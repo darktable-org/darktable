@@ -2252,23 +2252,6 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
   free(g);
 }
 
-static int
-_get_grid_nb_lines(GtkGrid *grid)
-{
-  int line = 0;
-  gboolean not_empty = TRUE;
-  while(not_empty)
-  {
-    for(int i = 0; i < 2; i++)
-    {
-      not_empty = gtk_grid_get_child_at(grid, i, line) != NULL;
-      if(not_empty) break;
-    }
-    if(not_empty) line++;
-  }
-  return line;
-}
-
 static void
 _gui_preferences_bool_callback(GtkWidget *widget, gpointer data)
 {
@@ -2300,7 +2283,8 @@ void dt_gui_preferences_bool_update(GtkWidget *widget)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), val);
 }
 
-GtkWidget *dt_gui_preferences_bool(GtkGrid *grid, const char *key, const gboolean swap)
+GtkWidget *dt_gui_preferences_bool(GtkGrid *grid, const char *key, const guint col,
+                                   const guint line, const gboolean swap)
 {
   GtkWidget *w_label = gtk_label_new(_(dt_confgen_get_label(key)));
   gtk_label_set_ellipsize(GTK_LABEL(w_label), PANGO_ELLIPSIZE_END);
@@ -2312,9 +2296,8 @@ GtkWidget *dt_gui_preferences_bool(GtkGrid *grid, const char *key, const gboolea
   GtkWidget *w = gtk_check_button_new();
   gtk_widget_set_name(w, key);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), dt_conf_get_bool(key));
-  const int line = _get_grid_nb_lines(grid);
-  gtk_grid_attach(GTK_GRID(grid), labelev, swap ? 1 : 0, line, 1, 1);
-  gtk_grid_attach(GTK_GRID(grid), w, swap ? 0 : 1, line, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), labelev, swap ? (col + 1) : col, line, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), w, swap ? col : (col + 1), line, 1, 1);
   g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(_gui_preferences_bool_callback), (gpointer)key);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(_gui_preferences_bool_reset), (gpointer)w);
   return w;
@@ -2351,7 +2334,8 @@ void dt_gui_preferences_int_update(GtkWidget *widget)
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), val);
 }
 
-GtkWidget *dt_gui_preferences_int(GtkGrid *grid, const char *key)
+GtkWidget *dt_gui_preferences_int(GtkGrid *grid, const char *key, const guint col,
+                                  const guint line)
 {
   GtkWidget *w_label = gtk_label_new(_(dt_confgen_get_label(key)));
   gtk_label_set_ellipsize(GTK_LABEL(w_label), PANGO_ELLIPSIZE_END);
@@ -2367,9 +2351,8 @@ GtkWidget *dt_gui_preferences_int(GtkGrid *grid, const char *key)
   gtk_widget_set_hexpand(w, FALSE);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(w), 0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(w), dt_conf_get_int(key));
-  const int line = _get_grid_nb_lines(grid);
-  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line, 1, 1);
-  gtk_grid_attach(GTK_GRID(grid), w, 1, line, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), labelev, col, line, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), w, col + 1, line, 1, 1);
   g_signal_connect(G_OBJECT(w), "value-changed", G_CALLBACK(_gui_preferences_int_callback), (gpointer)key);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(_gui_preferences_int_reset), (gpointer)w);
   return w;
@@ -2439,7 +2422,8 @@ void dt_gui_preferences_enum_update(GtkWidget *widget)
   g_free(str);
 }
 
-GtkWidget *dt_gui_preferences_enum(GtkGrid *grid, const char *key)
+GtkWidget *dt_gui_preferences_enum(GtkGrid *grid, const char *key, const guint col,
+                                   const guint line)
 {
   GtkWidget *w_label = gtk_label_new(_(dt_confgen_get_label(key)));
   gtk_label_set_ellipsize(GTK_LABEL(w_label), PANGO_ELLIPSIZE_END);
@@ -2485,9 +2469,8 @@ GtkWidget *dt_gui_preferences_enum(GtkGrid *grid, const char *key)
   gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(w), renderer, "text", 1, NULL);
   gtk_combo_box_set_active(GTK_COMBO_BOX(w), pos);
 
-  const int line = _get_grid_nb_lines(grid);
-  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line, 1, 1);
-  gtk_grid_attach(GTK_GRID(grid), w, 1, line, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), labelev, col, line, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), w, col + 1, line, 1, 1);
   g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(_gui_preferences_enum_callback), (gpointer)key);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(_gui_preferences_enum_reset), (gpointer)w);
   return w;
@@ -2526,7 +2509,8 @@ void dt_gui_preferences_string_update(GtkWidget *widget)
   g_free(str);
 }
 
-GtkWidget *dt_gui_preferences_string(GtkGrid *grid, const char *key)
+GtkWidget *dt_gui_preferences_string(GtkGrid *grid, const char *key, const guint col,
+                                     const guint line)
 {
   GtkWidget *w_label = gtk_label_new(_(dt_confgen_get_label(key)));
   gtk_label_set_ellipsize(GTK_LABEL(w_label), PANGO_ELLIPSIZE_END);
@@ -2543,9 +2527,8 @@ GtkWidget *dt_gui_preferences_string(GtkGrid *grid, const char *key)
   gtk_widget_set_hexpand(w, TRUE);
   gtk_widget_set_name(w, key);
 
-  const int line = _get_grid_nb_lines(grid);
-  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line, 1, 1);
-  gtk_grid_attach(GTK_GRID(grid), w, 1, line, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), labelev, col, line, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), w, col + 1, line, 1, 1);
   g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(_gui_preferences_string_callback), (gpointer)key);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(_gui_preferences_string_reset), (gpointer)w);
   return w;

@@ -113,6 +113,7 @@ typedef struct dt_lib_import_t
     GtkGrid *patterns;
     GtkWidget *datetime;
     dt_expander_t exp;
+    guint fn_line;
   } from;
 
 #ifdef USE_LUA
@@ -579,7 +580,7 @@ static gboolean _thumb_toggled(GtkWidget *view, GdkEventButton *event, dt_lib_mo
   return FALSE;
 }
 
-static gboolean _thumb_set_listview(gpointer user_data)
+static gboolean _thumb_set(gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
@@ -607,6 +608,7 @@ static void _all_thumb_toggled(GtkTreeViewColumn *column, dt_lib_module_t *self)
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   if(!thumb_sel)
   {
+    // remove the thumbnails
     d->from.event = 0;
     GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
     GtkTreeIter iter;
@@ -619,9 +621,10 @@ static void _all_thumb_toggled(GtkTreeViewColumn *column, dt_lib_module_t *self)
   }
   else if(!d->from.event)
   {
+    // if the display is not yet started, start it
     GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
     if(gtk_tree_model_get_iter_first(model, &d->from.iter))
-      d->from.event = g_timeout_add(100, _thumb_set_listview, self);
+      d->from.event = g_timeout_add_full(G_PRIORITY_LOW, 100, _thumb_set, self, NULL);
   }
 }
 
@@ -714,7 +717,7 @@ static void _update_layout(dt_lib_module_t* self)
   const gboolean usefn = dt_conf_get_bool("session/use_filename");
   for(int j = 0; j < 2 ; j++)
   {
-    GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(d->from.patterns), j, 4);
+    GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(d->from.patterns), j, d->from.fn_line);
     if(GTK_IS_WIDGET(w))
       gtk_widget_set_sensitive(w, !usefn);
   }
@@ -848,30 +851,23 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   d->from.img_nb = gtk_label_new("");
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(d->from.img_nb), TRUE, TRUE, 0);
 
-  // list - setup store
+  // general info
+  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
+  GtkWidget *label = dt_ui_label_new(_("folder"));
+  gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
+  label = dt_ui_label_new(d->from.folder);
+  gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(import_list), box, FALSE, FALSE, 0);
+
+  guint line = 0;
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-
-  // general info
-  int line = 0;
-  grid = GTK_GRID(gtk_grid_new());
-  gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-  GtkWidget *label = dt_ui_label_new(_("folder"));
-  gtk_grid_attach(grid, label, 0, line, 1, 1);
-  label = dt_ui_label_new(d->from.folder);
-  gtk_grid_attach(grid, label, 1, line++, 3, 1);
-  GtkGrid *grid2 = GTK_GRID(gtk_grid_new());
-  gtk_grid_set_column_spacing(grid2, DT_PIXEL_APPLY_DPI(5));
-  GtkWidget *recursive = dt_gui_preferences_bool(grid2, "ui_last/import_recursive", TRUE);
+  GtkWidget *recursive = dt_gui_preferences_bool(grid, "ui_last/import_recursive", 0, line, TRUE);
+  gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, 1, line), TRUE);
   g_signal_connect(G_OBJECT(recursive), "toggled", G_CALLBACK(_recursive_toggled), self);
-  gtk_grid_attach(grid, GTK_WIDGET(grid2), 0, line, 2, 1);
-  gtk_widget_set_hexpand(GTK_WIDGET(grid2), TRUE);
-  grid2 = GTK_GRID(gtk_grid_new());
-  gtk_grid_set_column_spacing(grid2, DT_PIXEL_APPLY_DPI(5));
-  GtkWidget *ignore_jpegs = dt_gui_preferences_bool(grid2, "ui_last/import_ignore_jpegs", TRUE);
+  GtkWidget *ignore_jpegs = dt_gui_preferences_bool(grid, "ui_last/import_ignore_jpegs", 2, line, TRUE);
+  gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, 3, line++), TRUE);
   g_signal_connect(G_OBJECT(ignore_jpegs), "toggled", G_CALLBACK(_ignore_jpegs_toggled), self);
-  gtk_grid_attach(grid, GTK_WIDGET(grid2), 2, line++, 2, 1);
-  gtk_widget_set_hexpand(GTK_WIDGET(grid2), TRUE);
   gtk_box_pack_start(GTK_BOX(import_list), GTK_WIDGET(grid), FALSE, FALSE, 8);
 
   d->from.store = gtk_list_store_new(DT_IMPORT_NUM_COLS, G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF,
@@ -938,7 +934,8 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
     GtkWidget *import_patterns = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     grid = GTK_GRID(gtk_grid_new());
     gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-    dt_gui_preferences_string(grid, "ui_last/import_jobcode");
+    line = 0;
+    dt_gui_preferences_string(grid, "ui_last/import_jobcode", 0, line++);
     gtk_box_pack_start(GTK_BOX(import_patterns), GTK_WIDGET(grid), FALSE, FALSE, 0);
 
     // collapsible section
@@ -948,11 +945,12 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
     // patterns
     grid = GTK_GRID(gtk_grid_new());
     gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-    d->from.datetime = dt_gui_preferences_string(grid, "ui_last/import_datetime_override");
-    dt_gui_preferences_string(grid, "session/base_directory_pattern");
-    dt_gui_preferences_string(grid, "session/sub_directory_pattern");
-    GtkWidget *usefn = dt_gui_preferences_bool(grid, "session/use_filename", FALSE);
-    dt_gui_preferences_string(grid, "session/filename_pattern");
+    d->from.datetime = dt_gui_preferences_string(grid, "ui_last/import_datetime_override", 0, line++);
+    dt_gui_preferences_string(grid, "session/base_directory_pattern", 0, line++);
+    dt_gui_preferences_string(grid, "session/sub_directory_pattern", 0, line++);
+    GtkWidget *usefn = dt_gui_preferences_bool(grid, "session/use_filename", 0, line++, FALSE);
+    d->from.fn_line = line;
+    dt_gui_preferences_string(grid, "session/filename_pattern", 0, line++);
     gtk_box_pack_start(GTK_BOX(d->from.exp.widgets), GTK_WIDGET(grid), FALSE, FALSE, 0);
     d->from.patterns = grid;
     _update_layout(self);
@@ -962,7 +960,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
     box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     grid = GTK_GRID(gtk_grid_new());
     gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-    dt_gui_preferences_bool(grid, "ui_last/import_keep_open", TRUE);
+    dt_gui_preferences_bool(grid, "ui_last/import_keep_open", 0, 0, TRUE);
     gtk_box_pack_end(GTK_BOX(box), GTK_WIDGET(grid), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(import_list), GTK_WIDGET(box), FALSE, FALSE, 0);
 
@@ -979,7 +977,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
 
 static void _import_set_collection(char *dirname)
 {
-  if(dirname && dt_conf_get_bool("ui_last/in_situ"))
+  if(dirname)
   {
     dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
     dt_conf_set_int("plugins/lighttable/collect/item0", 0);
@@ -1021,10 +1019,11 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
         dto = g_strstrip(dto);
         datetime_override = dto[0] ? _parse_date_time(dto) : 0;
         g_free(dto);
+        dt_gui_preferences_string_reset(d->from.datetime);
       }
       dt_control_import(imgs, datetime_override, d->from.inplace);
-      _import_set_collection(g_path_get_dirname((char *)imgs->data));
-      dt_gui_preferences_string_reset(d->from.datetime);
+      if(d->from.inplace)
+        _import_set_collection(g_path_get_dirname((char *)imgs->data));
     }
     gtk_tree_selection_unselect_all(selection);
     if(d->from.inplace || !dt_conf_get_bool("ui_last/import_keep_open"))
@@ -1163,10 +1162,12 @@ void gui_init(dt_lib_module_t *self)
 
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-  d->ignore_jpegs = dt_gui_preferences_bool(grid, "ui_last/import_ignore_jpegs", FALSE);
-  d->ignore_exif = dt_gui_preferences_bool(grid, "ui_last/ignore_exif_rating", FALSE);
-  d->rating = dt_gui_preferences_int(grid, "ui_last/import_initial_rating");
-  d->apply_metadata = d->metadata.apply_metadata = dt_gui_preferences_bool(grid, "ui_last/import_apply_metadata", FALSE);
+  guint line = 0;
+  d->ignore_jpegs = dt_gui_preferences_bool(grid, "ui_last/import_ignore_jpegs", 0, line++, FALSE);
+  d->ignore_exif = dt_gui_preferences_bool(grid, "ui_last/ignore_exif_rating", 0, line++, FALSE);
+  d->rating = dt_gui_preferences_int(grid, "ui_last/import_initial_rating", 0, line++);
+  d->apply_metadata = dt_gui_preferences_bool(grid, "ui_last/import_apply_metadata", 0, line++, FALSE);
+  d->metadata.apply_metadata = d->apply_metadata;
   gtk_box_pack_start(GTK_BOX(d->exp.widgets), GTK_WIDGET(grid), FALSE, FALSE, 0);
   d->metadata.box = d->exp.widgets;
   dt_import_metadata_init(&d->metadata);
