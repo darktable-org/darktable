@@ -994,9 +994,7 @@ combobox *
 
 context-menu,
 menu,
-menuitem > menu, /* sub-menu */
-menuitem arrow,
-menuitem:hover menuitem arrow,
+menuitem > arrow,
 tooltip,
 popover,
 combobox window,
@@ -1014,8 +1012,7 @@ dialog combobox window,
   padding: 0.2em 0;
 }
 
-menuitem arrow,
-menuitem:hover menuitem arrow
+menuitem > arrow
 {
   border: 0;
   margin-right: 2px;
@@ -2027,8 +2024,7 @@ messagedialog .default  /* this show that a button in confirmation action pop-up
 button:hover,
 #add-color-button:hover,
 menuitem:hover,
-menuitem:hover arrow,
-menuitem:hover menuitem:hover arrow,
+menuitem:hover > *,
 combobox window *:hover,
 radiobutton:hover label,
 #control-button:hover,
@@ -2057,9 +2053,7 @@ button:checked cellview,
 button:checked image,
 button:checked label,
 dialog row:hover label,
-menuitem:hover *,
-menuitem:hover menuitem:hover *,
-menuitem:hover menuitem:hover menuitem:hover *,
+menuitem:hover > *,
 notebook tab:hover label,
 #control-button:hover,
 #history-button:hover *,
@@ -2084,8 +2078,7 @@ button:checked cellview
 }
 
 /* Set submenus */
-menuitem:hover menuitem *,
-menuitem:hover menuitem:hover menuitem *
+menuitem > *
 {
     color: @fg_color;
 }
