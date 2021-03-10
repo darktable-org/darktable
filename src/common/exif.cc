@@ -1796,6 +1796,9 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
           exifData["Exif.Photo.UserComment"] = desc;
         g_list_free_full(res, &g_free);
       }
+      else
+        // mandatory tag for TIFF/EP, empty is ok (unknown)
+        exifData["Exif.Image.ImageDescription"] = "";
 
       res = dt_metadata_get(imgid, "Xmp.dc.rights", NULL);
       if(res != NULL)
