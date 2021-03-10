@@ -3342,7 +3342,11 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     float Lch[3];
     dt_xyY_to_Lch(xyY, Lch);
 
-    dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
+    // If the chroma is zero then there is not a meaningful hue angle. In this case
+    // leave the hue slider where it was, so that if chroma is set to zero and then
+    // set to a nonzero value, the hue setting will remain unchanged.
+    if(Lch[1] > 0)
+      dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
     dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
     dt_bauhaus_slider_set(g->temperature, p->temperature);
   }
