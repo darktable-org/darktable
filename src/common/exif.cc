@@ -1736,17 +1736,8 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
     if(out_height > 0) exifData["Exif.Photo.PixelYDimension"] = (uint32_t)out_height;
 
     const int resolution = dt_conf_get_int("metadata/resolution");
-    if(resolution > 0)
-    {
-      exifData["Exif.Image.XResolution"] = Exiv2::Rational(resolution, 1);
-      exifData["Exif.Image.YResolution"] = Exiv2::Rational(resolution, 1);
-    }
-    else
-    {
-      // mandatory tags for TIFF/EP and Exif, use Exif default
-      exifData["Exif.Image.XResolution"] = Exiv2::Rational(72, 1);
-      exifData["Exif.Image.YResolution"] = Exiv2::Rational(72, 1);
-    }
+    exifData["Exif.Image.XResolution"] = Exiv2::Rational(resolution, 1);
+    exifData["Exif.Image.YResolution"] = Exiv2::Rational(resolution, 1);
     exifData["Exif.Image.ResolutionUnit"] = uint16_t(2); /* inches */
 
     exifData["Exif.Image.Software"] = darktable_package_string;
