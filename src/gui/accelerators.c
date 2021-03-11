@@ -17,6 +17,7 @@
 */
 
 #include "gui/accelerators.h"
+#include "common/action.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/file_location.h"
@@ -818,15 +819,6 @@ static void _show_action_label(GtkTreeViewColumn *column, GtkCellRenderer *cell,
   g_object_set(cell, "text", action->label_translated, NULL);
 }
 
-static gint _sort_action_tree(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer user_data)
-{
-  dt_action_t *action_a, *action_b;
-  gtk_tree_model_get(model, a, 0, &action_a, -1);
-  gtk_tree_model_get(model, b, 0, &action_b, -1);
-
-  return strcoll(action_a->label_translated, action_b->label_translated);
-}
-
 static void _action_row_activated(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, gpointer user_data)
 {
   GtkTreeIter iter;
@@ -967,8 +959,6 @@ GtkWidget *dt_shortcuts_prefs()
   // Creating the action selection treeview
   g_set_weak_pointer(&actions_store, gtk_tree_store_new(1, G_TYPE_POINTER)); // static
   _add_actions_to_tree(NULL, darktable.control->actions);
-  gtk_tree_sortable_set_default_sort_func(GTK_TREE_SORTABLE(actions_store), _sort_action_tree, NULL, NULL);
-  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(actions_store), GTK_TREE_SORTABLE_DEFAULT_SORT_COLUMN_ID, GTK_SORT_ASCENDING);
 
   tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(actions_store));
   g_object_unref(actions_store);
@@ -1855,6 +1845,18 @@ static inline gchar *path_without_symbols(const gchar *path)
   return g_strdelimit(g_strdup(path), "=,/.", '-');
 }
 
+void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
+{
+  dt_action_t **insertion_point = (dt_action_t **)&owner->target;
+  while(*insertion_point &&
+      g_utf8_collate((*insertion_point)->label_translated, new_action->label_translated) < 0)
+  {
+    insertion_point = &(*insertion_point)->next;
+  }
+  new_action->next = *insertion_point;
+  *insertion_point = new_action;
+}
+
 dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path)
 {
   if(!owner) return NULL;
@@ -1873,8 +1875,9 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path)
       new_action->label_translated = g_strdup(Q_(*path));
       new_action->type = DT_ACTION_TYPE_SECTION;
       new_action->owner = owner;
-      new_action->next = owner->target;
-      owner->target = new_action;
+
+      dt_action_insert_sorted(owner, new_action);
+
       owner = new_action;
       action = NULL;
       path++;
