@@ -393,6 +393,9 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
+  dt_imageio_exr_gui_t *gui = (dt_imageio_exr_gui_t *)self->gui_data;
+
+  dt_bauhaus_combobox_set(gui->compression, dt_confgen_get_int("plugins/imageio/format/exr/compression", DT_DEFAULT));
 }
 
 

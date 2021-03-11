@@ -70,9 +70,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
 {
   if(type == DT_UNDO_COLORLABELS)
   {
-    GList *list = (GList *)data;
-
-    while(list)
+    for(GList *list = (GList *)data; list; list = g_list_next(list))
     {
       dt_undo_colorlabels_t *undocolorlabels = (dt_undo_colorlabels_t *)list->data;
 
@@ -80,7 +78,6 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
       const uint8_t after = (action == DT_ACTION_UNDO) ? undocolorlabels->before : undocolorlabels->after;
       _pop_undo_execute(undocolorlabels->imgid, before, after);
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undocolorlabels->imgid));
-      list = g_list_next(list);
     }
     dt_collection_hint_message(darktable.collection);
   }
@@ -135,8 +132,7 @@ typedef enum dt_colorlabels_actions_t
 
 static void _colorlabels_execute(const GList *imgs, const int labels, GList **undo, const gboolean undo_on, const int action)
 {
-  GList *images = (GList *)imgs;
-  while(images)
+  for(const GList *images = imgs; images; images = g_list_next((GList *)images))
   {
     const int image_id = GPOINTER_TO_INT(images->data);
     const uint8_t before = dt_colorlabels_get_labels(image_id);
@@ -167,23 +163,19 @@ static void _colorlabels_execute(const GList *imgs, const int labels, GList **un
     }
 
     _pop_undo_execute(image_id, before, after);
-
-    images = g_list_next(images);
   }
 }
 
 void dt_colorlabels_set_labels(const GList *img, const int labels, const gboolean clear_on,
                                const gboolean undo_on)
 {
-  GList *imgs = g_list_copy((GList *)img);
-  if(imgs)
+  if(img)
   {
     GList *undo = NULL;
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_COLORLABELS);
 
-    _colorlabels_execute(imgs, labels, &undo, undo_on, clear_on ? DT_CA_SET : DT_CA_ADD);
+    _colorlabels_execute(img, labels, &undo, undo_on, clear_on ? DT_CA_SET : DT_CA_ADD);
 
-    g_list_free(imgs);
     if(undo_on)
     {
       dt_undo_record(darktable.undo, NULL, DT_UNDO_COLORLABELS, undo, _pop_undo, _colorlabels_undo_data_free);
@@ -210,11 +202,9 @@ void dt_colorlabels_toggle_label_on_list(const GList *list, const int color, con
   }
 
   // synchronise xmp files
-  GList *l = (GList *)list;
-  while(l)
+  for(GList *l = (GList *)list; l; l = g_list_next(l))
   {
     dt_image_synch_xmp(GPOINTER_TO_INT(l->data));
-    l = g_list_next(l);
   }
 
   if(undo_on)

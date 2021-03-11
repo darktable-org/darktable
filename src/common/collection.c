@@ -1080,14 +1080,14 @@ GList *dt_collection_get(const dt_collection_t *collection, int limit, gboolean 
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       const int imgid = sqlite3_column_int(stmt, 0);
-      list = g_list_append(list, GINT_TO_POINTER(imgid));
+      list = g_list_prepend(list, GINT_TO_POINTER(imgid));
     }
 
     sqlite3_finalize(stmt);
     g_free(q);
   }
 
-  return list;
+  return g_list_reverse(list);  // list built in reverse order, so un-reverse it
 }
 
 GList *dt_collection_get_all(const dt_collection_t *collection, int limit)
@@ -1134,14 +1134,13 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
 {
   GRegex *regex;
   GMatchInfo *match_info;
-  int match_count;
 
   *number1 = *number2 = *operator= NULL;
 
   // we test the range expression first
   regex = g_regex_new("^\\s*\\[\\s*([0-9]+\\.?[0-9]*)\\s*;\\s*([0-9]+\\.?[0-9]*)\\s*\\]\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
-  match_count = g_match_info_get_match_count(match_info);
+  int match_count = g_match_info_get_match_count(match_info);
 
   if(match_count == 3)
   {
@@ -1179,7 +1178,7 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
 
 static char *_dt_collection_compute_datetime(const char *operator, const char *input)
 {
-  int len = strlen(input);
+  const int len = strlen(input);
   if(len < 4) return NULL;
 
   struct tm tm1 = { 0 };
@@ -1249,7 +1248,6 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
 {
   GRegex *regex;
   GMatchInfo *match_info;
-  int match_count;
 
   *number1 = *number2 = *operator= NULL;
 
@@ -1257,7 +1255,7 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
   // 2 elements : date-time1 and  date-time2
   regex = g_regex_new("^\\s*\\[\\s*(\\d{4}[:\\d\\s]*)\\s*;\\s*(\\d{4}[:\\d\\s]*)\\s*\\]\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
-  match_count = g_match_info_get_match_count(match_info);
+  int match_count = g_match_info_get_match_count(match_info);
 
   if(match_count == 3)
   {
@@ -1308,14 +1306,13 @@ void dt_collection_split_operator_exposure(const gchar *input, char **number1, c
 {
   GRegex *regex;
   GMatchInfo *match_info;
-  int match_count;
 
   *number1 = *number2 = *operator= NULL;
 
   // we test the range expression first
   regex = g_regex_new("^\\s*\\[\\s*(1/)?([0-9]+\\.?[0-9]*)(\")?\\s*;\\s*(1/)?([0-9]+\\.?[0-9]*)(\")?\\s*\\]\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
-  match_count = g_match_info_get_match_count(match_info);
+  int match_count = g_match_info_get_match_count(match_info);
 
   if(match_count == 6 || match_count == 7)
   {
@@ -1391,8 +1388,8 @@ void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList
                               -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    char *exif_maker = (char *)sqlite3_column_text(stmt, 0);
-    char *exif_model = (char *)sqlite3_column_text(stmt, 1);
+    const char *exif_maker = (char *)sqlite3_column_text(stmt, 0);
+    const char *exif_model = (char *)sqlite3_column_text(stmt, 1);
 
     gchar *makermodel =  dt_collection_get_makermodel(exif_maker, exif_model);
 
@@ -1451,51 +1448,50 @@ gchar *dt_collection_get_makermodel(const char *exif_maker, const char *exif_mod
 static gchar *get_query_string(const dt_collection_properties_t property, const gchar *text)
 {
   char *escaped_text = sqlite3_mprintf("%q", text);
-  unsigned int escaped_length = strlen(escaped_text);
+  const unsigned int escaped_length = strlen(escaped_text);
   gchar *query = NULL;
 
   switch(property)
   {
     case DT_COLLECTION_PROP_FILMROLL: // film roll
       if(!(escaped_text && *escaped_text))
-        query = dt_util_dstrcat(query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%'))",
+        query = g_strdup_printf("(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%'))",
                                 escaped_text);
       else
-        query = dt_util_dstrcat(query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s'))",
+        query = g_strdup_printf("(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s'))",
                                 escaped_text);
       break;
 
     case DT_COLLECTION_PROP_FOLDERS: // folders
-    {
-      if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
       {
-        escaped_text[escaped_length-1] = '\0';
-        query = dt_util_dstrcat(
-            query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s' OR folder LIKE '%s"
-                  G_DIR_SEPARATOR_S "%%'))",
-            escaped_text, escaped_text);
+        // replace * at the end with OR-clause to include subfolders
+        if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
+        {
+          escaped_text[escaped_length-1] = '\0';
+          query = g_strdup_printf("(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s' OR folder LIKE '%s"
+                                  G_DIR_SEPARATOR_S "%%'))",
+                                  escaped_text, escaped_text);
+        }
+        // replace |% at the end with /% to only show subfolders
+        else if ((escaped_length > 1) && (strcmp(escaped_text+escaped_length-2, "|%") == 0 ))
+        {
+          escaped_text[escaped_length-2] = '\0';
+          query = g_strdup_printf("(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s"
+                                  G_DIR_SEPARATOR_S "%%'))",
+                                  escaped_text);
+        }
+        else
+        {
+          query = g_strdup_printf("(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s'))",
+                                  escaped_text);
+        }
       }
-      else if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '%'))
-      {
-        escaped_text[escaped_length-2] = '\0';
-        query = dt_util_dstrcat(
-            query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s"
-                  G_DIR_SEPARATOR_S "%%'))",
-            escaped_text);
-      }
-      else
-      {
-        query = dt_util_dstrcat(
-            query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s'))",
-            escaped_text);
-      }
-    }
-    break;
+      break;
 
     case DT_COLLECTION_PROP_COLORLABEL: // colorlabel
     {
       if(!(escaped_text && *escaped_text) || strcmp(escaped_text, "%") == 0)
-        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.color_labels WHERE color IS NOT NULL))");
+        query = g_strdup_printf("(id IN (SELECT imgid FROM main.color_labels WHERE color IS NOT NULL))");
       else
       {
         int color = 0;
@@ -1509,7 +1505,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           color = 3;
         else if(strcmp(escaped_text, _("purple")) == 0)
           color = 4;
-        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.color_labels WHERE color=%d))", color);
+        query = g_strdup_printf("(id IN (SELECT imgid FROM main.color_labels WHERE color=%d))", color);
       }
     }
     break;
@@ -1542,11 +1538,11 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         const gboolean all_tagged = strcmp(escaped_text, _("tagged*")) == 0;
         char *escaped_text2 = g_strstr_len(escaped_text, -1, "|");
         if(not_tagged || all_tagged)
-          query = dt_util_dstrcat(query, "(id %s IN (SELECT id AS imgid FROM main.images "
-                                         "WHERE (longitude IS NOT NULL AND latitude IS NOT NULL))) ",
+          query = g_strdup_printf("(id %s IN (SELECT id AS imgid FROM main.images "
+                                  "WHERE (longitude IS NOT NULL AND latitude IS NOT NULL))) ",
                                   all_tagged ? "" : "not");
         else
-          query = dt_util_dstrcat(query, "(id IN (SELECT id AS imgid FROM main.images "
+          query = g_strdup_printf("(id IN (SELECT id AS imgid FROM main.images "
                                          "WHERE (longitude IS NOT NULL AND latitude IS NOT NULL))"
                                          "AND id %s IN (SELECT imgid FROM main.tagged_images AS ti"
                                          "  JOIN data.tags AS t"
@@ -1559,8 +1555,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
 
     case DT_COLLECTION_PROP_LOCAL_COPY: // local copy
-      query = dt_util_dstrcat(query, "(id %s IN (SELECT id AS imgid FROM main.images WHERE "
-                                     "(flags & %d))) ",
+      query = g_strdup_printf("(id %s IN (SELECT id AS imgid FROM main.images WHERE (flags & %d))) ",
                               (strcmp(escaped_text, _("not copied locally")) == 0) ? "not" : "",
                               DT_IMAGE_LOCAL_COPY);
       break;
@@ -1573,14 +1568,14 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = dt_util_dstrcat(query, "((aspect_ratio >= %s) AND (aspect_ratio <= %s))", number1, number2);
+          query = g_strdup_printf("((aspect_ratio >= %s) AND (aspect_ratio <= %s))", number1, number2);
       }
       else if(operator && number1)
-        query = dt_util_dstrcat(query, "(aspect_ratio %s %s)", operator, number1);
+        query = g_strdup_printf("(aspect_ratio %s %s)", operator, number1);
       else if(number1)
-        query = dt_util_dstrcat(query, "(aspect_ratio = %s)", number1);
+        query = g_strdup_printf("(aspect_ratio = %s)", number1);
       else
-        query = dt_util_dstrcat(query, "(aspect_ratio LIKE '%%%s%%')", escaped_text);
+        query = g_strdup_printf("(aspect_ratio LIKE '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number1);
@@ -1590,22 +1585,18 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
     case DT_COLLECTION_PROP_CAMERA: // camera
       // Start query with a false statement to avoid special casing the first condition
-      query = dt_util_dstrcat(query, "((1=0)");
+      query = g_strdup_printf("((1=0)");
       GList *lists = NULL;
       dt_collection_get_makermodels(text, NULL, &lists);
-      GList *element = lists;
-      while (element)
+      for(GList *element = lists; element; element = g_list_next(element))
       {
         GList *tuple = element->data;
-        char *mk = sqlite3_mprintf("%q", tuple->data);
-        char *md = sqlite3_mprintf("%q", tuple->next->data);
-        query = dt_util_dstrcat(query, " OR (maker = '%s' AND model = '%s')", mk, md);
-        sqlite3_free(mk);
-        sqlite3_free(md);
+        char *clause = sqlite3_mprintf(" OR (maker = '%q' AND model = '%q')", tuple->data, tuple->next->data);
+        query = dt_util_dstrcat(query, "%s", clause);
+        sqlite3_free(clause);
         g_free(tuple->data);
         g_free(tuple->next->data);
         g_list_free(tuple);
-        element = element->next;
       }
       g_list_free(lists);
       query = dt_util_dstrcat(query, ")");
@@ -1629,7 +1620,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           // shift-click adds an asterix * to include items in and under this hierarchy
           // without using a wildcard % which also would include similar named items
           escaped_text[escaped_length-1] = '\0';
-          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a "
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images AS a "
                                          "JOIN data.tags AS b ON a.tagid = b.id "
                                          "WHERE name LIKE '%s' OR name LIKE '%s|%%'))",
                                   escaped_text, escaped_text);
@@ -1637,7 +1628,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         else
         {
           // default
-          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
                                        "data.tags AS b ON a.tagid = b.id WHERE name LIKE '%s'))",
                                   escaped_text);
         }
@@ -1649,7 +1640,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           // shift-click adds an asterix * to include items in and under this hierarchy
           // without using a wildcard % which also would include similar named items
           escaped_text[escaped_length-1] = '\0';
-          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a "
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images AS a "
                                          "JOIN data.tags AS b ON a.tagid = b.id "
                                          "WHERE name = '%s'"
                                          "  OR SUBSTR(name, 1, LENGTH('%s') + 1) = '%s|'))",
@@ -1659,7 +1650,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         {
           // ends with % or |%
           escaped_text[escaped_length-1] = '\0';
-          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a "
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images AS a "
                                          "JOIN data.tags AS b ON a.tagid = b.id "
                                          "WHERE SUBSTR(name, 1, LENGTH('%s')) = '%s'))",
                                   escaped_text, escaped_text);
@@ -1667,7 +1658,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         else
         {
           // default
-          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
                                        "data.tags AS b ON a.tagid = b.id WHERE name = '%s'))",
                                   escaped_text);
         }
@@ -1676,7 +1667,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_LENS: // lens
-      query = dt_util_dstrcat(query, "(lens LIKE '%%%s%%')", escaped_text);
+      query = g_strdup_printf("(lens LIKE '%%%s%%')", escaped_text);
       break;
 
     case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
@@ -1687,14 +1678,14 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = dt_util_dstrcat(query, "((focal_length >= %s) AND (focal_length <= %s))", number1, number2);
+          query = g_strdup_printf("((focal_length >= %s) AND (focal_length <= %s))", number1, number2);
       }
       else if(operator && number1)
-        query = dt_util_dstrcat(query, "(focal_length %s %s)", operator, number1);
+        query = g_strdup_printf("(focal_length %s %s)", operator, number1);
       else if(number1)
-        query = dt_util_dstrcat(query, "(focal_length = %s)", number1);
+        query = g_strdup_printf("(focal_length = %s)", number1);
       else
-        query = dt_util_dstrcat(query, "(focal_length LIKE '%%%s%%')", escaped_text);
+        query = g_strdup_printf("(focal_length LIKE '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number1);
@@ -1710,14 +1701,14 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = dt_util_dstrcat(query, "((iso >= %s) AND (iso <= %s))", number1, number2);
+          query = g_strdup_printf("((iso >= %s) AND (iso <= %s))", number1, number2);
       }
       else if(operator && number1)
-        query = dt_util_dstrcat(query, "(iso %s %s)", operator, number1);
+        query = g_strdup_printf("(iso %s %s)", operator, number1);
       else if(number1)
-        query = dt_util_dstrcat(query, "(iso = %s)", number1);
+        query = g_strdup_printf("(iso = %s)", number1);
       else
-        query = dt_util_dstrcat(query, "(iso LIKE '%%%s%%')", escaped_text);
+        query = g_strdup_printf("(iso LIKE '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number1);
@@ -1733,15 +1724,15 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = dt_util_dstrcat(query, "((ROUND(aperture,1) >= %s) AND (ROUND(aperture,1) <= %s))", number1,
+          query = g_strdup_printf("((ROUND(aperture,1) >= %s) AND (ROUND(aperture,1) <= %s))", number1,
                                   number2);
       }
       else if(operator && number1)
-        query = dt_util_dstrcat(query, "(ROUND(aperture,1) %s %s)", operator, number1);
+        query = g_strdup_printf("(ROUND(aperture,1) %s %s)", operator, number1);
       else if(number1)
-        query = dt_util_dstrcat(query, "(ROUND(aperture,1) = %s)", number1);
+        query = g_strdup_printf("(ROUND(aperture,1) = %s)", number1);
       else
-        query = dt_util_dstrcat(query, "(ROUND(aperture,1) LIKE '%%%s%%')", escaped_text);
+        query = g_strdup_printf("(ROUND(aperture,1) LIKE '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number1);
@@ -1757,18 +1748,17 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = dt_util_dstrcat(query, "((exposure >= %s  - 1.0/100000) AND (exposure <= %s  + 1.0/100000))", number1,
+          query = g_strdup_printf("((exposure >= %s  - 1.0/100000) AND (exposure <= %s  + 1.0/100000))", number1,
                                   number2);
       }
       else if(operator && number1)
-        query = dt_util_dstrcat(query, "(exposure %s %s)", operator, number1);
+        query = g_strdup_printf("(exposure %s %s)", operator, number1);
       else if(number1)
-        query = dt_util_dstrcat(query,
-                                "(CASE WHEN exposure < 0.4 THEN ((exposure >= %s - 1.0/100000) AND  (exposure <= %s + 1.0/100000)) "
+        query = g_strdup_printf("(CASE WHEN exposure < 0.4 THEN ((exposure >= %s - 1.0/100000) AND  (exposure <= %s + 1.0/100000)) "
                                 "ELSE (ROUND(exposure,2) >= %s - 1.0/100000) AND (ROUND(exposure,2) <= %s + 1.0/100000) END)",
                                 number1, number1, number1, number1);
       else
-        query = dt_util_dstrcat(query, "(exposure LIKE '%%%s%%')", escaped_text);
+        query = g_strdup_printf("(exposure LIKE '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number1);
@@ -1778,20 +1768,25 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
     case DT_COLLECTION_PROP_FILENAME: // filename
     {
-      GList *list, *l;
-      list = dt_util_str_to_glist(",", escaped_text);
+      GList *list = dt_util_str_to_glist(",", escaped_text);
 
-      for (l = list; l != NULL; l = l->next)
-        l->data = dt_util_dstrcat(query, "(filename LIKE '%%%s%%')", (char *)l->data);
+      for (GList *l = list; l; l = g_list_next(l))
+      {
+        char *name = (char*)l->data;	// remember the original content of this list node
+        l->data = g_strdup_printf("(filename LIKE '%%%s%%')", name);
+        g_free(name);			// free the original filename
+      }
 
-      query = dt_util_dstrcat(NULL, "(%s)", dt_util_glist_to_str(" OR ", list));
-      g_list_free(list);
+      char *subquery = dt_util_glist_to_str(" OR ", list);
+      query = g_strdup_printf("(%s)", subquery);
+      g_free(subquery);
+      g_list_free_full(list, g_free);	// free the SQL clauses as well as the list
 
       break;
     }
 
     case DT_COLLECTION_PROP_DAY:
-    // query = dt_util_dstrcat(query, "(datetime_taken like '%%%s%%')", escaped_text);
+    // query = dt_util_dstrcat(NULL, "(datetime_taken like '%%%s%%')", escaped_text);
     // break;
 
     case DT_COLLECTION_PROP_TIME:
@@ -1802,17 +1797,17 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = dt_util_dstrcat(query, "((datetime_taken >= '%s') AND (datetime_taken <= '%s'))", number1,
+          query = g_strdup_printf("((datetime_taken >= '%s' COLLATE NOCASE) AND (datetime_taken <= '%s' COLLATE NOCASE))", number1,
                                   number2);
       }
       else if((strcmp(operator, "=") == 0 || strcmp(operator, "") == 0) && number1)
-        query = dt_util_dstrcat(query, "(datetime_taken LIKE '%s')", number1);
+        query = g_strdup_printf("(datetime_taken LIKE '%s')", number1);
       else if(strcmp(operator, "<>") == 0 && number1)
-        query = dt_util_dstrcat(query, "(datetime_taken NOT LIKE '%s')", number1);
+        query = g_strdup_printf("(datetime_taken NOT LIKE '%s')", number1);
       else if(number1)
-        query = dt_util_dstrcat(query, "(datetime_taken %s '%s')", operator, number1);
+        query = g_strdup_printf("(datetime_taken %s '%s')", operator, number1);
       else
-        query = dt_util_dstrcat(query, "(datetime_taken LIKE '%%%s%%')", escaped_text);
+        query = g_strdup_printf("(datetime_taken LIKE '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number1);
@@ -1881,10 +1876,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           if(strcmp(escaped_text, _(dt_iop_order_string(i))) == 0) break;
         }
         if(i < DT_IOP_ORDER_LAST)
-          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.module_order "
-                                         "WHERE version = %d))", i);
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.module_order WHERE version = %d))", i);
         else
-          query = dt_util_dstrcat(query, "(id NOT IN (SELECT imgid FROM main.module_order))");
+          query = g_strdup_printf("(id NOT IN (SELECT imgid FROM main.module_order))");
       }
       break;
 
@@ -1895,10 +1889,10 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         {
           const int keyid = dt_metadata_get_keyid_by_display_order(property - DT_COLLECTION_PROP_METADATA);
           if(strcmp(escaped_text, _("not defined")) != 0)
-            query = dt_util_dstrcat(query, "(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
+            query = g_strdup_printf("(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
                                            "LIKE '%%%s%%'))", keyid, escaped_text);
           else
-            query = dt_util_dstrcat(query, "(id NOT IN (SELECT id FROM main.meta_data WHERE key = %d))",
+            query = g_strdup_printf("(id NOT IN (SELECT id FROM main.meta_data WHERE key = %d))",
                                            keyid);
         }
       }
@@ -1907,7 +1901,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
   sqlite3_free(escaped_text);
 
   if(!query) // We've screwed up and not done a query string, send a placeholder
-    query = dt_util_dstrcat(query, "(1=1)");
+    query = g_strdup_printf("(1=1)");
 
   return query;
 }
@@ -1948,7 +1942,6 @@ int dt_collection_serialize(char *buf, int bufsize)
 void dt_collection_deserialize(char *buf)
 {
   int num_rules = 0;
-  int mode = 0, item = 0;
   sscanf(buf, "%d", &num_rules);
   if(num_rules == 0)
   {
@@ -1959,13 +1952,14 @@ void dt_collection_deserialize(char *buf)
   }
   else
   {
+    int mode = 0, item = 0;
     dt_conf_set_int("plugins/lighttable/collect/num_rules", num_rules);
     while(buf[0] != '\0' && buf[0] != ':') buf++;
     if(buf[0] == ':') buf++;
     char str[400], confname[200];
     for(int k = 0; k < num_rules; k++)
     {
-      int n = sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
+      const int n = sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
       if(n == 3)
       {
         snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", k);
@@ -2000,6 +1994,12 @@ void dt_collection_deserialize(char *buf)
 void dt_collection_update_query(const dt_collection_t *collection, dt_collection_change_t query_change, GList *list)
 {
   int next = -1;
+  if(!collection->clone && query_change == DT_COLLECTION_CHANGE_NEW_QUERY && darktable.gui)
+  {
+    // if the query has changed, we reset the expanded group
+    darktable.gui->expanded_group_id = -1;
+  }
+
   if(!collection->clone)
   {
     if(list)
@@ -2009,16 +2009,14 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
 
       // 1. create a string with all the imgids of the list to be used inside IN sql query
       gchar *txt = NULL;
-      GList *l = g_list_first(list);
       int i = 0;
-      while(l)
+      for(GList *l = list; l; l = g_list_next(l))
       {
         const int id = GPOINTER_TO_INT(l->data);
         if(i == 0)
           txt = dt_util_dstrcat(txt, "%d", id);
         else
           txt = dt_util_dstrcat(txt, ",%d", id);
-        l = g_list_next(l);
         i++;
       }
       // 2. search the first imgid not in the list but AFTER the list (or in a gap inside the list)
@@ -2164,8 +2162,8 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   /* collection hinting */
   gchar *message;
 
-  int c = dt_collection_get_count_no_group(collection);
-  int cs = dt_collection_get_selected_count(collection);
+  const int c = dt_collection_get_count_no_group(collection);
+  const int cs = dt_collection_get_selected_count(collection);
   g_list_free(selected_imgids);
 
   if(cs == 1)
@@ -2207,7 +2205,7 @@ static int dt_collection_image_offset_with_collection(const dt_collection_t *col
 
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      int id = sqlite3_column_int(stmt, 0);
+      const int id = sqlite3_column_int(stmt, 0);
       if(imgid == id)
       {
         found = TRUE;
@@ -2231,7 +2229,7 @@ int dt_collection_image_offset(int imgid)
 static void _dt_collection_recount_callback_1(gpointer instance, gpointer user_data)
 {
   dt_collection_t *collection = (dt_collection_t *)user_data;
-  int old_count = collection->count;
+  const int old_count = collection->count;
   collection->count = _dt_collection_compute_count(collection, FALSE);
   collection->count_no_group = _dt_collection_compute_count(collection, TRUE);
   if(!collection->clone)
@@ -2248,7 +2246,7 @@ static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpo
 static void _dt_collection_filmroll_imported_callback(gpointer instance, uint8_t id, gpointer user_data)
 {
   dt_collection_t *collection = (dt_collection_t *)user_data;
-  int old_count = collection->count;
+  const int old_count = collection->count;
   collection->count = _dt_collection_compute_count(collection, FALSE);
   collection->count_no_group = _dt_collection_compute_count(collection, TRUE);
   if(!collection->clone)
@@ -2340,18 +2338,13 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
     return;
   }
 
-  const guint selected_images_length = g_list_length(selected_images);
-
-  if (selected_images_length == 0)
-  {
-    return;
-  }
-
   const uint32_t tagid = darktable.collection->tagid;
   // getting the position of the target image
   const int64_t target_image_pos = dt_collection_get_image_position(image_id, tagid);
   if (target_image_pos >= 0)
   {
+    const guint selected_images_length = g_list_length(selected_images);
+
     dt_collection_shift_image_positions(selected_images_length, target_image_pos, tagid);
 
     sqlite3_stmt *stmt = NULL;
@@ -2373,8 +2366,8 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
                                 -1, &stmt, NULL);
 
     for (const GList * selected_images_iter = selected_images;
-        selected_images_iter != NULL;
-        selected_images_iter = selected_images_iter->next)
+         selected_images_iter != NULL;
+         selected_images_iter = g_list_next(selected_images_iter))
     {
       const int moved_image_id = GPOINTER_TO_INT(selected_images_iter->data);
 
@@ -2429,8 +2422,8 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
                                 -1, &update_stmt, NULL);
 
     for (const GList * selected_images_iter = selected_images;
-        selected_images_iter != NULL;
-        selected_images_iter = selected_images_iter->next)
+         selected_images_iter != NULL;
+         selected_images_iter = g_list_next(selected_images_iter))
     {
       max_position++;
       const int moved_image_id = GPOINTER_TO_INT(selected_images_iter->data);

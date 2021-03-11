@@ -121,7 +121,7 @@ GList *dt_control_crawler_run()
         item->image_path = g_strdup(image_path);
         item->xmp_path = g_strdup(xmp_path);
 
-        result = g_list_append(result, item);
+        result = g_list_prepend(result, item);
         dt_print(DT_DEBUG_CONTROL, "[crawler] `%s' (id: %d) is a newer xmp file.\n", xmp_path, id);
       }
       // older timestamps are the case for all images after the db upgrade. better not report these
@@ -192,7 +192,7 @@ GList *dt_control_crawler_run()
   sqlite3_finalize(stmt);
   sqlite3_finalize(inner_stmt);
 
-  return result;
+  return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
 }
 
 
@@ -349,8 +349,7 @@ void dt_control_crawler_show_image_list(GList *images)
 
   gui->model = GTK_TREE_MODEL(store);
 
-  GList *list_iter = g_list_first(images);
-  while(list_iter)
+  for(GList *list_iter = images; list_iter; list_iter = g_list_next(list_iter))
   {
     GtkTreeIter iter;
     dt_control_crawler_result_t *item = list_iter->data;
@@ -370,7 +369,6 @@ void dt_control_crawler_show_image_list(GList *images)
                        -1);
     g_free(item->image_path);
     g_free(item->xmp_path);
-    list_iter = g_list_next(list_iter);
   }
   g_list_free_full(images, g_free);
 

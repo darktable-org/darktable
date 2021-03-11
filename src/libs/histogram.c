@@ -95,7 +95,7 @@ typedef struct dt_lib_histogram_t
   gboolean dragging;
   int32_t button_down_x, button_down_y;
   float button_down_value;
-  // depends on mouse positon
+  // depends on mouse position
   dt_lib_histogram_highlight_t highlight;
   // state set by buttons
   dt_lib_histogram_scope_type_t scope_type;
@@ -131,39 +131,13 @@ int position()
 }
 
 
-static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float *const input, int width, int height)
+static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d, const float *const input,
+                                             const dt_histogram_roi_t *const roi)
 {
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
   const dt_iop_colorspace_type_t cst = iop_cs_rgb;
   dt_dev_histogram_stats_t histogram_stats = { .bins_count = HISTOGRAM_BINS, .ch = 4, .pixels = 0 };
   uint32_t histogram_max[4] = { 0 };
-  dt_histogram_roi_t histogram_roi = { .width = width, .height = height,
-                                      .crop_x = 0, .crop_y = 0, .crop_width = 0, .crop_height = 0 };
-
-  // Constraining the area if the colorpicker is active in area mode
-  // FIXME: this should happen in dt_lib_histogram_process() as it can apply to waveform as well
-  dt_develop_t *dev = darktable.develop;
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view(cv) == DT_VIEW_DARKROOM &&
-     dev->gui_module && !strcmp(dev->gui_module->op, "colorout")
-     && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
-     && darktable.lib->proxy.colorpicker.restrict_histogram)
-  {
-    if(darktable.lib->proxy.colorpicker.size == DT_COLORPICKER_SIZE_BOX)
-    {
-      histogram_roi.crop_x = MIN(width, MAX(0, dev->gui_module->color_picker_box[0] * width));
-      histogram_roi.crop_y = MIN(height, MAX(0, dev->gui_module->color_picker_box[1] * height));
-      histogram_roi.crop_width = width - MIN(width, MAX(0, dev->gui_module->color_picker_box[2] * width));
-      histogram_roi.crop_height = height - MIN(height, MAX(0, dev->gui_module->color_picker_box[3] * height));
-    }
-    else
-    {
-      histogram_roi.crop_x = MIN(width, MAX(0, dev->gui_module->color_picker_point[0] * width));
-      histogram_roi.crop_y = MIN(height, MAX(0, dev->gui_module->color_picker_point[1] * height));
-      histogram_roi.crop_width = width - MIN(width, MAX(0, dev->gui_module->color_picker_point[0] * width));
-      histogram_roi.crop_height = height - MIN(height, MAX(0, dev->gui_module->color_picker_point[1] * height));
-    }
-  }
 
   dt_times_t start_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
@@ -171,10 +145,11 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
   d->histogram_max = 0;
   memset(d->histogram, 0, sizeof(uint32_t) * 4 * HISTOGRAM_BINS);
 
-  histogram_params.roi = &histogram_roi;
+  histogram_params.roi = roi;
   histogram_params.bins_count = HISTOGRAM_BINS;
   histogram_params.mul = histogram_params.bins_count - 1;
 
+  // FIXME: set up "custom" histogram worker which can do colorspace conversion on fly -- in cases that we need to do that -- may need to add from colorspace to dt_dev_histogram_collection_params_t
   dt_histogram_helper(&histogram_params, &histogram_stats, cst, iop_cs_NONE, input, &d->histogram, FALSE, NULL);
   dt_histogram_max_helper(&histogram_stats, cst, iop_cs_NONE, &d->histogram, histogram_max);
   d->histogram_max = MAX(MAX(histogram_max[0], histogram_max[1]), histogram_max[2]);
@@ -187,16 +162,19 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *d, const float 
   }
 }
 
-static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *const input, int width, int height)
+static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const float *const input,
+                                            const dt_histogram_roi_t *const roi)
 {
   dt_times_t start_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
+
+  const int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
+  const int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
 
   // Note that, with current constants, the input buffer is from the
   // preview pixelpipe and should be <= 1440x900x4. The output buffer
   // will be <= 360x175x4. Hence process works with a relatively small
   // quantity of data.
-  const int wf_height = d->waveform_height;
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
   float *const restrict wf_linear = DT_IS_ALIGNED((float *const restrict)d->waveform_linear);
 
@@ -207,48 +185,46 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   // Note that waveform_stride is pre-initialized/hardcoded,
   // but waveform_width varies, depending on preview image
   // width and # of bins.
-  const size_t bin_width = ceilf(width / (float)d->waveform_max_width);
-  const size_t wf_width = ceilf(width / (float)bin_width);
+  const size_t bin_width = ceilf(sample_width / (float)d->waveform_max_width);
+  const size_t wf_width = ceilf(sample_width / (float)bin_width);
   d->waveform_width = wf_width;
 
-  dt_iop_image_fill(wf_linear, 0.0f, wf_width, wf_height, 4);
+  dt_iop_image_fill(wf_linear, 0.0f, wf_width, d->waveform_height, 4);
 
   // Every bin_width x height portion of the image is being described
-  // in a 1 pixel x wf_height portion of the histogram.
+  // in a 1 pixel x waveform_height portion of the histogram.
   // NOTE: if constant is decreased, will brighten output
-  const float brightness = wf_height / 40.0f;
-  const float scale = brightness / (height * bin_width);
+  const float brightness = d->waveform_height / 40.0f;
+  const float scale = brightness / (sample_height * bin_width);
 
   // 1.0 is at 8/9 of the height!
-  const size_t height_i = wf_height-1;
+  const size_t height_i = d->waveform_height-1;
   const float height_f = height_i;
-
-  const size_t in_stride = 4U * width;
-  const size_t out_stride = 4U * wf_width;
 
   // count the colors
   // FIXME: could flip x/y axes here and when reading to make row-wise iteration?
+  // FIXME: Try histogram-style worker threads to process by row and consolidate results. Have the workers do colorspace conversion per-pixel. As there will be no intermediate buffer, even 20 per-thread output buffers will still use less memory.
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, wf_linear, width, height, wf_width, bin_width, in_stride, out_stride, height_f, height_i, scale) \
+  dt_omp_firstprivate(in, wf_linear, roi, wf_width, bin_width, height_f, height_i, scale) \
   schedule(static)
 #endif
   for(size_t out_x = 0; out_x < wf_width; out_x++)
   {
-    const size_t x_from = out_x * bin_width;
-    const size_t x_high = MIN(x_from + bin_width, width);
+    const size_t x_from = out_x * bin_width + roi->crop_x;
+    const size_t x_high = MIN(x_from + bin_width, roi->width - roi->crop_width);
     for(size_t in_x = x_from; in_x < x_high; in_x++)
     {
-      for(size_t in_y = 0; in_y < height; in_y++)
+      for(size_t in_y = roi->crop_y; in_y < roi->height - roi->crop_height; in_y++)
       {
         // While it would be nice to use for_each_channel(), making
         // the BGR/RGB flip doesn't allow for this. Regardless, the
         // fourth channel will be ignored when waveform is drawn.
         for(size_t k = 0; k < 3; k++)
         {
-          const float v = 1.0f - (8.0f / 9.0f) * in[in_stride * in_y + 4U * in_x + (2U - k)];
+          const float v = 1.0f - (8.0f / 9.0f) * in[4U * (roi->width * in_y + in_x) + (2U - k)];
           const size_t out_y = isnan(v) ? 0 : MIN((size_t)fmaxf(v*height_f, 0.0f), height_i);
-          wf_linear[out_stride * out_y + 4U * out_x + k] += scale;
+          wf_linear[4U * (wf_width * out_y + out_x) + k] += scale;
         }
       }
     }
@@ -280,9 +256,40 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     return;
   }
 
+  // FIXME: scope goes black when click histogram lib colorpicker on -- is this meant to happen?
+  // FIXME: scope doesn't redraw when click histogram lib colorpicker off -- is this meant to happen?
+  dt_histogram_roi_t roi = { .width = width, .height = height,
+                             .crop_x = 0, .crop_y = 0, .crop_width = 0, .crop_height = 0 };
+
+  // Constraining the area if the colorpicker is active in area mode
+  // FIXME: only need to do colorspace conversion below on roi
+  // FIXME: if the only time we use roi in histogram to limit area is here, and whenever we use tether there is no colorpicker (true?), and if we're always doing a colorspace transform in darkroom and clip to roi during conversion, then can get rid of all roi code for common/histogram?
+  // when darkroom colorpicker is active, gui_module is set to colorout
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view(cv) == DT_VIEW_DARKROOM &&
+     dev->gui_module && !strcmp(dev->gui_module->op, "colorout")
+     && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
+     && darktable.lib->proxy.colorpicker.restrict_histogram)
+  {
+    if(darktable.lib->proxy.colorpicker.size == DT_COLORPICKER_SIZE_BOX)
+    {
+      roi.crop_x = MIN(width, MAX(0, dev->gui_module->color_picker_box[0] * width));
+      roi.crop_y = MIN(height, MAX(0, dev->gui_module->color_picker_box[1] * height));
+      roi.crop_width = width - MIN(width, MAX(0, dev->gui_module->color_picker_box[2] * width));
+      roi.crop_height = height - MIN(height, MAX(0, dev->gui_module->color_picker_box[3] * height));
+    }
+    else
+    {
+      roi.crop_x = MIN(width, MAX(0, dev->gui_module->color_picker_point[0] * width));
+      roi.crop_y = MIN(height, MAX(0, dev->gui_module->color_picker_point[1] * height));
+      roi.crop_width = width - MIN(width, MAX(0, dev->gui_module->color_picker_point[0] * width));
+      roi.crop_height = height - MIN(height, MAX(0, dev->gui_module->color_picker_point[1] * height));
+    }
+  }
+
   // Convert pixelpipe output to histogram profile. If in tether view,
   // then the image is already converted by the caller.
-  // FIXME: do conversion in-place in the processing to save an extra buffer?
+  // FIXME: do conversion in-place in the processing to save an extra buffer? -- will need logic from _transform_matrix_rgb() -- or better yet a per-pixel callback within _transform_matrix_rgb()-ish code
   if(in_profile_type != DT_COLORSPACE_NONE)
   {
     const dt_iop_order_iccprofile_info_t *const profile_info_from
@@ -306,10 +313,10 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      _lib_histogram_process_histogram(d, img_display ? img_display : input, width, height);
+      _lib_histogram_process_histogram(d, img_display ? img_display : input, &roi);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      _lib_histogram_process_waveform(d, img_display ? img_display : input, width, height);
+      _lib_histogram_process_waveform(d, img_display ? img_display : input, &roi);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       g_assert_not_reached();
@@ -438,7 +445,7 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, i
   cairo_restore(cr);
 }
 
-// FIXME: have different drawable for each scope in a stack -- simplifies this function from being a swath of conditionals -- then esentially draw callbacks _lib_histogram_draw_waveform and _lib_histogram_draw_rgb_parade
+// FIXME: have different drawable for each scope in a stack -- simplifies this function from being a swath of conditionals -- then essentially draw callbacks _lib_histogram_draw_waveform and _lib_histogram_draw_rgb_parade
 // FIXME: if exposure change regions are separate widgets, then we could have a menu to swap in different overlay widgets (sort of like basic adjustments) to adjust other things about the image, e.g. tone equalizer, color balance, etc.
 static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {

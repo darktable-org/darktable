@@ -157,11 +157,53 @@ typedef struct dt_masks_point_group_t
   float opacity;
 } dt_masks_point_group_t;
 
+/** structure used to store pointers to the functions implementing operations on a mask shape */
+/** plus a few per-class descriptive data items */
+typedef struct dt_masks_functions_t
+{
+  int point_struct_size;   // sizeof(struct dt_masks_point_*_t)
+  void (*sanitize_config)(dt_masks_type_t type_flags);
+  GSList *(*setup_mouse_actions)(const struct dt_masks_form_t *const form);
+  void (*set_form_name)(struct dt_masks_form_t *const form, const size_t nb);
+  void (*set_hint_message)(const struct dt_masks_form_gui_t *const gui, const struct dt_masks_form_t *const form,
+                           const int opacity, char *const __restrict__ msgbuf, const size_t msgbuf_len);
+  void (*duplicate_points)(struct dt_develop_t *const dev, struct dt_masks_form_t *base, struct dt_masks_form_t *dest);
+  void (*initial_source_pos)(const float iwd, const float iht, float *x, float *y);
+  void (*get_distance)(float x, float y, float as, struct dt_masks_form_gui_t *gui, int index, int num_points,
+                       int *inside, int *inside_border, int *near, int *inside_source);
+  int (*get_points)(dt_develop_t *dev, float x, float y, float radius_a, float radius_b, float rotation,
+                    float **points, int *points_count);
+  int (*get_points_border)(dt_develop_t *dev, struct dt_masks_form_t *form, float **points, int *points_count,
+                           float **border, int *border_count, int source);
+  int (*get_mask)(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                  struct dt_masks_form_t *const form,
+                  float **buffer, int *width, int *height, int *posx, int *posy);
+  int (*get_mask_roi)(const dt_iop_module_t *const fmodule, const dt_dev_pixelpipe_iop_t *const piece,
+                      struct dt_masks_form_t *const form,
+                      const dt_iop_roi_t *roi, float *buffer);
+  int (*get_area)(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                  struct dt_masks_form_t *const form,
+                  int *width, int *height, int *posx, int *posy);
+  int (*get_source_area)(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, struct dt_masks_form_t *form,
+                         int *width, int *height, int *posx, int *posy);
+  int (*mouse_moved)(struct dt_iop_module_t *module, float pzx, float pzy, double pressure, int which,
+                     struct dt_masks_form_t *form, int parentid, struct dt_masks_form_gui_t *gui, int index);
+  int (*mouse_scrolled)(struct dt_iop_module_t *module, float pzx, float pzy, int up, uint32_t state,
+                        struct dt_masks_form_t *form, int parentid, struct dt_masks_form_gui_t *gui, int index);
+  int (*button_pressed)(struct dt_iop_module_t *module, float pzx, float pzy,
+                        double pressure, int which, int type, uint32_t state,
+                        struct dt_masks_form_t *form, int parentid, struct dt_masks_form_gui_t *gui, int index);
+  int (*button_released)(struct dt_iop_module_t *module, float pzx, float pzy, int which, uint32_t state,
+                         struct dt_masks_form_t *form, int parentid, struct dt_masks_form_gui_t *gui, int index);
+  void (*post_expose)(cairo_t *cr, float zoom_scale, struct dt_masks_form_gui_t *gui, int index, int num_points);
+} dt_masks_functions_t;
+  
 /** structure used to define a form */
 typedef struct dt_masks_form_t
 {
   GList *points; // list of point structures
   dt_masks_type_t type;
+  const dt_masks_functions_t *functions;
 
   // position of the source (used only for clone)
   float source[2];
@@ -247,6 +289,14 @@ typedef struct dt_masks_form_gui_t
   uint64_t pipe_hash;
 } dt_masks_form_gui_t;
 
+/** the shape-specific function tables */
+extern const dt_masks_functions_t dt_masks_functions_circle;
+extern const dt_masks_functions_t dt_masks_functions_ellipse;
+extern const dt_masks_functions_t dt_masks_functions_brush;
+extern const dt_masks_functions_t dt_masks_functions_path;
+extern const dt_masks_functions_t dt_masks_functions_gradient;
+extern const dt_masks_functions_t dt_masks_functions_group;
+
 /** init dt_masks_form_gui_t struct with default values */
 void dt_masks_init_form_gui(dt_masks_form_gui_t *gui);
 
@@ -261,10 +311,18 @@ int dt_masks_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
 int dt_masks_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
                              int *width, int *height, int *posx, int *posy);
 /** get the transparency mask of the form and his border */
-int dt_masks_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                      float **buffer, int *width, int *height, int *posx, int *posy);
-int dt_masks_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                          const dt_iop_roi_t *roi, float *buffer);
+static inline int dt_masks_get_mask(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                      dt_masks_form_t *const form,
+                      float **buffer, int *width, int *height, int *posx, int *posy)
+{
+  return form->functions ? form->functions->get_mask(module, piece, form, buffer, width, height, posx, posy) : 0;
+}
+static inline int dt_masks_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                          dt_masks_form_t *const form, const dt_iop_roi_t *roi, float *buffer)
+{
+  return form->functions ? form->functions->get_mask_roi(module, piece, form, roi, buffer) : 0;
+}
+
 int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
                           float **buffer, int *roi, float scale);
 int dt_masks_group_render_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
@@ -373,7 +431,32 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
 /** return the list of possible mouse actions */
 GSList *dt_masks_mouse_actions(dt_masks_form_t *form);
 
+void dt_group_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_form_t *form,
+                                 dt_masks_form_gui_t *gui);
+
 /** code for dynamic handling of intermediate buffers */
+static inline gboolean _dt_masks_dynbuf_growto(dt_masks_dynbuf_t *a, size_t size)
+{
+  const size_t newsize = dt_round_size_sse(sizeof(float) * size) / sizeof(float);
+  float *newbuf = dt_alloc_align_float(newsize);
+  if (!newbuf)
+  {
+    // not much we can do here except emit an error message
+    fprintf(stderr, "critical: out of memory for dynbuf '%s' with size request %zu!\n", a->tag, size);
+    return FALSE;
+  }
+  if (a->buffer)
+  {
+    memcpy(newbuf, a->buffer, a->size * sizeof(float));
+    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n", a->tag,
+             (unsigned long)a->size, newbuf, a->buffer);
+    dt_free_align(a->buffer);
+  }
+  a->size = newsize;
+  a->buffer = newbuf;
+  return TRUE;
+}
+
 static inline
 dt_masks_dynbuf_t *dt_masks_dynbuf_init(size_t size, const char *tag)
 {
@@ -384,11 +467,9 @@ dt_masks_dynbuf_t *dt_masks_dynbuf_init(size_t size, const char *tag)
   {
     g_strlcpy(a->tag, tag, sizeof(a->tag)); //only for debugging purposes
     a->pos = 0;
-    const size_t bufsize = dt_round_size_sse(sizeof(float) * size);
-    a->size = bufsize / sizeof(float);
-    a->buffer = dt_alloc_align_float(a->size);
-    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] with initial size %lu (is %p)\n", a->tag,
-             (unsigned long)a->size, a->buffer);
+    if(_dt_masks_dynbuf_growto(a, size))
+      dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] with initial size %lu (is %p)\n", a->tag,
+               (unsigned long)a->size, a->buffer);
     if(a->buffer == NULL)
     {
       free(a);
@@ -403,57 +484,68 @@ void dt_masks_dynbuf_add(dt_masks_dynbuf_t *a, float value)
 {
   assert(a != NULL);
   assert(a->pos <= a->size);
-  if(a->pos == a->size)
+  if(__builtin_expect(a->pos == a->size, 0))
   {
-    if(a->size == 0) return;
-    float *oldbuffer = a->buffer;
-    size_t oldsize = a->size;
-    a->size *= 2;
-    a->buffer = dt_alloc_align_float(a->size);
-    if(a->buffer == NULL)
-    {
-      // not much we can do here except of emitting an error message
-      fprintf(stderr, "critical: out of memory for dynbuf '%s' with size request %lu!\n", a->tag,
-              (unsigned long)a->size);
-      a->size = oldsize;
-      a->buffer = oldbuffer;
+    if (a->size == 0 || !_dt_masks_dynbuf_growto(a, 2 * a->size))
       return;
-    }
-    memcpy(a->buffer, oldbuffer, oldsize * sizeof(float));
-    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n", a->tag,
-             (unsigned long)a->size, a->buffer, oldbuffer);
-    dt_free_align(oldbuffer);
   }
   a->buffer[a->pos++] = value;
 }
 
 static inline
-void dt_masks_dynbuf_add_n(dt_masks_dynbuf_t *a, float* values, const int n)
+void dt_masks_dynbuf_add_2(dt_masks_dynbuf_t *a, float value1, float value2)
 {
   assert(a != NULL);
   assert(a->pos <= a->size);
-  if(a->pos + n >= a->size)
+  if(__builtin_expect(a->pos + 2 >= a->size, 0))
+  {
+    if (a->size == 0 || !_dt_masks_dynbuf_growto(a, 2 * (a->size+1)))
+      return;
+  }
+  a->buffer[a->pos++] = value1;
+  a->buffer[a->pos++] = value2;
+}
+
+// Return a pointer to N floats past the current end of the dynbuf's contents, marking them as already in use.
+// The caller should then fill in the reserved elements using the returned pointer.
+static inline
+float *dt_masks_dynbuf_reserve_n(dt_masks_dynbuf_t *a, const int n)
+{
+  assert(a != NULL);
+  assert(a->pos <= a->size);
+  if(__builtin_expect(a->pos + n >= a->size, 0))
+  {
+    if(a->size == 0) return NULL;
+    size_t newsize = a->size;
+    while(a->pos + n >= newsize) newsize *= 2;
+    if (!_dt_masks_dynbuf_growto(a, newsize))
+    {
+      return NULL;
+    }
+  }
+  // get the current end of the (possibly reallocated) buffer, then mark the next N items as in-use
+  float *reserved = a->buffer + a->pos;
+  a->pos += n;
+  return reserved;
+}
+
+static inline
+void dt_masks_dynbuf_add_zeros(dt_masks_dynbuf_t *a, const int n)
+{
+  assert(a != NULL);
+  assert(a->pos <= a->size);
+  if(__builtin_expect(a->pos + n >= a->size, 0))
   {
     if(a->size == 0) return;
-    float *oldbuffer = a->buffer;
-    size_t oldsize = a->size;
-    while(a->pos + n >= a->size) a->size *= 2;
-    a->buffer = (float *)dt_alloc_align(64, a->size * sizeof(float));
-    if(a->buffer == NULL)
+    size_t newsize = a->size;
+    while(a->pos + n >= newsize) newsize *= 2;
+    if (!_dt_masks_dynbuf_growto(a, newsize))
     {
-      // not much we can do here except of emitting an error message
-      fprintf(stderr, "critical: out of memory for dynbuf '%s' with size request %lu!\n", a->tag,
-              (unsigned long)a->size);
-      a->size = oldsize;
-      a->buffer = oldbuffer;
       return;
     }
-    memcpy(a->buffer, oldbuffer, oldsize * sizeof(float));
-    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n", a->tag,
-             (unsigned long)a->size, a->buffer, oldbuffer);
-    dt_free_align(oldbuffer);
   }
-  memcpy(a->buffer + a->pos, values, n * sizeof(float));
+  // now that we've ensured a sufficiently large buffer add N zeros to the end of the existing data
+  memset(a->buffer + a->pos, 0, n * sizeof(float));
   a->pos += n;
 }
 

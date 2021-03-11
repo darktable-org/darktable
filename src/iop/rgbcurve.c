@@ -874,7 +874,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
       const dt_iop_order_iccprofile_info_t *const work_profile
           = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
 
-      float picker_mean[4], picker_min[4], picker_max[4];
+      float DT_ALIGNED_PIXEL picker_mean[4], picker_min[4], picker_max[4];
 
       // the global live samples ...
       GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
@@ -883,10 +883,9 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
         const dt_iop_order_iccprofile_info_t *const histogram_profile = dt_ioppr_get_histogram_profile_info(dev);
         if(work_profile && histogram_profile)
         {
-          dt_colorpicker_sample_t *sample = NULL;
-          while(samples)
+          for(; samples; samples = g_slist_next(samples))
           {
-            sample = samples->data;
+            dt_colorpicker_sample_t *sample = samples->data;
 
             // this functions need a 4c image
             for(int k = 0; k < 3; k++)
@@ -921,8 +920,6 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
             cairo_move_to(cr, width * picker_mean[ch], 0);
             cairo_line_to(cr, width * picker_mean[ch], -height);
             cairo_stroke(cr);
-
-            samples = g_slist_next(samples);
           }
       }
       }

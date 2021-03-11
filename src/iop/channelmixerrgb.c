@@ -385,7 +385,7 @@ void init_presets(dt_iop_module_so_t *self)
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Kodak ?
-  // can't find spectral sensivity curves and the illuminant under wich they are produced,
+  // can't find spectral sensivity curves and the illuminant under which they are produced,
   // so ¯\_(ツ)_/¯
 
   // basic channel-mixer
@@ -1736,6 +1736,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
+  declare_cat_on_pipe(self, FALSE);
+
   // dt_iop_have_required_input_format() has reset the trouble message.
   // we must set it again in case of any trouble.
   _check_for_wb_issue_and_set_trouble_message(self);
@@ -2690,7 +2692,7 @@ static void update_illuminants(dt_iop_module_t *self)
  *
  * Also, the R, G, B sliders have a background color gradient that shows the actual R, G, B sensors
  * used by the selected chromatic adaptation. Each chromatic adaptation method uses a different RGB space,
- * called LMS in the litterature (but it's only a special-purpose RGB space for all we care here),
+ * called LMS in the literature (but it's only a special-purpose RGB space for all we care here),
  * which primaries are projected to sRGB colors, to be displayed in the GUI, so users may get a feeling
  * of what colors they will get.
  **/
@@ -3001,7 +3003,7 @@ static gboolean illuminant_color_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   width -= 2* INNER_PADDING;
   height -= 2 * margin;
 
-  // Paint illuminant color - we need to recompute it in full in case camera RAW is choosen
+  // Paint illuminant color - we need to recompute it in full in case camera RAW is chosen
   float x = p->x;
   float y = p->y;
   float RGB[4] = { 0 };

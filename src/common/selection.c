@@ -449,6 +449,59 @@ void dt_selection_select_list(struct dt_selection_t *selection, GList *list)
   dt_collection_hint_message(darktable.collection);
 }
 
+// return the query used to get the selection
+// be carefull : if ordering is TRUE, the order depend of only_visible :
+// DESC order if only_visible is TRUE ; ASC order otherwise...
+gchar *dt_selection_get_list_query(struct dt_selection_t *selection, const gboolean only_visible,
+                                   const gboolean ordering)
+{
+  gchar *query = NULL;
+  if(only_visible)
+  {
+    // we don't want to get image hidden because of grouping
+    query = dt_util_dstrcat(NULL, "SELECT m.imgid"
+                                  " FROM memory.collected_images as m"
+                                  " WHERE m.imgid IN (SELECT s.imgid FROM main.selected_images as s)");
+    if(ordering) query = dt_util_dstrcat(query, " ORDER BY m.rowid DESC");
+  }
+  else
+  {
+    // we need to get hidden grouped images too, and the
+    // selection already contains them, but not in right order
+    if(ordering)
+    {
+      query = dt_util_dstrcat(NULL,
+                              "SELECT DISTINCT ng.id"
+                              " FROM (%s) AS ng"
+                              " WHERE ng.id IN (SELECT s.imgid FROM main.selected_images as s)",
+                              dt_collection_get_query_no_group(dt_selection_get_collection(selection)));
+    }
+    else
+    {
+      query = dt_util_dstrcat(NULL, "SELECT imgid FROM main.selected_images");
+    }
+  }
+  return query;
+}
+
+// return a list of all selected imgid
+GList *dt_selection_get_list(struct dt_selection_t *selection, const gboolean only_visible, const gboolean ordering)
+{
+  GList *l = NULL;
+  gchar *query = dt_selection_get_list_query(selection, only_visible, ordering);
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  g_free(query);
+  while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    l = g_list_prepend(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+  }
+  if(only_visible && ordering) l = g_list_reverse(l);
+  if(stmt) sqlite3_finalize(stmt);
+
+  return l;
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

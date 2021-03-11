@@ -216,8 +216,7 @@ static cairo_filter_t _get_filtering_level(dt_develop_t *dev)
 void _display_module_trouble_message_callback(gpointer instance,
                                               dt_iop_module_t *module,
                                               const char *const trouble_msg,
-                                              const char *const trouble_tooltip,
-                                              const char *const stderr_message)
+                                              const char *const trouble_tooltip)
 {
   GtkWidget *label_widget = NULL;
 
@@ -232,12 +231,6 @@ void _display_module_trouble_message_callback(gpointer instance,
 
   if(trouble_msg && *trouble_msg)
   {
-    if((!module || !module->has_trouble) && (stderr_message || !module->widget))
-    {
-      const char *name = module ? module->name() : "?";
-      fprintf(stderr,"[%s] %s\n", name, stderr_message ? stderr_message : trouble_msg);
-    }
-
     if(module && module->widget)
     {
       if(label_widget)
@@ -298,12 +291,10 @@ void expose(
   {
     // synch module guis from gtk thread:
     ++darktable.gui->reset;
-    GList *modules = dev->iop;
-    while(modules)
+    for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
       dt_iop_gui_update(module);
-      modules = g_list_next(modules);
     }
     --darktable.gui->reset;
     dev->gui_synch = 0;
@@ -596,7 +587,7 @@ void expose(
     cairo_scale(cri, zoom_scale, zoom_scale);
     cairo_translate(cri, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
-    while(samples)
+    for( ; samples; samples = g_slist_next(samples))
     {
       sample = samples->data;
 
@@ -604,7 +595,6 @@ void expose(
       if(only_selected_sample
          && sample != darktable.lib->proxy.colorpicker.selected_sample)
       {
-        samples = g_slist_next(samples);
         continue;
       }
 
@@ -646,8 +636,6 @@ void expose(
         cairo_line_to(cri, point[0] * wd + .01 * wd - lw, point[1] * ht);
         cairo_stroke(cri);
       }
-
-      samples = g_slist_next(samples);
     }
 
     cairo_restore(cri);
@@ -819,9 +807,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
 
   // change active image
   g_slist_free(darktable.view_manager->active_images);
-  darktable.view_manager->active_images = NULL;
-  darktable.view_manager->active_images
-      = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
+  darktable.view_manager->active_images = g_slist_prepend(NULL, GINT_TO_POINTER(imgid));
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 
   // if the previous shown image is selected and the selection is unique
@@ -1003,8 +989,8 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
   dt_dev_read_history(dev);
 
   // we have to init all module instances other than "base" instance
-  GList *modules = g_list_last(dev->iop);
-  while(modules)
+  char option[1024];
+  for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     if(module->multi_priority > 0)
@@ -1015,7 +1001,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
 
         /* add module to right panel */
         dt_iop_gui_set_expander(module);
-        dt_iop_gui_set_expanded(module, FALSE, dt_conf_get_bool("darkroom/ui/single_module"));
         dt_iop_gui_update_blending(module);
       }
     }
@@ -1024,12 +1009,12 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
       //  update the module header to ensure proper multi-name display
       if(!dt_iop_is_hidden(module))
       {
+        snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
+        module->expanded = dt_conf_get_bool(option);
         if(module->change_image) module->change_image(module);
         dt_iop_gui_update_header(module);
       }
     }
-
-    modules = g_list_previous(modules);
   }
 
   dt_dev_pop_history_items(dev, dev->history_end);
@@ -1052,8 +1037,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
   if(active_plugin)
   {
     gboolean valid = FALSE;
-    modules = dev->iop;
-    while(modules)
+    for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
       if(!strcmp(module->op, active_plugin))
@@ -1062,7 +1046,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
         dt_conf_set_string("plugins/darkroom/active", active_plugin);
         dt_iop_request_focus(module);
       }
-      modules = g_list_next(modules);
     }
     if(!valid)
     {
@@ -1294,9 +1277,9 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
   if(styles)
   {
     menu = GTK_MENU_SHELL(gtk_menu_new());
-    do
+    for(const GList *st_iter = styles; st_iter; st_iter = g_list_next(st_iter))
     {
-      dt_style_t *style = (dt_style_t *)styles->data;
+      dt_style_t *style = (dt_style_t *)st_iter->data;
 
       char *items_string = dt_styles_get_item_list_as_string(style->name);
       gchar *tooltip = NULL;
@@ -1340,18 +1323,17 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
       // check if we already have a sub-menu with this name
       GtkMenu *sm = NULL;
 
-      GList *childs = gtk_container_get_children(GTK_CONTAINER(menu));
-      while(childs)
+      GList *children = gtk_container_get_children(GTK_CONTAINER(menu));
+      for(const GList *child = children; child; child = g_list_next(child))
       {
-        GtkMenuItem *smi = (GtkMenuItem *)childs->data;
+        GtkMenuItem *smi = (GtkMenuItem *)child->data;
         if(!g_strcmp0(split[0],gtk_menu_item_get_label(smi)))
         {
           sm = (GtkMenu *)gtk_menu_item_get_submenu(smi);
-          g_list_free(childs);
           break;
         }
-        childs = g_list_next(childs);
       }
+      g_list_free(children);
 
       GtkMenuItem *smi = NULL;
 
@@ -1382,7 +1364,7 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
       g_free(items_string);
       g_free(tooltip);
       g_strfreev(split);
-    } while((styles = g_list_next(styles)) != NULL);
+    }
     g_list_free_full(styles, dt_style_free);
   }
 
@@ -1975,24 +1957,19 @@ static void _preference_prev_downsample_change(gpointer instance, gpointer user_
 
 static void _preference_changed_button_hide(gpointer instance, dt_develop_t *dev)
 {
-  GList *modules = dev->iop;
-  while(modules)
+  for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
     if(module->header)
-    {
-      dt_iop_show_hide_header_buttons(module->header, NULL, FALSE, FALSE);
-    }
-
-    modules = g_list_next(modules);
+      add_remove_mask_indicator(module, (module->blend_params->mask_mode != DEVELOP_MASK_DISABLED) &&
+                                (module->blend_params->mask_mode != DEVELOP_MASK_ENABLED));
   }
 }
 
 static void _update_display_profile_cmb(GtkWidget *cmb_display_profile)
 {
-  GList *l = darktable.color_profiles->profiles;
-  while(l)
+  for(const GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {
     dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
     if(prof->display_pos > -1)
@@ -2008,14 +1985,12 @@ static void _update_display_profile_cmb(GtkWidget *cmb_display_profile)
         }
       }
     }
-    l = g_list_next(l);
   }
 }
 
 static void _update_display2_profile_cmb(GtkWidget *cmb_display_profile)
 {
-  GList *l = darktable.color_profiles->profiles;
-  while(l)
+  for(const GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {
     dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
     if(prof->display2_pos > -1)
@@ -2031,7 +2006,6 @@ static void _update_display2_profile_cmb(GtkWidget *cmb_display_profile)
         }
       }
     }
-    l = g_list_next(l);
   }
 }
 
@@ -2444,8 +2418,7 @@ void gui_init(dt_view_t *self)
     gtk_box_pack_start(GTK_BOX(vbox), softproof_profile, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), histogram_profile, TRUE, TRUE, 0);
 
-    GList *l = darktable.color_profiles->profiles;
-    while(l)
+    for(const GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
     {
       dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
       if(prof->display_pos > -1)
@@ -2487,7 +2460,6 @@ void gui_init(dt_view_t *self)
           dt_bauhaus_combobox_set(histogram_profile, prof->category_pos);
         }
       }
-      l = g_list_next(l);
     }
 
     char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
@@ -2625,8 +2597,7 @@ static dt_iop_module_t *_get_dnd_dest_module(GtkBox *container, gint x, gint y, 
 
   if(widget_dest)
   {
-    GList *modules = g_list_first(darktable.develop->iop);
-    while(modules)
+    for(const GList *modules = darktable.develop->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
       if(mod->expander == widget_dest)
@@ -2634,7 +2605,6 @@ static dt_iop_module_t *_get_dnd_dest_module(GtkBox *container, gint x, gint y, 
         module_dest = mod;
         break;
       }
-      modules = g_list_next(modules);
     }
   }
 
@@ -2729,8 +2699,7 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
       can_moved = dt_ioppr_check_can_move_before_iop(darktable.develop->iop, module_src, module_dest);
   }
 
-  GList *modules = g_list_last(darktable.develop->iop);
-  while(modules)
+  for(const GList *modules = g_list_last(darktable.develop->iop); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
@@ -2740,8 +2709,6 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
       gtk_style_context_remove_class(context, "iop_drop_after");
       gtk_style_context_remove_class(context, "iop_drop_before");
     }
-
-    modules = g_list_previous(modules);
   }
 
   if(can_moved)
@@ -2806,8 +2773,7 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
       fprintf(stderr, "[_on_drag_data_received] can't find destination module\n");
   }
 
-  GList *modules = g_list_last(darktable.develop->iop);
-  while(modules)
+  for(const GList *modules = g_list_last(darktable.develop->iop); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
@@ -2817,8 +2783,6 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
       gtk_style_context_remove_class(context, "iop_drop_after");
       gtk_style_context_remove_class(context, "iop_drop_before");
     }
-
-    modules = g_list_previous(modules);
   }
 
   gtk_drag_finish(dc, TRUE, FALSE, time);
@@ -2861,8 +2825,7 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
 
 static void _on_drag_leave(GtkWidget *widget, GdkDragContext *dc, guint time, gpointer user_data)
 {
-  GList *modules = g_list_last(darktable.develop->iop);
-  while(modules)
+  for(const GList *modules = g_list_last(darktable.develop->iop); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
@@ -2872,8 +2835,6 @@ static void _on_drag_leave(GtkWidget *widget, GdkDragContext *dc, guint time, gp
       gtk_style_context_remove_class(context, "iop_drop_after");
       gtk_style_context_remove_class(context, "iop_drop_before");
     }
-
-    modules = g_list_previous(modules);
   }
 
   GtkWidget *w = g_object_get_data(G_OBJECT(widget), "highlighted");
@@ -2977,8 +2938,7 @@ void enter(dt_view_t *self)
    * add IOP modules to plugin list
    */
   char option[1024];
-  GList *modules = g_list_last(dev->iop);
-  while(modules)
+  for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
@@ -2990,16 +2950,14 @@ void enter(dt_view_t *self)
       /* add module to right panel */
       dt_iop_gui_set_expander(module);
 
-      snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
-      if(dt_conf_get_bool(option))
-        dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
-      else
-        dt_iop_gui_set_expanded(module, FALSE, FALSE);
+      if(module->multi_priority == 0)
+      {
+        snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
+        module->expanded = dt_conf_get_bool(option);
+      }
 
       dt_iop_reload_defaults(module);
     }
-
-    modules = g_list_previous(modules);
   }
 
   /* signal that darktable.develop is initialized and ready to be used */
@@ -3016,12 +2974,10 @@ void enter(dt_view_t *self)
   gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
   if(active_plugin)
   {
-    modules = dev->iop;
-    while(modules)
+    for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
       if(!strcmp(module->op, active_plugin)) dt_iop_request_focus(module);
-      modules = g_list_next(modules);
     }
     g_free(active_plugin);
   }
@@ -3167,6 +3123,9 @@ void leave(dt_view_t *self)
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
     if(!dt_iop_is_hidden(module)) dt_iop_gui_cleanup_module(module);
 
+    // force refresh if module has mask visualized
+    if (module->request_mask_display || module->suppress_mask) dt_iop_refresh_center(module);
+
     dt_accel_cleanup_closures_iop(module);
     module->accel_closures = NULL;
     dt_iop_cleanup_module(module);
@@ -3210,7 +3169,7 @@ void leave(dt_view_t *self)
 
   // darkroom development could have changed a collection, so update that before being back in lighttable
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                             g_list_append(NULL, GINT_TO_POINTER(darktable.develop->image_storage.id)));
+                             g_list_prepend(NULL, GINT_TO_POINTER(darktable.develop->image_storage.id)));
 
   darktable.develop->image_storage.id = -1;
 
@@ -4064,40 +4023,14 @@ GSList *mouse_actions(const dt_view_t *self)
 {
   GSList *lm = NULL;
   GSList *lm2 = NULL;
-  dt_mouse_action_t *a = NULL;
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_DOUBLE_LEFT;
-  g_strlcpy(a->name, _("switch to lighttable"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_SCROLL;
-  g_strlcpy(a->name, _("zoom in the image"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->key.accel_mods = GDK_CONTROL_MASK;
-  a->action = DT_MOUSE_ACTION_SCROLL;
-  g_strlcpy(a->name, _("unbounded zoom in the image"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_MIDDLE;
-  g_strlcpy(a->name, _("zoom to 100% 200% and back"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->key.accel_mods = GDK_SHIFT_MASK;
-  a->action = DT_MOUSE_ACTION_SCROLL;
-  g_strlcpy(a->name, _("[modules] expand module without closing others"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->key.accel_mods = GDK_SHIFT_MASK | GDK_CONTROL_MASK;
-  a->action = DT_MOUSE_ACTION_DRAG_DROP;
-  g_strlcpy(a->name, _("[modules] change module position in pipe"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_DOUBLE_LEFT, 0, _("switch to lighttable"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("zoom in the image"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("unbounded zoom in the image"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_MIDDLE, 0, _("zoom to 100% 200% and back"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK,
+                                     _("[modules] expand module without closing others"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_DRAG_DROP, GDK_SHIFT_MASK | GDK_CONTROL_MASK,
+                                     _("[modules] change module position in pipe"));
 
   const dt_develop_t *dev = (dt_develop_t *)self->data;
   if(dev->form_visible)
@@ -4111,17 +4044,7 @@ GSList *mouse_actions(const dt_view_t *self)
     lm2 = dev->gui_module->mouse_actions(dev->gui_module);
   }
 
-  // we concatenate the 2 lists
-  GSList *l = lm2;
-  while(l)
-  {
-    a = (dt_mouse_action_t *)l->data;
-    if(a) lm = g_slist_append(lm, a);
-    l = g_slist_next(l);
-  }
-  g_slist_free(lm2);
-
-  return lm;
+  return g_slist_concat(lm, lm2);
 }
 
 //-----------------------------------------------------------

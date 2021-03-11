@@ -217,7 +217,7 @@ static void _overlays_show_popup(dt_lib_module_t *self)
 
   if(thumbs_state)
   {
-    // we write the label with the size categorie
+    // we write the label with the size category
     gchar *txt = dt_util_dstrcat(NULL, "%s %d (%d %s)", _("thumbnails overlays for size"),
                                  dt_ui_thumbtable(darktable.gui->ui)->prefs_size,
                                  dt_ui_thumbtable(darktable.gui->ui)->thumb_size, _("px"));
@@ -384,9 +384,9 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_tooltip_text(d->grouping_button, _("expand grouped images"));
   else
     gtk_widget_set_tooltip_text(d->grouping_button, _("collapse grouped images"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->grouping_button), darktable.gui->grouping);
   g_signal_connect(G_OBJECT(d->grouping_button), "clicked", G_CALLBACK(_lib_filter_grouping_button_clicked),
                    NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->grouping_button), darktable.gui->grouping);
 
   /* create the "show/hide overlays" button */
   d->overlays_button = dtgtk_button_new(dtgtk_cairo_paint_overlays, CPF_STYLE_FLAT, NULL);

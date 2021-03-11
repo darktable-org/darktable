@@ -868,7 +868,7 @@ static gboolean _event_rating_release(GtkWidget *widget, GdkEventButton *event, 
     {
       dt_ratings_apply_on_image(thumb->imgid, rating, TRUE, TRUE, TRUE);
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                                 g_list_append(NULL, GINT_TO_POINTER(thumb->imgid)));
+                                 g_list_prepend(NULL, GINT_TO_POINTER(thumb->imgid)));
     }
   }
   return TRUE;
@@ -938,15 +938,13 @@ static void _dt_image_info_changed_callback(gpointer instance, gpointer imgs, gp
 {
   if(!user_data || !imgs) return;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  const GList *i = imgs;
-  while(i)
+  for(const GList *i = imgs; i; i = g_list_next(i))
   {
     if(GPOINTER_TO_INT(i->data) == thumb->imgid)
     {
       dt_thumbnail_update_infos(thumb);
       break;
     }
-    i = g_list_next(i);
   }
 }
 
@@ -957,15 +955,13 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
 {
   if(!user_data || !imgs) return;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  const GList *i = imgs;
-  while(i)
+  for(const GList *i = imgs; i; i = g_list_next(i))
   {
     if(GPOINTER_TO_INT(i->data) == thumb->imgid)
     {
       dt_thumbnail_update_infos(thumb);
       break;
     }
-    i = g_list_next(i);
   }
 }
 
@@ -1005,8 +1001,7 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
   if(!thumb) return;
 
   gboolean active = FALSE;
-  GSList *l = darktable.view_manager->active_images;
-  while(l)
+  for(GSList *l = darktable.view_manager->active_images; l; l = g_slist_next(l))
   {
     int id = GPOINTER_TO_INT(l->data);
     if(id == thumb->imgid)
@@ -1014,7 +1009,6 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
       active = TRUE;
       break;
     }
-    l = g_slist_next(l);
   }
 
   // if there's a change, update the thumb
@@ -1736,14 +1730,13 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
     {
       // we remove all previous size class if any
       GList *l = gtk_style_context_list_classes(context);
-      while(l)
+      for(GList *l_iter = l; l_iter; l_iter = g_list_next(l_iter))
       {
-        gchar *ll = (gchar *)l->data;
+        gchar *ll = (gchar *)l_iter->data;
         if(g_str_has_prefix(ll, "dt_thumbnails_"))
         {
           gtk_style_context_remove_class(context, ll);
         }
-        l = g_list_next(l);
       }
       g_list_free(l);
 

@@ -501,8 +501,7 @@ gboolean dt_lib_presets_apply(const gchar *preset, gchar *module_name, int modul
     int writeprotect = sqlite3_column_int(stmt, 1);
     if(blob)
     {
-      GList *it = darktable.lib->plugins;
-      while(it)
+      for(const GList *it = darktable.lib->plugins; it; it = g_list_next(it))
       {
         dt_lib_module_t *module = (dt_lib_module_t *)it->data;
         if(!strncmp(module->plugin_name, module_name, 128))
@@ -513,7 +512,6 @@ gboolean dt_lib_presets_apply(const gchar *preset, gchar *module_name, int modul
           res = module->set_params(module, blob, length);
           break;
         }
-        it = g_list_next(it);
       }
     }
 
@@ -727,83 +725,31 @@ gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
 }
 
 /* default expandable implementation */
-static int _lib_default_expandable(dt_lib_module_t *self)
+static int default_expandable(dt_lib_module_t *self)
 {
   return 1;
 }
 
-static int dt_lib_load_module(void *m, const char *libname, const char *plugin_name)
+static int dt_lib_load_module(void *m, const char *libname, const char *module_name)
 {
   dt_lib_module_t *module = (dt_lib_module_t *)m;
-  module->widget = NULL;
-  module->expander = NULL;
-  g_strlcpy(module->plugin_name, plugin_name, sizeof(module->plugin_name));
-  dt_print(DT_DEBUG_CONTROL, "[lib_load_module] loading lib `%s' from %s\n", plugin_name, libname);
-  module->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
-  if(!module->module) goto error;
-  int (*version)();
-  if(!g_module_symbol(module->module, "dt_module_dt_version", (gpointer) & (version))) goto error;
-  if(version() != dt_version())
-  {
-    fprintf(stderr,
-            "[lib_load_module] `%s' is compiled for another version of dt (module %d (%s) != dt %d (%s)) !\n",
-            libname, abs(version()), version() < 0 ? "debug" : "opt", abs(dt_version()),
-            dt_version() < 0 ? "debug" : "opt");
-    goto error;
-  }
-  if(!g_module_symbol(module->module, "dt_module_mod_version", (gpointer) & (module->version))) goto error;
-  if(!g_module_symbol(module->module, "name", (gpointer) & (module->name))) goto error;
-  if(!g_module_symbol(module->module, "views", (gpointer) & (module->views))) goto error;
-  if(!g_module_symbol(module->module, "container", (gpointer) & (module->container))) goto error;
-  if(!g_module_symbol(module->module, "expandable", (gpointer) & (module->expandable)))
-    module->expandable = _lib_default_expandable;
-  if(!g_module_symbol(module->module, "init", (gpointer) & (module->init))) module->init = NULL;
+  g_strlcpy(module->plugin_name, module_name, sizeof(module->plugin_name));
 
-  if(!g_module_symbol(module->module, "gui_reset", (gpointer) & (module->gui_reset)))
-    module->gui_reset = NULL;
-  if(!g_module_symbol(module->module, "gui_init", (gpointer) & (module->gui_init))) goto error;
-  if(!g_module_symbol(module->module, "gui_cleanup", (gpointer) & (module->gui_cleanup))) goto error;
+#define INCLUDE_API_FROM_MODULE_LOAD "lib_load_module"
+#include "libs/lib_api.h"
 
-  if(!g_module_symbol(module->module, "gui_post_expose", (gpointer) & (module->gui_post_expose)))
-    module->gui_post_expose = NULL;
-
-  if(!g_module_symbol(module->module, "view_enter", (gpointer) & (module->view_enter))) module->view_enter = NULL;
-  if(!g_module_symbol(module->module, "view_leave", (gpointer) & (module->view_leave))) module->view_leave = NULL;
-
-  if(!g_module_symbol(module->module, "mouse_leave", (gpointer) & (module->mouse_leave)))
-    module->mouse_leave = NULL;
-  if(!g_module_symbol(module->module, "mouse_moved", (gpointer) & (module->mouse_moved)))
-    module->mouse_moved = NULL;
-  if(!g_module_symbol(module->module, "button_released", (gpointer) & (module->button_released)))
-    module->button_released = NULL;
-  if(!g_module_symbol(module->module, "button_pressed", (gpointer) & (module->button_pressed)))
-    module->button_pressed = NULL;
-  if(!g_module_symbol(module->module, "configure", (gpointer) & (module->configure)))
-    module->configure = NULL;
-  if(!g_module_symbol(module->module, "set_preferences", (gpointer) & (module->set_preferences)))
-    module->set_preferences = NULL;
-  if(!g_module_symbol(module->module, "scrolled", (gpointer) & (module->scrolled))) module->scrolled = NULL;
-  if(!g_module_symbol(module->module, "position", (gpointer) & (module->position))) module->position = NULL;
-  if(!g_module_symbol(module->module, "legacy_params", (gpointer) & (module->legacy_params)))
-    module->legacy_params = NULL;
-  if((!g_module_symbol(module->module, "get_params", (gpointer) & (module->get_params)))
-     || (!g_module_symbol(module->module, "set_params", (gpointer) & (module->set_params)))
-     || (!g_module_symbol(module->module, "init_presets", (gpointer) & (module->init_presets))))
+  if(!module->get_params || !module->set_params || !module->init_presets)
   {
     // need all at the same time, or none.
     module->legacy_params = NULL;
     module->set_params = NULL;
     module->get_params = NULL;
     module->init_presets = NULL;
-  }
-  if(!module->init_presets
-     || !g_module_symbol(module->module, "manage_presets", (gpointer) & (module->manage_presets)))
     module->manage_presets = NULL;
-  if(!g_module_symbol(module->module, "init_key_accels", (gpointer) & (module->init_key_accels)))
-    module->init_key_accels = NULL;
-  if(!g_module_symbol(module->module, "connect_key_accels", (gpointer) & (module->connect_key_accels)))
-    module->connect_key_accels = NULL;
+  }
 
+  module->widget = NULL;
+  module->expander = NULL;
   module->accel_closures = NULL;
   module->reset_button = NULL;
   module->presets_button = NULL;
@@ -826,10 +772,6 @@ static int dt_lib_load_module(void *m, const char *libname, const char *plugin_n
   if(module->init) module->init(module);
 
   return 0;
-error:
-  fprintf(stderr, "[lib_load_module] failed to open operation `%s': %s\n", plugin_name, g_module_error());
-  if(module->module) g_module_close(module->module);
-  return 1;
 }
 
 static void *_update_params(dt_lib_module_t *module,
@@ -1115,10 +1057,9 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
     /* handle shiftclick on expander, hide all except this */
     if(!dt_conf_get_bool("lighttable/ui/single_module") != !(e->state & GDK_SHIFT_MASK))
     {
-      GList *it = g_list_first(darktable.lib->plugins);
       const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
       gboolean all_other_closed = TRUE;
-      while(it)
+      for(const GList *it = darktable.lib->plugins; it; it = g_list_next(it))
       {
         dt_lib_module_t *m = (dt_lib_module_t *)it->data;
 
@@ -1127,8 +1068,6 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
           all_other_closed = all_other_closed && !dtgtk_expander_get_expanded(DTGTK_EXPANDER(m->expander));
           dt_lib_gui_set_expanded(m, FALSE);
         }
-
-        it = g_list_next(it);
       }
       if(all_other_closed)
         dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
@@ -1178,10 +1117,9 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
 
   if(dt_conf_get_bool("lighttable/ui/single_module"))
   {
-    GList *it = g_list_first(darktable.lib->plugins);
     const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
     gboolean all_other_closed = TRUE;
-    while(it)
+    for(const GList *it = darktable.lib->plugins; it; it = g_list_next(it))
     {
       dt_lib_module_t *m = (dt_lib_module_t *)it->data;
 
@@ -1190,8 +1128,6 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
         all_other_closed = all_other_closed && !dtgtk_expander_get_expanded(DTGTK_EXPANDER(m->expander));
         dt_lib_gui_set_expanded(m, FALSE);
       }
-
-      it = g_list_next(it);
     }
     if(all_other_closed)
       dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
@@ -1442,14 +1378,10 @@ gchar *dt_lib_get_localized_name(const gchar *plugin_name)
   if(module_names == NULL)
   {
     module_names = g_hash_table_new(g_str_hash, g_str_equal);
-    GList *lib = g_list_first(darktable.lib->plugins);
-    if(lib != NULL)
+    for(const GList *lib = darktable.lib->plugins; lib; lib = g_list_next(lib))
     {
-      do
-      {
-        dt_lib_module_t *module = (dt_lib_module_t *)lib->data;
-        g_hash_table_insert(module_names, module->plugin_name, g_strdup(module->name(module)));
-      } while((lib = g_list_next(lib)) != NULL);
+      dt_lib_module_t *module = (dt_lib_module_t *)lib->data;
+      g_hash_table_insert(module_names, module->plugin_name, g_strdup(module->name(module)));
     }
   }
 

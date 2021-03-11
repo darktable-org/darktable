@@ -270,7 +270,7 @@
     <type>string</type>
     <default></default>
     <shortdescription>checksum representing the setup of opencl devices on this computer</shortdescription>
-    <longdescription>darktable re-checks the performance benchmarks of your system in case your setup has changed, which is indicated by a change versus the stored checksum in this config variable; darktable de-activates opencl if the GPU benchmark lies below the one of the CPU; inital value is the empty string; set to OFF if you want to deactivate any automatic checks and prefer to do all configurations manually.</longdescription>
+    <longdescription>darktable re-checks the performance benchmarks of your system in case your setup has changed, which is indicated by a change versus the stored checksum in this config variable; darktable de-activates opencl if the GPU benchmark lies below the one of the CPU; initial value is the empty string; set to OFF if you want to deactivate any automatic checks and prefer to do all configurations manually.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>pixelpipe_synchronization_timeout</name>
@@ -376,7 +376,7 @@
     <name>opencl_memory_requirement</name>
     <type>int</type>
     <default>768</default>
-    <shortdescription>minmum amount of GPU memory (MB) required to activate OpenCL</shortdescription>
+    <shortdescription>minimum amount of GPU memory (MB) required to activate OpenCL</shortdescription>
     <longdescription>OpenCL will only be activated if your graphics card has at least this amount of memory. reducing the value will allow cards with less GPU memory to be used - but at the risk of lower system stability and occasional crashes. values below 200 will be treated as 200.</longdescription>
   </dtconfig>
   <dtconfig>
@@ -1579,7 +1579,7 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>ask before deleting a preset</shortdescription>
-    <longdescription>will ask for confirmation before deleting or overwritting a preset</longdescription>
+    <longdescription>will ask for confirmation before deleting or overwriting a preset</longdescription>
   </dtconfig>
   <dtconfig ui="yes">
     <name>plugins/map/show_map_osd</name>
@@ -1936,6 +1936,19 @@
     <longdescription>decrease to speed up preview rendering, may hinder accurate masking</longdescription>
   </dtconfig>
   <dtconfig prefs="processing">
+    <name>plugins/lighttable/export/pixel_interpolator_warp</name>
+    <type>
+      <enum>
+        <option>bilinear</option>
+        <option>bicubic</option>
+        <option>lanczos2</option>
+      </enum>
+    </type>
+    <default>bicubic</default>
+    <shortdescription>warp pixel interpolator</shortdescription>
+    <longdescription>pixel interpolator used in modules for rotation, lens correction, liquify, clipping and final scaling (bilinear, bicubic, lanczos2).</longdescription>
+  </dtconfig>
+  <dtconfig prefs="processing">
     <name>plugins/lighttable/export/pixel_interpolator</name>
     <type>
       <enum>
@@ -1947,7 +1960,7 @@
     </type>
     <default>lanczos3</default>
     <shortdescription>pixel interpolator</shortdescription>
-    <longdescription>pixel interpolator used in rotation and lens correction (bilinear, bicubic, lanczos2, lanczos3).</longdescription>
+    <longdescription>pixel interpolator used for scaling (bilinear, bicubic, lanczos2, lanczos3).</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/dimensions_type</name>
@@ -2070,16 +2083,29 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/jpeg/quality</name>
-    <type>int</type>
+    <type min="5" max="100">int</type>
+    <default>95</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/j2k/quality</name>
+    <type min="5" max="100">int</type>
     <default>95</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/tiff/bpp</name>
-    <type>int</type>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>16</option>
+        <option>32</option>
+      </enum>
+    </type>
     <default>8</default>
-    <shortdescription/>
+    <shortdescription>TIFF bit depth (bpp)</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
@@ -2091,23 +2117,103 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/tiff/compresslevel</name>
-    <type>int</type>
+    <type min="0" max="9">int</type>
     <default>6</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/png/bpp</name>
-    <type>int</type>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>16</option>
+      </enum>
+    </type>
     <default>8</default>
-    <shortdescription/>
+    <shortdescription>PNG bit depth (bpp)</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/png/compression</name>
-    <type>int</type>
+    <type min="0" max="9">int</type>
     <default>5</default>
     <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/webp/comp_type</name>
+    <type min="0" max="1">int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/webp/quality</name>
+    <type min="5" max="100">int</type>
+    <default>95</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/webp/hint</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/avif/bpp</name>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>10</option>
+        <option>12</option>
+      </enum>
+    </type>
+    <default>8</default>
+    <shortdescription>AVIF bit depth (bpp)</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/avif/color_mode</name>
+    <type min="0">int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/avif/tiling</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>AVIF Tiling</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/avif/compression_type</name>
+    <type min="0">int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/avif/quality</name>
+    <type min="5" max="100">int</type>
+    <default>92</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/xcf/bpp</name>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>16</option>
+        <option>32</option>
+      </enum>
+    </type>
+    <default>32</default>
+    <shortdescription>XCF bit depth (bpp)</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="misc" section="other">
@@ -2642,7 +2748,7 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>arange buttons as bar below temp/tint sliders</shortdescription>
-    <longdescription>if enabled, the buttons in white balance module will be aranged below temp/tint sliders, otherwise they'll be shown in a grid to the right of temp/tint sliders</longdescription>
+    <longdescription>if enabled, the buttons in white balance module will be arranged below temp/tint sliders, otherwise they'll be shown in a grid to the right of temp/tint sliders</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/colorzones/bg_sat_factor</name>
@@ -2681,6 +2787,13 @@
     <default>always</default>
     <shortdescription>show right-side buttons in processing module headers</shortdescription>
     <longdescription>when the mouse is not over a module, the multi-instance, reset and preset buttons can be hidden:\nalways - always show all buttons,\nactive - only show the buttons when the mouse is over the module,\ndim - buttons are dimmed when mouse is away,\nauto - hide the buttons when the panel is narrow,\nfade - fade out all buttons when panel narrows,\nfit - hide all the buttons if the module name doesn't fit,\nsmooth - fade out all buttons in one header simultaneously,\nglide - gradually hide individual buttons as needed</longdescription>
+  </dtconfig>
+  <dtconfig prefs="darkroom" section="modules">
+    <name>darkroom/ui/show_mask_indicator</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show mask indicator in module headers</shortdescription>
+    <longdescription>if enabled, an icon will be shown in the header of any processing modules that have a mask applied</longdescription>
   </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@

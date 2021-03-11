@@ -385,8 +385,7 @@ static dt_lib_timeline_time_t _time_get_from_pos(int pos, dt_lib_timeline_t *str
   dt_lib_timeline_time_t tt = _time_init();
 
   int x = 0;
-  GList *bl = strip->blocks;
-  while(bl)
+  for(const GList *bl = strip->blocks; bl; bl = g_list_next(bl))
   {
     dt_lib_timeline_block_t *blo = bl->data;
     if(pos < x + blo->width)
@@ -439,7 +438,6 @@ static dt_lib_timeline_time_t _time_get_from_pos(int pos, dt_lib_timeline_t *str
       return tt;
     }
     x += blo->width + 2;
-    bl = bl->next;
   }
 
   return tt;
@@ -455,13 +453,12 @@ static dt_lib_timeline_time_t _time_compute_offset_for_zoom(int pos, dt_lib_time
   // we search the number of the bloc under pos
   int bloc_nb = 0;
   int x = 0;
-  GList *bl = strip->blocks;
-  while(bl)
+  GList *bl;
+  for(bl = strip->blocks; bl; bl = g_list_next(bl))
   {
     dt_lib_timeline_block_t *blo = bl->data;
     if(pos < x + blo->width) break;
     x += blo->width + 2;
-    bl = bl->next;
     bloc_nb++;
   }
   if(!bl)
@@ -572,7 +569,7 @@ static gboolean _time_read_bounds_from_db(dt_lib_module_t *self)
 
   sqlite3_stmt *stmt;
   const char *query = "SELECT datetime_taken FROM main.images WHERE LENGTH(datetime_taken) = 19 AND "
-                      "datetime_taken > '0001:01:01 00:00:00' ORDER BY "
+                      "datetime_taken > '0001:01:01 00:00:00' COLLATE NOCASE ORDER BY "
                       "datetime_taken ASC LIMIT 1";
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -592,7 +589,7 @@ static gboolean _time_read_bounds_from_db(dt_lib_module_t *self)
   sqlite3_finalize(stmt);
 
   const char *query2 = "SELECT datetime_taken FROM main.images WHERE LENGTH(datetime_taken) = 19 AND "
-                       "datetime_taken > '0001:01:01 00:00:00' ORDER BY "
+                       "datetime_taken > '0001:01:01 00:00:00' COLLATE NOCASE ORDER BY "
                        "datetime_taken DESC LIMIT 1";
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt, NULL);
 
@@ -619,7 +616,7 @@ static gboolean _time_read_bounds_from_collection(dt_lib_module_t *self)
   sqlite3_stmt *stmt;
   const char *query = "SELECT db.datetime_taken FROM main.images AS db, memory.collected_images AS col WHERE "
                       "db.id=col.imgid AND LENGTH(db.datetime_taken) = 19 AND db.datetime_taken > '0001:01:01 "
-                      "00:00:00' ORDER BY "
+                      "00:00:00' COLLATE NOCASE ORDER BY "
                       "db.datetime_taken ASC LIMIT 1";
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -640,7 +637,7 @@ static gboolean _time_read_bounds_from_collection(dt_lib_module_t *self)
 
   const char *query2 = "SELECT db.datetime_taken FROM main.images AS db, memory.collected_images AS col WHERE "
                        "db.id=col.imgid AND LENGTH(db.datetime_taken) = 19 AND db.datetime_taken > '0001:01:01 "
-                       "00:00:00' ORDER BY "
+                       "00:00:00' COLLATE NOCASE ORDER BY "
                        "db.datetime_taken DESC LIMIT 1";
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt, NULL);
 
@@ -737,7 +734,7 @@ static int _block_get_at_zoom(dt_lib_module_t *self, int width)
   gchar *query = g_strdup_printf("SELECT db.datetime_taken, col.imgid FROM main.images AS db LEFT JOIN "
                                  "memory.collected_images AS col ON db.id=col.imgid WHERE "
                                  "LENGTH(db.datetime_taken) = 19 AND "
-                                 "db.datetime_taken > '%s' ORDER BY db.datetime_taken ASC",
+                                 "db.datetime_taken > '%s' COLLATE NOCASE ORDER BY db.datetime_taken ASC",
                                  _time_format_for_db(strip->time_pos, strip->zoom, TRUE));
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -1005,9 +1002,8 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
     cairo_paint(cr);
 
     // draw content depending of zoom level
-    GList *bl = strip->blocks;
     int posx = 0;
-    while(bl)
+    for(const GList *bl = strip->blocks; bl; bl = g_list_next(bl))
     {
       dt_lib_timeline_block_t *blo = bl->data;
 
@@ -1038,7 +1034,6 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
         cairo_fill(cr);
       }
 
-      bl = bl->next;
       posx += wb + 2;
       if(posx >= allocation.width) break;
     }

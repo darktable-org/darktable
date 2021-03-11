@@ -1434,13 +1434,11 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker)))
     {
       // the global live samples ...
-      GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
-      dt_colorpicker_sample_t *sample = NULL;
       cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3));
 
-      while(samples)
+      for(GSList *samples = darktable.lib->proxy.colorpicker.live_samples; samples; samples = g_slist_next(samples))
       {
-        sample = samples->data;
+        dt_colorpicker_sample_t *sample = samples->data;
 
         picker_scale(sample->picked_color_lab_mean, picker_mean);
         picker_scale(sample->picked_color_lab_min, picker_min);
@@ -1459,8 +1457,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         cairo_move_to(cr, width * picker_mean[ch], 0);
         cairo_line_to(cr, width * picker_mean[ch], -height);
         cairo_stroke(cr);
-
-        samples = g_slist_next(samples);
       }
 
       // ... and the local sample

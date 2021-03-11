@@ -54,13 +54,16 @@ GList *dt_module_load_modules(const char *subdir, size_t module_size,
       free(module);
       continue;
     }
-    plugin_list = g_list_append(plugin_list, module);
+    plugin_list = g_list_prepend(plugin_list, module);
 
     if(init_module) init_module(module);
   }
   g_dir_close(dir);
 
-  if(sort_modules) plugin_list = g_list_sort(plugin_list, sort_modules);
+  if(sort_modules)
+    plugin_list = g_list_sort(plugin_list, sort_modules);
+  else
+    plugin_list = g_list_reverse(plugin_list);  // list was built in reverse order, so un-reverse it
 
  return plugin_list;
 }

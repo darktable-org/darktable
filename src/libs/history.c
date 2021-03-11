@@ -259,7 +259,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
 
 static void _reset_module_instance(GList *hist, dt_iop_module_t *module, int multi_priority)
 {
-  while (hist)
+  for(; hist; hist = g_list_next(hist))
   {
     dt_dev_history_item_t *hit = (dt_dev_history_item_t *)hist->data;
 
@@ -267,7 +267,6 @@ static void _reset_module_instance(GList *hist, dt_iop_module_t *module, int mul
     {
       hit->module = module;
     }
-    hist = hist->next;
   }
 }
 
@@ -310,8 +309,7 @@ static dt_dev_history_item_t *_search_history_by_module(GList *history_list, dt_
 {
   dt_dev_history_item_t *hist_ret = NULL;
 
-  GList *history = g_list_first(history_list);
-  while(history)
+  for(GList *history = history_list; history; history = g_list_next(history))
   {
     dt_dev_history_item_t *hist_item = (dt_dev_history_item_t *)history->data;
 
@@ -320,8 +318,6 @@ static dt_dev_history_item_t *_search_history_by_module(GList *history_list, dt_
       hist_ret = hist_item;
       break;
     }
-
-    history = g_list_next(history);
   }
   return hist_ret;
 }
@@ -332,7 +328,7 @@ static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList 
   int deleted_module_found = 0;
 
   // we will check on dev->iop if there's a module that is not in history
-  GList *modules = g_list_first(iop_list);
+  GList *modules = iop_list;
   while(modules)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
@@ -428,7 +424,7 @@ static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList 
       --darktable.gui->reset;
 
       // and reset the list
-      modules = g_list_first(iop_list);
+      modules = iop_list;
       continue;
     }
 
@@ -444,8 +440,7 @@ static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList 
 static void _reorder_gui_module_list(dt_develop_t *dev)
 {
   int pos_module = 0;
-  GList *modules = g_list_last(dev->iop);
-  while(modules)
+  for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
@@ -455,16 +450,13 @@ static void _reorder_gui_module_list(dt_develop_t *dev)
       gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER), expander,
                             pos_module++);
     }
-
-    modules = g_list_previous(modules);
   }
 }
 
 static int _rebuild_multi_priority(GList *history_list)
 {
   int changed = 0;
-  GList *history = g_list_first(history_list);
-  while(history)
+  for(const GList *history = history_list; history; history = g_list_next(history))
   {
     dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)history->data;
 
@@ -475,8 +467,6 @@ static int _rebuild_multi_priority(GList *history_list)
       dt_iop_update_multi_priority(hitem->module, hitem->multi_priority);
       changed = 1;
     }
-
-    history = g_list_next(history);
   }
   return changed;
 }
@@ -487,7 +477,7 @@ static int _create_deleted_modules(GList **_iop_list, GList *history_list)
   int changed = 0;
   gboolean done = FALSE;
 
-  GList *l = g_list_first(history_list);
+  GList *l = history_list;
   while(l)
   {
     GList *next = g_list_next(l);
@@ -656,7 +646,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
       dt_iop_gui_update_blendif(darktable.develop->gui_module);
       dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)(dev->gui_module->blend_data);
       if(bd)
-        dtgtk_button_set_active(DTGTK_BUTTON(bd->showmask),
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask),
                                 hist->request_mask_display == DT_DEV_PIXELPIPE_DISPLAY_MASK);
     }
   }
@@ -845,8 +835,9 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
   dt_iop_params_t *old_params = hitem->module->default_params;
   dt_develop_blend_params_t *old_blend = hitem->module->default_blendop_params;
 
-  GList *find_old = g_list_first(darktable.develop->history);
-  while(find_old && find_old->data != hitem)
+  for(const GList *find_old = darktable.develop->history;
+      find_old && find_old->data != hitem;
+      find_old = g_list_next(find_old))
   {
     const dt_dev_history_item_t *hiprev = (dt_dev_history_item_t *)(find_old->data);
 
@@ -855,8 +846,6 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
       old_params = hiprev->params;
       old_blend = hiprev->blend_params;
     }
-
-    find_old = g_list_next(find_old);
   }
 
   gchar **change_parts = g_malloc0_n(sizeof(dt_develop_blend_params_t) / (sizeof(float)) + 10, sizeof(char*));
@@ -1072,8 +1061,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   dt_pthread_mutex_lock(&darktable.develop->history_mutex);
 
   /* iterate over history items and add them to list*/
-  GList *history = g_list_first(darktable.develop->history);
-  while(history)
+  for(const GList *history = darktable.develop->history; history; history = g_list_next(history))
   {
     const dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
     gchar *label;
@@ -1096,8 +1084,6 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     gtk_box_pack_start(GTK_BOX(d->history_box), widget, FALSE, FALSE, 0);
     gtk_box_reorder_child(GTK_BOX(d->history_box), widget, 0);
     num++;
-
-    history = g_list_next(history);
   }
 
   /* show all widgets */
@@ -1192,8 +1178,9 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   for(GList *l = children; l != NULL; l = g_list_next(l))
   {
     GList *hbox = gtk_container_get_children(GTK_CONTAINER(l->data));
-    GtkToggleButton *b = GTK_TOGGLE_BUTTON(g_list_nth(hbox, HIST_WIDGET_MODULE)->data);
+    GtkToggleButton *b = GTK_TOGGLE_BUTTON(g_list_nth_data(hbox, HIST_WIDGET_MODULE));
     if(b != GTK_TOGGLE_BUTTON(widget)) g_object_set(G_OBJECT(b), "active", FALSE, (gchar *)0);
+    g_list_free(hbox);
   }
   g_list_free(children);
 

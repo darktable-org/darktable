@@ -155,6 +155,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   GtkWidget *widget;
 
   widget = gtk_entry_new();
+  gtk_entry_set_width_chars(GTK_ENTRY(widget), 0);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
   gchar *dir = dt_conf_get_string("plugins/imageio/storage/gallery/file_directory");
   if(dir)
@@ -183,10 +184,9 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
-  widget = gtk_label_new(_("title"));
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
-  gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("title")), FALSE, FALSE, 0);
   d->title_entry = GTK_ENTRY(gtk_entry_new());
+  gtk_entry_set_width_chars(d->title_entry, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->title_entry));
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->title_entry), _("enter the title of the website"));
@@ -210,6 +210,8 @@ void gui_cleanup(dt_imageio_module_storage_t *self)
 void gui_reset(dt_imageio_module_storage_t *self)
 {
   gallery_t *d = (gallery_t *)self->gui_data;
+  gtk_entry_set_text(d->entry, dt_confgen_get("plugins/imageio/storage/gallery/file_directory", DT_DEFAULT));
+  gtk_entry_set_text(d->title_entry, dt_confgen_get("plugins/imageio/storage/gallery/title", DT_DEFAULT));
   dt_conf_set_string("plugins/imageio/storage/gallery/file_directory", gtk_entry_get_text(d->entry));
   dt_conf_set_string("plugins/imageio/storage/gallery/title", gtk_entry_get_text(d->title_entry));
 }
@@ -465,12 +467,10 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
           title, title);
 
   size_t count = 0;
-  GList *tmp = d->l;
-  while(tmp)
+  for(GList *tmp = d->l; tmp; tmp = g_list_next(tmp))
   {
     pair_t *p = (pair_t *)tmp->data;
     fprintf(f, "%s", p->line);
-    tmp = g_list_next(tmp);
     count++;
   }
 

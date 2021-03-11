@@ -257,8 +257,7 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
   // [[does the above still apply?]]
   dt_pthread_mutex_lock(&pipe->busy_mutex); // block until the pipe has shut down
   // destroy all nodes
-  GList *nodes = pipe->nodes;
-  while(nodes)
+  for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
     // printf("cleanup module `%s'\n", piece->module->name());
@@ -270,7 +269,6 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
     g_hash_table_destroy(piece->raster_masks);
     piece->raster_masks = NULL;
     free(piece);
-    nodes = g_list_next(nodes);
   }
   g_list_free(pipe->nodes);
   pipe->nodes = NULL;
@@ -298,8 +296,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   pipe->iop_order_list = dt_ioppr_iop_order_copy_deep(dev->iop_order_list);
   // for all modules in dev:
   pipe->iop = g_list_copy(dev->iop);
-  GList *modules = pipe->iop;
-  while(modules)
+  for(GList *modules = pipe->iop; modules; modules = g_list_next(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)calloc(1, sizeof(dt_dev_pixelpipe_iop_t));
@@ -327,7 +324,6 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     memset(&piece->processed_roi_out, 0, sizeof(piece->processed_roi_out));
     dt_iop_init_pipe(piece->module, pipe, piece);
     pipe->nodes = g_list_append(pipe->nodes, piece);
-    modules = g_list_next(modules);
   }
   dt_pthread_mutex_unlock(&pipe->busy_mutex); // safe for others to use/mess with the pipe now
 }
@@ -337,11 +333,10 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
 {
   dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
   // find piece in nodes list
-  GList *nodes = pipe->nodes;
   dt_dev_pixelpipe_iop_t *piece = NULL;
   gboolean hint = FALSE;
 
-  while(nodes)
+  for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
   {
     piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
     const dt_image_t *img = &piece->pipe->image;
@@ -373,7 +368,6 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
       piece->enabled = active;
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
     }
-    nodes = g_list_next(nodes);
   }
   if(hint)
     dt_control_log(_("history problem detected\nplease report via the issue tracker\nincluding the xmp file"));
@@ -386,15 +380,13 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with defaults_params for pipe %i\n", pipe->type);
 
   // call reset_params on all pieces first. This is mandatory to init utility modules that don't have an history stack
-  GList *nodes = pipe->nodes;
-  while(nodes)
+  for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
     piece->hash = 0;
     piece->enabled = piece->module->default_enabled;
     dt_iop_commit_params(piece->module, piece->module->default_params, piece->module->default_blendop_params,
                          pipe, piece);
-    nodes = g_list_next(nodes);
   }
 
   dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with history for pipe %i\n", pipe->type);
@@ -905,15 +897,13 @@ static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
   dt_colorpicker_sample_t *sample = NULL;
-  GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
 
-  while(samples)
+  for(GSList *samples = darktable.lib->proxy.colorpicker.live_samples; samples; samples = g_slist_next(samples))
   {
     sample = samples->data;
 
     if(sample->locked)
     {
-      samples = g_slist_next(samples);
       continue;
     }
 
@@ -921,8 +911,6 @@ static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_
         sample->box, sample->point, sample->size,
         sample->picked_color_rgb_min, sample->picked_color_rgb_max, sample->picked_color_rgb_mean,
         sample->picked_color_lab_min, sample->picked_color_lab_max, sample->picked_color_lab_mean);
-
-    samples = g_slist_next(samples);
   }
 
   if(xform_rgb2lab) cmsDeleteTransform(xform_rgb2lab);

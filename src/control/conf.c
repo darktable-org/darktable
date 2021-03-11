@@ -24,7 +24,6 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "control/conf.h"
-#include "conf_gen.h"
 
 #include <glib.h>
 #include <glib/gstdio.h>
@@ -322,7 +321,7 @@ static char *_sanitize_confgen(const char *name, const char *value)
 
       const int min = item->min ? (int)dt_calculator_solve(1, item->min) : INT_MIN;
       const int max = item->max ? (int)dt_calculator_solve(1, item->max) : INT_MAX;
-      // if garbadge, use default
+      // if garbage, use default
       const int val = isnan(v) ? dt_confgen_get_int(name, DT_DEFAULT) : (int)v;
       result = g_strdup_printf("%d", CLAMP(val, min, max));
     }
@@ -333,7 +332,7 @@ static char *_sanitize_confgen(const char *name, const char *value)
 
       const int64_t min = item->min ? (int64_t)dt_calculator_solve(1, item->min) : INT64_MIN;
       const int64_t max = item->max ? (int64_t)dt_calculator_solve(1, item->max) : INT64_MAX;
-      // if garbadge, use default
+      // if garbage, use default
       const int64_t val = isnan(v) ? dt_confgen_get_int64(name, DT_DEFAULT) : (int64_t)v;
       result = g_strdup_printf("%"PRId64, CLAMP(val, min, max));
     }
@@ -344,7 +343,7 @@ static char *_sanitize_confgen(const char *name, const char *value)
 
       const float min = item->min ? (float)dt_calculator_solve(1, item->min) : -FLT_MAX;
       const float max = item->max ? (float)dt_calculator_solve(1, item->max) : FLT_MAX;
-      // if garbadge, use default
+      // if garbage, use default
       const float val = isnan(v) ? dt_confgen_get_float(name, DT_DEFAULT) : v;
       result = g_strdup_printf("%f", CLAMP(val, min, max));
     }
@@ -378,8 +377,6 @@ static char *_sanitize_confgen(const char *name, const char *value)
 void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
 {
   cf->x_confgen = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, _free_confgen_value);
-
-  dt_confgen_init();
 
   cf->table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
@@ -453,12 +450,10 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
 
   if(override_entries)
   {
-    GSList *p = override_entries;
-    while(p)
+    for(GSList *p = override_entries; p; p = g_slist_next(p))
     {
       dt_conf_string_entry_t *entry = (dt_conf_string_entry_t *)p->data;
       g_hash_table_insert(darktable.conf->override_entries, entry->key, entry->value);
-      p = g_slist_next(p);
     }
   }
 
@@ -480,14 +475,11 @@ void dt_conf_cleanup(dt_conf_t *cf)
     GList *keys = g_hash_table_get_keys(cf->table);
     GList *sorted = g_list_sort(keys, (GCompareFunc)g_strcmp0);
 
-    GList *iter = sorted;
-
-    while(iter)
+    for(GList *iter = sorted; iter; iter = g_list_next(iter))
     {
       const gchar *key = (const gchar *)iter->data;
       const gchar *val = (const gchar *)g_hash_table_lookup(cf->table, key);
       dt_conf_print(key, val, f);
-      iter = g_list_next(iter);
     }
 
     g_list_free(sorted);

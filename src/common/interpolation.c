@@ -1118,6 +1118,25 @@ const struct dt_interpolation *dt_interpolation_new(enum dt_interpolation_type t
      * prepare later search pass with default fallback */
     type = DT_INTERPOLATION_DEFAULT;
   }
+  else if(type == DT_INTERPOLATION_USERPREF_WARP)
+  {
+    // Find user preferred interpolation method
+    gchar *uipref = dt_conf_get_string("plugins/lighttable/export/pixel_interpolator_warp");
+    for(int i = DT_INTERPOLATION_FIRST; uipref && i < DT_INTERPOLATION_LAST; i++)
+    {
+      if(!strcmp(uipref, dt_interpolator[i].name))
+      {
+        // Found the one
+        itor = &dt_interpolator[i];
+        break;
+      }
+    }
+    g_free(uipref);
+
+    /* In the case the search failed (!uipref or name not found),
+     * prepare later search pass with default fallback */
+    type = DT_INTERPOLATION_DEFAULT_WARP;
+  }
   if(!itor)
   {
     // Did not find the userpref one or we've been asked for a specific one

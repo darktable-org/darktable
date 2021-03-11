@@ -578,7 +578,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
   }
   else
   {
-    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
     const float rx = piece->buf_in.width * roi_in->scale;
     const float ry = piece->buf_in.height * roi_in->scale;
     float k_space[4] = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
@@ -950,7 +950,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else
   {
-    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
     const float rx = piece->buf_in.width * roi_in->scale;
     const float ry = piece->buf_in.height * roi_in->scale;
     float k_space[4] = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
@@ -1035,7 +1035,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   {
     int crkernel = -1;
 
-    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
     switch(interpolation->id)
     {
@@ -1381,7 +1381,7 @@ static float _ratio_get_aspect(dt_iop_module_t *self, GtkWidget *combo)
     }
     else
     {
-      const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+      const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
       const float whratio = ((float)(iwd - 2 * interpolation->width) * (fabsf(p->cw) - p->cx))
                             / ((float)(iht - 2 * interpolation->width) * (fabsf(p->ch) - p->cy));
       const float ri = (float)iwd / (float)iht;
@@ -1709,8 +1709,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
   {
     d = n = 0;
 
-    GList *iter = g->aspect_list;
-    while(iter != NULL)
+    for(const GList *iter = g->aspect_list; iter; iter = g_list_next(iter))
     {
       const dt_iop_clipping_aspect_t *aspect = iter->data;
       if(g_strcmp0(aspect->name, text) == 0)
@@ -1719,7 +1718,6 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
         n = aspect->n;
         break;
       }
-      iter = g_list_next(iter);
     }
   }
 
@@ -1742,8 +1740,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
   // Search if current aspect ratio matches something known
   int act = -1, i = 0;
 
-  GList *iter = g->aspect_list;
-  while(iter != NULL)
+  for(const GList *iter = g->aspect_list; iter; iter = g_list_next(iter))
   {
     const dt_iop_clipping_aspect_t *aspect = iter->data;
     if((aspect->d == d) && (aspect->n == n))
@@ -1752,7 +1749,6 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
       break;
     }
     i++;
-    iter = g_list_next(iter);
   }
 
   // Update combobox label
@@ -1926,8 +1922,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   int act = -1;
   int i = 0;
-  GList *iter = g->aspect_list;
-  while(iter != NULL)
+  for(const GList *iter = g->aspect_list; iter; iter = g_list_next(iter))
   {
     const dt_iop_clipping_aspect_t *aspect = iter->data;
     if((aspect->d == d) && (aspect->n == n))
@@ -1936,7 +1931,6 @@ void gui_update(struct dt_iop_module_t *self)
       break;
     }
     i++;
-    iter = g_list_next(iter);
   }
 
   // keystone :
@@ -3444,24 +3438,10 @@ void connect_key_accels(dt_iop_module_t *self)
 GSList *mouse_actions(struct dt_iop_module_t *self)
 {
   GSList *lm = NULL;
-  dt_mouse_action_t *a = NULL;
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_LEFT_DRAG;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on borders] crop"), self->name());
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->key.accel_mods = GDK_SHIFT_MASK;
-  a->action = DT_MOUSE_ACTION_LEFT_DRAG;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on borders] crop keeping ratio"), self->name());
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_RIGHT_DRAG;
-  g_snprintf(a->name, sizeof(a->name), _("[%s] define/rotate horizon"), self->name());
-  lm = g_slist_append(lm, a);
-
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0, _("[%s on borders] crop"), self->name());
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, GDK_SHIFT_MASK,
+                                     _("[%s on borders] crop keeping ratio"), self->name());
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_RIGHT_DRAG, 0, _("[%s] define/rotate horizon"), self->name());
   return lm;
 }
 

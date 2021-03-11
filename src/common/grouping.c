@@ -143,13 +143,13 @@ GList *dt_grouping_get_group_images(const int32_t imgid)
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
         const int image_id = sqlite3_column_int(stmt, 0);
-        imgs = g_list_append(imgs, GINT_TO_POINTER(image_id));
+        imgs = g_list_prepend(imgs, GINT_TO_POINTER(image_id));
       }
       sqlite3_finalize(stmt);
     }
-    else imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+    else imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));
   }
-  return imgs;
+  return g_list_reverse(imgs);
 }
 
 /** add grouped images to images list */
@@ -157,8 +157,7 @@ void dt_grouping_add_grouped_images(GList **images)
 {
   if(!*images) return;
   GList *gimgs = NULL;
-  GList *imgs = *images;
-  while(imgs)
+  for(GList *imgs = *images; imgs; imgs = g_list_next(imgs))
   {
     const dt_image_t *image = dt_image_cache_get(darktable.image_cache, GPOINTER_TO_INT(imgs->data), 'r');
     if(image)
@@ -176,16 +175,15 @@ void dt_grouping_add_grouped_images(GList **images)
         {
           const int image_id = sqlite3_column_int(stmt, 0);
           if(image_id != GPOINTER_TO_INT(imgs->data))
-            gimgs = g_list_append(gimgs, GINT_TO_POINTER(image_id));
+            gimgs = g_list_prepend(gimgs, GINT_TO_POINTER(image_id));
         }
         sqlite3_finalize(stmt);
       }
     }
-    imgs = g_list_next(imgs);
   }
 
   if(gimgs)
-    imgs = g_list_concat(*images, gimgs);
+    *images = g_list_concat(*images, g_list_reverse(gimgs));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

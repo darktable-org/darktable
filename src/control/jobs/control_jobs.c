@@ -31,6 +31,7 @@
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
 #include "common/undo.h"
+#include "common/grouping.h"
 #include "control/conf.h"
 #include "develop/imageop_math.h"
 
@@ -180,7 +181,7 @@ static dt_job_t *dt_control_generic_images_job_create(dt_job_execute_callback ex
   }
   if(progress_type != PROGRESS_NONE)
     dt_control_job_add_progress(job, _(message), progress_type == PROGRESS_CANCELLABLE);
-  params->index = g_list_copy((GList *)dt_view_get_images_to_act_on(only_visible, TRUE));
+  params->index = g_list_copy((GList *)dt_view_get_images_to_act_on(only_visible, TRUE, FALSE));
 
   dt_control_job_set_params(job, params, dt_control_image_enumerator_cleanup);
 
@@ -530,7 +531,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   g_free(directory);
 
   // refresh the thumbtable view
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_append(NULL, GINT_TO_POINTER(imageid)));
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_prepend(NULL, GINT_TO_POINTER(imageid)));
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
 
@@ -548,6 +549,9 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   const guint total = g_list_length(t);
   double fraction = 0.0f;
   char message[512] = { 0 };
+
+  dt_undo_start_group(darktable.undo, DT_UNDO_DUPLICATE);
+
   snprintf(message, sizeof(message), ngettext("duplicating %d image", "duplicating %d images", total), total);
   dt_control_job_set_progress_message(job, message);
   while(t)
@@ -563,6 +567,9 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
+
+  dt_undo_end_group(darktable.undo);
+
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
@@ -680,10 +687,10 @@ static GList *_get_full_pathname(char *imgs)
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, imgs, -1, SQLITE_STATIC);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    list = g_list_append(list, g_strdup((const gchar *)sqlite3_column_text(stmt, 0)));
+    list = g_list_prepend(list, g_strdup((const gchar *)sqlite3_column_text(stmt, 0)));
   }
   sqlite3_finalize(stmt);
-  return list;
+  return g_list_reverse(list);  // list was built in reverse order, so un-reverse it
 }
 
 static int32_t dt_control_remove_images_job_run(dt_job_t *job)
@@ -1018,13 +1025,11 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
 
       GList *files = dt_image_find_duplicates(filename);
 
-      GList *file_iter = g_list_first(files);
-      while(file_iter != NULL)
+      for(GList *file_iter = files; file_iter; file_iter = g_list_next(file_iter))
       {
         delete_status = delete_file_from_disk(file_iter->data, &delete_on_trash_error);
         if (delete_status != _DT_DELETE_STATUS_OK_TO_REMOVE)
           break;
-        file_iter = g_list_next(file_iter);
       }
 
       g_list_free_full(files, g_free);
@@ -1097,8 +1102,8 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   if(!tz_camera) goto bail_out;
   GTimeZone *tz_utc = g_time_zone_new_utc();
 
-  dt_undo_start_group(darktable.undo, DT_UNDO_GEOTAG);
-
+  GList *imgs = NULL;
+  GArray *gloc = g_array_new(FALSE, FALSE, sizeof(dt_image_geoloc_t));
   /* go thru each selected image and lookup location in gpx */
   do
   {
@@ -1145,14 +1150,20 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     /* only update image location if time is within gpx tack range */
     if(dt_gpx_get_location(gpx, &timestamp, &geoloc))
     {
-      // set location to image and its group
-      dt_image_set_location(imgid, &geoloc, TRUE, TRUE);
+      // takes the option to include the grouped images
+      GList *grps = dt_grouping_get_group_images(imgid);
+      for(GList *grp = grps; grp; grp = g_list_next(grp))
+      {
+        imgs = g_list_prepend(imgs, grp->data);
+        g_array_append_val(gloc, geoloc);
+      }
+      g_list_free(grps);
       cntr++;
     }
-
   } while((t = g_list_next(t)) != NULL);
+  imgs = g_list_reverse(imgs);
 
-  dt_undo_end_group(darktable.undo);
+  dt_image_set_images_locations(imgs, gloc, TRUE);
 
   dt_control_log(ngettext("applied matched GPX location onto %d image",
                           "applied matched GPX location onto %d images", cntr), cntr);
@@ -1160,7 +1171,8 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   g_time_zone_unref(tz_camera);
   g_time_zone_unref(tz_utc);
   dt_gpx_destroy(gpx);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, g_list_copy(t), 0);
+  g_array_unref(gloc);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
   return 0;
 
 bail_out:
@@ -1439,7 +1451,8 @@ static void dt_control_gpx_apply_job_cleanup(void *p)
   dt_control_image_enumerator_cleanup(params);
 }
 
-static dt_job_t *dt_control_gpx_apply_job_create(const gchar *filename, int32_t filmid, const gchar *tz)
+static dt_job_t *_control_gpx_apply_job_create(const gchar *filename, int32_t filmid,
+                                               const gchar *tz, GList *imgs)
 {
   dt_job_t *job = dt_control_job_create(&dt_control_gpx_apply_job_run, "gpx apply");
   if(!job) return NULL;
@@ -1453,9 +1466,10 @@ static dt_job_t *dt_control_gpx_apply_job_create(const gchar *filename, int32_t 
 
   if(filmid != -1)
     dt_control_image_enumerator_job_film_init(params, filmid);
+  else if(!imgs)
+    params->index = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE, FALSE));
   else
-    params->index = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE));
-
+    params->index = imgs;
   dt_control_gpx_apply_t *data = params->data;
   data->filename = g_strdup(filename);
   data->tz = g_strdup(tz);
@@ -1470,10 +1484,10 @@ void dt_control_merge_hdr()
                                                           NULL, PROGRESS_CANCELLABLE, TRUE));
 }
 
-void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz)
+void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz, GList *imgs)
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     dt_control_gpx_apply_job_create(filename, filmid, tz));
+                     _control_gpx_apply_job_create(filename, filmid, tz, imgs));
 }
 
 void dt_control_duplicate_images()
@@ -1868,11 +1882,49 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   mstorage->export_dispatched(mstorage);
 }
 
+static void _add_datetime_offset(const uint32_t imgid, const char *odt,
+                                 const long int offset, char *ndt)
+{
+  // get the datetime_taken and calculate the new time
+  gint year;
+  gint month;
+  gint day;
+  gint hour;
+  gint minute;
+  gint seconds;
+
+  if(sscanf(odt, "%d:%d:%d %d:%d:%d", (int *)&year, (int *)&month, (int *)&day,
+            (int *)&hour, (int *)&minute, (int *)&seconds) != 6)
+  {
+    fprintf(stderr, "broken exif time in db, '%s', imgid %d\n", odt, imgid);
+    return;
+  }
+
+  GTimeZone *tz = g_time_zone_new_utc();
+  GDateTime *datetime_original = g_date_time_new(tz, year, month, day, hour, minute, seconds);
+  g_time_zone_unref(tz);
+  if(!datetime_original)
+    return;
+
+  // let's add our offset
+  GDateTime *datetime_new = g_date_time_add_seconds(datetime_original, offset);
+  g_date_time_unref(datetime_original);
+
+  if(!datetime_new)
+    return;
+
+  gchar *datetime = g_date_time_format(datetime_new, "%Y:%m:%d %H:%M:%S");
+  g_date_time_unref(datetime_new);
+
+  if(datetime)
+    memcpy(ndt, datetime, DT_DATETIME_LENGTH);
+  g_free(datetime);
+}
+
 static int32_t dt_control_datetime_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   uint32_t cntr = 0;
-  double fraction = 0.0;
   GList *t = params->index;
   const long int offset = ((dt_control_datetime_t *)params->data)->offset;
   const char *datetime = ((dt_control_datetime_t *)params->data)->datetime;
@@ -1886,33 +1938,53 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
 
   const guint total = g_list_length(t);
 
-  const char *mes11 = offset ? N_("adding time offset to %d image") : N_("setting date time to %d image");
-  const char *mes12 = offset ? N_("adding time offset to %d images") : N_("setting date time to %d images");
+  const char *mes11 = offset ? N_("adding time offset to %d image") : N_("setting date/time of %d image");
+  const char *mes12 = offset ? N_("adding time offset to %d images") : N_("setting date/time of %d images");
   snprintf(message, sizeof(message), ngettext(mes11, mes12, total), total);
   dt_control_job_set_progress_message(job, message);
 
-  dt_undo_start_group(darktable.undo, DT_UNDO_DATETIME);
-  /* go thru each selected image and update datetime_taken */
-  do
+  GList *imgs = NULL;
+  if(offset)
   {
-    int imgid = GPOINTER_TO_INT(t->data);
+    GArray *dtime = g_array_new(FALSE, TRUE, DT_DATETIME_LENGTH);
 
-    if(offset)
-      dt_image_add_time_offset(imgid, offset);
-    else
-      dt_image_set_datetime(imgid, datetime);
-    cntr++;
+    for(GList *img = t; img; img = g_list_next(img))
+    {
+      char odt[DT_DATETIME_LENGTH] = {0};
+      dt_image_get_datetime(GPOINTER_TO_INT(img->data), odt);
+      if(!odt[0]) continue;
 
-    fraction = MAX(fraction, (1.0 * cntr) / total);
-    dt_control_job_set_progress(job, fraction);
-  } while((t = g_list_next(t)) != NULL);
-  dt_undo_end_group(darktable.undo);
+      char ndt[DT_DATETIME_LENGTH] = {0};
+      _add_datetime_offset(GPOINTER_TO_INT(img->data), odt, offset, ndt);
+      if(!ndt[0]) continue;
 
-  const char *mes21 = offset ? N_("added time offset to %d image") : N_("set date time to %d image");
-  const char *mes22 = offset ? N_("added time offset to %d images") : N_("set date time to %d images");
+      // takes the option to include the grouped images
+      GList *grps = dt_grouping_get_group_images(GPOINTER_TO_INT(img->data));
+      for(GList *grp = grps; grp; grp = g_list_next(grp))
+      {
+        imgs = g_list_prepend(imgs, grp->data);
+        g_array_append_val(dtime, ndt);
+        cntr++;
+      }
+      g_list_free(grps);
+    }
+    imgs = g_list_reverse(imgs);
+    dt_image_set_datetimes(imgs, dtime, TRUE);
+  }
+  else
+  {
+    imgs = g_list_copy(t);
+    // takes the option to include the grouped images
+    dt_grouping_add_grouped_images(&imgs);
+    cntr = g_list_length(imgs);
+    dt_image_set_datetime(imgs, datetime, TRUE);
+  }
+
+  const char *mes21 = offset ? N_("added time offset to %d image") : N_("set date/time of %d image");
+  const char *mes22 = offset ? N_("added time offset to %d images") : N_("set date/time of %d images");
   dt_control_log(ngettext(mes21, mes22, cntr), cntr);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, g_list_copy(params->index));
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
   return 0;
 }
 
@@ -1940,7 +2012,7 @@ static void dt_control_datetime_job_cleanup(void *p)
   dt_control_image_enumerator_cleanup(params);
 }
 
-static dt_job_t *dt_control_datetime_job_create(const long int offset, const char *datetime, int imgid)
+static dt_job_t *dt_control_datetime_job_create(const long int offset, const char *datetime, GList *imgs)
 {
   dt_job_t *job = dt_control_job_create(&dt_control_datetime_job_run, "time offset");
   if(!job) return NULL;
@@ -1953,10 +2025,10 @@ static dt_job_t *dt_control_datetime_job_create(const long int offset, const cha
   dt_control_job_add_progress(job, _("time offset"), FALSE);
   dt_control_job_set_params(job, params, dt_control_datetime_job_cleanup);
 
-  if(imgid != -1)
-    params->index = g_list_append(params->index, GINT_TO_POINTER(imgid));
+  if(imgs)
+    params->index = imgs;
   else
-    params->index = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE));
+    params->index = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE, FALSE));
 
   dt_control_datetime_t *data = params->data;
   data->offset = offset;
@@ -1968,10 +2040,10 @@ static dt_job_t *dt_control_datetime_job_create(const long int offset, const cha
   return job;
 }
 
-void dt_control_datetime(const long int offset, const char *datetime, int imgid)
+void dt_control_datetime(const long int offset, const char *datetime, GList *imgs)
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     dt_control_datetime_job_create(offset, datetime, imgid));
+                     dt_control_datetime_job_create(offset, datetime, imgs));
 }
 
 void dt_control_write_sidecar_files()

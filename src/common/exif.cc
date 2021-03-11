@@ -260,8 +260,7 @@ const GList* dt_exif_get_exiv2_taglist()
 static const char *_exif_get_exiv2_tag_type(const char *tagname)
 {
   if(!tagname) return NULL;
-  GList *tag = exiv2_taglist;
-  while(tag)
+  for(GList *tag = exiv2_taglist; tag; tag = g_list_next(tag))
   {
     char *t = (char *)tag->data;
     if(g_str_has_prefix(t, tagname) && t[strlen(tagname)] == ',')
@@ -270,7 +269,6 @@ static const char *_exif_get_exiv2_tag_type(const char *tagname)
       t += strlen(tagname) + 1;
       return t;
     }
-    tag = g_list_next(tag);
   }
   return NULL;
 }
@@ -420,7 +418,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
 {
   // as this can be called several times during the image lifetime, clean up first
   GList *imgs = NULL;
-  imgs = g_list_append(imgs, GINT_TO_POINTER(img->id));
+  imgs = g_list_prepend(imgs, GINT_TO_POINTER(img->id));
   try
   {
     Exiv2::XmpData::iterator pos;
@@ -1027,7 +1025,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
 
-    // finaly the lens has only numbers and parentheses, let's try to use
+    // finally the lens has only numbers and parentheses, let's try to use
     // Exif.Photo.LensModel if defined.
 
     std::string lens(img->exif_lens);
@@ -1345,7 +1343,7 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
     if(img->id > 0 && str != NULL && str[0] != '\0')
     {
       GList *imgs = NULL;
-      imgs = g_list_append(imgs, GINT_TO_POINTER(img->id));
+      imgs = g_list_prepend(imgs, GINT_TO_POINTER(img->id));
       dt_tag_attach_string_list(str, imgs, FALSE);
       g_list_free(imgs);
     }
@@ -2861,14 +2859,11 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     }
     else
     {
-      GList *m_entries = g_list_first(mask_entries_v3);
-      while(m_entries)
+      for(GList *m_entries = g_list_first(mask_entries_v3); m_entries; m_entries = g_list_next(m_entries))
       {
         mask_entry_t *mask_entry = (mask_entry_t *)m_entries->data;
 
         add_mask_entry_to_db(img->id, mask_entry);
-
-        m_entries = g_list_next(m_entries);
       }
     }
     sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
@@ -3023,7 +3018,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
         iop_order_list = g_list_append(iop_order_list, e);
       }
 
-      // and finally reoder the full list based on the iop-order
+      // and finally reorder the full list based on the iop-order
 
       iop_order_list = g_list_sort(iop_order_list, dt_sort_iop_list_by_order_f);
     }
@@ -3547,19 +3542,17 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   std::unique_ptr<Exiv2::Value> v2(Exiv2::Value::create(Exiv2::xmpBag));
 
   GList *tags = dt_tag_get_list(imgid);
-  while(tags)
+  for(GList *tag = tags; tag; tag = g_list_next(tag))
   {
-    v1->read((char *)tags->data);
-    tags = g_list_next(tags);
+    v1->read((char *)tag->data);
   }
   if(v1->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v1.get());
   g_list_free_full(tags, g_free);
 
   GList *hierarchical = dt_tag_get_hierarchical(imgid);
-  while(hierarchical)
+  for(GList *hier = hierarchical; hier; hier = g_list_next(hier))
   {
-    v2->read((char *)hierarchical->data);
-    hierarchical = g_list_next(hierarchical);
+    v2->read((char *)hier->data);
   }
   if(v2->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"), v2.get());
   g_list_free_full(hierarchical, g_free);
@@ -3679,10 +3672,9 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid,
     // get tags from db, store in dublin core
     std::unique_ptr<Exiv2::Value> v1(Exiv2::Value::create(Exiv2::xmpBag));
     GList *tags = dt_tag_get_list_export(imgid, metadata->flags);
-    while(tags)
+    for(GList *tag = tags; tag; tag = g_list_next(tag))
     {
-      v1->read((char *)tags->data);
-      tags = g_list_next(tags);
+      v1->read((char *)tag->data);
     }
     if(v1->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v1.get());
     g_list_free_full(tags, g_free);
@@ -3692,10 +3684,9 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid,
   {
     std::unique_ptr<Exiv2::Value> v2(Exiv2::Value::create(Exiv2::xmpBag));
     GList *hierarchical = dt_tag_get_hierarchical_export(imgid, metadata->flags);
-    while(hierarchical)
+    for(GList *hier = hierarchical; hier; hier = g_list_next(hier))
     {
-      v2->read((char *)hierarchical->data);
-      hierarchical = g_list_next(hierarchical);
+      v2->read((char *)hier->data);
     }
     if(v2->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"), v2.get());
     g_list_free_full(hierarchical, g_free);

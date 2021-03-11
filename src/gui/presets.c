@@ -976,9 +976,8 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
 
   gchar *config = dt_conf_get_string("plugins/darkroom/quick_preset_list");
 
-  GList *m2 = g_list_copy(darktable.iop);
-  GList *modules = g_list_sort(m2, menuitem_manage_quick_presets_sort);
-  while(modules)
+  GList *m2 = g_list_sort(g_list_copy(darktable.iop), menuitem_manage_quick_presets_sort);
+  for(const GList *modules = m2; modules; modules = g_list_next(modules))
   {
     dt_iop_module_so_t *iop = (dt_iop_module_so_t *)modules->data;
 
@@ -1017,8 +1016,6 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
       // we don't show modules with no presets
       if(nb == 0) gtk_tree_store_remove(treestore, &toplevel);
     }
-
-    modules = g_list_next(modules);
   }
   g_free(config);
   g_list_free(m2);
@@ -1065,52 +1062,47 @@ void dt_gui_favorite_presets_menu_show()
   else
     config = dt_conf_get_string("plugins/darkroom/quick_preset_list");
 
-  GList *modules = g_list_last(darktable.develop->iop);
-  if(modules)
+  for(const GList *modules = g_list_last(darktable.develop->iop); modules; modules = g_list_previous(modules))
   {
-    do
+    dt_iop_module_t *iop = (dt_iop_module_t *)modules->data;
+
+    // check if module is visible in current layout
+    if(dt_dev_modulegroups_is_visible(darktable.develop, iop->so->op))
     {
-      dt_iop_module_t *iop = (dt_iop_module_t *)modules->data;
+      /* query presets for module */
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query,
+                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, iop->op, -1, SQLITE_TRANSIENT);
 
-      // check if module is visible in current layout
-      if(dt_dev_modulegroups_is_visible(darktable.develop, iop->so->op))
+      while(sqlite3_step(stmt) == SQLITE_ROW)
       {
-        /* query presets for module */
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query,
-                                    -1, &stmt, NULL);
-        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, iop->op, -1, SQLITE_TRANSIENT);
-
-        while(sqlite3_step(stmt) == SQLITE_ROW)
+        const char *name = (char *)sqlite3_column_text(stmt, 0);
+        if(retrieve_list)
         {
-          const char *name = (char *)sqlite3_column_text(stmt, 0);
-          if(retrieve_list)
-          {
-            // we only show it if module is in favorite
-            gchar *key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/favorite", iop->so->op);
-            const gboolean fav = dt_conf_get_bool(key);
-            g_free(key);
-            if(fav) config = dt_util_dstrcat(config, "ꬹ%s|%sꬹ", iop->so->op, name);
-          }
-
-          // check that this preset is in the config list
-          gchar *txt = dt_util_dstrcat(NULL, "ꬹ%s|%sꬹ", iop->so->op, name);
-          if(config && strstr(config, txt))
-          {
-            GtkMenuItem *mi = (GtkMenuItem *)gtk_menu_item_new_with_label(name);
-            gchar *tt = dt_util_dstrcat(NULL, "<b>%s %s</b> %s", iop->name(), iop->multi_name, name);
-            gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), tt);
-            g_free(tt);
-            g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
-            g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_pick_preset), iop);
-            gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(mi));
-          }
-          g_free(txt);
+          // we only show it if module is in favorite
+          gchar *key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/favorite", iop->so->op);
+          const gboolean fav = dt_conf_get_bool(key);
+          g_free(key);
+          if(fav) config = dt_util_dstrcat(config, "ꬹ%s|%sꬹ", iop->so->op, name);
         }
 
-        sqlite3_finalize(stmt);
+        // check that this preset is in the config list
+        gchar *txt = dt_util_dstrcat(NULL, "ꬹ%s|%sꬹ", iop->so->op, name);
+        if(config && strstr(config, txt))
+        {
+          GtkMenuItem *mi = (GtkMenuItem *)gtk_menu_item_new_with_label(name);
+          gchar *tt = dt_util_dstrcat(NULL, "<b>%s %s</b> %s", iop->name(), iop->multi_name, name);
+          gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), tt);
+          g_free(tt);
+          g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
+          g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_pick_preset), iop);
+          gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(mi));
+        }
+        g_free(txt);
       }
 
-    } while((modules = g_list_previous(modules)) != NULL);
+      sqlite3_finalize(stmt);
+    }
   }
   if(retrieve_list) dt_conf_set_string("plugins/darkroom/quick_preset_list", config);
   g_free(config);

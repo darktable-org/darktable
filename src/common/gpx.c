@@ -151,14 +151,11 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, dt_image
 {
   g_assert(gpx != NULL);
 
-  GList *item = g_list_first(gpx->trkpts);
-
   /* verify that we got at least 2 trackpoints */
-  if(!item || !item->next) return FALSE;
+  if(g_list_shorter_than(gpx->trkpts,2)) return FALSE;
 
-  do
+  for(GList *item = gpx->trkpts; item; item = g_list_next(item))
   {
-
     dt_gpx_track_point_t *tp = (dt_gpx_track_point_t *)item->data;
 
     /* if timestamp is out of time range return false but fill
@@ -173,15 +170,14 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, dt_image
 
     /* check if timestamp is within current and next trackpoint */
     if(timestamp->tv_sec >= tp->time.tv_sec
-       && timestamp->tv_sec <= ((dt_gpx_track_point_t *)item->next->data)->time.tv_sec)
+       && item->next && timestamp->tv_sec <= ((dt_gpx_track_point_t *)item->next->data)->time.tv_sec)
     {
       geoloc->longitude = tp->longitude;
       geoloc->latitude = tp->latitude;
       geoloc->elevation = tp->elevation;
       return TRUE;
     }
-
-  } while((item = g_list_next(item)) != NULL);
+  }
 
   /* should not reach this point */
   return FALSE;

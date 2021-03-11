@@ -79,7 +79,7 @@ typedef struct dt_iop_useless_params_t
   // to initialise self->default_params, which is then used in gui_init to set widget defaults.
   //
   // These field names are just examples; chose meaningful ones! For performance reasons, align
-  // to 4 byte bounderies (use gboolean, not bool).
+  // to 4 byte boundaries (use gboolean, not bool).
   int checker_scale; // $MIN: 0 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "size"
   float factor;      // $MIN: -5.0 $MAX: 5.0 $DEFAULT: 0
   gboolean check;    // $DESCRIPTION: "checkbox option"
@@ -339,11 +339,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       int wi = (roi_in->x + i) * scale, wj = (roi_in->y + j) * scale;
       if((wi / d->checker_scale + wj / d->checker_scale) & 1)
       {
-        for(int c = 0; c < 3; c++) out[c] = in[c] * (1.0 - d->factor);
+        for_each_channel(c, aligned(in,out))  // vectorize if possible
+          out[c] = in[c] * (1.0 - d->factor); // does this for c=0..2 or c=0..3, whichever is faster
         if(out_mask) out_mask[i] = 1.0;
       }
       else
-        for(int c = 0; c < 3; c++) out[c] = in[c];
+      {
+        copy_pixel(out, in);
+      }
       in += ch;
       out += ch;
     }
@@ -515,7 +518,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   // If we are in darkroom, gui_init will already have been called and has initialised
   // module->gui_data and widgets.
-  // So if deafault values have been changed, it may then be necessary to also change the
+  // So if default values have been changed, it may then be necessary to also change the
   // default values in widgets. Resetting the individual widgets will then have the same
   // effect as resetting the whole module at once.
   dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)module->gui_data;
@@ -555,8 +558,8 @@ void gui_init(dt_iop_module_t *self)
   // type of image, then the widgets have to be updated in reload_params.
   dt_iop_useless_gui_data_t *g = IOP_GUI_ALLOC(useless);
 
-  // If the first widget is created useing a _from_params call, self->widget does not have to
-  // be explicitly initialised, as a new virtical box will be created automatically.
+  // If the first widget is created using a _from_params call, self->widget does not have to
+  // be explicitly initialised, as a new vertical box will be created automatically.
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   // Linking a slider to an integer will make it take only whole numbers (step=1).
@@ -617,6 +620,22 @@ void gui_cleanup(dt_iop_module_t *self)
 // uint32_t state);
 // int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
 // int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state);
+
+// optional: if mouse events are handled by the iop, we can add text to the help screen by declaring
+// the mouse actions and their descriptions
+#if 0
+GSList *mouse_actions(dt_iop_module_t *self)
+{
+  GSList *lm = NULL;
+  // add the first action
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK, 
+                                     _("[%s] some action"), self->name());
+  // append a second action to the list we will return
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, GDK_CONTROL_MASK | GDK_SHIFT_MASK, 
+                                     _("[%s] other action"), self->name());
+  return lm;
+}
+#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

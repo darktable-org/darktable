@@ -1268,7 +1268,7 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
       dt_show_times(&start, "[map] dbscan calculation");
 
       // set the groups
-      const GList *sel_imgs = dt_view_get_images_to_act_on(TRUE, FALSE);
+      const GList *sel_imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
       int group = -1;
       for(i = 0; i< img_count; i++)
       {
@@ -1385,7 +1385,7 @@ static dt_map_image_t *_view_map_get_entry_at_pos(dt_view_t *self, const double 
 {
   dt_map_t *lib = (dt_map_t *)self->data;
 
-  for(GSList *iter = lib->images; iter; iter = iter->next)
+  for(const GSList *iter = lib->images; iter; iter = g_slist_next(iter))
   {
     dt_map_image_t *entry = (dt_map_image_t *)iter->data;
     OsmGpsMapImage *image = entry->image;
@@ -1412,7 +1412,7 @@ static GList *_view_map_get_imgs_at_pos(dt_view_t *self, const double x,
   int imgid = -1;
   dt_map_image_t *entry = NULL;
 
-  for(GSList *iter = lib->images; iter; iter = iter->next)
+  for(const GSList *iter = lib->images; iter; iter = g_slist_next(iter))
   {
     entry = (dt_map_image_t *)iter->data;
     OsmGpsMapImage *image = entry->image;
@@ -1618,7 +1618,7 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
       abs(lib->start_drag_y - (int)ceil(e->y_root))) > DT_PIXEL_APPLY_DPI(8))
   {
     const int nb = g_list_length(lib->selected_images);
-    for(GSList *iter = lib->images; iter; iter = iter->next)
+    for(const GSList *iter = lib->images; iter; iter = g_slist_next(iter))
     {
       dt_map_image_t *entry = (dt_map_image_t *)iter->data;
       if(entry->image)
@@ -1638,11 +1638,7 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
       }
     }
 
-    int group_count = 0;
-    for(GList *iter = lib->selected_images; iter != NULL; iter = iter->next)
-    {
-      group_count++;
-    }
+    const int group_count = g_list_length(lib->selected_images);
 
     lib->start_drag = FALSE;
     GtkTargetList *targets = gtk_target_list_new(target_list_all, n_targets_all);
@@ -2102,7 +2098,7 @@ static OsmGpsMapPolygon *_view_map_add_polygon(const dt_view_t *view, GList *poi
   OsmGpsMapPolygon *poly = osm_gps_map_polygon_new();
   OsmGpsMapTrack* track = osm_gps_map_track_new();
 
-  for(GList *iter = g_list_first(points); iter; iter = g_list_next(iter))
+  for(GList *iter = points; iter; iter = g_list_next(iter))
   {
     dt_geo_map_display_point_t *p = (dt_geo_map_display_point_t *)iter->data;
     OsmGpsMapPoint* point = osm_gps_map_point_new_degrees(p->lat, p->lon);
@@ -2131,7 +2127,7 @@ static OsmGpsMapTrack *_view_map_add_track(const dt_view_t *view, GList *points)
 
   OsmGpsMapTrack* track = osm_gps_map_track_new();
 
-  for(GList *iter = g_list_first(points); iter; iter = g_list_next(iter))
+  for(GList *iter = points; iter; iter = g_list_next(iter))
   {
     dt_geo_map_display_point_t *p = (dt_geo_map_display_point_t *)iter->data;
     OsmGpsMapPoint* point = osm_gps_map_point_new_degrees(p->lat, p->lon);
@@ -2456,11 +2452,10 @@ static void _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *contex
           if(imgs_nb)
           {
             uint32_t *imgs = malloc(sizeof(uint32_t) * imgs_nb);
-            GList *l = lib->selected_images;
-            for(int i = 0; i < imgs_nb; i++)
+            int i = 0;
+            for(GList *l = lib->selected_images; l; l = g_list_next(l))
             {
-              imgs[i] = GPOINTER_TO_INT(l->data);
-              l = g_list_next(l);
+              imgs[i++] = GPOINTER_TO_INT(l->data);
             }
             gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data),
                                    _DWORD, (guchar *)imgs, imgs_nb * sizeof(uint32_t));
@@ -2581,23 +2576,9 @@ static void _view_map_build_main_query(dt_map_t *lib)
 GSList *mouse_actions(const dt_view_t *self)
 {
   GSList *lm = NULL;
-  dt_mouse_action_t *a = NULL;
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_DOUBLE_LEFT;
-  g_strlcpy(a->name, _("[on image] open in darkroom"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_DOUBLE_LEFT;
-  g_strlcpy(a->name, _("[on map] zoom map"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_DRAG_DROP;
-  g_strlcpy(a->name, _("move image location"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_DOUBLE_LEFT, 0, _("[on image] open in darkroom"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_DOUBLE_LEFT, 0, _("[on map] zoom map"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_DRAG_DROP, 0, _("move image location"));
   return lm;
 }
 

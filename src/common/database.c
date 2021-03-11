@@ -47,7 +47,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 33
+#define CURRENT_DATABASE_VERSION_LIBRARY 34
 #define CURRENT_DATABASE_VERSION_DATA     8
 
 typedef struct dt_database_t
@@ -1075,8 +1075,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     // fill temp table with all operations up to this release
     // it will be used to create the pipe and update the iop_order on history
-    GList *priorities = g_list_first(prior_v1);
-    while(priorities)
+    for(GList *priorities = prior_v1; priorities; priorities = g_list_next(priorities))
     {
       dt_iop_order_entry_t *prior = (dt_iop_order_entry_t *)priorities->data;
 
@@ -1088,8 +1087,6 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
       sqlite3_bind_text(stmt, 2, prior->operation, -1, SQLITE_TRANSIENT);
       TRY_STEP(stmt, SQLITE_DONE, "[init] can't insert default value in iop_order_tmp\n");
       sqlite3_finalize(stmt);
-
-      priorities = g_list_next(priorities);
     }
     g_list_free_full(prior_v1, free);
 
@@ -1240,7 +1237,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
           // first remove all item_list iop from the iop_order_list
 
-          GList *e = g_list_first(item_list);
+          GList *e = item_list;
           GList *n = NULL;
           dt_iop_order_entry_t *n_entry = NULL;
 
@@ -1248,7 +1245,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
           {
             dt_iop_order_entry_t *e_entry = (dt_iop_order_entry_t *)e->data;
 
-            GList *s = g_list_first(iop_order_list);
+            GList *s = iop_order_list;
             while(s && strcmp(((dt_iop_order_entry_t *)s->data)->operation, e_entry->operation))
             {
               s = g_list_next(s);
@@ -1271,15 +1268,13 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
           // then add all item_list into iop_order_list
 
-          e = g_list_first(item_list);
-          while(e)
+          for(e = item_list; e; e = g_list_next(e))
           {
             dt_iop_order_entry_t *e_entry = (dt_iop_order_entry_t *)e->data;
-            iop_order_list = g_list_append(iop_order_list, e_entry);
-            e = g_list_next(e);
+            iop_order_list = g_list_prepend(iop_order_list, e_entry);
           }
 
-          // and finally reoder the full list based on the iop-order
+          // and finally reorder the full list based on the iop-order
 
           iop_order_list = g_list_sort(iop_order_list, dt_sort_iop_list_by_order_f);
 
@@ -1288,7 +1283,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
           // check if we have some multi-instances
 
           gboolean has_multiple_instances = FALSE;
-          GList *l = g_list_first(iop_order_list);
+          GList *l = iop_order_list;
 
           while(l)
           {
@@ -1964,6 +1959,18 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 33;
   }
+  else if(version == 33)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS main.images_datetime_taken_nc ON images (datetime_taken COLLATE NOCASE)",
+             "[init] can't create images_datetime_taken\n");
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS main.metadata_index_key ON meta_data (key)",
+             "[init] can't create metadata_index_key\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 34;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -2008,8 +2015,7 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
     // fill temp table with all operations up to this release
     // it will be used to create the pipe and update the iop_order on history
-    GList *priorities = g_list_first(prior_v1);
-    while(priorities)
+    for(GList *priorities = prior_v1; priorities; priorities = g_list_next(priorities))
     {
       dt_iop_order_entry_t *prior = (dt_iop_order_entry_t *)priorities->data;
 
@@ -2021,8 +2027,6 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
       sqlite3_bind_text(stmt, 2, prior->operation, -1, SQLITE_TRANSIENT);
       TRY_STEP(stmt, SQLITE_DONE, "[init] can't insert default value in iop_order_tmp\n");
       sqlite3_finalize(stmt);
-
-      priorities = g_list_next(priorities);
     }
     g_list_free_full(prior_v1, free);
 
@@ -2304,6 +2308,12 @@ static void _create_library_schema(dt_database_t *db)
                "basic_hash BLOB, auto_hash BLOB, current_hash BLOB, mipmap_hash BLOB, "
                "FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
                NULL, NULL, NULL);
+
+  // v34
+  sqlite3_exec(db->handle, "CREATE INDEX main.images_datetime_taken_nc ON images (datetime_taken COLLATE NOCASE)",
+               NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_key ON meta_data (key)", NULL, NULL, NULL);
+
 }
 
 /* create the current database schema and set the version in db_info accordingly */
