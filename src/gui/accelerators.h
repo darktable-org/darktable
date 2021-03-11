@@ -38,6 +38,8 @@ void dt_shortcuts_select_view(dt_view_type_flags_t view);
 
 gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_data);
 
+void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action);
+
 dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path);
 
 void dt_action_define_iop(dt_iop_module_t *self, const gchar *path, gboolean local, guint accel_key, GdkModifierType mods, GtkWidget *widget);

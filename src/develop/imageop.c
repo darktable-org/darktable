@@ -1453,9 +1453,8 @@ static void dt_iop_init_module_so(void *m)
   if(darktable.gui)
   {
     module->actions = (dt_action_t){ DT_ACTION_TYPE_IOP, module->op, module->name(),
-                                    .owner = &darktable.control->actions_iops,
-                                    .next = darktable.control->actions_iops.target };
-    darktable.control->actions_iops.target = &module->actions;
+                                     .owner = &darktable.control->actions_iops };
+    dt_action_insert_sorted(&darktable.control->actions_iops, &module->actions);
 
     // Calling the accelerator initialization callback, if present
     init_key_accels(module);
