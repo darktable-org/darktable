@@ -477,7 +477,7 @@ static void _camera_import_dialog_run(_camera_import_dialog_t *data)
         GValue value = {
           0,
         };
-        gtk_tree_model_get_iter(GTK_TREE_MODEL(data->store), &iter, (GtkTreePath *)sp->data);
+        gtk_tree_model_get_iter(GTK_TREE_MODEL(data->store), &iter, (GtkTreePath *)sp_iter->data);
         gtk_tree_model_get_value(GTK_TREE_MODEL(data->store), &iter, 1, &value);
         if(G_VALUE_HOLDS_STRING(&value))
           data->params->result = g_list_prepend(data->params->result, g_strdup(g_value_get_string(&value)));

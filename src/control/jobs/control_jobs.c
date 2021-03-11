@@ -2134,10 +2134,22 @@ static int32_t _control_import_job_run(dt_job_t *job)
 
   double fraction = 0.0f;
   int filmid = -1;
+  int first_filmid = -1;
   for(GList *img = t; img; img = g_list_next(img))
   {
     if(data->session)
+    {
       filmid = _control_import_image_copy((char *)img->data, data->session);
+      if(filmid != -1 && first_filmid == -1)
+      {
+        first_filmid = filmid;
+        const char *output_path = dt_import_session_path(data->session, FALSE);
+        dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
+        dt_conf_set_int("plugins/lighttable/collect/item0", 0);
+        dt_conf_set_string("plugins/lighttable/collect/string0", output_path);
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+      }
+    }
     else
       filmid = _control_import_image_insitu((char *)img->data);
     if(filmid != -1)
