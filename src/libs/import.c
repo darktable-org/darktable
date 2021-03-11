@@ -612,12 +612,9 @@ static void _all_thumb_toggled(GtkTreeViewColumn *column, dt_lib_module_t *self)
     d->from.event = 0;
     GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
     GtkTreeIter iter;
-    gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
-    while(valid)
-    {
+    for(gboolean valid = gtk_tree_model_get_iter_first(model, &iter); valid;
+        valid = gtk_tree_model_iter_next(model, &iter))
       _thumb_set_in_listview(model, &iter, FALSE, self);
-      valid = gtk_tree_model_iter_next(model, &iter);
-    }
   }
   else if(!d->from.event)
   {
@@ -789,13 +786,14 @@ static void _expander_click(GtkWidget *expander, GdkEventButton *e, GtkWidget *t
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle), !active);
 }
 
-static void _expander_create(dt_expander_t *exp, const char *pref_key, const char *css_key)
+static void _expander_create(dt_expander_t *exp, const char *label,
+                             const char *pref_key, const char *css_key)
 {
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *header_evb = gtk_event_box_new();
   GtkStyleContext *context = gtk_widget_get_style_context(destdisp_head);
   gtk_style_context_add_class(context, "section-expander");
-  GtkWidget *destdisp = dt_ui_section_label_new(_("session parameters"));
+  GtkWidget *destdisp = dt_ui_section_label_new(_(label));
   gtk_container_add(GTK_CONTAINER(header_evb), destdisp);
 
   GtkWidget *toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
@@ -886,7 +884,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   gtk_container_add(GTK_CONTAINER(d->from.w), GTK_WIDGET(d->from.treeview));
 
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("file"), renderer, "text",
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("name"), renderer, "text",
                                                     DT_IMPORT_UI_FILENAME, NULL);
   gtk_tree_view_append_column(d->from.treeview, column);
   gtk_tree_view_column_set_expand(column, TRUE);
@@ -896,10 +894,14 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   gtk_tree_view_column_set_sort_column_id(column, DT_IMPORT_FILENAME);
 
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(_("date/time"), renderer, "text",
+  column = gtk_tree_view_column_new_with_attributes(_("modified"), renderer, "text",
                                                     DT_IMPORT_UI_DATETIME, NULL);
   gtk_tree_view_append_column(d->from.treeview, column);
   gtk_tree_view_column_set_sort_column_id(column, DT_IMPORT_DATETIME);
+  GtkWidget *header = gtk_tree_view_column_get_button(column);
+  gtk_widget_set_tooltip_text(header, _("file 'modified date/time', may be different from 'Exif date/time'"));
+  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(d->from.store),
+                                       DT_IMPORT_DATETIME, GTK_SORT_ASCENDING);
 
   renderer = gtk_cell_renderer_pixbuf_new();
   column = gtk_tree_view_column_new_with_attributes("", renderer, "pixbuf",
@@ -907,6 +909,8 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   gtk_tree_view_append_column(d->from.treeview, column);
   GtkWidget *button = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT, NULL);
   gtk_widget_show(button);
+  header = gtk_tree_view_column_get_button(column);
+  gtk_widget_set_tooltip_text(header, _("show/hide thumbnails"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), FALSE);
   gtk_tree_view_column_set_widget(column, button);
   g_signal_connect(column, "clicked", G_CALLBACK(_all_thumb_toggled), self);
@@ -939,7 +943,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
     gtk_box_pack_start(GTK_BOX(import_patterns), GTK_WIDGET(grid), FALSE, FALSE, 0);
 
     // collapsible section
-    _expander_create(&d->from.exp, "ui_last/session_expander_import", "import_metadata");
+    _expander_create(&d->from.exp, "naming rules", "ui_last/session_expander_import", "import_metadata");
     gtk_box_pack_start(GTK_BOX(import_patterns), d->from.exp.expander, FALSE, FALSE, 0);
 
     // patterns
@@ -1157,7 +1161,7 @@ void gui_init(dt_lib_module_t *self)
 #endif
 
   // collapsible section
-  _expander_create(&d->exp, "ui_last/expander_import", "import_metadata");
+  _expander_create(&d->exp, "parameters", "ui_last/expander_import", "import_metadata");
   gtk_box_pack_start(GTK_BOX(self->widget), d->exp.expander, FALSE, FALSE, 0);
 
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
