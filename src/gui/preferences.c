@@ -388,6 +388,7 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   //Font size check and spin buttons
   GtkWidget *usesysfont = gtk_check_button_new();
   GtkWidget *fontsize = gtk_spin_button_new_with_range(5.0f, 30.0f, 0.2f);
+  int i = dt_conf_get_bool("font_prefs_align_right") ? gtk_widget_set_hexpand(fontsize, TRUE), 2 : 0;
 
   //checkbox to use system font size
   if(dt_conf_get_bool("use_system_font"))
@@ -400,7 +401,7 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
-  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), labelev, i, i?2:line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), usesysfont, labelev, GTK_POS_RIGHT, 1, 1);
   gtk_widget_set_tooltip_text(usesysfont, _("use system font size"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(usesysfont), dt_conf_get_bool("use_system_font"));
@@ -416,7 +417,7 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
-  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), labelev, i, i?0:line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), fontsize, labelev, GTK_POS_RIGHT, 1, 1);
   gtk_widget_set_tooltip_text(fontsize, _("font size in points"));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(fontsize), dt_conf_get_float("font_size"));
@@ -428,7 +429,7 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
-  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), labelev, i, i?1:line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), screen_dpi_overwrite, labelev, GTK_POS_RIGHT, 1, 1);
   gtk_widget_set_tooltip_text(screen_dpi_overwrite, _("adjust the global GUI resolution to rescale controls, buttons, labels, etc.\n"
                                                       "increase for a magnified GUI, decrease to fit more content in window.\n"
