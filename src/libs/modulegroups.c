@@ -2203,7 +2203,7 @@ static void _manage_editor_group_update_arrows(GtkWidget *box)
   const int max = g_list_length(lw) - 1;
   for(const GList *lw_iter = lw; lw_iter; lw_iter = g_list_next(lw_iter))
   {
-    GtkWidget *w = (GtkWidget *)lw->data;
+    GtkWidget *w = (GtkWidget *)lw_iter->data;
     GtkWidget *hb = dtgtk_container_first_child(GTK_CONTAINER(w));
     if(hb)
     {
