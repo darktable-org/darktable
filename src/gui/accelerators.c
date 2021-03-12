@@ -232,7 +232,7 @@ static gchar *_shortcut_key_move_name(dt_input_device_t id, guint key_or_move, g
   if(id == DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE)
   {
     if(mods == DT_MOVE_NAME)
-      return g_strdup(display ? _(move_string[key_or_move]) : move_string[key_or_move]);
+      return g_strdup(display && key_or_move != 0 ? _(move_string[key_or_move]) : move_string[key_or_move]);
     else
     {
       if(display)
@@ -451,6 +451,9 @@ void find_views(dt_shortcut_t *s)
   case DT_ACTION_TYPE_CATEGORY:
     if(owner == &darktable.control->actions_blend)
       s->views = DT_VIEW_DARKROOM;
+    else if(owner == &darktable.control->actions_lua)
+      s->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING |
+                 DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
     else if(owner == &darktable.control->actions_thumb)
     {
       s->views = DT_VIEW_DARKROOM | DT_VIEW_MAP | DT_VIEW_TETHERING | DT_VIEW_PRINT;
@@ -1050,11 +1053,10 @@ void dt_shortcuts_load(const gchar *file_name)
           fprintf(stderr, "[dt_shortcuts_load] line '%s' is not an assignment\n", line);
           continue;
         }
-        char *act_end = act_start + strcspn(act_start, ";");
 
         dt_shortcut_t s = { .speed = 1 };
 
-        char *token = strtok(line, "=;/");
+        char *token = strtok(line, "=;");
         if(strcmp(token, "None"))
         {
           s.click = DT_SHORTCUT_CLICK_SINGLE;
@@ -1104,7 +1106,7 @@ void dt_shortcuts_load(const gchar *file_name)
           }
         }
 
-        while((token = strtok(NULL, "=;/")) && token < act_start)
+        while((token = strtok(NULL, "=;")) && token < act_start)
         {
           char *colon = strchr(token, ':');
           if(!colon)
@@ -1182,37 +1184,23 @@ void dt_shortcuts_load(const gchar *file_name)
         }
 
         // find action and also views along the way
-        dt_action_t *ac = darktable.control->actions;
-        while(token && token < act_end && ac)
-        {
-          if(!strcmp(token, ac->label))
-          {
-            s.action = ac;
-            ac = ac->type <= DT_ACTION_TYPE_SECTION ? ac->target : NULL;
-            token = strtok(NULL, ";/");
-          }
-          else
-          {
-            ac = ac->next;
-          }
-        }
+        gchar **path = g_strsplit(token, "/", 0);
+        s.action = dt_action_locate(NULL, path);
+        g_strfreev(path);
 
-        if((token && token < act_end) || ac)
+        if(!s.action)
         {
-          for(token = ++act_start; token < act_end; token++) if(!*token) *token = '/';
-          fprintf(stderr, "[dt_shortcuts_load] action path '%s' not found\n", act_start);
+          fprintf(stderr, "[dt_shortcuts_load] action path '%s' not found\n", token);
           continue;
         }
 
-        while(token)
+        while((token = strtok(NULL, ";")))
         {
           if(!strcmp(token, "first")) s.instance =  1; else
           if(!strcmp(token, "last" )) s.instance = -1; else
           if(*token == '+' || *token == '-') sscanf(token, "%d", &s.instance); else
           if(*token == '*') sscanf(token, "*%g", &s.speed); else
           fprintf(stderr, "[dt_shortcuts_load] token '%s' not recognised\n", token);
-
-          token = strtok(NULL, ";");
         }
 
         insert_shortcut(&s, FALSE);
@@ -1859,11 +1847,11 @@ void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
 
 dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path)
 {
-  if(!owner) return NULL;
+//  if(!owner) return NULL;
 
   gchar *clean_path = NULL;
 
-  dt_action_t *action = owner->target;
+  dt_action_t *action = owner ? owner->target : darktable.control->actions;
   while(*path)
   {
     if(!clean_path) clean_path = path_without_symbols(*path);
@@ -1880,21 +1868,26 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path)
 
       owner = new_action;
       action = NULL;
-      path++;
-      clean_path = NULL; // now owned by action
     }
     else if(!strcmp(action->label, clean_path))
     {
+      g_free(clean_path);
       owner = action;
       action = action->target;
-      path++;
-      g_free(clean_path);
-      clean_path = NULL;
     }
     else
     {
       action = action->next;
+      continue;
     }
+    clean_path = NULL; // now owned by action or freed
+    path++;
+  }
+
+  if(owner->type <= DT_ACTION_TYPE_SECTION && owner->target)
+  {
+    fprintf(stderr, "[dt_action_locate] found action '%s' not leaf node \n", owner->label);
+    return NULL;
   }
 
   return owner;
@@ -2063,18 +2056,56 @@ static void dt_accel_path_manual_translated(char *s, size_t n, const char *full_
   snprintf(s, n, "<Darktable>/%s", g_dpgettext2(NULL, "accel", full_path));
 }
 
-void dt_accel_register_shortcut(dt_action_t *owner, const gchar *path, guint accel_key, GdkModifierType mods)
+void dt_accel_register_shortcut(dt_action_t *owner, const gchar *path_string, guint accel_key, GdkModifierType mods)
 {
 #ifdef SHORTCUTS_TRANSITION
 
-  dt_action_t *a = calloc(1, sizeof(dt_action_t));
+  gchar **split_path = g_strsplit(path_string, "/", 0);
+  gchar **split_trans = g_strsplit(g_dpgettext2(NULL, "accel", path_string), "/", g_strv_length(split_path));
 
-  a->label = g_strdup(path);
-  a->label_translated = g_strdup(g_dpgettext2(NULL, "accel", path));
-  a->type = DT_ACTION_TYPE_CLOSURE;
-  a->owner = owner;
-  a->next = owner->target;
-  owner->target = a;
+  gchar **path = split_path;
+  gchar **trans = split_trans;
+
+  gchar *clean_path = NULL;
+
+  dt_action_t *action = owner->target;
+  while(*path)
+  {
+    if(!clean_path) clean_path = path_without_symbols(*path);
+
+    if(!action)
+    {
+      dt_action_t *new_action = calloc(1, sizeof(dt_action_t));
+      new_action->label = clean_path;
+      new_action->label_translated = g_strdup(*trans ? *trans : *path);
+      new_action->type = DT_ACTION_TYPE_SECTION;
+      new_action->owner = owner;
+
+      dt_action_insert_sorted(owner, new_action);
+
+      owner = new_action;
+      action = NULL;
+    }
+    else if(!strcmp(action->label, clean_path))
+    {
+      g_free(clean_path);
+      owner = action;
+      action = action->target;
+    }
+    else
+    {
+      action = action->next;
+      continue;
+    }
+    clean_path = NULL; // now owned by action or freed
+    path++;
+    if(*trans) trans++;
+  }
+
+  g_strfreev(split_path);
+  g_strfreev(split_trans);
+
+  owner->type = DT_ACTION_TYPE_CLOSURE;
 
   if(accel_key != 0)
   {
@@ -2103,7 +2134,7 @@ void dt_accel_register_shortcut(dt_action_t *owner, const gchar *path, guint acc
                         .click = DT_SHORTCUT_CLICK_SINGLE,
                         .mods = mods,
                         .speed = 1.0,
-                        .action = a };
+                        .action = owner };
 
     gdk_keymap_translate_keyboard_state(keymap, keys[i].keycode, 0, 0, &s.key, NULL, NULL, NULL);
 
@@ -2114,27 +2145,42 @@ void dt_accel_register_shortcut(dt_action_t *owner, const gchar *path, guint acc
 #endif // SHORTCUTS_TRANSITION
 }
 
-void dt_accel_connect_shortcut(dt_action_t *owner, const gchar *path, GClosure *closure)
+void dt_accel_connect_shortcut(dt_action_t *owner, const gchar *path_string, GClosure *closure)
 {
 #ifdef SHORTCUTS_TRANSITION
-  dt_action_t *a = owner->target;
-  while(a)
+
+  gchar **split_path = g_strsplit(path_string, "/", 0);
+  gchar **path = split_path;
+
+  while(*path && (owner = owner->target))
   {
-    if(!strcmp(a->label, path))
-      break;
-    else
-      a = a->next;
+    gchar *clean_path = path_without_symbols(*path);
+
+    while(owner)
+    {
+      if(!strcmp(owner->label, clean_path))
+        break;
+      else
+        owner = owner->next;
+    }
+
+    g_free(clean_path);
+    path++;
   }
-  if(a)
+
+  if(!*path && owner)
   {
-    a->target = closure;
+    owner->target = closure;
     g_closure_ref(closure);
     g_closure_sink(closure);
   }
   else
   {
-    fprintf(stderr, "[dt_accel_connect_shortcut] '%s' not found\n", path);
+    fprintf(stderr, "[dt_accel_connect_shortcut] '%s' not found\n", path_string);
   }
+
+  g_strfreev(split_path);
+
 #endif // SHORTCUTS_TRANSITION
 }
 
@@ -2432,6 +2478,8 @@ void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType m
   accel->local = FALSE;
   accel->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
   darktable.control->accelerator_list = g_list_prepend(darktable.control->accelerator_list, accel);
+
+  dt_accel_register_shortcut(&darktable.control->actions_lua, path, accel_key, mods);
 }
 
 void dt_accel_register_manual(const gchar *full_path, dt_view_type_flags_t views, guint accel_key,
@@ -2590,6 +2638,8 @@ dt_accel_t *dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path, GCl
 
 void dt_accel_connect_lua(const gchar *path, GClosure *closure)
 {
+  dt_accel_connect_shortcut(&darktable.control->actions_lua, path, closure);
+
   gchar accel_path[256];
   dt_accel_path_lua(accel_path, sizeof(accel_path), path);
   dt_accel_t *laccel = _lookup_accel(accel_path);
