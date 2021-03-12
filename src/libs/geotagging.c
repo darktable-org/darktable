@@ -333,10 +333,9 @@ static void _refresh_images_displayed_on_track(const int segid, const gboolean a
       count++;
       dt_sel_img_t *next = i->next ? (dt_sel_img_t *)i->next->data
                                    : NULL;
-
-      if(!next
-         || !((next->gl.latitude == im->gl.latitude)
-              && (next->gl.longitude == im->gl.longitude)))
+      if(!im->image && (!next
+                        || !((next->gl.latitude == im->gl.latitude)
+                             && (next->gl.longitude == im->gl.longitude))))
       {
         struct {uint32_t imgid; float latitude; float longitude; int count;} p;
         p.imgid = im->imgid;
@@ -351,6 +350,7 @@ static void _refresh_images_displayed_on_track(const int segid, const gboolean a
     }
   }
 }
+
 static void _update_nb_images(dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
@@ -525,8 +525,9 @@ static gboolean _refresh_display_track(const gboolean active, const int segid, d
   if(active)
   {
     GList *pts = dt_gpx_get_trkpts(d->map.gpx, segid);
-    d->map.tracks->td[segid].track = dt_view_map_add_marker(darktable.view_manager,
-                                                            MAP_DISPLAY_TRACK, pts);
+    if(!d->map.tracks->td[segid].track)
+      d->map.tracks->td[segid].track = dt_view_map_add_marker(darktable.view_manager,
+                                                              MAP_DISPLAY_TRACK, pts);
     osm_gps_map_track_set_color((OsmGpsMapTrack *)d->map.tracks->td[segid].track, &color[segid % 6]);
     grow = _update_map_box(segid, pts, self);
     g_list_free_full(pts, g_free);
@@ -967,7 +968,8 @@ static void _choose_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   gtk_file_filter_set_name(filter, _("all files"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
-  _setup_selected_images_list(self);
+  if(!d->imgs)
+    _setup_selected_images_list(self);
 
   int res = gtk_dialog_run(GTK_DIALOG(filechooser));
   while(res == GTK_RESPONSE_ACCEPT)
