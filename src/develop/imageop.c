@@ -2328,7 +2328,6 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
       gtk_box_pack_end(GTK_BOX(module->header), module->mask_indicator, FALSE, FALSE, 0);
       dt_iop_show_hide_header_buttons(module->header, NULL, FALSE, FALSE);
     }
-  g_list_free(children);
 
   if(module->mask_indicator)
   {
