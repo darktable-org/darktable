@@ -2077,7 +2077,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(box_enabled, g->buttonbar, TRUE, TRUE, 0);
 
   g->presets = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->presets, NULL, N_("settings")); // relabel to settings to remove confusion between module presets and white balance settings
+  dt_bauhaus_widget_set_label(g->presets, N_("settings"), N_("settings")); // relabel to settings to remove confusion between module presets and white balance settings
   gtk_widget_set_tooltip_text(g->presets, _("choose white balance setting"));
   gtk_box_pack_start(box_enabled, g->presets, TRUE, TRUE, 0);
 

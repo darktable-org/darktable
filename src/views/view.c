@@ -175,9 +175,8 @@ static int dt_view_load_module(void *v, const char *libname, const char *module_
   if(darktable.gui)
   {
     module->actions = (dt_action_t){ DT_ACTION_TYPE_VIEW, module->module_name, module->name(module),
-                                     .owner = &darktable.control->actions_views,
-                                     .next = darktable.control->actions_views.target };
-    darktable.control->actions_views.target = &module->actions;
+                                     .owner = &darktable.control->actions_views };
+    dt_action_insert_sorted(&darktable.control->actions_views, &module->actions);
   }
 
   if(darktable.gui && module->init_key_accels) module->init_key_accels(module);
