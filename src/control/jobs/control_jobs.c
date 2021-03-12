@@ -1113,7 +1113,6 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   /* go thru each selected image and lookup location in gpx */
   do
   {
-    GTimeVal timestamp;
     GDateTime *exif_time, *utc_time;
     dt_image_geoloc_t geoloc;
     int imgid = GPOINTER_TO_INT(t->data);
@@ -1149,12 +1148,9 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     utc_time = g_date_time_to_timezone(exif_time, tz_utc);
     g_date_time_unref(exif_time);
     if(!utc_time) continue;
-    gboolean res = g_date_time_to_timeval(utc_time, &timestamp);
-    g_date_time_unref(utc_time);
-    if(!res) continue;
 
     /* only update image location if time is within gpx tack range */
-    if(dt_gpx_get_location(gpx, &timestamp, &geoloc))
+    if(dt_gpx_get_location(gpx, utc_time, &geoloc))
     {
       // takes the option to include the grouped images
       GList *grps = dt_grouping_get_group_images(imgid);
@@ -1166,6 +1162,7 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
       g_list_free(grps);
       cntr++;
     }
+    g_date_time_unref(utc_time);
   } while((t = g_list_next(t)) != NULL);
   imgs = g_list_reverse(imgs);
 
