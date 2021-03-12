@@ -26,15 +26,15 @@ struct dt_gpx_t;
 typedef struct dt_gpx_track_point_t
 {
   gdouble longitude, latitude, elevation;
-  GTimeVal time;
+  GDateTime *time;
   uint32_t segid;
 } dt_gpx_track_point_t;
 
 typedef struct dt_gpx_track_segment_t
 {
   guint id;
-  GTimeVal start_dt;
-  GTimeVal end_dt;
+  GDateTime *start_dt;
+  GDateTime *end_dt;
   char *name;
   dt_gpx_track_point_t *trkpt;
   uint32_t nb_trkpt;
@@ -47,7 +47,7 @@ void dt_gpx_destroy(struct dt_gpx_t *gpx);
 /* fetch the lon,lat coords for time t, if within time range
   of gpx record return TRUE, FALSE is returned if out of time frame
   and closest record of lon,lat is filled */
-gboolean dt_gpx_get_location(struct dt_gpx_t *, GTimeVal *timestamp, dt_image_geoloc_t *geoloc);
+gboolean dt_gpx_get_location(struct dt_gpx_t *, GDateTime *timestamp, dt_image_geoloc_t *geoloc);
 
 // get the list of track segments
 GList *dt_gpx_get_trkseg(struct dt_gpx_t *gpx);
