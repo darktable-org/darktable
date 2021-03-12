@@ -1736,22 +1736,9 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
     if(out_height > 0) exifData["Exif.Photo.PixelYDimension"] = (uint32_t)out_height;
 
     const int resolution = dt_conf_get_int("metadata/resolution");
-    if(resolution > 0)
-    {
-      exifData["Exif.Image.XResolution"] = Exiv2::Rational(resolution, 1);
-      exifData["Exif.Image.YResolution"] = Exiv2::Rational(resolution, 1);
-      exifData["Exif.Image.ResolutionUnit"] = uint16_t(2); /* inches */
-    }
-    else
-    {
-      static const char *keys[] = {
-        "Exif.Image.XResolution",
-        "Exif.Image.YResolution",
-        "Exif.Image.ResolutionUnit"
-      };
-      static const guint n_keys = G_N_ELEMENTS(keys);
-      dt_remove_exif_keys(exifData, keys, n_keys);
-    }
+    exifData["Exif.Image.XResolution"] = Exiv2::Rational(resolution, 1);
+    exifData["Exif.Image.YResolution"] = Exiv2::Rational(resolution, 1);
+    exifData["Exif.Image.ResolutionUnit"] = uint16_t(2); /* inches */
 
     exifData["Exif.Image.Software"] = darktable_package_string;
 
@@ -1796,6 +1783,9 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
           exifData["Exif.Photo.UserComment"] = desc;
         g_list_free_full(res, &g_free);
       }
+      else
+        // mandatory tag for TIFF/EP and recommended for Exif, empty is ok (unknown)
+        exifData["Exif.Image.ImageDescription"] = "";
 
       res = dt_metadata_get(imgid, "Xmp.dc.rights", NULL);
       if(res != NULL)
@@ -1804,7 +1794,7 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
         g_list_free_full(res, &g_free);
       }
       else
-        // mandatory tag for TIFF/EP, empty is ok (unknown)
+        // mandatory tag for TIFF/EP and optional for Exif, empty is ok (unknown)
         exifData["Exif.Image.Copyright"] = "";
 
       res = dt_metadata_get(imgid, "Xmp.xmp.Rating", NULL);
