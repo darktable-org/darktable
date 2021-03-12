@@ -1945,7 +1945,7 @@
       </enum>
     </type>
     <default>bicubic</default>
-    <shortdescription>warp pixel interpolator</shortdescription>
+    <shortdescription>pixel interpolator (warp)</shortdescription>
     <longdescription>pixel interpolator used in modules for rotation, lens correction, liquify, clipping and final scaling (bilinear, bicubic, lanczos2).</longdescription>
   </dtconfig>
   <dtconfig prefs="processing">
@@ -1959,7 +1959,7 @@
       </enum>
     </type>
     <default>lanczos3</default>
-    <shortdescription>pixel interpolator</shortdescription>
+    <shortdescription>pixel interpolator (scaling)</shortdescription>
     <longdescription>pixel interpolator used for scaling (bilinear, bicubic, lanczos2, lanczos3).</longdescription>
   </dtconfig>
   <dtconfig>
