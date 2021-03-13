@@ -299,7 +299,7 @@ sudo make install
 
 ##### Windows
 
-See https://github.com/darktable-org/darktable/blob/master/packaging/windows/BUILD.txt
+See https://github.com/darktable-org/darktable/blob/master/packaging/windows/BUILD.md
 
 ### Using
 
