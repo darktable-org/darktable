@@ -855,7 +855,7 @@ static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_mo
   g_object_get(G_OBJECT(d->renderer), "editing", &editing, NULL);
   if(editing)
   {
-    dt_control_log(_("terminate edition (press enter or escape) before selecting another location"));
+    dt_control_log(_("terminate edit (press enter or escape) before selecting another location"));
     return TRUE;
   }
 
@@ -950,13 +950,13 @@ void gui_init(dt_lib_module_t *self)
                               _("list of user locations,"
                                 "\nclick to show or hide a location on the map:"
                                 "\n - wheel scroll inside the shape to resize it"
-                                "\n - if a rectangle <shift> or <ctrl> scroll to modify the width or the height"
+                                "\n - <shift> or <ctrl> scroll to modify the width or the height"
                                 "\n - click inside the shape and drag it to change its position"
                                 "\n - ctrl-click to move an image from inside the location"
                                 "\nctrl-click to edit a location name"
                                 "\n - a pipe \'|\' symbol breaks the name into several levels"
                                 "\n - to remove a group of locations clear its name"
-                                "\n - press enter to validate the new name, escape to cancel the edition"
+                                "\n - press enter to validate the new name, escape to cancel the edit"
                                 "\nright-click for other actions: delete location and go to collection,"
                                 "\nctrl-wheel scroll to resize the window"));
 
