@@ -255,10 +255,10 @@ static int _count_images_per_track(dt_gpx_track_segment_t *t, dt_gpx_track_segme
     if(im->segid == -1)
     {
       GDateTime *dt = _localtime_text_to_utc_timeval(im->dt, d->tz_camera, d->tz_utc, d->offset);
-      if((g_date_time_compare(dt, t->start_dt) >= 0 &&
-          g_date_time_compare(dt, t->end_dt) <= 0) ||
-         (n && g_date_time_compare(dt, t->end_dt) >= 0 &&
-               g_date_time_compare(dt, n->start_dt) <= 0))
+      if((g_date_time_compare(dt, t->start_dt) >= 0
+          && g_date_time_compare(dt, t->end_dt) <= 0)
+         || (n && g_date_time_compare(dt, t->end_dt) >= 0
+             && g_date_time_compare(dt, n->start_dt) <= 0))
       {
         nb_imgs++;
         im->segid = t->id;
@@ -331,16 +331,19 @@ static void _refresh_images_displayed_on_track(const int segid, const gboolean a
     if(im->segid == segid && im->gl.latitude != NAN)
     {
       count++;
-      if(!i->next || !(((dt_sel_img_t *)i->next->data)->gl.latitude == im->gl.latitude &&
-                       ((dt_sel_img_t *)i->next->data)->gl.longitude == im->gl.longitude))
+      dt_sel_img_t *next = i->next ? (dt_sel_img_t *)i->next->data
+                                   : NULL;
+
+      if(!next
+         || !((next->gl.latitude == im->gl.latitude)
+              && (next->gl.longitude == im->gl.longitude)))
       {
         struct {uint32_t imgid; float latitude; float longitude; int count;} p;
         p.imgid = im->imgid;
         p.latitude = im->gl.latitude;
         p.longitude = im->gl.longitude;
         p.count = count == 1 ? 0 : count;
-        GList *img = NULL;
-        img = g_list_prepend(img, &p);
+        GList *img = g_list_prepend(NULL, &p);
         im->image = dt_view_map_add_marker(darktable.view_manager, MAP_DISPLAY_THUMB, img);
         g_list_free(img);
         count = 0;
