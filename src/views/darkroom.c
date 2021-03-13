@@ -1011,6 +1011,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
       {
         snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
         module->expanded = dt_conf_get_bool(option);
+        dt_iop_gui_update_expanded(module);
         if(module->change_image) module->change_image(module);
         dt_iop_gui_update_header(module);
       }
@@ -2954,6 +2955,7 @@ void enter(dt_view_t *self)
       {
         snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
         module->expanded = dt_conf_get_bool(option);
+        dt_iop_gui_update_expanded(module);
       }
 
       dt_iop_reload_defaults(module);
