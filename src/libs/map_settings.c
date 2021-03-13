@@ -138,17 +138,18 @@ void gui_init(dt_lib_module_t *self)
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
 
-  d->show_osd_checkbutton = dt_gui_preferences_bool(grid, "plugins/map/show_map_osd");
+  int line = 0;
+  d->show_osd_checkbutton = dt_gui_preferences_bool(grid, "plugins/map/show_map_osd", 0, line++, FALSE);
   g_signal_connect(G_OBJECT(d->show_osd_checkbutton), "toggled", G_CALLBACK(_show_osd_toggled), NULL);
-  d->filtered_images_checkbutton = dt_gui_preferences_bool(grid, "plugins/map/filter_images_drawn");
+  d->filtered_images_checkbutton = dt_gui_preferences_bool(grid, "plugins/map/filter_images_drawn", 0, line++, FALSE);
   g_signal_connect(G_OBJECT(d->filtered_images_checkbutton), "toggled", G_CALLBACK(_parameter_changed), NULL);
-  d->max_images_entry = dt_gui_preferences_int(grid, "plugins/map/max_images_drawn");
+  d->max_images_entry = dt_gui_preferences_int(grid, "plugins/map/max_images_drawn", 0, line++);
   g_signal_connect(G_OBJECT(d->max_images_entry), "value-changed", G_CALLBACK(_parameter_changed), self);
-  d->epsilon_factor = dt_gui_preferences_int(grid, "plugins/map/epsilon_factor");
+  d->epsilon_factor = dt_gui_preferences_int(grid, "plugins/map/epsilon_factor", 0, line++);
   g_signal_connect(G_OBJECT(d->epsilon_factor), "value-changed", G_CALLBACK(_parameter_changed), self);
-  d->min_images = dt_gui_preferences_int(grid, "plugins/map/min_images_per_group");
+  d->min_images = dt_gui_preferences_int(grid, "plugins/map/min_images_per_group", 0, line++);
   g_signal_connect(G_OBJECT(d->min_images), "value-changed", G_CALLBACK(_parameter_changed), self);
-  d->images_thumb = dt_gui_preferences_enum(grid, "plugins/map/images_thumbnail");
+  d->images_thumb = dt_gui_preferences_enum(grid, "plugins/map/images_thumbnail", 0, line++);
   g_signal_connect(G_OBJECT(d->images_thumb), "changed", G_CALLBACK(_parameter_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), FALSE, FALSE, 0);
 }
