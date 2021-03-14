@@ -971,11 +971,13 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
     gtk_box_pack_start(GTK_BOX(content), GTK_WIDGET(import_list), TRUE, TRUE, 0);
     gtk_widget_show_all(d->from.dialog);
     _expander_update(d->from.exp.toggle, d->from.exp.expander);
+    gtk_widget_grab_focus(gtk_dialog_get_widget_for_response(GTK_DIALOG(d->from.dialog), GTK_RESPONSE_ACCEPT));
   }
   else
   {
     gtk_box_pack_start(GTK_BOX(content), GTK_WIDGET(import_list), TRUE, TRUE, 0);
     gtk_widget_show_all(d->from.dialog);
+    gtk_widget_grab_focus(gtk_dialog_get_widget_for_response(GTK_DIALOG(d->from.dialog), GTK_RESPONSE_ACCEPT));
   }
 }
 
