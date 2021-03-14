@@ -204,12 +204,6 @@ typedef struct dt_bauhaus_t
   // flag set on button press indicating that popup should be hidden in button release handler
   gboolean hiding;
 
-  // vim-style keyboard interfacing/scripting stuff:
-  GHashTable *keymap; // hashtable translating control name -> bauhaus widget ptr
-  GList *key_mod;     // for autocomplete, before the point: module.
-  GList *key_val;     // for autocomplete, after the point: .value
-  char key_history[64][256];
-
   // initialise or connect accelerators in set_label
   int skip_accel;
 
