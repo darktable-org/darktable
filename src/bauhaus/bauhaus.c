@@ -619,12 +619,6 @@ void dt_bauhaus_init()
 
   dt_bauhaus_load_theme();
 
-  // keys are freed with g_free, values are ptrs to the widgets, these don't need to be cleaned up.
-  darktable.bauhaus->keymap = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
-  darktable.bauhaus->key_mod = NULL;
-  darktable.bauhaus->key_val = NULL;
-  memset(darktable.bauhaus->key_history, 0, sizeof(darktable.bauhaus->key_history));
-
   darktable.bauhaus->skip_accel = 1;
 
   // this easily gets keyboard input:
@@ -687,14 +681,6 @@ void dt_bauhaus_init()
 
 void dt_bauhaus_cleanup()
 {
-  // TODO: destroy popup window and resources
-  g_list_free_full(darktable.bauhaus->key_mod, (GDestroyNotify)g_free);
-  g_list_free_full(darktable.bauhaus->key_val, (GDestroyNotify)g_free);
-  if(darktable.bauhaus->keymap)
-  {
-    g_hash_table_destroy(darktable.bauhaus->keymap);
-    darktable.bauhaus->keymap = NULL;
-  }
 }
 
 // fwd declare a few callbacks
@@ -893,7 +879,6 @@ void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min,
 
 void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section_orig, const char *label_orig)
 {
-  const char *section = section_orig ? _(section_orig) : NULL;
   const char *label = _(label_orig);
 
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
@@ -935,44 +920,6 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section_orig, co
       g_free(combined_label);
     }
 
-    // construct control path name and insert into keymap:
-    gchar *path;
-    if(section && section[0] != '\0')
-    {
-      path = g_strdup_printf("%s.%s.%s", w->module->name(), section, w->label);
-      gchar *section_path = g_strdup_printf("%s.%s", w->module->name(), section);
-      if(!g_list_find_custom(darktable.bauhaus->key_val, section_path, (GCompareFunc)strcmp))
-        darktable.bauhaus->key_val
-            = g_list_insert_sorted(darktable.bauhaus->key_val, section_path, (GCompareFunc)strcmp);
-      else
-        g_free(section_path);
-    }
-    else
-      path = g_strdup_printf("%s.%s", w->module->name(), w->label);
-    if(!g_hash_table_lookup(darktable.bauhaus->keymap, path))
-    {
-      // also insert into sorted tab-complete list.
-      // (but only if this is the first time we insert this path)
-      gchar *mod = g_strdup(path);
-      gchar *val = g_strstr_len(mod, strlen(mod), ".");
-      if(val)
-      {
-        *val = 0;
-        if(!g_list_find_custom(darktable.bauhaus->key_mod, mod, (GCompareFunc)strcmp))
-          darktable.bauhaus->key_mod
-              = g_list_insert_sorted(darktable.bauhaus->key_mod, mod, (GCompareFunc)strcmp);
-        else
-          g_free(mod);
-
-        // unfortunately need our own string, as replace in the hashtable below might destroy this pointer.
-        darktable.bauhaus->key_val
-            = g_list_insert_sorted(darktable.bauhaus->key_val, g_strdup(path), (GCompareFunc)strcmp);
-      }
-      else
-        g_free(mod);
-    }
-    // might free an old path
-    g_hash_table_replace(darktable.bauhaus->keymap, path, w);
     gtk_widget_queue_draw(GTK_WIDGET(w));
   }
 }
@@ -2863,27 +2810,56 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
 
 void dt_bauhaus_vimkey_exec(const char *input)
 {
-  char module[64], label[64], value[256], *key;
+  dt_action_t *ac = darktable.control->actions_iops.target;
+  input += 5; // skip ":set "
+
+  while(ac)
+  {
+    const int prefix = strcspn(input, ".=");
+
+    if((ac->type == DT_ACTION_TYPE_WIDGET && DT_IS_BAUHAUS_WIDGET(ac->target))
+        || ac->type <= DT_ACTION_TYPE_SECTION)
+    {
+      if(!strncasecmp(ac->label_translated, input, prefix))
+      {
+        if(!ac->label_translated[prefix])
+        {
+          input += prefix;
+          if(*input) input++; // skip . or =
+
+          if(ac->type <= DT_ACTION_TYPE_SECTION)
+          {
+            ac = ac->target;
+            continue;
+          }
+          else
+            break;
+        }
+      }
+    }
+
+    ac = ac->next;
+  }
+
+  if(!ac || ac->type != DT_ACTION_TYPE_WIDGET || !DT_IS_BAUHAUS_WIDGET(ac->target))
+    return;
+
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(ac->target);
+
   float old_value, new_value = 0.0f;
 
-  sscanf(input, ":set %63[^.].%63[^=]=%255s", module, label, value);
-  fprintf(stderr, "[vimkey] setting module `%s', slider `%s' to `%s'", module, label, value);
-  key = g_strjoin(".", module, label, NULL);
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)g_hash_table_lookup(darktable.bauhaus->keymap, key);
-  g_free(key);
-  if(!w) return;
   switch(w->type)
   {
     case DT_BAUHAUS_SLIDER:
       old_value = dt_bauhaus_slider_get(GTK_WIDGET(w));
-      new_value = dt_calculator_solve(old_value, value);
+      new_value = dt_calculator_solve(old_value, input);
       fprintf(stderr, " = %f\n", new_value);
       if(isfinite(new_value)) dt_bauhaus_slider_set_soft(GTK_WIDGET(w), new_value);
       break;
     case DT_BAUHAUS_COMBOBOX:
       // TODO: what about text as entry?
       old_value = dt_bauhaus_combobox_get(GTK_WIDGET(w));
-      new_value = dt_calculator_solve(old_value, value);
+      new_value = dt_calculator_solve(old_value, input);
       fprintf(stderr, " = %f\n", new_value);
       if(isfinite(new_value)) dt_bauhaus_combobox_set(GTK_WIDGET(w), new_value);
       break;
@@ -2895,25 +2871,31 @@ void dt_bauhaus_vimkey_exec(const char *input)
 // give autocomplete suggestions
 GList *dt_bauhaus_vimkey_complete(const char *input)
 {
-  char *point = strstr(input, ".");
-  const int prefix = strlen(input);
-  GList *cmp = point ? darktable.bauhaus->key_val : darktable.bauhaus->key_mod;
   GList *res = NULL;
-  int after = 0;
-  for( ; cmp ; cmp = g_list_next(cmp))
+
+  dt_action_t *ac = darktable.control->actions_iops.target;
+
+  while(ac)
   {
-    char *path = (char *)cmp->data;
-    if(strncasecmp(path, input, prefix))
+    const int prefix = strcspn(input, ".");
+
+    if((ac->type == DT_ACTION_TYPE_WIDGET && DT_IS_BAUHAUS_WIDGET(ac->target))
+        || ac->type <= DT_ACTION_TYPE_SECTION)
     {
-      if(after) break; // sorted, so we're done
-                       // else loop till we find the start of it
+      if(!prefix || !strncasecmp(ac->label_translated, input, prefix))
+      {
+        if(!ac->label_translated[prefix] && input[prefix] == '.')
+        {
+            input += prefix + 1;
+          if(ac->type <= DT_ACTION_TYPE_SECTION) ac = ac->target;
+          continue;
+        }
+        else
+          res = g_list_append(res, (gchar *)ac->label_translated + prefix);
+      }
     }
-    else
-    {
-      // append:
-      res = g_list_insert_sorted(res, path, (GCompareFunc)strcmp);
-      after = 1;
-    }
+
+    ac = ac->next;
   }
   return res;
 }
