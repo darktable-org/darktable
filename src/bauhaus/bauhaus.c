@@ -134,6 +134,13 @@ static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cai
   //gtk_style_context_get(context, gtk_widget_get_state_flags(GTK_WIDGET(w)), "font", font_desc, NULL);
 
   pango_layout_set_font_description(layout, font_desc);
+
+  PangoAttrList *attrlist = pango_attr_list_new();
+  PangoAttribute *attr = pango_attr_font_features_new("tnum");
+  pango_attr_list_insert(attrlist, attr);
+  pango_layout_set_attributes(layout, attrlist);
+  pango_attr_list_unref(attrlist);
+
   pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
 
   int pango_width, pango_height;
