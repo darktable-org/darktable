@@ -351,6 +351,41 @@ static gchar *_shortcut_description(dt_shortcut_t *s, gboolean full)
   return hint;
 }
 
+static void _insert_shortcut_in_list(GHashTable *ht, char *shortcut, dt_action_t *ac, char *label)
+{
+  if(ac->owner && ac->owner->owner)
+    _insert_shortcut_in_list(ht, shortcut, ac->owner, g_strdup_printf("%s/%s", ac->owner->label_translated, label));
+  {
+    GtkListStore *list_store = g_hash_table_lookup(ht, ac->owner);
+    if(!list_store)
+    {
+      list_store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+      g_hash_table_insert(ht, ac->owner, list_store);
+    }
+
+    gtk_list_store_insert_with_values(list_store, NULL, -1, 0, shortcut, 1, label, -1);
+  }
+
+  g_free(label);
+}
+
+GHashTable *dt_shortcut_category_lists(dt_view_type_flags_t v)
+{
+  GHashTable *ht = g_hash_table_new(NULL, NULL);
+
+  for(GSequenceIter *iter = g_sequence_get_begin_iter(darktable.control->shortcuts);
+      !g_sequence_iter_is_end(iter);
+      iter = g_sequence_iter_next(iter))
+  {
+    dt_shortcut_t *s = g_sequence_get(iter);
+    if(s && s->views & v)
+      _insert_shortcut_in_list(ht, _shortcut_description(s, TRUE), s->action, g_strdup(s->action->label_translated));
+  }
+
+  return ht;
+}
+
+
 static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
                                            GtkTooltip *tooltip, gpointer user_data)
 {
