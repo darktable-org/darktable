@@ -149,7 +149,8 @@ void dt_lib_presets_remove(const gchar *preset, gchar *module_name, int module_v
 // update a preset
 void dt_lib_presets_update(const gchar *preset, gchar *module_name, int module_version, const gchar *newname,
                            const gchar *desc, const void *params, const int32_t params_size);
-
+// know if the module can autoapply presets
+gboolean dt_lib_presets_can_autoapply(dt_lib_module_t *mod);
 
 /*
  * Proxy functions
