@@ -28,6 +28,7 @@
 #include "dtgtk/icon.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #ifdef GDK_WINDOWING_QUARTZ
@@ -285,22 +286,6 @@ static DTGTKCairoPaintIconFunc _buttons_get_icon_fct(const gchar *icon)
     return dtgtk_cairo_paint_modulegroup_technical;
 
   return dtgtk_cairo_paint_modulegroup_basic;
-}
-
-void gui_cleanup(dt_lib_module_t *self)
-{
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-
-  dt_gui_key_accel_block_on_focus_disconnect(d->text_entry);
-
-  darktable.develop->proxy.modulegroups.module = NULL;
-  darktable.develop->proxy.modulegroups.set = NULL;
-  darktable.develop->proxy.modulegroups.get = NULL;
-  darktable.develop->proxy.modulegroups.test = NULL;
-  darktable.develop->proxy.modulegroups.switch_group = NULL;
-
-  g_free(self->data);
-  self->data = NULL;
 }
 
 static gint _iop_compare(gconstpointer a, gconstpointer b)
@@ -2688,6 +2673,69 @@ static gboolean _manage_direct_basic_popup(GtkWidget *widget, GdkEventButton *ev
   return FALSE;
 }
 
+static void _dt_dev_image_changed_callback(gpointer instance, dt_lib_module_t *self)
+{
+  dt_develop_t *dev = darktable.develop;
+  if(!dev || dev->image_storage.id <= 0) return;
+
+  const dt_image_t *image = dt_image_cache_get(darktable.image_cache, dev->image_storage.id, 'r');
+  if(!image) return;
+
+  char query[1024];
+  snprintf(query, sizeof(query),
+           "SELECT name"
+           " FROM data.presets"
+           " WHERE operation='modulegroups'"
+           "       AND op_version=?1"
+           "       AND autoapply=1"
+           "       AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
+           "       AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
+           "       AND ?8 BETWEEN exposure_min AND exposure_max"
+           "       AND ?9 BETWEEN aperture_min AND aperture_max"
+           "       AND ?10 BETWEEN focal_length_min AND focal_length_max"
+           "       AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))"
+           " ORDER BY writeprotect DESC, name DESC"
+           " LIMIT 1");
+
+  int iformat = 0;
+  if(dt_image_is_rawprepare_supported(image))
+    iformat |= FOR_RAW;
+  else
+    iformat |= FOR_LDR;
+  if(dt_image_is_hdr(image)) iformat |= FOR_HDR;
+
+  int excluded = 0;
+  if(dt_image_monochrome_flags(image))
+    excluded |= FOR_NOT_MONO;
+  else
+    excluded |= FOR_NOT_COLOR;
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, self->version());
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, image->exif_maker, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, image->camera_alias, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, image->camera_maker, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 6, image->exif_lens, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(FLT_MAX, image->exif_iso)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, image->exif_exposure)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f, fminf(1000000, image->exif_aperture)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, fmaxf(0.0f, fminf(1000000, image->exif_focal_length)));
+  // 0: dontcare, 1: ldr, 2: raw plus monochrome & color
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
+
+  dt_image_cache_read_release(darktable.image_cache, image);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *preset = (char *)sqlite3_column_blob(stmt, 0);
+    dt_lib_presets_apply(preset, self->plugin_name, self->version());
+  }
+  sqlite3_finalize(stmt);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -2779,6 +2827,30 @@ void gui_init(dt_lib_module_t *self)
   darktable.develop->proxy.modulegroups.switch_group = _lib_modulegroups_switch_group;
   darktable.develop->proxy.modulegroups.search_text_focus = _lib_modulegroups_search_text_focus;
   darktable.develop->proxy.modulegroups.test_visible = _lib_modulegroups_test_visible;
+
+  // check for autoapplypresets on image change
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
+                                  G_CALLBACK(_dt_dev_image_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE,
+                                  G_CALLBACK(_dt_dev_image_changed_callback), self);
+}
+
+void gui_cleanup(dt_lib_module_t *self)
+{
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+
+  dt_gui_key_accel_block_on_focus_disconnect(d->text_entry);
+
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_dev_image_changed_callback), self);
+
+  darktable.develop->proxy.modulegroups.module = NULL;
+  darktable.develop->proxy.modulegroups.set = NULL;
+  darktable.develop->proxy.modulegroups.get = NULL;
+  darktable.develop->proxy.modulegroups.test = NULL;
+  darktable.develop->proxy.modulegroups.switch_group = NULL;
+
+  g_free(self->data);
+  self->data = NULL;
 }
 
 static void _buttons_update(dt_lib_module_t *self)
@@ -3755,6 +3827,11 @@ void view_enter(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
     // and set the current group
     d->current = dt_conf_get_int("plugins/darkroom/groups");
   }
+}
+
+int preset_autoapply(dt_lib_module_t *self)
+{
+  return 1;
 }
 #undef PADDING
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
