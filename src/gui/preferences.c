@@ -646,17 +646,17 @@ static void cairo_destroy_from_pixbuf(guchar *pixels, gpointer data)
   cairo_destroy((cairo_t *)data);
 }
 
-static gboolean _module_is_lib(const gchar *operation)
+static gboolean _module_can_autoapply(const gchar *operation)
 {
   for (const GList * lib_modules = darktable.lib->plugins; lib_modules; lib_modules = g_list_next(lib_modules))
   {
     dt_lib_module_t *lib_module = (dt_lib_module_t *)lib_modules->data;
     if(!strcmp(lib_module->plugin_name, operation))
     {
-      return TRUE;
+      return dt_lib_presets_can_autoapply(lib_module);
     }
   }
-  return FALSE;
+  return TRUE;
 }
 
 static void tree_insert_presets(GtkTreeStore *tree_model)
@@ -726,7 +726,7 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
     if(module == NULL) module = g_strdup(dt_lib_get_localized_name(operation));
     if(module == NULL) module = g_strdup(operation);
 
-    if(_module_is_lib(operation))
+    if(!_module_can_autoapply(operation))
     {
       iso = g_strdup("");
       exposure = g_strdup("");
@@ -2088,7 +2088,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
     gtk_spin_button_set_value(g->focal_length_min, sqlite3_column_double(stmt, 10));
     gtk_spin_button_set_value(g->focal_length_max, sqlite3_column_double(stmt, 11));
 
-    if(_module_is_lib(operation))
+    if(!_module_can_autoapply(operation))
     {
       //hide auto apply buttons
       gtk_widget_set_sensitive(GTK_WIDGET(g->autoapply), FALSE);
