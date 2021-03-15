@@ -1681,135 +1681,66 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
   // get the list of valid accel for this view
   const dt_view_t *cv = dt_view_manager_get_current_view(vm);
   const dt_view_type_flags_t v = cv->view(cv);
-  GtkStyleContext *context;
 
-  typedef struct _bloc_t
-  {
-    gchar *base;
-    gchar *title;
-    GtkListStore *list_store;
-  } _bloc_t;
+  GHashTable *blocks = dt_shortcut_category_lists(v);
 
-  // go through all accels to populate categories with valid ones
-  GList *blocs = NULL;
-  GList *bl = NULL;
-  for(const GList *l = darktable.control->accelerator_list;
-      l;
-      l = g_list_next(l))
-  {
-    dt_accel_t *da = (dt_accel_t *)l->data;
-    if(da && (da->views & v) == v)
-    {
-      GtkAccelKey ak;
-      if(gtk_accel_map_lookup_entry(da->path, &ak) && ak.accel_key > 0)
-      {
-        // we want the base path
-        gchar **elems = g_strsplit(da->translated_path, "/", -1);
-        if(elems[0] && elems[1] && elems[2])
-        {
-          // do we already have a category ?
-          _bloc_t *b = NULL;
-          for(bl = blocs; bl; bl = g_list_next(bl))
-          {
-            _bloc_t *bb = (_bloc_t *)bl->data;
-            if(strcmp(elems[1], bb->base) == 0)
-            {
-              b = bb;
-              break;
-            }
-          }
-
-          // if not found, we create it
-          if(!b)
-          {
-            b = (_bloc_t *)calloc(1, sizeof(_bloc_t));
-            b->base = dt_util_dstrcat(NULL, "%s", elems[1]);
-
-            if(g_str_has_prefix(da->path, "<Darktable>/views/"))
-              b->title = dt_util_dstrcat(NULL, "%s", cv->name(cv));
-            else
-              b->title = dt_util_dstrcat(NULL, "%s", elems[1]);
-
-            b->list_store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
-            blocs = g_list_prepend(blocs, b);
-          }
-          // we add the new line
-          GtkTreeIter iter;
-          gtk_list_store_prepend(b->list_store, &iter);
-          gchar *txt;
-          // for views accels, no need to specify the view name, it's in the category title
-          if(g_str_has_prefix(da->path, "<Darktable>/views/"))
-            txt = da->translated_path + strlen(elems[0]) + strlen(elems[1]) + strlen(elems[2]) + 3;
-          else
-            txt = da->translated_path + strlen(elems[0]) + strlen(elems[1]) + 2;
-          // for dynamic accel, we need to add the "+scroll"
-
-          gchar *accel_label = gtk_accelerator_get_label(ak.accel_key, ak.accel_mods);
-          gchar *atxt = dt_util_dstrcat(NULL, "%s", accel_label);
-          g_free(accel_label);
-          if(g_str_has_prefix(da->path, "<Darktable>/image operations/") && g_str_has_suffix(da->path, "/dynamic"))
-            atxt = dt_util_dstrcat(atxt, _("+Scroll"));
-          gtk_list_store_set(b->list_store, &iter, 0, atxt, 1, txt, -1);
-          g_free(atxt);
-          g_strfreev(elems);
-        }
-      }
-    }
-  }
+  dt_action_t *first_category = darktable.control->actions;
 
   // we add the mouse actions too
+  dt_action_t mouse_actions = { .label_translated = _("mouse actions"),
+                                .next = first_category };
   if(cv->mouse_actions)
   {
-    _bloc_t *bm = (_bloc_t *)calloc(1, sizeof(_bloc_t));
-    bm->base = NULL;
-    bm->title = dt_util_dstrcat(NULL, _("mouse actions"));
-    bm->list_store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
-    blocs = g_list_prepend(blocs, bm);
+    GtkListStore *mouse_list = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+    g_hash_table_insert(blocks, &mouse_actions, mouse_list);
 
     GSList *actions = cv->mouse_actions(cv);
     for(GSList *lm = actions; lm; lm = g_slist_next(lm))
     {
-      dt_mouse_action_t *ma = (dt_mouse_action_t *)lm->data;
+      dt_mouse_action_t *ma = lm->data;
       if(ma)
       {
-        GtkTreeIter iter;
-        gtk_list_store_append(bm->list_store, &iter);
         gchar *atxt = _mouse_action_get_string(ma);
-        gtk_list_store_set(bm->list_store, &iter, 0, atxt, 1, ma->name, -1);
+        gtk_list_store_insert_with_values(mouse_list, NULL, -1, 0, atxt, 1, ma->name, -1);
         g_free(atxt);
       }
     }
-    g_slist_free(actions); // we've already freed the action records, but still need to free the list itself
+    g_slist_free_full(actions, g_free);
+
+    first_category = &mouse_actions;
   }
 
   // now we create and insert the widget to display all accels by categories
-  for(bl = blocs; bl; bl = g_list_next(bl))
+  for(dt_action_t *category = first_category; category; category = category->next)
   {
-    const _bloc_t *bb = (_bloc_t *)bl->data;
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     // the title
-    GtkWidget *lb = gtk_label_new(bb->title);
-    context = gtk_widget_get_style_context(lb);
+    GtkWidget *lb = gtk_label_new(category->label_translated);
+    GtkStyleContext *context = gtk_widget_get_style_context(lb);
     gtk_style_context_add_class(context, "accels_window_cat_title");
     gtk_box_pack_start(GTK_BOX(box), lb, FALSE, FALSE, 0);
 
     // the list of accels
-    GtkWidget *list = gtk_tree_view_new_with_model(GTK_TREE_MODEL(bb->list_store));
-    context = gtk_widget_get_style_context(list);
-    gtk_style_context_add_class(context, "accels_window_list");
-    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-    GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("Accel"), renderer, "text", 0, NULL);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-    column = gtk_tree_view_column_new_with_attributes(_("Action"), renderer, "text", 1, NULL);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+    GtkTreeModel *model = GTK_TREE_MODEL(g_hash_table_lookup(blocks, category));
+    if(model)
+    {
+      GtkWidget *list = gtk_tree_view_new_with_model(model);
+      g_object_unref(model);
+      context = gtk_widget_get_style_context(list);
+      gtk_style_context_add_class(context, "accels_window_list");
+      GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+      GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("Shortcut"), renderer, "text", 0, NULL);
+      gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+      column = gtk_tree_view_column_new_with_attributes(_("Action"), renderer, "text", 1, NULL);
+      gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
-    gtk_box_pack_start(GTK_BOX(box), list, FALSE, FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(box), list, FALSE, FALSE, 0);
 
-    gtk_flow_box_insert(GTK_FLOW_BOX(vm->accels_window.flow_box), box, -1);
-    g_free(bb->base);
-    g_free(bb->title);
+      gtk_flow_box_insert(GTK_FLOW_BOX(vm->accels_window.flow_box), box, -1);
+    }
   }
-  g_list_free_full(blocs, free);
+
+  g_hash_table_destroy(blocks);
 
   gtk_widget_show_all(vm->accels_window.flow_box);
 }

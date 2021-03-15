@@ -27,6 +27,7 @@
 #define SHORTCUTS_TRANSITION
 
 GtkWidget *dt_shortcuts_prefs();
+GHashTable *dt_shortcut_category_lists(dt_view_type_flags_t v);
 
 void dt_shortcuts_save(const gchar *file_name);
 
