@@ -3894,6 +3894,10 @@ void configure(dt_view_t *self, int wd, int ht)
 
 void init_key_accels(dt_view_t *self)
 {
+  dt_control_accels_t *ac = &darktable.control->accels;
+  dt_action_define_key_pressed_accel(&self->actions, "full preview", &ac->darkroom_preview);
+  dt_action_define_key_pressed_accel(&self->actions, "allow to pan & zoom while editing masks", &ac->darkroom_skip_mouse_events);
+
   // Zoom shortcuts
   dt_accel_register_view(self, NC_("accel", "zoom close-up"), GDK_KEY_1, GDK_MOD1_MASK);
   dt_accel_register_view(self, NC_("accel", "zoom fill"), GDK_KEY_2, GDK_MOD1_MASK);

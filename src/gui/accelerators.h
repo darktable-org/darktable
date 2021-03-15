@@ -42,6 +42,8 @@ void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action);
 
 dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path);
 
+void dt_action_define_key_pressed_accel(dt_action_t *action, const gchar *name, GtkAccelKey *key);
+
 void dt_action_define_iop(dt_iop_module_t *self, const gchar *path, gboolean local, guint accel_key, GdkModifierType mods, GtkWidget *widget);
 
 void dt_action_define_preset(dt_action_t *action, const gchar *name);

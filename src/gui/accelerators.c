@@ -536,6 +536,13 @@ static void add_shortcut(dt_shortcut_t *shortcut, dt_view_type_flags_t view)
 
     gtk_tree_store_insert_with_values(shortcuts_store, NULL, &category, found, 0, new_shortcut, -1);
   }
+
+  if(shortcut->action && shortcut->action->type == DT_ACTION_TYPE_KEY_PRESSED && shortcut->action->target)
+  {
+    GtkAccelKey *key = shortcut->action->target;
+    key->accel_key = shortcut->key;
+    key->accel_mods = shortcut->mods;
+  }
 }
 
 static void _shortcut_row_inserted(GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data)
@@ -547,6 +554,18 @@ static void _shortcut_row_inserted(GtkTreeModel *tree_model, GtkTreePath *path, 
 
 static gboolean insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
 {
+  if(shortcut->action && shortcut->action && shortcut->action->type == DT_ACTION_TYPE_KEY_PRESSED &&
+     (shortcut->key_device != DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE ||
+      shortcut->move_device != DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE || shortcut->button != 0 ||
+      shortcut->click != DT_SHORTCUT_CLICK_SINGLE || shortcut->move != DT_SHORTCUT_MOVE_NONE))
+  {
+    fprintf(stderr, "[insert_shortcut] only key+mods type shortcut supported for key_pressed style accelerators\n");
+    dt_control_log(_("only key + ctrl/shift/alt supported for this shortcut"));
+    return FALSE;
+  }
+  // FIXME: prevent multiple shortcuts because only the last one will work.
+  // better solution; incorporate these special case accelerators into standard shortcut framework
+
   dt_shortcut_t *s = calloc(sizeof(dt_shortcut_t), 1);
   *s = *shortcut;
   find_views(s);
@@ -1413,7 +1432,9 @@ static float process_mapping(float move_size)
         event->button.window = gtk_widget_get_window(widget);
         g_object_ref(event->button.window);
 
-        gtk_widget_event(widget, event);
+        // some togglebuttons connect to the clicked signal, others to toggled or button-press-event
+        if(!gtk_widget_event(widget, event))
+          gtk_button_clicked(GTK_BUTTON(widget));
 
         gdk_event_free(event);
       }
@@ -1579,7 +1600,8 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key, guint mo
     GSequenceIter *existing = g_sequence_lookup(darktable.control->shortcuts, &simple_key,
                                                 shortcut_compare_func, GINT_TO_POINTER(simple_key.views));
 
-    if(existing && ((dt_shortcut_t *)g_sequence_get(existing))->action->target == NULL) return;
+    if(existing && ((dt_shortcut_t *)g_sequence_get(existing))->action->type == DT_ACTION_TYPE_KEY_PRESSED)
+      return;
   }
 
   dt_device_key_t this_key = { id, key };
@@ -1893,7 +1915,19 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path)
   return owner;
 }
 
-dt_action_t *dt_action_define(dt_action_t *owner, const gchar *path, gboolean local, guint accel_key, GdkModifierType mods, GtkWidget *widget)
+void dt_action_define_key_pressed_accel(dt_action_t *action, const gchar *path, GtkAccelKey *key)
+{
+  dt_action_t *new_action = calloc(1, sizeof(dt_action_t));
+  new_action->label = path_without_symbols(path);
+  new_action->label_translated = g_strdup(Q_(path));
+  new_action->type = DT_ACTION_TYPE_KEY_PRESSED;
+  new_action->target = key;
+  new_action->owner = action;
+
+  dt_action_insert_sorted(action, new_action);
+}
+
+dt_action_t *_action_define(dt_action_t *owner, const gchar *path, gboolean local, guint accel_key, GdkModifierType mods, GtkWidget *widget)
 {
   // add to module_so actions list
   // split on `; find any sections or if not found, create (at start)
@@ -1903,6 +1937,9 @@ dt_action_t *dt_action_define(dt_action_t *owner, const gchar *path, gboolean lo
 
   if(ac)
   {
+    if(owner->type == DT_ACTION_TYPE_CLOSURE && owner->target)
+      g_closure_unref(owner->target);
+
     ac->type = DT_ACTION_TYPE_WIDGET;
 
     if(!darktable.control->accel_initialising)
@@ -1923,8 +1960,8 @@ void dt_action_define_iop(dt_iop_module_t *self, const gchar *path, gboolean loc
 {
   // add to module_so actions list
   dt_action_t *ac = strstr(path,"blend`") == path
-                  ? dt_action_define(&darktable.control->actions_blend, path + strlen("blend`"), local, accel_key, mods, widget)
-                  : dt_action_define(&self->so->actions, path, local, accel_key, mods, widget);
+                  ? _action_define(&darktable.control->actions_blend, path + strlen("blend`"), local, accel_key, mods, widget)
+                  : _action_define(&self->so->actions, path, local, accel_key, mods, widget);
 
   // to support multi-instance, also save per instance widget list
   dt_action_widget_t *referral = g_malloc0(sizeof(dt_action_widget_t));
@@ -2105,8 +2142,6 @@ void dt_accel_register_shortcut(dt_action_t *owner, const gchar *path_string, gu
   g_strfreev(split_path);
   g_strfreev(split_trans);
 
-  owner->type = DT_ACTION_TYPE_CLOSURE;
-
   if(accel_key != 0)
   {
     GdkKeymap *keymap = gdk_keymap_get_for_display(gdk_display_get_default());
@@ -2170,6 +2205,10 @@ void dt_accel_connect_shortcut(dt_action_t *owner, const gchar *path_string, GCl
 
   if(!*path && owner)
   {
+    if(owner->type == DT_ACTION_TYPE_CLOSURE && owner->target)
+      g_closure_unref(owner->target);
+
+    owner->type = DT_ACTION_TYPE_CLOSURE;
     owner->target = closure;
     g_closure_ref(closure);
     g_closure_sink(closure);
@@ -2717,7 +2756,7 @@ void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path, Gtk
   if(gtk_widget_get_has_tooltip(button))
     g_signal_connect(G_OBJECT(button), "query-tooltip", G_CALLBACK(_tooltip_callback), NULL);
 
-  dt_action_define(&module->actions, path, FALSE, 0, 0, button);
+  _action_define(&module->actions, path, FALSE, 0, 0, button);
 }
 
 void dt_accel_connect_button_lib_as_global(dt_lib_module_t *module, const gchar *path, GtkWidget *button)
@@ -2729,7 +2768,7 @@ void dt_accel_connect_button_lib_as_global(dt_lib_module_t *module, const gchar 
   if(gtk_widget_get_has_tooltip(button))
     g_signal_connect(G_OBJECT(button), "query-tooltip", G_CALLBACK(_tooltip_callback), NULL);
 
-  dt_action_define(&darktable.control->actions_global, path, FALSE, 0, 0, button);
+  _action_define(&darktable.control->actions_global, path, FALSE, 0, 0, button);
 }
 
 static gboolean bauhaus_slider_edit_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,

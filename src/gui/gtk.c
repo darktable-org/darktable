@@ -136,6 +136,8 @@ static void init_main_table(GtkWidget *container);
 static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint accel_key,
                               GdkModifierType accel_mods, gpointer user_data)
 {
+#ifndef SHORTCUTS_TRANSITION
+
   char path[256];
 
   // Updating all the stored accelerator keys/mods for key_pressed shortcuts
@@ -240,6 +242,7 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
 
   dt_accel_path_global(path, sizeof(path), "toggle focus peaking");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_focus_peaking);
+#endif // #ifndef SHORTCUTS_TRANSITION
 }
 
 static gboolean fullscreen_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,

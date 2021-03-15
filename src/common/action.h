@@ -33,6 +33,7 @@ typedef enum dt_action_type_t
   DT_ACTION_TYPE_COMMAND,
   DT_ACTION_TYPE_WIDGET,
   DT_ACTION_TYPE_CLOSURE,
+  DT_ACTION_TYPE_KEY_PRESSED,
   DT_ACTION_TYPE_PRESET
 } dt_action_type_t;
 
