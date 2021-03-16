@@ -42,7 +42,7 @@
 #endif
 #define ICON_SIZE 13
 
-typedef struct dt_gui_presets_edit_dialog_t
+typedef struct dt_gui_presets_edit_dialog2_t
 {
   GtkTreeView *tree; // CHANGED!
   gint rowid;        // CHANGED!
@@ -56,7 +56,7 @@ typedef struct dt_gui_presets_edit_dialog_t
   GtkWidget *aperture_min, *aperture_max;
   GtkSpinButton *focal_length_min, *focal_length_max;
   GtkWidget *format_btn[5];
-} dt_gui_presets_edit_dialog_t;
+} dt_gui_presets_edit_dialog2_t;
 
 typedef struct dt_gui_accel_search_t
 {
@@ -151,7 +151,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer d
 static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
 static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, const gchar *module);
-static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_dialog_t *g);
+static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_dialog2_t *g);
 
 static GtkWidget *_preferences_dialog;
 
@@ -1892,7 +1892,7 @@ static gint compare_rows_presets(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIte
 }
 
 // FIXME: Mostly c&p from gui/presets.c
-static void check_buttons_activated(GtkCheckButton *button, dt_gui_presets_edit_dialog_t *g)
+static void check_buttons_activated(GtkCheckButton *button, dt_gui_presets_edit_dialog2_t *g)
 {
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->autoapply))
      || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->filter)))
@@ -1926,8 +1926,8 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   gtk_container_add(content_area, GTK_WIDGET(box));
   GtkWidget *label;
 
-  dt_gui_presets_edit_dialog_t *g
-      = (dt_gui_presets_edit_dialog_t *)malloc(sizeof(dt_gui_presets_edit_dialog_t));
+  dt_gui_presets_edit_dialog2_t *g
+      = (dt_gui_presets_edit_dialog2_t *)malloc(sizeof(dt_gui_presets_edit_dialog2_t));
   g->rowid = rowid;
   g->tree = tree;
   g->name = GTK_LABEL(gtk_label_new(name));
@@ -2111,7 +2111,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   gtk_widget_show_all(dialog);
 }
 
-static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_dialog_t *g)
+static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_dialog2_t *g)
 {
   // commit all the user input fields
   if(response_id == GTK_RESPONSE_OK)
