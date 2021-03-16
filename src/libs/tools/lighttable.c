@@ -202,7 +202,7 @@ static gboolean _lib_lighttable_layout_btn_release(GtkWidget *w, GdkEventButton 
     // that means we want to activate the button
     if(w == d->layout_preview)
     {
-      d->fullpreview_focus = ((event->state & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK);
+      d->fullpreview_focus = dt_modifier_is(event->state, GDK_CONTROL_MASK);
       new_layout = DT_LIGHTTABLE_LAYOUT_PREVIEW;
     }
     else if(w == d->layout_culling_fix)

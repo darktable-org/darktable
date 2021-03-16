@@ -1215,7 +1215,7 @@ static gboolean _lib_timeline_button_release_callback(GtkWidget *w, GdkEventButt
     }
     strip->selecting = FALSE;
 
-    if(!strip->move_edge && (e->state & GDK_SHIFT_MASK))
+    if(!strip->move_edge && dt_modifier_is(e->state, GDK_SHIFT_MASK))
       _selection_collect(strip, DT_LIB_TIMELINE_MODE_RESET);
     else
       _selection_collect(strip, DT_LIB_TIMELINE_MODE_AND);
@@ -1370,7 +1370,7 @@ static gboolean _lib_timeline_scroll_callback(GtkWidget *w, GdkEventScroll *e, g
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
 
   // zoom change (with Ctrl key)
-  if(e->state & GDK_CONTROL_MASK)
+  if(dt_modifier_is(e->state, GDK_CONTROL_MASK))
   {
     int z = strip->zoom;
     if(e->direction == GDK_SCROLL_UP)
@@ -1404,7 +1404,7 @@ static gboolean _lib_timeline_scroll_callback(GtkWidget *w, GdkEventScroll *e, g
     if(dt_gui_get_scroll_unit_delta(e, &delta))
     {
       int move = -delta;
-      if(e->state & GDK_SHIFT_MASK) move *= 2;
+      if(dt_modifier_is(e->state, GDK_SHIFT_MASK)) move *= 2;
 
       _time_add(&(strip->time_pos), move, strip->zoom);
       // we ensure that the fimlstrip stay in the bounds

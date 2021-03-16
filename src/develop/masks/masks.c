@@ -1125,7 +1125,7 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
   if(gui)
   {
     // for brush, the opacity is the density of the masks, do not update opacity here for the brush.
-    if(gui->creation && (state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == GDK_CONTROL_MASK)
+    if(gui->creation && dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
       float amount = 0.05f;
@@ -2216,9 +2216,9 @@ void dt_masks_draw_clone_source_pos(cairo_t *cr, const float zoom_scale, const f
 void dt_masks_set_source_pos_initial_state(dt_masks_form_gui_t *gui, const uint32_t state, const float pzx,
                                            const float pzy)
 {
-  if((state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == (GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+  if(dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
     gui->source_pos_type = DT_MASKS_SOURCE_POS_ABSOLUTE;
-  else if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+  else if(dt_modifier_is(state, GDK_SHIFT_MASK))
     gui->source_pos_type = DT_MASKS_SOURCE_POS_RELATIVE_TEMP;
   else
     fprintf(stderr, "[dt_masks_set_source_pos_initial_state] unknown state for setting masks position type\n");

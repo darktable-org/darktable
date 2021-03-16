@@ -230,12 +230,11 @@ static gboolean _gradient_slider_add_delta_internal(GtkWidget *widget, gdouble d
 
   float multiplier;
 
-  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-  if((state & modifiers) == GDK_SHIFT_MASK)
+  if(dt_modifier_is(state, GDK_SHIFT_MASK))
   {
     multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
   }
-  else if((state & modifiers) == GDK_CONTROL_MASK)
+  else if(dt_modifier_is(state, GDK_CONTROL_MASK))
   {
     multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
   }

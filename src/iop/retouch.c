@@ -1553,7 +1553,7 @@ static gboolean rt_edit_masks_callback(GtkWidget *widget, GdkEventButton *event,
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, self->blend_params->mask_id);
     if(grp && (grp->type & DT_MASKS_GROUP) && grp->points)
     {
-      const int control_button_pressed = event->state & GDK_CONTROL_MASK;
+      const gboolean control_button_pressed = dt_modifier_is(event->state, GDK_CONTROL_MASK);
 
       switch(bd->masks_shown)
       {
@@ -1593,8 +1593,7 @@ static gboolean rt_add_shape_callback(GtkWidget *widget, GdkEventButton *e, dt_i
 
   if(darktable.gui->reset) return FALSE;
 
-  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-  const int creation_continuous = ((e->state & modifiers) == GDK_CONTROL_MASK);
+  const int creation_continuous = dt_modifier_is(e->state, GDK_CONTROL_MASK);
 
   rt_add_shape(widget, creation_continuous, self);
 
@@ -1631,8 +1630,7 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton, GdkE
   gboolean accept = TRUE;
 
   const int index = rt_get_selected_shape_index(p);
-  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-  if(index >= 0 && ((e->state & modifiers) == GDK_CONTROL_MASK))
+  if(index >= 0 && dt_modifier_is(e->state, GDK_CONTROL_MASK))
   {
     if(new_algo != p->rt_forms[index].algorithm)
     {
@@ -1662,7 +1660,7 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton, GdkE
     return FALSE;
   }
 
-  if(index >= 0 && ((e->state & modifiers) == GDK_CONTROL_MASK))
+  if(index >= 0 && dt_modifier_is(e->state, GDK_CONTROL_MASK))
   {
     if(p->algorithm != p->rt_forms[index].algorithm)
     {

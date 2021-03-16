@@ -310,8 +310,7 @@ static gboolean _add_shape_callback(GtkWidget *widget, GdkEventButton *e, dt_iop
 
   const dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *) self->gui_data;
 
-  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-  const int creation_continuous = ((e->state & modifiers) == GDK_CONTROL_MASK);
+  const gboolean creation_continuous = dt_modifier_is(e->state, GDK_CONTROL_MASK);
 
   _add_shape(widget, creation_continuous, self);
 

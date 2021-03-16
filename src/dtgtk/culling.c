@@ -411,7 +411,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, const float zoom_delta, co
   {
     // CULLING with multiple images
     // if shift+ctrl, we only change the current image
-    if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
       const int mouseid = dt_control_get_mouse_over_id();
       for(GList *l = table->list; l; l = g_list_next(l))
@@ -525,7 +525,7 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
 
   if(dt_gui_get_scroll_unit_delta(e, &delta))
   {
-    if((e->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+    if(dt_modifier_is(e->state, GDK_CONTROL_MASK))
     {
       // zooming
       const float zoom_delta = delta < 0 ? 0.5f : -0.5f;
@@ -590,7 +590,7 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
   if(event->button == 2)
   {
     // if shift is pressed, we work only with image hovered
-    if(event->state & GDK_SHIFT_MASK)
+    if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
       _toggle_zoom_current(table, event->x_root, event->y_root);
     else
       _toggle_zoom_all(table, event->x_root, event->y_root);
@@ -642,7 +642,7 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
     const float valx = (x - table->pan_x) * scale;
     const float valy = (y - table->pan_y) * scale;
 
-    if((event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
     {
       int mouseid = dt_control_get_mouse_over_id();
       for(GList *l = table->list; l; l = g_list_next(l))

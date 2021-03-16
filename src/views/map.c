@@ -1734,14 +1734,14 @@ static gboolean _view_map_scroll_event(GtkWidget *w, GdkEventScroll *event, dt_v
   {
     if(dt_map_location_included(lon, lat, &lib->loc.main.data))
     {
-      if(event->state & GDK_SHIFT_MASK)
+      if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
       {
         if(event->direction == GDK_SCROLL_DOWN)
           lib->loc.main.data.delta1 *= 1.1;
         else
           lib->loc.main.data.delta1 /= 1.1;
       }
-      else if(event->state & GDK_CONTROL_MASK)
+      else if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
       {
         if(event->direction == GDK_SCROLL_DOWN)
           lib->loc.main.data.delta2 *= 1.1;
@@ -1791,7 +1791,7 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
   if(e->button == 1)
   {
     // check if the click was in a location form - crtl gives priority to images
-    if(lib->loc.main.id > 0 && !(e->state & GDK_CONTROL_MASK))
+    if(lib->loc.main.id > 0 && !dt_modifier_is(e->state, GDK_CONTROL_MASK))
     {
 
       OsmGpsMapPoint *p = osm_gps_map_get_event_location(lib->map, e);
@@ -1799,7 +1799,7 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
       osm_gps_map_point_get_degrees(p, &lat, &lon);
       if(dt_map_location_included(lon, lat, &lib->loc.main.data))
       {
-        if(!(e->state & GDK_SHIFT_MASK))
+        if(!dt_modifier_is(e->state, GDK_SHIFT_MASK))
         {
           lib->start_drag_x = ceil(e->x_root);
           lib->start_drag_y = ceil(e->y_root);
@@ -1809,7 +1809,7 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
       }
     }
     // check if another location is clicked - ctrl gives priority to images
-    if (!(e->state & GDK_CONTROL_MASK))
+    if (!dt_modifier_is(e->state, GDK_CONTROL_MASK))
     {
       OsmGpsMapPoint *p = osm_gps_map_get_event_location(lib->map, e);
       float lat, lon;
@@ -1830,7 +1830,7 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
     }
     // check if the click was on image(s) or just some random position
     lib->selected_images = _view_map_get_imgs_at_pos(self, e->x, e->y,
-                                                     !(e->state & GDK_SHIFT_MASK));
+                                                     !dt_modifier_is(e->state, GDK_SHIFT_MASK));
     if(e->type == GDK_BUTTON_PRESS)
     {
       if(lib->selected_images)
