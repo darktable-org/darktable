@@ -723,6 +723,7 @@ static void _fill_tree_fields(GtkTreeViewColumn *column, GtkCellRenderer *cell, 
   field_id field = GPOINTER_TO_INT(data);
   gchar *field_text = NULL;
   gboolean editable = FALSE;
+  PangoUnderline underline = PANGO_UNDERLINE_NONE;
   if(GPOINTER_TO_UINT(data_ptr) < NUM_CATEGORIES)
   {
     if(field == SHORTCUT_VIEW_DESCRIPTION)
@@ -743,7 +744,12 @@ static void _fill_tree_fields(GtkTreeViewColumn *column, GtkCellRenderer *cell, 
       field_text = g_strdup(_shortcut_description(s, FALSE));
       break;
     case SHORTCUT_VIEW_ACTION:
-      if(s->action) field_text = _action_full_label_translated(s->action);
+      if(s->action)
+      {
+        field_text = _action_full_label_translated(s->action);
+        if(s->action->type == DT_ACTION_TYPE_KEY_PRESSED)
+          underline = PANGO_UNDERLINE_ERROR;
+      }
       break;
     case SHORTCUT_VIEW_ELEMENT:
       field_text = g_strdup(s->element ? "reset" : ""); // FIXME just for fakes
@@ -755,7 +761,6 @@ static void _fill_tree_fields(GtkTreeViewColumn *column, GtkCellRenderer *cell, 
         if(owner->type == DT_ACTION_TYPE_IOP)
         {
           dt_iop_module_so_t *iop = (dt_iop_module_so_t *)owner;
-//          iop -= (dt_iop_module_so_t *)&iop->actions - iop;
 
           if(!(iop->flags() & IOP_FLAGS_ONE_INSTANCE))
           {
@@ -768,14 +773,19 @@ static void _fill_tree_fields(GtkTreeViewColumn *column, GtkCellRenderer *cell, 
       }
       break;
     case SHORTCUT_VIEW_SPEED:
-      field_text = g_strdup_printf("%.3f", s->speed);
-      editable = TRUE;
+      if(s->action && s->action->type == DT_ACTION_TYPE_WIDGET &&
+         DT_IS_BAUHAUS_WIDGET(s->action->target) &&
+         DT_BAUHAUS_WIDGET(s->action->target)->type == DT_BAUHAUS_SLIDER)
+      {
+        field_text = g_strdup_printf("%.3f", s->speed);
+        editable = TRUE;
+      }
       break;
     default:
       break;
     }
   }
-  g_object_set(cell, "text", field_text, "editable", editable, NULL);
+  g_object_set(cell, "text", field_text, "editable", editable, "underline", underline, NULL);
   g_free(field_text);
 }
 
