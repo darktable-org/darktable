@@ -2190,17 +2190,19 @@ static gboolean _click_on_view_dictionary(GtkWidget *view, GdkEventButton *event
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
 
-  if((event->type == GDK_BUTTON_PRESS && event->button == 3)
-    || (d->tree_flag && event->type == GDK_BUTTON_PRESS && event->button == 1 && event->state & GDK_SHIFT_MASK)
+  const int button_pressed = (event->type == GDK_BUTTON_PRESS) ? event->button : 0;
+  const gboolean shift_pressed = dt_modifier_is(event->state, GDK_SHIFT_MASK);
+  if((button_pressed == 3)
+     || (d->tree_flag && button_pressed == 1 && shift_pressed)
     || (event->type == GDK_2BUTTON_PRESS && event->button == 1)
-    || (event->type == GDK_BUTTON_PRESS && event->button == 1))
+    || (button_pressed == 1))
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
     GtkTreePath *path = NULL;
     // Get tree path for row that was clicked
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL))
     {
-      if(event->type == GDK_BUTTON_PRESS && event->button == 1)
+      if(button_pressed == 1)
       {
         GtkTreeModel *model = gtk_tree_view_get_model(d->dictionary_view);
         GtkTreeIter iter;
@@ -2219,13 +2221,13 @@ static gboolean _click_on_view_dictionary(GtkWidget *view, GdkEventButton *event
       {
         gtk_tree_selection_select_path(selection, path);
         _update_atdetach_buttons(self);
-        if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+        if(button_pressed == 3)
         {
           _pop_menu_dictionary(view, event, self);
           gtk_tree_path_free(path);
           return TRUE;
         }
-        else if(d->tree_flag && event->type == GDK_BUTTON_PRESS && event->button == 1 && event->state & GDK_SHIFT_MASK)
+        else if(d->tree_flag && button_pressed == 1 && shift_pressed)
         {
           gtk_tree_view_expand_row(GTK_TREE_VIEW(view), path, TRUE);
           return TRUE;

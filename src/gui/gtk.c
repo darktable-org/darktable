@@ -1129,10 +1129,10 @@ guint dt_gui_translated_key_state(GdkEventKey *event)
     //find any modifiers consumed to produce keyval
     guint consumed;
     gdk_keymap_translate_keyboard_state(gdk_keymap_get_for_display(gdk_display_get_default()), event->hardware_keycode, event->state, event->group, NULL, NULL, NULL, &consumed);
-    return event->state & ~consumed & KEY_STATE_MASK;
+    return event->state & ~consumed & gtk_accelerator_get_default_mod_mask();
   }
   else
-    return event->state & KEY_STATE_MASK;
+    return event->state & gtk_accelerator_get_default_mod_mask();
 }
 
 static gboolean key_pressed_override(GtkWidget *w, GdkEventKey *event, gpointer user_data)
@@ -3007,7 +3007,7 @@ GdkModifierType dt_key_modifier_state()
   guint state = 0;
   GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
   gdk_device_get_state(gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_window_get_display(window))), window, NULL, &state);
-  return state & gtk_accelerator_get_default_mod_mask();
+  return state;
 }
 
 static void notebook_size_callback(GtkNotebook *notebook, GdkRectangle *allocation, gpointer *data)
@@ -3174,7 +3174,7 @@ static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
 
   const gint increment = _get_container_row_heigth(w);
 
-  if(event->state & GDK_CONTROL_MASK)
+  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
   {
     int delta_y=0;
 

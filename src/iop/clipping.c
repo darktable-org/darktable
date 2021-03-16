@@ -3415,8 +3415,8 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
       g->prev_clip_h = g->clip_h;
 
       /* if shift is pressed, then lock crop on center */
-      if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK) g->shift_hold = TRUE;
-      if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK) g->ctrl_hold = TRUE;
+      if(dt_modifiers_include(state, GDK_SHIFT_MASK)) g->shift_hold = TRUE;
+      if(dt_modifiers_include(state, GDK_CONTROL_MASK)) g->ctrl_hold = TRUE;
     }
 
     return 1;

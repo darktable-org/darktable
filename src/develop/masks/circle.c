@@ -76,7 +76,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
     else
       masks_size = dt_conf_get_float("plugins/darkroom/masks/circle/size");
 
-    if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
       float masks_border = 0.0f;
 
@@ -120,7 +120,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
       gui->scrollx = pzx;
       gui->scrolly = pzy;
     }
-    if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+    if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       // we try to change the opacity
       dt_masks_form_change_opacity(form, parentid, up);
@@ -129,7 +129,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
     {
       dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
       // resize don't care where the mouse is inside a shape
-      if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+      if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {
         if(up && circle->border > 0.0005f)
           circle->border *= 0.97f;
@@ -209,8 +209,7 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
     return 1;
   }
   else if(gui->creation && which == 1
-          && (((state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
-              || ((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)))
+          && ((dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)) || dt_modifier_is(state, GDK_SHIFT_MASK)))
   {
     // set some absolute or relative position for the source of the clone mask
     if(form->type & DT_MASKS_CLONE) dt_masks_set_source_pos_initial_state(gui, state, pzx, pzy);
