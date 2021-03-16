@@ -1159,7 +1159,7 @@ static gboolean _lib_truncate_stack_accel(GtkAccelGroup *accel_group, GObject *a
 
 static void _lib_history_compress_clicked_callback(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
 {
-  const gboolean compress = !(e->state & GDK_CONTROL_MASK);
+  const gboolean compress = !dt_modifier_is(e->state, GDK_CONTROL_MASK);
   _lib_history_truncate(compress);
 }
 

@@ -3864,7 +3864,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
   // if shift button is pressed go into bounding mode (selecting or deselecting
   // in a rectangle area)
-  if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+  if(dt_modifier_is(state, GDK_SHIFT_MASK))
   {
     g->lastx = pzx;
     g->lasty = pzy;
@@ -3944,7 +3944,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 
   // finalize the isbounding mode
   // if user has released the shift button in-between -> do nothing
-  if(g->isbounding != ASHIFT_BOUNDING_OFF && (state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+  if(g->isbounding != ASHIFT_BOUNDING_OFF && dt_modifier_is(state, GDK_SHIFT_MASK))
   {
     int handled = 0;
 
@@ -4112,8 +4112,8 @@ static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-    const int control = (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK;
-    const int shift = (event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK;
+    const int control = dt_modifiers_include(event->state, GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(event->state, GDK_SHIFT_MASK);
 
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
@@ -4164,8 +4164,8 @@ static int fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-    const int control = (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK;
-    const int shift = (event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK;
+    const int control = dt_modifiers_include(event->state, GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(event->state, GDK_SHIFT_MASK);
 
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
@@ -4216,8 +4216,8 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-    const int control = (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK;
-    const int shift = (event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK;
+    const int control = dt_modifiers_include(event->state, GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(event->state, GDK_SHIFT_MASK);
 
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
@@ -4270,8 +4270,8 @@ static int structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gp
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-    const int control = (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK;
-    const int shift = (event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK;
+    const int control = dt_modifiers_include(event->state, GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(event->state, GDK_SHIFT_MASK);
 
     dt_iop_ashift_enhance_t enhance;
 

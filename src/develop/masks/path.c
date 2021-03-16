@@ -915,7 +915,7 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
       gui->scrollx = pzx;
       gui->scrolly = pzy;
     }
-    if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+    if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       // we try to change the opacity
       dt_masks_form_change_opacity(form, parentid, up);
@@ -924,7 +924,7 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
     {
       const float amount = up ? 0.97f : 1.03f;
       // resize don't care where the mouse is inside a shape
-      if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+      if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {
         float masks_size = 1.0f, feather_size = 0.0f;
         _path_get_sizes(module, form, gui, index, &masks_size, &feather_size);
@@ -1046,8 +1046,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
     masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/path/border"), 0.5f);
 
   if(gui->creation && which == 1 && form->points == NULL
-     && (((state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
-         || ((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)))
+     && (dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK) || dt_modifier_is(state, GDK_SHIFT_MASK)))
   {
     // set some absolute or relative position for the source of the clone mask
     if(form->type & DT_MASKS_CLONE) dt_masks_set_source_pos_initial_state(gui, state, pzx, pzy);
@@ -1197,7 +1196,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
       form->points = g_list_append(form->points, bzpt);
 
       // if this is a ctrl click, the last created point is a sharp one
-      if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+      if(dt_modifier_is(state, GDK_CONTROL_MASK))
       {
         dt_masks_point_path_t *bzpt3 = g_list_nth_data(form->points, nb - 1);
         bzpt3->ctrl1[0] = bzpt3->ctrl2[0] = bzpt3->corner[0];
@@ -1236,7 +1235,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
     else if(gui->point_selected >= 0)
     {
       // if ctrl is pressed, we change the type of point
-      if(gui->point_edited == gui->point_selected && ((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK))
+      if(gui->point_edited == gui->point_selected && dt_modifier_is(state, GDK_CONTROL_MASK))
       {
         dt_masks_point_path_t *point
             = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->point_edited);
@@ -1293,7 +1292,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
     else if(gui->seg_selected >= 0)
     {
       gui->point_edited = -1;
-      if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+      if(dt_modifier_is(state, GDK_CONTROL_MASK))
       {
         // we add a new point to the path
         dt_masks_point_path_t *bzpt = (dt_masks_point_path_t *)(malloc(sizeof(dt_masks_point_path_t)));
