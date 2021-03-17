@@ -212,20 +212,18 @@ static GtkWidget *_set_up_label(const char *name, const int align, GtkWidget *gr
   return label;
 }
 
-static gchar *_utc_timeval_to_localtime_text(GTimeVal *utc_dt, GTimeZone *tz_camera,
+static gchar *_utc_timeval_to_localtime_text(GDateTime *utc_dt, GTimeZone *tz_camera,
                                              const gboolean full)
 {
-  GDateTime *dt = g_date_time_new_from_timeval_utc(utc_dt);
-  GDateTime *local_dt  = g_date_time_to_timezone(dt, tz_camera);
+  GDateTime *local_dt  = g_date_time_to_timezone(utc_dt, tz_camera);
   gchar *dts = g_date_time_format(local_dt, full ? "%Y:%m:%d %H:%M:%S" : "%H:%M:%S");
   g_date_time_unref(local_dt);
-  g_date_time_unref(dt);
   return dts;
 }
 
-static void _localtime_text_to_utc_timeval(const char *date_time, GTimeVal *dt,
-                                           GTimeZone *tz_camera, GTimeZone *tz_utc,
-                                           time_t offset)
+static GDateTime *_localtime_text_to_utc_timeval(const char *date_time,
+                                                 GTimeZone *tz_camera, GTimeZone *tz_utc,
+                                                 time_t offset)
 {
   gint year;
   gint month;
@@ -239,11 +237,10 @@ static void _localtime_text_to_utc_timeval(const char *date_time, GTimeVal *dt,
   GDateTime *exif_time = g_date_time_new(tz_camera, year, month, day, hour, minute, second);
   GDateTime *dt_offset = g_date_time_add_seconds(exif_time, offset);
   GDateTime *utc_time = g_date_time_to_timezone(dt_offset, tz_utc);
-  g_date_time_to_timeval(utc_time, dt);
 
   g_date_time_unref(exif_time);
   g_date_time_unref(dt_offset);
-  g_date_time_unref(utc_time);
+  return utc_time;
 }
 
 static int _count_images_per_track(dt_gpx_track_segment_t *t, dt_gpx_track_segment_t *n,
@@ -257,31 +254,29 @@ static int _count_images_per_track(dt_gpx_track_segment_t *t, dt_gpx_track_segme
     dt_sel_img_t *im = (dt_sel_img_t *)i->data;
     if(im->segid == -1)
     {
-      GTimeVal dt;
-      _localtime_text_to_utc_timeval(im->dt, &dt, d->tz_camera, d->tz_utc, d->offset);
-      if((dt.tv_sec >= t->start_dt.tv_sec &&
-          dt.tv_sec <= t->end_dt.tv_sec) ||
-         (n && dt.tv_sec >= t->end_dt.tv_sec &&
-               dt.tv_sec <= n->start_dt.tv_sec))
+      GDateTime *dt = _localtime_text_to_utc_timeval(im->dt, d->tz_camera, d->tz_utc, d->offset);
+      if((g_date_time_compare(dt, t->start_dt) >= 0
+          && g_date_time_compare(dt, t->end_dt) <= 0)
+         || (n && g_date_time_compare(dt, t->end_dt) >= 0
+             && g_date_time_compare(dt, n->start_dt) <= 0))
       {
         nb_imgs++;
         im->segid = t->id;
       }
+      g_date_time_unref(dt);
     }
   }
   return nb_imgs;
 }
 
 #ifdef HAVE_MAP
-static gchar *_utc_timeval_to_utc_text(GTimeVal *utc_dt, const gboolean full)
+static gchar *_utc_timeval_to_utc_text(GDateTime *utc_dt, const gboolean full)
 {
-  GDateTime *dt = g_date_time_new_from_timeval_utc(utc_dt);
-  gchar *dts = g_date_time_format(dt, full ? "%Y:%m:%d %H:%M:%S" : "%H:%M:%S");
-  g_date_time_unref(dt);
+  gchar *dts = g_date_time_format(utc_dt, full ? "%Y:%m:%d %H:%M:%S" : "%H:%M:%S");
   return dts;
 }
 
-static gchar *_datetime_tooltip(GTimeVal *start, GTimeVal *end, GTimeZone *tz)
+static gchar *_datetime_tooltip(GDateTime *start, GDateTime *end, GTimeZone *tz)
 {
   gchar *dtsl = _utc_timeval_to_localtime_text(start, tz, FALSE);
   gchar *dtel = _utc_timeval_to_localtime_text(end, tz, FALSE);
@@ -317,10 +312,10 @@ static void _refresh_images_displayed_on_track(const int segid, const gboolean a
     dt_sel_img_t *im = (dt_sel_img_t *)i->data;
     if(im->segid == segid && active)
     {
-      GTimeVal dt;
-      _localtime_text_to_utc_timeval(im->dt, &dt, d->tz_camera, d->tz_utc, d->offset);
-      if(!dt_gpx_get_location(d->map.gpx, &dt, &im->gl))
+      GDateTime *dt = _localtime_text_to_utc_timeval(im->dt, d->tz_camera, d->tz_utc, d->offset);
+      if(!dt_gpx_get_location(d->map.gpx, dt, &im->gl))
         im->gl.latitude = NAN;
+      g_date_time_unref(dt);
     }
     else if(im->segid == segid && !active && im->image)
     {
@@ -336,16 +331,18 @@ static void _refresh_images_displayed_on_track(const int segid, const gboolean a
     if(im->segid == segid && im->gl.latitude != NAN)
     {
       count++;
-      if(!i->next || !(((dt_sel_img_t *)i->next->data)->gl.latitude == im->gl.latitude &&
-                       ((dt_sel_img_t *)i->next->data)->gl.longitude == im->gl.longitude))
+      dt_sel_img_t *next = i->next ? (dt_sel_img_t *)i->next->data
+                                   : NULL;
+      if(!im->image && (!next
+                        || !((next->gl.latitude == im->gl.latitude)
+                             && (next->gl.longitude == im->gl.longitude))))
       {
         struct {uint32_t imgid; float latitude; float longitude; int count;} p;
         p.imgid = im->imgid;
         p.latitude = im->gl.latitude;
         p.longitude = im->gl.longitude;
         p.count = count == 1 ? 0 : count;
-        GList *img = NULL;
-        img = g_list_prepend(img, &p);
+        GList *img = g_list_prepend(NULL, &p);
         im->image = dt_view_map_add_marker(darktable.view_manager, MAP_DISPLAY_THUMB, img);
         g_list_free(img);
         count = 0;
@@ -353,6 +350,7 @@ static void _refresh_images_displayed_on_track(const int segid, const gboolean a
     }
   }
 }
+
 static void _update_nb_images(dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
@@ -527,8 +525,9 @@ static gboolean _refresh_display_track(const gboolean active, const int segid, d
   if(active)
   {
     GList *pts = dt_gpx_get_trkpts(d->map.gpx, segid);
-    d->map.tracks->td[segid].track = dt_view_map_add_marker(darktable.view_manager,
-                                                            MAP_DISPLAY_TRACK, pts);
+    if(!d->map.tracks->td[segid].track)
+      d->map.tracks->td[segid].track = dt_view_map_add_marker(darktable.view_manager,
+                                                              MAP_DISPLAY_TRACK, pts);
     osm_gps_map_track_set_color((OsmGpsMapTrack *)d->map.tracks->td[segid].track, &color[segid % 6]);
     grow = _update_map_box(segid, pts, self);
     g_list_free_full(pts, g_free);
@@ -653,12 +652,12 @@ static void _refresh_track_list(dt_lib_module_t *self)
   for(GList *ts = trkseg; ts && valid; ts = g_list_next(ts))
   {
     dt_gpx_track_segment_t *t = (dt_gpx_track_segment_t *)ts->data;
-    gchar *dts = _utc_timeval_to_localtime_text(&t->start_dt, d->tz_camera, TRUE);
+    gchar *dts = _utc_timeval_to_localtime_text(t->start_dt, d->tz_camera, TRUE);
     total_pts += t->nb_trkpt;
     const int nb_imgs = _count_images_per_track(t, ts->next ? ts->next->data : NULL, self);
     gboolean active;
     gtk_tree_model_get(model, &iter, DT_GEO_TRACKS_ACTIVE, &active, -1);
-    gchar *tooltip = _datetime_tooltip(&t->start_dt, &t->end_dt, d->tz_camera);
+    gchar *tooltip = _datetime_tooltip(t->start_dt, t->end_dt, d->tz_camera);
     gtk_list_store_set(GTK_LIST_STORE(model), &iter,
                        DT_GEO_TRACKS_DATETIME, dts,
                        DT_GEO_TRACKS_POINTS, t->nb_trkpt,
@@ -700,8 +699,8 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
   for(GList *ts = trkseg; ts; ts = g_list_next(ts))
   {
     dt_gpx_track_segment_t *t = (dt_gpx_track_segment_t *)ts->data;
-    gchar *dts = _utc_timeval_to_localtime_text(&t->start_dt, d->tz_camera, TRUE);
-    gchar *tooltip = _datetime_tooltip(&t->start_dt, &t->end_dt, d->tz_camera);
+    gchar *dts = _utc_timeval_to_localtime_text(t->start_dt, d->tz_camera, TRUE);
+    gchar *tooltip = _datetime_tooltip(t->start_dt, t->end_dt, d->tz_camera);
     const int nb_imgs = _count_images_per_track(t, ts->next ? ts->next->data : NULL, self);
     gtk_list_store_append(GTK_LIST_STORE(model), &iter);
     gtk_list_store_set(GTK_LIST_STORE(model), &iter,
@@ -859,8 +858,8 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
   for(GList *ts = trkseg; ts; ts = g_list_next(ts))
   {
     dt_gpx_track_segment_t *t = (dt_gpx_track_segment_t *)ts->data;
-    gchar *dts = _utc_timeval_to_localtime_text(&t->start_dt, d->tz_camera, TRUE);
-    gchar *dte = _utc_timeval_to_localtime_text(&t->end_dt, d->tz_camera, TRUE);
+    gchar *dts = _utc_timeval_to_localtime_text(t->start_dt, d->tz_camera, TRUE);
+    gchar *dte = _utc_timeval_to_localtime_text(t->end_dt, d->tz_camera, TRUE);
 
     const int nb_imgs = _count_images_per_track(t, ts->next ? ts->next->data : NULL,self);
     total_imgs += nb_imgs;
@@ -969,7 +968,8 @@ static void _choose_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   gtk_file_filter_set_name(filter, _("all files"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
-  _setup_selected_images_list(self);
+  if(!d->imgs)
+    _setup_selected_images_list(self);
 
   int res = gtk_dialog_run(GTK_DIALOG(filechooser));
   while(res == GTK_RESPONSE_ACCEPT)
@@ -1436,7 +1436,7 @@ static gboolean _datetime_scroll_over(GtkWidget *w, GdkEventScroll *event, dt_li
     if(w == d->dt.widget[i]) break;
 
   int increment = event->direction == GDK_SCROLL_DOWN ? -1 : 1;
-  if(event->state & GDK_SHIFT_MASK)
+  if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
     increment *= 10;
   value += increment;
   value = MAX(MIN(value, max[i]), min[i]);

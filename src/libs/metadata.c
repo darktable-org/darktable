@@ -261,14 +261,14 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
-  if(event->state & GDK_CONTROL_MASK)
+  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
   {
     switch(event->keyval)
     {
       case GDK_KEY_Return:
       case GDK_KEY_KP_Enter:
         // insert new line
-        event->state &= ~GDK_CONTROL_MASK;
+        event->state &= ~GDK_CONTROL_MASK;  //TODO: on Mac, remap Ctrl to Cmd key
       default:
         d->editing = TRUE;
     }

@@ -697,7 +697,7 @@ int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
-  if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+  if(dt_modifier_is(state, GDK_CONTROL_MASK))
   {
     float dens;
     if(up)
@@ -710,7 +710,7 @@ int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state)
     }
     return 1;
   }
-  if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+  if(dt_modifier_is(state, GDK_SHIFT_MASK))
   {
     float comp;
     if(up)

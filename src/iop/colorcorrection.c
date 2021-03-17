@@ -510,12 +510,11 @@ static gboolean dt_iop_colorcorrection_key_press(GtkWidget *widget, GdkEventKey 
 
   float multiplier;
 
-  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-  if((event->state & modifiers) == GDK_SHIFT_MASK)
+  if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
   {
     multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
   }
-  else if((event->state & modifiers) == GDK_CONTROL_MASK)
+  else if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
   {
     multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
   }

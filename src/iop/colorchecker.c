@@ -1249,7 +1249,7 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
     return TRUE;
   }
   else if((event->button == 1) &&
-          ((event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK) &&
+          dt_modifier_is(event->state, GDK_SHIFT_MASK) &&
           (self->request_color_pick == DT_REQUEST_COLORPICK_MODULE))
   {
     // shift-left while colour picking: replace source colour
