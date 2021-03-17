@@ -45,9 +45,9 @@ DT_MODULE(3)
 typedef enum dt_disk_onconflict_actions_t
 {
   DT_EXPORT_ONCONFLICT_UNIQUEFILENAME = 0,
-  DT_EXPORT_ONCONFLICT_OVERWRITE  = 1, /* overwrite, but ask confirmation */
-  DT_EXPORT_ONCONFLICT_OVERWRITE2 = 2, /* just overwrite */
-  DT_EXPORT_ONCONFLICT_SKIP = 3
+  DT_EXPORT_ONCONFLICT_OVERWRITE = 1, /* overwrite, prompt first */
+  DT_EXPORT_ONCONFLICT_SKIP = 2,
+  DT_EXPORT_ONCONFLICT_OVERWRITE2 = 3, /* just overwrite */
 } dt_disk_onconflict_actions_t;
 
 // gui data
@@ -202,9 +202,9 @@ void gui_init(dt_imageio_module_storage_t *self)
   d->onsave_action = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->onsave_action, NULL, N_("on conflict"));
   dt_bauhaus_combobox_add(d->onsave_action, _("create unique filename"));
-  dt_bauhaus_combobox_add(d->onsave_action, _("overwrite, but ask"));
-  dt_bauhaus_combobox_add(d->onsave_action, _("overwrite"));
+  dt_bauhaus_combobox_add(d->onsave_action, _("prompt"));
   dt_bauhaus_combobox_add(d->onsave_action, _("skip"));
+  dt_bauhaus_combobox_add(d->onsave_action, _("overwrite"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->onsave_action, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->onsave_action), "value-changed", G_CALLBACK(onsave_action_toggle_callback), self);
   dt_bauhaus_combobox_set(d->onsave_action, dt_conf_get_int("plugins/imageio/storage/disk/overwrite"));
