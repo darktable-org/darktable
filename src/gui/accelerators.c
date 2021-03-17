@@ -509,7 +509,7 @@ void find_views(dt_shortcut_t *s)
 
 static GtkTreeStore *shortcuts_store = NULL;
 static GtkTreeStore *actions_store = NULL;
-static GtkWidget *grab_widget = NULL;
+static GtkWidget *grab_widget = NULL, *grab_window = NULL;
 
 #define NUM_CATEGORIES 3
 const gchar *category_label[NUM_CATEGORIES]
@@ -829,7 +829,8 @@ static void grab_in_tree_view(GtkTreeView *tree_view)
 {
   g_set_weak_pointer(&grab_widget, gtk_widget_get_parent(gtk_widget_get_parent(GTK_WIDGET(tree_view)))); // static
   gtk_widget_set_sensitive(grab_widget, FALSE);
-  g_signal_connect(gtk_widget_get_toplevel(grab_widget), "event", G_CALLBACK(dt_shortcut_dispatcher), NULL);
+  g_set_weak_pointer(&grab_window, gtk_widget_get_toplevel(grab_widget));
+  g_signal_connect(grab_window, "event", G_CALLBACK(dt_shortcut_dispatcher), NULL);
 }
 
 static void ungrab_grab_widget()
@@ -1637,7 +1638,7 @@ static gboolean _button_release_delayed(gpointer user_data)
 
 void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key, guint mods)
 {
-  if(id == DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE)
+  if(!grab_widget && id == DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE)
   {
     dt_shortcut_t simple_key = { .key_device = id, .key = key, .mods = mods, .click = DT_SHORTCUT_CLICK_SINGLE,
                                  .views = darktable.view_manager->current_view->view(darktable.view_manager->current_view) };
@@ -1676,7 +1677,7 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key, guint mo
 
       GdkCursor *cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "all-scroll");
       gdk_seat_grab(gdk_display_get_default_seat(gdk_display_get_default()),
-                    gtk_widget_get_window(grab_widget ? gtk_widget_get_toplevel(grab_widget)
+                    gtk_widget_get_window(grab_window ? grab_window
                                                       : dt_ui_main_window(darktable.gui->ui)),
                     GDK_SEAT_CAPABILITY_ALL, FALSE, cursor,
                     NULL, NULL, NULL);
@@ -1780,8 +1781,11 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
   case GDK_WINDOW_STATE:
     event->focus_change.in = FALSE; // fall through to GDK_FOCUS_CHANGE
   case GDK_FOCUS_CHANGE: // dialog boxes and switch to other app release grab
-    if(!event->focus_change.in)
+    if(event->focus_change.in)
+      g_set_weak_pointer(&grab_window, w);
+    else
     {
+      grab_window = NULL;
       ungrab_grab_widget();
       g_slist_free_full(pressed_keys, g_free);
       pressed_keys = NULL;
