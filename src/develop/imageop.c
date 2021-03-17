@@ -920,12 +920,12 @@ static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton 
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
 
-  if(event->button == 2)
+  if(event->button == 3)
   {
     if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE)) dt_iop_gui_copy_callback(button, user_data);
     return;
   }
-  else if(event->button == 3)
+  else if(event->button == 2)
   {
     return;
   }
@@ -2393,7 +2393,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   hw[IOP_MODULE_INSTANCE] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT, NULL);
   module->multimenu_button = GTK_WIDGET(hw[IOP_MODULE_INSTANCE]);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_INSTANCE]),
-                              _("multiple instance actions\nmiddle-click creates new instance"));
+                              _("multiple instance actions\nright-click creates new instance"));
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_INSTANCE]), "button-press-event", G_CALLBACK(dt_iop_gui_multiinstance_callback),
                    module);
 
@@ -2414,7 +2414,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   if (module->flags() & IOP_FLAGS_ONE_INSTANCE)
     gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), _("presets"));
   else
-    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), _("presets\nmiddle-click to apply on new instance"));
+    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), _("presets\nright-click to apply on new instance"));
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_PRESETS]), "clicked", G_CALLBACK(popup_callback), module);
   gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), "module-preset-button");
 
