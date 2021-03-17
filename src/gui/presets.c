@@ -846,7 +846,7 @@ static gboolean menuitem_button_released_preset(GtkMenuItem *menuitem, GdkEventB
   {
     menuitem_pick_preset(menuitem, module);
   }
-  else if (event->button == 2)
+  else if (event->button == 3)
   {
     dt_iop_module_t *new_module = dt_iop_gui_duplicate(module, FALSE);
     if (new_module)
