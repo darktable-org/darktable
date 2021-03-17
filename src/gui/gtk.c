@@ -248,31 +248,26 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
 static gboolean fullscreen_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                               guint keyval, GdkModifierType modifier, gpointer data)
 {
-  GtkWidget *widget;
-  int fullscreen;
+  GtkWidget *widget = darktable.develop &&
+                      darktable.develop->second_window.second_wnd &&
+                      gtk_window_is_active(GTK_WINDOW(darktable.develop->second_window.second_wnd))
+                    ? darktable.develop->second_window.second_wnd
+                    : dt_ui_main_window(darktable.gui->ui);
 
-  if(data)
-  {
-    widget = dt_ui_main_window(darktable.gui->ui);
-    fullscreen = gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_FULLSCREEN;
-    if(fullscreen)
-      gtk_window_unfullscreen(GTK_WINDOW(widget));
-    else
-      gtk_window_fullscreen(GTK_WINDOW(widget));
-    dt_dev_invalidate(darktable.develop);
-  }
-  else
-  {
-    widget = dt_ui_main_window(darktable.gui->ui);
+  if(!data || gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_FULLSCREEN)
     gtk_window_unfullscreen(GTK_WINDOW(widget));
-    dt_dev_invalidate(darktable.develop);
-  }
+  else
+    gtk_window_fullscreen(GTK_WINDOW(widget));
+
+  dt_dev_invalidate(darktable.develop);
 
   /* redraw center view */
-  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+  gtk_widget_queue_draw(widget);
+
 #ifdef __APPLE__
   // workaround for GTK Quartz backend bug
-  gtk_window_set_title(GTK_WINDOW(widget), "darktable");
+  gtk_window_set_title(GTK_WINDOW(widget), widget == dt_ui_main_window(darktable.gui->ui)
+                                         ? "darktable" : _("darktable - darkroom preview"));
 #endif
   return TRUE;
 }

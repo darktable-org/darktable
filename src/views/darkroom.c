@@ -4702,44 +4702,6 @@ static gboolean _second_window_delete_callback(GtkWidget *widget, GdkEvent *even
   return FALSE;
 }
 
-static gboolean _second_window_key_pressed_callback(GtkWidget *widget, GdkEventKey *event, dt_develop_t *dev)
-{
-  int fullscreen;
-
-  GtkAccelKey key_on, key_off;
-  char path_on[256];
-  char path_off[256];
-  dt_accel_path_global(path_on, sizeof(path_on), "toggle fullscreen");
-  dt_accel_path_global(path_off, sizeof(path_off), "leave fullscreen");
-  gtk_accel_map_lookup_entry(path_on, &key_on);
-  gtk_accel_map_lookup_entry(path_off, &key_off);
-
-  if(event->keyval == key_on.accel_key && dt_modifier_is(event->state, key_on.accel_mods))
-  {
-    fullscreen = gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_FULLSCREEN;
-    if(fullscreen)
-      gtk_window_unfullscreen(GTK_WINDOW(widget));
-    else
-      gtk_window_fullscreen(GTK_WINDOW(widget));
-  }
-  else if(event->keyval == key_off.accel_key && dt_modifier_is(event->state, key_off.accel_mods))
-  {
-    gtk_window_unfullscreen(GTK_WINDOW(widget));
-  }
-  else
-  {
-    return FALSE;
-  }
-
-  /* redraw center view */
-  gtk_widget_queue_draw(dev->second_window.widget);
-#ifdef __APPLE__
-  // workaround for GTK Quartz backend bug
-  gtk_window_set_title(GTK_WINDOW(widget), _("darktable - darkroom preview"));
-#endif
-  return TRUE;
-}
-
 static void _darkroom_display_second_window(dt_develop_t *dev)
 {
   if(dev->second_window.second_wnd == NULL)
@@ -4791,8 +4753,8 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
 
     g_signal_connect(G_OBJECT(dev->second_window.second_wnd), "delete-event",
                      G_CALLBACK(_second_window_delete_callback), dev);
-    g_signal_connect(G_OBJECT(dev->second_window.second_wnd), "key-press-event",
-                     G_CALLBACK(_second_window_key_pressed_callback), dev);
+    g_signal_connect(G_OBJECT(dev->second_window.second_wnd), "event",
+                     G_CALLBACK(dt_shortcut_dispatcher), NULL);
 
     _darkroom_ui_second_window_init(dev->second_window.second_wnd, dev);
   }
