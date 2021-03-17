@@ -391,6 +391,10 @@ int main(int argc, char *arg[])
         k++;
         break;
       }
+      else
+      {
+        fprintf(stderr, _("warning: unknown option '%s'\n"), arg[k]);
+      }
     }
     else
     {
