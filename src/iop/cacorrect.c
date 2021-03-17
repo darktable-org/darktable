@@ -1584,19 +1584,19 @@ static void _display_ca_error(struct dt_iop_module_t *self)
 
   if(g->error == CACORRECT_ERROR_CFA)
     dt_iop_set_module_trouble_message(self, _("error"),
-                                      _("CA correction supports only RGB Colour filter arrays"), NULL);
+                                      _("CA correction supports only RGB colour filter arrays"), NULL);
   else if(g->error == CACORRECT_ERROR_MATH)
      dt_iop_set_module_trouble_message(self, _("error"),
-                                      _("While calculating the correction parameters the internal maths failed so module is bypassed\n"
-                                        "You can get more info by running dt via the console."), NULL);
+                                      _("while calculating the correction parameters the internal maths failed so module is bypassed.\n"
+                                        "you can get more info by running dt via the console."), NULL);
   else if(g->error == CACORRECT_ERROR_LIN)
      dt_iop_set_module_trouble_message(self, _("quality"),
-                                      _("Internals maths found too few data points so restricted the order of the fit to linear.\n"
-                                        "You might view bad correction results."), NULL);
+                                      _("internals maths found too few data points so restricted the order of the fit to linear.\n"
+                                        "you might view bad correction results."), NULL);
   else if(g->error == CACORRECT_ERROR_SIZE)
     dt_iop_set_module_trouble_message(self, _("bypassed"),
-                                      _("To calculate good parameters for raw CA correction we want full sensor data or at least a sensible part of that.\n"
-                                        "The image shown in darkroom would look vastly different from developed files so effect is bypassed now."), NULL);
+                                      _("to calculate good parameters for raw CA correction we want full sensor data or at least a sensible part of that.\n"
+                                        "the image shown in darkroom would look vastly different from developed files so effect is bypassed now."), NULL);
   else
     dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
 
