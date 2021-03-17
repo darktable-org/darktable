@@ -146,6 +146,7 @@ typedef struct dt_lib_modulegroups_t
   GtkWidget *preset_name, *preset_groups_box;
   GtkWidget *edit_search_cb;
   GtkWidget *basics_chkbox, *edit_basics_groupbox, *edit_basics_box;
+  GtkWidget *edit_autoapply_lb;
 
   gboolean basics_show;
   GList *basics;
@@ -3317,6 +3318,50 @@ static void _preset_renamed_callback(GtkEntry *entry, dt_lib_module_t *self)
   _manage_editor_save(self);
 }
 
+static void _preset_autoapply_changed(dt_gui_presets_edit_dialog_t *g)
+{
+  dt_lib_module_t *self = g->data;
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+
+  // we reread the presets autoapply values from the database
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT autoapply, filter"
+                              " FROM data.presets"
+                              " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, d->edit_preset, -1, SQLITE_TRANSIENT);
+
+  int autoapply = 0;
+  int filter = 0;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    autoapply = sqlite3_column_int(stmt, 0);
+    filter = sqlite3_column_int(stmt, 1);
+    sqlite3_finalize(stmt);
+  }
+  else
+  {
+    sqlite3_finalize(stmt);
+    return;
+  }
+
+  // we refresh the label
+  gchar *auto_txt = dt_util_dstrcat(NULL, "%s:%s - %s:%s", _("autoapply"), autoapply ? _("yes") : _("no"),
+                                    _("filter"), filter ? _("yes") : _("no"));
+  gtk_label_set_text(GTK_LABEL(d->edit_autoapply_lb), auto_txt);
+  g_free(auto_txt);
+}
+
+static void _preset_autoapply_edit(GtkButton *button, dt_lib_module_t *self)
+{
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_gui_presets_show_lib_edit_dialog(d->edit_preset, self, G_CALLBACK(_preset_autoapply_changed), self, FALSE,
+                                      FALSE, GTK_WINDOW(d->dialog));
+}
+
 static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
@@ -3355,16 +3400,17 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   d->edit_groups = NULL;
   d->edit_preset = NULL;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "SELECT writeprotect, op_params"
-      " FROM data.presets"
-      " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
-      -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT writeprotect, op_params, autoapply, filter"
+                              " FROM data.presets"
+                              " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, preset, -1, SQLITE_TRANSIENT);
 
+  int autoapply = 0;
+  int filter = 0;
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     d->edit_ro = sqlite3_column_int(stmt, 0);
@@ -3374,6 +3420,9 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
     d->edit_basics_box = NULL;
     _basics_cleanup_list(self, TRUE);
     d->edit_preset = g_strdup(preset);
+
+    autoapply = sqlite3_column_int(stmt, 2);
+    filter = sqlite3_column_int(stmt, 3);
     sqlite3_finalize(stmt);
   }
   else
@@ -3409,6 +3458,20 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->basics_chkbox), "toggled", G_CALLBACK(_manage_editor_basics_toggle), self);
   gtk_widget_set_sensitive(d->basics_chkbox, !d->edit_ro);
   gtk_box_pack_start(GTK_BOX(vb), d->basics_chkbox, FALSE, TRUE, 0);
+
+  // show the autoapply/filter line
+  gchar *auto_txt = dt_util_dstrcat(NULL, "%s:%s - %s:%s", _("autoapply"), autoapply ? _("yes") : _("no"),
+                                    _("filter"), filter ? _("yes") : _("no"));
+  hb1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  d->edit_autoapply_lb = gtk_label_new(auto_txt);
+  gtk_widget_set_name(d->edit_autoapply_lb, "modulegroups-autoapply-txt");
+  g_free(auto_txt);
+  gtk_box_pack_start(GTK_BOX(hb1), d->edit_autoapply_lb, FALSE, FALSE, 0);
+  GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_preferences, 0, NULL);
+  g_signal_connect(G_OBJECT(btn), "clicked", G_CALLBACK(_preset_autoapply_edit), self);
+  gtk_widget_set_name(btn, "modulegroups-autoapply-btn");
+  gtk_box_pack_start(GTK_BOX(hb1), btn, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vb), hb1, FALSE, TRUE, 0);
 
   hb1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->preset_groups_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
