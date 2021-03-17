@@ -964,7 +964,7 @@ GList *dt_tag_get_hierarchical_export(gint imgid, int32_t flags)
     dt_tag_t *t = (dt_tag_t *)tag_iter->data;
     if (export_private_tags || !(t->flags & DT_TF_PRIVATE))
     {
-      tags = g_list_prepend(tags, t->tag);
+      tags = g_list_prepend(tags, g_strdup(t->tag));
     }
   }
 
