@@ -348,8 +348,8 @@ void dt_develop_make_contrast_mask(const float *const ivoid, float *mask, const 
 #endif
   for(size_t idx =0; idx < (size_t) width * height; idx++)
   {
-    const float val = labspace ? ivoid[4 * idx] : ivoid[4 * idx] + ivoid[4 * idx + 1] + ivoid[4 * idx + 2];
-    lum[idx] = lab_f(0.33333f * val);
+    const float val = labspace ? 0.02f * ivoid[4 * idx] : 0.333333f * (ivoid[4 * idx] + ivoid[4 * idx + 1] + ivoid[4 * idx + 2]);
+    lum[idx] = lab_f(val);
   }
 
   const float scale = 1.0f / 16.0f;
