@@ -738,7 +738,11 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
     dt_pthread_mutex_init(&camera->live_view_buffer_mutex, NULL);
     dt_pthread_mutex_init(&camera->live_view_synch, NULL);
 
-    // if(g_strcmp0(camera->port,"usb:")==0) { g_free(camera); continue; }
+    if(!strncmp(camera->port, "disk:", 5))
+    {
+      g_free(camera);
+      continue;
+    }
     GList *citem;
     if( ((citem = g_list_find_custom(c->cameras, camera, _compare_camera_by_port)) == NULL)
        || g_strcmp0(((dt_camera_t *)citem->data)->model, camera->model) != 0)
@@ -1005,7 +1009,6 @@ static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
 void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *images)
 {
   _camctl_lock(c, cam);
-  const gboolean sdcard = !strncmp(c->active_camera->port, "disk:", 5);
 
   for(GList *ifile = images; ifile; ifile = g_list_next(ifile))
   {
@@ -1013,7 +1016,6 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
     char *eos;
     char folder[PATH_MAX] = { 0 };
     char filename[PATH_MAX] = { 0 };
-    char sdfilename[PATH_MAX] = { 0 };
     char *file = (char *)ifile->data;
     eos = file + strlen(file);
     while(--eos > file && *eos != '/')
@@ -1028,35 +1030,23 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
     char *data = NULL;
     gsize size = 0;
     time_t exif_time;
-    if(!sdcard)
+
+    gp_file_new(&camfile);
+    if((res = gp_camera_file_get(cam->gpcam, folder, filename, GP_FILE_TYPE_NORMAL, camfile, NULL)) < GP_OK)
     {
-      gp_file_new(&camfile);
-      if((res = gp_camera_file_get(cam->gpcam, folder, filename, GP_FILE_TYPE_NORMAL, camfile, NULL)) < GP_OK)
-      {
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] gphoto import failed: %s\n", gp_result_as_string(res));
-        gp_file_free(camfile);
-        continue;
-      }
-      unsigned long int gpsize = 0;
-      if((res = gp_file_get_data_and_size(camfile, (const char**)&data, &gpsize)) < GP_OK)
-      {
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] gphoto import failed: %s\n", gp_result_as_string(res));
-        gp_file_free(camfile);
-        continue;
-      }
-      else
-        size = (gsize) gpsize;
+      dt_print(DT_DEBUG_CAMCTL, "[camera_control] gphoto import failed: %s\n", gp_result_as_string(res));
+      gp_file_free(camfile);
+      continue;
+    }
+    unsigned long int gpsize = 0;
+    if((res = gp_file_get_data_and_size(camfile, (const char**)&data, &gpsize)) < GP_OK)
+    {
+      dt_print(DT_DEBUG_CAMCTL, "[camera_control] gphoto import failed: %s\n", gp_result_as_string(res));
+      gp_file_free(camfile);
+      continue;
     }
     else
-    {
-      g_strlcat(sdfilename, c->active_camera->port +5, sizeof(sdfilename));
-      g_strlcat(sdfilename, file, sizeof(sdfilename));
-      if(!g_file_get_contents(sdfilename, &data, &size, NULL))
-      {
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to read disk mounted file `%s`\n", sdfilename);
-        continue;
-      }
-    }
+      size = (gsize) gpsize;
 
     const gboolean have_exif_time = dt_exif_get_datetime_taken((uint8_t *)data, size, &exif_time);
 
@@ -1064,8 +1054,7 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
     const char *fname = _dispatch_request_image_filename(c, filename, have_exif_time ? &exif_time : NULL, cam);
     if(!fname)
     {
-      if(sdcard) g_free(data);
-      else gp_file_free(camfile);
+      gp_file_free(camfile);
       continue;
     }
 
@@ -1076,8 +1065,7 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
     else
       _dispatch_camera_image_downloaded(c, cam, output);
 
-    if(sdcard) g_free(data);
-    else gp_file_free(camfile);
+    gp_file_free(camfile);
     g_free(output);
   }
 

@@ -215,10 +215,6 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
 
   if(citem)
   {
-    // The label for the section below could be "Mass Storage Camera" from gphoto2
-    // let's add a translatable string for it.
-    #define FOR_TRANSLATION_MSC N_("Mass Storage Camera")
-
     // Add detected supported devices
     char buffer[512] = { 0 };
     for(; citem; citem = g_list_next(citem))
