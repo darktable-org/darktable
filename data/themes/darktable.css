@@ -1220,7 +1220,7 @@ dialog scrollbar
 #preferences_notebook combobox,
 #preferences_notebook spinbutton
 {
-   min-width: 12.6em;
+   min-width: 16em;
 }
 
 #preferences_notebook combobox menuitem
