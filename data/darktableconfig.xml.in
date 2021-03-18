@@ -527,13 +527,6 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/capture/camera/import/jobcode</name>
-    <type>string</type>
-    <default>noname</default>
-    <shortdescription>jobcode of import job</shortdescription>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/capture/camera/live_view_fps</name>
     <type>int</type>
     <default>15</default>
