@@ -943,7 +943,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
     gtk_box_pack_start(GTK_BOX(import_patterns), GTK_WIDGET(grid), FALSE, FALSE, 0);
 
     // collapsible section
-    _expander_create(&d->from.exp, "naming rules", "ui_last/session_expander_import", "import_metadata");
+    _expander_create(&d->from.exp, _("naming rules"), "ui_last/session_expander_import", "import_metadata");
     gtk_box_pack_start(GTK_BOX(import_patterns), d->from.exp.expander, FALSE, FALSE, 0);
 
     // patterns
@@ -1163,7 +1163,7 @@ void gui_init(dt_lib_module_t *self)
 #endif
 
   // collapsible section
-  _expander_create(&d->exp, "parameters", "ui_last/expander_import", "import_metadata");
+  _expander_create(&d->exp, _("parameters"), "ui_last/expander_import", "import_metadata");
   gtk_box_pack_start(GTK_BOX(self->widget), d->exp.expander, FALSE, FALSE, 0);
 
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
