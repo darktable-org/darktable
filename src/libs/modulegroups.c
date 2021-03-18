@@ -3358,8 +3358,25 @@ static void _preset_autoapply_changed(dt_gui_presets_edit_dialog_t *g)
 static void _preset_autoapply_edit(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-  dt_gui_presets_show_lib_edit_dialog(d->edit_preset, self, G_CALLBACK(_preset_autoapply_changed), self, FALSE,
-                                      FALSE, GTK_WINDOW(d->dialog));
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT rowid"
+                              " FROM data.presets"
+                              " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, d->edit_preset, -1, SQLITE_TRANSIENT);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int rowid = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+    dt_gui_presets_show_edit_dialog(d->edit_preset, self->name(self), rowid, G_CALLBACK(_preset_autoapply_changed),
+                                    self, FALSE, FALSE, FALSE, GTK_WINDOW(d->dialog));
+  }
+  else
+    sqlite3_finalize(stmt);
 }
 
 static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
