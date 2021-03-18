@@ -40,7 +40,8 @@ static dt_develop_blend_params_t _default_blendop_params
         0.0f,
         0.0f,
         0.0f,
-        { 0, 0, 0, 0 },
+        0.0f, // luminance based contrast mask threshold
+        { 0, 0, 0 },
         { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
@@ -219,6 +220,178 @@ int dt_develop_blendif_init_masking_profile(struct dt_dev_pixelpipe_iop_t *piece
   return 1;
 }
 
+static inline float calcBlendFactor(float val, float threshold)
+{
+    // sigmoid function
+    // result is in ]0;1] range
+    // inflexion point is at (x, y) (threshold, 0.5)
+    return 1.0f / (1.0f + dt_fast_expf(16.0f - (16.0f / threshold) * val));
+}
+static inline float sqrf(float a)
+{
+  return a * a;
+}
+
+static void fast_blur(float *const restrict src, float *const restrict out, const int width, const int height, const float sigma)
+{
+  // For a blurring sigma of 2.0f a 13x13 kernel would be optimally required but the 9x9 is by far good enough here 
+  float kernel[9][9];
+  const double temp = -2.0f * sqrf(sigma);
+  float sum = 0.0f;
+  for(int i = -4; i <= 4; i++)
+  {
+    for(int j = -4; j <= 4; j++)
+    {
+      kernel[i + 4][j + 4] = expf( (sqrf(i) + sqrf(j)) / temp);
+      sum += kernel[i + 4][j + 4];
+    }
+  }
+  for(int i = 0; i < 9; i++)
+  {
+    for(int j = 0; j < 9; j++)
+      kernel[i][j] /= sum;
+  }
+  const float c42 = kernel[0][2];
+  const float c41 = kernel[0][3];
+  const float c40 = kernel[0][4];
+  const float c33 = kernel[1][1];
+  const float c32 = kernel[1][2];
+  const float c31 = kernel[1][3];
+  const float c30 = kernel[1][4];
+  const float c22 = kernel[2][2];
+  const float c21 = kernel[2][3];
+  const float c20 = kernel[2][4];
+  const float c11 = kernel[3][3];
+  const float c10 = kernel[3][4];
+  const float c00 = kernel[4][4];
+  const int w1 = width;
+  const int w2 = 2*width;
+  const int w3 = 3*width;
+  const int w4 = 4*width;
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(src, out) \
+  dt_omp_sharedconst(c42, c41, c40, c33, c32, c31, c30, c22, c21, c20, c11, c10, c00, w1, w2, w3, w4, width, height) \
+  schedule(simd:static) aligned(src, out : 64) 
+ #endif
+  for(int row = 4; row < height - 4; row++)
+  {
+#if defined(__clang__)
+        #pragma clang loop vectorize(assume_safety)
+#elif defined(__GNUC__)
+        #pragma GCC ivdep
+#endif
+    for(int col = 4; col < width - 4; col++)
+    {
+      const int i = row * width + col;
+      const float val = c42 * (src[i - w4 - 2] + src[i - w4 + 2] + src[i - w2 - 4] + src[i - w2 + 4] + src[i + w2 - 4] + src[i + w2 + 4] + src[i + w4 - 2] + src[i + w4 + 2]) +
+                        c41 * (src[i - w4 - 1] + src[i - w4 + 1] + src[i - w1 - 4] + src[i - w1 + 4] + src[i + w1 - 4] + src[i + w1 + 4] + src[i + w4 - 1] + src[i + w4 + 1]) +
+                        c40 * (src[i - w4] + src[i - 4] + src[i + 4] + src[i + w4]) +
+                        c33 * (src[i - w3 - 3] + src[i - w3 + 3] + src[i + w3 - 3] + src[i + w3 + 3]) +
+                        c32 * (src[i - w3 - 2] + src[i - w3 + 2] + src[i - w2 - 3] + src[i - w2 + 3] + src[i + w2 - 3] + src[i + w2 + 3] + src[i + w3 - 2] + src[i + w3 + 2]) +
+                        c31 * (src[i - w3 - 1] + src[i - w3 + 1] + src[i - w1 - 3] + src[i - w1 + 3] + src[i + w1 - 3] + src[i + w1 + 3] + src[i + w3 - 1] + src[i + w3 + 1]) +
+                        c30 * (src[i - w3] + src[i - 3] + src[i + 3] + src[i + w3]) +
+                        c22 * (src[i - w2 - 2] + src[i - w2 + 2] + src[i + w2 - 2] + src[i + w2 + 2]) +
+                        c21 * (src[i - w2 - 1] + src[i - w2 + 1] + src[i - w1 - 2] + src[i - w1 + 2] + src[i + w1 - 2] + src[i + w1 + 2] + src[i + w2 - 1] + src[i + w2 + 1]) +
+                        c20 * (src[i - w2] + src[i - 2] + src[i + 2] + src[i + w2]) +
+                        c11 * (src[i - w1 - 1] + src[i - w1 + 1] + src[i + w1 - 1] + src[i + w1 + 1]) +
+                        c10 * (src[i - w1] + src[i - 1] + src[i + 1] + src[i + w1]) +
+                        c00 * src[i];
+      out[i] = fminf(1.0f, fmaxf(0.0f, val));
+    }
+  }
+}
+static void fill_mask_border(float *mask, const int width, const int height, const int border)
+{
+  if(border <= 0) return;
+  for(int row = border; row < height - border; row++)
+  {
+    const int idx = row * width;
+    for(int i = 0; i < border; i++)
+    {
+      mask[idx + i] = mask[idx + border];
+      mask[idx + width - i - 1] = mask[idx + width - border -1];   
+    }
+  }
+  for(int col = 0; col < width; col++)
+  {
+    const float top = mask[border * width + MIN(width - border - 1, MAX(col, border))];
+    const float bot = mask[(height - border - 1) * width + MIN(width - border - 1, MAX(col, border))];
+    for(int i = 0; i < border; i++)
+    {
+      mask[col + i * width] = top;
+      mask[col + (height - i - 1) * width] = bot;
+    }   
+  }
+} 
+
+void dt_develop_make_contrast_mask(const float *const ivoid, float *mask, const int width, const int height, const float level, const gboolean inverted, const gboolean labspace)
+{
+  if(level == 0.0f) return;
+  gboolean detail = (level > 0.0f);
+  const float threshold = detail ? 0.01f * sqrf(level) : 0.01f * (1.0f - sqrtf(fabs(level)));
+  
+  float *tmp = NULL;
+  float *lum = NULL;
+  tmp = dt_alloc_align_float((size_t) width * height);
+  lum = dt_alloc_align_float((size_t) width * height);
+  if((tmp == NULL) || (lum == NULL))
+  {
+    dt_control_log(_("could not allocate buffer for contrast mask blending"));
+    goto finish;
+  }
+
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(lum, ivoid, width, height, labspace) \
+  schedule(simd:static) aligned(lum, ivoid : 64) 
+#endif
+  for(size_t idx =0; idx < (size_t) width * height; idx++)
+  {
+    const float val = labspace ? ivoid[4 * idx] : ivoid[4 * idx] + ivoid[4 * idx + 1] + ivoid[4 * idx + 2];
+    lum[idx] = lab_f(0.33333f * val);
+  }
+
+  const float scale = 1.0f / 16.0f;
+  {
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(lum, tmp, width, height, threshold, scale, detail) \
+  schedule(simd:static) aligned(lum, tmp : 64) 
+ #endif
+    for(int row = 2; row < height - 2; row++)
+    {
+      for(int col = 2, idx = row * width + col; col < width - 2; col++, idx++)
+      {
+        const float contrast = scale * sqrtf(sqrf(lum[idx+1] - lum[idx-1]) + sqrf(lum[idx + width]   - lum[idx - width]) +
+                                             sqrf(lum[idx+2] - lum[idx-2]) + sqrf(lum[idx + 2*width] - lum[idx - 2*width]));
+        const float blend = calcBlendFactor(contrast, threshold);
+        tmp[idx] = detail ? blend : 1.0f - blend;
+      }
+    }
+  }
+  fill_mask_border(tmp, width, height, 2);  
+  fast_blur(tmp, lum, width, height, 2.0f);
+  fill_mask_border(lum, width, height, 4);  
+
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(lum, mask, width, height, inverted) \
+  schedule(simd:static) aligned(lum, mask : 64) 
+ #endif
+  for(size_t idx =0; idx < (size_t) width * height; idx++)
+  {
+    if(inverted)
+      mask[idx] = 1.0f - (1.0f - mask[idx]) * lum[idx];
+    else
+      mask[idx] = mask[idx] * lum[idx];
+  }
+
+  finish:
+  dt_free_align(lum);
+  dt_free_align(tmp);
+}
+
 void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                               const void *const ivoid, void *const ovoid, const struct dt_iop_roi_t *const roi_in,
                               const struct dt_iop_roi_t *const roi_out)
@@ -340,6 +513,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
         // if we have a mask and this flag is set -> invert the mask
         dt_iop_image_invert(mask,1.0f,owidth,oheight,1); //mask[k] = 1.0f - mask[k];
       }
+      dt_develop_make_contrast_mask(ivoid, mask, owidth, oheight, d->lum_contrast, d->mask_combine & DEVELOP_COMBINE_MASKS_POS, blend_csp == DEVELOP_BLEND_CS_LAB);
     }
     else if((!(self->flags() & IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
     {
@@ -353,6 +527,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
       const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
       dt_iop_image_fill(mask,fill,owidth,oheight,1); //mask[k] = fill;
+      dt_develop_make_contrast_mask(ivoid, mask, owidth, oheight, d->lum_contrast, fill == 0.0f, blend_csp == DEVELOP_BLEND_CS_LAB);
     }
 
     // get parametric mask (if any) and apply global opacity
@@ -513,6 +688,31 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 }
 
 #ifdef HAVE_OPENCL
+
+// this is currently a slow dummy until al contrast masks features are well enought tested to port to opencl
+void dt_develop_make_contrast_mask_cl(cl_mem in, float *mask, const int width, const int height, const float level, const gboolean inverted, const int devid, const gboolean labspace)
+{
+  if(level == 0.0f) return;
+  float *rgb = dt_alloc_align_float((size_t)4 * width * height);
+  if(rgb == NULL)
+  {
+    fprintf(stderr, "[dt_develop_make_contrast_mask_cl] error allocating rgb memory\n");
+    goto cleanup;
+  }
+
+  const int err = dt_opencl_read_host_from_device(devid, rgb, in, width, height, 4 * sizeof(float));
+  if(err != CL_SUCCESS)
+  {
+    fprintf(stderr, "[dt_develop_make_contrast_mask_cl] error copy to rgb array\n");
+    goto cleanup;
+  }
+
+  dt_develop_make_contrast_mask(rgb, mask, width, height, level, inverted, labspace);
+
+  cleanup:
+  dt_free_align(rgb);  
+}
+
 int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                                 cl_mem dev_in, cl_mem dev_out, const struct dt_iop_roi_t *roi_in,
                                 const struct dt_iop_roi_t *roi_out)
@@ -720,6 +920,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
         // if we have a mask and this flag is set -> invert the mask
         dt_iop_image_invert(mask,1.0f,owidth,oheight,1); //mask[k] = 1.0f - mask[k]
       }
+      dt_develop_make_contrast_mask_cl(dev_in, mask, owidth, oheight, d->lum_contrast, d->mask_combine & DEVELOP_COMBINE_MASKS_POS, devid, blend_csp == DEVELOP_BLEND_CS_LAB);
     }
     else if((!(self->flags() & IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
     {
@@ -733,6 +934,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
       const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
       dt_iop_image_fill(mask,fill,owidth,oheight,1); //mask[k] = fill;
+      dt_develop_make_contrast_mask_cl(dev_in, mask, owidth, oheight, d->lum_contrast, fill == 0.0f, devid, blend_csp == DEVELOP_BLEND_CS_LAB);
     }
 
     // write mask from host to device

@@ -80,6 +80,7 @@ const dt_develop_name_value_t dt_develop_blend_mode_names[]
         { NC_("blendmode", "divide reverse"), DEVELOP_BLEND_DIVIDE_REVERSE },
         { NC_("blendmode", "geometric mean"), DEVELOP_BLEND_GEOMETRIC_MEAN },
         { NC_("blendmode", "harmonic mean"), DEVELOP_BLEND_HARMONIC_MEAN },
+        { NC_("blendmode", "lum contrast"), DEVELOP_BLEND_LUM_CONTRAST },
 
         /** deprecated blend modes: make them available as legacy history stacks might want them */
         { NC_("blendmode", "difference (deprecated)"), DEVELOP_BLEND_DIFFERENCE },
@@ -255,6 +256,7 @@ enum _channel_indexes
   CHANNEL_INDEX_Jz = 4,
   CHANNEL_INDEX_Cz = 5,
   CHANNEL_INDEX_hz = 6,
+  CHANNEL_INDEX_ct = 7,
 };
 
 static void _blendop_blendif_update_tab(dt_iop_module_t *module, const int tab);
@@ -1031,6 +1033,15 @@ static void _blendop_blendif_update_tab(dt_iop_module_t *module, const int tab)
   gtk_widget_set_sensitive(GTK_WIDGET(data->channel_boost_factor_slider), boost_factor_enabled);
   dt_bauhaus_slider_set_soft(GTK_WIDGET(data->channel_boost_factor_slider), boost_factor);
 
+  float lum_contrast = 0.0f;
+  const gboolean lum_contrast_enabled = channel->lum_contrast_enabled;
+  if(lum_contrast_enabled)
+  {
+    lum_contrast = bp->lum_contrast;
+  }
+  gtk_widget_set_sensitive(GTK_WIDGET(data->lum_contrast_slider), lum_contrast_enabled);
+  dt_bauhaus_slider_set_soft(GTK_WIDGET(data->lum_contrast_slider), lum_contrast);
+
   --darktable.gui->reset;
 }
 
@@ -1084,6 +1095,20 @@ static void _blendop_blendif_boost_factor_callback(GtkWidget *slider, dt_iop_gui
       bp->blendif &= ~(1 << ch);
     bp->blendif_boost_factors[ch] = new_value;
   }
+  _blendop_blendif_update_tab(data->module, tab);
+
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+}
+
+static void _blendop_blendif_lum_contrast_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *data)
+{
+  if(darktable.gui->reset || !data || !data->blendif_inited) return;
+  dt_develop_blend_params_t *bp = data->module->blend_params;
+  const int tab = data->tab;
+
+  const float value = dt_bauhaus_slider_get(slider);
+  bp->lum_contrast = value;
+
   _blendop_blendif_update_tab(data->module, tab);
 
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
@@ -1245,6 +1270,7 @@ static gboolean _blendop_blendif_reset(GtkButton *button, GdkEventButton *event,
   module->blend_params->blendif = module->default_blendop_params->blendif;
   memcpy(module->blend_params->blendif_parameters, module->default_blendop_params->blendif_parameters,
          4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+  module->blend_params->lum_contrast = module->default_blendop_params->lum_contrast;
 
   dt_iop_color_picker_reset(module, FALSE);
   dt_iop_gui_update_blendif(module);
@@ -1924,77 +1950,90 @@ static gboolean _blendop_blendif_key_press(GtkWidget *widget, GdkEventKey *event
 #define COLORSTOPS(gradient) sizeof(gradient) / sizeof(dt_iop_gui_blendif_colorstop_t), gradient
 
 const dt_iop_gui_blendif_channel_t Lab_channels[]
-    = { { N_("L"), N_("sliders for L channel"), 1.0f / 100.0f, COLORSTOPS(_gradient_L), TRUE, 0.0f,
+    = { { N_("L"), N_("sliders for L channel"), 1.0f / 100.0f, COLORSTOPS(_gradient_L), TRUE, 0.0f, FALSE,
           { DEVELOP_BLENDIF_L_in, DEVELOP_BLENDIF_L_out }, DT_DEV_PIXELPIPE_DISPLAY_L,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("lightness") },
-        { N_("a"), N_("sliders for a channel"), 1.0f / 256.0f, COLORSTOPS(_gradient_a), TRUE, 0.0f,
+        { N_("a"), N_("sliders for a channel"), 1.0f / 256.0f, COLORSTOPS(_gradient_a), TRUE, 0.0f, FALSE,
           { DEVELOP_BLENDIF_A_in, DEVELOP_BLENDIF_A_out }, DT_DEV_PIXELPIPE_DISPLAY_a,
           _blendif_scale_print_ab, _blendop_blendif_disp_alternative_mag, N_("green/red") },
-        { N_("b"), N_("sliders for b channel"), 1.0f / 256.0f, COLORSTOPS(_gradient_b), TRUE, 0.0f,
+        { N_("b"), N_("sliders for b channel"), 1.0f / 256.0f, COLORSTOPS(_gradient_b), TRUE, 0.0f, FALSE,
           { DEVELOP_BLENDIF_B_in, DEVELOP_BLENDIF_B_out }, DT_DEV_PIXELPIPE_DISPLAY_b,
           _blendif_scale_print_ab, _blendop_blendif_disp_alternative_mag, N_("blue/yellow") },
         { N_("C"), N_("sliders for chroma channel (of LCh)"), 1.0f / 100.0f, COLORSTOPS(_gradient_chroma),
-          TRUE, 0.0f,
+          TRUE, 0.0f, FALSE,
           { DEVELOP_BLENDIF_C_in, DEVELOP_BLENDIF_C_out }, DT_DEV_PIXELPIPE_DISPLAY_LCH_C,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("saturation") },
         { N_("h"), N_("sliders for hue channel (of LCh)"), 1.0f / 360.0f, COLORSTOPS(_gradient_LCh_hue),
-          FALSE, 0.0f,
+          FALSE, 0.0f, FALSE,
           { DEVELOP_BLENDIF_h_in, DEVELOP_BLENDIF_h_out }, DT_DEV_PIXELPIPE_DISPLAY_LCH_h,
           _blendif_scale_print_hue, NULL, N_("hue") },
+        { N_("lC"), N_("slider for local contrast detection"), 1.0f / 100.0f, COLORSTOPS(_gradient_gray),
+          FALSE, 0.0f, TRUE,
+          { DEVELOP_BLENDIF_loc_contrast }, DT_DEV_PIXELPIPE_DISPLAY_loc_contrast,
+          _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("local contrast") },
         { NULL } };
 
 const dt_iop_gui_blendif_channel_t rgb_channels[]
-    = { { N_("g"), N_("sliders for gray value"), 1.0f / 255.0f, COLORSTOPS(_gradient_gray), TRUE, 0.0f,
+    = { { N_("g"), N_("sliders for gray value"), 1.0f / 255.0f, COLORSTOPS(_gradient_gray), TRUE, 0.0f, FALSE,
           { DEVELOP_BLENDIF_GRAY_in, DEVELOP_BLENDIF_GRAY_out }, DT_DEV_PIXELPIPE_DISPLAY_GRAY,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("gray") },
-        { N_("R"), N_("sliders for red channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_red), TRUE, 0.0f,
+        { N_("R"), N_("sliders for red channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_red), TRUE, 0.0f, FALSE,
           { DEVELOP_BLENDIF_RED_in, DEVELOP_BLENDIF_RED_out }, DT_DEV_PIXELPIPE_DISPLAY_R,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("red") },
-        { N_("G"), N_("sliders for green channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_green), TRUE, 0.0f,
+        { N_("G"), N_("sliders for green channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_green), TRUE, 0.0f, FALSE,
           { DEVELOP_BLENDIF_GREEN_in, DEVELOP_BLENDIF_GREEN_out }, DT_DEV_PIXELPIPE_DISPLAY_G,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("green") },
-        { N_("B"), N_("sliders for blue channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_blue), TRUE, 0.0f,
+        { N_("B"), N_("sliders for blue channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_blue), TRUE, 0.0f, FALSE,
           { DEVELOP_BLENDIF_BLUE_in, DEVELOP_BLENDIF_BLUE_out }, DT_DEV_PIXELPIPE_DISPLAY_B,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("blue") },
         { N_("H"), N_("sliders for hue channel (of HSL)"), 1.0f / 360.0f, COLORSTOPS(_gradient_HSL_hue),
-          FALSE, 0.0f,
+          FALSE, 0.0f, FALSE,
           { DEVELOP_BLENDIF_H_in, DEVELOP_BLENDIF_H_out }, DT_DEV_PIXELPIPE_DISPLAY_HSL_H,
           _blendif_scale_print_hue, NULL, N_("hue") },
         { N_("S"), N_("sliders for chroma channel (of HSL)"), 1.0f / 100.0f, COLORSTOPS(_gradient_chroma),
-          FALSE, 0.0f,
+          FALSE, 0.0f, FALSE,
           { DEVELOP_BLENDIF_S_in, DEVELOP_BLENDIF_S_out }, DT_DEV_PIXELPIPE_DISPLAY_HSL_S,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("chroma") },
         { N_("L"), N_("sliders for value channel (of HSL)"), 1.0f / 100.0f, COLORSTOPS(_gradient_gray),
-          FALSE, 0.0f,
+          FALSE, 0.0f, FALSE,
           { DEVELOP_BLENDIF_l_in, DEVELOP_BLENDIF_l_out }, DT_DEV_PIXELPIPE_DISPLAY_HSL_l,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("luminance") },
+        { N_("lC"), N_("slider for local contrast detection"), 1.0f / 100.0f, COLORSTOPS(_gradient_gray),
+          FALSE, 0.0f, TRUE,
+          { DEVELOP_BLENDIF_loc_contrast }, DT_DEV_PIXELPIPE_DISPLAY_loc_contrast,
+          _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("local contrast") },
         { NULL } };
 
 const dt_iop_gui_blendif_channel_t rgbj_channels[]
-    = { { N_("g"), N_("sliders for gray value"), 1.0f / 255.0f, COLORSTOPS(_gradient_gray), TRUE, 0.0f,
+    = { { N_("g"), N_("sliders for gray value"), 1.0f / 255.0f, COLORSTOPS(_gradient_gray), TRUE, 0.0f, FALSE,
           { DEVELOP_BLENDIF_GRAY_in, DEVELOP_BLENDIF_GRAY_out }, DT_DEV_PIXELPIPE_DISPLAY_GRAY,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("gray") },
-        { N_("R"), N_("sliders for red channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_red), TRUE, 0.0f,
+        { N_("R"), N_("sliders for red channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_red), TRUE, 0.0f, FALSE,
           { DEVELOP_BLENDIF_RED_in, DEVELOP_BLENDIF_RED_out }, DT_DEV_PIXELPIPE_DISPLAY_R,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("red") },
-        { N_("G"), N_("sliders for green channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_green), TRUE, 0.0f,
+        { N_("G"), N_("sliders for green channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_green), TRUE, 0.0f, FALSE,
           { DEVELOP_BLENDIF_GREEN_in, DEVELOP_BLENDIF_GREEN_out }, DT_DEV_PIXELPIPE_DISPLAY_G,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("green") },
-        { N_("B"), N_("sliders for blue channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_blue), TRUE, 0.0f,
+        { N_("B"), N_("sliders for blue channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_blue), TRUE, 0.0f, FALSE,
           { DEVELOP_BLENDIF_BLUE_in, DEVELOP_BLENDIF_BLUE_out }, DT_DEV_PIXELPIPE_DISPLAY_B,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("blue") },
         { N_("Jz"), N_("sliders for value channel (of JzCzhz)"), 1.0f / 100.0f, COLORSTOPS(_gradient_gray),
           TRUE, -6.64385619f, // cf. _blend_init_blendif_boost_parameters
+          FALSE,
           { DEVELOP_BLENDIF_Jz_in, DEVELOP_BLENDIF_Jz_out }, DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Jz,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("luminance") },
         { N_("Cz"), N_("sliders for chroma channel (of JzCzhz)"), 1.0f / 100.0f, COLORSTOPS(_gradient_chroma),
           TRUE, -6.64385619f, // cf. _blend_init_blendif_boost_parameters
+          FALSE,
           { DEVELOP_BLENDIF_Cz_in, DEVELOP_BLENDIF_Cz_out }, DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("chroma") },
         { N_("hz"), N_("sliders for hue channel (of JzCzhz)"), 1.0f / 360.0f, COLORSTOPS(_gradient_JzCzhz_hue),
-          FALSE, 0.0f,
-          { DEVELOP_BLENDIF_hz_in, DEVELOP_BLENDIF_hz_out }, DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz,
+          FALSE, 0.0f, FALSE, { DEVELOP_BLENDIF_hz_in, DEVELOP_BLENDIF_hz_out }, DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz,
           _blendif_scale_print_hue, NULL, N_("hue") },
+        { N_("lC"), N_("slider for local contrast detection"), 1.0f / 100.0f, COLORSTOPS(_gradient_gray),
+          FALSE, 0.0f, TRUE,
+          { DEVELOP_BLENDIF_loc_contrast }, DT_DEV_PIXELPIPE_DISPLAY_loc_contrast,
+          _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("local contrast") },
         { NULL } };
 
 const char *slider_tooltip[] = { N_("adjustment based on input received by this module:\n* range defined by upper markers: "
@@ -2188,11 +2227,19 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     dt_bauhaus_slider_enable_soft_boundaries(bd->channel_boost_factor_slider, 0.0, 18.0);
     gtk_widget_set_tooltip_text(bd->channel_boost_factor_slider, _("adjust the boost factor of the channel mask"));
     gtk_widget_set_sensitive(bd->channel_boost_factor_slider, FALSE);
-
-    g_signal_connect(G_OBJECT(bd->channel_boost_factor_slider), "value-changed",
-                     G_CALLBACK(_blendop_blendif_boost_factor_callback), bd);
+    g_signal_connect(G_OBJECT(bd->channel_boost_factor_slider), "value-changed", G_CALLBACK(_blendop_blendif_boost_factor_callback), bd);
 
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(bd->channel_boost_factor_slider), TRUE, FALSE, 0);
+
+    bd->lum_contrast_slider = dt_bauhaus_slider_new_with_range(module, -1.0f, 1.0f, .01f, 0.0f, 2);
+    dt_bauhaus_slider_set_format(bd->lum_contrast_slider, _("%.2f"));
+    dt_bauhaus_widget_set_label(bd->lum_contrast_slider, N_("contrast threshold"), N_("contrast threshold"));
+    dt_bauhaus_slider_enable_soft_boundaries(bd->lum_contrast_slider, -1.0f, 1.0f);
+    gtk_widget_set_tooltip_text(bd->lum_contrast_slider, _("adjust the threshold for local contrast mask.\npositive values select for high local contrast\nnegative values select flat areas"));
+    gtk_widget_set_sensitive(bd->lum_contrast_slider, FALSE);
+    g_signal_connect(G_OBJECT(bd->lum_contrast_slider), "value-changed", G_CALLBACK(_blendop_blendif_lum_contrast_callback), bd);
+
+    gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(bd->lum_contrast_slider), TRUE, FALSE, 0);
 
     g_signal_connect(G_OBJECT(bd->channel_tabs), "switch_page", G_CALLBACK(_blendop_blendif_tab_switch), bd);
     g_signal_connect(G_OBJECT(bd->colorpicker), "toggled", G_CALLBACK(_update_gradient_slider_pickers), module);

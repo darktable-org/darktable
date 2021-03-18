@@ -80,6 +80,7 @@ typedef enum dt_develop_blend_mode_t
   DEVELOP_BLEND_DIVIDE_REVERSE = 0x27,
   DEVELOP_BLEND_GEOMETRIC_MEAN = 0x28,
   DEVELOP_BLEND_HARMONIC_MEAN = 0x29,
+  DEVELOP_BLEND_LUM_CONTRAST = 0x2A,
 } dt_develop_blend_mode_t;
 
 typedef enum dt_develop_mask_mode_t
@@ -153,8 +154,10 @@ typedef enum dt_develop_blendif_channels_t
   DEVELOP_BLENDIF_Cz_out = 13,
   DEVELOP_BLENDIF_hz_out = 14,
 
-  DEVELOP_BLENDIF_MAX = 14,
-  DEVELOP_BLENDIF_unused = 15,
+  DEVELOP_BLENDIF_loc_contrast = 15,
+
+  DEVELOP_BLENDIF_MAX = 15,
+  DEVELOP_BLENDIF_unused = 16,
 
   DEVELOP_BLENDIF_active = 31,
 
@@ -387,8 +390,10 @@ typedef struct dt_develop_blend_params_t
   float contrast;
   /** mask brightness adjustment */
   float brightness;
+  /** lum_contrast threshold */
+  float lum_contrast;
   /** some reserved fields for future use */
-  uint32_t reserved[4];
+  uint32_t reserved[3];
   /** blendif parameters */
   float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
   float blendif_boost_factors[DEVELOP_BLENDIF_SIZE];
@@ -430,6 +435,7 @@ typedef struct dt_iop_gui_blendif_channel_t
   const dt_iop_gui_blendif_colorstop_t *colorstops;
   gboolean boost_factor_enabled;
   float boost_factor_offset;
+  gboolean lum_contrast_enabled;
   dt_develop_blendif_channels_t param_channels[2];
   dt_dev_pixelpipe_display_mask_t display_channel;
   void (*scale_print)(float value, float boost_factor, char *string, int n);
@@ -515,6 +521,7 @@ typedef struct dt_iop_gui_blend_data_t
   gboolean output_channels_shown;
 
   GtkWidget *channel_boost_factor_slider;
+  GtkWidget *lum_contrast_slider;
 
   GtkWidget *masks_combo;
   GtkWidget *masks_shapes[DEVELOP_MASKS_NB_SHAPES];
