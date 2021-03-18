@@ -1038,6 +1038,11 @@ static void _blendop_blendif_update_tab(dt_iop_module_t *module, const int tab)
   if(lum_contrast_enabled)
   {
     lum_contrast = bp->lum_contrast;
+    gtk_widget_set_sensitive(GTK_WIDGET(data->filter[0].box), FALSE);
+  }
+  else
+  {
+    gtk_widget_set_sensitive(GTK_WIDGET(data->filter[0].box), TRUE);
   }
   gtk_widget_set_sensitive(GTK_WIDGET(data->lum_contrast_slider), lum_contrast_enabled);
   dt_bauhaus_slider_set_soft(GTK_WIDGET(data->lum_contrast_slider), lum_contrast);
@@ -1969,7 +1974,7 @@ const dt_iop_gui_blendif_channel_t Lab_channels[]
           _blendif_scale_print_hue, NULL, N_("hue") },
         { N_("lC"), N_("slider for local contrast detection"), 1.0f / 100.0f, COLORSTOPS(_gradient_gray),
           FALSE, 0.0f, TRUE,
-          { DEVELOP_BLENDIF_loc_contrast }, DT_DEV_PIXELPIPE_DISPLAY_loc_contrast,
+          { DEVELOP_BLENDIF_loc_contrast, DEVELOP_BLENDIF_loc_contrast }, DT_DEV_PIXELPIPE_DISPLAY_loc_contrast,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("local contrast") },
         { NULL } };
 
@@ -2000,7 +2005,7 @@ const dt_iop_gui_blendif_channel_t rgb_channels[]
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("luminance") },
         { N_("lC"), N_("slider for local contrast detection"), 1.0f / 100.0f, COLORSTOPS(_gradient_gray),
           FALSE, 0.0f, TRUE,
-          { DEVELOP_BLENDIF_loc_contrast }, DT_DEV_PIXELPIPE_DISPLAY_loc_contrast,
+          { DEVELOP_BLENDIF_loc_contrast, DEVELOP_BLENDIF_loc_contrast }, DT_DEV_PIXELPIPE_DISPLAY_loc_contrast,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("local contrast") },
         { NULL } };
 
@@ -2032,7 +2037,7 @@ const dt_iop_gui_blendif_channel_t rgbj_channels[]
           _blendif_scale_print_hue, NULL, N_("hue") },
         { N_("lC"), N_("slider for local contrast detection"), 1.0f / 100.0f, COLORSTOPS(_gradient_gray),
           FALSE, 0.0f, TRUE,
-          { DEVELOP_BLENDIF_loc_contrast }, DT_DEV_PIXELPIPE_DISPLAY_loc_contrast,
+          { DEVELOP_BLENDIF_loc_contrast, DEVELOP_BLENDIF_loc_contrast }, DT_DEV_PIXELPIPE_DISPLAY_loc_contrast,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("local contrast") },
         { NULL } };
 
