@@ -2107,8 +2107,6 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     gtk_notebook_set_scrollable(bd->channel_tabs, TRUE);
     gtk_box_pack_start(GTK_BOX(header), GTK_WIDGET(bd->channel_tabs), TRUE, TRUE, 0);
 
-    gtk_box_pack_start(GTK_BOX(header), gtk_grid_new(), TRUE, TRUE, 0);
-
     bd->colorpicker = dt_color_picker_new(module, DT_COLOR_PICKER_POINT_AREA, header);
     gtk_widget_set_tooltip_text(bd->colorpicker, _("pick GUI color from image\nctrl+click to select an area"));
     gtk_widget_set_name(bd->colorpicker, "keep-active");
