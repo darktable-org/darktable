@@ -472,12 +472,18 @@ overshoot.right
 #iop-plugin-ui-main,
 #lib-plugin-ui-main
 {
-  padding: 0.35em 0.56em;
+  padding: 0.42em 0.84em;
 }
 
+/* Frame around blending boxes */
 #blending-box
 {
-  padding: 0.14em 0.56em;
+  padding: 0 0.77em;
+}
+
+#blending-tabs + #blending-box /* set top margin below blending tabs */
+{
+  margin-top: 0.42em;
 }
 
 /* icon buttons in modules main body */
@@ -571,7 +577,7 @@ overshoot.right
 .dt_gslider_multivalue
 {
   min-height: 1.7em;
-  padding: 0.25em 0.6em;
+  padding: 0.56em;
 }
 
 /* Entries options in lighttable */
@@ -1505,59 +1511,35 @@ filechooser row:hover,
 /*--------------------
   - Quick access tab -
   --------------------*/
-#basics-box
+#basics-header-box
 {
-  padding-bottom: 0.75em;
-  padding-top: 0.5em;
+  border-top: 0.049em solid @darkroom_bg_color;
+  padding-top: 0.28em;
+}
+
+#basics-box-labels
+{
+  padding-bottom: 0.14em;
+}
+
+#basics-module-hbox
+{
+  padding: 0.28em 0.84em;
 }
 
 #basics-box #module-enable-button,
 #basics-box-labels #module-enable-button,
 #basics-link
 {
-  margin: 0 0.5em;
-  padding: 0.2em 0.3em 0.3em 0.2em;
-}
-
-#basics-header-box #basics-link
-{
-  color: shade(@button_fg, 1.1);
-  margin-bottom: 0;
-}
-
-#basics-box #basics-widget
-{
-  margin-bottom: 0.5em;
-}
-
-#basics-module-hbox
-{
-  margin: 0 0.75em;
-}
-
-#basics-header-box
-{
-  border-top: 0.049em solid @darkroom_bg_color;
-  margin-top: 0.14em;
+  margin: 0 0.56em;
+  padding: 0.28em;
 }
 
 #basics-box-labels #basics-header-box:first-child,
 #basics-box-labels #section_label,
-#basics-header-box-first,
 #basics-link
 {
   border: none;
-}
-
-#basics-iop_name
-{
-  padding-left: 0.25em;
-}
-
-#basics-widget #bauhaus-combobox + #dt-button,
-#basics-widget #bauhaus-slider + #dt-button
-{
-  margin-left: 0.5em;
 }
 
 /*--------------------------------
