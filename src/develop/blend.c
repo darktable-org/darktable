@@ -329,7 +329,7 @@ void dt_develop_make_contrast_mask(const float *const ivoid, float *mask, const 
 {
   if(level == 0.0f) return;
   gboolean detail = (level > 0.0f);
-  const float threshold = detail ? 0.01f * sqrf(level) : 0.01f * (1.0f - sqrtf(fabs(level)));
+  const float threshold = detail ? 0.01f * sqrf(level) : 0.05f * (1.0f - sqrtf(fabs(level)));
   
   float *tmp = NULL;
   float *lum = NULL;
