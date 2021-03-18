@@ -513,7 +513,7 @@ endif(USE_OPENCL)
 
 
 if(Gphoto2_FOUND)
-  set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" "gui/camera_import_dialog.c" )
+  set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" )
   add_definitions("-DHAVE_GPHOTO2")
 
   # Gphoto 2.5 changed the prototype of a set of callback functions.
