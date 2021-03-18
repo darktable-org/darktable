@@ -112,10 +112,10 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module);
 
 void dt_gui_presets_show_iop_edit_dialog(const char *name_in, dt_iop_module_t *module, GCallback final_callback,
                                          gpointer data, gboolean allow_name_change, gboolean allow_desc_change,
-                                         GtkWindow *parent);
-void dt_gui_presets_show_lib_edit_dialog(const char *name_in, dt_lib_module_t *module, GCallback final_callback,
-                                         gpointer data, gboolean allow_name_change, gboolean allow_desc_change,
-                                         GtkWindow *parent);
+                                         gboolean allow_remove, GtkWindow *parent);
+void dt_gui_presets_show_edit_dialog(const char *name_in, const char *module_name, int rowid,
+                                     GCallback final_callback, gpointer data, gboolean allow_name_change,
+                                     gboolean allow_desc_change, gboolean allow_remove, GtkWindow *parent);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
