@@ -786,6 +786,14 @@ static void _expander_create(dt_expander_t *exp, const char *label,
   exp->expander = expander;
 }
 
+static void _resize_dialog(GtkWidget *widget, dt_lib_module_t* self)
+{
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  dt_conf_set_int("ui_last/import_dialog_width", allocation.width);
+  dt_conf_set_int("ui_last/import_dialog_height", allocation.height);
+}
+
 static const char *_import_text[] =
 {
   N_("import in-place"),
@@ -804,10 +812,12 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   dt_osx_disallow_fullscreen(d->from.dialog);
 #endif
   gtk_window_set_default_size(GTK_WINDOW(d->from.dialog),
-                              DT_PIXEL_APPLY_DPI(800), DT_PIXEL_APPLY_DPI(900));
+                              DT_PIXEL_APPLY_DPI(dt_conf_get_int("ui_last/import_dialog_width")),
+                              DT_PIXEL_APPLY_DPI(dt_conf_get_int("ui_last/import_dialog_height")));
   gtk_window_set_transient_for(GTK_WINDOW(d->from.dialog), GTK_WINDOW(win));
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(d->from.dialog));
   GtkWidget *import_list = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  g_signal_connect(d->from.dialog, "check-resize", G_CALLBACK(_resize_dialog), self);
 
   // images numbers
   GList *children = gtk_container_get_children(GTK_CONTAINER(d->from.dialog));
