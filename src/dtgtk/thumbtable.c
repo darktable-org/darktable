@@ -2201,7 +2201,7 @@ static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable,
       gchar *result = NULL;
       for(GList *res_iter = res; res_iter; res_iter = g_list_next(res_iter))
       {
-        const GdkRGBA c = darktable.bauhaus->colorlabels[GPOINTER_TO_INT(res->data)];
+        const GdkRGBA c = darktable.bauhaus->colorlabels[GPOINTER_TO_INT(res_iter->data)];
         result = dt_util_dstrcat(result,
                                  "<span foreground='#%02x%02x%02x'>⬤ </span>",
                                  (guint)(c.red*255), (guint)(c.green*255), (guint)(c.blue*255));
