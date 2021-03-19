@@ -621,7 +621,7 @@ static void _blend_RGB_R(const float *const restrict a, const float *const restr
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
-    out[j + 0] = a[j + 0] * (1.0f - local_opacity) + b[j + 0] * local_opacity;
+    out[j + 0] = a[j + 0] * (1.0f - local_opacity) + p * b[j + 0] * local_opacity;
     out[j + 1] = a[j + 1];
     out[j + 2] = a[j + 2];
     out[j + 3] = local_opacity;
@@ -639,7 +639,7 @@ static void _blend_RGB_G(const float *const restrict a, const float *const restr
   {
     const float local_opacity = mask[i];
     out[j + 0] = a[j + 0];
-    out[j + 1] = a[j + 1] * (1.0f - local_opacity) + b[j + 1] * local_opacity;
+    out[j + 1] = a[j + 1] * (1.0f - local_opacity) + p * b[j + 1] * local_opacity;
     out[j + 2] = a[j + 2];
     out[j + 3] = local_opacity;
   }
@@ -657,7 +657,7 @@ static void _blend_RGB_B(const float *const restrict a, const float *const restr
     const float local_opacity = mask[i];
     out[j + 0] = a[j + 0];
     out[j + 1] = a[j + 1];
-    out[j + 2] = a[j + 2] * (1.0f - local_opacity) + b[j + 2] * local_opacity;
+    out[j + 2] = a[j + 2] * (1.0f - local_opacity) + p * b[j + 2] * local_opacity;
     out[j + 3] = local_opacity;
   }
 }
