@@ -63,7 +63,7 @@ typedef enum dt_iop_cacorrect_multi_t
 typedef struct dt_iop_cacorrect_params_t
 {
   gboolean avoidshift;      // $DEFAULT: 0 $DESCRIPTION: "avoid colorshift"
-  dt_iop_cacorrect_multi_t iterations; // $DEFAULT: CACORRETC_MULTI_2 $DESCRIPTION: "Iterations"
+  dt_iop_cacorrect_multi_t iterations; // $DEFAULT: CACORRETC_MULTI_2 $DESCRIPTION: "iterations"
 } dt_iop_cacorrect_params_t;
 
 typedef struct dt_iop_cacorrect_gui_data_t
@@ -374,7 +374,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const gboolean valid = MAX(width, height) >= CA_SIZE_MINIMUM;
   const gboolean run_fast = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
 
-  dt_iop_cacorrect_data_t     *d = (dt_iop_cacorrect_data_t *)piece->data; 
+  dt_iop_cacorrect_data_t     *d = (dt_iop_cacorrect_data_t *)piece->data;
   dt_iop_cacorrect_gui_data_t *g = (dt_iop_cacorrect_gui_data_t *)self->gui_data;
 
   const gboolean avoidshift = d->avoidshift;
@@ -386,7 +386,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *redfactor = NULL;
   float *bluefactor = NULL;
   float *oldraw = NULL;
-  
+
   dt_iop_image_copy_by_size(out, in2, width, height, 1);
 
   if(full_pipe && g)
@@ -1665,7 +1665,7 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_set_visible(g->avoidshift, active);
   gtk_widget_set_visible(g->iterations, active);
   dt_bauhaus_combobox_set_from_value(g->iterations, p->iterations);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->avoidshift), p->avoidshift);  
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->avoidshift), p->avoidshift);
 
   _display_ca_error(self);
 }
@@ -1707,10 +1707,10 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->iterations = dt_bauhaus_combobox_from_params(self, "iterations");
-  gtk_widget_set_tooltip_text(g->iterations, _("iteration runs, default is twice"));  
-  
+  gtk_widget_set_tooltip_text(g->iterations, _("iteration runs, default is twice"));
+
   g->avoidshift = dt_bauhaus_toggle_from_params(self, "avoidshift");
-  gtk_widget_set_tooltip_text(g->avoidshift, _("activate colorshift correction for blue & red channels"));  
+  gtk_widget_set_tooltip_text(g->avoidshift, _("activate colorshift correction for blue & red channels"));
 
   // start building top level widget
   self->widget = gtk_stack_new();
