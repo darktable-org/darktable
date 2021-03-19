@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2020 darktable developers.
+    Copyright (C) 2016-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -24,6 +24,7 @@
 extern "C" {
 #endif
 
+#include <glib.h>
 #include <cairo/cairo.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -47,7 +48,7 @@ REQUIRED(uint32_t, container, struct dt_lib_module_t *self);
 /** check if module should use a expander or not, default implementation
     will make the module expandable and storing the expanding state,
     if not the module will always be shown without the expander. */
-DEFAULT(int, expandable, struct dt_lib_module_t *self);
+DEFAULT(gboolean, expandable, struct dt_lib_module_t *self);
 
 /** constructor */
 OPTIONAL(void, init, struct dt_lib_module_t *self);

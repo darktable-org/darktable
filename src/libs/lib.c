@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -725,9 +725,9 @@ gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
 }
 
 /* default expandable implementation */
-static int default_expandable(dt_lib_module_t *self)
+static gboolean default_expandable(dt_lib_module_t *self)
 {
-  return 1;
+  return TRUE;
 }
 
 static int dt_lib_load_module(void *m, const char *libname, const char *module_name)
