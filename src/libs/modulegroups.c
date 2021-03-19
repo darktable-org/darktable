@@ -3909,9 +3909,9 @@ void view_enter(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
   }
 }
 
-int preset_autoapply(dt_lib_module_t *self)
+gboolean preset_autoapply(dt_lib_module_t *self)
 {
-  return 1;
+  return TRUE;
 }
 #undef PADDING
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
