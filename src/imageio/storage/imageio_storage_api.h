@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2020 darktable developers.
+    Copyright (C) 2016-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -51,7 +51,7 @@ REQUIRED(void, gui_reset, struct dt_imageio_module_storage_t *self);
 /* allow the module to initialize itself */
 REQUIRED(void, init, struct dt_imageio_module_storage_t *self);
 /* try and see if this format is supported? */
-DEFAULT(int, supported, struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format);
+DEFAULT(gboolean, supported, struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format);
 /* get storage max supported image dimension, return 0 if no dimension restrictions exists. */
 OPTIONAL(int, dimension, struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *data,
               uint32_t *width, uint32_t *height);

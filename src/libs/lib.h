@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 #include "views/view.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
+#include <glib.h>
+
 #ifdef USE_LUA
 #include "lua/call.h"
 #include "lua/events.h"
