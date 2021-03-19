@@ -391,6 +391,10 @@ int main(int argc, char *arg[])
         k++;
         break;
       }
+      else
+      {
+        fprintf(stderr, _("warning: unknown option '%s'\n"), arg[k]);
+      }
     }
     else
     {
@@ -740,7 +744,7 @@ int main(int argc, char *arg[])
 
   // TODO: add a callback to set the bpp without going through the config
 
-  int num = 1;
+  int num = 1, res = 0;
   for(GList *iter = id_list; iter; iter = g_list_next(iter), num++)
   {
     const int id = GPOINTER_TO_INT(iter->data);
@@ -748,8 +752,9 @@ int main(int argc, char *arg[])
     dt_export_metadata_t metadata;
     metadata.flags = dt_lib_export_metadata_default_flags();
     metadata.list = NULL;
-    storage->store(storage, sdata, id, format, fdata, num, total, high_quality, upscale, export_masks,
-                   icc_type, icc_filename, icc_intent, &metadata);
+    if(storage->store(storage, sdata, id, format, fdata, num, total, high_quality, upscale, export_masks,
+                      icc_type, icc_filename, icc_intent, &metadata) != 0)
+      res = 1;
   }
 
   // cleanup time
@@ -764,6 +769,7 @@ int main(int argc, char *arg[])
   dt_cleanup();
 
   free(m_arg);
+  exit(res);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
