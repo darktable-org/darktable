@@ -291,9 +291,9 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
       query = dt_util_dstrcat(query,
                               "UPDATE data.presets "
                               "SET"
-                              " name=?1, description=?2, "
-                              " model=?3, maker=?4, lens=?5, iso_min=?6, iso_max=?7, exposure_min=?8, "
-                              "exposure_max=?9, aperture_min=?10,"
+                              " name=?1, description=?2,"
+                              " model=?3, maker=?4, lens=?5, iso_min=?6, iso_max=?7, exposure_min=?8,"
+                              " exposure_max=?9, aperture_min=?10,"
                               " aperture_max=?11, focal_length_min=?12, focal_length_max=?13, autoapply=?14,"
                               " filter=?15, format=?16 "
                               "WHERE"
@@ -303,16 +303,16 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
     else
     {
       // we create a new preset
-      query = dt_util_dstrcat(
-          query, "INSERT INTO data.presets"
-                 " (name, description, "
-                 "  model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min,"
-                 "  aperture_max, focal_length_min, focal_length_max, autoapply,"
-                 "  filter, format, def, writeprotect, operation, op_version, op_params, enabled, "
-                 "  blendop_params, blendop_version, multi_priority, multi_name) "
-                 "VALUES"
-                 " (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, 0, 0, ?17, "
-                 "  ?18, ?19, ?20, ?21, ?22, 0, '')");
+      query = dt_util_dstrcat(query,
+                              "INSERT INTO data.presets"
+                              " (name, description, "
+                              "  model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min,"
+                              "  aperture_max, focal_length_min, focal_length_max, autoapply,"
+                              "  filter, format, def, writeprotect, operation, op_version, op_params, enabled,"
+                              "  blendop_params, blendop_version, multi_priority, multi_name) "
+                              "VALUES"
+                              " (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, 0, 0, ?17,"
+                              "  ?18, ?19, ?20, ?21, ?22, 0, '')");
     }
 
     // commit all the user input fields
