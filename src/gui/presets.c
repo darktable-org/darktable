@@ -37,30 +37,26 @@
 #include <stdlib.h>
 
 
-static const int dt_gui_presets_exposure_value_cnt = 24;
-static const float dt_gui_presets_exposure_value[]
+static const int _dt_gui_presets_exposure_value_cnt = 24;
+static const float _dt_gui_presets_exposure_value[]
     = { 0.,       1. / 8000, 1. / 4000, 1. / 2000, 1. / 1000, 1. / 1000, 1. / 500, 1. / 250,
         1. / 125, 1. / 60,   1. / 30,   1. / 15,   1. / 15,   1. / 8,    1. / 4,   1. / 2,
         1,        2,         4,         8,         15,        30,        60,       FLT_MAX };
-static const char *dt_gui_presets_exposure_value_str[]
+static const char *_dt_gui_presets_exposure_value_str[]
     = { "0",     "1/8000", "1/4000", "1/2000", "1/1000", "1/1000", "1/500", "1/250",
         "1/125", "1/60",   "1/30",   "1/15",   "1/15",   "1/8",    "1/4",   "1/2",
         "1\"",   "2\"",    "4\"",    "8\"",    "15\"",   "30\"",   "60\"",  "+" };
-static const int dt_gui_presets_aperture_value_cnt = 19;
-static const float dt_gui_presets_aperture_value[]
-    = { 0,    0.5,  0.7,  1.0,  1.4,  2.0,  2.8,  4.0,   5.6,    8.0,
-        11.0, 16.0, 22.0, 32.0, 45.0, 64.0, 90.0, 128.0, FLT_MAX };
-static const char *dt_gui_presets_aperture_value_str[]
+static const int _dt_gui_presets_aperture_value_cnt = 19;
+static const float _dt_gui_presets_aperture_value[]
+    = { 0, 0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0, 5.6, 8.0, 11.0, 16.0, 22.0, 32.0, 45.0, 64.0, 90.0, 128.0, FLT_MAX };
+static const char *_dt_gui_presets_aperture_value_str[]
     = { "f/0",  "f/0.5", "f/0.7", "f/1.0", "f/1.4", "f/2",  "f/2.8", "f/4",   "f/5.6", "f/8",
         "f/11", "f/16",  "f/22",  "f/32",  "f/45",  "f/64", "f/90",  "f/128", "f/+" };
 
 // format string and corresponding flag stored into the database
-static const char *dt_gui_presets_format_value_str[5] = { N_("normal images"),
-                                                          N_("raw"),
-                                                          N_("HDR"),
-                                                          N_("monochrome"),
-                                                          N_("color")};
-static const int dt_gui_presets_format_flag[5] = { FOR_LDR, FOR_RAW, FOR_HDR, FOR_NOT_MONO, FOR_NOT_COLOR };
+static const char *_dt_gui_presets_format_value_str[5]
+    = { N_("normal images"), N_("raw"), N_("HDR"), N_("monochrome"), N_("color") };
+static const int _dt_gui_presets_format_flag[5] = { FOR_LDR, FOR_RAW, FOR_HDR, FOR_NOT_MONO, FOR_NOT_COLOR };
 
 // this is also called for non-gui applications linking to libdarktable!
 // so beware, don't use any darktable.gui stuff here .. (or change this behaviour in darktable.c)
@@ -113,7 +109,7 @@ void dt_gui_presets_add_with_blendop(
   sqlite3_finalize(stmt);
 }
 
-static gchar *get_active_preset_name(dt_iop_module_t *module, int *writeprotect)
+static gchar *_get_active_preset_name(dt_iop_module_t *module, int *writeprotect)
 {
   sqlite3_stmt *stmt;
   // if we sort by writeprotect DESC then in case user copied the writeprotected preset
@@ -151,11 +147,11 @@ static gchar *get_active_preset_name(dt_iop_module_t *module, int *writeprotect)
   return name;
 }
 
-static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
+static void _menuitem_delete_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
   sqlite3_stmt *stmt;
   int writeprotect = -1;
-  gchar *name = get_active_preset_name(module, &writeprotect);
+  gchar *name = _get_active_preset_name(module, &writeprotect);
   if(name == NULL) return;
 
   if(writeprotect)
@@ -198,12 +194,12 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_iop_module_t *modul
   }
   g_free(name);
 }
-static void edit_preset_final_callback(dt_gui_presets_edit_dialog_t *g)
+static void _edit_preset_final_callback(dt_gui_presets_edit_dialog_t *g)
 {
   dt_gui_store_last_preset(gtk_entry_get_text(g->name));
 }
 
-static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_dialog_t *g)
+static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_dialog_t *g)
 {
   if(response_id == GTK_RESPONSE_OK)
   {
@@ -330,17 +326,19 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, gtk_entry_get_text(GTK_ENTRY(g->lens)), -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, gtk_spin_button_get_value(GTK_SPIN_BUTTON(g->iso_min)));
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, gtk_spin_button_get_value(GTK_SPIN_BUTTON(g->iso_max)));
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, dt_gui_presets_exposure_value[dt_bauhaus_combobox_get(g->exposure_min)]);
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, dt_gui_presets_exposure_value[dt_bauhaus_combobox_get(g->exposure_max)]);
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, dt_gui_presets_aperture_value[dt_bauhaus_combobox_get(g->aperture_min)]);
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11, dt_gui_presets_aperture_value[dt_bauhaus_combobox_get(g->aperture_max)]);
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, _dt_gui_presets_exposure_value[dt_bauhaus_combobox_get(g->exposure_min)]);
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, _dt_gui_presets_exposure_value[dt_bauhaus_combobox_get(g->exposure_max)]);
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10,
+                                 _dt_gui_presets_aperture_value[dt_bauhaus_combobox_get(g->aperture_min)]);
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11,
+                                 _dt_gui_presets_aperture_value[dt_bauhaus_combobox_get(g->aperture_max)]);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 12, gtk_spin_button_get_value(GTK_SPIN_BUTTON(g->focal_length_min)));
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 13, gtk_spin_button_get_value(GTK_SPIN_BUTTON(g->focal_length_max)));
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->autoapply)));
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->filter)));
     int format = 0;
     for(int k = 0; k < 5; k++)
-      format += gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->format_btn[k])) * dt_gui_presets_format_flag[k];
+      format += gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->format_btn[k])) * _dt_gui_presets_format_flag[k];
     format ^= DT_PRESETS_FOR_NOT;
 
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, format);
@@ -454,7 +452,7 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
   free(g);
 }
 
-static void check_buttons_activated(GtkCheckButton *button, dt_gui_presets_edit_dialog_t *g)
+static void _check_buttons_activated(GtkCheckButton *button, dt_gui_presets_edit_dialog_t *g)
 {
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->autoapply))
      || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->filter)))
@@ -512,8 +510,8 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->filter), _("be very careful with this option. "
                                                            "this might be the last time you see your preset."));
   gtk_box_pack_start(box, GTK_WIDGET(g->filter), FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(g->autoapply), "toggled", G_CALLBACK(check_buttons_activated), g);
-  g_signal_connect(G_OBJECT(g->filter), "toggled", G_CALLBACK(check_buttons_activated), g);
+  g_signal_connect(G_OBJECT(g->autoapply), "toggled", G_CALLBACK(_check_buttons_activated), g);
+  g_signal_connect(G_OBJECT(g->filter), "toggled", G_CALLBACK(_check_buttons_activated), g);
 
   int line = 0;
   g->details = gtk_grid_new();
@@ -564,10 +562,10 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
   g->exposure_max = dt_bauhaus_combobox_new(NULL);
   gtk_widget_set_tooltip_text(g->exposure_min, _("minimum exposure time"));
   gtk_widget_set_tooltip_text(g->exposure_max, _("maximum exposure time"));
-  for(int k = 0; k < dt_gui_presets_exposure_value_cnt; k++)
-    dt_bauhaus_combobox_add(g->exposure_min, dt_gui_presets_exposure_value_str[k]);
-  for(int k = 0; k < dt_gui_presets_exposure_value_cnt; k++)
-    dt_bauhaus_combobox_add(g->exposure_max, dt_gui_presets_exposure_value_str[k]);
+  for(int k = 0; k < _dt_gui_presets_exposure_value_cnt; k++)
+    dt_bauhaus_combobox_add(g->exposure_min, _dt_gui_presets_exposure_value_str[k]);
+  for(int k = 0; k < _dt_gui_presets_exposure_value_cnt; k++)
+    dt_bauhaus_combobox_add(g->exposure_max, _dt_gui_presets_exposure_value_str[k]);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(g->details), g->exposure_min, label, GTK_POS_RIGHT, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(g->details), g->exposure_max, g->exposure_min, GTK_POS_RIGHT, 1, 1);
@@ -579,10 +577,10 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
   g->aperture_max = dt_bauhaus_combobox_new(NULL);
   gtk_widget_set_tooltip_text(g->aperture_min, _("minimum aperture value"));
   gtk_widget_set_tooltip_text(g->aperture_max, _("maximum aperture value"));
-  for(int k = 0; k < dt_gui_presets_aperture_value_cnt; k++)
-    dt_bauhaus_combobox_add(g->aperture_min, dt_gui_presets_aperture_value_str[k]);
-  for(int k = 0; k < dt_gui_presets_aperture_value_cnt; k++)
-    dt_bauhaus_combobox_add(g->aperture_max, dt_gui_presets_aperture_value_str[k]);
+  for(int k = 0; k < _dt_gui_presets_aperture_value_cnt; k++)
+    dt_bauhaus_combobox_add(g->aperture_min, _dt_gui_presets_aperture_value_str[k]);
+  for(int k = 0; k < _dt_gui_presets_aperture_value_cnt; k++)
+    dt_bauhaus_combobox_add(g->aperture_max, _dt_gui_presets_aperture_value_str[k]);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(g->details), g->aperture_min, label, GTK_POS_RIGHT, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(g->details), g->aperture_max, g->aperture_min, GTK_POS_RIGHT, 1, 1);
@@ -608,7 +606,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
 
   for(int i = 0; i < 5; i++)
   {
-    g->format_btn[i] = gtk_check_button_new_with_label(_(dt_gui_presets_format_value_str[i]));
+    g->format_btn[i] = gtk_check_button_new_with_label(_(_dt_gui_presets_format_value_str[i]));
     gtk_grid_attach(GTK_GRID(g->details), g->format_btn[i], 1, line + i, 2, 1);
   }
 
@@ -638,19 +636,19 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
 
     float val = sqlite3_column_double(stmt, 7);
     int k = 0;
-    for(; k < dt_gui_presets_exposure_value_cnt && val > dt_gui_presets_exposure_value[k]; k++)
+    for(; k < _dt_gui_presets_exposure_value_cnt && val > _dt_gui_presets_exposure_value[k]; k++)
       ;
     dt_bauhaus_combobox_set(g->exposure_min, k);
     val = sqlite3_column_double(stmt, 8);
-    for(k = 0; k < dt_gui_presets_exposure_value_cnt && val > dt_gui_presets_exposure_value[k]; k++)
+    for(k = 0; k < _dt_gui_presets_exposure_value_cnt && val > _dt_gui_presets_exposure_value[k]; k++)
       ;
     dt_bauhaus_combobox_set(g->exposure_max, k);
     val = sqlite3_column_double(stmt, 9);
-    for(k = 0; k < dt_gui_presets_aperture_value_cnt && val > dt_gui_presets_aperture_value[k]; k++)
+    for(k = 0; k < _dt_gui_presets_aperture_value_cnt && val > _dt_gui_presets_aperture_value[k]; k++)
       ;
     dt_bauhaus_combobox_set(g->aperture_min, k);
     val = sqlite3_column_double(stmt, 10);
-    for(k = 0; k < dt_gui_presets_aperture_value_cnt && val > dt_gui_presets_aperture_value[k]; k++)
+    for(k = 0; k < _dt_gui_presets_aperture_value_cnt && val > _dt_gui_presets_aperture_value[k]; k++)
       ;
     dt_bauhaus_combobox_set(g->aperture_max, k);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_min), sqlite3_column_double(stmt, 11));
@@ -659,7 +657,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter), sqlite3_column_int(stmt, 14));
     const int format = (sqlite3_column_int(stmt, 15)) ^ DT_PRESETS_FOR_NOT;
     for(k = 0; k < 5; k++)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->format_btn[k]), format & (dt_gui_presets_format_flag[k]));
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->format_btn[k]), format & (_dt_gui_presets_format_flag[k]));
   }
   else
   {
@@ -672,19 +670,19 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
 
     float val = 0;
     int k = 0;
-    for(; k < dt_gui_presets_exposure_value_cnt && val > dt_gui_presets_exposure_value[k]; k++)
+    for(; k < _dt_gui_presets_exposure_value_cnt && val > _dt_gui_presets_exposure_value[k]; k++)
       ;
     dt_bauhaus_combobox_set(g->exposure_min, k);
     val = 100000000;
-    for(k = 0; k < dt_gui_presets_exposure_value_cnt && val > dt_gui_presets_exposure_value[k]; k++)
+    for(k = 0; k < _dt_gui_presets_exposure_value_cnt && val > _dt_gui_presets_exposure_value[k]; k++)
       ;
     dt_bauhaus_combobox_set(g->exposure_max, k);
     val = 0;
-    for(k = 0; k < dt_gui_presets_aperture_value_cnt && val > dt_gui_presets_aperture_value[k]; k++)
+    for(k = 0; k < _dt_gui_presets_aperture_value_cnt && val > _dt_gui_presets_aperture_value[k]; k++)
       ;
     dt_bauhaus_combobox_set(g->aperture_min, k);
     val = 100000000;
-    for(k = 0; k < dt_gui_presets_aperture_value_cnt && val > dt_gui_presets_aperture_value[k]; k++)
+    for(k = 0; k < _dt_gui_presets_aperture_value_cnt && val > _dt_gui_presets_aperture_value[k]; k++)
       ;
     dt_bauhaus_combobox_set(g->aperture_max, k);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_min), 0);
@@ -708,7 +706,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
     if(w) gtk_widget_set_sensitive(w, FALSE);
   }
 
-  g_signal_connect(dialog, "response", G_CALLBACK(edit_preset_response), g);
+  g_signal_connect(dialog, "response", G_CALLBACK(_edit_preset_response), g);
   gtk_widget_show_all(dialog);
 }
 
@@ -760,13 +758,13 @@ void dt_gui_presets_show_edit_dialog(const char *name_in, const char *module_nam
     sqlite3_finalize(stmt);
 }
 
-static void edit_preset(const char *name_in, dt_iop_module_t *module)
+static void _edit_preset(const char *name_in, dt_iop_module_t *module)
 {
   gchar *name = NULL;
   if(name_in == NULL)
   {
     int writeprotect = -1;
-    name = get_active_preset_name(module, &writeprotect);
+    name = _get_active_preset_name(module, &writeprotect);
     if(name == NULL) return;
     if(writeprotect)
     {
@@ -778,17 +776,17 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   else
     name = g_strdup(name_in);
 
-  dt_gui_presets_show_iop_edit_dialog(name, module, (GCallback)edit_preset_final_callback, NULL, TRUE, TRUE, FALSE,
-                                      GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+  dt_gui_presets_show_iop_edit_dialog(name, module, (GCallback)_edit_preset_final_callback, NULL, TRUE, TRUE,
+                                      FALSE, GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   g_free(name);
 }
 
-static void menuitem_edit_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
+static void _menuitem_edit_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
-  edit_preset(NULL, module);
+  _edit_preset(NULL, module);
 }
 
-static void menuitem_update_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
+static void _menuitem_update_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
   gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
@@ -832,7 +830,7 @@ static void menuitem_update_preset(GtkMenuItem *menuitem, dt_iop_module_t *modul
   }
 }
 
-static void menuitem_new_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
+static void _menuitem_new_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
   // add new preset
   sqlite3_stmt *stmt;
@@ -852,10 +850,10 @@ static void menuitem_new_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
   dt_accel_connect_preset_iop(module, _("new preset"));
   dt_accel_connect_instance_iop(module);
   // then show edit dialog
-  edit_preset(_("new preset"), module);
+  _edit_preset(_("new preset"), module);
 }
 
-static void apply_preset(const gchar* name, dt_iop_module_t *module)
+static void _apply_preset(const gchar *name, dt_iop_module_t *module)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2
@@ -913,10 +911,10 @@ static void apply_preset(const gchar* name, dt_iop_module_t *module)
   }
 }
 
-static void menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
+static void _menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
   gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
-  apply_preset(name, module);
+  _apply_preset(name, module);
 }
 
 gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module)
@@ -982,7 +980,7 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const char *name = (const char *)sqlite3_column_text(stmt, 0);
-    apply_preset(name, module);
+    _apply_preset(name, module);
     applied = TRUE;
   }
   sqlite3_finalize(stmt);
@@ -990,17 +988,17 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module)
   return applied;
 }
 
-static gboolean menuitem_button_released_preset(GtkMenuItem *menuitem, GdkEventButton *event, dt_iop_module_t *module)
+static gboolean _menuitem_button_released_preset(GtkMenuItem *menuitem, GdkEventButton *event,
+                                                 dt_iop_module_t *module)
 {
   if (event->button == 1 || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
   {
-    menuitem_pick_preset(menuitem, module);
+    _menuitem_pick_preset(menuitem, module);
   }
   else if (event->button == 2)
   {
     dt_iop_module_t *new_module = dt_iop_gui_duplicate(module, FALSE);
-    if (new_module)
-      menuitem_pick_preset(menuitem, new_module);
+    if(new_module) _menuitem_pick_preset(menuitem, new_module);
   }
 
   if(dt_conf_get_bool("accel/prefer_enabled") || dt_conf_get_bool("accel/prefer_unmasked"))
@@ -1018,8 +1016,8 @@ static gboolean menuitem_button_released_preset(GtkMenuItem *menuitem, GdkEventB
     ꬹiop_name_0|preset_name_0ꬹꬹiop_name_1|preset_name_1ꬹ...
 */
 
-static gboolean menuitem_manage_quick_presets_traverse(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter,
-                                                       gpointer data)
+static gboolean _menuitem_manage_quick_presets_traverse(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter,
+                                                        gpointer data)
 {
   gchar **txt = (gchar **)data;
   gchar *preset = NULL;
@@ -1035,8 +1033,8 @@ static gboolean menuitem_manage_quick_presets_traverse(GtkTreeModel *model, GtkT
   return FALSE;
 }
 
-static void menuitem_manage_quick_presets_toggle(GtkCellRendererToggle *cell_renderer, gchar *path,
-                                                 gpointer tree_view)
+static void _menuitem_manage_quick_presets_toggle(GtkCellRendererToggle *cell_renderer, gchar *path,
+                                                  gpointer tree_view)
 {
   GtkTreeModel *model;
   GtkTreeIter iter;
@@ -1055,13 +1053,13 @@ static void menuitem_manage_quick_presets_toggle(GtkCellRendererToggle *cell_ren
 
   // and we recreate the list of activated presets
   gchar *txt = NULL;
-  gtk_tree_model_foreach(model, menuitem_manage_quick_presets_traverse, &txt);
+  gtk_tree_model_foreach(model, _menuitem_manage_quick_presets_traverse, &txt);
 
   dt_conf_set_string("plugins/darkroom/quick_preset_list", txt);
   g_free(txt);
 }
 
-static int menuitem_manage_quick_presets_sort(gconstpointer a, gconstpointer b)
+static int _menuitem_manage_quick_presets_sort(gconstpointer a, gconstpointer b)
 {
   dt_iop_module_so_t *ma = (dt_iop_module_so_t *)a;
   dt_iop_module_so_t *mb = (dt_iop_module_so_t *)b;
@@ -1077,7 +1075,7 @@ static int menuitem_manage_quick_presets_sort(gconstpointer a, gconstpointer b)
   return res;
 }
 
-static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
+static void _menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
 {
   sqlite3_stmt *stmt;
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
@@ -1114,7 +1112,7 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
   gtk_tree_view_append_column(GTK_TREE_VIEW(view), col);
 
   renderer = gtk_cell_renderer_toggle_new();
-  g_signal_connect(renderer, "toggled", G_CALLBACK(menuitem_manage_quick_presets_toggle), view);
+  g_signal_connect(renderer, "toggled", G_CALLBACK(_menuitem_manage_quick_presets_toggle), view);
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_add_attribute(col, renderer, "active", 1);
   gtk_tree_view_column_add_attribute(col, renderer, "visible", 2);
@@ -1126,7 +1124,7 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
 
   gchar *config = dt_conf_get_string("plugins/darkroom/quick_preset_list");
 
-  GList *m2 = g_list_sort(g_list_copy(darktable.iop), menuitem_manage_quick_presets_sort);
+  GList *m2 = g_list_sort(g_list_copy(darktable.iop), _menuitem_manage_quick_presets_sort);
   for(const GList *modules = m2; modules; modules = g_list_next(modules))
   {
     dt_iop_module_so_t *iop = (dt_iop_module_so_t *)modules->data;
@@ -1245,7 +1243,7 @@ void dt_gui_favorite_presets_menu_show()
           gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), tt);
           g_free(tt);
           g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
-          g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_pick_preset), iop);
+          g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_pick_preset), iop);
           gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(mi));
         }
         g_free(txt);
@@ -1260,17 +1258,17 @@ void dt_gui_favorite_presets_menu_show()
 
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
   GtkMenuItem *smi_manage = (GtkMenuItem *)gtk_menu_item_new_with_label(_("manage quick presets list..."));
-  g_signal_connect(G_OBJECT(smi_manage), "activate", G_CALLBACK(menuitem_manage_quick_presets), NULL);
+  g_signal_connect(G_OBJECT(smi_manage), "activate", G_CALLBACK(_menuitem_manage_quick_presets), NULL);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(smi_manage));
 }
 
 
-static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version,
-                                                    dt_iop_params_t *params, int32_t params_size,
-                                                    dt_develop_blend_params_t *bl_params,
-                                                    dt_iop_module_t *module, const dt_image_t *image,
-                                                    void (*pick_callback)(GtkMenuItem *, void *),
-                                                    void *callback_data)
+static void _dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version,
+                                                     dt_iop_params_t *params, int32_t params_size,
+                                                     dt_develop_blend_params_t *bl_params, dt_iop_module_t *module,
+                                                     const dt_image_t *image,
+                                                     void (*pick_callback)(GtkMenuItem *, void *),
+                                                     void *callback_data)
 {
   GtkMenu *menu = darktable.gui->presets_popup_menu;
   if(menu) gtk_widget_destroy(GTK_WIDGET(menu));
@@ -1411,7 +1409,8 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
       g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
       if(module)
       {
-        g_signal_connect(G_OBJECT(mi), "button-release-event", G_CALLBACK(menuitem_button_released_preset), module);
+        g_signal_connect(G_OBJECT(mi), "button-release-event", G_CALLBACK(_menuitem_button_released_preset),
+                         module);
       }
       else if(pick_callback)
         g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(pick_callback), callback_data);
@@ -1429,17 +1428,17 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
     if(active_preset >= 0 && !writeprotect)
     {
       mi = gtk_menu_item_new_with_label(_("edit this preset.."));
-      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_edit_preset), module);
+      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_edit_preset), module);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
       mi = gtk_menu_item_new_with_label(_("delete this preset"));
-      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_delete_preset), module);
+      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_delete_preset), module);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     }
     else
     {
       mi = gtk_menu_item_new_with_label(_("store new preset.."));
-      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_new_preset), module);
+      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_new_preset), module);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
       if(darktable.gui->last_preset && found)
@@ -1449,7 +1448,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
         mi = gtk_menu_item_new_with_label("");
         gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
         g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(darktable.gui->last_preset), g_free);
-        g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_update_preset), module);
+        g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_update_preset), module);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
         g_free(markup);
       }
@@ -1463,15 +1462,14 @@ void dt_gui_presets_popup_menu_show_for_params(dt_dev_operation_t op, int32_t ve
                                                void (*pick_callback)(GtkMenuItem *, void *),
                                                void *callback_data)
 {
-  dt_gui_presets_popup_menu_show_internal(op, version, params, params_size, blendop_params, NULL, image,
-                                          pick_callback, callback_data);
+  _dt_gui_presets_popup_menu_show_internal(op, version, params, params_size, blendop_params, NULL, image,
+                                           pick_callback, callback_data);
 }
 
 void dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
 {
-  dt_gui_presets_popup_menu_show_internal(module->op, module->version(), module->params, module->params_size,
-                                          module->blend_params, module, &module->dev->image_storage, NULL,
-                                          NULL);
+  _dt_gui_presets_popup_menu_show_internal(module->op, module->version(), module->params, module->params_size,
+                                           module->blend_params, module, &module->dev->image_storage, NULL, NULL);
 }
 
 void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const int32_t version,
