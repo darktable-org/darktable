@@ -730,6 +730,12 @@ static int default_expandable(dt_lib_module_t *self)
   return 1;
 }
 
+/* default autoapply implementation */
+static gboolean default_preset_autoapply(dt_lib_module_t *self)
+{
+  return FALSE;
+}
+
 static int dt_lib_load_module(void *m, const char *libname, const char *module_name)
 {
   dt_lib_module_t *module = (dt_lib_module_t *)m;
@@ -1459,7 +1465,7 @@ void dt_lib_cancel_postponed_update(dt_lib_module_t *mod)
 
 gboolean dt_lib_presets_can_autoapply(dt_lib_module_t *mod)
 {
-  return (mod->preset_autoapply && mod->preset_autoapply(mod));
+  return mod->preset_autoapply(mod);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
