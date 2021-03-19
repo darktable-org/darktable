@@ -3140,7 +3140,6 @@ void leave(dt_view_t *self)
     if (module->request_mask_display || module->suppress_mask) dt_iop_refresh_center(module);
 
     dt_accel_cleanup_closures_iop(module);
-    module->accel_closures = NULL;
     dt_iop_cleanup_module(module);
     free(module);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);

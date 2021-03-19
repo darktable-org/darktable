@@ -185,10 +185,6 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_lib_pre
 
 
     // commit all the user input fields
-#ifndef SHORTCUTS_TRANSITION
-    dt_accel_rename_preset_lib(g->module, g->original_name, name);
-#endif // ifndef SHORTCUTS_TRANSITION
-
     dt_action_rename_preset(&g->module->actions, g->original_name, name);
 
     DT_DEBUG_SQLITE3_PREPARE_V2
@@ -357,13 +353,6 @@ static void menuitem_new_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *min
   sqlite3_finalize(stmt);
   // create a shortcut for the new entry
 
-#ifndef SHORTCUTS_TRANSITION
-  char path[1024];
-  snprintf(path, sizeof(path), "%s/%s", _("preset"), _("new preset"));
-  dt_accel_register_lib(minfo->module, path, 0, 0);
-  dt_accel_connect_preset_lib(minfo->module, _("new preset"));
-#endif // ifndef SHORTCUTS_TRANSITION
-
   dt_action_define_preset(&minfo->module->actions, "new preset");
 
   // then show edit dialog
@@ -404,12 +393,6 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
 
   if(res == GTK_RESPONSE_YES)
   {
-#ifndef SHORTCUTS_TRANSITION
-    char tmp_path[1024];
-    snprintf(tmp_path, sizeof(tmp_path), "%s/%s", _("preset"), name);
-    dt_accel_deregister_lib(minfo->module, tmp_path);
-#endif // ifndef SHORTCUTS_TRANSITION
-
     dt_action_rename_preset(&minfo->module->actions, name, NULL);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -772,7 +755,6 @@ static int dt_lib_load_module(void *m, const char *libname, const char *module_n
 
   module->widget = NULL;
   module->expander = NULL;
-  module->accel_closures = NULL;
   module->reset_button = NULL;
   module->presets_button = NULL;
 
@@ -1398,13 +1380,6 @@ void dt_lib_connect_common_accels(dt_lib_module_t *module)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-#ifndef SHORTCUTS_TRANSITION
-      char path[1024];
-      snprintf(path, sizeof(path), "%s/%s", _("preset"), (char *)sqlite3_column_text(stmt, 0));
-      dt_accel_register_lib(module, path, 0, 0);
-      dt_accel_connect_preset_lib(module, (char *)sqlite3_column_text(stmt, 0));
-#endif // #ifndef SHORTCUTS_TRANSITION
-
       dt_action_define_preset(&module->actions, (char *)sqlite3_column_text(stmt, 0));
     }
     sqlite3_finalize(stmt);

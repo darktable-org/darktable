@@ -2422,17 +2422,7 @@ void dt_thumbtable_init_accels(dt_thumbtable_t *table)
   dt_accel_register_manual(NC_("accel", "views/thumbtable/invert selection"), views, GDK_KEY_i, GDK_CONTROL_MASK);
   dt_accel_register_manual(NC_("accel", "views/thumbtable/select film roll"), views, 0, 0);
   dt_accel_register_manual(NC_("accel", "views/thumbtable/select untouched"), views, 0, 0);
-}
-// connect all accels if thumbtable is active in the view and they are not loaded
-// disconnect them if not
-void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, const int view)
-{
-  //disconnect all accels and reconnect if thumbtable may be active for this view
 
-  dt_accel_disconnect_list(&table->accel_closures);
-
-  if((view & DT_VIEW_LIGHTTABLE) || (view & DT_VIEW_DARKROOM) || (view & DT_VIEW_TETHERING)
-     || (view & DT_VIEW_MAP) || (view & DT_VIEW_PRINT))
   {
     // Rating accels
     dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/rate 0",
@@ -2451,7 +2441,7 @@ void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, const int vi
                             g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_REJECT), NULL));
 
     // History key accels
-    if(!(view & DT_VIEW_LIGHTTABLE))
+//    if(!(view & DT_VIEW_LIGHTTABLE))
     {
       dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/copy history",
                               g_cclosure_new(G_CALLBACK(_accel_copy), NULL, NULL));

@@ -103,8 +103,6 @@ typedef struct dt_lib_module_t
   /** ID of timer for delayed callback */
   guint timeout_handle;
 
-  GSList *accel_closures;
-
   GtkWidget *reset_button;
   GtkWidget *presets_button;
 } dt_lib_module_t;

@@ -133,118 +133,6 @@ static void init_widgets(dt_gui_gtk_t *gui);
 
 static void init_main_table(GtkWidget *container);
 
-static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint accel_key,
-                              GdkModifierType accel_mods, gpointer user_data)
-{
-#ifndef SHORTCUTS_TRANSITION
-
-  char path[256];
-
-  // Updating all the stored accelerator keys/mods for key_pressed shortcuts
-
-  dt_accel_path_view(path, sizeof(path), "filmstrip", "scroll forward");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.filmstrip_forward);
-
-  dt_accel_path_view(path, sizeof(path), "filmstrip", "scroll back");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.filmstrip_back);
-
-  // slideshow
-  dt_accel_path_view(path, sizeof(path), "slideshow", "start and stop");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.slideshow_start);
-
-  // Lighttable
-  dt_accel_path_view(path, sizeof(path), "lighttable", "move up");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_up);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "move down");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_down);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "move left");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_left);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "move right");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_right);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "move page up");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_pageup);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "move page down");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_pagedown);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "move start");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_start);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "move end");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_end);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "move up and select");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_sel_up);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "move down and select");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_sel_down);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "move left and select");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_sel_left);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "move right and select");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_sel_right);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "move page up and select");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_sel_pageup);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "move page down and select");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_sel_pagedown);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "move start and select");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_sel_start);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "move end and select");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_sel_end);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "scroll center");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_center);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "preview");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "preview with focus detection");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_display_focus);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "toggle filmstrip or timeline");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_timeline);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "preview zoom 100%");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_zoom_100);
-
-  dt_accel_path_view(path, sizeof(path), "lighttable", "preview zoom fit");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_zoom_fit);
-
-  // darkroom
-  dt_accel_path_view(path, sizeof(path), "darkroom", "full preview");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.darkroom_preview);
-
-  // add an option to allow skip mouse events while editing masks
-  dt_accel_path_view(path, sizeof(path), "darkroom", "allow to pan & zoom while editing masks");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.darkroom_skip_mouse_events);
-
-  // Global
-  dt_accel_path_global(path, sizeof(path), "toggle side borders");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_sideborders);
-
-  dt_accel_path_global(path, sizeof(path), "toggle panels collapsing controls");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_collapsing_controls);
-
-  dt_accel_path_global(path, sizeof(path), "slideshow view");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.slideshow_view);
-
-  dt_accel_path_global(path, sizeof(path), "show accels window");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_accels_window);
-
-  dt_accel_path_global(path, sizeof(path), "toggle focus peaking");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_focus_peaking);
-#endif // #ifndef SHORTCUTS_TRANSITION
-}
-
 static gboolean fullscreen_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                               guint keyval, GdkModifierType modifier, gpointer data)
 {
@@ -714,41 +602,14 @@ gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta)
   return FALSE;
 }
 
-static gboolean _widget_focus_in_block_key_accelerators(GtkWidget *widget, GdkEventFocus *event, gpointer data)
-{
-#ifndef SHORTCUTS_TRANSITION
-  dt_control_key_accelerators_off(darktable.control);
-#endif // ifndef SHORTCUTS_TRANSITION
-
-  return FALSE;
-}
-
-static gboolean _widget_focus_out_unblock_key_accelerators(GtkWidget *widget, GdkEventFocus *event,
-                                                           gpointer data)
-{
-#ifndef SHORTCUTS_TRANSITION
-  dt_control_key_accelerators_on(darktable.control);
-#endif // ifndef SHORTCUTS_TRANSITION
-
-  return FALSE;
-}
-
 void dt_gui_key_accel_block_on_focus_disconnect(GtkWidget *w)
 {
-  g_signal_handlers_disconnect_by_func(G_OBJECT(w), _widget_focus_in_block_key_accelerators, (gpointer)w);
-  g_signal_handlers_disconnect_by_func(G_OBJECT(w), _widget_focus_out_unblock_key_accelerators, (gpointer)w);
+ // FIXME no longer needed; dt_shortcut_dispatcher checks if Entry has focus
 }
 
 void dt_gui_key_accel_block_on_focus_connect(GtkWidget *w)
 {
-  /* first off add focus change event mask */
-  gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);
-
-  /* connect the signals */
-  g_signal_connect(G_OBJECT(w), "focus-in-event", G_CALLBACK(_widget_focus_in_block_key_accelerators),
-                   (gpointer)w);
-  g_signal_connect(G_OBJECT(w), "focus-out-event", G_CALLBACK(_widget_focus_out_unblock_key_accelerators),
-                   (gpointer)w);
+  // FIXME no longer needed; dt_shortcut_dispatcher checks if Entry has focus
 }
 
 static gboolean draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_data)
@@ -1299,14 +1160,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   g_object_set(G_OBJECT(settings), "gtk-theme-name", "Adwaita", (gchar *)0);
   g_object_unref(settings);
 
-  // Initializing the shortcut groups
-  darktable.control->accelerators = gtk_accel_group_new();
-
-  darktable.control->accelerator_list = NULL;
-
-  // Connecting the callback to update keyboard accels for key_pressed
-  g_signal_connect(G_OBJECT(gtk_accel_map_get()), "changed", G_CALLBACK(key_accel_changed), NULL);
-
   // smooth scrolling must be enabled to handle trackpad/touch events
   gui->scroll_mask = GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK;
 
@@ -1318,12 +1171,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // Initializing widgets
   init_widgets(gui);
-
-  // Adding the global shortcut group to the main window
-#ifndef SHORTCUTS_TRANSITION
-  gtk_window_add_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
-                             darktable.control->accelerators);
-#endif // ifndef SHORTCUTS_TRANSITION
 
   /* Have the delete event (window close) end the program */
   snprintf(path, sizeof(path), "%s/icons", datadir);

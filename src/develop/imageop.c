@@ -375,9 +375,6 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->process_plain = so->process_plain;
   module->have_introspection = so->have_introspection;
 
-  module->accel_closures = NULL;
-  module->accel_closures_local = NULL;
-  module->local_closures_connected = FALSE;
   module->reset_button = NULL;
   module->presets_button = NULL;
   module->fusion_slider = NULL;
@@ -1432,12 +1429,6 @@ static void init_key_accels(dt_iop_module_so_t *module)
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-#ifndef SHORTCUTS_TRANSITION
-    char path[1024];
-    snprintf(path, sizeof(path), "%s`%s", N_("preset"), (const char *)sqlite3_column_text(stmt, 0));
-    dt_accel_register_iop(module, FALSE, path, 0, 0);
-#endif // ifndef SHORTCUTS_TRANSITION
-
     dt_action_define_preset(&module->actions, (const char *)sqlite3_column_text(stmt, 0));
   }
   sqlite3_finalize(stmt);
@@ -1493,10 +1484,6 @@ static void dt_iop_init_module_so(void *m)
 
     free(module_instance);
 
-    if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
-    {
-      dt_accel_register_slider_iop(module, FALSE, NC_("accel","fusion") ? "accel|fusion" : "");
-    }
     if(!(module->flags() & IOP_FLAGS_DEPRECATED))
     {
       dt_accel_register_common_iop(module);
@@ -1940,7 +1927,6 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if(out_focus_module->operation_tags_filter()) dt_dev_invalidate_from_gui(darktable.develop);
 
     dt_iop_connect_accels_multi(out_focus_module->so);
-    dt_accel_disconnect_locals_iop(out_focus_module);
 
     /* reset mask view */
     dt_masks_reset_form_gui();
@@ -1971,7 +1957,6 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if(module->operation_tags_filter()) dt_dev_invalidate_from_gui(darktable.develop);
 
     dt_iop_connect_accels_multi(module->so);
-    dt_accel_connect_locals_iop(module);
 
     if(module->gui_focus) module->gui_focus(module, TRUE);
 
@@ -2684,6 +2669,7 @@ static gboolean enable_module_callback(GtkAccelGroup *accel_group, GObject *acce
 
 void dt_iop_connect_common_accels(dt_iop_module_t *module)
 {
+  // FIXME
   GClosure *closure = NULL;
   if(module->flags() & IOP_FLAGS_DEPRECATED) return;
   // Connecting the (optional) module show accelerator
@@ -2703,20 +2689,6 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
     dt_accel_connect_button_iop(module, "reset module parameters", module->reset_button);
   if(module->presets_button)
     dt_accel_connect_button_iop(module, "show preset menu", module->presets_button);
-
-  if(module->fusion_slider) dt_accel_connect_slider_iop(module, "fusion", module->fusion_slider);
-
-  sqlite3_stmt *stmt;
-  // don't know for which image. show all we got:
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name FROM data.presets WHERE operation=?1 ORDER BY writeprotect DESC, rowid",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    dt_accel_connect_preset_iop(module, (char *)sqlite3_column_text(stmt, 0));
-  }
-  sqlite3_finalize(stmt);
 }
 
 // to be called before issuing any query based on memory.darktable_iop_names

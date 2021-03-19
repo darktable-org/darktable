@@ -106,19 +106,11 @@ void dt_control_init(dt_control_t *s)
 
 void dt_control_key_accelerators_on(struct dt_control_t *s)
 {
-#ifndef SHORTCUTS_TRANSITION
-  gtk_window_add_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
-                             darktable.control->accelerators);
-#endif // ifndef SHORTCUTS_TRANSITION
   if(!s->key_accelerators_on) s->key_accelerators_on = 1;
 }
 
 void dt_control_key_accelerators_off(struct dt_control_t *s)
 {
-#ifndef SHORTCUTS_TRANSITION
-  gtk_window_remove_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
-                                darktable.control->accelerators);
-#endif // ifndef SHORTCUTS_TRANSITION
   s->key_accelerators_on = 0;
 }
 
@@ -211,7 +203,6 @@ void dt_control_cleanup(dt_control_t *s)
   dt_pthread_mutex_destroy(&s->res_mutex);
   dt_pthread_mutex_destroy(&s->run_mutex);
   dt_pthread_mutex_destroy(&s->progress_system.mutex);
-  if(s->accelerator_list) g_list_free_full(s->accelerator_list, g_free);
   if(s->widgets) g_hash_table_destroy(s->widgets);
   if(s->shortcuts) g_sequence_free(s->shortcuts);
   if(s->input_drivers) g_slist_free_full(s->input_drivers, g_free);

@@ -162,7 +162,6 @@ static int dt_view_load_module(void *v, const char *libname, const char *module_
   module->hscroll_size = module->hscroll_viewport_size = 1.0;
   module->vscroll_pos = module->hscroll_pos = 0.0;
   module->height = module->width = 100; // set to non-insane defaults before first expose/configure.
-  module->accel_closures = NULL;
 
   if(!strcmp(module->module_name, "darkroom")) darktable.develop = (dt_develop_t *)module->data;
 
@@ -188,8 +187,6 @@ static int dt_view_load_module(void *v, const char *libname, const char *module_
 static void dt_view_unload_module(dt_view_t *view)
 {
   if(view->cleanup) view->cleanup(view);
-
-  g_slist_free(view->accel_closures);
 
   if(view->module) g_module_close(view->module);
 }
@@ -280,7 +277,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
           if(plugin->view_leave) plugin->view_leave(plugin, old_view, NULL);
           plugin->gui_cleanup(plugin);
           plugin->data = NULL;
-          dt_accel_disconnect_list(&plugin->accel_closures);
           plugin->widget = NULL;
         }
       }
@@ -310,7 +306,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   {
     /* leave current view */
     if(old_view->leave) old_view->leave(old_view);
-    dt_accel_disconnect_list(&old_view->accel_closures);
 
     /* iterator plugins and cleanup plugins in current view */
     for(GList *iter = darktable.lib->plugins; iter; iter = g_list_next(iter))
@@ -321,7 +316,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
       if(dt_lib_is_visible_in_view(plugin, old_view))
       {
         if(plugin->view_leave) plugin->view_leave(plugin, old_view, new_view);
-        dt_accel_disconnect_list(&plugin->accel_closures);
       }
     }
 
@@ -332,9 +326,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 
   /* change current view to the new view */
   vm->current_view = new_view;
-
-  /* update thumbtable accels */
-  dt_thumbtable_update_accels_connection(dt_ui_thumbtable(darktable.gui->ui), new_view->view(new_view));
 
   /* restore visible stat of panels for the new view */
   dt_ui_restore_panels(darktable.gui->ui);
