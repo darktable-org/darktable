@@ -340,6 +340,7 @@ static GtkWidget *_set_up_label(GtkWidget *label, const int align, const int lin
   gtk_widget_set_visible(label, TRUE);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   gtk_widget_set_halign(label, align);
+  gtk_label_set_xalign(GTK_LABEL(label), 0.0);
   GtkWidget *labelev = gtk_event_box_new();
   gtk_widget_set_visible(labelev, TRUE);
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
