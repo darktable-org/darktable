@@ -289,7 +289,7 @@ static gboolean _blendif_blend_parameter_enabled(dt_develop_blend_colorspace_t c
 {
   if(csp == DEVELOP_BLEND_CS_RGB_SCENE)
   {
-    switch(mode)
+    switch(mode & ~DEVELOP_BLEND_REVERSE)
     {
       case DEVELOP_BLEND_ADD:
       case DEVELOP_BLEND_MULTIPLY:
@@ -297,6 +297,9 @@ static gboolean _blendif_blend_parameter_enabled(dt_develop_blend_colorspace_t c
       case DEVELOP_BLEND_SUBTRACT_INVERSE:
       case DEVELOP_BLEND_DIVIDE:
       case DEVELOP_BLEND_DIVIDE_INVERSE:
+      case DEVELOP_BLEND_RGB_R:
+      case DEVELOP_BLEND_RGB_G:
+      case DEVELOP_BLEND_RGB_B:
         return TRUE;
       default:
         return FALSE;

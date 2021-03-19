@@ -1225,21 +1225,21 @@ blendop_rgb_jzczhz(__read_only image2d_t in_a, __read_only image2d_t in_b, __rea
       break;
 
     case DEVELOP_BLEND_RGB_R:
-      o.x = (a.x * (1.0f - opacity)) + (b.x * opacity);
+      o.x = (a.x * (1.0f - opacity)) + (blend_parameter * b.x * opacity);
       o.y = a.y;
       o.z = a.z;
       break;
 
     case DEVELOP_BLEND_RGB_G:
       o.x = a.x;
-      o.y = (a.y * (1.0f - opacity)) + (b.y * opacity);
+      o.y = (a.y * (1.0f - opacity)) + (blend_parameter * b.y * opacity);
       o.z = a.z;
       break;
 
     case DEVELOP_BLEND_RGB_B:
       o.x = a.x;
       o.y = a.y;
-      o.z = (a.z * (1.0f - opacity)) + (b.z * opacity);
+      o.z = (a.z * (1.0f - opacity)) + (blend_parameter * b.z * opacity);
       break;
 
     case DEVELOP_BLEND_DIVIDE:
