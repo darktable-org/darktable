@@ -191,7 +191,6 @@ static dt_lib_module_t ref_lib = {
   .init_presets = NULL,
   .init_key_accels = NULL,
   .connect_key_accels = NULL,
-  .accel_closures = NULL,
   .reset_button = NULL,
   .presets_button = NULL,
   .view_enter = view_enter_wrapper,

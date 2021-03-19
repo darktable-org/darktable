@@ -24,8 +24,6 @@
 #include "libs/lib.h"
 #include "views/view.h"
 
-#define SHORTCUTS_TRANSITION
-
 GtkWidget *dt_shortcuts_prefs();
 GHashTable *dt_shortcut_category_lists(dt_view_type_flags_t v);
 
@@ -50,6 +48,7 @@ void dt_action_define_iop(dt_iop_module_t *self, const gchar *path, gboolean loc
 void dt_action_define_preset(dt_action_t *action, const gchar *name);
 // delete if new_name == NULL
 void dt_action_rename_preset(dt_action_t *action, const gchar *old_name, const gchar *new_name);
+void dt_action_rename(dt_action_t *action, const gchar *new_name);
 
 typedef uint8_t dt_input_device_t;
 
@@ -68,18 +67,6 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key, guint mo
 void dt_shortcut_key_release(dt_input_device_t id, guint time, guint key);
 float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size);
 
-typedef struct dt_accel_t
-{
-
-  gchar path[256];
-  gchar translated_path[256];
-  gchar module[256];
-  gboolean local;
-  dt_view_type_flags_t views;
-  GClosure *closure;
-
-} dt_accel_t;
-
 typedef enum dt_accel_iop_slider_scale_t
 {
   DT_IOP_PRECISION_NORMAL = 0,
@@ -87,69 +74,37 @@ typedef enum dt_accel_iop_slider_scale_t
   DT_IOP_PRECISION_COARSE = 2
 } dt_accel_iop_slider_scale_t;
 
-// Accel path string building functions
-void dt_accel_path_global(char *s, size_t n, const char *path);
-void dt_accel_path_view(char *s, size_t n, char *module, const char *path);
-void dt_accel_path_iop(char *s, size_t n, char *module, const char *path);
-void dt_accel_path_lib(char *s, size_t n, char *module, const char *path);
-void dt_accel_path_lua(char *s, size_t n, const char *path);
-void dt_accel_path_manual(char *s, size_t n, const char *full_path);
-
-// Accelerator search functions
-dt_accel_t *dt_accel_find_by_path(const gchar *path);
-
 // Accelerator registration functions
 void dt_accel_register_global(const gchar *path, guint accel_key, GdkModifierType mods);
 void dt_accel_register_view(dt_view_t *self, const gchar *path, guint accel_key, GdkModifierType mods);
-void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path, guint accel_key,
-                           GdkModifierType mods);
+void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path, guint accel_key, GdkModifierType mods);
 void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel_key, GdkModifierType mods);
-void dt_accel_register_lib_for_views(dt_lib_module_t *self, dt_view_type_flags_t views, const gchar *path,
-                                     guint accel_key, GdkModifierType mods);
 //register lib shortcut but make it look like a view shortcut
 void dt_accel_register_lib_as_view(gchar *view_name, const gchar *path, guint accel_key, GdkModifierType mods);
 void dt_accel_register_common_iop(dt_iop_module_so_t *so);
-void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path);
-void dt_accel_register_combobox_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path);
 void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType mods);
-void dt_accel_register_manual(const gchar *full_path, dt_view_type_flags_t views, guint accel_key,
-                              GdkModifierType mods);
+void dt_accel_register_manual(const gchar *full_path, dt_view_type_flags_t views, guint accel_key, GdkModifierType mods);
 
 // Accelerator connection functions
 void dt_accel_connect_global(const gchar *path, GClosure *closure);
 void dt_accel_connect_view(dt_view_t *self, const gchar *path, GClosure *closure);
-dt_accel_t *dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path, GClosure *closure);
-dt_accel_t *dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path, GClosure *closure);
+void dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path, GClosure *closure);
+void dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path, GClosure *closure);
 //connect lib as a view shortcut
-dt_accel_t *dt_accel_connect_lib_as_view(dt_lib_module_t *module, gchar *view_name, const gchar *path, GClosure *closure);
+void dt_accel_connect_lib_as_view(dt_lib_module_t *module, gchar *view_name, const gchar *path, GClosure *closure);
 //connect lib as a global shortcut
-dt_accel_t *dt_accel_connect_lib_as_global(dt_lib_module_t *module, const gchar *path, GClosure *closure);
+void dt_accel_connect_lib_as_global(dt_lib_module_t *module, const gchar *path, GClosure *closure);
 void dt_accel_connect_button_lib_as_global(dt_lib_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path, GtkWidget *button);
-void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *slider);
-void dt_accel_connect_combobox_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *combobox);
 void dt_accel_connect_instance_iop(dt_iop_module_t *module);
-void dt_accel_connect_locals_iop(dt_iop_module_t *module);
-void dt_accel_connect_preset_iop(dt_iop_module_t *so, const gchar *path);
-void dt_accel_connect_preset_lib(dt_lib_module_t *so, const gchar *path);
 void dt_accel_connect_lua(const gchar *path, GClosure *closure);
 void dt_accel_connect_manual(GSList **list_ptr, const gchar *full_path, GClosure *closure);
 
 // Disconnect function
-void dt_accel_disconnect_list(GSList **accels_ptr);
-void dt_accel_disconnect_locals_iop(dt_iop_module_t *module);
-void dt_accel_cleanup_closures_iop(dt_iop_module_t *module);
+void dt_accel_cleanup_closures_iop(dt_iop_module_t *module); // rename to cleanup instance_list
 
-// Deregister functions
-void dt_accel_deregister_iop(dt_iop_module_t *module, const gchar *path);
-void dt_accel_deregister_lib(dt_lib_module_t *module, const gchar *path);
-void dt_accel_deregister_global(const gchar *path);
-void dt_accel_deregister_lua(const gchar *path);
-void dt_accel_deregister_manual(GSList *list, const gchar *full_path);
-// Rename functions
-void dt_accel_rename_preset_iop(dt_iop_module_t *module, const gchar *path, const gchar *new_path);
-void dt_accel_rename_preset_lib(dt_lib_module_t *module, const gchar *path, const gchar *new_path);
+// Rename/remove functions
 void dt_accel_rename_global(const gchar *path, const gchar *new_path);
 void dt_accel_rename_lua(const gchar *path, const gchar *new_path);
 

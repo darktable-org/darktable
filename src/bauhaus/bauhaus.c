@@ -877,45 +877,20 @@ void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min,
   d->hard_max = hard_max;
 }
 
-void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section_orig, const char *label_orig)
+void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const char *label)
 {
-  const char *label = _(label_orig);
-
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   memset(w->label, 0, sizeof(w->label)); // keep valgrind happy
-  g_strlcpy(w->label, label, sizeof(w->label));
-  if(section) w->section = g_strdup(section);
+  g_strlcpy(w->label, _(label), sizeof(w->label));
+  if(section) w->section = g_strdup(_(section));
 
   if(w->module)
   {
     if(!darktable.bauhaus->skip_accel)
     {
-      gchar *combined_label = section_orig
-                            ? g_strdup_printf("%s`%s", section_orig, label_orig)
-                            : g_strdup(label_orig);
-      if(darktable.control->accel_initialising)
-      {
-        if(w->type == DT_BAUHAUS_SLIDER)
-        {
-          dt_accel_register_slider_iop(w->module->so, FALSE, combined_label);
-        }
-        else if(w->type == DT_BAUHAUS_COMBOBOX)
-        {
-          dt_accel_register_combobox_iop(w->module->so, FALSE, combined_label);
-        }
-      }
-      else
-      {
-        if(w->type == DT_BAUHAUS_SLIDER)
-        {
-          dt_accel_connect_slider_iop(w->module, combined_label, widget);
-        }
-        else if(w->type == DT_BAUHAUS_COMBOBOX)
-        {
-          dt_accel_connect_combobox_iop(w->module, combined_label, widget);
-        }
-      }
-
+      gchar *combined_label = section
+                            ? g_strdup_printf("%s`%s", section, label)
+                            : g_strdup(label);
       dt_action_define_iop(w->module, combined_label, FALSE, 0, 0, widget);
       g_free(combined_label);
     }
