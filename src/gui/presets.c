@@ -181,12 +181,6 @@ static void _menuitem_delete_preset(GtkMenuItem *menuitem, dt_iop_module_t *modu
 
   if(res == GTK_RESPONSE_YES)
   {
-#ifndef SHORTCUTS_TRANSITION
-    char tmp_path[1024];
-    snprintf(tmp_path, sizeof(tmp_path), "%s`%s", N_("preset"), name);
-    dt_accel_deregister_iop(module, tmp_path);
-#endif // #ifndef SHORTCUTS_TRANSITION
-
     dt_action_rename_preset(&module->so->actions, name, NULL);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -288,7 +282,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
       }
 
       // rename accelerators
-      if(g->iop) dt_accel_rename_preset_iop(g->iop, g->original_name, name);
+      if(g->iop) dt_action_rename_preset(&g->iop->so->actions, g->original_name, name);
     }
 
     gchar *query = NULL;
@@ -322,8 +316,6 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
     }
 
     // rename accelerators
-    dt_accel_rename_preset_iop(g->iop, g->original_name, name);
-
     dt_action_rename_preset(&g->iop->so->actions, g->original_name, name);
 
     // commit all the user input fields
@@ -430,18 +422,29 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
     if(gtk_dialog_run(GTK_DIALOG(win)) == GTK_RESPONSE_YES)
     {
       // deregistering accel...
-      gchar accel[256];
-      gchar datadir[PATH_MAX] = { 0 };
-      gchar accelpath[PATH_MAX] = { 0 };
+      if(g->operation)
+      {
+        for(GList *modules = darktable.iop; modules; modules = modules->next)
+        {
+          dt_iop_module_so_t *mod = modules->data;
 
-      dt_loc_get_user_config_dir(datadir, sizeof(datadir));
-      snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", datadir);
-      gchar *preset_name = g_strdup_printf("%s`%s", N_("preset"), g->original_name);
-      dt_accel_path_iop(accel, sizeof(accel), g->operation, preset_name);
-      g_free(preset_name);
-      gtk_accel_map_change_entry(accel, 0, 0, TRUE);
-      // Saving the changed bindings
-      gtk_accel_map_save(accelpath);
+          if(!strcmp(mod->op, g->operation))
+          {
+            dt_action_rename_preset(&mod->actions, g->original_name, NULL);
+            break;
+          }
+        }
+        for(GList *libs = darktable.lib->plugins; libs; libs = g_list_next(libs))
+        {
+          dt_lib_module_t *lib = libs->data;
+
+          if(!strcmp(lib->plugin_name, g->operation))
+          {
+            dt_action_rename_preset(&lib->actions, g->original_name, NULL);
+            break;
+          }
+        }
+      }
 
       // remove the preset from the database
       sqlite3_stmt *stmt;
@@ -871,15 +874,8 @@ static void _menuitem_new_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, module->version());
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  // create a shortcut for the new entry
-#ifndef SHORTCUTS_TRANSITION
-  char path[1024];
-  snprintf(path, sizeof(path), "%s`%s", N_("preset"), _("new preset"));
-  dt_accel_register_iop(module->so, FALSE, path, 0, 0);
-  dt_accel_connect_preset_iop(module, _("new preset"));
-  dt_accel_connect_instance_iop(module);
-#endif // ifndef SHORTCUTS_TRANSITION
 
+  // create a shortcut for the new entry
   dt_action_define_preset(&module->so->actions, "new preset");
 
   // then show edit dialog

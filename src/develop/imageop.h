@@ -273,10 +273,6 @@ typedef struct dt_iop_module_t
   GtkWidget *presets_button;
   /** fusion slider */
   GtkWidget *fusion_slider;
-  /** list of closures: show, enable/disable */
-  GSList *accel_closures;
-  GSList *accel_closures_local;
-  gboolean local_closures_connected;
 
   GSList *widget_list;
 

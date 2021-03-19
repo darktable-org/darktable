@@ -142,7 +142,6 @@ typedef struct dt_view_t
   float vscroll_size, vscroll_lower, vscroll_viewport_size, vscroll_pos;
   float hscroll_size, hscroll_lower, hscroll_viewport_size, hscroll_pos;
 
-  GSList *accel_closures;
   GtkWidget *dynamic_accel_current;
 } dt_view_t;
 

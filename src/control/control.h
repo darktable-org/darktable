@@ -148,20 +148,10 @@ typedef struct dt_control_accels_t
  */
 typedef struct dt_control_t
 {
-  // Keyboard accelerator groups
-  GtkAccelGroup *accelerators;
-
-  // Accelerator group path lists
-  GList *accelerator_list;
-
   gboolean accel_initialising;
 
   // Cached accelerator keys for key_pressed shortcuts
   dt_control_accels_t accels;
-
-  // Accel remapping data
-  gchar *accel_remap_str;
-  GtkTreePath *accel_remap_path;
 
   dt_action_t *actions, actions_global, actions_views, actions_thumb, actions_libs, actions_iops, actions_blend, actions_lua;
 
