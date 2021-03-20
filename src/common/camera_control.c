@@ -755,6 +755,10 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
           dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to initialize device %s on port %s, likely "
                                     "causes are: locked by another application, no access to udev etc.\n",
                    camera->model, camera->port);
+
+          dt_control_log(_("new camera '%s' found but it is locked by another application\n"
+                           "make sure it is not mounted on the computer"),
+                         camera->model);
           /* Ok we found a new camera but it is not available so we keep track of it in locked_camera list */
           dt_camera_locked_t *locked_camera = g_malloc0(sizeof(dt_camera_locked_t));
           locked_camera->model = g_strdup(camera->model);
