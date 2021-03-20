@@ -46,11 +46,6 @@ DT_MODULE_INTROSPECTION(1, dt_iop_sigmoid_params_t)
 // They are also used in the history changes tooltip.
 // Combobox options will be presented in the same order as defined here.
 // These numbers must not be changed when a new version is introduced.
-typedef enum dt_iop_sigmoid_type_t
-{
-  DT_SIGMOID_LOGLOGISTIC = 0,  // $DESCRIPTION: "Log-Logisitic"
-  DT_SIGMOID_WEIBULL = 1,      // $DESCRIPTION: "Weibull"
-} dt_iop_sigmoid_type_t;
 
 typedef enum dt_iop_sigmoid_methods_type_t
 {
@@ -90,9 +85,8 @@ typedef struct dt_iop_sigmoid_params_t
   float display_white_target;  // $MIN: 0.2  $MAX: 16.0 $DEFAULT: 1.0 $DESCRIPTION: "target white"
   float display_grey_target;   // $MIN: 0.1  $MAX: 0.2 $DEFAULT: 0.1845 $DESCRIPTION: "target grey"
   float display_black_target;  // $MIN: 0.0  $MAX: 0.1 $DEFAULT: 0.0 $DESCRIPTION: "target black"
-  dt_iop_sigmoid_type_t cumulative_distribution;  // $DEFAULT: DT_SIGMOID_LOGLOGISTIC $DESCRIPTION: "Curve type"
-  dt_iop_sigmoid_methods_type_t color_method;     // $DEFAULT: DT_SIGMOID_METHOD_CROSSTALK $DESCRIPTION: "Color Method"
-  dt_iop_sigmoid_norm_type_t rgb_norm_method;     // $DEFAULT: DT_SIGMOID_METHOD_LUMINANCE $DESCRIPTION: "Luminance Method"
+  dt_iop_sigmoid_methods_type_t color_processing;  // $DEFAULT: DT_SIGMOID_METHOD_CROSSTALK $DESCRIPTION: "Color Processing"
+  dt_iop_sigmoid_norm_type_t rgb_norm_method;      // $DEFAULT: DT_SIGMOID_METHOD_LUMINANCE $DESCRIPTION: "Luminance Norm"
 } dt_iop_sigmoid_params_t;
 
 typedef struct dt_iop_sigmoid_global_data_t
@@ -103,7 +97,7 @@ typedef struct dt_iop_sigmoid_gui_data_t
   // Whatever you need to make your gui happy and provide access to widgets between gui_init, gui_update etc.
   // Stored in self->gui_data while in darkroom.
   // To permanently store per-user gui configuration settings, you could use dt_conf_set/_get.
-  GtkWidget *contrast_slider, *skewness_slider, *distribution_list, *color_method_list, *rgb_norm_method_list;
+  GtkWidget *contrast_slider, *skewness_slider, *distribution_list, *color_processing_list, *rgb_norm_method_list;
 } dt_iop_sigmoid_gui_data_t;
 
 
@@ -338,39 +332,6 @@ void process_loglogistic_ratio(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   }
 }
 
-void process_weibull(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                         void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  const dt_iop_sigmoid_params_t *d = (dt_iop_sigmoid_params_t *)piece->data;
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-
-  const float *const in = (const float *)ivoid;
-  float *const out = (float *)ovoid;
-  const size_t npixels = (size_t)roi_in->width * roi_in->height;
-
-  const float power = 0.91f * d->middle_grey_contrast;
-  const float scale = MIDDLE_GREY / powf(-logf(1.0f - MIDDLE_GREY), 1.0f / power);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, work_profile, scale, power) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
-  for(size_t k = 0; k < 4*npixels; k += 4)
-  {
-    // Desature a bit to get proper roll off to white in highlights
-    // This is taken from the ACES RRT implementation
-    const float luma = rgb_luma(in + k, work_profile);
-    for(size_t c = 0; c < 3; c++)
-    {
-      const float desat = fmaxf(luma + 0.96f * (in[k + c] - luma), 0.0f);
-      out[k + c] = 1.0f - expf(-powf(desat / scale, power));
-    }
-    // Copy over the alpha channel
-    out[k + 3] = in[k + 3];
-  }
-}
 
 /** process, all real work is done here. */
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
@@ -380,20 +341,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // get our data struct:
   dt_iop_sigmoid_params_t *d = (dt_iop_sigmoid_params_t *)piece->data;
 
-  if (d->cumulative_distribution == DT_SIGMOID_LOGLOGISTIC)
+  if (d->color_processing == DT_SIGMOID_METHOD_CROSSTALK)
   {
-    if (d->color_method == DT_SIGMOID_METHOD_CROSSTALK)
-    {
-      process_loglogistic_crosstalk(self, piece, ivoid, ovoid, roi_in, roi_out);
-    }
-    else
-    {
-      process_loglogistic_ratio(self, piece, ivoid, ovoid, roi_in, roi_out);
-    }
+    process_loglogistic_crosstalk(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
   else
   {
-    process_weibull(self, piece, ivoid, ovoid, roi_in, roi_out);
+    process_loglogistic_ratio(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
 }
 
@@ -429,8 +383,7 @@ void gui_update(dt_iop_module_t *self)
 
   dt_bauhaus_slider_set(g->contrast_slider, p->middle_grey_contrast);
   dt_bauhaus_slider_set(g->skewness_slider, p->contrast_skewness);
-  dt_bauhaus_combobox_set_from_value(g->distribution_list, p->cumulative_distribution);
-  dt_bauhaus_combobox_set_from_value(g->color_method_list, p->color_method);
+  dt_bauhaus_combobox_set_from_value(g->color_processing_list, p->color_processing);
   dt_bauhaus_combobox_set_from_value(g->rgb_norm_method_list, p->rgb_norm_method);
   gui_changed(self, NULL, NULL);
 }
@@ -466,10 +419,9 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_sigmoid_gui_data_t *g = IOP_GUI_ALLOC(sigmoid);
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->distribution_list = dt_bauhaus_combobox_from_params(self, "cumulative_distribution");
   g->contrast_slider = dt_bauhaus_slider_from_params(self, "middle_grey_contrast");
   g->skewness_slider = dt_bauhaus_slider_from_params(self, "contrast_skewness");
-  g->color_method_list = dt_bauhaus_combobox_from_params(self, "color_method");
+  g->color_processing_list = dt_bauhaus_combobox_from_params(self, "color_processing");
   g->rgb_norm_method_list = dt_bauhaus_combobox_from_params(self, "rgb_norm_method");
 }
 
