@@ -28,15 +28,9 @@
 dt_job_t *dt_camera_capture_job_create(const char *jobcode, uint32_t delay, uint32_t count, uint32_t brackets,
                                        uint32_t steps);
 
-/** camera get previews job. */
-dt_job_t *dt_camera_get_previews_job_create(struct dt_camera_t *camera, struct dt_camctl_listener_t *listener,
-                                            uint32_t flags, void *data);
-
 /** Camera import job */
-dt_job_t *dt_camera_import_job_create(const char *jobcode, GList *images, struct dt_camera_t *camera,
+dt_job_t *dt_camera_import_job_create(GList *images, struct dt_camera_t *camera,
                                       time_t time_override);
-
-void *dt_camera_previews_job_get_data(const dt_job_t *job);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
