@@ -1975,6 +1975,12 @@ radiobutton:hover label  /* set hover effect on popover menu from star icon */
   color: @field_hover_fg;
 }
 
+filechooser treeview:not(#lutname) *:hover:not(check):not(:selected)
+{
+  background-color: @field_bg;
+  color: @field_fg;
+}
+
 treeview *:active,
 filechooser *:active
 {
