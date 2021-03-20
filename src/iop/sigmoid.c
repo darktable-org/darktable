@@ -23,12 +23,14 @@
 #include "common/rgb_norms.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
-#include "gui/color_picker_proxy.h"
+#include "develop/openmp_maths.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
+
+#define INVERSE_SQRT_3 0.5773502691896258f
 
 // To have your module compile and appear in darkroom, add it to CMakeLists.txt, with
 //  add_iop(sigmoid "sigmoid.c")
@@ -36,7 +38,7 @@
 //  { {XX.0f }, "sigmoid", 0},
 
 // Module version number
-DT_MODULE_INTROSPECTION(2, dt_iop_sigmoid_params_t)
+DT_MODULE_INTROSPECTION(1, dt_iop_sigmoid_params_t)
 
 
 // Enums used in params_t can have $DESCRIPTIONs that will be used to
@@ -49,6 +51,20 @@ typedef enum dt_iop_sigmoid_type_t
   DT_SIGMOID_LOGLOGISTIC = 0,  // $DESCRIPTION: "Log-Logisitic"
   DT_SIGMOID_WEIBULL = 1,      // $DESCRIPTION: "Weibull"
 } dt_iop_sigmoid_type_t;
+
+typedef enum dt_iop_sigmoid_methods_type_t
+{
+  DT_SIGMOID_METHOD_CROSSTALK = 0,     // $DESCRIPTION: "crosstalk"
+  DT_SIGMOID_METHOD_RGB_RATIO = 1      // $DESCRIPTION: "rgb ratio"
+} dt_iop_sigmoid_methods_type_t;
+
+typedef enum dt_iop_sigmoid_norm_type_t
+{
+  DT_SIGMOID_METHOD_LUMINANCE = 0,      // $DESCRIPTION: "luminance Y"
+  DT_SIGMOID_METHOD_EUCLIDEAN_NORM = 1, // $DESCRIPTION: "RGB euclidean norm"
+  DT_SIGMOID_METHOD_POWER_NORM = 2,     // $DESCRIPTION: "RGB power norm"
+  DT_SIGMOID_METHOD_MAX_RGB = 3,        // $DESCRIPTION: "max RGB"
+} dt_iop_sigmoid_norm_type_t;
 
 #define MIDDLE_GREY 0.1845f
 
@@ -75,6 +91,8 @@ typedef struct dt_iop_sigmoid_params_t
   float display_grey_target;   // $MIN: 0.1  $MAX: 0.2 $DEFAULT: 0.1845 $DESCRIPTION: "target grey"
   float display_black_target;  // $MIN: 0.0  $MAX: 0.1 $DEFAULT: 0.0 $DESCRIPTION: "target black"
   dt_iop_sigmoid_type_t cumulative_distribution;  // $DEFAULT: DT_SIGMOID_LOGLOGISTIC $DESCRIPTION: "Curve type"
+  dt_iop_sigmoid_methods_type_t color_method;     // $DEFAULT: DT_SIGMOID_METHOD_CROSSTALK $DESCRIPTION: "Color Method"
+  dt_iop_sigmoid_norm_type_t rgb_norm_method;     // $DEFAULT: DT_SIGMOID_METHOD_LUMINANCE $DESCRIPTION: "Luminance Method"
 } dt_iop_sigmoid_params_t;
 
 typedef struct dt_iop_sigmoid_global_data_t
@@ -85,7 +103,7 @@ typedef struct dt_iop_sigmoid_gui_data_t
   // Whatever you need to make your gui happy and provide access to widgets between gui_init, gui_update etc.
   // Stored in self->gui_data while in darkroom.
   // To permanently store per-user gui configuration settings, you could use dt_conf_set/_get.
-  GtkWidget *contrast_slider, *skewness_slider, *distribution_list;
+  GtkWidget *contrast_slider, *skewness_slider, *distribution_list, *color_method_list, *rgb_norm_method_list;
 } dt_iop_sigmoid_gui_data_t;
 
 
@@ -135,23 +153,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 2)
-  {
-    typedef struct dt_iop_sigmoid_params_v1_t
-    {
-      float middle_grey_contrast;
-      dt_iop_sigmoid_type_t cumulative_distribution;
-    } dt_iop_sigmoid_params_v1_t;
-
-    dt_iop_sigmoid_params_v1_t *o = (dt_iop_sigmoid_params_v1_t *)old_params;
-    dt_iop_sigmoid_params_t *n = (dt_iop_sigmoid_params_t *)new_params;
-    dt_iop_sigmoid_params_t *d = (dt_iop_sigmoid_params_t *)self->default_params;
-
-    *n = *d; // start with a fresh copy of default parameters
-
-    n->middle_grey_contrast = o->middle_grey_contrast;
-    n->cumulative_distribution = o->cumulative_distribution;
-  }
   return 1;
 }
 
@@ -160,6 +161,28 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   memcpy(piece->data, p1, self->params_size);
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline float pixel_rgb_norm_power(const float pixel[4])
+{
+  // weird norm sort of perceptual. This is black magic really, but it looks good.
+  // the full norm is (R^3 + G^3 + B^3) / (R^2 + G^2 + B^2) and it should be in ]0; +infinity[
+
+  float numerator = 0.0f;
+  float denominator = 0.0f;
+
+  for(int c = 0; c < 3; c++)
+  {
+    const float value = fabsf(pixel[c]);
+    const float RGB_square = value * value;
+    const float RGB_cubic = RGB_square * value;
+    numerator += RGB_cubic;
+    denominator += RGB_square;
+  }
+
+  return numerator / fmaxf(denominator, 1e-12f); // prevent from division-by-0 (note: (1e-6)^2 = 1e-12
+}
 
 static inline float rgb_luma(const float pixel[4], const dt_iop_order_iccprofile_info_t *const work_profile)
 {
@@ -168,7 +191,30 @@ static inline float rgb_luma(const float pixel[4], const dt_iop_order_iccprofile
             : dt_camera_rgb_luminance(pixel);
 }
 
-void process_loglogistic(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+#ifdef _OPENMP
+#pragma omp declare simd uniform(variant, work_profile)
+#endif
+static inline float get_pixel_norm(const float pixel[4], const dt_iop_sigmoid_norm_type_t variant,
+                                   const dt_iop_order_iccprofile_info_t *const work_profile)
+{
+  switch(variant)
+  {
+    case(DT_SIGMOID_METHOD_MAX_RGB):
+      return fmaxf(fmaxf(pixel[0], pixel[1]), pixel[2]);
+
+    case(DT_SIGMOID_METHOD_POWER_NORM):
+      return pixel_rgb_norm_power(pixel);
+
+    case(DT_SIGMOID_METHOD_EUCLIDEAN_NORM):
+      return sqrtf(sqf(pixel[0]) + sqf(pixel[1]) + sqf(pixel[2])) * INVERSE_SQRT_3;
+
+    case(DT_SIGMOID_METHOD_LUMINANCE):
+    default:
+      return rgb_luma(pixel, work_profile);
+  }
+}
+
+void process_loglogistic_crosstalk(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                          void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_sigmoid_params_t *d = (dt_iop_sigmoid_params_t *)piece->data;
@@ -221,6 +267,77 @@ void process_loglogistic(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
   }
 }
 
+void process_loglogistic_ratio(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                         void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_sigmoid_params_t *d = (dt_iop_sigmoid_params_t *)piece->data;
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+
+  const float *const in = (const float *)ivoid;
+  float *const out = (float *)ovoid;
+  const size_t npixels = (size_t)roi_in->width * roi_in->height;
+
+  /* Calculate actual skew log logistic parameters to fulfill the following:
+   * f(scene_zero) = display_black_target 
+   * f(scene_grey) = display_grey_target
+   * f(scene_inf)  = display_white_target
+   * Keep contrast and skewness fairly orthogonal
+   */
+  const float scene_grey = MIDDLE_GREY;
+  const float skew_power = powf(5.0f, -d->contrast_skewness);
+  const float contrast_power = powf(d->middle_grey_contrast, 1.0f / skew_power);
+  const float magnitude = d->display_white_target;
+  // const float black_target = d->display_black_target;
+  const float white_grey_relation = powf(d->display_white_target / d->display_grey_target, 1.0f / skew_power) - 1.0f;
+  float film_fog = 0.0f;
+  if (d->display_black_target > 0.0f) {
+    const float white_black_relation = powf(d->display_white_target / d->display_black_target, 1.0f / skew_power) - 1.0f;
+    film_fog = scene_grey * powf(white_grey_relation, 1.0f / contrast_power) / (powf(white_black_relation, 1.0f / contrast_power) - powf(white_grey_relation, 1.0f / contrast_power));
+  }
+  const float paper_exp = powf(film_fog + scene_grey, contrast_power) * white_grey_relation;
+  const dt_iop_sigmoid_norm_type_t rgb_norm_method = d->rgb_norm_method;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(npixels, work_profile, magnitude, paper_exp, film_fog, contrast_power, skew_power, rgb_norm_method) \
+  dt_omp_sharedconst(in, out) \
+  schedule(static)
+#endif
+  for(size_t k = 0; k < 4 * npixels; k += 4)
+  {
+    const float *const restrict pix_in = in + k;
+    float *const restrict pix_out = out + k;
+    float DT_ALIGNED_ARRAY pre_out[4];
+
+    // Preserve color ratios by applying the tone curve on a luma estimate and then scale the RGB tripplet uniformly
+    const float luma = get_pixel_norm(in + k, rgb_norm_method, work_profile);
+    float mapped_luma = 0.0f;
+    if (luma > 0.0f) {
+      mapped_luma = magnitude * powf(1.0 + paper_exp * powf(film_fog + luma, -contrast_power), -skew_power);
+    }
+    const float scaling_factor = mapped_luma / luma;
+    for(size_t c = 0; c < 3; c++)
+    {
+      pre_out[c] = scaling_factor * pix_in[c];
+    }
+    
+    // Some pixels will get out of gamut values, scale these into gamut again using desaturation.
+    const float max_pre_out = fmaxf(fmaxf(pre_out[0], pre_out[1]), pre_out[2]);
+    const float sat_max = max_pre_out > magnitude ? (magnitude - mapped_luma) / (max_pre_out - mapped_luma) : 1.0f;
+
+    // const float min_pre_out = fminf(fminf(pre_out[0], pre_out[1]), pre_out[2]);
+    // const float sat_min = min_pre_out == mapped_luma ? 1.0f : (black_target - mapped_luma) / (min_pre_out - mapped_luma);
+    // Use the smallest saturation factor of the two to gurantee inside of gamut, and never add saturation
+    const float saturation_factor = fminf(sat_max, 1.0f); // fminf(fminf(sat_max, sat_min), 1.0f);
+
+    for(size_t c = 0; c < 3; c++)
+    {
+      pix_out[c] = mapped_luma + saturation_factor * (pre_out[c] - mapped_luma);
+    }
+    // Copy over the alpha channel
+    pix_out[3] = pix_in[3];
+  }
+}
+
 void process_weibull(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                          void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -262,11 +379,17 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
   dt_iop_sigmoid_params_t *d = (dt_iop_sigmoid_params_t *)piece->data;
-  const dt_iop_sigmoid_type_t cdf_type = d->cumulative_distribution;
 
-  if (cdf_type == DT_SIGMOID_LOGLOGISTIC)
+  if (d->cumulative_distribution == DT_SIGMOID_LOGLOGISTIC)
   {
-    process_loglogistic(self, piece, ivoid, ovoid, roi_in, roi_out);
+    if (d->color_method == DT_SIGMOID_METHOD_CROSSTALK)
+    {
+      process_loglogistic_crosstalk(self, piece, ivoid, ovoid, roi_in, roi_out);
+    }
+    else
+    {
+      process_loglogistic_ratio(self, piece, ivoid, ovoid, roi_in, roi_out);
+    }
   }
   else
   {
@@ -307,6 +430,8 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->contrast_slider, p->middle_grey_contrast);
   dt_bauhaus_slider_set(g->skewness_slider, p->contrast_skewness);
   dt_bauhaus_combobox_set_from_value(g->distribution_list, p->cumulative_distribution);
+  dt_bauhaus_combobox_set_from_value(g->color_method_list, p->color_method);
+  dt_bauhaus_combobox_set_from_value(g->rgb_norm_method_list, p->rgb_norm_method);
   gui_changed(self, NULL, NULL);
 }
 
@@ -344,6 +469,8 @@ void gui_init(dt_iop_module_t *self)
   g->distribution_list = dt_bauhaus_combobox_from_params(self, "cumulative_distribution");
   g->contrast_slider = dt_bauhaus_slider_from_params(self, "middle_grey_contrast");
   g->skewness_slider = dt_bauhaus_slider_from_params(self, "contrast_skewness");
+  g->color_method_list = dt_bauhaus_combobox_from_params(self, "color_method");
+  g->rgb_norm_method_list = dt_bauhaus_combobox_from_params(self, "rgb_norm_method");
 }
 
 void gui_cleanup(dt_iop_module_t *self)
