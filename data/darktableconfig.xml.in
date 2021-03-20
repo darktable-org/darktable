@@ -527,13 +527,6 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/capture/camera/import/jobcode</name>
-    <type>string</type>
-    <default>noname</default>
-    <shortdescription>jobcode of import job</shortdescription>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/capture/camera/live_view_fps</name>
     <type>int</type>
     <default>15</default>
@@ -654,6 +647,20 @@
     <name>ui_last/expander_import</name>
     <type>bool</type>
     <default>false</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/import_dialog_width</name>
+    <type>int</type>
+    <default>600</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/import_dialog_height</name>
+    <type>int</type>
+    <default>600</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
