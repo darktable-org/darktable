@@ -88,6 +88,7 @@ data/darktable.desktop.in
 src/bauhaus/bauhaus.c
 src/chart/main.c
 src/cli/main.c
+src/common/camera_control.c
 src/common/collection.c
 src/common/colorspaces.c
 src/common/cups_print.c
@@ -149,7 +150,6 @@ src/dtgtk/thumbtable.c
 src/external/wb_presets.c
 src/generate-cache/main.c
 src/gui/accelerators.c
-src/gui/camera_import_dialog.c
 src/gui/gtk.c
 src/gui/gtkentry.c
 src/gui/guides.c
