@@ -132,7 +132,6 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/thumbnail_btn.c"
   "dtgtk/thumbtable.c"
   "dtgtk/togglebutton.c"
-  "dtgtk/utility.c"
   "gui/accelerators.c"
   "gui/gtkentry.c"
   "gui/guides.c"
