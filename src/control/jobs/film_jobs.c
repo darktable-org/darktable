@@ -149,7 +149,7 @@ static void _apply_filmroll_gpx(dt_film_t *cfr)
 /* compare used for sorting the list of files to import
    only sort on basename of full path eg. the actually filename.
 */
-int _film_filename_cmp(gchar *a, gchar *b)
+static int _film_filename_cmp(gchar *a, gchar *b)
 {
   gchar *a_basename = g_path_get_basename(a);
   gchar *b_basename = g_path_get_basename(b);

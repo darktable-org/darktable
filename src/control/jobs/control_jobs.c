@@ -2117,14 +2117,77 @@ static int _control_import_image_insitu(const char *filename)
   return filmid;
 }
 
+#ifdef USE_LUA
+/* compare used for sorting the list of files to import
+   only sort on basename of full path eg. the actually filename.
+*/
+static int _film_filename_cmp(gchar *a, gchar *b)
+{
+  gchar *a_basename = g_path_get_basename(a);
+  gchar *b_basename = g_path_get_basename(b);
+  int ret = g_strcmp0(a_basename, b_basename);
+  g_free(a_basename);
+  g_free(b_basename);
+  return ret;
+}
+
+static GList *_apply_lua_filter(GList *images)
+{
+  /* pre-sort image list for easier handling in Lua code */
+  images = g_list_sort(images, (GCompareFunc)_film_filename_cmp);
+
+  dt_lua_lock();
+  lua_State *L = darktable.lua_state.state;
+  {
+    lua_newtable(L);
+    for(GList *elt = images; elt; elt = g_list_next(elt))
+    {
+      lua_pushstring(L, elt->data);
+      luaL_ref(L, -2);
+    }
+  }
+  lua_pushvalue(L, -1);
+  dt_lua_event_trigger(L, "pre-import", 1);
+  {
+    g_list_free_full(images, g_free);
+    // recreate list of images
+    images = NULL;
+    lua_pushnil(L); /* first key */
+    while(lua_next(L, -2) != 0)
+    {
+      /* uses 'key' (at index -2) and 'value' (at index -1) */
+      void *filename = strdup(luaL_checkstring(L, -1));
+      lua_pop(L, 1);
+      images = g_list_prepend(images, filename);
+    }
+  }
+
+  lua_pop(L, 1); // remove the table again from the stack
+
+  dt_lua_unlock();
+
+  /* we got ourself a list of images, lets sort and start import */
+  images = g_list_sort(images, (GCompareFunc)_film_filename_cmp);
+  return images;
+}
+#endif
+
 static int32_t _control_import_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   dt_control_import_t *data = params->data;
   uint32_t cntr = 0;
-  GList *t = params->index;
   char message[512] = { 0 };
 
+#ifdef USE_LUA
+  if(!data->session)
+  {
+    params->index = _apply_lua_filter(params->index);
+    if(!params->index) return 0;
+  }
+#endif
+
+  GList *t = params->index;
   const guint total = g_list_length(t);
   snprintf(message, sizeof(message), ngettext("importing %d image", "importing %d images", total), total);
   dt_control_job_set_progress_message(job, message);
