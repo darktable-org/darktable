@@ -1174,13 +1174,13 @@ void gui_init(dt_lib_module_t *self)
   d->metadata.box = d->exp.widgets;
   dt_import_metadata_init(&d->metadata);
 
-  #ifdef USE_LUA
-    /* initialize the lua area  and make sure it survives its parent's destruction*/
-    d->extra_lua_widgets = gtk_box_new(GTK_ORIENTATION_VERTICAL,5);
-    g_object_ref_sink(d->extra_lua_widgets);
-    gtk_box_pack_start(GTK_BOX(d->exp.widgets), d->extra_lua_widgets, FALSE, FALSE, 0);
-    gtk_container_foreach(GTK_CONTAINER(d->extra_lua_widgets), reset_child, NULL);
-  #endif
+#ifdef USE_LUA
+  /* initialize the lua area  and make sure it survives its parent's destruction*/
+  d->extra_lua_widgets = gtk_box_new(GTK_ORIENTATION_VERTICAL,5);
+  g_object_ref_sink(d->extra_lua_widgets);
+  gtk_box_pack_start(GTK_BOX(d->exp.widgets), d->extra_lua_widgets, FALSE, FALSE, 0);
+  gtk_container_foreach(GTK_CONTAINER(d->extra_lua_widgets), reset_child, NULL);
+#endif
 
   gtk_widget_show_all(self->widget);
   gtk_widget_set_no_show_all(self->widget, TRUE);
