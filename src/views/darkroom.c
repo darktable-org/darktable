@@ -40,7 +40,6 @@
 #include "develop/masks.h"
 #include "dtgtk/button.h"
 #include "dtgtk/thumbtable.h"
-#include "dtgtk/utility.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -223,7 +222,7 @@ void _display_module_trouble_message_callback(gpointer instance,
 
   if(module && module->has_trouble && module->widget)
   {
-    label_widget = dtgtk_container_first_child(GTK_CONTAINER(gtk_widget_get_parent(module->widget)));
+    label_widget = dt_gui_container_first_child(GTK_CONTAINER(gtk_widget_get_parent(module->widget)));
     if(strcmp(gtk_widget_get_name(label_widget), "iop-plugin-warning"))
       label_widget = NULL;
   }

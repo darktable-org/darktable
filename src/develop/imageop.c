@@ -40,7 +40,6 @@
 #include "dtgtk/expander.h"
 #include "dtgtk/gradientslider.h"
 #include "dtgtk/icon.h"
-#include "dtgtk/utility.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -1103,7 +1102,7 @@ static void _iop_gui_update_header(dt_iop_module_t *module)
   if (!module->header)                  /* some modules such as overexposed don't actually have a header */
     return;
   /* get the enable button and button */
-  GtkWidget *lab = dtgtk_container_nth_child(GTK_CONTAINER(module->header), IOP_MODULE_LABEL);
+  GtkWidget *lab = dt_gui_container_nth_child(GTK_CONTAINER(module->header), IOP_MODULE_LABEL);
 
   // set panel name to display correct multi-instance
   _iop_panel_label(lab, module);
@@ -1172,7 +1171,7 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
 static void _iop_gui_update_label(dt_iop_module_t *module)
 {
   if(!module->header) return;
-  GtkWidget *lab = dtgtk_container_nth_child(GTK_CONTAINER(module->header), IOP_MODULE_LABEL);
+  GtkWidget *lab = dt_gui_container_nth_child(GTK_CONTAINER(module->header), IOP_MODULE_LABEL);
   _iop_panel_label(lab, module);
 }
 

@@ -24,7 +24,6 @@
 #include "control/progress.h"
 #include "develop/develop.h"
 #include "dtgtk/button.h"
-#include "dtgtk/utility.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
@@ -200,7 +199,7 @@ static gboolean _destroyed_gui_thread(gpointer user_data)
   params->instance->widget = NULL;
 
   /* if jobbox is empty let's hide */
-  if(!dtgtk_container_has_children(GTK_CONTAINER(params->self->widget)))
+  if(!dt_gui_container_has_children(GTK_CONTAINER(params->self->widget)))
     gtk_widget_hide(params->self->widget);
 
   // free data

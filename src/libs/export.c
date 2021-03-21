@@ -29,7 +29,6 @@
 #include "control/jobs.h"
 #include "control/signal.h"
 #include "dtgtk/button.h"
-#include "dtgtk/utility.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -1060,7 +1059,7 @@ static void _on_storage_list_changed(gpointer instance, dt_lib_module_t *self)
   dt_imageio_module_storage_t *storage = dt_imageio_get_storage();
   dt_bauhaus_combobox_clear(d->storage);
 
-  dtgtk_container_remove_children(GTK_CONTAINER(d->storage_extra_container));
+  dt_gui_container_remove_children(GTK_CONTAINER(d->storage_extra_container));
 
   for(const GList *it = darktable.imageio->plugins_storage; it; it = g_list_next(it))
   {

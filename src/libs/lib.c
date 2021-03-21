@@ -23,7 +23,6 @@
 #include "dtgtk/button.h"
 #include "dtgtk/expander.h"
 #include "dtgtk/icon.h"
-#include "dtgtk/utility.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #ifdef GDK_WINDOWING_QUARTZ
@@ -987,7 +986,7 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   GtkWidget *header = dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander));
   gint flags = CPF_DIRECTION_DOWN | CPF_BG_TRANSPARENT | CPF_STYLE_FLAT;
 
-  GtkDarktableButton *icon = (GtkDarktableButton*)dtgtk_container_nth_child(GTK_CONTAINER(header), DT_MODULE_ARROW);
+  GtkDarktableButton *icon = (GtkDarktableButton*)dt_gui_container_nth_child(GTK_CONTAINER(header), DT_MODULE_ARROW);
   if(!expanded) flags = CPF_DIRECTION_RIGHT | CPF_BG_TRANSPARENT | CPF_STYLE_FLAT;
   dtgtk_button_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags, NULL);
 

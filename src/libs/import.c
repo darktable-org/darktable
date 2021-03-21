@@ -27,7 +27,6 @@
 #include "control/jobs/camera_jobs.h"
 #endif
 #include "dtgtk/expander.h"
-#include "dtgtk/utility.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
@@ -197,8 +196,8 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
 
   /* cleanup of widgets in devices container*/
-  dtgtk_container_remove_children(GTK_CONTAINER(d->devices));
-  dtgtk_container_remove_children(GTK_CONTAINER(d->locked_devices));
+  dt_gui_container_remove_children(GTK_CONTAINER(d->devices));
+  dt_gui_container_remove_children(GTK_CONTAINER(d->locked_devices));
 
   dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
   dt_pthread_mutex_lock(&camctl->lock);

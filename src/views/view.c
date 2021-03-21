@@ -34,7 +34,6 @@
 #include "dtgtk/button.h"
 #include "dtgtk/expander.h"
 #include "dtgtk/thumbtable.h"
-#include "dtgtk/utility.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
@@ -1515,7 +1514,7 @@ static void _accels_window_sticky(GtkWidget *widget, GdkEventButton *event, dt_v
   gtk_window_set_default_size(win, alloc.width * 0.7, alloc.height * 0.7);
   g_signal_connect(win, "destroy", G_CALLBACK(_accels_window_destroy), vm);
 
-  GtkWidget *sw = dtgtk_container_first_child(GTK_CONTAINER(vm->accels_window.window));
+  GtkWidget *sw = dt_gui_container_first_child(GTK_CONTAINER(vm->accels_window.window));
   g_object_ref(sw);
   gtk_container_remove(GTK_CONTAINER(vm->accels_window.window), sw);
   gtk_container_add(GTK_CONTAINER(win), sw);
