@@ -1416,11 +1416,11 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   convert_any_XYZ_to_LMS(D50_XYZ, D50_LMS, kind);
 
   // solve the equation to find the scene illuminant
-  float illuminant[3];
+  float illuminant[4] = { .0f };
   for(size_t c = 0; c < 3; c++) illuminant[c] = D50_LMS[c] * LMS_grey_test[c] / LMS_grey_ref[c];
 
   // convert back the illuminant to XYZ then xyY
-  float illuminant_XYZ[3], illuminant_xyY[3];
+  float illuminant_XYZ[4], illuminant_xyY[4] = { .0f };
   convert_any_LMS_to_XYZ(illuminant, illuminant_XYZ, kind);
   const float Y_illu = illuminant_XYZ[1];
   for(size_t c = 0; c < 3; c++) illuminant_XYZ[c] /= Y_illu;
