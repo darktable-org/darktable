@@ -491,8 +491,7 @@ static void _basics_on_off_callback(GtkWidget *btn, dt_lib_modulegroups_basic_it
 static void _basics_on_off_callback2(GtkWidget *widget, GdkEventButton *e, dt_lib_modulegroups_basic_item_t *item)
 {
   // we get the button and change its state
-  GList *children = gtk_container_get_children(GTK_CONTAINER(item->box));
-  GtkToggleButton *btn = (GtkToggleButton *)children->data;
+  GtkToggleButton *btn = (GtkToggleButton *)dt_gui_container_first_child(GTK_CONTAINER(item->box));
   if(btn)
   {
     darktable.gui->reset++;
@@ -500,7 +499,6 @@ static void _basics_on_off_callback2(GtkWidget *widget, GdkEventButton *e, dt_li
     darktable.gui->reset--;
     gtk_toggle_button_toggled(btn);
   }
-  g_list_free(children);
 }
 
 static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_item_t *item, DtBauhausWidget *bw,
@@ -564,13 +562,11 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       }
       else
       {
-        GList *children = gtk_container_get_children(GTK_CONTAINER(item->module->header));
-        GtkWidget *orig_label = (GtkWidget *)g_list_nth_data(children, IOP_MODULE_LABEL);
+        GtkWidget *orig_label = dt_gui_container_nth_child(GTK_CONTAINER(item->module->header), IOP_MODULE_LABEL);
         gchar *tooltip = gtk_widget_get_tooltip_text(orig_label);
         gtk_widget_set_tooltip_text(lb, tooltip);
         gtk_widget_set_tooltip_text(btn, tooltip);
         g_free(tooltip);
-        g_list_free(children);
       }
 
       gtk_widget_show_all(item->box);
@@ -2004,13 +2000,7 @@ static void _manage_editor_basics_update_list(dt_lib_module_t *self)
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
   // first, we remove all existing modules
-  GList *lw = gtk_container_get_children(GTK_CONTAINER(d->edit_basics_box));
-  for(const GList *lw_iter = lw; lw_iter; lw_iter = g_list_next(lw_iter))
-  {
-    GtkWidget *w = (GtkWidget *)lw_iter->data;
-    gtk_widget_destroy(w);
-  }
-  g_list_free(lw);
+  dt_gui_container_destroy_children(GTK_CONTAINER(d->edit_basics_box));
 
   // and we add the ones from the list
   for(const GList *modules = g_list_last(darktable.develop->iop); modules; modules = g_list_previous(modules))
@@ -2168,13 +2158,7 @@ static void _manage_editor_module_update_list(dt_lib_module_t *self, dt_lib_modu
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
   // first, we remove all existing modules
-  GList *lw = gtk_container_get_children(GTK_CONTAINER(gr->iop_box));
-  for(const GList *lw_iter = lw; lw_iter; lw_iter = g_list_next(lw_iter))
-  {
-    GtkWidget *w = (GtkWidget *)lw_iter->data;
-    gtk_widget_destroy(w);
-  }
-  g_list_free(lw);
+  dt_gui_container_destroy_children(GTK_CONTAINER(gr->iop_box));
 
   // and we add the ones from the list
   for(GList *modules2 = g_list_last(darktable.develop->iop); modules2; modules2 = g_list_previous(modules2))
@@ -2219,8 +2203,7 @@ static void _manage_editor_group_update_arrows(GtkWidget *box)
   for(const GList *lw_iter = lw; lw_iter; lw_iter = g_list_next(lw_iter))
   {
     GtkWidget *w = (GtkWidget *)lw_iter->data;
-    GList *children = gtk_container_get_children(GTK_CONTAINER(w));
-    GtkWidget *hb = (GtkWidget *)children->data;
+    GtkWidget *hb = dt_gui_container_first_child(GTK_CONTAINER(w));
     if(hb)
     {
       GList *lw2 = gtk_container_get_children(GTK_CONTAINER(hb));
@@ -2239,7 +2222,6 @@ static void _manage_editor_group_update_arrows(GtkWidget *box)
       }
       g_list_free(lw2);
     }
-    g_list_free(children);
     pos++;
   }
   g_list_free(lw);
@@ -3256,16 +3238,10 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   }
 
   // we remove all widgets from the box
-  GList *lw = gtk_container_get_children(GTK_CONTAINER(d->preset_box));
-  for(const GList *lw_iter = lw; lw_iter; lw_iter = g_list_next(lw_iter))
-  {
-    GtkWidget *w = (GtkWidget *)lw_iter->data;
-    gtk_widget_destroy(w);
-  }
-  g_list_free(lw);
+  dt_gui_container_destroy_children(GTK_CONTAINER(d->preset_box));
 
   // we update all the preset lines
-  lw = gtk_container_get_children(GTK_CONTAINER(d->presets_list));
+  GList *lw = gtk_container_get_children(GTK_CONTAINER(d->presets_list));
   for(const GList *lw_iter = lw; lw_iter; lw_iter = g_list_next(lw_iter))
   {
     GtkWidget *w = (GtkWidget *)lw_iter->data;
@@ -3546,13 +3522,7 @@ static void _manage_preset_update_list(dt_lib_module_t *self)
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
   // we first remove all existing entries from the box
-  GList *lw = gtk_container_get_children(GTK_CONTAINER(d->presets_list));
-  for(const GList *lw_iter = lw; lw_iter; lw_iter = g_list_next(lw_iter))
-  {
-    GtkWidget *w = (GtkWidget *)lw_iter->data;
-    gtk_widget_destroy(w);
-  }
-  g_list_free(lw);
+  dt_gui_container_destroy_children(GTK_CONTAINER(d->presets_list));
 
   // and we repopulate it
   sqlite3_stmt *stmt;

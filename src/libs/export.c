@@ -1053,20 +1053,13 @@ static void _update_formats_combobox(dt_lib_export_t *d)
   gtk_widget_set_sensitive(d->format, !empty);
 }
 
-static void _remove_child(GtkWidget *widget, gpointer data)
-{
-  GtkContainer *cont = (GtkContainer *)data;
-  gtk_container_remove(cont, widget);
-}
-
 static void _on_storage_list_changed(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_export_t *d = self->data;
   dt_imageio_module_storage_t *storage = dt_imageio_get_storage();
   dt_bauhaus_combobox_clear(d->storage);
 
-  GtkContainer *cont = GTK_CONTAINER(d->storage_extra_container);
-  gtk_container_foreach(cont, _remove_child, cont);
+  dt_gui_container_remove_children(GTK_CONTAINER(d->storage_extra_container));
 
   for(const GList *it = darktable.imageio->plugins_storage; it; it = g_list_next(it))
   {
