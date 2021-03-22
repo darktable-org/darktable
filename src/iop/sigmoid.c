@@ -80,13 +80,14 @@ typedef struct dt_iop_sigmoid_params_t
   // If no explicit init() is specified, the default implementation uses $DEFAULT tags
   // to initialise self->default_params, which is then used in gui_init to set widget defaults.
 
-  float middle_grey_contrast;  // $MIN: 0.1  $MAX: 4.0 $DEFAULT: 1.6 $DESCRIPTION: "Contrast"
-  float contrast_skewness;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "Skew"
+  float middle_grey_contrast;  // $MIN: 0.1  $MAX: 4.0 $DEFAULT: 1.6 $DESCRIPTION: "contrast"
+  float contrast_skewness;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "skew"
   float display_white_target;  // $MIN: 0.2  $MAX: 16.0 $DEFAULT: 1.0 $DESCRIPTION: "target white"
   float display_grey_target;   // $MIN: 0.1  $MAX: 0.2 $DEFAULT: 0.1845 $DESCRIPTION: "target grey"
   float display_black_target;  // $MIN: 0.0  $MAX: 0.1 $DEFAULT: 0.0 $DESCRIPTION: "target black"
-  dt_iop_sigmoid_methods_type_t color_processing;  // $DEFAULT: DT_SIGMOID_METHOD_CROSSTALK $DESCRIPTION: "Color Processing"
-  dt_iop_sigmoid_norm_type_t rgb_norm_method;      // $DEFAULT: DT_SIGMOID_METHOD_LUMINANCE $DESCRIPTION: "Luminance Norm"
+  dt_iop_sigmoid_methods_type_t color_processing;  // $DEFAULT: DT_SIGMOID_METHOD_CROSSTALK $DESCRIPTION: "color processing"
+  float crosstalk_amount;                          // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 4.0 $DESCRIPTION: "crosstalk amount"
+  dt_iop_sigmoid_norm_type_t rgb_norm_method;      // $DEFAULT: DT_SIGMOID_METHOD_LUMINANCE $DESCRIPTION: "luminance norm"
 } dt_iop_sigmoid_params_t;
 
 typedef struct dt_iop_sigmoid_global_data_t
@@ -97,7 +98,7 @@ typedef struct dt_iop_sigmoid_gui_data_t
   // Whatever you need to make your gui happy and provide access to widgets between gui_init, gui_update etc.
   // Stored in self->gui_data while in darkroom.
   // To permanently store per-user gui configuration settings, you could use dt_conf_set/_get.
-  GtkWidget *contrast_slider, *skewness_slider, *distribution_list, *color_processing_list, *rgb_norm_method_list;
+  GtkWidget *contrast_slider, *skewness_slider, *color_processing_list, *crosstalk_slider, *rgb_norm_method_list;
 } dt_iop_sigmoid_gui_data_t;
 
 
@@ -235,6 +236,7 @@ void process_loglogistic_crosstalk(struct dt_iop_module_t *self, dt_dev_pixelpip
     film_fog = scene_grey * powf(white_grey_relation, 1.0f / contrast_power) / (powf(white_black_relation, 1.0f / contrast_power) - powf(white_grey_relation, 1.0f / contrast_power));
   }
   const float paper_exp = powf(film_fog + scene_grey, contrast_power) * white_grey_relation;
+  const float saturation_factor = fmaxf(1.0f - d->crosstalk_amount / 100.0f, 0.0f);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -249,7 +251,7 @@ void process_loglogistic_crosstalk(struct dt_iop_module_t *self, dt_dev_pixelpip
     const float luma = rgb_luma(in + k, work_profile);
     for(size_t c = 0; c < 3; c++)
     {
-      const float desat = luma + 0.96f * (in[k + c] - luma);
+      const float desat = luma + saturation_factor * (in[k + c] - luma);
       if (desat > 0.0f) {
         out[k + c] = magnitude * powf(1.0 + paper_exp * powf(film_fog + desat, -contrast_power), -skew_power);
       } else {
@@ -374,7 +376,13 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
-{}
+{
+  dt_iop_sigmoid_gui_data_t *g = (dt_iop_sigmoid_gui_data_t *)self->gui_data;
+  dt_iop_sigmoid_params_t *p = (dt_iop_sigmoid_params_t *)self->params;
+
+  gtk_widget_set_visible(g->crosstalk_slider, p->color_processing == DT_SIGMOID_METHOD_CROSSTALK);
+  gtk_widget_set_visible(g->rgb_norm_method_list, p->color_processing == DT_SIGMOID_METHOD_RGB_RATIO);
+}
 
 void gui_update(dt_iop_module_t *self)
 {
@@ -383,8 +391,11 @@ void gui_update(dt_iop_module_t *self)
 
   dt_bauhaus_slider_set(g->contrast_slider, p->middle_grey_contrast);
   dt_bauhaus_slider_set(g->skewness_slider, p->contrast_skewness);
+
   dt_bauhaus_combobox_set_from_value(g->color_processing_list, p->color_processing);
+  dt_bauhaus_slider_set(g->crosstalk_slider, p->crosstalk_amount);
   dt_bauhaus_combobox_set_from_value(g->rgb_norm_method_list, p->rgb_norm_method);
+
   gui_changed(self, NULL, NULL);
 }
 
@@ -421,7 +432,12 @@ void gui_init(dt_iop_module_t *self)
 
   g->contrast_slider = dt_bauhaus_slider_from_params(self, "middle_grey_contrast");
   g->skewness_slider = dt_bauhaus_slider_from_params(self, "contrast_skewness");
+
   g->color_processing_list = dt_bauhaus_combobox_from_params(self, "color_processing");
+  g->crosstalk_slider = dt_bauhaus_slider_from_params(self, "crosstalk_amount");
+  dt_bauhaus_slider_set_soft_range(g->crosstalk_slider, 0.0f, 10.0f);
+  dt_bauhaus_slider_set_format(g->crosstalk_slider, "%.2f %%");
+
   g->rgb_norm_method_list = dt_bauhaus_combobox_from_params(self, "rgb_norm_method");
 }
 
