@@ -1911,10 +1911,10 @@ void dt_ui_container_foreach(struct dt_ui_t *ui, const dt_ui_container_t c, GtkC
   g_return_if_fail(GTK_IS_CONTAINER(ui->containers[c]));
   gtk_container_foreach(GTK_CONTAINER(ui->containers[c]), callback, (gpointer)ui->containers[c]);
 }
+
 void dt_ui_container_destroy_children(struct dt_ui_t *ui, const dt_ui_container_t c)
 {
-  g_return_if_fail(GTK_IS_CONTAINER(ui->containers[c]));
-  gtk_container_foreach(GTK_CONTAINER(ui->containers[c]), (GtkCallback)gtk_widget_destroy, (gpointer)c);
+  dt_gui_container_destroy_children(GTK_CONTAINER(ui->containers[c]));
 }
 
 void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui)
@@ -3058,7 +3058,7 @@ void dt_ui_notebook_clear(GtkNotebook *notebook)
 {
   if(gtk_notebook_get_n_pages(notebook) >= 2)
     g_signal_handlers_disconnect_by_func(G_OBJECT(notebook), G_CALLBACK(notebook_size_callback), NULL);
-  gtk_container_foreach(GTK_CONTAINER(notebook), (GtkCallback)gtk_widget_destroy, NULL);
+  dt_gui_container_destroy_children(GTK_CONTAINER(notebook));
 }
 
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip)
@@ -3106,11 +3106,10 @@ static gint _get_container_row_heigth(GtkWidget *w)
   }
   else
   {
-    GList *children = gtk_container_get_children(GTK_CONTAINER(w));
-    if(children)
+    GtkWidget *child = dt_gui_container_first_child(GTK_CONTAINER(w));
+    if(child)
     {
-      height = gtk_widget_get_allocated_height(GTK_WIDGET(children->data));
-      g_list_free(children);
+      height = gtk_widget_get_allocated_height(child);
     }
   }
 
@@ -3214,6 +3213,65 @@ GtkWidget *dt_ui_scroll_wrap(GtkWidget *w, gint min_size, char *config_str)
   gtk_container_add(GTK_CONTAINER(sw), w);
 
   return sw;
+}
+
+gboolean dt_gui_container_has_children(GtkContainer *container)
+{
+  g_return_val_if_fail(GTK_IS_CONTAINER(container), FALSE);
+  GList *children = gtk_container_get_children(container);
+  gboolean has_children = children != NULL;
+  g_list_free(children);
+  return has_children;
+}
+
+int dt_gui_container_num_children(GtkContainer *container)
+{
+  g_return_val_if_fail(GTK_IS_CONTAINER(container), FALSE);
+  GList *children = gtk_container_get_children(container);
+  int num_children = g_list_length(children);
+  g_list_free(children);
+  return num_children;
+}
+
+GtkWidget *dt_gui_container_first_child(GtkContainer *container)
+{
+  g_return_val_if_fail(GTK_IS_CONTAINER(container), NULL);
+  GList *children = gtk_container_get_children(container);
+  GtkWidget *child = children ? (GtkWidget*)children->data : NULL;
+  g_list_free(children);
+  return child;
+}
+
+GtkWidget *dt_gui_container_nth_child(GtkContainer *container, int which)
+{
+  g_return_val_if_fail(GTK_IS_CONTAINER(container), NULL);
+  GList *children = gtk_container_get_children(container);
+  GtkWidget *child = (GtkWidget*)g_list_nth_data(children, which);
+  g_list_free(children);
+  return child;
+}
+
+static void _remove_child(GtkWidget *widget, gpointer data)
+{
+  gtk_container_remove((GtkContainer*)data, widget);
+}
+
+void dt_gui_container_remove_children(GtkContainer *container)
+{
+  g_return_if_fail(GTK_IS_CONTAINER(container));
+  gtk_container_foreach(container, _remove_child, container);
+}
+
+static void _delete_child(GtkWidget *widget, gpointer data)
+{
+  (void)data;  // avoid unreferenced-parameter warning
+  gtk_widget_destroy(widget);
+}
+
+void dt_gui_container_destroy_children(GtkContainer *container)
+{
+  g_return_if_fail(GTK_IS_CONTAINER(container));
+  gtk_container_foreach(container, _delete_child, NULL);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
