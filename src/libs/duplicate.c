@@ -392,7 +392,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   g_list_free_full(d->thumbs, _thumb_remove);
   d->thumbs = NULL;
   // and the other widgets too
-  gtk_container_foreach(GTK_CONTAINER(d->duplicate_box), (GtkCallback)gtk_widget_destroy, 0);
+  dt_gui_container_destroy_children(GTK_CONTAINER(d->duplicate_box));
   // retrieve all the versions of the image
   sqlite3_stmt *stmt;
   dt_develop_t *dev = darktable.develop;

@@ -15,6 +15,7 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "gui/gtk.h"
 #include "lua/types.h"
 #include "lua/widget/common.h"
@@ -71,13 +72,8 @@ static void on_child_removed(GtkContainer *container,GtkWidget *child,lua_contai
 
 static void container_cleanup(lua_State* L,lua_widget widget)
 {
-  GList * children = gtk_container_get_children(GTK_CONTAINER(widget->widget));
   g_signal_handlers_disconnect_by_func(widget->widget, G_CALLBACK(on_child_removed), widget);
-  for(const GList *cur_child = children; cur_child; cur_child = g_list_next(cur_child))
-  {
-    gtk_container_remove(GTK_CONTAINER(widget->widget),GTK_WIDGET(cur_child->data));
-  }
-  g_list_free(children);
+  dt_gui_container_remove_children(GTK_CONTAINER(widget->widget));
 }
 
 
@@ -121,9 +117,8 @@ static int container_len(lua_State*L)
 {
   lua_container container;
   luaA_to(L,lua_container,&container,1);
-  GList * children = gtk_container_get_children(GTK_CONTAINER(container->widget));
-  lua_pushinteger(L,g_list_length(children));
-  g_list_free(children);
+  int children = dt_gui_container_num_children(GTK_CONTAINER(container->widget));
+  lua_pushinteger(L,children);
   return 1;
 }
 

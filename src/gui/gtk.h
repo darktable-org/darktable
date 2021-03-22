@@ -414,6 +414,24 @@ static inline GtkWidget *dt_ui_button_new(const gchar *label, const gchar *toolt
 
 GtkWidget *dt_ui_scroll_wrap(GtkWidget *w, gint min_size, char *config_str);
 
+// check whether the given container has any user-added children
+gboolean dt_gui_container_has_children(GtkContainer *container);
+// return a count of the user-added children in the given container
+int dt_gui_container_num_children(GtkContainer *container);
+// return the first child of the given container
+GtkWidget *dt_gui_container_first_child(GtkContainer *container);
+// return the requested child of the given container, or NULL if it has fewer children
+GtkWidget *dt_gui_container_nth_child(GtkContainer *container, int which);
+
+// remove all of the children we've added to the container.  Any which no longer have any references will
+// be destroyed.
+void dt_gui_container_remove_children(GtkContainer *container);
+
+// delete all of the children we've added to the container.  Use this function only if you are SURE
+// there are no other references to any of the children (if in doubt, use dt_gui_container_remove_children
+// instead; it's a bit slower but safer).
+void dt_gui_container_destroy_children(GtkContainer *container);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

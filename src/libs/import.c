@@ -190,23 +190,14 @@ static void _lib_import_tethered_callback(GtkToggleButton *button, gpointer data
   dt_ctl_switch_mode_to("tethering");
 }
 
-static void _remove_child(GtkWidget *widget, gpointer data)
-{
-  GtkContainer *cont = (GtkContainer *)data;
-  gtk_container_remove(cont, widget);
-}
-
 /** update the device list */
 void _lib_import_ui_devices_update(dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
 
   /* cleanup of widgets in devices container*/
-  GtkContainer *cont = GTK_CONTAINER(d->devices);
-  gtk_container_foreach(cont, _remove_child, cont);
-
-  cont = GTK_CONTAINER(d->locked_devices);
-  gtk_container_foreach(cont, _remove_child, cont);
+  dt_gui_container_remove_children(GTK_CONTAINER(d->devices));
+  dt_gui_container_remove_children(GTK_CONTAINER(d->locked_devices));
 
   dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
   dt_pthread_mutex_lock(&camctl->lock);
