@@ -1616,6 +1616,13 @@
     <shortdescription>ask before deleting a preset</shortdescription>
     <longdescription>will ask for confirmation before deleting or overwriting a preset</longdescription>
   </dtconfig>
+  <dtconfig prefs="security">
+    <name>plugins/lighttable/export/ask_before_export_overwrite</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>ask before exporting in overwrite mode</shortdescription>
+    <longdescription>will ask for confirmation before exporting files in overwrite mode</longdescription>
+  </dtconfig>
   <dtconfig ui="yes">
     <name>plugins/map/show_map_osd</name>
     <type>bool</type>
