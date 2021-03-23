@@ -997,7 +997,6 @@ static gboolean dt_iop_gui_off_button_press(GtkWidget *w, GdkEventButton *e, gpo
 static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  gboolean raster = module->blend_params->mask_mode & DEVELOP_MASK_RASTER;
 
   if(!darktable.gui->reset)
   {
@@ -1025,8 +1024,9 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
 
       if(dt_conf_get_bool("darkroom/ui/activate_expand") && module->expanded)
         dt_iop_gui_set_expanded(module, FALSE, FALSE);
-
     }
+
+    const gboolean raster = module->blend_params->mask_mode & DEVELOP_MASK_RASTER;
     // set mask indicator sensitive according to module activation and raster mask
     if(module->mask_indicator)
       gtk_widget_set_sensitive(module->mask_indicator, !raster && module->enabled);
@@ -2289,7 +2289,7 @@ static void _display_mask_indicator_callback(GtkToggleButton *bt, dt_iop_module_
   if(darktable.gui->reset) return;
 
   const gboolean is_active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bt));
-  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
+  const dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
 
   module->request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_MASK;
   module->request_mask_display |= (is_active ? DT_DEV_PIXELPIPE_DISPLAY_MASK : 0);
@@ -2304,31 +2304,31 @@ static void _display_mask_indicator_callback(GtkToggleButton *bt, dt_iop_module_
 
 void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
 {
-  gboolean show = add && dt_conf_get_bool("darkroom/ui/show_mask_indicator");
-  gboolean raster = module->blend_params->mask_mode & DEVELOP_MASK_RASTER;
+  const gboolean show = add && dt_conf_get_bool("darkroom/ui/show_mask_indicator");
+  const gboolean raster = module->blend_params->mask_mode & DEVELOP_MASK_RASTER;
 
   if(module->mask_indicator)
   {
     if(!show)
-      {
-        gtk_widget_destroy(module->mask_indicator);
-        module->mask_indicator = NULL;
-        dt_iop_show_hide_header_buttons(module->header, NULL, FALSE, FALSE);
-      }
-    else
-        gtk_widget_set_sensitive(module->mask_indicator, !raster && module->enabled);
-  }
-  else if(show)
     {
-      module->mask_indicator = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask,
-                                                      CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
-      gtk_widget_set_name(module->mask_indicator, "module-mask-indicator");
-      g_signal_connect(G_OBJECT(module->mask_indicator), "toggled",
-                       G_CALLBACK(_display_mask_indicator_callback), module);
-      gtk_widget_set_sensitive(module->mask_indicator, !raster && module->enabled);
-      gtk_box_pack_end(GTK_BOX(module->header), module->mask_indicator, FALSE, FALSE, 0);
+      gtk_widget_destroy(module->mask_indicator);
+      module->mask_indicator = NULL;
       dt_iop_show_hide_header_buttons(module->header, NULL, FALSE, FALSE);
     }
+    else
+      gtk_widget_set_sensitive(module->mask_indicator, !raster && module->enabled);
+  }
+  else if(show)
+  {
+    module->mask_indicator = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask,
+                                                    CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+    gtk_widget_set_name(module->mask_indicator, "module-mask-indicator");
+    g_signal_connect(G_OBJECT(module->mask_indicator), "toggled",
+                     G_CALLBACK(_display_mask_indicator_callback), module);
+    gtk_widget_set_sensitive(module->mask_indicator, !raster && module->enabled);
+    gtk_box_pack_end(GTK_BOX(module->header), module->mask_indicator, FALSE, FALSE, 0);
+    dt_iop_show_hide_header_buttons(module->header, NULL, FALSE, FALSE);
+  }
 
   if(module->mask_indicator)
   {
