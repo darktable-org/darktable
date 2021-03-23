@@ -680,8 +680,8 @@ static void _blendop_blendif_sliders_callback(GtkDarktableGradientSlider *slider
   dt_develop_blendif_channels_t ch = channel->param_channels[in_out];
   GtkLabel **label = data->filter[in_out].label;
 
-  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker)) &&
-     !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values)))
+  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker))
+     && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values)))
   {
     dt_iop_color_picker_reset(data->module, FALSE);
   }
@@ -1044,9 +1044,9 @@ static void _blendop_blendif_tab_switch(GtkNotebook *notebook, GtkWidget *page, 
 
   data->tab = page_num;
 
-  if(cst_old != _blendop_blendif_get_picker_colorspace(data) &&
-     (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker)) ||
-      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values))))
+  if(cst_old != _blendop_blendif_get_picker_colorspace(data)
+     && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker))
+         || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values))))
   {
     dt_iop_color_picker_set_cst(data->module, _blendop_blendif_get_picker_colorspace(data));
     dt_dev_reprocess_all(data->module->dev);
@@ -2594,9 +2594,9 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   {
     dt_bauhaus_combobox_clear(bd->blend_modes_combo);
 
-    if(bd->csp == DEVELOP_BLEND_CS_LAB ||
-       bd->csp == DEVELOP_BLEND_CS_RGB_DISPLAY ||
-       bd->csp == DEVELOP_BLEND_CS_RAW )
+    if(bd->csp == DEVELOP_BLEND_CS_LAB
+       || bd->csp == DEVELOP_BLEND_CS_RGB_DISPLAY
+       || bd->csp == DEVELOP_BLEND_CS_RAW )
     {
       dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("normal & difference modes"));
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_NORMAL2);
@@ -2728,8 +2728,9 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     gtk_widget_hide(GTK_WIDGET(bd->top_box));
   }
 
-  if((mask_mode & DEVELOP_MASK_ENABLED) && ((bd->masks_inited && (mask_mode & DEVELOP_MASK_MASK))
-                                            || (bd->blendif_inited && (mask_mode & DEVELOP_MASK_CONDITIONAL))))
+  if((mask_mode & DEVELOP_MASK_ENABLED)
+     && ((bd->masks_inited && (mask_mode & DEVELOP_MASK_MASK))
+         || (bd->blendif_inited && (mask_mode & DEVELOP_MASK_CONDITIONAL))))
   {
     if(bd->blendif_inited && (mask_mode & DEVELOP_MASK_CONDITIONAL))
     {
@@ -2771,13 +2772,12 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), FALSE);
     // (re)set the header mask indicator too
     if(module->mask_indicator)
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->mask_indicator), FALSE);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->mask_indicator), FALSE);
     module->suppress_mask = 0;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), FALSE);
 
     gtk_widget_hide(GTK_WIDGET(bd->bottom_box));
   }
-
 
   if(bd->masks_inited && (mask_mode & DEVELOP_MASK_MASK))
   {
