@@ -1128,11 +1128,11 @@ static void _blendop_blendif_showmask_clicked(GtkWidget *button, GdkEventButton 
 
     if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), TRUE);
 
-    // (re)set the header mask indicator too
     ++darktable.gui->reset;
+    // (re)set the header mask indicator too
     if(module->mask_indicator)
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->mask_indicator),
-                                     module->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->mask_indicator),
+                                   module->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE);
     --darktable.gui->reset;
 
     dt_iop_request_focus(module);
@@ -2852,7 +2852,7 @@ void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
     // (re)set the header mask indicator too
     ++darktable.gui->reset;
     if(module->mask_indicator)
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->mask_indicator), FALSE);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->mask_indicator), FALSE);
     --darktable.gui->reset;
 
     if(bd->masks_support)
