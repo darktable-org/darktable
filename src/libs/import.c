@@ -1048,6 +1048,11 @@ static void _import_from_dialog_free(dt_lib_module_t* self)
   gtk_widget_destroy(d->from.dialog);
 }
 
+static gboolean _select_folders_only(const GtkFileFilterInfo *filter_info, gpointer data)
+{
+  return g_file_test(filter_info->filename, G_FILE_TEST_IS_DIR);
+}
+
 static void _lib_import_from_callback(GtkWidget *widget, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
@@ -1060,6 +1065,12 @@ static void _lib_import_from_callback(GtkWidget *widget, dt_lib_module_t* self)
 #endif
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+
+  GtkFileFilter *nofiles = gtk_file_filter_new();
+  gtk_file_filter_set_name(nofiles, "folders");
+  gtk_file_filter_add_custom(nofiles, GTK_FILE_FILTER_FILENAME, _select_folders_only, NULL, NULL);
+
+  gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(filechooser), nofiles);
 
   char *last_directory = dt_conf_get_string("ui_last/import_last_directory");
   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), last_directory);
