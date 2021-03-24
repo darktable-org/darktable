@@ -1767,10 +1767,10 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
     /* and we add masks */
     dt_masks_group_get_hash_buffer(grp, str + pos);
 
-    #ifdef HAVE_OPENCL
+#ifdef HAVE_OPENCL
     // assume process_cl is ready, commit_params can overwrite this.
     if(module->process_cl) piece->process_cl_ready = 1;
-    #endif // HAVE_OPENCL
+#endif // HAVE_OPENCL
 
     // register if module allows tiling, commit_params can overwrite this.
     if(module->flags() & IOP_FLAGS_ALLOW_TILING) piece->process_tiling_ready = 1;

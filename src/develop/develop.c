@@ -837,16 +837,17 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
 
   history = g_list_nth(dev->history, dev->history_end - 1);
   dt_dev_history_item_t *hist = history ? (dt_dev_history_item_t *)(history->data) : 0;
-  if(!history // if no history yet, push new item for sure.
+  if(!history                                                  // no history yet, push new item
      || new_item                                               // a new item is requested
      || module != hist->module
      || module->instance != hist->module->instance             // add new item for different op
      || module->multi_priority != hist->module->multi_priority // or instance
      || ((dev->focus_hash != hist->focus_hash)                 // or if focused out and in
-         && (// but only add item if there is a difference at all for the same module
-           (module->params_size != hist->module->params_size) ||
-           include_masks ||
-           (module->params_size == hist->module->params_size && memcmp(hist->params, module->params, module->params_size)))))
+         // but only add item if there is a difference at all for the same module
+         && ((module->params_size != hist->module->params_size)
+             || include_masks
+             || (module->params_size == hist->module->params_size
+                 && memcmp(hist->params, module->params, module->params_size)))))
   {
     // new operation, push new item
     // printf("adding new history item %d - %s\n", dev->history_end, module->op);
