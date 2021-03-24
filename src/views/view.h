@@ -162,7 +162,7 @@ typedef enum dt_view_image_over_t
 // get images to act on for gloabals change (via libs or accels)
 // no need to free the list - done internally
 const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gboolean force,
-                                          const gboolean ordering);
+                                          const gboolean ordered);
 gchar *dt_view_get_images_to_act_on_query(const gboolean only_visible);
 // get the main image to act on during global changes (libs, accels)
 int dt_view_get_image_to_act_on();
@@ -211,7 +211,7 @@ typedef struct dt_view_manager_t
     gboolean inside_table;
     GSList *active_imgs;
     gboolean image_over_inside_sel;
-    gboolean ordering;
+    gboolean ordered;
   } act_on;
 
   /* reusable db statements
