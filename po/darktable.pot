@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-22 08:08+0100\n"
+"POT-Creation-Date: 2021-03-24 11:41+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1410,7 +1410,7 @@ msgid ""
 "keep notes for images"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:7424 ../src/control/jobs/control_jobs.c:2205
+#: ../build/bin/preferences_gen.h:7424 ../src/control/jobs/control_jobs.c:2268
 #: ../src/libs/import.c:134
 msgid "import"
 msgstr ""
@@ -1740,7 +1740,7 @@ msgstr ""
 #: ../src/common/history.c:873 ../src/common/styles.c:1102
 #: ../src/common/styles.c:1106 ../src/develop/blend_gui.c:100
 #: ../src/develop/blend_gui.c:121 ../src/develop/blend_gui.c:2925
-#: ../src/develop/develop.c:2171 ../src/imageio/format/avif.c:812
+#: ../src/develop/develop.c:2172 ../src/imageio/format/avif.c:812
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:666
 #: ../src/iop/ashift.c:4705 ../src/libs/live_view.c:429
 msgid "off"
@@ -4355,7 +4355,7 @@ msgstr ""
 #: ../src/common/history.c:854 ../src/common/history.c:857
 #: ../src/common/history.c:873 ../src/common/styles.c:1102
 #: ../src/common/styles.c:1106 ../src/develop/blend_gui.c:122
-#: ../src/develop/develop.c:2171 ../src/imageio/format/avif.c:810
+#: ../src/develop/develop.c:2172 ../src/imageio/format/avif.c:810
 #: ../src/iop/ashift.c:4706 ../src/libs/live_view.c:430
 msgid "on"
 msgstr ""
@@ -5131,21 +5131,21 @@ msgstr ""
 msgid "write sidecar files"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2129 ../src/control/jobs/film_jobs.c:223
+#: ../src/control/jobs/control_jobs.c:2192 ../src/control/jobs/film_jobs.c:223
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:2155
+#: ../src/control/jobs/control_jobs.c:2218
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/control/jobs/control_jobs.c:2161
+#: ../src/control/jobs/control_jobs.c:2224
 #, c-format
 msgid "imported %d image"
 msgid_plural "imported %d images"
@@ -5407,17 +5407,17 @@ msgid "uniformly"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:102 ../src/develop/blend_gui.c:2279
-#: ../src/develop/blend_gui.c:2938
+#: ../src/develop/blend_gui.c:2938 ../src/develop/imageop.c:2341
 msgid "drawn mask"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:103 ../src/develop/blend_gui.c:2095
-#: ../src/develop/blend_gui.c:2945
+#: ../src/develop/blend_gui.c:2945 ../src/develop/imageop.c:2343
 msgid "parametric mask"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:104 ../src/develop/blend_gui.c:2459
-#: ../src/develop/blend_gui.c:2963
+#: ../src/develop/blend_gui.c:2963 ../src/develop/imageop.c:2345
 msgid "raster mask"
 msgstr ""
 
@@ -5450,12 +5450,12 @@ msgid "input image"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:824 ../src/develop/blend_gui.c:2148
-#: ../src/develop/imageop.c:3065
+#: ../src/develop/imageop.c:3082
 msgid "input"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:824 ../src/develop/blend_gui.c:2148
-#: ../src/develop/imageop.c:3067
+#: ../src/develop/imageop.c:3084
 msgid "output"
 msgstr ""
 
@@ -5919,19 +5919,19 @@ msgstr ""
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 
-#: ../src/develop/develop.c:1455 ../src/gui/presets.c:801
+#: ../src/develop/develop.c:1456 ../src/gui/presets.c:801
 msgid "display-referred default"
 msgstr ""
 
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
 #. we need an initial exposure boost. This might be too much in some cases but…
 #. (the preset name is used in develop.c)
-#: ../src/develop/develop.c:1457 ../src/gui/presets.c:803
+#: ../src/develop/develop.c:1458 ../src/gui/presets.c:803
 #: ../src/iop/exposure.c:272 ../src/iop/exposure.c:281
 msgid "scene-referred default"
 msgstr ""
 
-#: ../src/develop/develop.c:1927
+#: ../src/develop/develop.c:1928
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr ""
@@ -5962,12 +5962,12 @@ msgstr ""
 msgid "rename"
 msgstr ""
 
-#: ../src/develop/imageop.c:1037 ../src/develop/imageop.c:2423
+#: ../src/develop/imageop.c:1037 ../src/develop/imageop.c:2440
 #, c-format
 msgid "%s is switched on"
 msgstr ""
 
-#: ../src/develop/imageop.c:1037 ../src/develop/imageop.c:2423
+#: ../src/develop/imageop.c:1037 ../src/develop/imageop.c:2440
 #, c-format
 msgid "%s is switched off"
 msgstr ""
@@ -5987,57 +5987,63 @@ msgctxt "accel"
 msgid "fusion"
 msgstr ""
 
-#: ../src/develop/imageop.c:2336
-msgid "this module has a raster mask"
+#: ../src/develop/imageop.c:2335
+msgid "unknown mask"
 msgstr ""
 
-#: ../src/develop/imageop.c:2338
-msgid ""
-"this module has a mask, click to display\n"
-"module must be activated first"
+#: ../src/develop/imageop.c:2339
+msgid "drawn + parametric mask"
 msgstr ""
 
-#: ../src/develop/imageop.c:2392
+#: ../src/develop/imageop.c:2348
+msgid "this module has a"
+msgstr ""
+
+#: ../src/develop/imageop.c:2352
+msgid "click to display (module must be activated first)"
+msgstr ""
+
+#: ../src/develop/imageop.c:2409
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
 msgstr ""
 
-#: ../src/develop/imageop.c:2403
+#: ../src/develop/imageop.c:2420
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
 msgstr ""
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2411 ../src/gui/preferences.c:828
+#: ../src/develop/imageop.c:2428 ../src/gui/preferences.c:828
 #: ../src/libs/lib.c:1199 ../src/libs/modulegroups.c:2710
 msgid "presets"
 msgstr ""
 
-#: ../src/develop/imageop.c:2413
+#: ../src/develop/imageop.c:2430
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
 msgstr ""
 
-#: ../src/develop/imageop.c:2694 ../src/develop/imageop.c:2716
+#: ../src/develop/imageop.c:2711 ../src/develop/imageop.c:2733
 msgid "ERROR"
 msgstr ""
 
-#: ../src/develop/imageop.c:3064
+#: ../src/develop/imageop.c:3081
 msgid "purpose"
 msgstr ""
 
-#: ../src/develop/imageop.c:3066
+#: ../src/develop/imageop.c:3083
 msgid "process"
 msgstr ""
 
-#: ../src/develop/imageop.c:3136
+#: ../src/develop/imageop.c:3153
 msgid "unsupported input"
 msgstr ""
 
-#: ../src/develop/imageop.c:3137
+#: ../src/develop/imageop.c:3154
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
