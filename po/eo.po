@@ -3,15 +3,12 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#: ../build/bin/conf_gen.h:685 ../build/bin/conf_gen.h:691
-#: ../build/bin/conf_gen.h:697 ../build/bin/conf_gen.h:703
-#: ../build/bin/conf_gen.h:709
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-22 18:51+1100\n"
-"PO-Revision-Date: 2021-03-22 18:50+1100\n"
+"POT-Creation-Date: 2021-03-25 04:18+1100\n"
+"PO-Revision-Date: 2021-03-25 04:24+1100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: eo\n"
@@ -1575,7 +1572,7 @@ msgstr ""
 "ĉi tiu ekstera programo estas uzenda por ludi sondosierojn, kiujn iuj "
 "fotiloj registras, por konservi notojn por bildoj"
 
-#: ../build/bin/preferences_gen.h:7353 ../src/control/jobs/control_jobs.c:2205
+#: ../build/bin/preferences_gen.h:7353 ../src/control/jobs/control_jobs.c:2268
 #: ../src/libs/import.c:134
 msgid "import"
 msgstr "importi"
@@ -1929,7 +1926,7 @@ msgstr "specifa"
 #: ../src/common/history.c:873 ../src/common/styles.c:1102
 #: ../src/common/styles.c:1106 ../src/develop/blend_gui.c:100
 #: ../src/develop/blend_gui.c:121 ../src/develop/blend_gui.c:2925
-#: ../src/develop/develop.c:2171 ../src/imageio/format/avif.c:812
+#: ../src/develop/develop.c:2172 ../src/imageio/format/avif.c:812
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:666
 #: ../src/iop/ashift.c:4705 ../src/libs/live_view.c:429
 msgid "off"
@@ -4650,7 +4647,7 @@ msgstr "vi devas kopii historion de bildo antaŭ ol alglui ĝin al alia"
 #: ../src/common/history.c:854 ../src/common/history.c:857
 #: ../src/common/history.c:873 ../src/common/styles.c:1102
 #: ../src/common/styles.c:1106 ../src/develop/blend_gui.c:122
-#: ../src/develop/develop.c:2171 ../src/imageio/format/avif.c:810
+#: ../src/develop/develop.c:2172 ../src/imageio/format/avif.c:810
 #: ../src/iop/ashift.c:4706 ../src/libs/live_view.c:430
 msgid "on"
 msgstr "sur"
@@ -5441,21 +5438,21 @@ msgstr "tempa ofseto"
 msgid "write sidecar files"
 msgstr "skribu kromĉarajn dosierojn"
 
-#: ../src/control/jobs/control_jobs.c:2129 ../src/control/jobs/film_jobs.c:223
+#: ../src/control/jobs/control_jobs.c:2192 ../src/control/jobs/film_jobs.c:223
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] "importante %d bildon"
 msgstr[1] "importante %d bildojn"
 
-#: ../src/control/jobs/control_jobs.c:2155
+#: ../src/control/jobs/control_jobs.c:2218
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
 msgstr[0] "importante %d/%d bildon"
 msgstr[1] "importante %d/%d bildojn"
 
-#: ../src/control/jobs/control_jobs.c:2161
+#: ../src/control/jobs/control_jobs.c:2224
 #, c-format
 msgid "imported %d image"
 msgid_plural "imported %d images"
@@ -5717,17 +5714,17 @@ msgid "uniformly"
 msgstr "unuforme"
 
 #: ../src/develop/blend_gui.c:102 ../src/develop/blend_gui.c:2279
-#: ../src/develop/blend_gui.c:2938
+#: ../src/develop/blend_gui.c:2938 ../src/develop/imageop.c:2341
 msgid "drawn mask"
 msgstr "desegnita masko"
 
 #: ../src/develop/blend_gui.c:103 ../src/develop/blend_gui.c:2095
-#: ../src/develop/blend_gui.c:2945
+#: ../src/develop/blend_gui.c:2945 ../src/develop/imageop.c:2343
 msgid "parametric mask"
 msgstr "parametrika masko"
 
 #: ../src/develop/blend_gui.c:104 ../src/develop/blend_gui.c:2459
-#: ../src/develop/blend_gui.c:2963
+#: ../src/develop/blend_gui.c:2963 ../src/develop/imageop.c:2345
 msgid "raster mask"
 msgstr "rastuma masko"
 
@@ -5760,12 +5757,12 @@ msgid "input image"
 msgstr "eniga bildo"
 
 #: ../src/develop/blend_gui.c:824 ../src/develop/blend_gui.c:2148
-#: ../src/develop/imageop.c:3065
+#: ../src/develop/imageop.c:3082
 msgid "input"
 msgstr "enigo"
 
 #: ../src/develop/blend_gui.c:824 ../src/develop/blend_gui.c:2148
-#: ../src/develop/imageop.c:3067
+#: ../src/develop/imageop.c:3084
 msgid "output"
 msgstr "eligo"
 
@@ -6255,19 +6252,19 @@ msgstr "provizore malŝaltu miksaĵan maskon"
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "provizore malŝaltu miksaĵan maskon. nur por modulo en fokuso"
 
-#: ../src/develop/develop.c:1455 ../src/gui/presets.c:801
+#: ../src/develop/develop.c:1456 ../src/gui/presets.c:801
 msgid "display-referred default"
 msgstr "ekran-referita aprioro"
 
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
 #. we need an initial exposure boost. This might be too much in some cases but…
 #. (the preset name is used in develop.c)
-#: ../src/develop/develop.c:1457 ../src/gui/presets.c:803
+#: ../src/develop/develop.c:1458 ../src/gui/presets.c:803
 #: ../src/iop/exposure.c:272 ../src/iop/exposure.c:281
 msgid "scene-referred default"
 msgstr "scen-referita aprioro"
 
-#: ../src/develop/develop.c:1927
+#: ../src/develop/develop.c:1928
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: versio de modulo '%s' ne kongruas: %d != %d"
@@ -6298,12 +6295,12 @@ msgstr "forigi"
 msgid "rename"
 msgstr "renomi"
 
-#: ../src/develop/imageop.c:1037 ../src/develop/imageop.c:2423
+#: ../src/develop/imageop.c:1037 ../src/develop/imageop.c:2440
 #, c-format
 msgid "%s is switched on"
 msgstr "%s estas ŝaltita"
 
-#: ../src/develop/imageop.c:1037 ../src/develop/imageop.c:2423
+#: ../src/develop/imageop.c:1037 ../src/develop/imageop.c:2440
 #, c-format
 msgid "%s is switched off"
 msgstr "%s estas malŝaltita"
@@ -6323,19 +6320,23 @@ msgctxt "accel"
 msgid "fusion"
 msgstr "kunfandiĝo"
 
-#: ../src/develop/imageop.c:2336
-msgid "this module has a raster mask"
-msgstr "ĉi tiu modulo havas rastruma maskon"
+#: ../src/develop/imageop.c:2335
+msgid "unknown mask"
+msgstr "nekonata masko"
 
-#: ../src/develop/imageop.c:2338
-msgid ""
-"this module has a mask, click to display\n"
-"module must be activated first"
-msgstr ""
-"ĉi tiu modulo havas maskon, alklaki por montri ĝin\n"
-"modulo devas unue esti aktivigita"
+#: ../src/develop/imageop.c:2339
+msgid "drawn + parametric mask"
+msgstr "desegnita + parametrika masko"
 
-#: ../src/develop/imageop.c:2392
+#: ../src/develop/imageop.c:2348
+msgid "this module has a"
+msgstr "ĉi tiu modulo havas"
+
+#: ../src/develop/imageop.c:2352
+msgid "click to display (module must be activated first)"
+msgstr "alklaki por montri (modulo devas esti unue aktivigita)"
+
+#: ../src/develop/imageop.c:2409
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -6343,7 +6344,7 @@ msgstr ""
 "multoblaj okazaĵaj agoj\n"
 "dekstra klako kreas novan okazaĵon"
 
-#: ../src/develop/imageop.c:2403
+#: ../src/develop/imageop.c:2420
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -6352,12 +6353,12 @@ msgstr ""
 "stirklavo+klako por reapliki iujn aŭtomatajn antaŭselektojn"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2411 ../src/gui/preferences.c:828
+#: ../src/develop/imageop.c:2428 ../src/gui/preferences.c:828
 #: ../src/libs/lib.c:1199 ../src/libs/modulegroups.c:2710
 msgid "presets"
 msgstr "antaŭdefinitaĵoj"
 
-#: ../src/develop/imageop.c:2413
+#: ../src/develop/imageop.c:2430
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -6365,23 +6366,23 @@ msgstr ""
 "antaŭagordoj\n"
 "dekstre klaki por apliki al nova okazaĵo"
 
-#: ../src/develop/imageop.c:2694 ../src/develop/imageop.c:2716
+#: ../src/develop/imageop.c:2711 ../src/develop/imageop.c:2733
 msgid "ERROR"
 msgstr "ERARO"
 
-#: ../src/develop/imageop.c:3064
+#: ../src/develop/imageop.c:3081
 msgid "purpose"
 msgstr "tialo"
 
-#: ../src/develop/imageop.c:3066
+#: ../src/develop/imageop.c:3083
 msgid "process"
 msgstr "prilabori"
 
-#: ../src/develop/imageop.c:3136
+#: ../src/develop/imageop.c:3153
 msgid "unsupported input"
 msgstr "nesubtenata eniro"
 
-#: ../src/develop/imageop.c:3137
+#: ../src/develop/imageop.c:3154
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
