@@ -365,7 +365,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
         }
       }
       piece->enabled = active;
-      dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece, TRUE);
+      dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
     }
   }
   if(hint)
@@ -385,7 +385,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     piece->hash = 0;
     piece->enabled = piece->module->default_enabled;
     dt_iop_commit_params(piece->module, piece->module->default_params, piece->module->default_blendop_params,
-                         pipe, piece, FALSE);
+                         pipe, piece);
   }
 
   dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with history for pipe %i\n", pipe->type);
