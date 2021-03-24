@@ -1739,11 +1739,11 @@ gboolean _iop_validate_params(dt_introspection_field_t *field, dt_iop_params_t *
 
 void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
                           dt_develop_blend_params_t *blendop_params, dt_dev_pixelpipe_t *pipe,
-                          dt_dev_pixelpipe_iop_t *piece)
+                          dt_dev_pixelpipe_iop_t *piece, const gboolean force)
 {
   piece->hash = 0;
 
-  if(piece->enabled)
+  if(piece->enabled || force)
   {
     /* construct module params data for hash calc */
     int length = module->params_size;
@@ -1779,9 +1779,13 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
       _iop_validate_params(module->so->get_introspection()->field, params, TRUE);
 
     module->commit_params(module, params, pipe, piece);
-    uint64_t hash = 5381;
-    for(int i = 0; i < length; i++) hash = ((hash << 5) + hash) ^ str[i];
-    piece->hash = hash;
+
+    if(piece->enabled)
+    {
+      uint64_t hash = 5381;
+      for(int i = 0; i < length; i++) hash = ((hash << 5) + hash) ^ str[i];
+      piece->hash = hash;
+    }
 
     free(str);
 
