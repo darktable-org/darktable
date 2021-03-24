@@ -1739,11 +1739,34 @@ gboolean _iop_validate_params(dt_introspection_field_t *field, dt_iop_params_t *
 
 void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
                           dt_develop_blend_params_t *blendop_params, dt_dev_pixelpipe_t *pipe,
-                          dt_dev_pixelpipe_iop_t *piece, const gboolean force)
+                          dt_dev_pixelpipe_iop_t *piece)
 {
+  // 1. commit params
+
+  memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
+  // this should be redundant! (but is not)
+  dt_iop_commit_blend_params(module, blendop_params);
+
+#ifdef HAVE_OPENCL
+  // assume process_cl is ready, commit_params can overwrite this.
+  if(module->process_cl)
+    piece->process_cl_ready = 1;
+#endif // HAVE_OPENCL
+
+  // register if module allows tiling, commit_params can overwrite this.
+  if(module->flags() & IOP_FLAGS_ALLOW_TILING)
+    piece->process_tiling_ready = 1;
+
+  if(darktable.unmuted & DT_DEBUG_PARAMS && module->so->get_introspection())
+    _iop_validate_params(module->so->get_introspection()->field, params, TRUE);
+
+  module->commit_params(module, params, pipe, piece);
+
+  // 2. compute the hash only if piece is enabled
+
   piece->hash = 0;
 
-  if(piece->enabled || force)
+  if(piece->enabled)
   {
     /* construct module params data for hash calc */
     int length = module->params_size;
@@ -1760,32 +1783,13 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
       memcpy(str + module->params_size, blendop_params, sizeof(dt_develop_blend_params_t));
       pos += sizeof(dt_develop_blend_params_t);
     }
-    memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
-    // this should be redundant! (but is not)
-    dt_iop_commit_blend_params(module, blendop_params);
 
     /* and we add masks */
     dt_masks_group_get_hash_buffer(grp, str + pos);
 
-#ifdef HAVE_OPENCL
-    // assume process_cl is ready, commit_params can overwrite this.
-    if(module->process_cl) piece->process_cl_ready = 1;
-#endif // HAVE_OPENCL
-
-    // register if module allows tiling, commit_params can overwrite this.
-    if(module->flags() & IOP_FLAGS_ALLOW_TILING) piece->process_tiling_ready = 1;
-
-    if(darktable.unmuted & DT_DEBUG_PARAMS && module->so->get_introspection())
-      _iop_validate_params(module->so->get_introspection()->field, params, TRUE);
-
-    module->commit_params(module, params, pipe, piece);
-
-    if(piece->enabled)
-    {
-      uint64_t hash = 5381;
-      for(int i = 0; i < length; i++) hash = ((hash << 5) + hash) ^ str[i];
-      piece->hash = hash;
-    }
+    uint64_t hash = 5381;
+    for(int i = 0; i < length; i++) hash = ((hash << 5) + hash) ^ str[i];
+    piece->hash = hash;
 
     free(str);
 
