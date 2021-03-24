@@ -2510,30 +2510,59 @@ void dt_database_show_error(const dt_database_t *db)
     char lck_pathname[1024];
     snprintf(lck_pathname, sizeof(lck_pathname), "%s.lock", db->error_dbfilename);
     char *lck_dirname = g_strdup(lck_pathname);
-    char *lck_filename = g_strrstr(lck_dirname, "/") + 1 ;
     *g_strrstr(lck_dirname, "/") = '\0';
-
     char *label_text = g_markup_printf_escaped(
         _("\n"
-          " Sorry, darktable could not be started (database is locked)\n"
+          "  Sorry, darktable could not be started (database is locked)\n"
           "\n"
-          " How to solve this problem?\n"
+          "  How to solve this problem?\n"
           "\n"
-          " 1 - check if darktable is already running (might be process id %d)\n"
-          "     if yes, use it or close it before reopening darktable\n"
+          "  1 - If another darktable instance is already open, \n"
+          "      click cancel and either use that instance or close it before attempting to rerun darktable \n"
+          "      (process ID <i><b>%d</b></i> created the database locks)\n"
           "\n"
-          " 2 - if you can't find it -> close/reopen your session or restart your computer\n"
+          "  2 - If you can't find a running instance of darktable, try restarting your session or your computer. \n"
+          "      This will close all running programs and hopefully close the databases correctly. \n"
           "\n"
-          " 3 - if you still get this error after the restart:\n"
-          "     + open your config folder (click here: <a href=\"file:///%s\">%s</a>) \n"
-          "     + manually delete the .lock file (%s)\n"
+          "  3 - If you have done this or are certain that no other instances of darktable are running, \n"
+          "      this probably means that the last instance was ended abnormally. \n"
+          "      Click on the \"delete database lock files\" button to remove the files <i>data.db.lock</i> and <i>library.db.lock</i>.  \n"
           "\n\n"
-          "     <i>Caution! Do not delete .lock files without first checking that there are no more occurrences of darktable, \n"
-          "     otherwise you risk generating serious inconsistencies in your database.</i>\n"),
-      db->error_other_pid, lck_dirname, lck_dirname, lck_filename);
+          "      <i><u>Caution!</u> Do not delete these files without first undertaking the above checks, \n"
+          "      otherwise you risk generating serious inconsistencies in your database.</i>\n"),
+      db->error_other_pid);
 
-    dt_gui_show_standalone_yes_no_dialog(_("error starting darktable"),
-                                         label_text, _("close darktable"), NULL);
+    gboolean delete_lockfiles = dt_gui_show_standalone_yes_no_dialog(_("error starting darktable"),
+                                        label_text, _("cancel"), _("delete database lock files"));
+
+    if(delete_lockfiles)
+    {
+      gboolean really_delete_lockfiles = dt_gui_show_standalone_yes_no_dialog(_("are you sure?"),
+                                        _("\n  do you really want to delete the lock files?  \n"), _("no"), _("yes"));
+      if(really_delete_lockfiles)
+      {
+        int status = 0;
+
+        char *lck_filename = g_strconcat(lck_dirname, "/data.db.lock", NULL);
+        if(access(lck_filename, F_OK) != -1)
+          status += remove(lck_filename);
+
+        lck_filename = g_strconcat(lck_dirname, "/library.db.lock", NULL);
+        if(access(lck_filename, F_OK) != -1)
+          status += remove(lck_filename);
+
+        if(status==0)
+          dt_gui_show_standalone_yes_no_dialog(_("all fine"), 
+                                        _("\n  Successfully deleted the lock files.  \n  You can now restart darktable  \n"), 
+                                        _("ok"), NULL);
+        else
+          dt_gui_show_standalone_yes_no_dialog(_("oops"), g_markup_printf_escaped(
+                                        _("\n  At least one file could not be removed.  \n"
+                                        "  You may try to delete the files <i>data.db.lock</i> and <i>library.db.lock</i>  \n"
+                                        "  in folder <a href=\"file:///%s\">%s</a> manually.  \n"), lck_dirname, lck_dirname), 
+                                        _("ok"), NULL);
+      }
+    }
 
     g_free(lck_dirname);
     g_free(label_text);
