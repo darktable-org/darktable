@@ -612,6 +612,12 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
       dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
       if(first->rowid == 1 && posy > 0 && first->y >= 0)
       {
+        // prevent continuous scrolling past top of filemanager
+        if (dt_conf_get_bool("lighttable/ui/continuous_scrolling"))
+        {
+          dt_thumbtable_full_redraw(table, TRUE);
+          return TRUE;
+        }
         // for some reasons, in filemanager, first image can not be at x=0
         // in that case, we count the number of "scroll-top" try and reallign after 2 try
         if(first->x != 0)
@@ -629,6 +635,13 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
       table->realign_top_try = 0;
 
       dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
+      if (dt_conf_get_bool("lighttable/ui/continuous_scrolling")
+          && last->y + table->thumb_size < table->view_height && posy < 0)
+      {
+        // move thumbs back if scrolled past bottom row
+        _move(table, 0, table->view_height - last->y - table->thumb_size - 1, FALSE);
+        return TRUE;
+      }
       if(table->thumbs_per_row == 1 && posy < 0 && g_list_is_singleton(table->list))
       {
         // special case for zoom == 1 as we don't want any space under last image (the image would have disappear)
@@ -893,7 +906,7 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
 
    // Handle continuous scrolling separately
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER && e->direction == GDK_SCROLL_SMOOTH
-    && !((e->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK))
+    && !((e->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK) && dt_conf_get_bool("lighttable/ui/continuous_scrolling"))
   {
     gdouble delta;
     if (dt_gui_get_scroll_deltas(e, NULL, &delta))
