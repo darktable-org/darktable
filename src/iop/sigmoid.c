@@ -56,9 +56,10 @@ typedef enum dt_iop_sigmoid_methods_type_t
 typedef enum dt_iop_sigmoid_norm_type_t
 {
   DT_SIGMOID_METHOD_LUMINANCE = 0,      // $DESCRIPTION: "luminance Y"
-  DT_SIGMOID_METHOD_EUCLIDEAN_NORM = 1, // $DESCRIPTION: "RGB euclidean norm"
-  DT_SIGMOID_METHOD_POWER_NORM = 2,     // $DESCRIPTION: "RGB power norm"
-  DT_SIGMOID_METHOD_MAX_RGB = 3,        // $DESCRIPTION: "max RGB"
+  DT_SIGMOID_METHOD_AVERAGE = 1,        // $DESCRIPTION: "average"
+  DT_SIGMOID_METHOD_EUCLIDEAN_NORM = 2, // $DESCRIPTION: "RGB euclidean norm"
+  DT_SIGMOID_METHOD_POWER_NORM = 3,     // $DESCRIPTION: "RGB power norm"
+  DT_SIGMOID_METHOD_MAX_RGB = 4,        // $DESCRIPTION: "max RGB"
 } dt_iop_sigmoid_norm_type_t;
 
 #define MIDDLE_GREY 0.1845f
@@ -202,6 +203,9 @@ static inline float get_pixel_norm(const float pixel[4], const dt_iop_sigmoid_no
 
     case(DT_SIGMOID_METHOD_EUCLIDEAN_NORM):
       return sqrtf(sqf(pixel[0]) + sqf(pixel[1]) + sqf(pixel[2])) * INVERSE_SQRT_3;
+
+    case(DT_SIGMOID_METHOD_AVERAGE):
+      return (pixel[0] + pixel[1] + pixel[2]) / 3.0f;
 
     case(DT_SIGMOID_METHOD_LUMINANCE):
     default:
