@@ -960,7 +960,7 @@
       </enum>
     </type>
     <default>never</default>
-    <shortdescription>thumb use raw file instead of embedded JPEG from size</shortdescription>
+    <shortdescription>use raw file instead of embedded JPEG from size</shortdescription>
     <longdescription>if the thumbnail size is greater than this value, it will be processed using raw file instead of the embedded preview JPEG (better but slower).\nif you want all thumbnails and pre-rendered images in best quality you should choose the *always* option.\n(more comments in the manual)</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
@@ -979,7 +979,7 @@
       </enum>
     </type>
     <default>720p</default>
-    <shortdescription>high quality thumb processing from size</shortdescription>
+    <shortdescription>high quality processing from size</shortdescription>
     <longdescription>if the thumbnail size is greater than this value, it will be processed using the full quality rendering path (better but slower).\nif you want all thumbnails and pre-rendered images in best quality you should choose the *always* option.\n(more comments in the manual)</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
