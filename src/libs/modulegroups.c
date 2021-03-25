@@ -3484,10 +3484,14 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   gtk_widget_set_name(d->edit_autoapply_lb, "modulegroups-autoapply-txt");
   g_free(auto_txt);
   gtk_box_pack_start(GTK_BOX(hb1), d->edit_autoapply_lb, FALSE, FALSE, 0);
-  GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_preferences, 0, NULL);
-  g_signal_connect(G_OBJECT(btn), "clicked", G_CALLBACK(_preset_autoapply_edit), self);
-  gtk_widget_set_name(btn, "modulegroups-autoapply-btn");
-  gtk_box_pack_start(GTK_BOX(hb1), btn, FALSE, FALSE, 0);
+  if(!d->edit_ro)
+  {
+    // we only show the edit button for read-write presets
+    GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_preferences, 0, NULL);
+    g_signal_connect(G_OBJECT(btn), "clicked", G_CALLBACK(_preset_autoapply_edit), self);
+    gtk_widget_set_name(btn, "modulegroups-autoapply-btn");
+    gtk_box_pack_start(GTK_BOX(hb1), btn, FALSE, FALSE, 0);
+  }
   gtk_box_pack_start(GTK_BOX(vb), hb1, FALSE, TRUE, 0);
 
   hb1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
