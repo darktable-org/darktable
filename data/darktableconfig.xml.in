@@ -1846,6 +1846,13 @@
     <shortdescription>show scrollbars for central view</shortdescription>
     <longdescription>defines whether scrollbars should be displayed</longdescription>
   </dtconfig>
+  <dtconfig prefs="lighttable" section="general">
+    <name>lighttable/ui/continuous_scrolling</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>continuous scrolling for filemanager</shortdescription>
+    <longdescription>defines whether filemanager grid view scrolls continuously or one row at a time. Useful for touchpads.</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>darkroom/ui/rawoverexposed/mode</name>
     <type>int</type>
