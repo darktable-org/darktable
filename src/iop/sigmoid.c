@@ -240,7 +240,7 @@ void process_loglogistic_crosstalk(struct dt_iop_module_t *self, dt_dev_pixelpip
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, work_profile, magnitude, paper_exp, film_fog, contrast_power, skew_power) \
+  dt_omp_firstprivate(npixels, work_profile, saturation_factor, magnitude, paper_exp, film_fog, contrast_power, skew_power) \
   dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
