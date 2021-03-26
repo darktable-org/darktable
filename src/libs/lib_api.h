@@ -17,6 +17,7 @@
 */
 
 #include "common/module_api.h"
+#include <glib.h>
 
 #ifdef FULL_API_H
 
@@ -87,6 +88,8 @@ OPTIONAL(int, set_params, struct dt_lib_module_t *self, const void *params, int 
 OPTIONAL(void, init_presets, struct dt_lib_module_t *self);
 OPTIONAL(void, manage_presets, struct dt_lib_module_t *self);
 OPTIONAL(void, set_preferences, void *menu, struct dt_lib_module_t *self);
+/** check if the module can autoapply presets. Default is FALSE */
+DEFAULT(gboolean, preset_autoapply, struct dt_lib_module_t *self);
 
 /** Optional callbacks for keyboard accelerators */
 OPTIONAL(void, init_key_accels, struct dt_lib_module_t *self);
