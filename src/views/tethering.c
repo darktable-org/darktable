@@ -460,7 +460,7 @@ static const char *_camera_request_image_filename(const dt_camera_t *camera, con
   struct dt_capture_t *lib = (dt_capture_t *)data;
 
   /* update import session with original filename so that $(FILE_EXTENSION)
-   *     and alikes can be expanded. */
+   *     and alike can be expanded. */
   dt_import_session_set_filename(lib->session, filename);
   const gchar *file = dt_import_session_filename(lib->session, FALSE);
 

@@ -148,7 +148,7 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
   const int height = roi_in->height;
   if((width < 16) || (height < 16)) return;
 
-  // If the threshold is zero and we dont't want to see the blend mask we dont't do anything
+  // If the threshold is zero and we don't want to see the blend mask we don't do anything
   if(dual_threshold <= 0.0f) return;
 
   float *blend = dt_alloc_align_float((size_t) width * height);

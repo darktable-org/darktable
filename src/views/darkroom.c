@@ -596,7 +596,7 @@ void expose(
     {
       sample = samples->data;
 
-      // only dislay selected sample, skip if not the selected sample
+      // only display selected sample, skip if not the selected sample
       if(only_selected_sample
          && sample != darktable.lib->proxy.colorpicker.selected_sample)
       {
@@ -3069,7 +3069,7 @@ void leave(dt_view_t *self)
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_preference_changed_button_hide), dev);
 
-  // reset color assesment mode
+  // reset color assessment mode
   if(dev->iso_12646.enabled)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->iso_12646.button), FALSE);
@@ -3201,7 +3201,7 @@ void mouse_leave(dt_view_t *self)
 }
 
 /* This helper function tests for a position to be within the displayed area
-   of an image. To avoid "border cases" we accept values to be slighly out of area too.
+   of an image. To avoid "border cases" we accept values to be slightly out of area too.
 */
 static int mouse_in_imagearea(dt_view_t *self, double x, double y)
 {
@@ -3887,7 +3887,7 @@ void init_key_accels(dt_view_t *self)
   // toggle gamut check
   dt_accel_register_view(self, NC_("accel", "gamut check"), GDK_KEY_g, GDK_CONTROL_MASK);
 
-  // toggle visability of drawn masks for current gui module
+  // toggle visibility of drawn masks for current gui module
   dt_accel_register_view(self, NC_("accel", "show drawn masks"), 0, 0);
 
   // brush size +/-
@@ -3978,7 +3978,7 @@ void connect_key_accels(dt_view_t *self)
   closure = g_cclosure_new(G_CALLBACK(_overlay_cycle_callback), (gpointer)self->data, NULL);
   dt_accel_connect_view(self, "cycle overlay colors", closure);
 
-  // toggle visability of drawn masks for current gui module
+  // toggle visibility of drawn masks for current gui module
   closure = g_cclosure_new(G_CALLBACK(_toggle_mask_visibility_callback), (gpointer)self->data, NULL);
   dt_accel_connect_view(self, "show drawn masks", closure);
 

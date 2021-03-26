@@ -46,7 +46,7 @@ include(FeatureSummary)
 
 # resolve symbolic links into real path?
 get_filename_component(CMAKE_INSTALL_BINDIR_ABS "${CMAKE_INSTALL_FULL_BINDIR}" REALPATH "${CMAKE_INSTALL_PREFIX}")
-# get relative pathes specific to the system
+# get relative paths specific to the system
 file(RELATIVE_PATH REL_BIN_TO_LIBDIR    ${CMAKE_INSTALL_FULL_BINDIR} "${CMAKE_INSTALL_FULL_LIBDIR}/darktable")
 file(RELATIVE_PATH REL_BIN_TO_SHAREDIR  ${CMAKE_INSTALL_FULL_BINDIR} "${CMAKE_INSTALL_FULL_DATADIR}")
 file(RELATIVE_PATH REL_BIN_TO_LOCALEDIR ${CMAKE_INSTALL_FULL_BINDIR} "${CMAKE_INSTALL_FULL_LOCALEDIR}")

@@ -1323,7 +1323,7 @@ filechooser row:hover .sidebar-icon
 #preferences_box .sidebar row:selected,
 #modulegroups-preset-activated
 {
-  border-left-color: @field_hover_bg;   /* make the border left visible with choosed color if category on sidebar is selected */
+  border-left-color: @field_hover_bg;   /* make the border left visible with chosen color if category on sidebar is selected */
 }
 
 filechooser row:hover,
