@@ -83,12 +83,12 @@ typedef struct dt_iop_sigmoid_params_t
 
   float middle_grey_contrast;  // $MIN: 0.1  $MAX: 4.0 $DEFAULT: 1.6 $DESCRIPTION: "contrast"
   float contrast_skewness;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "skew"
-  float display_white_target;  // $MIN: 0.2  $MAX: 16.0 $DEFAULT: 1.0 $DESCRIPTION: "target white"
+  float display_white_target;  // $MIN: 20.0  $MAX: 1600.0 $DEFAULT: 100.0 $DESCRIPTION: "target white"
   float display_grey_target;   // $MIN: 0.1  $MAX: 0.2 $DEFAULT: 0.1845 $DESCRIPTION: "target grey"
-  float display_black_target;  // $MIN: 0.0  $MAX: 0.1 $DEFAULT: 0.0 $DESCRIPTION: "target black"
+  float display_black_target;  // $MIN: 0.0  $MAX: 10.0 $DEFAULT: 0.0152 $DESCRIPTION: "target black"
   dt_iop_sigmoid_methods_type_t color_processing;  // $DEFAULT: DT_SIGMOID_METHOD_CROSSTALK $DESCRIPTION: "color processing"
   float crosstalk_amount;                          // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 4.0 $DESCRIPTION: "crosstalk amount"
-  dt_iop_sigmoid_norm_type_t rgb_norm_method;      // $DEFAULT: DT_SIGMOID_METHOD_LUMINANCE $DESCRIPTION: "luminance norm"
+  dt_iop_sigmoid_norm_type_t rgb_norm_method;      // $DEFAULT: DT_SIGMOID_METHOD_AVERAGE $DESCRIPTION: "luminance norm"
 } dt_iop_sigmoid_params_t;
 
 typedef struct dt_iop_sigmoid_global_data_t
@@ -99,7 +99,7 @@ typedef struct dt_iop_sigmoid_gui_data_t
   // Whatever you need to make your gui happy and provide access to widgets between gui_init, gui_update etc.
   // Stored in self->gui_data while in darkroom.
   // To permanently store per-user gui configuration settings, you could use dt_conf_set/_get.
-  GtkWidget *contrast_slider, *skewness_slider, *color_processing_list, *crosstalk_slider, *rgb_norm_method_list;
+  GtkWidget *contrast_slider, *skewness_slider, *color_processing_list, *crosstalk_slider, *rgb_norm_method_list, *display_black_slider, *display_white_slider;
 } dt_iop_sigmoid_gui_data_t;
 
 
@@ -230,13 +230,15 @@ void process_loglogistic_crosstalk(struct dt_iop_module_t *self, dt_dev_pixelpip
    * Keep contrast and skewness fairly orthogonal
    */
   const float scene_grey = MIDDLE_GREY;
+  const float display_white = 0.01f * d->display_white_target;
+  const float display_black = 0.01f * d->display_black_target;
   const float skew_power = powf(5.0f, -d->contrast_skewness);
   const float contrast_power = powf(d->middle_grey_contrast, 1.0f / skew_power);
-  const float magnitude = d->display_white_target;
-  const float white_grey_relation = powf(d->display_white_target / d->display_grey_target, 1.0f / skew_power) - 1.0f;
+  const float magnitude = display_white;
+  const float white_grey_relation = powf(display_white / d->display_grey_target, 1.0f / skew_power) - 1.0f;
   float film_fog = 0.0f;
-  if (d->display_black_target > 0.0f) {
-    const float white_black_relation = powf(d->display_white_target / d->display_black_target, 1.0f / skew_power) - 1.0f;
+  if (display_black > 0.0f) {
+    const float white_black_relation = powf(display_white / display_black, 1.0f / skew_power) - 1.0f;
     film_fog = scene_grey * powf(white_grey_relation, 1.0f / contrast_power) / (powf(white_black_relation, 1.0f / contrast_power) - powf(white_grey_relation, 1.0f / contrast_power));
   }
   const float paper_exp = powf(film_fog + scene_grey, contrast_power) * white_grey_relation;
@@ -286,19 +288,19 @@ void process_loglogistic_ratio(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   const float scene_grey = MIDDLE_GREY;
   const float skew_power = powf(5.0f, -d->contrast_skewness);
   const float contrast_power = powf(d->middle_grey_contrast, 1.0f / skew_power);
-  const float magnitude = d->display_white_target;
-  // const float black_target = d->display_black_target;
-  const float white_grey_relation = powf(d->display_white_target / d->display_grey_target, 1.0f / skew_power) - 1.0f;
+  const float magnitude = 0.01f * d->display_white_target;
+  const float black_target = 0.01f * d->display_black_target;
+  const float white_grey_relation = powf(magnitude / d->display_grey_target, 1.0f / skew_power) - 1.0f;
   float film_fog = 0.0f;
-  if (d->display_black_target > 0.0f) {
-    const float white_black_relation = powf(d->display_white_target / d->display_black_target, 1.0f / skew_power) - 1.0f;
+  if (black_target > 0.0f) {
+    const float white_black_relation = powf(magnitude / black_target, 1.0f / skew_power) - 1.0f;
     film_fog = scene_grey * powf(white_grey_relation, 1.0f / contrast_power) / (powf(white_black_relation, 1.0f / contrast_power) - powf(white_grey_relation, 1.0f / contrast_power));
   }
   const float paper_exp = powf(film_fog + scene_grey, contrast_power) * white_grey_relation;
   const dt_iop_sigmoid_norm_type_t rgb_norm_method = d->rgb_norm_method;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, work_profile, magnitude, paper_exp, film_fog, contrast_power, skew_power, rgb_norm_method) \
+  dt_omp_firstprivate(npixels, work_profile, magnitude, black_target, paper_exp, film_fog, contrast_power, skew_power, rgb_norm_method) \
   dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
@@ -321,13 +323,16 @@ void process_loglogistic_ratio(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     }
     
     // Some pixels will get out of gamut values, scale these into gamut again using desaturation.
+    // Check for values larger then the white target
     const float max_pre_out = fmaxf(fmaxf(pre_out[0], pre_out[1]), pre_out[2]);
     const float sat_max = max_pre_out > magnitude ? (magnitude - mapped_luma) / (max_pre_out - mapped_luma) : 1.0f;
 
-    // const float min_pre_out = fminf(fminf(pre_out[0], pre_out[1]), pre_out[2]);
-    // const float sat_min = min_pre_out == mapped_luma ? 1.0f : (black_target - mapped_luma) / (min_pre_out - mapped_luma);
+    // Check for values smaller then the black target
+    const float min_pre_out = fminf(fminf(pre_out[0], pre_out[1]), pre_out[2]);
+    const float sat_min = min_pre_out < black_target ? (black_target - mapped_luma) / (min_pre_out - mapped_luma) : 1.0f;
+
     // Use the smallest saturation factor of the two to gurantee inside of gamut, and never add saturation
-    const float saturation_factor = fminf(sat_max, 1.0f); // fminf(fminf(sat_max, sat_min), 1.0f);
+    const float saturation_factor = fminf(fminf(sat_max, sat_min), 1.0f);
 
     for(size_t c = 0; c < 3; c++)
     {
@@ -400,6 +405,9 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->crosstalk_slider, p->crosstalk_amount);
   dt_bauhaus_combobox_set_from_value(g->rgb_norm_method_list, p->rgb_norm_method);
 
+  dt_bauhaus_slider_set(g->display_black_slider, p->display_black_target);
+  dt_bauhaus_slider_set(g->display_white_slider, p->display_white_target);
+
   gui_changed(self, NULL, NULL);
 }
 
@@ -435,6 +443,7 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->contrast_slider = dt_bauhaus_slider_from_params(self, "middle_grey_contrast");
+  dt_bauhaus_slider_set_digits(g->contrast_slider, 3);
   g->skewness_slider = dt_bauhaus_slider_from_params(self, "contrast_skewness");
 
   g->color_processing_list = dt_bauhaus_combobox_from_params(self, "color_processing");
@@ -443,6 +452,20 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->crosstalk_slider, "%.2f %%");
 
   g->rgb_norm_method_list = dt_bauhaus_combobox_from_params(self, "rgb_norm_method");
+
+  GtkWidget *label = dt_ui_section_label_new(_("display luminance"));
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
+  gtk_style_context_add_class(context, "section_label_top");
+  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
+
+  g->display_black_slider = dt_bauhaus_slider_from_params(self, "display_black_target");
+  dt_bauhaus_slider_set_soft_range(g->display_black_slider, 0.0f, 1.0f);
+  dt_bauhaus_slider_set_step(g->display_black_slider, .001);
+  dt_bauhaus_slider_set_digits(g->display_black_slider, 4);
+  dt_bauhaus_slider_set_format(g->display_black_slider, "%.3f %%");
+  g->display_white_slider = dt_bauhaus_slider_from_params(self, "display_white_target");
+  dt_bauhaus_slider_set_soft_range(g->display_white_slider, 50.0f, 100.0f);
+  dt_bauhaus_slider_set_format(g->display_white_slider, "%.1f %%");
 }
 
 void gui_cleanup(dt_iop_module_t *self)
