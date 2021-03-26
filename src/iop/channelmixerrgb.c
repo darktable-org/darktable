@@ -3587,7 +3587,7 @@ void gui_init(struct dt_iop_module_t *self)
   NOTEBOOK_PAGE(saturation, sat, N_("colorfulness"), N_("colorfulness"), N_("colorfulness"), FALSE)
   g->saturation_version = dt_bauhaus_combobox_from_params(self, "version");
   NOTEBOOK_PAGE(lightness, light, N_("brightness"), N_("brightness"), N_("brightness"), FALSE)
-  NOTEBOOK_PAGE(grey, grey, N_("grey"), N_("grey"), N_("grey"), FALSE)
+  NOTEBOOK_PAGE(grey, grey, N_("gray"), N_("gray"), N_("gray"), FALSE)
 
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
