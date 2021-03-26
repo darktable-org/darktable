@@ -1489,11 +1489,11 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
 }
 
 // start no quick access
-#define SNQA() \
-  {                                      \
-    g_free(tx);                          \
-    tx=NULL;                             \
-    tx = dt_util_dstrcat(tx, "1ꬹ1");     \
+#define SNQA()                                                                                                    \
+  {                                                                                                               \
+    g_free(tx);                                                                                                   \
+    tx = NULL;                                                                                                    \
+    tx = dt_util_dstrcat(tx, "1ꬹ0||");                                                                          \
   }
 
 // start quick access
