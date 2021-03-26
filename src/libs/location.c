@@ -47,7 +47,7 @@ typedef struct _lib_location_result_t
   _lib_location_type_t type;
   float lon;
   float lat;
-  float bbox_lon1, bbox_lat1, bbox_lon2, bbox_lat2;
+  dt_map_box_t bbox;
   dt_geo_map_display_t marker_type;
   GList *marker_points;
   gchar *name;
@@ -293,14 +293,14 @@ static void clear_search(dt_lib_location_t *lib)
 
 static void _show_location(dt_lib_location_t *lib, _lib_location_result_t *p)
 {
-  if(isnan(p->bbox_lon1) || isnan(p->bbox_lat1) || isnan(p->bbox_lon2) || isnan(p->bbox_lat2))
+  if(isnan(p->bbox.lon1) || isnan(p->bbox.lat1) || isnan(p->bbox.lon2) || isnan(p->bbox.lat2))
   {
     int32_t zoom = _lib_location_place_get_zoom(p);
     dt_view_map_center_on_location(darktable.view_manager, p->lon, p->lat, zoom);
   }
   else
   {
-    dt_view_map_center_on_bbox(darktable.view_manager, p->bbox_lon1, p->bbox_lat1, p->bbox_lon2, p->bbox_lat2);
+    dt_view_map_center_on_bbox(darktable.view_manager, p->bbox.lon1, p->bbox.lat1, p->bbox.lon2, p->bbox.lat2);
   }
 
   _clear_markers(lib);
@@ -308,6 +308,9 @@ static void _show_location(dt_lib_location_t *lib, _lib_location_result_t *p)
   lib->marker = dt_view_map_add_marker(darktable.view_manager, p->marker_type, p->marker_points);
   lib->marker_type = p->marker_type;
   lib->selected_location = p;
+
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_LOCATION_CHANGED,
+                                p->marker_type == MAP_DISPLAY_POLYGON ? p->marker_points : NULL);
 }
 
 /* called when search job has been processed and
@@ -455,10 +458,10 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt, const c
 
   place->lon = NAN;
   place->lat = NAN;
-  place->bbox_lon1 = NAN;
-  place->bbox_lat1 = NAN;
-  place->bbox_lon2 = NAN;
-  place->bbox_lat2 = NAN;
+  place->bbox.lon1 = NAN;
+  place->bbox.lat1 = NAN;
+  place->bbox.lon2 = NAN;
+  place->bbox.lat2 = NAN;
   place->marker_type = MAP_DISPLAY_NONE;
   place->marker_points = NULL;
 
@@ -501,10 +504,10 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt, const c
         lon2 = g_ascii_strtod(endptr, &endptr);
         if(*endptr != '\0') goto broken_bbox;
 
-        place->bbox_lon1 = lon1;
-        place->bbox_lat1 = lat1;
-        place->bbox_lon2 = lon2;
-        place->bbox_lat2 = lat2;
+        place->bbox.lon1 = lon1;
+        place->bbox.lat1 = lat1;
+        place->bbox.lon2 = lon2;
+        place->bbox.lat2 = lat2;
 broken_bbox:
         ;
       }
@@ -555,11 +558,11 @@ broken_bbox:
             dt_geo_map_display_point_t *p = malloc(sizeof(dt_geo_map_display_point_t));
             p->lon = lon;
             p->lat = lat;
-            place->marker_points = g_list_append(place->marker_points, p);
+            place->marker_points = g_list_prepend(place->marker_points, p);
             startptr = endptr+1;
             i++;
           }
-
+          place->marker_points = g_list_reverse(place->marker_points);
           if(error)
           {
             g_list_free_full(place->marker_points, free);
@@ -619,7 +622,7 @@ struct params_fixed_t
   _lib_location_type_t type;
   float lon;
   float lat;
-  float bbox_lon1, bbox_lat1, bbox_lon2, bbox_lat2;
+  dt_map_box_t bbox;
   dt_geo_map_display_t marker_type;
 } __attribute__((packed));
 
@@ -642,10 +645,10 @@ void *get_params(dt_lib_module_t *self, int *size)
   params_fixed->type = location->type;
   params_fixed->lon = location->lon;
   params_fixed->lat = location->lat;
-  params_fixed->bbox_lon1 = location->bbox_lon1;
-  params_fixed->bbox_lat1 = location->bbox_lat1;
-  params_fixed->bbox_lon2 = location->bbox_lon2;
-  params_fixed->bbox_lat2 = location->bbox_lat2;
+  params_fixed->bbox.lon1 = location->bbox.lon1;
+  params_fixed->bbox.lat1 = location->bbox.lat1;
+  params_fixed->bbox.lon2 = location->bbox.lon2;
+  params_fixed->bbox.lat2 = location->bbox.lat2;
   params_fixed->marker_type = location->marker_type;
 
   memcpy(params + size_fixed, location->name, size_name);
@@ -686,10 +689,10 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   location->type = params_fixed->type;
   location->lon = params_fixed->lon;
   location->lat = params_fixed->lat;
-  location->bbox_lon1 = params_fixed->bbox_lon1;
-  location->bbox_lat1 = params_fixed->bbox_lat1;
-  location->bbox_lon2 = params_fixed->bbox_lon2;
-  location->bbox_lat2 = params_fixed->bbox_lat2;
+  location->bbox.lon1 = params_fixed->bbox.lon1;
+  location->bbox.lat1 = params_fixed->bbox.lat1;
+  location->bbox.lon2 = params_fixed->bbox.lon2;
+  location->bbox.lat2 = params_fixed->bbox.lat2;
   location->marker_type = params_fixed->marker_type;
   location->name = g_strdup(name);
   location->marker_points = NULL;
@@ -699,8 +702,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     dt_geo_map_display_point_t *p = (dt_geo_map_display_point_t *)malloc(sizeof(dt_geo_map_display_point_t));
     p->lat = points[0];
     p->lon = points[1];
-    location->marker_points = g_list_append(location->marker_points, p);
+    location->marker_points = g_list_prepend(location->marker_points, p);
   }
+  location->marker_points = g_list_reverse(location->marker_points);
 
   clear_search(lib);
   lib->places = g_list_append(lib->places, location);
