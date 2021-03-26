@@ -522,6 +522,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
   // model, maker, lens
   g->model = gtk_entry_new();
   gtk_widget_set_hexpand(GTK_WIDGET(g->model), TRUE);
+  /* xgettext:no-c-format */
   gtk_widget_set_tooltip_text(g->model, _("string to match model (use % as wildcard)"));
   label = gtk_label_new(_("model"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
@@ -529,6 +530,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
   gtk_grid_attach_next_to(GTK_GRID(g->details), g->model, label, GTK_POS_RIGHT, 2, 1);
 
   g->maker = gtk_entry_new();
+  /* xgettext:no-c-format */
   gtk_widget_set_tooltip_text(g->maker, _("string to match maker (use % as wildcard)"));
   label = gtk_label_new(_("maker"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
@@ -536,6 +538,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
   gtk_grid_attach_next_to(GTK_GRID(g->details), g->maker, label, GTK_POS_RIGHT, 2, 1);
 
   g->lens = gtk_entry_new();
+  /* xgettext:no-c-format */
   gtk_widget_set_tooltip_text(g->lens, _("string to match lens (use % as wildcard)"));
   label = gtk_label_new(_("lens"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
