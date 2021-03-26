@@ -712,6 +712,13 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
     if(w) gtk_widget_set_sensitive(w, FALSE);
   }
 
+  // put focus on cancel button if 2 first entry desactivated
+  if(!allow_desc_change && !allow_name_change)
+  {
+    GtkWidget *w = gtk_dialog_get_widget_for_response(GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL);
+    if(w) gtk_widget_grab_focus(w);
+  }
+
   g_signal_connect(dialog, "response", G_CALLBACK(_edit_preset_response), g);
   gtk_widget_show_all(dialog);
 }
