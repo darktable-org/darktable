@@ -3532,6 +3532,9 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
 
   // and we update arrows
   if(!d->edit_ro) _manage_editor_group_update_arrows(d->preset_groups_box);
+
+  //set keyboard focus on the scrollable window (not on a widget)
+  gtk_widget_grab_focus(sw);
 }
 
 static void _manage_preset_change(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
