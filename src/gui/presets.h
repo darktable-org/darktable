@@ -30,6 +30,31 @@ typedef enum dt_gui_presets_format_flag_t
   FOR_NOT_COLOR = 1 << 4
 } dt_gui_presets_format_flag_t;
 
+typedef struct dt_gui_presets_edit_dialog_t
+{
+  GtkWindow *parent;
+
+  dt_iop_module_t *iop;
+  gchar *module_name;
+  gchar *operation;
+  int op_version;
+
+  GtkEntry *name, *description;
+  GtkCheckButton *autoapply, *filter;
+  GtkWidget *details;
+  GtkWidget *model, *maker, *lens;
+  GtkWidget *iso_min, *iso_max;
+  GtkWidget *exposure_min, *exposure_max;
+  GtkWidget *aperture_min, *aperture_max;
+  GtkWidget *focal_length_min, *focal_length_max;
+  gchar *original_name;
+  gint old_id;
+  GtkWidget *format_btn[5];
+
+  GCallback callback;
+  gpointer data;
+} dt_gui_presets_edit_dialog_t;
+
 #define DT_PRESETS_FOR_NOT (FOR_NOT_MONO | FOR_NOT_COLOR);
 
 /** create a db table with presets for all operations. */
@@ -84,6 +109,13 @@ void dt_gui_favorite_presets_menu_show();
 
 /** apply any auto presets that are appropriate for the current module **/
 gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module);
+
+void dt_gui_presets_show_iop_edit_dialog(const char *name_in, dt_iop_module_t *module, GCallback final_callback,
+                                         gpointer data, gboolean allow_name_change, gboolean allow_desc_change,
+                                         gboolean allow_remove, GtkWindow *parent);
+void dt_gui_presets_show_edit_dialog(const char *name_in, const char *module_name, int rowid,
+                                     GCallback final_callback, gpointer data, gboolean allow_name_change,
+                                     gboolean allow_desc_change, gboolean allow_remove, GtkWindow *parent);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

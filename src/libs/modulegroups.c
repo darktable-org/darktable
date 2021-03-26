@@ -28,6 +28,7 @@
 #include "dtgtk/icon.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #ifdef GDK_WINDOWING_QUARTZ
@@ -145,6 +146,7 @@ typedef struct dt_lib_modulegroups_t
   GtkWidget *preset_name, *preset_groups_box;
   GtkWidget *edit_search_cb;
   GtkWidget *basics_chkbox, *edit_basics_groupbox, *edit_basics_box;
+  GtkWidget *edit_autoapply_lb;
 
   gboolean basics_show;
   GList *basics;
@@ -285,22 +287,6 @@ static DTGTKCairoPaintIconFunc _buttons_get_icon_fct(const gchar *icon)
     return dtgtk_cairo_paint_modulegroup_technical;
 
   return dtgtk_cairo_paint_modulegroup_basic;
-}
-
-void gui_cleanup(dt_lib_module_t *self)
-{
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-
-  dt_gui_key_accel_block_on_focus_disconnect(d->text_entry);
-
-  darktable.develop->proxy.modulegroups.module = NULL;
-  darktable.develop->proxy.modulegroups.set = NULL;
-  darktable.develop->proxy.modulegroups.get = NULL;
-  darktable.develop->proxy.modulegroups.test = NULL;
-  darktable.develop->proxy.modulegroups.switch_group = NULL;
-
-  g_free(self->data);
-  self->data = NULL;
 }
 
 static gint _iop_compare(gconstpointer a, gconstpointer b)
@@ -2670,6 +2656,69 @@ static gboolean _manage_direct_basic_popup(GtkWidget *widget, GdkEventButton *ev
   return FALSE;
 }
 
+static void _dt_dev_image_changed_callback(gpointer instance, dt_lib_module_t *self)
+{
+  dt_develop_t *dev = darktable.develop;
+  if(!dev || dev->image_storage.id <= 0) return;
+
+  const dt_image_t *image = dt_image_cache_get(darktable.image_cache, dev->image_storage.id, 'r');
+  if(!image) return;
+
+  char query[1024];
+  snprintf(query, sizeof(query),
+           "SELECT name"
+           " FROM data.presets"
+           " WHERE operation='modulegroups'"
+           "       AND op_version=?1"
+           "       AND autoapply=1"
+           "       AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
+           "       AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
+           "       AND ?8 BETWEEN exposure_min AND exposure_max"
+           "       AND ?9 BETWEEN aperture_min AND aperture_max"
+           "       AND ?10 BETWEEN focal_length_min AND focal_length_max"
+           "       AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))"
+           " ORDER BY writeprotect DESC, name DESC"
+           " LIMIT 1");
+
+  int iformat = 0;
+  if(dt_image_is_rawprepare_supported(image))
+    iformat |= FOR_RAW;
+  else
+    iformat |= FOR_LDR;
+  if(dt_image_is_hdr(image)) iformat |= FOR_HDR;
+
+  int excluded = 0;
+  if(dt_image_monochrome_flags(image))
+    excluded |= FOR_NOT_MONO;
+  else
+    excluded |= FOR_NOT_COLOR;
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, self->version());
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, image->exif_maker, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, image->camera_alias, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, image->camera_maker, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 6, image->exif_lens, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(FLT_MAX, image->exif_iso)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, image->exif_exposure)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, fmaxf(0.0f, fminf(1000000, image->exif_aperture)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, fmaxf(0.0f, fminf(1000000, image->exif_focal_length)));
+  // 0: dontcare, 1: ldr, 2: raw plus monochrome & color
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
+
+  dt_image_cache_read_release(darktable.image_cache, image);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *preset = (char *)sqlite3_column_blob(stmt, 0);
+    dt_lib_presets_apply(preset, self->plugin_name, self->version());
+  }
+  sqlite3_finalize(stmt);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -2761,6 +2810,30 @@ void gui_init(dt_lib_module_t *self)
   darktable.develop->proxy.modulegroups.switch_group = _lib_modulegroups_switch_group;
   darktable.develop->proxy.modulegroups.search_text_focus = _lib_modulegroups_search_text_focus;
   darktable.develop->proxy.modulegroups.test_visible = _lib_modulegroups_test_visible;
+
+  // check for autoapplypresets on image change
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
+                                  G_CALLBACK(_dt_dev_image_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE,
+                                  G_CALLBACK(_dt_dev_image_changed_callback), self);
+}
+
+void gui_cleanup(dt_lib_module_t *self)
+{
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+
+  dt_gui_key_accel_block_on_focus_disconnect(d->text_entry);
+
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_dev_image_changed_callback), self);
+
+  darktable.develop->proxy.modulegroups.module = NULL;
+  darktable.develop->proxy.modulegroups.set = NULL;
+  darktable.develop->proxy.modulegroups.get = NULL;
+  darktable.develop->proxy.modulegroups.test = NULL;
+  darktable.develop->proxy.modulegroups.switch_group = NULL;
+
+  g_free(self->data);
+  self->data = NULL;
 }
 
 static void _buttons_update(dt_lib_module_t *self)
@@ -3227,6 +3300,67 @@ static void _preset_renamed_callback(GtkEntry *entry, dt_lib_module_t *self)
   _manage_editor_save(self);
 }
 
+static void _preset_autoapply_changed(dt_gui_presets_edit_dialog_t *g)
+{
+  dt_lib_module_t *self = g->data;
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+
+  // we reread the presets autoapply values from the database
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT autoapply, filter"
+                              " FROM data.presets"
+                              " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, d->edit_preset, -1, SQLITE_TRANSIENT);
+
+  int autoapply = 0;
+  int filter = 0;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    autoapply = sqlite3_column_int(stmt, 0);
+    filter = sqlite3_column_int(stmt, 1);
+    sqlite3_finalize(stmt);
+  }
+  else
+  {
+    sqlite3_finalize(stmt);
+    return;
+  }
+
+  // we refresh the label
+  gchar *auto_txt = dt_util_dstrcat(NULL, "%s:%s - %s:%s", _("autoapply"), autoapply ? _("yes") : _("no"),
+                                    _("filter"), filter ? _("yes") : _("no"));
+  gtk_label_set_text(GTK_LABEL(d->edit_autoapply_lb), auto_txt);
+  g_free(auto_txt);
+}
+
+static void _preset_autoapply_edit(GtkButton *button, dt_lib_module_t *self)
+{
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT rowid"
+                              " FROM data.presets"
+                              " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, d->edit_preset, -1, SQLITE_TRANSIENT);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int rowid = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+    dt_gui_presets_show_edit_dialog(d->edit_preset, self->name(self), rowid, G_CALLBACK(_preset_autoapply_changed),
+                                    self, FALSE, FALSE, FALSE, GTK_WINDOW(d->dialog));
+  }
+  else
+    sqlite3_finalize(stmt);
+}
+
 static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
@@ -3259,16 +3393,17 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   d->edit_groups = NULL;
   d->edit_preset = NULL;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "SELECT writeprotect, op_params"
-      " FROM data.presets"
-      " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
-      -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT writeprotect, op_params, autoapply, filter"
+                              " FROM data.presets"
+                              " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, preset, -1, SQLITE_TRANSIENT);
 
+  int autoapply = 0;
+  int filter = 0;
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     d->edit_ro = sqlite3_column_int(stmt, 0);
@@ -3278,6 +3413,9 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
     d->edit_basics_box = NULL;
     _basics_cleanup_list(self, TRUE);
     d->edit_preset = g_strdup(preset);
+
+    autoapply = sqlite3_column_int(stmt, 2);
+    filter = sqlite3_column_int(stmt, 3);
     sqlite3_finalize(stmt);
   }
   else
@@ -3313,6 +3451,24 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->basics_chkbox), "toggled", G_CALLBACK(_manage_editor_basics_toggle), self);
   gtk_widget_set_sensitive(d->basics_chkbox, !d->edit_ro);
   gtk_box_pack_start(GTK_BOX(vb), d->basics_chkbox, FALSE, TRUE, 0);
+
+  // show the autoapply/filter line
+  gchar *auto_txt = dt_util_dstrcat(NULL, "%s:%s - %s:%s", _("autoapply"), autoapply ? _("yes") : _("no"),
+                                    _("filter"), filter ? _("yes") : _("no"));
+  hb1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  d->edit_autoapply_lb = gtk_label_new(auto_txt);
+  gtk_widget_set_name(d->edit_autoapply_lb, "modulegroups-autoapply-txt");
+  g_free(auto_txt);
+  gtk_box_pack_start(GTK_BOX(hb1), d->edit_autoapply_lb, FALSE, FALSE, 0);
+  if(!d->edit_ro)
+  {
+    // we only show the edit button for read-write presets
+    GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_preferences, 0, NULL);
+    g_signal_connect(G_OBJECT(btn), "clicked", G_CALLBACK(_preset_autoapply_edit), self);
+    gtk_widget_set_name(btn, "modulegroups-autoapply-btn");
+    gtk_box_pack_start(GTK_BOX(hb1), btn, FALSE, FALSE, 0);
+  }
+  gtk_box_pack_start(GTK_BOX(vb), hb1, FALSE, TRUE, 0);
 
   hb1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->preset_groups_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -3725,6 +3881,11 @@ void view_enter(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
     // and set the current group
     d->current = dt_conf_get_int("plugins/darkroom/groups");
   }
+}
+
+gboolean preset_autoapply(dt_lib_module_t *self)
+{
+  return TRUE;
 }
 #undef PADDING
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
