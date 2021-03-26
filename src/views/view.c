@@ -759,10 +759,10 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
   gboolean inside_sel = FALSE;
   if(mouseover > 0)
   {
-    // collumn 1,2,3
+    // column 1,2,3
     if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside)
     {
-      // collumn 1,2
+      // column 1,2
       sqlite3_stmt *stmt;
       gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM main.selected_images WHERE imgid=%d", mouseover);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -775,9 +775,9 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
 
       if(inside_sel)
       {
-        // collumn 1
+        // column 1
 
-        // first, we try to return cached list if we wher already
+        // first, we try to return cached list if we were already
         // inside sel and the selection has not changed
         if(!force
            && darktable.view_manager->act_on.ok
@@ -793,13 +793,13 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
       }
       else
       {
-        // collumn 2
+        // column 2
         _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
       }
     }
     else
     {
-      // collumn 3
+      // column 3
       _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
       // be absolutely sure we have the id in the list (in darkroom,
       // the active image can be out of collection)
@@ -808,10 +808,10 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
   }
   else
   {
-    // collumn 4,5
+    // column 4,5
     if(darktable.view_manager->active_images)
     {
-      // collumn 5
+      // column 5
       for(GSList *ll = darktable.view_manager->active_images; ll; ll = g_slist_next(ll))
       {
         const int id = GPOINTER_TO_INT(ll->data);
@@ -823,7 +823,7 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
     }
     else
     {
-      // collumn 4
+      // column 4
       // we return the list of the selection
       l = dt_selection_get_list(darktable.selection, only_visible, ordered);
     }
@@ -867,10 +867,10 @@ gchar *dt_view_get_images_to_act_on_query(const gboolean only_visible)
   gboolean inside_sel = FALSE;
   if(mouseover > 0)
   {
-    // collumn 1,2,3
+    // column 1,2,3
     if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside)
     {
-      // collumn 1,2
+      // column 1,2
       sqlite3_stmt *stmt;
       gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM main.selected_images WHERE imgid =%d", mouseover);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -883,18 +883,18 @@ gchar *dt_view_get_images_to_act_on_query(const gboolean only_visible)
 
       if(inside_sel)
       {
-        // collumn 1
+        // column 1
         return dt_selection_get_list_query(darktable.selection, only_visible, FALSE);
       }
       else
       {
-        // collumn 2
+        // column 2
         _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
       }
     }
     else
     {
-      // collumn 3
+      // column 3
       _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
       // be absolutely sure we have the id in the list (in darkroom,
       // the active image can be out of collection)
@@ -903,10 +903,10 @@ gchar *dt_view_get_images_to_act_on_query(const gboolean only_visible)
   }
   else
   {
-    // collumn 4,5
+    // column 4,5
     if(darktable.view_manager->active_images)
     {
-      // collumn 5
+      // column 5
       for(GSList *ll = darktable.view_manager->active_images;
           ll;
           ll = g_slist_next(ll))
@@ -920,12 +920,12 @@ gchar *dt_view_get_images_to_act_on_query(const gboolean only_visible)
     }
     else
     {
-      // collumn 4
+      // column 4
       return dt_selection_get_list_query(darktable.selection, only_visible, FALSE);
     }
   }
 
-  // if we don't return the selection, we return the list of imgid separeted by comma
+  // if we don't return the selection, we return the list of imgid separated by comma
   // in the form it can be used inside queries
   gchar *images = NULL;
   for(; l; l = g_list_next(l))
@@ -1001,7 +1001,7 @@ dt_view_surface_value_t dt_view_image_get_surface(int imgid, int width, int heig
      && cairo_surface_get_reference_count(*surface) > 0) cairo_surface_destroy(*surface);
   *surface = NULL;
 
-  // get mipmap cahe image
+  // get mipmap cache image
   dt_mipmap_cache_t *cache = darktable.mipmap_cache;
   dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(cache, width * darktable.gui->ppd, height * darktable.gui->ppd);
 

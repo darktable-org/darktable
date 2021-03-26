@@ -39,7 +39,7 @@ _(if applicable)_
 **Screencast**
 _(if applicable)_
 
-**Which commit intruduced the error**
+**Which commit introduced the error**
 _If possible, please try using `git bisect` to determine which commit introduced the issue and place the result here._
 
 _A bisect is much appreciated and can significantly simplify the developer's job._

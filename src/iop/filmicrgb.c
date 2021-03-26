@@ -873,7 +873,7 @@ inline static void blur_2D_Bspline(const float *const restrict in, float *const 
         const size_t col = CLAMP(mult * (int)(jj - (FSIZE - 1) / 2) + (int)j, (int)0, (int)width - 1);
         indices[jj] = 4 * col;
       }
-      // Compute the horizonal blur of the already vertically-blurred pixel and store the result at the proper
+      // Compute the horizontal blur of the already vertically-blurred pixel and store the result at the proper
       //  row/column location in the output buffer
       sparse_scalar_product(temp, indices, out + (i * width + j) * 4);
     }
@@ -1102,7 +1102,7 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
   // À trous wavelet decompose
   // there is a paper from a guy we know that explains it : https://jo.dreggn.org/home/2010_atrous.pdf
   // the wavelets decomposition here is the same as the equalizer/atrous module,
-  // but simplified because we don't need the edge-aware term, so we can seperate the convolution kernel
+  // but simplified because we don't need the edge-aware term, so we can separate the convolution kernel
   // with a vertical and horizontal blur, which is 10 multiply-add instead of 25 by pixel.
   for(int s = 0; s < scales; ++s)
   {
@@ -1135,7 +1135,7 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
     // Compute wavelets low-frequency scales
     blur_2D_Bspline(detail, LF, temp, roi_out->width, roi_out->height, mult);
 
-    // Compute wavelets high-frequency scales and save the mininum of texture over the RGB channels
+    // Compute wavelets high-frequency scales and save the minimum of texture over the RGB channels
     // Note : HF_RGB = detail - LF, HF_grey = max(HF_RGB)
     wavelets_detail_level(detail, LF, HF_RGB_temp, HF_grey, roi_out->width, roi_out->height, ch);
 
@@ -1586,7 +1586,7 @@ static inline cl_int reconstruct_highlights_cl(cl_mem in, cl_mem mask, cl_mem re
   // À trous wavelet decompose
   // there is a paper from a guy we know that explains it : https://jo.dreggn.org/home/2010_atrous.pdf
   // the wavelets decomposition here is the same as the equalizer/atrous module,
-  // but simplified because we don't need the edge-aware term, so we can seperate the convolution kernel
+  // but simplified because we don't need the edge-aware term, so we can separate the convolution kernel
   // with a vertical and horizontal blur, which is 10 multiply-add instead of 25 by pixel.
   for(int s = 0; s < scales; ++s)
   {
