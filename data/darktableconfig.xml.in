@@ -1037,7 +1037,7 @@
     <type>
       <enum>
         <option>false color</option>
-        <option>grey scale</option>
+        <option>gray scale</option>
       </enum>
     </type>
     <default>false color</default>
@@ -1982,7 +1982,7 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>show loading screen between images</shortdescription>
-    <longdescription>show grey loading screen when navigating between images in the darkroom\ndisable to just show a toast message</longdescription>
+    <longdescription>show gray loading screen when navigating between images in the darkroom\ndisable to just show a toast message</longdescription>
   </dtconfig>
   <dtconfig prefs="processing">
     <name>plugins/lighttable/export/pixel_interpolator_warp</name>
