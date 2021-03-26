@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.4.2/3.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-22 11:34-0600\n"
-"PO-Revision-Date: 2021-03-22 22:34-0600\n"
+"POT-Creation-Date: 2021-03-23 10:58-0600\n"
+"PO-Revision-Date: 2021-03-26 16:45-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -548,7 +548,7 @@ msgid ""
 "disable to just show a toast message"
 msgstr ""
 "Se muestra un fondo gris mientras se carga la imagen al navegar o pasar de "
-"una imagen a otra, en el cuarto oscuro\n"
+"una imagen a otra, en el cuarto oscuro.\n"
 "Al desactivar, sólo aparecerá un mensaje de carga."
 
 #: ../build/bin/preferences_gen.h:4514
@@ -770,7 +770,7 @@ msgid ""
 "that have a mask applied"
 msgstr ""
 "Al activarse, se mostrará un ícono al lado del nombre del módulo de revelado "
-"que tenga aplicada una máscara"
+"que tenga aplicada una máscara."
 
 #: ../build/bin/preferences_gen.h:5036
 msgid "other views"
@@ -1171,10 +1171,10 @@ msgid ""
 "amount of memory (in MB) that tiling should take for a single image buffer. "
 "has precedence over heuristics based on host_memory_limit (needs a restart)."
 msgstr ""
-"Si se ajusta a positivo, valor diferente de cero, esta variable define la "
+"Si se fija el valor como positivo mayor que cero, la variable define la "
 "cantidad mínima de memoria (en MB) que el proceso por bandas debería tomar "
 "para el búfer de una sola imagen. Tiene precedencia sobre los cálculos "
-"basados en la variable host_memory_limit (necesita reiniciarse)."
+"basados en la variable «host_memory_limit» (necesita reiniciarse)."
 
 #: ../build/bin/preferences_gen.h:6267
 msgid "activate OpenCL support"
@@ -1622,7 +1622,7 @@ msgstr ""
 "Este programa externo es utilizado para reproducir archivos de audio que "
 "algunas cámaras graban para mantener notas de las imagenes"
 
-#: ../build/bin/preferences_gen.h:7424 ../src/control/jobs/control_jobs.c:2205
+#: ../build/bin/preferences_gen.h:7424 ../src/control/jobs/control_jobs.c:2268
 #: ../src/libs/import.c:134
 msgid "import"
 msgstr "importar"
@@ -5514,21 +5514,21 @@ msgid "write sidecar files"
 msgstr ""
 "escribir archivos se han encontrado archivos de sidecar del xmp actualizados"
 
-#: ../src/control/jobs/control_jobs.c:2129 ../src/control/jobs/film_jobs.c:223
+#: ../src/control/jobs/control_jobs.c:2192 ../src/control/jobs/film_jobs.c:223
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] "Importando %d imagen"
 msgstr[1] "Importando %d imágenes"
 
-#: ../src/control/jobs/control_jobs.c:2155
+#: ../src/control/jobs/control_jobs.c:2218
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
 msgstr[0] "Importando %d/%d imagen"
 msgstr[1] "Importando %d/%d imágenes"
 
-#: ../src/control/jobs/control_jobs.c:2161
+#: ../src/control/jobs/control_jobs.c:2224
 #, c-format
 msgid "imported %d image"
 msgid_plural "imported %d images"
