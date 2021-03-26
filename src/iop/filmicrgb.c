@@ -157,16 +157,16 @@ typedef enum dt_iop_filmic_rgb_gui_mode_t
 // clang-format off
 typedef struct dt_iop_filmicrgb_params_t
 {
-  float grey_point_source;     // $MIN: 0 $MAX: 100 $DEFAULT: 18.45 $DESCRIPTION: "middle grey luminance"
+  float grey_point_source;     // $MIN: 0 $MAX: 100 $DEFAULT: 18.45 $DESCRIPTION: "middle gray luminance"
   float black_point_source;    // $MIN: -16 $MAX: -0.1 $DEFAULT: -8.0 $DESCRIPTION: "black relative exposure"
   float white_point_source;    // $MIN: 0 $MAX: 16 $DEFAULT: 4.0 $DESCRIPTION: "white relative exposure"
   float reconstruct_threshold; // $MIN: -6.0 $MAX: 6.0 $DEFAULT: +3.0 $DESCRIPTION: "threshold"
   float reconstruct_feather;   // $MIN: 0.25 $MAX: 6.0 $DEFAULT: 3.0 $DESCRIPTION: "transition"
   float reconstruct_bloom_vs_details; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "bloom/reconstruct"
-  float reconstruct_grey_vs_color; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "grey/colorful details"
+  float reconstruct_grey_vs_color; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "gray/colorful details"
   float reconstruct_structure_vs_texture; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "structure/texture"
   float security_factor;                  // $MIN: -50 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "dynamic range scaling"
-  float grey_point_target;                // $MIN: 1 $MAX: 50 $DEFAULT: 18.45 $DESCRIPTION: "target middle grey"
+  float grey_point_target;                // $MIN: 1 $MAX: 50 $DEFAULT: 18.45 $DESCRIPTION: "target middle gray"
   float black_point_target; // $MIN: 0.000 $MAX: 20.000 $DEFAULT: 0.01517634 $DESCRIPTION: "target black luminance"
   float white_point_target; // $MIN: 0 $MAX: 1600 $DEFAULT: 100 $DESCRIPTION: "target white luminance"
   float output_power;       // $MIN: 1 $MAX: 10 $DEFAULT: 4.0 $DESCRIPTION: "hardness"
@@ -178,7 +178,7 @@ typedef struct dt_iop_filmicrgb_params_t
   dt_iop_filmicrgb_methods_type_t preserve_color; // $DEFAULT: DT_FILMIC_METHOD_POWER_NORM $DESCRIPTION: "preserve chrominance"
   dt_iop_filmicrgb_colorscience_type_t version; // $DEFAULT: DT_FILMIC_COLORSCIENCE_V2 $DESCRIPTION: "color science"
   gboolean auto_hardness;                       // $DEFAULT: TRUE $DESCRIPTION: "auto adjust hardness"
-  gboolean custom_grey;                         // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-grey values"
+  gboolean custom_grey;                         // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-gray values"
   int high_quality_reconstruction;       // $MIN: 0 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "iterations of high-quality reconstruction"
   int noise_distribution;                // $DEFAULT: DT_NOISE_GAUSSIAN $DESCRIPTION: "type of noise"
   dt_iop_filmicrgb_curve_type_t shadows; // $DEFAULT: DT_FILMIC_CURVE_POLY_4 $DESCRIPTION: "contrast in shadows"
@@ -479,19 +479,19 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   {
     typedef struct dt_iop_filmicrgb_params_v3_t
     {
-      float grey_point_source;     // $MIN: 0 $MAX: 100 $DEFAULT: 18.45 $DESCRIPTION: "middle grey luminance"
+      float grey_point_source;     // $MIN: 0 $MAX: 100 $DEFAULT: 18.45 $DESCRIPTION: "middle gray luminance"
       float black_point_source;    // $MIN: -16 $MAX: -0.1 $DEFAULT: -8.0 $DESCRIPTION: "black relative exposure"
       float white_point_source;    // $MIN: 0 $MAX: 16 $DEFAULT: 4.0 $DESCRIPTION: "white relative exposure"
       float reconstruct_threshold; // $MIN: -6.0 $MAX: 6.0 $DEFAULT: +3.0 $DESCRIPTION: "threshold"
       float reconstruct_feather;   // $MIN: 0.25 $MAX: 6.0 $DEFAULT: 3.0 $DESCRIPTION: "transition"
       float reconstruct_bloom_vs_details; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION:
                                           // "bloom/reconstruct"
-      float reconstruct_grey_vs_color;    // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "grey/colorful
+      float reconstruct_grey_vs_color;    // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "gray/colorful
                                           // details"
       float reconstruct_structure_vs_texture; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION:
                                               // "structure/texture"
       float security_factor;    // $MIN: -50 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "dynamic range scaling"
-      float grey_point_target;  // $MIN: 1 $MAX: 50 $DEFAULT: 18.45 $DESCRIPTION: "target middle grey"
+      float grey_point_target;  // $MIN: 1 $MAX: 50 $DEFAULT: 18.45 $DESCRIPTION: "target middle gray"
       float black_point_target; // $MIN: 0 $MAX: 20 $DEFAULT: 0 $DESCRIPTION: "target black luminance"
       float white_point_target; // $MIN: 0 $MAX: 1600 $DEFAULT: 100 $DESCRIPTION: "target white luminance"
       float output_power;       // $MIN: 1 $MAX: 10 $DEFAULT: 4.0 $DESCRIPTION: "hardness"
@@ -505,7 +505,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       dt_iop_filmicrgb_colorscience_type_t version;   // $DEFAULT: DT_FILMIC_COLORSCIENCE_V2 $DESCRIPTION: "color
                                                       // science"
       gboolean auto_hardness;                         // $DEFAULT: TRUE $DESCRIPTION: "auto adjust hardness"
-      gboolean custom_grey;            // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-grey values"
+      gboolean custom_grey;            // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-gray values"
       int high_quality_reconstruction; // $MIN: 0 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "iterations of high-quality
                                        // reconstruction"
       int noise_distribution;          // $DEFAULT: DT_NOISE_POISSONIAN $DESCRIPTION: "type of noise"
@@ -3613,7 +3613,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->white_point_source, 2.0, 8.0);
   dt_bauhaus_slider_set_format(g->white_point_source, _("%+.2f EV"));
   gtk_widget_set_tooltip_text(g->white_point_source,
-                              _("number of stops between middle grey and pure white.\n"
+                              _("number of stops between middle gray and pure white.\n"
                                 "this is a reading a lightmeter would give you on the scene.\n"
                                 "adjust so highlights clipping is avoided"));
 
@@ -3623,7 +3623,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->black_point_source, -14.0, -3);
   dt_bauhaus_slider_set_format(g->black_point_source, _("%+.2f EV"));
   gtk_widget_set_tooltip_text(
-      g->black_point_source, _("number of stops between middle grey and pure black.\n"
+      g->black_point_source, _("number of stops between middle gray and pure black.\n"
                                "this is a reading a lightmeter would give you on the scene.\n"
                                "increase to get more contrast.\ndecrease to recover more details in low-lights."));
 
@@ -3775,7 +3775,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->grey_point_target, 4);
   dt_bauhaus_slider_set_format(g->grey_point_target, "%.4f %%");
   gtk_widget_set_tooltip_text(g->grey_point_target,
-                              _("midde grey value of the target display or color space.\n"
+                              _("midde gray value of the target display or color space.\n"
                                 "you should never touch that unless you know what you are doing."));
 
   g->white_point_target = dt_bauhaus_slider_from_params(self, "white_point_target");
@@ -3812,15 +3812,15 @@ void gui_init(dt_iop_module_t *self)
                                             "soft uses a low curvature resulting in less tonal compression."));
 
   g->custom_grey = dt_bauhaus_toggle_from_params(self, "custom_grey");
-  gtk_widget_set_tooltip_text(g->custom_grey, _("enable to input custom middle-grey values.\n"
+  gtk_widget_set_tooltip_text(g->custom_grey, _("enable to input custom middle-gray values.\n"
                                                 "this is not recommended in general.\n"
                                                 "fix the global exposure in the exposure module instead.\n"
-                                                "disable to use standard 18.45 %% middle grey."));
+                                                "disable to use standard 18.45 %% middle gray."));
 
   g->auto_hardness = dt_bauhaus_toggle_from_params(self, "auto_hardness");
   gtk_widget_set_tooltip_text(
       g->auto_hardness, _("enable to auto-set the look hardness depending on the scene white and black points.\n"
-                          "this keeps the middle grey on the identity line and improves fast tuning.\n"
+                          "this keeps the middle gray on the identity line and improves fast tuning.\n"
                           "disable if you want a manual control."));
 
   g->high_quality_reconstruction = dt_bauhaus_slider_from_params(self, "high_quality_reconstruction");
