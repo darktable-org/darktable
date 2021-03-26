@@ -675,7 +675,7 @@ static void _lib_history_will_change_callback(gpointer instance, GList *history,
 
   if(lib->record_undo && (lib->record_history_level == 0))
   {
-    // history is about to change, we want here ot record a snapshot of the history for the undo
+    // history is about to change, here we want to record a snapshot of the history for the undo
     // record previous history
     g_list_free_full(lib->previous_snapshot, free);
     g_list_free_full(lib->previous_iop_order_list, free);

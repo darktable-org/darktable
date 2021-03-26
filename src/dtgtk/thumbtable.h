@@ -68,7 +68,7 @@ typedef struct dt_thumbtable_t
   int thumbs_per_row; // number of image in a row (1 for filmstrip ; MAX_ZOOM for zoomable)
   int rows; // number of rows (the last one is not fully visible) for filmstrip it's the number of columns
   int thumb_size;              // demanded thumb size (real size can differ of 1 due to rounding)
-  int prefs_size;              // size value to dertermine overlays mode and css class
+  int prefs_size;              // size value to determine overlays mode and css class
   int view_width, view_height; // last main widget size
   GdkRectangle thumbs_area;    // coordinate of all the currently loaded thumbs area
 
@@ -91,7 +91,7 @@ typedef struct dt_thumbtable_t
   // as this can change during the drag and drop (esp. because of the image_over_id)
   GList *drag_list;
 
-  // to desactivate scrollbars event because we have updated it by hand in the code
+  // to deactivate scrollbars event because we have updated it by hand in the code
   gboolean code_scrolling;
 
   // are scrollbars shown ?
@@ -119,7 +119,7 @@ gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, int imgid, gbool
 // fired when the zoom level change
 void dt_thumbtable_zoom_changed(dt_thumbtable_t *table, int oldzoom, int newzoom);
 
-// ensure that the mentionned image is visible by moving the view if needed
+// ensure that the mentioned image is visible by moving the view if needed
 gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, int imgid);
 // check if the mentioned image is visible
 gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table, int imgid);
@@ -128,7 +128,7 @@ gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table, int imgid)
 // this key accels are not managed here but inside view
 gboolean dt_thumbtable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, gboolean select);
 
-// ensure the first image in collection as no offset (is positionned on top-left)
+// ensure the first image in collection as no offset (is positioned on top-left)
 gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table);
 
 // scrollbar change

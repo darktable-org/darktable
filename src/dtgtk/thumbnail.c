@@ -511,7 +511,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     if(v->view(v) == DT_VIEW_DARKROOM && dev->preview_pipe->output_imgid == thumb->imgid
        && dev->preview_pipe->output_backbuf)
     {
-      // the current thumb is the one currently developped in darkroom
+      // the current thumb is the one currently developed in darkroom
       // better use the preview buffer for surface, in order to stay in sync
       if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
         cairo_surface_destroy(thumb->img_surf);
@@ -1833,7 +1833,7 @@ void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb)
 {
   thumb->img_surf_dirty = TRUE;
 
-  // we ensure that the image is not completly outside the thumbnail, otherwise the image_draw is not triggered
+  // we ensure that the image is not completely outside the thumbnail, otherwise the image_draw is not triggered
   if(gtk_widget_get_margin_start(thumb->w_image_box) >= thumb->width
      || gtk_widget_get_margin_top(thumb->w_image_box) >= thumb->height)
   {

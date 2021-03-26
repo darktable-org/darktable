@@ -177,7 +177,7 @@ static void _thumbs_refocus(dt_culling_t *table)
     }
   }
 
-  // if overid not valid, we use the offest image
+  // if overid not valid, we use the offset image
   if(overid <= 0)
   {
     overid = table->offset_imgid;
@@ -209,7 +209,7 @@ static void _thumbs_move(dt_culling_t *table, int move)
       }
       else
       {
-        // if we are here, that means we don't have enought space to move as wanted. So we move to first position
+        // if we are here, that means we don't have enough space to move as wanted. So we move to first position
         g_free(query);
         sqlite3_finalize(stmt);
         query
@@ -723,7 +723,7 @@ static void _dt_selection_changed_callback(gpointer instance, gpointer user_data
   dt_culling_t *table = (dt_culling_t *)user_data;
   if(!gtk_widget_get_visible(table->widget)) return;
 
-  // if we are in slection synchronisation mode, we exit this mode
+  // if we are in selection synchronisation mode, we exit this mode
   if(table->selection_sync) table->selection_sync = FALSE;
 
   // if we are in dynamic mode, zoom = selection count
@@ -1174,7 +1174,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
     }
     else
     {
-      // we create a completly new thumb
+      // we create a completely new thumb
       // we set its size to the thumb it replace in the list if any otherwise we set it to something > 0 to trigger
       // draw events
       int nw = 40;
@@ -1257,7 +1257,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
         }
         else
         {
-          // we create a completly new thumb
+          // we create a completely new thumb
           // we set its size to the thumb it replace in the list if any otherwise we set it to something > 0 to
           // trigger draw events
           int nw = 40;

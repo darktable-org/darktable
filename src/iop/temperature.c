@@ -864,7 +864,7 @@ void color_finetuning_slider(struct dt_iop_module_t *self)
   dt_iop_temperature_preset_data_t *preset = dt_bauhaus_combobox_get_data(g->presets);
   if(preset != NULL)
   {
-    //we can do realistic/exagerated.
+    //we can do realistic/exaggerated.
 
     double min_tune[3] = {0.0};
     double no_tune[3] = {0.0};
@@ -896,7 +896,7 @@ void color_finetuning_slider(struct dt_iop_module_t *self)
     }
     else
     {
-      //exagerated
+      //exaggerated
 
       for(int ch=0; ch<3; ch++)
       {
@@ -951,7 +951,7 @@ void color_rgb_sliders(struct dt_iop_module_t *self)
 
   if(!color_rgb) return;
 
-  // there are 3 ways to do colored sliders: naive (independed 0->1), smart(er) (dependent 0->1) and real (coeff)
+  // there are 3 ways to do colored sliders: naive (independent 0->1), smart(er) (dependent 0->1) and real (coeff)
 
   if(FALSE)
   {

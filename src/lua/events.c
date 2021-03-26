@@ -245,7 +245,7 @@ int dt_lua_event_keyed_destroy(lua_State *L)
     return luaL_error(L, "no key provided when destroying event %s", luaL_checkstring(L, 4));
 
   // remove the callback function from the data table using the key
-  lua_pushnil(L);  // set the action to nil to remmove it
+  lua_pushnil(L);  // set the action to nil to remove it
   lua_setfield(L, 1, luaL_checkstring(L, -2));
 
   // remove the index entry

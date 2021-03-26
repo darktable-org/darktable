@@ -344,7 +344,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
     _rgbcurve_show_hide_controls(p, g);
 
-    // swithing to manual scale, if G and B not touched yet, just make them identical to global setting (R)
+    // switching to manual scale, if G and B not touched yet, just make them identical to global setting (R)
     if(p->curve_autoscale == DT_S_SCALE_MANUAL_RGB
       && _is_identity(p, DT_IOP_RGBCURVE_G)
       && _is_identity(p, DT_IOP_RGBCURVE_B))

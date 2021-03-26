@@ -269,7 +269,7 @@ static int _time_compare(dt_lib_timeline_time_t t1, dt_lib_timeline_time_t t2)
   return 0;
 }
 
-// add/substract value to a time at certain level
+// add/subtract value to a time at certain level
 static void _time_add(dt_lib_timeline_time_t *t, int val, dt_lib_timeline_zooms_t level)
 {
   if(level == DT_LIB_TIMELINE_ZOOM_YEAR)
