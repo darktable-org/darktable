@@ -1182,7 +1182,7 @@ static gchar *_preset_retrieve_old_layout_updated()
     // group name and icon
     if(i == 0)
     {
-      ret = dt_util_dstrcat(ret, "ꬹ1|||%s",
+      ret = dt_util_dstrcat(ret, "1ꬹ1|||%s",
                             "exposure/exposure|temperature/temperature|temperature/tint|colorbalance/contrast"
                             "|colorbalance/output saturation|clipping/angle|denoiseprofile|lens|bilat");
       ret = dt_util_dstrcat(ret, "ꬹfavorites|favorites|");
@@ -1235,7 +1235,7 @@ static gchar *_preset_retrieve_old_layout(const char *list, const char *list_fav
     if(i == 0)
     {
       // we don't have to care about "modern" workflow for temperature as it's more recent than this layout
-      ret = dt_util_dstrcat(ret, "ꬹ1|||%s",
+      ret = dt_util_dstrcat(ret, "1ꬹ1|||%s",
                             "exposure/exposure|temperature/temperature|temperature/tint|colorbalance/contrast"
                             "|colorbalance/output saturation|clipping/angle|denoiseprofile|lens|bilat");
       ret = dt_util_dstrcat(ret, "ꬹfavorites|favorites|");
@@ -1497,28 +1497,28 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
   }
 
 // start quick access
-#define SQA()                            \
-  {                                      \
-    g_free(tx);                          \
-    tx=NULL;                             \
-    tx = dt_util_dstrcat(tx, "ꬹ1||");     \
-    if(is_modern)                        \
-    {                                    \
-      AM("channelmixerrgb/temperature"); \
-    }                                    \
-    else                                 \
-    {                                    \
-      AM("temperature/temperature");     \
-      AM("temperature/tint");            \
-    }                                    \
-    AM("exposure/exposure");             \
-    AM("colorbalance/contrast");         \
-    AM("colorbalance/output saturation");\
-    AM("vibrancergb/amount");            \
-    AM("clipping/angle");                \
-    AM("denoiseprofile");                \
-    AM("lens");                          \
-    AM("bilat");                         \
+#define SQA()                                                                                                     \
+  {                                                                                                               \
+    g_free(tx);                                                                                                   \
+    tx = NULL;                                                                                                    \
+    tx = dt_util_dstrcat(tx, "1ꬹ1||");                                                                          \
+    if(is_modern)                                                                                                 \
+    {                                                                                                             \
+      AM("channelmixerrgb/temperature");                                                                          \
+    }                                                                                                             \
+    else                                                                                                          \
+    {                                                                                                             \
+      AM("temperature/temperature");                                                                              \
+      AM("temperature/tint");                                                                                     \
+    }                                                                                                             \
+    AM("exposure/exposure");                                                                                      \
+    AM("colorbalance/contrast");                                                                                  \
+    AM("colorbalance/output saturation");                                                                         \
+    AM("vibrancergb/amount");                                                                                     \
+    AM("clipping/angle");                                                                                         \
+    AM("denoiseprofile");                                                                                         \
+    AM("lens");                                                                                                   \
+    AM("bilat");                                                                                                  \
   }
 
 // start module group
