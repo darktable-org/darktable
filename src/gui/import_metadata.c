@@ -28,7 +28,7 @@
     Metadata are displayed in a grid which follows this layout:
     Lines
     First line (DT_META_META_HEADER): Titles + metadata presets combobox
-    Next lines (DT_META_META_VALUE): Metadata - visibilty depending on metadata preferences
+    Next lines (DT_META_META_VALUE): Metadata - visibility depending on metadata preferences
     Before last line (DT_META_TAGS_HEADER): tags presets combobox
     Last line (DT_META_TAGS_VALUE): tags
     Columns

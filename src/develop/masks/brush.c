@@ -2844,7 +2844,7 @@ static void _brush_set_form_name(struct dt_masks_form_t *const form, const size_
 static void _brush_set_hint_message(const dt_masks_form_gui_t *const gui, const dt_masks_form_t *const form,
                                      const int opacity, char *const restrict msgbuf, const size_t msgbuf_len)
 {
-  // TODO: check if it would be good idea to have same controlls on creation and for selected brush
+  // TODO: check if it would be good idea to have same controls on creation and for selected brush
   if(gui->creation)
     g_snprintf(msgbuf, msgbuf_len,
                _("<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"

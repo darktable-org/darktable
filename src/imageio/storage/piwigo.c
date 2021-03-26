@@ -205,7 +205,7 @@ static void _piwigo_load_account(dt_storage_piwigo_gui_data_t *ui)
         if(account->server && strlen(account->server)>0)
           ui->accounts = g_list_append(ui->accounts, account);
         else
-          free(account); // we didn't add acount to list, freeing it
+          free(account); // we didn't add account to list, freeing it
       }
 
       g_object_unref(parser);

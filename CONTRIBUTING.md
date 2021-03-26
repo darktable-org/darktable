@@ -4,7 +4,7 @@ The darktable project welcomes contributions:
 
 * [Code](https://www.darktable.org/development/)
 * [Documentation](https://www.darktable.org/resources/)
-* Testing (and any backtraces if you happpen to crash darktable)
+* Testing (and any backtraces if you happen to crash darktable)
 * Translations
 * [Camera profiles](https://www.darktable.org/resources/camera-support/).
 * Tutorials, screencasts, etc.

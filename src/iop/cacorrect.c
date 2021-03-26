@@ -1535,7 +1535,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
 
-    // blurr correction factors
+    // blur correction factors
     float valmax[] = { 10.0f };
     float valmin[] = { 0.1f };
     dt_gaussian_t *red  = dt_gaussian_init(h_width, h_height, 1, valmax, valmin, 30.0f, 0);

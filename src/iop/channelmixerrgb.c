@@ -385,7 +385,7 @@ void init_presets(dt_iop_module_so_t *self)
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Kodak ?
-  // can't find spectral sensivity curves and the illuminant under which they are produced,
+  // can't find spectral sensitivity curves and the illuminant under which they are produced,
   // so ¯\_(ツ)_/¯
 
   // basic channel-mixer
@@ -1340,14 +1340,14 @@ static const extraction_result_t _extract_patches(const float *const restrict in
 
   /* match global exposure */
   // white exposure depends on camera settings and raw white point,
-  // we want our profile to be independant from that
+  // we want our profile to be independent from that
   float XYZ_white_ref[4];
   float *XYZ_white_test = patches + g->checker->white * 4;
   dt_Lab_to_XYZ(g->checker->values[g->checker->white].Lab, XYZ_white_ref);
   const float exposure = XYZ_white_ref[1] / XYZ_white_test[1];
 
   // black point is evaluated by rawspeed on each picture using the dark pixels
-  // we want our profile to be also independant from its discrepancies
+  // we want our profile to be also independent from its discrepancies
   float XYZ_black_ref[4];
   float *XYZ_black_test = patches + g->checker->black * 4;
   dt_Lab_to_XYZ(g->checker->values[g->checker->black].Lab, XYZ_black_ref);
@@ -2680,7 +2680,7 @@ static void update_illuminants(dt_iop_module_t *self)
  * Using (x, y) is a robust and interoperable way to describe an illuminant, since it is all the actual pixel code needs
  * to perform the chromatic adaptation. This (x, y) can be computed in many different ways or taken from databases,
  * and possibly from other software, so storing only the result let us room to improve the computation in the future,
- * without loosing compatibility with older versions.
+ * without losing compatibility with older versions.
  *
  * However, it's not a great GUI since x and y are not perceptually scaled. So the `g->illum_x` and `g->illum_y`
  * actually display respectively hue and chroma, in LCh color space, which is designed for illuminants
@@ -3301,7 +3301,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
 
       if(found)
-        dt_control_log(_("white balance successfuly extracted from raw image"));
+        dt_control_log(_("white balance successfully extracted from raw image"));
     }
     else if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES
             || p->illuminant == DT_ILLUMINANT_DETECT_SURFACES)
@@ -3317,13 +3317,13 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
     if(p->illuminant != DT_ILLUMINANT_CUSTOM && p->illuminant != DT_ILLUMINANT_CAMERA)
     {
-      // We are in any mode defining (x, y) indirectly from an interface, so commit (x, y) explicitely
+      // We are in any mode defining (x, y) indirectly from an interface, so commit (x, y) explicitly
       illuminant_to_xy(p->illuminant, NULL, NULL, &(p->x), &(p->y), p->temperature, p->illum_fluo, p->illum_led);
     }
 
     if(p->illuminant != DT_ILLUMINANT_D && p->illuminant != DT_ILLUMINANT_BB && p->illuminant != DT_ILLUMINANT_CAMERA)
     {
-      // We are in any mode not defining explicitely a temperature, so find the the closest CCT and commit it
+      // We are in any mode not defining explicitly a temperature, so find the the closest CCT and commit it
       check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, NULL);
     }
   }
