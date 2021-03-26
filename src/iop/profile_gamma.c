@@ -52,7 +52,7 @@ typedef struct dt_iop_profilegamma_params_t
   float linear;          // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.1
   float gamma;           // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.45
   float dynamic_range;   // $MIN: 0.01 $MAX: 32.0 $DEFAULT: 10.0 $DESCRIPTION: "dynamic range"
-  float grey_point;      // $MIN: 0.1 $MAX: 100.0 $DEFAULT: 18.0 $DESCRIPTION: "middle grey luma"
+  float grey_point;      // $MIN: 0.1 $MAX: 100.0 $DEFAULT: 18.0 $DESCRIPTION: "middle gray luma"
   float shadows_range;   // $MIN: -16.0 $MAX: 16.0 $DEFAULT: -5.0 $DESCRIPTION: "black relative exposure"
   float security_factor; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "safety factor"
 } dt_iop_profilegamma_params_t;
@@ -663,7 +663,7 @@ void gui_init(dt_iop_module_t *self)
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "shadows_range"));
   dt_bauhaus_slider_set_soft_max(g->shadows_range, 0.0);
   dt_bauhaus_slider_set_format(g->shadows_range, "%.2f EV");
-  gtk_widget_set_tooltip_text(g->shadows_range, _("number of stops between middle grey and pure black\nthis is a reading a posemeter would give you on the scene"));
+  gtk_widget_set_tooltip_text(g->shadows_range, _("number of stops between middle gray and pure black\nthis is a reading a posemeter would give you on the scene"));
 
   g->dynamic_range
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "dynamic_range"));
