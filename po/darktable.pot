@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-26 09:33+0100\n"
+"POT-Creation-Date: 2021-03-26 13:13+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -504,7 +504,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4539
 msgid ""
-"show grey loading screen when navigating between images in the darkroom\n"
+"show gray loading screen when navigating between images in the darkroom\n"
 "disable to just show a toast message"
 msgstr ""
 
@@ -523,7 +523,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4585
 msgctxt "preferences"
-msgid "grey scale"
+msgid "gray scale"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4607
@@ -778,7 +778,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5379 ../src/control/jobs/control_jobs.c:1656
 #: ../src/control/jobs/control_jobs.c:1729 ../src/gui/preferences.c:1766
-#: ../src/gui/presets.c:382 ../src/imageio/storage/disk.c:121
+#: ../src/gui/presets.c:383 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/disk.c:197 ../src/imageio/storage/gallery.c:108
 #: ../src/imageio/storage/gallery.c:181 ../src/imageio/storage/latex.c:107
 #: ../src/imageio/storage/latex.c:180 ../src/libs/styles.c:385
@@ -1701,7 +1701,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_ashift.c:138
 #: ../build/lib/darktable/plugins/introspection_ashift.c:257
 #: ../src/common/collection.c:691 ../src/gui/preferences.c:849
-#: ../src/gui/presets.c:592 ../src/libs/camera.c:581
+#: ../src/gui/presets.c:595 ../src/libs/camera.c:581
 #: ../src/libs/metadata_view.c:148
 msgid "focal length"
 msgstr ""
@@ -2731,8 +2731,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:197
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:402
-#: ../src/iop/filmic.c:1598
-msgid "middle grey luminance"
+msgid "middle gray luminance"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:203
@@ -2761,7 +2760,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:233
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:426
-msgid "grey/colorful details"
+msgid "gray/colorful details"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:239
@@ -2776,8 +2775,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:251
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:438
-#: ../src/iop/filmic.c:1752
-msgid "target middle grey"
+msgid "target middle gray"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:257
@@ -2833,7 +2831,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:323
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:486
-msgid "use custom middle-grey values"
+msgid "use custom middle-gray values"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:329
@@ -3166,7 +3164,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:91
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:162
-msgid "middle grey luma"
+msgid "middle gray luma"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:103
@@ -3226,7 +3224,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
 #: ../src/common/collection.c:694 ../src/gui/preferences.c:841
-#: ../src/gui/presets.c:562 ../src/iop/basicadj.c:597 ../src/iop/exposure.c:107
+#: ../src/gui/presets.c:565 ../src/iop/basicadj.c:597 ../src/iop/exposure.c:107
 #: ../src/iop/exposure.c:832 ../src/libs/metadata_view.c:146
 msgid "exposure"
 msgstr ""
@@ -3292,7 +3290,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:134
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:223
 #: ../src/iop/rgbcurve.c:1446
-msgid "compensate middle grey"
+msgid "compensate middle gray"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:246
@@ -3604,7 +3602,7 @@ msgstr ""
 #: ../src/control/jobs/control_jobs.c:1729 ../src/gui/hist_dialog.c:185
 #: ../src/gui/preferences.c:1603 ../src/gui/preferences.c:1629
 #: ../src/gui/preferences.c:1718 ../src/gui/preferences.c:1766
-#: ../src/gui/presets.c:382 ../src/gui/presets.c:477
+#: ../src/gui/presets.c:383 ../src/gui/presets.c:478
 #: ../src/gui/styles_dialog.c:418 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
 #: ../src/iop/lut3d.c:1556 ../src/libs/collect.c:426
@@ -3812,20 +3810,20 @@ msgid "color label"
 msgstr ""
 
 #: ../src/common/collection.c:690 ../src/gui/preferences.c:833
-#: ../src/gui/presets.c:543 ../src/libs/metadata_view.c:144
+#: ../src/gui/presets.c:546 ../src/libs/metadata_view.c:144
 msgid "lens"
 msgstr ""
 
 #. iso
 #: ../src/common/collection.c:692 ../src/gui/preferences.c:837
-#: ../src/gui/presets.c:549 ../src/libs/camera.c:589
+#: ../src/gui/presets.c:552 ../src/libs/camera.c:589
 #: ../src/libs/metadata_view.c:150
 msgid "ISO"
 msgstr ""
 
 #. aperture
 #: ../src/common/collection.c:693 ../src/gui/preferences.c:845
-#: ../src/gui/presets.c:577 ../src/libs/camera.c:576 ../src/libs/camera.c:578
+#: ../src/gui/presets.c:580 ../src/libs/camera.c:576 ../src/libs/camera.c:578
 #: ../src/libs/metadata_view.c:145
 msgid "aperture"
 msgstr ""
@@ -5547,7 +5545,8 @@ msgid "sliders for gray value"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:1951 ../src/develop/blend_gui.c:1978
-#: ../src/iop/levels.c:673 ../src/views/darkroom.c:2539
+#: ../src/iop/channelmixerrgb.c:3590 ../src/iop/levels.c:673
+#: ../src/views/darkroom.c:2539
 msgid "gray"
 msgstr ""
 
@@ -5929,14 +5928,14 @@ msgstr ""
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 
-#: ../src/develop/develop.c:1456 ../src/gui/presets.c:952
+#: ../src/develop/develop.c:1456 ../src/gui/presets.c:955
 msgid "display-referred default"
 msgstr ""
 
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
 #. we need an initial exposure boost. This might be too much in some cases but…
 #. (the preset name is used in develop.c)
-#: ../src/develop/develop.c:1458 ../src/gui/presets.c:954
+#: ../src/develop/develop.c:1458 ../src/gui/presets.c:957
 #: ../src/iop/exposure.c:272 ../src/iop/exposure.c:281
 msgid "scene-referred default"
 msgstr ""
@@ -5962,7 +5961,7 @@ msgstr ""
 msgid "move down"
 msgstr ""
 
-#: ../src/develop/imageop.c:960 ../src/gui/presets.c:478
+#: ../src/develop/imageop.c:960 ../src/gui/presets.c:479
 #: ../src/libs/image.c:177 ../src/libs/tagging.c:1359
 #: ../src/libs/tagging.c:1447
 msgid "delete"
@@ -5986,7 +5985,7 @@ msgstr ""
 #: ../src/gui/accelerators.c:967 ../src/gui/accelerators.c:1049
 #: ../src/gui/accelerators.c:1203 ../src/gui/accelerators.c:1219
 #: ../src/gui/accelerators.c:1250 ../src/gui/preferences.c:1557
-#: ../src/gui/presets.c:183 ../src/gui/presets.c:428 ../src/gui/presets.c:851
+#: ../src/gui/presets.c:185 ../src/gui/presets.c:429 ../src/gui/presets.c:854
 #: ../src/libs/lib.c:355 ../src/libs/lib.c:397 ../src/libs/lib.c:1369
 msgid "preset"
 msgstr ""
@@ -7389,7 +7388,7 @@ msgstr ""
 msgid "select _none"
 msgstr ""
 
-#: ../src/gui/hist_dialog.c:188 ../src/gui/presets.c:478 ../src/libs/lib.c:235
+#: ../src/gui/hist_dialog.c:188 ../src/gui/presets.c:479 ../src/libs/lib.c:235
 msgid "_ok"
 msgstr ""
 
@@ -7538,12 +7537,12 @@ msgid "darktable needs to be restarted for settings to take effect"
 msgstr ""
 
 #. exif
-#: ../src/gui/preferences.c:825 ../src/gui/presets.c:527
+#: ../src/gui/preferences.c:825 ../src/gui/presets.c:530
 #: ../src/libs/metadata_view.c:142
 msgid "model"
 msgstr ""
 
-#: ../src/gui/preferences.c:829 ../src/gui/presets.c:535
+#: ../src/gui/preferences.c:829 ../src/gui/presets.c:538
 #: ../src/libs/metadata_view.c:143
 msgid "maker"
 msgstr ""
@@ -7611,15 +7610,15 @@ msgstr ""
 msgid "accel conflict"
 msgstr ""
 
-#: ../src/gui/preferences.c:1539 ../src/gui/presets.c:171
-#: ../src/gui/presets.c:414 ../src/libs/lib.c:385
+#: ../src/gui/preferences.c:1539 ../src/gui/presets.c:173
+#: ../src/gui/presets.c:415 ../src/libs/lib.c:385
 #: ../src/libs/modulegroups.c:3603
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr ""
 
-#: ../src/gui/preferences.c:1543 ../src/gui/presets.c:175
-#: ../src/gui/presets.c:418 ../src/libs/lib.c:389
+#: ../src/gui/preferences.c:1543 ../src/gui/presets.c:177
+#: ../src/gui/presets.c:419 ../src/libs/lib.c:389
 #: ../src/libs/modulegroups.c:3607
 msgid "delete preset?"
 msgstr ""
@@ -7684,44 +7683,44 @@ msgstr ""
 msgid "monochrome"
 msgstr ""
 
-#: ../src/gui/presets.c:159
+#: ../src/gui/presets.c:161
 #, c-format
 msgid "preset `%s' is write-protected, can't delete!"
 msgstr ""
 
 #. then show edit dialog
-#: ../src/gui/presets.c:213 ../src/gui/presets.c:844 ../src/gui/presets.c:851
-#: ../src/gui/presets.c:853 ../src/gui/presets.c:856 ../src/libs/lib.c:331
+#: ../src/gui/presets.c:215 ../src/gui/presets.c:847 ../src/gui/presets.c:854
+#: ../src/gui/presets.c:856 ../src/gui/presets.c:859 ../src/libs/lib.c:331
 #: ../src/libs/lib.c:347 ../src/libs/lib.c:355 ../src/libs/lib.c:357
 #: ../src/libs/lib.c:359
 msgid "new preset"
 msgstr ""
 
-#: ../src/gui/presets.c:218
+#: ../src/gui/presets.c:220
 msgid "please give preset a name"
 msgstr ""
 
-#: ../src/gui/presets.c:223
+#: ../src/gui/presets.c:225
 msgid "unnamed preset"
 msgstr ""
 
-#: ../src/gui/presets.c:250 ../src/libs/lib.c:154
+#: ../src/gui/presets.c:252 ../src/libs/lib.c:154
 #, c-format
 msgid ""
 "preset `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
 
-#: ../src/gui/presets.c:255 ../src/libs/lib.c:158
+#: ../src/gui/presets.c:257 ../src/libs/lib.c:158
 msgid "overwrite preset?"
 msgstr ""
 
-#: ../src/gui/presets.c:383 ../src/imageio/storage/disk.c:122
+#: ../src/gui/presets.c:384 ../src/imageio/storage/disk.c:122
 #: ../src/imageio/storage/gallery.c:109 ../src/imageio/storage/latex.c:108
 msgid "_select as output destination"
 msgstr ""
 
-#: ../src/gui/presets.c:399
+#: ../src/gui/presets.c:400
 #, c-format
 msgid "preset %s was successfully saved"
 msgstr ""
@@ -7731,137 +7730,137 @@ msgstr ""
 msgid "edit `%s' for module `%s'"
 msgstr ""
 
-#: ../src/gui/presets.c:477
+#: ../src/gui/presets.c:478
 msgid "_save..."
 msgstr ""
 
-#: ../src/gui/presets.c:495 ../src/libs/lib.c:255
+#: ../src/gui/presets.c:496 ../src/libs/lib.c:255
 msgid "name of the preset"
 msgstr ""
 
-#: ../src/gui/presets.c:503 ../src/libs/lib.c:259
+#: ../src/gui/presets.c:504 ../src/libs/lib.c:259
 msgid "description or further information"
 msgstr ""
 
-#: ../src/gui/presets.c:506
+#: ../src/gui/presets.c:507
 msgid "auto apply this preset to matching images"
 msgstr ""
 
-#: ../src/gui/presets.c:509
+#: ../src/gui/presets.c:510
 msgid "only show this preset for matching images"
 msgstr ""
 
-#: ../src/gui/presets.c:510
+#: ../src/gui/presets.c:511
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
 msgstr ""
 
-#: ../src/gui/presets.c:526
+#: ../src/gui/presets.c:529
 #, no-c-format
 msgid "string to match model (use % as wildcard)"
 msgstr ""
 
-#: ../src/gui/presets.c:534
+#: ../src/gui/presets.c:537
 #, no-c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr ""
 
-#: ../src/gui/presets.c:542
+#: ../src/gui/presets.c:545
 #, no-c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr ""
 
-#: ../src/gui/presets.c:552
+#: ../src/gui/presets.c:555
 msgid "minimum ISO value"
 msgstr ""
 
-#: ../src/gui/presets.c:555
+#: ../src/gui/presets.c:558
 msgid "maximum ISO value"
 msgstr ""
 
-#: ../src/gui/presets.c:566
+#: ../src/gui/presets.c:569
 msgid "minimum exposure time"
 msgstr ""
 
-#: ../src/gui/presets.c:567
+#: ../src/gui/presets.c:570
 msgid "maximum exposure time"
 msgstr ""
 
-#: ../src/gui/presets.c:581
+#: ../src/gui/presets.c:584
 msgid "minimum aperture value"
 msgstr ""
 
-#: ../src/gui/presets.c:582
+#: ../src/gui/presets.c:585
 msgid "maximum aperture value"
 msgstr ""
 
-#: ../src/gui/presets.c:598
+#: ../src/gui/presets.c:601
 msgid "minimum focal length"
 msgstr ""
 
-#: ../src/gui/presets.c:599
+#: ../src/gui/presets.c:602
 msgid "maximum focal length"
 msgstr ""
 
 #. raw/hdr/ldr/mono/color
-#: ../src/gui/presets.c:605 ../src/imageio/format/j2k.c:645
+#: ../src/gui/presets.c:608 ../src/imageio/format/j2k.c:645
 msgid "format"
 msgstr ""
 
-#: ../src/gui/presets.c:608
+#: ../src/gui/presets.c:611
 msgid "select image types you want this preset to be available for"
 msgstr ""
 
-#: ../src/gui/presets.c:774
+#: ../src/gui/presets.c:777
 #, c-format
 msgid "preset `%s' is write-protected! can't edit it!"
 msgstr ""
 
-#: ../src/gui/presets.c:803 ../src/libs/lib.c:293
+#: ../src/gui/presets.c:806 ../src/libs/lib.c:293
 #, c-format
 msgid "do you really want to update the preset `%s'?"
 msgstr ""
 
-#: ../src/gui/presets.c:807 ../src/libs/lib.c:297
+#: ../src/gui/presets.c:810 ../src/libs/lib.c:297
 msgid "update preset?"
 msgstr ""
 
-#: ../src/gui/presets.c:1085 ../src/libs/modulegroups.c:3775
+#: ../src/gui/presets.c:1087 ../src/libs/modulegroups.c:3775
 #: ../src/libs/modulegroups.c:3784
 msgid "manage module layouts"
 msgstr ""
 
-#: ../src/gui/presets.c:1093
+#: ../src/gui/presets.c:1095
 msgid "manage quick presets"
 msgstr ""
 
-#: ../src/gui/presets.c:1263
+#: ../src/gui/presets.c:1262
 msgid "manage quick presets list..."
 msgstr ""
 
-#: ../src/gui/presets.c:1389
+#: ../src/gui/presets.c:1395
 msgid "(default)"
 msgstr ""
 
-#: ../src/gui/presets.c:1408
+#: ../src/gui/presets.c:1414
 msgid "disabled: wrong module version"
 msgstr ""
 
-#: ../src/gui/presets.c:1433 ../src/libs/lib.c:671
+#: ../src/gui/presets.c:1439 ../src/libs/lib.c:671
 msgid "edit this preset.."
 msgstr ""
 
-#: ../src/gui/presets.c:1437 ../src/libs/lib.c:675
+#: ../src/gui/presets.c:1443 ../src/libs/lib.c:675
 #: ../src/libs/modulegroups.c:3732
 msgid "delete this preset"
 msgstr ""
 
-#: ../src/gui/presets.c:1443 ../src/libs/lib.c:683
+#: ../src/gui/presets.c:1449 ../src/libs/lib.c:683
 msgid "store new preset.."
 msgstr ""
 
-#: ../src/gui/presets.c:1449 ../src/libs/lib.c:695
+#: ../src/gui/presets.c:1455 ../src/libs/lib.c:695
 msgid "update preset"
 msgstr ""
 
@@ -9929,10 +9928,6 @@ msgstr ""
 msgid "colorfulness"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3590
-msgid "grey"
-msgstr ""
-
 #: ../src/iop/channelmixerrgb.c:3602
 msgid "calibrate with a color checker"
 msgstr ""
@@ -11632,20 +11627,24 @@ msgstr ""
 msgid "logarithmic shaper"
 msgstr ""
 
+#: ../src/iop/filmic.c:1598
+msgid "middle grey luminance"
+msgstr ""
+
 #: ../src/iop/filmic.c:1601
 msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
 msgstr ""
 
-#: ../src/iop/filmic.c:1612 ../src/iop/filmicrgb.c:3616
+#: ../src/iop/filmic.c:1612
 msgid ""
 "number of stops between middle grey and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
 "adjust so highlights clipping is avoided"
 msgstr ""
 
-#: ../src/iop/filmic.c:1624 ../src/iop/filmicrgb.c:3626
+#: ../src/iop/filmic.c:1624
 msgid ""
 "number of stops between middle grey and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -11773,7 +11772,11 @@ msgid ""
 "except if you want a faded look"
 msgstr ""
 
-#: ../src/iop/filmic.c:1755 ../src/iop/filmicrgb.c:3778
+#: ../src/iop/filmic.c:1752
+msgid "target middle grey"
+msgstr ""
+
+#: ../src/iop/filmic.c:1755
 msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -11919,6 +11922,21 @@ msgstr ""
 msgid "%+.2f EV"
 msgstr ""
 
+#: ../src/iop/filmicrgb.c:3616
+msgid ""
+"number of stops between middle gray and pure white.\n"
+"this is a reading a lightmeter would give you on the scene.\n"
+"adjust so highlights clipping is avoided"
+msgstr ""
+
+#: ../src/iop/filmicrgb.c:3626
+msgid ""
+"number of stops between middle gray and pure black.\n"
+"this is a reading a lightmeter would give you on the scene.\n"
+"increase to get more contrast.\n"
+"decrease to recover more details in low-lights."
+msgstr ""
+
 #: ../src/iop/filmicrgb.c:3634
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
@@ -12030,6 +12048,12 @@ msgid ""
 "increase if shadows and/or highlights are under-saturated."
 msgstr ""
 
+#: ../src/iop/filmicrgb.c:3778
+msgid ""
+"midde gray value of the target display or color space.\n"
+"you should never touch that unless you know what you are doing."
+msgstr ""
+
 #. Page OPTIONS
 #: ../src/iop/filmicrgb.c:3790
 msgid "options"
@@ -12065,17 +12089,17 @@ msgstr ""
 #: ../src/iop/filmicrgb.c:3815
 #, c-format
 msgid ""
-"enable to input custom middle-grey values.\n"
+"enable to input custom middle-gray values.\n"
 "this is not recommended in general.\n"
 "fix the global exposure in the exposure module instead.\n"
-"disable to use standard 18.45 %% middle grey."
+"disable to use standard 18.45 %% middle gray."
 msgstr ""
 
 #: ../src/iop/filmicrgb.c:3822
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
-"this keeps the middle grey on the identity line and improves fast tuning.\n"
+"this keeps the middle gray on the identity line and improves fast tuning.\n"
 "disable if you want a manual control."
 msgstr ""
 
@@ -13376,7 +13400,7 @@ msgstr ""
 
 #: ../src/iop/profile_gamma.c:666
 msgid ""
-"number of stops between middle grey and pure black\n"
+"number of stops between middle gray and pure black\n"
 "this is a reading a posemeter would give you on the scene"
 msgstr ""
 
