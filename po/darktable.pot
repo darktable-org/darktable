@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-26 13:13+0100\n"
+"POT-Creation-Date: 2021-03-26 18:32+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -6438,195 +6438,195 @@ msgstr ""
 msgid "fit"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1140
+#: ../src/dtgtk/thumbtable.c:1141
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1142
+#: ../src/dtgtk/thumbtable.c:1143
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1144
+#: ../src/dtgtk/thumbtable.c:1145
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
 "\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1147
+#: ../src/dtgtk/thumbtable.c:1148
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
 "\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1149
+#: ../src/dtgtk/thumbtable.c:1150
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
 "\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1152
+#: ../src/dtgtk/thumbtable.c:1153
 msgid "do you want to do that now?"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1160
+#: ../src/dtgtk/thumbtable.c:1161
 msgid "cached thumbnails invalidation"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2166 ../src/libs/metadata_view.c:465
+#: ../src/dtgtk/thumbtable.c:2167 ../src/libs/metadata_view.c:465
 msgid "image rejected"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2168 ../src/dtgtk/thumbtable.c:2170
-#: ../src/dtgtk/thumbtable.c:2172 ../src/dtgtk/thumbtable.c:2174
-#: ../src/dtgtk/thumbtable.c:2176
+#: ../src/dtgtk/thumbtable.c:2169 ../src/dtgtk/thumbtable.c:2171
+#: ../src/dtgtk/thumbtable.c:2173 ../src/dtgtk/thumbtable.c:2175
+#: ../src/dtgtk/thumbtable.c:2177
 #, c-format
 msgid "image rated to %s"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2178
+#: ../src/dtgtk/thumbtable.c:2179
 msgid "image rated to 0 star"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2211
+#: ../src/dtgtk/thumbtable.c:2212
 #, c-format
 msgid "colorlabels set to %s"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2213
+#: ../src/dtgtk/thumbtable.c:2214
 msgid "all colorlabels removed"
 msgstr ""
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:2335
+#: ../src/dtgtk/thumbtable.c:2336
 msgctxt "accel"
 msgid "views/thumbtable/rate 0"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2336
+#: ../src/dtgtk/thumbtable.c:2337
 msgctxt "accel"
 msgid "views/thumbtable/rate 1"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2337
+#: ../src/dtgtk/thumbtable.c:2338
 msgctxt "accel"
 msgid "views/thumbtable/rate 2"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2338
+#: ../src/dtgtk/thumbtable.c:2339
 msgctxt "accel"
 msgid "views/thumbtable/rate 3"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2339
+#: ../src/dtgtk/thumbtable.c:2340
 msgctxt "accel"
 msgid "views/thumbtable/rate 4"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2340
+#: ../src/dtgtk/thumbtable.c:2341
 msgctxt "accel"
 msgid "views/thumbtable/rate 5"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2341
+#: ../src/dtgtk/thumbtable.c:2342
 msgctxt "accel"
 msgid "views/thumbtable/rate reject"
 msgstr ""
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2344
+#: ../src/dtgtk/thumbtable.c:2345
 msgctxt "accel"
 msgid "views/thumbtable/copy history"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2345
+#: ../src/dtgtk/thumbtable.c:2346
 msgctxt "accel"
 msgid "views/thumbtable/copy history parts"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2347
+#: ../src/dtgtk/thumbtable.c:2348
 msgctxt "accel"
 msgid "views/thumbtable/paste history"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2348
+#: ../src/dtgtk/thumbtable.c:2349
 msgctxt "accel"
 msgid "views/thumbtable/paste history parts"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2350
+#: ../src/dtgtk/thumbtable.c:2351
 msgctxt "accel"
 msgid "views/thumbtable/discard history"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2352
+#: ../src/dtgtk/thumbtable.c:2353
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2353
+#: ../src/dtgtk/thumbtable.c:2354
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image virgin"
 msgstr ""
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:2357
+#: ../src/dtgtk/thumbtable.c:2358
 msgctxt "accel"
 msgid "views/thumbtable/color red"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2358
+#: ../src/dtgtk/thumbtable.c:2359
 msgctxt "accel"
 msgid "views/thumbtable/color yellow"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2359
+#: ../src/dtgtk/thumbtable.c:2360
 msgctxt "accel"
 msgid "views/thumbtable/color green"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2360
+#: ../src/dtgtk/thumbtable.c:2361
 msgctxt "accel"
 msgid "views/thumbtable/color blue"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2361
+#: ../src/dtgtk/thumbtable.c:2362
 msgctxt "accel"
 msgid "views/thumbtable/color purple"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2362
+#: ../src/dtgtk/thumbtable.c:2363
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
 msgstr ""
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:2365
+#: ../src/dtgtk/thumbtable.c:2366
 msgctxt "accel"
 msgid "views/thumbtable/select all"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2366
+#: ../src/dtgtk/thumbtable.c:2367
 msgctxt "accel"
 msgid "views/thumbtable/select none"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2368
+#: ../src/dtgtk/thumbtable.c:2369
 msgctxt "accel"
 msgid "views/thumbtable/invert selection"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2369
+#: ../src/dtgtk/thumbtable.c:2370
 msgctxt "accel"
 msgid "views/thumbtable/select film roll"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2370
+#: ../src/dtgtk/thumbtable.c:2371
 msgctxt "accel"
 msgid "views/thumbtable/select untouched"
 msgstr ""
@@ -9855,7 +9855,7 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:3304
-msgid "white balance successfuly extracted from raw image"
+msgid "white balance successfully extracted from raw image"
 msgstr ""
 
 #. We need to recompute only the full preview
@@ -18715,7 +18715,7 @@ msgctxt "accel"
 msgid "gamut check"
 msgstr ""
 
-#. toggle visability of drawn masks for current gui module
+#. toggle visibility of drawn masks for current gui module
 #: ../src/views/darkroom.c:3891
 msgctxt "accel"
 msgid "show drawn masks"
