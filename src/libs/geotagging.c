@@ -48,14 +48,6 @@ typedef struct dt_lib_datetime_t
   GtkWidget *sign;
 } dt_lib_datetime_t;
 
-typedef struct dt_map_box_t
-{
-  float lon1;
-  float lon2;
-  float lat1;
-  float lat2;
-} dt_map_box_t;
-
 #ifdef HAVE_MAP
 typedef struct dt_lib_tracks_data_t
 {
