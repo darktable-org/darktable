@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-26 13:13+0100\n"
-"PO-Revision-Date: 2021-03-26 13:14+0100\n"
+"POT-Creation-Date: 2021-03-26 18:32+0100\n"
+"PO-Revision-Date: 2021-03-26 18:32+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6883,13 +6883,13 @@ msgstr "images groupées"
 msgid "fit"
 msgstr "ajusté"
 
-#: ../src/dtgtk/thumbtable.c:1140
+#: ../src/dtgtk/thumbtable.c:1141
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr ""
 "vous avez modifié le paramètre contrôlant la génération des miniatures\n"
 
-#: ../src/dtgtk/thumbtable.c:1142
+#: ../src/dtgtk/thumbtable.c:1143
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
@@ -6897,7 +6897,7 @@ msgstr ""
 "toutes les miniatures doivent être invalidées.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1144
+#: ../src/dtgtk/thumbtable.c:1145
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
@@ -6906,7 +6906,7 @@ msgstr ""
 "les miniatures du cache à partir du niveau %d doivent être invalidées.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1147
+#: ../src/dtgtk/thumbtable.c:1148
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
@@ -6915,7 +6915,7 @@ msgstr ""
 "les miniatures du cache en dessous du niveau %d doivent être invalidées.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1149
+#: ../src/dtgtk/thumbtable.c:1150
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
@@ -6924,163 +6924,163 @@ msgstr ""
 "les miniatures du cache entre les niveaux %d et %d doivent être invalidées.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1152
+#: ../src/dtgtk/thumbtable.c:1153
 msgid "do you want to do that now?"
 msgstr "voulez-vous faire cela maintenant ?"
 
-#: ../src/dtgtk/thumbtable.c:1160
+#: ../src/dtgtk/thumbtable.c:1161
 msgid "cached thumbnails invalidation"
 msgstr "invalidation du cache des miniatures"
 
-#: ../src/dtgtk/thumbtable.c:2166 ../src/libs/metadata_view.c:465
+#: ../src/dtgtk/thumbtable.c:2167 ../src/libs/metadata_view.c:465
 msgid "image rejected"
 msgstr "image rejetée"
 
-#: ../src/dtgtk/thumbtable.c:2168 ../src/dtgtk/thumbtable.c:2170
-#: ../src/dtgtk/thumbtable.c:2172 ../src/dtgtk/thumbtable.c:2174
-#: ../src/dtgtk/thumbtable.c:2176
+#: ../src/dtgtk/thumbtable.c:2169 ../src/dtgtk/thumbtable.c:2171
+#: ../src/dtgtk/thumbtable.c:2173 ../src/dtgtk/thumbtable.c:2175
+#: ../src/dtgtk/thumbtable.c:2177
 #, c-format
 msgid "image rated to %s"
 msgstr "image notée à « %s »"
 
-#: ../src/dtgtk/thumbtable.c:2178
+#: ../src/dtgtk/thumbtable.c:2179
 msgid "image rated to 0 star"
 msgstr "image notée à 0 étoile"
 
-#: ../src/dtgtk/thumbtable.c:2211
+#: ../src/dtgtk/thumbtable.c:2212
 #, c-format
 msgid "colorlabels set to %s"
 msgstr "labels de couleur positionnés à « %s »"
 
-#: ../src/dtgtk/thumbtable.c:2213
+#: ../src/dtgtk/thumbtable.c:2214
 msgid "all colorlabels removed"
 msgstr "tous les labels de couleur supprimés"
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:2335
+#: ../src/dtgtk/thumbtable.c:2336
 msgctxt "accel"
 msgid "views/thumbtable/rate 0"
 msgstr "vues/miniature/pas d'étoile"
 
-#: ../src/dtgtk/thumbtable.c:2336
+#: ../src/dtgtk/thumbtable.c:2337
 msgctxt "accel"
 msgid "views/thumbtable/rate 1"
 msgstr "vues/miniature/1 étoile"
 
-#: ../src/dtgtk/thumbtable.c:2337
+#: ../src/dtgtk/thumbtable.c:2338
 msgctxt "accel"
 msgid "views/thumbtable/rate 2"
 msgstr "vues/miniature/2 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:2338
+#: ../src/dtgtk/thumbtable.c:2339
 msgctxt "accel"
 msgid "views/thumbtable/rate 3"
 msgstr "vues/miniature/3 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:2339
+#: ../src/dtgtk/thumbtable.c:2340
 msgctxt "accel"
 msgid "views/thumbtable/rate 4"
 msgstr "vues/miniature/4 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:2340
+#: ../src/dtgtk/thumbtable.c:2341
 msgctxt "accel"
 msgid "views/thumbtable/rate 5"
 msgstr "vues/miniature/5 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:2341
+#: ../src/dtgtk/thumbtable.c:2342
 msgctxt "accel"
 msgid "views/thumbtable/rate reject"
 msgstr "vues/miniature/rejeter"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2344
+#: ../src/dtgtk/thumbtable.c:2345
 msgctxt "accel"
 msgid "views/thumbtable/copy history"
 msgstr "vues/miniature/copie historique"
 
-#: ../src/dtgtk/thumbtable.c:2345
+#: ../src/dtgtk/thumbtable.c:2346
 msgctxt "accel"
 msgid "views/thumbtable/copy history parts"
 msgstr "vues/miniature/copier une partie du développement"
 
-#: ../src/dtgtk/thumbtable.c:2347
+#: ../src/dtgtk/thumbtable.c:2348
 msgctxt "accel"
 msgid "views/thumbtable/paste history"
 msgstr "vues/miniature/coller le développement"
 
-#: ../src/dtgtk/thumbtable.c:2348
+#: ../src/dtgtk/thumbtable.c:2349
 msgctxt "accel"
 msgid "views/thumbtable/paste history parts"
 msgstr "vues/miniature/coller une partie du développement"
 
-#: ../src/dtgtk/thumbtable.c:2350
+#: ../src/dtgtk/thumbtable.c:2351
 msgctxt "accel"
 msgid "views/thumbtable/discard history"
 msgstr "vues/miniature/supprimer historique"
 
-#: ../src/dtgtk/thumbtable.c:2352
+#: ../src/dtgtk/thumbtable.c:2353
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image"
 msgstr "vues/miniature/cloner l'image"
 
-#: ../src/dtgtk/thumbtable.c:2353
+#: ../src/dtgtk/thumbtable.c:2354
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image virgin"
 msgstr "vues/miniature/dupliquer image vierge"
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:2357
+#: ../src/dtgtk/thumbtable.c:2358
 msgctxt "accel"
 msgid "views/thumbtable/color red"
 msgstr "vues/miniature/couleur rouge"
 
-#: ../src/dtgtk/thumbtable.c:2358
+#: ../src/dtgtk/thumbtable.c:2359
 msgctxt "accel"
 msgid "views/thumbtable/color yellow"
 msgstr "vues/miniature/couleur jaune"
 
-#: ../src/dtgtk/thumbtable.c:2359
+#: ../src/dtgtk/thumbtable.c:2360
 msgctxt "accel"
 msgid "views/thumbtable/color green"
 msgstr "vues/miniature/couleur vert"
 
-#: ../src/dtgtk/thumbtable.c:2360
+#: ../src/dtgtk/thumbtable.c:2361
 msgctxt "accel"
 msgid "views/thumbtable/color blue"
 msgstr "vues/miniature/couleur bleue"
 
-#: ../src/dtgtk/thumbtable.c:2361
+#: ../src/dtgtk/thumbtable.c:2362
 msgctxt "accel"
 msgid "views/thumbtable/color purple"
 msgstr "vues/miniature/couleur violette"
 
-#: ../src/dtgtk/thumbtable.c:2362
+#: ../src/dtgtk/thumbtable.c:2363
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
 msgstr "vues/miniature/aucun label couleur"
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:2365
+#: ../src/dtgtk/thumbtable.c:2366
 msgctxt "accel"
 msgid "views/thumbtable/select all"
 msgstr "vues/miniature/tout sélectionner"
 
-#: ../src/dtgtk/thumbtable.c:2366
+#: ../src/dtgtk/thumbtable.c:2367
 msgctxt "accel"
 msgid "views/thumbtable/select none"
 msgstr "vues/miniature/ne rien sélectionner"
 
-#: ../src/dtgtk/thumbtable.c:2368
+#: ../src/dtgtk/thumbtable.c:2369
 msgctxt "accel"
 msgid "views/thumbtable/invert selection"
 msgstr "vues/miniature/inverser sélection"
 
-#: ../src/dtgtk/thumbtable.c:2369
+#: ../src/dtgtk/thumbtable.c:2370
 msgctxt "accel"
 msgid "views/thumbtable/select film roll"
 msgstr "vues/miniature/sélectionner film"
 
-#: ../src/dtgtk/thumbtable.c:2370
+#: ../src/dtgtk/thumbtable.c:2371
 msgctxt "accel"
 msgid "views/thumbtable/select untouched"
 msgstr "vues/miniature/non développées"
@@ -10549,7 +10549,7 @@ msgstr ""
 "ne peut être définie donc vous devez utiliser un illuminant personnalisé."
 
 #: ../src/iop/channelmixerrgb.c:3304
-msgid "white balance successfuly extracted from raw image"
+msgid "white balance successfully extracted from raw image"
 msgstr "la balance des blancs a été extraite de l'image raw avec succès"
 
 #. We need to recompute only the full preview
@@ -20348,7 +20348,7 @@ msgctxt "accel"
 msgid "gamut check"
 msgstr "vérification de gamut"
 
-#. toggle visability of drawn masks for current gui module
+#. toggle visibility of drawn masks for current gui module
 #: ../src/views/darkroom.c:3891
 msgctxt "accel"
 msgid "show drawn masks"
