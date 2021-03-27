@@ -71,6 +71,9 @@ typedef struct dt_lib_location_t
 
   /* remember the currently selected search result so we can put it into a preset */
   _lib_location_result_t *selected_location;
+
+  // place used to keep biggest polygon
+  GList *marker_points;
 } dt_lib_location_t;
 
 typedef struct _callback_param_t
@@ -452,6 +455,9 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt, const c
   /* only interested in place element */
   if(strcmp(element_name, "place") != 0) return;
 
+  // used to keep the biggest polygon
+  lib->marker_points = NULL;
+
   /* create new place */
   _lib_location_result_t *place = g_malloc0(sizeof(_lib_location_result_t));
   if(!place) return;
@@ -535,7 +541,7 @@ broken_bbox:
                 || g_str_has_prefix(*avalue, "POLYGON")
                 || g_str_has_prefix(*avalue, "MULTIPOLYGON")
 #endif
-        )
+               )
         {
           gboolean error = FALSE;
           const char *startptr = *avalue;
@@ -549,7 +555,37 @@ broken_bbox:
             float lon = g_ascii_strtod(startptr, &endptr);
             float lat = g_ascii_strtod(endptr, &endptr);
 
-            if(*endptr == ')') break; // TODO: support holes in POLYGON and several forms in MULTIPOLYGON?
+            if(*endptr == ')') // TODO: support holes in POLYGON and several forms in MULTIPOLYGON?
+            {
+              // doesn't really support MULTIPOLYGON, just keeps the biggect one
+              const int old_mp = g_list_length(lib->marker_points);
+              const int new_mp = g_list_length(place->marker_points);
+              if(g_str_has_prefix(endptr, ")),((") || g_str_has_prefix(endptr, "),("))
+              {
+                if(new_mp > old_mp)
+                {
+                  g_list_free_full(lib->marker_points, g_free);
+                  lib->marker_points = place->marker_points;
+                }
+                else
+                  g_list_free_full(place->marker_points, g_free);
+                place->marker_points = NULL;
+                startptr = endptr + (g_str_has_prefix(endptr, ")),((") ? 5 : 3);
+                continue;
+              }
+              else
+              {
+                if(new_mp > old_mp)
+                  g_list_free_full(lib->marker_points, g_free);
+                else
+                {
+                  g_list_free_full(place->marker_points, g_free);
+                  place->marker_points = lib->marker_points;
+                }
+                lib->marker_points = NULL;
+                break;
+              }
+            }
             if(*endptr != ',' || i > max_outline_nodes) // don't go too big for speed reasons
             {
               error = TRUE;

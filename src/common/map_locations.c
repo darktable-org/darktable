@@ -214,7 +214,6 @@ void dt_map_location_get_polygons(dt_location_draw_t *ld)
     dt_geo_map_display_point_t *p = malloc(ld->data.plg_pts);
     memcpy(p, sqlite3_column_blob(stmt, 0), ld->data.plg_pts);
     ld->data.plg_pts /= sizeof(dt_geo_map_display_point_t);
-    printf("dt_map_location_get_polygons %d -> %d\n", ld->id, ld->data.plg_pts);
     GList *pol = NULL;
     for(int i = 0; i < ld->data.plg_pts; i++, p++)
       pol = g_list_prepend(pol, p);
@@ -226,7 +225,6 @@ void dt_map_location_get_polygons(dt_location_draw_t *ld)
 
 void dt_map_location_free_polygons(dt_location_draw_t *ld)
 {
-  printf("dt_map_location_free_polygons %d nb points %d\n", ld->id, ld->data.plg_pts);
   if(ld->data.shape == MAP_LOCATION_SHAPE_POLYGONS && ld->data.polygons)
   {
     g_free(ld->data.polygons->data);
@@ -244,7 +242,6 @@ static gboolean _is_point_in_polygon(const dt_geo_map_display_point_t *pt,
   float lat1 = plp->lat;
   float lon1 = plp->lon;
   float lat2, lon2;
-  printf("_is_point_in_polygon vertices %d lat %f lon %f => lat %f lon %f \n", plg_pts, lat1, lon1, pt->lat, pt->lon);
   for(int i = 0; i < plg_pts; i++)
   {
     if(i < plg_pts - 1)
@@ -368,8 +365,8 @@ void dt_map_location_set_data(const guint locid, const dt_map_location_data_t *g
   }
   else
   {
-    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 8, g->polygons->data, g->plg_pts * (int)sizeof(dt_geo_map_display_point_t), SQLITE_STATIC);
-    printf("dt_map_location_set_data %d %d\n", g->plg_pts, g->plg_pts * (int)sizeof(dt_geo_map_display_point_t));
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 8, g->polygons->data,
+                               g->plg_pts * (int)sizeof(dt_geo_map_display_point_t), SQLITE_STATIC);
   }
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -378,7 +375,6 @@ void dt_map_location_set_data(const guint locid, const dt_map_location_data_t *g
 // find locations which match with that image
 GList *dt_map_location_find_locations(const guint imgid)
 {
-  printf("dt_map_location_find_locations imgid %d\n", imgid);
   GList *tags = NULL;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -421,7 +417,6 @@ GList *dt_map_location_find_locations(const guint imgid)
         const gint plg_pts = sqlite3_column_bytes(stmt2, 0) / sizeof(dt_geo_map_display_point_t);
         if(_is_point_in_polygon(&pt, plg_pts, sqlite3_column_blob(stmt2, 0)))
         {
-          printf("dt_map_location_find_locations imgid %d locid %d shape %d\n", imgid, id, sqlite3_column_int(stmt, 1));
           tags = g_list_prepend(tags, GINT_TO_POINTER(id));
         }
       }
@@ -429,7 +424,6 @@ GList *dt_map_location_find_locations(const guint imgid)
     }
     else
     {
-      printf("dt_map_location_find_locations imgid %d locid %d shape %d\n", imgid, id, sqlite3_column_int(stmt, 1));
       tags = g_list_prepend(tags, GINT_TO_POINTER(id));
     }
   }
@@ -464,7 +458,7 @@ GList *_map_location_find_images(dt_location_draw_t *ld)
                                 "       AND i.latitude<=(l.latitude+delta2))"
                                 "  WHERE l.tagid = ?1 ",
                                 -1, &stmt, NULL);
-  else if(ld->data.shape == MAP_LOCATION_SHAPE_POLYGONS)
+  else // MAP_LOCATION_SHAPE_POLYGONS
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT i.id, i.longitude, i.latitude FROM main.images AS i"
                                 "  JOIN data.locations AS l"
@@ -495,7 +489,6 @@ GList *_map_location_find_images(dt_location_draw_t *ld)
     i++;
   }
   sqlite3_finalize(stmt);
-  printf("_map_location_find_images locid %d found %d / %d\n", ld->id, g_list_length(imgs), i);
   return imgs;
 }
 
