@@ -803,8 +803,8 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   dt_osx_disallow_fullscreen(d->from.dialog);
 #endif
   gtk_window_set_default_size(GTK_WINDOW(d->from.dialog),
-                              DT_PIXEL_APPLY_DPI(dt_conf_get_int("ui_last/import_dialog_width")),
-                              DT_PIXEL_APPLY_DPI(dt_conf_get_int("ui_last/import_dialog_height")));
+                              dt_conf_get_int("ui_last/import_dialog_width"),
+                              dt_conf_get_int("ui_last/import_dialog_height"));
   gtk_window_set_transient_for(GTK_WINDOW(d->from.dialog), GTK_WINDOW(win));
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(d->from.dialog));
   GtkWidget *import_list = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
