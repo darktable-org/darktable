@@ -88,7 +88,7 @@ typedef enum dt_map_position_name_sort_id
 
 const DTGTKCairoPaintIconFunc location_shapes[] = { dtgtk_cairo_paint_masks_circle,
                                                     dtgtk_cairo_paint_rect_landscape,
-                                                    dtgtk_cairo_paint_masks_drawn};
+                                                    dtgtk_cairo_paint_polygon};
 
 static gboolean _mouse_scroll(GtkWidget *treeview, GdkEventScroll *event,
                               dt_lib_module_t *self)
@@ -415,7 +415,6 @@ static void _view_map_geotag_changed(gpointer instance, GList *imgs, const int n
   // one of the other location has been clicked on the map
   if(newlocid)
   {
-    printf("_view_map_geotag_changed locid %d\n", newlocid);
     GtkTreeIter iter;
     GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->view));
     if(gtk_tree_model_get_iter_first(model, &iter))
@@ -436,7 +435,6 @@ static void _view_map_geotag_changed(gpointer instance, GList *imgs, const int n
   }
   else
   {
-    printf("_view_map_geotag_changed imgs %d\n", g_list_length(imgs));
     for(GList* img = imgs; img; img = g_list_next(img))
     {
       // find new locations for that image
@@ -552,7 +550,6 @@ static void _name_editing_done(GtkCellEditable *editable, dt_lib_module_t *self)
             g.polygons = d->polygons;
             dt_view_map_add_location(darktable.view_manager, &g, locid);
             const int count = dt_map_location_get_images_count(locid);
-  printf("_name_editing_done locid %d count %d\n", locid, count);
             if(g_strstr_len(name, -1, "|"))
             {
               // the user wants to insert some group(s). difficult to handle the tree => reset
@@ -701,10 +698,9 @@ static void _pop_menu_delete_location(GtkWidget *menuitem, dt_lib_module_t *self
     gtk_tree_model_get(model, &iter, DT_MAP_LOCATION_COL_ID, &locid, -1);
     if(locid > 0)
     {
-      // remove the location afterwards to avoid map movement
-      _signal_location_change(self);
       dt_view_map_location_action(darktable.view_manager, MAP_LOCATION_ACTION_REMOVE);
       dt_map_location_delete(locid);
+      _signal_location_change(self);
     }
     // update the treeview
     GtkTreeIter parent;
@@ -999,7 +995,8 @@ void gui_init(dt_lib_module_t *self)
   d->shape_button_handler = g_signal_connect(G_OBJECT(d->shape_button), "clicked",
                                              G_CALLBACK(_shape_button_clicked), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->shape_button ),
-                              _("select the shape of the location\'s limits on the map, circle or rectangle"));
+                              _("select the shape of the location\'s limits on the map, circle or rectangle"
+                                "\nor even polygon if available (select first a polygon place in 'find location' module)"));
 
   d->new_button = dt_ui_button_new(_("new location"),
                                    _("add a new location on the center of the visible map"), NULL);
