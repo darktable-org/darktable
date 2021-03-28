@@ -2058,7 +2058,7 @@ void dt_control_write_sidecar_files()
 }
 
 static int _control_import_image_copy(const char *filename,
-                                      struct dt_import_session_t *session)
+                                      struct dt_import_session_t *session, GList **imgs)
 {
   char *data = NULL;
   gsize size = 0;
@@ -2090,10 +2090,14 @@ static int _control_import_image_copy(const char *filename,
   {
     const int32_t imgid = dt_image_import(dt_import_session_film_id(session), output, FALSE, FALSE);
     if(!imgid) dt_control_log(_("error loading file `%s'"), output);
-    else if((imgid & 3) == 3)
+    else
     {
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
-      dt_control_queue_redraw_center();
+      *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(imgid));
+      if((imgid & 3) == 3)
+      {
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+        dt_control_queue_redraw_center();
+      }
     }
   }
   g_free(output);
@@ -2101,17 +2105,21 @@ static int _control_import_image_copy(const char *filename,
   return res ? dt_import_session_film_id(session) : -1;
 }
 
-static int _control_import_image_insitu(const char *filename)
+static int _control_import_image_insitu(const char *filename, GList **imgs)
 {
   char *dirname = g_path_get_dirname(filename);
   dt_film_t film;
   const int filmid = dt_film_new(&film, dirname);
   const int32_t imgid = dt_image_import(filmid, filename, FALSE, FALSE);
   if(!imgid) dt_control_log(_("error loading file `%s'"), filename);
-  else if((imgid & 3) == 3)
+  else
   {
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
-    dt_control_queue_redraw_center();
+    *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(imgid));
+    if((imgid & 3) == 3)
+    {
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+      dt_control_queue_redraw_center();
+    }
   }
   g_free(dirname);
   return filmid;
@@ -2192,6 +2200,7 @@ static int32_t _control_import_job_run(dt_job_t *job)
   snprintf(message, sizeof(message), ngettext("importing %d image", "importing %d images", total), total);
   dt_control_job_set_progress_message(job, message);
 
+  GList *imgs = NULL;
   double fraction = 0.0f;
   int filmid = -1;
   int first_filmid = -1;
@@ -2199,7 +2208,7 @@ static int32_t _control_import_job_run(dt_job_t *job)
   {
     if(data->session)
     {
-      filmid = _control_import_image_copy((char *)img->data, data->session);
+      filmid = _control_import_image_copy((char *)img->data, data->session, &imgs);
       if(filmid != -1 && first_filmid == -1)
       {
         first_filmid = filmid;
@@ -2211,7 +2220,7 @@ static int32_t _control_import_job_run(dt_job_t *job)
       }
     }
     else
-      filmid = _control_import_image_insitu((char *)img->data);
+      filmid = _control_import_image_insitu((char *)img->data, &imgs);
     if(filmid != -1)
       cntr++;
     fraction += 1.0 / total;
@@ -2224,6 +2233,7 @@ static int32_t _control_import_job_run(dt_job_t *job)
   dt_control_log(ngettext("imported %d image", "imported %d images", cntr), cntr);
   dt_control_queue_redraw_center();
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, filmid);
   return 0;
 }
