@@ -73,11 +73,11 @@ typedef struct dt_iop_borders_params_t
   float size;               /* border width relative to overal frame width
                                $MIN: 0.0 $MAX: 0.5 $DEFAULT: 0.1 $DESCRIPTION: "border size" */
   float pos_h;              /* picture horizontal position ratio into the final image
-                               $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "horizontal position" */
+                               $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "horizontal offset" */
   char pos_h_text[20];      /* picture horizontal position ratio into the final image (user string version)
                                DEFAULT: "1/2" */
   float pos_v;              /* picture vertical position ratio into the final image
-                               $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "vertical position"*/
+                               $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "vertical offset"*/
   char pos_v_text[20];      /* picture vertical position ratio into the final image (user string version)
                                DEFAULT: "1/2" */
   float frame_size;         /* frame line width relative to border width
