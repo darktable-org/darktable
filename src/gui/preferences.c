@@ -2077,9 +2077,7 @@ GtkWidget *dt_gui_preferences_enum(GtkGrid *grid, const char *key, const guint c
     if(item[0] == '[') item++;
     else if(item[strlen(item) - 1] == ']') item[strlen(item) - 1] = '\0';
     gtk_list_store_append(store, &iter);
-    // FIXME C_() works with "" string but doesn't with a variable string.
-    //    gtk_list_store_set(store, &iter, 0, item, 1, C_("preferences", item), -1);
-    gtk_list_store_set(store, &iter, 0, item, 1, _(item), -1);
+    gtk_list_store_set(store, &iter, 0, item, 1, g_dpgettext2(NULL, "preferences", item), -1);
     if(pos == -1 && !g_strcmp0(str, item))
     {
       pos = i;
