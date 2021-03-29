@@ -86,9 +86,9 @@ typedef enum dt_map_position_name_sort_id
   DT_MAP_POSITION_SORT_NAME_ID,
 } dt_map_position_name_sort_id;
 
-const DTGTKCairoPaintIconFunc location_shapes[] = { dtgtk_cairo_paint_masks_circle,
-                                                    dtgtk_cairo_paint_rect_landscape,
-                                                    dtgtk_cairo_paint_polygon};
+const DTGTKCairoPaintIconFunc location_shapes[] = { dtgtk_cairo_paint_masks_circle,   // MAP_LOCATION_SHAPE_ELLIPSE
+                                                    dtgtk_cairo_paint_rect_landscape, // MAP_LOCATION_SHAPE_RECTANGLE
+                                                    dtgtk_cairo_paint_polygon};       // MAP_LOCATION_SHAPE_POLYGONS
 
 static gboolean _mouse_scroll(GtkWidget *treeview, GdkEventScroll *event,
                               dt_lib_module_t *self)
@@ -341,7 +341,7 @@ static void _shape_button_clicked(GtkButton *button, dt_lib_module_t *self)
   int shape = dt_conf_get_int("plugins/map/locationshape");
   shape++;
   if((shape > G_N_ELEMENTS(location_shapes) - 1) ||
-     (!d->polygons && location_shapes[shape] == dtgtk_cairo_paint_masks_drawn))
+     (!d->polygons && shape == MAP_LOCATION_SHAPE_POLYGONS))
     shape = 0;
   dt_conf_set_int("plugins/map/locationshape", shape);
 
@@ -927,7 +927,7 @@ static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_mo
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)malloc(sizeof(dt_lib_map_locations_t));
+  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)g_malloc0(sizeof(dt_lib_map_locations_t));
   self->data = d;
 
   self->widget =  gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
