@@ -14,6 +14,8 @@
 #ifndef DT_CONFGEN_H
 #define DT_CONFGEN_H
 
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 #include "control/conf.h"
 
 static void _insert_default(const char *name, const char *value)
@@ -174,6 +176,9 @@ void dt_confgen_init()
       <xsl:text>", "</xsl:text><xsl:apply-templates select="enum"/>
       <xsl:text>");</xsl:text>
       <xsl:text>&#xA;</xsl:text>
+
+      <!-- generate translation strings for each enum -->
+      <xsl:apply-templates select="enum" mode="value"/>
     </xsl:when>
     <xsl:otherwise>
       <xsl:text>   _insert_type("</xsl:text><xsl:value-of select="../name" />
@@ -253,6 +258,18 @@ void dt_confgen_init()
     <xsl:text>[</xsl:text>
     <xsl:value-of select="." />
     <xsl:text>]</xsl:text>
+  </xsl:for-each>
+</xsl:template>
+
+<xsl:template match="enum" mode="value">
+  <xsl:for-each select="option">
+    <xsl:if test="number(.) != .">
+      <xsl:text>   const char *</xsl:text>
+      <xsl:value-of select="generate-id(.)" />
+      <xsl:text> = C_("preferences", "</xsl:text>
+      <xsl:value-of select="." />
+      <xsl:text>");&#xA;</xsl:text>
+    </xsl:if>
   </xsl:for-each>
 </xsl:template>
 
