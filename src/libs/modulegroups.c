@@ -2905,6 +2905,10 @@ static void _manage_editor_group_remove(GtkWidget *widget, GdkEventButton *event
 
   // we remove the group from the ui
   const gint current_page = gtk_notebook_get_current_page(GTK_NOTEBOOK(d->preset_groups_box));
+  // if this is the last page, first switch to the new last page
+  GtkNotebook *nb = GTK_NOTEBOOK(d->preset_groups_box);
+  if(current_page == gtk_notebook_get_n_pages(nb) - 2)
+    gtk_notebook_set_current_page(nb, gtk_notebook_get_n_pages(nb) - 3);
   gtk_notebook_remove_page(GTK_NOTEBOOK(d->preset_groups_box), current_page);
 
   // we also cleanup basics widgets list
@@ -3106,11 +3110,10 @@ static GtkWidget *_manage_editor_group_init_basics_box(dt_lib_module_t *self)
   return vb2;
 }
 
-static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, dt_lib_modulegroups_group_t *gr)
+static void _manage_editor_group_init_modules_box(dt_lib_module_t *self, dt_lib_modulegroups_group_t *gr, GtkWidget *vb2)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
-  GtkWidget *vb2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(vb2, "modulegroups-groupbox");
   // line to edit the group
   GtkWidget *hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -3182,8 +3185,6 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   gtk_box_pack_start(GTK_BOX(vb2), sw, TRUE, TRUE, 0);
 
   g_object_set_data(G_OBJECT(vb2), "group", gr);
-
-  return vb2;
 }
 
 static void _manage_editor_reset(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
@@ -3193,26 +3194,6 @@ static void _manage_editor_reset(GtkWidget *widget, GdkEventButton *event, dt_li
   gchar *txt = g_strdup(d->edit_preset);
   _manage_editor_load(txt, self);
   g_free(txt);
-}
-
-static void _manage_editor_group_add(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
-{
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-  dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_malloc0(sizeof(dt_lib_modulegroups_group_t));
-  gr->name = g_strdup(_("new"));
-  gr->icon = g_strdup("basic");
-  d->edit_groups = g_list_append(d->edit_groups, gr);
-
-  // we update the group list
-  GtkWidget *vb2 = _manage_editor_group_init_modules_box(self, gr);
-  GtkWidget *btn = dtgtk_icon_new(_buttons_get_icon_fct(gr->icon), 0, NULL);
-  gtk_widget_set_size_request(btn, DT_PIXEL_APPLY_DPI(23), DT_PIXEL_APPLY_DPI(23));
-  gtk_widget_show_all(vb2);
-
-  GtkNotebook *nb = GTK_NOTEBOOK(d->preset_groups_box);
-  const gint newpage = gtk_notebook_append_page(nb, vb2, btn);
-  gtk_notebook_set_tab_reorderable(nb, vb2, TRUE);
-  gtk_notebook_set_current_page(nb, newpage);
 }
 
 static void _manage_editor_basics_toggle(GtkWidget *button, dt_lib_module_t *self)
@@ -3295,16 +3276,54 @@ static void _group_page_reordered(GtkNotebook *nb, GtkWidget *tab, guint page_no
 
   if(d->edit_basics_show && page_no == 0)
   {
-    newpage = 0;
+    newpage = 1;
     gtk_notebook_reorder_child(nb, tab, 1);
   }
-  else if(d->edit_basics_show)
-    newpage = page_no - 1;
+  else if(!d->edit_ro && page_no == gtk_notebook_get_n_pages(nb) - 1)
+  {
+    newpage = gtk_notebook_get_n_pages(nb) - 2;
+    gtk_notebook_reorder_child(nb, tab, newpage);
+  }
+
+  if(d->edit_basics_show)
+    newpage = newpage - 1;
 
   // we move the group inside the list
   dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(tab), "group");
   d->edit_groups = g_list_remove(d->edit_groups, gr);
   d->edit_groups = g_list_insert(d->edit_groups, gr, newpage);
+}
+
+static void _group_page_switched(GtkNotebook *nb, GtkWidget *tab, guint page_no, dt_lib_module_t *self)
+{
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  if(!d->edit_ro && page_no == gtk_notebook_get_n_pages(nb) - 1)
+  {
+    //clicked on add group button
+    GtkWidget *plus_icon = dtgtk_icon_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
+    GtkWidget *plus_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_widget_show_all(plus_box);
+    gtk_widget_set_tooltip_text(plus_icon, _("add module group"));
+    gtk_widget_set_size_request(plus_icon, DT_PIXEL_APPLY_DPI(23), DT_PIXEL_APPLY_DPI(23));
+    gtk_notebook_append_page(GTK_NOTEBOOK(d->preset_groups_box), plus_box, plus_icon);
+    gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(d->preset_groups_box), plus_box, FALSE);
+
+    dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_malloc0(sizeof(dt_lib_modulegroups_group_t));
+    gr->name = g_strdup(_("new"));
+    gr->icon = g_strdup("basic");
+    d->edit_groups = g_list_append(d->edit_groups, gr);
+
+    // we update the group list
+    _manage_editor_group_init_modules_box(self, gr, tab);
+    GtkWidget *btn = dtgtk_icon_new(_buttons_get_icon_fct(gr->icon), 0, NULL);
+    gtk_widget_set_size_request(btn, DT_PIXEL_APPLY_DPI(23), DT_PIXEL_APPLY_DPI(23));
+    gtk_widget_show_all(tab);
+
+    gtk_notebook_set_tab_reorderable(nb, tab, TRUE);
+    gtk_notebook_set_tab_label(nb, tab, btn);
+    gtk_widget_set_tooltip_text(btn, gr->name);
+
+  }
 }
 
 static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
@@ -3420,13 +3439,6 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   d->preset_groups_box = gtk_notebook_new();
   gtk_widget_set_name(hb1, "modulegroups-groups-title");
   gtk_box_pack_start(GTK_BOX(hb1), gtk_label_new(_("module groups")), FALSE, TRUE, 0);
-  if(!d->edit_ro)
-  {
-    GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_plus_simple,
-                                     CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
-    g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_group_add), self);
-    gtk_box_pack_start(GTK_BOX(hb1), bt, FALSE, FALSE, 0);
-  }
   gtk_widget_set_halign(hb1, GTK_ALIGN_CENTER);
   gtk_box_pack_start(GTK_BOX(vb), hb1, FALSE, TRUE, 0);
 
@@ -3446,7 +3458,8 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   for(const GList *l = d->edit_groups; l; l = g_list_next(l))
   {
     dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)l->data;
-    GtkWidget *vb2 = _manage_editor_group_init_modules_box(self, gr);
+    GtkWidget *vb2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    _manage_editor_group_init_modules_box(self, gr, vb2);
     GtkWidget *btn = dtgtk_icon_new(_buttons_get_icon_fct(gr->icon), 0, NULL);
     gtk_widget_set_tooltip_text(btn, gr->name);
     gtk_widget_set_size_request(btn, DT_PIXEL_APPLY_DPI(23), DT_PIXEL_APPLY_DPI(23));
@@ -3454,7 +3467,19 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
     gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(d->preset_groups_box), vb2, !d->edit_ro);
   }
 
+  if(!d->edit_ro)
+  {
+    GtkWidget *plus_icon = dtgtk_icon_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
+    GtkWidget *plus_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_widget_set_tooltip_text(plus_icon, _("add module group"));
+    gtk_widget_set_size_request(plus_icon, DT_PIXEL_APPLY_DPI(23), DT_PIXEL_APPLY_DPI(23));
+    gtk_widget_show_all(plus_box);
+    gtk_notebook_append_page(GTK_NOTEBOOK(d->preset_groups_box), plus_box, plus_icon);
+    gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(d->preset_groups_box), plus_box, FALSE);
+  }
+
   g_signal_connect(G_OBJECT(d->preset_groups_box), "page-reordered", G_CALLBACK(_group_page_reordered), self);
+  g_signal_connect(G_OBJECT(d->preset_groups_box), "switch-page", G_CALLBACK(_group_page_switched), self);
 
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_NEVER);
