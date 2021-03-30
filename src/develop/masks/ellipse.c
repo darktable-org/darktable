@@ -899,13 +899,20 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
     const float xref = gpt->points[0];
     const float yref = gpt->points[1];
 
-    float pts[8] = { xref, yref, x , y, 0, 0, gui->dx, gui->dy };
-    dt_dev_distort_backtransform(darktable.develop, pts, 4);
+    const float pts[8] = { xref, yref, x , y, 0, 0, gui->dx, gui->dy };
 
     const float dv = atan2f(pts[3] - pts[1], pts[2] - pts[0]) - atan2(-(pts[7] - pts[5]), -(pts[6] - pts[4]));
 
-    ellipse->rotation += dv / M_PI * 180.0f;
-    ellipse->rotation = fmodf(ellipse->rotation, 360.0f);
+    float pts2[8] = { xref, yref, x , y, xref+10.0f, yref, xref, yref+10.0f };
+    dt_dev_distort_backtransform(darktable.develop, pts2, 4);
+
+    float check_angle = atan2f(pts2[7] - pts2[1], pts2[6] - pts2[0]) - atan2(pts2[5] - pts2[1], pts2[4] - pts2[0]);
+    // Normalize to the range -180 to 180 degrees
+    check_angle = atan2f(sinf(check_angle), cosf(check_angle));
+    if (check_angle < 0)
+      ellipse->rotation -= dv / M_PI * 180.0f;
+    else
+      ellipse->rotation += dv / M_PI * 180.0f;
 
     if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
       dt_conf_set_float("plugins/darkroom/spots/ellipse_rotation", ellipse->rotation);
