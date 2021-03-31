@@ -792,16 +792,9 @@ int dt_control_key_pressed(guint key, guint state)
 
 int dt_control_key_released(guint key, guint state)
 {
-  // this line is here to find the right key code on different platforms (mac).
-  // printf("key code pressed: %d\n", which);
-
   const dt_control_accels_t *accels = &darktable.control->accels;
 
-  // be sure to reset dynamic accel
-  if(darktable.view_manager->current_view->dynamic_accel_current) dt_control_hinter_message(darktable.control, "");
-  darktable.view_manager->current_view->dynamic_accel_current = NULL;
-
-  if(key == accels->global_accels_window.accel_key && state == accels->global_accels_window.accel_mods)
+            if(key == accels->global_accels_window.accel_key) // && state == accels->global_accels_window.accel_mods)
   {
     dt_view_accels_hide(darktable.view_manager);
   }

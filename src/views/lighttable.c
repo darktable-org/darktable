@@ -853,6 +853,7 @@ static gboolean zoom_min_callback(GtkAccelGroup *accel_group, GObject *accelerat
 void init_key_accels(dt_view_t *self)
 {
   dt_control_accels_t *ac = &darktable.control->accels;
+  dt_action_define_key_pressed_accel(&self->actions, "move up", &ac->lighttable_up);
   dt_action_define_key_pressed_accel(&self->actions, "move down", &ac->lighttable_down);
   dt_action_define_key_pressed_accel(&self->actions, "move left", &ac->lighttable_left);
   dt_action_define_key_pressed_accel(&self->actions, "move right", &ac->lighttable_right);

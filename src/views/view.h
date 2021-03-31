@@ -141,8 +141,6 @@ typedef struct dt_view_t
   // scroll bar control
   float vscroll_size, vscroll_lower, vscroll_viewport_size, vscroll_pos;
   float hscroll_size, hscroll_lower, hscroll_viewport_size, hscroll_pos;
-
-  GtkWidget *dynamic_accel_current;
 } dt_view_t;
 
 typedef enum dt_view_image_over_t

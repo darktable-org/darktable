@@ -749,6 +749,17 @@ static void _main_do_event_help(GdkEvent *event, gpointer data)
   if(!handled) gtk_main_do_event(event);
 }
 
+// Don't save across sessions (window managers role)
+static struct { gint x, y, w, h; } _shortcuts_dialog_posize = {};
+
+static gboolean _resize_shortcuts_dialog(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  gtk_window_get_position(GTK_WINDOW(widget), &_shortcuts_dialog_posize.x, &_shortcuts_dialog_posize.y);
+  gtk_window_get_size(GTK_WINDOW(widget), &_shortcuts_dialog_posize.w, &_shortcuts_dialog_posize.h);
+
+  return FALSE;
+}
+
 static void _main_do_event_keymap(GdkEvent *event, gpointer data)
 {
   GtkWidget *event_widget = gtk_get_event_widget(event);
@@ -764,9 +775,7 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
                                         ? event_widget : NULL;
 
       dt_control_allow_change_cursor();
-      dt_control_change_cursor(darktable.control->mapping_widget
-                               ? GDK_BOX_SPIRAL
-                               : GDK_X_CURSOR);
+      dt_control_change_cursor(darktable.control->mapping_widget ? GDK_BOX_SPIRAL : GDK_X_CURSOR);
       dt_control_forbid_change_cursor();
     }
     break;
@@ -774,23 +783,43 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
     if(gdk_display_device_is_grabbed(gdk_window_get_display(event->button.window), event->button.device))
       break;
 
-    if(GTK_IS_BUTTON(event_widget)) break;
+    GtkWidget *main_window = dt_ui_main_window(darktable.gui->ui);
+    if(gtk_widget_get_toplevel(event_widget) != main_window)
+      break;
 
     // allow opening modules to map widgets inside
     if(GTK_IS_EVENT_BOX(event_widget)) event_widget = gtk_bin_get_child(GTK_BIN(event_widget));
     if(event_widget && !strcmp(gtk_widget_get_name(event_widget), "module-header"))
       break;
 
-    // reset GTK to normal behaviour
-    dt_control_allow_change_cursor();
-    dt_control_change_cursor(GDK_LEFT_PTR);
-
     dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)data;
-    g_signal_handlers_block_by_func(d->keymap_button, _lib_keymap_button_clicked, d);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->keymap_button), FALSE);
-    g_signal_handlers_unblock_by_func(d->keymap_button, _lib_keymap_button_clicked, d);
+    if(event_widget == d->keymap_button)
+      break;
 
-    gdk_event_handler_set((GdkEventFunc)gtk_main_do_event, NULL, NULL);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->keymap_button), FALSE);
+
+    if(event->button.button == GDK_BUTTON_PRIMARY)
+    {
+
+      GtkWidget *shortcuts_dialog = gtk_dialog_new_with_buttons(_("shortcuts"), GTK_WINDOW(main_window),
+                                                                GTK_DIALOG_DESTROY_WITH_PARENT, NULL, NULL);
+      if(!_shortcuts_dialog_posize.w)
+        gtk_window_set_default_size(GTK_WINDOW(shortcuts_dialog), DT_PIXEL_APPLY_DPI(1100), DT_PIXEL_APPLY_DPI(750));
+      else
+      {
+        gtk_window_move(GTK_WINDOW(shortcuts_dialog), _shortcuts_dialog_posize.x, _shortcuts_dialog_posize.y);
+        gtk_window_resize(GTK_WINDOW(shortcuts_dialog), _shortcuts_dialog_posize.w, _shortcuts_dialog_posize.h);
+      }
+      g_signal_connect(G_OBJECT(shortcuts_dialog), "configure-event", G_CALLBACK(_resize_shortcuts_dialog), NULL);
+
+      //grab the content area of the dialog
+      GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(shortcuts_dialog));
+      gtk_box_pack_start(GTK_BOX(content), dt_shortcuts_prefs(gtk_get_event_widget(event)), TRUE, TRUE, 0);
+
+      gtk_widget_show_all(shortcuts_dialog);
+      gtk_dialog_run(GTK_DIALOG(shortcuts_dialog));
+      gtk_widget_destroy(shortcuts_dialog);
+    }
 
     return;
   default:
@@ -809,9 +838,19 @@ static void _lib_help_button_clicked(GtkWidget *widget, gpointer user_data)
 
 static void _lib_keymap_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  dt_control_change_cursor(GDK_X_CURSOR);
-  dt_control_forbid_change_cursor();
-  gdk_event_handler_set(_main_do_event_keymap, user_data, NULL);
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+  {
+    dt_control_change_cursor(GDK_X_CURSOR);
+    dt_control_forbid_change_cursor();
+    gdk_event_handler_set(_main_do_event_keymap, user_data, NULL);
+  }
+  else
+  {
+    darktable.control->mapping_widget = NULL;
+    dt_control_allow_change_cursor();
+    dt_control_change_cursor(GDK_LEFT_PTR);
+    gdk_event_handler_set((GdkEventFunc)gtk_main_do_event, NULL, NULL);
+  }
 }
 
 void init_key_accels(dt_lib_module_t *self)

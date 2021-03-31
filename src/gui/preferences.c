@@ -890,10 +890,7 @@ static void init_tab_presets(GtkWidget *stack)
 
 static void init_tab_accels(GtkWidget *stack)
 {
-  GtkWidget *container = dt_shortcuts_prefs();
-
-  // Adding the outer container
-  gtk_stack_add_titled(GTK_STACK(stack), container, _("shortcuts"), _("shortcuts"));
+  gtk_stack_add_titled(GTK_STACK(stack), dt_shortcuts_prefs(NULL), _("shortcuts"), _("shortcuts"));
 }
 
 // TODO: remember which sections were collapsed/expanded and where the view was scrolled to and restore that
