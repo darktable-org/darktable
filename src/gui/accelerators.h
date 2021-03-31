@@ -24,7 +24,7 @@
 #include "libs/lib.h"
 #include "views/view.h"
 
-GtkWidget *dt_shortcuts_prefs();
+GtkWidget *dt_shortcuts_prefs(GtkWidget *widget);
 GHashTable *dt_shortcut_category_lists(dt_view_type_flags_t v);
 
 void dt_shortcuts_save(const gchar *file_name);

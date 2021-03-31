@@ -741,11 +741,11 @@ static void _basics_show(dt_lib_module_t *self)
           }
         }
       }
-
+// FIXME add widgets from subsections
       dt_action_t *ac = module->so->actions.target;
       while(ac)
       {
-        if(ac->type == DT_ACTION_TYPE_WIDGET && DT_IS_BAUHAUS_WIDGET(ac->target))
+        if(ac->type == DT_ACTION_TYPE_SLIDER || ac->type == DT_ACTION_TYPE_COMBO)
         {
           DtBauhausWidget *ww = DT_BAUHAUS_WIDGET(ac->target);
           if(ww->module == module)
@@ -2453,7 +2453,7 @@ static GtkWidget *_build_menu_from_actions(dt_action_t *actions, dt_lib_module_t
       if(actions->type <= DT_ACTION_TYPE_SECTION)
         new_sub = _build_menu_from_actions(actions->target, self, on_off, base_menu, full_menu, num_selected);
 
-      if(new_sub || (actions->type == DT_ACTION_TYPE_WIDGET && DT_IS_BAUHAUS_WIDGET(actions->target)))
+      if(new_sub || actions->type == DT_ACTION_TYPE_SLIDER || actions->type == DT_ACTION_TYPE_COMBO)
       {
         item = gtk_menu_item_new_with_label(actions->label_translated);
         action_id = _action_id(actions);

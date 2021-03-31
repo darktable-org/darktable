@@ -319,6 +319,8 @@ void midi_open_devices(dt_lib_module_t *self)
   for(int i = 0; i < Pm_CountDevices() && i < 10; i++)
   {
     const PmDeviceInfo *info = Pm_GetDeviceInfo(i);
+    dt_print(DT_DEBUG_INPUT, "[midi_open_devices] found midi device '%s' via '%s'\n", info->name, info->interf);
+
 
     if(info->input)
     {

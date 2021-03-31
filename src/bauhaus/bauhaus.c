@@ -2792,8 +2792,9 @@ void dt_bauhaus_vimkey_exec(const char *input)
   {
     const int prefix = strcspn(input, ".=");
 
-    if((ac->type == DT_ACTION_TYPE_WIDGET && DT_IS_BAUHAUS_WIDGET(ac->target))
-        || ac->type <= DT_ACTION_TYPE_SECTION)
+    if(ac->type == DT_ACTION_TYPE_SLIDER ||
+       ac->type == DT_ACTION_TYPE_COMBO ||
+       ac->type <= DT_ACTION_TYPE_SECTION)
     {
       if(!strncasecmp(ac->label_translated, input, prefix))
       {
@@ -2816,27 +2817,25 @@ void dt_bauhaus_vimkey_exec(const char *input)
     ac = ac->next;
   }
 
-  if(!ac || ac->type != DT_ACTION_TYPE_WIDGET || !DT_IS_BAUHAUS_WIDGET(ac->target))
+  if(!ac || (ac->type != DT_ACTION_TYPE_SLIDER && ac->type != DT_ACTION_TYPE_COMBO))
     return;
 
-  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(ac->target);
+  float old_value = .0f, new_value = .0f;
 
-  float old_value, new_value = 0.0f;
-
-  switch(w->type)
+  switch(ac->type)
   {
-    case DT_BAUHAUS_SLIDER:
-      old_value = dt_bauhaus_slider_get(GTK_WIDGET(w));
+    case DT_ACTION_TYPE_SLIDER:
+      old_value = dt_bauhaus_slider_get(GTK_WIDGET(ac->target));
       new_value = dt_calculator_solve(old_value, input);
       fprintf(stderr, " = %f\n", new_value);
-      if(isfinite(new_value)) dt_bauhaus_slider_set_soft(GTK_WIDGET(w), new_value);
+      if(isfinite(new_value)) dt_bauhaus_slider_set_soft(GTK_WIDGET(ac->target), new_value);
       break;
-    case DT_BAUHAUS_COMBOBOX:
+    case DT_ACTION_TYPE_COMBO:
       // TODO: what about text as entry?
-      old_value = dt_bauhaus_combobox_get(GTK_WIDGET(w));
+      old_value = dt_bauhaus_combobox_get(GTK_WIDGET(ac->target));
       new_value = dt_calculator_solve(old_value, input);
       fprintf(stderr, " = %f\n", new_value);
-      if(isfinite(new_value)) dt_bauhaus_combobox_set(GTK_WIDGET(w), new_value);
+      if(isfinite(new_value)) dt_bauhaus_combobox_set(GTK_WIDGET(ac->target), new_value);
       break;
     default:
       break;
@@ -2854,8 +2853,9 @@ GList *dt_bauhaus_vimkey_complete(const char *input)
   {
     const int prefix = strcspn(input, ".");
 
-    if((ac->type == DT_ACTION_TYPE_WIDGET && DT_IS_BAUHAUS_WIDGET(ac->target))
-        || ac->type <= DT_ACTION_TYPE_SECTION)
+    if(ac->type == DT_ACTION_TYPE_SLIDER ||
+       ac->type == DT_ACTION_TYPE_COMBO ||
+       ac->type <= DT_ACTION_TYPE_SECTION)
     {
       if(!prefix || !strncasecmp(ac->label_translated, input, prefix))
       {
