@@ -3532,47 +3532,6 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   if(height_i > capht) y += (capht - height_i) * .5f;
 
   int handled = 0;
-  // dynamic accels
-  if(self->dynamic_accel_current)
-  {
-    GtkWidget *widget = self->dynamic_accel_current;
-    dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
-
-    if(w->type == DT_BAUHAUS_SLIDER)
-    {
-      float value = dt_bauhaus_slider_get(widget);
-      float step = dt_bauhaus_slider_get_step(widget);
-      float multiplier = dt_accel_get_slider_scale_multiplier();
-
-      const float min_visible = powf(10.0f, -dt_bauhaus_slider_get_digits(widget));
-      if(fabsf(step*multiplier) < min_visible)
-        multiplier = min_visible / fabsf(step);
-
-      if(up)
-        dt_bauhaus_slider_set(widget, value + step * multiplier);
-      else
-        dt_bauhaus_slider_set(widget, value - step * multiplier);
-    }
-    else
-    {
-      const int currentval = dt_bauhaus_combobox_get(widget);
-
-      if(up)
-      {
-        const int nextval = currentval + 1 >= dt_bauhaus_combobox_length(widget) ? 0 : currentval + 1;
-        dt_bauhaus_combobox_set(widget, nextval);
-      }
-      else
-      {
-        const int prevval = currentval - 1 < 0 ? dt_bauhaus_combobox_length(widget) : currentval - 1;
-        dt_bauhaus_combobox_set(widget, prevval);
-      }
-
-    }
-    g_signal_emit_by_name(G_OBJECT(widget), "value-changed");
-    dt_accel_widget_toast(widget);
-    return;
-  }
   // masks
   if(dev->form_visible) handled = dt_masks_events_mouse_scrolled(dev->gui_module, x, y, up, state);
   if(handled) return;
@@ -3834,7 +3793,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     return 1;
   }
 
-  return 1;
+  return 0;
 }
 
 static gboolean search_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,

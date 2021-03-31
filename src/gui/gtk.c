@@ -1011,11 +1011,6 @@ guint dt_gui_translated_key_state(GdkEventKey *event)
     return event->state & gtk_accelerator_get_default_mod_mask();
 }
 
-static gboolean key_pressed_override(GtkWidget *w, GdkEventKey *event, gpointer user_data)
-{
-  return dt_control_key_pressed_override(event->keyval, dt_gui_translated_key_state(event));
-}
-
 static gboolean key_pressed(GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
   return dt_control_key_pressed(gdk_keyval_to_lower(event->keyval), dt_gui_translated_key_state(event));
@@ -1530,7 +1525,6 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gtk_window_set_title(GTK_WINDOW(widget), "darktable");
 
   g_signal_connect(G_OBJECT(widget), "delete_event", G_CALLBACK(dt_gui_quit_callback), NULL);
-  g_signal_connect(G_OBJECT(widget), "key-press-event", G_CALLBACK(key_pressed_override), NULL);
   g_signal_connect(G_OBJECT(widget), "key-release-event", G_CALLBACK(key_released), NULL);
   g_signal_connect(G_OBJECT(widget), "focus-in-event", G_CALLBACK(_focus_in_out_event), widget);
   g_signal_connect(G_OBJECT(widget), "focus-out-event", G_CALLBACK(_focus_in_out_event), widget);
@@ -2060,6 +2054,12 @@ void dt_ui_panel_set_size(dt_ui_t *ui, const dt_ui_panel_t p, int s)
     dt_conf_set_int(key, width);
     g_free(key);
   }
+}
+
+gboolean dt_ui_panel_ancestor(struct dt_ui_t *ui, const dt_ui_panel_t p, GtkWidget *w)
+{
+  g_return_val_if_fail(GTK_IS_WIDGET(ui->panels[p]), FALSE);
+  return gtk_widget_is_ancestor(w, ui->panels[p]) || gtk_widget_is_ancestor(ui->panels[p], w);
 }
 
 GtkWidget *dt_ui_center(dt_ui_t *ui)
