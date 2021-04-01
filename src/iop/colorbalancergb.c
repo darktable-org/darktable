@@ -395,7 +395,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                                      { -sin_T,  cos_T } };
     const float DT_ALIGNED_PIXEL M_rot_inv[2][2] = { {  cos_T, -sin_T },
                                                      {  sin_T,  cos_T } };
-    const float offset = JC[1] * cos_T;
+    const float offset = sqrtf(JC[1] * JC[0]) * cos_T;
 
     float SO[2] = { JC[0] * M_rot_dir[0][0] + JC[1] * M_rot_dir[0][1], offset };
 
