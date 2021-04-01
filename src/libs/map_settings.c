@@ -145,10 +145,13 @@ void gui_init(dt_lib_module_t *self)
   d->filtered_images_checkbutton = dt_gui_preferences_bool(grid, "plugins/map/filter_images_drawn", 0, line++, FALSE);
   g_signal_connect(G_OBJECT(d->filtered_images_checkbutton), "toggled", G_CALLBACK(_parameter_changed), NULL);
   d->max_images_entry = dt_gui_preferences_int(grid, "plugins/map/max_images_drawn", 0, line++);
+  dt_gui_key_accel_block_on_focus_connect(d->max_images_entry);
   g_signal_connect(G_OBJECT(d->max_images_entry), "value-changed", G_CALLBACK(_parameter_changed), self);
   d->epsilon_factor = dt_gui_preferences_int(grid, "plugins/map/epsilon_factor", 0, line++);
+  dt_gui_key_accel_block_on_focus_connect(d->epsilon_factor);
   g_signal_connect(G_OBJECT(d->epsilon_factor), "value-changed", G_CALLBACK(_parameter_changed), self);
   d->min_images = dt_gui_preferences_int(grid, "plugins/map/min_images_per_group", 0, line++);
+  dt_gui_key_accel_block_on_focus_connect(d->min_images);
   g_signal_connect(G_OBJECT(d->min_images), "value-changed", G_CALLBACK(_parameter_changed), self);
   d->images_thumb = dt_gui_preferences_enum(grid, "plugins/map/images_thumbnail", 0, line++);
   g_signal_connect(G_OBJECT(d->images_thumb), "changed", G_CALLBACK(_parameter_changed), self);
@@ -157,6 +160,10 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_lib_map_settings_t *d = (dt_lib_map_settings_t *)self->data;
+  dt_gui_key_accel_block_on_focus_disconnect(d->max_images_entry);
+  dt_gui_key_accel_block_on_focus_disconnect(d->epsilon_factor);
+  dt_gui_key_accel_block_on_focus_disconnect(d->min_images);
   free(self->data);
   self->data = NULL;
 }

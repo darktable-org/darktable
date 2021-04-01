@@ -1167,6 +1167,7 @@ void gui_init(dt_lib_module_t *self)
   guint line = 0;
   d->ignore_exif = dt_gui_preferences_bool(grid, "ui_last/ignore_exif_rating", 0, line++, FALSE);
   d->rating = dt_gui_preferences_int(grid, "ui_last/import_initial_rating", 0, line++);
+  dt_gui_key_accel_block_on_focus_connect(d->rating);
   d->apply_metadata = dt_gui_preferences_bool(grid, "ui_last/import_apply_metadata", 0, line++, FALSE);
   d->metadata.apply_metadata = d->apply_metadata;
   gtk_box_pack_start(GTK_BOX(d->exp.widgets), GTK_WIDGET(grid), FALSE, FALSE, 0);
@@ -1189,6 +1190,7 @@ void gui_init(dt_lib_module_t *self)
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  dt_gui_key_accel_block_on_focus_disconnect(d->rating);
 #ifdef HAVE_GPHOTO2
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_camera_detected), self);
 #endif
