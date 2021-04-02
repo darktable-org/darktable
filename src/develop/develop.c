@@ -1382,7 +1382,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   if(!(image->flags & DT_IMAGE_AUTO_PRESETS_APPLIED)) run = TRUE;
 
   // flag was already set? only apply presets once in the lifetime of a history stack.
-  // (the flag will be cleared when removing it)
+  // (the flag will be cleared when removing it).
   if(!run || image->id <= 0)
   {
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
