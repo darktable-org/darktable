@@ -395,19 +395,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                                      { -sin_T,  cos_T } };
     const float DT_ALIGNED_PIXEL M_rot_inv[2][2] = { {  cos_T, -sin_T },
                                                      {  sin_T,  cos_T } };
-    const float offset = sqrtf(JC[1] * JC[0]) * cos_T;
-
-    float SO[2] = { JC[0] * M_rot_dir[0][0] + JC[1] * M_rot_dir[0][1], offset };
+    float SO[2];
 
     // Purity & Saturation : mix of chroma and luminance
-    const float boosts[2] = { 1.f + d->purity_global + scalar_product(opacities, purity),          // move in S direction
-                              1.f + d->saturation_global + scalar_product(opacities, saturation) };// move in O direction
+    const float boosts[2] = { 1.f + d->purity_global + scalar_product(opacities, purity),     // move in S direction
+                              d->saturation_global + scalar_product(opacities, saturation) }; // move in O direction
 
-    SO[0] = fmaxf(SO[0] * boosts[0], 0.f);
-    SO[1] = fmaxf(SO[1] * boosts[1], 0.f);
+    SO[0] = fmaxf(JC[0] * M_rot_dir[0][0] + JC[1] * M_rot_dir[0][1] * boosts[0], 0.f);
+    SO[1] = JC[0] * fminf(fmaxf(T * boosts[1], -T), DT_M_PI_F / 2.f - T);
 
     // Project back to JCh, that is rotate back of -T angle
-    SO[1] -= offset;
     JC[0] = fmaxf(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
     JC[1] = fmaxf(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
 
