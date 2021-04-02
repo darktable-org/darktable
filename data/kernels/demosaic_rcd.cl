@@ -294,20 +294,62 @@ __kernel void dual_calc_blend(global float *luminance, global float *mask, const
   const int row = get_global_id(1);
   if((col >= w) || (row >= height)) return;
 
-  const int idx = mad24(row, w, col);
-  if((col < 2) || (row < 2) || (col >= w - 2) || (row >= height - 2)) 
-  {
-    mask[idx] = 0.0f;
-  }
-  else
-  {
-    const int w2 = w * 2;
-    const float scale = 1.0f / 16.0f;
-    const float contrast = scale * native_sqrt(sqrf(luminance[idx+1] - luminance[idx-1]) + sqrf(luminance[idx +  w] - luminance[idx -  w]) +
-                                         sqrf(luminance[idx+2] - luminance[idx-2]) + sqrf(luminance[idx + w2] - luminance[idx - w2]));
-    mask[idx] = calcBlendFactor(contrast, threshold);
-  }
+  const int oidx = mad24(row, w, col);
+  int incol = col < 2 ? 2 : col;
+  incol = col > w - 3 ? w - 3 : incol;
+  int inrow = row < 2 ? 2 : row;
+  inrow = row > height - 3 ? height - 3 : inrow;
+
+  const int idx = mad24(inrow, w, incol); 
+  const int w2 = w * 2;
+  const float scale = 1.0f / 16.0f;
+  const float contrast = scale * native_sqrt(sqrf(luminance[idx+1] - luminance[idx-1]) + sqrf(luminance[idx +  w] - luminance[idx -  w]) +
+                                             sqrf(luminance[idx+2] - luminance[idx-2]) + sqrf(luminance[idx + w2] - luminance[idx - w2]));
+  mask[oidx] = calcBlendFactor(contrast, threshold);
 }
+
+__kernel void calc_ctmask(global float *out,  __read_only image2d_t in, const int w, const int height, const float threshold, const int detail)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= w) || (row >= height)) return;
+  const int idx = mad24(row, w, col);
+  const float val = read_imagef(in, sampleri, (int2)(col, row)).x;
+
+  const float blend = calcBlendFactor(val, threshold);
+  out[idx] = detail ? blend : 1.0f - blend;
+}
+
+__kernel void writeout_ctmask(global float *mask, __write_only image2d_t out, const int w, const int height)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= w) || (row >= height)) return;
+  const int idx = mad24(row, w, col);
+
+  const float val = mask[idx];
+  write_imagef(out, (int2)(col, row), val);  
+}
+
+__kernel void prepare_ctmask(global float *luminance, __write_only image2d_t mask, const int w, const int height)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= w) || (row >= height)) return;
+
+  int incol = col < 2 ? 2 : col;
+  incol = col > w - 3 ? w - 3 : incol;
+  int inrow = row < 2 ? 2 : row;
+  inrow = row > height - 3 ? height - 3 : inrow;
+
+  const int idx = mad24(inrow, w, incol); 
+  const int w2 = w * 2;
+  const float scale = 1.0f / 16.0f;
+  const float contrast = scale * native_sqrt(sqrf(luminance[idx+1] - luminance[idx-1]) + sqrf(luminance[idx +  w] - luminance[idx -  w]) +
+                                             sqrf(luminance[idx+2] - luminance[idx-2]) + sqrf(luminance[idx + w2] - luminance[idx - w2]));
+  write_imagef(mask, (int2)(col, row), contrast);
+}
+
 
 __kernel void dual_blend_both(__read_only image2d_t high, __read_only image2d_t low, __write_only image2d_t out, const int w, const int height, global float *mask, const int showmask)
 {
@@ -339,14 +381,14 @@ __kernel void dual_fast_blur(global float *src, global float *out, const int w, 
   const int col = get_global_id(0);
   const int row = get_global_id(1);
   if((col >= w) || (row >= height)) return;
-  const int i = mad24(row, w, col);
 
-  if((col < 5) || (row < 5) || (col > w - 5) || (row > height - 5)) 
-  {
-    out[i] = 0.0f;
-  }
-  else
-  {
+  const int oidx = mad24(row, w, col);
+  int incol = col < 4 ? 4 : col;
+  incol = col > w - 5 ? w - 5 : incol;
+  int inrow = row < 4 ? 4 : row;
+  inrow = row > height - 5 ? height - 5 : inrow;
+  const int i = mad24(inrow, w, incol); 
+
     const int w2 = 2 * w;
     const int w3 = 3 * w;
     const int w4 = 4 * w;
@@ -363,8 +405,7 @@ __kernel void dual_fast_blur(global float *src, global float *out, const int w, 
                       c11 * (src[i -  w - 1] + src[i -  w + 1] + src[i +  w - 1] + src[i +  w + 1]) +
                       c10 * (src[i -  w] + src[i - 1] + src[i + 1] + src[i +  w]) +
                       c00 * src[i];
-    out[i] = ICLAMP(val, 0.0f, 1.0f);
-  }
+    out[oidx] = ICLAMP(val, 0.0f, 1.0f);
 }
 
 kernel void rcd_border(global float *cfa, write_only image2d_t out, const int width, const int height, const unsigned int filters, const int border, const float scale)

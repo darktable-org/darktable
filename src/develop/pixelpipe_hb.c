@@ -29,6 +29,7 @@
 #include "develop/pixelpipe.h"
 #include "develop/tiling.h"
 #include "develop/masks.h"
+#include "develop/openmp_maths.h"
 #include "gui/gtk.h"
 #include "libs/colorpicker.h"
 #include "libs/lib.h"
@@ -176,6 +177,9 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   pipe->output_backbuf_height = 0;
   pipe->output_imgid = 0;
 
+  pipe->ctmask_data = NULL;
+  pipe->want_ctmask = DT_DEV_CTMASK_NONE;
+
   pipe->processing = 0;
   dt_atomic_set_int(&pipe->shutdown,FALSE);
   pipe->opencl_error = 0;
@@ -240,6 +244,8 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   pipe->output_backbuf_width = 0;
   pipe->output_backbuf_height = 0;
   pipe->output_imgid = 0;
+
+  dt_dev_clear_ctmask(pipe);
 
   if(pipe->forms)
   {
@@ -341,6 +347,10 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
     piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
     const dt_image_t *img = &piece->pipe->image;
     const int imgid = img->id;
+    pipe->want_ctmask &= DT_DEV_CTMASK_REQUIRED;
+    if(dt_image_is_raw(img))
+      pipe->want_ctmask |= DT_DEV_CTMASK_DEMOSAIC;
+    else if(dt_image_is_rawprepare_supported(img)) pipe->want_ctmask |= DT_DEV_CTMASK_RAWPREPARE; 
 
     if(piece->module == hist->module)
     {
@@ -366,6 +376,12 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
       }
       piece->enabled = active;
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
+
+      if(piece->blendop_data)
+      {
+        const dt_develop_blend_params_t *const bp = (const dt_develop_blend_params_t *)piece->blendop_data;
+        if(bp->local_contrast != 0.0f) pipe->want_ctmask |= DT_DEV_CTMASK_REQUIRED;
+      }
     }
   }
   if(hint)
@@ -2539,6 +2555,168 @@ float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const dt_iop_modul
   }
 
   return raster_mask;
+}
+
+void dt_dev_clear_ctmask(dt_dev_pixelpipe_t *pipe)
+{
+  if(pipe->ctmask_data) dt_free_align(pipe->ctmask_data);
+  pipe->ctmask_data = NULL;
+}
+
+gboolean dt_dev_write_ctmask_data(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode)
+{
+  dt_dev_pixelpipe_t *p = piece->pipe;
+  if((p->want_ctmask & DT_DEV_CTMASK_REQUIRED) == 0) return FALSE;
+  if((p->want_ctmask & ~DT_DEV_CTMASK_REQUIRED) != mode) return FALSE;
+
+  dt_dev_clear_ctmask(p);
+
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  float *mask = dt_alloc_align_float((size_t)width * height);
+  float *tmp  = dt_alloc_align_float((size_t)width * height);
+
+  if((tmp == NULL) || (mask == NULL))
+  {
+    dt_free_align(tmp);
+    dt_free_align(mask);
+    return TRUE; 
+  }
+
+  p->ctmask_data = mask;
+  memcpy(&p->ctmask_roi, roi_in, sizeof(dt_iop_roi_t));
+
+  dt_masks_prepare_ctmask(rgb, mask, tmp, width, height);
+
+  dt_free_align(tmp);
+  return FALSE;
+}
+
+#ifdef HAVE_OPENCL
+// cl_mem in got via dt_opencl_alloc_device
+gboolean dt_dev_write_ctmask_data_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in, const dt_iop_roi_t *const roi_in, const int mode)
+{
+  dt_dev_pixelpipe_t *p = piece->pipe;  
+
+  if((p->want_ctmask & DT_DEV_CTMASK_REQUIRED) == 0) return FALSE;
+  if((p->want_ctmask & ~DT_DEV_CTMASK_REQUIRED) != mode) return FALSE;
+
+  dt_dev_clear_ctmask(p);
+
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  cl_mem tmp = NULL;
+  cl_mem out = NULL;
+  float *mask = NULL;
+  const int devid = p->devid;
+
+  mask = dt_alloc_align_float((size_t)width * height);
+  if(mask == NULL) goto error;
+  tmp = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
+  if(tmp == NULL) goto error;
+  out = dt_opencl_alloc_device(devid, width, height, sizeof(float));   
+  if(out == NULL) goto error;
+
+  const int program = 31;
+  int kernel_calc_luminance_mask = dt_opencl_create_kernel(program, "dual_luminance_mask");
+  int kernel_prepare_ctmask = dt_opencl_create_kernel(program, "prepare_ctmask");   
+
+  {
+    size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    dt_opencl_set_kernel_arg(devid, kernel_calc_luminance_mask, 0, sizeof(cl_mem), &tmp);
+    dt_opencl_set_kernel_arg(devid, kernel_calc_luminance_mask, 1, sizeof(cl_mem), &in);
+    dt_opencl_set_kernel_arg(devid, kernel_calc_luminance_mask, 2, sizeof(int), &width);
+    dt_opencl_set_kernel_arg(devid, kernel_calc_luminance_mask, 3, sizeof(int), &height);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel_calc_luminance_mask, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }  
+
+  {
+    size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    dt_opencl_set_kernel_arg(devid, kernel_prepare_ctmask, 0, sizeof(cl_mem), &tmp);
+    dt_opencl_set_kernel_arg(devid, kernel_prepare_ctmask, 1, sizeof(cl_mem), &out);
+    dt_opencl_set_kernel_arg(devid, kernel_prepare_ctmask, 2, sizeof(int), &width);
+    dt_opencl_set_kernel_arg(devid, kernel_prepare_ctmask, 3, sizeof(int), &height);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel_prepare_ctmask, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }  
+
+  {
+    const int err = dt_opencl_read_host_from_device(devid, mask, out, width, height, sizeof(float));
+    if(err != CL_SUCCESS) goto error;
+  }
+
+  p->ctmask_data = mask;
+  memcpy(&p->ctmask_roi, roi_in, sizeof(dt_iop_roi_t));
+
+  dt_opencl_release_mem_object(tmp);
+  dt_opencl_release_mem_object(out);
+
+  dt_opencl_free_kernel(kernel_calc_luminance_mask);
+  dt_opencl_free_kernel(kernel_prepare_ctmask);
+  return FALSE;
+
+  error:
+  dt_opencl_release_mem_object(tmp);
+  dt_opencl_release_mem_object(out);
+  dt_free_align(mask);
+  return TRUE;  
+}
+#endif
+
+// this expects the ctmask prepared by the demosaicer and distorts the mask through all pipeline modules
+// until target
+float *dt_dev_distort_ctmask(const dt_dev_pixelpipe_t *pipe, float *src, const dt_iop_module_t *target_module)
+{
+  if(!pipe->ctmask_data) return NULL;
+  gboolean valid = FALSE;
+  const int check = pipe->want_ctmask & ~DT_DEV_CTMASK_REQUIRED;
+
+  GList *source_iter;
+  for(source_iter = pipe->nodes; source_iter; source_iter = g_list_next(source_iter))
+  {
+    const dt_dev_pixelpipe_iop_t *candidate = (dt_dev_pixelpipe_iop_t *)source_iter->data;
+    if(((!strcmp(candidate->module->op, "demosaic")) && candidate->enabled) && (check == DT_DEV_CTMASK_DEMOSAIC))
+    {
+      valid = TRUE;
+      break;
+    }
+    if(((!strcmp(candidate->module->op, "rawprepare")) && candidate->enabled) && (check == DT_DEV_CTMASK_RAWPREPARE))
+    {
+      valid = TRUE;
+      break;
+    }
+  }
+  // We might also read data from pipe input here and construct a mask
+
+  if(!valid) return NULL;
+
+  float *resmask = src;
+  float *inmask  = src;
+  if(source_iter)
+  {
+    for(GList *iter = source_iter; iter; iter = g_list_next(iter))
+    {
+      dt_dev_pixelpipe_iop_t *module = (dt_dev_pixelpipe_iop_t *)iter->data;
+      if(module->enabled)
+      {
+        if(module->module->distort_mask
+              && !(!strcmp(module->module->op, "finalscale") // hack against pipes not using finalscale
+                    && module->processed_roi_in.width == 0
+                    && module->processed_roi_in.height == 0))
+        {
+          float *tmp = dt_alloc_align_float((size_t)module->processed_roi_out.width * module->processed_roi_out.height);
+          module->module->distort_mask(module->module, module, inmask, tmp, &module->processed_roi_in, &module->processed_roi_out);
+          resmask = tmp;
+          if(inmask != src) dt_free_align(inmask);
+          inmask = tmp; 
+        }
+        if(module->module == target_module) break;
+      }
+    }
+  }
+  return resmask;  
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

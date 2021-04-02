@@ -428,6 +428,12 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
                                          const float initial_ypos, const float xpos, const float ypos, float *px,
                                          float *py, const int adding);
 
+/** ctmask supporting */
+void dt_masks_extend_border(float *mask, const int width, const int height, const int border);
+void dt_masks_blur_9x9(float *const src, float *const out, const int width, const int height, const float sigma);
+void dt_masks_prepare_ctmask(float *const src, float *const out, float *const tmp, const int width, const int height);
+void dt_masks_full_ctmask(float *const src, float *const out, float *const tmp, const int width, const int height, const float threshold, const gboolean detail);
+
 /** return the list of possible mouse actions */
 GSList *dt_masks_mouse_actions(dt_masks_form_t *form);
 

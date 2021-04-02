@@ -30,6 +30,8 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
+#include "develop/openmp_maths.h"
+#include "develop/masks.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
@@ -2944,6 +2946,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float threshold = 0.0001f * img->exif_iso;
   dt_times_t start_time = { 0 }, end_time = { 0 };
 
+  dt_dev_clear_ctmask(piece->pipe);
+
   dt_iop_roi_t roi = *roi_in;
   dt_iop_roi_t roo = *roi_out;
   roo.x = roo.y = 0;
@@ -3069,6 +3073,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         method2string(demosaicing_method & ~DEMOSAIC_DUAL), mpixels, tclock, uclock, mpixels / tclock);
     }
 
+    dt_dev_write_ctmask_data(piece, tmp, roi_in, DT_DEV_CTMASK_DEMOSAIC);
+
     if((demosaicing_method & DEMOSAIC_DUAL) && !run_fast)
     {
       dual_demosaic(piece, tmp, pixels, &roo, &roi, piece->pipe->dsc.filters, xtrans, showmask, data->dual_thrs);
@@ -3094,6 +3100,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     else
       dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width,
                                                 piece->pipe->dsc.filters);
+    dt_dev_write_ctmask_data(piece, (float *)o, &roi, DT_DEV_CTMASK_DEMOSAIC);
   }
   if(data->color_smoothing)
     color_smoothing(o, roi_out, data->color_smoothing);
@@ -3574,6 +3581,9 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     dt_opencl_release_mem_object(PQ_dir);
     dt_opencl_release_mem_object(VP_diff);
     dt_opencl_release_mem_object(HQ_diff);
+
+    dt_dev_write_ctmask_data_cl(piece, dev_aux, roi_in, DT_DEV_CTMASK_DEMOSAIC);
+
     if(scaled)
     {
       // scale aux buffer to output buffer
@@ -3788,6 +3798,8 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
         if(err != CL_SUCCESS) goto error;
       }
     }
+
+    dt_dev_write_ctmask_data_cl(piece, dev_aux, roi_in, DT_DEV_CTMASK_DEMOSAIC);
 
     if(scaled)
     {
@@ -4195,6 +4207,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_green_equilibrate, sizes);
       if(err != CL_SUCCESS) goto error;
     }
+    dt_dev_write_ctmask_data_cl(piece, dev_aux, roi_in, DT_DEV_CTMASK_DEMOSAIC);
 
     if(scaled)
     {
@@ -4962,7 +4975,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       dt_opencl_release_mem_object(dev_edge_out);
       dev_edge_in = dev_edge_out = NULL;
     }
-
+    dt_dev_write_ctmask_data_cl(piece, dev_tmp, roi_in, DT_DEV_CTMASK_DEMOSAIC);
 
     if(scaled)
     {
@@ -5037,6 +5050,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   dt_times_t start_time = { 0 }, end_time = { 0 };
   const gboolean info = ((darktable.unmuted & (DT_DEBUG_DEMOSAIC | DT_DEBUG_PERF)) && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL));
+
+  dt_dev_clear_ctmask(piece->pipe);
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   const int demosaicing_method = data->demosaicing_method;

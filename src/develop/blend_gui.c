@@ -544,6 +544,8 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
       gtk_widget_hide(GTK_WIDGET(data->brightness_slider));
       gtk_widget_set_sensitive(data->contrast_slider, FALSE);
       gtk_widget_hide(GTK_WIDGET(data->contrast_slider));
+      gtk_widget_set_sensitive(data->local_contrast_slider, FALSE);
+      gtk_widget_hide(GTK_WIDGET(data->local_contrast_slider));
     }
     else
     {
@@ -1089,6 +1091,21 @@ static void _blendop_blendif_boost_factor_callback(GtkWidget *slider, dt_iop_gui
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
+static void _blendop_blendif_local_contrast_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *data)
+{
+  if(darktable.gui->reset || !data || !data->blendif_inited) return;
+  dt_develop_blend_params_t *bp = data->module->blend_params;
+  const float oldval = bp->local_contrast;
+  bp->local_contrast = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+
+  if((oldval == 0.0f) && (bp->local_contrast != 0.0f))
+  {
+    dt_dev_reprocess_all(data->module->dev);
+    dt_control_queue_redraw();
+  }
+}
+
 static void _blendop_blendif_showmask_clicked(GtkWidget *button, GdkEventButton *event, dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return;
@@ -1247,6 +1264,7 @@ static gboolean _blendop_blendif_reset(GtkButton *button, GdkEventButton *event,
   module->blend_params->blendif = module->default_blendop_params->blendif;
   memcpy(module->blend_params->blendif_parameters, module->default_blendop_params->blendif_parameters,
          4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+  module->blend_params->local_contrast = module->default_blendop_params->local_contrast;
 
   dt_iop_color_picker_reset(module, FALSE);
   dt_iop_gui_update_blendif(module);
@@ -2704,6 +2722,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   dt_bauhaus_slider_set(bd->blur_radius_slider, module->blend_params->blur_radius);
   dt_bauhaus_slider_set(bd->brightness_slider, module->blend_params->brightness);
   dt_bauhaus_slider_set(bd->contrast_slider, module->blend_params->contrast);
+  dt_bauhaus_slider_set(bd->local_contrast_slider, module->blend_params->local_contrast);
 
   /* reset all alternative display modes for blendif */
   memset(bd->altmode, 0, sizeof(bd->altmode));
@@ -2727,6 +2746,9 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   {
     gtk_widget_hide(GTK_WIDGET(bd->top_box));
   }
+
+  const dt_image_t img = module->dev->image_storage;
+  gtk_widget_set_visible(bd->local_contrast_slider, dt_image_is_rawprepare_supported(&img));
 
   if((mask_mode & DEVELOP_MASK_ENABLED)
      && ((bd->masks_inited && (mask_mode & DEVELOP_MASK_MASK))
@@ -3054,6 +3076,12 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     g_signal_connect(G_OBJECT(bd->contrast_slider), "value-changed",
                      G_CALLBACK(dt_iop_slider_float_callback), &module->blend_params->contrast);
 
+    bd->local_contrast_slider = dt_bauhaus_slider_new_with_range(module, -1.0f, 1.0f, .01f, 0.0f, 2);
+    dt_bauhaus_widget_set_label(bd->local_contrast_slider, N_("local contrast threshold"), N_("local contrast threshold"));
+    dt_bauhaus_slider_set_format(bd->local_contrast_slider, _("%.2f"));
+    gtk_widget_set_tooltip_text(bd->local_contrast_slider, _("adjust the threshold for the local contrast mask.\npositive values select for high local contrast\nnegative values select flat areas"));
+    g_signal_connect(G_OBJECT(bd->local_contrast_slider), "value-changed", G_CALLBACK(_blendop_blendif_local_contrast_callback), bd);
+
     GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_name(hbox, "section_label");
     gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("mask refinement")), TRUE, TRUE, 0);
@@ -3103,6 +3131,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), bd->blur_radius_slider, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), bd->brightness_slider, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), bd->contrast_slider, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(bd->bottom_box), bd->local_contrast_slider, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(bd->bottom_box), TRUE, TRUE, 0);
     dt_gui_add_help_link(GTK_WIDGET(bd->bottom_box), "blending.html#combined_masks");
 

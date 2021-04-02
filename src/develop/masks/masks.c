@@ -24,6 +24,7 @@
 #include "common/undo.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
+#include "develop/openmp_maths.h"
 
 #pragma GCC diagnostic ignored "-Wshadow"
 
@@ -2377,6 +2378,8 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
   *px = x;
   *py = y;
 }
+
+#include "ctmask.c"
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

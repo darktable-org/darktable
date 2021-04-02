@@ -119,6 +119,13 @@ typedef enum dt_dev_pixelpipe_display_mask_t
   DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
 } dt_dev_pixelpipe_display_mask_t;
 
+typedef enum dt_develop_ctmask_t
+{
+  DT_DEV_CTMASK_NONE = 0,
+  DT_DEV_CTMASK_REQUIRED = 1,
+  DT_DEV_CTMASK_DEMOSAIC = 2,
+  DT_DEV_CTMASK_RAWPREPARE = 4
+} dt_develop_ctmask_t;
 
 typedef enum dt_clipping_preview_mode_t
 {
