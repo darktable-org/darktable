@@ -82,6 +82,8 @@ you are strongly advised to take a backup first.
 
 * action sensitivity - add darktable.gui.libs.image.set_action_sensitive() to set action button sensitivity
 
+* bugfix - Changed text_view widget to wrap lines when the text exceeds the width of the widget
+
 ## Changed Dependencies
 
 ## RawSpeed changes
