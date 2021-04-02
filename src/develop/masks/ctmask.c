@@ -162,11 +162,3 @@ void dt_masks_full_ctmask(float *const restrict src, float *const restrict out, 
   dt_masks_blur_9x9(tmp, out, width, height, 2.0f);
 }  
 
-#ifdef HAVE_OPENCL
-void dt_masks_full_ctmask_cl(float *const restrict src, float *const restrict out, float *const restrict tmp, const int width, const int height, const float threshold, const gboolean detail)
-{
-
-
-}
-#endif
-
