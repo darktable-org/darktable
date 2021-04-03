@@ -662,18 +662,21 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
   }
 
   // GUIDES
-  if(cam->live_view_rotation % 2 == 1)
+  float scale;
+  if(cam->live_view_rotation % 2 == 0)
+    scale = fminf(w / pw, h / ph);
+  else
   {
-    gint tmp = pw;
+    const gint tmp = pw;
     pw = ph;
     ph = tmp;
+
+    scale = fminf(w / ph, h / pw);
   }
-  float scale = 1.0;
-  //   if(cam->live_view_zoom == FALSE)
-  //   {
-  if(pw > w) scale = w / pw;
-  if(ph > h) scale = fminf(scale, h / ph);
-  //   }
+
+  // ensure some sanity on the scale factor
+  scale = fminf(10.0, scale);
+
   const double sw = scale * pw;
   const double sh = scale * ph;
 
