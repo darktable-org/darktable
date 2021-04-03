@@ -28,6 +28,7 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
+#include "dtgtk/drawingarea.h"
 #include "dtgtk/gradientslider.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -108,6 +109,7 @@ typedef struct dt_iop_colorbalancergb_gui_data_t
   GtkWidget *saturation_global, *saturation_highlights, *saturation_midtones, *saturation_shadows;
   GtkWidget *purity_global, *purity_highlights, *purity_midtones, *purity_shadows;
   GtkWidget *hue_angle;
+  GtkDrawingArea *area;
   GtkNotebook *notebook;
   gboolean mask_display;
   dt_iop_colorbalancergb_mask_data_t mask_type;
@@ -773,6 +775,97 @@ static void mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
   dt_iop_refresh_center(self);
 }
 
+static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)self->params;
+  const float shadows_weight = 2.f + p->shadows_weight * 2.f;
+  const float highlights_weight = 2.f + p->highlights_weight * 2.f;
+
+  // Cache the graph objects to avoid recomputing all the view at each redraw
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+
+  cairo_surface_t *cst =
+    dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, allocation.width, allocation.height);
+  PangoFontDescription *desc =
+    pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  cairo_t *cr = cairo_create(cst);
+  PangoLayout *layout = pango_cairo_create_layout(cr);
+
+  const gint font_size = pango_font_description_get_size(desc);
+  pango_font_description_set_size(desc, 0.95 * font_size);
+  pango_layout_set_font_description(layout, desc);
+  pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
+
+  //const float inset = DT_PIXEL_APPLY_DPI(4);
+  const float margin_top = 0;
+  const float margin_bottom = 0;
+  const float margin_left = 0;
+  const float margin_right = 0;
+
+  const float graph_width = allocation.width - margin_right - margin_left;   // align the right border on sliders
+  const float graph_height = allocation.height - margin_bottom - margin_top; // give room to nodes
+
+  gtk_render_background(context, cr, 0, 0, allocation.width, allocation.height);
+
+  // set the graph as the origin of the coordinates
+  cairo_translate(cr, margin_left, margin_top);
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+
+  set_color(cr, darktable.bauhaus->graph_bg);
+  cairo_rectangle(cr, 0, 0, graph_width, graph_height);
+  cairo_fill(cr);
+
+  float *LUT[3];
+  for(size_t c = 0; c < 3; c++) LUT[c] = dt_alloc_align_float(LUT_ELEM);
+
+  for(size_t k = 0 ; k < LUT_ELEM; k++)
+  {
+    const float Y = k / (float)(LUT_ELEM - 1);
+    const float x_offset = (Y - 0.1845f) / 0.1845f;
+    const float alpha = 1.f / (1.f + expf(x_offset * shadows_weight)); // opacity of shadows
+    const float gamma = expf(-0.1845f * x_offset * x_offset / (shadows_weight * highlights_weight));
+    const float beta = 1.f / (1.f + expf(-x_offset * highlights_weight)); // opacity of highlights
+
+    LUT[0][k] = alpha;
+    LUT[1][k] = gamma;
+    LUT[2][k] = beta;
+  }
+
+  set_color(cr, darktable.bauhaus->graph_fg);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
+
+  for(size_t c = 0; c < 3; c++)
+  {
+    cairo_move_to(cr, 0, (1.f - LUT[c][0]) * graph_height);
+    for(size_t k = 0; k < LUT_ELEM; k++)
+    {
+      const float x = (float)k / (float)(LUT_ELEM - 1) * graph_width;
+      const float y = (1.f - LUT[c][k]) * graph_height;
+      cairo_line_to(cr, x, y);
+    }
+    cairo_stroke(cr);
+  }
+
+  for(size_t c = 0; c < 3; c++) dt_free_align(LUT[c]);
+
+  cairo_restore(cr);
+
+  // restore font size
+  pango_font_description_set_size(desc, font_size);
+  pango_layout_set_font_description(layout, desc);
+
+  cairo_destroy(cr);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
+  cairo_surface_destroy(cst);
+  g_object_unref(layout);
+  pango_font_description_free(desc);
+  return TRUE;
+}
+
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
@@ -791,6 +884,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   if(!w || w == g->highlights_H)
     paint_chroma_slider(g->highlights_C, p->highlights_H);
+
+  if(!w || w == g->shadows_weight || w == g->highlights_weight)
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
 
   --darktable.gui->reset;
 
@@ -1056,6 +1152,10 @@ void gui_init(dt_iop_module_t *self)
   self->widget = dt_ui_notebook_page(g->notebook, _("masks"), _("isolate luminances"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("luminance ranges")), FALSE, FALSE, 0);
+
+  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
+  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), FALSE, FALSE, 0);
 
   g->shadows_weight = dt_bauhaus_slider_from_params(self, "shadows_weight");
   dt_bauhaus_slider_set_digits(g->shadows_weight, 4);
