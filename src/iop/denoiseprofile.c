@@ -804,7 +804,7 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
                   + 5.f / 8.f * sqrt_3_2 / (x * x2) - sigma2_plus_1_8[c]);
       // asymptotic form:
       // buf[j+c] = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2[c]);
-      buf[j+c] *= a[c];
+      // buf[j+c] *= a[c];
     }
   }
 }
