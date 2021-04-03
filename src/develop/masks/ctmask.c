@@ -15,6 +15,69 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+/* How are "contrast masks" implemented?
+
+  The contrast masks (CM) are used in the dual demosaicer and as a further refinement step in
+  shape / parametric masks.
+  They contain threshold weighed sigmoid values of pixel-wise local signal variances so they
+  can be understood as "areas with or without local detail. 
+  
+  As the CM using algoritms (like dual demosaicing, sharpening ...) are all pixel peeping we
+  need the "original data" coming from the sensor to calculate the CM.
+  (Calculating the mask from the modules roi might not detect such regions at all because of
+  scaling / rotating artefacts, some blurring earlier in the pipeline, color changes ...)
+
+  For all cases the user interface is pretty simple, we always pass the threshold value, which
+  is in the range of -1.0 to 1.0 by an additional slider in the masks refinement part.
+  Positive values will select regions of high local detail, negatives select for regions without
+  high local detail. (In the dual demosaicer we only want positives as we always look for high
+  frequency content.)
+  A threshold value of 0.0 means bypassing.
+  
+  So the first important point is:
+  We make sure taking the input data for the CM right from the demosaicer for normal raws
+  or from rawprepare in case of monochromes. This means some additional housekeeping for the
+  pixelpipe. If any mask in any module selects a thresholf of != 0.0 we leave a flag in the pipe
+  struct telling a) we want a CM and b) we want it from demosaic or from rawprepare.
+  If such a flag has not been set before we will force a pipeline reprocessing.
+  
+  gboolean dt_dev_write_ctmask_data(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode);
+  writes an intermediate mask holding (VM) containing local pixelwise variances. This VM
+  - is not scaled but only cropped to the roi_out of the processing module
+  - holds luminance variances. For this we take the non-linear 'luminance' and calulate a
+    'variance' from the horizontal and vertical neighbors in a 5x5 pixel area.
+  - the pipe also gets the roi of the writing module 
+  
+  Calculating the intermediate VM is done for performance reasons. This way we don't have to
+  pass full data to the module and the VM can be shared by other modules that also might want to use it. 
+  
+  If a modules mask uses the contrast mask refinement step it takes the intermediate mask VM and
+  calculates a new mask VMT via
+  void dt_masks_full_ctmask(float *const restrict src, float *const restrict out, float *const restrict tmp, const int width, const int height, const float threshold, const gboolean detail)
+  It takes the VM as input, calculates the sigmoid threshold values and does some blurring for
+  smoother transitions. As the size of this mask in not scaled so far we can use a constant sigma, we could
+  also have chosen another algo but the blur_9x9 is pretty fast both in openmp/cl code paths - much faster
+  than standard gaussians.
+
+  The actual refinement is done in
+  static void _combine_ctmask
+  and it's _cl friend. We still have the threshold weighed mask VMT untransformed, it's still based
+  on the input data. So we have to transform it through the pipeline using   
+  float *dt_dev_distort_ctmask(const dt_dev_pixelpipe_t *pipe, float *src, const dt_iop_module_t *target_module)
+  returning a pointer to a distorted mask DM with same size as used in the module wanting the refinement.
+
+  NOW we finally can use the DM to refine the original mask.
+  All other refinements and parametric parameters are untouched.
+
+  Some additional comments:
+  1. intentionally this contrast mask refinement has only been implemented for raws. Especially for compressed
+     inmages like jpegs or 8bit input the algo didn't work as good.
+  2. Of course credit goes to Ingo @heckflosse from rt team for the original idea.
+  
+  hanno@schwalm-bremen.de 21/04/03
+*/
+
 void dt_masks_extend_border(float *mask, const int width, const int height, const int border)
 {
   if(border <= 0) return;
