@@ -3,12 +3,15 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+#: ../build/bin/conf_gen.h:691 ../build/bin/conf_gen.h:697
+#: ../build/bin/conf_gen.h:703 ../build/bin/conf_gen.h:709
+#: ../build/bin/conf_gen.h:715
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-28 09:45+1100\n"
-"PO-Revision-Date: 2021-03-28 10:10+1100\n"
+"POT-Creation-Date: 2021-04-03 18:18+1100\n"
+"PO-Revision-Date: 2021-04-03 18:17+1100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: eo\n"
@@ -539,11 +542,11 @@ msgstr "montri ŝarĝekranon inter bildoj"
 
 #: ../build/bin/preferences_gen.h:4539
 msgid ""
-"show grey loading screen when navigating between images in the darkroom\n"
+"show gray loading screen when navigating between images in the darkroom\n"
 "disable to just show a toast message"
 msgstr ""
 "montri grizan ŝarĝekranon dum navigado inter bildoj en la senluma ĉambro\n"
-"malebligi por nur montri ŝprucfenestran mesaĝon"
+"malebligi por montri nur ŝprucfenestran mesaĝon"
 
 #: ../build/bin/preferences_gen.h:4549
 msgid "modules"
@@ -560,8 +563,8 @@ msgstr "falsa koloro"
 
 #: ../build/bin/preferences_gen.h:4585
 msgctxt "preferences"
-msgid "grey scale"
-msgstr "grizskala"
+msgid "gray scale"
+msgstr "grizkolora"
 
 #: ../build/bin/preferences_gen.h:4607
 msgid ""
@@ -2514,7 +2517,7 @@ msgstr "brilaĵa faliĝo"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:156
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:297
 #: ../src/iop/bilat.c:460 ../src/iop/colorbalance.c:2081
-#: ../src/iop/colorbalancergb.c:876 ../src/iop/shadhi.c:691
+#: ../src/iop/colorbalancergb.c:873 ../src/iop/shadhi.c:691
 #: ../src/iop/splittoning.c:521
 msgid "shadows"
 msgstr "ombroj"
@@ -2528,7 +2531,7 @@ msgstr "ombroj"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:180
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:313
 #: ../src/iop/bilat.c:454 ../src/iop/colorbalance.c:2083
-#: ../src/iop/colorbalancergb.c:924 ../src/iop/monochrome.c:579
+#: ../src/iop/colorbalancergb.c:921 ../src/iop/monochrome.c:579
 #: ../src/iop/shadhi.c:692 ../src/iop/splittoning.c:523
 msgid "highlights"
 msgstr "brilaĵoj"
@@ -2539,7 +2542,7 @@ msgstr "brilaĵoj"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:468
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:476
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:496
-#: ../src/iop/colorbalancergb.c:853
+#: ../src/iop/colorbalancergb.c:850
 msgid "global"
 msgstr "tutmonda"
 
@@ -2551,7 +2554,7 @@ msgstr "tutmonda"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:504
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:168
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:305
-#: ../src/iop/colorbalancergb.c:900
+#: ../src/iop/colorbalancergb.c:897
 msgid "midtones"
 msgstr "meztonoj"
 
@@ -2946,8 +2949,7 @@ msgstr "aŭtomate"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:197
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:402
-#: ../src/iop/filmic.c:1598
-msgid "middle grey luminance"
+msgid "middle gray luminance"
 msgstr "mezgriza lumeco"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:203
@@ -2976,7 +2978,7 @@ msgstr "flori/rekonstrui"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:233
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:426
-msgid "grey/colorful details"
+msgid "gray/colorful details"
 msgstr "grizaj/buntaj detaloj"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:239
@@ -2991,8 +2993,7 @@ msgstr "skalado de dinamika gamo"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:251
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:438
-#: ../src/iop/filmic.c:1752
-msgid "target middle grey"
+msgid "target middle gray"
 msgstr "celita mezgrizo"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:257
@@ -3048,7 +3049,7 @@ msgstr "aŭtomate ĝustigi malmolecon"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:323
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:486
-msgid "use custom middle-grey values"
+msgid "use custom middle-gray values"
 msgstr "uzi laŭmendajn mezgrizajn valorojn"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:329
@@ -3381,8 +3382,8 @@ msgstr "dinamika gamo"
 
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:91
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:162
-msgid "middle grey luma"
-msgstr "mezgriza lumeco"
+msgid "middle gray luma"
+msgstr "mezgriza lumeca"
 
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:103
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:170
@@ -3506,7 +3507,8 @@ msgstr "koloro"
 
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:134
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:223
-msgid "compensate middle grey"
+#: ../src/iop/rgbcurve.c:1446
+msgid "compensate middle gray"
 msgstr "kompensi mezan grizon"
 
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:246
@@ -6552,28 +6554,28 @@ msgstr ""
 msgid "rotation: %3.f°"
 msgstr "rotacio: %3.f°"
 
-#: ../src/develop/masks/ellipse.c:1991
+#: ../src/develop/masks/ellipse.c:1998
 msgid "[ELLIPSE] change size"
 msgstr "[ELIPSO] ŝanĝi grandecon"
 
-#: ../src/develop/masks/ellipse.c:1992
+#: ../src/develop/masks/ellipse.c:1999
 msgid "[ELLIPSE] change opacity"
 msgstr "[ELIPSO] ŝanĝi maldiafanecon"
 
-#: ../src/develop/masks/ellipse.c:1993
+#: ../src/develop/masks/ellipse.c:2000
 msgid "[ELLIPSE] switch feathering mode"
 msgstr "[ELIPSO] ŝanĝi plumadan reĝimon"
 
-#: ../src/develop/masks/ellipse.c:1994
+#: ../src/develop/masks/ellipse.c:2001
 msgid "[ELLIPSE] rotate shape"
 msgstr "[ELIPSO] turni formon"
 
-#: ../src/develop/masks/ellipse.c:2000
+#: ../src/develop/masks/ellipse.c:2007
 #, c-format
 msgid "ellipse #%d"
 msgstr "elipso #%d"
 
-#: ../src/develop/masks/ellipse.c:2029
+#: ../src/develop/masks/ellipse.c:2036
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -6583,11 +6585,11 @@ msgstr ""
 "<b>rotacio</b>: stirklavo+majusklo+rulumi, <b>maldiafaneco</b>: stirklavo"
 "+rulumi (%d%%)"
 
-#: ../src/develop/masks/ellipse.c:2032
+#: ../src/develop/masks/ellipse.c:2039
 msgid "<b>rotate</b>: ctrl+drag"
 msgstr "<b>turni</b>: stirklavo+treni"
 
-#: ../src/develop/masks/ellipse.c:2035
+#: ../src/develop/masks/ellipse.c:2042
 #, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
@@ -11036,7 +11038,7 @@ msgid "RGBL"
 msgstr "RVBL"
 
 #. Page master
-#: ../src/iop/colorbalance.c:1902 ../src/iop/colorbalancergb.c:759
+#: ../src/iop/colorbalance.c:1902 ../src/iop/colorbalancergb.c:756
 msgid "master"
 msgstr "mastro"
 
@@ -11151,139 +11153,139 @@ msgstr ""
 "ĉi tiu modulo estas eksperimenta kaj la interna io povas iomete ŝanĝiĝi "
 "antaŭ malluma tabelo 3.6. ne uzu ĝin ankoraŭ por serioza laboro."
 
-#: ../src/iop/colorbalancergb.c:759
+#: ../src/iop/colorbalancergb.c:756
 msgid "global grading"
 msgstr "tutmonda gradigo"
 
-#: ../src/iop/colorbalancergb.c:765
+#: ../src/iop/colorbalancergb.c:762
 msgid "rotate all hues by an angle, at the same luminance"
 msgstr "turni ĉiujn nuancojn per angulo, samlumante"
 
-#: ../src/iop/colorbalancergb.c:767
+#: ../src/iop/colorbalancergb.c:764
 msgid "linear chroma grading"
 msgstr "lineara kolorogradigo"
 
-#: ../src/iop/colorbalancergb.c:774
+#: ../src/iop/colorbalancergb.c:771
 msgid "increase colorfulness at same luminance globally"
 msgstr "pliigi buntecon ĉe sama lumeco tutmonde"
 
-#: ../src/iop/colorbalancergb.c:780
+#: ../src/iop/colorbalancergb.c:777
 msgid "increase colorfulness at same luminance mostly in shadows"
 msgstr "pliigi kolorecon ĉe sama lumeco plejparte en ombroj"
 
-#: ../src/iop/colorbalancergb.c:786
+#: ../src/iop/colorbalancergb.c:783
 msgid "increase colorfulness at same luminance mostly in midtones"
 msgstr "pliigi kolorecon ĉe sama lumeco plejparte en meztonoj"
 
-#: ../src/iop/colorbalancergb.c:792
+#: ../src/iop/colorbalancergb.c:789
 msgid "increase colorfulness at same luminance mostly in highlights"
 msgstr "pliigi kolorecon ĉe sama lumeco plejparte en brilaĵoj"
 
-#: ../src/iop/colorbalancergb.c:794
+#: ../src/iop/colorbalancergb.c:791
 msgid "perceptual saturation grading"
 msgstr "percepta saturiĝa gradigo"
 
-#: ../src/iop/colorbalancergb.c:801
+#: ../src/iop/colorbalancergb.c:798
 msgid "add or remove saturation by an absolute amount"
 msgstr "aldoni aŭ forigi saturon per absoluta kvanto"
 
-#: ../src/iop/colorbalancergb.c:807 ../src/iop/colorbalancergb.c:813
-#: ../src/iop/colorbalancergb.c:819
+#: ../src/iop/colorbalancergb.c:804 ../src/iop/colorbalancergb.c:810
+#: ../src/iop/colorbalancergb.c:816
 msgid ""
 "increase or decrease saturation proportionnaly to the original pixel "
 "saturation"
 msgstr ""
 "pliigi aŭ malpliigi saturiĝon proporcie al la originala rastruma saturado"
 
-#: ../src/iop/colorbalancergb.c:822
+#: ../src/iop/colorbalancergb.c:819
 msgid "perceptual purity grading"
 msgstr "percepta pureco-gradigo"
 
-#: ../src/iop/colorbalancergb.c:829
+#: ../src/iop/colorbalancergb.c:826
 msgid "add or remove purity by an absolute amount"
 msgstr "aldoni aŭ forigi purecon per absoluta kvanto"
 
-#: ../src/iop/colorbalancergb.c:835 ../src/iop/colorbalancergb.c:841
-#: ../src/iop/colorbalancergb.c:847
+#: ../src/iop/colorbalancergb.c:832 ../src/iop/colorbalancergb.c:838
+#: ../src/iop/colorbalancergb.c:844
 msgid "increase or decrease purity proportionnaly to the original pixel purity"
 msgstr "pliigi aŭ malpliigi purecon proporcie al la originala piksela pureco"
 
 #. Page 4-ways
-#: ../src/iop/colorbalancergb.c:851
+#: ../src/iop/colorbalancergb.c:848
 msgid "4 ways"
 msgstr "4 manieroj"
 
-#: ../src/iop/colorbalancergb.c:851
+#: ../src/iop/colorbalancergb.c:848
 msgid "selective color grading"
 msgstr "selektema kolora gradigo"
 
-#: ../src/iop/colorbalancergb.c:860
+#: ../src/iop/colorbalancergb.c:857
 msgid "global luminance offset"
 msgstr "tutmonda lumeca ofseto"
 
-#: ../src/iop/colorbalancergb.c:867
+#: ../src/iop/colorbalancergb.c:864
 msgid "hue of the global color offset"
 msgstr "nuanco de la tutmonda kolora ofseto"
 
-#: ../src/iop/colorbalancergb.c:874
+#: ../src/iop/colorbalancergb.c:871
 msgid "chroma of the global color offset"
 msgstr "koloreco de la tutmonda kolora ofseto"
 
-#: ../src/iop/colorbalancergb.c:883
+#: ../src/iop/colorbalancergb.c:880
 msgid "luminance gain in shadows"
 msgstr "lumeca gajno en ombroj"
 
-#: ../src/iop/colorbalancergb.c:890
+#: ../src/iop/colorbalancergb.c:887
 msgid "hue of the color gain in shadows"
 msgstr "nuanco de la kolora gajno en ombroj"
 
-#: ../src/iop/colorbalancergb.c:898
+#: ../src/iop/colorbalancergb.c:895
 msgid "chroma of the color gain in shadows"
 msgstr "kromateco de la kolora gajno en ombroj"
 
-#: ../src/iop/colorbalancergb.c:907
+#: ../src/iop/colorbalancergb.c:904
 msgid "luminance exponent in midtones"
 msgstr "lumeca eksponento en meztonoj"
 
-#: ../src/iop/colorbalancergb.c:914
+#: ../src/iop/colorbalancergb.c:911
 msgid "hue of the color exponent in midtones"
 msgstr "nuanco de la kolora eksponento en meztonoj"
 
-#: ../src/iop/colorbalancergb.c:922
+#: ../src/iop/colorbalancergb.c:919
 msgid "chroma of the color exponent in midtones"
 msgstr "koloreco de la kolora eksponento en meztonoj"
 
-#: ../src/iop/colorbalancergb.c:931
+#: ../src/iop/colorbalancergb.c:928
 msgid "luminance gain in highlights"
 msgstr "lumeca gajno en brilaĵoj"
 
-#: ../src/iop/colorbalancergb.c:938
+#: ../src/iop/colorbalancergb.c:935
 msgid "hue of the color gain in highlights"
 msgstr "nuanco de la kolora gajno en brilaĵoj"
 
-#: ../src/iop/colorbalancergb.c:946
+#: ../src/iop/colorbalancergb.c:943
 msgid "chroma of the color gain in highlights"
 msgstr "kromateco de la kolora gajno en brilaĵoj"
 
 #. Page masks
-#: ../src/iop/colorbalancergb.c:949
+#: ../src/iop/colorbalancergb.c:946
 msgid "masks"
 msgstr "maskoj"
 
-#: ../src/iop/colorbalancergb.c:949
+#: ../src/iop/colorbalancergb.c:946
 msgid "isolate luminances"
 msgstr "izoli lumecojn"
 
-#: ../src/iop/colorbalancergb.c:956
+#: ../src/iop/colorbalancergb.c:953
 msgid "weight of the shadows over the whole tonal range"
 msgstr "pezo de la ombroj sur la tuta tona gamo"
 
-#: ../src/iop/colorbalancergb.c:963
+#: ../src/iop/colorbalancergb.c:960
 msgid "peak white luminance value used to normalize the power function"
 msgstr ""
 "maksimuma blanka lumeca valoro uzata por normaligi la potencan funkcion"
 
-#: ../src/iop/colorbalancergb.c:970
+#: ../src/iop/colorbalancergb.c:967
 msgid "weights of highlights over the whole tonal range"
 msgstr "pezoj de brilaĵoj tra la tuta tona gamo"
 
@@ -12409,6 +12411,10 @@ msgstr "nurlega grafeo, uzu la parametrojn sube por agordi la nodojn"
 msgid "logarithmic shaper"
 msgstr "logaritma formigilo"
 
+#: ../src/iop/filmic.c:1598
+msgid "middle grey luminance"
+msgstr "mezgriza lumeco"
+
 #: ../src/iop/filmic.c:1601
 msgid ""
 "adjust to match the average luminance of the subject.\n"
@@ -12586,6 +12592,10 @@ msgid ""
 msgstr ""
 "lumeco de eligo pura nigro, ĉi tio devas esti 0%\n"
 "krom se vi volas paliĝintan aspekton"
+
+#: ../src/iop/filmic.c:1752
+msgid "target middle grey"
+msgstr "celita mezgrizo"
 
 #: ../src/iop/filmic.c:1755
 msgid ""
@@ -14814,10 +14824,6 @@ msgstr "kurbaj nodoj por v kanalo"
 #: ../src/iop/rgbcurve.c:1384 ../src/iop/rgblevels.c:945
 msgid "curve nodes for b channel"
 msgstr "kurbaj nodoj por b kanalo"
-
-#: ../src/iop/rgbcurve.c:1446
-msgid "compensate middle gray"
-msgstr "kompensi mezan grizon"
 
 #: ../src/iop/rgblevels.c:100
 msgid "rgb levels"
@@ -20516,6 +20522,13 @@ msgstr "Akcelo"
 #: ../src/views/view.c:1791
 msgid "Action"
 msgstr "Ago"
+
+#~ msgctxt "preferences"
+#~ msgid "grey scale"
+#~ msgstr "grizskala"
+
+#~ msgid "compensate middle grey"
+#~ msgstr "kompensi mezan grizon"
 
 #~ msgid "grey"
 #~ msgstr "griza"
