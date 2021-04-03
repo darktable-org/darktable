@@ -3040,7 +3040,7 @@ static void get_stamp_params(dt_iop_module_t *module, float *radius, float *r_st
   const float scale = devpipe->iscale / (pr_d * get_zoom_scale(module->dev));
   const float im_scale = 0.09f * iwd_min * last_win_min * scale / proc_wdht_min;
 
-  *radius = dt_conf_get_sanitize_float(CONF_RADIUS, 0.33f*im_scale, 3.0f*im_scale, im_scale);
+  *radius = dt_conf_get_sanitize_float(CONF_RADIUS, 0.1f*im_scale, 3.0f*im_scale, im_scale);
   *r_strength = dt_conf_get_sanitize_float(CONF_STRENGTH, 0.5f * *radius, 2.0f * *radius, 1.5f * *radius);
   *phi = dt_conf_get_sanitize_float(CONF_ANGLE, -M_PI, M_PI, 0.0f);
 }
