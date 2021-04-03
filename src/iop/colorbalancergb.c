@@ -66,7 +66,7 @@ typedef struct dt_iop_colorbalancergb_params_t
   float global_C;              // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
   float global_H;              // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
   float shadows_weight;        // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows fall-off"
-  float midtones_weight;       // $MIN: -6.0 $MAX:   6.0 $DEFAULT: 0.0 $DESCRIPTION: "white pivot"
+  float power_fulcrum;       // $MIN: -6.0 $MAX:   6.0 $DEFAULT: 0.0 $DESCRIPTION: "white pivot"
   float highlights_weight;     // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights fall-off"
   float chroma_shadows;        // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
   float chroma_highlights;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
@@ -89,18 +89,30 @@ typedef struct dt_iop_colorbalancergb_params_t
 } dt_iop_colorbalancergb_params_t;
 
 
+typedef enum dt_iop_colorbalancergb_mask_data_t
+{
+  MASK_SHADOWS = 0,
+  MASK_MIDTONES = 1,
+  MASK_HIGHLIGHTS = 2,
+  MASK_NONE
+} dt_iop_colorbalancergb_mask_data_t;
+
+
 typedef struct dt_iop_colorbalancergb_gui_data_t
 {
   GtkWidget *shadows_H, *midtones_H, *highlights_H, *global_H;
   GtkWidget *shadows_C, *midtones_C, *highlights_C, *global_C;
   GtkWidget *shadows_Y, *midtones_Y, *highlights_Y, *global_Y;
-  GtkWidget *shadows_weight, *midtones_weight, *highlights_weight;
+  GtkWidget *shadows_weight, *midtones_weight, *highlights_weight, *power_fulcrum;
   GtkWidget *chroma_highlights, *chroma_global, *chroma_shadows, *chroma_midtones;
   GtkWidget *saturation_global, *saturation_highlights, *saturation_midtones, *saturation_shadows;
   GtkWidget *purity_global, *purity_highlights, *purity_midtones, *purity_shadows;
   GtkWidget *hue_angle;
   GtkNotebook *notebook;
+  gboolean mask_display;
+  dt_iop_colorbalancergb_mask_data_t mask_type;
 } dt_iop_colorbalancergb_gui_data_t;
+
 
 typedef struct dt_iop_colorbalancergb_data_t
 {
@@ -113,7 +125,7 @@ typedef struct dt_iop_colorbalancergb_data_t
   float saturation_global, saturation[4];
   float purity_global, purity[4];
   float hue_angle;
-  float shadows_weight, midtones_weight, highlights_weight;
+  float shadows_weight, power_fulcrum, highlights_weight;
   float *gamut_LUT;
   float max_chroma;
   gboolean lut_inited;
@@ -179,7 +191,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float global_C;              // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
       float global_H;              // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
       float shadows_weight;        // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "tonal weight"
-      float midtones_weight;       // $MIN: -6.0 $MAX:   6.0 $DEFAULT: 0.0 $DESCRIPTION: "fulcrum"
+      float power_fulcrum;       // $MIN: -6.0 $MAX:   6.0 $DEFAULT: 0.0 $DESCRIPTION: "fulcrum"
       float highlights_weight;     // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "tonal weight"
       float chroma_shadows;        // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
       float chroma_highlights;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
@@ -246,7 +258,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)piece->data;
-  const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
+  dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
+  const struct dt_iop_order_iccprofile_info_t *const work_profile
+      = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   if(work_profile == NULL) return; // no point
 
   float DT_ALIGNED_ARRAY RGB_to_XYZ[3][4];
@@ -294,13 +308,25 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float *const restrict saturation = __builtin_assume_aligned((const float *const restrict)d->saturation, 16);
   const float *const restrict purity = __builtin_assume_aligned((const float *const restrict)d->purity, 16);
 
+  const gint mask_display
+      = (self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL
+         && g->mask_display);
+
+  // pixel size of the checker background
+  const size_t checker_1 = (mask_display) ? DT_PIXEL_APPLY_DPI(8) : 0;
+  const size_t checker_2 = 2 * checker_1;
+
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) aligned(in, out, gamut_LUT: 64) aligned(global, highlights, shadows, midtones, chroma, saturation, purity:16)\
-      dt_omp_firstprivate(in, out, roi_in, roi_out, d, input_matrix, output_matrix, gamut_LUT, white_grading_RGB, \
-        global, highlights, shadows, midtones, chroma, saturation, purity) schedule(static)
+#pragma omp parallel for simd default(none) aligned(in, out, gamut_LUT: 64) \
+  aligned(global, highlights, shadows, midtones, chroma, saturation, purity:16)\
+  dt_omp_firstprivate(in, out, roi_in, roi_out, d, g, mask_display, input_matrix, output_matrix, gamut_LUT, white_grading_RGB, \
+    global, highlights, shadows, midtones, chroma, saturation, purity, checker_1, checker_2) \
+    schedule(static) collapse(2)
 #endif
-  for(size_t k = 0; k < (size_t)4 * roi_in->width * roi_out->height; k += 4)
+  for(size_t i = 0; i < roi_out->height; i++)
+  for(size_t j = 0; j < roi_out->width; j++)
   {
+    const size_t k = ((i * roi_out->width) + j) * 4;
     const float *const restrict pix_in = __builtin_assume_aligned(in + k, 16);
     float *const restrict pix_out = __builtin_assume_aligned(out + k, 16);
 
@@ -355,12 +381,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       // midtones : power with sign preservation
       const float sign = (RGB[c] < 0.f) ? -1.f : 1.f;
-      RGB[c] = sign * powf(fabsf(RGB[c]) / d->midtones_weight, midtones[c]) * d->midtones_weight;
+      RGB[c] = sign * powf(fabsf(RGB[c]) / d->power_fulcrum, midtones[c]) * d->power_fulcrum;
     }
 
     // for the Y midtones power (gamma), we need to go in Ych again because RGB doesn't preserve color
     gradingRGB_to_Ych(RGB, Ych, white_grading_RGB);
-    Y = Ych[0] = powf(fmaxf(Ych[0] / d->midtones_weight, 0.f), d->midtones_Y) * d->midtones_weight;
+    Y = Ych[0] = powf(fmaxf(Ych[0] / d->power_fulcrum, 0.f), d->midtones_Y) * d->power_fulcrum;
     Ych_to_gradingRGB(Ych, RGB, white_grading_RGB);
 
     /* Perceptual color adjustments */
@@ -423,7 +449,48 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     Ych_to_gradingRGB(Ych, RGB, white_grading_RGB);
     dot_product(RGB, output_matrix, pix_out);
-    for(size_t c = 0; c < 4; ++c) pix_out[c] = fmaxf(pix_out[c], 0.f);
+
+    if(mask_display)
+    {
+      // draw checkerboard
+      float color;
+      if(i % checker_1 < i % checker_2)
+      {
+        if(j % checker_1 < j % checker_2) color = 1.0f;
+        else color = 0.5f;
+      }
+      else
+      {
+        if(j % checker_1 < j % checker_2) color = 0.5f;
+        else color = 1.0f;
+      }
+
+      float opacity;
+      switch(g->mask_type)
+      {
+      case MASK_SHADOWS:
+        opacity = alpha;
+        break;
+      case MASK_MIDTONES:
+        opacity = gamma;
+        break;
+      case MASK_HIGHLIGHTS:
+        opacity = beta;
+        break;
+      case MASK_NONE:
+      default:
+        opacity = 0.f;
+        break;
+      }
+      const float opacity_comp = 1.0f - opacity;
+
+      for(size_t c = 0; c < 4; ++c) pix_out[c] = opacity_comp * color + opacity * fmaxf(pix_out[c], 0.f);
+      pix_out[3] = 1.f;
+    }
+    else
+    {
+      for(size_t c = 0; c < 4; ++c) pix_out[c] = fmaxf(pix_out[c], 0.f);
+    }
   }
 }
 
@@ -488,7 +555,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     Ych_to_gradingRGB(Ych, d->midtones, NULL);
     for(size_t c = 0; c < 4; c++) d->midtones[c] = 1.f / (1.f + (d->midtones[c] - RGB_norm[c]));
     d->midtones_Y = 1.f / (1.f + p->midtones_Y);
-    d->midtones_weight = exp2f(p->midtones_weight);
+    d->power_fulcrum = exp2f(p->power_fulcrum);
   }
 
   // Check if the RGB working profile has changed in pipe
@@ -668,6 +735,44 @@ static void paint_chroma_slider(GtkWidget *w, const float hue)
 }
 
 
+static void mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_request_focus(self);
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
+
+  dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
+
+  // if blend module is displaying mask do not display it here
+  if(self->request_mask_display)
+  {
+    dt_control_log(_("cannot display masks when the blending mask is displayed"));
+    g->mask_display = 0;
+  }
+  else
+  {
+    g->mask_display = dt_bauhaus_widget_get_quad_active(GTK_WIDGET(togglebutton));
+  }
+
+  if(g->mask_display)
+  {
+    if(togglebutton == g->shadows_weight) g->mask_type = MASK_SHADOWS;
+    if(togglebutton == g->midtones_weight) g->mask_type = MASK_MIDTONES;
+    if(togglebutton == g->highlights_weight) g->mask_type = MASK_HIGHLIGHTS;
+  }
+  else
+  {
+    g->mask_type = MASK_NONE;
+  }
+
+  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->shadows_weight), g->mask_type == MASK_SHADOWS);
+  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->midtones_weight), g->mask_type == MASK_MIDTONES);
+  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->highlights_weight), g->mask_type == MASK_HIGHLIGHTS);
+
+  dt_iop_refresh_center(self);
+}
+
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
@@ -708,7 +813,6 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->saturation_midtones, p->saturation_midtones);
   dt_bauhaus_slider_set_soft(g->saturation_shadows, p->saturation_shadows);
 
-
   dt_bauhaus_slider_set_soft(g->purity_global, p->purity_global);
   dt_bauhaus_slider_set_soft(g->purity_highlights, p->purity_highlights);
   dt_bauhaus_slider_set_soft(g->purity_midtones, p->purity_midtones);
@@ -726,7 +830,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->midtones_C, p->midtones_C);
   dt_bauhaus_slider_set_soft(g->midtones_H, p->midtones_H);
   dt_bauhaus_slider_set_soft(g->midtones_Y, p->midtones_Y);
-  dt_bauhaus_slider_set_soft(g->midtones_weight, p->midtones_weight);
+  dt_bauhaus_slider_set_soft(g->power_fulcrum, p->power_fulcrum);
 
   dt_bauhaus_slider_set_soft(g->highlights_C, p->highlights_C);
   dt_bauhaus_slider_set_soft(g->highlights_H, p->highlights_H);
@@ -735,6 +839,12 @@ void gui_update(dt_iop_module_t *self)
 
   gui_changed(self, NULL, NULL);
   dt_iop_color_picker_reset(self, TRUE);
+  g->mask_display = FALSE;
+  g->mask_type = MASK_NONE;
+
+  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->shadows_weight), FALSE);
+  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->midtones_weight), FALSE);
+  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->highlights_weight), FALSE);
 }
 
 
@@ -945,19 +1055,28 @@ void gui_init(dt_iop_module_t *self)
   // Page masks
   self->widget = dt_ui_notebook_page(g->notebook, _("masks"), _("isolate luminances"));
 
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("luminance ranges")), FALSE, FALSE, 0);
+
   g->shadows_weight = dt_bauhaus_slider_from_params(self, "shadows_weight");
   dt_bauhaus_slider_set_digits(g->shadows_weight, 4);
   dt_bauhaus_slider_set_step(g->shadows_weight, 0.1);
   dt_bauhaus_slider_set_format(g->shadows_weight, "%.2f %%");
   dt_bauhaus_slider_set_factor(g->shadows_weight, 100.0f);
   gtk_widget_set_tooltip_text(g->shadows_weight, _("weight of the shadows over the whole tonal range"));
+  dt_bauhaus_widget_set_quad_paint(g->shadows_weight, dtgtk_cairo_paint_showmask,
+                                   CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->shadows_weight, TRUE);
+  g_signal_connect(G_OBJECT(g->shadows_weight), "quad-pressed", G_CALLBACK(mask_callback), self);
 
-  g->midtones_weight = dt_bauhaus_slider_from_params(self, "midtones_weight");
-  dt_bauhaus_slider_set_soft_range(g->midtones_weight, -2., +2.);
-  dt_bauhaus_slider_set_step(g->midtones_weight, 0.1);
-  dt_bauhaus_slider_set_digits(g->midtones_weight, 4);
-  dt_bauhaus_slider_set_format(g->midtones_weight, "%.2f EV");
-  gtk_widget_set_tooltip_text(g->midtones_weight, _("peak white luminance value used to normalize the power function"));
+  g->midtones_weight = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->midtones_weight, NULL, N_("midtones roll-off"));
+  gtk_widget_set_tooltip_text(g->midtones_weight, _("weights of midtones over the whole tonal range."
+                                                    "this is the remainder of highlights and shadows masks"));
+  dt_bauhaus_widget_set_quad_paint(g->midtones_weight, dtgtk_cairo_paint_showmask,
+                                   CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->midtones_weight, TRUE);
+  g_signal_connect(G_OBJECT(g->midtones_weight), "quad-pressed", G_CALLBACK(mask_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->midtones_weight, FALSE, FALSE, 0);
 
   g->highlights_weight = dt_bauhaus_slider_from_params(self, "highlights_weight");
   dt_bauhaus_slider_set_step(g->highlights_weight, 0.1);
@@ -965,6 +1084,19 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->highlights_weight, "%.2f %%");
   dt_bauhaus_slider_set_factor(g->highlights_weight, 100.0f);
   gtk_widget_set_tooltip_text(g->highlights_weight, _("weights of highlights over the whole tonal range"));
+  dt_bauhaus_widget_set_quad_paint(g->highlights_weight, dtgtk_cairo_paint_showmask,
+                                   CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->highlights_weight, TRUE);
+  g_signal_connect(G_OBJECT(g->highlights_weight), "quad-pressed", G_CALLBACK(mask_callback), self);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("threshold")), FALSE, FALSE, 0);
+
+  g->power_fulcrum = dt_bauhaus_slider_from_params(self, "power_fulcrum");
+  dt_bauhaus_slider_set_soft_range(g->power_fulcrum, -2., +2.);
+  dt_bauhaus_slider_set_step(g->power_fulcrum, 0.1);
+  dt_bauhaus_slider_set_digits(g->power_fulcrum, 4);
+  dt_bauhaus_slider_set_format(g->power_fulcrum, "%.2f EV");
+  gtk_widget_set_tooltip_text(g->power_fulcrum, _("peak white luminance value used to normalize the power function"));
 
 
   // paint backgrounds
