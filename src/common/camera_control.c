@@ -704,6 +704,8 @@ static gint _compare_camera_by_port(gconstpointer a, gconstpointer b)
   return g_strcmp0(ca->port, cb->port);
 }
 
+static gboolean _new_camera_locked_message_displayed = FALSE;
+
 static void dt_camctl_update_cameras(const dt_camctl_t *c)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
@@ -756,9 +758,14 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
                                     "causes are: locked by another application, no access to udev etc.\n",
                    camera->model, camera->port);
 
-          dt_control_log(_("new camera '%s' found but it is locked by another application\n"
-                           "make sure it is not mounted on the computer"),
-                         camera->model);
+          if(!_new_camera_locked_message_displayed)
+          {
+            dt_control_log(_("new camera '%s' found but it is locked by another application\n"
+                             "make sure it is not mounted on the computer"),
+                           camera->model);
+            _new_camera_locked_message_displayed = TRUE;
+          }
+
           /* Ok we found a new camera but it is not available so we keep track of it in locked_camera list */
           dt_camera_locked_t *locked_camera = g_malloc0(sizeof(dt_camera_locked_t));
           locked_camera->model = g_strdup(camera->model);
