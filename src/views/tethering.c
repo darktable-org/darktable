@@ -254,7 +254,9 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
             scale = fminf(w / pw, h / ph);
           else
             scale = fminf(w / ph, h / pw);
-          scale = fminf(1.0, scale);
+
+          // ensure some sanity on the scale factor
+          scale = fminf(10.0, scale);
 
           // FIXME: use cairo_pattern_set_filter()?
           cairo_translate(cr, width * 0.5, (height + BAR_HEIGHT) * 0.5); // origin to middle of canvas
