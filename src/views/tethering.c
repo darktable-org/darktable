@@ -258,10 +258,13 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
 
           // FIXME: use cairo_pattern_set_filter()?
           cairo_translate(cr, width * 0.5, (height + BAR_HEIGHT) * 0.5); // origin to middle of canvas
-          if(cam->live_view_flip == TRUE) cairo_scale(cr, -1.0, 1.0);    // mirror image
-          if(cam->live_view_rotation) cairo_rotate(cr, -M_PI_2 * cam->live_view_rotation); // rotate around middle
-          if(cam->live_view_zoom == FALSE) cairo_scale(cr, scale, scale);                  // scale to fit canvas
-          cairo_translate(cr, -0.5 * pw, -0.5 * ph);                                       // origin back to corner
+          if(cam->live_view_flip == TRUE)
+            cairo_scale(cr, -1.0, 1.0);    // mirror image
+          if(cam->live_view_rotation)
+            cairo_rotate(cr, -M_PI_2 * cam->live_view_rotation); // rotate around middle
+          if(cam->live_view_zoom == FALSE)
+            cairo_scale(cr, scale, scale);                  // scale to fit canvas
+          cairo_translate(cr, -0.5 * pw, -0.5 * ph);        // origin back to corner
           cairo_scale(cr, darktable.gui->ppd, darktable.gui->ppd);
           cairo_set_source_surface(cr, source, 0.0, 0.0);
           cairo_paint(cr);
