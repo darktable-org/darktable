@@ -562,7 +562,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     v9->fix_anscombe_and_nlmeans_norm = v8.fix_anscombe_and_nlmeans_norm;
     v9->wb_adaptive_anscombe = v8.wb_adaptive_anscombe;
     v9->shadows = v8.shadows;
-    v9->bias = v8.shadows;
+    v9->bias = v8.bias;
     v9->use_new_vst = v8.use_new_vst;
     v9->overshooting = v8.overshooting;
     return 0;
@@ -578,6 +578,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     else
       memcpy(&v9, old_params, sizeof(v9)); // was v9 already
     dt_iop_denoiseprofile_params_t *v10 = new_params;
+
+    // start with a clean default
+    dt_iop_denoiseprofile_params_t *d = self->default_params;
+    *v10 = *d;
+
     v10->radius = v9.radius;
     v10->strength = v9.strength;
     v10->mode = v9.mode;
@@ -605,7 +610,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     v10->fix_anscombe_and_nlmeans_norm = v9.fix_anscombe_and_nlmeans_norm;
     v10->wb_adaptive_anscombe = v9.wb_adaptive_anscombe;
     v10->shadows = v9.shadows;
-    v10->bias = v9.shadows;
+    v10->bias = v9.bias;
     v10->use_new_vst = v9.use_new_vst;
     v10->overshooting = v9.overshooting;
     v10->wavelet_color_mode = MODE_RGB;
@@ -799,7 +804,7 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
                   + 5.f / 8.f * sqrt_3_2 / (x * x2) - sigma2_plus_1_8[c]);
       // asymptotic form:
       // buf[j+c] = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2[c]);
-      buf[j+c] *= a[c];
+      // buf[j+c] *= a[c];
     }
   }
 }
