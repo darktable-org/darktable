@@ -266,9 +266,7 @@ void gui_init(dt_lib_module_t *self)
   // Setup gui
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, "live_view.html#live_view");
-  GtkWidget *box;
-
-  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
   lib->live_view = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT, NULL);
   lib->live_view_zoom = dtgtk_button_new(
@@ -461,11 +459,11 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   // disable buttons that won't work with this camera
   // TODO: initialize tethering mode outside of libs/camera.s so we can use darktable.camctl->active_camera
   // here
-  dt_lib_live_view_t *lib = self->data;
+  const dt_lib_live_view_t *lib = self->data;
   const dt_camera_t *cam = darktable.camctl->active_camera;
   if(cam == NULL) cam = darktable.camctl->wanted_camera;
 
-  gboolean sensitive = cam && cam->can_live_view_advanced;
+  const gboolean sensitive = cam && cam->can_live_view_advanced;
 
   gtk_widget_set_sensitive(lib->live_view_zoom, sensitive);
   gtk_widget_set_sensitive(lib->focus_in_big, sensitive);
@@ -476,7 +474,7 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
 
 void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
 {
-  dt_lib_live_view_t *lib = self->data;
+  const dt_lib_live_view_t *lib = self->data;
 
   // there's no code to automatically restart live view when entering
   // the view, and besides the user may not want to jump right back
@@ -506,13 +504,13 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
     dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
     return;
   }
-  double w = width - (MARGIN * 2.0f);
-  double h = height - (MARGIN * 2.0f) - BAR_HEIGHT;
+  const double w = width - (MARGIN * 2.0f);
+  const double h = height - (MARGIN * 2.0f) - BAR_HEIGHT;
   gint pw = cam->live_view_width;
   gint ph = cam->live_view_height;
   lib->overlay_x0 = lib->overlay_x1 = lib->overlay_y0 = lib->overlay_y1 = 0.0;
 
-  gboolean use_splitline = (dt_bauhaus_combobox_get(lib->overlay_splitline) == 1);
+  const gboolean use_splitline = (dt_bauhaus_combobox_get(lib->overlay_splitline) == 1);
 
   // OVERLAY
   int imgid = 0;
@@ -602,10 +600,10 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
       if((buf.width <= 8 && buf.height <= 8) || fabsf(scale - 1.0f) < 0.01f)
         cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
       cairo_rectangle(cr, 0, 0, buf.width, buf.height);
-      int overlay_modes_index = dt_bauhaus_combobox_get(lib->overlay_mode);
+      const int overlay_modes_index = dt_bauhaus_combobox_get(lib->overlay_mode);
       if(overlay_modes_index >= 0)
       {
-        cairo_operator_t mode = _overlay_modes[overlay_modes_index];
+        const cairo_operator_t mode = _overlay_modes[overlay_modes_index];
         cairo_set_operator(cr, mode);
       }
       cairo_fill(cr);
@@ -628,8 +626,8 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
       lib->overlay_y1 = lib->overlay_y0 + ph * scale;
 
       // splitline position to absolute coords:
-      double sl_x = lib->overlay_x0 + lib->splitline_x * pw * scale;
-      double sl_y = lib->overlay_y0 + lib->splitline_y * ph * scale;
+      const double sl_x = lib->overlay_x0 + lib->splitline_x * pw * scale;
+      const double sl_y = lib->overlay_y0 + lib->splitline_y * ph * scale;
 
       int x0 = sl_x, y0 = 0.0, x1 = x0, y1 = height;
       if(lib->splitline_rotation % 2 != 0)
@@ -639,8 +637,10 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
         x1 = width;
         y1 = y0;
       }
-      gboolean mouse_over_control = (lib->splitline_rotation % 2 == 0) ? (fabs(sl_x - pointerx) < 5)
-                                                                       : (fabs(sl_y - pointery) < 5);
+      const gboolean mouse_over_control = (lib->splitline_rotation % 2 == 0)
+        ? (fabs(sl_x - pointerx) < 5)
+        : (fabs(sl_y - pointery) < 5);
+
       cairo_save(cr);
       cairo_set_source_rgb(cr, .7, .7, .7);
       cairo_set_line_width(cr, (mouse_over_control ? 2.0 : 0.5));
@@ -653,7 +653,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
       if(!lib->splitline_dragging && mouse_over_control)
       {
         cairo_set_line_width(cr, 0.5);
-        double s = width * HANDLE_SIZE;
+        const double s = width * HANDLE_SIZE;
         dtgtk_cairo_paint_refresh(cr, sl_x - (s * 0.5), sl_y - (s * 0.5), s, s, 1, NULL);
       }
 
@@ -674,15 +674,15 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
   if(pw > w) scale = w / pw;
   if(ph > h) scale = fminf(scale, h / ph);
   //   }
-  double sw = scale * pw;
-  double sh = scale * ph;
+  const double sw = scale * pw;
+  const double sh = scale * ph;
 
   // draw guides
-  int guide_flip = dt_bauhaus_combobox_get(lib->flip_guides);
-  double left = (width - sw) * 0.5;
-  double top = (height + BAR_HEIGHT - sh) * 0.5;
+  const int guide_flip = dt_bauhaus_combobox_get(lib->flip_guides);
+  const double left = (width - sw) * 0.5;
+  const double top = (height + BAR_HEIGHT - sh) * 0.5;
 
-  double dashes = 5.0;
+  const double dashes = 5.0;
 
   cairo_save(cr);
   cairo_rectangle(cr, left, top, sw, sh);
@@ -697,7 +697,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
   // Flip vertical.
   if(guide_flip & FLAG_FLIP_VERTICAL) cairo_scale(cr, 1, -1);
 
-  int which = dt_bauhaus_combobox_get(lib->guide_selector);
+  const int which = dt_bauhaus_combobox_get(lib->guide_selector);
   dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
   if(guide)
   {
@@ -745,11 +745,12 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
     const double height = lib->overlay_y1 - lib->overlay_y0;
 
     // splitline position to absolute coords:
-    double sl_x = lib->overlay_x0 + lib->splitline_x * width;
-    double sl_y = lib->overlay_y0 + lib->splitline_y * height;
+    const double sl_x = lib->overlay_x0 + lib->splitline_x * width;
+    const double sl_y = lib->overlay_y0 + lib->splitline_y * height;
 
-    gboolean mouse_over_control = (lib->splitline_rotation % 2 == 0) ? (fabs(sl_x - x) < 5)
-                                                                     : (fabs(sl_y - y) < 5);
+    const gboolean mouse_over_control = (lib->splitline_rotation % 2 == 0)
+      ? (fabs(sl_x - x) < 5)
+      : (fabs(sl_y - y) < 5);
 
     /* do the split rotating */
     if(which == 1 && fabs(sl_x - x) < 7 && fabs(sl_y - y) < 7)
