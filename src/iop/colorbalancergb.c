@@ -27,6 +27,7 @@
 #include "develop/blend.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/openmp_maths.h"
 #include "develop/imageop_gui.h"
 #include "dtgtk/drawingarea.h"
 #include "dtgtk/gradientslider.h"
@@ -66,9 +67,9 @@ typedef struct dt_iop_colorbalancergb_params_t
   float global_Y;              // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
   float global_C;              // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
   float global_H;              // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-  float shadows_weight;        // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows fall-off"
-  float power_fulcrum;       // $MIN: -6.0 $MAX:   6.0 $DEFAULT: 0.0 $DESCRIPTION: "white pivot"
-  float highlights_weight;     // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights fall-off"
+  float shadows_weight;        // $MIN:  0.0 $MAX:   3.0 $DEFAULT: 1.0 $DESCRIPTION: "shadows fall-off"
+  float power_fulcrum;         // $MIN: -6.0 $MAX:   6.0 $DEFAULT: 0.0 $DESCRIPTION: "white pivot"
+  float highlights_weight;     // $MIN:  0.0 $MAX:   3.0 $DEFAULT: 1.0 $DESCRIPTION: "highlights fall-off"
   float chroma_shadows;        // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
   float chroma_highlights;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
   float chroma_global;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
@@ -127,7 +128,7 @@ typedef struct dt_iop_colorbalancergb_data_t
   float saturation_global, saturation[4];
   float purity_global, purity[4];
   float hue_angle;
-  float shadows_weight, power_fulcrum, highlights_weight;
+  float shadows_weight, power_fulcrum, highlights_weight, midtones_weight;
   float *gamut_LUT;
   float max_chroma;
   gboolean lut_inited;
@@ -256,6 +257,39 @@ static void mat3mul4(float *dst, const float *const m1, const float *const m2)
 }
 
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(output, output_comp: 16) uniform(shadows_weight, midtones_weight, highlights_weight)
+#endif
+static inline void opacity_masks(const float x,
+                                 const float shadows_weight, const float highlights_weight, const float midtones_weight,
+                                 float output[4], float output_comp[4])
+{
+  const float grey = 0.5f;
+  const float x_offset = (x - grey);
+  const float x_offset_norm = x_offset / grey;
+  const float alpha = 1.f / (1.f + expf(x_offset_norm * shadows_weight));    // opacity of shadows
+  const float beta = 1.f / (1.f + expf(-x_offset_norm * highlights_weight)); // opacity of highlights
+  const float alpha_comp = 1.f - alpha;
+  const float beta_comp = 1.f - beta;
+  const float gamma = expf(-sqf(x_offset) * midtones_weight / 4.f) * sqf(alpha_comp) * sqf(beta_comp) * 8.f; // opacity of midtones
+  const float gamma_comp = 1.f - gamma;
+
+  output[0] = alpha;
+  output[1] = gamma;
+  output[2] = beta;
+  output[3] = 0.f;
+
+  if(output_comp)
+  {
+    output_comp[0] = alpha_comp;
+    output_comp[1] = gamma_comp;
+    output_comp[2] = beta_comp;
+    output_comp[3] = 0.f;
+  }
+}
+
+
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -344,14 +378,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const int is_black = (Y == 0.f);
 
     // Opacities for luma masks
-    const float x_offset = (Y - 0.1845f) / 0.1845f;
-
-    const float alpha = 1.f / (1.f + expf(x_offset * d->shadows_weight));         // opacity of shadows
-    const float gamma = expf(-0.1845f * x_offset * x_offset / (d->shadows_weight * d->highlights_weight));
-    const float beta = 1.f / (1.f + expf(- x_offset * d->highlights_weight));     // opacity of highlights
-    const float DT_ALIGNED_PIXEL opacities[4] = { alpha, gamma, beta, 0.f };
-    const float alpha_comp = 1.f - alpha;
-    const float beta_comp = 1.f - beta;
+    float DT_ALIGNED_PIXEL opacities[4];
+    float DT_ALIGNED_PIXEL opacities_comp[4];
+    opacity_masks(powf(Y, 0.4101205819200422f), // center middle grey in 50 %
+                  d->shadows_weight, d->highlights_weight, d->midtones_weight, opacities, opacities_comp);
 
     // Hue shift - do it now because we need the gamut limit at output hue right after
     Ych[2] += d->hue_angle;
@@ -378,7 +408,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       RGB[c] = RGB[c] + global[c];
 
       //  highlights, shadows : 2 slopes with masking
-      RGB[c] *= beta_comp * (alpha_comp + alpha * shadows[c]) + beta * highlights[c];
+      RGB[c] *= opacities_comp[2] * (opacities_comp[0] + opacities[0] * shadows[c]) + opacities[2] * highlights[c];
       // factorization of : (RGB[c] * (1.f - alpha) + RGB[c] * d->shadows[c] * alpha) * (1.f - beta)  + RGB[c] * d->highlights[c] * beta;
 
       // midtones : power with sign preservation
@@ -467,23 +497,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         else color = 1.0f;
       }
 
-      float opacity;
-      switch(g->mask_type)
-      {
-      case MASK_SHADOWS:
-        opacity = alpha;
-        break;
-      case MASK_MIDTONES:
-        opacity = gamma;
-        break;
-      case MASK_HIGHLIGHTS:
-        opacity = beta;
-        break;
-      case MASK_NONE:
-      default:
-        opacity = 0.f;
-        break;
-      }
+      float opacity = opacities[g->mask_type];
       const float opacity_comp = 1.0f - opacity;
 
       for(size_t c = 0; c < 4; ++c) pix_out[c] = opacity_comp * color + opacity * fmaxf(pix_out[c], 0.f);
@@ -558,6 +572,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     for(size_t c = 0; c < 4; c++) d->midtones[c] = 1.f / (1.f + (d->midtones[c] - RGB_norm[c]));
     d->midtones_Y = 1.f / (1.f + p->midtones_Y);
     d->power_fulcrum = exp2f(p->power_fulcrum);
+    d->midtones_weight = sqf(d->shadows_weight) * sqf(d->highlights_weight) /
+      (sqf(d->shadows_weight) + sqf(d->highlights_weight));
   }
 
   // Check if the RGB working profile has changed in pipe
@@ -775,6 +791,7 @@ static void mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
   dt_iop_refresh_center(self);
 }
 
+
 static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -818,20 +835,19 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_rectangle(cr, 0, 0, graph_width, graph_height);
   cairo_fill(cr);
 
+  // from https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.583.3007&rep=rep1&type=pdf
+  const float midtones_weight
+      = sqf(shadows_weight) * sqf(highlights_weight) / (sqf(shadows_weight) + sqf(highlights_weight));
+
   float *LUT[3];
   for(size_t c = 0; c < 3; c++) LUT[c] = dt_alloc_align_float(LUT_ELEM);
 
   for(size_t k = 0 ; k < LUT_ELEM; k++)
   {
     const float Y = k / (float)(LUT_ELEM - 1);
-    const float x_offset = (Y - 0.1845f) / 0.1845f;
-    const float alpha = 1.f / (1.f + expf(x_offset * shadows_weight)); // opacity of shadows
-    const float gamma = expf(-0.1845f * x_offset * x_offset / (shadows_weight * highlights_weight));
-    const float beta = 1.f / (1.f + expf(-x_offset * highlights_weight)); // opacity of highlights
-
-    LUT[0][k] = alpha;
-    LUT[1][k] = gamma;
-    LUT[2][k] = beta;
+    float output[4];
+    opacity_masks(Y, shadows_weight, highlights_weight, midtones_weight, output, NULL);
+    for(size_t c = 0; c < 3; c++) LUT[c][k] = output[c];
   }
 
   set_color(cr, darktable.bauhaus->graph_fg);
