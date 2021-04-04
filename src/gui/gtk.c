@@ -592,8 +592,13 @@ gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x,
     case GDK_SCROLL_SMOOTH:
       if((delta_x && event->delta_x != 0) || (delta_y && event->delta_y != 0))
       {
-        if(delta_x) *delta_x = event->delta_x;
-        if(delta_y) *delta_y = event->delta_y;
+#ifdef GDK_WINDOWING_QUARTZ // on macOS deltas need to be scaled
+        if(delta_x) *delta_x = event->delta_x / 100;
+        if(delta_y) *delta_y = event->delta_y / 100;
+#else
+         if(delta_x) *delta_x = event->delta_x;
+         if(delta_y) *delta_y = event->delta_y;
+#endif
         handled = TRUE;
       }
     default:
@@ -1292,10 +1297,13 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // Connecting the callback to update keyboard accels for key_pressed
   g_signal_connect(G_OBJECT(gtk_accel_map_get()), "changed", G_CALLBACK(key_accel_changed), NULL);
 
-  // smooth scrolling must be enabled for Wayland to handle
-  // trackpad/touch events, but due to problem reports for Quartz &
-  // X11, leave it off in other cases
+  // smooth scrolling must be enabled for Wayland and Quartz to handle
+  // trackpad/touch events, but due to problem reports for
+  // X11, leave it off in that case
   gui->scroll_mask = GDK_SCROLL_MASK;
+#ifdef GDK_WINDOWING_QUARTZ
+  gui->scroll_mask |= GDK_SMOOTH_SCROLL_MASK;
+#endif
 #ifdef GDK_WINDOWING_WAYLAND
   if (GDK_IS_WAYLAND_DISPLAY(gdk_display_get_default())) gui->scroll_mask |= GDK_SMOOTH_SCROLL_MASK;
 #endif
