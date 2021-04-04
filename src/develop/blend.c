@@ -229,7 +229,7 @@ static float _ctmask_threshold(const float level, const gboolean detail)
   return 0.01f * (detail ? powf(level, 1.5f) : 1.0f - powf(fabs(level), 0.75f ));
 }
 
-static void _combine_ctmask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *mask, const struct dt_iop_roi_t *const roi_in, const struct dt_iop_roi_t *const roi_out, const float level, const gboolean inverted)
+static void _combine_ctmask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *mask, const struct dt_iop_roi_t *const roi_in, const struct dt_iop_roi_t *const roi_out, const float level)
 {
   if(level == 0.0f) return;
 
@@ -250,10 +250,10 @@ static void _combine_ctmask(struct dt_iop_module_t *self, struct dt_dev_pixelpip
 
   float *ctmask = p->ctmask_data;
  
-  const size_t bufsize = MAX(iwidth * iheight, owidth * oheight);
+  const int bufsize = MAX(iwidth * iheight, owidth * oheight);
   
-  tmp = dt_alloc_align_float((size_t) bufsize);
-  lum = dt_alloc_align_float((size_t) bufsize);
+  tmp = dt_alloc_align_float(bufsize);
+  lum = dt_alloc_align_float(bufsize);
   if((tmp == NULL) || (lum == NULL)) goto error;
 
   dt_masks_full_ctmask(ctmask, lum, tmp, iwidth, iheight, threshold, detail);
@@ -263,14 +263,15 @@ static void _combine_ctmask(struct dt_iop_module_t *self, struct dt_dev_pixelpip
   warp_mask = dt_dev_distort_ctmask(p, lum, self);
   if(warp_mask == NULL) goto error;
 
+  const int msize = owidth * oheight;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mask, warp_mask, owidth, oheight, inverted) \
+  dt_omp_firstprivate(mask, warp_mask, msize) \
   schedule(simd:static) aligned(mask, warp_mask : 64) 
  #endif
-  for(size_t idx =0; idx < (size_t) owidth * oheight; idx++)
+  for(int idx =0; idx < msize; idx++)
   {
-    mask[idx] = inverted ? 1.0f - (1.0f - mask[idx]) * warp_mask[idx] : mask[idx] * warp_mask[idx];
+    mask[idx] = mask[idx] * warp_mask[idx];
   }
   dt_free_align(warp_mask);
   dt_free_align(lum);
@@ -395,13 +396,11 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 
     // get the drawn mask if there is one
     dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
-    gboolean inverted = FALSE;
 
     if(form && (!(self->flags() & IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
     {
       dt_masks_group_render_roi(self, piece, form, roi_out, mask);
-      inverted = d->mask_combine & DEVELOP_COMBINE_MASKS_POS;
-      if(inverted)
+      if(d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
       {
         // if we have a mask and this flag is set -> invert the mask
         dt_iop_image_invert(mask,1.0f,owidth,oheight,1); //mask[k] = 1.0f - mask[k];
@@ -411,19 +410,16 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
     {
       // no form defined but drawn mask active
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
-      inverted = d->mask_combine & DEVELOP_COMBINE_MASKS_POS;
-      const float fill = inverted ? 0.0f : 1.0f;
+      const float fill = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
       dt_iop_image_fill(mask,fill,owidth,oheight,1); //mask[k] = fill;
     }
     else
     {
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
-      inverted = d->mask_combine & DEVELOP_COMBINE_INCL;
-      const float fill = inverted ? 0.0f : 1.0f;
+      const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
       dt_iop_image_fill(mask,fill,owidth,oheight,1); //mask[k] = fill;
     }
-
-    _combine_ctmask(self, piece, mask, roi_in, roi_out, d->local_contrast, inverted);
+    _combine_ctmask(self, piece, mask, roi_in, roi_out, d->local_contrast);
 
     // get parametric mask (if any) and apply global opacity
     switch(blend_csp)
@@ -584,7 +580,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 
 #ifdef HAVE_OPENCL
 static void _combine_ctmask_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *mask, const struct dt_iop_roi_t *roi_in,
-                                const struct dt_iop_roi_t *roi_out, const float level, const gboolean inverted, const int devid)
+                                const struct dt_iop_roi_t *roi_out, const float level, const int devid)
 {
   if(level == 0.0f) return;
 
@@ -718,14 +714,15 @@ static void _combine_ctmask_cl(struct dt_iop_module_t *self, struct dt_dev_pixel
   float *warp_mask = dt_dev_distort_ctmask(p, lum, self);
   if(warp_mask == NULL) goto error;
 
+  const int msize = owidth * oheight;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mask, warp_mask, owidth, oheight, inverted) \
+  dt_omp_firstprivate(mask, warp_mask, msize) \
   schedule(simd:static) aligned(mask, warp_mask : 64) 
  #endif
-  for(size_t idx =0; idx < (size_t) owidth * oheight; idx++)
+  for(int idx = 0; idx < msize; idx++)
   {
-    mask[idx] = inverted ? 1.0f - (1.0f - mask[idx]) * warp_mask[idx] : mask[idx] * warp_mask[idx];
+    mask[idx] = mask[idx] * warp_mask[idx];
   }
   dt_free_align(warp_mask);
   return;
@@ -935,13 +932,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 
     // get the drawn mask if there is one
     dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, d->mask_id);
-    gboolean inverted = FALSE;
 
     if(form && (!(self->flags() & IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
     {
       dt_masks_group_render_roi(self, piece, form, roi_out, mask);
-      inverted = d->mask_combine & DEVELOP_COMBINE_MASKS_POS;
-      if(inverted)
+      if(d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
       {
         // if we have a mask and this flag is set -> invert the mask
         dt_iop_image_invert(mask,1.0f,owidth,oheight,1); //mask[k] = 1.0f - mask[k]
@@ -951,19 +946,16 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     {
       // no form defined but drawn mask active
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
-      inverted = d->mask_combine & DEVELOP_COMBINE_MASKS_POS;
-      const float fill = inverted ? 0.0f : 1.0f;
+      const float fill = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
       dt_iop_image_fill(mask,fill,owidth,oheight,1); //mask[k] = fill;
     }
     else
     {
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
-      inverted = d->mask_combine & DEVELOP_COMBINE_INCL;
-      const float fill = inverted ? 0.0f : 1.0f;
+      const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
       dt_iop_image_fill(mask,fill,owidth,oheight,1); //mask[k] = fill;
     }
-
-    _combine_ctmask_cl(self, piece, mask, roi_in, roi_out, d->local_contrast, inverted, devid);
+    _combine_ctmask_cl(self, piece, mask, roi_in, roi_out, d->local_contrast, devid);
 
     // write mask from host to device
     dev_mask_2 = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
