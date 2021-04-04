@@ -408,6 +408,7 @@ jobs:
             mingw-w64-x86_64-python3
             mingw-w64-x86_64-iso-codes
             mingw-w64-x86_64-python3-jsonschema
+            mingw-w64-x86_64-python3-six
             mingw-w64-x86_64-python3-setuptools
             mingw-w64-x86_64-gmic
           update: true
