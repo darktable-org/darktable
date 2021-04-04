@@ -96,6 +96,9 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     ${MINGW_PATH}/libgmpxx*.dll
   #LIBUSB1
     ${MINGW_PATH}/libusb*.dll
+  #OPENSSL
+    ${MINGW_PATH}/libcrypto*.dll
+    ${MINGW_PATH}/libssl*.dll
     )
 
   if(OpenEXR_FOUND)
