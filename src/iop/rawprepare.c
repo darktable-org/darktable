@@ -351,7 +351,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-  dt_dev_write_ctmask_data(piece, (float *const)ovoid, roi_in, DT_DEV_CTMASK_RAWPREPARE);
+  dt_dev_write_luminance_mask(piece, (float *const)ovoid, roi_in, DT_DEV_LUMINANCE_MASK_RAWPREPARE);
 
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 }
@@ -509,7 +509,7 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 
   _mm_sfence();
-  dt_dev_write_ctmask_data(piece, (float *const)ovoid, roi_in, DT_DEV_CTMASK_RAWPREPARE);
+  dt_dev_write_luminance_mask(piece, (float *const)ovoid, roi_in, DT_DEV_LUMINANCE_MASK_RAWPREPARE);
 }
 #endif
 
@@ -576,7 +576,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 
-  err = dt_dev_write_ctmask_data_cl(piece, dev_out, roi_in, DT_DEV_CTMASK_RAWPREPARE);
+  err = dt_dev_write_luminance_mask_cl(piece, dev_out, roi_in, DT_DEV_LUMINANCE_MASK_RAWPREPARE);
   if(err != CL_SUCCESS) goto error;
 
   return TRUE;

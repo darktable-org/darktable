@@ -165,7 +165,6 @@ typedef enum dt_develop_blendif_channels_t
   DEVELOP_BLENDIF_OUTPUT_MASK = 0xF0F0
 } dt_develop_blendif_channels_t;
 
-
 /** blend legacy parameters version 1 */
 typedef struct dt_develop_blend_params1_t
 {

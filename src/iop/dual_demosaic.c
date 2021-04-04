@@ -57,8 +57,8 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
 
   const float contrastf = dual_threshold / 100.0f;
 
-  dt_masks_prepare_ctmask(rgb_data, blend, tmp, width, height);
-  dt_masks_full_ctmask(blend, blend, tmp, width, height, contrastf, TRUE);  
+  dt_masks_calc_luminance_mask(rgb_data, blend, width, height);
+  dt_masks_calc_contrast_mask(blend, blend, tmp, width, height, contrastf, TRUE);  
 
   const float filler = 0.0f;
   dt_iop_image_fill(blend, filler, width, 4, 1);
@@ -133,12 +133,14 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   }  
 
   {
+    const int detail = 1;
     size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
     dt_opencl_set_kernel_arg(devid, gd->kernel_dual_calc_blend, 0, sizeof(cl_mem), &luminance);  
     dt_opencl_set_kernel_arg(devid, gd->kernel_dual_calc_blend, 1, sizeof(cl_mem), &blend);  
     dt_opencl_set_kernel_arg(devid, gd->kernel_dual_calc_blend, 2, sizeof(int), &width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_dual_calc_blend, 3, sizeof(int), &height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_dual_calc_blend, 4, sizeof(float), &contrastf);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_dual_calc_blend, 5, sizeof(int), &detail);
     const int err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_dual_calc_blend, sizes);
     if(err != CL_SUCCESS) return FALSE;
   }

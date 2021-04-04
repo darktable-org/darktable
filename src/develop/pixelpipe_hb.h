@@ -133,9 +133,9 @@ typedef struct dt_dev_pixelpipe_t
 
   // the data for the contrast mask are kept in a buffer filled in by demosaic or pipeline init
   // as we have to scale the mask later ke keep both roi at that stage
-  float *ctmask_data;
-  struct dt_iop_roi_t ctmask_roi;
-  int want_ctmask;
+  float *luminance_mask_data;
+  struct dt_iop_roi_t luminance_mask_roi;
+  int want_luminance_mask;
 
   int output_imgid;
   // working?
@@ -244,15 +244,15 @@ float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const struct dt_io
                               const int raster_mask_id, const struct dt_iop_module_t *target_module,
                               gboolean *free_mask);
 // some helper functions related to the local contrast mask interface
-void dt_dev_clear_ctmask(dt_dev_pixelpipe_t *pipe);
+void dt_dev_clear_luminance_mask(dt_dev_pixelpipe_t *pipe);
 
-gboolean dt_dev_write_ctmask_data(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode);
+gboolean dt_dev_write_luminance_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode);
 #ifdef HAVE_OPENCL
-gboolean dt_dev_write_ctmask_data_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in, const dt_iop_roi_t *const roi_in, const int mode);
+gboolean dt_dev_write_luminance_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in, const dt_iop_roi_t *const roi_in, const int mode);
 #endif
 
 // helper function writing the pipe-processed ctmask data to dest 
-float *dt_dev_distort_ctmask(const dt_dev_pixelpipe_t *pipe, float *src, const struct dt_iop_module_t *target_module);
+float *dt_dev_distort_luminance_mask(const dt_dev_pixelpipe_t *pipe, float *src, const struct dt_iop_module_t *target_module);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

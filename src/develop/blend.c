@@ -223,32 +223,32 @@ int dt_develop_blendif_init_masking_profile(struct dt_dev_pixelpipe_iop_t *piece
   return 1;
 }
 
-static float _ctmask_threshold(const float level, const gboolean detail)
+static float _contrast_mask_threshold(const float level, const gboolean detail)
 {
   // this does some range calculation for smoother ui experience
   return 0.01f * (detail ? powf(level, 1.5f) : 1.0f - powf(fabs(level), 0.75f ));
 }
 
-static void _combine_ctmask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *mask, const struct dt_iop_roi_t *const roi_in, const struct dt_iop_roi_t *const roi_out, const float level)
+static void _refine_contrast_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *mask, const struct dt_iop_roi_t *const roi_in, const struct dt_iop_roi_t *const roi_out, const float level)
 {
   if(level == 0.0f) return;
 
   gboolean detail = (level > 0.0f);
-  const float threshold = _ctmask_threshold(level, detail);
+  const float threshold = _contrast_mask_threshold(level, detail);
   
   float *tmp = NULL;
   float *lum = NULL;
   float *warp_mask = NULL;
 
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if(p->ctmask_data == NULL) goto error;
+  if(p->luminance_mask_data == NULL) goto error;
 
-  const int iwidth  = p->ctmask_roi.width;
-  const int iheight = p->ctmask_roi.height;
+  const int iwidth  = p->luminance_mask_roi.width;
+  const int iheight = p->luminance_mask_roi.height;
   const int owidth  = roi_in->width;
   const int oheight = roi_in->height;
 
-  float *ctmask = p->ctmask_data;
+  float *ctmask = p->luminance_mask_data;
  
   const int bufsize = MAX(iwidth * iheight, owidth * oheight);
   
@@ -256,11 +256,11 @@ static void _combine_ctmask(struct dt_iop_module_t *self, struct dt_dev_pixelpip
   lum = dt_alloc_align_float(bufsize);
   if((tmp == NULL) || (lum == NULL)) goto error;
 
-  dt_masks_full_ctmask(ctmask, lum, tmp, iwidth, iheight, threshold, detail);
+  dt_masks_calc_contrast_mask(ctmask, lum, tmp, iwidth, iheight, threshold, detail);
   dt_masks_extend_border(lum, iwidth, iheight, 4);
 
-  // here we have the slightly blurred full ctmask available
-  warp_mask = dt_dev_distort_ctmask(p, lum, self);
+  // here we have the slightly blurred full contrast mask available
+  warp_mask = dt_dev_distort_luminance_mask(p, lum, self);
   if(warp_mask == NULL) goto error;
 
   const int msize = owidth * oheight;
@@ -419,7 +419,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
       dt_iop_image_fill(mask,fill,owidth,oheight,1); //mask[k] = fill;
     }
-    _combine_ctmask(self, piece, mask, roi_in, roi_out, d->local_contrast);
+    _refine_contrast_mask(self, piece, mask, roi_in, roi_out, d->local_contrast);
 
     // get parametric mask (if any) and apply global opacity
     switch(blend_csp)
@@ -579,27 +579,27 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 }
 
 #ifdef HAVE_OPENCL
-static void _combine_ctmask_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *mask, const struct dt_iop_roi_t *roi_in,
+static void _refine_contrast_mask_cl(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *mask, const struct dt_iop_roi_t *roi_in,
                                 const struct dt_iop_roi_t *roi_out, const float level, const int devid)
 {
   if(level == 0.0f) return;
 
   const int detail = (level > 0.0f);
-  const float threshold = _ctmask_threshold(level, detail);  
+  const float threshold = _contrast_mask_threshold(level, detail);  
   float *lum = NULL;
   cl_mem tmp = NULL;
   cl_mem blur = NULL;
   cl_mem out = NULL;
 
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if(p->ctmask_data == NULL) goto error;
+  if(p->luminance_mask_data == NULL) goto error;
 
-  const int iwidth  = p->ctmask_roi.width;
-  const int iheight = p->ctmask_roi.height;
+  const int iwidth  = p->luminance_mask_roi.width;
+  const int iheight = p->luminance_mask_roi.height;
   const int owidth  = roi_in->width;
   const int oheight = roi_in->height;
 
-  float *ctmask = p->ctmask_data;
+  float *ctmask = p->luminance_mask_data;
  
   lum = dt_alloc_align_float(iwidth * iheight);
   if(lum == NULL) goto error;
@@ -616,14 +616,25 @@ static void _combine_ctmask_cl(struct dt_iop_module_t *self, struct dt_dev_pixel
   }
 
   const int program = 31;
-  int kernel_calc_blend = dt_opencl_create_kernel(program, "calc_ctmask");
-  int kernel_write_mask = dt_opencl_create_kernel(program, "writeout_ctmask");
+  int kernel_write_mask = dt_opencl_create_kernel(program, "writeout_mask");
+  int kernel_read_mask  = dt_opencl_create_kernel(program, "readin_mask");
+  int kernel_calc_blend = dt_opencl_create_kernel(program, "dual_calc_blend");
   int kernel_mask_blur  = dt_opencl_create_kernel(program, "dual_fast_blur");
 
   {
     size_t sizes[3] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1 };
-    dt_opencl_set_kernel_arg(devid, kernel_calc_blend, 0, sizeof(cl_mem), &blur);
-    dt_opencl_set_kernel_arg(devid, kernel_calc_blend, 1, sizeof(cl_mem), &tmp);
+    dt_opencl_set_kernel_arg(devid, kernel_read_mask, 0, sizeof(cl_mem), &out);
+    dt_opencl_set_kernel_arg(devid, kernel_read_mask, 1, sizeof(cl_mem), &tmp);
+    dt_opencl_set_kernel_arg(devid, kernel_read_mask, 2, sizeof(int), &iwidth);
+    dt_opencl_set_kernel_arg(devid, kernel_read_mask, 3, sizeof(int), &iheight);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel_read_mask, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }  
+
+  {
+    size_t sizes[3] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1 };
+    dt_opencl_set_kernel_arg(devid, kernel_calc_blend, 0, sizeof(cl_mem), &out);
+    dt_opencl_set_kernel_arg(devid, kernel_calc_blend, 1, sizeof(cl_mem), &blur);
     dt_opencl_set_kernel_arg(devid, kernel_calc_blend, 2, sizeof(int), &iwidth);
     dt_opencl_set_kernel_arg(devid, kernel_calc_blend, 3, sizeof(int), &iheight);
     dt_opencl_set_kernel_arg(devid, kernel_calc_blend, 4, sizeof(float), &threshold);
@@ -703,6 +714,7 @@ static void _combine_ctmask_cl(struct dt_iop_module_t *self, struct dt_dev_pixel
 
   dt_opencl_free_kernel(kernel_calc_blend);
   dt_opencl_free_kernel(kernel_write_mask);
+  dt_opencl_free_kernel(kernel_read_mask);
   dt_opencl_free_kernel(kernel_mask_blur);
 
   dt_opencl_release_mem_object(tmp);
@@ -710,8 +722,8 @@ static void _combine_ctmask_cl(struct dt_iop_module_t *self, struct dt_dev_pixel
   dt_opencl_release_mem_object(out);
   tmp = blur = out = NULL;
 
-  // here we have the slightly blurred full ctmask available
-  float *warp_mask = dt_dev_distort_ctmask(p, lum, self);
+  // here we have the slightly blurred full contrast available
+  float *warp_mask = dt_dev_distort_luminance_mask(p, lum, self);
   if(warp_mask == NULL) goto error;
 
   const int msize = owidth * oheight;
@@ -955,7 +967,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
       dt_iop_image_fill(mask,fill,owidth,oheight,1); //mask[k] = fill;
     }
-    _combine_ctmask_cl(self, piece, mask, roi_in, roi_out, d->local_contrast, devid);
+    _refine_contrast_mask_cl(self, piece, mask, roi_in, roi_out, d->local_contrast, devid);
 
     // write mask from host to device
     dev_mask_2 = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));

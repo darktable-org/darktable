@@ -21,7 +21,7 @@
   The contrast masks (CM) are used in the dual demosaicer and as a further refinement step in
   shape / parametric masks.
   They contain threshold weighed sigmoid values of pixel-wise local signal variances so they
-  can be understood as "areas with or without local detail. 
+  can be understood as "areas with or without local detail". 
   
   As the CM using algoritms (like dual demosaicing, sharpening ...) are all pixel peeping we
   need the "original data" coming from the sensor to calculate the CM.
@@ -38,36 +38,40 @@
   So the first important point is:
   We make sure taking the input data for the CM right from the demosaicer for normal raws
   or from rawprepare in case of monochromes. This means some additional housekeeping for the
-  pixelpipe. If any mask in any module selects a thresholf of != 0.0 we leave a flag in the pipe
+  pixelpipe. If any mask in any module selects a threshold of != 0.0 we leave a flag in the pipe
   struct telling a) we want a CM and b) we want it from demosaic or from rawprepare.
   If such a flag has not been set before we will force a pipeline reprocessing.
   
-  gboolean dt_dev_write_ctmask_data(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode);
-  writes an intermediate mask holding (VM) containing local pixelwise variances. This VM
-  - is not scaled but only cropped to the roi_out of the processing module
-  - holds luminance variances. For this we take the non-linear 'luminance' and calulate a
-    'variance' from the horizontal and vertical neighbors in a 5x5 pixel area.
-  - the pipe also gets the roi of the writing module 
-  
-  Calculating the intermediate VM is done for performance reasons. This way we don't have to
-  pass full data to the module and the VM can be shared by other modules that also might want to use it. 
-  
-  If a modules mask uses the contrast mask refinement step it takes the intermediate mask VM and
-  calculates a new mask VMT via
-  void dt_masks_full_ctmask(float *const restrict src, float *const restrict out, float *const restrict tmp, const int width, const int height, const float threshold, const gboolean detail)
-  It takes the VM as input, calculates the sigmoid threshold values and does some blurring for
-  smoother transitions. As the size of this mask in not scaled so far we can use a constant sigma, we could
-  also have chosen another algo but the blur_9x9 is pretty fast both in openmp/cl code paths - much faster
-  than standard gaussians.
+  gboolean dt_dev_write_luminance_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode);
 
-  The actual refinement is done in
-  static void _combine_ctmask
-  and it's _cl friend. We still have the threshold weighed mask VMT untransformed, it's still based
-  on the input data. So we have to transform it through the pipeline using   
-  float *dt_dev_distort_ctmask(const dt_dev_pixelpipe_t *pipe, float *src, const dt_iop_module_t *target_module)
-  returning a pointer to a distorted mask DM with same size as used in the module wanting the refinement.
+  writes a mask holding luminances for every pixel.
+  This luminance mask (LM) is not scaled but only cropped to the roi_out of the writing module (demosaic or rawprepare)
+  Also the pipe gets the roi of the writing module so we can later scale/distort the LM.
+  Calculating the LM done for performance and lower mem pressure reasons. This way we don't have to
+  pass full data to the module and the LM can be used by other modules that want it. 
+ 
+  If a modules mask uses the contrast mask refinement step it takes the luminance mask LM and
+  calculates an (intermediate) mask (IM) via
 
-  NOW we finally can use the DM to refine the original mask.
+  void dt_masks_calc_contrast_mask(float *const restrict src, float *const restrict out, float *const restrict tmp,
+                                   const int width, const int height, const float threshold, const gboolean detail)
+  This IM mask is still not scaled but has the roi of the writing module.
+  For every pixel we calculate
+    a - luminance variances from the neighbors in a 5x5 pixel area.
+    b - the contrast masks value via a sigmoid function with the variance and threshold as parameters.
+  The raw contrast mask is now slightly blurred to avoid hard transitions.
+  As the size of this mask is still not scaled we can use a constant sigma, we could also have chosen another
+  algo but the blur_9x9 is pretty fast both in openmp/cl code paths - much faster than dt gaussians.
+
+  The actual mask refinement is done in
+  static void _refine_contrast_mask
+  and it's _cl friend. As the intermediate mask IM is still untransformed we have to transform it through the pipeline using   
+
+  float *dt_dev_distort_luminance_mask(const dt_dev_pixelpipe_t *pipe, float *src, const dt_iop_module_t *target_module)
+
+  returning a pointer to a distorted mask (CM) with same size as used in the module wanting the refinement.
+  This CM is used to refine the original mask.
+
   All other refinements and parametric parameters are untouched.
 
   Some additional comments:
@@ -75,7 +79,7 @@
      inmages like jpegs or 8bit input the algo didn't work as good.
   2. Of course credit goes to Ingo @heckflosse from rt team for the original idea.
   
-  hanno@schwalm-bremen.de 21/04/03
+  hanno@schwalm-bremen.de 21/04/04
 */
 
 void dt_masks_extend_border(float *mask, const int width, const int height, const int border)
@@ -172,34 +176,19 @@ void dt_masks_blur_9x9(float *const restrict src, float *const restrict out, con
   }
 }
 
-void dt_masks_prepare_ctmask(float *const restrict src, float *const restrict mask, float *const restrict tmp, const int width, const int height)
+void dt_masks_calc_luminance_mask(float *const restrict src, float *const restrict mask, const int width, const int height)
 {
+  const int msize = width * height;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(tmp, src, width, height) \
+  dt_omp_firstprivate(mask, src, msize) \
   schedule(simd:static) aligned(mask, src : 64) 
 #endif
-  for(size_t idx =0; idx < (size_t) width * height; idx++)
+  for(int idx =0; idx < msize; idx++)
   {
-    const float val = 0.333333f * (src[4 * idx] + src[4 * idx + 1] + src[4 * idx + 2]);
-    tmp[idx] = lab_f(val);
+    const float val = 0.333333333f * (src[4 * idx] + src[4 * idx + 1] + src[4 * idx + 2]);
+    mask[idx] = lab_f(val);
   }
-
-  const float scale = 1.0f / 16.0f;
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mask, tmp, width, height, scale) \
-  schedule(simd:static) aligned(mask, tmp : 64) 
- #endif
-  for(int row = 2; row < height - 2; row++)
-  {
-    for(int col = 2, idx = row * width + col; col < width - 2; col++, idx++)
-    {
-      mask[idx] = scale * sqrtf(sqf(tmp[idx+1] - tmp[idx-1]) + sqf(tmp[idx + width]   - tmp[idx - width]) +
-                                sqf(tmp[idx+2] - tmp[idx-2]) + sqf(tmp[idx + 2*width] - tmp[idx - 2*width]));
-    }
-  }
-  dt_masks_extend_border(mask, width, height, 2);  
 }
 
 static inline float calcBlendFactor(float val, float threshold)
@@ -210,18 +199,35 @@ static inline float calcBlendFactor(float val, float threshold)
     return 1.0f / (1.0f + dt_fast_expf(16.0f - (16.0f / threshold) * val));
 }
 
-void dt_masks_full_ctmask(float *const restrict src, float *const restrict out, float *const restrict tmp, const int width, const int height, const float threshold, const gboolean detail)
+void dt_masks_calc_contrast_mask(float *const restrict src, float *const restrict out, float *const restrict tmp, const int width, const int height, const float threshold, const gboolean detail)
 {
+  const float scale = 1.0f / 16.0f;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(src, tmp, width, height, threshold, detail) \
+  dt_omp_firstprivate(src, tmp, width, height, scale) \
   schedule(simd:static) aligned(src, tmp : 64) 
-#endif
-  for(size_t idx =0; idx < (size_t) width * height; idx++)
+ #endif
+  for(int row = 2; row < height - 2; row++)
   {
-    const float blend = calcBlendFactor(src[idx], threshold);
+    for(int col = 2, idx = row * width + col; col < width - 2; col++, idx++)
+    {
+      tmp[idx] = scale * sqrtf(sqf(src[idx+1] - src[idx-1]) + sqf(src[idx + width]   - src[idx - width]) +
+                                sqf(src[idx+2] - src[idx-2]) + sqf(src[idx + 2*width] - src[idx - 2*width]));
+    }
+  }
+  dt_masks_extend_border(tmp, width, height, 2);  
+
+  const int msize = width * height;
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(tmp, msize, threshold, detail) \
+  schedule(simd:static) aligned(tmp : 64) 
+#endif
+  for(int idx = 0; idx < msize; idx++)
+  {
+    const float blend = calcBlendFactor(tmp[idx], threshold);
     tmp[idx] = detail ? blend : 1.0f - blend;
   }
   dt_masks_blur_9x9(tmp, out, width, height, 2.0f);
-}  
+}
 

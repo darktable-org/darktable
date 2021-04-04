@@ -285,16 +285,29 @@ __kernel void dual_luminance_mask(global float *luminance, __read_only image2d_t
   const int idx = mad24(row, w, col);
 
   float4 val = read_imagef(in, sampleri, (int2)(col, row));
-  luminance[idx] = lab_f(0.333333333f * (val.x + val.y + val.z));    
+  luminance[idx] = lab_f(0.333333333f * (val.x + val.y + val.z));
 }
 
-__kernel void dual_calc_blend(global float *luminance, global float *mask, const int w, const int height, const float threshold)
+__kernel void out_luminance_mask(__write_only image2d_t out, __read_only image2d_t in, const int w, const int height)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= w) || (row >= height)) return;
+  const int idx = mad24(row, w, col);
+
+  float4 val = read_imagef(in, sampleri, (int2)(col, row));
+  const float lum = lab_f(0.333333333f * (val.x + val.y + val.z));
+  write_imagef(out, (int2)(col, row), lum);  
+}
+
+__kernel void dual_calc_blend(global float *luminance, global float *mask, const int w, const int height, const float threshold, const int detail)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
   if((col >= w) || (row >= height)) return;
 
   const int oidx = mad24(row, w, col);
+
   int incol = col < 2 ? 2 : col;
   incol = col > w - 3 ? w - 3 : incol;
   int inrow = row < 2 ? 2 : row;
@@ -305,22 +318,22 @@ __kernel void dual_calc_blend(global float *luminance, global float *mask, const
   const float scale = 1.0f / 16.0f;
   const float contrast = scale * native_sqrt(sqrf(luminance[idx+1] - luminance[idx-1]) + sqrf(luminance[idx +  w] - luminance[idx -  w]) +
                                              sqrf(luminance[idx+2] - luminance[idx-2]) + sqrf(luminance[idx + w2] - luminance[idx - w2]));
-  mask[oidx] = calcBlendFactor(contrast, threshold);
+  const float blend = calcBlendFactor(contrast, threshold);
+  mask[oidx] = detail ? blend : 1.0f - blend;
 }
 
-__kernel void calc_ctmask(global float *out,  __read_only image2d_t in, const int w, const int height, const float threshold, const int detail)
+__kernel void readin_mask(global float *mask, __read_only image2d_t in, const int w, const int height)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
   if((col >= w) || (row >= height)) return;
+
   const int idx = mad24(row, w, col);
   const float val = read_imagef(in, sampleri, (int2)(col, row)).x;
-
-  const float blend = calcBlendFactor(val, threshold);
-  out[idx] = detail ? blend : 1.0f - blend;
+  mask[idx] = val;
 }
 
-__kernel void writeout_ctmask(global float *mask, __write_only image2d_t out, const int w, const int height)
+__kernel void writeout_mask(global float *mask, __write_only image2d_t out, const int w, const int height)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
@@ -330,26 +343,6 @@ __kernel void writeout_ctmask(global float *mask, __write_only image2d_t out, co
   const float val = mask[idx];
   write_imagef(out, (int2)(col, row), val);  
 }
-
-__kernel void prepare_ctmask(global float *luminance, __write_only image2d_t mask, const int w, const int height)
-{
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if((col >= w) || (row >= height)) return;
-
-  int incol = col < 2 ? 2 : col;
-  incol = col > w - 3 ? w - 3 : incol;
-  int inrow = row < 2 ? 2 : row;
-  inrow = row > height - 3 ? height - 3 : inrow;
-
-  const int idx = mad24(inrow, w, incol); 
-  const int w2 = w * 2;
-  const float scale = 1.0f / 16.0f;
-  const float contrast = scale * native_sqrt(sqrf(luminance[idx+1] - luminance[idx-1]) + sqrf(luminance[idx +  w] - luminance[idx -  w]) +
-                                             sqrf(luminance[idx+2] - luminance[idx-2]) + sqrf(luminance[idx + w2] - luminance[idx - w2]));
-  write_imagef(mask, (int2)(col, row), contrast);
-}
-
 
 __kernel void dual_blend_both(__read_only image2d_t high, __read_only image2d_t low, __write_only image2d_t out, const int w, const int height, global float *mask, const int showmask)
 {

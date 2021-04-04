@@ -2206,9 +2206,7 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     dt_bauhaus_slider_enable_soft_boundaries(bd->channel_boost_factor_slider, 0.0, 18.0);
     gtk_widget_set_tooltip_text(bd->channel_boost_factor_slider, _("adjust the boost factor of the channel mask"));
     gtk_widget_set_sensitive(bd->channel_boost_factor_slider, FALSE);
-
-    g_signal_connect(G_OBJECT(bd->channel_boost_factor_slider), "value-changed",
-                     G_CALLBACK(_blendop_blendif_boost_factor_callback), bd);
+    g_signal_connect(G_OBJECT(bd->channel_boost_factor_slider), "value-changed", G_CALLBACK(_blendop_blendif_boost_factor_callback), bd);
 
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(bd->channel_boost_factor_slider), TRUE, FALSE, 0);
 
