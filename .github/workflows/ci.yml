@@ -1,7 +1,5 @@
 name: CI
 
-# Keep in sync with manualrun.yml!
-
 on:
   push:
     branches:
@@ -32,6 +30,7 @@ on:
         - "data/themes/**"
         - "data/watermarks/**"
         - "**.md"
+  workflow_dispatch:
 
 jobs:
 
