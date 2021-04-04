@@ -2558,8 +2558,8 @@ void dt_database_show_error(const dt_database_t *db)
         else
           dt_gui_show_standalone_yes_no_dialog(_("oops"), g_markup_printf_escaped(
                                         _("\n  At least one file could not be removed.  \n"
-                                        "  You may try to delete the files <i>data.db.lock</i> and <i>library.db.lock</i>  \n"
-                                        "  in folder <a href=\"file:///%s\">%s</a> manually.  \n"), lck_dirname, lck_dirname), 
+                                        "  You may try to manually delete the files <i>data.db.lock</i> and <i>library.db.lock</i>  \n"
+                                        "  in folder <a href=\"file:///%s\">%s</a>.  \n"), lck_dirname, lck_dirname), 
                                         _("ok"), NULL);
       }
     }
