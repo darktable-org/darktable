@@ -1283,8 +1283,7 @@ int dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so, const 
                                            const int length)
 {
   // we need a dt_iop_module_t for dt_develop_blend_legacy_params()
-  dt_iop_module_t *module;
-  module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+  dt_iop_module_t *module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
   if(dt_iop_load_module_by_so(module, module_so, NULL))
   {
     free(module);
