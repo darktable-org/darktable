@@ -462,8 +462,8 @@ static gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScrol
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
-  gdouble delta_y;
-  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  int delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
      p->saturation = CLAMP(p->saturation - 0.1 * delta_y, -3.0, 3.0);
      dt_bauhaus_slider_set(g->slider, p->saturation);
