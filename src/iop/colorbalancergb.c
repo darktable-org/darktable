@@ -32,6 +32,7 @@
 #include "dtgtk/drawingarea.h"
 #include "dtgtk/gradientslider.h"
 #include "gui/accelerators.h"
+#include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "gui/color_picker_proxy.h"
@@ -879,10 +880,19 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   pango_layout_set_font_description(layout, desc);
   pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
 
-  //const float inset = DT_PIXEL_APPLY_DPI(4);
-  const float margin_top = 0;
-  const float margin_bottom = 0;
-  const float margin_left = 0;
+  char text[256];
+
+  // Get the text line height for spacing
+  PangoRectangle ink;
+  snprintf(text, sizeof(text), "X");
+  pango_layout_set_text(layout, text, -1);
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+  const float line_height = ink.height;
+
+  const float inset = DT_PIXEL_APPLY_DPI(4);
+  const float margin_top = inset;
+  const float margin_bottom = line_height + 2 * inset;
+  const float margin_left = line_height + inset;
   const float margin_right = 0;
 
   const float graph_width = allocation.width - margin_right - margin_left;   // align the right border on sliders
@@ -890,13 +900,63 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   gtk_render_background(context, cr, 0, 0, allocation.width, allocation.height);
 
+  // draw x gradient as axis legend
+  cairo_pattern_t *grad;
+  grad = cairo_pattern_create_linear(margin_left, 0.0, graph_width, 0.0);
+  dt_cairo_perceptual_gradient(grad, 1.0);
+  cairo_set_line_width(cr, 0.0);
+  cairo_rectangle(cr, margin_left, graph_height + 2 * inset, graph_width, line_height);
+  cairo_set_source(cr, grad);
+  cairo_fill(cr);
+  cairo_pattern_destroy(grad);
+
+  // draw y gradient as axis legend
+  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, line_height);
+  unsigned char *data = malloc(stride * graph_height);
+  cairo_surface_t *surface = cairo_image_surface_create_for_data(data, CAIRO_FORMAT_ARGB32, (size_t)line_height, (size_t)graph_height, stride);
+
+  const size_t checker_1 = DT_PIXEL_APPLY_DPI(6);
+  const size_t checker_2 = 2 * checker_1;
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(data, graph_height, line_height, checker_1, checker_2) \
+  schedule(static) collapse(2)
+#endif
+  for(size_t i = 0; i < (size_t)graph_height; i++)
+    for(size_t j = 0; j < (size_t)line_height; j++)
+    {
+      const size_t k = ((i * (size_t)line_height) + j) * 4;
+      unsigned char color;
+      const float alpha = (float)i / graph_height;
+      if(i % checker_1 < i % checker_2)
+      {
+        if(j % checker_1 < j % checker_2) color = 150;
+        else color = 100;
+      }
+      else
+      {
+        if(j % checker_1 < j % checker_2) color = 100;
+        else color = 150;
+      }
+
+      for(size_t c = 0; c < 4; ++c) data[k + c] = color * alpha;
+      data[k+3] = alpha * 255;
+    }
+
+  cairo_set_source_surface(cr, surface, 0, margin_top);
+  cairo_paint(cr);
+  free(data);
+  cairo_surface_destroy(surface);
+
   // set the graph as the origin of the coordinates
   cairo_translate(cr, margin_left, margin_top);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
   set_color(cr, darktable.bauhaus->graph_bg);
   cairo_rectangle(cr, 0, 0, graph_width, graph_height);
-  cairo_fill(cr);
+  cairo_fill_preserve(cr);
+  cairo_clip(cr);
 
   // from https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.583.3007&rep=rep1&type=pdf
   const float midtones_weight
@@ -906,6 +966,11 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   float *LUT[3];
   for(size_t c = 0; c < 3; c++) LUT[c] = dt_alloc_align_float(LUT_ELEM);
 
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(LUT, shadows_weight, midtones_weight, highlights_weight, grey_fulcrum) \
+  schedule(static)
+#endif
   for(size_t k = 0 ; k < LUT_ELEM; k++)
   {
     const float Y = k / (float)(LUT_ELEM - 1);
@@ -914,11 +979,17 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     for(size_t c = 0; c < 3; c++) LUT[c][k] = output[c];
   }
 
-  set_color(cr, darktable.bauhaus->graph_fg);
+  GdkRGBA fg_color = darktable.bauhaus->graph_fg;
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
 
   for(size_t c = 0; c < 3; c++)
   {
+    GdkRGBA line_color = { fg_color.red * (1. - (2 - c) / 4.),
+                           fg_color.green * (1. - (2 - c) / 4.),
+                           fg_color.blue * (1. - (2 - c) / 4.),
+                           fg_color.alpha };
+    set_color(cr, line_color);
+
     cairo_move_to(cr, 0, (1.f - LUT[c][0]) * graph_height);
     for(size_t k = 0; k < LUT_ELEM; k++)
     {
