@@ -54,10 +54,10 @@ DT_MODULE_INTROSPECTION(4, dt_iop_demosaic_params_t)
 typedef enum dt_iop_demosaic_method_t
 {
   // methods for Bayer images
-  DT_IOP_DEMOSAIC_PPG = 0,   // $DESCRIPTION: "PPG (fast)"
-  DT_IOP_DEMOSAIC_AMAZE = 1, // $DESCRIPTION: "AMaZE (slow)"
+  DT_IOP_DEMOSAIC_PPG = 0,   // $DESCRIPTION: "PPG"
+  DT_IOP_DEMOSAIC_AMAZE = 1, // $DESCRIPTION: "AMaZE"
   DT_IOP_DEMOSAIC_VNG4 = 2,  // $DESCRIPTION: "VNG4"
-  DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME = 3, // $DESCRIPTION: "passthrough (monochrome) (experimental)"
+  DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME = 3, // $DESCRIPTION: "passthrough (monochrome)"
   DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR = 4, // $DESCRIPTION: "photosite color (debug)"
   DT_IOP_DEMOSAIC_RCD = 5,   // $DESCRIPTION: "RCD"
   DT_IOP_DEMOSAIC_RCD_VNG = DEMOSAIC_DUAL | DT_IOP_DEMOSAIC_RCD, // $DESCRIPTION: "RCD + VNG4"
@@ -65,9 +65,9 @@ typedef enum dt_iop_demosaic_method_t
   // methods for x-trans images
   DT_IOP_DEMOSAIC_VNG = DEMOSAIC_XTRANS | 0,           // $DESCRIPTION: "VNG"
   DT_IOP_DEMOSAIC_MARKESTEIJN = DEMOSAIC_XTRANS | 1,   // $DESCRIPTION: "Markesteijn 1-pass"
-  DT_IOP_DEMOSAIC_MARKESTEIJN_3 = DEMOSAIC_XTRANS | 2, // $DESCRIPTION: "Markesteijn 3-pass (slow)"
-  DT_IOP_DEMOSAIC_PASSTHR_MONOX = DEMOSAIC_XTRANS | 3, // $DESCRIPTION: "passthrough (monochrome) (experimental)"
-  DT_IOP_DEMOSAIC_FDC = DEMOSAIC_XTRANS | 4,           // $DESCRIPTION: "frequency domain chroma (slow)"
+  DT_IOP_DEMOSAIC_MARKESTEIJN_3 = DEMOSAIC_XTRANS | 2, // $DESCRIPTION: "Markesteijn 3-pass"
+  DT_IOP_DEMOSAIC_PASSTHR_MONOX = DEMOSAIC_XTRANS | 3, // $DESCRIPTION: "passthrough (monochrome)"
+  DT_IOP_DEMOSAIC_FDC = DEMOSAIC_XTRANS | 4,           // $DESCRIPTION: "frequency domain chroma"
   DT_IOP_DEMOSAIC_PASSTHR_COLORX = DEMOSAIC_XTRANS | 5, // $DESCRIPTION: "photosite color (debug)"
   DT_IOP_DEMOSAIC_MARKEST3_VNG = DEMOSAIC_DUAL | DT_IOP_DEMOSAIC_MARKESTEIJN_3 // $DESCRIPTION: "Markesteijn 3-pass + VNG"
 } dt_iop_demosaic_method_t;
@@ -105,7 +105,7 @@ typedef struct dt_iop_demosaic_params_t
   dt_iop_demosaic_greeneq_t green_eq; // $DEFAULT: DT_IOP_GREEN_EQ_NO $DESCRIPTION: "match greens"
   float median_thrs; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "edge threshold"
   dt_iop_demosaic_smooth_t color_smoothing; // $DEFAULT: DEMOSAIC_SMOOTH_OFF $DESCRIPTION: "color smoothing"
-  dt_iop_demosaic_method_t demosaicing_method; // $DEFAULT: DT_IOP_DEMOSAIC_PPG $DESCRIPTION: "demosaicing method"
+  dt_iop_demosaic_method_t demosaicing_method; // $DEFAULT: DT_IOP_DEMOSAIC_RCD $DESCRIPTION: "demosaicing method"
   uint32_t yet_unused_data_specific_to_demosaicing_method;
   float dual_thrs; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.15 $DESCRIPTION: "switch dual threshold"
 } dt_iop_demosaic_params_t;
@@ -2966,7 +2966,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // only overwrite setting if quality << requested and in dr mode and not a special method
   && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
   && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR))
-    demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_MARKESTEIJN;
+    demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_RCD : DT_IOP_DEMOSAIC_MARKESTEIJN;
 
 
   const float *const pixels = (float *)i;
@@ -5433,14 +5433,22 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   d->color_smoothing = p->color_smoothing;
   d->median_thrs = p->median_thrs;
   d->dual_thrs = p->dual_thrs;
-  d->demosaicing_method = p->demosaicing_method;
 
-  const gboolean passing = ((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
-                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
-                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
-                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX));
+  dt_iop_demosaic_method_t use_method = p->demosaicing_method;
+  const gboolean xmethod = use_method & DEMOSAIC_XTRANS;
+  const gboolean bayer   = (self->dev->image_storage.buf_dsc.filters != 9u);
 
-  if(!(p->demosaicing_method == DT_IOP_DEMOSAIC_PPG))
+  if(bayer && xmethod)   use_method = DT_IOP_DEMOSAIC_RCD;
+  if(!bayer && !xmethod) use_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+
+  if(use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME || use_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX)
+    use_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
+  if(use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR || use_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX)
+    use_method = DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR;
+
+  const gboolean passing = (use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME || use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR);
+
+  if(!(use_method == DT_IOP_DEMOSAIC_PPG))
     d->median_thrs = 0.0f;
   if(passing)
   {
@@ -5448,13 +5456,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     d->color_smoothing = 0;
   }
 
-  if(p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME ||
-     p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX)
-    d->demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
-
-  if(p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR ||
-     p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX)
-    d->demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR;
+  d->demosaicing_method = use_method;
 
   // OpenCL only supported by some of the demosaicing methods
   switch(d->demosaicing_method)
@@ -5537,19 +5539,25 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
 
   const gboolean bayer = (self->dev->image_storage.buf_dsc.filters != 9u);
-  const gboolean isppg = (p->demosaicing_method == DT_IOP_DEMOSAIC_PPG);
-  const gboolean isdual = (p->demosaicing_method & DEMOSAIC_DUAL);
-  const gboolean passing = ((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
-                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
-                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
-                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX));
+  dt_iop_demosaic_method_t use_method = p->demosaicing_method;
+  const gboolean xmethod = use_method & DEMOSAIC_XTRANS;
+
+  if(bayer && xmethod)   use_method = DT_IOP_DEMOSAIC_RCD;
+  if(!bayer && !xmethod) use_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+
+  const gboolean isppg = (use_method == DT_IOP_DEMOSAIC_PPG);
+  const gboolean isdual = (use_method & DEMOSAIC_DUAL);
+  const gboolean passing = ((use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
+                            (use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
+                            (use_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
+                            (use_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX));
 
   gtk_widget_set_visible(g->demosaic_method_bayer, bayer);
   gtk_widget_set_visible(g->demosaic_method_xtrans, !bayer);
   if(bayer)
-    dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayer, p->demosaicing_method);
+    dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayer, use_method);
   else
-    dt_bauhaus_combobox_set_from_value(g->demosaic_method_xtrans, p->demosaicing_method);
+    dt_bauhaus_combobox_set_from_value(g->demosaic_method_xtrans, use_method);
 
   gtk_widget_set_visible(g->median_thrs, bayer && isppg);
   gtk_widget_set_visible(g->greeneq, !passing);
@@ -5591,7 +5599,7 @@ void reload_defaults(dt_iop_module_t *module)
   else if(module->dev->image_storage.buf_dsc.filters == 9u)
     d->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
   else
-    d->demosaicing_method = DT_IOP_DEMOSAIC_PPG;
+    d->demosaicing_method = DT_IOP_DEMOSAIC_RCD;
 
   module->hide_enable_button = 1;
 
@@ -5659,11 +5667,11 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->demosaic_method_bayer = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
   for(int i=0;i<7;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayer, 8);
-  gtk_widget_set_tooltip_text(g->demosaic_method_bayer, _("demosaicing raw data method"));
+  gtk_widget_set_tooltip_text(g->demosaic_method_bayer, _("bayer sensor demosaicing method, PPG and RCD are fast, AMaZE is slow.\ndual demosaicers double processing time."));
 
   g->demosaic_method_xtrans = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
   for(int i=0;i<8;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_xtrans, 0);
-  gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("demosaicing raw data method"));
+  gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("xtrans sensor demosaicing method, Markesteijn 3-pass and frequency domain chroma are slow.\ndual demosaicers double processing time."));
 
   g->median_thrs = dt_bauhaus_slider_from_params(self, "median_thrs");
   dt_bauhaus_slider_set_step(g->median_thrs, 0.001);
