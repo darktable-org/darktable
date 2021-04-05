@@ -43,10 +43,10 @@ DT_MODULE_INTROSPECTION(1, dt_iop_rawprepare_params_t)
 
 typedef struct dt_iop_rawprepare_params_t
 {
-  int32_t x; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop x"
-  int32_t y; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop y"
-  int32_t width; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop width"
-  int32_t height; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop height"
+  int32_t x; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop left"
+  int32_t y; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop top"
+  int32_t width; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop right"
+  int32_t height; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop bottom"
   uint16_t raw_black_level_separate[4]; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "black level"
   uint16_t raw_white_point; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "white point"
 } dt_iop_rawprepare_params_t;
@@ -108,8 +108,11 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 const char *description(struct dt_iop_module_t *self)
 {
-  return g_strdup(_("internal module to setup technical specificities of raw sensor.\n\n"
-                    "you should not touch values here !"));
+  return dt_iop_set_description(self, _("sets technical specificities of the raw sensor.\n\ntouch with great care!"),
+                                      _("mandatory"),
+                                      _("linear, raw, scene-referred"),
+                                      _("linear, raw"),
+                                      _("linear, raw, scene-referred"));
 }
 
 void init_presets(dt_iop_module_so_t *self)
