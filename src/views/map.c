@@ -2217,8 +2217,6 @@ static OsmGpsMapPolygon *_view_map_add_polygon_location(dt_map_t *lib, dt_locati
 {
   OsmGpsMapPolygon *poly = osm_gps_map_polygon_new();
   OsmGpsMapTrack* track = osm_gps_map_track_new();
-  GdkRGBA color = {.red = 1.0, .green = 1.0, .blue = 0.7, .alpha = 1.0 };
-  osm_gps_map_track_set_color(track, &color);
   g_object_set(track, "line-width" , 2.0, "alpha", 0.9, (gchar *)0);
 
   // angles for 1 pixel;
