@@ -1165,7 +1165,6 @@ void gui_init(dt_lib_module_t *self)
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   guint line = 0;
-  d->ignore_jpegs = dt_gui_preferences_bool(grid, "ui_last/import_ignore_jpegs", 0, line++, FALSE);
   d->ignore_exif = dt_gui_preferences_bool(grid, "ui_last/ignore_exif_rating", 0, line++, FALSE);
   d->rating = dt_gui_preferences_int(grid, "ui_last/import_initial_rating", 0, line++);
   d->apply_metadata = dt_gui_preferences_bool(grid, "ui_last/import_apply_metadata", 0, line++, FALSE);
