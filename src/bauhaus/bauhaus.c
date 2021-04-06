@@ -2205,6 +2205,7 @@ static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *even
   int delta_y;
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
+    if(delta_y == 0) return TRUE;
     gdouble delta = delta_y * -w->data.slider.scale / 5.0;
     gtk_widget_set_state_flags(GTK_WIDGET(w), GTK_STATE_FLAG_FOCUSED, TRUE);
     return dt_bauhaus_slider_add_delta_internal(widget, delta, event->state);
