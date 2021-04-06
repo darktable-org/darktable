@@ -424,7 +424,7 @@ static inline float curve_scalar(
     val = g - sigma * 2.0f*mt*t + t2*(- sigma - sigma*highlights);
   }
   // midtone local contrast
-  val += clarity * c * dt_fast_expf(-c*c/(2.0*sigma*sigma/3.0f));
+  val += clarity * c * expf(-c*c/(2.0*sigma*sigma/3.0f));
   return val;
 }
 
