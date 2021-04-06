@@ -277,7 +277,7 @@ __kernel void rcd_step_5_2(global float *VH_dir, global float *rgb0, global floa
   }
 }
 
-__kernel void dual_luminance_mask(global float *luminance, __read_only image2d_t in, const int w, const int height)
+__kernel void calc_luminance_mask(global float *luminance, __read_only image2d_t in, const int w, const int height)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
@@ -285,31 +285,44 @@ __kernel void dual_luminance_mask(global float *luminance, __read_only image2d_t
   const int idx = mad24(row, w, col);
 
   float4 val = read_imagef(in, sampleri, (int2)(col, row));
-  luminance[idx] = lab_f(0.333333333f * (val.x + val.y + val.z));    
+  luminance[idx] = lab_f(0.333333333f * (val.x + val.y + val.z));
 }
 
-__kernel void dual_calc_blend(global float *luminance, global float *mask, const int w, const int height, const float threshold)
+__kernel void out_luminance_mask(__write_only image2d_t out, __read_only image2d_t in, const int w, const int height)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= w) || (row >= height)) return;
+  const int idx = mad24(row, w, col);
+
+  float4 val = read_imagef(in, sampleri, (int2)(col, row));
+  const float lum = lab_f(0.333333333f * (val.x + val.y + val.z));
+  write_imagef(out, (int2)(col, row), lum);  
+}
+
+__kernel void calc_detail_blend(global float *luminance, global float *mask, const int w, const int height, const float threshold, const int detail)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
   if((col >= w) || (row >= height)) return;
 
-  const int idx = mad24(row, w, col);
-  if((col < 2) || (row < 2) || (col >= w - 2) || (row >= height - 2)) 
-  {
-    mask[idx] = 0.0f;
-  }
-  else
-  {
-    const int w2 = w * 2;
-    const float scale = 1.0f / 16.0f;
-    const float contrast = scale * native_sqrt(sqrf(luminance[idx+1] - luminance[idx-1]) + sqrf(luminance[idx +  w] - luminance[idx -  w]) +
-                                         sqrf(luminance[idx+2] - luminance[idx-2]) + sqrf(luminance[idx + w2] - luminance[idx - w2]));
-    mask[idx] = calcBlendFactor(contrast, threshold);
-  }
+  const int oidx = mad24(row, w, col);
+
+  int incol = col < 2 ? 2 : col;
+  incol = col > w - 3 ? w - 3 : incol;
+  int inrow = row < 2 ? 2 : row;
+  inrow = row > height - 3 ? height - 3 : inrow;
+
+  const int idx = mad24(inrow, w, incol); 
+  const int w2 = w * 2;
+  const float scale = 1.0f / 16.0f;
+  const float contrast = scale * native_sqrt(sqrf(luminance[idx+1] - luminance[idx-1]) + sqrf(luminance[idx +  w] - luminance[idx -  w]) +
+                                             sqrf(luminance[idx+2] - luminance[idx-2]) + sqrf(luminance[idx + w2] - luminance[idx - w2]));
+  const float blend = calcBlendFactor(contrast, threshold);
+  mask[oidx] = detail ? blend : 1.0f - blend;
 }
 
-__kernel void dual_blend_both(__read_only image2d_t high, __read_only image2d_t low, __write_only image2d_t out, const int w, const int height, global float *mask, const int showmask)
+__kernel void write_blended_dual(__read_only image2d_t high, __read_only image2d_t low, __write_only image2d_t out, const int w, const int height, global float *mask, const int showmask)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
@@ -332,39 +345,38 @@ __kernel void dual_blend_both(__read_only image2d_t high, __read_only image2d_t 
   write_imagef(out, (int2)(col, row), data);
 }
 
-__kernel void dual_fast_blur(global float *src, global float *out, const int w, const int height, const float c42, const float c41, const float c40,
+__kernel void fastblur_mask_9x9(global float *src, global float *out, const int w, const int height, const float c42, const float c41, const float c40,
                              const float c33, const float c32, const float c31, const float c30, const float c22, const float c21,
                              const float c20, const float c11, const float c10, const float c00)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
   if((col >= w) || (row >= height)) return;
-  const int i = mad24(row, w, col);
 
-  if((col < 5) || (row < 5) || (col > w - 5) || (row > height - 5)) 
-  {
-    out[i] = 0.0f;
-  }
-  else
-  {
-    const int w2 = 2 * w;
-    const int w3 = 3 * w;
-    const int w4 = 4 * w;
-    const float val = c42 * (src[i - w4 - 2] + src[i - w4 + 2] + src[i - w2 - 4] + src[i - w2 + 4] + src[i + w2 - 4] + src[i + w2 + 4] + src[i + w4 - 2] + src[i + w4 + 2]) +
-                      c41 * (src[i - w4 - 1] + src[i - w4 + 1] + src[i -  w - 4] + src[i -  w + 4] + src[i +  w - 4] + src[i +  w + 4] + src[i + w4 - 1] + src[i + w4 + 1]) +
-                      c40 * (src[i - w4] + src[i - 4] + src[i + 4] + src[i + w4]) +
-                      c33 * (src[i - w3 - 3] + src[i - w3 + 3] + src[i + w3 - 3] + src[i + w3 + 3]) +
-                      c32 * (src[i - w3 - 2] + src[i - w3 + 2] + src[i - w2 - 3] + src[i - w2 + 3] + src[i + w2 - 3] + src[i + w2 + 3] + src[i + w3 - 2] + src[i + w3 + 2]) +
-                      c31 * (src[i - w3 - 1] + src[i - w3 + 1] + src[i -  w - 3] + src[i -  w + 3] + src[i +  w - 3] + src[i +  w + 3] + src[i + w3 - 1] + src[i + w3 + 1]) +
-                      c30 * (src[i - w3] + src[i - 3] + src[i + 3] + src[i + w3]) +
-                      c22 * (src[i - w2 - 2] + src[i - w2 + 2] + src[i + w2 - 2] + src[i + w2 + 2]) +
-                      c21 * (src[i - w2 - 1] + src[i - w2 + 1] + src[i -  w - 2] + src[i -  w + 2] + src[i +  w - 2] + src[i +  w + 2] + src[i + w2 - 1] + src[i + w2 + 1]) +
-                      c20 * (src[i - w2] + src[i - 2] + src[i + 2] + src[i + w2]) +
-                      c11 * (src[i -  w - 1] + src[i -  w + 1] + src[i +  w - 1] + src[i +  w + 1]) +
-                      c10 * (src[i -  w] + src[i - 1] + src[i + 1] + src[i +  w]) +
-                      c00 * src[i];
-    out[i] = ICLAMP(val, 0.0f, 1.0f);
-  }
+  const int oidx = mad24(row, w, col);
+  int incol = col < 4 ? 4 : col;
+  incol = col > w - 5 ? w - 5 : incol;
+  int inrow = row < 4 ? 4 : row;
+  inrow = row > height - 5 ? height - 5 : inrow;
+  const int i = mad24(inrow, w, incol); 
+
+  const int w2 = 2 * w;
+  const int w3 = 3 * w;
+  const int w4 = 4 * w;
+  const float val = c42 * (src[i - w4 - 2] + src[i - w4 + 2] + src[i - w2 - 4] + src[i - w2 + 4] + src[i + w2 - 4] + src[i + w2 + 4] + src[i + w4 - 2] + src[i + w4 + 2]) +
+                    c41 * (src[i - w4 - 1] + src[i - w4 + 1] + src[i -  w - 4] + src[i -  w + 4] + src[i +  w - 4] + src[i +  w + 4] + src[i + w4 - 1] + src[i + w4 + 1]) +
+                    c40 * (src[i - w4] + src[i - 4] + src[i + 4] + src[i + w4]) +
+                    c33 * (src[i - w3 - 3] + src[i - w3 + 3] + src[i + w3 - 3] + src[i + w3 + 3]) +
+                    c32 * (src[i - w3 - 2] + src[i - w3 + 2] + src[i - w2 - 3] + src[i - w2 + 3] + src[i + w2 - 3] + src[i + w2 + 3] + src[i + w3 - 2] + src[i + w3 + 2]) +
+                    c31 * (src[i - w3 - 1] + src[i - w3 + 1] + src[i -  w - 3] + src[i -  w + 3] + src[i +  w - 3] + src[i +  w + 3] + src[i + w3 - 1] + src[i + w3 + 1]) +
+                    c30 * (src[i - w3] + src[i - 3] + src[i + 3] + src[i + w3]) +
+                    c22 * (src[i - w2 - 2] + src[i - w2 + 2] + src[i + w2 - 2] + src[i + w2 + 2]) +
+                    c21 * (src[i - w2 - 1] + src[i - w2 + 1] + src[i -  w - 2] + src[i -  w + 2] + src[i +  w - 2] + src[i +  w + 2] + src[i + w2 - 1] + src[i + w2 + 1]) +
+                    c20 * (src[i - w2] + src[i - 2] + src[i + 2] + src[i + w2]) +
+                    c11 * (src[i -  w - 1] + src[i -  w + 1] + src[i +  w - 1] + src[i +  w + 1]) +
+                    c10 * (src[i -  w] + src[i - 1] + src[i + 1] + src[i +  w]) +
+                    c00 * src[i];
+  out[oidx] = ICLAMP(val, 0.0f, 1.0f);
 }
 
 kernel void rcd_border(global float *cfa, write_only image2d_t out, const int width, const int height, const unsigned int filters, const int border, const float scale)
