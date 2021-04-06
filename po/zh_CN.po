@@ -355,7 +355,7 @@ msgstr "图像信息行的模式"
 
 #: ../build/src/preferences_gen.h:2658
 msgid "see manual to know all the tags you can use."
-msgstr "查看手册了解所有可用的标记"
+msgstr "查看手册了解所有可用的标签"
 
 #: ../build/src/preferences_gen.h:2666
 msgid "position of the image infos line"
@@ -454,7 +454,7 @@ msgid ""
 "the maximum number of geotagged images drawn on the map. increasing this "
 "number can slow drawing of the map down."
 msgstr ""
-"绘制在地图上的拥有地理标志的图像的最大数量。增加该值会降低地图绘制的速度。"
+"绘制在地图上的拥有地理标签的图像的最大数量。增加该值会降低地图绘制的速度。"
 
 #: ../build/src/preferences_gen.h:2911
 msgid "pretty print the image location"
@@ -705,7 +705,7 @@ msgstr "这些冗余文件以后可重新导入进其他数据库，并保留您
 
 #: ../build/src/preferences_gen.h:3681
 msgid "store xmp tags in compressed format"
-msgstr "压缩格式中存储xmp标记"
+msgstr "压缩格式中存储xmp标签"
 
 #: ../build/src/preferences_gen.h:3757
 msgid "memory in megabytes to use for thumbnail cache"
@@ -762,8 +762,8 @@ msgid ""
 "if found, use OpenCL runtime on your system for improved processing speed. "
 "can be switched on and off at any time."
 msgstr ""
-"如果存在，将在您的系统上使用OpenCL运行时以提高处理速度。这一功能能够随时开启"
-"或关闭。"
+"如果存在，将在您的系统上使用OpenCL运行时(OpenCL runtime)以提高处理速度。"
+"这一功能随时可以开启或关闭。"
 
 #: ../build/src/preferences_gen.h:3921 ../build/src/preferences_gen.h:3976
 msgid "not available"
@@ -797,7 +797,7 @@ msgstr "非常快的GPU"
 
 #: ../build/src/preferences_gen.h:4020
 msgid "disable the entry completion"
-msgstr "禁用条目完成"
+msgstr "禁用条目补全"
 
 #: ../build/src/preferences_gen.h:4040
 msgid "password storage backend to use"
@@ -7259,7 +7259,7 @@ msgstr "绿色通道匹配方法"
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
-msgstr "包围曝光只能用于RAW图像。"
+msgstr "去马赛克只能用于RAW图像。"
 
 #: ../src/iop/denoiseprofile.c:498
 msgid "denoise (profiled)"
@@ -9386,7 +9386,7 @@ msgstr "噪点阈值"
 msgid ""
 "raw denoising\n"
 "only works for raw images."
-msgstr "包围曝光只能用于RAW图像。"
+msgstr "RAW降噪只能用于RAW图像。"
 
 #: ../src/iop/rawoverexposed.c:68
 msgid "raw overexposed"
@@ -13306,9 +13306,8 @@ msgid "attach tag to all"
 msgstr "给所有选中的图片加上标签"
 
 #: ../src/libs/tagging.c:1047 ../src/libs/tagging.c:1912
-#, fuzzy
 msgid "detach tag"
-msgstr "分离"
+msgstr "分离标签"
 
 #: ../src/libs/tagging.c:1162
 msgid "delete tag?"
@@ -13399,9 +13398,8 @@ msgid "tag name already exists. aborting."
 msgstr "名为 '%s' 的标签已经存在，取消。"
 
 #: ../src/libs/tagging.c:1513
-#, fuzzy
 msgid "edit tag"
-msgstr "编辑样式"
+msgstr "编辑标签"
 
 #: ../src/libs/tagging.c:1527 ../src/libs/tagging.c:1747
 #, c-format
@@ -13439,9 +13437,8 @@ msgid "at least one new tagname (%s) already exists, aborting."
 msgstr "至少一个新的标签名（%s）已经存在，取消。"
 
 #: ../src/libs/tagging.c:1908
-#, fuzzy
 msgid "attach tag"
-msgstr "附加"
+msgstr "附加标签"
 
 #: ../src/libs/tagging.c:1920
 msgid "delete tag"
@@ -13453,11 +13450,11 @@ msgstr "创建标签…"
 
 #: ../src/libs/tagging.c:1934
 msgid "edit tag..."
-msgstr ""
+msgstr "编辑标签…"
 
 #: ../src/libs/tagging.c:1943
 msgid "rename path..."
-msgstr ""
+msgstr "重命名路径…"
 
 #: ../src/libs/tagging.c:1950
 #, fuzzy
@@ -15806,7 +15803,7 @@ msgid ""
 msgstr "关闭-忽略压力读数，硬度/不透明度/笔刷大小-压力读数控制指定属性，绝对/相对-压力读数直接作为属性值或与预定义设置相乘。"
 
 msgid "see manual for a list of the tags you can use."
-msgstr "有关可以使用的标记的列表，请参阅手册"
+msgstr "有关可以使用的标签的列表，请参阅手册"
 
 #: ../build/src/preferences_gen.h:2847
 msgid ""
@@ -16004,7 +16001,7 @@ msgid ""
 "curve and the legacy module pipe order."
 msgstr ""
 "场景引用工作流基于线性模块，将自动应用胶片和曝光\n"
-"显示引用的工作流基于实验室模块，将自动应用基础曲线和传统模块管道顺序"
+"显示引用的工作流基于实验室模块，将自动应用基础曲线和传统模块“管道(pipe)”顺序"
 
 msgid ""
 "legacy performs a basic chromatic adaptation using only the white balance "
@@ -16147,10 +16144,10 @@ msgid ""
 "parallel on two different GPUs; very fast GPU - process both pixelpipes "
 "sequentially on the GPU."
 msgstr ""
-"定义如何在启用OpenCL的系统上调度预览和完整像素管道任务。\n"
-"默认-GPU处理完整和CPU处理预览管道（可根据配置参数进行调整）；\n"
-"多个GPU-在两个不同的GPU上并行处理两个像素管道；\n"
-"非常快的GPU-处理两个像素管道"
+"定义如何在启用OpenCL的系统上调度预览和完整像素“管道(pipe)”任务。\n"
+"默认 - GPU处理完整像素“管道(pipe)”、CPU处理预览“管道(pipe)”(按配置参数调整)；\n"
+"多个GPU - 在两个不同的GPU上并行处理预览和完整像素“管道(pipe)”；\n"
+"非常快的GPU - 在GPU上依次处理预览和完整像素“管道(pipe)”"
 
 msgid "storage"
 msgstr "存储"
@@ -16201,11 +16198,11 @@ msgid ""
 "on close - create snapshot every time darktable is closed"
 msgstr ""
 "数据库快照是在关闭darktable之前创建的。选项允许您选择创建快照的频率：\n"
-"从不-只是不做快照。这样做的唯一快照是强制版本升级快照\n"
-"每月一次—如果自上次快照以来已过一个月，则创建快照\n"
-"每周一次—如果自上次快照以来已过7天，则创建快照\n"
-"每天一次-如果自上次快照后超过24小时，则创建快照\n"
-"关闭时-每次关闭darktable时创建快照"
+"从不 - 只是不做快照。这个选项唯一的快照是强制版本升级的快照\n"
+"每月一次 - 如果自上次快照以来已过一个月，则创建快照\n"
+"每周一次 - 如果自上次快照以来已过7天，则创建快照\n"
+"每天一次 - 如果自上次快照后超过24小时，则创建快照\n"
+"关闭时 - 每次关闭darktable时创建快照"
 
 
 msgid ""
@@ -16214,8 +16211,9 @@ msgid ""
 "keep in mind that snapshots do take some space and you only need the most "
 "recent one for successful restore"
 msgstr ""
-"成功创建快照后，要保留多少旧快照（不包括强制版本更新的快照）。输入-1以保留所有快照。\n"
-"请记住，快照确实占用了一些空间，您只需要最新的快照即可成功恢复。"
+"成功创建快照后，要保留多少旧快照（不包括强制版本升级的快照）。"
+"输入-1以保留所有快照。\n"
+"请记住，快照确实占用了一些空间，您仅需要最新的快照即可成功恢复。"
 
 #: ../build/src/preferences_gen.h:3720
 msgid ""
@@ -16223,7 +16221,7 @@ msgid ""
 "to store the history stack in output files. this option allows xmp tags to "
 "be compressed and save space."
 msgstr ""
-"xmp标记中的条目可能会变得相当大，并且可能超过在输出文件中存储历史堆栈的可用空间。此选项允许压缩xmp标记并节省空间。"
+"xmp标签中的条目可能会变得相当大，并且可能超过在输出文件中存储历史堆栈的可用空间。此选项允许压缩xmp标签并节省空间。"
 
 #: ../build/src/preferences_gen.h:3740
 msgid ""
@@ -16289,7 +16287,7 @@ msgstr "用于获取显示配置文件的方法"
 
 #: ../build/src/preferences_gen.h:4000
 msgid "omit hierarchy in simple tag lists"
-msgstr "省略简单标记列表中的层次结构"
+msgstr "省略简单标签列表中的层次结构"
 
 msgid "keyboard shortcuts with multiple instances"
 msgstr "具有多个实例的键盘快捷键"
@@ -16350,7 +16348,7 @@ msgid ""
 "this option is checked darktable will only include their last part and "
 "ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
-"在创建XMP文件时，层次标记也被添加为非层次标记的简单列表，以使它们对其他一些程序可见。\n"
+"在创建XMP文件时，层次标签也被添加为非层次标签的简单列表，以使它们对其他一些程序可见。\n"
 "选中此选项时，darktable将只包含其最后一部分，而忽略其余部分。所以“foo | bar | baz”只会加上“baz”。"
 
 #: ../build/src/preferences_gen.h:4032
@@ -16359,7 +16357,8 @@ msgid ""
 "for others the entry completion can be embarrassing. need to restart "
 "darktable."
 msgstr ""
-"输入完成对那些只从键盘输入标签的人很有用。对其他人来说，完成入学考试可能会很尴尬。需要重新启动darktable。"
+"条目补全对那些只用键盘输入标签的人很有用。但对另外的人来说，反而有点不合适。"
+"需要重新启动darktable。"
 
 msgid "if instances of the module are expanded, ignore collapsed instances"
 msgstr ""
@@ -16525,7 +16524,7 @@ msgid "select colors metadata"
 msgstr "选择颜色元数据"
 
 msgid "select geo tags metadata"
-msgstr "选择地理标记元数据"
+msgstr "选择地理标签元数据"
 
 msgid "set the (first) selected image as source of metadata"
 msgstr "将（第一个）选定的图像设置为元数据源"
@@ -16802,7 +16801,7 @@ msgstr ""
 "• 在形状内部单击并拖动它以更改其位置\n"
 "• 按住ctrl键并单击可从位置内部移动图像\n"
 "按住ctrl键并单击以编辑位置名称\n"
-"• 管道“|”符号将名称分为几个级别\n"
+"• 管道(pipe) “|” 符号将名称分为几个级别\n"
 "• 要删除一组位置，请清除其名称\n"
 "• 按enter键验证新名称，按escape键取消编辑\n"
 "右键单击可执行其他操作：删除位置并转到集合，\n"
@@ -17450,7 +17449,7 @@ msgstr ""
 
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
-"从传感器色彩滤波阵列读取重建完整的RGB像素"
+"依照传感器色彩滤波阵列读数来重建完整的RGB像素"
 
 msgid "denoise the raw picture early in the pipeline"
 msgstr "在前期对RAW进行去噪"
@@ -18985,3 +18984,11 @@ msgid ""
 "shortcuts will be applied to"
 msgstr ""
 "当存在多个模块实例时，这些首选项决定了优先使用哪个模块实例的快捷键（按选择顺序）"
+
+msgid "new sub-location"
+msgstr "新建子位置"
+
+msgid ""
+"terminate edition (press enter or escape) before selecting another location"
+msgstr ""
+"在选择其他位置之前终止编辑（按Enter或Esc）"
