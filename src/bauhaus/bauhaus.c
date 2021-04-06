@@ -2162,6 +2162,8 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
 
 static gboolean dt_bauhaus_slider_add_delta_internal(GtkWidget *widget, float delta, guint state)
 {
+  if (delta == 0) return TRUE;
+
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   const dt_bauhaus_slider_data_t *d = &w->data.slider;
 
