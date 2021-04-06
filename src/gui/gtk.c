@@ -552,6 +552,9 @@ gboolean dt_gui_ignore_scroll(GdkEventScroll *event)
 
 gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x, gdouble *delta_y)
 {
+  // avoid double counting real and emulated events when receiving smooth scrolls
+  if(gdk_event_get_pointer_emulated((GdkEvent*)event)) return FALSE;
+
   gboolean handled = FALSE;
   switch(event->direction)
   {
@@ -609,6 +612,9 @@ gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x,
 
 gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x, int *delta_y)
 {
+  // avoid double counting real and emulated events when receiving smooth scrolls
+  if(gdk_event_get_pointer_emulated((GdkEvent*)event)) return FALSE;
+
   // accumulates scrolling regardless of source or the widget being scrolled
   static gdouble acc_x = 0.0, acc_y = 0.0;
   gboolean handled = FALSE;
