@@ -2648,7 +2648,7 @@ msgstr "Farbton"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:267
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:448
 msgid "shadows fall-off"
-msgstr "Bereich der Schatten"
+msgstr "Schattenverlauf"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:273
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:452
@@ -2658,7 +2658,7 @@ msgstr "Weißpunkt"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:279
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:456
 msgid "highlights fall-off"
-msgstr "Bereich der Lichter"
+msgstr "Lichterverlauf"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:285
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:327
