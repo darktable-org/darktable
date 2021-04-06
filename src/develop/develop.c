@@ -1389,7 +1389,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   // (the flag will be cleared when removing it).
   if(!run || image->id <= 0)
   {
-    // Next section is to recoved old edits where all modules with default parameters were not
+    // Next section is to recover old edits where all modules with default parameters were not
     // recorded in the db nor in the .XMP.
     //
     // One crutial point is the white-balance which has automatic default based on the camera
