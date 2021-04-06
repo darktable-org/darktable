@@ -225,61 +225,6 @@ gboolean dt_supported_image(const gchar *filename)
   return supported;
 }
 
-static void strip_semicolons_from_keymap(const char *path)
-{
-  char pathtmp[PATH_MAX] = { 0 };
-  FILE *fin = g_fopen(path, "rb");
-  FILE *fout;
-
-  if(!fin) return;
-
-  snprintf(pathtmp, sizeof(pathtmp), "%s_tmp", path);
-  fout = g_fopen(pathtmp, "wb");
-
-  if(!fout)
-  {
-    fclose(fin);
-    return;
-  }
-
-  int c = '\0';
-  // First ignoring the first three lines
-  for(int i = 0; i < 3; i++)
-  {
-    while(c != '\n' && c != '\r' && c != EOF) c = fgetc(fin);
-    while(c == '\n' || c == '\r') c = fgetc(fin);
-    ungetc(c, fin);
-  }
-
-  // Then ignore the first two characters of each line, copying the rest out
-  while(c != EOF)
-  {
-    fseek(fin, 2, SEEK_CUR);
-    while(c != '\n' && c != '\r' && c != EOF)
-    {
-      c = fgetc(fin);
-      if(c != '\n' && c != '\r' && c != EOF) fputc(c, fout);
-    }
-    while(c == '\n' || c == '\r')
-    {
-      fputc(c, fout);
-      c = fgetc(fin);
-    }
-    ungetc(c, fin);
-  }
-
-  fclose(fin);
-  fclose(fout);
-
-  GFile *gpath = g_file_new_for_path(path);
-  GFile *gpathtmp = g_file_new_for_path(pathtmp);
-
-  g_file_delete(gpath, NULL, NULL);
-  g_file_move(gpathtmp, gpath, 0, NULL, NULL, NULL, NULL);
-  g_object_unref(gpath);
-  g_object_unref(gpathtmp);
-}
-
 int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean *single_image)
 {
   int32_t id = 0;
@@ -1170,29 +1115,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
     // init the gui part of views
     dt_view_manager_gui_init(darktable.view_manager);
-    // Loading the keybindings
-    char keyfile[PATH_MAX] = { 0 };
-
-    // First dump the default keymapping
-    snprintf(keyfile, sizeof(keyfile), "%s/keyboardrc_default", datadir);
-    gtk_accel_map_save(keyfile);
-
-    // Removing extraneous semi-colons from the default keymap
-    strip_semicolons_from_keymap(keyfile);
-
-    // Then load any modified keys if available
-    snprintf(keyfile, sizeof(keyfile), "%s/keyboardrc", datadir);
-    if(g_file_test(keyfile, G_FILE_TEST_EXISTS))
-      gtk_accel_map_load(keyfile);
-    else
-      gtk_accel_map_save(keyfile); // Save the default keymap if none is present
 
     // Then load any shortcuts if available
-    snprintf(keyfile, sizeof(keyfile), "%s/shortcutsrc", datadir);
-    if(g_file_test(keyfile, G_FILE_TEST_EXISTS))
-      dt_shortcuts_load(keyfile);
+    dt_shortcuts_load(FALSE); //
 
-    dt_shortcuts_save(keyfile); // Save the shortcuts including defaults
+    // Save the shortcuts including defaults
+    dt_shortcuts_save(TRUE);
 
     // initialize undo struct
     darktable.undo = dt_undo_init();
