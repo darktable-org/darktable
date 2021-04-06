@@ -1399,6 +1399,11 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
     g_free(normalized_filename);
     return 0;
   }
+  if (access(normalized_filename, R_OK) != 0)
+  {
+    g_free(normalized_filename);
+    return 0;
+  }
   const char *cc = normalized_filename + strlen(normalized_filename);
   for(; *cc != '.' && cc > normalized_filename; cc--)
     ;
