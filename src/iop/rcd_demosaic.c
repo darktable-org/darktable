@@ -103,11 +103,6 @@ static INLINE float safe_in(float a, float scale)
   return fmaxf(0.0f, a) * scale;
 }
 
-static INLINE float sqrf(float a)
-{
-  return a * a;
-}
-
 // The border interpolation has been taken from rt, adapted to dt.
 // The original dcraw based code had much stronger color artefacts in the border region. 
 static INLINE void approxit(float *out, const float *cfa, const float *sum, const int idx, const int c)
@@ -309,7 +304,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         {
           for(int col = 4, indx = row * RCD_TILESIZE + col; col < tileCols - 4; col++, indx++ )
           {
-            bufferV[row - 3][col - 4] = sqrf((cfa[indx - w3] - cfa[indx - w1] - cfa[indx + w1] + cfa[indx + w3]) - 3.0f * (cfa[indx - w2] + cfa[indx + w2]) + 6.0f * cfa[indx]);
+            bufferV[row - 3][col - 4] = sqf((cfa[indx - w3] - cfa[indx - w1] - cfa[indx + w1] + cfa[indx + w3]) - 3.0f * (cfa[indx - w2] + cfa[indx + w2]) + 6.0f * cfa[indx]);
           }
         }
 
@@ -325,11 +320,11 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         {
           for(int col = 3, indx = row * RCD_TILESIZE + col; col < tileCols - 3; col++, indx++)
           {
-            bufferH[col - 3] = sqrf((cfa[indx -  3] - cfa[indx -  1] - cfa[indx +  1] + cfa[indx +  3]) - 3.0f * (cfa[indx -  2] + cfa[indx +  2]) + 6.0f * cfa[indx]);
+            bufferH[col - 3] = sqf((cfa[indx -  3] - cfa[indx -  1] - cfa[indx +  1] + cfa[indx +  3]) - 3.0f * (cfa[indx -  2] + cfa[indx +  2]) + 6.0f * cfa[indx]);
           }
           for(int col = 4, indx = (row + 1) * RCD_TILESIZE + col; col < tileCols - 4; col++, indx++)
           {
-            V2[col - 4] = sqrf((cfa[indx - w3] - cfa[indx - w1] - cfa[indx + w1] + cfa[indx + w3]) - 3.0f * (cfa[indx - w2] + cfa[indx + w2]) + 6.0f * cfa[indx]);
+            V2[col - 4] = sqf((cfa[indx - w3] - cfa[indx - w1] - cfa[indx + w1] + cfa[indx + w3]) - 3.0f * (cfa[indx - w2] + cfa[indx + w2]) + 6.0f * cfa[indx]);
           }
           for(int col = 4, indx = row * RCD_TILESIZE + col; col < tileCols - 4; col++, indx++ )
           {
@@ -395,8 +390,8 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         {
           for(int col = 3, indx = row * RCD_TILESIZE + col, indx2 = indx / 2; col < tileCols - 3; col+=2, indx+=2, indx2++)
           {
-            P_CDiff_Hpf[indx2] = sqrf((cfa[indx - w3 - 3] - cfa[indx - w1 - 1] - cfa[indx + w1 + 1] + cfa[indx + w3 + 3]) - 3.0f * (cfa[indx - w2 - 2] + cfa[indx + w2 + 2]) + 6.0f * cfa[indx]);
-            Q_CDiff_Hpf[indx2] = sqrf((cfa[indx - w3 + 3] - cfa[indx - w1 + 1] - cfa[indx + w1 - 1] + cfa[indx + w3 - 3]) - 3.0f * (cfa[indx - w2 + 2] + cfa[indx + w2 - 2]) + 6.0f * cfa[indx]);
+            P_CDiff_Hpf[indx2] = sqf((cfa[indx - w3 - 3] - cfa[indx - w1 - 1] - cfa[indx + w1 + 1] + cfa[indx + w3 + 3]) - 3.0f * (cfa[indx - w2 - 2] + cfa[indx + w2 + 2]) + 6.0f * cfa[indx]);
+            Q_CDiff_Hpf[indx2] = sqf((cfa[indx - w3 + 3] - cfa[indx - w1 + 1] - cfa[indx + w1 - 1] + cfa[indx + w3 - 3]) - 3.0f * (cfa[indx - w2 + 2] + cfa[indx + w2 - 2]) + 6.0f * cfa[indx]);
           }
         }
         // Step 4.1: Obtain the P/Q diagonals directional discrimination strength

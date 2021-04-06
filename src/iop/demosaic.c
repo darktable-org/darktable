@@ -30,6 +30,8 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
+#include "develop/openmp_maths.h"
+#include "develop/masks.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
@@ -172,10 +174,10 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_rcd_step_5_1;
   int kernel_rcd_step_5_2;
   int kernel_rcd_border;
-  int kernel_dual_luminance_mask;
-  int kernel_dual_calc_blend;
-  int kernel_dual_blend_both;
-  int kernel_dual_fast_blur;
+  int kernel_calc_luminance_mask;
+  int kernel_calc_detail_blend;
+  int kernel_write_blended_dual;
+  int kernel_fastblur_mask_9x9;
 } dt_iop_demosaic_global_data_t;
 
 typedef struct dt_iop_demosaic_data_t
@@ -2965,9 +2967,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if((qual_flags & DEMOSAIC_MEDIUM_QUAL)
   // only overwrite setting if quality << requested and in dr mode and not a special method
   && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
-  && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR))
+  && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR)
+  // dual demosaicing with the show mask option on is also a special method for ui 
+  && !((demosaicing_method & DEMOSAIC_DUAL) && showmask))
     demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_RCD : DT_IOP_DEMOSAIC_MARKESTEIJN;
-
 
   const float *const pixels = (float *)i;
 
@@ -5358,10 +5361,10 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_rcd_step_5_1 = dt_opencl_create_kernel(rcd, "rcd_step_5_1");
   gd->kernel_rcd_step_5_2 = dt_opencl_create_kernel(rcd, "rcd_step_5_2");
   gd->kernel_rcd_border = dt_opencl_create_kernel(rcd, "rcd_border");
-  gd->kernel_dual_luminance_mask = dt_opencl_create_kernel(rcd, "dual_luminance_mask");
-  gd->kernel_dual_calc_blend = dt_opencl_create_kernel(rcd, "dual_calc_blend");
-  gd->kernel_dual_blend_both  = dt_opencl_create_kernel(rcd, "dual_blend_both");  
-  gd->kernel_dual_fast_blur = dt_opencl_create_kernel(rcd, "dual_fast_blur"); 
+  gd->kernel_calc_luminance_mask = dt_opencl_create_kernel(rcd, "calc_luminance_mask");
+  gd->kernel_calc_detail_blend = dt_opencl_create_kernel(rcd, "calc_detail_blend");
+  gd->kernel_write_blended_dual  = dt_opencl_create_kernel(rcd, "write_blended_dual");  
+  gd->kernel_fastblur_mask_9x9 = dt_opencl_create_kernel(rcd, "fastblur_mask_9x9"); 
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -5414,10 +5417,10 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_rcd_step_5_1);
   dt_opencl_free_kernel(gd->kernel_rcd_step_5_2);
   dt_opencl_free_kernel(gd->kernel_rcd_border);
-  dt_opencl_free_kernel(gd->kernel_dual_luminance_mask);
-  dt_opencl_free_kernel(gd->kernel_dual_calc_blend);
-  dt_opencl_free_kernel(gd->kernel_dual_blend_both);  
-  dt_opencl_free_kernel(gd->kernel_dual_fast_blur);
+  dt_opencl_free_kernel(gd->kernel_calc_luminance_mask);
+  dt_opencl_free_kernel(gd->kernel_calc_detail_blend);
+  dt_opencl_free_kernel(gd->kernel_write_blended_dual);  
+  dt_opencl_free_kernel(gd->kernel_fastblur_mask_9x9);
   free(module->data);
   module->data = NULL;
 }
