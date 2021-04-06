@@ -1262,7 +1262,7 @@ GList* dt_image_find_duplicates(const char* filename)
   // concatenate filename and sidecar extension
   g_strlcpy(pattern,  filename, sizeof(pattern));
   g_strlcpy(pattern + fn_len, xmp, sizeof(pattern) - fn_len);
-  if (access(pattern, R_OK) == 0)
+  if (g_access(pattern, R_OK) == 0)
   {
     // the default sidecar exists and is readable, so add it to the list
     files = g_list_prepend(files, g_strdup(pattern));
@@ -1394,12 +1394,8 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   char *normalized_filename = dt_util_normalize_path(filename);
   if(!normalized_filename
      || !g_file_test(normalized_filename, G_FILE_TEST_IS_REGULAR)
-     || dt_util_get_file_size(normalized_filename) == 0)
-  {
-    g_free(normalized_filename);
-    return 0;
-  }
-  if (access(normalized_filename, R_OK) != 0)
+     || dt_util_get_file_size(normalized_filename) == 0
+     || g_access(normalized_filename, R_OK) != 0)
   {
     g_free(normalized_filename);
     return 0;
