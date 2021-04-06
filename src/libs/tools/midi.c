@@ -322,7 +322,7 @@ void midi_open_devices(dt_lib_module_t *self)
     dt_print(DT_DEBUG_INPUT, "[midi_open_devices] found midi device '%s' via '%s'\n", info->name, info->interf);
 
 
-    if(info->input)
+    if(info->input && !strstr(info->name, "Midi Through Port"))
     {
       PortMidiStream *stream_in;
       PmError error = Pm_OpenInput(&stream_in, i, NULL, EVENT_BUFFER_SIZE, NULL, NULL);
@@ -390,6 +390,9 @@ static void callback_image_changed(gpointer instance, gpointer user_data)
     midi_device *midi = devices->data;
 
     for(int i = 0; i < 128; i++) update_with_move(midi, 0, i, 0);
+    // FIXME this needs to happen with lower priority to avoid flooding
+    // could be priority of slider update that is too high
+    // also; reduce range if it can be determined reliably
 
     devices = devices->next;
   }

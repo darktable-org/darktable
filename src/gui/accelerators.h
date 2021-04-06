@@ -27,9 +27,9 @@
 GtkWidget *dt_shortcuts_prefs(GtkWidget *widget);
 GHashTable *dt_shortcut_category_lists(dt_view_type_flags_t v);
 
-void dt_shortcuts_save(const gchar *file_name);
+void dt_shortcuts_save(gboolean backup);
 
-void dt_shortcuts_load(const gchar *file_name);
+void dt_shortcuts_load(gboolean clear);
 
 void dt_shortcuts_reinitialise();
 
@@ -66,6 +66,35 @@ dt_input_device_t dt_register_input_driver(dt_lib_module_t *module, const dt_inp
 void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key, guint mods);
 void dt_shortcut_key_release(dt_input_device_t id, guint time, guint key);
 float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size);
+
+typedef enum dt_shortcut_flag_t
+{
+  DT_SHORTCUT_FLAG_PRESS_TRIPLE  = 1 << 10,
+  DT_SHORTCUT_FLAG_PRESS_DOUBLE  = 1 << 9,
+  DT_SHORTCUT_FLAG_PRESS_LONG    = 1 << 8,
+  DT_SHORTCUT_FLAG_BUTTON_RIGHT  = 1 << 7,
+  DT_SHORTCUT_FLAG_BUTTON_MIDDLE = 1 << 6,
+  DT_SHORTCUT_FLAG_BUTTON_LEFT   = 1 << 5,
+  DT_SHORTCUT_FLAG_CLICK_TRIPLE  = 1 << 4,
+  DT_SHORTCUT_FLAG_CLICK_DOUBLE  = 1 << 3,
+  DT_SHORTCUT_FLAG_CLICK_LONG    = 1 << 2,
+  DT_SHORTCUT_FLAG_DIR_UP        = 1 << 1,
+  DT_SHORTCUT_FLAG_DIR_DOWN      = 1 << 0,
+} dt_shortcut_flag_t;
+
+typedef enum dt_shortcut_move_t
+{
+  DT_SHORTCUT_MOVE_NONE,
+  DT_SHORTCUT_MOVE_SCROLL,
+  DT_SHORTCUT_MOVE_PAN,
+  DT_SHORTCUT_MOVE_HORIZONTAL,
+  DT_SHORTCUT_MOVE_VERTICAL,
+  DT_SHORTCUT_MOVE_DIAGONAL,
+  DT_SHORTCUT_MOVE_SKEW,
+  DT_SHORTCUT_MOVE_LEFTRIGHT,
+  DT_SHORTCUT_MOVE_UPDOWN,
+  DT_SHORTCUT_MOVE_PGUPDOWN,
+} dt_shortcut_move_t;
 
 typedef enum dt_accel_iop_slider_scale_t
 {
