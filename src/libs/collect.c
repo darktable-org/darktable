@@ -1724,8 +1724,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    "SELECT CAST(focal_length AS INTEGER) AS focal_length, 1, COUNT(*) AS count"
                    " FROM main.images AS mi"
                    " WHERE %s"
-                   " GROUP BY focal_length"
-                   " ORDER BY focal_length",
+                   " GROUP BY CAST(focal_length AS INTEGER)"
+                   " ORDER BY CAST(focal_length AS INTEGER)",
                    where_ext);
         break;
 
