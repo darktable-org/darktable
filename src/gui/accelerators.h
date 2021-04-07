@@ -69,17 +69,14 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
 
 typedef enum dt_shortcut_flag_t
 {
-  DT_SHORTCUT_FLAG_PRESS_TRIPLE  = 1 << 10,
-  DT_SHORTCUT_FLAG_PRESS_DOUBLE  = 1 << 9,
-  DT_SHORTCUT_FLAG_PRESS_LONG    = 1 << 8,
-  DT_SHORTCUT_FLAG_BUTTON_RIGHT  = 1 << 7,
-  DT_SHORTCUT_FLAG_BUTTON_MIDDLE = 1 << 6,
-  DT_SHORTCUT_FLAG_BUTTON_LEFT   = 1 << 5,
-  DT_SHORTCUT_FLAG_CLICK_TRIPLE  = 1 << 4,
-  DT_SHORTCUT_FLAG_CLICK_DOUBLE  = 1 << 3,
-  DT_SHORTCUT_FLAG_CLICK_LONG    = 1 << 2,
-  DT_SHORTCUT_FLAG_DIR_UP        = 1 << 1,
-  DT_SHORTCUT_FLAG_DIR_DOWN      = 1 << 0,
+  DT_SHORTCUT_LONG   = 1 << 0,
+  DT_SHORTCUT_DOUBLE = 1 << 1,
+  DT_SHORTCUT_TRIPLE = 1 << 2,
+  DT_SHORTCUT_LEFT   = 1 << 0,
+  DT_SHORTCUT_MIDDLE = 1 << 1,
+  DT_SHORTCUT_RIGHT  = 1 << 2,
+  DT_SHORTCUT_DOWN   = 1 << 0,
+  DT_SHORTCUT_UP     = 1 << 1,
 } dt_shortcut_flag_t;
 
 typedef enum dt_shortcut_move_t
@@ -95,6 +92,94 @@ typedef enum dt_shortcut_move_t
   DT_SHORTCUT_MOVE_UPDOWN,
   DT_SHORTCUT_MOVE_PGUPDOWN,
 } dt_shortcut_move_t;
+
+typedef enum dt_action_element_t
+{
+  DT_ACTION_ELEMENT_VALUE = 0,
+  DT_ACTION_ELEMENT_SELECTION = 0,
+} dt_action_element_t;
+
+typedef enum dt_action_effect_t
+{
+  DT_ACTION_EFFECT_DEFAULT_MOVE = -1,
+  DT_ACTION_EFFECT_DEFAULT_KEY = 0,
+  DT_ACTION_EFFECT_DEFAULT_UP = 1,
+  DT_ACTION_EFFECT_DEFAULT_DOWN = 2,
+
+  // Sliders
+  DT_ACTION_EFFECT_RESET = 0,
+  DT_ACTION_EFFECT_UP = 1,
+  DT_ACTION_EFFECT_DOWN = 2,
+  DT_ACTION_EFFECT_TOP = 3,
+  DT_ACTION_EFFECT_BOTTOM = 4,
+  DT_ACTION_EFFECT_EDIT = 5,
+
+  // Combos
+//DT_ACTION_EFFECT_RESET = 0,
+  DT_ACTION_EFFECT_PREVIOUS = 1,
+  DT_ACTION_EFFECT_NEXT = 2,
+  DT_ACTION_EFFECT_FIRST = 3,
+  DT_ACTION_EFFECT_LAST = 4,
+//DT_ACTION_EFFECT_EDIT = 5,
+
+  // Togglebuttons
+  DT_ACTION_EFFECT_TOGGLE = 0,
+  DT_ACTION_EFFECT_ON = 1,
+  DT_ACTION_EFFECT_OFF = 2,
+  DT_ACTION_EFFECT_TOGGLE_CTRL = 3,
+  DT_ACTION_EFFECT_ON_CTRL = 4,
+  DT_ACTION_EFFECT_TOGGLE_RIGHT = 5,
+  DT_ACTION_EFFECT_ON_RIGHT = 6,
+
+  // Buttons
+  DT_ACTION_EFFECT_ACTIVATE = 0,
+  DT_ACTION_EFFECT_ACTIVATE_CTRL = 1,
+  DT_ACTION_EFFECT_ACTIVATE_RIGHT = 2,
+
+  // Lib and iop presets
+  DT_ACTION_EFFECT_SHOW = 0,
+//DT_ACTION_EFFECT_UP = 1,
+//DT_ACTION_EFFECT_DOWN = 2,
+  DT_ACTION_EFFECT_STORE = 3,
+  DT_ACTION_EFFECT_DELETE = 4,
+//DT_ACTION_EFFECT_EDIT = 5,
+  DT_ACTION_EFFECT_UPDATE = 6,
+  DT_ACTION_EFFECT_PREFERENCES = 7,
+} dt_action_effect_t;
+
+extern const gchar *dt_action_effect_value[];
+extern const gchar *dt_action_effect_selection[];
+extern const gchar *dt_action_effect_toggle[];
+extern const gchar *dt_action_effect_activate[];
+extern const gchar *dt_action_effect_presets[];
+
+typedef struct dt_action_element_def_t
+{
+  const gchar *name;
+  const gchar **effects;
+} dt_action_element_def_t;
+
+typedef struct dt_action_definition_t
+{
+  const gchar *name;
+  const dt_action_element_def_t *elements;
+  float (*process)(gpointer target, dt_action_element_t, dt_action_effect_t, float size);
+  dt_action_element_t (*identify)(gpointer target, int x, int y);
+} dt_action_definition_t;
+
+typedef struct dt_shortcut_fallback_t
+{
+  guint mods;
+  guint press     : 3;
+  guint button    : 3;
+  guint click     : 3;
+  guint direction : 2;
+  dt_shortcut_move_t move;
+  dt_action_element_t element;
+  dt_action_effect_t effect;
+} dt_shortcut_fallback_t;
+
+void dt_shortcut_fallbacks(dt_action_definition_t *target, dt_shortcut_fallback_t *fallbacks);
 
 typedef enum dt_accel_iop_slider_scale_t
 {
