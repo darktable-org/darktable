@@ -367,7 +367,10 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
 
       if(piece->enabled != hist->enabled)
       {
-        dt_iop_set_module_trouble_message(piece->module, _("problem"), _("usage of the module is not correct for this image.\nlikely introduced by applying a preset, style or history copy&paste"), NULL);
+        if(piece->enabled)
+          dt_iop_set_module_trouble_message(piece->module, _("enabled as required"), _("history had module disabled but it is required for this type of image.\nlikely introduced by applying a preset, style or history copy&paste"), NULL);
+        else
+          dt_iop_set_module_trouble_message(piece->module, _("disabled as not appropriate"), _("history had module enabled but it is not allowed for this type of image.\nlikely introduced by applying a preset, style or history copy&paste"), NULL);
         dt_print(DT_DEBUG_PARAMS, "[pixelpipe_synch] enabling mismatch for module %s in image %i\n", piece->module->op, imgid);
       }
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
