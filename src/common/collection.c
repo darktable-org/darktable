@@ -1683,7 +1683,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       else if(operator && number1)
         query = g_strdup_printf("(focal_length %s %s)", operator, number1);
       else if(number1)
-        query = g_strdup_printf("(focal_length = %s)", number1);
+        query = g_strdup_printf("(CAST(focal_length AS INTEGER) = CAST(%s AS INTEGER))", number1);
       else
         query = g_strdup_printf("(focal_length LIKE '%%%s%%')", escaped_text);
 
