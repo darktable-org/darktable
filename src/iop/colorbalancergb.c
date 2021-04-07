@@ -556,12 +556,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       float opacity = opacities[g->mask_type];
       const float opacity_comp = 1.0f - opacity;
 
-      for(size_t c = 0; c < 4; ++c) pix_out[c] = opacity_comp * color + opacity * fmaxf(pix_out[c], 0.f);
+      for_four_channels(c) pix_out[c] = opacity_comp * color + opacity * fmaxf(pix_out[c], 0.f);
       pix_out[3] = 1.f;
     }
     else
     {
-      for(size_t c = 0; c < 4; ++c) pix_out[c] = fmaxf(pix_out[c], 0.f);
+      for_four_channels(c) pix_out[c] = fmaxf(pix_out[c], 0.f);
+      pix_out[3] = pix_in[3]; // copy alpha
     }
   }
 }
@@ -901,8 +902,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   gtk_render_background(context, cr, 0, 0, allocation.width, allocation.height);
 
   // draw x gradient as axis legend
-  cairo_pattern_t *grad;
-  grad = cairo_pattern_create_linear(margin_left, 0.0, graph_width, 0.0);
+  cairo_pattern_t *grad = cairo_pattern_create_linear(margin_left, 0.0, graph_width, 0.0);
   dt_cairo_perceptual_gradient(grad, 1.0);
   cairo_set_line_width(cr, 0.0);
   cairo_rectangle(cr, margin_left, graph_height + 2 * inset, graph_width, line_height);
@@ -940,8 +940,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         else color = 150;
       }
 
-      for(size_t c = 0; c < 4; ++c) data[k + c] = color * alpha;
-      data[k+3] = alpha * 255;
+      for_four_channels(c) data[k + c] = color * alpha;
+      data[k + 3] = alpha * 255;
     }
 
   cairo_set_source_surface(cr, surface, 0, margin_top);
