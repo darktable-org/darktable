@@ -98,7 +98,7 @@ typedef struct dt_lib_import_t
   GtkButton *import_camera;
   GtkButton *tethered_shoot;
 
-  GtkWidget *ignore_jpegs, *ignore_exif, *rating, *apply_metadata;
+  GtkWidget *ignore_exif, *rating, *apply_metadata;
   dt_import_metadata_t metadata;
   GtkBox *devices;
   GtkBox *locked_devices;
@@ -708,9 +708,7 @@ static gboolean _update_files_list(gpointer user_data)
 
 static void _ignore_jpegs_toggled(GtkWidget *widget, dt_lib_module_t* self)
 {
-  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   _update_files_list(self);
-  dt_gui_preferences_bool_update(d->ignore_jpegs);
 }
 
 static void _recursive_toggled(GtkWidget *widget, dt_lib_module_t* self)
@@ -1395,7 +1393,6 @@ static void _apply_preferences(const char *pref, dt_lib_module_t *self)
   g_list_free_full(prefs, g_free);
 
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  dt_gui_preferences_bool_update(d->ignore_jpegs);
   dt_gui_preferences_bool_update(d->ignore_exif);
   dt_gui_preferences_int_update(d->rating);
   dt_gui_preferences_bool_update(d->apply_metadata);
