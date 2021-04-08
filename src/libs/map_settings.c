@@ -53,7 +53,7 @@ uint32_t container(dt_lib_module_t *self)
 typedef struct dt_lib_map_settings_t
 {
   GtkWidget *show_osd_checkbutton, *filtered_images_checkbutton, *map_source_dropdown;
-  GtkWidget *images_thumb, *max_images_entry, *epsilon_factor, *min_images;
+  GtkWidget *images_thumb, *max_images_entry, *epsilon_factor, *min_images, *max_outline_nodes;
 } dt_lib_map_settings_t;
 
 int position()
@@ -139,6 +139,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
 
   int line = 0;
+  d->max_outline_nodes = dt_gui_preferences_int(grid, "plugins/map/max_outline_nodes", 0, line++);
   d->show_osd_checkbutton = dt_gui_preferences_bool(grid, "plugins/map/show_map_osd", 0, line++, FALSE);
   g_signal_connect(G_OBJECT(d->show_osd_checkbutton), "toggled", G_CALLBACK(_show_osd_toggled), NULL);
   d->filtered_images_checkbutton = dt_gui_preferences_bool(grid, "plugins/map/filter_images_drawn", 0, line++, FALSE);
@@ -165,6 +166,7 @@ void gui_reset(dt_lib_module_t *self)
   dt_lib_map_settings_t *d = (dt_lib_map_settings_t *)self->data;
   dt_gui_preferences_bool_reset(d->show_osd_checkbutton);
   dt_gui_preferences_bool_reset(d->filtered_images_checkbutton);
+  dt_gui_preferences_int_reset(d->max_outline_nodes);
   dt_gui_preferences_int_reset(d->max_images_entry);
   dt_gui_preferences_int_reset(d->epsilon_factor);
   dt_gui_preferences_int_reset(d->min_images);

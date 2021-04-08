@@ -195,6 +195,10 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
 
   { "dt-trouble-message", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 3, pointer_trouble, NULL,
     FALSE }, // DT_SIGNAL_TROUBLE_MESSAGE
+
+  { "dt-location-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg, NULL,
+    TRUE }, // DT_SIGNAL_LOCATION_CHANGED
+
 };
 
 static GType _signal_type;
