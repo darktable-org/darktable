@@ -1646,7 +1646,7 @@
   </dtconfig>
   <dtconfig ui="yes">
     <name>plugins/map/epsilon_factor</name>
-    <type min="10" max="100">int</type>
+    <type min="1" max="100">int</type>
     <default>25</default>
     <shortdescription>group size factor</shortdescription>
     <longdescription>increase or decrease the spatial size of images groups on the map. can influence the calculation time</longdescription>
@@ -1678,12 +1678,12 @@
     <shortdescription>Whether to highlight the search result on the map</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig>
+  <dtconfig ui="yes">
     <name>plugins/map/max_outline_nodes</name>
     <type>int</type>
     <default>10000</default>
-    <shortdescription/>
-    <longdescription/>
+    <shortdescription>max polygon points</shortdescription>
+    <longdescription>limit the number of points imported with polygon in find location module</longdescription>
   </dtconfig>
   <dtconfig prefs="otherviews" section="geoloc">
     <name>plugins/lighttable/metadata_view/pretty_location</name>
