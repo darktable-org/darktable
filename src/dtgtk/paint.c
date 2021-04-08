@@ -2070,6 +2070,22 @@ void dtgtk_cairo_paint_rect_portrait(cairo_t *cr, gint x, gint y, gint w, gint h
   FINISH
 }
 
+void dtgtk_cairo_paint_polygon(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_move_to(cr, 0.0, 0.3);
+  cairo_line_to(cr, 0.7, 0.0);
+  cairo_line_to(cr, 0.5, 0.5);
+  cairo_line_to(cr, 1.0, 0.6);
+  cairo_line_to(cr, 0.6, 1.0);
+  cairo_line_to(cr, 0.3, 0.8);
+  cairo_line_to(cr, 0.0, 0.3);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_zoom(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   PREAMBLE(1, 0, 0)

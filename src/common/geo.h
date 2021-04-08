@@ -32,6 +32,14 @@ typedef struct dt_geo_map_display_point_t
   float lat, lon;
 } dt_geo_map_display_point_t;
 
+typedef struct dt_map_box_t
+{
+  float lon1;
+  float lat1;
+  float lon2;
+  float lat2;
+} dt_map_box_t;
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
