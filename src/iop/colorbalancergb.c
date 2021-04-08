@@ -1331,7 +1331,6 @@ void gui_init(dt_iop_module_t *self)
                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->grey_fulcrum, TRUE);
   g_signal_connect(G_OBJECT(g->grey_fulcrum), "quad-pressed", G_CALLBACK(mask_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->grey_fulcrum, FALSE, FALSE, 0);
 
   g->highlights_weight = dt_bauhaus_slider_from_params(self, "highlights_weight");
   dt_bauhaus_slider_set_step(g->highlights_weight, 0.1);
