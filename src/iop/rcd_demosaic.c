@@ -49,24 +49,24 @@
 #endif
 
 /* We don't want to use the -Ofast option in dt as it effects are not well specified and there have been issues
-   leading to crashes. 
+   leading to crashes.
    But we can use the 'fast-math' option in code sections if input data and algorithms are well defined.
-    
+
    We have defined input data and make sure there are no divide-by-zero or overflows by chosen eps
-   Reordering of instructions might lead to a slight loss of presision whigh is not significant here.  
+   Reordering of instructions might lead to a slight loss of presision whigh is not significant here.
    Not necessary in this code section
      threadsafe handling of errno
      signed zero handling
      handling of math interrupts
-     handling of rounding 
+     handling of rounding
      handling of overflows
 
-   The 'fp-contract=fast' option enables fused multiply&add if available 
+   The 'fp-contract=fast' option enables fused multiply&add if available
 */
 
 #ifdef __GNUC__
   #pragma GCC push_options
-  #pragma GCC optimize ("fast-math", "fp-contract=fast") 
+  #pragma GCC optimize ("fast-math", "fp-contract=fast")
 #endif
 
 #ifdef __GNUC__
@@ -97,7 +97,7 @@ static INLINE float intp(float a, float b, float c)
     return a * (b - c) + c;
 }
 
-// We might have negative data in input and also want to normalise 
+// We might have negative data in input and also want to normalise
 static INLINE float safe_in(float a, float scale)
 {
   return fmaxf(0.0f, a) * scale;
@@ -110,7 +110,7 @@ static INLINE float sqrf(float a)
 }
 
 // The border interpolation has been taken from rt, adapted to dt.
-// The original dcraw based code had much stronger color artefacts in the border region. 
+// The original dcraw based code had much stronger color artefacts in the border region.
 static INLINE void approxit(float *out, const float *cfa, const float *sum, const int idx, const int c)
 {
   float (*rgb)[4] = (void *)out;
@@ -165,7 +165,7 @@ static void rcd_border_interpolate(dt_dev_pixelpipe_iop_t *piece, float *out, co
           }
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j)); 
+      approxit(out, cfa, sum, i * width + j, FCRCD(i, j));
     }
 
     for(int j = width - border; j < width; j++)
@@ -183,7 +183,7 @@ static void rcd_border_interpolate(dt_dev_pixelpipe_iop_t *piece, float *out, co
           }
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j)); 
+      approxit(out, cfa, sum, i * width + j, FCRCD(i, j));
     }
   }
   for(int i = 0; i < border; i++)
@@ -204,7 +204,7 @@ static void rcd_border_interpolate(dt_dev_pixelpipe_iop_t *piece, float *out, co
           }
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j)); 
+      approxit(out, cfa, sum, i * width + j, FCRCD(i, j));
     }
   }
   for(int i = height - border; i < height; i++)
@@ -225,7 +225,7 @@ static void rcd_border_interpolate(dt_dev_pixelpipe_iop_t *piece, float *out, co
           }
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j)); 
+      approxit(out, cfa, sum, i * width + j, FCRCD(i, j));
     }
   }
 }
@@ -257,7 +257,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
   #pragma omp parallel \
   dt_omp_firstprivate(width, height, cfarray, out, in, scaler, revscaler)
 #endif
-  { 
+  {
     float *const VH_Dir = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE);
     memset(VH_Dir, 0, sizeof(*VH_Dir) * RCD_TILESIZE * RCD_TILESIZE);
     float *const PQ_Dir = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE / 2);
@@ -267,8 +267,8 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
     float *const P_CDiff_Hpf = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE / 2);
     memset(P_CDiff_Hpf, 0, sizeof(*P_CDiff_Hpf) * RCD_TILESIZE * RCD_TILESIZE / 2);
     float *const Q_CDiff_Hpf = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE / 2);
-    memset(Q_CDiff_Hpf, 0, sizeof(*Q_CDiff_Hpf) * RCD_TILESIZE * RCD_TILESIZE / 2);  
- 
+    memset(Q_CDiff_Hpf, 0, sizeof(*Q_CDiff_Hpf) * RCD_TILESIZE * RCD_TILESIZE / 2);
+
     float (*const rgb)[RCD_TILESIZE * RCD_TILESIZE] = (void *)dt_alloc_align_float((size_t)3 * RCD_TILESIZE * RCD_TILESIZE);
 
     // No overlapping use so re-use same buffer
@@ -489,7 +489,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
             }
           }
         }
-          
+
         // For the outermost tiles in all directions we can use a smaller border margin
         const int first_vertical =   rowStart + ((tile_vertical == 0) ? RCD_MARGIN : RCD_BORDER);
         const int last_vertical =    rowEnd   - ((tile_vertical == num_vertical - 1)     ? RCD_MARGIN : RCD_BORDER);
@@ -517,7 +517,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
   rcd_border_interpolate(piece, out, in, roi_out, roi_in, filters, RCD_MARGIN);
 }
 
-// revert rcd specific aggressive optimizing 
+// revert rcd specific aggressive optimizing
 #ifdef __GNUC__
   #pragma GCC pop_options
 #endif
@@ -532,4 +532,3 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
 #undef w4
 #undef eps
 #undef epssq
-
