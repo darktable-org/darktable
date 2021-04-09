@@ -15,6 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+static inline float sqrf(float a)
+{
+  return a * a;
+}
 
 void dt_masks_extend_border(float *mask, const int width, const int height, const int border)
 {
@@ -44,13 +48,13 @@ void dt_masks_blur_9x9(float *const restrict src, float *const restrict out, con
 {
   // For a blurring sigma of 2.0f a 13x13 kernel would be optimally required but the 9x9 is by far good enough here 
   float kernel[9][9];
-  const float temp = 2.0f * sqf(sigma);
+  const float temp = 2.0f * sqrf(sigma);
   float sum = 0.0f;
   for(int i = -4; i <= 4; i++)
   {
     for(int j = -4; j <= 4; j++)
     {
-      kernel[i + 4][j + 4] = expf( -(sqf(i) + sqf(j)) / temp);
+      kernel[i + 4][j + 4] = expf( -(sqrf(i) + sqrf(j)) / temp);
       sum += kernel[i + 4][j + 4];
     }
   }
@@ -105,7 +109,7 @@ void dt_masks_blur_9x9(float *const restrict src, float *const restrict out, con
                         c11 * (src[i - w1 - 1] + src[i - w1 + 1] + src[i + w1 - 1] + src[i + w1 + 1]) +
                         c10 * (src[i - w1] + src[i - 1] + src[i + 1] + src[i + w1]) +
                         c00 * src[i];
-      out[i] = clamp_simd(val);
+      out[i] = fminf(1.0f, fmaxf(0.0f, val));
     }
   }
 }
@@ -145,8 +149,8 @@ void dt_masks_calc_detail_mask(float *const restrict src, float *const restrict 
   {
     for(int col = 2, idx = row * width + col; col < width - 2; col++, idx++)
     {
-      tmp[idx] = scale * sqrtf(sqf(src[idx+1] - src[idx-1]) + sqf(src[idx + width]   - src[idx - width]) +
-                                sqf(src[idx+2] - src[idx-2]) + sqf(src[idx + 2*width] - src[idx - 2*width]));
+      tmp[idx] = scale * sqrtf(sqrf(src[idx+1] - src[idx-1]) + sqrf(src[idx + width]   - src[idx - width]) +
+                               sqrf(src[idx+2] - src[idx-2]) + sqrf(src[idx + 2*width] - src[idx - 2*width]));
     }
   }
   dt_masks_extend_border(tmp, width, height, 2);  
