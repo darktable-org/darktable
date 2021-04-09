@@ -2289,6 +2289,9 @@ static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *accelerata
   else
     dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL, TRUE, TRUE);
 
+  // a duplicate should keep the change time stamp of the original
+  dt_image_cache_set_change_timestamp_from_image(darktable.image_cache, newimgid, sourceid);
+
   dt_undo_end_group(darktable.undo);
 
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
