@@ -74,9 +74,10 @@
   All other refinements and parametric parameters are untouched.
 
   Some additional comments:
-  1. intentionally this contrast mask refinement has only been implemented for raws. Especially for compressed
+  1. intentionally this details mask refinement has only been implemented for raws. Especially for compressed
      inmages like jpegs or 8bit input the algo didn't work as good.
-  2. Of course credit goes to Ingo @heckflosse from rt team for the original idea.
+  2. Of course credit goes to Ingo @heckflosse from rt team for the original idea. (in the rt world this is knowb
+     as details mask)
   
   hanno@schwalm-bremen.de 21/04/09
 */
