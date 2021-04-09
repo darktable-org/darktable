@@ -23,6 +23,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/imageio_rawspeed.h" // for dt_rawspeed_crop_dcraw_filters
 #include "common/opencl.h"
+#include "common/imagebuf.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "develop/tiling.h"
@@ -196,9 +197,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
                   float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  // TODO
-  memset(out, 0, sizeof(float) * roi_out->width * roi_out->height);
-  fprintf(stderr, "TODO: implement %s() in %s\n", __FUNCTION__, __FILE__);
+  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out, TRUE);
 }
 
 // we're not scaling here (bayer input), so just crop borders
@@ -354,6 +353,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
   }
+
+  dt_dev_write_luminance_mask(piece, (float *const)ovoid, roi_in, DT_DEV_LUMINANCE_MASK_RAWPREPARE);
 
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 }
@@ -513,6 +514,7 @@ void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const vo
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 
   _mm_sfence();
+  dt_dev_write_luminance_mask(piece, (float *const)ovoid, roi_in, DT_DEV_LUMINANCE_MASK_RAWPREPARE);
 }
 #endif
 
@@ -578,6 +580,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   }
 
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
+
+  err = dt_dev_write_luminance_mask_cl(piece, dev_out, roi_in, DT_DEV_LUMINANCE_MASK_RAWPREPARE);
+  if(err != CL_SUCCESS) goto error;
 
   return TRUE;
 
