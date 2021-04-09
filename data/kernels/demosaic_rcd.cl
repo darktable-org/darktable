@@ -322,6 +322,28 @@ __kernel void calc_detail_blend(global float *luminance, global float *mask, con
   mask[oidx] = detail ? blend : 1.0f - blend;
 }
 
+__kernel void readin_mask(global float *mask, __read_only image2d_t in, const int w, const int height)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= w) || (row >= height)) return;
+
+  const int idx = mad24(row, w, col);
+  const float val = read_imagef(in, sampleri, (int2)(col, row)).x;
+  mask[idx] = val;
+}
+
+__kernel void writeout_mask(global float *mask, __write_only image2d_t out, const int w, const int height)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= w) || (row >= height)) return;
+  const int idx = mad24(row, w, col);
+
+  const float val = mask[idx];
+  write_imagef(out, (int2)(col, row), val);  
+}
+
 __kernel void write_blended_dual(__read_only image2d_t high, __read_only image2d_t low, __write_only image2d_t out, const int w, const int height, global float *mask, const int showmask)
 {
   const int col = get_global_id(0);
