@@ -2280,8 +2280,8 @@ static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *accelerata
 {
   dt_undo_start_group(darktable.undo, DT_UNDO_DUPLICATE);
 
-  const int sourceid = dt_view_get_image_to_act_on();
-  const int newimgid = dt_image_duplicate(sourceid);
+  const int32_t sourceid = dt_view_get_image_to_act_on();
+  const int32_t newimgid = dt_image_duplicate(sourceid);
   if(newimgid <= 0) return FALSE;
 
   if(GPOINTER_TO_INT(data))
