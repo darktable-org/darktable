@@ -53,6 +53,13 @@ typedef enum dt_iop_sigmoid_methods_type_t
   DT_SIGMOID_METHOD_RGB_RATIO = 1      // $DESCRIPTION: "rgb ratio"
 } dt_iop_sigmoid_methods_type_t;
 
+typedef enum dt_iop_sigmoid_negative_values_type_t
+{
+  DT_SIGMOID_NEGATIVE_CLIP = 0,        // $DESCRIPTION: "clip"
+  DT_SIGMOID_NEGATIVE_DESATURATE = 1,  // $DESCRIPTION: "desaturate"
+  DT_SIGMOID_NEGATIVE_BRIGHTEN = 2     // $DESCRIPTION: "brighten"
+} dt_iop_sigmoid_negative_values_type_t;
+
 typedef enum dt_iop_sigmoid_norm_type_t
 {
   DT_SIGMOID_METHOD_LUMINANCE = 0,      // $DESCRIPTION: "luminance Y"
@@ -89,6 +96,7 @@ typedef struct dt_iop_sigmoid_params_t
   dt_iop_sigmoid_methods_type_t color_processing;  // $DEFAULT: DT_SIGMOID_METHOD_CROSSTALK $DESCRIPTION: "color processing"
   float crosstalk_amount;                          // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 4.0 $DESCRIPTION: "crosstalk amount"
   dt_iop_sigmoid_norm_type_t rgb_norm_method;      // $DEFAULT: DT_SIGMOID_METHOD_AVERAGE $DESCRIPTION: "luminance norm"
+  dt_iop_sigmoid_negative_values_type_t negative_values_method; // $DEFAULT: DT_SIGMOID_NEGATIVE_DESATURATE $DESCRIPTION: "negative values"
 } dt_iop_sigmoid_params_t;
 
 typedef struct dt_iop_sigmoid_global_data_t
@@ -99,7 +107,8 @@ typedef struct dt_iop_sigmoid_gui_data_t
   // Whatever you need to make your gui happy and provide access to widgets between gui_init, gui_update etc.
   // Stored in self->gui_data while in darkroom.
   // To permanently store per-user gui configuration settings, you could use dt_conf_set/_get.
-  GtkWidget *contrast_slider, *skewness_slider, *color_processing_list, *crosstalk_slider, *rgb_norm_method_list, *display_black_slider, *display_white_slider;
+  GtkWidget *contrast_slider, *skewness_slider, *color_processing_list, *crosstalk_slider, *rgb_norm_method_list,
+            *display_black_slider, *display_white_slider, *negative_values_list;
 } dt_iop_sigmoid_gui_data_t;
 
 
@@ -213,6 +222,45 @@ static inline float get_pixel_norm(const float pixel[4], const dt_iop_sigmoid_no
   }
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd uniform(method)
+#endif
+static inline void negative_values(const float pix_in[4], float pix_out[4], const dt_iop_sigmoid_negative_values_type_t method)
+{
+  float average;
+  float min_value;
+  float saturation_factor;
+
+  switch(method)
+  {
+    case(DT_SIGMOID_NEGATIVE_BRIGHTEN):
+      min_value = fminf(fminf(pix_in[0], pix_in[1]), fminf(pix_in[2], 0.0f));
+      for(size_t c = 0; c < 3; c++)
+      {
+        pix_out[c] = pix_in[c] - min_value;
+      }
+      break;
+
+    case(DT_SIGMOID_NEGATIVE_DESATURATE):
+      average = fmaxf((pix_in[0] + pix_in[1] + pix_in[2]) / 3.0f, 0.0f);
+      min_value = fminf(fminf(pix_in[0], pix_in[1]), pix_in[2]);
+      saturation_factor = min_value < 0.0f ? -average / (min_value - average) : 1.0f;
+      for(size_t c = 0; c < 3; c++)
+      {
+        pix_out[c] = average + saturation_factor * (pix_in[c] - average);
+      }
+      break;
+
+    case(DT_SIGMOID_NEGATIVE_CLIP):
+    default:
+      for(size_t c = 0; c < 3; c++)
+      {
+        pix_out[c] = fmaxf(pix_in[c], 0.0);
+      }
+      break;
+  }
+}
+
 void process_loglogistic_crosstalk(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                          void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -243,29 +291,37 @@ void process_loglogistic_crosstalk(struct dt_iop_module_t *self, dt_dev_pixelpip
   }
   const float paper_exp = powf(film_fog + scene_grey, contrast_power) * white_grey_relation;
   const float saturation_factor = fmaxf(1.0f - d->crosstalk_amount / 100.0f, 0.0f);
+  const dt_iop_sigmoid_negative_values_type_t negative_values_method = d->negative_values_method;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, work_profile, saturation_factor, magnitude, paper_exp, film_fog, contrast_power, skew_power) \
+  dt_omp_firstprivate(npixels, work_profile, saturation_factor, negative_values_method, magnitude, paper_exp, film_fog, contrast_power, skew_power) \
   dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < 4*npixels; k += 4)
-  {
+  for(size_t k = 0; k < 4 * npixels; k += 4)
+  { 
+    const float *const restrict pix_in = in + k;
+    float *const restrict pix_out = out + k;
+    float DT_ALIGNED_ARRAY in_gamut[4];
+
+    // Force negative values to zero
+    negative_values(pix_in, in_gamut, negative_values_method);
+
     // Desature a bit to get proper roll off to white in highlights
     // This is taken from the ACES RRT implementation
-    const float luma = rgb_luma(in + k, work_profile);
+    const float luma = rgb_luma(in_gamut, work_profile);
     for(size_t c = 0; c < 3; c++)
     {
-      const float desat = luma + saturation_factor * (in[k + c] - luma);
+      const float desat = luma + saturation_factor * (in_gamut[c] - luma);
       if (desat > 0.0f) {
-        out[k + c] = magnitude * powf(1.0 + paper_exp * powf(film_fog + desat, -contrast_power), -skew_power);
+        pix_out[c] = magnitude * powf(1.0 + paper_exp * powf(film_fog + desat, -contrast_power), -skew_power);
       } else {
-        out[k + c] = 0.0f;
+        pix_out[c] = 0.0f;
       }
     }
     // Copy over the alpha channel
-    out[k + 3] = in[k + 3];
+    pix_out[3] = in[k + 3];
   }
 }
 
@@ -390,6 +446,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_sigmoid_params_t *p = (dt_iop_sigmoid_params_t *)self->params;
 
   gtk_widget_set_visible(g->crosstalk_slider, p->color_processing == DT_SIGMOID_METHOD_CROSSTALK);
+  gtk_widget_set_visible(g->negative_values_list, p->color_processing == DT_SIGMOID_METHOD_CROSSTALK);
   gtk_widget_set_visible(g->rgb_norm_method_list, p->color_processing == DT_SIGMOID_METHOD_RGB_RATIO);
 }
 
@@ -403,6 +460,7 @@ void gui_update(dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set_from_value(g->color_processing_list, p->color_processing);
   dt_bauhaus_slider_set(g->crosstalk_slider, p->crosstalk_amount);
+  dt_bauhaus_combobox_set_from_value(g->negative_values_list, p->negative_values_method);
   dt_bauhaus_combobox_set_from_value(g->rgb_norm_method_list, p->rgb_norm_method);
 
   dt_bauhaus_slider_set(g->display_black_slider, p->display_black_target);
@@ -442,17 +500,22 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_sigmoid_gui_data_t *g = IOP_GUI_ALLOC(sigmoid);
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
+  // Look controls
   g->contrast_slider = dt_bauhaus_slider_from_params(self, "middle_grey_contrast");
   dt_bauhaus_slider_set_digits(g->contrast_slider, 3);
   g->skewness_slider = dt_bauhaus_slider_from_params(self, "contrast_skewness");
 
+  // Color handling
   g->color_processing_list = dt_bauhaus_combobox_from_params(self, "color_processing");
+  // Cross talk option
   g->crosstalk_slider = dt_bauhaus_slider_from_params(self, "crosstalk_amount");
   dt_bauhaus_slider_set_soft_range(g->crosstalk_slider, 0.0f, 10.0f);
   dt_bauhaus_slider_set_format(g->crosstalk_slider, "%.2f %%");
-
+  g->negative_values_list = dt_bauhaus_combobox_from_params(self, "negative_values_method");
+  // Constant RGB ratio option
   g->rgb_norm_method_list = dt_bauhaus_combobox_from_params(self, "rgb_norm_method");
 
+  // Target display
   GtkWidget *label = dt_ui_section_label_new(_("display luminance"));
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
   gtk_style_context_add_class(context, "section_label_top");
