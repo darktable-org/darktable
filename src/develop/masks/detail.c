@@ -15,6 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+// We don't want to use the SIMD version as we might access unaligned memory
 static inline float sqrf(float a)
 {
   return a * a;
