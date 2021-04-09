@@ -261,6 +261,18 @@ static inline void negative_values(const float pix_in[4], float pix_out[4], cons
   }
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd uniform(magnitude, paper_exp, film_fog, contrast_power, skew_power)
+#endif
+static inline float generalized_loglogistic_sigmoid(const float value, const float magnitude, const float paper_exp,
+                                                    const float film_fog, const float contrast_power, const float skew_power)
+{
+  if (value > 0.0f) {
+    return magnitude * powf(1.0 + paper_exp * powf(film_fog + value, -contrast_power), -skew_power);
+  }
+  return 0.0f;
+}
+
 void process_loglogistic_crosstalk(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                          void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -303,25 +315,21 @@ void process_loglogistic_crosstalk(struct dt_iop_module_t *self, dt_dev_pixelpip
   { 
     const float *const restrict pix_in = in + k;
     float *const restrict pix_out = out + k;
-    float DT_ALIGNED_ARRAY in_gamut[4];
+    float DT_ALIGNED_ARRAY pix_in_strict_positive[4];
 
     // Force negative values to zero
-    negative_values(pix_in, in_gamut, negative_values_method);
+    negative_values(pix_in, pix_in_strict_positive, negative_values_method);
 
     // Desature a bit to get proper roll off to white in highlights
     // This is taken from the ACES RRT implementation
-    const float luma = rgb_luma(in_gamut, work_profile);
+    const float luma = rgb_luma(pix_in_strict_positive, work_profile);
     for(size_t c = 0; c < 3; c++)
     {
-      const float desat = luma + saturation_factor * (in_gamut[c] - luma);
-      if (desat > 0.0f) {
-        pix_out[c] = magnitude * powf(1.0 + paper_exp * powf(film_fog + desat, -contrast_power), -skew_power);
-      } else {
-        pix_out[c] = 0.0f;
-      }
+      const float desaturated_value = luma + saturation_factor * (pix_in_strict_positive[c] - luma);
+      pix_out[c] = generalized_loglogistic_sigmoid(desaturated_value, magnitude, paper_exp, film_fog, contrast_power, skew_power);
     }
     // Copy over the alpha channel
-    pix_out[3] = in[k + 3];
+    pix_out[3] = pix_in[3];
   }
 }
 
@@ -367,11 +375,9 @@ void process_loglogistic_ratio(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     float DT_ALIGNED_ARRAY pre_out[4];
 
     // Preserve color ratios by applying the tone curve on a luma estimate and then scale the RGB tripplet uniformly
-    const float luma = get_pixel_norm(in + k, rgb_norm_method, work_profile);
-    float mapped_luma = 0.0f;
-    if (luma > 0.0f) {
-      mapped_luma = magnitude * powf(1.0 + paper_exp * powf(film_fog + luma, -contrast_power), -skew_power);
-    }
+    const float luma = get_pixel_norm(pix_in, rgb_norm_method, work_profile);
+    const float mapped_luma = generalized_loglogistic_sigmoid(luma, magnitude, paper_exp, film_fog, contrast_power, skew_power); 
+
     const float scaling_factor = mapped_luma / luma;
     for(size_t c = 0; c < 3; c++)
     {
@@ -405,7 +411,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
-  // get our data struct:
   dt_iop_sigmoid_params_t *d = (dt_iop_sigmoid_params_t *)piece->data;
 
   if (d->color_processing == DT_SIGMOID_METHOD_CROSSTALK)
