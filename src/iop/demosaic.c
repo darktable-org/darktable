@@ -30,7 +30,6 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
-#include "develop/openmp_maths.h"
 #include "develop/masks.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "develop/tiling.h"
