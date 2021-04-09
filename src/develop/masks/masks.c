@@ -24,7 +24,6 @@
 #include "common/undo.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
-#include "develop/openmp_maths.h"
 
 #pragma GCC diagnostic ignored "-Wshadow"
 
