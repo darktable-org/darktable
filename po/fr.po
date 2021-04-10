@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-04-10 11:48+0200\n"
-"PO-Revision-Date: 2021-04-10 11:49+0200\n"
+"POT-Creation-Date: 2021-04-10 11:58+0200\n"
+"PO-Revision-Date: 2021-04-10 12:03+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2817,7 +2817,7 @@ msgstr "rayon détection contours"
 #: ../build/lib/darktable/plugins/introspection_defringe.c:106
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:215
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:414
-#: ../src/iop/bloom.c:403 ../src/iop/colorbalancergb.c:1346
+#: ../src/iop/bloom.c:403 ../src/iop/colorbalancergb.c:1415
 #: ../src/iop/colorreconstruction.c:1282 ../src/iop/hotpixels.c:376
 #: ../src/iop/sharpen.c:729
 msgid "threshold"
@@ -9489,7 +9489,7 @@ msgid "frequential, RGB"
 msgstr "fréquentiel, RVB"
 
 #: ../src/iop/atrous.c:142 ../src/iop/colorbalance.c:160
-#: ../src/iop/colorbalancergb.c:162
+#: ../src/iop/colorbalancergb.c:165
 msgid "linear, Lab, scene-referred"
 msgstr "relatif à la scène, linéaire, Lab"
 
@@ -9714,7 +9714,7 @@ msgid "linear, RGB, display-referred"
 msgstr "relatif à l'affichage, linéaire, RVB"
 
 #: ../src/iop/basecurve.c:341 ../src/iop/basicadj.c:148
-#: ../src/iop/colorbalance.c:161 ../src/iop/colorbalancergb.c:163
+#: ../src/iop/colorbalance.c:161 ../src/iop/colorbalancergb.c:166
 #: ../src/iop/dither.c:105 ../src/iop/filmicrgb.c:333
 #: ../src/iop/graduatednd.c:152 ../src/iop/negadoctor.c:158
 #: ../src/iop/profile_gamma.c:103 ../src/iop/rgbcurve.c:144
@@ -10359,7 +10359,7 @@ msgstr ""
 
 #: ../src/iop/channelmixer.c:139 ../src/iop/channelmixerrgb.c:196
 #: ../src/iop/clipping.c:321 ../src/iop/colorbalance.c:159
-#: ../src/iop/colorbalancergb.c:161 ../src/iop/colorchecker.c:126
+#: ../src/iop/colorbalancergb.c:164 ../src/iop/colorchecker.c:126
 #: ../src/iop/colorcorrection.c:77 ../src/iop/lut3d.c:139
 msgid "corrective or creative"
 msgstr "correctif ou créatif"
@@ -11130,11 +11130,11 @@ msgid "lift gamma gain|cdl|color grading|contrast|saturation|hue"
 msgstr ""
 "lift gamma gain|cdl|étalonnage des couleurs|contraste|saturation|tonalité"
 
-#: ../src/iop/colorbalance.c:158 ../src/iop/colorbalancergb.c:160
+#: ../src/iop/colorbalance.c:158 ../src/iop/colorbalancergb.c:163
 msgid "affect color, brightness and contrast"
 msgstr "affecte la couleur, la luminosité et le contraste"
 
-#: ../src/iop/colorbalance.c:162 ../src/iop/colorbalancergb.c:164
+#: ../src/iop/colorbalance.c:162 ../src/iop/colorbalancergb.c:167
 msgid "non-linear, Lab, scene-referred"
 msgstr "relatif à la scène, non-linéaire, Lab"
 
@@ -11242,7 +11242,7 @@ msgid "RGBL"
 msgstr "RVBL"
 
 #. Page master
-#: ../src/iop/colorbalance.c:1902 ../src/iop/colorbalancergb.c:1115
+#: ../src/iop/colorbalance.c:1902 ../src/iop/colorbalancergb.c:1184
 msgid "master"
 msgstr "maître"
 
@@ -11339,17 +11339,17 @@ msgstr "ajuste l'histogramme et centre la luminosité moyenne"
 msgid "optimize the RGB curves to remove color casts"
 msgstr "optimise les courbes RVB et supprime les dérives de couleur"
 
-#: ../src/iop/colorbalancergb.c:145
+#: ../src/iop/colorbalancergb.c:148
 msgid "color balance rgb"
 msgstr "balance couleur rvb"
 
-#: ../src/iop/colorbalancergb.c:150
+#: ../src/iop/colorbalancergb.c:153
 msgid "offset power slope|cdl|color grading|contrast|chroma_highlights|hue"
 msgstr ""
 "lift gamma gain|cdl|étalonnage des couleurs|contraste|chroma hautes lumières|"
 "tonalité"
 
-#: ../src/iop/colorbalancergb.c:155
+#: ../src/iop/colorbalancergb.c:158
 msgid ""
 "this module is experimental and the internal algo may slightly change before "
 "darktable 3.6. don't use it for serious work yet."
@@ -11357,55 +11357,55 @@ msgstr ""
 "ce module est expérimental et l'algorithme interne peut légèrement changer "
 "avant darktable 3.6. ne pas encore l'utiliser pour un travail sérieux."
 
-#: ../src/iop/colorbalancergb.c:832 ../src/iop/colorzones.c:2205
+#: ../src/iop/colorbalancergb.c:848 ../src/iop/colorzones.c:2205
 #: ../src/iop/retouch.c:1713 ../src/iop/toneequal.c:1838
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
 "impossible d'afficher les masques lorsque les masques de fusion sont affichés"
 
-#: ../src/iop/colorbalancergb.c:1115
+#: ../src/iop/colorbalancergb.c:1184
 msgid "global grading"
 msgstr "étalonnage global"
 
-#: ../src/iop/colorbalancergb.c:1121
+#: ../src/iop/colorbalancergb.c:1190
 msgid "rotate all hues by an angle, at the same luminance"
 msgstr "faire pivoter toutes les teintes d'un angle, à la même luminance"
 
-#: ../src/iop/colorbalancergb.c:1123
+#: ../src/iop/colorbalancergb.c:1192
 msgid "linear chroma grading"
 msgstr "étalonnage chromatique linéaire"
 
-#: ../src/iop/colorbalancergb.c:1130
+#: ../src/iop/colorbalancergb.c:1199
 msgid "increase colorfulness at same luminance globally"
 msgstr "augmenter la saturation à la même luminance globalement"
 
-#: ../src/iop/colorbalancergb.c:1136
+#: ../src/iop/colorbalancergb.c:1205
 msgid "increase colorfulness at same luminance mostly in shadows"
 msgstr ""
 "augmenter la saturation à la même luminance essentiellement dans les ombres"
 
-#: ../src/iop/colorbalancergb.c:1142
+#: ../src/iop/colorbalancergb.c:1211
 msgid "increase colorfulness at same luminance mostly in midtones"
 msgstr ""
 "augmenter la saturation à la même luminance essentiellement dans les tons "
 "moyens"
 
-#: ../src/iop/colorbalancergb.c:1148
+#: ../src/iop/colorbalancergb.c:1217
 msgid "increase colorfulness at same luminance mostly in highlights"
 msgstr ""
 "augmenter la saturation à la même luminance essentiellement dans les hautes "
 "lumières"
 
-#: ../src/iop/colorbalancergb.c:1150
+#: ../src/iop/colorbalancergb.c:1219
 msgid "perceptual saturation grading"
 msgstr "étalonnage perceptuel de la saturation"
 
-#: ../src/iop/colorbalancergb.c:1157
+#: ../src/iop/colorbalancergb.c:1226
 msgid "add or remove saturation by an absolute amount"
 msgstr "ajouter ou supprimer de la saturation d'un montant absolu"
 
-#: ../src/iop/colorbalancergb.c:1163 ../src/iop/colorbalancergb.c:1169
-#: ../src/iop/colorbalancergb.c:1175
+#: ../src/iop/colorbalancergb.c:1232 ../src/iop/colorbalancergb.c:1238
+#: ../src/iop/colorbalancergb.c:1244
 msgid ""
 "increase or decrease saturation proportionnaly to the original pixel "
 "saturation"
@@ -11413,16 +11413,16 @@ msgstr ""
 "augmenter ou réduire la saturation proportionnellement à la saturation des "
 "pixels d'origine"
 
-#: ../src/iop/colorbalancergb.c:1178
+#: ../src/iop/colorbalancergb.c:1247
 msgid "perceptual brilliance grading"
 msgstr "étalonnage perceptuel de la brillance"
 
-#: ../src/iop/colorbalancergb.c:1185
+#: ../src/iop/colorbalancergb.c:1254
 msgid "add or remove brilliance by an absolute amount"
 msgstr "ajouter ou supprimer de la brillance d'un montant absolu"
 
-#: ../src/iop/colorbalancergb.c:1191 ../src/iop/colorbalancergb.c:1197
-#: ../src/iop/colorbalancergb.c:1203
+#: ../src/iop/colorbalancergb.c:1260 ../src/iop/colorbalancergb.c:1266
+#: ../src/iop/colorbalancergb.c:1272
 msgid ""
 "increase or decrease brilliance proportionnaly to the original pixel "
 "brilliance"
@@ -11431,109 +11431,129 @@ msgstr ""
 "pixels d'origine"
 
 #. Page 4-ways
-#: ../src/iop/colorbalancergb.c:1207
+#: ../src/iop/colorbalancergb.c:1276
 msgid "4 ways"
 msgstr "4 échelles"
 
-#: ../src/iop/colorbalancergb.c:1207
+#: ../src/iop/colorbalancergb.c:1276
 msgid "selective color grading"
 msgstr "étalonnage sélectif des couleurs"
 
-#: ../src/iop/colorbalancergb.c:1209
+#: ../src/iop/colorbalancergb.c:1278
 msgid "global offset"
 msgstr "offset global"
 
-#: ../src/iop/colorbalancergb.c:1216
+#: ../src/iop/colorbalancergb.c:1285
 msgid "global luminance offset"
 msgstr "compensation de la luminance globale"
 
-#: ../src/iop/colorbalancergb.c:1223
+#: ../src/iop/colorbalancergb.c:1292
 msgid "hue of the global color offset"
 msgstr "teinte de l'offset couleur global"
 
-#: ../src/iop/colorbalancergb.c:1230
+#: ../src/iop/colorbalancergb.c:1299
 msgid "chroma of the global color offset"
 msgstr "chroma de l'offset couleur global"
 
-#: ../src/iop/colorbalancergb.c:1232
+#: ../src/iop/colorbalancergb.c:1301
 msgid "shadows lift"
 msgstr "lift ombres"
 
-#: ../src/iop/colorbalancergb.c:1239
+#: ../src/iop/colorbalancergb.c:1308
 msgid "luminance gain in shadows"
 msgstr "gain de luminance dans les ombres"
 
-#: ../src/iop/colorbalancergb.c:1246
+#: ../src/iop/colorbalancergb.c:1315
 msgid "hue of the color gain in shadows"
 msgstr "teinte du gain couleur dans les ombres"
 
-#: ../src/iop/colorbalancergb.c:1254
+#: ../src/iop/colorbalancergb.c:1323
 msgid "chroma of the color gain in shadows"
 msgstr "chroma du gain couleur dans les ombres"
 
-#: ../src/iop/colorbalancergb.c:1256
+#: ../src/iop/colorbalancergb.c:1325
 msgid "highlights gain"
 msgstr "gain hautes lumières"
 
-#: ../src/iop/colorbalancergb.c:1263
+#: ../src/iop/colorbalancergb.c:1332
 msgid "luminance gain in highlights"
 msgstr "gain de luminance dans les hautes lumières"
 
-#: ../src/iop/colorbalancergb.c:1270
+#: ../src/iop/colorbalancergb.c:1339
 msgid "hue of the color gain in highlights"
 msgstr "teinte du gain couleur dans les hautes lumières"
 
-#: ../src/iop/colorbalancergb.c:1278
+#: ../src/iop/colorbalancergb.c:1347
 msgid "chroma of the color gain in highlights"
 msgstr "chroma du gain couleur dans les hautes lumières"
 
-#: ../src/iop/colorbalancergb.c:1280
+#: ../src/iop/colorbalancergb.c:1349
 msgid "power"
 msgstr "power"
 
-#: ../src/iop/colorbalancergb.c:1287
+#: ../src/iop/colorbalancergb.c:1356
 msgid "luminance exponent in midtones"
 msgstr "exposant de luminance dans les tons moyens"
 
-#: ../src/iop/colorbalancergb.c:1294
+#: ../src/iop/colorbalancergb.c:1363
 msgid "hue of the color exponent in midtones"
 msgstr "teinte de l'exposant couleur dans les tons moyens"
 
-#: ../src/iop/colorbalancergb.c:1302
+#: ../src/iop/colorbalancergb.c:1371
 msgid "chroma of the color exponent in midtones"
 msgstr "chroma de l'exposant couleur dans les tons moyens"
 
 #. Page masks
-#: ../src/iop/colorbalancergb.c:1305
+#: ../src/iop/colorbalancergb.c:1374
 msgid "masks"
 msgstr "masques"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
-#: ../src/iop/colorbalancergb.c:1305
+#: ../src/iop/colorbalancergb.c:1374
 msgid "isolate luminances"
 msgstr "isoler luminances"
 
-#: ../src/iop/colorbalancergb.c:1307
+#: ../src/iop/colorbalancergb.c:1376
 msgid "luminance ranges"
 msgstr "étendues luminance"
 
-#: ../src/iop/colorbalancergb.c:1318
+#: ../src/iop/colorbalancergb.c:1387
 msgid "weight of the shadows over the whole tonal range"
 msgstr "poids des ombres sur l'ensemble de la gamme tonale"
 
-#: ../src/iop/colorbalancergb.c:1329
+#: ../src/iop/colorbalancergb.c:1398
 msgid "position of the middle-grey reference for masking"
 msgstr "position du gris moyen référence pour le masque"
 
-#: ../src/iop/colorbalancergb.c:1340
+#: ../src/iop/colorbalancergb.c:1409
 msgid "weights of highlights over the whole tonal range"
 msgstr "poids des hautes lumières sur l'ensemble de la gamme tonale"
 
-#: ../src/iop/colorbalancergb.c:1353
+#: ../src/iop/colorbalancergb.c:1422
 msgid "peak white luminance value used to normalize the power function"
 msgstr ""
 "valeur de pointe de la luminance blanche utilisée pour normaliser la "
 "fonction de puissance"
+
+#: ../src/iop/colorbalancergb.c:1424
+msgid "mask preview settings"
+msgstr "paramètres du masque"
+
+#: ../src/iop/colorbalancergb.c:1427
+msgid "checkerboard color 1"
+msgstr "couleur 1 du damier"
+
+#: ../src/iop/colorbalancergb.c:1430 ../src/iop/colorbalancergb.c:1439
+msgid "select color of the checkerboard from a swatch"
+msgstr "sélectionne la couleur du damier depuis un nuancier"
+
+#: ../src/iop/colorbalancergb.c:1436
+msgid "checkerboard color 2"
+msgstr "couleur 2 du damier"
+
+#: ../src/iop/colorbalancergb.c:1446
+msgid "checkerboard size"
+msgstr "taille du damier"
 
 #: ../src/iop/colorchecker.c:115
 msgid "color look up table"
@@ -14463,7 +14483,7 @@ msgstr "couleur du film"
 
 #: ../src/iop/negadoctor.c:820
 msgid "select color of film material from a swatch"
-msgstr "sélectionne la couleur du film"
+msgstr "sélectionne la couleur du film depuis un nuancier"
 
 #: ../src/iop/negadoctor.c:835 ../src/iop/negadoctor.c:846
 #: ../src/iop/negadoctor.c:857
@@ -14521,7 +14541,7 @@ msgstr "dérive couleur des ombres"
 
 #: ../src/iop/negadoctor.c:890
 msgid "select color of shadows from a swatch"
-msgstr "sélectionne la couleur des ombres"
+msgstr "sélectionne la couleur des ombres depuis un nuancier"
 
 #: ../src/iop/negadoctor.c:895
 msgid "pick shadows color from image"
@@ -14559,7 +14579,7 @@ msgstr "balance des blancs des hautes lumières"
 
 #: ../src/iop/negadoctor.c:927
 msgid "select color of illuminant from a swatch"
-msgstr "sélectionne la couleur de l'illuminant"
+msgstr "sélectionne la couleur de l'illuminant depuis un nuancier"
 
 #: ../src/iop/negadoctor.c:932
 msgid "pick illuminant color from image"
