@@ -2186,21 +2186,15 @@ static void _manage_editor_group_update_arrows(GtkWidget *box)
   {
     GtkWidget *w = (GtkWidget *)lw_iter->data;
     GtkWidget *hb = dt_gui_container_first_child(GTK_CONTAINER(w));
-    if(hb)
+    if(pos > 0 && hb) // we skip the first item as it's quick access panel
     {
       GList *lw2 = gtk_container_get_children(GTK_CONTAINER(hb));
       if(!g_list_shorter_than(lw2, 3)) //do we have at least three?
       {
         GtkWidget *left = (GtkWidget *)lw2->data;
         GtkWidget *right = (GtkWidget *)g_list_nth_data(lw2, 2);
-        if(pos == 1)
-          gtk_widget_hide(left);
-        else
-          gtk_widget_show(left);
-        if(pos == max)
-          gtk_widget_hide(right);
-        else
-          gtk_widget_show(right);
+        gtk_widget_set_visible(left, pos > 1);
+        gtk_widget_set_visible(right, pos < max);
       }
       g_list_free(lw2);
     }
@@ -2932,8 +2926,8 @@ static void _manage_editor_group_move_right(GtkWidget *widget, GdkEventButton *e
   d->edit_groups = g_list_remove(d->edit_groups, gr);
   d->edit_groups = g_list_insert(d->edit_groups, gr, pos + 1);
 
-  // we move the group in the ui
-  gtk_box_reorder_child(GTK_BOX(gtk_widget_get_parent(vb)), vb, pos + 1);
+  // we move the group in the ui (the position need +1 due to the quick access panel)
+  gtk_box_reorder_child(GTK_BOX(gtk_widget_get_parent(vb)), vb, pos + 2);
   // and we update arrows
   _manage_editor_group_update_arrows(gtk_widget_get_parent(vb));
 }
@@ -2950,8 +2944,8 @@ static void _manage_editor_group_move_left(GtkWidget *widget, GdkEventButton *ev
   d->edit_groups = g_list_remove(d->edit_groups, gr);
   d->edit_groups = g_list_insert(d->edit_groups, gr, pos - 1);
 
-  // we move the group in the ui
-  gtk_box_reorder_child(GTK_BOX(gtk_widget_get_parent(vb)), vb, pos - 1);
+  // we move the group in the ui (the position need +1 due to the quick access panel)
+  gtk_box_reorder_child(GTK_BOX(gtk_widget_get_parent(vb)), vb, pos);
   // and we update arrows
   _manage_editor_group_update_arrows(gtk_widget_get_parent(vb));
 }
@@ -3174,7 +3168,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   GtkWidget *hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(hb2, "modulegroups-header");
 
-  // left arrow (not if pos == 0 which means this is the first group)
+  // left arrow
   GtkWidget *btn = NULL;
   if(!d->edit_ro)
   {
@@ -3190,6 +3184,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   gtk_widget_set_name(hb3, "modulegroups-header-center");
   gtk_widget_set_hexpand(hb3, TRUE);
 
+  // icon
   btn = dtgtk_button_new(_buttons_get_icon_fct(gr->icon), 0, NULL);
   gtk_widget_set_name(btn, "modulegroups-group-icon");
   gtk_widget_set_tooltip_text(btn, _("group icon"));
@@ -3198,6 +3193,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   g_object_set_data(G_OBJECT(btn), "group", gr);
   gtk_box_pack_start(GTK_BOX(hb3), btn, FALSE, TRUE, 0);
 
+  // entry for group name
   GtkWidget *tb = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(tb), 5);
   gtk_widget_set_tooltip_text(tb, _("group name"));
@@ -3207,6 +3203,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   gtk_entry_set_text(GTK_ENTRY(tb), gr->name);
   gtk_box_pack_start(GTK_BOX(hb3), tb, TRUE, TRUE, 0);
 
+  // remove button
   if(!d->edit_ro)
   {
     btn = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
@@ -3218,7 +3215,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
 
   gtk_box_pack_start(GTK_BOX(hb2), hb3, FALSE, TRUE, 0);
 
-  // right arrow (not if pos == -1 which means this is the last group)
+  // right arrow
   if(!d->edit_ro)
   {
     btn = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_DIRECTION_LEFT | CPF_STYLE_FLAT,
