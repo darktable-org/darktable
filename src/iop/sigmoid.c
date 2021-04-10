@@ -99,6 +99,20 @@ typedef struct dt_iop_sigmoid_params_t
   dt_iop_sigmoid_negative_values_type_t negative_values_method; // $DEFAULT: DT_SIGMOID_NEGATIVE_DESATURATE $DESCRIPTION: "negative values"
 } dt_iop_sigmoid_params_t;
 
+typedef struct dt_iop_sigmoid_data_t
+{
+  float white_target;
+  float black_target;
+  float paper_exposure;
+  float film_fog;
+  float contrast_power;
+  float skew_power;
+  dt_iop_sigmoid_methods_type_t color_processing;
+  dt_iop_sigmoid_negative_values_type_t negative_values_method;
+  float crosstalk_amount;
+  dt_iop_sigmoid_norm_type_t rgb_norm_method;
+} dt_iop_sigmoid_data_t;
+
 typedef struct dt_iop_sigmoid_global_data_t
 {} dt_iop_sigmoid_global_data_t;
 
@@ -163,7 +177,31 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  memcpy(piece->data, p1, self->params_size);
+  dt_iop_sigmoid_params_t *params = (dt_iop_sigmoid_params_t *)p1;
+  dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
+  /* Calculate actual skew log logistic parameters to fulfill the following:
+   * f(scene_zero) = display_black_target 
+   * f(scene_grey) = display_grey_target
+   * f(scene_inf)  = display_white_target
+   * Slope at scene_grey independet of skewness i.e. only changed by the contrast parameter.
+   */
+
+  module_data->skew_power = powf(5.0f, -params->contrast_skewness);
+  module_data->contrast_power = powf(params->middle_grey_contrast, 1.0f / module_data->skew_power);
+  module_data->white_target = 0.01f * params->display_white_target;
+  module_data->black_target = 0.01f * params->display_black_target;
+  const float white_grey_relation = powf(module_data->white_target / params->display_grey_target, 1.0f / module_data->skew_power) - 1.0f;
+  module_data->film_fog = 0.0f;
+  if (module_data->black_target > 0.0f) {
+    const float white_black_relation = powf(module_data->white_target / module_data->black_target, 1.0f / module_data->skew_power) - 1.0f;
+    module_data->film_fog = MIDDLE_GREY * powf(white_grey_relation, 1.0f / module_data->contrast_power) / (powf(white_black_relation, 1.0f / module_data->contrast_power) - powf(white_grey_relation, 1.0f / module_data->contrast_power));
+  }
+  module_data->paper_exposure = powf(module_data->film_fog + MIDDLE_GREY, module_data->contrast_power) * white_grey_relation;
+
+  module_data->color_processing = params->color_processing;
+  module_data->negative_values_method = params->negative_values_method;
+  module_data->crosstalk_amount = fmaxf(1.0f - params->crosstalk_amount / 100.0f, 0.0f);
+  module_data->rgb_norm_method = params->rgb_norm_method;
 }
 
 #ifdef _OPENMP
@@ -273,10 +311,10 @@ static inline float generalized_loglogistic_sigmoid(const float value, const flo
   return 0.0f;
 }
 
-void process_loglogistic_crosstalk(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                         void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_loglogistic_crosstalk(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+                                   const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_sigmoid_params_t *d = (dt_iop_sigmoid_params_t *)piece->data;
+  const dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   const float *const in = (const float *)ivoid;
@@ -289,25 +327,18 @@ void process_loglogistic_crosstalk(struct dt_iop_module_t *self, dt_dev_pixelpip
    * f(scene_inf)  = display_white_target
    * Keep contrast and skewness fairly orthogonal
    */
-  const float scene_grey = MIDDLE_GREY;
-  const float display_white = 0.01f * d->display_white_target;
-  const float display_black = 0.01f * d->display_black_target;
-  const float skew_power = powf(5.0f, -d->contrast_skewness);
-  const float contrast_power = powf(d->middle_grey_contrast, 1.0f / skew_power);
-  const float magnitude = display_white;
-  const float white_grey_relation = powf(display_white / d->display_grey_target, 1.0f / skew_power) - 1.0f;
-  float film_fog = 0.0f;
-  if (display_black > 0.0f) {
-    const float white_black_relation = powf(display_white / display_black, 1.0f / skew_power) - 1.0f;
-    film_fog = scene_grey * powf(white_grey_relation, 1.0f / contrast_power) / (powf(white_black_relation, 1.0f / contrast_power) - powf(white_grey_relation, 1.0f / contrast_power));
-  }
-  const float paper_exp = powf(film_fog + scene_grey, contrast_power) * white_grey_relation;
-  const float saturation_factor = fmaxf(1.0f - d->crosstalk_amount / 100.0f, 0.0f);
-  const dt_iop_sigmoid_negative_values_type_t negative_values_method = d->negative_values_method;
+
+  const float white_target = module_data->white_target;
+  const float paper_exp = module_data->paper_exposure;
+  const float film_fog = module_data->film_fog;
+  const float contrast_power = module_data->contrast_power;
+  const float skew_power = module_data->skew_power;
+  const float saturation_factor = module_data->crosstalk_amount;
+  const dt_iop_sigmoid_negative_values_type_t negative_values_method = module_data->negative_values_method;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, work_profile, saturation_factor, negative_values_method, magnitude, paper_exp, film_fog, contrast_power, skew_power) \
+  dt_omp_firstprivate(npixels, work_profile, saturation_factor, negative_values_method, white_target, paper_exp, film_fog, contrast_power, skew_power) \
   dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
@@ -326,45 +357,34 @@ void process_loglogistic_crosstalk(struct dt_iop_module_t *self, dt_dev_pixelpip
     for(size_t c = 0; c < 3; c++)
     {
       const float desaturated_value = luma + saturation_factor * (pix_in_strict_positive[c] - luma);
-      pix_out[c] = generalized_loglogistic_sigmoid(desaturated_value, magnitude, paper_exp, film_fog, contrast_power, skew_power);
+      pix_out[c] = generalized_loglogistic_sigmoid(desaturated_value, white_target, paper_exp, film_fog, contrast_power, skew_power);
     }
     // Copy over the alpha channel
     pix_out[3] = pix_in[3];
   }
 }
 
-void process_loglogistic_ratio(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                         void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_loglogistic_ratio(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+                               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_sigmoid_params_t *d = (dt_iop_sigmoid_params_t *)piece->data;
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-
+  const dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
   const size_t npixels = (size_t)roi_in->width * roi_in->height;
 
-  /* Calculate actual skew log logistic parameters to fulfill the following:
-   * f(scene_zero) = display_black_target 
-   * f(scene_grey) = display_grey_target
-   * f(scene_inf)  = display_white_target
-   * Keep contrast and skewness fairly orthogonal
-   */
-  const float scene_grey = MIDDLE_GREY;
-  const float skew_power = powf(5.0f, -d->contrast_skewness);
-  const float contrast_power = powf(d->middle_grey_contrast, 1.0f / skew_power);
-  const float magnitude = 0.01f * d->display_white_target;
-  const float black_target = 0.01f * d->display_black_target;
-  const float white_grey_relation = powf(magnitude / d->display_grey_target, 1.0f / skew_power) - 1.0f;
-  float film_fog = 0.0f;
-  if (black_target > 0.0f) {
-    const float white_black_relation = powf(magnitude / black_target, 1.0f / skew_power) - 1.0f;
-    film_fog = scene_grey * powf(white_grey_relation, 1.0f / contrast_power) / (powf(white_black_relation, 1.0f / contrast_power) - powf(white_grey_relation, 1.0f / contrast_power));
-  }
-  const float paper_exp = powf(film_fog + scene_grey, contrast_power) * white_grey_relation;
-  const dt_iop_sigmoid_norm_type_t rgb_norm_method = d->rgb_norm_method;
+  const float white_target = module_data->white_target;
+  const float black_target = module_data->black_target;
+  const float paper_exp = module_data->paper_exposure;
+  const float film_fog = module_data->film_fog;
+  const float contrast_power = module_data->contrast_power;
+  const float skew_power = module_data->skew_power;
+
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_sigmoid_norm_type_t rgb_norm_method = module_data->rgb_norm_method;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, work_profile, magnitude, black_target, paper_exp, film_fog, contrast_power, skew_power, rgb_norm_method) \
+  dt_omp_firstprivate(npixels, work_profile, white_target, rgb_norm_method, black_target, paper_exp, film_fog, contrast_power, skew_power) \
   dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
@@ -376,7 +396,7 @@ void process_loglogistic_ratio(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 
     // Preserve color ratios by applying the tone curve on a luma estimate and then scale the RGB tripplet uniformly
     const float luma = get_pixel_norm(pix_in, rgb_norm_method, work_profile);
-    const float mapped_luma = generalized_loglogistic_sigmoid(luma, magnitude, paper_exp, film_fog, contrast_power, skew_power); 
+    const float mapped_luma = generalized_loglogistic_sigmoid(luma, white_target, paper_exp, film_fog, contrast_power, skew_power); 
 
     const float scaling_factor = mapped_luma / luma;
     for(size_t c = 0; c < 3; c++)
@@ -387,7 +407,7 @@ void process_loglogistic_ratio(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     // Some pixels will get out of gamut values, scale these into gamut again using desaturation.
     // Check for values larger then the white target
     const float max_pre_out = fmaxf(fmaxf(pre_out[0], pre_out[1]), pre_out[2]);
-    const float sat_max = max_pre_out > magnitude ? (magnitude - mapped_luma) / (max_pre_out - mapped_luma) : 1.0f;
+    const float sat_max = max_pre_out > white_target ? (white_target - mapped_luma) / (max_pre_out - mapped_luma) : 1.0f;
 
     // Check for values smaller then the black target
     const float min_pre_out = fminf(fminf(pre_out[0], pre_out[1]), pre_out[2]);
@@ -411,16 +431,27 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
-  dt_iop_sigmoid_params_t *d = (dt_iop_sigmoid_params_t *)piece->data;
+  dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
 
-  if (d->color_processing == DT_SIGMOID_METHOD_CROSSTALK)
+  if (module_data->color_processing == DT_SIGMOID_METHOD_CROSSTALK)
   {
-    process_loglogistic_crosstalk(self, piece, ivoid, ovoid, roi_in, roi_out);
+    process_loglogistic_crosstalk(piece, ivoid, ovoid, roi_in, roi_out);
   }
   else
   {
-    process_loglogistic_ratio(self, piece, ivoid, ovoid, roi_in, roi_out);
+    process_loglogistic_ratio(piece, ivoid, ovoid, roi_in, roi_out);
   }
+}
+
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  piece->data = calloc(1, sizeof(dt_iop_sigmoid_data_t));
+}
+
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  free(piece->data);
+  piece->data = NULL;
 }
 
 void init_global(dt_iop_module_so_t *module)
