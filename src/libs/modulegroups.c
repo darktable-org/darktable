@@ -3567,7 +3567,6 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
 
   // autoapply
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->edit_autoapply_chkbox), autoapply);
-  gtk_widget_set_sensitive(d->edit_autoapply_chkbox, !d->edit_ro);
   gtk_widget_set_sensitive(d->edit_autoapply_btn, !d->edit_ro);
 
   // new group button
@@ -3756,7 +3755,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->edit_autoapply_chkbox = gtk_check_button_new_with_label(_("auto-apply this preset"));
-  g_signal_connect(G_OBJECT(d->edit_autoapply_chkbox), "toggled", G_CALLBACK(_preset_autoapply_edit), self);
+  gtk_widget_set_sensitive(d->edit_autoapply_chkbox, FALSE); // always readonly. change are done with the button...
   gtk_widget_set_name(d->edit_autoapply_chkbox, "modulegroups_editor_setting");
   gtk_box_pack_start(GTK_BOX(hb2), d->edit_autoapply_chkbox, FALSE, TRUE, 0);
   d->edit_autoapply_btn = dtgtk_button_new(dtgtk_cairo_paint_preferences, 0, NULL);
