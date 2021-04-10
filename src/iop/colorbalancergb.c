@@ -1326,7 +1326,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->grey_fulcrum, 0.01);
   dt_bauhaus_slider_set_format(g->grey_fulcrum, "%.2f %%");
   dt_bauhaus_slider_set_factor(g->grey_fulcrum, 100.0f);
-  gtk_widget_set_tooltip_text(g->grey_fulcrum, _("position of the middle-grey reference for masking."));
+  gtk_widget_set_tooltip_text(g->grey_fulcrum, _("position of the middle-grey reference for masking"));
   dt_bauhaus_widget_set_quad_paint(g->grey_fulcrum, dtgtk_cairo_paint_showmask,
                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->grey_fulcrum, TRUE);
