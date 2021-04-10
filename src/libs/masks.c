@@ -980,13 +980,26 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
     int nb = gtk_tree_selection_count_selected_rows(selection);
     int from_group = 0;
 
-    GtkTreePath *it0 = NULL;
+    int grpid = 0;
     int depth = 0;
     if(nb > 0)
     {
       GList *selected = gtk_tree_selection_get_selected_rows(selection, NULL);
-      it0 = (GtkTreePath *)selected->data;
+      GtkTreePath *it0 = (GtkTreePath *)selected->data;
       depth = gtk_tree_path_get_depth(it0);
+      if(nb == 1)
+      {
+        // before freeing the list of selected rows, we check if the form is a group or not
+        if(gtk_tree_model_get_iter(model, &iter, it0))
+        {
+          GValue gv = {
+            0,
+          };
+          gtk_tree_model_get_value(model, &iter, TREE_FORMID, &gv);
+          grpid = g_value_get_int(&gv);
+          g_value_unset(&gv);
+        }
+      }
       g_list_free_full(selected, (GDestroyNotify)gtk_tree_path_free);
     }
     if(depth > 1) from_group = 1;
@@ -1014,18 +1027,6 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
 
     if(nb == 1)
     {
-      // we check if the form is a group or not
-      int grpid = 0;
-      if(gtk_tree_model_get_iter(model, &iter, it0))
-      {
-        GValue gv = {
-          0,
-        };
-        gtk_tree_model_get_value(model, &iter, TREE_FORMID, &gv);
-        grpid = g_value_get_int(&gv);
-        g_value_unset(&gv);
-      }
-
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grpid);
       if(grp && (grp->type & DT_MASKS_GROUP))
       {
