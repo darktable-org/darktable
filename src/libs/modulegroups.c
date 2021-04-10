@@ -2953,6 +2953,11 @@ static void _manage_editor_group_move_left(GtkWidget *widget, GdkEventButton *ev
 static void _manage_editor_group_remove(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  // we don't allow to remove the last group if no quick access or searchbox
+  if(g_list_length(d->edit_groups) == 1 && !d->edit_basics_show && !d->edit_show_search)
+  {
+    return;
+  }
   dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
   GtkWidget *vb = gtk_widget_get_parent(gtk_widget_get_parent(gtk_widget_get_parent(widget)));
   GtkWidget *groups_box = gtk_widget_get_parent(vb);
@@ -3287,8 +3292,31 @@ static void _manage_editor_basics_toggle(GtkWidget *button, dt_lib_module_t *sel
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
   if(d->editor_reset) return;
+  const gboolean state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
+  // we don't allow that to be false if there's no group or search
+  if(!state && g_list_length(d->edit_groups) == 0 && !d->edit_show_search)
+  {
+    d->editor_reset = TRUE;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+    d->editor_reset = FALSE;
+  }
   d->edit_basics_show = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   gtk_widget_set_visible(d->edit_basics_groupbox, d->edit_basics_show);
+}
+
+static void _manage_editor_search_toggle(GtkWidget *button, dt_lib_module_t *self)
+{
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  if(d->editor_reset) return;
+  const gboolean state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
+  // we don't allow that to be false if there's no group or quick access
+  if(!state && g_list_length(d->edit_groups) == 0 && !d->edit_basics_show)
+  {
+    d->editor_reset = TRUE;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+    d->editor_reset = FALSE;
+  }
+  d->edit_show_search = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
 }
 
 static void _preset_autoapply_changed(dt_gui_presets_edit_dialog_t *g)
@@ -3753,6 +3781,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   d->edit_search_cb = gtk_check_button_new_with_label(_("show search line"));
   gtk_widget_set_name(d->edit_search_cb, "modulegroups_editor_setting");
+  g_signal_connect(G_OBJECT(d->edit_search_cb), "toggled", G_CALLBACK(_manage_editor_search_toggle), self);
   gtk_box_pack_start(GTK_BOX(vb), d->edit_search_cb, FALSE, TRUE, 0);
   d->basics_chkbox = gtk_check_button_new_with_label(_("show quick access panel"));
   gtk_widget_set_name(d->basics_chkbox, "modulegroups_editor_setting");
