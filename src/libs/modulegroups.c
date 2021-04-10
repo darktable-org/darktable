@@ -3753,9 +3753,10 @@ static void _manage_show_window(dt_lib_module_t *self)
   GtkWidget *vb_main = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); // main box
   // preset combobox
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(hb, "modulegroups_top_box");
   GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(hb2), gtk_label_new(_("presets :")), FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb2), gtk_label_new(_("preset : ")), FALSE, TRUE, 0);
   d->presets_combo = gtk_combo_box_text_new();
   g_signal_connect(G_OBJECT(d->presets_combo), "changed", G_CALLBACK(_manage_preset_change), self);
   gtk_box_pack_start(GTK_BOX(hb2), d->presets_combo, FALSE, TRUE, 0);
