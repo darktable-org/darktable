@@ -1345,6 +1345,11 @@ filechooser row:hover,
   margin: 0;
 }
 
+#modulegroups_top_box
+{
+  font-size: 1.1em;
+}
+
 #modulegroups_editor
 {
   padding: 0.5em 0.6em;
