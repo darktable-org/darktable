@@ -385,7 +385,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
       }
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
 
-      if((piece->blendop_data) && (piece->enabled))
+      if(piece->blendop_data)
       {
         const dt_develop_blend_params_t *const bp = (const dt_develop_blend_params_t *)piece->blendop_data;
         if(bp->details != 0.0f)
@@ -2678,7 +2678,9 @@ float *dt_dev_distort_luminance_mask(const dt_dev_pixelpipe_t *pipe, float *src,
     for(GList *iter = source_iter; iter; iter = g_list_next(iter))
     {
       dt_dev_pixelpipe_iop_t *module = (dt_dev_pixelpipe_iop_t *)iter->data;
-      if(module->enabled)
+      if(module->enabled
+            && !(module->module->dev->gui_module && module->module->dev->gui_module->operation_tags_filter()
+                 & module->module->operation_tags()))
       {
         if(module->module->distort_mask
               && !(!strcmp(module->module->op, "finalscale") // hack against pipes not using finalscale
