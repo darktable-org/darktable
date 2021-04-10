@@ -2395,13 +2395,7 @@ static void _manage_module_add_popup(GtkWidget *widget, dt_lib_modulegroups_grou
     gtk_menu_shell_prepend(GTK_MENU_SHELL(pop), smt);
   }
 
-  gtk_widget_show_all(pop);
-
-#if GTK_CHECK_VERSION(3, 22, 0)
-  gtk_menu_popup_at_pointer(GTK_MENU(pop), NULL);
-#else
-  gtk_menu_popup(GTK_MENU(pop), NULL, NULL, NULL, NULL, 0, 0);
-#endif
+  dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
 }
 
 static gchar *_action_label(dt_action_t *action)
@@ -2567,13 +2561,7 @@ static void _manage_basics_add_popup(GtkWidget *widget, dt_lib_module_t *self, g
     pop = all_modules;
   }
 
-  gtk_widget_show_all(pop);
-
-#if GTK_CHECK_VERSION(3, 22, 0)
-  gtk_menu_popup_at_pointer(GTK_MENU(pop), NULL);
-#else
-  gtk_menu_popup(GTK_MENU(pop), NULL, NULL, NULL, NULL, 0, 0);
-#endif
+  dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
 }
 
 static void _manage_editor_basics_add_popup(GtkWidget *widget, GdkEvent *event, dt_lib_module_t *self)
