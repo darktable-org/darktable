@@ -3693,6 +3693,14 @@ static void _manage_editor_destroy(GtkWidget *widget, dt_lib_module_t *self)
   d->edit_preset = NULL;
 }
 
+static void _manage_editor_resize_dialog(GtkWidget *widget, dt_lib_module_t *self)
+{
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  dt_conf_set_int("ui_last/modulegroups_dialog_width", allocation.width);
+  dt_conf_set_int("ui_last/modulegroups_dialog_height", allocation.height);
+}
+
 static void _manage_show_window(dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
@@ -3701,13 +3709,14 @@ static void _manage_show_window(dt_lib_module_t *self)
   d->dialog = gtk_dialog_new_with_buttons(_("manage module layouts"), win,
                                           GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, NULL, NULL);
 
-  gtk_window_set_default_size(GTK_WINDOW(d->dialog), DT_PIXEL_APPLY_DPI(1100), DT_PIXEL_APPLY_DPI(700));
-
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(d->dialog);
 #endif
+  gtk_window_set_default_size(GTK_WINDOW(d->dialog), dt_conf_get_int("ui_last/modulegroups_dialog_width"),
+                              dt_conf_get_int("ui_last/modulegroups_dialog_height"));
   gtk_widget_set_name(d->dialog, "modulegroups_manager");
   gtk_window_set_title(GTK_WINDOW(d->dialog), _("manage module layouts"));
+  g_signal_connect(d->dialog, "check-resize", G_CALLBACK(_manage_editor_resize_dialog), self);
 
   // remove the small border
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(d->dialog));
