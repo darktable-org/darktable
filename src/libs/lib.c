@@ -949,7 +949,7 @@ static void _preset_popup_posistion(GtkMenu *menu, gint *x, gint *y, gboolean *p
 }
 #endif
 
-static void popup_callback(GtkButton *button, dt_lib_module_t *module)
+static void presets_popup_callback(GtkButton *button, dt_lib_module_t *module)
 {
   dt_lib_module_info_t *mi = (dt_lib_module_info_t *)calloc(1, sizeof(dt_lib_module_info_t));
 
@@ -965,34 +965,9 @@ static void popup_callback(GtkButton *button, dt_lib_module_t *module)
   }
   dt_lib_presets_popup_menu_show(mi);
 
-  gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+  dt_gui_menu_popup(darktable.gui->presets_popup_menu, GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 
-#if GTK_CHECK_VERSION(3, 22, 0)
-  GtkWidget *w = module->presets_button;
-  if(module->expander) w = dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander));
-
-  GdkEvent *event = gtk_get_current_event();
-  if(event)
-  {
-    gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu, w, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST, event);
-  }
-  else
-  {
-    event = gdk_event_new(GDK_BUTTON_PRESS);
-    event->button.device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
-    event->button.window = gtk_widget_get_window(GTK_WIDGET(button));
-    g_object_ref(event->button.window);
-
-    gtk_menu_popup_at_pointer(darktable.gui->presets_popup_menu, event);
-  }
-  gdk_event_free(event);
-#else
-  gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_posistion, button, 0,
-                 gtk_get_current_event_time());
-  gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
-#endif
-
-  dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
+  if(button) dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
 }
 
 
@@ -1104,9 +1079,8 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
   }
   else if(e->button == 3)
   {
-    GtkWidget *preset_button = module->presets_button;
-    if(gtk_widget_get_sensitive(preset_button))
-      popup_callback(GTK_BUTTON(preset_button), module);
+    if(gtk_widget_get_sensitive(module->presets_button))
+      presets_popup_callback(NULL, module);
 
     return TRUE;
   }
@@ -1167,7 +1141,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
     if(module->presets_button)
     {
       // if presets btn has been loaded to be shown outside expander
-      g_signal_connect(G_OBJECT(module->presets_button), "clicked", G_CALLBACK(popup_callback), module);
+      g_signal_connect(G_OBJECT(module->presets_button), "clicked", G_CALLBACK(presets_popup_callback), module);
     }
     module->expander = NULL;
     return NULL;
@@ -1217,7 +1191,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   hw[DT_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
   module->presets_button = GTK_WIDGET(hw[DT_MODULE_PRESETS]);
   gtk_widget_set_tooltip_text(hw[DT_MODULE_PRESETS], _("presets"));
-  g_signal_connect(G_OBJECT(hw[DT_MODULE_PRESETS]), "clicked", G_CALLBACK(popup_callback), module);
+  g_signal_connect(G_OBJECT(hw[DT_MODULE_PRESETS]), "clicked", G_CALLBACK(presets_popup_callback), module);
 
   if(!module->get_params && !module->set_preferences) gtk_widget_set_sensitive(GTK_WIDGET(hw[DT_MODULE_PRESETS]), FALSE);
   gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_PRESETS]), "module-preset-button");
