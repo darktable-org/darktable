@@ -385,10 +385,11 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
       }
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
 
-      if(piece->blendop_data)
+      if((piece->blendop_data) && (piece->enabled))
       {
         const dt_develop_blend_params_t *const bp = (const dt_develop_blend_params_t *)piece->blendop_data;
-        if(bp->details != 0.0f) pipe->want_luminance_mask |= DT_DEV_LUMINANCE_MASK_REQUIRED;
+        if(bp->details != 0.0f)
+          pipe->want_luminance_mask |= DT_DEV_LUMINANCE_MASK_REQUIRED;
       }
     }
   }
