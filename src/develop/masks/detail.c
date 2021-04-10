@@ -75,10 +75,12 @@
 
   Some additional comments:
   1. intentionally this details mask refinement has only been implemented for raws. Especially for compressed
-     inmages like jpegs or 8bit input the algo didn't work as good.
-  2. Of course credit goes to Ingo @heckflosse from rt team for the original idea. (in the rt world this is knowb
+     inmages like jpegs or 8bit input the algo didn't work as good because of input precision and compression artefacts.
+  2. In the gui the slider is above the rest of the refinemt sliders to emphasize that blurring & feathering use the
+     mask corrected by detail refinemnt.
+  3. Of course credit goes to Ingo @heckflosse from rt team for the original idea. (in the rt world this is knowb
      as details mask)
-  
+
   hanno@schwalm-bremen.de 21/04/09
 */
 
