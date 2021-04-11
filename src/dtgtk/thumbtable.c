@@ -913,7 +913,7 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
     {
       // Scale delta to represent scroll size in pixels.
       // On macOS reverses scaling in dt_gui_get_scroll_deltas
-      delta = delta * 100;
+      delta = delta * 50;
       if(delta < 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
         _move(table, 0, -delta, TRUE);
       if(delta >= 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
