@@ -269,7 +269,7 @@ button,
   background-color: @button_bg;
   color: @button_fg;
   font-weight: normal;
-  font-family: sans-serif; 
+  font-family: sans-serif;
 }
 
 button:disabled,
@@ -353,7 +353,7 @@ separator
   border-left: 0.07em solid transparent;
 }
 
-/* Allow to resize dialog windows */ 
+/* Allow to resize dialog windows */
 decoration
 {
   margin: 0.07em;
@@ -1300,7 +1300,6 @@ filechooser .sidebar row:selected,
 filechooser .sidebar row:selected:hover .sidebar-label,
 #preferences_box .sidebar row:selected,
 #preferences_box .sidebar row:selected:hover label,
-#modulegroups-preset-activated,
 #modulegroups_editor
 {
   color: @fg_color;
@@ -1320,15 +1319,13 @@ filechooser row:hover .sidebar-icon
   background-color: @field_hover_bg;
 }
 
-#preferences_box .sidebar row:selected,
-#modulegroups-preset-activated
+#preferences_box .sidebar row:selected
 {
   border-left-color: @field_hover_bg;   /* make the border left visible with chosen color if category on sidebar is selected */
 }
 
 filechooser row:hover,
-#preferences_box .sidebar :hover,  /* be sure border is set but same color as background-color hover effect and for same reason as just above */
-#modulegroups-preset:hover
+#preferences_box .sidebar :hover  /* be sure border is set but same color as background-color hover effect and for same reason as just above */
 {
   border-left-color: @button_hover_bg;
   background-color: @button_hover_bg;
@@ -1348,25 +1345,14 @@ filechooser row:hover,
   margin: 0;
 }
 
+#modulegroups_top_box
+{
+  font-size: 1.1em;
+}
+
 #modulegroups_editor
 {
   padding: 0.5em 0.6em;
-}
-
-#modulegroups-presets-list
-{
-  background-color: @bg_color;
-}
-
-#modulegroups-preset,
-#modulegroups-preset-activated
-{
-  background-color: @bg_color;
-  color: @plugin_label_color;
-  border-left: 0.14em solid @bg_color;
-  padding: 0.49em 1.19em;
-  font-size: 1.1em;
-  min-width: 10.5em;
 }
 
 #modulegroups-iop-header,
@@ -1392,9 +1378,7 @@ filechooser row:hover,
   border: 0;
 }
 
-#modulegroups-header #dt-button,
-#modulegroups-preset #dt-button,
-#modulegroups-preset-activated #dt-button
+#modulegroups-header #dt-button
 {
   border: 0;
 }
@@ -1423,15 +1407,9 @@ filechooser row:hover,
   margin: 0.5em;
 }
 
-#modulegroups-preset-name
+#modulegroups_editor_setting
 {
-  font-size: 1.1em;
-  margin-top: 0.4em;
-}
-
-#modulegroups-preset-name entry
-{
-  min-width: 21em;
+  padding-left: 2em;
 }
 
 #modulegroups-ro
@@ -1465,16 +1443,9 @@ filechooser row:hover,
   font-weight: bold;
 }
 
-#modulegroups-add-module-btn,
-#modulegroups-preset-add-btn
+#modulegroups-add-module-btn
 {
   margin-top: 0.4em;
-}
-
-#modulegroups-preset:hover label,
-#modulegroups-preset:hover #dt-button
-{
-  color: @button_hover_fg;
 }
 
 #modulegroups-deprecated-msg,
