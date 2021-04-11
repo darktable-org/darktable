@@ -142,11 +142,12 @@ typedef struct dt_lib_modulegroups_t
 
   // editor dialog
   GtkWidget *dialog;
-  GtkWidget *presets_list, *preset_box;
-  GtkWidget *preset_name, *preset_groups_box;
+  gboolean editor_reset;
+  GtkWidget *presets_combo, *presets_btn_remove, *presets_btn_dup, *presets_btn_rename, *presets_btn_new;
+  GtkWidget *preset_groups_box, *preset_btn_add_group, *preset_read_only_label, *preset_reset_btn;
   GtkWidget *edit_search_cb;
   GtkWidget *basics_chkbox, *edit_basics_groupbox, *edit_basics_box;
-  GtkWidget *edit_autoapply_lb;
+  GtkWidget *edit_autoapply_chkbox, *edit_autoapply_btn;
 
   gboolean basics_show;
   GList *basics;
@@ -2006,6 +2007,8 @@ static void _manage_editor_basics_update_list(dt_lib_module_t *self)
           gtk_widget_set_name(hb, "modulegroups-iop-header");
           gchar *lbn = dt_util_dstrcat(NULL, "%s\n    %s", module->name(), item->widget_name);
           GtkWidget *lb = gtk_label_new(lbn);
+          gtk_label_set_ellipsize(GTK_LABEL(lb), PANGO_ELLIPSIZE_END);
+          gtk_label_set_xalign(GTK_LABEL(lb), 0.0);
           g_free(lbn);
           gtk_widget_set_name(lb, "iop-panel-label");
           gtk_box_pack_start(GTK_BOX(hb), lb, FALSE, TRUE, 0);
@@ -2092,31 +2095,22 @@ static void _manage_editor_save(dt_lib_module_t *self)
   // get all the values
   d->edit_show_search = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->edit_search_cb));
   gchar *params = _preset_to_string(self, TRUE);
-  gchar *newname = g_strdup(gtk_entry_get_text(GTK_ENTRY(d->preset_name)));
 
   // update the preset in the database
-  dt_lib_presets_update(d->edit_preset, self->plugin_name, self->version(), newname, "", params, strlen(params));
+  dt_lib_presets_update(d->edit_preset, self->plugin_name, self->version(), d->edit_preset, "", params,
+                        strlen(params));
   g_free(params);
-  if(d->edit_preset) g_free(d->edit_preset);
-  d->edit_preset = g_strdup(newname);
-
-  // if name has changed, we need to reflect the change on the presets list too
-  _manage_preset_update_list(self);
 
   // update groups
   gchar *preset = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
-  if(g_strcmp0(preset, newname) == 0)
+  if(g_strcmp0(preset, d->edit_preset) == 0)
   {
-    // if name has changed, let's update it
-    if(g_strcmp0(d->edit_preset, newname) != 0)
-      dt_conf_set_string("plugins/darkroom/modulegroups_preset", newname);
     // and we update the gui
-    if(!dt_lib_presets_apply(newname, self->plugin_name, self->version()))
+    if(!dt_lib_presets_apply(d->edit_preset, self->plugin_name, self->version()))
       dt_lib_presets_apply((gchar *)C_("modulegroup", FALLBACK_PRESET_NAME),
                            self->plugin_name, self->version());
   }
   g_free(preset);
-  g_free(newname);
 }
 
 static void _manage_editor_module_remove(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
@@ -2160,6 +2154,8 @@ static void _manage_editor_module_update_list(dt_lib_module_t *self, dt_lib_modu
         GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         gtk_widget_set_name(hb, "modulegroups-iop-header");
         GtkWidget *lb = gtk_label_new(module->name());
+        gtk_label_set_ellipsize(GTK_LABEL(lb), PANGO_ELLIPSIZE_END);
+        gtk_label_set_xalign(GTK_LABEL(lb), 0.0);
         gtk_widget_set_name(lb, "iop-panel-label");
         gtk_box_pack_start(GTK_BOX(hb), lb, FALSE, TRUE, 0);
         if(!d->edit_ro)
@@ -2190,21 +2186,15 @@ static void _manage_editor_group_update_arrows(GtkWidget *box)
   {
     GtkWidget *w = (GtkWidget *)lw_iter->data;
     GtkWidget *hb = dt_gui_container_first_child(GTK_CONTAINER(w));
-    if(hb)
+    if(pos > 0 && hb) // we skip the first item as it's quick access panel
     {
       GList *lw2 = gtk_container_get_children(GTK_CONTAINER(hb));
       if(!g_list_shorter_than(lw2, 3)) //do we have at least three?
       {
         GtkWidget *left = (GtkWidget *)lw2->data;
         GtkWidget *right = (GtkWidget *)g_list_nth_data(lw2, 2);
-        if(pos == 1)
-          gtk_widget_hide(left);
-        else
-          gtk_widget_show(left);
-        if(pos == max)
-          gtk_widget_hide(right);
-        else
-          gtk_widget_show(right);
+        gtk_widget_set_visible(left, pos > 1);
+        gtk_widget_set_visible(right, pos < max);
       }
       g_list_free(lw2);
     }
@@ -2936,8 +2926,8 @@ static void _manage_editor_group_move_right(GtkWidget *widget, GdkEventButton *e
   d->edit_groups = g_list_remove(d->edit_groups, gr);
   d->edit_groups = g_list_insert(d->edit_groups, gr, pos + 1);
 
-  // we move the group in the ui
-  gtk_box_reorder_child(GTK_BOX(gtk_widget_get_parent(vb)), vb, pos + 1);
+  // we move the group in the ui (the position need +1 due to the quick access panel)
+  gtk_box_reorder_child(GTK_BOX(gtk_widget_get_parent(vb)), vb, pos + 2);
   // and we update arrows
   _manage_editor_group_update_arrows(gtk_widget_get_parent(vb));
 }
@@ -2954,8 +2944,8 @@ static void _manage_editor_group_move_left(GtkWidget *widget, GdkEventButton *ev
   d->edit_groups = g_list_remove(d->edit_groups, gr);
   d->edit_groups = g_list_insert(d->edit_groups, gr, pos - 1);
 
-  // we move the group in the ui
-  gtk_box_reorder_child(GTK_BOX(gtk_widget_get_parent(vb)), vb, pos - 1);
+  // we move the group in the ui (the position need +1 due to the quick access panel)
+  gtk_box_reorder_child(GTK_BOX(gtk_widget_get_parent(vb)), vb, pos);
   // and we update arrows
   _manage_editor_group_update_arrows(gtk_widget_get_parent(vb));
 }
@@ -2963,6 +2953,11 @@ static void _manage_editor_group_move_left(GtkWidget *widget, GdkEventButton *ev
 static void _manage_editor_group_remove(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  // we don't allow to remove the last group if no quick access or searchbox
+  if(g_list_length(d->edit_groups) == 1 && !d->edit_basics_show && !d->edit_show_search)
+  {
+    return;
+  }
   dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
   GtkWidget *vb = gtk_widget_get_parent(gtk_widget_get_parent(gtk_widget_get_parent(widget)));
   GtkWidget *groups_box = gtk_widget_get_parent(vb);
@@ -3130,6 +3125,7 @@ static GtkWidget *_manage_editor_group_init_basics_box(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(hb3), btn, FALSE, TRUE, 0);
 
   GtkWidget *tb = gtk_entry_new();
+  gtk_entry_set_width_chars(GTK_ENTRY(tb), 5);
   gtk_widget_set_tooltip_text(tb, _("quick access panel widgets"));
   gtk_widget_set_sensitive(tb, FALSE);
   gtk_entry_set_text(GTK_ENTRY(tb), _("quick access"));
@@ -3177,7 +3173,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   GtkWidget *hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(hb2, "modulegroups-header");
 
-  // left arrow (not if pos == 0 which means this is the first group)
+  // left arrow
   GtkWidget *btn = NULL;
   if(!d->edit_ro)
   {
@@ -3193,6 +3189,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   gtk_widget_set_name(hb3, "modulegroups-header-center");
   gtk_widget_set_hexpand(hb3, TRUE);
 
+  // icon
   btn = dtgtk_button_new(_buttons_get_icon_fct(gr->icon), 0, NULL);
   gtk_widget_set_name(btn, "modulegroups-group-icon");
   gtk_widget_set_tooltip_text(btn, _("group icon"));
@@ -3201,7 +3198,9 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   g_object_set_data(G_OBJECT(btn), "group", gr);
   gtk_box_pack_start(GTK_BOX(hb3), btn, FALSE, TRUE, 0);
 
+  // entry for group name
   GtkWidget *tb = gtk_entry_new();
+  gtk_entry_set_width_chars(GTK_ENTRY(tb), 5);
   gtk_widget_set_tooltip_text(tb, _("group name"));
   g_object_set_data(G_OBJECT(tb), "group", gr);
   gtk_widget_set_sensitive(tb, !d->edit_ro);
@@ -3209,6 +3208,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   gtk_entry_set_text(GTK_ENTRY(tb), gr->name);
   gtk_box_pack_start(GTK_BOX(hb3), tb, TRUE, TRUE, 0);
 
+  // remove button
   if(!d->edit_ro)
   {
     btn = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
@@ -3220,7 +3220,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
 
   gtk_box_pack_start(GTK_BOX(hb2), hb3, FALSE, TRUE, 0);
 
-  // right arrow (not if pos == -1 which means this is the last group)
+  // right arrow
   if(!d->edit_ro)
   {
     btn = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_DIRECTION_LEFT | CPF_STYLE_FLAT,
@@ -3291,13 +3291,32 @@ static void _manage_editor_group_add(GtkWidget *widget, GdkEventButton *event, d
 static void _manage_editor_basics_toggle(GtkWidget *button, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  if(d->editor_reset) return;
+  const gboolean state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
+  // we don't allow that to be false if there's no group or search
+  if(!state && g_list_length(d->edit_groups) == 0 && !d->edit_show_search)
+  {
+    d->editor_reset = TRUE;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+    d->editor_reset = FALSE;
+  }
   d->edit_basics_show = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   gtk_widget_set_visible(d->edit_basics_groupbox, d->edit_basics_show);
 }
 
-static void _preset_renamed_callback(GtkEntry *entry, dt_lib_module_t *self)
+static void _manage_editor_search_toggle(GtkWidget *button, dt_lib_module_t *self)
 {
-  _manage_editor_save(self);
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  if(d->editor_reset) return;
+  const gboolean state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
+  // we don't allow that to be false if there's no group or quick access
+  if(!state && g_list_length(d->edit_groups) == 0 && !d->edit_basics_show)
+  {
+    d->editor_reset = TRUE;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+    d->editor_reset = FALSE;
+  }
+  d->edit_show_search = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
 }
 
 static void _preset_autoapply_changed(dt_gui_presets_edit_dialog_t *g)
@@ -3308,7 +3327,7 @@ static void _preset_autoapply_changed(dt_gui_presets_edit_dialog_t *g)
   // we reread the presets autoapply values from the database
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT autoapply, filter"
+                              "SELECT autoapply"
                               " FROM data.presets"
                               " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
                               -1, &stmt, NULL);
@@ -3317,11 +3336,9 @@ static void _preset_autoapply_changed(dt_gui_presets_edit_dialog_t *g)
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, d->edit_preset, -1, SQLITE_TRANSIENT);
 
   int autoapply = 0;
-  int filter = 0;
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     autoapply = sqlite3_column_int(stmt, 0);
-    filter = sqlite3_column_int(stmt, 1);
     sqlite3_finalize(stmt);
   }
   else
@@ -3330,16 +3347,160 @@ static void _preset_autoapply_changed(dt_gui_presets_edit_dialog_t *g)
     return;
   }
 
-  // we refresh the label
-  gchar *auto_txt = dt_util_dstrcat(NULL, "%s:%s - %s:%s", _("autoapply"), autoapply ? _("yes") : _("no"),
-                                    _("filter"), filter ? _("yes") : _("no"));
-  gtk_label_set_text(GTK_LABEL(d->edit_autoapply_lb), auto_txt);
-  g_free(auto_txt);
+  // we refresh the checkbox
+  d->editor_reset = TRUE;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->edit_autoapply_chkbox), autoapply);
+  d->editor_reset = FALSE;
+}
+
+static void _manage_editor_preset_name_verify(GtkWidget *tb, dt_lib_module_t *self)
+{
+  GList *names = (GList *)g_object_get_data(G_OBJECT(tb), "existing_names");
+  GtkWidget *lb = (GtkWidget *)g_object_get_data(G_OBJECT(tb), "existing_label");
+  GtkWidget *bt_ok = (GtkWidget *)g_object_get_data(G_OBJECT(tb), "ok_btn");
+  const gchar *txt = gtk_entry_get_text(GTK_ENTRY(tb));
+
+  // we don't want empty name
+  if(!g_strcmp0(txt, ""))
+  {
+    gtk_widget_set_visible(lb, TRUE);
+    gtk_widget_set_sensitive(bt_ok, FALSE);
+    return;
+  }
+
+  for(const GList *l = names; l; l = g_list_next(l))
+  {
+    gchar *tx = (gchar *)l->data;
+    if(!g_strcmp0(tx, txt))
+    {
+      gtk_widget_set_visible(lb, TRUE);
+      gtk_widget_set_sensitive(bt_ok, FALSE);
+      return;
+    }
+  }
+  gtk_widget_set_visible(lb, FALSE);
+  gtk_widget_set_sensitive(bt_ok, TRUE);
+}
+
+static void _manage_editor_preset_action(GtkWidget *btn, dt_lib_module_t *self)
+{
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+
+  // we get the default name
+  gchar *new_name = NULL;
+  if(btn == d->presets_btn_rename)
+    new_name = g_strdup(d->edit_preset);
+  else if(btn == d->presets_btn_new)
+    new_name = g_strdup(_("new"));
+  else if(btn == d->presets_btn_dup)
+    new_name = dt_util_dstrcat(NULL, "%s_1", d->edit_preset);
+  else
+    return;
+
+  // we first get the list of all the existing preset names
+  GList *names = NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT name"
+                              " FROM data.presets"
+                              " WHERE operation = ?1 AND op_version = ?2",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *name = (char *)sqlite3_column_text(stmt, 0);
+    names = g_list_prepend(names, g_strdup(name));
+  }
+  sqlite3_finalize(stmt);
+
+  gint res = GTK_RESPONSE_OK;
+  GtkWidget *dialog
+      = gtk_dialog_new_with_buttons(_("rename preset"), GTK_WINDOW(d->dialog), GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    _("cancel"), GTK_RESPONSE_CANCEL, _("rename"), GTK_RESPONSE_OK, NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
+  GtkWidget *bt_ok = gtk_dialog_get_widget_for_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
+  GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+  gtk_box_pack_start(GTK_BOX(content_area), gtk_label_new(_("new preset name :")), FALSE, TRUE, 0);
+  GtkWidget *lb = gtk_label_new(_("a preset with this name already exists !"));
+  GtkWidget *tb = gtk_entry_new();
+  gtk_entry_set_text(GTK_ENTRY(tb), new_name);
+  g_object_set_data(G_OBJECT(tb), "existing_names", names);
+  g_object_set_data(G_OBJECT(tb), "existing_label", lb);
+  g_object_set_data(G_OBJECT(tb), "ok_btn", bt_ok);
+  g_signal_connect(G_OBJECT(tb), "changed", G_CALLBACK(_manage_editor_preset_name_verify), self);
+  gtk_box_pack_start(GTK_BOX(content_area), tb, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(content_area), lb, FALSE, TRUE, 0);
+  gtk_widget_show_all(content_area);
+  _manage_editor_preset_name_verify(tb, self);
+  res = gtk_dialog_run(GTK_DIALOG(dialog));
+
+  g_free(new_name);
+
+  if(res == GTK_RESPONSE_OK)
+  {
+    if(btn == d->presets_btn_rename)
+    {
+      // we update the database
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE data.presets"
+                                  " SET name=?1"
+                                  " WHERE name=?2 AND operation = ?3 AND op_version = ?4",
+                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, gtk_entry_get_text(GTK_ENTRY(tb)), -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, d->edit_preset, -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, self->plugin_name, -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, self->version());
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+
+      // we update the presets list
+      g_free(d->edit_preset);
+      d->edit_preset = g_strdup(gtk_entry_get_text(GTK_ENTRY(tb)));
+      d->editor_reset = TRUE;
+      _manage_preset_update_list(self);
+      gtk_combo_box_set_active_id(GTK_COMBO_BOX(d->presets_combo), d->edit_preset);
+      d->editor_reset = FALSE;
+    }
+    else if(btn == d->presets_btn_new)
+    {
+      // create a new minimal preset
+      char *tx = _presets_get_minimal(self);
+      dt_lib_presets_add(gtk_entry_get_text(GTK_ENTRY(tb)), self->plugin_name, self->version(), tx, strlen(tx),
+                         FALSE);
+      g_free(tx);
+      // update the presets list
+      d->editor_reset = TRUE;
+      _manage_preset_update_list(self);
+      d->editor_reset = FALSE;
+      // select the new preset
+      _manage_editor_load(gtk_entry_get_text(GTK_ENTRY(tb)), self);
+    }
+    else if(btn == d->presets_btn_dup)
+    {
+      char *tx = _preset_to_string(self, TRUE);
+      dt_lib_presets_add(gtk_entry_get_text(GTK_ENTRY(tb)), self->plugin_name, self->version(), tx, strlen(tx),
+                         FALSE);
+      g_free(tx);
+      // update the presets list
+      d->editor_reset = TRUE;
+      _manage_preset_update_list(self);
+      d->editor_reset = FALSE;
+      // select the new preset
+      _manage_editor_load(gtk_entry_get_text(GTK_ENTRY(tb)), self);
+    }
+  }
+
+  gtk_widget_destroy(dialog);
+  g_list_free_full(names, g_free);
 }
 
 static void _preset_autoapply_edit(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  if(d->editor_reset) return;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT rowid"
@@ -3371,21 +3532,17 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
     _manage_editor_save(self);
   }
 
-  // we remove all widgets from the box
-  dt_gui_container_destroy_children(GTK_CONTAINER(d->preset_box));
+  // we avoid widgets events to be executed
+  d->editor_reset = TRUE;
 
-  // we update all the preset lines
-  GList *lw = gtk_container_get_children(GTK_CONTAINER(d->presets_list));
-  for(const GList *lw_iter = lw; lw_iter; lw_iter = g_list_next(lw_iter))
-  {
-    GtkWidget *w = (GtkWidget *)lw_iter->data;
-    const char *pr_name = (char *)g_object_get_data(G_OBJECT(w), "preset_name");
-    if(g_strcmp0(pr_name, preset) == 0)
-      gtk_widget_set_name(w, "modulegroups-preset-activated");
-    else if(pr_name)
-      gtk_widget_set_name(w, "modulegroups-preset");
-  }
-  g_list_free(lw);
+  // we remove all widgets from the groups-box
+  dt_gui_container_destroy_children(GTK_CONTAINER(d->preset_groups_box));
+
+  // we select the right preset in the combobox (or we select the first one)
+  gboolean sel_ok = FALSE;
+  if(preset) sel_ok = gtk_combo_box_set_active_id(GTK_COMBO_BOX(d->presets_combo), preset);
+  if(!sel_ok) gtk_combo_box_set_active(GTK_COMBO_BOX(d->presets_combo), 0);
+  const gchar *sel_preset = gtk_combo_box_get_active_id(GTK_COMBO_BOX(d->presets_combo));
 
   // get all presets groups
   if(d->edit_groups) _manage_editor_groups_cleanup(self, TRUE);
@@ -3394,97 +3551,55 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   d->edit_preset = NULL;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT writeprotect, op_params, autoapply, filter"
+                              "SELECT writeprotect, op_params, autoapply"
                               " FROM data.presets"
                               " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, preset, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, sel_preset, -1, SQLITE_TRANSIENT);
 
   int autoapply = 0;
-  int filter = 0;
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     d->edit_ro = sqlite3_column_int(stmt, 0);
     const void *blob = sqlite3_column_blob(stmt, 1);
     _preset_from_string(self, (char *)blob, TRUE);
-    d->preset_groups_box = NULL; // ensure we don't have any destroyed widget remaining
     d->edit_basics_box = NULL;
+    d->edit_basics_groupbox = NULL;
     _basics_cleanup_list(self, TRUE);
-    d->edit_preset = g_strdup(preset);
+    d->edit_preset = g_strdup(sel_preset);
 
     autoapply = sqlite3_column_int(stmt, 2);
-    filter = sqlite3_column_int(stmt, 3);
     sqlite3_finalize(stmt);
   }
   else
   {
+    d->editor_reset = FALSE;
     sqlite3_finalize(stmt);
     return;
   }
 
-  GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_vexpand(vb, TRUE);
+  // presets buttons
+  gtk_widget_set_sensitive(d->presets_btn_rename, !d->edit_ro);
+  gtk_widget_set_sensitive(d->presets_btn_remove, !d->edit_ro);
+  gtk_widget_set_sensitive(d->presets_btn_dup, g_strcmp0(sel_preset, _(DEPRECATED_PRESET_NAME)));
 
-  // preset name
-  GtkWidget *hb1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(hb1, "modulegroups-preset-name");
-  gtk_box_pack_start(GTK_BOX(hb1), gtk_label_new(_("preset name : ")), FALSE, TRUE, 0);
-  d->preset_name = gtk_entry_new();
-  gtk_widget_set_tooltip_text(d->preset_name, _("preset name"));
-  gtk_entry_set_text(GTK_ENTRY(d->preset_name), preset);
-  gtk_widget_set_sensitive(d->preset_name, !d->edit_ro);
-  g_signal_connect(G_OBJECT(d->preset_name), "changed", G_CALLBACK(_preset_renamed_callback), self);
-  gtk_box_pack_start(GTK_BOX(hb1), d->preset_name, FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vb), hb1, FALSE, TRUE, 0);
-
-  // show search checkbox
-  d->edit_search_cb = gtk_check_button_new_with_label(_("show search line"));
+  // search checkbox
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->edit_search_cb), d->edit_show_search);
   gtk_widget_set_sensitive(d->edit_search_cb, !d->edit_ro);
-  gtk_box_pack_start(GTK_BOX(vb), d->edit_search_cb, FALSE, TRUE, 0);
 
-  // show basics checkbox
-  d->basics_chkbox = gtk_check_button_new_with_label(_("show quick access panel"));
+  // basics checkbox
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->basics_chkbox), d->edit_basics_show);
-  g_signal_connect(G_OBJECT(d->basics_chkbox), "toggled", G_CALLBACK(_manage_editor_basics_toggle), self);
   gtk_widget_set_sensitive(d->basics_chkbox, !d->edit_ro);
-  gtk_box_pack_start(GTK_BOX(vb), d->basics_chkbox, FALSE, TRUE, 0);
 
-  // show the autoapply/filter line
-  gchar *auto_txt = dt_util_dstrcat(NULL, "%s:%s - %s:%s", _("autoapply"), autoapply ? _("yes") : _("no"),
-                                    _("filter"), filter ? _("yes") : _("no"));
-  hb1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  d->edit_autoapply_lb = gtk_label_new(auto_txt);
-  gtk_widget_set_name(d->edit_autoapply_lb, "modulegroups-autoapply-txt");
-  g_free(auto_txt);
-  gtk_box_pack_start(GTK_BOX(hb1), d->edit_autoapply_lb, FALSE, FALSE, 0);
-  if(!d->edit_ro)
-  {
-    // we only show the edit button for read-write presets
-    GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_preferences, 0, NULL);
-    g_signal_connect(G_OBJECT(btn), "clicked", G_CALLBACK(_preset_autoapply_edit), self);
-    gtk_widget_set_name(btn, "modulegroups-autoapply-btn");
-    gtk_box_pack_start(GTK_BOX(hb1), btn, FALSE, FALSE, 0);
-  }
-  gtk_box_pack_start(GTK_BOX(vb), hb1, FALSE, TRUE, 0);
+  // autoapply
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->edit_autoapply_chkbox), autoapply);
+  gtk_widget_set_sensitive(d->edit_autoapply_btn, !d->edit_ro);
 
-  hb1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  d->preset_groups_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(hb1, "modulegroups-groups-title");
-  gtk_box_pack_start(GTK_BOX(hb1), gtk_label_new(_("module groups")), FALSE, TRUE, 0);
-  if(!d->edit_ro)
-  {
-    GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_plus_simple,
-                                     CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
-    g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_group_add), self);
-    gtk_box_pack_start(GTK_BOX(hb1), bt, FALSE, FALSE, 0);
-  }
-  gtk_widget_set_halign(hb1, GTK_ALIGN_CENTER);
-  gtk_box_pack_start(GTK_BOX(vb), hb1, FALSE, TRUE, 0);
+  // new group button
+  gtk_widget_set_visible(d->preset_btn_add_group, !d->edit_ro);
 
-  gtk_widget_set_name(d->preset_groups_box, "modulegroups-groups-box");
   // set up basics widgets
   d->edit_basics_groupbox = _manage_editor_group_init_basics_box(self);
   gtk_box_pack_start(GTK_BOX(d->preset_groups_box), d->edit_basics_groupbox, FALSE, TRUE, 0);
@@ -3497,113 +3612,42 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   {
     dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)l->data;
     GtkWidget *vb2 = _manage_editor_group_init_modules_box(self, gr);
+    gtk_widget_show_all(vb2);
     gtk_box_pack_start(GTK_BOX(d->preset_groups_box), vb2, FALSE, TRUE, 0);
   }
 
-  gtk_widget_set_halign(d->preset_groups_box, GTK_ALIGN_CENTER);
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_NEVER);
-  gtk_container_add(GTK_CONTAINER(sw), d->preset_groups_box);
-  gtk_box_pack_start(GTK_BOX(vb), sw, TRUE, TRUE, 0);
-
   // read-only message
-  if(d->edit_ro)
-  {
-    GtkWidget *lb
-        = gtk_label_new(_("this is a built-in read-only preset. duplicate it if you want to make changes"));
-    gtk_widget_set_name(lb, "modulegroups-ro");
-    gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
-  }
+  gtk_widget_set_visible(d->preset_read_only_label, d->edit_ro);
 
   // reset button
-  if(!d->edit_ro)
-  {
-    hb1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    GtkWidget *bt = gtk_button_new();
-    gtk_widget_set_name(bt, "modulegroups-reset");
-    gtk_button_set_label(GTK_BUTTON(bt), _("reset"));
-    g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_reset), self);
-    gtk_box_pack_end(GTK_BOX(hb1), bt, FALSE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(vb), hb1, FALSE, TRUE, 0);
-  }
-
-  gtk_container_add(GTK_CONTAINER(d->preset_box), vb);
-  gtk_widget_show_all(d->preset_box);
+  gtk_widget_set_visible(d->preset_reset_btn, !d->edit_ro);
 
   // and we update arrows
   if(!d->edit_ro) _manage_editor_group_update_arrows(d->preset_groups_box);
 
-  //set keyboard focus on the scrollable window (not on a widget)
-  gtk_widget_grab_focus(sw);
+  d->editor_reset = FALSE;
+  // set keyboard focus on the scrollable window (not on a widget)
+  // gtk_widget_grab_focus(sw);
 }
 
-static void _manage_preset_change(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+static void _manage_preset_change(GtkWidget *widget, dt_lib_module_t *self)
 {
-  const char *preset = (char *)g_object_get_data(G_OBJECT(widget), "preset_name");
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  if(d->editor_reset) return;
+  const char *preset = gtk_combo_box_get_active_id(GTK_COMBO_BOX(d->presets_combo));
   _manage_editor_load(preset, self);
 }
 
-static void _manage_preset_add(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+static void _manage_preset_delete(GtkWidget *widget, dt_lib_module_t *self)
 {
-  // find the new name
-  sqlite3_stmt *stmt;
-  int i = 0;
-  gboolean ko = TRUE;
-  while(ko)
-  {
-    i++;
-    gchar *tx = dt_util_dstrcat(NULL, "new_%d", i);
-    DT_DEBUG_SQLITE3_PREPARE_V2(
-        dt_database_get(darktable.db),
-        "SELECT name"
-        " FROM data.presets"
-        " WHERE operation = ?1 AND op_version = ?2 AND name = ?3", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, tx, -1, SQLITE_TRANSIENT);
-    if(sqlite3_step(stmt) != SQLITE_ROW) ko = FALSE;
-    sqlite3_finalize(stmt);
-    g_free(tx);
-  }
-  gchar *nname = dt_util_dstrcat(NULL, "new_%d", i);
-
-  // and create a new minimal preset
-  char *tx = _presets_get_minimal(self);
-  dt_lib_presets_add(nname, self->plugin_name, self->version(), tx, strlen(tx), FALSE);
-  g_free(tx);
-
-  _manage_preset_update_list(self);
-
-  // and we load the new preset
-  _manage_editor_load(nname, self);
-  g_free(nname);
-}
-
-static void _manage_preset_duplicate(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
-{
-  const char *preset = (char *)g_object_get_data(G_OBJECT(widget), "preset_name");
-  gchar *nname = dt_lib_presets_duplicate(preset, self->plugin_name, self->version());
-
-  // reload the window
-  _manage_preset_update_list(self);
-  // select the duplicated preset
-  _manage_editor_load(nname, self);
-
-  g_free(nname);
-}
-
-static void _manage_preset_delete(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
-{
-  const char *preset = (char *)g_object_get_data(G_OBJECT(widget), "preset_name");
-
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
   gint res = GTK_RESPONSE_YES;
-  GtkWidget *w = gtk_widget_get_toplevel(widget);
 
   if(dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset"))
   {
-    GtkWidget *dialog
-        = gtk_message_dialog_new(GTK_WINDOW(w), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
-                                 GTK_BUTTONS_YES_NO, _("do you really want to delete the preset `%s'?"), preset);
+    GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(d->dialog), GTK_DIALOG_DESTROY_WITH_PARENT,
+                                               GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+                                               _("do you really want to delete the preset `%s'?"), d->edit_preset);
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -3614,45 +3658,13 @@ static void _manage_preset_delete(GtkWidget *widget, GdkEventButton *event, dt_l
 
   if(res == GTK_RESPONSE_YES)
   {
-    dt_lib_presets_remove(preset, self->plugin_name, self->version());
-
-    // reload presets list
-    dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-    _manage_preset_update_list(self);
-
-    // we try to reload previous selected preset if it still exists
-    gboolean sel_ok = FALSE;
-    GList *children = gtk_container_get_children(GTK_CONTAINER(d->presets_list));
-    for(const GList *l = children; l; l = g_list_next(l))
-    {
-      GtkWidget *ww = (GtkWidget *)l->data;
-      const char *tx = (char *)g_object_get_data(G_OBJECT(ww), "preset_name");
-      if(g_strcmp0(tx, gtk_entry_get_text(GTK_ENTRY(d->preset_name))) == 0)
-      {
-        _manage_editor_load(tx, self);
-        sel_ok = TRUE;
-        break;
-      }
-    }
-    g_list_free(children);
-    // otherwise we load the first preset
-    if(!sel_ok)
-    {
-      GList *children2 = gtk_container_get_children(GTK_CONTAINER(d->presets_list));
-      GtkWidget *ww = (GtkWidget *)children2->data;
-      if(ww)
-      {
-        const char *firstn = (char *)g_object_get_data(G_OBJECT(ww), "preset_name");
-        _manage_editor_load(firstn, self);
-      }
-      g_list_free(children2);
-    }
+    dt_lib_presets_remove(d->edit_preset, self->plugin_name, self->version());
 
     // if the deleted preset was the one currently in use, load default preset
     if(dt_conf_key_exists("plugins/darkroom/modulegroups_preset"))
     {
       gchar *cur = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
-      if(g_strcmp0(cur, preset) == 0)
+      if(g_strcmp0(cur, d->edit_preset) == 0)
       {
         dt_conf_set_string("plugins/darkroom/modulegroups_preset", C_("modulegroup", FALLBACK_PRESET_NAME));
         dt_lib_presets_apply((gchar *)C_("modulegroup", FALLBACK_PRESET_NAME),
@@ -3660,34 +3672,26 @@ static void _manage_preset_delete(GtkWidget *widget, GdkEventButton *event, dt_l
       }
       g_free(cur);
     }
+
+    // reload presets list
+    _manage_preset_update_list(self);
+    // we fallback to the first preset
+    _manage_editor_load(NULL, self);
   }
-}
-
-static gboolean _manage_preset_hover_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
-{
-  int flags = gtk_widget_get_state_flags(gtk_widget_get_parent(widget));
-
-  if(event->type == GDK_ENTER_NOTIFY)
-    flags |= GTK_STATE_FLAG_PRELIGHT;
-  else
-    flags &= ~GTK_STATE_FLAG_PRELIGHT;
-
-  gtk_widget_set_state_flags(gtk_widget_get_parent(widget), flags, TRUE);
-  return FALSE;
 }
 
 static void _manage_preset_update_list(dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
-  // we first remove all existing entries from the box
-  dt_gui_container_destroy_children(GTK_CONTAINER(d->presets_list));
+  // we first remove all existing entries from the combobox
+  gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(d->presets_combo));
 
   // and we repopulate it
   sqlite3_stmt *stmt;
   // order: get shipped defaults first
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, writeprotect, description"
+                              "SELECT name"
                               " FROM data.presets"
                               " WHERE operation=?1 AND op_version=?2"
                               " ORDER BY writeprotect DESC, name, rowid",
@@ -3697,63 +3701,10 @@ static void _manage_preset_update_list(dt_lib_module_t *self)
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const int ro = sqlite3_column_int(stmt, 1);
     const char *name = (char *)sqlite3_column_text(stmt, 0);
-    GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_widget_set_name(hb, "modulegroups-preset");
-    g_object_set_data(G_OBJECT(hb), "preset_name", g_strdup(name));
-
-    // preset label
-    GtkWidget *evt = gtk_event_box_new();
-    g_object_set_data(G_OBJECT(evt), "preset_name", g_strdup(name));
-    g_signal_connect(G_OBJECT(evt), "button-press-event", G_CALLBACK(_manage_preset_change), self);
-    g_signal_connect(G_OBJECT(evt), "enter-notify-event", G_CALLBACK(_manage_preset_hover_callback), self);
-    g_signal_connect(G_OBJECT(evt), "leave-notify-event", G_CALLBACK(_manage_preset_hover_callback), self);
-    GtkWidget *lbl = gtk_label_new(name);
-    gtk_widget_set_tooltip_text(lbl, name);
-    gtk_widget_set_size_request(lbl, 180, -1);
-    gtk_label_set_ellipsize(GTK_LABEL(lbl), PANGO_ELLIPSIZE_END);
-    gtk_label_set_xalign(GTK_LABEL(lbl), 0.0);
-    gtk_container_add(GTK_CONTAINER(evt), lbl);
-    gtk_box_pack_start(GTK_BOX(hb), evt, TRUE, TRUE, 0);
-
-    // duplicate button (not for deprecate preset)
-    GtkWidget *btn;
-    if(g_strcmp0(name, _(DEPRECATED_PRESET_NAME)))
-    {
-      btn = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT, NULL);
-      gtk_widget_set_tooltip_text(btn, _("duplicate this preset"));
-      g_object_set_data(G_OBJECT(btn), "preset_name", g_strdup(name));
-      g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_preset_duplicate), self);
-      gtk_box_pack_end(GTK_BOX(hb), btn, FALSE, FALSE, 0);
-    }
-
-    // remove button (not for read-lony presets)
-    if(!ro)
-    {
-      btn = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
-      gtk_widget_set_tooltip_text(btn, _("delete this preset"));
-      g_object_set_data(G_OBJECT(btn), "preset_name", g_strdup(name));
-      g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_preset_delete), self);
-      gtk_box_pack_end(GTK_BOX(hb), btn, FALSE, FALSE, 0);
-    }
-
-    gtk_box_pack_start(GTK_BOX(d->presets_list), hb, FALSE, TRUE, 0);
+    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(d->presets_combo), name, name);
   }
   sqlite3_finalize(stmt);
-
-  // and we finally add the "new preset" button
-  GtkWidget *hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_plus_simple,
-                                   CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
-  g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_preset_add), self);
-  gtk_widget_set_name(bt, "modulegroups-preset-add-btn");
-  gtk_widget_set_tooltip_text(bt, _("add new empty preset"));
-  gtk_widget_set_halign(hb2, GTK_ALIGN_CENTER);
-  gtk_box_pack_start(GTK_BOX(hb2), bt, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(d->presets_list), hb2, FALSE, FALSE, 0);
-
-  gtk_widget_show_all(d->presets_list);
 }
 
 static void _manage_editor_destroy(GtkWidget *widget, dt_lib_module_t *self)
@@ -3770,6 +3721,14 @@ static void _manage_editor_destroy(GtkWidget *widget, dt_lib_module_t *self)
   d->edit_preset = NULL;
 }
 
+static void _manage_editor_resize_dialog(GtkWidget *widget, dt_lib_module_t *self)
+{
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  dt_conf_set_int("ui_last/modulegroups_dialog_width", allocation.width);
+  dt_conf_set_int("ui_last/modulegroups_dialog_height", allocation.height);
+}
+
 static void _manage_show_window(dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
@@ -3778,72 +3737,120 @@ static void _manage_show_window(dt_lib_module_t *self)
   d->dialog = gtk_dialog_new_with_buttons(_("manage module layouts"), win,
                                           GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, NULL, NULL);
 
-  gtk_window_set_default_size(GTK_WINDOW(d->dialog), DT_PIXEL_APPLY_DPI(1100), DT_PIXEL_APPLY_DPI(700));
-
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(d->dialog);
 #endif
+  gtk_window_set_default_size(GTK_WINDOW(d->dialog), dt_conf_get_int("ui_last/modulegroups_dialog_width"),
+                              dt_conf_get_int("ui_last/modulegroups_dialog_height"));
   gtk_widget_set_name(d->dialog, "modulegroups_manager");
   gtk_window_set_title(GTK_WINDOW(d->dialog), _("manage module layouts"));
+  g_signal_connect(d->dialog, "check-resize", G_CALLBACK(_manage_editor_resize_dialog), self);
 
   // remove the small border
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(d->dialog));
   gtk_container_set_border_width(GTK_CONTAINER(content), 0);
 
+  GtkWidget *vb_main = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); // main box
+  // preset combobox
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(hb, "modulegroups_top_box");
   GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_name(vb, "modulegroups-presets-list");
-  d->preset_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_name(d->preset_box, "modulegroups_editor");
+  GtkWidget *hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(hb2), gtk_label_new(_("preset : ")), FALSE, TRUE, 0);
+  d->presets_combo = gtk_combo_box_text_new();
+  g_signal_connect(G_OBJECT(d->presets_combo), "changed", G_CALLBACK(_manage_preset_change), self);
+  gtk_box_pack_start(GTK_BOX(hb2), d->presets_combo, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vb), hb2, FALSE, TRUE, 0);
+  // presets buttons
+  hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  d->presets_btn_remove = dt_ui_button_new(_("remove"), _("remove the preset"), NULL);
+  g_signal_connect(G_OBJECT(d->presets_btn_remove), "clicked", G_CALLBACK(_manage_preset_delete), self);
+  gtk_box_pack_start(GTK_BOX(hb2), d->presets_btn_remove, TRUE, TRUE, 0);
+  d->presets_btn_dup = dt_ui_button_new(_("duplicate"), _("duplicate the preset"), NULL);
+  g_signal_connect(G_OBJECT(d->presets_btn_dup), "clicked", G_CALLBACK(_manage_editor_preset_action), self);
+  gtk_box_pack_start(GTK_BOX(hb2), d->presets_btn_dup, TRUE, TRUE, 0);
+  d->presets_btn_rename = dt_ui_button_new(_("rename"), _("rename the preset"), NULL);
+  g_signal_connect(G_OBJECT(d->presets_btn_rename), "clicked", G_CALLBACK(_manage_editor_preset_action), self);
+  gtk_box_pack_start(GTK_BOX(hb2), d->presets_btn_rename, TRUE, TRUE, 0);
+  d->presets_btn_new = dt_ui_button_new(_("new"), _("create a new empty preset"), NULL);
+  g_signal_connect(G_OBJECT(d->presets_btn_new), "clicked", G_CALLBACK(_manage_editor_preset_action), self);
+  gtk_box_pack_start(GTK_BOX(hb2), d->presets_btn_new, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vb), hb2, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, TRUE, 0);
 
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  d->presets_list = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  // presets settings (search + quick acces)
+  vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  d->edit_search_cb = gtk_check_button_new_with_label(_("show search line"));
+  gtk_widget_set_name(d->edit_search_cb, "modulegroups_editor_setting");
+  g_signal_connect(G_OBJECT(d->edit_search_cb), "toggled", G_CALLBACK(_manage_editor_search_toggle), self);
+  gtk_box_pack_start(GTK_BOX(vb), d->edit_search_cb, FALSE, TRUE, 0);
+  d->basics_chkbox = gtk_check_button_new_with_label(_("show quick access panel"));
+  gtk_widget_set_name(d->basics_chkbox, "modulegroups_editor_setting");
+  g_signal_connect(G_OBJECT(d->basics_chkbox), "toggled", G_CALLBACK(_manage_editor_basics_toggle), self);
+  gtk_box_pack_start(GTK_BOX(vb), d->basics_chkbox, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, TRUE, 0);
+
+  // presets settings (autoapply)
+  vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  d->edit_autoapply_chkbox = gtk_check_button_new_with_label(_("auto-apply this preset"));
+  gtk_widget_set_sensitive(d->edit_autoapply_chkbox, FALSE); // always readonly. change are done with the button...
+  gtk_widget_set_name(d->edit_autoapply_chkbox, "modulegroups_editor_setting");
+  gtk_box_pack_start(GTK_BOX(hb2), d->edit_autoapply_chkbox, FALSE, TRUE, 0);
+  d->edit_autoapply_btn = dtgtk_button_new(dtgtk_cairo_paint_preferences, 0, NULL);
+  g_signal_connect(G_OBJECT(d->edit_autoapply_btn), "clicked", G_CALLBACK(_preset_autoapply_edit), self);
+  gtk_widget_set_name(d->edit_autoapply_btn, "modulegroups-autoapply-btn");
+  gtk_box_pack_start(GTK_BOX(hb2), d->edit_autoapply_btn, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vb), hb2, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, TRUE, 0);
+
+  gtk_box_pack_start(GTK_BOX(vb_main), hb, FALSE, TRUE, 0);
+
+  // groups title line
+  hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(hb, "modulegroups-groups-title");
+  gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("module groups")), FALSE, TRUE, 0);
+  d->preset_btn_add_group
+      = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
+  g_signal_connect(G_OBJECT(d->preset_btn_add_group), "button-press-event", G_CALLBACK(_manage_editor_group_add),
+                   self);
+  gtk_box_pack_start(GTK_BOX(hb), d->preset_btn_add_group, FALSE, FALSE, 0);
+  gtk_widget_set_halign(hb, GTK_ALIGN_CENTER);
+  gtk_box_pack_start(GTK_BOX(vb_main), hb, FALSE, TRUE, 0);
+
+  // groups line
+  d->preset_groups_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(d->preset_groups_box, "modulegroups-groups-box");
+  gtk_widget_set_vexpand(d->preset_groups_box, TRUE);
+  gtk_widget_set_halign(d->preset_groups_box, GTK_ALIGN_FILL);
+  gtk_box_pack_start(GTK_BOX(vb_main), d->preset_groups_box, TRUE, TRUE, 0);
+
+  // read only message
+  d->preset_read_only_label
+      = gtk_label_new(_("this is a built-in read-only preset. duplicate it if you want to make changes"));
+  gtk_widget_set_name(d->preset_read_only_label, "modulegroups-ro");
+  gtk_box_pack_start(GTK_BOX(vb_main), d->preset_read_only_label, FALSE, TRUE, 0);
+
+  // reset button
+  hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  d->preset_reset_btn = gtk_button_new();
+  gtk_widget_set_name(d->preset_reset_btn, "modulegroups-reset");
+  gtk_button_set_label(GTK_BUTTON(d->preset_reset_btn), _("reset"));
+  g_signal_connect(G_OBJECT(d->preset_reset_btn), "button-press-event", G_CALLBACK(_manage_editor_reset), self);
+  gtk_box_pack_end(GTK_BOX(hb2), d->preset_reset_btn, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vb_main), hb2, FALSE, TRUE, 0);
 
   // we load the presets list
   _manage_preset_update_list(self);
 
-  gtk_container_add(GTK_CONTAINER(sw), d->presets_list);
-  gtk_box_pack_start(GTK_BOX(vb), sw, TRUE, TRUE, 0);
-
-  gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hb), d->preset_box, TRUE, TRUE, 0);
-  gtk_widget_show_all(hb);
+  gtk_widget_show_all(vb_main);
 
   // and we select the current one
-  gboolean sel_ok = FALSE;
-  if(dt_conf_key_exists("plugins/darkroom/modulegroups_preset"))
-  {
-    gchar *preset = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
-    GList *children = gtk_container_get_children(GTK_CONTAINER(d->presets_list));
-    for(const GList *l = children; l; l = g_list_next(l))
-    {
-      GtkWidget *w = (GtkWidget *)l->data;
-      const char *tx = (char *)g_object_get_data(G_OBJECT(w), "preset_name");
-      if(g_strcmp0(tx, preset) == 0)
-      {
-        _manage_editor_load(preset, self);
-        sel_ok = TRUE;
-        break;
-      }
-    }
-    g_list_free(children);
-    g_free(preset);
-  }
-  // or the first one if no selection found
-  if(!sel_ok)
-  {
-    GList *children = gtk_container_get_children(GTK_CONTAINER(d->presets_list));
-    GtkWidget *w = (GtkWidget *)children->data;
-    if(w)
-    {
-      const char *firstn = (char *)g_object_get_data(G_OBJECT(w), "preset_name");
-      _manage_editor_load(firstn, self);
-    }
-    g_list_free(children);
-  }
+  gchar *preset = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
+  _manage_editor_load(preset, self);
+  g_free(preset);
 
-  gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(d->dialog))), hb);
+  gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(d->dialog))), vb_main);
 
   g_signal_connect(d->dialog, "destroy", G_CALLBACK(_manage_editor_destroy), self);
   gtk_window_set_resizable(GTK_WINDOW(d->dialog), TRUE);
