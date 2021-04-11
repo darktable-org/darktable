@@ -521,6 +521,14 @@ gboolean preferences_window_deleted(GtkWidget *widget, GdkEvent *event, gpointer
 }
 #endif
 
+static void _resize_dialog(GtkWidget *widget)
+{
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  dt_conf_set_int("ui_last/preferences_dialog_width", allocation.width);
+  dt_conf_set_int("ui_last/preferences_dialog_height", allocation.height);
+}
+
 void dt_gui_preferences_show()
 {
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
@@ -532,7 +540,10 @@ void dt_gui_preferences_show()
   g_signal_connect(G_OBJECT(_preferences_dialog), "delete-event", G_CALLBACK(preferences_window_deleted), NULL);
 #endif
 
-  gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog), DT_PIXEL_APPLY_DPI(1100), DT_PIXEL_APPLY_DPI(750));
+  gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog), 
+                              dt_conf_get_int("ui_last/preferences_dialog_width"),
+                              dt_conf_get_int("ui_last/preferences_dialog_height"));
+  g_signal_connect(G_OBJECT(_preferences_dialog), "check-resize", G_CALLBACK(_resize_dialog), NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(_preferences_dialog);
 #endif
@@ -554,7 +565,6 @@ void dt_gui_preferences_show()
   GtkWidget *stack = gtk_stack_new();
   GtkWidget *stacksidebar = gtk_stack_sidebar_new();
   gtk_stack_sidebar_set_stack(GTK_STACK_SIDEBAR(stacksidebar), GTK_STACK(stack));
-  gtk_widget_set_size_request(stack, DT_PIXEL_APPLY_DPI(900), DT_PIXEL_APPLY_DPI(750));
   gtk_box_pack_start(GTK_BOX(box), stacksidebar, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), stack, TRUE, TRUE, 0);
 
