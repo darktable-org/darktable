@@ -615,6 +615,7 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
         // prevent continuous scrolling past top of filemanager
         if (dt_conf_get_bool("lighttable/ui/continuous_scrolling"))
         {
+          table->accumulator = 0;
           dt_thumbtable_full_redraw(table, TRUE);
           return TRUE;
         }
@@ -1564,6 +1565,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
   else
   {
     // otherwise we reset the offset to the beginning
+    table->accumulator = 0;
     table->offset = 1;
     table->offset_imgid = _thumb_get_imgid(table->offset);
     dt_conf_set_int("plugins/lighttable/recentcollect/pos0", 1);
@@ -1934,7 +1936,6 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       const int offset_row = (table->offset-1) / table->thumbs_per_row;
       offset = offset_row * table->thumbs_per_row + 1;
       table->offset = offset;
-      table->accumulator = 0;
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
@@ -2068,6 +2069,18 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     sqlite3_finalize(stmt);
 
     if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
+
+    // Correct the location of thumbs when using continuous scrolling.
+    // Apply additional offset according to offset before reset.
+    if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER && dt_conf_get_bool("lighttable/ui/continuous_scrolling"))
+    {
+      if(table->accumulator != 0)
+      {
+        const gdouble accumulator_old = table->accumulator;
+        table->accumulator = 0;
+        _move(table, 0, accumulator_old * table->thumb_size, TRUE);
+      }
+    }
   }
 }
 
