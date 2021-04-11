@@ -679,6 +679,20 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>ui_last/modulegroups_dialog_width</name>
+    <type>int</type>
+    <default>1100</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/modulegroups_dialog_height</name>
+    <type>int</type>
+    <default>700</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>ui_last/session_expander_import</name>
     <type>bool</type>
     <default>false</default>
