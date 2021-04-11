@@ -2280,14 +2280,17 @@ static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *accelerata
 {
   dt_undo_start_group(darktable.undo, DT_UNDO_DUPLICATE);
 
-  const int sourceid = dt_view_get_image_to_act_on();
-  const int newimgid = dt_image_duplicate(sourceid);
+  const int32_t sourceid = dt_view_get_image_to_act_on();
+  const int32_t newimgid = dt_image_duplicate(sourceid);
   if(newimgid <= 0) return FALSE;
 
   if(GPOINTER_TO_INT(data))
     dt_history_delete_on_image(newimgid);
   else
     dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL, TRUE, TRUE);
+
+  // a duplicate should keep the change time stamp of the original
+  dt_image_cache_set_change_timestamp_from_image(darktable.image_cache, newimgid, sourceid);
 
   dt_undo_end_group(darktable.undo);
 
