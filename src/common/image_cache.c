@@ -325,6 +325,24 @@ void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache, const int32_t 
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
+void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache, const int32_t imgid, const int32_t sourceid)
+{
+  if(imgid <= 0 || sourceid <= 0) return;
+
+  // get source timestamp
+  const dt_image_t *simg = dt_image_cache_get(cache, sourceid, 'r');
+  const time_t change_timestamp = simg->change_timestamp;
+  dt_image_cache_read_release(cache, simg);
+
+  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
+  if(!entry) return;
+  ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
+  dt_image_t *img = (dt_image_t *)entry->data;
+  img->cache_entry = entry;
+  img->change_timestamp = change_timestamp;
+  dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
+}
+
 void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const int32_t imgid)
 {
   if(imgid <= 0) return;
