@@ -1108,6 +1108,17 @@ void set_preferences(void *menu, dt_lib_module_t *self)
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
+static gboolean _next_widget(GtkWidget *width, GdkEventKey *ev, GtkWidget *next)
+{
+  if(ev->keyval == GDK_KEY_Tab)
+  {
+    gtk_widget_grab_focus(next);
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
@@ -1405,9 +1416,12 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(_height_changed), (gpointer)d);
 
   g_signal_connect(G_OBJECT(d->width), "button-press-event", G_CALLBACK(_widht_mdlclick), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->width), "key-press-event", G_CALLBACK(_next_widget), (gpointer)d->height);
   g_signal_connect(G_OBJECT(d->height), "button-press-event", G_CALLBACK(_height_mdlclick), (gpointer)d);
   g_signal_connect(G_OBJECT(d->print_width), "button-press-event", G_CALLBACK(_widht_mdlclick), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->print_width), "key-press-event", G_CALLBACK(_next_widget), (gpointer)d->print_height);
   g_signal_connect(G_OBJECT(d->print_height), "button-press-event", G_CALLBACK(_height_mdlclick), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->print_height), "key-press-event", G_CALLBACK(_next_widget), (gpointer)d->print_dpi);
 
   g_signal_connect(G_OBJECT(d->scale), "button-press-event", G_CALLBACK(_scale_mdlclick), (gpointer)d);
   g_signal_connect(G_OBJECT(d->scale), "changed", G_CALLBACK(_scale_changed), (gpointer)d);
