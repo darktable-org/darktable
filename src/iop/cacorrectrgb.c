@@ -182,6 +182,8 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
   // as it is the average of the values where the guide is higher than its
   // average, and the lower manifold of the guided channel is equal to 1.
 
+for(size_t p = 0; p < 4; p++)
+{
   // refine the manifolds
   // improve result especially on very degraded images
 #ifdef _OPENMP
@@ -276,7 +278,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_man
   dt_gaussian_blur_4c(g, manifold_higher, blurred_manifold_higher);
   dt_gaussian_blur_4c(g, manifold_lower, blurred_manifold_lower);
   normalize_manifolds(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide);
-
+}
   dt_gaussian_free(g);
   dt_free_align(manifold_lower);
   dt_free_align(manifold_higher);
@@ -325,19 +327,37 @@ dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma, mode) \
     float dist = fabsf(log_high - log_pixg) / fmaxf(fabsf(log_high - log_low), 1E-6);
     dist = fminf(dist, 1.0f);
 
-    for(size_t kc = 1; kc <= 2; kc++)
+    for(size_t kc = 0; kc <= 1; kc++)
     {
-      const size_t c = (guide + kc) % 3;
+      const size_t c = (guide + kc + 1) % 3;
+      const size_t c2 = (guide + (kc ^ 1) + 1) % 3;
       const float pixelc = in[k * 4 + c];
+      const float pixelc2 = in[k * 4 + c2];
+
+      //TODO weight trust in different channels depending on dx and dy
+      const float xl = logf(fmaxf(low_guide, 1E-6));
+      const float yl = logf(fmaxf(manifolds[k * 6 + 3 + c2], 1E-6));
+      const float xh = logf(fmaxf(high_guide, 1E-6));
+      const float yh = logf(fmaxf(manifolds[k * 6 + c2], 1E-6));
+
+      const float x = logf(fmaxf(pixelg, 1E-6));
+      const float y = logf(fmaxf(pixelc2, 1E-6));
+
+      // project (x;y) on the (xl;yl)(xh;yh) line
+      const float dx = xh - xl;
+      const float dy = yh - yl;
+      const float norm = sqrtf(dx * dx + dy * dy);
+      float dist_low_proj = ((x - xl) * dx + (y - yl) * dy) / norm;
+      dist_low_proj = 1.0f - fminf(fmaxf(dist_low_proj, 0.0f), 1.0f);
 
       const float diff_high_manifolds = manifolds[k * 6 + c] - high_guide;
       const float diff_low_manifolds = manifolds[k * 6 + 3 + c] - low_guide;
-      const float diff = (diff_low_manifolds * dist) + (diff_high_manifolds * (1.0f - dist));
+      const float diff = (diff_low_manifolds * dist_low_proj) + (diff_high_manifolds * (1.0f - dist_low_proj));
       const float estimate_d = pixelg + diff;
 
       const float ratio_high_manifolds = manifolds[k * 6 + c] / high_guide;
       const float ratio_low_manifolds = manifolds[k * 6 + 3 + c] / low_guide;
-      const float ratio = powf(ratio_low_manifolds, dist) * powf(ratio_high_manifolds, (1.0f - dist));
+      const float ratio = powf(ratio_low_manifolds, dist_low_proj) * powf(ratio_high_manifolds, (1.0f - dist_low_proj));
       const float estimate_r = pixelg * ratio;
 
       float dist_dr = (pixelc - estimate_d) / (estimate_r - estimate_d);
@@ -351,10 +371,10 @@ dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma, mode) \
           out[k * 4 + c] = outp;
           break;
         case DT_CACORRECT_MODE_DARKEN:
-          out[k * 4 + c] = fminf(outp, in[k * 4 + c]);
+          out[k * 4 + c] = fminf(outp, pixelc);
           break;
         case DT_CACORRECT_MODE_BRIGHTEN:
-          out[k * 4 + c] = fmaxf(outp, in[k * 4 + c]);
+          out[k * 4 + c] = fmaxf(outp, pixelc);
           break;
       }
     }
