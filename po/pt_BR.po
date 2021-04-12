@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-04-11 16:09-0300\n"
-"PO-Revision-Date: 2021-04-11 16:08-0300\n"
+"POT-Creation-Date: 2021-04-12 14:57-0300\n"
+"PO-Revision-Date: 2021-04-13 14:29-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -886,8 +886,8 @@ msgstr ""
 msgid "3D lut root folder"
 msgstr "pasta raiz do LUT 3D"
 
-#: ../build/bin/preferences_gen.h:5379 ../src/control/jobs/control_jobs.c:1656
-#: ../src/control/jobs/control_jobs.c:1729 ../src/gui/preferences.c:1776
+#: ../build/bin/preferences_gen.h:5379 ../src/control/jobs/control_jobs.c:1659
+#: ../src/control/jobs/control_jobs.c:1732 ../src/gui/preferences.c:1776
 #: ../src/gui/presets.c:383 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/disk.c:197 ../src/imageio/storage/gallery.c:108
 #: ../src/imageio/storage/gallery.c:181 ../src/imageio/storage/latex.c:107
@@ -1663,7 +1663,7 @@ msgstr ""
 "este programa externo é usado para tocar arquivos de áudio que algumas "
 "câmeras gravam para manter notas sobre imagens"
 
-#: ../build/bin/preferences_gen.h:7495 ../src/control/jobs/control_jobs.c:2278
+#: ../build/bin/preferences_gen.h:7495 ../src/control/jobs/control_jobs.c:2281
 #: ../src/libs/import.c:134
 msgid "import"
 msgstr "importar"
@@ -2004,10 +2004,9 @@ msgid "overlaid"
 msgstr "sobreposto"
 
 #: ../build/bin/conf_gen.h:2244
-#, fuzzy
 msgctxt "preferences"
 msgid "parade"
-msgstr "parâmetros"
+msgstr "parada (canais lado a lado)"
 
 #: ../build/bin/conf_gen.h:2511
 msgid "camera time zone"
@@ -3210,8 +3209,8 @@ msgstr "versão do gerador de splines"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/darktable.c:919 ../src/common/variables.c:465
 #: ../src/develop/imageop_gui.c:302 ../src/imageio/format/pdf.c:655
-#: ../src/imageio/format/pdf.c:680 ../src/libs/export.c:1266
-#: ../src/libs/export.c:1272 ../src/libs/export.c:1279
+#: ../src/imageio/format/pdf.c:680 ../src/libs/export.c:1277
+#: ../src/libs/export.c:1283 ../src/libs/export.c:1290
 #: ../src/libs/metadata_view.c:409
 msgid "no"
 msgstr "não"
@@ -3341,7 +3340,7 @@ msgstr "detectar por 3 vizinhos"
 #: ../src/iop/bilat.c:426 ../src/iop/colorbalance.c:1882
 #: ../src/iop/denoiseprofile.c:3615 ../src/iop/exposure.c:877
 #: ../src/iop/levels.c:688 ../src/iop/profile_gamma.c:691
-#: ../src/libs/copy_history.c:402 ../src/libs/export.c:1360
+#: ../src/libs/copy_history.c:402 ../src/libs/export.c:1371
 #: ../src/libs/image.c:590 ../src/libs/print_settings.c:1503
 #: ../src/libs/styles.c:837 ../src/views/darkroom.c:2215
 msgid "mode"
@@ -3946,8 +3945,8 @@ msgstr "Mostrar imagens em um mapa"
 msgid "Print your images"
 msgstr "Imprimir suas imagens"
 
-#: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1656
-#: ../src/control/jobs/control_jobs.c:1729 ../src/gui/hist_dialog.c:185
+#: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1659
+#: ../src/control/jobs/control_jobs.c:1732 ../src/gui/hist_dialog.c:185
 #: ../src/gui/preferences.c:1613 ../src/gui/preferences.c:1639
 #: ../src/gui/preferences.c:1728 ../src/gui/preferences.c:1776
 #: ../src/gui/presets.c:383 ../src/gui/presets.c:478
@@ -4479,8 +4478,8 @@ msgstr "erro carregando diretório `%s'"
 msgid "file `%s' has unknown format!"
 msgstr "arquivo `%s' é de formato desconhecido!"
 
-#: ../src/common/darktable.c:296 ../src/control/jobs/control_jobs.c:2092
-#: ../src/control/jobs/control_jobs.c:2114
+#: ../src/common/darktable.c:296 ../src/control/jobs/control_jobs.c:2095
+#: ../src/control/jobs/control_jobs.c:2117
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erro carregando arquivo `%s'"
@@ -4506,8 +4505,8 @@ msgstr ""
 #: ../src/common/darktable.c:919 ../src/common/database.c:3581
 #: ../src/common/variables.c:463 ../src/develop/imageop_gui.c:303
 #: ../src/imageio/format/pdf.c:656 ../src/imageio/format/pdf.c:681
-#: ../src/libs/export.c:1267 ../src/libs/export.c:1273
-#: ../src/libs/export.c:1280 ../src/libs/metadata_view.c:409
+#: ../src/libs/export.c:1278 ../src/libs/export.c:1284
+#: ../src/libs/export.c:1291 ../src/libs/metadata_view.c:409
 msgid "yes"
 msgstr "sim"
 
@@ -4892,7 +4891,7 @@ msgstr ""
 msgid "cannot create local copy."
 msgstr "não pude criar cópia local."
 
-#: ../src/common/image.c:2325 ../src/control/jobs/control_jobs.c:733
+#: ../src/common/image.c:2325 ../src/control/jobs/control_jobs.c:736
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "não é possível remover cópias local quando o arquivo original está "
@@ -5027,7 +5026,7 @@ msgstr "perfil de escalonamento OpenCL ajustado para default."
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:89 ../src/libs/export.c:552 ../src/libs/export.c:1223
+#: ../src/common/pdf.h:89 ../src/libs/export.c:552 ../src/libs/export.c:1234
 #: ../src/libs/print_settings.c:1283
 msgid "cm"
 msgstr "cm"
@@ -5271,237 +5270,237 @@ msgid_plural "duplicating %d images"
 msgstr[0] "duplicando %d imagem"
 msgstr[1] "duplicando %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:595
+#: ../src/control/jobs/control_jobs.c:598
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "espelhando %d imagem"
 msgstr[1] "espelhando %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:625
+#: ../src/control/jobs/control_jobs.c:628
 #, c-format
 msgid "set %d color image"
 msgid_plural "setting %d color images"
 msgstr[0] "definindo %d imagem colorida"
 msgstr[1] "definindo %d imagens coloridas"
 
-#: ../src/control/jobs/control_jobs.c:627
+#: ../src/control/jobs/control_jobs.c:630
 #, c-format
 msgid "set %d monochrome image"
 msgid_plural "setting %d monochrome images"
 msgstr[0] "definindo %d imagem monocromática"
 msgstr[1] "definindo %d imagens monocromáticas"
 
-#: ../src/control/jobs/control_jobs.c:709
+#: ../src/control/jobs/control_jobs.c:712
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "removendo %d imagem"
 msgstr[1] "removendo %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:812
+#: ../src/control/jobs/control_jobs.c:815
 #, c-format
 msgid "could not send %s to trash%s%s"
 msgstr "não foi possível mandar %s para a lixeira%s%s"
 
-#: ../src/control/jobs/control_jobs.c:813
+#: ../src/control/jobs/control_jobs.c:816
 #, c-format
 msgid "could not physically delete %s%s%s"
 msgstr "não é possível excluir fisicamente %s%s%s"
 
-#: ../src/control/jobs/control_jobs.c:823
+#: ../src/control/jobs/control_jobs.c:826
 msgid "physically delete"
 msgstr "excluir fisicamente"
 
-#: ../src/control/jobs/control_jobs.c:824
+#: ../src/control/jobs/control_jobs.c:827
 msgid "physically delete all files"
 msgstr "excluir fisicamente todos os arquivos do disco"
 
-#: ../src/control/jobs/control_jobs.c:826
+#: ../src/control/jobs/control_jobs.c:829
 msgid "only remove from the collection"
 msgstr "apenas remover da coleção"
 
-#: ../src/control/jobs/control_jobs.c:827
+#: ../src/control/jobs/control_jobs.c:830
 msgid "skip to next file"
 msgstr "pular para o próximo arquivo"
 
-#: ../src/control/jobs/control_jobs.c:828
+#: ../src/control/jobs/control_jobs.c:831
 msgid "stop process"
 msgstr "parar processo"
 
-#: ../src/control/jobs/control_jobs.c:833
+#: ../src/control/jobs/control_jobs.c:836
 msgid "trashing error"
 msgstr "erro ao enviar para lixeira"
 
-#: ../src/control/jobs/control_jobs.c:834
+#: ../src/control/jobs/control_jobs.c:837
 msgid "deletion error"
 msgstr "erro ao excluir"
 
-#: ../src/control/jobs/control_jobs.c:976
+#: ../src/control/jobs/control_jobs.c:979
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
 msgstr[0] "enviando %d imagem para lixeira"
 msgstr[1] "enviando %d imagens para lixeira"
 
-#: ../src/control/jobs/control_jobs.c:978
+#: ../src/control/jobs/control_jobs.c:981
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "excluindo %d imagem"
 msgstr[1] "excluindo %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:1103
+#: ../src/control/jobs/control_jobs.c:1106
 msgid "failed to parse GPX file"
 msgstr "falha ao analisar arquivo GPX"
 
-#: ../src/control/jobs/control_jobs.c:1171
+#: ../src/control/jobs/control_jobs.c:1174
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "aplicada localização GPX correspondente em %d imagem"
 msgstr[1] "aplicada localização GPX correspondente em %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:1189
+#: ../src/control/jobs/control_jobs.c:1192
 #, c-format
 msgid "moving %d image"
 msgstr "movendo %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1190
+#: ../src/control/jobs/control_jobs.c:1193
 #, c-format
 msgid "moving %d images"
 msgstr "movendo %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1195
+#: ../src/control/jobs/control_jobs.c:1198
 #, c-format
 msgid "copying %d image"
 msgstr "copiando %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1196
+#: ../src/control/jobs/control_jobs.c:1199
 #, c-format
 msgid "copying %d images"
 msgstr "copiando %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1211
+#: ../src/control/jobs/control_jobs.c:1214
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "criando cópia local %d de imagem"
 msgstr[1] "criando cópias locais %d de imagens"
 
-#: ../src/control/jobs/control_jobs.c:1214
+#: ../src/control/jobs/control_jobs.c:1217
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "removendo cópia local %d da imagem"
 msgstr[1] "removendo cópias locais %d das imagens"
 
-#: ../src/control/jobs/control_jobs.c:1259
+#: ../src/control/jobs/control_jobs.c:1262
 #, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
 msgstr[0] "atualizando informações para %d imagem"
 msgstr[1] "atualizando informações para %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:1342
+#: ../src/control/jobs/control_jobs.c:1345
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exportando %d imagem.."
 msgstr[1] "exportando %d imagens.."
 
-#: ../src/control/jobs/control_jobs.c:1374
+#: ../src/control/jobs/control_jobs.c:1377
 #, c-format
 msgid "exporting %d / %d to %s"
 msgstr "exportando %d / %d para %s"
 
-#: ../src/control/jobs/control_jobs.c:1395 ../src/views/darkroom.c:792
+#: ../src/control/jobs/control_jobs.c:1398 ../src/views/darkroom.c:792
 #: ../src/views/print.c:313
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "imagem `%s' não está disponível"
 
-#: ../src/control/jobs/control_jobs.c:1486
+#: ../src/control/jobs/control_jobs.c:1489
 msgid "merge hdr image"
 msgstr "fundir imagem hdr"
 
-#: ../src/control/jobs/control_jobs.c:1500
+#: ../src/control/jobs/control_jobs.c:1503
 msgid "duplicate images"
 msgstr "duplicar imagens"
 
-#: ../src/control/jobs/control_jobs.c:1506
+#: ../src/control/jobs/control_jobs.c:1509
 msgid "flip images"
 msgstr "inverter (espelhar) imagens"
 
-#: ../src/control/jobs/control_jobs.c:1513
+#: ../src/control/jobs/control_jobs.c:1516
 msgid "set monochrome images"
 msgstr "definir imagens monocromáticas"
 
 #. get all selected images now, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1520
+#: ../src/control/jobs/control_jobs.c:1523
 msgid "remove images"
 msgstr "remover imagens"
 
-#: ../src/control/jobs/control_jobs.c:1537
+#: ../src/control/jobs/control_jobs.c:1540
 #, c-format
 msgid "do you really want to remove %d image from the collection?"
 msgid_plural "do you really want to remove %d images from the collection?"
 msgstr[0] "você realmente deseja remover %d imagem da coleção?"
 msgstr[1] "você realmente deseja remover %d imagens da coleção?"
 
-#: ../src/control/jobs/control_jobs.c:1544
+#: ../src/control/jobs/control_jobs.c:1547
 msgid "remove images?"
 msgstr "remover imagens?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1560
-#: ../src/control/jobs/control_jobs.c:1604
+#: ../src/control/jobs/control_jobs.c:1563
+#: ../src/control/jobs/control_jobs.c:1607
 msgid "delete images"
 msgstr "excluir imagens"
 
-#: ../src/control/jobs/control_jobs.c:1580
+#: ../src/control/jobs/control_jobs.c:1583
 #, c-format
 msgid "do you really want to send %d image to trash?"
 msgid_plural "do you really want to send %d images to trash?"
 msgstr[0] "você realmente deseja enviar %d imagem para a lixeira?"
 msgstr[1] "você realmente deseja enviar %d imagens para a lixeira?"
 
-#: ../src/control/jobs/control_jobs.c:1582
+#: ../src/control/jobs/control_jobs.c:1585
 #, c-format
 msgid "do you really want to physically delete %d image from disk?"
 msgid_plural "do you really want to physically delete %d images from disk?"
 msgstr[0] "você realmente deseja excluir fisicamente %d imagem do disco?"
 msgstr[1] "você realmente deseja excluir fisicamente %d imagens do disco?"
 
-#: ../src/control/jobs/control_jobs.c:1589
-#: ../src/control/jobs/control_jobs.c:1627
+#: ../src/control/jobs/control_jobs.c:1592
+#: ../src/control/jobs/control_jobs.c:1630
 msgid "trash images?"
 msgstr "enviar imagens para lixeira?"
 
-#: ../src/control/jobs/control_jobs.c:1589
-#: ../src/control/jobs/control_jobs.c:1627
+#: ../src/control/jobs/control_jobs.c:1592
+#: ../src/control/jobs/control_jobs.c:1630
 msgid "delete images?"
 msgstr "excluir imagens?"
 
-#: ../src/control/jobs/control_jobs.c:1621
+#: ../src/control/jobs/control_jobs.c:1624
 msgid "do you really want to send selected image to trash?"
 msgstr "você realmente deseja enviar a imagem selecionada para a lixeira?"
 
-#: ../src/control/jobs/control_jobs.c:1622
+#: ../src/control/jobs/control_jobs.c:1625
 msgid "do you really want to physically delete selected image from disk?"
 msgstr ""
 "você realmente deseja excluir fisicamente a imagem selecionada do disco?"
 
-#: ../src/control/jobs/control_jobs.c:1645
+#: ../src/control/jobs/control_jobs.c:1648
 msgid "move images"
 msgstr "mover imagens"
 
-#: ../src/control/jobs/control_jobs.c:1657
-#: ../src/control/jobs/control_jobs.c:1730
+#: ../src/control/jobs/control_jobs.c:1660
+#: ../src/control/jobs/control_jobs.c:1733
 msgid "_select as destination"
 msgstr "_selecionar como destino"
 
-#: ../src/control/jobs/control_jobs.c:1688
+#: ../src/control/jobs/control_jobs.c:1691
 #, c-format
 msgid ""
 "do you really want to physically move %d image to %s?\n"
@@ -5516,112 +5515,112 @@ msgstr[1] ""
 "você realmente deseja mover fisicamente as %d imagens para %s?\n"
 "(todas duplicatas serão movidas também)"
 
-#: ../src/control/jobs/control_jobs.c:1697
+#: ../src/control/jobs/control_jobs.c:1700
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "mover imagem?"
 msgstr[1] "mover imagens?"
 
-#: ../src/control/jobs/control_jobs.c:1718
+#: ../src/control/jobs/control_jobs.c:1721
 msgid "copy images"
 msgstr "copiar imagens"
 
-#: ../src/control/jobs/control_jobs.c:1760
+#: ../src/control/jobs/control_jobs.c:1763
 #, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
 msgstr[0] "você realmente deseja copiar fisicamente %d imagem para %s?"
 msgstr[1] "você realmente deseja copiar fisicamente %d imagens para %s?"
 
-#: ../src/control/jobs/control_jobs.c:1766
+#: ../src/control/jobs/control_jobs.c:1769
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "copiar imagem?"
 msgstr[1] "copiar imagens?"
 
-#: ../src/control/jobs/control_jobs.c:1786
-#: ../src/control/jobs/control_jobs.c:1794
+#: ../src/control/jobs/control_jobs.c:1789
+#: ../src/control/jobs/control_jobs.c:1797
 msgid "local copy images"
 msgstr "copiar imagens localmente"
 
-#: ../src/control/jobs/control_jobs.c:1801 ../src/libs/image.c:598
+#: ../src/control/jobs/control_jobs.c:1804 ../src/libs/image.c:598
 msgid "refresh exif"
 msgstr "atualizar exif"
 
-#: ../src/control/jobs/control_jobs.c:1865
+#: ../src/control/jobs/control_jobs.c:1868
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "falha o obter parâmetros do módulo de armazenamento `%s', abortando "
 "exportação.."
 
-#: ../src/control/jobs/control_jobs.c:1881
+#: ../src/control/jobs/control_jobs.c:1884
 msgid "export images"
 msgstr "exportar imagens"
 
-#: ../src/control/jobs/control_jobs.c:1944
+#: ../src/control/jobs/control_jobs.c:1947
 #, c-format
 msgid "adding time offset to %d image"
 msgstr "adicionando compensação de tempo a %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1944
+#: ../src/control/jobs/control_jobs.c:1947
 #, c-format
 msgid "setting date/time of %d image"
 msgstr "definindo data/hora em %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1945
+#: ../src/control/jobs/control_jobs.c:1948
 #, c-format
 msgid "adding time offset to %d images"
 msgstr "adicionando compensação de tempo a %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:1945
+#: ../src/control/jobs/control_jobs.c:1948
 #, c-format
 msgid "setting date/time of %d images"
 msgstr "definindo data/hora em %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:1986
+#: ../src/control/jobs/control_jobs.c:1989
 #, c-format
 msgid "added time offset to %d image"
 msgstr "compensação de tempo adicionada a %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1986
+#: ../src/control/jobs/control_jobs.c:1989
 #, c-format
 msgid "set date/time of %d image"
 msgstr "defininda data/hora em %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1987
+#: ../src/control/jobs/control_jobs.c:1990
 #, c-format
 msgid "added time offset to %d images"
 msgstr "compensação de tempo adicionada a %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1987
+#: ../src/control/jobs/control_jobs.c:1990
 #, c-format
 msgid "set date/time of %d images"
 msgstr "definida data/hora em %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:2028
+#: ../src/control/jobs/control_jobs.c:2031
 msgid "time offset"
 msgstr "intervalo de tempo"
 
-#: ../src/control/jobs/control_jobs.c:2056 ../src/libs/copy_history.c:415
+#: ../src/control/jobs/control_jobs.c:2059 ../src/libs/copy_history.c:415
 msgid "write sidecar files"
 msgstr "escrever arquivos associados"
 
-#: ../src/control/jobs/control_jobs.c:2200 ../src/control/jobs/film_jobs.c:223
+#: ../src/control/jobs/control_jobs.c:2203 ../src/control/jobs/film_jobs.c:223
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] "importando %d imagem"
 msgstr[1] "importando %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:2227
+#: ../src/control/jobs/control_jobs.c:2230
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
 msgstr[0] "importando %d/%d imagem"
 msgstr[1] "importando %d/%d imagens"
 
-#: ../src/control/jobs/control_jobs.c:2233
+#: ../src/control/jobs/control_jobs.c:2236
 #, c-format
 msgid "imported %d image"
 msgid_plural "imported %d images"
@@ -7072,131 +7071,131 @@ msgid "all colorlabels removed"
 msgstr "todas as etiquetas de cor removidas"
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:2336
+#: ../src/dtgtk/thumbtable.c:2339
 msgctxt "accel"
 msgid "views/thumbtable/rate 0"
 msgstr "visões/miniaturas/sem estrelas"
 
-#: ../src/dtgtk/thumbtable.c:2337
+#: ../src/dtgtk/thumbtable.c:2340
 msgctxt "accel"
 msgid "views/thumbtable/rate 1"
 msgstr "visões/miniaturas/1 estrela"
 
-#: ../src/dtgtk/thumbtable.c:2338
+#: ../src/dtgtk/thumbtable.c:2341
 msgctxt "accel"
 msgid "views/thumbtable/rate 2"
 msgstr "visões/miniaturas/2 estrelas"
 
-#: ../src/dtgtk/thumbtable.c:2339
+#: ../src/dtgtk/thumbtable.c:2342
 msgctxt "accel"
 msgid "views/thumbtable/rate 3"
 msgstr "visões/miniaturas/3 estrelas"
 
-#: ../src/dtgtk/thumbtable.c:2340
+#: ../src/dtgtk/thumbtable.c:2343
 msgctxt "accel"
 msgid "views/thumbtable/rate 4"
 msgstr "visões/miniaturas/4 estrelas"
 
-#: ../src/dtgtk/thumbtable.c:2341
+#: ../src/dtgtk/thumbtable.c:2344
 msgctxt "accel"
 msgid "views/thumbtable/rate 5"
 msgstr "visões/miniaturas/5 estrelas"
 
-#: ../src/dtgtk/thumbtable.c:2342
+#: ../src/dtgtk/thumbtable.c:2345
 msgctxt "accel"
 msgid "views/thumbtable/rate reject"
 msgstr "visões/miniaturas/rejeitada"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2345
+#: ../src/dtgtk/thumbtable.c:2348
 msgctxt "accel"
 msgid "views/thumbtable/copy history"
 msgstr "visões/miniaturas/copiar histórico"
 
-#: ../src/dtgtk/thumbtable.c:2346
+#: ../src/dtgtk/thumbtable.c:2349
 msgctxt "accel"
 msgid "views/thumbtable/copy history parts"
 msgstr "visões/miniaturas/copia parte do histórico"
 
-#: ../src/dtgtk/thumbtable.c:2348
+#: ../src/dtgtk/thumbtable.c:2351
 msgctxt "accel"
 msgid "views/thumbtable/paste history"
 msgstr "visões/miniaturas/colar histórico"
 
-#: ../src/dtgtk/thumbtable.c:2349
+#: ../src/dtgtk/thumbtable.c:2352
 msgctxt "accel"
 msgid "views/thumbtable/paste history parts"
 msgstr "visões/miniaturas/cola parte da histórico"
 
-#: ../src/dtgtk/thumbtable.c:2351
+#: ../src/dtgtk/thumbtable.c:2354
 msgctxt "accel"
 msgid "views/thumbtable/discard history"
 msgstr "visões/miniaturas/descartar histórico"
 
-#: ../src/dtgtk/thumbtable.c:2353
+#: ../src/dtgtk/thumbtable.c:2356
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image"
 msgstr "visões/miniaturas/duplicar imagem"
 
-#: ../src/dtgtk/thumbtable.c:2354
+#: ../src/dtgtk/thumbtable.c:2357
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image virgin"
 msgstr ""
 "vistas/miniaturas/duplicar imagem original (sem as modificações feitas)"
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:2358
+#: ../src/dtgtk/thumbtable.c:2361
 msgctxt "accel"
 msgid "views/thumbtable/color red"
 msgstr "visões/miniaturas/cor vermelha"
 
-#: ../src/dtgtk/thumbtable.c:2359
+#: ../src/dtgtk/thumbtable.c:2362
 msgctxt "accel"
 msgid "views/thumbtable/color yellow"
 msgstr "visões/miniaturas/cor amarela"
 
-#: ../src/dtgtk/thumbtable.c:2360
+#: ../src/dtgtk/thumbtable.c:2363
 msgctxt "accel"
 msgid "views/thumbtable/color green"
 msgstr "visões/miniaturas/cor verde"
 
-#: ../src/dtgtk/thumbtable.c:2361
+#: ../src/dtgtk/thumbtable.c:2364
 msgctxt "accel"
 msgid "views/thumbtable/color blue"
 msgstr "visões/miniaturas/cor azul"
 
-#: ../src/dtgtk/thumbtable.c:2362
+#: ../src/dtgtk/thumbtable.c:2365
 msgctxt "accel"
 msgid "views/thumbtable/color purple"
 msgstr "visões/miniaturas/cor roxa"
 
-#: ../src/dtgtk/thumbtable.c:2363
+#: ../src/dtgtk/thumbtable.c:2366
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
 msgstr "visões/miniaturas/remover etiquetas de cor"
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:2366
+#: ../src/dtgtk/thumbtable.c:2369
 msgctxt "accel"
 msgid "views/thumbtable/select all"
 msgstr "visões/miniaturas/seleciona tudo"
 
-#: ../src/dtgtk/thumbtable.c:2367
+#: ../src/dtgtk/thumbtable.c:2370
 msgctxt "accel"
 msgid "views/thumbtable/select none"
 msgstr "visões/minuaturas/seleciona nenhuma"
 
-#: ../src/dtgtk/thumbtable.c:2369
+#: ../src/dtgtk/thumbtable.c:2372
 msgctxt "accel"
 msgid "views/thumbtable/invert selection"
 msgstr "visões/miniaturas/inverte seleção"
 
-#: ../src/dtgtk/thumbtable.c:2370
+#: ../src/dtgtk/thumbtable.c:2373
 msgctxt "accel"
 msgid "views/thumbtable/select film roll"
 msgstr "visões/miniaturas/seleciona rolo de filme"
 
-#: ../src/dtgtk/thumbtable.c:2371
+#: ../src/dtgtk/thumbtable.c:2374
 msgctxt "accel"
 msgid "views/thumbtable/select untouched"
 msgstr "visões/miniaturas/seleciona não modificadas"
@@ -7485,6 +7484,15 @@ msgstr "próximo"
 msgctxt "accel"
 msgid "previous"
 msgstr "anterior"
+
+#: ../src/gui/accelerators.c:528
+#, c-format
+msgid ""
+"%s\n"
+"(shortcut: %s)"
+msgstr ""
+"%s\n"
+"(atalho: %s)"
 
 #: ../src/gui/accelerators.c:605
 #, c-format
@@ -8809,7 +8817,7 @@ msgstr ""
 "exemplos: 10 mm, 1 inch"
 
 #. dpi
-#: ../src/imageio/format/pdf.c:642 ../src/libs/export.c:1228
+#: ../src/imageio/format/pdf.c:642 ../src/libs/export.c:1239
 msgid "dpi"
 msgstr "dpi"
 
@@ -11431,9 +11439,8 @@ msgid "chroma of the global color offset"
 msgstr "croma do deslocamento global de cor"
 
 #: ../src/iop/colorbalancergb.c:1301
-#, fuzzy
 msgid "shadows lift"
-msgstr "sombras"
+msgstr "elevação de sombras"
 
 #: ../src/iop/colorbalancergb.c:1308
 msgid "luminance gain in shadows"
@@ -11884,21 +11891,21 @@ msgstr "perfil de saída não suportado foi substituido por linear sRGB!"
 msgid "output intent"
 msgstr "intenção de saída"
 
-#: ../src/iop/colorout.c:871 ../src/libs/export.c:1317
+#: ../src/iop/colorout.c:871 ../src/libs/export.c:1328
 #: ../src/libs/print_settings.c:1235 ../src/libs/print_settings.c:1448
 #: ../src/views/darkroom.c:2381 ../src/views/darkroom.c:2388
 #: ../src/views/lighttable.c:1313 ../src/views/lighttable.c:1320
 msgid "perceptual"
 msgstr "perceptual"
 
-#: ../src/iop/colorout.c:872 ../src/libs/export.c:1318
+#: ../src/iop/colorout.c:872 ../src/libs/export.c:1329
 #: ../src/libs/print_settings.c:1236 ../src/libs/print_settings.c:1449
 #: ../src/views/darkroom.c:2382 ../src/views/darkroom.c:2389
 #: ../src/views/lighttable.c:1314 ../src/views/lighttable.c:1321
 msgid "relative colorimetric"
 msgstr "colorimétrico relativo"
 
-#: ../src/iop/colorout.c:873 ../src/libs/export.c:1319
+#: ../src/iop/colorout.c:873 ../src/libs/export.c:1330
 #: ../src/libs/print_settings.c:1237 ../src/libs/print_settings.c:1450
 #: ../src/views/darkroom.c:2383 ../src/views/darkroom.c:2390
 #: ../src/views/lighttable.c:1315 ../src/views/lighttable.c:1322
@@ -11906,7 +11913,7 @@ msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturação"
 
-#: ../src/iop/colorout.c:874 ../src/libs/export.c:1320
+#: ../src/iop/colorout.c:874 ../src/libs/export.c:1331
 #: ../src/libs/print_settings.c:1238 ../src/libs/print_settings.c:1451
 #: ../src/views/darkroom.c:2384 ../src/views/darkroom.c:2391
 #: ../src/views/lighttable.c:1316 ../src/views/lighttable.c:1323
@@ -12306,7 +12313,7 @@ msgstr "variância de azul: "
 msgid "variance computed on the blue channel"
 msgstr "variância calculada no canal azul"
 
-#: ../src/iop/denoiseprofile.c:3608 ../src/libs/export.c:1292
+#: ../src/iop/denoiseprofile.c:3608 ../src/libs/export.c:1303
 #: ../src/libs/print_settings.c:1181 ../src/libs/print_settings.c:1399
 msgid "profile"
 msgstr "perfil"
@@ -12798,7 +12805,7 @@ msgstr ""
 "especificamente em luminâncias extremas\n"
 "diminua se sombras e/ou realces estão saturados demais."
 
-#: ../src/iop/filmic.c:1705 ../src/libs/export.c:1315
+#: ../src/iop/filmic.c:1705 ../src/libs/export.c:1326
 #: ../src/libs/print_settings.c:1234 ../src/libs/print_settings.c:1445
 #: ../src/views/darkroom.c:2380 ../src/views/darkroom.c:2387
 #: ../src/views/lighttable.c:1312 ../src/views/lighttable.c:1319
@@ -16715,7 +16722,7 @@ msgid "create a duplicate of the image with same history stack"
 msgstr "cria uma duplicata da imagem com o memso histórico"
 
 #. Export button
-#: ../src/libs/export.c:154 ../src/libs/export.c:1393
+#: ../src/libs/export.c:154 ../src/libs/export.c:1404
 msgid "export"
 msgstr "exportar"
 
@@ -16734,51 +16741,51 @@ msgctxt "unit"
 msgid "in"
 msgstr "in"
 
-#: ../src/libs/export.c:1119
+#: ../src/libs/export.c:1130
 msgid "storage options"
 msgstr "opções de armazenamento"
 
-#: ../src/libs/export.c:1126
+#: ../src/libs/export.c:1137
 msgid "target storage"
 msgstr "armazenar em"
 
-#: ../src/libs/export.c:1148
+#: ../src/libs/export.c:1159
 msgid "format options"
 msgstr "opções de formato"
 
-#: ../src/libs/export.c:1153
+#: ../src/libs/export.c:1164
 msgid "file format"
 msgstr "formato do arquivo"
 
-#: ../src/libs/export.c:1170
+#: ../src/libs/export.c:1181
 msgid "global options"
 msgstr "opções globais"
 
-#: ../src/libs/export.c:1175
+#: ../src/libs/export.c:1186
 msgid "set size"
 msgstr "definir tamanho"
 
-#: ../src/libs/export.c:1176
+#: ../src/libs/export.c:1187
 msgid "choose a method for setting the output size"
 msgstr "escolha um método para determinar o tamanho da saída"
 
-#: ../src/libs/export.c:1177
+#: ../src/libs/export.c:1188
 msgid "in pixels (for file)"
 msgstr "em pixels (para arquivo)"
 
-#: ../src/libs/export.c:1178
+#: ../src/libs/export.c:1189
 msgid "in cm (for print)"
 msgstr "em cm (para impressão)"
 
-#: ../src/libs/export.c:1179
+#: ../src/libs/export.c:1190
 msgid "in inch (for print)"
 msgstr "em polegadas (para impressão)"
 
-#: ../src/libs/export.c:1180
+#: ../src/libs/export.c:1191
 msgid "by scale (for file)"
 msgstr "por escala (para arquivo)"
 
-#: ../src/libs/export.c:1184 ../src/libs/export.c:1203
+#: ../src/libs/export.c:1195 ../src/libs/export.c:1214
 msgid ""
 "maximum output width limit.\n"
 "click middle mouse button to reset to 0."
@@ -16786,7 +16793,7 @@ msgstr ""
 "limite máximo para largura da saída.\n"
 "clique com o botão do meio para redefinir como 0."
 
-#: ../src/libs/export.c:1188 ../src/libs/export.c:1207
+#: ../src/libs/export.c:1199 ../src/libs/export.c:1218
 msgid ""
 "maximum output height limit.\n"
 "click middle mouse button to reset to 0."
@@ -16794,23 +16801,23 @@ msgstr ""
 "limite máximo para altura da saída.\n"
 "clique com o botão do meio para redefinir como 0."
 
-#: ../src/libs/export.c:1192
+#: ../src/libs/export.c:1203
 msgid "resolution in dot per inch"
 msgstr "resolução em pontos por polegada"
 
-#: ../src/libs/export.c:1221 ../src/libs/export.c:1235
+#: ../src/libs/export.c:1232 ../src/libs/export.c:1246
 msgid "x"
 msgstr "x"
 
-#: ../src/libs/export.c:1226
+#: ../src/libs/export.c:1237
 msgid "@"
 msgstr "@"
 
-#: ../src/libs/export.c:1238 ../src/libs/tools/global_toolbox.c:223
+#: ../src/libs/export.c:1249 ../src/libs/tools/global_toolbox.c:223
 msgid "px"
 msgstr "px"
 
-#: ../src/libs/export.c:1244
+#: ../src/libs/export.c:1255
 msgid ""
 "it can be an integer, decimal number or simple fraction.\n"
 "zero or empty values are equal to 1.\n"
@@ -16820,39 +16827,39 @@ msgstr ""
 "zero ou vazio são iguais a 1.\n"
 "clique com o botão do meio para redefinir em 1."
 
-#: ../src/libs/export.c:1265
+#: ../src/libs/export.c:1276
 msgid "allow upscaling"
 msgstr "permitir aumentar a escala"
 
-#: ../src/libs/export.c:1271
+#: ../src/libs/export.c:1282
 msgid "high quality resampling"
 msgstr "reamostragem de alta qualidade"
 
-#: ../src/libs/export.c:1274
+#: ../src/libs/export.c:1285
 msgid "do high quality resampling during export"
 msgstr "fazer reamostragem de alta qualidade durante exportação"
 
-#: ../src/libs/export.c:1278
+#: ../src/libs/export.c:1289
 msgid "store masks"
 msgstr "armazenar máscaras"
 
-#: ../src/libs/export.c:1281
+#: ../src/libs/export.c:1292
 msgid "store masks as layers in exported images. only works for some formats."
 msgstr ""
 "armazena máscaras como camadas nas imagens exportadas. só funciona com "
 "alguns formatos."
 
-#: ../src/libs/export.c:1294 ../src/libs/export.c:1316
+#: ../src/libs/export.c:1305 ../src/libs/export.c:1327
 #: ../src/libs/print_settings.c:1402 ../src/libs/print_settings.c:1447
 msgid "image settings"
 msgstr "configurações da imagem"
 
-#: ../src/libs/export.c:1306 ../src/libs/print_settings.c:1436
+#: ../src/libs/export.c:1317 ../src/libs/print_settings.c:1436
 #, c-format
 msgid "output ICC profiles in %s or %s"
 msgstr "perfil ICC de saída em  %s ou %s"
 
-#: ../src/libs/export.c:1323
+#: ../src/libs/export.c:1334
 #, c-format
 msgid ""
 "• perceptual : smoothly moves out-of-gamut colors into gamut,preserving "
@@ -16885,34 +16892,34 @@ msgstr ""
 "da mídia de destino e não faz mais nada. usado principalmente ao verificar "
 "cores (não serve para fotografia)."
 
-#: ../src/libs/export.c:1352 ../src/libs/print_settings.c:1461
+#: ../src/libs/export.c:1363 ../src/libs/print_settings.c:1461
 msgid "style"
 msgstr "estilo"
 
-#: ../src/libs/export.c:1355
+#: ../src/libs/export.c:1366
 msgid "temporary style to use while exporting"
 msgstr "estilo temporário a ser usado ao exportar"
 
-#: ../src/libs/export.c:1364 ../src/libs/print_settings.c:1505
+#: ../src/libs/export.c:1375 ../src/libs/print_settings.c:1505
 msgid "replace history"
 msgstr "colar histórico, eliminando a original"
 
-#: ../src/libs/export.c:1365 ../src/libs/print_settings.c:1506
+#: ../src/libs/export.c:1376 ../src/libs/print_settings.c:1506
 msgid "append history"
 msgstr "adicionar histórico ao final"
 
-#: ../src/libs/export.c:1370 ../src/libs/print_settings.c:1513
+#: ../src/libs/export.c:1381 ../src/libs/print_settings.c:1513
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
 "se os itens de estilo são adicionados ao final do histórico ou se substituem "
 "o histórico"
 
-#: ../src/libs/export.c:1393
+#: ../src/libs/export.c:1404
 msgid "export with current settings"
 msgstr "exporta com configuração atual (ctrl-e)"
 
-#: ../src/libs/export.c:2128 ../src/libs/styles.c:74
+#: ../src/libs/export.c:2142 ../src/libs/styles.c:74
 msgctxt "accel"
 msgid "export"
 msgstr "exporta"
@@ -19842,8 +19849,8 @@ msgid "show global preferences"
 msgstr "mostrar preferências globais"
 
 #: ../src/libs/tools/global_toolbox.c:595
-msgid "do you want to access https://darktable.gitlab.io/doc/?"
-msgstr "você quer acessar https://darktable.gitlab.io/doc/?"
+msgid "do you want to access https://darktable.org/usermanual/?"
+msgstr "você quer acessar https://darktable.org/usermanual/?"
 
 #: ../src/libs/tools/global_toolbox.c:600
 msgid "access the online usermanual?"
