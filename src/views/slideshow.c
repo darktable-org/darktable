@@ -394,6 +394,11 @@ void enter(dt_view_t *self)
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, FALSE, TRUE);
 
   // also hide arrows
+  gtk_widget_set_visible(GTK_WIDGET(darktable.gui->widgets.right_border), FALSE);
+  gtk_widget_set_visible(GTK_WIDGET(darktable.gui->widgets.left_border), FALSE);
+  gtk_widget_set_visible(GTK_WIDGET(darktable.gui->widgets.top_border), FALSE);
+  gtk_widget_set_visible(GTK_WIDGET(darktable.gui->widgets.bottom_border), FALSE);
+
   dt_control_queue_redraw();
 
   // alloc screen-size double buffer
