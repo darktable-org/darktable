@@ -891,7 +891,7 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const c
       gchar *combined_label = section
                             ? g_strdup_printf("%s`%s", section, label)
                             : g_strdup(label);
-      dt_action_define_iop(w->module, combined_label, FALSE, 0, 0, widget);
+      dt_action_define_iop(w->module, combined_label, widget);
       g_free(combined_label);
     }
 

@@ -39,7 +39,8 @@ typedef enum dt_action_type_t
   DT_ACTION_TYPE_WIDGET,
   DT_ACTION_TYPE_SLIDER,
   DT_ACTION_TYPE_COMBO,
-  DT_ACTION_TYPE_TOGGLE
+  DT_ACTION_TYPE_TOGGLE,
+  DT_ACTION_TYPE_BUTTON,
   // FIXME these will be dynamically assigned to modules that expose a shortcuttable widget
 } dt_action_type_t;
 

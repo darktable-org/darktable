@@ -43,7 +43,9 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path);
 
 void dt_action_define_key_pressed_accel(dt_action_t *action, const gchar *name, GtkAccelKey *key);
 
-void dt_action_define_iop(dt_iop_module_t *self, const gchar *path, gboolean local, guint accel_key, GdkModifierType mods, GtkWidget *widget);
+void dt_action_define_iop(dt_iop_module_t *self, const gchar *path, GtkWidget *widget);
+
+dt_action_t *dt_action_define(dt_action_t *action, const gchar *path, GtkWidget *widget);
 
 void dt_action_define_preset(dt_action_t *action, const gchar *name);
 // delete if new_name == NULL
@@ -120,7 +122,7 @@ typedef enum dt_action_effect_t
   DT_ACTION_EFFECT_NEXT = 2,
   DT_ACTION_EFFECT_FIRST = 3,
   DT_ACTION_EFFECT_LAST = 4,
-//DT_ACTION_EFFECT_EDIT = 5,
+  DT_ACTION_EFFECT_POPUP = 5,
 
   // Togglebuttons
   DT_ACTION_EFFECT_TOGGLE = 0,
@@ -159,14 +161,6 @@ typedef struct dt_action_element_def_t
   const gchar **effects;
 } dt_action_element_def_t;
 
-typedef struct dt_action_definition_t
-{
-  const gchar *name;
-  const dt_action_element_def_t *elements;
-  float (*process)(gpointer target, dt_action_element_t, dt_action_effect_t, float size);
-  dt_action_element_t (*identify)(gpointer target, int x, int y);
-} dt_action_definition_t;
-
 typedef struct dt_shortcut_fallback_t
 {
   guint mods;
@@ -179,7 +173,14 @@ typedef struct dt_shortcut_fallback_t
   dt_action_effect_t effect;
 } dt_shortcut_fallback_t;
 
-void dt_shortcut_fallbacks(dt_action_definition_t *target, dt_shortcut_fallback_t *fallbacks);
+typedef struct dt_action_def_t
+{
+  const gchar *name;
+  float (*process)(gpointer target, dt_action_element_t, dt_action_effect_t, float size);
+  dt_action_element_t (*identify)(GtkWidget *w, int x, int y);
+  const dt_action_element_def_t *elements;
+  dt_shortcut_fallback_t *fallbacks;
+} dt_action_def_t;
 
 typedef enum dt_accel_iop_slider_scale_t
 {
@@ -195,7 +196,6 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *
 void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel_key, GdkModifierType mods);
 //register lib shortcut but make it look like a view shortcut
 void dt_accel_register_lib_as_view(gchar *view_name, const gchar *path, guint accel_key, GdkModifierType mods);
-void dt_accel_register_common_iop(dt_iop_module_so_t *so);
 void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType mods);
 void dt_accel_register_manual(const gchar *full_path, dt_view_type_flags_t views, guint accel_key, GdkModifierType mods);
 
