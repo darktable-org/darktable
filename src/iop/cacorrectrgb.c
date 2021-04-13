@@ -182,7 +182,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
   // as it is the average of the values where the guide is higher than its
   // average, and the lower manifold of the guided channel is equal to 1.
 
-for(size_t p = 0; p < 4; p++)
+for(size_t p = 0; p < log2f(sigma)+1; p++)
 {
   // refine the manifolds
   // improve result especially on very degraded images
@@ -330,40 +330,53 @@ dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma, mode) \
     for(size_t kc = 0; kc <= 1; kc++)
     {
       const size_t c = (guide + kc + 1) % 3;
-      const size_t c2 = (guide + (kc ^ 1) + 1) % 3;
+      //const size_t c2 = (guide + (kc ^ 1) + 1) % 3;
       const float pixelc = in[k * 4 + c];
-      const float pixelc2 = in[k * 4 + c2];
 
-      //TODO weight trust in different channels depending on dx and dy
-      const float xl = logf(fmaxf(low_guide, 1E-6));
-      const float yl = logf(fmaxf(manifolds[k * 6 + 3 + c2], 1E-6));
-      const float xh = logf(fmaxf(high_guide, 1E-6));
-      const float yh = logf(fmaxf(manifolds[k * 6 + c2], 1E-6));
+      const float xl = log2f(fmaxf(low_guide, 1E-6));
+      const float yl = log2f(fmaxf(manifolds[k * 6 + 3 + c], 1E-6));
+      const float xh = log2f(fmaxf(high_guide, 1E-6));
+      const float yh = log2f(fmaxf(manifolds[k * 6 + c], 1E-6));
 
-      const float x = logf(fmaxf(pixelg, 1E-6));
-      const float y = logf(fmaxf(pixelc2, 1E-6));
+      const float x = log2f(fmaxf(pixelg, 1E-6));
+      const float y = log2f(fmaxf(pixelc, 1E-6));
 
-      // project (x;y) on the (xl;yl)(xh;yh) line
-      const float dx = xh - xl;
-      const float dy = yh - yl;
-      const float norm = sqrtf(dx * dx + dy * dy);
-      float dist_low_proj = ((x - xl) * dx + (y - yl) * dy) / norm;
-      dist_low_proj = 1.0f - fminf(fmaxf(dist_low_proj, 0.0f), 1.0f);
+      // (xl,yl) and (xh,yh) are good.
+      // (xl,yh) and (xh,yl) are bad points, result of chromatic aberration
+      // if (x,y) is too close from a bad point, correct it.
+      // const float dist_bad_good = fminf(fabsf(yh - yl), xh - xl);
+
+      // float strength = 1.0f; //in EV
+      // strength = fminf(strength, dist_bad_good * 0.9f);
+
+      const float dist_to_bad_1 = sqrtf((x - xl) * (x - xl) + (y - yh) * (y - yh));
+      const float dist_to_bad_2 = sqrtf((x - xh) * (x - xh) + (y - yl) * (y - yl));
+      const float dist_to_bad = fminf(dist_to_bad_1, dist_to_bad_2);
+
+      const float dist_to_good_1 = sqrtf((x - xl) * (x - xl) + (y - yl) * (y - yl));
+      const float dist_to_good_2 = sqrtf((x - xh) * (x - xh) + (y - yh) * (y - yh));
+      const float dist_to_good = fminf(dist_to_good_1, dist_to_good_2);
+
+      const float weight_corr = exp2f(-dist_to_bad / ((dist_to_good + 0.01f) * 10.0f));
+
+      //const float weight_corr = exp2f(-fmaxf(dist_to_bad - strength, 0.0f) / fmaxf(40.0f * strength, 1E-6));
 
       const float diff_high_manifolds = manifolds[k * 6 + c] - high_guide;
       const float diff_low_manifolds = manifolds[k * 6 + 3 + c] - low_guide;
-      const float diff = (diff_low_manifolds * dist_low_proj) + (diff_high_manifolds * (1.0f - dist_low_proj));
+      const float diff = (diff_low_manifolds * dist) + (diff_high_manifolds * fmaxf(1.0f - dist, 0.0f));
       const float estimate_d = pixelg + diff;
 
       const float ratio_high_manifolds = manifolds[k * 6 + c] / high_guide;
       const float ratio_low_manifolds = manifolds[k * 6 + 3 + c] / low_guide;
-      const float ratio = powf(ratio_low_manifolds, dist_low_proj) * powf(ratio_high_manifolds, (1.0f - dist_low_proj));
+      const float ratio = powf(ratio_low_manifolds, dist) * powf(ratio_high_manifolds, fmaxf(1.0f - dist, 0.0f));
       const float estimate_r = pixelg * ratio;
 
-      float dist_dr = (pixelc - estimate_d) / (estimate_r - estimate_d);
+      float dist_dr = 1.0f; //(pixelc - estimate_d) / (estimate_r - estimate_d);
       dist_dr = fminf(dist_dr, 1.0f);
       dist_dr = fmaxf(dist_dr, 0.0f);
-      const float outp = estimate_d * (1.0f - dist_dr) + estimate_r * dist_dr;
+      const float outp = powf(fmaxf(pixelc, 0.99f * pixelc + 0.01f * estimate_r), fmaxf(1.0f - weight_corr, 0.0f)) * powf(estimate_d * fmaxf(1.0f - dist_dr, 0.0f) + estimate_r * dist_dr, weight_corr);
+
+      if(outp <= 0.0f) printf("problem, dist: %f, ratio_h: %f, ratio_l: %f, pixelg: %f, outp: %f, pixelc: %f\n", dist, ratio_high_manifolds, ratio_low_manifolds, pixelg, outp, pixelc);
 
       switch(mode)
       {
