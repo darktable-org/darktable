@@ -52,16 +52,6 @@ typedef struct dt_lib_presets_edit_dialog_t
   gint old_id;
 } dt_lib_presets_edit_dialog_t;
 
-typedef enum dt_module_header_icons_t
-{
-  DT_MODULE_ARROW = 0,
-  DT_MODULE_LABEL,
-  DT_MODULE_RESET,
-  DT_MODULE_PRESETS,
-  DT_MODULE_LAST
-} dt_module_header_icons_t;
-
-
 gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module, const dt_view_t *view)
 {
   if(!module->views)
@@ -755,6 +745,7 @@ static int dt_lib_load_module(void *m, const char *libname, const char *module_n
 
   module->widget = NULL;
   module->expander = NULL;
+  module->arrow = NULL;
   module->reset_button = NULL;
   module->presets_button = NULL;
 
@@ -978,12 +969,8 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), expanded);
 
   /* update expander arrow state */
-  GtkWidget *header = dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander));
-  gint flags = CPF_DIRECTION_DOWN | CPF_BG_TRANSPARENT | CPF_STYLE_FLAT;
-
-  GtkDarktableButton *icon = (GtkDarktableButton*)dt_gui_container_nth_child(GTK_CONTAINER(header), DT_MODULE_ARROW);
-  if(!expanded) flags = CPF_DIRECTION_RIGHT | CPF_BG_TRANSPARENT | CPF_STYLE_FLAT;
-  dtgtk_button_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags, NULL);
+  gint flags = (expanded ? CPF_DIRECTION_DOWN : CPF_DIRECTION_RIGHT) | CPF_BG_TRANSPARENT | CPF_STYLE_FLAT;
+  dtgtk_button_set_paint(DTGTK_BUTTON(module->arrow), dtgtk_cairo_paint_solid_arrow, flags, NULL);
 
   /* show / hide plugin widget */
   if(expanded)
@@ -1161,48 +1148,43 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   /*
    * initialize the header widgets
    */
-  GtkWidget *hw[DT_MODULE_LAST] = { NULL };
-
   /* add the expand indicator icon */
-  hw[DT_MODULE_ARROW] = dtgtk_button_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_ARROW]), "module-collapse-button");
-  g_signal_connect(G_OBJECT(hw[DT_MODULE_ARROW]), "button-press-event", G_CALLBACK(_lib_plugin_header_button_press),
-                   module);
-
+  module->arrow = dtgtk_button_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_tooltip_text(module->arrow, _("show module"));
+  g_signal_connect(G_OBJECT(module->arrow), "button-press-event", G_CALLBACK(_lib_plugin_header_button_press), module);
+  gtk_widget_set_name(module->arrow, "module-collapse-button");
+  dt_action_define(&module->actions, NULL, module->arrow);
+  gtk_box_pack_start(GTK_BOX(header), module->arrow, FALSE, FALSE, 0);
 
   /* add module label */
-  hw[DT_MODULE_LABEL] = gtk_label_new("");
-  gtk_label_set_markup(GTK_LABEL(hw[DT_MODULE_LABEL]), module->name(module));
-  gtk_widget_set_tooltip_text(hw[DT_MODULE_LABEL], module->name(module));
-  gtk_label_set_ellipsize(GTK_LABEL(hw[DT_MODULE_LABEL]), PANGO_ELLIPSIZE_END);
-  g_object_set(G_OBJECT(hw[DT_MODULE_LABEL]), "xalign", 0.0, (gchar *)0);
-  gtk_widget_set_name(hw[DT_MODULE_LABEL], "lib-panel-label");
-
-  /* add reset button if module has implementation */
-  hw[DT_MODULE_RESET] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
-  module->reset_button = GTK_WIDGET(hw[DT_MODULE_RESET]);
-  gtk_widget_set_tooltip_text(hw[DT_MODULE_RESET], _("reset parameters"));
-  g_signal_connect(G_OBJECT(hw[DT_MODULE_RESET]), "clicked", G_CALLBACK(dt_lib_gui_reset_callback), module);
-
-  if(!module->gui_reset) gtk_widget_set_sensitive(GTK_WIDGET(hw[DT_MODULE_RESET]), FALSE);
-  gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_RESET]), "module-reset-button");
+  GtkWidget *label = gtk_label_new("");
+  GtkWidget *label_evb = gtk_event_box_new();
+  gtk_container_add(GTK_CONTAINER(label_evb), label);
+  gtk_label_set_markup(GTK_LABEL(label), module->name(module));
+  gtk_widget_set_tooltip_text(label_evb, module->name(module));
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  g_object_set(G_OBJECT(label), "halign", GTK_ALIGN_START, "xalign", 0.0, (gchar *)0);
+  gtk_widget_set_name(label, "lib-panel-label");
+  dt_action_define(&module->actions, NULL, label_evb);
+  gtk_box_pack_start(GTK_BOX(header), label_evb, FALSE, FALSE, 0);
 
   /* add preset button if module has implementation */
-  hw[DT_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
-  module->presets_button = GTK_WIDGET(hw[DT_MODULE_PRESETS]);
-  gtk_widget_set_tooltip_text(hw[DT_MODULE_PRESETS], _("presets"));
-  g_signal_connect(G_OBJECT(hw[DT_MODULE_PRESETS]), "clicked", G_CALLBACK(presets_popup_callback), module);
+  module->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_tooltip_text(module->presets_button, _("presets"));
+  g_signal_connect(G_OBJECT(module->presets_button), "clicked", G_CALLBACK(presets_popup_callback), module);
+  if(!module->get_params && !module->set_preferences) gtk_widget_set_sensitive(GTK_WIDGET(module->presets_button), FALSE);
+  gtk_widget_set_name(GTK_WIDGET(module->presets_button), "module-preset-button");
+  dt_action_define(&module->actions, NULL, module->presets_button);
+  gtk_box_pack_end(GTK_BOX(header), module->presets_button, FALSE, FALSE, 0);
 
-  if(!module->get_params && !module->set_preferences) gtk_widget_set_sensitive(GTK_WIDGET(hw[DT_MODULE_PRESETS]), FALSE);
-  gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_PRESETS]), "module-preset-button");
-
-  /* lets order header elements depending on left/right side panel placement */
-
-  for(int i = 0; i < DT_MODULE_LAST; i++)
-    if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == DT_MODULE_LABEL ? TRUE : FALSE, i == DT_MODULE_LABEL ? TRUE : FALSE, 0);
-  gtk_widget_set_halign(hw[DT_MODULE_ARROW], GTK_ALIGN_START);
-  gtk_widget_set_halign(hw[DT_MODULE_LABEL], GTK_ALIGN_START);
-  gtk_widget_set_halign(hw[DT_MODULE_RESET], GTK_ALIGN_END);
+  /* add reset button if module has implementation */
+  module->reset_button = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_tooltip_text(module->reset_button, _("reset parameters"));
+  g_signal_connect(G_OBJECT(module->reset_button), "clicked", G_CALLBACK(dt_lib_gui_reset_callback), module);
+  if(!module->gui_reset) gtk_widget_set_sensitive(module->reset_button, FALSE);
+  gtk_widget_set_name(module->reset_button, "module-reset-button");
+  dt_action_define(&module->actions, NULL, module->reset_button);
+  gtk_box_pack_end(GTK_BOX(header), module->reset_button, FALSE, FALSE, 0);
 
   gtk_widget_show_all(module->widget);
   gtk_widget_set_name(module->widget, "lib-plugin-ui-main");
@@ -1331,16 +1313,6 @@ void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
 
 void dt_lib_connect_common_accels(dt_lib_module_t *module)
 {
-  if(module->reset_button && module->gui_reset)
-    dt_accel_connect_button_lib(module, "reset module parameters", module->reset_button);
-  if(module->presets_button && module->get_params)
-    dt_accel_connect_button_lib(module, "show preset menu", module->presets_button);
-  if(module->expandable(module))
-  {
-    GClosure *closure = NULL;
-    closure = g_cclosure_new(G_CALLBACK(show_module_callback), module, NULL);
-    dt_accel_connect_lib(module, "show module", closure);
-  }
   if(module->init_presets)
   {
     sqlite3_stmt *stmt;
@@ -1450,6 +1422,66 @@ gboolean dt_lib_presets_can_autoapply(dt_lib_module_t *mod)
 {
   return mod->preset_autoapply(mod);
 }
+
+typedef enum dt_action_element_lib_t
+{
+  DT_ACTION_ELEMENT_SHOW = 0,
+  DT_ACTION_ELEMENT_RESET = 1,
+  DT_ACTION_ELEMENT_PRESETS = 2,
+} dt_action_element_lib_t;
+
+static const dt_action_element_def_t dt_action_elements[]
+  = { { N_("show"), dt_action_effect_toggle },
+      { N_("reset"), dt_action_effect_activate },
+      { N_("presets"), dt_action_effect_presets },
+      { NULL } };
+
+static float _action_process(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  if(move_size)
+  {
+    switch((dt_action_element_lib_t)element)
+    {
+    case DT_ACTION_ELEMENT_SHOW:
+      show_module_callback(NULL, NULL, 0, 0, target);
+      break;
+    case DT_ACTION_ELEMENT_RESET:
+      switch(effect)
+      {
+      case DT_ACTION_EFFECT_ACTIVATE:
+        dt_lib_gui_reset_callback(NULL, target);
+        break;
+      default:
+        fprintf(stderr, "[process_mapping] unknown shortcut effect (%d) for iop\n", effect);
+        break;
+      }
+      break;
+    case DT_ACTION_ELEMENT_PRESETS:
+      presets_popup_callback(NULL, target);
+      break;
+    }
+  }
+
+  return 0;
+}
+
+static dt_action_element_t _action_identify(GtkWidget *w, int x, int y)
+{
+  const gchar *name = gtk_widget_get_name(w);
+
+  if(!strcmp(name, "module-reset-button"))
+    return DT_ACTION_ELEMENT_RESET;
+  if(!strcmp(name, "module-preset-button"))
+    return DT_ACTION_ELEMENT_PRESETS;
+
+  return DT_ACTION_ELEMENT_SHOW;
+}
+
+const dt_action_def_t dt_action_def_lib
+  = { N_("utility module"),
+      _action_process,
+      _action_identify,
+      dt_action_elements };
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

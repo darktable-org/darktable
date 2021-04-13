@@ -770,12 +770,20 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
   case GDK_LEAVE_NOTIFY:
     if(event->crossing.mode == GDK_CROSSING_NORMAL || event->crossing.mode == GDK_CROSSING_UNGRAB)
     {
+      GdkCursorType cursor = GDK_DIAMOND_CROSS;
+
       darktable.control->mapping_widget = event->type == GDK_ENTER_NOTIFY &&
                                           g_hash_table_lookup(darktable.control->widgets, event_widget)
                                         ? event_widget : NULL;
 
+      if(darktable.control->mapping_widget) cursor = GDK_BOX_SPIRAL;
+
+      if(GTK_IS_EVENT_BOX(event_widget)) event_widget = gtk_bin_get_child(GTK_BIN(event_widget));
+      if(event_widget && !strcmp(gtk_widget_get_name(event_widget), "module-header"))
+        cursor = GDK_BASED_ARROW_DOWN;
+
       dt_control_allow_change_cursor();
-      dt_control_change_cursor(darktable.control->mapping_widget ? GDK_BOX_SPIRAL : GDK_X_CURSOR);
+      dt_control_change_cursor(cursor);
       dt_control_forbid_change_cursor();
     }
     break;
@@ -787,19 +795,16 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
     if(gtk_widget_get_toplevel(event_widget) != main_window)
       break;
 
-    // allow opening modules to map widgets inside
-    if(GTK_IS_EVENT_BOX(event_widget)) event_widget = gtk_bin_get_child(GTK_BIN(event_widget));
-    if(event_widget && !strcmp(gtk_widget_get_name(event_widget), "module-header"))
-      break;
-
     dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)data;
     if(event_widget == d->keymap_button)
       break;
 
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->keymap_button), FALSE);
-
     if(event->button.button == GDK_BUTTON_PRIMARY)
     {
+      // allow opening modules to map widgets inside
+      if(GTK_IS_EVENT_BOX(event_widget)) event_widget = gtk_bin_get_child(GTK_BIN(event_widget));
+      if(event_widget && !strcmp(gtk_widget_get_name(event_widget), "module-header"))
+        break;
 
       GtkWidget *shortcuts_dialog = gtk_dialog_new_with_buttons(_("shortcuts"), GTK_WINDOW(main_window),
                                                                 GTK_DIALOG_DESTROY_WITH_PARENT, NULL, NULL);
@@ -820,6 +825,8 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
       gtk_dialog_run(GTK_DIALOG(shortcuts_dialog));
       gtk_widget_destroy(shortcuts_dialog);
     }
+
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->keymap_button), FALSE);
 
     return;
   default:
