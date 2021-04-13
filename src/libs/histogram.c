@@ -1128,20 +1128,6 @@ static void _vectorscope_view_update(dt_lib_histogram_t *d)
     case DT_LIB_HISTOGRAM_VECTORSCOPE_N:
       g_assert_not_reached();
   }
-
-  // generate data for changed view and trigger widget redraw
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv)  // this may be called by _scope_type_update() on init, before in a view
-  {
-    // redraw empty scope for immediate visual feedback
-    d->vectorscope_radius = 0.f;
-    dt_control_queue_redraw_widget(d->scope_draw);
-
-    if(cv->view(cv) == DT_VIEW_DARKROOM)
-      dt_dev_process_preview(darktable.develop);
-    else
-      dt_control_queue_redraw_center();
-  }
 }
 
 static void _scope_type_update(dt_lib_histogram_t *d)
@@ -1221,7 +1207,16 @@ static void _scope_view_clicked(GtkWidget *button, dt_lib_histogram_t *d)
       dt_conf_set_string("plugins/darkroom/histogram/vectorscope",
                          dt_lib_histogram_vectorscope_type_names[d->vectorscope_type]);
       _vectorscope_view_update(d);
+      // redraw empty scope for immediate visual feedback
+      d->vectorscope_radius = 0.f;
       dt_control_queue_redraw_widget(d->scope_draw);
+      // trigger new process from scratch depending on whether CIELuv or JzAzBz
+      // FIXME: it would be nice as with other scopes to make the initial processing independent of the view
+      const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+      if(cv->view(cv) == DT_VIEW_DARKROOM)
+        dt_dev_process_preview(darktable.develop);
+      else
+        dt_control_queue_redraw_center();
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       // FIXME: use dt_unreachable_codepath_with_desc()
