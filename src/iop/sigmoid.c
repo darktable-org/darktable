@@ -300,15 +300,16 @@ static inline void negative_values(const float pix_in[4], float pix_out[4], cons
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd uniform(magnitude, paper_exp, film_fog, contrast_power, skew_power)
+#pragma omp declare simd uniform(magnitude, paper_exp, film_fog, film_power, paper_power)
 #endif
 static inline float generalized_loglogistic_sigmoid(const float value, const float magnitude, const float paper_exp,
-                                                    const float film_fog, const float contrast_power, const float skew_power)
+                                                    const float film_fog, const float film_power, const float paper_power)
 {
-  if (value > 0.0f) {
-    return magnitude * powf(1.0 + paper_exp * powf(film_fog + value, -contrast_power), -skew_power);
-  }
-  return 0.0f;
+  // The following equation can be derived as a model for film + paper but it has a pole at 0
+  // magnitude * powf(1.0 + paper_exp * powf(film_fog + value, -film_power), -paper_power);
+  // Rewritten on a stable and with a check for negative values.
+  const float film = value > 0.0f ? pow(value, film_power) : 0.0f;
+  return magnitude * pow(film / (paper_exp + film), paper_power);
 }
 
 void process_loglogistic_crosstalk(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
@@ -320,13 +321,6 @@ void process_loglogistic_crosstalk(dt_dev_pixelpipe_iop_t *piece, const void *co
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
   const size_t npixels = (size_t)roi_in->width * roi_in->height;
-
-  /* Calculate actual skew log logistic parameters to fulfill the following:
-   * f(scene_zero) = display_black_target 
-   * f(scene_grey) = display_grey_target
-   * f(scene_inf)  = display_white_target
-   * Keep contrast and skewness fairly orthogonal
-   */
 
   const float white_target = module_data->white_target;
   const float paper_exp = module_data->paper_exposure;
