@@ -54,10 +54,10 @@ static void _free_confgen_value(void *value)
 /** return slot for this variable or newly allocated slot. */
 static inline char *dt_conf_get_var(const char *name)
 {
-  char *str;
+  gchar *ret = NULL;
 
   dt_pthread_mutex_lock(&darktable.conf->mutex);
-
+  char *str;
   str = (char *)g_hash_table_lookup(darktable.conf->override_entries, name);
   if(str) goto fin;
 
@@ -80,8 +80,9 @@ static inline char *dt_conf_get_var(const char *name)
   g_hash_table_insert(darktable.conf->table, g_strdup(name), str);
 
 fin:
+  ret = g_strdup(str);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
-  return str;
+  return ret;
 }
 
 /* set the value only if it hasn't been overridden from commandline
@@ -135,8 +136,9 @@ void dt_conf_set_string(const char *name, const char *val)
 
 int dt_conf_get_int_fast(const char *name)
 {
-  const char *str = dt_conf_get_var(name);
+  gchar *str = dt_conf_get_var(name);
   float new_value = dt_calculator_solve(1, str);
+  g_free(str);
   if(isnan(new_value))
   {
     //we've got garbage, check default
@@ -178,8 +180,9 @@ int dt_conf_get_int(const char *name)
 
 int64_t dt_conf_get_int64_fast(const char *name)
 {
-  const char *str = dt_conf_get_var(name);
+  gchar *str = dt_conf_get_var(name);
   float new_value = dt_calculator_solve(1, str);
+  g_free(str);
   if(isnan(new_value))
   {
     //we've got garbage, check default
@@ -221,8 +224,9 @@ int64_t dt_conf_get_int64(const char *name)
 
 float dt_conf_get_float_fast(const char *name)
 {
-  const char *str = dt_conf_get_var(name);
+  gchar *str = dt_conf_get_var(name);
   float new_value = dt_calculator_solve(1, str);
+  g_free(str);
   if(isnan(new_value))
   {
     //we've got garbage, check default
@@ -288,21 +292,23 @@ float dt_conf_get_and_sanitize_float(const char *name, float min, float max)
 
 int dt_conf_get_bool(const char *name)
 {
-  const char *str = dt_conf_get_var(name);
+  gchar *str = dt_conf_get_var(name);
   const int val = (str[0] == 'T') || (str[0] == 't');
+  g_free(str);
   return val;
 }
 
 gchar *dt_conf_get_string(const char *name)
 {
-  const char *str = dt_conf_get_var(name);
-  return g_strdup(str);
+  return dt_conf_get_var(name);
 }
 
 gboolean dt_conf_is_equal(const char *name, const char *value)
 {
-  const char *str = dt_conf_get_var(name);
-  return g_strcmp0(str, value) == 0;
+  gchar *str = dt_conf_get_var(name);
+  gboolean ret = (g_strcmp0(str, value) == 0);
+  g_free(str);
+  return ret;
 }
 
 static char *_sanitize_confgen(const char *name, const char *value)
@@ -760,8 +766,10 @@ gboolean dt_conf_is_default(const char *name)
   default:
     {
       const char *def_val = dt_confgen_get(name, DT_DEFAULT);
-      const char *cur_val = dt_conf_get_var(name);
-      return g_strcmp0(def_val, cur_val) == 0;
+      gchar *cur_val = dt_conf_get_var(name);
+      gboolean ret = (g_strcmp0(def_val, cur_val) == 0);
+      g_free(cur_val);
+      return ret;
       break;
     }
   }
