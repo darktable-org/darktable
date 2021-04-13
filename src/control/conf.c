@@ -498,7 +498,7 @@ int dt_conf_key_exists(const char *key)
   const int res = (g_hash_table_lookup(darktable.conf->table, key) != NULL)
                   || (g_hash_table_lookup(darktable.conf->override_entries, key) != NULL);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
-  return res;
+  return (res || dt_confgen_value_exists(key, DT_DEFAULT));
 }
 
 static void _conf_add(char *key, char *val, dt_conf_dreggn_t *d)
