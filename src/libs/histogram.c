@@ -678,7 +678,6 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   // FIXME: the areas to left/right of the scope could have some data (primaries, whitepoint, scale, etc.)
   cairo_save(cr);
 
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_translate(cr, width / 2., height / 2.);
   cairo_rotate(cr, d->vectorscope_angle);
 
@@ -688,25 +687,35 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   // math
   cairo_scale(cr, 1., -1.);
 
-  // graticule: histogram profile primaries/secondaries
   cairo_save(cr);
   cairo_scale(cr, min_size / (vs_radius * 2.), min_size / (vs_radius * 2.));
 
+  // concentric circles as a scale
+  set_color(cr, darktable.bauhaus->graph_grid);
+  cairo_set_line_width(cr, vs_radius * 1.5 / min_size);
+  const float grid_radius = d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV ? 100. : 0.01;
+  for(int i = 1; i < 1.f + ceilf(vs_radius/grid_radius); i++)
+  {
+    cairo_arc(cr, 0., 0., grid_radius * i, 0., M_PI * 2.);
+    cairo_stroke(cr);
+  }
+
   // FIXME: also add hue rings (monochrome/dotted) for input/work/output profiles
-  // FIXME: add gamut bounding lines to connect the dots (which need to be plotted in XYZ?)
   // from Sobotka:
   // 1. The input encoding primaries. How dd the image start out life? What is valid data within that? What is invalid introduced by error of camera virtual primaries solving or math such as resampling an image such that negative lobes result?
   // 2. The working reference primaries. How did 1. end up in 2.? Are there negative and therefore nonsensical values in the working space? Should a gamut mapping pass be applied before work, between 1. and 2.?
   // 3. The output primaries rendition. From a selection of gamut mappings, is one required between 2. and 3.?"
-  set_color(cr, darktable.bauhaus->graph_grid);
+
+  // graticule: histogram profile primaries/secondaries
+  set_color(cr, darktable.bauhaus->graph_fg);
   for(int k=0; k<6; k++)
   {
     cairo_arc(cr, d->hue_ring_coord[k][0][0], d->hue_ring_coord[k][0][1], vs_radius * 0.03, 0., M_PI * 2.);
     cairo_fill(cr);
   }
 
-  // hue ring
-  // FIXME: use DT_PIXEL_APPLY_DPI?
+  // graticule: histogram profile hue ring
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_line_width(cr, vs_radius * 1.5 / min_size);
   cairo_move_to(cr, d->hue_ring_coord[5][VECTORSCOPE_HUES-1][0], d->hue_ring_coord[5][VECTORSCOPE_HUES-1][1]);
   for(int k=0; k<6; k++)
@@ -720,24 +729,13 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       cairo_stroke(cr);
       cairo_move_to(cr, d->hue_ring_coord[k][i][0], d->hue_ring_coord[k][i][1]);
     }
-  cairo_new_path(cr);
-
-  // concentric circles as a scale
-  set_color(cr, darktable.bauhaus->graph_grid);
-  cairo_set_line_width(cr, vs_radius / min_size);
-  const float grid_radius = d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV ? 100. : 0.01;
-  for(int i = 1; i < 1.f + ceilf(vs_radius/grid_radius); i++)
-  {
-    cairo_arc(cr, 0., 0., grid_radius * i, 0., M_PI * 2.);
-    cairo_stroke(cr);
-  }
 
   cairo_restore(cr);
 
   // the vectorscope graph itself
   cairo_translate(cr, min_size * -0.5, min_size * -0.5);
-  // FIXME: use ppd? if not, cast min_size to double
   cairo_scale(cr, darktable.gui->ppd*min_size/diam_px, darktable.gui->ppd*min_size/diam_px);
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 
   const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px);
   cairo_surface_t *source = dt_cairo_image_surface_create_for_data(d->vectorscope_display, CAIRO_FORMAT_RGB24,
@@ -760,7 +758,7 @@ static void _draw_vectorscope_frame(cairo_t *cr, int width, int height)
   cairo_pattern_t *p = cairo_pattern_create_radial(0.5 * width, 0.5 * height, 0.5 * min_size,
                                                    0.5 * width, 0.5 * height, 0.5 * hypot(min_size, min_size));
   cairo_pattern_add_color_stop_rgb(p, 0., darktable.bauhaus->graph_bg.red, darktable.bauhaus->graph_bg.green, darktable.bauhaus->graph_bg.blue);
-  cairo_pattern_add_color_stop_rgb(p, 1., darktable.bauhaus->graph_border.red, darktable.bauhaus->graph_border.green, darktable.bauhaus->graph_border.blue);
+  cairo_pattern_add_color_stop_rgb(p, 1., darktable.bauhaus->graph_exterior.red, darktable.bauhaus->graph_exterior.green, darktable.bauhaus->graph_exterior.blue);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_set_source(cr, p);
   cairo_fill_preserve(cr);
@@ -771,9 +769,8 @@ static void _draw_vectorscope_frame(cairo_t *cr, int width, int height)
   cairo_translate(cr, width/2., height/2.);
 
   // central crosshair
-  // FIXME: draw with some sort of XOR-ish operator to make more generally visible
-  set_color(cr, darktable.bauhaus->graph_overlay);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
+  set_color(cr, darktable.bauhaus->graph_grid);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
   dt_draw_line(cr, -w_ctr, 0.0f, w_ctr, 0.0f);
   cairo_stroke(cr);
   dt_draw_line(cr, 0.0f, -w_ctr, 0.0f, w_ctr);
