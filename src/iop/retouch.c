@@ -2108,8 +2108,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->wd_bar), "scroll-event", G_CALLBACK(rt_wdbar_scrolled), self);
   gtk_widget_add_events(GTK_WIDGET(g->wd_bar), GDK_POINTER_MOTION_MASK
                                                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                                   | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
-                                                   | GDK_SMOOTH_SCROLL_MASK);
+                                                   | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
   gtk_widget_set_size_request(g->wd_bar, -1, DT_PIXEL_APPLY_DPI(40));
 
   // toolbar display current scale / cut&paste / suppress&display masks

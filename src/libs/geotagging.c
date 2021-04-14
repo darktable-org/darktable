@@ -1419,6 +1419,8 @@ static void _selection_changed_callback(gpointer instance, dt_lib_module_t *self
 
 static gboolean _datetime_scroll_over(GtkWidget *w, GdkEventScroll *event, dt_lib_module_t *self)
 {
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   int min[6] = {1900, 0, 0, -1, -1, -1};
   int max[6] = {3000, 13, 32, 24, 60, 60};
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
@@ -1427,7 +1429,14 @@ static gboolean _datetime_scroll_over(GtkWidget *w, GdkEventScroll *event, dt_li
   for(i = 0; i < 6; i++)
     if(w == d->dt.widget[i]) break;
 
-  int increment = event->direction == GDK_SCROLL_DOWN ? -1 : 1;
+  int delta_y;
+  int increment = 0;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  {
+    if (delta_y < 0) increment = 1;
+    else if (delta_y > 0) increment = -1;
+  }
+
   if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
     increment *= 10;
   value += increment;
@@ -1465,7 +1474,7 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
       if(type == 0)
       {
         dt_gui_key_accel_block_on_focus_connect(dt->widget[i]);
-        gtk_widget_add_events(dt->widget[i], GDK_SCROLL_MASK);
+        gtk_widget_add_events(dt->widget[i], darktable.gui->scroll_mask);
       }
       else
       {

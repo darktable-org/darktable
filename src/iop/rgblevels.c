@@ -647,8 +647,8 @@ static gboolean _area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, 
   if(darktable.develop->gui_module != self) dt_iop_request_focus(self);
 
   const float interval = 0.002; // Distance moved for each scroll event
-  gdouble delta_y;
-  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  int delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
     const float new_position = p->levels[c->channel][c->handle_move] - interval * delta_y;
     _rgblevels_move_handle(self, c->handle_move, new_position, p->levels[c->channel], c->drag_start_percentage);
@@ -656,7 +656,7 @@ static gboolean _area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, 
     return TRUE;
   }
 
-  return FALSE;
+  return TRUE; // Ensure that scrolling the widget cannot move side panel
 }
 
 static void _auto_levels_callback(GtkButton *button, dt_iop_module_t *self)

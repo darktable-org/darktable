@@ -552,6 +552,9 @@ gboolean dt_gui_ignore_scroll(GdkEventScroll *event)
 
 gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x, gdouble *delta_y)
 {
+  // avoid double counting real and emulated events when receiving smooth scrolls
+  if(gdk_event_get_pointer_emulated((GdkEvent*)event)) return FALSE;
+
   gboolean handled = FALSE;
   switch(event->direction)
   {
@@ -592,8 +595,13 @@ gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x,
     case GDK_SCROLL_SMOOTH:
       if((delta_x && event->delta_x != 0) || (delta_y && event->delta_y != 0))
       {
-        if(delta_x) *delta_x = event->delta_x;
-        if(delta_y) *delta_y = event->delta_y;
+#ifdef GDK_WINDOWING_QUARTZ // on macOS deltas need to be scaled
+        if(delta_x) *delta_x = event->delta_x / 50;
+        if(delta_y) *delta_y = event->delta_y / 50;
+#else
+         if(delta_x) *delta_x = event->delta_x;
+         if(delta_y) *delta_y = event->delta_y;
+#endif
         handled = TRUE;
       }
     default:
@@ -604,6 +612,9 @@ gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x,
 
 gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x, int *delta_y)
 {
+  // avoid double counting real and emulated events when receiving smooth scrolls
+  if(gdk_event_get_pointer_emulated((GdkEvent*)event)) return FALSE;
+
   // accumulates scrolling regardless of source or the widget being scrolled
   static gdouble acc_x = 0.0, acc_y = 0.0;
   gboolean handled = FALSE;
@@ -1292,13 +1303,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // Connecting the callback to update keyboard accels for key_pressed
   g_signal_connect(G_OBJECT(gtk_accel_map_get()), "changed", G_CALLBACK(key_accel_changed), NULL);
 
-  // smooth scrolling must be enabled for Wayland to handle
-  // trackpad/touch events, but due to problem reports for Quartz &
-  // X11, leave it off in other cases
-  gui->scroll_mask = GDK_SCROLL_MASK;
-#ifdef GDK_WINDOWING_WAYLAND
-  if (GDK_IS_WAYLAND_DISPLAY(gdk_display_get_default())) gui->scroll_mask |= GDK_SMOOTH_SCROLL_MASK;
-#endif
+  // smooth scrolling must be enabled to handle trackpad/touch events
+  gui->scroll_mask = GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK;
 
   // key accelerator that enables scrolling of side panels
   gui->sidebar_scroll_mask = GDK_MOD1_MASK | GDK_CONTROL_MASK;
@@ -1690,7 +1696,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_app_paintable(widget, TRUE);
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | GDK_SCROLL_MASK);
+                                | darktable.gui->scroll_mask);
   gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
 
@@ -1705,7 +1711,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_app_paintable(widget, TRUE);
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | GDK_SCROLL_MASK);
+                                | darktable.gui->scroll_mask);
   gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
 
@@ -1738,7 +1744,7 @@ static void init_main_table(GtkWidget *container)
   gtk_widget_set_app_paintable(widget, TRUE);
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | GDK_SCROLL_MASK);
+                                | darktable.gui->scroll_mask);
   gtk_grid_attach(GTK_GRID(container), widget, 0, 0, 1, 2);
   gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
@@ -1751,7 +1757,7 @@ static void init_main_table(GtkWidget *container)
   gtk_widget_set_app_paintable(widget, TRUE);
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | GDK_SCROLL_MASK);
+                                | darktable.gui->scroll_mask);
   gtk_grid_attach(GTK_GRID(container), widget, 4, 0, 1, 2);
   gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
@@ -2294,8 +2300,7 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
   /* avoid scrolling with wheel, it's distracting (you'll end up over a control, and scroll it's value) */
   container = widget;
   widget = gtk_event_box_new();
-  gtk_widget_add_events(GTK_WIDGET(widget), GDK_SCROLL_MASK);
-  // gtk_widget_add_events(GTK_WIDGET(widget), GDK_SMOOTH_SCROLL_MASK);
+  gtk_widget_add_events(GTK_WIDGET(widget), darktable.gui->scroll_mask);
   g_signal_connect(G_OBJECT(widget), "scroll-event", G_CALLBACK(_ui_init_panel_container_center_scroll_event),
                    NULL);
   gtk_container_add(GTK_CONTAINER(container), widget);

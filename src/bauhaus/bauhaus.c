@@ -2162,6 +2162,8 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
 
 static gboolean dt_bauhaus_slider_add_delta_internal(GtkWidget *widget, float delta, guint state)
 {
+  if (delta == 0) return TRUE;
+
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   const dt_bauhaus_slider_data_t *d = &w->data.slider;
 
@@ -2202,15 +2204,16 @@ static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *even
 
   gtk_widget_grab_focus(widget);
 
-  gdouble delta_y = 0.0;;
-  if(dt_gui_get_scroll_delta(event, &delta_y))
+  int delta_y;
+  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
-    delta_y *= -w->data.slider.scale / 5.0;
+    if(delta_y == 0) return TRUE;
+    gdouble delta = delta_y * -w->data.slider.scale / 5.0;
     gtk_widget_set_state_flags(GTK_WIDGET(w), GTK_STATE_FLAG_FOCUSED, TRUE);
-    return dt_bauhaus_slider_add_delta_internal(widget, delta_y, event->state);
+    return dt_bauhaus_slider_add_delta_internal(widget, delta, event->state);
   }
 
-  return FALSE;
+  return TRUE; // Ensure that scrolling the slider cannot move side panel
 }
 
 static gboolean dt_bauhaus_slider_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
@@ -2264,7 +2267,7 @@ static gboolean dt_bauhaus_combobox_scroll(GtkWidget *widget, GdkEventScroll *ev
       dt_bauhaus_combobox_set(widget, new_pos);
     return TRUE;
   }
-  return FALSE;
+  return TRUE; // Ensure that scrolling the combobox cannot move side panel
 }
 
 static gboolean dt_bauhaus_combobox_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)

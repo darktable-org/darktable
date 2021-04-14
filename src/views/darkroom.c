@@ -4477,77 +4477,10 @@ static gboolean _second_window_draw_callback(GtkWidget *widget, cairo_t *crf, dt
   return TRUE;
 }
 
-static gboolean dt_gui_get_second_window_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x, int *delta_y)
-{
-  // accumulates scrolling regardless of source or the widget being scrolled
-  static gdouble acc_x = 0.0, acc_y = 0.0;
-  gboolean handled = FALSE;
-
-  switch(event->direction)
-  {
-    // is one-unit cardinal, e.g. from a mouse scroll wheel
-    case GDK_SCROLL_LEFT:
-      if(delta_x) *delta_x = -1;
-      if(delta_y) *delta_y = 0;
-      handled = TRUE;
-      break;
-    case GDK_SCROLL_RIGHT:
-      if(delta_x) *delta_x = 1;
-      if(delta_y) *delta_y = 0;
-      handled = TRUE;
-      break;
-    case GDK_SCROLL_UP:
-      if(delta_x) *delta_x = 0;
-      if(delta_y) *delta_y = -1;
-      handled = TRUE;
-      break;
-    case GDK_SCROLL_DOWN:
-      if(delta_x) *delta_x = 0;
-      if(delta_y) *delta_y = 1;
-      handled = TRUE;
-      break;
-    // is trackpad (or touch) scroll
-    case GDK_SCROLL_SMOOTH:
-#if GTK_CHECK_VERSION(3, 20, 0)
-      // stop events reset accumulated delta
-      if(event->is_stop)
-      {
-        acc_x = acc_y = 0.0;
-        break;
-      }
-#endif
-      // accumulate trackpad/touch scrolls until they make a unit
-      // scroll, and only then tell caller that there is a scroll to
-      // handle
-      acc_x += event->delta_x;
-      acc_y += event->delta_y;
-      if(fabs(acc_x) >= 1.0)
-      {
-        gdouble amt = trunc(acc_x);
-        acc_x -= amt;
-        if(delta_x) *delta_x = (int)amt;
-        if(delta_y) *delta_y = 0;
-        handled = TRUE;
-      }
-      if(fabs(acc_y) >= 1.0)
-      {
-        gdouble amt = trunc(acc_y);
-        acc_y -= amt;
-        if(delta_x && !handled) *delta_x = 0;
-        if(delta_y) *delta_y = (int)amt;
-        handled = TRUE;
-      }
-      break;
-    default:
-      break;
-  }
-  return handled;
-}
-
 static gboolean _second_window_scrolled_callback(GtkWidget *widget, GdkEventScroll *event, dt_develop_t *dev)
 {
   int delta_y;
-  if(dt_gui_get_second_window_scroll_unit_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
     second_window_scrolled(widget, dev, event->x, event->y, delta_y < 0, event->state & 0xf);
     gtk_widget_queue_draw(widget);
