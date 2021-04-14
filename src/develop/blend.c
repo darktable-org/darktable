@@ -49,7 +49,7 @@ static dt_develop_blend_params_t _default_blendop_params
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
           0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f },
         { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
-        { 0 }, 0, 0, FALSE };
+        { 0 }, 0, 0, FALSE, DEVELOP_COORDINATES_RAW_GEODESIC };
 
 static inline dt_develop_blend_colorspace_t _blend_default_module_blend_colorspace(dt_iop_module_t *module,
                                                                                    gboolean is_scene_referred)
@@ -1331,6 +1331,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blend_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_BLEND_NORMAL2 : o->mode;
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
+    n->coordinates_reference = DEVELOP_COORDINATES_RAW_GEODESIC;
     return 0;
   }
 
@@ -1353,6 +1354,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
                                     // which were undefined in version
                                     // 2; also switch off old "active" bit
     for(int i = 0; i < (4 * 8); i++) n->blendif_parameters[i] = o->blendif_parameters[i];
+    n->coordinates_reference = DEVELOP_COORDINATES_RAW_GEODESIC;
 
     return 0;
   }
@@ -1374,6 +1376,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->mask_id = o->mask_id;
     n->blendif = o->blendif & ~(1u << DEVELOP_BLENDIF_active); // knock out old unused "active" flag
     memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
+    n->coordinates_reference = DEVELOP_COORDINATES_RAW_GEODESIC;
 
     return 0;
   }
@@ -1396,6 +1399,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blur_radius = o->radius;
     n->blendif = o->blendif & ~(1u << DEVELOP_BLENDIF_active); // knock out old unused "active" flag
     memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
+    n->coordinates_reference = DEVELOP_COORDINATES_RAW_GEODESIC;
 
     return 0;
   }
@@ -1421,6 +1425,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blendif = (o->blendif & (1u << DEVELOP_BLENDIF_active) ? o->blendif | 31 : o->blendif)
                  & ~(1u << DEVELOP_BLENDIF_active);
     memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
+    n->coordinates_reference = DEVELOP_COORDINATES_RAW_GEODESIC;
 
     return 0;
   }
@@ -1441,6 +1446,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blur_radius = o->radius;
     n->blendif = o->blendif;
     memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
+    n->coordinates_reference = DEVELOP_COORDINATES_RAW_GEODESIC;
     return 0;
   }
 
@@ -1460,6 +1466,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blur_radius = o->radius;
     n->blendif = o->blendif;
     memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
+    n->coordinates_reference = DEVELOP_COORDINATES_RAW_GEODESIC;
     return 0;
   }
 
@@ -1483,6 +1490,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->contrast = o->contrast;
     n->brightness = o->brightness;
     memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
+    n->coordinates_reference = DEVELOP_COORDINATES_RAW_GEODESIC;
     return 0;
   }
 
@@ -1510,9 +1518,22 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->raster_mask_instance = o->raster_mask_instance;
     n->raster_mask_id = o->raster_mask_id;
     n->raster_mask_invert = o->raster_mask_invert;
+    n->coordinates_reference = DEVELOP_COORDINATES_RAW_GEODESIC;
     return 0;
   }
 
+  if(old_version == 10 && new_version == 11)
+  {
+    if(length != sizeof(dt_develop_blend_params10_t)) return 1;
+
+    dt_develop_blend_params10_t *o = (dt_develop_blend_params10_t *)old_params;
+    dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
+
+    *n = default_display_blend_params; // start with a fresh copy of default parameters
+    memcpy(n, o, sizeof(dt_develop_blend_params10_t));
+    n->coordinates_reference = DEVELOP_COORDINATES_RAW_GEODESIC;
+    return 0;
+  }
   return 1;
 }
 

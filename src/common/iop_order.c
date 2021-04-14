@@ -396,6 +396,27 @@ dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const 
     return NULL;
 }
 
+// returns the module at position iop_order
+struct dt_iop_module_t *dt_ioppr_get_pipe_nth_iop_module(GList *iop_list, int iop_order)
+{
+  GList *link = NULL;
+
+  for(GList *iops_order = iop_list; iops_order; iops_order = g_list_next(iops_order))
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)iops_order->data;
+    if(module->iop_order == iop_order)
+    {
+      link = iops_order;
+      break;
+    }
+  }
+
+  if(link)
+    return (dt_iop_module_t *)link->data;
+  else
+    return NULL;
+}
+
 // returns the iop_order associated with the iop order entry that matches operation == op_name
 int dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name, const int multi_priority)
 {

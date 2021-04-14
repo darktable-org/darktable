@@ -358,6 +358,7 @@ static gboolean _edit_masks(GtkWidget *widget, GdkEventButton *e, dt_iop_module_
 
   dt_iop_color_picker_reset(self, TRUE);
 
+  darktable.develop->proxy.masks.coordinates = self->blend_params->coordinates_reference;
   dt_masks_set_edit_mode(self, self->dev->form_gui->edit_mode == DT_MASKS_EDIT_FULL ? DT_MASKS_EDIT_OFF : DT_MASKS_EDIT_FULL);
 
   // update edit shapes status
