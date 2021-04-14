@@ -538,6 +538,7 @@ void dt_bauhaus_load_theme()
   gtk_style_context_lookup_color(ctx, "bauhaus_indicator_border", &darktable.bauhaus->indicator_border);
 
   gtk_style_context_lookup_color(ctx, "graph_bg", &darktable.bauhaus->graph_bg);
+  gtk_style_context_lookup_color(ctx, "graph_exterior", &darktable.bauhaus->graph_exterior);
   gtk_style_context_lookup_color(ctx, "graph_border", &darktable.bauhaus->graph_border);
   gtk_style_context_lookup_color(ctx, "graph_grid", &darktable.bauhaus->graph_grid);
   gtk_style_context_lookup_color(ctx, "graph_fg", &darktable.bauhaus->graph_fg);
