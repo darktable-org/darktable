@@ -211,7 +211,8 @@ int dt_develop_blendif_init_masking_profile(struct dt_dev_pixelpipe_iop_t *piece
     for(size_t x = 0; x < 3; x++)
     {
       float sum = 0.0f;
-      for(size_t i = 0; i < 3; i++) sum += M[y][i] * profile->matrix_in[x + i * 3];
+      for(size_t i = 0; i < 3; i++)
+        sum += M[y][i] * profile->matrix_in[x + i * 3];
       blending_profile->matrix_out[y * 3 + x] = sum;
     }
   }
@@ -242,7 +243,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   const size_t buffsize = (size_t)owidth * oheight;
   const float iscale = roi_in->scale;
   const float oscale = roi_out->scale;
-  const _Bool rois_equal = iwidth == owidth || iheight == oheight || xoffs == 0 || yoffs == 0;
+  const gboolean rois_equal = iwidth == owidth || iheight == oheight || xoffs == 0 || yoffs == 0;
 
   // In most cases of blending-enabled modules input and output of the module have
   // the exact same dimensions. Only in very special cases we allow a module's input
@@ -271,11 +272,11 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 
   // check if mask should be suppressed temporarily (i.e. just set to global
   // opacity value)
-  const _Bool suppress_mask = self->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
+  const gboolean suppress_mask = self->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
                               && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL);
-  const _Bool mask_feather = d->feathering_radius > 0.1f;
-  const _Bool mask_blur = d->blur_radius > 0.1f;
-  const _Bool mask_tone_curve = fabsf(d->contrast) >= 0.01f || fabsf(d->brightness) >= 0.01f;
+  const gboolean mask_feather = d->feathering_radius > 0.1f;
+  const gboolean mask_blur = d->blur_radius > 0.1f;
+  const gboolean mask_tone_curve = fabsf(d->contrast) >= 0.01f || fabsf(d->brightness) >= 0.01f;
 
   // get the clipped opacity value  0 - 1
   const float opacity = fminf(fmaxf(0.0f, (d->opacity / 100.0f)), 1.0f);
@@ -321,7 +322,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
     {
       // fallback for when the raster mask couldn't be applied
       const float value = d->raster_mask_invert ? 0.0 : 1.0;
-      dt_iop_image_fill(mask,value,owidth,oheight,1);  //mask[k] = value;
+      dt_iop_image_fill(mask, value, owidth, oheight, 1);  //mask[k] = value;
     }
   }
   else
@@ -338,7 +339,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       if(d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
       {
         // if we have a mask and this flag is set -> invert the mask
-        dt_iop_image_invert(mask,1.0f,owidth,oheight,1); //mask[k] = 1.0f - mask[k];
+        dt_iop_image_invert(mask, 1.0f, owidth, oheight, 1); //mask[k] = 1.0f - mask[k];
       }
     }
     else if((!(self->flags() & IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
@@ -346,13 +347,13 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       // no form defined but drawn mask active
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
       const float fill = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
-      dt_iop_image_fill(mask,fill,owidth,oheight,1); //mask[k] = fill;
+      dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
     }
     else
     {
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
       const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
-      dt_iop_image_fill(mask,fill,owidth,oheight,1); //mask[k] = fill;
+      dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
     }
 
     // get parametric mask (if any) and apply global opacity
@@ -411,8 +412,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 #endif
           for(size_t y = 0; y < oheight; y++)
           {
-            size_t iindex = ((size_t)(y + yoffs) * iwidth + xoffs) * ch;
-            size_t oindex = (size_t)y * owidth * ch;
+            const size_t iindex = ((size_t)(y + yoffs) * iwidth + xoffs) * ch;
+            const size_t oindex = (size_t)y * owidth * ch;
             memcpy(guide_tmp + oindex, (float *)ivoid + iindex, sizeof(*guide_tmp) * owidth * ch);
           }
           guide = guide_tmp;
@@ -536,7 +537,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   const size_t buffsize = (size_t)owidth * oheight;
   const float iscale = roi_in->scale;
   const float oscale = roi_out->scale;
-  const _Bool rois_equal = iwidth == owidth || iheight == oheight || xoffs == 0 || yoffs == 0;
+  const gboolean rois_equal = iwidth == owidth || iheight == oheight || xoffs == 0 || yoffs == 0;
 
   // In most cases of blending-enabled modules input and output of the module have
   // the exact same dimensions. Only in very special cases we allow a module's input
@@ -568,11 +569,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 
   // check if mask should be suppressed temporarily (i.e. just set to global
   // opacity value)
-  const _Bool suppress_mask = self->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
+  const gboolean suppress_mask = self->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
                               && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_MASK_CONDITIONAL);
-  const _Bool mask_feather = d->feathering_radius > 0.1f;
-  const _Bool mask_blur = d->blur_radius > 0.1f;
-  const _Bool mask_tone_curve = fabsf(d->contrast) >= 0.01f || fabsf(d->brightness) >= 0.01f;
+  const gboolean mask_feather = d->feathering_radius > 0.1f;
+  const gboolean mask_blur = d->blur_radius > 0.1f;
+  const gboolean mask_tone_curve = fabsf(d->contrast) >= 0.01f || fabsf(d->brightness) >= 0.01f;
 
   // get the clipped opacity value  0 - 1
   const float opacity = fminf(fmaxf(0.0f, (d->opacity / 100.0f)), 1.0f);
@@ -718,7 +719,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       if(d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
       {
         // if we have a mask and this flag is set -> invert the mask
-        dt_iop_image_invert(mask,1.0f,owidth,oheight,1); //mask[k] = 1.0f - mask[k]
+        dt_iop_image_invert(mask, 1.0f, owidth, oheight, 1); //mask[k] = 1.0f - mask[k]
       }
     }
     else if((!(self->flags() & IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
@@ -726,13 +727,13 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       // no form defined but drawn mask active
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
       const float fill = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
-      dt_iop_image_fill(mask,fill,owidth,oheight,1); //mask[k] = fill;
+      dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
     }
     else
     {
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
       const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
-      dt_iop_image_fill(mask,fill,owidth,oheight,1); //mask[k] = fill;
+      dt_iop_image_fill(mask, fill, owidth, oheight, 1); //mask[k] = fill;
     }
 
     // write mask from host to device
