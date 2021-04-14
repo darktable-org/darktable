@@ -322,7 +322,7 @@ dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma, mode) \
     const float low_guide = fmaxf(manifolds[k * 6 + 3 + guide], 1E-6);
     const float log_high = logf(high_guide);
     const float log_low = logf(low_guide);
-    const float pixelg = in[k * 4 + guide];
+    const float pixelg = fmaxf(in[k * 4 + guide], 0.0f);
     const float log_pixg = logf(fminf(fmaxf(pixelg, low_guide), high_guide));
     float dist = fabsf(log_high - log_pixg) / fmaxf(fabsf(log_high - log_low), 1E-6);
     dist = fminf(dist, 1.0f);
@@ -331,7 +331,7 @@ dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma, mode) \
     {
       const size_t c = (guide + kc + 1) % 3;
       //const size_t c2 = (guide + (kc ^ 1) + 1) % 3;
-      const float pixelc = in[k * 4 + c];
+      const float pixelc = fmaxf(in[k * 4 + c], 0.0f);
 
       const float xl = log2f(fmaxf(low_guide, 1E-6));
       const float yl = log2f(fmaxf(manifolds[k * 6 + 3 + c], 1E-6));
@@ -374,9 +374,7 @@ dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma, mode) \
       float dist_dr = 1.0f; //(pixelc - estimate_d) / (estimate_r - estimate_d);
       dist_dr = fminf(dist_dr, 1.0f);
       dist_dr = fmaxf(dist_dr, 0.0f);
-      const float outp = powf(fmaxf(pixelc, 0.99f * pixelc + 0.01f * estimate_r), fmaxf(1.0f - weight_corr, 0.0f)) * powf(estimate_d * fmaxf(1.0f - dist_dr, 0.0f) + estimate_r * dist_dr, weight_corr);
-
-      if(outp <= 0.0f) printf("problem, dist: %f, ratio_h: %f, ratio_l: %f, pixelg: %f, outp: %f, pixelc: %f\n", dist, ratio_high_manifolds, ratio_low_manifolds, pixelg, outp, pixelc);
+      const float outp = powf(pixelc, fmaxf(1.0f - weight_corr, 0.0f)) * powf(estimate_d * fmaxf(1.0f - dist_dr, 0.0f) + estimate_r * dist_dr, weight_corr);
 
       switch(mode)
       {
