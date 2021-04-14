@@ -692,7 +692,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // concentric circles as a scale
   set_color(cr, darktable.bauhaus->graph_grid);
-  cairo_set_line_width(cr, vs_radius * 1.5 / min_size);
+  cairo_set_line_width(cr, vs_radius * 2. / min_size);
   const float grid_radius = d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV ? 100. : 0.01;
   for(int i = 1; i < 1.f + ceilf(vs_radius/grid_radius); i++)
   {
@@ -706,23 +706,14 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   // 2. The working reference primaries. How did 1. end up in 2.? Are there negative and therefore nonsensical values in the working space? Should a gamut mapping pass be applied before work, between 1. and 2.?
   // 3. The output primaries rendition. From a selection of gamut mappings, is one required between 2. and 3.?"
 
-  // graticule: histogram profile primaries/secondaries
-  set_color(cr, darktable.bauhaus->graph_fg);
-  for(int k=0; k<6; k++)
-  {
-    cairo_arc(cr, d->hue_ring_coord[k][0][0], d->hue_ring_coord[k][0][1], vs_radius * 0.03, 0., M_PI * 2.);
-    cairo_fill(cr);
-  }
-
   // graticule: histogram profile hue ring
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  cairo_set_line_width(cr, vs_radius * 1.5 / min_size);
+  cairo_set_line_width(cr, vs_radius * 2. / min_size);
   cairo_move_to(cr, d->hue_ring_coord[5][VECTORSCOPE_HUES-1][0], d->hue_ring_coord[5][VECTORSCOPE_HUES-1][1]);
   for(int k=0; k<6; k++)
     for(int i=0; i < VECTORSCOPE_HUES; i++)
     {
       // FIXME: can we pre-make a pattern with the hues radiating out, and use it as the "ink" to draw the hue ring and -- if in false color mode -- the vectorscope? will this be faster then drawing lots of lines each with their own color? will it allow for drawing the hue ring with splines and calculating fewer points?
-      // FIXME: if/when have a color vectorscope, make hue ring gray to complement it?
       // note that hue_ring_rgb and hue_ring_coord are calculated as float but converted here to double
       cairo_set_source_rgba(cr, d->hue_ring_rgb[k][i][0], d->hue_ring_rgb[k][i][1], d->hue_ring_rgb[k][i][2], 0.5);
       cairo_line_to(cr, d->hue_ring_coord[k][i][0], d->hue_ring_coord[k][i][1]);
@@ -744,14 +735,20 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_set_source_surface(cr, source, 0.0, 0.0);
   cairo_paint(cr);
   cairo_surface_destroy(source);
+
   cairo_restore(cr);
+
+  // overlay central circle
+  set_color(cr, darktable.bauhaus->graph_overlay);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
+  cairo_new_sub_path(cr);
+  cairo_arc(cr, width / 2., height / 2., DT_PIXEL_APPLY_DPI(3.), 0., M_PI * 2.);
+  cairo_stroke(cr);
 }
 
 static void _draw_vectorscope_frame(cairo_t *cr, int width, int height)
 {
   const double min_size = MIN(width, height);
-  // FIXME: need DT_PIXEL_APPLY_DPI()?
-  const double w_ctr = min_size / 25.0;
 
   cairo_save(cr);
 
@@ -764,16 +761,6 @@ static void _draw_vectorscope_frame(cairo_t *cr, int width, int height)
   cairo_fill_preserve(cr);
   cairo_pattern_destroy(p);
   set_color(cr, darktable.bauhaus->graph_border);
-  cairo_stroke(cr);
-
-  cairo_translate(cr, width/2., height/2.);
-
-  // central crosshair
-  set_color(cr, darktable.bauhaus->graph_grid);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
-  dt_draw_line(cr, -w_ctr, 0.0f, w_ctr, 0.0f);
-  cairo_stroke(cr);
-  dt_draw_line(cr, 0.0f, -w_ctr, 0.0f, w_ctr);
   cairo_stroke(cr);
 
   cairo_restore(cr);
