@@ -911,14 +911,13 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 
   if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
-    float *buf = (float *)malloc(sizeof(float) * 2 * 3);
+    float buf[6];
     for(size_t i = 0; i < points_count * 2; i += 2)
     {
       modifier->ApplySubpixelGeometryDistortion(points[i], points[i + 1], 1, 1, buf);
       points[i] = buf[0];
       points[i + 1] = buf[3];
     }
-    free(buf);
   }
 
   delete modifier;
