@@ -62,10 +62,13 @@ void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info, co
 /** must be called when done with profile_info */
 void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info);
 
-/** returns the profile info from dev profiles info list that matches (profile_type, profile_filename)
+/** returns the profile info from dev profiles info list that matches (profile_type, profile_filename, intent)
  * NULL if not found
  */
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev, const int profile_type, const char *profile_filename);
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,
+                                                                    const int profile_type,
+                                                                    const char *profile_filename,
+                                                                    const int intent);
 /** adds the profile info from (profile_type, profile_filename) to the dev profiles info list if not already exists
  * returns the generated profile or the existing one
  */
