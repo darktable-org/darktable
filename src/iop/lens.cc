@@ -344,7 +344,7 @@ static lfModifier * get_modifier(int *mods_done, int w, int h, const dt_iop_lens
   int mods_done_tmp = 0;
 
 #ifdef LF_0395
-  mod = new lfModifier(d->crop, w, h, LF_PF_F32, d->inverse || force_inverse);
+  mod = new lfModifier(d->crop, w, h, LF_PF_F32, (force_inverse) ? !d->inverse : d->inverse);
   if(mods_todo & LF_MODIFY_DISTORTION)
     mods_done_tmp |= mod->EnableDistortionCorrection(d->lens, d->focal);
   if((mods_todo & LF_MODIFY_GEOMETRY) && (d->lens->Type != d->target_geom))
@@ -360,7 +360,8 @@ static lfModifier * get_modifier(int *mods_done, int w, int h, const dt_iop_lens
     mods_done_tmp |= mod->EnableVignettingCorrection(d->lens, d->focal, d->aperture, d->distance);
 #else
   mod = new lfModifier(d->lens, d->crop, w, h);
-  mods_done_tmp = mod->Initialize(d->lens, LF_PF_F32, d->focal, d->aperture, d->distance, d->scale, d->target_geom, mods_todo, d->inverse || force_inverse);
+  mods_done_tmp = mod->Initialize(d->lens, LF_PF_F32, d->focal, d->aperture, d->distance, d->scale, d->target_geom, mods_todo, 
+                                  (force_inverse) ? !d->inverse : d->inverse);
 #endif
 
   if(mods_done) *mods_done = mods_done_tmp;
