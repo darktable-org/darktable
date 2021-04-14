@@ -100,6 +100,7 @@ typedef struct dt_lib_histogram_t
   int waveform_width, waveform_height, waveform_max_width;
   // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
   uint8_t *vectorscope_display;
+  float vectorscope_pt_x, vectorscope_pt_y;
   int vectorscope_diameter_px;
   // FIXME: These arrays could instead be alloc'd/free'd. Would the only concern about making dt_lib_histogram_t large so long be if it were stored in the DB?
   float hue_ring_rgb[6][VECTORSCOPE_HUES][4] DT_ALIGNED_ARRAY;
@@ -262,7 +263,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   }
 }
 
-static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const float *const input, int width, int height)
+static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const float *const input,
+                                               const dt_histogram_roi_t *const roi)
 {
   dt_times_t start_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
@@ -333,80 +335,107 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   d->vectorscope_radius = max_radius;
   const float max_diam = max_radius * 2.f;;
 
+  const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
+  const int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
+  const int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
+
+  // special case, point sample
+  if(sample_width == 1 && sample_height == 1)
+  {
+    float XYZ_D50[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
+    dt_ioppr_rgb_matrix_to_xyz(in + 4U * (roi->crop_y * roi->width + roi->crop_x), XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
+                               vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
+    if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+    {
+      float xyY_D50[4] DT_ALIGNED_PIXEL;
+      dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
+      dt_xyY_to_Luv(xyY_D50, chromaticity);
+    }
+    else
+    {
+      float XYZ_D65[4] DT_ALIGNED_PIXEL;
+      dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
+      dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
+    }
+    d->vectorscope_pt_x = chromaticity[1] / max_diam;
+    d->vectorscope_pt_y = chromaticity[2] / max_diam;
+    goto cleanup;
+  }
+
   // FIXME: pre-allocate?
   float *const restrict binned = dt_iop_image_alloc(diam_px, diam_px, 4);
   dt_iop_image_fill(binned, 0.0f, diam_px, diam_px, 4);
   // FIXME: faster to have bins just record count and multiply by scale after?
   // FIXME: do something fancy where 16 bits of out are pixel count, the other two are chromaticity?
   const float gain = 1.f / 50.f;
-  const float scale = gain * (diam_px * diam_px) / (width * height);
-  const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
-  const size_t nfloats = 4 * width * height;
+  d->vectorscope_pt_x = NAN;
+  const float scale = gain * (diam_px * diam_px) / (sample_width * sample_height);
 
   // count into bins
   // FIXME: move verbosed interleaved comments into a method note at the start, as the code itself is succinct and clear
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, binned, nfloats, vs_prof, diam_px, max_diam, scale, vs_type) \
+  dt_omp_firstprivate(in, binned, roi, vs_prof, diam_px, max_diam, scale, vs_type) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < nfloats; k += 4)
-  {
-    // FIXME: Are there are unnecessary color math hops? Right now the data
-    // comes into dt_lib_histogram_process() in a known profile
-    // (usually from pixelpipe). Then (usually) it gets converted to
-    // the histogram profile. Here it gets converted to XYZ D50 before
-    // making its way to L*u*v* or JzAzBz:
-    //   RGB (pixelpipe) -> XYZ(PCS, D50) -> RGB (histogram) -> XYZ (PCS, D50) -> chromaticity
-    // Given that the histogram profile is "well behaved" and the
-    // conversion to histogram profile is relative colorimetric, how
-    // does this compare to:
-    //   RGB (pixelpipe) -> XYZ(PCS, D50) -> chromaticity
-    float XYZ_D50[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
-    // this goes to the PCS which has standard illuminant D50
-    dt_ioppr_rgb_matrix_to_xyz(in+k, XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
-                               vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
-    // NOTE: see for comparison/reference rgb_to_JzCzhz() in color_picker.c
-    if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+  for(size_t in_y = roi->crop_y; in_y < roi->height - roi->crop_height; in_y++)
+    for(size_t in_x = roi->crop_x; in_x < roi->width - roi->crop_width; in_x++)
     {
-      // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
-      float xyY_D50[4] DT_ALIGNED_PIXEL;
-      dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
-      // using D50 correct u*v* (not u'v') to be relative to the whitepoint (important for vectorscope) and as u*v* is more evenly spaced
-      dt_xyY_to_Luv(xyY_D50, chromaticity);
-    }
-    else
-    {
-      // FIXME: can skip a hop by pre-multipying matrices: see colorbalancergb and dt_develop_blendif_init_masking_profile() for how to make hacked profile
-      float XYZ_D65[4] DT_ALIGNED_PIXEL;
-      // If the profile whitepoint is D65, its RGB -> XYZ conversion
-      // matrix has been adapted to D50 (PCS standard) via
-      // Bradford. Using Bradford again to adapt back to D65 gives a
-      // pretty clean reversal of the transform.
-      // FIXME: if the profile whitepoint is D50 (ProPhoto...), then should we use a nicer adaptation (CAT16?) to D65?
-      dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
-      // FIXME: The bulk of processing time is spent in the XYZ -> JzAzBz conversion in the 2*3 powf() in X'Y'Z' -> L'M'S'. Making a LUT for these, using _apply_trc() to do powf() work. It only needs to be accurate enough to be about on the right pixel for a diam_px x diam_px plot
-      dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
-    }
+      // FIXME: Are there are unnecessary color math hops? Right now the data
+      // comes into dt_lib_histogram_process() in a known profile
+      // (usually from pixelpipe). Then (usually) it gets converted to
+      // the histogram profile. Here it gets converted to XYZ D50 before
+      // making its way to L*u*v* or JzAzBz:
+      //   RGB (pixelpipe) -> XYZ(PCS, D50) -> RGB (histogram) -> XYZ (PCS, D50) -> chromaticity
+      // Given that the histogram profile is "well behaved" and the
+      // conversion to histogram profile is relative colorimetric, how
+      // does this compare to:
+      //   RGB (pixelpipe) -> XYZ(PCS, D50) -> chromaticity
+      float XYZ_D50[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
+      // this goes to the PCS which has standard illuminant D50
+      dt_ioppr_rgb_matrix_to_xyz(in + 4U * (in_y * roi->width + in_x), XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
+                                 vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
+      // NOTE: see for comparison/reference rgb_to_JzCzhz() in color_picker.c
+      if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+      {
+        // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
+        float xyY_D50[4] DT_ALIGNED_PIXEL;
+        dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
+        // using D50 correct u*v* (not u'v') to be relative to the whitepoint (important for vectorscope) and as u*v* is more evenly spaced
+        dt_xyY_to_Luv(xyY_D50, chromaticity);
+      }
+      else
+      {
+        // FIXME: can skip a hop by pre-multipying matrices: see colorbalancergb and dt_develop_blendif_init_masking_profile() for how to make hacked profile
+        float XYZ_D65[4] DT_ALIGNED_PIXEL;
+        // If the profile whitepoint is D65, its RGB -> XYZ conversion
+        // matrix has been adapted to D50 (PCS standard) via
+        // Bradford. Using Bradford again to adapt back to D65 gives a
+        // pretty clean reversal of the transform.
+        // FIXME: if the profile whitepoint is D50 (ProPhoto...), then should we use a nicer adaptation (CAT16?) to D65?
+        dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
+        // FIXME: The bulk of processing time is spent in the XYZ -> JzAzBz conversion in the 2*3 powf() in X'Y'Z' -> L'M'S'. Making a LUT for these, using _apply_trc() to do powf() work. It only needs to be accurate enough to be about on the right pixel for a diam_px x diam_px plot
+        dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
+      }
 
-    const int out_x = diam_px * (chromaticity[1] / max_diam + 0.5f);
-    const int out_y = diam_px * (chromaticity[2] / max_diam + 0.5f);
+      const int out_x = diam_px * (chromaticity[1] / max_diam + 0.5f);
+      const int out_y = diam_px * (chromaticity[2] / max_diam + 0.5f);
 
-    // clip any out-of-scale values, so there aren't light edges
-    if(out_x >= 0 && out_x < diam_px-1 && out_y >= 0 && out_y <= diam_px-1)
-    {
-      // FIXME: is this helpful?
-      // FIXME: do need (size_t)4U?
-      float *const restrict b = binned + 4U * (out_y * diam_px + out_x);
-      // FIXME: if necessary average XYZ values if they're in a big range -- test this -- and cast b[3] to an int and store a count
-      // FIXME: this is a repeat assign on multiple iterations, though may be slightly different each time -- instead calculate the out_x/out_y to chromaticity below? -- or average these -- probably no perceptible difference -- or test if unassigned and then assign?
-      b[0] = XYZ_D50[0];
-      // FIXME: we don't care about this, we'll set it from intensity?
-      b[1] = XYZ_D50[1];
-      b[2] = XYZ_D50[2];
-      b[3] += scale;
+      // clip any out-of-scale values, so there aren't light edges
+      if(out_x >= 0 && out_x < diam_px-1 && out_y >= 0 && out_y <= diam_px-1)
+      {
+        // FIXME: is this helpful?
+        // FIXME: do need (size_t)4U?
+        float *const restrict b = binned + 4U * (out_y * diam_px + out_x);
+        // FIXME: if necessary average XYZ values if they're in a big range -- test this -- and cast b[3] to an int and store a count
+        // FIXME: this is a repeat assign on multiple iterations, though may be slightly different each time -- instead calculate the out_x/out_y to chromaticity below? -- or average these -- probably no perceptible difference -- or test if unassigned and then assign?
+        b[0] = XYZ_D50[0];
+        // FIXME: we don't care about this, we'll set it from intensity?
+        b[1] = XYZ_D50[1];
+        b[2] = XYZ_D50[2];
+        b[3] += scale;
+      }
     }
-  }
 
   // FIXME: do same gamma trick here as in waveform, making the gamma code local to simplify, just need interpolation function
   const float gamma = 1.0f / 2.0f;
@@ -444,6 +473,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
   dt_free_align(binned);
 
+cleanup:
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
     dt_times_t end_time = { 0 };
@@ -537,7 +567,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
       // FIXME: only work on roi
-      _lib_histogram_process_vectorscope(d, img_display ? img_display : input, width, height);
+      _lib_histogram_process_vectorscope(d, img_display ? img_display : input, &roi);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       // FIXME: use dt_unreachable_codepath_with_desc()
@@ -677,7 +707,6 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // FIXME: the areas to left/right of the scope could have some data (primaries, whitepoint, scale, etc.)
   cairo_save(cr);
-
   cairo_translate(cr, width / 2., height / 2.);
   cairo_rotate(cr, d->vectorscope_angle);
 
@@ -720,21 +749,31 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       cairo_stroke(cr);
       cairo_move_to(cr, d->hue_ring_coord[k][i][0], d->hue_ring_coord[k][i][1]);
     }
-
   cairo_restore(cr);
 
-  // the vectorscope graph itself
-  cairo_translate(cr, min_size * -0.5, min_size * -0.5);
-  cairo_scale(cr, darktable.gui->ppd*min_size/diam_px, darktable.gui->ppd*min_size/diam_px);
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-
-  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px);
-  cairo_surface_t *source = dt_cairo_image_surface_create_for_data(d->vectorscope_display, CAIRO_FORMAT_RGB24,
-                                                                   diam_px, diam_px, stride);
-  // FIXME: what happens if mask has color (not just alpha) -- can use this to calculate false color vectorscope and draw it as a pattern or use it as a mask to draw it white? and if so could also simplify waveform drawing code above, to use color mask to alter channel visibility
-  cairo_set_source_surface(cr, source, 0.0, 0.0);
-  cairo_paint(cr);
-  cairo_surface_destroy(source);
+  if(isnan(d->vectorscope_pt_x))
+  {
+    // vectorscope graph
+    cairo_translate(cr, min_size * -0.5, min_size * -0.5);
+    cairo_scale(cr, darktable.gui->ppd*min_size/diam_px, darktable.gui->ppd*min_size/diam_px);
+    cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px);
+    cairo_surface_t *source = dt_cairo_image_surface_create_for_data(d->vectorscope_display, CAIRO_FORMAT_RGB24,
+                                                                     diam_px, diam_px, stride);
+    // FIXME: what happens if mask has color (not just alpha) -- can use this to calculate false color vectorscope and draw it as a pattern or use it as a mask to draw it white? and if so could also simplify waveform drawing code above, to use color mask to alter channel visibility
+    cairo_set_source_surface(cr, source, 0.0, 0.0);
+    cairo_paint(cr);
+    cairo_surface_destroy(source);
+  }
+  else
+  {
+    // point sample
+    cairo_new_sub_path(cr);
+    set_color(cr, darktable.bauhaus->graph_fg);
+    cairo_arc(cr, d->vectorscope_pt_x*min_size, d->vectorscope_pt_y*min_size,
+              DT_PIXEL_APPLY_DPI(3.), 0., M_PI * 2.);
+    cairo_fill(cr);
+  }
 
   cairo_restore(cr);
 
