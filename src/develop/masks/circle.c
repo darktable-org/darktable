@@ -139,7 +139,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
           return 1;
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_remove(form, gui, index);
-        dt_masks_gui_form_create(form, gui, index);
+        dt_masks_gui_form_create(form, gui, index, module);
         if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
           dt_conf_set_float("plugins/darkroom/spots/circle_border", circle->border);
         else
@@ -156,7 +156,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
           return 1;
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_remove(form, gui, index);
-        dt_masks_gui_form_create(form, gui, index);
+        dt_masks_gui_form_create(form, gui, index, module);
         if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
           dt_conf_set_float("plugins/darkroom/spots/circle_size", circle->radius);
         else
@@ -267,7 +267,7 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
       else if(!gui->creation_continuous)
         dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
       dt_masks_iop_update(crea_module);
-      gui->creation_module = NULL;
+      // gui->creation_module = NULL;
     }
     else
     {
@@ -381,7 +381,7 @@ static int _circle_events_button_released(struct dt_iop_module_t *module, float 
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
     dt_masks_update_image(darktable.develop);
@@ -420,7 +420,7 @@ static int _circle_events_button_released(struct dt_iop_module_t *module, float 
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
     dt_masks_update_image(darktable.develop);
@@ -783,7 +783,8 @@ static void _bounding_box(const float *const points, int num_points, int *width,
 }
 
 static int _circle_get_points_border(dt_develop_t *dev, struct dt_masks_form_t *form, float **points,
-                                     int *points_count, float **border, int *border_count, int source)
+                                     int *points_count, float **border, int *border_count, int source,
+                                     const dt_iop_module_t *module)
 {
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
   float x = 0.0f, y = 0.0f;

@@ -175,7 +175,7 @@ void dt_masks_init_form_gui(dt_masks_form_gui_t *gui)
   gui->source_pos_type = DT_MASKS_SOURCE_POS_RELATIVE_TEMP;
 }
 
-void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index)
+void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index, dt_iop_module_t *module)
 {
   const int npoints = g_list_length(gui->points);
   if(npoints == index)
@@ -191,10 +191,10 @@ void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, i
 
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(dt_masks_get_points_border(darktable.develop, form, &gpt->points, &gpt->points_count, &gpt->border,
-                                &gpt->border_count, 0))
+                                &gpt->border_count, 0, NULL))
   {
     if(form->type & DT_MASKS_CLONE)
-      dt_masks_get_points_border(darktable.develop, form, &gpt->source, &gpt->source_count, NULL, NULL, 1);
+      dt_masks_get_points_border(darktable.develop, form, &gpt->source, &gpt->source_count, NULL, NULL, 1, module);
     gui->pipe_hash = darktable.develop->preview_pipe->backbuf_hash;
     gui->formid = form->formid;
   }
@@ -229,7 +229,7 @@ void dt_masks_gui_form_remove(dt_masks_form_t *form, dt_masks_form_gui_t *gui, i
   }
 }
 
-void dt_masks_gui_form_test_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui)
+void dt_masks_gui_form_test_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, dt_iop_module_t *module)
 {
   // we test if the image has changed
   if(gui->pipe_hash > 0)
@@ -253,12 +253,12 @@ void dt_masks_gui_form_test_create(dt_masks_form_t *form, dt_masks_form_gui_t *g
         dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
         dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
         if (!sel) return;
-        dt_masks_gui_form_create(sel, gui, pos);
+        dt_masks_gui_form_create(sel, gui, pos, module);
         pos++;
       }
     }
     else
-      dt_masks_gui_form_create(form, gui, 0);
+      dt_masks_gui_form_create(form, gui, 0, module);
   }
 }
 
@@ -403,11 +403,12 @@ int dt_masks_form_duplicate(dt_develop_t *dev, int formid)
 }
 
 int dt_masks_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points, int *points_count,
-                               float **border, int *border_count, int source)
+                               float **border, int *border_count, int source, dt_iop_module_t *module)
 {
   if(form->functions && form->functions->get_points_border)
   {
-    return form->functions->get_points_border(dev, form, points, points_count, border, border_count, source);
+    return form->functions->get_points_border(dev, form, points, points_count, border, border_count, source,
+                                              module);
   }
   return 0;
 }
@@ -1178,7 +1179,7 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
   // add preview when creating a circle, ellipse and gradient
   if(!(((form->type & DT_MASKS_CIRCLE) || (form->type & DT_MASKS_ELLIPSE) || (form->type & DT_MASKS_GRADIENT))
        && gui->creation))
-    dt_masks_gui_form_test_create(form, gui);
+    dt_masks_gui_form_test_create(form, gui, module);
 
   // draw form
   if(form->type & DT_MASKS_GROUP)
