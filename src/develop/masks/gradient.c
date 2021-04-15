@@ -739,14 +739,19 @@ static void _gradient_draw_lines(gboolean borders, cairo_t *cr, double *dashed, 
     else
       cairo_set_dash(cr, dashed, 0, 0);
     if(selected)
+    {
       if(borders)
         cairo_set_line_width(cr, 2.0 / zoom_scale);
       else
         cairo_set_line_width(cr, 5.0 / zoom_scale);
-    else if(borders)
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
+    }
     else
-      cairo_set_line_width(cr, 3.0 / zoom_scale);
+    {
+      if(borders)
+        cairo_set_line_width(cr, 1.0 / zoom_scale);
+      else
+        cairo_set_line_width(cr, 3.0 / zoom_scale);
+    }
     dt_draw_set_color_overlay(cr, 0.3, 0.8);
 
     cairo_move_to(cr, x, y);
