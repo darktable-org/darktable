@@ -2148,7 +2148,7 @@ static float process_mapping(float move_size)
 
       const dt_action_def_t *definition = _action_find_definition(bac->action);
       if(definition && definition->process)
-        definition->process(action_target, bac->element, effect, move_size);
+        return_value = definition->process(action_target, bac->element, effect, move_size);
     }
   }
   else
