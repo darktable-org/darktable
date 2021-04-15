@@ -122,7 +122,7 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
         gradient->compression = fminf(fmaxf(gradient->compression, 0.001f) * 1.0f / 0.8f, 1.0f);
       dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
       dt_masks_gui_form_remove(form, gui, index);
-      dt_masks_gui_form_create(form, gui, index);
+      dt_masks_gui_form_create(form, gui, index, module);
       dt_conf_set_float("plugins/darkroom/masks/gradient/compression", gradient->compression);
       dt_toast_log(_("compression: %3.2f%%"), gradient->compression*100.0f);
       dt_masks_update_image(darktable.develop);
@@ -137,7 +137,7 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
       dt_toast_log(_("curvature: %3.2f%%"), gradient->curvature*50.0f);
       dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
       dt_masks_gui_form_remove(form, gui, index);
-      dt_masks_gui_form_create(form, gui, index);
+      dt_masks_gui_form_create(form, gui, index, module);
       dt_masks_update_image(darktable.develop);
     }
     return 1;
@@ -160,7 +160,7 @@ static int _gradient_events_button_pressed(struct dt_iop_module_t *module, float
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
 
     dt_masks_update_image(darktable.develop);
 
@@ -310,7 +310,7 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
     dt_masks_update_image(darktable.develop);
@@ -356,7 +356,7 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the rotation
     dt_masks_update_image(darktable.develop);
@@ -381,7 +381,7 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the new parameters
     dt_masks_update_image(darktable.develop);
@@ -1023,9 +1023,9 @@ static void _gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
   }
 }
 
-static int _gradient_get_points_border(dt_develop_t *dev, dt_masks_form_t *form,
-                                       float **points, int *points_count,
-                                       float **border,  int *border_count, int source)
+static int _gradient_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points, int *points_count,
+                                       float **border, int *border_count, int source,
+                                       const dt_iop_module_t *module)
 {
   (void)source;  // unused arg, keep compiler from complaining
   dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)form->points->data;
