@@ -342,7 +342,8 @@ static int _ellipse_get_points(dt_develop_t *dev, float xx, float yy, float radi
 }
 
 static int _ellipse_get_points_border(dt_develop_t *dev, struct dt_masks_form_t *form, float **points,
-                                      int *points_count, float **border, int *border_count, int source)
+                                      int *points_count, float **border, int *border_count, int source,
+                                      const dt_iop_module_t *module)
 {
   dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
   float x = 0.0f, y = 0.0f, a = 0.0f, b = 0.0f;
@@ -506,7 +507,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
 
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_remove(form, gui, index);
-        dt_masks_gui_form_create(form, gui, index);
+        dt_masks_gui_form_create(form, gui, index, module);
         if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
           dt_conf_set_float("plugins/darkroom/spots/ellipse_rotation", ellipse->rotation);
         else
@@ -525,7 +526,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         ellipse->border = CLAMP(ellipse->border, 0.001f * reference, reference);
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_remove(form, gui, index);
-        dt_masks_gui_form_create(form, gui, index);
+        dt_masks_gui_form_create(form, gui, index, module);
         if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
           dt_conf_set_float("plugins/darkroom/spots/ellipse_border", ellipse->border);
         else
@@ -549,7 +550,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
 
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_remove(form, gui, index);
-        dt_masks_gui_form_create(form, gui, index);
+        dt_masks_gui_form_create(form, gui, index, module);
         if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
         {
           dt_conf_set_float("plugins/darkroom/spots/ellipse_radius_a", ellipse->radius[0]);
@@ -815,7 +816,7 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
     dt_masks_update_image(darktable.develop);
@@ -871,7 +872,7 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the new parameters
     dt_masks_update_image(darktable.develop);
@@ -923,7 +924,7 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the rotation
     dt_masks_update_image(darktable.develop);
@@ -977,7 +978,7 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the rotation
     dt_masks_update_image(darktable.develop);
@@ -1008,7 +1009,7 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
     dt_masks_update_image(darktable.develop);

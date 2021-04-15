@@ -845,8 +845,8 @@ static void _path_get_distance(float x, float y, float as, dt_masks_form_gui_t *
   else *inside_border = 1;
 }
 
-static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points,
-                                     int *points_count, float **border, int *border_count, int source)
+static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points, int *points_count,
+                                   float **border, int *border_count, int source, const dt_iop_module_t *module)
 {
   return _path_get_pts_border(dev, form, 0.f, DT_DEV_TRANSFORM_DIR_ALL, dev->preview_pipe, points, points_count, border,
                               border_count, source);
@@ -1020,7 +1020,7 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
 
       // we recreate the form points
       dt_masks_gui_form_remove(form, gui, index);
-      dt_masks_gui_form_create(form, gui, index);
+      dt_masks_gui_form_create(form, gui, index, module);
 
       // we save the move
       dt_masks_update_image(darktable.develop);
@@ -1210,7 +1210,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
 
       // we recreate the form points
       dt_masks_gui_form_remove(form, gui, index);
-      dt_masks_gui_form_create(form, gui, index);
+      dt_masks_gui_form_create(form, gui, index, module);
 
       dt_control_queue_redraw_center();
       return 1;
@@ -1259,7 +1259,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
 
         // we recreate the form points
         dt_masks_gui_form_remove(form, gui, index);
-        dt_masks_gui_form_create(form, gui, index);
+        dt_masks_gui_form_create(form, gui, index, module);
         gpt->clockwise = _path_is_clockwise(form);
         // we save the move
         dt_masks_update_image(darktable.develop);
@@ -1318,7 +1318,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
         form->points = g_list_insert(form->points, bzpt, gui->seg_selected + 1);
         _path_init_ctrl_points(form);
         dt_masks_gui_form_remove(form, gui, index);
-        dt_masks_gui_form_create(form, gui, index);
+        dt_masks_gui_form_create(form, gui, index, module);
         gui->point_edited = gui->point_dragging = gui->point_selected = gui->seg_selected + 1;
         gui->seg_selected = -1;
         dt_control_queue_redraw_center();
@@ -1387,7 +1387,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
     gpt->clockwise = _path_is_clockwise(form);
     // we save the move
     dt_masks_update_image(darktable.develop);
@@ -1407,7 +1407,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
 
       // we recreate the form points
       dt_masks_gui_form_remove(form, gui, index);
-      dt_masks_gui_form_create(form, gui, index);
+      dt_masks_gui_form_create(form, gui, index, module);
       gpt->clockwise = _path_is_clockwise(form);
       // we save the move
       dt_masks_update_image(darktable.develop);
@@ -1485,7 +1485,7 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
     dt_masks_update_image(darktable.develop);
@@ -1508,7 +1508,7 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
     dt_masks_update_image(darktable.develop);
@@ -1554,7 +1554,7 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
     gpt->clockwise = _path_is_clockwise(form);
     // we save the move
     dt_masks_update_image(darktable.develop);
@@ -1588,7 +1588,7 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
     gpt->clockwise = _path_is_clockwise(form);
     // we save the move
     dt_masks_update_image(darktable.develop);
@@ -1654,7 +1654,7 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     _path_init_ctrl_points(form);
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
   }
@@ -1692,7 +1692,7 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
 
     dt_control_queue_redraw_center();
     return 1;
@@ -1719,7 +1719,7 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     _path_init_ctrl_points(form);
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
   }
@@ -1749,7 +1749,7 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
   }
