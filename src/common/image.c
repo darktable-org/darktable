@@ -678,7 +678,7 @@ gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
   // to go the full path (as the thumbnail will be flipped the wrong way round)
   const int incompatible = !strncmp(img.exif_maker, "Phase One", 9);
   const gboolean use_raw =
-    dt_conf_is_equal("plugins/lighttable/thumbnail_raw_min_level", "never");
+    !dt_conf_is_equal("plugins/lighttable/thumbnail_raw_min_level", "never");
 
   if(!img.verified_size && !dt_image_altered(imgid) && !use_raw && !incompatible)
   {
