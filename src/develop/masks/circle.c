@@ -496,60 +496,59 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
   return 0;
 }
 
-static void _circle_draw_shape(cairo_t *cr, double *dashed, const int selected, const float zoom_scale,
-                               float *points, const int points_count)
+static void _circle_draw_lines(gboolean borders, gboolean source, cairo_t *cr, double *dashed, const int len,
+                               const gboolean selected, const float zoom_scale, float *points,
+                               const int points_count, const float dx, const float dy)
 {
   if(points_count <= 6) return;
 
-  cairo_set_dash(cr, dashed, 0, 0);
-  if(selected)
-    cairo_set_line_width(cr, 5.0 / zoom_scale);
+  if(borders && !source)
+    cairo_set_dash(cr, dashed, len, 0);
   else
-    cairo_set_line_width(cr, 3.0 / zoom_scale);
+    cairo_set_dash(cr, dashed, 0, 0);
+  if(selected)
+  {
+    if(source)
+      cairo_set_line_width(cr, 2.5 / zoom_scale);
+    else if(borders)
+      cairo_set_line_width(cr, 2.0 / zoom_scale);
+    else
+      cairo_set_line_width(cr, 5.0 / zoom_scale);
+  }
+  else
+  {
+    if(source)
+      cairo_set_line_width(cr, 1.5 / zoom_scale);
+    else if(borders)
+      cairo_set_line_width(cr, 1.0 / zoom_scale);
+    else
+      cairo_set_line_width(cr, 3.0 / zoom_scale);
+  }
   dt_draw_set_color_overlay(cr, 0.3, 0.8);
 
-  cairo_move_to(cr, points[2], points[3]);
+  cairo_move_to(cr, points[2] + dx, points[3] + dy);
   for(int i = 2; i < points_count; i++)
   {
-    cairo_line_to(cr, points[i * 2], points[i * 2 + 1]);
+    cairo_line_to(cr, points[i * 2] + dx, points[i * 2 + 1] + dy);
   }
-  cairo_line_to(cr, points[2], points[3]);
+  cairo_line_to(cr, points[2] + dx, points[3] + dy);
 
   cairo_stroke_preserve(cr);
   if(selected)
-    cairo_set_line_width(cr, 2.0 / zoom_scale);
-  else
-    cairo_set_line_width(cr, 1.0 / zoom_scale);
-  dt_draw_set_color_overlay(cr, 0.8, 0.8);
-  cairo_stroke(cr);
-}
-
-static void _circle_draw_border(cairo_t *cr, double *dashed, const float len, const int selected,
-                                const float zoom_scale, float *points, const int points_count)
-{
-  if(points_count <= 6) return;
-
-  cairo_set_dash(cr, dashed, len, 0);
-  if(selected)
-    cairo_set_line_width(cr, 2.0 / zoom_scale);
-  else
-    cairo_set_line_width(cr, 1.0 / zoom_scale);
-  dt_draw_set_color_overlay(cr, 0.3, 0.8);
-
-  cairo_move_to(cr, points[2], points[3]);
-  for(int i = 2; i < points_count; i++)
   {
-    cairo_line_to(cr, points[i * 2], points[i * 2 + 1]);
+    if(source)
+      cairo_set_line_width(cr, 1.0 / zoom_scale);
+    else
+      cairo_set_line_width(cr, 2.0 / zoom_scale);
   }
-  cairo_line_to(cr, points[2], points[3]);
-
-  cairo_stroke_preserve(cr);
-  if(selected)
-    cairo_set_line_width(cr, 2.0 / zoom_scale);
   else
-    cairo_set_line_width(cr, 1.0 / zoom_scale);
+  {
+    if(source)
+      cairo_set_line_width(cr, 0.5 / zoom_scale);
+    else
+      cairo_set_line_width(cr, 1.0 / zoom_scale);
+  }
   dt_draw_set_color_overlay(cr, 0.8, 0.8);
-  cairo_set_dash(cr, dashed, len, 4);
   cairo_stroke(cr);
 }
 
@@ -665,14 +664,10 @@ static void _circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
 
       // we draw the form and it's border
       cairo_save(cr);
-      if(draw && points_count >= 2)
-      {
-        _circle_draw_shape(cr, dashed, 0, zoom_scale, points, points_count);
-      }
-      if(draw && border_count >= 2)
-      {
-        _circle_draw_border(cr, dashed, len, 0, zoom_scale, border, border_count);
-      }
+      // we draw the main shape
+      _circle_draw_lines(FALSE, FALSE, cr, dashed, len, FALSE, zoom_scale, points, points_count, 0.0, 0.0);
+      // we draw the borders
+      _circle_draw_lines(TRUE, FALSE, cr, dashed, len, FALSE, zoom_scale, border, border_count, 0.0, 0.0);
       cairo_restore(cr);
 
       // draw a cross where the source will be created
@@ -704,55 +699,13 @@ static void _circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
     dys = gui->posy + gui->dy - gpt->source[1];
   }
 
-  if(gpt->points_count > 6)
-  {
-    cairo_set_dash(cr, dashed, 0, 0);
-    if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 5.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 3.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
-    cairo_move_to(cr, gpt->points[2] + dx, gpt->points[3] + dy);
-    for(int i = 2; i < gpt->points_count; i++)
-    {
-      cairo_line_to(cr, gpt->points[i * 2] + dx, gpt->points[i * 2 + 1] + dy);
-    }
-    cairo_line_to(cr, gpt->points[2] + dx, gpt->points[3] + dy);
-    cairo_stroke_preserve(cr);
-    if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.8, 0.8);
-    cairo_stroke(cr);
-  }
-
-  // draw border
-  if((gui->group_selected == index) && gpt->border_count > 6)
-  {
-    cairo_set_dash(cr, dashed, len, 0);
-    if((gui->group_selected == index) && (gui->border_selected))
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
-
-    cairo_move_to(cr, gpt->border[2] + dx, gpt->border[3] + dy);
-    for(int i = 2; i < gpt->border_count; i++)
-    {
-      cairo_line_to(cr, gpt->border[i * 2] + dx, gpt->border[i * 2 + 1] + dy);
-    }
-    cairo_line_to(cr, gpt->border[2] + dx, gpt->border[3] + dy);
-
-    cairo_stroke_preserve(cr);
-    if((gui->group_selected == index) && (gui->border_selected))
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.8, 0.8);
-    cairo_set_dash(cr, dashed, len, 4);
-    cairo_stroke(cr);
-  }
+  // we draw the main shape
+  const gboolean selected = (gui->group_selected == index) && (gui->form_selected || gui->form_dragging);
+  _circle_draw_lines(FALSE, FALSE, cr, dashed, len, selected, zoom_scale, gpt->points, gpt->points_count, dx, dy);
+  // we draw the borders
+  if(gui->group_selected == index)
+    _circle_draw_lines(TRUE, FALSE, cr, dashed, len, (gui->border_selected), zoom_scale, gpt->border,
+                       gpt->border_count, dx, dy);
 
   // draw the source if any
   if(gpt->source_count > 6)
@@ -805,26 +758,9 @@ static void _circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
       cairo_stroke(cr);
     }
 
-    // we draw the source
-    cairo_set_dash(cr, dashed, 0, 0);
-    if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 2.5 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
-    cairo_move_to(cr, gpt->source[2] + dxs, gpt->source[3] + dys);
-    for(int i = 2; i < gpt->source_count; i++)
-    {
-      cairo_line_to(cr, gpt->source[i * 2] + dxs, gpt->source[i * 2 + 1] + dys);
-    }
-    cairo_line_to(cr, gpt->source[2] + dxs, gpt->source[3] + dys);
-    cairo_stroke_preserve(cr);
-    if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 0.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.8, 0.8);
-    cairo_stroke(cr);
+    // we only the main shape for the source, no borders
+    _circle_draw_lines(FALSE, TRUE, cr, dashed, len, selected, zoom_scale, gpt->source, gpt->source_count, dxs,
+                       dys);
   }
 }
 
