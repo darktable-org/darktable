@@ -580,6 +580,54 @@ static float *_points_to_transform(float x, float y, float radius, float wd, flo
   return points;
 }
 
+static int _circle_get_points_source(dt_develop_t *dev, float x, float y, float xs, float ys, float radius,
+                                     float radius2, float rotation, float **points, int *points_count,
+                                     const dt_iop_module_t *module)
+{
+  (void)radius2; // keep compiler from complaining about unused arg
+  (void)rotation;
+  float wd = dev->preview_pipe->iwidth;
+  float ht = dev->preview_pipe->iheight;
+
+  // compute the points of the target (center and circumference of circle)
+  // we get the point in RAW image reference
+  *points = _points_to_transform(x, y, radius, wd, ht, points_count);
+  if(!*points) return 0;
+
+  // we transform with all distortion that happen *before* the module
+  // so we have now the TARGET points in module input reference
+  if(dt_dev_distort_transform_plus(dev, dev->preview_pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL,
+                                   *points, *points_count))
+  {
+    // now we move all the points by the shift
+    // so we have now the SOURCE points in module input reference
+    float pts[2] = { xs * wd, ys * ht };
+    if(dt_dev_distort_transform_plus(dev, dev->preview_pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL,
+                                     pts, 1))
+    {
+      const float dx = pts[0] - (*points)[0];
+      const float dy = pts[1] - (*points)[1];
+      for(int i = 0; i < *points_count; i++)
+      {
+        (*points)[i * 2] += dx;
+        (*points)[i * 2 + 1] += dy;
+      }
+
+      // we apply the rest of the distortions (those after the module)
+      // so we have now the SOURCE points in final image reference
+      if(dt_dev_distort_transform_plus(dev, dev->preview_pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_FORW_INCL,
+                                       *points, *points_count))
+        return 1;
+    }
+  }
+
+  // if we failed, then free all and return
+  dt_free_align(*points);
+  *points = NULL;
+  *points_count = 0;
+  return 0;
+}
+
 static int _circle_get_points(dt_develop_t *dev, float x, float y, float radius, float radius2, float rotation,
                               float **points, int *points_count)
 {
@@ -788,19 +836,25 @@ static int _circle_get_points_border(dt_develop_t *dev, struct dt_masks_form_t *
 {
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
   float x = 0.0f, y = 0.0f;
+  x = circle->center[0], y = circle->center[1];
   if(source)
-    x = form->source[0], y = form->source[1];
-  else
-    x = circle->center[0], y = circle->center[1];
-  if(form->functions->get_points(dev, x, y, circle->radius, circle->radius, 0, points, points_count))
   {
-    if(border)
+    float xs = form->source[0], ys = form->source[1];
+    return _circle_get_points_source(dev, x, y, xs, ys, circle->radius, circle->radius, 0, points, points_count,
+                                     module);
+  }
+  else
+  {
+    if(form->functions->get_points(dev, x, y, circle->radius, circle->radius, 0, points, points_count))
     {
-      float outer_radius = circle->radius + circle->border;
-      return form->functions->get_points(dev, x, y, outer_radius, outer_radius, 0, border, border_count);
+      if(border)
+      {
+        float outer_radius = circle->radius + circle->border;
+        return form->functions->get_points(dev, x, y, outer_radius, outer_radius, 0, border, border_count);
+      }
+      else
+        return 1;
     }
-    else
-      return 1;
   }
   return 0;
 }
