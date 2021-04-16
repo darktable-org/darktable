@@ -456,7 +456,27 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module, float pz
                                         double pressure, int which, dt_masks_form_t *form, int parentid,
                                         dt_masks_form_gui_t *gui, int index)
 {
-  if(gui->form_dragging || gui->form_rotating)
+  if(gui->form_dragging)
+  {
+    // we get the gradient
+    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)((form->points)->data);
+
+    // we change the center value
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
+    float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
+    dt_dev_distort_backtransform(darktable.develop, pts, 1);
+
+    gradient->anchor[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
+    gradient->anchor[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+
+    // we recreate the form points
+    dt_masks_gui_form_remove(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
+    dt_control_queue_redraw_center();
+    return 1;
+  }
+  if(gui->form_rotating)
   {
     dt_control_queue_redraw_center();
     return 1;
@@ -920,12 +940,7 @@ static void _gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
   const float xref = gpt->points[0];
   const float yref = gpt->points[1];
 
-  if((gui->group_selected == index) && gui->form_dragging)
-  {
-    dx = gui->posx + gui->dx - xref;
-    dy = gui->posy + gui->dy - yref;
-  }
-  else if((gui->group_selected == index) && gui->form_rotating)
+  if((gui->group_selected == index) && gui->form_rotating)
   {
     const float v = atan2f(gui->posy - yref, gui->posx - xref) - atan2(-gui->dy, -gui->dx);
     sinv = sinf(v);
