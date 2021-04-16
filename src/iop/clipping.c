@@ -389,6 +389,9 @@ static void keystone_get_matrix(float *k_space, float kxa, float kxb, float kxc,
           + kyb * kyb * (kxc * kxd * kxd * kyc - kxc * kxc * kxd * kyd));
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline void keystone_backtransform(float *i, float *k_space, float a, float b, float d, float e, float g,
                                           float h, float kxa, float kya)
 {
@@ -401,6 +404,9 @@ static inline void keystone_backtransform(float *i, float *k_space, float a, flo
   i[1] = -(d * xx - a * yy) / div + kya;
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline void keystone_transform(float *i, float *k_space, float a, float b, float d, float e, float g, float h,
                                       float kxa, float kya)
 {
@@ -412,6 +418,9 @@ static inline void keystone_transform(float *i, float *k_space, float a, float b
   i[1] = (d * xx + e * yy) / div + k_space[1];
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline void backtransform(float *x, float *o, const float *m, const float t_h, const float t_v)
 {
   x[1] /= (1.0f + x[0] * t_h);
@@ -419,6 +428,9 @@ static inline void backtransform(float *x, float *o, const float *m, const float
   mul_mat_vec_2(m, x, o);
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline void inv_matrix(float *m, float *inv_m)
 {
   const float det = (m[0] * m[3]) - (m[1] * m[2]);
@@ -428,6 +440,9 @@ static inline void inv_matrix(float *m, float *inv_m)
   inv_m[3] =  m[0] / det;
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline void transform(float *x, float *o, const float *m, const float t_h, const float t_v)
 {
   mul_mat_vec_2(m, x, o);
@@ -436,7 +451,7 @@ static inline void transform(float *x, float *o, const float *m, const float t_h
 }
 
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points, size_t points_count)
 {
   // as dt_iop_roi_t contain int values and not floats, we can have some rounding errors
   // as a workaround, we use a factor for preview pipes
@@ -454,13 +469,18 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   const float rx = piece->buf_in.width;
   const float ry = piece->buf_in.height;
 
-  float k_space[4] = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
+  float DT_ALIGNED_PIXEL k_space[4] = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
   const float kxa = d->kxa * rx, kxb = d->kxb * rx, kxc = d->kxc * rx, kxd = d->kxd * rx;
   const float kya = d->kya * ry, kyb = d->kyb * ry, kyc = d->kyc * ry, kyd = d->kyd * ry;
   float ma = 0, mb = 0, md = 0, me = 0, mg = 0, mh = 0;
   if(d->k_apply == 1)
     keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(points_count, points, d, factor, k_space, ma, mb, md, me, mg, mh, kxa, kya) \
+    schedule(static) if(points_count > 100) aligned(points:64) aligned(k_space:16)
+#endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];
@@ -500,7 +520,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   return 1;
 }
-int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points,
                           size_t points_count)
 {
   // as dt_iop_roi_t contain int values and not floats, we can have some rounding errors
@@ -519,13 +539,18 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   const float rx = piece->buf_in.width;
   const float ry = piece->buf_in.height;
 
-  float k_space[4] = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
+  float DT_ALIGNED_PIXEL k_space[4] = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
   const float kxa = d->kxa * rx, kxb = d->kxb * rx, kxc = d->kxc * rx, kxd = d->kxd * rx;
   const float kya = d->kya * ry, kyb = d->kyb * ry, kyc = d->kyc * ry, kyd = d->kyd * ry;
   float ma, mb, md, me, mg, mh;
   if(d->k_apply == 1)
     keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(points_count, points, d, factor, k_space, ma, mb, md, me, mg, mh, kxa, kya) \
+    schedule(static) if(points_count > 100) aligned(points:64) aligned(k_space:16)
+#endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];
