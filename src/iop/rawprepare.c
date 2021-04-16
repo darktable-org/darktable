@@ -134,24 +134,10 @@ void init_presets(dt_iop_module_so_t *self)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
-// value to round,   reference on how to round:
-//  if ref was even, returned value will be even
-//  if ref was odd,  returned value will be odd
-static int round_smart(float val, int ref)
-{
-  // first, just round it
-  int round = (int)roundf(val);
-
-  if((ref & 1) ^ (round & 1)) round++;
-
-  return round;
-}
-
 static int compute_proper_crop(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_in, int value)
 {
   const float scale = roi_in->scale / piece->iscale;
-
-  return round_smart((float)value * scale, value);
+  return (int)roundf((float)value * scale);
 }
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points, size_t points_count)
@@ -227,8 +213,8 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
   const int32_t x = d->x + d->width, y = d->y + d->height;
 
   const float scale = roi_in->scale / piece->iscale;
-  roi_out->width -= round_smart((float)x * scale, x);
-  roi_out->height -= round_smart((float)y * scale, y);
+  roi_out->width -= (int)roundf((float)x * scale);
+  roi_out->height -= (int)roundf((float)y * scale);
 }
 
 void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
@@ -240,8 +226,8 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   const int32_t x = d->x + d->width, y = d->y + d->height;
 
   const float scale = roi_in->scale / piece->iscale;
-  roi_in->width += round_smart((float)x * scale, x);
-  roi_in->height += round_smart((float)y * scale, y);
+  roi_in->width += (int)roundf((float)x * scale);
+  roi_in->height += (int)roundf((float)y * scale);
 }
 
 void output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
