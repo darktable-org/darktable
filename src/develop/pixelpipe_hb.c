@@ -2505,8 +2505,8 @@ float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const dt_iop_modul
           dt_dev_pixelpipe_iop_t *module = (dt_dev_pixelpipe_iop_t *)iter->data;
 
           if(module->enabled
-            && !(module->module->dev->gui_module && module->module->dev->gui_module->operation_tags_filter()
-                 & module->module->operation_tags()))
+            && !(module->module->dev->gui_module
+                 && (module->module->dev->gui_module->operation_tags_filter() & module->module->operation_tags())))
           {
             if(module->module->distort_mask
               && !(!strcmp(module->module->op, "finalscale") // hack against pipes not using finalscale
