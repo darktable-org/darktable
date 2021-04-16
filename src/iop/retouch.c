@@ -40,7 +40,7 @@
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE_INTROSPECTION(1, dt_iop_retouch_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_retouch_params_t)
 
 #define RETOUCH_NO_FORMS 300
 #define RETOUCH_MAX_SCALES 15
@@ -84,6 +84,7 @@ typedef struct dt_iop_retouch_form_data_t
   dt_iop_retouch_fill_modes_t fill_mode; // mode for fill algorithm, erase or fill with color
   float fill_color[3];                   // color for fill algorithm
   float fill_brightness;                 // value to be added to the color
+  int distort_mode; // module v1 => 1, otherwise 2. mode 1 as issues if there's distortion before this module
 } dt_iop_retouch_form_data_t;
 
 typedef struct retouch_user_data_t
@@ -224,6 +225,87 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
+                  const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_iop_retouch_form_data_v1_t
+    {
+      int formid; // from masks, form->formid
+      int scale;  // 0==original image; 1..RETOUCH_MAX_SCALES==scale; RETOUCH_MAX_SCALES+1==residual
+      dt_iop_retouch_algo_type_t algorithm; // clone, heal, blur, fill
+
+      dt_iop_retouch_blur_types_t blur_type; // gaussian, bilateral
+      float blur_radius;                     // radius for blur algorithm
+
+      dt_iop_retouch_fill_modes_t fill_mode; // mode for fill algorithm, erase or fill with color
+      float fill_color[3];                   // color for fill algorithm
+      float fill_brightness;                 // value to be added to the color
+    } dt_iop_retouch_form_data_v1_t;
+    typedef struct dt_iop_retouch_params_v1_t
+    {
+      dt_iop_retouch_form_data_v1_t rt_forms[RETOUCH_NO_FORMS]; // array of masks index and additional data
+
+      dt_iop_retouch_algo_type_t algorithm; // $DEFAULT: DT_IOP_RETOUCH_HEAL clone, heal, blur, fill
+
+      int num_scales;       // $DEFAULT: 0 number of wavelets scales
+      int curr_scale;       // $DEFAULT: 0 current wavelet scale
+      int merge_from_scale; // $DEFAULT: 0
+
+      float preview_levels[3];
+
+      dt_iop_retouch_blur_types_t blur_type; // $DEFAULT: DT_IOP_RETOUCH_BLUR_GAUSSIAN $DESCRIPTION: "blur type"
+                                             // gaussian, bilateral
+      float blur_radius; // $MIN: 0.1 $MAX: 200.0 $DEFAULT: 10.0 $DESCRIPTION: "blur radius" radius for blur
+                         // algorithm
+
+      dt_iop_retouch_fill_modes_t fill_mode; // $DEFAULT: DT_IOP_RETOUCH_FILL_ERASE $DESCRIPTION: "fill mode" mode
+                                             // for fill algorithm, erase or fill with color
+      float fill_color[3];                   // $DEFAULT: 0.0 color for fill algorithm
+      float fill_brightness; // $MIN: -1.0 $MAX: 1.0 $DESCRIPTION: "brightness" value to be added to the color
+    } dt_iop_retouch_params_v1_t;
+
+    dt_iop_retouch_params_v1_t *o = (dt_iop_retouch_params_v1_t *)old_params;
+    dt_iop_retouch_params_t *n = (dt_iop_retouch_params_t *)new_params;
+    dt_iop_retouch_params_t *d = (dt_iop_retouch_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+    for(int i = 0; i < RETOUCH_NO_FORMS; i++)
+    {
+      dt_iop_retouch_form_data_v1_t of = o->rt_forms[i];
+      n->rt_forms[i].algorithm = of.algorithm;
+      n->rt_forms[i].blur_radius = of.blur_radius;
+      n->rt_forms[i].blur_type = of.blur_type;
+      n->rt_forms[i].distort_mode = 1;
+      n->rt_forms[i].fill_brightness = of.fill_brightness;
+      n->rt_forms[i].fill_color[0] = of.fill_color[0];
+      n->rt_forms[i].fill_color[1] = of.fill_color[1];
+      n->rt_forms[i].fill_color[2] = of.fill_color[2];
+      n->rt_forms[i].fill_mode = of.fill_mode;
+      n->rt_forms[i].formid = of.formid;
+      n->rt_forms[i].scale = of.scale;
+    }
+    n->algorithm = o->algorithm;
+    n->blur_radius = o->blur_radius;
+    n->blur_type = o->blur_type;
+    n->curr_scale = o->curr_scale;
+    n->fill_brightness = o->fill_brightness;
+    n->fill_color[0] = o->fill_color[0];
+    n->fill_color[1] = o->fill_color[1];
+    n->fill_color[2] = o->fill_color[2];
+    n->fill_mode = o->fill_mode;
+    n->merge_from_scale = o->merge_from_scale;
+    n->num_scales = o->num_scales;
+    n->preview_levels[0] = o->preview_levels[0];
+    n->preview_levels[1] = o->preview_levels[1];
+    n->preview_levels[2] = o->preview_levels[2];
+
+    return 0;
+  }
+  return 1;
+}
+
 static int rt_get_index_from_formid(dt_iop_retouch_params_t *p, const int formid)
 {
   int index = -1;
@@ -238,22 +320,6 @@ static int rt_get_index_from_formid(dt_iop_retouch_params_t *p, const int formid
     }
   }
   return index;
-}
-
-static dt_iop_retouch_algo_type_t rt_get_algorithm_from_formid(dt_iop_retouch_params_t *p, const int formid)
-{
-  dt_iop_retouch_algo_type_t algo = 0;
-  if(formid > 0)
-  {
-    int i = 0;
-
-    while(algo == 0 && i < RETOUCH_NO_FORMS)
-    {
-      if(p->rt_forms[i].formid == formid) algo = p->rt_forms[i].algorithm;
-      i++;
-    }
-  }
-  return algo;
 }
 
 static int rt_get_selected_shape_id()
@@ -615,6 +681,7 @@ static void rt_resynch_params(struct dt_iop_module_t *self)
             forms_d[new_form_index].formid = formid;
             forms_d[new_form_index].scale = p->curr_scale;
             forms_d[new_form_index].algorithm = p->algorithm;
+            forms_d[new_form_index].distort_mode = 2;
 
             switch(forms_d[new_form_index].algorithm)
             {
@@ -678,24 +745,46 @@ static void rt_masks_point_denormalize(dt_dev_pixelpipe_iop_t *piece, const dt_i
 }
 
 static int rt_masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi,
-                                     const float *target, const float *source, int *dx, int *dy)
+                                     const float *target, const float *source, int *dx, int *dy,
+                                     const int distort_mode)
 {
+  // if distort_mode==1 we don't scale at the right place, hence false positions if there's distortion before this
+  // module. we keep it for backward compatibility only. all new forms have distort_mode==2
   float points[4];
-  rt_masks_point_denormalize(piece, roi, target, 1, points);
-  rt_masks_point_denormalize(piece, roi, source, 1, points + 2);
+  if(distort_mode == 1)
+  {
+    rt_masks_point_denormalize(piece, roi, target, 1, points);
+    rt_masks_point_denormalize(piece, roi, source, 1, points + 2);
+  }
+  else
+  {
+    points[0] = target[0] * piece->pipe->iwidth;
+    points[1] = target[1] * piece->pipe->iheight;
+    points[2] = source[0] * piece->pipe->iwidth;
+    points[3] = source[1] * piece->pipe->iheight;
+  }
 
   int res = dt_dev_distort_transform_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, 2);
   if(!res) return res;
 
-  *dx = points[0] - points[2];
-  *dy = points[1] - points[3];
+  if(distort_mode == 1)
+  {
+    *dx = points[0] - points[2];
+    *dy = points[1] - points[3];
+  }
+  else
+  {
+    *dx = (points[0] - points[2]) * roi->scale;
+    *dy = (points[1] - points[3]) * roi->scale;
+  }
 
   return res;
 }
 
 /* returns (dx dy) to get from the source to the destination */
-static int rt_masks_get_delta_to_destination(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi,
-                                             dt_masks_form_t *form, int *dx, int *dy)
+static int rt_masks_get_delta_to_destination(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                             const dt_iop_roi_t *roi, dt_masks_form_t *form, int *dx, int *dy,
+                                             const int distort_mode)
 {
   int res = 0;
 
@@ -703,25 +792,25 @@ static int rt_masks_get_delta_to_destination(dt_iop_module_t *self, dt_dev_pixel
   {
     const dt_masks_point_path_t *pt = (dt_masks_point_path_t *)form->points->data;
 
-    res = rt_masks_point_calc_delta(self, piece, roi, pt->corner, form->source, dx, dy);
+    res = rt_masks_point_calc_delta(self, piece, roi, pt->corner, form->source, dx, dy, distort_mode);
   }
   else if(form->type & DT_MASKS_CIRCLE)
   {
     const dt_masks_point_circle_t *pt = (dt_masks_point_circle_t *)form->points->data;
 
-    res = rt_masks_point_calc_delta(self, piece, roi, pt->center, form->source, dx, dy);
+    res = rt_masks_point_calc_delta(self, piece, roi, pt->center, form->source, dx, dy, distort_mode);
   }
   else if(form->type & DT_MASKS_ELLIPSE)
   {
     const dt_masks_point_ellipse_t *pt = (dt_masks_point_ellipse_t *)form->points->data;
 
-    res = rt_masks_point_calc_delta(self, piece, roi, pt->center, form->source, dx, dy);
+    res = rt_masks_point_calc_delta(self, piece, roi, pt->center, form->source, dx, dy, distort_mode);
   }
   else if(form->type & DT_MASKS_BRUSH)
   {
     const dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)form->points->data;
 
-    res = rt_masks_point_calc_delta(self, piece, roi, pt->corner, form->source, dx, dy);
+    res = rt_masks_point_calc_delta(self, piece, roi, pt->corner, form->source, dx, dy, distort_mode);
   }
 
   return res;
@@ -2317,8 +2406,8 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelp
       if(grpt)
       {
         const int formid = grpt->formid;
-        const dt_iop_retouch_algo_type_t algo = rt_get_algorithm_from_formid(p, formid);
-        if(algo == DT_IOP_RETOUCH_FILL)
+        const int index = rt_get_index_from_formid(p, formid);
+        if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_FILL)
         {
           continue;
         }
@@ -2344,7 +2433,7 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelp
           }
 
           // heal need the entire area
-          if(algo == DT_IOP_RETOUCH_HEAL)
+          if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_HEAL)
           {
             // we enlarge the roi if needed
             roiy = fminf(ft, roiy);
@@ -2353,9 +2442,8 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelp
             roib = fmaxf(ft + fh, roib);
           }
           // blur need an overlap of 4 * radius (scaled)
-          if(algo == DT_IOP_RETOUCH_BLUR)
+          if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_BLUR)
           {
-            const int index = rt_get_index_from_formid(p, formid);
             if(index >= 0)
             {
               const int overlap = ceilf(4 * (p->rt_forms[index].blur_radius * roi_in->scale / piece->iscale));
@@ -2366,10 +2454,12 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelp
             }
           }
           // heal and clone need both source and destination areas
-          if(algo == DT_IOP_RETOUCH_HEAL || algo == DT_IOP_RETOUCH_CLONE)
+          if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_HEAL
+             || p->rt_forms[index].algorithm == DT_IOP_RETOUCH_CLONE)
           {
             int dx = 0, dy = 0;
-            if(rt_masks_get_delta_to_destination(self, piece, roi_in, form, &dx, &dy))
+            if(rt_masks_get_delta_to_destination(self, piece, roi_in, form, &dx, &dy,
+                                                 p->rt_forms[index].distort_mode))
             {
               roiy = fminf(ft - dy, roiy);
               roix = fminf(fl - dx, roix);
@@ -2417,10 +2507,11 @@ static void rt_extend_roi_in_from_source_clones(struct dt_iop_module_t *self, st
         // just need the previous forms
         if(formid == formid_src) break;
 
-        const dt_iop_retouch_algo_type_t algo = rt_get_algorithm_from_formid(p, formid);
+        const int index = rt_get_index_from_formid(p, formid);
 
         // only process clone and heal
-        if(algo != DT_IOP_RETOUCH_HEAL && algo != DT_IOP_RETOUCH_CLONE)
+        if(p->rt_forms[index].algorithm != DT_IOP_RETOUCH_HEAL
+           && p->rt_forms[index].algorithm != DT_IOP_RETOUCH_CLONE)
         {
           continue;
         }
@@ -2440,7 +2531,8 @@ static void rt_extend_roi_in_from_source_clones(struct dt_iop_module_t *self, st
           // get the destination area
           int fl_dest, ft_dest;
           int dx = 0, dy = 0;
-          if(!rt_masks_get_delta_to_destination(self, piece, roi_in, form, &dx, &dy))
+          if(!rt_masks_get_delta_to_destination(self, piece, roi_in, form, &dx, &dy,
+                                                p->rt_forms[index].distort_mode))
           {
             continue;
           }
@@ -2499,9 +2591,10 @@ static void rt_extend_roi_in_for_clone(struct dt_iop_module_t *self, struct dt_d
       if(grpt)
       {
         const int formid = grpt->formid;
-        const dt_iop_retouch_algo_type_t algo = rt_get_algorithm_from_formid(p, formid);
+        const int index = rt_get_index_from_formid(p, formid);
 
-        if(algo != DT_IOP_RETOUCH_HEAL && algo != DT_IOP_RETOUCH_CLONE)
+        if(p->rt_forms[index].algorithm != DT_IOP_RETOUCH_HEAL
+           && p->rt_forms[index].algorithm != DT_IOP_RETOUCH_CLONE)
         {
           continue;
         }
@@ -3334,7 +3427,8 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
 
         if(algo != DT_IOP_RETOUCH_BLUR && algo != DT_IOP_RETOUCH_FILL)
         {
-          if(!rt_masks_get_delta_to_destination(self, piece, roi_layer, form, &dx, &dy))
+          if(!rt_masks_get_delta_to_destination(self, piece, roi_layer, form, &dx, &dy,
+                                                p->rt_forms[index].distort_mode))
           {
             if(mask) dt_free_align(mask);
             continue;
@@ -4135,7 +4229,8 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
         const dt_iop_retouch_algo_type_t algo = p->rt_forms[index].algorithm;
         if(algo != DT_IOP_RETOUCH_BLUR && algo != DT_IOP_RETOUCH_FILL)
         {
-          if(!rt_masks_get_delta_to_destination(self, piece, roi_layer, form, &dx, &dy))
+          if(!rt_masks_get_delta_to_destination(self, piece, roi_layer, form, &dx, &dy,
+                                                p->rt_forms[index].distort_mode))
           {
             if(mask) dt_free_align(mask);
             continue;
