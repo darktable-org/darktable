@@ -3582,7 +3582,7 @@ void gui_init(dt_iop_module_t *self)
   g->gui_sizes_inited = FALSE;
 
   // don't make the area square to safe some vertical space -- it's not interactive anyway
-  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
+  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_BUTTON_PRESS_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                                                  | GDK_POINTER_MOTION_MASK);
