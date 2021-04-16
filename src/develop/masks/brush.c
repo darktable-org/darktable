@@ -2031,6 +2031,37 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx, 
   }
   else if(gui->form_dragging || gui->source_dragging)
   {
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
+    float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
+    dt_dev_distort_backtransform(darktable.develop, pts, 1);
+
+    // we move all points
+    if(gui->form_dragging)
+    {
+      dt_masks_point_path_t *point = (dt_masks_point_path_t *)(form->points)->data;
+      const float dx = pts[0] / darktable.develop->preview_pipe->iwidth - point->corner[0];
+      const float dy = pts[1] / darktable.develop->preview_pipe->iheight - point->corner[1];
+      for(GList *points = form->points; points; points = g_list_next(points))
+      {
+        point = (dt_masks_point_path_t *)points->data;
+        point->corner[0] += dx;
+        point->corner[1] += dy;
+        point->ctrl1[0] += dx;
+        point->ctrl1[1] += dy;
+        point->ctrl2[0] += dx;
+        point->ctrl2[1] += dy;
+      }
+    }
+    else
+    {
+      form->source[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
+      form->source[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+    }
+
+    // we recreate the form points
+    dt_masks_gui_form_remove(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
   }
@@ -2134,16 +2165,6 @@ static void _brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_fo
   const int len = sizeof(dashed) / sizeof(dashed[0]);
 
   float dx = 0.0f, dy = 0.0f, dxs = 0.0f, dys = 0.0f;
-  if((gui->group_selected == index) && gui->form_dragging)
-  {
-    dx = gui->posx + gui->dx - gpt->points[2];
-    dy = gui->posy + gui->dy - gpt->points[3];
-  }
-  if((gui->group_selected == index) && gui->source_dragging)
-  {
-    dxs = gui->posx + gui->dx - gpt->source[2];
-    dys = gui->posy + gui->dy - gpt->source[3];
-  }
 
   // in creation mode
   if(gui->creation)
