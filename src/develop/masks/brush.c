@@ -612,7 +612,7 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
   // we store all points
   float dx = 0.0f, dy = 0.0f;
 
-  if(source && form->points)
+  if(source && form->points > 0 && transf_direction != DT_DEV_TRANSFORM_DIR_ALL)
   {
     dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)form->points->data;
     dx = (pt->corner[0] - form->source[0]) * wd;
@@ -863,6 +863,37 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
   }
 
   // and we transform them with all distorted modules
+  if(source && transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+  {
+    // we transform with all distortion that happen *before* the module
+    // so we have now the TARGET points in module input reference
+    if(dt_dev_distort_transform_plus(dev, pipe, iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL, *points, *points_count))
+    {
+      // now we move all the points by the shift
+      // so we have now the SOURCE points in module input reference
+      float pts[2] = { form->source[0] * wd, form->source[1] * ht };
+      if(!dt_dev_distort_transform_plus(dev, pipe, iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL, pts, 1)) goto fail;
+
+      dx = pts[0] - (*points)[0];
+      dy = pts[1] - (*points)[1];
+      for(int i = 0; i < *points_count; i++)
+      {
+        (*points)[i * 2] += dx;
+        (*points)[i * 2 + 1] += dy;
+      }
+
+      // we apply the rest of the distortions (those after the module)
+      // so we have now the SOURCE points in final image reference
+      if(!dt_dev_distort_transform_plus(dev, pipe, iop_order, DT_DEV_TRANSFORM_DIR_FORW_INCL, *points,
+                                        *points_count))
+        goto fail;
+    }
+
+    if(darktable.unmuted & DT_DEBUG_PERF)
+      dt_print(DT_DEBUG_MASKS, "[masks %s] path_points end took %0.04f sec\n", form->name, dt_get_wtime() - start2);
+
+    return 1;
+  }
   if(dt_dev_distort_transform_plus(dev, pipe, iop_order, transf_direction, *points, *points_count))
   {
     if(!border || dt_dev_distort_transform_plus(dev, pipe, iop_order, transf_direction, *border, *border_count))
@@ -875,6 +906,7 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
   }
 
   // if we failed, then free all and return
+fail:
   dt_free_align(*points);
   *points = NULL;
   *points_count = 0;
@@ -989,8 +1021,10 @@ static void _brush_get_distance(float x, float y, float as, dt_masks_form_gui_t 
 static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points, int *points_count,
                                     float **border, int *border_count, int source, const dt_iop_module_t *module)
 {
-  return _brush_get_pts_border(dev, form, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, dev->preview_pipe, points, points_count, border,
-                               border_count, NULL, NULL, source);
+  if(source && !module) return 0;
+  const double ioporder = (module) ? module->iop_order : 0.0f;
+  return _brush_get_pts_border(dev, form, ioporder, DT_DEV_TRANSFORM_DIR_ALL, dev->preview_pipe, points,
+                               points_count, border, border_count, NULL, NULL, source);
 }
 
 /** find relative position within a brush segment that is closest to the point given by coordinates x and y;
