@@ -880,14 +880,14 @@ static inline int isneutral(const dt_iop_ashift_data_t *data)
 }
 
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points, size_t points_count)
 {
   const dt_iop_ashift_data_t *const data = (dt_iop_ashift_data_t *)piece->data;
 
   // nothing to be done if parameters are set to neutral values
   if(isneutral(data)) return 1;
 
-  float homograph[3][3];
+  float DT_ALIGNED_ARRAY homograph[3][3];
   homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_FORWARD);
 
@@ -898,15 +898,14 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   const float cy = fullheight * data->ct;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(cx, cy, points_count) \
-  shared(points, homograph) \
-  schedule(static)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(cx, cy, points_count, points, homograph) \
+  schedule(static) if(points_count > 100) aligned(points, homograph:64)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    float pi[3] = { points[i], points[i + 1], 1.0f };
-    float po[3];
+    float DT_ALIGNED_PIXEL pi[3] = { points[i], points[i + 1], 1.0f };
+    float DT_ALIGNED_PIXEL po[3];
     mat3mulv(po, (float *)homograph, pi);
     points[i] = po[0] / po[2] - cx;
     points[i + 1] = po[1] / po[2] - cy;
@@ -924,7 +923,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   // nothing to be done if parameters are set to neutral values
   if(isneutral(data)) return 1;
 
-  float ihomograph[3][3];
+  float DT_ALIGNED_ARRAY ihomograph[3][3];
   homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
@@ -935,15 +934,14 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   const float cy = fullheight * data->ct;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(cx, cy) \
-  shared(points, points_count, ihomograph) \
-  schedule(static)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(cx, cy, points, points_count, ihomograph) \
+  schedule(static) if(points_count > 100) aligned(ihomograph, points:64)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    float pi[3] = { points[i] + cx, points[i + 1] + cy, 1.0f };
-    float po[3];
+    float DT_ALIGNED_PIXEL pi[3] = { points[i] + cx, points[i + 1] + cy, 1.0f };
+    float DT_ALIGNED_PIXEL po[3];
     mat3mulv(po, (float *)ihomograph, pi);
     points[i] = po[0] / po[2];
     points[i + 1] = po[1] / po[2];

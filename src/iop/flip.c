@@ -189,7 +189,7 @@ static void backtransform(const int32_t *x, int32_t *o, const dt_image_orientati
   }
 }
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points, size_t points_count)
 {
   // if (!self->enabled) return 2;
   const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
@@ -197,6 +197,11 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   // nothing to be done if parameters are set to neutral values (no flip or swap)
   if (d->orientation == 0) return 1;
 
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(points_count, points, d, piece) \
+    schedule(static) if(points_count > 100) aligned(points:64)
+#endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float x = points[i];
@@ -215,7 +220,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   return 1;
 }
-int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points,
                           size_t points_count)
 {
   // if (!self->enabled) return 2;
@@ -224,6 +229,11 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   // nothing to be done if parameters are set to neutral values (no flip or swap)
   if (d->orientation == 0) return 1;
 
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(points_count, points, d, piece) \
+    schedule(static) if(points_count > 100) aligned(points:64)
+#endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float x, y;
