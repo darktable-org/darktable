@@ -314,7 +314,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
         for(size_t i = 0; i < buffsize; i++) mask[i] = (1.0 - raster_mask[i]) * opacity;
       else
       {
-        dt_iop_image_scaled_copy(mask,raster_mask,opacity,owidth,oheight,1); //mask[k] = opacity * raster_mask[k];
+        dt_iop_image_scaled_copy(mask, raster_mask, opacity, owidth, oheight, 1); //mask[k] = opacity * raster_mask[k];
       }
       if(free_mask) dt_free_align(raster_mask);
     }
@@ -691,7 +691,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
         for(size_t i = 0; i < buffsize; i++) mask[i] = (1.0 - raster_mask[i]) * opacity;
       else
       {
-        dt_iop_image_scaled_copy(mask,raster_mask,opacity,owidth,oheight,1); //mask[k] = opacity * raster_mask[k];
+        dt_iop_image_scaled_copy(mask, raster_mask,opacity, owidth, oheight, 1); //mask[k] = opacity * raster_mask[k];
       }
       if(free_mask) dt_free_align(raster_mask);
     }
@@ -699,7 +699,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     {
       // fallback for when the raster mask couldn't be applied
       const float value = d->raster_mask_invert ? 0.0 : 1.0;
-      dt_iop_image_fill(mask,value,owidth,oheight,1); //mask[k] = value;
+      dt_iop_image_fill(mask, value, owidth, oheight, 1); //mask[k] = value;
     }
 
     err = dt_opencl_write_host_to_device(devid, mask, dev_mask_1, owidth, oheight, sizeof(float));
