@@ -1193,6 +1193,49 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module, float pzx
   }
   else if(gui->form_rotating)
   {
+    dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
+
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float x = pzx * wd;
+    const float y = pzy * ht;
+
+    // we need the reference point
+    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+    if(!gpt) return 0;
+
+    // ellipse center
+    const float xref = gpt->points[0];
+    const float yref = gpt->points[1];
+
+    const float pts[8] = { xref, yref, x, y, 0, 0, gui->dx, gui->dy };
+
+    const float dv = atan2f(pts[3] - pts[1], pts[2] - pts[0]) - atan2(-(pts[7] - pts[5]), -(pts[6] - pts[4]));
+
+    float pts2[8] = { xref, yref, x, y, xref + 10.0f, yref, xref, yref + 10.0f };
+    dt_dev_distort_backtransform(darktable.develop, pts2, 4);
+
+    float check_angle = atan2f(pts2[7] - pts2[1], pts2[6] - pts2[0]) - atan2(pts2[5] - pts2[1], pts2[4] - pts2[0]);
+    // Normalize to the range -180 to 180 degrees
+    check_angle = atan2f(sinf(check_angle), cosf(check_angle));
+    if(check_angle < 0)
+      ellipse->rotation -= dv / M_PI * 180.0f;
+    else
+      ellipse->rotation += dv / M_PI * 180.0f;
+
+    if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
+      dt_conf_set_float("plugins/darkroom/spots/ellipse_rotation", ellipse->rotation);
+    else
+      dt_conf_set_float("plugins/darkroom/masks/ellipse/rotation", ellipse->rotation);
+
+    // we recreate the form points
+    dt_masks_gui_form_remove(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
+
+    // we remap dx, dy to the right values, as it will be used in next movements
+    gui->dx = xref - gui->posx;
+    gui->dy = yref - gui->posy;
+
     dt_control_queue_redraw_center();
     return 1;
   }
@@ -1391,12 +1434,6 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   {
     xrefs = gpt->source[0];
     yrefs = gpt->source[1];
-  }
-  if((gui->group_selected == index) && gui->form_rotating)
-  {
-    const float v = atan2f(gui->posy - yref, gui->posx - xref) - atan2(-gui->dy, -gui->dx);
-    sinv = sinf(v);
-    cosv = cosf(v);
   }
 
   float x, y;
