@@ -26,17 +26,13 @@
 #include "develop/openmp_maths.h"
 
 static inline void _ellipse_point_transform(const float xref, const float yref, const float x, const float y,
-                                            const float sinr, const float cosr, const float scalea,
-                                            const float scaleb, const float sinv, const float cosv,
-                                            float *xnew, float *ynew)
+                                            const float sinr, const float cosr, float *xnew, float *ynew)
 {
-  float xtmp = (scaleb * sinr * sinr + scalea * cosr * cosr) * (x - xref)
-               + (scalea * cosr * sinr - scaleb * cosr * sinr) * (y - yref);
-  float ytmp = (scalea * cosr * sinr - scaleb * cosr * sinr) * (x - xref)
-               + (scalea * sinr * sinr + scaleb * cosr * cosr) * (y - yref);
+  float xtmp = (sinr * sinr + cosr * cosr) * (x - xref) + (cosr * sinr - cosr * sinr) * (y - yref);
+  float ytmp = (cosr * sinr - cosr * sinr) * (x - xref) + (sinr * sinr + cosr * cosr) * (y - yref);
 
-  *xnew = xref + cosv * xtmp - sinv * ytmp;
-  *ynew = yref + sinv * xtmp + cosv * ytmp;
+  *xnew = xref + xtmp;
+  *ynew = yref + ytmp;
 }
 
 // Jordan's point in polygon test
@@ -181,8 +177,7 @@ static void _ellipse_get_distance(float x, float y, float as, dt_masks_form_gui_
 }
 
 static void _ellipse_draw_shape(cairo_t *cr, double *dashed, const int selected, const float zoom_scale,
-                                const float xref, const float yref, const float sinv, const float cosv,
-                                const float scalea, const float scaleb, float *points, const int points_count)
+                                const float xref, const float yref, float *points, const int points_count)
 {
   if(points_count <= 10) return;
 
@@ -200,15 +195,14 @@ static void _ellipse_draw_shape(cairo_t *cr, double *dashed, const int selected,
     cairo_set_line_width(cr, 3.0 / zoom_scale);
   dt_draw_set_color_overlay(cr, 0.3, 0.8);
 
-  _ellipse_point_transform(xref, yref, points[10], points[11], sinr, cosr, scalea, scaleb, sinv, cosv, &x, &y);
+  _ellipse_point_transform(xref, yref, points[10], points[11], sinr, cosr, &x, &y);
   cairo_move_to(cr, x, y);
   for(int i = 6; i < points_count; i++)
   {
-    _ellipse_point_transform(xref, yref, points[i * 2], points[i * 2 + 1], sinr, cosr, scalea, scaleb, sinv, cosv,
-                             &x, &y);
+    _ellipse_point_transform(xref, yref, points[i * 2], points[i * 2 + 1], sinr, cosr, &x, &y);
     cairo_line_to(cr, x, y);
   }
-  _ellipse_point_transform(xref, yref, points[10], points[11], sinr, cosr, scalea, scaleb, sinv, cosv, &x, &y);
+  _ellipse_point_transform(xref, yref, points[10], points[11], sinr, cosr, &x, &y);
   cairo_line_to(cr, x, y);
   cairo_stroke_preserve(cr);
   if(selected)
@@ -220,8 +214,7 @@ static void _ellipse_draw_shape(cairo_t *cr, double *dashed, const int selected,
 }
 
 static void _ellipse_draw_border(cairo_t *cr, double *dashed, const float len, const int selected,
-                                 const float zoom_scale, const float xref, const float yref, const float sinv,
-                                 const float cosv, const float scaleab, const float scalebb, float *border,
+                                 const float zoom_scale, const float xref, const float yref, float *border,
                                  const int border_count)
 {
   if(border_count <= 10) return;
@@ -240,15 +233,14 @@ static void _ellipse_draw_border(cairo_t *cr, double *dashed, const float len, c
     cairo_set_line_width(cr, 1.0 / zoom_scale);
   dt_draw_set_color_overlay(cr, 0.3, 0.8);
 
-  _ellipse_point_transform(xref, yref, border[10], border[11], sinr, cosr, scaleab, scalebb, sinv, cosv, &x, &y);
+  _ellipse_point_transform(xref, yref, border[10], border[11], sinr, cosr, &x, &y);
   cairo_move_to(cr, x, y);
   for(int i = 6; i < border_count; i++)
   {
-    _ellipse_point_transform(xref, yref, border[i * 2], border[i * 2 + 1], sinr, cosr, scaleab, scalebb, sinv,
-                             cosv, &x, &y);
+    _ellipse_point_transform(xref, yref, border[i * 2], border[i * 2 + 1], sinr, cosr, &x, &y);
     cairo_line_to(cr, x, y);
   }
-  _ellipse_point_transform(xref, yref, border[10], border[11], sinr, cosr, scaleab, scalebb, sinv, cosv, &x, &y);
+  _ellipse_point_transform(xref, yref, border[10], border[11], sinr, cosr, &x, &y);
   cairo_line_to(cr, x, y);
 
   cairo_stroke_preserve(cr);
@@ -1320,8 +1312,6 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
 
   float xref = 0.0f, yref = 0.0f;
   float xrefs = 0.0f, yrefs = 0.0f;
-  float sinv = 0.0f, cosv = 1.0f;
-  float scalea = 1.0f, scaleb = 1.0f, scaleab = 1.0f, scalebb = 1.0f;
 
   // add a preview when creating an ellipse
   // in creation mode
@@ -1394,16 +1384,14 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
         xref = points[0];
         yref = points[1];
 
-        _ellipse_draw_shape(cr, dashed, 0, zoom_scale, xref, yref, sinv, cosv, scalea, scaleb, points,
-                            points_count);
+        _ellipse_draw_shape(cr, dashed, 0, zoom_scale, xref, yref, points, points_count);
       }
       if(draw && border_count >= 2)
       {
         xref = border[0];
         yref = border[1];
 
-        _ellipse_draw_border(cr, dashed, len, 0, zoom_scale, xref, yref, sinv, cosv, scaleab, scalebb, border,
-                             border_count);
+        _ellipse_draw_border(cr, dashed, len, 0, zoom_scale, xref, yref, border, border_count);
       }
 
       // draw a cross where the source will be created
@@ -1439,15 +1427,13 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   float x, y;
 
   // draw shape
-  _ellipse_draw_shape(cr, dashed, 0, zoom_scale, xref, yref, sinv, cosv, scalea, scaleb, gpt->points,
-                      gpt->points_count);
+  _ellipse_draw_shape(cr, dashed, 0, zoom_scale, xref, yref, gpt->points, gpt->points_count);
 
   // draw anchor points
   if(TRUE)
   {
     cairo_set_dash(cr, dashed, 0, 0);
-    float anchor_size; // = (gui->form_dragging || gui->form_selected) ? 7.0f / zoom_scale : 5.0f /
-                       // zoom_scale;
+    float anchor_size;
 
     for(int i = 1; i < 5; i++)
     {
@@ -1458,8 +1444,7 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       else
         anchor_size = 5.0f / zoom_scale;
 
-      _ellipse_point_transform(xref, yref, gpt->points[i * 2], gpt->points[i * 2 + 1], sinr, cosr, scalea, scaleb,
-                               sinv, cosv, &x, &y);
+      _ellipse_point_transform(xref, yref, gpt->points[i * 2], gpt->points[i * 2 + 1], sinr, cosr, &x, &y);
       cairo_rectangle(cr, x - (anchor_size * 0.5), y - (anchor_size * 0.5), anchor_size, anchor_size);
       cairo_fill_preserve(cr);
       if((gui->group_selected == index) && (i == gui->point_dragging || i == gui->point_selected))
@@ -1476,8 +1461,7 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   // draw border
   if(gui->group_selected == index)
   {
-    _ellipse_draw_border(cr, dashed, len, 0, zoom_scale, xref, yref, sinv, cosv, scaleab, scalebb, gpt->border,
-                         gpt->border_count);
+    _ellipse_draw_border(cr, dashed, len, 0, zoom_scale, xref, yref, gpt->border, gpt->border_count);
   }
 
   // draw the source if any
@@ -1588,17 +1572,14 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     else
       cairo_set_line_width(cr, 1.5 / zoom_scale);
     dt_draw_set_color_overlay(cr, 0.3, 0.8);
-    _ellipse_point_transform(xrefs, yrefs, gpt->source[10], gpt->source[11], sinr, cosr, scalea, scaleb, sinv,
-                             cosv, &x, &y);
+    _ellipse_point_transform(xrefs, yrefs, gpt->source[10], gpt->source[11], sinr, cosr, &x, &y);
     cairo_move_to(cr, x, y);
     for(int i = 6; i < gpt->source_count; i++)
     {
-      _ellipse_point_transform(xrefs, yrefs, gpt->source[i * 2], gpt->source[i * 2 + 1], sinr, cosr, scalea,
-                               scaleb, sinv, cosv, &x, &y);
+      _ellipse_point_transform(xrefs, yrefs, gpt->source[i * 2], gpt->source[i * 2 + 1], sinr, cosr, &x, &y);
       cairo_line_to(cr, x, y);
     }
-    _ellipse_point_transform(xrefs, yrefs, gpt->source[10], gpt->source[11], sinr, cosr, scalea, scaleb, sinv,
-                             cosv, &x, &y);
+    _ellipse_point_transform(xrefs, yrefs, gpt->source[10], gpt->source[11], sinr, cosr, &x, &y);
     cairo_line_to(cr, x, y);
     cairo_stroke_preserve(cr);
     if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
