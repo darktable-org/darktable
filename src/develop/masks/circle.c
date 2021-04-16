@@ -444,7 +444,6 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
 {
   if(gui->form_dragging || gui->source_dragging)
   {
-
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
