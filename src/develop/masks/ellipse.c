@@ -266,11 +266,9 @@ static void _ellipse_draw_border(cairo_t *cr, double *dashed, const float len, c
   cairo_stroke(cr);
 }
 
-static int _ellipse_get_points(dt_develop_t *dev, float xx, float yy, float radius_a, float radius_b,
-                               float rotation, float **points, int *points_count)
+static float *_points_to_transform(float xx, float yy, float radius_a, float radius_b, float rotation, float wd,
+                                   float ht, int *points_count)
 {
-  const float wd = dev->preview_pipe->iwidth;
-  const float ht = dev->preview_pipe->iheight;
   const float v1 = (rotation / 180.0f) * M_PI;
   const float v2 = (rotation - 90.0f) / 180.0f * M_PI;
   float a, b, v;
@@ -301,8 +299,8 @@ static int _ellipse_get_points(dt_develop_t *dev, float xx, float yy, float radi
                   * (1.0f + (3.0f * lambda * lambda) / (10.0f + sqrtf(4.0f - 3.0f * lambda * lambda)))) / n));
 
   // buffer allocations
-  *points = dt_alloc_align_float((size_t)2 * (l + 5));
-  if(*points == NULL)
+  float *const restrict points = dt_alloc_align_float((size_t)2 * (l + 5));
+  if(!points)
   {
     *points_count = 0;
     return 0;
@@ -310,29 +308,89 @@ static int _ellipse_get_points(dt_develop_t *dev, float xx, float yy, float radi
   *points_count = l + 5;
 
   // now we set the points
-  const float x = (*points)[0] = xx * wd;
-  const float y = (*points)[1] = yy * ht;
+  const float x = points[0] = xx * wd;
+  const float y = points[1] = yy * ht;
 
-  (*points)[2] = x + a * cosf(v);
-  (*points)[3] = y + a * sinf(v);
-  (*points)[4] = x - a * cosf(v);
-  (*points)[5] = y - a * sinf(v);
+  points[2] = x + a * cosf(v);
+  points[3] = y + a * sinf(v);
+  points[4] = x - a * cosf(v);
+  points[5] = y - a * sinf(v);
 
-  (*points)[6] = x + b * cosf(v - M_PI / 2.0f);
-  (*points)[7] = y + b * sinf(v - M_PI / 2.0f);
-  (*points)[8] = x - b * cosf(v - M_PI / 2.0f);
-  (*points)[9] = y - b * sinf(v - M_PI / 2.0f);
+  points[6] = x + b * cosf(v - M_PI / 2.0f);
+  points[7] = y + b * sinf(v - M_PI / 2.0f);
+  points[8] = x - b * cosf(v - M_PI / 2.0f);
+  points[9] = y - b * sinf(v - M_PI / 2.0f);
 
 
   for(int i = 5; i < l + 5; i++)
   {
     const float alpha = (i - 5) * 2.0 * M_PI / (float)l;
-    (*points)[i * 2] = x + a * cosf(alpha) * cosv - b * sinf(alpha) * sinv;
-    (*points)[i * 2 + 1] = y + a * cosf(alpha) * sinv + b * sinf(alpha) * cosv;
+    points[i * 2] = x + a * cosf(alpha) * cosv - b * sinf(alpha) * sinv;
+    points[i * 2 + 1] = y + a * cosf(alpha) * sinv + b * sinf(alpha) * cosv;
   }
 
+  return points;
+}
+
+static int _ellipse_get_points_source(dt_develop_t *dev, float xx, float yy, float xs, float ys, float radius_a,
+                                      float radius_b, float rotation, float **points, int *points_count,
+                                      const dt_iop_module_t *module)
+{
+  const float wd = dev->preview_pipe->iwidth;
+  const float ht = dev->preview_pipe->iheight;
+
+  // compute the points of the target (center and circumference of circle)
+  // we get the point in RAW image reference
+  *points = _points_to_transform(xx, yy, radius_a, radius_b, rotation, wd, ht, points_count);
+  if(!*points) return 0;
+
+  // we transform with all distortion that happen *before* the module
+  // so we have now the TARGET points in module input reference
+  if(dt_dev_distort_transform_plus(dev, dev->preview_pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL,
+                                   *points, *points_count))
+  {
+    // now we move all the points by the shift
+    // so we have now the SOURCE points in module input reference
+    float pts[2] = { xs * wd, ys * ht };
+    if(dt_dev_distort_transform_plus(dev, dev->preview_pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL,
+                                     pts, 1))
+    {
+      const float dx = pts[0] - (*points)[0];
+      const float dy = pts[1] - (*points)[1];
+      (*points)[0] = pts[0];
+      (*points)[1] = pts[1];
+      for(int i = 5; i < *points_count; i++)
+      {
+        (*points)[i * 2] += dx;
+        (*points)[i * 2 + 1] += dy;
+      }
+
+      // we apply the rest of the distortions (those after the module)
+      // so we have now the SOURCE points in final image reference
+      if(dt_dev_distort_transform_plus(dev, dev->preview_pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_FORW_INCL,
+                                       *points, *points_count))
+        return 1;
+    }
+  }
+
+  // if we failed, then free all and return
+  dt_free_align(*points);
+  *points = NULL;
+  *points_count = 0;
+  return 0;
+}
+
+static int _ellipse_get_points(dt_develop_t *dev, float xx, float yy, float radius_a, float radius_b,
+                               float rotation, float **points, int *points_count)
+{
+  const float wd = dev->preview_pipe->iwidth;
+  const float ht = dev->preview_pipe->iheight;
+
+  *points = _points_to_transform(xx, yy, radius_a, radius_b, rotation, wd, ht, points_count);
+  if(!*points) return 0;
+
   // and we transform them with all distorted modules
-  if(dt_dev_distort_transform(dev, *points, l + 5)) return 1;
+  if(dt_dev_distort_transform(dev, *points, *points_count)) return 1;
 
   // if we failed, then free all and return
   dt_free_align(*points);
@@ -347,23 +405,28 @@ static int _ellipse_get_points_border(dt_develop_t *dev, struct dt_masks_form_t 
 {
   dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
   float x = 0.0f, y = 0.0f, a = 0.0f, b = 0.0f;
-  if(source)
-    x = form->source[0], y = form->source[1];
-  else
-    x = ellipse->center[0], y = ellipse->center[1];
+  x = ellipse->center[0], y = ellipse->center[1];
   a = ellipse->radius[0], b = ellipse->radius[1];
-  if(_ellipse_get_points(dev, x, y, a, b, ellipse->rotation, points, points_count))
+
+  if(source)
   {
-    if(border)
+    float xs = form->source[0], ys = form->source[1];
+    return _ellipse_get_points_source(dev, x, y, xs, ys, a, b, ellipse->rotation, points, points_count, module);
+  }
+  else
+  {
+    if(_ellipse_get_points(dev, x, y, a, b, ellipse->rotation, points, points_count))
     {
-      const int prop = ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL;
-      return _ellipse_get_points(dev, x, y,
-                                 (prop ? a * (1.0f + ellipse->border) : a + ellipse->border),
-                                 (prop ? b * (1.0f + ellipse->border) : b + ellipse->border),
-                                 ellipse->rotation, border, border_count);
+      if(border)
+      {
+        const int prop = ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL;
+        return _ellipse_get_points(dev, x, y, (prop ? a * (1.0f + ellipse->border) : a + ellipse->border),
+                                   (prop ? b * (1.0f + ellipse->border) : b + ellipse->border), ellipse->rotation,
+                                   border, border_count);
+      }
+      else
+        return 1;
     }
-    else
-      return 1;
   }
   return 0;
 }
