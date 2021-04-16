@@ -1791,7 +1791,6 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
   }
   else if(gui->form_dragging || gui->source_dragging)
   {
-    // we get point0 new values
     const float wd = darktable.develop->preview_pipe->backbuf_width;
     const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
@@ -1923,18 +1922,17 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
   if(!gui) return;
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
-  float dx = 0, dy = 0, dxs = 0, dys = 0;
 
   // draw path
   if(gpt->points_count > nb * 3 + 6)
   {
     cairo_set_dash(cr, dashed, 0, 0);
 
-    cairo_move_to(cr, gpt->points[nb * 6] + dx, gpt->points[nb * 6 + 1] + dy);
+    cairo_move_to(cr, gpt->points[nb * 6], gpt->points[nb * 6 + 1]);
     int seg = 1, seg2 = 0;
     for(int i = nb * 3; i < gpt->points_count; i++)
     {
-      cairo_line_to(cr, gpt->points[i * 2] + dx, gpt->points[i * 2 + 1] + dy);
+      cairo_line_to(cr, gpt->points[i * 2], gpt->points[i * 2 + 1]);
       // we decide to highlight the form segment by segment
       if(gpt->points[i * 2 + 1] == gpt->points[seg * 6 + 3] && gpt->points[i * 2] == gpt->points[seg * 6 + 2])
       {
@@ -1956,7 +1954,7 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
         // and we update the segment number
         seg = (seg + 1) % nb;
         seg2++;
-        cairo_move_to(cr, gpt->points[i * 2] + dx, gpt->points[i * 2 + 1] + dy);
+        cairo_move_to(cr, gpt->points[i * 2], gpt->points[i * 2 + 1]);
       }
     }
   }
@@ -1976,8 +1974,8 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
         anchor_size = 5.0f / zoom_scale;
       }
       dt_draw_set_color_overlay(cr, 0.8, 0.8);
-      cairo_rectangle(cr, gpt->points[k * 6 + 2] - (anchor_size * 0.5) + dx,
-                      gpt->points[k * 6 + 3] - (anchor_size * 0.5) + dy, anchor_size, anchor_size);
+      cairo_rectangle(cr, gpt->points[k * 6 + 2] - (anchor_size * 0.5),
+                      gpt->points[k * 6 + 3] - (anchor_size * 0.5), anchor_size, anchor_size);
       cairo_fill_preserve(cr);
 
       if((gui->group_selected == index) && (k == gui->point_dragging || k == gui->point_selected))
@@ -1997,17 +1995,16 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
   {
     const int k = gui->point_edited;
     // uncomment this part if you want to see "real" control points
-    /*cairo_move_to(cr, gui->points[k*6+2]+dx,gui->points[k*6+3]+dy);
-    cairo_line_to(cr, gui->points[k*6]+dx,gui->points[k*6+1]+dy);
+    /*cairo_move_to(cr, gui->points[k*6+2],gui->points[k*6+3]);
+    cairo_line_to(cr, gui->points[k*6],gui->points[k*6+1]);
     cairo_stroke(cr);
-    cairo_move_to(cr, gui->points[k*6+2]+dx,gui->points[k*6+3]+dy);
-    cairo_line_to(cr, gui->points[k*6+4]+dx,gui->points[k*6+5]+dy);
+    cairo_move_to(cr, gui->points[k*6+2],gui->points[k*6+3]);
+    cairo_line_to(cr, gui->points[k*6+4],gui->points[k*6+5]);
     cairo_stroke(cr);*/
     int ffx = 0, ffy = 0;
-    _path_ctrl2_to_feather(gpt->points[k * 6 + 2] + dx, gpt->points[k * 6 + 3] + dy,
-                           gpt->points[k * 6 + 4] + dx, gpt->points[k * 6 + 5] + dy, &ffx, &ffy,
-                           gpt->clockwise);
-    cairo_move_to(cr, gpt->points[k * 6 + 2] + dx, gpt->points[k * 6 + 3] + dy);
+    _path_ctrl2_to_feather(gpt->points[k * 6 + 2], gpt->points[k * 6 + 3], gpt->points[k * 6 + 4],
+                           gpt->points[k * 6 + 5], &ffx, &ffy, gpt->clockwise);
+    cairo_move_to(cr, gpt->points[k * 6 + 2], gpt->points[k * 6 + 3]);
     cairo_line_to(cr, ffx, ffy);
     cairo_set_line_width(cr, 1.5 / zoom_scale);
     dt_draw_set_color_overlay(cr, 0.3, 0.8);
@@ -2042,11 +2039,11 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
       }
       if(dep)
       {
-        cairo_move_to(cr, gpt->border[i * 2] + dx, gpt->border[i * 2 + 1] + dy);
+        cairo_move_to(cr, gpt->border[i * 2], gpt->border[i * 2 + 1]);
         dep = 0;
       }
       else
-        cairo_line_to(cr, gpt->border[i * 2] + dx, gpt->border[i * 2 + 1] + dy);
+        cairo_line_to(cr, gpt->border[i * 2], gpt->border[i * 2 + 1]);
     }
     // we execute the drawing
     if(gui->border_selected)
@@ -2077,8 +2074,8 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
         anchor_size = 5.0f / zoom_scale;
       }
       dt_draw_set_color_overlay(cr, 0.8, 0.8);
-      cairo_rectangle(cr, gpt->border[k * 6] - (anchor_size * 0.5) + dx,
-                      gpt->border[k * 6 + 1] - (anchor_size * 0.5) + dy, anchor_size, anchor_size);
+      cairo_rectangle(cr, gpt->border[k * 6] - (anchor_size * 0.5), gpt->border[k * 6 + 1] - (anchor_size * 0.5),
+                      anchor_size, anchor_size);
       cairo_fill_preserve(cr);
 
       if(gui->point_border_selected == k)
@@ -2098,8 +2095,8 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
     if((k * 6 + 2) >= 0)
     {
       float x = 0.f, y = 0.f;
-      dt_masks_calculate_source_pos_value(gui, DT_MASKS_PATH, gpt->points[2] + dx, gpt->points[3] + dy,
-                                          gpt->points[k * 6 + 2] + dx, gpt->points[k * 6 + 3] + dy, &x, &y, TRUE);
+      dt_masks_calculate_source_pos_value(gui, DT_MASKS_PATH, gpt->points[2], gpt->points[3],
+                                          gpt->points[k * 6 + 2], gpt->points[k * 6 + 3], &x, &y, TRUE);
       dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
     }
     else
@@ -2126,8 +2123,8 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
   if(!gui->creation && gpt->source_count > nb * 3 + 6)
   {
     // we draw the line between source and dest
-    cairo_move_to(cr, gpt->source[2] + dxs, gpt->source[3] + dys);
-    cairo_line_to(cr, gpt->points[2] + dx, gpt->points[3] + dy);
+    cairo_move_to(cr, gpt->source[2], gpt->source[3]);
+    cairo_line_to(cr, gpt->points[2], gpt->points[3]);
     cairo_set_dash(cr, dashed, 0, 0);
     if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
       cairo_set_line_width(cr, 2.5 / zoom_scale);
@@ -2149,10 +2146,9 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
     else
       cairo_set_line_width(cr, 1.5 / zoom_scale);
     dt_draw_set_color_overlay(cr, 0.3, 0.8);
-    cairo_move_to(cr, gpt->source[nb * 6] + dxs, gpt->source[nb * 6 + 1] + dys);
-    for(int i = nb * 3; i < gpt->source_count; i++)
-      cairo_line_to(cr, gpt->source[i * 2] + dxs, gpt->source[i * 2 + 1] + dys);
-    cairo_line_to(cr, gpt->source[nb * 6] + dxs, gpt->source[nb * 6 + 1] + dys);
+    cairo_move_to(cr, gpt->source[nb * 6], gpt->source[nb * 6 + 1]);
+    for(int i = nb * 3; i < gpt->source_count; i++) cairo_line_to(cr, gpt->source[i * 2], gpt->source[i * 2 + 1]);
+    cairo_line_to(cr, gpt->source[nb * 6], gpt->source[nb * 6 + 1]);
     cairo_stroke_preserve(cr);
     if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
       cairo_set_line_width(cr, 1.0 / zoom_scale);
