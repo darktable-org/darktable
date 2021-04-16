@@ -211,7 +211,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points, size_t points_count)
 {
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
 
@@ -224,9 +224,9 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   if (border_size_l == 0 && border_size_t == 0) return 1;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
+#pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(points, points_count, border_size_l, border_size_t)  \
-  schedule(static) if(points_count > 100)
+  schedule(static) if(points_count > 100) aligned(points:64)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
@@ -236,7 +236,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   return 1;
 }
-int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points,
                           size_t points_count)
 {
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
@@ -250,9 +250,9 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   if (border_size_l == 0 && border_size_t == 0) return 1;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
+#pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(points, points_count, border_size_l, border_size_t)  \
-  schedule(static) if(points_count > 100)
+  schedule(static) if(points_count > 100) aligned(points:64)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {

@@ -124,6 +124,9 @@ fastlog (float x)
 
 // multiply 3x3 matrix with 3x1 vector
 // dest needs to be different from v
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline void mat3mulv(float *const __restrict__ dest, const float *const mat, const float *const __restrict__ v)
 {
   for(int k = 0; k < 3; k++)
@@ -138,6 +141,9 @@ static inline void mat3mulv(float *const __restrict__ dest, const float *const m
 // multiply two 3x3 matrices
 // dest needs to be different from m1 and m2
 // dest = m1 * m2 in this order
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline void mat3mul(float *const __restrict__ dest, const float *const __restrict__ m1, const float *const __restrict__ m2)
 {
   for(int k = 0; k < 3; k++)
@@ -152,12 +158,18 @@ static inline void mat3mul(float *const __restrict__ dest, const float *const __
   }
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline void mul_mat_vec_2(const float *m, const float *p, float *o)
 {
   o[0] = p[0] * m[0] + p[1] * m[1];
   o[1] = p[0] * m[2] + p[1] * m[3];
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline float dt_log2f(const float f)
 {
 #ifdef __GLIBC__
@@ -333,4 +345,3 @@ static inline __m128 sinf_fast_sse(__m128 t)
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
-

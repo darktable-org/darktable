@@ -97,6 +97,10 @@ const char *description(struct dt_iop_module_t *self)
                     "you should not touch values here !"));
 }
 
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static void transform(const dt_dev_pixelpipe_iop_t *const piece, const float scale, const float *const x,
                       float *o)
 {
@@ -107,6 +111,10 @@ static void transform(const dt_dev_pixelpipe_iop_t *const piece, const float sca
   mul_mat_vec_2(d->m, pi, o);
 }
 
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static void backtransform(const dt_dev_pixelpipe_iop_t *const piece, const float scale, const float *const x,
                           float *o)
 {
@@ -119,10 +127,15 @@ static void backtransform(const dt_dev_pixelpipe_iop_t *const piece, const float
   o[1] += d->ry * scale;
 }
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points, size_t points_count)
 {
   const float scale = piece->buf_in.scale / piece->iscale;
 
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(points_count, points, scale, piece) \
+    schedule(static) if(points_count > 100) aligned(points:64)
+#endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];
@@ -139,11 +152,16 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   return 1;
 }
 
-int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points,
                           size_t points_count)
 {
   const float scale = piece->buf_in.scale / piece->iscale;
 
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(points_count, points, scale, piece) \
+    schedule(static) if(points_count > 100) aligned(points:64)
+#endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];
