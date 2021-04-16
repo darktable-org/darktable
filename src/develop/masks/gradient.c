@@ -25,15 +25,6 @@
 #include "develop/masks.h"
 #include "develop/openmp_maths.h"
 
-
-static inline void _gradient_point_transform(const float xref, const float yref, const float x, const float y,
-                                             const float sinv, const float cosv, float *xnew, float *ynew)
-{
-  *xnew = xref + cosv * (x - xref) - sinv * (y - yref);
-  *ynew = yref + sinv * (x - xref) + cosv * (y - yref);
-}
-
-
 static void _gradient_get_distance(float x, float y, float as, dt_masks_form_gui_t *gui, int index,
                                    int num_points, int *inside, int *inside_border, int *near, int *inside_source)
 {
@@ -758,8 +749,7 @@ end:
 
 static void _gradient_draw_lines(gboolean borders, cairo_t *cr, double *dashed, const float len,
                                  const gboolean selected, const float zoom_scale, float *pts_line,
-                                 int pts_line_count, const float xref, const float yref, const float dx,
-                                 const float dy, const float sinv, const float cosv)
+                                 int pts_line_count, const float xref, const float yref)
 {
   // safeguard in case of malformed arrays of points
   if(borders && pts_line_count <= 3) return;
@@ -781,7 +771,8 @@ static void _gradient_draw_lines(gboolean borders, cairo_t *cr, double *dashed, 
       continue;
     }
 
-    _gradient_point_transform(xref, yref, points[count * 2] + dx, points[count * 2 + 1] + dy, sinv, cosv, &x, &y);
+    x = points[count * 2];
+    y = points[count * 2 + 1];
 
     if(!_gradient_is_canonical(x, y, wd, ht))
     {
@@ -814,11 +805,9 @@ static void _gradient_draw_lines(gboolean borders, cairo_t *cr, double *dashed, 
     count++;
     for(; count < points_count && isnormal(points[count * 2]); count++)
     {
-      _gradient_point_transform(xref, yref, points[count * 2] + dx, points[count * 2 + 1] + dy, sinv, cosv, &x, &y);
+      if(!_gradient_is_canonical(points[count * 2], points[count * 2 + 1], wd, ht)) break;
 
-      if(!_gradient_is_canonical(x, y, wd, ht)) break;
-
-      cairo_line_to(cr, x, y);
+      cairo_line_to(cr, points[count * 2], points[count * 2 + 1]);
     }
     cairo_stroke_preserve(cr);
     if(selected)
@@ -831,18 +820,16 @@ static void _gradient_draw_lines(gboolean borders, cairo_t *cr, double *dashed, 
 }
 
 static void _gradient_draw_arrow(cairo_t *cr, double *dashed, const float len, const gboolean selected,
-                                 const gboolean border_selected, const float zoom_scale, float *pts, int pts_count,
-                                 const float dx, const float dy, const float sinv, const float cosv)
+                                 const gboolean border_selected, const float zoom_scale, float *pts, int pts_count)
 {
   if(pts_count < 3) return;
 
-  float anchor_x = 0.0f, anchor_y = 0.0f;
-  float pivot_start_x = 0.0f, pivot_start_y = 0.0f;
-  float pivot_end_x = 0.0f, pivot_end_y = 0.0f;
-
-  _gradient_point_transform(pts[0], pts[1], pts[0] + dx, pts[1] + dy, sinv, cosv, &anchor_x, &anchor_y);
-  _gradient_point_transform(pts[0], pts[1], pts[2] + dx, pts[3] + dy, sinv, cosv, &pivot_end_x, &pivot_end_y);
-  _gradient_point_transform(pts[0], pts[1], pts[4] + dx, pts[5] + dy, sinv, cosv, &pivot_start_x, &pivot_start_y);
+  float anchor_x = pts[0];
+  float anchor_y = pts[1];
+  float pivot_end_x = pts[2];
+  float pivot_end_y = pts[3];
+  float pivot_start_x = pts[4];
+  float pivot_start_y = pts[5];
 
   // draw anchor point
   {
@@ -956,13 +943,11 @@ static void _gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
 
     cairo_save(cr);
     // draw main line
-    _gradient_draw_lines(FALSE, cr, dashed, len, FALSE, zoom_scale, points, points_count, points[0], points[1],
-                         0.0, 0.0, 0.0, 1.0);
+    _gradient_draw_lines(FALSE, cr, dashed, len, FALSE, zoom_scale, points, points_count, points[0], points[1]);
     // draw borders
-    _gradient_draw_lines(TRUE, cr, dashed, len, FALSE, zoom_scale, border, border_count, points[0], points[1], 0.0,
-                         0.0, 0.0, 1.0);
+    _gradient_draw_lines(TRUE, cr, dashed, len, FALSE, zoom_scale, border, border_count, points[0], points[1]);
     // draw arrow
-    _gradient_draw_arrow(cr, dashed, len, FALSE, FALSE, zoom_scale, points, points_count, 0.0, 0.0, 0.0, 1.0);
+    _gradient_draw_arrow(cr, dashed, len, FALSE, FALSE, zoom_scale, points, points_count);
     cairo_restore(cr);
 
     if(points) dt_free_align(points);
@@ -971,99 +956,19 @@ static void _gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
   }
   const dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
-  float dx = 0.0f, dy = 0.0f, sinv = 0.0f, cosv = 1.0f;
   const float xref = gpt->points[0];
   const float yref = gpt->points[1];
 
   const gboolean selected = (gui->group_selected == index) && (gui->form_selected || gui->form_dragging);
   // draw main line
-  _gradient_draw_lines(FALSE, cr, dashed, len, selected, zoom_scale, gpt->points, gpt->points_count, xref, yref,
-                       dx, dy, sinv, cosv);
+  _gradient_draw_lines(FALSE, cr, dashed, len, selected, zoom_scale, gpt->points, gpt->points_count, xref, yref);
   // draw borders
   if(gui->group_selected == index)
     _gradient_draw_lines(TRUE, cr, dashed, len, gui->border_selected, zoom_scale, gpt->border, gpt->border_count,
-                         xref, yref, dx, dy, sinv, cosv);
+                         xref, yref);
 
   _gradient_draw_arrow(cr, dashed, len, selected, ((gui->group_selected == index) && (gui->border_selected)),
-                       zoom_scale, gpt->points, gpt->points_count, dx, dy, sinv, cosv);
-  float anchor_x = 0.0f, anchor_y = 0.0f;
-  float pivot_start_x = 0.0f, pivot_start_y = 0.0f;
-  float pivot_end_x = 0.0f, pivot_end_y = 0.0f;
-
-  _gradient_point_transform(xref, yref, gpt->points[0] + dx, gpt->points[1] + dy, sinv, cosv, &anchor_x, &anchor_y);
-  _gradient_point_transform(xref, yref, gpt->points[2] + dx, gpt->points[3] + dy, sinv, cosv, &pivot_end_x,
-                            &pivot_end_y);
-  _gradient_point_transform(xref, yref, gpt->points[4] + dx, gpt->points[5] + dy, sinv, cosv, &pivot_start_x,
-                            &pivot_start_y);
-
-  // draw anchor point
-  {
-    cairo_set_dash(cr, dashed, 0, 0);
-    const float anchor_size = (gui->form_dragging || gui->form_selected) ? 7.0f / zoom_scale : 5.0f / zoom_scale;
-    dt_draw_set_color_overlay(cr, 0.8, 0.8);
-    cairo_rectangle(cr, anchor_x - (anchor_size * 0.5), anchor_y - (anchor_size * 0.5), anchor_size, anchor_size);
-    cairo_fill_preserve(cr);
-
-    if((gui->group_selected == index) && (gui->form_dragging || gui->form_selected))
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
-    cairo_stroke(cr);
-  }
-
-
-  // draw pivot points
-  {
-    cairo_set_dash(cr, dashed, 0, 0);
-    if((gui->group_selected == index) && (gui->border_selected))
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
-
-    // from start to end
-    dt_draw_set_color_overlay(cr, 0.8, 0.8);
-    cairo_move_to(cr, pivot_start_x, pivot_start_y);
-    cairo_line_to(cr, pivot_end_x, pivot_end_y);
-    cairo_stroke(cr);
-
-    // start side of the gradient
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
-    cairo_arc(cr, pivot_start_x, pivot_start_y, 3.0f / zoom_scale, 0, 2.0f * M_PI);
-    cairo_fill_preserve(cr);
-    cairo_stroke(cr);
-
-    // end side of the gradient
-    cairo_arc(cr, pivot_end_x, pivot_end_y, 1.0f / zoom_scale, 0, 2.0f * M_PI);
-    cairo_fill_preserve(cr);
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
-    cairo_stroke(cr);
-
-    // draw arrow on the end of the gradient to clearly display the direction
-
-    // size & width of the arrow
-    const float arrow_angle = 0.25f;
-    const float arrow_length = 15.0f / zoom_scale;
-
-    const float a_dx = anchor_x - pivot_end_x;
-    const float a_dy = pivot_end_y - anchor_y;
-    const float angle = atan2f(a_dx, a_dy) - M_PI / 2.0f;
-
-    const float arrow_x1 = pivot_end_x + (arrow_length * cosf(angle + arrow_angle));
-    const float arrow_x2 = pivot_end_x + (arrow_length * cosf(angle - arrow_angle));
-    const float arrow_y1 = pivot_end_y + (arrow_length * sinf(angle + arrow_angle));
-    const float arrow_y2 = pivot_end_y + (arrow_length * sinf(angle - arrow_angle));
-
-    dt_draw_set_color_overlay(cr, 0.8, 0.8);
-    cairo_move_to(cr, pivot_end_x, pivot_end_y);
-    cairo_line_to(cr, arrow_x1, arrow_y1);
-    cairo_line_to(cr, arrow_x2, arrow_y2);
-    cairo_line_to(cr, pivot_end_x, pivot_end_y);
-    cairo_close_path(cr);
-    cairo_fill_preserve(cr);
-    cairo_stroke(cr);
-  }
+                       zoom_scale, gpt->points, gpt->points_count);
 }
 
 static int _gradient_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points, int *points_count,
