@@ -2610,12 +2610,14 @@ int dt_dev_distort_transform_locked(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe,
     }
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
-    if(piece->enabled && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL && module->iop_order >= iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL && module->iop_order > iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL && module->iop_order <= iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order)) &&
-      !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
+    if(piece->enabled
+       && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL && module->iop_order >= iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL && module->iop_order > iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL && module->iop_order <= iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order)) &&
+       !(dev->gui_module
+         && (dev->gui_module->operation_tags_filter() & module->operation_tags())))
     {
       module->distort_transform(module, piece, points, points_count);
     }
@@ -2630,10 +2632,14 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, c
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
   const int success = dt_dev_distort_transform_locked(dev,pipe,iop_order,transf_direction,points,points_count);
-  if (success && (dev->preview_downsampling != 1.0f) && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
-                        || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
-                        || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL))
-    for(size_t idx=0; idx < 2 * points_count; idx++) points[idx] *= dev->preview_downsampling;
+
+  if (success
+      && (dev->preview_downsampling != 1.0f)
+      && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
+          || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
+          || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL))
+    for(size_t idx=0; idx < 2 * points_count; idx++)
+      points[idx] *= dev->preview_downsampling;
 
   dt_pthread_mutex_unlock(&dev->history_mutex);
   return 1;
@@ -2653,12 +2659,14 @@ int dt_dev_distort_backtransform_locked(dt_develop_t *dev, dt_dev_pixelpipe_t *p
     }
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
-    if(piece->enabled && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL && module->iop_order >= iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL && module->iop_order > iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL && module->iop_order <= iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order)) &&
-      !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
+    if(piece->enabled
+       && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL && module->iop_order >= iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL && module->iop_order > iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL && module->iop_order <= iop_order)
+           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order))
+       && !(dev->gui_module
+            && (dev->gui_module->operation_tags_filter() & module->operation_tags())))
     {
       module->distort_backtransform(module, piece, points, points_count);
     }
@@ -2675,9 +2683,10 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
   if ((dev->preview_downsampling != 1.0f) && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
     || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
     || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL))
-      for(size_t idx=0; idx < 2 * points_count; idx++) points[idx] /= dev->preview_downsampling;
+      for(size_t idx=0; idx < 2 * points_count; idx++)
+        points[idx] /= dev->preview_downsampling;
 
-  const int success = dt_dev_distort_backtransform_locked(dev,pipe,iop_order,transf_direction,points,points_count);
+  const int success = dt_dev_distort_backtransform_locked(dev, pipe, iop_order, transf_direction, points, points_count);
   dt_pthread_mutex_unlock(&dev->history_mutex);
   return success;
 }

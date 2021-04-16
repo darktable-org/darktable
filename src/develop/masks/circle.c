@@ -407,8 +407,8 @@ static int _circle_events_button_released(struct dt_iop_module_t *module, float 
     else
     {
       // we change the center value
-      float wd = darktable.develop->preview_pipe->backbuf_width;
-      float ht = darktable.develop->preview_pipe->backbuf_height;
+      const float wd = darktable.develop->preview_pipe->backbuf_width;
+      const float ht = darktable.develop->preview_pipe->backbuf_height;
       float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
 
       dt_dev_distort_backtransform(darktable.develop, pts, 1);
@@ -730,7 +730,7 @@ static float *_points_to_transform(float x, float y, float radius, float wd, flo
 {
   // how many points do we need?
   const float r = radius * MIN(wd,ht);
-  const size_t l = (size_t)(2.0 * M_PI * r);
+  const size_t l = (size_t)(2.0f * M_PI * r);
   // allocate buffer
   float *const restrict points = dt_alloc_align_float((l + 1) *2);
   if (!points)
@@ -747,7 +747,7 @@ static float *_points_to_transform(float x, float y, float radius, float wd, flo
   points[1] = center_y;
   for(int i = 1; i < l + 1; i++)
   {
-    float alpha = (i - 1) * 2.0 * M_PI / (float)l;
+    const float alpha = (i - 1) * 2.0f * M_PI / (float)l;
     points[i * 2] = center_x + r * cosf(alpha);
     points[i * 2 + 1] = center_y + r * sinf(alpha);
   }
@@ -777,8 +777,8 @@ static int _circle_get_points(dt_develop_t *dev, float x, float y, float radius,
 {
   (void)radius2; // keep compiler from complaining about unused arg
   (void)rotation;
-  float wd = dev->preview_pipe->iwidth;
-  float ht = dev->preview_pipe->iheight;
+  const float wd = dev->preview_pipe->iwidth;
+  const float ht = dev->preview_pipe->iheight;
 
   // compute the points we need to transform (center and circumference of circle)
   *points = _points_to_transform(x, y, radius, wd, ht, points_count);
