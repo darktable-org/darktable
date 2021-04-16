@@ -704,6 +704,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   const float vs_radius = d->vectorscope_radius;
   const int diam_px = d->vectorscope_diameter_px;
   const int min_size = MIN(width, height);
+  const double scale = min_size / (vs_radius * 2.);
 
   // FIXME: the areas to left/right of the scope could have some data (primaries, whitepoint, scale, etc.)
   cairo_save(cr);
@@ -716,16 +717,13 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   // math
   cairo_scale(cr, 1., -1.);
 
-  cairo_save(cr);
-  cairo_scale(cr, min_size / (vs_radius * 2.), min_size / (vs_radius * 2.));
-
   // concentric circles as a scale
   set_color(cr, darktable.bauhaus->graph_grid);
-  cairo_set_line_width(cr, vs_radius * 2. / min_size);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   const float grid_radius = d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV ? 100. : 0.01;
   for(int i = 1; i < 1.f + ceilf(vs_radius/grid_radius); i++)
   {
-    cairo_arc(cr, 0., 0., grid_radius * i, 0., M_PI * 2.);
+    cairo_arc(cr, 0., 0., grid_radius * scale * i, 0., M_PI * 2.);
     cairo_stroke(cr);
   }
 
@@ -737,26 +735,28 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // graticule: histogram profile hue ring
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  cairo_set_line_width(cr, vs_radius * 2. / min_size);
-  cairo_move_to(cr, d->hue_ring_coord[5][VECTORSCOPE_HUES-1][0], d->hue_ring_coord[5][VECTORSCOPE_HUES-1][1]);
-  for(int k=0; k<6; k++)
-    for(int i=0; i < VECTORSCOPE_HUES; i++)
-    {
-      // FIXME: can we pre-make a pattern with the hues radiating out, and use it as the "ink" to draw the hue ring and -- if in false color mode -- the vectorscope? will this be faster then drawing lots of lines each with their own color? will it allow for drawing the hue ring with splines and calculating fewer points?
-      // note that hue_ring_rgb and hue_ring_coord are calculated as float but converted here to double
-      cairo_set_source_rgba(cr, d->hue_ring_rgb[k][i][0], d->hue_ring_rgb[k][i][1], d->hue_ring_rgb[k][i][2], 0.5);
-      cairo_line_to(cr, d->hue_ring_coord[k][i][0], d->hue_ring_coord[k][i][1]);
-      cairo_stroke(cr);
-      cairo_move_to(cr, d->hue_ring_coord[k][i][0], d->hue_ring_coord[k][i][1]);
-    }
-  cairo_restore(cr);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
+  int n = 5, h = VECTORSCOPE_HUES - 1;
+  for(int i=0; i < 6 * VECTORSCOPE_HUES; i++)
+  {
+    cairo_move_to(cr, d->hue_ring_coord[n][h][0] * scale, d->hue_ring_coord[n][h][1] * scale);
+    n = i / VECTORSCOPE_HUES;
+    h = i % VECTORSCOPE_HUES;
+    // FIXME: can we pre-make a pattern with the hues radiating out, and use it as the "ink" to draw the hue ring and -- if in false color mode -- the vectorscope? will this be faster then drawing lots of lines each with their own color? will it allow for drawing the hue ring with splines and calculating fewer points?
+    // note that hue_ring_rgb and hue_ring_coord are calculated as float but converted here to double
+    cairo_set_source_rgba(cr, d->hue_ring_rgb[n][h][0], d->hue_ring_rgb[n][h][1], d->hue_ring_rgb[n][h][2], 0.5);
+    cairo_line_to(cr, d->hue_ring_coord[n][h][0] * scale, d->hue_ring_coord[n][h][1] * scale);
+    cairo_stroke(cr);
+  }
+  cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 
   if(isnan(d->vectorscope_pt_x))
   {
     // vectorscope graph
+    cairo_save(cr);
+    cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
     cairo_translate(cr, min_size * -0.5, min_size * -0.5);
     cairo_scale(cr, darktable.gui->ppd*min_size/diam_px, darktable.gui->ppd*min_size/diam_px);
-    cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
     const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px);
     cairo_surface_t *source = dt_cairo_image_surface_create_for_data(d->vectorscope_display, CAIRO_FORMAT_RGB24,
                                                                      diam_px, diam_px, stride);
@@ -764,25 +764,25 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
     cairo_set_source_surface(cr, source, 0.0, 0.0);
     cairo_paint(cr);
     cairo_surface_destroy(source);
+    cairo_restore(cr);
   }
   else
   {
     // point sample
-    cairo_new_sub_path(cr);
     set_color(cr, darktable.bauhaus->graph_fg);
     cairo_arc(cr, d->vectorscope_pt_x*min_size, d->vectorscope_pt_y*min_size,
               DT_PIXEL_APPLY_DPI(3.), 0., M_PI * 2.);
     cairo_fill(cr);
   }
 
-  cairo_restore(cr);
-
   // overlay central circle
   set_color(cr, darktable.bauhaus->graph_overlay);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
   cairo_new_sub_path(cr);
-  cairo_arc(cr, width / 2., height / 2., DT_PIXEL_APPLY_DPI(3.), 0., M_PI * 2.);
+  cairo_arc(cr, 0., 0., DT_PIXEL_APPLY_DPI(3.), 0., M_PI * 2.);
   cairo_stroke(cr);
+
+  cairo_restore(cr);
 }
 
 static void _draw_vectorscope_frame(cairo_t *cr, int width, int height)
