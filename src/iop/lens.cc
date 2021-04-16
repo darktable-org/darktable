@@ -360,7 +360,7 @@ static lfModifier * get_modifier(int *mods_done, int w, int h, const dt_iop_lens
     mods_done_tmp |= mod->EnableVignettingCorrection(d->lens, d->focal, d->aperture, d->distance);
 #else
   mod = new lfModifier(d->lens, d->crop, w, h);
-  mods_done_tmp = mod->Initialize(d->lens, LF_PF_F32, d->focal, d->aperture, d->distance, d->scale, d->target_geom, mods_todo, 
+  mods_done_tmp = mod->Initialize(d->lens, LF_PF_F32, d->focal, d->aperture, d->distance, d->scale, d->target_geom, mods_todo,
                                   (force_inverse) ? !d->inverse : d->inverse);
 #endif
 
@@ -855,7 +855,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const __restrict points, size_t points_count)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return 0;
@@ -866,9 +866,15 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   const lfModifier *modifier = get_modifier(&modflags, orig_w, orig_h, d, LF_MODIFY_ALL, TRUE);
   if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
-    float buf[6];
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(points_count, points, modifier) \
+    schedule(static) if(points_count > 100)
+#endif
     for(size_t i = 0; i < points_count * 2; i += 2)
     {
+      float DT_ALIGNED_ARRAY buf[6];
       modifier->ApplySubpixelGeometryDistortion(points[i], points[i + 1], 1, 1, buf);
       points[i] = buf[0];
       points[i + 1] = buf[3];
@@ -879,7 +885,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   return 1;
 }
 
-int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const __restrict points,
                           size_t points_count)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
@@ -892,9 +898,15 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 
   if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
-    float buf[6];
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(points_count, points, modifier) \
+    schedule(static) if(points_count > 100)
+#endif
     for(size_t i = 0; i < points_count * 2; i += 2)
     {
+      float DT_ALIGNED_ARRAY buf[6];
       modifier->ApplySubpixelGeometryDistortion(points[i], points[i + 1], 1, 1, buf);
       points[i] = buf[0];
       points[i + 1] = buf[3];
