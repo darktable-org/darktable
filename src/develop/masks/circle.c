@@ -444,6 +444,26 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
 {
   if(gui->form_dragging || gui->source_dragging)
   {
+
+    float wd = darktable.develop->preview_pipe->backbuf_width;
+    float ht = darktable.develop->preview_pipe->backbuf_height;
+    float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
+    dt_dev_distort_backtransform(darktable.develop, pts, 1);
+    if(gui->form_dragging)
+    {
+      dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
+      circle->center[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
+      circle->center[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+    }
+    else
+    {
+      form->source[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
+      form->source[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+    }
+
+    // we recreate the form points
+    dt_masks_gui_form_remove(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
   }
@@ -498,7 +518,7 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
 
 static void _circle_draw_lines(gboolean borders, gboolean source, cairo_t *cr, double *dashed, const int len,
                                const gboolean selected, const float zoom_scale, float *points,
-                               const int points_count, const float dx, const float dy)
+                               const int points_count)
 {
   if(points_count <= 6) return;
 
@@ -526,12 +546,12 @@ static void _circle_draw_lines(gboolean borders, gboolean source, cairo_t *cr, d
   }
   dt_draw_set_color_overlay(cr, 0.3, 0.8);
 
-  cairo_move_to(cr, points[2] + dx, points[3] + dy);
+  cairo_move_to(cr, points[2], points[3]);
   for(int i = 2; i < points_count; i++)
   {
-    cairo_line_to(cr, points[i * 2] + dx, points[i * 2 + 1] + dy);
+    cairo_line_to(cr, points[i * 2], points[i * 2 + 1]);
   }
-  cairo_line_to(cr, points[2] + dx, points[3] + dy);
+  cairo_line_to(cr, points[2], points[3]);
 
   cairo_stroke_preserve(cr);
   if(selected)
@@ -713,9 +733,9 @@ static void _circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
       // we draw the form and it's border
       cairo_save(cr);
       // we draw the main shape
-      _circle_draw_lines(FALSE, FALSE, cr, dashed, len, FALSE, zoom_scale, points, points_count, 0.0, 0.0);
+      _circle_draw_lines(FALSE, FALSE, cr, dashed, len, FALSE, zoom_scale, points, points_count);
       // we draw the borders
-      _circle_draw_lines(TRUE, FALSE, cr, dashed, len, FALSE, zoom_scale, border, border_count, 0.0, 0.0);
+      _circle_draw_lines(TRUE, FALSE, cr, dashed, len, FALSE, zoom_scale, border, border_count);
       cairo_restore(cr);
 
       // draw a cross where the source will be created
@@ -735,25 +755,13 @@ static void _circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
   }
 
   if(!gpt) return;
-  float dx = 0.0f, dy = 0.0f, dxs = 0.0f, dys = 0.0f;
-  if((gui->group_selected == index) && gui->form_dragging)
-  {
-    dx = gui->posx + gui->dx - gpt->points[0];
-    dy = gui->posy + gui->dy - gpt->points[1];
-  }
-  if((gui->group_selected == index) && gui->source_dragging)
-  {
-    dxs = gui->posx + gui->dx - gpt->source[0];
-    dys = gui->posy + gui->dy - gpt->source[1];
-  }
-
   // we draw the main shape
   const gboolean selected = (gui->group_selected == index) && (gui->form_selected || gui->form_dragging);
-  _circle_draw_lines(FALSE, FALSE, cr, dashed, len, selected, zoom_scale, gpt->points, gpt->points_count, dx, dy);
+  _circle_draw_lines(FALSE, FALSE, cr, dashed, len, selected, zoom_scale, gpt->points, gpt->points_count);
   // we draw the borders
   if(gui->group_selected == index)
     _circle_draw_lines(TRUE, FALSE, cr, dashed, len, (gui->border_selected), zoom_scale, gpt->border,
-                       gpt->border_count, dx, dy);
+                       gpt->border_count);
 
   // draw the source if any
   if(gpt->source_count > 6)
@@ -762,8 +770,8 @@ static void _circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
     const float radius = fabs(gpt->points[2] - gpt->points[0]);
 
     // compute the dest inner circle intersection with the line from source center to dest center.
-    const float cdx = gpt->source[0] + dxs - gpt->points[0] - dx;
-    const float cdy = gpt->source[1] + dys - gpt->points[1] - dy;
+    const float cdx = gpt->source[0] - gpt->points[0];
+    const float cdy = gpt->source[1] - gpt->points[1];
 
     // we don't draw the line if source==point
     if(cdx != 0.0 && cdy != 0.0)
@@ -778,11 +786,11 @@ static void _circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
 
       // (arrowx,arrowy) is the point of intersection, we move it (factor 1.11) a bit farther than the
       // inner circle to avoid superposition.
-      const float arrowx = gpt->points[0] + 1.11 * radius * cosf(cangle) + dx;
-      const float arrowy = gpt->points[1] + 1.11 * radius * sinf(cangle) + dy;
+      const float arrowx = gpt->points[0] + 1.11 * radius * cosf(cangle);
+      const float arrowy = gpt->points[1] + 1.11 * radius * sinf(cangle);
 
-      cairo_move_to(cr, gpt->source[0] + dxs, gpt->source[1] + dys); // source center
-      cairo_line_to(cr, arrowx, arrowy);                             // dest border
+      cairo_move_to(cr, gpt->source[0], gpt->source[1]); // source center
+      cairo_line_to(cr, arrowx, arrowy);                 // dest border
       // then draw to line for the arrow itself
       const float arrow_scale = 6.0f * pr_d;
       cairo_move_to(cr, arrowx + arrow_scale * cosf(cangle + (0.4f)),
@@ -807,8 +815,7 @@ static void _circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
     }
 
     // we only the main shape for the source, no borders
-    _circle_draw_lines(FALSE, TRUE, cr, dashed, len, selected, zoom_scale, gpt->source, gpt->source_count, dxs,
-                       dys);
+    _circle_draw_lines(FALSE, TRUE, cr, dashed, len, selected, zoom_scale, gpt->source, gpt->source_count);
   }
 }
 
