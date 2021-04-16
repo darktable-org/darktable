@@ -552,7 +552,7 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
   // we store all points
   float dx = 0.0f, dy = 0.0f;
 
-  if(source && nb > 0)
+  if(source && nb > 0 && transf_direction != DT_DEV_TRANSFORM_DIR_ALL)
   {
     dt_masks_point_path_t *pt = (dt_masks_point_path_t *)form->points->data;
     dx = (pt->corner[0] - form->source[0]) * wd;
@@ -703,7 +703,40 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
   }
 
   // and we transform them with all distorted modules
-  if(dt_dev_distort_transform_plus(dev, pipe, iop_order, transf_direction, *points, *points_count))
+  if(source && transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+  {
+    // we transform with all distortion that happen *before* the module
+    // so we have now the TARGET points in module input reference
+    if(dt_dev_distort_transform_plus(dev, pipe, iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL, *points, *points_count))
+    {
+      // now we move all the points by the shift
+      // so we have now the SOURCE points in module input reference
+      float pts[2] = { form->source[0] * wd, form->source[1] * ht };
+      if(!dt_dev_distort_transform_plus(dev, pipe, iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL, pts, 1)) goto fail;
+
+      dx = pts[0] - (*points)[0];
+      dy = pts[1] - (*points)[1];
+      for(int i = 0; i < *points_count; i++)
+      {
+        (*points)[i * 2] += dx;
+        (*points)[i * 2 + 1] += dy;
+      }
+
+      // we apply the rest of the distortions (those after the module)
+      // so we have now the SOURCE points in final image reference
+      if(!dt_dev_distort_transform_plus(dev, pipe, iop_order, DT_DEV_TRANSFORM_DIR_FORW_INCL, *points,
+                                        *points_count))
+        goto fail;
+    }
+
+    if(darktable.unmuted & DT_DEBUG_PERF)
+      dt_print(DT_DEBUG_MASKS, "[masks %s] path_points end took %0.04f sec\n", form->name, dt_get_wtime() - start2);
+
+    dt_masks_dynbuf_free(intersections);
+    dt_free_align(border_init);
+    return 1;
+  }
+  else if(dt_dev_distort_transform_plus(dev, pipe, iop_order, transf_direction, *points, *points_count))
   {
     if(!border || dt_dev_distort_transform_plus(dev, pipe, iop_order, transf_direction, *border, *border_count))
     {
@@ -759,6 +792,7 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
   }
 
   // if we failed, then free all and return
+fail:
   dt_masks_dynbuf_free(intersections);
   dt_free_align(border_init);
   dt_free_align(*points);
@@ -848,8 +882,10 @@ static void _path_get_distance(float x, float y, float as, dt_masks_form_gui_t *
 static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points, int *points_count,
                                    float **border, int *border_count, int source, const dt_iop_module_t *module)
 {
-  return _path_get_pts_border(dev, form, 0.f, DT_DEV_TRANSFORM_DIR_ALL, dev->preview_pipe, points, points_count, border,
-                              border_count, source);
+  if(source && !module) return 0;
+  const double ioporder = (module) ? module->iop_order : 0.0f;
+  return _path_get_pts_border(dev, form, ioporder, DT_DEV_TRANSFORM_DIR_ALL, dev->preview_pipe, points,
+                              points_count, border, border_count, source);
 }
 
 static void _path_get_sizes(struct dt_iop_module_t *module, dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index, float *masks_size, float *feather_size)
