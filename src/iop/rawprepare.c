@@ -137,12 +137,22 @@ void init_presets(dt_iop_module_so_t *self)
 // value to round,   reference on how to round:
 //  if ref was even, returned value will be even
 //  if ref was odd,  returned value will be odd
-static int round_smart(float val, int ref)
+static inline int round_smart(float val, int ref)
 {
   // first, just round it
   int round = (int)roundf(val);
 
-  if((ref & 1) ^ (round & 1)) round++;
+#if 0
+  // this gives slightly better mask alignment than the original code.
+  // but without this even/odd rounding the mask alignment is best.
+  if((ref & 1) ^ (round & 1))
+  {
+    if((float)round > val)
+      round--;
+    else
+      round++;
+  }
+#endif
 
   return round;
 }
