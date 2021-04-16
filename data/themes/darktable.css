@@ -150,7 +150,7 @@
 @define-color brush_trace alpha(black, .8);
 
 /* Graphs : histogram, navigation thumbnail and some items on tone curve */
-@define-color graph_bg @grey_10;
+@define-color graph_bg @grey_15;
 @define-color graph_exterior shade(@graph_bg, 0.9);
 @define-color graph_border @grey_05;
 @define-color graph_fg @grey_75;
