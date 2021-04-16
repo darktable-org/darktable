@@ -1113,7 +1113,85 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module, float pzx
     dt_control_queue_redraw_center();
     return 1;
   }
-  else if(gui->form_rotating || gui->point_dragging >= 1)
+  else if(gui->point_dragging >= 1)
+  {
+    dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
+    const int k = gui->point_dragging;
+
+    // we need the reference points
+    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+    if(!gpt) return 0;
+
+    const float xref = gpt->points[0];
+    const float yref = gpt->points[1];
+    const float rx = gpt->points[k * 2] - xref;
+    const float ry = gpt->points[k * 2 + 1] - yref;
+    const float deltax = gui->posx + gui->dx - xref;
+    const float deltay = gui->posy + gui->dy - yref;
+
+    // we remap dx, dy to the right values, as it will be used in next movements
+    gui->dx = xref - gui->posx;
+    gui->dy = yref - gui->posy;
+
+    const float r = sqrtf(rx * rx + ry * ry);
+    const float d = (rx * deltax + ry * deltay) / r;
+    const float s = fmaxf(r > 0.0f ? (r + d) / r : 0.0f, 0.0f);
+
+    // make sure we adjust the right radius: anchor points and 1 and 2 correspond to the ellipse's longer axis
+    const gboolean dir = (ellipse->radius[0] > ellipse->radius[1]);
+    if(((k == 1 || k == 2) && ellipse->radius[0] > ellipse->radius[1])
+       || ((k == 3 || k == 4) && ellipse->radius[0] <= ellipse->radius[1]))
+    {
+      ellipse->radius[0] = MAX(0.002f, ellipse->radius[0] * s);
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
+        dt_conf_set_float("plugins/darkroom/spots/ellipse_radius_a", ellipse->radius[0]);
+      else
+        dt_conf_set_float("plugins/darkroom/masks/ellipse/radius_a", ellipse->radius[0]);
+    }
+    else
+    {
+      ellipse->radius[1] = MAX(0.002f, ellipse->radius[1] * s);
+      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
+        dt_conf_set_float("plugins/darkroom/spots/ellipse_radius_b", ellipse->radius[1]);
+      else
+        dt_conf_set_float("plugins/darkroom/masks/ellipse/radius_b", ellipse->radius[1]);
+    }
+
+    // as point 1 an 2 always correspond to the longer axis, point number may change when recreating the form
+    // this happen if radius values order change
+    if(dir != (ellipse->radius[0] > ellipse->radius[1]))
+    {
+      if(dir)
+      {
+        if(k == 1)
+          gui->point_dragging = 4;
+        else if(k == 2)
+          gui->point_dragging = 3;
+        else if(k == 3)
+          gui->point_dragging = 1;
+        else if(k == 4)
+          gui->point_dragging = 2;
+      }
+      else
+      {
+        if(k == 1)
+          gui->point_dragging = 3;
+        else if(k == 2)
+          gui->point_dragging = 4;
+        else if(k == 3)
+          gui->point_dragging = 2;
+        else if(k == 4)
+          gui->point_dragging = 1;
+      }
+    }
+
+    // we recreate the form points
+    dt_masks_gui_form_remove(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
+    dt_control_queue_redraw_center();
+    return 1;
+  }
+  else if(gui->form_rotating)
   {
     dt_control_queue_redraw_center();
     return 1;
@@ -1319,32 +1397,6 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     const float v = atan2f(gui->posy - yref, gui->posx - xref) - atan2(-gui->dy, -gui->dx);
     sinv = sinf(v);
     cosv = cosf(v);
-  }
-  else if((gui->group_selected == index) && (gui->point_dragging >= 1))
-  {
-    const int k = gui->point_dragging;
-    const float rx = gpt->points[k * 2] - xref;
-    const float ry = gpt->points[k * 2 + 1] - yref;
-    const float bx = gpt->border[k * 2] - xref;
-    const float by = gpt->border[k * 2 + 1] - yref;
-    const float deltax = gui->posx + gui->dx - xref;
-    const float deltay = gui->posy + gui->dy - yref;
-
-    const float radius = sqrtf(rx * rx + ry * ry);
-    const float b = sqrtf(bx * bx + by * by);
-    float d = (rx * deltax + ry * deltay) / radius;
-    if(radius + d < 0) d = -radius;
-
-    if(k == 1 || k == 2)
-    {
-      scalea = radius > 0 ? (radius + d) / radius : 0;
-      scaleab = b > 0 ? (b + d) / b : 0;
-    }
-    else
-    {
-      scaleb = radius > 0 ? (radius + d) / radius : 0;
-      scalebb = b > 0 ? (b + d) / b : 0;
-    }
   }
 
   float x, y;
