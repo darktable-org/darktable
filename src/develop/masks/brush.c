@@ -612,7 +612,7 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
   // we store all points
   float dx = 0.0f, dy = 0.0f;
 
-  if(source && form->points > 0 && transf_direction != DT_DEV_TRANSFORM_DIR_ALL)
+  if(source && form->points && transf_direction != DT_DEV_TRANSFORM_DIR_ALL)
   {
     dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)form->points->data;
     dx = (pt->corner[0] - form->source[0]) * wd;

@@ -704,8 +704,8 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
         = (dt_masks_point_ellipse_t *)(malloc(sizeof(dt_masks_point_ellipse_t)));
 
     // we change the center value
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     ellipse->center[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
@@ -1083,8 +1083,8 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module, float pzx
 {
   if(gui->form_dragging || gui->source_dragging)
   {
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     if(gui->form_dragging)
