@@ -236,6 +236,9 @@ DEFAULT(dt_introspection_field_t *, get_f, const char *name);
 
 #endif // FULL_API_H
 
+// define height / with ratio for non square graph area in modules
+#define IOP_GRAPH_ASPECT_RATIO 0.5626 // 9:16 ratio
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
