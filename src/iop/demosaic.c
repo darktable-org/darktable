@@ -3401,22 +3401,6 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
 
     dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
     if(dev_tmp == NULL) goto error;
-    cfa = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
-    if(cfa == NULL) goto error;
-    VH_dir = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
-    if(VH_dir == NULL) goto error;
-    PQ_dir = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
-    if(PQ_dir == NULL) goto error;
-    VP_diff = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
-    if(VP_diff == NULL) goto error;
-    HQ_diff = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
-    if(HQ_diff == NULL) goto error;
-    rgb0 = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
-    if(rgb0 == NULL) goto error;
-    rgb1 = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
-    if(rgb1 == NULL) goto error;
-    rgb2 = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
-    if(rgb2 == NULL) goto error;
 
     {
       const int myborder = 3;
@@ -3472,6 +3456,28 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_rcd_border_redblue, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
+    dt_opencl_release_mem_object(dev_tmp);
+    dev_tmp = NULL;
+
+    cfa = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
+    if(cfa == NULL) goto error;
+    VH_dir = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
+    if(VH_dir == NULL) goto error;
+    PQ_dir = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
+    if(PQ_dir == NULL) goto error;
+    VP_diff = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
+    if(VP_diff == NULL) goto error;
+    HQ_diff = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
+    if(HQ_diff == NULL) goto error;
+    rgb0 = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
+    if(rgb0 == NULL) goto error;
+    rgb1 = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
+    if(rgb1 == NULL) goto error;
+    rgb2 = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
+    if(rgb2 == NULL) goto error;
+
+
+
 
     {
       // populate data
@@ -3651,7 +3657,6 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
 
   if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
   dt_opencl_release_mem_object(dev_green_eq);
-  dt_opencl_release_mem_object(dev_tmp);
 
   dev_aux = dev_green_eq = dev_tmp = cfa = rgb0 = rgb1 = rgb2 = VH_dir = PQ_dir = VP_diff = HQ_diff = NULL;
 
