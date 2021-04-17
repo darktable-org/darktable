@@ -233,7 +233,7 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev
 {
   if(level == 0.0f) return;
 
-  gboolean detail = (level > 0.0f);
+  const gboolean detail = (level > 0.0f);
   const float threshold = _detail_mask_threshold(level, detail);
   
   float *tmp = NULL;
@@ -643,7 +643,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   {
     // For a blurring sigma of 2.0f a 13x13 kernel would be optimally required but the 9x9 is by far good enough here 
     float kernel[9][9];
-    const double temp = -2.0f * 2.0f * 2.0f;
+    const float temp = -8.0f; // -2.0f * 2.0f * 2.0f; for a sigma of 2
     float sum = 0.0f;
     for(int i = -4; i <= 4; i++)
     {
@@ -655,6 +655,9 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
     }
     for(int i = 0; i < 9; i++)
     {
+#if defined(__GNUC__)
+  #pragma GCC ivdep
+#endif
       for(int j = 0; j < 9; j++)
         kernel[i][j] /= sum;
     }
