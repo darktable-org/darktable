@@ -174,7 +174,7 @@ typedef struct dt_masks_functions_t
   int (*get_points)(dt_develop_t *dev, float x, float y, float radius_a, float radius_b, float rotation,
                     float **points, int *points_count);
   int (*get_points_border)(dt_develop_t *dev, struct dt_masks_form_t *form, float **points, int *points_count,
-                           float **border, int *border_count, int source);
+                           float **border, int *border_count, int source, const dt_iop_module_t *const module);
   int (*get_mask)(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
                   struct dt_masks_form_t *const form,
                   float **buffer, int *width, int *height, int *posx, int *posy);
@@ -197,7 +197,7 @@ typedef struct dt_masks_functions_t
                          struct dt_masks_form_t *form, int parentid, struct dt_masks_form_gui_t *gui, int index);
   void (*post_expose)(cairo_t *cr, float zoom_scale, struct dt_masks_form_gui_t *gui, int index, int num_points);
 } dt_masks_functions_t;
-  
+
 /** structure used to define a form */
 typedef struct dt_masks_form_t
 {
@@ -303,7 +303,7 @@ void dt_masks_init_form_gui(dt_masks_form_gui_t *gui);
 /** get points in real space with respect of distortion dx and dy are used to eventually move the center of
  * the circle */
 int dt_masks_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points, int *points_count,
-                               float **border, int *border_count, int source);
+                               float **border, int *border_count, int source, dt_iop_module_t *module);
 
 /** get the rectangle which include the form and his border */
 int dt_masks_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
@@ -381,9 +381,10 @@ int dt_masks_events_mouse_leave(struct dt_iop_module_t *module);
 int dt_masks_events_mouse_enter(struct dt_iop_module_t *module);
 
 /** functions used to manipulate gui data */
-void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index);
+void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index,
+                              struct dt_iop_module_t *module);
 void dt_masks_gui_form_remove(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index);
-void dt_masks_gui_form_test_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui);
+void dt_masks_gui_form_test_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, struct dt_iop_module_t *module);
 void dt_masks_gui_form_save_creation(dt_develop_t *dev, struct dt_iop_module_t *module, dt_masks_form_t *form,
                                      dt_masks_form_gui_t *gui);
 void dt_masks_group_ungroup(dt_masks_form_t *dest_grp, dt_masks_form_t *grp);
