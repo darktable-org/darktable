@@ -267,7 +267,7 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
       else if(!gui->creation_continuous)
         dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
       dt_masks_iop_update(crea_module);
-      // gui->creation_module = NULL;
+      gui->creation_module = NULL;
     }
     else
     {
@@ -371,8 +371,8 @@ static int _circle_events_button_released(struct dt_iop_module_t *module, float 
     gui->form_dragging = FALSE;
 
     // we change the center value
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     circle->center[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
@@ -444,8 +444,8 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
 {
   if(gui->form_dragging || gui->source_dragging)
   {
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     if(gui->form_dragging)
@@ -605,8 +605,8 @@ static int _circle_get_points_source(dt_develop_t *dev, float x, float y, float 
 {
   (void)radius2; // keep compiler from complaining about unused arg
   (void)rotation;
-  float wd = dev->preview_pipe->iwidth;
-  float ht = dev->preview_pipe->iheight;
+  const float wd = dev->preview_pipe->iwidth;
+  const float ht = dev->preview_pipe->iheight;
 
   // compute the points of the target (center and circumference of circle)
   // we get the point in RAW image reference

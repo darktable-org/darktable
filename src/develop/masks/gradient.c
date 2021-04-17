@@ -240,7 +240,7 @@ static void _gradient_init_values(float zoom_scale, dt_masks_form_gui_t *gui, fl
   float check_angle = atan2f(pts[7] - pts[1], pts[6] - pts[0]) - atan2(pts[5] - pts[1], pts[4] - pts[0]);
   // Normalize to the range -180 to 180 degrees
   check_angle = atan2f(sinf(check_angle), cosf(check_angle));
-  if(check_angle < 0) rot -= M_PI;
+  if(check_angle < 0.0f) rot -= M_PI;
 
   const float compr = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
 
@@ -496,7 +496,7 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module, float pz
     float check_angle = atan2f(pts2[7] - pts2[1], pts2[6] - pts2[0]) - atan2(pts2[5] - pts2[1], pts2[4] - pts2[0]);
     // Normalize to the range -180 to 180 degrees
     check_angle = atan2f(sinf(check_angle), cosf(check_angle));
-    if(check_angle < 0)
+    if(check_angle < 0.0f)
       gradient->rotation += dv / M_PI * 180.0f;
     else
       gradient->rotation -= dv / M_PI * 180.0f;
@@ -824,12 +824,12 @@ static void _gradient_draw_arrow(cairo_t *cr, double *dashed, const float len, c
 {
   if(pts_count < 3) return;
 
-  float anchor_x = pts[0];
-  float anchor_y = pts[1];
-  float pivot_end_x = pts[2];
-  float pivot_end_y = pts[3];
-  float pivot_start_x = pts[4];
-  float pivot_start_y = pts[5];
+  const float anchor_x = pts[0];
+  const float anchor_y = pts[1];
+  const float pivot_end_x = pts[2];
+  const float pivot_end_y = pts[3];
+  const float pivot_start_x = pts[4];
+  const float pivot_start_y = pts[5];
 
   // draw anchor point
   {
