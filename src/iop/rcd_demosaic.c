@@ -208,7 +208,7 @@ static void rcd_ppg_border(float *const out, const float *const in, const int wi
       else
         color[1] = pc;
 
-      color[4] = 0.0f;
+      color[3] = 0.0f;
       memcpy(buf, color, sizeof(float) * 4);
       buf += 4;
       buf_in++;
@@ -228,19 +228,19 @@ static void rcd_ppg_border(float *const out, const float *const in, const int wi
       if(i == RCD_MARGIN && j >= RCD_MARGIN && j < height - RCD_MARGIN)
       {
         i = width - RCD_MARGIN;
-        buf = out + (size_t)4 * width * j + 4 * i;
+        buf = out + (size_t)4 * (width * j + i);
       }
       const int c = FC(j, i, filters);
       float color[4] = { buf[0], buf[1], buf[2], buf[3] };
-
+      const int linesize = 4 * width;
       // fill all four pixels with correctly interpolated stuff: r/b for green1/2
       // b for r and r for b
       if(__builtin_expect(c & 1, 1)) // c == 1 || c == 3)
       {
         // calculate red and blue for green pixels:
         // need 4-nbhood:
-        const float *nt = buf - 4 * width;
-        const float *nb = buf + 4 * width;
+        const float *nt = buf - linesize;
+        const float *nb = buf + linesize;
         const float *nl = buf - 4;
         const float *nr = buf + 4;
         if(FC(j, i + 1, filters) == 0) // red nb in same row
@@ -258,10 +258,10 @@ static void rcd_ppg_border(float *const out, const float *const in, const int wi
       else
       {
         // get 4-star-nbhood:
-        const float *ntl = buf - 4 - 4 * width;
-        const float *ntr = buf + 4 - 4 * width;
-        const float *nbl = buf - 4 + 4 * width;
-        const float *nbr = buf + 4 + 4 * width;
+        const float *ntl = buf - 4 - linesize;
+        const float *ntr = buf + 4 - linesize;
+        const float *nbl = buf - 4 + linesize;
+        const float *nbr = buf + 4 + linesize;
 
         if(c == 0)
         {
