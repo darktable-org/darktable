@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-04-17 07:19+1000\n"
-"PO-Revision-Date: 2021-04-17 07:26+1000\n"
+"PO-Revision-Date: 2021-04-17 14:57+1000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: eo\n"
@@ -7639,95 +7639,95 @@ msgstr "Sen %s"
 
 #: ../src/gui/gtkentry.c:184
 msgid "$(ROLL_NAME) - roll of the input image"
-msgstr "$(RULA_NOMO) - rulo de la eniga bildo"
+msgstr "$(ROLL_NAME) - rulo de la eniga bildo"
 
 #: ../src/gui/gtkentry.c:185
 msgid "$(FILE_FOLDER) - folder containing the input image"
-msgstr "$(DOSIERA_DOSIERUJO) - dosierujo enhavanta la enigan bildon"
+msgstr "$(FILE_FOLDER) - dosierujo enhavanta la enigan bildon"
 
 #: ../src/gui/gtkentry.c:186
 msgid "$(FILE_NAME) - basename of the input image"
-msgstr "$(DOSIERA_NOMO) - baznomo de la eniga bildo"
+msgstr "$(FILE_NAME) - baznomo de la eniga bildo"
 
 #: ../src/gui/gtkentry.c:187
 msgid "$(FILE_EXTENSION) - extension of the input image"
-msgstr "$(DOSIERA_ETENDAĴO) - etendaĵo de la eniga bildo"
+msgstr "$(FILE_EXTENSION) - etendaĵo de la eniga bildo"
 
 #: ../src/gui/gtkentry.c:188
 msgid "$(VERSION) - duplicate version"
-msgstr "$(VERSIO) - duplikata versio"
+msgstr "$(VERSION) - duplikata versio"
 
 #: ../src/gui/gtkentry.c:189
 msgid ""
 "$(VERSION_IF_MULTI) - same as $(VERSION) but null string if only one version "
 "exists"
 msgstr ""
-"$(VERSIO_SE_MULTOBLA) - same kiel $(VERSIO) sed nulĉeno se nur unu versio "
+"$(VERSION_IF_MULTI) - same kiel $(VERSION) sed nulĉeno se nur unu versio "
 "ekzistas"
 
 #: ../src/gui/gtkentry.c:190
 msgid "$(VERSION_NAME) - version name from metadata"
-msgstr "$(VERSIA_NOMO) - versia nomo el metadatenoj"
+msgstr "$(VERSION_NAME) - versia nomo el metadatenoj"
 
 #: ../src/gui/gtkentry.c:191
 msgid "$(SEQUENCE) - sequence number"
-msgstr "$(SEKVENCO) - sekvenca numero"
+msgstr "$(SEQUENCE) - sekvenca numero"
 
 #: ../src/gui/gtkentry.c:192
 msgid "$(MAX_WIDTH) - maximum image export width"
-msgstr "$(MAKS_LARĜECO) - maksimuma larĝeco de eksporta bildo"
+msgstr "$(MAX_WIDTH) - maksimuma larĝeco de eksporta bildo"
 
 #: ../src/gui/gtkentry.c:193
 msgid "$(MAX_HEIGHT) - maximum image export height"
-msgstr "$(MAKS_ALTECO) - maksimuma alteco de eksporta bildo"
+msgstr "$(MAX_HEIGHT) - maksimuma alteco de eksporta bildo"
 
 #: ../src/gui/gtkentry.c:194
 msgid "$(YEAR) - year"
-msgstr "$(JARO) - jaro"
+msgstr "$(YEAR) - jaro"
 
 #: ../src/gui/gtkentry.c:195
 msgid "$(MONTH) - month"
-msgstr "$(MONATO) - monato"
+msgstr "$(MONTH) - monato"
 
 #: ../src/gui/gtkentry.c:196
 msgid "$(DAY) - day"
-msgstr "$(TAGO) - tago"
+msgstr "$(DAY) - tago"
 
 #: ../src/gui/gtkentry.c:197
 msgid "$(HOUR) - hour"
-msgstr "$(HORO) - horo"
+msgstr "$(HOUR) - horo"
 
 #: ../src/gui/gtkentry.c:198
 msgid "$(MINUTE) - minute"
-msgstr "$(MINUTO) - minuto"
+msgstr "$(MINUTE) - minuto"
 
 #: ../src/gui/gtkentry.c:199
 msgid "$(SECOND) - second"
-msgstr "$(SEKUNDO) - second"
+msgstr "$(SECOND) - second"
 
 #: ../src/gui/gtkentry.c:200
 msgid "$(EXIF_YEAR) - EXIF year"
-msgstr "$(EXIF_JARO) - EXIF jaro"
+msgstr "$(EXIF_YEAR) - EXIF jaro"
 
 #: ../src/gui/gtkentry.c:201
 msgid "$(EXIF_MONTH) - EXIF month"
-msgstr "$(EXIF_MONATO) - EXIF monato"
+msgstr "$(EXIF_MONTH) - EXIF monato"
 
 #: ../src/gui/gtkentry.c:202
 msgid "$(EXIF_DAY) - EXIF day"
-msgstr "$(EXIF_TAGO) - EXIF tago"
+msgstr "$(EXIF_DAY) - EXIF tago"
 
 #: ../src/gui/gtkentry.c:203
 msgid "$(EXIF_HOUR) - EXIF hour"
-msgstr "$(EXIF_HORO) - EXIF horo"
+msgstr "$(EXIF_HOUR) - EXIF horo"
 
 #: ../src/gui/gtkentry.c:204
 msgid "$(EXIF_MINUTE) - EXIF minute"
-msgstr "$(EXIF_MINUTO) - EXIF minuto"
+msgstr "$(EXIF_MINUTE) - EXIF minuto"
 
 #: ../src/gui/gtkentry.c:205
 msgid "$(EXIF_SECOND) - EXIF second"
-msgstr "$(EXIF_SEKUNDO) - EXIF second"
+msgstr "$(EXIF_SECOND) - EXIF second"
 
 #: ../src/gui/gtkentry.c:206
 msgid "$(EXIF_ISO) - ISO value"
@@ -7735,100 +7735,100 @@ msgstr "$(EXIF_ISO) - ISO valoro"
 
 #: ../src/gui/gtkentry.c:207
 msgid "$(EXIF_EXPOSURE) - EXIF exposure"
-msgstr "$(EXIF_EKSPOZICIO) - EXIF ekspozicio"
+msgstr "$(EXIF_EXPOSURE) - EXIF ekspozicio"
 
 #: ../src/gui/gtkentry.c:208
 msgid "$(EXIF_EXPOSURE_BIAS) - EXIF exposure bias"
-msgstr "$(EXIF_EKSPOZICIA_ANTAŬJUĜO) - EXIF ekspozicia antaŭjuĝo"
+msgstr "$(EXIF_EXPOSURE_BIAS) - EXIF ekspozicia antaŭjuĝo"
 
 #: ../src/gui/gtkentry.c:209
 msgid "$(EXIF_APERTURE) - EXIF aperture"
-msgstr "$(EXIF_APERTURO) - EXIF aperturo"
+msgstr "$(EXIF_APERTURE) - EXIF aperturo"
 
 #: ../src/gui/gtkentry.c:210
 msgid "$(EXIF_FOCAL_LENGTH) - EXIF focal length"
-msgstr "$(EXIF_FOKUSA_LONGECO) - EXIF fokusa longeco"
+msgstr "$(EXIF_FOCAL_LENGTH) - EXIF fokusa longeco"
 
 #: ../src/gui/gtkentry.c:211
 msgid "$(EXIF_FOCUS_DISTANCE) - EXIF focal distance"
-msgstr "$(EXIF_FOKUSA_DISTANCO) - EXIF fokusa distanco"
+msgstr "$(EXIF_FOCUS_DISTANCE) - EXIF fokusa distanco"
 
 #: ../src/gui/gtkentry.c:212
 msgid "$(LONGITUDE) - longitude"
-msgstr "$(LONGITUDO) - longitudo"
+msgstr "$(LONGITUDE) - longitudo"
 
 #: ../src/gui/gtkentry.c:213
 msgid "$(LATITUDE) - latitude"
-msgstr "$(LATITUDO) - latitudo"
+msgstr "$(LATITUDE) - latitudo"
 
 #: ../src/gui/gtkentry.c:214
 msgid "$(ELEVATION) - elevation"
-msgstr "$(ALTO) - alto"
+msgstr "$(ELEVATION) - alto"
 
 #: ../src/gui/gtkentry.c:215
 msgid "$(STARS) - star rating"
-msgstr "$(STELOJ) - stela takso"
+msgstr "$(STARS) - stela takso"
 
 #: ../src/gui/gtkentry.c:216
 msgid "$(LABELS) - colorlabels"
-msgstr "$(KOLORETIKEDOJ) - koloretikedoj"
+msgstr "$(LABELS) - koloretikedoj"
 
 #: ../src/gui/gtkentry.c:217
 msgid "$(MAKER) - camera maker"
-msgstr "$(PRODUKTANTO) - produktanto de fotilo"
+msgstr "$(MAKER) - produktanto de fotilo"
 
 #: ../src/gui/gtkentry.c:218
 msgid "$(MODEL) - camera model"
-msgstr "$(MODELO) - modelo de fotilo"
+msgstr "$(MODEL) - modelo de fotilo"
 
 #: ../src/gui/gtkentry.c:219
 msgid "$(LENS) - lens"
-msgstr "$(LENSO) - lenso"
+msgstr "$(LENS) - lenso"
 
 #: ../src/gui/gtkentry.c:220
 msgid "$(TITLE) - title from metadata"
-msgstr "$(TITOLO) - titolo el la metadatenoj"
+msgstr "$(TITLE) - titolo el la metadatenoj"
 
 #: ../src/gui/gtkentry.c:221
 msgid "$(DESCRIPTION) - description from metadata"
-msgstr "$(PRISKRIBO) - priskribo el la  metadatenoj"
+msgstr "$(DESCRIPTION) - priskribo el la  metadatenoj"
 
 #: ../src/gui/gtkentry.c:222
 msgid "$(CREATOR) - creator from metadata"
-msgstr "$(KREINTO) - kreinto el la metadatenoj"
+msgstr "$(CREATOR) - kreinto el la metadatenoj"
 
 #: ../src/gui/gtkentry.c:223
 msgid "$(PUBLISHER) - publisher from metadata"
-msgstr "$(ELDONANTO) - eldonanto el la metadatenoj"
+msgstr "$(PUBLISHER) - eldonanto el la metadatenoj"
 
 #: ../src/gui/gtkentry.c:224
 msgid "$(RIGHTS) - rights from metadata"
-msgstr "$(RAJTOJ) - rajtoj el la metadatenoj"
+msgstr "$(RIGHTS) - rajtoj el la metadatenoj"
 
 #: ../src/gui/gtkentry.c:225
 msgid "$(PICTURES_FOLDER) - pictures folder"
-msgstr "$(BILDA_DOSIERUJO) - dosierujo por la bildoj"
+msgstr "$(PICTURES_FOLDER) - dosierujo por la bildoj"
 
 #: ../src/gui/gtkentry.c:226
 msgid "$(HOME) - home folder"
-msgstr "$(HEJMO) - hejma dosierujo"
+msgstr "$(HOME) - hejma dosierujo"
 
 #: ../src/gui/gtkentry.c:227
 msgid "$(DESKTOP) - desktop folder"
-msgstr "$(SURTABLO) - surtabla dosierujo"
+msgstr "$(DESKTOP) - surtabla dosierujo"
 
 #: ../src/gui/gtkentry.c:228
 msgid "$(OPENCL_ACTIVATED) - whether OpenCL is activated"
-msgstr "$(OPENCL_AKTIVITA) - ĉu OpenCL estas aktivita"
+msgstr "$(OPENCL_ACTIVATED) - ĉu OpenCL estas aktivita"
 
 #: ../src/gui/gtkentry.c:229
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
 msgstr ""
-"$(KATEGORIO0(kategorio)) - subetikedo de nivelo 0 en hierarkiaj etikedoj"
+"$(CATEGORY0(kategorio)) - subetikedo de nivelo 0 en hierarkiaj etikedoj"
 
 #: ../src/gui/gtkentry.c:230
 msgid "$(TAGS) - tags as set in metadata settings"
-msgstr "$(ETIKEDOJ) - etikedoj kiel metite en la metadatenaj agordoj"
+msgstr "$(TAGS) - etikedoj kiel metite en la metadatenaj agordoj"
 
 #: ../src/gui/guides.c:108
 msgid "horizontal lines"
