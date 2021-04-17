@@ -1084,6 +1084,9 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_iop_atrous_params_t p = *(dt_iop_atrous_params_t *)self->params;
 
+  const float aspect = dt_conf_get_int("plugins/darkroom/atrous/aspect_percent") / 100.0;
+  dtgtk_drawing_area_set_aspect_ratio(widget, aspect);
+
   const float mix = c->in_curve ? 1.0f : p.mix;
 
   for(int k = 0; k < BANDS; k++)
@@ -1526,10 +1529,18 @@ static gboolean area_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
-  gdouble delta_y;
-  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  int delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
-    c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.25 / BANDS, 1.0);
+    if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    {
+      //adjust aspect
+      const int aspect = dt_conf_get_int("plugins/darkroom/atrous/aspect_percent");
+      dt_conf_set_int("plugins/darkroom/atrous/aspect_percent", aspect + delta_y);
+    }
+    else
+      c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.25 / BANDS, 1.0);
+
     gtk_widget_queue_draw(widget);
   }
   return TRUE;
@@ -1585,7 +1596,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
 
   // graph
-  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
+  const float aspect = dt_conf_get_int("plugins/darkroom/atrous/aspect_percent") / 100.0;
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   gtk_widget_add_events(GTK_WIDGET(c->area),
