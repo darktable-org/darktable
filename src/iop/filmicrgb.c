@@ -2580,6 +2580,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
   dt_iop_filmic_rgb_compute_spline(p, &g->spline);
 
+  const float aspect = dt_conf_get_int("plugins/darkroom/filmicrgb/aspect_percent") / 100.0;
+  dtgtk_drawing_area_set_aspect_ratio(widget, aspect);
+
   // Cache the graph objects to avoid recomputing all the view at each redraw
   gtk_widget_get_allocation(widget, &g->allocation);
 
@@ -3570,6 +3573,26 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
   }
 }
 
+static gboolean area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
+  int delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  {
+    if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    {
+      //adjust aspect
+      const int aspect = dt_conf_get_int("plugins/darkroom/filmicrgb/aspect_percent");
+      dt_conf_set_int("plugins/darkroom/filmicrgb/aspect_percent", aspect + delta_y);
+      gtk_widget_queue_draw(widget);
+
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
 
 void gui_init(dt_iop_module_t *self)
 {
@@ -3582,15 +3605,18 @@ void gui_init(dt_iop_module_t *self)
   g->gui_sizes_inited = FALSE;
 
   // don't make the area square to safe some vertical space -- it's not interactive anyway
-  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
+  const float aspect = dt_conf_get_int("plugins/darkroom/filmicrgb/aspect_percent") / 100.0;
+  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
+
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_BUTTON_PRESS_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                                                 | GDK_POINTER_MOTION_MASK);
+                                                 | GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(area_button_press), self);
   g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(area_leave_notify), self);
   g_signal_connect(G_OBJECT(g->area), "enter-notify-event", G_CALLBACK(area_enter_notify), self);
   g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(area_motion_notify), self);
+  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(area_scroll_callback), self);
 
   // Init GTK notebook
   g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
