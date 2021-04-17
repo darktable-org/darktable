@@ -552,7 +552,7 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
   // we store all points
   float dx = 0.0f, dy = 0.0f;
 
-  if(source && nb > 0)
+  if(source && nb > 0 && transf_direction != DT_DEV_TRANSFORM_DIR_ALL)
   {
     dt_masks_point_path_t *pt = (dt_masks_point_path_t *)form->points->data;
     dx = (pt->corner[0] - form->source[0]) * wd;
@@ -703,7 +703,40 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
   }
 
   // and we transform them with all distorted modules
-  if(dt_dev_distort_transform_plus(dev, pipe, iop_order, transf_direction, *points, *points_count))
+  if(source && transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+  {
+    // we transform with all distortion that happen *before* the module
+    // so we have now the TARGET points in module input reference
+    if(dt_dev_distort_transform_plus(dev, pipe, iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL, *points, *points_count))
+    {
+      // now we move all the points by the shift
+      // so we have now the SOURCE points in module input reference
+      float pts[2] = { form->source[0] * wd, form->source[1] * ht };
+      if(!dt_dev_distort_transform_plus(dev, pipe, iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL, pts, 1)) goto fail;
+
+      dx = pts[0] - (*points)[0];
+      dy = pts[1] - (*points)[1];
+      for(int i = 0; i < *points_count; i++)
+      {
+        (*points)[i * 2] += dx;
+        (*points)[i * 2 + 1] += dy;
+      }
+
+      // we apply the rest of the distortions (those after the module)
+      // so we have now the SOURCE points in final image reference
+      if(!dt_dev_distort_transform_plus(dev, pipe, iop_order, DT_DEV_TRANSFORM_DIR_FORW_INCL, *points,
+                                        *points_count))
+        goto fail;
+    }
+
+    if(darktable.unmuted & DT_DEBUG_PERF)
+      dt_print(DT_DEBUG_MASKS, "[masks %s] path_points end took %0.04f sec\n", form->name, dt_get_wtime() - start2);
+
+    dt_masks_dynbuf_free(intersections);
+    dt_free_align(border_init);
+    return 1;
+  }
+  else if(dt_dev_distort_transform_plus(dev, pipe, iop_order, transf_direction, *points, *points_count))
   {
     if(!border || dt_dev_distort_transform_plus(dev, pipe, iop_order, transf_direction, *border, *border_count))
     {
@@ -759,6 +792,7 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
   }
 
   // if we failed, then free all and return
+fail:
   dt_masks_dynbuf_free(intersections);
   dt_free_align(border_init);
   dt_free_align(*points);
@@ -845,11 +879,13 @@ static void _path_get_distance(float x, float y, float as, dt_masks_form_gui_t *
   else *inside_border = 1;
 }
 
-static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points,
-                                     int *points_count, float **border, int *border_count, int source)
+static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points, int *points_count,
+                                   float **border, int *border_count, int source, const dt_iop_module_t *module)
 {
-  return _path_get_pts_border(dev, form, 0.f, DT_DEV_TRANSFORM_DIR_ALL, dev->preview_pipe, points, points_count, border,
-                              border_count, source);
+  if(source && !module) return 0;
+  const double ioporder = (module) ? module->iop_order : 0.0f;
+  return _path_get_pts_border(dev, form, ioporder, DT_DEV_TRANSFORM_DIR_ALL, dev->preview_pipe, points,
+                              points_count, border, border_count, source);
 }
 
 static void _path_get_sizes(struct dt_iop_module_t *module, dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index, float *masks_size, float *feather_size)
@@ -1020,7 +1056,7 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
 
       // we recreate the form points
       dt_masks_gui_form_remove(form, gui, index);
-      dt_masks_gui_form_create(form, gui, index);
+      dt_masks_gui_form_create(form, gui, index, module);
 
       // we save the move
       dt_masks_update_image(darktable.develop);
@@ -1210,7 +1246,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
 
       // we recreate the form points
       dt_masks_gui_form_remove(form, gui, index);
-      dt_masks_gui_form_create(form, gui, index);
+      dt_masks_gui_form_create(form, gui, index, module);
 
       dt_control_queue_redraw_center();
       return 1;
@@ -1259,7 +1295,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
 
         // we recreate the form points
         dt_masks_gui_form_remove(form, gui, index);
-        dt_masks_gui_form_create(form, gui, index);
+        dt_masks_gui_form_create(form, gui, index, module);
         gpt->clockwise = _path_is_clockwise(form);
         // we save the move
         dt_masks_update_image(darktable.develop);
@@ -1318,7 +1354,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
         form->points = g_list_insert(form->points, bzpt, gui->seg_selected + 1);
         _path_init_ctrl_points(form);
         dt_masks_gui_form_remove(form, gui, index);
-        dt_masks_gui_form_create(form, gui, index);
+        dt_masks_gui_form_create(form, gui, index, module);
         gui->point_edited = gui->point_dragging = gui->point_selected = gui->seg_selected + 1;
         gui->seg_selected = -1;
         dt_control_queue_redraw_center();
@@ -1387,7 +1423,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
     gpt->clockwise = _path_is_clockwise(form);
     // we save the move
     dt_masks_update_image(darktable.develop);
@@ -1407,7 +1443,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
 
       // we recreate the form points
       dt_masks_gui_form_remove(form, gui, index);
-      dt_masks_gui_form_create(form, gui, index);
+      dt_masks_gui_form_create(form, gui, index, module);
       gpt->clockwise = _path_is_clockwise(form);
       // we save the move
       dt_masks_update_image(darktable.develop);
@@ -1485,7 +1521,7 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
     dt_masks_update_image(darktable.develop);
@@ -1508,7 +1544,7 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
     dt_masks_update_image(darktable.develop);
@@ -1554,7 +1590,7 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
     gpt->clockwise = _path_is_clockwise(form);
     // we save the move
     dt_masks_update_image(darktable.develop);
@@ -1588,7 +1624,7 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
     gpt->clockwise = _path_is_clockwise(form);
     // we save the move
     dt_masks_update_image(darktable.develop);
@@ -1654,7 +1690,7 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     _path_init_ctrl_points(form);
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
   }
@@ -1692,7 +1728,7 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
 
     dt_control_queue_redraw_center();
     return 1;
@@ -1719,7 +1755,7 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     _path_init_ctrl_points(form);
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
   }
@@ -1749,12 +1785,43 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
 
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
-    dt_masks_gui_form_create(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
   }
   else if(gui->form_dragging || gui->source_dragging)
   {
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
+    float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
+    dt_dev_distort_backtransform(darktable.develop, pts, 1);
+
+    // we move all points
+    if(gui->form_dragging)
+    {
+      dt_masks_point_path_t *point = (dt_masks_point_path_t *)(form->points)->data;
+      const float dx = pts[0] / darktable.develop->preview_pipe->iwidth - point->corner[0];
+      const float dy = pts[1] / darktable.develop->preview_pipe->iheight - point->corner[1];
+      for(GList *points = form->points; points; points = g_list_next(points))
+      {
+        point = (dt_masks_point_path_t *)points->data;
+        point->corner[0] += dx;
+        point->corner[1] += dy;
+        point->ctrl1[0] += dx;
+        point->ctrl1[1] += dy;
+        point->ctrl2[0] += dx;
+        point->ctrl2[1] += dy;
+      }
+    }
+    else
+    {
+      form->source[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
+      form->source[1] = pts[1] / darktable.develop->preview_pipe->iheight;
+    }
+
+    // we recreate the form points
+    dt_masks_gui_form_remove(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
   }
@@ -1855,28 +1922,17 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
   if(!gui) return;
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
-  float dx = 0, dy = 0, dxs = 0, dys = 0;
-  if((gui->group_selected == index) && gui->form_dragging)
-  {
-    dx = gui->posx + gui->dx - gpt->points[2];
-    dy = gui->posy + gui->dy - gpt->points[3];
-  }
-  if((gui->group_selected == index) && gui->source_dragging)
-  {
-    dxs = gui->posx + gui->dx - gpt->source[2];
-    dys = gui->posy + gui->dy - gpt->source[3];
-  }
 
   // draw path
   if(gpt->points_count > nb * 3 + 6)
   {
     cairo_set_dash(cr, dashed, 0, 0);
 
-    cairo_move_to(cr, gpt->points[nb * 6] + dx, gpt->points[nb * 6 + 1] + dy);
+    cairo_move_to(cr, gpt->points[nb * 6], gpt->points[nb * 6 + 1]);
     int seg = 1, seg2 = 0;
     for(int i = nb * 3; i < gpt->points_count; i++)
     {
-      cairo_line_to(cr, gpt->points[i * 2] + dx, gpt->points[i * 2 + 1] + dy);
+      cairo_line_to(cr, gpt->points[i * 2], gpt->points[i * 2 + 1]);
       // we decide to highlight the form segment by segment
       if(gpt->points[i * 2 + 1] == gpt->points[seg * 6 + 3] && gpt->points[i * 2] == gpt->points[seg * 6 + 2])
       {
@@ -1898,7 +1954,7 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
         // and we update the segment number
         seg = (seg + 1) % nb;
         seg2++;
-        cairo_move_to(cr, gpt->points[i * 2] + dx, gpt->points[i * 2 + 1] + dy);
+        cairo_move_to(cr, gpt->points[i * 2], gpt->points[i * 2 + 1]);
       }
     }
   }
@@ -1918,8 +1974,8 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
         anchor_size = 5.0f / zoom_scale;
       }
       dt_draw_set_color_overlay(cr, 0.8, 0.8);
-      cairo_rectangle(cr, gpt->points[k * 6 + 2] - (anchor_size * 0.5) + dx,
-                      gpt->points[k * 6 + 3] - (anchor_size * 0.5) + dy, anchor_size, anchor_size);
+      cairo_rectangle(cr, gpt->points[k * 6 + 2] - (anchor_size * 0.5),
+                      gpt->points[k * 6 + 3] - (anchor_size * 0.5), anchor_size, anchor_size);
       cairo_fill_preserve(cr);
 
       if((gui->group_selected == index) && (k == gui->point_dragging || k == gui->point_selected))
@@ -1939,17 +1995,16 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
   {
     const int k = gui->point_edited;
     // uncomment this part if you want to see "real" control points
-    /*cairo_move_to(cr, gui->points[k*6+2]+dx,gui->points[k*6+3]+dy);
-    cairo_line_to(cr, gui->points[k*6]+dx,gui->points[k*6+1]+dy);
+    /*cairo_move_to(cr, gui->points[k*6+2],gui->points[k*6+3]);
+    cairo_line_to(cr, gui->points[k*6],gui->points[k*6+1]);
     cairo_stroke(cr);
-    cairo_move_to(cr, gui->points[k*6+2]+dx,gui->points[k*6+3]+dy);
-    cairo_line_to(cr, gui->points[k*6+4]+dx,gui->points[k*6+5]+dy);
+    cairo_move_to(cr, gui->points[k*6+2],gui->points[k*6+3]);
+    cairo_line_to(cr, gui->points[k*6+4],gui->points[k*6+5]);
     cairo_stroke(cr);*/
     int ffx = 0, ffy = 0;
-    _path_ctrl2_to_feather(gpt->points[k * 6 + 2] + dx, gpt->points[k * 6 + 3] + dy,
-                           gpt->points[k * 6 + 4] + dx, gpt->points[k * 6 + 5] + dy, &ffx, &ffy,
-                           gpt->clockwise);
-    cairo_move_to(cr, gpt->points[k * 6 + 2] + dx, gpt->points[k * 6 + 3] + dy);
+    _path_ctrl2_to_feather(gpt->points[k * 6 + 2], gpt->points[k * 6 + 3], gpt->points[k * 6 + 4],
+                           gpt->points[k * 6 + 5], &ffx, &ffy, gpt->clockwise);
+    cairo_move_to(cr, gpt->points[k * 6 + 2], gpt->points[k * 6 + 3]);
     cairo_line_to(cr, ffx, ffy);
     cairo_set_line_width(cr, 1.5 / zoom_scale);
     dt_draw_set_color_overlay(cr, 0.3, 0.8);
@@ -1984,11 +2039,11 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
       }
       if(dep)
       {
-        cairo_move_to(cr, gpt->border[i * 2] + dx, gpt->border[i * 2 + 1] + dy);
+        cairo_move_to(cr, gpt->border[i * 2], gpt->border[i * 2 + 1]);
         dep = 0;
       }
       else
-        cairo_line_to(cr, gpt->border[i * 2] + dx, gpt->border[i * 2 + 1] + dy);
+        cairo_line_to(cr, gpt->border[i * 2], gpt->border[i * 2 + 1]);
     }
     // we execute the drawing
     if(gui->border_selected)
@@ -2019,8 +2074,8 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
         anchor_size = 5.0f / zoom_scale;
       }
       dt_draw_set_color_overlay(cr, 0.8, 0.8);
-      cairo_rectangle(cr, gpt->border[k * 6] - (anchor_size * 0.5) + dx,
-                      gpt->border[k * 6 + 1] - (anchor_size * 0.5) + dy, anchor_size, anchor_size);
+      cairo_rectangle(cr, gpt->border[k * 6] - (anchor_size * 0.5), gpt->border[k * 6 + 1] - (anchor_size * 0.5),
+                      anchor_size, anchor_size);
       cairo_fill_preserve(cr);
 
       if(gui->point_border_selected == k)
@@ -2040,8 +2095,8 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
     if((k * 6 + 2) >= 0)
     {
       float x = 0.f, y = 0.f;
-      dt_masks_calculate_source_pos_value(gui, DT_MASKS_PATH, gpt->points[2] + dx, gpt->points[3] + dy,
-                                          gpt->points[k * 6 + 2] + dx, gpt->points[k * 6 + 3] + dy, &x, &y, TRUE);
+      dt_masks_calculate_source_pos_value(gui, DT_MASKS_PATH, gpt->points[2], gpt->points[3],
+                                          gpt->points[k * 6 + 2], gpt->points[k * 6 + 3], &x, &y, TRUE);
       dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
     }
     else
@@ -2068,8 +2123,8 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
   if(!gui->creation && gpt->source_count > nb * 3 + 6)
   {
     // we draw the line between source and dest
-    cairo_move_to(cr, gpt->source[2] + dxs, gpt->source[3] + dys);
-    cairo_line_to(cr, gpt->points[2] + dx, gpt->points[3] + dy);
+    cairo_move_to(cr, gpt->source[2], gpt->source[3]);
+    cairo_line_to(cr, gpt->points[2], gpt->points[3]);
     cairo_set_dash(cr, dashed, 0, 0);
     if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
       cairo_set_line_width(cr, 2.5 / zoom_scale);
@@ -2091,10 +2146,9 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
     else
       cairo_set_line_width(cr, 1.5 / zoom_scale);
     dt_draw_set_color_overlay(cr, 0.3, 0.8);
-    cairo_move_to(cr, gpt->source[nb * 6] + dxs, gpt->source[nb * 6 + 1] + dys);
-    for(int i = nb * 3; i < gpt->source_count; i++)
-      cairo_line_to(cr, gpt->source[i * 2] + dxs, gpt->source[i * 2 + 1] + dys);
-    cairo_line_to(cr, gpt->source[nb * 6] + dxs, gpt->source[nb * 6 + 1] + dys);
+    cairo_move_to(cr, gpt->source[nb * 6], gpt->source[nb * 6 + 1]);
+    for(int i = nb * 3; i < gpt->source_count; i++) cairo_line_to(cr, gpt->source[i * 2], gpt->source[i * 2 + 1]);
+    cairo_line_to(cr, gpt->source[nb * 6], gpt->source[nb * 6 + 1]);
     cairo_stroke_preserve(cr);
     if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
       cairo_set_line_width(cr, 1.0 / zoom_scale);
