@@ -99,8 +99,8 @@ typedef struct dt_lib_histogram_t
   uint8_t *waveform_8bit;
   int waveform_width, waveform_height, waveform_max_width;
   // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
-  uint8_t *vectorscope_display;
-  float vectorscope_pt_x, vectorscope_pt_y;
+  uint8_t *vectorscope_graph;
+  float vectorscope_pt[2];            // point colorpicker position
   int vectorscope_diameter_px;
   // FIXME: These arrays could instead be alloc'd/free'd. Would the only concern about making dt_lib_histogram_t large so long be if it were stored in the DB?
   float hue_ring_rgb[6][VECTORSCOPE_HUES][4] DT_ALIGNED_ARRAY;
@@ -271,7 +271,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
   const int diam_px = d->vectorscope_diameter_px;
   const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
-  uint8_t *const out = d->vectorscope_display;
+  uint8_t *const out = d->vectorscope_graph;
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
 
   // FIXME: is this available from caller?
@@ -327,6 +327,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       }
       d->hue_ring_coord[k][i][0] = chromaticity[1];
       d->hue_ring_coord[k][i][1] = chromaticity[2];
+      // FIXME: we actually want to know max(abs(x)) and max(abs(y)) so can use more of space, then give somethinglike 110% of each on the display
       max_radius = MAX(max_radius, hypotf(chromaticity[1], chromaticity[2]));
     }
   }
@@ -357,8 +358,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
       dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
     }
-    d->vectorscope_pt_x = chromaticity[1] / max_diam;
-    d->vectorscope_pt_y = chromaticity[2] / max_diam;
+    d->vectorscope_pt[0] = chromaticity[1] / max_diam;
+    d->vectorscope_pt[1] = chromaticity[2] / max_diam;
     goto cleanup;
   }
 
@@ -368,7 +369,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // FIXME: faster to have bins just record count and multiply by scale after?
   // FIXME: do something fancy where 16 bits of out are pixel count, the other two are chromaticity?
   const float gain = 1.f / 50.f;
-  d->vectorscope_pt_x = NAN;
+  d->vectorscope_pt[0] = NAN;
   const float scale = gain * (diam_px * diam_px) / (sample_width * sample_height);
 
   // count into bins
@@ -704,7 +705,9 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   const float vs_radius = d->vectorscope_radius;
   const int diam_px = d->vectorscope_diameter_px;
   const int min_size = MIN(width, height);
-  const double scale = min_size / (vs_radius * 2.);
+  // FIXME: background gradient also should be drawn with scale factor
+  const double factor = 2.;
+  const double scale = min_size / (vs_radius * 2.) * factor;
 
   // FIXME: the areas to left/right of the scope could have some data (primaries, whitepoint, scale, etc.)
   cairo_save(cr);
@@ -748,29 +751,35 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
     cairo_line_to(cr, d->hue_ring_coord[n][h][0] * scale, d->hue_ring_coord[n][h][1] * scale);
     cairo_stroke(cr);
   }
-  cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 
-  if(isnan(d->vectorscope_pt_x))
+  if(isnan(d->vectorscope_pt[0]))
   {
     // vectorscope graph
-    cairo_save(cr);
     cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-    cairo_translate(cr, min_size * -0.5, min_size * -0.5);
-    cairo_scale(cr, darktable.gui->ppd*min_size/diam_px, darktable.gui->ppd*min_size/diam_px);
-    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px);
-    cairo_surface_t *source = dt_cairo_image_surface_create_for_data(d->vectorscope_display, CAIRO_FORMAT_RGB24,
+    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
+    // FIXME: if use cairo_mask() could calculate a false color vectorscope and draw with appropriate hues? and if so could also simplify waveform drawing code above, to use color mask to alter channel visibility
+    cairo_surface_t *source = dt_cairo_image_surface_create_for_data(d->vectorscope_graph, CAIRO_FORMAT_RGB24,
                                                                      diam_px, diam_px, stride);
-    // FIXME: what happens if mask has color (not just alpha) -- can use this to calculate false color vectorscope and draw it as a pattern or use it as a mask to draw it white? and if so could also simplify waveform drawing code above, to use color mask to alter channel visibility
-    cairo_set_source_surface(cr, source, 0.0, 0.0);
+
+    // FIXME: note that multiple CAIRO_OPERATOR_ADD passes give very nice intensity -- simulate this in the drawing code?
+    cairo_pattern_t *pattern = cairo_pattern_create_for_surface(source);
+    cairo_matrix_t matrix;
+    cairo_matrix_init_translate(&matrix, 0.5*diam_px/darktable.gui->ppd, 0.5*diam_px/darktable.gui->ppd);
+    cairo_matrix_scale(&matrix, (double)diam_px / min_size / factor / darktable.gui->ppd,
+                       (double) diam_px / min_size / factor / darktable.gui->ppd);
+    cairo_pattern_set_matrix(pattern, &matrix);
+    cairo_set_source(cr, pattern);
     cairo_paint(cr);
+    cairo_pattern_destroy(pattern);
     cairo_surface_destroy(source);
-    cairo_restore(cr);
+    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
   }
   else
   {
     // point sample
+    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
     set_color(cr, darktable.bauhaus->graph_fg);
-    cairo_arc(cr, d->vectorscope_pt_x*min_size, d->vectorscope_pt_y*min_size,
+    cairo_arc(cr, factor*d->vectorscope_pt[0]*min_size, factor*d->vectorscope_pt[1]*min_size,
               DT_PIXEL_APPLY_DPI(3.), 0., M_PI * 2.);
     cairo_fill(cr);
   }
@@ -1526,7 +1535,7 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: what is the appropriate resolution for this: balance memory use, processing speed, helpful resolution
   d->vectorscope_diameter_px = 384;
   const int vectorscope_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px);
-  d->vectorscope_display = dt_alloc_align(64, sizeof(uint8_t) * 4U * vectorscope_stride * d->vectorscope_diameter_px);
+  d->vectorscope_graph = dt_alloc_align(64, sizeof(uint8_t) * 4U * vectorscope_stride * d->vectorscope_diameter_px);
   // initially no vectorscope to draw
   d->vectorscope_radius = 0.f;
 
@@ -1670,7 +1679,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_free_align(d->waveform_linear);
   dt_free_align(d->waveform_display);
   dt_free_align(d->waveform_8bit);
-  dt_free_align(d->vectorscope_display);
+  dt_free_align(d->vectorscope_graph);
   dt_pthread_mutex_destroy(&d->lock);
 
   g_free(self->data);
