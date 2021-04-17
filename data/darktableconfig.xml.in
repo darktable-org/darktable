@@ -2504,6 +2504,13 @@
     <longdescription>aspect ratio of levels graph in per cent</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/rgblevels/aspect_percent</name>
+    <type min="25" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of rgb levels graph in per cent</shortdescription>
+    <longdescription>aspect ratio of rgb levels graph in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/histogram/mode</name>
     <type>
       <enum>
