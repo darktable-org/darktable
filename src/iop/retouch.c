@@ -1787,6 +1787,21 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton, GdkE
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
+  // if we have the shift key pressed, we set it as default
+  if(dt_modifier_is(e->state, GDK_SHIFT_MASK))
+  {
+    dt_conf_set_int("plugins/darkroom/retouch/default_algo", p->algorithm);
+    // and we show a toat msg to confirm
+    if(p->algorithm == DT_IOP_RETOUCH_CLONE)
+      dt_control_log(N_("default tool changed to %s"), N_("cloning"));
+    else if(p->algorithm == DT_IOP_RETOUCH_HEAL)
+      dt_control_log(N_("default tool changed to %s"), N_("healing"));
+    else if(p->algorithm == DT_IOP_RETOUCH_FILL)
+      dt_control_log(N_("default tool changed to %s"), N_("blur"));
+    else if(p->algorithm == DT_IOP_RETOUCH_BLUR)
+      dt_control_log(N_("default tool changed to %s"), N_("fill"));
+  }
+
   return TRUE;
 }
 
@@ -1885,6 +1900,7 @@ void init(dt_iop_module_t *module)
   d->preview_levels[0] = RETOUCH_PREVIEW_LVL_MIN;
   d->preview_levels[1] = 0.f;
   d->preview_levels[2] = RETOUCH_PREVIEW_LVL_MAX;
+  d->algorithm = dt_conf_get_int("plugins/darkroom/retouch/default_algo");
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -2146,21 +2162,38 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(hbox_algo), dt_ui_label_new(_("algorithms:")), FALSE, TRUE, 0);
 
-  g->bt_blur = dt_iop_togglebutton_new(self, N_("tools"), N_("activate blur tool"), NULL,
-                                       G_CALLBACK(rt_select_algorithm_callback), TRUE, 0, 0,
-                                       dtgtk_cairo_paint_tool_blur, hbox_algo);
+  g->bt_blur = dt_iop_togglebutton_new(
+      self, N_("tools"), N_("activate blur tool"), N_("change algorithm for current form"),
+      G_CALLBACK(rt_select_algorithm_callback), TRUE, 0, 0, dtgtk_cairo_paint_tool_blur, hbox_algo);
 
-  g->bt_fill = dt_iop_togglebutton_new(self, N_("tools"), N_("activate fill tool"), NULL,
-                                       G_CALLBACK(rt_select_algorithm_callback), TRUE, 0, 0,
-                                       dtgtk_cairo_paint_tool_fill, hbox_algo);
+  g->bt_fill = dt_iop_togglebutton_new(
+      self, N_("tools"), N_("activate fill tool"), N_("change algorithm for current form"),
+      G_CALLBACK(rt_select_algorithm_callback), TRUE, 0, 0, dtgtk_cairo_paint_tool_fill, hbox_algo);
 
-  g->bt_clone = dt_iop_togglebutton_new(self, N_("tools"), N_("activate cloning tool"), NULL,
-                                        G_CALLBACK(rt_select_algorithm_callback), TRUE, 0, 0,
-                                        dtgtk_cairo_paint_tool_clone, hbox_algo);
+  g->bt_clone = dt_iop_togglebutton_new(
+      self, N_("tools"), N_("activate cloning tool"), N_("change algorithm for current form"),
+      G_CALLBACK(rt_select_algorithm_callback), TRUE, 0, 0, dtgtk_cairo_paint_tool_clone, hbox_algo);
 
-  g->bt_heal = dt_iop_togglebutton_new(self, N_("tools"), N_("activate healing tool"), NULL,
-                                       G_CALLBACK(rt_select_algorithm_callback), TRUE, 0, 0,
-                                       dtgtk_cairo_paint_tool_heal, hbox_algo);
+  g->bt_heal = dt_iop_togglebutton_new(
+      self, N_("tools"), N_("activate healing tool"), N_("change algorithm for current form"),
+      G_CALLBACK(rt_select_algorithm_callback), TRUE, 0, 0, dtgtk_cairo_paint_tool_heal, hbox_algo);
+
+  // overwrite tooltip ourself to handle shift+click
+  gchar *tt2 = dt_util_dstrcat(NULL, "%s\n%s", N_("ctrl+click to change tool for current form"),
+                               N_("shift+click to set the tool as default"));
+  gchar *tt = dt_util_dstrcat(NULL, "%s\n%s", N_("activate blur tool"), tt2);
+  gtk_widget_set_tooltip_text(g->bt_blur, tt);
+  g_free(tt);
+  tt = dt_util_dstrcat(NULL, "%s\n%s", N_("activate fill tool"), tt2);
+  gtk_widget_set_tooltip_text(g->bt_fill, tt);
+  g_free(tt);
+  tt = dt_util_dstrcat(NULL, "%s\n%s", N_("activate cloning tool"), tt2);
+  gtk_widget_set_tooltip_text(g->bt_clone, tt);
+  g_free(tt);
+  tt = dt_util_dstrcat(NULL, "%s\n%s", N_("activate healing tool"), tt2);
+  gtk_widget_set_tooltip_text(g->bt_heal, tt);
+  g_free(tt);
+  g_free(tt2);
 
   // wavelet decompose bar labels
   GtkWidget *grid_wd_labels = gtk_grid_new();
@@ -2370,6 +2403,16 @@ void gui_reset(struct dt_iop_module_t *self)
 {
   // hide the previous masks
   dt_masks_reset_form_gui();
+  // set the algo to the default one
+  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
+  p->algorithm = dt_conf_get_int("plugins/darkroom/retouch/default_algo");
+}
+
+void reload_defaults(dt_iop_module_t *self)
+{
+  // set the algo to the default one
+  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->default_params;
+  p->algorithm = dt_conf_get_int("plugins/darkroom/retouch/default_algo");
 }
 
 void gui_cleanup(dt_iop_module_t *self)
