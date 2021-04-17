@@ -1979,6 +1979,12 @@
     <shortdescription>last page selected in channel mixer rgb notebook</shortdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/retouch/default_algo</name>
+    <type>int</type>
+    <default>2</default>
+    <shortdescription>default algorithm for the retouch module</shortdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/demosaic/fdc_xover_iso</name>
     <type>int</type>
     <default>1600</default>
