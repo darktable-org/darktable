@@ -876,6 +876,11 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
 
       dx = pts[0] - (*points)[0];
       dy = pts[1] - (*points)[1];
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(points_count, points, dx, dy)              \
+    schedule(static) if(*points_count > 100) aligned(points:64)
+#endif
       for(int i = 0; i < *points_count; i++)
       {
         (*points)[i * 2] += dx;

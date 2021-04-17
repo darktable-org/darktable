@@ -590,6 +590,11 @@ static float *_points_to_transform(float x, float y, float radius, float wd, flo
   const float center_y = y * ht;
   points[0] = center_x;
   points[1] = center_y;
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(l, points, center_x, center_y, r)      \
+    schedule(static) if(l > 100) aligned(points:64)
+#endif
   for(int i = 1; i < l + 1; i++)
   {
     const float alpha = (i - 1) * 2.0f * M_PI / (float)l;
@@ -626,6 +631,11 @@ static int _circle_get_points_source(dt_develop_t *dev, float x, float y, float 
     {
       const float dx = pts[0] - (*points)[0];
       const float dy = pts[1] - (*points)[1];
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(points_count, points, dx, dy)              \
+    schedule(static) if(*points_count > 100) aligned(points:64)
+#endif
       for(int i = 0; i < *points_count; i++)
       {
         (*points)[i * 2] += dx;

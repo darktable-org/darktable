@@ -276,7 +276,6 @@ static float *_points_to_transform(float xx, float yy, float radius_a, float rad
   const float sinv = sinf(v);
   const float cosv = cosf(v);
 
-
   // how many points do we need? we only take every nth point and rely on interpolation (only affecting GUI
   // anyhow)
   const int n = 10;
@@ -309,6 +308,11 @@ static float *_points_to_transform(float xx, float yy, float radius_a, float rad
   points[9] = y - b * sinf(v - M_PI / 2.0f);
 
 
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(l, points, x, y, a, b, cosv, sinv)  \
+    schedule(static) if(l > 100) aligned(points:64)
+#endif
   for(int i = 5; i < l + 5; i++)
   {
     const float alpha = (i - 5) * 2.0 * M_PI / (float)l;
@@ -346,6 +350,11 @@ static int _ellipse_get_points_source(dt_develop_t *dev, float xx, float yy, flo
       const float dy = pts[1] - (*points)[1];
       (*points)[0] = pts[0];
       (*points)[1] = pts[1];
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(points_count, points, dx, dy)              \
+    schedule(static) if(*points_count > 100) aligned(points:64)
+#endif
       for(int i = 5; i < *points_count; i++)
       {
         (*points)[i * 2] += dx;
