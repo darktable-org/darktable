@@ -918,7 +918,7 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio( IOP_GRAPH_ASPECT_RATIO ));
 
   gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(c->area), FALSE, FALSE, 0);
