@@ -137,6 +137,8 @@ int dt_imageio_get_index_of_storage(dt_imageio_module_storage_t *storage);
 
 /* add a module into the known module list */
 void dt_imageio_insert_storage(dt_imageio_module_storage_t *storage);
+/* remove a module from the known module list */
+void dt_imageio_remove_storage(dt_imageio_module_storage_t *storage);
 
 // This function returns value of string which stored in the
 // "plugins/lighttable/export/resizing_factor" parameter of the configuration file

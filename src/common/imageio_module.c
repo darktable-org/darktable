@@ -368,6 +368,12 @@ void dt_imageio_insert_storage(dt_imageio_module_storage_t *storage)
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
 }
 
+void dt_imageio_remove_storage(dt_imageio_module_storage_t *storage)
+{
+  darktable.imageio->plugins_storage  = g_list_remove(darktable.imageio->plugins_storage, storage);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
+}
+
 gchar *dt_imageio_resizing_factor_get_and_parsing(double *num, double *denum)
 {
   double _num, _denum;
