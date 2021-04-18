@@ -109,123 +109,190 @@ static INLINE float sqrf(float a)
   return a * a;
 }
 
-// The border interpolation has been taken from rt, adapted to dt.
-// The original dcraw based code had much stronger color artefacts in the border region.
-static INLINE void approxit(float *out, const float *cfa, const float *sum, const int idx, const int c)
+/** This is basically ppg adopted to only write data to RCD_MARGIN */
+static void rcd_ppg_border(float *const out, const float *const in, const int width, const int height, const uint32_t filters)
 {
-  float (*rgb)[4] = (void *)out;
-  if(c == 1)
+  // write approximatad 3-pixel border region to out
+  float sum[8];
+  for(int j = 0; j < height; j++)
   {
-    rgb[idx][0] = sum[0] / sum[3];
-    rgb[idx][1] = fmaxf(0.0f, cfa[idx]);
-    rgb[idx][2] = sum[2] / sum[5];
-  }
-  else
-  {
-    rgb[idx][1] =  sum[1] / sum[4];
-    if (c == 0)
+    for(int i = 0; i < width; i++)
     {
-      rgb[idx][0] = fmaxf(0.0f, cfa[idx]);
-      rgb[idx][2] = sum[2] / sum[5];
-    }
-    else
-    {
-      rgb[idx][0] = sum[0] / sum[3];
-      rgb[idx][2] = fmaxf(0.0f, cfa[idx]);
-    }
-  }
-  rgb[idx][3] = 0.0f;
-}
-
-static void rcd_border_interpolate(dt_dev_pixelpipe_iop_t *piece, float *out, const float *cfa, dt_iop_roi_t *const roi_out,
-                                   const dt_iop_roi_t *const roi_in, const uint32_t filters, const int border)
-{
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-
-  if((width < 2 * border) || (height < 2 * border)) return;
-
-  const int cfarray[4] = {FC(roi_in->y, roi_in->x, filters), FC(roi_in->y, roi_in->x + 1, filters), FC(roi_in->y + 1, roi_in->x, filters), FC(roi_in->y + 1, roi_in->x + 1, filters)};
-
-  for(int i = 0; i < height; i++)
-  {
-    float sum[6];
-    for(int j = 0; j < border; j++)
-    {
-      for(int x = 0; x < 6; x++) { sum[x] = 0.0f; }
-      for(int i1 = i - 1; i1 < i + 2; i1++)
+      if(i == 3 && j >= 3 && j < height - 3) i = width - 3;
+      if(i == width) break;
+      memset(sum, 0, sizeof(float) * 8);
+      for(int y = j - 1; y != j + 2; y++)
       {
-        for(int j1 = j - 1; j1 < j + 2; j1++)
+        for(int x = i - 1; x != i + 2; x++)
         {
-          if((i1 > -1) && (i1 < height) && (j1 > -1))
+          if((y >= 0) && (x >= 0) && (y < height) && (x < width))
           {
-            const int c = FCRCD(i1, j1);
-            sum[c] += fmaxf(0.0f, cfa[i1 * width + j1]);
-            sum[c + 3]++;
+            const int f = FC(y, x, filters);
+            sum[f] += in[(size_t)y * width + x];
+            sum[f + 4]++;
           }
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j));
+      const int f = FC(j, i, filters);
+      for(int c = 0; c < 3; c++)
+      {
+        if(c != f && sum[c + 4] > 0.0f)
+          out[4 * ((size_t)j * width + i) + c] = sum[c] / sum[c + 4];
+        else
+          out[4 * ((size_t)j * width + i) + c] = in[(size_t)j * width + i];
+      }
     }
+  }
 
-    for(int j = width - border; j < width; j++)
+  const float *input = in;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(filters, out, width, height) \
+  shared(input) \
+  schedule(static)
+#endif
+  for(int j = 3; j < height - 3; j++)
+  {
+    float *buf = out + (size_t)4 * width * j + 4 * 3;
+    const float *buf_in = input + (size_t)width * j + 3;
+    for(int i = 3; i < width - 3; i++)
     {
-      for(int x = 0; x < 6; x++) { sum[x] = 0.0f; }
-      for(int i1 = i - 1; i1 < i + 2; i1++)
+      if(i == 9 && j >= 9 && j < height - 9)
       {
-        for(int j1 = j - 1; j1 < j + 2; j1++)
+        i = width - 9;
+        buf = out + (size_t)4 * width * j + 4 * i;
+        buf_in = input + (size_t)width * j + i;
+      }
+      if(i == width) break;
+
+      const int c = FC(j, i, filters);
+      float color[4];
+      const float pc = buf_in[0];
+      if(c == 0 || c == 2)
+      {
+        color[c] = pc;
+        const float pym = buf_in[-width * 1];
+        const float pym2 = buf_in[-width * 2];
+        const float pym3 = buf_in[-width * 3];
+        const float pyM = buf_in[+width * 1];
+        const float pyM2 = buf_in[+width * 2];
+        const float pyM3 = buf_in[+width * 3];
+        const float pxm = buf_in[-1];
+        const float pxm2 = buf_in[-2];
+        const float pxm3 = buf_in[-3];
+        const float pxM = buf_in[+1];
+        const float pxM2 = buf_in[+2];
+        const float pxM3 = buf_in[+3];
+
+        const float guessx = (pxm + pc + pxM) * 2.0f - pxM2 - pxm2;
+        const float diffx = (fabsf(pxm2 - pc) + fabsf(pxM2 - pc) + fabsf(pxm - pxM)) * 3.0f
+                            + (fabsf(pxM3 - pxM) + fabsf(pxm3 - pxm)) * 2.0f;
+        const float guessy = (pym + pc + pyM) * 2.0f - pyM2 - pym2;
+        const float diffy = (fabsf(pym2 - pc) + fabsf(pyM2 - pc) + fabsf(pym - pyM)) * 3.0f
+                            + (fabsf(pyM3 - pyM) + fabsf(pym3 - pym)) * 2.0f;
+        if(diffx > diffy)
         {
-          if((i1 > -1) && (i1 < height ) && (j1 < width))
-          {
-            const int c = FCRCD(i1, j1);
-            sum[c] += fmaxf(0.0f, cfa[i1 * width + j1]);
-            sum[c + 3]++;
-          }
+          // use guessy
+          const float m = fminf(pym, pyM);
+          const float M = fmaxf(pym, pyM);
+          color[1] = fmaxf(fminf(guessy * .25f, M), m);
+        }
+        else
+        {
+          const float m = fminf(pxm, pxM);
+          const float M = fmaxf(pxm, pxM);
+          color[1] = fmaxf(fminf(guessx * .25f, M), m);
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j));
+      else
+        color[1] = pc;
+
+      color[3] = 0.0f;
+      memcpy(buf, color, sizeof(float) * 4);
+      buf += 4;
+      buf_in++;
     }
   }
-  for(int i = 0; i < border; i++)
+// for all pixels: interpolate colors into float array
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(filters, out, width, height) \
+  schedule(static)
+#endif
+  for(int j = 1; j < height - 1; j++)
   {
-    float sum[6];
-    for(int j = border; j < width - border; j++)
+    float *buf = out + (size_t)4 * width * j + 4;
+    for(int i = 1; i < width - 1; i++)
     {
-      for(int x = 0; x < 6; x++) { sum[x] = 0.0f; }
-      for(int i1 = i - 1; i1 < i + 2; i1++)
+      if(i == RCD_MARGIN && j >= RCD_MARGIN && j < height - RCD_MARGIN)
       {
-        for(int j1 = j - 1; j1 < j + 2; j1++)
+        i = width - RCD_MARGIN;
+        buf = out + (size_t)4 * (width * j + i);
+      }
+      const int c = FC(j, i, filters);
+      float color[4] = { buf[0], buf[1], buf[2], buf[3] };
+      const int linesize = 4 * width;
+      // fill all four pixels with correctly interpolated stuff: r/b for green1/2
+      // b for r and r for b
+      if(__builtin_expect(c & 1, 1)) // c == 1 || c == 3)
+      {
+        // calculate red and blue for green pixels:
+        // need 4-nbhood:
+        const float *nt = buf - linesize;
+        const float *nb = buf + linesize;
+        const float *nl = buf - 4;
+        const float *nr = buf + 4;
+        if(FC(j, i + 1, filters) == 0) // red nb in same row
         {
-          if((i1 > -1) && (i1 < height) && (j1 > -1))
-          {
-            const int c = FCRCD(i1, j1);
-            sum[c] += fmaxf(0.0f, cfa[i1 * width + j1]);
-            sum[c + 3]++;
-          }
+          color[2] = (nt[2] + nb[2] + 2.0f * color[1] - nt[1] - nb[1]) * .5f;
+          color[0] = (nl[0] + nr[0] + 2.0f * color[1] - nl[1] - nr[1]) * .5f;
+        }
+        else
+        {
+          // blue nb
+          color[0] = (nt[0] + nb[0] + 2.0f * color[1] - nt[1] - nb[1]) * .5f;
+          color[2] = (nl[2] + nr[2] + 2.0f * color[1] - nl[1] - nr[1]) * .5f;
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j));
-    }
-  }
-  for(int i = height - border; i < height; i++)
-  {
-    float sum[6];
-    for(int j = border; j < width - border; j++)
-    {
-      for(int x = 0; x < 6; x++) { sum[x] = 0.0f; }
-      for(int i1 = i - 1; i1 < i + 2; i1++)
+      else
       {
-        for(int j1 = j - 1; j1 < j + 2; j1++)
+        // get 4-star-nbhood:
+        const float *ntl = buf - 4 - linesize;
+        const float *ntr = buf + 4 - linesize;
+        const float *nbl = buf - 4 + linesize;
+        const float *nbr = buf + 4 + linesize;
+
+        if(c == 0)
         {
-          if((i1 > -1) && (i1 < height) && (j1 < width))
-          {
-            const int c = FCRCD(i1, j1);
-            sum[c] += fmaxf(0.0f, cfa[i1 * width + j1]);
-            sum[c + 3]++;
-          }
+          // red pixel, fill blue:
+          const float diff1 = fabsf(ntl[2] - nbr[2]) + fabsf(ntl[1] - color[1]) + fabsf(nbr[1] - color[1]);
+          const float guess1 = ntl[2] + nbr[2] + 2.0f * color[1] - ntl[1] - nbr[1];
+          const float diff2 = fabsf(ntr[2] - nbl[2]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
+          const float guess2 = ntr[2] + nbl[2] + 2.0f * color[1] - ntr[1] - nbl[1];
+          if(diff1 > diff2)
+            color[2] = guess2 * .5f;
+          else if(diff1 < diff2)
+            color[2] = guess1 * .5f;
+          else
+            color[2] = (guess1 + guess2) * .25f;
+        }
+        else // c == 2, blue pixel, fill red:
+        {
+          const float diff1 = fabsf(ntl[0] - nbr[0]) + fabsf(ntl[1] - color[1]) + fabsf(nbr[1] - color[1]);
+          const float guess1 = ntl[0] + nbr[0] + 2.0f * color[1] - ntl[1] - nbr[1];
+          const float diff2 = fabsf(ntr[0] - nbl[0]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
+          const float guess2 = ntr[0] + nbl[0] + 2.0f * color[1] - ntr[1] - nbl[1];
+          if(diff1 > diff2)
+            color[0] = guess2 * .5f;
+          else if(diff1 < diff2)
+            color[0] = guess1 * .5f;
+          else
+            color[0] = (guess1 + guess2) * .25f;
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j));
+      memcpy(buf, color, sizeof(float) * 4);
+      buf += 4;
     }
   }
 }
@@ -244,6 +311,8 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
     dt_control_log(_("[rcd_demosaic] too small area"));
     return;
   }
+
+  rcd_ppg_border(out, in, width, height, filters);
 
   const float scaler = fmaxf(piece->pipe->dsc.processed_maximum[0], fmaxf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
   const float revscaler = 1.0f / scaler;
@@ -514,7 +583,6 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
     dt_free_align(P_CDiff_Hpf);
     dt_free_align(Q_CDiff_Hpf);
   }
-  rcd_border_interpolate(piece, out, in, roi_out, roi_in, filters, RCD_MARGIN);
 }
 
 // revert rcd specific aggressive optimizing
