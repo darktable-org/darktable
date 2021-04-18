@@ -342,6 +342,9 @@ static const char* method2string(dt_iop_demosaic_method_t method)
     (a) = tmp;                                                                                               \
   }
 
+#ifdef _OPENMP
+  #pragma omp declare simd aligned(in, out)
+#endif
 static void pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi, const uint32_t filters,
                          const int num_passes, const float threshold)
 {
@@ -2569,15 +2572,12 @@ static void passthrough_color(float *out, const float *const in, dt_iop_roi_t *c
 }
 
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
+#ifdef _OPENMP
+  #pragma omp declare simd aligned(in, out)
+#endif
 static void demosaic_ppg(float *const out, const float *const in, const dt_iop_roi_t *const roi_out,
                          const dt_iop_roi_t *const roi_in, const uint32_t filters, const float thrs)
 {
-  // offsets only where the buffer ends:
-  const int offx = 3; // MAX(0, 3 - roi_out->x);
-  const int offy = 3; // MAX(0, 3 - roi_out->y);
-  const int offX = 3; // MAX(0, 3 - (roi_in->width  - (roi_out->x + roi_out->width)));
-  const int offY = 3; // MAX(0, 3 - (roi_in->height - (roi_out->y + roi_out->height)));
-
   // these may differ a little, if you're unlucky enough to split a bayer block with cropping or similar.
   // we never want to access the input out of bounds though:
   assert(roi_in->width >= roi_out->width);
@@ -2587,7 +2587,7 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
   for(int j = 0; j < roi_out->height; j++)
     for(int i = 0; i < roi_out->width; i++)
     {
-      if(i == offx && j >= offy && j < roi_out->height - offY) i = roi_out->width - offX;
+      if(i == 3 && j >= 3 && j < roi_out->height - 3) i = roi_out->width - 3;
       if(i == roi_out->width) break;
       memset(sum, 0, sizeof(float) * 8);
       for(int y = j - 1; y != j + 2; y++)
@@ -2620,37 +2620,22 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
     pre_median(med_in, in, roi_in, filters, 1, thrs);
     input = med_in;
   }
-// for all pixels: interpolate green into float array, or copy color.
+// for all pixels except those in the 3 pixel border:
+// interpolate green from input into out float array, or copy color.
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(filters, out, roi_in, roi_out, offx, offy, offX, offY) \
+  dt_omp_firstprivate(filters, out, roi_in, roi_out) \
   shared(input) \
   schedule(static)
 #endif
-  for(int j = offy; j < roi_out->height - offY; j++)
+  for(int j = 3; j < roi_out->height - 3; j++)
   {
-    float *buf = out + (size_t)4 * roi_out->width * j + 4 * offx;
-    const float *buf_in = input + (size_t)roi_in->width * (j + roi_out->y) + offx + roi_out->x;
-    for(int i = offx; i < roi_out->width - offX; i++)
+    float *buf = out + (size_t)4 * roi_out->width * j + 4 * 3;
+    const float *buf_in = input + (size_t)roi_in->width * (j + roi_out->y) + 3 + roi_out->x;
+    for(int i = 3; i < roi_out->width - 3; i++)
     {
       const int c = FC(j, i, filters);
-#if defined(__SSE__)
-      // prefetch what we need soon (load to cpu caches)
-      _mm_prefetch((char *)buf_in + 256, _MM_HINT_NTA); // TODO: try HINT_T0-3
-      _mm_prefetch((char *)buf_in + roi_in->width + 256, _MM_HINT_NTA);
-      _mm_prefetch((char *)buf_in + 2 * roi_in->width + 256, _MM_HINT_NTA);
-      _mm_prefetch((char *)buf_in + 3 * roi_in->width + 256, _MM_HINT_NTA);
-      _mm_prefetch((char *)buf_in - roi_in->width + 256, _MM_HINT_NTA);
-      _mm_prefetch((char *)buf_in - 2 * roi_in->width + 256, _MM_HINT_NTA);
-      _mm_prefetch((char *)buf_in - 3 * roi_in->width + 256, _MM_HINT_NTA);
-#endif
-
-#if defined(__SSE__)
-      __m128 col = _mm_load_ps(buf);
-      float *color = (float *)&col;
-#else
-      float color[4] = { buf[0], buf[1], buf[2], buf[3] };
-#endif
+      float color[4];
       const float pc = buf_in[0];
       // if(__builtin_expect(c == 0 || c == 2, 1))
       if(c == 0 || c == 2)
@@ -2693,6 +2678,7 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
       else
         color[1] = pc;
 
+      color[3] = 0.0f;
       // write using MOVNTPS (write combine omitting caches)
       // _mm_stream_ps(buf, col);
       memcpy(buf, color, sizeof(float) * 4);
@@ -2700,10 +2686,9 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
       buf_in++;
     }
   }
-// SFENCE (make sure stuff is stored now)
-// _mm_sfence();
 
-// for all pixels: interpolate colors into float array
+// for all pixels except the outermost row/column:
+// interpolate colors using out as input into float out array
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(filters, out, roi_out) \
@@ -2715,19 +2700,9 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
     for(int i = 1; i < roi_out->width - 1; i++)
     {
       // also prefetch direct nbs top/bottom
-#if defined(__SSE__)
-      _mm_prefetch((char *)buf + 256, _MM_HINT_NTA);
-      _mm_prefetch((char *)buf - roi_out->width * 4 * sizeof(float) + 256, _MM_HINT_NTA);
-      _mm_prefetch((char *)buf + roi_out->width * 4 * sizeof(float) + 256, _MM_HINT_NTA);
-#endif
-
       const int c = FC(j, i, filters);
-#if defined(__SSE__)
-      __m128 col = _mm_load_ps(buf);
-      float *color = (float *)&col;
-#else
       float color[4] = { buf[0], buf[1], buf[2], buf[3] };
-#endif
+
       // fill all four pixels with correctly interpolated stuff: r/b for green1/2
       // b for r and r for b
       if(__builtin_expect(c & 1, 1)) // c == 1 || c == 3)
@@ -3700,6 +3675,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   cl_mem dev_aux = NULL;
   cl_mem dev_tmp = NULL;
+  cl_mem dev_med = NULL;
   cl_mem dev_green_eq = NULL;
   cl_int err = -999;
 
@@ -3747,8 +3723,28 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     }
     else if(demosaicing_method == DT_IOP_DEMOSAIC_PPG)
     {
+      dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
+      if(dev_tmp == NULL) goto error;
+
+      {
+        const int myborder = 3;
+        // manage borders
+        size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+        dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 0, sizeof(cl_mem), &dev_in);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 1, sizeof(cl_mem), &dev_tmp);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 2, sizeof(int), (void *)&width);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 3, sizeof(int), (void *)&height);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 4, sizeof(uint32_t), (void *)&piece->pipe->dsc.filters);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 5, sizeof(int), (void *)&myborder);
+        err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_border_interpolate, sizes);
+        if(err != CL_SUCCESS) goto error;
+      }
+
       if(data->median_thrs > 0.0f)
       {
+        dev_med = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
+        if(dev_med == NULL) goto error;
+
         dt_opencl_local_buffer_t locopt
           = (dt_opencl_local_buffer_t){ .xoffset = 2*2, .xfactor = 1, .yoffset = 2*2, .yfactor = 1,
                                         .cellsize = 1 * sizeof(float), .overhead = 0,
@@ -3760,7 +3756,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
         size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
         size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
         dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 0, sizeof(cl_mem), &dev_in);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 1, sizeof(cl_mem), &dev_aux);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 1, sizeof(cl_mem), &dev_med);
         dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 2, sizeof(int), &width);
         dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 3, sizeof(int), &height);
         dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 4, sizeof(uint32_t),
@@ -3772,9 +3768,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
         if(err != CL_SUCCESS) goto error;
         dev_in = dev_aux;
       }
-
-      dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
-      if(dev_tmp == NULL) goto error;
+      else dev_med = dev_in;
 
       {
         dt_opencl_local_buffer_t locopt
@@ -3787,7 +3781,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
         size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
         size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-        dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_green, 0, sizeof(cl_mem), &dev_in);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_green, 0, sizeof(cl_mem), &dev_med);
         dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_green, 1, sizeof(cl_mem), &dev_tmp);
         dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_green, 2, sizeof(int), &width);
         dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_green, 3, sizeof(int), &height);
@@ -3821,20 +3815,6 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
                              sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2), NULL);
 
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_ppg_redblue, sizes, local);
-        if(err != CL_SUCCESS) goto error;
-      }
-
-      {
-        const int myborder = 3;
-        // manage borders
-        size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-        dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 0, sizeof(cl_mem), &dev_in);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 1, sizeof(cl_mem), &dev_aux);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 2, sizeof(int), (void *)&width);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 3, sizeof(int), (void *)&height);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 4, sizeof(uint32_t), (void *)&piece->pipe->dsc.filters);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 5, sizeof(int), (void *)&myborder);
-        err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_border_interpolate, sizes);
         if(err != CL_SUCCESS) goto error;
       }
     }
@@ -3900,9 +3880,10 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   }
 
   if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
+  if(dev_med != dev_in) dt_opencl_release_mem_object(dev_med);
   dt_opencl_release_mem_object(dev_green_eq);
   dt_opencl_release_mem_object(dev_tmp);
-  dev_aux = dev_green_eq = dev_tmp = NULL;
+  dev_aux = dev_green_eq = dev_tmp = dev_med = NULL;
 
   // color smoothing
   if(data->color_smoothing)
@@ -3915,6 +3896,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
 error:
   if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
+  if(dev_med != dev_in) dt_opencl_release_mem_object(dev_med);
   dt_opencl_release_mem_object(dev_green_eq);
   dt_opencl_release_mem_object(dev_tmp);
   dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %d\n", err);
