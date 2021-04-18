@@ -489,6 +489,9 @@ static gboolean lowlight_draw(GtkWidget *widget, cairo_t *crf, gpointer user_dat
   dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
   dt_iop_lowlight_params_t p = *(dt_iop_lowlight_params_t *)self->params;
 
+  const float aspect = dt_conf_get_int("plugins/darkroom/lowlight/aspect_percent") / 100.0;
+  dtgtk_drawing_area_set_aspect_ratio(widget, aspect);
+
   dt_draw_curve_set_point(c->transition_curve, 0, p.transition_x[DT_IOP_LOWLIGHT_BANDS - 2] - 1.0,
                           p.transition_y[0]);
   for(int k = 0; k < DT_IOP_LOWLIGHT_BANDS; k++)
@@ -790,10 +793,17 @@ static gboolean lowlight_scrolled(GtkWidget *widget, GdkEventScroll *event, gpoi
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
-  gdouble delta_y;
-  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  int delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
-    c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.2 / DT_IOP_LOWLIGHT_BANDS, 1.0);
+    if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    {
+      //adjust aspect
+      const int aspect = dt_conf_get_int("plugins/darkroom/lowlight/aspect_percent");
+      dt_conf_set_int("plugins/darkroom/lowlight/aspect_percent", aspect + delta_y);
+    }
+    else
+      c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.2 / DT_IOP_LOWLIGHT_BANDS, 1.0);
     gtk_widget_queue_draw(widget);
   }
 
@@ -820,7 +830,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
+  const float aspect = dt_conf_get_int("plugins/darkroom/lowlight/aspect_percent") / 100.0;
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), FALSE, FALSE, 0);
 

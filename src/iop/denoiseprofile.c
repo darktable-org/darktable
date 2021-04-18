@@ -3178,6 +3178,9 @@ static gboolean denoiseprofile_draw(GtkWidget *widget, cairo_t *crf, gpointer us
   dt_iop_denoiseprofile_gui_data_t *c = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_denoiseprofile_params_t p = *(dt_iop_denoiseprofile_params_t *)self->params;
 
+  const float aspect = dt_conf_get_int("plugins/darkroom/denoiseprofile/aspect_percent") / 100.0;
+  dtgtk_drawing_area_set_aspect_ratio(widget, aspect);
+
   int ch = (int)c->channel;
   dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.f, p.y[ch][0]);
   for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
@@ -3476,10 +3479,18 @@ static gboolean denoiseprofile_scrolled(GtkWidget *widget, GdkEventScroll *event
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
-  gdouble delta_y;
-  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  int delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
-    c->mouse_radius = CLAMP(c->mouse_radius * (1.f + 0.1f * delta_y), 0.2f / DT_IOP_DENOISE_PROFILE_BANDS, 1.f);
+    if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    {
+      //adjust aspect
+      const int aspect = dt_conf_get_int("plugins/darkroom/denoiseprofile/aspect_percent");
+      dt_conf_set_int("plugins/darkroom/denoiseprofile/aspect_percent", aspect + delta_y);
+    }
+    else
+      c->mouse_radius = CLAMP(c->mouse_radius * (1.f + 0.1f * delta_y), 0.2f / DT_IOP_DENOISE_PROFILE_BANDS, 1.f);
+
     gtk_widget_queue_draw(widget);
   }
 
@@ -3556,7 +3567,9 @@ void gui_init(dt_iop_module_t *self)
   g->x_move = -1;
   g->mouse_radius = 1.0f / (DT_IOP_DENOISE_PROFILE_BANDS * 2);
 
-  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
+  const float aspect = dt_conf_get_int("plugins/darkroom/denoiseprofile/aspect_percent") / 100.0;
+  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
+
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                                  | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
