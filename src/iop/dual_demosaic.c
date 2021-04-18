@@ -60,15 +60,6 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
   dt_masks_calc_luminance_mask(rgb_data, blend, width, height);
   dt_masks_calc_detail_mask(blend, blend, tmp, width, height, contrastf, TRUE);  
 
-  const float filler = 0.0f;
-  dt_iop_image_fill(blend, filler, width, 4, 1);
-  dt_iop_image_fill(&blend[(height-4) * width], filler, width, 4, 1);
-  for(int row = 4; row < height - 4; row++)
-  {
-    dt_iop_image_fill(&blend[row * width], filler, 4, 1, 1);
-    dt_iop_image_fill(&blend[row * width + width - 4], filler, 4, 1, 1);
-  }
-
   if(dual_mask)
   {
 #ifdef _OPENMP
@@ -80,13 +71,6 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
     {
       for(int c = 0; c < 4; c++)
         rgb_data[idx * 4 + c] = blend[idx];
-    }
-    dt_iop_image_fill(rgb_data, filler, width, 4, 4);
-    dt_iop_image_fill(&rgb_data[4 * ((height-4) * width)], filler, width, 4, 4);
-    for(int row = 4; row < height - 4; row++)
-    {
-      dt_iop_image_fill(&rgb_data[4 * row * width], filler, 4, 1, 4);
-      dt_iop_image_fill(&rgb_data[4 * (row * width + width - 4)], filler, 4, 1, 4);
     }
   }
   else

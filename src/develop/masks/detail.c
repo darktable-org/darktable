@@ -114,6 +114,7 @@ void dt_masks_blur_9x9(float *const restrict src, float *const restrict out, con
       out[i] = fminf(1.0f, fmaxf(0.0f, val));
     }
   }
+  dt_masks_extend_border(out, width, height, 4);
 }
 
 void dt_masks_calc_luminance_mask(float *const restrict src, float *const restrict mask, const int width, const int height)
