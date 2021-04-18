@@ -2462,6 +2462,62 @@
     <longdescription>height of the histogram module in the darkroom and tethering views</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/atrous/aspect_percent</name>
+    <type min="50" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of contrast equalizer gui in per cent</shortdescription>
+    <longdescription>aspect ratio of contrast equalizer gui in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/denoiseprofile/aspect_percent</name>
+    <type min="50" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of denoise (profiled) wavelets gui in per cent</shortdescription>
+    <longdescription>aspect ratio of denoise (profiled) wavelets gui in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/rawdenoise/aspect_percent</name>
+    <type min="50" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of raw denoise wavelets gui in per cent</shortdescription>
+    <longdescription>aspect ratio of raw denoise wavelets gui in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/colorzones/aspect_percent</name>
+    <type min="50" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of color zones graph in per cent</shortdescription>
+    <longdescription>aspect ratio of color zones graph in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/lowlight/aspect_percent</name>
+    <type min="50" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of lowlight graph in per cent</shortdescription>
+    <longdescription>aspect ratio of lowlight graph in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/levels/aspect_percent</name>
+    <type min="25" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of levels graph in per cent</shortdescription>
+    <longdescription>aspect ratio of levels graph in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/rgblevels/aspect_percent</name>
+    <type min="25" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of rgb levels graph in per cent</shortdescription>
+    <longdescription>aspect ratio of rgb levels graph in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/filmicrgb/aspect_percent</name>
+    <type min="50" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of filmic rgb graph in per cent</shortdescription>
+    <longdescription>aspect ratio of filmic rgb graph in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/histogram/mode</name>
     <type>
       <enum>
