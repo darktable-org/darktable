@@ -36,8 +36,7 @@
 
 /* Modules box (plugins) */
 @define-color plugin_bg_color @grey_35;
-@define-color plugin_fg_color @grey_85;
-@define-color section_label @grey_75;
+@define-color plugin_fg_color @fg_color;
 @define-color plugin_label_color @grey_70;
 
 /* Modules controls (sliders and comboboxes) */
