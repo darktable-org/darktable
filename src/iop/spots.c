@@ -56,6 +56,11 @@ const char *name()
   return _("spot removal");
 }
 
+const char *deprecated_msg()
+{
+  return _("this module is deprecated. please use the retouch module instead.");
+}
+
 const char *description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("remove sensor dust spots"),
@@ -72,7 +77,7 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_NO_MASKS;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_NO_MASKS | IOP_FLAGS_DEPRECATED;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

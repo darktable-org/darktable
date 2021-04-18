@@ -1609,7 +1609,6 @@ void init_presets(dt_lib_module_t *self)
   AM("rotatepixels");
   AM("scalepixels");
   AM("sharpen");
-  AM("spots");
 
   SMG(C_("modulegroup", "effect"), "effect");
   AM("bloom");
@@ -1826,7 +1825,6 @@ void init_presets(dt_lib_module_t *self)
   AM("retouch");
   AM("sharpen");
   AM("soften");
-  AM("spots");
   AM("vignette");
   AM("watermark");
   AM("censorize");
@@ -1839,7 +1837,7 @@ void init_presets(dt_lib_module_t *self)
 
   // this is a special preset for all newly deprecated modules
   // so users still have a chance to access them until next release (with warning messages)
-  // this modules are deprecated in 3.4 and should be removed from this group in 3.6
+  // this modules are deprecated in 3.4 and should be removed from this group in 3.8 (1 year later)
   SNQA();
   SMG(C_("modulegroup", "deprecated"), "basic");
   AM("zonesystem");
@@ -1850,6 +1848,8 @@ void init_presets(dt_lib_module_t *self)
   AM("tonemap");
   AM("vibrance");
   AM("basicadj");
+  // this modules are deprecated in 3.6 and should be removed 1 yer later
+  AM("spots");
 
   dt_lib_presets_add(_(DEPRECATED_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
