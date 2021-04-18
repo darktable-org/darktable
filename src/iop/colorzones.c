@@ -1053,6 +1053,9 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t p = *(dt_iop_colorzones_params_t *)self->params;
 
+  const float aspect = dt_conf_get_int("plugins/darkroom/colorzones/aspect_percent") / 100.0;
+  dtgtk_drawing_area_set_aspect_ratio(widget, aspect);
+
   if(p.splines_version == DT_IOP_COLORZONES_SPLINES_V1)
   {
     for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++)
@@ -1681,11 +1684,11 @@ static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
-  gdouble delta_y;
+  int delta_y;
 
   if(darktable.develop->darkroom_skip_mouse_events)
   {
-    if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+    if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
     {
       GtkAllocation allocation;
       gtk_widget_get_allocation(widget, &allocation);
@@ -1710,9 +1713,22 @@ static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event
     return TRUE;
   }
 
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  {
+    if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    {
+      //adjust aspect
+      const int aspect = dt_conf_get_int("plugins/darkroom/colorzones/aspect_percent");
+      dt_conf_set_int("plugins/darkroom/colorzones/aspect_percent", aspect + delta_y);
+      gtk_widget_queue_draw(widget);
+
+      return TRUE;
+    }
+  }
+
   if(c->selected < 0 && !c->edit_by_area) return TRUE;
 
-  if(dt_gui_get_scroll_delta(event, &delta_y))
+  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
     dt_iop_color_picker_reset(self, TRUE);
 
@@ -2384,7 +2400,9 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->colorpicker_set_values), "toggled", G_CALLBACK(_color_picker_callback), self);
 
   // the nice graph
-  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
+  const float aspect = dt_conf_get_int("plugins/darkroom/colorzones/aspect_percent") / 100.0;
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
+
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   GtkWidget *dabox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
