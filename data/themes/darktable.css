@@ -84,7 +84,7 @@
 /* Modules box (plugins) */
 @define-color plugin_bg_color @grey_20;
 @define-color plugin_fg_color @fg_color;
-@define-color section_label @grey_60;
+@define-color section_label shade(@plugin_fg_color, 0.9);
 @define-color plugin_label_color @grey_65;
 
 /* Modules controls (sliders and comboboxes) */
