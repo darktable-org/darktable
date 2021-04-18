@@ -84,6 +84,10 @@ you are strongly advised to take a backup first.
 
 * bugfix - Changed text_view widget to wrap lines when the text exceeds the width of the widget
 
+* storage removal - add darktable.destroy_storage() to remove a storage from the exporter
+
+* Change API to 7.0.0 for darktable 3.6.0 due to all of the breaking changes this development cycle
+
 ## Changed Dependencies
 
 ## RawSpeed changes
