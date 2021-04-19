@@ -484,6 +484,12 @@ static inline void *dt_alloc_perthread(const size_t n, const size_t objsize, siz
   *padded_size = 64 * cache_lines / objsize;
   return __builtin_assume_aligned(dt_alloc_align(64, 64 * cache_lines * dt_get_num_threads()), 64);
 }
+static inline void *dt_calloc_perthread(const size_t n, const size_t objsize, size_t* padded_size)
+{
+  void *const buf = (float*)dt_alloc_perthread(n, objsize, padded_size);
+  memset(buf, 0, *padded_size * dt_get_num_threads() * objsize);
+  return buf;
+}
 // Same as dt_alloc_perthread, but the object is a float.
 static inline float *dt_alloc_perthread_float(const size_t n, size_t* padded_size)
 {
