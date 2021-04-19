@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-04-19 18:20+0200\n"
+"POT-Creation-Date: 2021-04-19 20:25+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -10677,7 +10677,7 @@ msgstr ""
 #: ../src/iop/colorbalancergb.c:1254 ../src/iop/colorbalancergb.c:1261
 #: ../src/iop/colorbalancergb.c:1268
 msgid ""
-"increase or decrease saturation proportionnaly to the original pixel "
+"increase or decrease saturation proportionally to the original pixel "
 "saturation"
 msgstr ""
 
@@ -10692,7 +10692,7 @@ msgstr ""
 #: ../src/iop/colorbalancergb.c:1285 ../src/iop/colorbalancergb.c:1292
 #: ../src/iop/colorbalancergb.c:1299
 msgid ""
-"increase or decrease brilliance proportionnaly to the original pixel "
+"increase or decrease brilliance proportionally to the original pixel "
 "brilliance"
 msgstr ""
 
