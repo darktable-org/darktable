@@ -951,8 +951,8 @@ static void _brush_get_distance(float x, float y, float as, dt_masks_form_gui_t 
   // add support for clone masks
   if(gpt->points_count > 2 + corner_count * 3 && gpt->source_count > 2 + corner_count * 3)
   {
-    float dx = -gpt->points[2] + gpt->source[2];
-    float dy = -gpt->points[3] + gpt->source[3];
+    const float dx = -gpt->points[2] + gpt->source[2];
+    const float dy = -gpt->points[3] + gpt->source[3];
 
     int current_seg = 1;
     for(int i = corner_count * 3; i < gpt->points_count; i++)
