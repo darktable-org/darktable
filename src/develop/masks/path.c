@@ -834,7 +834,8 @@ static void _path_get_distance(float x, float y, float as, dt_masks_form_gui_t *
   }
 
   // we check if it's inside borders
-  if(!dt_masks_point_in_form_exact(x,yf,gpt->border,corner_count * 3,gpt->border_count)) return;
+  if(!dt_masks_point_in_form_exact(x, yf, gpt->border, corner_count * 3, gpt->border_count))
+    return;
 
   *inside = 1;
 
@@ -857,7 +858,8 @@ static void _path_get_distance(float x, float y, float as, dt_masks_form_gui_t *
         continue;
       }
       // do we change of path segment ?
-      if(gpt->points[i * 2 + 1] == gpt->points[current_seg * 6 + 3] && gpt->points[i * 2] == gpt->points[current_seg * 6 + 2])
+      if(gpt->points[i * 2 + 1] == gpt->points[current_seg * 6 + 3]
+         && gpt->points[i * 2] == gpt->points[current_seg * 6 + 2])
       {
         current_seg = (current_seg + 1) % corner_count;
       }
@@ -2241,7 +2243,7 @@ static int _get_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe
 static int _path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
                                  dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
 {
-  return _get_area(module, piece, form,width, height, posx, posy, 1);
+  return _get_area(module, piece, form, width, height, posx, posy, 1);
 }
 
 static int _path_get_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,

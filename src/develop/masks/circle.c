@@ -42,7 +42,7 @@ static void _circle_get_distance(float x, float y, float as, dt_masks_form_gui_t
   if(!gpt) return;
 
   // we first check if we are inside the source form
-  if(dt_masks_point_in_form_exact(x,yf,gpt->source,1,gpt->source_count))
+  if(dt_masks_point_in_form_exact(x, yf, gpt->source, 1, gpt->source_count))
   {
     *inside_source = 1;
     *inside = 1;
@@ -50,13 +50,13 @@ static void _circle_get_distance(float x, float y, float as, dt_masks_form_gui_t
   }
 
   // we check if it's inside borders
-  if(!dt_masks_point_in_form_exact(x,yf,gpt->border,1,gpt->border_count)) return;
+  if(!dt_masks_point_in_form_exact(x, yf, gpt->border, 1, gpt->border_count)) return;
 
   *inside = 1;
   *near = 0;
 
   // and we check if it's inside form
-  *inside_border = !(dt_masks_point_in_form_near(x,yf,gpt->points,1,gpt->points_count,as,near));
+  *inside_border = !(dt_masks_point_in_form_near(x, yf, gpt->points, 1, gpt->points_count, as, near));
 }
 
 static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up,
@@ -262,7 +262,9 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
       dt_dev_add_history_item(darktable.develop, crea_module, TRUE);
       // and we switch in edit mode to show all the forms
       // spots and retouch have their own handling of creation_continuous
-      if(gui->creation_continuous && ( strcmp(crea_module->so->op, "spots") == 0 || strcmp(crea_module->so->op, "retouch") == 0))
+      if(gui->creation_continuous
+         && (strcmp(crea_module->so->op, "spots") == 0
+             || strcmp(crea_module->so->op, "retouch") == 0))
         dt_masks_set_edit_mode_single_form(crea_module, form->formid, DT_MASKS_EDIT_FULL);
       else if(!gui->creation_continuous)
         dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
