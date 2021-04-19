@@ -43,10 +43,6 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path);
 
 void dt_action_define_key_pressed_accel(dt_action_t *action, const gchar *name, GtkAccelKey *key);
 
-void dt_action_define_iop(dt_iop_module_t *self, const gchar *path, GtkWidget *widget);
-
-dt_action_t *dt_action_define(dt_action_t *action, const gchar *path, GtkWidget *widget);
-
 void dt_action_define_preset(dt_action_t *action, const gchar *name);
 // delete if new_name == NULL
 void dt_action_rename_preset(dt_action_t *action, const gchar *old_name, const gchar *new_name);
@@ -97,8 +93,7 @@ typedef enum dt_shortcut_move_t
 
 typedef enum dt_action_element_t
 {
-  DT_ACTION_ELEMENT_VALUE = 0,
-  DT_ACTION_ELEMENT_SELECTION = 0,
+  DT_ACTION_ELEMENT_DEFAULT = 0,
 } dt_action_element_t;
 
 typedef enum dt_action_effect_t
@@ -109,20 +104,20 @@ typedef enum dt_action_effect_t
   DT_ACTION_EFFECT_DEFAULT_DOWN = 2,
 
   // Sliders
-  DT_ACTION_EFFECT_RESET = 0,
+  DT_ACTION_EFFECT_EDIT = 0,
   DT_ACTION_EFFECT_UP = 1,
   DT_ACTION_EFFECT_DOWN = 2,
-  DT_ACTION_EFFECT_TOP = 3,
-  DT_ACTION_EFFECT_BOTTOM = 4,
-  DT_ACTION_EFFECT_EDIT = 5,
+  DT_ACTION_EFFECT_RESET = 3,
+  DT_ACTION_EFFECT_TOP = 4,
+  DT_ACTION_EFFECT_BOTTOM = 5,
 
   // Combos
-//DT_ACTION_EFFECT_RESET = 0,
+  DT_ACTION_EFFECT_POPUP = 0,
   DT_ACTION_EFFECT_PREVIOUS = 1,
   DT_ACTION_EFFECT_NEXT = 2,
-  DT_ACTION_EFFECT_FIRST = 3,
-  DT_ACTION_EFFECT_LAST = 4,
-  DT_ACTION_EFFECT_POPUP = 5,
+//DT_ACTION_EFFECT_RESET = 3,
+  DT_ACTION_EFFECT_FIRST = 4,
+  DT_ACTION_EFFECT_LAST = 5,
 
   // Togglebuttons
   DT_ACTION_EFFECT_TOGGLE = 0,
@@ -168,9 +163,10 @@ typedef struct dt_shortcut_fallback_t
   guint button    : 3;
   guint click     : 3;
   guint direction : 2;
-  dt_shortcut_move_t move;
+  dt_shortcut_move_t  move;
   dt_action_element_t element;
-  dt_action_effect_t effect;
+  dt_action_effect_t  effect;
+  float               speed;
 } dt_shortcut_fallback_t;
 
 typedef struct dt_action_def_t
@@ -179,8 +175,17 @@ typedef struct dt_action_def_t
   float (*process)(gpointer target, dt_action_element_t, dt_action_effect_t, float size);
   dt_action_element_t (*identify)(GtkWidget *w, int x, int y);
   const dt_action_element_def_t *elements;
-  dt_shortcut_fallback_t *fallbacks;
+  const dt_shortcut_fallback_t *fallbacks;
 } dt_action_def_t;
+
+extern const dt_action_def_t dt_action_def_toggle;
+extern const dt_action_def_t dt_action_def_value;
+
+void dt_action_define_iop(dt_iop_module_t *self, const gchar *section, const gchar *label, GtkWidget *widget, const dt_action_def_t *action_def);
+
+dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gchar *label, GtkWidget *widget, const dt_action_def_t *action_def);
+
+void dt_action_define_fallback(dt_action_type_t type, const dt_action_def_t *action_def);
 
 typedef enum dt_accel_iop_slider_scale_t
 {

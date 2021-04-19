@@ -51,7 +51,8 @@ void dt_control_init(dt_control_t *s)
   s->actions_libs = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "lib", C_("accel", "utility modules"), .next = &s->actions_iops };
   s->actions_iops = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "iop", C_("accel", "processing modules"), .next = &s->actions_lua, .target = &s->actions_blend };
   s->actions_blend = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "blend", C_("accel", "blending"), .owner = &s->actions_iops };
-  s->actions_lua = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "lua", C_("accel", "lua scripts") };
+  s->actions_lua = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "lua", C_("accel", "lua scripts"), .next = &s->actions_fallbacks };
+  s->actions_fallbacks = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "fallbacks", C_("accel", "fallbacks") };
   s->actions = &s->actions_global;
 
   dt_action_define_key_pressed_accel(&s->actions_global, "toggle side borders", &s->accels.global_sideborders);
@@ -63,7 +64,12 @@ void dt_control_init(dt_control_t *s)
   s->widgets = g_hash_table_new(NULL, NULL);
   s->shortcuts = g_sequence_new(g_free);
   s->mapping_widget = NULL;
+  s->widget_definitions = g_ptr_array_new ();
   s->input_drivers = NULL;
+
+  dt_action_define_fallback(DT_ACTION_TYPE_IOP, &dt_action_def_iop);
+  dt_action_define_fallback(DT_ACTION_TYPE_LIB, &dt_action_def_lib);
+  dt_action_define_fallback(DT_ACTION_TYPE_VALUE_FALLBACK, &dt_action_def_value);
 
   memset(s->vimkey, 0, sizeof(s->vimkey));
   s->vimkey_cnt = 0;

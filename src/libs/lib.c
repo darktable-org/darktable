@@ -750,9 +750,9 @@ static int dt_lib_load_module(void *m, const char *libname, const char *module_n
   module->presets_button = NULL;
 
   module->actions = (dt_action_t){ DT_ACTION_TYPE_LIB, module->plugin_name, module->name(module),
-                                   .owner = &darktable.control->actions_libs };
+                                  .owner = &darktable.control->actions_libs };
   dt_action_insert_sorted(&darktable.control->actions_libs, &module->actions);
-
+/* FIXME check in _process
   if(module->gui_reset)
   {
     dt_accel_register_lib(module, NC_("accel", "reset module parameters"), 0, 0);
@@ -765,6 +765,7 @@ static int dt_lib_load_module(void *m, const char *libname, const char *module_n
   {
     dt_accel_register_lib(module, NC_("accel", "show module"), 0, 0);
   }
+*/
 #ifdef USE_LUA
   dt_lua_lib_register(darktable.lua_state.state, module);
 #endif
@@ -1127,6 +1128,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   {
     if(module->presets_button)
     {
+      // FIXME separately define as darkroom widget shortcut/action, because not automatically registered via lib
       // if presets btn has been loaded to be shown outside expander
       g_signal_connect(G_OBJECT(module->presets_button), "clicked", G_CALLBACK(presets_popup_callback), module);
     }
@@ -1153,7 +1155,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_widget_set_tooltip_text(module->arrow, _("show module"));
   g_signal_connect(G_OBJECT(module->arrow), "button-press-event", G_CALLBACK(_lib_plugin_header_button_press), module);
   gtk_widget_set_name(module->arrow, "module-collapse-button");
-  dt_action_define(&module->actions, NULL, module->arrow);
+  dt_action_define(&module->actions, NULL, NULL, module->arrow, NULL);
   gtk_box_pack_start(GTK_BOX(header), module->arrow, FALSE, FALSE, 0);
 
   /* add module label */
@@ -1165,7 +1167,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   g_object_set(G_OBJECT(label), "halign", GTK_ALIGN_START, "xalign", 0.0, (gchar *)0);
   gtk_widget_set_name(label, "lib-panel-label");
-  dt_action_define(&module->actions, NULL, label_evb);
+  dt_action_define(&module->actions, NULL, NULL, label_evb, NULL);
   gtk_box_pack_start(GTK_BOX(header), label_evb, FALSE, FALSE, 0);
 
   /* add preset button if module has implementation */
@@ -1174,7 +1176,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   g_signal_connect(G_OBJECT(module->presets_button), "clicked", G_CALLBACK(presets_popup_callback), module);
   if(!module->get_params && !module->set_preferences) gtk_widget_set_sensitive(GTK_WIDGET(module->presets_button), FALSE);
   gtk_widget_set_name(GTK_WIDGET(module->presets_button), "module-preset-button");
-  dt_action_define(&module->actions, NULL, module->presets_button);
+  dt_action_define(&module->actions, NULL, NULL, module->presets_button, NULL);
   gtk_box_pack_end(GTK_BOX(header), module->presets_button, FALSE, FALSE, 0);
 
   /* add reset button if module has implementation */
@@ -1183,7 +1185,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   g_signal_connect(G_OBJECT(module->reset_button), "clicked", G_CALLBACK(dt_lib_gui_reset_callback), module);
   if(!module->gui_reset) gtk_widget_set_sensitive(module->reset_button, FALSE);
   gtk_widget_set_name(module->reset_button, "module-reset-button");
-  dt_action_define(&module->actions, NULL, module->reset_button);
+  dt_action_define(&module->actions, NULL, NULL, module->reset_button, NULL);
   gtk_box_pack_end(GTK_BOX(header), module->reset_button, FALSE, FALSE, 0);
 
   gtk_widget_show_all(module->widget);
@@ -1430,7 +1432,13 @@ typedef enum dt_action_element_lib_t
   DT_ACTION_ELEMENT_PRESETS = 2,
 } dt_action_element_lib_t;
 
-static const dt_action_element_def_t dt_action_elements[]
+static const dt_shortcut_fallback_t _action_fallbacks[]
+  = { { .element = DT_ACTION_ELEMENT_SHOW, .button = DT_SHORTCUT_LEFT },
+      { .element = DT_ACTION_ELEMENT_RESET, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
+      { .element = DT_ACTION_ELEMENT_PRESETS, .button = DT_SHORTCUT_RIGHT },
+      { } };
+
+static const dt_action_element_def_t _action_elements[]
   = { { N_("show"), dt_action_effect_toggle },
       { N_("reset"), dt_action_effect_activate },
       { N_("presets"), dt_action_effect_presets },
@@ -1481,7 +1489,8 @@ const dt_action_def_t dt_action_def_lib
   = { N_("utility module"),
       _action_process,
       _action_identify,
-      dt_action_elements };
+      _action_elements,
+      _action_fallbacks };
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

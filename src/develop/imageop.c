@@ -67,7 +67,7 @@ typedef struct dt_iop_gui_simple_callback_t
   int index;
 } dt_iop_gui_simple_callback_t;
 
-static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module);
+static void _iop_panel_label(dt_iop_module_t *module);
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
@@ -1067,8 +1067,9 @@ gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
   return dt_dev_modulegroups_test(module->dev, group, module);
 }
 
-static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
+static void _iop_panel_label(dt_iop_module_t *module)
 {
+  GtkWidget *lab = dt_gui_container_nth_child(GTK_CONTAINER(module->header), IOP_MODULE_LABEL);
   lab = gtk_bin_get_child(GTK_BIN(lab));
   gtk_widget_set_name(lab, "iop-panel-label");
   char *module_name = dt_history_item_get_name_html(module);
@@ -1091,11 +1092,9 @@ static void _iop_gui_update_header(dt_iop_module_t *module)
 {
   if (!module->header)                  /* some modules such as overexposed don't actually have a header */
     return;
-  /* get the enable button and button */
-  GtkWidget *lab = dt_gui_container_nth_child(GTK_CONTAINER(module->header), IOP_MODULE_LABEL);
 
   // set panel name to display correct multi-instance
-  _iop_panel_label(lab, module);
+  _iop_panel_label(module);
   dt_iop_gui_set_enable_button(module);
 }
 
@@ -1161,8 +1160,7 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
 static void _iop_gui_update_label(dt_iop_module_t *module)
 {
   if(!module->header) return;
-  GtkWidget *lab = dt_gui_container_nth_child(GTK_CONTAINER(module->header), IOP_MODULE_LABEL);
-  _iop_panel_label(lab, module);
+  _iop_panel_label(module);
 }
 
 void dt_iop_gui_init(dt_iop_module_t *module)
@@ -2449,7 +2447,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   for(int i = IOP_MODULE_LAST - 1; i > IOP_MODULE_LABEL; i--)
     if(hw[i]) gtk_box_pack_end(GTK_BOX(header), hw[i], FALSE, FALSE, 0);
   for(int i = 0; i < IOP_MODULE_LAST; i++)
-    if(hw[i]) dt_action_define(&module->so->actions, NULL, hw[i]);
+    if(hw[i]) dt_action_define(&module->so->actions, NULL, NULL, hw[i], NULL);
 
   dt_gui_add_help_link(header, dt_get_help_url("module_interacting"));
 
@@ -3166,7 +3164,7 @@ typedef enum dt_action_element_iop_t
   DT_ACTION_ELEMENT_PRESETS = 5,
 } dt_action_element_iop_t;
 
-static const dt_action_element_def_t dt_action_elements[]
+static const dt_action_element_def_t _action_elements[]
   = { { N_("focus"), dt_action_effect_toggle },
       { N_("enable"), dt_action_effect_toggle },
       { N_("show"), dt_action_effect_toggle },
@@ -3174,6 +3172,14 @@ static const dt_action_element_def_t dt_action_elements[]
       { N_("reset"), dt_action_effect_activate },
       { N_("presets"), dt_action_effect_presets },
       { NULL } };
+
+static const dt_shortcut_fallback_t _action_fallbacks[]
+  = { { .element = DT_ACTION_ELEMENT_ENABLE, .button = DT_SHORTCUT_LEFT },
+      { .element = DT_ACTION_ELEMENT_SHOW, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_LONG },
+      { .element = DT_ACTION_ELEMENT_INSTANCE, .button = DT_SHORTCUT_RIGHT, .click = DT_SHORTCUT_DOUBLE },
+      { .element = DT_ACTION_ELEMENT_RESET, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
+      { .element = DT_ACTION_ELEMENT_PRESETS, .button = DT_SHORTCUT_RIGHT },
+      { } };
 
 static float _action_process(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
@@ -3237,7 +3243,8 @@ const dt_action_def_t dt_action_def_iop
   = { N_("processing module"),
       _action_process,
       _action_identify,
-      dt_action_elements };
+      _action_elements,
+      _action_fallbacks };
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
