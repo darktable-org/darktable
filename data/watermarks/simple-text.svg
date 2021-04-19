@@ -4,6 +4,7 @@
      y="0">
 
   <text x="0" y="5px" text-anchor="start"
+        xml:space="preserve"
         fill="$(WATERMARK_COLOR)"
         font-family="$(WATERMARK_FONT_FAMILY)"
         font-style="$(WATERMARK_FONT_STYLE)"
