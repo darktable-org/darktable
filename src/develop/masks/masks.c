@@ -2124,16 +2124,16 @@ int dt_masks_point_in_form_near(float x, float y, float *points, int points_star
 
   if(points_count > 2 + points_start)
   {
-    int start = isnan(points[points_start * 2]) && !isnan(points[points_start * 2 + 1])
-                    ? points[points_start * 2 + 1]
-                    : points_start;
+    const int start = isnan(points[points_start * 2]) && !isnan(points[points_start * 2 + 1])
+                      ? points[points_start * 2 + 1]
+                      : points_start;
 
-    float yf = (float)y;
+    const float yf = (float)y;
     int nb = 0;
     for(int i = start, next = start + 1; i < points_count;)
     {
-      float y1 = points[i * 2 + 1];
-      float y2 = points[next * 2 + 1];
+      const float y1 = points[i * 2 + 1];
+      const float y2 = points[next * 2 + 1];
       //if we need to jump to skip points (in case of deleted point, because of self-intersection)
       if(isnan(points[next * 2]))
       {

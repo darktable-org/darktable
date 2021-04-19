@@ -84,6 +84,18 @@ static int _group_events_button_released(struct dt_iop_module_t *module, float p
   return 0;
 }
 
+static inline gboolean _is_dragging_form(dt_masks_form_gui_t *gui)
+{
+  return gui->form_dragging
+    || gui->source_dragging
+    || gui->gradient_toggling
+    || gui->form_rotating
+    || (gui->point_dragging != -1)
+    || (gui->feather_dragging != -1)
+    || (gui->point_border_dragging != -1)
+    || (gui->seg_dragging != -1);
+}
+
 static int _group_events_mouse_moved(struct dt_iop_module_t *module, float pzx, float pzy, double pressure,
                                      int which, dt_masks_form_t *form, int unused1, dt_masks_form_gui_t *gui,
                                      int unused2)
@@ -105,8 +117,8 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module, float pzx, 
     gui->scrollx = gui->scrolly = 0.0f;
   }
 
-  // if a form is in edit mode, we first execute the corresponding event
-  if(gui->group_edited >= 0)
+  // if a form is in edit mode and we are dragging, don't try to select another form
+  if(gui->group_edited >= 0 && _is_dragging_form(gui))
   {
     // we get the form
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
@@ -131,26 +143,46 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module, float pzx, 
   gui->seg_selected = -1;
   gui->point_border_selected = -1;
   gui->group_edited = gui->group_selected = -1;
+
+  dt_masks_form_t *sel = NULL;
+  dt_masks_point_group_t *sel_fpt = NULL;
+  int sel_pos = 0;
+  float sel_dist = FLT_MAX;
+
   for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
-    dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
+    dt_masks_form_t *frm = dt_masks_get_from_id(darktable.develop, fpt->formid);
     int inside, inside_border, near, inside_source;
+    float dist = FLT_MAX;
     inside = inside_border = inside_source = 0;
     near = -1;
     const float xx = pzx * darktable.develop->preview_pipe->backbuf_width,
                 yy = pzy * darktable.develop->preview_pipe->backbuf_height;
-    if(sel->functions && sel->functions->get_distance)
-      sel->functions->get_distance(xx, yy, as, gui, pos, g_list_length(sel->points),
-                                   &inside, &inside_border, &near, &inside_source);
+    if(frm->functions && frm->functions->get_distance)
+      frm->functions->get_distance(xx, yy, as, gui, pos, g_list_length(frm->points),
+                                   &inside, &inside_border, &near, &inside_source, &dist);
+
     if(inside || inside_border || near >= 0 || inside_source)
     {
-      gui->group_edited = gui->group_selected = pos;
-      if(sel->functions)
-        return sel->functions->mouse_moved(module, pzx, pzy, pressure, which, sel, fpt->parentid, gui, pos);
+
+      if(sel_dist > dist)
+      {
+        sel = frm;
+        sel_dist = dist;
+        sel_pos = pos;
+        sel_fpt = fpt;
+      }
     }
     pos++;
   }
+
+  if(sel && sel->functions)
+  {
+    gui->group_edited = gui->group_selected = sel_pos;
+    return sel->functions->mouse_moved(module, pzx, pzy, pressure, which, sel, sel_fpt->parentid, gui, gui->group_edited);
+  }
+
   dt_control_queue_redraw_center();
   return 0;
 }
