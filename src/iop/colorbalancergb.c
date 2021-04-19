@@ -1251,21 +1251,21 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->saturation_shadows, 4);
   dt_bauhaus_slider_set_factor(g->saturation_shadows, 100.0f);
   dt_bauhaus_slider_set_format(g->saturation_shadows, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->saturation_shadows, _("increase or decrease saturation proportionnaly to the original pixel saturation"));
+  gtk_widget_set_tooltip_text(g->saturation_shadows, _("increase or decrease saturation proportionally to the original pixel saturation"));
 
   g->saturation_midtones= dt_bauhaus_slider_from_params(self, "saturation_midtones");
   dt_bauhaus_slider_set_soft_range(g->saturation_midtones, -0.25, 0.25);
   dt_bauhaus_slider_set_digits(g->saturation_midtones, 4);
   dt_bauhaus_slider_set_factor(g->saturation_midtones, 100.0f);
   dt_bauhaus_slider_set_format(g->saturation_midtones, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->saturation_midtones, _("increase or decrease saturation proportionnaly to the original pixel saturation"));
+  gtk_widget_set_tooltip_text(g->saturation_midtones, _("increase or decrease saturation proportionally to the original pixel saturation"));
 
   g->saturation_highlights = dt_bauhaus_slider_from_params(self, "saturation_highlights");
   dt_bauhaus_slider_set_soft_range(g->saturation_highlights, -0.25, 0.25);
   dt_bauhaus_slider_set_digits(g->saturation_highlights, 4);
   dt_bauhaus_slider_set_factor(g->saturation_highlights, 100.0f);
   dt_bauhaus_slider_set_format(g->saturation_highlights, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->saturation_highlights, _("increase or decrease saturation proportionnaly to the original pixel saturation"));
+  gtk_widget_set_tooltip_text(g->saturation_highlights, _("increase or decrease saturation proportionally to the original pixel saturation"));
 
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("perceptual brilliance grading")), FALSE, FALSE, 0);
@@ -1282,21 +1282,21 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->brilliance_shadows, 4);
   dt_bauhaus_slider_set_factor(g->brilliance_shadows, 100.0f);
   dt_bauhaus_slider_set_format(g->brilliance_shadows, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->brilliance_shadows, _("increase or decrease brilliance proportionnaly to the original pixel brilliance"));
+  gtk_widget_set_tooltip_text(g->brilliance_shadows, _("increase or decrease brilliance proportionally to the original pixel brilliance"));
 
   g->brilliance_midtones= dt_bauhaus_slider_from_params(self, "brilliance_midtones");
   dt_bauhaus_slider_set_soft_range(g->brilliance_midtones, -0.25, 0.25);
   dt_bauhaus_slider_set_digits(g->brilliance_midtones, 4);
   dt_bauhaus_slider_set_factor(g->brilliance_midtones, 100.0f);
   dt_bauhaus_slider_set_format(g->brilliance_midtones, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->brilliance_midtones, _("increase or decrease brilliance proportionnaly to the original pixel brilliance"));
+  gtk_widget_set_tooltip_text(g->brilliance_midtones, _("increase or decrease brilliance proportionally to the original pixel brilliance"));
 
   g->brilliance_highlights = dt_bauhaus_slider_from_params(self, "brilliance_highlights");
   dt_bauhaus_slider_set_soft_range(g->brilliance_highlights, -0.25, 0.25);
   dt_bauhaus_slider_set_digits(g->brilliance_highlights, 4);
   dt_bauhaus_slider_set_factor(g->brilliance_highlights, 100.0f);
   dt_bauhaus_slider_set_format(g->brilliance_highlights, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->brilliance_highlights, _("increase or decrease brilliance proportionnaly to the original pixel brilliance"));
+  gtk_widget_set_tooltip_text(g->brilliance_highlights, _("increase or decrease brilliance proportionally to the original pixel brilliance"));
 
 
   // Page 4-ways
