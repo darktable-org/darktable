@@ -26,23 +26,35 @@
 #include "develop/openmp_maths.h"
 
 static void _gradient_get_distance(float x, float y, float as, dt_masks_form_gui_t *gui, int index,
-                                   int num_points, int *inside, int *inside_border, int *near, int *inside_source)
+                                   int num_points, int *inside, int *inside_border, int *near, int *inside_source, float *dist)
 {
   (void)num_points; // unused arg, keep compiler from complaining
   if(!gui) return;
 
   *inside = *inside_border = *inside_source = 0;
   *near = -1;
+  *dist = FLT_MAX;
 
   const dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
 
   const float as2 = as * as;
 
+  float close_to_controls = FALSE;
+
+  // compute distances with the three control points
+  for(int k = 0; k<3; k++)
+  {
+    const float dx = x - gpt->points[k * 2];
+    const float dy = y - gpt->points[k * 2 + 1];
+    const float dd = (dx * dx) + (dy * dy);
+    *dist = fminf(*dist, dd);
+
+    close_to_controls = close_to_controls || (dd < as2);
+  }
+
   // check if we are close to pivot or anchor
-  if((x - gpt->points[0]) * (x - gpt->points[0]) + (y - gpt->points[1]) * (y - gpt->points[1]) < as2
-     || (x - gpt->points[2]) * (x - gpt->points[2]) + (y - gpt->points[3]) * (y - gpt->points[3]) < as2
-     || (x - gpt->points[4]) * (x - gpt->points[4]) + (y - gpt->points[5]) * (y - gpt->points[5]) < as2)
+  if(close_to_controls)
   {
     *inside = 1;
     return;
@@ -517,7 +529,8 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module, float pz
     const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
     int in, inb, near, ins;
-    _gradient_get_distance(x, y, as, gui, index, 0, &in, &inb, &near, &ins);
+    float dist;
+    _gradient_get_distance(x, y, as, gui, index, 0, &in, &inb, &near, &ins, &dist);
 
     const dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 

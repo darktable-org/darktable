@@ -26,6 +26,8 @@
 #include "develop/masks.h"
 #include <assert.h>
 
+static void _path_bounding_box_raw(const float *const points, const float *border, const int nb_corner, const int num_points, int num_borders,
+                                   float *x_min, float *x_max, float *y_min, float *y_max);
 
 /** get the point of the path at pos t [0,1]  */
 static void _path_get_XY(float p0x, float p0y, float p1x, float p1y, float p2x, float p2y, float p3x,
@@ -811,30 +813,53 @@ fail:
 
 /** get the distance between point (x,y) and the path */
 static void _path_get_distance(float x, float y, float as, dt_masks_form_gui_t *gui, int index,
-                               int corner_count, int *inside, int *inside_border, int *near, int *inside_source)
+                               int corner_count, int *inside, int *inside_border, int *near, int *inside_source, float *dist)
 {
   // initialise returned values
   *inside_source = 0;
   *inside = 0;
   *inside_border = 0;
   *near = -1;
+  *dist = FLT_MAX;
 
   if(!gui) return;
 
-  float yf = (float)y;
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
 
   // we first check if we are inside the source form
-  if(dt_masks_point_in_form_exact(x,yf,gpt->source,corner_count * 6,gpt->source_count))
+  if(dt_masks_point_in_form_exact(x, y, gpt->source, corner_count * 6, gpt->source_count))
   {
     *inside_source = 1;
     *inside = 1;
+
+    float x_min = FLT_MAX, y_min = FLT_MAX;
+    float x_max = FLT_MIN, y_max = FLT_MIN;
+
+    for(int i = corner_count * 3; i < gpt->source_count; i++)
+    {
+      const float xx = gpt->source[i * 2];
+      const float yy = gpt->source[i * 2 + 1];
+
+      x_min = fminf(x_min, xx);
+      x_max = fmaxf(x_max, xx);
+      y_min = fminf(y_min, yy);
+      y_max = fmaxf(y_max, yy);
+
+      const float dd = (xx - x) * (xx - x) + (yy - y) * (yy - y);
+      *dist = fminf(*dist, dd);
+    }
+
+    const float cx = x - (x_min + (x_max - x_min) / 2.0f);
+    const float cy = y - (y_min + (y_max - y_min) / 2.0f);
+    const float dd = (cx * cx) + (cy * cy);
+    *dist = fminf(*dist, dd);
+
     return;
   }
 
   // we check if it's inside borders
-  if(!dt_masks_point_in_form_exact(x, yf, gpt->border, corner_count * 3, gpt->border_count))
+  if(!dt_masks_point_in_form_exact(x, y, gpt->border, corner_count * 3, gpt->border_count))
     return;
 
   *inside = 1;
@@ -848,6 +873,10 @@ static void _path_get_distance(float x, float y, float as, dt_masks_form_gui_t *
     int nb = 0;
     int near_form = 0;
     int current_seg = 1;
+
+    float x_min = FLT_MAX, y_min = FLT_MAX;
+    float x_max = FLT_MIN, y_max = FLT_MIN;
+
     for(int i = corner_count * 3; i < gpt->points_count; i++)
     {
       //if we need to jump to skip points (in case of deleted point, because of self-intersection)
@@ -864,9 +893,16 @@ static void _path_get_distance(float x, float y, float as, dt_masks_form_gui_t *
         current_seg = (current_seg + 1) % corner_count;
       }
       //distance from tested point to current form point
-      float yy = gpt->points[i * 2 + 1];
-      float dd = (gpt->points[i * 2] - x) * (gpt->points[i * 2] - x)
-                  + (yy - yf) * (yy - yf);
+      const float xx = gpt->points[i * 2];
+      const float yy = gpt->points[i * 2 + 1];
+
+      x_min = fminf(x_min, xx);
+      x_max = fmaxf(x_max, xx);
+      y_min = fminf(y_min, yy);
+      y_max = fmaxf(y_max, yy);
+
+      const float dd = (xx - x) * (xx - x) + (yy - y) * (yy - y);
+      *dist = fminf(*dist, dd);
 
       if(dd < as2)
       {
@@ -877,11 +913,16 @@ static void _path_get_distance(float x, float y, float as, dt_masks_form_gui_t *
           *near = current_seg - 1;
       }
 
-      if (((yf<=yy && yf>last) || (yf>=yy && yf<last)) && (gpt->points[i * 2] > x)) nb++;
+      if (((y<=yy && y>last) || (y>=yy && y<last)) && (gpt->points[i * 2] > x)) nb++;
 
       last = yy;
     }
     *inside_border = !((nb & 1) || (near_form));
+
+    const float cx = x - (x_min + (x_max - x_min) / 2.0f);
+    const float cy = y - (y_min + (y_max - y_min) / 2.0f);
+    const float dd = (cx * cx) + (cy * cy);
+    *dist = fminf(*dist, dd);
   }
   else *inside_border = 1;
 }
@@ -1895,7 +1936,8 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
 
   // are we inside the form or the borders or near a segment ???
   int in = 0, inb = 0, near = 0, ins = 0;
-  _path_get_distance(pzx, (int)pzy, as, gui, index, nb, &in, &inb, &near, &ins);
+  float dist = 0;
+  _path_get_distance(pzx, (int)pzy, as, gui, index, nb, &in, &inb, &near, &ins, &dist);
   gui->seg_selected = near;
   if(near < 0)
   {
