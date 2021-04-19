@@ -406,18 +406,7 @@ GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const char *section, c
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), FALSE);
   if(GTK_IS_BOX(box)) gtk_box_pack_end(GTK_BOX(box), w, FALSE, FALSE, 0);
 
-  gchar *combined_label = section
-                        ? g_strdup_printf("%s`%s", section, label)
-                        : g_strdup(label);
-  gchar *combined_ctrl_label = ctrl_label && section
-                        ? g_strdup_printf("%s`%s", section, ctrl_label)
-                        : g_strdup(ctrl_label);
-
-  dt_action_define_iop(self, combined_label, w);
-// FIXME CTRL-press callback. Presumably should be sub with fallback
-
-  g_free(combined_ctrl_label);
-  g_free(combined_label);
+  dt_action_define_iop(self, section, label, w, &dt_action_def_toggle);
 
   return w;
 }

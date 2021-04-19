@@ -1116,13 +1116,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
     else if(!dt_iop_is_hidden(module) && module->expander)
     {
       // we have to ensure that the name of the widget is correct
-      GtkWidget *child = dt_gui_container_first_child(GTK_CONTAINER(module->expander));
-      GtkWidget *header = gtk_bin_get_child(GTK_BIN(child));
-
-      GtkWidget *wlabel = dt_gui_container_nth_child(GTK_CONTAINER(header), IOP_MODULE_LABEL);
-      gchar *label = dt_history_item_get_name_html(module);
-      gtk_label_set_markup(GTK_LABEL(wlabel), label);
-      g_free(label);
+      dt_iop_gui_update_header(module);
     }
   }
 

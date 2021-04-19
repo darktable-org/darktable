@@ -33,15 +33,13 @@ typedef enum dt_action_type_t
   DT_ACTION_TYPE_COMMAND,
   DT_ACTION_TYPE_KEY_PRESSED,
   DT_ACTION_TYPE_PRESET,
+  DT_ACTION_TYPE_FALLBACK,
+  DT_ACTION_TYPE_VALUE_FALLBACK,
   // === all widgets below
   DT_ACTION_TYPE_PER_INSTANCE,
   DT_ACTION_TYPE_CLOSURE,
+  // === dynamically assign widget type numbers from here
   DT_ACTION_TYPE_WIDGET,
-  DT_ACTION_TYPE_SLIDER,
-  DT_ACTION_TYPE_COMBO,
-  DT_ACTION_TYPE_TOGGLE,
-  DT_ACTION_TYPE_BUTTON,
-  // FIXME these will be dynamically assigned to modules that expose a shortcuttable widget
 } dt_action_type_t;
 
 typedef struct dt_action_t
