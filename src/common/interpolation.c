@@ -1393,6 +1393,8 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
   float *vkernel = NULL;
   int *vmeta = NULL;
 
+  const int32_t in_stride_floats = in_stride / sizeof(float);
+  const int32_t out_stride_floats = out_stride / sizeof(float);
   int r;
 
   debug_info("resampling %p (%dx%d@%dx%d scale %f) -> %p (%dx%d@%dx%d scale %f)\n", in, roi_in->width,
@@ -1456,7 +1458,7 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
 // Process each output line
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, in_stride, out_stride, roi_out) \
+  dt_omp_firstprivate(in, in_stride_floats, out_stride_floats, roi_out) \
   shared(out, hindex, hlength, hkernel, vindex, vlength, vkernel, vmeta)
 #endif
   for(int oy = 0; oy < roi_out->height; oy++)
@@ -1480,7 +1482,7 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
       debug_extra("output %p [% 4d % 4d]\n", out, ox, oy);
 
       // This will hold the resulting pixel
-      float vs[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      DT_ALIGNED_PIXEL float vs[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
       // Number of horizontal samples contributing to the output
       int hl = hlength[hlidx++]; // H(orizontal) L(ength)
@@ -1488,21 +1490,23 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
       for(int iy = 0; iy < vl; iy++)
       {
         // This is our input line
-        const float *i = (float *)((char *)in + (size_t)in_stride * vindex[viidx++]);
+        size_t baseidx_vindex = (size_t)vindex[viidx++] * in_stride_floats;
 
-        float vhs[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        DT_ALIGNED_PIXEL float vhs[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
         for(int ix = 0; ix < hl; ix++)
         {
           // Apply the precomputed filter kernel
-          const size_t baseidx = (size_t)hindex[hiidx++] * 4;
+          const size_t baseidx = baseidx_vindex + (size_t)hindex[hiidx++] * 4;
           const float htap = hkernel[hkidx++];
-          for(int c = 0; c < 3; c++) vhs[c] += i[baseidx + c] * htap;
+          // Convince gcc 10 to vectorize
+          DT_ALIGNED_PIXEL float tmp[4] = { in[baseidx], in[baseidx+1], in[baseidx+2], in[baseidx+3] };
+          for_each_channel(c, aligned(tmp,vhs:16)) vhs[c] += tmp[c] * htap;
         }
 
         // Accumulate contribution from this line
         const float vtap = vkernel[vkidx++];
-        for(int c = 0; c < 3; c++) vs[c] += vhs[c] * vtap;
+        for_each_channel(c, aligned(vhs,vs:16)) vs[c] += vhs[c] * vtap;
 
         // Reset horizontal resampling context
         hkidx -= hl;
@@ -1510,8 +1514,8 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
       }
 
       // Output pixel is ready
-      float *o = (float *)((char *)out + (size_t)oy * out_stride + (size_t)ox * 4 * sizeof(float));
-      for(int c = 0; c < 3; c++) o[c] = vs[c];
+      const size_t baseidx = (size_t)oy * out_stride_floats + (size_t)ox * 4;
+      for_each_channel(c, aligned(vs:16)) out[baseidx + c] = vs[c];
 
       // Reset vertical resampling context
       viidx -= vl;
