@@ -626,13 +626,21 @@ static int _gradient_get_points(dt_develop_t *dev, float x, float y, float rotat
   (*points)[4] = x2;
   (*points)[5] = y2;
 
-  *points_count = 3;
+  const int nthreads = omp_get_max_threads();
+  size_t c_padded_size;
+  uint32_t *pts_count = dt_calloc_perthread(nthreads, sizeof(uint32_t), &c_padded_size);
+  float *const restrict pts = dt_alloc_align_float((size_t)2 * count * nthreads);
 
   // we set the line point
   const float xstart = fabsf(curvature) > 1.0f ? -sqrtf(1.0f / fabsf(curvature)) : -1.0f;
   const float xdelta = -2.0f * xstart / (count - 3);
 
-  int in_frame = FALSE;
+//  gboolean in_frame = FALSE;
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(nthreads, pts, pts_count, count, cosv, sinv, xstart, xdelta, curvature, scale, x, y, wd, ht, c_padded_size) \
+  schedule(static) if(count > 100) aligned(points:64)
+#endif
   for(int i = 3; i < count; i++)
   {
     const float xi = xstart + (i - 3) * xdelta;
@@ -644,20 +652,30 @@ static int _gradient_get_points(dt_develop_t *dev, float x, float y, float rotat
 
     // don't generate guide points if they extend too far beyond the image frame;
     // this is to avoid that modules like lens correction fail on out of range coordinates
-    if(xiii < -wd || xiii > 2 * wd || yiii < -ht || yiii > 2 * ht)
+    if(!(xiii < -wd || xiii > 2 * wd || yiii < -ht || yiii > 2 * ht))
     {
-      if(!in_frame)
-        continue;         // we have not entered the frame yet
-      else
-        break;            // we have left the frame
+      const int thread = omp_get_thread_num();
+      uint32_t *tcount = dt_get_perthread(pts_count, c_padded_size);
+      pts[(thread * count) + *tcount * 2]     = xiii;
+      pts[(thread * count) + *tcount * 2 + 1] = yiii;
+      (*tcount)++;
     }
-    else
-      in_frame = TRUE;    // we are in the frame
-
-    (*points)[*points_count * 2] = xiii;
-    (*points)[*points_count * 2 + 1] = yiii;
-    (*points_count)++;
   }
+
+  *points_count = 3;
+  for(int thread = 0; thread < nthreads; thread++)
+  {
+    const uint32_t tcount = *(uint32_t *)dt_get_bythread(pts_count, c_padded_size, thread);
+    for(int k = 0; k < tcount; k++)
+    {
+      (*points)[(*points_count) * 2]     = pts[(thread * count) + k * 2];
+      (*points)[(*points_count) * 2 + 1] = pts[(thread * count) + k * 2 + 1];
+      (*points_count)++;
+    }
+  }
+
+  dt_free_align(pts_count);
+  dt_free_align(pts);
 
   // and we transform them with all distorted modules
   if(dt_dev_distort_transform(dev, *points, *points_count)) return 1;
