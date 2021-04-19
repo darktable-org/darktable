@@ -811,6 +811,17 @@ static void _basics_show(dt_lib_module_t *self)
   gtk_widget_show(d->vbox_basic);
 }
 
+static uint32_t _lib_modulegroups_get_activated(dt_lib_module_t *self)
+{
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+
+  // we get the current group and verify that it is effectively activated
+  // this can not be the case if we are in search mode
+  GtkWidget *bt = _buttons_get_from_pos(self, d->current);
+  if(bt && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bt))) return d->current;
+  return DT_MODULEGROUP_NONE;
+}
+
 static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
@@ -829,6 +840,11 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
   if (DT_IOP_ORDER_INFO)
     fprintf(stderr,"\n^^^^^ modulegroups");
 
+  // update basic button selection too
+  g_signal_handlers_block_matched(d->basic_btn, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->basic_btn), d->current == DT_MODULEGROUP_BASICS);
+  g_signal_handlers_unblock_matched(d->basic_btn, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
+
   /* only show module group as selected if not currently searching */
   if((d->show_search || d->force_show_module) && d->current != DT_MODULEGROUP_NONE)
   {
@@ -846,11 +862,6 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       g_signal_handlers_unblock_matched(bt, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
     }
   }
-
-  // update basic button selection too
-  g_signal_handlers_block_matched(d->basic_btn, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->basic_btn), d->current == DT_MODULEGROUP_BASICS);
-  g_signal_handlers_unblock_matched(d->basic_btn, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
 
   // hide deprectade message. it will be shown after if needed
   gtk_widget_set_visible(d->deprecated, FALSE);
@@ -2796,6 +2807,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.develop->proxy.modulegroups.set = _lib_modulegroups_set;
   darktable.develop->proxy.modulegroups.update_visibility = _lib_modulegroups_update_visibility_proxy;
   darktable.develop->proxy.modulegroups.get = _lib_modulegroups_get;
+  darktable.develop->proxy.modulegroups.get_activated = _lib_modulegroups_get_activated;
   darktable.develop->proxy.modulegroups.test = _lib_modulegroups_test;
   darktable.develop->proxy.modulegroups.switch_group = _lib_modulegroups_switch_group;
   darktable.develop->proxy.modulegroups.search_text_focus = _lib_modulegroups_search_text_focus;
@@ -2819,6 +2831,7 @@ void gui_cleanup(dt_lib_module_t *self)
   darktable.develop->proxy.modulegroups.module = NULL;
   darktable.develop->proxy.modulegroups.set = NULL;
   darktable.develop->proxy.modulegroups.get = NULL;
+  darktable.develop->proxy.modulegroups.get_activated = NULL;
   darktable.develop->proxy.modulegroups.test = NULL;
   darktable.develop->proxy.modulegroups.switch_group = NULL;
 

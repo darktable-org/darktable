@@ -2300,6 +2300,14 @@ void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group)
     dev->proxy.modulegroups.set(dev->proxy.modulegroups.module, group);
 }
 
+uint32_t dt_dev_modulegroups_get_activated(dt_develop_t *dev)
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.get_activated)
+    return dev->proxy.modulegroups.get_activated(dev->proxy.modulegroups.module);
+
+  return 0;
+}
+
 uint32_t dt_dev_modulegroups_get(dt_develop_t *dev)
 {
   if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.get)
