@@ -3143,6 +3143,8 @@ static gboolean _scroll_wrap_resize(GtkWidget *w, void *cr, const char *config_s
 
   if(content_height < min_height) content_height = min_height;
 
+  if(height > content_height) height = content_height;
+
   height += increment - 1;
   height -= height % increment;
 
