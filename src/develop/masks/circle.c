@@ -26,7 +26,7 @@
 #include "develop/openmp_maths.h"
 
 static void _circle_get_distance(float x, float y, float as, dt_masks_form_gui_t *gui, int index,
-                                 int num_points, int *inside, int *inside_border, int *near, int *inside_source)
+                                 int num_points, int *inside, int *inside_border, int *near, int *inside_source, float *dist)
 {
   (void)num_points; // unused arg, keep compiler from complaining
   // initialise returned values
@@ -34,29 +34,41 @@ static void _circle_get_distance(float x, float y, float as, dt_masks_form_gui_t
   *inside = 0;
   *inside_border = 0;
   *near = -1;
+  *dist = FLT_MAX;
 
   if(!gui) return;
 
-  float yf = (float)y;
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
 
   // we first check if we are inside the source form
-  if(dt_masks_point_in_form_exact(x, yf, gpt->source, 1, gpt->source_count))
+  if(dt_masks_point_in_form_exact(x, y, gpt->source, 1, gpt->source_count))
   {
     *inside_source = 1;
     *inside = 1;
+
+    // distance from source center
+    const float cx = x - gpt->source[0];
+    const float cy = y - gpt->source[1];
+    *dist = (cx * cx) + (cy * cy);
+
     return;
   }
 
+  // distance from center
+
+  const float cx = x - gpt->points[0];
+  const float cy = y - gpt->points[1];
+  *dist = (cx * cx) + (cy * cy);
+
   // we check if it's inside borders
-  if(!dt_masks_point_in_form_exact(x, yf, gpt->border, 1, gpt->border_count)) return;
+  if(!dt_masks_point_in_form_exact(x, y, gpt->border, 1, gpt->border_count)) return;
 
   *inside = 1;
   *near = 0;
 
   // and we check if it's inside form
-  *inside_border = !(dt_masks_point_in_form_near(x, yf, gpt->points, 1, gpt->points_count, as, near));
+  *inside_border = !(dt_masks_point_in_form_near(x, y, gpt->points, 1, gpt->points_count, as, near));
 }
 
 static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up,
@@ -475,9 +487,10 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
     const float as = DT_PIXEL_APPLY_DPI(5) / zoom_scale;
     int in, inb, near, ins;
+    float dist;
     _circle_get_distance(pzx * darktable.develop->preview_pipe->backbuf_width,
                          pzy * darktable.develop->preview_pipe->backbuf_height, as, gui, index, 0,
-                         &in, &inb, &near, &ins);
+                         &in, &inb, &near, &ins, &dist);
     if(ins)
     {
       gui->form_selected = TRUE;

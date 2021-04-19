@@ -170,7 +170,7 @@ typedef struct dt_masks_functions_t
   void (*duplicate_points)(struct dt_develop_t *const dev, struct dt_masks_form_t *base, struct dt_masks_form_t *dest);
   void (*initial_source_pos)(const float iwd, const float iht, float *x, float *y);
   void (*get_distance)(float x, float y, float as, struct dt_masks_form_gui_t *gui, int index, int num_points,
-                       int *inside, int *inside_border, int *near, int *inside_source);
+                       int *inside, int *inside_border, int *near, int *inside_source, float *dist);
   int (*get_points)(dt_develop_t *dev, float x, float y, float radius_a, float radius_b, float rotation,
                     float **points, int *points_count);
   int (*get_points_border)(dt_develop_t *dev, struct dt_masks_form_t *form, float **points, int *points_count,

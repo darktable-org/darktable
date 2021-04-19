@@ -932,13 +932,14 @@ fail:
 
 /** get the distance between point (x,y) and the brush */
 static void _brush_get_distance(float x, float y, float as, dt_masks_form_gui_t *gui, int index,
-                                int corner_count, int *inside, int *inside_border, int *near, int *inside_source)
+                                int corner_count, int *inside, int *inside_border, int *near, int *inside_source, float *dist)
 {
   // initialise returned values
   *inside_source = 0;
   *inside = 0;
   *inside_border = 0;
   *near = -1;
+  *dist = FLT_MAX;
 
   if(!gui) return;
 
@@ -1010,14 +1011,18 @@ static void _brush_get_distance(float x, float y, float as, dt_masks_form_gui_t 
       //distance from tested point to current form point
       const float yy = gpt->points[i * 2 + 1];
       const float xx = gpt->points[i * 2];
+
+      const float dx = x - xx;
+      const float dy = y - yy;
+      const float dd = (dx * dx) + (dy * dy);
+      *dist = fminf(*dist, dd);
+
       if ((yy-yf)<as && (yy-yf)>-as && (xx-x)<as && (xx-x)>-as)
       {
         if(current_seg == 0)
           *near = corner_count - 1;
         else
           *near = current_seg - 1;
-
-        return;
       }
     }
   }
@@ -2133,7 +2138,8 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx, 
 
   // are we inside the form or the borders or near a segment ???
   int in, inb, near, ins;
-  _brush_get_distance(pzx, (int)pzy, as, gui, index, nb, &in, &inb, &near, &ins);
+  float dist;
+  _brush_get_distance(pzx, (int)pzy, as, gui, index, nb, &in, &inb, &near, &ins, &dist);
   gui->seg_selected = near;
   if(near < 0)
   {
