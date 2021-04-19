@@ -153,11 +153,12 @@ typedef struct dt_control_t
   // Cached accelerator keys for key_pressed shortcuts
   dt_control_accels_t accels;
 
-  dt_action_t *actions, actions_global, actions_views, actions_thumb, actions_libs, actions_iops, actions_blend, actions_lua;
+  dt_action_t *actions, actions_global, actions_views, actions_thumb, actions_libs, actions_iops, actions_blend, actions_lua, actions_fallbacks;
 
   GHashTable *widgets;
   GSequence *shortcuts;
   void *mapping_widget;
+  GPtrArray *widget_definitions;
   GSList *input_drivers;
 
   char vimkey[256];
