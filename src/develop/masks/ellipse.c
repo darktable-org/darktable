@@ -135,14 +135,16 @@ static int _ellipse_point_close_to_path(float x, float y, float as, float *point
 }
 
 static void _ellipse_get_distance(float x, float y, float as, dt_masks_form_gui_t *gui, int index,
-                                  int num_points, int *inside, int *inside_border, int *near, int *inside_source)
+                                  int num_points, int *inside, int *inside_border, int *near, int *inside_source, float *dist)
 {
   (void)num_points; // unused arg, keep compiler from complaining
+
+  *dist = FLT_MAX;
+
   if(!gui) return;
 
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
-
 
   // we first check if we are inside the source form
   if(gpt->source_count > 10)
@@ -153,8 +155,25 @@ static void _ellipse_get_distance(float x, float y, float as, dt_masks_form_gui_
       *inside = 1;
       *inside_border = 0;
       *near = -1;
+
+      // get the minial dist for center & control points
+      for(int k=0; k<5; k++)
+      {
+        const float cx = x - gpt->source[k * 2];
+        const float cy = y - gpt->source[k * 2 + 1];
+        const float dd = (cx * cx) + (cy * cy);
+        *dist = fminf(*dist, dd);
+      }
       return;
     }
+  }
+
+  for(int k=0; k<5; k++)
+  {
+    const float cx = x - gpt->points[k * 2];
+    const float cy = y - gpt->points[k * 2 + 1];
+    const float dd = (cx * cx) + (cy * cy);
+    *dist = fminf(*dist, dd);
   }
 
   *inside_source = 0;
@@ -1250,9 +1269,10 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module, float pzx
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
 
     int in = 0, inb = 0, near = 0, ins = 0; // FIXME gcc7 false-positive
+    float dist;
     _ellipse_get_distance(pzx * darktable.develop->preview_pipe->backbuf_width,
                           pzy * darktable.develop->preview_pipe->backbuf_height, as, gui, index, 0,
-                          &in, &inb, &near, &ins);
+                          &in, &inb, &near, &ins, &dist);
     if(ins)
     {
       gui->form_selected = TRUE;
