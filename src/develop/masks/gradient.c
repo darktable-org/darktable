@@ -470,7 +470,12 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module, float pz
                                         double pressure, int which, dt_masks_form_t *form, int parentid,
                                         dt_masks_form_gui_t *gui, int index)
 {
-  if(gui->form_dragging)
+  if(gui->creation && gui->form_dragging)
+  {
+    dt_control_queue_redraw_center();
+    return 1;
+  }
+  else if(gui->form_dragging)
   {
     // we get the gradient
     dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)((form->points)->data);
