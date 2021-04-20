@@ -967,17 +967,25 @@ static void _brush_get_distance(float x, float y, float as, dt_masks_form_gui_t 
       // distance from tested point to current form point
       const float yy = gpt->points[i * 2 + 1] + dy;
       const float xx = gpt->points[i * 2] + dx;
+
+      const float sdx = x - xx;
+      const float sdy = y - yy;
+      const float dd = (sdx * sdx) + (sdy * sdy);
+      *dist = fminf(*dist, dd);
+
       if((yy - yf) < as && (yy - yf) > -as && (xx - x) < as && (xx - x) > -as)
       {
-        if(current_seg == 0)
-          *inside_source = corner_count - 1;
-        else
-          *inside_source = current_seg - 1;
-
-        if(*inside_source)
+        if(*inside == 0)
         {
-          *inside = 1;
-          return;
+          if(current_seg == 0)
+            *inside_source = corner_count - 1;
+          else
+            *inside_source = current_seg - 1;
+
+          if(*inside_source)
+          {
+            *inside = 1;
+          }
         }
       }
     }
