@@ -343,6 +343,14 @@ static inline void opacity_masks(const float x,
 }
 
 
+static inline float soft_clip(const float x, const float soft_threshold, const float hard_threshold)
+{
+  // use an exponential soft clipping above soft_threshold
+  // hard threshold must be > soft threshold
+  const float norm = hard_threshold - soft_threshold;
+  return (x > soft_threshold) ? soft_threshold + (1.f - expf(-(x - soft_threshold) / norm)) * norm : x;
+}
+
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -439,9 +447,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // Hue shift - do it now because we need the gamut limit at output hue right after
     Ych[2] += d->hue_angle;
 
+    // Ensure hue ± correction is in [-PI; PI]
+    if(Ych[2] > M_PI_F) Ych[2] -= 2.f * M_PI_F;
+    else if(Ych[2] < -M_PI_F) Ych[2] += 2.f * M_PI_F;
+
     // Get max allowed chroma in working RGB gamut at current output hue
-    const float max_chroma_h = (is_black) ? 0.f : gamut_LUT[CLAMP((size_t)(LUT_ELEM / 2. * (Ych[2] + M_PI) / M_PI), 0, LUT_ELEM - 1)];
-    float C = (is_black) ? 0.f : fminf(Ych[1], max_chroma_h);
+    const float max_chroma_h = Y * gamut_LUT[CLAMP((size_t)(LUT_ELEM * (Ych[2] + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1)];
 
     // Linear chroma : distance to achromatic at constant luminance in scene-referred
     // - in case we desaturate, we do so by a constant factor
@@ -449,12 +460,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     //   to prevent users from pushing saturated colors outside of gamut while the low-sat ones
     //   are still muted.
     const float chroma_boost = d->chroma_global + scalar_product(opacities, chroma);
-    const float chroma_norm = (chroma_boost > 0.f) ? max_chroma_h / d->max_chroma : 1.f;
-    const float chroma_factor = fmaxf(1.f + chroma_boost * chroma_norm, 0.f);
-    Ych[1] = fminf(C * chroma_factor, max_chroma_h);
+    const float chroma_factor = fmaxf(1.f + chroma_boost, 0.f);
+    Ych[1] = soft_clip(Ych[1] * chroma_factor, max_chroma_h, max_chroma_h * 4.f);
     Ych_to_gradingRGB(Ych, RGB, white_grading_RGB);
 
-    /* Color balance */
+    // Color balance
     for_four_channels(c, aligned(RGB, opacities, opacities_comp, global, shadows, midtones, highlights:16))
     {
       // global : offset
@@ -474,9 +484,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     Y = Ych[0] = powf(fmaxf(Ych[0] / d->white_fulcrum, 0.f), d->midtones_Y) * d->white_fulcrum;
     Ych_to_gradingRGB(Ych, RGB, white_grading_RGB);
 
-    /* Perceptual color adjustments */
+    // Perceptual color adjustments
 
-     // grading RGB to CIE 1931 XYZ 2° D65
+    // grading RGB to CIE 1931 XYZ 2° D65
     const float DT_ALIGNED_ARRAY RGB_to_XYZ_D65[3][4] = { { 1.64004888f, -0.10969806f, 0.49329934f, 0.f },
                                                           { 0.61055787f, 0.47749658f, -0.08730269f, 0.f },
                                                           { -0.10698534f, 0.07785058f, 1.66590006f, 0.f } };
@@ -529,13 +539,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dot_product(Ych, XYZ_to_RGB_D65, RGB);
     gradingRGB_to_Ych(RGB, Ych, white_grading_RGB);
 
-    /* Gamut mapping */
-    const float out_max_chroma_h = gamut_LUT[CLAMP((size_t)(LUT_ELEM / 2. * (Ych[2] + M_PI) / M_PI), 0, LUT_ELEM - 1)];
-    Ych[1] = fminf(Ych[1], out_max_chroma_h);
+    // Gamut mapping
+    // Note : no need to check hue is in [-PI; PI], gradingRGB_to_Ych uses atan2f()
+    // which always returns angles in [-PI; PI]
+    const float out_max_chroma_h = Ych[0] * gamut_LUT[CLAMP((size_t)(LUT_ELEM * (Ych[2] + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1)];
+    Ych[1] = soft_clip(Ych[1], out_max_chroma_h, out_max_chroma_h * 4.f);
 
     Ych_to_gradingRGB(Ych, RGB, white_grading_RGB);
     dot_product(RGB, output_matrix, pix_out);
-
     if(mask_display)
     {
       // draw checkerboard
@@ -698,15 +709,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
           float DT_ALIGNED_PIXEL Ych[4] = { 0.f };
           dot_product(rgb, input_matrix, RGB);
           gradingRGB_to_Ych(RGB, Ych, white_grading_RGB);
-          const size_t index = CLAMP((size_t)(LUT_ELEM / 2. * (Ych[2] + M_PI) / M_PI), 0, LUT_ELEM - 1);
-          if(LUT[index] < Ych[1]) LUT[index] = Ych[1];
+          const size_t index = CLAMP((size_t)(LUT_ELEM * (Ych[2] + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1);
+          const float saturation = (Ych[0] > 0.f) ? Ych[1] / Ych[0] : 0.f;
+          if(LUT[index] < saturation) LUT[index] = saturation;
         }
 
     d->lut_inited = TRUE;
-
-    d->max_chroma = 0.f;
-    for(size_t k = 0; k < LUT_ELEM; k++)
-      if(d->max_chroma < LUT[k]) d->max_chroma = LUT[k];
   }
 }
 
