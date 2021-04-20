@@ -715,7 +715,6 @@ static gboolean _update_files_list(gpointer user_data)
   g_object_unref(model);
   GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.treeview);
   gtk_tree_selection_select_all(selection);
-  gtk_widget_grab_focus(gtk_dialog_get_widget_for_response(GTK_DIALOG(d->from.dialog), GTK_RESPONSE_ACCEPT));
   return FALSE;
 }
 
@@ -1007,6 +1006,17 @@ static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t* self)
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
+static gboolean _handle_enter(GtkWidget *widget, GdkEventKey *event, dt_lib_module_t* self)
+{
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  if((d->from.nb) && (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter))
+  {
+    gtk_dialog_response(GTK_DIALOG(d->from.dialog), GTK_RESPONSE_ACCEPT);
+    return TRUE;
+  }
+  return FALSE;
+}
+
 static const char *_import_text[] =
 {
   N_("import in-place"),
@@ -1030,6 +1040,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   gtk_window_set_transient_for(GTK_WINDOW(d->from.dialog), GTK_WINDOW(win));
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(d->from.dialog));
   g_signal_connect(d->from.dialog, "check-resize", G_CALLBACK(_resize_dialog), self);
+  g_signal_connect(d->from.dialog, "key-press-event", G_CALLBACK(_handle_enter), self);
 
   // images numbers
   GList *children = gtk_container_get_children(GTK_CONTAINER(d->from.dialog));
