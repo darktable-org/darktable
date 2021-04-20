@@ -436,7 +436,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     // Sanitize input : no negative luminance
     float Y = fmaxf(Ych[0], 0.f);
-    const int is_black = (Y == 0.f);
 
     // Opacities for luma masks
     float DT_ALIGNED_PIXEL opacities[4];
