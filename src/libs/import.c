@@ -1074,6 +1074,28 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   GtkWidget *paned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
   if(d->import_case != DT_IMPORT_CAMERA)
   {
+    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
+    GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
+    gtk_widget_set_name(button, "non-flat");
+    gtk_box_pack_start(GTK_BOX(box), button, FALSE, FALSE, 0);
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_import_select_folder), self);
+    char *folder;
+    if(dt_conf_is_equal("ui_last/import_last_root", ""))
+    {
+      if(dt_conf_is_equal("ui_last/import_last_directory", ""))
+        folder = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES));
+      else
+      {
+        folder = dt_conf_get_string("ui_last/import_last_directory");
+      }
+    }
+    else
+      folder = dt_conf_get_string("ui_last/import_last_root");
+    d->from.root = dt_ui_label_new(folder);
+    g_free(folder);
+    gtk_box_pack_start(GTK_BOX(box), d->from.root, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(content), box, FALSE, FALSE, 0);
+
     const int position = dt_conf_get_int("ui_last/import_dialog_paned_pos");
     if(position)
       gtk_paned_set_position(GTK_PANED(paned), position);
@@ -1181,28 +1203,6 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
     {
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
       gtk_paned_pack1(GTK_PANED(paned), lbox, TRUE, FALSE);
-      box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-      button = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
-      gtk_widget_set_name(button, "non-flat");
-      gtk_box_pack_start(GTK_BOX(box), button, FALSE, FALSE, 0);
-      g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_import_select_folder), self);
-      char *folder;
-      if(dt_conf_is_equal("ui_last/import_last_root", ""))
-      {
-        if(dt_conf_is_equal("ui_last/import_last_directory", ""))
-          folder = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES));
-        else
-        {
-          folder = dt_conf_get_string("ui_last/import_last_directory");
-        }
-      }
-      else
-        folder = dt_conf_get_string("ui_last/import_last_root");
-      d->from.root = dt_ui_label_new(folder);
-      g_free(folder);
-      gtk_box_pack_start(GTK_BOX(box), d->from.root, FALSE, FALSE, 0);
-      gtk_box_pack_start(GTK_BOX(lbox), box, FALSE, FALSE, 0);
-
       _set_folders_list(lbox, self);
       _update_folders_list(self);
     }
