@@ -939,6 +939,9 @@ static inline float scalar_product(const float v_1[4], const float v_2[4])
 static inline void dot_product(const float v_in[4], const float M[3][4], float v_out[4])
 {
   // specialized 3×4 dot products of 4×1 RGB-alpha pixels
+  #ifdef _OPENMP
+  #pragma omp simd aligned(M:64) aligned(v_in, v_out:16)
+  #endif
   for(size_t i = 0; i < 3; ++i) v_out[i] = scalar_product(v_in, M[i]);
 }
 
@@ -1065,7 +1068,8 @@ static inline void gradingRGB_to_Ych(float RGB[4], float Ych[3], const float *co
 
   Ych[0] = fmaxf(0.67282368f * RGB[0] + 0.47812261f * RGB[1] + 0.01044966f * RGB[2], 0.f);
   const float a = RGB[0] + RGB[1] + RGB[2];
-  for(size_t c = 0; c < 4; c++) RGB[c] = (a == 0.f) ? 0.f : RGB[c] / a;
+
+  for_four_channels(c, aligned(RGB:16)) RGB[c] = (a == 0.f) ? 0.f : RGB[c] / a;
 
   RGB[0] -= D65[0];
   RGB[1] -= D65[1];
@@ -1077,7 +1081,7 @@ static inline void gradingRGB_to_Ych(float RGB[4], float Ych[3], const float *co
 #ifdef _OPENMP
 #pragma omp declare simd aligned(Ych, RGB, D65_pipe: 16) uniform(D65_pipe)
 #endif
-static inline void Ych_to_gradingRGB(const float Ych[4], float RGB[3], const float *const DT_RESTRICT D65_pipe)
+static inline void Ych_to_gradingRGB(const float Ych[4], float RGB[4], const float *const DT_RESTRICT D65_pipe)
 {
   const float DT_ALIGNED_PIXEL D65_gradingRGB[4] = { 0.18600766,  0.5908061,   0.22318624, 0.f };
   const float *const DT_RESTRICT D65 = (D65_pipe == NULL) ? D65_gradingRGB : D65_pipe;
@@ -1087,7 +1091,7 @@ static inline void Ych_to_gradingRGB(const float Ych[4], float RGB[3], const flo
   RGB[2] = 1.f - RGB[0] - RGB[1];
 
   const float a = (0.67282368f * RGB[0] + 0.47812261f * RGB[1] + 0.01044966f * RGB[2]);
-  for(size_t c = 0; c < 3; ++c) RGB[c] = (a == 0.f) ? 0.f : RGB[c] * Ych[0] / a;
+  for_four_channels(c, aligned(RGB, Ych:16)) RGB[c] = (a == 0.f) ? 0.f : RGB[c] * Ych[0] / a;
 }
 
 
