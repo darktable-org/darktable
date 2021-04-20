@@ -651,6 +651,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>ui_last/import_dialog_paned_pos</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>ui_last/import_dialog_width</name>
     <type>int</type>
     <default>600</default>
@@ -760,6 +767,20 @@
     <type>string</type>
     <default/>
     <shortdescription>last opened directory.</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/import_last_root</name>
+    <type>string</type>
+    <default/>
+    <shortdescription>last root folder</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/import_last_folder_descending</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription>folders display order in folder pane</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig ui="yes">
