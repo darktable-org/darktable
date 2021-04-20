@@ -118,6 +118,7 @@ typedef struct dt_lib_import_t
     GtkListStore *store;
     GtkWidget *w;
     GtkTreeView *treeview;
+    GtkWidget *thumbs;
     GtkWidget *root;
     GtkTreeView *folderview;
     GtkTreeIter iter;
@@ -554,7 +555,7 @@ static gboolean _thumb_set(gpointer user_data)
 static void _all_thumb_toggled(GtkTreeViewColumn *column, dt_lib_module_t *self)
 {
   GtkWidget *toggle = gtk_tree_view_column_get_widget(column);
-  gboolean thumb_sel = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle));
+  const gboolean thumb_sel = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle), thumb_sel);
 
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
@@ -569,6 +570,19 @@ static void _all_thumb_toggled(GtkTreeViewColumn *column, dt_lib_module_t *self)
       _thumb_set_in_listview(model, &iter, FALSE, self);
   }
   else if(!d->from.event)
+  {
+    // if the display is not yet started, start it
+    GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
+    if(gtk_tree_model_get_iter_first(model, &d->from.iter))
+      d->from.event = g_timeout_add_full(G_PRIORITY_LOW, 100, _thumb_set, self, NULL);
+  }
+}
+
+static void _show_all_thumbs(dt_lib_module_t* self)
+{
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  const gboolean thumb_sel = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->from.thumbs));
+  if(!d->from.event && thumb_sel)
   {
     // if the display is not yet started, start it
     GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
@@ -693,7 +707,8 @@ static gboolean _update_files_list(gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-
+  // clear parallel thumb refresh
+  d->from.event = 0;
   GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
   g_object_ref(model);
   gtk_tree_view_set_model(d->from.treeview, NULL);
@@ -721,11 +736,13 @@ static gboolean _update_files_list(gpointer user_data)
 static void _ignore_jpegs_toggled(GtkWidget *widget, dt_lib_module_t* self)
 {
   _update_files_list(self);
+  _show_all_thumbs(self);
 }
 
 static void _recursive_toggled(GtkWidget *widget, dt_lib_module_t* self)
 {
   _update_files_list(self);
+  _show_all_thumbs(self);
 }
 
 static void _expander_update(GtkWidget *toggle, GtkWidget *expander)
@@ -853,6 +870,7 @@ static void _selected_folder_changed(GtkTreeSelection *selection, dt_lib_module_
     dt_conf_set_string("ui_last/import_last_directory", folder);
     g_free(folder);
     _update_files_list(self);
+    _show_all_thumbs(self);
   }
 }
 
@@ -1003,7 +1021,6 @@ static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t* self)
   _update_folders_list(self);
   _update_files_list(self);
   gtk_widget_destroy(filechooser);
-  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
 static gboolean _handle_enter(GtkWidget *widget, GdkEventKey *event, dt_lib_module_t* self)
@@ -1135,6 +1152,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), FALSE);
   gtk_tree_view_column_set_widget(column, button);
   g_signal_connect(column, "clicked", G_CALLBACK(_all_thumb_toggled), self);
+  d->from.thumbs = button;
   gtk_tree_view_column_set_alignment(column, 0.5);
   gtk_tree_view_column_set_clickable(column, TRUE);
   gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(128));
