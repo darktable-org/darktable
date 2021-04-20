@@ -1433,7 +1433,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
         dt_masks_change_form_gui(NULL);
       else
       {
-        int emode = gui->edit_mode;
+        const int emode = gui->edit_mode;
         dt_masks_clear_form_gui(darktable.develop);
         for(GList *forms = darktable.develop->form_visible->points; forms; forms = g_list_next(forms))
         {
