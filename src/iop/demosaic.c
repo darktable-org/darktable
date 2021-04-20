@@ -3076,7 +3076,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     else
       dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width,
                                                 piece->pipe->dsc.filters);
-    dt_dev_write_luminance_mask(piece, (float *)o, &roi, DT_DEV_LUMINANCE_MASK_DEMOSAIC);
   }
   if(data->color_smoothing)
     color_smoothing(o, roi_out, data->color_smoothing);
