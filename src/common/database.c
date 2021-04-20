@@ -2552,11 +2552,11 @@ void dt_database_show_error(const dt_database_t *db)
           status += remove(lck_filename);
 
         if(status==0)
-          dt_gui_show_standalone_yes_no_dialog(_("all fine"), 
+          dt_gui_show_standalone_yes_no_dialog(_("done"), 
                                         _("\n  Successfully deleted the lock files.  \n  You can now restart darktable  \n"), 
                                         _("ok"), NULL);
         else
-          dt_gui_show_standalone_yes_no_dialog(_("oops"), g_markup_printf_escaped(
+          dt_gui_show_standalone_yes_no_dialog(_("error"), g_markup_printf_escaped(
                                         _("\n  At least one file could not be removed.  \n"
                                         "  You may try to manually delete the files <i>data.db.lock</i> and <i>library.db.lock</i>  \n"
                                         "  in folder <a href=\"file:///%s\">%s</a>.  \n"), lck_dirname, lck_dirname), 
