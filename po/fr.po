@@ -6020,7 +6020,7 @@ msgstr "C"
 
 #: ../src/develop/blend_gui.c:1938
 msgid "sliders for chroma channel (of LCh)"
-msgstr "conditions de fusion sur le canal de chromaticité C (de LCh)"
+msgstr "conditions de fusion sur le canal chroma C (de LCh)"
 
 #: ../src/develop/blend_gui.c:1942
 msgid "h"
