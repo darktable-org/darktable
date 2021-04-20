@@ -241,7 +241,7 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev
   float *warp_mask = NULL;
 
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if(p->luminance_mask_data == NULL) goto error;
+  if(p->luminance_mask_data == NULL) return;
 
   const int iwidth  = p->luminance_mask_roi.width;
   const int iheight = p->luminance_mask_roi.height;
@@ -255,7 +255,6 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev
   if((tmp == NULL) || (lum == NULL)) goto error;
 
   dt_masks_calc_detail_mask(p->luminance_mask_data, lum, tmp, iwidth, iheight, threshold, detail);
-  dt_masks_extend_border(lum, iwidth, iheight, 4);
 
   // here we have the slightly blurred full detail mask available
   warp_mask = dt_dev_distort_luminance_mask(p, lum, self);
@@ -591,7 +590,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   cl_mem out = NULL;
 
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if(p->luminance_mask_data == NULL) goto error;
+  if(p->luminance_mask_data == NULL) return;
 
   const int iwidth  = p->luminance_mask_roi.width;
   const int iheight = p->luminance_mask_roi.height;

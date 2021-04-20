@@ -2577,7 +2577,9 @@ gboolean dt_dev_write_luminance_mask(dt_dev_pixelpipe_iop_t *piece, float *const
   if((p->want_luminance_mask & ~DT_DEV_LUMINANCE_MASK_REQUIRED) != mode) return FALSE;
 
   dt_dev_clear_luminance_mask(p);
-
+  const gboolean unwanted = ((darktable.develop->preview_downsampling != 1.0f) &&
+                             ((p->type & DT_DEV_PIXELPIPE_FULL) != DT_DEV_PIXELPIPE_FULL)); 
+  if(unwanted) return FALSE;
   const int width = roi_in->width;
   const int height = roi_in->height;
   float *mask = dt_alloc_align_float((size_t)width * height);
@@ -2599,6 +2601,9 @@ gboolean dt_dev_write_luminance_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
   if((p->want_luminance_mask & ~DT_DEV_LUMINANCE_MASK_REQUIRED) != mode) return FALSE;
 
   dt_dev_clear_luminance_mask(p);
+  const gboolean unwanted = ((darktable.develop->preview_downsampling != 1.0f) &&
+                             ((p->type & DT_DEV_PIXELPIPE_FULL) != DT_DEV_PIXELPIPE_FULL)); 
+  if(unwanted) return FALSE;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
