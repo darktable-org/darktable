@@ -798,7 +798,7 @@ static void _resize_dialog(GtkWidget *widget, dt_lib_module_t* self)
 
 static guint _get_folders_list(GtkTreeStore *store, GtkTreeIter *parent,
                                const gchar *folder, const int root_lgth,
-                               const int n, dt_lib_module_t *self)
+                               const int n, const int level, dt_lib_module_t *self)
 {
   GError *error = NULL;
   GFile *gfolder = g_file_parse_name(folder);
@@ -827,7 +827,8 @@ static guint _get_folders_list(GtkTreeStore *store, GtkTreeIter *parent,
       gtk_tree_store_append(store, &iter, parent);
       gtk_tree_store_set(store, &iter, DT_FOLDER_NAME, &uifullname[root_lgth + 1],
                                        DT_FOLDER_PATH, fullname, -1);
-      nb = nb + _get_folders_list(store, &iter, fullname, root_lgth, nb, self);
+      if(level - 1 > 0)
+        nb = nb + _get_folders_list(store, &iter, fullname, root_lgth, nb, level - 1, self);
       g_free(fullname);
       g_free(uifullname);
     }
@@ -862,6 +863,21 @@ static void _folder_order_clicked(GtkTreeViewColumn *column, dt_lib_module_t *se
                   !dt_conf_get_bool("ui_last/import_last_folder_descending"));
 }
 
+static void _row_expanded(GtkTreeView *view, GtkTreeIter *iter,
+                          GtkTreePath *path, dt_lib_module_t *self)
+{
+  GtkTreeIter child, parent = *iter;
+  GtkTreeModel *model = gtk_tree_view_get_model(view);
+  if(gtk_tree_model_iter_children(model, &child, &parent))
+  do
+  {
+    char *fullname;
+    gtk_tree_model_get(model, &child, DT_FOLDER_PATH, &fullname, -1);
+    _get_folders_list(GTK_TREE_STORE(model), &child, fullname, strlen(fullname), 0, 1, self);
+    g_free(fullname);
+  } while(gtk_tree_model_iter_next(model, &child));
+}
+
 static void _paned_position_changed(GtkWidget *widget, dt_lib_module_t* self)
 {
   gint position = gtk_paned_get_position(GTK_PANED(widget));
@@ -884,7 +900,8 @@ static void _set_folders_list(GtkWidget *box, dt_lib_module_t* self)
   gtk_tree_view_column_set_expand(column, TRUE);
   gtk_tree_view_column_set_resizable(column, TRUE);
   g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
-  gtk_tree_view_set_expander_column(d->from.folderview , column);
+  gtk_tree_view_set_expander_column(d->from.folderview, column);
+  g_signal_connect(d->from.folderview, "row-expanded", G_CALLBACK(_row_expanded), self);
   gtk_tree_view_column_set_sort_column_id(column, DT_FOLDER_PATH);
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store), DT_FOLDER_PATH,
                                 dt_conf_get_bool("ui_last/import_last_folder_descending")
@@ -933,7 +950,7 @@ static void _update_folders_list(dt_lib_module_t* self)
   gtk_tree_view_set_model(d->from.folderview, NULL);
   gtk_tree_store_clear(GTK_TREE_STORE(model));
   const char *root = gtk_label_get_text(GTK_LABEL(d->from.root));
-  _get_folders_list(GTK_TREE_STORE(model), NULL, root, strlen(root), 0, self);
+  _get_folders_list(GTK_TREE_STORE(model), NULL, root, strlen(root), 0, 2, self);
   gtk_tree_view_set_model(d->from.folderview, model);
   g_object_unref(model);
   if(!dt_conf_is_equal("ui_last/import_last_directory", ""))
