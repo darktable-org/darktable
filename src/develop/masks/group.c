@@ -84,12 +84,13 @@ static int _group_events_button_released(struct dt_iop_module_t *module, float p
   return 0;
 }
 
-static inline gboolean _is_dragging_form(dt_masks_form_gui_t *gui)
+static inline gboolean _is_handling_form(dt_masks_form_gui_t *gui)
 {
   return gui->form_dragging
     || gui->source_dragging
     || gui->gradient_toggling
     || gui->form_rotating
+    || (gui->point_edited != -1)
     || (gui->point_dragging != -1)
     || (gui->feather_dragging != -1)
     || (gui->point_border_dragging != -1)
@@ -118,7 +119,7 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module, float pzx, 
   }
 
   // if a form is in edit mode and we are dragging, don't try to select another form
-  if(gui->group_edited >= 0 && _is_dragging_form(gui))
+  if(gui->group_edited >= 0 && _is_handling_form(gui))
   {
     // we get the form
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
