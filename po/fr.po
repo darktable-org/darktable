@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-04-19 20:25+0200\n"
-"PO-Revision-Date: 2021-04-19 20:25+0200\n"
-"Last-Translator: Pascal Obry <pascal@obry.net>\n"
+"PO-Revision-Date: 2021-04-20 23:27+0200\n"
+"Last-Translator: Aurélien PIERRE <contact@aurelienpierre.com>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
@@ -3428,15 +3428,15 @@ msgstr "Adobe RVB"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:203
 msgid "gamma rec709 RGB"
-msgstr "Rec709 gamma RVB"
+msgstr "RVB Rec709 gamma"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:204
 msgid "linear rec709 RGB"
-msgstr "Rec709 linéaire RVB"
+msgstr "RVB Rec709 linéaire"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:205
 msgid "linear rec2020 RGB"
-msgstr "Rec2020 linéaire RVB"
+msgstr "RVB Rec2020 linéaire"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:209
 msgid "tetrahedral"
@@ -11387,7 +11387,7 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1205
 msgid "global grading"
-msgstr "étalonnage global"
+msgstr "gradation globale"
 
 #: ../src/iop/colorbalancergb.c:1211
 msgid "rotate all hues by an angle, at the same luminance"
@@ -11395,36 +11395,37 @@ msgstr "faire pivoter toutes les teintes d'un angle, à la même luminance"
 
 #: ../src/iop/colorbalancergb.c:1213
 msgid "linear chroma grading"
-msgstr "étalonnage chromatique linéaire"
+msgstr "gradation de chroma linéaire"
 
 #: ../src/iop/colorbalancergb.c:1220
 msgid "increase colorfulness at same luminance globally"
-msgstr "augmenter la saturation à la même luminance globalement"
+msgstr "augmenter globalement la richesse de couleur à luminance égale"
 
 #: ../src/iop/colorbalancergb.c:1226
 msgid "increase colorfulness at same luminance mostly in shadows"
 msgstr ""
-"augmenter la saturation à la même luminance essentiellement dans les ombres"
+"augmenter la richesse de couleur à luminance égale principalement dans les "
+"ombres"
 
 #: ../src/iop/colorbalancergb.c:1232
 msgid "increase colorfulness at same luminance mostly in midtones"
 msgstr ""
-"augmenter la saturation à la même luminance essentiellement dans les tons "
-"moyens"
+"augmenter la richesse de couleur à luminance égale principalement dans les "
+"tons moyens"
 
 #: ../src/iop/colorbalancergb.c:1238
 msgid "increase colorfulness at same luminance mostly in highlights"
 msgstr ""
-"augmenter la saturation à la même luminance essentiellement dans les hautes "
-"lumières"
+"augmenter la richesse de couleur à luminance égale principalement dans les "
+"hautes lumières"
 
 #: ../src/iop/colorbalancergb.c:1240
 msgid "perceptual saturation grading"
-msgstr "étalonnage perceptuel de la saturation"
+msgstr "gradation de saturation perceptuelle"
 
 #: ../src/iop/colorbalancergb.c:1247
 msgid "add or remove saturation by an absolute amount"
-msgstr "ajouter ou supprimer de la saturation d'un montant absolu"
+msgstr "augmenter ou réduire de la saturation d'une quantité absolue"
 
 #: ../src/iop/colorbalancergb.c:1254 ../src/iop/colorbalancergb.c:1261
 #: ../src/iop/colorbalancergb.c:1268
@@ -11437,11 +11438,11 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1271
 msgid "perceptual brilliance grading"
-msgstr "étalonnage perceptuel de la brillance"
+msgstr "gradation de la brillance perceptuelle"
 
 #: ../src/iop/colorbalancergb.c:1278
 msgid "add or remove brilliance by an absolute amount"
-msgstr "ajouter ou supprimer de la brillance d'un montant absolu"
+msgstr "ajouter ou supprimer de la brillance d'une quantité absolue"
 
 #: ../src/iop/colorbalancergb.c:1285 ../src/iop/colorbalancergb.c:1292
 #: ../src/iop/colorbalancergb.c:1299
@@ -11455,31 +11456,31 @@ msgstr ""
 #. Page 4-ways
 #: ../src/iop/colorbalancergb.c:1303
 msgid "4 ways"
-msgstr "4 échelles"
+msgstr "4 voies"
 
 #: ../src/iop/colorbalancergb.c:1303
 msgid "selective color grading"
-msgstr "étalonnage sélectif des couleurs"
+msgstr "gradation sélective des couleurs"
 
 #: ../src/iop/colorbalancergb.c:1305
 msgid "global offset"
-msgstr "offset global"
+msgstr "décalage global"
 
 #: ../src/iop/colorbalancergb.c:1312
 msgid "global luminance offset"
-msgstr "compensation de la luminance globale"
+msgstr "décalage global de luminance"
 
 #: ../src/iop/colorbalancergb.c:1319
 msgid "hue of the global color offset"
-msgstr "teinte de l'offset couleur global"
+msgstr "teinte du décalage de couleur global"
 
 #: ../src/iop/colorbalancergb.c:1326
 msgid "chroma of the global color offset"
-msgstr "chroma de l'offset couleur global"
+msgstr "chroma du décalage de couleur global"
 
 #: ../src/iop/colorbalancergb.c:1328
 msgid "shadows lift"
-msgstr "lift ombres"
+msgstr "lift des ombres"
 
 #: ../src/iop/colorbalancergb.c:1335
 msgid "luminance gain in shadows"
@@ -11511,7 +11512,7 @@ msgstr "chroma du gain couleur dans les hautes lumières"
 
 #: ../src/iop/colorbalancergb.c:1376
 msgid "power"
-msgstr "power"
+msgstr "puissance"
 
 #: ../src/iop/colorbalancergb.c:1383
 msgid "luminance exponent in midtones"
@@ -11537,7 +11538,7 @@ msgstr "isoler luminances"
 
 #: ../src/iop/colorbalancergb.c:1403
 msgid "luminance ranges"
-msgstr "étendues luminance"
+msgstr "étendues de luminance"
 
 #: ../src/iop/colorbalancergb.c:1417
 msgid "weight of the shadows over the whole tonal range"
@@ -11554,12 +11555,11 @@ msgstr "poids des hautes lumières sur l'ensemble de la gamme tonale"
 #: ../src/iop/colorbalancergb.c:1452
 msgid "peak white luminance value used to normalize the power function"
 msgstr ""
-"valeur de pointe de la luminance blanche utilisée pour normaliser la "
-"fonction de puissance"
+"valeur pic de la luminance du blanc utilisée pour normaliser la fonction puissance"
 
 #: ../src/iop/colorbalancergb.c:1454
 msgid "mask preview settings"
-msgstr "paramètres du masque"
+msgstr "paramètres de prévisualisation du masque"
 
 #: ../src/iop/colorbalancergb.c:1457
 msgid "checkerboard color 1"
