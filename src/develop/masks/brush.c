@@ -946,6 +946,8 @@ static void _brush_get_distance(float x, float y, float as, dt_masks_form_gui_t 
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
 
+  const float as2 = as * as;
+
   // we first check if we are inside the source form
 
   // add support for clone masks
@@ -972,7 +974,7 @@ static void _brush_get_distance(float x, float y, float as, dt_masks_form_gui_t 
       const float dd = (sdx * sdx) + (sdy * sdy);
       *dist = fminf(*dist, dd);
 
-      if((yy - y) < as && (yy - y) > -as && (xx - x) < as && (xx - x) > -as)
+      if(dd < as2)
       {
         if(*inside == 0)
         {
@@ -1024,7 +1026,7 @@ static void _brush_get_distance(float x, float y, float as, dt_masks_form_gui_t 
       const float dd = (dx * dx) + (dy * dy);
       *dist = fminf(*dist, dd);
 
-      if ((yy-y)<as && (yy-y)>-as && (xx-x)<as && (xx-x)>-as)
+      if(dd < as2)
       {
         if(current_seg == 0)
           *near = corner_count - 1;
