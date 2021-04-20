@@ -3235,8 +3235,6 @@ int button_pressed(struct dt_iop_module_t *module,
 
 done:
   dt_iop_gui_leave_critical_section(module);
-  if(handled)
-    sync_pipe(module, TRUE);
   return handled;
 }
 
