@@ -626,13 +626,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   /* setup stride for performance */
   const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, roi_out->width);
 
+  if(stride == -1)
+  {
+    fprintf(stderr,"[watermark] cairo stride error\n");
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+    return;
+  }
+
   /* create a cairo memory surface that is later used for reading watermark overlay data */
   guint8 *image = (guint8 *)g_malloc0_n(roi_out->height, stride);
   cairo_surface_t *surface = cairo_image_surface_create_for_data(image, CAIRO_FORMAT_ARGB32, roi_out->width,
                                                                  roi_out->height, stride);
   if((cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) || (image == NULL))
   {
-    fprintf(stderr,"[watermark] Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
+    fprintf(stderr,"[watermark] cairo surface error: %s\n",
+            cairo_status_to_string(cairo_surface_status(surface)));
     g_free(image);
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
@@ -686,11 +694,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else
   {
     // in larger/smaller side mode, set wbase and hbase to the largest or smallest side of the image
-    float larger;
-    if(dimension.width > dimension.height)
-      larger = (float)dimension.width;
-    else
-      larger = (float)dimension.height;
+    const float larger = dimension.width > dimension.height
+      ? (float)dimension.width
+      : (float)dimension.height;
 
     if(iw > ih)
     {
@@ -759,7 +765,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                                                  watermark_height, stride_two);
   if((cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS) || (image_two == NULL))
   {
-    fprintf(stderr,"[watermark] Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface_two)));
+    fprintf(stderr,"[watermark] cairo surface 2 error: %s\n",
+            cairo_status_to_string(cairo_surface_status(surface_two)));
     cairo_surface_destroy(surface);
     g_object_unref(svg);
     g_free(image);
@@ -815,13 +822,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   cairo_translate(cr, -cX, -cY);
 
   // now set proper scale and translationfor the watermark itself
-  cairo_translate(cr_two, svg_offset_x,svg_offset_y);
+  cairo_translate(cr_two, svg_offset_x, svg_offset_y);
   cairo_scale(cr_two, scale, scale);
   /* render svg into surface*/
   rsvg_handle_render_cairo(svg, cr_two);
   cairo_surface_flush(surface_two);
 
-  cairo_set_source_surface(cr, surface_two,-svg_offset_x,-svg_offset_y);
+  cairo_set_source_surface(cr, surface_two, -svg_offset_x, -svg_offset_y);
   cairo_paint(cr);
 
   // no more non-thread safe rsvg usage
