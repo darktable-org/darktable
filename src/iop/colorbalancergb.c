@@ -399,8 +399,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float *const restrict brilliance = __builtin_assume_aligned((const float *const restrict)d->brilliance, 16);
 
   const gint mask_display
-      = (self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL
-         && g->mask_display);
+      = ((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL && self->dev->gui_attached
+         && g && g->mask_display);
 
   // pixel size of the checker background
   const size_t checker_1 = (mask_display) ? DT_PIXEL_APPLY_DPI(d->checker_size) : 0;
@@ -539,7 +539,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(mask_display)
     {
       // draw checkerboard
-      float color[4];
+      float DT_ALIGNED_PIXEL color[4];
       if(i % checker_1 < i % checker_2)
       {
         if(j % checker_1 < j % checker_2) for_four_channels(c) color[c] = d->checker_color_2[c];
@@ -572,14 +572,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)(piece->data);
   dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)p1;
 
-  d->checker_color_1[0] = dt_conf_get_float("plugins/darkroom/colorbalancergb/checker1/red");
-  d->checker_color_1[1] = dt_conf_get_float("plugins/darkroom/colorbalancergb/checker1/green");
-  d->checker_color_1[2] = dt_conf_get_float("plugins/darkroom/colorbalancergb/checker1/blue");
+  d->checker_color_1[0] = CLAMP(dt_conf_get_float("plugins/darkroom/colorbalancergb/checker1/red"), 0.f, 1.f);
+  d->checker_color_1[1] = CLAMP(dt_conf_get_float("plugins/darkroom/colorbalancergb/checker1/green"), 0.f, 1.f);
+  d->checker_color_1[2] = CLAMP(dt_conf_get_float("plugins/darkroom/colorbalancergb/checker1/blue"), 0.f, 1.f);
   d->checker_color_1[3] = 1.f;
 
-  d->checker_color_2[0] = dt_conf_get_float("plugins/darkroom/colorbalancergb/checker2/red");
-  d->checker_color_2[1] = dt_conf_get_float("plugins/darkroom/colorbalancergb/checker2/green");
-  d->checker_color_2[2] = dt_conf_get_float("plugins/darkroom/colorbalancergb/checker2/blue");
+  d->checker_color_2[0] = CLAMP(dt_conf_get_float("plugins/darkroom/colorbalancergb/checker2/red"), 0.f, 1.f);
+  d->checker_color_2[1] = CLAMP(dt_conf_get_float("plugins/darkroom/colorbalancergb/checker2/green"), 0.f, 1.f);
+  d->checker_color_2[2] = CLAMP(dt_conf_get_float("plugins/darkroom/colorbalancergb/checker2/blue"), 0.f, 1.f);
   d->checker_color_2[3] = 1.f;
 
   d->checker_size = MAX(dt_conf_get_int("plugins/darkroom/colorbalancergb/checker/size"), 2);
@@ -1197,6 +1197,7 @@ static gboolean area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, g
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_colorbalancergb_gui_data_t *g = IOP_GUI_ALLOC(colorbalancergb);
+  g->mask_display = FALSE;
 
   // start building top level widget
   g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
