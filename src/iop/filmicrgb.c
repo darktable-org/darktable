@@ -3591,7 +3591,7 @@ static gboolean area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, g
     }
   }
 
-  return FALSE;
+  return TRUE; // Ensure that scrolling cannot move side panel when no delta
 }
 
 void gui_init(dt_iop_module_t *self)
