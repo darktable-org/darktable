@@ -3069,13 +3069,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f((float *)o, pixels, &roo, &roi, roo.width, roi.width);
     else if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR)
        dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f((float *)o, pixels, &roo, &roi, roo.width, roi.width);
-    else // sample half-size raw (Bayer) or 1/3-size raw (X-Trans)
-        if(piece->pipe->dsc.filters == 9u)
-      dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi, roo.width, roi.width,
-                                                        xtrans);
+    else if(piece->pipe->dsc.filters == 9u)
+      dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi, roo.width, roi.width, xtrans);
     else
       dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width,
                                                 piece->pipe->dsc.filters);
+
+    // this is used for preview pipes, currently there is now writing mask implemented
+    // we just clear the mask data as we might have changed the preview downsampling
+    dt_dev_clear_luminance_mask(piece->pipe);
   }
   if(data->color_smoothing)
     color_smoothing(o, roi_out, data->color_smoothing);
