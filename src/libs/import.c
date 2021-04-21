@@ -901,7 +901,7 @@ static void _paned_position_changed(GtkWidget *widget, dt_lib_module_t* self)
   dt_conf_set_int("ui_last/import_dialog_paned_pos", position);
 }
 
-static void _set_folders_list(GtkWidget *box, dt_lib_module_t* self)
+static void _set_folders_list(GtkWidget *lbox, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   GtkTreeStore *store = gtk_tree_store_new(DT_FOLDER_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING);
@@ -927,7 +927,7 @@ static void _set_folders_list(GtkWidget *box, dt_lib_module_t* self)
   gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(w), DT_PIXEL_APPLY_DPI(200));
   gtk_tree_view_set_model(d->from.folderview, GTK_TREE_MODEL(store));
   gtk_tree_view_set_headers_visible(d->from.folderview, TRUE);
-  gtk_box_pack_end(GTK_BOX(box), w, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(lbox), w, TRUE, TRUE, 0);
 
   GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.folderview);
   g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(_selected_folder_changed), self);
@@ -1034,105 +1034,12 @@ static gboolean _handle_enter(GtkWidget *widget, GdkEventKey *event, dt_lib_modu
   return FALSE;
 }
 
-static const char *_import_text[] =
+static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
 {
-  N_("import in-place"),
-  N_("copy and import"),
-  N_("import from camera")
-};
-
-const char *folder_tooltip = N_("choose the root of the folder tree below"
-                               "\ntry to choose a root folder that contains most/all of your photographs (in sub-folders)"
-                               "\nso that you don't need to change the root frequently"
-                               "\ne.g. set it to your \'pictures\' or \'home\' directory");
-
-static void _import_from_dialog_new(dt_lib_module_t* self)
-{
-  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  d->from.dialog = gtk_dialog_new_with_buttons( _import_text[d->import_case], NULL, GTK_DIALOG_MODAL,
-                                                _("cancel"), GTK_RESPONSE_NONE,
-                                                _import_text[d->import_case], GTK_RESPONSE_ACCEPT, NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(d->from.dialog);
-#endif
-  gtk_window_set_default_size(GTK_WINDOW(d->from.dialog),
-                              dt_conf_get_int("ui_last/import_dialog_width"),
-                              dt_conf_get_int("ui_last/import_dialog_height"));
-  gtk_window_set_transient_for(GTK_WINDOW(d->from.dialog), GTK_WINDOW(win));
-  GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(d->from.dialog));
-  g_signal_connect(d->from.dialog, "check-resize", G_CALLBACK(_resize_dialog), self);
-  g_signal_connect(d->from.dialog, "key-press-event", G_CALLBACK(_handle_enter), self);
-
-  // images numbers
-  GList *children = gtk_container_get_children(GTK_CONTAINER(d->from.dialog));
-  GtkWidget *box = GTK_WIDGET(children->data);
-  g_list_free(children);
-  children = gtk_container_get_children(GTK_CONTAINER(box));
-  box = GTK_WIDGET(children->data); // action-box
-  g_list_free(children);
-
-  d->from.img_nb = gtk_label_new("");
-  gtk_widget_set_halign(d->from.img_nb, GTK_ALIGN_END);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(d->from.img_nb), TRUE, TRUE, 0);
-
-  GtkWidget *paned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
-  if(d->import_case != DT_IMPORT_CAMERA)
-  {
-    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-    GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
-    gtk_widget_set_name(button, "non-flat");
-    gtk_widget_set_tooltip_text(button, folder_tooltip);
-    gtk_box_pack_start(GTK_BOX(box), button, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_import_select_folder), self);
-    char *folder;
-    if(dt_conf_is_equal("ui_last/import_last_root", ""))
-    {
-      if(dt_conf_is_equal("ui_last/import_last_directory", ""))
-        folder = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES));
-      else
-      {
-        folder = dt_conf_get_string("ui_last/import_last_directory");
-      }
-    }
-    else
-      folder = dt_conf_get_string("ui_last/import_last_root");
-    d->from.root = dt_ui_label_new(folder);
-    g_free(folder);
-    gtk_widget_set_tooltip_text(d->from.root, folder_tooltip);
-    gtk_box_pack_start(GTK_BOX(box), d->from.root, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(content), box, FALSE, FALSE, 0);
-
-    const int position = dt_conf_get_int("ui_last/import_dialog_paned_pos");
-    if(position)
-      gtk_paned_set_position(GTK_PANED(paned), position);
-  }
-  g_signal_connect(paned, "notify::position", G_CALLBACK(_paned_position_changed), self);
-  GtkWidget *rbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
-  gtk_paned_pack2(GTK_PANED(paned), rbox, TRUE, FALSE);
-  gtk_box_pack_start(GTK_BOX(content), paned, TRUE, TRUE, 0);
-
-  guint line = 0;
-  guint col = 0;
-  GtkGrid *grid = GTK_GRID(gtk_grid_new());
-  gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-  if(d->import_case != DT_IMPORT_CAMERA)
-  {
-    GtkWidget *recursive = dt_gui_preferences_bool(grid, "ui_last/import_recursive", col++, line, TRUE);
-    gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line), TRUE);
-    g_signal_connect(G_OBJECT(recursive), "toggled", G_CALLBACK(_recursive_toggled), self);
-  }
-  GtkWidget *ignore_jpegs = dt_gui_preferences_bool(grid, "ui_last/import_ignore_jpegs", col++, line, TRUE);
-  gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line++), TRUE);
-  g_signal_connect(G_OBJECT(ignore_jpegs), "toggled", G_CALLBACK(_ignore_jpegs_toggled), self);
-  gtk_box_pack_start(GTK_BOX(rbox), GTK_WIDGET(grid), FALSE, FALSE, 8);
-
   d->from.store = gtk_list_store_new(DT_IMPORT_NUM_COLS, G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF,
                                      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64);
-  // fulfill the store
   d->from.eye = _eye_thumbnail(GTK_WIDGET(d->from.dialog));
-  g_timeout_add_full(G_PRIORITY_LOW, 100, _update_files_list, self, NULL);
-
   // Create the treview with list model data store
   d->from.w = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(d->from.w), GTK_POLICY_NEVER,
@@ -1197,61 +1104,170 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   gtk_tree_view_set_headers_visible(d->from.treeview, TRUE);
 
   gtk_box_pack_start(GTK_BOX(rbox), GTK_WIDGET(d->from.w), TRUE, TRUE, 0);
+}
 
-  #ifdef HAVE_GPHOTO2
-    if(d->import_case == DT_IMPORT_CAMERA)
-    {
-      d->from.info = dt_ui_label_new(_("please wait while prefetching the list of images from camera..."));
-      gtk_label_set_single_line_mode(GTK_LABEL(d->from.info), FALSE);
-      gtk_box_pack_start(GTK_BOX(rbox), d->from.info, FALSE, FALSE, 0);
-    }
-    else
-  #endif
-    {
-      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
-      gtk_paned_pack1(GTK_PANED(paned), lbox, TRUE, FALSE);
-      _set_folders_list(lbox, self);
-      _update_folders_list(self);
-    }
-
+static void _set_expander_content(GtkWidget *rbox, dt_lib_module_t* self)
+{
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   // separator
   gtk_widget_set_name(GTK_WIDGET(d->from.w), "section_label");
+  // job code
+  GtkWidget *import_patterns = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkGrid *grid = GTK_GRID(gtk_grid_new());
+  gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
+  gint line = 0;
+  dt_gui_preferences_string(grid, "ui_last/import_jobcode", 0, line++);
+  gtk_box_pack_start(GTK_BOX(import_patterns), GTK_WIDGET(grid), FALSE, FALSE, 0);
 
+  // collapsible section
+  _expander_create(&d->from.exp, _("naming rules"), "ui_last/session_expander_import", "import_metadata");
+  gtk_box_pack_start(GTK_BOX(import_patterns), d->from.exp.expander, FALSE, FALSE, 0);
+
+  // import patterns
+  grid = GTK_GRID(gtk_grid_new());
+  gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
+  d->from.datetime = dt_gui_preferences_string(grid, "ui_last/import_datetime_override", 0, line++);
+  dt_gui_preferences_string(grid, "session/base_directory_pattern", 0, line++);
+  dt_gui_preferences_string(grid, "session/sub_directory_pattern", 0, line++);
+  GtkWidget *usefn = dt_gui_preferences_bool(grid, "session/use_filename", 0, line++, FALSE);
+  d->from.fn_line = line;
+  dt_gui_preferences_string(grid, "session/filename_pattern", 0, line++);
+  gtk_box_pack_start(GTK_BOX(d->from.exp.widgets), GTK_WIDGET(grid), FALSE, FALSE, 0);
+  d->from.patterns = grid;
+  _update_layout(self);
+  g_signal_connect(usefn, "toggled", G_CALLBACK(_usefn_toggled), self);
+  gtk_box_pack_start(GTK_BOX(rbox), import_patterns, FALSE, FALSE, 0);
+
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  grid = GTK_GRID(gtk_grid_new());
+  gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
+  dt_gui_preferences_bool(grid, "ui_last/import_keep_open", 0, 0, TRUE);
+  gtk_box_pack_end(GTK_BOX(box), GTK_WIDGET(grid), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(rbox), GTK_WIDGET(box), FALSE, FALSE, 0);
+}
+
+static const char *_import_text[] =
+{
+  N_("import in-place"),
+  N_("copy and import"),
+  N_("import from camera")
+};
+
+const char *folder_tooltip = N_("choose the root of the folder tree below"
+                               "\ntry to choose a root folder that contains most/all of your photographs (in sub-folders)"
+                               "\nso that you don't need to change the root frequently"
+                               "\ne.g. set it to your \'pictures\' or \'home\' directory");
+
+static void _import_from_dialog_new(dt_lib_module_t* self)
+{
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  d->from.dialog = gtk_dialog_new_with_buttons( _import_text[d->import_case], NULL, GTK_DIALOG_MODAL,
+                                                _("cancel"), GTK_RESPONSE_NONE,
+                                                _import_text[d->import_case], GTK_RESPONSE_ACCEPT, NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(d->from.dialog);
+#endif
+  gtk_window_set_default_size(GTK_WINDOW(d->from.dialog),
+                              dt_conf_get_int("ui_last/import_dialog_width"),
+                              dt_conf_get_int("ui_last/import_dialog_height"));
+  gtk_window_set_transient_for(GTK_WINDOW(d->from.dialog), GTK_WINDOW(win));
+  GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(d->from.dialog));
+  g_signal_connect(d->from.dialog, "check-resize", G_CALLBACK(_resize_dialog), self);
+  g_signal_connect(d->from.dialog, "key-press-event", G_CALLBACK(_handle_enter), self);
+
+  // images numbers in action-box
+  GList *children = gtk_container_get_children(GTK_CONTAINER(d->from.dialog));
+  GtkWidget *box = GTK_WIDGET(children->data);
+  g_list_free(children);
+  children = gtk_container_get_children(GTK_CONTAINER(box));
+  box = GTK_WIDGET(children->data); // action-box
+  g_list_free(children);
+
+  d->from.img_nb = gtk_label_new("");
+  gtk_widget_set_halign(d->from.img_nb, GTK_ALIGN_END);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(d->from.img_nb), TRUE, TRUE, 0);
+
+  GtkWidget *paned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
+  if(d->import_case != DT_IMPORT_CAMERA)
+  {
+    // root folder
+    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
+    GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
+    gtk_widget_set_name(button, "non-flat");
+    gtk_widget_set_tooltip_text(button, folder_tooltip);
+    gtk_box_pack_start(GTK_BOX(box), button, FALSE, FALSE, 0);
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_import_select_folder), self);
+    char *folder;
+    if(dt_conf_is_equal("ui_last/import_last_root", ""))
+    {
+      if(dt_conf_is_equal("ui_last/import_last_directory", ""))
+        folder = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES));
+      else
+      {
+        folder = dt_conf_get_string("ui_last/import_last_directory");
+      }
+    }
+    else
+      folder = dt_conf_get_string("ui_last/import_last_root");
+    d->from.root = dt_ui_label_new(folder);
+    g_free(folder);
+    gtk_widget_set_tooltip_text(d->from.root, folder_tooltip);
+    gtk_box_pack_start(GTK_BOX(box), d->from.root, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(content), box, FALSE, FALSE, 0);
+
+    const int position = dt_conf_get_int("ui_last/import_dialog_paned_pos");
+    if(position)
+      gtk_paned_set_position(GTK_PANED(paned), position);
+  }
+
+  // right pane
+  GtkWidget *rbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
+  gtk_paned_pack2(GTK_PANED(paned), rbox, TRUE, FALSE);
+  gtk_box_pack_start(GTK_BOX(content), paned, TRUE, TRUE, 0);
+
+  guint line = 0;
+  guint col = 0;
+  GtkGrid *grid = GTK_GRID(gtk_grid_new());
+  gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
+  if(d->import_case != DT_IMPORT_CAMERA)
+  {
+    GtkWidget *recursive = dt_gui_preferences_bool(grid, "ui_last/import_recursive", col++, line, TRUE);
+    gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line), TRUE);
+    g_signal_connect(G_OBJECT(recursive), "toggled", G_CALLBACK(_recursive_toggled), self);
+  }
+  GtkWidget *ignore_jpegs = dt_gui_preferences_bool(grid, "ui_last/import_ignore_jpegs", col++, line, TRUE);
+  gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line++), TRUE);
+  g_signal_connect(G_OBJECT(ignore_jpegs), "toggled", G_CALLBACK(_ignore_jpegs_toggled), self);
+  gtk_box_pack_start(GTK_BOX(rbox), GTK_WIDGET(grid), FALSE, FALSE, 8);
+
+  // files list
+  _set_files_list(rbox, self);
+  g_timeout_add_full(G_PRIORITY_LOW, 100, _update_files_list, self, NULL);
+
+#ifdef HAVE_GPHOTO2
+  if(d->import_case == DT_IMPORT_CAMERA)
+  {
+    d->from.info = dt_ui_label_new(_("please wait while prefetching the list of images from camera..."));
+    gtk_label_set_single_line_mode(GTK_LABEL(d->from.info), FALSE);
+    gtk_box_pack_start(GTK_BOX(rbox), d->from.info, FALSE, FALSE, 0);
+  }
+  else
+#endif
+  {
+    // left pane
+    g_signal_connect(paned, "notify::position", G_CALLBACK(_paned_position_changed), self);
+    GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
+    gtk_paned_pack1(GTK_PANED(paned), lbox, TRUE, FALSE);
+    // folder tree
+    _set_folders_list(lbox, self);
+    _update_folders_list(self);
+  }
+
+  // patterns expander
   if(d->import_case != DT_IMPORT_INPLACE)
   {
-    GtkWidget *import_patterns = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    grid = GTK_GRID(gtk_grid_new());
-    gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-    line = 0;
-    dt_gui_preferences_string(grid, "ui_last/import_jobcode", 0, line++);
-    gtk_box_pack_start(GTK_BOX(import_patterns), GTK_WIDGET(grid), FALSE, FALSE, 0);
-
-    // collapsible section
-    _expander_create(&d->from.exp, _("naming rules"), "ui_last/session_expander_import", "import_metadata");
-    gtk_box_pack_start(GTK_BOX(import_patterns), d->from.exp.expander, FALSE, FALSE, 0);
-
-    // patterns
-    grid = GTK_GRID(gtk_grid_new());
-    gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-    d->from.datetime = dt_gui_preferences_string(grid, "ui_last/import_datetime_override", 0, line++);
-    dt_gui_preferences_string(grid, "session/base_directory_pattern", 0, line++);
-    dt_gui_preferences_string(grid, "session/sub_directory_pattern", 0, line++);
-    GtkWidget *usefn = dt_gui_preferences_bool(grid, "session/use_filename", 0, line++, FALSE);
-    d->from.fn_line = line;
-    dt_gui_preferences_string(grid, "session/filename_pattern", 0, line++);
-    gtk_box_pack_start(GTK_BOX(d->from.exp.widgets), GTK_WIDGET(grid), FALSE, FALSE, 0);
-    d->from.patterns = grid;
-    _update_layout(self);
-    g_signal_connect(usefn, "toggled", G_CALLBACK(_usefn_toggled), self);
-    gtk_box_pack_start(GTK_BOX(rbox), import_patterns, FALSE, FALSE, 0);
-
-    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    grid = GTK_GRID(gtk_grid_new());
-    gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-    dt_gui_preferences_bool(grid, "ui_last/import_keep_open", 0, 0, TRUE);
-    gtk_box_pack_end(GTK_BOX(box), GTK_WIDGET(grid), FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(rbox), GTK_WIDGET(box), FALSE, FALSE, 0);
-
+    _set_expander_content(rbox, self);
     gtk_widget_show_all(d->from.dialog);
     _expander_update(d->from.exp.toggle, d->from.exp.expander);
   }
