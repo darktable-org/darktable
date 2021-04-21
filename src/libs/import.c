@@ -1387,13 +1387,18 @@ void gui_init(dt_lib_module_t *self)
 
   // add import buttons
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *widget = dt_ui_button_new(_("import in-place..."), _("select a folder to import from"), "lighttable_panels.html#import_from_fs");
+  GtkWidget *widget = dt_ui_button_new(_("import in-place..."),
+                                       _("import images in-place without renaming"),
+                                       "lighttable_panels.html#import_from_fs");
   d->import_inplace = GTK_BUTTON(widget);
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_import_from_callback), self);
-  widget = dt_ui_button_new(_("copy and import..."), _("select a folder to import from"), "lighttable_panels.html#import_from_fs");
+  widget = dt_ui_button_new(_("copy and import..."),
+                            _("copy and optionally rename images before importing them"
+                              "\npatterns can be defined to rename the images and specify the destination folders"),
+                            "lighttable_panels.html#import_from_fs");
   d->import_copy = GTK_BUTTON(widget);
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
