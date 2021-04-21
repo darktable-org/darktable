@@ -3476,17 +3476,21 @@ static gboolean denoiseprofile_scrolled(GtkWidget *widget, GdkEventScroll *event
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
-  int delta_y;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
   {
-    if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    int delta_y;
+    if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
     {
       //adjust aspect
       const int aspect = dt_conf_get_int("plugins/darkroom/denoiseprofile/aspect_percent");
       dt_conf_set_int("plugins/darkroom/denoiseprofile/aspect_percent", aspect + delta_y);
       dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
     }
-    else
+  }
+  else
+  {
+    gdouble delta_y;
+    if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
     {
       c->mouse_radius = CLAMP(c->mouse_radius * (1.f + 0.1f * delta_y), 0.2f / DT_IOP_DENOISE_PROFILE_BANDS, 1.f);
       gtk_widget_queue_draw(widget);
