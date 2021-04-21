@@ -844,7 +844,7 @@ static guint _get_folders_list(GtkTreeStore *store, GtkTreeIter *parent,
       gtk_tree_store_set(store, &iter, DT_FOLDER_NAME, &uifullname[root_lgth + 1],
                                        DT_FOLDER_PATH, fullname, -1);
       if(level - 1 > 0)
-        nb = nb + _get_folders_list(store, &iter, fullname, root_lgth, nb, level - 1, self);
+        nb = nb + _get_folders_list(store, &iter, fullname, strlen(fullname), nb, level - 1, self);
       g_free(fullname);
       g_free(uifullname);
     }
