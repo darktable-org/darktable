@@ -906,7 +906,7 @@ static void _set_folders_list(GtkWidget *box, dt_lib_module_t* self)
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   GtkTreeStore *store = gtk_tree_store_new(DT_FOLDER_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING);
   GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
   d->from.folderview = GTK_TREE_VIEW(gtk_tree_view_new());
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->from.folderview));
 
@@ -916,7 +916,6 @@ static void _set_folders_list(GtkWidget *box, dt_lib_module_t* self)
   gtk_tree_view_append_column(d->from.folderview, column);
   gtk_tree_view_column_set_expand(column, TRUE);
   gtk_tree_view_column_set_resizable(column, TRUE);
-  g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
   gtk_tree_view_set_expander_column(d->from.folderview, column);
   g_signal_connect(d->from.folderview, "row-expanded", G_CALLBACK(_row_expanded), self);
   gtk_tree_view_column_set_sort_column_id(column, DT_FOLDER_PATH);
@@ -925,6 +924,7 @@ static void _set_folders_list(GtkWidget *box, dt_lib_module_t* self)
                                 ? GTK_SORT_DESCENDING : GTK_SORT_ASCENDING);
   g_signal_connect(column, "clicked", G_CALLBACK(_folder_order_clicked), self);
   gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(200));
+  gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(w), DT_PIXEL_APPLY_DPI(200));
   gtk_tree_view_set_model(d->from.folderview, GTK_TREE_MODEL(store));
   gtk_tree_view_set_headers_visible(d->from.folderview, TRUE);
   gtk_box_pack_end(GTK_BOX(box), w, TRUE, TRUE, 0);
@@ -1041,6 +1041,11 @@ static const char *_import_text[] =
   N_("import from camera")
 };
 
+const char *folder_tooltip = N_("choose the root of the folder tree below"
+                               "\ntry to choose a root folder that contains most/all of your photographs (in sub-folders)"
+                               "\nso that you don't need to change the root frequently"
+                               "\ne.g. set it to your \'pictures\' or \'home\' directory");
+
 static void _import_from_dialog_new(dt_lib_module_t* self)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
@@ -1077,6 +1082,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
     box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
     GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
     gtk_widget_set_name(button, "non-flat");
+    gtk_widget_set_tooltip_text(button, folder_tooltip);
     gtk_box_pack_start(GTK_BOX(box), button, FALSE, FALSE, 0);
     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_import_select_folder), self);
     char *folder;
@@ -1093,6 +1099,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
       folder = dt_conf_get_string("ui_last/import_last_root");
     d->from.root = dt_ui_label_new(folder);
     g_free(folder);
+    gtk_widget_set_tooltip_text(d->from.root, folder_tooltip);
     gtk_box_pack_start(GTK_BOX(box), d->from.root, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(content), box, FALSE, FALSE, 0);
 
