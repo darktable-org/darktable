@@ -673,11 +673,15 @@ ppg_demosaic_redblue (read_only image2d_t in, write_only image2d_t out, const in
   barrier(CLK_LOCAL_MEM_FENCE);
 
   if(x >= width || y >= height) return;
-
   const int row = y;
   const int col = x;
   const int c = FC(row, col, filters);
   float4 color = buffer[0];
+  if(x == 0 || y == 0 || x == (width-1) || y == (height-1))
+  {
+    write_imagef (out, (int2)(x, y), color);  
+    return;
+  }
 
   if(c == 1 || c == 3)
   { // calculate red and blue for green pixels:
