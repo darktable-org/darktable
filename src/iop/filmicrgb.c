@@ -3577,21 +3577,19 @@ static gboolean area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, g
 {
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
-  int delta_y;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
   {
-    if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    int delta_y;
+    if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
     {
       //adjust aspect
       const int aspect = dt_conf_get_int("plugins/darkroom/filmicrgb/aspect_percent");
       dt_conf_set_int("plugins/darkroom/filmicrgb/aspect_percent", aspect + delta_y);
       gtk_widget_queue_draw(widget);
-
-      return TRUE;
     }
+    return TRUE; // Ensure that scrolling cannot move side panel when no delta
   }
-
-  return TRUE; // Ensure that scrolling cannot move side panel when no delta
+  return FALSE;
 }
 
 void gui_init(dt_iop_module_t *self)
