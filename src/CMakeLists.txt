@@ -3,6 +3,7 @@ add_subdirectory(external)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
+include(CheckCXXSymbolExists)
 
 #
 # Add files for libdarktable
@@ -388,6 +389,25 @@ find_package(Exiv2 0.24 REQUIRED)
 include_directories(SYSTEM ${Exiv2_INCLUDE_DIRS})
 list(APPEND LIBS ${Exiv2_LIBRARIES})
 add_definitions(${Exiv2_DEFINITIONS})
+
+# Optionally enable ISOBMFF support in Exiv2
+if (USE_ISOBMFF)
+  if(Exiv2_VERSION VERSION_GREATER_EQUAL "0.27.4")
+    # exiv2 >= 0.27.4 provides optional support for ISOBMFF files.
+    # This must be manually enabled during exiv2 build and can be checked with
+    # the EXV_ENABLE_BMFF symbol.
+    check_cxx_symbol_exists(EXV_ENABLE_BMFF "exiv2/exiv2.hpp" HAVE_EXV_ENABLE_BMFF)
+    if(HAVE_EXV_ENABLE_BMFF)
+      add_definitions(-DHAVE_LIBEXIV2_WITH_ISOBMFF=1)
+      set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} cr3 heif CACHE INTERNAL "")
+      message(STATUS "Exiv2 >= 0.27.4 found with ISOBMFF support (CR3, AVIF, HEIF)")
+    else()
+      message(STATUS "Exiv2 >= 0.27.4 found, but was not compiled with ISOBMFF support (CR3, AVIF, HEIF)")
+    endif()
+  else()
+    message(STATUS "Exiv2 <= 0.27.4 found, no support for ISOBMFF files (CR3, AVIF, HEIF)")
+  endif()
+endif()
 
 if(USE_OPENJPEG)
   find_package(OpenJPEG)

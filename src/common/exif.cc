@@ -4223,6 +4223,10 @@ void dt_exif_init()
   // preface the exiv2 messages with "[exiv2] "
   Exiv2::LogMsg::setHandler(&dt_exif_log_handler);
 
+  #ifdef HAVE_LIBEXIV2_WITH_ISOBMFF
+  Exiv2::enableBMFF();
+  #endif
+
   Exiv2::XmpParser::initialize();
   // this has to stay with the old url (namespace already propagated outside dt)
   Exiv2::XmpProperties::registerNs("http://darktable.sf.net/", "darktable");
