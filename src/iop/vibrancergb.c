@@ -136,41 +136,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
-
-#ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  dt_iop_vibrancergb_data_t *data = (dt_iop_vibrancergb_data_t *)piece->data;
-  dt_iop_vibrancergb_global_data_t *gd = (dt_iop_vibrancergb_global_data_t *)self->global_data;
-  cl_int err = -999;
-
-  const int devid = piece->pipe->devid;
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-
-  const float vibrance = data->amount / 1.4f;
-
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vibrancergb, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vibrancergb, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vibrancergb, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vibrancergb, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vibrancergb, 4, sizeof(float), (void *)&vibrance);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vibrancergb, sizes);
-  if(err != CL_SUCCESS) goto error;
-
-  return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_vibrancergb] couldn't enqueue kernel! %d\n", err);
-  return FALSE;
-}
-#endif
-
-
-
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 8; // extended.cl, from programs.conf
