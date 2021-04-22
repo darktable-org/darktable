@@ -78,6 +78,7 @@ typedef enum dt_folder_cols_t
 {
   DT_FOLDER_PATH = 0,
   DT_FOLDER_NAME,
+  DT_FOLDER_EXPANDED,
   DT_FOLDER_NUM_COLS
 } dt_folder_cols_t;
 
@@ -813,8 +814,35 @@ static void _resize_dialog(GtkWidget *widget, dt_lib_module_t* self)
   dt_conf_set_int("ui_last/import_dialog_height", allocation.height);
 }
 
+static gboolean _find_iter_folder(GtkTreeModel *model, GtkTreeIter *iter,
+                                  const char *folder)
+{
+  gboolean found = FALSE;
+  if(!folder) return found;
+  char *path;
+  do
+  {
+    gtk_tree_model_get(model, iter, DT_FOLDER_PATH, &path, -1);
+    found = !g_strcmp0(folder, path);
+    g_free(path);
+    if(found) return found;
+    GtkTreeIter child, parent = *iter;
+    if(gtk_tree_model_iter_children(model, &child, &parent))
+    {
+      found = _find_iter_folder(model, &child, folder);
+      if(found)
+      {
+        *iter = child;
+        return found;
+      }
+    }
+  } while(gtk_tree_model_iter_next(model, iter));
+  return found;
+}
+
 static void _get_folders_list(GtkTreeStore *store, GtkTreeIter *parent,
-                              const gchar *folder, const int level)
+                              const gchar *folder, const int level,
+                              const char *selected)
 {
   GError *error = NULL;
   GFile *gfolder = g_file_parse_name(folder);
@@ -825,6 +853,9 @@ static void _get_folders_list(GtkTreeStore *store, GtkTreeIter *parent,
                                   G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN,
                                   G_FILE_QUERY_INFO_NONE, NULL, &error);
 
+  gboolean expanded = FALSE;
+  if(parent)
+    gtk_tree_model_get(GTK_TREE_MODEL(store), parent, DT_FOLDER_EXPANDED, &expanded, -1);
   GFileInfo *info = NULL;
   while((info = g_file_enumerator_next_file(dir_files, NULL, &error)))
   {
@@ -835,18 +866,34 @@ static void _get_folders_list(GtkTreeStore *store, GtkTreeIter *parent,
     const GFileType filetype = g_file_info_get_file_type(info);
     if(filetype == G_FILE_TYPE_DIRECTORY && !ishidden)
     {
-      const char *uifilename = g_file_info_get_display_name(info);
-      gchar *uifullname = g_build_filename(folder, uifilename, NULL);
       gchar *fullname = g_build_filename(folder, filename, NULL);
       GtkTreeIter iter;
-      gtk_tree_store_append(store, &iter, parent);
-      gtk_tree_store_set(store, &iter, DT_FOLDER_NAME, &uifullname[strlen(folder) + 1],
-                                       DT_FOLDER_PATH, fullname, -1);
-      if(level - 1 > 0)
-        _get_folders_list(store, &iter, fullname, level - 1);
+      if(!expanded)
+      {
+        const char *uifilename = g_file_info_get_display_name(info);
+        gchar *uifullname = g_build_filename(folder, uifilename, NULL);
+        gtk_tree_store_append(store, &iter, parent);
+        gtk_tree_store_set(store, &iter, DT_FOLDER_NAME, &uifullname[strlen(folder) + 1],
+                                         DT_FOLDER_PATH, fullname,
+                                         DT_FOLDER_EXPANDED, FALSE, -1);
+        g_free(uifullname);
+      }
+      else
+      {
+        iter = *parent;
+        if(!_find_iter_folder(GTK_TREE_MODEL(store), &iter, fullname))
+        {
+          g_free(fullname);
+          g_object_unref(info);
+          break;
+        }
+      }
+      if((level - 1 > 0) || (selected[0] && g_str_has_prefix(selected, fullname)))
+        _get_folders_list(store, &iter, fullname, level - 1, selected);
       g_free(fullname);
-      g_free(uifullname);
     }
+    if(parent)
+      gtk_tree_store_set(store, parent, DT_FOLDER_EXPANDED, TRUE, -1);
     g_object_unref(info);
   }
   if(dir_files)
@@ -909,7 +956,13 @@ static void _row_expanded(GtkTreeView *view, GtkTreeIter *iter,
   {
     char *fullname;
     gtk_tree_model_get(model, &child, DT_FOLDER_PATH, &fullname, -1);
-    _get_folders_list(GTK_TREE_STORE(model), &child, fullname, 1);
+    gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
+                                         GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
+                                         GTK_SORT_ASCENDING);
+    _get_folders_list(GTK_TREE_STORE(model), &child, fullname, 1, "");
+    gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model), DT_FOLDER_PATH,
+                                         dt_conf_get_bool("ui_last/import_last_folder_descending")
+                                         ? GTK_SORT_DESCENDING : GTK_SORT_ASCENDING);
     g_free(fullname);
   } while(gtk_tree_model_iter_next(model, &child));
 
@@ -931,7 +984,7 @@ static void _paned_position_changed(GtkWidget *widget, dt_lib_module_t* self)
 static void _set_folders_list(GtkWidget *lbox, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  GtkTreeStore *store = gtk_tree_store_new(DT_FOLDER_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING);
+  GtkTreeStore *store = gtk_tree_store_new(DT_FOLDER_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN);
   GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
   d->from.folderview = GTK_TREE_VIEW(gtk_tree_view_new());
@@ -959,32 +1012,6 @@ static void _set_folders_list(GtkWidget *lbox, dt_lib_module_t* self)
   gtk_box_pack_end(GTK_BOX(lbox), w, TRUE, TRUE, 0);
 }
 
-static gboolean _find_iter_folder(GtkTreeModel *model, GtkTreeIter *iter,
-                                  const char *folder)
-{
-  gboolean found = FALSE;
-  if(!folder) return found;
-  char *path;
-  do
-  {
-    gtk_tree_model_get(model, iter, DT_FOLDER_PATH, &path, -1);
-    found = !g_strcmp0(folder, path);
-    g_free(path);
-    if(found) return found;
-    GtkTreeIter child, parent = *iter;
-    if(gtk_tree_model_iter_children(model, &child, &parent))
-    {
-      found = _find_iter_folder(model, &child, folder);
-      if(found)
-      {
-        *iter = child;
-        return found;
-      }
-    }
-  } while(gtk_tree_model_iter_next(model, iter));
-  return found;
-}
-
 static void _update_folders_list(dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
@@ -993,15 +1020,21 @@ static void _update_folders_list(dt_lib_module_t* self)
   gtk_tree_view_set_model(d->from.folderview, NULL);
   gtk_tree_store_clear(GTK_TREE_STORE(model));
   const char *root = gtk_label_get_text(GTK_LABEL(d->from.root));
-  _get_folders_list(GTK_TREE_STORE(model), NULL, root, 2);
+  char *folder = dt_conf_get_string("ui_last/import_last_directory");
+  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
+                                       GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
+                                       GTK_SORT_ASCENDING);
+  _get_folders_list(GTK_TREE_STORE(model), NULL, root, 2, folder);
+  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model), DT_FOLDER_PATH,
+                                       dt_conf_get_bool("ui_last/import_last_folder_descending")
+                                       ? GTK_SORT_DESCENDING : GTK_SORT_ASCENDING);
   gtk_tree_view_set_model(d->from.folderview, model);
   g_object_unref(model);
-  if(!dt_conf_is_equal("ui_last/import_last_directory", ""))
+  if(folder[0])
   {
     GtkTreeIter iter;
     if(gtk_tree_model_get_iter_first(model, &iter))
     {
-      char *folder = dt_conf_get_string("ui_last/import_last_directory");
       if(_find_iter_folder(model, &iter, folder))
       {
         GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
@@ -1011,9 +1044,9 @@ static void _update_folders_list(dt_lib_module_t* self)
         GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.folderview);
         gtk_tree_selection_select_iter(selection, &iter);
       }
-      g_free(folder);
     }
   }
+  g_free(folder);
 }
 
 static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t* self)
