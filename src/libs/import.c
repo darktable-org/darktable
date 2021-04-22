@@ -903,6 +903,20 @@ static void _get_folders_list(GtkTreeStore *store, GtkTreeIter *parent,
   }
 }
 
+// workaround to erase parasitic selection when click on expander or empty part of the view
+static gboolean _clear_parasitic_selection(gpointer user_data)
+{
+  if(dt_conf_is_equal("ui_last/import_last_directory", ""))
+  {
+    dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+    dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.folderview);
+    if(gtk_tree_selection_count_selected_rows(selection))
+      gtk_tree_selection_unselect_all(selection);
+  }
+  return FALSE;
+}
+
 static gboolean _button_press(GtkWidget *view, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
@@ -937,6 +951,7 @@ static gboolean _button_press(GtkWidget *view, GdkEventButton *event, dt_lib_mod
     }
     gtk_tree_path_free(path);
   }
+  g_timeout_add_full(G_PRIORITY_DEFAULT_IDLE, 100, _clear_parasitic_selection, self, NULL);
 	return res;
 }
 
@@ -965,14 +980,6 @@ static void _row_expanded(GtkTreeView *view, GtkTreeIter *iter,
                                          ? GTK_SORT_DESCENDING : GTK_SORT_ASCENDING);
     g_free(fullname);
   } while(gtk_tree_model_iter_next(model, &child));
-
-  // workaround to erase parasite selection when click on expander
-  if(dt_conf_is_equal("ui_last/import_last_directory", ""))
-  {
-    dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-    GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.folderview);
-    gtk_tree_selection_unselect_all(selection);
-  }
 }
 
 static void _paned_position_changed(GtkWidget *widget, dt_lib_module_t* self)
