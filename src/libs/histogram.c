@@ -328,7 +328,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       }
       d->hue_ring_coord[k][i][0] = chromaticity[1];
       d->hue_ring_coord[k][i][1] = chromaticity[2];
-      // FIXME: we actually want to know max(abs(x)) and max(abs(y)) so can use more of space, then give somethinglike 110% of each on the display
+      // FIXME: we actually want to know max(abs(x)) and max(abs(y)) so can use more of space, then give something like 110% of each on the display
       max_radius = MAX(max_radius, hypotf(chromaticity[1], chromaticity[2]));
     }
   }
@@ -359,8 +359,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
       dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
     }
-    d->vectorscope_pt[0] = chromaticity[1] / max_diam;
-    d->vectorscope_pt[1] = chromaticity[2] / max_diam;
+    d->vectorscope_pt[0] = chromaticity[1];
+    d->vectorscope_pt[1] = chromaticity[2];
     goto cleanup;
   }
 
@@ -711,6 +711,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   cairo_save(cr);
 
+  // background
   cairo_pattern_t *p = cairo_pattern_create_radial(0.5 * width, 0.5 * height, factor * 0.5 * min_size,
                                                    0.5 * width, 0.5 * height, factor * 0.5 * hypot(min_size, min_size));
   cairo_pattern_add_color_stop_rgb(p, 0., darktable.bauhaus->graph_bg.red, darktable.bauhaus->graph_bg.green, darktable.bauhaus->graph_bg.blue);
@@ -780,9 +781,8 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
     cairo_pattern_t *pattern = cairo_pattern_create_for_surface(source);
     cairo_matrix_t matrix;
     cairo_matrix_init_translate(&matrix, 0.5*diam_px/darktable.gui->ppd, 0.5*diam_px/darktable.gui->ppd);
-    // FIXME: set in terms of scale rather than factor
     cairo_matrix_scale(&matrix, (double)diam_px / min_size / factor / darktable.gui->ppd,
-                       (double) diam_px / min_size / factor / darktable.gui->ppd);
+                       (double)diam_px / min_size / factor / darktable.gui->ppd);
     cairo_pattern_set_matrix(pattern, &matrix);
     cairo_set_source(cr, pattern);
     cairo_paint(cr);
@@ -795,8 +795,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
     // point sample
     cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
     set_color(cr, darktable.bauhaus->graph_fg);
-    // FIXME: set vectorscope_pt such that can be in terms of scale rather than factor
-    cairo_arc(cr, factor*d->vectorscope_pt[0]*min_size, factor*d->vectorscope_pt[1]*min_size,
+    cairo_arc(cr, scale*d->vectorscope_pt[0], scale*d->vectorscope_pt[1],
               DT_PIXEL_APPLY_DPI(3.), 0., M_PI * 2.);
     cairo_fill(cr);
   }
@@ -836,10 +835,10 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
   {
     cairo_save(cr);
     cairo_rectangle(cr, 0, 0, width, height);
-    set_color(cr, darktable.bauhaus->graph_border);
-    cairo_stroke_preserve(cr);
     set_color(cr, darktable.bauhaus->graph_bg);
-    cairo_fill(cr);
+    cairo_fill_preserve(cr);
+    set_color(cr, darktable.bauhaus->graph_border);
+    cairo_stroke(cr);
     cairo_restore(cr);
   }
 
