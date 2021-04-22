@@ -59,7 +59,7 @@ typedef struct dt_iop_vibrance_global_data_t
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. please use the vibrance rgb module instead.");
+  return _("this module is deprecated. please use the vibrance slider in the color balance rgb module instead.");
 }
 
 const char *name()
