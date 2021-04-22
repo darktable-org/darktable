@@ -984,7 +984,7 @@ static void _row_expanded(GtkTreeView *view, GtkTreeIter *iter,
 
 static void _paned_position_changed(GtkWidget *widget, dt_lib_module_t* self)
 {
-  gint position = gtk_paned_get_position(GTK_PANED(widget));
+  const gint position = gtk_paned_get_position(GTK_PANED(widget));
   dt_conf_set_int("ui_last/import_dialog_paned_pos", position);
 }
 
