@@ -706,12 +706,23 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   const float vs_radius = d->vectorscope_radius;
   const int diam_px = d->vectorscope_diameter_px;
   const int min_size = MIN(width, height);
-  // FIXME: background gradient also should be drawn with scale factor
   const double factor = d->vectorscope_scale;
   const double scale = min_size / (vs_radius * 2.) * factor;
 
-  // FIXME: the areas to left/right of the scope could have some data (primaries, whitepoint, scale, etc.)
   cairo_save(cr);
+
+  cairo_pattern_t *p = cairo_pattern_create_radial(0.5 * width, 0.5 * height, factor * 0.5 * min_size,
+                                                   0.5 * width, 0.5 * height, factor * 0.5 * hypot(min_size, min_size));
+  cairo_pattern_add_color_stop_rgb(p, 0., darktable.bauhaus->graph_bg.red, darktable.bauhaus->graph_bg.green, darktable.bauhaus->graph_bg.blue);
+  cairo_pattern_add_color_stop_rgb(p, 1., darktable.bauhaus->graph_exterior.red, darktable.bauhaus->graph_exterior.green, darktable.bauhaus->graph_exterior.blue);
+  cairo_rectangle(cr, 0, 0, width, height);
+  cairo_set_source(cr, p);
+  cairo_fill_preserve(cr);
+  cairo_pattern_destroy(p);
+  set_color(cr, darktable.bauhaus->graph_border);
+  cairo_stroke(cr);
+
+  // FIXME: the areas to left/right of the scope could have some data (primaries, whitepoint, scale, etc.)
   cairo_translate(cr, width / 2., height / 2.);
   cairo_rotate(cr, d->vectorscope_angle);
 
@@ -723,11 +734,14 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // concentric circles as a scale
   set_color(cr, darktable.bauhaus->graph_grid);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   const float grid_radius = d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV ? 100. : 0.01;
   for(int i = 1; i < 1.f + ceilf(vs_radius/grid_radius); i++)
   {
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
     cairo_arc(cr, 0., 0., grid_radius * scale * i, 0., M_PI * 2.);
+    cairo_stroke(cr);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5));
+    cairo_arc(cr, 0., 0., grid_radius * scale * (i - 0.5), 0., M_PI * 2.);
     cairo_stroke(cr);
   }
 
@@ -797,27 +811,6 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_restore(cr);
 }
 
-static void _draw_vectorscope_frame(cairo_t *cr, int width, int height)
-{
-  const double min_size = MIN(width, height);
-
-  cairo_save(cr);
-
-  // FIXME: this should be scaled by vectorscope_scale
-  cairo_pattern_t *p = cairo_pattern_create_radial(0.5 * width, 0.5 * height, 0.5 * min_size,
-                                                   0.5 * width, 0.5 * height, 0.5 * hypot(min_size, min_size));
-  cairo_pattern_add_color_stop_rgb(p, 0., darktable.bauhaus->graph_bg.red, darktable.bauhaus->graph_bg.green, darktable.bauhaus->graph_bg.blue);
-  cairo_pattern_add_color_stop_rgb(p, 1., darktable.bauhaus->graph_exterior.red, darktable.bauhaus->graph_exterior.green, darktable.bauhaus->graph_exterior.blue);
-  cairo_rectangle(cr, 0, 0, width, height);
-  cairo_set_source(cr, p);
-  cairo_fill_preserve(cr);
-  cairo_pattern_destroy(p);
-  set_color(cr, darktable.bauhaus->graph_border);
-  cairo_stroke(cr);
-
-  cairo_restore(cr);
-}
-
 // FIXME: have different drawable for each scope in a stack -- simplifies this function from being a swath of conditionals -- then esentially draw callbacks _lib_histogram_draw_waveform, _lib_histogram_draw_rgb_parade, etc.
 // FIXME: if exposure change regions are separate widgets, then we could have a menu to swap in different overlay widgets (sort of like basic adjustments) to adjust other things about the image, e.g. tone equalizer, color balance, etc.
 static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
@@ -839,11 +832,7 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.5)); // borders width
 
   // Draw frame and background
-  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
-  {
-    _draw_vectorscope_frame(cr, width, height);
-  }
-  else
+  if(d->scope_type != DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
   {
     cairo_save(cr);
     cairo_rectangle(cr, 0, 0, width, height);
