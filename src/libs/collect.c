@@ -598,7 +598,7 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
      || (!d->singleclick && event->type == GDK_2BUTTON_PRESS && event->button == 1)
      || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == 1)
      || ((d->view_rule == DT_COLLECTION_PROP_FOLDERS || d->view_rule == DT_COLLECTION_PROP_FILMROLL)
-          && (event->type == GDK_BUTTON_PRESS && event->button == 1 && 
+          && (event->type == GDK_BUTTON_PRESS && event->button == 1 &&
               (dt_modifier_is(event->state, GDK_SHIFT_MASK) || dt_modifier_is(event->state, GDK_CONTROL_MASK)))))
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
@@ -2596,7 +2596,7 @@ static void metadata_changed(gpointer instance, int type, gpointer self)
      || (prop >= DT_COLLECTION_PROP_METADATA
          && prop < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER))
   {
-    combo_changed(d->rule[d->active_rule].combo, &d->rule[d->active_rule]);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
   }
 }
 
