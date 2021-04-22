@@ -1526,7 +1526,7 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
     AM("exposure/exposure");                                                                                      \
     AM("colorbalance/contrast");                                                                                  \
     AM("colorbalance/output saturation");                                                                         \
-    AM("vibrancergb/amount");                                                                                     \
+    AM("colorbalancergb/global vibrance");                                                                        \
     AM("clipping/angle");                                                                                         \
     AM("denoiseprofile");                                                                                         \
     AM("lens");                                                                                                   \
@@ -1600,7 +1600,6 @@ void init_presets(dt_lib_module_t *self)
   AM("profile");
   AM("gamma");
   AM("velvia");
-  AM("vibrancergb");
 
   SMG(C_("modulegroup", "correct"), "correct");
   AM("ashift");
@@ -1695,7 +1694,6 @@ void init_presets(dt_lib_module_t *self)
   AM("colorzones");
   AM("monochrome");
   AM("velvia");
-  AM("vibrancergb");
 
   SMG(C_("modulegroup", "correct"), "correct");
   AM("ashift");
@@ -1819,7 +1817,6 @@ void init_presets(dt_lib_module_t *self)
   AM("tonecurve");
   AM("toneequal");
   AM("velvia");
-  AM("vibrancergb");
 
   SMG(C_("modulegroup", "effects"), "effect");
   AM("atrous");
