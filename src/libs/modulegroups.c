@@ -49,8 +49,8 @@ DT_MODULE(1)
 
 // list of recommended basics widgets
 #define RECOMMENDED_BASICS                                                                                        \
-  "|exposure/exposure|temperature/temperature|temperature/tint|colorbalance/contrast|colorbalance/output "        \
-  "saturation|clipping/angle|denoiseprofile|lens|bilat|"
+  "|exposure/exposure|temperature/temperature|temperature/tint|colorbalancergb/contrast|colorbalancergb/global "        \
+  "vibrance|colorbalancergb/global chroma|colorbalancergb/global saturation|clipping/angle|denoiseprofile|lens|bilat|"
 
 // if a preset cannot be loaded or the current preset deleted, this is the fallback preset
 
@@ -1195,8 +1195,9 @@ static gchar *_preset_retrieve_old_layout_updated()
     if(i == 0)
     {
       ret = dt_util_dstrcat(ret, "1ꬹ1|||%s",
-                            "exposure/exposure|temperature/temperature|temperature/tint|colorbalance/contrast"
-                            "|colorbalance/output saturation|clipping/angle|denoiseprofile|lens|bilat");
+                            "exposure/exposure|temperature/temperature|temperature/tint|colorbalancergb/contrast"
+                            "|colorbalancergb/global vibrance|colorbalancergb/global chroma|colorbalancergb/global saturation"
+                            "|clipping/angle|denoiseprofile|lens|bilat");
       ret = dt_util_dstrcat(ret, "ꬹfavorites|favorites|");
     }
     else if(i == 1)
@@ -1248,8 +1249,9 @@ static gchar *_preset_retrieve_old_layout(const char *list, const char *list_fav
     {
       // we don't have to care about "modern" workflow for temperature as it's more recent than this layout
       ret = dt_util_dstrcat(ret, "1ꬹ1|||%s",
-                            "exposure/exposure|temperature/temperature|temperature/tint|colorbalance/contrast"
-                            "|colorbalance/output saturation|clipping/angle|denoiseprofile|lens|bilat");
+                            "exposure/exposure|temperature/temperature|temperature/tint|colorbalancergb/contrast"
+                            "|colorbalancergb/global vibrance|colorbalancergb/global chroma|colorbalancergb/global saturation"
+                            "|clipping/angle|denoiseprofile|lens|bilat");
       ret = dt_util_dstrcat(ret, "ꬹfavorites|favorites|");
     }
     else if(i == 1)
@@ -1524,9 +1526,10 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
       AM("temperature/tint");                                                                                     \
     }                                                                                                             \
     AM("exposure/exposure");                                                                                      \
-    AM("colorbalance/contrast");                                                                                  \
-    AM("colorbalance/output saturation");                                                                         \
+    AM("colorbalancergb/contrast");                                                                               \
+    AM("colorbalancergb/global chroma");                                                                          \
     AM("colorbalancergb/global vibrance");                                                                        \
+    AM("colorbalancergb/global saturation");                                                                      \
     AM("clipping/angle");                                                                                         \
     AM("denoiseprofile");                                                                                         \
     AM("lens");                                                                                                   \
@@ -1588,7 +1591,7 @@ void init_presets(dt_lib_module_t *self)
 
   SMG(C_("modulegroup", "color"), "color");
   AM("channelmixerrgb");
-  AM("colorbalance");
+  AM("colorbalancergb");
   AM("colorchecker");
   AM("colorcontrast");
   AM("colorcorrection");
@@ -1689,7 +1692,7 @@ void init_presets(dt_lib_module_t *self)
 
   SMG(C_("modulegroup", "color"), "color");
   AM("channelmixerrgb");
-  AM("colorbalance");
+  AM("colorbalancergb");
   AM("colorcorrection");
   AM("colorzones");
   AM("monochrome");
@@ -1735,7 +1738,7 @@ void init_presets(dt_lib_module_t *self)
 
   SMG(C_("modulegroup", "color"), "color");
   AM("channelmixerrgb");
-  AM("colorbalance");
+  AM("colorbalancergb");
   AM("colorzones");
 
   SMG(C_("modulegroup", "correct"), "correct");
@@ -1803,7 +1806,7 @@ void init_presets(dt_lib_module_t *self)
   AM("basicadj");
   AM("channelmixerrgb");
   AM("colisa");
-  AM("colorbalance");
+  AM("colorbalancergb");
   AM("colorcontrast");
   AM("colorcorrection");
   AM("colorize");
@@ -1889,13 +1892,13 @@ static gchar *_presets_get_minimal(dt_lib_module_t *self)
 
   SQA();
   AM("exposure/exposure");
-  AM("colorbalance/contrast");
+  AM("colorbalancergb/contrast");
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("basecurve");
   AM("filmicrgb");
   AM("exposure");
-  AM("colorbalance");
+  AM("colorbalancergb");
 
   return tx;
 }
