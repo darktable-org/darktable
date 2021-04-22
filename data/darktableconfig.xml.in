@@ -2841,6 +2841,13 @@
     <shortdescription>detect monochrome previews</shortdescription>
     <longdescription>many monochrome images can be identified via exif and preview data. beware: this slows down imports and reading exif data</longdescription>
  </dtconfig>
+ <dtconfig prefs="processing">
+    <name>plugins/darkroom/show_warnings</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show warning messages</shortdescription>
+    <longdescription>display messages in modules to warn beginner users when non-standard and possibly harmful settings are used in the pipeline.\nthese messages can be false-positive and should be disregarded if you know what you are doing. This option will hide them all the time.</longdescription>
+  </dtconfig>
  <dtconfig>
     <name>screen_dpi_overwrite</name>
     <type>float</type>
