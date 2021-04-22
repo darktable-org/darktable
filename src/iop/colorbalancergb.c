@@ -50,7 +50,7 @@
 #define DEG_TO_RAD(x) ((x + ANGLE_SHIFT) * M_PI / 180.f)
 #define RAD_TO_DEG(x) (x * 180.f / M_PI - ANGLE_SHIFT)
 
-DT_MODULE_INTROSPECTION(3, dt_iop_colorbalancergb_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_colorbalancergb_params_t)
 
 
 typedef struct dt_iop_colorbalancergb_params_t
@@ -90,6 +90,9 @@ typedef struct dt_iop_colorbalancergb_params_t
   /* params of v3 */
   float grey_fulcrum;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "middle-grey fulcrum"
 
+  /* params of v4 */
+  float vibrance;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0 $DESCRIPTION: "global vibrance"
+
   /* add future params after this so the legacy params import can use a blind memcpy */
 
 
@@ -111,7 +114,7 @@ typedef struct dt_iop_colorbalancergb_gui_data_t
   GtkWidget *shadows_C, *midtones_C, *highlights_C, *global_C;
   GtkWidget *shadows_Y, *midtones_Y, *highlights_Y, *global_Y;
   GtkWidget *shadows_weight, *grey_fulcrum, *highlights_weight, *white_fulcrum;
-  GtkWidget *chroma_highlights, *chroma_global, *chroma_shadows, *chroma_midtones;
+  GtkWidget *chroma_highlights, *chroma_global, *chroma_shadows, *chroma_midtones, *vibrance;
   GtkWidget *saturation_global, *saturation_highlights, *saturation_midtones, *saturation_shadows;
   GtkWidget *brilliance_global, *brilliance_highlights, *brilliance_midtones, *brilliance_shadows;
   GtkWidget *hue_angle;
@@ -130,7 +133,7 @@ typedef struct dt_iop_colorbalancergb_data_t
   float highlights[4];
   float midtones[4];
   float midtones_Y;
-  float chroma_global, chroma[4];
+  float chroma_global, chroma[4], vibrance;
   float saturation_global, saturation[4];
   float brilliance_global, brilliance[4];
   float hue_angle;
@@ -180,7 +183,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
                   const int new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  if(old_version == 1 && new_version == 4)
   {
     typedef struct dt_iop_colorbalancergb_params_v1_t
     {
@@ -219,11 +222,12 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     dt_iop_colorbalancergb_params_t *n = (dt_iop_colorbalancergb_params_t *)new_params;
     n->saturation_global /= 180.f / M_PI;
     n->grey_fulcrum = 0.1845f;
+    n->vibrance = 0.f;
 
     return 0;
   }
 
-  if(old_version == 2 && new_version == 3)
+  if(old_version == 2 && new_version == 4)
   {
     typedef struct dt_iop_colorbalancergb_params_v2_t
     {
@@ -269,9 +273,63 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     dt_iop_colorbalancergb_params_t *n = (dt_iop_colorbalancergb_params_t *)new_params;
     n->grey_fulcrum = 0.1845f;
+    n->vibrance = 0.f;
 
     return 0;
   }
+  if(old_version == 3 && new_version == 4)
+  {
+    typedef struct dt_iop_colorbalancergb_params_v3_t
+    {
+      /* params of v1 */
+      float shadows_Y;             // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
+      float shadows_C;             // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
+      float shadows_H;             // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
+      float midtones_Y;            // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
+      float midtones_C;            // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
+      float midtones_H;            // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
+      float highlights_Y;          // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
+      float highlights_C;          // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
+      float highlights_H;          // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
+      float global_Y;              // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
+      float global_C;              // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
+      float global_H;              // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
+      float shadows_weight;        // $MIN:  0.0 $MAX:   3.0 $DEFAULT: 1.0 $DESCRIPTION: "shadows fall-off"
+      float white_fulcrum;         // $MIN: -16.0 $MAX:   16.0 $DEFAULT: 0.0 $DESCRIPTION: "white fulcrum"
+      float highlights_weight;     // $MIN:  0.0 $MAX:   3.0 $DEFAULT: 1.0 $DESCRIPTION: "highlights fall-off"
+      float chroma_shadows;        // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
+      float chroma_highlights;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
+      float chroma_global;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
+      float chroma_midtones;       // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "midtones"
+      float saturation_global;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
+      float saturation_highlights; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
+      float saturation_midtones;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "midtones"
+      float saturation_shadows;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
+      float hue_angle;             // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "hue shift"
+
+      /* params of v2 */
+      float brilliance_global;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
+      float brilliance_highlights; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
+      float brilliance_midtones;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "midtones"
+      float brilliance_shadows;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
+
+      /* params of v3 */
+      float grey_fulcrum;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "middle-grey fulcrum"
+
+    } dt_iop_colorbalancergb_params_v3_t;
+
+    // Init params with defaults
+    memcpy(new_params, self->default_params, sizeof(dt_iop_colorbalancergb_params_t));
+
+    // Copy the common part of the params struct
+    memcpy(new_params, old_params, sizeof(dt_iop_colorbalancergb_params_v3_t));
+
+    dt_iop_colorbalancergb_params_t *n = (dt_iop_colorbalancergb_params_t *)new_params;
+    n->vibrance = 0.f;
+
+    return 0;
+  }
+
   return 1;
 }
 
@@ -459,7 +517,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     //   to prevent users from pushing saturated colors outside of gamut while the low-sat ones
     //   are still muted.
     const float chroma_boost = d->chroma_global + scalar_product(opacities, chroma);
-    const float chroma_factor = fmaxf(1.f + chroma_boost, 0.f);
+    const float vibrance = d->vibrance * (1.0f - powf(Ych[1], fabsf(d->vibrance)));
+    const float chroma_factor = fmaxf(1.f + chroma_boost + vibrance, 0.f);
     Ych[1] = soft_clip(Ych[1] * chroma_factor, max_chroma_h, max_chroma_h * 4.f);
     Ych_to_gradingRGB(Ych, RGB, white_grading_RGB);
 
@@ -593,6 +652,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->checker_color_2[3] = 1.f;
 
   d->checker_size = MAX(dt_conf_get_int("plugins/darkroom/colorbalancergb/checker/size"), 2);
+
+  d->vibrance = p->vibrance;
 
   d->chroma_global = p->chroma_global;
   d->chroma[0] = p->chroma_shadows;
@@ -1108,6 +1169,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)self->params;
 
   dt_bauhaus_slider_set_soft(g->hue_angle, p->hue_angle);
+  dt_bauhaus_slider_set_soft(g->vibrance, p->vibrance);
 
   dt_bauhaus_slider_set_soft(g->chroma_global, p->chroma_global);
   dt_bauhaus_slider_set_soft(g->chroma_highlights, p->chroma_highlights);
@@ -1217,6 +1279,13 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->hue_angle, 1.);
   dt_bauhaus_slider_set_format(g->hue_angle, "%.2f °");
   gtk_widget_set_tooltip_text(g->hue_angle, _("rotate all hues by an angle, at the same luminance"));
+
+  g->vibrance = dt_bauhaus_slider_from_params(self, "vibrance");
+  dt_bauhaus_slider_set_soft_range(g->vibrance, -0.5, 0.5);
+  dt_bauhaus_slider_set_digits(g->vibrance, 4);
+  dt_bauhaus_slider_set_factor(g->vibrance, 100.0f);
+  dt_bauhaus_slider_set_format(g->vibrance, "%.2f %%");
+  gtk_widget_set_tooltip_text(g->vibrance, _("increase colorfulness mostly on low-chroma colors"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("linear chroma grading")), FALSE, FALSE, 0);
 
