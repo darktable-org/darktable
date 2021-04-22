@@ -121,6 +121,7 @@ typedef struct dt_lib_import_t
     GtkWidget *thumbs;
     GtkWidget *root;
     GtkTreeView *folderview;
+    GtkTreeViewColumn *foldercol;
     GtkTreeIter iter;
     int event;
     guint nb;
@@ -858,20 +859,41 @@ static guint _get_folders_list(GtkTreeStore *store, GtkTreeIter *parent,
   return nb;
 }
 
-static void _selected_folder_changed(GtkTreeSelection *selection, dt_lib_module_t* self)
+static gboolean _button_press(GtkWidget *view, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->from.folderview));
-  GtkTreeIter iter;
-  if(gtk_tree_selection_get_selected(selection, &model, &iter))
+  gboolean res = FALSE;
+  const int button_pressed = (event->type == GDK_BUTTON_PRESS) ? event->button : 0;
+  const gboolean modifier = dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK);
+  if((button_pressed == 1) && !modifier)
   {
-    char *folder;
-    gtk_tree_model_get(model, &iter, DT_FOLDER_PATH, &folder, -1);
-    dt_conf_set_string("ui_last/import_last_directory", folder);
-    g_free(folder);
-    _update_files_list(self);
-    _show_all_thumbs(self);
+    GtkTreePath *path = NULL;
+    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), event->x, event->y, &path, NULL, NULL, NULL))
+    {
+      GdkRectangle rect;
+      gtk_tree_view_get_cell_area(GTK_TREE_VIEW(view), path, d->from.foldercol, &rect);
+      const gboolean blank = gtk_tree_view_is_blank_at_pos(GTK_TREE_VIEW(view), event->x, event->y,
+                                                           NULL, NULL, NULL, NULL);
+      // select and save new folder only if not click on expander
+      if(blank || (event->x > rect.x))
+      {
+        GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.folderview);
+        gtk_tree_selection_select_path(selection, path);
+        GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
+        GtkTreeIter iter;
+        gtk_tree_model_get_iter(model, &iter, path);
+        char *folder;
+        gtk_tree_model_get(model, &iter, DT_FOLDER_PATH, &folder, -1);
+        dt_conf_set_string("ui_last/import_last_directory", folder);
+        g_free(folder);
+        _update_files_list(self);
+        _show_all_thumbs(self);
+        res = TRUE;
+      }
+    }
+    gtk_tree_path_free(path);
   }
+	return res;
 }
 
 static void _folder_order_clicked(GtkTreeViewColumn *column, dt_lib_module_t *self)
@@ -893,6 +915,14 @@ static void _row_expanded(GtkTreeView *view, GtkTreeIter *iter,
     _get_folders_list(GTK_TREE_STORE(model), &child, fullname, strlen(fullname), 0, 1, self);
     g_free(fullname);
   } while(gtk_tree_model_iter_next(model, &child));
+
+  // workaround to erase parasite selection when click on expander
+  if(dt_conf_is_equal("ui_last/import_last_directory", ""))
+  {
+    dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.folderview);
+    gtk_tree_selection_unselect_all(selection);
+  }
 }
 
 static void _paned_position_changed(GtkWidget *widget, dt_lib_module_t* self)
@@ -918,19 +948,18 @@ static void _set_folders_list(GtkWidget *lbox, dt_lib_module_t* self)
   gtk_tree_view_column_set_resizable(column, TRUE);
   gtk_tree_view_set_expander_column(d->from.folderview, column);
   g_signal_connect(d->from.folderview, "row-expanded", G_CALLBACK(_row_expanded), self);
+  g_signal_connect(G_OBJECT(d->from.folderview), "button-press-event", G_CALLBACK(_button_press), self);
   gtk_tree_view_column_set_sort_column_id(column, DT_FOLDER_PATH);
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store), DT_FOLDER_PATH,
                                 dt_conf_get_bool("ui_last/import_last_folder_descending")
                                 ? GTK_SORT_DESCENDING : GTK_SORT_ASCENDING);
   g_signal_connect(column, "clicked", G_CALLBACK(_folder_order_clicked), self);
   gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(200));
+  d->from.foldercol = column;
   gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(w), DT_PIXEL_APPLY_DPI(200));
   gtk_tree_view_set_model(d->from.folderview, GTK_TREE_MODEL(store));
   gtk_tree_view_set_headers_visible(d->from.folderview, TRUE);
   gtk_box_pack_end(GTK_BOX(lbox), w, TRUE, TRUE, 0);
-
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.folderview);
-  g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(_selected_folder_changed), self);
 }
 
 static gboolean _find_iter_folder(GtkTreeModel *model, GtkTreeIter *iter,
