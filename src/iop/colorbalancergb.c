@@ -73,9 +73,9 @@ typedef struct dt_iop_colorbalancergb_params_t
   float highlights_weight;     // $MIN:  0.0 $MAX:   3.0 $DEFAULT: 1.0 $DESCRIPTION: "highlights fall-off"
   float chroma_shadows;        // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
   float chroma_highlights;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
-  float chroma_global;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
+  float chroma_global;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global chroma"
   float chroma_midtones;       // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "midtones"
-  float saturation_global;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
+  float saturation_global;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global saturation"
   float saturation_highlights; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
   float saturation_midtones;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "midtones"
   float saturation_shadows;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
@@ -88,14 +88,14 @@ typedef struct dt_iop_colorbalancergb_params_t
   float brilliance_shadows;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
 
   /* params of v3 */
-  float grey_fulcrum;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "middle-grey fulcrum"
+  float mask_grey_fulcrum;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "mask middle-grey fulcrum"
 
   /* params of v4 */
   float vibrance;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0 $DESCRIPTION: "global vibrance"
+  float grey_fulcrum;     // $MIN:  0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "contrast grey fulcrum"
+  float contrast;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0. $DESCRIPTION: "contrast"
 
   /* add future params after this so the legacy params import can use a blind memcpy */
-
-
 } dt_iop_colorbalancergb_params_t;
 
 
@@ -113,8 +113,9 @@ typedef struct dt_iop_colorbalancergb_gui_data_t
   GtkWidget *shadows_H, *midtones_H, *highlights_H, *global_H;
   GtkWidget *shadows_C, *midtones_C, *highlights_C, *global_C;
   GtkWidget *shadows_Y, *midtones_Y, *highlights_Y, *global_Y;
-  GtkWidget *shadows_weight, *grey_fulcrum, *highlights_weight, *white_fulcrum;
+  GtkWidget *shadows_weight, *mask_grey_fulcrum, *highlights_weight;
   GtkWidget *chroma_highlights, *chroma_global, *chroma_shadows, *chroma_midtones, *vibrance;
+  GtkWidget *contrast, *grey_fulcrum, *white_fulcrum;
   GtkWidget *saturation_global, *saturation_highlights, *saturation_midtones, *saturation_shadows;
   GtkWidget *brilliance_global, *brilliance_highlights, *brilliance_midtones, *brilliance_shadows;
   GtkWidget *hue_angle;
@@ -133,11 +134,12 @@ typedef struct dt_iop_colorbalancergb_data_t
   float highlights[4];
   float midtones[4];
   float midtones_Y;
-  float chroma_global, chroma[4], vibrance;
+  float chroma_global, chroma[4], vibrance, contrast;
   float saturation_global, saturation[4];
   float brilliance_global, brilliance[4];
   float hue_angle;
-  float shadows_weight, white_fulcrum, highlights_weight, midtones_weight, grey_fulcrum;
+  float shadows_weight, highlights_weight, midtones_weight, mask_grey_fulcrum;
+  float white_fulcrum, grey_fulcrum;
   float *gamut_LUT;
   float max_chroma;
   float checker_color_1[4], checker_color_2[4];
@@ -221,8 +223,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     dt_iop_colorbalancergb_params_t *n = (dt_iop_colorbalancergb_params_t *)new_params;
     n->saturation_global /= 180.f / M_PI;
-    n->grey_fulcrum = 0.1845f;
+    n->mask_grey_fulcrum = 0.1845f;
     n->vibrance = 0.f;
+    n->grey_fulcrum = 0.1845f;
+    n->contrast = 0.f;
 
     return 0;
   }
@@ -272,8 +276,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     memcpy(new_params, old_params, sizeof(dt_iop_colorbalancergb_params_v2_t));
 
     dt_iop_colorbalancergb_params_t *n = (dt_iop_colorbalancergb_params_t *)new_params;
-    n->grey_fulcrum = 0.1845f;
+    n->mask_grey_fulcrum = 0.1845f;
     n->vibrance = 0.f;
+    n->grey_fulcrum = 0.1845f;
+    n->contrast = 0.f;
 
     return 0;
   }
@@ -314,7 +320,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float brilliance_shadows;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
 
       /* params of v3 */
-      float grey_fulcrum;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "middle-grey fulcrum"
+      float mask_grey_fulcrum;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "middle-grey fulcrum"
 
     } dt_iop_colorbalancergb_params_v3_t;
 
@@ -326,6 +332,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     dt_iop_colorbalancergb_params_t *n = (dt_iop_colorbalancergb_params_t *)new_params;
     n->vibrance = 0.f;
+    n->grey_fulcrum = 0.1845f;
+    n->contrast = 0.f;
 
     return 0;
   }
@@ -374,11 +382,11 @@ static void mat3mul4(float *dst, const float *const m1, const float *const m2)
 #endif
 static inline void opacity_masks(const float x,
                                  const float shadows_weight, const float highlights_weight,
-                                 const float midtones_weight, const float grey_fulcrum,
+                                 const float midtones_weight, const float mask_grey_fulcrum,
                                  float output[4], float output_comp[4])
 {
-  const float x_offset = (x - grey_fulcrum);
-  const float x_offset_norm = x_offset / grey_fulcrum;
+  const float x_offset = (x - mask_grey_fulcrum);
+  const float x_offset_norm = x_offset / mask_grey_fulcrum;
   const float alpha = 1.f / (1.f + expf(x_offset_norm * shadows_weight));    // opacity of shadows
   const float beta = 1.f / (1.f + expf(-x_offset_norm * highlights_weight)); // opacity of highlights
   const float alpha_comp = 1.f - alpha;
@@ -499,7 +507,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float DT_ALIGNED_PIXEL opacities[4];
     float DT_ALIGNED_PIXEL opacities_comp[4];
     opacity_masks(powf(Y, 0.4101205819200422f), // center middle grey in 50 %
-                  d->shadows_weight, d->highlights_weight, d->midtones_weight, d->grey_fulcrum, opacities, opacities_comp);
+                  d->shadows_weight, d->highlights_weight, d->midtones_weight, d->mask_grey_fulcrum, opacities, opacities_comp);
 
     // Hue shift - do it now because we need the gamut limit at output hue right after
     Ych[2] += d->hue_angle;
@@ -540,6 +548,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // for the Y midtones power (gamma), we need to go in Ych again because RGB doesn't preserve color
     gradingRGB_to_Ych(RGB, Ych, white_grading_RGB);
     Y = Ych[0] = powf(fmaxf(Ych[0] / d->white_fulcrum, 0.f), d->midtones_Y) * d->white_fulcrum;
+
+    // then the contrast
+    Y = Ych[0] = d->grey_fulcrum * powf(Ych[0] / d->grey_fulcrum, d->contrast);
     Ych_to_gradingRGB(Ych, RGB, white_grading_RGB);
 
     // Perceptual color adjustments
@@ -654,6 +665,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->checker_size = MAX(dt_conf_get_int("plugins/darkroom/colorbalancergb/checker/size"), 2);
 
   d->vibrance = p->vibrance;
+  d->contrast = 1.0f + p->contrast; // that limits the user param range to [-1, 1], but it seems enough
+  d->grey_fulcrum = p->grey_fulcrum;
 
   d->chroma_global = p->chroma_global;
   d->chroma[0] = p->chroma_shadows;
@@ -712,7 +725,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     d->white_fulcrum = exp2f(p->white_fulcrum);
     d->midtones_weight = sqf(d->shadows_weight) * sqf(d->highlights_weight) /
       (sqf(d->shadows_weight) + sqf(d->highlights_weight));
-    d->grey_fulcrum = powf(p->grey_fulcrum, 0.4101205819200422f);
+    d->mask_grey_fulcrum = powf(p->mask_grey_fulcrum, 0.4101205819200422f);
   }
 
   // Check if the RGB working profile has changed in pipe
@@ -861,6 +874,11 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
     p->white_fulcrum = log2f(max_Ych[0]);
     dt_bauhaus_slider_set_soft(g->white_fulcrum, p->white_fulcrum);
   }
+  else if(picker == g->grey_fulcrum)
+  {
+    p->grey_fulcrum = Ych[0];
+    dt_bauhaus_slider_set_soft(g->grey_fulcrum, p->grey_fulcrum);
+  }
   else
     fprintf(stderr, "[colorbalancergb] unknown color picker\n");
   --darktable.gui->reset;
@@ -921,7 +939,7 @@ static void mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
   if(g->mask_display)
   {
     if(togglebutton == g->shadows_weight) g->mask_type = MASK_SHADOWS;
-    if(togglebutton == g->grey_fulcrum) g->mask_type = MASK_MIDTONES;
+    if(togglebutton == g->mask_grey_fulcrum) g->mask_type = MASK_MIDTONES;
     if(togglebutton == g->highlights_weight) g->mask_type = MASK_HIGHLIGHTS;
   }
   else
@@ -930,7 +948,7 @@ static void mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
   }
 
   dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->shadows_weight), g->mask_type == MASK_SHADOWS);
-  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->grey_fulcrum), g->mask_type == MASK_MIDTONES);
+  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->mask_grey_fulcrum), g->mask_type == MASK_MIDTONES);
   dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->highlights_weight), g->mask_type == MASK_HIGHLIGHTS);
 
   dt_iop_refresh_center(self);
@@ -1045,21 +1063,21 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   // from https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.583.3007&rep=rep1&type=pdf
   const float midtones_weight
       = sqf(shadows_weight) * sqf(highlights_weight) / (sqf(shadows_weight) + sqf(highlights_weight));
-  const float grey_fulcrum = powf(p->grey_fulcrum, 0.4101205819200422f);
+  const float mask_grey_fulcrum = powf(p->mask_grey_fulcrum, 0.4101205819200422f);
 
   float *LUT[3];
   for(size_t c = 0; c < 3; c++) LUT[c] = dt_alloc_align_float(LUT_ELEM);
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(LUT, shadows_weight, midtones_weight, highlights_weight, grey_fulcrum) \
+  dt_omp_firstprivate(LUT, shadows_weight, midtones_weight, highlights_weight, mask_grey_fulcrum) \
   schedule(static)
 #endif
   for(size_t k = 0 ; k < LUT_ELEM; k++)
   {
     const float Y = k / (float)(LUT_ELEM - 1);
     float output[4];
-    opacity_masks(Y, shadows_weight, highlights_weight, midtones_weight, grey_fulcrum, output, NULL);
+    opacity_masks(Y, shadows_weight, highlights_weight, midtones_weight, mask_grey_fulcrum, output, NULL);
     for(size_t c = 0; c < 3; c++) LUT[c][k] = output[c];
   }
 
@@ -1156,7 +1174,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(!w || w == g->highlights_H)
     paint_chroma_slider(g->highlights_C, p->highlights_H);
 
-  if(!w || w == g->shadows_weight || w == g->highlights_weight || w == g->grey_fulcrum)
+  if(!w || w == g->shadows_weight || w == g->highlights_weight || w == g->mask_grey_fulcrum)
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
 
   --darktable.gui->reset;
@@ -1170,6 +1188,7 @@ void gui_update(dt_iop_module_t *self)
 
   dt_bauhaus_slider_set_soft(g->hue_angle, p->hue_angle);
   dt_bauhaus_slider_set_soft(g->vibrance, p->vibrance);
+  dt_bauhaus_slider_set_soft(g->contrast, p->contrast);
 
   dt_bauhaus_slider_set_soft(g->chroma_global, p->chroma_global);
   dt_bauhaus_slider_set_soft(g->chroma_highlights, p->chroma_highlights);
@@ -1205,6 +1224,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->highlights_Y, p->highlights_Y);
   dt_bauhaus_slider_set_soft(g->highlights_weight, p->highlights_weight);
 
+  dt_bauhaus_slider_set_soft(g->mask_grey_fulcrum, p->mask_grey_fulcrum);
   dt_bauhaus_slider_set_soft(g->grey_fulcrum, p->grey_fulcrum);
 
   gui_changed(self, NULL, NULL);
@@ -1213,7 +1233,7 @@ void gui_update(dt_iop_module_t *self)
   g->mask_type = MASK_NONE;
 
   dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->shadows_weight), FALSE);
-  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->grey_fulcrum), FALSE);
+  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->mask_grey_fulcrum), FALSE);
   dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->highlights_weight), FALSE);
 
   // Checkerboard mask preview preferences
@@ -1286,6 +1306,13 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_factor(g->vibrance, 100.0f);
   dt_bauhaus_slider_set_format(g->vibrance, "%.2f %%");
   gtk_widget_set_tooltip_text(g->vibrance, _("increase colorfulness mostly on low-chroma colors"));
+
+  g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
+  dt_bauhaus_slider_set_soft_range(g->contrast, -0.5, 0.5);
+  dt_bauhaus_slider_set_digits(g->contrast, 4);
+  dt_bauhaus_slider_set_factor(g->contrast, 100.0f);
+  dt_bauhaus_slider_set_format(g->contrast, "%.2f %%");
+  gtk_widget_set_tooltip_text(g->contrast, _("increase the contrast at constant chromaticity"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("linear chroma grading")), FALSE, FALSE, 0);
 
@@ -1497,16 +1524,16 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_toggle(g->shadows_weight, TRUE);
   g_signal_connect(G_OBJECT(g->shadows_weight), "quad-pressed", G_CALLBACK(mask_callback), self);
 
-  g->grey_fulcrum = dt_bauhaus_slider_from_params(self, "grey_fulcrum");
-  dt_bauhaus_slider_set_digits(g->grey_fulcrum, 4);
-  dt_bauhaus_slider_set_step(g->grey_fulcrum, 0.01);
-  dt_bauhaus_slider_set_format(g->grey_fulcrum, "%.2f %%");
-  dt_bauhaus_slider_set_factor(g->grey_fulcrum, 100.0f);
-  gtk_widget_set_tooltip_text(g->grey_fulcrum, _("position of the middle-grey reference for masking"));
-  dt_bauhaus_widget_set_quad_paint(g->grey_fulcrum, dtgtk_cairo_paint_showmask,
+  g->mask_grey_fulcrum = dt_bauhaus_slider_from_params(self, "mask_grey_fulcrum");
+  dt_bauhaus_slider_set_digits(g->mask_grey_fulcrum, 4);
+  dt_bauhaus_slider_set_step(g->mask_grey_fulcrum, 0.01);
+  dt_bauhaus_slider_set_format(g->mask_grey_fulcrum, "%.2f %%");
+  dt_bauhaus_slider_set_factor(g->mask_grey_fulcrum, 100.0f);
+  gtk_widget_set_tooltip_text(g->mask_grey_fulcrum, _("position of the middle-grey reference for masking"));
+  dt_bauhaus_widget_set_quad_paint(g->mask_grey_fulcrum, dtgtk_cairo_paint_showmask,
                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->grey_fulcrum, TRUE);
-  g_signal_connect(G_OBJECT(g->grey_fulcrum), "quad-pressed", G_CALLBACK(mask_callback), self);
+  dt_bauhaus_widget_set_quad_toggle(g->mask_grey_fulcrum, TRUE);
+  g_signal_connect(G_OBJECT(g->mask_grey_fulcrum), "quad-pressed", G_CALLBACK(mask_callback), self);
 
   g->highlights_weight = dt_bauhaus_slider_from_params(self, "highlights_weight");
   dt_bauhaus_slider_set_step(g->highlights_weight, 0.1);
@@ -1527,6 +1554,14 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->white_fulcrum, 4);
   dt_bauhaus_slider_set_format(g->white_fulcrum, "%.2f EV");
   gtk_widget_set_tooltip_text(g->white_fulcrum, _("peak white luminance value used to normalize the power function"));
+
+  g->grey_fulcrum = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "grey_fulcrum"));
+  dt_bauhaus_slider_set_soft_range(g->grey_fulcrum, 0.1, 0.5);
+  dt_bauhaus_slider_set_factor(g->grey_fulcrum, 100.0f);
+  dt_bauhaus_slider_set_step(g->grey_fulcrum, 0.01);
+  dt_bauhaus_slider_set_digits(g->grey_fulcrum, 4);
+  dt_bauhaus_slider_set_format(g->grey_fulcrum, "%.2f %%");
+  gtk_widget_set_tooltip_text(g->grey_fulcrum, _("peak white luminance value used to normalize the power function"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("mask preview settings")), FALSE, FALSE, 0);
 
