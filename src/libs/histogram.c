@@ -101,7 +101,6 @@ typedef struct dt_lib_histogram_t
   // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
   uint8_t *vectorscope_graph;
   float vectorscope_pt[2];            // point colorpicker position
-  float vectorscope_scale;
   int vectorscope_diameter_px;
   // FIXME: These arrays could instead be alloc'd/free'd. Would the only concern about making dt_lib_histogram_t large so long be if it were stored in the DB?
   float hue_ring_rgb[6][VECTORSCOPE_HUES][4] DT_ALIGNED_ARRAY;
@@ -737,8 +736,8 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   double bounds_y = fabs(sin(angle) * d->vectorscope_bounds[0] + cos(angle) * d->vectorscope_bounds[1]);
   bounds_x = CLAMP(bounds_x, vs_radius * 0.4, vs_radius);
   bounds_y = CLAMP(bounds_y, vs_radius * 0.4, vs_radius);
-  const double factor_x = vs_radius * ((float) width / min_size) / bounds_x * d->vectorscope_scale;
-  const double factor_y = vs_radius * ((float) height / min_size) / bounds_y * d->vectorscope_scale;
+  const double factor_x = vs_radius * ((float) width / min_size) / bounds_x;
+  const double factor_y = vs_radius * ((float) height / min_size) / bounds_y;
   const double factor = MIN(factor_x, factor_y);
   const double scale = min_size / (vs_radius * 2.) * factor;
 
@@ -971,33 +970,21 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
 
   if(d->dragging)
   {
-    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
+    // FIXME: dragging the vectorscope could change white balance
+    const float diff = d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM ? d->button_down_y - event->y
+                                                                        : event->x - d->button_down_x;
+    const int range = d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM ? allocation.height
+                                                                       : allocation.width;
+    // FIXME: see dt_bauhaus_slider_postponed_value_change(): delay processing until the pixelpipe can update based on dev->preview_average_delay for smoother interaction
+    if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
     {
-      // FIXME: this allows for scaling, but not repositioning the center -- would there be occassions when it would be helpful to make the graph off-center?
-      const float down = hypotf(d->button_down_x - allocation.width/2, d->button_down_y - allocation.height/2);
-      const float cur = hypotf(event->x - allocation.width/2, event->y - allocation.height/2);
-      const int range = MIN(allocation.width, allocation.height);
-      d->vectorscope_scale = CLAMP(d->button_down_value + 2.5f * (cur - down) / range, 0.7f, 8.f);
-      dt_control_queue_redraw_widget(widget);
+      const float exposure = d->button_down_value + diff * 4.0f / (float)range;
+      dt_dev_exposure_set_exposure(dev, exposure);
     }
-    else
+    else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
     {
-      // FIXME: dragging the vectorscope could change white balance
-      const float diff = d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM ? d->button_down_y - event->y
-                                                                          : event->x - d->button_down_x;
-      const int range = d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM ? allocation.height
-                                                                         : allocation.width;
-      // FIXME: see dt_bauhaus_slider_postponed_value_change(): delay processing until the pixelpipe can update based on dev->preview_average_delay for smoother interaction
-      if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
-      {
-        const float exposure = d->button_down_value + diff * 4.0f / (float)range;
-        dt_dev_exposure_set_exposure(dev, exposure);
-      }
-      else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
-      {
-        const float black = d->button_down_value - diff * .1f / (float)range;
-        dt_dev_exposure_set_black(dev, black);
-      }
+      const float black = d->button_down_value - diff * .1f / (float)range;
+      dt_dev_exposure_set_black(dev, black);
     }
   }
   else
@@ -1014,7 +1001,7 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
     if(!hooks_available || d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
-      gtk_widget_set_tooltip_text(widget, _("shift+scroll/shift+drag to change scale,\nctrl+scroll to change display height"));
+      gtk_widget_set_tooltip_text(widget, _("ctrl+scroll to change display height"));
     }
     // FIXME: could a GtkRange be used to do this work?
     else if((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM) ||
@@ -1048,39 +1035,27 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   dt_develop_t *dev = darktable.develop;
 
-  if(event->type == GDK_2BUTTON_PRESS)
+  if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
   {
-    if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
+    if(event->type == GDK_2BUTTON_PRESS)
     {
       dt_dev_exposure_reset_defaults(dev);
     }
-    else if(dt_modifier_is(event->state, GDK_SHIFT_MASK) && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
+    else
     {
-      d->vectorscope_scale = 1.0f;
-      dt_control_queue_redraw_widget(widget);
-    }
-  }
-  else
-  {
-    // FIXME: should change cursor from "grab" to "grabbing", but this would mean rewriting dt_control_change_cursor() to use gdk_cursor_new_from_name()
-    d->dragging = FALSE;
-    if(dt_modifier_is(event->state, GDK_SHIFT_MASK) && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
-    {
-      d->button_down_value = d->vectorscope_scale;
+      // FIXME: should change cursor from "grab" to "grabbing", but this would mean rewriting dt_control_change_cursor() to use gdk_cursor_new_from_name()
+      if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
+      {
+        d->button_down_value = dt_dev_exposure_get_exposure(dev);
+      }
+      else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
+      {
+        d->button_down_value = dt_dev_exposure_get_black(dev);
+      }
       d->dragging = TRUE;
+      d->button_down_x = event->x;
+      d->button_down_y = event->y;
     }
-    else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
-    {
-      d->button_down_value = dt_dev_exposure_get_exposure(dev);
-      d->dragging = TRUE;
-    }
-    else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
-    {
-      d->button_down_value = dt_dev_exposure_get_black(dev);
-      d->dragging = TRUE;
-    }
-    d->button_down_x = event->x;
-    d->button_down_y = event->y;
   }
 
   return TRUE;
@@ -1098,30 +1073,20 @@ static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *eve
   // note are using unit rather than smooth scroll events, as
   // exposure changes can get laggy if handling a multitude of smooth
   // scroll events
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y) &&
+     d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
   {
-    if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+    dt_develop_t *dev = darktable.develop;
+    // FIXME: see dt_bauhaus_slider_postponed_value_change(): delay processing until the pixelpipe can update based on dev->preview_average_delay for smoother interaction
+    if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
     {
-      if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
-      {
-        d->vectorscope_scale = CLAMP(d->vectorscope_scale * (1.f + 0.1f * delta_y), 0.7f, 8.f);
-        dt_control_queue_redraw_widget(widget);
-      }
+      const float ce = dt_dev_exposure_get_exposure(dev);
+      dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta_y);
     }
-    else if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
+    else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
     {
-      dt_develop_t *dev = darktable.develop;
-      // FIXME: see dt_bauhaus_slider_postponed_value_change(): delay processing until the pixelpipe can update based on dev->preview_average_delay for smoother interaction
-      if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
-      {
-        const float ce = dt_dev_exposure_get_exposure(dev);
-        dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta_y);
-      }
-      else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
-      {
-        const float cb = dt_dev_exposure_get_black(dev);
-        dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y);
-      }
+      const float cb = dt_dev_exposure_get_black(dev);
+      dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y);
     }
   }
 
@@ -1601,8 +1566,6 @@ void gui_init(dt_lib_module_t *self)
   d->vectorscope_graph = dt_alloc_align(64, sizeof(uint8_t) * 4U * vectorscope_stride * d->vectorscope_diameter_px);
   // initially no vectorscope to draw
   d->vectorscope_radius = 0.f;
-  // FIXME: should this come from conf? currently reset on startup
-  d->vectorscope_scale = 1.f;
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
