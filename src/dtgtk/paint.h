@@ -191,6 +191,8 @@ void dtgtk_cairo_paint_camera(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
 void dtgtk_cairo_paint_histogram_scope(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint waveform scope icon */
 void dtgtk_cairo_paint_waveform_scope(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint vectorscope icon */
+void dtgtk_cairo_paint_vectorscope(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint linear scale icon */
 void dtgtk_cairo_paint_linear_scale(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint logarithmic scale icon */
@@ -199,6 +201,10 @@ void dtgtk_cairo_paint_logarithmic_scale(cairo_t *cr, gint x, gint y, gint w, gi
 void dtgtk_cairo_paint_waveform_overlaid(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint RGB parade icon */
 void dtgtk_cairo_paint_rgb_parade(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint Luv icon */
+void dtgtk_cairo_paint_luv(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint JzAzBz icon */
+void dtgtk_cairo_paint_jzazbz(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
 /** paint active modulegroup icon */
 void dtgtk_cairo_paint_modulegroup_active(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
