@@ -383,7 +383,7 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
 
         switch (avif->matrixCoefficients) {
         case AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-          cp->type = DT_COLORSPACE_PQ_P3;
+          cp->type = DT_COLORSPACE_HLG_P3;
           break;
         default:
           break;
