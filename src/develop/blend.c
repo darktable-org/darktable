@@ -223,7 +223,7 @@ int dt_develop_blendif_init_masking_profile(struct dt_dev_pixelpipe_iop_t *piece
   return 1;
 }
 
-static float _detail_mask_threshold(const float level, const gboolean detail)
+static inline float _detail_mask_threshold(const float level, const gboolean detail)
 {
   // this does some range calculation for smoother ui experience
   return 0.01f * (detail ? powf(level, 1.5f) : 1.0f - powf(fabs(level), 0.75f ));
@@ -255,9 +255,13 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev
   if((tmp == NULL) || (lum == NULL)) goto error;
 
   dt_masks_calc_detail_mask(p->luminance_mask_data, lum, tmp, iwidth, iheight, threshold, detail);
-
+  dt_free_align(tmp);
+  tmp = NULL;
   // here we have the slightly blurred full detail mask available
   warp_mask = dt_dev_distort_luminance_mask(p, lum, self);
+  dt_free_align(lum);
+  lum = NULL;
+
   if(warp_mask == NULL) goto error;
 
   const int msize = owidth * oheight;
@@ -271,8 +275,6 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev
     mask[idx] = mask[idx] * warp_mask[idx];
   }
   dt_free_align(warp_mask);
-  dt_free_align(lum);
-  dt_free_align(tmp);
   return;
 
   error:
@@ -724,6 +726,8 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   // here we have the slightly blurred full detail available
   float *warp_mask = dt_dev_distort_luminance_mask(p, lum, self);
   if(warp_mask == NULL) goto error;
+  dt_free_align(lum);
+  lum = NULL;
 
   const int msize = owidth * oheight;
 #ifdef _OPENMP
