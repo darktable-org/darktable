@@ -274,7 +274,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
   const int diam_px = d->vectorscope_diameter_px;
-  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
+  const int out_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
   uint8_t *const out = d->vectorscope_graph;
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
 
@@ -340,8 +340,9 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   const float max_diam = max_radius * 2.f;;
 
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
-  const int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
-  const int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
+  int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
+  int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
+  size_t min_x, min_y, max_x, max_y;
 
   // special case, point sample
   // FIXME: instead calculate whole graph and the point sample coords, draw those on top of a dimmer graph
@@ -362,9 +363,23 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
       dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
     }
-    d->vectorscope_bounds[0] = d->vectorscope_pt[0] = chromaticity[1];
-    d->vectorscope_bounds[1] = d->vectorscope_pt[1] = chromaticity[2];
-    goto cleanup;
+    d->vectorscope_pt[0] = chromaticity[1];
+    d->vectorscope_pt[1] = chromaticity[2];
+
+    // now calculate graph based on whole image
+    sample_width = roi->width;
+    sample_height = roi->height;
+    min_x = min_y  = 0;
+    max_x = roi->width;
+    max_y = roi->height;
+  }
+  else
+  {
+    d->vectorscope_pt[0] = NAN;
+    min_x = roi->crop_x;
+    min_y = roi->crop_y;
+    max_x = roi->width - roi->crop_width;
+    max_y = roi->height - roi->crop_height;
   }
 
   // FIXME: pre-allocate?
@@ -373,20 +388,20 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // FIXME: faster to have bins just record count and multiply by scale after?
   // FIXME: do something fancy where 16 bits of out are pixel count, the other two are chromaticity?
   const float gain = 1.f / 50.f;
-  d->vectorscope_pt[0] = NAN;
   const float scale = gain * (diam_px * diam_px) / (sample_width * sample_height);
 
   // count into bins
   // FIXME: move verbosed interleaved comments into a method note at the start, as the code itself is succinct and clear
   float bounds_x = 0.f, bounds_y = 0.f;
+  const size_t in_stride = roi->width;
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, binned, roi, vs_prof, diam_px, max_diam, scale, vs_type) \
+  dt_omp_firstprivate(in, binned, min_x, max_x, min_y, max_y, in_stride, vs_prof, diam_px, max_diam, scale, vs_type) \
   reduction(max : bounds_x, bounds_y) \
   schedule(static)
 #endif
-  for(size_t in_y = roi->crop_y; in_y < roi->height - roi->crop_height; in_y++)
-    for(size_t in_x = roi->crop_x; in_x < roi->width - roi->crop_width; in_x++)
+  for(size_t in_y = min_y; in_y < max_y; in_y++)
+    for(size_t in_x = min_x; in_x < max_x; in_x++)
     {
       // FIXME: Are there are unnecessary color math hops? Right now the data
       // comes into dt_lib_histogram_process() in a known profile
@@ -400,7 +415,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       //   RGB (pixelpipe) -> XYZ(PCS, D50) -> chromaticity
       float XYZ_D50[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
       // this goes to the PCS which has standard illuminant D50
-      dt_ioppr_rgb_matrix_to_xyz(in + 4U * (in_y * roi->width + in_x), XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
+      dt_ioppr_rgb_matrix_to_xyz(in + 4U * (in_y * in_stride + in_x), XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
                                  vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
       // NOTE: see for comparison/reference rgb_to_JzCzhz() in color_picker.c
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
@@ -458,7 +473,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     {
       // FIXME: do need (size_t)4U?
       const float *const restrict b = binned + 4U * (out_y * diam_px + out_x);
-      uint8_t *const restrict px = out + out_y * stride + out_x * 4U;
+      uint8_t *const restrict px = out + out_y * out_stride + out_x * 4U;
       // FIXME: use cache or linear interpolate from pre-calculated
       // FIXME: will this ever be below 0?
       const float intensity = CLAMP(powf(b[3], gamma), 0.f, 1.f);
@@ -485,7 +500,6 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
   dt_free_align(binned);
 
-cleanup:
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
     dt_times_t end_time = { 0 };
@@ -785,29 +799,30 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
     cairo_stroke(cr);
   }
 
-  if(isnan(d->vectorscope_pt[0]))
-  {
-    // vectorscope graph
-    cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
-    // FIXME: if use cairo_mask() could calculate a false color vectorscope and draw with appropriate hues? and if so could also simplify waveform drawing code above, to use color mask to alter channel visibility
-    cairo_surface_t *source = dt_cairo_image_surface_create_for_data(d->vectorscope_graph, CAIRO_FORMAT_RGB24,
-                                                                     diam_px, diam_px, stride);
+  // vectorscope graph
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
+  // FIXME: if use cairo_mask() could calculate a false color vectorscope and draw with appropriate hues? and if so could also simplify waveform drawing code above, to use color mask to alter channel visibility
+  cairo_surface_t *source = dt_cairo_image_surface_create_for_data(d->vectorscope_graph, CAIRO_FORMAT_RGB24,
+                                                                   diam_px, diam_px, stride);
 
-    // FIXME: note that multiple CAIRO_OPERATOR_ADD passes give very nice intensity -- simulate this in the drawing code?
-    cairo_pattern_t *pattern = cairo_pattern_create_for_surface(source);
-    cairo_matrix_t matrix;
-    cairo_matrix_init_translate(&matrix, 0.5*diam_px/darktable.gui->ppd, 0.5*diam_px/darktable.gui->ppd);
-    cairo_matrix_scale(&matrix, (double)diam_px / min_size / factor / darktable.gui->ppd,
-                       (double)diam_px / min_size / factor / darktable.gui->ppd);
-    cairo_pattern_set_matrix(pattern, &matrix);
-    cairo_set_source(cr, pattern);
+  // FIXME: note that multiple CAIRO_OPERATOR_ADD passes give very nice intensity -- simulate this in the drawing code?
+  cairo_pattern_t *pattern = cairo_pattern_create_for_surface(source);
+  cairo_matrix_t matrix;
+  cairo_matrix_init_translate(&matrix, 0.5*diam_px/darktable.gui->ppd, 0.5*diam_px/darktable.gui->ppd);
+  cairo_matrix_scale(&matrix, (double)diam_px / min_size / factor / darktable.gui->ppd,
+                     (double)diam_px / min_size / factor / darktable.gui->ppd);
+  cairo_pattern_set_matrix(pattern, &matrix);
+  cairo_set_source(cr, pattern);
+  if(isnan(d->vectorscope_pt[0]))
     cairo_paint(cr);
-    cairo_pattern_destroy(pattern);
-    cairo_surface_destroy(source);
-    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-  }
   else
+    cairo_paint_with_alpha(cr, 0.5);
+  cairo_pattern_destroy(pattern);
+  cairo_surface_destroy(source);
+  cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+
+  if(!isnan(d->vectorscope_pt[0]))
   {
     // point sample
     cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
