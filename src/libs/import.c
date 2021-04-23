@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -121,6 +122,7 @@ typedef struct dt_lib_import_t
     GtkTreeView *treeview;
     GtkWidget *thumbs;
     GtkWidget *root;
+    gulong root_handler;
     GtkTreeView *folderview;
     GtkTreeViewColumn *foldercol;
     GtkTreeIter iter;
@@ -996,6 +998,7 @@ static void _set_folders_list(GtkWidget *lbox, dt_lib_module_t* self)
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
   d->from.folderview = GTK_TREE_VIEW(gtk_tree_view_new());
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->from.folderview));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->from.folderview), _("select a folder to see the content"));
 
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("folder"), renderer, "text",
@@ -1026,7 +1029,7 @@ static void _update_folders_list(dt_lib_module_t* self)
   g_object_ref(model);
   gtk_tree_view_set_model(d->from.folderview, NULL);
   gtk_tree_store_clear(GTK_TREE_STORE(model));
-  const char *root = gtk_label_get_text(GTK_LABEL(d->from.root));
+  const char *root = dt_bauhaus_combobox_get_text(d->from.root);
   char *folder = dt_conf_get_string("ui_last/import_last_directory");
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
                                        GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
@@ -1056,7 +1059,80 @@ static void _update_folders_list(dt_lib_module_t* self)
   g_free(folder);
 }
 
-static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t* self)
+static void _save_last_root(const char *folder)
+{
+  char *new_list = NULL;
+  char *saved = dt_conf_get_string("ui_last/import_last_root");
+  if(g_str_has_prefix(saved, folder))
+  {
+    g_free(saved);
+    return;
+  }
+  if(saved[0])
+  {
+    char *exists = g_strstr_len(saved, strlen(saved), folder);
+    if(exists == NULL)
+    {
+      const int nb_saved = dt_util_str_occurence(saved, ",");
+      if(nb_saved > 8)
+      {
+        char *last = g_strrstr(saved, ",");
+        last[0] = '\0';
+      }
+      new_list = g_strconcat(folder, ",", saved, NULL);
+    }
+    else
+    {
+      // set it first
+      char *end = exists;
+      end--;
+      end[0] = '\0';
+      new_list = g_strconcat(exists, ",", saved, NULL);
+    }
+  }
+  else new_list = g_strdup(folder);
+  if(new_list)
+    dt_conf_set_string("ui_last/import_last_root", new_list);
+  g_free(saved);
+  g_free(new_list);
+}
+
+static void _set_root_combo(dt_lib_module_t *self)
+{
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  g_signal_handler_block(d->from.root, d->from.root_handler);
+  dt_bauhaus_combobox_clear(d->from.root);
+  char *saved = dt_conf_get_string("ui_last/import_last_root");
+  const int nb_saved = saved[0] ? dt_util_str_occurence(saved, ",") + 1 : 0;
+  char *folders = saved;
+  for(int i = 0; i < nb_saved; i++)
+  {
+    char *next = g_strstr_len(folders, strlen(folders), ",");
+    if(next)
+      next[0] = '\0';
+    if(folders[0])
+    {
+      dt_bauhaus_combobox_add(d->from.root, folders);
+      if(next)
+        folders = next + 1;
+    }
+  }
+  g_free(saved);
+  dt_bauhaus_combobox_set(d->from.root, 0);
+  g_signal_handler_unblock(d->from.root, d->from.root_handler);
+}
+
+static void _root_combobox_changed(GtkWidget *widget, dt_lib_module_t *self)
+{
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  const char *root = dt_bauhaus_combobox_get_text(d->from.root);
+  _save_last_root(root);
+  dt_conf_set_string("ui_last/import_last_directory", "");
+  _update_folders_list(self);
+  _update_files_list(self);
+}
+
+static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
@@ -1069,17 +1145,16 @@ static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t* self)
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
-  char *last_directory = dt_conf_get_string("ui_last/import_last_root");
-  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), last_directory);
-  g_free(last_directory);
+  const char *root = dt_bauhaus_combobox_get_text(d->from.root);
+  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), root);
 
   // run the dialog
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gtk_widget_hide(filechooser);
     GSList *list = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(filechooser));
-    gtk_label_set_text(GTK_LABEL(d->from.root), (char *)list->data);
-    dt_conf_set_string("ui_last/import_last_root", (char *)list->data);
+    _save_last_root((char *)list->data);
+    _set_root_combo(self);
     dt_conf_set_string("ui_last/import_last_directory", "");
     g_slist_free(list);
   }
@@ -1264,22 +1339,23 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
     gtk_widget_set_tooltip_text(button, folder_tooltip);
     gtk_box_pack_start(GTK_BOX(box), button, FALSE, FALSE, 0);
     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_import_select_folder), self);
-    char *folder;
     if(dt_conf_is_equal("ui_last/import_last_root", ""))
     {
-      if(dt_conf_is_equal("ui_last/import_last_directory", ""))
-        folder = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES));
-      else
-      {
-        folder = dt_conf_get_string("ui_last/import_last_directory");
-      }
+      char *folder = (char *)g_get_user_special_dir(G_USER_DIRECTORY_PICTURES);
+      if(!folder)
+        folder = (char *)g_get_user_special_dir(G_USER_DIRECTORY_DOCUMENTS);
+      folder = g_strdup(folder ? folder : "");
+      dt_conf_set_string("ui_last/import_last_root", folder);
+      g_free(folder);
     }
-    else
-      folder = dt_conf_get_string("ui_last/import_last_root");
-    d->from.root = dt_ui_label_new(folder);
-    g_free(folder);
+    d->from.root = dt_bauhaus_combobox_new(NULL);
+    dt_bauhaus_combobox_set_entries_ellipsis(d->from.root, PANGO_ELLIPSIZE_NONE);
+    dt_bauhaus_combobox_set_selected_text_align(d->from.root, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+    d->from.root_handler = g_signal_connect(G_OBJECT(d->from.root), "value-changed",
+                                            G_CALLBACK(_root_combobox_changed), self);
+    _set_root_combo(self);
     gtk_widget_set_tooltip_text(d->from.root, folder_tooltip);
-    gtk_box_pack_start(GTK_BOX(box), d->from.root, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(box), d->from.root, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(content), box, FALSE, FALSE, 0);
 
     const int position = dt_conf_get_int("ui_last/import_dialog_paned_pos");
@@ -1415,6 +1491,9 @@ static void _import_from_dialog_free(dt_lib_module_t* self)
   g_object_unref(d->from.eye);
   gtk_list_store_clear(d->from.store);
   g_object_unref(d->from.store);
+  GtkTreeModel *model = gtk_tree_view_get_model(d->from.folderview);
+  gtk_tree_store_clear(GTK_TREE_STORE(model));
+  g_object_unref(GTK_TREE_STORE(model));
   // Destroy and quit
   gtk_widget_destroy(d->from.dialog);
 }
