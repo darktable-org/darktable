@@ -107,6 +107,7 @@ typedef struct dt_lib_histogram_t
   float hue_ring_rgb[6][VECTORSCOPE_HUES][4] DT_ALIGNED_ARRAY;
   float hue_ring_coord[6][VECTORSCOPE_HUES][2] DT_ALIGNED_ARRAY;
   double vectorscope_radius;
+  float vectorscope_bounds[2];
   dt_pthread_mutex_t lock;
   GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
   GtkWidget *button_box;               // GtkButtonBox -- contains scope control buttons
@@ -175,6 +176,7 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d, const 
   histogram_params.bins_count = HISTOGRAM_BINS;
   histogram_params.mul = histogram_params.bins_count - 1;
 
+  // FIXME: for point sample, calculate whole graph and the point sample values, draw these on top of the graph
   // FIXME: set up "custom" histogram worker which can do colorspace conversion on fly -- in cases that we need to do that -- may need to add from colorspace to dt_dev_histogram_collection_params_t
   dt_histogram_helper(&histogram_params, &histogram_stats, cst, iop_cs_NONE, input, &d->histogram, FALSE, NULL);
   dt_histogram_max_helper(&histogram_stats, cst, iop_cs_NONE, &d->histogram, histogram_max);
@@ -227,6 +229,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   const size_t height_i = d->waveform_height-1;
   const float height_f = height_i;
 
+  // FIXME: for point sample, calculate whole graph and the point sample values, draw these on top of a dimmer graph
   // count the colors
   // FIXME: could flip x/y axes here and when reading to make row-wise iteration?
   // FIXME: Try histogram-style worker threads to process by row and consolidate results. Have the workers do colorspace conversion per-pixel. As there will be no intermediate buffer, even 20 per-thread output buffers will still use less memory.
@@ -300,6 +303,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
                                              {0.f, 1.f, 0.f}, {0.f, 1.f, 1.f},
                                              {0.f, 0.f, 1.f}, {1.f, 0.f, 1.f} };
   float max_radius = 0.f;
+  float bounds[2] = { 0.f };
   for(int k=0; k<6; k++)
   {
     float delta[4] DT_ALIGNED_PIXEL;
@@ -328,13 +332,15 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       }
       d->hue_ring_coord[k][i][0] = chromaticity[1];
       d->hue_ring_coord[k][i][1] = chromaticity[2];
-      // FIXME: we actually want to know max(abs(x)) and max(abs(y)) so can use more of space, then give something like 110% of each on the display
       max_radius = MAX(max_radius, hypotf(chromaticity[1], chromaticity[2]));
+      bounds[0] = MAX(bounds[0], fabsf(chromaticity[1]));
+      bounds[1] = MAX(bounds[1], fabsf(chromaticity[2]));
     }
   }
   // FIXME: make an image buffer with all the hues relative to whitepoint to use as the pattern for drawing hue ring and false color scope variant?
   // FIXME: particularly for u*v*, center on hue ring bounds rather than plot center, to be able to show a larger plot?
   d->vectorscope_radius = max_radius;
+  memcpy(d->vectorscope_bounds, bounds, sizeof(bounds));
   const float max_diam = max_radius * 2.f;;
 
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
@@ -342,6 +348,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   const int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
 
   // special case, point sample
+  // FIXME: instead calculate whole graph and the point sample coords, draw those on top of a dimmer graph
   if(sample_width == 1 && sample_height == 1)
   {
     float XYZ_D50[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
@@ -592,6 +599,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   // overlaid secondaries and neutral colors should be about the same
   // brightness. The combined group is then drawn with an alpha, which
   // dims things down.
+  cairo_save(cr);
   cairo_push_group_with_content(cr, CAIRO_CONTENT_COLOR);
   cairo_translate(cr, 0, height);
   cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
@@ -606,6 +614,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_pop_group_to_source(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_paint_with_alpha(cr, 0.5);
+  cairo_restore(cr);
 }
 
 static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t *cr, int ch)
@@ -706,7 +715,9 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   const float vs_radius = d->vectorscope_radius;
   const int diam_px = d->vectorscope_diameter_px;
   const int min_size = MIN(width, height);
-  const double factor = d->vectorscope_scale;
+  const double bounds_y = fabs(sin(d->vectorscope_angle) * d->vectorscope_bounds[0] +
+                               cos(d->vectorscope_angle) * d->vectorscope_bounds[1]);
+  const double factor = vs_radius / bounds_y * d->vectorscope_scale;
   const double scale = min_size / (vs_radius * 2.) * factor;
 
   cairo_save(cr);
@@ -718,10 +729,8 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_pattern_add_color_stop_rgb(p, 1., darktable.bauhaus->graph_exterior.red, darktable.bauhaus->graph_exterior.green, darktable.bauhaus->graph_exterior.blue);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_set_source(cr, p);
-  cairo_fill_preserve(cr);
+  cairo_fill(cr);
   cairo_pattern_destroy(p);
-  set_color(cr, darktable.bauhaus->graph_border);
-  cairo_stroke(cr);
 
   // FIXME: the areas to left/right of the scope could have some data (primaries, whitepoint, scale, etc.)
   cairo_translate(cr, width / 2., height / 2.);
@@ -836,9 +845,7 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
     cairo_save(cr);
     cairo_rectangle(cr, 0, 0, width, height);
     set_color(cr, darktable.bauhaus->graph_bg);
-    cairo_fill_preserve(cr);
-    set_color(cr, darktable.bauhaus->graph_border);
-    cairo_stroke(cr);
+    cairo_fill(cr);
     cairo_restore(cr);
   }
 
@@ -911,6 +918,11 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
   }
   dt_pthread_mutex_unlock(&d->lock);
 
+  // finally a thin border
+  cairo_rectangle(cr, 0, 0, width, height);
+  set_color(cr, darktable.bauhaus->graph_border);
+  cairo_stroke(cr);
+
   cairo_destroy(cr);
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
@@ -938,6 +950,7 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
   {
     if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
+      // FIXME: this allows for scaling, but not repositioning the center -- would there be occassions when it would be helpful to make the graph off-center?
       const float down = hypotf(d->button_down_x - allocation.width/2, d->button_down_y - allocation.height/2);
       const float cur = hypotf(event->x - allocation.width/2, event->y - allocation.height/2);
       const int range = MIN(allocation.width, allocation.height);
@@ -1565,6 +1578,7 @@ void gui_init(dt_lib_module_t *self)
   d->vectorscope_graph = dt_alloc_align(64, sizeof(uint8_t) * 4U * vectorscope_stride * d->vectorscope_diameter_px);
   // initially no vectorscope to draw
   d->vectorscope_radius = 0.f;
+  // FIXME: should this come from conf? currently reset on startup
   d->vectorscope_scale = 1.f;
 
   // proxy functions and data so that pixelpipe or tether can
