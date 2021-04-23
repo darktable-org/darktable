@@ -1062,6 +1062,18 @@ void dtgtk_cairo_paint_waveform_scope(cairo_t *cr, gint x, gint y, gint w, gint 
   FINISH
 }
 
+void dtgtk_cairo_paint_vectorscope(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_move_to(cr, 0.0, 0.3);
+  cairo_curve_to(cr, 0.1, 0.0, 0.7, 0.3, 1.0, 0.7);
+  cairo_curve_to(cr, 0.9, 0.8, 0.1, 0.8, 0.0, 0.3);
+  cairo_fill(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_linear_scale(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   PREAMBLE(1, 0, 0)
@@ -1113,7 +1125,7 @@ void dtgtk_cairo_paint_rgb_parade(cairo_t *cr, gint x, gint y, gint w, gint h, g
 {
   PREAMBLE(1, 0, 0)
 
-  const GdkRGBA *const primaries = darktable.bauhaus->graph_primaries;
+  const GdkRGBA *const primaries = darktable.bauhaus->graph_colors;
   cairo_pattern_t *pat;
 
   pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);
@@ -1142,6 +1154,46 @@ void dtgtk_cairo_paint_rgb_parade(cairo_t *cr, gint x, gint y, gint w, gint h, g
   cairo_set_source(cr, pat);
   cairo_fill(cr);
   cairo_pattern_destroy(pat);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_luv(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  // FIXME: change icon to "u*v*"
+  cairo_move_to(cr, 0.0, 0.0);
+  cairo_line_to(cr, 0.0, 1.0);
+  cairo_line_to(cr, 0.7, 1.0);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, 0.5, 0.0);
+  cairo_curve_to(cr, 0.5, 0.4, 1.0, 0.4, 1.0, 0.0);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, 0.5, 0.5);
+  cairo_line_to(cr, 0.75, 0.8);
+  cairo_line_to(cr, 1.0, 0.5);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_jzazbz(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  // FIXME: change icon to "AzBz" or just "z"
+  cairo_move_to(cr, 0.4, 0.0);
+  cairo_curve_to(cr, 0.45, 1.0, 0.1, 1.0, 0.0, 0.8);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, 0.6, 0.5);
+  cairo_line_to(cr, 1.0, 0.5);
+  cairo_line_to(cr, 0.6, 1.0);
+  cairo_line_to(cr, 1.0, 1.0);
+  cairo_stroke(cr);
 
   FINISH
 }

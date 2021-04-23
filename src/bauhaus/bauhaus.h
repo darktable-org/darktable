@@ -233,8 +233,8 @@ typedef struct dt_bauhaus_t
   GdkRGBA color_fg, color_fg_insensitive, color_bg, color_border, indicator_border, color_fill;
 
   // colors for graphs
-  GdkRGBA graph_bg, graph_border, graph_fg, graph_grid, graph_fg_active, graph_overlay, inset_histogram;
-  GdkRGBA graph_primaries[3];
+  GdkRGBA graph_bg, graph_exterior, graph_border, graph_fg, graph_grid, graph_fg_active, graph_overlay, inset_histogram;
+  GdkRGBA graph_colors[3];               // primaries
   GdkRGBA colorlabels[DT_COLORLABELS_LAST];
 } dt_bauhaus_t;
 
