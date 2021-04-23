@@ -2612,16 +2612,14 @@ gboolean dt_dev_write_luminance_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
   out = dt_opencl_alloc_device(devid, width, height, sizeof(float));   
   if(out == NULL) goto error;
 
-  const int program = 31;
-  int kernel_calc_luminance_mask = dt_opencl_create_kernel(program, "out_luminance_mask");
-
   {
+    const int kernel = darktable.opencl->blendop->kernel_calc_luminance_mask;
     size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-    dt_opencl_set_kernel_arg(devid, kernel_calc_luminance_mask, 0, sizeof(cl_mem), &out);
-    dt_opencl_set_kernel_arg(devid, kernel_calc_luminance_mask, 1, sizeof(cl_mem), &in);
-    dt_opencl_set_kernel_arg(devid, kernel_calc_luminance_mask, 2, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, kernel_calc_luminance_mask, 3, sizeof(int), &height);
-    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel_calc_luminance_mask, sizes);
+    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &out);
+    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &in);
+    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &width);
+    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &height);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) goto error;
   }  
 
@@ -2634,7 +2632,6 @@ gboolean dt_dev_write_luminance_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
   memcpy(&p->luminance_mask_roi, roi_in, sizeof(dt_iop_roi_t));
 
   dt_opencl_release_mem_object(out);
-  dt_opencl_free_kernel(kernel_calc_luminance_mask);
   return FALSE;
 
   error:
