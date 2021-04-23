@@ -120,7 +120,8 @@ typedef enum dt_iop_filmicrgb_methods_type_t
 typedef enum dt_iop_filmicrgb_curve_type_t
 {
   DT_FILMIC_CURVE_POLY_4 = 0, // $DESCRIPTION: "hard"
-  DT_FILMIC_CURVE_POLY_3 = 1  // $DESCRIPTION: "soft"
+  DT_FILMIC_CURVE_POLY_3 = 1,  // $DESCRIPTION: "soft"
+  DT_FILMIC_CURVE_RATIONAL = 2, // $DESCRIPTION: "safe"
 } dt_iop_filmicrgb_curve_type_t;
 
 
@@ -145,6 +146,7 @@ typedef struct dt_iop_filmic_rgb_spline_t
   float latitude_min, latitude_max;                         // bounds of the latitude == linear part by design
   float y[5];                                               // controls nodes
   float x[5];                                               // controls nodes
+  dt_iop_filmicrgb_curve_type_t type[2];
 } dt_iop_filmic_rgb_spline_t;
 
 
@@ -173,7 +175,7 @@ typedef struct dt_iop_filmicrgb_params_t
   float black_point_target; // $MIN: 0.000 $MAX: 20.000 $DEFAULT: 0.01517634 $DESCRIPTION: "target black luminance"
   float white_point_target; // $MIN: 0 $MAX: 1600 $DEFAULT: 100 $DESCRIPTION: "target white luminance"
   float output_power;       // $MIN: 1 $MAX: 10 $DEFAULT: 4.0 $DESCRIPTION: "hardness"
-  float latitude;           // $MIN: 0.01 $MAX: 100 $DEFAULT: 25.0
+  float latitude;           // $MIN: 0.01 $MAX: 100 $DEFAULT: 33.0
   float contrast;           // $MIN: 0 $MAX: 5 $DEFAULT: 1.35
   float saturation;         // $MIN: -50 $MAX: 200 $DEFAULT: 10 $DESCRIPTION: "extreme luminance saturation"
   float balance;            // $MIN: -50 $MAX: 50 $DEFAULT: 0.0 $DESCRIPTION: "shadows/highlights balance"
@@ -184,8 +186,8 @@ typedef struct dt_iop_filmicrgb_params_t
   gboolean custom_grey;                         // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-gray values"
   int high_quality_reconstruction;       // $MIN: 0 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "iterations of high-quality reconstruction"
   int noise_distribution;                // $DEFAULT: DT_NOISE_GAUSSIAN $DESCRIPTION: "type of noise"
-  dt_iop_filmicrgb_curve_type_t shadows; // $DEFAULT: DT_FILMIC_CURVE_POLY_4 $DESCRIPTION: "contrast in shadows"
-  dt_iop_filmicrgb_curve_type_t highlights; // $DEFAULT: DT_FILMIC_CURVE_POLY_4 $DESCRIPTION: "contrast in highlights"
+  dt_iop_filmicrgb_curve_type_t shadows; // $DEFAULT: DT_FILMIC_CURVE_RATIONAL $DESCRIPTION: "contrast in shadows"
+  dt_iop_filmicrgb_curve_type_t highlights; // $DEFAULT: DT_FILMIC_CURVE_RATIONAL $DESCRIPTION: "contrast in highlights"
   gboolean compensate_icc_black; // $DEFAULT: FALSE $DESCRIPTION: "compensate output ICC profile black point"
   gint internal_version;         // $DEFAULT: 2020 $DESCRIPTION: "version of the spline generator"
 } dt_iop_filmicrgb_params_t;
@@ -661,14 +663,65 @@ static inline float exp_tonemapping_v2(const float x, const float grey, const fl
 #endif
 static inline float filmic_spline(const float x, const float M1[4], const float M2[4], const float M3[4],
                                   const float M4[4], const float M5[4], const float latitude_min,
-                                  const float latitude_max)
+                                  const float latitude_max, const dt_iop_filmicrgb_curve_type_t type[2])
 {
+  // if type polynomial :
   // y = M5 * x⁴ + M4 * x³ + M3 * x² + M2 * x¹ + M1 * x⁰
   // but we rewrite it using Horner factorisation, to spare ops and enable FMA in available
+  // else if type rational :
+  // y = M1 * (M2 * (x - x_0)² + (x - x_0)) / (M2 * (x - x_0)² + (x - x_0) + M3)
 
-  return (x < latitude_min) ? M1[0] + x * (M2[0] + x * (M3[0] + x * (M4[0] + x * M5[0]))) : // toe
-         (x > latitude_max) ? M1[1] + x * (M2[1] + x * (M3[1] + x * (M4[1] + x * M5[1]))) : // shoulder
-                              M1[2] + x * (M2[2] + x * (M3[2] + x * (M4[2] + x * M5[2])));  // latitude
+  float result;
+
+  if(x < latitude_min)
+  {
+    // toe
+    if(type[0] == DT_FILMIC_CURVE_POLY_4)
+    {
+      // polynomial toe, 4th order
+      result = M1[0] + x * (M2[0] + x * (M3[0] + x * (M4[0] + x * M5[0])));
+    }
+    else if(type[0] == DT_FILMIC_CURVE_POLY_3)
+    {
+      // polynomial toe, 3rd order
+      result = M1[0] + x * (M2[0] + x * (M3[0] + x * M4[0]));
+    }
+    else
+    {
+      // rational toe
+      const float xi = latitude_min - x;
+      const float rat = xi * (xi * M2[0] + 1.f);
+      result = M4[0] - M1[0] * rat / (rat + M3[0]);
+    }
+  }
+  else if(x > latitude_max)
+  {
+    // shoulder
+    if(type[1] == DT_FILMIC_CURVE_POLY_4)
+    {
+      // polynomial shoulder, 4th order
+      result = M1[1] + x * (M2[1] + x * (M3[1] + x * (M4[1] + x * M5[1])));
+    }
+    else if(type[1] == DT_FILMIC_CURVE_POLY_3)
+    {
+      // polynomial shoulder, 3rd order
+      result = M1[1] + x * (M2[1] + x * (M3[1] + x * M4[1]));
+    }
+    else
+    {
+      // rational toe
+      const float xi = x - latitude_max;
+      const float rat = xi * (xi * M2[1] + 1.f);
+      result = M4[1] + M1[1] * rat / (rat + M3[1]);
+    }
+  }
+  else
+  {
+    // latitude
+    result = M1[2] + x * M2[2];
+  }
+
+  return result;
 }
 
 
@@ -1209,7 +1262,7 @@ static inline void filmic_split_v1(const float *const restrict in, float *const 
     for(int c = 0; c < 3; c++)
       pix_out[c] = powf(
           clamp_simd(filmic_spline(linear_saturation(temp[c], lum, desaturation), spline.M1, spline.M2, spline.M3,
-                                   spline.M4, spline.M5, spline.latitude_min, spline.latitude_max)),
+                                   spline.M4, spline.M5, spline.latitude_min, spline.latitude_max, spline.type)),
           data->output_power);
   }
 }
@@ -1251,7 +1304,7 @@ static inline void filmic_split_v2_v3(const float *const restrict in, float *con
     for(int c = 0; c < 3; c++)
       pix_out[c] = powf(
           clamp_simd(filmic_spline(linear_saturation(temp[c], lum, desaturation), spline.M1, spline.M2, spline.M3,
-                                   spline.M4, spline.M5, spline.latitude_min, spline.latitude_max)),
+                                   spline.M4, spline.M5, spline.latitude_min, spline.latitude_max, spline.type)),
           data->output_power);
   }
 }
@@ -1304,7 +1357,7 @@ static inline void filmic_chroma_v1(const float *const restrict in, float *const
     // Filmic S curve on the max RGB
     // Apply the transfer function of the display
     norm = powf(clamp_simd(filmic_spline(norm, spline.M1, spline.M2, spline.M3, spline.M4, spline.M5,
-                                         spline.latitude_min, spline.latitude_max)),
+                                         spline.latitude_min, spline.latitude_max, spline.type)),
                 data->output_power);
 
     // Re-apply ratios
@@ -1356,7 +1409,7 @@ static inline void filmic_chroma_v2_v3(const float *const restrict in, float *co
     // Filmic S curve on the max RGB
     // Apply the transfer function of the display
     norm = powf(clamp_simd(filmic_spline(norm, spline.M1, spline.M2, spline.M3, spline.M4, spline.M5,
-                                         spline.latitude_min, spline.latitude_max)),
+                                         spline.latitude_min, spline.latitude_max, spline.type)),
                 data->output_power);
 
     // Re-apply ratios with saturation change
@@ -1884,6 +1937,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 19, sizeof(float), (void *)&spline.latitude_max);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 20, sizeof(float), (void *)&d->output_power);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 21, sizeof(int), (void *)&d->version);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 22, sizeof(int), (void *)&spline.type[0]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 23, sizeof(int), (void *)&spline.type[1]);
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_rgb_split, sizes);
     if(err != CL_SUCCESS) goto error;
@@ -1913,6 +1968,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 20, sizeof(float), (void *)&d->output_power);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 21, sizeof(int), (void *)&d->preserve_color);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 22, sizeof(int), (void *)&d->version);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 23, sizeof(int), (void *)&spline.type[0]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 24, sizeof(int), (void *)&spline.type[1]);
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_rgb_chroma, sizes);
     if(err != CL_SUCCESS) goto error;
@@ -2139,7 +2196,7 @@ inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_param
 
   float latitude = CLAMP(p->latitude, 0.0f, 100.0f) / 100.0f * dynamic_range; // in % of dynamic range
   float balance = CLAMP(p->balance, -50.0f, 50.0f) / 100.0f;                  // in %
-  float contrast = CLAMP(p->contrast, 0.1f, 2.0f);
+  float contrast = CLAMP(p->contrast, 1.00001f, 6.0f);
 
   // nodes for mapping from log encoding to desired target luminance
   // X coordinates
@@ -2190,6 +2247,9 @@ inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_param
   spline->latitude_min = spline->x[1];
   spline->latitude_max = spline->x[3];
 
+  spline->type[0] = p->shadows;
+  spline->type[1] = p->highlights;
+
   /**
    * For background and details, see :
    * https://eng.aurelienpierre.com/2018/11/30/filmic-darktable-and-the-quest-of-the-hdr-tone-mapping/#filmic_s_curve
@@ -2205,8 +2265,10 @@ inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_param
   const double Sl3 = Sl2 * Sl;
   const double Sl4 = Sl3 * Sl;
 
-  // Each polynomial is following the same structure :
+  // if type polynomial :
   // y = M5 * x⁴ + M4 * x³ + M3 * x² + M2 * x¹ + M1 * x⁰
+  // else if type rational :
+  // y = M1 * (M2 * (x - x_0)² + (x - x_0)) / (M2 * (x - x_0)² + (x - x_0) + M3)
   // We then compute M1 to M5 coeffs using the imposed conditions over the curve.
   // M1 to M5 are 3×1 vectors, where each element belongs to a part of the curve.
 
@@ -2237,7 +2299,7 @@ inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_param
     spline->M2[0] = b0[3]; // * x¹
     spline->M1[0] = b0[4]; // * x⁰
   }
-  else
+  else if(p->shadows == DT_FILMIC_CURVE_POLY_3)
   {
     // third order polynom
     double A0[ORDER_3 * ORDER_3] = { 0.,       0.,      0., 1.,   // position in 0
@@ -2254,6 +2316,21 @@ inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_param
     spline->M3[0] = b0[1]; // * x²
     spline->M2[0] = b0[2]; // * x¹
     spline->M1[0] = b0[3]; // * x⁰
+  }
+  else
+  {
+    const float P1[2] = { black_log, black_display };
+    const float P0[2] = { toe_log, toe_display };
+    const float x = P0[0] - P1[0];
+    const float y = P0[1] - P1[1];
+    const float g = contrast;
+    const float b = g / (2.f * y) + (sqrtf(sqf(x * g / y + 1.f) - 4.f) - 1.f) / (2.f * x);
+    const float c = y / g * (b * sqf(x) + x) / (b * sqf(x) + x - (y / g));
+    const float a = c * g;
+    spline->M1[0] = a;
+    spline->M2[0] = b;
+    spline->M3[0] = c;
+    spline->M4[0] = toe_display;
   }
 
   // solve the shoulder part
@@ -2275,7 +2352,7 @@ inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_param
     spline->M2[1] = b1[2]; // * x¹
     spline->M1[1] = b1[3]; // * x⁰
   }
-  else
+  else if(p->highlights == DT_FILMIC_CURVE_POLY_4)
   {
     // 4th order polynom
     double A1[ORDER_4 * ORDER_4] = { 1.,        1.,       1.,      1., 1.,   // position in 1
@@ -2293,6 +2370,21 @@ inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_param
     spline->M3[1] = b1[2]; // * x²
     spline->M2[1] = b1[3]; // * x¹
     spline->M1[1] = b1[4]; // * x⁰
+  }
+  else
+  {
+    const float P1[2] = { white_log, white_display };
+    const float P0[2] = { shoulder_log, shoulder_display };
+    const float x = P1[0] - P0[0];
+    const float y = P1[1] - P0[1];
+    const float g = contrast;
+    const float b = g / (2.f * y) + (sqrtf(sqf(x * g / y + 1.f) - 4.f) - 1.f) / (2.f * x);
+    const float c = y / g * (b * sqf(x) + x) / (b * sqf(x) + x - (y / g));
+    const float a = c * g;
+    spline->M1[1] = a;
+    spline->M2[1] = b;
+    spline->M3[1] = c;
+    spline->M4[1] = shoulder_display;
   }
 }
 
@@ -2819,7 +2911,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) x_start = dt_log_scale_axis(x_start, LOGBASE);
 
     float y_start = clamp_simd(filmic_spline(x_start, g->spline.M1, g->spline.M2, g->spline.M3, g->spline.M4,
-                                             g->spline.M5, g->spline.latitude_min, g->spline.latitude_max));
+                                             g->spline.M5, g->spline.latitude_min, g->spline.latitude_max, g->spline.type));
 
     if(g->gui_mode == DT_FILMIC_GUI_BASECURVE)
       y_start = powf(y_start, p->output_power);
@@ -2841,7 +2933,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       if(g->gui_mode == DT_FILMIC_GUI_BASECURVE_LOG) x = dt_log_scale_axis(x, LOGBASE);
 
       float y = filmic_spline(value, g->spline.M1, g->spline.M2, g->spline.M3, g->spline.M4, g->spline.M5,
-                              g->spline.latitude_min, g->spline.latitude_max);
+                              g->spline.latitude_min, g->spline.latitude_max, g->spline.type);
 
       if(y > g->spline.y[4])
       {
@@ -3185,7 +3277,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
     // Compute usual filmic  mapping
     float display_lat_bottom = filmic_spline(g->spline.latitude_min, g->spline.M1, g->spline.M2, g->spline.M3, g->spline.M4,
-                                  g->spline.M5, g->spline.latitude_min, g->spline.latitude_max);
+                                  g->spline.M5, g->spline.latitude_min, g->spline.latitude_max, g->spline.type);
     display_lat_bottom = powf(fmaxf(display_lat_bottom, NORM_MIN), p->output_power); // clamp at -16 EV
 
     // rescale output to log scale
@@ -3202,7 +3294,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
     // Compute usual filmic  mapping
     float display_lat_top = filmic_spline(g->spline.latitude_max, g->spline.M1, g->spline.M2, g->spline.M3, g->spline.M4,
-                                  g->spline.M5, g->spline.latitude_min, g->spline.latitude_max);
+                                  g->spline.M5, g->spline.latitude_min, g->spline.latitude_max, g->spline.type);
     display_lat_top = powf(fmaxf(display_lat_top, NORM_MIN), p->output_power); // clamp at -16 EV
 
     // rescale output to log scale
@@ -3271,7 +3363,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         // Compute usual filmic  mapping
         const float normal_value = ((float)i - p->black_point_source) / DR;
         float y_temp = filmic_spline(normal_value, g->spline.M1, g->spline.M2, g->spline.M3, g->spline.M4,
-                                     g->spline.M5, g->spline.latitude_min, g->spline.latitude_max);
+                                     g->spline.M5, g->spline.latitude_min, g->spline.latitude_max, g->spline.type);
         y_temp = powf(fmaxf(y_temp, NORM_MIN), p->output_power); // clamp at -16 EV
 
         // rescale output to log scale
