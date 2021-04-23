@@ -398,7 +398,7 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>ask before removing images from darktable</shortdescription>
-    <longdescription>always ask the user before any image is removed from darktable.</longdescription>
+    <longdescription>always ask the user before any image is removed from darktable</longdescription>
   </dtconfig>
   <dtconfig prefs="security">
     <name>ask_before_delete</name>
