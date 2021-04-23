@@ -1236,6 +1236,9 @@ dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void)
   b->kernel_blendop_mask_tone_curve = dt_opencl_create_kernel(program, "blendop_mask_tone_curve");
   b->kernel_blendop_set_mask = dt_opencl_create_kernel(program, "blendop_set_mask");
   b->kernel_blendop_display_channel = dt_opencl_create_kernel(program, "blendop_display_channel");
+
+  const int program_rcd = 31;
+  b->kernel_calc_luminance_mask = dt_opencl_create_kernel(program_rcd, "out_luminance_mask");
   return b;
 #else
   return NULL;
@@ -1259,7 +1262,7 @@ void dt_develop_blend_free_cl_global(dt_blendop_cl_global_t *b)
   dt_opencl_free_kernel(b->kernel_blendop_mask_tone_curve);
   dt_opencl_free_kernel(b->kernel_blendop_set_mask);
   dt_opencl_free_kernel(b->kernel_blendop_display_channel);
-
+  dt_opencl_free_kernel(b->kernel_calc_luminance_mask);
   free(b);
 #endif
 }
