@@ -303,7 +303,6 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
                                              {0.f, 1.f, 0.f}, {0.f, 1.f, 1.f},
                                              {0.f, 0.f, 1.f}, {1.f, 0.f, 1.f} };
   float max_radius = 0.f;
-  float bounds[2] = { 0.f };
   for(int k=0; k<6; k++)
   {
     float delta[4] DT_ALIGNED_PIXEL;
@@ -333,14 +332,11 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       d->hue_ring_coord[k][i][0] = chromaticity[1];
       d->hue_ring_coord[k][i][1] = chromaticity[2];
       max_radius = MAX(max_radius, hypotf(chromaticity[1], chromaticity[2]));
-      bounds[0] = MAX(bounds[0], fabsf(chromaticity[1]));
-      bounds[1] = MAX(bounds[1], fabsf(chromaticity[2]));
     }
   }
   // FIXME: make an image buffer with all the hues relative to whitepoint to use as the pattern for drawing hue ring and false color scope variant?
   // FIXME: particularly for u*v*, center on hue ring bounds rather than plot center, to be able to show a larger plot?
   d->vectorscope_radius = max_radius;
-  memcpy(d->vectorscope_bounds, bounds, sizeof(bounds));
   const float max_diam = max_radius * 2.f;;
 
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
@@ -366,8 +362,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
       dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
     }
-    d->vectorscope_pt[0] = chromaticity[1];
-    d->vectorscope_pt[1] = chromaticity[2];
+    d->vectorscope_bounds[0] = d->vectorscope_pt[0] = chromaticity[1];
+    d->vectorscope_bounds[1] = d->vectorscope_pt[1] = chromaticity[2];
     goto cleanup;
   }
 
@@ -382,9 +378,11 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
   // count into bins
   // FIXME: move verbosed interleaved comments into a method note at the start, as the code itself is succinct and clear
+  float bounds_x = 0.f, bounds_y = 0.f;
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, binned, roi, vs_prof, diam_px, max_diam, scale, vs_type) \
+  reduction(max : bounds_x, bounds_y) \
   schedule(static)
 #endif
   for(size_t in_y = roi->crop_y; in_y < roi->height - roi->crop_height; in_y++)
@@ -427,6 +425,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
       }
 
+      bounds_x = MAX(bounds_x, fabsf(chromaticity[1]));
+      bounds_y = MAX(bounds_y, fabsf(chromaticity[2]));
       const int out_x = diam_px * (chromaticity[1] / max_diam + 0.5f);
       const int out_y = diam_px * (chromaticity[2] / max_diam + 0.5f);
 
@@ -438,6 +438,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         float *const restrict b = binned + 4U * (out_y * diam_px + out_x);
         // FIXME: if necessary average XYZ values if they're in a big range -- test this -- and cast b[3] to an int and store a count
         // FIXME: this is a repeat assign on multiple iterations, though may be slightly different each time -- instead calculate the out_x/out_y to chromaticity below? -- or average these -- probably no perceptible difference -- or test if unassigned and then assign?
+        // FIXME: make this atomic!
         b[0] = XYZ_D50[0];
         // FIXME: we don't care about this, we'll set it from intensity?
         b[1] = XYZ_D50[1];
@@ -445,6 +446,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         b[3] += scale;
       }
     }
+  d->vectorscope_bounds[0] = bounds_x;
+  d->vectorscope_bounds[1] = bounds_y;
 
   // FIXME: do same gamma trick here as in waveform, making the gamma code local to simplify, just need interpolation function
   const float gamma = 1.0f / 2.0f;
@@ -715,9 +718,14 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   const float vs_radius = d->vectorscope_radius;
   const int diam_px = d->vectorscope_diameter_px;
   const int min_size = MIN(width, height);
-  const double bounds_y = fabs(sin(d->vectorscope_angle) * d->vectorscope_bounds[0] +
-                               cos(d->vectorscope_angle) * d->vectorscope_bounds[1]);
-  const double factor = vs_radius / bounds_y * d->vectorscope_scale;
+  const double angle = d->vectorscope_angle;
+  double bounds_x = fabs(cos(angle) * d->vectorscope_bounds[0] + sin(angle) * d->vectorscope_bounds[1]);
+  double bounds_y = fabs(sin(angle) * d->vectorscope_bounds[0] + cos(angle) * d->vectorscope_bounds[1]);
+  bounds_x = CLAMP(bounds_x, vs_radius * 0.4, vs_radius);
+  bounds_y = CLAMP(bounds_y, vs_radius * 0.4, vs_radius);
+  const double factor_x = vs_radius * ((float) width / min_size) / bounds_x * d->vectorscope_scale;
+  const double factor_y = vs_radius * ((float) height / min_size) / bounds_y * d->vectorscope_scale;
+  const double factor = MIN(factor_x, factor_y);
   const double scale = min_size / (vs_radius * 2.) * factor;
 
   cairo_save(cr);
@@ -734,7 +742,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // FIXME: the areas to left/right of the scope could have some data (primaries, whitepoint, scale, etc.)
   cairo_translate(cr, width / 2., height / 2.);
-  cairo_rotate(cr, d->vectorscope_angle);
+  cairo_rotate(cr, angle);
 
   // traditional video editor's vectorscope is oriented with x-axis Y
   // -> B, y-axis C -> R but CIE 1976 UCS is graphed x-axis as u (G ->
