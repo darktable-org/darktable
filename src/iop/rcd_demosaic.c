@@ -64,10 +64,12 @@
    The 'fp-contract=fast' option enables fused multiply&add if available
 */
 
+/*
 #ifdef __GNUC__
   #pragma GCC push_options
   #pragma GCC optimize ("fast-math", "fp-contract=fast")
 #endif
+*/
 
 #ifdef __GNUC__
   #define INLINE __inline
@@ -585,10 +587,12 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
   }
 }
 
+/*
 // revert rcd specific aggressive optimizing
 #ifdef __GNUC__
   #pragma GCC pop_options
 #endif
+*/
 
 #undef FCRCD
 #undef RCD_BORDER
