@@ -3175,7 +3175,11 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->scale_saturation_R, p->saturation[0]);
   dt_bauhaus_slider_set_soft(g->scale_saturation_G, p->saturation[1]);
   dt_bauhaus_slider_set_soft(g->scale_saturation_B, p->saturation[2]);
-  dt_bauhaus_combobox_set(g->saturation_version, p->version);
+
+  if(p->version != CHANNELMIXERRGB_V_3)
+    dt_bauhaus_combobox_set(g->saturation_version, p->version);
+  else
+    gtk_widget_hide(GTK_WIDGET(g->saturation_version));
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_sat), p->normalize_sat);
 
