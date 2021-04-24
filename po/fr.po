@@ -17507,7 +17507,7 @@ msgstr "afficher en mode AzBz"
 
 #: ../src/libs/histogram.c:1184
 msgid "set view to u*v*"
-msgstr "afficher en mode u*u*"
+msgstr "afficher en mode u*v*"
 
 #: ../src/libs/histogram.c:1198
 msgid "set mode to waveform"
