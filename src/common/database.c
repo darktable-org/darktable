@@ -2510,42 +2510,59 @@ void dt_database_show_error(const dt_database_t *db)
     char lck_pathname[1024];
     snprintf(lck_pathname, sizeof(lck_pathname), "%s.lock", db->error_dbfilename);
     char *lck_dirname = g_strdup(lck_pathname);
-    char *lck_filename = g_strrstr(lck_dirname, "/") + 1 ;
     *g_strrstr(lck_dirname, "/") = '\0';
-
     char *label_text = g_markup_printf_escaped(
         _("\n"
-          " At startup, the database failed to open because at least one of the two files in the database is locked.\n"
+          "  Sorry, darktable could not be started (database is locked)\n"
           "\n"
-          " The persistence of the lock is mainly caused by one of the two following causes:\n"
+          "  How to solve this problem?\n"
           "\n"
-          " - Another occurrence of darktable has already opened this database file and locked it for its benefit.\n"
+          "  1 - If another darktable instance is already open, \n"
+          "      click cancel and either use that instance or close it before attempting to rerun darktable \n"
+          "      (process ID <i><b>%d</b></i> created the database locks)\n"
           "\n"
-          " - A previous occurrence of darktable ended abnormally and therefore \n"
-          "   could not close one or both files in the database properly.\n"
+          "  2 - If you can't find a running instance of darktable, try restarting your session or your computer. \n"
+          "      This will close all running programs and hopefully close the databases correctly. \n"
           "\n"
-          " How to solve this problem?\n"
-          "\n"
-          " 1 - Search in your environment if another darktable occurrence is active. If so, use it or close it. \n"
-          "     The lock indicates that the process number of this occurrence is : <i><b>%d</b></i>\n"
-          "\n"
-          " 2 - If you can't find this other occurrence, try closing your session and reopening it or shutting down your computer. \n"
-          "     This will delete all running programs and thus close the database correctly.\n"
-          "\n"
-          " 3 - If these two actions are not enough, it is because at least one of the two files that materialize the locks remains \n"
-          "     and that these are no longer attached to any occurrence of darktable. It is then necessary to delete it (or them). \n"
-          "     The two files are named <i>data.db.lock</i> and <i>library.db.lock</i> respectively. The opening mechanism signals \n"
-          "     the presence of the <i><b>%s</b></i> file in the <i><b>%s</b></i> folder. \n"
-          "     (full pathname: <i><b>%s</b></i>).\n"
-          "\n"
-          "     <u>Caution!</u> Do not delete these files without first checking that there are no more occurrences of darktable, \n"
-          "     otherwise you risk generating serious inconsistencies in your database.\n"
-          "\n"
-          " As soon as you have identified and removed the cause of the lock, darktable will start without any problem.\n"),
-      db->error_other_pid, lck_filename, lck_dirname, lck_pathname);
+          "  3 - If you have done this or are certain that no other instances of darktable are running, \n"
+          "      this probably means that the last instance was ended abnormally. \n"
+          "      Click on the \"delete database lock files\" button to remove the files <i>data.db.lock</i> and <i>library.db.lock</i>.  \n"
+          "\n\n"
+          "      <i><u>Caution!</u> Do not delete these files without first undertaking the above checks, \n"
+          "      otherwise you risk generating serious inconsistencies in your database.</i>\n"),
+      db->error_other_pid);
 
-    dt_gui_show_standalone_yes_no_dialog(_("darktable cannot be started because the database is locked"),
-                                         label_text, _("close darktable"), NULL);
+    gboolean delete_lockfiles = dt_gui_show_standalone_yes_no_dialog(_("error starting darktable"),
+                                        label_text, _("cancel"), _("delete database lock files"));
+
+    if(delete_lockfiles)
+    {
+      gboolean really_delete_lockfiles = dt_gui_show_standalone_yes_no_dialog(_("are you sure?"),
+                                        _("\n  do you really want to delete the lock files?  \n"), _("no"), _("yes"));
+      if(really_delete_lockfiles)
+      {
+        int status = 0;
+
+        char *lck_filename = g_strconcat(lck_dirname, "/data.db.lock", NULL);
+        if(access(lck_filename, F_OK) != -1)
+          status += remove(lck_filename);
+
+        lck_filename = g_strconcat(lck_dirname, "/library.db.lock", NULL);
+        if(access(lck_filename, F_OK) != -1)
+          status += remove(lck_filename);
+
+        if(status==0)
+          dt_gui_show_standalone_yes_no_dialog(_("done"), 
+                                        _("\n  Successfully deleted the lock files.  \n  You can now restart darktable  \n"), 
+                                        _("ok"), NULL);
+        else
+          dt_gui_show_standalone_yes_no_dialog(_("error"), g_markup_printf_escaped(
+                                        _("\n  At least one file could not be removed.  \n"
+                                        "  You may try to manually delete the files <i>data.db.lock</i> and <i>library.db.lock</i>  \n"
+                                        "  in folder <a href=\"file:///%s\">%s</a>.  \n"), lck_dirname, lck_dirname), 
+                                        _("ok"), NULL);
+      }
+    }
 
     g_free(lck_dirname);
     g_free(label_text);
