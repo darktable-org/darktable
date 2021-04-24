@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-04-24 07:11-0300\n"
-"PO-Revision-Date: 2021-04-24 07:13-0300\n"
+"POT-Creation-Date: 2021-04-24 19:53-0300\n"
+"PO-Revision-Date: 2021-04-25 08:21-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1026,8 +1026,10 @@ msgid ""
 "these messages can be false-positive and should be disregarded if you know "
 "what you are doing. this option will hide them all the time."
 msgstr ""
-"mostrar mensagens em módulos para avisar iniciantes quando configurações não-padrão e possivelmente danosas são usadas na pipeline.\n"
-"estas mensagens podem ser falsos positivos e devem ser ignoradas se você sabe o que está fazendo. esta opção as esconderá o tempo todo."
+"mostrar mensagens em módulos para avisar iniciantes quando configurações não-"
+"padrão e possivelmente danosas são usadas na pipeline.\n"
+"estas mensagens podem ser falsos positivos e devem ser ignoradas se você "
+"sabe o que está fazendo. esta opção as esconderá o tempo todo."
 
 #: ../build/bin/preferences_gen.h:5725
 msgid "security"
@@ -2167,7 +2169,7 @@ msgstr "preservar cores"
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:251
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
-#: ../src/iop/basecurve.c:2098 ../src/iop/channelmixerrgb.c:3625
+#: ../src/iop/basecurve.c:2098 ../src/iop/channelmixerrgb.c:3635
 #: ../src/iop/clipping.c:1887 ../src/iop/clipping.c:2145
 #: ../src/iop/clipping.c:2161 ../src/iop/clipping.c:2296
 #: ../src/iop/clipping.c:2323 ../src/iop/lens.cc:2229 ../src/iop/retouch.c:422
@@ -2197,7 +2199,7 @@ msgstr "luminância"
 
 #: ../build/lib/darktable/plugins/introspection_basecurve.c:264
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:251
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:527
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:529
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:253
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:155
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:272
@@ -2360,203 +2362,207 @@ msgstr "raio de saída para desfoque"
 msgid "noise level"
 msgstr "nível de ruído"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:251
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:257
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:263
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:269
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:275
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:281
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:432
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:436
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:440
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:444
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:448
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:452
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:252
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:258
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:264
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:270
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:276
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:282
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:433
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:437
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:441
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:445
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:449
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:453
 msgid "normalize channels"
 msgstr "normalizar canais"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:293
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:460
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:294
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:461
 msgid "F source"
 msgstr "fonte F"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:299
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:464
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:300
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:465
 msgid "LED source"
 msgstr "fonte LED"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:329
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:484
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:330
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:485
 msgid "gamut compression"
 msgstr "compressão de gamut"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:335
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:488
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:336
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:489
 msgid "clip negative RGB from gamut"
 msgstr "recortar RGB negativo da gama"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:341
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:492
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:342
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:493
 msgid "saturation algorithm"
 msgstr "algoritmo de saturação"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:506
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:507
 msgid "same as pipeline (D50)"
 msgstr "mesmo que na pipeline (D50)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:507
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:508
 msgid "A (incandescent)"
 msgstr "A (incandescente)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:508
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:509
 msgid "D (daylight)"
 msgstr "D (luz diurna)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:509
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:510
 msgid "E (equi-energy)"
 msgstr "E (equi-energia)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:510
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:511
 msgid "F (fluorescent)"
 msgstr "F (fluorescente)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:511
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:512
 msgid "LED (LED light)"
 msgstr "LED (luz de LED)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:512
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:513
 msgid "Planckian (black body)"
 msgstr "Planckiano (corpo negro)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:513
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:514
 #: ../src/common/iop_order.c:58
 msgid "custom"
 msgstr "personalizado"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:514
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:515
 msgid "(AI) detect from image surfaces..."
 msgstr "(AI) detectar das superfícies da imagem..."
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:515
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:516
 msgid "(AI) detect from image edges..."
 msgstr "(AI) detectar das bordas da imagem..."
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:516
-#: ../src/iop/channelmixerrgb.c:3279
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:517
+#: ../src/iop/channelmixerrgb.c:3289
 msgid "as shot in camera"
 msgstr "como ao tirar a foto"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:521
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:522
 msgid "F1 (Daylight 6430 K) – medium CRI"
 msgstr "F1 (Luz diurna 6430 K) – CRI médio"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:522
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:523
 msgid "F2 (Cool White 4230 K) – medium CRI"
 msgstr "F2 (Branco frio 4230 K) – CRI médio"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:523
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:524
 msgid "F3 (White 3450 K) – medium CRI"
 msgstr "F3 (Branco 3450 K) – CRI médio"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:524
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:525
 msgid "F4 (Warm White 2940 K) – medium CRI"
 msgstr "F4 (Branco quente 2940 K) – CRI médio"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:525
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:526
 msgid "F5 (Daylight 6350 K) – medium CRI"
 msgstr "F5 (Luz diurna 6350 K) – CRI médio"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:526
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:527
 msgid "F6 (Lite White 4150 K) – medium CRI"
 msgstr "F6 (Branco leve 4150 K) – CRI médio"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:527
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:528
 msgid "F7 (D65 simulator 6500 K) – high CRI"
 msgstr "F7 (D65 simulador 6500 K) – CRI alto"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:528
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:529
 msgid "F8 (D50 simulator 5000 K) – high CRI"
 msgstr "F8 (D50 simulador 5000 K) – CRI alto"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:529
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:530
 msgid "F9 (Cool White Deluxe 4150 K) – high CRI"
 msgstr "F9 (Cool Branco Deluxe 4150 K) – CRI alto"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:530
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:531
 msgid "F10 (Tuned RGB 5000 K) – low CRI"
 msgstr "F10 (RGB Ajustado 5000 K) – CRI baixo"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:531
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:532
 msgid "F11 (Tuned RGB 4000 K) – low CRI"
 msgstr "F11 (RGB Ajustado 4000 K) – CRI baixo"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:532
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:533
 msgid "F12 (Tuned RGB 3000 K) – low CRI"
 msgstr "F12 (RGB Ajustado 3000 K) – CRI baixo"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:537
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:538
 msgid "B1 (Blue 2733 K)"
 msgstr "B1 (Azul 2733 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:538
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:539
 msgid "B2 (Blue 2998 K)"
 msgstr "B2 (Azul 2998 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:539
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:540
 msgid "B3 (Blue 4103 K)"
 msgstr "B3 (Azul 4103 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:540
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:541
 msgid "B4 (Blue 5109 K)"
 msgstr "B4 (Azul 5109 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:541
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:542
 msgid "B5 (Blue 6598 K)"
 msgstr "B5 (Azul 6598 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:542
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:543
 msgid "BH1 (Blue-Red hybrid 2851 K)"
 msgstr "BH1 (híbrido Azul-Vermelho 2851 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:543
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:544
 msgid "RGB1 (RGB 2840 K)"
 msgstr "RGB1 (RGB 2840 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:544
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:545
 msgid "V1 (Violet 2724 K)"
 msgstr "V1 (Violeta 2724 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:545
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:546
 msgid "V2 (Violet 4070 K)"
 msgstr "V2 (Violeta 4070 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:550
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:551
 msgid "linear Bradford (ICC v4)"
 msgstr "Bradford linear (ICC v4)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:551
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:552
 msgid "CAT16 (CIECAM16)"
 msgstr "CAT16 (CIECAM16)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:552
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:553
 msgid "non-linear Bradford"
 msgstr "Bradford não-linear"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:553
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:554
 msgid "XYZ "
 msgstr "XYZ "
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:554
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:555
 msgid "none (bypass)"
 msgstr "nenhum (bypass)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:559
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:560
 msgid "version 1 (2020)"
 msgstr "versão 1 (2020)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:560
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:561
 msgid "version 2 (2021)"
 msgstr "versão 2 (2021)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:562
+msgid "version 3 (Apr 2021)"
+msgstr "versão 3 (Abr 2021)"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:142
 #: ../build/lib/darktable/plugins/introspection_clipping.c:303
@@ -2614,7 +2620,7 @@ msgstr "elevação, gama, ganho (sRGB)"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:476
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:488
 #: ../src/develop/blend_gui.c:1968 ../src/develop/blend_gui.c:1995
-#: ../src/iop/atrous.c:1591 ../src/iop/channelmixerrgb.c:3542
+#: ../src/iop/atrous.c:1591 ../src/iop/channelmixerrgb.c:3552
 #: ../src/iop/equalizer.c:391 ../src/iop/nlmeans.c:536
 msgid "chroma"
 msgstr "croma"
@@ -2637,7 +2643,7 @@ msgstr "croma"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:1945 ../src/develop/blend_gui.c:1964
 #: ../src/develop/blend_gui.c:1999 ../src/iop/channelmixer.c:622
-#: ../src/iop/channelmixerrgb.c:3536 ../src/iop/colorbalance.c:2024
+#: ../src/iop/channelmixerrgb.c:3546 ../src/iop/colorbalance.c:2024
 #: ../src/iop/colorize.c:347 ../src/iop/colorreconstruction.c:1288
 #: ../src/iop/colorzones.c:2377 ../src/iop/splittoning.c:476
 msgid "hue"
@@ -2736,7 +2742,7 @@ msgstr "pivô de contraste de cinza (contrast grey fulcrum)"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:572
 #: ../src/iop/basicadj.c:607 ../src/iop/bilat.c:450 ../src/iop/colisa.c:315
 #: ../src/iop/colorbalance.c:1926 ../src/iop/colorbalance.c:1933
-#: ../src/iop/filmic.c:1653 ../src/iop/filmicrgb.c:3765
+#: ../src/iop/filmic.c:1653 ../src/iop/filmicrgb.c:3857
 #: ../src/iop/lowpass.c:587
 msgid "contrast"
 msgstr "contraste"
@@ -2812,7 +2818,7 @@ msgid "range extent"
 msgstr "extensão da faixa"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
-#: ../src/iop/channelmixerrgb.c:3627
+#: ../src/iop/channelmixerrgb.c:3637
 msgid "saturated colors"
 msgstr "cores saturadas"
 
@@ -2877,8 +2883,8 @@ msgstr "raio para detecção de bordas"
 
 #: ../build/lib/darktable/plugins/introspection_defringe.c:53
 #: ../build/lib/darktable/plugins/introspection_defringe.c:106
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:217
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:416
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:219
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:418
 #: ../src/iop/bloom.c:403 ../src/iop/colorbalancergb.c:1549
 #: ../src/iop/colorreconstruction.c:1282 ../src/iop/hotpixels.c:376
 #: ../src/iop/sharpen.c:729
@@ -3126,188 +3132,192 @@ msgstr "manual"
 msgid "automatic"
 msgstr "automático"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:199
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:404
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:201
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:406
 msgid "middle gray luminance"
 msgstr "luminância de cinza médio"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:205
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:408
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:207
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:410
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:97
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:166
 #: ../src/iop/filmic.c:1621
 msgid "black relative exposure"
 msgstr "exposição relativa de preto"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:211
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:412
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:213
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:414
 #: ../src/iop/filmic.c:1609
 msgid "white relative exposure"
 msgstr "exposição relativa de branco"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:223
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:420
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:225
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:422
 msgid "transition"
 msgstr "transição"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:229
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:424
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:231
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:426
 msgid "bloom/reconstruct"
 msgstr "florescer/reconstruir"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:235
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:428
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:237
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:430
 msgid "gray/colorful details"
 msgstr "detalhes de cinza/cores"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:241
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:432
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:243
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:434
 msgid "structure/texture"
 msgstr "balanço estrutura/textura"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:247
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:436
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:249
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:438
 msgid "dynamic range scaling"
 msgstr "escala de faixa dinâmica"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:253
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:440
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:255
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:442
 msgid "target middle gray"
 msgstr "cinza médio alvo"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:259
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:444
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:261
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:446
 #: ../src/iop/filmic.c:1743
 msgid "target black luminance"
 msgstr "luminância de preto alvo"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:265
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:448
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:267
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:450
 #: ../src/iop/filmic.c:1761
 msgid "target white luminance"
 msgstr "luminância de branco alvo"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:271
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:452
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:273
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:454
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:69
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:140
 msgid "hardness"
 msgstr "dureza"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:289
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:464
-#: ../src/iop/filmic.c:1691 ../src/iop/filmicrgb.c:3945
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:291
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:466
+#: ../src/iop/filmic.c:1691 ../src/iop/filmicrgb.c:4037
 msgid "extreme luminance saturation"
 msgstr "saturação para luminância extrema"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:295
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:468
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:297
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:470
 #: ../src/iop/filmic.c:1672
 msgid "shadows/highlights balance"
 msgstr "balanço de sombras e realces"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:301
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:472
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:303
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:474
 msgid "add noise in highlights"
 msgstr "adicionar ruído em realces"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:307
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:476
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:309
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:478
 msgid "preserve chrominance"
 msgstr "preservar a crominância"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:313
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:480
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:315
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:482
 msgid "color science"
 msgstr "ciência de cores"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:319
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:484
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:321
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:486
 msgid "auto adjust hardness"
 msgstr "auto-ajustar dureza"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:325
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:488
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:327
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:490
 msgid "use custom middle-gray values"
 msgstr "usar valores personalizados de cinza-médio"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:331
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:492
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:333
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:494
 msgid "iterations of high-quality reconstruction"
 msgstr "iterações de reconstrução de alta qualidade"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:337
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:496
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:339
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:498
 msgid "type of noise"
 msgstr "tipo de ruído"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:343
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:500
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:345
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:502
 msgid "contrast in shadows"
 msgstr "contraste em sombras"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:349
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:504
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:351
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:506
 msgid "contrast in highlights"
 msgstr "contraste em realces"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:355
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:508
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:357
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:510
 msgid "compensate output ICC profile black point"
 msgstr "compensar ponto preto do perfil ICC de saída"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:361
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:512
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:363
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:514
 msgid "version of the spline generator"
 msgstr "versão do gerador de splines"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:526
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:528
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
-#: ../src/common/darktable.c:919 ../src/common/variables.c:465
-#: ../src/develop/imageop_gui.c:302 ../src/imageio/format/pdf.c:655
-#: ../src/imageio/format/pdf.c:680 ../src/libs/export.c:1277
-#: ../src/libs/export.c:1283 ../src/libs/export.c:1290
-#: ../src/libs/metadata_view.c:409
+#: ../src/common/darktable.c:919 ../src/common/database.c:2541
+#: ../src/common/variables.c:465 ../src/develop/imageop_gui.c:302
+#: ../src/imageio/format/pdf.c:655 ../src/imageio/format/pdf.c:680
+#: ../src/libs/export.c:1277 ../src/libs/export.c:1283
+#: ../src/libs/export.c:1290 ../src/libs/metadata_view.c:409
 msgid "no"
 msgstr "não"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:528
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:530
 msgid "luminance Y"
 msgstr "luminância Y"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:529
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:531
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:384
 msgid "RGB power norm"
 msgstr "norma da potência RGB"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:530
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:532
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:383
 msgid "RGB euclidean norm"
 msgstr "RGB norma euclideana"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:531
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:533
 msgid "RGB euclidean norm (legacy)"
 msgstr "RGB norma euclideana (legado)"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:535
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:537
 msgid "v3 (2019)"
 msgstr "v3 (2019)"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:536
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:538
 msgid "v4 (2020)"
 msgstr "v4 (2020)"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:537
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:539
 msgid "v5 (2021)"
 msgstr "v5 (2021)"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:541
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:543
 msgid "hard"
 msgstr "dura"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:542
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:544
 msgid "soft"
 msgstr "suave"
+
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:545
+msgid "safe"
+msgstr "seguro"
 
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:60
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:125
@@ -3477,7 +3487,7 @@ msgstr "ordem 2"
 #: ../build/lib/darktable/plugins/introspection_lowpass.c:189
 #: ../build/lib/darktable/plugins/introspection_retouch.c:436
 #: ../build/lib/darktable/plugins/introspection_shadhi.c:267
-#: ../src/iop/filmicrgb.c:3883
+#: ../src/iop/filmicrgb.c:3975
 msgid "gaussian"
 msgstr "gaussiano"
 
@@ -3649,7 +3659,7 @@ msgstr "modo de preenchimento"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:279
 #: ../build/lib/darktable/plugins/introspection_retouch.c:414
-#: ../src/iop/basicadj.c:621 ../src/iop/channelmixerrgb.c:3589
+#: ../src/iop/basicadj.c:621 ../src/iop/channelmixerrgb.c:3599
 #: ../src/iop/colisa.c:316 ../src/iop/lowpass.c:588 ../src/iop/soften.c:414
 #: ../src/iop/vignette.c:990 ../src/libs/history.c:897
 msgid "brightness"
@@ -4020,7 +4030,7 @@ msgstr "Imprimir suas imagens"
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
 #: ../src/iop/lut3d.c:1556 ../src/libs/collect.c:426
 #: ../src/libs/copy_history.c:108 ../src/libs/geotagging.c:938
-#: ../src/libs/import.c:1140 ../src/libs/lib.c:235 ../src/libs/styles.c:385
+#: ../src/libs/import.c:1138 ../src/libs/lib.c:235 ../src/libs/styles.c:385
 #: ../src/libs/styles.c:529 ../src/libs/tagging.c:2299
 #: ../src/libs/tagging.c:2340
 msgid "_cancel"
@@ -4190,7 +4200,7 @@ msgstr "tempo demais para ajustar o aspecto da coleção"
 msgid "film roll"
 msgstr "rolo de filme"
 
-#: ../src/common/collection.c:679 ../src/libs/import.c:1004
+#: ../src/common/collection.c:679
 msgid "folder"
 msgstr "pasta"
 
@@ -4284,7 +4294,7 @@ msgstr "ordem dos módulos"
 #: ../src/common/collection.c:1498 ../src/develop/blend_gui.c:1954
 #: ../src/develop/blend_gui.c:1981 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:317 ../src/iop/channelmixer.c:625
-#: ../src/iop/channelmixer.c:635 ../src/iop/channelmixerrgb.c:3584
+#: ../src/iop/channelmixer.c:635 ../src/iop/channelmixerrgb.c:3594
 #: ../src/iop/temperature.c:1877 ../src/iop/temperature.c:2028
 #: ../src/libs/collect.c:1710 ../src/views/darkroom.c:2540
 msgid "red"
@@ -4299,7 +4309,7 @@ msgstr "amarelo"
 #: ../src/common/collection.c:1502 ../src/develop/blend_gui.c:1957
 #: ../src/develop/blend_gui.c:1984 ../src/develop/lightroom.c:832
 #: ../src/iop/bilateral.cc:322 ../src/iop/channelmixer.c:626
-#: ../src/iop/channelmixer.c:641 ../src/iop/channelmixerrgb.c:3585
+#: ../src/iop/channelmixer.c:641 ../src/iop/channelmixerrgb.c:3595
 #: ../src/iop/temperature.c:1861 ../src/iop/temperature.c:1879
 #: ../src/iop/temperature.c:2029 ../src/libs/collect.c:1710
 #: ../src/views/darkroom.c:2541
@@ -4309,7 +4319,7 @@ msgstr "verde"
 #: ../src/common/collection.c:1504 ../src/develop/blend_gui.c:1960
 #: ../src/develop/blend_gui.c:1987 ../src/develop/lightroom.c:834
 #: ../src/iop/bilateral.cc:327 ../src/iop/channelmixer.c:627
-#: ../src/iop/channelmixer.c:647 ../src/iop/channelmixerrgb.c:3586
+#: ../src/iop/channelmixer.c:647 ../src/iop/channelmixerrgb.c:3596
 #: ../src/iop/temperature.c:1881 ../src/iop/temperature.c:2030
 #: ../src/libs/collect.c:1710
 msgid "blue"
@@ -4568,116 +4578,132 @@ msgstr ""
 "especialmente caso as tenha modificado manualmente.\n"
 "gostaria de aplicar esta atualização de configuração de desempenho?\n"
 
-#: ../src/common/darktable.c:919 ../src/common/database.c:3581
-#: ../src/common/variables.c:463 ../src/develop/imageop_gui.c:303
-#: ../src/imageio/format/pdf.c:656 ../src/imageio/format/pdf.c:681
-#: ../src/libs/export.c:1278 ../src/libs/export.c:1284
-#: ../src/libs/export.c:1291 ../src/libs/metadata_view.c:409
+#: ../src/common/darktable.c:919 ../src/common/database.c:2541
+#: ../src/common/database.c:3598 ../src/common/variables.c:463
+#: ../src/develop/imageop_gui.c:303 ../src/imageio/format/pdf.c:656
+#: ../src/imageio/format/pdf.c:681 ../src/libs/export.c:1278
+#: ../src/libs/export.c:1284 ../src/libs/export.c:1291
+#: ../src/libs/metadata_view.c:409
 msgid "yes"
 msgstr "sim"
 
-#: ../src/common/database.c:2517
+#: ../src/common/database.c:2515
 #, c-format
 msgid ""
 "\n"
-" At startup, the database failed to open because at least one of the two "
-"files in the database is locked.\n"
+"  Sorry, darktable could not be started (database is locked)\n"
 "\n"
-" The persistence of the lock is mainly caused by one of the two following "
-"causes:\n"
+"  How to solve this problem?\n"
 "\n"
-" - Another occurrence of darktable has already opened this database file and "
-"locked it for its benefit.\n"
+"  1 - If another darktable instance is already open, \n"
+"      click cancel and either use that instance or close it before "
+"attempting to rerun darktable \n"
+"      (process ID <i><b>%d</b></i> created the database locks)\n"
 "\n"
-" - A previous occurrence of darktable ended abnormally and therefore \n"
-"   could not close one or both files in the database properly.\n"
+"  2 - If you can't find a running instance of darktable, try restarting your "
+"session or your computer. \n"
+"      This will close all running programs and hopefully close the databases "
+"correctly. \n"
 "\n"
-" How to solve this problem?\n"
+"  3 - If you have done this or are certain that no other instances of "
+"darktable are running, \n"
+"      this probably means that the last instance was ended abnormally. \n"
+"      Click on the \"delete database lock files\" button to remove the files "
+"<i>data.db.lock</i> and <i>library.db.lock</i>.  \n"
 "\n"
-" 1 - Search in your environment if another darktable occurrence is active. "
-"If so, use it or close it. \n"
-"     The lock indicates that the process number of this occurrence is : "
-"<i><b>%d</b></i>\n"
 "\n"
-" 2 - If you can't find this other occurrence, try closing your session and "
-"reopening it or shutting down your computer. \n"
-"     This will delete all running programs and thus close the database "
-"correctly.\n"
-"\n"
-" 3 - If these two actions are not enough, it is because at least one of the "
-"two files that materialize the locks remains \n"
-"     and that these are no longer attached to any occurrence of darktable. "
-"It is then necessary to delete it (or them). \n"
-"     The two files are named <i>data.db.lock</i> and <i>library.db.lock</i> "
-"respectively. The opening mechanism signals \n"
-"     the presence of the <i><b>%s</b></i> file in the <i><b>%s</b></i> "
-"folder. \n"
-"     (full pathname: <i><b>%s</b></i>).\n"
-"\n"
-"     <u>Caution!</u> Do not delete these files without first checking that "
-"there are no more occurrences of darktable, \n"
-"     otherwise you risk generating serious inconsistencies in your "
-"database.\n"
-"\n"
-" As soon as you have identified and removed the cause of the lock, darktable "
-"will start without any problem.\n"
+"      <i><u>Caution!</u> Do not delete these files without first undertaking "
+"the above checks, \n"
+"      otherwise you risk generating serious inconsistencies in your database."
+"</i>\n"
 msgstr ""
 "\n"
-"Ao inicializar, a base de dados falhou em abrir porque pelo menos um dos\n"
-"dois arquivos na base de dados está bloqueado.\n"
+"  Desculpe, o darktable não pode ser iniciado (base de dados travada)\n"
 "\n"
-"A persistência do bloqueio é causada principalmente por uma das duas "
-"causas:\n"
+"  Como resolver este problema?\n"
 "\n"
-" - Outra ocorrência do darktable já abriu esta base de dados e a travou\n"
-"   para si mesma.\n"
+"  1 - Se ou tra instância do darktable já está aberta,\n"
+"      clique em cancelar e use aquela instância ou feche-a antes de tentar rodar o darktable novamente\n"
+"      (o processo com ID <i><b>%d</b></i> criou as travas da base de dados)\n"
 "\n"
-" - Uma ocorrência anterior do darktable finalizou de maneira não normal e\n"
-"   não conseguiu fechar um ou ambos os arquivos na base de dados "
-"apropriadamente.\n"
+"  2 - Se você não encontrar uma instância d odarktable rodando, tente reiniciar sua sessão ou o computador.\n"
+"      Isto fechará todos os programas que estão executando e fechará a base de dados corratamente.\n"
 "\n"
-" Como resolver este problema?\n"
+"  3 - Se você fez isto ou se tem certeza de que não há outras instâncias do darktable rodando,\n"
+"      isto provavelmente significa que a última instância fechou de forma não normal.\n"
+"      Clique no botão \"remover arquivos de trava da base de dados\" para remover os arquivos <i>data.db.lock</i> e <i>library.db.lock</i>.\n"
 "\n"
-" 1 - Procure em seu ambiente se outra ocorrência do darktale está ativa.\n"
-"     Se estiver, use-a ou feche-a. O bloqueio indica que o número de "
-"processo\n"
-"     dessa ocorrência é : <i><b>%d</b></i>\n"
 "\n"
-" 2 - Se não achar essa ocorrência, tente fechar sua sessão e reabrir, ou\n"
-"     desligar seu computador. Isto removerá todos os programas executando\n"
-"     e, desta forma, fechará a base de dados de maneira paropriada.\n"
-"\n"
-" 3 - Se estas duas ações não forem suficientes, é porque pelo menos um dos\n"
-"     arquivos que materializam o bloqueio permanecem, e que estes não estão "
-"mais\n"
-"     associados a nenhuma ocorrência do darktable. É necessário removê-los.\n"
-"     Os dois arquivos são nomeados <i>data.db.lock</i> e <i>library.db.lock</"
-"i>,\n"
-"     respectivamente. O mecanismo de abertura sinaliza a presença do "
-"arquivo\n"
-"     <i><b>%s</b></i> na pasta <i><b>%s</b></i>.\n"
-"     (caminho completo: <i><b>%s</b></i>).\n"
-"\n"
-"     <u>Cuidado!</u> Não remova estes arquivos sem antes verificar que não "
-"há\n"
-"     mais ocorrências do darktable, senão você corre o risco de gerar\n"
-"     inconsistências sérias na sua base de dados.\n"
-"\n"
-" Assim que tiver identificado e removido a causa do bloqueio, o darktable "
-"iniciará\n"
-"sem problemas.\n"
+"      <i><u>Cuidado!</u> Não remova estes arquivos sem antes fazer as verificações acima,\n"
+"      de outra forma você corre o risco de gerar sérias inconsistências na sua base de dados.</i>\n"
 
-#: ../src/common/database.c:2547
-msgid "darktable cannot be started because the database is locked"
-msgstr "O darktable não pode iniciar porque a base de dados está bloqueada"
+#: ../src/common/database.c:2535
+msgid "error starting darktable"
+msgstr "erro ao iniciar o darktable"
 
-#: ../src/common/database.c:2548 ../src/common/database.c:2720
-#: ../src/common/database.c:3031 ../src/common/database.c:3049
-#: ../src/common/database.c:3211 ../src/common/database.c:3229
-msgid "close darktable"
-msgstr "fechar o darktable"
+#: ../src/common/database.c:2536 ../src/libs/collect.c:2774
+#: ../src/libs/export_metadata.c:269 ../src/libs/import.c:1309
+#: ../src/libs/metadata.c:446 ../src/libs/metadata_view.c:1040
+#: ../src/libs/modulegroups.c:3433 ../src/libs/styles.c:439
+#: ../src/libs/styles.c:614 ../src/libs/tagging.c:1359
+#: ../src/libs/tagging.c:1447 ../src/libs/tagging.c:1528
+#: ../src/libs/tagging.c:1653 ../src/libs/tagging.c:1927
+msgid "cancel"
+msgstr "cancela"
 
-#: ../src/common/database.c:2660
+#: ../src/common/database.c:2536
+msgid "delete database lock files"
+msgstr "apagar arquivos de travas (locks) da base de dados"
+
+#: ../src/common/database.c:2540
+msgid "are you sure?"
+msgstr "tem certeza?"
+
+#: ../src/common/database.c:2541
+#, fuzzy
+msgid ""
+"\n"
+"  do you really want to delete the lock files?  \n"
+msgstr "você realmente deseja excluir a predefinição `%s'?"
+
+#: ../src/common/database.c:2555 ../src/libs/export_metadata.c:160
+#: ../src/libs/geotagging.c:821
+msgid "done"
+msgstr "feito"
+
+#: ../src/common/database.c:2556
+msgid ""
+"\n"
+"  successfully deleted the lock files.  \n"
+"  you can now restart darktable  \n"
+msgstr ""
+"\n"
+"  arquivos de trava removidos com sucesso.  \n"
+"  você agora pode reiniciar o darktable  \n"
+
+#: ../src/common/database.c:2557 ../src/common/database.c:2563
+msgid "ok"
+msgstr "ok"
+
+#: ../src/common/database.c:2559 ../src/iop/cacorrect.c:1586
+msgid "error"
+msgstr "erro"
+
+#: ../src/common/database.c:2560
+#, c-format
+msgid ""
+"\n"
+"  at least one file could not be removed.  \n"
+"  you may try to manually delete the files <i>data.db.lock</i> and "
+"<i>library.db.lock</i>  \n"
+"  in folder <a href=\"file:///%s\">%s</a>.  \n"
+msgstr ""
+"\n"
+"  pelo menos um arquivo nào pode ser removido.  \n"
+"  você pode tentar manualmente apagar os arquivos <i>data.db.lock</i> e <i>library.db.lock</i>\n"
+"  na pasta <a href=\"file:///%s\">%s</a>  \n"
+
+#: ../src/common/database.c:2677
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -4686,18 +4712,18 @@ msgstr ""
 "o arquivo de lock da base de dados contém um pid que parece estar vivo no "
 "seu sistema: %d"
 
-#: ../src/common/database.c:2666
+#: ../src/common/database.c:2683
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "o lock da base de dados parece estar vazio"
 
-#: ../src/common/database.c:2674
+#: ../src/common/database.c:2691
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr "erro ao abrir a base de dados para leitura: %s"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:2711
+#: ../src/common/database.c:2728
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -4712,15 +4738,21 @@ msgstr ""
 "\n"
 "você quer continuar ou parar agora para fazer um backup\n"
 
-#: ../src/common/database.c:2719
+#: ../src/common/database.c:2736
 msgid "darktable - schema migration"
 msgstr "darktable - migrar esquema"
 
-#: ../src/common/database.c:2720
+#: ../src/common/database.c:2737 ../src/common/database.c:3048
+#: ../src/common/database.c:3066 ../src/common/database.c:3228
+#: ../src/common/database.c:3246
+msgid "close darktable"
+msgstr "fechar o darktable"
+
+#: ../src/common/database.c:2737
 msgid "upgrade database"
 msgstr "atualizar base de dados"
 
-#: ../src/common/database.c:3011 ../src/common/database.c:3191
+#: ../src/common/database.c:3028 ../src/common/database.c:3208
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -4729,21 +4761,21 @@ msgstr ""
 "quick_check disse:\n"
 "%s \n"
 
-#: ../src/common/database.c:3028 ../src/common/database.c:3046
-#: ../src/common/database.c:3208 ../src/common/database.c:3226
+#: ../src/common/database.c:3045 ../src/common/database.c:3063
+#: ../src/common/database.c:3225 ../src/common/database.c:3243
 msgid "darktable - error opening database"
 msgstr "darktable - erro ao abrir a base de dados"
 
-#: ../src/common/database.c:3033 ../src/common/database.c:3213
+#: ../src/common/database.c:3050 ../src/common/database.c:3230
 msgid "attempt restore"
 msgstr "tentar recuperar"
 
-#: ../src/common/database.c:3035 ../src/common/database.c:3051
-#: ../src/common/database.c:3215 ../src/common/database.c:3231
+#: ../src/common/database.c:3052 ../src/common/database.c:3068
+#: ../src/common/database.c:3232 ../src/common/database.c:3248
 msgid "delete database"
 msgstr "apagar base de dados"
 
-#: ../src/common/database.c:3039 ../src/common/database.c:3219
+#: ../src/common/database.c:3056 ../src/common/database.c:3236
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -4755,7 +4787,7 @@ msgstr ""
 "do snapshot mais recente ou remover a base de dados corrompida\n"
 "e iniciar com uma nova?"
 
-#: ../src/common/database.c:3055 ../src/common/database.c:3235
+#: ../src/common/database.c:3072 ../src/common/database.c:3252
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -4765,7 +4797,7 @@ msgstr ""
 "a base de dados de um backup ou remover a base de dados corrompida\n"
 "e iniciar com uma nova?"
 
-#: ../src/common/database.c:3062 ../src/common/database.c:3240
+#: ../src/common/database.c:3079 ../src/common/database.c:3257
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -4782,20 +4814,20 @@ msgstr ""
 "parece que a base de dados está corrompida.\n"
 "%s%s"
 
-#: ../src/common/database.c:3558
+#: ../src/common/database.c:3575
 msgid "click later to be asked on next startup"
 msgstr "clique 'depois' para ser questionado na próxima vez que iniciar"
 
-#: ../src/common/database.c:3562
+#: ../src/common/database.c:3579
 msgid "click later to be asked when closing darktable"
 msgstr "clique 'depois' para ser questionado ao fechar o darktable"
 
-#: ../src/common/database.c:3566
+#: ../src/common/database.c:3583
 msgid "click later to be asked next time when closing darktable"
 msgstr ""
 "clique 'depois' para ser questionado na próxima vez que fechar o darktable"
 
-#: ../src/common/database.c:3570
+#: ../src/common/database.c:3587
 #, c-format
 msgid ""
 "the database could use some maintenance\n"
@@ -4816,11 +4848,11 @@ msgstr ""
 "%s\n"
 "você sempre pode mudar as preferências de manutenção nas opções do core"
 
-#: ../src/common/database.c:3580
+#: ../src/common/database.c:3597
 msgid "darktable - schema maintenance"
 msgstr "darktable - manutenção de esquema"
 
-#: ../src/common/database.c:3581
+#: ../src/common/database.c:3598
 msgid "later"
 msgstr "depois"
 
@@ -4854,7 +4886,7 @@ msgstr[1] "remover diretórios vazios?"
 
 #: ../src/common/film.c:316 ../src/gui/preferences.c:831
 #: ../src/gui/styles_dialog.c:445 ../src/libs/geotagging.c:839
-#: ../src/libs/import.c:1192
+#: ../src/libs/import.c:1194
 msgid "name"
 msgstr "nome"
 
@@ -6101,13 +6133,13 @@ msgid "sliders for gray value"
 msgstr "deslizante para valor cinza"
 
 #: ../src/develop/blend_gui.c:1951 ../src/develop/blend_gui.c:1978
-#: ../src/iop/channelmixerrgb.c:3590 ../src/iop/levels.c:674
+#: ../src/iop/channelmixerrgb.c:3600 ../src/iop/levels.c:674
 #: ../src/views/darkroom.c:2539
 msgid "gray"
 msgstr "cinza"
 
 #: ../src/develop/blend_gui.c:1952 ../src/develop/blend_gui.c:1979
-#: ../src/iop/channelmixerrgb.c:3584 ../src/iop/denoiseprofile.c:3545
+#: ../src/iop/channelmixerrgb.c:3594 ../src/iop/denoiseprofile.c:3545
 #: ../src/iop/rawdenoise.c:907 ../src/iop/rgbcurve.c:1382
 #: ../src/iop/rgblevels.c:959
 msgid "R"
@@ -6118,7 +6150,7 @@ msgid "sliders for red channel"
 msgstr "deslizante para canal vermelho"
 
 #: ../src/develop/blend_gui.c:1955 ../src/develop/blend_gui.c:1982
-#: ../src/iop/channelmixerrgb.c:3585 ../src/iop/denoiseprofile.c:3546
+#: ../src/iop/channelmixerrgb.c:3595 ../src/iop/denoiseprofile.c:3546
 #: ../src/iop/rawdenoise.c:908 ../src/iop/rgbcurve.c:1383
 #: ../src/iop/rgblevels.c:960
 msgid "G"
@@ -6129,7 +6161,7 @@ msgid "sliders for green channel"
 msgstr "deslizante para canal verde"
 
 #: ../src/develop/blend_gui.c:1958 ../src/develop/blend_gui.c:1985
-#: ../src/iop/channelmixerrgb.c:3586 ../src/iop/denoiseprofile.c:3547
+#: ../src/iop/channelmixerrgb.c:3596 ../src/iop/denoiseprofile.c:3547
 #: ../src/iop/rawdenoise.c:909 ../src/iop/rgbcurve.c:1384
 #: ../src/iop/rgblevels.c:961
 msgid "B"
@@ -8336,7 +8368,7 @@ msgstr "selecione arquivo para importar"
 
 #: ../src/gui/preferences.c:1639 ../src/gui/preferences.c:1728
 #: ../src/libs/collect.c:427 ../src/libs/copy_history.c:109
-#: ../src/libs/geotagging.c:939 ../src/libs/import.c:1141
+#: ../src/libs/geotagging.c:939 ../src/libs/import.c:1139
 #: ../src/libs/styles.c:530
 msgid "_open"
 msgstr "_abrir"
@@ -9339,8 +9371,8 @@ msgstr "corretivo"
 
 #: ../src/iop/ashift.c:128 ../src/iop/ashift.c:130 ../src/iop/atrous.c:140
 #: ../src/iop/basicadj.c:147 ../src/iop/bilateral.cc:100
-#: ../src/iop/bilateral.cc:102 ../src/iop/channelmixerrgb.c:197
-#: ../src/iop/channelmixerrgb.c:199 ../src/iop/clipping.c:322
+#: ../src/iop/bilateral.cc:102 ../src/iop/channelmixerrgb.c:199
+#: ../src/iop/channelmixerrgb.c:201 ../src/iop/clipping.c:322
 #: ../src/iop/clipping.c:324 ../src/iop/colorin.c:137 ../src/iop/demosaic.c:215
 #: ../src/iop/denoiseprofile.c:670 ../src/iop/denoiseprofile.c:672
 #: ../src/iop/exposure.c:115 ../src/iop/exposure.c:117 ../src/iop/flip.c:102
@@ -9554,7 +9586,7 @@ msgid "add or remove local contrast, sharpness, acutance"
 msgstr "adiciona ou remove contraste local, nitidez, agudez"
 
 #: ../src/iop/atrous.c:139 ../src/iop/bilateral.cc:99 ../src/iop/exposure.c:114
-#: ../src/iop/filmicrgb.c:334 ../src/iop/graduatednd.c:150
+#: ../src/iop/filmicrgb.c:336 ../src/iop/graduatednd.c:150
 #: ../src/iop/negadoctor.c:156 ../src/iop/rgbcurve.c:142
 #: ../src/iop/rgblevels.c:121 ../src/iop/shadhi.c:197
 #: ../src/iop/tonecurve.c:213 ../src/iop/toneequal.c:320
@@ -9791,7 +9823,7 @@ msgstr "linear, RGB, relativo à exibição"
 
 #: ../src/iop/basecurve.c:341 ../src/iop/basicadj.c:148
 #: ../src/iop/colorbalance.c:161 ../src/iop/colorbalancergb.c:166
-#: ../src/iop/dither.c:105 ../src/iop/filmicrgb.c:336
+#: ../src/iop/dither.c:105 ../src/iop/filmicrgb.c:338
 #: ../src/iop/graduatednd.c:152 ../src/iop/negadoctor.c:158
 #: ../src/iop/profile_gamma.c:103 ../src/iop/rgbcurve.c:144
 #: ../src/iop/rgblevels.c:123 ../src/iop/vignette.c:160
@@ -9800,7 +9832,7 @@ msgid "non-linear, RGB"
 msgstr "não-linear, RGB"
 
 #: ../src/iop/basecurve.c:342 ../src/iop/colorout.c:94 ../src/iop/dither.c:104
-#: ../src/iop/dither.c:106 ../src/iop/filmicrgb.c:337
+#: ../src/iop/dither.c:106 ../src/iop/filmicrgb.c:339
 #: ../src/iop/graduatednd.c:153 ../src/iop/negadoctor.c:159
 #: ../src/iop/profile_gamma.c:104 ../src/iop/rgblevels.c:124
 #: ../src/iop/vignette.c:159 ../src/iop/vignette.c:161
@@ -10282,10 +10314,6 @@ msgstr "linear, raw, relativo à cena"
 msgid "linear, raw"
 msgstr "linear, raw"
 
-#: ../src/iop/cacorrect.c:1586
-msgid "error"
-msgstr "erro"
-
 #: ../src/iop/cacorrect.c:1587
 msgid "CA correction supports only RGB colour filter arrays"
 msgstr "correção de aberração cromática só suporta filtros de cor RGB"
@@ -10351,7 +10379,7 @@ msgid "censorize license plates and body parts for privacy"
 msgstr "censurar placas de veículos e partes do corpo para privacidade"
 
 #: ../src/iop/censorize.c:84 ../src/iop/colorin.c:135
-#: ../src/iop/filmicrgb.c:335 ../src/iop/graduatednd.c:151
+#: ../src/iop/filmicrgb.c:337 ../src/iop/graduatednd.c:151
 msgid "linear or non-linear, RGB, scene-referred"
 msgstr "linear ou não-linear, RGB, relativo à cena"
 
@@ -10402,7 +10430,7 @@ msgstr ""
 "este módulo foi descontinuado. por favor, ao invés dele use o módulo de "
 "calibração de cores."
 
-#: ../src/iop/channelmixer.c:136 ../src/iop/channelmixerrgb.c:193
+#: ../src/iop/channelmixer.c:136 ../src/iop/channelmixerrgb.c:195
 msgid ""
 "perform color space corrections\n"
 "such as white balance, channels mixing\n"
@@ -10412,7 +10440,7 @@ msgstr ""
 "como balanço de branco, mistura de canais\n"
 "e conversões para monocromático amulando filme"
 
-#: ../src/iop/channelmixer.c:139 ../src/iop/channelmixerrgb.c:196
+#: ../src/iop/channelmixer.c:139 ../src/iop/channelmixerrgb.c:198
 #: ../src/iop/clipping.c:321 ../src/iop/colorbalance.c:159
 #: ../src/iop/colorbalancergb.c:164 ../src/iop/colorchecker.c:126
 #: ../src/iop/colorcorrection.c:77 ../src/iop/lut3d.c:139
@@ -10440,11 +10468,11 @@ msgstr "quantidade do canal verde no canal de saída"
 msgid "amount of blue channel in the output channel"
 msgstr "quantidade do canal azul no canal de saída"
 
-#: ../src/iop/channelmixer.c:662 ../src/iop/channelmixerrgb.c:439
+#: ../src/iop/channelmixer.c:662 ../src/iop/channelmixerrgb.c:441
 msgid "swap R and B"
 msgstr "trocar R e B"
 
-#: ../src/iop/channelmixer.c:668 ../src/iop/channelmixerrgb.c:413
+#: ../src/iop/channelmixer.c:668 ../src/iop/channelmixerrgb.c:415
 msgid "swap G and B"
 msgstr "trocar G e B"
 
@@ -10508,67 +10536,67 @@ msgstr "Kodak T-max 400 B/P"
 msgid "B/W Kodak Tri-X 400"
 msgstr "Kodak Tri-X 400 B/P"
 
-#: ../src/iop/channelmixerrgb.c:183
+#: ../src/iop/channelmixerrgb.c:185
 msgid "color calibration"
 msgstr "calibração de cor"
 
-#: ../src/iop/channelmixerrgb.c:188
+#: ../src/iop/channelmixerrgb.c:190
 msgid "channel mixer|white balance|monochrome"
 msgstr "misturador de canais|balanço de branco|monocromático"
 
-#: ../src/iop/channelmixerrgb.c:198
+#: ../src/iop/channelmixerrgb.c:200
 msgid "linear, RGB or XYZ"
 msgstr "linear, RGB ou XYZ"
 
-#: ../src/iop/channelmixerrgb.c:318
+#: ../src/iop/channelmixerrgb.c:320
 msgid "B&W : luminance-based"
 msgstr "P&B: baseado em luminância"
 
-#: ../src/iop/channelmixerrgb.c:347
+#: ../src/iop/channelmixerrgb.c:349
 msgid "B&W : Ilford HP5+"
 msgstr "P&B: Ilford HP5+"
 
-#: ../src/iop/channelmixerrgb.c:356
+#: ../src/iop/channelmixerrgb.c:358
 msgid "B&W : Ilford Delta 100"
 msgstr "P&B: Ilford Delta 100"
 
-#: ../src/iop/channelmixerrgb.c:366
+#: ../src/iop/channelmixerrgb.c:368
 msgid "B&W : Ilford Delta 400 - 3200"
 msgstr "P&B: Ilford Delta 400 - 3200"
 
-#: ../src/iop/channelmixerrgb.c:375
+#: ../src/iop/channelmixerrgb.c:377
 msgid "B&W : Ilford FP2"
 msgstr "P&B: Ilford FP2"
 
-#: ../src/iop/channelmixerrgb.c:384
+#: ../src/iop/channelmixerrgb.c:386
 msgid "B&W : Fuji Acros 100"
 msgstr "P&B : Fuji Acros 100"
 
-#: ../src/iop/channelmixerrgb.c:400
+#: ../src/iop/channelmixerrgb.c:402
 msgid "basic channel mixer"
 msgstr "misturador de canais básico"
 
-#: ../src/iop/channelmixerrgb.c:426
+#: ../src/iop/channelmixerrgb.c:428
 msgid "swap G and R"
 msgstr "trocar G e R"
 
-#: ../src/iop/channelmixerrgb.c:1622 ../src/iop/channelmixerrgb.c:1671
+#: ../src/iop/channelmixerrgb.c:1628 ../src/iop/channelmixerrgb.c:1677
 msgid "very good"
 msgstr "muito bom"
 
-#: ../src/iop/channelmixerrgb.c:1624 ../src/iop/channelmixerrgb.c:1673
+#: ../src/iop/channelmixerrgb.c:1630 ../src/iop/channelmixerrgb.c:1679
 msgid "good"
 msgstr "bom"
 
-#: ../src/iop/channelmixerrgb.c:1626 ../src/iop/channelmixerrgb.c:1675
+#: ../src/iop/channelmixerrgb.c:1632 ../src/iop/channelmixerrgb.c:1681
 msgid "passable"
 msgstr "passável"
 
-#: ../src/iop/channelmixerrgb.c:1628 ../src/iop/channelmixerrgb.c:1677
+#: ../src/iop/channelmixerrgb.c:1634 ../src/iop/channelmixerrgb.c:1683
 msgid "bad"
 msgstr "ruim"
 
-#: ../src/iop/channelmixerrgb.c:1635
+#: ../src/iop/channelmixerrgb.c:1641
 #, c-format
 msgid ""
 "\n"
@@ -10605,7 +10633,7 @@ msgstr ""
 "compensação de exposição : \t%+.2f EV\n"
 "desvio de preto : \t%+.4f"
 
-#: ../src/iop/channelmixerrgb.c:1681
+#: ../src/iop/channelmixerrgb.c:1687
 #, c-format
 msgid ""
 "\n"
@@ -10626,11 +10654,11 @@ msgstr ""
 
 #. our second biggest problem : another channelmixerrgb instance is doing CAT
 #. earlier in the pipe.
-#: ../src/iop/channelmixerrgb.c:1703
+#: ../src/iop/channelmixerrgb.c:1709
 msgid "double CAT applied"
 msgstr "CAT duplo aplicado"
 
-#: ../src/iop/channelmixerrgb.c:1704
+#: ../src/iop/channelmixerrgb.c:1710
 msgid ""
 "you have 2 instances or more of color calibration,\n"
 "all performing chromatic adaptation.\n"
@@ -10643,11 +10671,11 @@ msgstr ""
 "as use com máscaras ou saiba o que está fazendo."
 
 #. our first and biggest problem : white balance module is being clever with WB coeffs
-#: ../src/iop/channelmixerrgb.c:1714
+#: ../src/iop/channelmixerrgb.c:1720
 msgid "white balance module error"
 msgstr "erro no módulo balanço de branco"
 
-#: ../src/iop/channelmixerrgb.c:1715
+#: ../src/iop/channelmixerrgb.c:1721
 msgid ""
 "the white balance module is not using the camera\n"
 "reference illuminant, which will cause issues here\n"
@@ -10659,16 +10687,16 @@ msgstr ""
 "com a adaptação cromática. defina para referência ou\n"
 "desabilite a adaptação cromática aqui."
 
-#: ../src/iop/channelmixerrgb.c:1788
+#: ../src/iop/channelmixerrgb.c:1794
 msgid "auto-detection of white balance completed"
 msgstr "auto-detecção de balanço de branco completada"
 
-#: ../src/iop/channelmixerrgb.c:3048
+#: ../src/iop/channelmixerrgb.c:3054
 #, c-format
 msgid "CCT: %.0f K (daylight)"
 msgstr "CCT: %.0f K (luz do dia)"
 
-#: ../src/iop/channelmixerrgb.c:3050
+#: ../src/iop/channelmixerrgb.c:3056
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a daylight spectrum,\n"
@@ -10679,12 +10707,12 @@ msgstr ""
 "diurna,\n"
 "então sua temperatura é relevante e faz sentido com um iluminante D."
 
-#: ../src/iop/channelmixerrgb.c:3056
+#: ../src/iop/channelmixerrgb.c:3062
 #, c-format
 msgid "CCT: %.0f K (black body)"
 msgstr "CCT: %.0f K (corpo negro)"
 
-#: ../src/iop/channelmixerrgb.c:3058
+#: ../src/iop/channelmixerrgb.c:3064
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a black body spectrum,\n"
@@ -10695,12 +10723,12 @@ msgstr ""
 "negro,\n"
 "então sua temperatura é relevante e faz sentido com um iluminante Planckiano."
 
-#: ../src/iop/channelmixerrgb.c:3064
+#: ../src/iop/channelmixerrgb.c:3070
 #, c-format
 msgid "CCT: %.0f K (invalid)"
 msgstr "CCT: %.0f K (inválido)"
 
-#: ../src/iop/channelmixerrgb.c:3066
+#: ../src/iop/channelmixerrgb.c:3072
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant cannot be accurately modeled by a daylight or black body "
@@ -10714,12 +10742,12 @@ msgstr ""
 "então sua temperatura não é relevante e você precisa usar um iluminante "
 "customizado."
 
-#: ../src/iop/channelmixerrgb.c:3073
+#: ../src/iop/channelmixerrgb.c:3079
 #, c-format
 msgid "CCT: undefined"
 msgstr "CCT: não definido"
 
-#: ../src/iop/channelmixerrgb.c:3075
+#: ../src/iop/channelmixerrgb.c:3081
 msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
@@ -10727,16 +10755,16 @@ msgstr ""
 "a temperatura aproximada de cor correlacionada\n"
 "não pode ser calculada então você precisa usar um iluminante customizado."
 
-#: ../src/iop/channelmixerrgb.c:3304
+#: ../src/iop/channelmixerrgb.c:3314
 msgid "white balance successfully extracted from raw image"
 msgstr "balanço de branco extraído com sucesso da imagem RAW"
 
 #. We need to recompute only the full preview
-#: ../src/iop/channelmixerrgb.c:3310
+#: ../src/iop/channelmixerrgb.c:3320
 msgid "auto-detection of white balance started…"
 msgstr "auto-detecção de balanço de branco iniciada..."
 
-#: ../src/iop/channelmixerrgb.c:3365
+#: ../src/iop/channelmixerrgb.c:3375
 msgid ""
 "color calibration: the sum of the grey channel parameters is zero, "
 "normalization will be disabled."
@@ -10745,19 +10773,19 @@ msgstr ""
 "normalização será desabilitada."
 
 #. Page CAT
-#: ../src/iop/channelmixerrgb.c:3480
+#: ../src/iop/channelmixerrgb.c:3490
 msgid "CAT"
 msgstr "CAT"
 
-#: ../src/iop/channelmixerrgb.c:3480
+#: ../src/iop/channelmixerrgb.c:3490
 msgid "chromatic adaptation transform"
 msgstr "transformação de adaptação cromática"
 
-#: ../src/iop/channelmixerrgb.c:3482
+#: ../src/iop/channelmixerrgb.c:3492
 msgid "adaptation"
 msgstr "adaptação"
 
-#: ../src/iop/channelmixerrgb.c:3484
+#: ../src/iop/channelmixerrgb.c:3494
 msgid ""
 "choose the method to adapt the illuminant\n"
 "and the colorspace in which the module works: \n"
@@ -10779,7 +10807,7 @@ msgstr ""
 "geral, não é recomendado.\n"
 "• nenhum desabilita qualquer adaptação e usa o RGB da pipeline."
 
-#: ../src/iop/channelmixerrgb.c:3501
+#: ../src/iop/channelmixerrgb.c:3511
 msgid ""
 "this is the color of the scene illuminant before chromatic adaptation\n"
 "this color will be turned into pure white by the adaptation."
@@ -10787,103 +10815,103 @@ msgstr ""
 "esta é a cor do iluminante da cena antes da adaptação cromática\n"
 "esta cor será transformada em branco puro pela adaptação."
 
-#: ../src/iop/channelmixerrgb.c:3508 ../src/iop/temperature.c:2057
+#: ../src/iop/channelmixerrgb.c:3518 ../src/iop/temperature.c:2057
 msgid "set white balance to detected from area"
 msgstr "definir balanço de branco para detectado em uma área"
 
-#: ../src/iop/channelmixerrgb.c:3512
+#: ../src/iop/channelmixerrgb.c:3522
 msgid "illuminant"
 msgstr "iluminante"
 
-#: ../src/iop/channelmixerrgb.c:3518 ../src/iop/temperature.c:1993
+#: ../src/iop/channelmixerrgb.c:3528 ../src/iop/temperature.c:1993
 msgid "temperature"
 msgstr "temperatura"
 
-#: ../src/iop/channelmixerrgb.c:3562
+#: ../src/iop/channelmixerrgb.c:3572
 msgid "input red"
 msgstr "vermelho na entrada"
 
-#: ../src/iop/channelmixerrgb.c:3569
+#: ../src/iop/channelmixerrgb.c:3579
 msgid "input green"
 msgstr "verde na entrada"
 
-#: ../src/iop/channelmixerrgb.c:3576
+#: ../src/iop/channelmixerrgb.c:3586
 msgid "input blue"
 msgstr "azul na entrada"
 
-#: ../src/iop/channelmixerrgb.c:3587
+#: ../src/iop/channelmixerrgb.c:3597
 msgid "colorfulness"
 msgstr "colorfulness (colorido)"
 
-#: ../src/iop/channelmixerrgb.c:3602
+#: ../src/iop/channelmixerrgb.c:3612
 msgid "calibrate with a color checker"
 msgstr "calibrar com uma tabela de cores"
 
-#: ../src/iop/channelmixerrgb.c:3605
+#: ../src/iop/channelmixerrgb.c:3615
 msgid "use a color checker target to autoset CAT and channels"
 msgstr "usar uma tabela de cores para autodefinir CAT e canais"
 
-#: ../src/iop/channelmixerrgb.c:3612
+#: ../src/iop/channelmixerrgb.c:3622
 msgid "chart"
 msgstr "cartão (tabela)"
 
-#: ../src/iop/channelmixerrgb.c:3613
+#: ../src/iop/channelmixerrgb.c:3623
 msgid "Xrite ColorChecker 24 pre-2014"
 msgstr "Xrite ColorChecker 24 pre-2014"
 
-#: ../src/iop/channelmixerrgb.c:3614
+#: ../src/iop/channelmixerrgb.c:3624
 msgid "Xrite ColorChecker 24 post-2014"
 msgstr "Xrite ColorChecker 24 post-2014"
 
-#: ../src/iop/channelmixerrgb.c:3615
+#: ../src/iop/channelmixerrgb.c:3625
 msgid "Datacolor SpyderCheckr 24 pre-2018"
 msgstr "Datacolor SpyderCheckr 24 pre-2018"
 
-#: ../src/iop/channelmixerrgb.c:3616
+#: ../src/iop/channelmixerrgb.c:3626
 msgid "Datacolor SpyderCheckr 24 post-2018"
 msgstr "Datacolor SpyderCheckr 24 pós-2018"
 
-#: ../src/iop/channelmixerrgb.c:3617
+#: ../src/iop/channelmixerrgb.c:3627
 msgid "Datacolor SpyderCheckr 48 pre-2018"
 msgstr "Datacolor SpyderCheckr 48 pre-2018"
 
-#: ../src/iop/channelmixerrgb.c:3618
+#: ../src/iop/channelmixerrgb.c:3628
 msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr "Datacolor SpyderCheckr 48 pós-2018"
 
-#: ../src/iop/channelmixerrgb.c:3620
+#: ../src/iop/channelmixerrgb.c:3630
 msgid "choose the vendor and the type of your chart"
 msgstr "escolha a marca e o tipo da sua tabela"
 
-#: ../src/iop/channelmixerrgb.c:3624
+#: ../src/iop/channelmixerrgb.c:3634
 msgid "optimize for"
 msgstr "otimizar para"
 
-#: ../src/iop/channelmixerrgb.c:3626
+#: ../src/iop/channelmixerrgb.c:3636
 msgid "neutral colors"
 msgstr "cores neutras"
 
-#: ../src/iop/channelmixerrgb.c:3628
+#: ../src/iop/channelmixerrgb.c:3638
 msgid "skin and soil colors"
 msgstr "cores de pele e solo"
 
-#: ../src/iop/channelmixerrgb.c:3629
+#: ../src/iop/channelmixerrgb.c:3639
 msgid "foliage colors"
 msgstr "cores de folhagem"
 
-#: ../src/iop/channelmixerrgb.c:3630
+#: ../src/iop/channelmixerrgb.c:3640
 msgid "sky and water colors"
 msgstr "cores de céu e água"
 
-#: ../src/iop/channelmixerrgb.c:3631
+#: ../src/iop/channelmixerrgb.c:3641
 msgid "average delta E"
 msgstr "delta E médio"
 
-#: ../src/iop/channelmixerrgb.c:3632
+#: ../src/iop/channelmixerrgb.c:3642
 msgid "maximum delta E"
 msgstr "delta E máximo"
 
-#: ../src/iop/channelmixerrgb.c:3634
+#: ../src/iop/channelmixerrgb.c:3644
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -10900,11 +10928,11 @@ msgstr ""
 "nenhum é um meio-termo entre os dois\n"
 "os outros são comportamentos especiais para proteger algumas matizes"
 
-#: ../src/iop/channelmixerrgb.c:3642
+#: ../src/iop/channelmixerrgb.c:3652
 msgid "patch scale"
 msgstr "escala do patch"
 
-#: ../src/iop/channelmixerrgb.c:3643
+#: ../src/iop/channelmixerrgb.c:3653
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
@@ -10914,19 +10942,19 @@ msgstr ""
 "útil quando a correção de perspectiva não é boa ou\n"
 "a moldura fazem sombra sobre as bordas do patch."
 
-#: ../src/iop/channelmixerrgb.c:3651
+#: ../src/iop/channelmixerrgb.c:3661
 msgid "the delta E is using the CIE 2000 formula."
 msgstr "o delta E está usando a fórmula CIE 2000"
 
-#: ../src/iop/channelmixerrgb.c:3657
+#: ../src/iop/channelmixerrgb.c:3667
 msgid "accept the computed profile and set it in the module"
 msgstr "aceitar o perfil calculado e definí-lo no módulo"
 
-#: ../src/iop/channelmixerrgb.c:3662
+#: ../src/iop/channelmixerrgb.c:3672
 msgid "recompute the profile"
 msgstr "recalcular o perfil"
 
-#: ../src/iop/channelmixerrgb.c:3667
+#: ../src/iop/channelmixerrgb.c:3677
 msgid "check the output delta E"
 msgstr "verificar a saída delta E"
 
@@ -12799,7 +12827,7 @@ msgstr ""
 "aumenta ou diminui a faixa dinâmica calculada.\n"
 "útil junto com \"ajustar níveis automaticamente\"."
 
-#: ../src/iop/filmic.c:1641 ../src/iop/filmicrgb.c:3679
+#: ../src/iop/filmic.c:1641 ../src/iop/filmicrgb.c:3771
 #: ../src/iop/profile_gamma.c:682
 msgid "auto tune levels"
 msgstr "ajustar níveis automaticamente"
@@ -12820,7 +12848,7 @@ msgstr ""
 msgid "filmic S curve"
 msgstr "curva S fílmica"
 
-#: ../src/iop/filmic.c:1655 ../src/iop/filmicrgb.c:3769
+#: ../src/iop/filmic.c:1655 ../src/iop/filmicrgb.c:3861
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
@@ -12829,7 +12857,7 @@ msgstr ""
 "afeta principalmente os meios-tons"
 
 #. geotagging
-#: ../src/iop/filmic.c:1662 ../src/iop/filmicrgb.c:3778
+#: ../src/iop/filmic.c:1662 ../src/iop/filmicrgb.c:3870
 #: ../src/libs/metadata_view.c:162
 msgid "latitude"
 msgstr "latitude"
@@ -12843,7 +12871,7 @@ msgstr ""
 "domínio de linearidade no meio da curva.\n"
 "aumente para obter mais contraste nas luminâncias extremas."
 
-#: ../src/iop/filmic.c:1675 ../src/iop/filmicrgb.c:3790
+#: ../src/iop/filmic.c:1675 ../src/iop/filmicrgb.c:3882
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -12923,7 +12951,7 @@ msgstr ""
 msgid "destination/display"
 msgstr "destino/display"
 
-#: ../src/iop/filmic.c:1746 ../src/iop/filmicrgb.c:3810
+#: ../src/iop/filmic.c:1746 ../src/iop/filmicrgb.c:3902
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -12943,7 +12971,7 @@ msgstr ""
 "valor de cinza médio do display alvo ou espaço de cor.\n"
 "você não deve tocar nisto a não ser que saiba o que está fazendo."
 
-#: ../src/iop/filmic.c:1764 ../src/iop/filmicrgb.c:3826
+#: ../src/iop/filmic.c:1764 ../src/iop/filmicrgb.c:3918
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -12965,16 +12993,16 @@ msgstr ""
 "do display ou espaço de cor.\n"
 "você nunca deveria mexer nisso a não ser que saiba o que está fazendo."
 
-#: ../src/iop/filmicrgb.c:321
+#: ../src/iop/filmicrgb.c:323
 msgid "filmic rgb"
 msgstr "rgb fílmico"
 
-#: ../src/iop/filmicrgb.c:326
+#: ../src/iop/filmicrgb.c:328
 msgid "tone mapping|curve|view transform|contrast|saturation|highlights"
 msgstr ""
 "mapeamento de tons|curva|transformação de visão|contraste|saturação|realces"
 
-#: ../src/iop/filmicrgb.c:331
+#: ../src/iop/filmicrgb.c:333
 msgid ""
 "apply a view transform to prepare the scene-referred pipeline\n"
 "for display on SDR screens and paper prints\n"
@@ -12984,7 +13012,7 @@ msgstr ""
 "para exibição em telas SDR e impressão em papel\n"
 "prevenind orecorde de forma não-destrutiva"
 
-#: ../src/iop/filmicrgb.c:1095
+#: ../src/iop/filmicrgb.c:1148
 msgid ""
 "filmic highlights reconstruction failed to allocate memory, check your RAM "
 "settings"
@@ -12992,72 +13020,72 @@ msgstr ""
 "A reconstrução de realces do fílmico não conseguiu alocar memória, verifique "
 "sua configuração de RAM"
 
-#: ../src/iop/filmicrgb.c:1442 ../src/iop/filmicrgb.c:1719
+#: ../src/iop/filmicrgb.c:1495 ../src/iop/filmicrgb.c:1772
 msgid "filmic works only on RGB input"
 msgstr "O fílmico funciona somente com entrada RGB"
 
-#: ../src/iop/filmicrgb.c:1577
+#: ../src/iop/filmicrgb.c:1630
 msgid "filmic highlights reconstruction failed to allocate memory on GPU"
 msgstr ""
 "A reconstrução de realces do fílmico não conseguiu alocar memória na GPU"
 
-#: ../src/iop/filmicrgb.c:2702
+#: ../src/iop/filmicrgb.c:2794
 msgid "look only"
 msgstr "aparência apenas"
 
-#: ../src/iop/filmicrgb.c:2704
+#: ../src/iop/filmicrgb.c:2796
 msgid "look + mapping (lin)"
 msgstr "aparência + mapeamento (lin)"
 
-#: ../src/iop/filmicrgb.c:2706
+#: ../src/iop/filmicrgb.c:2798
 msgid "look + mapping (log)"
 msgstr "aparência + mapeamento (log)"
 
-#: ../src/iop/filmicrgb.c:2708
+#: ../src/iop/filmicrgb.c:2800
 msgid "dynamic range mapping"
 msgstr "mapeamento de faixa dinâmica"
 
-#: ../src/iop/filmicrgb.c:3038
+#: ../src/iop/filmicrgb.c:3130
 #, c-format
 msgid "(%.0f %%)"
 msgstr "(%.0f %%)"
 
-#: ../src/iop/filmicrgb.c:3054
+#: ../src/iop/filmicrgb.c:3146
 #, no-c-format
 msgid "% display"
 msgstr "% display"
 
-#: ../src/iop/filmicrgb.c:3065
+#: ../src/iop/filmicrgb.c:3157
 msgid "EV scene"
 msgstr "EV cena"
 
-#: ../src/iop/filmicrgb.c:3069
+#: ../src/iop/filmicrgb.c:3161
 #, no-c-format
 msgid "% camera"
 msgstr "% câmera"
 
 #. Page DISPLAY
-#: ../src/iop/filmicrgb.c:3105 ../src/iop/filmicrgb.c:3803
+#: ../src/iop/filmicrgb.c:3197 ../src/iop/filmicrgb.c:3895
 msgid "display"
 msgstr "display"
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:3114
+#: ../src/iop/filmicrgb.c:3206
 msgid "(%)"
 msgstr "(%)"
 
 #. Page SCENE
-#: ../src/iop/filmicrgb.c:3123 ../src/iop/filmicrgb.c:3639
+#: ../src/iop/filmicrgb.c:3215 ../src/iop/filmicrgb.c:3731
 msgid "scene"
 msgstr "cena"
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:3132
+#: ../src/iop/filmicrgb.c:3224
 msgid "(EV)"
 msgstr "(EV)"
 
 #. we are over the graph area
-#: ../src/iop/filmicrgb.c:3561
+#: ../src/iop/filmicrgb.c:3653
 msgid ""
 "use the parameters below to set the nodes.\n"
 "the bright curve is the filmic tone mapping curve\n"
@@ -13067,11 +13095,11 @@ msgstr ""
 "a curva clara é a curva de mapeamento de tons do fílmico.\n"
 "a curva escura é a de dessaturação."
 
-#: ../src/iop/filmicrgb.c:3567
+#: ../src/iop/filmicrgb.c:3659
 msgid "toggle axis labels and values display."
 msgstr "liga/desliga exibição de rótulos dos eixos e valores."
 
-#: ../src/iop/filmicrgb.c:3571
+#: ../src/iop/filmicrgb.c:3663
 msgid ""
 "cycle through graph views.\n"
 "left click: cycle forward.\n"
@@ -13083,7 +13111,7 @@ msgstr ""
 "clique direito: para trás.\n"
 "clique duplo: volta à visão de aparência."
 
-#: ../src/iop/filmicrgb.c:3646
+#: ../src/iop/filmicrgb.c:3738
 msgid ""
 "adjust to match the average luminance of the image's subject.\n"
 "the value entered here will then be remapped to 18.45%.\n"
@@ -13093,8 +13121,8 @@ msgstr ""
 "o valor entrado aqui será reajustado para corresponder a 18.45%.\n"
 "diminua o valor para aumentar o brilho geral."
 
-#: ../src/iop/filmicrgb.c:3654 ../src/iop/filmicrgb.c:3664
-#: ../src/iop/filmicrgb.c:3697 ../src/iop/filmicrgb.c:3707
+#: ../src/iop/filmicrgb.c:3746 ../src/iop/filmicrgb.c:3756
+#: ../src/iop/filmicrgb.c:3789 ../src/iop/filmicrgb.c:3799
 #: ../src/iop/toneequal.c:3073 ../src/iop/toneequal.c:3077
 #: ../src/iop/toneequal.c:3081 ../src/iop/toneequal.c:3085
 #: ../src/iop/toneequal.c:3089 ../src/iop/toneequal.c:3093
@@ -13105,7 +13133,7 @@ msgstr ""
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
 
-#: ../src/iop/filmicrgb.c:3656
+#: ../src/iop/filmicrgb.c:3748
 msgid ""
 "number of stops between middle gray and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -13115,7 +13143,7 @@ msgstr ""
 "esta é a leitura que um exposímetro daria na cena\n"
 "ajuste para evitar highlight clipping"
 
-#: ../src/iop/filmicrgb.c:3666
+#: ../src/iop/filmicrgb.c:3758
 msgid ""
 "number of stops between middle gray and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -13127,7 +13155,7 @@ msgstr ""
 "aumente para obter mais contraste.\n"
 "diminua para recuperar mais detalhes com pouca luz."
 
-#: ../src/iop/filmicrgb.c:3674
+#: ../src/iop/filmicrgb.c:3766
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -13135,7 +13163,7 @@ msgstr ""
 "simetricamente aumenta ou diminui a faixa dinâmica calculada.\n"
 "útil junto para dar margem de segurança em liminâncias extremas."
 
-#: ../src/iop/filmicrgb.c:3680
+#: ../src/iop/filmicrgb.c:3772
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -13152,15 +13180,15 @@ msgstr ""
 "certifique-se de entender suas suposições antes de usá-lo."
 
 #. Page RECONSTRUCT
-#: ../src/iop/filmicrgb.c:3689
+#: ../src/iop/filmicrgb.c:3781
 msgid "reconstruct"
 msgstr "reconstruir"
 
-#: ../src/iop/filmicrgb.c:3691
+#: ../src/iop/filmicrgb.c:3783
 msgid "highlights clipping"
 msgstr "corte de realces"
 
-#: ../src/iop/filmicrgb.c:3699
+#: ../src/iop/filmicrgb.c:3791
 msgid ""
 "set the exposure threshold upon which\n"
 "clipped highlights get reconstructed.\n"
@@ -13176,7 +13204,7 @@ msgstr ""
 "diminua para incluir mais áreas,\n"
 "aumente para excluir mais áreas."
 
-#: ../src/iop/filmicrgb.c:3709
+#: ../src/iop/filmicrgb.c:3801
 msgid ""
 "soften the transition between clipped highlights and valid pixels.\n"
 "decrease to make the transition harder and sharper,\n"
@@ -13186,15 +13214,15 @@ msgstr ""
 "diminua para tornar a transição mais dura e nítida,\n"
 "aumente para tornar a transição mais suave e menos nítida."
 
-#: ../src/iop/filmicrgb.c:3715
+#: ../src/iop/filmicrgb.c:3807
 msgid "display highlight reconstruction mask"
 msgstr "mostrar máscara de reconstrução de realce"
 
-#: ../src/iop/filmicrgb.c:3722 ../src/iop/splittoning.c:528
+#: ../src/iop/filmicrgb.c:3814 ../src/iop/splittoning.c:528
 msgid "balance"
 msgstr "balanço"
 
-#: ../src/iop/filmicrgb.c:3730
+#: ../src/iop/filmicrgb.c:3822
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -13211,7 +13239,7 @@ msgstr ""
 "aumente se pelo menos um canal RGB não estiver recortado.\n"
 "diminua se todos os canais RGB estiverem recortados em grandes áreas."
 
-#: ../src/iop/filmicrgb.c:3742
+#: ../src/iop/filmicrgb.c:3834
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -13228,7 +13256,7 @@ msgstr ""
 "aumente se quiser mais detalhes.\n"
 "diminua se quiser mais desfoque."
 
-#: ../src/iop/filmicrgb.c:3755
+#: ../src/iop/filmicrgb.c:3847
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -13246,11 +13274,11 @@ msgstr ""
 "diminua se perceber realces magenta ou fora da gama."
 
 #. Page LOOK
-#: ../src/iop/filmicrgb.c:3763
+#: ../src/iop/filmicrgb.c:3855
 msgid "look"
 msgstr "aparência"
 
-#: ../src/iop/filmicrgb.c:3774
+#: ../src/iop/filmicrgb.c:3866
 msgid ""
 "equivalent to paper grade in analog.\n"
 "increase to make highlights brighter and less compressed.\n"
@@ -13260,7 +13288,7 @@ msgstr ""
 "aumente para tornar os realces mais claros e menos comprimidos.\n"
 "diminua para deixar os relces menos expressivos."
 
-#: ../src/iop/filmicrgb.c:3782
+#: ../src/iop/filmicrgb.c:3874
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "in percent of the dynamic range (white exposure - black exposure).\n"
@@ -13276,7 +13304,7 @@ msgstr ""
 "de outr aforma, diminua. nenhuma dessaturação é feita na faixa da latitude.\n"
 "não tem efeitos em tons médios."
 
-#: ../src/iop/filmicrgb.c:3798
+#: ../src/iop/filmicrgb.c:3890
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -13286,7 +13314,7 @@ msgstr ""
 "especificamente em luminâncias extremas\n"
 "aumente se sombras e/ou realces estão subsaturados."
 
-#: ../src/iop/filmicrgb.c:3818
+#: ../src/iop/filmicrgb.c:3910
 msgid ""
 "midde gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -13295,11 +13323,11 @@ msgstr ""
 "você não deve tocar nisto a não ser que saiba o que está fazendo."
 
 #. Page OPTIONS
-#: ../src/iop/filmicrgb.c:3830
+#: ../src/iop/filmicrgb.c:3922
 msgid "options"
 msgstr "opções"
 
-#: ../src/iop/filmicrgb.c:3835
+#: ../src/iop/filmicrgb.c:3927
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
@@ -13307,7 +13335,7 @@ msgstr ""
 "v3 é o método de desaturação do darktable 3.0, o mesmo que balanço de cor.\n"
 "v4 é um método mais novo de desaturação, baseado na pureza espectral da luz."
 
-#: ../src/iop/filmicrgb.c:3839
+#: ../src/iop/filmicrgb.c:3931
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
@@ -13317,7 +13345,7 @@ msgstr ""
 "pode produzir cores supersaturadas e reforçar aberrações cromáticas da "
 "lente.\n"
 
-#: ../src/iop/filmicrgb.c:3845
+#: ../src/iop/filmicrgb.c:3937
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -13327,7 +13355,7 @@ msgstr ""
 "dura usa uma curvatura resultando em mais compressão tonal.\n"
 "suave usa uma curvatura resultando em menos compressão tonal"
 
-#: ../src/iop/filmicrgb.c:3850
+#: ../src/iop/filmicrgb.c:3942
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -13337,7 +13365,7 @@ msgstr ""
 "dura usa uma curvatura resultando em mais compressão tonal.\n"
 "suave usa uma curvatura resultando em menos compressão tonal."
 
-#: ../src/iop/filmicrgb.c:3855
+#: ../src/iop/filmicrgb.c:3947
 #, c-format
 msgid ""
 "enable to input custom middle-gray values.\n"
@@ -13350,7 +13378,7 @@ msgstr ""
 "ao invés disso, ajuste a exposição global no módulo exposição.\n"
 "desabilite para usar o padrão de 18.45 %% de cinza médio."
 
-#: ../src/iop/filmicrgb.c:3862
+#: ../src/iop/filmicrgb.c:3954
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
@@ -13362,7 +13390,7 @@ msgstr ""
 "isto mantém o cinza médio na linha da identidade e melhora o ajusta rápido.\n"
 "desabilite se quiser controle manual."
 
-#: ../src/iop/filmicrgb.c:3868
+#: ../src/iop/filmicrgb.c:3960
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
 "more iterations means more color propagation from neighbourhood.\n"
@@ -13374,7 +13402,7 @@ msgstr ""
 "isto será mais lento, mas resultará em realces mais neutros.\n"
 "também ajuda em casos difíceis de realces magenta."
 
-#: ../src/iop/filmicrgb.c:3875
+#: ../src/iop/filmicrgb.c:3967
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -13386,15 +13414,15 @@ msgstr ""
 "quando a imagem é muito ruidosa,\n"
 "e os realces se misturam com o resto da imagem."
 
-#: ../src/iop/filmicrgb.c:3882
+#: ../src/iop/filmicrgb.c:3974
 msgid "uniform"
 msgstr "uniforme"
 
-#: ../src/iop/filmicrgb.c:3884
+#: ../src/iop/filmicrgb.c:3976
 msgid "poissonian"
 msgstr "Poissoniano"
 
-#: ../src/iop/filmicrgb.c:3885
+#: ../src/iop/filmicrgb.c:3977
 msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern.\n"
@@ -13402,7 +13430,7 @@ msgstr ""
 "escolha a distribuição estatística do ruído.\n"
 "isto é útil para combinar com o padrão natural de ruído do sensor.\n"
 
-#: ../src/iop/filmicrgb.c:3947
+#: ../src/iop/filmicrgb.c:4039
 msgid "middle tones saturation"
 msgstr "saturação de meios-tons"
 
@@ -16542,15 +16570,6 @@ msgstr "darktable"
 msgid "collect images settings"
 msgstr "preferências para coletar imagens"
 
-#: ../src/libs/collect.c:2774 ../src/libs/export_metadata.c:269
-#: ../src/libs/import.c:1307 ../src/libs/metadata.c:446
-#: ../src/libs/metadata_view.c:1040 ../src/libs/modulegroups.c:3433
-#: ../src/libs/styles.c:439 ../src/libs/styles.c:614 ../src/libs/tagging.c:1359
-#: ../src/libs/tagging.c:1447 ../src/libs/tagging.c:1528
-#: ../src/libs/tagging.c:1653 ../src/libs/tagging.c:1927
-msgid "cancel"
-msgstr "cancela"
-
 #: ../src/libs/collect.c:2775 ../src/libs/export_metadata.c:269
 #: ../src/libs/metadata.c:446 ../src/libs/metadata_view.c:1040
 #: ../src/libs/tagging.c:1528 ../src/libs/tagging.c:1653
@@ -17037,10 +17056,6 @@ msgstr "seleciona etiqueta"
 #: ../src/libs/export_metadata.c:160
 msgid "add"
 msgstr "adicionar"
-
-#: ../src/libs/export_metadata.c:160 ../src/libs/geotagging.c:821
-msgid "done"
-msgstr "feito"
 
 #: ../src/libs/export_metadata.c:170
 msgid "list filter"
@@ -17877,7 +17892,7 @@ msgstr "copiar e importar"
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "dispositivo \"%s\" conectado na porta \"%s\"."
 
-#: ../src/libs/import.c:249 ../src/libs/import.c:1294
+#: ../src/libs/import.c:249 ../src/libs/import.c:1296
 msgid "import from camera"
 msgstr "importar da câmera"
 
@@ -17892,41 +17907,45 @@ msgid_plural "%d images out of %d selected"
 msgstr[0] "%d imagem de %d selecionada"
 msgstr[1] "%d imagens de %d selecionadas"
 
-#: ../src/libs/import.c:1001
+#: ../src/libs/import.c:980
 msgid "select a folder to see the content"
 msgstr "selecione uma pasta para ver o conteúdo"
 
-#: ../src/libs/import.c:1140
+#: ../src/libs/import.c:983
+msgid "folders"
+msgstr "pastas"
+
+#: ../src/libs/import.c:1138
 msgid "open folder"
 msgstr "abrir pasta"
 
-#: ../src/libs/import.c:1211
+#: ../src/libs/import.c:1213
 msgid "modified"
 msgstr "modificado"
 
-#: ../src/libs/import.c:1216
+#: ../src/libs/import.c:1218
 msgid "file 'modified date/time', may be different from 'Exif date/time'"
 msgstr ""
 "data/hora de modificação do arquivo, pode ser diferente de data/hora Exif"
 
-#: ../src/libs/import.c:1228
+#: ../src/libs/import.c:1230
 msgid "show/hide thumbnails"
 msgstr "mostrar/esconder miniaturas"
 
 #. collapsible section
-#: ../src/libs/import.c:1264
+#: ../src/libs/import.c:1266
 msgid "naming rules"
 msgstr "regras para nomes"
 
-#: ../src/libs/import.c:1292
+#: ../src/libs/import.c:1294
 msgid "import in-place"
 msgstr "importar no local"
 
-#: ../src/libs/import.c:1293
+#: ../src/libs/import.c:1295
 msgid "copy and import"
 msgstr "copiar e importar"
 
-#: ../src/libs/import.c:1297
+#: ../src/libs/import.c:1299
 msgid ""
 "choose the root of the folder tree below\n"
 "try to choose a root folder that contains most/all of your photographs (in "
@@ -17940,7 +17959,7 @@ msgstr ""
 "de forma que não seja necessário mudar de raiz frequentemente\n"
 "por exemplo, defina como sua pasta \"imagens\" ou sua pasta de usuário"
 
-#: ../src/libs/import.c:1393
+#: ../src/libs/import.c:1395
 msgid "please wait while prefetching the list of images from camera..."
 msgstr "por favor aguarde durante pre-busca da lista de imagens da câmera..."
 
@@ -21004,6 +21023,103 @@ msgstr "Ação"
 
 #, c-format
 #~ msgid ""
+#~ "\n"
+#~ " At startup, the database failed to open because at least one of the two "
+#~ "files in the database is locked.\n"
+#~ "\n"
+#~ " The persistence of the lock is mainly caused by one of the two following "
+#~ "causes:\n"
+#~ "\n"
+#~ " - Another occurrence of darktable has already opened this database file "
+#~ "and locked it for its benefit.\n"
+#~ "\n"
+#~ " - A previous occurrence of darktable ended abnormally and therefore \n"
+#~ "   could not close one or both files in the database properly.\n"
+#~ "\n"
+#~ " How to solve this problem?\n"
+#~ "\n"
+#~ " 1 - Search in your environment if another darktable occurrence is "
+#~ "active. If so, use it or close it. \n"
+#~ "     The lock indicates that the process number of this occurrence is : "
+#~ "<i><b>%d</b></i>\n"
+#~ "\n"
+#~ " 2 - If you can't find this other occurrence, try closing your session "
+#~ "and reopening it or shutting down your computer. \n"
+#~ "     This will delete all running programs and thus close the database "
+#~ "correctly.\n"
+#~ "\n"
+#~ " 3 - If these two actions are not enough, it is because at least one of "
+#~ "the two files that materialize the locks remains \n"
+#~ "     and that these are no longer attached to any occurrence of "
+#~ "darktable. It is then necessary to delete it (or them). \n"
+#~ "     The two files are named <i>data.db.lock</i> and <i>library.db.lock</"
+#~ "i> respectively. The opening mechanism signals \n"
+#~ "     the presence of the <i><b>%s</b></i> file in the <i><b>%s</b></i> "
+#~ "folder. \n"
+#~ "     (full pathname: <i><b>%s</b></i>).\n"
+#~ "\n"
+#~ "     <u>Caution!</u> Do not delete these files without first checking "
+#~ "that there are no more occurrences of darktable, \n"
+#~ "     otherwise you risk generating serious inconsistencies in your "
+#~ "database.\n"
+#~ "\n"
+#~ " As soon as you have identified and removed the cause of the lock, "
+#~ "darktable will start without any problem.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Ao inicializar, a base de dados falhou em abrir porque pelo menos um dos\n"
+#~ "dois arquivos na base de dados está bloqueado.\n"
+#~ "\n"
+#~ "A persistência do bloqueio é causada principalmente por uma das duas "
+#~ "causas:\n"
+#~ "\n"
+#~ " - Outra ocorrência do darktable já abriu esta base de dados e a travou\n"
+#~ "   para si mesma.\n"
+#~ "\n"
+#~ " - Uma ocorrência anterior do darktable finalizou de maneira não normal "
+#~ "e\n"
+#~ "   não conseguiu fechar um ou ambos os arquivos na base de dados "
+#~ "apropriadamente.\n"
+#~ "\n"
+#~ " Como resolver este problema?\n"
+#~ "\n"
+#~ " 1 - Procure em seu ambiente se outra ocorrência do darktale está ativa.\n"
+#~ "     Se estiver, use-a ou feche-a. O bloqueio indica que o número de "
+#~ "processo\n"
+#~ "     dessa ocorrência é : <i><b>%d</b></i>\n"
+#~ "\n"
+#~ " 2 - Se não achar essa ocorrência, tente fechar sua sessão e reabrir, ou\n"
+#~ "     desligar seu computador. Isto removerá todos os programas "
+#~ "executando\n"
+#~ "     e, desta forma, fechará a base de dados de maneira paropriada.\n"
+#~ "\n"
+#~ " 3 - Se estas duas ações não forem suficientes, é porque pelo menos um "
+#~ "dos\n"
+#~ "     arquivos que materializam o bloqueio permanecem, e que estes não "
+#~ "estão mais\n"
+#~ "     associados a nenhuma ocorrência do darktable. É necessário removê-"
+#~ "los.\n"
+#~ "     Os dois arquivos são nomeados <i>data.db.lock</i> e <i>library.db."
+#~ "lock</i>,\n"
+#~ "     respectivamente. O mecanismo de abertura sinaliza a presença do "
+#~ "arquivo\n"
+#~ "     <i><b>%s</b></i> na pasta <i><b>%s</b></i>.\n"
+#~ "     (caminho completo: <i><b>%s</b></i>).\n"
+#~ "\n"
+#~ "     <u>Cuidado!</u> Não remova estes arquivos sem antes verificar que "
+#~ "não há\n"
+#~ "     mais ocorrências do darktable, senão você corre o risco de gerar\n"
+#~ "     inconsistências sérias na sua base de dados.\n"
+#~ "\n"
+#~ " Assim que tiver identificado e removido a causa do bloqueio, o darktable "
+#~ "iniciará\n"
+#~ "sem problemas.\n"
+
+#~ msgid "darktable cannot be started because the database is locked"
+#~ msgstr "O darktable não pode iniciar porque a base de dados está bloqueada"
+
+#, c-format
+#~ msgid ""
 #~ "<b>compression</b>: shift+scroll\n"
 #~ "<b>opacity</b>: ctrl+scroll (%d%%)"
 #~ msgstr ""
@@ -21357,9 +21473,6 @@ msgstr "Ação"
 #~ "muda a ordem default das listas de coleções, tempos e datas para listar "
 #~ "do mais recente ao mais antigo"
 
-#~ msgid "folders"
-#~ msgstr "pastas"
-
 #~ msgid "tonal weight"
 #~ msgstr "peso tonal"
 
@@ -21372,9 +21485,6 @@ msgstr "Ação"
 #~ msgstr ""
 #~ "introduza a hora mostrada na imagem selecionada\n"
 #~ "formato: hh:mm:ss"
-
-#~ msgid "ok"
-#~ msgstr "ok"
 
 #~ msgid ""
 #~ "time offset\n"
