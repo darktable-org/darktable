@@ -69,7 +69,7 @@ typedef struct dt_iop_rgbcurve_params_t
   int curve_num_nodes[DT_IOP_RGBCURVE_MAX_CHANNELS]; // $DEFAULT: 2 number of nodes per curve
   int curve_type[DT_IOP_RGBCURVE_MAX_CHANNELS]; // $DEFAULT: MONOTONE_HERMITE (CATMULL_ROM, MONOTONE_HERMITE, CUBIC_SPLINE)
   dt_iop_rgbcurve_autoscale_t curve_autoscale;  // $DEFAULT: DT_S_SCALE_AUTOMATIC_RGB $DESCRIPTION: "mode"
-  gboolean compensate_middle_grey; // $DEFAULT: 1  $DESCRIPTION: "compensate middle gray" scale the curve and histogram so middle gray is at .5
+  gboolean compensate_middle_grey; // $DEFAULT: 0  $DESCRIPTION: "compensate middle gray" scale the curve and histogram so middle gray is at .5
   dt_iop_rgb_norms_t preserve_colors; // $DEFAULT: DT_RGB_NORM_LUMINANCE $DESCRIPTION: "preserve colors"
 } dt_iop_rgbcurve_params_t;
 
