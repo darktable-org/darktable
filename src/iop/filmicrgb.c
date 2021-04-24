@@ -1404,7 +1404,20 @@ static inline void filmic_chroma_v2_v3(const float *const restrict in, float *co
     norm = log_tonemapping_v2(norm, data->grey_source, data->black_source, data->dynamic_range);
 
     // Get the desaturation value based on the log value
-    const float desaturation = filmic_desaturate_v2(norm, data->sigma_toe, data->sigma_shoulder, data->saturation);
+    float desat_value;
+    if(colorscience_version == DT_FILMIC_COLORSCIENCE_V3)
+    {
+      // Use the luminance to desaturate - more accurate
+      float DT_ALIGNED_PIXEL RGB[4];
+      for(int c = 0; c < 3; c++) RGB[c] = norm * ratios[c];
+      desat_value = fmaxf(get_pixel_norm(RGB, DT_FILMIC_METHOD_LUMINANCE, work_profile), NORM_MIN);
+    }
+    else
+    {
+      // Use the usual norm to desaturate - faster
+      desat_value = norm;
+    }
+    const float desaturation = filmic_desaturate_v2(desat_value, data->sigma_toe, data->sigma_shoulder, data->saturation);
 
     // Filmic S curve on the max RGB
     // Apply the transfer function of the display
