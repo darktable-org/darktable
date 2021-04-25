@@ -2591,13 +2591,16 @@ static gboolean dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event
       // if(event->string[0] == 'p') return system("scrot");
       // else
       if(darktable.bauhaus->keys_cnt + 2 < 64
-         && (event->keyval == GDK_KEY_space || event->keyval == GDK_KEY_KP_Space || // SPACE
-             event->keyval == GDK_KEY_percent ||                                    // %
-             (event->string[0] >= 40 && event->string[0] <= 57) ||                  // ()+-*/.,0-9
-             event->keyval == GDK_KEY_asciicircum ||                                // ^
-             event->keyval == GDK_KEY_X || event->keyval == GDK_KEY_x))             // Xx
+         && (event->keyval == GDK_KEY_space || event->keyval == GDK_KEY_KP_Space ||              // SPACE
+             event->keyval == GDK_KEY_percent ||                                                 // %
+             (event->string[0] >= 40 && event->string[0] <= 57) ||                               // ()+-*/.,0-9
+             event->keyval == GDK_KEY_asciicircum || event->keyval == GDK_KEY_dead_circumflex || // ^
+             event->keyval == GDK_KEY_X || event->keyval == GDK_KEY_x))                          // Xx
       {
-        darktable.bauhaus->keys[darktable.bauhaus->keys_cnt++] = event->string[0];
+        if(event->keyval == GDK_KEY_dead_circumflex)
+          darktable.bauhaus->keys[darktable.bauhaus->keys_cnt++] = '^';
+        else
+          darktable.bauhaus->keys[darktable.bauhaus->keys_cnt++] = event->string[0];
         gtk_widget_queue_draw(darktable.bauhaus->popup_area);
       }
       else if(darktable.bauhaus->keys_cnt > 0
