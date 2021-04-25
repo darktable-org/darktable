@@ -2391,6 +2391,8 @@ interpolation_resample (read_only image2d_t in, write_only image2d_t out, const 
   // store final result
   if (iy == 0 && x < width && y < height)
   {
-    write_imagef (out, (int2)(x, y), buffer[ylid]);
+    // Clip negative RGB that may be produced by Lanczos undershooting
+    // Negative RGB are invalid values no matter the RGB space (light is positive)
+    write_imagef (out, (int2)(x, y), fmax(buffer[ylid], 0.f));
   }
 }

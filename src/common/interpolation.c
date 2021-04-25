@@ -1515,7 +1515,10 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
 
       // Output pixel is ready
       const size_t baseidx = (size_t)oy * out_stride_floats + (size_t)ox * 4;
-      for_each_channel(c, aligned(vs:16)) out[baseidx + c] = vs[c];
+
+      // Clip negative RGB that may be produced by Lanczos undershooting
+      // Negative RGB are invalid values no matter the RGB space (light is positive)
+      for_each_channel(c, aligned(vs:16)) out[baseidx + c] = fmaxf(vs[c], 0.f);
 
       // Reset vertical resampling context
       viidx -= vl;
@@ -1674,6 +1677,10 @@ static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, f
 
       // Output pixel is ready
       float *o = (float *)((char *)out + (size_t)oy * out_stride + (size_t)ox * 4 * sizeof(float));
+
+      // Clip negative RGB that may be produced by Lanczos undershooting
+      // Negative RGB are invalid values no matter the RGB space (light is positive)
+      vs = _mm_max_ps(vs, _mm_setzero_ps());
       _mm_stream_ps(o, vs);
 
       // Reset vertical resampling context
