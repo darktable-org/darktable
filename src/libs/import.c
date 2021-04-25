@@ -717,11 +717,15 @@ static gboolean _update_files_list(gpointer user_data)
   g_object_ref(model);
   gtk_tree_view_set_model(d->from.treeview, NULL);
   gtk_list_store_clear(d->from.store);
+  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
+                                       GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID, GTK_SORT_ASCENDING);
 #ifdef HAVE_GPHOTO2
   if(d->import_case == DT_IMPORT_CAMERA)
   {
     d->from.nb = _import_from_camera_set_file_list(self);
     gtk_widget_hide(d->from.info);
+    gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
+                                         DT_IMPORT_FILENAME, GTK_SORT_ASCENDING);
   }
   else
 #endif
@@ -729,6 +733,8 @@ static gboolean _update_files_list(gpointer user_data)
     char *folder = dt_conf_get_string("ui_last/import_last_directory");
     d->from.nb = !folder[0] ? 0 : _import_set_file_list(folder, strlen(folder), 0, self);
     g_free(folder);
+    gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
+                                         DT_IMPORT_DATETIME, GTK_SORT_ASCENDING);
   }
   gtk_tree_view_set_model(d->from.treeview, model);
   g_object_unref(model);
