@@ -1450,7 +1450,8 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
       gtk_tree_model_get_iter(model, &iter, (GtkTreePath *)path->data);
       char *filename;
       gtk_tree_model_get(model, &iter, DT_IMPORT_FILENAME, &filename, -1);
-      char *folder = dt_conf_get_string("ui_last/import_last_directory");
+      char *folder = (d->import_case == DT_IMPORT_CAMERA) ? g_strdup("") :
+                     dt_conf_get_string("ui_last/import_last_directory");
       char *fullname = g_build_filename(folder, filename, NULL);
       g_free(folder);
       imgs = g_list_prepend(imgs, fullname);
@@ -1492,8 +1493,11 @@ static void _import_from_dialog_free(dt_lib_module_t* self)
   d->from.event = 0;
   g_object_unref(d->from.eye);
   g_object_unref(d->from.store);
-  GtkTreeModel *model = gtk_tree_view_get_model(d->from.folderview);
-  g_object_unref(GTK_TREE_STORE(model));
+  if(d->import_case != DT_IMPORT_CAMERA)
+  {
+    GtkTreeModel *model = gtk_tree_view_get_model(d->from.folderview);
+    g_object_unref(GTK_TREE_STORE(model));
+  }
   // Destroy and quit
   gtk_widget_destroy(d->from.dialog);
 }
