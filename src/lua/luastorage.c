@@ -510,6 +510,7 @@ int dt_lua_init_luastorages(lua_State *L)
   lua_pushstring(L, "destroy_storage");
   lua_pushcfunction(L, &destroy_storage);
   lua_settable(L, -3);
+  lua_pop(L, 1);
 
   dt_lua_push_darktable_lib(L);
   lua_pushstring(L, "register_storage");
