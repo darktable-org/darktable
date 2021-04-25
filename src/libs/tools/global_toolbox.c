@@ -581,18 +581,27 @@ static void _main_do_event(GdkEvent *event, gpointer data)
         {
           GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
           dt_print(DT_DEBUG_CONTROL, "[context help] opening `%s'\n", help_url);
-          char *base_url = dt_conf_get_string("context_help/url");
-          // if url is https://www.darktable.org/usermanual/, it is the old deprecated
-          // url and we need to update it
-          if(!base_url || !*base_url || (0 == strcmp(base_url, "https://darktable.gitlab.io/doc/")))
+          char *base_url = dt_conf_get_string
+            (dt_is_dev_version()
+             ? "context_help/dev_url"
+             : "context_help/url");
+
+          char *last_base_url = dt_conf_get_string("context_help/last_url");
+
+          // if url is https://www.darktable.org/usermanual/,
+          // it is the old deprecated url and we need to update it
+          if(!last_base_url
+             || !*last_base_url
+             || (strcmp(base_url, last_base_url) != 0))
           {
-            g_free(base_url);
-            base_url = NULL;
+            g_free(last_base_url);
+            last_base_url = base_url;
 
             // ask the user if darktable.org may be accessed
-            GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                       GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-                                                       _("do you want to access https://darktable.org/usermanual/?"));
+            GtkWidget *dialog = gtk_message_dialog_new
+              (GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
+               GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+               _("do you want to access %s?"), last_base_url);
 #ifdef GDK_WINDOWING_QUARTZ
             dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -602,8 +611,7 @@ static void _main_do_event(GdkEvent *event, gpointer data)
             gtk_widget_destroy(dialog);
             if(res == GTK_RESPONSE_YES)
             {
-              base_url = g_strdup("https://darktable.org/usermanual/");
-              dt_conf_set_string("context_help/url", base_url);
+              dt_conf_set_string("context_help/last_url", last_base_url);
             }
           }
           if(base_url)
@@ -611,6 +619,7 @@ static void _main_do_event(GdkEvent *event, gpointer data)
             gboolean is_language_supported = FALSE;
             char *lang = "en";
             GError *error = NULL;
+
             if(darktable.l10n!=NULL)
             {
               dt_l10n_language_t *language = NULL;
@@ -633,7 +642,10 @@ static void _main_do_event(GdkEvent *event, gpointer data)
               }
             }
             if(!is_language_supported) lang = "en";
-            char *url = g_build_path("/", base_url, lang, help_url, NULL);
+            char *url = dt_is_dev_version()
+              ? g_build_path("/", base_url, help_url, NULL)
+              : g_build_path("/", base_url, lang, help_url, NULL);
+
             // TODO: call the web browser directly so that file:// style base for local installs works
             const gboolean uri_success = gtk_show_uri_on_window(GTK_WINDOW(win), url, gtk_get_current_event_time(), &error);
             g_free(base_url);
@@ -647,7 +659,7 @@ static void _main_do_event(GdkEvent *event, gpointer data)
               dt_control_log(_("error while opening help url in web browser"));
               if (error != NULL) // uri_success being FALSE should guarantee that
               {
-                fprintf (stderr, "Unable to read file: %s\n", error->message);
+                fprintf (stderr, "unable to read file: %s\n", error->message);
                 g_error_free (error);
               }
             }
