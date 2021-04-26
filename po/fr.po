@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-04-24 16:45+0200\n"
-"PO-Revision-Date: 2021-04-24 16:45+0200\n"
+"POT-Creation-Date: 2021-04-26 15:28+0200\n"
+"PO-Revision-Date: 2021-04-26 15:35+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -873,8 +873,8 @@ msgstr ""
 msgid "3D lut root folder"
 msgstr "répertoire 3D lut racine"
 
-#: ../build/bin/preferences_gen.h:5414 ../src/control/jobs/control_jobs.c:1659
-#: ../src/control/jobs/control_jobs.c:1732 ../src/gui/preferences.c:1776
+#: ../build/bin/preferences_gen.h:5414 ../src/control/jobs/control_jobs.c:1668
+#: ../src/control/jobs/control_jobs.c:1741 ../src/gui/preferences.c:1776
 #: ../src/gui/presets.c:383 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/disk.c:197 ../src/imageio/storage/gallery.c:108
 #: ../src/imageio/storage/gallery.c:181 ../src/imageio/storage/latex.c:107
@@ -1671,7 +1671,7 @@ msgstr ""
 "cette application externe est utilisée pour jouer les annotations audio "
 "enregistrées par certains appareils photo"
 
-#: ../build/bin/preferences_gen.h:7566 ../src/control/jobs/control_jobs.c:2281
+#: ../build/bin/preferences_gen.h:7566 ../src/control/jobs/control_jobs.c:2311
 #: ../src/libs/import.c:148
 msgid "import"
 msgstr "importer"
@@ -2164,7 +2164,7 @@ msgstr "préserver couleur"
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:251
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
-#: ../src/iop/basecurve.c:2098 ../src/iop/channelmixerrgb.c:3625
+#: ../src/iop/basecurve.c:2098 ../src/iop/channelmixerrgb.c:3635
 #: ../src/iop/clipping.c:1887 ../src/iop/clipping.c:2145
 #: ../src/iop/clipping.c:2161 ../src/iop/clipping.c:2296
 #: ../src/iop/clipping.c:2323 ../src/iop/lens.cc:2229 ../src/iop/retouch.c:422
@@ -2357,203 +2357,207 @@ msgstr "rayon du flou de sortie"
 msgid "noise level"
 msgstr "niveau de bruit"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:251
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:257
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:263
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:269
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:275
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:281
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:432
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:436
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:440
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:444
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:448
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:452
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:252
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:258
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:264
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:270
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:276
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:282
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:433
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:437
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:441
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:445
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:449
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:453
 msgid "normalize channels"
 msgstr "normaliser les canaux"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:293
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:460
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:294
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:461
 msgid "F source"
 msgstr "source F"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:299
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:464
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:300
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:465
 msgid "LED source"
 msgstr "source LED"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:329
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:484
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:330
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:485
 msgid "gamut compression"
 msgstr "compression gamut"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:335
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:488
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:336
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:489
 msgid "clip negative RGB from gamut"
 msgstr "écrêter les valeurs RVB négatives du gamut"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:341
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:492
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:342
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:493
 msgid "saturation algorithm"
 msgstr "algorithme de saturation"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:506
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:507
 msgid "same as pipeline (D50)"
 msgstr "identique à la chaîne de traitement (D50)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:507
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:508
 msgid "A (incandescent)"
 msgstr "A (incandescent)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:508
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:509
 msgid "D (daylight)"
 msgstr "D (lumière du jour)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:509
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:510
 msgid "E (equi-energy)"
 msgstr "E (énergie égale)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:510
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:511
 msgid "F (fluorescent)"
 msgstr "F (fluorescent)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:511
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:512
 msgid "LED (LED light)"
 msgstr "LED (lumière DEL)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:512
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:513
 msgid "Planckian (black body)"
 msgstr "planckien (corps noir)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:513
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:514
 #: ../src/common/iop_order.c:58
 msgid "custom"
 msgstr "personnalisé"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:514
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:515
 msgid "(AI) detect from image surfaces..."
 msgstr "(IA) détecter depuis les surfaces de l'image..."
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:515
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:516
 msgid "(AI) detect from image edges..."
 msgstr "(IA) détecter depuis les bords de l'image..."
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:516
-#: ../src/iop/channelmixerrgb.c:3279
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:517
+#: ../src/iop/channelmixerrgb.c:3289
 msgid "as shot in camera"
 msgstr "tel que pris par le boitier"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:521
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:522
 msgid "F1 (Daylight 6430 K) – medium CRI"
 msgstr "F1 (Lumière du jour 6430 K) – IRC moyen"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:522
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:523
 msgid "F2 (Cool White 4230 K) – medium CRI"
 msgstr "F2 (Blanc froid 4230 K) – IRC moyen"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:523
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:524
 msgid "F3 (White 3450 K) – medium CRI"
 msgstr "F3 (Blanc 3450 K) – IRC moyen"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:524
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:525
 msgid "F4 (Warm White 2940 K) – medium CRI"
 msgstr "F4 (Blanc chaud 2940 K)  – IRC moyen"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:525
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:526
 msgid "F5 (Daylight 6350 K) – medium CRI"
 msgstr "F5 (Lumière du jour 6350 K) – IRC moyen"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:526
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:527
 msgid "F6 (Lite White 4150 K) – medium CRI"
 msgstr "F6 (Blanc léger 4150 K) – IRC moyen"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:527
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:528
 msgid "F7 (D65 simulator 6500 K) – high CRI"
 msgstr "F7 (Simulation D65 6500 K) – IRC haut"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:528
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:529
 msgid "F8 (D50 simulator 5000 K) – high CRI"
 msgstr "F8 (Simulation D50 5000 K) –IRC haut"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:529
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:530
 msgid "F9 (Cool White Deluxe 4150 K) – high CRI"
 msgstr "F9 (Blanc froid deluxe 4150 K) – IRC haut"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:530
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:531
 msgid "F10 (Tuned RGB 5000 K) – low CRI"
 msgstr "F10 (RVB ajusté 5000 K) – IRC bas"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:531
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:532
 msgid "F11 (Tuned RGB 4000 K) – low CRI"
 msgstr "F11 (RVB affiné 4000 K)– IRC bas"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:532
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:533
 msgid "F12 (Tuned RGB 3000 K) – low CRI"
 msgstr "F12 (RVB affiné 3000 K)– IRC bas"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:537
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:538
 msgid "B1 (Blue 2733 K)"
 msgstr "B1 (Bleu 2733 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:538
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:539
 msgid "B2 (Blue 2998 K)"
 msgstr "B2 (Bleu 2998 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:539
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:540
 msgid "B3 (Blue 4103 K)"
 msgstr "B3 (Bleu 4103 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:540
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:541
 msgid "B4 (Blue 5109 K)"
 msgstr "B4 (Bleu 5109 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:541
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:542
 msgid "B5 (Blue 6598 K)"
 msgstr "B5 (Bleu 6598 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:542
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:543
 msgid "BH1 (Blue-Red hybrid 2851 K)"
 msgstr "BH1 (Hybride bleu-rouge 2851 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:543
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:544
 msgid "RGB1 (RGB 2840 K)"
 msgstr "RVB1 (RVB 2840 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:544
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:545
 msgid "V1 (Violet 2724 K)"
 msgstr "V1 (Violet 2724 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:545
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:546
 msgid "V2 (Violet 4070 K)"
 msgstr "V2 (Violet 4070 K)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:550
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:551
 msgid "linear Bradford (ICC v4)"
 msgstr "Bradford linéaire (ICC v4)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:551
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:552
 msgid "CAT16 (CIECAM16)"
 msgstr "CAT16 (CIECAM16)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:552
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:553
 msgid "non-linear Bradford"
 msgstr "Bradford non-linéaire"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:553
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:554
 msgid "XYZ "
 msgstr "XYZ"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:554
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:555
 msgid "none (bypass)"
 msgstr "aucun (contourner)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:559
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:560
 msgid "version 1 (2020)"
 msgstr "version 1 (2020)"
 
-#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:560
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:561
 msgid "version 2 (2021)"
 msgstr "version 2 (2021)"
+
+#: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:562
+msgid "version 3 (Apr 2021)"
+msgstr "version 3 (Avril 2021)"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:142
 #: ../build/lib/darktable/plugins/introspection_clipping.c:303
@@ -2611,7 +2615,7 @@ msgstr "lift, gamma, gain (sRVB)"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:476
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:488
 #: ../src/develop/blend_gui.c:1968 ../src/develop/blend_gui.c:1995
-#: ../src/iop/atrous.c:1591 ../src/iop/channelmixerrgb.c:3542
+#: ../src/iop/atrous.c:1591 ../src/iop/channelmixerrgb.c:3552
 #: ../src/iop/equalizer.c:391 ../src/iop/nlmeans.c:536
 msgid "chroma"
 msgstr "chroma"
@@ -2634,7 +2638,7 @@ msgstr "chroma"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:1945 ../src/develop/blend_gui.c:1964
 #: ../src/develop/blend_gui.c:1999 ../src/iop/channelmixer.c:622
-#: ../src/iop/channelmixerrgb.c:3536 ../src/iop/colorbalance.c:2024
+#: ../src/iop/channelmixerrgb.c:3546 ../src/iop/colorbalance.c:2024
 #: ../src/iop/colorize.c:347 ../src/iop/colorreconstruction.c:1288
 #: ../src/iop/colorzones.c:2377 ../src/iop/splittoning.c:476
 msgid "hue"
@@ -2809,7 +2813,7 @@ msgid "range extent"
 msgstr "étendue de clarté"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
-#: ../src/iop/channelmixerrgb.c:3627
+#: ../src/iop/channelmixerrgb.c:3637
 msgid "saturated colors"
 msgstr "couleurs saturées"
 
@@ -3260,11 +3264,11 @@ msgstr "version du générateur de spline"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:528
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
-#: ../src/common/darktable.c:919 ../src/common/variables.c:465
-#: ../src/develop/imageop_gui.c:302 ../src/imageio/format/pdf.c:655
-#: ../src/imageio/format/pdf.c:680 ../src/libs/export.c:1277
-#: ../src/libs/export.c:1283 ../src/libs/export.c:1290
-#: ../src/libs/metadata_view.c:409
+#: ../src/common/darktable.c:919 ../src/common/database.c:2543
+#: ../src/common/variables.c:465 ../src/develop/imageop_gui.c:302
+#: ../src/imageio/format/pdf.c:655 ../src/imageio/format/pdf.c:680
+#: ../src/libs/export.c:1277 ../src/libs/export.c:1283
+#: ../src/libs/export.c:1290 ../src/libs/metadata_view.c:409
 msgid "no"
 msgstr "non"
 
@@ -3651,7 +3655,7 @@ msgstr "mode de remplissage"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:279
 #: ../build/lib/darktable/plugins/introspection_retouch.c:414
-#: ../src/iop/basicadj.c:621 ../src/iop/channelmixerrgb.c:3589
+#: ../src/iop/basicadj.c:621 ../src/iop/channelmixerrgb.c:3599
 #: ../src/iop/colisa.c:316 ../src/iop/lowpass.c:588 ../src/iop/soften.c:414
 #: ../src/iop/vignette.c:990 ../src/libs/history.c:897
 msgid "brightness"
@@ -4012,8 +4016,8 @@ msgstr "Montre des images sur la carte"
 msgid "Print your images"
 msgstr "Imprimer vos images"
 
-#: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1659
-#: ../src/control/jobs/control_jobs.c:1732 ../src/gui/hist_dialog.c:185
+#: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1668
+#: ../src/control/jobs/control_jobs.c:1741 ../src/gui/hist_dialog.c:185
 #: ../src/gui/preferences.c:1613 ../src/gui/preferences.c:1639
 #: ../src/gui/preferences.c:1728 ../src/gui/preferences.c:1776
 #: ../src/gui/presets.c:383 ../src/gui/presets.c:478
@@ -4290,7 +4294,7 @@ msgstr "ordre des modules"
 #: ../src/common/collection.c:1498 ../src/develop/blend_gui.c:1954
 #: ../src/develop/blend_gui.c:1981 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:317 ../src/iop/channelmixer.c:625
-#: ../src/iop/channelmixer.c:635 ../src/iop/channelmixerrgb.c:3584
+#: ../src/iop/channelmixer.c:635 ../src/iop/channelmixerrgb.c:3594
 #: ../src/iop/temperature.c:1877 ../src/iop/temperature.c:2028
 #: ../src/libs/collect.c:1710 ../src/views/darkroom.c:2540
 msgid "red"
@@ -4305,7 +4309,7 @@ msgstr "jaune"
 #: ../src/common/collection.c:1502 ../src/develop/blend_gui.c:1957
 #: ../src/develop/blend_gui.c:1984 ../src/develop/lightroom.c:832
 #: ../src/iop/bilateral.cc:322 ../src/iop/channelmixer.c:626
-#: ../src/iop/channelmixer.c:641 ../src/iop/channelmixerrgb.c:3585
+#: ../src/iop/channelmixer.c:641 ../src/iop/channelmixerrgb.c:3595
 #: ../src/iop/temperature.c:1861 ../src/iop/temperature.c:1879
 #: ../src/iop/temperature.c:2029 ../src/libs/collect.c:1710
 #: ../src/views/darkroom.c:2541
@@ -4315,7 +4319,7 @@ msgstr "vert"
 #: ../src/common/collection.c:1504 ../src/develop/blend_gui.c:1960
 #: ../src/develop/blend_gui.c:1987 ../src/develop/lightroom.c:834
 #: ../src/iop/bilateral.cc:327 ../src/iop/channelmixer.c:627
-#: ../src/iop/channelmixer.c:647 ../src/iop/channelmixerrgb.c:3586
+#: ../src/iop/channelmixer.c:647 ../src/iop/channelmixerrgb.c:3596
 #: ../src/iop/temperature.c:1881 ../src/iop/temperature.c:2030
 #: ../src/libs/collect.c:1710
 msgid "blue"
@@ -4551,8 +4555,8 @@ msgstr "erreur de chargement du dossier « %s »"
 msgid "file `%s' has unknown format!"
 msgstr "le fichier « %s » possède un format inconnu !"
 
-#: ../src/common/darktable.c:296 ../src/control/jobs/control_jobs.c:2095
-#: ../src/control/jobs/control_jobs.c:2117
+#: ../src/common/darktable.c:296 ../src/control/jobs/control_jobs.c:2104
+#: ../src/control/jobs/control_jobs.c:2143
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
@@ -4575,113 +4579,143 @@ msgstr ""
 "particulièrement si la configuration a été changée manuellement.\n"
 "voulez-vous exécuter une nouvelle configuration de la performance?\n"
 
-#: ../src/common/darktable.c:919 ../src/common/database.c:3581
-#: ../src/common/variables.c:463 ../src/develop/imageop_gui.c:303
-#: ../src/imageio/format/pdf.c:656 ../src/imageio/format/pdf.c:681
-#: ../src/libs/export.c:1278 ../src/libs/export.c:1284
-#: ../src/libs/export.c:1291 ../src/libs/metadata_view.c:409
+#: ../src/common/darktable.c:919 ../src/common/database.c:2543
+#: ../src/common/database.c:3601 ../src/common/variables.c:463
+#: ../src/develop/imageop_gui.c:303 ../src/imageio/format/pdf.c:656
+#: ../src/imageio/format/pdf.c:681 ../src/libs/export.c:1278
+#: ../src/libs/export.c:1284 ../src/libs/export.c:1291
+#: ../src/libs/metadata_view.c:409
 msgid "yes"
 msgstr "oui"
 
-#: ../src/common/database.c:2517
+#: ../src/common/database.c:2515
 #, c-format
 msgid ""
 "\n"
-" At startup, the database failed to open because at least one of the two "
-"files in the database is locked.\n"
+"  Sorry, darktable could not be started (database is locked)\n"
 "\n"
-" The persistence of the lock is mainly caused by one of the two following "
-"causes:\n"
+"  How to solve this problem?\n"
 "\n"
-" - Another occurrence of darktable has already opened this database file and "
-"locked it for its benefit.\n"
+"  1 - If another darktable instance is already open, \n"
+"      click cancel and either use that instance or close it before "
+"attempting to rerun darktable \n"
+"      (process ID <i><b>%d</b></i> created the database locks)\n"
 "\n"
-" - A previous occurrence of darktable ended abnormally and therefore \n"
-"   could not close one or both files in the database properly.\n"
+"  2 - If you can't find a running instance of darktable, try restarting your "
+"session or your computer. \n"
+"      This will close all running programs and hopefully close the databases "
+"correctly. \n"
 "\n"
-" How to solve this problem?\n"
+"  3 - If you have done this or are certain that no other instances of "
+"darktable are running, \n"
+"      this probably means that the last instance was ended abnormally. \n"
+"      Click on the \"delete database lock files\" button to remove the files "
+"<i>data.db.lock</i> and <i>library.db.lock</i>.  \n"
 "\n"
-" 1 - Search in your environment if another darktable occurrence is active. "
-"If so, use it or close it. \n"
-"     The lock indicates that the process number of this occurrence is : "
-"<i><b>%d</b></i>\n"
 "\n"
-" 2 - If you can't find this other occurrence, try closing your session and "
-"reopening it or shutting down your computer. \n"
-"     This will delete all running programs and thus close the database "
-"correctly.\n"
-"\n"
-" 3 - If these two actions are not enough, it is because at least one of the "
-"two files that materialize the locks remains \n"
-"     and that these are no longer attached to any occurrence of darktable. "
-"It is then necessary to delete it (or them). \n"
-"     The two files are named <i>data.db.lock</i> and <i>library.db.lock</i> "
-"respectively. The opening mechanism signals \n"
-"     the presence of the <i><b>%s</b></i> file in the <i><b>%s</b></i> "
-"folder. \n"
-"     (full pathname: <i><b>%s</b></i>).\n"
-"\n"
-"     <u>Caution!</u> Do not delete these files without first checking that "
-"there are no more occurrences of darktable, \n"
-"     otherwise you risk generating serious inconsistencies in your "
-"database.\n"
-"\n"
-" As soon as you have identified and removed the cause of the lock, darktable "
-"will start without any problem.\n"
+"      <i><u>Caution!</u> Do not delete these files without first undertaking "
+"the above checks, \n"
+"      otherwise you risk generating serious inconsistencies in your database."
+"</i>\n"
 msgstr ""
 "\n"
-"La base de donnée n'a pas pu être ouverte au démarrage car un des deux "
-"fichiers est verrouillé.\n"
+"Désolé, darktable ne peut se lancer (la base de données est verrouillée)\n"
 "\n"
-"La présence d'un fichier de verrouillage est principalement du à l'une de "
-"ces causes :\n"
+"Comment résoudre se problème ?\n"
 "\n"
-"-Une autre occurrence de darktable est déjà ouverte et utilise cette base de "
-"données.\n"
+"1 - Si une autre instance de darktable est déjà ouverte,\n"
+"      cliquer annuler et soit vous utilisez cette instance ou vous la fermée "
+"avant de redémarrer darktable.\n"
+"      (processus n° <i><b>%d</b></i> a créé les verrous)\n"
 "\n"
-"- Une précédente version de darktable a terminé anormalement et n'a donc pas "
-"été fermée proprement la base de données.\n"
+"2 - Si vous ne pouvez pas trouver d'instance de darktable s'exécutant , "
+"essayer de relancer votre session sur l'ordinateur.\n"
+"      Ceci fermera toutes les programmes s'exécutant et pourrait fermer les "
+"bases de données correctement.\n"
 "\n"
-"Comment résoudre ce problème ?\n"
+"3 - Si vous avez fait cela et que vous êtes certain qu'aucune autre instance "
+"ne s'exécute,\n"
+"      cela veut probablement dire que la dernière exécution ne s'est pas "
+"terminée correctement. \n"
+"      Cliquez sur \"supprimer les verrous des bases de données\" pour "
+"supprimer <i>data.db.lock</i> and <i>library.db.lock</i>. \n"
 "\n"
-"1 - Vérifier dans votre environnent si une autre occurrence de darktable est "
-"active. Si c'est le cas, utilisez la ou quittez la. \n"
-"   Le verrouillage indique que le numéro de processus de cette occurrence "
-"est : <i><b>%d</b></i>\n"
 "\n"
-"2 - Si vous ne trouvez pas d'autre occurrence, quittez votre session "
-"actuelle ou redémarrez votre ordinateur.\n"
-"   Cela terminera tous les programmes actifs et ainsi fermera la base de "
-"données correctement.\n"
+"      <i><u>Attention!</u> Ne supprimez pas ces fichiers sans avoir effectué "
+"les vérifications ci-dessus,\n"
+"      sinon vous risquez de créer des incohérences sérieuses dans les bases "
+"de données.</i>\n"
 "\n"
-"3 - Si ces deux actions ne sont pas suffisantes, c'est qu'au moins l'un des "
-"deux fichiers de verrouillage est toujours présent.\n"
-"   et que ce fichier n'est plus attaché à une occurrence de darktable. Il "
-"est alors nécessaire de le (ou les) supprimer .\n"
-"   Les deux fichiers sont nommés <i>data.db.lock</i> and <i>library.db.lock</"
-"i> respectivement. Le système d'ouverture signale\n"
-"   la présence du fichier <i><b>%s</b></i> dans le répertoire <i><b>%s</b></"
-"i> .\n"
-"   (chemin complet : <i><b>%s</b></i>).\n"
-"\n"
-"   <u>Attention !</u> Ne supprimez pas ces fichiers sans avoir vérifié au "
-"préalable qu'il n'y a pas d'autres occurrences de darktable,\n"
-"   sinon vous risquez de corrompre irrémédiablement la base de données.\n"
-"\n"
-"Dès que vous aurez identifié et supprimé la cause du verrouillage, darktable "
-"s'exécutera a nouveau sans problème.\n"
 
-#: ../src/common/database.c:2547
-msgid "darktable cannot be started because the database is locked"
-msgstr "darktable ne peut démarrer car la base de données est verrouillée"
+#: ../src/common/database.c:2535
+msgid "error starting darktable"
+msgstr "erreur de lancement de darktable"
 
-#: ../src/common/database.c:2548 ../src/common/database.c:2720
-#: ../src/common/database.c:3031 ../src/common/database.c:3049
-#: ../src/common/database.c:3211 ../src/common/database.c:3229
-msgid "close darktable"
-msgstr "quitter darktable"
+#: ../src/common/database.c:2536 ../src/libs/collect.c:2774
+#: ../src/libs/export_metadata.c:269 ../src/libs/import.c:1309
+#: ../src/libs/metadata.c:446 ../src/libs/metadata_view.c:1040
+#: ../src/libs/modulegroups.c:3433 ../src/libs/styles.c:439
+#: ../src/libs/styles.c:614 ../src/libs/tagging.c:1359
+#: ../src/libs/tagging.c:1447 ../src/libs/tagging.c:1528
+#: ../src/libs/tagging.c:1653 ../src/libs/tagging.c:1927
+msgid "cancel"
+msgstr "annuler"
 
-#: ../src/common/database.c:2660
+#: ../src/common/database.c:2536
+msgid "delete database lock files"
+msgstr "effacer les verrous des bases de données"
+
+#: ../src/common/database.c:2542
+msgid "are you sure?"
+msgstr "êtes vous certain ?"
+
+#: ../src/common/database.c:2543
+msgid ""
+"\n"
+"do you really want to delete the lock files?\n"
+msgstr ""
+"\n"
+"voulez-vous réellement supprimer les fichiers verrous ?\n"
+
+#: ../src/common/database.c:2557 ../src/libs/export_metadata.c:160
+#: ../src/libs/geotagging.c:821
+msgid "done"
+msgstr "terminé"
+
+#: ../src/common/database.c:2558
+msgid ""
+"\n"
+"successfully deleted the lock files.\n"
+"you can now restart darktable\n"
+msgstr ""
+"\n"
+"suppression des fichiers verrous réussie.\n"
+"darktable doit être redémarré\n"
+
+#: ../src/common/database.c:2559 ../src/common/database.c:2566
+msgid "ok"
+msgstr "ok"
+
+#: ../src/common/database.c:2562 ../src/iop/cacorrect.c:1586
+msgid "error"
+msgstr "erreur"
+
+#: ../src/common/database.c:2563
+#, c-format
+msgid ""
+"\n"
+"at least one file could not be removed.\n"
+"you may try to manually delete the files <i>data.db.lock</i> and <i>library."
+"db.lock</i>\n"
+"in folder <a href=\"file:///%s\">%s</a>.\n"
+msgstr ""
+"\n"
+"au moins un fichier n'a pas pu être supprimé.\n"
+"vous pouvez essayer de supprimer les fichiers <i>data.db.lock</i> and "
+"<i>library.db.lock</i> \n"
+"dans le répertoire <a href=\"file:///%s\">%s</a>. \n"
+
+#: ../src/common/database.c:2680
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -4690,12 +4724,12 @@ msgstr ""
 "le fichier de verrouillage de la base contient un numéro de process actif "
 "sur votre système : « %d »"
 
-#: ../src/common/database.c:2666
+#: ../src/common/database.c:2686
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "le fichier de verrouillage de la base de données semble être vide"
 
-#: ../src/common/database.c:2674
+#: ../src/common/database.c:2694
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr ""
@@ -4703,7 +4737,7 @@ msgstr ""
 "de données : %s"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:2711
+#: ../src/common/database.c:2731
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -4718,15 +4752,21 @@ msgstr ""
 "\n"
 "voulez-vous continuer ou quitter pour effectuer une sauvegarde\n"
 
-#: ../src/common/database.c:2719
+#: ../src/common/database.c:2739
 msgid "darktable - schema migration"
 msgstr "darktable - migration de la base"
 
-#: ../src/common/database.c:2720
+#: ../src/common/database.c:2740 ../src/common/database.c:3051
+#: ../src/common/database.c:3069 ../src/common/database.c:3231
+#: ../src/common/database.c:3249
+msgid "close darktable"
+msgstr "quitter darktable"
+
+#: ../src/common/database.c:2740
 msgid "upgrade database"
 msgstr "mise à jour de base de données"
 
-#: ../src/common/database.c:3011 ../src/common/database.c:3191
+#: ../src/common/database.c:3031 ../src/common/database.c:3211
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -4736,21 +4776,21 @@ msgstr ""
 "« %s »\n"
 "\n"
 
-#: ../src/common/database.c:3028 ../src/common/database.c:3046
-#: ../src/common/database.c:3208 ../src/common/database.c:3226
+#: ../src/common/database.c:3048 ../src/common/database.c:3066
+#: ../src/common/database.c:3228 ../src/common/database.c:3246
 msgid "darktable - error opening database"
 msgstr "darktable - erreur lors de l'ouverture de la base de données"
 
-#: ../src/common/database.c:3033 ../src/common/database.c:3213
+#: ../src/common/database.c:3053 ../src/common/database.c:3233
 msgid "attempt restore"
 msgstr "essayer de restaurer"
 
-#: ../src/common/database.c:3035 ../src/common/database.c:3051
-#: ../src/common/database.c:3215 ../src/common/database.c:3231
+#: ../src/common/database.c:3055 ../src/common/database.c:3071
+#: ../src/common/database.c:3235 ../src/common/database.c:3251
 msgid "delete database"
 msgstr "effacer la base de données"
 
-#: ../src/common/database.c:3039 ../src/common/database.c:3219
+#: ../src/common/database.c:3059 ../src/common/database.c:3239
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -4763,7 +4803,7 @@ msgstr ""
 "depuis la sauvegarde la plus récente ou supprimer la base corrompues\n"
 "et redémarrer avec une nouvelle ?"
 
-#: ../src/common/database.c:3055 ../src/common/database.c:3235
+#: ../src/common/database.c:3075 ../src/common/database.c:3255
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -4773,7 +4813,7 @@ msgstr ""
 "la base de données depuis une sauvegarde ou supprimer la base corrompues\n"
 "et redémarrer avec une nouvelle ?"
 
-#: ../src/common/database.c:3062 ../src/common/database.c:3240
+#: ../src/common/database.c:3082 ../src/common/database.c:3260
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -4790,19 +4830,19 @@ msgstr ""
 "la base de données semble corrompue.\n"
 "« %s%s »"
 
-#: ../src/common/database.c:3558
+#: ../src/common/database.c:3578
 msgid "click later to be asked on next startup"
 msgstr "sélectionner « plus tard » pour redemander au prochain démarrage"
 
-#: ../src/common/database.c:3562
+#: ../src/common/database.c:3582
 msgid "click later to be asked when closing darktable"
 msgstr "sélectionner « plus tard » pour redemander à la fermeture"
 
-#: ../src/common/database.c:3566
+#: ../src/common/database.c:3586
 msgid "click later to be asked next time when closing darktable"
 msgstr "sélectionner « plus tard » pour redemander à la prochaine fermeture"
 
-#: ../src/common/database.c:3570
+#: ../src/common/database.c:3590
 #, c-format
 msgid ""
 "the database could use some maintenance\n"
@@ -4823,11 +4863,11 @@ msgstr ""
 "il est possible de changer les options de maintenance dans les préférences "
 "de fonctionnement"
 
-#: ../src/common/database.c:3580
+#: ../src/common/database.c:3600
 msgid "darktable - schema maintenance"
 msgstr "darktable - maintenance"
 
-#: ../src/common/database.c:3581
+#: ../src/common/database.c:3601
 msgid "later"
 msgstr "plus tard"
 
@@ -4967,7 +5007,7 @@ msgstr ""
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:2325 ../src/control/jobs/control_jobs.c:736
+#: ../src/common/image.c:2325 ../src/control/jobs/control_jobs.c:745
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
@@ -5313,210 +5353,210 @@ msgstr[1] "importation de %d images depuis l'appareil photo"
 msgid "import images from camera"
 msgstr "importer des images depuis le boîtier"
 
-#: ../src/control/jobs/control_jobs.c:131
+#: ../src/control/jobs/control_jobs.c:140
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 "échec de la création du dossier de destination, abandon du déplacement..."
 
-#: ../src/control/jobs/control_jobs.c:357
+#: ../src/control/jobs/control_jobs.c:366
 msgid "exposure bracketing only works on raw images."
 msgstr "bracketing d'exposition marche uniquement sur les images raw."
 
-#: ../src/control/jobs/control_jobs.c:364
+#: ../src/control/jobs/control_jobs.c:373
 msgid "images have to be of same size and orientation!"
 msgstr "les images doivent avoir les mêmes taille et orientation !"
 
-#: ../src/control/jobs/control_jobs.c:459
+#: ../src/control/jobs/control_jobs.c:468
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "fusion de %d image"
 msgstr[1] "fusion de %d images"
 
-#: ../src/control/jobs/control_jobs.c:530
+#: ../src/control/jobs/control_jobs.c:539
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "image HDR « %s » écrite"
 
-#: ../src/control/jobs/control_jobs.c:561
+#: ../src/control/jobs/control_jobs.c:570
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "duplication de %d image"
 msgstr[1] "duplication de %d images"
 
-#: ../src/control/jobs/control_jobs.c:598
+#: ../src/control/jobs/control_jobs.c:607
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "rotation de %d image"
 msgstr[1] "rotation de %d images"
 
-#: ../src/control/jobs/control_jobs.c:628
+#: ../src/control/jobs/control_jobs.c:637
 #, c-format
 msgid "set %d color image"
 msgid_plural "setting %d color images"
 msgstr[0] "applique le mode couleur à %d image"
 msgstr[1] "applique le mode couleur à %d images"
 
-#: ../src/control/jobs/control_jobs.c:630
+#: ../src/control/jobs/control_jobs.c:639
 #, c-format
 msgid "set %d monochrome image"
 msgid_plural "setting %d monochrome images"
 msgstr[0] "applique le mode monochrome à %d image"
 msgstr[1] "applique le mode monochrome à %d images"
 
-#: ../src/control/jobs/control_jobs.c:712
+#: ../src/control/jobs/control_jobs.c:721
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "suppression de %d image"
 msgstr[1] "suppression de %d images"
 
-#: ../src/control/jobs/control_jobs.c:815
+#: ../src/control/jobs/control_jobs.c:824
 #, c-format
 msgid "could not send %s to trash%s%s"
 msgstr "impossible de placer « %s » dans la poubelle%s%s"
 
-#: ../src/control/jobs/control_jobs.c:816
+#: ../src/control/jobs/control_jobs.c:825
 #, c-format
 msgid "could not physically delete %s%s%s"
 msgstr "impossible de supprimer du disque %s%s%s"
 
-#: ../src/control/jobs/control_jobs.c:826
+#: ../src/control/jobs/control_jobs.c:835
 msgid "physically delete"
 msgstr "supprime du disque définitivement"
 
-#: ../src/control/jobs/control_jobs.c:827
+#: ../src/control/jobs/control_jobs.c:836
 msgid "physically delete all files"
 msgstr "supprime physiquement tous les fichiers"
 
-#: ../src/control/jobs/control_jobs.c:829
+#: ../src/control/jobs/control_jobs.c:838
 msgid "only remove from the collection"
 msgstr "enlève uniquement de la collection"
 
-#: ../src/control/jobs/control_jobs.c:830
+#: ../src/control/jobs/control_jobs.c:839
 msgid "skip to next file"
 msgstr "passe au fichier suivant"
 
-#: ../src/control/jobs/control_jobs.c:831
+#: ../src/control/jobs/control_jobs.c:840
 msgid "stop process"
 msgstr "arrête l'effacement"
 
-#: ../src/control/jobs/control_jobs.c:836
+#: ../src/control/jobs/control_jobs.c:845
 msgid "trashing error"
 msgstr "erreur de la poubelle"
 
-#: ../src/control/jobs/control_jobs.c:837
+#: ../src/control/jobs/control_jobs.c:846
 msgid "deletion error"
 msgstr "erreur de suppression"
 
-#: ../src/control/jobs/control_jobs.c:979
+#: ../src/control/jobs/control_jobs.c:988
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
 msgstr[0] "mise à la poubelle de %d image"
 msgstr[1] "mise à la poubelle de %d images"
 
-#: ../src/control/jobs/control_jobs.c:981
+#: ../src/control/jobs/control_jobs.c:990
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "suppression de %d image"
 msgstr[1] "suppression de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1106
+#: ../src/control/jobs/control_jobs.c:1115
 msgid "failed to parse GPX file"
 msgstr "erreur de lecture du fichier GPX"
 
-#: ../src/control/jobs/control_jobs.c:1174
+#: ../src/control/jobs/control_jobs.c:1183
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "application des données GPX recalées à %d image"
 msgstr[1] "application des données GPX recalées à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1192
+#: ../src/control/jobs/control_jobs.c:1201
 #, c-format
 msgid "moving %d image"
 msgstr "déplacement de %d image"
 
-#: ../src/control/jobs/control_jobs.c:1193
+#: ../src/control/jobs/control_jobs.c:1202
 #, c-format
 msgid "moving %d images"
 msgstr "déplacement de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1198
+#: ../src/control/jobs/control_jobs.c:1207
 #, c-format
 msgid "copying %d image"
 msgstr "copie de %d image"
 
-#: ../src/control/jobs/control_jobs.c:1199
+#: ../src/control/jobs/control_jobs.c:1208
 #, c-format
 msgid "copying %d images"
 msgstr "copie de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1214
+#: ../src/control/jobs/control_jobs.c:1223
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "création de copie locale de %d image"
 msgstr[1] "création des copies locales de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1217
+#: ../src/control/jobs/control_jobs.c:1226
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "suppression de la copie locale de %d image"
 msgstr[1] "suppression des copies locales de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1262
+#: ../src/control/jobs/control_jobs.c:1271
 #, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
 msgstr[0] "mise à jour des informations de %d image"
 msgstr[1] "mise à jour des informations de %d images"
 
-#: ../src/control/jobs/control_jobs.c:1345
+#: ../src/control/jobs/control_jobs.c:1354
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exportation de %d image..."
 msgstr[1] "exportation de %d images..."
 
-#: ../src/control/jobs/control_jobs.c:1377
+#: ../src/control/jobs/control_jobs.c:1386
 #, c-format
 msgid "exporting %d / %d to %s"
 msgstr "exportation %d / %d vers %s"
 
-#: ../src/control/jobs/control_jobs.c:1398 ../src/views/darkroom.c:792
+#: ../src/control/jobs/control_jobs.c:1407 ../src/views/darkroom.c:792
 #: ../src/views/print.c:313
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "image « %s » non disponible actuellement"
 
-#: ../src/control/jobs/control_jobs.c:1489
+#: ../src/control/jobs/control_jobs.c:1498
 msgid "merge hdr image"
 msgstr "fusion hdr d'images"
 
-#: ../src/control/jobs/control_jobs.c:1503
+#: ../src/control/jobs/control_jobs.c:1512
 msgid "duplicate images"
 msgstr "cloner les images"
 
-#: ../src/control/jobs/control_jobs.c:1509
+#: ../src/control/jobs/control_jobs.c:1518
 msgid "flip images"
 msgstr "retourner les images"
 
-#: ../src/control/jobs/control_jobs.c:1516
+#: ../src/control/jobs/control_jobs.c:1525
 msgid "set monochrome images"
 msgstr "définit comme images monochromes"
 
 #. get all selected images now, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1523
+#: ../src/control/jobs/control_jobs.c:1532
 msgid "remove images"
 msgstr "enlever les images"
 
-#: ../src/control/jobs/control_jobs.c:1540
+#: ../src/control/jobs/control_jobs.c:1549
 #, c-format
 msgid ""
 "do you really want to remove %d image from darktable\n"
@@ -5531,21 +5571,21 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir enlever %d images de darktable\n"
 "(sans supprimer les fichiers du disque)?"
 
-#: ../src/control/jobs/control_jobs.c:1547
+#: ../src/control/jobs/control_jobs.c:1556
 msgid "remove image?"
 msgstr "enlever l'image ?"
 
-#: ../src/control/jobs/control_jobs.c:1547
+#: ../src/control/jobs/control_jobs.c:1556
 msgid "remove images?"
 msgstr "enlever les images ?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1563
-#: ../src/control/jobs/control_jobs.c:1607
+#: ../src/control/jobs/control_jobs.c:1572
+#: ../src/control/jobs/control_jobs.c:1616
 msgid "delete images"
 msgstr "supprimer les images"
 
-#: ../src/control/jobs/control_jobs.c:1583
+#: ../src/control/jobs/control_jobs.c:1592
 #, c-format
 msgid ""
 "do you really want to physically delete %d image\n"
@@ -5560,23 +5600,23 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir supprimer définitivement %d images\n"
 "(en utilisant la poubelle si possible)?"
 
-#: ../src/control/jobs/control_jobs.c:1585
+#: ../src/control/jobs/control_jobs.c:1594
 #, c-format
 msgid "do you really want to physically delete %d image from disk?"
 msgid_plural "do you really want to physically delete %d images from disk?"
 msgstr[0] "êtes-vous sûr de vouloir supprimer définitivement %d image ?"
 msgstr[1] "êtes-vous sûr de vouloir supprimer définitivement %d images ?"
 
-#: ../src/control/jobs/control_jobs.c:1592
-#: ../src/control/jobs/control_jobs.c:1630
+#: ../src/control/jobs/control_jobs.c:1601
+#: ../src/control/jobs/control_jobs.c:1639
 msgid "delete image?"
 msgstr "supprimer l'image ?"
 
-#: ../src/control/jobs/control_jobs.c:1592
+#: ../src/control/jobs/control_jobs.c:1601
 msgid "delete images?"
 msgstr "supprimer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1624
+#: ../src/control/jobs/control_jobs.c:1633
 msgid ""
 "do you really want to physically delete selected image (using trash if "
 "possible)?"
@@ -5584,21 +5624,21 @@ msgstr ""
 "êtes-vous sûr de vouloir supprimer définitivement l'image sélectionnée (en "
 "utilisant la poubelle si possible) ?"
 
-#: ../src/control/jobs/control_jobs.c:1625
+#: ../src/control/jobs/control_jobs.c:1634
 msgid "do you really want to physically delete selected image from disk?"
 msgstr ""
 "êtes-vous sûr de vouloir supprimer définitivement les images sélectionnées ?"
 
-#: ../src/control/jobs/control_jobs.c:1648
+#: ../src/control/jobs/control_jobs.c:1657
 msgid "move images"
 msgstr "déplacer les images"
 
-#: ../src/control/jobs/control_jobs.c:1660
-#: ../src/control/jobs/control_jobs.c:1733
+#: ../src/control/jobs/control_jobs.c:1669
+#: ../src/control/jobs/control_jobs.c:1742
 msgid "_select as destination"
 msgstr "_sélectionner comme destination"
 
-#: ../src/control/jobs/control_jobs.c:1691
+#: ../src/control/jobs/control_jobs.c:1700
 #, c-format
 msgid ""
 "do you really want to physically move %d image to %s?\n"
@@ -5613,112 +5653,112 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir déplacer %d images vers %s ?\n"
 "(les clones seront également déplacés)"
 
-#: ../src/control/jobs/control_jobs.c:1700
+#: ../src/control/jobs/control_jobs.c:1709
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "déplacer l'image ?"
 msgstr[1] "déplacer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1721
+#: ../src/control/jobs/control_jobs.c:1730
 msgid "copy images"
 msgstr "copier les images"
 
-#: ../src/control/jobs/control_jobs.c:1763
+#: ../src/control/jobs/control_jobs.c:1772
 #, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
 msgstr[0] "êtes-vous sûr de vouloir copier %d image vers %s ?"
 msgstr[1] "êtes-vous sûr de vouloir copier %d images vers %s ?"
 
-#: ../src/control/jobs/control_jobs.c:1769
+#: ../src/control/jobs/control_jobs.c:1778
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "copier l'image ?"
 msgstr[1] "copier les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1789
-#: ../src/control/jobs/control_jobs.c:1797
+#: ../src/control/jobs/control_jobs.c:1798
+#: ../src/control/jobs/control_jobs.c:1806
 msgid "local copy images"
 msgstr "copie locale d'images"
 
-#: ../src/control/jobs/control_jobs.c:1804 ../src/libs/image.c:598
+#: ../src/control/jobs/control_jobs.c:1813 ../src/libs/image.c:598
 msgid "refresh exif"
 msgstr "rafraîchir exif"
 
-#: ../src/control/jobs/control_jobs.c:1868
+#: ../src/control/jobs/control_jobs.c:1877
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "impossible d'obtenir les paramètres du module de stockage « %s », "
 "exportation abandonnée."
 
-#: ../src/control/jobs/control_jobs.c:1884
+#: ../src/control/jobs/control_jobs.c:1893
 msgid "export images"
 msgstr "exporter les images"
 
-#: ../src/control/jobs/control_jobs.c:1947
+#: ../src/control/jobs/control_jobs.c:1956
 #, c-format
 msgid "adding time offset to %d image"
 msgstr "ajout du décalage horaire à %d image"
 
-#: ../src/control/jobs/control_jobs.c:1947
+#: ../src/control/jobs/control_jobs.c:1956
 #, c-format
 msgid "setting date/time of %d image"
 msgstr "définit date/heure à %d image"
 
-#: ../src/control/jobs/control_jobs.c:1948
+#: ../src/control/jobs/control_jobs.c:1957
 #, c-format
 msgid "adding time offset to %d images"
 msgstr "ajout du décalage horaire à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1948
+#: ../src/control/jobs/control_jobs.c:1957
 #, c-format
 msgid "setting date/time of %d images"
 msgstr "définit date/heure à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1989
+#: ../src/control/jobs/control_jobs.c:1998
 #, c-format
 msgid "added time offset to %d image"
 msgstr "décalage horaire ajouté à %d image"
 
-#: ../src/control/jobs/control_jobs.c:1989
+#: ../src/control/jobs/control_jobs.c:1998
 #, c-format
 msgid "set date/time of %d image"
 msgstr "date/heure définit à %d image"
 
-#: ../src/control/jobs/control_jobs.c:1990
+#: ../src/control/jobs/control_jobs.c:1999
 #, c-format
 msgid "added time offset to %d images"
 msgstr "décalage horaire ajouté à %d image"
 
-#: ../src/control/jobs/control_jobs.c:1990
+#: ../src/control/jobs/control_jobs.c:1999
 #, c-format
 msgid "set date/time of %d images"
 msgstr "date/heure définit à %d images"
 
-#: ../src/control/jobs/control_jobs.c:2031
+#: ../src/control/jobs/control_jobs.c:2040
 msgid "time offset"
 msgstr "décalage : "
 
-#: ../src/control/jobs/control_jobs.c:2059 ../src/libs/copy_history.c:415
+#: ../src/control/jobs/control_jobs.c:2068 ../src/libs/copy_history.c:415
 msgid "write sidecar files"
 msgstr "sauver en xmp"
 
-#: ../src/control/jobs/control_jobs.c:2203 ../src/control/jobs/film_jobs.c:223
+#: ../src/control/jobs/control_jobs.c:2225 ../src/control/jobs/film_jobs.c:223
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] "importation de %d image"
 msgstr[1] "importation de %d images"
 
-#: ../src/control/jobs/control_jobs.c:2230
+#: ../src/control/jobs/control_jobs.c:2259
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
 msgstr[0] "importation de %d/%d image"
 msgstr[1] "importation de %d/%d images"
 
-#: ../src/control/jobs/control_jobs.c:2236
+#: ../src/control/jobs/control_jobs.c:2266
 #, c-format
 msgid "imported %d image"
 msgid_plural "imported %d images"
@@ -6110,13 +6150,13 @@ msgid "sliders for gray value"
 msgstr "conditions de fusion sur le canal gris"
 
 #: ../src/develop/blend_gui.c:1951 ../src/develop/blend_gui.c:1978
-#: ../src/iop/channelmixerrgb.c:3590 ../src/iop/levels.c:674
+#: ../src/iop/channelmixerrgb.c:3600 ../src/iop/levels.c:674
 #: ../src/views/darkroom.c:2539
 msgid "gray"
 msgstr "gris"
 
 #: ../src/develop/blend_gui.c:1952 ../src/develop/blend_gui.c:1979
-#: ../src/iop/channelmixerrgb.c:3584 ../src/iop/denoiseprofile.c:3545
+#: ../src/iop/channelmixerrgb.c:3594 ../src/iop/denoiseprofile.c:3545
 #: ../src/iop/rawdenoise.c:907 ../src/iop/rgbcurve.c:1382
 #: ../src/iop/rgblevels.c:959
 msgid "R"
@@ -6127,7 +6167,7 @@ msgid "sliders for red channel"
 msgstr "conditions de fusion sur le canal rouge"
 
 #: ../src/develop/blend_gui.c:1955 ../src/develop/blend_gui.c:1982
-#: ../src/iop/channelmixerrgb.c:3585 ../src/iop/denoiseprofile.c:3546
+#: ../src/iop/channelmixerrgb.c:3595 ../src/iop/denoiseprofile.c:3546
 #: ../src/iop/rawdenoise.c:908 ../src/iop/rgbcurve.c:1383
 #: ../src/iop/rgblevels.c:960
 msgid "G"
@@ -6138,7 +6178,7 @@ msgid "sliders for green channel"
 msgstr "conditions de fusion sur le canal vert"
 
 #: ../src/develop/blend_gui.c:1958 ../src/develop/blend_gui.c:1985
-#: ../src/iop/channelmixerrgb.c:3586 ../src/iop/denoiseprofile.c:3547
+#: ../src/iop/channelmixerrgb.c:3596 ../src/iop/denoiseprofile.c:3547
 #: ../src/iop/rawdenoise.c:909 ../src/iop/rgbcurve.c:1384
 #: ../src/iop/rgblevels.c:961
 msgid "B"
@@ -6871,7 +6911,16 @@ msgstr "[GRADIENT] changer opacité"
 msgid "gradient #%d"
 msgstr "dégradé #%d"
 
-#: ../src/develop/masks/gradient.c:1457
+#: ../src/develop/masks/gradient.c:1458
+#, c-format
+msgid ""
+"<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
+"<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
+msgstr ""
+"<b>courbe</b> : molette, <b>compression</b> : shift+molette\n"
+"<b>orientation</b>: clic+déplacer, <b>opacité</b> : ctrl+molette (%d%%)"
+
+#: ../src/develop/masks/gradient.c:1462
 #, c-format
 msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
@@ -6880,7 +6929,7 @@ msgstr ""
 "<b>courbe</b> : molette, <b>compression</b> : shift+molette\n"
 "<b>opacité</b> : ctrl+molette (%d%%)"
 
-#: ../src/develop/masks/gradient.c:1460
+#: ../src/develop/masks/gradient.c:1465
 msgid "<b>rotate</b>: drag"
 msgstr "<b>tourner</b> : déplacer"
 
@@ -9349,8 +9398,8 @@ msgstr "correctif"
 
 #: ../src/iop/ashift.c:128 ../src/iop/ashift.c:130 ../src/iop/atrous.c:140
 #: ../src/iop/basicadj.c:147 ../src/iop/bilateral.cc:100
-#: ../src/iop/bilateral.cc:102 ../src/iop/channelmixerrgb.c:197
-#: ../src/iop/channelmixerrgb.c:199 ../src/iop/clipping.c:322
+#: ../src/iop/bilateral.cc:102 ../src/iop/channelmixerrgb.c:199
+#: ../src/iop/channelmixerrgb.c:201 ../src/iop/clipping.c:322
 #: ../src/iop/clipping.c:324 ../src/iop/colorin.c:137 ../src/iop/demosaic.c:215
 #: ../src/iop/denoiseprofile.c:670 ../src/iop/denoiseprofile.c:672
 #: ../src/iop/exposure.c:115 ../src/iop/exposure.c:117 ../src/iop/flip.c:102
@@ -10308,10 +10357,6 @@ msgstr "relatif à la scène, linéaire, raw"
 msgid "linear, raw"
 msgstr "linéaire, raw"
 
-#: ../src/iop/cacorrect.c:1586
-msgid "error"
-msgstr "erreur"
-
 #: ../src/iop/cacorrect.c:1587
 msgid "CA correction supports only RGB colour filter arrays"
 msgstr "la correction des AC supporte seulement les filtres couleur RGB"
@@ -10432,7 +10477,7 @@ msgstr ""
 "ce module est déprécié. nous vous recommandons d'utiliser le module "
 "calibration des couleurs."
 
-#: ../src/iop/channelmixer.c:136 ../src/iop/channelmixerrgb.c:193
+#: ../src/iop/channelmixer.c:136 ../src/iop/channelmixerrgb.c:195
 msgid ""
 "perform color space corrections\n"
 "such as white balance, channels mixing\n"
@@ -10442,7 +10487,7 @@ msgstr ""
 "tels que la balance des blancs, le mélange des canaux\n"
 "et des conversions en films d'émulation monochromes"
 
-#: ../src/iop/channelmixer.c:139 ../src/iop/channelmixerrgb.c:196
+#: ../src/iop/channelmixer.c:139 ../src/iop/channelmixerrgb.c:198
 #: ../src/iop/clipping.c:321 ../src/iop/colorbalance.c:159
 #: ../src/iop/colorbalancergb.c:164 ../src/iop/colorchecker.c:126
 #: ../src/iop/colorcorrection.c:77 ../src/iop/lut3d.c:139
@@ -10470,11 +10515,11 @@ msgstr "quantité du canal vert dans le canal de destination"
 msgid "amount of blue channel in the output channel"
 msgstr "quantité du canal bleu dans le canal de destination"
 
-#: ../src/iop/channelmixer.c:662 ../src/iop/channelmixerrgb.c:439
+#: ../src/iop/channelmixer.c:662 ../src/iop/channelmixerrgb.c:441
 msgid "swap R and B"
 msgstr "échanger R et B"
 
-#: ../src/iop/channelmixer.c:668 ../src/iop/channelmixerrgb.c:413
+#: ../src/iop/channelmixer.c:668 ../src/iop/channelmixerrgb.c:415
 msgid "swap G and B"
 msgstr "échanger V et B"
 
@@ -10538,67 +10583,67 @@ msgstr "N/B Kodak T-max 400"
 msgid "B/W Kodak Tri-X 400"
 msgstr "N/B Kodak Tri-X 400"
 
-#: ../src/iop/channelmixerrgb.c:183
+#: ../src/iop/channelmixerrgb.c:185
 msgid "color calibration"
 msgstr "calibration des couleurs"
 
-#: ../src/iop/channelmixerrgb.c:188
+#: ../src/iop/channelmixerrgb.c:190
 msgid "channel mixer|white balance|monochrome"
 msgstr "mixeur de canaux|balance des blancs|monochrome"
 
-#: ../src/iop/channelmixerrgb.c:198
+#: ../src/iop/channelmixerrgb.c:200
 msgid "linear, RGB or XYZ"
 msgstr "linéaire, RVB ou XYZ"
 
-#: ../src/iop/channelmixerrgb.c:318
+#: ../src/iop/channelmixerrgb.c:320
 msgid "B&W : luminance-based"
 msgstr "N&B : basée sur luminance"
 
-#: ../src/iop/channelmixerrgb.c:347
+#: ../src/iop/channelmixerrgb.c:349
 msgid "B&W : Ilford HP5+"
 msgstr "N&B : Ilford HP5+"
 
-#: ../src/iop/channelmixerrgb.c:356
+#: ../src/iop/channelmixerrgb.c:358
 msgid "B&W : Ilford Delta 100"
 msgstr "N&B : Ilford Delta 100"
 
-#: ../src/iop/channelmixerrgb.c:366
+#: ../src/iop/channelmixerrgb.c:368
 msgid "B&W : Ilford Delta 400 - 3200"
 msgstr "N&B : Ilford Delta 400 - 3200"
 
-#: ../src/iop/channelmixerrgb.c:375
+#: ../src/iop/channelmixerrgb.c:377
 msgid "B&W : Ilford FP2"
 msgstr "N&B : Ilford FP2"
 
-#: ../src/iop/channelmixerrgb.c:384
+#: ../src/iop/channelmixerrgb.c:386
 msgid "B&W : Fuji Acros 100"
 msgstr "N&B : Fuji Acros 100"
 
-#: ../src/iop/channelmixerrgb.c:400
+#: ../src/iop/channelmixerrgb.c:402
 msgid "basic channel mixer"
 msgstr "mixeur de canaux base"
 
-#: ../src/iop/channelmixerrgb.c:426
+#: ../src/iop/channelmixerrgb.c:428
 msgid "swap G and R"
 msgstr "échanger V et R"
 
-#: ../src/iop/channelmixerrgb.c:1622 ../src/iop/channelmixerrgb.c:1671
+#: ../src/iop/channelmixerrgb.c:1628 ../src/iop/channelmixerrgb.c:1677
 msgid "very good"
 msgstr "très bon"
 
-#: ../src/iop/channelmixerrgb.c:1624 ../src/iop/channelmixerrgb.c:1673
+#: ../src/iop/channelmixerrgb.c:1630 ../src/iop/channelmixerrgb.c:1679
 msgid "good"
 msgstr "bon"
 
-#: ../src/iop/channelmixerrgb.c:1626 ../src/iop/channelmixerrgb.c:1675
+#: ../src/iop/channelmixerrgb.c:1632 ../src/iop/channelmixerrgb.c:1681
 msgid "passable"
 msgstr "passable"
 
-#: ../src/iop/channelmixerrgb.c:1628 ../src/iop/channelmixerrgb.c:1677
+#: ../src/iop/channelmixerrgb.c:1634 ../src/iop/channelmixerrgb.c:1683
 msgid "bad"
 msgstr "mauvais"
 
-#: ../src/iop/channelmixerrgb.c:1635
+#: ../src/iop/channelmixerrgb.c:1641
 #, c-format
 msgid ""
 "\n"
@@ -10635,7 +10680,7 @@ msgstr ""
 "compensation d'exposition : \t%+.2f IL\n"
 "décalage du noir : \t\t\t%+.4f"
 
-#: ../src/iop/channelmixerrgb.c:1681
+#: ../src/iop/channelmixerrgb.c:1687
 #, c-format
 msgid ""
 "\n"
@@ -10656,11 +10701,11 @@ msgstr ""
 
 #. our second biggest problem : another channelmixerrgb instance is doing CAT
 #. earlier in the pipe.
-#: ../src/iop/channelmixerrgb.c:1703
+#: ../src/iop/channelmixerrgb.c:1709
 msgid "double CAT applied"
 msgstr "CAT appliquée deux foix"
 
-#: ../src/iop/channelmixerrgb.c:1704
+#: ../src/iop/channelmixerrgb.c:1710
 msgid ""
 "you have 2 instances or more of color calibration,\n"
 "all performing chromatic adaptation.\n"
@@ -10673,11 +10718,11 @@ msgstr ""
 "avec des masques en connaissance de cause."
 
 #. our first and biggest problem : white balance module is being clever with WB coeffs
-#: ../src/iop/channelmixerrgb.c:1714
+#: ../src/iop/channelmixerrgb.c:1720
 msgid "white balance module error"
 msgstr "erreur module balance des blancs"
 
-#: ../src/iop/channelmixerrgb.c:1715
+#: ../src/iop/channelmixerrgb.c:1721
 msgid ""
 "the white balance module is not using the camera\n"
 "reference illuminant, which will cause issues here\n"
@@ -10689,16 +10734,16 @@ msgstr ""
 "d'adaptation chromatique ici. soit la référence de chaîne de traitement\n"
 "est utilisée soit l'adaptation chromatiques est désactivée."
 
-#: ../src/iop/channelmixerrgb.c:1788
+#: ../src/iop/channelmixerrgb.c:1794
 msgid "auto-detection of white balance completed"
 msgstr "détection automatique de la balance des blancs terminée"
 
-#: ../src/iop/channelmixerrgb.c:3048
+#: ../src/iop/channelmixerrgb.c:3054
 #, c-format
 msgid "CCT: %.0f K (daylight)"
 msgstr "CCT : %.0f K (lumière du jour)"
 
-#: ../src/iop/channelmixerrgb.c:3050
+#: ../src/iop/channelmixerrgb.c:3056
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a daylight spectrum,\n"
@@ -10709,12 +10754,12 @@ msgstr ""
 "du jour,\n"
 "donc sa température est pertinente et significative avec un illuminant D."
 
-#: ../src/iop/channelmixerrgb.c:3056
+#: ../src/iop/channelmixerrgb.c:3062
 #, c-format
 msgid "CCT: %.0f K (black body)"
 msgstr "CCT : %.0f K (corps noir)"
 
-#: ../src/iop/channelmixerrgb.c:3058
+#: ../src/iop/channelmixerrgb.c:3064
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a black body spectrum,\n"
@@ -10726,12 +10771,12 @@ msgstr ""
 "donc sa température est pertinente et significative avec un illuminant "
 "planckien."
 
-#: ../src/iop/channelmixerrgb.c:3064
+#: ../src/iop/channelmixerrgb.c:3070
 #, c-format
 msgid "CCT: %.0f K (invalid)"
 msgstr "CCT : %.0f K (invalide)"
 
-#: ../src/iop/channelmixerrgb.c:3066
+#: ../src/iop/channelmixerrgb.c:3072
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant cannot be accurately modeled by a daylight or black body "
@@ -10745,12 +10790,12 @@ msgstr ""
 "donc sa température est pertinente et significative avec un illuminant "
 "personnalisé."
 
-#: ../src/iop/channelmixerrgb.c:3073
+#: ../src/iop/channelmixerrgb.c:3079
 #, c-format
 msgid "CCT: undefined"
 msgstr "CCT : non défini"
 
-#: ../src/iop/channelmixerrgb.c:3075
+#: ../src/iop/channelmixerrgb.c:3081
 msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
@@ -10758,16 +10803,16 @@ msgstr ""
 "température de couleur proximale\n"
 "ne peut être définie donc vous devez utiliser un illuminant personnalisé."
 
-#: ../src/iop/channelmixerrgb.c:3304
+#: ../src/iop/channelmixerrgb.c:3314
 msgid "white balance successfully extracted from raw image"
 msgstr "la balance des blancs a été extraite de l'image raw avec succès"
 
 #. We need to recompute only the full preview
-#: ../src/iop/channelmixerrgb.c:3310
+#: ../src/iop/channelmixerrgb.c:3320
 msgid "auto-detection of white balance started…"
 msgstr "l'auto-détection de la balance des blancs a démarrée..."
 
-#: ../src/iop/channelmixerrgb.c:3365
+#: ../src/iop/channelmixerrgb.c:3375
 msgid ""
 "color calibration: the sum of the grey channel parameters is zero, "
 "normalization will be disabled."
@@ -10776,19 +10821,19 @@ msgstr ""
 "la normalisation va être désactivée."
 
 #. Page CAT
-#: ../src/iop/channelmixerrgb.c:3480
+#: ../src/iop/channelmixerrgb.c:3490
 msgid "CAT"
 msgstr "CAT"
 
-#: ../src/iop/channelmixerrgb.c:3480
+#: ../src/iop/channelmixerrgb.c:3490
 msgid "chromatic adaptation transform"
 msgstr "transformation d'adaptation chromatique"
 
-#: ../src/iop/channelmixerrgb.c:3482
+#: ../src/iop/channelmixerrgb.c:3492
 msgid "adaptation"
 msgstr "adaptation"
 
-#: ../src/iop/channelmixerrgb.c:3484
+#: ../src/iop/channelmixerrgb.c:3494
 msgid ""
 "choose the method to adapt the illuminant\n"
 "and the colorspace in which the module works: \n"
@@ -10811,7 +10856,7 @@ msgstr ""
 "• aucun désactive toute adaptation et utilise l'espace RVB de travail du "
 "pipeline."
 
-#: ../src/iop/channelmixerrgb.c:3501
+#: ../src/iop/channelmixerrgb.c:3511
 msgid ""
 "this is the color of the scene illuminant before chromatic adaptation\n"
 "this color will be turned into pure white by the adaptation."
@@ -10819,103 +10864,103 @@ msgstr ""
 "ceci est la couleur de l'illuminant de scène avant l'adaptation chromatique\n"
 "cette couleur sera transformée en blanc pur par l'adaptation."
 
-#: ../src/iop/channelmixerrgb.c:3508 ../src/iop/temperature.c:2057
+#: ../src/iop/channelmixerrgb.c:3518 ../src/iop/temperature.c:2057
 msgid "set white balance to detected from area"
 msgstr "choisir la balance des blancs depuis une zone"
 
-#: ../src/iop/channelmixerrgb.c:3512
+#: ../src/iop/channelmixerrgb.c:3522
 msgid "illuminant"
 msgstr "illuminant"
 
-#: ../src/iop/channelmixerrgb.c:3518 ../src/iop/temperature.c:1993
+#: ../src/iop/channelmixerrgb.c:3528 ../src/iop/temperature.c:1993
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/channelmixerrgb.c:3562
+#: ../src/iop/channelmixerrgb.c:3572
 msgid "input red"
 msgstr "rouge (entrée)"
 
-#: ../src/iop/channelmixerrgb.c:3569
+#: ../src/iop/channelmixerrgb.c:3579
 msgid "input green"
 msgstr "vert (entrée)"
 
-#: ../src/iop/channelmixerrgb.c:3576
+#: ../src/iop/channelmixerrgb.c:3586
 msgid "input blue"
 msgstr "bleu (entrée)"
 
-#: ../src/iop/channelmixerrgb.c:3587
+#: ../src/iop/channelmixerrgb.c:3597
 msgid "colorfulness"
 msgstr "saturation"
 
-#: ../src/iop/channelmixerrgb.c:3602
+#: ../src/iop/channelmixerrgb.c:3612
 msgid "calibrate with a color checker"
 msgstr "calibrer avec une charte couleur"
 
-#: ../src/iop/channelmixerrgb.c:3605
+#: ../src/iop/channelmixerrgb.c:3615
 msgid "use a color checker target to autoset CAT and channels"
 msgstr "utiliser une charte couleur pour auto-définir CAT et canaux"
 
-#: ../src/iop/channelmixerrgb.c:3612
+#: ../src/iop/channelmixerrgb.c:3622
 msgid "chart"
 msgstr "charte"
 
-#: ../src/iop/channelmixerrgb.c:3613
+#: ../src/iop/channelmixerrgb.c:3623
 msgid "Xrite ColorChecker 24 pre-2014"
 msgstr "Xrite ColorChecker 24 pré-2014"
 
-#: ../src/iop/channelmixerrgb.c:3614
+#: ../src/iop/channelmixerrgb.c:3624
 msgid "Xrite ColorChecker 24 post-2014"
 msgstr "Xrite ColorChecker 24 post-2014"
 
-#: ../src/iop/channelmixerrgb.c:3615
+#: ../src/iop/channelmixerrgb.c:3625
 msgid "Datacolor SpyderCheckr 24 pre-2018"
 msgstr "Datacolor SpyderCheckr 24 (avant 2018)"
 
-#: ../src/iop/channelmixerrgb.c:3616
+#: ../src/iop/channelmixerrgb.c:3626
 msgid "Datacolor SpyderCheckr 24 post-2018"
 msgstr "Datacolor SpyderCheckr 24 (après 2018)"
 
-#: ../src/iop/channelmixerrgb.c:3617
+#: ../src/iop/channelmixerrgb.c:3627
 msgid "Datacolor SpyderCheckr 48 pre-2018"
 msgstr "Datacolor SpyderCheckr 48 (avant 2018)"
 
-#: ../src/iop/channelmixerrgb.c:3618
+#: ../src/iop/channelmixerrgb.c:3628
 msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr "Datacolor SpyderCheckr 48 (après 2018)"
 
-#: ../src/iop/channelmixerrgb.c:3620
+#: ../src/iop/channelmixerrgb.c:3630
 msgid "choose the vendor and the type of your chart"
 msgstr "choisissez le vendeur et le modèle de votre charte"
 
-#: ../src/iop/channelmixerrgb.c:3624
+#: ../src/iop/channelmixerrgb.c:3634
 msgid "optimize for"
 msgstr "optimisé pour"
 
-#: ../src/iop/channelmixerrgb.c:3626
+#: ../src/iop/channelmixerrgb.c:3636
 msgid "neutral colors"
 msgstr "couleurs neutres"
 
-#: ../src/iop/channelmixerrgb.c:3628
+#: ../src/iop/channelmixerrgb.c:3638
 msgid "skin and soil colors"
 msgstr "couleurs de la peau et du sol"
 
-#: ../src/iop/channelmixerrgb.c:3629
+#: ../src/iop/channelmixerrgb.c:3639
 msgid "foliage colors"
 msgstr "couleurs du feuillage"
 
-#: ../src/iop/channelmixerrgb.c:3630
+#: ../src/iop/channelmixerrgb.c:3640
 msgid "sky and water colors"
 msgstr "couleurs du ciel et de l'eau"
 
-#: ../src/iop/channelmixerrgb.c:3631
+#: ../src/iop/channelmixerrgb.c:3641
 msgid "average delta E"
 msgstr "delta E moyen"
 
-#: ../src/iop/channelmixerrgb.c:3632
+#: ../src/iop/channelmixerrgb.c:3642
 msgid "maximum delta E"
 msgstr "delta E maximum"
 
-#: ../src/iop/channelmixerrgb.c:3634
+#: ../src/iop/channelmixerrgb.c:3644
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -10933,11 +10978,11 @@ msgstr ""
 "les autres sont des comportements spéciaux visant à protéger certaines "
 "teintes"
 
-#: ../src/iop/channelmixerrgb.c:3642
+#: ../src/iop/channelmixerrgb.c:3652
 msgid "patch scale"
 msgstr "échelle du patch"
 
-#: ../src/iop/channelmixerrgb.c:3643
+#: ../src/iop/channelmixerrgb.c:3653
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
@@ -10947,19 +10992,19 @@ msgstr ""
 "utile lorsque la correction de la perspective est bâclée ou\n"
 "le cadre des patchs projette une ombre sur les bords du patch."
 
-#: ../src/iop/channelmixerrgb.c:3651
+#: ../src/iop/channelmixerrgb.c:3661
 msgid "the delta E is using the CIE 2000 formula."
 msgstr "le delta E utilise la formule CIE 2000."
 
-#: ../src/iop/channelmixerrgb.c:3657
+#: ../src/iop/channelmixerrgb.c:3667
 msgid "accept the computed profile and set it in the module"
 msgstr "accepter le profile calculé et le définir dans le module"
 
-#: ../src/iop/channelmixerrgb.c:3662
+#: ../src/iop/channelmixerrgb.c:3672
 msgid "recompute the profile"
 msgstr "recalculer le profil"
 
-#: ../src/iop/channelmixerrgb.c:3667
+#: ../src/iop/channelmixerrgb.c:3677
 msgid "check the output delta E"
 msgstr "vérifier le delta E de sortie"
 
@@ -16634,15 +16679,6 @@ msgstr "darktable"
 msgid "collect images settings"
 msgstr "préférences des filtres de collection"
 
-#: ../src/libs/collect.c:2774 ../src/libs/export_metadata.c:269
-#: ../src/libs/import.c:1309 ../src/libs/metadata.c:446
-#: ../src/libs/metadata_view.c:1040 ../src/libs/modulegroups.c:3433
-#: ../src/libs/styles.c:439 ../src/libs/styles.c:614 ../src/libs/tagging.c:1359
-#: ../src/libs/tagging.c:1447 ../src/libs/tagging.c:1528
-#: ../src/libs/tagging.c:1653 ../src/libs/tagging.c:1927
-msgid "cancel"
-msgstr "annuler"
-
 #: ../src/libs/collect.c:2775 ../src/libs/export_metadata.c:269
 #: ../src/libs/metadata.c:446 ../src/libs/metadata_view.c:1040
 #: ../src/libs/tagging.c:1528 ../src/libs/tagging.c:1653
@@ -17141,10 +17177,6 @@ msgstr "sélectionner un mots-clés"
 #: ../src/libs/export_metadata.c:160
 msgid "add"
 msgstr "ajouter"
-
-#: ../src/libs/export_metadata.c:160 ../src/libs/geotagging.c:821
-msgid "done"
-msgstr "terminé"
 
 #: ../src/libs/export_metadata.c:170
 msgid "list filter"
@@ -18068,19 +18100,19 @@ msgid "please wait while prefetching the list of images from camera..."
 msgstr ""
 "merci de patienter pendant la récupération des images de votre boîtier..."
 
-#: ../src/libs/import.c:1551
+#: ../src/libs/import.c:1555
 msgid "import in-place..."
 msgstr "importer sur-place..."
 
-#: ../src/libs/import.c:1552
+#: ../src/libs/import.c:1556
 msgid "import images in-place without renaming"
 msgstr "importer les images sur place sans les renommer"
 
-#: ../src/libs/import.c:1559
+#: ../src/libs/import.c:1563
 msgid "copy and import..."
 msgstr "copier et importer..."
 
-#: ../src/libs/import.c:1560
+#: ../src/libs/import.c:1564
 msgid ""
 "copy and optionally rename images before importing them\n"
 "patterns can be defined to rename the images and specify the destination "
@@ -18091,7 +18123,7 @@ msgstr ""
 "destination"
 
 #. collapsible section
-#: ../src/libs/import.c:1586
+#: ../src/libs/import.c:1590
 msgid "parameters"
 msgstr "paramètres"
 
@@ -21184,6 +21216,96 @@ msgstr "action"
 
 #, c-format
 #~ msgid ""
+#~ "\n"
+#~ " At startup, the database failed to open because at least one of the two "
+#~ "files in the database is locked.\n"
+#~ "\n"
+#~ " The persistence of the lock is mainly caused by one of the two following "
+#~ "causes:\n"
+#~ "\n"
+#~ " - Another occurrence of darktable has already opened this database file "
+#~ "and locked it for its benefit.\n"
+#~ "\n"
+#~ " - A previous occurrence of darktable ended abnormally and therefore \n"
+#~ "   could not close one or both files in the database properly.\n"
+#~ "\n"
+#~ " How to solve this problem?\n"
+#~ "\n"
+#~ " 1 - Search in your environment if another darktable occurrence is "
+#~ "active. If so, use it or close it. \n"
+#~ "     The lock indicates that the process number of this occurrence is : "
+#~ "<i><b>%d</b></i>\n"
+#~ "\n"
+#~ " 2 - If you can't find this other occurrence, try closing your session "
+#~ "and reopening it or shutting down your computer. \n"
+#~ "     This will delete all running programs and thus close the database "
+#~ "correctly.\n"
+#~ "\n"
+#~ " 3 - If these two actions are not enough, it is because at least one of "
+#~ "the two files that materialize the locks remains \n"
+#~ "     and that these are no longer attached to any occurrence of "
+#~ "darktable. It is then necessary to delete it (or them). \n"
+#~ "     The two files are named <i>data.db.lock</i> and <i>library.db.lock</"
+#~ "i> respectively. The opening mechanism signals \n"
+#~ "     the presence of the <i><b>%s</b></i> file in the <i><b>%s</b></i> "
+#~ "folder. \n"
+#~ "     (full pathname: <i><b>%s</b></i>).\n"
+#~ "\n"
+#~ "     <u>Caution!</u> Do not delete these files without first checking "
+#~ "that there are no more occurrences of darktable, \n"
+#~ "     otherwise you risk generating serious inconsistencies in your "
+#~ "database.\n"
+#~ "\n"
+#~ " As soon as you have identified and removed the cause of the lock, "
+#~ "darktable will start without any problem.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "La base de donnée n'a pas pu être ouverte au démarrage car un des deux "
+#~ "fichiers est verrouillé.\n"
+#~ "\n"
+#~ "La présence d'un fichier de verrouillage est principalement du à l'une de "
+#~ "ces causes :\n"
+#~ "\n"
+#~ "-Une autre occurrence de darktable est déjà ouverte et utilise cette base "
+#~ "de données.\n"
+#~ "\n"
+#~ "- Une précédente version de darktable a terminé anormalement et n'a donc "
+#~ "pas été fermée proprement la base de données.\n"
+#~ "\n"
+#~ "Comment résoudre ce problème ?\n"
+#~ "\n"
+#~ "1 - Vérifier dans votre environnent si une autre occurrence de darktable "
+#~ "est active. Si c'est le cas, utilisez la ou quittez la. \n"
+#~ "   Le verrouillage indique que le numéro de processus de cette occurrence "
+#~ "est : <i><b>%d</b></i>\n"
+#~ "\n"
+#~ "2 - Si vous ne trouvez pas d'autre occurrence, quittez votre session "
+#~ "actuelle ou redémarrez votre ordinateur.\n"
+#~ "   Cela terminera tous les programmes actifs et ainsi fermera la base de "
+#~ "données correctement.\n"
+#~ "\n"
+#~ "3 - Si ces deux actions ne sont pas suffisantes, c'est qu'au moins l'un "
+#~ "des deux fichiers de verrouillage est toujours présent.\n"
+#~ "   et que ce fichier n'est plus attaché à une occurrence de darktable. Il "
+#~ "est alors nécessaire de le (ou les) supprimer .\n"
+#~ "   Les deux fichiers sont nommés <i>data.db.lock</i> and <i>library.db."
+#~ "lock</i> respectivement. Le système d'ouverture signale\n"
+#~ "   la présence du fichier <i><b>%s</b></i> dans le répertoire <i><b>%s</"
+#~ "b></i> .\n"
+#~ "   (chemin complet : <i><b>%s</b></i>).\n"
+#~ "\n"
+#~ "   <u>Attention !</u> Ne supprimez pas ces fichiers sans avoir vérifié au "
+#~ "préalable qu'il n'y a pas d'autres occurrences de darktable,\n"
+#~ "   sinon vous risquez de corrompre irrémédiablement la base de données.\n"
+#~ "\n"
+#~ "Dès que vous aurez identifié et supprimé la cause du verrouillage, "
+#~ "darktable s'exécutera a nouveau sans problème.\n"
+
+#~ msgid "darktable cannot be started because the database is locked"
+#~ msgstr "darktable ne peut démarrer car la base de données est verrouillée"
+
+#, c-format
+#~ msgid ""
 #~ "<b>compression</b>: shift+scroll\n"
 #~ "<b>opacity</b>: ctrl+scroll (%d%%)"
 #~ msgstr ""
@@ -21592,9 +21714,6 @@ msgstr "action"
 #~ msgstr ""
 #~ "entrer l'heure affichée sur les images sélectionnées\n"
 #~ "format : hh:mm:ss"
-
-#~ msgid "ok"
-#~ msgstr "ok"
 
 #~ msgid ""
 #~ "time offset\n"
