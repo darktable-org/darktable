@@ -2545,8 +2545,29 @@ static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int
   if(!table->list) return FALSE;
   // get first and last fully visible thumbnails
   dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
-  const int pos = MIN(g_list_length(table->list) - 1, table->thumbs_per_row * (table->rows - 1) - 1);
+  int pos = MIN(g_list_length(table->list) - 1, table->thumbs_per_row * (table->rows - 1) - 1);
   dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_nth_data(table->list, pos);
+
+  if(dt_conf_get_bool("lighttable/ui/continuous_scrolling"))
+  {
+    pos = g_list_length(table->list) - 1;
+    last = (dt_thumbnail_t *)g_list_nth_data(table->list, pos);
+    if(last->y - (first->y + table->thumb_size) < table->thumb_size)
+    {
+      // align requested thumb to view if no visible middle row
+      const int move_rows = (table->offset - rowid + ((rowid - 1) % table->thumbs_per_row)) / table->thumbs_per_row;
+      _move(table, 0, (move_rows - table->accumulator) * table->thumb_size, TRUE);
+      return TRUE;
+    }
+    else
+    {
+      // if first or last row is partially visible use the next row
+      if(first->y < 0)
+        first = (dt_thumbnail_t *)g_list_nth_data(table->list, table->thumbs_per_row);
+      if(last->y + table->thumb_size > table->view_height)
+        last = (dt_thumbnail_t *)g_list_nth_data(table->list, pos - (pos % table->thumbs_per_row + 1));
+    }
+  }
 
   if(first->rowid > rowid)
   {
@@ -2566,6 +2587,7 @@ static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int
   }
   return TRUE;
 }
+
 static gboolean _zoomable_ensure_rowid_visibility(dt_thumbtable_t *table, const int rowid)
 {
   if(rowid < 1) return FALSE;
