@@ -1874,6 +1874,15 @@ void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, float x, float y)
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
+    // With continuous scrolling move the thumbnails
+    // by difference between scrollbar position and thumbtable current position.
+    if (dt_conf_get_bool("lighttable/ui/continuous_scrolling"))
+    {
+      const float thumbs_area_offset_y = (y - ((table->offset - 1) / table->thumbs_per_row - table->accumulator)) * table->thumb_size;
+      if(thumbs_area_offset_y != 0) _move(table, 0, -thumbs_area_offset_y, FALSE);
+      return;
+    }
+
     const int first_offset = (table->offset - 1) % table->thumbs_per_row;
     int new_offset = table->offset;
     if(first_offset == 0)
@@ -1894,11 +1903,6 @@ void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, float x, float y)
     {
       table->offset = new_offset;
       dt_thumbtable_full_redraw(table, TRUE);
-      // To enable smooth scrolling move the thumbnails
-      // by the floating point amount of the scrollbar
-      // so if the scrollbar is in 13.28 position move the thumbs by 0.28 * thumb_size
-      const float thumbs_area_offset_y = ((y - floor(y)) * (float)table->thumb_size);
-      _move(table, 0, -thumbs_area_offset_y, FALSE);
     }
   }
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
