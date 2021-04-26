@@ -642,6 +642,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
   const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, wf_width);
+
   // colors used to represent primary colors
   // FIXME: force a redraw when colors have changed via user entering new CSS in preferences -- is there a signal for this?
   const GdkRGBA *const css_primaries = darktable.bauhaus->graph_colors;
@@ -650,40 +651,34 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
     {css_primaries[1].blue, css_primaries[1].green, css_primaries[1].red, 1.0f},
     {css_primaries[0].blue, css_primaries[0].green, css_primaries[0].red, 1.0f},
   };
+
   // shortcut for a fast gamma change -- borrow hybrid log-gamma LUT
   const dt_iop_order_iccprofile_info_t *const profile =
     dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_HLG_REC2020, "", DT_INTENT_PERCEPTUAL);
   // lut for all three channels should be the same
-  // FIXME: check all three luts are the same and are reasonable
   const float *const lut = profile->lut_out[0];
   // FIXME: does pulling out lutsize here help?
 
   // not enough iterations to be worth threading? or just SIMD on inner loop as in prior code?
   for(size_t y = 0; y < wf_height; y++)
-  {
     for(size_t x = 0; x < wf_width; x++)
     {
-      // FIXME: is there any benefit to pre-calculating this and not doing so in the loop?
-      //const float *const restrict in = __builtin_assume_aligned(wf_linear + 4U * (y * wf_width + x) + ch, 4);
       const float src = wf_linear[4U * (y * wf_width + x) + ch];
-      //float temp[3] DT_ALIGNED_PIXEL = { 0.f };
+      // FIXME: faster to use for_each_channel() and have dummy fourth channel?
       for(size_t k = 0; k < 3; k++)
       {
         const float linear = src * primaries_linear[ch][k];
+        // FIXME: is this too fancy? could simply pulling out nearest value from LUT rather than interpolating produce good enough results for 8 bit?
         const float display = extrapolate_lut(lut, linear, profile->lutsize);
         // FIXME: do ever need to clamp here? should be w/in range from extrapolate_lut?
         wf_8bit[y * wf_8bit_stride + x * 4 + k] = display * 255.0f;
       }
-      // FIXME: do need to set this or just don't skip alpha channel?
-      wf_8bit[y * wf_8bit_stride + x * 4 + 3] = 255;
     }
-  }
 
   // FIXME: everything up to here should be invariant (unless CSS changes) so put it in process rather than draw
 
-  // FIXME: does this alpha channel do anything? if not, lose...
   cairo_surface_t *source
-    = dt_cairo_image_surface_create_for_data(wf_8bit, CAIRO_FORMAT_ARGB32,
+    = dt_cairo_image_surface_create_for_data(wf_8bit, CAIRO_FORMAT_RGB24,
                                              wf_width, wf_height, wf_8bit_stride);
   cairo_set_source_surface(cr, source, 0.0, 0.0);
   cairo_paint_with_alpha(cr, 0.5);
