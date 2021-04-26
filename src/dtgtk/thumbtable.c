@@ -420,6 +420,21 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
+    gdouble vpos;
+    gdouble offset;
+    if(dt_conf_get_bool("lighttable/ui/continuous_scrolling"))
+    {
+      // add position between rows if continuous scrolling is used
+      vpos = lbefore - table->accumulator;
+      // adjust size of scrollbar to work with different clamping of continuous scrolling
+      offset = (float)(table->view_height % table->thumb_size) / table->thumb_size;
+    }
+    else
+    {
+      vpos = lbefore;
+      offset = 0;
+    }
+
     // if the scrollbar is currently visible and we want to hide it
     // we first ensure that with the width without the scrollbar, we won't need a scrollbar
     if(gtk_widget_get_visible(darktable.gui->scrollbars.vscrollbar) && lbefore + lafter <= table->rows - 1)
@@ -427,13 +442,13 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
       const int nw = table->view_width + gtk_widget_get_allocated_width(darktable.gui->scrollbars.vscrollbar);
       if((lbefore + lafter) * nw / table->thumbs_per_row >= table->view_height)
       {
-        dt_view_set_scrollbar(darktable.view_manager->current_view, 0, 0, 0, 0, lbefore, 0, lbefore + lafter + 1,
+        dt_view_set_scrollbar(darktable.view_manager->current_view, 0, 0, 0, 0, vpos, 0, lbefore + lafter + 1 - offset,
                               table->rows - 1);
         return TRUE;
       }
     }
     // in filemanager, no horizontal bar, and vertical bar reference is 1 thumb.
-    dt_view_set_scrollbar(darktable.view_manager->current_view, 0, 0, 0, 0, lbefore, 0, lbefore + lafter,
+    dt_view_set_scrollbar(darktable.view_manager->current_view, 0, 0, 0, 0, vpos, 0, lbefore + lafter - offset,
                           table->rows - 1);
     table->code_scrolling = FALSE;
     return (lbefore + lafter > table->rows - 1);
