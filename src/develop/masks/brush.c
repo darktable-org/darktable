@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2020 darktable developers.
+    Copyright (C) 2013-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include "develop/blend.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
+#include "develop/openmp_maths.h"
 
 #define HARDNESS_MIN 0.0005f
 #define HARDNESS_MAX 1.0f
@@ -62,7 +63,7 @@ static float _brush_point_line_distance2(int index, int pointscount, const float
   const float r7 = dend - dstart;
 
   const float r = r1 * r3 + r2 * r4;
-  const float l = r3 * r3 + r4 * r4;
+  const float l = sqf(r3) + sqf(r4);
   const float p = r / l;
 
   float dx = 0.0f, dy = 0.0f, db = 0.0f, dh = 0.0f, dd = 0.0f;
@@ -100,7 +101,7 @@ static float _brush_point_line_distance2(int index, int pointscount, const float
     dd = d - (dstart + p * r7);
   }
 
-  return dx * dx + dy * dy + bweight * db * db + hweight * dh * dh + dweight * dd * dd;
+  return sqf(dx) + sqf(dy) + bweight * sqf(db) + hweight * dh * dh + dweight * sqf(dd);
 }
 
 /** remove unneeded points (Ramer-Douglas-Peucker algorithm) and return resulting path as linked list */
@@ -168,7 +169,7 @@ static void _brush_get_XY(float p0x, float p0y, float p1x, float p1y, float p2x,
   const float ti = 1.0f - t;
   const float a = ti * ti * ti;
   const float b = 3.0f * t * ti * ti;
-  const float c = 3.0f * t * t * ti;
+  const float c = 3.0f * sqf(t) * ti;
   const float d = t * t * t;
   *x = p0x * a + p1x * b + p2x * c + p3x * d;
   *y = p0y * a + p1y * b + p2y * c + p3y * d;
@@ -186,7 +187,7 @@ static void _brush_border_get_XY(float p0x, float p0y, float p1x, float p1y, flo
   const float a = 3.0f * ti * ti;
   const float b = 3.0f * (ti * ti - 2.0f * t * ti);
   const float c = 3.0f * (2.0f * t * ti - t * t);
-  const float d = 3.0f * t * t;
+  const float d = 3.0f * sqf(t);
 
   const float dx = -p0x * a + p1x * b + p2x * c + p3x * d;
   const float dy = -p0y * a + p1y * b + p2y * c + p3y * d;
