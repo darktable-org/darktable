@@ -4663,7 +4663,7 @@ msgstr "annuler"
 
 #: ../src/common/database.c:2536
 msgid "delete database lock files"
-msgstr "effacer les verrous des bases de données"
+msgstr "supprimer les verrous des bases de données"
 
 #: ../src/common/database.c:2542
 msgid "are you sure?"
