@@ -2537,8 +2537,10 @@ void dt_database_show_error(const dt_database_t *db)
 
     if(delete_lockfiles)
     {
-      gboolean really_delete_lockfiles = dt_gui_show_standalone_yes_no_dialog(_("are you sure?"),
-                                        _("\n  do you really want to delete the lock files?  \n"), _("no"), _("yes"));
+      gboolean really_delete_lockfiles =
+        dt_gui_show_standalone_yes_no_dialog
+        (_("are you sure?"),
+         _("\ndo you really want to delete the lock files?\n"), _("no"), _("yes"));
       if(really_delete_lockfiles)
       {
         int status = 0;
@@ -2553,14 +2555,15 @@ void dt_database_show_error(const dt_database_t *db)
 
         if(status==0)
           dt_gui_show_standalone_yes_no_dialog(_("done"),
-                                        _("\n  successfully deleted the lock files.  \n  you can now restart darktable  \n"),
+                                        _("\nsuccessfully deleted the lock files.\nyou can now restart darktable\n"),
                                         _("ok"), NULL);
         else
-          dt_gui_show_standalone_yes_no_dialog(_("error"), g_markup_printf_escaped(
-                                        _("\n  at least one file could not be removed.  \n"
-                                        "  you may try to manually delete the files <i>data.db.lock</i> and <i>library.db.lock</i>  \n"
-                                        "  in folder <a href=\"file:///%s\">%s</a>.  \n"), lck_dirname, lck_dirname),
-                                        _("ok"), NULL);
+          dt_gui_show_standalone_yes_no_dialog
+            (_("error"), g_markup_printf_escaped(
+              _("\nat least one file could not be removed.\n"
+                "you may try to manually delete the files <i>data.db.lock</i> and <i>library.db.lock</i>\n"
+                "in folder <a href=\"file:///%s\">%s</a>.\n"), lck_dirname, lck_dirname),
+             _("ok"), NULL);
       }
     }
 
