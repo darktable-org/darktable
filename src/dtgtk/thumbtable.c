@@ -617,7 +617,7 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
     // we check bounds to allow or not the move
     if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     {
-      // prevent scrolling more than view_height so that thumbs cannot disappear
+      // prevent moving more than view_height so that thumbs cannot disappear
       if (posy > table->view_height) posy = table->view_height;
       else if (posy < -table->view_height) posy = -table->view_height;
 
@@ -626,13 +626,15 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
 
       // we stop when first rowid image is fully shown
       dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
-      if(first->rowid == 1 && posy > 0 && first->y >= 0)
+      if(first->rowid == 1 && posy > 0 && first->y + posy > 0)
       {
         // prevent continuous scrolling past top of filemanager
         if (dt_conf_get_bool("lighttable/ui/continuous_scrolling"))
         {
+          // align top row if thumbtable would be moved past top of collection
+          _move(table, 0, -first->y, FALSE);
           table->accumulator = 0;
-          dt_thumbtable_full_redraw(table, TRUE);
+          table->offset = 1;
           return TRUE;
         }
         // for some reasons, in filemanager, first image can not be at x=0
@@ -652,21 +654,26 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
       table->realign_top_try = 0;
 
       dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
+      // moving would expose a new bottom row
       if (dt_conf_get_bool("lighttable/ui/continuous_scrolling")
-          && last->y + table->thumb_size < table->view_height && posy < 0)
+          && last->y + table->thumb_size + posy < table->view_height && posy < 0)
       {
-        // don't move if the whole collection is visible
         int nbid = 1;
         sqlite3_stmt *stmt;
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM memory.collected_images",
                                     -1, &stmt, NULL);
         if(sqlite3_step(stmt) == SQLITE_ROW) nbid = sqlite3_column_int(stmt, 0);
         sqlite3_finalize(stmt);
+
+        // don't move if the whole collection is visible
         if(nbid <= table->thumbs_per_row * (table->rows - 1)) return FALSE;
 
-        // move thumbs back if scrolled past bottom row
-        _move(table, 0, table->view_height - last->y - table->thumb_size - 1, FALSE);
-        return TRUE;
+        // align bottom row if thumbtable would be moved past bottom of collection
+        if(last->rowid >= nbid)
+        {
+          _move(table, 0, table->view_height - last->y - table->thumb_size - 1, FALSE);
+          return TRUE;
+        }
       }
       if(table->thumbs_per_row == 1 && posy < 0 && g_list_is_singleton(table->list))
       {
