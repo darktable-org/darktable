@@ -564,14 +564,6 @@ static void _main_do_event(GdkEvent *event, gpointer data)
   {
     case GDK_BUTTON_PRESS:
     {
-      // reset GTK to normal behaviour
-      dt_control_allow_change_cursor();
-      dt_control_change_cursor(GDK_LEFT_PTR);
-      gdk_event_handler_set((GdkEventFunc)gtk_main_do_event, NULL, NULL);
-      g_signal_handlers_block_by_func(d->help_button, _lib_help_button_clicked, d);
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->help_button), FALSE);
-      g_signal_handlers_unblock_by_func(d->help_button, _lib_help_button_clicked, d);
-
       GtkWidget *event_widget = gtk_get_event_widget(event);
       if(event_widget)
       {
@@ -673,6 +665,23 @@ static void _main_do_event(GdkEvent *event, gpointer data)
       handled = TRUE;
       break;
     }
+
+    case GDK_BUTTON_RELEASE:
+    {
+      // reset GTK to normal behaviour
+
+      g_signal_handlers_block_by_func(d->help_button, _lib_help_button_clicked, d);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->help_button), FALSE);
+      g_signal_handlers_unblock_by_func(d->help_button, _lib_help_button_clicked, d);
+
+      dt_control_allow_change_cursor();
+      dt_control_change_cursor(GDK_LEFT_PTR);
+      gdk_event_handler_set((GdkEventFunc)gtk_main_do_event, NULL, NULL);
+
+      handled = TRUE;
+    }
+    break;
+
     case GDK_ENTER_NOTIFY:
     case GDK_LEAVE_NOTIFY:
     {
