@@ -653,24 +653,26 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
   // this should be <= 250K iterations, hence not worth the overhead to thread
   for(size_t p = 0; p < nfloats; p += 4)
   {
+    // FIXME: if can go directly to LUT work here, don't need to clamp, as extrapolate_lut does that
     const float src = MIN(1.0f, wf_linear[p + ch]);
     for_four_channels(k,aligned(wf_display,primaries_linear:64))
     {
       wf_display[p+k] = src * primaries_linear[ch][k];
     }
+    // FIXME: combine this work with loops below?
   }
 
   // shortcut for a fast gamma change -- borrow hybrid log-gamma LUT
   const dt_iop_order_iccprofile_info_t *profile_work =
     dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_HLG_REC2020, "", DT_INTENT_PERCEPTUAL);
-
   const size_t num_px = (size_t)wf_width * wf_height * 4;
-  // FIXME: is this too small for SIMD to help?
+  // FIXME: is this too small for threading to help? just use SIMD on inner loop?
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
     dt_omp_firstprivate(num_px, wf_display, profile_work) \
     schedule(static) aligned(wf_display:64)
 #endif
+  // FIXME: loop variable name should be k
   for(size_t y = 0; y < num_px; y += 4U)
   {
     float *const restrict px = __builtin_assume_aligned(wf_display + y, 16);
@@ -678,9 +680,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
     // FIXME: faster to do for_each_channel but won't preserve alpha?
     for(size_t c = 0; c < 3; c++)
     {
-      // FIXME: is in[c] ever >= 1.f? even if so, shouldn't we just clamp at 1.0 for output?
-      px[c] = (px[c] < 1.0f) ? extrapolate_lut(profile_work->lut_out[c], px[c], profile_work->lutsize)
-                              : eval_exp(profile_work->unbounded_coeffs_out[c], px[c]);
+      px[c] = extrapolate_lut(profile_work->lut_out[c], px[c], profile_work->lutsize);
       // FIXME: can covert to 0-255 here, skip a step below
     }
   }
