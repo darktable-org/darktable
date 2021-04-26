@@ -95,7 +95,7 @@ typedef struct dt_lib_histogram_t
   uint32_t *histogram;
   uint32_t histogram_max;
   // waveform histogram buffer and dimensions
-  float *waveform_linear, *waveform_display;
+  float *waveform_linear;
   uint8_t *waveform_8bit;
   int waveform_width, waveform_height, waveform_max_width;
   // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
@@ -638,9 +638,10 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
 {
   // map linear waveform data to a display colorspace
   const float *const restrict wf_linear = DT_IS_ALIGNED((const float *const restrict)d->waveform_linear);
-  float *const restrict wf_display = DT_IS_ALIGNED((float *const restrict)d->waveform_display);
+  uint8_t *const restrict wf_8bit = DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_8bit);
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
+  const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, wf_width);
   // colors used to represent primary colors
   // FIXME: force a redraw when colors have changed via user entering new CSS in preferences -- is there a signal for this?
   const GdkRGBA *const css_primaries = darktable.bauhaus->graph_colors;
@@ -649,57 +650,35 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
     {css_primaries[1].blue, css_primaries[1].green, css_primaries[1].red, 1.0f},
     {css_primaries[0].blue, css_primaries[0].green, css_primaries[0].red, 1.0f},
   };
-  const size_t nfloats = 4U * wf_width * wf_height;
-  // this should be <= 250K iterations, hence not worth the overhead to thread
-  for(size_t p = 0; p < nfloats; p += 4)
-  {
-    // FIXME: if can go directly to LUT work here, don't need to clamp, as extrapolate_lut does that
-    const float src = MIN(1.0f, wf_linear[p + ch]);
-    for_four_channels(k,aligned(wf_display,primaries_linear:64))
-    {
-      wf_display[p+k] = src * primaries_linear[ch][k];
-    }
-    // FIXME: combine this work with loops below?
-  }
-
   // shortcut for a fast gamma change -- borrow hybrid log-gamma LUT
-  const dt_iop_order_iccprofile_info_t *profile_work =
+  const dt_iop_order_iccprofile_info_t *const profile =
     dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_HLG_REC2020, "", DT_INTENT_PERCEPTUAL);
-  const size_t num_px = (size_t)wf_width * wf_height * 4;
-  // FIXME: is this too small for threading to help? just use SIMD on inner loop?
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(num_px, wf_display, profile_work) \
-    schedule(static) aligned(wf_display:64)
-#endif
-  // FIXME: loop variable name should be k
-  for(size_t y = 0; y < num_px; y += 4U)
-  {
-    float *const restrict px = __builtin_assume_aligned(wf_display + y, 16);
+  // lut for all three channels should be the same
+  // FIXME: check all three luts are the same and are reasonable
+  const float *const lut = profile->lut_out[0];
+  // FIXME: does pulling out lutsize here help?
 
-    // FIXME: faster to do for_each_channel but won't preserve alpha?
-    for(size_t c = 0; c < 3; c++)
-    {
-      px[c] = extrapolate_lut(profile_work->lut_out[c], px[c], profile_work->lutsize);
-      // FIXME: can covert to 0-255 here, skip a step below
-    }
-  }
-
-  const size_t wf_width_floats = 4U * wf_width;
-  uint8_t *const restrict wf_8bit = DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_8bit);
-  const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, wf_width);
-  // not enough iterations to be worth threading
+  // not enough iterations to be worth threading? or just SIMD on inner loop as in prior code?
   for(size_t y = 0; y < wf_height; y++)
   {
-#ifdef _OPENMP
-#pragma simd aligned(wf_display, wf_8bit : 64)
-#endif
-    for(size_t k = 0; k < wf_width_floats; k++)
+    for(size_t x = 0; x < wf_width; x++)
     {
-      // linear -> display transform can return pixels > 1, hence limit these
-      wf_8bit[y * wf_8bit_stride + k] = MIN(255, (int)(wf_display[y * wf_width_floats + k] * 255.0f));
+      // FIXME: is there any benefit to pre-calculating this and not doing so in the loop?
+      //const float *const restrict in = __builtin_assume_aligned(wf_linear + 4U * (y * wf_width + x) + ch, 4);
+      const float src = wf_linear[4U * (y * wf_width + x) + ch];
+      //float temp[3] DT_ALIGNED_PIXEL = { 0.f };
+      for(size_t k = 0; k < 3; k++)
+      {
+        const float linear = src * primaries_linear[ch][k];
+        const float display = extrapolate_lut(lut, linear, profile->lutsize);
+        // FIXME: do ever need to clamp here? should be w/in range from extrapolate_lut?
+        wf_8bit[y * wf_8bit_stride + x * 4 + k] = display * 255.0f;
+      }
+      // FIXME: do need to set this or just don't skip alpha channel?
+      wf_8bit[y * wf_8bit_stride + x * 4 + 3] = 255;
     }
   }
+
   // FIXME: everything up to here should be invariant (unless CSS changes) so put it in process rather than draw
 
   // FIXME: does this alpha channel do anything? if not, lose...
@@ -1572,7 +1551,6 @@ void gui_init(dt_lib_module_t *self)
   // histogram.
   d->waveform_height  = 175;
   d->waveform_linear  = dt_iop_image_alloc(d->waveform_max_width, d->waveform_height, 4);
-  d->waveform_display = dt_iop_image_alloc(d->waveform_max_width, d->waveform_height, 4);
   d->waveform_8bit    = dt_alloc_align(64, sizeof(uint8_t) * 4 * d->waveform_height * d->waveform_max_width);
 
   // FIXME: what is the appropriate resolution for this: balance memory use, processing speed, helpful resolution
@@ -1720,7 +1698,6 @@ void gui_cleanup(dt_lib_module_t *self)
 
   free(d->histogram);
   dt_free_align(d->waveform_linear);
-  dt_free_align(d->waveform_display);
   dt_free_align(d->waveform_8bit);
   dt_free_align(d->vectorscope_graph);
   dt_pthread_mutex_destroy(&d->lock);
