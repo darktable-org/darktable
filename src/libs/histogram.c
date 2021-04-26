@@ -215,7 +215,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   const size_t bin_width = ceilf(sample_width / (float)d->waveform_max_width);
   const size_t wf_width = ceilf(sample_width / (float)bin_width);
   d->waveform_width = wf_width;
-  const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, wf_width);
+  const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wf_width);
 
   dt_iop_image_fill(wf_linear, 0.0f, wf_width, d->waveform_height, 4);
 
@@ -272,28 +272,28 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   const dt_iop_order_iccprofile_info_t *const profile =
     dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_HLG_REC2020, "", DT_INTENT_PERCEPTUAL);
   // lut for all three channels should be the same
-  const float *const lut = profile->lut_out[0];
-  // FIXME: does pulling out lutsize here help?
+  const float *const restrict lut = profile->lut_out[0];
+  const int lutsize = profile->lutsize;
+  uint8_t *const restrict wf_8bit = DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_8bit);
+  const size_t wf_8bit_ch_stride = 4 * d->waveform_height * wf_8bit_stride;
 
-  // not enough iterations to be worth threading? or just SIMD on inner loop as in prior code?
+#if defined(_OPENMP)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(d, height_i, wf_width, wf_8bit, wf_8bit_ch_stride, wf_8bit_stride, wf_linear, primaries_linear, lut, lutsize) \
+  schedule(static) collapse(3)
+#endif
   for(int ch = 0; ch < 3; ch++)
-  {
-    uint8_t *const restrict wf_8bit = DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_8bit + ch * 4 * d->waveform_height * wf_8bit_stride);
     for(size_t y = 0; y <= height_i; y++)
       for(size_t x = 0; x < wf_width; x++)
       {
         const float src = wf_linear[4U * (y * wf_width + x) + ch];
-        // FIXME: faster to use for_each_channel() and have dummy fourth channel?
         for(size_t k = 0; k < 3; k++)
         {
           const float linear = src * primaries_linear[ch][k];
-          // FIXME: is this too fancy? could simply pulling out nearest value from LUT rather than interpolating produce good enough results for 8 bit?
-          const float display = extrapolate_lut(lut, linear, profile->lutsize);
-          // FIXME: do ever need to clamp here? should be w/in range from extrapolate_lut?
-          wf_8bit[y * wf_8bit_stride + x * 4 + k] = display * 255.0f;
+          const float display = lut[CLAMPS((int)(linear * (lutsize - 1)), 0, lutsize - 1)];
+          wf_8bit[ch * wf_8bit_ch_stride + y * wf_8bit_stride + x * 4 + k] = display * 255.0f;
         }
       }
-  }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
@@ -673,7 +673,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
 
 static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t *cr, int ch)
 {
-  const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, d->waveform_width);
+  const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->waveform_width);
   cairo_surface_t *source
     = dt_cairo_image_surface_create_for_data(d->waveform_8bit + ch * 4 * d->waveform_height * wf_8bit_stride,
                                              CAIRO_FORMAT_RGB24,
