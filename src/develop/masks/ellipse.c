@@ -91,22 +91,22 @@ static int _ellipse_point_close_to_path(float x, float y, float as, float *point
 {
   float as2 = as * as;
 
-  float lastx = points[2 * (points_count - 1)];
-  float lasty = points[2 * (points_count - 1) + 1];
+  const float lastx = points[2 * (points_count - 1)];
+  const float lasty = points[2 * (points_count - 1) + 1];
 
   for(int i = 0; i < points_count; i++)
   {
-    float px = points[2 * i];
-    float py = points[2 * i + 1];
+    const float px = points[2 * i];
+    const float py = points[2 * i + 1];
 
-    float r1 = x - lastx;
-    float r2 = y - lasty;
-    float r3 = px - lastx;
-    float r4 = py - lasty;
+    const float r1 = x - lastx;
+    const float r2 = y - lasty;
+    const float r3 = px - lastx;
+    const float r4 = py - lasty;
 
-    float d = r1 * r3 + r2 * r4;
+    const float d = r1 * r3 + r2 * r4;
     float l = r3 * r3 + r4 * r4;
-    float p = d / l;
+    const float p = d / l;
 
     float xx = 0.0f, yy = 0.0f;
 
