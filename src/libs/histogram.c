@@ -494,6 +494,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       RGB[3] = intensity;
       for_each_channel(ch,aligned(px,RGB:16))
         // FIXME: this BGR/RGB flip is for pixelpipe vs. Cairo color?
+        // FIXME: this produces px[-1] for ch==3, which will be out of bounds for out_y == out_x == 0?
         px[2U-ch] = CLAMP((int)(RGB[ch] * 255.0f), 0, 255);
     }
 
@@ -659,16 +660,30 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
     }
   }
 
-  // shortcut for a fast gamma change
-  const dt_iop_order_iccprofile_info_t *profile_linear =
-    dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
+  // shortcut for a fast gamma change -- borrow hybrid log-gamma LUT
   const dt_iop_order_iccprofile_info_t *profile_work =
     dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_HLG_REC2020, "", DT_INTENT_PERCEPTUAL);
-  // in place transform will preserve alpha
-  // dt's transform is approx. 2x faster than LCMS here
-  // FIXME: optimize by just doing the extrapolate_lut() work and make our own sensible LUT with enough resolution to provide continuous tone
-  dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
-                                          profile_linear, profile_work, "waveform gamma");
+
+  const size_t num_px = (size_t)wf_width * wf_height * 4;
+  // FIXME: is this too small for SIMD to help?
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(num_px, wf_display, profile_work) \
+    schedule(static) aligned(wf_display:64)
+#endif
+  for(size_t y = 0; y < num_px; y += 4U)
+  {
+    float *const restrict px = __builtin_assume_aligned(wf_display + y, 16);
+
+    // FIXME: faster to do for_each_channel but won't preserve alpha?
+    for(size_t c = 0; c < 3; c++)
+    {
+      // FIXME: is in[c] ever >= 1.f? even if so, shouldn't we just clamp at 1.0 for output?
+      px[c] = (px[c] < 1.0f) ? extrapolate_lut(profile_work->lut_out[c], px[c], profile_work->lutsize)
+                              : eval_exp(profile_work->unbounded_coeffs_out[c], px[c]);
+      // FIXME: can covert to 0-255 here, skip a step below
+    }
+  }
 
   const size_t wf_width_floats = 4U * wf_width;
   uint8_t *const restrict wf_8bit = DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_8bit);
