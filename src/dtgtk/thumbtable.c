@@ -617,10 +617,6 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
     // we check bounds to allow or not the move
     if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     {
-      // prevent moving more than view_height so that thumbs cannot disappear
-      if (posy > table->view_height) posy = table->view_height;
-      else if (posy < -table->view_height) posy = -table->view_height;
-
       posx = 0; // to be sure, we don't want horizontal move
       if(posy == 0) return FALSE;
 
@@ -937,21 +933,20 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
   GdkEventScroll *e = (GdkEventScroll *)event;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
-   // Handle continuous scrolling separately
+  // Handle continuous scrolling separately
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER && e->direction == GDK_SCROLL_SMOOTH
     && !((e->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK) && dt_conf_get_bool("lighttable/ui/continuous_scrolling"))
   {
     gdouble delta;
-    if (dt_gui_get_scroll_deltas(e, NULL, &delta))
+    if(dt_gui_get_scroll_deltas(e, NULL, &delta))
     {
       // Scale delta to represent scroll size in pixels.
       // On macOS reverses scaling in dt_gui_get_scroll_deltas
       delta = delta * 50;
-      if(delta < 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
-        _move(table, 0, -delta, TRUE);
-      if(delta >= 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
-        _move(table, 0, -delta, TRUE);
-
+      // prevent moving more than view_height so that thumbs cannot disappear
+      if(delta > table->view_height) delta = table->view_height;
+      else if(delta < -table->view_height) delta = -table->view_height;
+      _move(table, 0, -delta, TRUE);
       // ensure the hovered image is the right one
       dt_thumbnail_t *th = _thumb_get_under_mouse(table);
       if(th) dt_control_set_mouse_over_id(th->imgid);
