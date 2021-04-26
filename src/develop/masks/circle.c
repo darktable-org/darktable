@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2020 darktable developers.
+    Copyright (C) 2013-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ static void _circle_get_distance(float x, float y, float as, dt_masks_form_gui_t
     // distance from source center
     const float cx = x - gpt->source[0];
     const float cy = y - gpt->source[1];
-    *dist = (cx * cx) + (cy * cy);
+    *dist = sqf(cx) + sqf(cy);
 
     return;
   }
@@ -59,7 +59,7 @@ static void _circle_get_distance(float x, float y, float as, dt_masks_form_gui_t
 
   const float cx = x - gpt->points[0];
   const float cy = y - gpt->points[1];
-  *dist = (cx * cx) + (cy * cy);
+  *dist = sqf(cx) + sqf(cy);
 
   // we check if it's inside borders
   if(!dt_masks_point_in_form_exact(x, y, gpt->border, 1, gpt->border_count)) return;

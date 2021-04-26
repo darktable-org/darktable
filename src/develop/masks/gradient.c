@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2020 darktable developers.
+    Copyright (C) 2013-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ static void _gradient_get_distance(float x, float y, float as, dt_masks_form_gui
   {
     const float dx = x - gpt->points[k * 2];
     const float dy = y - gpt->points[k * 2 + 1];
-    const float dd = (dx * dx) + (dy * dy);
+    const float dd = sqf(dx) + sqf(dy);
     *dist = fminf(*dist, dd);
 
     close_to_controls = close_to_controls || (dd < as2);
