@@ -640,6 +640,15 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
       if (dt_conf_get_bool("lighttable/ui/continuous_scrolling")
           && last->y + table->thumb_size < table->view_height && posy < 0)
       {
+        // don't move if the whole collection is visible
+        int nbid = 1;
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM memory.collected_images",
+                                    -1, &stmt, NULL);
+        if(sqlite3_step(stmt) == SQLITE_ROW) nbid = sqlite3_column_int(stmt, 0);
+        sqlite3_finalize(stmt);
+        if(nbid <= table->thumbs_per_row * (table->rows - 1)) return FALSE;
+
         // move thumbs back if scrolled past bottom row
         _move(table, 0, table->view_height - last->y - table->thumb_size - 1, FALSE);
         return TRUE;
