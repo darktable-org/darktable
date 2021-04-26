@@ -414,8 +414,8 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
   if((table->offset - 1) % table->thumbs_per_row) lbefore++;
 
   // the number of line after (including the current one)
-  int lafter = (nbid - table->offset) / table->thumbs_per_row;
-  if((nbid - table->offset) % table->thumbs_per_row) lafter++;
+  int lafter = (nbid - table->offset + 1) / table->thumbs_per_row;
+  if(nbid % table->thumbs_per_row) lafter++;
 
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
