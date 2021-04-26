@@ -2222,7 +2222,11 @@ gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table, const int offset, cons
   if(offset < 1 || offset == table->offset) return FALSE;
   table->offset = offset;
   dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
-  if(redraw) dt_thumbtable_full_redraw(table, TRUE);
+  if(redraw)
+  {
+    table->accumulator = 0;
+    dt_thumbtable_full_redraw(table, TRUE);
+  }
   return TRUE;
 }
 
