@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2020 darktable developers.
+    Copyright (C) 2013-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -105,7 +105,7 @@ static int _ellipse_point_close_to_path(float x, float y, float as, float *point
     const float r4 = py - lasty;
 
     const float d = r1 * r3 + r2 * r4;
-    float l = r3 * r3 + r4 * r4;
+    const float l = sqf(r3) + sqf(r4);
     const float p = d / l;
 
     float xx = 0.0f, yy = 0.0f;
@@ -129,7 +129,7 @@ static int _ellipse_point_close_to_path(float x, float y, float as, float *point
     float dx = x - xx;
     float dy = y - yy;
 
-    if(dx * dx + dy * dy < as2) return 1;
+    if(sqf(dx) + sqf(dy) < as2) return 1;
   }
   return 0;
 }
@@ -161,7 +161,7 @@ static void _ellipse_get_distance(float x, float y, float as, dt_masks_form_gui_
       {
         const float cx = x - gpt->source[k * 2];
         const float cy = y - gpt->source[k * 2 + 1];
-        const float dd = (cx * cx) + (cy * cy);
+        const float dd = sqf(cx) + sqf(cy);
         *dist = fminf(*dist, dd);
       }
       return;
@@ -172,7 +172,7 @@ static void _ellipse_get_distance(float x, float y, float as, dt_masks_form_gui_
   {
     const float cx = x - gpt->points[k * 2];
     const float cy = y - gpt->points[k * 2 + 1];
-    const float dd = (cx * cx) + (cy * cy);
+    const float dd = sqf(cx) + sqf(cy);
     *dist = fminf(*dist, dd);
   }
 
