@@ -27,6 +27,10 @@ typedef struct _help_url
 dt_help_url urls_db[] =
 {
   {"ratings",                    "lighttable/digital-asset-management/star-color/#star-ratings"},
+  {"layout_filemanager",         "lighttable/lighttable-modes/filemanager/"},
+  {"layout_zoomable",            "lighttable/lighttable-modes/zoomable-lighttable/"},
+  {"layout_culling",             "lighttable/lighttable-modes/culling/"},
+  {"layout_preview",             "lighttable/lighttable-modes/full-preview/"},
   {"filter",                     NULL},
   {"colorlabels",                "lighttable/digital-asset-management/star-color/#color-labels"},
   {"import",                     "module-reference/utility-modules/lighttable/import/"},
