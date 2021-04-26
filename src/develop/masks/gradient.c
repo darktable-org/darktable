@@ -1453,7 +1453,12 @@ static void _gradient_set_form_name(struct dt_masks_form_t *const form, const si
 static void _gradient_set_hint_message(const dt_masks_form_gui_t *const gui, const dt_masks_form_t *const form,
                                      const int opacity, char *const restrict msgbuf, const size_t msgbuf_len)
 {
-  if(gui->creation || gui->form_selected)
+  if(gui->creation)
+    g_snprintf(msgbuf, msgbuf_len,
+               _("<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
+                 "<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"),
+               opacity);
+  else if(gui->form_selected)
     g_snprintf(msgbuf, msgbuf_len, _("<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
                                      "<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
   else if(gui->pivot_selected)
