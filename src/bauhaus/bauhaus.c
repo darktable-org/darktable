@@ -313,13 +313,6 @@ static gboolean dt_bauhaus_window_button_press(GtkWidget *widget, GdkEventMotion
 
 static void combobox_popup_scroll(int amt)
 {
-  gint wx = 0, wy = 0;
-  GtkWidget *w = GTK_WIDGET(darktable.bauhaus->current);
-  GtkAllocation allocation_w;
-  gtk_widget_get_allocation(w, &allocation_w);
-  const int ht = allocation_w.height;
-  const int skip = darktable.bauhaus->line_height;
-  gdk_window_get_origin(gtk_widget_get_window(w), &wx, &wy);
   const dt_bauhaus_combobox_data_t *d = &darktable.bauhaus->current->data.combobox;
   int new_value = CLAMP(d->active + amt, 0, d->num_labels - 1);
 
@@ -327,26 +320,20 @@ static void combobox_popup_scroll(int amt)
   if(!_combobox_next_entry(d->entries, &new_value, amt))
     return;
 
-  // we move the popup up or down
-  if(new_value == d->active)
-  {
-    gdk_window_move(gtk_widget_get_window(darktable.bauhaus->popup_window), wx, wy - d->active * skip);
-  }
-  else
-  {
-    gint px, py;
-    gdk_window_get_origin(gtk_widget_get_window(darktable.bauhaus->popup_window), &px, &py);
-    gdk_window_move(gtk_widget_get_window(darktable.bauhaus->popup_window),
-                    wx, py - skip * (new_value - d->active));
-  }
+  gint wx = 0, wy = 0;
+  const int skip = darktable.bauhaus->line_height;
+  GdkWindow *w = gtk_widget_get_window(darktable.bauhaus->popup_window);
+  gdk_window_get_origin(w, &wx, &wy);
+  // gdk_window_get_position(w, &wx, &wy);
+  gdk_window_move(w, wx, wy - skip * (new_value - d->active));
 
   // make sure highlighted entry is updated:
   darktable.bauhaus->mouse_x = 0;
-  darktable.bauhaus->mouse_y = new_value * skip + ht / 2;
+  darktable.bauhaus->mouse_y = new_value * skip + skip / 2;
   gtk_widget_queue_draw(darktable.bauhaus->popup_area);
 
   // and we change the value
-  _bauhaus_combobox_set(w, new_value, d->mute_scrolling);
+  _bauhaus_combobox_set(GTK_WIDGET(darktable.bauhaus->current), new_value, d->mute_scrolling);
 }
 
 
@@ -2074,12 +2061,24 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
     gtk_widget_set_state_flags(GTK_WIDGET(w), GTK_STATE_FLAG_FOCUSED, TRUE);
   }
 
-  int offset = 0;
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
   if(tmp.width == 1) return;
 
   gtk_widget_realize(darktable.bauhaus->popup_window);
+  GdkWindow *widget_window = gtk_widget_get_window(GTK_WIDGET(w));
+
+  gint wx, wy;
+  GdkDevice *pointer = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+  if(widget_window == gdk_device_get_window_at_position(pointer, NULL, NULL))
+    gdk_window_get_origin(widget_window, &wx, &wy);
+  else
+  {
+    gdk_device_get_position(pointer, NULL, &wx, &wy);
+    wx -= (tmp.width - darktable.bauhaus->quad_width) / 2;
+    wy -= darktable.bauhaus->line_height / 2;
+  }
+
   switch(darktable.bauhaus->current->type)
   {
     case DT_BAUHAUS_SLIDER:
@@ -2105,7 +2104,7 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
       gtk_widget_get_allocation(GTK_WIDGET(w), &allocation_w);
       const int ht = allocation_w.height;
       const int skip = darktable.bauhaus->line_height;
-      offset = -d->active * darktable.bauhaus->line_height;
+      wy -= d->active * darktable.bauhaus->line_height;
       darktable.bauhaus->mouse_x = 0;
       darktable.bauhaus->mouse_y = d->active * skip + ht / 2;
       break;
@@ -2114,11 +2113,6 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
       break;
   }
 
-  gint wx, wy;
-  gdk_window_get_origin(gtk_widget_get_window(GTK_WIDGET(w)), &wx, &wy);
-
-  // move popup so mouse is over currently active item, to minimize confusion with scroll wheel:
-  if(darktable.bauhaus->current->type == DT_BAUHAUS_COMBOBOX) wy += offset;
   wx -= darktable.bauhaus->widget_space + INNER_PADDING;
   tmp.width += darktable.bauhaus->widget_space + INNER_PADDING;
 
