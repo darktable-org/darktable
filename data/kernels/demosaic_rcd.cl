@@ -56,11 +56,11 @@ __kernel void rcd_populate (__read_only image2d_t in, global float *cfa, global 
 }
 
 // Write back-normalized data in rgb channels to output 
-__kernel void rcd_write_output (__write_only image2d_t out, global float *rgb0, global float *rgb1, global float *rgb2, const int w, const int height, const float scale)
+__kernel void rcd_write_output (__write_only image2d_t out, global float *rgb0, global float *rgb1, global float *rgb2, const int w, const int height, const float scale, const int border)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
-  if(col >= w || row >= height) return;
+  if(!(col >= border && col < w - border && row >= border && row < height - border)) return;
   const int idx = mad24(row, w, col);
 
   write_imagef(out, (int2)(col, row), (float4)(scale * rgb0[idx], scale * rgb1[idx], scale * rgb2[idx], 0.0f));
@@ -277,7 +277,7 @@ __kernel void rcd_step_5_2(global float *VH_dir, global float *rgb0, global floa
   }
 }
 
-__kernel void dual_luminance_mask(global float *luminance, __read_only image2d_t in, const int w, const int height)
+__kernel void calc_luminance_mask(global float *luminance, __read_only image2d_t in, const int w, const int height)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
@@ -285,31 +285,44 @@ __kernel void dual_luminance_mask(global float *luminance, __read_only image2d_t
   const int idx = mad24(row, w, col);
 
   float4 val = read_imagef(in, sampleri, (int2)(col, row));
-  luminance[idx] = lab_f(0.333333333f * (val.x + val.y + val.z));    
+  luminance[idx] = lab_f(0.333333333f * (val.x + val.y + val.z));
 }
 
-__kernel void dual_calc_blend(global float *luminance, global float *mask, const int w, const int height, const float threshold)
+__kernel void out_luminance_mask(__write_only image2d_t out, __read_only image2d_t in, const int w, const int height)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= w) || (row >= height)) return;
+  const int idx = mad24(row, w, col);
+
+  float4 val = read_imagef(in, sampleri, (int2)(col, row));
+  const float lum = lab_f(0.333333333f * (val.x + val.y + val.z));
+  write_imagef(out, (int2)(col, row), lum);  
+}
+
+__kernel void calc_detail_blend(global float *luminance, global float *mask, const int w, const int height, const float threshold, const int detail)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
   if((col >= w) || (row >= height)) return;
 
-  const int idx = mad24(row, w, col);
-  if((col < 2) || (row < 2) || (col >= w - 2) || (row >= height - 2)) 
-  {
-    mask[idx] = 0.0f;
-  }
-  else
-  {
-    const int w2 = w * 2;
-    const float scale = 1.0f / 16.0f;
-    const float contrast = scale * native_sqrt(sqrf(luminance[idx+1] - luminance[idx-1]) + sqrf(luminance[idx +  w] - luminance[idx -  w]) +
-                                         sqrf(luminance[idx+2] - luminance[idx-2]) + sqrf(luminance[idx + w2] - luminance[idx - w2]));
-    mask[idx] = calcBlendFactor(contrast, threshold);
-  }
+  const int oidx = mad24(row, w, col);
+
+  int incol = col < 2 ? 2 : col;
+  incol = col > w - 3 ? w - 3 : incol;
+  int inrow = row < 2 ? 2 : row;
+  inrow = row > height - 3 ? height - 3 : inrow;
+
+  const int idx = mad24(inrow, w, incol); 
+  const int w2 = w * 2;
+  const float scale = 1.0f / 16.0f;
+  const float contrast = scale * native_sqrt(sqrf(luminance[idx+1] - luminance[idx-1]) + sqrf(luminance[idx +  w] - luminance[idx -  w]) +
+                                             sqrf(luminance[idx+2] - luminance[idx-2]) + sqrf(luminance[idx + w2] - luminance[idx - w2]));
+  const float blend = calcBlendFactor(contrast, threshold);
+  mask[oidx] = detail ? blend : 1.0f - blend;
 }
 
-__kernel void dual_blend_both(__read_only image2d_t high, __read_only image2d_t low, __write_only image2d_t out, const int w, const int height, global float *mask, const int showmask)
+__kernel void write_blended_dual(__read_only image2d_t high, __read_only image2d_t low, __write_only image2d_t out, const int w, const int height, global float *mask, const int showmask)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
@@ -332,75 +345,238 @@ __kernel void dual_blend_both(__read_only image2d_t high, __read_only image2d_t 
   write_imagef(out, (int2)(col, row), data);
 }
 
-__kernel void dual_fast_blur(global float *src, global float *out, const int w, const int height, const float c42, const float c41, const float c40,
+__kernel void fastblur_mask_9x9(global float *src, global float *out, const int w, const int height, const float c42, const float c41, const float c40,
                              const float c33, const float c32, const float c31, const float c30, const float c22, const float c21,
                              const float c20, const float c11, const float c10, const float c00)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
   if((col >= w) || (row >= height)) return;
-  const int i = mad24(row, w, col);
 
-  if((col < 5) || (row < 5) || (col > w - 5) || (row > height - 5)) 
-  {
-    out[i] = 0.0f;
-  }
-  else
-  {
-    const int w2 = 2 * w;
-    const int w3 = 3 * w;
-    const int w4 = 4 * w;
-    const float val = c42 * (src[i - w4 - 2] + src[i - w4 + 2] + src[i - w2 - 4] + src[i - w2 + 4] + src[i + w2 - 4] + src[i + w2 + 4] + src[i + w4 - 2] + src[i + w4 + 2]) +
-                      c41 * (src[i - w4 - 1] + src[i - w4 + 1] + src[i -  w - 4] + src[i -  w + 4] + src[i +  w - 4] + src[i +  w + 4] + src[i + w4 - 1] + src[i + w4 + 1]) +
-                      c40 * (src[i - w4] + src[i - 4] + src[i + 4] + src[i + w4]) +
-                      c33 * (src[i - w3 - 3] + src[i - w3 + 3] + src[i + w3 - 3] + src[i + w3 + 3]) +
-                      c32 * (src[i - w3 - 2] + src[i - w3 + 2] + src[i - w2 - 3] + src[i - w2 + 3] + src[i + w2 - 3] + src[i + w2 + 3] + src[i + w3 - 2] + src[i + w3 + 2]) +
-                      c31 * (src[i - w3 - 1] + src[i - w3 + 1] + src[i -  w - 3] + src[i -  w + 3] + src[i +  w - 3] + src[i +  w + 3] + src[i + w3 - 1] + src[i + w3 + 1]) +
-                      c30 * (src[i - w3] + src[i - 3] + src[i + 3] + src[i + w3]) +
-                      c22 * (src[i - w2 - 2] + src[i - w2 + 2] + src[i + w2 - 2] + src[i + w2 + 2]) +
-                      c21 * (src[i - w2 - 1] + src[i - w2 + 1] + src[i -  w - 2] + src[i -  w + 2] + src[i +  w - 2] + src[i +  w + 2] + src[i + w2 - 1] + src[i + w2 + 1]) +
-                      c20 * (src[i - w2] + src[i - 2] + src[i + 2] + src[i + w2]) +
-                      c11 * (src[i -  w - 1] + src[i -  w + 1] + src[i +  w - 1] + src[i +  w + 1]) +
-                      c10 * (src[i -  w] + src[i - 1] + src[i + 1] + src[i +  w]) +
-                      c00 * src[i];
-    out[i] = ICLAMP(val, 0.0f, 1.0f);
-  }
+  const int oidx = mad24(row, w, col);
+  int incol = col < 4 ? 4 : col;
+  incol = col > w - 5 ? w - 5 : incol;
+  int inrow = row < 4 ? 4 : row;
+  inrow = row > height - 5 ? height - 5 : inrow;
+  const int i = mad24(inrow, w, incol); 
+
+  const int w2 = 2 * w;
+  const int w3 = 3 * w;
+  const int w4 = 4 * w;
+  const float val = c42 * (src[i - w4 - 2] + src[i - w4 + 2] + src[i - w2 - 4] + src[i - w2 + 4] + src[i + w2 - 4] + src[i + w2 + 4] + src[i + w4 - 2] + src[i + w4 + 2]) +
+                    c41 * (src[i - w4 - 1] + src[i - w4 + 1] + src[i -  w - 4] + src[i -  w + 4] + src[i +  w - 4] + src[i +  w + 4] + src[i + w4 - 1] + src[i + w4 + 1]) +
+                    c40 * (src[i - w4] + src[i - 4] + src[i + 4] + src[i + w4]) +
+                    c33 * (src[i - w3 - 3] + src[i - w3 + 3] + src[i + w3 - 3] + src[i + w3 + 3]) +
+                    c32 * (src[i - w3 - 2] + src[i - w3 + 2] + src[i - w2 - 3] + src[i - w2 + 3] + src[i + w2 - 3] + src[i + w2 + 3] + src[i + w3 - 2] + src[i + w3 + 2]) +
+                    c31 * (src[i - w3 - 1] + src[i - w3 + 1] + src[i -  w - 3] + src[i -  w + 3] + src[i +  w - 3] + src[i +  w + 3] + src[i + w3 - 1] + src[i + w3 + 1]) +
+                    c30 * (src[i - w3] + src[i - 3] + src[i + 3] + src[i + w3]) +
+                    c22 * (src[i - w2 - 2] + src[i - w2 + 2] + src[i + w2 - 2] + src[i + w2 + 2]) +
+                    c21 * (src[i - w2 - 1] + src[i - w2 + 1] + src[i -  w - 2] + src[i -  w + 2] + src[i +  w - 2] + src[i +  w + 2] + src[i + w2 - 1] + src[i + w2 + 1]) +
+                    c20 * (src[i - w2] + src[i - 2] + src[i + 2] + src[i + w2]) +
+                    c11 * (src[i -  w - 1] + src[i -  w + 1] + src[i +  w - 1] + src[i +  w + 1]) +
+                    c10 * (src[i -  w] + src[i - 1] + src[i + 1] + src[i +  w]) +
+                    c00 * src[i];
+  out[oidx] = ICLAMP(val, 0.0f, 1.0f);
 }
 
-kernel void rcd_border(global float *cfa, write_only image2d_t out, const int width, const int height, const unsigned int filters, const int border, const float scale)
+kernel void rcd_border_green(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                    const unsigned int filters, local float *buffer, const int border)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
+  const int xlsz = get_local_size(0);
+  const int ylsz = get_local_size(1);
+  const int xlid = get_local_id(0);
+  const int ylid = get_local_id(1);
+  const int xgid = get_group_id(0);
+  const int ygid = get_group_id(1);
+
+  // individual control variable in this work group and the work group size
+  const int l = mad24(ylid, xlsz, xlid);
+  const int lsz = mul24(xlsz, ylsz);
+
+  // stride and maximum capacity of local buffer
+  // cells of 1*float per pixel with a surrounding border of 3 cells
+  const int stride = xlsz + 2*3;
+  const int maxbuf = mul24(stride, ylsz + 2*3);
+
+  // coordinates of top left pixel of buffer
+  // this is 3 pixel left and above of the work group origin
+  const int xul = mul24(xgid, xlsz) - 3;
+  const int yul = mul24(ygid, ylsz) - 3;
+
+  // populate local memory buffer
+  for(int n = 0; n <= maxbuf/lsz; n++)
+  {
+    const int bufidx = mad24(n, lsz, l);
+    if(bufidx >= maxbuf) continue;
+    const int xx = xul + bufidx % stride;
+    const int yy = yul + bufidx / stride;
+    buffer[bufidx] = read_imagef(in, sampleri, (int2)(xx, yy)).x;
+  }
+
+  // center buffer around current x,y-Pixel
+  buffer += mad24(ylid + 3, stride, xlid + 3);
+
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  if(x >= width - 3 || x < 3 || y >= height - 3 || y < 3) return;
+  if(x >= border && x < width - border && y >= border && y < height - border) return;
+
+  // process all non-green pixels
+  const int row = y;
+  const int col = x;
+  const int c = FC(row, col, filters);
+  float4 color; // output color
+
+  const float pc = buffer[0];
+
+  if     (c == 0) color.x = pc; // red
+  else if(c == 1) color.y = pc; // green1
+  else if(c == 2) color.z = pc; // blue
+  else            color.y = pc; // green2
+
+  // fill green layer for red and blue pixels:
+  if(c == 0 || c == 2)
+  {
+    // look up horizontal and vertical neighbours, sharpened weight:
+    const float pym  = buffer[-1 * stride];
+    const float pym2 = buffer[-2 * stride];
+    const float pym3 = buffer[-3 * stride];
+    const float pyM  = buffer[ 1 * stride];
+    const float pyM2 = buffer[ 2 * stride];
+    const float pyM3 = buffer[ 3 * stride];
+    const float pxm  = buffer[-1];
+    const float pxm2 = buffer[-2];
+    const float pxm3 = buffer[-3];
+    const float pxM  = buffer[ 1];
+    const float pxM2 = buffer[ 2];
+    const float pxM3 = buffer[ 3];
+    const float guessx = (pxm + pc + pxM) * 2.0f - pxM2 - pxm2;
+    const float diffx  = (fabs(pxm2 - pc) +
+                          fabs(pxM2 - pc) +
+                          fabs(pxm  - pxM)) * 3.0f +
+                         (fabs(pxM3 - pxM) + fabs(pxm3 - pxm)) * 2.0f;
+    const float guessy = (pym + pc + pyM) * 2.0f - pyM2 - pym2;
+    const float diffy  = (fabs(pym2 - pc) +
+                          fabs(pyM2 - pc) +
+                          fabs(pym  - pyM)) * 3.0f +
+                         (fabs(pyM3 - pyM) + fabs(pym3 - pym)) * 2.0f;
+    if(diffx > diffy)
+    {
+      // use guessy
+      const float m = fmin(pym, pyM);
+      const float M = fmax(pym, pyM);
+      color.y = fmax(fmin(guessy*0.25f, M), m);
+    }
+    else
+    {
+      const float m = fmin(pxm, pxM);
+      const float M = fmax(pxm, pxM);
+      color.y = fmax(fmin(guessx*0.25f, M), m);
+    }
+  }
+  write_imagef (out, (int2)(x, y), color);
+}
+kernel void rcd_border_redblue(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                      const unsigned int filters, local float4 *buffer, const int border)
+{
+  // image in contains full green and sparse r b
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int xlsz = get_local_size(0);
+  const int ylsz = get_local_size(1);
+  const int xlid = get_local_id(0);
+  const int ylid = get_local_id(1);
+  const int xgid = get_group_id(0);
+  const int ygid = get_group_id(1);
+
+  // individual control variable in this work group and the work group size
+  const int l = mad24(ylid, xlsz, xlid);
+  const int lsz = mul24(xlsz, ylsz);
+
+  // stride and maximum capacity of local buffer
+  // cells of float4 per pixel with a surrounding border of 1 cell
+  const int stride = xlsz + 2;
+  const int maxbuf = mul24(stride, ylsz + 2);
+
+  // coordinates of top left pixel of buffer
+  // this is 1 pixel left and above of the work group origin
+  const int xul = mul24(xgid, xlsz) - 1;
+  const int yul = mul24(ygid, ylsz) - 1;
+
+  // populate local memory buffer
+  for(int n = 0; n <= maxbuf/lsz; n++)
+  {
+    const int bufidx = mad24(n, lsz, l);
+    if(bufidx >= maxbuf) continue;
+    const int xx = xul + bufidx % stride;
+    const int yy = yul + bufidx / stride;
+    buffer[bufidx] = read_imagef(in, sampleri, (int2)(xx, yy));
+  }
+
+  // center buffer around current x,y-Pixel
+  buffer += mad24(ylid + 1, stride, xlid + 1);
+
+  barrier(CLK_LOCAL_MEM_FENCE);
 
   if(x >= width || y >= height) return;
   if(x >= border && x < width - border && y >= border && y < height - border) return;
 
-  float o[3]   = { 0.0f, 0.0f, 0.0f };
-  float sum[3] = { 0.0f, 0.0f, 0.0f };
-  float cnt[3] = { 0.0f, 0.0f, 0.0f };
-
-  for(int j = y - 1; j < y + 2; j++)
-  {
-    for(int i = x - 1; i < x + 2; i++)
-    {
-      if (j > -1 && i > -1 && j < height && i < width)
+  const int row = y;
+  const int col = x;
+  const int c = FC(row, col, filters);
+  float4 color = buffer[0];
+  if(row > 0 && col > 0 && col < width - 1 && row < height - 1)
+  { 
+    if(c == 1 || c == 3)
+    { // calculate red and blue for green pixels:
+      // need 4-nbhood:
+      float4 nt = buffer[-stride];
+      float4 nb = buffer[ stride];
+      float4 nl = buffer[-1];
+      float4 nr = buffer[ 1];
+      if(FC(row, col+1, filters) == 0) // red nb in same row
       {
-        const int c = FC(j, i, filters);
-        sum[c] += cfa[mad24(j, width, i)];
-        cnt[c] += 1.0f;
+        color.z = (nt.z + nb.z + 2.0f*color.y - nt.y - nb.y)*0.5f;
+        color.x = (nl.x + nr.x + 2.0f*color.y - nl.y - nr.y)*0.5f;
+      }
+      else
+      { // blue nb
+        color.x = (nt.x + nb.x + 2.0f*color.y - nt.y - nb.y)*0.5f;
+        color.z = (nl.z + nr.z + 2.0f*color.y - nl.y - nr.y)*0.5f;
+      }
+    }
+    else
+    {
+      // get 4-star-nbhood:
+      float4 ntl = buffer[-stride - 1];
+      float4 ntr = buffer[-stride + 1];
+      float4 nbl = buffer[ stride - 1];
+      float4 nbr = buffer[ stride + 1];
+
+      if(c == 0)
+      { // red pixel, fill blue:
+        const float diff1  = fabs(ntl.z - nbr.z) + fabs(ntl.y - color.y) + fabs(nbr.y - color.y);
+        const float guess1 = ntl.z + nbr.z + 2.0f*color.y - ntl.y - nbr.y;
+        const float diff2  = fabs(ntr.z - nbl.z) + fabs(ntr.y - color.y) + fabs(nbl.y - color.y);
+        const float guess2 = ntr.z + nbl.z + 2.0f*color.y - ntr.y - nbl.y;
+        if     (diff1 > diff2) color.z = guess2 * 0.5f;
+        else if(diff1 < diff2) color.z = guess1 * 0.5f;
+        else color.z = (guess1 + guess2)*0.25f;
+      }
+      else // c == 2, blue pixel, fill red:
+      {
+        const float diff1  = fabs(ntl.x - nbr.x) + fabs(ntl.y - color.y) + fabs(nbr.y - color.y);
+        const float guess1 = ntl.x + nbr.x + 2.0f*color.y - ntl.y - nbr.y;
+        const float diff2  = fabs(ntr.x - nbl.x) + fabs(ntr.y - color.y) + fabs(nbl.y - color.y);
+        const float guess2 = ntr.x + nbl.x + 2.0f*color.y - ntr.y - nbl.y;
+        if     (diff1 > diff2) color.x = guess2 * 0.5f;
+        else if(diff1 < diff2) color.x = guess1 * 0.5f;
+        else color.x = (guess1 + guess2)*0.25f;
       }
     }
   }
-
-  const float cfai = cfa[mad24(y, width, x)];
-  const int f = FC(y, x, filters);
-  for(int c = 0; c < 3; c++)
-  {
-    if(c != f && cnt[c] != 0.0f)
-      o[c] = sum[c] / cnt[c];
-    else
-      o[c] = cfai;
-  }
-  write_imagef(out, (int2)(x, y), (float4)(scale * o[0], scale * o[1], scale * o[2], 0.0f));
+  write_imagef (out, (int2)(x, y), color);
 }
 

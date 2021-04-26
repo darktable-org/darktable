@@ -58,6 +58,7 @@ typedef struct dt_lib_map_locations_t
   GtkCellRenderer *renderer;
   GtkTreeSelection *selection;
   GtkTreeViewColumn *name_col;
+  GList *polygons;
 } dt_lib_map_locations_t;
 
 typedef struct dt_loc_op_t
@@ -85,14 +86,15 @@ typedef enum dt_map_position_name_sort_id
   DT_MAP_POSITION_SORT_NAME_ID,
 } dt_map_position_name_sort_id;
 
-const DTGTKCairoPaintIconFunc location_shapes[] = { dtgtk_cairo_paint_masks_circle,
-                                                     dtgtk_cairo_paint_rect_landscape };
+const DTGTKCairoPaintIconFunc location_shapes[] = { dtgtk_cairo_paint_masks_circle,   // MAP_LOCATION_SHAPE_ELLIPSE
+                                                    dtgtk_cairo_paint_rect_landscape, // MAP_LOCATION_SHAPE_RECTANGLE
+                                                    dtgtk_cairo_paint_polygon};       // MAP_LOCATION_SHAPE_POLYGONS
 
 static gboolean _mouse_scroll(GtkWidget *treeview, GdkEventScroll *event,
                               dt_lib_module_t *self)
 {
   dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
-  if (event->state & GDK_CONTROL_MASK)
+  if (dt_modifier_is(event->state, GDK_CONTROL_MASK))
   {
     const gint increment = DT_PIXEL_APPLY_DPI(10.0);
     const gint min_height = DT_PIXEL_APPLY_DPI(100.0);
@@ -338,7 +340,8 @@ static void _shape_button_clicked(GtkButton *button, dt_lib_module_t *self)
   dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
   int shape = dt_conf_get_int("plugins/map/locationshape");
   shape++;
-  if(shape > G_N_ELEMENTS(location_shapes)-1)
+  if((shape > G_N_ELEMENTS(location_shapes) - 1) ||
+     (!d->polygons && shape == MAP_LOCATION_SHAPE_POLYGONS))
     shape = 0;
   dt_conf_set_int("plugins/map/locationshape", shape);
 
@@ -462,6 +465,21 @@ static void _view_map_geotag_changed(gpointer instance, GList *imgs, const int n
   }
 }
 
+static void _view_map_location_changed(gpointer instance, GList *polygons, dt_lib_module_t *self)
+{
+  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
+  const int shape = dt_conf_get_int("plugins/map/locationshape");
+  if((shape == MAP_LOCATION_SHAPE_POLYGONS) && !polygons)
+  {
+    g_signal_handler_block (d->shape_button, d->shape_button_handler);
+    dtgtk_togglebutton_set_paint((GtkDarktableToggleButton *)d->shape_button,
+                                 location_shapes[MAP_LOCATION_SHAPE_ELLIPSE], CPF_STYLE_FLAT, NULL);
+    g_signal_handler_unblock (d->shape_button, d->shape_button_handler);
+    dt_conf_set_int("plugins/map/locationshape", MAP_LOCATION_SHAPE_ELLIPSE);
+  }
+  d->polygons = polygons;
+}
+
 static void _signal_location_change(dt_lib_module_t *self)
 {
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_view_map_geotag_changed), self);
@@ -529,8 +547,9 @@ static void _name_editing_done(GtkCellEditable *editable, dt_lib_module_t *self)
             g.shape = dt_conf_get_int("plugins/map/locationshape");
             g.lon = g.lat = NAN;
             g.delta1 = g.delta2 = 0.0;
+            g.polygons = d->polygons;
             dt_view_map_add_location(darktable.view_manager, &g, locid);
-
+            const int count = dt_map_location_get_images_count(locid);
             if(g_strstr_len(name, -1, "|"))
             {
               // the user wants to insert some group(s). difficult to handle the tree => reset
@@ -542,6 +561,7 @@ static void _name_editing_done(GtkCellEditable *editable, dt_lib_module_t *self)
                                  DT_MAP_LOCATION_COL_ID, locid,
                                  DT_MAP_LOCATION_COL_PATH, new_path,
                                  DT_MAP_LOCATION_COL_TAG, name,
+                                 DT_MAP_LOCATION_COL_COUNT, count,
                                   -1);
             }
           }
@@ -678,10 +698,9 @@ static void _pop_menu_delete_location(GtkWidget *menuitem, dt_lib_module_t *self
     gtk_tree_model_get(model, &iter, DT_MAP_LOCATION_COL_ID, &locid, -1);
     if(locid > 0)
     {
-      // remove the location afterwards to avoid map movement
-      _signal_location_change(self);
       dt_view_map_location_action(darktable.view_manager, MAP_LOCATION_ACTION_REMOVE);
       dt_map_location_delete(locid);
+      _signal_location_change(self);
     }
     // update the treeview
     GtkTreeIter parent;
@@ -855,13 +874,15 @@ static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_mo
   g_object_get(G_OBJECT(d->renderer), "editing", &editing, NULL);
   if(editing)
   {
-    dt_control_log(_("terminate edition (press enter or escape) before selecting another location"));
+    dt_control_log(_("terminate edit (press enter or escape) before selecting another location"));
     return TRUE;
   }
 
-  if((event->type == GDK_BUTTON_PRESS && event->button == 3)
-    || (event->type == GDK_BUTTON_PRESS && event->button == 1 && !(event->state & GDK_CONTROL_MASK))
-    || (event->type == GDK_BUTTON_PRESS && event->button == 1 && event->state & GDK_CONTROL_MASK)
+  const int button_pressed = (event->type == GDK_BUTTON_PRESS) ? event->button : 0;
+  const gboolean ctrl_pressed = dt_modifier_is(event->state, GDK_CONTROL_MASK);
+  if((button_pressed == 3)
+     || (button_pressed == 1 && !ctrl_pressed)
+     || (button_pressed == 1 && ctrl_pressed)
     )
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
@@ -870,7 +891,7 @@ static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_mo
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)event->x,
                                      (gint)event->y, &path, NULL, NULL, NULL))
     {
-      if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+      if(button_pressed == 3)
       {
         gtk_tree_selection_select_path(selection, path);
         _pop_menu_view(view, event, self);
@@ -878,14 +899,14 @@ static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_mo
         _display_buttons(self);
         return TRUE;
       }
-      else if(event->type == GDK_BUTTON_PRESS && event->button == 1 && !(event->state & GDK_CONTROL_MASK))
+      else if(button_pressed == 1 && !ctrl_pressed)
       {
         if(gtk_tree_selection_path_is_selected(selection, path))
           g_timeout_add(100, _force_selection_changed, self);
         gtk_tree_path_free(path);
         return FALSE;
       }
-      else if(event->type == GDK_BUTTON_PRESS && event->button == 1 && event->state & GDK_CONTROL_MASK)
+      else if(button_pressed == 1 && ctrl_pressed)
       {
         gtk_tree_selection_select_path(selection, path);
         g_object_set(G_OBJECT(d->renderer), "editable", TRUE, NULL);
@@ -906,7 +927,7 @@ static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_mo
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)malloc(sizeof(dt_lib_map_locations_t));
+  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)g_malloc0(sizeof(dt_lib_map_locations_t));
   self->data = d;
 
   self->widget =  gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -950,13 +971,13 @@ void gui_init(dt_lib_module_t *self)
                               _("list of user locations,"
                                 "\nclick to show or hide a location on the map:"
                                 "\n - wheel scroll inside the shape to resize it"
-                                "\n - if a rectangle <shift> or <ctrl> scroll to modify the width or the height"
+                                "\n - <shift> or <ctrl> scroll to modify the width or the height"
                                 "\n - click inside the shape and drag it to change its position"
                                 "\n - ctrl-click to move an image from inside the location"
                                 "\nctrl-click to edit a location name"
                                 "\n - a pipe \'|\' symbol breaks the name into several levels"
                                 "\n - to remove a group of locations clear its name"
-                                "\n - press enter to validate the new name, escape to cancel the edition"
+                                "\n - press enter to validate the new name, escape to cancel the edit"
                                 "\nright-click for other actions: delete location and go to collection,"
                                 "\nctrl-wheel scroll to resize the window"));
 
@@ -964,9 +985,9 @@ void gui_init(dt_lib_module_t *self)
   GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
   int shape = dt_conf_get_int("plugins/map/locationshape");
-  if(shape > G_N_ELEMENTS(location_shapes)-1)
+  if(shape == MAP_LOCATION_SHAPE_POLYGONS)
   {
-    shape = 0;
+    shape = MAP_LOCATION_SHAPE_ELLIPSE;
     dt_conf_set_int("plugins/map/locationshape", shape);
   }
   d->shape_button = dtgtk_togglebutton_new(location_shapes[shape], CPF_STYLE_FLAT, NULL);
@@ -974,7 +995,8 @@ void gui_init(dt_lib_module_t *self)
   d->shape_button_handler = g_signal_connect(G_OBJECT(d->shape_button), "clicked",
                                              G_CALLBACK(_shape_button_clicked), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->shape_button ),
-                              _("select the shape of the location\'s limits on the map, circle or rectangle"));
+                              _("select the shape of the location\'s limits on the map, circle or rectangle"
+                                "\nor even polygon if available (select first a polygon place in 'find location' module)"));
 
   d->new_button = dt_ui_button_new(_("new location"),
                                    _("add a new location on the center of the visible map"), NULL);
@@ -995,9 +1017,12 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(_selection_changed), self);
 
-  /* connect geotag changed signal */
+  // connect geotag changed signal
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED,
                                   G_CALLBACK(_view_map_geotag_changed), (gpointer)self);
+  // connect location changed signal
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_LOCATION_CHANGED,
+                                  G_CALLBACK(_view_map_location_changed), (gpointer)self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -1006,6 +1031,7 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_view_map_geotag_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_view_map_location_changed), self);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -69,11 +69,13 @@ DT_MODULE_INTROSPECTION(3, dt_iop_channelmixer_rgb_params_t)
 
 #define CHANNEL_SIZE 4
 #define NORM_MIN 1e-6f
+#define INVERSE_SQRT_3 0.5773502691896258f
 
 typedef enum dt_iop_channelmixer_rgb_version_t
 {
   CHANNELMIXERRGB_V_1 = 0, // $DESCRIPTION: "version 1 (2020)"
-  CHANNELMIXERRGB_V_2 = 1  // $DESCRIPTION: "version 2 (2021)"
+  CHANNELMIXERRGB_V_2 = 1, // $DESCRIPTION: "version 2 (2021)"
+  CHANNELMIXERRGB_V_3 = 2, // $DESCRIPTION: "version 3 (Apr 2021)"
 } dt_iop_channelmixer_rgb_version_t;
 
 typedef struct dt_iop_channelmixer_rgb_params_t
@@ -96,7 +98,7 @@ typedef struct dt_iop_channelmixer_rgb_params_t
   gboolean clip;                   // $DEFAULT: TRUE $DESCRIPTION: "clip negative RGB from gamut"
 
   /* params of v3 */
-  dt_iop_channelmixer_rgb_version_t version; // $DEFAULT: CHANNELMIXERRGB_V_2 $DESCRIPTION: "saturation algorithm"
+  dt_iop_channelmixer_rgb_version_t version; // $DEFAULT: CHANNELMIXERRGB_V_3 $DESCRIPTION: "saturation algorithm"
 
   /* always add new params after this so we can import legacy params with memcpy on the common part of the struct */
 
@@ -269,7 +271,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_iop_channelmixer_rgb_params_t p;
   memset(&p, 0, sizeof(p));
 
-  p.version = CHANNELMIXERRGB_V_2;
+  p.version = CHANNELMIXERRGB_V_3;
 
   // bypass adaptation
   p.illuminant = DT_ILLUMINANT_PIPE;
@@ -385,7 +387,7 @@ void init_presets(dt_iop_module_so_t *self)
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Kodak ?
-  // can't find spectral sensivity curves and the illuminant under which they are produced,
+  // can't find spectral sensitivity curves and the illuminant under which they are produced,
   // so ¯\_(ツ)_/¯
 
   // basic channel-mixer
@@ -573,6 +575,9 @@ static inline void luma_chroma(const float input[4], const float saturation[4], 
   const float mix = scalar_product(input, lightness);
   float norm = euclidean_norm(input);
 
+  // Compensate the norm to get color ratios (R, G, B) = (1, 1, 1) for grey (colorless) pixels.
+  if(version == CHANNELMIXERRGB_V_3) norm *= INVERSE_SQRT_3;
+
   // Ratios
   for(size_t c = 0; c < 3; c++) output[c] = input[c] / norm;
 
@@ -585,11 +590,7 @@ static inline void luma_chroma(const float input[4], const float saturation[4], 
       coeff_ratio += sqf(1.0f - output[c]) * saturation[c];
   }
   else
-  {
-    for(size_t c = 0; c < 3; c++)
-      coeff_ratio += output[c] * saturation[c];
-  }
-  coeff_ratio /= 3.f;
+    coeff_ratio = scalar_product(output, saturation) / 3.f;
 
   // Adjust the RGB ratios with the pixel correction
   for(size_t c = 0; c < 3; c++)
@@ -598,8 +599,13 @@ static inline void luma_chroma(const float input[4], const float saturation[4], 
     // otherwise bright saturated blues end up solid black
     const float min_ratio = (output[c] < 0.0f) ? output[c] : 0.0f;
     const float output_inverse = 1.0f - output[c];
-    output[c] = fmaxf(DT_FMA(output_inverse, coeff_ratio, output[c]), min_ratio); // output_inverse  * coeff_ratio + output
+    output[c] = fmaxf(DT_FMA(output_inverse, coeff_ratio, output[c]),
+                      min_ratio); // output_inverse  * coeff_ratio + output
   }
+
+  // The above interpolation between original pixel ratios and (1, 1, 1) might change the norm of the
+  // ratios. Compensate for that.
+  if(version == CHANNELMIXERRGB_V_3) norm /= euclidean_norm(output) * INVERSE_SQRT_3;
 
   // Apply colorfulness adjustment channel-wise and repack with lightness to get LMS back
   norm *= fmaxf(1.f + mix / avg, 0.f);
@@ -1333,21 +1339,21 @@ static const extraction_result_t _extract_patches(const float *const restrict in
     for(size_t c = 0; c < 3; c++) patches[k * 4 + c] /= (float)num_elem;
 
     // Convert to XYZ
-    float XYZ[3];
+    float XYZ[4] = { 0 };
     dot_product(patches + k * 4, RGB_to_XYZ, XYZ);
     for(size_t c = 0; c < 3; c++) patches[k * 4 + c] = XYZ[c];
   }
 
   /* match global exposure */
   // white exposure depends on camera settings and raw white point,
-  // we want our profile to be independant from that
+  // we want our profile to be independent from that
   float XYZ_white_ref[4];
   float *XYZ_white_test = patches + g->checker->white * 4;
   dt_Lab_to_XYZ(g->checker->values[g->checker->white].Lab, XYZ_white_ref);
   const float exposure = XYZ_white_ref[1] / XYZ_white_test[1];
 
   // black point is evaluated by rawspeed on each picture using the dark pixels
-  // we want our profile to be also independant from its discrepancies
+  // we want our profile to be also independent from its discrepancies
   float XYZ_black_ref[4];
   float *XYZ_black_test = patches + g->checker->black * 4;
   dt_Lab_to_XYZ(g->checker->values[g->checker->black].Lab, XYZ_black_ref);
@@ -1416,11 +1422,11 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   convert_any_XYZ_to_LMS(D50_XYZ, D50_LMS, kind);
 
   // solve the equation to find the scene illuminant
-  float illuminant[3];
+  float illuminant[4] = { .0f };
   for(size_t c = 0; c < 3; c++) illuminant[c] = D50_LMS[c] * LMS_grey_test[c] / LMS_grey_ref[c];
 
   // convert back the illuminant to XYZ then xyY
-  float illuminant_XYZ[3], illuminant_xyY[3];
+  float illuminant_XYZ[4], illuminant_xyY[4] = { .0f };
   convert_any_LMS_to_XYZ(illuminant, illuminant_XYZ, kind);
   const float Y_illu = illuminant_XYZ[1];
   for(size_t c = 0; c < 3; c++) illuminant_XYZ[c] /= Y_illu;
@@ -2680,7 +2686,7 @@ static void update_illuminants(dt_iop_module_t *self)
  * Using (x, y) is a robust and interoperable way to describe an illuminant, since it is all the actual pixel code needs
  * to perform the chromatic adaptation. This (x, y) can be computed in many different ways or taken from databases,
  * and possibly from other software, so storing only the result let us room to improve the computation in the future,
- * without loosing compatibility with older versions.
+ * without losing compatibility with older versions.
  *
  * However, it's not a great GUI since x and y are not perceptually scaled. So the `g->illum_x` and `g->illum_y`
  * actually display respectively hue and chroma, in LCh color space, which is designed for illuminants
@@ -3169,7 +3175,11 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->scale_saturation_R, p->saturation[0]);
   dt_bauhaus_slider_set_soft(g->scale_saturation_G, p->saturation[1]);
   dt_bauhaus_slider_set_soft(g->scale_saturation_B, p->saturation[2]);
-  dt_bauhaus_combobox_set(g->saturation_version, p->version);
+
+  if(p->version != CHANNELMIXERRGB_V_3)
+    dt_bauhaus_combobox_set(g->saturation_version, p->version);
+  else
+    gtk_widget_hide(GTK_WIDGET(g->saturation_version));
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_sat), p->normalize_sat);
 
@@ -3301,7 +3311,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
 
       if(found)
-        dt_control_log(_("white balance successfuly extracted from raw image"));
+        dt_control_log(_("white balance successfully extracted from raw image"));
     }
     else if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES
             || p->illuminant == DT_ILLUMINANT_DETECT_SURFACES)
@@ -3317,13 +3327,13 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
     if(p->illuminant != DT_ILLUMINANT_CUSTOM && p->illuminant != DT_ILLUMINANT_CAMERA)
     {
-      // We are in any mode defining (x, y) indirectly from an interface, so commit (x, y) explicitely
+      // We are in any mode defining (x, y) indirectly from an interface, so commit (x, y) explicitly
       illuminant_to_xy(p->illuminant, NULL, NULL, &(p->x), &(p->y), p->temperature, p->illum_fluo, p->illum_led);
     }
 
     if(p->illuminant != DT_ILLUMINANT_D && p->illuminant != DT_ILLUMINANT_BB && p->illuminant != DT_ILLUMINANT_CAMERA)
     {
-      // We are in any mode not defining explicitely a temperature, so find the the closest CCT and commit it
+      // We are in any mode not defining explicitly a temperature, so find the the closest CCT and commit it
       check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, NULL);
     }
   }
@@ -3342,7 +3352,11 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     float Lch[3];
     dt_xyY_to_Lch(xyY, Lch);
 
-    dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
+    // If the chroma is zero then there is not a meaningful hue angle. In this case
+    // leave the hue slider where it was, so that if chroma is set to zero and then
+    // set to a nonzero value, the hue setting will remain unchanged.
+    if(Lch[1] > 0)
+      dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
     dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
     dt_bauhaus_slider_set(g->temperature, p->temperature);
   }
@@ -3583,7 +3597,7 @@ void gui_init(struct dt_iop_module_t *self)
   NOTEBOOK_PAGE(saturation, sat, N_("colorfulness"), N_("colorfulness"), N_("colorfulness"), FALSE)
   g->saturation_version = dt_bauhaus_combobox_from_params(self, "version");
   NOTEBOOK_PAGE(lightness, light, N_("brightness"), N_("brightness"), N_("brightness"), FALSE)
-  NOTEBOOK_PAGE(grey, grey, N_("grey"), N_("grey"), N_("grey"), FALSE)
+  NOTEBOOK_PAGE(grey, grey, N_("gray"), N_("gray"), N_("gray"), FALSE)
 
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);

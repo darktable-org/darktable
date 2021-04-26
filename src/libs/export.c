@@ -366,9 +366,9 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
     }
   }
 
-  dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int(CONFIG_PREFIX "icctype");
+  const dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int(CONFIG_PREFIX "icctype");
   gchar *icc_filename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
-  dt_iop_color_intent_t icc_intent = dt_conf_get_int(CONFIG_PREFIX "iccintent");
+  const dt_iop_color_intent_t icc_intent = dt_conf_get_int(CONFIG_PREFIX "iccintent");
 
   GList *list = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE, TRUE));
   dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, upscale, export_masks,
@@ -576,16 +576,17 @@ void gui_reset(dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->intent, dt_confgen_get_int(CONFIG_PREFIX "iccintent", DT_DEFAULT) + 1);
 
   // iccprofile
-  int icctype = dt_confgen_get_int(CONFIG_PREFIX "icctype", DT_DEFAULT);
+  const int icctype = dt_confgen_get_int(CONFIG_PREFIX "icctype", DT_DEFAULT);
   gchar *iccfilename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
   dt_bauhaus_combobox_set(d->profile, 0);
   if(icctype != DT_COLORSPACE_NONE)
   {
     for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
     {
-      dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)profiles->data;
-      if(pp->out_pos > -1 &&
-         icctype == pp->type && (icctype != DT_COLORSPACE_FILE || !strcmp(iccfilename, pp->filename)))
+      const dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)profiles->data;
+      if(pp->out_pos > -1
+         && icctype == pp->type
+         && (icctype != DT_COLORSPACE_FILE || !strcmp(iccfilename, pp->filename)))
       {
         dt_bauhaus_combobox_set(d->profile, pp->out_pos + 1);
         break;
@@ -631,7 +632,7 @@ static void set_format_by_name(dt_lib_export_t *d, const char *name)
   for(GList *it = darktable.imageio->plugins_format; it; it = g_list_next(it))
   {
     if(g_strcmp0(((dt_imageio_module_format_t *)it->data)->name(), name) == 0
-        || g_strcmp0(((dt_imageio_module_format_t *)it->data)->plugin_name, name) == 0)
+       || g_strcmp0(((dt_imageio_module_format_t *)it->data)->plugin_name, name) == 0)
     {
       module = (dt_imageio_module_format_t *)it->data;
       break;
@@ -727,7 +728,7 @@ static void _validate_dimensions(dt_lib_export_t *d)
   uint32_t height = atoi(gtk_entry_get_text(GTK_ENTRY(d->height)));
   if(width > d->max_allowed_width || height > d->max_allowed_height)
   {
-    width = width > d->max_allowed_width ? dt_conf_get_int(CONFIG_PREFIX "width") : width;
+    width  = width  > d->max_allowed_width  ? dt_conf_get_int(CONFIG_PREFIX "width")  : width;
     height = height > d->max_allowed_height ? dt_conf_get_int(CONFIG_PREFIX "height") : height;
     _set_dimensions(d, width, height);
   }
@@ -796,7 +797,7 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
 
   // Lets try to set selected format if fail select first in list..
   gchar *format_name = dt_conf_get_string(CONFIG_PREFIX "format_name");
-  dt_imageio_module_format_t *format = dt_imageio_get_format_by_name(format_name);
+  const dt_imageio_module_format_t *format = dt_imageio_get_format_by_name(format_name);
   g_free(format_name);
 
   if(format == NULL
@@ -932,7 +933,7 @@ static void _width_changed(GtkEditable *entry, gpointer user_data)
 {
   if(darktable.gui->reset) return;
 
-  dt_lib_export_t *d = (dt_lib_export_t *)user_data;
+  const dt_lib_export_t *d = (dt_lib_export_t *)user_data;
   const uint32_t width = atoi(gtk_entry_get_text(GTK_ENTRY(d->width)));
   dt_conf_set_int(CONFIG_PREFIX "width", width);
 }
@@ -959,7 +960,7 @@ static void _height_changed(GtkEditable *entry, gpointer user_data)
 {
   if(darktable.gui->reset) return;
 
-  dt_lib_export_t *d = (dt_lib_export_t *)user_data;
+  const dt_lib_export_t *d = (dt_lib_export_t *)user_data;
   const uint32_t height = atoi(gtk_entry_get_text(GTK_ENTRY(d->height)));
   dt_conf_set_int(CONFIG_PREFIX "height", height);
 }
@@ -1053,24 +1054,17 @@ static void _update_formats_combobox(dt_lib_export_t *d)
   gtk_widget_set_sensitive(d->format, !empty);
 }
 
-static void _remove_child(GtkWidget *widget, gpointer data)
-{
-  GtkContainer *cont = (GtkContainer *)data;
-  gtk_container_remove(cont, widget);
-}
-
 static void _on_storage_list_changed(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_export_t *d = self->data;
   dt_imageio_module_storage_t *storage = dt_imageio_get_storage();
   dt_bauhaus_combobox_clear(d->storage);
 
-  GtkContainer *cont = GTK_CONTAINER(d->storage_extra_container);
-  gtk_container_foreach(cont, _remove_child, cont);
+  dt_gui_container_remove_children(GTK_CONTAINER(d->storage_extra_container));
 
   for(const GList *it = darktable.imageio->plugins_storage; it; it = g_list_next(it))
   {
-    dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
+    const dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
     dt_bauhaus_combobox_add(d->storage, module->name(module));
     if(module->widget)
     {
@@ -1114,6 +1108,17 @@ void set_preferences(void *menu, dt_lib_module_t *self)
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
+static gboolean _next_widget(GtkWidget *width, GdkEventKey *ev, GtkWidget *next)
+{
+  if(ev->keyval == GDK_KEY_Tab)
+  {
+    gtk_widget_grab_focus(next);
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
@@ -1126,7 +1131,7 @@ void gui_init(dt_lib_module_t *self)
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
   gtk_style_context_add_class(context, "section_label_top");
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
-  dt_gui_add_help_link(self->widget, "export_selected.html#export_selected_usage");
+  dt_gui_add_help_link(self->widget, dt_get_help_url("export"));
 
   d->storage = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->storage, NULL, N_("target storage"));
@@ -1153,7 +1158,7 @@ void gui_init(dt_lib_module_t *self)
 
   label = dt_ui_section_label_new(_("format options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
-  dt_gui_add_help_link(self->widget, "export_selected.html#export_selected_usage");
+  dt_gui_add_help_link(self->widget, dt_get_help_url("export"));
 
   d->format = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->format, NULL, N_("file format"));
@@ -1166,7 +1171,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->format_extra_container, FALSE, TRUE, 0);
   for(const GList *it = darktable.imageio->plugins_format; it; it = g_list_next(it))
   {
-    dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
+    const dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
     if(module->widget)
     {
       gtk_container_add(GTK_CONTAINER(d->format_extra_container), module->widget);
@@ -1175,7 +1180,7 @@ void gui_init(dt_lib_module_t *self)
 
   label = dt_ui_section_label_new(_("global options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
-  dt_gui_add_help_link(self->widget, "export_selected.html#export_selected_usage");
+  dt_gui_add_help_link(self->widget, dt_get_help_url("export"));
 
   d->dimensions_type = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->dimensions_type, NULL, N_("set size"));
@@ -1300,8 +1305,9 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->profile, _("image settings"));
   for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {
-    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
-    if(prof->out_pos > -1) dt_bauhaus_combobox_add(d->profile, prof->name);
+    const dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
+    if(prof->out_pos > -1)
+      dt_bauhaus_combobox_add(d->profile, prof->name);
   }
 
   dt_bauhaus_combobox_set(d->profile, 0);
@@ -1410,9 +1416,12 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(_height_changed), (gpointer)d);
 
   g_signal_connect(G_OBJECT(d->width), "button-press-event", G_CALLBACK(_widht_mdlclick), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->width), "key-press-event", G_CALLBACK(_next_widget), (gpointer)d->height);
   g_signal_connect(G_OBJECT(d->height), "button-press-event", G_CALLBACK(_height_mdlclick), (gpointer)d);
   g_signal_connect(G_OBJECT(d->print_width), "button-press-event", G_CALLBACK(_widht_mdlclick), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->print_width), "key-press-event", G_CALLBACK(_next_widget), (gpointer)d->print_height);
   g_signal_connect(G_OBJECT(d->print_height), "button-press-event", G_CALLBACK(_height_mdlclick), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->print_height), "key-press-event", G_CALLBACK(_next_widget), (gpointer)d->print_dpi);
 
   g_signal_connect(G_OBJECT(d->scale), "button-press-event", G_CALLBACK(_scale_mdlclick), (gpointer)d);
   g_signal_connect(G_OBJECT(d->scale), "changed", G_CALLBACK(_scale_changed), (gpointer)d);
@@ -1460,16 +1469,17 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->intent, dt_conf_get_int(CONFIG_PREFIX "iccintent") + 1);
 
   // iccprofile
-  int icctype = dt_conf_get_int(CONFIG_PREFIX "icctype");
+  const int icctype = dt_conf_get_int(CONFIG_PREFIX "icctype");
   gchar *iccfilename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
   dt_bauhaus_combobox_set(d->profile, 0);
   if(icctype != DT_COLORSPACE_NONE)
   {
     for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
     {
-      dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)profiles->data;
-      if(pp->out_pos > -1 &&
-         icctype == pp->type && (icctype != DT_COLORSPACE_FILE || !strcmp(iccfilename, pp->filename)))
+      const dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)profiles->data;
+      if(pp->out_pos > -1
+         && icctype == pp->type
+         && (icctype != DT_COLORSPACE_FILE || !strcmp(iccfilename, pp->filename)))
       {
         dt_bauhaus_combobox_set(d->profile, pp->out_pos + 1);
         break;
@@ -1487,7 +1497,8 @@ void gui_init(dt_lib_module_t *self)
   if(setting != NULL && strlen(setting) > 0)
   {
     rc = dt_bauhaus_combobox_set_from_text(d->style, setting);
-    if(rc == FALSE) dt_bauhaus_combobox_set(d->style, 0);
+    if(rc == FALSE)
+      dt_bauhaus_combobox_set(d->style, 0);
   }
   else
     dt_bauhaus_combobox_set(d->style, 0);
@@ -1577,7 +1588,8 @@ void init_presets(dt_lib_module_t *self)
                       "expected. dropping preset.\n",
               name, op_version, version);
       sqlite3_stmt *innerstmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM data.presets WHERE rowid=?1", -1,
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "DELETE FROM data.presets WHERE rowid=?1", -1,
                                   &innerstmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 1, rowid);
       sqlite3_step(innerstmt);
@@ -1624,7 +1636,7 @@ void init_presets(dt_lib_module_t *self)
 
       void *new_fdata = NULL, *new_sdata = NULL;
       size_t new_fsize = fsize, new_ssize = ssize;
-      int32_t new_fversion = fmod->version(), new_sversion = smod->version();
+      const int32_t new_fversion = fmod->version(), new_sversion = smod->version();
 
       if(fversion < new_fversion)
       {
@@ -1645,7 +1657,7 @@ void init_presets(dt_lib_module_t *self)
       if(new_fdata || new_sdata)
       {
         // we got an updated blob -> reassemble the parts and update the preset
-        size_t new_params_size = op_params_size - (fsize + ssize) + (new_fsize + new_ssize);
+        const size_t new_params_size = op_params_size - (fsize + ssize) + (new_fsize + new_ssize);
         void *new_params = malloc(new_params_size);
         memcpy(new_params, op_params, copy_over_part);
         // next we have fversion, sversion, fsize, ssize, fdata, sdata which is the stuff that might change
@@ -1674,7 +1686,8 @@ void init_presets(dt_lib_module_t *self)
                 name, fversion, sversion, new_fversion, new_sversion);
         sqlite3_stmt *innerstmt;
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "UPDATE data.presets SET op_params=?1 WHERE rowid=?2", -1, &innerstmt, NULL);
+                                    "UPDATE data.presets SET op_params=?1 WHERE rowid=?2",
+                                    -1, &innerstmt, NULL);
         DT_DEBUG_SQLITE3_BIND_BLOB(innerstmt, 1, new_params, new_params_size, SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 2, rowid);
         sqlite3_step(innerstmt);
@@ -1694,7 +1707,8 @@ void init_presets(dt_lib_module_t *self)
                       "versions %d/%d. dropping preset\n",
               name, fversion, sversion, new_fversion, new_sversion);
       sqlite3_stmt *innerstmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM data.presets WHERE rowid=?1", -1,
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "DELETE FROM data.presets WHERE rowid=?1", -1,
                                   &innerstmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 1, rowid);
       sqlite3_step(innerstmt);
@@ -1710,7 +1724,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
   if(old_version == 1)
   {
     // add version of format & storage to params
-    size_t new_params_size = old_params_size + 2 * sizeof(int32_t);
+    const size_t new_params_size = old_params_size + 2 * sizeof(int32_t);
     void *new_params = malloc(new_params_size);
 
     const char *buf = (const char *)old_params;
@@ -1756,7 +1770,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
   else if(old_version == 2)
   {
     // add upscale to params
-    size_t new_params_size = old_params_size + sizeof(int32_t);
+    const size_t new_params_size = old_params_size + sizeof(int32_t);
     void *new_params = calloc(1, new_params_size);
 
     memcpy(new_params, old_params, sizeof(int32_t) * 2);
@@ -1832,7 +1846,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     //  - char* (iccfilename)
     //  - old rest
 
-    size_t new_params_size = old_params_size + sizeof(int32_t);
+    const size_t new_params_size = old_params_size + sizeof(int32_t);
     void *new_params = calloc(1, new_params_size);
 
     size_t pos = 0;
@@ -1861,7 +1875,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     const gboolean omit = dt_conf_get_bool("omit_tag_hierarchy");
     char *flags = dt_util_dstrcat(NULL, "%x", dt_lib_export_metadata_default_flags() | (omit ? DT_META_OMIT_HIERARCHY : 0));
     const int flags_size = strlen(flags) + 1;
-    size_t new_params_size = old_params_size + flags_size;
+    const size_t new_params_size = old_params_size + flags_size;
     void *new_params = calloc(1, new_params_size);
     size_t pos = 0;
     memcpy(new_params, old_params, sizeof(int32_t) * 6);
@@ -1915,8 +1929,8 @@ void *get_params(dt_lib_module_t *self, int *size)
   dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
   size_t ssize = mstorage->params_size(mstorage);
   void *sdata = mstorage->get_params(mstorage);
-  int32_t fversion = mformat->version();
-  int32_t sversion = mstorage->version();
+  const int32_t fversion = mformat->version();
+  const int32_t sversion = mstorage->version();
   // we allow null pointers (plugin not ready for export in current state), and just don't copy back the
   // settings later:
   if(!sdata) ssize = 0;
@@ -1956,11 +1970,15 @@ void *get_params(dt_lib_module_t *self, int *size)
     g_free(iccfilename);
     iccfilename = NULL;
   }
+
   if(!iccfilename) iccfilename = g_strdup("");
   if(!metadata_export) metadata_export = g_strdup("");
 
-  char *fname = mformat->plugin_name, *sname = mstorage->plugin_name;
-  int32_t fname_len = strlen(fname), sname_len = strlen(sname);
+  const char *fname = mformat->plugin_name;
+  const char *sname = mstorage->plugin_name;
+  const int32_t fname_len = strlen(fname);
+  const int32_t sname_len = strlen(sname);
+
   *size = fname_len + sname_len + 2 + 4 * sizeof(int32_t) + fsize + ssize + 7 * sizeof(int32_t)
           + strlen(iccfilename) + 1 + strlen(metadata_export) + 1;
 
@@ -2052,9 +2070,10 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   {
     for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
     {
-      dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)iter->data;
-      if(pp->out_pos > -1 &&
-         icctype == pp->type && (icctype != DT_COLORSPACE_FILE || !strcmp(iccfilename, pp->filename)))
+      const dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)iter->data;
+      if(pp->out_pos > -1
+         && icctype == pp->type
+         && (icctype != DT_COLORSPACE_FILE || !strcmp(iccfilename, pp->filename)))
       {
         dt_bauhaus_combobox_set(d->profile, pp->out_pos + 1);
         break;
@@ -2090,6 +2109,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   if(fversion != fmod->version() || sversion != smod->version()) return 1;
 
   const dt_imageio_module_data_t *fdata = (const dt_imageio_module_data_t *)buf;
+
   if(fdata->style[0] == '\0')
     dt_bauhaus_combobox_set(d->style, 0);
   else

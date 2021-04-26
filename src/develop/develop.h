@@ -228,6 +228,8 @@ typedef struct dt_develop_t
       void (*set)(struct dt_lib_module_t *self, uint32_t group);
       /* get current module group */
       uint32_t (*get)(struct dt_lib_module_t *self);
+      /* get activated module group */
+      uint32_t (*get_activated)(struct dt_lib_module_t *self);
       /* test if iop group flags matches modulegroup */
       gboolean (*test)(struct dt_lib_module_t *self, uint32_t group, struct dt_iop_module_t *module);
       /* switch to modulegroup */
@@ -425,6 +427,8 @@ void dt_dev_modulegroups_search_text_focus(dt_develop_t *dev);
 void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group);
 /** get the active modulegroup */
 uint32_t dt_dev_modulegroups_get(dt_develop_t *dev);
+/** get the activated modulegroup */
+uint32_t dt_dev_modulegroups_get_activated(dt_develop_t *dev);
 /** test if iop group flags matches modulegroup */
 gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, struct dt_iop_module_t *module);
 /** reorder the module list */

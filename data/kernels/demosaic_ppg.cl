@@ -566,8 +566,8 @@ ppg_demosaic_green (read_only image2d_t in, write_only image2d_t out, const int 
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  if(x >= width || y >= height) return;
-
+  // make sure we dont write the outermost 3 pixels
+  if(x >= width - 3 || x < 3 || y >= height - 3 || y < 3) return;
   // process all non-green pixels
   const int row = y;
   const int col = x;
@@ -673,11 +673,15 @@ ppg_demosaic_redblue (read_only image2d_t in, write_only image2d_t out, const in
   barrier(CLK_LOCAL_MEM_FENCE);
 
   if(x >= width || y >= height) return;
-
   const int row = y;
   const int col = x;
   const int c = FC(row, col, filters);
   float4 color = buffer[0];
+  if(x == 0 || y == 0 || x == (width-1) || y == (height-1))
+  {
+    write_imagef (out, (int2)(x, y), color);  
+    return;
+  }
 
   if(c == 1 || c == 3)
   { // calculate red and blue for green pixels:
@@ -740,9 +744,9 @@ border_interpolate(read_only image2d_t in, write_only image2d_t out, const int w
 
   if(x >= width || y >= height) return;
 
-  int avgwindow = 1;
+  const int avgwindow = 1;
 
-  if(x>=border && x<width-border && y>=border && y<height-border) return;
+  if(x >= border && x < width-border && y >= border && y < height-border) return;
 
   float4 o;
   float sum[4] = { 0.0f };
@@ -752,18 +756,18 @@ border_interpolate(read_only image2d_t in, write_only image2d_t out, const int w
   {
     if (j>=0 && i>=0 && j<height && i<width)
     {
-      int f = FC(j,i,filters);
+      const int f = FC(j,i,filters);
       sum[f] += read_imagef(in, sampleri, (int2)(i, j)).x;
       count[f]++;
     }
   }
 
-  float i = read_imagef(in, sampleri, (int2)(x, y)).x;
+  const float i = read_imagef(in, sampleri, (int2)(x, y)).x;
   o.x = count[0] > 0 ? sum[0]/count[0] : i;
   o.y = count[1]+count[3] > 0 ? (sum[1]+sum[3])/(count[1]+count[3]) : i;
   o.z = count[2] > 0 ? sum[2]/count[2] : i;
 
-  int f = FC(y,x,filters);
+  const int f = FC(y,x,filters);
 
   if     (f == 0) o.x = i;
   else if(f == 1) o.y = i;

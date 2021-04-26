@@ -334,43 +334,48 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
   dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
   // find piece in nodes list
   dt_dev_pixelpipe_iop_t *piece = NULL;
-  gboolean hint = FALSE;
+
+  const dt_image_t *img = &pipe->image;
+  const int32_t imgid = img->id;
+  const gboolean rawprep_img = dt_image_is_rawprepare_supported(img);
 
   for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
   {
     piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
-    const dt_image_t *img = &piece->pipe->image;
-    const int imgid = img->id;
 
     if(piece->module == hist->module)
     {
-      gboolean active = hist->enabled;
+      const gboolean active = hist->enabled;
+      piece->enabled = active;
 
-      // demosaic must be OFF for non-raws and ON for raws
-      if(strcmp(piece->module->op, "demosaic") == 0)
+      // Styles, presets or history copy&paste might set history items not appropriate for the image.
+      // Fixing that seemed to be almost impossible after long discussions but at least we can test,
+      // correct and add a problem hint here.
+      if((strcmp(piece->module->op, "demosaic") == 0) || (strcmp(piece->module->op, "rawprepare") == 0))
       {
-        if(dt_image_is_raw(img) && !active)
-        {
-          hint = TRUE;
-          active = TRUE;
-          fprintf(stderr,"[dt_dev_pixelpipe_synch] found disabled demosaic in history for raw `%s`, id: %i\n",
-            img->filename, imgid);
-        }
-        else if(!dt_image_is_raw(img) && active)
-        {
-          hint = TRUE;
-          active = FALSE;
-          fprintf(stderr,"[dt_dev_pixelpipe_synch] found enabled demosaic in history for non-raw `%s`, id: %i\n",
-            img->filename, imgid);
-        }
+        if(rawprep_img && !active)
+          piece->enabled = TRUE;
+        else if(!rawprep_img && active)
+          piece->enabled = FALSE;
+      }
+      else if((strcmp(piece->module->op, "rawdenoise") == 0) ||
+              (strcmp(piece->module->op, "hotpixels") == 0) ||
+              (strcmp(piece->module->op, "cacorrect") == 0))
+      {
+        if(!rawprep_img && active) piece->enabled = FALSE;
       }
 
-      piece->enabled = active;
+      if(piece->enabled != hist->enabled)
+      {
+        if(piece->enabled)
+          dt_iop_set_module_trouble_message(piece->module, _("enabled as required"), _("history had module disabled but it is required for this type of image.\nlikely introduced by applying a preset, style or history copy&paste"), NULL);
+        else
+          dt_iop_set_module_trouble_message(piece->module, _("disabled as not appropriate"), _("history had module enabled but it is not allowed for this type of image.\nlikely introduced by applying a preset, style or history copy&paste"), NULL);
+        dt_print(DT_DEBUG_PARAMS, "[pixelpipe_synch] enabling mismatch for module %s in image %i\n", piece->module->op, imgid);
+      }
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
     }
   }
-  if(hint)
-    dt_control_log(_("history problem detected\nplease report via the issue tracker\nincluding the xmp file"));
 }
 
 void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
@@ -408,12 +413,12 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   if(history)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
-    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module `%s' for pipe %i\n", hist->module->op, pipe->type); 
+    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module `%s' for pipe %i\n", hist->module->op, pipe->type);
     dt_dev_pixelpipe_synch(pipe, dev, history);
   }
   else
   {
-    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module missing error for pipe %i\n", pipe->type); 
+    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module missing error for pipe %i\n", pipe->type);
   }
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
 }
@@ -2500,8 +2505,8 @@ float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const dt_iop_modul
           dt_dev_pixelpipe_iop_t *module = (dt_dev_pixelpipe_iop_t *)iter->data;
 
           if(module->enabled
-            && !(module->module->dev->gui_module && module->module->dev->gui_module->operation_tags_filter()
-                 & module->module->operation_tags()))
+            && !(module->module->dev->gui_module
+                 && (module->module->dev->gui_module->operation_tags_filter() & module->module->operation_tags())))
           {
             if(module->module->distort_mask
               && !(!strcmp(module->module->op, "finalscale") // hack against pipes not using finalscale

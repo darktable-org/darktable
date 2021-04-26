@@ -1464,6 +1464,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
     case DT_COLLECTION_PROP_FOLDERS: // folders
       {
+        // replace * at the end with OR-clause to include subfolders
         if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
         {
           escaped_text[escaped_length-1] = '\0';
@@ -1471,7 +1472,8 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
                                   G_DIR_SEPARATOR_S "%%'))",
                                   escaped_text, escaped_text);
         }
-        else if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '%'))
+        // replace |% at the end with /% to only show subfolders
+        else if ((escaped_length > 1) && (strcmp(escaped_text+escaped_length-2, "|%") == 0 ))
         {
           escaped_text[escaped_length-2] = '\0';
           query = g_strdup_printf("(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s"
@@ -1681,7 +1683,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       else if(operator && number1)
         query = g_strdup_printf("(focal_length %s %s)", operator, number1);
       else if(number1)
-        query = g_strdup_printf("(focal_length = %s)", number1);
+        query = g_strdup_printf("(CAST(focal_length AS INTEGER) = CAST(%s AS INTEGER))", number1);
       else
         query = g_strdup_printf("(focal_length LIKE '%%%s%%')", escaped_text);
 
@@ -1992,6 +1994,12 @@ void dt_collection_deserialize(char *buf)
 void dt_collection_update_query(const dt_collection_t *collection, dt_collection_change_t query_change, GList *list)
 {
   int next = -1;
+  if(!collection->clone && query_change == DT_COLLECTION_CHANGE_NEW_QUERY && darktable.gui)
+  {
+    // if the query has changed, we reset the expanded group
+    darktable.gui->expanded_group_id = -1;
+  }
+
   if(!collection->clone)
   {
     if(list)

@@ -3,6 +3,7 @@ add_subdirectory(external)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
+include(CheckCXXSymbolExists)
 
 #
 # Add files for libdarktable
@@ -291,8 +292,8 @@ endif()
 # Find all other required libraries for building
 #
 # GTK3 does pull glib, but this allows us to check for the version
-find_package(Glib 2.40 REQUIRED)
-add_definitions("-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_40")
+find_package(Glib 2.56 REQUIRED)
+add_definitions("-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_56")
 add_definitions("-DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_MIN_REQUIRED")
 include_directories(SYSTEM ${Glib_INCLUDE_DIRS})
 list(APPEND LIBS ${Glib_LIBRARIES})
@@ -328,7 +329,12 @@ if(USE_CAMERA_SUPPORT)
 endif(USE_CAMERA_SUPPORT)
 
 if(USE_OPENEXR)
-  find_package(OpenEXR)
+  find_package(OpenEXR 3.0 CONFIG)
+  if(TARGET OpenEXR::OpenEXR)
+    set(OpenEXR_LIBRARIES OpenEXR::OpenEXR)
+  else()
+    find_package(OpenEXR)
+  endif()
   if(OpenEXR_FOUND)
     include_directories(SYSTEM ${OpenEXR_INCLUDE_DIRS})
     list(APPEND LIBS ${OpenEXR_LIBRARIES})
@@ -388,6 +394,25 @@ find_package(Exiv2 0.24 REQUIRED)
 include_directories(SYSTEM ${Exiv2_INCLUDE_DIRS})
 list(APPEND LIBS ${Exiv2_LIBRARIES})
 add_definitions(${Exiv2_DEFINITIONS})
+
+# Optionally enable ISOBMFF support in Exiv2
+if (USE_ISOBMFF)
+  if(Exiv2_VERSION VERSION_GREATER_EQUAL "0.27.4")
+    # exiv2 >= 0.27.4 provides optional support for ISOBMFF files.
+    # This must be manually enabled during exiv2 build and can be checked with
+    # the EXV_ENABLE_BMFF symbol.
+    check_cxx_symbol_exists(EXV_ENABLE_BMFF "exiv2/exiv2.hpp" HAVE_EXV_ENABLE_BMFF)
+    if(HAVE_EXV_ENABLE_BMFF)
+      add_definitions(-DHAVE_LIBEXIV2_WITH_ISOBMFF=1)
+      set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} cr3 heif CACHE INTERNAL "")
+      message(STATUS "Exiv2 >= 0.27.4 found with ISOBMFF support (CR3, AVIF, HEIF)")
+    else()
+      message(STATUS "Exiv2 >= 0.27.4 found, but was not compiled with ISOBMFF support (CR3, AVIF, HEIF)")
+    endif()
+  else()
+    message(STATUS "Exiv2 <= 0.27.4 found, no support for ISOBMFF files (CR3, AVIF, HEIF)")
+  endif()
+endif()
 
 if(USE_OPENJPEG)
   find_package(OpenJPEG)
@@ -513,7 +538,7 @@ endif(USE_OPENCL)
 
 
 if(Gphoto2_FOUND)
-  set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" "gui/camera_import_dialog.c" )
+  set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" )
   add_definitions("-DHAVE_GPHOTO2")
 
   # Gphoto 2.5 changed the prototype of a set of callback functions.
@@ -880,6 +905,7 @@ add_library(lib_darktable SHARED ${DARKTABLE_BINDIR}/preferences_gen.h ${DARKTAB
 # since this isn't the same directory we do have to manually set it
 set_source_files_properties(${DARKTABLE_BINDIR}/version_gen.c PROPERTIES GENERATED TRUE)
 
+add_dependencies(lib_darktable generate_conf)
 add_dependencies(lib_darktable generate_version)
 add_dependencies(lib_darktable generate_preferences)
 

@@ -675,7 +675,7 @@ static void _lib_history_will_change_callback(gpointer instance, GList *history,
 
   if(lib->record_undo && (lib->record_history_level == 0))
   {
-    // history is about to change, we want here ot record a snapshot of the history for the undo
+    // history is about to change, here we want to record a snapshot of the history for the undo
     // record previous history
     g_list_free_full(lib->previous_snapshot, free);
     g_list_free_full(lib->previous_iop_order_list, free);
@@ -1017,7 +1017,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   dt_lib_history_t *d = (dt_lib_history_t *)self->data;
 
   /* first destroy all buttons in list */
-  gtk_container_foreach(GTK_CONTAINER(d->history_box), (GtkCallback)gtk_widget_destroy, 0);
+  dt_gui_container_destroy_children(GTK_CONTAINER(d->history_box));
 
   /* add default which always should be */
   int num = -1;
@@ -1159,7 +1159,7 @@ static gboolean _lib_truncate_stack_accel(GtkAccelGroup *accel_group, GObject *a
 
 static void _lib_history_compress_clicked_callback(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
 {
-  const gboolean compress = !(e->state & GDK_CONTROL_MASK);
+  const gboolean compress = !dt_modifier_is(e->state, GDK_CONTROL_MASK);
   _lib_history_truncate(compress);
 }
 
@@ -1177,10 +1177,9 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   GList *children = gtk_container_get_children(GTK_CONTAINER(d->history_box));
   for(GList *l = children; l != NULL; l = g_list_next(l))
   {
-    GList *hbox = gtk_container_get_children(GTK_CONTAINER(l->data));
-    GtkToggleButton *b = GTK_TOGGLE_BUTTON(g_list_nth_data(hbox, HIST_WIDGET_MODULE));
-    if(b != GTK_TOGGLE_BUTTON(widget)) g_object_set(G_OBJECT(b), "active", FALSE, (gchar *)0);
-    g_list_free(hbox);
+    GtkToggleButton *b = GTK_TOGGLE_BUTTON(dt_gui_container_nth_child(GTK_CONTAINER(l->data), HIST_WIDGET_MODULE));
+    if(b != GTK_TOGGLE_BUTTON(widget))
+      g_object_set(G_OBJECT(b), "active", FALSE, (gchar *)0);
   }
   g_list_free(children);
 

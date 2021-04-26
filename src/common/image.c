@@ -678,7 +678,7 @@ gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
   // to go the full path (as the thumbnail will be flipped the wrong way round)
   const int incompatible = !strncmp(img.exif_maker, "Phase One", 9);
   const gboolean use_raw =
-    dt_conf_is_equal("plugins/lighttable/thumbnail_raw_min_level", "never");
+    !dt_conf_is_equal("plugins/lighttable/thumbnail_raw_min_level", "never");
 
   if(!img.verified_size && !dt_image_altered(imgid) && !use_raw && !incompatible)
   {
@@ -1153,7 +1153,6 @@ static int32_t _image_duplicate_with_version(const int32_t imgid, const int32_t 
       dt_undo_record(darktable.undo, NULL, DT_UNDO_DUPLICATE, dupundo, _pop_undo, NULL);
     }
 
-
     // make sure that the duplicate doesn't have some magic darktable| tags
     if(dt_tag_detach_by_string("darktable|changed", newid, FALSE, FALSE)
        || dt_tag_detach_by_string("darktable|exported", newid, FALSE, FALSE))
@@ -1344,9 +1343,9 @@ static int _image_read_duplicates(const uint32_t id, const char *filename, const
     int newid = id;
     int grpid = -1;
 
-    if(!count_xmps_processed)
+    if(count_xmps_processed == 0)
     {
-      //this is the first xmp processed, just update the passed-in id
+      // this is the first xmp processed, just update the passed-in id
       sqlite3_stmt *stmt;
       DT_DEBUG_SQLITE3_PREPARE_V2
         (dt_database_get(darktable.db),
@@ -1362,7 +1361,7 @@ static int _image_read_duplicates(const uint32_t id, const char *filename, const
       // dt_image_duplicate_with_version() as this version also set the group which
       // is using DT_IMAGE_CACHE_SAFE and so will write the .XMP. But we must avoid
       // this has the xmp for the duplicate is read just below.
-      newid = _image_duplicate_with_version(id, version, FALSE);
+      newid = _image_duplicate_with_version_ext(id, version);
       const dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'r');
       grpid = img->group_id;
       dt_image_cache_read_release(darktable.image_cache, img);

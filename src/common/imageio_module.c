@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -156,10 +156,10 @@ static int dt_imageio_load_modules_format(dt_imageio_t *iio)
 }
 
 /** Default implementation of supported function, used if storage modules not implements supported() */
-static int default_supported(struct dt_imageio_module_storage_t *self,
-                              struct dt_imageio_module_format_t *format)
+static gboolean default_supported(struct dt_imageio_module_storage_t *self,
+                                  struct dt_imageio_module_format_t *format)
 {
-  return 1;
+  return TRUE;
 }
 /** Default implementation of dimension module function, used if storage modules does not implements
  * dimension() */
@@ -365,6 +365,12 @@ void dt_imageio_insert_storage(dt_imageio_module_storage_t *storage)
 {
   darktable.imageio->plugins_storage
       = g_list_insert_sorted(darktable.imageio->plugins_storage, storage, dt_imageio_sort_modules_storage);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
+}
+
+void dt_imageio_remove_storage(dt_imageio_module_storage_t *storage)
+{
+  darktable.imageio->plugins_storage  = g_list_remove(darktable.imageio->plugins_storage, storage);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
 }
 

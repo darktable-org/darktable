@@ -242,12 +242,9 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
 
   const int resolution = dt_conf_get_int("metadata/resolution");
-  if(resolution > 0)
-  {
-    TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
-    TIFFSetField(tif, TIFFTAG_YRESOLUTION, (float)resolution);
-    TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
-  }
+  TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
+  TIFFSetField(tif, TIFFTAG_YRESOLUTION, (float)resolution);
+  TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
 
   const size_t rowsize = (d->global.width * layers) * d->bpp / 8;
   if((rowdata = malloc(rowsize)) == NULL)
@@ -405,12 +402,9 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
           TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)d->compresslevel);
         }
 
-        if(resolution > 0)
-        {
-          TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
-          TIFFSetField(tif, TIFFTAG_YRESOLUTION, (float)resolution);
-          TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
-        }
+        TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
+        TIFFSetField(tif, TIFFTAG_YRESOLUTION, (float)resolution);
+        TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
 
         TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)w);
         TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)h);

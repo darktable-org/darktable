@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 #include "views/view.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
+#include <glib.h>
+
 #ifdef USE_LUA
 #include "lua/call.h"
 #include "lua/events.h"
@@ -149,7 +151,8 @@ void dt_lib_presets_remove(const gchar *preset, gchar *module_name, int module_v
 // update a preset
 void dt_lib_presets_update(const gchar *preset, gchar *module_name, int module_version, const gchar *newname,
                            const gchar *desc, const void *params, const int32_t params_size);
-
+// know if the module can autoapply presets
+gboolean dt_lib_presets_can_autoapply(dt_lib_module_t *mod);
 
 /*
  * Proxy functions

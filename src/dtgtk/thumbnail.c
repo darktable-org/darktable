@@ -511,7 +511,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     if(v->view(v) == DT_VIEW_DARKROOM && dev->preview_pipe->output_imgid == thumb->imgid
        && dev->preview_pipe->output_backbuf)
     {
-      // the current thumb is the one currently developped in darkroom
+      // the current thumb is the one currently developed in darkroom
       // better use the preview buffer for surface, in order to stay in sync
       if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
         cairo_surface_destroy(thumb->img_surf);
@@ -812,8 +812,7 @@ static gboolean _event_main_press(GtkWidget *widget, GdkEventButton *event, gpoi
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(event->button == 1
      && ((event->type == GDK_2BUTTON_PRESS && !thumb->single_click)
-         || (event->type == GDK_BUTTON_PRESS
-             && (event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK)) == 0 && thumb->single_click)))
+         || (event->type == GDK_BUTTON_PRESS && dt_modifier_is(event->state, 0) && thumb->single_click)))
   {
     dt_control_set_mouse_over_id(thumb->imgid); // to ensure we haven't lost imgid during double-click
   }
@@ -825,14 +824,13 @@ static gboolean _event_main_release(GtkWidget *widget, GdkEventButton *event, gp
 
   if(event->button == 1 && !thumb->moved && thumb->sel_mode != DT_THUMBNAIL_SEL_MODE_DISABLED)
   {
-    if((event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK)) == 0
-       && thumb->sel_mode != DT_THUMBNAIL_SEL_MODE_MOD_ONLY)
+    if(dt_modifier_is(event->state, 0) && thumb->sel_mode != DT_THUMBNAIL_SEL_MODE_MOD_ONLY)
       dt_selection_select_single(darktable.selection, thumb->imgid);
-    else if((event->state & (GDK_MOD1_MASK)) == GDK_MOD1_MASK)
+    else if(dt_modifier_is(event->state, GDK_MOD1_MASK))
       dt_selection_select_single(darktable.selection, thumb->imgid);
-    else if((event->state & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
+    else if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
       dt_selection_toggle(darktable.selection, thumb->imgid);
-    else if((event->state & (GDK_SHIFT_MASK)) == GDK_SHIFT_MASK)
+    else if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
       dt_selection_select_range(darktable.selection, thumb->imgid);
   }
   return FALSE;
@@ -882,6 +880,7 @@ static gboolean _event_grouping_release(GtkWidget *widget, GdkEventButton *event
 
   if(event->button == 1 && !thumb->moved)
   {
+    //TODO: will succeed if either or *both* of Shift and Control are pressed.  Do we want this?
     if(event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) // just add the whole group to the selection. TODO:
                                                            // make this also work for collapsed groups.
     {
@@ -1834,7 +1833,7 @@ void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb)
 {
   thumb->img_surf_dirty = TRUE;
 
-  // we ensure that the image is not completly outside the thumbnail, otherwise the image_draw is not triggered
+  // we ensure that the image is not completely outside the thumbnail, otherwise the image_draw is not triggered
   if(gtk_widget_get_margin_start(thumb->w_image_box) >= thumb->width
      || gtk_widget_get_margin_top(thumb->w_image_box) >= thumb->height)
   {

@@ -4,6 +4,7 @@
 #  EXIV2_INCLUDE_DIR, where to find png.h, etc.
 #  EXIV2_LIBRARIES, the libraries to link against to use exiv2
 #  EXIV2_FOUND, If false, do not try to use exiv2
+#  EXIV2_VERSION, version string for exiv2
 # also defined, but not for general use are
 #  EXIV2_LIBRARY, where to find the exiv2 library
 
@@ -50,4 +51,5 @@ find_package_handle_standard_args(Exiv2 DEFAULT_MSG Exiv2_LIBRARY Exiv2_INCLUDE_
 IF(Exiv2_FOUND)
   set(Exiv2_LIBRARIES ${Exiv2_LIBRARY})
   set(Exiv2_INCLUDE_DIRS ${Exiv2_INCLUDE_DIR})
+  set(Exiv2_VERSION ${Exiv2_PKGCONF_VERSION})
 ENDIF(Exiv2_FOUND)

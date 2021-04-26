@@ -539,8 +539,8 @@ static gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *ev
 
   dt_iop_color_picker_reset(self, TRUE);
 
-  gdouble delta_y;
-  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  int delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
     const float old_size = p->size;
     p->size = CLAMP(p->size + delta_y * 0.1, 0.5f, 3.0f);

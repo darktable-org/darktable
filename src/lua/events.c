@@ -110,7 +110,7 @@ void dt_lua_event_add(lua_State *L, const char *evt_name)
   if(args != 3)
   {
     lua_pop(L, args);
-    dt_print(DT_DEBUG_LUA, "LUA ERROR : %s: wrong number of args for %s, expected 4, got %d\n", __FUNCTION__, evt_name, args);
+    dt_print(DT_DEBUG_LUA, "LUA ERROR : %s: wrong number of args for %s, expected 3, got %d\n", __FUNCTION__, evt_name, args);
     return;
   }
 
@@ -245,7 +245,7 @@ int dt_lua_event_keyed_destroy(lua_State *L)
     return luaL_error(L, "no key provided when destroying event %s", luaL_checkstring(L, 4));
 
   // remove the callback function from the data table using the key
-  lua_pushnil(L);  // set the action to nil to remmove it
+  lua_pushnil(L);  // set the action to nil to remove it
   lua_setfield(L, 1, luaL_checkstring(L, -2));
 
   // remove the index entry

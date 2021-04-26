@@ -261,14 +261,14 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
-  if(event->state & GDK_CONTROL_MASK)
+  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
   {
     switch(event->keyval)
     {
       case GDK_KEY_Return:
       case GDK_KEY_KP_Enter:
         // insert new line
-        event->state &= ~GDK_CONTROL_MASK;
+        event->state &= ~GDK_CONTROL_MASK;  //TODO: on Mac, remap Ctrl to Cmd key
       default:
         d->editing = TRUE;
     }
@@ -716,7 +716,7 @@ void gui_init(dt_lib_module_t *self)
   d->metadata_grid = grid;
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(grid), 0, 0, 1, 1);
 
-  dt_gui_add_help_link(self->widget, "metadata_editor.html#metadata_editor_usage");
+  dt_gui_add_help_link(self->widget, dt_get_help_url("metadata"));
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
 

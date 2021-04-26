@@ -230,12 +230,11 @@ static gboolean _gradient_slider_add_delta_internal(GtkWidget *widget, gdouble d
 
   float multiplier;
 
-  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-  if((state & modifiers) == GDK_SHIFT_MASK)
+  if(dt_modifier_is(state, GDK_SHIFT_MASK))
   {
     multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
   }
-  else if((state & modifiers) == GDK_CONTROL_MASK)
+  else if(dt_modifier_is(state, GDK_CONTROL_MASK))
   {
     multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
   }
@@ -414,11 +413,11 @@ static gboolean _gradient_slider_scroll_event(GtkWidget *widget, GdkEventScroll 
 
   gtk_widget_grab_focus(widget);
 
-  gdouble delta_y;
-  if(dt_gui_get_scroll_delta(event, &delta_y))
+  int delta_y;
+  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
-    delta_y *= -gslider->increment;
-    return _gradient_slider_add_delta_internal(widget, delta_y, event->state, selected);
+    gdouble delta = delta_y * -gslider->increment;
+    return _gradient_slider_add_delta_internal(widget, delta, event->state, selected);
   }
 
   return TRUE;

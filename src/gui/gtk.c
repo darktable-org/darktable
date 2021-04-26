@@ -552,6 +552,9 @@ gboolean dt_gui_ignore_scroll(GdkEventScroll *event)
 
 gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x, gdouble *delta_y)
 {
+  // avoid double counting real and emulated events when receiving smooth scrolls
+  if(gdk_event_get_pointer_emulated((GdkEvent*)event)) return FALSE;
+
   gboolean handled = FALSE;
   switch(event->direction)
   {
@@ -609,6 +612,9 @@ gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x,
 
 gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x, int *delta_y)
 {
+  // avoid double counting real and emulated events when receiving smooth scrolls
+  if(gdk_event_get_pointer_emulated((GdkEvent*)event)) return FALSE;
+
   // accumulates scrolling regardless of source or the widget being scrolled
   static gdouble acc_x = 0.0, acc_y = 0.0;
   gboolean handled = FALSE;
@@ -1134,10 +1140,10 @@ guint dt_gui_translated_key_state(GdkEventKey *event)
     //find any modifiers consumed to produce keyval
     guint consumed;
     gdk_keymap_translate_keyboard_state(gdk_keymap_get_for_display(gdk_display_get_default()), event->hardware_keycode, event->state, event->group, NULL, NULL, NULL, &consumed);
-    return event->state & ~consumed & KEY_STATE_MASK;
+    return event->state & ~consumed & gtk_accelerator_get_default_mod_mask();
   }
   else
-    return event->state & KEY_STATE_MASK;
+    return event->state & gtk_accelerator_get_default_mod_mask();
 }
 
 static gboolean key_pressed_override(GtkWidget *w, GdkEventKey *event, gpointer user_data)
@@ -1297,13 +1303,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // Connecting the callback to update keyboard accels for key_pressed
   g_signal_connect(G_OBJECT(gtk_accel_map_get()), "changed", G_CALLBACK(key_accel_changed), NULL);
 
-  // smooth scrolling must be enabled for Wayland to handle
-  // trackpad/touch events, but due to problem reports for Quartz &
-  // X11, leave it off in other cases
-  gui->scroll_mask = GDK_SCROLL_MASK;
-#ifdef GDK_WINDOWING_WAYLAND
-  if (GDK_IS_WAYLAND_DISPLAY(gdk_display_get_default())) gui->scroll_mask |= GDK_SMOOTH_SCROLL_MASK;
-#endif
+  // smooth scrolling must be enabled to handle trackpad/touch events
+  gui->scroll_mask = GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK;
 
   // key accelerator that enables scrolling of side panels
   gui->sidebar_scroll_mask = GDK_MOD1_MASK | GDK_CONTROL_MASK;
@@ -1695,7 +1696,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_app_paintable(widget, TRUE);
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | GDK_SCROLL_MASK);
+                                | darktable.gui->scroll_mask);
   gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
 
@@ -1710,7 +1711,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_app_paintable(widget, TRUE);
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | GDK_SCROLL_MASK);
+                                | darktable.gui->scroll_mask);
   gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
 
@@ -1743,7 +1744,7 @@ static void init_main_table(GtkWidget *container)
   gtk_widget_set_app_paintable(widget, TRUE);
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | GDK_SCROLL_MASK);
+                                | darktable.gui->scroll_mask);
   gtk_grid_attach(GTK_GRID(container), widget, 0, 0, 1, 2);
   gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
@@ -1756,7 +1757,7 @@ static void init_main_table(GtkWidget *container)
   gtk_widget_set_app_paintable(widget, TRUE);
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | GDK_SCROLL_MASK);
+                                | darktable.gui->scroll_mask);
   gtk_grid_attach(GTK_GRID(container), widget, 4, 0, 1, 2);
   gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
@@ -1819,6 +1820,13 @@ static void init_main_table(GtkWidget *container)
   gtk_widget_set_events(eb, GDK_BUTTON_PRESS_MASK | darktable.gui->scroll_mask);
   g_signal_connect(G_OBJECT(eb), "scroll-event", G_CALLBACK(scrolled), NULL);
   gtk_label_set_ellipsize(GTK_LABEL(darktable.gui->ui->toast_msg), PANGO_ELLIPSIZE_MIDDLE);
+
+  PangoAttrList *attrlist = pango_attr_list_new();
+  PangoAttribute *attr = pango_attr_font_features_new("tnum");
+  pango_attr_list_insert(attrlist, attr);
+  gtk_label_set_attributes(GTK_LABEL(darktable.gui->ui->toast_msg), attrlist);
+  pango_attr_list_unref(attrlist);
+
   gtk_widget_set_name(darktable.gui->ui->toast_msg, "toast-msg");
   gtk_container_add(GTK_CONTAINER(eb), darktable.gui->ui->toast_msg);
   gtk_widget_set_valign(eb, GTK_ALIGN_START);
@@ -1909,10 +1917,10 @@ void dt_ui_container_foreach(struct dt_ui_t *ui, const dt_ui_container_t c, GtkC
   g_return_if_fail(GTK_IS_CONTAINER(ui->containers[c]));
   gtk_container_foreach(GTK_CONTAINER(ui->containers[c]), callback, (gpointer)ui->containers[c]);
 }
+
 void dt_ui_container_destroy_children(struct dt_ui_t *ui, const dt_ui_container_t c)
 {
-  g_return_if_fail(GTK_IS_CONTAINER(ui->containers[c]));
-  gtk_container_foreach(GTK_CONTAINER(ui->containers[c]), (GtkCallback)gtk_widget_destroy, (gpointer)c);
+  dt_gui_container_destroy_children(GTK_CONTAINER(ui->containers[c]));
 }
 
 void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui)
@@ -2292,8 +2300,7 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
   /* avoid scrolling with wheel, it's distracting (you'll end up over a control, and scroll it's value) */
   container = widget;
   widget = gtk_event_box_new();
-  gtk_widget_add_events(GTK_WIDGET(widget), GDK_SCROLL_MASK);
-  // gtk_widget_add_events(GTK_WIDGET(widget), GDK_SMOOTH_SCROLL_MASK);
+  gtk_widget_add_events(GTK_WIDGET(widget), darktable.gui->scroll_mask);
   g_signal_connect(G_OBJECT(widget), "scroll-event", G_CALLBACK(_ui_init_panel_container_center_scroll_event),
                    NULL);
   gtk_container_add(GTK_CONTAINER(container), widget);
@@ -3005,7 +3012,7 @@ GdkModifierType dt_key_modifier_state()
   guint state = 0;
   GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
   gdk_device_get_state(gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_window_get_display(window))), window, NULL, &state);
-  return state & gtk_accelerator_get_default_mod_mask();
+  return state;
 }
 
 static void notebook_size_callback(GtkNotebook *notebook, GdkRectangle *allocation, gpointer *data)
@@ -3056,7 +3063,7 @@ void dt_ui_notebook_clear(GtkNotebook *notebook)
 {
   if(gtk_notebook_get_n_pages(notebook) >= 2)
     g_signal_handlers_disconnect_by_func(G_OBJECT(notebook), G_CALLBACK(notebook_size_callback), NULL);
-  gtk_container_foreach(GTK_CONTAINER(notebook), (GtkCallback)gtk_widget_destroy, NULL);
+  dt_gui_container_destroy_children(GTK_CONTAINER(notebook));
 }
 
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip)
@@ -3104,11 +3111,10 @@ static gint _get_container_row_heigth(GtkWidget *w)
   }
   else
   {
-    GList *children = gtk_container_get_children(GTK_CONTAINER(w));
-    if(children)
+    GtkWidget *child = dt_gui_container_first_child(GTK_CONTAINER(w));
+    if(child)
     {
-      height = gtk_widget_get_allocated_height(GTK_WIDGET(children->data));
-      g_list_free(children);
+      height = gtk_widget_get_allocated_height(child);
     }
   }
 
@@ -3172,7 +3178,7 @@ static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
 
   const gint increment = _get_container_row_heigth(w);
 
-  if(event->state & GDK_CONTROL_MASK)
+  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
   {
     int delta_y=0;
 
@@ -3212,6 +3218,65 @@ GtkWidget *dt_ui_scroll_wrap(GtkWidget *w, gint min_size, char *config_str)
   gtk_container_add(GTK_CONTAINER(sw), w);
 
   return sw;
+}
+
+gboolean dt_gui_container_has_children(GtkContainer *container)
+{
+  g_return_val_if_fail(GTK_IS_CONTAINER(container), FALSE);
+  GList *children = gtk_container_get_children(container);
+  gboolean has_children = children != NULL;
+  g_list_free(children);
+  return has_children;
+}
+
+int dt_gui_container_num_children(GtkContainer *container)
+{
+  g_return_val_if_fail(GTK_IS_CONTAINER(container), FALSE);
+  GList *children = gtk_container_get_children(container);
+  int num_children = g_list_length(children);
+  g_list_free(children);
+  return num_children;
+}
+
+GtkWidget *dt_gui_container_first_child(GtkContainer *container)
+{
+  g_return_val_if_fail(GTK_IS_CONTAINER(container), NULL);
+  GList *children = gtk_container_get_children(container);
+  GtkWidget *child = children ? (GtkWidget*)children->data : NULL;
+  g_list_free(children);
+  return child;
+}
+
+GtkWidget *dt_gui_container_nth_child(GtkContainer *container, int which)
+{
+  g_return_val_if_fail(GTK_IS_CONTAINER(container), NULL);
+  GList *children = gtk_container_get_children(container);
+  GtkWidget *child = (GtkWidget*)g_list_nth_data(children, which);
+  g_list_free(children);
+  return child;
+}
+
+static void _remove_child(GtkWidget *widget, gpointer data)
+{
+  gtk_container_remove((GtkContainer*)data, widget);
+}
+
+void dt_gui_container_remove_children(GtkContainer *container)
+{
+  g_return_if_fail(GTK_IS_CONTAINER(container));
+  gtk_container_foreach(container, _remove_child, container);
+}
+
+static void _delete_child(GtkWidget *widget, gpointer data)
+{
+  (void)data;  // avoid unreferenced-parameter warning
+  gtk_widget_destroy(widget);
+}
+
+void dt_gui_container_destroy_children(GtkContainer *container)
+{
+  g_return_if_fail(GTK_IS_CONTAINER(container));
+  gtk_container_foreach(container, _delete_child, NULL);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

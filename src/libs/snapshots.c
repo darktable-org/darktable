@@ -375,12 +375,12 @@ void gui_init(dt_lib_module_t *self)
 
   /* initialize ui containers */
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, "snapshots.html#snapshots");
+  dt_gui_add_help_link(self->widget, dt_get_help_url("snapshots"));
   d->snapshots_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   /* create take snapshot button */
   d->take_button = dt_ui_button_new(_("take snapshot"), _("take snapshot to compare with another image "
-                                      "or the same image at another stage of development"), "snapshots.html#snapshots");
+                                      "or the same image at another stage of development"), dt_get_help_url("snapshots"));
   g_signal_connect(G_OBJECT(d->take_button), "clicked",
                    G_CALLBACK(_lib_snapshots_add_button_clicked_callback), self);
 

@@ -37,9 +37,6 @@
 #include <shobjidl.h>
 #endif
 
-// A mask to strip out the Ctrl, Shift, and Alt mod keys for shortcuts
-#define KEY_STATE_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)
-
 struct dt_lib_backgroundjob_element_t;
 
 typedef GdkCursorType dt_cursor_t;

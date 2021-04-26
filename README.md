@@ -299,7 +299,7 @@ sudo make install
 
 ##### Windows
 
-See https://github.com/darktable-org/darktable/blob/master/packaging/windows/BUILD.txt
+See https://github.com/darktable-org/darktable/blob/master/packaging/windows/BUILD.md
 
 ### Using
 
@@ -317,14 +317,14 @@ the test/unstable one in `~/.config/darktable-test`, so they will not produce da
 
 #### Regular/stable version
 
-Simply lauch it from your desktop application menu, or in terminal, run `darktable` or `/opt/darktable/bin/darktable`. If the installation did not create a launcher in your applications menu, run:
+Simply launch it from your desktop application menu, or in terminal, run `darktable` or `/opt/darktable/bin/darktable`. If the installation did not create a launcher in your applications menu, run:
 
 ```
 sudo ln -s /opt/darktable/share/applications/darktable.desktop /usr/share/applications/darktable.desktop
 ```
 
 You may find darktable configuration files in `~/.config/darktable`.
-In case you are having crashes at startup, try lauching darktable without OpenCL with `darktable --conf opencl=FALSE`.
+In case you are having crashes at startup, try launching darktable without OpenCL with `darktable --conf opencl=FALSE`.
 
 ### Further reading
 
