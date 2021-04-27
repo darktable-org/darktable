@@ -962,9 +962,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   const float shadows_weight = 2.f + p->shadows_weight * 2.f;
   const float highlights_weight = 2.f + p->highlights_weight * 2.f;
 
-  const float aspect = dt_conf_get_int("plugins/darkroom/colorbalancergb/aspect_percent") / 100.0;
-  dtgtk_drawing_area_set_aspect_ratio(widget, aspect);
-
   // Cache the graph objects to avoid recomputing all the view at each redraw
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1273,7 +1270,7 @@ static gboolean area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, g
       //adjust aspect
       const int aspect = dt_conf_get_int("plugins/darkroom/colorbalancergb/aspect_percent");
       dt_conf_set_int("plugins/darkroom/colorbalancergb/aspect_percent", aspect + delta_y);
-      gtk_widget_queue_draw(widget);
+      dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
 
       return TRUE;
     }
