@@ -35,6 +35,19 @@
 
 G_DEFINE_TYPE(DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA)
 
+enum
+{
+  // Sliders
+  DT_ACTION_ELEMENT_VALUE = 0,
+  DT_ACTION_ELEMENT_BUTTON = 1,
+  DT_ACTION_ELEMENT_FORCE = 2,
+  DT_ACTION_ELEMENT_ZOOM = 3,
+
+  // Combos
+  DT_ACTION_ELEMENT_SELECTION = 0,
+//DT_ACTION_ELEMENT_BUTTON = 1,
+};
+
 // INNER_PADDING is the horizontal space between slider and quad
 // and vertical space between labels and slider baseline
 static const double INNER_PADDING = 4.0;
@@ -681,6 +694,7 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
 static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_bauhaus_combobox_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
 static gboolean dt_bauhaus_combobox_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
+static gboolean dt_bauhaus_combobox_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 
 // static gboolean
 // dt_bauhaus_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
@@ -923,6 +937,19 @@ int dt_bauhaus_widget_get_quad_active(GtkWidget *widget)
   return (w->quad_paint_flags & CPF_ACTIVE) == CPF_ACTIVE;
 }
 
+void dt_bauhaus_widget_press_quad(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if (w->quad_toggle)
+  {
+    if (w->quad_paint_flags & CPF_ACTIVE)
+      w->quad_paint_flags &= ~CPF_ACTIVE;
+    else
+      w->quad_paint_flags |= CPF_ACTIVE;
+  }
+  g_signal_emit_by_name(G_OBJECT(w), "quad-pressed");
+}
+
 static float _default_linear_curve(GtkWidget *self, float value, dt_bauhaus_curve_t dir)
 {
   // regardless of dir: input <-> output
@@ -1050,6 +1077,8 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
                    (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "scroll-event", G_CALLBACK(dt_bauhaus_combobox_scroll), (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "key-press-event", G_CALLBACK(dt_bauhaus_combobox_key_press), (gpointer)NULL);
+  g_signal_connect(G_OBJECT(w), "motion-notify-event", G_CALLBACK(dt_bauhaus_combobox_motion_notify),
+                   (gpointer)NULL);
   g_signal_connect(G_OBJECT(w), "destroy", G_CALLBACK(dt_bauhaus_combobox_destroy), (gpointer)NULL);
 }
 
@@ -2291,14 +2320,7 @@ static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButt
   const dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   if(w->quad_paint && (event->x > allocation.width - darktable.bauhaus->quad_width - INNER_PADDING))
   {
-    if (w->quad_toggle)
-    {
-      if (w->quad_paint_flags & CPF_ACTIVE)
-        w->quad_paint_flags &= ~CPF_ACTIVE;
-      else
-        w->quad_paint_flags |= CPF_ACTIVE;
-    }
-    g_signal_emit_by_name(G_OBJECT(w), "quad-pressed");
+    dt_bauhaus_widget_press_quad(widget);
     return TRUE;
   }
   else if(event->button == 3)
@@ -2693,14 +2715,7 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
   gtk_widget_get_allocation(widget, &allocation);
   if(event->x > allocation.width - darktable.bauhaus->quad_width - INNER_PADDING)
   {
-    if (w->quad_paint && w->quad_toggle)
-    {
-      if (w->quad_paint_flags & CPF_ACTIVE)
-        w->quad_paint_flags &= ~CPF_ACTIVE;
-      else
-        w->quad_paint_flags |= CPF_ACTIVE;
-    }
-    g_signal_emit_by_name(G_OBJECT(w), "quad-pressed");
+    dt_bauhaus_widget_press_quad(widget);
     return TRUE;
   }
   else if(event->button == 3)
@@ -2772,10 +2787,29 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
       const float r = slider_right_pos((float)allocation.width);
       dt_bauhaus_slider_set_normalized(w, (event->x / allocation.width - l) / (r - l));
     }
+    darktable.control->element = event->x > (0.1 * (allocation.width - darktable.bauhaus->quad_width)) &&
+                                 event->x < (0.9 * (allocation.width - darktable.bauhaus->quad_width))
+                               ? DT_ACTION_ELEMENT_VALUE
+                               : DT_ACTION_ELEMENT_FORCE;
   }
+  else
+    darktable.control->element = DT_ACTION_ELEMENT_BUTTON;
 
   return TRUE;
 }
+
+static gboolean dt_bauhaus_combobox_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+{
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+
+  darktable.control->element = event->x <= allocation.width - darktable.bauhaus->quad_width
+                             ? DT_ACTION_ELEMENT_SELECTION
+                             : DT_ACTION_ELEMENT_BUTTON;
+
+  return TRUE;
+}
+
 
 void dt_bauhaus_vimkey_exec(const char *input)
 {
@@ -2876,89 +2910,110 @@ void dt_bauhaus_combobox_mute_scrolling(GtkWidget *widget)
   d->mute_scrolling = TRUE;
 }
 
-typedef enum dt_action_element_slider_t
-{
-  DT_ACTION_ELEMENT_VALUE = 0,
-  DT_ACTION_ELEMENT_BUTTON = 1,
-  DT_ACTION_ELEMENT_MIN = 1,
-  DT_ACTION_ELEMENT_MAX = 2,
-  DT_ACTION_ELEMENT_ZOOM = 3,
-} dt_action_element_slider_t;
-typedef enum dt_action_element_combo_t
-{
-  DT_ACTION_ELEMENT_SELECTION = 0,
-//DT_ACTION_ELEMENT_BUTTON = 1,
-} dt_action_element_combo_t;
-
-const dt_action_element_def_t _action_elements_slider[]
-  = { { N_("value"), dt_action_effect_value },
-      { N_("button"), dt_action_effect_toggle },
-      { N_("min"), dt_action_effect_value },
-      { N_("max"), dt_action_effect_value },
-      { N_("zoom"), dt_action_effect_value },
-      { NULL } };
-const dt_action_element_def_t _action_elements_combo[]
-  = { { N_("selection"), dt_action_effect_selection },
-      { N_("button"), dt_action_effect_toggle },
-      { NULL } };
-
-static const dt_shortcut_fallback_t _action_fallbacks_slider[]
-  = { { .element = DT_ACTION_ELEMENT_VALUE,  .effect = DT_ACTION_EFFECT_RESET, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
-      { .element = DT_ACTION_ELEMENT_BUTTON, .button = DT_SHORTCUT_LEFT },
-      { .element = DT_ACTION_ELEMENT_BUTTON, .effect = DT_ACTION_EFFECT_TOGGLE_CTRL, .button = DT_SHORTCUT_LEFT, .mods = GDK_CONTROL_MASK },
-      { .element = DT_ACTION_ELEMENT_MIN,    .button = DT_SHORTCUT_RIGHT, .move = DT_SHORTCUT_MOVE_DIAGONAL },
-      { .element = DT_ACTION_ELEMENT_MAX,    .button = DT_SHORTCUT_RIGHT, .move = DT_SHORTCUT_MOVE_SKEW },
-      { .element = DT_ACTION_ELEMENT_ZOOM,   .button = DT_SHORTCUT_RIGHT, .move = DT_SHORTCUT_MOVE_VERTICAL },
-      { } };
-static const dt_shortcut_fallback_t _action_fallbacks_combo[]
-  = { { .element = DT_ACTION_ELEMENT_SELECTION, .effect = DT_ACTION_EFFECT_RESET, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
-      { .element = DT_ACTION_ELEMENT_BUTTON, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_LONG },
-      { .element = DT_ACTION_ELEMENT_BUTTON, .effect = DT_ACTION_EFFECT_TOGGLE_CTRL, .button = DT_SHORTCUT_LEFT, .mods = GDK_CONTROL_MASK },
-      { } };
-
 static float _action_process_slider(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
   GtkWidget *widget = GTK_WIDGET(target);
   dt_bauhaus_widget_t *bhw = DT_BAUHAUS_WIDGET(widget);
   dt_bauhaus_slider_data_t *d = &bhw->data.slider;
+  float value = dt_bauhaus_slider_get(widget);
+  const float min_visible = powf(10.0f, -dt_bauhaus_slider_get_digits(widget));
 
   if(move_size)
   {
-    switch(effect)
+    switch(element)
     {
-    case DT_ACTION_EFFECT_EDIT:
-      dt_bauhaus_show_popup(DT_BAUHAUS_WIDGET(widget));
-      break;
-    case DT_ACTION_EFFECT_DOWN:
-      move_size *= -1;
-    case DT_ACTION_EFFECT_UP:
-      d->is_dragging = 1;
-      float value = dt_bauhaus_slider_get(widget);
-      float step = dt_bauhaus_slider_get_step(widget);
-      float multiplier = dt_accel_get_slider_scale_multiplier();
+    case DT_ACTION_ELEMENT_VALUE:
+    case DT_ACTION_ELEMENT_FORCE:
+      switch(effect)
+      {
+      case DT_ACTION_EFFECT_POPUP:
+        dt_bauhaus_show_popup(DT_BAUHAUS_WIDGET(widget));
+        break;
+      case DT_ACTION_EFFECT_DOWN:
+        move_size *= -1;
+      case DT_ACTION_EFFECT_UP:
+        d->is_dragging = 1;
+        float step = dt_bauhaus_slider_get_step(widget);
+        float multiplier = dt_accel_get_slider_scale_multiplier();
 
-      const float min_visible = powf(10.0f, -dt_bauhaus_slider_get_digits(widget));
-      if(fabsf(step*multiplier) < min_visible)
-        multiplier = min_visible / fabsf(step);
+        if(fabsf(move_size * step * multiplier) < min_visible)
+          multiplier = min_visible / fabsf(move_size * step);
 
-      dt_bauhaus_slider_set(widget, value + move_size * step * multiplier);
-      d->is_dragging = 0;
+        if(element == DT_ACTION_ELEMENT_FORCE)
+        {
+          if(d->pos < 0.0001) d->min = d->soft_min;
+          if(d->pos > 0.9999) d->max = d->soft_max;
+          dt_bauhaus_slider_set_soft(widget, value + move_size * step * multiplier);
+        }
+        else
+          dt_bauhaus_slider_set(widget, value + move_size * step * multiplier);
+        d->is_dragging = 0;
+        break;
+      case DT_ACTION_EFFECT_RESET:
+        dt_bauhaus_slider_reset(widget);
+        break;
+      case DT_ACTION_EFFECT_TOP:
+        dt_bauhaus_slider_set_soft(widget, element == DT_ACTION_ELEMENT_FORCE ? d->hard_max: d->max);
+        break;
+      case DT_ACTION_EFFECT_BOTTOM:
+        dt_bauhaus_slider_set_soft(widget, element == DT_ACTION_ELEMENT_FORCE ? d->hard_min: d->min);
+        break;
+      default:
+        fprintf(stderr, "[_action_process_slider] unknown shortcut effect (%d) for slider\n", effect);
+        break;
+      }
+      dt_accel_widget_toast(widget);
+
       break;
-    case DT_ACTION_EFFECT_RESET:
-      dt_bauhaus_slider_reset(widget);
+    case DT_ACTION_ELEMENT_BUTTON:
+      dt_bauhaus_widget_press_quad(widget);
       break;
-    case DT_ACTION_EFFECT_TOP:
-      dt_bauhaus_slider_set(widget, d->max);
-      break;
-    case DT_ACTION_EFFECT_BOTTOM:
-      dt_bauhaus_slider_set(widget, d->min);
+    case DT_ACTION_ELEMENT_ZOOM:
+      switch(effect)
+      {
+      case DT_ACTION_EFFECT_POPUP:
+        dt_bauhaus_show_popup(DT_BAUHAUS_WIDGET(widget));
+        break;
+      case DT_ACTION_EFFECT_DOWN:
+        move_size *= -1;
+      case DT_ACTION_EFFECT_UP:
+        if(d->soft_min != d->hard_min || d->soft_max != d->hard_max)
+        {
+          float multiplier = powf(2.0f, move_size/2);
+          float new_min = value - multiplier * (value - d->min);
+          float new_max = value + multiplier * (d->max - value);
+          if(new_min >= d->hard_min && new_max <= d->hard_max &&
+             new_max - new_min >= min_visible * 10)
+          {
+            d->min = new_min;
+            d->max = new_max;
+          }
+        }
+        break;
+      case DT_ACTION_EFFECT_RESET:
+        d->min = d->soft_min;
+        d->max = d->soft_max;
+        break;
+      case DT_ACTION_EFFECT_TOP:
+        d->max = d->hard_max;
+        break;
+      case DT_ACTION_EFFECT_BOTTOM:
+        d->min = d->hard_min;
+        break;
+      default:
+        fprintf(stderr, "[_action_process_slider] unknown shortcut effect (%d) for slider\n", effect);
+        break;
+      }
+      dt_bauhaus_slider_set_soft(widget, value); // restore value (and move min/max again if needed)
+
+      gtk_widget_queue_draw(GTK_WIDGET(widget));
+      dt_toast_log(("[%f , %f]"), d->min, d->max);
+
       break;
     default:
-      fprintf(stderr, "[_action_process_slider] unknown shortcut effect (%d) for slider\n", effect);
+      fprintf(stderr, "[_action_process_slider] unknown shortcut element (%d) for slider\n", element);
       break;
     }
-
-    dt_accel_widget_toast(widget);
   }
 
   return d->pos +
@@ -2982,7 +3037,9 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
 
   if(move_size)
   {
-    switch(effect)
+    if(element == DT_ACTION_ELEMENT_BUTTON)
+      dt_bauhaus_widget_press_quad(widget);
+    else switch(effect)
     {
     case DT_ACTION_EFFECT_POPUP:
       dt_bauhaus_show_popup(DT_BAUHAUS_WIDGET(widget));
@@ -2994,12 +3051,15 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
     case DT_ACTION_EFFECT_PREVIOUS:
       move_size *= - 1;
     case DT_ACTION_EFFECT_NEXT:
-      // FIXME: check if entries are sensitive: _combobox_next_entry
       value = CLAMP(value + move_size, 0, dt_bauhaus_combobox_length(widget) - 1);
+      dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
 
-      ++darktable.gui->reset;
-      dt_bauhaus_combobox_set(widget, value);
-      --darktable.gui->reset;
+      if(_combobox_next_entry(w->data.combobox.entries, &value, move_size > 0 ? 1 : -1))
+      {
+        ++darktable.gui->reset;
+        dt_bauhaus_combobox_set(widget, value);
+        --darktable.gui->reset;
+      }
 
       g_idle_add(combobox_idle_value_changed, widget);
       break;
@@ -3017,6 +3077,32 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
 
   return - 1 - value;
 }
+
+const dt_action_element_def_t _action_elements_slider[]
+  = { { N_("value"), dt_action_effect_value },
+      { N_("button"), dt_action_effect_toggle },
+      { N_("force"), dt_action_effect_value },
+      { N_("zoom"), dt_action_effect_value },
+      { NULL } };
+const dt_action_element_def_t _action_elements_combo[]
+  = { { N_("selection"), dt_action_effect_selection },
+      { N_("button"), dt_action_effect_toggle },
+      { NULL } };
+
+static const dt_shortcut_fallback_t _action_fallbacks_slider[]
+  = { { .element = DT_ACTION_ELEMENT_VALUE,  .effect = DT_ACTION_EFFECT_RESET, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
+      { .element = DT_ACTION_ELEMENT_VALUE,  .effect = DT_ACTION_EFFECT_TOP, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE, .direction = DT_SHORTCUT_UP },
+      { .element = DT_ACTION_ELEMENT_VALUE,  .effect = DT_ACTION_EFFECT_BOTTOM, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE, .direction = DT_SHORTCUT_DOWN },
+      { .element = DT_ACTION_ELEMENT_BUTTON, .button = DT_SHORTCUT_LEFT },
+      { .element = DT_ACTION_ELEMENT_BUTTON, .effect = DT_ACTION_EFFECT_TOGGLE_CTRL, .button = DT_SHORTCUT_LEFT, .mods = GDK_CONTROL_MASK },
+      { .element = DT_ACTION_ELEMENT_FORCE,  .mods   = GDK_CONTROL_MASK | GDK_SHIFT_MASK, .speed = 10.0 },
+      { .element = DT_ACTION_ELEMENT_ZOOM,   .button = DT_SHORTCUT_RIGHT, .move = DT_SHORTCUT_MOVE_VERTICAL },
+      { } };
+static const dt_shortcut_fallback_t _action_fallbacks_combo[]
+  = { { .element = DT_ACTION_ELEMENT_SELECTION, .effect = DT_ACTION_EFFECT_RESET, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
+      { .element = DT_ACTION_ELEMENT_BUTTON, .button = DT_SHORTCUT_LEFT },
+      { .element = DT_ACTION_ELEMENT_BUTTON, .effect = DT_ACTION_EFFECT_TOGGLE_CTRL, .button = DT_SHORTCUT_LEFT, .mods = GDK_CONTROL_MASK },
+      { } };
 
 const dt_action_def_t dt_action_def_slider
   = { N_("slider"),

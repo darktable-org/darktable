@@ -30,6 +30,17 @@ typedef enum dt_gui_presets_format_flag_t
   FOR_NOT_COLOR = 1 << 4
 } dt_gui_presets_format_flag_t;
 
+enum // Lib and iop presets
+{
+  DT_ACTION_EFFECT_SHOW = 0,
+//DT_ACTION_EFFECT_UP = 1,
+//DT_ACTION_EFFECT_DOWN = 2,
+  DT_ACTION_EFFECT_STORE = 3,
+  DT_ACTION_EFFECT_DELETE = 4,
+  DT_ACTION_EFFECT_EDIT = 5,
+  DT_ACTION_EFFECT_UPDATE = 6,
+  DT_ACTION_EFFECT_PREFERENCES = 7,
+};
 typedef struct dt_gui_presets_edit_dialog_t
 {
   GtkWindow *parent;

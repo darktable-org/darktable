@@ -53,6 +53,51 @@ typedef struct dt_action_t
   struct dt_action_t *next;
 } dt_action_t;
 
+#define DT_ACTION(p) ((dt_action_t*)&p->actions)
+
+enum
+{
+  DT_ACTION_ELEMENT_DEFAULT = 0,
+};
+typedef gint dt_action_element_t;
+
+enum
+{
+  DT_ACTION_EFFECT_DEFAULT_MOVE = -1,
+  DT_ACTION_EFFECT_DEFAULT_KEY = 0,
+  DT_ACTION_EFFECT_DEFAULT_UP = 1,
+  DT_ACTION_EFFECT_DEFAULT_DOWN = 2,
+
+  // Generic
+  DT_ACTION_EFFECT_PREVIOUS = 1,
+  DT_ACTION_EFFECT_NEXT = 2,
+  DT_ACTION_EFFECT_FIRST = 4,
+  DT_ACTION_EFFECT_LAST = 5,
+
+  // Values
+  DT_ACTION_EFFECT_POPUP = 0,
+  DT_ACTION_EFFECT_UP = 1,
+  DT_ACTION_EFFECT_DOWN = 2,
+  DT_ACTION_EFFECT_RESET = 3,
+  DT_ACTION_EFFECT_TOP = 4,
+  DT_ACTION_EFFECT_BOTTOM = 5,
+
+  // Togglebuttons
+  DT_ACTION_EFFECT_TOGGLE = 0,
+  DT_ACTION_EFFECT_ON = 1,
+  DT_ACTION_EFFECT_OFF = 2,
+  DT_ACTION_EFFECT_TOGGLE_CTRL = 3,
+  DT_ACTION_EFFECT_ON_CTRL = 4,
+  DT_ACTION_EFFECT_TOGGLE_RIGHT = 5,
+  DT_ACTION_EFFECT_ON_RIGHT = 6,
+
+  // Buttons
+  DT_ACTION_EFFECT_ACTIVATE = 0,
+  DT_ACTION_EFFECT_ACTIVATE_CTRL = 1,
+  DT_ACTION_EFFECT_ACTIVATE_RIGHT = 2,
+};
+typedef gint dt_action_effect_t;
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

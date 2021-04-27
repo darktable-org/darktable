@@ -222,7 +222,7 @@ static gboolean poll_gamepad_devices(gpointer user_data)
     case SDL_CONTROLLERBUTTONDOWN:
       dt_print(DT_DEBUG_INPUT, "SDL button down event time %d id %d button %hhd state %hhd\n", event.cbutton.timestamp, event.cbutton.which, event.cbutton.button, event.cbutton.state);
       process_axis_and_send(gamepad, event.cbutton.timestamp);
-      dt_shortcut_key_press(gamepad->id + event.cbutton.which, event.cbutton.timestamp, event.cbutton.button, dt_key_modifier_state());
+      dt_shortcut_key_press(gamepad->id + event.cbutton.which, event.cbutton.timestamp, event.cbutton.button);
 
       break;
     case SDL_CONTROLLERBUTTONUP:
