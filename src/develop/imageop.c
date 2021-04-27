@@ -3135,6 +3135,17 @@ gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_modul
 
 enum
 {
+  DT_ACTION_ELEMENT_FOCUS = 0,
+  DT_ACTION_ELEMENT_ENABLE = 1,
+  DT_ACTION_ELEMENT_SHOW = 2,
+  DT_ACTION_ELEMENT_INSTANCE = 3,
+  DT_ACTION_ELEMENT_RESET = 4,
+  DT_ACTION_ELEMENT_PRESETS = 5,
+};
+
+enum
+{
+  // Multi-instance
 //DT_ACTION_EFFECT_SHOW = 0,
 //DT_ACTION_EFFECT_UP = 1,
 //DT_ACTION_EFFECT_DOWN = 2,
@@ -3143,6 +3154,65 @@ enum
   DT_ACTION_EFFECT_RENAME = 5,
   DT_ACTION_EFFECT_DUPLICATE = 6,
 };
+
+static float _action_process(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  dt_iop_module_t *module = target;
+
+  if(move_size != 0)
+  {
+    switch(element)
+    {
+    case DT_ACTION_ELEMENT_FOCUS:
+      request_module_focus_callback(NULL, NULL, 0, 0, module);
+      break;
+    case DT_ACTION_ELEMENT_ENABLE:
+      enable_module_callback(NULL, NULL, 0, 0, module);
+      break;
+    case DT_ACTION_ELEMENT_SHOW:
+      show_module_callback(NULL, NULL, 0, 0, module);
+      break;
+    case DT_ACTION_ELEMENT_INSTANCE:
+      if     (effect == DT_ACTION_EFFECT_NEW       && module->multi_show_new  ) dt_iop_gui_copy_callback     (NULL, module);
+      else if(effect == DT_ACTION_EFFECT_DUPLICATE && module->multi_show_new  ) dt_iop_gui_duplicate_callback(NULL, module);
+      else if(effect == DT_ACTION_EFFECT_UP        && module->multi_show_up   ) dt_iop_gui_moveup_callback   (NULL, module);
+      else if(effect == DT_ACTION_EFFECT_DOWN      && module->multi_show_down ) dt_iop_gui_movedown_callback (NULL, module);
+      else if(effect == DT_ACTION_EFFECT_DELETE    && module->multi_show_close) dt_iop_gui_delete_callback   (NULL, module);
+      else if(effect == DT_ACTION_EFFECT_RENAME                               ) dt_iop_gui_rename_callback   (NULL, module);
+      else dt_iop_gui_multiinstance_callback(NULL, NULL, module);
+      break;
+    case DT_ACTION_ELEMENT_RESET:
+      {
+        GdkEventButton event = { .state = (effect == DT_ACTION_EFFECT_ACTIVATE_CTRL ? GDK_CONTROL_MASK : 0) };
+        dt_iop_gui_reset_callback(NULL, &event, module);
+      }
+      break;
+    case DT_ACTION_ELEMENT_PRESETS:
+      if(module->presets_button) presets_popup_callback(NULL, module);
+      break;
+    }
+  }
+
+  return 0;
+}
+
+static dt_action_element_t _action_identify(GtkWidget *w)
+{
+  const gchar *name = gtk_widget_get_name(w);
+
+  if(!strcmp(name, "iop-panel-label"))
+    return DT_ACTION_ELEMENT_SHOW;
+  if(!strcmp(name, "module-enable-button"))
+    return DT_ACTION_ELEMENT_ENABLE;
+  if(!strcmp(name, "module-instance-button"))
+    return DT_ACTION_ELEMENT_INSTANCE;
+  if(!strcmp(name, "module-reset-button"))
+    return DT_ACTION_ELEMENT_RESET;
+  if(!strcmp(name, "module-preset-button"))
+    return DT_ACTION_ELEMENT_PRESETS;
+
+  return DT_ACTION_ELEMENT_FOCUS;
+}
 
 const gchar *dt_action_effect_instance[]
   = { N_("show"),
@@ -3153,16 +3223,6 @@ const gchar *dt_action_effect_instance[]
       N_("rename"),
       N_("duplicate"),
       NULL };
-
-typedef enum dt_action_element_iop_t
-{
-  DT_ACTION_ELEMENT_FOCUS = 0,
-  DT_ACTION_ELEMENT_ENABLE = 1,
-  DT_ACTION_ELEMENT_SHOW = 2,
-  DT_ACTION_ELEMENT_INSTANCE = 3,
-  DT_ACTION_ELEMENT_RESET = 4,
-  DT_ACTION_ELEMENT_PRESETS = 5,
-} dt_action_element_iop_t;
 
 static const dt_action_element_def_t _action_elements[]
   = { { N_("focus"), dt_action_effect_toggle },
@@ -3180,64 +3240,6 @@ static const dt_shortcut_fallback_t _action_fallbacks[]
       { .element = DT_ACTION_ELEMENT_RESET, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
       { .element = DT_ACTION_ELEMENT_PRESETS, .button = DT_SHORTCUT_RIGHT },
       { } };
-
-static float _action_process(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
-{
-  if(move_size != 0)
-  {
-    switch((dt_action_element_iop_t)element)
-    {
-    case DT_ACTION_ELEMENT_FOCUS:
-      request_module_focus_callback(NULL, NULL, 0, 0, target);
-      break;
-    case DT_ACTION_ELEMENT_ENABLE:
-      enable_module_callback(NULL, NULL, 0, 0, target);
-      break;
-    case DT_ACTION_ELEMENT_SHOW:
-      show_module_callback(NULL, NULL, 0, 0, target);
-      break;
-    case DT_ACTION_ELEMENT_INSTANCE:
-      // FIXME check multi_show_up etc before executing shortcut
-      dt_iop_gui_multiinstance_callback(NULL, NULL, target);
-      break;
-    case DT_ACTION_ELEMENT_RESET:
-      switch(effect)
-      {
-      case DT_ACTION_EFFECT_ACTIVATE:
-        dt_iop_gui_reset_callback(NULL, NULL, target); // FIXME support ctrl; standard button effects on module->reset_button
-        break;
-      default:
-        fprintf(stderr, "[process_mapping] unknown shortcut effect (%d) for iop\n", effect);
-        break;
-      }
-      break;
-    case DT_ACTION_ELEMENT_PRESETS:
-      presets_popup_callback(NULL, target);
-//module->presets_button
-      break;
-    }
-  }
-
-  return 0;
-}
-
-static dt_action_element_t _action_identify(GtkWidget *w, int x, int y)
-{
-  const gchar *name = gtk_widget_get_name(w);
-
-  if(!strcmp(name, "iop-panel-label"))
-    return DT_ACTION_ELEMENT_SHOW;
-  if(!strcmp(name, "module-enable-button"))
-    return DT_ACTION_ELEMENT_ENABLE;
-  if(!strcmp(name, "module-instance-button"))
-    return DT_ACTION_ELEMENT_INSTANCE;
-  if(!strcmp(name, "module-reset-button"))
-    return DT_ACTION_ELEMENT_RESET;
-  if(!strcmp(name, "module-preset-button"))
-    return DT_ACTION_ELEMENT_PRESETS;
-
-  return DT_ACTION_ELEMENT_FOCUS;
-}
 
 const dt_action_def_t dt_action_def_iop
   = { N_("processing module"),

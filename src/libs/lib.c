@@ -1432,40 +1432,22 @@ typedef enum dt_action_element_lib_t
   DT_ACTION_ELEMENT_PRESETS = 2,
 } dt_action_element_lib_t;
 
-static const dt_shortcut_fallback_t _action_fallbacks[]
-  = { { .element = DT_ACTION_ELEMENT_SHOW, .button = DT_SHORTCUT_LEFT },
-      { .element = DT_ACTION_ELEMENT_RESET, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
-      { .element = DT_ACTION_ELEMENT_PRESETS, .button = DT_SHORTCUT_RIGHT },
-      { } };
-
-static const dt_action_element_def_t _action_elements[]
-  = { { N_("show"), dt_action_effect_toggle },
-      { N_("reset"), dt_action_effect_activate },
-      { N_("presets"), dt_action_effect_presets },
-      { NULL } };
-
 static float _action_process(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
+  dt_lib_module_t *module = target;
+
   if(move_size)
   {
-    switch((dt_action_element_lib_t)element)
+    switch(element)
     {
     case DT_ACTION_ELEMENT_SHOW:
-      show_module_callback(NULL, NULL, 0, 0, target);
+      show_module_callback(NULL, NULL, 0, 0, module);
       break;
     case DT_ACTION_ELEMENT_RESET:
-      switch(effect)
-      {
-      case DT_ACTION_EFFECT_ACTIVATE:
-        dt_lib_gui_reset_callback(NULL, target);
-        break;
-      default:
-        fprintf(stderr, "[process_mapping] unknown shortcut effect (%d) for iop\n", effect);
-        break;
-      }
+      if(module->gui_reset) dt_lib_gui_reset_callback(NULL, module);
       break;
     case DT_ACTION_ELEMENT_PRESETS:
-      presets_popup_callback(NULL, target);
+      if(module->get_params || module->set_preferences) presets_popup_callback(NULL, module);
       break;
     }
   }
@@ -1473,7 +1455,7 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
   return 0;
 }
 
-static dt_action_element_t _action_identify(GtkWidget *w, int x, int y)
+static dt_action_element_t _action_identify(GtkWidget *w)
 {
   const gchar *name = gtk_widget_get_name(w);
 
@@ -1484,6 +1466,18 @@ static dt_action_element_t _action_identify(GtkWidget *w, int x, int y)
 
   return DT_ACTION_ELEMENT_SHOW;
 }
+
+static const dt_action_element_def_t _action_elements[]
+  = { { N_("show"), dt_action_effect_toggle },
+      { N_("reset"), dt_action_effect_activate },
+      { N_("presets"), dt_action_effect_presets },
+      { NULL } };
+
+static const dt_shortcut_fallback_t _action_fallbacks[]
+  = { { .element = DT_ACTION_ELEMENT_SHOW, .button = DT_SHORTCUT_LEFT },
+      { .element = DT_ACTION_ELEMENT_RESET, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
+      { .element = DT_ACTION_ELEMENT_PRESETS, .button = DT_SHORTCUT_RIGHT },
+      { } };
 
 const dt_action_def_t dt_action_def_lib
   = { N_("utility module"),
