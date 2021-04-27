@@ -1053,9 +1053,6 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t p = *(dt_iop_colorzones_params_t *)self->params;
 
-  const float aspect = dt_conf_get_int("plugins/darkroom/colorzones/aspect_percent") / 100.0;
-  dtgtk_drawing_area_set_aspect_ratio(widget, aspect);
-
   if(p.splines_version == DT_IOP_COLORZONES_SPLINES_V1)
   {
     for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++)
@@ -1720,7 +1717,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event
       //adjust aspect
       const int aspect = dt_conf_get_int("plugins/darkroom/colorzones/aspect_percent");
       dt_conf_set_int("plugins/darkroom/colorzones/aspect_percent", aspect + delta_y);
-      gtk_widget_queue_draw(widget);
+      dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
 
       return TRUE;
     }

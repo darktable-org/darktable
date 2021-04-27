@@ -714,9 +714,6 @@ static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointe
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
 
-  const float aspect = dt_conf_get_int("plugins/darkroom/levels/aspect_percent") / 100.0;
-  dtgtk_drawing_area_set_aspect_ratio(widget, aspect);
-
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(GTK_WIDGET(c->area), &allocation);
@@ -975,7 +972,7 @@ static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, g
       //adjust aspect
       const int aspect = dt_conf_get_int("plugins/darkroom/levels/aspect_percent");
       dt_conf_set_int("plugins/darkroom/levels/aspect_percent", aspect + delta_y);
-      gtk_widget_queue_draw(widget);
+      dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
 
       return TRUE;
     }

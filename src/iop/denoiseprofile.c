@@ -3178,9 +3178,6 @@ static gboolean denoiseprofile_draw(GtkWidget *widget, cairo_t *crf, gpointer us
   dt_iop_denoiseprofile_gui_data_t *c = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_denoiseprofile_params_t p = *(dt_iop_denoiseprofile_params_t *)self->params;
 
-  const float aspect = dt_conf_get_int("plugins/darkroom/denoiseprofile/aspect_percent") / 100.0;
-  dtgtk_drawing_area_set_aspect_ratio(widget, aspect);
-
   int ch = (int)c->channel;
   dt_draw_curve_set_point(c->transition_curve, 0, p.x[ch][DT_IOP_DENOISE_PROFILE_BANDS - 2] - 1.f, p.y[ch][0]);
   for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
@@ -3487,11 +3484,13 @@ static gboolean denoiseprofile_scrolled(GtkWidget *widget, GdkEventScroll *event
       //adjust aspect
       const int aspect = dt_conf_get_int("plugins/darkroom/denoiseprofile/aspect_percent");
       dt_conf_set_int("plugins/darkroom/denoiseprofile/aspect_percent", aspect + delta_y);
+      dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
     }
     else
+    {
       c->mouse_radius = CLAMP(c->mouse_radius * (1.f + 0.1f * delta_y), 0.2f / DT_IOP_DENOISE_PROFILE_BANDS, 1.f);
-
-    gtk_widget_queue_draw(widget);
+      gtk_widget_queue_draw(widget);
+    }
   }
 
   return TRUE;

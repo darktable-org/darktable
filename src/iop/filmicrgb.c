@@ -2688,9 +2688,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
   dt_iop_filmic_rgb_compute_spline(p, &g->spline);
 
-  const float aspect = dt_conf_get_int("plugins/darkroom/filmicrgb/aspect_percent") / 100.0;
-  dtgtk_drawing_area_set_aspect_ratio(widget, aspect);
-
   // Cache the graph objects to avoid recomputing all the view at each redraw
   gtk_widget_get_allocation(widget, &g->allocation);
 
@@ -3693,7 +3690,7 @@ static gboolean area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, g
       //adjust aspect
       const int aspect = dt_conf_get_int("plugins/darkroom/filmicrgb/aspect_percent");
       dt_conf_set_int("plugins/darkroom/filmicrgb/aspect_percent", aspect + delta_y);
-      gtk_widget_queue_draw(widget);
+      dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
     }
     return TRUE; // Ensure that scrolling cannot move side panel when no delta
   }
