@@ -2062,6 +2062,18 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
     /* xgettext:no-c-format */
                                   "use `*' to include locations and sub-locations (shift-click)"));
   }
+  else if(property == DT_COLLECTION_PROP_FOLDERS)
+  {
+    gtk_widget_set_tooltip_text(d->text,
+    /* xgettext:no-c-format */
+                                _("use `%' as wildcard\n"
+    /* xgettext:no-c-format */
+                                  "ctrl+click to include only sub-folders\n"
+    /* xgettext:no-c-format */
+                                  "shift+click to include current + sub-folders\n"
+    /* xgettext:no-c-format */
+                                  "double-click to include only the current folder"));
+  }
   else
   {
     /* xgettext:no-c-format */
