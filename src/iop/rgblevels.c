@@ -372,9 +372,6 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
 {
   dt_iop_rgblevels_gui_data_t *c = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)self->params;
-
-  const float aspect = dt_conf_get_int("plugins/darkroom/rgblevels/aspect_percent") / 100.0;
-  dtgtk_drawing_area_set_aspect_ratio(widget, aspect);
   
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
@@ -648,7 +645,7 @@ static gboolean _area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, 
       //adjust aspect
       const int aspect = dt_conf_get_int("plugins/darkroom/rgblevels/aspect_percent");
       dt_conf_set_int("plugins/darkroom/rgblevels/aspect_percent", aspect + delta_y);
-      gtk_widget_queue_draw(widget);
+      dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
 
       return TRUE;
     }
