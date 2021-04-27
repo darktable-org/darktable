@@ -1671,6 +1671,24 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   return id;
 }
 
+gboolean dt_images_already_imported(const gchar *folder, const gchar *filename)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT *"
+                              " FROM main.images, main.film_rolls"
+                              " WHERE film_rolls.folder = ?1"
+                              "       AND images.film_id = film_rolls.id"
+                              "       AND images.filename = ?2",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, folder, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, filename, -1, SQLITE_STATIC);
+  const gboolean result = sqlite3_step(stmt) == SQLITE_ROW;
+  sqlite3_finalize(stmt);
+
+  return result;
+}
+
 uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs,
                          gboolean raise_signals)
 {
