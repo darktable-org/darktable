@@ -40,6 +40,9 @@
 #ifdef HAVE_LIBAVIF
 #include "common/imageio_avif.h"
 #endif
+#ifdef HAVE_LIBHEIF
+#include "common/imageio_heif.h"
+#endif
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
 #include "iop/iop_api.h"
@@ -1866,6 +1869,27 @@ void reload_defaults(dt_iop_module_t *module)
       /* try the nclx box before falling back to any ICC profile */
       if((color_profile = dt_colorspaces_cicp_to_type(&cicp, filename)) == DT_COLORSPACE_NONE)
         color_profile = (img->profile_size > 0) ? DT_COLORSPACE_EMBEDDED_ICC : DT_COLORSPACE_NONE;
+    }
+#endif
+#ifdef HAVE_LIBHEIF
+    else if(!strcmp(ext, "heif") || !strcmp(ext, "heic") || !strcmp(ext, "hif"))
+    {
+      struct heif_color_profile cp = {
+          .type = DT_COLORSPACE_NONE,
+      };
+
+      dt_imageio_heif_read_color_profile(filename, &cp);
+
+      if (cp.type != DT_COLORSPACE_NONE)
+      {
+        color_profile = cp.type;
+      }
+      else
+      {
+        img->profile_size = cp.icc_profile_size;
+        img->profile      = cp.icc_profile;
+        color_profile = (img->profile_size > 0) ? DT_COLORSPACE_EMBEDDED_ICC : DT_COLORSPACE_NONE;
+      }
     }
 #endif
     g_free(ext);

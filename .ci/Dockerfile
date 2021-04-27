@@ -82,6 +82,7 @@ RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
     libgphoto2-dev \
     libgraphicsmagick1-dev \
     libgtk-3-dev \
+    libheif-dev \
     libjpeg-dev \
     libjson-glib-dev \
     liblcms2-dev \
