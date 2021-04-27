@@ -63,6 +63,9 @@ static void _lib_import_ui_devices_update(dt_lib_module_t *self);
 static void _import_from_dialog_new(dt_lib_module_t* self);
 static void _import_from_dialog_run(dt_lib_module_t* self);
 static void _import_from_dialog_free(dt_lib_module_t* self);
+static void _do_select_all(dt_lib_module_t* self);
+static void _do_select_none(dt_lib_module_t* self);
+static void _do_select_new(dt_lib_module_t* self);
 
 typedef enum dt_import_cols_t
 {
@@ -71,6 +74,7 @@ typedef enum dt_import_cols_t
   DT_IMPORT_UI_FILENAME,        // displayed filename
   DT_IMPORT_FILENAME,           // filename
   DT_IMPORT_UI_DATETIME,        // displayed datetime
+  DT_IMPORT_UI_EXISTS,          // wether the picture is already imported
   DT_IMPORT_DATETIME,           // file datetime
   DT_IMPORT_NUM_COLS
 } dt_import_cols_t;
@@ -639,13 +643,16 @@ static guint _import_set_file_list(const gchar *folder, const int root_lgth,
       if(include_jpegs || (ext && g_ascii_strncasecmp(ext, ".jpg", sizeof(".jpg"))
                                && g_ascii_strncasecmp(ext, ".jpeg", sizeof(".jpeg"))))
       {
+        const gboolean already_imported = dt_images_already_imported(folder, &fullname[root_lgth + 1]);
         GtkTreeIter iter;
         gtk_list_store_append(d->from.store, &iter);
-        gtk_list_store_set(d->from.store, &iter, DT_IMPORT_UI_FILENAME, &uifullname[root_lgth + 1],
-                                         DT_IMPORT_FILENAME, &fullname[root_lgth + 1],
-                                         DT_IMPORT_UI_DATETIME, dt_txt,
-                                         DT_IMPORT_DATETIME, datetime,
-                                         DT_IMPORT_THUMB, d->from.eye, -1);
+        gtk_list_store_set(d->from.store, &iter,
+                           DT_IMPORT_UI_EXISTS, already_imported ? "✔" : " ",
+                           DT_IMPORT_UI_FILENAME, &uifullname[root_lgth + 1],
+                           DT_IMPORT_FILENAME, &fullname[root_lgth + 1],
+                           DT_IMPORT_UI_DATETIME, dt_txt,
+                           DT_IMPORT_DATETIME, datetime,
+                           DT_IMPORT_THUMB, d->from.eye, -1);
         nb++;
       }
     }
@@ -740,8 +747,9 @@ static gboolean _update_files_list(gpointer user_data)
   }
   gtk_tree_view_set_model(d->from.treeview, model);
   g_object_unref(model);
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.treeview);
-  gtk_tree_selection_select_all(selection);
+
+  _do_select_all(self);
+
   return FALSE;
 }
 
@@ -1241,7 +1249,8 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   d->from.store = gtk_list_store_new(DT_IMPORT_NUM_COLS, G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF,
-                                     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64);
+                                     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+                                     G_TYPE_UINT64);
   d->from.eye = _eye_thumbnail(GTK_WIDGET(d->from.dialog));
   // Create the treview with list model data store
   d->from.w = gtk_scrolled_window_new(NULL, NULL);
@@ -1250,10 +1259,24 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   d->from.treeview = GTK_TREE_VIEW(gtk_tree_view_new());
   gtk_container_add(GTK_CONTAINER(d->from.w), GTK_WIDGET(d->from.treeview));
 
+  if(d->import_case == DT_IMPORT_INPLACE)
+  {
+    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+    GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("✔"), renderer, "text",
+                                                      DT_IMPORT_UI_EXISTS, NULL);
+    g_object_set (renderer, "xalign", 0.5, NULL);
+    gtk_tree_view_append_column(d->from.treeview, column);
+    gtk_tree_view_column_set_alignment(column, 0.5);
+    gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(10));
+    GtkWidget *header = gtk_tree_view_column_get_button(column);
+    gtk_widget_set_tooltip_text(header, _("mark already imported pictures"));
+  }
+
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("name"), renderer, "text",
                                                     DT_IMPORT_UI_FILENAME, NULL);
   gtk_tree_view_append_column(d->from.treeview, column);
+
   gtk_tree_view_column_set_expand(column, TRUE);
   gtk_tree_view_column_set_resizable(column, TRUE);
   gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(200));
@@ -1365,9 +1388,23 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  d->from.dialog = gtk_dialog_new_with_buttons( _import_text[d->import_case], NULL, GTK_DIALOG_MODAL,
-                                                _("cancel"), GTK_RESPONSE_NONE,
-                                                _import_text[d->import_case], GTK_RESPONSE_ACCEPT, NULL);
+
+  if(d->import_case == DT_IMPORT_INPLACE)
+    d->from.dialog = gtk_dialog_new_with_buttons
+      ( _import_text[d->import_case], NULL, GTK_DIALOG_MODAL,
+        _("select all"), GTK_RESPONSE_YES,
+        _("select none"), GTK_RESPONSE_NONE,
+        _("select new"), GTK_RESPONSE_OK,
+        _("cancel"), GTK_RESPONSE_CANCEL,
+        _import_text[d->import_case], GTK_RESPONSE_ACCEPT, NULL);
+  else
+    d->from.dialog = gtk_dialog_new_with_buttons
+      ( _import_text[d->import_case], NULL, GTK_DIALOG_MODAL,
+        _("select all"), GTK_RESPONSE_YES,
+        _("select none"), GTK_RESPONSE_NONE,
+        _("cancel"), GTK_RESPONSE_CANCEL,
+        _import_text[d->import_case], GTK_RESPONSE_ACCEPT, NULL);
+
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(d->from.dialog);
 #endif
@@ -1494,11 +1531,77 @@ static void _import_set_collection(char *dirname)
   }
 }
 
+static void _do_select_all(dt_lib_module_t* self)
+{
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.treeview);
+  gtk_tree_selection_select_all(selection);
+}
+
+static void _do_select_none(dt_lib_module_t* self)
+{
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.treeview);
+  gtk_tree_selection_unselect_all(selection);
+}
+
+static void _do_select_new(dt_lib_module_t* self)
+{
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+
+  GtkTreeIter iter;
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->from.treeview));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.treeview);
+
+  gtk_tree_selection_unselect_all(selection);
+
+  if(gtk_tree_model_get_iter_first(model, &iter))
+  {
+    do
+    {
+      gchar *sel = NULL;
+      gtk_tree_model_get(model, &iter, DT_IMPORT_UI_EXISTS, &sel, -1);
+      if((d->import_case != DT_IMPORT_INPLACE) || (sel && !strcmp(sel, " ")))
+        gtk_tree_selection_select_iter(selection, &iter);
+    }
+    while(gtk_tree_model_iter_next(model, &iter));
+  }
+}
+
 static void _import_from_dialog_run(dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  while(gtk_dialog_run(GTK_DIALOG(d->from.dialog)) == GTK_RESPONSE_ACCEPT)
+  gint res = 0;
+
+  while((res = gtk_dialog_run(GTK_DIALOG(d->from.dialog))) != GTK_RESPONSE_CANCEL)
   {
+    if(res == GTK_RESPONSE_YES)
+    {
+      _do_select_all(self);
+      continue;
+    }
+    else if(res == GTK_RESPONSE_NONE)
+    {
+      _do_select_none(self);
+      continue;
+    }
+    else if(res == GTK_RESPONSE_OK)
+    {
+      _do_select_new(self);
+      continue;
+    }
+    else if(res == GTK_RESPONSE_DELETE_EVENT)
+    {
+      // closing window or hitting ESC
+      break;
+    }
+    else if(res != GTK_RESPONSE_ACCEPT)
+    {
+      continue;
+    }
+
     // reset filter so that view isn't empty
     dt_view_filter_reset(darktable.view_manager, TRUE);
     GList *imgs = NULL;
