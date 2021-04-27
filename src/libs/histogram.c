@@ -95,7 +95,7 @@ typedef struct dt_lib_histogram_t
   uint32_t *histogram;
   uint32_t histogram_max;
   // waveform histogram buffer and dimensions
-  float *waveform_linear, *waveform_display;
+  float *waveform_linear;
   uint8_t *waveform_8bit;
   int waveform_width, waveform_height, waveform_max_width;
   // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
@@ -204,6 +204,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   // quantity of data.
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
   float *const restrict wf_linear = DT_IS_ALIGNED((float *const restrict)d->waveform_linear);
+  uint8_t *const restrict wf_8bit = DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_8bit);
 
   // Use integral sized bins for columns, as otherwise they will be
   // unequal and have banding. Rely on draw to smoothly do horizontal
@@ -215,17 +216,19 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   const size_t bin_width = ceilf(sample_width / (float)d->waveform_max_width);
   const size_t wf_width = ceilf(sample_width / (float)bin_width);
   d->waveform_width = wf_width;
+  const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wf_width);
+  const size_t wf_height = d->waveform_height;
 
-  dt_iop_image_fill(wf_linear, 0.0f, wf_width, d->waveform_height, 4);
+  dt_iop_image_fill(wf_linear, 0.0f, wf_width, wf_height, 4);
 
   // Every bin_width x height portion of the image is being described
   // in a 1 pixel x waveform_height portion of the histogram.
   // NOTE: if constant is decreased, will brighten output
-  const float brightness = d->waveform_height / 40.0f;
+  const float brightness = wf_height / 40.0f;
   const float scale = brightness / (sample_height * bin_width);
 
   // 1.0 is at 8/9 of the height!
-  const size_t height_i = d->waveform_height-1;
+  const size_t height_i = wf_height-1;
   const float height_f = height_i;
 
   // FIXME: for point sample, calculate whole graph and the point sample values, draw these on top of a dimmer graph
@@ -257,6 +260,33 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
       }
     }
   }
+
+  // colors used to represent primary colors
+  // FIXME: force a recalc/redraw when colors have changed via user entering new CSS in preferences -- is there a signal for this?
+  const GdkRGBA *const css_primaries = darktable.bauhaus->graph_colors;
+  const float DT_ALIGNED_ARRAY primaries_linear[3][4] = {
+    {css_primaries[2].blue, css_primaries[2].green, css_primaries[2].red, 1.0f},
+    {css_primaries[1].blue, css_primaries[1].green, css_primaries[1].red, 1.0f},
+    {css_primaries[0].blue, css_primaries[0].green, css_primaries[0].red, 1.0f},
+  };
+
+  // shortcut for a fast gamma change -- borrow hybrid log-gamma LUT
+  const dt_iop_order_iccprofile_info_t *const profile =
+    dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_HLG_REC2020, "", DT_INTENT_PERCEPTUAL);
+  // lut for all three channels should be the same
+  const float *const restrict lut = DT_IS_ALIGNED((const float *const restrict)profile->lut_out[0]);
+  const float lutmax = profile->lutsize - 1;
+
+  // loops are too small (3 * 360 * 175 max iterations) to need threads
+  for(size_t ch = 0; ch < 3; ch++)
+    for(size_t y = 0; y < wf_height; y++)
+      for(size_t x = 0; x < wf_width; x++)
+      {
+        const float linear = MIN(1.f, wf_linear[4U * (y * wf_width + x) + ch]);
+        uint8_t *const restrict out = wf_8bit + (ch * wf_height + y) * wf_8bit_stride + x * 4;
+        for(size_t k = 0; k < 3; k++)
+          out[k] = lut[(int)(linear * primaries_linear[ch][k] * lutmax)] * 255.0f;
+      }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
@@ -494,6 +524,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       RGB[3] = intensity;
       for_each_channel(ch,aligned(px,RGB:16))
         // FIXME: this BGR/RGB flip is for pixelpipe vs. Cairo color?
+        // FIXME: this produces px[-1] for ch==3, which will be out of bounds for out_y == out_x == 0?
         px[2U-ch] = CLAMP((int)(RGB[ch] * 255.0f), 0, 255);
     }
 
@@ -635,63 +666,13 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
 
 static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t *cr, int ch)
 {
-  // map linear waveform data to a display colorspace
-  const float *const restrict wf_linear = DT_IS_ALIGNED((const float *const restrict)d->waveform_linear);
-  float *const restrict wf_display = DT_IS_ALIGNED((float *const restrict)d->waveform_display);
-  const int wf_width = d->waveform_width;
-  const int wf_height = d->waveform_height;
-  // colors used to represent primary colors
-  // FIXME: force a redraw when colors have changed via user entering new CSS in preferences -- is there a signal for this?
-  const GdkRGBA *const css_primaries = darktable.bauhaus->graph_colors;
-  const float DT_ALIGNED_ARRAY primaries_linear[3][4] = {
-    {css_primaries[2].blue, css_primaries[2].green, css_primaries[2].red, 1.0f},
-    {css_primaries[1].blue, css_primaries[1].green, css_primaries[1].red, 1.0f},
-    {css_primaries[0].blue, css_primaries[0].green, css_primaries[0].red, 1.0f},
-  };
-  const size_t nfloats = 4U * wf_width * wf_height;
-  // this should be <= 250K iterations, hence not worth the overhead to thread
-  for(size_t p = 0; p < nfloats; p += 4)
-  {
-    const float src = MIN(1.0f, wf_linear[p + ch]);
-    for_four_channels(k,aligned(wf_display,primaries_linear:64))
-    {
-      wf_display[p+k] = src * primaries_linear[ch][k];
-    }
-  }
-
-  // shortcut for a fast gamma change
-  const dt_iop_order_iccprofile_info_t *profile_linear =
-    dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
-  const dt_iop_order_iccprofile_info_t *profile_work =
-    dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_HLG_REC2020, "", DT_INTENT_PERCEPTUAL);
-  // in place transform will preserve alpha
-  // dt's transform is approx. 2x faster than LCMS here
-  // FIXME: optimize by just doing the extrapolate_lut() work and make our own sensible LUT with enough resolution to provide continuous tone
-  dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
-                                          profile_linear, profile_work, "waveform gamma");
-
-  const size_t wf_width_floats = 4U * wf_width;
-  uint8_t *const restrict wf_8bit = DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_8bit);
-  const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, wf_width);
-  // not enough iterations to be worth threading
-  for(size_t y = 0; y < wf_height; y++)
-  {
-#ifdef _OPENMP
-#pragma simd aligned(wf_display, wf_8bit : 64)
-#endif
-    for(size_t k = 0; k < wf_width_floats; k++)
-    {
-      // linear -> display transform can return pixels > 1, hence limit these
-      wf_8bit[y * wf_8bit_stride + k] = MIN(255, (int)(wf_display[y * wf_width_floats + k] * 255.0f));
-    }
-  }
-  // FIXME: everything up to here should be invariant (unless CSS changes) so put it in process rather than draw
-
-  // FIXME: does this alpha channel do anything? if not, lose...
+  const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->waveform_width);
   cairo_surface_t *source
-    = dt_cairo_image_surface_create_for_data(wf_8bit, CAIRO_FORMAT_ARGB32,
-                                             wf_width, wf_height, wf_8bit_stride);
+    = dt_cairo_image_surface_create_for_data(d->waveform_8bit + ch * d->waveform_height * wf_8bit_stride,
+                                             CAIRO_FORMAT_RGB24,
+                                             d->waveform_width, d->waveform_height, wf_8bit_stride);
   cairo_set_source_surface(cr, source, 0.0, 0.0);
+  // FIXME: increase alpha for more intense waveform, especially for RGB parade
   cairo_paint_with_alpha(cr, 0.5);
   cairo_surface_destroy(source);
 }
@@ -1557,8 +1538,8 @@ void gui_init(dt_lib_module_t *self)
   // histogram.
   d->waveform_height  = 175;
   d->waveform_linear  = dt_iop_image_alloc(d->waveform_max_width, d->waveform_height, 4);
-  d->waveform_display = dt_iop_image_alloc(d->waveform_max_width, d->waveform_height, 4);
-  d->waveform_8bit    = dt_alloc_align(64, sizeof(uint8_t) * 4 * d->waveform_height * d->waveform_max_width);
+  d->waveform_8bit    = dt_alloc_align(64, sizeof(uint8_t) * 3 * d->waveform_height *
+                                       cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->waveform_max_width));
 
   // FIXME: what is the appropriate resolution for this: balance memory use, processing speed, helpful resolution
   d->vectorscope_diameter_px = 384;
@@ -1705,7 +1686,6 @@ void gui_cleanup(dt_lib_module_t *self)
 
   free(d->histogram);
   dt_free_align(d->waveform_linear);
-  dt_free_align(d->waveform_display);
   dt_free_align(d->waveform_8bit);
   dt_free_align(d->vectorscope_graph);
   dt_pthread_mutex_destroy(&d->lock);
