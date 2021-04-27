@@ -369,50 +369,14 @@ dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma, mode) \
   }
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static void reduce_artifacts(const float* const restrict in,
+                          const size_t width, const size_t height,
+                          const size_t ch, const float sigma,
+                          const dt_iop_cacorrectrgb_guide_channel_t guide,
+                          const float safety,
+                          float* const restrict out)
+
 {
-  dt_iop_cacorrectrgb_params_t *d = (dt_iop_cacorrectrgb_params_t *)piece->data;
-  const float scale = piece->iscale / roi_in->scale;
-  const int ch = piece->colors;
-  const size_t width = roi_out->width;
-  const size_t height = roi_out->height;
-  const float* in = (float*)ivoid;
-  float* out = (float*)ovoid;
-  const float sigma = MAX(d->radius / scale, 1.0f);
-
-  if(ch != 4)
-  {
-    memcpy(out, in, width * height * ch * sizeof(float));
-    return;
-  }
-
-  const dt_iop_cacorrectrgb_guide_channel_t guide = d->guide_channel;
-  const dt_iop_cacorrectrgb_mode_t mode = d->mode;
-  // whether to be very conservative in preserving the original image, or to
-  // keep algorithm result even if it overshoots
-  const float safety = powf(20.0f, 2.0f - d->strength);
-
-  const float downsize = 3.0f;
-  const size_t ds_width = width / downsize;
-  const size_t ds_height = height / downsize;
-  float *const restrict ds_in = dt_alloc_sse_ps(dt_round_size_sse(ds_width * ds_height * ch));
-  // we use only one variable for both higher and lower manifolds in order
-  // to save time by doing only one bilinear interpolation instead of 2.
-  float *const restrict ds_manifolds = dt_alloc_sse_ps(dt_round_size_sse(ds_width * ds_height * 6));
-  // Downsample the image for speed-up
-  interpolate_bilinear(in, width, height, ds_in, ds_width, ds_height, 4);
-  get_manifolds(ds_in, ds_width, ds_height, ch, sigma / downsize, guide, ds_manifolds);
-  dt_free_align(ds_in);
-  float *const restrict manifolds = dt_alloc_sse_ps(dt_round_size_sse(width * height * 6));
-  // upscale manifolds
-  interpolate_bilinear(ds_manifolds, ds_width, ds_height, manifolds, width, height, 6);
-  dt_free_align(ds_manifolds);
-  apply_correction(in, manifolds, width, height, ch, sigma, guide, mode, out);
-  dt_free_align(manifolds);
-
-  // reduce artifacts
-
   // in_out contains 2 guided channels of in, and of out
   float *const restrict in_out = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
 #ifdef _OPENMP
@@ -460,6 +424,51 @@ dt_omp_firstprivate(in, out, blurred_in_out, width, height, guide, safety, ch) \
     }
   }
   dt_free_align(blurred_in_out);
+}
+
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_cacorrectrgb_params_t *d = (dt_iop_cacorrectrgb_params_t *)piece->data;
+  const float scale = piece->iscale / roi_in->scale;
+  const int ch = piece->colors;
+  const size_t width = roi_out->width;
+  const size_t height = roi_out->height;
+  const float* in = (float*)ivoid;
+  float* out = (float*)ovoid;
+  const float sigma = MAX(d->radius / scale, 1.0f);
+
+  if(ch != 4)
+  {
+    memcpy(out, in, width * height * ch * sizeof(float));
+    return;
+  }
+
+  const dt_iop_cacorrectrgb_guide_channel_t guide = d->guide_channel;
+  const dt_iop_cacorrectrgb_mode_t mode = d->mode;
+  // whether to be very conservative in preserving the original image, or to
+  // keep algorithm result even if it overshoots
+  const float safety = powf(20.0f, 2.0f - d->strength);
+
+  const float downsize = 3.0f;
+  const size_t ds_width = width / downsize;
+  const size_t ds_height = height / downsize;
+  float *const restrict ds_in = dt_alloc_sse_ps(dt_round_size_sse(ds_width * ds_height * ch));
+  // we use only one variable for both higher and lower manifolds in order
+  // to save time by doing only one bilinear interpolation instead of 2.
+  float *const restrict ds_manifolds = dt_alloc_sse_ps(dt_round_size_sse(ds_width * ds_height * 6));
+  // Downsample the image for speed-up
+  interpolate_bilinear(in, width, height, ds_in, ds_width, ds_height, 4);
+  get_manifolds(ds_in, ds_width, ds_height, ch, sigma / downsize, guide, ds_manifolds);
+  dt_free_align(ds_in);
+  float *const restrict manifolds = dt_alloc_sse_ps(dt_round_size_sse(width * height * 6));
+  // upscale manifolds
+  interpolate_bilinear(ds_manifolds, ds_width, ds_height, manifolds, width, height, 6);
+  dt_free_align(ds_manifolds);
+  apply_correction(in, manifolds, width, height, ch, sigma, guide, mode, out);
+  dt_free_align(manifolds);
+
+  reduce_artifacts(in, width, height, ch, sigma, guide, safety, out);
 }
 
 /** gui setup and update, these are needed. */
