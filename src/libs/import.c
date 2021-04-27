@@ -1407,7 +1407,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
       folder = g_strdup(folder ? folder : "");
       dt_conf_set_string("ui_last/import_last_root", folder);
       g_free(folder);
-      dt_conf_set_string("ui_last/import_recursive", FALSE);
+      dt_conf_set_bool("ui_last/import_recursive", FALSE);
     }
     d->from.root = dt_bauhaus_combobox_new(NULL);
     dt_bauhaus_combobox_set_entries_ellipsis(d->from.root, PANGO_ELLIPSIZE_NONE);
