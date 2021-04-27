@@ -2020,8 +2020,6 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
 {
   const int property = _combo_get_active_collection(d->combo);
 
-  dt_lib_collect_t *c = get_collect(d);
-
   if(property == DT_COLLECTION_PROP_APERTURE
      || property == DT_COLLECTION_PROP_FOCAL_LENGTH
      || property == DT_COLLECTION_PROP_ISO
@@ -2080,8 +2078,8 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
     gtk_widget_set_tooltip_text(d->text, _("use `%' as wildcard"));
   }
 
-  //set the treeview tooltip as well
-  gtk_widget_set_tooltip_text(GTK_WIDGET(c->view), gtk_widget_get_tooltip_text(d->text));
+  //set the combobox tooltip as well
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->combo), gtk_widget_get_tooltip_text(d->text));
 }
 
 
