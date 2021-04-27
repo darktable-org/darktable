@@ -604,6 +604,9 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
     GtkTreePath *path = NULL;
 
+    if(d->view_rule == DT_COLLECTION_PROP_FOLDERS )
+      dt_control_log(_("showing current folder"));
+
     /* Get tree path for row that was clicked */
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), (gint)event->x, (gint)event->y, &path, NULL, NULL,
                                      NULL))
@@ -2272,6 +2275,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
         /* if a tag has children, ctrl-clicking on a parent node should display all images under this hierarchy. */
         if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
         {
+          dt_control_log(_("showing only sub-folders"));
           gchar *n_text = g_strconcat(text, "|%", NULL);
           g_free(text);
           text = n_text;
@@ -2280,6 +2284,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
          * hierarchy. */
         else if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
         {
+          dt_control_log(_("showing current folder + sub-folders"));
           gchar *n_text = g_strconcat(text, "*", NULL);
           g_free(text);
           text = n_text;
