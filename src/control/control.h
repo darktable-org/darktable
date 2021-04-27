@@ -157,7 +157,8 @@ typedef struct dt_control_t
 
   GHashTable *widgets;
   GSequence *shortcuts;
-  void *mapping_widget;
+  GtkWidget *mapping_widget;
+  dt_action_element_t element;
   GPtrArray *widget_definitions;
   GSList *input_drivers;
 

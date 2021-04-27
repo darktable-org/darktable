@@ -268,7 +268,7 @@ static gboolean poll_midi_devices(gpointer user_data)
       case 0x9:  // note on
         dt_print(DT_DEBUG_INPUT, "Note On: Channel %d, Data1 %d\n", midi->channel, event_data1);
 
-        dt_shortcut_key_press(midi->id, event[i].timestamp, event_data1, dt_key_modifier_state());
+        dt_shortcut_key_press(midi->id, event[i].timestamp, event_data1);
         break;
       case 0x8:  // note off
         dt_print(DT_DEBUG_INPUT, "Note Off: Channel %d, Data1 %d\n", midi->channel, event_data1);
