@@ -313,11 +313,12 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
     {
       GtkTreeIter iter;
       gtk_list_store_append(d->from.store, &iter);
-      gtk_list_store_set(d->from.store, &iter, DT_IMPORT_UI_FILENAME, img->data,
-                                               DT_IMPORT_FILENAME, img->data,
-                                               DT_IMPORT_UI_DATETIME, "-",
-                                               DT_IMPORT_DATETIME, "-",
-                                               DT_IMPORT_THUMB, d->from.eye, -1);
+      gtk_list_store_set(d->from.store, &iter,
+                         DT_IMPORT_UI_FILENAME, img->data,
+                         DT_IMPORT_FILENAME, img->data,
+                         DT_IMPORT_UI_DATETIME, "-",
+                         DT_IMPORT_DATETIME, "-",
+                         DT_IMPORT_THUMB, d->from.eye, -1);
       nb++;
     }
   }
@@ -602,12 +603,13 @@ static guint _import_set_file_list(const gchar *folder, const int root_lgth,
   GError *error = NULL;
   GFile *gfolder = g_file_parse_name(folder);
 
-  GFileEnumerator *dir_files = g_file_enumerate_children(gfolder,
-                                  G_FILE_ATTRIBUTE_STANDARD_NAME ","
-                                  G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
-                                  G_FILE_ATTRIBUTE_TIME_MODIFIED ","
-                                  G_FILE_ATTRIBUTE_STANDARD_TYPE,
-                                  G_FILE_QUERY_INFO_NONE, NULL, &error);
+  GFileEnumerator *dir_files =
+    g_file_enumerate_children(gfolder,
+                              G_FILE_ATTRIBUTE_STANDARD_NAME ","
+                              G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
+                              G_FILE_ATTRIBUTE_TIME_MODIFIED ","
+                              G_FILE_ATTRIBUTE_STANDARD_TYPE,
+                              G_FILE_QUERY_INFO_NONE, NULL, &error);
 
   GFileInfo *info = NULL;
   guint nb = n;
@@ -1521,7 +1523,7 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
     {
       imgs = g_list_reverse(imgs);
       time_t datetime_override = 0;
-      if(d->import_case !=  DT_IMPORT_INPLACE)
+      if(d->import_case != DT_IMPORT_INPLACE)
       {
         char *dto = g_strdup(gtk_entry_get_text(GTK_ENTRY(d->from.datetime)));
         dto = g_strstrip(dto);
