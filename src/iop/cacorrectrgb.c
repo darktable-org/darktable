@@ -143,6 +143,9 @@ static void get_manifolds(const float* const restrict in, const size_t width, co
   dt_gaussian_blur_4c(g, in, blurred_in);
 
   // construct the manifolds
+  // higher manifold is the blur of all pixels that are above average,
+  // lower manifold is the blur of all pixels that are below average
+  // we use the guide channel to categorize the pixels as above or below average
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
 dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, height, guide) \
