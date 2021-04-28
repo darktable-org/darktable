@@ -78,8 +78,6 @@ static gboolean skip_f_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
                                           GdkModifierType modifier, gpointer data);
 static gboolean skip_b_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data);
-static gboolean _toolbox_toggle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                         GdkModifierType modifier, gpointer data);
 static gboolean _brush_size_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                         GdkModifierType modifier, gpointer data);
 static gboolean _brush_size_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1402,7 +1400,24 @@ static void _second_window_quickbutton_clicked(GtkWidget *w, dt_develop_t *dev)
 
 static gboolean _toolbar_show_popup(gpointer user_data)
 {
-  gtk_widget_show_all(GTK_WIDGET(user_data));
+  GtkPopover *popover = GTK_POPOVER(user_data);
+
+  GtkWidget *button = gtk_popover_get_relative_to(popover);
+  GdkDevice *pointer = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+
+  int x, y;
+  GdkWindow *pointer_window = gdk_device_get_window_at_position(pointer, &x, &y);
+  gpointer   pointer_widget = NULL;
+  gdk_window_get_user_data(pointer_window, &pointer_widget);
+
+  GdkRectangle rect = { gtk_widget_get_allocated_width(button) / 2, 0, 1, 1 };
+
+  if(button != pointer_widget)
+    gtk_widget_translate_coordinates(pointer_widget, button, x, y, &rect.x, &rect.y);
+
+  gtk_popover_set_pointing_to(popover, &rect);
+
+  gtk_widget_show_all(GTK_WIDGET(popover));
 
   // cancel glib timeout if invoked by long button press
   return FALSE;
@@ -1597,13 +1612,6 @@ static void rawoverexposed_threshold_callback(GtkWidget *slider, gpointer user_d
     gtk_button_clicked(GTK_BUTTON(d->rawoverexposed.button));
   else
     dt_dev_reprocess_center(d);
-}
-
-static gboolean _toolbox_toggle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                             GdkModifierType modifier, gpointer data)
-{
-  gtk_button_clicked(GTK_BUTTON(data));
-  return TRUE;
 }
 
 /* softproof */
@@ -2160,6 +2168,7 @@ void gui_init(dt_view_t *self)
   /* create second window display button */
   dev->second_window.button
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, CPF_STYLE_FLAT, NULL);
+  dt_action_define(&self->actions, NULL, "second window", dev->second_window.button, &dt_action_def_toggle);
   g_signal_connect(G_OBJECT(dev->second_window.button), "clicked", G_CALLBACK(_second_window_quickbutton_clicked),
                    dev);
   g_signal_connect(G_OBJECT(dev->second_window.button), "button-press-event",
@@ -2175,6 +2184,7 @@ void gui_init(dt_view_t *self)
   /* Enable ISO 12646-compliant colour assessment conditions */
   dev->iso_12646.button
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT, NULL);
+  dt_action_define(&self->actions, NULL, "color assessment", dev->iso_12646.button, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(dev->iso_12646.button,
                               _("toggle ISO 12646 color assessment conditions"));
   g_signal_connect(G_OBJECT(dev->iso_12646.button), "clicked", G_CALLBACK(_iso_12646_quickbutton_clicked), dev);
@@ -2185,6 +2195,7 @@ void gui_init(dt_view_t *self)
     // the button
     dev->rawoverexposed.button
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_rawoverexposed, CPF_STYLE_FLAT, NULL);
+    dt_action_define(&self->actions, NULL, "raw overexposed", dev->rawoverexposed.button, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(dev->rawoverexposed.button,
                                 _("toggle raw over exposed indication\nright click for options"));
     g_signal_connect(G_OBJECT(dev->rawoverexposed.button), "clicked",
@@ -2249,6 +2260,7 @@ void gui_init(dt_view_t *self)
     // the button
     dev->overexposed.button
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT, NULL);
+    dt_action_define(&self->actions, NULL, "overexposed", dev->overexposed.button, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(dev->overexposed.button,
                                 _("toggle clipping indication\nright click for options"));
     g_signal_connect(G_OBJECT(dev->overexposed.button), "clicked",
@@ -2331,6 +2343,7 @@ void gui_init(dt_view_t *self)
     // the softproof button
     dev->profile.softproof_button =
       dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, CPF_STYLE_FLAT, NULL);
+    dt_action_define(&self->actions, NULL, "softproof", dev->profile.softproof_button, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(dev->profile.softproof_button,
                                 _("toggle softproofing\nright click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.softproof_button), "clicked",
@@ -2345,6 +2358,7 @@ void gui_init(dt_view_t *self)
     // the gamut check button
     dev->profile.gamut_button =
       dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, CPF_STYLE_FLAT, NULL);
+    dt_action_define(&self->actions, NULL, "gamut check", dev->profile.gamut_button, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(dev->profile.gamut_button,
                  _("toggle gamut checking\nright click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.gamut_button), "clicked",
@@ -3926,7 +3940,6 @@ static gboolean _darkroom_redo_callback(GtkAccelGroup *accel_group, GObject *acc
 void connect_key_accels(dt_view_t *self)
 {
   GClosure *closure;
-  dt_develop_t *data = (dt_develop_t *)self->data;
 
   // Zoom shortcuts
   closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), GINT_TO_POINTER(1), NULL);
@@ -3952,18 +3965,6 @@ void connect_key_accels(dt_view_t *self)
   closure = g_cclosure_new(G_CALLBACK(skip_b_key_accel_callback), (gpointer)self->data, NULL);
   dt_accel_connect_view(self, "image back", closure);
 
-  // toggle ISO 12646 color assessment condition
-  closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->iso_12646.button, NULL);
-  dt_accel_connect_view(self, "color assessment", closure);
-
-  // toggle raw overexposure indication
-  closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->rawoverexposed.button, NULL);
-  dt_accel_connect_view(self, "raw overexposed", closure);
-
-  // toggle overexposure indication
-  closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->overexposed.button, NULL);
-  dt_accel_connect_view(self, "overexposed", closure);
-
   // cycle through overlay colors
   closure = g_cclosure_new(G_CALLBACK(_overlay_cycle_callback), (gpointer)self->data, NULL);
   dt_accel_connect_view(self, "cycle overlay colors", closure);
@@ -3971,14 +3972,6 @@ void connect_key_accels(dt_view_t *self)
   // toggle visibility of drawn masks for current gui module
   closure = g_cclosure_new(G_CALLBACK(_toggle_mask_visibility_callback), (gpointer)self->data, NULL);
   dt_accel_connect_view(self, "show drawn masks", closure);
-
-  // toggle softproof indication
-  closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->profile.softproof_button, NULL);
-  dt_accel_connect_view(self, "softproof", closure);
-
-  // toggle gamut indication
-  closure = g_cclosure_new(G_CALLBACK(_toolbox_toggle_callback), data->profile.gamut_button, NULL);
-  dt_accel_connect_view(self, "gamut check", closure);
 
   // brush size +/-
   closure = g_cclosure_new(G_CALLBACK(_brush_size_up_callback), (gpointer)self->data, NULL);
