@@ -2823,9 +2823,9 @@ void dt_bauhaus_vimkey_exec(const char *input)
     if(ac->type >= DT_ACTION_TYPE_WIDGET ||
        ac->type <= DT_ACTION_TYPE_SECTION)
     {
-      if(!strncasecmp(ac->label_translated, input, prefix))
+      if(!strncasecmp(ac->label, input, prefix))
       {
-        if(!ac->label_translated[prefix])
+        if(!ac->label[prefix])
         {
           input += prefix;
           if(*input) input++; // skip . or =
@@ -2885,16 +2885,16 @@ GList *dt_bauhaus_vimkey_complete(const char *input)
     if(ac->type >= DT_ACTION_TYPE_WIDGET ||
        ac->type <= DT_ACTION_TYPE_SECTION)
     {
-      if(!prefix || !strncasecmp(ac->label_translated, input, prefix))
+      if(!prefix || !strncasecmp(ac->label, input, prefix))
       {
-        if(!ac->label_translated[prefix] && input[prefix] == '.')
+        if(!ac->label[prefix] && input[prefix] == '.')
         {
             input += prefix + 1;
           if(ac->type <= DT_ACTION_TYPE_SECTION) ac = ac->target;
           continue;
         }
         else
-          res = g_list_append(res, (gchar *)ac->label_translated + prefix);
+          res = g_list_append(res, (gchar *)ac->label + prefix);
       }
     }
 
