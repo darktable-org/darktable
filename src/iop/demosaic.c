@@ -3049,7 +3049,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         method2string(demosaicing_method & ~DEMOSAIC_DUAL), mpixels, tclock, uclock, mpixels / tclock);
     }
 
-    dt_dev_write_rawdetail_mask(piece, tmp, roi_in, DT_DEV_LUMINANCE_MASK_DEMOSAIC);
+    dt_dev_write_rawdetail_mask(piece, tmp, roi_in, DT_DEV_DETAIL_MASK_DEMOSAIC);
 
     if((demosaicing_method & DEMOSAIC_DUAL) && !run_fast)
     {
@@ -3607,7 +3607,7 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     dt_opencl_release_mem_object(VP_diff);
     dt_opencl_release_mem_object(HQ_diff);
 
-    dt_dev_write_rawdetail_mask_cl(piece, dev_aux, roi_in, DT_DEV_LUMINANCE_MASK_DEMOSAIC);
+    dt_dev_write_rawdetail_mask_cl(piece, dev_aux, roi_in, DT_DEV_DETAIL_MASK_DEMOSAIC);
 
     if(scaled)
     {
@@ -3828,7 +3828,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       }
     }
 
-    dt_dev_write_rawdetail_mask_cl(piece, dev_aux, roi_in, DT_DEV_LUMINANCE_MASK_DEMOSAIC);
+    dt_dev_write_rawdetail_mask_cl(piece, dev_aux, roi_in, DT_DEV_DETAIL_MASK_DEMOSAIC);
 
     if(scaled)
     {
@@ -4238,7 +4238,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vng_green_equilibrate, sizes);
       if(err != CL_SUCCESS) goto error;
     }
-    dt_dev_write_rawdetail_mask_cl(piece, dev_aux, roi_in, DT_DEV_LUMINANCE_MASK_DEMOSAIC);
+    dt_dev_write_rawdetail_mask_cl(piece, dev_aux, roi_in, DT_DEV_DETAIL_MASK_DEMOSAIC);
 
     if(scaled)
     {
@@ -5006,7 +5006,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       dt_opencl_release_mem_object(dev_edge_out);
       dev_edge_in = dev_edge_out = NULL;
     }
-    dt_dev_write_rawdetail_mask_cl(piece, dev_tmp, roi_in, DT_DEV_LUMINANCE_MASK_DEMOSAIC);
+    dt_dev_write_rawdetail_mask_cl(piece, dev_tmp, roi_in, DT_DEV_DETAIL_MASK_DEMOSAIC);
 
     if(scaled)
     {
