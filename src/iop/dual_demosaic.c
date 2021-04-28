@@ -57,7 +57,7 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
 
   const float contrastf = dual_threshold / 100.0f;
 
-  dt_masks_calc_luminance_mask(rgb_data, blend, width, height);
+  dt_masks_calc_rawdetail_mask(rgb_data, blend, tmp, width, height, piece->pipe->dsc.temperature.coeffs);
   dt_masks_calc_detail_mask(blend, blend, tmp, width, height, contrastf, TRUE);  
 
   if(dual_mask)

@@ -42,7 +42,7 @@
   telling a) we want a DM and b) we want it from either demosaic or from rawprepare.
   If such a flag has not been previously set we will force a pipeline reprocessing.
   
-  gboolean dt_dev_write_luminance_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode);
+  gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode);
   or it's _cl equivalent write a mask holding luminances for every pixel.
   This luminance mask (LM) is not scaled but only cropped to the roi of the writing module (demosaic
   or rawprepare).
@@ -66,7 +66,7 @@
   gaussians - it is used here.
   Now we have an unscaled detail mask which requires to be transformed through the pipeline using
 
-  float *dt_dev_distort_luminance_mask(const dt_dev_pixelpipe_t *pipe, float *src, const dt_iop_module_t *target_module)
+  float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, const dt_iop_module_t *target_module)
 
   returning a pointer to a distorted mask (DT) with same size as used in the module wanting the refinement.
   This DM is finally used to refine the original mask.
@@ -185,19 +185,45 @@ void dt_masks_blur_9x9(float *const restrict src, float *const restrict out, con
   dt_masks_extend_border(out, width, height, 4);
 }
 
-void dt_masks_calc_luminance_mask(float *const restrict src, float *const restrict mask, const int width, const int height)
+void dt_masks_calc_rawdetail_mask(float *const restrict src, float *const restrict mask, float *const restrict tmp, const int width, const int height, const float wb[3])
 {
   const int msize = width * height;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(mask, src, msize) \
-  schedule(simd:static) aligned(mask, src : 64)
+  dt_omp_firstprivate(tmp, src, msize, wb) \
+  schedule(simd:static) aligned(tmp, src : 64)
 #endif
   for(int idx =0; idx < msize; idx++)
   {
-    const float val = 0.333333333f * (src[4 * idx] + src[4 * idx + 1] + src[4 * idx + 2]);
-    mask[idx] = lab_f(val);
+    const float val = 0.333333333f * (fmaxf(src[4 * idx], 0.0f) / wb[0] + fmaxf(src[4 * idx + 1], 0.0f) / wb[1] + fmaxf(src[4 * idx + 2], 0.0f) / wb[2]);
+    tmp[idx] = sqrtf(val); // add a gamma. sqrtf should make noise variance the same for all image
   }
+
+  const float scale = 1.0f / 16.0f;
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(mask, tmp, width, height, scale) \
+  schedule(simd:static) aligned(mask, tmp : 64)
+ #endif
+  for(int row = 1; row < height - 1; row++)
+  {
+    for(int col = 1, idx = row * width + col; col < width - 1; col++, idx++)
+    {
+      // scharr operator
+      const float gx = 47.0f * (tmp[idx-width-1] - tmp[idx-width+1])
+                    + 162.0f * (tmp[idx-1]       - tmp[idx+1])
+                     + 47.0f * (tmp[idx+width-1] - tmp[idx+width+1]);
+      const float gy = 47.0f * (tmp[idx-width-1] - tmp[idx+width-1])
+                    + 162.0f * (tmp[idx-width]   - tmp[idx+width])
+                     + 47.0f * (tmp[idx-width+1] - tmp[idx+width+1]);
+      float gradient_magnitude = sqrtf(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
+      mask[idx] = scale * gradient_magnitude;
+      // Original code from rt
+      // tmp[idx] = scale * sqrtf(sqrf(src[idx+1] - src[idx-1]) + sqrf(src[idx + width]   - src[idx - width]) +
+      //                          sqrf(src[idx+2] - src[idx-2]) + sqrf(src[idx + 2*width] - src[idx - 2*width]));
+    }
+  }
+  dt_masks_extend_border(mask, width, height, 1);
 }
 
 static inline float calcBlendFactor(float val, float threshold)
@@ -210,31 +236,15 @@ static inline float calcBlendFactor(float val, float threshold)
 
 void dt_masks_calc_detail_mask(float *const restrict src, float *const restrict out, float *const restrict tmp, const int width, const int height, const float threshold, const gboolean detail)
 {
-  const float scale = 1.0f / 16.0f;
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(src, tmp, width, height, scale) \
-  schedule(simd:static) aligned(src, tmp : 64)
- #endif
-  for(int row = 2; row < height - 2; row++)
-  {
-    for(int col = 2, idx = row * width + col; col < width - 2; col++, idx++)
-    {
-      tmp[idx] = scale * sqrtf(sqrf(src[idx+1] - src[idx-1]) + sqrf(src[idx + width]   - src[idx - width]) +
-                               sqrf(src[idx+2] - src[idx-2]) + sqrf(src[idx + 2*width] - src[idx - 2*width]));
-    }
-  }
-  dt_masks_extend_border(tmp, width, height, 2);
-
   const int msize = width * height;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(tmp, msize, threshold, detail) \
-  schedule(simd:static) aligned(tmp : 64)
+  dt_omp_firstprivate(src, tmp, msize, threshold, detail) \
+  schedule(simd:static) aligned(src, tmp : 64)
 #endif
   for(int idx = 0; idx < msize; idx++)
   {
-    const float blend = calcBlendFactor(tmp[idx], threshold);
+    const float blend = calcBlendFactor(src[idx], threshold);
     tmp[idx] = detail ? blend : 1.0f - blend;
   }
   dt_masks_blur_9x9(tmp, out, width, height, 2.0f);
