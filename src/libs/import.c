@@ -757,6 +757,11 @@ static gboolean _update_files_list(gpointer user_data)
   return FALSE;
 }
 
+static void _import_new_toggled(GtkWidget *widget, dt_lib_module_t* self)
+{
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) _do_select_new(self);
+}
+
 static void _ignore_jpegs_toggled(GtkWidget *widget, dt_lib_module_t* self)
 {
   _update_files_list(self);
@@ -1475,6 +1480,12 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   guint col = 0;
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
+  if(d->import_case == DT_IMPORT_INPLACE)
+  {
+    d->import_new = dt_gui_preferences_bool(grid, "ui_last/import_select_new", col++, line, TRUE);
+    gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line), TRUE);
+    g_signal_connect(G_OBJECT(d->import_new), "toggled", G_CALLBACK(_import_new_toggled), self);
+  }
   if(d->import_case != DT_IMPORT_CAMERA)
   {
     d->recursive = dt_gui_preferences_bool(grid, "ui_last/import_recursive", col++, line, TRUE);
@@ -1761,7 +1772,6 @@ void gui_init(dt_lib_module_t *self)
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   guint line = 0;
-  d->import_new = dt_gui_preferences_bool(grid, "ui_last/import_select_new", 0, line++, FALSE);
   d->ignore_exif = dt_gui_preferences_bool(grid, "ui_last/ignore_exif_rating", 0, line++, FALSE);
   d->rating = dt_gui_preferences_int(grid, "ui_last/import_initial_rating", 0, line++);
   d->apply_metadata = dt_gui_preferences_bool(grid, "ui_last/import_apply_metadata", 0, line++, FALSE);
@@ -1993,7 +2003,6 @@ static void _apply_preferences(const char *pref, dt_lib_module_t *self)
   g_list_free_full(prefs, g_free);
 
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  dt_gui_preferences_bool_update(d->import_new);
   dt_gui_preferences_bool_update(d->ignore_exif);
   dt_gui_preferences_int_update(d->rating);
   dt_gui_preferences_bool_update(d->apply_metadata);
