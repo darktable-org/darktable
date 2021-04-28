@@ -1878,7 +1878,13 @@ void reload_defaults(dt_iop_module_t *module)
           .type = DT_COLORSPACE_NONE,
       };
 
-      dt_imageio_heif_read_color_profile(filename, &cp);
+      dt_imageio_retval_t ret;
+
+      ret = dt_imageio_heif_read_color_profile(filename, &cp);
+      if (ret != DT_IMAGEIO_OK) {
+        g_free(ext);
+        return;
+      }
 
       if (cp.type != DT_COLORSPACE_NONE)
       {
