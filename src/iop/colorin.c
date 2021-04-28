@@ -1924,8 +1924,13 @@ void reload_defaults(dt_iop_module_t *module)
       struct avif_color_profile cp = {
           .type = DT_COLORSPACE_NONE,
       };
-
-      img->profile_size = dt_imageio_avif_read_color_profile(filename, &cp);
+      const dt_imageio_retval_t ret =
+          dt_imageio_avif_read_color_profile(filename, &cp);
+      if (ret != DT_IMAGEIO_OK)
+      {
+        g_free(ext);
+        return;
+      }
       if (cp.type != DT_COLORSPACE_NONE)
       {
         color_profile = cp.type;
