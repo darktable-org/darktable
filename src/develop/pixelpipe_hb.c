@@ -177,7 +177,7 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   pipe->output_imgid = 0;
 
   pipe->rawdetail_mask_data = NULL;
-  pipe->want_detail_mask = DT_DEV_LUMINANCE_MASK_NONE;
+  pipe->want_detail_mask = DT_DEV_DETAIL_MASK_NONE;
 
   pipe->processing = 0;
   dt_atomic_set_int(&pipe->shutdown,FALSE);
@@ -345,9 +345,9 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
   const gboolean rawprep_img = dt_image_is_rawprepare_supported(img);
   const gboolean raw_img     = dt_image_is_raw(img);
 
-  pipe->want_detail_mask &= DT_DEV_LUMINANCE_MASK_REQUIRED;
-  if(raw_img)          pipe->want_detail_mask |= DT_DEV_LUMINANCE_MASK_DEMOSAIC;
-  else if(rawprep_img) pipe->want_detail_mask |= DT_DEV_LUMINANCE_MASK_RAWPREPARE; 
+  pipe->want_detail_mask &= DT_DEV_DETAIL_MASK_REQUIRED;
+  if(raw_img)          pipe->want_detail_mask |= DT_DEV_DETAIL_MASK_DEMOSAIC;
+  else if(rawprep_img) pipe->want_detail_mask |= DT_DEV_DETAIL_MASK_RAWPREPARE; 
 
   for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
   {
@@ -389,7 +389,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
       {
         const dt_develop_blend_params_t *const bp = (const dt_develop_blend_params_t *)piece->blendop_data;
         if(bp->details != 0.0f)
-          pipe->want_detail_mask |= DT_DEV_LUMINANCE_MASK_REQUIRED;
+          pipe->want_detail_mask |= DT_DEV_DETAIL_MASK_REQUIRED;
       }
     }
   }
@@ -2573,8 +2573,8 @@ void dt_dev_clear_rawdetail_mask(dt_dev_pixelpipe_t *pipe)
 gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if((p->want_detail_mask & DT_DEV_LUMINANCE_MASK_REQUIRED) == 0) return FALSE;
-  if((p->want_detail_mask & ~DT_DEV_LUMINANCE_MASK_REQUIRED) != mode) return FALSE;
+  if((p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED) == 0) return FALSE;
+  if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) != mode) return FALSE;
 
   dt_dev_clear_rawdetail_mask(p);
 
@@ -2604,8 +2604,8 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
 {
   dt_dev_pixelpipe_t *p = piece->pipe;  
 
-  if((p->want_detail_mask & DT_DEV_LUMINANCE_MASK_REQUIRED) == 0) return FALSE;
-  if((p->want_detail_mask & ~DT_DEV_LUMINANCE_MASK_REQUIRED) != mode) return FALSE;
+  if((p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED) == 0) return FALSE;
+  if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) != mode) return FALSE;
 
   dt_dev_clear_rawdetail_mask(p);
 
@@ -2657,18 +2657,18 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, co
 {
   if(!pipe->rawdetail_mask_data) return NULL;
   gboolean valid = FALSE;
-  const int check = pipe->want_detail_mask & ~DT_DEV_LUMINANCE_MASK_REQUIRED;
+  const int check = pipe->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED;
 
   GList *source_iter;
   for(source_iter = pipe->nodes; source_iter; source_iter = g_list_next(source_iter))
   {
     const dt_dev_pixelpipe_iop_t *candidate = (dt_dev_pixelpipe_iop_t *)source_iter->data;
-    if(((!strcmp(candidate->module->op, "demosaic")) && candidate->enabled) && (check == DT_DEV_LUMINANCE_MASK_DEMOSAIC))
+    if(((!strcmp(candidate->module->op, "demosaic")) && candidate->enabled) && (check == DT_DEV_DETAIL_MASK_DEMOSAIC))
     {
       valid = TRUE;
       break;
     }
-    if(((!strcmp(candidate->module->op, "rawprepare")) && candidate->enabled) && (check == DT_DEV_LUMINANCE_MASK_RAWPREPARE))
+    if(((!strcmp(candidate->module->op, "rawprepare")) && candidate->enabled) && (check == DT_DEV_DETAIL_MASK_RAWPREPARE))
     {
       valid = TRUE;
       break;
