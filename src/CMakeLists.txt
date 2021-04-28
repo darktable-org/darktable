@@ -362,8 +362,13 @@ if (USE_AVIF)
 endif()
 
 if (USE_HEIF)
-    find_package(libheif 1.9.0)
-    if (libheif_FOUND)
+    find_package(libheif 1.9.0 CONFIG)
+    if (NOT TARGET heif)
+      # Some distros don't ship the libheif CMakeFiles, so we fallback to
+      # in-tree cmake module.
+      find_package(libheif 1.9.0)
+    endif()
+    if (TARGET heif OR libheif_FOUND)
         list(APPEND LIBS heif)
         add_definitions(-DHAVE_LIBHEIF=1)
         list(APPEND SOURCES "common/imageio_heif.c")
