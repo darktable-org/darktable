@@ -318,6 +318,19 @@ gint shortcut_compare_func(gconstpointer shortcut_a, gconstpointer shortcut_b, g
   return 0;
 };
 
+static gchar *_action_full_id(dt_action_t *action)
+{
+  if(action->owner)
+  {
+    gchar *owner_id = _action_full_id(action->owner);
+    gchar *full_label = g_strdup_printf("%s/%s", owner_id, action->id);
+    g_free(owner_id);
+    return full_label;
+  }
+  else
+    return g_strdup(action->id);
+}
+
 static gchar *_action_full_label(dt_action_t *action)
 {
   if(action->owner)
@@ -331,24 +344,11 @@ static gchar *_action_full_label(dt_action_t *action)
     return g_strdup(action->label);
 }
 
-static gchar *_action_full_label_translated(dt_action_t *action)
-{
-  if(action->owner)
-  {
-    gchar *owner_label = _action_full_label_translated(action->owner);
-    gchar *full_label = g_strdup_printf("%s/%s", owner_label, action->label_translated);
-    g_free(owner_label);
-    return full_label;
-  }
-  else
-    return g_strdup(action->label_translated);
-}
-
 static void _dump_actions(FILE *f, dt_action_t *action)
 {
   while(action)
   {
-    gchar *label = _action_full_label(action);
+    gchar *label = _action_full_id(action);
     fprintf(f, "%s %s %d (%p)\n", label, !action->target ? "*" : "", action->type, action->target);
     g_free(label);
     if(action->type <= DT_ACTION_TYPE_SECTION)
@@ -521,7 +521,7 @@ static gchar *_shortcut_description(dt_shortcut_t *s, gboolean full)
 static void _insert_shortcut_in_list(GHashTable *ht, char *shortcut, dt_action_t *ac, char *label)
 {
   if(ac->owner && ac->owner->owner)
-    _insert_shortcut_in_list(ht, shortcut, ac->owner, g_strdup_printf("%s/%s", ac->owner->label_translated, label));
+    _insert_shortcut_in_list(ht, shortcut, ac->owner, g_strdup_printf("%s/%s", ac->owner->label, label));
   {
     GtkListStore *list_store = g_hash_table_lookup(ht, ac->owner);
     if(!list_store)
@@ -546,7 +546,7 @@ GHashTable *dt_shortcut_category_lists(dt_view_type_flags_t v)
   {
     dt_shortcut_t *s = g_sequence_get(iter);
     if(s && s->views & v)
-      _insert_shortcut_in_list(ht, _shortcut_description(s, TRUE), s->action, g_strdup(s->action->label_translated));
+      _insert_shortcut_in_list(ht, _shortcut_description(s, TRUE), s->action, g_strdup(s->action->label));
   }
 
   return ht;
@@ -660,11 +660,11 @@ void find_views(dt_shortcut_t *s)
     else if(owner == &darktable.control->actions_thumb)
     {
       s->views = DT_VIEW_DARKROOM | DT_VIEW_MAP | DT_VIEW_TETHERING | DT_VIEW_PRINT;
-      if(!strstr(s->action->label,"history"))
+      if(!strstr(s->action->id,"history"))
         s->views |= DT_VIEW_LIGHTTABLE; // lighttable has copy/paste history shortcuts in separate lib
     }
     else
-      fprintf(stderr, "[find_views] views for category '%s' unknown\n", owner->label);
+      fprintf(stderr, "[find_views] views for category '%s' unknown\n", owner->id);
     break;
   case DT_ACTION_TYPE_GLOBAL:
     s->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING |
@@ -873,7 +873,7 @@ static gboolean insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
             else
             {
               gchar *old_labels = existing_labels;
-              gchar *new_label = _action_full_label_translated(e->action);
+              gchar *new_label = _action_full_label(e->action);
               existing_labels = g_strdup_printf("%s\n%s",
                                                 existing_labels ? existing_labels : "",
                                                 new_label);
@@ -964,7 +964,7 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
     case SHORTCUT_VIEW_ACTION:
       if(s->action)
       {
-        field_text = _action_full_label_translated(s->action);
+        field_text = _action_full_label(s->action);
         if(s->action->type == DT_ACTION_TYPE_KEY_PRESSED)
           underline = PANGO_UNDERLINE_ERROR;
       }
@@ -1255,7 +1255,7 @@ static void _fill_action_fields(GtkTreeViewColumn *column, GtkCellRenderer *cell
   dt_action_t *action = NULL;
   gtk_tree_model_get(model, iter, 0, &action, -1);
   if(data)
-    g_object_set(cell, "text", action->label_translated, NULL);
+    g_object_set(cell, "text", action->label, NULL);
   else
   {
     const dt_action_def_t *def = _action_find_definition(action);
@@ -1375,7 +1375,7 @@ gboolean _search_func(GtkTreeModel *model, gint column, const gchar *key, GtkTre
   {
     dt_action_t *action = NULL;
     gtk_tree_model_get(model, iter, 0, &action, -1);
-    different = !strstr(action->label_translated, key);
+    different = !strstr(action->label, key);
   }
   else
   {
@@ -1386,7 +1386,7 @@ gboolean _search_func(GtkTreeModel *model, gint column, const gchar *key, GtkTre
       dt_shortcut_t *s = g_sequence_get(seq_iter);
       if(s->action)
       {
-        gchar *label = _action_full_label_translated(s->action);
+        gchar *label = _action_full_label(s->action);
         different = !strstr(label, key);
         g_free(label);
       }
@@ -1657,7 +1657,7 @@ void dt_shortcuts_save(gboolean backup)
 
       fprintf(f, "=");
 
-      gchar *action_label = _action_full_label(s->action);
+      gchar *action_label = _action_full_id(s->action);
       fprintf(f, "%s", action_label);
       g_free(action_label);
 
@@ -1984,7 +1984,7 @@ static void define_new_mapping()
 {
   if(insert_shortcut(&_sc, TRUE))
   {
-    gchar *label = _action_full_label_translated(_sc.action);
+    gchar *label = _action_full_label(_sc.action);
     dt_control_log(_("%s assigned to %s"), _shortcut_description(&_sc, TRUE), label);
     g_free(label);
   }
@@ -2184,14 +2184,14 @@ static float process_mapping(float move_size)
       if(owner->type == DT_ACTION_TYPE_LIB)
       {
         dt_lib_module_t *lib = (dt_lib_module_t *)owner;
-        dt_lib_presets_apply(fsc.action->label_translated, lib->plugin_name, lib->version());
+        dt_lib_presets_apply(fsc.action->label, lib->plugin_name, lib->version());
       }
       else if(owner->type == DT_ACTION_TYPE_IOP)
       {
-        dt_gui_presets_apply_preset(fsc.action->label_translated, action_target);
+        dt_gui_presets_apply_preset(fsc.action->label, action_target);
       }
       else
-        fprintf(stderr, "[process_mapping] preset '%s' has unsupported type\n", fsc.action->label_translated);
+        fprintf(stderr, "[process_mapping] preset '%s' has unsupported type\n", fsc.action->label);
     }
     else if(fsc.action->type < DT_ACTION_TYPE_WIDGET || !_widget_invisible(action_target))
     {
@@ -2217,7 +2217,7 @@ static float process_mapping(float move_size)
   else if(move_size)
   {
     if(fsc.action)
-      dt_control_log(_("no fallback for %s (%s)"), _shortcut_description(&fsc, TRUE), fsc.action->label_translated);
+      dt_control_log(_("no fallback for %s (%s)"), _shortcut_description(&fsc, TRUE), fsc.action->label);
     else
       dt_control_log(_("%s not assigned"), _shortcut_description(&_sc, TRUE));
   }
@@ -2632,9 +2632,9 @@ static inline gchar *path_without_symbols(const gchar *path)
 void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
 {
   dt_action_t **insertion_point = (dt_action_t **)&owner->target;
-  while(*insertion_point && strcmp(new_action->label, "preset") &&
-        (!strcmp((*insertion_point)->label, "preset") ||
-         g_utf8_collate((*insertion_point)->label_translated, new_action->label_translated) < 0))
+  while(*insertion_point && strcmp(new_action->id, "preset") &&
+        (!strcmp((*insertion_point)->id, "preset") ||
+         g_utf8_collate((*insertion_point)->label, new_action->label) < 0))
   {
     insertion_point = &(*insertion_point)->next;
   }
@@ -2661,8 +2661,8 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path)
       }
 
       dt_action_t *new_action = calloc(1, sizeof(dt_action_t));
-      new_action->label = clean_path;
-      new_action->label_translated = g_strdup(Q_(*path));
+      new_action->id = clean_path;
+      new_action->label = g_strdup(Q_(*path));
       new_action->type = DT_ACTION_TYPE_SECTION;
       new_action->owner = owner;
 
@@ -2671,7 +2671,7 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path)
       owner = new_action;
       action = NULL;
     }
-    else if(!strcmp(action->label, clean_path))
+    else if(!strcmp(action->id, clean_path))
     {
       g_free(clean_path);
       owner = action;
@@ -2688,7 +2688,7 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path)
 
   if(owner->type <= DT_ACTION_TYPE_VIEW)
   {
-    fprintf(stderr, "[dt_action_locate] found action '%s' internal node\n", owner->label);
+    fprintf(stderr, "[dt_action_locate] found action '%s' internal node\n", owner->id);
     return NULL;
   }
   else if(owner->type == DT_ACTION_TYPE_SECTION)
@@ -2700,8 +2700,8 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path)
 void dt_action_define_key_pressed_accel(dt_action_t *action, const gchar *path, GtkAccelKey *key)
 {
   dt_action_t *new_action = calloc(1, sizeof(dt_action_t));
-  new_action->label = path_without_symbols(path);
-  new_action->label_translated = g_strdup(Q_(path));
+  new_action->id = path_without_symbols(path);
+  new_action->label = g_strdup(Q_(path));
   new_action->type = DT_ACTION_TYPE_KEY_PRESSED;
   new_action->target = key;
   new_action->owner = action;
@@ -2830,8 +2830,8 @@ void dt_accel_register_shortcut(dt_action_t *owner, const gchar *path_string, gu
     if(!action)
     {
       dt_action_t *new_action = calloc(1, sizeof(dt_action_t));
-      new_action->label = clean_path;
-      new_action->label_translated = g_strdup(*trans ? *trans : *path);
+      new_action->id = clean_path;
+      new_action->label = g_strdup(*trans ? *trans : *path);
       new_action->type = DT_ACTION_TYPE_SECTION;
       new_action->owner = owner;
 
@@ -2840,7 +2840,7 @@ void dt_accel_register_shortcut(dt_action_t *owner, const gchar *path_string, gu
       owner = new_action;
       action = NULL;
     }
-    else if(!strcmp(action->label, clean_path))
+    else if(!strcmp(action->id, clean_path))
     {
       g_free(clean_path);
       owner = action;
@@ -2902,7 +2902,7 @@ void dt_accel_connect_shortcut(dt_action_t *owner, const gchar *path_string, GCl
 
     while(owner)
     {
-      if(!strcmp(owner->label, clean_path))
+      if(!strcmp(owner->id, clean_path))
         break;
       else
         owner = owner->next;
@@ -2959,8 +2959,8 @@ void dt_action_define_preset(dt_action_t *action, const gchar *name)
 
 void dt_action_rename(dt_action_t *action, const gchar *new_name)
 {
+  g_free((char*)action->id);
   g_free((char*)action->label);
-  g_free((char*)action->label_translated);
 
   dt_action_t **previous = (dt_action_t **)&action->owner->target;
   while(*previous)
@@ -2975,8 +2975,8 @@ void dt_action_rename(dt_action_t *action, const gchar *new_name)
 
   if(new_name)
   {
-    action->label = path_without_symbols(new_name);
-    action->label_translated = g_strdup(_(new_name));
+    action->id = path_without_symbols(new_name);
+    action->label = g_strdup(_(new_name));
 
     dt_action_insert_sorted(action->owner, action);
   }
@@ -3024,7 +3024,7 @@ void dt_accel_register_lib_as_view(gchar *view_name, const gchar *path, guint ac
   dt_action_t *a = darktable.control->actions_views.target;
   while(a)
   {
-    if(!strcmp(a->label, view_name))
+    if(!strcmp(a->id, view_name))
       break;
     else
       a = a->next;
@@ -3073,7 +3073,7 @@ void dt_accel_connect_lib_as_view(dt_lib_module_t *module, gchar *view_name, con
   dt_action_t *a = darktable.control->actions_views.target;
   while(a)
   {
-    if(!strcmp(a->label, view_name))
+    if(!strcmp(a->id, view_name))
       break;
     else
       a = a->next;

@@ -1678,7 +1678,7 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
   dt_action_t *first_category = darktable.control->actions;
 
   // we add the mouse actions too
-  dt_action_t mouse_actions = { .label_translated = _("mouse actions"),
+  dt_action_t mouse_actions = { .label = _("mouse actions"),
                                 .next = first_category };
   if(cv->mouse_actions)
   {
@@ -1706,7 +1706,7 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
   {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     // the title
-    GtkWidget *lb = gtk_label_new(category->label_translated);
+    GtkWidget *lb = gtk_label_new(category->label);
     GtkStyleContext *context = gtk_widget_get_style_context(lb);
     gtk_style_context_add_class(context, "accels_window_cat_title");
     gtk_box_pack_start(GTK_BOX(box), lb, FALSE, FALSE, 0);
