@@ -152,24 +152,38 @@ const dt_action_element_def_t _action_elements_value_fallback[]
 
 static float _action_process_toggle(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
-  // FIXME implement/complete/fix
-  GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
-  event->button.state = 0; // FIXME support ctrl-press
-  event->button.button = GDK_BUTTON_PRIMARY;
-  GdkWindow *w = gtk_widget_get_window(target);
-  if(w && move_size)
+  float value = gtk_toggle_button_get_active(target);
+
+  if(move_size &&
+     !((effect == DT_ACTION_EFFECT_ON      ||
+        effect == DT_ACTION_EFFECT_ON_CTRL ||
+        effect == DT_ACTION_EFFECT_ON_RIGHT) && value) &&
+     (effect != DT_ACTION_EFFECT_OFF         || value))
   {
-    event->button.window = w;
+    GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
+    event->button.state = (effect == DT_ACTION_EFFECT_TOGGLE_CTRL ||
+                           effect == DT_ACTION_EFFECT_ON_CTRL)
+                        ? GDK_CONTROL_MASK : 0;
+    event->button.button = (effect == DT_ACTION_EFFECT_TOGGLE_RIGHT ||
+                            effect == DT_ACTION_EFFECT_ON_RIGHT)
+                         ? GDK_BUTTON_SECONDARY : GDK_BUTTON_PRIMARY;
+
+    if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
+    event->button.window = gtk_widget_get_window(target);
     g_object_ref(event->button.window);
 
     // some togglebuttons connect to the clicked signal, others to toggled or button-press-event
     if(!gtk_widget_event(target, event))
       gtk_button_clicked(GTK_BUTTON(target));
+    event->type = GDK_BUTTON_RELEASE;
+    gtk_widget_event(target, event);
+
+    gdk_event_free(event);
+
+    value = gtk_toggle_button_get_active(target);
   }
 
-  gdk_event_free(event);
-
-  return 0;
+  return value;
 }
 
 static float _action_process_button(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
@@ -197,16 +211,31 @@ static float _action_process_button(gpointer target, dt_action_element_t element
   return 0;
 }
 
+static const dt_shortcut_fallback_t _action_fallbacks_toggle[]
+  = { { .mods = GDK_CONTROL_MASK    , .effect = DT_ACTION_EFFECT_TOGGLE_CTRL  },
+      { .button = DT_SHORTCUT_RIGHT , .effect = DT_ACTION_EFFECT_TOGGLE_RIGHT },
+      { .press = DT_SHORTCUT_LONG   , .effect = DT_ACTION_EFFECT_TOGGLE_RIGHT },
+      { } };
+
 const dt_action_def_t dt_action_def_toggle
   = { N_("toggle"),
       _action_process_toggle,
       NULL,
-      _action_elements_toggle };
+      _action_elements_toggle,
+      _action_fallbacks_toggle };
+
+static const dt_shortcut_fallback_t _action_fallbacks_button[]
+  = { { .mods = GDK_CONTROL_MASK    , .effect = DT_ACTION_EFFECT_ACTIVATE_CTRL  },
+      { .button = DT_SHORTCUT_RIGHT , .effect = DT_ACTION_EFFECT_ACTIVATE_RIGHT },
+      { .press = DT_SHORTCUT_LONG   , .effect = DT_ACTION_EFFECT_ACTIVATE_RIGHT },
+      { } };
+
 const dt_action_def_t dt_action_def_button
   = { N_("button"),
       _action_process_button,
       NULL,
-      _action_elements_button };
+      _action_elements_button,
+      _action_fallbacks_button };
 
 static const dt_shortcut_fallback_t _action_fallbacks_value[]
   = { { .mods = GDK_CONTROL_MASK           , .effect = -1, .speed = 0.1 },
