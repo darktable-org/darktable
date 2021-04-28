@@ -31,6 +31,7 @@
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
 #include "develop/masks.h"
+#include "develop/blend.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
@@ -174,7 +175,6 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_rcd_step_5_2;
   int kernel_rcd_border_redblue;
   int kernel_rcd_border_green;
-  int kernel_calc_luminance_mask;
   int kernel_calc_detail_blend;
   int kernel_write_blended_dual;
   int kernel_fastblur_mask_9x9;
@@ -5090,7 +5090,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem high_image = NULL;
   cl_mem low_image = NULL;
   cl_mem blend = NULL;
-  cl_mem luminance = NULL;
+  cl_mem details = NULL;
   cl_mem dev_aux = NULL;
   const gboolean dual = ((demosaicing_method & DEMOSAIC_DUAL) && (qual_flags & DEMOSAIC_FULL_SCALE) && (data->dual_thrs > 0.0f));
   const int devid = piece->pipe->devid;
@@ -5176,7 +5176,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   // here we have work to be done only for dual demosaicers
   blend = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
-  luminance = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
+  details = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
   low_image = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if((blend == NULL) || (low_image == NULL)) goto finish;
 
@@ -5190,7 +5190,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(info) dt_get_times(&start_time);
   if(process_vng_cl(self, piece, dev_in, low_image, roi_in, roi_in, FALSE))
   {
-    retval = dual_demosaic_cl(self, piece, luminance, blend, high_image, low_image, dev_aux, width, height, showmask);   
+    retval = dual_demosaic_cl(self, piece, details, blend, high_image, low_image, dev_aux, width, height, showmask);   
   } 
 
   if(info)
@@ -5223,7 +5223,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   finish:
   dt_opencl_release_mem_object(high_image);
   dt_opencl_release_mem_object(low_image);
-  dt_opencl_release_mem_object(luminance);
+  dt_opencl_release_mem_object(details);
   dt_opencl_release_mem_object(blend);
   if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
   if(!retval) dt_control_log(_("[dual demosaic_cl] internal problem"));
@@ -5405,7 +5405,6 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_rcd_step_5_2 = dt_opencl_create_kernel(rcd, "rcd_step_5_2");
   gd->kernel_rcd_border_redblue = dt_opencl_create_kernel(rcd, "rcd_border_redblue");
   gd->kernel_rcd_border_green = dt_opencl_create_kernel(rcd, "rcd_border_green");
-  gd->kernel_calc_luminance_mask = dt_opencl_create_kernel(rcd, "calc_luminance_mask");
   gd->kernel_calc_detail_blend = dt_opencl_create_kernel(rcd, "calc_detail_blend");
   gd->kernel_write_blended_dual  = dt_opencl_create_kernel(rcd, "write_blended_dual");  
   gd->kernel_fastblur_mask_9x9 = dt_opencl_create_kernel(rcd, "fastblur_mask_9x9"); 
@@ -5462,7 +5461,6 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_rcd_step_5_2);
   dt_opencl_free_kernel(gd->kernel_rcd_border_redblue);
   dt_opencl_free_kernel(gd->kernel_rcd_border_green);
-  dt_opencl_free_kernel(gd->kernel_calc_luminance_mask);
   dt_opencl_free_kernel(gd->kernel_calc_detail_blend);
   dt_opencl_free_kernel(gd->kernel_write_blended_dual);  
   dt_opencl_free_kernel(gd->kernel_fastblur_mask_9x9);
