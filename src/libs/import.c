@@ -1133,7 +1133,10 @@ static void _update_folders_list(dt_lib_module_t* self)
                                        ? GTK_SORT_DESCENDING : GTK_SORT_ASCENDING);
   gtk_tree_view_set_model(d->from.folderview, model);
   g_object_unref(model);
-  _expand_folder(folder, TRUE, self);
+  if(folder[0])
+    _expand_folder(folder, TRUE, self);
+  else
+    _expand_folder(root, FALSE, self);
   g_free(folder);
 }
 
@@ -1219,7 +1222,6 @@ static void _root_combobox_changed(GtkWidget *widget, dt_lib_module_t *self)
   dt_conf_set_bool("ui_last/import_recursive", FALSE);
   dt_gui_preferences_bool_update(d->recursive);
   _update_folders_list(self);
-  _expand_folder(root, FALSE, self);
   _update_files_list(self);
 }
 
@@ -1251,7 +1253,6 @@ static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t *self)
     dt_gui_preferences_bool_update(d->recursive);
     g_slist_free(list);
     _update_folders_list(self);
-    _expand_folder(dt_bauhaus_combobox_get_text(d->from.root), FALSE, self);
     _update_files_list(self);
   }
   gtk_widget_destroy(filechooser);
@@ -1537,7 +1538,6 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
     // folder tree
     _set_folders_list(lbox, self);
     _update_folders_list(self);
-    _expand_folder(dt_bauhaus_combobox_get_text(d->from.root), FALSE, self);
   }
 
   // patterns expander
