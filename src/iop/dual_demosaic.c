@@ -98,7 +98,7 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
 }
 
 #ifdef HAVE_OPENCL
-gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem luminance, cl_mem blend, cl_mem high_image, cl_mem low_image, cl_mem out, const int width, const int height, const int showmask)
+gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem detail, cl_mem blend, cl_mem high_image, cl_mem low_image, cl_mem out, const int width, const int height, const int showmask)
 {
   const int devid = piece->pipe->devid;
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
@@ -108,23 +108,39 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
 
   {
     size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-    dt_opencl_set_kernel_arg(devid, gd->kernel_calc_luminance_mask, 0, sizeof(cl_mem), &luminance);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_calc_luminance_mask, 1, sizeof(cl_mem), &high_image);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_calc_luminance_mask, 2, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_calc_luminance_mask, 3, sizeof(int), &height);
-    const int err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_calc_luminance_mask, sizes);
+    const float wb[3] = {piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
+    const int kernel = darktable.opencl->blendop->kernel_calc_Y0_mask;
+    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &detail);
+    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &high_image);
+    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &width);
+    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &height);
+    dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(float), &wb[0]);
+    dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(float), &wb[1]);
+    dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(float), &wb[2]);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) return FALSE;
   }  
 
   {
-    const int detail = 1;
     size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-    dt_opencl_set_kernel_arg(devid, gd->kernel_calc_detail_blend, 0, sizeof(cl_mem), &luminance);  
-    dt_opencl_set_kernel_arg(devid, gd->kernel_calc_detail_blend, 1, sizeof(cl_mem), &blend);  
+    const int kernel = darktable.opencl->blendop->kernel_calc_scharr_mask;
+    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &detail);
+    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &blend);
+    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &width);
+    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &height);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    if(err != CL_SUCCESS) return FALSE;
+  }  
+
+  {
+    const int flag = 1;
+    size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_calc_detail_blend, 0, sizeof(cl_mem), &blend);  
+    dt_opencl_set_kernel_arg(devid, gd->kernel_calc_detail_blend, 1, sizeof(cl_mem), &detail);  
     dt_opencl_set_kernel_arg(devid, gd->kernel_calc_detail_blend, 2, sizeof(int), &width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_calc_detail_blend, 3, sizeof(int), &height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_calc_detail_blend, 4, sizeof(float), &contrastf);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_calc_detail_blend, 5, sizeof(int), &detail);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_calc_detail_blend, 5, sizeof(int), &flag);
     const int err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_calc_detail_blend, sizes);
     if(err != CL_SUCCESS) return FALSE;
   }
@@ -162,8 +178,8 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     const float c00 = kernel[4][4];
 
     size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 0, sizeof(cl_mem), &blend);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 1, sizeof(cl_mem), &luminance);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 0, sizeof(cl_mem), &detail);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 1, sizeof(cl_mem), &blend);
     dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 2, sizeof(int), &width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 3, sizeof(int), &height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 4, sizeof(int), &c42);
@@ -190,7 +206,7 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     dt_opencl_set_kernel_arg(devid, gd->kernel_write_blended_dual, 2, sizeof(cl_mem), &out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_write_blended_dual, 3, sizeof(int), &width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_write_blended_dual, 4, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_write_blended_dual, 5, sizeof(cl_mem), &luminance);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_write_blended_dual, 5, sizeof(cl_mem), &blend);
     dt_opencl_set_kernel_arg(devid, gd->kernel_write_blended_dual, 6, sizeof(int), &showmask);
     const int err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_write_blended_dual, sizes);
     if(err != CL_SUCCESS) return FALSE;

@@ -216,7 +216,7 @@ void dt_masks_calc_rawdetail_mask(float *const restrict src, float *const restri
       const float gy = 47.0f * (tmp[idx-width-1] - tmp[idx+width-1])
                     + 162.0f * (tmp[idx-width]   - tmp[idx+width])
                      + 47.0f * (tmp[idx-width+1] - tmp[idx+width+1]);
-      float gradient_magnitude = sqrtf(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
+      const float gradient_magnitude = sqrtf(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
       mask[idx] = scale * gradient_magnitude;
       // Original code from rt
       // tmp[idx] = scale * sqrtf(sqrf(src[idx+1] - src[idx-1]) + sqrf(src[idx + width]   - src[idx - width]) +

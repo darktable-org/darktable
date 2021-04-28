@@ -2613,6 +2613,7 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
   const int height = roi_in->height;
 
   cl_mem out = NULL;
+  cl_mem tmp = NULL;
   float *mask = NULL;
   const int devid = p->devid;
 
@@ -2620,16 +2621,31 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
   if(mask == NULL) goto error;
   out = dt_opencl_alloc_device(devid, width, height, sizeof(float));   
   if(out == NULL) goto error;
-
+  tmp = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
+  if(tmp == NULL) goto error;
   {
-    const int kernel = darktable.opencl->blendop->kernel_calc_luminance_mask;
+    const int kernel = darktable.opencl->blendop->kernel_calc_Y0_mask;
+    const float wb[3] = {piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
     size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &out);
+    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &tmp);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &in);
     dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &width);
     dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &height);
+    dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(float), &wb[0]);
+    dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(float), &wb[1]);
+    dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(float), &wb[2]);
     const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) goto error;
+  }  
+  {
+    size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    const int kernel = darktable.opencl->blendop->kernel_write_scharr_mask;
+    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &tmp);
+    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &out);
+    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &width);
+    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &height);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    if(err != CL_SUCCESS) return FALSE;
   }  
 
   {
@@ -2641,11 +2657,13 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
   memcpy(&p->rawdetail_mask_roi, roi_in, sizeof(dt_iop_roi_t));
 
   dt_opencl_release_mem_object(out);
+  dt_opencl_release_mem_object(tmp);
   return FALSE;
 
   error:
   dt_dev_clear_rawdetail_mask(p);
   dt_opencl_release_mem_object(out);
+  dt_opencl_release_mem_object(tmp);
   dt_free_align(mask);
   return TRUE;  
 }
