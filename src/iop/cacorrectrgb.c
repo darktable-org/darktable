@@ -183,7 +183,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
   // as it is the average of the values where the guide is higher than its
   // average, and the lower manifold of the guided channel is equal to 1.
 
-for(int p = 0; p < 0; p++)
+for(int p = 0; p < 1; p++)
 {
   // refine the manifolds
   // improve result especially on very degraded images
@@ -211,80 +211,58 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_man
     // guided |    1   |(1 + 4 * 0) / 5 = 0.2 |
     //
     // the lower manifold of the guided is 0.2 if we consider only the guide
-    // to determine weighth and weightl.
     //
-    // at this step of the algorithm, we know if the higher manifold of guided
-    // is actually higher or lower than the lower manifold.
+    // at this step of the algorithm, we know estimates of manifolds
     //
-    // we can refine the manifolds by computing weights that promote pixels that
-    // stretch the interval between the manifolds.
-    // i.e., in our case, we give higher weights to the pixels that are equal to
-    // 0 than to the pixel that is equal to 1 for the computation of the lower
-    // manifold
-    const float pixelg = in[k * 4 + guide];
-    const float avgg = blurred_in[k * 4 + guide];
+    // we can refine the manifolds by computing weights that reduce the influence
+    // of pixels that are probably suffering chromatic aberrations
+    const float pixelg = logf(fmaxf(in[k * 4 + guide], 1E-6));
+    const float highg = logf(fmaxf(blurred_manifold_higher[k * 4 + guide], 1E-6));
+    const float lowg = logf(fmaxf(blurred_manifold_lower[k * 4 + guide], 1E-6));
+    const float avgg = logf(fmaxf(blurred_in[k * 4 + guide], 1E-6));
+
+    float w = 1.0f;
+    for(size_t kc = 0; kc <= 1; kc++)
+    {
+      size_t c = (guide + kc + 1) % 3;
+      // if pixel value is close to the low manifold, give it a smaller weight
+      // than if it is close to the high manifold
+      const float pixel = logf(fmaxf(in[k * 4 + c], 1E-6));
+      const float highc = logf(fmaxf(blurred_manifold_higher[k * 4 + c], 1E-6));
+      const float lowc = logf(fmaxf(blurred_manifold_lower[k * 4 + c], 1E-6));
+      // find "probablity" of it being a chromatic aberration
+      // (lowc, lowg) and (highc, highg) are valid point
+      // (lowc, highg) and (highc, lowg) are chromatic aberrations
+
+      //MAYBE: use only distance to hh and lh for high manifold,
+      // and distance to ll and hl for low manifold?
+      const float dist_to_ll = sqrtf((pixel - lowc) * (pixel - lowc) + (pixelg - lowg) * (pixelg - lowg));
+      const float dist_to_hh = sqrtf((pixel - highc) * (pixel - highc) + (pixelg - highg) * (pixelg - highg));
+      const float dist_to_lh = sqrtf((pixel - lowc) * (pixel - lowc) + (pixelg - highg) * (pixelg - highg));
+      const float dist_to_hl = sqrtf((pixel - highc) * (pixel - highc) + (pixelg - lowg) * (pixelg - lowg));
+      const float dist_to_good = fminf(dist_to_ll, dist_to_hh);
+      const float dist_to_bad = fminf(dist_to_lh, dist_to_hl);
+
+      w *= 1.0f / (1.0f + 1000.0f * dist_to_good / dist_to_bad);
+    }
+
     if(pixelg > avgg)
     {
-      // high manifold
-      float weighth = 1.0f;
-      for(size_t c = 0; c < 3; c++)
-      {
-        // if pixel value is close to the low manifold, give it a smaller weight
-        // than if it is close to the high manifold
-        const float pixel = logf(fmaxf(in[k * 4 + c], 1E-6));
-        const float highc = logf(fmaxf(blurred_manifold_higher[k * 4 + c], 1E-6));
-        const float lowc = logf(fmaxf(blurred_manifold_lower[k * 4 + c], 1E-6));
-        const float avgc = logf(fmaxf(blurred_in[k * 4 + guide], 1E-6));
-        float dist = 0.01f;
-        if(lowc < highc)
-        {
-          if(pixel < highc && pixel > avgc) dist = 0.10f;
-          if(pixel > highc) dist = 4.0f + fminf(pixel - highc, 4.0f);
-        }
-        else
-        {
-          if(highc > pixel && pixel > avgc) dist = 0.10f;
-          if(pixel < highc) dist = 4.0f + fminf(highc - pixel, 4.0f);;
-        }
-        weighth *= dist;
-      }
       for(size_t c = 0; c < 3; c++)
       {
         const float pixel = fmaxf(in[k * 4 + c], 1E-6);
-        manifold_higher[k * 4 + c] = pixel * weighth;
+        manifold_higher[k * 4 + c] = pixel * w;
       }
-      manifold_higher[k * 4 + 3] = weighth;
+      manifold_higher[k * 4 + 3] = w;
     }
     else
     {
-      float weightl = 1.0f;
-      for(size_t c = 0; c < 3; c++)
-      {
-        // if pixel value is close to the high manifold, give it a smaller weight
-        // than if it is close to the low manifold
-        const float pixel = logf(fmaxf(in[k * 4 + c], 1E-6));
-        const float highc = logf(fmaxf(blurred_manifold_higher[k * 4 + c], 1E-6));
-        const float lowc = logf(fmaxf(blurred_manifold_lower[k * 4 + c], 1E-6));
-        const float avgc = logf(fmaxf(blurred_in[k * 4 + guide], 1E-6));
-        float dist = 0.01f;
-        if(lowc < highc)
-        {
-          if(lowc < pixel && pixel < avgc) dist = 0.10f;
-          if(pixel < lowc) dist = 4.0f + fminf(lowc - pixel, 4.0f);
-        }
-        else
-        {
-          if(pixel < lowc && pixel > avgc) dist = 0.10f;
-          if(pixel > lowc) dist = 4.0f + fminf(pixel - lowc, 4.0f);
-        }
-        weightl *= dist;
-      }
       for(size_t c = 0; c < 3; c++)
       {
         const float pixel = fmaxf(in[k * 4 + c], 1E-6);
-        manifold_lower[k * 4 + c] = pixel * weightl;
+        manifold_lower[k * 4 + c] = pixel * w;
       }
-      manifold_lower[k * 4 + 3] = weightl;
+      manifold_lower[k * 4 + 3] = w;
     }
   }
 
