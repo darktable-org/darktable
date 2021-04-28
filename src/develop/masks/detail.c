@@ -20,8 +20,8 @@
 
   The detail masks (DM) are used by the dual demosaicer and as a further refinement step for
   shape / parametric masks.
-  They contain threshold weighed sigmoid values of pixel-wise local signal variances so they
-  can be understood as "areas with or without local detail". 
+  They contain threshold weighed values of pixel-wise local signal changes so they can be
+  understood as "areas with or without local detail". 
   
   As the DM using algoritms (like dual demosaicing, sharpening ...) are all pixel peeping we
   want the "original data" from the sensor to calculate it.
@@ -42,24 +42,23 @@
   telling a) we want a DM and b) we want it from either demosaic or from rawprepare.
   If such a flag has not been previously set we will force a pipeline reprocessing.
   
-  gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode);
-  or it's _cl equivalent write a mask holding luminances for every pixel.
-  This luminance mask (LM) is not scaled but only cropped to the roi of the writing module (demosaic
+  gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode, const float wb[3]);
+  or it's _cl equivalent write a preliminary mask holding signal-change values for every pixel.
+  These mask values are calculated as
+  a) get Y0 for every pixel
+  b) apply a scharr operator on it
+
+  This raw detail mask (RM) is not scaled but only cropped to the roi of the writing module (demosaic
   or rawprepare).
   The pipe gets roi copy of the writing module so we can later scale/distort the LM.
 
-  Calculating the LM is done for performance and lower mem pressure reasons, so we don't have to
-  pass full data to the module. Also the LM can be used by other modules. 
+  Calculating the RM is done for performance and lower mem pressure reasons, so we don't have to
+  pass full data to the module. Also the RM can be used by other modules. 
  
-  If a mask uses the details refinement step it takes the shared luminance mask LM and calculates an
+  If a mask uses the details refinement step it takes the raw details mask RM and calculates an
   intermediate mask (IM) which is still not scaled but has the roi of the writing module.
-
-  void dt_masks_calc_detail_mask(float *const restrict src, float *const restrict out, float *const restrict tmp,
-                                   const int width, const int height, const float threshold, const gboolean detail)
  
-  For For every pixel we calculate
-    a - luminance variances from the neighbors in a 5x5 pixel area.
-    b - the details masks value via a sigmoid function with the variance and threshold as parameters.
+  For every pixel we calculate the IM value via a sigmoid function with the threshold and RM as parameters.
 
   At last the IM is slightly blurred to avoid hard transitions, as there still is no scaling we can use
   a constant sigma. As the blur_9x9 is pretty fast both in openmp/cl code paths - much faster than dt
@@ -80,8 +79,9 @@
      mask corrected by detail refinemnt.
   3. Of course credit goes to Ingo @heckflosse from rt team for the original idea. (in the rt world this is knowb
      as details mask)
+  4. Thanks to rawfiner for pointing out how to use Y0 and scharr for better maths.
 
-  hanno@schwalm-bremen.de 21/04/09
+  hanno@schwalm-bremen.de 21/04/29
 */
 
 // We don't want to use the SIMD version as we might access unaligned memory
