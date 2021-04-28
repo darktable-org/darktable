@@ -113,6 +113,7 @@ typedef struct dt_lib_import_t
   GtkButton *tethered_shoot;
 
   GtkWidget *ignore_exif, *rating, *apply_metadata, *recursive;
+  GtkWidget *import_new;
   dt_import_metadata_t metadata;
   GtkBox *devices;
   GtkBox *locked_devices;
@@ -748,7 +749,10 @@ static gboolean _update_files_list(gpointer user_data)
   gtk_tree_view_set_model(d->from.treeview, model);
   g_object_unref(model);
 
-  _do_select_all(self);
+  if(dt_conf_get_bool("ui_last/import_select_new"))
+    _do_select_new(self);
+  else
+    _do_select_all(self);
 
   return FALSE;
 }
@@ -1757,6 +1761,7 @@ void gui_init(dt_lib_module_t *self)
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   guint line = 0;
+  d->import_new = dt_gui_preferences_bool(grid, "ui_last/import_select_new", 0, line++, FALSE);
   d->ignore_exif = dt_gui_preferences_bool(grid, "ui_last/ignore_exif_rating", 0, line++, FALSE);
   d->rating = dt_gui_preferences_int(grid, "ui_last/import_initial_rating", 0, line++);
   d->apply_metadata = dt_gui_preferences_bool(grid, "ui_last/import_apply_metadata", 0, line++, FALSE);
@@ -1807,7 +1812,8 @@ const struct
   {"session/base_directory_pattern",    "base_pattern",       DT_STRING},
   {"session/sub_directory_pattern",     "sub_pattern",        DT_STRING},
   {"session/filename_pattern",          "filename_pattern",   DT_STRING},
-  {"ui_last/import_initial_rating",     "rating",             DT_INT}
+  {"ui_last/import_initial_rating",     "rating",             DT_INT},
+  {"ui_last/import_select_new",         "select_new",         DT_BOOL}
 };
 static const guint pref_n = G_N_ELEMENTS(_pref);
 
@@ -1987,6 +1993,7 @@ static void _apply_preferences(const char *pref, dt_lib_module_t *self)
   g_list_free_full(prefs, g_free);
 
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  dt_gui_preferences_bool_update(d->import_new);
   dt_gui_preferences_bool_update(d->ignore_exif);
   dt_gui_preferences_int_update(d->rating);
   dt_gui_preferences_bool_update(d->apply_metadata);
