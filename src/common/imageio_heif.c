@@ -315,14 +315,17 @@ static void map_icc_profile(
 
       switch (profile_info->transfer_characteristics) {
       /*
-       * SRGB
+       * REC709 (all transfer curves are equivalent)
        */
       case heif_transfer_characteristic_ITU_R_BT_709_5:
+      case heif_transfer_characteristic_ITU_R_BT_601_6:
+      case heif_transfer_characteristic_ITU_R_BT_2020_2_10bit:
+      case heif_transfer_characteristic_ITU_R_BT_2020_2_12bit:
 
         switch (profile_info->matrix_coefficients) {
         case heif_matrix_coefficients_ITU_R_BT_709_5:
         case heif_matrix_coefficients_chromaticity_derived_non_constant_luminance:
-          cp->type = DT_COLORSPACE_SRGB;
+          cp->type = DT_COLORSPACE_REC709;
           break;
         default:
           break;
