@@ -51,8 +51,8 @@ typedef enum dt_iop_cacorrectrgb_mode_t
 typedef struct dt_iop_cacorrectrgb_params_t
 {
   dt_iop_cacorrectrgb_guide_channel_t guide_channel; // $DEFAULT: DT_CACORRECT_RGB_G $DESCRIPTION: "guide"
-  float radius; // $MIN: 1 $MAX: 400 $DEFAULT: 5 $DESCRIPTION: "radius"
-  float strength; // $MIN: 0 $MAX: 5 $DEFAULT: 3 $DESCRIPTION: "strength"
+  float radius; // $MIN: 1 $MAX: 500 $DEFAULT: 5 $DESCRIPTION: "radius"
+  float strength; // $MIN: 0 $MAX: 4 $DEFAULT: 0.5 $DESCRIPTION: "strength"
   dt_iop_cacorrectrgb_mode_t mode; // $DEFAULT: DT_CACORRECT_MODE_STANDARD $DESCRIPTION: "correction mode"
 } dt_iop_cacorrectrgb_params_t;
 
@@ -183,8 +183,6 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
   // as it is the average of the values where the guide is higher than its
   // average, and the lower manifold of the guided channel is equal to 1.
 
-for(int p = 0; p < 1; p++)
-{
   // refine the manifolds
   // improve result especially on very degraded images
 #ifdef _OPENMP
@@ -230,12 +228,9 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_man
       const float pixel = logf(fmaxf(in[k * 4 + c], 1E-6));
       const float highc = logf(fmaxf(blurred_manifold_higher[k * 4 + c], 1E-6));
       const float lowc = logf(fmaxf(blurred_manifold_lower[k * 4 + c], 1E-6));
-      // find "probablity" of it being a chromatic aberration
-      // (lowc, lowg) and (highc, highg) are valid point
+      // find how likely the pixel is part of a chromatic aberration
+      // (lowc, lowg) and (highc, highg) are valid points
       // (lowc, highg) and (highc, lowg) are chromatic aberrations
-
-      //MAYBE: use only distance to hh and lh for high manifold,
-      // and distance to ll and hl for low manifold?
       const float dist_to_ll = sqrtf((pixel - lowc) * (pixel - lowc) + (pixelg - lowg) * (pixelg - lowg));
       const float dist_to_hh = sqrtf((pixel - highc) * (pixel - highc) + (pixelg - highg) * (pixelg - highg));
       const float dist_to_lh = sqrtf((pixel - lowc) * (pixel - lowc) + (pixelg - highg) * (pixelg - highg));
@@ -269,12 +264,11 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_man
   dt_gaussian_blur_4c(g, manifold_higher, blurred_manifold_higher);
   dt_gaussian_blur_4c(g, manifold_lower, blurred_manifold_lower);
   normalize_manifolds(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide);
-}
   dt_gaussian_free(g);
   dt_free_align(manifold_lower);
   dt_free_align(manifold_higher);
 
-
+  // store all manifolds in the same structure to make upscaling faster
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
 dt_omp_firstprivate(manifolds, blurred_manifold_lower, blurred_manifold_higher, width, height, guide) \
@@ -460,7 +454,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_cacorrectrgb_mode_t mode = d->mode;
   // whether to be very conservative in preserving the original image, or to
   // keep algorithm result even if it overshoots
-  const float safety = powf(20.0f, 2.0f - d->strength);
+  const float safety = powf(20.0f, 1.0f - d->strength);
   reduce_chromatic_aberrations(in, width, height, ch, sigma, guide, mode, safety, out);
 }
 
@@ -484,7 +478,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   d->guide_channel = DT_CACORRECT_RGB_G;
   d->radius = 5.0f;
-  d->strength = 3.0f;
+  d->strength = 0.5f;
   d->mode = DT_CACORRECT_MODE_STANDARD;
 
   dt_iop_cacorrectrgb_gui_data_t *g = (dt_iop_cacorrectrgb_gui_data_t *)module->gui_data;
@@ -512,7 +506,10 @@ void gui_init(dt_iop_module_t *self)
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   gtk_widget_set_tooltip_text(g->radius, _("increase for stronger correction\n"));
   g->strength = dt_bauhaus_slider_from_params(self, "strength");
-  gtk_widget_set_tooltip_text(g->strength, _("increase for stronger correction\n"));
+  gtk_widget_set_tooltip_text(g->strength, _("balance between smoothing colors\n"
+                                             "and preserving them.\n"
+                                             "high values can lead to overshooting\n"
+                                             "and edge bleeding."));
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_label_new(_("advanced parameters:")), TRUE, TRUE, 0);
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
