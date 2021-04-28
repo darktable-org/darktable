@@ -61,20 +61,25 @@ typedef struct dt_iop_cacorrectrgb_gui_data_t
   GtkWidget *guide_channel, *radius, *strength, *mode;
 } dt_iop_cacorrectrgb_gui_data_t;
 
-// this returns a translatable name
 const char *name()
 {
-  // make sure you put all your translatable strings into _() !
   return _("chromatic aberrations rgb");
 }
 
-// some additional flags (self explanatory i think):
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("correct chromatic aberrations"),
+                                      _("corrective"),
+                                      _("linear, raw, scene-referred"),
+                                      _("linear, raw"),
+                                      _("linear, raw, scene-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-// where does it appear in the gui?
 int default_group()
 {
   return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
