@@ -176,8 +176,8 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   pipe->output_backbuf_height = 0;
   pipe->output_imgid = 0;
 
-  pipe->luminance_mask_data = NULL;
-  pipe->want_luminance_mask = DT_DEV_LUMINANCE_MASK_NONE;
+  pipe->rawdetail_mask_data = NULL;
+  pipe->want_detail_mask = DT_DEV_LUMINANCE_MASK_NONE;
 
   pipe->processing = 0;
   dt_atomic_set_int(&pipe->shutdown,FALSE);
@@ -244,7 +244,7 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   pipe->output_backbuf_height = 0;
   pipe->output_imgid = 0;
 
-  dt_dev_clear_luminance_mask(pipe);
+  dt_dev_clear_rawdetail_mask(pipe);
 
   if(pipe->forms)
   {
@@ -345,9 +345,9 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
   const gboolean rawprep_img = dt_image_is_rawprepare_supported(img);
   const gboolean raw_img     = dt_image_is_raw(img);
 
-  pipe->want_luminance_mask &= DT_DEV_LUMINANCE_MASK_REQUIRED;
-  if(raw_img)          pipe->want_luminance_mask |= DT_DEV_LUMINANCE_MASK_DEMOSAIC;
-  else if(rawprep_img) pipe->want_luminance_mask |= DT_DEV_LUMINANCE_MASK_RAWPREPARE; 
+  pipe->want_detail_mask &= DT_DEV_LUMINANCE_MASK_REQUIRED;
+  if(raw_img)          pipe->want_detail_mask |= DT_DEV_LUMINANCE_MASK_DEMOSAIC;
+  else if(rawprep_img) pipe->want_detail_mask |= DT_DEV_LUMINANCE_MASK_RAWPREPARE; 
 
   for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
   {
@@ -389,7 +389,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
       {
         const dt_develop_blend_params_t *const bp = (const dt_develop_blend_params_t *)piece->blendop_data;
         if(bp->details != 0.0f)
-          pipe->want_luminance_mask |= DT_DEV_LUMINANCE_MASK_REQUIRED;
+          pipe->want_detail_mask |= DT_DEV_LUMINANCE_MASK_REQUIRED;
       }
     }
   }
@@ -2564,41 +2564,50 @@ float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const dt_iop_modul
   return raster_mask;
 }
 
-void dt_dev_clear_luminance_mask(dt_dev_pixelpipe_t *pipe)
+void dt_dev_clear_rawdetail_mask(dt_dev_pixelpipe_t *pipe)
 {
-  if(pipe->luminance_mask_data) dt_free_align(pipe->luminance_mask_data);
-  pipe->luminance_mask_data = NULL;
+  if(pipe->rawdetail_mask_data) dt_free_align(pipe->rawdetail_mask_data);
+  pipe->rawdetail_mask_data = NULL;
 }
 
-gboolean dt_dev_write_luminance_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode)
+gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if((p->want_luminance_mask & DT_DEV_LUMINANCE_MASK_REQUIRED) == 0) return FALSE;
-  if((p->want_luminance_mask & ~DT_DEV_LUMINANCE_MASK_REQUIRED) != mode) return FALSE;
+  if((p->want_detail_mask & DT_DEV_LUMINANCE_MASK_REQUIRED) == 0) return FALSE;
+  if((p->want_detail_mask & ~DT_DEV_LUMINANCE_MASK_REQUIRED) != mode) return FALSE;
 
-  dt_dev_clear_luminance_mask(p);
+  dt_dev_clear_rawdetail_mask(p);
 
   const int width = roi_in->width;
   const int height = roi_in->height;
   float *mask = dt_alloc_align_float((size_t)width * height);
-  if(mask == NULL) return TRUE;
+  float *tmp = dt_alloc_align_float((size_t)width * height);
+  if((mask == NULL) || (tmp == NULL)) goto error;
 
-  p->luminance_mask_data = mask;
-  memcpy(&p->luminance_mask_roi, roi_in, sizeof(dt_iop_roi_t));
+  p->rawdetail_mask_data = mask;
+  memcpy(&p->rawdetail_mask_roi, roi_in, sizeof(dt_iop_roi_t));
 
-  dt_masks_calc_luminance_mask(rgb, mask, width, height);
+  const float wb[3] = {piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
+
+  dt_masks_calc_rawdetail_mask(rgb, mask, tmp, width, height, wb);
+  dt_free_align(tmp);
   return FALSE;
+
+  error:
+  dt_free_align(mask);
+  dt_free_align(tmp);
+  return TRUE;
 }
 
 #ifdef HAVE_OPENCL
-gboolean dt_dev_write_luminance_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in, const dt_iop_roi_t *const roi_in, const int mode)
+gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in, const dt_iop_roi_t *const roi_in, const int mode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;  
 
-  if((p->want_luminance_mask & DT_DEV_LUMINANCE_MASK_REQUIRED) == 0) return FALSE;
-  if((p->want_luminance_mask & ~DT_DEV_LUMINANCE_MASK_REQUIRED) != mode) return FALSE;
+  if((p->want_detail_mask & DT_DEV_LUMINANCE_MASK_REQUIRED) == 0) return FALSE;
+  if((p->want_detail_mask & ~DT_DEV_LUMINANCE_MASK_REQUIRED) != mode) return FALSE;
 
-  dt_dev_clear_luminance_mask(p);
+  dt_dev_clear_rawdetail_mask(p);
 
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -2628,14 +2637,14 @@ gboolean dt_dev_write_luminance_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
     if(err != CL_SUCCESS) goto error;
   }
 
-  p->luminance_mask_data = mask;
-  memcpy(&p->luminance_mask_roi, roi_in, sizeof(dt_iop_roi_t));
+  p->rawdetail_mask_data = mask;
+  memcpy(&p->rawdetail_mask_roi, roi_in, sizeof(dt_iop_roi_t));
 
   dt_opencl_release_mem_object(out);
   return FALSE;
 
   error:
-  dt_dev_clear_luminance_mask(p);
+  dt_dev_clear_rawdetail_mask(p);
   dt_opencl_release_mem_object(out);
   dt_free_align(mask);
   return TRUE;  
@@ -2644,11 +2653,11 @@ gboolean dt_dev_write_luminance_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
 
 // this expects a mask prepared by the demosaicer and distorts the mask through all pipeline modules
 // until target
-float *dt_dev_distort_luminance_mask(const dt_dev_pixelpipe_t *pipe, float *src, const dt_iop_module_t *target_module)
+float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, const dt_iop_module_t *target_module)
 {
-  if(!pipe->luminance_mask_data) return NULL;
+  if(!pipe->rawdetail_mask_data) return NULL;
   gboolean valid = FALSE;
-  const int check = pipe->want_luminance_mask & ~DT_DEV_LUMINANCE_MASK_REQUIRED;
+  const int check = pipe->want_detail_mask & ~DT_DEV_LUMINANCE_MASK_REQUIRED;
 
   GList *source_iter;
   for(source_iter = pipe->nodes; source_iter; source_iter = g_list_next(source_iter))
