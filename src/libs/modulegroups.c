@@ -691,12 +691,12 @@ static gchar *_action_id(dt_action_t *action)
   if(action->type != DT_ACTION_TYPE_IOP && action->owner)
   {
     gchar *owner_id = _action_id(action->owner);
-    gchar *combined_id = g_strdup_printf("%s/%s", owner_id, action->label);
+    gchar *combined_id = g_strdup_printf("%s/%s", owner_id, action->id);
     g_free(owner_id);
     return combined_id;
   }
   else
-    return g_strdup(action->label);
+    return g_strdup(action->id);
 }
 
 static void _basics_show(dt_lib_module_t *self)
@@ -2409,12 +2409,12 @@ static gchar *_action_label(dt_action_t *action)
   if(action->type != DT_ACTION_TYPE_IOP && action->owner)
   {
     gchar *owner_id = _action_label(action->owner);
-    gchar *combined_id = g_strdup_printf("%s - %s", owner_id, action->label_translated);
+    gchar *combined_id = g_strdup_printf("%s - %s", owner_id, action->label);
     g_free(owner_id);
     return combined_id;
   }
   else
-    return g_strdup(action->label_translated);
+    return g_strdup(action->label);
 }
 
 static GtkWidget *_build_menu_from_actions(dt_action_t *actions, dt_lib_module_t *self, GtkWidget *on_off,
@@ -2443,8 +2443,8 @@ static GtkWidget *_build_menu_from_actions(dt_action_t *actions, dt_lib_module_t
       // FIXME don't check here if on/off is enabled, because it depends on image (reload_defaults)
       // respond later to image changed signal
       on_off = item = gtk_menu_item_new_with_label(_("on-off"));
-      action_id = g_strdup(actions->owner->label);
-      action_label = g_strdup_printf("%s - %s", actions->owner->label_translated, _("on-off"));
+      action_id = g_strdup(actions->owner->id);
+      action_label = g_strdup_printf("%s - %s", actions->owner->label, _("on-off"));
 
       // in next loop deal with first actual widget or section
     }
@@ -2455,7 +2455,7 @@ static GtkWidget *_build_menu_from_actions(dt_action_t *actions, dt_lib_module_t
 
       if(new_sub || (actions->type >= DT_ACTION_TYPE_WIDGET && actions->target && DT_IS_BAUHAUS_WIDGET(actions->target)))
       {
-        item = gtk_menu_item_new_with_label(actions->label_translated);
+        item = gtk_menu_item_new_with_label(actions->label);
         action_id = _action_id(actions);
         action_label = _action_label(actions);
       }

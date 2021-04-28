@@ -45,8 +45,8 @@ typedef enum dt_action_type_t
 typedef struct dt_action_t
 {
   dt_action_type_t type;
+  const char *id;
   const char *label;
-  const char *label_translated;
 
   gpointer target; // widget, section, command
   struct dt_action_t *owner; // iop, lib, view, global
