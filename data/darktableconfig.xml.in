@@ -710,7 +710,7 @@
     <name>ui_last/import_select_new</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>select new pictures</shortdescription>
+    <shortdescription>select only new pictures</shortdescription>
     <longdescription>in in-place import mode, select by default only new pictures if activated.</longdescription>
   </dtconfig>
   <dtconfig ui="yes">
