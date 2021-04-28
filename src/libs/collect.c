@@ -2016,6 +2016,72 @@ static void update_view(dt_lib_collect_rule_t *dr)
     list_view(dr);
 }
 
+static void _set_tooltip(dt_lib_collect_rule_t *d)
+{
+  const int property = _combo_get_active_collection(d->combo);
+
+  if(property == DT_COLLECTION_PROP_APERTURE
+     || property == DT_COLLECTION_PROP_FOCAL_LENGTH
+     || property == DT_COLLECTION_PROP_ISO
+     || property == DT_COLLECTION_PROP_ASPECT_RATIO
+     || property == DT_COLLECTION_PROP_EXPOSURE)
+  {
+    gtk_widget_set_tooltip_text(d->text, _("use <, <=, >, >=, <>, =, [;] as operators"));
+  }
+  else if(property == DT_COLLECTION_PROP_DAY || is_time_property(property))
+  {
+    gtk_widget_set_tooltip_text(d->text,
+                                _("use <, <=, >, >=, <>, =, [;] as operators\n"
+                                  "type dates in the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"));
+  }
+  else if(property == DT_COLLECTION_PROP_FILENAME)
+  {
+    gtk_widget_set_tooltip_text(d->text,
+    /* xgettext:no-c-format */
+                                _("use `%' as wildcard and `,' to separate values"));
+  }
+  else if(property == DT_COLLECTION_PROP_TAG)
+  {
+    gtk_widget_set_tooltip_text(d->text,
+    /* xgettext:no-c-format */
+                                _("use `%' as wildcard\n"
+    /* xgettext:no-c-format */
+                                  "use `|%' to include all sub-hierarchies (ctrl-click)\n"
+    /* xgettext:no-c-format */
+                                  "use `*' to include hierarchy and sub-hierarchies (shift-click)"));
+  }
+  else if(property == DT_COLLECTION_PROP_GEOTAGGING)
+  {
+    gtk_widget_set_tooltip_text(d->text,
+    /* xgettext:no-c-format */
+                                _("use `%' as wildcard\n"
+    /* xgettext:no-c-format */
+                                  "use `|%' to include all sub-locations (ctrl-click)\n"
+    /* xgettext:no-c-format */
+                                  "use `*' to include locations and sub-locations (shift-click)"));
+  }
+  else if(property == DT_COLLECTION_PROP_FOLDERS)
+  {
+    gtk_widget_set_tooltip_text(d->text,
+    /* xgettext:no-c-format */
+                                _("use `%' as wildcard\n"
+    /* xgettext:no-c-format */
+                                  "ctrl+click to include only sub-folders\n"
+    /* xgettext:no-c-format */
+                                  "shift+click to include current + sub-folders\n"
+    /* xgettext:no-c-format */
+                                  "double-click to include only the current folder"));
+  }
+  else
+  {
+    /* xgettext:no-c-format */
+    gtk_widget_set_tooltip_text(d->text, _("use `%' as wildcard"));
+  }
+
+  //set the combobox tooltip as well
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->combo), gtk_widget_get_tooltip_text(d->text));
+}
+
 
 static void _lib_collect_gui_update(dt_lib_module_t *self)
 {
@@ -2078,6 +2144,8 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
       if(mode == DT_LIB_COLLECT_MODE_AND_NOT) button->icon = dtgtk_cairo_paint_andnot;
       gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule"));
     }
+
+    _set_tooltip(d->rule + i);
   }
 
   // update list of proposals
@@ -2118,51 +2186,7 @@ static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
     d->typing = FALSE;
   }
 
-  if(property == DT_COLLECTION_PROP_APERTURE
-     || property == DT_COLLECTION_PROP_FOCAL_LENGTH
-     || property == DT_COLLECTION_PROP_ISO
-     || property == DT_COLLECTION_PROP_ASPECT_RATIO
-     || property == DT_COLLECTION_PROP_EXPOSURE)
-  {
-    gtk_widget_set_tooltip_text(d->text, _("use <, <=, >, >=, <>, =, [;] as operators"));
-  }
-  else if(property == DT_COLLECTION_PROP_DAY || is_time_property(property))
-  {
-    gtk_widget_set_tooltip_text(d->text,
-                                _("use <, <=, >, >=, <>, =, [;] as operators\n"
-                                  "type dates in the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"));
-  }
-  else if(property == DT_COLLECTION_PROP_FILENAME)
-  {
-    gtk_widget_set_tooltip_text(d->text,
-    /* xgettext:no-c-format */
-                                _("use `%' as wildcard and `,' to separate values"));
-  }
-  else if(property == DT_COLLECTION_PROP_TAG)
-  {
-    gtk_widget_set_tooltip_text(d->text,
-    /* xgettext:no-c-format */
-                                _("use `%' as wildcard\n"
-    /* xgettext:no-c-format */
-                                  "use `|%' to include all sub-hierarchies (ctrl-click)\n"
-    /* xgettext:no-c-format */
-                                  "use `*' to include hierarchy and sub-hierarchies (shift-click)"));
-  }
-  else if(property == DT_COLLECTION_PROP_GEOTAGGING)
-  {
-    gtk_widget_set_tooltip_text(d->text,
-    /* xgettext:no-c-format */
-                                _("use `%' as wildcard\n"
-    /* xgettext:no-c-format */
-                                  "use `|%' to include all sub-locations (ctrl-click)\n"
-    /* xgettext:no-c-format */
-                                  "use `*' to include locations and sub-locations (shift-click)"));
-  }
-  else
-  {
-    /* xgettext:no-c-format */
-    gtk_widget_set_tooltip_text(d->text, _("use `%' as wildcard"));
-  }
+  _set_tooltip(d);
 
   gboolean order_request = FALSE;
   uint32_t order = 0;
@@ -2843,7 +2867,6 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(w), "focus-in-event", G_CALLBACK(entry_focus_in_callback), d->rule + i);
 
     /* xgettext:no-c-format */
-    gtk_widget_set_tooltip_text(w, _("type your query, use `%' as wildcard"));
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(entry_changed), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
