@@ -774,6 +774,20 @@ static void _recursive_toggled(GtkWidget *widget, dt_lib_module_t* self)
   _show_all_thumbs(self);
 }
 
+static void _do_select_all_clicked(GtkWidget *widget, dt_lib_module_t* self)
+{
+  _do_select_all(self);
+}
+static void _do_select_none_clicked(GtkWidget *widget, dt_lib_module_t* self)
+{
+  _do_select_none(self);
+}
+
+static void _do_select_new_clicked(GtkWidget *widget, dt_lib_module_t* self)
+{
+  _do_select_new(self);
+}
+
 static void _expander_update(GtkWidget *toggle, GtkWidget *expander)
 {
   const char *key = gtk_widget_get_name(expander);
@@ -1398,21 +1412,11 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-  if(d->import_case == DT_IMPORT_INPLACE)
-    d->from.dialog = gtk_dialog_new_with_buttons
-      ( _import_text[d->import_case], NULL, GTK_DIALOG_MODAL,
-        _("select all"), GTK_RESPONSE_YES,
-        _("select none"), GTK_RESPONSE_NONE,
-        _("select new"), GTK_RESPONSE_OK,
-        _("cancel"), GTK_RESPONSE_CANCEL,
-        _import_text[d->import_case], GTK_RESPONSE_ACCEPT, NULL);
-  else
-    d->from.dialog = gtk_dialog_new_with_buttons
-      ( _import_text[d->import_case], NULL, GTK_DIALOG_MODAL,
-        _("select all"), GTK_RESPONSE_YES,
-        _("select none"), GTK_RESPONSE_NONE,
-        _("cancel"), GTK_RESPONSE_CANCEL,
-        _import_text[d->import_case], GTK_RESPONSE_ACCEPT, NULL);
+  d->from.dialog = gtk_dialog_new_with_buttons
+    ( _import_text[d->import_case], NULL, GTK_DIALOG_MODAL,
+      _("cancel"), GTK_RESPONSE_CANCEL,
+      _import_text[d->import_case], GTK_RESPONSE_ACCEPT,
+      NULL);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(d->from.dialog);
@@ -1432,6 +1436,21 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   children = gtk_container_get_children(GTK_CONTAINER(box));
   box = GTK_WIDGET(children->data); // action-box
   g_list_free(children);
+
+  GtkWidget *select_all = gtk_button_new_with_label(_("select all"));
+  gtk_box_pack_start(GTK_BOX(box), select_all, FALSE, FALSE, 0);
+  g_signal_connect(select_all, "clicked", G_CALLBACK(_do_select_all_clicked), self);
+
+  GtkWidget *select_none = gtk_button_new_with_label(_("select none"));
+  gtk_box_pack_start(GTK_BOX(box), select_none, FALSE, FALSE, 0);
+  g_signal_connect(select_none, "clicked", G_CALLBACK(_do_select_none_clicked), self);
+
+  if(d->import_case == DT_IMPORT_INPLACE)
+  {
+    GtkWidget *select_new = gtk_button_new_with_label(_("select new"));
+    gtk_box_pack_start(GTK_BOX(box), select_new, FALSE, FALSE, 0);
+    g_signal_connect(select_new, "clicked", G_CALLBACK(_do_select_new_clicked), self);
+  }
 
   d->from.img_nb = gtk_label_new("");
   gtk_widget_set_halign(d->from.img_nb, GTK_ALIGN_END);
@@ -1588,35 +1607,9 @@ static void _do_select_new(dt_lib_module_t* self)
 static void _import_from_dialog_run(dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  gint res = 0;
 
-  while((res = gtk_dialog_run(GTK_DIALOG(d->from.dialog))) != GTK_RESPONSE_CANCEL)
+  while(gtk_dialog_run(GTK_DIALOG(d->from.dialog)) == GTK_RESPONSE_ACCEPT)
   {
-    if(res == GTK_RESPONSE_YES)
-    {
-      _do_select_all(self);
-      continue;
-    }
-    else if(res == GTK_RESPONSE_NONE)
-    {
-      _do_select_none(self);
-      continue;
-    }
-    else if(res == GTK_RESPONSE_OK)
-    {
-      _do_select_new(self);
-      continue;
-    }
-    else if(res == GTK_RESPONSE_DELETE_EVENT)
-    {
-      // closing window or hitting ESC
-      break;
-    }
-    else if(res != GTK_RESPONSE_ACCEPT)
-    {
-      continue;
-    }
-
     // reset filter so that view isn't empty
     dt_view_filter_reset(darktable.view_manager, TRUE);
     GList *imgs = NULL;
@@ -1822,8 +1815,7 @@ const struct
   {"session/base_directory_pattern",    "base_pattern",       DT_STRING},
   {"session/sub_directory_pattern",     "sub_pattern",        DT_STRING},
   {"session/filename_pattern",          "filename_pattern",   DT_STRING},
-  {"ui_last/import_initial_rating",     "rating",             DT_INT},
-  {"ui_last/import_select_new",         "select_new",         DT_BOOL}
+  {"ui_last/import_initial_rating",     "rating",             DT_INT}
 };
 static const guint pref_n = G_N_ELEMENTS(_pref);
 
