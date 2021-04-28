@@ -277,30 +277,19 @@ __kernel void rcd_step_5_2(global float *VH_dir, global float *rgb0, global floa
   }
 }
 
-__kernel void calc_luminance_mask(global float *luminance, __read_only image2d_t in, const int w, const int height)
+__kernel void calc_Y0_mask(global float *mask, __read_only image2d_t in, const int w, const int height, const float red, const float green, const float blue)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
   if((col >= w) || (row >= height)) return;
   const int idx = mad24(row, w, col);
 
-  float4 val = read_imagef(in, sampleri, (int2)(col, row));
-  luminance[idx] = lab_f(0.333333333f * (val.x + val.y + val.z));
+  float4 pt = read_imagef(in, sampleri, (int2)(col, row));
+  const float val = 0.333333333f * (fmax(pt.x, 0.0f) / red  + fmax(pt.y, 0.0f) / green  + fmax(pt.z, 0.0f) / blue);
+  mask[idx] = native_sqrt(val);
 }
 
-__kernel void out_luminance_mask(__write_only image2d_t out, __read_only image2d_t in, const int w, const int height)
-{
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if((col >= w) || (row >= height)) return;
-  const int idx = mad24(row, w, col);
-
-  float4 val = read_imagef(in, sampleri, (int2)(col, row));
-  const float lum = lab_f(0.333333333f * (val.x + val.y + val.z));
-  write_imagef(out, (int2)(col, row), lum);  
-}
-
-__kernel void calc_detail_blend(global float *luminance, global float *mask, const int w, const int height, const float threshold, const int detail)
+__kernel void calc_scharr_mask(global float *in, global float *out, const int w, const int height)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
@@ -308,18 +297,64 @@ __kernel void calc_detail_blend(global float *luminance, global float *mask, con
 
   const int oidx = mad24(row, w, col);
 
-  int incol = col < 2 ? 2 : col;
-  incol = col > w - 3 ? w - 3 : incol;
-  int inrow = row < 2 ? 2 : row;
-  inrow = row > height - 3 ? height - 3 : inrow;
+  int incol = col < 1 ? 1 : col;
+  incol = col > w - 2 ? w - 2 : incol;
+  int inrow = row < 1 ? 1 : row;
+  inrow = row > height - 2 ? height - 2 : inrow;
 
   const int idx = mad24(inrow, w, incol); 
-  const int w2 = w * 2;
   const float scale = 1.0f / 16.0f;
-  const float contrast = scale * native_sqrt(sqrf(luminance[idx+1] - luminance[idx-1]) + sqrf(luminance[idx +  w] - luminance[idx -  w]) +
-                                             sqrf(luminance[idx+2] - luminance[idx-2]) + sqrf(luminance[idx + w2] - luminance[idx - w2]));
-  const float blend = calcBlendFactor(contrast, threshold);
-  mask[oidx] = detail ? blend : 1.0f - blend;
+
+  // scharr operator
+  const float gx = 47.0f * (in[idx-w-1] - in[idx-w+1])
+                + 162.0f * (in[idx-1]   - in[idx+1])
+                 + 47.0f * (in[idx+w-1] - in[idx+w+1]);
+  const float gy = 47.0f * (in[idx-w-1] - in[idx+w-1])
+                + 162.0f * (in[idx-w]   - in[idx+w])
+                 + 47.0f * (in[idx-w+1] - in[idx+w+1]);
+  const float gradient_magnitude = native_sqrt(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
+  out[oidx] = scale * gradient_magnitude;
+}
+
+
+__kernel void write_scharr_mask(global float *in, __write_only image2d_t out, const int w, const int height)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= w) || (row >= height)) return;
+
+  const int oidx = mad24(row, w, col);
+
+  int incol = col < 1 ? 1 : col;
+  incol = col > w - 2 ? w - 2 : incol;
+  int inrow = row < 1 ? 1 : row;
+  inrow = row > height - 2 ? height - 2 : inrow;
+
+  const int idx = mad24(inrow, w, incol); 
+  const float scale = 1.0f / 16.0f;
+
+  // scharr operator
+  const float gx = 47.0f * (in[idx-w-1] - in[idx-w+1])
+                + 162.0f * (in[idx-1]   - in[idx+1])
+                 + 47.0f * (in[idx+w-1] - in[idx+w+1]);
+  const float gy = 47.0f * (in[idx-w-1] - in[idx+w-1])
+                + 162.0f * (in[idx-w]   - in[idx+w])
+                 + 47.0f * (in[idx-w+1] - in[idx+w+1]);
+  const float gradient_magnitude = native_sqrt(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
+  write_imagef(out, (int2)(col, row), scale * gradient_magnitude);
+}
+
+
+__kernel void calc_detail_blend(global float *in, global float *out, const int w, const int height, const float threshold, const int detail)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col >= w) || (row >= height)) return;
+
+  const int idx = mad24(row, w, col); 
+
+  const float blend = calcBlendFactor(in[idx], threshold);
+  out[idx] = detail ? blend : 1.0f - blend;
 }
 
 __kernel void readin_mask(global float *mask, __read_only image2d_t in, const int w, const int height)
