@@ -711,7 +711,7 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>select only new pictures</shortdescription>
-    <longdescription>in in-place import mode, select by default only new pictures if activated.</longdescription>
+    <longdescription>only select images that have not already been imported</longdescription>
   </dtconfig>
   <dtconfig ui="yes">
     <name>ui_last/import_ignore_jpegs</name>
