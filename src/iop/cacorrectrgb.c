@@ -104,14 +104,26 @@ dt_omp_firstprivate(blurred_in, blurred_manifold_lower, blurred_manifold_higher,
 #endif
   for(size_t k = 0; k < width * height; k++)
   {
-    // normalize
     const float weighth = fmaxf(blurred_manifold_higher[k * 4 + 3], 1E-6);
     const float weightl = fmaxf(blurred_manifold_lower[k * 4 + 3], 1E-6);
-    for(size_t c = 0; c < 3; c++)
+
+    // normalize guide
+    float highg = blurred_manifold_higher[k * 4 + guide] / weighth;
+    float lowg = blurred_manifold_lower[k * 4 + guide] / weightl;
+
+    blurred_manifold_higher[k * 4 + guide] = highg;
+    blurred_manifold_lower[k * 4 + guide] = lowg;
+
+    // normalize and unlog other channels
+    for(size_t kc = 0; kc <= 1; kc++)
     {
-      blurred_manifold_higher[k * 4 + c] /= weighth;
-      blurred_manifold_lower[k * 4 + c] /= weightl;
+      size_t c = (kc + guide + 1) % 3;
+      float highc = blurred_manifold_higher[k * 4 + c] / weighth;
+      float lowc = blurred_manifold_lower[k * 4 + c] / weightl;
+      blurred_manifold_higher[k * 4 + c] = exp2f(highc) * highg;
+      blurred_manifold_lower[k * 4 + c] = exp2f(lowc) * lowg;
     }
+
     // replace by average if weight is too small
     if(weighth < 0.05f)
     {
@@ -142,7 +154,7 @@ static void get_manifolds(const float* const restrict in, const size_t width, co
   float *const restrict blurred_manifold_lower = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
 
   float max[4] = {INFINITY, INFINITY, INFINITY, INFINITY};
-  float min[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+  float min[4] = {-INFINITY, -INFINITY, -INFINITY, 0.0f};
   dt_gaussian_t *g = dt_gaussian_init(width, height, 4, max, min, sigma, 0);
   if(!g) return;
   dt_gaussian_blur_4c(g, in, blurred_in);
@@ -158,16 +170,20 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
 #endif
   for(size_t k = 0; k < width * height; k++)
   {
-    const float pixelg = in[k * 4 + guide];
+    const float pixelg = fmaxf(in[k * 4 + guide], 1E-6);
     const float avg = blurred_in[k * 4 + guide];
     const float weighth = (pixelg >= avg);
     const float weightl = (pixelg <= avg);
-    for(size_t c = 0; c < 3; c++)
+    for(size_t kc = 0; kc <= 1; kc++)
     {
+      size_t c = (kc + guide + 1) % 3;
       const float pixel = fmaxf(in[k * 4 + c], 1E-6);
-      manifold_higher[k * 4 + c] = pixel * weighth;
-      manifold_lower[k * 4 + c] = pixel * weightl;
+      const float log_diff = log2f(pixel / pixelg);
+      manifold_higher[k * 4 + c] = log_diff * weighth;
+      manifold_lower[k * 4 + c] = log_diff * weightl;
     }
+    manifold_higher[k * 4 + guide] = pixelg * weighth;
+    manifold_lower[k * 4 + guide] = pixelg * weightl;
     manifold_higher[k * 4 + 3] = weighth;
     manifold_lower[k * 4 + 3] = weightl;
   }
@@ -191,6 +207,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
   // as it is the average of the values where the guide is higher than its
   // average, and the lower manifold of the guided channel is equal to 1.
 
+#if 0
   // refine the manifolds
   // improve result especially on very degraded images
 #ifdef _OPENMP
@@ -222,10 +239,10 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_man
     //
     // we can refine the manifolds by computing weights that reduce the influence
     // of pixels that are probably suffering chromatic aberrations
-    const float pixelg = logf(fmaxf(in[k * 4 + guide], 1E-6));
-    const float highg = logf(fmaxf(blurred_manifold_higher[k * 4 + guide], 1E-6));
-    const float lowg = logf(fmaxf(blurred_manifold_lower[k * 4 + guide], 1E-6));
-    const float avgg = logf(fmaxf(blurred_in[k * 4 + guide], 1E-6));
+    const float pixelg = log2f(fmaxf(in[k * 4 + guide], 1E-6));
+    const float highg = log2f(fmaxf(blurred_manifold_higher[k * 4 + guide], 1E-6));
+    const float lowg = log2f(fmaxf(blurred_manifold_lower[k * 4 + guide], 1E-6));
+    const float avgg = log2f(fmaxf(blurred_in[k * 4 + guide], 1E-6));
 
     float w = 1.0f;
     for(size_t kc = 0; kc <= 1; kc++)
@@ -233,9 +250,9 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_man
       size_t c = (guide + kc + 1) % 3;
       // if pixel value is close to the low manifold, give it a smaller weight
       // than if it is close to the high manifold
-      const float pixel = logf(fmaxf(in[k * 4 + c], 1E-6));
-      const float highc = logf(fmaxf(blurred_manifold_higher[k * 4 + c], 1E-6));
-      const float lowc = logf(fmaxf(blurred_manifold_lower[k * 4 + c], 1E-6));
+      const float pixel = log2f(fmaxf(in[k * 4 + c], 1E-6));
+      const float highc = log2f(fmaxf(blurred_manifold_higher[k * 4 + c], 1E-6));
+      const float lowc = log2f(fmaxf(blurred_manifold_lower[k * 4 + c], 1E-6));
       // find how likely the pixel is part of a chromatic aberration
       // (lowc, lowg) and (highc, highg) are valid points
       // (lowc, highg) and (highc, lowg) are chromatic aberrations
@@ -246,25 +263,31 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_man
       const float dist_to_good = fminf(dist_to_ll, dist_to_hh);
       const float dist_to_bad = fminf(dist_to_lh, dist_to_hl);
 
-      w *= 1.0f / (1.0f + 1000.0f * dist_to_good / dist_to_bad);
+      w *= 1.0f / (1.0f + 100.0f * dist_to_good / dist_to_bad);
     }
 
     if(pixelg > avgg)
     {
-      for(size_t c = 0; c < 3; c++)
+      for(size_t kc = 0; kc <= 1; kc++)
       {
+        size_t c = (guide + kc + 1) % 3;
         const float pixel = fmaxf(in[k * 4 + c], 1E-6);
-        manifold_higher[k * 4 + c] = pixel * w;
+        const float log_diff = log2f(pixel) - pixelg;
+        manifold_higher[k * 4 + c] = log_diff * w;
       }
+      manifold_higher[k * 4 + guide] = in[k * 4 + guide] * w;
       manifold_higher[k * 4 + 3] = w;
     }
     else
     {
-      for(size_t c = 0; c < 3; c++)
+      for(size_t kc = 0; kc <= 1; kc++)
       {
+        size_t c = (guide + kc + 1) % 3;
         const float pixel = fmaxf(in[k * 4 + c], 1E-6);
-        manifold_lower[k * 4 + c] = pixel * w;
+        const float log_diff = log2f(pixel) - pixelg;
+        manifold_lower[k * 4 + c] = log_diff * w;
       }
+      manifold_lower[k * 4 + guide] = in[k * 4 + guide] * w;
       manifold_lower[k * 4 + 3] = w;
     }
   }
@@ -272,6 +295,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_man
   dt_gaussian_blur_4c(g, manifold_higher, blurred_manifold_higher);
   dt_gaussian_blur_4c(g, manifold_lower, blurred_manifold_lower);
   normalize_manifolds(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide);
+#endif
   dt_gaussian_free(g);
   dt_free_align(manifold_lower);
   dt_free_align(manifold_higher);
@@ -313,11 +337,21 @@ dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma, mode) \
   {
     const float high_guide = fmaxf(manifolds[k * 6 + guide], 1E-6);
     const float low_guide = fmaxf(manifolds[k * 6 + 3 + guide], 1E-6);
-    const float log_high = logf(high_guide);
-    const float log_low = logf(low_guide);
+    const float log_high = log2f(high_guide);
+    const float log_low = log2f(low_guide);
     const float pixelg = fmaxf(in[k * 4 + guide], 0.0f);
-    const float log_pixg = logf(fminf(fmaxf(pixelg, low_guide), high_guide));
+    const float log_pixg = log2f(fminf(fmaxf(pixelg, low_guide), high_guide));
     float dist = fabsf(log_high - log_pixg) / fmaxf(fabsf(log_high - log_low), 1E-6);
+
+    // if the manifolds are very close, we are likely to introduce discontinuities
+    // and to have a meaningless "dist".
+    // thus in these cases make dist closer to 0.5.
+    // we set a threshold of 0.25f EV min.
+    const float dist_low_high = (log_high - log_low) * 4.0f;
+    if(dist_low_high < 1.0f)
+    {
+      dist = dist * dist_low_high + 0.5f * (1.0f - dist_low_high);
+    }
 
     for(size_t kc = 0; kc <= 1; kc++)
     {
@@ -369,8 +403,8 @@ dt_omp_firstprivate(in, out, in_out, width, height, guide, ch) \
     for(size_t kc = 0; kc <= 1; kc++)
     {
       size_t c = (guide + kc + 1) % 3;
-      in_out[k * ch + kc * 2 + 0] = log2f(fmaxf(in[k * 4 + c], 0.000016f)) + 16.0f;
-      in_out[k * ch + kc * 2 + 1] = log2f(fmaxf(out[k * 4 + c], 0.000016f)) + 16.0f;
+      in_out[k * ch + kc * 2 + 0] = /*log2f*/(fmaxf(in[k * 4 + c], 0.000016f))/* + 16.0f*/;
+      in_out[k * ch + kc * 2 + 1] = /*log2f*/(fmaxf(out[k * 4 + c], 0.000016f))/* + 16.0f*/;
     }
   }
 
@@ -393,8 +427,8 @@ dt_omp_firstprivate(in, out, blurred_in_out, width, height, guide, safety, ch) \
     float w = 1.0f;
     for(size_t kc = 0; kc <= 1; kc++)
     {
-      const float avg_in = blurred_in_out[k * ch + kc * 2 + 0];
-      const float avg_out = blurred_in_out[k * ch + kc * 2 + 1];
+      const float avg_in = log2(blurred_in_out[k * ch + kc * 2 + 0]);
+      const float avg_out = log2(blurred_in_out[k * ch + kc * 2 + 1]);
       w *= expf(-fmaxf(fabsf(avg_out - avg_in), 0.01f) * safety);
     }
     for(size_t kc = 0; kc <= 1; kc++)
