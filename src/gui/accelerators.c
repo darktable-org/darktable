@@ -1867,7 +1867,7 @@ void dt_shortcuts_load(gboolean clear)
         {
           if(elements)
           {
-            int element = 0;
+            int element = -1;
             while(elements[++element].name)
               if(!strcmp(token, elements[element].name)) break;
             if(elements[element].name)
