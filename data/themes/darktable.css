@@ -638,7 +638,7 @@ overshoot.right
 #lib-plugin-ui .section-expander,
 #iop-plugin-ui .section-expander
 {
-  margin: 0.35em 0;
+  margin: 0.6em 0 0.35em 0;
 }
 
 #iop-plugin-ui #section_label.section_label_top,
