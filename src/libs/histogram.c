@@ -218,8 +218,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   d->waveform_width = wf_width;
   const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, wf_width);
   const size_t wf_height = d->waveform_height;
-
-  dt_iop_image_fill(wf_linear, 0.0f, wf_width, wf_height, 4);
+  dt_iop_image_fill(wf_linear, 0.0f, wf_width, wf_height, 3);
 
   // Every bin_width x height portion of the image is being described
   // in a 1 pixel x waveform_height portion of the histogram.
@@ -237,7 +236,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   // FIXME: Try histogram-style worker threads to process by row and consolidate results. Have the workers do colorspace conversion per-pixel. As there will be no intermediate buffer, even 20 per-thread output buffers will still use less memory.
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, wf_linear, roi, wf_width, bin_width, height_f, height_i, scale) \
+  dt_omp_firstprivate(in, wf_linear, roi, wf_width, wf_height, bin_width, height_f, height_i, scale) \
   schedule(static)
 #endif
   for(size_t out_x = 0; out_x < wf_width; out_x++)
@@ -246,12 +245,11 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
     const size_t x_high = MIN(x_from + bin_width, roi->width - roi->crop_width);
     for(size_t in_x = x_from; in_x < x_high; in_x++)
       for(size_t in_y = roi->crop_y; in_y < roi->height - roi->crop_height; in_y++)
-        // FIXME: will for_each_channel speed this up?
         for(size_t k = 0; k < 3; k++)
         {
           const float v = 1.0f - (8.0f / 9.0f) * in[4U * (roi->width * in_y + in_x) + k];
           const size_t out_y = isnan(v) ? 0 : MIN((size_t)fmaxf(v*height_f, 0.0f), height_i);
-          wf_linear[4U * (wf_width * out_y + out_x) + k] += scale;
+          wf_linear[(k * wf_height + out_y) * wf_width + out_x] += scale;
         }
   }
 
@@ -263,12 +261,11 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   const float lutmax = profile->lutsize - 1;
 
   // loops are too small (3 * 360 * 175 max iterations) to need threads
-  // FIXME: does ch in inner loop optimize better? or building wf_linear with ch as outer array dimension?
   for(size_t ch = 0; ch < 3; ch++)
     for(size_t y = 0; y < wf_height; y++)
       for(size_t x = 0; x < wf_width; x++)
       {
-        const float linear = MIN(1.f, wf_linear[4U * (y * wf_width + x) + ch]);
+        const float linear = MIN(1.f, wf_linear[(ch * wf_height + y) * wf_width + x]);
         const float display = lut[(int)(linear * lutmax)];
         wf_8bit[(ch * wf_height + y) * wf_8bit_stride + x] = display * 255.f;
       }
@@ -1525,7 +1522,7 @@ void gui_init(dt_lib_module_t *self)
   // of tonal gradation. 256 would match the # of bins in a regular
   // histogram.
   d->waveform_height  = 175;
-  d->waveform_linear  = dt_iop_image_alloc(d->waveform_max_width, d->waveform_height, 4);
+  d->waveform_linear  = dt_iop_image_alloc(d->waveform_max_width, d->waveform_height, 3);
   d->waveform_8bit    = dt_alloc_align(64, sizeof(uint8_t) * 3 * d->waveform_height *
                                        cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_max_width));
 
