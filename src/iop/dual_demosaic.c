@@ -135,13 +135,14 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   {
     const int flag = 1;
     size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-    dt_opencl_set_kernel_arg(devid, gd->kernel_calc_detail_blend, 0, sizeof(cl_mem), &blend);  
-    dt_opencl_set_kernel_arg(devid, gd->kernel_calc_detail_blend, 1, sizeof(cl_mem), &detail);  
-    dt_opencl_set_kernel_arg(devid, gd->kernel_calc_detail_blend, 2, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_calc_detail_blend, 3, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_calc_detail_blend, 4, sizeof(float), &contrastf);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_calc_detail_blend, 5, sizeof(int), &flag);
-    const int err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_calc_detail_blend, sizes);
+    const int kernel = darktable.opencl->blendop->kernel_calc_blend;
+    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &blend);  
+    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &detail);  
+    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &width);
+    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &height);
+    dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(float), &contrastf);
+    dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), &flag);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) return FALSE;
   }
 
@@ -178,24 +179,25 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     const float c00 = kernel[4][4];
 
     size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 0, sizeof(cl_mem), &detail);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 1, sizeof(cl_mem), &blend);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 2, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 3, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 4, sizeof(int), &c42);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 5, sizeof(int), &c41);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 6, sizeof(int), &c40);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 7, sizeof(int), &c33);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 8, sizeof(int), &c32);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 9, sizeof(int), &c31);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 10, sizeof(int), &c30);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 11, sizeof(int), &c22);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 12, sizeof(int), &c21);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 13, sizeof(int), &c20);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 14, sizeof(int), &c11);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 15, sizeof(int), &c10);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_fastblur_mask_9x9, 16, sizeof(int), &c00);
-    const int err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_fastblur_mask_9x9, sizes);
+    const int clkernel = darktable.opencl->blendop->kernel_mask_blur;
+    dt_opencl_set_kernel_arg(devid, clkernel, 0, sizeof(cl_mem), &detail);
+    dt_opencl_set_kernel_arg(devid, clkernel, 1, sizeof(cl_mem), &blend);
+    dt_opencl_set_kernel_arg(devid, clkernel, 2, sizeof(int), &width);
+    dt_opencl_set_kernel_arg(devid, clkernel, 3, sizeof(int), &height);
+    dt_opencl_set_kernel_arg(devid, clkernel, 4, sizeof(int), &c42);
+    dt_opencl_set_kernel_arg(devid, clkernel, 5, sizeof(int), &c41);
+    dt_opencl_set_kernel_arg(devid, clkernel, 6, sizeof(int), &c40);
+    dt_opencl_set_kernel_arg(devid, clkernel, 7, sizeof(int), &c33);
+    dt_opencl_set_kernel_arg(devid, clkernel, 8, sizeof(int), &c32);
+    dt_opencl_set_kernel_arg(devid, clkernel, 9, sizeof(int), &c31);
+    dt_opencl_set_kernel_arg(devid, clkernel, 10, sizeof(int), &c30);
+    dt_opencl_set_kernel_arg(devid, clkernel, 11, sizeof(int), &c22);
+    dt_opencl_set_kernel_arg(devid, clkernel, 12, sizeof(int), &c21);
+    dt_opencl_set_kernel_arg(devid, clkernel, 13, sizeof(int), &c20);
+    dt_opencl_set_kernel_arg(devid, clkernel, 14, sizeof(int), &c11);
+    dt_opencl_set_kernel_arg(devid, clkernel, 15, sizeof(int), &c10);
+    dt_opencl_set_kernel_arg(devid, clkernel, 16, sizeof(int), &c00);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, clkernel, sizes);
     if(err != CL_SUCCESS) return FALSE;
   }
 

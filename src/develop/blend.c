@@ -613,31 +613,27 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
     if(err != CL_SUCCESS) goto error;
   }
 
-  const int program = 31;
-  int kernel_write_mask = dt_opencl_create_kernel(program, "writeout_mask");
-  int kernel_read_mask  = dt_opencl_create_kernel(program, "readin_mask");
-  int kernel_calc_blend = dt_opencl_create_kernel(program, "calc_detail_blend");
-  int kernel_mask_blur  = dt_opencl_create_kernel(program, "fastblur_mask_9x9");
-
   {
     size_t sizes[3] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1 };
-    dt_opencl_set_kernel_arg(devid, kernel_read_mask, 0, sizeof(cl_mem), &out);
-    dt_opencl_set_kernel_arg(devid, kernel_read_mask, 1, sizeof(cl_mem), &tmp);
-    dt_opencl_set_kernel_arg(devid, kernel_read_mask, 2, sizeof(int), &iwidth);
-    dt_opencl_set_kernel_arg(devid, kernel_read_mask, 3, sizeof(int), &iheight);
-    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel_read_mask, sizes);
+    const int kernel = darktable.opencl->blendop->kernel_read_mask;
+    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &out);
+    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &tmp);
+    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &iwidth);
+    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &iheight);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) goto error;
   }  
 
   {
     size_t sizes[3] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1 };
-    dt_opencl_set_kernel_arg(devid, kernel_calc_blend, 0, sizeof(cl_mem), &out);
-    dt_opencl_set_kernel_arg(devid, kernel_calc_blend, 1, sizeof(cl_mem), &blur);
-    dt_opencl_set_kernel_arg(devid, kernel_calc_blend, 2, sizeof(int), &iwidth);
-    dt_opencl_set_kernel_arg(devid, kernel_calc_blend, 3, sizeof(int), &iheight);
-    dt_opencl_set_kernel_arg(devid, kernel_calc_blend, 4, sizeof(float), &threshold);
-    dt_opencl_set_kernel_arg(devid, kernel_calc_blend, 5, sizeof(int), &detail);
-    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel_calc_blend, sizes);
+    const int kernel = darktable.opencl->blendop->kernel_calc_blend;
+    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &out);
+    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &blur);
+    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &iwidth);
+    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &iheight);
+    dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(float), &threshold);
+    dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), &detail);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) goto error;
   }  
 
@@ -677,34 +673,36 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
     const float c00 = kernel[4][4];
 
     size_t sizes[3] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1 };
-    dt_opencl_set_kernel_arg(devid, kernel_mask_blur, 0, sizeof(cl_mem), &blur);
-    dt_opencl_set_kernel_arg(devid, kernel_mask_blur, 1, sizeof(cl_mem), &out);
-    dt_opencl_set_kernel_arg(devid, kernel_mask_blur, 2, sizeof(int), &iwidth);
-    dt_opencl_set_kernel_arg(devid, kernel_mask_blur, 3, sizeof(int), &iheight);
-    dt_opencl_set_kernel_arg(devid, kernel_mask_blur, 4, sizeof(int), &c42);
-    dt_opencl_set_kernel_arg(devid, kernel_mask_blur, 5, sizeof(int), &c41);
-    dt_opencl_set_kernel_arg(devid, kernel_mask_blur, 6, sizeof(int), &c40);
-    dt_opencl_set_kernel_arg(devid, kernel_mask_blur, 7, sizeof(int), &c33);
-    dt_opencl_set_kernel_arg(devid, kernel_mask_blur, 8, sizeof(int), &c32);
-    dt_opencl_set_kernel_arg(devid, kernel_mask_blur, 9, sizeof(int), &c31);
-    dt_opencl_set_kernel_arg(devid, kernel_mask_blur, 10, sizeof(int), &c30);
-    dt_opencl_set_kernel_arg(devid, kernel_mask_blur, 11, sizeof(int), &c22);
-    dt_opencl_set_kernel_arg(devid, kernel_mask_blur, 12, sizeof(int), &c21);
-    dt_opencl_set_kernel_arg(devid, kernel_mask_blur, 13, sizeof(int), &c20);
-    dt_opencl_set_kernel_arg(devid, kernel_mask_blur, 14, sizeof(int), &c11);
-    dt_opencl_set_kernel_arg(devid, kernel_mask_blur, 15, sizeof(int), &c10);
-    dt_opencl_set_kernel_arg(devid, kernel_mask_blur, 16, sizeof(int), &c00);
-    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask_blur, sizes);
+    const int clkernel = darktable.opencl->blendop->kernel_mask_blur;
+    dt_opencl_set_kernel_arg(devid, clkernel, 0, sizeof(cl_mem), &blur);
+    dt_opencl_set_kernel_arg(devid, clkernel, 1, sizeof(cl_mem), &out);
+    dt_opencl_set_kernel_arg(devid, clkernel, 2, sizeof(int), &iwidth);
+    dt_opencl_set_kernel_arg(devid, clkernel, 3, sizeof(int), &iheight);
+    dt_opencl_set_kernel_arg(devid, clkernel, 4, sizeof(int), &c42);
+    dt_opencl_set_kernel_arg(devid, clkernel, 5, sizeof(int), &c41);
+    dt_opencl_set_kernel_arg(devid, clkernel, 6, sizeof(int), &c40);
+    dt_opencl_set_kernel_arg(devid, clkernel, 7, sizeof(int), &c33);
+    dt_opencl_set_kernel_arg(devid, clkernel, 8, sizeof(int), &c32);
+    dt_opencl_set_kernel_arg(devid, clkernel, 9, sizeof(int), &c31);
+    dt_opencl_set_kernel_arg(devid, clkernel, 10, sizeof(int), &c30);
+    dt_opencl_set_kernel_arg(devid, clkernel, 11, sizeof(int), &c22);
+    dt_opencl_set_kernel_arg(devid, clkernel, 12, sizeof(int), &c21);
+    dt_opencl_set_kernel_arg(devid, clkernel, 13, sizeof(int), &c20);
+    dt_opencl_set_kernel_arg(devid, clkernel, 14, sizeof(int), &c11);
+    dt_opencl_set_kernel_arg(devid, clkernel, 15, sizeof(int), &c10);
+    dt_opencl_set_kernel_arg(devid, clkernel, 16, sizeof(int), &c00);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, clkernel, sizes);
     if(err != CL_SUCCESS) goto error;
   }
 
   {
     size_t sizes[3] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1 };
-    dt_opencl_set_kernel_arg(devid, kernel_write_mask, 0, sizeof(cl_mem), &out);
-    dt_opencl_set_kernel_arg(devid, kernel_write_mask, 1, sizeof(cl_mem), &tmp);
-    dt_opencl_set_kernel_arg(devid, kernel_write_mask, 2, sizeof(int), &iwidth);
-    dt_opencl_set_kernel_arg(devid, kernel_write_mask, 3, sizeof(int), &iheight);
-    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel_write_mask, sizes);
+    const int kernel = darktable.opencl->blendop->kernel_write_mask;
+    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &out);
+    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &tmp);
+    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &iwidth);
+    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &iheight);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) goto error;
   }  
 
@@ -712,11 +710,6 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
     const int err = dt_opencl_read_host_from_device(devid, lum, tmp, iwidth, iheight, sizeof(float));
     if(err != CL_SUCCESS) goto error;
   }
-
-  dt_opencl_free_kernel(kernel_calc_blend);
-  dt_opencl_free_kernel(kernel_write_mask);
-  dt_opencl_free_kernel(kernel_read_mask);
-  dt_opencl_free_kernel(kernel_mask_blur);
 
   dt_opencl_release_mem_object(tmp);
   dt_opencl_release_mem_object(blur);
@@ -1241,6 +1234,10 @@ dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void)
   b->kernel_calc_Y0_mask = dt_opencl_create_kernel(program_rcd, "calc_Y0_mask");
   b->kernel_calc_scharr_mask = dt_opencl_create_kernel(program_rcd, "calc_scharr_mask");
   b->kernel_write_scharr_mask = dt_opencl_create_kernel(program_rcd, "write_scharr_mask");
+  b->kernel_write_mask = dt_opencl_create_kernel(program_rcd, "writeout_mask");
+  b->kernel_read_mask  = dt_opencl_create_kernel(program_rcd, "readin_mask");
+  b->kernel_calc_blend = dt_opencl_create_kernel(program_rcd, "calc_detail_blend");
+  b->kernel_mask_blur  = dt_opencl_create_kernel(program_rcd, "fastblur_mask_9x9");
 
   return b;
 #else
@@ -1268,6 +1265,10 @@ void dt_develop_blend_free_cl_global(dt_blendop_cl_global_t *b)
   dt_opencl_free_kernel(b->kernel_calc_Y0_mask);
   dt_opencl_free_kernel(b->kernel_calc_scharr_mask);
   dt_opencl_free_kernel(b->kernel_write_scharr_mask);
+  dt_opencl_free_kernel(b->kernel_write_mask);
+  dt_opencl_free_kernel(b->kernel_read_mask);
+  dt_opencl_free_kernel(b->kernel_calc_blend);
+  dt_opencl_free_kernel(b->kernel_mask_blur);
   free(b);
 #endif
 }
