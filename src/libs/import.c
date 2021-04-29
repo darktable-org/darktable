@@ -1285,7 +1285,7 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   if(d->import_case == DT_IMPORT_INPLACE)
   {
     GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-    GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("✔"), renderer, "text",
+    GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes("✔", renderer, "text",
                                                       DT_IMPORT_UI_EXISTS, NULL);
     g_object_set (renderer, "xalign", 0.5, NULL);
     gtk_tree_view_append_column(d->from.treeview, column);
