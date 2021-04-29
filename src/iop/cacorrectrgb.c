@@ -33,6 +33,101 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_cacorrectrgb_params_t)
 
+/**
+ * Description of the approach
+ *
+ ** The problem
+ * chromatic aberration appear when:
+ * (1) channels are misaligned
+ * (2) or if some channel is more blurry than another.
+ *
+ * example case (1):
+ *           _________
+ * _________|               first channel
+ *             _______
+ * ___________|             second channel
+ *          ^^ chromatic aberration
+ *
+ * other example case (1):
+ *           _________
+ * _________|               first channel
+ * ___________
+ *            |_______      second channel
+ *          ^^ chromatic aberration
+ *
+ * example case (2):
+ *           _________
+ *          |               first channel
+ * _________|
+ *            ________
+ *           /              second channel
+ *          /
+ * ________/
+ *         ^^^ chromatic aberration
+ *
+ * note that case (1) can already be partially corrected using the lens
+ * correction module.
+ *
+ ** Requirements for the solution
+ * - handle both cases
+ * - preserve borders as much as possible
+ * - be fast to compute
+ *
+ ** The solution
+ * The main idea is to represent 2 channels as a function of the third one.
+ *
+ * a very simple function is: guided = a * guide
+ * where a = blur(guided) / blur(guide)
+ * But this function is too simple to cope with borders.
+ *
+ * We stick with the idea of having guided channel as a factor of
+ * the guide channel, but instead of having a locally constant factor
+ * a, we use a factor that depends on the value of the guide pixel:
+ * guided = a(guide) * guide
+ *
+ * Our function a(guide) is pretty simple, it is a weighted average
+ * between 2 values (one high and one low), where the weights are
+ * dependent on the guide pixel value.
+ *
+ * Now, how do we determine these high and low value.
+ *
+ * We compute 2 manifolds.
+ * manifolds are partial local averages:
+ * some pixels are not used in the averages.
+ *
+ * for the lower manifold, we average only pixels whose guide value are below
+ * a local average of the guide.
+ * for the higher manifold, we average only pixels whose guide value are above
+ * a local average of the guide.
+ *
+ * for example here:
+ *           _________
+ * _ _ _ _ _| _ _ _ _ _ _ _ average
+ * _________|
+ *
+ * ^^^^^^^^^ pixels below average (will be used to compute lower manifold)
+ *
+ *           ^^^^^^^^^ pixels above average (will be used to compute higher manifold)
+ *
+ * As we want to write the guided channel as a ratio of the guide channel,
+ * we compute the manifolds on:
+ * - the guide channel
+ * - log difference between guide and guided
+ *
+ * using the log difference gives much better result than using directly the
+ * guided channel in the manifolds computation and computing the ratio after
+ * that, because averaging in linear makes lower manifolds harder to estimate
+ * accurately.
+ * Note that the repartition of pixels into higher and lower manifold
+ * computation is done by taking into account ONLY the guide channel.
+ *
+ * Once we have our 2 manifolds, with an average log difference for each of them
+ * (i.e. an average ratio), we can do a weighted mean to get the result.
+ * We weight more one ratio or the other depending to how close the guide pixel
+ * is from one manifold or another.
+ *
+ **/
+
 typedef enum dt_iop_cacorrectrgb_guide_channel_t
 {
   DT_CACORRECT_RGB_R = 0,    // $DESCRIPTION: "red"
