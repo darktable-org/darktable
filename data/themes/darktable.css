@@ -772,13 +772,6 @@ dialog .dialog-vbox scrolledwindow
   padding: 0;
 }
 
-dialog button:focus,
-dialog checkbutton check:focus
-{
-  color: @button_hover_fg;
-  background-color: @field_hover_bg;
-}
-
 /* Set title headerbar and main buttons */
 dialog button
 {
