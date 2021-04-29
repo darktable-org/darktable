@@ -646,13 +646,12 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_restore(cr);
 }
 
-static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t *cr, int ch)
+static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t *cr, int ch, double alpha)
 {
   // FIXME: force a recalc/redraw when colors have changed via user entering new CSS in preferences -- is there a signal for this?
   // waveform data is BGR, need to flip to RGB
   const GdkRGBA primary = darktable.bauhaus->graph_colors[2-ch];
-  // FIXME: tune alpha for RGB parade
-  cairo_set_source_rgba(cr, primary.red, primary.green, primary.blue, 0.6);
+  cairo_set_source_rgba(cr, primary.red, primary.green, primary.blue, alpha);
   const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
   cairo_surface_t *surface
     = dt_cairo_image_surface_create_for_data(d->waveform_8bit + (2-ch) * d->waveform_height * wf_8bit_stride,
@@ -673,7 +672,7 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
 
   for(int ch = 0; ch < 3; ch++)
     if(mask[2-ch])
-      _lib_histogram_draw_waveform_channel(d, cr, ch);
+      _lib_histogram_draw_waveform_channel(d, cr, ch, 0.6);
   cairo_restore(cr);
 }
 
@@ -685,7 +684,7 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, i
               darktable.gui->ppd*height/d->waveform_height);
   for(int ch = 2; ch >= 0; ch--)
   {
-    _lib_histogram_draw_waveform_channel(d, cr, ch);
+    _lib_histogram_draw_waveform_channel(d, cr, ch, 0.9);
     cairo_translate(cr, d->waveform_width/darktable.gui->ppd, 0);
   }
   cairo_restore(cr);
