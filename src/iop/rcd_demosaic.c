@@ -38,7 +38,7 @@
 */
 
 /* Some notes about the algorithm
-* 1. The calculated data at the tiling borders RCD_BORDER must be at least 9 to be stable.
+* 1. The calculated data at the tiling borders RCD_BORDER must be at least 9 to be stable. Why does 8 **not** work?
 * 2. For the outermost tiles we only have to discard a 6 pixel border region interpolated otherwise.
 * 3. The tilesize has a significant influence on performance, the default is a good guess for modern
 *    x86/64 machines, tested on Xeon E-2288G, i5-8250U.
@@ -600,3 +600,4 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
 #undef w4
 #undef eps
 #undef epssq
+
