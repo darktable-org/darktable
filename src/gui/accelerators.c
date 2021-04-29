@@ -2379,7 +2379,6 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
       }
     }
 
-
     _sc.key_device = id;
     _sc.key = key;
     _sc.button = _pressed_button = 0;

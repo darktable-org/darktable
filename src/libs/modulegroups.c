@@ -741,7 +741,6 @@ static void _basics_show(dt_lib_module_t *self)
           }
         }
       }
-// FIXME add widgets from subsections
       dt_action_t *ac = module->so->actions.target;
       while(ac)
       {
@@ -758,7 +757,6 @@ static void _basics_show(dt_lib_module_t *self)
               if(!item->module && g_strcmp0(item->module_op, module->op) == 0
                  && item->widget_type != WIDGET_TYPE_ACTIVATE_BTN)
               {
-
                 if(!strcmp(item->id, action_id))
                 {
                   item->module = module;
