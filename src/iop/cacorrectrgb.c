@@ -192,6 +192,9 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
   dt_gaussian_blur_4c(g, manifold_lower, blurred_manifold_lower);
 
   normalize_manifolds(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide);
+  dt_gaussian_free(g);
+  dt_free_align(manifold_lower);
+  dt_free_align(manifold_higher);
 
   // note that manifolds were constructed based on the value and average
   // of the guide channel ONLY.
@@ -206,99 +209,6 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
   // equal to 0. The higher manifold of the guided channel is equal to 0
   // as it is the average of the values where the guide is higher than its
   // average, and the lower manifold of the guided channel is equal to 1.
-
-#if 0
-  // refine the manifolds
-  // improve result especially on very degraded images
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_manifold_lower, blurred_manifold_higher, width, height, guide) \
-  schedule(simd:static) aligned(in, blurred_in, manifold_lower, manifold_higher, blurred_manifold_lower, blurred_manifold_higher:64)
-#endif
-  for(size_t k = 0; k < width * height; k++)
-  {
-    // in order to refine the manifolds, we will compute weights
-    // for which all channel will have a contribution.
-    // this will allow to avoid taking too much into account pixels
-    // that have wrong values due to the chromatic aberration
-    //
-    // for example, here:
-    // guide:  1_____
-    //               |_____0
-    // guided: 1______
-    //                |____0
-    //               ^ this pixel makes the estimated lower manifold erroneous
-    // here, the higher and lower manifolds values computed are:
-    // _______|_higher_|________lower_________|
-    // guide  |    1   |   0                  |
-    // guided |    1   |(1 + 4 * 0) / 5 = 0.2 |
-    //
-    // the lower manifold of the guided is 0.2 if we consider only the guide
-    //
-    // at this step of the algorithm, we know estimates of manifolds
-    //
-    // we can refine the manifolds by computing weights that reduce the influence
-    // of pixels that are probably suffering chromatic aberrations
-    const float pixelg = log2f(fmaxf(in[k * 4 + guide], 1E-6));
-    const float highg = log2f(fmaxf(blurred_manifold_higher[k * 4 + guide], 1E-6));
-    const float lowg = log2f(fmaxf(blurred_manifold_lower[k * 4 + guide], 1E-6));
-    const float avgg = log2f(fmaxf(blurred_in[k * 4 + guide], 1E-6));
-
-    float w = 1.0f;
-    for(size_t kc = 0; kc <= 1; kc++)
-    {
-      size_t c = (guide + kc + 1) % 3;
-      // if pixel value is close to the low manifold, give it a smaller weight
-      // than if it is close to the high manifold
-      const float pixel = log2f(fmaxf(in[k * 4 + c], 1E-6));
-      const float highc = log2f(fmaxf(blurred_manifold_higher[k * 4 + c], 1E-6));
-      const float lowc = log2f(fmaxf(blurred_manifold_lower[k * 4 + c], 1E-6));
-      // find how likely the pixel is part of a chromatic aberration
-      // (lowc, lowg) and (highc, highg) are valid points
-      // (lowc, highg) and (highc, lowg) are chromatic aberrations
-      const float dist_to_ll = sqrtf((pixel - lowc) * (pixel - lowc) + (pixelg - lowg) * (pixelg - lowg));
-      const float dist_to_hh = sqrtf((pixel - highc) * (pixel - highc) + (pixelg - highg) * (pixelg - highg));
-      const float dist_to_lh = sqrtf((pixel - lowc) * (pixel - lowc) + (pixelg - highg) * (pixelg - highg));
-      const float dist_to_hl = sqrtf((pixel - highc) * (pixel - highc) + (pixelg - lowg) * (pixelg - lowg));
-      const float dist_to_good = fminf(dist_to_ll, dist_to_hh);
-      const float dist_to_bad = fminf(dist_to_lh, dist_to_hl);
-
-      w *= 1.0f / (1.0f + 100.0f * dist_to_good / dist_to_bad);
-    }
-
-    if(pixelg > avgg)
-    {
-      for(size_t kc = 0; kc <= 1; kc++)
-      {
-        size_t c = (guide + kc + 1) % 3;
-        const float pixel = fmaxf(in[k * 4 + c], 1E-6);
-        const float log_diff = log2f(pixel) - pixelg;
-        manifold_higher[k * 4 + c] = log_diff * w;
-      }
-      manifold_higher[k * 4 + guide] = in[k * 4 + guide] * w;
-      manifold_higher[k * 4 + 3] = w;
-    }
-    else
-    {
-      for(size_t kc = 0; kc <= 1; kc++)
-      {
-        size_t c = (guide + kc + 1) % 3;
-        const float pixel = fmaxf(in[k * 4 + c], 1E-6);
-        const float log_diff = log2f(pixel) - pixelg;
-        manifold_lower[k * 4 + c] = log_diff * w;
-      }
-      manifold_lower[k * 4 + guide] = in[k * 4 + guide] * w;
-      manifold_lower[k * 4 + 3] = w;
-    }
-  }
-
-  dt_gaussian_blur_4c(g, manifold_higher, blurred_manifold_higher);
-  dt_gaussian_blur_4c(g, manifold_lower, blurred_manifold_lower);
-  normalize_manifolds(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide);
-#endif
-  dt_gaussian_free(g);
-  dt_free_align(manifold_lower);
-  dt_free_align(manifold_higher);
 
   // store all manifolds in the same structure to make upscaling faster
 #ifdef _OPENMP
