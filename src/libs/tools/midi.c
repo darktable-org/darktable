@@ -195,7 +195,7 @@ void update_with_move(midi_device *midi, PmTimestamp timestamp, gint controller,
         (controller >= 11 && (midi->last_type == 0xb ? midi->last_data1 >= 10 : midi->last_data1 >= 24)) )
     {
       if(isnan(new_position))
-        midi_write(midi, 0, 0xB, controller % 10, 0); // off
+        ; // midi_write(midi, 0, 0xB, controller % 10, 0); // off
       else if(new_position >= 4)
         midi_write(midi, 0, 0xB, controller % 10, 2); // fan
       else if(new_position >= 2)
