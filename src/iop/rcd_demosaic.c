@@ -64,12 +64,10 @@
    The 'fp-contract=fast' option enables fused multiply&add if available
 */
 
-/*
 #ifdef __GNUC__
   #pragma GCC push_options
   #pragma GCC optimize ("fast-math", "fp-contract=fast")
 #endif
-*/
 
 #ifdef __GNUC__
   #define INLINE __inline
@@ -130,7 +128,7 @@ static void rcd_ppg_border(float *const out, const float *const in, const int wi
           if((y >= 0) && (x >= 0) && (y < height) && (x < width))
           {
             const int f = FC(y, x, filters);
-            sum[f] += in[(size_t)y * width + x];
+            sum[f] += fmaxf(0.0f, in[(size_t)y * width + x]);
             sum[f + 4]++;
           }
         }
@@ -141,7 +139,7 @@ static void rcd_ppg_border(float *const out, const float *const in, const int wi
         if(c != f && sum[c + 4] > 0.0f)
           out[4 * ((size_t)j * width + i) + c] = sum[c] / sum[c + 4];
         else
-          out[4 * ((size_t)j * width + i) + c] = in[(size_t)j * width + i];
+          out[4 * ((size_t)j * width + i) + c] = fmaxf(0.0f, in[(size_t)j * width + i]);
       }
     }
   }
@@ -170,22 +168,22 @@ static void rcd_ppg_border(float *const out, const float *const in, const int wi
 
       const int c = FC(j, i, filters);
       float color[4];
-      const float pc = buf_in[0];
+      const float pc = fmaxf(0.0f, buf_in[0]);
       if(c == 0 || c == 2)
       {
         color[c] = pc;
-        const float pym = buf_in[-width * 1];
-        const float pym2 = buf_in[-width * 2];
-        const float pym3 = buf_in[-width * 3];
-        const float pyM = buf_in[+width * 1];
-        const float pyM2 = buf_in[+width * 2];
-        const float pyM3 = buf_in[+width * 3];
-        const float pxm = buf_in[-1];
-        const float pxm2 = buf_in[-2];
-        const float pxm3 = buf_in[-3];
-        const float pxM = buf_in[+1];
-        const float pxM2 = buf_in[+2];
-        const float pxM3 = buf_in[+3];
+        const float pym  = fmaxf(0.0f, buf_in[-width * 1]);
+        const float pym2 = fmaxf(0.0f, buf_in[-width * 2]);
+        const float pym3 = fmaxf(0.0f, buf_in[-width * 3]);
+        const float pyM  = fmaxf(0.0f, buf_in[+width * 1]);
+        const float pyM2 = fmaxf(0.0f, buf_in[+width * 2]);
+        const float pyM3 = fmaxf(0.0f, buf_in[+width * 3]);
+        const float pxm  = fmaxf(0.0f, buf_in[-1]);
+        const float pxm2 = fmaxf(0.0f, buf_in[-2]);
+        const float pxm3 = fmaxf(0.0f, buf_in[-3]);
+        const float pxM  = fmaxf(0.0f, buf_in[+1]);
+        const float pxM2 = fmaxf(0.0f, buf_in[+2]);
+        const float pxM3 = fmaxf(0.0f, buf_in[+3]);
 
         const float guessx = (pxm + pc + pxM) * 2.0f - pxM2 - pxm2;
         const float diffx = (fabsf(pxm2 - pc) + fabsf(pxM2 - pc) + fabsf(pxm - pxM)) * 3.0f
@@ -268,9 +266,9 @@ static void rcd_ppg_border(float *const out, const float *const in, const int wi
         if(c == 0)
         {
           // red pixel, fill blue:
-          const float diff1 = fabsf(ntl[2] - nbr[2]) + fabsf(ntl[1] - color[1]) + fabsf(nbr[1] - color[1]);
+          const float diff1  = fabsf(ntl[2] - nbr[2]) + fabsf(ntl[1] - color[1]) + fabsf(nbr[1] - color[1]);
           const float guess1 = ntl[2] + nbr[2] + 2.0f * color[1] - ntl[1] - nbr[1];
-          const float diff2 = fabsf(ntr[2] - nbl[2]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
+          const float diff2  = fabsf(ntr[2] - nbl[2]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
           const float guess2 = ntr[2] + nbl[2] + 2.0f * color[1] - ntr[1] - nbl[1];
           if(diff1 > diff2)
             color[2] = guess2 * .5f;
@@ -281,9 +279,9 @@ static void rcd_ppg_border(float *const out, const float *const in, const int wi
         }
         else // c == 2, blue pixel, fill red:
         {
-          const float diff1 = fabsf(ntl[0] - nbr[0]) + fabsf(ntl[1] - color[1]) + fabsf(nbr[1] - color[1]);
+          const float diff1  = fabsf(ntl[0] - nbr[0]) + fabsf(ntl[1] - color[1]) + fabsf(nbr[1] - color[1]);
           const float guess1 = ntl[0] + nbr[0] + 2.0f * color[1] - ntl[1] - nbr[1];
-          const float diff2 = fabsf(ntr[0] - nbl[0]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
+          const float diff2  = fabsf(ntr[0] - nbl[0]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
           const float guess2 = ntr[0] + nbl[0] + 2.0f * color[1] - ntr[1] - nbl[1];
           if(diff1 > diff2)
             color[0] = guess2 * .5f;
@@ -587,12 +585,10 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
   }
 }
 
-/*
 // revert rcd specific aggressive optimizing
 #ifdef __GNUC__
   #pragma GCC pop_options
 #endif
-*/
 
 #undef FCRCD
 #undef RCD_BORDER
