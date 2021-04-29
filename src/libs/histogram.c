@@ -245,20 +245,14 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
     const size_t x_from = out_x * bin_width + roi->crop_x;
     const size_t x_high = MIN(x_from + bin_width, roi->width - roi->crop_width);
     for(size_t in_x = x_from; in_x < x_high; in_x++)
-    {
       for(size_t in_y = roi->crop_y; in_y < roi->height - roi->crop_height; in_y++)
-      {
-        // While it would be nice to use for_each_channel(), making
-        // the BGR/RGB flip doesn't allow for this. Regardless, the
-        // fourth channel will be ignored when waveform is drawn.
+        // FIXME: will for_each_channel speed this up?
         for(size_t k = 0; k < 3; k++)
         {
-          const float v = 1.0f - (8.0f / 9.0f) * in[4U * (roi->width * in_y + in_x) + (2U - k)];
+          const float v = 1.0f - (8.0f / 9.0f) * in[4U * (roi->width * in_y + in_x) + k];
           const size_t out_y = isnan(v) ? 0 : MIN((size_t)fmaxf(v*height_f, 0.0f), height_i);
           wf_linear[4U * (wf_width * out_y + out_x) + k] += scale;
         }
-      }
-    }
   }
 
   // shortcut to change from linear to display gamma -- borrow hybrid log-gamma LUT
@@ -269,6 +263,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   const float lutmax = profile->lutsize - 1;
 
   // loops are too small (3 * 360 * 175 max iterations) to need threads
+  // FIXME: does ch in inner loop optimize better? or building wf_linear with ch as outer array dimension?
   for(size_t ch = 0; ch < 3; ch++)
     for(size_t y = 0; y < wf_height; y++)
       for(size_t x = 0; x < wf_width; x++)
@@ -657,15 +652,15 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
 static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t *cr, int ch)
 {
   // FIXME: force a recalc/redraw when colors have changed via user entering new CSS in preferences -- is there a signal for this?
-  // FIXME: if flip primary here, can we flip it back in procses code instead, to simplify?
+  // waveform data is BGR, need to flip to RGB
   const GdkRGBA primary = darktable.bauhaus->graph_colors[2-ch];
+  // FIXME: tune alpha for RGB parade
   cairo_set_source_rgba(cr, primary.red, primary.green, primary.blue, 0.6);
   const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
   cairo_surface_t *surface
-    = dt_cairo_image_surface_create_for_data(d->waveform_8bit + ch * d->waveform_height * wf_8bit_stride,
+    = dt_cairo_image_surface_create_for_data(d->waveform_8bit + (2-ch) * d->waveform_height * wf_8bit_stride,
                                              CAIRO_FORMAT_A8,
                                              d->waveform_width, d->waveform_height, wf_8bit_stride);
-  // FIXME: increase alpha for more intense waveform, especially for RGB parade
   cairo_mask_surface(cr, surface, 0., 0.);
   cairo_surface_destroy(surface);
 }
