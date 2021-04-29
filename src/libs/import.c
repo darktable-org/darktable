@@ -1101,7 +1101,11 @@ static void _expand_folder(const char *folder, const gboolean select, dt_lib_mod
     {
       if(_find_iter_folder(model, &iter, folder))
       {
-        GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
+        // except for root expand only to parent
+        GtkTreeIter parent;
+        if(!gtk_tree_model_iter_parent(model, &parent, &iter))
+          parent = iter;
+        GtkTreePath *path = gtk_tree_model_get_path(model, &parent);
         gtk_tree_view_expand_to_path(d->from.folderview, path);
         gtk_tree_view_scroll_to_cell(d->from.folderview, path, NULL, TRUE, 0.5, 0.5);
         gtk_tree_path_free(path);
