@@ -84,7 +84,7 @@
 /* Modules box (plugins) */
 @define-color plugin_bg_color @grey_20;
 @define-color plugin_fg_color @fg_color;
-@define-color section_label shade(@plugin_fg_color, 0.9);
+@define-color section_label shade(@plugin_fg_color, 0.95);
 @define-color plugin_label_color @grey_65;
 
 /* Modules controls (sliders and comboboxes) */
@@ -638,7 +638,7 @@ overshoot.right
 #lib-plugin-ui .section-expander,
 #iop-plugin-ui .section-expander
 {
-  margin: 0.35em 0;
+  margin: 0.5em 0 0.35em 0;
 }
 
 #iop-plugin-ui #section_label.section_label_top,
