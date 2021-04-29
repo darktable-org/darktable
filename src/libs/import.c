@@ -1557,7 +1557,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   }
 }
 
-static void _import_set_collection(char *dirname)
+static void _import_set_collection(const char *dirname)
 {
   if(dirname)
   {
@@ -1565,7 +1565,6 @@ static void _import_set_collection(char *dirname)
     dt_conf_set_int("plugins/lighttable/collect/item0", 0);
     dt_conf_set_string("plugins/lighttable/collect/string0", dirname);
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
-    g_free(dirname);
   }
 }
 
@@ -1620,16 +1619,15 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
     GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
     GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.treeview);
     GList *paths = gtk_tree_selection_get_selected_rows(selection, &model);
+    char *folder = (d->import_case == DT_IMPORT_CAMERA) ? g_strdup("") :
+                   dt_conf_get_string("ui_last/import_last_directory");
     for(GList *path = paths; path; path = g_list_next(path))
     {
       GtkTreeIter iter;
       gtk_tree_model_get_iter(model, &iter, (GtkTreePath *)path->data);
       char *filename;
       gtk_tree_model_get(model, &iter, DT_IMPORT_FILENAME, &filename, -1);
-      char *folder = (d->import_case == DT_IMPORT_CAMERA) ? g_strdup("") :
-                     dt_conf_get_string("ui_last/import_last_directory");
       char *fullname = g_build_filename(folder, filename, NULL);
-      g_free(folder);
       imgs = g_list_prepend(imgs, fullname);
       g_free(filename);
     }
@@ -1655,11 +1653,19 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
         dt_control_import(imgs, datetime_override, d->import_case == DT_IMPORT_INPLACE);
 
       if(d->import_case == DT_IMPORT_INPLACE)
-        _import_set_collection(g_path_get_dirname((char *)imgs->data));
+      {
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->recursive)))
+          folder = dt_util_dstrcat(folder, "%%");
+        _import_set_collection(folder);
+      }
     }
     gtk_tree_selection_unselect_all(selection);
     if((d->import_case == DT_IMPORT_INPLACE) || !dt_conf_get_bool("ui_last/import_keep_open"))
+    {
+      g_free(folder);
       break;
+    }
+    g_free(folder);
   }
 }
 
