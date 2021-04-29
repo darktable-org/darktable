@@ -313,8 +313,8 @@ dt_omp_firstprivate(in, out, in_out, width, height, guide, ch) \
     for(size_t kc = 0; kc <= 1; kc++)
     {
       size_t c = (guide + kc + 1) % 3;
-      in_out[k * ch + kc * 2 + 0] = /*log2f*/(fmaxf(in[k * 4 + c], 0.000016f))/* + 16.0f*/;
-      in_out[k * ch + kc * 2 + 1] = /*log2f*/(fmaxf(out[k * 4 + c], 0.000016f))/* + 16.0f*/;
+      in_out[k * ch + kc * 2 + 0] = in[k * 4 + c];
+      in_out[k * ch + kc * 2 + 1] = out[k * 4 + c];
     }
   }
 
@@ -337,8 +337,8 @@ dt_omp_firstprivate(in, out, blurred_in_out, width, height, guide, safety, ch) \
     float w = 1.0f;
     for(size_t kc = 0; kc <= 1; kc++)
     {
-      const float avg_in = log2(blurred_in_out[k * ch + kc * 2 + 0]);
-      const float avg_out = log2(blurred_in_out[k * ch + kc * 2 + 1]);
+      const float avg_in = log2f(fmaxf(blurred_in_out[k * ch + kc * 2 + 0], 1E-6));
+      const float avg_out = log2f(fmaxf(blurred_in_out[k * ch + kc * 2 + 1], 1E-6));
       w *= expf(-fmaxf(fabsf(avg_out - avg_in), 0.01f) * safety);
     }
     for(size_t kc = 0; kc <= 1; kc++)
