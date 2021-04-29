@@ -175,9 +175,7 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_rcd_step_5_2;
   int kernel_rcd_border_redblue;
   int kernel_rcd_border_green;
-  int kernel_calc_detail_blend;
   int kernel_write_blended_dual;
-  int kernel_fastblur_mask_9x9;
 } dt_iop_demosaic_global_data_t;
 
 typedef struct dt_iop_demosaic_data_t
@@ -5405,9 +5403,7 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_rcd_step_5_2 = dt_opencl_create_kernel(rcd, "rcd_step_5_2");
   gd->kernel_rcd_border_redblue = dt_opencl_create_kernel(rcd, "rcd_border_redblue");
   gd->kernel_rcd_border_green = dt_opencl_create_kernel(rcd, "rcd_border_green");
-  gd->kernel_calc_detail_blend = dt_opencl_create_kernel(rcd, "calc_detail_blend");
   gd->kernel_write_blended_dual  = dt_opencl_create_kernel(rcd, "write_blended_dual");  
-  gd->kernel_fastblur_mask_9x9 = dt_opencl_create_kernel(rcd, "fastblur_mask_9x9"); 
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -5461,9 +5457,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_rcd_step_5_2);
   dt_opencl_free_kernel(gd->kernel_rcd_border_redblue);
   dt_opencl_free_kernel(gd->kernel_rcd_border_green);
-  dt_opencl_free_kernel(gd->kernel_calc_detail_blend);
   dt_opencl_free_kernel(gd->kernel_write_blended_dual);  
-  dt_opencl_free_kernel(gd->kernel_fastblur_mask_9x9);
   free(module->data);
   module->data = NULL;
 }
