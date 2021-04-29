@@ -412,7 +412,7 @@ kernel void rcd_border_green(read_only image2d_t in, write_only image2d_t out, c
     if(bufidx >= maxbuf) continue;
     const int xx = xul + bufidx % stride;
     const int yy = yul + bufidx / stride;
-    buffer[bufidx] = read_imagef(in, sampleri, (int2)(xx, yy)).x;
+    buffer[bufidx] = fmax(0.0f, read_imagef(in, sampleri, (int2)(xx, yy)).x);
   }
 
   // center buffer around current x,y-Pixel
@@ -427,7 +427,7 @@ kernel void rcd_border_green(read_only image2d_t in, write_only image2d_t out, c
   const int row = y;
   const int col = x;
   const int c = FC(row, col, filters);
-  float4 color; // output color
+  float4 color = 0.0f; // output color
 
   const float pc = buffer[0];
 
@@ -512,7 +512,7 @@ kernel void rcd_border_redblue(read_only image2d_t in, write_only image2d_t out,
     if(bufidx >= maxbuf) continue;
     const int xx = xul + bufidx % stride;
     const int yy = yul + bufidx / stride;
-    buffer[bufidx] = read_imagef(in, sampleri, (int2)(xx, yy));
+    buffer[bufidx] = fmax(0.0f, read_imagef(in, sampleri, (int2)(xx, yy)));
   }
 
   // center buffer around current x,y-Pixel
