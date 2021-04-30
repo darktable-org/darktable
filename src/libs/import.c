@@ -1443,17 +1443,17 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   g_list_free(children);
 
   GtkWidget *select_all = gtk_button_new_with_label(_("select all"));
-  gtk_box_pack_start(GTK_BOX(box), select_all, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), select_all, FALSE, FALSE, 2);
   g_signal_connect(select_all, "clicked", G_CALLBACK(_do_select_all_clicked), self);
 
   GtkWidget *select_none = gtk_button_new_with_label(_("select none"));
-  gtk_box_pack_start(GTK_BOX(box), select_none, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), select_none, FALSE, FALSE, 2);
   g_signal_connect(select_none, "clicked", G_CALLBACK(_do_select_none_clicked), self);
 
   if(d->import_case == DT_IMPORT_INPLACE)
   {
     GtkWidget *select_new = gtk_button_new_with_label(_("select new"));
-    gtk_box_pack_start(GTK_BOX(box), select_new, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(box), select_new, FALSE, FALSE, 2);
     g_signal_connect(select_new, "clicked", G_CALLBACK(_do_select_new_clicked), self);
   }
 
