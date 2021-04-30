@@ -487,11 +487,9 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       dt_xyY_to_XYZ(xyY, XYZ);
       dt_XYZ_to_Rec709_D50(XYZ, RGB);
       // FIXME: instead of doing this pre-colorspace, do a quick hack of XYZ -> xyY, scale the Y, then -> XYZ -> Rec709_D50 -- or if that is fishy because they're tied to stimulus and not response, do the quickest possible conversion (to Luv/Lch?) and scale in that space
-      // FIXME: hack to keep compiler happy -- instead just unroll loop if don't use alpha?
-      RGB[3] = intensity;
-      for_each_channel(ch,aligned(px,RGB:16))
-        // FIXME: this BGR/RGB flip is for pixelpipe vs. Cairo color?
-        // FIXME: this produces px[-1] for ch==3, which will be out of bounds for out_y == out_x == 0?
+      // BGR/RGB flip is for pixelpipe vs. Cairo color?
+      // FIXME: but don't want to flip earlier when binning?
+      for(int ch=0; ch<3; ch++)
         px[2U-ch] = CLAMP((int)(RGB[ch] * 255.0f), 0, 255);
     }
 
@@ -751,7 +749,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   // vectorscope graph
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
-  // FIXME: if use cairo_mask() could calculate a false color vectorscope and draw with appropriate hues? and if so could also simplify waveform drawing code above, to use color mask to alter channel visibility
+  // FIXME: if use cairo_mask() could calculate a false color vectorscope and draw with appropriate hues?
   cairo_surface_t *source = dt_cairo_image_surface_create_for_data(d->vectorscope_graph, CAIRO_FORMAT_RGB24,
                                                                    diam_px, diam_px, stride);
 
