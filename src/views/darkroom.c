@@ -496,7 +496,10 @@ void expose(
     else
     {
       fontsize = DT_PIXEL_APPLY_DPI(14);
-      load_txt = dt_util_dstrcat(NULL, C_("darkroom", "loading `%s' ..."), dev->image_storage.filename);
+      if(dt_conf_get_bool("darkroom/ui/loading_screen"))
+        load_txt = dt_util_dstrcat(NULL, C_("darkroom", "loading `%s' ..."), dev->image_storage.filename);
+      else
+        load_txt = g_strdup(dev->image_storage.filename);
     }
 
     if(dt_conf_get_bool("darkroom/ui/loading_screen"))
@@ -524,13 +527,13 @@ void expose(
       cairo_fill(cr);
       pango_font_description_free(desc);
       g_object_unref(layout);
-      g_free(load_txt);
       image_surface_imgid = dev->image_storage.id;
     }
     else
     {
       dt_toast_log("%s", load_txt);
     }
+    g_free(load_txt);
   }
   cairo_restore(cri);
 
