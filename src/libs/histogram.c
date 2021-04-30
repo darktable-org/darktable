@@ -458,8 +458,12 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   d->vectorscope_bounds[0] = bounds_x;
   d->vectorscope_bounds[1] = bounds_y;
 
-  // FIXME: do same gamma trick here as in waveform, making the gamma code local to simplify, just need interpolation function
-  const float gamma = 1.0f / 2.0f;
+  // shortcut to change from linear to display gamma
+  const dt_iop_order_iccprofile_info_t *const profile =
+    dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_HLG_REC2020, "", DT_INTENT_PERCEPTUAL);
+  const float *const restrict lut = DT_IS_ALIGNED((const float *const restrict)profile->lut_out[0]);
+  const float lutmax = profile->lutsize - 1;
+
   // loop appears to be too small to benefit w/OpenMP
   // FIXME: is this still true?
   for(size_t out_y = 0; out_y < diam_px; out_y++)
@@ -468,9 +472,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       // FIXME: do need (size_t)4U?
       const float *const restrict b = binned + 4U * (out_y * diam_px + out_x);
       uint8_t *const restrict px = out + out_y * out_stride + out_x * 4U;
-      // FIXME: use cache or linear interpolate from pre-calculated
-      // FIXME: will this ever be below 0?
-      const float intensity = CLAMP(powf(b[3], gamma), 0.f, 1.f);
+      const float intensity = lut[(int)(MIN(1.f, b[3]) * lutmax)];
       // FIXME: can use fewer temps
       float XYZ[4] DT_ALIGNED_PIXEL, xyY[4] DT_ALIGNED_PIXEL, Lch[4] DT_ALIGNED_PIXEL, RGB[4] DT_ALIGNED_PIXEL;
       // FIXME: can do all this work in XYZ? or uvY? (dt_uvY_to_xyY...)
