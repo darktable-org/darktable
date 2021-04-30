@@ -377,6 +377,8 @@ lighttable more responsive when you import large collections of images.
 However, this JPEG thumbnail is processed by the firmware of the camera, with proprietary algorithms,
 and colors, sharpness and contrast might not look the same as
 darktable processing, which is what you see when opening the darkroom. 
+Notice camera's manufacturers don't publish the pixel cuisine they perform in their firmware
+so their look is not exactly nor easily reproduceable externally.
 
 However, once RAW images have been previously edited in darktable, 
 the lighttable thumbnail should match exactly the darkroom preview because they are processed the same.
