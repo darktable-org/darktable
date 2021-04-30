@@ -50,7 +50,8 @@ DT_MODULE_INTROSPECTION(1, dt_iop_sigmoid_params_t)
 typedef enum dt_iop_sigmoid_methods_type_t
 {
   DT_SIGMOID_METHOD_CROSSTALK = 0,     // $DESCRIPTION: "crosstalk"
-  DT_SIGMOID_METHOD_RGB_RATIO = 1      // $DESCRIPTION: "rgb ratio"
+  DT_SIGMOID_METHOD_HUE = 1,           // $DESCRIPTION: "preserve hue"
+  DT_SIGMOID_METHOD_RGB_RATIO = 2      // $DESCRIPTION: "rgb ratio"
 } dt_iop_sigmoid_methods_type_t;
 
 typedef enum dt_iop_sigmoid_negative_values_type_t
@@ -299,6 +300,13 @@ static inline void negative_values(const float pix_in[4], float pix_out[4], cons
   }
 }
 
+// Return the middle value hue compensated such that the new color is only exposure and linear saturation change.
+static inline float preserve_hue(const float maxval, const float maxvalold,
+    const float medvalold, const float minval, const float minvalold)
+{
+  return minval + ((maxval - minval) * (medvalold - minvalold) / (maxvalold - minvalold));
+}
+
 #ifdef _OPENMP
 #pragma omp declare simd uniform(magnitude, paper_exp, film_fog, film_power, paper_power)
 #endif
@@ -419,6 +427,85 @@ void process_loglogistic_ratio(dt_dev_pixelpipe_iop_t *piece, const void *const 
   }
 }
 
+void process_loglogistic_hue(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+                             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
+
+  const float *const in = (const float *)ivoid;
+  float *const out = (float *)ovoid;
+  const size_t npixels = (size_t)roi_in->width * roi_in->height;
+
+  const float white_target = module_data->white_target;
+  const float paper_exp = module_data->paper_exposure;
+  const float film_fog = module_data->film_fog;
+  const float contrast_power = module_data->contrast_power;
+  const float skew_power = module_data->skew_power;
+  const float saturation_factor = module_data->crosstalk_amount;
+  const dt_iop_sigmoid_negative_values_type_t negative_values_method = module_data->negative_values_method;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(npixels, saturation_factor, negative_values_method, white_target, paper_exp, film_fog, contrast_power, skew_power) \
+  dt_omp_sharedconst(in, out) \
+  schedule(static)
+#endif
+  for(size_t k = 0; k < 4 * npixels; k += 4)
+  { 
+    const float *const restrict pix_in = in + k;
+    float *const restrict pix_out = out + k;
+    float DT_ALIGNED_ARRAY pix_in_strict_positive[4];
+
+    // Force negative values to zero
+    negative_values(pix_in, pix_in_strict_positive, negative_values_method);
+
+    // Desature a bit to get proper roll off to white in highlights
+    const float luma = (pix_in_strict_positive[0] + pix_in_strict_positive[1] + pix_in_strict_positive[2]) / 3.0f;
+    for(size_t c = 0; c < 3; c++)
+    {
+      const float desaturated_value = luma + saturation_factor * (pix_in_strict_positive[c] - luma);
+      pix_out[c] = generalized_loglogistic_sigmoid(desaturated_value, white_target, paper_exp, film_fog, contrast_power, skew_power);
+    }
+
+    // Hue correction by scaling the middle value relative to the max and min values.
+    if (pix_in[0] >= pix_in[1])
+    {
+      if (pix_in[1] > pix_in[2])
+      {  // Case 1: r >= g >  b
+        pix_out[1] = preserve_hue(pix_out[0], pix_in[0], pix_in[1], pix_out[2], pix_in[2]);
+      }
+      else if (pix_in[2] > pix_in[0])
+      {  // Case 2: b >  r >= g
+        pix_out[0] = preserve_hue(pix_out[2], pix_in[2], pix_in[0], pix_out[1], pix_in[1]);
+      }
+      else if (pix_in[2] > pix_in[1])
+      {  // Case 3: r >= b >  g
+        pix_out[2] = preserve_hue(pix_out[0], pix_in[0], pix_in[2], pix_out[1], pix_in[1]);
+      } else
+      {  // Case 4: r == g == b
+         // No change of the middle value.
+      }
+    }
+    else
+    {
+      if (pix_in[0] >= pix_in[2])
+      {  // Case 5: g >  r >= b
+        pix_out[0] = preserve_hue(pix_out[1], pix_in[1], pix_in[0], pix_out[2], pix_in[2]);
+      }
+      else if (pix_in[2] > pix_in[1])
+      {  // Case 6: b >  g >  r
+        pix_out[1] = preserve_hue(pix_out[2], pix_in[2], pix_in[1], pix_out[0], pix_in[0]);
+      }
+      else
+      {  // Case 7: g >= b >  r
+        pix_out[2] = preserve_hue(pix_out[1], pix_in[1], pix_in[2], pix_out[0], pix_in[0]);
+      }
+    }
+
+    // Copy over the alpha channel
+    pix_out[3] = pix_in[3];
+  }
+}
 
 /** process, all real work is done here. */
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
@@ -431,9 +518,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     process_loglogistic_crosstalk(piece, ivoid, ovoid, roi_in, roi_out);
   }
-  else
+  else if (module_data->color_processing == DT_SIGMOID_METHOD_RGB_RATIO)
   {
     process_loglogistic_ratio(piece, ivoid, ovoid, roi_in, roi_out);
+  }
+  else
+  {
+    process_loglogistic_hue(piece, ivoid, ovoid, roi_in, roi_out);
   }
 }
 
@@ -475,8 +566,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_sigmoid_gui_data_t *g = (dt_iop_sigmoid_gui_data_t *)self->gui_data;
   dt_iop_sigmoid_params_t *p = (dt_iop_sigmoid_params_t *)self->params;
 
-  gtk_widget_set_visible(g->crosstalk_slider, p->color_processing == DT_SIGMOID_METHOD_CROSSTALK);
-  gtk_widget_set_visible(g->negative_values_list, p->color_processing == DT_SIGMOID_METHOD_CROSSTALK);
+  gtk_widget_set_visible(g->crosstalk_slider, p->color_processing != DT_SIGMOID_METHOD_RGB_RATIO);
+  gtk_widget_set_visible(g->negative_values_list, p->color_processing != DT_SIGMOID_METHOD_RGB_RATIO);
   gtk_widget_set_visible(g->rgb_norm_method_list, p->color_processing == DT_SIGMOID_METHOD_RGB_RATIO);
 }
 
