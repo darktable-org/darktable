@@ -2158,6 +2158,20 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>context_help/url</name>
+    <type>string</type>
+    <default>https://darktable.org/usermanual/</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>context_help/dev_url</name>
+    <type>string</type>
+    <default>https://darktable-org.github.io/dtdocs/</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/imageio/storage/email/client</name>
     <type>string</type>
     <default/>
