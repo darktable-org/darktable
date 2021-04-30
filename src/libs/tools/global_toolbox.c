@@ -593,7 +593,7 @@ static void _main_do_event(GdkEvent *event, gpointer data)
             GtkWidget *dialog = gtk_message_dialog_new
               (GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
                GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-               _("do you want to access %s?"), last_base_url);
+               _("do you want to access `%s'?"), last_base_url);
 #ifdef GDK_WINDOWING_QUARTZ
             dt_osx_disallow_fullscreen(dialog);
 #endif
