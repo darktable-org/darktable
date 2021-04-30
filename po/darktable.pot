@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-04-29 09:51+0200\n"
+"POT-Creation-Date: 2021-04-30 08:14+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -226,7 +226,7 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:4985 ../build/bin/preferences_gen.h:5039
 #: ../build/bin/preferences_gen.h:6861 ../build/bin/conf_gen.h:377
 #: ../build/bin/conf_gen.h:986 ../build/bin/conf_gen.h:1002
-#: ../build/bin/conf_gen.h:2699
+#: ../build/bin/conf_gen.h:2711
 msgctxt "preferences"
 msgid "always"
 msgstr ""
@@ -598,17 +598,17 @@ msgid "white balance slider colors"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4855 ../build/bin/preferences_gen.h:4884
-#: ../build/bin/conf_gen.h:2659
+#: ../build/bin/conf_gen.h:2671
 msgctxt "preferences"
 msgid "no color"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4860 ../build/bin/conf_gen.h:2660
+#: ../build/bin/preferences_gen.h:4860 ../build/bin/conf_gen.h:2672
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4865 ../build/bin/conf_gen.h:2661
+#: ../build/bin/preferences_gen.h:4865 ../build/bin/conf_gen.h:2673
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr ""
@@ -627,17 +627,17 @@ msgid "colorbalance slider block layout"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4920 ../build/bin/preferences_gen.h:4949
-#: ../build/bin/conf_gen.h:2689
+#: ../build/bin/conf_gen.h:2701
 msgctxt "preferences"
 msgid "list"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4925 ../build/bin/conf_gen.h:2690
+#: ../build/bin/preferences_gen.h:4925 ../build/bin/conf_gen.h:2702
 msgctxt "preferences"
 msgid "tabs"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4930 ../build/bin/conf_gen.h:2691
+#: ../build/bin/preferences_gen.h:4930 ../build/bin/conf_gen.h:2703
 msgctxt "preferences"
 msgid "columns"
 msgstr ""
@@ -655,39 +655,39 @@ msgstr ""
 msgid "show right-side buttons in processing module headers"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4990 ../build/bin/conf_gen.h:2700
+#: ../build/bin/preferences_gen.h:4990 ../build/bin/conf_gen.h:2712
 msgctxt "preferences"
 msgid "active"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4995 ../build/bin/conf_gen.h:2701
+#: ../build/bin/preferences_gen.h:4995 ../build/bin/conf_gen.h:2713
 msgctxt "preferences"
 msgid "dim"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5000 ../build/bin/preferences_gen.h:7459
-#: ../build/bin/preferences_gen.h:7495 ../build/bin/conf_gen.h:2133
-#: ../build/bin/conf_gen.h:2702
+#: ../build/bin/preferences_gen.h:7495 ../build/bin/conf_gen.h:2145
+#: ../build/bin/conf_gen.h:2714
 msgctxt "preferences"
 msgid "auto"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5005 ../build/bin/conf_gen.h:2703
+#: ../build/bin/preferences_gen.h:5005 ../build/bin/conf_gen.h:2715
 msgctxt "preferences"
 msgid "fade"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5010 ../build/bin/conf_gen.h:2704
+#: ../build/bin/preferences_gen.h:5010 ../build/bin/conf_gen.h:2716
 msgctxt "preferences"
 msgid "fit"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5015 ../build/bin/conf_gen.h:2705
+#: ../build/bin/preferences_gen.h:5015 ../build/bin/conf_gen.h:2717
 msgctxt "preferences"
 msgid "smooth"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5020 ../build/bin/conf_gen.h:2706
+#: ../build/bin/preferences_gen.h:5020 ../build/bin/conf_gen.h:2718
 msgctxt "preferences"
 msgid "glide"
 msgstr ""
@@ -823,19 +823,19 @@ msgid "auto-apply pixel workflow defaults"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5461 ../build/bin/preferences_gen.h:5490
-#: ../build/bin/conf_gen.h:2545
+#: ../build/bin/conf_gen.h:2557
 msgctxt "preferences"
 msgid "scene-referred"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5466 ../build/bin/conf_gen.h:2546
+#: ../build/bin/preferences_gen.h:5466 ../build/bin/conf_gen.h:2558
 msgctxt "preferences"
 msgid "display-referred"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5471 ../build/bin/preferences_gen.h:7464
-#: ../build/bin/conf_gen.h:1598 ../build/bin/conf_gen.h:2134
-#: ../build/bin/conf_gen.h:2547
+#: ../build/bin/conf_gen.h:1598 ../build/bin/conf_gen.h:2146
+#: ../build/bin/conf_gen.h:2559
 msgctxt "preferences"
 msgid "none"
 msgstr ""
@@ -852,13 +852,13 @@ msgstr ""
 msgid "auto-apply chromatic adaptation defaults"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5526 ../build/bin/conf_gen.h:2555
+#: ../build/bin/preferences_gen.h:5526 ../build/bin/conf_gen.h:2567
 msgctxt "preferences"
 msgid "modern"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5531 ../build/bin/preferences_gen.h:5550
-#: ../build/bin/conf_gen.h:2556
+#: ../build/bin/conf_gen.h:2568
 msgctxt "preferences"
 msgid "legacy"
 msgstr ""
@@ -1317,17 +1317,17 @@ msgid "method to use for getting the display profile"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:7094 ../build/bin/preferences_gen.h:7123
-#: ../build/bin/conf_gen.h:2509
+#: ../build/bin/conf_gen.h:2521
 msgctxt "preferences"
 msgid "all"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:7099 ../build/bin/conf_gen.h:2510
+#: ../build/bin/preferences_gen.h:7099 ../build/bin/conf_gen.h:2522
 msgctxt "preferences"
 msgid "xatom"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:7104 ../build/bin/conf_gen.h:2511
+#: ../build/bin/preferences_gen.h:7104 ../build/bin/conf_gen.h:2523
 msgctxt "preferences"
 msgid "colord"
 msgstr ""
@@ -1442,12 +1442,12 @@ msgstr ""
 msgid "password storage backend to use"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:7469 ../build/bin/conf_gen.h:2135
+#: ../build/bin/preferences_gen.h:7469 ../build/bin/conf_gen.h:2147
 msgctxt "preferences"
 msgid "libsecret"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:7475 ../build/bin/conf_gen.h:2136
+#: ../build/bin/preferences_gen.h:7475 ../build/bin/conf_gen.h:2148
 msgctxt "preferences"
 msgid "kwallet"
 msgstr ""
@@ -1763,56 +1763,56 @@ msgid ""
 "limit the number of points imported with polygon in find location module"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2338
+#: ../build/bin/conf_gen.h:2350
 msgctxt "preferences"
 msgid "histogram"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2339
+#: ../build/bin/conf_gen.h:2351
 msgctxt "preferences"
 msgid "waveform"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2340
+#: ../build/bin/conf_gen.h:2352
 msgctxt "preferences"
 msgid "vectorscope"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2348
+#: ../build/bin/conf_gen.h:2360
 msgctxt "preferences"
 msgid "logarithmic"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2349
+#: ../build/bin/conf_gen.h:2361
 msgctxt "preferences"
 msgid "linear"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2357
+#: ../build/bin/conf_gen.h:2369
 msgctxt "preferences"
 msgid "overlaid"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2358
+#: ../build/bin/conf_gen.h:2370
 msgctxt "preferences"
 msgid "parade"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2366
+#: ../build/bin/conf_gen.h:2378
 msgctxt "preferences"
 msgid "u*v*"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2367
+#: ../build/bin/conf_gen.h:2379
 msgctxt "preferences"
 msgid "AzBz"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2646
+#: ../build/bin/conf_gen.h:2658
 msgid "camera time zone"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2647
+#: ../build/bin/conf_gen.h:2659
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -3035,7 +3035,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:528
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
-#: ../src/common/darktable.c:919 ../src/common/database.c:2543
+#: ../src/common/darktable.c:933 ../src/common/database.c:2543
 #: ../src/common/variables.c:465 ../src/develop/imageop_gui.c:302
 #: ../src/imageio/format/pdf.c:655 ../src/imageio/format/pdf.c:680
 #: ../src/libs/export.c:1277 ../src/libs/export.c:1283
@@ -3788,7 +3788,7 @@ msgstr ""
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
 #: ../src/iop/lut3d.c:1556 ../src/libs/collect.c:426
 #: ../src/libs/copy_history.c:108 ../src/libs/geotagging.c:938
-#: ../src/libs/import.c:1231 ../src/libs/lib.c:235 ../src/libs/styles.c:385
+#: ../src/libs/import.c:1237 ../src/libs/lib.c:235 ../src/libs/styles.c:385
 #: ../src/libs/styles.c:529 ../src/libs/tagging.c:2299
 #: ../src/libs/tagging.c:2340
 msgid "_cancel"
@@ -4283,32 +4283,32 @@ msgstr ""
 msgid "printing `%s' on `%s'"
 msgstr ""
 
-#: ../src/common/darktable.c:245
+#: ../src/common/darktable.c:259
 #, c-format
 msgid "found strange path `%s'"
 msgstr ""
 
-#: ../src/common/darktable.c:260
+#: ../src/common/darktable.c:274
 #, c-format
 msgid "error loading directory `%s'"
 msgstr ""
 
-#: ../src/common/darktable.c:283
+#: ../src/common/darktable.c:297
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr ""
 
-#: ../src/common/darktable.c:296 ../src/control/jobs/control_jobs.c:2104
+#: ../src/common/darktable.c:310 ../src/control/jobs/control_jobs.c:2104
 #: ../src/control/jobs/control_jobs.c:2143
 #, c-format
 msgid "error loading file `%s'"
 msgstr ""
 
-#: ../src/common/darktable.c:914
+#: ../src/common/darktable.c:928
 msgid "darktable - run performance configuration?"
 msgstr ""
 
-#: ../src/common/darktable.c:915
+#: ../src/common/darktable.c:929
 msgid ""
 "we have an updated performance configuration logic - executing that might "
 "improve the performance of darktable.\n"
@@ -4317,7 +4317,7 @@ msgid ""
 "would you like to execute this update of the performance configuration?\n"
 msgstr ""
 
-#: ../src/common/darktable.c:919 ../src/common/database.c:2543
+#: ../src/common/darktable.c:933 ../src/common/database.c:2543
 #: ../src/common/database.c:3601 ../src/common/variables.c:463
 #: ../src/develop/imageop_gui.c:303 ../src/imageio/format/pdf.c:656
 #: ../src/imageio/format/pdf.c:681 ../src/libs/export.c:1278
@@ -4362,8 +4362,8 @@ msgid "error starting darktable"
 msgstr ""
 
 #: ../src/common/database.c:2536 ../src/libs/collect.c:2798
-#: ../src/libs/export_metadata.c:269 ../src/libs/import.c:1417
-#: ../src/libs/metadata.c:446 ../src/libs/metadata_view.c:1040
+#: ../src/libs/export_metadata.c:269 ../src/libs/import.c:1422
+#: ../src/libs/metadata.c:446 ../src/libs/metadata_view.c:1020
 #: ../src/libs/modulegroups.c:3433 ../src/libs/styles.c:439
 #: ../src/libs/styles.c:614 ../src/libs/tagging.c:1359
 #: ../src/libs/tagging.c:1447 ../src/libs/tagging.c:1528
@@ -4565,7 +4565,7 @@ msgstr[1] ""
 
 #: ../src/common/film.c:316 ../src/gui/preferences.c:831
 #: ../src/gui/styles_dialog.c:445 ../src/libs/geotagging.c:839
-#: ../src/libs/import.c:1299
+#: ../src/libs/import.c:1304
 msgid "name"
 msgstr ""
 
@@ -4916,7 +4916,7 @@ msgid "below sea level"
 msgstr ""
 
 #: ../src/common/utility.c:516 ../src/iop/watermark.c:576
-#: ../src/libs/metadata_view.c:750
+#: ../src/libs/metadata_view.c:730
 msgid "m"
 msgstr ""
 
@@ -4948,7 +4948,7 @@ msgstr ""
 msgid "_close"
 msgstr ""
 
-#: ../src/control/crawler.c:417 ../src/libs/import.c:1440
+#: ../src/control/crawler.c:417 ../src/libs/import.c:1445
 #: ../src/libs/select.c:133
 msgid "select all"
 msgstr ""
@@ -5625,7 +5625,7 @@ msgid "unbounded (deprecated)"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:92 ../src/imageio/format/webp.c:357
-#: ../src/libs/metadata.c:445 ../src/libs/metadata_view.c:1039
+#: ../src/libs/metadata.c:445 ../src/libs/metadata_view.c:1019
 msgid "default"
 msgstr ""
 
@@ -7889,7 +7889,7 @@ msgstr ""
 
 #: ../src/gui/preferences.c:1639 ../src/gui/preferences.c:1728
 #: ../src/libs/collect.c:427 ../src/libs/copy_history.c:109
-#: ../src/libs/geotagging.c:939 ../src/libs/import.c:1232
+#: ../src/libs/geotagging.c:939 ../src/libs/import.c:1238
 #: ../src/libs/styles.c:530
 msgid "_open"
 msgstr ""
@@ -11135,21 +11135,21 @@ msgstr ""
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr ""
 
-#: ../src/iop/colorin.c:2117
+#: ../src/iop/colorin.c:2122
 msgid "input profile"
 msgstr ""
 
-#: ../src/iop/colorin.c:2121
+#: ../src/iop/colorin.c:2126
 msgid "working profile"
 msgstr ""
 
-#: ../src/iop/colorin.c:2128 ../src/iop/colorin.c:2139
+#: ../src/iop/colorin.c:2133 ../src/iop/colorin.c:2144
 #: ../src/iop/colorout.c:893
 #, c-format
 msgid "ICC profiles in %s or %s"
 msgstr ""
 
-#: ../src/iop/colorin.c:2150
+#: ../src/iop/colorin.c:2155
 msgid "confine Lab values to gamut of RGB color space"
 msgstr ""
 
@@ -12215,7 +12215,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3081 ../src/iop/toneequal.c:3085
 #: ../src/iop/toneequal.c:3089 ../src/iop/toneequal.c:3093
 #: ../src/iop/toneequal.c:3097 ../src/iop/toneequal.c:3101
-#: ../src/iop/toneequal.c:3105 ../src/libs/metadata_view.c:609
+#: ../src/iop/toneequal.c:3105 ../src/libs/metadata_view.c:589
 #: ../src/views/darkroom.c:2306
 #, c-format
 msgid "%+.2f EV"
@@ -15312,7 +15312,7 @@ msgstr ""
 
 #: ../src/libs/collect.c:2748 ../src/libs/export_metadata.c:289
 #: ../src/libs/image.c:463 ../src/libs/image.c:568 ../src/libs/metadata.c:486
-#: ../src/libs/metadata.c:657 ../src/libs/metadata_view.c:1071
+#: ../src/libs/metadata.c:657 ../src/libs/metadata_view.c:1051
 msgid "metadata"
 msgstr ""
 
@@ -15333,14 +15333,14 @@ msgid "collect images settings"
 msgstr ""
 
 #: ../src/libs/collect.c:2799 ../src/libs/export_metadata.c:269
-#: ../src/libs/metadata.c:446 ../src/libs/metadata_view.c:1040
+#: ../src/libs/metadata.c:446 ../src/libs/metadata_view.c:1020
 #: ../src/libs/tagging.c:1528 ../src/libs/tagging.c:1653
 #: ../src/libs/tagging.c:1927
 msgid "save"
 msgstr ""
 
 #: ../src/libs/collect.c:2813 ../src/libs/export.c:1106
-#: ../src/libs/metadata.c:580 ../src/libs/metadata_view.c:1151
+#: ../src/libs/metadata.c:580 ../src/libs/metadata_view.c:1131
 msgid "preferences..."
 msgstr ""
 
@@ -16221,8 +16221,7 @@ msgstr ""
 msgid "deprecated module"
 msgstr ""
 
-#: ../src/libs/history.c:793 ../src/libs/metadata_view.c:556
-#: ../src/libs/snapshots.c:467
+#: ../src/libs/history.c:793 ../src/libs/snapshots.c:467
 msgid "unknown"
 msgstr ""
 
@@ -16564,7 +16563,7 @@ msgstr ""
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr ""
 
-#: ../src/libs/import.c:254 ../src/libs/import.c:1402
+#: ../src/libs/import.c:254 ../src/libs/import.c:1407
 msgid "import from camera"
 msgstr ""
 
@@ -16587,40 +16586,40 @@ msgstr ""
 msgid "folders"
 msgstr ""
 
-#: ../src/libs/import.c:1231
+#: ../src/libs/import.c:1237
 msgid "open folder"
 msgstr ""
 
-#: ../src/libs/import.c:1295
+#: ../src/libs/import.c:1300
 msgid "mark already imported pictures"
 msgstr ""
 
-#: ../src/libs/import.c:1319
+#: ../src/libs/import.c:1324
 msgid "modified"
 msgstr ""
 
-#: ../src/libs/import.c:1324
+#: ../src/libs/import.c:1329
 msgid "file 'modified date/time', may be different from 'Exif date/time'"
 msgstr ""
 
-#: ../src/libs/import.c:1336
+#: ../src/libs/import.c:1341
 msgid "show/hide thumbnails"
 msgstr ""
 
 #. collapsible section
-#: ../src/libs/import.c:1372
+#: ../src/libs/import.c:1377
 msgid "naming rules"
 msgstr ""
 
-#: ../src/libs/import.c:1400
+#: ../src/libs/import.c:1405
 msgid "import in-place"
 msgstr ""
 
-#: ../src/libs/import.c:1401
+#: ../src/libs/import.c:1406
 msgid "copy and import"
 msgstr ""
 
-#: ../src/libs/import.c:1405
+#: ../src/libs/import.c:1410
 msgid ""
 "choose the root of the folder tree below\n"
 "try to choose a root folder that contains most/all of your photographs (in "
@@ -16629,31 +16628,31 @@ msgid ""
 "e.g. set it to your 'pictures' or 'home' directory"
 msgstr ""
 
-#: ../src/libs/import.c:1444 ../src/libs/select.c:137
+#: ../src/libs/import.c:1449 ../src/libs/select.c:137
 msgid "select none"
 msgstr ""
 
-#: ../src/libs/import.c:1450
+#: ../src/libs/import.c:1455
 msgid "select new"
 msgstr ""
 
-#: ../src/libs/import.c:1526
+#: ../src/libs/import.c:1531
 msgid "please wait while prefetching the list of images from camera..."
 msgstr ""
 
-#: ../src/libs/import.c:1727
+#: ../src/libs/import.c:1737
 msgid "import in-place..."
 msgstr ""
 
-#: ../src/libs/import.c:1728
+#: ../src/libs/import.c:1738
 msgid "import images in-place without renaming"
 msgstr ""
 
-#: ../src/libs/import.c:1735
+#: ../src/libs/import.c:1745
 msgid "copy and import..."
 msgstr ""
 
-#: ../src/libs/import.c:1736
+#: ../src/libs/import.c:1746
 msgid ""
 "copy and optionally rename images before importing them\n"
 "patterns can be defined to rename the images and specify the destination "
@@ -16661,7 +16660,7 @@ msgid ""
 msgstr ""
 
 #. collapsible section
-#: ../src/libs/import.c:1762
+#: ../src/libs/import.c:1772
 msgid "parameters"
 msgstr ""
 
@@ -17032,11 +17031,11 @@ msgstr ""
 msgid "<leave unchanged>"
 msgstr ""
 
-#: ../src/libs/metadata.c:444 ../src/libs/metadata_view.c:1038
+#: ../src/libs/metadata.c:444 ../src/libs/metadata_view.c:1018
 msgid "metadata settings"
 msgstr ""
 
-#: ../src/libs/metadata.c:492 ../src/libs/metadata_view.c:1082
+#: ../src/libs/metadata.c:492 ../src/libs/metadata_view.c:1062
 msgid "visible"
 msgstr ""
 
@@ -17235,61 +17234,17 @@ msgid_plural "image has %d stars"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/libs/metadata_view.c:557
-msgid "tiff"
-msgstr ""
-
-#: ../src/libs/metadata_view.c:558
-msgid "png"
-msgstr ""
-
-#: ../src/libs/metadata_view.c:559
-msgid "j2k"
-msgstr ""
-
-#: ../src/libs/metadata_view.c:560
-msgid "jpeg"
-msgstr ""
-
-#: ../src/libs/metadata_view.c:561
-msgid "exr"
-msgstr ""
-
-#: ../src/libs/metadata_view.c:562
-msgid "rgbe"
-msgstr ""
-
-#: ../src/libs/metadata_view.c:563
-msgid "pfm"
-msgstr ""
-
-#: ../src/libs/metadata_view.c:564
-msgid "GraphicsMagick"
-msgstr ""
-
-#: ../src/libs/metadata_view.c:565
-msgid "rawspeed"
-msgstr ""
-
-#: ../src/libs/metadata_view.c:566
-msgid "netpnm"
-msgstr ""
-
-#: ../src/libs/metadata_view.c:567
-msgid "avif"
-msgstr ""
-
-#: ../src/libs/metadata_view.c:572
+#: ../src/libs/metadata_view.c:552
 #, c-format
 msgid "loader: %s"
 msgstr ""
 
-#: ../src/libs/metadata_view.c:877
+#: ../src/libs/metadata_view.c:857
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr ""
 
-#: ../src/libs/metadata_view.c:1077
+#: ../src/libs/metadata_view.c:1057
 msgid ""
 "drag and drop one row at a time until you get the desired order\n"
 "untick to hide metadata which are not of interest for you\n"
@@ -18585,67 +18540,68 @@ msgstr ""
 msgid "show global preferences"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:595
-msgid "do you want to access https://darktable.org/usermanual/?"
+#: ../src/libs/tools/global_toolbox.c:596
+#, c-format
+msgid "do you want to access `%s'?"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:600
+#: ../src/libs/tools/global_toolbox.c:601
 msgid "access the online usermanual?"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:643
+#: ../src/libs/tools/global_toolbox.c:647
 msgid "help url opened in web browser"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:647
+#: ../src/libs/tools/global_toolbox.c:651
 msgid "error while opening help url in web browser"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:658
+#: ../src/libs/tools/global_toolbox.c:662
 msgid "there is no help available for this element"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:700
+#: ../src/libs/tools/global_toolbox.c:721
 msgctxt "accel"
 msgid "grouping"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:701
+#: ../src/libs/tools/global_toolbox.c:722
 msgctxt "accel"
 msgid "preferences"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:703
+#: ../src/libs/tools/global_toolbox.c:724
 msgctxt "accel"
 msgid "thumbnail overlays/no overlays"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:704
+#: ../src/libs/tools/global_toolbox.c:725
 msgctxt "accel"
 msgid "thumbnail overlays/overlays on mouse hover"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:705
+#: ../src/libs/tools/global_toolbox.c:726
 msgctxt "accel"
 msgid "thumbnail overlays/extended overlays on mouse hover"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:706
+#: ../src/libs/tools/global_toolbox.c:727
 msgctxt "accel"
 msgid "thumbnail overlays/permanent overlays"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:707
+#: ../src/libs/tools/global_toolbox.c:728
 msgctxt "accel"
 msgid "thumbnail overlays/permanent extended overlays"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:708
+#: ../src/libs/tools/global_toolbox.c:729
 msgctxt "accel"
 msgid "thumbnail overlays/permanent overlays extended on mouse hover"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:709
+#: ../src/libs/tools/global_toolbox.c:730
 msgctxt "accel"
 msgid "thumbnail overlays/overlays block on mouse hover"
 msgstr ""
@@ -18678,51 +18634,51 @@ msgstr ""
 msgid "click to enter culling layout in dynamic mode."
 msgstr ""
 
-#: ../src/libs/tools/lighttable.c:262
+#: ../src/libs/tools/lighttable.c:263
 msgid "click to enter filemanager layout."
 msgstr ""
 
-#: ../src/libs/tools/lighttable.c:267
+#: ../src/libs/tools/lighttable.c:270
 msgid "click to enter zoomable lighttable layout."
 msgstr ""
 
 #. view accels
-#: ../src/libs/tools/lighttable.c:559
+#: ../src/libs/tools/lighttable.c:568
 msgctxt "accel"
 msgid "toggle filemanager layout"
 msgstr ""
 
-#: ../src/libs/tools/lighttable.c:560
+#: ../src/libs/tools/lighttable.c:569
 msgctxt "accel"
 msgid "toggle zoomable lighttable layout"
 msgstr ""
 
-#: ../src/libs/tools/lighttable.c:561
+#: ../src/libs/tools/lighttable.c:570
 msgctxt "accel"
 msgid "toggle culling mode"
 msgstr ""
 
-#: ../src/libs/tools/lighttable.c:562
+#: ../src/libs/tools/lighttable.c:571
 msgctxt "accel"
 msgid "toggle culling dynamic mode"
 msgstr ""
 
-#: ../src/libs/tools/lighttable.c:564
+#: ../src/libs/tools/lighttable.c:573
 msgctxt "accel"
 msgid "toggle culling zoom mode"
 msgstr ""
 
-#: ../src/libs/tools/lighttable.c:565
+#: ../src/libs/tools/lighttable.c:574
 msgctxt "accel"
 msgid "toggle sticky preview mode"
 msgstr ""
 
-#: ../src/libs/tools/lighttable.c:566
+#: ../src/libs/tools/lighttable.c:575
 msgctxt "accel"
 msgid "toggle sticky preview mode with focus detection"
 msgstr ""
 
-#: ../src/libs/tools/lighttable.c:568
+#: ../src/libs/tools/lighttable.c:577
 msgctxt "accel"
 msgid "exit current layout"
 msgstr ""
