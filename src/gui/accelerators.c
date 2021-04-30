@@ -1438,6 +1438,10 @@ static gboolean _visible_shortcuts(GtkTreeModel *model, GtkTreeIter  *iter, gpoi
 
   dt_shortcut_t *s = g_sequence_get(data_ptr);
 
+  if(_selected_action->type == DT_ACTION_TYPE_FALLBACK &&
+     s->action->type == GPOINTER_TO_INT(_selected_action->target))
+    return TRUE;
+
   for(dt_action_t *ac = s->action; ac; ac = ac->owner)
     if(ac == _selected_action)
       return TRUE;
