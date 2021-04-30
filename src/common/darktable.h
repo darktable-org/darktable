@@ -193,6 +193,9 @@ static inline int dt_version()
 #endif
 }
 
+// returns true if the running darktable corresponds to a dev version
+gboolean dt_is_dev_version();
+
 // Golden number (1+sqrt(5))/2
 #ifndef PHI
 #define PHI 1.61803398874989479F
