@@ -1169,10 +1169,13 @@ void gui_init(struct dt_iop_module_t *self)
                                                  "then adjusted based on L curve data. auto XYZ is similar "
                                                  "but applies the saturation changes in XYZ space."));
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
-  dt_ui_notebook_page(c->channel_tabs, _("L"), _("tonecurve for L channel"));
-  dt_ui_notebook_page(c->channel_tabs, _("a"), _("tonecurve for a channel"));
-  dt_ui_notebook_page(c->channel_tabs, _("b"), _("tonecurve for b channel"));
+
+  static dt_action_def_t notebook_def = { };
+  c->channel_tabs = dt_ui_notebook_new(&notebook_def);
+  dt_action_define_iop(self, NULL, N_("channel"), GTK_WIDGET(c->channel_tabs), &notebook_def);
+  dt_ui_notebook_page(c->channel_tabs, N_("L"), _("tonecurve for L channel"));
+  dt_ui_notebook_page(c->channel_tabs, N_("a"), _("tonecurve for a channel"));
+  dt_ui_notebook_page(c->channel_tabs, N_("b"), _("tonecurve for b channel"));
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), gtk_grid_new(), TRUE, TRUE, 0);
