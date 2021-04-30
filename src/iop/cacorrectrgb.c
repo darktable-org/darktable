@@ -190,7 +190,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   memcpy(piece->data, p1, self->params_size);
 }
 
-static void normalize_manifolds(float *const restrict blurred_in, float *const restrict blurred_manifold_lower, float *const restrict blurred_manifold_higher, const size_t width, const size_t height, const dt_iop_cacorrectrgb_guide_channel_t guide)
+static void normalize_manifolds(const float *const restrict blurred_in, float *const restrict blurred_manifold_lower, float *const restrict blurred_manifold_higher, const size_t width, const size_t height, const dt_iop_cacorrectrgb_guide_channel_t guide)
 {
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
@@ -199,8 +199,8 @@ dt_omp_firstprivate(blurred_in, blurred_manifold_lower, blurred_manifold_higher,
 #endif
   for(size_t k = 0; k < width * height; k++)
   {
-    const float weighth = fmaxf(blurred_manifold_higher[k * 4 + 3], 1E-6);
-    const float weightl = fmaxf(blurred_manifold_lower[k * 4 + 3], 1E-6);
+    const float weighth = fmaxf(blurred_manifold_higher[k * 4 + 3], 1E-2);
+    const float weightl = fmaxf(blurred_manifold_lower[k * 4 + 3], 1E-2);
 
     // normalize guide
     float highg = blurred_manifold_higher[k * 4 + guide] / weighth;
@@ -222,16 +222,24 @@ dt_omp_firstprivate(blurred_in, blurred_manifold_lower, blurred_manifold_higher,
     // replace by average if weight is too small
     if(weighth < 0.05f)
     {
+      // we make a smooth transition between full manifold at
+      // weighth = 0.05f to full average at weighth = 0.01f
+      const float w = (weighth - 0.01f) / (0.05f - 0.01f);
       for(size_t c = 0; c < 3; c++)
       {
-        blurred_manifold_higher[k * 4 + c] = blurred_in[k * 4 + c];
+        blurred_manifold_higher[k * 4 + c] = w * blurred_manifold_higher[k * 4 + c]
+                                           + (1.0f - w) * blurred_in[k * 4 + c];
       }
     }
     if(weightl < 0.05f)
     {
+      // we make a smooth transition between full manifold at
+      // weightl = 0.05f to full average at weightl = 0.01f
+      const float w = (weightl - 0.01f) / (0.05f - 0.01f);
       for(size_t c = 0; c < 3; c++)
       {
-        blurred_manifold_lower[k * 4 + c] = blurred_in[k * 4 + c];
+        blurred_manifold_lower[k * 4 + c] = w * blurred_manifold_lower[k * 4 + c]
+                                          + (1.0f - w) * blurred_in[k * 4 + c];
       }
     }
   }
