@@ -3769,27 +3769,27 @@ static void _manage_show_window(dt_lib_module_t *self)
   gtk_widget_set_name(hb, "modulegroups_top_box");
   GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(hb2), gtk_label_new(_("preset : ")), FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb2), gtk_label_new(_("preset : ")), FALSE, TRUE, 2);
   d->presets_combo = gtk_combo_box_text_new();
   g_signal_connect(G_OBJECT(d->presets_combo), "changed", G_CALLBACK(_manage_preset_change), self);
-  gtk_box_pack_start(GTK_BOX(hb2), d->presets_combo, FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vb), hb2, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb2), d->presets_combo, TRUE, TRUE, 2);
+  gtk_box_pack_start(GTK_BOX(vb), hb2, FALSE, TRUE, 2);
   // presets buttons
   hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->presets_btn_remove = dt_ui_button_new(_("remove"), _("remove the preset"), NULL);
   g_signal_connect(G_OBJECT(d->presets_btn_remove), "clicked", G_CALLBACK(_manage_preset_delete), self);
-  gtk_box_pack_start(GTK_BOX(hb2), d->presets_btn_remove, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb2), d->presets_btn_remove, TRUE, TRUE, 2);
   d->presets_btn_dup = dt_ui_button_new(_("duplicate"), _("duplicate the preset"), NULL);
   g_signal_connect(G_OBJECT(d->presets_btn_dup), "clicked", G_CALLBACK(_manage_editor_preset_action), self);
-  gtk_box_pack_start(GTK_BOX(hb2), d->presets_btn_dup, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb2), d->presets_btn_dup, TRUE, TRUE, 2);
   d->presets_btn_rename = dt_ui_button_new(_("rename"), _("rename the preset"), NULL);
   g_signal_connect(G_OBJECT(d->presets_btn_rename), "clicked", G_CALLBACK(_manage_editor_preset_action), self);
-  gtk_box_pack_start(GTK_BOX(hb2), d->presets_btn_rename, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb2), d->presets_btn_rename, TRUE, TRUE, 2);
   d->presets_btn_new = dt_ui_button_new(_("new"), _("create a new empty preset"), NULL);
   g_signal_connect(G_OBJECT(d->presets_btn_new), "clicked", G_CALLBACK(_manage_editor_preset_action), self);
-  gtk_box_pack_start(GTK_BOX(hb2), d->presets_btn_new, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vb), hb2, FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hb2), d->presets_btn_new, TRUE, TRUE, 2);
+  gtk_box_pack_start(GTK_BOX(vb), hb2, FALSE, TRUE, 2);
+  gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, TRUE, 2);
 
   // presets settings (search + quick acces)
   vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -3813,7 +3813,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   d->edit_autoapply_btn = dtgtk_button_new(dtgtk_cairo_paint_preferences, 0, NULL);
   g_signal_connect(G_OBJECT(d->edit_autoapply_btn), "clicked", G_CALLBACK(_preset_autoapply_edit), self);
   gtk_widget_set_name(d->edit_autoapply_btn, "modulegroups-autoapply-btn");
-  gtk_box_pack_start(GTK_BOX(hb2), d->edit_autoapply_btn, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hb2), d->edit_autoapply_btn, FALSE, FALSE, 2);
   gtk_box_pack_start(GTK_BOX(vb), hb2, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, TRUE, 0);
 
