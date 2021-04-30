@@ -1400,7 +1400,7 @@ static void _set_expander_content(GtkWidget *rbox, dt_lib_module_t* self)
   gtk_box_pack_start(GTK_BOX(rbox), GTK_WIDGET(box), FALSE, FALSE, 0);
 }
 
-static const char *_import_text[] =
+static const char *const _import_text[] =
 {
   N_("import in-place"),
   N_("copy and import"),
@@ -1418,9 +1418,9 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
   d->from.dialog = gtk_dialog_new_with_buttons
-    ( _import_text[d->import_case], NULL, GTK_DIALOG_MODAL,
+    ( _(_import_text[d->import_case]), NULL, GTK_DIALOG_MODAL,
       _("cancel"), GTK_RESPONSE_CANCEL,
-      _import_text[d->import_case], GTK_RESPONSE_ACCEPT,
+      _(_import_text[d->import_case]), GTK_RESPONSE_ACCEPT,
       NULL);
 
 #ifdef GDK_WINDOWING_QUARTZ
@@ -1466,7 +1466,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   {
     // root folder
     box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-    gtk_widget_set_tooltip_text(box, folder_tooltip);
+    gtk_widget_set_tooltip_text(box, _(folder_tooltip));
     GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
     gtk_widget_set_name(button, "non-flat");
     gtk_box_pack_start(GTK_BOX(box), button, FALSE, FALSE, 0);
