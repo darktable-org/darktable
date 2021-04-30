@@ -1468,6 +1468,7 @@ void gui_init(dt_lib_module_t *self)
   d->time_pos = d->time_mini;
   /* creating drawing area */
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   /* creating timeline box*/
   d->timeline = gtk_event_box_new();
