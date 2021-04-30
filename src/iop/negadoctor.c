@@ -804,10 +804,12 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_negadoctor_gui_data_t *g = IOP_GUI_ALLOC(negadoctor);
 
-  g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
+  static dt_action_def_t notebook_def = { };
+  g->notebook = dt_ui_notebook_new(&notebook_def);
+  dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
 
   // Page FILM PROPERTIES
-  GtkWidget *page1 = self->widget = dt_ui_notebook_page(g->notebook, _("film properties"), NULL);
+  GtkWidget *page1 = self->widget = dt_ui_notebook_page(g->notebook, N_("film properties"), NULL);
 
   // Dmin
 
@@ -878,7 +880,7 @@ void gui_init(dt_iop_module_t *self)
                                            "before the inversion, so blacks are neither clipped or too pale."));
 
   // Page CORRECTIONS
-  GtkWidget *page2 = self->widget = dt_ui_notebook_page(g->notebook, _("corrections"), NULL);
+  GtkWidget *page2 = self->widget = dt_ui_notebook_page(g->notebook, N_("corrections"), NULL);
 
   // WB shadows
   gtk_box_pack_start(GTK_BOX(page2), dt_ui_section_label_new(_("shadows color cast")), FALSE, FALSE, 0);
@@ -955,7 +957,7 @@ void gui_init(dt_iop_module_t *self)
                                               "recovering the global white balance in difficult cases."));
 
   // Page PRINT PROPERTIES
-  GtkWidget *page3 = self->widget = dt_ui_notebook_page(g->notebook, _("print properties"), NULL);
+  GtkWidget *page3 = self->widget = dt_ui_notebook_page(g->notebook, N_("print properties"), NULL);
 
   // print corrections
   gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(_("virtual paper properties")), FALSE, FALSE, 0);

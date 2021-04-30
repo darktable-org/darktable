@@ -461,8 +461,8 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_notebook_new();
   dt_gui_add_help_link(self->widget, dt_get_help_url("image"));
 
-  GtkWidget *page1 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), _("images"), NULL);
-  GtkWidget *page2 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), _("metadata"), NULL);
+  GtkWidget *page1 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), N_("images"), NULL);
+  GtkWidget *page2 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), N_("metadata"), NULL);
 
   // images operations
   d->page1 = gtk_grid_new();

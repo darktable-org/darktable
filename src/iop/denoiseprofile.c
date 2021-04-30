@@ -3541,16 +3541,17 @@ void gui_init(dt_iop_module_t *self)
   g->wavelet_color_mode = dt_bauhaus_combobox_from_params(self, "wavelet_color_mode");
 
   g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
-  dt_ui_notebook_page(g->channel_tabs, _("all"), NULL);
-  dt_ui_notebook_page(g->channel_tabs, _("R"), NULL);
-  dt_ui_notebook_page(g->channel_tabs, _("G"), NULL);
-  dt_ui_notebook_page(g->channel_tabs, _("B"), NULL);
+  dt_action_define_iop(self, NULL, N_("channel"), GTK_WIDGET(g->channel_tabs), &dt_action_def_tabs_rgb);
+  dt_ui_notebook_page(g->channel_tabs, N_("all"), NULL);
+  dt_ui_notebook_page(g->channel_tabs, N_("R"), NULL);
+  dt_ui_notebook_page(g->channel_tabs, N_("G"), NULL);
+  dt_ui_notebook_page(g->channel_tabs, N_("B"), NULL);
   g_signal_connect(G_OBJECT(g->channel_tabs), "switch_page", G_CALLBACK(denoiseprofile_tab_switch), self);
   gtk_box_pack_start(GTK_BOX(g->box_wavelets), GTK_WIDGET(g->channel_tabs), FALSE, FALSE, 0);
 
   g->channel_tabs_Y0U0V0 = GTK_NOTEBOOK(gtk_notebook_new());
-  dt_ui_notebook_page(g->channel_tabs_Y0U0V0, _("Y0"), NULL);
-  dt_ui_notebook_page(g->channel_tabs_Y0U0V0, _("U0V0"), NULL);
+  dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("Y0"), NULL);
+  dt_ui_notebook_page(g->channel_tabs_Y0U0V0, N_("U0V0"), NULL);
   g_signal_connect(G_OBJECT(g->channel_tabs_Y0U0V0), "switch_page", G_CALLBACK(denoiseprofile_tab_switch), self);
   gtk_box_pack_start(GTK_BOX(g->box_wavelets), GTK_WIDGET(g->channel_tabs_Y0U0V0), FALSE, FALSE, 0);
 

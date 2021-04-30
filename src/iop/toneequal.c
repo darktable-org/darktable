@@ -3062,11 +3062,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   gui_cache_init(self);
 
-  g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
+  static dt_action_def_t notebook_def = { };
+  g->notebook = dt_ui_notebook_new(&notebook_def);
+  dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
 
   // Simple view
 
-  self->widget = dt_ui_notebook_page(g->notebook, _("simple"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, N_("simple"), NULL);
 
   g->noise = dt_bauhaus_slider_from_params(self, "noise");
   dt_bauhaus_slider_set_step(g->noise, .05);
@@ -3116,7 +3118,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Advanced view
 
-  self->widget = dt_ui_notebook_page(g->notebook, _("advanced"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, N_("advanced"), NULL);
 
   g->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
@@ -3147,7 +3149,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Masking options
 
-  self->widget = dt_ui_notebook_page(g->notebook, _("masking"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, N_("masking"), NULL);
 
   g->method = dt_bauhaus_combobox_from_params(self, "method");
   dt_bauhaus_combobox_remove_at(g->method, DT_TONEEQ_LAST);

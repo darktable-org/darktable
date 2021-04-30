@@ -372,6 +372,12 @@ static inline GtkWidget *dt_ui_label_new(const gchar *str)
   return label;
 };
 
+extern const struct dt_action_def_t dt_action_def_tabs_all_rgb;
+extern const struct dt_action_def_t dt_action_def_tabs_rgb;
+extern const struct dt_action_def_t dt_action_def_tabs_none;
+
+GtkNotebook *dt_ui_notebook_new(struct dt_action_def_t *def);
+
 // clears all the pages of the notebook
 void dt_ui_notebook_clear(GtkNotebook *notebook);
 

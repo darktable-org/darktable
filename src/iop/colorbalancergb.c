@@ -1614,10 +1614,12 @@ void gui_init(dt_iop_module_t *self)
   g->mask_display = FALSE;
 
   // start building top level widget
-  g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
+  static dt_action_def_t notebook_def = { };
+  g->notebook = dt_ui_notebook_new(&notebook_def);
+  dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
 
   // Page master
-  self->widget = dt_ui_notebook_page(g->notebook, _("master"), _("global grading"));
+  self->widget = dt_ui_notebook_page(g->notebook, N_("master"), _("global grading"));
 
   g->hue_angle = dt_bauhaus_slider_from_params(self, "hue_angle");
   dt_bauhaus_slider_set_digits(g->hue_angle, 4);
@@ -1729,7 +1731,7 @@ void gui_init(dt_iop_module_t *self)
 
 
   // Page 4-ways
-  self->widget = dt_ui_notebook_page(g->notebook, _("4 ways"), _("selective color grading"));
+  self->widget = dt_ui_notebook_page(g->notebook, N_("4 ways"), _("selective color grading"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("global offset")), FALSE, FALSE, 0);
 
@@ -1827,7 +1829,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->midtones_C, _("chroma of the color exponent in midtones"));
 
   // Page masks
-  self->widget = dt_ui_notebook_page(g->notebook, _("masks"), _("isolate luminances"));
+  self->widget = dt_ui_notebook_page(g->notebook, N_("masks"), _("isolate luminances"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("luminance ranges")), FALSE, FALSE, 0);
 
