@@ -279,7 +279,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
 }
 
 static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const float *const input,
-                                               const dt_histogram_roi_t *const roi)
+                                               dt_histogram_roi_t *const roi)
 {
   dt_times_t start_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
@@ -353,44 +353,21 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
   int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
   int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
-  size_t min_x, min_y, max_x, max_y;
+  size_t pt_sample[2];
 
-  // special case, point sample
-  // FIXME: instead calculate whole graph and the point sample coords, draw those on top of a dimmer graph
+  // point sample still calculates graph based on whole image
   if(sample_width == 1 && sample_height == 1)
   {
-    float XYZ_D50[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
-    dt_ioppr_rgb_matrix_to_xyz(in + 4U * (roi->crop_y * roi->width + roi->crop_x), XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
-                               vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
-    if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
-    {
-      float xyY_D50[4] DT_ALIGNED_PIXEL;
-      dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
-      dt_xyY_to_Luv(xyY_D50, chromaticity);
-    }
-    else
-    {
-      float XYZ_D65[4] DT_ALIGNED_PIXEL;
-      dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
-      dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
-    }
-    d->vectorscope_pt[0] = chromaticity[1];
-    d->vectorscope_pt[1] = chromaticity[2];
-
-    // now calculate graph based on whole image
+    pt_sample[0] = roi->crop_x;
+    pt_sample[1] = roi->crop_y;
     sample_width = roi->width;
     sample_height = roi->height;
-    min_x = min_y  = 0;
-    max_x = roi->width;
-    max_y = roi->height;
+    roi->crop_x = roi->crop_y = roi->crop_width = roi->crop_height = 0;
   }
   else
   {
+    pt_sample[0] = pt_sample[1] = SIZE_MAX;
     d->vectorscope_pt[0] = NAN;
-    min_x = roi->crop_x;
-    min_y = roi->crop_y;
-    max_x = roi->width - roi->crop_width;
-    max_y = roi->height - roi->crop_height;
   }
 
   // FIXME: pre-allocate?
@@ -407,12 +384,12 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   const size_t in_stride = roi->width;
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, binned, min_x, max_x, min_y, max_y, in_stride, vs_prof, diam_px, max_diam, scale, vs_type) \
+  dt_omp_firstprivate(in, binned, roi, in_stride, pt_sample, d, vs_prof, diam_px, max_diam, scale, vs_type) \
   reduction(max : bounds_x, bounds_y) \
   schedule(static)
 #endif
-  for(size_t in_y = min_y; in_y < max_y; in_y++)
-    for(size_t in_x = min_x; in_x < max_x; in_x++)
+  for(size_t in_y = roi->crop_y; in_y < roi->height - roi->crop_height; in_y++)
+    for(size_t in_x = roi->crop_x; in_x < roi->width - roi->crop_width; in_x++)
     {
       // FIXME: Are there are unnecessary color math hops? Right now the data
       // comes into dt_lib_histogram_process() in a known profile
@@ -449,6 +426,12 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
         // FIXME: The bulk of processing time is spent in the XYZ -> JzAzBz conversion in the 2*3 powf() in X'Y'Z' -> L'M'S'. Making a LUT for these, using _apply_trc() to do powf() work. It only needs to be accurate enough to be about on the right pixel for a diam_px x diam_px plot
         dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
+      }
+
+      if(pt_sample[0] == in_x && pt_sample[1] == in_y)
+      {
+        d->vectorscope_pt[0] = chromaticity[1];
+        d->vectorscope_pt[1] = chromaticity[2];
       }
 
       bounds_x = MAX(bounds_x, fabsf(chromaticity[1]));
