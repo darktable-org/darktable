@@ -1418,6 +1418,16 @@ filechooser row:hover,
   margin-top: 0.75em;
 }
 
+#modulegroups-groupbox scrolledwindow
+{
+  margin-top: 0.5em;
+}
+
+#modulegroups-groupbox #modulegroups-header
+{
+  margin-bottom: 0.5em;
+}
+
 #modulegroups-icons-popup
 {
   padding: 0.5em;
@@ -1432,14 +1442,16 @@ filechooser row:hover,
   border: 0;
 }
 
+#modulegroups-groupbox #modulegroups-add-module-btn
+{
+  min-height: 1.2em;
+  min-width: 1.2em;
+  margin: 0;
+}
+
 #modulegroups_iop_title
 {
   font-weight: bold;
-}
-
-#modulegroups-add-module-btn
-{
-  margin-top: 0.4em;
 }
 
 #modulegroups-deprecated-msg,
