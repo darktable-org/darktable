@@ -591,7 +591,7 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
     gchar *original_markup = gtk_widget_get_tooltip_markup(widget);
     gchar *desc_escaped = g_markup_escape_text(description, -1);
     gchar *markup_text = g_strdup_printf("%s<span style='italic' foreground='red'>%s</span>",
-                                         original_markup ? original_markup : "Shortcuts:", desc_escaped);
+                                         original_markup ? original_markup : _("shortcuts:"), desc_escaped);
     gtk_tooltip_set_markup(tooltip, markup_text);
     g_free(original_markup);
     g_free(desc_escaped);
@@ -974,7 +974,7 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
       if(elements && elements->name)
       {
         if(s->element || s->action->type != DT_ACTION_TYPE_FALLBACK)
-          field_text = g_strdup(elements[s->element].name);
+          field_text = g_strdup(_(elements[s->element].name));
         if(s->element == 0) weight = PANGO_WEIGHT_LIGHT;
         editable = TRUE;
       }
@@ -985,7 +985,7 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
       {
         if(s->effect >= 0 &&
            (s->effect || s->action->type != DT_ACTION_TYPE_FALLBACK))
-          field_text = g_strdup(elements[s->element].effects[s->effect]);
+          field_text = g_strdup(_(elements[s->element].effects[s->effect]));
         if(s->effect == 0) weight = PANGO_WEIGHT_LIGHT;
         editable = TRUE;
       }
@@ -1975,9 +1975,11 @@ static void lookup_mapping_widget()
   }
 
   const dt_action_def_t *def = _action_find_definition(_sc.action);
-  _sc.element = def && def->identify
-              ? def->identify(darktable.control->mapping_widget)
-              : def->elements ? darktable.control->element : 0;
+  _sc.element = 0;
+  if(def && def->elements && def->elements[0].name)
+    _sc.element = def->identify
+                ? def->identify(darktable.control->mapping_widget)
+                : darktable.control->element;
 }
 
 static void define_new_mapping()
@@ -2742,6 +2744,7 @@ dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gc
       if(label) ac->target = widget;
       g_hash_table_insert(darktable.control->widgets, widget, ac);
 
+      gtk_widget_set_has_tooltip(widget, TRUE);
       g_signal_connect(G_OBJECT(widget), "query-tooltip", G_CALLBACK(_shortcut_tooltip_callback), NULL);
       g_signal_connect(G_OBJECT(widget), "destroy", G_CALLBACK(_remove_widget_from_hashtable), NULL);
     }

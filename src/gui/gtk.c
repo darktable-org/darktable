@@ -2954,21 +2954,115 @@ void dt_ui_notebook_clear(GtkNotebook *notebook)
   dt_gui_container_destroy_children(GTK_CONTAINER(notebook));
 }
 
+static float _action_process_tabs(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  GtkNotebook *notebook = GTK_NOTEBOOK(target);
+  if(move_size)
+  {
+    switch(effect)
+    {
+    case DT_ACTION_EFFECT_ACTIVATE:
+      gtk_notebook_set_current_page(notebook, element);
+      break;
+    case DT_ACTION_EFFECT_NEXT:
+      gtk_notebook_prev_page(notebook);
+      break;
+    case DT_ACTION_EFFECT_PREVIOUS:
+      gtk_notebook_next_page(notebook);
+      break;
+    default:
+      fprintf(stderr, "[_action_process_tabs] unknown shortcut effect (%d) for tabs\n", effect);
+      break;
+    }
+  }
+
+  return -1 - gtk_notebook_get_current_page(notebook);
+}
+
+static dt_action_element_t _action_identify_tabs(GtkWidget *w)
+{
+  return gtk_notebook_get_current_page(GTK_NOTEBOOK(w));
+}
+
+const gchar *dt_action_effect_tabs[]
+  = { N_("activate"),
+      N_("next"),
+      N_("previous"),
+      NULL };
+
+static GtkNotebook *_current_notebook = NULL;
+static dt_action_def_t *_current_action_def = NULL;
+
+GtkNotebook *dt_ui_notebook_new(dt_action_def_t *def)
+{
+  _current_notebook = GTK_NOTEBOOK(gtk_notebook_new());
+  if(!def->name)
+  {
+    _current_action_def = def;
+    def->name = "tabs";
+    def->process = _action_process_tabs;
+    def->identify = _action_identify_tabs;
+  }
+
+  return _current_notebook;
+}
+
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip)
 {
-  GtkWidget *label = gtk_label_new(text);
+  if(notebook != _current_notebook)
+  {
+    _current_notebook = 0;
+    _current_action_def = 0;
+  }
+  GtkWidget *label = gtk_label_new(_(text));
   GtkWidget *page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   if(strlen(text) > 2)
     gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   if(tooltip || strlen(text) > 1)
     gtk_widget_set_tooltip_text(label, tooltip ? tooltip : text);
-  gtk_notebook_append_page(notebook, page, label);
+  gint page_num = gtk_notebook_append_page(notebook, page, label);
   gtk_container_child_set(GTK_CONTAINER(notebook), page, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
-  if(gtk_notebook_get_n_pages(notebook) == 2)
+  // GTK_STATE_FLAG_PRELIGHT does not get set on the label on hover so
+  // state-flags-changed doesn't work to update darktable.control->element for shortcut mapping
+  if(page_num == 1)
     g_signal_connect(G_OBJECT(notebook), "size-allocate", G_CALLBACK(notebook_size_callback), NULL);
+  if(_current_action_def)
+  {
+    dt_action_element_def_t *elements = calloc(page_num + 2, sizeof(dt_action_element_def_t));
+    memcpy(elements, _current_action_def->elements, page_num * sizeof(dt_action_element_def_t));
+    elements[page_num].name = text;
+    elements[page_num].effects = dt_action_effect_tabs;
+    free((void *)_current_action_def->elements);
+    _current_action_def->elements = elements;
+  }
 
   return page;
 }
+
+const dt_action_element_def_t _action_elements_tabs_all_rgb[]
+  = { { N_("all"  ), dt_action_effect_tabs },
+      { N_("red"  ), dt_action_effect_tabs },
+      { N_("green"), dt_action_effect_tabs },
+      { N_("blue" ), dt_action_effect_tabs },
+      { NULL       , dt_action_effect_tabs } };
+
+const dt_action_def_t dt_action_def_tabs_all_rgb
+  = { N_("tabs"),
+      _action_process_tabs,
+      _action_identify_tabs,
+      _action_elements_tabs_all_rgb };
+
+const dt_action_def_t dt_action_def_tabs_rgb
+  = { N_("tabs"),
+      _action_process_tabs,
+      _action_identify_tabs,
+      _action_elements_tabs_all_rgb + 1 };
+
+const dt_action_def_t dt_action_def_tabs_none
+  = { N_("tabs"),
+      _action_process_tabs,
+      _action_identify_tabs,
+      _action_elements_tabs_all_rgb + 4 };
 
 static gint _get_container_row_heigth(GtkWidget *w)
 {
