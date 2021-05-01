@@ -242,6 +242,9 @@ static const dt_shortcut_fallback_t _action_fallbacks_value[]
       { .mods = GDK_SHIFT_MASK             , .effect = -1, .speed = 10. },
       { .move = DT_SHORTCUT_MOVE_HORIZONTAL, .effect = -1, .speed = 0.1 },
       { .move = DT_SHORTCUT_MOVE_VERTICAL  , .effect = -1, .speed = 10. },
+      { .effect = DT_ACTION_EFFECT_RESET   , .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
+      // { .effect = DT_ACTION_EFFECT_TOP     , .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE, .direction = DT_SHORTCUT_UP },
+      // { .effect = DT_ACTION_EFFECT_BOTTOM  , .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE, .direction = DT_SHORTCUT_DOWN },
       { } };
 
 const dt_action_def_t dt_action_def_value
