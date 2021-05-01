@@ -3550,6 +3550,7 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
 
   // we remove all widgets from the groups-box
   dt_gui_container_destroy_children(GTK_CONTAINER(d->preset_groups_box));
+  gtk_box_set_homogeneous(GTK_BOX(d->preset_groups_box), TRUE);
 
   // we select the right preset in the combobox (or we select the first one)
   gboolean sel_ok = FALSE;
