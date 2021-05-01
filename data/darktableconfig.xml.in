@@ -2980,6 +2980,13 @@
     <longdescription>if enabled, the buttons in white balance module will be arranged below temp/tint sliders, otherwise they'll be shown in a grid to the right of temp/tint sliders</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/crop/expand_margins</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to show margins</shortdescription>
+    <longdescription>this is just for remembering whether to show margins or not and remember it</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/colorzones/bg_sat_factor</name>
     <type min="0.1" max="1.0">float</type>
     <default>0.5</default>

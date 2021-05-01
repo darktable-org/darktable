@@ -99,6 +99,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {20.0f }, "flip", 0},
   { {21.0f }, "clipping", 0},
   { {21.5f }, "toneequal", 0},
+  { {21.7f }, "crop", 0},
   { {22.0f }, "graduatednd", 0},
   { {23.0f }, "basecurve", 0},
   { {24.0f }, "bilateral", 0},
@@ -187,7 +188,8 @@ const dt_iop_order_entry_t v30_order[] = {
   { {21.0f }, "exposure", 0},
   { {22.0f }, "mask_manager", 0},
   { {23.0f }, "tonemap", 0},
-  { {24.0f }, "toneequal", 0},
+  { {24.0f }, "toneequal", 0},       // last module that need enlarged roi_in
+  { {24.5f }, "crop", 0},            // should go after all modules that may need a wider roi_in
   { {25.0f }, "graduatednd", 0},
   { {26.0f }, "profile_gamma", 0},
   { {27.0f }, "equalizer", 0},
