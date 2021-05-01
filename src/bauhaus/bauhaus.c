@@ -3090,10 +3090,7 @@ const dt_action_element_def_t _action_elements_combo[]
       { NULL } };
 
 static const dt_shortcut_fallback_t _action_fallbacks_slider[]
-  = { { .element = DT_ACTION_ELEMENT_VALUE,  .effect = DT_ACTION_EFFECT_RESET, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
-      { .element = DT_ACTION_ELEMENT_VALUE,  .effect = DT_ACTION_EFFECT_TOP, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE, .direction = DT_SHORTCUT_UP },
-      { .element = DT_ACTION_ELEMENT_VALUE,  .effect = DT_ACTION_EFFECT_BOTTOM, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE, .direction = DT_SHORTCUT_DOWN },
-      { .element = DT_ACTION_ELEMENT_BUTTON, .button = DT_SHORTCUT_LEFT },
+  = { { .element = DT_ACTION_ELEMENT_BUTTON, .button = DT_SHORTCUT_LEFT },
       { .element = DT_ACTION_ELEMENT_BUTTON, .effect = DT_ACTION_EFFECT_TOGGLE_CTRL, .button = DT_SHORTCUT_LEFT, .mods = GDK_CONTROL_MASK },
       { .element = DT_ACTION_ELEMENT_FORCE,  .mods   = GDK_CONTROL_MASK | GDK_SHIFT_MASK, .speed = 10.0 },
       { .element = DT_ACTION_ELEMENT_ZOOM,   .button = DT_SHORTCUT_RIGHT, .move = DT_SHORTCUT_MOVE_VERTICAL },

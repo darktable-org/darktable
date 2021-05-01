@@ -126,6 +126,7 @@ typedef struct dt_action_def_t
 } dt_action_def_t;
 
 extern const dt_action_def_t dt_action_def_toggle;
+extern const dt_action_def_t dt_action_def_button;
 extern const dt_action_def_t dt_action_def_value;
 
 void dt_action_define_iop(dt_iop_module_t *self, const gchar *section, const gchar *label, GtkWidget *widget, const dt_action_def_t *action_def);
