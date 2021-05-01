@@ -18,7 +18,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-// our includes go first:
+
 #include "bauhaus/bauhaus.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
@@ -352,19 +352,28 @@ dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma, mode) \
     const float low_guide = fmaxf(manifolds[k * 6 + 3 + guide], 1E-6);
     const float log_high = log2f(high_guide);
     const float log_low = log2f(low_guide);
+    const float dist_low_high = log_high - log_low;
     const float pixelg = fmaxf(in[k * 4 + guide], 0.0f);
     const float log_pixg = log2f(fminf(fmaxf(pixelg, low_guide), high_guide));
-    float dist = fabsf(log_high - log_pixg) / fmaxf(fabsf(log_high - log_low), 1E-6);
 
+    // determine how close our pixel is from the low manifold compared to the
+    // high manifold.
+    // if pixel value is lower or equal to the low manifold, weight_low = 1.0f
+    // if pixel value is higher or equal to the high manifold, weight_low = 0.0f
+    float weight_low = fabsf(log_high - log_pixg) / fmaxf(dist_low_high, 1E-6);
     // if the manifolds are very close, we are likely to introduce discontinuities
-    // and to have a meaningless "dist".
+    // and to have a meaningless "weight_low".
     // thus in these cases make dist closer to 0.5.
     // we set a threshold of 0.25f EV min.
-    const float dist_low_high = (log_high - log_low) * 4.0f;
-    if(dist_low_high < 1.0f)
+    const float threshold_dist_low_high = 0.25f;
+    if(dist_low_high < threshold_dist_low_high)
     {
-      dist = dist * dist_low_high + 0.5f * (1.0f - dist_low_high);
+      const float weight = dist_low_high / threshold_dist_low_high;
+      // dist_low_high = threshold_dist_low_high => dist
+      // dist_low_high = 0.0 => 0.5f
+      weight_low = weight_low * weight + 0.5f * (1.0f - weight);
     }
+    const float weight_high = fmaxf(1.0f - weight_low, 0.0f);
 
     for(size_t kc = 0; kc <= 1; kc++)
     {
@@ -373,7 +382,8 @@ dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma, mode) \
 
       const float ratio_high_manifolds = manifolds[k * 6 + c] / high_guide;
       const float ratio_low_manifolds = manifolds[k * 6 + 3 + c] / low_guide;
-      const float ratio = powf(ratio_low_manifolds, dist) * powf(ratio_high_manifolds, fmaxf(1.0f - dist, 0.0f));
+      // weighted geometric mean between the ratios.
+      const float ratio = powf(ratio_low_manifolds, weight_low) * powf(ratio_high_manifolds, weight_high);
 
       const float outp = pixelg * ratio;
 
@@ -404,7 +414,8 @@ static void reduce_artifacts(const float* const restrict in,
                           float* const restrict out)
 
 {
-  // in_out contains 2 guided channels of in, and of out
+  // in_out contains the 2 guided channels of in, and the 2 guided channels of out
+  // it allows to blur all channels in one 4-channel gaussian blur instead of 2
   float *const restrict in_out = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
@@ -430,6 +441,15 @@ dt_omp_firstprivate(in, out, in_out, width, height, guide, ch) \
   dt_gaussian_free(g);
   dt_free_align(in_out);
 
+  // we consider that even with chromatic aberration, local average should
+  // be close to be accurate.
+  // thus, the local average of output should be similar to the one of the input
+  // if they are not, the algorithm probably washed out colors too much or
+  // may have produced artifacts.
+  // we do a weighted average between input and output, keeping more input if
+  // the local averages are very different.
+  // we use the same weight for all channels, as using different weights
+  // introduces artefacts in practice.
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
 dt_omp_firstprivate(in, out, blurred_in_out, width, height, guide, safety, ch) \
@@ -513,7 +533,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   reduce_chromatic_aberrations(in, width, height, ch, sigma, guide, mode, safety, out);
 }
 
-/** gui setup and update, these are needed. */
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_cacorrectrgb_gui_data_t *g = (dt_iop_cacorrectrgb_gui_data_t *)self->gui_data;
@@ -525,8 +544,6 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
 }
 
-/** optional: if this exists, it will be called to init new defaults if a new image is
- * loaded from film strip mode. */
 void reload_defaults(dt_iop_module_t *module)
 {
   dt_iop_cacorrectrgb_params_t *d = (dt_iop_cacorrectrgb_params_t *)module->default_params;
