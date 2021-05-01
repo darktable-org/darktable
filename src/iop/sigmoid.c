@@ -89,7 +89,7 @@ typedef struct dt_iop_sigmoid_params_t
   // If no explicit init() is specified, the default implementation uses $DEFAULT tags
   // to initialise self->default_params, which is then used in gui_init to set widget defaults.
 
-  float middle_grey_contrast;  // $MIN: 0.1  $MAX: 4.0 $DEFAULT: 1.6 $DESCRIPTION: "contrast"
+  float middle_grey_contrast;  // $MIN: 0.1  $MAX: 10.0 $DEFAULT: 1.6 $DESCRIPTION: "contrast"
   float contrast_skewness;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "skew"
   float display_white_target;  // $MIN: 20.0  $MAX: 1600.0 $DEFAULT: 100.0 $DESCRIPTION: "target white"
   float display_grey_target;   // $MIN: 0.1  $MAX: 0.2 $DEFAULT: 0.1845 $DESCRIPTION: "target grey"
@@ -106,8 +106,8 @@ typedef struct dt_iop_sigmoid_data_t
   float black_target;
   float paper_exposure;
   float film_fog;
-  float contrast_power;
-  float skew_power;
+  float film_power;
+  float paper_power;
   dt_iop_sigmoid_methods_type_t color_processing;
   dt_iop_sigmoid_negative_values_type_t negative_values_method;
   float crosstalk_amount;
@@ -176,6 +176,19 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd uniform(magnitude, paper_exp, film_fog, film_power, paper_power)
+#endif
+static inline float generalized_loglogistic_sigmoid(const float value, const float magnitude, const float paper_exp,
+                                                    const float film_fog, const float film_power, const float paper_power)
+{
+  // The following equation can be derived as a model for film + paper but it has a pole at 0
+  // magnitude * powf(1.0 + paper_exp * powf(film_fog + value, -film_power), -paper_power);
+  // Rewritten on a stable and with a check for negative values.
+  const float film = value > 0.0f ? pow(value, film_power) : 0.0f;
+  return magnitude * pow(film / (paper_exp + film), paper_power);
+}
+
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_sigmoid_params_t *params = (dt_iop_sigmoid_params_t *)p1;
@@ -187,17 +200,39 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
    * Slope at scene_grey independet of skewness i.e. only changed by the contrast parameter.
    */
 
-  module_data->skew_power = powf(5.0f, -params->contrast_skewness);
-  module_data->contrast_power = powf(params->middle_grey_contrast, 1.0f / module_data->skew_power);
+  // Calculate a reference slope for no skew and a normalized display
+  const float ref_paper_power = 1.0f;
+  const float ref_film_power = params->middle_grey_contrast;
+  const float ref_magnitude = 1.0;
+  const float ref_film_fog = 0.0f;
+  const float ref_paper_exposure = powf(ref_film_fog + MIDDLE_GREY, ref_film_power) * ((ref_magnitude / MIDDLE_GREY) - 1.0f);
+  const float delta = 1e-6f;
+  const float ref_slope = (generalized_loglogistic_sigmoid(MIDDLE_GREY + delta, ref_magnitude, ref_paper_exposure, ref_film_fog, ref_film_power, ref_paper_power) -
+                           generalized_loglogistic_sigmoid(MIDDLE_GREY - delta, ref_magnitude, ref_paper_exposure, ref_film_fog, ref_film_power, ref_paper_power)) / 2.0f / delta;
+
+  // Add skew
+  module_data->paper_power = powf(5.0f, -params->contrast_skewness);
+
+  // Slope at low film power
+  const float temp_film_power = 1.0f;
+  const float temp_white_target = 0.01f * params->display_white_target;
+  const float temp_white_grey_relation = powf(temp_white_target / params->display_grey_target, 1.0f / module_data->paper_power) - 1.0f;
+  const float temp_paper_exposure = powf(MIDDLE_GREY, temp_film_power) * temp_white_grey_relation;
+  const float temp_slope = (generalized_loglogistic_sigmoid(MIDDLE_GREY + delta, temp_white_target, temp_paper_exposure, ref_film_fog, temp_film_power, module_data->paper_power) -
+                            generalized_loglogistic_sigmoid(MIDDLE_GREY - delta, temp_white_target, temp_paper_exposure, ref_film_fog, temp_film_power, module_data->paper_power)) / 2.0f / delta;
+
+  // Figure out what film power fulfills the target slope
+  // (linear when assuming display_black = 0.0)
+  module_data->film_power = ref_slope / temp_slope;
+
+  // Calculate the others parameters now that both film and paper power is nown
   module_data->white_target = 0.01f * params->display_white_target;
   module_data->black_target = 0.01f * params->display_black_target;
-  const float white_grey_relation = powf(module_data->white_target / params->display_grey_target, 1.0f / module_data->skew_power) - 1.0f;
-  module_data->film_fog = 0.0f;
-  if (module_data->black_target > 0.0f) {
-    const float white_black_relation = powf(module_data->white_target / module_data->black_target, 1.0f / module_data->skew_power) - 1.0f;
-    module_data->film_fog = MIDDLE_GREY * powf(white_grey_relation, 1.0f / module_data->contrast_power) / (powf(white_black_relation, 1.0f / module_data->contrast_power) - powf(white_grey_relation, 1.0f / module_data->contrast_power));
-  }
-  module_data->paper_exposure = powf(module_data->film_fog + MIDDLE_GREY, module_data->contrast_power) * white_grey_relation;
+  const float white_grey_relation = powf(module_data->white_target / params->display_grey_target, 1.0f / module_data->paper_power) - 1.0f;
+  const float white_black_relation = powf(module_data->black_target / module_data->white_target, -1.0f / module_data->paper_power) - 1.0f;
+
+  module_data->film_fog = MIDDLE_GREY * powf(white_grey_relation, 1.0f / module_data->film_power) / (powf(white_black_relation, 1.0f / module_data->film_power) - powf(white_grey_relation, 1.0f / module_data->film_power));
+  module_data->paper_exposure = powf(module_data->film_fog + MIDDLE_GREY, module_data->film_power) * white_grey_relation;
 
   module_data->color_processing = params->color_processing;
   module_data->negative_values_method = params->negative_values_method;
@@ -307,18 +342,6 @@ static inline float preserve_hue(const float maxval, const float maxvalold,
   return minval + ((maxval - minval) * (medvalold - minvalold) / (maxvalold - minvalold));
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(magnitude, paper_exp, film_fog, film_power, paper_power)
-#endif
-static inline float generalized_loglogistic_sigmoid(const float value, const float magnitude, const float paper_exp,
-                                                    const float film_fog, const float film_power, const float paper_power)
-{
-  // The following equation can be derived as a model for film + paper but it has a pole at 0
-  // magnitude * powf(1.0 + paper_exp * powf(film_fog + value, -film_power), -paper_power);
-  // Rewritten on a stable and with a check for negative values.
-  const float film = value > 0.0f ? pow(value, film_power) : 0.0f;
-  return magnitude * pow(film / (paper_exp + film), paper_power);
-}
 
 void process_loglogistic_crosstalk(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -333,8 +356,8 @@ void process_loglogistic_crosstalk(dt_dev_pixelpipe_iop_t *piece, const void *co
   const float white_target = module_data->white_target;
   const float paper_exp = module_data->paper_exposure;
   const float film_fog = module_data->film_fog;
-  const float contrast_power = module_data->contrast_power;
-  const float skew_power = module_data->skew_power;
+  const float contrast_power = module_data->film_power;
+  const float skew_power = module_data->paper_power;
   const float saturation_factor = module_data->crosstalk_amount;
   const dt_iop_sigmoid_negative_values_type_t negative_values_method = module_data->negative_values_method;
 
@@ -378,8 +401,8 @@ void process_loglogistic_ratio(dt_dev_pixelpipe_iop_t *piece, const void *const 
   const float black_target = module_data->black_target;
   const float paper_exp = module_data->paper_exposure;
   const float film_fog = module_data->film_fog;
-  const float contrast_power = module_data->contrast_power;
-  const float skew_power = module_data->skew_power;
+  const float contrast_power = module_data->film_power;
+  const float skew_power = module_data->paper_power;
 
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   const dt_iop_sigmoid_norm_type_t rgb_norm_method = module_data->rgb_norm_method;
@@ -439,8 +462,8 @@ void process_loglogistic_hue(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   const float white_target = module_data->white_target;
   const float paper_exp = module_data->paper_exposure;
   const float film_fog = module_data->film_fog;
-  const float contrast_power = module_data->contrast_power;
-  const float skew_power = module_data->skew_power;
+  const float contrast_power = module_data->film_power;
+  const float skew_power = module_data->paper_power;
   const float saturation_factor = module_data->crosstalk_amount;
   const dt_iop_sigmoid_negative_values_type_t negative_values_method = module_data->negative_values_method;
 
@@ -623,6 +646,7 @@ void gui_init(dt_iop_module_t *self)
 
   // Look controls
   g->contrast_slider = dt_bauhaus_slider_from_params(self, "middle_grey_contrast");
+  dt_bauhaus_slider_set_soft_range(g->contrast_slider, 0.4f, 4.0f);
   dt_bauhaus_slider_set_digits(g->contrast_slider, 3);
   g->skewness_slider = dt_bauhaus_slider_from_params(self, "contrast_skewness");
 
