@@ -59,7 +59,6 @@ typedef struct dt_iop_cropping_params_t
   float cy;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "top"
   float cw;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "right"
   float ch;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "bottom"
-  float k_h, k_v;
   int ratio_n;   // $DEFAULT: -1
   int ratio_d;   // $DEFAULT: -1
 } dt_iop_cropping_params_t;
@@ -120,11 +119,8 @@ typedef struct dt_iop_cropping_data_t
   float aspect;             // forced aspect ratio
   float m[4];               // rot/mirror matrix
   float inv_m[4];           // inverse of m (m^-1)
-  float k_h;                // keystone correction, ki and corrected k
-  float k_v;                // keystone correction, ki and corrected k
   float cx, cy, cw, ch;     // crop window
   float cix, ciy;           // crop window on roi_out 1.0 scale
-  float enlarge_x, enlarge_y;
 } dt_iop_cropping_data_t;
 
 static void commit_box(dt_iop_module_t *self, dt_iop_cropping_gui_data_t *g, dt_iop_cropping_params_t *p);
@@ -395,7 +391,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
       // rotation
       p[0] = o[0] - .5f * roi_in->width;
       p[1] = o[1] - .5f * roi_in->height;
-      transform(p, o, d->inv_m, d->k_h, d->k_v);
+      transform(p, o, d->inv_m, 0.0f, 0.0f);
       o[0] += .5f * roi_in->width;
       o[1] += .5f * roi_in->height;
 
@@ -439,9 +435,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
     new_sc_x *= d->cw - d->cx;
     new_sc_y *= d->ch - d->cy;
 
-    d->enlarge_x = fmaxf(-new_x, 0.0f);
     roi_out->x = fmaxf(new_x, 0.0f);
-    d->enlarge_y = fmaxf(-new_y, 0.0f);
     roi_out->y = fmaxf(new_y, 0.0f);
 
     roi_out->width = new_sc_x;
@@ -465,6 +459,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 {
   dt_iop_cropping_data_t *d = (dt_iop_cropping_data_t *)piece->data;
   *roi_in = *roi_out;
+
   // modify_roi_out took care of bounds checking for us. we hopefully do not get requests outside the clipping
   // area.
   // transform aabb back to roi_in
@@ -473,8 +468,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   const float so = roi_out->scale;
   const float kw = piece->buf_in.width * so;
   const float kh = piece->buf_in.height * so;
-  const float roi_out_x = roi_out->x - d->enlarge_x * so;
-  const float roi_out_y = roi_out->y - d->enlarge_y * so;
+  const float roi_out_x = roi_out->x;
+  const float roi_out_y = roi_out->y;
   float p[2], o[2],
       aabb[4] = { roi_out_x + d->cix * so, roi_out_y + d->ciy * so, roi_out_x + d->cix * so + roi_out->width,
                   roi_out_y + d->ciy * so + roi_out->height };
@@ -486,7 +481,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
     p[0] *= 1.0 / so;
     p[1] *= 1.0 / so;
-    backtransform(p, o, d->m, d->k_h, d->k_v);
+    backtransform(p, o, d->m, 0.0f, 0.0f);
     o[0] *= so;
     o[1] *= so;
     o[0] /= kw;
@@ -533,9 +528,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // reset all values to be sure everything is initialized
   d->m[0] = d->m[3] = 1.0f;
   d->m[1] = d->m[2] = 0.0f;
-  d->k_h = d->k_v = 0.0f;
   d->cix = d->ciy = 0.0f;
-  d->enlarge_x = d->enlarge_y = 0.0f;
 
   if(gui_has_focus(self))
   {
