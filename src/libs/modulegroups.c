@@ -3163,7 +3163,7 @@ static GtkWidget *_manage_editor_group_init_basics_box(dt_lib_module_t *self)
     GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_plus_simple,
                                      CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(bt, _("add widgets to the list"));
-    gtk_widget_set_name(bt, "modulegroups-add-module-btn");
+    gtk_widget_set_name(bt, "modulegroups-btn");
     g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_basics_add_popup), self);
     gtk_widget_set_halign(hb4, GTK_ALIGN_CENTER);
     gtk_box_pack_start(GTK_BOX(hb4), bt, FALSE, FALSE, 0);
@@ -3240,7 +3240,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
     // left arrow
     btn = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_DIRECTION_RIGHT | CPF_STYLE_FLAT,
                            NULL);
-    gtk_widget_set_name(btn, "modulegroups-add-module-btn");
+    gtk_widget_set_name(btn, "modulegroups-btn");
     gtk_widget_set_tooltip_text(btn, _("move group to the left"));
     g_object_set_data(G_OBJECT(btn), "group", gr);
     g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_editor_group_move_left), self);
@@ -3251,7 +3251,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
     GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_plus_simple,
                                      CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(bt, _("add module to the list"));
-    gtk_widget_set_name(bt, "modulegroups-add-module-btn");
+    gtk_widget_set_name(bt, "modulegroups-btn");
     g_object_set_data(G_OBJECT(bt), "group", gr);
     g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_module_add_popup), self);
     gtk_widget_set_halign(plusbox, GTK_ALIGN_CENTER);
@@ -3261,7 +3261,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
     //right arrow
     btn = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_DIRECTION_LEFT | CPF_STYLE_FLAT,
                            NULL);
-    gtk_widget_set_name(btn, "modulegroups-add-module-btn");
+    gtk_widget_set_name(btn, "modulegroups-btn");
     gtk_widget_set_tooltip_text(btn, _("move group to the right"));
     g_object_set_data(G_OBJECT(btn), "group", gr);
     g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_editor_group_move_right), self);
