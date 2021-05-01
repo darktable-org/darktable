@@ -166,9 +166,6 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d, const 
   dt_dev_histogram_stats_t histogram_stats = { .bins_count = HISTOGRAM_BINS, .ch = 4, .pixels = 0 };
   uint32_t histogram_max[4] = { 0 };
 
-  dt_times_t start_time = { 0 };
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
-
   d->histogram_max = 0;
   memset(d->histogram, 0, sizeof(uint32_t) * 4 * HISTOGRAM_BINS);
 
@@ -181,21 +178,11 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d, const 
   dt_histogram_helper(&histogram_params, &histogram_stats, cst, iop_cs_NONE, input, &d->histogram, FALSE, NULL);
   dt_histogram_max_helper(&histogram_stats, cst, iop_cs_NONE, &d->histogram, histogram_max);
   d->histogram_max = MAX(MAX(histogram_max[0], histogram_max[1]), histogram_max[2]);
-
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_times_t end_time = { 0 };
-    dt_get_times(&end_time);
-    fprintf(stderr, "final histogram took %.3f secs (%.3f CPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-  }
 }
 
 static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const float *const input,
                                             const dt_histogram_roi_t *const roi)
 {
-  dt_times_t start_time = { 0 };
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
-
   const int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
   const int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
 
@@ -270,13 +257,6 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
         const float display = lut[(int)(linear * lutmax)];
         wf_8bit[(ch * wf_height + y) * wf_8bit_stride + x] = display * 255.f;
       }
-
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_times_t end_time = { 0 };
-    dt_get_times(&end_time);
-    fprintf(stderr, "final histogram waveform took %.3f secs (%.3f CPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-  }
 }
 
 static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, const dt_iop_order_iccprofile_info_t *vs_prof)
@@ -340,9 +320,6 @@ static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, const dt_iop_order_ic
 static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const float *const input,
                                                dt_histogram_roi_t *const roi)
 {
-  dt_times_t start_time = { 0 };
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
-
   const int diam_px = d->vectorscope_diameter_px;
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
 
@@ -516,13 +493,6 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   dt_free_align(binned);
   dt_free_align(chromaticity);
   dt_free_align(XYZ_D50);
-
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_times_t end_time = { 0 };
-    dt_get_times(&end_time);
-    fprintf(stderr, "final vectorscope took %.3f secs (%.3f CPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-  }
 }
 
 static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *const input,
@@ -530,6 +500,9 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
                                      const dt_iop_order_iccprofile_info_t *const profile_info_from,
                                      const dt_iop_order_iccprofile_info_t *const profile_info_to)
 {
+  dt_times_t start_time = { 0 };
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
+
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   dt_develop_t *dev = darktable.develop;
 
@@ -544,7 +517,6 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     return;
   }
 
-  // FIXME: do clocking in this function rather than in per-scope type functions
   // FIXME: scope goes black when click histogram lib colorpicker on -- is this meant to happen?
   // FIXME: scope doesn't redraw when click histogram lib colorpicker off -- is this meant to happen?
   dt_histogram_roi_t roi = { .width = width, .height = height,
@@ -605,6 +577,13 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   }
   dt_pthread_mutex_unlock(&d->lock);
   dt_free_align(img_display);
+
+  if(darktable.unmuted & DT_DEBUG_PERF)
+  {
+    dt_times_t end_time = { 0 };
+    dt_get_times(&end_time);
+    fprintf(stderr, "final %s took %.3f secs (%.3f CPU)\n", dt_lib_histogram_scope_type_names[d->scope_type], end_time.clock - start_time.clock, end_time.user - start_time.user);
+  }
 }
 
 
