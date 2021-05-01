@@ -2635,6 +2635,16 @@ static void _manage_editor_module_add_popup(GtkWidget *widget, GdkEventButton *e
   _manage_module_add_popup(widget, gr, G_CALLBACK(_manage_editor_module_add), self, FALSE);
 }
 
+static gboolean _presets_pressed(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+  {
+    manage_presets(self);
+    return TRUE;
+  }
+  return FALSE;
+}
+
 static gboolean _manage_direct_popup(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   if(event->type == GDK_BUTTON_PRESS && event->button == 3)
@@ -2757,8 +2767,9 @@ void gui_init(dt_lib_module_t *self)
 
   // we load now the presets btn
   self->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(self->presets_button, _("presets"));
+  gtk_widget_set_tooltip_text(self->presets_button, _("presets\nctrl+click to manage"));
   gtk_box_pack_start(GTK_BOX(d->hbox_buttons), self->presets_button, FALSE, FALSE, 0);
+  g_signal_connect(self->presets_button, "button-press-event", G_CALLBACK(_presets_pressed), self);
 
   /* search box */
   GtkWidget *label = gtk_label_new(_("search module"));
