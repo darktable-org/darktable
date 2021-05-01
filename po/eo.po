@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-04-24 02:24+1000\n"
-"PO-Revision-Date: 2021-04-24 03:24+1000\n"
+"POT-Creation-Date: 2021-05-01 10:34+1000\n"
+"PO-Revision-Date: 2021-05-01 10:55+1000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: eo\n"
@@ -874,8 +874,8 @@ msgstr ""
 msgid "3D lut root folder"
 msgstr "radika dosierujo por 3D lut-oj"
 
-#: ../build/bin/preferences_gen.h:5379 ../src/control/jobs/control_jobs.c:1659
-#: ../src/control/jobs/control_jobs.c:1732 ../src/gui/preferences.c:1776
+#: ../build/bin/preferences_gen.h:5379 ../src/control/jobs/control_jobs.c:1668
+#: ../src/control/jobs/control_jobs.c:1741 ../src/gui/preferences.c:1776
 #: ../src/gui/presets.c:383 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/disk.c:197 ../src/imageio/storage/gallery.c:108
 #: ../src/imageio/storage/gallery.c:181 ../src/imageio/storage/latex.c:107
@@ -1642,8 +1642,8 @@ msgstr ""
 "ĉi tiu ekstera programo estas uzenda por ludi sondosierojn, kiujn iuj "
 "fotiloj registras, por konservi notojn por bildoj"
 
-#: ../build/bin/preferences_gen.h:7495 ../src/control/jobs/control_jobs.c:2281
-#: ../src/libs/import.c:148
+#: ../build/bin/preferences_gen.h:7495 ../src/control/jobs/control_jobs.c:2311
+#: ../src/libs/import.c:153
 msgid "import"
 msgstr "importi"
 
@@ -2113,7 +2113,7 @@ msgstr "konservi kolorojn"
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:251
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
-#: ../src/iop/basecurve.c:2098 ../src/iop/channelmixerrgb.c:3625
+#: ../src/iop/basecurve.c:2098 ../src/iop/channelmixerrgb.c:3635
 #: ../src/iop/clipping.c:1887 ../src/iop/clipping.c:2145
 #: ../src/iop/clipping.c:2161 ../src/iop/clipping.c:2296
 #: ../src/iop/clipping.c:2323 ../src/iop/lens.cc:2229 ../src/iop/retouch.c:422
@@ -2388,7 +2388,7 @@ msgid "(AI) detect from image edges..."
 msgstr "(AI) detekti de randoj en bildo..."
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:516
-#: ../src/iop/channelmixerrgb.c:3279
+#: ../src/iop/channelmixerrgb.c:3289
 msgid "as shot in camera"
 msgstr "kiel kaptite de fotilo"
 
@@ -2564,7 +2564,7 @@ msgstr "levo, gamao, gajno (sRVB)"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:476
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:488
 #: ../src/develop/blend_gui.c:1968 ../src/develop/blend_gui.c:1995
-#: ../src/iop/atrous.c:1591 ../src/iop/channelmixerrgb.c:3542
+#: ../src/iop/atrous.c:1590 ../src/iop/channelmixerrgb.c:3552
 #: ../src/iop/equalizer.c:391 ../src/iop/nlmeans.c:536
 msgid "chroma"
 msgstr "kolora"
@@ -2587,9 +2587,9 @@ msgstr "kolora"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:1945 ../src/develop/blend_gui.c:1964
 #: ../src/develop/blend_gui.c:1999 ../src/iop/channelmixer.c:622
-#: ../src/iop/channelmixerrgb.c:3536 ../src/iop/colorbalance.c:2024
+#: ../src/iop/channelmixerrgb.c:3546 ../src/iop/colorbalance.c:2024
 #: ../src/iop/colorize.c:347 ../src/iop/colorreconstruction.c:1288
-#: ../src/iop/colorzones.c:2377 ../src/iop/splittoning.c:476
+#: ../src/iop/colorzones.c:2374 ../src/iop/splittoning.c:476
 msgid "hue"
 msgstr "nuanco"
 
@@ -2686,7 +2686,7 @@ msgstr "griza pintpunkto de kontrasto"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:572
 #: ../src/iop/basicadj.c:607 ../src/iop/bilat.c:450 ../src/iop/colisa.c:315
 #: ../src/iop/colorbalance.c:1926 ../src/iop/colorbalance.c:1933
-#: ../src/iop/filmic.c:1653 ../src/iop/filmicrgb.c:3765
+#: ../src/iop/filmic.c:1653 ../src/iop/filmicrgb.c:3854
 #: ../src/iop/lowpass.c:587
 msgid "contrast"
 msgstr "kontrasto"
@@ -2762,7 +2762,7 @@ msgid "range extent"
 msgstr "gamo amplekso"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
-#: ../src/iop/channelmixerrgb.c:3627
+#: ../src/iop/channelmixerrgb.c:3637
 msgid "saturated colors"
 msgstr "saturitaj koloroj"
 
@@ -2776,7 +2776,7 @@ msgstr "elekti per"
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:233
 #: ../build/lib/darktable/plugins/introspection_soften.c:66
 #: ../build/lib/darktable/plugins/introspection_soften.c:121
-#: ../src/iop/atrous.c:1618
+#: ../src/iop/atrous.c:1617
 msgid "mix"
 msgstr "miksi"
 
@@ -2788,7 +2788,7 @@ msgstr "prilabora reĝimo"
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:1931 ../src/iop/channelmixer.c:624
 #: ../src/iop/colorchecker.c:1331 ../src/iop/colorize.c:363
-#: ../src/iop/colorzones.c:2375
+#: ../src/iop/colorzones.c:2372
 msgid "lightness"
 msgstr "lumeco"
 
@@ -2803,7 +2803,7 @@ msgstr "lumeco"
 #: ../src/iop/channelmixer.c:623 ../src/iop/colisa.c:317
 #: ../src/iop/colorbalance.c:2041 ../src/iop/colorchecker.c:1349
 #: ../src/iop/colorcontrast.c:94 ../src/iop/colorcorrection.c:281
-#: ../src/iop/colorize.c:358 ../src/iop/colorzones.c:2376
+#: ../src/iop/colorize.c:358 ../src/iop/colorzones.c:2373
 #: ../src/iop/lowpass.c:589 ../src/iop/soften.c:410
 #: ../src/iop/splittoning.c:488 ../src/iop/velvia.c:87 ../src/iop/vibrance.c:72
 #: ../src/iop/vignette.c:991
@@ -2811,8 +2811,8 @@ msgid "saturation"
 msgstr "saturado"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:267
-#: ../src/iop/atrous.c:1373 ../src/iop/atrous.c:1377
-#: ../src/iop/denoiseprofile.c:3372 ../src/iop/rawdenoise.c:762
+#: ../src/iop/atrous.c:1370 ../src/iop/atrous.c:1374
+#: ../src/iop/denoiseprofile.c:3369 ../src/iop/rawdenoise.c:759
 msgid "smooth"
 msgstr "glata"
 
@@ -2829,7 +2829,7 @@ msgstr "radiuso de randa detektado"
 #: ../build/lib/darktable/plugins/introspection_defringe.c:106
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:217
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:416
-#: ../src/iop/bloom.c:403 ../src/iop/colorbalancergb.c:1549
+#: ../src/iop/bloom.c:403 ../src/iop/colorbalancergb.c:1546
 #: ../src/iop/colorreconstruction.c:1282 ../src/iop/hotpixels.c:376
 #: ../src/iop/sharpen.c:729
 msgid "threshold"
@@ -3146,7 +3146,7 @@ msgstr "malmoleco"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:289
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:464
-#: ../src/iop/filmic.c:1691 ../src/iop/filmicrgb.c:3945
+#: ../src/iop/filmic.c:1691 ../src/iop/filmicrgb.c:4034
 msgid "extreme luminance saturation"
 msgstr "ekstrema lumeca saturiĝo"
 
@@ -3213,11 +3213,11 @@ msgstr "versio de la spline-generatoro"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:526
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
-#: ../src/common/darktable.c:919 ../src/common/variables.c:465
-#: ../src/develop/imageop_gui.c:302 ../src/imageio/format/pdf.c:655
-#: ../src/imageio/format/pdf.c:680 ../src/libs/export.c:1277
-#: ../src/libs/export.c:1283 ../src/libs/export.c:1290
-#: ../src/libs/metadata_view.c:409
+#: ../src/common/darktable.c:933 ../src/common/database.c:2543
+#: ../src/common/variables.c:465 ../src/develop/imageop_gui.c:302
+#: ../src/imageio/format/pdf.c:655 ../src/imageio/format/pdf.c:680
+#: ../src/libs/export.c:1277 ../src/libs/export.c:1283
+#: ../src/libs/export.c:1290 ../src/libs/metadata_view.c:409
 msgid "no"
 msgstr "ne"
 
@@ -3352,7 +3352,7 @@ msgstr "detekti per 3 najbaroj"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:51
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:118
 #: ../src/iop/bilat.c:426 ../src/iop/colorbalance.c:1882
-#: ../src/iop/denoiseprofile.c:3628 ../src/iop/exposure.c:877
+#: ../src/iop/denoiseprofile.c:3627 ../src/iop/exposure.c:877
 #: ../src/iop/levels.c:689 ../src/iop/profile_gamma.c:691
 #: ../src/libs/copy_history.c:402 ../src/libs/export.c:1371
 #: ../src/libs/image.c:590 ../src/libs/print_settings.c:1503
@@ -3427,7 +3427,7 @@ msgstr "ordo 2"
 #: ../build/lib/darktable/plugins/introspection_lowpass.c:189
 #: ../build/lib/darktable/plugins/introspection_retouch.c:436
 #: ../build/lib/darktable/plugins/introspection_shadhi.c:267
-#: ../src/iop/filmicrgb.c:3883
+#: ../src/iop/filmicrgb.c:3972
 msgid "gaussian"
 msgstr "gaussia"
 
@@ -3599,7 +3599,7 @@ msgstr "pleniga reĝimo"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:279
 #: ../build/lib/darktable/plugins/introspection_retouch.c:414
-#: ../src/iop/basicadj.c:621 ../src/iop/channelmixerrgb.c:3589
+#: ../src/iop/basicadj.c:621 ../src/iop/channelmixerrgb.c:3599
 #: ../src/iop/colisa.c:316 ../src/iop/lowpass.c:588 ../src/iop/soften.c:414
 #: ../src/iop/vignette.c:990 ../src/libs/history.c:897
 msgid "brightness"
@@ -3961,8 +3961,8 @@ msgstr "Montru bildojn sur mapo"
 msgid "Print your images"
 msgstr "Presi viajn bildojn"
 
-#: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1659
-#: ../src/control/jobs/control_jobs.c:1732 ../src/gui/hist_dialog.c:185
+#: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1668
+#: ../src/control/jobs/control_jobs.c:1741 ../src/gui/hist_dialog.c:185
 #: ../src/gui/preferences.c:1613 ../src/gui/preferences.c:1639
 #: ../src/gui/preferences.c:1728 ../src/gui/preferences.c:1776
 #: ../src/gui/presets.c:383 ../src/gui/presets.c:478
@@ -3970,7 +3970,7 @@ msgstr "Presi viajn bildojn"
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
 #: ../src/iop/lut3d.c:1556 ../src/libs/collect.c:426
 #: ../src/libs/copy_history.c:108 ../src/libs/geotagging.c:938
-#: ../src/libs/import.c:1140 ../src/libs/lib.c:235 ../src/libs/styles.c:385
+#: ../src/libs/import.c:1237 ../src/libs/lib.c:235 ../src/libs/styles.c:385
 #: ../src/libs/styles.c:529 ../src/libs/tagging.c:2299
 #: ../src/libs/tagging.c:2340
 msgid "_cancel"
@@ -4141,7 +4141,7 @@ msgstr "tro multe da tempo por ĝisdatigi aspektproporcion por la kolekto"
 msgid "film roll"
 msgstr "filmrulo"
 
-#: ../src/common/collection.c:679 ../src/libs/import.c:1004
+#: ../src/common/collection.c:679
 msgid "folder"
 msgstr "dosierujo"
 
@@ -4235,7 +4235,7 @@ msgstr "ordo de moduloj"
 #: ../src/common/collection.c:1498 ../src/develop/blend_gui.c:1954
 #: ../src/develop/blend_gui.c:1981 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:317 ../src/iop/channelmixer.c:625
-#: ../src/iop/channelmixer.c:635 ../src/iop/channelmixerrgb.c:3584
+#: ../src/iop/channelmixer.c:635 ../src/iop/channelmixerrgb.c:3594
 #: ../src/iop/temperature.c:1877 ../src/iop/temperature.c:2028
 #: ../src/libs/collect.c:1710 ../src/views/darkroom.c:2540
 msgid "red"
@@ -4250,7 +4250,7 @@ msgstr "flava"
 #: ../src/common/collection.c:1502 ../src/develop/blend_gui.c:1957
 #: ../src/develop/blend_gui.c:1984 ../src/develop/lightroom.c:832
 #: ../src/iop/bilateral.cc:322 ../src/iop/channelmixer.c:626
-#: ../src/iop/channelmixer.c:641 ../src/iop/channelmixerrgb.c:3585
+#: ../src/iop/channelmixer.c:641 ../src/iop/channelmixerrgb.c:3595
 #: ../src/iop/temperature.c:1861 ../src/iop/temperature.c:1879
 #: ../src/iop/temperature.c:2029 ../src/libs/collect.c:1710
 #: ../src/views/darkroom.c:2541
@@ -4260,7 +4260,7 @@ msgstr "verda"
 #: ../src/common/collection.c:1504 ../src/develop/blend_gui.c:1960
 #: ../src/develop/blend_gui.c:1987 ../src/develop/lightroom.c:834
 #: ../src/iop/bilateral.cc:327 ../src/iop/channelmixer.c:627
-#: ../src/iop/channelmixer.c:647 ../src/iop/channelmixerrgb.c:3586
+#: ../src/iop/channelmixer.c:647 ../src/iop/channelmixerrgb.c:3596
 #: ../src/iop/temperature.c:1881 ../src/iop/temperature.c:2030
 #: ../src/libs/collect.c:1710
 msgid "blue"
@@ -4286,7 +4286,7 @@ msgstr "ŝanĝita"
 #: ../src/common/collection.c:1536 ../src/common/collection.c:1610
 #: ../src/libs/collect.c:1158 ../src/libs/collect.c:1282
 #: ../src/libs/collect.c:1304 ../src/libs/collect.c:1404
-#: ../src/libs/collect.c:2288
+#: ../src/libs/collect.c:2312
 msgid "not tagged"
 msgstr "ne etikedita"
 
@@ -4481,32 +4481,32 @@ msgstr "eraro dum presado de `%s' sur `%s'"
 msgid "printing `%s' on `%s'"
 msgstr "presado de `%s' ĉe `%s'"
 
-#: ../src/common/darktable.c:245
+#: ../src/common/darktable.c:259
 #, c-format
 msgid "found strange path `%s'"
 msgstr "trovis strangan vojon `%s '"
 
-#: ../src/common/darktable.c:260
+#: ../src/common/darktable.c:274
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "eraro dum ŝarĝo de dosierujo `%s '"
 
-#: ../src/common/darktable.c:283
+#: ../src/common/darktable.c:297
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "dosiero `%s' havas nekonatan formaton!"
 
-#: ../src/common/darktable.c:296 ../src/control/jobs/control_jobs.c:2095
-#: ../src/control/jobs/control_jobs.c:2117
+#: ../src/common/darktable.c:310 ../src/control/jobs/control_jobs.c:2104
+#: ../src/control/jobs/control_jobs.c:2143
 #, c-format
 msgid "error loading file `%s'"
 msgstr "eraro dum ŝarĝo de dosiero `%s'"
 
-#: ../src/common/darktable.c:914
+#: ../src/common/darktable.c:928
 msgid "darktable - run performance configuration?"
 msgstr "darktable - ruli rendimentan agordadon?"
 
-#: ../src/common/darktable.c:915
+#: ../src/common/darktable.c:929
 msgid ""
 "we have an updated performance configuration logic - executing that might "
 "improve the performance of darktable.\n"
@@ -4520,112 +4520,140 @@ msgstr ""
 "mane modifis ilin al laŭmendaj valoroj.\n"
 "ĉu vi ŝatus plenumi ĉi tiun ĝisdatigon de la rendimenta agordo?\n"
 
-#: ../src/common/darktable.c:919 ../src/common/database.c:3581
-#: ../src/common/variables.c:463 ../src/develop/imageop_gui.c:303
-#: ../src/imageio/format/pdf.c:656 ../src/imageio/format/pdf.c:681
-#: ../src/libs/export.c:1278 ../src/libs/export.c:1284
-#: ../src/libs/export.c:1291 ../src/libs/metadata_view.c:409
+#: ../src/common/darktable.c:933 ../src/common/database.c:2543
+#: ../src/common/database.c:3601 ../src/common/variables.c:463
+#: ../src/develop/imageop_gui.c:303 ../src/imageio/format/pdf.c:656
+#: ../src/imageio/format/pdf.c:681 ../src/libs/export.c:1278
+#: ../src/libs/export.c:1284 ../src/libs/export.c:1291
+#: ../src/libs/metadata_view.c:409
 msgid "yes"
 msgstr "jes"
 
-#: ../src/common/database.c:2517
+#: ../src/common/database.c:2515
 #, c-format
 msgid ""
 "\n"
-" At startup, the database failed to open because at least one of the two "
-"files in the database is locked.\n"
+"  Sorry, darktable could not be started (database is locked)\n"
 "\n"
-" The persistence of the lock is mainly caused by one of the two following "
-"causes:\n"
+"  How to solve this problem?\n"
 "\n"
-" - Another occurrence of darktable has already opened this database file and "
-"locked it for its benefit.\n"
+"  1 - If another darktable instance is already open, \n"
+"      click cancel and either use that instance or close it before "
+"attempting to rerun darktable \n"
+"      (process ID <i><b>%d</b></i> created the database locks)\n"
 "\n"
-" - A previous occurrence of darktable ended abnormally and therefore \n"
-"   could not close one or both files in the database properly.\n"
+"  2 - If you can't find a running instance of darktable, try restarting your "
+"session or your computer. \n"
+"      This will close all running programs and hopefully close the databases "
+"correctly. \n"
 "\n"
-" How to solve this problem?\n"
+"  3 - If you have done this or are certain that no other instances of "
+"darktable are running, \n"
+"      this probably means that the last instance was ended abnormally. \n"
+"      Click on the \"delete database lock files\" button to remove the files "
+"<i>data.db.lock</i> and <i>library.db.lock</i>.  \n"
 "\n"
-" 1 - Search in your environment if another darktable occurrence is active. "
-"If so, use it or close it. \n"
-"     The lock indicates that the process number of this occurrence is : "
-"<i><b>%d</b></i>\n"
 "\n"
-" 2 - If you can't find this other occurrence, try closing your session and "
-"reopening it or shutting down your computer. \n"
-"     This will delete all running programs and thus close the database "
-"correctly.\n"
-"\n"
-" 3 - If these two actions are not enough, it is because at least one of the "
-"two files that materialize the locks remains \n"
-"     and that these are no longer attached to any occurrence of darktable. "
-"It is then necessary to delete it (or them). \n"
-"     The two files are named <i>data.db.lock</i> and <i>library.db.lock</i> "
-"respectively. The opening mechanism signals \n"
-"     the presence of the <i><b>%s</b></i> file in the <i><b>%s</b></i> "
-"folder. \n"
-"     (full pathname: <i><b>%s</b></i>).\n"
-"\n"
-"     <u>Caution!</u> Do not delete these files without first checking that "
-"there are no more occurrences of darktable, \n"
-"     otherwise you risk generating serious inconsistencies in your "
-"database.\n"
-"\n"
-" As soon as you have identified and removed the cause of the lock, darktable "
-"will start without any problem.\n"
+"      <i><u>Caution!</u> Do not delete these files without first undertaking "
+"the above checks, \n"
+"      otherwise you risk generating serious inconsistencies in your database."
+"</i>\n"
 msgstr ""
 "\n"
-"Ĉe ekfunkciigo, la datumbaza malfermado malsukcesis, ĉar almenaŭ unu el la "
-"du dosieroj en la datumbazo estas ŝlosita.\n"
+"Pardonu, darktable ne povis esti lanĉita (datumbazo estas ŝlosita)\n"
 "\n"
-" La persisto de la seruro estas ĉefe kaŭzita de unu el la du sekvaj kaŭzoj:\n"
+"   Kiel solvi ĉi tiun problemon?\n"
 "\n"
-" - Alia okazo de darktable jam malfermis ĉi tiun datumbazan dosieron kaj "
-"ŝlosis ĝin por sia avantaĝo.\n"
+"   1 - Se alia okazaĵo de darktable estas malfermata,\n"
+"       alklaku nuligi aŭ uzu tiun okazaĵon aŭ fermu ĝin antaŭ ol provi "
+"relanĉi darktable\n"
+"       (ID de procezo <i><b>%d</b></i> kreis la datumbazajn serurojn)\n"
 "\n"
-" - Antaŭa apero de darktable finiĝis nenormale kaj sekve\n"
-"   ne povis fermi unu aŭ ambaŭ dosierojn en la datumbazo ĝuste.\n"
+"   2 - Se vi ne povas trovi kurantan okazaĵon de darktable, provu rekomenci "
+"vian sesion aŭ vian komputilon.\n"
+"       Ĉi tio fermos ĉiujn kurantajn programojn kaj espereble fermos la "
+"datumbazojn ĝuste.\n"
 "\n"
-" Kiel solvi ĉi tiun problemon?\n"
+"   3 - Se vi faris ĉi tion aŭ certas, ke neniuj aliaj okazaĵoj de darktable "
+"funkcias,\n"
+"       ĉi tio verŝajne signifas, ke la lasta okazaĵo nenormale finiĝis.\n"
+"       Alklaku la butonon \"forigi datumbazajn ŝlosajn dosierojn\" por "
+"forigi la dosierojn <i>data.db.lock</i> kaj <i>library.db.lock</i>.\n"
 "\n"
-" 1 - Serĉu en via medio, ĉu alia okazo de darktable aperas aktiva. Se jes, "
-"uzu ĝin aŭ fermu ĝin.\n"
-"     La seruro indikas, ke la proceznumero de ĉi tiu okazo estas: <i><b>%d</"
-"b></i>\n"
 "\n"
-" 2 - Se vi ne povas trovi ĉi tiun alian okazaĵon, provu fermi vian kunsidon "
-"kaj remalfermi ĝin aŭ fermi vian komputilon.\n"
-"     Ĉi tio forigos ĉiujn aktualajn programojn kaj tiel fermos la datumbazon "
-"ĝuste.\n"
-"\n"
-" 3 - Se ĉi tiuj du agoj ne sufiĉas, tio estas ĉar almenaŭ unu el la du "
-"dosieroj, kiuj realigas la serurojn, restas\n"
-"     kaj ke ĉi tiuj ne plu ligiĝas al ia apero de darktable. Tiam necesas "
-"forigi ĝin (aŭ ilin).\n"
-"     La du dosieroj estas respektive nomataj <i>data.db.lock</i> kaj "
-"<i>library.db.lock</i>. La malferma mekanismo signalas\n"
-"     la ĉeesto de la dosiero <i><b>%s</b></i> en la dosierujo <i><b>%s</b></"
-"i>.\n"
-"     (plena vojo: <i><b>%s</b></i>).\n"
-"\n"
-"     <u> Atentu! </u> Ne forigu ĉi tiujn dosierojn sen antaŭe kontroli, ke "
-"ne plu estas aperoj de darktable,\n"
-"     alie vi riskas generi seriozajn nekonsekvencojn en via datumbazo.\n"
-"\n"
-" Tuj kiam vi identigis kaj forigis la kaŭzon de la seruro, darktable "
-"komenciĝos senprobleme.\n"
+"       <i> <u> Atentu!</u> Ne forigu ĉi tiujn dosierojn sen unue fari la "
+"suprajn kontrolojn,\n"
+"       alie vi riskas generi gravajn nekonsekvencojn en via datumbazo. </i>\n"
 
-#: ../src/common/database.c:2547
-msgid "darktable cannot be started because the database is locked"
-msgstr "darktable ne povas esti lanĉita ĉar la datumbazo estas ŝlosita"
+#: ../src/common/database.c:2535
+msgid "error starting darktable"
+msgstr "eraro lanĉante darktable"
 
-#: ../src/common/database.c:2548 ../src/common/database.c:2720
-#: ../src/common/database.c:3031 ../src/common/database.c:3049
-#: ../src/common/database.c:3211 ../src/common/database.c:3229
-msgid "close darktable"
-msgstr "fermu darktable"
+#: ../src/common/database.c:2536 ../src/libs/collect.c:2798
+#: ../src/libs/export_metadata.c:269 ../src/libs/import.c:1422
+#: ../src/libs/metadata.c:446 ../src/libs/metadata_view.c:1020
+#: ../src/libs/modulegroups.c:3433 ../src/libs/styles.c:439
+#: ../src/libs/styles.c:614 ../src/libs/tagging.c:1359
+#: ../src/libs/tagging.c:1447 ../src/libs/tagging.c:1528
+#: ../src/libs/tagging.c:1653 ../src/libs/tagging.c:1927
+msgid "cancel"
+msgstr "nuligi"
 
-#: ../src/common/database.c:2660
+#: ../src/common/database.c:2536
+msgid "delete database lock files"
+msgstr "forigi datumbazajn serurajn dosierojn"
+
+#: ../src/common/database.c:2542
+msgid "are you sure?"
+msgstr "ĉu vi certas?"
+
+#: ../src/common/database.c:2543
+msgid ""
+"\n"
+"do you really want to delete the lock files?\n"
+msgstr ""
+"\n"
+"ĉu vi vere volas forigi la serurajn dosierojn?\n"
+
+#: ../src/common/database.c:2557 ../src/libs/export_metadata.c:160
+#: ../src/libs/geotagging.c:821
+msgid "done"
+msgstr "farita"
+
+#: ../src/common/database.c:2558
+msgid ""
+"\n"
+"successfully deleted the lock files.\n"
+"you can now restart darktable\n"
+msgstr ""
+"\n"
+"sukcese forigis la serurajn dosierojn.\n"
+"vi nun povas rekomenci darktable\n"
+
+#: ../src/common/database.c:2559 ../src/common/database.c:2566
+msgid "ok"
+msgstr "bone"
+
+#: ../src/common/database.c:2562 ../src/iop/cacorrect.c:1586
+msgid "error"
+msgstr "eraro"
+
+#: ../src/common/database.c:2563
+#, c-format
+msgid ""
+"\n"
+"at least one file could not be removed.\n"
+"you may try to manually delete the files <i>data.db.lock</i> and <i>library."
+"db.lock</i>\n"
+"in folder <a href=\"file:///%s\">%s</a>.\n"
+msgstr ""
+"\n"
+"almenaŭ unu dosiero ne povis esti forigita.\n"
+"vi eble provu mane forigi la dosierojn <i>data.db.lock</i> kaj <i>library.db."
+"lock</i>\n"
+"en dosierujo <a href=\"file:///%s\">%s</a>.\n"
+
+#: ../src/common/database.c:2680
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -4634,18 +4662,18 @@ msgstr ""
 "la datumbaza ŝlosila dosiero enhavas pid, kiu ŝajnas esti aktiva en via "
 "sistemo: %d"
 
-#: ../src/common/database.c:2666
+#: ../src/common/database.c:2686
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "la datumbaza ŝlosila dosiero ŝajnas esti malplena"
 
-#: ../src/common/database.c:2674
+#: ../src/common/database.c:2694
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr "eraro dum malfermo de la datumbaza ŝlosila dosiero por legi: %s"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:2711
+#: ../src/common/database.c:2731
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -4660,15 +4688,21 @@ msgstr ""
 "\n"
 "ĉu vi volas daŭrigi aŭ ĉesi nun por fari sekurkopion\n"
 
-#: ../src/common/database.c:2719
+#: ../src/common/database.c:2739
 msgid "darktable - schema migration"
 msgstr "darktable - skema migrado"
 
-#: ../src/common/database.c:2720
+#: ../src/common/database.c:2740 ../src/common/database.c:3051
+#: ../src/common/database.c:3069 ../src/common/database.c:3231
+#: ../src/common/database.c:3249
+msgid "close darktable"
+msgstr "fermu darktable"
+
+#: ../src/common/database.c:2740
 msgid "upgrade database"
 msgstr "ĝisdatigi datumbazon"
 
-#: ../src/common/database.c:3011 ../src/common/database.c:3191
+#: ../src/common/database.c:3031 ../src/common/database.c:3211
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -4677,21 +4711,21 @@ msgstr ""
 "rapida_kontrolo diris:\n"
 "%s\n"
 
-#: ../src/common/database.c:3028 ../src/common/database.c:3046
-#: ../src/common/database.c:3208 ../src/common/database.c:3226
+#: ../src/common/database.c:3048 ../src/common/database.c:3066
+#: ../src/common/database.c:3228 ../src/common/database.c:3246
 msgid "darktable - error opening database"
 msgstr "darktable - eraro dum malfermo de datumbazo"
 
-#: ../src/common/database.c:3033 ../src/common/database.c:3213
+#: ../src/common/database.c:3053 ../src/common/database.c:3233
 msgid "attempt restore"
 msgstr "provu restarigi"
 
-#: ../src/common/database.c:3035 ../src/common/database.c:3051
-#: ../src/common/database.c:3215 ../src/common/database.c:3231
+#: ../src/common/database.c:3055 ../src/common/database.c:3071
+#: ../src/common/database.c:3235 ../src/common/database.c:3251
 msgid "delete database"
 msgstr "forigi datumbazon"
 
-#: ../src/common/database.c:3039 ../src/common/database.c:3219
+#: ../src/common/database.c:3059 ../src/common/database.c:3239
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -4703,7 +4737,7 @@ msgstr ""
 "el la plej freŝa momentfoto aŭ forigu la difektitan datumbazon\n"
 "kaj komenci per nova?"
 
-#: ../src/common/database.c:3055 ../src/common/database.c:3235
+#: ../src/common/database.c:3075 ../src/common/database.c:3255
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -4713,7 +4747,7 @@ msgstr ""
 "la datumbazo de sekurkopio aŭ forigu la difektitan datumbazon\n"
 "kaj komenci per nova?"
 
-#: ../src/common/database.c:3062 ../src/common/database.c:3240
+#: ../src/common/database.c:3082 ../src/common/database.c:3260
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -4730,19 +4764,19 @@ msgstr ""
 "ŝajnas, ke la datumbazo estas koruptita.\n"
 "%s%s"
 
-#: ../src/common/database.c:3558
+#: ../src/common/database.c:3578
 msgid "click later to be asked on next startup"
 msgstr "alklaku poste por esti demandata ĉe la sekva lanĉo"
 
-#: ../src/common/database.c:3562
+#: ../src/common/database.c:3582
 msgid "click later to be asked when closing darktable"
 msgstr "alklaku poste por esti demandata fermante darktable"
 
-#: ../src/common/database.c:3566
+#: ../src/common/database.c:3586
 msgid "click later to be asked next time when closing darktable"
 msgstr "alklaku poste por esti demandata venontfoje fermante darktable"
 
-#: ../src/common/database.c:3570
+#: ../src/common/database.c:3590
 #, c-format
 msgid ""
 "the database could use some maintenance\n"
@@ -4763,11 +4797,11 @@ msgstr ""
 "%s\n"
 "vi ĉiam povas ŝanĝi prizorgajn preferojn en kernaj elektoj"
 
-#: ../src/common/database.c:3580
+#: ../src/common/database.c:3600
 msgid "darktable - schema maintenance"
 msgstr "darktable - skema prizorgado"
 
-#: ../src/common/database.c:3581
+#: ../src/common/database.c:3601
 msgid "later"
 msgstr "poste"
 
@@ -4801,7 +4835,7 @@ msgstr[1] "forigi malplenajn dosierujojn?"
 
 #: ../src/common/film.c:316 ../src/gui/preferences.c:831
 #: ../src/gui/styles_dialog.c:445 ../src/libs/geotagging.c:839
-#: ../src/libs/import.c:1192
+#: ../src/libs/import.c:1304
 msgid "name"
 msgstr "nomo"
 
@@ -4864,51 +4898,51 @@ msgstr "dato/horo malfarita por %d bildoj"
 msgid "date/time re-applied to %d images"
 msgstr "dato/horo reaplikiĝis por %d bildoj"
 
-#: ../src/common/image.c:1898
+#: ../src/common/image.c:1916
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "ne povas aliri lokan kopion `%s '"
 
-#: ../src/common/image.c:1905
+#: ../src/common/image.c:1923
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "ne povas skribi lokan kopion `%s'"
 
-#: ../src/common/image.c:1912
+#: ../src/common/image.c:1930
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "eraro dum movado de loka kopio `%s' ->`%s'"
 
-#: ../src/common/image.c:1928
+#: ../src/common/image.c:1946
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "eraro movante `%s ': dosiero ne trovita"
 
-#: ../src/common/image.c:1938
+#: ../src/common/image.c:1956
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "eraro movante `%s' ->`%s': dosiero ekzistas"
 
-#: ../src/common/image.c:1942
+#: ../src/common/image.c:1960
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "eraro movante `%s' ->`%s'"
 
-#: ../src/common/image.c:2239
+#: ../src/common/image.c:2257
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "ne povas krei lokan kopion kiam la originala dosiero ne estas alirebla."
 
-#: ../src/common/image.c:2253
+#: ../src/common/image.c:2271
 msgid "cannot create local copy."
 msgstr "ne povas krei lokan kopion."
 
-#: ../src/common/image.c:2325 ../src/control/jobs/control_jobs.c:736
+#: ../src/common/image.c:2343 ../src/control/jobs/control_jobs.c:745
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "ne povas forigi lokan kopion kiam la originala dosiero ne estas alirebla."
 
-#: ../src/common/image.c:2503
+#: ../src/common/image.c:2521
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -5162,7 +5196,7 @@ msgid "below sea level"
 msgstr "sub marnivelo"
 
 #: ../src/common/utility.c:516 ../src/iop/watermark.c:576
-#: ../src/libs/metadata_view.c:750
+#: ../src/libs/metadata_view.c:730
 msgid "m"
 msgstr "m"
 
@@ -5194,7 +5228,8 @@ msgstr "ĝisdatigitaj xmp-kromĉaraj dosieroj trovitaj"
 msgid "_close"
 msgstr "_fermi"
 
-#: ../src/control/crawler.c:417 ../src/libs/select.c:133
+#: ../src/control/crawler.c:417 ../src/libs/import.c:1445
+#: ../src/libs/select.c:133
 msgid "select all"
 msgstr "elekti ĉiujn"
 
@@ -5243,19 +5278,19 @@ msgstr[1] "importante %d bildojn de fotilo"
 msgid "import images from camera"
 msgstr "importi bildojn de fotilo"
 
-#: ../src/control/jobs/control_jobs.c:131
+#: ../src/control/jobs/control_jobs.c:140
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr "malsukcesis krei filmrulon por celita dosierujo, ĉesigante movon .."
 
-#: ../src/control/jobs/control_jobs.c:357
+#: ../src/control/jobs/control_jobs.c:366
 msgid "exposure bracketing only works on raw images."
 msgstr "ekspozicia krampado funkcias nur ĉe krudaj bildoj."
 
-#: ../src/control/jobs/control_jobs.c:364
+#: ../src/control/jobs/control_jobs.c:373
 msgid "images have to be of same size and orientation!"
 msgstr "bildoj devas esti samgrandaj kaj samorientaj!"
 
-#: ../src/control/jobs/control_jobs.c:459
+#: ../src/control/jobs/control_jobs.c:468
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
@@ -5263,190 +5298,190 @@ msgstr[0] "kunfandante %d bildon"
 msgstr[1] "kunfandante %d bildojn"
 
 # HDR = ADG Alta Dinamika Gamo
-#: ../src/control/jobs/control_jobs.c:530
+#: ../src/control/jobs/control_jobs.c:539
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "skribis kunfanditan ADG `%s'"
 
-#: ../src/control/jobs/control_jobs.c:561
+#: ../src/control/jobs/control_jobs.c:570
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "kopiante %d bildon"
 msgstr[1] "kopiante %d bildojn"
 
-#: ../src/control/jobs/control_jobs.c:598
+#: ../src/control/jobs/control_jobs.c:607
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "renversante %d bildon"
 msgstr[1] "renversante %d bildojn"
 
-#: ../src/control/jobs/control_jobs.c:628
+#: ../src/control/jobs/control_jobs.c:637
 #, c-format
 msgid "set %d color image"
 msgid_plural "setting %d color images"
 msgstr[0] "agordi %d koloran bildon"
 msgstr[1] "agordi %d kolorajn bildojn"
 
-#: ../src/control/jobs/control_jobs.c:630
+#: ../src/control/jobs/control_jobs.c:639
 #, c-format
 msgid "set %d monochrome image"
 msgid_plural "setting %d monochrome images"
 msgstr[0] "agordi %d unukoloran bildon"
 msgstr[1] "agordi %d unukolorajn bildojn"
 
-#: ../src/control/jobs/control_jobs.c:712
+#: ../src/control/jobs/control_jobs.c:721
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "forigante %d bildon"
 msgstr[1] "forigante %d bildojn"
 
-#: ../src/control/jobs/control_jobs.c:815
+#: ../src/control/jobs/control_jobs.c:824
 #, c-format
 msgid "could not send %s to trash%s%s"
 msgstr "ne povis sendi %s al rubujo %s%s"
 
-#: ../src/control/jobs/control_jobs.c:816
+#: ../src/control/jobs/control_jobs.c:825
 #, c-format
 msgid "could not physically delete %s%s%s"
 msgstr "ne povis fizike forigi %s%s%s"
 
-#: ../src/control/jobs/control_jobs.c:826
+#: ../src/control/jobs/control_jobs.c:835
 msgid "physically delete"
 msgstr "fizike forviŝi"
 
-#: ../src/control/jobs/control_jobs.c:827
+#: ../src/control/jobs/control_jobs.c:836
 msgid "physically delete all files"
 msgstr "fizike forviŝi ĉiujn dosierojn"
 
-#: ../src/control/jobs/control_jobs.c:829
+#: ../src/control/jobs/control_jobs.c:838
 msgid "only remove from the collection"
 msgstr "forigu nur el la kolekto"
 
-#: ../src/control/jobs/control_jobs.c:830
+#: ../src/control/jobs/control_jobs.c:839
 msgid "skip to next file"
 msgstr "iri al sekva dosiero"
 
-#: ../src/control/jobs/control_jobs.c:831
+#: ../src/control/jobs/control_jobs.c:840
 msgid "stop process"
 msgstr "ĉesigi procezon"
 
-#: ../src/control/jobs/control_jobs.c:836
+#: ../src/control/jobs/control_jobs.c:845
 msgid "trashing error"
 msgstr "rubuja eraro"
 
-#: ../src/control/jobs/control_jobs.c:837
+#: ../src/control/jobs/control_jobs.c:846
 msgid "deletion error"
 msgstr "forviŝa eraro"
 
-#: ../src/control/jobs/control_jobs.c:979
+#: ../src/control/jobs/control_jobs.c:988
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
 msgstr[0] "forĵetante %d bildon"
 msgstr[1] "forĵetante %d bildojn"
 
-#: ../src/control/jobs/control_jobs.c:981
+#: ../src/control/jobs/control_jobs.c:990
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "forviŝante %d bildon"
 msgstr[1] "forigante %d bildojn"
 
-#: ../src/control/jobs/control_jobs.c:1106
+#: ../src/control/jobs/control_jobs.c:1115
 msgid "failed to parse GPX file"
 msgstr "malsukcesis analizi GPX-dosieron"
 
-#: ../src/control/jobs/control_jobs.c:1174
+#: ../src/control/jobs/control_jobs.c:1183
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "apliki kongruis kun GPX-loko sur %d bildo"
 msgstr[1] "apliki kongruis kun GPX-loko sur %d bildoj"
 
-#: ../src/control/jobs/control_jobs.c:1192
+#: ../src/control/jobs/control_jobs.c:1201
 #, c-format
 msgid "moving %d image"
 msgstr "movanta %d bildon"
 
-#: ../src/control/jobs/control_jobs.c:1193
+#: ../src/control/jobs/control_jobs.c:1202
 #, c-format
 msgid "moving %d images"
 msgstr "movanta %d bildojn"
 
-#: ../src/control/jobs/control_jobs.c:1198
+#: ../src/control/jobs/control_jobs.c:1207
 #, c-format
 msgid "copying %d image"
 msgstr "kopiante %d bildon"
 
-#: ../src/control/jobs/control_jobs.c:1199
+#: ../src/control/jobs/control_jobs.c:1208
 #, c-format
 msgid "copying %d images"
 msgstr "kopiante %d bildojn"
 
-#: ../src/control/jobs/control_jobs.c:1214
+#: ../src/control/jobs/control_jobs.c:1223
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "kreante lokan kopion de %d bildo"
 msgstr[1] "kreante lokajn kopiojn de %d bildoj"
 
-#: ../src/control/jobs/control_jobs.c:1217
+#: ../src/control/jobs/control_jobs.c:1226
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "forigante lokan kopion de %d bildo"
 msgstr[1] "forigante lokajn kopiojn de %d bildoj"
 
-#: ../src/control/jobs/control_jobs.c:1262
+#: ../src/control/jobs/control_jobs.c:1271
 #, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
 msgstr[0] "freŝiga informo por %d bildo"
 msgstr[1] "freŝiga informo por %d bildoj"
 
-#: ../src/control/jobs/control_jobs.c:1345
+#: ../src/control/jobs/control_jobs.c:1354
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "eksportante %d bildon .."
 msgstr[1] "eksportante %d bildojn .."
 
-#: ../src/control/jobs/control_jobs.c:1377
+#: ../src/control/jobs/control_jobs.c:1386
 #, c-format
 msgid "exporting %d / %d to %s"
 msgstr "eksportante %d / %d al %s"
 
-#: ../src/control/jobs/control_jobs.c:1398 ../src/views/darkroom.c:792
+#: ../src/control/jobs/control_jobs.c:1407 ../src/views/darkroom.c:792
 #: ../src/views/print.c:313
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "bildo `%s' estas nuntempe neatingebla"
 
-#: ../src/control/jobs/control_jobs.c:1489
+#: ../src/control/jobs/control_jobs.c:1498
 msgid "merge hdr image"
 msgstr "kunfandi adg bildon"
 
-#: ../src/control/jobs/control_jobs.c:1503
+#: ../src/control/jobs/control_jobs.c:1512
 msgid "duplicate images"
 msgstr "duplikataj bildoj"
 
-#: ../src/control/jobs/control_jobs.c:1509
+#: ../src/control/jobs/control_jobs.c:1518
 msgid "flip images"
 msgstr "renversi bildojn"
 
-#: ../src/control/jobs/control_jobs.c:1516
+#: ../src/control/jobs/control_jobs.c:1525
 msgid "set monochrome images"
 msgstr "agordi monokromajn bildojn"
 
 #. get all selected images now, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1523
+#: ../src/control/jobs/control_jobs.c:1532
 msgid "remove images"
 msgstr "forigi bildojn"
 
-#: ../src/control/jobs/control_jobs.c:1540
+#: ../src/control/jobs/control_jobs.c:1549
 #, c-format
 msgid ""
 "do you really want to remove %d image from darktable\n"
@@ -5461,21 +5496,21 @@ msgstr[1] ""
 "ĉu vi vere volas forigi %d bildojn el darktable\n"
 "(sen forviŝi dosierojn el disko)?"
 
-#: ../src/control/jobs/control_jobs.c:1547
+#: ../src/control/jobs/control_jobs.c:1556
 msgid "remove image?"
 msgstr "forigi bildon?"
 
-#: ../src/control/jobs/control_jobs.c:1547
+#: ../src/control/jobs/control_jobs.c:1556
 msgid "remove images?"
 msgstr "forigi bildojn?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1563
-#: ../src/control/jobs/control_jobs.c:1607
+#: ../src/control/jobs/control_jobs.c:1572
+#: ../src/control/jobs/control_jobs.c:1616
 msgid "delete images"
 msgstr "forviŝi bildojn"
 
-#: ../src/control/jobs/control_jobs.c:1583
+#: ../src/control/jobs/control_jobs.c:1592
 #, c-format
 msgid ""
 "do you really want to physically delete %d image\n"
@@ -5490,43 +5525,43 @@ msgstr[1] ""
 "ĉu vi vere volas fizike forviŝi %d bildojn \n"
 "(uzante rubujon se eblas)?"
 
-#: ../src/control/jobs/control_jobs.c:1585
+#: ../src/control/jobs/control_jobs.c:1594
 #, c-format
 msgid "do you really want to physically delete %d image from disk?"
 msgid_plural "do you really want to physically delete %d images from disk?"
 msgstr[0] "ĉu vi vere volas fizike forviŝi %d bildon de disko?"
 msgstr[1] "ĉu vi vere volas fizike forviŝi %d bildojn de disko?"
 
-#: ../src/control/jobs/control_jobs.c:1592
-#: ../src/control/jobs/control_jobs.c:1630
+#: ../src/control/jobs/control_jobs.c:1601
+#: ../src/control/jobs/control_jobs.c:1639
 msgid "delete image?"
 msgstr "forviŝi bildon?"
 
-#: ../src/control/jobs/control_jobs.c:1592
+#: ../src/control/jobs/control_jobs.c:1601
 msgid "delete images?"
 msgstr "forviŝi bildojn?"
 
-#: ../src/control/jobs/control_jobs.c:1624
+#: ../src/control/jobs/control_jobs.c:1633
 msgid ""
 "do you really want to physically delete selected image (using trash if "
 "possible)?"
 msgstr ""
 "ĉu vi vere volas fizike forviŝi elektitan bildon (uzante rubujon se eblas)?"
 
-#: ../src/control/jobs/control_jobs.c:1625
+#: ../src/control/jobs/control_jobs.c:1634
 msgid "do you really want to physically delete selected image from disk?"
 msgstr "ĉu vi vere volas fizike forigi elektitan bildon de disko?"
 
-#: ../src/control/jobs/control_jobs.c:1648
+#: ../src/control/jobs/control_jobs.c:1657
 msgid "move images"
 msgstr "movi bildojn"
 
-#: ../src/control/jobs/control_jobs.c:1660
-#: ../src/control/jobs/control_jobs.c:1733
+#: ../src/control/jobs/control_jobs.c:1669
+#: ../src/control/jobs/control_jobs.c:1742
 msgid "_select as destination"
 msgstr "_selekti kiel celloko"
 
-#: ../src/control/jobs/control_jobs.c:1691
+#: ../src/control/jobs/control_jobs.c:1700
 #, c-format
 msgid ""
 "do you really want to physically move %d image to %s?\n"
@@ -5541,111 +5576,111 @@ msgstr[1] ""
 "ĉu vi vere volas fizike movi %d bildojn al %s?\n"
 "(ĉiuj kopioj kopiiĝos)"
 
-#: ../src/control/jobs/control_jobs.c:1700
+#: ../src/control/jobs/control_jobs.c:1709
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "movi bildon?"
 msgstr[1] "movi bildojn?"
 
-#: ../src/control/jobs/control_jobs.c:1721
+#: ../src/control/jobs/control_jobs.c:1730
 msgid "copy images"
 msgstr "kopii bildojn"
 
-#: ../src/control/jobs/control_jobs.c:1763
+#: ../src/control/jobs/control_jobs.c:1772
 #, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
 msgstr[0] "ĉu vi vere volas fizike kopii %d bildon al %s?"
 msgstr[1] "ĉu vi vere volas fizike kopii %d bildojn al %s?"
 
-#: ../src/control/jobs/control_jobs.c:1769
+#: ../src/control/jobs/control_jobs.c:1778
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "kopii bildon?"
 msgstr[1] "kopii bildojn?"
 
-#: ../src/control/jobs/control_jobs.c:1789
-#: ../src/control/jobs/control_jobs.c:1797
+#: ../src/control/jobs/control_jobs.c:1798
+#: ../src/control/jobs/control_jobs.c:1806
 msgid "local copy images"
 msgstr "lokaj kopiaj bildoj"
 
-#: ../src/control/jobs/control_jobs.c:1804 ../src/libs/image.c:598
+#: ../src/control/jobs/control_jobs.c:1813 ../src/libs/image.c:598
 msgid "refresh exif"
 msgstr "refreŝigi exif"
 
-#: ../src/control/jobs/control_jobs.c:1868
+#: ../src/control/jobs/control_jobs.c:1877
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "malsukcesis akiri parametrojn de stokada modulo `%s', ĉesigante eksportadon.."
 
-#: ../src/control/jobs/control_jobs.c:1884
+#: ../src/control/jobs/control_jobs.c:1893
 msgid "export images"
 msgstr "eksporti bildojn"
 
-#: ../src/control/jobs/control_jobs.c:1947
+#: ../src/control/jobs/control_jobs.c:1956
 #, c-format
 msgid "adding time offset to %d image"
 msgstr "aldonante tempan ofseton al %d bildo"
 
-#: ../src/control/jobs/control_jobs.c:1947
+#: ../src/control/jobs/control_jobs.c:1956
 #, c-format
 msgid "setting date/time of %d image"
 msgstr "agordi daton/horon de %d bildo"
 
-#: ../src/control/jobs/control_jobs.c:1948
+#: ../src/control/jobs/control_jobs.c:1957
 #, c-format
 msgid "adding time offset to %d images"
 msgstr "aldonante tempajn ofsetojn al %d bildoj"
 
-#: ../src/control/jobs/control_jobs.c:1948
+#: ../src/control/jobs/control_jobs.c:1957
 #, c-format
 msgid "setting date/time of %d images"
 msgstr "agordi daton/horon de %d bildoj"
 
-#: ../src/control/jobs/control_jobs.c:1989
+#: ../src/control/jobs/control_jobs.c:1998
 #, c-format
 msgid "added time offset to %d image"
 msgstr "aldoninte tempan ofseton al %d bildo"
 
-#: ../src/control/jobs/control_jobs.c:1989
+#: ../src/control/jobs/control_jobs.c:1998
 #, c-format
 msgid "set date/time of %d image"
 msgstr "agordi daton/horon de %d bildo"
 
-#: ../src/control/jobs/control_jobs.c:1990
+#: ../src/control/jobs/control_jobs.c:1999
 #, c-format
 msgid "added time offset to %d images"
 msgstr "aldoninte tempajn ofsetojn al %d bildoj"
 
-#: ../src/control/jobs/control_jobs.c:1990
+#: ../src/control/jobs/control_jobs.c:1999
 #, c-format
 msgid "set date/time of %d images"
 msgstr "agordi daton/horon de %d bildoj"
 
-#: ../src/control/jobs/control_jobs.c:2031
+#: ../src/control/jobs/control_jobs.c:2040
 msgid "time offset"
 msgstr "tempa ofseto"
 
-#: ../src/control/jobs/control_jobs.c:2059 ../src/libs/copy_history.c:415
+#: ../src/control/jobs/control_jobs.c:2068 ../src/libs/copy_history.c:415
 msgid "write sidecar files"
 msgstr "skribu kromĉarajn dosierojn"
 
-#: ../src/control/jobs/control_jobs.c:2203 ../src/control/jobs/film_jobs.c:223
+#: ../src/control/jobs/control_jobs.c:2225 ../src/control/jobs/film_jobs.c:223
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] "importante %d bildon"
 msgstr[1] "importante %d bildojn"
 
-#: ../src/control/jobs/control_jobs.c:2230
+#: ../src/control/jobs/control_jobs.c:2259
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
 msgstr[0] "importante %d/%d bildon"
 msgstr[1] "importante %d/%d bildojn"
 
-#: ../src/control/jobs/control_jobs.c:2236
+#: ../src/control/jobs/control_jobs.c:2266
 #, c-format
 msgid "imported %d image"
 msgid_plural "imported %d images"
@@ -5885,7 +5920,7 @@ msgid "unbounded (deprecated)"
 msgstr "nelimigita (malrekomendata)"
 
 #: ../src/develop/blend_gui.c:92 ../src/imageio/format/webp.c:357
-#: ../src/libs/metadata.c:445 ../src/libs/metadata_view.c:1039
+#: ../src/libs/metadata.c:445 ../src/libs/metadata_view.c:1019
 msgid "default"
 msgstr "apriora"
 
@@ -5950,12 +5985,12 @@ msgid "input image"
 msgstr "eniga bildo"
 
 #: ../src/develop/blend_gui.c:824 ../src/develop/blend_gui.c:2148
-#: ../src/develop/imageop.c:3090
+#: ../src/develop/imageop.c:3093
 msgid "input"
 msgstr "enigo"
 
 #: ../src/develop/blend_gui.c:824 ../src/develop/blend_gui.c:2148
-#: ../src/develop/imageop.c:3092
+#: ../src/develop/imageop.c:3095
 msgid "output"
 msgstr "eligo"
 
@@ -6037,15 +6072,15 @@ msgid "sliders for gray value"
 msgstr "ĝustigiloj por griza valoro"
 
 #: ../src/develop/blend_gui.c:1951 ../src/develop/blend_gui.c:1978
-#: ../src/iop/channelmixerrgb.c:3590 ../src/iop/levels.c:674
+#: ../src/iop/channelmixerrgb.c:3600 ../src/iop/levels.c:674
 #: ../src/views/darkroom.c:2539
 msgid "gray"
 msgstr "griza"
 
 #: ../src/develop/blend_gui.c:1952 ../src/develop/blend_gui.c:1979
-#: ../src/iop/channelmixerrgb.c:3584 ../src/iop/denoiseprofile.c:3545
+#: ../src/iop/channelmixerrgb.c:3594 ../src/iop/denoiseprofile.c:3544
 #: ../src/iop/rawdenoise.c:907 ../src/iop/rgbcurve.c:1382
-#: ../src/iop/rgblevels.c:959
+#: ../src/iop/rgblevels.c:956
 msgid "R"
 msgstr "R"
 
@@ -6054,9 +6089,9 @@ msgid "sliders for red channel"
 msgstr "ĝustugiloj por ruĝa kanelo"
 
 #: ../src/develop/blend_gui.c:1955 ../src/develop/blend_gui.c:1982
-#: ../src/iop/channelmixerrgb.c:3585 ../src/iop/denoiseprofile.c:3546
+#: ../src/iop/channelmixerrgb.c:3595 ../src/iop/denoiseprofile.c:3545
 #: ../src/iop/rawdenoise.c:908 ../src/iop/rgbcurve.c:1383
-#: ../src/iop/rgblevels.c:960
+#: ../src/iop/rgblevels.c:957
 msgid "G"
 msgstr "V"
 
@@ -6065,9 +6100,9 @@ msgid "sliders for green channel"
 msgstr "ĝustigiloj por verda kanelo"
 
 #: ../src/develop/blend_gui.c:1958 ../src/develop/blend_gui.c:1985
-#: ../src/iop/channelmixerrgb.c:3586 ../src/iop/denoiseprofile.c:3547
+#: ../src/iop/channelmixerrgb.c:3596 ../src/iop/denoiseprofile.c:3546
 #: ../src/iop/rawdenoise.c:909 ../src/iop/rgbcurve.c:1384
-#: ../src/iop/rgblevels.c:961
+#: ../src/iop/rgblevels.c:958
 msgid "B"
 msgstr "B"
 
@@ -6147,7 +6182,7 @@ msgstr ""
 msgid "reset blend mask settings"
 msgstr "reagordi agordojn pri miksa masko"
 
-#: ../src/develop/blend_gui.c:2113 ../src/iop/colorzones.c:2387
+#: ../src/develop/blend_gui.c:2113 ../src/iop/colorzones.c:2384
 #: ../src/iop/rgbcurve.c:1391 ../src/iop/tonecurve.c:1181
 msgid ""
 "pick GUI color from image\n"
@@ -6564,19 +6599,19 @@ msgstr ""
 msgid "ERROR"
 msgstr "ERARO"
 
-#: ../src/develop/imageop.c:3089
+#: ../src/develop/imageop.c:3092
 msgid "purpose"
 msgstr "tialo"
 
-#: ../src/develop/imageop.c:3091
+#: ../src/develop/imageop.c:3094
 msgid "process"
 msgstr "prilabori"
 
-#: ../src/develop/imageop.c:3161
+#: ../src/develop/imageop.c:3164
 msgid "unsupported input"
 msgstr "nesubtenata eniro"
 
-#: ../src/develop/imageop.c:3162
+#: ../src/develop/imageop.c:3165
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -6618,41 +6653,41 @@ msgid_plural "%s have been imported"
 msgstr[0] "%s estas importata"
 msgstr[1] "%s estas importataj"
 
-#: ../src/develop/masks/brush.c:1113 ../src/develop/masks/brush.c:1197
+#: ../src/develop/masks/brush.c:1114 ../src/develop/masks/brush.c:1198
 #, c-format
 msgid "hardness: %3.2f%%"
 msgstr "malmoleco: %3.2f%%"
 
-#: ../src/develop/masks/brush.c:1137 ../src/develop/masks/brush.c:1179
-#: ../src/develop/masks/brush.c:1186 ../src/develop/masks/circle.c:122
+#: ../src/develop/masks/brush.c:1138 ../src/develop/masks/brush.c:1180
+#: ../src/develop/masks/brush.c:1187 ../src/develop/masks/circle.c:122
 #: ../src/develop/masks/circle.c:176 ../src/develop/masks/ellipse.c:555
-#: ../src/develop/masks/ellipse.c:642 ../src/develop/masks/path.c:1096
+#: ../src/develop/masks/ellipse.c:642 ../src/develop/masks/path.c:1097
 #, c-format
 msgid "size: %3.2f%%"
 msgstr "grandeco: %3.2f%%"
 
-#: ../src/develop/masks/brush.c:2898
+#: ../src/develop/masks/brush.c:2899
 msgid "[BRUSH creation] change size"
 msgstr "[BROSAN kreado] ŝanĝi grandecon"
 
-#: ../src/develop/masks/brush.c:2900
+#: ../src/develop/masks/brush.c:2901
 msgid "[BRUSH creation] change hardness"
 msgstr "[BROSAN kreado] ŝanĝi malmolecon"
 
-#: ../src/develop/masks/brush.c:2901
+#: ../src/develop/masks/brush.c:2902
 msgid "[BRUSH] change opacity"
 msgstr "[BROSO] ŝanĝi maldiafanecon"
 
-#: ../src/develop/masks/brush.c:2902
+#: ../src/develop/masks/brush.c:2903
 msgid "[BRUSH] change hardness"
 msgstr "[BROSO] ŝanĝi malmolecon"
 
-#: ../src/develop/masks/brush.c:2913
+#: ../src/develop/masks/brush.c:2914
 #, c-format
 msgid "brush #%d"
 msgstr "broso #%d"
 
-#: ../src/develop/masks/brush.c:2922
+#: ../src/develop/masks/brush.c:2923
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
@@ -6661,7 +6696,7 @@ msgstr ""
 "<b>grandeco</b>: rulumi, <b>malmoleco</b>: majusklo+rulumi\n"
 "<b>maldiafaneco</b>: stirklavo+rulumi (%d%%)"
 
-#: ../src/develop/masks/brush.c:2926
+#: ../src/develop/masks/brush.c:2927
 #, c-format
 msgid ""
 "<b>hardness</b>: scroll, <b>size</b>: shift+scroll\n"
@@ -6670,13 +6705,13 @@ msgstr ""
 "<b>malmoleco</b>: rulumi, <b>grandeco</b>: majusklo+rulumi\n"
 "<b>maldiafaneco</b>: stirklavo+rulumi (%d%%)"
 
-#: ../src/develop/masks/brush.c:2929
+#: ../src/develop/masks/brush.c:2930
 msgid "<b>size</b>: scroll"
 msgstr "<b>grandeco</b>: rulumi"
 
 #: ../src/develop/masks/circle.c:109 ../src/develop/masks/circle.c:159
 #: ../src/develop/masks/ellipse.c:527 ../src/develop/masks/ellipse.c:612
-#: ../src/develop/masks/path.c:1033 ../src/develop/masks/path.c:1040
+#: ../src/develop/masks/path.c:1034 ../src/develop/masks/path.c:1041
 #, c-format
 msgid "feather size: %3.2f%%"
 msgstr "pluma grandeco: %3.2f%%"
@@ -6698,7 +6733,7 @@ msgstr "[RONDO] ŝanĝi plumadan grandecon"
 msgid "circle #%d"
 msgstr "rondo #%d"
 
-#: ../src/develop/masks/circle.c:1352 ../src/develop/masks/path.c:3118
+#: ../src/develop/masks/circle.c:1352 ../src/develop/masks/path.c:3119
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -6793,7 +6828,16 @@ msgstr "[ELIPSO] ŝanĝi maldiafanecon"
 msgid "gradient #%d"
 msgstr "gradiento #%d"
 
-#: ../src/develop/masks/gradient.c:1457
+#: ../src/develop/masks/gradient.c:1458
+#, c-format
+msgid ""
+"<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
+"<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
+msgstr ""
+"<b>kurbiĝo</b>: rulumi, <b>kunpremo</b>: maj+rulumi\n"
+"<b>rotacio</b>: klaki+treni, <b>maldiafaneco</b>: stir+rulumi (%d%%)"
+
+#: ../src/develop/masks/gradient.c:1462
 #, c-format
 msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
@@ -6802,7 +6846,7 @@ msgstr ""
 "<b>kurbiĝo</b>: rulumi, <b>kunpremo</b>: majusklo+rulumi\n"
 "<b>maldiafaneco</b>: stirklavo+rulumi (%d%%)"
 
-#: ../src/develop/masks/gradient.c:1460
+#: ../src/develop/masks/gradient.c:1465
 msgid "<b>rotate</b>: drag"
 msgstr "<b>turni</b>: treni"
 
@@ -6837,52 +6881,52 @@ msgstr "uzi saman formon kiel"
 msgid "masks can not contain themselves"
 msgstr "maskoj ne povas sin enhavi"
 
-#: ../src/develop/masks/path.c:3075
+#: ../src/develop/masks/path.c:3076
 msgid "[PATH creation] add a smooth node"
 msgstr "[VOJA kreado] aldonu glatan nodon"
 
-#: ../src/develop/masks/path.c:3077
+#: ../src/develop/masks/path.c:3078
 msgid "[PATH creation] add a sharp node"
 msgstr "[VOJA kreado] aldonu akran nodon"
 
-#: ../src/develop/masks/path.c:3078
+#: ../src/develop/masks/path.c:3079
 msgid "[PATH creation] terminate path creation"
 msgstr "[VOJA kreado] ĉesigu kreadan vojon"
 
-#: ../src/develop/masks/path.c:3080
+#: ../src/develop/masks/path.c:3081
 msgid "[PATH on node] switch between smooth/sharp node"
 msgstr "[VOJO sur nodo] ŝanĝas inter glata/akra nodo"
 
-#: ../src/develop/masks/path.c:3081
+#: ../src/develop/masks/path.c:3082
 msgid "[PATH on node] remove the node"
 msgstr "[VOJO sur nodo] foriginodon"
 
-#: ../src/develop/masks/path.c:3082
+#: ../src/develop/masks/path.c:3083
 msgid "[PATH on feather] reset curvature"
 msgstr "[VOJO sur plumado] reagordi kurgiĝon"
 
-#: ../src/develop/masks/path.c:3084
+#: ../src/develop/masks/path.c:3085
 msgid "[PATH on segment] add node"
 msgstr "[VOJO sur segmento] aldoni nodon"
 
-#: ../src/develop/masks/path.c:3085
+#: ../src/develop/masks/path.c:3086
 msgid "[PATH] change size"
 msgstr "[VOJO] ŝanĝi grandecon"
 
-#: ../src/develop/masks/path.c:3086
+#: ../src/develop/masks/path.c:3087
 msgid "[PATH] change opacity"
 msgstr "[VOJO] ŝanĝi maldiafanecon"
 
-#: ../src/develop/masks/path.c:3087
+#: ../src/develop/masks/path.c:3088
 msgid "[PATH] change feather size"
 msgstr "[VOJO] ŝanĝi plumadan grandecon"
 
-#: ../src/develop/masks/path.c:3098
+#: ../src/develop/masks/path.c:3099
 #, c-format
 msgid "path #%d"
 msgstr "vojo #%d"
 
-#: ../src/develop/masks/path.c:3105
+#: ../src/develop/masks/path.c:3106
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
@@ -6890,7 +6934,7 @@ msgstr ""
 "<b>aldoni nodon</b>: klaki, <b>aldoni akran nodon</b>:stirklavo+klaki\n"
 "<b>nuligi</b>: dekstre klaki"
 
-#: ../src/develop/masks/path.c:3108
+#: ../src/develop/masks/path.c:3109
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finnish path</b>: right-click"
@@ -6898,7 +6942,7 @@ msgstr ""
 "<b>aldoni nodon</b>: klaki, <b>aldoni akran nodon</b>:stirklavo+klaki\n"
 "<b>fini vojon</b>: dekstre klaki"
 
-#: ../src/develop/masks/path.c:3111
+#: ../src/develop/masks/path.c:3112
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
@@ -6906,7 +6950,7 @@ msgstr ""
 "<b>movi nodon</b>: treni, <b>forigi nodon</b>: dekstre klaki\n"
 "<b>ŝanĝi glatan/akran reĝimon</b>: stirklavo+klaki"
 
-#: ../src/develop/masks/path.c:3114
+#: ../src/develop/masks/path.c:3115
 msgid ""
 "<b>node curvature</b>: drag\n"
 "<b>reset curvature</b>: right-click"
@@ -6914,7 +6958,7 @@ msgstr ""
 "<b>noda kurbigo</b>: treni\n"
 "<b>reagordi krbiĝon</b>: dekstre klaki"
 
-#: ../src/develop/masks/path.c:3116
+#: ../src/develop/masks/path.c:3117
 msgid ""
 "<b>move segment</b>: drag\n"
 "<b>add node</b>: ctrl+click"
@@ -7937,7 +7981,7 @@ msgid "golden spiral"
 msgstr "ora spiralo"
 
 #: ../src/gui/guides.c:444 ../src/imageio/format/pdf.c:667
-#: ../src/iop/denoiseprofile.c:3544 ../src/iop/lens.cc:2235
+#: ../src/iop/denoiseprofile.c:3543 ../src/iop/lens.cc:2235
 #: ../src/iop/rawdenoise.c:906 ../src/libs/tools/filter.c:175
 msgid "all"
 msgstr "ĉiuj"
@@ -8175,7 +8219,7 @@ msgstr "produktinto"
 
 #: ../src/gui/preferences.c:864 ../src/iop/basicadj.c:633
 #: ../src/iop/borders.c:1050 ../src/iop/levels.c:643
-#: ../src/iop/rgblevels.c:1004
+#: ../src/iop/rgblevels.c:1001
 msgid "auto"
 msgstr "aŭto"
 
@@ -8267,7 +8311,7 @@ msgstr "elekti dosieron importendan"
 
 #: ../src/gui/preferences.c:1639 ../src/gui/preferences.c:1728
 #: ../src/libs/collect.c:427 ../src/libs/copy_history.c:109
-#: ../src/libs/geotagging.c:939 ../src/libs/import.c:1141
+#: ../src/libs/geotagging.c:939 ../src/libs/import.c:1238
 #: ../src/libs/styles.c:530
 msgid "_open"
 msgstr "_malfermi"
@@ -9264,8 +9308,8 @@ msgstr "korekta"
 
 #: ../src/iop/ashift.c:128 ../src/iop/ashift.c:130 ../src/iop/atrous.c:140
 #: ../src/iop/basicadj.c:147 ../src/iop/bilateral.cc:100
-#: ../src/iop/bilateral.cc:102 ../src/iop/channelmixerrgb.c:197
-#: ../src/iop/channelmixerrgb.c:199 ../src/iop/clipping.c:322
+#: ../src/iop/bilateral.cc:102 ../src/iop/channelmixerrgb.c:199
+#: ../src/iop/channelmixerrgb.c:201 ../src/iop/clipping.c:322
 #: ../src/iop/clipping.c:324 ../src/iop/colorin.c:137 ../src/iop/demosaic.c:215
 #: ../src/iop/denoiseprofile.c:670 ../src/iop/denoiseprofile.c:672
 #: ../src/iop/exposure.c:115 ../src/iop/exposure.c:117 ../src/iop/flip.c:102
@@ -9478,7 +9522,7 @@ msgid "add or remove local contrast, sharpness, acutance"
 msgstr "aldonu aŭ forigu lokan kontraston, akrecon, akutecon"
 
 #: ../src/iop/atrous.c:139 ../src/iop/bilateral.cc:99 ../src/iop/exposure.c:114
-#: ../src/iop/filmicrgb.c:334 ../src/iop/graduatednd.c:150
+#: ../src/iop/filmicrgb.c:336 ../src/iop/graduatednd.c:150
 #: ../src/iop/negadoctor.c:156 ../src/iop/rgbcurve.c:142
 #: ../src/iop/rgblevels.c:121 ../src/iop/shadhi.c:197
 #: ../src/iop/tonecurve.c:213 ../src/iop/toneequal.c:320
@@ -9561,51 +9605,51 @@ msgstr "akrigi: meza malakrigo, forteco 1"
 msgid "deblur: fine blur, strength 1"
 msgstr "akrigi: fajna malakrigo, forteco 1"
 
-#: ../src/iop/atrous.c:1353 ../src/iop/denoiseprofile.c:3355
-#: ../src/iop/rawdenoise.c:745
+#: ../src/iop/atrous.c:1350 ../src/iop/denoiseprofile.c:3352
+#: ../src/iop/rawdenoise.c:742
 msgid "coarse"
 msgstr "kruda"
 
-#: ../src/iop/atrous.c:1360 ../src/iop/denoiseprofile.c:3363
-#: ../src/iop/rawdenoise.c:753
+#: ../src/iop/atrous.c:1357 ../src/iop/denoiseprofile.c:3360
+#: ../src/iop/rawdenoise.c:750
 msgid "fine"
 msgstr "fajna"
 
-#: ../src/iop/atrous.c:1372
+#: ../src/iop/atrous.c:1369
 msgid "contrasty"
 msgstr "kontraste"
 
-#: ../src/iop/atrous.c:1378 ../src/iop/denoiseprofile.c:3377
-#: ../src/iop/rawdenoise.c:767
+#: ../src/iop/atrous.c:1375 ../src/iop/denoiseprofile.c:3374
+#: ../src/iop/rawdenoise.c:764
 msgid "noisy"
 msgstr "brue"
 
 #. case atrous_s:
-#: ../src/iop/atrous.c:1381
+#: ../src/iop/atrous.c:1378
 msgid "bold"
 msgstr "aŭdace"
 
-#: ../src/iop/atrous.c:1382
+#: ../src/iop/atrous.c:1379
 msgid "dull"
 msgstr "malhele"
 
-#: ../src/iop/atrous.c:1590 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:532
+#: ../src/iop/atrous.c:1589 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:532
 msgid "luma"
 msgstr "luma"
 
-#: ../src/iop/atrous.c:1590
+#: ../src/iop/atrous.c:1589
 msgid "change lightness at each feature size"
 msgstr "ŝanĝi lumecon ĉe ĉiu trajta grandeco"
 
-#: ../src/iop/atrous.c:1591
+#: ../src/iop/atrous.c:1590
 msgid "change color saturation at each feature size"
 msgstr "ŝanĝi koloran saturadon ĉe ĉiu trajta grandeco"
 
-#: ../src/iop/atrous.c:1592
+#: ../src/iop/atrous.c:1591
 msgid "edges"
 msgstr "randoj"
 
-#: ../src/iop/atrous.c:1592
+#: ../src/iop/atrous.c:1591
 msgid ""
 "change edge halos at each feature size\n"
 "only changes results of luma and chroma tabs"
@@ -9613,7 +9657,7 @@ msgstr ""
 "ŝanĝi randajn aŭreolojn ĉe ĉiu trajtograndeco\n"
 "nur ŝanĝas rezultojn de lumaj kaj koloraj langetoj"
 
-#: ../src/iop/atrous.c:1619 ../src/iop/colorzones.c:2446
+#: ../src/iop/atrous.c:1618 ../src/iop/colorzones.c:2443
 msgid "make effect stronger or weaker"
 msgstr "fari efikon pli fortan aŭ pli malfortan"
 
@@ -9687,7 +9731,7 @@ msgstr "kiel nokia"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:273 ../src/iop/colorzones.c:2474
+#: ../src/iop/basecurve.c:273 ../src/iop/colorzones.c:2471
 #: ../src/iop/rgbcurve.c:1433 ../src/iop/tonecurve.c:1211
 msgid "cubic spline"
 msgstr "kuba kurbo"
@@ -9714,7 +9758,7 @@ msgstr "lineara, RVB, ekran-referita"
 
 #: ../src/iop/basecurve.c:341 ../src/iop/basicadj.c:148
 #: ../src/iop/colorbalance.c:161 ../src/iop/colorbalancergb.c:166
-#: ../src/iop/dither.c:105 ../src/iop/filmicrgb.c:336
+#: ../src/iop/dither.c:105 ../src/iop/filmicrgb.c:338
 #: ../src/iop/graduatednd.c:152 ../src/iop/negadoctor.c:158
 #: ../src/iop/profile_gamma.c:103 ../src/iop/rgbcurve.c:144
 #: ../src/iop/rgblevels.c:123 ../src/iop/vignette.c:160
@@ -9723,7 +9767,7 @@ msgid "non-linear, RGB"
 msgstr "nelineara , RVB"
 
 #: ../src/iop/basecurve.c:342 ../src/iop/colorout.c:94 ../src/iop/dither.c:104
-#: ../src/iop/dither.c:106 ../src/iop/filmicrgb.c:337
+#: ../src/iop/dither.c:106 ../src/iop/filmicrgb.c:339
 #: ../src/iop/graduatednd.c:153 ../src/iop/negadoctor.c:159
 #: ../src/iop/profile_gamma.c:104 ../src/iop/rgblevels.c:124
 #: ../src/iop/vignette.c:159 ../src/iop/vignette.c:161
@@ -9736,7 +9780,7 @@ msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "absciso: enigo, ordigita: eligo. funkcias ĉe RVB-kanaloj"
 
 #: ../src/iop/basecurve.c:2095 ../src/iop/basicadj.c:612
-#: ../src/iop/rgbcurve.c:1448 ../src/iop/rgblevels.c:1023
+#: ../src/iop/rgbcurve.c:1448 ../src/iop/rgblevels.c:1020
 #: ../src/iop/tonecurve.c:1222
 msgid "method to preserve colors when applying contrast"
 msgstr "metodo por konservi kolorojn dum aplikado de kontrasto"
@@ -10000,7 +10044,7 @@ msgstr "la grandeco de florado"
 msgid "the threshold of light"
 msgstr "la sojlo de lumo"
 
-#: ../src/iop/bloom.c:407 ../src/iop/denoiseprofile.c:3644
+#: ../src/iop/bloom.c:407 ../src/iop/denoiseprofile.c:3643
 #: ../src/iop/grain.c:581 ../src/iop/hazeremoval.c:203
 #: ../src/iop/hotpixels.c:381 ../src/iop/nlmeans.c:527 ../src/iop/velvia.c:337
 msgid "strength"
@@ -10201,10 +10245,6 @@ msgstr "lineara, kruda, scen-referita"
 msgid "linear, raw"
 msgstr "lineara, kruda"
 
-#: ../src/iop/cacorrect.c:1586
-msgid "error"
-msgstr "eraro"
-
 #: ../src/iop/cacorrect.c:1587
 msgid "CA correction supports only RGB colour filter arrays"
 msgstr "KA korektado subtenas nur RVB koloraj filtrilaj tabeloj"
@@ -10270,7 +10310,7 @@ msgid "censorize license plates and body parts for privacy"
 msgstr "cenzuri numerplatojn kaj korpopartojn por privateco"
 
 #: ../src/iop/censorize.c:84 ../src/iop/colorin.c:135
-#: ../src/iop/filmicrgb.c:335 ../src/iop/graduatednd.c:151
+#: ../src/iop/filmicrgb.c:337 ../src/iop/graduatednd.c:151
 msgid "linear or non-linear, RGB, scene-referred"
 msgstr "lineara aŭ nelineara, RVB, scen-referita"
 
@@ -10321,7 +10361,7 @@ msgstr ""
 "ĉi tiu modulo estas malaktuala. bonvolu uzi la koloran kalibrigan modulon "
 "anstataŭe."
 
-#: ../src/iop/channelmixer.c:136 ../src/iop/channelmixerrgb.c:193
+#: ../src/iop/channelmixer.c:136 ../src/iop/channelmixerrgb.c:195
 msgid ""
 "perform color space corrections\n"
 "such as white balance, channels mixing\n"
@@ -10331,7 +10371,7 @@ msgstr ""
 "kiel ekzemple blanka ekvilibrigo, kanaloj miksitaj\n"
 "kaj konvertiĝoj al monokromata emula filmo"
 
-#: ../src/iop/channelmixer.c:139 ../src/iop/channelmixerrgb.c:196
+#: ../src/iop/channelmixer.c:139 ../src/iop/channelmixerrgb.c:198
 #: ../src/iop/clipping.c:321 ../src/iop/colorbalance.c:159
 #: ../src/iop/colorbalancergb.c:164 ../src/iop/colorchecker.c:126
 #: ../src/iop/colorcorrection.c:77 ../src/iop/lut3d.c:139
@@ -10359,11 +10399,11 @@ msgstr "kvanto da verdo en la eliga kanalo"
 msgid "amount of blue channel in the output channel"
 msgstr "kvanto da bluo en la eliga kanalo"
 
-#: ../src/iop/channelmixer.c:662 ../src/iop/channelmixerrgb.c:439
+#: ../src/iop/channelmixer.c:662 ../src/iop/channelmixerrgb.c:441
 msgid "swap R and B"
 msgstr "interŝanĝi R kaj B"
 
-#: ../src/iop/channelmixer.c:668 ../src/iop/channelmixerrgb.c:413
+#: ../src/iop/channelmixer.c:668 ../src/iop/channelmixerrgb.c:415
 msgid "swap G and B"
 msgstr "interŝanĝi V kaj B"
 
@@ -10427,67 +10467,67 @@ msgstr "N/B Kodak T-Maks 400"
 msgid "B/W Kodak Tri-X 400"
 msgstr "N/B Kodak Tri-X 400"
 
-#: ../src/iop/channelmixerrgb.c:183
+#: ../src/iop/channelmixerrgb.c:185
 msgid "color calibration"
 msgstr "kolora kalibrado"
 
-#: ../src/iop/channelmixerrgb.c:188
+#: ../src/iop/channelmixerrgb.c:190
 msgid "channel mixer|white balance|monochrome"
 msgstr "kanala miksilo|blanka ekvilibrigo|monokromato"
 
-#: ../src/iop/channelmixerrgb.c:198
+#: ../src/iop/channelmixerrgb.c:200
 msgid "linear, RGB or XYZ"
 msgstr "lineara, RVB aŭ XYZ"
 
-#: ../src/iop/channelmixerrgb.c:318
+#: ../src/iop/channelmixerrgb.c:320
 msgid "B&W : luminance-based"
 msgstr "N/B : lumeco-bazite"
 
-#: ../src/iop/channelmixerrgb.c:347
+#: ../src/iop/channelmixerrgb.c:349
 msgid "B&W : Ilford HP5+"
 msgstr "N/B : Ilford HP5+"
 
-#: ../src/iop/channelmixerrgb.c:356
+#: ../src/iop/channelmixerrgb.c:358
 msgid "B&W : Ilford Delta 100"
 msgstr "N/B : Ilford Delto 100"
 
-#: ../src/iop/channelmixerrgb.c:366
+#: ../src/iop/channelmixerrgb.c:368
 msgid "B&W : Ilford Delta 400 - 3200"
 msgstr "N/B : Ilford Delto 400 - 3200"
 
-#: ../src/iop/channelmixerrgb.c:375
+#: ../src/iop/channelmixerrgb.c:377
 msgid "B&W : Ilford FP2"
 msgstr "N/B : Ilford FP2"
 
-#: ../src/iop/channelmixerrgb.c:384
+#: ../src/iop/channelmixerrgb.c:386
 msgid "B&W : Fuji Acros 100"
 msgstr "N/B : Fuji Akros 100"
 
-#: ../src/iop/channelmixerrgb.c:400
+#: ../src/iop/channelmixerrgb.c:402
 msgid "basic channel mixer"
 msgstr "baza kanala miksilo"
 
-#: ../src/iop/channelmixerrgb.c:426
+#: ../src/iop/channelmixerrgb.c:428
 msgid "swap G and R"
 msgstr "interŝanĝi V kaj R"
 
-#: ../src/iop/channelmixerrgb.c:1622 ../src/iop/channelmixerrgb.c:1671
+#: ../src/iop/channelmixerrgb.c:1628 ../src/iop/channelmixerrgb.c:1677
 msgid "very good"
 msgstr "tre bone"
 
-#: ../src/iop/channelmixerrgb.c:1624 ../src/iop/channelmixerrgb.c:1673
+#: ../src/iop/channelmixerrgb.c:1630 ../src/iop/channelmixerrgb.c:1679
 msgid "good"
 msgstr "bone"
 
-#: ../src/iop/channelmixerrgb.c:1626 ../src/iop/channelmixerrgb.c:1675
+#: ../src/iop/channelmixerrgb.c:1632 ../src/iop/channelmixerrgb.c:1681
 msgid "passable"
 msgstr "akcepteble"
 
-#: ../src/iop/channelmixerrgb.c:1628 ../src/iop/channelmixerrgb.c:1677
+#: ../src/iop/channelmixerrgb.c:1634 ../src/iop/channelmixerrgb.c:1683
 msgid "bad"
 msgstr "malbone"
 
-#: ../src/iop/channelmixerrgb.c:1635
+#: ../src/iop/channelmixerrgb.c:1641
 #, c-format
 msgid ""
 "\n"
@@ -10524,7 +10564,7 @@ msgstr ""
 "ekspozicia kompenso : \t%+.2f EV\n"
 "nigra ofseto : \t%+.4f"
 
-#: ../src/iop/channelmixerrgb.c:1681
+#: ../src/iop/channelmixerrgb.c:1687
 #, c-format
 msgid ""
 "\n"
@@ -10545,11 +10585,11 @@ msgstr ""
 
 #. our second biggest problem : another channelmixerrgb instance is doing CAT
 #. earlier in the pipe.
-#: ../src/iop/channelmixerrgb.c:1703
+#: ../src/iop/channelmixerrgb.c:1709
 msgid "double CAT applied"
 msgstr "duoble estas KAT aplikata"
 
-#: ../src/iop/channelmixerrgb.c:1704
+#: ../src/iop/channelmixerrgb.c:1710
 msgid ""
 "you have 2 instances or more of color calibration,\n"
 "all performing chromatic adaptation.\n"
@@ -10562,11 +10602,11 @@ msgstr ""
 "uzu ilin kun maskoj aŭ sciu, kion vi faras."
 
 #. our first and biggest problem : white balance module is being clever with WB coeffs
-#: ../src/iop/channelmixerrgb.c:1714
+#: ../src/iop/channelmixerrgb.c:1720
 msgid "white balance module error"
 msgstr "eraro pri blankevilibra modulo"
 
-#: ../src/iop/channelmixerrgb.c:1715
+#: ../src/iop/channelmixerrgb.c:1721
 msgid ""
 "the white balance module is not using the camera\n"
 "reference illuminant, which will cause issues here\n"
@@ -10578,17 +10618,17 @@ msgstr ""
 "kun kromata adapto. aŭ starigu ĝin al referenco\n"
 "aŭ malebligu kromatan adaptadon ĉi tie."
 
-#: ../src/iop/channelmixerrgb.c:1788
+#: ../src/iop/channelmixerrgb.c:1794
 msgid "auto-detection of white balance completed"
 msgstr "aŭtomata detekto de blanka ekvilibrigo finita"
 
 # CCT = Korelacia kolora temperaturo
-#: ../src/iop/channelmixerrgb.c:3048
+#: ../src/iop/channelmixerrgb.c:3054
 #, c-format
 msgid "CCT: %.0f K (daylight)"
 msgstr "KKT: %.0f K (sunlumo)"
 
-#: ../src/iop/channelmixerrgb.c:3050
+#: ../src/iop/channelmixerrgb.c:3056
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a daylight spectrum,\n"
@@ -10598,12 +10638,12 @@ msgstr ""
 "ĉi tiu lumigilo povas esti precize modelita per tagluma spektro,\n"
 "do ĝia temperaturo rilatas kaj sencas per D-lumilo."
 
-#: ../src/iop/channelmixerrgb.c:3056
+#: ../src/iop/channelmixerrgb.c:3062
 #, c-format
 msgid "CCT: %.0f K (black body)"
 msgstr "KKT: %.0f K (nigra korpo)"
 
-#: ../src/iop/channelmixerrgb.c:3058
+#: ../src/iop/channelmixerrgb.c:3064
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a black body spectrum,\n"
@@ -10613,12 +10653,12 @@ msgstr ""
 "ĉi tiu lumigilo povas esti precize modeligita per nigra korpa spektro,\n"
 "do ĝia temperaturo gravas kaj sencas ĉe plankkiana lumigilo."
 
-#: ../src/iop/channelmixerrgb.c:3064
+#: ../src/iop/channelmixerrgb.c:3070
 #, c-format
 msgid "CCT: %.0f K (invalid)"
 msgstr "KKT: %.0f K (malvalide)"
 
-#: ../src/iop/channelmixerrgb.c:3066
+#: ../src/iop/channelmixerrgb.c:3072
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant cannot be accurately modeled by a daylight or black body "
@@ -10632,12 +10672,12 @@ msgstr ""
 "do ĝia temperaturo ne gravas kaj sencas kaj vi bezonas uzi laŭmendan "
 "lumigilon."
 
-#: ../src/iop/channelmixerrgb.c:3073
+#: ../src/iop/channelmixerrgb.c:3079
 #, c-format
 msgid "CCT: undefined"
 msgstr "KKT: nedifinite"
 
-#: ../src/iop/channelmixerrgb.c:3075
+#: ../src/iop/channelmixerrgb.c:3081
 msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
@@ -10645,16 +10685,16 @@ msgstr ""
 "la proksimuma korelaciita kolora temperaturo\n"
 "tute ne povas esti komputita, do vi bezonas uzi laŭmendan lumigilon."
 
-#: ../src/iop/channelmixerrgb.c:3304
+#: ../src/iop/channelmixerrgb.c:3314
 msgid "white balance successfully extracted from raw image"
 msgstr "blanka ekvilibrigo sukcese ĉerpita el kruda bildo"
 
 #. We need to recompute only the full preview
-#: ../src/iop/channelmixerrgb.c:3310
+#: ../src/iop/channelmixerrgb.c:3320
 msgid "auto-detection of white balance started…"
 msgstr "aŭtomata detekto de blanka ekvilibrigo komenciĝis…"
 
-#: ../src/iop/channelmixerrgb.c:3365
+#: ../src/iop/channelmixerrgb.c:3375
 msgid ""
 "color calibration: the sum of the grey channel parameters is zero, "
 "normalization will be disabled."
@@ -10663,19 +10703,19 @@ msgstr ""
 "normaligo malebliĝos."
 
 #. Page CAT
-#: ../src/iop/channelmixerrgb.c:3480
+#: ../src/iop/channelmixerrgb.c:3490
 msgid "CAT"
 msgstr "KAT"
 
-#: ../src/iop/channelmixerrgb.c:3480
+#: ../src/iop/channelmixerrgb.c:3490
 msgid "chromatic adaptation transform"
 msgstr "kromata adapta transformo"
 
-#: ../src/iop/channelmixerrgb.c:3482
+#: ../src/iop/channelmixerrgb.c:3492
 msgid "adaptation"
 msgstr "adapto"
 
-#: ../src/iop/channelmixerrgb.c:3484
+#: ../src/iop/channelmixerrgb.c:3494
 msgid ""
 "choose the method to adapt the illuminant\n"
 "and the colorspace in which the module works: \n"
@@ -10696,7 +10736,7 @@ msgstr ""
 "• XYZ estas simpla skalo en XYZ-spaco. Ĝi ne estas rekomendita ĝenerale.\n"
 "• neniu malebligas iun ajn adaptadon kaj uzas pikselpipa RVB."
 
-#: ../src/iop/channelmixerrgb.c:3501
+#: ../src/iop/channelmixerrgb.c:3511
 msgid ""
 "this is the color of the scene illuminant before chromatic adaptation\n"
 "this color will be turned into pure white by the adaptation."
@@ -10704,103 +10744,103 @@ msgstr ""
 "ĉi tiu estas la koloro de la lumigilo antaŭ kromata adapto\n"
 "ĉi tiu koloro fariĝos pura blankulo per la adapto."
 
-#: ../src/iop/channelmixerrgb.c:3508 ../src/iop/temperature.c:2057
+#: ../src/iop/channelmixerrgb.c:3518 ../src/iop/temperature.c:2057
 msgid "set white balance to detected from area"
 msgstr "agordi blankan ekvilibrigon al detektita de areo"
 
-#: ../src/iop/channelmixerrgb.c:3512
+#: ../src/iop/channelmixerrgb.c:3522
 msgid "illuminant"
 msgstr "lumigilo"
 
-#: ../src/iop/channelmixerrgb.c:3518 ../src/iop/temperature.c:1993
+#: ../src/iop/channelmixerrgb.c:3528 ../src/iop/temperature.c:1993
 msgid "temperature"
 msgstr "temperaturo"
 
-#: ../src/iop/channelmixerrgb.c:3562
+#: ../src/iop/channelmixerrgb.c:3572
 msgid "input red"
 msgstr "eniga ruĝa"
 
-#: ../src/iop/channelmixerrgb.c:3569
+#: ../src/iop/channelmixerrgb.c:3579
 msgid "input green"
 msgstr "eniga verda"
 
-#: ../src/iop/channelmixerrgb.c:3576
+#: ../src/iop/channelmixerrgb.c:3586
 msgid "input blue"
 msgstr "eniga blua"
 
-#: ../src/iop/channelmixerrgb.c:3587
+#: ../src/iop/channelmixerrgb.c:3597
 msgid "colorfulness"
 msgstr "koloreco"
 
-#: ../src/iop/channelmixerrgb.c:3602
+#: ../src/iop/channelmixerrgb.c:3612
 msgid "calibrate with a color checker"
 msgstr "kalibri per kolora kontrolilo"
 
-#: ../src/iop/channelmixerrgb.c:3605
+#: ../src/iop/channelmixerrgb.c:3615
 msgid "use a color checker target to autoset CAT and channels"
 msgstr "uzu cel-kontrolilon por aŭtomate agordi CAT kaj kanalojn"
 
-#: ../src/iop/channelmixerrgb.c:3612
+#: ../src/iop/channelmixerrgb.c:3622
 msgid "chart"
 msgstr "diagramo"
 
-#: ../src/iop/channelmixerrgb.c:3613
+#: ../src/iop/channelmixerrgb.c:3623
 msgid "Xrite ColorChecker 24 pre-2014"
 msgstr "Xrite ColorChecker 24 antaŭ 2014"
 
-#: ../src/iop/channelmixerrgb.c:3614
+#: ../src/iop/channelmixerrgb.c:3624
 msgid "Xrite ColorChecker 24 post-2014"
 msgstr "Xrite ColorChecker 24 post 2014"
 
-#: ../src/iop/channelmixerrgb.c:3615
+#: ../src/iop/channelmixerrgb.c:3625
 msgid "Datacolor SpyderCheckr 24 pre-2018"
 msgstr "Datacolor SpyderChecker 24 antaŭ 2018"
 
-#: ../src/iop/channelmixerrgb.c:3616
+#: ../src/iop/channelmixerrgb.c:3626
 msgid "Datacolor SpyderCheckr 24 post-2018"
 msgstr "Datacolor SpyderChecker 24 post 2018"
 
-#: ../src/iop/channelmixerrgb.c:3617
+#: ../src/iop/channelmixerrgb.c:3627
 msgid "Datacolor SpyderCheckr 48 pre-2018"
 msgstr "Datacolor SpyderChecker 48 antaŭ 2018"
 
-#: ../src/iop/channelmixerrgb.c:3618
+#: ../src/iop/channelmixerrgb.c:3628
 msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr "Datacolor SpyderChecker 48 post 2018"
 
-#: ../src/iop/channelmixerrgb.c:3620
+#: ../src/iop/channelmixerrgb.c:3630
 msgid "choose the vendor and the type of your chart"
 msgstr "elektu la vendiston kaj la tipon de via diagramo"
 
-#: ../src/iop/channelmixerrgb.c:3624
+#: ../src/iop/channelmixerrgb.c:3634
 msgid "optimize for"
 msgstr "optimumigi por"
 
-#: ../src/iop/channelmixerrgb.c:3626
+#: ../src/iop/channelmixerrgb.c:3636
 msgid "neutral colors"
 msgstr "neŭtralaj koloroj"
 
-#: ../src/iop/channelmixerrgb.c:3628
+#: ../src/iop/channelmixerrgb.c:3638
 msgid "skin and soil colors"
 msgstr "haŭta kaj grunda koloroj"
 
-#: ../src/iop/channelmixerrgb.c:3629
+#: ../src/iop/channelmixerrgb.c:3639
 msgid "foliage colors"
 msgstr "foliaj koloroj"
 
-#: ../src/iop/channelmixerrgb.c:3630
+#: ../src/iop/channelmixerrgb.c:3640
 msgid "sky and water colors"
 msgstr "ĉielo kaj akvokoloroj"
 
-#: ../src/iop/channelmixerrgb.c:3631
+#: ../src/iop/channelmixerrgb.c:3641
 msgid "average delta E"
 msgstr "averaĝa delto E"
 
-#: ../src/iop/channelmixerrgb.c:3632
+#: ../src/iop/channelmixerrgb.c:3642
 msgid "maximum delta E"
 msgstr "maksimuma delto E"
 
-#: ../src/iop/channelmixerrgb.c:3634
+#: ../src/iop/channelmixerrgb.c:3644
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -10817,11 +10857,11 @@ msgstr ""
 "neniu estas interŝanĝo inter ambaŭ\n"
 "la aliaj estas specialaj kondutoj por protekti iujn nuancojn"
 
-#: ../src/iop/channelmixerrgb.c:3642
+#: ../src/iop/channelmixerrgb.c:3652
 msgid "patch scale"
 msgstr "flika skalo"
 
-#: ../src/iop/channelmixerrgb.c:3643
+#: ../src/iop/channelmixerrgb.c:3653
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
@@ -10831,19 +10871,19 @@ msgstr ""
 "utila kiam la perspektiva korekto estas malrapida aŭ\n"
 "la flikaĵoj enkadrigas ombrojn sur la randoj de la flikaĵo."
 
-#: ../src/iop/channelmixerrgb.c:3651
+#: ../src/iop/channelmixerrgb.c:3661
 msgid "the delta E is using the CIE 2000 formula."
 msgstr "la delta E uzas la formulon CIE 2000."
 
-#: ../src/iop/channelmixerrgb.c:3657
+#: ../src/iop/channelmixerrgb.c:3667
 msgid "accept the computed profile and set it in the module"
 msgstr "akceptu la komputitan profilon kaj starigu ĝin en la modulo"
 
-#: ../src/iop/channelmixerrgb.c:3662
+#: ../src/iop/channelmixerrgb.c:3672
 msgid "recompute the profile"
 msgstr "rekomputi la profilon"
 
-#: ../src/iop/channelmixerrgb.c:3667
+#: ../src/iop/channelmixerrgb.c:3677
 msgid "check the output delta E"
 msgstr "kontrolu la eliran deltan E"
 
@@ -11210,7 +11250,7 @@ msgid "RGBL"
 msgstr "RVBL"
 
 #. Page master
-#: ../src/iop/colorbalance.c:1902 ../src/iop/colorbalancergb.c:1295
+#: ../src/iop/colorbalance.c:1902 ../src/iop/colorbalancergb.c:1292
 msgid "master"
 msgstr "mastro"
 
@@ -11318,198 +11358,198 @@ msgstr ""
 "ofseto potenco deklivo|kdl|gradigo de koloro|kontrasto|kromataj_brijaĵoj|"
 "nuanco|vigleco"
 
-#: ../src/iop/colorbalancergb.c:931 ../src/iop/colorzones.c:2221
+#: ../src/iop/colorbalancergb.c:931 ../src/iop/colorzones.c:2218
 #: ../src/iop/retouch.c:1817 ../src/iop/toneequal.c:1838
 msgid "cannot display masks when the blending mask is displayed"
 msgstr "ne povas montri maskojn kiam la miksanta masko montriĝas"
 
-#: ../src/iop/colorbalancergb.c:1295
+#: ../src/iop/colorbalancergb.c:1292
 msgid "global grading"
 msgstr "tutmonda gradigo"
 
-#: ../src/iop/colorbalancergb.c:1301
+#: ../src/iop/colorbalancergb.c:1298
 msgid "rotate all hues by an angle, at the same luminance"
 msgstr "turni ĉiujn nuancojn per angulo, samlumante"
 
-#: ../src/iop/colorbalancergb.c:1308
+#: ../src/iop/colorbalancergb.c:1305
 msgid "increase colorfulness mostly on low-chroma colors"
 msgstr "pliigi kolorecon plejparte ĉe koloroj de malalta kromateco"
 
-#: ../src/iop/colorbalancergb.c:1315
+#: ../src/iop/colorbalancergb.c:1312
 msgid "increase the contrast at constant chromaticity"
 msgstr "pliigi la konstraston je konstanta kromateco"
 
-#: ../src/iop/colorbalancergb.c:1317
+#: ../src/iop/colorbalancergb.c:1314
 msgid "linear chroma grading"
 msgstr "lineara kolorogradigo"
 
-#: ../src/iop/colorbalancergb.c:1324
+#: ../src/iop/colorbalancergb.c:1321
 msgid "increase colorfulness at same luminance globally"
 msgstr "pliigi buntecon ĉe sama lumeco tutmonde"
 
-#: ../src/iop/colorbalancergb.c:1330
+#: ../src/iop/colorbalancergb.c:1327
 msgid "increase colorfulness at same luminance mostly in shadows"
 msgstr "pliigi kolorecon ĉe sama lumeco plejparte en ombroj"
 
-#: ../src/iop/colorbalancergb.c:1336
+#: ../src/iop/colorbalancergb.c:1333
 msgid "increase colorfulness at same luminance mostly in midtones"
 msgstr "pliigi kolorecon ĉe sama lumeco plejparte en meztonoj"
 
-#: ../src/iop/colorbalancergb.c:1342
+#: ../src/iop/colorbalancergb.c:1339
 msgid "increase colorfulness at same luminance mostly in highlights"
 msgstr "pliigi kolorecon ĉe sama lumeco plejparte en brilaĵoj"
 
-#: ../src/iop/colorbalancergb.c:1344
+#: ../src/iop/colorbalancergb.c:1341
 msgid "perceptual saturation grading"
 msgstr "percepta saturiĝa gradigo"
 
-#: ../src/iop/colorbalancergb.c:1351
+#: ../src/iop/colorbalancergb.c:1348
 msgid "add or remove saturation by an absolute amount"
 msgstr "aldoni aŭ forigi saturon per absoluta kvanto"
 
-#: ../src/iop/colorbalancergb.c:1358 ../src/iop/colorbalancergb.c:1365
-#: ../src/iop/colorbalancergb.c:1372
+#: ../src/iop/colorbalancergb.c:1355 ../src/iop/colorbalancergb.c:1362
+#: ../src/iop/colorbalancergb.c:1369
 msgid ""
 "increase or decrease saturation proportionally to the original pixel "
 "saturation"
 msgstr ""
 "pliigi aŭ malpliigi saturiĝon proporcie al la originala piksela saturiĝo"
 
-#: ../src/iop/colorbalancergb.c:1375
+#: ../src/iop/colorbalancergb.c:1372
 msgid "perceptual brilliance grading"
 msgstr "percepta brileca gradigo"
 
-#: ../src/iop/colorbalancergb.c:1382
+#: ../src/iop/colorbalancergb.c:1379
 msgid "add or remove brilliance by an absolute amount"
 msgstr "aldoni aŭ forigi brilecon per absoluta kvanto"
 
-#: ../src/iop/colorbalancergb.c:1389 ../src/iop/colorbalancergb.c:1396
-#: ../src/iop/colorbalancergb.c:1403
+#: ../src/iop/colorbalancergb.c:1386 ../src/iop/colorbalancergb.c:1393
+#: ../src/iop/colorbalancergb.c:1400
 msgid ""
 "increase or decrease brilliance proportionally to the original pixel "
 "brilliance"
 msgstr "pliigi aŭ malpliigi brilecon proporcie al la originala piksela brileco"
 
 #. Page 4-ways
-#: ../src/iop/colorbalancergb.c:1407
+#: ../src/iop/colorbalancergb.c:1404
 msgid "4 ways"
 msgstr "4 manieroj"
 
-#: ../src/iop/colorbalancergb.c:1407
+#: ../src/iop/colorbalancergb.c:1404
 msgid "selective color grading"
 msgstr "selektema kolora gradigo"
 
-#: ../src/iop/colorbalancergb.c:1409
+#: ../src/iop/colorbalancergb.c:1406
 msgid "global offset"
 msgstr "tutmonda ofseto"
 
-#: ../src/iop/colorbalancergb.c:1416
+#: ../src/iop/colorbalancergb.c:1413
 msgid "global luminance offset"
 msgstr "tutmonda lumeca ofseto"
 
-#: ../src/iop/colorbalancergb.c:1423
+#: ../src/iop/colorbalancergb.c:1420
 msgid "hue of the global color offset"
 msgstr "nuanco de la tutmonda kolora ofseto"
 
-#: ../src/iop/colorbalancergb.c:1430
+#: ../src/iop/colorbalancergb.c:1427
 msgid "chroma of the global color offset"
 msgstr "koloreco de la tutmonda kolora ofseto"
 
-#: ../src/iop/colorbalancergb.c:1432
+#: ../src/iop/colorbalancergb.c:1429
 msgid "shadows lift"
 msgstr "ombra levigo"
 
-#: ../src/iop/colorbalancergb.c:1439
+#: ../src/iop/colorbalancergb.c:1436
 msgid "luminance gain in shadows"
 msgstr "lumeca gajno en ombroj"
 
-#: ../src/iop/colorbalancergb.c:1446
+#: ../src/iop/colorbalancergb.c:1443
 msgid "hue of the color gain in shadows"
 msgstr "nuanco de la kolora gajno en ombroj"
 
-#: ../src/iop/colorbalancergb.c:1454
+#: ../src/iop/colorbalancergb.c:1451
 msgid "chroma of the color gain in shadows"
 msgstr "kromateco de la kolora gajno en ombroj"
 
-#: ../src/iop/colorbalancergb.c:1456
+#: ../src/iop/colorbalancergb.c:1453
 msgid "highlights gain"
 msgstr "brilaĵa gajno"
 
-#: ../src/iop/colorbalancergb.c:1463
+#: ../src/iop/colorbalancergb.c:1460
 msgid "luminance gain in highlights"
 msgstr "lumeca gajno en brilaĵoj"
 
-#: ../src/iop/colorbalancergb.c:1470
+#: ../src/iop/colorbalancergb.c:1467
 msgid "hue of the color gain in highlights"
 msgstr "nuanco de la kolora gajno en brilaĵoj"
 
-#: ../src/iop/colorbalancergb.c:1478
+#: ../src/iop/colorbalancergb.c:1475
 msgid "chroma of the color gain in highlights"
 msgstr "kromateco de la kolora gajno en brilaĵoj"
 
-#: ../src/iop/colorbalancergb.c:1480
+#: ../src/iop/colorbalancergb.c:1477
 msgid "power"
 msgstr "potenco"
 
-#: ../src/iop/colorbalancergb.c:1487
+#: ../src/iop/colorbalancergb.c:1484
 msgid "luminance exponent in midtones"
 msgstr "lumeca eksponento en meztonoj"
 
-#: ../src/iop/colorbalancergb.c:1494
+#: ../src/iop/colorbalancergb.c:1491
 msgid "hue of the color exponent in midtones"
 msgstr "nuanco de la kolora eksponento en meztonoj"
 
-#: ../src/iop/colorbalancergb.c:1502
+#: ../src/iop/colorbalancergb.c:1499
 msgid "chroma of the color exponent in midtones"
 msgstr "koloreco de la kolora eksponento en meztonoj"
 
 #. Page masks
-#: ../src/iop/colorbalancergb.c:1505
+#: ../src/iop/colorbalancergb.c:1502
 msgid "masks"
 msgstr "maskoj"
 
-#: ../src/iop/colorbalancergb.c:1505
+#: ../src/iop/colorbalancergb.c:1502
 msgid "isolate luminances"
 msgstr "izoli lumecojn"
 
-#: ../src/iop/colorbalancergb.c:1507
+#: ../src/iop/colorbalancergb.c:1504
 msgid "luminance ranges"
 msgstr "lumecaj gamoj"
 
-#: ../src/iop/colorbalancergb.c:1521
+#: ../src/iop/colorbalancergb.c:1518
 msgid "weight of the shadows over the whole tonal range"
 msgstr "pezo de la ombroj sur la tuta tona gamo"
 
-#: ../src/iop/colorbalancergb.c:1532
+#: ../src/iop/colorbalancergb.c:1529
 msgid "position of the middle-grey reference for masking"
 msgstr "pozicio de la mezgriza referenco por maskado"
 
-#: ../src/iop/colorbalancergb.c:1543
+#: ../src/iop/colorbalancergb.c:1540
 msgid "weights of highlights over the whole tonal range"
 msgstr "pezoj de brilaĵoj tra la tuta tona gamo"
 
-#: ../src/iop/colorbalancergb.c:1556 ../src/iop/colorbalancergb.c:1564
+#: ../src/iop/colorbalancergb.c:1553 ../src/iop/colorbalancergb.c:1561
 msgid "peak white luminance value used to normalize the power function"
 msgstr ""
 "maksimuma blanka lumeca valoro uzata por normaligi la potencan funkcion"
 
-#: ../src/iop/colorbalancergb.c:1566
+#: ../src/iop/colorbalancergb.c:1563
 msgid "mask preview settings"
 msgstr "agordoj de maska antaŭvido"
 
-#: ../src/iop/colorbalancergb.c:1569
+#: ../src/iop/colorbalancergb.c:1566
 msgid "checkerboard color 1"
 msgstr "damtabula koloro 1"
 
-#: ../src/iop/colorbalancergb.c:1572 ../src/iop/colorbalancergb.c:1581
+#: ../src/iop/colorbalancergb.c:1569 ../src/iop/colorbalancergb.c:1578
 msgid "select color of the checkerboard from a swatch"
 msgstr "elekti koloron de la damtabulo el specimena peceto"
 
-#: ../src/iop/colorbalancergb.c:1578
+#: ../src/iop/colorbalancergb.c:1575
 msgid "checkerboard color 2"
 msgstr "damtabula koloro 2"
 
-#: ../src/iop/colorbalancergb.c:1588
+#: ../src/iop/colorbalancergb.c:1585
 msgid "checkerboard size"
 msgstr "grandeco de damtabulo"
 
@@ -11735,21 +11775,21 @@ msgstr "eniga profilo ne povis esti generita!"
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "nesubtenata eniga profilo estis anstataŭigita per lineara Rec709 RVB!"
 
-#: ../src/iop/colorin.c:2117
+#: ../src/iop/colorin.c:2122
 msgid "input profile"
 msgstr "eniga profilo"
 
-#: ../src/iop/colorin.c:2121
+#: ../src/iop/colorin.c:2126
 msgid "working profile"
 msgstr "laboranta profilo"
 
-#: ../src/iop/colorin.c:2128 ../src/iop/colorin.c:2139
+#: ../src/iop/colorin.c:2133 ../src/iop/colorin.c:2144
 #: ../src/iop/colorout.c:893
 #, c-format
 msgid "ICC profiles in %s or %s"
 msgstr "IKK profiloj en %s aŭ %s"
 
-#: ../src/iop/colorin.c:2150
+#: ../src/iop/colorin.c:2155
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "limigi laboratorio-valorojn al gamo de RVB-kolora spaco"
 
@@ -12026,7 +12066,7 @@ msgstr "nigrablanka filmo"
 msgid "HSL base setting"
 msgstr "NSL baza agordo"
 
-#: ../src/iop/colorzones.c:2394 ../src/iop/rgbcurve.c:1398
+#: ../src/iop/colorzones.c:2391 ../src/iop/rgbcurve.c:1398
 msgid ""
 "create a curve based on an area from the image\n"
 "drag to create a flat curve\n"
@@ -12039,42 +12079,42 @@ msgstr ""
 "majusklo+treni por krei negativan kurbon"
 
 #. edit by area
-#: ../src/iop/colorzones.c:2418
+#: ../src/iop/colorzones.c:2415
 msgid "edit by area"
 msgstr "redakti per areo"
 
-#: ../src/iop/colorzones.c:2421
+#: ../src/iop/colorzones.c:2418
 msgid "edit the curve nodes by area"
 msgstr "redakti la kurbnodojn per areo"
 
-#: ../src/iop/colorzones.c:2428
+#: ../src/iop/colorzones.c:2425
 msgid "display selection"
 msgstr "montri elekton"
 
-#: ../src/iop/colorzones.c:2438
+#: ../src/iop/colorzones.c:2435
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "elektu elektan kriterion, estos la absciso en la grafeo"
 
-#: ../src/iop/colorzones.c:2441
+#: ../src/iop/colorzones.c:2438
 msgid "choose between a smoother or stronger effect"
 msgstr "elekti inter pli glata aŭ pli forta efiko"
 
-#: ../src/iop/colorzones.c:2473 ../src/iop/rgbcurve.c:1432
+#: ../src/iop/colorzones.c:2470 ../src/iop/rgbcurve.c:1432
 #: ../src/iop/tonecurve.c:1210
 msgid "interpolation method"
 msgstr "interpola metodo"
 
-#: ../src/iop/colorzones.c:2475 ../src/iop/rgbcurve.c:1434
+#: ../src/iop/colorzones.c:2472 ../src/iop/rgbcurve.c:1434
 #: ../src/iop/tonecurve.c:1212
 msgid "centripetal spline"
 msgstr "centripeta splino"
 
-#: ../src/iop/colorzones.c:2476 ../src/iop/rgbcurve.c:1435
+#: ../src/iop/colorzones.c:2473 ../src/iop/rgbcurve.c:1435
 #: ../src/iop/tonecurve.c:1213
 msgid "monotonic spline"
 msgstr "monotona spline"
 
-#: ../src/iop/colorzones.c:2479 ../src/iop/rgbcurve.c:1438
+#: ../src/iop/colorzones.c:2476 ../src/iop/rgbcurve.c:1438
 #: ../src/iop/tonecurve.c:1215
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
@@ -12228,19 +12268,19 @@ msgstr "trovita kongrua por ISO %d"
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolita de ISO %d kaj %d"
 
-#: ../src/iop/denoiseprofile.c:3050 ../src/iop/denoiseprofile.c:3634
+#: ../src/iop/denoiseprofile.c:3050 ../src/iop/denoiseprofile.c:3633
 msgid "compute variance"
 msgstr "kalkuli variancon"
 
-#: ../src/iop/denoiseprofile.c:3552
+#: ../src/iop/denoiseprofile.c:3551
 msgid "Y0"
 msgstr "Y0"
 
-#: ../src/iop/denoiseprofile.c:3553
+#: ../src/iop/denoiseprofile.c:3552
 msgid "U0V0"
 msgstr "U0V0"
 
-#: ../src/iop/denoiseprofile.c:3586
+#: ../src/iop/denoiseprofile.c:3585
 msgid ""
 "use only with a perfectly\n"
 "uniform image if you want to\n"
@@ -12250,55 +12290,55 @@ msgstr ""
 "unuforma bildo se vi volas\n"
 "taksi la bruan variancon."
 
-#: ../src/iop/denoiseprofile.c:3592
+#: ../src/iop/denoiseprofile.c:3591
 msgid "variance red: "
 msgstr "varianco ruĝa: "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3595
+#: ../src/iop/denoiseprofile.c:3594
 msgid "variance computed on the red channel"
 msgstr "varianco kalkulita sur la ruĝa kanalo"
 
-#: ../src/iop/denoiseprofile.c:3600
+#: ../src/iop/denoiseprofile.c:3599
 msgid "variance green: "
 msgstr "varianco verda: "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3603
+#: ../src/iop/denoiseprofile.c:3602
 msgid "variance computed on the green channel"
 msgstr "varianco kalkulita sur la verda kanalo"
 
-#: ../src/iop/denoiseprofile.c:3608
+#: ../src/iop/denoiseprofile.c:3607
 msgid "variance blue: "
 msgstr "varianco blua: "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3611
+#: ../src/iop/denoiseprofile.c:3610
 msgid "variance computed on the blue channel"
 msgstr "varianco kalkulita sur la blua kanalo"
 
-#: ../src/iop/denoiseprofile.c:3621 ../src/libs/export.c:1303
+#: ../src/iop/denoiseprofile.c:3620 ../src/libs/export.c:1303
 #: ../src/libs/print_settings.c:1181 ../src/libs/print_settings.c:1399
 msgid "profile"
 msgstr "profilo"
 
-#: ../src/iop/denoiseprofile.c:3629
+#: ../src/iop/denoiseprofile.c:3628
 msgid "non-local means"
 msgstr "neloka averaĝado"
 
-#: ../src/iop/denoiseprofile.c:3630
+#: ../src/iop/denoiseprofile.c:3629
 msgid "non-local means auto"
 msgstr "neloka averaĝado aŭtomate"
 
-#: ../src/iop/denoiseprofile.c:3631
+#: ../src/iop/denoiseprofile.c:3630
 msgid "wavelets"
 msgstr "ondetoj"
 
-#: ../src/iop/denoiseprofile.c:3632
+#: ../src/iop/denoiseprofile.c:3631
 msgid "wavelets auto"
 msgstr "ondetoj aŭtomate"
 
-#: ../src/iop/denoiseprofile.c:3659
+#: ../src/iop/denoiseprofile.c:3658
 msgid ""
 "adapt denoising according to the\n"
 "white balance coefficients.\n"
@@ -12314,7 +12354,7 @@ msgstr ""
 "devas esti malebligita se pli frua okazo\n"
 "estis uzata en la kolormiksa reĝimo."
 
-#: ../src/iop/denoiseprofile.c:3665
+#: ../src/iop/denoiseprofile.c:3664
 msgid ""
 "fix bugs in anscombe transform resulting\n"
 "in undersmoothing of the green channel in\n"
@@ -12336,11 +12376,11 @@ msgstr ""
 "kiun vi ricevas. kiam ebligita, vi ne povos\n"
 "reveni al malnova algoritmo."
 
-#: ../src/iop/denoiseprofile.c:3674
+#: ../src/iop/denoiseprofile.c:3673
 msgid "profile used for variance stabilization"
 msgstr "profilo uzata por variancostabiligo"
 
-#: ../src/iop/denoiseprofile.c:3675
+#: ../src/iop/denoiseprofile.c:3674
 msgid ""
 "method used in the denoising core.\n"
 "non-local means works best for `lightness' blending,\n"
@@ -12350,7 +12390,7 @@ msgstr ""
 "nelokaj averaĝado plej taŭgas por \"malpeza\" miksado,\n"
 "ondetoj plej bone funkcias por \"kolora\" miksado"
 
-#: ../src/iop/denoiseprofile.c:3678
+#: ../src/iop/denoiseprofile.c:3677
 msgid ""
 "color representation used within the algorithm.\n"
 "RGB keeps the RGB channels separated,\n"
@@ -12362,7 +12402,7 @@ msgstr ""
 "dum Y0U0V0 kombinas la kanalojn al\n"
 "denoise chroma kaj luma aparte."
 
-#: ../src/iop/denoiseprofile.c:3682
+#: ../src/iop/denoiseprofile.c:3681
 msgid ""
 "radius of the patches to match.\n"
 "increase for more sharpness on strong edges, and better denoising of smooth "
@@ -12376,7 +12416,7 @@ msgstr ""
 "se detaloj estas trankviligitaj, reduktu ĉi tiun valoron aŭ pliigu la "
 "detalan glitilon."
 
-#: ../src/iop/denoiseprofile.c:3685
+#: ../src/iop/denoiseprofile.c:3684
 msgid ""
 "emergency use only: radius of the neighbourhood to search patches in. "
 "increase for better denoising performance, but watch the long runtimes! "
@@ -12386,7 +12426,7 @@ msgstr ""
 "bona senbruiga efikeco, sed spektu la longajn rultempojn! grandaj radiusoj "
 "povas esti tre malrapidaj. vi estis avertita"
 
-#: ../src/iop/denoiseprofile.c:3688
+#: ../src/iop/denoiseprofile.c:3687
 msgid ""
 "scattering of the neighbourhood to search patches in.\n"
 "increase for better coarse-grain noise reduction.\n"
@@ -12396,7 +12436,7 @@ msgstr ""
 "pliiĝo por pli bona krudgrena bruoredukto.\n"
 "ne influas ekzekutan tempon."
 
-#: ../src/iop/denoiseprofile.c:3691
+#: ../src/iop/denoiseprofile.c:3690
 msgid ""
 "increase the weight of the central pixel\n"
 "of the patch in the patch comparison.\n"
@@ -12408,11 +12448,11 @@ msgstr ""
 "utila por rekuperi detalojn kiam flika grandeco\n"
 "estas sufiĉe granda."
 
-#: ../src/iop/denoiseprofile.c:3695
+#: ../src/iop/denoiseprofile.c:3694
 msgid "finetune denoising strength"
 msgstr "fajne agordi senbruigan forton"
 
-#: ../src/iop/denoiseprofile.c:3696
+#: ../src/iop/denoiseprofile.c:3695
 msgid ""
 "controls the way parameters are autoset\n"
 "increase if shadows are not denoised enough\n"
@@ -12424,7 +12464,7 @@ msgstr ""
 "aŭ se restas kromata bruo.\n"
 "ĉi tio povas okazi se via bildo estas subeksponita."
 
-#: ../src/iop/denoiseprofile.c:3700
+#: ../src/iop/denoiseprofile.c:3699
 msgid ""
 "finetune shadows denoising.\n"
 "decrease to denoise more aggressively\n"
@@ -12434,7 +12474,7 @@ msgstr ""
 "malpliigi por senbruigi pli agreseme\n"
 "malhelajn areojn de la bildo."
 
-#: ../src/iop/denoiseprofile.c:3703
+#: ../src/iop/denoiseprofile.c:3702
 msgid ""
 "correct color cast in shadows.\n"
 "decrease if shadows are too purple.\n"
@@ -12444,7 +12484,7 @@ msgstr ""
 "malpliiĝu se ombroj estas tro purpuraj.\n"
 "pliigu se ombroj estas tro verdaj."
 
-#: ../src/iop/denoiseprofile.c:3706
+#: ../src/iop/denoiseprofile.c:3705
 msgid ""
 "upgrade the variance stabilizing algorithm.\n"
 "new algorithm extends the current one.\n"
@@ -12688,7 +12728,7 @@ msgstr ""
 "pligrandigi aŭ malgrandigi la komputitan dinamikan gamon.\n"
 "utila kune kun \"aŭtomataj agordaj niveloj\"."
 
-#: ../src/iop/filmic.c:1641 ../src/iop/filmicrgb.c:3679
+#: ../src/iop/filmic.c:1641 ../src/iop/filmicrgb.c:3768
 #: ../src/iop/profile_gamma.c:682
 msgid "auto tune levels"
 msgstr "aŭtomataj agordaj niveloj"
@@ -12709,7 +12749,7 @@ msgstr ""
 msgid "filmic S curve"
 msgstr "filmeca S-kurbo"
 
-#: ../src/iop/filmic.c:1655 ../src/iop/filmicrgb.c:3769
+#: ../src/iop/filmic.c:1655 ../src/iop/filmicrgb.c:3858
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
@@ -12718,7 +12758,7 @@ msgstr ""
 "influas plejparte la mezajn tonojn"
 
 #. geotagging
-#: ../src/iop/filmic.c:1662 ../src/iop/filmicrgb.c:3778
+#: ../src/iop/filmic.c:1662 ../src/iop/filmicrgb.c:3867
 #: ../src/libs/metadata_view.c:162
 msgid "latitude"
 msgstr "latitudo"
@@ -12733,7 +12773,7 @@ msgstr ""
 "pliigi por akiri pli da kontrasto ĉe la ekstremaj lumoj.\n"
 "ĉi tio ne efikas sur meztonoj."
 
-#: ../src/iop/filmic.c:1675 ../src/iop/filmicrgb.c:3790
+#: ../src/iop/filmic.c:1675 ../src/iop/filmicrgb.c:3879
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -12816,7 +12856,7 @@ msgstr ""
 msgid "destination/display"
 msgstr "celloko/ekrano"
 
-#: ../src/iop/filmic.c:1746 ../src/iop/filmicrgb.c:3810
+#: ../src/iop/filmic.c:1746 ../src/iop/filmicrgb.c:3899
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -12836,7 +12876,7 @@ msgstr ""
 "meza griza valoro de la cela ekrano aŭ kolorspaco.\n"
 "vi neniam devas tuŝi tion, krom se vi scias, kion vi faras."
 
-#: ../src/iop/filmic.c:1764 ../src/iop/filmicrgb.c:3826
+#: ../src/iop/filmic.c:1764 ../src/iop/filmicrgb.c:3915
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -12858,15 +12898,15 @@ msgstr ""
 "de la ekrano aŭ kolorspaco.\n"
 "vi neniam devas tuŝi tion, krom se vi scias, kion vi faras."
 
-#: ../src/iop/filmicrgb.c:321
+#: ../src/iop/filmicrgb.c:323
 msgid "filmic rgb"
 msgstr "filmeca rvb"
 
-#: ../src/iop/filmicrgb.c:326
+#: ../src/iop/filmicrgb.c:328
 msgid "tone mapping|curve|view transform|contrast|saturation|highlights"
 msgstr "tonmapado|kurbo|vidotransformo|kontrasto|saturiĝo|brilaĵoj"
 
-#: ../src/iop/filmicrgb.c:331
+#: ../src/iop/filmicrgb.c:333
 msgid ""
 "apply a view transform to prepare the scene-referred pipeline\n"
 "for display on SDR screens and paper prints\n"
@@ -12876,7 +12916,7 @@ msgstr ""
 "por montriĝo sur NDG-ekranoj kaj paperaj presaĵoj\n"
 "dum malhelpante detondadon en nedetruaj manieroj"
 
-#: ../src/iop/filmicrgb.c:1095
+#: ../src/iop/filmicrgb.c:1148
 msgid ""
 "filmic highlights reconstruction failed to allocate memory, check your RAM "
 "settings"
@@ -12884,71 +12924,71 @@ msgstr ""
 "filmecaj kulminaĵoj rekonstruo malsukcesis asigni memoron, kontrolu viajn "
 "RAM-agordojn"
 
-#: ../src/iop/filmicrgb.c:1442 ../src/iop/filmicrgb.c:1719
+#: ../src/iop/filmicrgb.c:1495 ../src/iop/filmicrgb.c:1772
 msgid "filmic works only on RGB input"
 msgstr "filmeca modulo funkcias nur per RVB-enigo"
 
-#: ../src/iop/filmicrgb.c:1577
+#: ../src/iop/filmicrgb.c:1630
 msgid "filmic highlights reconstruction failed to allocate memory on GPU"
 msgstr "filmeca brilaĵa rekonstruo malsukcesis asigni memoron sur GPU"
 
-#: ../src/iop/filmicrgb.c:2702
+#: ../src/iop/filmicrgb.c:2791
 msgid "look only"
 msgstr "nur rigardo"
 
-#: ../src/iop/filmicrgb.c:2704
+#: ../src/iop/filmicrgb.c:2793
 msgid "look + mapping (lin)"
 msgstr "rigardo + mapado (lin)"
 
-#: ../src/iop/filmicrgb.c:2706
+#: ../src/iop/filmicrgb.c:2795
 msgid "look + mapping (log)"
 msgstr "rigardo + mapado (log)"
 
-#: ../src/iop/filmicrgb.c:2708
+#: ../src/iop/filmicrgb.c:2797
 msgid "dynamic range mapping"
 msgstr "mapado de dinamika gamo"
 
-#: ../src/iop/filmicrgb.c:3038
+#: ../src/iop/filmicrgb.c:3127
 #, c-format
 msgid "(%.0f %%)"
 msgstr "(%.0f %%)"
 
-#: ../src/iop/filmicrgb.c:3054
+#: ../src/iop/filmicrgb.c:3143
 #, no-c-format
 msgid "% display"
 msgstr "% enkrana"
 
-#: ../src/iop/filmicrgb.c:3065
+#: ../src/iop/filmicrgb.c:3154
 msgid "EV scene"
 msgstr "EV scena"
 
-#: ../src/iop/filmicrgb.c:3069
+#: ../src/iop/filmicrgb.c:3158
 #, no-c-format
 msgid "% camera"
 msgstr "% fotila"
 
 #. Page DISPLAY
-#: ../src/iop/filmicrgb.c:3105 ../src/iop/filmicrgb.c:3803
+#: ../src/iop/filmicrgb.c:3194 ../src/iop/filmicrgb.c:3892
 msgid "display"
 msgstr "ekrana"
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:3114
+#: ../src/iop/filmicrgb.c:3203
 msgid "(%)"
 msgstr "(%)"
 
 #. Page SCENE
-#: ../src/iop/filmicrgb.c:3123 ../src/iop/filmicrgb.c:3639
+#: ../src/iop/filmicrgb.c:3212 ../src/iop/filmicrgb.c:3728
 msgid "scene"
 msgstr "scena"
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:3132
+#: ../src/iop/filmicrgb.c:3221
 msgid "(EV)"
 msgstr "(EV)"
 
 #. we are over the graph area
-#: ../src/iop/filmicrgb.c:3561
+#: ../src/iop/filmicrgb.c:3650
 msgid ""
 "use the parameters below to set the nodes.\n"
 "the bright curve is the filmic tone mapping curve\n"
@@ -12958,11 +12998,11 @@ msgstr ""
 "la hela kurbo estas la filma tona mapa kurbo\n"
 "la malhela kurbo estas la desaturiga kurbo."
 
-#: ../src/iop/filmicrgb.c:3567
+#: ../src/iop/filmicrgb.c:3656
 msgid "toggle axis labels and values display."
 msgstr "ŝalti aksajn etikedojn kaj valorojn."
 
-#: ../src/iop/filmicrgb.c:3571
+#: ../src/iop/filmicrgb.c:3660
 msgid ""
 "cycle through graph views.\n"
 "left click: cycle forward.\n"
@@ -12974,7 +13014,7 @@ msgstr ""
 "dekstra klako: cirkuli malantaŭen.\n"
 "duobla klako: reagordi por rigardi vidon."
 
-#: ../src/iop/filmicrgb.c:3646
+#: ../src/iop/filmicrgb.c:3735
 msgid ""
 "adjust to match the average luminance of the image's subject.\n"
 "the value entered here will then be remapped to 18.45%.\n"
@@ -12984,19 +13024,19 @@ msgstr ""
 "la valoro enmetita ĉi tie tiam estos remapita al 18,45%.\n"
 "malpliigu la valoron por pliigi la ĝeneralan brilon."
 
-#: ../src/iop/filmicrgb.c:3654 ../src/iop/filmicrgb.c:3664
-#: ../src/iop/filmicrgb.c:3697 ../src/iop/filmicrgb.c:3707
+#: ../src/iop/filmicrgb.c:3743 ../src/iop/filmicrgb.c:3753
+#: ../src/iop/filmicrgb.c:3786 ../src/iop/filmicrgb.c:3796
 #: ../src/iop/toneequal.c:3073 ../src/iop/toneequal.c:3077
 #: ../src/iop/toneequal.c:3081 ../src/iop/toneequal.c:3085
 #: ../src/iop/toneequal.c:3089 ../src/iop/toneequal.c:3093
 #: ../src/iop/toneequal.c:3097 ../src/iop/toneequal.c:3101
-#: ../src/iop/toneequal.c:3105 ../src/libs/metadata_view.c:609
+#: ../src/iop/toneequal.c:3105 ../src/libs/metadata_view.c:589
 #: ../src/views/darkroom.c:2306
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
 
-#: ../src/iop/filmicrgb.c:3656
+#: ../src/iop/filmicrgb.c:3745
 msgid ""
 "number of stops between middle gray and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -13006,7 +13046,7 @@ msgstr ""
 "ĉi tio estas legado, kiun lummezurilo donus al vi ĉe la sceno.\n"
 "ĝustigu por ke brilaĵa detondado estu evitata"
 
-#: ../src/iop/filmicrgb.c:3666
+#: ../src/iop/filmicrgb.c:3755
 msgid ""
 "number of stops between middle gray and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -13018,7 +13058,7 @@ msgstr ""
 "pliigi por akiri pli da kontrasto.\n"
 "malpliigu por rekuperi pli da detaloj en malbrilaĵoj."
 
-#: ../src/iop/filmicrgb.c:3674
+#: ../src/iop/filmicrgb.c:3763
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -13026,7 +13066,7 @@ msgstr ""
 "simetrie pligrandigi aŭ malgrandigi la komputitan dinamikan gamon.\n"
 "utila por doni sekurecan randon al ekstremaj lumoj."
 
-#: ../src/iop/filmicrgb.c:3680
+#: ../src/iop/filmicrgb.c:3769
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -13043,15 +13083,15 @@ msgstr ""
 "certigu, ke vi komprenas ĝiajn supozojn antaŭ ol uzi ĝin."
 
 #. Page RECONSTRUCT
-#: ../src/iop/filmicrgb.c:3689
+#: ../src/iop/filmicrgb.c:3778
 msgid "reconstruct"
 msgstr "rekonstrui"
 
-#: ../src/iop/filmicrgb.c:3691
+#: ../src/iop/filmicrgb.c:3780
 msgid "highlights clipping"
 msgstr "brilaĵa detondado"
 
-#: ../src/iop/filmicrgb.c:3699
+#: ../src/iop/filmicrgb.c:3788
 msgid ""
 "set the exposure threshold upon which\n"
 "clipped highlights get reconstructed.\n"
@@ -13067,7 +13107,7 @@ msgstr ""
 "malpliigi por inkluzivi pli da areoj,\n"
 "pliigi por ekskludi pli da areoj."
 
-#: ../src/iop/filmicrgb.c:3709
+#: ../src/iop/filmicrgb.c:3798
 msgid ""
 "soften the transition between clipped highlights and valid pixels.\n"
 "decrease to make the transition harder and sharper,\n"
@@ -13077,15 +13117,15 @@ msgstr ""
 "malpliigi por fari la transiron pli malfacila kaj pli akra,\n"
 "pliigi por fari la transiron pli milda kaj pli malklariga."
 
-#: ../src/iop/filmicrgb.c:3715
+#: ../src/iop/filmicrgb.c:3804
 msgid "display highlight reconstruction mask"
 msgstr "montri brilaĵan rekonstruan maskon"
 
-#: ../src/iop/filmicrgb.c:3722 ../src/iop/splittoning.c:528
+#: ../src/iop/filmicrgb.c:3811 ../src/iop/splittoning.c:528
 msgid "balance"
 msgstr "ekvilibrigo"
 
-#: ../src/iop/filmicrgb.c:3730
+#: ../src/iop/filmicrgb.c:3819
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -13102,7 +13142,7 @@ msgstr ""
 "pliigu se almenaŭ unu RVB-kanalo ne estas tondita.\n"
 "malpliiĝu se ĉiuj RVB-kanaloj estas tonditaj super grandaj areoj."
 
-#: ../src/iop/filmicrgb.c:3742
+#: ../src/iop/filmicrgb.c:3831
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -13119,7 +13159,7 @@ msgstr ""
 "pliigu se vi volas pli da detaloj.\n"
 "malpliigu se vi volas pli da malklarigo."
 
-#: ../src/iop/filmicrgb.c:3755
+#: ../src/iop/filmicrgb.c:3844
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -13137,11 +13177,11 @@ msgstr ""
 "malpliiĝu se vi vidas magentajn aŭ ekster-gamajn kulminaĵojn."
 
 #. Page LOOK
-#: ../src/iop/filmicrgb.c:3763
+#: ../src/iop/filmicrgb.c:3852
 msgid "look"
 msgstr "rigardo"
 
-#: ../src/iop/filmicrgb.c:3774
+#: ../src/iop/filmicrgb.c:3863
 msgid ""
 "equivalent to paper grade in analog.\n"
 "increase to make highlights brighter and less compressed.\n"
@@ -13151,7 +13191,7 @@ msgstr ""
 "pliigi por fari brilaĵojn pli helajn kaj malpli kunpremitajn.\n"
 "malpliigi al mutaj kulminaĵoj."
 
-#: ../src/iop/filmicrgb.c:3782
+#: ../src/iop/filmicrgb.c:3871
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "in percent of the dynamic range (white exposure - black exposure).\n"
@@ -13166,7 +13206,7 @@ msgstr ""
 "malpliiĝu alie. neniu malsaturiĝo okazas en la latitudo.\n"
 "ĉi tio ne efikas sur meztonoj."
 
-#: ../src/iop/filmicrgb.c:3798
+#: ../src/iop/filmicrgb.c:3887
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -13176,7 +13216,7 @@ msgstr ""
 "specife ĉe ekstremaj lumoj.\n"
 "pliiĝu se ombroj kaj / aŭ brilaĵoj estas nesufiĉe saturitaj."
 
-#: ../src/iop/filmicrgb.c:3818
+#: ../src/iop/filmicrgb.c:3907
 msgid ""
 "midde gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -13185,11 +13225,11 @@ msgstr ""
 "vi neniam tuŝu tion, krom se vi scias, kion vi faras."
 
 #. Page OPTIONS
-#: ../src/iop/filmicrgb.c:3830
+#: ../src/iop/filmicrgb.c:3919
 msgid "options"
 msgstr "opcioj"
 
-#: ../src/iop/filmicrgb.c:3835
+#: ../src/iop/filmicrgb.c:3924
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
@@ -13197,7 +13237,7 @@ msgstr ""
 "v3 estas malluma tablo 3,0-nesatura metodo, same kiel kolora ekvilibrigo.\n"
 "v4 estas pli nova desaturiga metodo, bazita sur spektra pureco de lumo."
 
-#: ../src/iop/filmicrgb.c:3839
+#: ../src/iop/filmicrgb.c:3928
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
@@ -13207,7 +13247,7 @@ msgstr ""
 "povas plifortigi kromajn aberaciojn kaj koloran bruon,\n"
 "do certigu, ke ili taŭge korektiĝu aliloke.\n"
 
-#: ../src/iop/filmicrgb.c:3845
+#: ../src/iop/filmicrgb.c:3934
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -13217,7 +13257,7 @@ msgstr ""
 "malfacile uzas altan kurbecon rezultigante pli tonan kunpremadon.\n"
 "mola uzas malaltan kurbecon rezultigante malpli tonan kunpremon."
 
-#: ../src/iop/filmicrgb.c:3850
+#: ../src/iop/filmicrgb.c:3939
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -13227,7 +13267,7 @@ msgstr ""
 "malfacile uzas altan kurbecon rezultigante pli tonan kunpremadon.\n"
 "mola uzas malaltan kurbecon rezultigante malpli tonan kunpremon."
 
-#: ../src/iop/filmicrgb.c:3855
+#: ../src/iop/filmicrgb.c:3944
 #, c-format
 msgid ""
 "enable to input custom middle-gray values.\n"
@@ -13240,7 +13280,7 @@ msgstr ""
 "riparu la tutmondan ekspozicion per la ekspozicia modulo anstataŭe.\n"
 "malebligi por uzi norman 18.45 %% mezgrizon."
 
-#: ../src/iop/filmicrgb.c:3862
+#: ../src/iop/filmicrgb.c:3951
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
@@ -13253,7 +13293,7 @@ msgstr ""
 "agordon.\n"
 "malebligi se vi volas permanan regadon."
 
-#: ../src/iop/filmicrgb.c:3868
+#: ../src/iop/filmicrgb.c:3957
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
 "more iterations means more color propagation from neighbourhood.\n"
@@ -13265,7 +13305,7 @@ msgstr ""
 "ĉi tio estos pli malrapida sed donos pli neŭtralajn kulminaĵojn.\n"
 "ĝi ankaŭ helpas kun malfacilaj kazoj de magentaj kulminaĵoj."
 
-#: ../src/iop/filmicrgb.c:3875
+#: ../src/iop/filmicrgb.c:3964
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -13277,15 +13317,15 @@ msgstr ""
 "kiam la bildo ĝenerale bruas,\n"
 "do ili miksiĝas kun la resto de la bildo."
 
-#: ../src/iop/filmicrgb.c:3882
+#: ../src/iop/filmicrgb.c:3971
 msgid "uniform"
 msgstr "uniforma"
 
-#: ../src/iop/filmicrgb.c:3884
+#: ../src/iop/filmicrgb.c:3973
 msgid "poissonian"
 msgstr "poissonian"
 
-#: ../src/iop/filmicrgb.c:3885
+#: ../src/iop/filmicrgb.c:3974
 msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern.\n"
@@ -13293,7 +13333,7 @@ msgstr ""
 "elektu la statistikan distribuadon de bruo.\n"
 "ĉi tio utilas por kongrui kun natura sensora brua ŝablono.\n"
 
-#: ../src/iop/filmicrgb.c:3947
+#: ../src/iop/filmicrgb.c:4036
 msgid "middle tones saturation"
 msgstr "meza tono saturiĝo"
 
@@ -13872,26 +13912,26 @@ msgstr "niveloj"
 msgid "adjust black, white and mid-gray points"
 msgstr "ĝustigi nigrajn, blankajn kaj mezgrizajn punktojn"
 
-#: ../src/iop/levels.c:628 ../src/iop/rgblevels.c:969
+#: ../src/iop/levels.c:628 ../src/iop/rgblevels.c:966
 msgid ""
 "drag handles to set black, gray, and white points. operates on L channel."
 msgstr ""
 "trenu tenilojn por agordi nigrajn, grizajn kaj blankajn punktojn. funkcias "
 "per L-kanalo."
 
-#: ../src/iop/levels.c:644 ../src/iop/rgblevels.c:1005
+#: ../src/iop/levels.c:644 ../src/iop/rgblevels.c:1002
 msgid "apply auto levels"
 msgstr "apliki aŭtomatajn nivelojn"
 
-#: ../src/iop/levels.c:648 ../src/iop/rgblevels.c:983
+#: ../src/iop/levels.c:648 ../src/iop/rgblevels.c:980
 msgid "pick black point from image"
 msgstr "elekti nigran punkton de bildo"
 
-#: ../src/iop/levels.c:652 ../src/iop/rgblevels.c:988
+#: ../src/iop/levels.c:652 ../src/iop/rgblevels.c:985
 msgid "pick medium gray point from image"
 msgstr "elekti mezan grizan punkton de bildo"
 
-#: ../src/iop/levels.c:656 ../src/iop/rgblevels.c:993
+#: ../src/iop/levels.c:656 ../src/iop/rgblevels.c:990
 msgid "pick white point from image"
 msgstr "elekti blankan punkton de bildo"
 
@@ -14091,19 +14131,19 @@ msgstr "nokta strato malluma"
 msgid "night"
 msgstr "nokta"
 
-#: ../src/iop/lowlight.c:645
+#: ../src/iop/lowlight.c:642
 msgid "dark"
 msgstr "malluma"
 
-#: ../src/iop/lowlight.c:653
+#: ../src/iop/lowlight.c:650
 msgid "bright"
 msgstr "brila"
 
-#: ../src/iop/lowlight.c:662
+#: ../src/iop/lowlight.c:659
 msgid "day vision"
 msgstr "taga vizio"
 
-#: ../src/iop/lowlight.c:667
+#: ../src/iop/lowlight.c:664
 msgid "night vision"
 msgstr "nokta vizio"
 
@@ -15067,19 +15107,19 @@ msgstr "logaritmo (bazo 2)"
 msgid "exponential (base 2)"
 msgstr "eksponenta (bazo 2)"
 
-#: ../src/iop/rgbcurve.c:1377 ../src/iop/rgblevels.c:956
+#: ../src/iop/rgbcurve.c:1377 ../src/iop/rgblevels.c:953
 msgid "choose between linked and independent channels."
 msgstr "elekti inter ligitaj kaj sendependaj kanaloj."
 
-#: ../src/iop/rgbcurve.c:1382 ../src/iop/rgblevels.c:959
+#: ../src/iop/rgbcurve.c:1382 ../src/iop/rgblevels.c:956
 msgid "curve nodes for r channel"
 msgstr "kurbaj nodoj por r kanalo"
 
-#: ../src/iop/rgbcurve.c:1383 ../src/iop/rgblevels.c:960
+#: ../src/iop/rgbcurve.c:1383 ../src/iop/rgblevels.c:957
 msgid "curve nodes for g channel"
 msgstr "kurbaj nodoj por v kanalo"
 
-#: ../src/iop/rgbcurve.c:1384 ../src/iop/rgblevels.c:961
+#: ../src/iop/rgbcurve.c:1384 ../src/iop/rgblevels.c:958
 msgid "curve nodes for b channel"
 msgstr "kurbaj nodoj por b kanalo"
 
@@ -15091,7 +15131,7 @@ msgstr "rvb niveloj"
 msgid "adjust black, white and mid-gray points in RGB color space"
 msgstr "ĝustigi nigrajn, blankajn kaj mezgrizajn punktojn en RVB-kolora spaco"
 
-#: ../src/iop/rgblevels.c:1009
+#: ../src/iop/rgblevels.c:1006
 msgid ""
 "apply auto levels based on a region defined by the user\n"
 "click and drag to draw the area\n"
@@ -16311,20 +16351,11 @@ msgstr "kopiita loken"
 msgid "group followers"
 msgstr "grupanoj"
 
-#: ../src/libs/collect.c:2064 ../src/libs/collect.c:2079
-#: ../src/libs/collect.c:2656
-msgid "clear this rule"
-msgstr "forviŝi ĉi tiun regulon"
-
-#: ../src/libs/collect.c:2068
-msgid "clear this rule or add new rules"
-msgstr "forviŝi tiun regulon aŭ aldoni novajn regulojn"
-
-#: ../src/libs/collect.c:2127
+#: ../src/libs/collect.c:2029
 msgid "use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "uzu <, <=, >, >=, <>, =, [;] kiel operatoroj"
 
-#: ../src/libs/collect.c:2132
+#: ../src/libs/collect.c:2034
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "type dates in the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"
@@ -16333,12 +16364,12 @@ msgstr ""
 "entajpi datojn en la  formato : JJJJ:MM:TT HH:MM:SS (nur la jaro estas "
 "deviga)"
 
-#: ../src/libs/collect.c:2139
+#: ../src/libs/collect.c:2041
 #, no-c-format
 msgid "use `%' as wildcard and `,' to separate values"
 msgstr "uzu `%' kiel ĵokero kaj `,' to apartigi valorojn"
 
-#: ../src/libs/collect.c:2145
+#: ../src/libs/collect.c:2047
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -16349,7 +16380,7 @@ msgstr ""
 "uzu `|%' por inkluzivi ĉiujn sub-hierarkiojn (stir-klaki)\n"
 "uzu `*' por inkluzivi hierarkion kaj sub-hierarkiojn (majusklo+klaki)"
 
-#: ../src/libs/collect.c:2155
+#: ../src/libs/collect.c:2057
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -16360,86 +16391,94 @@ msgstr ""
 "uzu `|% ' por inkluzivi ĉiujn sublokojn (stir-klaki)\n"
 "uzu `*' por inkluzivi lokojn kaj sublokojn (majusklo-klaki)"
 
-#: ../src/libs/collect.c:2164
+#: ../src/libs/collect.c:2067
+#, no-c-format
+msgid ""
+"use `%' as wildcard\n"
+"ctrl+click to include only sub-folders\n"
+"shift+click to include current + sub-folders\n"
+"double-click to include only the current folder"
+msgstr ""
+"uzu `%' kiel ĵokeron\n"
+"stir+klaki por inkluzivi nur subdosierujojn\n"
+"maj+klaki por inkluzivi nunan + subdosierujojn\n"
+"duoble alklaki por inkluzivi nur la nunan dosierujon"
+
+#: ../src/libs/collect.c:2078
 #, no-c-format
 msgid "use `%' as wildcard"
 msgstr "uzu `%' kiel ĵokeron"
 
-#: ../src/libs/collect.c:2662
+#: ../src/libs/collect.c:2130 ../src/libs/collect.c:2145
+#: ../src/libs/collect.c:2680
+msgid "clear this rule"
+msgstr "forviŝi ĉi tiun regulon"
+
+#: ../src/libs/collect.c:2134
+msgid "clear this rule or add new rules"
+msgstr "forviŝi tiun regulon aŭ aldoni novajn regulojn"
+
+#: ../src/libs/collect.c:2686
 msgid "narrow down search"
 msgstr "malvastigi serĉadon"
 
-#: ../src/libs/collect.c:2667
+#: ../src/libs/collect.c:2691
 msgid "add more images"
 msgstr "aldoni pli da bildoj"
 
-#: ../src/libs/collect.c:2672
+#: ../src/libs/collect.c:2696
 msgid "exclude images"
 msgstr "ekskludi bildojn"
 
-#: ../src/libs/collect.c:2679
+#: ../src/libs/collect.c:2703
 msgid "change to: and"
 msgstr "ŝanĝi al: kaj"
 
-#: ../src/libs/collect.c:2684
+#: ../src/libs/collect.c:2708
 msgid "change to: or"
 msgstr "ŝanĝi al: aŭ"
 
-#: ../src/libs/collect.c:2689
+#: ../src/libs/collect.c:2713
 msgid "change to: except"
 msgstr "ŝanĝi al: ekcepte"
 
-#: ../src/libs/collect.c:2719
+#: ../src/libs/collect.c:2743
 msgid "files"
 msgstr "dosieroj"
 
-#: ../src/libs/collect.c:2724 ../src/libs/export_metadata.c:289
+#: ../src/libs/collect.c:2748 ../src/libs/export_metadata.c:289
 #: ../src/libs/image.c:463 ../src/libs/image.c:568 ../src/libs/metadata.c:486
-#: ../src/libs/metadata.c:657 ../src/libs/metadata_view.c:1071
+#: ../src/libs/metadata.c:657 ../src/libs/metadata_view.c:1051
 msgid "metadata"
 msgstr "metadatenoj"
 
-#: ../src/libs/collect.c:2742
+#: ../src/libs/collect.c:2766
 msgid "times"
 msgstr "fojoj"
 
-#: ../src/libs/collect.c:2750
+#: ../src/libs/collect.c:2774
 msgid "capture details"
 msgstr "kapti detalojn"
 
-#: ../src/libs/collect.c:2759 ../src/libs/tools/darktable.c:65
+#: ../src/libs/collect.c:2783 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/collect.c:2772
+#: ../src/libs/collect.c:2796
 msgid "collect images settings"
 msgstr "agordoj de 'kolekti bildojn'"
 
-#: ../src/libs/collect.c:2774 ../src/libs/export_metadata.c:269
-#: ../src/libs/import.c:1307 ../src/libs/metadata.c:446
-#: ../src/libs/metadata_view.c:1040 ../src/libs/modulegroups.c:3433
-#: ../src/libs/styles.c:439 ../src/libs/styles.c:614 ../src/libs/tagging.c:1359
-#: ../src/libs/tagging.c:1447 ../src/libs/tagging.c:1528
-#: ../src/libs/tagging.c:1653 ../src/libs/tagging.c:1927
-msgid "cancel"
-msgstr "nuligi"
-
-#: ../src/libs/collect.c:2775 ../src/libs/export_metadata.c:269
-#: ../src/libs/metadata.c:446 ../src/libs/metadata_view.c:1040
+#: ../src/libs/collect.c:2799 ../src/libs/export_metadata.c:269
+#: ../src/libs/metadata.c:446 ../src/libs/metadata_view.c:1020
 #: ../src/libs/tagging.c:1528 ../src/libs/tagging.c:1653
 #: ../src/libs/tagging.c:1927
 msgid "save"
 msgstr "konservi"
 
-#: ../src/libs/collect.c:2789 ../src/libs/export.c:1106
-#: ../src/libs/metadata.c:580 ../src/libs/metadata_view.c:1151
+#: ../src/libs/collect.c:2813 ../src/libs/export.c:1106
+#: ../src/libs/metadata.c:580 ../src/libs/metadata_view.c:1131
 msgid "preferences..."
 msgstr "preferencoj..."
-
-#: ../src/libs/collect.c:2846
-#, no-c-format
-msgid "type your query, use `%' as wildcard"
-msgstr "tajpu vian demandon, uzu `%' kiel ĵokeron"
 
 #: ../src/libs/colorpicker.c:52
 msgid "color picker"
@@ -16908,10 +16947,6 @@ msgstr "elekti etikedon"
 msgid "add"
 msgstr "aldoni"
 
-#: ../src/libs/export_metadata.c:160 ../src/libs/geotagging.c:821
-msgid "done"
-msgstr "farita"
-
 #: ../src/libs/export_metadata.c:170
 msgid "list filter"
 msgstr "lista filtrilo"
@@ -17222,15 +17257,15 @@ msgstr "elekti kongruajn bildojn"
 msgid "number of matching images versus selected images"
 msgstr "nombro de kongruaj bildoj kontraŭ elektitaj bildoj"
 
-#: ../src/libs/histogram.c:109
+#: ../src/libs/histogram.c:135
 msgid "histogram"
 msgstr "histogramo"
 
-#: ../src/libs/histogram.c:585
+#: ../src/libs/histogram.c:969 ../src/libs/histogram.c:1547
 msgid "ctrl+scroll to change display height"
 msgstr "stirklavo+rulumi por ŝanĝi ekranan altecon"
 
-#: ../src/libs/histogram.c:592
+#: ../src/libs/histogram.c:976
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets\n"
@@ -17240,7 +17275,7 @@ msgstr ""
 "duoble-klaki reagordas\n"
 "stirklavo+rulumi por ŝanĝi ekranan altecon"
 
-#: ../src/libs/histogram.c:597 ../src/libs/histogram.c:1080
+#: ../src/libs/histogram.c:981
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets\n"
@@ -17250,96 +17285,108 @@ msgstr ""
 "duoble-klaki reagordas\n"
 "stirklavo+rulumi por ŝanĝi ekranan altecon"
 
-#: ../src/libs/histogram.c:708
+#: ../src/libs/histogram.c:1094
 msgid "set scale to linear"
 msgstr "agordi skalon al lineara"
 
-#: ../src/libs/histogram.c:713
+#: ../src/libs/histogram.c:1099
 msgid "set scale to logarithmic"
 msgstr "agordi skalon al logaritma"
 
-#: ../src/libs/histogram.c:730
+#: ../src/libs/histogram.c:1117
 msgid "set view to RGB parade"
 msgstr "agordi vidon al RVB parado"
 
-#: ../src/libs/histogram.c:738
+#: ../src/libs/histogram.c:1125
 msgid "set view to waveform"
 msgstr "agordi vidon al ondforma"
 
-#: ../src/libs/histogram.c:755
+#: ../src/libs/histogram.c:1144
+msgid "set view to AzBz"
+msgstr "agordi vidon al AzBz"
+
+#: ../src/libs/histogram.c:1149
+msgid "set view to u*v*"
+msgstr "agordi vidon al u*v*"
+
+#: ../src/libs/histogram.c:1163
 msgid "set mode to waveform"
 msgstr "agordi reĝimon al ondforma"
 
-#: ../src/libs/histogram.c:764
+#: ../src/libs/histogram.c:1172
+msgid "set mode to vectorscope"
+msgstr "agordi reĝimon al vektorskopo"
+
+#: ../src/libs/histogram.c:1179
 msgid "set mode to histogram"
 msgstr "agordi reĝimon al histograma"
 
-#: ../src/libs/histogram.c:822 ../src/libs/histogram.c:858
-#: ../src/libs/histogram.c:1106
+#: ../src/libs/histogram.c:1256 ../src/libs/histogram.c:1292
+#: ../src/libs/histogram.c:1573
 msgid "click to hide red channel"
 msgstr "klaki por kaŝi ruĝan kanalon"
 
-#: ../src/libs/histogram.c:822 ../src/libs/histogram.c:858
-#: ../src/libs/histogram.c:1106
+#: ../src/libs/histogram.c:1256 ../src/libs/histogram.c:1292
+#: ../src/libs/histogram.c:1573
 msgid "click to show red channel"
 msgstr "klaki por montri ruĝan kanalon"
 
-#: ../src/libs/histogram.c:830 ../src/libs/histogram.c:856
-#: ../src/libs/histogram.c:1112
+#: ../src/libs/histogram.c:1264 ../src/libs/histogram.c:1290
+#: ../src/libs/histogram.c:1579
 msgid "click to hide green channel"
 msgstr "klaki por kaŝi verdan kanalon"
 
-#: ../src/libs/histogram.c:830 ../src/libs/histogram.c:856
-#: ../src/libs/histogram.c:1112
+#: ../src/libs/histogram.c:1264 ../src/libs/histogram.c:1290
+#: ../src/libs/histogram.c:1579
 msgid "click to show green channel"
 msgstr "klaki por montri verdan kanalon"
 
-#: ../src/libs/histogram.c:838 ../src/libs/histogram.c:857
-#: ../src/libs/histogram.c:1118
+#: ../src/libs/histogram.c:1272 ../src/libs/histogram.c:1291
+#: ../src/libs/histogram.c:1585
 msgid "click to hide blue channel"
 msgstr "klaki por kaŝi bluan kanalon"
 
-#: ../src/libs/histogram.c:838 ../src/libs/histogram.c:857
-#: ../src/libs/histogram.c:1118
+#: ../src/libs/histogram.c:1272 ../src/libs/histogram.c:1291
+#: ../src/libs/histogram.c:1585
 msgid "click to show blue channel"
 msgstr "klaki por montri bluan kanalon"
 
-#: ../src/libs/histogram.c:1216
+#: ../src/libs/histogram.c:1683
 msgctxt "accel"
 msgid "histogram/hide histogram"
 msgstr "histogramo/kaŝi histogramon"
 
-#: ../src/libs/histogram.c:1217
+#: ../src/libs/histogram.c:1684
 msgctxt "accel"
 msgid "hide histogram"
 msgstr "kaŝi histogramon"
 
-#: ../src/libs/histogram.c:1218
+#: ../src/libs/histogram.c:1685
 msgctxt "accel"
 msgid "histogram/cycle histogram modes"
 msgstr "histogramo/cirkuli histogramajn reĝimojn"
 
-#: ../src/libs/histogram.c:1219
+#: ../src/libs/histogram.c:1686
 msgctxt "accel"
 msgid "cycle histogram modes"
 msgstr "cirkuli histogramajn reĝimojn"
 
-#: ../src/libs/histogram.c:1220
+#: ../src/libs/histogram.c:1687
 msgctxt "accel"
 msgid "histogram/switch histogram mode"
 msgstr "histogramo/ŝalti histograman reĝimon"
 
-#: ../src/libs/histogram.c:1221
+#: ../src/libs/histogram.c:1688
 msgctxt "accel"
 msgid "switch histogram mode"
 msgstr "ŝalti histograman reĝimon"
 
-#: ../src/libs/histogram.c:1222
+#: ../src/libs/histogram.c:1689
 msgctxt "accel"
 msgid "histogram/switch histogram type"
 msgstr "histogramo/ŝalti histograman specon"
 
-#: ../src/libs/histogram.c:1223
+#: ../src/libs/histogram.c:1690
 msgctxt "accel"
 msgid "switch histogram type"
 msgstr "ŝalti histograman specon"
@@ -17388,8 +17435,7 @@ msgstr "apriore ebligita modulo"
 msgid "deprecated module"
 msgstr "malaktualigita modulo"
 
-#: ../src/libs/history.c:793 ../src/libs/metadata_view.c:556
-#: ../src/libs/snapshots.c:467
+#: ../src/libs/history.c:793 ../src/libs/snapshots.c:467
 msgid "unknown"
 msgstr "nekonata"
 
@@ -17707,80 +17753,88 @@ msgctxt "accel"
 msgid "ungroup"
 msgstr "malgrupigi"
 
-#: ../src/libs/import.c:170
+#: ../src/libs/import.c:175
 msgctxt "accel"
 msgid "import from camera"
 msgstr "importi bildojn de fotilo"
 
-#: ../src/libs/import.c:171
+#: ../src/libs/import.c:176
 msgctxt "accel"
 msgid "tethered shoot"
 msgstr "alligita fotopreno"
 
-#: ../src/libs/import.c:172
+#: ../src/libs/import.c:177
 msgctxt "accel"
 msgid "import in-place"
 msgstr "importi surloke"
 
-#: ../src/libs/import.c:173
+#: ../src/libs/import.c:178
 msgctxt "accel"
 msgid "copy and import"
 msgstr "kopii kaj importi"
 
-#: ../src/libs/import.c:239
+#: ../src/libs/import.c:244
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "aparato \"%s\" konektita al la haveno \"%s\"."
 
-#: ../src/libs/import.c:249 ../src/libs/import.c:1294
+#: ../src/libs/import.c:254 ../src/libs/import.c:1407
 msgid "import from camera"
 msgstr "importi de fotilo"
 
-#: ../src/libs/import.c:256
+#: ../src/libs/import.c:261
 msgid "tethered shoot"
 msgstr "alligita fotopreno"
 
-#: ../src/libs/import.c:668
+#: ../src/libs/import.c:678
 #, c-format
 msgid "%d image out of %d selected"
 msgid_plural "%d images out of %d selected"
 msgstr[0] "%d bildo el %d elektita"
 msgstr[1] "%d bildoj el %d elektitaj"
 
-#: ../src/libs/import.c:1001
+#: ../src/libs/import.c:1069
 msgid "select a folder to see the content"
 msgstr "elekti dosierujon por vidi la enhavon"
 
-#: ../src/libs/import.c:1140
+#: ../src/libs/import.c:1072
+msgid "folders"
+msgstr "dosierujoj"
+
+#: ../src/libs/import.c:1237
 msgid "open folder"
 msgstr "malfermi dosierujon"
 
-#: ../src/libs/import.c:1211
+#: ../src/libs/import.c:1300
+msgid "mark already imported pictures"
+msgstr "marki jam importitajn bildojn"
+
+#: ../src/libs/import.c:1324
 msgid "modified"
 msgstr "ŝanĝita"
 
-#: ../src/libs/import.c:1216
+#: ../src/libs/import.c:1329
 msgid "file 'modified date/time', may be different from 'Exif date/time'"
 msgstr "dosiero 'ŝanĝita dato/horo', povas esti malsama ol 'Exif dato/horo'"
 
-#: ../src/libs/import.c:1228
+#: ../src/libs/import.c:1341
 msgid "show/hide thumbnails"
 msgstr "montri/kaŝi bildetojn"
 
 #. collapsible section
-#: ../src/libs/import.c:1264
+#: ../src/libs/import.c:1377
 msgid "naming rules"
 msgstr "nomreguloj"
 
-#: ../src/libs/import.c:1292
+#: ../src/libs/import.c:1405
 msgid "import in-place"
 msgstr "importi surloke"
 
-#: ../src/libs/import.c:1293
+#: ../src/libs/import.c:1406
 msgid "copy and import"
 msgstr "kopii kaj importi"
 
-#: ../src/libs/import.c:1297
+#: ../src/libs/import.c:1410
 msgid ""
 "choose the root of the folder tree below\n"
 "try to choose a root folder that contains most/all of your photographs (in "
@@ -17794,23 +17848,31 @@ msgstr ""
 "por ke vi ne bezonu ofte ŝanĝi la radikon\n"
 "ekz. agordu ĝin al via dosierujo 'bildoj' aŭ 'hejmo'"
 
-#: ../src/libs/import.c:1393
+#: ../src/libs/import.c:1449 ../src/libs/select.c:137
+msgid "select none"
+msgstr "elekti neniujn"
+
+#: ../src/libs/import.c:1455
+msgid "select new"
+msgstr "elekti novan"
+
+#: ../src/libs/import.c:1531
 msgid "please wait while prefetching the list of images from camera..."
 msgstr "bonvolu atendi kiam listo de bildoj estas antaŭprenata de fotilo..."
 
-#: ../src/libs/import.c:1551
+#: ../src/libs/import.c:1737
 msgid "import in-place..."
 msgstr "importi surloke..."
 
-#: ../src/libs/import.c:1552
+#: ../src/libs/import.c:1738
 msgid "import images in-place without renaming"
 msgstr "importi bildojn surloke sen alinomigo"
 
-#: ../src/libs/import.c:1559
+#: ../src/libs/import.c:1745
 msgid "copy and import..."
 msgstr "kopii kaj importi..."
 
-#: ../src/libs/import.c:1560
+#: ../src/libs/import.c:1746
 msgid ""
 "copy and optionally rename images before importing them\n"
 "patterns can be defined to rename the images and specify the destination "
@@ -17821,7 +17883,7 @@ msgstr ""
 "dosierujojn"
 
 #. collapsible section
-#: ../src/libs/import.c:1586
+#: ../src/libs/import.c:1772
 msgid "parameters"
 msgstr "parametroj"
 
@@ -18209,11 +18271,11 @@ msgstr "metadatena redaktilo"
 msgid "<leave unchanged>"
 msgstr "<lasi senŝanĝe>"
 
-#: ../src/libs/metadata.c:444 ../src/libs/metadata_view.c:1038
+#: ../src/libs/metadata.c:444 ../src/libs/metadata_view.c:1018
 msgid "metadata settings"
 msgstr "metadatenaj agordoj"
 
-#: ../src/libs/metadata.c:492 ../src/libs/metadata_view.c:1082
+#: ../src/libs/metadata.c:492 ../src/libs/metadata_view.c:1062
 msgid "visible"
 msgstr "videble"
 
@@ -18424,61 +18486,17 @@ msgid_plural "image has %d stars"
 msgstr[0] "bildo havas %d stelon"
 msgstr[1] "bildo havas %d stelojn"
 
-#: ../src/libs/metadata_view.c:557
-msgid "tiff"
-msgstr "tiff"
-
-#: ../src/libs/metadata_view.c:558
-msgid "png"
-msgstr "png"
-
-#: ../src/libs/metadata_view.c:559
-msgid "j2k"
-msgstr "j2k"
-
-#: ../src/libs/metadata_view.c:560
-msgid "jpeg"
-msgstr "jpeg"
-
-#: ../src/libs/metadata_view.c:561
-msgid "exr"
-msgstr "exr"
-
-#: ../src/libs/metadata_view.c:562
-msgid "rgbe"
-msgstr "rgbe"
-
-#: ../src/libs/metadata_view.c:563
-msgid "pfm"
-msgstr "pfm"
-
-#: ../src/libs/metadata_view.c:564
-msgid "GraphicsMagick"
-msgstr "GraphicsMagick"
-
-#: ../src/libs/metadata_view.c:565
-msgid "rawspeed"
-msgstr "rawspeed"
-
-#: ../src/libs/metadata_view.c:566
-msgid "netpnm"
-msgstr "netpbm"
-
-#: ../src/libs/metadata_view.c:567
-msgid "avif"
-msgstr "avif"
-
-#: ../src/libs/metadata_view.c:572
+#: ../src/libs/metadata_view.c:552
 #, c-format
 msgid "loader: %s"
 msgstr "ŝarĝilo: %s"
 
-#: ../src/libs/metadata_view.c:877
+#: ../src/libs/metadata_view.c:857
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "salti al filmrulo"
 
-#: ../src/libs/metadata_view.c:1077
+#: ../src/libs/metadata_view.c:1057
 msgid ""
 "drag and drop one row at a time until you get the desired order\n"
 "untick to hide metadata which are not of interest for you\n"
@@ -19056,10 +19074,6 @@ msgstr " sed ne "
 #: ../src/libs/select.c:133
 msgid "select all images in current collection"
 msgstr "elekti ĉiujn bildojn en aktuala kolekto"
-
-#: ../src/libs/select.c:137
-msgid "select none"
-msgstr "elekti neniujn"
 
 #: ../src/libs/select.c:137
 msgid "clear selection"
@@ -19839,67 +19853,68 @@ msgstr ""
 msgid "show global preferences"
 msgstr "montri tutmondajn preferencojn"
 
-#: ../src/libs/tools/global_toolbox.c:595
-msgid "do you want to access https://darktable.org/usermanual/?"
-msgstr "ĉu vi volas viziti https://darktable.org/usermanual/?"
+#: ../src/libs/tools/global_toolbox.c:596
+#, c-format
+msgid "do you want to access `%s'?"
+msgstr "ĉu vi volas aliri `%s'?"
 
-#: ../src/libs/tools/global_toolbox.c:600
+#: ../src/libs/tools/global_toolbox.c:601
 msgid "access the online usermanual?"
 msgstr "ĉu viziti la retan manlibron?"
 
-#: ../src/libs/tools/global_toolbox.c:643
+#: ../src/libs/tools/global_toolbox.c:647
 msgid "help url opened in web browser"
 msgstr "helpligilo malfermita per retumilo"
 
-#: ../src/libs/tools/global_toolbox.c:647
+#: ../src/libs/tools/global_toolbox.c:651
 msgid "error while opening help url in web browser"
 msgstr "eraro malfermante helpligilon per retumilo"
 
-#: ../src/libs/tools/global_toolbox.c:658
+#: ../src/libs/tools/global_toolbox.c:662
 msgid "there is no help available for this element"
 msgstr "helpo ne disponablas por tiu elemento"
 
-#: ../src/libs/tools/global_toolbox.c:700
+#: ../src/libs/tools/global_toolbox.c:721
 msgctxt "accel"
 msgid "grouping"
 msgstr "grupado"
 
-#: ../src/libs/tools/global_toolbox.c:701
+#: ../src/libs/tools/global_toolbox.c:722
 msgctxt "accel"
 msgid "preferences"
 msgstr "preferencoj"
 
-#: ../src/libs/tools/global_toolbox.c:703
+#: ../src/libs/tools/global_toolbox.c:724
 msgctxt "accel"
 msgid "thumbnail overlays/no overlays"
 msgstr "bildetaj surmetoj/neniuj surmetaĵoj"
 
-#: ../src/libs/tools/global_toolbox.c:704
+#: ../src/libs/tools/global_toolbox.c:725
 msgctxt "accel"
 msgid "thumbnail overlays/overlays on mouse hover"
 msgstr "bildetaj surmetoj/surmetaĵoj dum musŝvebado"
 
-#: ../src/libs/tools/global_toolbox.c:705
+#: ../src/libs/tools/global_toolbox.c:726
 msgctxt "accel"
 msgid "thumbnail overlays/extended overlays on mouse hover"
 msgstr "bildetaj surmetoj/etenditaj surmetaĵoj dum musŝvebado"
 
-#: ../src/libs/tools/global_toolbox.c:706
+#: ../src/libs/tools/global_toolbox.c:727
 msgctxt "accel"
 msgid "thumbnail overlays/permanent overlays"
 msgstr "bildetaj surmetoj/konstantaj surmetaĵoj"
 
-#: ../src/libs/tools/global_toolbox.c:707
+#: ../src/libs/tools/global_toolbox.c:728
 msgctxt "accel"
 msgid "thumbnail overlays/permanent extended overlays"
 msgstr "bildetaj surmetoj/konstantaj etenditaj surmetaĵoj"
 
-#: ../src/libs/tools/global_toolbox.c:708
+#: ../src/libs/tools/global_toolbox.c:729
 msgctxt "accel"
 msgid "thumbnail overlays/permanent overlays extended on mouse hover"
 msgstr "bildetaj surmetoj/konstantaj etenditaj surmetaĵoj dum musŝvebado"
 
-#: ../src/libs/tools/global_toolbox.c:709
+#: ../src/libs/tools/global_toolbox.c:730
 msgctxt "accel"
 msgid "thumbnail overlays/overlays block on mouse hover"
 msgstr "bildetaj surmetoj/surmeta bloko dum musŝvebado"
@@ -19932,51 +19947,51 @@ msgstr "alklaki por eliri el mortiganta aranĝo."
 msgid "click to enter culling layout in dynamic mode."
 msgstr "alklaki por eniri mortigantan aranĝon en dinamika reĝimo."
 
-#: ../src/libs/tools/lighttable.c:262
+#: ../src/libs/tools/lighttable.c:263
 msgid "click to enter filemanager layout."
 msgstr "alklaki por eniri dosierestran aranĝon."
 
-#: ../src/libs/tools/lighttable.c:267
+#: ../src/libs/tools/lighttable.c:270
 msgid "click to enter zoomable lighttable layout."
 msgstr "alklaki por eniri zomeblan lumtablan aranĝon."
 
 #. view accels
-#: ../src/libs/tools/lighttable.c:559
+#: ../src/libs/tools/lighttable.c:568
 msgctxt "accel"
 msgid "toggle filemanager layout"
 msgstr "ŝalti dosirerestran aranĝon"
 
-#: ../src/libs/tools/lighttable.c:560
+#: ../src/libs/tools/lighttable.c:569
 msgctxt "accel"
 msgid "toggle zoomable lighttable layout"
 msgstr "ŝalti zomablan lumtablan aranĝon"
 
-#: ../src/libs/tools/lighttable.c:561
+#: ../src/libs/tools/lighttable.c:570
 msgctxt "accel"
 msgid "toggle culling mode"
 msgstr "ŝalti morgitantan reĝimon"
 
-#: ../src/libs/tools/lighttable.c:562
+#: ../src/libs/tools/lighttable.c:571
 msgctxt "accel"
 msgid "toggle culling dynamic mode"
 msgstr "ŝalti mortigantan dinamikan reĝimon"
 
-#: ../src/libs/tools/lighttable.c:564
+#: ../src/libs/tools/lighttable.c:573
 msgctxt "accel"
 msgid "toggle culling zoom mode"
 msgstr "ŝalti mortigantan zoman reĝimon"
 
-#: ../src/libs/tools/lighttable.c:565
+#: ../src/libs/tools/lighttable.c:574
 msgctxt "accel"
 msgid "toggle sticky preview mode"
 msgstr "ŝalti gluan antaŭvidan reĝimon"
 
-#: ../src/libs/tools/lighttable.c:566
+#: ../src/libs/tools/lighttable.c:575
 msgctxt "accel"
 msgid "toggle sticky preview mode with focus detection"
 msgstr "ŝalti gluan antaŭvidan reĝimon kun fokusa detekto"
 
-#: ../src/libs/tools/lighttable.c:568
+#: ../src/libs/tools/lighttable.c:577
 msgctxt "accel"
 msgid "exit current layout"
 msgstr "eliri el aktuala aranĝo"
@@ -20843,6 +20858,136 @@ msgstr "Akcelo"
 #: ../src/views/view.c:1791
 msgid "Action"
 msgstr "Ago"
+
+#, c-format
+#~ msgid ""
+#~ "\n"
+#~ " At startup, the database failed to open because at least one of the two "
+#~ "files in the database is locked.\n"
+#~ "\n"
+#~ " The persistence of the lock is mainly caused by one of the two following "
+#~ "causes:\n"
+#~ "\n"
+#~ " - Another occurrence of darktable has already opened this database file "
+#~ "and locked it for its benefit.\n"
+#~ "\n"
+#~ " - A previous occurrence of darktable ended abnormally and therefore \n"
+#~ "   could not close one or both files in the database properly.\n"
+#~ "\n"
+#~ " How to solve this problem?\n"
+#~ "\n"
+#~ " 1 - Search in your environment if another darktable occurrence is "
+#~ "active. If so, use it or close it. \n"
+#~ "     The lock indicates that the process number of this occurrence is : "
+#~ "<i><b>%d</b></i>\n"
+#~ "\n"
+#~ " 2 - If you can't find this other occurrence, try closing your session "
+#~ "and reopening it or shutting down your computer. \n"
+#~ "     This will delete all running programs and thus close the database "
+#~ "correctly.\n"
+#~ "\n"
+#~ " 3 - If these two actions are not enough, it is because at least one of "
+#~ "the two files that materialize the locks remains \n"
+#~ "     and that these are no longer attached to any occurrence of "
+#~ "darktable. It is then necessary to delete it (or them). \n"
+#~ "     The two files are named <i>data.db.lock</i> and <i>library.db.lock</"
+#~ "i> respectively. The opening mechanism signals \n"
+#~ "     the presence of the <i><b>%s</b></i> file in the <i><b>%s</b></i> "
+#~ "folder. \n"
+#~ "     (full pathname: <i><b>%s</b></i>).\n"
+#~ "\n"
+#~ "     <u>Caution!</u> Do not delete these files without first checking "
+#~ "that there are no more occurrences of darktable, \n"
+#~ "     otherwise you risk generating serious inconsistencies in your "
+#~ "database.\n"
+#~ "\n"
+#~ " As soon as you have identified and removed the cause of the lock, "
+#~ "darktable will start without any problem.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Ĉe ekfunkciigo, la datumbaza malfermado malsukcesis, ĉar almenaŭ unu el "
+#~ "la du dosieroj en la datumbazo estas ŝlosita.\n"
+#~ "\n"
+#~ " La persisto de la seruro estas ĉefe kaŭzita de unu el la du sekvaj "
+#~ "kaŭzoj:\n"
+#~ "\n"
+#~ " - Alia okazo de darktable jam malfermis ĉi tiun datumbazan dosieron kaj "
+#~ "ŝlosis ĝin por sia avantaĝo.\n"
+#~ "\n"
+#~ " - Antaŭa apero de darktable finiĝis nenormale kaj sekve\n"
+#~ "   ne povis fermi unu aŭ ambaŭ dosierojn en la datumbazo ĝuste.\n"
+#~ "\n"
+#~ " Kiel solvi ĉi tiun problemon?\n"
+#~ "\n"
+#~ " 1 - Serĉu en via medio, ĉu alia okazo de darktable aperas aktiva. Se "
+#~ "jes, uzu ĝin aŭ fermu ĝin.\n"
+#~ "     La seruro indikas, ke la proceznumero de ĉi tiu okazo estas: <i><b>"
+#~ "%d</b></i>\n"
+#~ "\n"
+#~ " 2 - Se vi ne povas trovi ĉi tiun alian okazaĵon, provu fermi vian "
+#~ "kunsidon kaj remalfermi ĝin aŭ fermi vian komputilon.\n"
+#~ "     Ĉi tio forigos ĉiujn aktualajn programojn kaj tiel fermos la "
+#~ "datumbazon ĝuste.\n"
+#~ "\n"
+#~ " 3 - Se ĉi tiuj du agoj ne sufiĉas, tio estas ĉar almenaŭ unu el la du "
+#~ "dosieroj, kiuj realigas la serurojn, restas\n"
+#~ "     kaj ke ĉi tiuj ne plu ligiĝas al ia apero de darktable. Tiam necesas "
+#~ "forigi ĝin (aŭ ilin).\n"
+#~ "     La du dosieroj estas respektive nomataj <i>data.db.lock</i> kaj "
+#~ "<i>library.db.lock</i>. La malferma mekanismo signalas\n"
+#~ "     la ĉeesto de la dosiero <i><b>%s</b></i> en la dosierujo <i><b>%s</"
+#~ "b></i>.\n"
+#~ "     (plena vojo: <i><b>%s</b></i>).\n"
+#~ "\n"
+#~ "     <u> Atentu! </u> Ne forigu ĉi tiujn dosierojn sen antaŭe kontroli, "
+#~ "ke ne plu estas aperoj de darktable,\n"
+#~ "     alie vi riskas generi seriozajn nekonsekvencojn en via datumbazo.\n"
+#~ "\n"
+#~ " Tuj kiam vi identigis kaj forigis la kaŭzon de la seruro, darktable "
+#~ "komenciĝos senprobleme.\n"
+
+#~ msgid "darktable cannot be started because the database is locked"
+#~ msgstr "darktable ne povas esti lanĉita ĉar la datumbazo estas ŝlosita"
+
+#, no-c-format
+#~ msgid "type your query, use `%' as wildcard"
+#~ msgstr "tajpu vian demandon, uzu `%' kiel ĵokeron"
+
+#~ msgid "tiff"
+#~ msgstr "tiff"
+
+#~ msgid "png"
+#~ msgstr "png"
+
+#~ msgid "j2k"
+#~ msgstr "j2k"
+
+#~ msgid "jpeg"
+#~ msgstr "jpeg"
+
+#~ msgid "exr"
+#~ msgstr "exr"
+
+#~ msgid "rgbe"
+#~ msgstr "rgbe"
+
+#~ msgid "pfm"
+#~ msgstr "pfm"
+
+#~ msgid "GraphicsMagick"
+#~ msgstr "GraphicsMagick"
+
+#~ msgid "rawspeed"
+#~ msgstr "rawspeed"
+
+#~ msgid "netpnm"
+#~ msgstr "netpbm"
+
+#~ msgid "avif"
+#~ msgstr "avif"
+
+#~ msgid "do you want to access https://darktable.org/usermanual/?"
+#~ msgstr "ĉu vi volas viziti https://darktable.org/usermanual/?"
 
 #~ msgid "white pivot"
 #~ msgstr "pivoto de blanko"
