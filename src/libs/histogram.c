@@ -572,8 +572,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
       _lib_histogram_process_vectorscope(d, img_display, &roi);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
-      // FIXME: use dt_unreachable_codepath_with_desc()
-      g_assert_not_reached();
+      dt_unreachable_codepath();
   }
   dt_pthread_mutex_unlock(&d->lock);
   dt_free_align(img_display);
@@ -840,8 +839,7 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
       // grid is drawn with scope, as it depends on chromaticity scale
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
-      // FIXME: use dt_unreachable_codepath_with_desc()
-      g_assert_not_reached();
+      dt_unreachable_codepath();
   }
 
   // FIXME: should set histogram buffer to black if have just entered tether view and nothing is displayed
@@ -869,8 +867,7 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
           _lib_histogram_draw_vectorscope(d, cr, width, height);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_N:
-      // FIXME: use dt_unreachable_codepath_with_desc()
-        g_assert_not_reached();
+        dt_unreachable_codepath();
     }
   }
   dt_pthread_mutex_unlock(&d->lock);
@@ -1071,8 +1068,7 @@ static void _histogram_scale_update(const dt_lib_histogram_t *d)
                              dtgtk_cairo_paint_linear_scale, CPF_NONE, NULL);
       break;
     case DT_LIB_HISTOGRAM_N:
-      // FIXME: use dt_unreachable_codepath_with_desc()
-      g_assert_not_reached();
+      dt_unreachable_codepath();
   }
   // FIXME: this should really redraw current iop if its background is a histogram (check request_histogram)
   darktable.lib->proxy.histogram.is_linear = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR;
@@ -1100,8 +1096,7 @@ static void _waveform_view_update(const dt_lib_histogram_t *d)
       gtk_widget_set_sensitive(d->blue_channel_button, FALSE);
       break;
     case DT_LIB_HISTOGRAM_WAVEFORM_N:
-      // FIXME: use dt_unreachable_codepath_with_desc()
-      g_assert_not_reached();
+      dt_unreachable_codepath();
   }
 }
 
@@ -1121,7 +1116,7 @@ static void _vectorscope_view_update(dt_lib_histogram_t *d)
                              dtgtk_cairo_paint_jzazbz, CPF_NONE, NULL);
       break;
     case DT_LIB_HISTOGRAM_VECTORSCOPE_N:
-      g_assert_not_reached();
+      dt_unreachable_codepath();
   }
 }
 
@@ -1155,7 +1150,7 @@ static void _scope_type_update(dt_lib_histogram_t *d)
       _vectorscope_view_update(d);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
-      g_assert_not_reached();
+      dt_unreachable_codepath();
   }
 }
 
@@ -1214,8 +1209,7 @@ static void _scope_view_clicked(GtkWidget *button, dt_lib_histogram_t *d)
         dt_control_queue_redraw_center();
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
-      // FIXME: use dt_unreachable_codepath_with_desc()
-      g_assert_not_reached();
+      dt_unreachable_codepath();
   }
 }
 
@@ -1364,8 +1358,7 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
       }
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
-      // FIXME: use dt_unreachable_codepath_with_desc()
-      g_assert_not_reached();
+      dt_unreachable_codepath();
   }
 
   return TRUE;
