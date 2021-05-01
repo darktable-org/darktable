@@ -105,6 +105,7 @@ typedef struct dt_lib_histogram_t
   // FIXME: These arrays could instead be alloc'd/free'd. Would the only concern about making dt_lib_histogram_t large so long be if it were stored in the DB?
   float hue_ring_rgb[6][VECTORSCOPE_HUES][4] DT_ALIGNED_ARRAY;
   float hue_ring_coord[6][VECTORSCOPE_HUES][2] DT_ALIGNED_ARRAY;
+  dt_colorspaces_color_profile_type_t hue_ring_prof;
   double vectorscope_radius;
   float vectorscope_bounds[2];
   dt_pthread_mutex_t lock;
@@ -278,21 +279,9 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   }
 }
 
-static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const float *const input,
-                                               dt_histogram_roi_t *const roi)
+static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, dt_iop_order_iccprofile_info_t *vs_prof)
 {
-  dt_times_t start_time = { 0 };
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
-
-  const int diam_px = d->vectorscope_diameter_px;
-  const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
-
-  // FIXME: is this available from caller?
-  // FIXME: if we do convert to histogram RGB, should it be an absolute colorimetric conversion (would mean knowing the histogram profile whitepoint and un-adapting its matrices) and then we have a meaningful whitepoint and could plot spectral locus -- or the reverse, adapt the spectral locus to the histogram profile PCS (always D50)?
-  dt_iop_order_iccprofile_info_t *vs_prof = dt_ioppr_get_histogram_profile_info(darktable.develop);
-  if(!vs_prof) return;
   // FIXME: as in colorbalancergb, repack matrix for SEE?
-
   // Calculate "hue ring" by tracing along the edges of the "RGB cube"
   // which do not touch the white or black vertex. This should be the
   // maximum chromas. It's OK if some of the sampled points are
@@ -328,7 +317,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       // outside [0,1] but cairo_set_source_rgba will clamp. Compare
       // to illuminant_xy_to_RGB.
       dt_XYZ_to_Rec709_D50(XYZ_D50, d->hue_ring_rgb[k][i]);
-      if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+      // FIXME: keep d->vectorscope_type in local variable for speed?
+      if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
         dt_XYZ_to_xyY(XYZ_D50, intermed);
         dt_xyY_to_Luv(intermed, chromaticity);
@@ -344,9 +334,26 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     }
   }
   // FIXME: make an image buffer with all the hues relative to whitepoint to use as the pattern for drawing hue ring and false color scope variant?
-  // FIXME: particularly for u*v*, center on hue ring bounds rather than plot center, to be able to show a larger plot?
   d->vectorscope_radius = max_radius;
-  const float max_diam = max_radius * 2.f;;
+}
+
+static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const float *const input,
+                                               dt_histogram_roi_t *const roi)
+{
+  dt_times_t start_time = { 0 };
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
+
+  const int diam_px = d->vectorscope_diameter_px;
+  const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
+
+  // FIXME: is this available from caller?
+  // FIXME: if we do convert to histogram RGB, should it be an absolute colorimetric conversion (would mean knowing the histogram profile whitepoint and un-adapting its matrices) and then we have a meaningful whitepoint and could plot spectral locus -- or the reverse, adapt the spectral locus to the histogram profile PCS (always D50)?
+  dt_iop_order_iccprofile_info_t *vs_prof = dt_ioppr_get_histogram_profile_info(darktable.develop);
+  if(!vs_prof) return;
+  if(vs_prof->type != d->hue_ring_prof)
+    _lib_histogram_hue_ring(d, vs_prof);
+  // FIXME: particularly for u*v*, center on hue ring bounds rather than plot center, to be able to show a larger plot?
+  const float max_diam = d->vectorscope_radius * 2.f;;
 
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
   int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
@@ -1519,6 +1526,7 @@ void gui_init(dt_lib_module_t *self)
   d->vectorscope_diameter_px = 384;
   const int vectorscope_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px);
   d->vectorscope_graph = dt_alloc_align(64, sizeof(uint8_t) * 4U * vectorscope_stride * d->vectorscope_diameter_px);
+  d->hue_ring_prof = DT_COLORSPACE_NONE;
   // initially no vectorscope to draw
   d->vectorscope_radius = 0.f;
 
