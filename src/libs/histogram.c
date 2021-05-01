@@ -318,16 +318,17 @@ static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, const dt_iop_order_ic
 }
 
 static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const float *const input,
+                                               const dt_iop_order_iccprofile_info_t *const input_profile,
                                                dt_histogram_roi_t *const roi)
 {
   const int diam_px = d->vectorscope_diameter_px;
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
 
-  // FIXME: is this available from caller?
-  // FIXME: if we do convert to histogram RGB, should it be an absolute colorimetric conversion (would mean knowing the histogram profile whitepoint and un-adapting its matrices) and then we have a meaningful whitepoint and could plot spectral locus -- or the reverse, adapt the spectral locus to the histogram profile PCS (always D50)?
   // NOTE: this may be different from the output profile for _lib_histogram_process()
   dt_iop_order_iccprofile_info_t *vs_prof = dt_ioppr_get_histogram_profile_info(darktable.develop);
   if(!vs_prof) return;
+  // FIXME: just compare the profiles as pointers -- this will get confused if there are two file profiles!
+  // FIXME: do this check in _lib_histogram_hue_ring() as it's the only place we use vs_prof & it keeps things simple
   if(vs_prof->type != d->hue_ring_prof)
     _lib_histogram_hue_ring(d, vs_prof);
   // FIXME: particularly for u*v*, center on hue ring bounds rather than plot center, to be able to show a larger plot?
@@ -352,34 +353,29 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   }
 
   // RGB -> chromaticity (processor-heavy and parallelized)
+  // Need XYZ chromaticity. Work directly with process input data (no
+  // need to convert to histogram profile). It's enough to know input
+  // profile type.
+  // FIXME: if we do convert to histogram RGB, should it be an absolute colorimetric conversion (would mean knowing the histogram profile whitepoint and un-adapting its matrices) and then we have a meaningful whitepoint and could plot spectral locus -- or the reverse, adapt the spectral locus to the histogram profile PCS (always D50)?
   // FIXME: pre-allocate?
   // FIXME: combine these -- only need two floats for chromaticity (uv or AzBz) and two for xy?
   float *const restrict chromaticity = dt_iop_image_alloc(sample_width, sample_height, 4);
   float *const restrict XYZ_D50 = dt_iop_image_alloc(sample_width, sample_height, 4);
+  // FIXME: for speed, downsample 2x2 -> 1x1 here, which still should produce enough chromaticity data -- Question: AVERAGE(RGBx4) -> chromaticity, or AVERAGE((RGB -> chromaticity)x4)?
   // FIXME: move verbosed interleaved comments into a method note at the start, as the code itself is succinct and clear
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, XYZ_D50, chromaticity, sample_width, sample_height, roi, vs_prof, vs_type) \
+  dt_omp_firstprivate(in, XYZ_D50, chromaticity, sample_width, sample_height, roi, input_profile, vs_type) \
   schedule(static) collapse(2)
 #endif
   for(size_t y=0; y<sample_height; y++)
     for(size_t x=0; x<sample_width; x++)
     {
-      // FIXME: Are there are unnecessary color math hops? Right now the data
-      // comes into dt_lib_histogram_process() in a known profile
-      // (usually from pixelpipe). Then (usually) it gets converted to
-      // the histogram profile. Here it gets converted to XYZ D50 before
-      // making its way to L*u*v* or JzAzBz:
-      //   RGB (pixelpipe) -> XYZ(PCS, D50) -> RGB (histogram) -> XYZ (PCS, D50) -> chromaticity
-      // Given that the histogram profile is "well behaved" and the
-      // conversion to histogram profile is relative colorimetric, how
-      // does this compare to:
-      //   RGB (pixelpipe) -> XYZ(PCS, D50) -> chromaticity
       size_t k = 4U * (y * sample_width + x);
       // this goes to the PCS which has standard illuminant D50
       dt_ioppr_rgb_matrix_to_xyz(in + 4U * ((y + roi->crop_y) * roi->width + x + roi->crop_x),
-                                 XYZ_D50+k, vs_prof->matrix_in, vs_prof->lut_in,
-                                 vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
+                                 XYZ_D50+k, input_profile->matrix_in, input_profile->lut_in,
+                                 input_profile->unbounded_coeffs_in, input_profile->lutsize, input_profile->nonlinearlut);
       // NOTE: see for comparison/reference rgb_to_JzCzhz() in color_picker.c
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
@@ -552,30 +548,33 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   // in tether view, then the image is already converted by the
   // caller.
   // FIXME: do conversion in-place in the processing to save an extra buffer? -- at least for waveform, which already has to touch each pixel -- will need logic from _transform_matrix_rgb() -- or better yet a per-pixel callback within _transform_matrix_rgb()-ish code
-  // FIXME: in case of vectorscope, it needs XYZ data, so skip this conversion and instead it's enough that it has input & in_profile_type -- though then we don't see the result of a relative colorimetric conversion to the histogram profile...
-  float *img_display = dt_alloc_align_float((size_t)4 * width * height);
-  if(!img_display) return;
-  dt_ioppr_transform_image_colorspace_rgb(input, img_display, width, height,
-                                          profile_info_from, profile_info_to, "final histogram");
-
-  dt_pthread_mutex_lock(&d->lock);
-  switch(d->scope_type)
+  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
   {
-    case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      _lib_histogram_process_histogram(d, img_display, &roi);
-      break;
-    case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      _lib_histogram_process_waveform(d, img_display, &roi);
-      break;
-    case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-      // FIXME: only work on roi
-      _lib_histogram_process_vectorscope(d, img_display, &roi);
-      break;
-    case DT_LIB_HISTOGRAM_SCOPE_N:
-      dt_unreachable_codepath();
+    dt_pthread_mutex_lock(&d->lock);
+    _lib_histogram_process_vectorscope(d, input, profile_info_from, &roi);
+    dt_pthread_mutex_unlock(&d->lock);
   }
-  dt_pthread_mutex_unlock(&d->lock);
-  dt_free_align(img_display);
+  else
+  {
+    float *img_display = dt_alloc_align_float((size_t)4 * width * height);
+    if(!img_display) return;
+    dt_ioppr_transform_image_colorspace_rgb(input, img_display, width, height,
+                                            profile_info_from, profile_info_to, "final histogram");
+    dt_pthread_mutex_lock(&d->lock);
+    switch(d->scope_type)
+    {
+      case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
+        _lib_histogram_process_histogram(d, img_display, &roi);
+        break;
+      case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
+        _lib_histogram_process_waveform(d, img_display, &roi);
+        break;
+      default:
+        dt_unreachable_codepath();
+    }
+    dt_pthread_mutex_unlock(&d->lock);
+    dt_free_align(img_display);
+  }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
@@ -1484,7 +1483,9 @@ void gui_init(dt_lib_module_t *self)
   // of tonal gradation. 256 would match the # of bins in a regular
   // histogram.
   d->waveform_height  = 175;
+  // FIXME: combine with an intermediate buffer for vectorscope, as only use one or the other
   d->waveform_linear  = dt_iop_image_alloc(d->waveform_max_width, d->waveform_height, 3);
+  // FIXME: combine waveform_8bit and vectorscope_graph, as only ever use one or the other
   d->waveform_8bit    = dt_alloc_align(64, sizeof(uint8_t) * 3 * d->waveform_height *
                                        cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_max_width));
 
