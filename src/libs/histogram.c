@@ -279,7 +279,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   }
 }
 
-static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, dt_iop_order_iccprofile_info_t *vs_prof)
+static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, const dt_iop_order_iccprofile_info_t *vs_prof)
 {
   // FIXME: as in colorbalancergb, repack matrix for SEE?
   // Calculate "hue ring" by tracing along the edges of the "RGB cube"
@@ -348,6 +348,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
   // FIXME: is this available from caller?
   // FIXME: if we do convert to histogram RGB, should it be an absolute colorimetric conversion (would mean knowing the histogram profile whitepoint and un-adapting its matrices) and then we have a meaningful whitepoint and could plot spectral locus -- or the reverse, adapt the spectral locus to the histogram profile PCS (always D50)?
+  // NOTE: this may be different from the output profile for _lib_histogram_process()
   dt_iop_order_iccprofile_info_t *vs_prof = dt_ioppr_get_histogram_profile_info(darktable.develop);
   if(!vs_prof) return;
   if(vs_prof->type != d->hue_ring_prof)
@@ -526,11 +527,11 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
 static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *const input,
                                      int width, int height,
-                                     dt_colorspaces_color_profile_type_t in_profile_type, const gchar *in_profile_filename)
+                                     const dt_iop_order_iccprofile_info_t *const profile_info_from,
+                                     const dt_iop_order_iccprofile_info_t *const profile_info_to)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   dt_develop_t *dev = darktable.develop;
-  float *img_display = NULL;
 
   // special case, clear the scopes
   if(!input)
@@ -543,6 +544,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     return;
   }
 
+  // FIXME: do clocking in this function rather than in per-scope type functions
   // FIXME: scope goes black when click histogram lib colorpicker on -- is this meant to happen?
   // FIXME: scope doesn't redraw when click histogram lib colorpicker off -- is this meant to happen?
   dt_histogram_roi_t roi = { .width = width, .height = height,
@@ -579,46 +581,30 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   // caller.
   // FIXME: do conversion in-place in the processing to save an extra buffer? -- at least for waveform, which already has to touch each pixel -- will need logic from _transform_matrix_rgb() -- or better yet a per-pixel callback within _transform_matrix_rgb()-ish code
   // FIXME: in case of vectorscope, it needs XYZ data, so skip this conversion and instead it's enough that it has input & in_profile_type -- though then we don't see the result of a relative colorimetric conversion to the histogram profile...
-  if(in_profile_type != DT_COLORSPACE_NONE)
-  {
-    const dt_iop_order_iccprofile_info_t *const profile_info_from
-      = dt_ioppr_add_profile_info_to_list(dev, in_profile_type, in_profile_filename, INTENT_PERCEPTUAL);
-
-    dt_colorspaces_color_profile_type_t out_profile_type;
-    const char *out_profile_filename;
-    dt_ioppr_get_histogram_profile_type(&out_profile_type, &out_profile_filename);
-    if(out_profile_type != DT_COLORSPACE_NONE)
-    {
-      const dt_iop_order_iccprofile_info_t *const profile_info_to =
-        dt_ioppr_add_profile_info_to_list(dev, out_profile_type, out_profile_filename, DT_INTENT_RELATIVE_COLORIMETRIC);
-      img_display = dt_alloc_align_float((size_t)4 * width * height);
-      if(!img_display) return;
-      dt_ioppr_transform_image_colorspace_rgb(input, img_display, width, height, profile_info_from,
-                                              profile_info_to, "final histogram");
-    }
-  }
+  float *img_display = dt_alloc_align_float((size_t)4 * width * height);
+  if(!img_display) return;
+  dt_ioppr_transform_image_colorspace_rgb(input, img_display, width, height,
+                                          profile_info_from, profile_info_to, "final histogram");
 
   dt_pthread_mutex_lock(&d->lock);
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      _lib_histogram_process_histogram(d, img_display ? img_display : input, &roi);
+      _lib_histogram_process_histogram(d, img_display, &roi);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      _lib_histogram_process_waveform(d, img_display ? img_display : input, &roi);
+      _lib_histogram_process_waveform(d, img_display, &roi);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
       // FIXME: only work on roi
-      _lib_histogram_process_vectorscope(d, img_display ? img_display : input, &roi);
+      _lib_histogram_process_vectorscope(d, img_display, &roi);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       // FIXME: use dt_unreachable_codepath_with_desc()
       g_assert_not_reached();
   }
   dt_pthread_mutex_unlock(&d->lock);
-
-  if(img_display)
-    dt_free_align(img_display);
+  dt_free_align(img_display);
 }
 
 
@@ -768,6 +754,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   }
 
   // vectorscope graph
+  // FIXME: use cairo_pattern_set_filter()?
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
   // FIXME: if use cairo_mask() could calculate a false color vectorscope and draw with appropriate hues?
