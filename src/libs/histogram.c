@@ -359,10 +359,9 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
   int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
   size_t pt_sample;
-
-  // point sample still calculates graph based on whole image
   if(sample_width == 1 && sample_height == 1)
   {
+    // point sample still calculates graph based on whole image
     pt_sample = ((size_t)roi->width * roi->crop_y + roi->crop_x) * 4U;
     sample_width = roi->width;
     sample_height = roi->height;
@@ -376,14 +375,14 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
   // RGB -> chromaticity (processor-heavy and parallelized)
   // FIXME: pre-allocate?
-  // FIXME: combine these -- only need two floats for chromaticity (uv or AzBz) and two for XZ
+  // FIXME: combine these -- only need two floats for chromaticity (uv or AzBz) and two for xy?
   float *const restrict chromaticity = dt_iop_image_alloc(sample_width, sample_height, 4);
   float *const restrict XYZ_D50 = dt_iop_image_alloc(sample_width, sample_height, 4);
   // FIXME: move verbosed interleaved comments into a method note at the start, as the code itself is succinct and clear
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, XYZ_D50, chromaticity, sample_width, sample_height, roi, vs_prof, vs_type) \
-  schedule(static)
+  schedule(static) collapse(2)
 #endif
   for(size_t y=0; y<sample_height; y++)
     for(size_t x=0; x<sample_width; x++)
@@ -459,7 +458,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       // FIXME: if necessary average XYZ values if they're in a big range -- test this -- and cast b[3] to an int and store a count
       // FIXME: this is a repeat assign on multiple iterations, though may be slightly different each time -- instead calculate the out_x/out_y to chromaticity below? -- or average these -- probably no perceptible difference -- or test if unassigned and then assign?
       b[0] = XYZ_D50[k];
-      // FIXME: we don't care about this, we'll set it from intensity?
+      // FIXME: we don't care about this, we'll set it from intensity? -- in which case store xy instead of XYZ?
       b[1] = XYZ_D50[k+1];
       b[2] = XYZ_D50[k+2];
       b[3] += scale;
@@ -485,9 +484,17 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       const float *const restrict b = binned + 4U * (out_y * diam_px + out_x);
       uint8_t *const restrict px = graph + out_y * out_stride + out_x * 4U;
       const float intensity = lut[(int)(MIN(1.f, b[3]) * lutmax)];
+      // FIXME: is this a useful optimization? maybe if it clears the way for fancier color math
+      if(intensity == 0.f)
+      {
+        px[0] = px[1] = px[2] = 0;
+        continue;
+      }
+
       // FIXME: can use fewer temps
       float XYZ[4] DT_ALIGNED_PIXEL, xyY[4] DT_ALIGNED_PIXEL, Lch[4] DT_ALIGNED_PIXEL, RGB[4] DT_ALIGNED_PIXEL;
       // FIXME: can do all this work in XYZ? or uvY? (dt_uvY_to_xyY...)
+      // FIXME: can do this work in XYZ -> Lab -> LCH -> Lab -- faster?
       // FIXME: just calculate from out_x/out_y rather than storing? then binned can be back to 1d and have int counters
       dt_XYZ_to_xyY(b, xyY);
       dt_xyY_to_Lch(xyY, Lch);
