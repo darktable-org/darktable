@@ -150,6 +150,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {62.0f }, "splittoning", 0},
   { {63.0f }, "velvia", 0},
   { {64.0f }, "clahe", 0},
+  { {64.5f }, "cropping", 0},
   { {65.0f }, "finalscale", 0},
   { {66.0f }, "overexposed", 0},
   { {67.0f }, "rawoverexposed", 0},
@@ -250,6 +251,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {69.0f }, "colorreconstruct", 0},// try to salvage blown areas before ICC intents in LittleCMS2 do things with them.
   { {70.0f }, "colorout", 0},
   { {71.0f }, "clahe", 0},
+  { {71.5f }, "cropping", 0},
   { {72.0f }, "finalscale", 0},
   { {73.0f }, "overexposed", 0},
   { {74.0f }, "rawoverexposed", 0},
