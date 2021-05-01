@@ -2204,8 +2204,8 @@ static void _manage_editor_group_update_arrows(GtkWidget *box)
       {
         GtkWidget *left = (GtkWidget *)lw2->data;
         GtkWidget *right = (GtkWidget *)g_list_nth_data(lw2, 2);
-        gtk_widget_set_visible(left, pos > 1);
-        gtk_widget_set_visible(right, pos < max);
+        gtk_widget_set_sensitive(left, pos > 1);
+        gtk_widget_set_sensitive(right, pos < max);
       }
       g_list_free(lw2);
     }
