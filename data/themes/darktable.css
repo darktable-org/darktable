@@ -1442,7 +1442,7 @@ filechooser row:hover,
   border: 0;
 }
 
-#modulegroups-groupbox #modulegroups-add-module-btn
+#modulegroups-groupbox #modulegroups-btn
 {
   min-height: 1.2em;
   min-width: 1.2em;
