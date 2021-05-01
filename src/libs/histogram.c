@@ -105,7 +105,7 @@ typedef struct dt_lib_histogram_t
   // FIXME: These arrays could instead be alloc'd/free'd. Would the only concern about making dt_lib_histogram_t large so long be if it were stored in the DB?
   float hue_ring_rgb[6][VECTORSCOPE_HUES][4] DT_ALIGNED_ARRAY;
   float hue_ring_coord[6][VECTORSCOPE_HUES][2] DT_ALIGNED_ARRAY;
-  dt_colorspaces_color_profile_type_t hue_ring_prof;
+  const dt_iop_order_iccprofile_info_t *hue_ring_prof;
   double vectorscope_radius;
   float vectorscope_bounds[2];
   dt_pthread_mutex_t lock;
@@ -259,8 +259,13 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
       }
 }
 
-static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, const dt_iop_order_iccprofile_info_t *vs_prof)
+static void _lib_histogram_hue_ring(dt_lib_histogram_t *d)
 {
+  // NOTE: this may be different from the output profile for _lib_histogram_process()
+  const dt_iop_order_iccprofile_info_t *const vs_prof = dt_ioppr_get_histogram_profile_info(darktable.develop);
+  if(!vs_prof || vs_prof == d->hue_ring_prof)
+    return;
+
   // FIXME: as in colorbalancergb, repack matrix for SEE?
   // Calculate "hue ring" by tracing along the edges of the "RGB cube"
   // which do not touch the white or black vertex. This should be the
@@ -315,6 +320,7 @@ static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, const dt_iop_order_ic
   }
   // FIXME: make an image buffer with all the hues relative to whitepoint to use as the pattern for drawing hue ring and false color scope variant?
   d->vectorscope_radius = max_radius;
+  d->hue_ring_prof = vs_prof;
 }
 
 static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const float *const input,
@@ -324,13 +330,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   const int diam_px = d->vectorscope_diameter_px;
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
 
-  // NOTE: this may be different from the output profile for _lib_histogram_process()
-  dt_iop_order_iccprofile_info_t *vs_prof = dt_ioppr_get_histogram_profile_info(darktable.develop);
-  if(!vs_prof) return;
-  // FIXME: just compare the profiles as pointers -- this will get confused if there are two file profiles!
-  // FIXME: do this check in _lib_histogram_hue_ring() as it's the only place we use vs_prof & it keeps things simple
-  if(vs_prof->type != d->hue_ring_prof)
-    _lib_histogram_hue_ring(d, vs_prof);
+  _lib_histogram_hue_ring(d);
   // FIXME: particularly for u*v*, center on hue ring bounds rather than plot center, to be able to show a larger plot?
   const float max_diam = d->vectorscope_radius * 2.f;;
 
@@ -1493,7 +1493,7 @@ void gui_init(dt_lib_module_t *self)
   d->vectorscope_diameter_px = 384;
   const int vectorscope_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px);
   d->vectorscope_graph = dt_alloc_align(64, sizeof(uint8_t) * 4U * vectorscope_stride * d->vectorscope_diameter_px);
-  d->hue_ring_prof = DT_COLORSPACE_NONE;
+  d->hue_ring_prof = NULL;
   // initially no vectorscope to draw
   d->vectorscope_radius = 0.f;
 
