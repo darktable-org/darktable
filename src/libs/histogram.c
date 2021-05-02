@@ -18,6 +18,7 @@
 #include <stdint.h>
 
 #include "bauhaus/bauhaus.h"
+#include "common/atomic.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/histogram.h"
@@ -337,42 +338,43 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
   int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
   int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
-  size_t pt_sample;
+  size_t pt_sample_x = SIZE_MAX, pt_sample_y = SIZE_MAX;
   if(sample_width == 1 && sample_height == 1)
   {
     // point sample still calculates graph based on whole image
-    pt_sample = ((size_t)roi->width * roi->crop_y + roi->crop_x) * 4U;
+    pt_sample_x = roi->crop_x;
+    pt_sample_y = roi->crop_y;
     sample_width = roi->width;
     sample_height = roi->height;
     roi->crop_x = roi->crop_y = 0;
   }
   else
   {
-    pt_sample = SIZE_MAX;
     d->vectorscope_pt[0] = NAN;
   }
 
-  // RGB -> chromaticity (processor-heavy and parallelized)
+  // RGB -> chromaticity (processor-heavy), count into bins by chromaticity
   // Need XYZ chromaticity. Work directly with process input data (no
   // need to convert to histogram profile). It's enough to know input
   // profile type.
   // FIXME: if we do convert to histogram RGB, should it be an absolute colorimetric conversion (would mean knowing the histogram profile whitepoint and un-adapting its matrices) and then we have a meaningful whitepoint and could plot spectral locus -- or the reverse, adapt the spectral locus to the histogram profile PCS (always D50)?
-  // FIXME: pre-allocate?
-  // FIXME: combine these -- only need two floats for chromaticity (uv or AzBz) and two for xy?
-  float *const restrict chromaticity = dt_iop_image_alloc(sample_width, sample_height, 4);
+  // FIXME: pre-allocate? -- use the same buffer as for waveform?
+  dt_atomic_int *const restrict binned = __builtin_assume_aligned(dt_alloc_align(64, sizeof(int) * diam_px * diam_px), 64);
+  memset(binned, 0, sizeof(int) * diam_px * diam_px);
   // FIXME: for speed, downsample 2x2 -> 1x1 here, which still should produce enough chromaticity data -- Question: AVERAGE(RGBx4) -> chromaticity, or AVERAGE((RGB -> chromaticity)x4)?
   // FIXME: move verbosed interleaved comments into a method note at the start, as the code itself is succinct and clear
   // FIXME: even with getting rid of the extra profile conversion hop there's no noticeable speedup -- maybe this loop is memory bound -- if can get rid of one of the output buffers and still no speedup, consider doing more work in this loop, such as atomic binning
+  float bounds_x = 0.f, bounds_y = 0.f;
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, chromaticity, sample_width, sample_height, roi, input_profile, vs_type) \
+  dt_omp_firstprivate(in, binned, sample_width, sample_height, roi, pt_sample_x, pt_sample_y, d, diam_px, max_diam, input_profile, vs_type) \
+  reduction(max : bounds_x, bounds_y) \
   schedule(static) collapse(2)
 #endif
   for(size_t y=0; y<sample_height; y++)
     for(size_t x=0; x<sample_width; x++)
     {
-      float XYZ_D50[4] DT_ALIGNED_PIXEL;
-      size_t k = 4U * (y * sample_width + x);
+      float XYZ_D50[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
       // this goes to the PCS which has standard illuminant D50
       dt_ioppr_rgb_matrix_to_xyz(in + 4U * ((y + roi->crop_y) * roi->width + x + roi->crop_x),
                                  XYZ_D50, input_profile->matrix_in, input_profile->lut_in,
@@ -384,7 +386,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         float xyY_D50[4] DT_ALIGNED_PIXEL;
         dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
         // using D50 correct u*v* (not u'v') to be relative to the whitepoint (important for vectorscope) and as u*v* is more evenly spaced
-        dt_xyY_to_Luv(xyY_D50, chromaticity+k);
+        dt_xyY_to_Luv(xyY_D50, chromaticity);
       }
       else
       {
@@ -397,38 +399,25 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         // FIXME: if the profile whitepoint is D50 (ProPhoto...), then should we use a nicer adaptation (CAT16?) to D65?
         dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
         // FIXME: The bulk of processing time is spent in the XYZ -> JzAzBz conversion in the 2*3 powf() in X'Y'Z' -> L'M'S'. Making a LUT for these, using _apply_trc() to do powf() work. It only needs to be accurate enough to be about on the right pixel for a diam_px x diam_px plot
-        dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity+k);
+        dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
       }
+
+      if(x == pt_sample_x && y == pt_sample_y)
+      {
+        d->vectorscope_pt[0] = chromaticity[1];
+        d->vectorscope_pt[1] = chromaticity[2];
+      }
+      bounds_x = MAX(bounds_x, fabsf(chromaticity[1]));
+      bounds_y = MAX(bounds_y, fabsf(chromaticity[2]));
+
+      // FIXME: make cx,cy which are float, check 0 <= cx < 1, then multiply by diam_px
+      const int out_x = diam_px * (chromaticity[1] / max_diam + 0.5f);
+      const int out_y = diam_px * (chromaticity[2] / max_diam + 0.5f);
+
+      // clip any out-of-scale values, so there aren't light edges
+      if(out_x >= 0 && out_x <= diam_px-1 && out_y >= 0 && out_y <= diam_px-1)
+        dt_atomic_add_int(binned + out_y * diam_px + out_x, 1);
     }
-
-
-  // FIXME: pre-allocate? -- use the same buffer as for waveform?
-  int *const restrict binned = __builtin_assume_aligned(dt_alloc_align(64, sizeof(int) * diam_px * diam_px), 64);
-  memset(binned, 0, sizeof(int) * diam_px * diam_px);
-  // count into bins by chromaticity (processor light, not paralellized so no races)
-  // FIXME: do bounds work in RGB -> chromaticity above with a reduction(max : bounds_x, bounds_y)?
-  float bounds_x = 0.f, bounds_y = 0.f;
-  const size_t nfloats = sample_width * sample_height * 4U;
-  for(size_t k=0; k < nfloats; k+=4)
-  {
-    if(k == pt_sample)
-    {
-      d->vectorscope_pt[0] = chromaticity[k+1];
-      d->vectorscope_pt[1] = chromaticity[k+2];
-    }
-    bounds_x = MAX(bounds_x, fabsf(chromaticity[k+1]));
-    bounds_y = MAX(bounds_y, fabsf(chromaticity[k+2]));
-    // FIXME: make cx,cy which are float, check 0 <= cx < 1, then multiply by diam_px
-    const int out_x = diam_px * (chromaticity[k+1] / max_diam + 0.5f);
-    const int out_y = diam_px * (chromaticity[k+2] / max_diam + 0.5f);
-
-    // clip any out-of-scale values, so there aren't light edges
-    if(out_x >= 0 && out_x <= diam_px-1 && out_y >= 0 && out_y <= diam_px-1)
-      // FIMXE: if use dt_atomic_add_int() and it's not too slow can bring this code back into the chromaticity conversion and make parallel & lose chromaticity buffer
-      binned[out_y * diam_px + out_x]++;
-  }
-  d->vectorscope_bounds[0] = bounds_x;
-  d->vectorscope_bounds[1] = bounds_y;
 
   // shortcut to change from linear to display gamma
   const dt_iop_order_iccprofile_info_t *const profile =
@@ -504,7 +493,6 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     }
 
   dt_free_align(binned);
-  dt_free_align(chromaticity);
 }
 
 static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *const input,
