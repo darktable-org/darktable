@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -323,8 +323,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   dt_iop_crop_data_t *d = (dt_iop_crop_data_t *)piece->data;
   *roi_in = *roi_out;
 
-  float iw = piece->buf_in.width * roi_out->scale;
-  float ih = piece->buf_in.height * roi_out->scale;
+  const float iw = piece->buf_in.width * roi_out->scale;
+  const float ih = piece->buf_in.height * roi_out->scale;
 
   roi_in->x += iw * d->cx;
   roi_in->y += ih * d->cy;
@@ -353,7 +353,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_clipping] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_crop] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
 #endif
@@ -728,8 +728,8 @@ static void _event_aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *sel
       {
         // input the exact fraction
         c++;
-        int dd = atoi(text);
-        int nn = atoi(c);
+        const int dd = atoi(text);
+        const int nn = atoi(c);
         // some sanity check
         if(nn == 0 || dd == 0)
         {
@@ -1026,7 +1026,7 @@ static void _event_guides_presets_changed(GtkWidget *combo, dt_iop_module_t *sel
 
 static void _event_guides_flip_changed(GtkWidget *combo, dt_iop_module_t *self)
 {
-  int flip = dt_bauhaus_combobox_get(combo);
+  const int flip = dt_bauhaus_combobox_get(combo);
 
   // remember setting
   dt_conf_set_int("plugins/darkroom/crop/guides_flip", flip);
