@@ -263,7 +263,7 @@ static void _lib_histogram_hue_ring(dt_lib_histogram_t *d)
 {
   // NOTE: this may be different from the output profile for _lib_histogram_process()
   const dt_iop_order_iccprofile_info_t *const vs_prof = dt_ioppr_get_histogram_profile_info(darktable.develop);
-  if(!vs_prof || vs_prof == d->hue_ring_prof)
+  if(!vs_prof || (d->vectorscope_radius != 0.f && vs_prof == d->hue_ring_prof))
     return;
 
   // FIXME: as in colorbalancergb, repack matrix for SEE?
@@ -332,7 +332,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
   _lib_histogram_hue_ring(d);
   // FIXME: particularly for u*v*, center on hue ring bounds rather than plot center, to be able to show a larger plot?
-  const float max_diam = d->vectorscope_radius * 2.f;;
+  const float max_diam = d->vectorscope_radius * 2.f;
 
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
   int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
@@ -360,28 +360,29 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // FIXME: pre-allocate?
   // FIXME: combine these -- only need two floats for chromaticity (uv or AzBz) and two for xy?
   float *const restrict chromaticity = dt_iop_image_alloc(sample_width, sample_height, 4);
-  float *const restrict XYZ_D50 = dt_iop_image_alloc(sample_width, sample_height, 4);
   // FIXME: for speed, downsample 2x2 -> 1x1 here, which still should produce enough chromaticity data -- Question: AVERAGE(RGBx4) -> chromaticity, or AVERAGE((RGB -> chromaticity)x4)?
   // FIXME: move verbosed interleaved comments into a method note at the start, as the code itself is succinct and clear
+  // FIXME: even with getting rid of the extra profile conversion hop there's no noticeable speedup -- maybe this loop is memory bound -- if can get rid of one of the output buffers and still no speedup, consider doing more work in this loop, such as atomic binning
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, XYZ_D50, chromaticity, sample_width, sample_height, roi, input_profile, vs_type) \
+  dt_omp_firstprivate(in, chromaticity, sample_width, sample_height, roi, input_profile, vs_type) \
   schedule(static) collapse(2)
 #endif
   for(size_t y=0; y<sample_height; y++)
     for(size_t x=0; x<sample_width; x++)
     {
+      float XYZ_D50[4] DT_ALIGNED_PIXEL;
       size_t k = 4U * (y * sample_width + x);
       // this goes to the PCS which has standard illuminant D50
       dt_ioppr_rgb_matrix_to_xyz(in + 4U * ((y + roi->crop_y) * roi->width + x + roi->crop_x),
-                                 XYZ_D50+k, input_profile->matrix_in, input_profile->lut_in,
+                                 XYZ_D50, input_profile->matrix_in, input_profile->lut_in,
                                  input_profile->unbounded_coeffs_in, input_profile->lutsize, input_profile->nonlinearlut);
       // NOTE: see for comparison/reference rgb_to_JzCzhz() in color_picker.c
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
         // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
         float xyY_D50[4] DT_ALIGNED_PIXEL;
-        dt_XYZ_to_xyY(XYZ_D50+k, xyY_D50);
+        dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
         // using D50 correct u*v* (not u'v') to be relative to the whitepoint (important for vectorscope) and as u*v* is more evenly spaced
         dt_xyY_to_Luv(xyY_D50, chromaticity+k);
       }
@@ -394,18 +395,19 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         // Bradford. Using Bradford again to adapt back to D65 gives a
         // pretty clean reversal of the transform.
         // FIXME: if the profile whitepoint is D50 (ProPhoto...), then should we use a nicer adaptation (CAT16?) to D65?
-        dt_XYZ_D50_2_XYZ_D65(XYZ_D50+k, XYZ_D65);
+        dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
         // FIXME: The bulk of processing time is spent in the XYZ -> JzAzBz conversion in the 2*3 powf() in X'Y'Z' -> L'M'S'. Making a LUT for these, using _apply_trc() to do powf() work. It only needs to be accurate enough to be about on the right pixel for a diam_px x diam_px plot
         dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity+k);
       }
     }
 
-  // FIXME: pre-allocate?
+  // FIXME: pre-allocate? -- use the same buffer as for waveform?
   float *const restrict binned = dt_iop_image_alloc(diam_px, diam_px, 4);
+  // FIXME: really only need to erase the count/scale accumulator
   dt_iop_image_fill(binned, 0.0f, diam_px, diam_px, 4);
   // FIXME: faster to have bins just record count and multiply by scale after?
   // FIXME: do something fancy where 16 bits of out are pixel count, the other two are chromaticity?
-  const float gain = 1.f / 50.f;
+  const float gain = 1.f / 300.f;
   const float scale = gain * (diam_px * diam_px) / (sample_width * sample_height);
 
   // count into bins by chromaticity (processor light, not paralellized so no races)
@@ -429,13 +431,10 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     if(out_x >= 0 && out_x <= diam_px-1 && out_y >= 0 && out_y <= diam_px-1)
     {
       float *const restrict b = binned + 4U * (out_y * diam_px + out_x);
-      // FIXME: if necessary average XYZ values if they're in a big range -- test this -- and cast b[3] to an int and store a count
       // FIXME: this is a repeat assign on multiple iterations, though may be slightly different each time -- instead calculate the out_x/out_y to chromaticity below? -- or average these -- probably no perceptible difference -- or test if unassigned and then assign?
-      b[0] = XYZ_D50[k];
-      // FIXME: we don't care about this, we'll set it from intensity? -- in which case store xy instead of XYZ?
-      b[1] = XYZ_D50[k+1];
-      b[2] = XYZ_D50[k+2];
-      b[3] += scale;
+      b[0] += scale;
+      b[1] = chromaticity[k+1];
+      b[2] = chromaticity[k+2];
     }
   }
   d->vectorscope_bounds[0] = bounds_x;
@@ -455,30 +454,51 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     for(int out_x = 0; out_x < diam_px; out_x++)
     {
       // FIXME: do need (size_t)4U?
-      const float *const restrict b = binned + 4U * (out_y * diam_px + out_x);
+      float *const restrict b = binned + 4U * (out_y * diam_px + out_x);
       uint8_t *const restrict px = graph + out_y * out_stride + out_x * 4U;
-      const float intensity = lut[(int)(MIN(1.f, b[3]) * lutmax)];
-      // FIXME: is this a useful optimization? maybe if it clears the way for fancier color math
-      if(intensity == 0.f)
+      if(b[0] == 0.f)
       {
         px[0] = px[1] = px[2] = 0;
         continue;
       }
+      const float intensity = lut[(int)(MIN(1.f, b[0]) * lutmax)];
+      float XYZ_D50[4] DT_ALIGNED_PIXEL, RGB[4] DT_ALIGNED_PIXEL;
+      const float hypot = hypotf(b[1], b[2]);
 
-      // FIXME: can use fewer temps
-      float XYZ[4] DT_ALIGNED_PIXEL, xyY[4] DT_ALIGNED_PIXEL, Lch[4] DT_ALIGNED_PIXEL, RGB[4] DT_ALIGNED_PIXEL;
+      if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+      {
+        // FIXME: just convert Luv -> JzAzBz and fall through?
+        b[0] = 40.f + intensity * 60.f;
+        const float chroma = max_diam * (0.1 + 0.2 * (1.f - intensity));
+        b[1] = chroma * b[1] / hypot;
+        b[2] = chroma * b[2] / hypot;
+        float xyY[4] DT_ALIGNED_PIXEL;
+        dt_Luv_to_xyY(b, xyY);
+        // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
+        dt_xyY_to_XYZ(xyY, XYZ_D50);
+      }
+      else if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ)
+      {
+        b[0] = intensity * 0.02f;
+        const float chroma = max_diam * (0.2 + 0.4 * (1.f - intensity));
+        b[1] = chroma * b[1] / hypot;
+        b[2] = chroma * b[2] / hypot;
+        // FIXME: can optimize the XYZ_D65 -> RGB conversion by pre-multiplying matrix?
+        float XYZ_D65[4] DT_ALIGNED_PIXEL;
+        dt_JzAzBz_2_XYZ(b, XYZ_D65);
+        dt_XYZ_D65_2_XYZ_D50(XYZ_D65, XYZ_D50);
+      }
+      else
+      {
+        dt_unreachable_codepath();
+      }
+      // FIXME: a custom matrix could do this flip and write directly to pixel buffer
+      dt_XYZ_to_Rec709_D50(XYZ_D50, RGB);
       // FIXME: can do all this work in XYZ? or uvY? (dt_uvY_to_xyY...)
       // FIXME: can do this work in XYZ -> Lab -> LCH -> Lab -- faster?
       // FIXME: just calculate from out_x/out_y rather than storing? then binned can be back to 1d and have int counters
-      dt_XYZ_to_xyY(b, xyY);
-      dt_xyY_to_Lch(xyY, Lch);
-      Lch[0] = 20.f + intensity * 70.f;
-      // what are the min/max chroma values?
+      // FIXME:what are the min/max chroma values?
       // FIXME: do we want to do this work in Lch space, where different hues have different max chromas, or in RGB?
-      Lch[1] = 50.f + (1.f - intensity) * 50.f;
-      dt_Lch_to_xyY(Lch, xyY);
-      dt_xyY_to_XYZ(xyY, XYZ);
-      dt_XYZ_to_Rec709_D50(XYZ, RGB);
       // FIXME: instead of doing this pre-colorspace, do a quick hack of XYZ -> xyY, scale the Y, then -> XYZ -> Rec709_D50 -- or if that is fishy because they're tied to stimulus and not response, do the quickest possible conversion (to Luv/Lch?) and scale in that space
       // BGR/RGB flip is for pixelpipe vs. Cairo color?
       // FIXME: but don't want to flip earlier when binning?
@@ -488,7 +508,6 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
   dt_free_align(binned);
   dt_free_align(chromaticity);
-  dt_free_align(XYZ_D50);
 }
 
 static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *const input,
