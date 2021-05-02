@@ -335,15 +335,14 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // FIXME: particularly for u*v*, center on hue ring bounds rather than plot center, to be able to show a larger plot?
   const float max_diam = d->vectorscope_radius * 2.f;
 
-  const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
   int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
   int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
   size_t pt_sample_x = SIZE_MAX, pt_sample_y = SIZE_MAX;
   if(sample_width == 1 && sample_height == 1)
   {
     // point sample still calculates graph based on whole image
-    pt_sample_x = roi->crop_x;
-    pt_sample_y = roi->crop_y;
+    pt_sample_x = roi->crop_x - (roi->crop_x % 2);
+    pt_sample_y = roi->crop_y - (roi->crop_y % 2);
     sample_width = roi->width;
     sample_height = roi->height;
     roi->crop_x = roi->crop_y = 0;
@@ -361,23 +360,35 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // FIXME: pre-allocate? -- use the same buffer as for waveform?
   dt_atomic_int *const restrict binned = __builtin_assume_aligned(dt_alloc_align(64, sizeof(int) * diam_px * diam_px), 64);
   memset(binned, 0, sizeof(int) * diam_px * diam_px);
-  // FIXME: for speed, downsample 2x2 -> 1x1 here, which still should produce enough chromaticity data -- Question: AVERAGE(RGBx4) -> chromaticity, or AVERAGE((RGB -> chromaticity)x4)?
   // FIXME: move verbosed interleaved comments into a method note at the start, as the code itself is succinct and clear
   // FIXME: even with getting rid of the extra profile conversion hop there's no noticeable speedup -- maybe this loop is memory bound -- if can get rid of one of the output buffers and still no speedup, consider doing more work in this loop, such as atomic binning
   float bounds_x = 0.f, bounds_y = 0.f;
+  // FIXME: average neighboring pixels on x but not y -- may be enough of an optimization
+  const int sample_max_x = sample_width - (sample_width % 2);
+  const int sample_max_y = sample_height - (sample_height % 2);
+  // FIXME: if decimate/downsample, should blur before this
+  // FIXME: instead of scaling, if chromaticity really depends only on XY, then make a lookup on startup of for each grid cell on graph output the minimum XY to populate that cell, then either brute-force scan that LUT, or start from position of last pixel and scan, or do an optimized search (1/2, 1/2, 1/2, etc.) -- would also find point sample pixel this way
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, binned, sample_width, sample_height, roi, pt_sample_x, pt_sample_y, d, diam_px, max_diam, input_profile, vs_type) \
+  dt_omp_firstprivate(input, binned, sample_max_x, sample_max_y, roi, pt_sample_x, pt_sample_y, d, diam_px, max_diam, input_profile, vs_type) \
   reduction(max : bounds_x, bounds_y) \
   schedule(static) collapse(2)
 #endif
-  for(size_t y=0; y<sample_height; y++)
-    for(size_t x=0; x<sample_width; x++)
+  for(size_t y=0; y<sample_max_y; y+=2)
+    for(size_t x=0; x<sample_max_x; x+=2)
     {
-      float XYZ_D50[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
+      float RGB[4] DT_ALIGNED_PIXEL = {0.f}, XYZ_D50[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
+      // FIXME: for speed, downsample 2x2 -> 1x1 here, which still should produce enough chromaticity data -- Question: AVERAGE(RGBx4) -> chromaticity, or AVERAGE((RGB -> chromaticity)x4)?
+      // FIXME: could compromise and downsample to 2x1 -- may also be a bit faster than skipping rows
+      const float *const restrict px = DT_IS_ALIGNED((const float *const restrict)input +
+                                                     4U * ((y + roi->crop_y) * roi->width + x + roi->crop_x));
+      for(size_t xx=0; xx<2; xx++)
+        for(size_t yy=0; yy<2; yy++)
+          for_each_channel(ch,aligned(px,RGB:16))
+            RGB[ch] += px[4U * (yy * roi->width + xx) + ch] * 0.25f;
+
       // this goes to the PCS which has standard illuminant D50
-      dt_ioppr_rgb_matrix_to_xyz(in + 4U * ((y + roi->crop_y) * roi->width + x + roi->crop_x),
-                                 XYZ_D50, input_profile->matrix_in, input_profile->lut_in,
+      dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, input_profile->matrix_in, input_profile->lut_in,
                                  input_profile->unbounded_coeffs_in, input_profile->lutsize, input_profile->nonlinearlut);
       // NOTE: see for comparison/reference rgb_to_JzCzhz() in color_picker.c
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
@@ -402,6 +413,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
       }
 
+      // FIXME: we ignore the L or Jz components -- do they optimize out of the above code, or would in particular a XYZ_2_AzBz but helpful?
       if(x == pt_sample_x && y == pt_sample_y)
       {
         d->vectorscope_pt[0] = chromaticity[1];
@@ -427,7 +439,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   const int out_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
   uint8_t *const graph = d->vectorscope_graph;
 
-  const float gain = 1.f / 300.f;
+  // FIXME: should count the max bin size, and vary the scale such that it is always 1?
+  const float gain = 1.f / 75.f;
   const float scale = gain * (diam_px * diam_px) / (sample_width * sample_height);
 
   // loop appears to be too small to benefit w/OpenMP
@@ -451,6 +464,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       float XYZ_D50[4] DT_ALIGNED_PIXEL, RGB[4] DT_ALIGNED_PIXEL;
       const float hypot = hypotf(b[1], b[2]);
 
+      // FIXME: look into alternative ways to render this. From Sobotka: "Makes me wonder if full emission mixtures using the GL alpha transparency adding might help for visibility? I’d expect maximum volume of values add to display referred maximum white, while lower density volume of values are more visible and loosely representative of the mixture?"
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
         // FIXME: just convert Luv -> JzAzBz and fall through?
