@@ -4273,7 +4273,7 @@ msgstr "Kamera"
 
 #: ../src/common/collection.c:681 ../src/libs/export_metadata.c:184
 msgid "tag"
-msgstr "Tag"
+msgstr "Tagging"
 
 #: ../src/common/collection.c:682
 msgid "date taken"
