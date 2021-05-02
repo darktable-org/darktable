@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-04-30 08:14+0200\n"
-"PO-Revision-Date: 2021-05-01 14:30+0200\n"
+"PO-Revision-Date: 2021-05-02 12:54+0200\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -342,7 +342,7 @@ msgstr "Schema der erweiterten Bildinfos in Vorschaubildern"
 
 #: ../build/bin/preferences_gen.h:3988 ../build/bin/preferences_gen.h:4031
 msgid "see manual to know all the tags you can use."
-msgstr "Siehe Handbuch, um mehr über Stichwörter zu erfahren."
+msgstr "Siehe Handbuch, um mehr über die Platzhalter zu erfahren."
 
 #: ../build/bin/preferences_gen.h:4010
 msgid "pattern for the thumbnail tooltip (empty to disable)"
@@ -434,7 +434,7 @@ msgstr "Beschriftung der Bildinformationszeile"
 
 #: ../build/bin/preferences_gen.h:4248
 msgid "see manual for a list of the tags you can use."
-msgstr "Siehe Handbuch, um mehr über hier verwendbare Stichwörter zu erfahren."
+msgstr "Siehe Handbuch, um mehr über hier verwendbare Platzhalter zu erfahren."
 
 #: ../build/bin/preferences_gen.h:4270
 msgid "position of the image information line"
@@ -1113,7 +1113,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5992
 msgid "ask before deleting a tag"
-msgstr "fragen, bevor ein Schlagwort gelöscht wird"
+msgstr "fragen, bevor ein Tag gelöscht wird"
 
 #: ../build/bin/preferences_gen.h:6027
 msgid "ask before deleting a style"
@@ -1453,7 +1453,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6845
 msgid "store xmp tags in compressed format"
-msgstr "XMP-Stichwörter komprimiert speichern"
+msgstr "XMP-Tags komprimiert speichern"
 
 #: ../build/bin/preferences_gen.h:6866 ../build/bin/preferences_gen.h:6885
 #: ../build/bin/conf_gen.h:378
@@ -1565,11 +1565,11 @@ msgstr ""
 #: ../src/gui/import_metadata.c:470 ../src/libs/export_metadata.c:310
 #: ../src/libs/image.c:552 ../src/libs/metadata_view.c:167
 msgid "tags"
-msgstr "Stichwörter"
+msgstr "Tags"
 
 #: ../build/bin/preferences_gen.h:7156
 msgid "omit hierarchy in simple tag lists"
-msgstr "Hierarchie in einfacher Schlagwort-Liste auslassen"
+msgstr "Hierarchie in einfacher Tag-Liste auslassen"
 
 #: ../build/bin/preferences_gen.h:7170
 msgid ""
@@ -1578,11 +1578,12 @@ msgid ""
 "this option is checked darktable will only include their last part and "
 "ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
-"Beim Export von Bildern werden die hierarchischen Stichwörter auch in einer "
+"Beim Export von Bildern werden die hierarchischen Tags auch in einer "
 "einfachen flachen Liste gespeichert, um die Kompatibilität mit einigen "
 "anderen Programmen zu verbessern. \n"
-"Wenn diese Option ausgewählt ist, wird nur der letzte Stichwortteil genommen "
-"und der Rest ignoriert. Von 'foo|bar|baz' wird also nur 'baz' eingefügt."
+"Wenn diese Option ausgewählt ist, wird nur das Tag der letzten Ebene "
+"genommen und der Rest ignoriert. Von 'foo|bar|baz' wird also nur 'baz' "
+"eingefügt."
 
 #: ../build/bin/preferences_gen.h:7192
 msgid "disable the entry completion"
@@ -1594,8 +1595,8 @@ msgid ""
 "for others the entry completion can be embarrassing. need to restart "
 "darktable."
 msgstr ""
-"Die Eingabevervollständigung ist hilfreich, wenn Stichwörter nur über die "
-"Tastatur eingegeben werden. \n"
+"Die Eingabevervollständigung ist hilfreich, wenn Tags nur über die Tastatur "
+"eingegeben werden. \n"
 "Für andere Methoden kann die Eingabevervollständigung hinderlich sein. Bei "
 "Änderung Neustart erforderlich."
 
@@ -1757,17 +1758,16 @@ msgstr "Namensformat für Dateien beim Importieren"
 
 #: ../build/bin/preferences_gen.h:7760
 msgid "do not set the 'uncategorized' entry for tags"
-msgstr "nicht 'Sonstige' als Schlagwort verwenden"
+msgstr "nicht 'Sonstige' als Tag verwenden"
 
 #: ../build/bin/preferences_gen.h:7774
 msgid ""
 "do not set the 'uncategorized' entry for tags which do not have children"
-msgstr ""
-"nicht 'Sonstige' als Schlagwort verwenden, wenn es keine Detailierung gibt"
+msgstr "nicht 'Sonstige' als Tag verwenden, wenn es keine Detaillierung gibt"
 
 #: ../build/bin/preferences_gen.h:7796
 msgid "tags case sensitivity"
-msgstr "Groß- und Kleinschreibung für Schlagworte"
+msgstr "Groß- und Kleinschreibung für Tags"
 
 #: ../build/bin/preferences_gen.h:7807 ../build/bin/conf_gen.h:404
 msgctxt "preferences"
@@ -1785,7 +1785,7 @@ msgid ""
 "tags case sensitivity. without the Sqlite ICU extension, insensivity works "
 "only for the 26 latin letters"
 msgstr ""
-"Groß- und Kleinschreibung für Schlagworte. Ohne die Sqlite ICU Erweiterung "
+"Groß- und Kleinschreibung für Tags. Ohne die Sqlite ICU Erweiterung "
 "funktioniert die Nichtbeachtung der Groß/Kleinschreibung nur für die 26 "
 "lateinischen Buchstaben"
 
@@ -1898,12 +1898,11 @@ msgstr "Rechte, die beim Import hinzugefügt werden sollen"
 
 #: ../build/bin/conf_gen.h:773
 msgid "comma separated tags to be applied when importing"
-msgstr ""
-"Komma-separierte Stichwörter, die beim Import hinzugefügt werden sollen"
+msgstr "Komma-separierte Tags, die beim Import hinzugefügt werden sollen"
 
 #: ../build/bin/conf_gen.h:779
 msgid "import tags from xmp"
-msgstr "Schlagworte aus XMP-Datei importieren"
+msgstr "Tags aus XMP-Datei importieren"
 
 #: ../build/bin/conf_gen.h:805
 msgid "initial rating"
@@ -4274,7 +4273,7 @@ msgstr "Kamera"
 
 #: ../src/common/collection.c:681 ../src/libs/export_metadata.c:184
 msgid "tag"
-msgstr "Schlagwort"
+msgstr "Tagging"
 
 #: ../src/common/collection.c:682
 msgid "date taken"
@@ -8097,13 +8096,11 @@ msgstr "$(OPENCL_ACTIVATED) – falls OpenCL aktiviert ist"
 
 #: ../src/gui/gtkentry.c:229
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
-msgstr ""
-"$(CATEGORY0(category)) – Schlagwort der Ebene 0 in hierarchischer "
-"Verschlagwortung"
+msgstr "$(CATEGORY0(category)) – Tag der Ebene 0 in hierarchischem Tagging"
 
 #: ../src/gui/gtkentry.c:230
 msgid "$(TAGS) - tags as set in metadata settings"
-msgstr "$(TAGS) – Schlagworte gemäß den Metadateneinstellungen"
+msgstr "$(TAGS) – Tags gemäß den Metadateneinstellungen"
 
 #: ../src/gui/guides.c:108
 msgid "horizontal lines"
@@ -8259,11 +8256,11 @@ msgstr ""
 #. tags
 #: ../src/gui/import_metadata.c:463
 msgid "tag presets"
-msgstr "Verschlagwortung Voreinstellungen"
+msgstr "Tag Voreinst."
 
 #: ../src/gui/import_metadata.c:477
 msgid "comma separated list of tags"
-msgstr "Liste komma-separierter Schlagworte"
+msgstr "Liste komma-separierter Tags"
 
 #. language
 #: ../src/gui/preferences.c:319
@@ -16868,10 +16865,10 @@ msgid_plural ""
 "see tag: darktable|problem|history-compress."
 msgstr[0] ""
 "Keine Verlauf-Kompression bei einem Bild,\n"
-"siehe Schlagwort: darktable|problem|history-compress."
+"siehe Tag: darktable|problem|history-compress."
 msgstr[1] ""
 "Keine Verlauf-Kompression bei %d Bildern,\n"
-"siehe Schlagwort: darktable|problem|history-compress."
+"siehe Tag: darktable|problem|history-compress."
 
 #: ../src/libs/copy_history.c:217
 msgid "history compression warning"
@@ -16965,7 +16962,7 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:416
 msgid "write history stack and tags to XMP sidecar files"
-msgstr "Verlaufsstapel und Schlagworte in XMP-Begleitdatei schreiben"
+msgstr "Verlaufsstapel und Tags in XMP-Begleitdatei schreiben"
 
 #: ../src/libs/copy_history.c:453
 msgctxt "accel"
@@ -17236,7 +17233,7 @@ msgstr "exportieren"
 
 #: ../src/libs/export_metadata.c:159
 msgid "select tag"
-msgstr "Schlagwort auswählen"
+msgstr "Tag auswählen"
 
 #: ../src/libs/export_metadata.c:160
 msgid "add"
@@ -17251,8 +17248,8 @@ msgid ""
 "list of available tags. click 'add' button or double-click on tag to add the "
 "selected one"
 msgstr ""
-"Liste der verfügbaren Schlagworte. Ein Klick auf die Schaltfläche "
-"\"Hinzufügen\" oder Doppelklick auf das Schlagwort, fügt dieses hinzu"
+"Liste der verfügbaren Tags. Ein Klick auf die Schaltfläche \"Hinzufügen\" "
+"oder Doppelklick auf das Tag, fügt dieses hinzu"
 
 #: ../src/libs/export_metadata.c:187
 msgid "type"
@@ -17307,15 +17304,15 @@ msgstr "Geo-Tags exportieren"
 
 #: ../src/libs/export_metadata.c:311
 msgid "export tags (to Xmp.dc.Subject)"
-msgstr "Schlagworte exportieren (nach Xmp.dc.Subject)"
+msgstr "Tags exportieren (nach Xmp.dc.Subject)"
 
 #: ../src/libs/export_metadata.c:318
 msgid "private tags"
-msgstr "private Schlagworte"
+msgstr "private Tags"
 
 #: ../src/libs/export_metadata.c:319
 msgid "export private tags"
-msgstr "private Schlagworte exportieren"
+msgstr "private Tags exportieren"
 
 #: ../src/libs/export_metadata.c:321
 msgid "synonyms"
@@ -17323,7 +17320,7 @@ msgstr "Synonym"
 
 #: ../src/libs/export_metadata.c:322
 msgid "export tags synonyms"
-msgstr "Schlagwort Synonym exportieren"
+msgstr "Tag Synonym exportieren"
 
 #: ../src/libs/export_metadata.c:324
 msgid "omit hierarchy"
@@ -17334,17 +17331,16 @@ msgid ""
 "only the last part of the hierarchical tags is included. can be useful if "
 "categories are not used"
 msgstr ""
-"Nur der letzte Teil der hierarchischen Verschlagwortung ist enthalten. Dies "
-"kann sinnvoll sein, wenn Kategorien nicht verwendet werden."
+"Nur der letzte Teil des hierarchischen Tagging ist enthalten. Dies kann "
+"sinnvoll sein, wenn Kategorien nicht verwendet werden."
 
 #: ../src/libs/export_metadata.c:328
 msgid "hierarchical tags"
-msgstr "hierarchische Stichwörter"
+msgstr "hierarchische Tags"
 
 #: ../src/libs/export_metadata.c:329
 msgid "export hierarchical tags (to Xmp.lr.Hierarchical Subject)"
-msgstr ""
-"Hierarchische Stichwörter exportieren (nach Xmp.lr.Hierarchical Subject)"
+msgstr "Hierarchische Tags exportieren (nach Xmp.lr.Hierarchical Subject)"
 
 #: ../src/libs/export_metadata.c:331
 msgid "develop history"
@@ -17364,11 +17360,11 @@ msgstr "Konfiguration der einzelnen Metadaten"
 
 #: ../src/libs/export_metadata.c:350
 msgid "list of available tags"
-msgstr "Liste der verfügbaren Schlagworte"
+msgstr "Liste der verfügbaren Tags"
 
 #: ../src/libs/export_metadata.c:353
 msgid "redefined tag"
-msgstr "neu definiertes Schlagwort"
+msgstr "neu definiertes Tag"
 
 #: ../src/libs/export_metadata.c:358
 msgid "formula"
@@ -17396,11 +17392,11 @@ msgstr ""
 
 #: ../src/libs/export_metadata.c:418
 msgid "add an output metadata tag"
-msgstr "Hinzufügen eines Ausgabe Metadaten Schlagworts"
+msgstr "Hinzufügen eines Ausgabe Metadaten Tags"
 
 #: ../src/libs/export_metadata.c:423
 msgid "delete metadata tag"
-msgstr "Metadaten Schlagwort löschen"
+msgstr "Metadaten Tag löschen"
 
 #: ../src/libs/geotagging.c:374
 msgid "apply offset and geo-location"
@@ -17908,7 +17904,7 @@ msgstr "Farbmetadaten auswählen"
 
 #: ../src/libs/image.c:554
 msgid "select tags metadata"
-msgstr "Schlagwort Metadaten auswählen"
+msgstr "Tag Metadaten auswählen"
 
 #: ../src/libs/image.c:562
 msgid "select geo tags metadata"
@@ -19027,7 +19023,7 @@ msgstr "Modul suchen"
 
 #: ../src/libs/modulegroups.c:2770
 msgid "search modules by name or tag"
-msgstr "Modul nach Namen oder Markierung suchen"
+msgstr "Modul nach Namen oder Stichwort suchen"
 
 #: ../src/libs/modulegroups.c:2778
 msgid "clear text"
@@ -19621,7 +19617,7 @@ msgstr "in Liste ausgewählte Stile auf ausgewählte Bilder anwenden"
 
 #: ../src/libs/tagging.c:103
 msgid "tagging"
-msgstr "Verschlagwortung"
+msgstr "Verschlagwortung - Tagging"
 
 #: ../src/libs/tagging.c:128
 msgctxt "accel"
@@ -19641,24 +19637,24 @@ msgstr "neu"
 #: ../src/libs/tagging.c:131
 msgctxt "accel"
 msgid "tag"
-msgstr "Schlagwort vergeben"
+msgstr "Tag vergeben"
 
 #: ../src/libs/tagging.c:132
 msgctxt "accel"
 msgid "redo last tag"
-msgstr "letztes Schlagwort erneut vergeben"
+msgstr "letztes Tag erneut vergeben"
 
 #: ../src/libs/tagging.c:1200
 msgid "attach tag to all"
-msgstr "Schlagwort an alle anhängen"
+msgstr "Tag an alle anhängen"
 
 #: ../src/libs/tagging.c:1208 ../src/libs/tagging.c:2095
 msgid "detach tag"
-msgstr "Schlagwort entfernen"
+msgstr "Tag entfernen"
 
 #: ../src/libs/tagging.c:1358
 msgid "delete tag?"
-msgstr "Schlagwort löschen?"
+msgstr "Tag löschen?"
 
 #: ../src/libs/tagging.c:1365 ../src/libs/tagging.c:1453
 #: ../src/libs/tagging.c:1659 ../src/libs/tagging.c:1933
@@ -19676,16 +19672,16 @@ msgid_plural ""
 "do you really want to delete the tag `%s'?\n"
 "%d images are assigned this tag!"
 msgstr[0] ""
-"Soll das Schlagwort „%s“ wirklich gelöscht werden?\n"
-"%d Bild ist dieses Schlagwort zugewiesen."
+"Soll das Tag „%s“ wirklich gelöscht werden?\n"
+"%d Bild ist dieses Tag zugewiesen."
 msgstr[1] ""
-"Soll das Schlagwort „%s“ wirklich gelöscht werden?\n"
-"%d Bildern ist dieses Schlagwort zugewiesen."
+"Soll das Tag „%s“ wirklich gelöscht werden?\n"
+"%d Bildern ist dieses Tag zugewiesen."
 
 #: ../src/libs/tagging.c:1406
 #, c-format
 msgid "tag %s removed"
-msgstr "Schlagwort „%s” entfernt"
+msgstr "Tag „%s” entfernt"
 
 #: ../src/libs/tagging.c:1446
 msgid "delete node?"
@@ -19695,8 +19691,8 @@ msgstr "Oberbegriff löschen?"
 #, c-format
 msgid "<u>%d</u> tag will be deleted."
 msgid_plural "<u>%d</u> tags will be deleted."
-msgstr[0] "<u>%d</u> Schlagwort wird gelöscht."
-msgstr[1] "<u>%d</u> Schlagworte werden gelöscht."
+msgstr[0] "<u>%d</u> Tag wird gelöscht."
+msgstr[1] "<u>%d</u> Tags werden gelöscht."
 
 #: ../src/libs/tagging.c:1465 ../src/libs/tagging.c:1671
 #: ../src/libs/tagging.c:1945
@@ -19709,11 +19705,11 @@ msgstr[1] "<u>%d</u> Bilder werden aktualisiert"
 #: ../src/libs/tagging.c:1491
 #, c-format
 msgid "%d tags removed"
-msgstr "%d Schlagworte entfernt"
+msgstr "%d Tags entfernt"
 
 #: ../src/libs/tagging.c:1527
 msgid "create tag"
-msgstr "Schlagwort erstellen"
+msgstr "Tag erstellen"
 
 #: ../src/libs/tagging.c:1537 ../src/libs/tagging.c:1679
 msgid "name: "
@@ -19735,11 +19731,11 @@ msgstr "Synonyme: "
 #: ../src/libs/tagging.c:1581 ../src/libs/tagging.c:1725
 #: ../src/libs/tagging.c:1967
 msgid "empty tag is not allowed, aborting"
-msgstr "Leeres Schlagwort ist nicht erlaubt. Abbruch"
+msgstr "Leeres Tag ist nicht erlaubt. Abbruch"
 
 #: ../src/libs/tagging.c:1592
 msgid "tag name already exists. aborting."
-msgstr "Schlagwort existiert bereits. Abbruch."
+msgstr "Tag existiert bereits. Abbruch."
 
 #: ../src/libs/tagging.c:1652
 msgid "edit"
@@ -19749,27 +19745,26 @@ msgstr "bearbeiten"
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
-msgstr[0] "<u>%d</u> Schlagwort wird aktualisiert."
-msgstr[1] "<u>%d</u> Schlagworte werden aktualisiert."
+msgstr[0] "<u>%d</u> Tag wird aktualisiert."
+msgstr[1] "<u>%d</u> Tags werden aktualisiert."
 
 #: ../src/libs/tagging.c:1727
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierarchy use rename path instead. Aborting."
 msgstr ""
-"'|' Zeichen ist für die Umbenennung von Stichwörtern nicht erlaubt.\n"
+"'|' Zeichen ist für die Umbenennung von Tags nicht erlaubt.\n"
 "Um die Hierarchie zu ändern, verwenden stattdessen Pfad Umbenennen. Abbruch."
 
 #: ../src/libs/tagging.c:1766
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
-msgstr ""
-"Mindestens ein neues Schlagwort (%s) existiert bereits, Abbruch des Vorgangs"
+msgstr "Mindestens ein neues Tag (%s) existiert bereits, Abbruch des Vorgangs"
 
 #: ../src/libs/tagging.c:1873
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
-msgstr "Mindestens ein neues Schlagwort (%s) existiert bereits. Abbruch."
+msgstr "Mindestens ein neues Tag (%s) existiert bereits. Abbruch."
 
 #: ../src/libs/tagging.c:1926
 msgid "change path"
@@ -19777,24 +19772,24 @@ msgstr "ändere Hierarchie …"
 
 #: ../src/libs/tagging.c:1969
 msgid "'|' misplaced, empty tag is not allowed, aborting"
-msgstr "'|' falsch platziert, leeres Schlagwort ist nicht erlaubt, Abbruch"
+msgstr "'|' falsch platziert, leeres Tag ist nicht erlaubt, Abbruch"
 
 #: ../src/libs/tagging.c:2066
 #, c-format
 msgid "tag %s created"
-msgstr "Schlagwort „%s” angelegt"
+msgstr "Tag „%s” angelegt"
 
 #: ../src/libs/tagging.c:2091
 msgid "attach tag"
-msgstr "Schlagwort anhängen"
+msgstr "Tag anhängen"
 
 #: ../src/libs/tagging.c:2104
 msgid "create tag..."
-msgstr "Schlagwort erstellen…"
+msgstr "Tag erstellen…"
 
 #: ../src/libs/tagging.c:2110
 msgid "delete tag"
-msgstr "Schlagwort löschen"
+msgstr "Tag löschen"
 
 #: ../src/libs/tagging.c:2117
 msgid "delete node"
@@ -19806,7 +19801,7 @@ msgstr "ändere Hierarchie …"
 
 #: ../src/libs/tagging.c:2140
 msgid "set as a tag"
-msgstr "als Schlagwort verwenden"
+msgstr "als Tag verwenden"
 
 #: ../src/libs/tagging.c:2148
 msgid "copy to entry"
@@ -19814,7 +19809,7 @@ msgstr "Kopieren in den Eintrag"
 
 #: ../src/libs/tagging.c:2165
 msgid "go to tag collection"
-msgstr "gehe zur Schlagwort Sammlung"
+msgstr "gehe zur Tag Sammlung"
 
 #: ../src/libs/tagging.c:2171
 msgid "go back to work"
@@ -19829,9 +19824,10 @@ msgstr "%s"
 msgid "(private)"
 msgstr "(privat)"
 
+# bezieht sich auf eine Lightroom Stichwortdatei
 #: ../src/libs/tagging.c:2297
 msgid "Select a keyword file"
-msgstr "Schlagwortdatei auswählen"
+msgstr "Stichwortdatei auswählen"
 
 #: ../src/libs/tagging.c:2300
 msgid "_import"
@@ -19839,12 +19835,12 @@ msgstr "_importieren"
 
 #: ../src/libs/tagging.c:2314
 msgid "error importing tags"
-msgstr "Fehler beim Importieren der Stichwörter"
+msgstr "Fehler beim Importieren der Schlagwörter"
 
 #: ../src/libs/tagging.c:2316
 #, c-format
 msgid "%zd tags imported"
-msgstr "%zd Stichwörter importiert"
+msgstr "%zd Tags importiert"
 
 #: ../src/libs/tagging.c:2338
 msgid "Select file to export to"
@@ -19854,14 +19850,15 @@ msgstr "Datei zum exportieren wählen"
 msgid "_export"
 msgstr "_exportieren"
 
+# bezieht sich auf Stichwort Dateien.
 #: ../src/libs/tagging.c:2356
 msgid "error exporting tags"
-msgstr "Fehler beim Exportieren der Stichwörter"
+msgstr "Fehler beim Exportieren der Tags"
 
 #: ../src/libs/tagging.c:2358
 #, c-format
 msgid "%zd tags exported"
-msgstr "%zd Stichwörter exportiert"
+msgstr "%zd Tags exportiert"
 
 #: ../src/libs/tagging.c:2805
 msgid "drop to root"
@@ -19874,9 +19871,9 @@ msgid ""
 "right-click for other actions on attached tag,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
-"angefügte Schlagworte,\n"
+"angefügte Tags,\n"
 "Doppelklick zum Entfernen\n"
-"Rechtsklick für andere Aktionen des ausgewählten Schlagworts,\n"
+"Rechtsklick für andere Aktionen des ausgewählten Tags,\n"
 "Strg-Mausrad, um die Größe des Fensters zu ändern"
 
 #: ../src/libs/tagging.c:2947
@@ -19885,7 +19882,7 @@ msgstr "anhängen"
 
 #: ../src/libs/tagging.c:2947
 msgid "attach tag to all selected images"
-msgstr "Schlagwort an alle ausgewählten Bilder anhängen"
+msgstr "Tag an alle ausgewählten Bilder anhängen"
 
 #: ../src/libs/tagging.c:2951
 msgid "detach"
@@ -19893,7 +19890,7 @@ msgstr "entfernen"
 
 #: ../src/libs/tagging.c:2951
 msgid "detach tag from all selected images"
-msgstr "Schlagwort von allen ausgewählten Bildern entfernen"
+msgstr "Tag von allen ausgewählten Bildern entfernen"
 
 #: ../src/libs/tagging.c:2957
 msgid "toggle list with / without hierarchy"
@@ -19905,11 +19902,11 @@ msgstr "Zwischen Sortierung nach Name oder Anzahl umschalten"
 
 #: ../src/libs/tagging.c:2975
 msgid "toggle show or not darktable tags"
-msgstr "Anzeige von Stichwörtern aktivieren oder deaktivieren"
+msgstr "Anzeige von darktable Tags aktivieren oder deaktivieren"
 
 #: ../src/libs/tagging.c:2993
 msgid "enter tag name"
-msgstr "Schlagwort eingeben"
+msgstr "Tag eingeben"
 
 #: ../src/libs/tagging.c:3002
 msgid "clear entry"
@@ -19922,9 +19919,9 @@ msgid ""
 "right-click for other actions on selected tag,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
-"Schlagwort Verzeichnis,\n"
+"Tag Verzeichnis,\n"
 "Duppelklick für hinzufügen,\n"
-"Rechtsklick für andere Aktionen des ausgewählten Schlagwort,\n"
+"Rechtsklick für andere Aktionen des ausgewählten Tag,\n"
 "Strg+Mausrad, um die Größe des Fensters zu ändern"
 
 #: ../src/libs/tagging.c:3082
@@ -19932,12 +19929,12 @@ msgid ""
 "create a new tag with the\n"
 "name you entered"
 msgstr ""
-"neues Schlagwort mit dem eingegebenen\n"
+"neues Tag mit dem eingegebenen\n"
 "Namen erstellen"
 
 #: ../src/libs/tagging.c:3086
 msgid "import tags from a Lightroom keyword file"
-msgstr "Schlagworte aus einer Lightroom-Stichwortdatei importieren"
+msgstr "Tags aus einer Lightroom-Stichwortdatei importieren"
 
 #: ../src/libs/tagging.c:3090
 msgctxt "verb"
@@ -19946,7 +19943,7 @@ msgstr "exportieren…"
 
 #: ../src/libs/tagging.c:3090
 msgid "export all tags to a Lightroom keyword file"
-msgstr "alle Schlagworte in eine Lightroom-Stichwortdatei exportieren"
+msgstr "alle Tags in eine Lightroom-Stichwortdatei exportieren"
 
 #: ../src/libs/tagging.c:3096
 msgid "toggle list / tree view"
@@ -19960,8 +19957,8 @@ msgstr "Wechseln zwischen Liste mit / ohne Vorschlag"
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
-"Schlagwort Kurzbefehle in der Baumansicht nicht aktiv. Bitte zur "
-"Listenansicht wechseln."
+"Tag Kurzbefehle in der Baumansicht nicht aktiv. Bitte zur Listenansicht "
+"wechseln."
 
 #: ../src/libs/tools/battery_indicator.c:38
 #: ../src/libs/tools/battery_indicator.c:71
@@ -21511,19 +21508,19 @@ msgstr "Aktion"
 
 #, c-format
 #~ msgid "tag: %s "
-#~ msgstr "Schlagwort: %s "
+#~ msgstr "Tag: %s "
 
 #~ msgid "delete path"
 #~ msgstr "Pfad löschen"
 
 #~ msgid "edit tag"
-#~ msgstr "Schlagwort bearbeiten"
+#~ msgstr "Tag bearbeiten"
 
 #~ msgid "rename path?"
 #~ msgstr "Pfad umbenennen?"
 
 #~ msgid "edit tag..."
-#~ msgstr "Schlagwort bearbeiten…"
+#~ msgstr "Tag bearbeiten…"
 
 #~ msgctxt "blendmode"
 #~ msgid "chroma"
@@ -25260,8 +25257,7 @@ msgstr "Aktion"
 #~ msgstr "ausgewählte Bilder exportieren"
 
 #~ msgid "invert the colors of the image. useful for scanned negatives."
-#~ msgstr ""
-#~ "Invertiere die Farben im Bild. Nützlich für gescannte Negative."
+#~ msgstr "Invertiere die Farben im Bild. Nützlich für gescannte Negative."
 
 #~ msgid "denoising (extra slow)"
 #~ msgstr "entrauschen (besonders langsam)"
