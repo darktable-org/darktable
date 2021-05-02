@@ -401,15 +401,10 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       }
     }
 
-  // FIXME: pre-allocate? -- use the same buffer as for waveform?
-  float *const restrict binned = dt_iop_image_alloc(diam_px, diam_px, 4);
-  // FIXME: really only need to erase the count/scale accumulator
-  dt_iop_image_fill(binned, 0.0f, diam_px, diam_px, 4);
-  // FIXME: faster to have bins just record count and multiply by scale after?
-  // FIXME: do something fancy where 16 bits of out are pixel count, the other two are chromaticity?
-  const float gain = 1.f / 300.f;
-  const float scale = gain * (diam_px * diam_px) / (sample_width * sample_height);
 
+  // FIXME: pre-allocate? -- use the same buffer as for waveform?
+  int *const restrict binned = __builtin_assume_aligned(dt_alloc_align(64, sizeof(int) * diam_px * diam_px), 64);
+  memset(binned, 0, sizeof(int) * diam_px * diam_px);
   // count into bins by chromaticity (processor light, not paralellized so no races)
   // FIXME: do bounds work in RGB -> chromaticity above with a reduction(max : bounds_x, bounds_y)?
   float bounds_x = 0.f, bounds_y = 0.f;
@@ -429,13 +424,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
     // clip any out-of-scale values, so there aren't light edges
     if(out_x >= 0 && out_x <= diam_px-1 && out_y >= 0 && out_y <= diam_px-1)
-    {
-      float *const restrict b = binned + 4U * (out_y * diam_px + out_x);
-      // FIXME: this is a repeat assign on multiple iterations, though may be slightly different each time -- instead calculate the out_x/out_y to chromaticity below? -- or average these -- probably no perceptible difference -- or test if unassigned and then assign?
-      b[0] += scale;
-      b[1] = chromaticity[k+1];
-      b[2] = chromaticity[k+2];
-    }
+      // FIMXE: if use dt_atomic_add_int() and it's not too slow can bring this code back into the chromaticity conversion and make parallel & lose chromaticity buffer
+      binned[out_y * diam_px + out_x]++;
   }
   d->vectorscope_bounds[0] = bounds_x;
   d->vectorscope_bounds[1] = bounds_y;
@@ -448,19 +438,26 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   const int out_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
   uint8_t *const graph = d->vectorscope_graph;
 
+  const float gain = 1.f / 300.f;
+  const float scale = gain * (diam_px * diam_px) / (sample_width * sample_height);
+
   // loop appears to be too small to benefit w/OpenMP
   // FIXME: is this still true?
   for(size_t out_y = 0; out_y < diam_px; out_y++)
-    for(int out_x = 0; out_x < diam_px; out_x++)
+    for(size_t out_x = 0; out_x < diam_px; out_x++)
     {
-      // FIXME: do need (size_t)4U?
-      float *const restrict b = binned + 4U * (out_y * diam_px + out_x);
       uint8_t *const restrict px = graph + out_y * out_stride + out_x * 4U;
-      if(b[0] == 0.f)
+      const int count = binned[out_y * diam_px + out_x];
+      if(!count)
       {
         px[0] = px[1] = px[2] = 0;
         continue;
       }
+
+      float b[4] DT_ALIGNED_PIXEL = {scale * count,
+        max_diam * (((float)out_x / diam_px) - 0.5f),
+        max_diam * (((float)out_y / diam_px) - 0.5f)};
+
       const float intensity = lut[(int)(MIN(1.f, b[0]) * lutmax)];
       float XYZ_D50[4] DT_ALIGNED_PIXEL, RGB[4] DT_ALIGNED_PIXEL;
       const float hypot = hypotf(b[1], b[2]);
