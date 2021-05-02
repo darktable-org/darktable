@@ -123,6 +123,7 @@ dt_help_url urls_db[] =
   {"colorreconstruct",           "module-reference/processing-modules/color-reconstruction/"},
   {"colortransfer",              NULL}, // deprecate
   {"colorzones",                 "module-reference/processing-modules/color-zones/"},
+  {"crop",                       "module-reference/processing-modules/crop/"},
   {"defringe",                   "module-reference/processing-modules/defringe/"},
   {"demosaic",                   "module-reference/processing-modules/demosaic/"},
   {"denoiseprofile",             "module-reference/processing-modules/denoise-profiled/"},
