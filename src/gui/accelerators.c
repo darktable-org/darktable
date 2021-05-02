@@ -260,7 +260,7 @@ static const dt_action_def_t *_action_find_definition(dt_action_t *action)
 
   dt_action_type_t type = action->type != DT_ACTION_TYPE_FALLBACK
                         ? action->type : GPOINTER_TO_INT(action->target);
-  const int index = type - DT_ACTION_TYPE_WIDGET;
+  const int index = type - DT_ACTION_TYPE_WIDGET - 1;
 
   if(index >= 0 && index < darktable.control->widget_definitions->len)
     return darktable.control->widget_definitions->pdata[index];
@@ -2736,10 +2736,12 @@ dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gc
 
       guint index = 0;
       if(g_ptr_array_find(darktable.control->widget_definitions, action_def, &index))
-        ac->type = DT_ACTION_TYPE_WIDGET + index;
+        ac->type = DT_ACTION_TYPE_WIDGET + index + 1;
+      else if(!action_def)
+        ac->type = DT_ACTION_TYPE_WIDGET;
       else
       {
-        ac->type = DT_ACTION_TYPE_WIDGET + darktable.control->widget_definitions->len;
+        ac->type = DT_ACTION_TYPE_WIDGET + darktable.control->widget_definitions->len + 1;
         g_ptr_array_add(darktable.control->widget_definitions, (gpointer)action_def);
 
         dt_action_define_fallback(ac->type, action_def);

@@ -945,7 +945,7 @@ void change_image(struct dt_iop_module_t *self)
 
 static float _action_process(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
-  dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "instance");
+  dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
   dt_iop_rgblevels_gui_data_t *c = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)self->params;
 
@@ -1020,7 +1020,7 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
-  g_object_set_data(G_OBJECT(c->area), "instance", self);
+  g_object_set_data(G_OBJECT(c->area), "iop-instance", self);
   dt_action_define_iop(self, NULL, N_("levels"), GTK_WIDGET(c->area), &dt_action_def_levels);
 
   gtk_widget_set_tooltip_text(GTK_WIDGET(c->area),_("drag handles to set black, gray, and white points. "
