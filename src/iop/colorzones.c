@@ -2401,6 +2401,8 @@ void gui_init(struct dt_iop_module_t *self)
   // the nice graph
   const float aspect = dt_conf_get_int("plugins/darkroom/colorzones/aspect_percent") / 100.0;
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
+  g_object_set_data(G_OBJECT(c->area), "iop-instance", self);
+  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(c->area), NULL);
 
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 

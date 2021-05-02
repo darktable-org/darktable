@@ -460,7 +460,7 @@ static void _basics_on_off_callback2(GtkWidget *widget, GdkEventButton *e, dt_li
   }
 }
 
-static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_item_t *item, DtBauhausWidget *bw,
+static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_item_t *item, GtkWidget *w,
                                dt_lib_modulegroups_basic_item_position_t item_pos)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
@@ -534,13 +534,12 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
   else
   {
     // classic widgets (sliders and combobox)
-    if(!bw || !GTK_IS_WIDGET(bw)) return;
-    GtkWidget *w = GTK_WIDGET(bw);
+    if(!w || !GTK_IS_WIDGET(w)) return;
 
     if(GTK_IS_BOX(gtk_widget_get_parent(w)))
     {
       item->widget = w;
-      item->module = bw->module;
+//      item->module = bw->module;
       item->old_parent = gtk_widget_get_parent(item->widget);
       // we retrieve current positions, etc...
       gtk_box_query_child_packing(GTK_BOX(item->old_parent), item->widget, &item->expand, &item->fill,
@@ -550,7 +549,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     else if(GTK_IS_GRID(gtk_widget_get_parent(w)))
     {
       item->widget = w;
-      item->module = bw->module;
+//      item->module = bw->module;
       item->old_parent = gtk_widget_get_parent(item->widget);
 
       gtk_container_child_get(GTK_CONTAINER(item->old_parent), item->widget,
@@ -580,7 +579,11 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     g_object_unref(item->widget);
 
     // change the widget label to integrate section name
-    bw->show_extended_label = TRUE;
+    if(DT_IS_BAUHAUS_WIDGET(w))
+    {
+      DtBauhausWidget *bw = DT_BAUHAUS_WIDGET(w);
+      bw->show_extended_label = TRUE;
+    }
 
     // we put the temporary widget at the place of the real widget in the module
     // this avoid order mismatch when putting back the real widget
@@ -744,32 +747,28 @@ static void _basics_show(dt_lib_module_t *self)
       dt_action_t *ac = module->so->actions.target;
       while(ac)
       {
-        if(ac->type >= DT_ACTION_TYPE_WIDGET && ac->target && DT_IS_BAUHAUS_WIDGET(ac->target))
+        if(ac->type >= DT_ACTION_TYPE_WIDGET && ac->target)
         {
-          DtBauhausWidget *ww = DT_BAUHAUS_WIDGET(ac->target);
-          if(ww->module == module)
-          {
-            gchar *action_id = _action_id(ac);
+          gchar *action_id = _action_id(ac);
 
-            for(const GList *l = d->basics; l; l = g_list_next(l))
+          for(const GList *l = d->basics; l; l = g_list_next(l))
+          {
+            dt_lib_modulegroups_basic_item_t *item = (dt_lib_modulegroups_basic_item_t *)l->data;
+            if(!item->module && g_strcmp0(item->module_op, module->op) == 0
+                && item->widget_type != WIDGET_TYPE_ACTIVATE_BTN)
             {
-              dt_lib_modulegroups_basic_item_t *item = (dt_lib_modulegroups_basic_item_t *)l->data;
-              if(!item->module && g_strcmp0(item->module_op, module->op) == 0
-                 && item->widget_type != WIDGET_TYPE_ACTIVATE_BTN)
+              if(!strcmp(item->id, action_id))
               {
-                if(!strcmp(item->id, action_id))
-                {
-                  item->module = module;
-                  _basics_add_widget(self, item, ww, item_pos);
-                  item_pos = NORMAL;
-                  pos++;
-                  break;
-                }
+                item->module = module;
+                _basics_add_widget(self, item, ac->target, item_pos);
+                item_pos = NORMAL;
+                pos++;
+                break;
               }
             }
-
-            g_free(action_id);
           }
+
+          g_free(action_id);
         }
 
         if(ac->type == DT_ACTION_TYPE_SECTION)
@@ -2451,7 +2450,7 @@ static GtkWidget *_build_menu_from_actions(dt_action_t *actions, dt_lib_module_t
       if(actions->type <= DT_ACTION_TYPE_SECTION)
         new_sub = _build_menu_from_actions(actions->target, self, on_off, base_menu, full_menu, num_selected);
 
-      if(new_sub || (actions->type >= DT_ACTION_TYPE_WIDGET && actions->target && DT_IS_BAUHAUS_WIDGET(actions->target)))
+      if(new_sub || (actions->type >= DT_ACTION_TYPE_WIDGET && actions->target && !GTK_IS_BUTTON(actions->target)))
       {
         item = gtk_menu_item_new_with_label(actions->label);
         action_id = _action_id(actions);
