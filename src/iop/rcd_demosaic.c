@@ -110,8 +110,9 @@ static INLINE float sqrf(float a)
 }
 
 /** This is basically ppg adopted to only write data to RCD_MARGIN */
-static void rcd_ppg_border(float *const out, const float *const in, const int width, const int height, const uint32_t filters)
+static void rcd_ppg_border(float *const out, const float *const in, const int width, const int height, const uint32_t filters, const int margin)
 {
+  const int border = margin + 3;
   // write approximatad 3-pixel border region to out
   float sum[8];
   for(int j = 0; j < height; j++)
@@ -148,7 +149,7 @@ static void rcd_ppg_border(float *const out, const float *const in, const int wi
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(filters, out, width, height) \
+  dt_omp_firstprivate(filters, out, width, height, border) \
   shared(input) \
   schedule(static)
 #endif
@@ -158,9 +159,9 @@ static void rcd_ppg_border(float *const out, const float *const in, const int wi
     const float *buf_in = input + (size_t)width * j + 3;
     for(int i = 3; i < width - 3; i++)
     {
-      if(i == 9 && j >= 9 && j < height - 9)
+      if(i == border && j >= border && j < height - border)
       {
-        i = width - 9;
+        i = width - border;
         buf = out + (size_t)4 * width * j + 4 * i;
         buf_in = input + (size_t)width * j + i;
       }
@@ -217,7 +218,7 @@ static void rcd_ppg_border(float *const out, const float *const in, const int wi
 // for all pixels: interpolate colors into float array
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(filters, out, width, height) \
+  dt_omp_firstprivate(filters, out, width, height, margin) \
   schedule(static)
 #endif
   for(int j = 1; j < height - 1; j++)
@@ -225,9 +226,9 @@ static void rcd_ppg_border(float *const out, const float *const in, const int wi
     float *buf = out + (size_t)4 * width * j + 4;
     for(int i = 1; i < width - 1; i++)
     {
-      if(i == RCD_MARGIN && j >= RCD_MARGIN && j < height - RCD_MARGIN)
+      if(i == margin && j >= margin && j < height - margin)
       {
-        i = width - RCD_MARGIN;
+        i = width - margin;
         buf = out + (size_t)4 * (width * j + i);
       }
       const int c = FC(j, i, filters);
@@ -312,7 +313,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
     return;
   }
 
-  rcd_ppg_border(out, in, width, height, filters);
+  rcd_ppg_border(out, in, width, height, filters, RCD_MARGIN);
 
   const float scaler = fmaxf(piece->pipe->dsc.processed_maximum[0], fmaxf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
   const float revscaler = 1.0f / scaler;
