@@ -86,7 +86,7 @@ const char *description(struct dt_iop_module_t *self)
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
+  return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL | IOP_FLAGS_DEPRECATED;
 }
 
 int flags()
