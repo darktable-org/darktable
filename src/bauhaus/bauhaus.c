@@ -100,6 +100,12 @@ static GdkRGBA * default_color_assign()
   return gdk_rgba_copy(&color);
 }
 
+void dt_bauhaus_widget_set_section(GtkWidget *widget, const gboolean is_section)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  w->is_section = is_section;
+}
+
 static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cairo_t *cr,
                            char *text, float x_pos, float y_pos, float max_width,
                            gboolean right_aligned, gboolean calc_only,
@@ -126,7 +132,10 @@ static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cai
     pango_layout_set_text(layout, NULL, 0);
   }
 
-  PangoFontDescription *font_desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  PangoFontDescription *font_desc =
+    w->is_section
+    ? pango_font_description_copy_static(darktable.bauhaus->pango_sec_font_desc)
+    : pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
 
   // This should be able to update the font style for current text depending on :hover, :focused, etc.
   // CSS pseudo-classes, yet it defaults to system font.
@@ -561,13 +570,23 @@ void dt_bauhaus_load_theme()
 
   PangoFontDescription *pfont = 0;
   gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font", &pfont, NULL);
-  gtk_widget_path_free(path);
 
   // make sure we release previously loaded font
   if(darktable.bauhaus->pango_font_desc)
     pango_font_description_free(darktable.bauhaus->pango_font_desc);
 
   darktable.bauhaus->pango_font_desc = pfont;
+
+  if(darktable.bauhaus->pango_sec_font_desc)
+    pango_font_description_free(darktable.bauhaus->pango_sec_font_desc);
+
+  // now get the font for the section labels
+  gtk_widget_path_iter_set_name(path, pos, "section_label");
+  gtk_style_context_set_path(ctx, path);
+  gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font", &pfont, NULL);
+  darktable.bauhaus->pango_sec_font_desc = pfont;
+
+  gtk_widget_path_free(path);
 
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 128, 128);
   cairo_t *cr = cairo_create(cst);
@@ -1811,7 +1830,8 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       float label_width = width - darktable.bauhaus->quad_width - INNER_PADDING * 2.0 - value_width;
       if(label_width > 0)
-        show_pango_text(w, context, cr, w->label, 0, 0, label_width, FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE);
+        show_pango_text(w, context, cr, w->label, 0, 0, label_width, FALSE, FALSE,
+                        PANGO_ELLIPSIZE_END, FALSE);
 
       cairo_restore(cr);
     }
