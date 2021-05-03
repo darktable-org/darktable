@@ -27,12 +27,296 @@ you are strongly advised to take a backup first.
 
 ## The Big Ones
 
+- Full rework of the import module. The new module allows to see the
+  thumbs and makes it easier to handle multiple import tasks. Also the
+  same dialog is used for importing from disk, card or camera.
+
+  When importing in-place, images already present in darktable are
+  flagged.
+
+  Importing from local disk won't use gphoto and so should work more
+  reliably on Windows.
+
+- A vector scope is added and complements the current histogram,
+  waveform and parade views.
+
+- RCD is a new demosaic method proposed. This is demosaic algorithm
+  replaces PPG as default.
+
+- Add support for dual demosaic, you can choose "RCD + VNG4" and
+  "RCD + AmaZe". And rework the order of the different demosaic methods
+  to be clearer.
+
+- A masking based on the sharpness is proposed in the blending options.
+
+- All masks are pre-visualized and moved with full deformation
+  applied. This makes the edit of masks easier as fully WYSIWYG.
+
+- New module Color Balance RGB is added. This is the one stop module
+  for all the color grading work.
+
+- New module censorize is added. Hide some part of the image by adding
+  blur/pixelization.
+
+- The color calibration module is added a color checker overlay.
+
+- The map module has been enhanced in many ways.
+  - When importing a GPX the trace is displayed.
+
+  - Location can be polygons and directly created from information
+    reported by Open Street Map. As a reminder, all locations are
+    creating automatic tags for images placed into the area.
+
 ## New Features And Changes
 
-- Many optimizations in different part of the code (soften, tone equalizer,
-  circle masks, color picker).
+- The lighttable combo box to access the various layout has been
+  replaced by clear and descriptive icons which are easier to use.
+
+- The export module is now also accessible on the left panel of the
+  darkroom view.
+
+- Rework of the quick access module GUI. Make it more compact and
+  readable.
+
+- The mix control in the contrast equalizer module is now kept as
+  parameter. This means that no data is lost and we can always change
+  the mix later with full precision.
+
+- Some modules have been deprecated:
+  - basicadj is replaced by the new quick access module.
+
+  - vibrance is replaced by the vibrance control of the new color
+    balance rgb module.
+
+- The scene-referred workflow is now the default.
+
+- ESC key can be used to exit the slideshow.
+
+- The key ctrl-click on the manage group preset button can be used to
+  access manage dialog directly.
+
+- Again many GUI aspects have been reworked, tweaked for better user
+  experience (combo-box alignment, padding, histogram icons, etc.).
+
+- Rework all scope views (histogram, parade, waveform) color by using CSS.
+
+- The integrated help system will now point to the new manual which is
+  up-to-date. Also for development build of darktable the links will
+  go to the development version of the manual. So more links have been
+  added like for all lighttable layout and the timeline.
+
+  As a reminder, the new documentation is readable here:
+
+  https://www.darktable.org/usermanual/en/
+
+- Many graphs in development modules can be resized with ctrl+scroll.
+  (Filmic RGB, RGB levels, levels, lowlight, colorzones, rawdenoise,
+  denoise profile, contrast equalizer).
+
+- A new color preservation named "norm-preserving colorfulness" has
+  been added in the color calibration module.
+
+- A simplified and more precise message for database locking recovery
+  is proposed.
+
+- Add rational function to toe/shoulder for Filmic RGB.
+
+- A new preference for advanced users can be used to disable the
+  module warning messages. Use at your own risk.
+
+- Preliminary work toward full support for CR3. The darktable exif
+  support can now ready CR3 files if the proper exiv2 library version
+  is found.
+
+- A new color science with norm preservation under de-saturation is
+  added into Filmic RGB and a new scaled euclidean norm is supported.
+
+- Liquify some changes are made to make it faster when editing
+  nodes. Also smaller deformation stamps are allowed.
+
+- GUI update of the module sections for them to stand out mode.
+
+- It is now possible to handle overlapping masks. For example, it is
+  possible to change the ellipse's control points which are inside a
+  larger circle or path-form.
+
+- The following modules have been deprecated: spot, defringe.
+
+- The preferences, module group and import dialog will remember and
+  restore their size after closing.
+
+- Many optimizations in different part of the code (soften, tone
+  equalizer, circle masks, color picker, color spaces conversion,
+  masks). Also in all code dealing with lists. There is a huge amount
+  of internal optimizations done in this release, almost impossible to
+  list all of them.
+
+- The prompt for overwriting at export time is optional and controlled
+  by a new preference.
+
+- Add mask indicator into the module header. It is possible to see
+  quickly which modules have a mask and to enable/disable the mask
+  display by clicking on it.
+
+- Display a message when a camera is plugged and darktable is not able
+  to connect to it. The general cause is that the camera is mounted by
+  the OS and so exclusively locked.
+
+- Make the darkroom loading screen optional.
+
+- The RAW chromatic aberration module has been enhanced to support
+  multiple iterations and an option to help avoid color shifting has
+  been added (not activated by default).
+
+- Allow auto-apply of module groups presets. This make it possible to
+  create groups to specifically develop color, monochrome, RAW or Jpeg
+  for example.
+
+- Add a preference for warp interpolation algorithm which may be
+  different to the one used for scaling.
+
+- Use RGB scene blending mode for the denoise profile presets.
+
+- Improve handling of parametric masks when reseting them. It may need
+  to be inverted to be considered as a no operation.
+
+- Minor rework the GUI blending section to be more compact.
+
+- Skip computing distortion for stamps that are outside the current
+  view.
+
+- Better values reported on toast messages when changing masks' size
+  and feather.
+
+- Enhance the undo to support duplicates. That is, the creation of a
+  duplicate can be undone by using the ctrl+z (undo) key.
+
+- Easier handling of the masks control. Do not require high precision
+  as the collision detection with the mouse has been reworked).
+
+- Filter out non-matrix based profiles from the histogram profile
+  menu.
+
+- Many speed improvements for the standard CPU code path by tuning the
+  OpenMP code. There is some huge gain with the new code in some
+  modules. We have then removed some hand coded SSE routines as not
+  faster and hard to maintain.
+
+- Change timeline/filmstrip accel to ctrl-b. More consistent with
+  ctrl+shift+b to toggle the bottom panel and avoid a conflict with
+  sticky preview accel.
+
+- Some preferences have been moved to the module preset's preferences
+  sub-menu. This makes the global preferences lighter. This has been
+  done for the import, export, meta-data, collect modules.
+
+- Faster decoding of Jpeg-2000 files (using multiple threads).
+
+- The lighttable has been enhanced to be able to use the embedded jpeg
+  depending on the size of the thumbs. Using such a preference to use
+  embedded preview for small thumbs may speed-up dealing with large
+  collection during import for example.
+
+- Add support for removing multiple styles at once.
+
+- Allow mass presets import/export.
+
+- Add collect filter presets to display image based on aspect ratio
+  and import date.
+
+- The variables $(EXIF_xxx) can be used while importing pictures.
+
+- Fix graduated density module's control when using down-sampling.
+
+- Fix possible crash in undo for modules without mask.
+
+- When doing an undo we restore the mask display status.
+
+- Adjust color zone saturation to avoid misleading visual illusions.
+
+- Allow to remove a module from a group with right-click.
+
+- Many improvements in the TIFF export module.
 
 ## Bug fixes
+
+- Fix ellipse rotation angle when there is distortion modules
+  activated. This is a GUI issue only when adding new ellipses.
+
+- Fix gradient rotation angle.
+
+- Fix white-balance from old edits. The white balance module
+  parameters where all defaults in darktable 2.6.x. For those edits we
+  need to recover the legacy values and not the new ones from 3.x.
+
+- Use smooth zooming to avoid thumbs flickering.
+
+- Fix entering of exponent expression in sliders for keyboard where ^
+  is a dead key (this is the case in the German and French layout for
+  example).
+
+- The import should be a bit faster for large collections by limiting
+  the GUI update.
+
+- Fix various AVIF issues (set YUV range, proper use of color
+  primaries, set codecName, etc.)
+
+- Fix demosaic borders handling and have less differences between the
+  CPU & GPU code path.
+
+- Fix use of sources in spot and retouch when distortion is used. The
+  source area was possibly not correctly distorted and was actually
+  giving different results if some distortion were present or not.
+
+- In default watermark simple-text we now preserve the spaces.
+
+- Properly check for CLUT in all ICC intents before extracting matrix.
+
+- Properly use the inverse-transform routine provided by lensfun instead
+  of adhoc iterative routine in lens module. This makes the code
+  cleaner and probably more precise.
+
+- Hide borders by default in slideshow view.
+
+- Ensure that a duplicate gets the time-stamp of the source image.
+
+- Fix creation of duplicates when the workflow default has been
+  changed since the base image has been created. That is, an image
+  created with the display-referred workflow must be fully identical
+  when duplicated if the new workflow has been changed to
+  scene-referred.
+
+- Properly group focal length in the collect filters.
+
+- Better naming of the RAW prepare module controls.
+
+- Fix live-view display scaling on large screens (especially for HiDPI
+  ones).
+
+- Fix migration of legacy parameters for denoise profile. A wrong
+  copy/paste was coping the shadow parameter as the new bias.
+
+- Fix possible loss of masks in a module if disabled just before
+  switching to another module.
+
+- Creating a new module instance is now done using right-click instead
+  of middle-click which is not available on all mouses.
+
+- Fix zoom in/out in lighttable full preview to keep the mouse position.
+
+- Recover forms from legacy spot in version 1.
+
+- Fix reset in the export module to bring back all default into the
+  module.
+
+- Fix HDR DNG white balance setting.
+
+- Import Lr metadata only if there is no already a darktable XMP for
+  the corresponding image.
+
+- Fix color profile handling in overexposed.
+
+- Fix style undo in overwrite mode.
 
 ## Notes
 
