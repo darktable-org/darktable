@@ -19,7 +19,7 @@
 #pragma once
 
 #include "common/darktable.h"
-#include "common/colorspaces.h"
+#include "common/iop_profile.h"
 #include "views/view.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
