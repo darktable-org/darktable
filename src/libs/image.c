@@ -588,7 +588,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->clear_metadata_button, 4, line++, 2, 1);
   g_signal_connect(G_OBJECT(d->clear_metadata_button), "clicked", G_CALLBACK(clear_metadata_callback), self);
 
-  GtkWidget *pastemode = dt_bauhaus_combobox_new(NULL);
+  GtkWidget *pastemode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(pastemode, NULL, N_("mode"));
   dt_bauhaus_combobox_add(pastemode, _("merge"));
   dt_bauhaus_combobox_add(pastemode, _("overwrite"));

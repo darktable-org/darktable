@@ -46,7 +46,7 @@ typedef struct dt_module_param_t
 
 static inline void process_changed_value(dt_iop_module_t *self, GtkWidget *widget, void *data)
 {
-  if(!self) self = DT_BAUHAUS_WIDGET(widget)->module;
+  if(!self) self = (dt_iop_module_t *)(DT_BAUHAUS_WIDGET(widget)->module);
 
   if(self->gui_changed) self->gui_changed(self, widget, data);
 
@@ -349,21 +349,14 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
 
   if(f && f->header.type == DT_INTROSPECTION_TYPE_BOOL)
   {
-    if (*f->header.description)
-    {
-      // we do not want to support a context as it break all translations see #5498
-      // button = gtk_check_button_new_with_label(g_dpgettext2(NULL, "introspection description", f->header.description));
+    // we do not want to support a context as it break all translations see #5498
+    // button = gtk_check_button_new_with_label(g_dpgettext2(NULL, "introspection description", f->header.description));
       label = gtk_label_new(gettext(f->header.description));
-    }
-    else
-    {
-      str = dt_util_str_replace(f->header.field_name, "_", " ");
+    str = *f->header.description
+        ? g_strdup(f->header.description)
+        : dt_util_str_replace(f->header.field_name, "_", " ");
 
-      label = gtk_label_new(_(str));
-
-      g_free(str);
-    }
-
+    label = gtk_label_new(_(str));
     gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
     button = gtk_check_button_new();
     gtk_container_add(GTK_CONTAINER(button), label);
@@ -371,16 +364,17 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
     module_param->module = self;
     module_param->param = p + f->header.offset;
     g_signal_connect_data(G_OBJECT(button), "toggled", G_CALLBACK(_iop_toggle_callback), module_param, (GClosureNotify)g_free, 0);
+
+    dt_action_define_iop(self, NULL, str, button, &dt_action_def_toggle);
   }
   else
   {
     str = g_strdup_printf("'%s' is not a bool/togglebutton parameter", param);
 
     button = gtk_check_button_new_with_label(str);
-
-    g_free(str);
   }
 
+  g_free(str);
   if(!self->widget) self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(self->widget), button, FALSE, FALSE, 0);
 

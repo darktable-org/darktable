@@ -401,7 +401,7 @@ void gui_init(dt_lib_module_t *self)
                                        "history_stack.html#history_stack_usage");
   gtk_grid_attach(grid, d->discard_button, 3, line++, 3, 1);
 
-  d->pastemode = dt_bauhaus_combobox_new(NULL);
+  d->pastemode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(d->pastemode, NULL, N_("mode"));
   dt_bauhaus_combobox_add(d->pastemode, _("append"));
   dt_bauhaus_combobox_add(d->pastemode, _("overwrite"));

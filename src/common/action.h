@@ -30,6 +30,7 @@ typedef enum dt_action_type_t
   // ==== all below need to be freed and own their strings
   DT_ACTION_TYPE_SECTION,
   // ==== all above split off chains
+  DT_ACTION_TYPE_IOP_INSTANCE,
   DT_ACTION_TYPE_COMMAND,
   DT_ACTION_TYPE_KEY_PRESSED,
   DT_ACTION_TYPE_PRESET,
@@ -38,8 +39,8 @@ typedef enum dt_action_type_t
   // === all widgets below
   DT_ACTION_TYPE_PER_INSTANCE,
   DT_ACTION_TYPE_CLOSURE,
-  // === dynamically assign widget type numbers from here
   DT_ACTION_TYPE_WIDGET,
+  // === dynamically assign widget type numbers from here
 } dt_action_type_t;
 
 typedef struct dt_action_t

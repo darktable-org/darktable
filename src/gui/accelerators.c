@@ -347,12 +347,34 @@ static gchar *_action_full_label(dt_action_t *action)
     return g_strdup(action->label);
 }
 
+static void _action_distinct_label(gchar **label, dt_action_t *action, gchar *instance)
+{
+  if(!action || action->type <= DT_ACTION_TYPE_GLOBAL)
+    return;
+
+  if(*label)
+  {
+    if(!strstr(action->label, *label) || *instance)
+    {
+      gchar *distinct_label = action->type == DT_ACTION_TYPE_IOP && *instance
+                            ? g_strdup_printf("%s %s / %s", action->label, instance, *label)
+                            : g_strdup_printf("%s / %s", action->label, *label);
+      g_free(*label);
+      *label = distinct_label;
+    }
+  }
+  else
+    *label = g_strdup(action->label);
+
+  _action_distinct_label(label, action->owner, instance);
+}
+
 static void _dump_actions(FILE *f, dt_action_t *action)
 {
   while(action)
   {
     gchar *label = _action_full_id(action);
-    fprintf(f, "%s %s %d (%p)\n", label, !action->target ? "*" : "", action->type, action->target);
+    fprintf(f, "%s %s %d\n", label, !action->target ? "*" : "", action->type);
     g_free(label);
     if(action->type <= DT_ACTION_TYPE_SECTION)
       _dump_actions(f, action->target);
@@ -2719,6 +2741,12 @@ void dt_action_define_key_pressed_accel(dt_action_t *action, const gchar *path, 
 
 dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gchar *label, GtkWidget *widget, const dt_action_def_t *action_def)
 {
+  if(owner->type == DT_ACTION_TYPE_IOP_INSTANCE)
+  {
+    dt_action_define_iop((dt_iop_module_t *)owner, section, label, widget, action_def);
+    return owner;
+  }
+
   dt_action_t *ac = owner;
 
   if(label)
@@ -3149,7 +3177,7 @@ void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path, Gtk
 
 void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path, GtkWidget *button)
 {
-  dt_action_define(&module->actions, NULL, path, button, &dt_action_def_button);
+  dt_action_define(DT_ACTION(module), NULL, path, button, &dt_action_def_button);
 }
 
 void dt_accel_connect_button_lib_as_global(dt_lib_module_t *module, const gchar *path, GtkWidget *button)
@@ -3159,13 +3187,13 @@ void dt_accel_connect_button_lib_as_global(dt_lib_module_t *module, const gchar 
 
 void dt_accel_widget_toast(GtkWidget *widget)
 {
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_widget_t *bw = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
 
   if(!darktable.gui->reset)
   {
-    char *text = NULL;
+    gchar *text = NULL;
 
-    switch(w->type){
+    switch(bw->type){
       case DT_BAUHAUS_SLIDER:
       {
         text = dt_bauhaus_slider_get_text(widget);
@@ -3179,24 +3207,41 @@ void dt_accel_widget_toast(GtkWidget *widget)
         break;
     }
 
-    if(w->label[0] != '\0')
-    { // label is not empty
-      if(w->module && w->module->multi_name[0] != '\0')
-        dt_toast_log(_("%s %s / %s: %s"), w->module->name(), w->module->multi_name, w->label, text);
-      else if(w->module && !strstr(w->module->name(), w->label))
-        dt_toast_log(_("%s / %s: %s"), w->module->name(), w->label, text);
-      else
-        dt_toast_log(_("%s: %s"), w->label, text);
+    if(bw->module)
+    {
+      dt_action_t *action = bw->module;
+      gchar *instance_name = NULL;
+      gchar *label = NULL;
+
+      if(action->type == DT_ACTION_TYPE_IOP_INSTANCE)
+      {
+        dt_iop_module_t *module = (dt_iop_module_t *)action;
+
+        action = DT_ACTION(module->so);
+        instance_name = module->multi_name;
+
+        for(GSList *w = module->widget_list; w; w = w->next)
+        {
+          dt_action_target_t *referral = w->data;
+          if(referral->target == widget)
+          {
+            if(referral->action->owner == &darktable.control->actions_blend)
+            {
+              _action_distinct_label(&label, referral->action, NULL);
+            }
+            else
+              action = referral->action;
+            break;
+          }
+        }
+      }
+
+      _action_distinct_label(&label, action, instance_name);
+      dt_toast_log("%s : %s", label, text);
+      g_free(label);
     }
     else
-    { //label is empty
-      if(w->module && w->module->multi_name[0] != '\0')
-        dt_toast_log(_("%s %s / %s"), w->module->name(), w->module->multi_name, text);
-      else if(w->module)
-        dt_toast_log(_("%s / %s"), w->module->name(), text);
-      else
-        dt_toast_log("%s", text);
-    }
+      dt_toast_log("%s", text);
 
     g_free(text);
   }
