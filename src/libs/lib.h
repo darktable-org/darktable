@@ -19,7 +19,7 @@
 #pragma once
 
 #include "common/darktable.h"
-#include "common/colorspaces.h"
+#include "common/iop_profile.h"
 #include "views/view.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
@@ -73,7 +73,8 @@ typedef struct dt_lib_t
       struct dt_lib_module_t *module;
       void (*process)(struct dt_lib_module_t *self, const float *const input,
                       int width, int height,
-                      dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename);
+                      const dt_iop_order_iccprofile_info_t *const profile_info_from,
+                      const dt_iop_order_iccprofile_info_t *const profile_info_to);
       // FIXME: now that PR #5532 is merged, define this as dt_atomic_int and include "common/atomic.h" and use dt_atomic_set_int() and dt_atomic_get_int()
       gboolean is_linear;
     } histogram;

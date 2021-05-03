@@ -2177,6 +2177,11 @@ post_process_collect_info:
     }
     if(dev->gui_attached && !dev->gui_leaving && pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
     {
+      // FIXME: read this from dt_ioppr_get_pipe_output_profile_info()?
+      const dt_iop_order_iccprofile_info_t *const display_profile
+        = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
+                                            darktable.color_profiles->display_filename, INTENT_RELATIVE_COLORIMETRIC);
+
       // Since histogram is being treated as the second-to-last link
       // in the pixelpipe and has a "process" call, why not treat it
       // as an iop? Granted, other views such as tether may also
@@ -2198,7 +2203,7 @@ post_process_collect_info:
           }
           darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, buf,
                                                  roi_out->width, roi_out->height,
-                                                 darktable.color_profiles->display_type, darktable.color_profiles->display_filename);
+                                                 display_profile, dt_ioppr_get_histogram_profile_info(dev));
           dt_free_align(buf);
         }
       }
@@ -2206,7 +2211,7 @@ post_process_collect_info:
       {
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, input,
                                                roi_in.width, roi_in.height,
-                                               darktable.color_profiles->display_type, darktable.color_profiles->display_filename);
+                                               display_profile, dt_ioppr_get_histogram_profile_info(dev));
       }
     }
   }
