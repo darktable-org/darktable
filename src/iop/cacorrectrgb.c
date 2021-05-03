@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -203,8 +203,8 @@ dt_omp_firstprivate(blurred_in, blurred_manifold_lower, blurred_manifold_higher,
     const float weightl = fmaxf(blurred_manifold_lower[k * 4 + 3], 1E-2);
 
     // normalize guide
-    float highg = blurred_manifold_higher[k * 4 + guide] / weighth;
-    float lowg = blurred_manifold_lower[k * 4 + guide] / weightl;
+    const float highg = blurred_manifold_higher[k * 4 + guide] / weighth;
+    const float lowg = blurred_manifold_lower[k * 4 + guide] / weightl;
 
     blurred_manifold_higher[k * 4 + guide] = highg;
     blurred_manifold_lower[k * 4 + guide] = lowg;
@@ -212,9 +212,9 @@ dt_omp_firstprivate(blurred_in, blurred_manifold_lower, blurred_manifold_higher,
     // normalize and unlog other channels
     for(size_t kc = 0; kc <= 1; kc++)
     {
-      size_t c = (kc + guide + 1) % 3;
-      float highc = blurred_manifold_higher[k * 4 + c] / weighth;
-      float lowc = blurred_manifold_lower[k * 4 + c] / weightl;
+      const size_t c = (kc + guide + 1) % 3;
+      const float highc = blurred_manifold_higher[k * 4 + c] / weighth;
+      const float lowc = blurred_manifold_lower[k * 4 + c] / weightl;
       blurred_manifold_higher[k * 4 + c] = exp2f(highc) * highg;
       blurred_manifold_lower[k * 4 + c] = exp2f(lowc) * lowg;
     }
@@ -282,7 +282,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
     const float weightl = (pixelg <= avg);
     for(size_t kc = 0; kc <= 1; kc++)
     {
-      size_t c = (kc + guide + 1) % 3;
+      const size_t c = (kc + guide + 1) % 3;
       const float pixel = fmaxf(in[k * 4 + c], 1E-6);
       const float log_diff = log2f(pixel / pixelg);
       manifold_higher[k * 4 + c] = log_diff * weighth;
@@ -331,7 +331,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
     for(size_t k = 0; k < width * height; k++)
     {
       // in order to refine the manifolds, we will compute weights
-      // for which all channel will have a contribution.
+      // for which all channels will have a contribution.
       // this will allow to avoid taking too much into account pixels
       // that have wrong values due to the chromatic aberration
       //
@@ -360,7 +360,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
       float w = 1.0f;
       for(size_t kc = 0; kc <= 1; kc++)
       {
-        size_t c = (guide + kc + 1) % 3;
+        const size_t c = (guide + kc + 1) % 3;
         // weight by considering how close pixel is for a manifold,
         // and how close the log difference between the channels is
         // close to the wrong log difference between the channels.
@@ -397,7 +397,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
       {
         for(size_t kc = 0; kc <= 1; kc++)
         {
-          size_t c = (guide + kc + 1) % 3;
+          const size_t c = (guide + kc + 1) % 3;
           const float pixel = fmaxf(in[k * 4 + c], 1E-6);
           const float log_diff = logf(pixel) - pixelg;
           manifold_higher[k * 4 + c] = log_diff * w;
@@ -409,7 +409,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
       {
         for(size_t kc = 0; kc <= 1; kc++)
         {
-          size_t c = (guide + kc + 1) % 3;
+          const size_t c = (guide + kc + 1) % 3;
           const float pixel = fmaxf(in[k * 4 + c], 1E-6);
           const float log_diff = logf(pixel) - pixelg;
           manifold_lower[k * 4 + c] = log_diff * w;
@@ -541,7 +541,7 @@ dt_omp_firstprivate(in, out, in_out, width, height, guide, ch) \
   {
     for(size_t kc = 0; kc <= 1; kc++)
     {
-      size_t c = (guide + kc + 1) % 3;
+      const size_t c = (guide + kc + 1) % 3;
       in_out[k * ch + kc * 2 + 0] = in[k * 4 + c];
       in_out[k * ch + kc * 2 + 1] = out[k * 4 + c];
     }
@@ -581,7 +581,7 @@ dt_omp_firstprivate(in, out, blurred_in_out, width, height, guide, safety, ch) \
     }
     for(size_t kc = 0; kc <= 1; kc++)
     {
-      size_t c = (guide + kc + 1) % 3;
+      const size_t c = (guide + kc + 1) % 3;
       out[k * ch + c] = fmaxf(1.0f - w, 0.0f) * fmaxf(in[k * ch + c], 0.0f) + w * fmaxf(out[k * ch + c], 0.0f);
     }
   }
@@ -692,16 +692,16 @@ void gui_init(dt_iop_module_t *self)
                                            "use sharpest channel if some\n"
                                            "channels are blurry.\n"
                                            "try changing guide channel if you\n"
-                                           "have artefacts."));
+                                           "have artifacts."));
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
-  gtk_widget_set_tooltip_text(g->radius, _("increase for stronger correction\n"));
+  gtk_widget_set_tooltip_text(g->radius, _("increase for stronger correction"));
   g->strength = dt_bauhaus_slider_from_params(self, "strength");
   gtk_widget_set_tooltip_text(g->strength, _("balance between smoothing colors\n"
                                              "and preserving them.\n"
                                              "high values can lead to overshooting\n"
                                              "and edge bleeding."));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_label_new(_("advanced parameters:")), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("advanced parameters")), TRUE, TRUE, 0);
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
   gtk_widget_set_tooltip_text(g->mode, _("correction mode to use.\n"
                                          "can help with multiple\n"
@@ -712,7 +712,7 @@ void gui_init(dt_iop_module_t *self)
                                          "chromatic aberration."));
   g->refine_manifolds = dt_bauhaus_toggle_from_params(self, "refine_manifolds");
   gtk_widget_set_tooltip_text(g->refine_manifolds, _("runs an iterative approach\n"
-                                                    "with several radiuses.\n"
+                                                    "with several radius.\n"
                                                     "improves result on images\n"
                                                     "with very large chromatic\n"
                                                     "aberrations, but can smooth\n"
