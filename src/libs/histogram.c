@@ -457,8 +457,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       }
 
       float b[4] DT_ALIGNED_PIXEL = {scale * count,
-        max_diam * (((float)out_x / diam_px) - 0.5f),
-        max_diam * (((float)out_y / diam_px) - 0.5f)};
+        max_diam * (((out_x + 0.5f) / diam_px) - 0.5f),
+        max_diam * (((out_y + 0.5f) / diam_px) - 0.5f)};
 
       const float intensity = lut[(int)(MIN(1.f, b[0]) * lutmax)];
       float XYZ_D50[4] DT_ALIGNED_PIXEL, RGB[4] DT_ALIGNED_PIXEL;
