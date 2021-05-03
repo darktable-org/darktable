@@ -26,6 +26,12 @@
 
 // dual_demosaic is always called **after** the high-frequency demosaicer (rcd, amaze or one of the non-bayer demosaicers)
 // and expects the data available in rgb_data as rgba quadruples. 
+
+// improve UI experience
+static float slider2contrast(float slider)
+{
+  return 0.005f * powf(slider, 1.1f);
+}
 static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict rgb_data, const float *const restrict raw_data,
                           dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in, const uint32_t filters, const uint8_t (*const xtrans)[6],
                           const gboolean dual_mask, float dual_threshold)
@@ -55,7 +61,7 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
   dt_times_t start_blend = { 0 }, end_blend = { 0 };
   if(info) dt_get_times(&start_blend);
 
-  const float contrastf = dual_threshold / 100.0f;
+  const float contrastf = slider2contrast(dual_threshold);
 
   dt_masks_calc_rawdetail_mask(rgb_data, blend, tmp, width, height, piece->pipe->dsc.temperature.coeffs);
   dt_masks_calc_detail_mask(blend, blend, tmp, width, height, contrastf, TRUE);  
@@ -103,8 +109,8 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   const int devid = piece->pipe->devid;
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
-  const float dual_threshold = data->dual_thrs;
-  const float contrastf = dual_threshold / 100.0f;
+
+  const float contrastf = slider2contrast(data->dual_thrs);
 
   {
     size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
