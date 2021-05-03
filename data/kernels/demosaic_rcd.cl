@@ -402,9 +402,7 @@ __kernel void write_blended_dual(__read_only image2d_t high, __read_only image2d
   write_imagef(out, (int2)(col, row), data);
 }
 
-__kernel void fastblur_mask_9x9(global float *src, global float *out, const int w, const int height, const float c42, const float c41, const float c40,
-                             const float c33, const float c32, const float c31, const float c30, const float c22, const float c21,
-                             const float c20, const float c11, const float c10, const float c00)
+__kernel void fastblur_mask_9x9(global float *src, global float *out, const int w, const int height, global float *kern)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
@@ -420,19 +418,19 @@ __kernel void fastblur_mask_9x9(global float *src, global float *out, const int 
   const int w2 = 2 * w;
   const int w3 = 3 * w;
   const int w4 = 4 * w;
-  const float val = c42 * (src[i - w4 - 2] + src[i - w4 + 2] + src[i - w2 - 4] + src[i - w2 + 4] + src[i + w2 - 4] + src[i + w2 + 4] + src[i + w4 - 2] + src[i + w4 + 2]) +
-                    c41 * (src[i - w4 - 1] + src[i - w4 + 1] + src[i -  w - 4] + src[i -  w + 4] + src[i +  w - 4] + src[i +  w + 4] + src[i + w4 - 1] + src[i + w4 + 1]) +
-                    c40 * (src[i - w4] + src[i - 4] + src[i + 4] + src[i + w4]) +
-                    c33 * (src[i - w3 - 3] + src[i - w3 + 3] + src[i + w3 - 3] + src[i + w3 + 3]) +
-                    c32 * (src[i - w3 - 2] + src[i - w3 + 2] + src[i - w2 - 3] + src[i - w2 + 3] + src[i + w2 - 3] + src[i + w2 + 3] + src[i + w3 - 2] + src[i + w3 + 2]) +
-                    c31 * (src[i - w3 - 1] + src[i - w3 + 1] + src[i -  w - 3] + src[i -  w + 3] + src[i +  w - 3] + src[i +  w + 3] + src[i + w3 - 1] + src[i + w3 + 1]) +
-                    c30 * (src[i - w3] + src[i - 3] + src[i + 3] + src[i + w3]) +
-                    c22 * (src[i - w2 - 2] + src[i - w2 + 2] + src[i + w2 - 2] + src[i + w2 + 2]) +
-                    c21 * (src[i - w2 - 1] + src[i - w2 + 1] + src[i -  w - 2] + src[i -  w + 2] + src[i +  w - 2] + src[i +  w + 2] + src[i + w2 - 1] + src[i + w2 + 1]) +
-                    c20 * (src[i - w2] + src[i - 2] + src[i + 2] + src[i + w2]) +
-                    c11 * (src[i -  w - 1] + src[i -  w + 1] + src[i +  w - 1] + src[i +  w + 1]) +
-                    c10 * (src[i -  w] + src[i - 1] + src[i + 1] + src[i +  w]) +
-                    c00 * src[i];
+  const float val = kern[12] * (src[i - w4 - 2] + src[i - w4 + 2] + src[i - w2 - 4] + src[i - w2 + 4] + src[i + w2 - 4] + src[i + w2 + 4] + src[i + w4 - 2] + src[i + w4 + 2]) +
+                    kern[11] * (src[i - w4 - 1] + src[i - w4 + 1] + src[i -  w - 4] + src[i -  w + 4] + src[i +  w - 4] + src[i +  w + 4] + src[i + w4 - 1] + src[i + w4 + 1]) +
+                    kern[10] * (src[i - w4] + src[i - 4] + src[i + 4] + src[i + w4]) +
+                    kern[9] * (src[i - w3 - 3] + src[i - w3 + 3] + src[i + w3 - 3] + src[i + w3 + 3]) +
+                    kern[8] * (src[i - w3 - 2] + src[i - w3 + 2] + src[i - w2 - 3] + src[i - w2 + 3] + src[i + w2 - 3] + src[i + w2 + 3] + src[i + w3 - 2] + src[i + w3 + 2]) +
+                    kern[7] * (src[i - w3 - 1] + src[i - w3 + 1] + src[i -  w - 3] + src[i -  w + 3] + src[i +  w - 3] + src[i +  w + 3] + src[i + w3 - 1] + src[i + w3 + 1]) +
+                    kern[6] * (src[i - w3] + src[i - 3] + src[i + 3] + src[i + w3]) +
+                    kern[5] * (src[i - w2 - 2] + src[i - w2 + 2] + src[i + w2 - 2] + src[i + w2 + 2]) +
+                    kern[4] * (src[i - w2 - 1] + src[i - w2 + 1] + src[i -  w - 2] + src[i -  w + 2] + src[i +  w - 2] + src[i +  w + 2] + src[i + w2 - 1] + src[i + w2 + 1]) +
+                    kern[3] * (src[i - w2] + src[i - 2] + src[i + 2] + src[i + w2]) +
+                    kern[2] * (src[i -  w - 1] + src[i -  w + 1] + src[i +  w - 1] + src[i +  w + 1]) +
+                    kern[1] * (src[i -  w] + src[i - 1] + src[i + 1] + src[i +  w]) +
+                    kern[0] * src[i];
   out[oidx] = ICLAMP(val, 0.0f, 1.0f);
 }
 

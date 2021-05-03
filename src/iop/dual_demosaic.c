@@ -149,7 +149,7 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   {
     // For a blurring sigma of 2.0f a 13x13 kernel would be optimally required but the 9x9 is by far good enough here 
     float kernel[9][9];
-    const double temp = -2.0f * (2.0f * 2.0f);
+    const float temp = -2.0f * (2.0f * 2.0f);
     float sum = 0.0f;
     for(int i = -4; i <= 4; i++)
     {
@@ -161,44 +161,37 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     }
     for(int i = 0; i < 9; i++)
     {
+#if defined(__GNUC__)
+  #pragma GCC ivdep
+#endif
       for(int j = 0; j < 9; j++)
         kernel[i][j] /= sum;
     }
-    const float c42 = kernel[0][2];
-    const float c41 = kernel[0][3];
-    const float c40 = kernel[0][4];
-    const float c33 = kernel[1][1];
-    const float c32 = kernel[1][2];
-    const float c31 = kernel[1][3];
-    const float c30 = kernel[1][4];
-    const float c22 = kernel[2][2];
-    const float c21 = kernel[2][3];
-    const float c20 = kernel[2][4];
-    const float c11 = kernel[3][3];
-    const float c10 = kernel[3][4];
-    const float c00 = kernel[4][4];
 
-    size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-    const int clkernel = darktable.opencl->blendop->kernel_mask_blur;
-    dt_opencl_set_kernel_arg(devid, clkernel, 0, sizeof(cl_mem), &detail);
-    dt_opencl_set_kernel_arg(devid, clkernel, 1, sizeof(cl_mem), &blend);
-    dt_opencl_set_kernel_arg(devid, clkernel, 2, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, clkernel, 3, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, clkernel, 4, sizeof(int), &c42);
-    dt_opencl_set_kernel_arg(devid, clkernel, 5, sizeof(int), &c41);
-    dt_opencl_set_kernel_arg(devid, clkernel, 6, sizeof(int), &c40);
-    dt_opencl_set_kernel_arg(devid, clkernel, 7, sizeof(int), &c33);
-    dt_opencl_set_kernel_arg(devid, clkernel, 8, sizeof(int), &c32);
-    dt_opencl_set_kernel_arg(devid, clkernel, 9, sizeof(int), &c31);
-    dt_opencl_set_kernel_arg(devid, clkernel, 10, sizeof(int), &c30);
-    dt_opencl_set_kernel_arg(devid, clkernel, 11, sizeof(int), &c22);
-    dt_opencl_set_kernel_arg(devid, clkernel, 12, sizeof(int), &c21);
-    dt_opencl_set_kernel_arg(devid, clkernel, 13, sizeof(int), &c20);
-    dt_opencl_set_kernel_arg(devid, clkernel, 14, sizeof(int), &c11);
-    dt_opencl_set_kernel_arg(devid, clkernel, 15, sizeof(int), &c10);
-    dt_opencl_set_kernel_arg(devid, clkernel, 16, sizeof(int), &c00);
-    const int err = dt_opencl_enqueue_kernel_2d(devid, clkernel, sizes);
-    if(err != CL_SUCCESS) return FALSE;
+    float blurmat[13] = { kernel[4][4], kernel[3][4], kernel[3][3],               // 00: c00 c10 c11
+                          kernel[2][4], kernel[2][3], kernel[2][2],               // 03: c20 c21 c22
+                          kernel[1][4], kernel[1][3], kernel[1][2], kernel[1][1], // 06: c30 c31 c32 c33
+                          kernel[0][4], kernel[0][3], kernel[0][2]};              // 10: c40 c41 c42
+    cl_mem dev_blurmat = NULL;
+    dev_blurmat = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 13, blurmat);
+    if(dev_blurmat != NULL)
+    {
+      size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+      const int clkernel = darktable.opencl->blendop->kernel_mask_blur;
+      dt_opencl_set_kernel_arg(devid, clkernel, 0, sizeof(cl_mem), &detail);
+      dt_opencl_set_kernel_arg(devid, clkernel, 1, sizeof(cl_mem), &blend);
+      dt_opencl_set_kernel_arg(devid, clkernel, 2, sizeof(int), &width);
+      dt_opencl_set_kernel_arg(devid, clkernel, 3, sizeof(int), &height);
+      dt_opencl_set_kernel_arg(devid, clkernel, 4, sizeof(cl_mem), (void *) &dev_blurmat);
+      const int err = dt_opencl_enqueue_kernel_2d(devid, clkernel, sizes);
+      dt_opencl_release_mem_object(dev_blurmat);
+      if(err != CL_SUCCESS) return FALSE;
+    }
+    else
+    {
+      dt_opencl_release_mem_object(dev_blurmat);
+      return FALSE;
+    }
   }
 
   {
