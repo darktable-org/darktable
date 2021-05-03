@@ -180,6 +180,8 @@ typedef struct dt_iop_module_so_t
 
 typedef struct dt_iop_module_t
 {
+  dt_action_type_t actions; // !!! NEEDS to be FIRST (to be able to cast convert)
+
 #define INCLUDE_API_FROM_MODULE_H
 #include "iop/iop_api.h"
 

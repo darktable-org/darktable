@@ -328,6 +328,7 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *module_name)
 
 int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_develop_t *dev)
 {
+  module->actions = DT_ACTION_TYPE_IOP_INSTANCE;
   module->dev = dev;
   module->widget = NULL;
   module->header = NULL;

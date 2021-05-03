@@ -2195,7 +2195,7 @@ void gui_init(dt_view_t *self)
     // the button
     dev->rawoverexposed.button
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_rawoverexposed, CPF_STYLE_FLAT, NULL);
-    dt_action_define(&self->actions, NULL, "raw overexposed", dev->rawoverexposed.button, &dt_action_def_toggle);
+    dt_action_define(&self->actions, N_("raw overexposed"), N_("toggle"), dev->rawoverexposed.button, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(dev->rawoverexposed.button,
                                 _("toggle raw over exposed indication\nright click for options"));
     g_signal_connect(G_OBJECT(dev->rawoverexposed.button), "clicked",
@@ -2219,8 +2219,8 @@ void gui_init(dt_view_t *self)
 
     /** let's fill the encapsulating widgets */
     /* mode of operation */
-    GtkWidget *mode = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(mode, NULL, N_("mode"));
+    GtkWidget *mode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+    dt_bauhaus_widget_set_label(mode, N_("raw overexposed"), N_("mode"));
     dt_bauhaus_combobox_add(mode, _("mark with CFA color"));
     dt_bauhaus_combobox_add(mode, _("mark with solid color"));
     dt_bauhaus_combobox_add(mode, _("false color"));
@@ -2231,8 +2231,8 @@ void gui_init(dt_view_t *self)
     gtk_widget_set_state_flags(mode, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* color scheme */
-    GtkWidget *colorscheme = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(colorscheme, NULL, N_("color scheme"));
+    GtkWidget *colorscheme = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+    dt_bauhaus_widget_set_label(colorscheme, N_("raw overexposed"), N_("color scheme"));
     dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "red"));
     dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "green"));
     dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "blue"));
@@ -2246,9 +2246,9 @@ void gui_init(dt_view_t *self)
     gtk_widget_set_state_flags(colorscheme, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* threshold */
-    GtkWidget *threshold = dt_bauhaus_slider_new_with_range(NULL, 0.0, 2.0, 0.01, 1.0, 3);
+    GtkWidget *threshold = dt_bauhaus_slider_new_action(DT_ACTION(self), 0.0, 2.0, 0.01, 1.0, 3);
     dt_bauhaus_slider_set(threshold, dev->rawoverexposed.threshold);
-    dt_bauhaus_widget_set_label(threshold, NULL, N_("clipping threshold"));
+    dt_bauhaus_widget_set_label(threshold, N_("raw overexposed"), N_("clipping threshold"));
     gtk_widget_set_tooltip_text(
         threshold, _("threshold of what shall be considered overexposed\n1.0 - white level\n0.0 - black level"));
     g_signal_connect(G_OBJECT(threshold), "value-changed", G_CALLBACK(rawoverexposed_threshold_callback), dev);
@@ -2260,7 +2260,7 @@ void gui_init(dt_view_t *self)
     // the button
     dev->overexposed.button
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT, NULL);
-    dt_action_define(&self->actions, NULL, "overexposed", dev->overexposed.button, &dt_action_def_toggle);
+    dt_action_define(DT_ACTION(self), N_("overexposed"), N_("toggle"), dev->overexposed.button, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(dev->overexposed.button,
                                 _("toggle clipping indication\nright click for options"));
     g_signal_connect(G_OBJECT(dev->overexposed.button), "clicked",
@@ -2284,8 +2284,8 @@ void gui_init(dt_view_t *self)
 
     /** let's fill the encapsulating widgets */
     /* preview mode */
-    GtkWidget *mode = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(mode, NULL, N_("clipping preview mode"));
+    GtkWidget *mode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+    dt_bauhaus_widget_set_label(mode, N_("overexposed"), N_("clipping preview mode"));
     dt_bauhaus_combobox_add(mode, _("full gamut"));
     dt_bauhaus_combobox_add(mode, _("any RGB channel"));
     dt_bauhaus_combobox_add(mode, _("luminance only"));
@@ -2298,8 +2298,8 @@ void gui_init(dt_view_t *self)
     gtk_widget_set_state_flags(mode, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* color scheme */
-    GtkWidget *colorscheme = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(colorscheme, NULL, N_("color scheme"));
+    GtkWidget *colorscheme = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+    dt_bauhaus_widget_set_label(colorscheme, N_("overexposed"), N_("color scheme"));
     dt_bauhaus_combobox_add(colorscheme, _("black & white"));
     dt_bauhaus_combobox_add(colorscheme, _("red & blue"));
     dt_bauhaus_combobox_add(colorscheme, _("purple & green"));
@@ -2310,10 +2310,10 @@ void gui_init(dt_view_t *self)
     gtk_widget_set_state_flags(colorscheme, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* lower */
-    GtkWidget *lower = dt_bauhaus_slider_new_with_range(NULL, -32., -4., 1., -12.69, 2);
+    GtkWidget *lower = dt_bauhaus_slider_new_action(DT_ACTION(self), -32., -4., 1., -12.69, 2);
     dt_bauhaus_slider_set(lower, dev->overexposed.lower);
     dt_bauhaus_slider_set_format(lower, _("%+.2f EV"));
-    dt_bauhaus_widget_set_label(lower, NULL, N_("lower threshold"));
+    dt_bauhaus_widget_set_label(lower, N_("overexposed"), N_("lower threshold"));
     gtk_widget_set_tooltip_text(lower, _("clipping threshold for the black point,\n"
                                          "in EV, relatively to white (0 EV).\n"
                                          "8 bits sRGB clips blacks at -12.69 EV,\n"
@@ -2327,10 +2327,10 @@ void gui_init(dt_view_t *self)
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(lower), TRUE, TRUE, 0);
 
     /* upper */
-    GtkWidget *upper = dt_bauhaus_slider_new_with_range(NULL, 0.0, 100.0, 0.1, 99.99, 2);
+    GtkWidget *upper = dt_bauhaus_slider_new_action(DT_ACTION(self), 0.0, 100.0, 0.1, 99.99, 2);
     dt_bauhaus_slider_set(upper, dev->overexposed.upper);
     dt_bauhaus_slider_set_format(upper, "%.2f%%");
-    dt_bauhaus_widget_set_label(upper, NULL, N_("upper threshold"));
+    dt_bauhaus_widget_set_label(upper, N_("overexposed"), N_("upper threshold"));
     /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(upper, _("clipping threshold for the white point.\n"
                                          "100% is peak medium luminance."));
@@ -2387,15 +2387,15 @@ void gui_init(dt_view_t *self)
     dt_loc_get_datadir(datadir, sizeof(datadir));
     const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
-    GtkWidget *display_intent = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(display_intent, NULL, N_("intent"));
+    GtkWidget *display_intent = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+    dt_bauhaus_widget_set_label(display_intent, N_("profiles"), N_("intent"));
     dt_bauhaus_combobox_add(display_intent, _("perceptual"));
     dt_bauhaus_combobox_add(display_intent, _("relative colorimetric"));
     dt_bauhaus_combobox_add(display_intent, C_("rendering intent", "saturation"));
     dt_bauhaus_combobox_add(display_intent, _("absolute colorimetric"));
 
-    GtkWidget *display2_intent = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(display2_intent, NULL, N_("intent"));
+    GtkWidget *display2_intent = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+    dt_bauhaus_widget_set_label(display2_intent, N_("profiles"), N_("preview intent"));
     dt_bauhaus_combobox_add(display2_intent, _("perceptual"));
     dt_bauhaus_combobox_add(display2_intent, _("relative colorimetric"));
     dt_bauhaus_combobox_add(display2_intent, C_("rendering intent", "saturation"));
@@ -2409,15 +2409,15 @@ void gui_init(dt_view_t *self)
       gtk_widget_set_visible(display2_intent, FALSE);
     }
 
-    GtkWidget *display_profile = dt_bauhaus_combobox_new(NULL);
-    GtkWidget *display2_profile = dt_bauhaus_combobox_new(NULL);
-    GtkWidget *softproof_profile = dt_bauhaus_combobox_new(NULL);
-    GtkWidget *histogram_profile = dt_bauhaus_combobox_new(NULL);
+    GtkWidget *display_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+    GtkWidget *display2_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+    GtkWidget *softproof_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+    GtkWidget *histogram_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
 
-    dt_bauhaus_widget_set_label(display_profile, NULL, N_("display profile"));
-    dt_bauhaus_widget_set_label(display2_profile, NULL, N_("preview display profile"));
-    dt_bauhaus_widget_set_label(softproof_profile, NULL, N_("softproof profile"));
-    dt_bauhaus_widget_set_label(histogram_profile, NULL, N_("histogram profile"));
+    dt_bauhaus_widget_set_label(display_profile, N_("profiles"), N_("display profile"));
+    dt_bauhaus_widget_set_label(display2_profile, N_("profiles"), N_("preview display profile"));
+    dt_bauhaus_widget_set_label(softproof_profile, N_("profiles"), N_("softproof profile"));
+    dt_bauhaus_widget_set_label(histogram_profile, N_("profiles"), N_("histogram profile"));
 
     dt_bauhaus_combobox_set_entries_ellipsis(display_profile, PANGO_ELLIPSIZE_MIDDLE);
     dt_bauhaus_combobox_set_entries_ellipsis(display2_profile, PANGO_ELLIPSIZE_MIDDLE);
@@ -2545,7 +2545,7 @@ void gui_init(dt_view_t *self)
     gtk_container_add(GTK_CONTAINER(dev->overlay_color.floating_window), vbox);
 
     /** let's fill the encapsulating widget */
-    GtkWidget *overlay_colors = dev->overlay_color.colors = dt_bauhaus_combobox_new(NULL);
+    GtkWidget *overlay_colors = dev->overlay_color.colors = dt_bauhaus_combobox_new_action(DT_ACTION(self));
     dt_bauhaus_widget_set_label(overlay_colors, NULL, N_("overlay color"));
     dt_bauhaus_combobox_add(overlay_colors, _("gray"));
     dt_bauhaus_combobox_add(overlay_colors, _("red"));
@@ -3877,10 +3877,10 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "color assessment"), GDK_KEY_b, GDK_CONTROL_MASK);
 
   // toggle raw overexposure indication
-  dt_accel_register_view(self, NC_("accel", "raw overexposed"), GDK_KEY_o, GDK_SHIFT_MASK);
+  dt_accel_register_view(self, NC_("accel", "raw overexposed/toggle"), GDK_KEY_o, GDK_SHIFT_MASK);
 
   // toggle overexposure indication
-  dt_accel_register_view(self, NC_("accel", "overexposed"), GDK_KEY_o, 0);
+  dt_accel_register_view(self, NC_("accel", "overexposed/toggle"), GDK_KEY_o, 0);
 
   // cycle overlay colors
   dt_accel_register_view(self, NC_("accel", "cycle overlay colors"), GDK_KEY_o, GDK_CONTROL_MASK);
