@@ -142,18 +142,18 @@ typedef enum dt_iop_cacorrectrgb_mode_t
   DT_CACORRECT_MODE_BRIGHTEN = 2   // $DESCRIPTION: "brighten only"
 } dt_iop_cacorrectrgb_mode_t;
 
-
 typedef struct dt_iop_cacorrectrgb_params_t
 {
   dt_iop_cacorrectrgb_guide_channel_t guide_channel; // $DEFAULT: DT_CACORRECT_RGB_G $DESCRIPTION: "guide"
   float radius; // $MIN: 1 $MAX: 500 $DEFAULT: 5 $DESCRIPTION: "radius"
   float strength; // $MIN: 0 $MAX: 4 $DEFAULT: 0.5 $DESCRIPTION: "strength"
   dt_iop_cacorrectrgb_mode_t mode; // $DEFAULT: DT_CACORRECT_MODE_STANDARD $DESCRIPTION: "correction mode"
+  gboolean refine_manifolds; // $MIN: FALSE $MAX: TRUE $DEFAULT: FALSE $DESCRIPTION: "very large chromatic aberration"
 } dt_iop_cacorrectrgb_params_t;
 
 typedef struct dt_iop_cacorrectrgb_gui_data_t
 {
-  GtkWidget *guide_channel, *radius, *strength, *mode;
+  GtkWidget *guide_channel, *radius, *strength, *mode, *refine_manifolds;
 } dt_iop_cacorrectrgb_gui_data_t;
 
 const char *name()
@@ -246,9 +246,9 @@ dt_omp_firstprivate(blurred_in, blurred_manifold_lower, blurred_manifold_higher,
 }
 
 static void get_manifolds(const float* const restrict in, const size_t width, const size_t height,
-                          const size_t ch, const float sigma,
+                          const size_t ch, const float sigma, const float sigma2,
                           const dt_iop_cacorrectrgb_guide_channel_t guide,
-                          float* const restrict manifolds)
+                          float* const restrict manifolds, gboolean refine_manifolds)
 {
   float *const restrict blurred_in = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
   float *const restrict manifold_higher = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
@@ -258,7 +258,10 @@ static void get_manifolds(const float* const restrict in, const size_t width, co
 
   float max[4] = {INFINITY, INFINITY, INFINITY, INFINITY};
   float min[4] = {-INFINITY, -INFINITY, -INFINITY, 0.0f};
-  dt_gaussian_t *g = dt_gaussian_init(width, height, 4, max, min, sigma, 0);
+  // start with a larger blur to estimate the manifolds if we refine them
+  // later on
+  const float blur_size = refine_manifolds ? sigma2 : sigma;
+  dt_gaussian_t *g = dt_gaussian_init(width, height, 4, max, min, blur_size, 0);
   if(!g) return;
   dt_gaussian_blur_4c(g, in, blurred_in);
 
@@ -293,11 +296,9 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
 
   dt_gaussian_blur_4c(g, manifold_higher, blurred_manifold_higher);
   dt_gaussian_blur_4c(g, manifold_lower, blurred_manifold_lower);
+  dt_gaussian_free(g);
 
   normalize_manifolds(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide);
-  dt_gaussian_free(g);
-  dt_free_align(manifold_lower);
-  dt_free_align(manifold_higher);
 
   // note that manifolds were constructed based on the value and average
   // of the guide channel ONLY.
@@ -312,6 +313,120 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
   // equal to 0. The higher manifold of the guided channel is equal to 0
   // as it is the average of the values where the guide is higher than its
   // average, and the lower manifold of the guided channel is equal to 1.
+
+  if(refine_manifolds)
+  {
+    g = dt_gaussian_init(width, height, 4, max, min, sigma, 0);
+    if(!g) return;
+    dt_gaussian_blur_4c(g, in, blurred_in);
+
+    // refine the manifolds
+    // improve result especially on very degraded images
+    // we use a blur of normal size for this step
+  #ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_manifold_lower, blurred_manifold_higher, width, height, guide) \
+    schedule(simd:static) aligned(in, blurred_in, manifold_lower, manifold_higher, blurred_manifold_lower, blurred_manifold_higher:64)
+  #endif
+    for(size_t k = 0; k < width * height; k++)
+    {
+      // in order to refine the manifolds, we will compute weights
+      // for which all channel will have a contribution.
+      // this will allow to avoid taking too much into account pixels
+      // that have wrong values due to the chromatic aberration
+      //
+      // for example, here:
+      // guide:  1_____
+      //               |_____0
+      // guided: 1______
+      //                |____0
+      //               ^ this pixel makes the estimated lower manifold erroneous
+      // here, the higher and lower manifolds values computed are:
+      // _______|_higher_|________lower_________|
+      // guide  |    1   |   0                  |
+      // guided |    1   |(1 + 4 * 0) / 5 = 0.2 |
+      //
+      // the lower manifold of the guided is 0.2 if we consider only the guide
+      //
+      // at this step of the algorithm, we know estimates of manifolds
+      //
+      // we can refine the manifolds by computing weights that reduce the influence
+      // of pixels that are probably suffering from chromatic aberrations
+      const float pixelg = logf(fmaxf(in[k * 4 + guide], 1E-6));
+      const float highg = logf(fmaxf(blurred_manifold_higher[k * 4 + guide], 1E-6));
+      const float lowg = logf(fmaxf(blurred_manifold_lower[k * 4 + guide], 1E-6));
+      const float avgg = logf(fmaxf(blurred_in[k * 4 + guide], 1E-6));
+
+      float w = 1.0f;
+      for(size_t kc = 0; kc <= 1; kc++)
+      {
+        size_t c = (guide + kc + 1) % 3;
+        // weight by considering how close pixel is for a manifold,
+        // and how close the log difference between the channels is
+        // close to the wrong log difference between the channels.
+
+        const float pixel = logf(fmaxf(in[k * 4 + c], 1E-6));
+        const float highc = logf(fmaxf(blurred_manifold_higher[k * 4 + c], 1E-6));
+        const float lowc = logf(fmaxf(blurred_manifold_lower[k * 4 + c], 1E-6));
+
+        // find how likely the pixel is part of a chromatic aberration
+        // (lowc, lowg) and (highc, highg) are valid points
+        // (lowc, highg) and (highc, lowg) are chromatic aberrations
+        const float dist_to_ll = fabsf(pixelg - lowg - pixel + lowc);
+        const float dist_to_hh = fabsf(pixelg - highg - pixel + highc);
+        const float dist_to_lh = fabsf((pixelg - pixel) - (highg - lowc));
+        const float dist_to_hl = fabsf((pixelg - pixel) - (lowg - highc));
+
+        float dist_to_good = 1.0f;
+        if(fabsf(pixelg - lowg) < fabsf(pixelg - highg))
+          dist_to_good = dist_to_ll;
+        else
+          dist_to_good = dist_to_hh;
+
+        float dist_to_bad = 1.0f;
+        if(fabsf(pixelg - lowg) < fabsf(pixelg - highg))
+          dist_to_bad = dist_to_hl;
+        else
+          dist_to_bad = dist_to_lh;
+
+        // make w higher if close to good, and smaller if close to bad.
+        w *= 5.0f * (0.2f + 1.0f / fmaxf(dist_to_good, 0.1f)) / (0.2f + 1.0f / fmaxf(dist_to_bad, 0.1f));
+      }
+
+      if(pixelg > avgg)
+      {
+        for(size_t kc = 0; kc <= 1; kc++)
+        {
+          size_t c = (guide + kc + 1) % 3;
+          const float pixel = fmaxf(in[k * 4 + c], 1E-6);
+          const float log_diff = logf(pixel) - pixelg;
+          manifold_higher[k * 4 + c] = log_diff * w;
+        }
+        manifold_higher[k * 4 + guide] = fmaxf(in[k * 4 + guide], 0.0f) * w;
+        manifold_higher[k * 4 + 3] = w;
+      }
+      else
+      {
+        for(size_t kc = 0; kc <= 1; kc++)
+        {
+          size_t c = (guide + kc + 1) % 3;
+          const float pixel = fmaxf(in[k * 4 + c], 1E-6);
+          const float log_diff = logf(pixel) - pixelg;
+          manifold_lower[k * 4 + c] = log_diff * w;
+        }
+        manifold_lower[k * 4 + guide] = fmaxf(in[k * 4 + guide], 0.0f) * w;
+        manifold_lower[k * 4 + 3] = w;
+      }
+    }
+
+    dt_gaussian_blur_4c(g, manifold_higher, blurred_manifold_higher);
+    dt_gaussian_blur_4c(g, manifold_lower, blurred_manifold_lower);
+    normalize_manifolds(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide);
+    dt_gaussian_free(g);
+  }
+
+  dt_free_align(manifold_lower);
+  dt_free_align(manifold_higher);
 
   // store all manifolds in the same structure to make upscaling faster
 #ifdef _OPENMP
@@ -475,9 +590,10 @@ dt_omp_firstprivate(in, out, blurred_in_out, width, height, guide, safety, ch) \
 
 static void reduce_chromatic_aberrations(const float* const restrict in,
                           const size_t width, const size_t height,
-                          const size_t ch, const float sigma,
+                          const size_t ch, const float sigma, const float sigma2,
                           const dt_iop_cacorrectrgb_guide_channel_t guide,
                           const dt_iop_cacorrectrgb_mode_t mode,
+                          const gboolean refine_manifolds,
                           const float safety,
                           float* const restrict out)
 
@@ -493,7 +609,7 @@ static void reduce_chromatic_aberrations(const float* const restrict in,
   interpolate_bilinear(in, width, height, ds_in, ds_width, ds_height, 4);
 
   // Compute manifolds
-  get_manifolds(ds_in, ds_width, ds_height, ch, sigma / downsize, guide, ds_manifolds);
+  get_manifolds(ds_in, ds_width, ds_height, ch, sigma / downsize, sigma2 / downsize, guide, ds_manifolds, refine_manifolds);
   dt_free_align(ds_in);
 
   // upscale manifolds
@@ -517,7 +633,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const size_t height = roi_out->height;
   const float* in = (float*)ivoid;
   float* out = (float*)ovoid;
-  const float sigma = MAX(d->radius / scale, 1.0f);
+  const float sigma = fmaxf(d->radius / scale, 1.0f);
+  const float sigma2 = fmaxf(d->radius * d->radius/* * d->radius*/ / scale, 1.0f);
 
   if(ch != 4)
   {
@@ -525,12 +642,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     return;
   }
 
-  const dt_iop_cacorrectrgb_guide_channel_t guide = d->guide_channel;
-  const dt_iop_cacorrectrgb_mode_t mode = d->mode;
   // whether to be very conservative in preserving the original image, or to
   // keep algorithm result even if it overshoots
   const float safety = powf(20.0f, 1.0f - d->strength);
-  reduce_chromatic_aberrations(in, width, height, ch, sigma, guide, mode, safety, out);
+  reduce_chromatic_aberrations(in, width, height, ch, sigma, sigma2, d->guide_channel, d->mode, d->refine_manifolds, safety, out);
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -542,6 +657,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->radius, p->radius);
   dt_bauhaus_slider_set_soft(g->strength, p->strength);
   dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->refine_manifolds), p->refine_manifolds);
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -552,6 +668,7 @@ void reload_defaults(dt_iop_module_t *module)
   d->radius = 5.0f;
   d->strength = 0.5f;
   d->mode = DT_CACORRECT_MODE_STANDARD;
+  d->refine_manifolds = FALSE;
 
   dt_iop_cacorrectrgb_gui_data_t *g = (dt_iop_cacorrectrgb_gui_data_t *)module->gui_data;
   if(g)
@@ -561,6 +678,7 @@ void reload_defaults(dt_iop_module_t *module)
     dt_bauhaus_slider_set_soft_range(g->radius, 1.0, 20.0);
     dt_bauhaus_slider_set_default(g->strength, d->strength);
     dt_bauhaus_combobox_set_default(g->mode, d->mode);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->refine_manifolds), d->refine_manifolds);
   }
 }
 
@@ -592,4 +710,12 @@ void gui_init(dt_iop_module_t *self)
                                          "darken only is particularly\n"
                                          "efficient to correct blue\n"
                                          "chromatic aberration."));
+  g->refine_manifolds = dt_bauhaus_toggle_from_params(self, "refine_manifolds");
+  gtk_widget_set_tooltip_text(g->refine_manifolds, _("runs an iterative approach\n"
+                                                    "with several radiuses.\n"
+                                                    "improves result on images\n"
+                                                    "with very large chromatic\n"
+                                                    "aberrations, but can smooth\n"
+                                                    "colors too much on other\n"
+                                                    "images."));
 }
