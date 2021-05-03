@@ -300,6 +300,8 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
         // can't handle when not in darkroom view. Plus we can do an
         // in-place conversion which saves allocating an extra buffer.
         const dt_iop_order_iccprofile_info_t *profile_to;
+        const dt_iop_order_iccprofile_info_t *const srgb_profile =
+          dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", DT_INTENT_RELATIVE_COLORIMETRIC);
         if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
         {
           // The work profile of a SOC JPEG is nonsensical. So that
@@ -311,24 +313,18 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
         else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
         {
           // don't touch the image
-          profile_to = NULL;
+          profile_to = srgb_profile;
         }
         else
         {
           profile_to = dt_ioppr_get_histogram_profile_info(dev);
+          if(!profile_to)
+            profile_to = srgb_profile;
         }
 
-        if(profile_to)
-        {
-          // FIXME: if liveview image is tagged and we can read its colorspace, use that
-          const dt_iop_order_iccprofile_info_t *const profile_from
-              = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", INTENT_PERCEPTUAL);
-          dt_ioppr_transform_image_colorspace_rgb(tmp_f, tmp_f, pw, ph, profile_from, profile_to,
-                                                  "live view histogram");
-        }
-
+        // FIXME: if liveview image is tagged and we can read its colorspace, use that
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, tmp_f, pw, ph,
-                                               DT_COLORSPACE_NONE, "");
+                                               srgb_profile, profile_to);
         dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
         dt_free_align(tmp_f);
       }
@@ -398,8 +394,10 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
                                      FALSE, FALSE, FALSE, FALSE, NULL, FALSE, FALSE, icc_type, icc_filename,
                                      DT_INTENT_PERCEPTUAL, NULL, NULL, 1, 1, NULL))
     {
+      const dt_iop_order_iccprofile_info_t *const histogram_profile =
+        dt_ioppr_get_histogram_profile_info(darktable.develop);
       darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, dat.buf, dat.head.width,
-                                             dat.head.height, DT_COLORSPACE_NONE, "");
+                                             dat.head.height, histogram_profile, histogram_profile);
       dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
       free(dat.buf);
     }
@@ -407,8 +405,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
   else // not in live view, no image selected
   {
     // if we just left live view, blank out its histogram
-    darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, NULL, 0, 0, DT_COLORSPACE_NONE,
-                                           "");
+    darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, NULL, 0, 0, NULL, NULL);
     dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
   }
 }
