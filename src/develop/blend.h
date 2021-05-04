@@ -318,6 +318,7 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *suppress;
   GtkWidget *masks_combine_combo;
   GtkWidget *blend_modes_combo;
+  GtkWidget *blend_modes_blend_order;
   GtkWidget *blend_mode_parameter_slider;
   GtkWidget *masks_invert_combo;
   GtkWidget *opacity_slider;

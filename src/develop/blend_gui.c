@@ -644,19 +644,20 @@ static void _blendop_blend_mode_callback(GtkWidget *combo, dt_iop_gui_blend_data
   }
 }
 
-static void _blendop_blend_mode_reverse_callback(GtkWidget *button, dt_iop_module_t *self)
+static void _blendop_blend_order_clicked(GtkWidget *button, GdkEventButton *event, dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return;
 
-  int active = dt_bauhaus_widget_get_quad_active(button);
-
-  dt_develop_blend_params_t *bp = self->blend_params;
+  dt_develop_blend_params_t *bp = (dt_develop_blend_params_t *)module->blend_params;
+  const gboolean active = !(bp->blend_mode & DEVELOP_BLEND_REVERSE);
   if(!active)
     bp->blend_mode &= ~DEVELOP_BLEND_REVERSE;
   else
     bp->blend_mode |= DEVELOP_BLEND_REVERSE;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), active);
+
+  dt_dev_add_history_item(darktable.develop, module, TRUE);
   dt_control_queue_redraw_widget(GTK_WIDGET(button));
 }
 
@@ -2735,7 +2736,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   }
 
   gboolean blend_mode_reversed = (module->blend_params->blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE;
-  dt_bauhaus_widget_set_quad_active(bd->blend_modes_combo, blend_mode_reversed);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->blend_modes_blend_order), blend_mode_reversed);
 
   dt_bauhaus_slider_set_soft(bd->blend_mode_parameter_slider, module->blend_params->blend_parameter);
   gtk_widget_set_sensitive(bd->blend_mode_parameter_slider,
@@ -3036,6 +3037,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
         g_list_nth_data(bd->masks_modes_toggles,
                         g_list_index(bd->masks_modes, (gconstpointer)DEVELOP_MASK_DISABLED)));
 
+    GtkWidget *blend_modes_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
     bd->blend_modes_combo = dt_bauhaus_combobox_new(module);
     dt_bauhaus_widget_set_label(bd->blend_modes_combo, N_("blend"), N_("blend mode"));
     gtk_widget_set_tooltip_text(bd->blend_modes_combo, _("choose blending mode"));
@@ -3043,12 +3046,14 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     g_signal_connect(G_OBJECT(bd->blend_modes_combo), "value-changed",
                      G_CALLBACK(_blendop_blend_mode_callback), bd);
     dt_gui_add_help_link(GTK_WIDGET(bd->blend_modes_combo), dt_get_help_url("masks_blending_op"));
+    gtk_box_pack_start(GTK_BOX(blend_modes_hbox), bd->blend_modes_combo, TRUE, TRUE, 0);
 
-    dt_bauhaus_widget_set_quad_paint(bd->blend_modes_combo, dtgtk_cairo_paint_invert, 0, NULL);
-    dt_bauhaus_widget_set_quad_toggle(bd->blend_modes_combo, TRUE);
-    g_signal_connect(G_OBJECT(bd->blend_modes_combo), "quad-pressed",
-                     G_CALLBACK(_blendop_blend_mode_reverse_callback), module);
-    dt_bauhaus_widget_set_quad_active(bd->blend_modes_combo, FALSE);
+    bd->blend_modes_blend_order = dt_iop_togglebutton_new(module, "blend`tools", N_("toggle blend order"), NULL,
+                                                          G_CALLBACK(_blendop_blend_order_clicked), FALSE,
+                                                          0, 0, dtgtk_cairo_paint_invert, blend_modes_hbox);
+    gtk_widget_set_tooltip_text(bd->blend_modes_blend_order, _("toggle the blending order between the input and the output of the module,"
+                                                               "\nby default the output will be blended on top of the input,"
+                                                               "\norder can be reversed by clicking on the icon (input on top of output)"));
 
     bd->blend_mode_parameter_slider = dt_bauhaus_slider_new_with_range(module, -3.0f, 3.0f, .02f, 0.0f, 3);
     dt_bauhaus_slider_set_format(bd->blend_mode_parameter_slider, _("%.2f EV"));
@@ -3152,7 +3157,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_widget_set_name(GTK_WIDGET(bd->masks_modes_box), "blending-tabs");
 
     bd->top_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-    gtk_box_pack_start(GTK_BOX(bd->top_box), bd->blend_modes_combo, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(bd->top_box), blend_modes_hbox, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->top_box), bd->blend_mode_parameter_slider, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->top_box), bd->opacity_slider, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(bd->top_box), TRUE, TRUE, 0);
