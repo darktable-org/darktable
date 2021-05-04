@@ -9,6 +9,7 @@ build/lib/darktable/plugins/introspection_bilateral.cc
 build/lib/darktable/plugins/introspection_bloom.c
 build/lib/darktable/plugins/introspection_borders.c
 build/lib/darktable/plugins/introspection_cacorrect.c
+build/lib/darktable/plugins/introspection_cacorrectrgb.c
 build/lib/darktable/plugins/introspection_censorize.c
 build/lib/darktable/plugins/introspection_channelmixer.c
 build/lib/darktable/plugins/introspection_channelmixerrgb.c
@@ -27,6 +28,7 @@ build/lib/darktable/plugins/introspection_colorout.c
 build/lib/darktable/plugins/introspection_colorreconstruction.c
 build/lib/darktable/plugins/introspection_colortransfer.c
 build/lib/darktable/plugins/introspection_colorzones.c
+build/lib/darktable/plugins/introspection_crop.c
 build/lib/darktable/plugins/introspection_defringe.c
 build/lib/darktable/plugins/introspection_demosaic.c
 build/lib/darktable/plugins/introspection_denoiseprofile.c
@@ -184,6 +186,7 @@ src/iop/bilateral.cc
 src/iop/bloom.c
 src/iop/borders.c
 src/iop/cacorrect.c
+src/iop/cacorrectrgb.c
 src/iop/censorize.c
 src/iop/channelmixer.c
 src/iop/channelmixerrgb.c
@@ -203,6 +206,7 @@ src/iop/colorout.c
 src/iop/colorreconstruction.c
 src/iop/colortransfer.c
 src/iop/colorzones.c
+src/iop/crop.c
 src/iop/defringe.c
 src/iop/demosaic.c
 src/iop/denoiseprofile.c
