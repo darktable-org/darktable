@@ -397,7 +397,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
     {
       char *filedir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
       dt_presets_save_to_file(g->old_id, name, filedir);
-      dt_control_log(_("preset %s was successfully saved"), name);
+      dt_control_log(_("preset %s was successfully exported"), name);
       g_free(filedir);
       gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
       dt_conf_set_string("ui_last/export_path", folder);
@@ -475,7 +475,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
   snprintf(title, sizeof(title), _("edit `%s' for module `%s'"), g->original_name, g->module_name);
   GtkWidget *dialog = gtk_dialog_new_with_buttons
     (title, g->parent, GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
-     _("_cancel"), GTK_RESPONSE_CANCEL, _("_save..."), GTK_RESPONSE_YES,
+     _("_cancel"), GTK_RESPONSE_CANCEL, _("_export..."), GTK_RESPONSE_YES,
      _("delete"), GTK_RESPONSE_REJECT, _("_ok"), GTK_RESPONSE_OK, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
 
@@ -710,7 +710,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
     GtkWidget *w = gtk_dialog_get_widget_for_response(GTK_DIALOG(dialog), GTK_RESPONSE_REJECT);
     if(w) gtk_widget_set_sensitive(w, FALSE);
   }
-  // disable save button if the preset is not already in the database
+  // disable export button if the preset is not already in the database
   if(g->old_id < 0)
   {
     GtkWidget *w = gtk_dialog_get_widget_for_response(GTK_DIALOG(dialog), GTK_RESPONSE_YES);
