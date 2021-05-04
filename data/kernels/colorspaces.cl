@@ -16,8 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "color_conversion.cl"
-#include "colorspace.cl"
+#include "color_conversion.h"
+#include "colorspace.h"
 
 kernel void
 colorspaces_transform_lab_to_rgb_matrix(read_only const image2d_t in, write_only image2d_t out, const int width, const int height,
