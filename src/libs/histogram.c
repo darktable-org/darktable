@@ -53,10 +53,6 @@ typedef enum dt_lib_histogram_highlight_t
   DT_LIB_HISTOGRAM_HIGHLIGHT_NONE = 0,
   DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT,
   DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE,
-  // these are "virtual" highlights for adjusting vectorscope
-  // FIXME: a bit hacky
-  DT_LIB_HISTOGRAM_HIGHLIGHT_SCALE,
-  DT_LIB_HISTOGRAM_HIGHLIGHT_OFFSET,
 } dt_lib_histogram_highlight_t;
 
 typedef enum dt_lib_histogram_scope_type_t
@@ -927,7 +923,7 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
 
   if(d->dragging)
   {
-    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE && d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_OFFSET)
+    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
       d->vectorscope_offset[0] = d->button_down_value[0] + event->x - d->button_down_x;
       d->vectorscope_offset[1] = d->button_down_value[1] + event->y - d->button_down_y;
@@ -1018,20 +1014,10 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
   else
   {
     // FIXME: should change cursor from "grab" to "grabbing", but this would mean rewriting dt_control_change_cursor() to use gdk_cursor_new_from_name()
-    d->dragging = FALSE;
     if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
-      if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
-      {
-        d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_SCALE;
-        d->button_down_value[0] = d->vectorscope_scale;
-      }
-      else
-      {
-        d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_OFFSET;
-        d->button_down_value[0] = d->vectorscope_offset[0];
-        d->button_down_value[1] = d->vectorscope_offset[1];
-      }
+      d->button_down_value[0] = d->vectorscope_offset[0];
+      d->button_down_value[1] = d->vectorscope_offset[1];
       d->dragging = TRUE;
     }
     else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
@@ -1043,6 +1029,10 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
     {
       d->button_down_value[0] = dt_dev_exposure_get_black(dev);
       d->dragging = TRUE;
+    }
+    else
+    {
+      d->dragging = FALSE;
     }
     d->button_down_x = event->x;
     d->button_down_y = event->y;
@@ -1065,13 +1055,10 @@ static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *eve
   // scroll events
   if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
-    if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+    if(dt_modifier_is(event->state, GDK_SHIFT_MASK) && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
-      if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
-      {
-        d->vectorscope_scale = CLAMP(d->vectorscope_scale * (1.f + 0.1f * delta_y), 0.2f, 8.f);
-        dt_control_queue_redraw_widget(widget);
-      }
+      d->vectorscope_scale = CLAMP(d->vectorscope_scale * (1.f + 0.1f * delta_y), 0.2f, 8.f);
+      dt_control_queue_redraw_widget(widget);
     }
     else if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
     {
@@ -1098,9 +1085,6 @@ static gboolean _drawable_button_release_callback(GtkWidget *widget, GdkEventBut
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   d->dragging = FALSE;
-  if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_SCALE ||
-     d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_OFFSET)
-    d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
   // hack to recalculate the highlight as mouse may be over a different part of the widget
   // FIXME: generate an event instead?
   _drawable_motion_notify_callback(widget, (GdkEventMotion *)event, user_data);
