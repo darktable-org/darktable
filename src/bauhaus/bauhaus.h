@@ -220,10 +220,6 @@ typedef struct dt_bauhaus_t
   float baseline_size;                   // height of the slider bar
   float border_width;                    // width of the border of the slider marker
   float quad_width;                      // width of the quad area to paint icons
-  float label_font_size;                 // percent of line height to fill with font for labels
-  float value_font_size;                 // percent of line height to fill with font for values
-  char label_font[256];                  // font to draw the label with
-  char value_font[256];                  // font to draw the value with
   PangoFontDescription *pango_font_desc; // no need to recreate this for every string we want to print
   PangoFontDescription *pango_sec_font_desc; // as above but for section labels
 
