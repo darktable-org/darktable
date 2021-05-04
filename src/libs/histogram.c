@@ -1057,15 +1057,15 @@ static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *eve
     return FALSE;
   }
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
-  int delta_y;
+  int delta;
   // note are using unit rather than smooth scroll events, as
   // exposure changes can get laggy if handling a multitude of smooth
   // scroll events
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_unit_delta(event, &delta))
   {
     if(dt_modifier_is(event->state, GDK_SHIFT_MASK) && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
-      d->vectorscope_scale = CLAMP(d->vectorscope_scale * (1.f + 0.1f * delta_y), 20.f, 250.f);
+      d->vectorscope_scale = CLAMP(d->vectorscope_scale * (1.f + 0.1f * delta), 20.f, 250.f);
       d->vectorscope_auto_scale = FALSE;
       dt_control_queue_redraw_widget(widget);
     }
@@ -1076,12 +1076,12 @@ static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *eve
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
       {
         const float ce = dt_dev_exposure_get_exposure(dev);
-        dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta_y);
+        dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta);
       }
       else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
       {
         const float cb = dt_dev_exposure_get_black(dev);
-        dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y);
+        dt_dev_exposure_set_black(dev, cb + 0.001f * delta);
       }
     }
   }
