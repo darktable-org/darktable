@@ -2,7 +2,7 @@
 # install opencl kernel source files
 #
 FILE(GLOB DT_OPENCL_KERNELS "*.cl" "common.h")
-FILE(GLOB DT_OPENCL_EXTRA "programs.conf" "rgb_norms.h" "noise_generator.h")
+FILE(GLOB DT_OPENCL_EXTRA "programs.conf" "rgb_norms.h" "noise_generator.h" "color_conversion.h" "colorspace.h")
 
 add_custom_target(testcompile_opencl_kernels ALL)
 
