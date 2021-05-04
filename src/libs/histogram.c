@@ -52,7 +52,11 @@ typedef enum dt_lib_histogram_highlight_t
 {
   DT_LIB_HISTOGRAM_HIGHLIGHT_NONE = 0,
   DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT,
-  DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE
+  DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE,
+  // these are "virtual" highlights for adjusting vectorscope
+  // FIXME: a bit hacky
+  DT_LIB_HISTOGRAM_HIGHLIGHT_SCALE,
+  DT_LIB_HISTOGRAM_HIGHLIGHT_OFFSET,
 } dt_lib_histogram_highlight_t;
 
 typedef enum dt_lib_histogram_scope_type_t
@@ -103,6 +107,7 @@ typedef struct dt_lib_histogram_t
   uint8_t *vectorscope_graph;
   float vectorscope_pt[2];            // point colorpicker position
   float vectorscope_scale;
+  float vectorscope_offset[2];
   int vectorscope_diameter_px;
   // FIXME: These arrays could instead be alloc'd/free'd. Would the only concern about making dt_lib_histogram_t large so long be if it were stored in the DB?
   float hue_ring_rgb[6][VECTORSCOPE_HUES][4] DT_ALIGNED_ARRAY;
@@ -121,7 +126,7 @@ typedef struct dt_lib_histogram_t
   // drag to change parameters
   gboolean dragging;
   int32_t button_down_x, button_down_y;
-  float button_down_value;
+  float button_down_value[2];
   // depends on mouse position
   dt_lib_histogram_highlight_t highlight;
   // state set by buttons
@@ -362,13 +367,13 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   dt_atomic_int *const restrict binned = __builtin_assume_aligned(dt_alloc_align(64, sizeof(int) * diam_px * diam_px), 64);
   memset(binned, 0, sizeof(int) * diam_px * diam_px);
   // FIXME: move verbosed interleaved comments into a method note at the start, as the code itself is succinct and clear
-  // FIXME: even with getting rid of the extra profile conversion hop there's no noticeable speedup -- maybe this loop is memory bound -- if can get rid of one of the output buffers and still no speedup, consider doing more work in this loop, such as atomic binning
   float bounds_x = 0.f, bounds_y = 0.f;
   // FIXME: average neighboring pixels on x but not y -- may be enough of an optimization
   const int sample_max_x = sample_width - (sample_width % 2);
   const int sample_max_y = sample_height - (sample_height % 2);
   // FIXME: if decimate/downsample, should blur before this
   // FIXME: instead of scaling, if chromaticity really depends only on XY, then make a lookup on startup of for each grid cell on graph output the minimum XY to populate that cell, then either brute-force scan that LUT, or start from position of last pixel and scan, or do an optimized search (1/2, 1/2, 1/2, etc.) -- would also find point sample pixel this way
+  // FIXME: make lookups (Luv and JzAzBz) for each bin of the minimum XYZ for that cell, then do 2D/3D binary search to find the first bin which each color can fit into
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(input, binned, sample_max_x, sample_max_y, roi, pt_sample_x, pt_sample_y, d, diam_px, max_diam, input_profile, vs_type) \
@@ -457,6 +462,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         continue;
       }
 
+      // set some sort of roll-off for lowest counts, so that they are barely visible and maybe scattered single counts aren't drawn at all -- this may be beyond what the LUT can do for this
       float b[4] DT_ALIGNED_PIXEL = {scale * count,
         max_diam * (((out_x + 0.5f) / diam_px) - 0.5f),
         max_diam * (((out_y + 0.5f) / diam_px) - 0.5f)};
@@ -693,13 +699,14 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   const double scale = min_size / (vs_radius * 2.) * factor;
 
   cairo_save(cr);
+  cairo_translate(cr, d->vectorscope_offset[0], d->vectorscope_offset[1]);
 
   // background
   cairo_pattern_t *p = cairo_pattern_create_radial(0.5 * width, 0.5 * height, factor * 0.5 * min_size,
                                                    0.5 * width, 0.5 * height, factor * 0.5 * hypot(min_size, min_size));
   cairo_pattern_add_color_stop_rgb(p, 0., darktable.bauhaus->graph_bg.red, darktable.bauhaus->graph_bg.green, darktable.bauhaus->graph_bg.blue);
   cairo_pattern_add_color_stop_rgb(p, 1., darktable.bauhaus->graph_exterior.red, darktable.bauhaus->graph_exterior.green, darktable.bauhaus->graph_exterior.blue);
-  cairo_rectangle(cr, 0, 0, width, height);
+  cairo_rectangle(cr, -d->vectorscope_offset[0], -d->vectorscope_offset[1], width, height);
   cairo_set_source(cr, p);
   cairo_fill(cr);
   cairo_pattern_destroy(p);
@@ -922,11 +929,19 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
   {
     if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
-      // FIXME: this allows for scaling, but not repositioning the center -- would there be occassions when it would be helpful to make the graph off-center?
-      const float down = hypotf(d->button_down_x - allocation.width/2, d->button_down_y - allocation.height/2);
-      const float cur = hypotf(event->x - allocation.width/2, event->y - allocation.height/2);
-      const int range = MIN(allocation.width, allocation.height);
-      d->vectorscope_scale = CLAMP(d->button_down_value + 2.5f * (cur - down) / range, 0.7f, 8.f);
+      if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_SCALE)
+      {
+        // FIXME: this was always awkward, but more so now that aren't scaling around center -- eliminate?
+        const float down = hypotf(d->button_down_x - allocation.width/2, d->button_down_y - allocation.height/2);
+        const float cur = hypotf(event->x - allocation.width/2, event->y - allocation.height/2);
+        const int range = MIN(allocation.width, allocation.height);
+        d->vectorscope_scale = CLAMP(d->button_down_value[0] + 2.5f * (cur - down) / range, 0.7f, 8.f);
+      }
+      else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_OFFSET)
+      {
+        d->vectorscope_offset[0] = d->button_down_value[0] + event->x - d->button_down_x;
+        d->vectorscope_offset[1] = d->button_down_value[1] + event->y - d->button_down_y;
+      }
       dt_control_queue_redraw_widget(widget);
     }
     else
@@ -939,12 +954,12 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
       // FIXME: see dt_bauhaus_slider_postponed_value_change(): delay processing until the pixelpipe can update based on dev->preview_average_delay for smoother interaction
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
       {
-        const float exposure = d->button_down_value + diff * 4.0f / (float)range;
+        const float exposure = d->button_down_value[0] + diff * 4.0f / (float)range;
         dt_dev_exposure_set_exposure(dev, exposure);
       }
       else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
       {
-        const float black = d->button_down_value - diff * .1f / (float)range;
+        const float black = d->button_down_value[0] - diff * .1f / (float)range;
         dt_dev_exposure_set_black(dev, black);
       }
     }
@@ -963,7 +978,7 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
     if(!hooks_available || d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
-      gtk_widget_set_tooltip_text(widget, _("shift+scroll/shift+drag to change scale,\nctrl+scroll to change display height"));
+      gtk_widget_set_tooltip_text(widget, _("shift+scroll/shift+drag to change scale,\nclick+drag to move center,\nshift+double-click to reset scale/center,\nctrl+scroll to change display height"));
     }
     // FIXME: could a GtkRange be used to do this work?
     else if((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM) ||
@@ -999,13 +1014,15 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
 
   if(event->type == GDK_2BUTTON_PRESS)
   {
-    if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
+    if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE ||
+       d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
     {
       dt_dev_exposure_reset_defaults(dev);
     }
     else if(dt_modifier_is(event->state, GDK_SHIFT_MASK) && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
       d->vectorscope_scale = 1.0f;
+      d->vectorscope_offset[0] = d->vectorscope_offset[1] = 0.f;
       dt_control_queue_redraw_widget(widget);
     }
   }
@@ -1013,19 +1030,29 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
   {
     // FIXME: should change cursor from "grab" to "grabbing", but this would mean rewriting dt_control_change_cursor() to use gdk_cursor_new_from_name()
     d->dragging = FALSE;
-    if(dt_modifier_is(event->state, GDK_SHIFT_MASK) && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
+    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
-      d->button_down_value = d->vectorscope_scale;
+      if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+      {
+        d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_SCALE;
+        d->button_down_value[0] = d->vectorscope_scale;
+      }
+      else
+      {
+        d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_OFFSET;
+        d->button_down_value[0] = d->vectorscope_offset[0];
+        d->button_down_value[1] = d->vectorscope_offset[1];
+      }
       d->dragging = TRUE;
     }
     else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
     {
-      d->button_down_value = dt_dev_exposure_get_exposure(dev);
+      d->button_down_value[0] = dt_dev_exposure_get_exposure(dev);
       d->dragging = TRUE;
     }
     else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
     {
-      d->button_down_value = dt_dev_exposure_get_black(dev);
+      d->button_down_value[0] = dt_dev_exposure_get_black(dev);
       d->dragging = TRUE;
     }
     d->button_down_x = event->x;
@@ -1053,7 +1080,7 @@ static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *eve
     {
       if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
       {
-        d->vectorscope_scale = CLAMP(d->vectorscope_scale * (1.f + 0.1f * delta_y), 0.7f, 8.f);
+        d->vectorscope_scale = CLAMP(d->vectorscope_scale * (1.f + 0.1f * delta_y), 0.25f, 8.f);
         dt_control_queue_redraw_widget(widget);
       }
     }
@@ -1082,6 +1109,9 @@ static gboolean _drawable_button_release_callback(GtkWidget *widget, GdkEventBut
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   d->dragging = FALSE;
+  if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_SCALE ||
+     d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_OFFSET)
+    d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
   // hack to recalculate the highlight as mouse may be over a different part of the widget
   // FIXME: generate an event instead?
   _drawable_motion_notify_callback(widget, (GdkEventMotion *)event, user_data);
@@ -1549,8 +1579,9 @@ void gui_init(dt_lib_module_t *self)
   d->hue_ring_prof = NULL;
   // initially no vectorscope to draw
   d->vectorscope_radius = 0.f;
-  // FIXME: should this come from conf? currently reset on startup
+  // FIXME: should these reset which change image?
   d->vectorscope_scale = 1.f;
+  d->vectorscope_offset[0] = d->vectorscope_offset[1] = 0.f;
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
