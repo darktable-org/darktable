@@ -1566,6 +1566,7 @@ void init_presets(dt_lib_module_t *self)
   AM("basecurve");
   AM("basicadj");
   AM("clipping");
+  AM("crop");
   AM("colisa");
   AM("colorreconstruct");
   AM("demosaic");
@@ -1650,6 +1651,7 @@ void init_presets(dt_lib_module_t *self)
   AM("ashift");
   AM("basecurve");
   AM("clipping");
+  AM("crop");
   AM("denoiseprofile");
   AM("exposure");
   AM("flip");
@@ -1681,6 +1683,7 @@ void init_presets(dt_lib_module_t *self)
   AM("basecurve");
   AM("toneequal");
   AM("clipping");
+  AM("crop");
   AM("flip");
   AM("exposure");
   AM("temperature");
@@ -1731,6 +1734,7 @@ void init_presets(dt_lib_module_t *self)
   AM("filmicrgb");
   AM("toneequal");
   AM("clipping");
+  AM("crop");
   AM("flip");
   AM("exposure");
   AM("temperature");
@@ -1775,6 +1779,7 @@ void init_presets(dt_lib_module_t *self)
   AM("bilateral");
   AM("cacorrect");
   AM("clipping");
+  AM("crop");
   AM("colorchecker");
   AM("colorin");
   AM("colorout");
