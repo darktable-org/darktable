@@ -927,21 +927,10 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
 
   if(d->dragging)
   {
-    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
+    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE && d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_OFFSET)
     {
-      if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_SCALE)
-      {
-        // FIXME: this was always awkward, but more so now that aren't scaling around center -- eliminate?
-        const float down = hypotf(d->button_down_x - allocation.width/2, d->button_down_y - allocation.height/2);
-        const float cur = hypotf(event->x - allocation.width/2, event->y - allocation.height/2);
-        const int range = MIN(allocation.width, allocation.height);
-        d->vectorscope_scale = CLAMP(d->button_down_value[0] + 2.5f * (cur - down) / range, 0.7f, 8.f);
-      }
-      else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_OFFSET)
-      {
-        d->vectorscope_offset[0] = d->button_down_value[0] + event->x - d->button_down_x;
-        d->vectorscope_offset[1] = d->button_down_value[1] + event->y - d->button_down_y;
-      }
+      d->vectorscope_offset[0] = d->button_down_value[0] + event->x - d->button_down_x;
+      d->vectorscope_offset[1] = d->button_down_value[1] + event->y - d->button_down_y;
       dt_control_queue_redraw_widget(widget);
     }
     else
@@ -978,7 +967,7 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
     if(!hooks_available || d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
-      gtk_widget_set_tooltip_text(widget, _("shift+scroll/shift+drag to change scale,\nclick+drag to move center,\nshift+double-click to reset scale/center,\nctrl+scroll to change display height"));
+      gtk_widget_set_tooltip_text(widget, _("shift+scroll to change scale,\nclick+drag to move center,\ndouble-click to reset view,\nctrl+scroll to change display height"));
     }
     // FIXME: could a GtkRange be used to do this work?
     else if((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM) ||
@@ -1019,7 +1008,7 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
     {
       dt_dev_exposure_reset_defaults(dev);
     }
-    else if(dt_modifier_is(event->state, GDK_SHIFT_MASK) && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
+    else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
       d->vectorscope_scale = 1.0f;
       d->vectorscope_offset[0] = d->vectorscope_offset[1] = 0.f;
@@ -1080,7 +1069,7 @@ static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *eve
     {
       if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
       {
-        d->vectorscope_scale = CLAMP(d->vectorscope_scale * (1.f + 0.1f * delta_y), 0.25f, 8.f);
+        d->vectorscope_scale = CLAMP(d->vectorscope_scale * (1.f + 0.1f * delta_y), 0.2f, 8.f);
         dt_control_queue_redraw_widget(widget);
       }
     }
