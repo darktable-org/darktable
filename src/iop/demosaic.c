@@ -3455,9 +3455,6 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     rgb2 = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
     if(rgb2 == NULL) goto error;
 
-
-
-
     {
       // populate data
       size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
@@ -3604,6 +3601,8 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     dt_opencl_release_mem_object(PQ_dir);
     dt_opencl_release_mem_object(VP_diff);
     dt_opencl_release_mem_object(HQ_diff);
+    dt_opencl_release_mem_object(dev_green_eq);
+    dev_green_eq = cfa = rgb0 = rgb1 = rgb2 = VH_dir = PQ_dir = VP_diff = HQ_diff = NULL;
 
     dt_dev_write_rawdetail_mask_cl(piece, dev_aux, roi_in, DT_DEV_DETAIL_MASK_DEMOSAIC);
 
@@ -3638,9 +3637,7 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   }
 
   if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
-  dt_opencl_release_mem_object(dev_green_eq);
-
-  dev_aux = dev_green_eq = dev_tmp = cfa = rgb0 = rgb1 = rgb2 = VH_dir = PQ_dir = VP_diff = HQ_diff = NULL;
+  dev_aux = NULL;
 
   // color smoothing
   if((data->color_smoothing) && smooth)
