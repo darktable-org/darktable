@@ -100,10 +100,16 @@ static GdkRGBA * default_color_assign()
   return gdk_rgba_copy(&color);
 }
 
+void dt_bauhaus_widget_set_section(GtkWidget *widget, const gboolean is_section)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  w->is_section = is_section;
+}
+
 static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cairo_t *cr,
                            char *text, float x_pos, float y_pos, float max_width,
                            gboolean right_aligned, gboolean calc_only,
-                           PangoEllipsizeMode ellipsize, gboolean is_markup)
+                           PangoEllipsizeMode ellipsize, gboolean is_markup, gboolean is_label)
 {
   PangoLayout *layout = pango_cairo_create_layout(cr);
 
@@ -126,7 +132,10 @@ static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cai
     pango_layout_set_text(layout, NULL, 0);
   }
 
-  PangoFontDescription *font_desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  PangoFontDescription *font_desc =
+    w->is_section && is_label
+    ? pango_font_description_copy_static(darktable.bauhaus->pango_sec_font_desc)
+    : pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
 
   // This should be able to update the font style for current text depending on :hover, :focused, etc.
   // CSS pseudo-classes, yet it defaults to system font.
@@ -519,8 +528,6 @@ void dt_bauhaus_load_theme()
   darktable.bauhaus->line_space = 1.5;
   darktable.bauhaus->line_height = 9;
   darktable.bauhaus->marker_size = 0.25f;
-  darktable.bauhaus->label_font_size = 0.6f;
-  darktable.bauhaus->value_font_size = 0.6f;
 
   GtkWidget *root_window = dt_ui_main_window(darktable.gui->ui);
   GtkStyleContext *ctx = gtk_style_context_new();
@@ -561,13 +568,23 @@ void dt_bauhaus_load_theme()
 
   PangoFontDescription *pfont = 0;
   gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font", &pfont, NULL);
-  gtk_widget_path_free(path);
 
   // make sure we release previously loaded font
   if(darktable.bauhaus->pango_font_desc)
     pango_font_description_free(darktable.bauhaus->pango_font_desc);
 
   darktable.bauhaus->pango_font_desc = pfont;
+
+  if(darktable.bauhaus->pango_sec_font_desc)
+    pango_font_description_free(darktable.bauhaus->pango_sec_font_desc);
+
+  // now get the font for the section labels
+  gtk_widget_path_iter_set_name(path, pos, "section_label");
+  gtk_style_context_set_path(ctx, path);
+  gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font", &pfont, NULL);
+  darktable.bauhaus->pango_sec_font_desc = pfont;
+
+  gtk_widget_path_free(path);
 
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 128, 128);
   cairo_t *cr = cairo_create(cst);
@@ -1806,12 +1823,13 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       char *text = dt_bauhaus_slider_get_text(current);
       set_color(cr, *fg_color);
       float value_width = show_pango_text(w, context, cr, text, wd - darktable.bauhaus->quad_width - INNER_PADDING,
-                                          0, 0, TRUE, FALSE, PANGO_ELLIPSIZE_END, FALSE);
+                                          0, 0, TRUE, FALSE, PANGO_ELLIPSIZE_END, FALSE, FALSE);
       g_free(text);
 
       float label_width = width - darktable.bauhaus->quad_width - INNER_PADDING * 2.0 - value_width;
       if(label_width > 0)
-        show_pango_text(w, context, cr, w->label, 0, 0, label_width, FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE);
+        show_pango_text(w, context, cr, w->label, 0, 0, label_width, FALSE, FALSE,
+                        PANGO_ELLIPSIZE_END, FALSE, FALSE);
 
       cairo_restore(cr);
     }
@@ -1853,14 +1871,14 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
             gchar *esc_label = g_markup_escape_text(entry->label, -1);
             gchar *label = g_strdup_printf("<b>%s</b>", esc_label);
             label_width = show_pango_text(w, context, cr, label, INNER_PADDING, ht * k + darktable.bauhaus->widget_space,
-                                          max_width, FALSE, FALSE, ellipsis, TRUE);
+                                          max_width, FALSE, FALSE, ellipsis, TRUE, FALSE);
             g_free(label);
             g_free(esc_label);
           }
           else
             label_width
                 = show_pango_text(w, context, cr, entry->label, wd - darktable.bauhaus->quad_width,
-                                  ht * k + darktable.bauhaus->widget_space, max_width, TRUE, FALSE, ellipsis, FALSE);
+                                  ht * k + darktable.bauhaus->widget_space, max_width, TRUE, FALSE, ellipsis, FALSE, FALSE);
 
           // prefer the entry over the label wrt. ellipsization when expanded
           if(first_label)
@@ -1883,7 +1901,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         set_color(cr, text_color);
         show_pango_text(w, context, cr, w->label, INNER_PADDING, darktable.bauhaus->widget_space,
                         wd - INNER_PADDING - darktable.bauhaus->quad_width - first_label_width,
-                        FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE);
+                        FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE, TRUE);
       }
       g_free(keys);
     }
@@ -1988,10 +2006,10 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
 
       //calculate total widths of label and combobox
       const float label_width
-        = show_pango_text(w, context, cr, w->label, 0, 0, 0, FALSE, TRUE, PANGO_ELLIPSIZE_END, FALSE);
+        = show_pango_text(w, context, cr, w->label, 0, 0, 0, FALSE, TRUE, PANGO_ELLIPSIZE_END, FALSE, TRUE);
       const float combo_width
         = show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING, 0, 0,
-                          TRUE, TRUE, combo_ellipsis, FALSE);
+                          TRUE, TRUE, combo_ellipsis, FALSE, FALSE);
 
       //check if they fit
       if((label_width + combo_width) > available_width)
@@ -1999,25 +2017,25 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
         //they don't fit: evenly divide the available width between the two in proportion
         const float ratio = label_width / (label_width + combo_width);
         show_pango_text(w, context, cr, w->label, 0, darktable.bauhaus->widget_space, available_width * ratio - INNER_PADDING * 2,
-                        FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE);
+                        FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE, TRUE);
         if(d->text_align == DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT)
           show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING, darktable.bauhaus->widget_space,
                           available_width * (1.0f - ratio),
-                          TRUE, FALSE, combo_ellipsis, FALSE);
+                          TRUE, FALSE, combo_ellipsis, FALSE, FALSE);
         else
           show_pango_text(w, context, cr, text, INNER_PADDING, darktable.bauhaus->widget_space,
                           available_width * (1.0f - ratio),
-                          FALSE, FALSE, combo_ellipsis, FALSE);
+                          FALSE, FALSE, combo_ellipsis, FALSE, FALSE);
       }
       else
       {
-        show_pango_text(w, context, cr, w->label, 0, darktable.bauhaus->widget_space, 0, FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE);
+        show_pango_text(w, context, cr, w->label, 0, darktable.bauhaus->widget_space, 0, FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE, TRUE);
         if(d->text_align == DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT)
           show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING, darktable.bauhaus->widget_space, 0,
-                          TRUE, FALSE, combo_ellipsis, FALSE);
+                          TRUE, FALSE, combo_ellipsis, FALSE, FALSE);
         else
           show_pango_text(w, context, cr, text, INNER_PADDING, darktable.bauhaus->widget_space, 0,
-                          FALSE, FALSE, combo_ellipsis, FALSE);
+                          FALSE, FALSE, combo_ellipsis, FALSE, FALSE);
       }
       break;
     }
@@ -2043,14 +2061,15 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
         char *text = dt_bauhaus_slider_get_text(widget);
         set_color(cr, *text_color);
         value_width = show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING,
-                                      0, 0, TRUE, FALSE, PANGO_ELLIPSIZE_END, FALSE);
+                                      0, 0, TRUE, FALSE, PANGO_ELLIPSIZE_END, FALSE, FALSE);
         g_free(text);
       }
       // label on top of marker:
       set_color(cr, *text_color);
       float label_width = width - darktable.bauhaus->quad_width - INNER_PADDING - value_width;
       if(label_width > 0)
-        show_pango_text(w, context, cr, w->label, 0, 0, label_width, FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE);
+        show_pango_text(w, context, cr, w->label, 0, 0, label_width,
+                        FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE, TRUE);
     }
     break;
     default:

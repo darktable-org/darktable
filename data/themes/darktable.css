@@ -624,13 +624,18 @@ overshoot.right
 }
 
 /* Labels of controls sections in modules */
-#section_label
+#section_label,
+#section_label *
 {
   padding: 0;
   color: @section_label;
-  border-bottom: 0.035em solid  @section_label;
   font-family: sans-serif;
   font-weight: 500;
+}
+
+#section_label
+{
+  border-bottom: 0.035em solid  @section_label;
 }
 
 #iop-plugin-ui #section_label,
