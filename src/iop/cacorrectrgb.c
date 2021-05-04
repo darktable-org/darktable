@@ -352,10 +352,10 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
       //
       // we can refine the manifolds by computing weights that reduce the influence
       // of pixels that are probably suffering from chromatic aberrations
-      const float pixelg = logf(fmaxf(in[k * 4 + guide], 1E-6f));
-      const float highg = logf(fmaxf(blurred_manifold_higher[k * 4 + guide], 1E-6f));
-      const float lowg = logf(fmaxf(blurred_manifold_lower[k * 4 + guide], 1E-6f));
-      const float avgg = logf(fmaxf(blurred_in[k * 4 + guide], 1E-6f));
+      const float pixelg = log2f(fmaxf(in[k * 4 + guide], 1E-6f));
+      const float highg = log2f(fmaxf(blurred_manifold_higher[k * 4 + guide], 1E-6f));
+      const float lowg = log2f(fmaxf(blurred_manifold_lower[k * 4 + guide], 1E-6f));
+      const float avgg = log2f(fmaxf(blurred_in[k * 4 + guide], 1E-6f));
 
       float w = 1.0f;
       for(size_t kc = 0; kc <= 1; kc++)
@@ -365,9 +365,9 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
         // and how close the log difference between the channels is
         // close to the wrong log difference between the channels.
 
-        const float pixel = logf(fmaxf(in[k * 4 + c], 1E-6f));
-        const float highc = logf(fmaxf(blurred_manifold_higher[k * 4 + c], 1E-6f));
-        const float lowc = logf(fmaxf(blurred_manifold_lower[k * 4 + c], 1E-6f));
+        const float pixel = log2f(fmaxf(in[k * 4 + c], 1E-6f));
+        const float highc = log2f(fmaxf(blurred_manifold_higher[k * 4 + c], 1E-6f));
+        const float lowc = log2f(fmaxf(blurred_manifold_lower[k * 4 + c], 1E-6f));
 
         // find how likely the pixel is part of a chromatic aberration
         // (lowc, lowg) and (highc, highg) are valid points
@@ -390,7 +390,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
           dist_to_bad = dist_to_lh;
 
         // make w higher if close to good, and smaller if close to bad.
-        w *= 5.0f * (0.2f + 1.0f / fmaxf(dist_to_good, 0.1f)) / (0.2f + 1.0f / fmaxf(dist_to_bad, 0.1f));
+        w *= 1.0f * (0.2f + 1.0f / fmaxf(dist_to_good, 0.1f)) / (0.2f + 1.0f / fmaxf(dist_to_bad, 0.1f));
       }
 
       if(pixelg > avgg)
@@ -399,11 +399,17 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
         {
           const size_t c = (guide + kc + 1) % 3;
           const float pixel = fmaxf(in[k * 4 + c], 1E-6f);
-          const float log_diff = logf(pixel) - pixelg;
+          const float log_diff = log2f(pixel) - pixelg;
           manifold_higher[k * 4 + c] = log_diff * w;
         }
         manifold_higher[k * 4 + guide] = fmaxf(in[k * 4 + guide], 0.0f) * w;
         manifold_higher[k * 4 + 3] = w;
+        // manifold_lower still contains the values from first iteration
+        // -> reset it.
+        for(size_t c = 0; c < 4; c++)
+        {
+          manifold_lower[k * 4 + c] = 0.0f;
+        }
       }
       else
       {
@@ -411,11 +417,17 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
         {
           const size_t c = (guide + kc + 1) % 3;
           const float pixel = fmaxf(in[k * 4 + c], 1E-6f);
-          const float log_diff = logf(pixel) - pixelg;
+          const float log_diff = log2f(pixel) - pixelg;
           manifold_lower[k * 4 + c] = log_diff * w;
         }
         manifold_lower[k * 4 + guide] = fmaxf(in[k * 4 + guide], 0.0f) * w;
         manifold_lower[k * 4 + 3] = w;
+        // manifold_higher still contains the values from first iteration
+        // -> reset it.
+        for(size_t c = 0; c < 4; c++)
+        {
+          manifold_higher[k * 4 + c] = 0.0f;
+        }
       }
     }
 
