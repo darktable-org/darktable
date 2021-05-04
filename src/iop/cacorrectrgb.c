@@ -610,7 +610,7 @@ static void reduce_chromatic_aberrations(const float* const restrict in,
                           float* const restrict out)
 
 {
-  const float downsize = 3.0f;
+  const float downsize = fminf(3.0f, sigma);
   const size_t ds_width = width / downsize;
   const size_t ds_height = height / downsize;
   float *const restrict ds_in = dt_alloc_sse_ps(dt_round_size_sse(ds_width * ds_height * ch));
