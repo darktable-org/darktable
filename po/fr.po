@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-04 22:45+0200\n"
-"PO-Revision-Date: 2021-05-04 22:45+0200\n"
+"POT-Creation-Date: 2021-05-04 22:48+0200\n"
+"PO-Revision-Date: 2021-05-04 23:00+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2175,11 +2175,11 @@ msgstr "préserver couleur"
 #: ../src/iop/basecurve.c:2098 ../src/iop/channelmixerrgb.c:3635
 #: ../src/iop/clipping.c:1887 ../src/iop/clipping.c:2145
 #: ../src/iop/clipping.c:2161 ../src/iop/clipping.c:2296
-#: ../src/iop/clipping.c:2323 ../src/iop/lens.cc:2228 ../src/iop/retouch.c:422
-#: ../src/libs/collect.c:1809 ../src/libs/colorpicker.c:633
-#: ../src/libs/export.c:1083 ../src/libs/live_view.c:343
-#: ../src/libs/live_view.c:368 ../src/libs/live_view.c:377
-#: ../src/libs/print_settings.c:1463
+#: ../src/iop/clipping.c:2323 ../src/iop/crop.c:1237 ../src/iop/crop.c:1264
+#: ../src/iop/lens.cc:2228 ../src/iop/retouch.c:422 ../src/libs/collect.c:1809
+#: ../src/libs/colorpicker.c:633 ../src/libs/export.c:1083
+#: ../src/libs/live_view.c:343 ../src/libs/live_view.c:368
+#: ../src/libs/live_view.c:377 ../src/libs/print_settings.c:1463
 msgid "none"
 msgstr "sans"
 
@@ -2344,6 +2344,79 @@ msgstr "quatre passes"
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:203
 msgid "five times"
 msgstr "cinq passes"
+
+#: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:61
+#: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:128
+msgid "guide"
+msgstr "guide"
+
+#: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:67
+#: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:132
+#: ../src/iop/bilateral.cc:312 ../src/iop/clahe.c:335 ../src/iop/dither.c:887
+#: ../src/iop/lowpass.c:584 ../src/iop/shadhi.c:695 ../src/iop/sharpen.c:718
+msgid "radius"
+msgstr "rayon"
+
+#: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:73
+#: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:136
+#: ../src/iop/bloom.c:407 ../src/iop/denoiseprofile.c:3643
+#: ../src/iop/grain.c:581 ../src/iop/hazeremoval.c:203
+#: ../src/iop/hotpixels.c:381 ../src/iop/nlmeans.c:527 ../src/iop/velvia.c:337
+msgid "strength"
+msgstr "force"
+
+#: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:79
+#: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:140
+msgid "correction mode"
+msgstr "mode de correction"
+
+#: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:85
+#: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:144
+msgid "very large chromatic aberration"
+msgstr "aberrations chromatiques très larges"
+
+#: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
+#: ../src/common/collection.c:1498 ../src/develop/blend_gui.c:1972
+#: ../src/develop/blend_gui.c:1999 ../src/develop/lightroom.c:828
+#: ../src/iop/bilateral.cc:317 ../src/iop/channelmixer.c:625
+#: ../src/iop/channelmixer.c:635 ../src/iop/channelmixerrgb.c:3594
+#: ../src/iop/temperature.c:1877 ../src/iop/temperature.c:2028
+#: ../src/libs/collect.c:1710 ../src/views/darkroom.c:2543
+msgid "red"
+msgstr "rouge"
+
+#: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
+#: ../src/common/collection.c:1502 ../src/develop/blend_gui.c:1975
+#: ../src/develop/blend_gui.c:2002 ../src/develop/lightroom.c:832
+#: ../src/iop/bilateral.cc:322 ../src/iop/channelmixer.c:626
+#: ../src/iop/channelmixer.c:641 ../src/iop/channelmixerrgb.c:3595
+#: ../src/iop/temperature.c:1861 ../src/iop/temperature.c:1879
+#: ../src/iop/temperature.c:2029 ../src/libs/collect.c:1710
+#: ../src/views/darkroom.c:2544
+msgid "green"
+msgstr "vert"
+
+#: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
+#: ../src/common/collection.c:1504 ../src/develop/blend_gui.c:1978
+#: ../src/develop/blend_gui.c:2005 ../src/develop/lightroom.c:834
+#: ../src/iop/bilateral.cc:327 ../src/iop/channelmixer.c:627
+#: ../src/iop/channelmixer.c:647 ../src/iop/channelmixerrgb.c:3596
+#: ../src/iop/temperature.c:1881 ../src/iop/temperature.c:2030
+#: ../src/libs/collect.c:1710
+msgid "blue"
+msgstr "bleu"
+
+#: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:164
+msgid "standard"
+msgstr "standard"
+
+#: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:165
+msgid "darken only"
+msgstr "assombrir seulement"
+
+#: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:166
+msgid "brighten only"
+msgstr "éclaircir seulement"
 
 #: ../build/lib/darktable/plugins/introspection_censorize.c:51
 #: ../build/lib/darktable/plugins/introspection_censorize.c:112
@@ -2569,21 +2642,29 @@ msgstr "version 3 (Avril 2021)"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:142
 #: ../build/lib/darktable/plugins/introspection_clipping.c:303
+#: ../build/lib/darktable/plugins/introspection_crop.c:61
+#: ../build/lib/darktable/plugins/introspection_crop.c:134
 msgid "left"
 msgstr "gauche"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:148
 #: ../build/lib/darktable/plugins/introspection_clipping.c:307
+#: ../build/lib/darktable/plugins/introspection_crop.c:67
+#: ../build/lib/darktable/plugins/introspection_crop.c:138
 msgid "top"
 msgstr "haut"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:154
 #: ../build/lib/darktable/plugins/introspection_clipping.c:311
+#: ../build/lib/darktable/plugins/introspection_crop.c:73
+#: ../build/lib/darktable/plugins/introspection_crop.c:142
 msgid "right"
 msgstr "droite"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:160
 #: ../build/lib/darktable/plugins/introspection_clipping.c:315
+#: ../build/lib/darktable/plugins/introspection_crop.c:79
+#: ../build/lib/darktable/plugins/introspection_crop.c:146
 msgid "bottom"
 msgstr "bas"
 
@@ -4299,39 +4380,11 @@ msgstr "module"
 msgid "module order"
 msgstr "ordre des modules"
 
-#: ../src/common/collection.c:1498 ../src/develop/blend_gui.c:1972
-#: ../src/develop/blend_gui.c:1999 ../src/develop/lightroom.c:828
-#: ../src/iop/bilateral.cc:317 ../src/iop/channelmixer.c:625
-#: ../src/iop/channelmixer.c:635 ../src/iop/channelmixerrgb.c:3594
-#: ../src/iop/temperature.c:1877 ../src/iop/temperature.c:2028
-#: ../src/libs/collect.c:1710 ../src/views/darkroom.c:2543
-msgid "red"
-msgstr "rouge"
-
 #: ../src/common/collection.c:1500 ../src/develop/lightroom.c:830
 #: ../src/iop/temperature.c:1867 ../src/libs/collect.c:1710
 #: ../src/views/darkroom.c:2545
 msgid "yellow"
 msgstr "jaune"
-
-#: ../src/common/collection.c:1502 ../src/develop/blend_gui.c:1975
-#: ../src/develop/blend_gui.c:2002 ../src/develop/lightroom.c:832
-#: ../src/iop/bilateral.cc:322 ../src/iop/channelmixer.c:626
-#: ../src/iop/channelmixer.c:641 ../src/iop/channelmixerrgb.c:3595
-#: ../src/iop/temperature.c:1861 ../src/iop/temperature.c:1879
-#: ../src/iop/temperature.c:2029 ../src/libs/collect.c:1710
-#: ../src/views/darkroom.c:2544
-msgid "green"
-msgstr "vert"
-
-#: ../src/common/collection.c:1504 ../src/develop/blend_gui.c:1978
-#: ../src/develop/blend_gui.c:2005 ../src/develop/lightroom.c:834
-#: ../src/iop/bilateral.cc:327 ../src/iop/channelmixer.c:627
-#: ../src/iop/channelmixer.c:647 ../src/iop/channelmixerrgb.c:3596
-#: ../src/iop/temperature.c:1881 ../src/iop/temperature.c:2030
-#: ../src/libs/collect.c:1710
-msgid "blue"
-msgstr "bleu"
 
 #: ../src/common/collection.c:1506 ../src/libs/collect.c:1710
 msgid "purple"
@@ -9416,9 +9469,9 @@ msgid "distort perspective automatically"
 msgstr "déforme la perspective automatiquement"
 
 #: ../src/iop/ashift.c:127 ../src/iop/basecurve.c:339 ../src/iop/cacorrect.c:92
-#: ../src/iop/colorreconstruction.c:135 ../src/iop/defringe.c:81
-#: ../src/iop/denoiseprofile.c:669 ../src/iop/dither.c:103
-#: ../src/iop/flip.c:101 ../src/iop/hazeremoval.c:111
+#: ../src/iop/cacorrectrgb.c:167 ../src/iop/colorreconstruction.c:135
+#: ../src/iop/defringe.c:81 ../src/iop/denoiseprofile.c:669
+#: ../src/iop/dither.c:103 ../src/iop/flip.c:101 ../src/iop/hazeremoval.c:111
 #: ../src/iop/highlights.c:87 ../src/iop/hotpixels.c:73 ../src/iop/invert.c:121
 #: ../src/iop/lens.cc:159 ../src/iop/nlmeans.c:99
 #: ../src/iop/profile_gamma.c:101 ../src/iop/rawdenoise.c:130
@@ -9431,7 +9484,8 @@ msgstr "correctif"
 #: ../src/iop/basicadj.c:147 ../src/iop/bilateral.cc:100
 #: ../src/iop/bilateral.cc:102 ../src/iop/channelmixerrgb.c:199
 #: ../src/iop/channelmixerrgb.c:201 ../src/iop/clipping.c:322
-#: ../src/iop/clipping.c:324 ../src/iop/colorin.c:137 ../src/iop/demosaic.c:213
+#: ../src/iop/clipping.c:324 ../src/iop/colorin.c:137 ../src/iop/crop.c:143
+#: ../src/iop/crop.c:144 ../src/iop/demosaic.c:213
 #: ../src/iop/denoiseprofile.c:670 ../src/iop/denoiseprofile.c:672
 #: ../src/iop/exposure.c:115 ../src/iop/exposure.c:117 ../src/iop/flip.c:102
 #: ../src/iop/flip.c:104 ../src/iop/hazeremoval.c:112
@@ -9444,7 +9498,7 @@ msgid "linear, RGB, scene-referred"
 msgstr "relatif à la scène, linéaire, RVB"
 
 #: ../src/iop/ashift.c:129 ../src/iop/borders.c:189 ../src/iop/clipping.c:323
-#: ../src/iop/flip.c:103 ../src/iop/liquify.c:298
+#: ../src/iop/crop.c:143 ../src/iop/flip.c:103 ../src/iop/liquify.c:298
 msgid "geometric, RGB"
 msgstr "géométrique, RVB"
 
@@ -9490,7 +9544,7 @@ msgstr "horizontale"
 msgid "vertical"
 msgstr "verticale"
 
-#: ../src/iop/ashift.c:4703 ../src/iop/clipping.c:2289
+#: ../src/iop/ashift.c:4703 ../src/iop/clipping.c:2289 ../src/iop/crop.c:1230
 #: ../src/libs/live_view.c:336
 msgid "guides"
 msgstr "guides"
@@ -10140,11 +10194,6 @@ msgstr ""
 msgid "linear, RGB"
 msgstr "linéaire, RVB"
 
-#: ../src/iop/bilateral.cc:312 ../src/iop/clahe.c:335 ../src/iop/dither.c:887
-#: ../src/iop/lowpass.c:584 ../src/iop/shadhi.c:695 ../src/iop/sharpen.c:718
-msgid "radius"
-msgstr "rayon"
-
 #: ../src/iop/bilateral.cc:313
 msgid "spatial extent of the gaussian"
 msgstr "extension spatiale du flou gaussien"
@@ -10182,12 +10231,6 @@ msgstr "taille de la lumière d'arrière-plan"
 #: ../src/iop/bloom.c:405
 msgid "the threshold of light"
 msgstr "seuil de lumière"
-
-#: ../src/iop/bloom.c:407 ../src/iop/denoiseprofile.c:3643
-#: ../src/iop/grain.c:581 ../src/iop/hazeremoval.c:203
-#: ../src/iop/hotpixels.c:381 ../src/iop/nlmeans.c:527 ../src/iop/velvia.c:337
-msgid "strength"
-msgstr "force"
 
 #: ../src/iop/bloom.c:409
 msgid "the strength of bloom"
@@ -10229,7 +10272,7 @@ msgstr "2:1"
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:973 ../src/iop/clipping.c:2184
+#: ../src/iop/borders.c:973 ../src/iop/clipping.c:2184 ../src/iop/crop.c:1126
 msgid "golden cut"
 msgstr "rapport d'or"
 
@@ -10249,7 +10292,7 @@ msgstr "DIN"
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:978 ../src/iop/clipping.c:2174
+#: ../src/iop/borders.c:978 ../src/iop/clipping.c:2174 ../src/iop/crop.c:1116
 #: ../src/libs/collect.c:260
 msgid "square"
 msgstr "carré"
@@ -10286,7 +10329,7 @@ msgstr "2/3"
 msgid "size of the border in percent of the full image"
 msgstr "taille du cadre en pourcentage de l'image"
 
-#: ../src/iop/borders.c:1041 ../src/iop/clipping.c:2271
+#: ../src/iop/borders.c:1041 ../src/iop/clipping.c:2271 ../src/iop/crop.c:1212
 msgid "aspect"
 msgstr "aspect"
 
@@ -10373,6 +10416,7 @@ msgstr ""
 "uniquement pour les capteur de Bayer"
 
 #: ../src/iop/cacorrect.c:93 ../src/iop/cacorrect.c:95
+#: ../src/iop/cacorrectrgb.c:168 ../src/iop/cacorrectrgb.c:170
 #: ../src/iop/demosaic.c:211 ../src/iop/highlights.c:88
 #: ../src/iop/highlights.c:90 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:131
@@ -10382,7 +10426,8 @@ msgstr ""
 msgid "linear, raw, scene-referred"
 msgstr "relatif à la scène, linéaire, raw"
 
-#: ../src/iop/cacorrect.c:94 ../src/iop/demosaic.c:212 ../src/iop/invert.c:123
+#: ../src/iop/cacorrect.c:94 ../src/iop/cacorrectrgb.c:169
+#: ../src/iop/demosaic.c:212 ../src/iop/invert.c:123
 #: ../src/iop/rawdenoise.c:132 ../src/iop/rawprepare.c:115
 #: ../src/iop/temperature.c:203
 msgid "linear, raw"
@@ -10445,6 +10490,76 @@ msgstr ""
 "correction automatique des\n"
 "aberrations chromatiques\n"
 "uniquement pour les images raw bayer."
+
+#: ../src/iop/cacorrectrgb.c:161 ../src/iop/defringe.c:75
+msgid "chromatic aberrations"
+msgstr "aberrations chromatiques"
+
+#: ../src/iop/cacorrectrgb.c:166
+msgid "correct chromatic aberrations"
+msgstr "corrige les aberrations chromatiques"
+
+#: ../src/iop/cacorrectrgb.c:690
+msgid ""
+"channel used as a reference to\n"
+"correct the other channels.\n"
+"use sharpest channel if some\n"
+"channels are blurry.\n"
+"try changing guide channel if you\n"
+"have artifacts."
+msgstr ""
+"canal à utiliser comme référence pour corriger les autres canaux.\n"
+"utiliser le canal le plus net si certains canaux sont flous\n"
+"changer le guide de canal si vous avez des artefacts."
+
+#: ../src/iop/cacorrectrgb.c:697
+msgid "increase for stronger correction"
+msgstr "augmenter pour des aberrations chromatiques importantes"
+
+#: ../src/iop/cacorrectrgb.c:699
+msgid ""
+"balance between smoothing colors\n"
+"and preserving them.\n"
+"high values can lead to overshooting\n"
+"and edge bleeding."
+msgstr ""
+"balance entre lisser ou préserver les couleurs.\n"
+"les hautes valeurs peuvent entraîner des sur-expositions et des halos."
+
+#: ../src/iop/cacorrectrgb.c:704
+msgid "advanced parameters"
+msgstr "paramètres avancés"
+
+#: ../src/iop/cacorrectrgb.c:706
+msgid ""
+"correction mode to use.\n"
+"can help with multiple\n"
+"instances for very damaged\n"
+"images.\n"
+"darken only is particularly\n"
+"efficient to correct blue\n"
+"chromatic aberration."
+msgstr ""
+"mode de correction à utiliser.\n"
+"peut aider lors de l'utilisation de multiples instances\n"
+"pour les images très endommagées.\n"
+"assombrir seulement est particulièrement\n"
+"efficace pour corriger les aberrations chromatiques bleues."
+
+#: ../src/iop/cacorrectrgb.c:714
+msgid ""
+"runs an iterative approach\n"
+"with several radii.\n"
+"improves result on images\n"
+"with very large chromatic\n"
+"aberrations, but can smooth\n"
+"colors too much on other\n"
+"images."
+msgstr ""
+"exécute un approche itérative avec différents rayons.\n"
+"améliore les résultats sur les images avec de larges aberrations "
+"chromatiques,\n"
+"mais cela peut trop lisser les couleurs sur d'autres images."
 
 #: ../src/iop/censorize.c:77
 msgid "censorize"
@@ -10521,7 +10636,7 @@ msgstr ""
 #: ../src/iop/channelmixer.c:139 ../src/iop/channelmixerrgb.c:198
 #: ../src/iop/clipping.c:321 ../src/iop/colorbalance.c:159
 #: ../src/iop/colorbalancergb.c:164 ../src/iop/colorchecker.c:126
-#: ../src/iop/colorcorrection.c:77 ../src/iop/lut3d.c:139
+#: ../src/iop/colorcorrection.c:77 ../src/iop/crop.c:142 ../src/iop/lut3d.c:139
 msgid "corrective or creative"
 msgstr "correctif ou créatif"
 
@@ -11075,15 +11190,16 @@ msgstr "recadrer|perspective|correction trapézoïdale|déformation"
 msgid "change the framing and correct the perspective"
 msgstr "modifier le cadrage et corriger la perspective"
 
-#: ../src/iop/clipping.c:1381 ../src/iop/clipping.c:2173
+#: ../src/iop/clipping.c:1381 ../src/iop/clipping.c:2173 ../src/iop/crop.c:432
+#: ../src/iop/crop.c:1115
 msgid "original image"
 msgstr "image"
 
-#: ../src/iop/clipping.c:1685
+#: ../src/iop/clipping.c:1685 ../src/iop/crop.c:736
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "format de dimension non reconnu. il devrait être \"nombre:nombre\""
 
-#: ../src/iop/clipping.c:1701
+#: ../src/iop/clipping.c:1701 ../src/iop/crop.c:752
 msgid "invalid ratio format. it should be a positive number"
 msgstr "format de dimension non reconnu. il doit être un nombre positif"
 
@@ -11108,7 +11224,8 @@ msgid "flip"
 msgstr "symétrie miroir"
 
 #: ../src/iop/clipping.c:2148 ../src/iop/clipping.c:2326
-#: ../src/iop/colorbalance.c:1890 ../src/libs/live_view.c:371
+#: ../src/iop/colorbalance.c:1890 ../src/iop/crop.c:1267
+#: ../src/libs/live_view.c:371
 msgid "both"
 msgstr "les deux"
 
@@ -11132,81 +11249,82 @@ msgstr "perspective"
 msgid "set perspective correction for your image"
 msgstr "règle la correction de perspective"
 
-#: ../src/iop/clipping.c:2172
+#: ../src/iop/clipping.c:2172 ../src/iop/crop.c:1114
 msgid "freehand"
 msgstr "libre"
 
-#: ../src/iop/clipping.c:2175
+#: ../src/iop/clipping.c:2175 ../src/iop/crop.c:1117
 msgid "10:8 in print"
 msgstr "10:8 in print"
 
-#: ../src/iop/clipping.c:2176
+#: ../src/iop/clipping.c:2176 ../src/iop/crop.c:1118
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:2177
+#: ../src/iop/clipping.c:2177 ../src/iop/crop.c:1119
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:2178
+#: ../src/iop/clipping.c:2178 ../src/iop/crop.c:1120
 msgid "8.5x11, letter"
 msgstr "8.5x11, letter"
 
-#: ../src/iop/clipping.c:2179
+#: ../src/iop/clipping.c:2179 ../src/iop/crop.c:1121
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:2180
+#: ../src/iop/clipping.c:2180 ../src/iop/crop.c:1122
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:2181
+#: ../src/iop/clipping.c:2181 ../src/iop/crop.c:1123
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:2182
+#: ../src/iop/clipping.c:2182 ../src/iop/crop.c:1124
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:2183
+#: ../src/iop/clipping.c:2183 ../src/iop/crop.c:1125
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:2185
+#: ../src/iop/clipping.c:2185 ../src/iop/crop.c:1127
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:2186
+#: ../src/iop/clipping.c:2186 ../src/iop/crop.c:1128
 msgid "widescreen"
 msgstr "panoramique"
 
-#: ../src/iop/clipping.c:2187
+#: ../src/iop/clipping.c:2187 ../src/iop/crop.c:1129
 msgid "2:1, univisium"
 msgstr "2:1, univisium"
 
-#: ../src/iop/clipping.c:2188
+#: ../src/iop/clipping.c:2188 ../src/iop/crop.c:1130
 msgid "cinemascope"
 msgstr "cinemascope"
 
-#: ../src/iop/clipping.c:2189
+#: ../src/iop/clipping.c:2189 ../src/iop/crop.c:1131
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:2190
+#: ../src/iop/clipping.c:2190 ../src/iop/crop.c:1132
 msgid "anamorphic"
 msgstr "anamorphique"
 
-#: ../src/iop/clipping.c:2191
+#: ../src/iop/clipping.c:2191 ../src/iop/crop.c:1133
 msgid "3:1, panorama"
 msgstr "3:1, panorama"
 
-#: ../src/iop/clipping.c:2223 ../src/iop/clipping.c:2235
+#: ../src/iop/clipping.c:2223 ../src/iop/clipping.c:2235 ../src/iop/crop.c:1165
+#: ../src/iop/crop.c:1177
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr ""
 "format de dimension non reconnu « %s ». il devrait être \"nombre:nombre\""
 
-#: ../src/iop/clipping.c:2282
+#: ../src/iop/clipping.c:2282 ../src/iop/crop.c:1223
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square"
@@ -11214,58 +11332,61 @@ msgstr ""
 "fixe les proportions\n"
 "la liste est triée : du carré aux formats les plus allongés"
 
-#: ../src/iop/clipping.c:2318 ../src/libs/live_view.c:363
+#: ../src/iop/clipping.c:2318 ../src/iop/crop.c:1259
+#: ../src/libs/live_view.c:363
 msgid "display guide lines to help compose your photograph"
 msgstr "affiche des guides pour vous aider à composer votre photo"
 
-#: ../src/iop/clipping.c:2322 ../src/iop/clipping.c:2327
-#: ../src/libs/live_view.c:372
+#: ../src/iop/clipping.c:2322 ../src/iop/clipping.c:2327 ../src/iop/crop.c:1263
+#: ../src/iop/crop.c:1268 ../src/libs/live_view.c:372
 msgid "flip guides"
 msgstr "retourne les guides"
 
-#: ../src/iop/clipping.c:2324 ../src/libs/live_view.c:369
+#: ../src/iop/clipping.c:2324 ../src/iop/crop.c:1265
+#: ../src/libs/live_view.c:369
 msgid "horizontally"
 msgstr "horizontale"
 
-#: ../src/iop/clipping.c:2325 ../src/libs/live_view.c:370
+#: ../src/iop/clipping.c:2325 ../src/iop/crop.c:1266
+#: ../src/libs/live_view.c:370
 msgid "vertically"
 msgstr "verticale"
 
-#: ../src/iop/clipping.c:2334
+#: ../src/iop/clipping.c:2334 ../src/iop/crop.c:1278
 msgid "margins"
 msgstr "marges"
 
-#: ../src/iop/clipping.c:2340
+#: ../src/iop/clipping.c:2340 ../src/iop/crop.c:1306
 msgid "the left margin cannot overlap with the right margin"
 msgstr "la marge gauche ne peut pas dépasser la marge droite"
 
-#: ../src/iop/clipping.c:2347
+#: ../src/iop/clipping.c:2347 ../src/iop/crop.c:1313
 msgid "the right margin cannot overlap with the left margin"
 msgstr "la marge droite ne peut pas dépasser la marge gauche"
 
-#: ../src/iop/clipping.c:2353
+#: ../src/iop/clipping.c:2353 ../src/iop/crop.c:1319
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr "la marge haute ne peut pas dépasser la marge basse"
 
-#: ../src/iop/clipping.c:2360
+#: ../src/iop/clipping.c:2360 ../src/iop/crop.c:1326
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr "la marge basse ne peut pas dépasser la marge haute"
 
-#: ../src/iop/clipping.c:3456
+#: ../src/iop/clipping.c:3456 ../src/iop/crop.c:1777
 msgid "commit"
 msgstr "valider"
 
-#: ../src/iop/clipping.c:3467
+#: ../src/iop/clipping.c:3467 ../src/iop/crop.c:1788
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s sur bords] recadrer"
 
-#: ../src/iop/clipping.c:3469
+#: ../src/iop/clipping.c:3469 ../src/iop/crop.c:1790
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s sur bords] recadrer avec ratio"
 
-#: ../src/iop/clipping.c:3470
+#: ../src/iop/clipping.c:3470 ../src/iop/crop.c:1791
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] définir/orienter l'horizon"
@@ -12318,13 +12439,25 @@ msgstr ""
 "- monotone donne une meilleure précision sur les fonctions mathématiques "
 "analytiques (log, gamma, exp). \n"
 
+#: ../src/iop/crop.c:132
+msgid "crop"
+msgstr "recadrer"
+
+#: ../src/iop/crop.c:137
+msgid "reframe|distortion"
+msgstr "recadrer|rogner|distortion"
+
+#: ../src/iop/crop.c:142
+msgid "change the framing"
+msgstr "changer le cadrage"
+
+#: ../src/iop/crop.c:1108
+msgid "crop settings"
+msgstr "paramètres de recadrage"
+
 #: ../src/iop/defringe.c:70
 msgid "defringe"
 msgstr "suppression des franges"
-
-#: ../src/iop/defringe.c:75
-msgid "chromatic aberrations"
-msgstr "aberrations chromatiques"
 
 #: ../src/iop/defringe.c:80
 msgid "attenuate chromatic aberration by desaturating edges"
@@ -21443,9 +21576,6 @@ msgstr "action"
 
 #~ msgid "Markesteijn 3-pass (slow)"
 #~ msgstr "Markesteijn 3-passes (lent)"
-
-#~ msgid "crop x"
-#~ msgstr "rogner x"
 
 #~ msgid "crop y"
 #~ msgstr "rogner y"
