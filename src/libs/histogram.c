@@ -102,6 +102,7 @@ typedef struct dt_lib_histogram_t
   // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
   uint8_t *vectorscope_graph;
   float vectorscope_pt[2];            // point colorpicker position
+  gboolean vectorscope_auto_scale;
   float vectorscope_scale;
   float vectorscope_offset[2];
   int vectorscope_diameter_px;
@@ -432,6 +433,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       if(out_x >= 0 && out_x <= diam_px-1 && out_y >= 0 && out_y <= diam_px-1)
         dt_atomic_add_int(binned + out_y * diam_px + out_x, 1);
     }
+  d->vectorscope_bounds[0] = bounds_x;
+  d->vectorscope_bounds[1] = bounds_y;
 
   // shortcut to change from linear to display gamma
   const dt_iop_order_iccprofile_info_t *const profile =
@@ -689,9 +692,13 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   double bounds_y = fabs(sin(angle) * d->vectorscope_bounds[0] + cos(angle) * d->vectorscope_bounds[1]);
   bounds_x = CLAMP(bounds_x, vs_radius * 0.4, vs_radius);
   bounds_y = CLAMP(bounds_y, vs_radius * 0.4, vs_radius);
-  const double factor_x = vs_radius * ((float) width / min_size) / bounds_x * d->vectorscope_scale;
-  const double factor_y = vs_radius * ((float) height / min_size) / bounds_y * d->vectorscope_scale;
-  const double factor = MIN(factor_x, factor_y);
+  if(d->vectorscope_auto_scale)
+  {
+    const double factor_x = ((float) width / min_size) / bounds_x;
+    const double factor_y = ((float) height / min_size) / bounds_y;
+    d->vectorscope_scale = MIN(factor_x, factor_y);
+  }
+  const double factor = vs_radius * d->vectorscope_scale;
   const double scale = min_size / (vs_radius * 2.) * factor;
 
   cairo_save(cr);
@@ -1006,7 +1013,7 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
     }
     else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
-      d->vectorscope_scale = 1.0f;
+      d->vectorscope_auto_scale = TRUE;
       d->vectorscope_offset[0] = d->vectorscope_offset[1] = 0.f;
       dt_control_queue_redraw_widget(widget);
     }
@@ -1018,6 +1025,7 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
     {
       d->button_down_value[0] = d->vectorscope_offset[0];
       d->button_down_value[1] = d->vectorscope_offset[1];
+      d->vectorscope_auto_scale = FALSE;
       d->dragging = TRUE;
     }
     else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
@@ -1057,7 +1065,8 @@ static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *eve
   {
     if(dt_modifier_is(event->state, GDK_SHIFT_MASK) && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
-      d->vectorscope_scale = CLAMP(d->vectorscope_scale * (1.f + 0.1f * delta_y), 0.2f, 8.f);
+      d->vectorscope_scale = CLAMP(d->vectorscope_scale * (1.f + 0.1f * delta_y), 20.f, 250.f);
+      d->vectorscope_auto_scale = FALSE;
       dt_control_queue_redraw_widget(widget);
     }
     else if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
@@ -1555,6 +1564,7 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: should these reset which change image?
   d->vectorscope_scale = 1.f;
   d->vectorscope_offset[0] = d->vectorscope_offset[1] = 0.f;
+  d->vectorscope_auto_scale = TRUE;
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
