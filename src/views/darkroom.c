@@ -4101,7 +4101,10 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
     image_surface_width = width;
     image_surface_height = height;
     if(image_surface) cairo_surface_destroy(image_surface);
-    image_surface = dt_cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
+//  image_surface = dt_cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
+    image_surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, width * dev->second_window.ppd, height * dev->second_window.ppd);
+    cairo_surface_set_device_scale(image_surface, dev->second_window.ppd, dev->second_window.ppd);
+
     image_surface_imgid = -1; // invalidate old stuff
   }
   cairo_surface_t *surface;
@@ -4117,8 +4120,9 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
     float wd = dev->preview2_pipe->output_backbuf_width;
     float ht = dev->preview2_pipe->output_backbuf_height;
     const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
-    surface
-        = dt_cairo_image_surface_create_for_data(dev->preview2_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+//  surface = dt_cairo_image_surface_create_for_data(dev->preview2_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+    surface = cairo_image_surface_create_for_data(dev->preview2_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+    cairo_surface_set_device_scale(surface, dev->second_window.ppd, dev->second_window.ppd);
     wd /= dev->second_window.ppd;
     ht /= dev->second_window.ppd;
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
@@ -4140,7 +4144,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
     if(darktable.gui->show_focus_peaking)
     {
       cairo_save(cr);
-      cairo_scale(cr, 1./ darktable.gui->ppd, 1. / darktable.gui->ppd);
+      cairo_scale(cr, 1.0f / dev->second_window.ppd, 1.0f / dev->second_window.ppd);
       dt_focuspeaking(cr, wd, ht, cairo_image_surface_get_data(surface),
                                   cairo_image_surface_get_width(surface),
                                   cairo_image_surface_get_height(surface));
