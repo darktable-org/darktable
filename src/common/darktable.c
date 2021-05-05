@@ -926,7 +926,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     {
       // ask the user whether he/she would like
       // dt to make changes in the settings
-      gboolean run_configure = dt_gui_show_standalone_yes_no_dialog(
+      const gboolean run_configure = dt_gui_show_standalone_yes_no_dialog(
           _("darktable - run performance configuration?"),
           _("we have an updated performance configuration logic - executing that might improve the performance of "
             "darktable.\nthis will potentially overwrite some of your existing settings - especially in case you "
