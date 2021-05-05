@@ -250,11 +250,11 @@ static void get_manifolds(const float* const restrict in, const size_t width, co
                           const dt_iop_cacorrectrgb_guide_channel_t guide,
                           float* const restrict manifolds, gboolean refine_manifolds)
 {
-  float *const restrict blurred_in = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
-  float *const restrict manifold_higher = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
-  float *const restrict manifold_lower = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
-  float *const restrict blurred_manifold_higher = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
-  float *const restrict blurred_manifold_lower = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
+  float *const restrict blurred_in = dt_alloc_align_float(width * height * ch);
+  float *const restrict manifold_higher = dt_alloc_align_float(width * height * ch);
+  float *const restrict manifold_lower = dt_alloc_align_float(width * height * ch);
+  float *const restrict blurred_manifold_higher = dt_alloc_align_float(width * height * ch);
+  float *const restrict blurred_manifold_lower = dt_alloc_align_float(width * height * ch);
 
   float max[4] = {INFINITY, INFINITY, INFINITY, INFINITY};
   float min[4] = {-INFINITY, -INFINITY, -INFINITY, 0.0f};
@@ -352,10 +352,10 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
       //
       // we can refine the manifolds by computing weights that reduce the influence
       // of pixels that are probably suffering from chromatic aberrations
-      const float pixelg = logf(fmaxf(in[k * 4 + guide], 1E-6f));
-      const float highg = logf(fmaxf(blurred_manifold_higher[k * 4 + guide], 1E-6f));
-      const float lowg = logf(fmaxf(blurred_manifold_lower[k * 4 + guide], 1E-6f));
-      const float avgg = logf(fmaxf(blurred_in[k * 4 + guide], 1E-6f));
+      const float pixelg = log2f(fmaxf(in[k * 4 + guide], 1E-6f));
+      const float highg = log2f(fmaxf(blurred_manifold_higher[k * 4 + guide], 1E-6f));
+      const float lowg = log2f(fmaxf(blurred_manifold_lower[k * 4 + guide], 1E-6f));
+      const float avgg = log2f(fmaxf(blurred_in[k * 4 + guide], 1E-6f));
 
       float w = 1.0f;
       for(size_t kc = 0; kc <= 1; kc++)
@@ -365,9 +365,9 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
         // and how close the log difference between the channels is
         // close to the wrong log difference between the channels.
 
-        const float pixel = logf(fmaxf(in[k * 4 + c], 1E-6f));
-        const float highc = logf(fmaxf(blurred_manifold_higher[k * 4 + c], 1E-6f));
-        const float lowc = logf(fmaxf(blurred_manifold_lower[k * 4 + c], 1E-6f));
+        const float pixel = log2f(fmaxf(in[k * 4 + c], 1E-6f));
+        const float highc = log2f(fmaxf(blurred_manifold_higher[k * 4 + c], 1E-6f));
+        const float lowc = log2f(fmaxf(blurred_manifold_lower[k * 4 + c], 1E-6f));
 
         // find how likely the pixel is part of a chromatic aberration
         // (lowc, lowg) and (highc, highg) are valid points
@@ -390,7 +390,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
           dist_to_bad = dist_to_lh;
 
         // make w higher if close to good, and smaller if close to bad.
-        w *= 5.0f * (0.2f + 1.0f / fmaxf(dist_to_good, 0.1f)) / (0.2f + 1.0f / fmaxf(dist_to_bad, 0.1f));
+        w *= 1.0f * (0.2f + 1.0f / fmaxf(dist_to_good, 0.1f)) / (0.2f + 1.0f / fmaxf(dist_to_bad, 0.1f));
       }
 
       if(pixelg > avgg)
@@ -399,11 +399,17 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
         {
           const size_t c = (guide + kc + 1) % 3;
           const float pixel = fmaxf(in[k * 4 + c], 1E-6f);
-          const float log_diff = logf(pixel) - pixelg;
+          const float log_diff = log2f(pixel) - pixelg;
           manifold_higher[k * 4 + c] = log_diff * w;
         }
         manifold_higher[k * 4 + guide] = fmaxf(in[k * 4 + guide], 0.0f) * w;
         manifold_higher[k * 4 + 3] = w;
+        // manifold_lower still contains the values from first iteration
+        // -> reset it.
+        for(size_t c = 0; c < 4; c++)
+        {
+          manifold_lower[k * 4 + c] = 0.0f;
+        }
       }
       else
       {
@@ -411,11 +417,17 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
         {
           const size_t c = (guide + kc + 1) % 3;
           const float pixel = fmaxf(in[k * 4 + c], 1E-6f);
-          const float log_diff = logf(pixel) - pixelg;
+          const float log_diff = log2f(pixel) - pixelg;
           manifold_lower[k * 4 + c] = log_diff * w;
         }
         manifold_lower[k * 4 + guide] = fmaxf(in[k * 4 + guide], 0.0f) * w;
         manifold_lower[k * 4 + 3] = w;
+        // manifold_higher still contains the values from first iteration
+        // -> reset it.
+        for(size_t c = 0; c < 4; c++)
+        {
+          manifold_higher[k * 4 + c] = 0.0f;
+        }
       }
     }
 
@@ -531,7 +543,7 @@ static void reduce_artifacts(const float* const restrict in,
 {
   // in_out contains the 2 guided channels of in, and the 2 guided channels of out
   // it allows to blur all channels in one 4-channel gaussian blur instead of 2
-  float *const restrict in_out = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
+  float *const restrict in_out = dt_alloc_align_float(width * height * ch);
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
 dt_omp_firstprivate(in, out, in_out, width, height, guide, ch) \
@@ -547,7 +559,7 @@ dt_omp_firstprivate(in, out, in_out, width, height, guide, ch) \
     }
   }
 
-  float *const restrict blurred_in_out = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
+  float *const restrict blurred_in_out = dt_alloc_align_float(width * height * ch);
   float max[4] = {INFINITY, INFINITY, INFINITY, INFINITY};
   float min[4] = {0.0f, 0.0f, 0.0f, 0.0f};
   dt_gaussian_t *g = dt_gaussian_init(width, height, 4, max, min, sigma, 0);
@@ -598,13 +610,13 @@ static void reduce_chromatic_aberrations(const float* const restrict in,
                           float* const restrict out)
 
 {
-  const float downsize = 3.0f;
+  const float downsize = fminf(3.0f, sigma);
   const size_t ds_width = width / downsize;
   const size_t ds_height = height / downsize;
-  float *const restrict ds_in = dt_alloc_sse_ps(dt_round_size_sse(ds_width * ds_height * ch));
+  float *const restrict ds_in = dt_alloc_align_float(ds_width * ds_height * ch);
   // we use only one variable for both higher and lower manifolds in order
   // to save time by doing only one bilinear interpolation instead of 2.
-  float *const restrict ds_manifolds = dt_alloc_sse_ps(dt_round_size_sse(ds_width * ds_height * 6));
+  float *const restrict ds_manifolds = dt_alloc_align_float(ds_width * ds_height * 6);
   // Downsample the image for speed-up
   interpolate_bilinear(in, width, height, ds_in, ds_width, ds_height, 4);
 
@@ -613,7 +625,7 @@ static void reduce_chromatic_aberrations(const float* const restrict in,
   dt_free_align(ds_in);
 
   // upscale manifolds
-  float *const restrict manifolds = dt_alloc_sse_ps(dt_round_size_sse(width * height * 6));
+  float *const restrict manifolds = dt_alloc_align_float(width * height * 6);
   interpolate_bilinear(ds_manifolds, ds_width, ds_height, manifolds, width, height, 6);
   dt_free_align(ds_manifolds);
 
