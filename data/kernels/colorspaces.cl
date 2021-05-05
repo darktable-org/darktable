@@ -62,7 +62,7 @@ kernel void
 colorspaces_transform_rgb_matrix_to_rgb(read_only const image2d_t in, write_only image2d_t out, const int width, const int height,
     constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info_from, read_only const image2d_t lut_from,
     constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info_to, read_only const image2d_t lut_to,
-    constant const float matrix[9])
+    constant const float *const matrix)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
