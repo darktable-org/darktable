@@ -42,6 +42,7 @@
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/guides.h"
 #include "gui/presets.h"
 #include "libs/colorpicker.h"
 #include "libs/modulegroups.h"
@@ -1450,34 +1451,21 @@ static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 }
 
 /* overlay color */
-static void _overlay_color_quickbutton_clicked(GtkWidget *w, gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  d->overlay_color.enabled = !d->overlay_color.enabled;
-  dt_dev_reprocess_center(d);
-}
-
 static gboolean _overlay_color_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
+  // destroy old remaining widgets
+  GList *l = gtk_container_get_children(GTK_CONTAINER(darktable.develop->overlay_color.floating_window));
+  if(l && l->data)
+  {
+    GtkWidget *w = (GtkWidget *)l->data;
+    gtk_widget_destroy(w);
+  }
+  // add new widgets
+  gtk_container_add(GTK_CONTAINER(darktable.develop->overlay_color.floating_window),
+                    dt_guides_get_widgets(darktable.develop->gui_module));
   _toolbar_show_popup(d->overlay_color.floating_window);
   return TRUE;
-}
-
-static gboolean _overlay_color_quickbutton_released(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  if(d->overlay_color.timeout > 0) g_source_remove(d->overlay_color.timeout);
-  d->overlay_color.timeout = 0;
-  return FALSE;
-}
-
-static void overlay_colors_callback(GtkWidget *combo, gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  d->overlay_color.color = dt_bauhaus_combobox_get(combo);
-  dt_conf_set_int("darkroom/ui/overlay_color", d->overlay_color.color);
-  dt_dev_reprocess_center(d);
 }
 
 /* overexposed */
@@ -2526,12 +2514,8 @@ void gui_init(dt_view_t *self)
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(dev->overlay_color.button,
                                 _("set the color of lines that overlay the image (drawn masks, crop and rotate guides etc.)"));
-    g_signal_connect(G_OBJECT(dev->overlay_color.button), "clicked",
-                     G_CALLBACK(_overlay_color_quickbutton_clicked), dev);
     g_signal_connect(G_OBJECT(dev->overlay_color.button), "button-press-event",
                      G_CALLBACK(_overlay_color_quickbutton_pressed), dev);
-    g_signal_connect(G_OBJECT(dev->overlay_color.button), "button-release-event",
-                     G_CALLBACK(_overlay_color_quickbutton_released), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->overlay_color.button, DT_VIEW_DARKROOM);
 
     // and the popup window
@@ -2541,23 +2525,6 @@ void gui_init(dt_view_t *self)
     g_object_set(G_OBJECT(dev->overlay_color.floating_window), "transitions-enabled", FALSE, NULL);
 #endif
 
-    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_container_add(GTK_CONTAINER(dev->overlay_color.floating_window), vbox);
-
-    /** let's fill the encapsulating widget */
-    GtkWidget *overlay_colors = dev->overlay_color.colors = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-    dt_bauhaus_widget_set_label(overlay_colors, NULL, N_("overlay color"));
-    dt_bauhaus_combobox_add(overlay_colors, _("gray"));
-    dt_bauhaus_combobox_add(overlay_colors, _("red"));
-    dt_bauhaus_combobox_add(overlay_colors, _("green"));
-    dt_bauhaus_combobox_add(overlay_colors, _("yellow"));
-    dt_bauhaus_combobox_add(overlay_colors, _("cyan"));
-    dt_bauhaus_combobox_add(overlay_colors, _("magenta"));
-    dt_bauhaus_combobox_set(overlay_colors, dev->overlay_color.color);
-    gtk_widget_set_tooltip_text(overlay_colors, _("set overlay color"));
-    g_signal_connect(G_OBJECT(overlay_colors), "value-changed", G_CALLBACK(overlay_colors_callback), dev);
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(overlay_colors), TRUE, TRUE, 0);
-    gtk_widget_set_state_flags(overlay_colors, GTK_STATE_FLAG_SELECTED, TRUE);
   }
 
   darktable.view_manager->proxy.darkroom.get_layout = _lib_darkroom_get_layout;
@@ -3478,7 +3445,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
       if(low_ppd) closeup = 1;
     }
-    else if((tscale > 1.95f) && (tscale < 2.05f)) // at 200% so switch to zoomfit           
+    else if((tscale > 1.95f) && (tscale < 2.05f)) // at 200% so switch to zoomfit
     {
       zoom = DT_ZOOM_FIT;
       scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
@@ -4358,7 +4325,7 @@ static int second_window_button_pressed(GtkWidget *widget, dt_develop_t *dev, do
       scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
       if(low_ppd) closeup = 1;
     }
-    else if((tscale > 1.95f) && (tscale < 2.05f)) // at 200% so switch to zoomfit           
+    else if((tscale > 1.95f) && (tscale < 2.05f)) // at 200% so switch to zoomfit
     {
       zoom = DT_ZOOM_FIT;
       scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
