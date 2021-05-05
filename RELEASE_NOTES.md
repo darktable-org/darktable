@@ -58,6 +58,10 @@ you are strongly advised to take a backup first.
 - New module censorize is added. Hide some part of the image by adding
   blur/pixelization.
 
+- New module crop is added. This new module is coming late into the
+  pipe to make it possible to use the full image for cloning areas for
+  example.
+
 - The color calibration module is added a color checker overlay.
 
 - The map module has been enhanced in many ways.
