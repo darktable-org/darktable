@@ -96,7 +96,7 @@ you are strongly advised to take a backup first.
 
 - ESC key can be used to exit the slideshow.
 
-- The key ctrl-click on the manage group preset button can be used to
+- The key <kbd>Ctrl-Click</kbd> on the manage group preset button can be used to
   access manage dialog directly.
 
 - Again many GUI aspects have been reworked, tweaked for better user
@@ -113,7 +113,7 @@ you are strongly advised to take a backup first.
 
   https://www.darktable.org/usermanual/en/
 
-- Many graphs in development modules can be resized with ctrl+scroll.
+- Many graphs in development modules can be resized with <kbd>Ctrl+Scroll</kbd>.
   (Filmic RGB, RGB levels, levels, lowlight, colorzones, rawdenoise,
   denoise profile, contrast equalizer).
 
@@ -193,7 +193,7 @@ you are strongly advised to take a backup first.
   and feather.
 
 - Enhance the undo to support duplicates. That is, the creation of a
-  duplicate can be undone by using the ctrl+z (undo) key.
+  duplicate can be undone by using the <kbd>Ctrl+Z</kbd> (undo) key.
 
 - Easier handling of the masks control. Do not require high precision
   as the collision detection with the mouse has been reworked).
@@ -206,8 +206,8 @@ you are strongly advised to take a backup first.
   modules. We have then removed some hand coded SSE routines as not
   faster and hard to maintain.
 
-- Change timeline/filmstrip accel to ctrl-b. More consistent with
-  ctrl+shift+b to toggle the bottom panel and avoid a conflict with
+- Change timeline/filmstrip accel to <kbd>Ctrl-B</kbd>. More consistent with
+  <kbd>Ctrl+Shift+B</kbd> to toggle the bottom panel and avoid a conflict with
   sticky preview accel.
 
 - Some preferences have been moved to the module preset's preferences
