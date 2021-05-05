@@ -74,14 +74,14 @@ const dt_develop_name_value_t dt_develop_blend_mode_names[]
         { NC_("blendmode", "RGB red channel"), DEVELOP_BLEND_RGB_R },
         { NC_("blendmode", "RGB green channel"), DEVELOP_BLEND_RGB_G },
         { NC_("blendmode", "RGB blue channel"), DEVELOP_BLEND_RGB_B },
-        { NC_("blendmode", "subtract inverse"), DEVELOP_BLEND_SUBTRACT_INVERSE },
         { NC_("blendmode", "divide"), DEVELOP_BLEND_DIVIDE },
-        { NC_("blendmode", "divide inverse"), DEVELOP_BLEND_DIVIDE_INVERSE },
         { NC_("blendmode", "geometric mean"), DEVELOP_BLEND_GEOMETRIC_MEAN },
         { NC_("blendmode", "harmonic mean"), DEVELOP_BLEND_HARMONIC_MEAN },
 
         /** deprecated blend modes: make them available as legacy history stacks might want them */
         { NC_("blendmode", "difference (deprecated)"), DEVELOP_BLEND_DIFFERENCE },
+        { NC_("blendmode", "subtract inverse (deprecated)"), DEVELOP_BLEND_SUBTRACT_INVERSE },
+        { NC_("blendmode", "divide inverse (deprecated)"), DEVELOP_BLEND_DIVIDE_INVERSE },
         { "", 0 } };
 
 const dt_develop_name_value_t dt_develop_blend_mode_flag_names[]
@@ -2700,10 +2700,8 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_NORMAL2);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_MULTIPLY);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_DIVIDE);
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_DIVIDE_INVERSE);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_ADD);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_SUBTRACT);
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_SUBTRACT_INVERSE);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_DIFFERENCE2);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_AVERAGE);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_GEOMETRIC_MEAN);
