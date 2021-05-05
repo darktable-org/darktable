@@ -2711,6 +2711,9 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
   dt_osx_disallow_fullscreen(window);
 #endif
 
+  // themes not yet loaded, no CSS add some manual padding
+  const int padding = darktable.themes ? 0 : 5;
+
   gtk_window_set_icon_name(GTK_WINDOW(window), "darktable");
   gtk_window_set_title(GTK_WINDOW(window), title);
   g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
@@ -2733,12 +2736,27 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
   }
 
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, padding);
   gtk_container_add(GTK_CONTAINER(window), vbox);
+
+  GtkWidget *mhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, padding);
+  gtk_box_pack_start(GTK_BOX(vbox), mhbox, TRUE, TRUE, padding);
+
+  if(padding)
+  {
+    gtk_box_pack_start(GTK_BOX(mhbox),
+                       gtk_box_new(GTK_ORIENTATION_VERTICAL, padding), TRUE, TRUE, padding);
+  }
 
   GtkWidget *label = gtk_label_new(NULL);
   gtk_label_set_markup(GTK_LABEL(label), markup);
-  gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(mhbox), label, TRUE, TRUE, padding);
+
+  if(padding)
+  {
+    gtk_box_pack_start(GTK_BOX(mhbox),
+                       gtk_box_new(GTK_ORIENTATION_VERTICAL, padding), TRUE, TRUE, padding);
+  }
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
