@@ -17,7 +17,7 @@
 */
 
 #include "common.h"
-#include "colorspace.cl"
+#include "colorspace.h"
 
 
 __kernel void
