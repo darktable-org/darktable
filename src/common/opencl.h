@@ -29,7 +29,7 @@
 #define DT_OPENCL_EVENTNAMELENGTH 64
 #define DT_OPENCL_MAX_EVENTS 256
 #define DT_OPENCL_MAX_ERRORS 5
-#define DT_OPENCL_MAX_INCLUDES 5
+#define DT_OPENCL_MAX_INCLUDES 7
 
 #include "common/darktable.h"
 
