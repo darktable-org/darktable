@@ -114,10 +114,10 @@ const dt_develop_name_value_t dt_develop_combine_masks_names[]
         { "", 0 } };
 
 const dt_develop_name_value_t dt_develop_feathering_guide_names[]
-    = { { N_("output image before blur"), DEVELOP_MASK_GUIDE_OUT_BEFORE_BLUR },
-        { N_("input image before blur"), DEVELOP_MASK_GUIDE_IN_BEFORE_BLUR },
-        { N_("output image after blur"), DEVELOP_MASK_GUIDE_OUT_AFTER_BLUR },
-        { N_("input image after blur"), DEVELOP_MASK_GUIDE_IN_AFTER_BLUR },
+    = { { N_("output before blur"), DEVELOP_MASK_GUIDE_OUT_BEFORE_BLUR },
+        { N_("input before blur"), DEVELOP_MASK_GUIDE_IN_BEFORE_BLUR },
+        { N_("output after blur"), DEVELOP_MASK_GUIDE_OUT_AFTER_BLUR },
+        { N_("input after blur"), DEVELOP_MASK_GUIDE_IN_AFTER_BLUR },
         { "", 0 } };
 
 const dt_develop_name_value_t dt_develop_invert_mask_names[]
@@ -3090,7 +3090,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                                                       "\nnegative values select flat areas"));
     g_signal_connect(G_OBJECT(bd->details_slider), "value-changed", G_CALLBACK(_blendop_blendif_details_callback), bd);
     bd->masks_feathering_guide_combo = _combobox_new_from_list(module, _("feathering guide"), dt_develop_feathering_guide_names,
-                                                               _("choose to guide mask by input or output image"));
+                                                               _("choose to guide mask by input or output image and"
+                                                                 "\nchoose to apply feathering before or after mask blur"));
     g_signal_connect(G_OBJECT(bd->masks_feathering_guide_combo), "value-changed",
                      G_CALLBACK(dt_iop_combobox_enum_callback), &module->blend_params->feathering_guide);
 
