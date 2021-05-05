@@ -18,8 +18,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "colorspace.cl"
-#include "color_conversion.cl"
+#include "colorspace.h"
+#include "color_conversion.h"
 #include "rgb_norms.h"
 
 int

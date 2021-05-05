@@ -17,7 +17,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "color_conversion.cl"
+#include "color_conversion.h"
 #include "rgb_norms.h"
 
 /* we use this exp approximation to maintain full identity with cpu path */
