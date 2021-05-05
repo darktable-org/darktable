@@ -1057,12 +1057,16 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 #endif
       for(size_t k = 0; k < nbpoints; k++)
       {
-        const float x = buf[6 * k + 0];
-        const float y = buf[6 * k + 3];
-        xm = isnan(x) ? xm : MIN(xm, x);
-        xM = isnan(x) ? xM : MAX(xM, x);
-        ym = isnan(y) ? ym : MIN(ym, y);
-        yM = isnan(y) ? yM : MAX(yM, y);
+        // iterate over RGB channels x and y coordinates
+        for(size_t c = 0; c < 6; c+=2)
+        {
+          const float x = buf[6 * k + c];
+          const float y = buf[6 * k + c + 1];
+          xm = isnan(x) ? xm : MIN(xm, x);
+          xM = isnan(x) ? xM : MAX(xM, x);
+          ym = isnan(y) ? ym : MIN(ym, y);
+          yM = isnan(y) ? yM : MAX(yM, y);
+        }
       }
     }
 
