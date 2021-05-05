@@ -250,11 +250,11 @@ static void get_manifolds(const float* const restrict in, const size_t width, co
                           const dt_iop_cacorrectrgb_guide_channel_t guide,
                           float* const restrict manifolds, gboolean refine_manifolds)
 {
-  float *const restrict blurred_in = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
-  float *const restrict manifold_higher = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
-  float *const restrict manifold_lower = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
-  float *const restrict blurred_manifold_higher = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
-  float *const restrict blurred_manifold_lower = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
+  float *const restrict blurred_in = dt_alloc_align_float(width * height * ch);
+  float *const restrict manifold_higher = dt_alloc_align_float(width * height * ch);
+  float *const restrict manifold_lower = dt_alloc_align_float(width * height * ch);
+  float *const restrict blurred_manifold_higher = dt_alloc_align_float(width * height * ch);
+  float *const restrict blurred_manifold_lower = dt_alloc_align_float(width * height * ch);
 
   float max[4] = {INFINITY, INFINITY, INFINITY, INFINITY};
   float min[4] = {-INFINITY, -INFINITY, -INFINITY, 0.0f};
@@ -543,7 +543,7 @@ static void reduce_artifacts(const float* const restrict in,
 {
   // in_out contains the 2 guided channels of in, and the 2 guided channels of out
   // it allows to blur all channels in one 4-channel gaussian blur instead of 2
-  float *const restrict in_out = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
+  float *const restrict in_out = dt_alloc_align_float(width * height * ch);
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
 dt_omp_firstprivate(in, out, in_out, width, height, guide, ch) \
@@ -559,7 +559,7 @@ dt_omp_firstprivate(in, out, in_out, width, height, guide, ch) \
     }
   }
 
-  float *const restrict blurred_in_out = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
+  float *const restrict blurred_in_out = dt_alloc_align_float(width * height * ch);
   float max[4] = {INFINITY, INFINITY, INFINITY, INFINITY};
   float min[4] = {0.0f, 0.0f, 0.0f, 0.0f};
   dt_gaussian_t *g = dt_gaussian_init(width, height, 4, max, min, sigma, 0);
@@ -613,10 +613,10 @@ static void reduce_chromatic_aberrations(const float* const restrict in,
   const float downsize = fminf(3.0f, sigma);
   const size_t ds_width = width / downsize;
   const size_t ds_height = height / downsize;
-  float *const restrict ds_in = dt_alloc_sse_ps(dt_round_size_sse(ds_width * ds_height * ch));
+  float *const restrict ds_in = dt_alloc_align_float(ds_width * ds_height * ch);
   // we use only one variable for both higher and lower manifolds in order
   // to save time by doing only one bilinear interpolation instead of 2.
-  float *const restrict ds_manifolds = dt_alloc_sse_ps(dt_round_size_sse(ds_width * ds_height * 6));
+  float *const restrict ds_manifolds = dt_alloc_align_float(ds_width * ds_height * 6);
   // Downsample the image for speed-up
   interpolate_bilinear(in, width, height, ds_in, ds_width, ds_height, 4);
 
@@ -625,7 +625,7 @@ static void reduce_chromatic_aberrations(const float* const restrict in,
   dt_free_align(ds_in);
 
   // upscale manifolds
-  float *const restrict manifolds = dt_alloc_sse_ps(dt_round_size_sse(width * height * 6));
+  float *const restrict manifolds = dt_alloc_align_float(width * height * 6);
   interpolate_bilinear(ds_manifolds, ds_width, ds_height, manifolds, width, height, 6);
   dt_free_align(ds_manifolds);
 
