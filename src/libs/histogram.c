@@ -315,7 +315,6 @@ static void _lib_histogram_hue_ring(dt_lib_histogram_t *d)
         dt_XYZ_D50_2_XYZ_D65(XYZ_D50, intermed);
         dt_XYZ_2_JzAzBz(intermed, chromaticity);
       }
-      // FIXME: do log scaling here
       d->hue_ring_coord[k][i][0] = chromaticity[1];
       d->hue_ring_coord[k][i][1] = chromaticity[2];
       max_radius = MAX(max_radius, hypotf(chromaticity[1], chromaticity[2]));
@@ -324,6 +323,24 @@ static void _lib_histogram_hue_ring(dt_lib_histogram_t *d)
   // FIXME: make an image buffer with all the hues relative to whitepoint to use as the pattern for drawing hue ring and false color scope variant?
   d->vectorscope_radius = max_radius;
   d->hue_ring_prof = vs_prof;
+}
+
+static inline float baselog(float x, float bound)
+{
+  // FIXME: use dt's fastlog()?
+  return log1pf((VECTORSCOPE_BASE_LOG - 1.f) * x / bound) / log(VECTORSCOPE_BASE_LOG) * bound;
+}
+
+static inline void log_scale(const dt_lib_histogram_t *d, float *x, float *y, float r)
+{
+  // FIXME: use d->vectorscope_scale
+  if(d->histogram_scale == DT_LIB_HISTOGRAM_LOGARITHMIC)
+  {
+    const float h = hypotf(*x,*y);
+    const float s = baselog(h, r);
+    *x *= s / h;
+    *y *= s / h;
+  }
 }
 
 static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const float *const input,
@@ -413,23 +430,12 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         // FIXME: The bulk of processing time is spent in the XYZ -> JzAzBz conversion in the 2*3 powf() in X'Y'Z' -> L'M'S'. Making a LUT for these, using _apply_trc() to do powf() work. It only needs to be accurate enough to be about on the right pixel for a diam_px x diam_px plot
         dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
       }
-
       // FIXME: we ignore the L or Jz components -- do they optimize out of the above code, or would in particular a XYZ_2_AzBz but helpful?
+      log_scale(d, chromaticity+1, chromaticity+2, max_radius);
       if(x == pt_sample_x && y == pt_sample_y)
       {
         d->vectorscope_pt[0] = chromaticity[1];
         d->vectorscope_pt[1] = chromaticity[2];
-      }
-
-      // FIXME: use d->vectorscope_scale
-      if(d->histogram_scale == DT_LIB_HISTOGRAM_LOGARITHMIC)
-      {
-        const float h = hypotf(chromaticity[1], chromaticity[2]);
-        const float s = log1pf((VECTORSCOPE_BASE_LOG - 1.f) * h / max_radius) / log(VECTORSCOPE_BASE_LOG) * max_radius;
-        if(x==0 && y==0) printf("max_diam %f h %f s %f chromaticity %f %f -> ", max_diam, h, s, chromaticity[1], chromaticity[2]);
-        chromaticity[1] *= s / h;
-        chromaticity[2] *= s / h;
-        if(x==0 && y==0) printf("chromaticity %f %f\n", chromaticity[1], chromaticity[2]);
       }
 
       // FIXME: make cx,cy which are float, check 0 <= cx < 1, then multiply by diam_px
@@ -738,18 +744,24 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   // graticule: histogram profile hue ring
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
-  int n = 5, h = VECTORSCOPE_HUES - 1;
-  for(int i=0; i < 6 * VECTORSCOPE_HUES; i++)
-  {
-    cairo_move_to(cr, d->hue_ring_coord[n][h][0] * scale, d->hue_ring_coord[n][h][1] * scale);
-    n = i / VECTORSCOPE_HUES;
-    h = i % VECTORSCOPE_HUES;
-    // FIXME: can we pre-make a pattern with the hues radiating out, and use it as the "ink" to draw the hue ring and -- if in false color mode -- the vectorscope? will this be faster then drawing lots of lines each with their own color? will it allow for drawing the hue ring with splines and calculating fewer points?
-    // note that hue_ring_rgb and hue_ring_coord are calculated as float but converted here to double
-    cairo_set_source_rgba(cr, d->hue_ring_rgb[n][h][0], d->hue_ring_rgb[n][h][1], d->hue_ring_rgb[n][h][2], 0.5);
-    cairo_line_to(cr, d->hue_ring_coord[n][h][0] * scale, d->hue_ring_coord[n][h][1] * scale);
-    cairo_stroke(cr);
-  }
+  float x_prev = d->hue_ring_coord[5][VECTORSCOPE_HUES-1][0];
+  float y_prev = d->hue_ring_coord[5][VECTORSCOPE_HUES-1][1];
+  log_scale(d, &x_prev, &y_prev, vs_radius);
+  for(int n=0; n<6; n++)
+    for(int h=0; h<VECTORSCOPE_HUES; h++)
+    {
+      cairo_move_to(cr, x_prev * scale, y_prev * scale);
+      // FIXME: can we pre-make a pattern with the hues radiating out, and use it as the "ink" to draw the hue ring and -- if in false color mode -- the vectorscope? will this be faster then drawing lots of lines each with their own color? will it allow for drawing the hue ring with splines and calculating fewer points?
+      // note that hue_ring_rgb and hue_ring_coord are calculated as float but converted here to double
+      cairo_set_source_rgba(cr, d->hue_ring_rgb[n][h][0], d->hue_ring_rgb[n][h][1], d->hue_ring_rgb[n][h][2], 0.5);
+      float x = d->hue_ring_coord[n][h][0];
+      float y = d->hue_ring_coord[n][h][1];
+      log_scale(d, &x, &y, vs_radius);
+      cairo_line_to(cr, x*scale, y*scale);
+      cairo_stroke(cr);
+      x_prev = x;
+      y_prev = y;
+    }
 
   // vectorscope graph
   // FIXME: use cairo_pattern_set_filter()?
