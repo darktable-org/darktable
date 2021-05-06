@@ -652,6 +652,23 @@ void expose(
     cairo_restore(cri);
   }
 
+  // draw guide lines if needed
+  if(!dev->gui_module || !(dev->gui_module->flags() & IOP_FLAGS_SPECIAL_GUIDES))
+  {
+    // we restrict the drawing to the image only
+    // the drawing is done on the preview pipe reference
+    const float wd = dev->preview_pipe->backbuf_width;
+    const float ht = dev->preview_pipe->backbuf_height;
+    const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1 << closeup, 1);
+
+    cairo_save(cri);
+    cairo_translate(cri, width / 2.0, height / 2.0);
+    cairo_scale(cri, zoom_scale, zoom_scale);
+    cairo_translate(cri, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
+    dt_guides_draw(cri, 0.0f, 0.0f, wd, ht, zoom_scale);
+    cairo_restore(cri);
+  }
+
   // display mask if we have a current module activated or if the masks manager module is expanded
 
   const gboolean display_masks = (dev->gui_module && dev->gui_module->enabled
