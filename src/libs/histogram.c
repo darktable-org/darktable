@@ -722,16 +722,15 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_scale(cr, 1., -1.);
 
   // concentric circles as a scale
-  // FIXME: in log mode, should the circles change?
   set_color(cr, darktable.bauhaus->graph_grid);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   const float grid_radius = d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV ? 100. : 0.01;
   for(int i = 1; i < 1.f + ceilf(vs_radius/grid_radius); i++)
   {
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
-    cairo_arc(cr, 0., 0., grid_radius * scale * i, 0., M_PI * 2.);
-    cairo_stroke(cr);
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5));
-    cairo_arc(cr, 0., 0., grid_radius * scale * (i - 0.5), 0., M_PI * 2.);
+    float r = grid_radius * i;
+    if(d->histogram_scale == DT_LIB_HISTOGRAM_LOGARITHMIC)
+      r = baselog(r, vs_radius);
+    cairo_arc(cr, 0., 0., r * scale, 0., M_PI * 2.);
     cairo_stroke(cr);
   }
 
@@ -743,7 +742,6 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // graticule: histogram profile hue ring
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   float x_prev = d->hue_ring_coord[5][VECTORSCOPE_HUES-1][0];
   float y_prev = d->hue_ring_coord[5][VECTORSCOPE_HUES-1][1];
   log_scale(d, &x_prev, &y_prev, vs_radius);
