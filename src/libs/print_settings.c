@@ -178,44 +178,20 @@ static int write_image(dt_imageio_module_data_t *data, const char *filename, con
   return 0;
 }
 
-static int _print_job_run(dt_job_t *job)
+typedef struct _image_box
+{
+  int32_t imgid;
+  int32_t max_width, max_height;
+  int32_t exp_width, exp_height;
+  int32_t x, y, width, height;
+  uint16_t *buf;
+} dt_image_box;
+
+// export image imgid with given max_width & max_height, set iwidth & iheight with the
+// final image size as exported.
+static int _export_image(dt_job_t *job, dt_image_box *img)
 {
   dt_lib_print_job_t *params = dt_control_job_get_params(job);
-
-  // user margin are already in the proper orientation landscape/portrait
-  double width, height;
-  double margin_w = params->prt.page.margin_left + params->prt.page.margin_right;
-  double margin_h = params->prt.page.margin_top + params->prt.page.margin_bottom;
-
-  if (params->prt.page.landscape)
-  {
-    width = params->prt.paper.height;
-    height = params->prt.paper.width;
-    margin_w += params->prt.printer.hw_margin_top + params->prt.printer.hw_margin_bottom;
-    margin_h += params->prt.printer.hw_margin_left + params->prt.printer.hw_margin_right;
-  }
-  else
-  {
-    width = params->prt.paper.width;
-    height = params->prt.paper.height;
-    margin_w += params->prt.printer.hw_margin_left + params->prt.printer.hw_margin_right;
-    margin_h += params->prt.printer.hw_margin_top + params->prt.printer.hw_margin_bottom;
-  }
-
-  const int32_t width_pix = (width * params->prt.printer.resolution) / 25.4;
-  const int32_t height_pix = (height * params->prt.printer.resolution) / 25.4;
-
-  const double pa_width  = (width  - margin_w) / 25.4;
-  const double pa_height = (height - margin_h) / 25.4;
-
-  dt_print(DT_DEBUG_PRINT, "[print] printable area for image %u : %3.2fin x %3.2fin\n", params->imgid, pa_width, pa_height);
-
-  // compute the needed size for picture for the given printer resolution
-
-  const int max_width  = (pa_width  * params->prt.printer.resolution);
-  const int max_height = (pa_height * params->prt.printer.resolution);
-
-  dt_print(DT_DEBUG_PRINT, "[print] max image size %d x %d (at resolution %d)\n", max_width, max_height, params->prt.printer.resolution);
 
   dt_imageio_module_format_t buf;
   buf.mime = mime;
@@ -224,8 +200,8 @@ static int _print_job_run(dt_job_t *job)
   buf.write_image = write_image;
 
   dt_print_format_t dat;
-  dat.head.max_width = max_width;
-  dat.head.max_height = max_height;
+  dat.head.max_width = img->max_width;
+  dat.head.max_height = img->max_height;
   dat.head.style[0] = '\0';
   dat.head.style_append = params->style_append;
   dat.bpp = *params->p_icc_profile ? 16 : 8; // set to 16bit when a profile is to be applied
@@ -240,42 +216,26 @@ static int _print_job_run(dt_job_t *job)
   const gboolean high_quality = TRUE;
   const gboolean upscale = TRUE;
   const gboolean export_masks = FALSE;
-  const dt_colorspaces_color_profile_t *buf_profile = dt_colorspaces_get_output_profile(params->imgid,
-                                                                                        params->buf_icc_type,
-                                                                                        params->buf_icc_profile);
 
-  dt_imageio_export_with_flags(params->imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE,
-                               high_quality, upscale, FALSE, NULL, FALSE, export_masks, params->buf_icc_type,
-                               params->buf_icc_profile, params->buf_icc_intent,  NULL, NULL, 1, 1, NULL);
+  dt_imageio_export_with_flags
+    (img->imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE,
+     high_quality, upscale, FALSE, NULL, FALSE, export_masks, params->buf_icc_type,
+     params->buf_icc_profile, params->buf_icc_intent,  NULL, NULL, 1, 1, NULL);
 
-  // after exporting we know the real size of the image, compute the layout
-
-  // compute print-area (in inches)
-  int32_t px=0, py=0, pwidth=0, pheight=0;
-  int32_t ax=0, ay=0, awidth=0, aheight=0;
-  int32_t ix=0, iy=0, iwidth=0, iheight=0;
-  int32_t iwpix=dat.head.width, ihpix=dat.head.height;
-
-  dt_get_print_layout (params->imgid, &params->prt, width_pix, height_pix,
-                       &iwpix, &ihpix,
-                       &px, &py, &pwidth, &pheight,
-                       &ax, &ay, &awidth, &aheight,
-                       &ix, &iy, &iwidth, &iheight);
-
-  const int margin_top    = iy;
-  const int margin_left   = ix;
-  const int margin_right  = pwidth - iwidth - ix;
-  const int margin_bottom = pheight - iheight - iy;
-
-  dt_print(DT_DEBUG_PRINT, "[print] margins top %d ; bottom %d ; left %d ; right %d\n",
-           margin_top, margin_bottom, margin_left, margin_right);
+  img->exp_width = dat.head.width;
+  img->exp_height = dat.head.height;
 
   // we have the exported buffer, let's apply the printer profile
 
-  if (*params->p_icc_profile)
+  const dt_colorspaces_color_profile_t *buf_profile =
+    dt_colorspaces_get_output_profile(img->imgid,
+                                      params->buf_icc_type,
+                                      params->buf_icc_profile);
+  if(*params->p_icc_profile)
   {
-    const dt_colorspaces_color_profile_t *pprof = dt_colorspaces_get_profile(params->p_icc_type, params->p_icc_profile,
-                                                                             DT_PROFILE_DIRECTION_OUT);
+    const dt_colorspaces_color_profile_t *pprof =
+      dt_colorspaces_get_profile(params->p_icc_type, params->p_icc_profile,
+                                 DT_PROFILE_DIRECTION_OUT);
     if (!pprof)
     {
       dt_control_log(_("cannot open printer profile `%s'"), params->p_icc_profile);
@@ -292,8 +252,9 @@ static int _print_job_run(dt_job_t *job)
         dt_control_queue_redraw();
         return 1;
       }
-      if (dt_apply_printer_profile((void **)&(params->buf), dat.head.width, dat.head.height, dat.bpp, buf_profile->profile,
-                                   pprof->profile, params->p_icc_intent, params->black_point_compensation))
+      if (dt_apply_printer_profile
+          ((void **)&(params->buf), dat.head.width, dat.head.height, dat.bpp, buf_profile->profile,
+           pprof->profile, params->p_icc_intent, params->black_point_compensation))
       {
         dt_control_log(_("cannot apply printer profile `%s'"), params->p_icc_profile);
         fprintf(stderr, "cannot apply printer profile `%s'\n", params->p_icc_profile);
@@ -303,8 +264,161 @@ static int _print_job_run(dt_job_t *job)
     }
   }
 
+  img->buf = params->buf;
+
+  return 0;
+}
+
+static void _create_pdf(dt_job_t *job, dt_image_box *img, float width, float height)
+{
+  dt_lib_print_job_t *params = dt_control_job_get_params(job);
+
   const float page_width  = dt_pdf_mm_to_point(width);
   const float page_height = dt_pdf_mm_to_point(height);
+  const int icc_id = 0;
+
+  // create the PDF page
+  dt_pdf_t *pdf = dt_pdf_start(params->pdf_filename, page_width, page_height,
+                               params->prt.printer.resolution, DT_PDF_STREAM_ENCODER_FLATE);
+
+/*
+  // ??? should a profile be embedded here?
+  if (*printer_profile)
+    icc_id = dt_pdf_add_icc(pdf, printer_profile);
+*/
+  params->pdf_image = dt_pdf_add_image(pdf, (uint8_t *)img->buf, img->exp_width, img->exp_height, 8, icc_id, 0.0);
+
+  //  PDF bounding-box has origin on bottom-left
+  params->pdf_image->bb_x      = dt_pdf_pixel_to_point((float)img->x, params->prt.printer.resolution);
+  params->pdf_image->bb_y      = dt_pdf_pixel_to_point((float)img->y, params->prt.printer.resolution);
+  params->pdf_image->bb_width  = dt_pdf_pixel_to_point((float)img->width, params->prt.printer.resolution);
+  params->pdf_image->bb_height = dt_pdf_pixel_to_point((float)img->height, params->prt.printer.resolution);
+
+  if (params->prt.page.landscape && (img->exp_width > img->exp_height))
+    params->pdf_image->rotate_to_fit = TRUE;
+  else
+    params->pdf_image->rotate_to_fit = FALSE;
+
+  params->pdf_page = dt_pdf_add_page(pdf, &params->pdf_image, 1);
+  dt_pdf_finish(pdf, &params->pdf_page, 1);
+}
+
+/* get paper dimention for the orientation */
+static void _get_page_dimention(dt_job_t *job, float *width, float *height)
+{
+  dt_lib_print_job_t *params = dt_control_job_get_params(job);
+
+  if(params->prt.page.landscape)
+  {
+    *width = params->prt.paper.height;
+    *height = params->prt.paper.width;
+  }
+  else
+  {
+    *width = params->prt.paper.width;
+    *height = params->prt.paper.height;
+  }
+}
+
+/* compute max image width/height when a single auto-fit image is used */
+static void _get_auto_size(dt_job_t *job, dt_image_box *img)
+{
+  dt_lib_print_job_t *params = dt_control_job_get_params(job);
+
+  // user margin are already in the proper orientation landscape/portrait
+  float width, height;
+  _get_page_dimention(job, &width, &height);
+
+  float margin_w = params->prt.page.margin_left + params->prt.page.margin_right;
+  float margin_h = params->prt.page.margin_top + params->prt.page.margin_bottom;
+
+  if(params->prt.page.landscape)
+  {
+    margin_w += params->prt.printer.hw_margin_top + params->prt.printer.hw_margin_bottom;
+    margin_h += params->prt.printer.hw_margin_left + params->prt.printer.hw_margin_right;
+  }
+  else
+  {
+    margin_w += params->prt.printer.hw_margin_left + params->prt.printer.hw_margin_right;
+    margin_h += params->prt.printer.hw_margin_top + params->prt.printer.hw_margin_bottom;
+  }
+
+  const float pa_width  = (width  - margin_w) / 25.4;
+  const float pa_height = (height - margin_h) / 25.4;
+
+  dt_print(DT_DEBUG_PRINT, "[print] printable area for image %u : %3.2fin x %3.2fin\n", params->imgid, pa_width, pa_height);
+
+  // compute the needed size for picture for the given printer resolution
+
+  img->max_width  = (int)(pa_width  * params->prt.printer.resolution);
+  img->max_height = (int)(pa_height * params->prt.printer.resolution);
+}
+
+static int _export_and_setup_pos(dt_job_t *job, dt_image_box *img)
+{
+  dt_lib_print_job_t *params = dt_control_job_get_params(job);
+
+  float width, height;
+  _get_page_dimention(job, &width, &height);
+
+  _get_auto_size(job, img);
+
+  dt_print(DT_DEBUG_PRINT, "[print] max image size %d x %d (at resolution %d)\n",
+           img->max_width, img->max_height, params->prt.printer.resolution);
+
+  if(_export_image(job, img)) return 1;
+
+  // for the auto layout, full page based on the margin (hardware & user's)
+  {
+    // after exporting we know the real size of the image, compute the layout
+
+    const int32_t width_pix = (width * params->prt.printer.resolution) / 25.4;
+    const int32_t height_pix = (height * params->prt.printer.resolution) / 25.4;
+
+    // compute print-area (in inches)
+    int32_t px=0, py=0, pwidth=0, pheight=0;
+    int32_t ax=0, ay=0, awidth=0, aheight=0;
+    int32_t ix=0, iy=0, iwidth=0, iheight=0;
+    int32_t iwpix=img->exp_width, ihpix=img->exp_height;
+
+    dt_get_print_layout (params->imgid, &params->prt, width_pix, height_pix,
+                         &iwpix, &ihpix,
+                         &px, &py, &pwidth, &pheight,
+                         &ax, &ay, &awidth, &aheight,
+                         &ix, &iy, &iwidth, &iheight);
+
+    const int margin_top    = iy;
+    const int margin_left   = ix;                      // used for pdf bounding box X
+    const int margin_right  = pwidth - iwidth - ix;
+    const int margin_bottom = pheight - iheight - iy;  // used for pdf bounding box Y
+
+    img->x      = margin_left;
+    img->y      = margin_bottom;
+    img->width  = iwidth;
+    img->height = iheight;
+
+    dt_print(DT_DEBUG_PRINT, "[print] margins top %d ; bottom %d ; left %d ; right %d\n",
+             margin_top, margin_bottom, margin_left, margin_right);
+  }
+
+  return 0;
+}
+
+static int _print_job_run(dt_job_t *job)
+{
+  dt_lib_print_job_t *params = dt_control_job_get_params(job);
+
+  // compute the needed size for picture for the given printer resolution
+
+  float width, height;
+  _get_page_dimention(job, &width, &height);
+
+  dt_image_box img;
+  img.imgid = params->imgid;
+  img.max_width = 0;
+  img.max_height = 0;
+
+  if(_export_and_setup_pos(job, &img)) return 1;
 
   if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED) return 0;
   dt_control_job_set_progress(job, 0.9);
@@ -312,7 +426,7 @@ static int _print_job_run(dt_job_t *job)
   dt_loc_get_tmp_dir(params->pdf_filename, sizeof(params->pdf_filename));
   g_strlcat(params->pdf_filename, "/pf.XXXXXX.pdf", sizeof(params->pdf_filename));
 
-  gint fd = g_mkstemp(params->pdf_filename);
+  const gint fd = g_mkstemp(params->pdf_filename);
   if(fd == -1)
   {
     dt_control_log(_("failed to create temporary pdf for printing"));
@@ -321,37 +435,14 @@ static int _print_job_run(dt_job_t *job)
   }
   close(fd);
 
-  const int icc_id = 0;
-
-  dt_pdf_t *pdf = dt_pdf_start(params->pdf_filename, page_width, page_height, params->prt.printer.resolution, DT_PDF_STREAM_ENCODER_FLATE);
-
-/*
-  // ??? should a profile be embedded here?
-  if (*printer_profile)
-    icc_id = dt_pdf_add_icc(pdf, printer_profile);
-*/
-  params->pdf_image = dt_pdf_add_image(pdf, (uint8_t *)params->buf, dat.head.width, dat.head.height, 8, icc_id, 0.0);
-
-  //  PDF bounding-box has origin on bottom-left
-  params->pdf_image->bb_x      = dt_pdf_pixel_to_point((float)margin_left, params->prt.printer.resolution);
-  params->pdf_image->bb_y      = dt_pdf_pixel_to_point((float)margin_bottom, params->prt.printer.resolution);
-  params->pdf_image->bb_width  = dt_pdf_pixel_to_point((float)iwidth, params->prt.printer.resolution);
-  params->pdf_image->bb_height = dt_pdf_pixel_to_point((float)iheight, params->prt.printer.resolution);
-
-  if (params->prt.page.landscape && (dat.head.width > dat.head.height))
-    params->pdf_image->rotate_to_fit = TRUE;
-  else
-    params->pdf_image->rotate_to_fit = FALSE;
-
-  params->pdf_page = dt_pdf_add_page(pdf, &params->pdf_image, 1);
-  dt_pdf_finish(pdf, &params->pdf_page, 1);
+  _create_pdf(job, &img, width, height);
 
   if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED) return 0;
   dt_control_job_set_progress(job, 0.95);
 
   // send to CUPS
 
-  dt_print_file (params->imgid, params->pdf_filename, params->job_title, &params->prt);
+  dt_print_file (img.imgid, params->pdf_filename, params->job_title, &params->prt);
   dt_control_job_set_progress(job, 1.0);
 
   // add tag for this image
