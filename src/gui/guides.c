@@ -738,11 +738,9 @@ GtkWidget *dt_guides_get_widgets(dt_iop_module_t *module)
   g_signal_connect(G_OBJECT(vbox), "destroy", G_CALLBACK(_settings_box_destroyed), gw);
 
   // global guides section
-  gtk_box_pack_start(GTK_BOX(vbox), dt_ui_section_label_new(_("global guides")), TRUE, TRUE, 0);
-
   gw->g_guides = dt_bauhaus_combobox_new(NULL);
-  gtk_widget_set_tooltip_text(gw->g_guides, _("display guide lines to help compose your photograph"));
-  dt_bauhaus_widget_set_label(gw->g_guides, NULL, N_("guides"));
+  gtk_widget_set_tooltip_text(gw->g_guides, _("guide lines to show permanently"));
+  dt_bauhaus_widget_set_label(gw->g_guides, NULL, N_("global guide lines"));
   gtk_box_pack_start(GTK_BOX(vbox), gw->g_guides, TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(gw->g_guides, _("none"));
   for(GList *iter = darktable.guides; iter; iter = g_list_next(iter))
@@ -776,14 +774,15 @@ GtkWidget *dt_guides_get_widgets(dt_iop_module_t *module)
   // module specific guides section
   if(module)
   {
+    gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
     gw->module = module;
-    gchar *tx = dt_util_dstrcat(NULL, "%s '%s'", _("guides for"), module->name());
-    gtk_box_pack_start(GTK_BOX(vbox), dt_ui_section_label_new(tx), TRUE, TRUE, 0);
-    g_free(tx);
-
+    gchar *tx = dt_util_dstrcat(NULL, "%s '%s'", _("guide lines for"), module->name());
+    gchar *tx2 = dt_util_dstrcat(NULL, "%s '%s' %s", _("guide lines for"), module->name(), _(" module only"));
     gw->m_guides = dt_bauhaus_combobox_new(NULL);
-    gtk_widget_set_tooltip_text(gw->m_guides, _("display guide lines to help compose your photograph"));
-    dt_bauhaus_widget_set_label(gw->m_guides, NULL, N_("guides"));
+    gtk_widget_set_tooltip_text(gw->m_guides, tx2);
+    dt_bauhaus_widget_set_label(gw->m_guides, NULL, tx);
+    g_free(tx);
+    g_free(tx2);
     gtk_box_pack_start(GTK_BOX(vbox), gw->m_guides, TRUE, TRUE, 0);
     dt_bauhaus_combobox_add(gw->m_guides, _("none"));
     dt_bauhaus_combobox_add(gw->m_guides, _("follow global setting"));
@@ -824,7 +823,7 @@ GtkWidget *dt_guides_get_widgets(dt_iop_module_t *module)
   _settings_update_visibility(gw);
 
   // color section
-  gtk_box_pack_start(GTK_BOX(vbox), dt_ui_section_label_new(_("guides color")), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
   gw->colors = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(gw->colors, NULL, N_("overlay color"));
