@@ -42,6 +42,8 @@ void dt_guides_cleanup(GList *guides);
 void dt_guides_add_guide(const char *name, dt_guides_draw_callback draw, dt_guides_widget_callback widget, void *user_data, GDestroyNotify free);
 
 GtkWidget *dt_guides_get_widgets(dt_iop_module_t *module);
+void dt_guides_draw(cairo_t *cr, const float left, const float top, const float width, const float height,
+                    const float zoom_scale);
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
