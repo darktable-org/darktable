@@ -44,7 +44,7 @@
 // RGB (or perceptual space), the spacing will be different
 // FIXME: would fewer gradations still produce a nice hue ring? are this many gradations (32 * 6 = 192) slow to draw on the scope?
 #define VECTORSCOPE_HUES 32
-
+#define VECTORSCOPE_BASE_LOG 30
 
 DT_MODULE(1)
 
@@ -108,7 +108,6 @@ typedef struct dt_lib_histogram_t
   float hue_ring_coord[6][VECTORSCOPE_HUES][2] DT_ALIGNED_ARRAY;
   const dt_iop_order_iccprofile_info_t *hue_ring_prof;
   double vectorscope_radius;
-  float vectorscope_bounds[2];
   dt_pthread_mutex_t lock;
   GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
   GtkWidget *button_box;               // GtkButtonBox -- contains scope control buttons
@@ -128,6 +127,8 @@ typedef struct dt_lib_histogram_t
   dt_lib_histogram_scale_t histogram_scale;
   dt_lib_histogram_waveform_type_t waveform_type;
   dt_lib_histogram_vectorscope_type_t vectorscope_type;
+  // FIXME: actually use this
+  dt_lib_histogram_scale_t vectorscope_scale;
   double vectorscope_angle;
   gboolean red, green, blue;
 } dt_lib_histogram_t;
@@ -314,6 +315,7 @@ static void _lib_histogram_hue_ring(dt_lib_histogram_t *d)
         dt_XYZ_D50_2_XYZ_D65(XYZ_D50, intermed);
         dt_XYZ_2_JzAzBz(intermed, chromaticity);
       }
+      // FIXME: do log scaling here
       d->hue_ring_coord[k][i][0] = chromaticity[1];
       d->hue_ring_coord[k][i][1] = chromaticity[2];
       max_radius = MAX(max_radius, hypotf(chromaticity[1], chromaticity[2]));
@@ -333,7 +335,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
   _lib_histogram_hue_ring(d);
   // FIXME: particularly for u*v*, center on hue ring bounds rather than plot center, to be able to show a larger plot?
-  const float max_diam = d->vectorscope_radius * 2.f;
+  const float max_radius = d->vectorscope_radius;
+  const float max_diam = max_radius * 2.f;
 
   int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
   int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
@@ -362,7 +365,6 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   memset(binned, 0, sizeof(int) * diam_px * diam_px);
   // FIXME: move verbosed interleaved comments into a method note at the start, as the code itself is succinct and clear
   // FIXME: even with getting rid of the extra profile conversion hop there's no noticeable speedup -- maybe this loop is memory bound -- if can get rid of one of the output buffers and still no speedup, consider doing more work in this loop, such as atomic binning
-  float bounds_x = 0.f, bounds_y = 0.f;
   // FIXME: average neighboring pixels on x but not y -- may be enough of an optimization
   const int sample_max_x = sample_width - (sample_width % 2);
   const int sample_max_y = sample_height - (sample_height % 2);
@@ -370,8 +372,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // FIXME: instead of scaling, if chromaticity really depends only on XY, then make a lookup on startup of for each grid cell on graph output the minimum XY to populate that cell, then either brute-force scan that LUT, or start from position of last pixel and scan, or do an optimized search (1/2, 1/2, 1/2, etc.) -- would also find point sample pixel this way
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, binned, sample_max_x, sample_max_y, roi, pt_sample_x, pt_sample_y, d, diam_px, max_diam, input_profile, vs_type) \
-  reduction(max : bounds_x, bounds_y) \
+  dt_omp_firstprivate(input, binned, sample_max_x, sample_max_y, roi, pt_sample_x, pt_sample_y, d, diam_px, max_radius, max_diam, input_profile, vs_type) \
   schedule(static) collapse(2)
 #endif
   for(size_t y=0; y<sample_max_y; y+=2)
@@ -419,8 +420,17 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         d->vectorscope_pt[0] = chromaticity[1];
         d->vectorscope_pt[1] = chromaticity[2];
       }
-      bounds_x = MAX(bounds_x, fabsf(chromaticity[1]));
-      bounds_y = MAX(bounds_y, fabsf(chromaticity[2]));
+
+      // FIXME: use d->vectorscope_scale
+      if(d->histogram_scale == DT_LIB_HISTOGRAM_LOGARITHMIC)
+      {
+        const float h = hypotf(chromaticity[1], chromaticity[2]);
+        const float s = log1pf((VECTORSCOPE_BASE_LOG - 1.f) * h / max_radius) / log(VECTORSCOPE_BASE_LOG) * max_radius;
+        if(x==0 && y==0) printf("max_diam %f h %f s %f chromaticity %f %f -> ", max_diam, h, s, chromaticity[1], chromaticity[2]);
+        chromaticity[1] *= s / h;
+        chromaticity[2] *= s / h;
+        if(x==0 && y==0) printf("chromaticity %f %f\n", chromaticity[1], chromaticity[2]);
+      }
 
       // FIXME: make cx,cy which are float, check 0 <= cx < 1, then multiply by diam_px
       const int out_x = diam_px * (chromaticity[1] / max_diam + 0.5f);
@@ -462,7 +472,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
       const float intensity = lut[(int)(MIN(1.f, b[0]) * lutmax)];
       float XYZ_D50[4] DT_ALIGNED_PIXEL, RGB[4] DT_ALIGNED_PIXEL;
-      const float hypot = hypotf(b[1], b[2]);
+      const float h = hypotf(b[1], b[2]);
 
       // FIXME: look into alternative ways to render this. From Sobotka: "Makes me wonder if full emission mixtures using the GL alpha transparency adding might help for visibility? I’d expect maximum volume of values add to display referred maximum white, while lower density volume of values are more visible and loosely representative of the mixture?"
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
@@ -470,8 +480,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         // FIXME: just convert Luv -> JzAzBz and fall through?
         b[0] = 40.f + intensity * 60.f;
         const float chroma = max_diam * (0.1 + 0.2 * (1.f - intensity));
-        b[1] = chroma * b[1] / hypot;
-        b[2] = chroma * b[2] / hypot;
+        b[1] *= chroma / h;
+        b[2] *= chroma / h;
         float xyY[4] DT_ALIGNED_PIXEL;
         dt_Luv_to_xyY(b, xyY);
         // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
@@ -481,8 +491,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       {
         b[0] = intensity * 0.02f;
         const float chroma = max_diam * (0.2 + 0.4 * (1.f - intensity));
-        b[1] = chroma * b[1] / hypot;
-        b[2] = chroma * b[2] / hypot;
+        b[1] *= chroma / h;
+        b[2] *= chroma / h;
         // FIXME: can optimize the XYZ_D65 -> RGB conversion by pre-multiplying matrix?
         float XYZ_D65[4] DT_ALIGNED_PIXEL;
         dt_JzAzBz_2_XYZ(b, XYZ_D65);
@@ -681,21 +691,13 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   const float vs_radius = d->vectorscope_radius;
   const int diam_px = d->vectorscope_diameter_px;
   const int min_size = MIN(width, height);
-  const double angle = d->vectorscope_angle;
-  double bounds_x = fabs(cos(angle) * d->vectorscope_bounds[0] + sin(angle) * d->vectorscope_bounds[1]);
-  double bounds_y = fabs(sin(angle) * d->vectorscope_bounds[0] + cos(angle) * d->vectorscope_bounds[1]);
-  bounds_x = CLAMP(bounds_x, vs_radius * 0.4, vs_radius);
-  bounds_y = CLAMP(bounds_y, vs_radius * 0.4, vs_radius);
-  const double factor_x = vs_radius * ((float) width / min_size) / bounds_x;
-  const double factor_y = vs_radius * ((float) height / min_size) / bounds_y;
-  const double factor = MIN(factor_x, factor_y);
-  const double scale = min_size / (vs_radius * 2.) * factor;
+  const double scale = min_size / (vs_radius * 2.);
 
   cairo_save(cr);
 
   // background
-  cairo_pattern_t *p = cairo_pattern_create_radial(0.5 * width, 0.5 * height, factor * 0.5 * min_size,
-                                                   0.5 * width, 0.5 * height, factor * 0.5 * hypot(min_size, min_size));
+  cairo_pattern_t *p = cairo_pattern_create_radial(0.5 * width, 0.5 * height, 0.5 * min_size,
+                                                   0.5 * width, 0.5 * height, 0.5 * hypot(min_size, min_size));
   cairo_pattern_add_color_stop_rgb(p, 0., darktable.bauhaus->graph_bg.red, darktable.bauhaus->graph_bg.green, darktable.bauhaus->graph_bg.blue);
   cairo_pattern_add_color_stop_rgb(p, 1., darktable.bauhaus->graph_exterior.red, darktable.bauhaus->graph_exterior.green, darktable.bauhaus->graph_exterior.blue);
   cairo_rectangle(cr, 0, 0, width, height);
@@ -705,7 +707,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // FIXME: the areas to left/right of the scope could have some data (primaries, whitepoint, scale, etc.)
   cairo_translate(cr, width / 2., height / 2.);
-  cairo_rotate(cr, angle);
+  cairo_rotate(cr, d->vectorscope_angle);
 
   // traditional video editor's vectorscope is oriented with x-axis Y
   // -> B, y-axis C -> R but CIE 1976 UCS is graphed x-axis as u (G ->
@@ -714,6 +716,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_scale(cr, 1., -1.);
 
   // concentric circles as a scale
+  // FIXME: in log mode, should the circles change?
   set_color(cr, darktable.bauhaus->graph_grid);
   const float grid_radius = d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV ? 100. : 0.01;
   for(int i = 1; i < 1.f + ceilf(vs_radius/grid_radius); i++)
@@ -760,8 +763,8 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_pattern_t *pattern = cairo_pattern_create_for_surface(source);
   cairo_matrix_t matrix;
   cairo_matrix_init_translate(&matrix, 0.5*diam_px/darktable.gui->ppd, 0.5*diam_px/darktable.gui->ppd);
-  cairo_matrix_scale(&matrix, (double)diam_px / min_size / factor / darktable.gui->ppd,
-                     (double)diam_px / min_size / factor / darktable.gui->ppd);
+  cairo_matrix_scale(&matrix, (double)diam_px / min_size / darktable.gui->ppd,
+                     (double)diam_px / min_size / darktable.gui->ppd);
   cairo_pattern_set_matrix(pattern, &matrix);
   cairo_set_source(cr, pattern);
   if(isnan(d->vectorscope_pt[0]))
@@ -984,6 +987,8 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   dt_develop_t *dev = darktable.develop;
 
+  // FIXME: hack
+  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE) { d->histogram_scale = 1-d->histogram_scale; dt_dev_process_preview(darktable.develop); }
   if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
   {
     if(event->type == GDK_2BUTTON_PRESS)
