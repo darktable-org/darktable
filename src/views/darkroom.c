@@ -1470,18 +1470,14 @@ static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 /* overlay color */
 static gboolean _overlay_color_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  // destroy old remaining widgets
-  GList *l = gtk_container_get_children(GTK_CONTAINER(darktable.develop->overlay_color.floating_window));
-  if(l && l->data)
-  {
-    GtkWidget *w = (GtkWidget *)l->data;
-    gtk_widget_destroy(w);
-  }
+  GtkWidget *pop = gtk_popover_new(widget);
+  gtk_widget_set_size_request(GTK_WIDGET(pop), 350, -1);
+#if GTK_CHECK_VERSION(3, 16, 0)
+  g_object_set(G_OBJECT(pop), "transitions-enabled", FALSE, NULL);
+#endif
   // add new widgets
-  gtk_container_add(GTK_CONTAINER(darktable.develop->overlay_color.floating_window),
-                    dt_guides_get_widgets(darktable.develop->gui_module));
-  _toolbar_show_popup(d->overlay_color.floating_window);
+  gtk_container_add(GTK_CONTAINER(pop), dt_guides_get_widgets(darktable.develop->gui_module));
+  _toolbar_show_popup(pop);
   return TRUE;
 }
 
@@ -2095,13 +2091,10 @@ static gboolean _brush_opacity_down_callback(GtkAccelGroup *accel_group, GObject
 static gboolean _overlay_cycle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                              GdkModifierType modifier, gpointer data)
 {
-  dt_develop_t *dev = (dt_develop_t *)data;
-  GtkWidget * combobox = dev->overlay_color.colors;
-
-  const int currentval = dt_bauhaus_combobox_get(combobox);
-  const int nextval = currentval + 1 >= dt_bauhaus_combobox_length(combobox) ? 0 : currentval + 1;
-  dt_bauhaus_combobox_set(combobox, nextval);
-  dt_accel_widget_toast(combobox);
+  const int currentval = dt_conf_get_int("darkroom/ui/overlay_color");
+  const int nextval = (currentval + 1) % 5; // colors can go from 0 to 5
+  dt_conf_set_int("darkroom/ui/overlay_color", nextval);
+  dt_control_queue_redraw_center();
   return TRUE;
 }
 
@@ -2527,21 +2520,11 @@ void gui_init(dt_view_t *self)
   /* create overlay color changer popup tool */
   {
     // the button
-    dev->overlay_color.button
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, CPF_STYLE_FLAT, NULL);
-    gtk_widget_set_tooltip_text(dev->overlay_color.button,
-                                _("set the color of lines that overlay the image (drawn masks, crop and rotate guides etc.)"));
-    g_signal_connect(G_OBJECT(dev->overlay_color.button), "button-press-event",
-                     G_CALLBACK(_overlay_color_quickbutton_pressed), dev);
-    dt_view_manager_module_toolbox_add(darktable.view_manager, dev->overlay_color.button, DT_VIEW_DARKROOM);
-
-    // and the popup window
-    dev->overlay_color.floating_window = gtk_popover_new(dev->overlay_color.button);
-    gtk_widget_set_size_request(GTK_WIDGET(dev->overlay_color.floating_window), dialog_width, -1);
-#if GTK_CHECK_VERSION(3, 16, 0)
-    g_object_set(G_OBJECT(dev->overlay_color.floating_window), "transitions-enabled", FALSE, NULL);
-#endif
-
+    GtkWidget *guides_btn = dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, CPF_STYLE_FLAT, NULL);
+    gtk_widget_set_tooltip_text(guides_btn, _("set the guide lines"));
+    g_signal_connect(G_OBJECT(guides_btn), "button-press-event", G_CALLBACK(_overlay_color_quickbutton_pressed),
+                     dev);
+    dt_view_manager_module_toolbox_add(darktable.view_manager, guides_btn, DT_VIEW_DARKROOM);
   }
 
   darktable.view_manager->proxy.darkroom.get_layout = _lib_darkroom_get_layout;
