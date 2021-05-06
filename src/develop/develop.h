@@ -308,16 +308,6 @@ typedef struct dt_develop_t
     float threshold;
   } rawoverexposed;
 
-  // for the overlay color indicator
-  struct
-  {
-    guint timeout;
-    GtkWidget *floating_window, *button, *colors; // yes, having gtk stuff in here is ugly. live with it.
-
-    gboolean enabled;
-    dt_dev_overlay_colors_t color;
-  } overlay_color;
-
   // ISO 12646-compliant colour assessment conditions
   struct
   {
