@@ -192,8 +192,11 @@ you are strongly advised to take a backup first.
 - Better values reported on toast messages when changing masks' size
   and feather.
 
-- Enhance the undo to support duplicates. That is, the creation of a
-  duplicate can be undone by using the <kbd>Ctrl+Z</kbd> (undo) key.
+- Enhance the undo to support duplicates. That is, the creation of
+  duplicates can be undone by using the <kbd>Ctrl+Z</kbd> (undo) key.
+
+- In darkroom undo now restores the mask display status together with
+  the module changes.
 
 - Easier handling of the masks control. Do not require high precision
   as the collision detection with the mouse has been reworked).
@@ -231,10 +234,6 @@ you are strongly advised to take a backup first.
 - The variables $(EXIF_xxx) can be used while importing pictures.
 
 - Fix graduated density module's control when using down-sampling.
-
-- Fix possible crash in undo for modules without mask.
-
-- When doing an undo we restore the mask display status.
 
 - Adjust color zone saturation to avoid misleading visual illusions.
 
