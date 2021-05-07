@@ -2517,14 +2517,14 @@ void gui_init(dt_view_t *self)
                               G_CALLBACK(_display2_profile_changed), (gpointer)display2_profile);
   }
 
-  /* create overlay color changer popup tool */
+  /* create grid changer popup tool */
   {
     // the button
     GtkWidget *guides_btn = dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(guides_btn, _("set the guide lines"));
     g_signal_connect(G_OBJECT(guides_btn), "button-press-event", G_CALLBACK(_overlay_color_quickbutton_pressed),
                      dev);
-    dt_view_manager_module_toolbox_add(darktable.view_manager, guides_btn, DT_VIEW_DARKROOM);
+    dt_view_manager_module_toolbox_add(darktable.view_manager, guides_btn, DT_VIEW_DARKROOM | DT_VIEW_TETHERING);
   }
 
   darktable.view_manager->proxy.darkroom.get_layout = _lib_darkroom_get_layout;
