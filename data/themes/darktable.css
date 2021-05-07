@@ -71,7 +71,7 @@
 @define-color selected_bg_color @grey_35; /* legacy stuff */
 @define-color border_color @grey_10; /* border, when used */
 @define-color bg_color @grey_15; /* general background */
-@define-color fg_color @grey_70; /* general text */
+@define-color fg_color @grey_75; /* general text */
 @define-color base_color @fg_color; /* legacy stuff */
 @define-color text_color @grey_05; /* same */
 @define-color disabled_fg_color @grey_40; /* disabled controls */
@@ -85,7 +85,7 @@
 @define-color plugin_bg_color @grey_20;
 @define-color plugin_fg_color @fg_color;
 @define-color section_label shade(@plugin_fg_color, 0.95);
-@define-color plugin_label_color @grey_65;
+@define-color plugin_label_color @grey_60;
 
 /* Modules controls (sliders and comboboxes) */
 @define-color bauhaus_bg @bg_color;
@@ -112,7 +112,7 @@
 @define-color field_bg @grey_15;
 @define-color field_fg @button_fg;
 @define-color field_active_bg @grey_25;
-@define-color field_active_fg @grey_75;
+@define-color field_active_fg @grey_80;
 @define-color field_selected_bg @grey_40;
 @define-color field_selected_fg @button_checked_fg;
 @define-color field_hover_bg @grey_45;
@@ -759,7 +759,7 @@ dialog
 
 dialog .dialog-vbox
 {
-  margin: 0.42em;
+  margin: 0.56em;
 }
 
 dialog filechooser
@@ -786,11 +786,6 @@ dialog headerbar entry
 }
 
 /* Set specific content */
-dialog scrolledwindow
-{
-  padding: 0 0.07em 0 0.56em;
-}
-
 #left #lib-plugin-ui #import_metadata entry,
 #left #lib-plugin-ui #import_metadata checkbutton check,
 #right #lib-plugin-ui #gpx_list checkbutton check
@@ -1143,16 +1138,14 @@ dialog scrollbar
   - Preferences dialog window options -
   -------------------------------------*/
 
-#preferences_notebook *,
-#modulegroups_manager box
+#preferences_notebook *
 {
   margin: 0; /* reset default dialog margin to all items. And needed to have an hover and selected effect on all width of categories in sidebar */
 }
 
 /* Set preferences margins in main part */
 #preferences_box box grid,
-#preferences_box scrolledwindow,
-#modulegroups_top_box
+#preferences_box scrolledwindow
 {
   padding: 0.7em 1.05em 0.35em 1.05em;
 }
@@ -1257,7 +1250,15 @@ margin: 0 0.14em;
 /* set top box header */
 #modulegroups_editor_setting
 {
-  padding-left: 2em;
+  padding-left: 3.5em;
+}
+
+/* set main padding */
+#modulegroups_top_box,
+#modulegroups-iop-header,
+#modulegroups-groupbox
+{
+  padding: 0.5em;
 }
 
 /* set main group modules title */
@@ -1269,7 +1270,7 @@ margin: 0 0.14em;
 
 #modulegroups-groups-title #dt-button
 {
-  margin-left: 0.5em;
+  margin-left: 0.56em;
 }
 
 #modulegroups-groups-box
@@ -1277,7 +1278,7 @@ margin: 0 0.14em;
   border-top: 0.035em solid  @section_label;
 }
 
-/* set groups header */
+/* set groups part */
 #modulegroups-iop-header,
 #modulegroups-header-center
 {
@@ -1287,8 +1288,26 @@ margin: 0 0.14em;
 
 #modulegroups-header-center
 {
-  border: 0.014em inset @button_checked_bg;
-  border-radius: 0.7em;
+  border: 0.07em solid @button_bg;
+  border-radius: 0.42em 0.42em 0 0;
+}
+
+#modulegroups-iop-header
+{
+  border-left: 0.07em solid @button_bg;
+  border-right: 0.07em solid @button_bg;
+}
+
+box #modulegroups-iop-header:first-child
+{
+  border-top: 0.07em solid @button_bg;
+}
+
+
+box #modulegroups-iop-header:last-child
+{
+  border-bottom: 0.07em solid @button_bg;
+  border-radius: 0 0 0.42em 0.42em;
 }
 
 #modulegroups-group-icon
@@ -1321,17 +1340,6 @@ margin: 0 0.14em;
   min-width: 1.6em;
   min-height: 1.6em;
   border: 0;
-}
-
-#modulegroups-iop-header
-{
-  padding: 0.5em;
-}
-
-/* set group modules box */
-#modulegroups-groupbox
-{
-  padding: 0.5em;
 }
 
 /* set bottom bar infos */
