@@ -743,29 +743,30 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // graticule: histogram profile hue ring
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  float x_prev = d->hue_ring_coord[5][VECTORSCOPE_HUES-1][0];
-  float y_prev = d->hue_ring_coord[5][VECTORSCOPE_HUES-1][1];
-  log_scale(d, &x_prev, &y_prev, vs_radius);
+  float x = d->hue_ring_coord[5][VECTORSCOPE_HUES-1][0];
+  float y = d->hue_ring_coord[5][VECTORSCOPE_HUES-1][1];
+  log_scale(d, &x, &y, vs_radius);
   for(int n=0; n<6; n++)
   {
     for(int h=0; h<VECTORSCOPE_HUES; h++)
     {
-      cairo_move_to(cr, x_prev * scale, y_prev * scale);
+      cairo_move_to(cr, x*scale, y*scale);
       // FIXME: can we pre-make a pattern with the hues radiating out, and use it as the "ink" to draw the hue ring and -- if in false color mode -- the vectorscope? will this be faster then drawing lots of lines each with their own color? will it allow for drawing the hue ring with splines and calculating fewer points? -- we might need a color pattern of the colorspace, then masked once to increase saturation and once for alpha?
       // note that hue_ring_rgb and hue_ring_coord are calculated as float but converted here to double
       cairo_set_source_rgba(cr, d->hue_ring_rgb[n][h][0], d->hue_ring_rgb[n][h][1], d->hue_ring_rgb[n][h][2], 0.5);
-      float x = d->hue_ring_coord[n][h][0];
-      float y = d->hue_ring_coord[n][h][1];
+      x = d->hue_ring_coord[n][h][0];
+      y = d->hue_ring_coord[n][h][1];
       log_scale(d, &x, &y, vs_radius);
       cairo_line_to(cr, x*scale, y*scale);
       cairo_stroke(cr);
       if(h==0)
       {
-        cairo_arc(cr, x*scale, y*scale, DT_PIXEL_APPLY_DPI(3.), 0., M_PI * 2.);
-        cairo_fill(cr);
+        cairo_arc(cr, x*scale, y*scale, DT_PIXEL_APPLY_DPI(2.), 0., M_PI * 2.);
+        cairo_set_source_rgba(cr, d->hue_ring_rgb[n][h][0], d->hue_ring_rgb[n][h][1], d->hue_ring_rgb[n][h][2], 1.);
+        cairo_fill_preserve(cr);
+        set_color(cr, darktable.bauhaus->graph_grid);
+        cairo_stroke(cr);
       }
-      x_prev = x;
-      y_prev = y;
     }
   }
 
