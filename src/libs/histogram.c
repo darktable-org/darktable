@@ -86,7 +86,7 @@ typedef enum dt_lib_histogram_vectorscope_type_t
 
 // FIXME: are these lists available from the enum/options in darktableconfig.xml?
 const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] = { "histogram", "waveform", "vectorscope" };
-const gchar *dt_lib_histogram_histogram_scale_names[DT_LIB_HISTOGRAM_N] = { "logarithmic", "linear" };
+const gchar *dt_lib_histogram_scale_names[DT_LIB_HISTOGRAM_N] = { "logarithmic", "linear" };
 const gchar *dt_lib_histogram_waveform_type_names[DT_LIB_HISTOGRAM_WAVEFORM_N] = { "overlaid", "parade" };
 const gchar *dt_lib_histogram_vectorscope_type_names[DT_LIB_HISTOGRAM_VECTORSCOPE_N] = { "u*v*", "AzBz" };
 
@@ -111,11 +111,13 @@ typedef struct dt_lib_histogram_t
   dt_pthread_mutex_t lock;
   GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
   GtkWidget *button_box;               // GtkButtonBox -- contains scope control buttons
+  GtkWidget *button_stack;             // GtkStack -- flips between red and colorspace buttons
   GtkWidget *scope_type_button;        // GtkButton -- histogram/waveform/vectorscope control
   GtkWidget *scope_view_button;        // GtkButton -- how to render the current scope
   GtkWidget *red_channel_button;       // GtkToggleButton -- enable/disable processing R channel
   GtkWidget *green_channel_button;     // GtkToggleButton -- enable/disable processing G channel
   GtkWidget *blue_channel_button;      // GtkToggleButton -- enable/disable processing B channel
+  GtkWidget *colorspace_button;        // GtkButton -- vectorscope colorspace
   // drag to change parameters
   gboolean dragging;
   int32_t button_down_x, button_down_y;
@@ -127,7 +129,6 @@ typedef struct dt_lib_histogram_t
   dt_lib_histogram_scale_t histogram_scale;
   dt_lib_histogram_waveform_type_t waveform_type;
   dt_lib_histogram_vectorscope_type_t vectorscope_type;
-  // FIXME: actually use this
   dt_lib_histogram_scale_t vectorscope_scale;
   double vectorscope_angle;
   gboolean red, green, blue;
@@ -333,8 +334,7 @@ static inline float baselog(float x, float bound)
 
 static inline void log_scale(const dt_lib_histogram_t *d, float *x, float *y, float r)
 {
-  // FIXME: use d->vectorscope_scale
-  if(d->histogram_scale == DT_LIB_HISTOGRAM_LOGARITHMIC)
+  if(d->vectorscope_scale == DT_LIB_HISTOGRAM_LOGARITHMIC)
   {
     const float h = hypotf(*x,*y);
     const float s = baselog(h, r);
@@ -382,6 +382,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   memset(binned, 0, sizeof(int) * diam_px * diam_px);
   // FIXME: move verbosed interleaved comments into a method note at the start, as the code itself is succinct and clear
   // FIXME: even with getting rid of the extra profile conversion hop there's no noticeable speedup -- maybe this loop is memory bound -- if can get rid of one of the output buffers and still no speedup, consider doing more work in this loop, such as atomic binning
+  // FIXME: make 2x2 averaging be conditional on preprocessor define
   // FIXME: average neighboring pixels on x but not y -- may be enough of an optimization
   const int sample_max_x = sample_width - (sample_width % 2);
   const int sample_max_y = sample_height - (sample_height % 2);
@@ -728,7 +729,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   for(int i = 1; i < 1.f + ceilf(vs_radius/grid_radius); i++)
   {
     float r = grid_radius * i;
-    if(d->histogram_scale == DT_LIB_HISTOGRAM_LOGARITHMIC)
+    if(d->vectorscope_scale == DT_LIB_HISTOGRAM_LOGARITHMIC)
       r = baselog(r, vs_radius);
     cairo_arc(cr, 0., 0., r * scale, 0., M_PI * 2.);
     cairo_stroke(cr);
@@ -1005,8 +1006,6 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   dt_develop_t *dev = darktable.develop;
 
-  // FIXME: hack
-  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE) { d->histogram_scale = 1-d->histogram_scale; dt_dev_process_preview(darktable.develop); }
   if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
   {
     if(event->type == GDK_2BUTTON_PRESS)
@@ -1142,17 +1141,31 @@ static void _waveform_view_update(const dt_lib_histogram_t *d)
 
 static void _vectorscope_view_update(dt_lib_histogram_t *d)
 {
-  // FIXME: add a "false color" variant, probably taking over the "red channel" button for this
+  switch(d->vectorscope_scale)
+  {
+    case DT_LIB_HISTOGRAM_LOGARITHMIC:
+      gtk_widget_set_tooltip_text(d->scope_view_button, _("set scale to linear"));
+      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
+                             dtgtk_cairo_paint_logarithmic_scale, CPF_NONE, NULL);
+      break;
+    case DT_LIB_HISTOGRAM_LINEAR:
+      gtk_widget_set_tooltip_text(d->scope_view_button, _("set scale to logarithmic"));
+      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
+                             dtgtk_cairo_paint_linear_scale, CPF_NONE, NULL);
+      break;
+    case DT_LIB_HISTOGRAM_N:
+      dt_unreachable_codepath();
+  }
   switch(d->vectorscope_type)
   {
     case DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV:
-      gtk_widget_set_tooltip_text(d->scope_view_button, _("set view to AzBz"));
-      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
+      gtk_widget_set_tooltip_text(d->colorspace_button, _("set view to AzBz"));
+      dtgtk_button_set_paint(DTGTK_BUTTON(d->colorspace_button),
                              dtgtk_cairo_paint_luv, CPF_NONE, NULL);
       break;
     case DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ:
-      gtk_widget_set_tooltip_text(d->scope_view_button, _("set view to u*v*"));
-      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
+      gtk_widget_set_tooltip_text(d->colorspace_button, _("set view to u*v*"));
+      dtgtk_button_set_paint(DTGTK_BUTTON(d->colorspace_button),
                              dtgtk_cairo_paint_jzazbz, CPF_NONE, NULL);
       break;
     case DT_LIB_HISTOGRAM_VECTORSCOPE_N:
@@ -1171,12 +1184,14 @@ static void _scope_type_update(dt_lib_histogram_t *d)
       gtk_widget_set_sensitive(d->red_channel_button, TRUE);
       gtk_widget_set_sensitive(d->green_channel_button, TRUE);
       gtk_widget_set_sensitive(d->blue_channel_button, TRUE);
+      gtk_stack_set_visible_child(GTK_STACK(d->button_stack), d->red_channel_button);
       _histogram_scale_update(d);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
       gtk_widget_set_tooltip_text(d->scope_type_button, _("set mode to vectorscope"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_type_button),
                              dtgtk_cairo_paint_waveform_scope, CPF_NONE, NULL);
+      gtk_stack_set_visible_child(GTK_STACK(d->button_stack), d->red_channel_button);
       // handles setting RGB channel button sensitive state
       _waveform_view_update(d);
       break;
@@ -1187,6 +1202,7 @@ static void _scope_type_update(dt_lib_histogram_t *d)
       gtk_widget_set_sensitive(d->red_channel_button, FALSE);
       gtk_widget_set_sensitive(d->green_channel_button, FALSE);
       gtk_widget_set_sensitive(d->blue_channel_button, FALSE);
+      gtk_stack_set_visible_child(GTK_STACK(d->button_stack), d->colorspace_button);
       _vectorscope_view_update(d);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
@@ -1199,12 +1215,10 @@ static void _scope_type_clicked(GtkWidget *button, dt_lib_histogram_t *d)
   // NOTE: this isn't a "real" button but more of a tri-state toggle button
   d->scope_type = (d->scope_type + 1) % DT_LIB_HISTOGRAM_SCOPE_N;
   dt_conf_set_string("plugins/darkroom/histogram/mode", dt_lib_histogram_scope_type_names[d->scope_type]);
+  // mark scope data invalid, will recalculate hue ring
+  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
+      d->vectorscope_radius = 0.f;
   _scope_type_update(d);
-
-  // redraw scope now, even if it isn't up to date, so that there is
-  // immediate feedback on button press even though there will be a
-  // lag to process the scope data
-  dt_control_queue_redraw_widget(d->scope_draw);
 
   // generate data for changed scope and trigger widget redraw
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
@@ -1221,7 +1235,7 @@ static void _scope_view_clicked(GtkWidget *button, dt_lib_histogram_t *d)
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
       d->histogram_scale = (d->histogram_scale + 1) % DT_LIB_HISTOGRAM_N;
       dt_conf_set_string("plugins/darkroom/histogram/histogram",
-                         dt_lib_histogram_histogram_scale_names[d->histogram_scale]);
+                         dt_lib_histogram_scale_names[d->histogram_scale]);
       _histogram_scale_update(d);
       dt_control_queue_redraw_widget(d->scope_draw);
       break;
@@ -1233,14 +1247,13 @@ static void _scope_view_clicked(GtkWidget *button, dt_lib_histogram_t *d)
       dt_control_queue_redraw_widget(d->scope_draw);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-      d->vectorscope_type = (d->vectorscope_type + 1) % DT_LIB_HISTOGRAM_VECTORSCOPE_N;
-      dt_conf_set_string("plugins/darkroom/histogram/vectorscope",
-                         dt_lib_histogram_vectorscope_type_names[d->vectorscope_type]);
+      d->vectorscope_scale = (d->vectorscope_scale + 1) % DT_LIB_HISTOGRAM_N;
+      dt_conf_set_string("plugins/darkroom/histogram/vectorscope_scale",
+                         dt_lib_histogram_scale_names[d->vectorscope_scale]);
       _vectorscope_view_update(d);
-      // redraw empty scope for immediate visual feedback
+      // marks scope data invalid, will recalculate hue ring
       d->vectorscope_radius = 0.f;
-      dt_control_queue_redraw_widget(d->scope_draw);
-      // trigger new process from scratch depending on whether CIELuv or JzAzBz
+      // trigger new process from scratch depending on whether linear or logarithmic
       // FIXME: it would be nice as with other scopes to make the initial processing independent of the view
       const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
       if(cv->view(cv) == DT_VIEW_DARKROOM)
@@ -1251,6 +1264,23 @@ static void _scope_view_clicked(GtkWidget *button, dt_lib_histogram_t *d)
     case DT_LIB_HISTOGRAM_SCOPE_N:
       dt_unreachable_codepath();
   }
+}
+
+static void _colorspace_clicked(GtkWidget *button, dt_lib_histogram_t *d)
+{
+  d->vectorscope_type = (d->vectorscope_type + 1) % DT_LIB_HISTOGRAM_VECTORSCOPE_N;
+  dt_conf_set_string("plugins/darkroom/histogram/vectorscope",
+                     dt_lib_histogram_vectorscope_type_names[d->vectorscope_type]);
+  _vectorscope_view_update(d);
+  // marks scope data invalid, will recalculate hue ring
+  d->vectorscope_radius = 0.f;
+  // trigger new process from scratch depending on whether CIELuv or JzAzBz
+  // FIXME: it would be nice as with other scopes to make the initial processing independent of the view
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view(cv) == DT_VIEW_DARKROOM)
+    dt_dev_process_preview(darktable.develop);
+  else
+    dt_control_queue_redraw_center();
 }
 
 // FIXME: these all could be the same function with different user_data
@@ -1378,21 +1408,31 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
         d->vectorscope_type = DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV;
         dt_conf_set_string("plugins/darkroom/histogram/vectorscope",
                            dt_lib_histogram_vectorscope_type_names[d->vectorscope_type]);
+        d->vectorscope_scale = DT_LIB_HISTOGRAM_LOGARITHMIC;
+        dt_conf_set_string("plugins/darkroom/histogram/vectorscope_scale",
+                           dt_lib_histogram_scale_names[d->vectorscope_scale]);
         _scope_type_clicked(d->scope_type_button, d);
         d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
         dt_control_change_cursor(GDK_LEFT_PTR);
       }
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-      if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+      if(d->vectorscope_scale == DT_LIB_HISTOGRAM_LOGARITHMIC)
       {
         _scope_view_clicked(d->scope_view_button, d);
+      }
+      else if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+      {
+        d->vectorscope_scale = DT_LIB_HISTOGRAM_LOGARITHMIC;
+        dt_conf_set_string("plugins/darkroom/histogram/vectorscope_scale",
+                           dt_lib_histogram_scale_names[d->vectorscope_scale]);
+        _colorspace_clicked(d->colorspace_button, d);
       }
       else
       {
         d->histogram_scale = DT_LIB_HISTOGRAM_LOGARITHMIC;
         dt_conf_set_string("plugins/darkroom/histogram/histogram",
-                           dt_lib_histogram_histogram_scale_names[d->histogram_scale]);
+                           dt_lib_histogram_scale_names[d->histogram_scale]);
         // don't need to cancel dragging or lose highlight so long as vectorscope isn't draggable
         _scope_type_clicked(d->scope_type_button, d);
       }
@@ -1480,7 +1520,7 @@ void gui_init(dt_lib_module_t *self)
 
   str = dt_conf_get_string("plugins/darkroom/histogram/histogram");
   for(dt_lib_histogram_scale_t i=0; i<DT_LIB_HISTOGRAM_N; i++)
-    if(g_strcmp0(str, dt_lib_histogram_histogram_scale_names[i]) == 0)
+    if(g_strcmp0(str, dt_lib_histogram_scale_names[i]) == 0)
       d->histogram_scale = i;
   g_free(str);
 
@@ -1494,6 +1534,12 @@ void gui_init(dt_lib_module_t *self)
   for(dt_lib_histogram_vectorscope_type_t i=0; i<DT_LIB_HISTOGRAM_VECTORSCOPE_N; i++)
     if(g_strcmp0(str, dt_lib_histogram_vectorscope_type_names[i]) == 0)
       d->vectorscope_type = i;
+  g_free(str);
+
+  str = dt_conf_get_string("plugins/darkroom/histogram/vectorscope_scale");
+  for(dt_lib_histogram_scale_t i=0; i<DT_LIB_HISTOGRAM_N; i++)
+    if(g_strcmp0(str, dt_lib_histogram_scale_names[i]) == 0)
+      d->vectorscope_scale = i;
   g_free(str);
 
   int a = dt_conf_get_int("plugins/darkroom/histogram/vectorscope/angle");
@@ -1565,6 +1611,7 @@ void gui_init(dt_lib_module_t *self)
   // icons/tooltips are updated, and button sensitivity is set as
   // needed.
 
+  // FIXME: the button transitions when they appear on mouseover (mouse enters scope widget) or change (mouse click) cause redraws of the entire scope -- is there a way to avoid this?
   // FIXME: this could be a combobox to allow for more types and not to have to swap the icon on click
   // icons will be filled in by _scope_type_update()
   d->scope_type_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
@@ -1572,13 +1619,18 @@ void gui_init(dt_lib_module_t *self)
   d->scope_view_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
   gtk_box_pack_start(GTK_BOX(d->button_box), d->scope_view_button, FALSE, FALSE, 0);
 
+  // the red togglebutton turns into colorspace button in vectorscope
+  d->button_stack = gtk_stack_new();
+  gtk_box_pack_start(GTK_BOX(d->button_box), d->button_stack, FALSE, FALSE, 0);
+
   // red/green/blue channel on/off
   // these are toggle boxes with a meaningful active state, unlike the type/view buttons
   d->red_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
   gtk_widget_set_name(d->red_channel_button, "red-channel-button");
   gtk_widget_set_tooltip_text(d->red_channel_button, d->red ? _("click to hide red channel") : _("click to show red channel"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->red_channel_button), d->red);
-  gtk_box_pack_start(GTK_BOX(d->button_box), d->red_channel_button, FALSE, FALSE, 0);
+  // FIXME: just use gtk_container_add() as don't care about name?
+  gtk_stack_add_named(GTK_STACK(d->button_stack), d->red_channel_button, "red");
 
   d->green_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
   gtk_widget_set_name(d->green_channel_button, "green-channel-button");
@@ -1591,6 +1643,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->blue_channel_button, d->blue ? _("click to hide blue channel") : _("click to show blue channel"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->blue_channel_button), d->blue);
   gtk_box_pack_start(GTK_BOX(d->button_box), d->blue_channel_button, FALSE, FALSE, 0);
+
+  d->colorspace_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
+  // FIXME: just use gtk_container_add() as don't care about name?
+  gtk_stack_add_named(GTK_STACK(d->button_stack), d->colorspace_button, "colorspace");
 
   // will change sensitivity of channel buttons, hence must run after all buttons are declared
   _scope_type_update(d);
@@ -1632,6 +1688,7 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(d->scope_type_button), "clicked", G_CALLBACK(_scope_type_clicked), d);
   g_signal_connect(G_OBJECT(d->scope_view_button), "clicked", G_CALLBACK(_scope_view_clicked), d);
+  g_signal_connect(G_OBJECT(d->colorspace_button), "clicked", G_CALLBACK(_colorspace_clicked), d);
 
   g_signal_connect(G_OBJECT(d->red_channel_button), "toggled", G_CALLBACK(_red_channel_toggle), d);
   g_signal_connect(G_OBJECT(d->green_channel_button), "toggled", G_CALLBACK(_green_channel_toggle), d);
