@@ -2107,7 +2107,7 @@ static int _control_import_image_copy(const char *filename,
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(imgid));
       if((imgid & 3) == 3)
       {
-        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
         dt_control_queue_redraw_center();
       }
     }
@@ -2128,7 +2128,7 @@ static void _collection_update(double *last_update, double *update_interval)
     // between updates until it hits the pre-set maximum
     if (*update_interval < MAX_UPDATE_INTERVAL)
       *update_interval += 0.1;
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
     dt_control_queue_redraw_center();
   }
 }

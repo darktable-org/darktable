@@ -238,7 +238,7 @@ void _camera_import_image_downloaded(const dt_camera_t *camera, const char *file
 
   if((imgid & 3) == 3)
   {
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
   }
 
   if(t->import_count + 1 == num_images)
