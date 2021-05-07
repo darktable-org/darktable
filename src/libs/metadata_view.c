@@ -497,13 +497,8 @@ static int lua_update_metadata(lua_State*L);
 /* update all values to reflect mouse over image id or no data at all */
 static void _metadata_view_update_values(dt_lib_module_t *self)
 {
-  //uint32_t ids_size = 0u;
-  GArray *const ids = g_array_new(FALSE, FALSE, sizeof(int));
   int32_t mouse_over_id = dt_control_get_mouse_over_id();
-
   int32_t count = 0;
-
-  //  printf("--- count=%d / mouse_over_id=%d\n", count, mouse_over_id);
 
   if(mouse_over_id == -1)
   {
@@ -537,9 +532,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   {
     count = 1;
   }
-  //  printf("count=%d / mouse_over_id=%d\n", count, mouse_over_id);
 
-  char metadata[md_size][PATH_MAX] = {{0}};
   gboolean skip[md_size] = {false};
 
   if (count > 1)
@@ -572,8 +565,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
                                          "COUNT(DISTINCT datetime_taken), " //OK
                                          "COUNT(DISTINCT width), " //OK
                                          "COUNT(DISTINCT height), " //OK
-                                         "2, " //exported width
-                                         "2, " //exported height
+                                         "1, " //exported width
+                                         "1, " //exported height
                                          "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 2 WHERE images.id in (%s)), " //titre
                                          "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 3 WHERE images.id in (%s)), " //description
                                          "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 0 WHERE images.id in (%s)), " //auteur
@@ -589,40 +582,51 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
                                          "FROM main.images "
                                          "WHERE id IN (%s)",
                                    images, images, images, images, images, images, images, images);
-    // SELECT count(id), count(ifnull(meta_data.value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 4 WHERE images.id in (SELECT * FROM selected_images)
     double tt = dt_get_wtime();
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-    printf("Requête: %0.06f\n", dt_get_wtime()-tt);
+    printf("Requête: %0.06f", dt_get_wtime()-tt);
+
+    sqlite3_stmt *stmt_tags = NULL;
+    tt = dt_get_wtime();
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                dt_util_dstrcat(NULL, "SELECT flags, COUNT(DISTINCT imgid) FROM main.tagged_images JOIN data.tags ON data.tags.id = main.tagged_images.tagid AND name NOT LIKE 'darktable|%%' WHERE imgid in (%s) GROUP BY tagid", images),
+                                -1, &stmt_tags, NULL);
+
+    printf(" - %0.06f\n", dt_get_wtime()-tt);
     g_free(query);
 
     if (sqlite3_step(stmt) == SQLITE_ROW)
     {
-      for (int32_t md = 0; md < md_size; md++)
+      for (int32_t md = 0; md < md_tag_names; md++)
       {
-        if (sqlite3_column_int(stmt, md) > 1)
-        {
-          skip[md] = true;
-        }
-        else
-        {
-          skip[md] = false;
-          //          const dt_image_t *img = dt_image_cache_get(darktable.image_cache, img_id, 'r');
-          //          (void)g_strlcpy(metadata[i], "data", sizeof(metadata[i]));
-          //          const dt_image_t *img = dt_image_cache_get(darktable.image_cache, g_array_index(ids, int, 0), 'r');
-          //          _metadata_update_value(md, "data", self);
-        }
+        skip[md] = (sqlite3_column_int(stmt, md) > 1);
       }
     }
     sqlite3_finalize(stmt);
+
+    // Tags and categories management
+    gboolean same_tags = true;
+    gboolean same_categories = true;
+
+    while (sqlite3_step(stmt_tags) == SQLITE_ROW)
+    {
+      if (sqlite3_column_int(stmt_tags, 0) & DT_TF_CATEGORY)
+      {
+        same_categories &= (sqlite3_column_int(stmt_tags, 1) == count);
+      }
+      else
+      {
+        same_tags &= (sqlite3_column_int(stmt_tags, 1) == count);
+      }
+    }
+
+    skip[md_tag_names] = ! same_tags;
+    skip[md_categories] = ! same_categories;
+
+    sqlite3_finalize(stmt_tags);
   }
 
-  //gboolean cease[md_size] = {false};
-  char tooltip_filmroll[300] = {0};
-#if SHOW_FLAGS
-  char tooltip_flags[300] = {0};
-#endif
-
-  int img_id = mouse_over_id; //g_array_index(ids, int, i);
+  int img_id = mouse_over_id;
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, img_id, 'r');
 
   if (!img) goto fill_minuses;
@@ -638,7 +642,16 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   {
     if (skip[md] == true)
     {
-      //          printf("md=%d -- skipped\n", md);
+#if SHOW_FLAGS
+      if (md == md_internal_flags)
+      {
+        _metadata_update_tooltip(md, NULL, self);
+      }
+#endif //SHOW_FLAGS
+      if (md == md_internal_filmroll)
+      {
+        _metadata_update_tooltip(md, NULL, self);
+      }
       _metadata_update_value(md, VARIOUS, self);
       continue;
     }
@@ -648,10 +661,13 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     switch (md)
     {
       case md_internal_filmroll:
+      {
+        char tooltip_filmroll[300] = {0};
         dt_image_film_roll(img, text, sizeof(text));
         snprintf(tooltip_filmroll, sizeof(tooltip_filmroll), _("double click to jump to film roll\n%s"), text);
         _metadata_update_tooltip(md_internal_filmroll, tooltip_filmroll, self);
         _metadata_update_value(md_internal_filmroll, text, self);
+      }
         break;
 
       case md_internal_imgid:
@@ -717,9 +733,12 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         // TODO: decide if this should be removed for a release. maybe #ifdef'ing to only add it to git compiles?
 #if SHOW_FLAGS
       case md_internal_flags:
+      {
+        char tooltip_flags[300] = {0};
         _metadata_get_flags(img, text, tooltip_flags, sizeof(tooltip_flags));
         _metadata_update_tooltip(md_internal_flags, tooltip_flags, self);
         _metadata_update_value(md_internal_flags, text, self);
+      }
         break;
 #endif // SHOW_FLAGS
 
@@ -789,7 +808,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
           _metadata_update_timestamp(md_exif_datetime, &exif_timestamp, self);
         }
         else
-          _metadata_update_value(md_exif_datetime, metadata[md_exif_datetime], self);
+          _metadata_update_value(md_exif_datetime, img->exif_datetime_taken, self);
       }
       break;
 
@@ -988,9 +1007,6 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     }
   }
   dt_image_cache_read_release(darktable.image_cache, img);
-  //}
-
-  (void)g_array_free(ids, TRUE);
 
   return;
 
