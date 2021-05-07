@@ -508,10 +508,12 @@ static void _guides_draw_golden_mean(cairo_t *cr, const float x, const float y,
   // if we want the global setting
   if(extra == -1)
   {
-    gchar *val = _conf_get_path("global", "guide", NULL);
+    gchar *key = _conf_get_path("global", "guide", NULL);
+    gchar *val = dt_conf_get_string(key);
+    g_free(key);
     if(!g_strcmp0(val, "golden mean"))
     {
-      gchar *key = _conf_get_path("global", "golden_extra", NULL);
+      key = _conf_get_path("global", "golden_extra", NULL);
       extra = dt_conf_get_int(key);
       g_free(key);
     }
@@ -799,7 +801,9 @@ GtkWidget *dt_guides_get_widgets(dt_iop_module_t *module)
   gtk_box_pack_start(GTK_BOX(vbox), gw->g_flip, TRUE, TRUE, 0);
   gtk_widget_set_no_show_all(gw->g_flip, TRUE);
 
-  gchar *val = _conf_get_path("global", "guide", NULL);
+  gchar *key = _conf_get_path("global", "guide", NULL);
+  gchar *val = dt_conf_get_string(key);
+  g_free(key);
   int i = MAX(0, _guides_get_value(val));
   g_free(val);
   dt_bauhaus_combobox_set(gw->g_guides, i);
@@ -842,7 +846,7 @@ GtkWidget *dt_guides_get_widgets(dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(vbox), gw->m_flip, TRUE, TRUE, 0);
     gtk_widget_set_no_show_all(gw->m_flip, TRUE);
 
-    gchar *key = _conf_get_path(module->op, "guide", NULL);
+    key = _conf_get_path(module->op, "guide", NULL);
     val = dt_conf_get_string(key);
     i = _guides_get_value(val) + 1;
     g_free(val);
