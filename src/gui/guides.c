@@ -62,6 +62,30 @@ static int _guides_get_value(gchar *name)
   return 0;
 }
 
+static gchar *_conf_get_path(gchar *module_name, gchar *property_1, gchar *property_2)
+{
+  if(!darktable.view_manager) return NULL;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  // in lighttable, we store panels states per layout
+  char lay[32] = "";
+  if(g_strcmp0(cv->module_name, "lighttable") == 0)
+  {
+    if(dt_view_lighttable_preview_state(darktable.view_manager))
+      g_snprintf(lay, sizeof(lay), "preview/");
+    else
+      g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
+  }
+  else if(g_strcmp0(cv->module_name, "darkroom") == 0)
+  {
+    g_snprintf(lay, sizeof(lay), "%d/", dt_view_darkroom_get_layout(darktable.view_manager));
+  }
+
+  if(property_2)
+    return dt_util_dstrcat(NULL, "guides/%s/%s%s/%s", cv->module_name, lay, property_1, property_2);
+  else
+    return dt_util_dstrcat(NULL, "guides/%s/%s%s", cv->module_name, lay, property_1);
+}
+
 static void dt_guides_draw_grid(cairo_t *cr, const float x, const float y, const float w, const float h,
                                 float zoom_scale, void *data)
 {
@@ -72,18 +96,18 @@ static void dt_guides_draw_grid(cairo_t *cr, const float x, const float y, const
   if(module)
   {
     // we verify that we want the module specific setting, not the global one
-    gchar *key = dt_util_dstrcat(NULL, "guides/%s/guide", module->op);
+    gchar *key = _conf_get_path(module->op, "guide", NULL);
     gchar *val = dt_conf_get_string(key);
     g_free(key);
     if(!g_strcmp0(val, "grid"))
     {
-      key = dt_util_dstrcat(NULL, "guides/%s/grid_nbh", module->op);
+      key = _conf_get_path(module->op, "grid_nbh", NULL);
       if(dt_conf_key_exists(key)) nbh = dt_conf_get_int(key);
       g_free(key);
-      key = dt_util_dstrcat(NULL, "guides/%s/grid_nbv", module->op);
+      key = _conf_get_path(module->op, "grid_nbv", NULL);
       if(dt_conf_key_exists(key)) nbv = dt_conf_get_int(key);
       g_free(key);
-      key = dt_util_dstrcat(NULL, "guides/%s/grid_subdiv", module->op);
+      key = _conf_get_path(module->op, "grid_subdiv", NULL);
       if(dt_conf_key_exists(key)) subdiv = dt_conf_get_int(key);
       g_free(key);
       loaded = TRUE;
@@ -93,12 +117,20 @@ static void dt_guides_draw_grid(cairo_t *cr, const float x, const float y, const
   // if we want the global setting
   if(!loaded)
   {
-    gchar *val = dt_conf_get_string("guides/global/guide");
+    gchar *key = _conf_get_path("guides", "guide", NULL);
+    gchar *val = dt_conf_get_string(key);
+    g_free(key);
     if(!g_strcmp0(val, "grid"))
     {
-      if(dt_conf_key_exists("guides/global/grid_nbh")) nbh = dt_conf_get_int("guides/global/grid_nbh");
-      if(dt_conf_key_exists("guides/global/grid_nbv")) nbv = dt_conf_get_int("guides/global/grid_nbv");
-      if(dt_conf_key_exists("guides/global/grid_subdiv")) subdiv = dt_conf_get_int("guides/global/grid_subdiv");
+      key = _conf_get_path("global", "grid_nbh", NULL);
+      if(dt_conf_key_exists(key)) nbh = dt_conf_get_int(key);
+      g_free(key);
+      key = _conf_get_path("global", "grid_nbv", NULL);
+      if(dt_conf_key_exists(key)) nbv = dt_conf_get_int(key);
+      g_free(key);
+      key = _conf_get_path("global", "grid_subdiv", NULL);
+      if(dt_conf_key_exists(key)) subdiv = dt_conf_get_int(key);
+      g_free(key);
       loaded = TRUE;
     }
     g_free(val);
@@ -136,7 +168,7 @@ static void _grid_horizontal_changed(GtkWidget *w, void *data)
 {
   int horizontal = dt_bauhaus_slider_get(w);
   dt_iop_module_t *module = g_object_get_data(G_OBJECT(w), "module");
-  gchar *key = dt_util_dstrcat(NULL, "guides/%s/grid_nbh", module ? module->op : "global");
+  gchar *key = _conf_get_path(module ? module->op : "global", "grid_nbh", NULL);
   dt_conf_set_int(key, horizontal);
   g_free(key);
   dt_control_queue_redraw_center();
@@ -146,7 +178,7 @@ static void _grid_vertical_changed(GtkWidget *w, void *data)
 {
   int vertical = dt_bauhaus_slider_get(w);
   dt_iop_module_t *module = g_object_get_data(G_OBJECT(w), "module");
-  gchar *key = dt_util_dstrcat(NULL, "guides/%s/grid_nbv", module ? module->op : "global");
+  gchar *key = _conf_get_path(module ? module->op : "global", "grid_nbv", NULL);
   dt_conf_set_int(key, vertical);
   g_free(key);
   dt_control_queue_redraw_center();
@@ -156,7 +188,7 @@ static void _grid_subdiv_changed(GtkWidget *w, void *data)
 {
   int subdiv = dt_bauhaus_slider_get(w);
   dt_iop_module_t *module = g_object_get_data(G_OBJECT(w), "module");
-  gchar *key = dt_util_dstrcat(NULL, "guides/%s/grid_subdiv", module ? module->op : "global");
+  gchar *key = _conf_get_path(module ? module->op : "global", "grid_subdiv", NULL);
   dt_conf_set_int(key, subdiv);
   g_free(key);
   dt_control_queue_redraw_center();
@@ -172,7 +204,7 @@ static GtkWidget *_guides_gui_grid(dt_iop_module_t *self, void *user_data)
   dt_bauhaus_widget_set_label(grid_horizontal, NULL, N_("horizontal lines"));
   gtk_widget_set_tooltip_text(grid_horizontal, _("number of horizontal guide lines"));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(grid_horizontal), TRUE, TRUE, 0);
-  gchar *key = dt_util_dstrcat(NULL, "guides/%s/grid_nbh", self ? self->op : "global");
+  gchar *key = _conf_get_path(self ? self->op : "global", "grid_nbh", NULL);
   dt_bauhaus_slider_set(grid_horizontal, dt_conf_key_exists(key) ? dt_conf_get_int(key) : 3);
   g_free(key);
   g_signal_connect(G_OBJECT(grid_horizontal), "value-changed", G_CALLBACK(_grid_horizontal_changed), user_data);
@@ -183,7 +215,7 @@ static GtkWidget *_guides_gui_grid(dt_iop_module_t *self, void *user_data)
   dt_bauhaus_widget_set_label(grid_vertical, NULL, N_("vertical lines"));
   gtk_widget_set_tooltip_text(grid_vertical, _("number of vertical guide lines"));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(grid_vertical), TRUE, TRUE, 0);
-  key = dt_util_dstrcat(NULL, "guides/%s/grid_nbv", self ? self->op : "global");
+  key = _conf_get_path(self ? self->op : "global", "grid_nbv", NULL);
   dt_bauhaus_slider_set(grid_vertical, dt_conf_key_exists(key) ? dt_conf_get_int(key) : 3);
   g_free(key);
   g_signal_connect(G_OBJECT(grid_vertical), "value-changed", G_CALLBACK(_grid_vertical_changed), user_data);
@@ -194,7 +226,7 @@ static GtkWidget *_guides_gui_grid(dt_iop_module_t *self, void *user_data)
   dt_bauhaus_widget_set_label(grid_subdiv, NULL, N_("subdivisions"));
   gtk_widget_set_tooltip_text(grid_subdiv, _("number of subdivisions per grid rectangle"));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(grid_subdiv), TRUE, TRUE, 0);
-  key = dt_util_dstrcat(NULL, "guides/%s/grid_subdiv", self ? self->op : "global");
+  key = _conf_get_path(self ? self->op : "global", "grid_subdiv", NULL);
   dt_bauhaus_slider_set(grid_subdiv, dt_conf_key_exists(key) ? dt_conf_get_int(key) : 3);
   g_free(key);
   g_signal_connect(G_OBJECT(grid_subdiv), "value-changed", G_CALLBACK(_grid_subdiv_changed), user_data);
@@ -462,12 +494,12 @@ static void _guides_draw_golden_mean(cairo_t *cr, const float x, const float y,
   if(module)
   {
     // we verify that we want the module specific setting, not the global one
-    gchar *key = dt_util_dstrcat(NULL, "guides/%s/guide", module->op);
+    gchar *key = _conf_get_path(module->op, "guide", NULL);
     gchar *val = dt_conf_get_string(key);
     g_free(key);
     if(!g_strcmp0(val, "golden mean"))
     {
-      key = dt_util_dstrcat(NULL, "guides/%s/golden_extra", module->op);
+      key = _conf_get_path(module->op, "golden_extra", NULL);
       extra = dt_conf_get_int(key);
       g_free(key);
     }
@@ -476,10 +508,12 @@ static void _guides_draw_golden_mean(cairo_t *cr, const float x, const float y,
   // if we want the global setting
   if(extra == -1)
   {
-    gchar *val = dt_conf_get_string("guides/global/guide");
+    gchar *val = _conf_get_path("global", "guide", NULL);
     if(!g_strcmp0(val, "golden mean"))
     {
-      extra = dt_conf_get_int("guides/global/golden_extra");
+      gchar *key = _conf_get_path("global", "golden_extra", NULL);
+      extra = dt_conf_get_int(key);
+      g_free(key);
     }
     g_free(val);
   }
@@ -515,7 +549,7 @@ static void _golden_mean_changed(GtkWidget *combo, void *user_data)
 
   // remember setting
   dt_iop_module_t *module = g_object_get_data(G_OBJECT(combo), "module");
-  gchar *key = dt_util_dstrcat(NULL, "guides/%s/golden_extra", module ? module->op : "global");
+  gchar *key = _conf_get_path(module ? module->op : "global", "golden_extra", NULL);
   dt_conf_set_int(key, which);
   g_free(key);
 
@@ -533,7 +567,7 @@ static GtkWidget *_guides_gui_golden_mean(dt_iop_module_t *self, void *user_data
   gtk_widget_set_tooltip_text(golden_extras, _("show some extra guides"));
 
   // set current value
-  gchar *key = dt_util_dstrcat(NULL, "guides/%s/golden_extra", self ? self->op : "global");
+  gchar *key = _conf_get_path(self ? self->op : "global", "golden_extra", NULL);
   dt_bauhaus_combobox_set(golden_extras, dt_conf_get_int(key));
   g_free(key);
 
@@ -627,7 +661,7 @@ static void _settings_flip_update(_guides_settings_t *gw)
   dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->g_guides) - 1);
   if(guide && guide->support_flip)
   {
-    gchar *key = dt_util_dstrcat(NULL, "guides/global/%s/flip", guide->name);
+    gchar *key = _conf_get_path("global", guide->name, "flip");
     dt_bauhaus_combobox_set(gw->g_flip, dt_conf_get_int(key));
     g_free(key);
   }
@@ -637,7 +671,7 @@ static void _settings_flip_update(_guides_settings_t *gw)
     guide = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->m_guides) - 2);
     if(guide && guide->support_flip)
     {
-      gchar *key = dt_util_dstrcat(NULL, "guides/%s/%s/flip", gw->module->op, guide->name);
+      gchar *key = _conf_get_path(gw->module->op, guide->name, "flip");
       dt_bauhaus_combobox_set(gw->m_flip, dt_conf_get_int(key));
       g_free(key);
     }
@@ -655,7 +689,9 @@ static void _settings_guides_changed(GtkWidget *w, _guides_settings_t *gw)
   {
     const int which = dt_bauhaus_combobox_get(gw->g_guides);
     dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
-    dt_conf_set_string("guides/global/guide", guide ? guide->name : "none");
+    gchar *key = _conf_get_path("global", "guide", NULL);
+    dt_conf_set_string(key, guide ? guide->name : "none");
+    g_free(key);
   }
   else if(gw->module && w == gw->m_guides)
   {
@@ -671,7 +707,7 @@ static void _settings_guides_changed(GtkWidget *w, _guides_settings_t *gw)
       else
         val = g_strdup("follow global");
     }
-    gchar *key = dt_util_dstrcat(NULL, "guides/%s/guide", gw->module->op);
+    gchar *key = _conf_get_path(gw->module->op, "guide", NULL);
     dt_conf_set_string(key, val);
     g_free(val);
     g_free(key);
@@ -697,7 +733,7 @@ static void _settings_flip_changed(GtkWidget *w, _guides_settings_t *gw)
     dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
     if(guide)
     {
-      gchar *key = dt_util_dstrcat(NULL, "guides/global/%s/flip", guide->name);
+      gchar *key = _conf_get_path("global", guide->name, "flip");
       dt_conf_set_int(key, dt_bauhaus_combobox_get(w));
       g_free(key);
     }
@@ -708,7 +744,7 @@ static void _settings_flip_changed(GtkWidget *w, _guides_settings_t *gw)
     dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 2);
     if(guide)
     {
-      gchar *key = dt_util_dstrcat(NULL, "guides/%s/%s/flip", gw->module->op, guide->name);
+      gchar *key = _conf_get_path(gw->module->op, guide->name, "flip");
       dt_conf_set_int(key, dt_bauhaus_combobox_get(w));
       g_free(key);
     }
@@ -763,7 +799,7 @@ GtkWidget *dt_guides_get_widgets(dt_iop_module_t *module)
   gtk_box_pack_start(GTK_BOX(vbox), gw->g_flip, TRUE, TRUE, 0);
   gtk_widget_set_no_show_all(gw->g_flip, TRUE);
 
-  gchar *val = dt_conf_get_string("guides/global/guide");
+  gchar *val = _conf_get_path("global", "guide", NULL);
   int i = MAX(0, _guides_get_value(val));
   g_free(val);
   dt_bauhaus_combobox_set(gw->g_guides, i);
@@ -806,7 +842,7 @@ GtkWidget *dt_guides_get_widgets(dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(vbox), gw->m_flip, TRUE, TRUE, 0);
     gtk_widget_set_no_show_all(gw->m_flip, TRUE);
 
-    gchar *key = dt_util_dstrcat(NULL, "guides/%s/guide", module->op);
+    gchar *key = _conf_get_path(module->op, "guide", NULL);
     val = dt_conf_get_string(key);
     i = _guides_get_value(val) + 1;
     g_free(val);
@@ -854,7 +890,7 @@ void dt_guides_draw(cairo_t *cr, const float left, const float top, const float 
   gboolean global = FALSE;
   if(module)
   {
-    key = dt_util_dstrcat(NULL, "guides/%s/guide", module->op);
+    key = _conf_get_path(module->op, "guide", NULL);
     if(dt_conf_key_exists(key))
     {
       val = dt_conf_get_string(key);
@@ -874,12 +910,14 @@ void dt_guides_draw(cairo_t *cr, const float left, const float top, const float 
   if(!guide)
   {
     global = TRUE;
-    if(dt_conf_key_exists("guides/global/guide"))
+    key = _conf_get_path("global", "guide", NULL);
+    if(dt_conf_key_exists(key))
     {
-      val = dt_conf_get_string("guides/global/guide");
+      val = dt_conf_get_string(key);
       guide = (dt_guides_t *)g_list_nth_data(darktable.guides, _guides_get_value(val) - 1);
       g_free(val);
     }
+    g_free(key);
   }
   // if no guide at this point : nothing to draw :)
   if(!guide) return;
@@ -888,7 +926,7 @@ void dt_guides_draw(cairo_t *cr, const float left, const float top, const float 
   // retrieve guide flip
   if(guide->support_flip)
   {
-    key = dt_util_dstrcat(NULL, "guides/%s/%s/flip", global ? "global" : module->op, guide->name);
+    key = _conf_get_path(global ? "global" : module->op, guide->name, "flip");
     if(dt_conf_key_exists(key)) flip = dt_conf_get_int(key);
     g_free(key);
   }
