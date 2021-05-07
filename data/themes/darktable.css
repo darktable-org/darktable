@@ -759,15 +759,33 @@ dialog
 
 dialog .dialog-vbox
 {
-  margin: 0.56em;
+  margin: 0.42em 0.56em;
 }
 
+/* set top margin in bottom button bar to be the same as bottom margin applied above for main dialog window */
+dialog .dialog-action-box
+{
+  margin-top: 0.42em;
+}
+
+/* remove margin on the left for first left button only, then do the same for right margin for last right button only */
+dialog .dialog-action-box button:first-child
+{
+  margin-left: 0;
+}
+
+dialog .dialog-action-box button:last-child
+{
+  margin-right: 0;
+}
+
+/* remove left margin only on dialog filechooser box */
 dialog filechooser
 {
-  margin-left: -0.42em; /* remove left margin only on dialog filechooser box */
+  margin-left: -0.42em; 
 }
 
-/* Set title headerbar and main buttons */
+/* Set title headerbar and main buttons for some themes and/or desktops environment */
 dialog button
 {
   padding: 0.14em 0.35em;
@@ -798,22 +816,10 @@ dialog headerbar entry
   margin: 0.2em 0;
 }
 
-#import_presets
+#import_presets,
+#modulegroups-ro
 {
   font-style: italic;
-}
-
-/* Set import from camera or card dialog window */
-dialog .dialog-vbox notebook stack box box > label  /* set code project name on first tab */
-{
-  font-size: 0.95em;
-  font-weight: bold;
-  padding: 0.35em 0;
-}
-
-dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on last line on second tab */
-{
-  padding: 0.14em 0.42em 0.14em 0;
 }
 
 /* About window: set different background for credits view */
@@ -1340,17 +1346,6 @@ box #modulegroups-iop-header:last-child
   min-width: 1.6em;
   min-height: 1.6em;
   border: 0;
-}
-
-/* set bottom bar infos */
-#modulegroups-ro
-{
-  font-style: italic;
-}
-
-#modulegroups-reset
-{
-  margin: 0.5em;
 }
 
 /*---------------------------------------------------------------
