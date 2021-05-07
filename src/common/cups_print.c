@@ -610,7 +610,7 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
 
   /* do some arrangements for the landscape mode. */
 
-  if (prt->page.landscape)
+  if(prt->page.landscape)
   {
     double tmp = pg_width;
     pg_width = pg_height;
@@ -641,7 +641,7 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
   // display page
   int32_t p_bottom, p_right;
 
-  if (a_aspect > pg_aspect)
+  if(a_aspect > pg_aspect)
   {
     *px = (width - (height * pg_aspect)) / 2;
     *py = 0;
@@ -684,8 +684,11 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
 
   // get the image dimensions if needed
 
-  if (*iwpix <= 0 || *ihpix <= 0)
+  if(imgid != -1
+     && (*iwpix <= 0 || *ihpix <= 0))
+  {
     dt_image_get_final_size(imgid, iwpix, ihpix);
+  }
 
   // compute the scaling for the image to fit into the printable area
 
