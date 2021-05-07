@@ -1479,10 +1479,10 @@ void dt_view_map_drag_set_icon(const dt_view_manager_t *vm, GdkDragContext *cont
 #endif
 
 #ifdef HAVE_PRINT
-void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo)
+void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo, dt_images_box *imgs)
 {
   if (vm->proxy.print.view)
-    vm->proxy.print.print_settings(vm->proxy.print.view, pinfo);
+    vm->proxy.print.print_settings(vm->proxy.print.view, pinfo, imgs);
 }
 #endif
 
