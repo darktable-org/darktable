@@ -47,8 +47,9 @@ You are strongly advised to take a backup first.
   of AMaZE. the order of the demosaic algorithms has also been adjusted for clarity.
 
 - Support for "dual demosaic" has also been added, allowing you to combine
-  "RCD + VNG4" and "AMaZE + VNG4". This allows you to use higher quality algorithms
-  (RCD/AMaZE) on high frequency parts of the image and lower quality algorithms on 
+  "RCD + VNG4" and "AMaZE + VNG4" for bayer sensors, for xtrans sensors there is
+  "Markesteijn 3-pass + VNG". This allows you to use higher quality algorithms
+  (RCD/AMaZE/Markesteijn3) on high frequency parts of the image and lower quality algorithms on 
   low frequency parts and can be helpful in better controlling noise.
 
 - You can now create an opacity mask based on the sharpness of the image. This uses
