@@ -240,6 +240,9 @@ gboolean dt_ioppr_check_can_move_after_iop(GList *iop_list, struct dt_iop_module
 gboolean dt_ioppr_move_iop_before(struct dt_develop_t *dev, struct dt_iop_module_t *module, struct dt_iop_module_t *module_next);
 gboolean dt_ioppr_move_iop_after(struct dt_develop_t *dev, struct dt_iop_module_t *module, struct dt_iop_module_t *module_prev);
 
+/** returns the dt_iop_order_entry_t at position iop_order in iop_order_list **/
+struct dt_iop_module_t *dt_ioppr_get_pipe_nth_iop_module(GList *iop_list, int iop_order);
+
 // for debug only
 int dt_ioppr_check_iop_order(struct dt_develop_t *dev, const int imgid, const char *msg);
 void dt_ioppr_print_module_iop_order(GList *iop_list, const char *msg);

@@ -25,7 +25,13 @@
 #include "dtgtk/gradientslider.h"
 #include "gui/color_picker_proxy.h"
 
-#define DEVELOP_BLEND_VERSION (10)
+#define DEVELOP_BLEND_VERSION (11)
+
+typedef enum dt_develop_coordinates_t
+{
+  DEVELOP_COORDINATES_RAW_GEODESIC = 0,    // $DESCRIPTION: "raw geodesic coordinates"
+  DEVELOP_COORDINATES_VIEWPORT_PLANAR = 1, // $DESCRIPTION: "viewport planar coordinates"
+} dt_develop_coordinates_t;
 
 typedef enum dt_develop_blend_colorspace_t
 {
@@ -357,6 +363,45 @@ typedef struct dt_develop_blend_params9_t
   gboolean raster_mask_invert;
 } dt_develop_blend_params9_t;
 
+typedef struct dt_develop_blend_params10_t
+{
+  /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask
+   *  or raster mask */
+  uint32_t mask_mode;
+  /** blending color space type */
+  int32_t blend_cst;
+  /** blending mode */
+  uint32_t blend_mode;
+  /** parameter for the blending */
+  float blend_parameter;
+  /** mixing opacity */
+  float opacity;
+  /** how masks are combined */
+  uint32_t mask_combine;
+  /** id of mask in current pipeline */
+  uint32_t mask_id;
+  /** blendif mask */
+  uint32_t blendif;
+  /** feathering radius */
+  float feathering_radius;
+  /** feathering guide */
+  uint32_t feathering_guide;
+  /** blur radius */
+  float blur_radius;
+  /** mask contrast enhancement */
+  float contrast;
+  /** mask brightness adjustment */
+  float brightness;
+  /** some reserved fields for future use */
+  uint32_t reserved[4];
+  /** blendif parameters */
+  float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
+  float blendif_boost_factors[DEVELOP_BLENDIF_SIZE];
+  dt_dev_operation_t raster_mask_source;
+  int raster_mask_instance;
+  int raster_mask_id;
+  gboolean raster_mask_invert;
+} dt_develop_blend_params10_t;
 /** blend parameters current version */
 typedef struct dt_develop_blend_params_t
 {
@@ -398,6 +443,11 @@ typedef struct dt_develop_blend_params_t
   int raster_mask_instance;
   int raster_mask_id;
   gboolean raster_mask_invert;
+
+  // v11 addendum
+  dt_develop_coordinates_t coordinates_reference;
+
+  // new params go here so previous params can be imported with memcpy()
 } dt_develop_blend_params_t;
 
 

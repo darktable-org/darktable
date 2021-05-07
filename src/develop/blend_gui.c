@@ -1400,6 +1400,7 @@ static int _blendop_masks_show_and_edit(GtkWidget *widget, GdkEventButton *event
 
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown != DT_MASKS_EDIT_OFF);
     dt_masks_set_edit_mode(self, bd->masks_shown);
+    if(bd->masks_shown) darktable.develop->proxy.masks.coordinates = self->blend_params->coordinates_reference;
 
     // set all add shape buttons to inactive
     for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
@@ -1643,6 +1644,21 @@ static void _blendif_select_colorspace(GtkMenuItem *menuitem, dt_iop_module_t *m
   }
 }
 
+static void _select_coordinates(GtkMenuItem *menuitem, dt_iop_module_t *module)
+{
+  module->blend_params->coordinates_reference = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(menuitem), "dt-coordinates"));
+  darktable.develop->proxy.masks.coordinates = module->blend_params->coordinates_reference;
+
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  dt_dev_add_new_history_item(darktable.develop, module, TRUE);
+  dt_masks_set_edit_mode(module, bd->masks_shown);  // redraw masks shapes
+  dt_iop_gui_update(module);
+  dt_masks_iop_update(module);
+  dt_dev_reprocess_all(bd->module->dev);
+  dt_control_queue_redraw();
+}
+
+
 static void _blendif_show_output_channels(GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
@@ -1684,8 +1700,9 @@ static void _blendif_options_callback(GtkButton *button, GdkEventButton *event, 
   // add a section to switch blending color spaces
   const dt_develop_blend_colorspace_t module_cst = dt_develop_blend_default_module_blend_colorspace(module);
   const dt_develop_blend_colorspace_t module_blend_cst = module->blend_params->blend_cst;
+  const dt_develop_coordinates_t module_coordinates = module->blend_params->coordinates_reference;
   if(module_cst == DEVELOP_BLEND_CS_LAB || module_cst == DEVELOP_BLEND_CS_RGB_DISPLAY
-      || module_cst == DEVELOP_BLEND_CS_RGB_SCENE)
+     || module_cst == DEVELOP_BLEND_CS_RGB_SCENE)
   {
 
     mi = gtk_menu_item_new_with_label(_("reset to default blend colorspace"));
@@ -1717,6 +1734,22 @@ static void _blendif_options_callback(GtkButton *button, GdkEventButton *event, 
       gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
     g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst", GINT_TO_POINTER(DEVELOP_BLEND_CS_RGB_SCENE), NULL);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_blendif_select_colorspace), module);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+
+    mi = gtk_menu_item_new_with_label(_("RAW coordinates"));
+    if(module_coordinates == DEVELOP_COORDINATES_RAW_GEODESIC)
+      gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
+    g_object_set_data_full(G_OBJECT(mi), "dt-coordinates", GINT_TO_POINTER(DEVELOP_COORDINATES_RAW_GEODESIC), NULL);
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_select_coordinates), module);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+
+    mi = gtk_menu_item_new_with_label(_("screen coordinates"));
+    if(module_coordinates == DEVELOP_COORDINATES_VIEWPORT_PLANAR)
+      gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
+    g_object_set_data_full(G_OBJECT(mi), "dt-coordinates", GINT_TO_POINTER(DEVELOP_COORDINATES_VIEWPORT_PLANAR), NULL);
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_select_coordinates), module);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());

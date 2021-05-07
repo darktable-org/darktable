@@ -2610,6 +2610,23 @@ int dt_dev_distort_transform_locked(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe,
 {
   GList *modules = pipe->iop;
   GList *pieces = pipe->nodes;
+
+  // If coordinates space is viewport planar, we don't need transforms
+  dt_iop_module_t *current_module = dt_ioppr_get_pipe_nth_iop_module(pipe->iop, iop_order);
+  if(!current_module)
+  {
+    // this function is called from mask drawing methods, through dt_dev_distort_transform()
+    // which passes iop_order = 0.0 and prevents us to find a module.
+    // We fall back to the global dev mask proxy that should be inited in GUI "mask edit" buttons callbacks
+    if(darktable.develop->proxy.masks.coordinates  == DEVELOP_COORDINATES_VIEWPORT_PLANAR)
+      return 1;
+  }
+  else
+  {
+    if(current_module->blend_params->coordinates_reference == DEVELOP_COORDINATES_VIEWPORT_PLANAR)
+      return 1;
+  }
+
   while(modules)
   {
     if(!pieces)
@@ -2659,6 +2676,23 @@ int dt_dev_distort_backtransform_locked(dt_develop_t *dev, dt_dev_pixelpipe_t *p
 {
   GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
+
+  // If coordinates space is viewport planar, we don't need transforms
+  dt_iop_module_t *current_module = dt_ioppr_get_pipe_nth_iop_module(pipe->iop, iop_order);
+  if(!current_module)
+  {
+    // this function is called from mask drawing methods, through dt_dev_distort_backtransform()
+    // which passes iop_order = 0.0 and prevents us to find a module.
+    // We fall back to the global dev mask proxy that should be inited in GUI "mask edit" buttons callbacks
+    if(darktable.develop->proxy.masks.coordinates  == DEVELOP_COORDINATES_VIEWPORT_PLANAR)
+      return 1;
+  }
+  else
+  {
+    if(current_module->blend_params->coordinates_reference == DEVELOP_COORDINATES_VIEWPORT_PLANAR)
+      return 1;
+  }
+
   while(modules)
   {
     if(!pieces)

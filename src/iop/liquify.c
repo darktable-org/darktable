@@ -26,6 +26,7 @@
 #include "common/collection.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "develop/blend.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "gui/accelerators.h"
@@ -3594,7 +3595,11 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn, GdkEventButton *ev
       _start_new_shape(module);
     }
 
-    if(btn) dt_iop_request_focus(module);
+    if(btn)
+    {
+      dt_iop_request_focus(module);
+      darktable.develop->proxy.masks.coordinates = module->blend_params->coordinates_reference;
+    }
   }
   else
   {

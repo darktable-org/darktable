@@ -1760,6 +1760,7 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton, GdkE
   else if(darktable.develop->form_gui->creation && (darktable.develop->form_gui->creation_module == self))
   {
     dt_iop_request_focus(self);
+    darktable.develop->proxy.masks.coordinates = self->blend_params->coordinates_reference;
 
     dt_masks_type_t type = DT_MASKS_CIRCLE;
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_path)))

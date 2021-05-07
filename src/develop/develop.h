@@ -268,6 +268,8 @@ typedef struct dt_develop_t
       void (*list_update)(struct dt_lib_module_t *self);
       /* selected forms change */
       void (*selection_change)(struct dt_lib_module_t *self, int selectid, int throw_event);
+      /* whether the module capturing masks display uses geodesic or planar coordinates and needs distort_transform */
+      int coordinates;
     } masks;
 
     // what is the ID of the module currently doing pipeline chromatic adaptation ?
