@@ -86,9 +86,9 @@ typedef enum dt_shortcut_move_t
   DT_SHORTCUT_MOVE_VERTICAL,
   DT_SHORTCUT_MOVE_DIAGONAL,
   DT_SHORTCUT_MOVE_SKEW,
-  DT_SHORTCUT_MOVE_LEFTRIGHT,
-  DT_SHORTCUT_MOVE_UPDOWN,
-  DT_SHORTCUT_MOVE_PGUPDOWN,
+  DT_SHORTCUT_MOVE_LEFTRIGHT, // FIXME cursor key pairs will be treated as Moves
+  DT_SHORTCUT_MOVE_UPDOWN,    // once per-view key_pressed routines that extensively use them
+  DT_SHORTCUT_MOVE_PGUPDOWN,  // are ported to the action framework
 } dt_shortcut_move_t;
 
 extern const gchar *dt_action_effect_value[];

@@ -243,8 +243,8 @@ static const dt_shortcut_fallback_t _action_fallbacks_value[]
       { .move = DT_SHORTCUT_MOVE_HORIZONTAL, .effect = -1, .speed = 0.1 },
       { .move = DT_SHORTCUT_MOVE_VERTICAL  , .effect = -1, .speed = 10. },
       { .effect = DT_ACTION_EFFECT_RESET   , .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
-      // { .effect = DT_ACTION_EFFECT_TOP     , .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE, .direction = DT_SHORTCUT_UP },
-      // { .effect = DT_ACTION_EFFECT_BOTTOM  , .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE, .direction = DT_SHORTCUT_DOWN },
+      { .effect = DT_ACTION_EFFECT_TOP     , .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE, .move = DT_SHORTCUT_MOVE_VERTICAL, .direction = DT_SHORTCUT_UP },
+      { .effect = DT_ACTION_EFFECT_BOTTOM  , .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE, .move = DT_SHORTCUT_MOVE_VERTICAL, .direction = DT_SHORTCUT_DOWN },
       { } };
 
 const dt_action_def_t dt_action_def_value
@@ -580,11 +580,13 @@ GHashTable *dt_shortcut_category_lists(dt_view_type_flags_t v)
 static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
                                            GtkTooltip *tooltip, gpointer user_data)
 {
+  gchar *instructions = "";
   gchar *description = NULL;
   dt_action_t *action = NULL;
 
   if(GTK_IS_TREE_VIEW(widget))
   {
+    if(!gtk_widget_is_sensitive(widget)) return FALSE;
     GtkTreePath *path = NULL;
     GtkTreeModel *model;
     GtkTreeIter iter;
@@ -594,6 +596,8 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
     gtk_tree_model_get(model, &iter, 0, &action, -1);
     gtk_tree_view_set_tooltip_row(GTK_TREE_VIEW(widget), tooltip, path);
     gtk_tree_path_free(path);
+
+    instructions = _("click to filter shortcut list\ndouble click to define new shortcut");
   }
   else
     action = g_hash_table_lookup(darktable.control->widgets, widget);
@@ -614,17 +618,27 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
   if(description)
   {
     gchar *original_markup = gtk_widget_get_tooltip_markup(widget);
+    gchar *instr_escaped = g_markup_escape_text(instructions, -1);
     gchar *desc_escaped = g_markup_escape_text(description, -1);
-    gchar *markup_text = g_strdup_printf("%s<span style='italic' foreground='red'>%s</span>",
+    gchar *markup_text = g_strdup_printf("%s%s%s<span style='italic' foreground='red'>%s</span>",
+                                         instr_escaped, *instr_escaped ? "\n" : "",
                                          original_markup ? original_markup : _("shortcuts:"), desc_escaped);
     gtk_tooltip_set_markup(tooltip, markup_text);
     g_free(original_markup);
     g_free(desc_escaped);
+    g_free(instr_escaped);
     g_free(markup_text);
     g_free(description);
 
     return TRUE;
   }
+  else if(GTK_IS_TREE_VIEW(widget))
+  {
+    gtk_tooltip_set_text(tooltip, instructions);
+
+    return TRUE;
+  }
+
 
   return FALSE;
 }
@@ -1167,22 +1181,15 @@ static void grab_in_tree_view(GtkTreeView *tree_view)
 {
   g_set_weak_pointer(&grab_widget, gtk_widget_get_parent(gtk_widget_get_parent(GTK_WIDGET(tree_view)))); // static
   gtk_widget_set_sensitive(grab_widget, FALSE);
+  gtk_widget_set_tooltip_text(grab_widget, _("define a shortcut by pressing a key, optionally combined with modifier keys (ctrl/shift/alt)\n"
+                                             "a key can be double or triple pressed, with a long last press\n"
+                                             "while the key is held, a combination of mouse buttons can be (double/triple/long) clicked\n"
+                                             "still holding the key (and modifiers and/or buttons) a scroll or mouse move can be added\n"
+                                             "connected devices can send keys or moves using their physical controllers"));
   g_set_weak_pointer(&grab_window, gtk_widget_get_toplevel(grab_widget));
   if(_sc.action && _sc.action->type == DT_ACTION_TYPE_FALLBACK)
     dt_shortcut_key_press(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, 0);
   g_signal_connect(grab_window, "event", G_CALLBACK(dt_shortcut_dispatcher), NULL);
-}
-
-static void ungrab_grab_widget()
-{
-  gdk_seat_ungrab(gdk_display_get_default_seat(gdk_display_get_default()));
-
-  if(grab_widget)
-  {
-    gtk_widget_set_sensitive(grab_widget, TRUE);
-    g_signal_handlers_disconnect_by_func(gtk_widget_get_toplevel(grab_widget), G_CALLBACK(dt_shortcut_dispatcher), NULL);
-    grab_widget = NULL;
-  }
 }
 
 static void _shortcut_row_activated(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, gpointer user_data)
@@ -1962,6 +1969,8 @@ static GSList *pressed_keys = NULL; // list of currently pressed keys
 static guint _pressed_button = 0;
 static guint _last_time = 0;
 static guint _timeout_source = 0;
+static guint focus_loss_key = 0;
+static guint focus_loss_press = 0;
 
 static void lookup_mapping_widget()
 {
@@ -2013,10 +2022,11 @@ static void lookup_mapping_widget()
 
 static void define_new_mapping()
 {
-  if(insert_shortcut(&_sc, TRUE))
+  dt_shortcut_t s = _sc;
+  if(insert_shortcut(&s, TRUE))
   {
-    gchar *label = _action_full_label(_sc.action);
-    dt_control_log(_("%s assigned to %s"), _shortcut_description(&_sc, TRUE), label);
+    gchar *label = _action_full_label(s.action);
+    dt_control_log(_("%s assigned to %s"), _shortcut_description(&s, TRUE), label);
     g_free(label);
   }
 
@@ -2248,7 +2258,12 @@ static float process_mapping(float move_size)
   else if(move_size)
   {
     if(fsc.action)
-      dt_control_log(_("no fallback for %s (%s)"), _shortcut_description(&fsc, TRUE), fsc.action->label);
+    {
+      gchar *base_label = NULL;
+      _action_distinct_label(&base_label, fsc.action, "");
+      dt_control_log(_("no fallback for %s (%s)"), _shortcut_description(&fsc, TRUE), base_label);
+      g_free(base_label);
+    }
     else
       dt_control_log(_("%s not assigned"), _shortcut_description(&_sc, TRUE));
   }
@@ -2269,6 +2284,25 @@ static inline void _cancel_delayed_release(void)
   {
     g_source_remove(_timeout_source);
     _timeout_source = 0;
+
+    _sc.button = _pressed_button;
+    _sc.click = 0;
+  }
+}
+
+static void ungrab_grab_widget()
+{
+  gdk_seat_ungrab(gdk_display_get_default_seat(gdk_display_get_default()));
+
+  g_slist_free_full(pressed_keys, g_free);
+  pressed_keys = NULL;
+
+  if(grab_widget)
+  {
+    gtk_widget_set_sensitive(grab_widget, TRUE);
+    gtk_widget_set_tooltip_text(grab_widget, NULL);
+    g_signal_handlers_disconnect_by_func(gtk_widget_get_toplevel(grab_widget), G_CALLBACK(dt_shortcut_dispatcher), NULL);
+    grab_widget = NULL;
   }
 }
 
@@ -2341,7 +2375,7 @@ static gboolean _key_release_delayed(gpointer timed_out)
   _timeout_source = 0;
   _last_time = 0;
 
-  if(!pressed_keys) ungrab_grab_widget();
+  ungrab_grab_widget();
 
   if(!timed_out)
     dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, 1);
@@ -2368,7 +2402,14 @@ static gboolean _button_release_delayed(gpointer timed_out)
 void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
 {
   dt_device_key_t this_key = { id, key };
-  if(!g_slist_find_custom(pressed_keys, &this_key, cmp_key))
+  if(g_slist_find_custom(pressed_keys, &this_key, cmp_key))
+  {
+    // if key is still repeating (after return from popup menu) then restore double/triple press state
+    if(id == DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE && key == focus_loss_key && time < _last_time + 50)
+      _sc.press = focus_loss_press;
+    focus_loss_key = 0;
+  }
+  else
   {
     _cancel_delayed_release();
 
@@ -2403,10 +2444,10 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
     {
       if(_sc.action)
       {
-        _sc.action = NULL;
+        // only one key press allowed while defining shortcut
         ungrab_grab_widget();
-        g_slist_free_full(pressed_keys, g_free);
-        pressed_keys = NULL;
+        _sc = (dt_shortcut_t) { 0 };
+        return;
       }
     }
 
@@ -2485,7 +2526,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     if(grab_widget && event->type == GDK_BUTTON_PRESS)
     {
       ungrab_grab_widget();
-      _sc.action = NULL;
+      _sc = (dt_shortcut_t) { 0 };
       return TRUE;
     }
 
@@ -2494,8 +2535,8 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
 
     if(GTK_IS_WINDOW(w))
     {
-      GtkWidget *focused = gtk_window_get_focus(GTK_WINDOW(w));
-      if(focused && gtk_widget_event(focused, event))
+      GtkWidget *focused_widget = gtk_window_get_focus(GTK_WINDOW(w));
+      if(focused_widget && gtk_widget_event(focused_widget, event))
         return TRUE;
     }
   }
@@ -2527,7 +2568,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     break;
   case GDK_GRAB_BROKEN:
     if(event->grab_broken.implicit) break;
-  case GDK_WINDOW_STATE:
+//case GDK_WINDOW_STATE:
     event->focus_change.in = FALSE; // fall through to GDK_FOCUS_CHANGE
   case GDK_FOCUS_CHANGE: // dialog boxes and switch to other app release grab
     if(event->focus_change.in)
@@ -2535,9 +2576,10 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     else
     {
       grab_window = NULL;
+      focus_loss_key = _sc.key;
+      focus_loss_press = _sc.press;
       ungrab_grab_widget();
-      g_slist_free_full(pressed_keys, g_free);
-      pressed_keys = NULL;
+      _sc = (dt_shortcut_t) { 0 };
     }
     break;
   case GDK_SCROLL:
