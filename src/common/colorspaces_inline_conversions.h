@@ -1063,7 +1063,7 @@ static inline void gradingRGB_to_XYZ(const float RGB[4], float XYZ[3])
 #endif
 static inline void gradingRGB_to_Ych(float RGB[4], float Ych[3], const float *const DT_RESTRICT D65_pipe)
 {
-  const float DT_ALIGNED_PIXEL D65_gradingRGB[4] = { 0.18600766,  0.5908061,   0.22318624, 0.f };
+  const float DT_ALIGNED_PIXEL D65_gradingRGB[4] = { 0.18600766f,  0.5908061f,   0.22318624f, 0.f };
   const float *const DT_RESTRICT D65 = (D65_pipe == NULL) ? D65_gradingRGB : D65_pipe;
 
   Ych[0] = fmaxf(0.67282368f * RGB[0] + 0.47812261f * RGB[1] + 0.01044966f * RGB[2], 0.f);
@@ -1083,7 +1083,7 @@ static inline void gradingRGB_to_Ych(float RGB[4], float Ych[3], const float *co
 #endif
 static inline void Ych_to_gradingRGB(const float Ych[4], float RGB[4], const float *const DT_RESTRICT D65_pipe)
 {
-  const float DT_ALIGNED_PIXEL D65_gradingRGB[4] = { 0.18600766,  0.5908061,   0.22318624, 0.f };
+  const float DT_ALIGNED_PIXEL D65_gradingRGB[4] = { 0.18600766f,  0.5908061f,   0.22318624f, 0.f };
   const float *const DT_RESTRICT D65 = (D65_pipe == NULL) ? D65_gradingRGB : D65_pipe;
 
   RGB[0] = Ych[1] * cosf(Ych[2]) + D65[0];
