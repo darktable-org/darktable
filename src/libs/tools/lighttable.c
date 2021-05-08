@@ -353,12 +353,11 @@ static void _lib_lighttable_zoom_slider_changed(GtkRange *range, gpointer user_d
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
 
   const int i = gtk_range_get_value(range);
-  _set_zoom(self, i);
   gchar *i_as_str = g_strdup_printf("%d", i);
   gtk_entry_set_text(GTK_ENTRY(d->zoom_entry), i_as_str);
+  _set_zoom(self, i);
   d->current_zoom = i;
   g_free(i_as_str);
-  dt_control_queue_redraw_center();
 }
 
 static gboolean _lib_lighttable_zoom_entry_changed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
