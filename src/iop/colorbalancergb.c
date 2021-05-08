@@ -438,14 +438,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     repack_3x3_to_3xSSE(work_profile->matrix_out, XYZ_to_RGB);
   }
 
-  // Matrices from CIE 1931 2° XYZ D50 to Filmlight grading RGB D65 through CIE 2006 LMS
-  const float XYZ_to_gradRGB[3][4] = { { 0.53346004f,  0.15226970f , -0.19946283f, 0.f },
-                                       {-0.67012691f,  1.91752954f,   0.39223917f, 0.f },
-                                       { 0.06557547f, -0.07983082f,   0.75036927f, 0.f } };
-  const float gradRGB_to_XYZ[3][4] = { { 1.67222161f, -0.11185000f,  0.50297636f, 0.f },
-                                       { 0.60120746f,  0.47018395f, -0.08596569f, 0.f },
-                                       {-0.08217531f,  0.05979694f,  1.27957582f, 0.f } };
-
   // Premultiply the pipe RGB -> XYZ and XYZ -> grading RGB matrices to spare 2 matrix products per pixel
   float DT_ALIGNED_ARRAY input_matrix[3][4];
   float DT_ALIGNED_ARRAY output_matrix[3][4];
@@ -520,10 +512,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float max_chroma_h = Y * gamut_LUT[CLAMP((size_t)(LUT_ELEM * (Ych[2] + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1)];
 
     // Linear chroma : distance to achromatic at constant luminance in scene-referred
-    // - in case we desaturate, we do so by a constant factor
-    // - in case we resaturate, we normalize the correction by the max chroma allowed at current hue
-    //   to prevent users from pushing saturated colors outside of gamut while the low-sat ones
-    //   are still muted.
     const float chroma_boost = d->chroma_global + scalar_product(opacities, chroma);
     const float vibrance = d->vibrance * (1.0f - powf(Ych[1], fabsf(d->vibrance)));
     const float chroma_factor = fmaxf(1.f + chroma_boost + vibrance, 0.f);
@@ -751,11 +739,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // Premultiply the matrix to speed-up
     float DT_ALIGNED_ARRAY RGB_to_XYZ[3][4];
     repack_3x3_to_3xSSE(work_profile->matrix_in, RGB_to_XYZ);
-    const float XYZ_to_gradingRGB[3][4] = { { 0.53346004f,  0.15226970f , -0.19946283f, 0.f },
-                                            {-0.67012691f,  1.91752954f,   0.39223917f, 0.f },
-                                            { 0.06557547f, -0.07983082f,   0.75036927f, 0.f } };
+
     float DT_ALIGNED_ARRAY input_matrix[3][4];
-    mat3mul4((float *)input_matrix, (float *)XYZ_to_gradingRGB, (float *)RGB_to_XYZ);
+    mat3mul4((float *)input_matrix, (float *)XYZ_to_gradRGB, (float *)RGB_to_XYZ);
 
     // Test white point of the current space in grading RGB
     const float white_pipe_RGB[4] = { 1.f, 1.f, 1.f };
