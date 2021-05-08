@@ -326,33 +326,34 @@ inline float4 sRGB_to_XYZ(float4 sRGB)
 
 inline float4 XYZ_to_JzAzBz(float4 XYZ_D65)
 {
-  const float4 Mx = (float4)(0.41478972f, 0.579999f, 0.0146480f, 0.0f);
-  const float4 My = (float4)(-0.2015100f, 1.120649f, 0.0531008f, 0.0f);
-  const float4 Mz = (float4)(-0.0166008f, 0.264800f, 0.6684799f, 0.0f);
+  const float4 M[3] = { { 0.41478972f, 0.579999f, 0.0146480f, 0.0f },
+                        { -0.2015100f, 1.120649f, 0.0531008f, 0.0f },
+                        { -0.0166008f, 0.264800f, 0.6684799f, 0.0f } };
 
-  const float4 Ax = (float4)(0.5f, 0.5f, 0.0f, 0.0f);
-  const float4 Ay = (float4)(3.524000f, -4.066708f, 0.542708f, 0.0f);
-  const float4 Az = (float4)(0.199076f, 1.096799f, -1.295875f, 0.0f);
+  const float4 A[3] = { { 0.5f, 0.5f, 0.0f, 0.0f },
+                        { 3.524000f, -4.066708f, 0.542708f, 0.0f },
+                        { 0.199076f, 1.096799f, -1.295875f, 0.0f } };
 
   float4 temp1, temp2;
   // XYZ -> X'Y'Z
   temp1.x = 1.15f * XYZ_D65.x - 0.15f * XYZ_D65.z;
   temp1.y = 0.66f * XYZ_D65.y + 0.34f * XYZ_D65.x;
   temp1.z = XYZ_D65.z;
+  temp1.w = 0.f;
   // X'Y'Z -> LMS
-  temp2.x = Mx.x * temp1.x + Mx.y * temp1.y + Mx.z * temp1.z;
-  temp2.y = My.x * temp1.x + My.y * temp1.y + My.z * temp1.z;
-  temp2.z = Mz.x * temp1.x + Mz.y * temp1.y + Mz.z * temp1.z;
+  temp2.x = dot(M[0], temp1);
+  temp2.y = dot(M[1], temp1);
+  temp2.z = dot(M[2], temp1);
+  temp2.w = 0.f;
   // LMS -> L'M'S'
   temp2 = native_powr(fmax(temp2 / 10000.f, 0.0f), 0.159301758f);
   temp2 = native_powr((0.8359375f + 18.8515625f * temp2) / (1.0f + 18.6875f * temp2), 134.034375f);
   // L'M'S' -> Izazbz
-  temp1.x = Ax.x * temp2.x + Ax.y * temp2.y;
-  temp1.y = Ay.x * temp2.x + Ay.y * temp2.y + Ay.z * temp2.z;
-  temp1.z = Az.x * temp2.x + Az.y * temp2.y + Az.z * temp2.z;
+  temp1.x = dot(A[0], temp2);
+  temp1.y = dot(A[1], temp2);
+  temp1.z = dot(A[2], temp2);
   // Iz -> Jz
   temp1.x = 0.44f * temp1.x / (1.0f - 0.56f * temp1.x) - 1.6295499532821566e-11f;
-  temp1.w = XYZ_D65.w;
   return temp1;
 }
 
