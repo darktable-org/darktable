@@ -357,6 +357,53 @@ inline float4 XYZ_to_JzAzBz(float4 XYZ_D65)
   return temp1;
 }
 
+
+inline float4 JzAzBz_2_XYZ(const float4 JzAzBz)
+{
+  const float b = 1.15f;
+  const float g = 0.66f;
+  const float c1 = 0.8359375f; // 3424 / 2^12
+  const float c2 = 18.8515625f; // 2413 / 2^7
+  const float c3 = 18.6875f; // 2392 / 2^7
+  const float n_inv = 1.0f / 0.159301758f; // 2610 / 2^14
+  const float p_inv = 1.0f / 134.034375f; // 1.7 x 2523 / 2^5
+  const float d = -0.56f;
+  const float d0 = 1.6295499532821566e-11f;
+  const float4 MI[3] = { {  1.9242264357876067f, -1.0047923125953657f,  0.0376514040306180f, 0.0f },
+                         {  0.3503167620949991f,  0.7264811939316552f, -0.0653844229480850f, 0.0f },
+                         { -0.0909828109828475f, -0.3127282905230739f,  1.5227665613052603f, 0.0f } };
+  const float4 AI[3] = { {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
+                         {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
+                         {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f } };
+
+  float4 XYZ, LMS, IzAzBz;
+  // Jz -> Iz
+  IzAzBz = JzAzBz;
+  IzAzBz.x += d0;
+  IzAzBz.x = IzAzBz.x / (1.0f + d - d * IzAzBz.x);
+  // IzAzBz -> L'M'S'
+  LMS.x = dot(AI[0], IzAzBz);
+  LMS.y = dot(AI[1], IzAzBz);
+  LMS.z = dot(AI[2], IzAzBz);
+  LMS.w = 0.f;
+  // L'M'S' -> LMS
+  LMS = native_powr(fmax(LMS, 0.0f), p_inv);
+  LMS = 10000.f * native_powr(fmax((c1 - LMS) / (c3 * LMS - c2), 0.0f), n_inv);
+  // LMS -> X'Y'Z
+  XYZ.x = dot(MI[0], LMS);
+  XYZ.y = dot(MI[1], LMS);
+  XYZ.z = dot(MI[2], LMS);
+  XYZ.w = 0.f;
+  // X'Y'Z -> XYZ_D65
+  float4 XYZ_D65;
+  XYZ_D65.x = (XYZ.x + (b - 1.0f) * XYZ.z) / b;
+  XYZ_D65.y = (XYZ.y + (g - 1.0f) * XYZ_D65.x) / g;
+  XYZ_D65.z = XYZ.z;
+  XYZ_D65.w = JzAzBz.w;
+  return XYZ_D65;
+}
+
+
 inline float4 JzAzBz_to_JzCzhz(float4 JzAzBz)
 {
   float h = atan2(JzAzBz.z, JzAzBz.y) / (2.0f * M_PI_F);
@@ -366,4 +413,62 @@ inline float4 JzAzBz_to_JzCzhz(float4 JzAzBz)
   JzCzhz.z = (h >= 0.0f) ? h : 1.0f + h;
   JzCzhz.w = JzAzBz.w;
   return JzCzhz;
+}
+
+
+inline float4 gradingRGB_to_Ych(float4 RGB, constant const float *const D65)
+{
+  float4 Ych;
+  Ych.x = fmax(0.67282368f * RGB.x + 0.47812261f * RGB.y + 0.01044966f * RGB.z, 0.f);
+  const float a = RGB.x + RGB.y + RGB.z;
+  RGB = (a == 0.f) ? (float4)0.f : RGB / a;
+
+  RGB.x -= D65[0];
+  RGB.y -= D65[1];
+
+  Ych.y = hypot(RGB.y, RGB.x);
+  Ych.z = (Ych.x == 0.f) ? 0.f : atan2(RGB.y, RGB.x);
+  Ych.w = RGB.w;
+  return Ych;
+}
+
+
+inline float4 Ych_to_gradingRGB(const float4 Ych, constant const float *const D65)
+{
+  float4 RGB;
+  RGB.x = Ych.y * native_cos(Ych.z) + D65[0];
+  RGB.y = Ych.y * native_sin(Ych.z) + D65[1];
+  RGB.z = 1.f - RGB.x - RGB.y;
+
+  const float a = (0.67282368f * RGB.x + 0.47812261f * RGB.y + 0.01044966f * RGB.z);
+  RGB = (a == 0.f) ? (float4)0.f : RGB * Ych.x / a;
+  RGB.w = Ych.w;
+  return RGB;
+}
+
+/* Same as above but compute only Yrg */
+inline float4 gradingRGB_to_Yrg(float4 RGB)
+{
+  float4 Yrg;
+  Yrg.x = fmax(0.67282368f * RGB.x + 0.47812261f * RGB.y + 0.01044966f * RGB.z, 0.f);
+  const float a = RGB.x + RGB.y + RGB.z;
+  RGB = (a == 0.f) ? (float4)0.f : RGB / a;
+
+  Yrg.y = RGB.x;
+  Yrg.z = RGB.y;
+  Yrg.w = RGB.w;
+  return Yrg;
+}
+
+inline float4 Yrg_to_gradingRGB(const float4 Yrg)
+{
+  float4 RGB;
+  RGB.x = Yrg.y;
+  RGB.y = Yrg.z;
+  RGB.z = 1.f - Yrg.y - Yrg.z;
+
+  const float a = (0.67282368f * RGB.x + 0.47812261f * RGB.y + 0.01044966f * RGB.z);
+  RGB = (a == 0.f) ? (float4)0.f : RGB * Yrg.x / a;
+  RGB.w = Yrg.w;
+  return RGB;
 }
