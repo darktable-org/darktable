@@ -25,7 +25,7 @@
 #include "dtgtk/gradientslider.h"
 #include "gui/color_picker_proxy.h"
 
-#define DEVELOP_BLEND_VERSION (10)
+#define DEVELOP_BLEND_VERSION (11)
 
 typedef enum dt_develop_blend_colorspace_t
 {
@@ -38,8 +38,8 @@ typedef enum dt_develop_blend_colorspace_t
 
 typedef enum dt_develop_blend_mode_t
 {
-  DEVELOP_BLEND_DISABLED = 0x00,
-  DEVELOP_BLEND_NORMAL = 0x01, /* deprecated as it did clamping */
+  DEVELOP_BLEND_DISABLED_OBSOLETE = 0x00, /* same as the new normal */
+  DEVELOP_BLEND_NORMAL_OBSOLETE = 0x01, /* obsolete as it did clamping */
   DEVELOP_BLEND_LIGHTEN = 0x02,
   DEVELOP_BLEND_DARKEN = 0x03,
   DEVELOP_BLEND_MULTIPLY = 0x04,
@@ -58,8 +58,8 @@ typedef enum dt_develop_blend_mode_t
   DEVELOP_BLEND_CHROMATICITY = 0x11,
   DEVELOP_BLEND_HUE = 0x12,
   DEVELOP_BLEND_COLOR = 0x13,
-  DEVELOP_BLEND_INVERSE = 0x14,   /* deprecated */
-  DEVELOP_BLEND_UNBOUNDED = 0x15, /* deprecated as new normal takes over */
+  DEVELOP_BLEND_INVERSE_OBSOLETE = 0x14, /* obsolete */
+  DEVELOP_BLEND_UNBOUNDED_OBSOLETE = 0x15, /* obsolete as new normal takes over */
   DEVELOP_BLEND_COLORADJUST = 0x16,
   DEVELOP_BLEND_DIFFERENCE2 = 0x17,
   DEVELOP_BLEND_NORMAL2 = 0x18,
@@ -74,12 +74,15 @@ typedef enum dt_develop_blend_mode_t
   DEVELOP_BLEND_RGB_R = 0x21,
   DEVELOP_BLEND_RGB_G = 0x22,
   DEVELOP_BLEND_RGB_B = 0x23,
-  DEVELOP_BLEND_MULTIPLY_REVERSE = 0x24,
-  DEVELOP_BLEND_SUBTRACT_REVERSE = 0x25,
+  DEVELOP_BLEND_MULTIPLY_REVERSE_OBSOLETE = 0x24, /* obsoleted by MULTIPLY + REVERSE */
+  DEVELOP_BLEND_SUBTRACT_INVERSE = 0x25,
   DEVELOP_BLEND_DIVIDE = 0x26,
-  DEVELOP_BLEND_DIVIDE_REVERSE = 0x27,
+  DEVELOP_BLEND_DIVIDE_INVERSE = 0x27,
   DEVELOP_BLEND_GEOMETRIC_MEAN = 0x28,
   DEVELOP_BLEND_HARMONIC_MEAN = 0x29,
+
+  DEVELOP_BLEND_REVERSE = 0x80000000,
+  DEVELOP_BLEND_MODE_MASK = 0xFF,
 } dt_develop_blend_mode_t;
 
 typedef enum dt_develop_mask_mode_t
@@ -107,8 +110,10 @@ typedef enum dt_develop_mask_combine_mode_t
 
 typedef enum dt_develop_mask_feathering_guide_t
 {
-  DEVELOP_MASK_GUIDE_IN = 0x01,
-  DEVELOP_MASK_GUIDE_OUT = 0x02
+  DEVELOP_MASK_GUIDE_IN_BEFORE_BLUR = 0x01,
+  DEVELOP_MASK_GUIDE_OUT_BEFORE_BLUR = 0x02,
+  DEVELOP_MASK_GUIDE_IN_AFTER_BLUR = 0x05,
+  DEVELOP_MASK_GUIDE_OUT_AFTER_BLUR = 0x06,
 } dt_develop_mask_feathering_guide_t;
 
 typedef enum dt_develop_blendif_channels_t
@@ -165,197 +170,6 @@ typedef enum dt_develop_blendif_channels_t
   DEVELOP_BLENDIF_OUTPUT_MASK = 0xF0F0
 } dt_develop_blendif_channels_t;
 
-
-/** blend legacy parameters version 1 */
-typedef struct dt_develop_blend_params1_t
-{
-  uint32_t mode;
-  float opacity;
-  uint32_t mask_id;
-} dt_develop_blend_params1_t;
-
-/** blend legacy parameters version 2 */
-typedef struct dt_develop_blend_params2_t
-{
-  /** blending mode */
-  uint32_t mode;
-  /** mixing opacity */
-  float opacity;
-  /** id of mask in current pipeline */
-  uint32_t mask_id;
-  /** blendif mask */
-  uint32_t blendif;
-  /** blendif parameters */
-  float blendif_parameters[4 * 8];
-} dt_develop_blend_params2_t;
-
-/** blend legacy parameters version 3 */
-typedef struct dt_develop_blend_params3_t
-{
-  /** blending mode */
-  uint32_t mode;
-  /** mixing opacity */
-  float opacity;
-  /** id of mask in current pipeline */
-  uint32_t mask_id;
-  /** blendif mask */
-  uint32_t blendif;
-  /** blendif parameters */
-  float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
-} dt_develop_blend_params3_t;
-
-/** blend legacy parameters version 4 */
-typedef struct dt_develop_blend_params4_t
-{
-  /** blending mode */
-  uint32_t mode;
-  /** mixing opacity */
-  float opacity;
-  /** id of mask in current pipeline */
-  uint32_t mask_id;
-  /** blendif mask */
-  uint32_t blendif;
-  /** blur radius */
-  float radius;
-  /** blendif parameters */
-  float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
-} dt_develop_blend_params4_t;
-
-/** blend legacy parameters version 5 (identical to version 6)*/
-typedef struct dt_develop_blend_params5_t
-{
-  /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask */
-  uint32_t mask_mode;
-  /** blending mode */
-  uint32_t blend_mode;
-  /** mixing opacity */
-  float opacity;
-  /** how masks are combined */
-  uint32_t mask_combine;
-  /** id of mask in current pipeline */
-  uint32_t mask_id;
-  /** blendif mask */
-  uint32_t blendif;
-  /** blur radius */
-  float radius;
-  /** some reserved fields for future use */
-  uint32_t reserved[4];
-  /** blendif parameters */
-  float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
-} dt_develop_blend_params5_t;
-
-/** blend legacy parameters version 6 (identical to version 7) */
-typedef struct dt_develop_blend_params6_t
-{
-  /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask */
-  uint32_t mask_mode;
-  /** blending mode */
-  uint32_t blend_mode;
-  /** mixing opacity */
-  float opacity;
-  /** how masks are combined */
-  uint32_t mask_combine;
-  /** id of mask in current pipeline */
-  uint32_t mask_id;
-  /** blendif mask */
-  uint32_t blendif;
-  /** blur radius */
-  float radius;
-  /** some reserved fields for future use */
-  uint32_t reserved[4];
-  /** blendif parameters */
-  float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
-} dt_develop_blend_params6_t;
-
-/** blend legacy parameters version 7 */
-typedef struct dt_develop_blend_params7_t
-{
-  /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask */
-  uint32_t mask_mode;
-  /** blending mode */
-  uint32_t blend_mode;
-  /** mixing opacity */
-  float opacity;
-  /** how masks are combined */
-  uint32_t mask_combine;
-  /** id of mask in current pipeline */
-  uint32_t mask_id;
-  /** blendif mask */
-  uint32_t blendif;
-  /** blur radius */
-  float radius;
-  /** some reserved fields for future use */
-  uint32_t reserved[4];
-  /** blendif parameters */
-  float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
-} dt_develop_blend_params7_t;
-
-/** blend legacy parameters version 8 */
-typedef struct dt_develop_blend_params8_t
-{
-  /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask */
-  uint32_t mask_mode;
-  /** blending mode */
-  uint32_t blend_mode;
-  /** mixing opacity */
-  float opacity;
-  /** how masks are combined */
-  uint32_t mask_combine;
-  /** id of mask in current pipeline */
-  uint32_t mask_id;
-  /** blendif mask */
-  uint32_t blendif;
-  /** feathering radius */
-  float feathering_radius;
-  /** feathering guide */
-  uint32_t feathering_guide;
-  /** blur radius */
-  float blur_radius;
-  /** mask contrast enhancement */
-  float contrast;
-  /** mask brightness adjustment */
-  float brightness;
-  /** some reserved fields for future use */
-  uint32_t reserved[4];
-  /** blendif parameters */
-  float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
-} dt_develop_blend_params8_t;
-
-/** blend legacy parameters version 9 */
-typedef struct dt_develop_blend_params9_t
-{
-  /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask
-   *  or raster mask */
-  uint32_t mask_mode;
-  /** blending mode */
-  uint32_t blend_mode;
-  /** mixing opacity */
-  float opacity;
-  /** how masks are combined */
-  uint32_t mask_combine;
-  /** id of mask in current pipeline */
-  uint32_t mask_id;
-  /** blendif mask */
-  uint32_t blendif;
-  /** feathering radius */
-  float feathering_radius;
-  /** feathering guide */
-  uint32_t feathering_guide;
-  /** blur radius */
-  float blur_radius;
-  /** mask contrast enhancement */
-  float contrast;
-  /** mask brightness adjustment */
-  float brightness;
-  /** some reserved fields for future use */
-  uint32_t reserved[4];
-  /** blendif parameters */
-  float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
-  dt_dev_operation_t raster_mask_source;
-  int raster_mask_instance;
-  int raster_mask_id;
-  gboolean raster_mask_invert;
-} dt_develop_blend_params9_t;
 
 /** blend parameters current version */
 typedef struct dt_develop_blend_params_t
@@ -458,12 +272,13 @@ typedef struct dt_iop_gui_blendif_filter_t
 
 typedef struct dt_iop_blend_name_value_t
 {
-  char name[25];
+  char name[32];
   int value;
 } dt_develop_name_value_t;
 
 extern const dt_develop_name_value_t dt_develop_blend_colorspace_names[];
 extern const dt_develop_name_value_t dt_develop_blend_mode_names[];
+extern const dt_develop_name_value_t dt_develop_blend_mode_flag_names[];
 extern const dt_develop_name_value_t dt_develop_mask_mode_names[];
 extern const dt_develop_name_value_t dt_develop_combine_masks_names[];
 extern const dt_develop_name_value_t dt_develop_feathering_guide_names[];
@@ -503,6 +318,7 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *suppress;
   GtkWidget *masks_combine_combo;
   GtkWidget *blend_modes_combo;
+  GtkWidget *blend_modes_blend_order;
   GtkWidget *blend_mode_parameter_slider;
   GtkWidget *masks_invert_combo;
   GtkWidget *opacity_slider;
