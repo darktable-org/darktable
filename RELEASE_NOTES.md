@@ -258,6 +258,10 @@ You are strongly advised to take a backup first.
 
 - Many improvements have been made to the TIFF export module.
 
+- In the lighttable, when several images are selected, the image information module
+  now displays the information only if every image share the same data. If data are
+  different, a \<various\> text is displayed.
+
 ## Bug Fixes
 
 - Fix ellipse and gradient rotation angle when distortion modules are
