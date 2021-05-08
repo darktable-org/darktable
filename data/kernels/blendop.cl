@@ -21,8 +21,8 @@
 
 typedef enum dt_develop_blend_mode_t
 {
-  DEVELOP_BLEND_DISABLED = 0x00,
-  DEVELOP_BLEND_NORMAL = 0x01, /* deprecated as it did clamping */
+  DEVELOP_BLEND_DISABLED_OBSOLETE = 0x00, /* same as the new normal */
+  DEVELOP_BLEND_NORMAL_OBSOLETE = 0x01, /* obsolete as it did clamping */
   DEVELOP_BLEND_LIGHTEN = 0x02,
   DEVELOP_BLEND_DARKEN = 0x03,
   DEVELOP_BLEND_MULTIPLY = 0x04,
@@ -41,8 +41,8 @@ typedef enum dt_develop_blend_mode_t
   DEVELOP_BLEND_CHROMA = 0x11,
   DEVELOP_BLEND_HUE = 0x12,
   DEVELOP_BLEND_COLOR = 0x13,
-  DEVELOP_BLEND_INVERSE = 0x14,   /* deprecated */
-  DEVELOP_BLEND_UNBOUNDED = 0x15, /* deprecated as new normal takes over */
+  DEVELOP_BLEND_INVERSE_OBSOLETE = 0x14, /* obsolete */
+  DEVELOP_BLEND_UNBOUNDED_OBSOLETE = 0x15, /* obsolete as new normal takes over */
   DEVELOP_BLEND_COLORADJUST = 0x16,
   DEVELOP_BLEND_DIFFERENCE2 = 0x17,
   DEVELOP_BLEND_NORMAL2 = 0x18,
@@ -57,12 +57,15 @@ typedef enum dt_develop_blend_mode_t
   DEVELOP_BLEND_RGB_R = 0x21,
   DEVELOP_BLEND_RGB_G = 0x22,
   DEVELOP_BLEND_RGB_B = 0x23,
-  DEVELOP_BLEND_MULTIPLY_REVERSE = 0x24,
-  DEVELOP_BLEND_SUBTRACT_REVERSE = 0x25,
+  DEVELOP_BLEND_MULTIPLY_REVERSE_OBSOLETE = 0x24, /* obsoleted by MULTIPLY + REVERSE */
+  DEVELOP_BLEND_SUBTRACT_INVERSE = 0x25,
   DEVELOP_BLEND_DIVIDE = 0x26,
-  DEVELOP_BLEND_DIVIDE_REVERSE = 0x27,
+  DEVELOP_BLEND_DIVIDE_INVERSE = 0x27,
   DEVELOP_BLEND_GEOMETRIC_MEAN = 0x28,
   DEVELOP_BLEND_HARMONIC_MEAN = 0x29,
+
+  DEVELOP_BLEND_REVERSE = 0x80000000,
+  DEVELOP_BLEND_MODE_MASK = 0xFF,
 } dt_develop_blend_mode_t;
 
 typedef enum dt_develop_mask_mode_t
@@ -515,12 +518,20 @@ blendop_Lab(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only 
 
   if(x >= width || y >= height) return;
 
-  float4 o;
+  float4 a, b, o;
   float4 ta, tb, to;
   float d, s;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
-  float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
+  if((blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
+  {
+    b = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+    a = read_imagef(in_b, sampleri, (int2)(x, y));
+  }
+  else
+  {
+    a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+    b = read_imagef(in_b, sampleri, (int2)(x, y));
+  }
   float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
 
   /* scale L down to [0; 1] and a,b to [-1; 1] */
@@ -541,7 +552,7 @@ blendop_Lab(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only 
 
 
   /* select the blend operator */
-  switch (blend_mode)
+  switch(blend_mode & DEVELOP_BLEND_MODE_MASK)
   {
     case DEVELOP_BLEND_LIGHTEN:
       o = clamp(a * (1.0f - opacity) + (a > b ? a : b) * opacity, min, max);
@@ -731,12 +742,7 @@ blendop_Lab(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only 
       o = clamp(LCH_2_Lab(to), min, max);
       break;
 
-    case DEVELOP_BLEND_INVERSE:
-      o =  clamp((a * opacity) + (b * (1.0f - opacity)), min, max);
-      break;
-
     case DEVELOP_BLEND_BOUNDED:
-    case DEVELOP_BLEND_NORMAL:
       o =  clamp((a * (1.0f - opacity)) + (b * opacity), min, max);
       break;
 
@@ -774,7 +780,6 @@ blendop_Lab(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only 
       break;
 
     /* fallback to normal blend */
-    case DEVELOP_BLEND_UNBOUNDED:
     case DEVELOP_BLEND_NORMAL2:
     default:
       o =  (a * (1.0f - opacity)) + (b * opacity);
@@ -802,10 +807,18 @@ blendop_RAW(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only 
 
   if(x >= width || y >= height) return;
 
-  float o;
+  float a, b, o;
 
-  float a = read_imagef(in_a, sampleri, (int2)(x, y) + offs).x; // see comment in blend.c:dt_develop_blend_process_cl()
-  float b = read_imagef(in_b, sampleri, (int2)(x, y)).x;
+  if((blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
+  {
+    b = read_imagef(in_a, sampleri, (int2)(x, y) + offs).x;
+    a = read_imagef(in_b, sampleri, (int2)(x, y)).x;
+  }
+  else
+  {
+    a = read_imagef(in_a, sampleri, (int2)(x, y) + offs).x;
+    b = read_imagef(in_b, sampleri, (int2)(x, y)).x;
+  }
   float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
 
   const float min = 0.0f;
@@ -821,7 +834,7 @@ blendop_RAW(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only 
 
 
   /* select the blend operator */
-  switch (blend_mode)
+  switch(blend_mode & DEVELOP_BLEND_MODE_MASK)
   {
     case DEVELOP_BLEND_LIGHTEN:
       o = clamp(a * (1.0f - opacity) + fmax(a, b) * opacity, min, max);
@@ -900,12 +913,7 @@ blendop_RAW(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only 
       o = clamp(a, min, max);		// Noop for Raw
       break;
 
-    case DEVELOP_BLEND_INVERSE:
-      o =  clamp((a * opacity) + (b * (1.0f - opacity)), min, max);
-      break;
-
     case DEVELOP_BLEND_BOUNDED:
-    case DEVELOP_BLEND_NORMAL:
       o =  clamp((a * (1.0f - opacity)) + (b * opacity), min, max);
       break;
 
@@ -926,7 +934,6 @@ blendop_RAW(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only 
       break;
 
     /* fallback to normal blend */
-    case DEVELOP_BLEND_UNBOUNDED:
     case DEVELOP_BLEND_NORMAL2:
     default:
       o =  (a * (1.0f - opacity)) + (b * opacity);
@@ -947,12 +954,20 @@ blendop_rgb_hsl(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_o
 
   if(x >= width || y >= height) return;
 
-  float4 o;
+  float4 a, b, o;
   float4 ta, tb, to;
   float d, s;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
-  float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
+  if((blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
+  {
+    b = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+    a = read_imagef(in_b, sampleri, (int2)(x, y));
+  }
+  else
+  {
+    a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+    b = read_imagef(in_b, sampleri, (int2)(x, y));
+  }
   float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
 
   const float4 min = (float4)(0.0f, 0.0f, 0.0f, 1.0f);
@@ -968,7 +983,7 @@ blendop_rgb_hsl(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_o
 
 
   /* select the blend operator */
-  switch (blend_mode)
+  switch(blend_mode & DEVELOP_BLEND_MODE_MASK)
   {
     case DEVELOP_BLEND_LIGHTEN:
       o =  clamp(a * (1.0f - opacity) + fmax(a, b) * opacity, min, max);
@@ -1078,12 +1093,7 @@ blendop_rgb_hsl(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_o
       o = clamp(HSL_2_RGB(to), min, max);
       break;
 
-    case DEVELOP_BLEND_INVERSE:
-      o =  clamp((a * opacity) + (b * (1.0f - opacity)), min, max);
-      break;
-
     case DEVELOP_BLEND_BOUNDED:
-    case DEVELOP_BLEND_NORMAL:
       o =  clamp((a * (1.0f - opacity)) + (b * opacity), min, max);
       break;
 
@@ -1136,7 +1146,6 @@ blendop_rgb_hsl(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_o
 
 
     /* fallback to normal blend */
-    case DEVELOP_BLEND_UNBOUNDED:
     case DEVELOP_BLEND_NORMAL2:
     default:
       o =  (a * (1.0f - opacity)) + (b * opacity);
@@ -1159,15 +1168,24 @@ blendop_rgb_jzczhz(__read_only image2d_t in_a, __read_only image2d_t in_b, __rea
 
   if(x >= width || y >= height) return;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs); // see comment in blend.c:dt_develop_blend_process_cl()
-  float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
+  float4 a, b, o;
+
+  if((blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
+  {
+    b = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+    a = read_imagef(in_b, sampleri, (int2)(x, y));
+  }
+  else
+  {
+    a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
+    b = read_imagef(in_b, sampleri, (int2)(x, y));
+  }
   float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
   float norm_a;
   float norm_b;
-  float4 o;
 
   /* select the blend operator */
-  switch (blend_mode)
+  switch (blend_mode & DEVELOP_BLEND_MODE_MASK)
   {
     case DEVELOP_BLEND_MULTIPLY:
       o = a * (1.0f - opacity) + a * b * blend_parameter * opacity;
@@ -1185,7 +1203,7 @@ blendop_rgb_jzczhz(__read_only image2d_t in_a, __read_only image2d_t in_b, __rea
       o = a * (1.0f - opacity) + fmax(a - blend_parameter * b, 0.0f) * opacity;
       break;
 
-    case DEVELOP_BLEND_SUBTRACT_REVERSE:
+    case DEVELOP_BLEND_SUBTRACT_INVERSE:
       o = a * (1.0f - opacity) + fmax(b - blend_parameter * a, 0.0f) * opacity;
       break;
 
@@ -1206,37 +1224,29 @@ blendop_rgb_jzczhz(__read_only image2d_t in_a, __read_only image2d_t in_b, __rea
       o = a * (1.0f - opacity) + b * norm_a / norm_b * opacity;
       break;
 
-    case DEVELOP_BLEND_INVERSE:
-      o = a * opacity + b * (1.0f - opacity);
-      break;
-
     case DEVELOP_BLEND_RGB_R:
-      o.x = (a.x * (1.0f - opacity)) + (b.x * opacity);
+      o.x = (a.x * (1.0f - opacity)) + (blend_parameter * b.x * opacity);
       o.y = a.y;
       o.z = a.z;
       break;
 
     case DEVELOP_BLEND_RGB_G:
       o.x = a.x;
-      o.y = (a.y * (1.0f - opacity)) + (b.y * opacity);
+      o.y = (a.y * (1.0f - opacity)) + (blend_parameter * b.y * opacity);
       o.z = a.z;
       break;
 
     case DEVELOP_BLEND_RGB_B:
       o.x = a.x;
       o.y = a.y;
-      o.z = (a.z * (1.0f - opacity)) + (b.z * opacity);
-      break;
-
-    case DEVELOP_BLEND_MULTIPLY_REVERSE:
-      o = b * (1.0f - opacity) + a * b * blend_parameter * opacity;
+      o.z = (a.z * (1.0f - opacity)) + (blend_parameter * b.z * opacity);
       break;
 
     case DEVELOP_BLEND_DIVIDE:
       o = a * (1.0f - opacity) + a / fmax(b * blend_parameter, 1e-6f) * opacity;
       break;
 
-    case DEVELOP_BLEND_DIVIDE_REVERSE:
+    case DEVELOP_BLEND_DIVIDE_INVERSE:
       o = a * (1.0f - opacity) + b / fmax(a * blend_parameter, 1e-6f) * opacity;
       break;
 
@@ -1250,8 +1260,6 @@ blendop_rgb_jzczhz(__read_only image2d_t in_a, __read_only image2d_t in_b, __rea
 
     /* fallback to normal blend */
     case DEVELOP_BLEND_BOUNDED:
-    case DEVELOP_BLEND_UNBOUNDED:
-    case DEVELOP_BLEND_NORMAL:
     case DEVELOP_BLEND_NORMAL2:
     default:
       o =  (a * (1.0f - opacity)) + (b * opacity);
