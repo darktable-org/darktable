@@ -347,7 +347,8 @@ static inline void log_scale(const dt_lib_histogram_t *d, float *x, float *y, fl
   }
 }
 
-static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const float *const input,
+static void _lib_histogram_process_vectorscope(dt_develop_t *dev, dt_lib_histogram_t *d,
+                                               const float *const input,
                                                const dt_iop_order_iccprofile_info_t *const input_profile,
                                                dt_histogram_roi_t *const roi)
 {
@@ -355,12 +356,13 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
 
   // NOTE: this may be different from the output profile for _lib_histogram_process()
-  const dt_iop_order_iccprofile_info_t *const vs_prof = dt_ioppr_get_histogram_profile_info(darktable.develop);
-  if(!vs_prof)
+  const dt_iop_order_iccprofile_info_t *vs_prof = dt_ioppr_get_histogram_profile_info(darktable.develop);
+  if(!vs_prof || isnan(vs_prof->matrix_in[0]))
   {
-    printf("histogram: vectorscope could not determine histogram profile\n");
-    return;
+    fprintf(stderr, "[histogram] unsupported vectorscope profile %i %s, it will be replaced with linear rec2020\n", vs_prof->type, vs_prof->filename);
+    vs_prof = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC);
   }
+
   _lib_histogram_hue_ring(d, vs_prof);
   // FIXME: particularly for u*v*, center on hue ring bounds rather than plot center, to be able to show a larger plot?
   const float max_radius = d->vectorscope_radius;
@@ -597,7 +599,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
   {
     dt_pthread_mutex_lock(&d->lock);
-    _lib_histogram_process_vectorscope(d, input, profile_info_from, &roi);
+    _lib_histogram_process_vectorscope(dev, d, input, profile_info_from, &roi);
     dt_pthread_mutex_unlock(&d->lock);
   }
   else
