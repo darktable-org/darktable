@@ -565,8 +565,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
                                          "COUNT(DISTINCT datetime_taken), " //OK
                                          "COUNT(DISTINCT width), " //OK
                                          "COUNT(DISTINCT height), " //OK
-                                         "1, " //exported width
-                                         "1, " //exported height
+                                         "COUNT(DISTINCT IFNULL(output_width, '')), " //exported width
+                                         "COUNT(DISTINCT IFNULL(output_height, '')), " //exported height
                                          "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 2 WHERE images.id in (%s)), " //titre
                                          "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 3 WHERE images.id in (%s)), " //description
                                          "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 0 WHERE images.id in (%s)), " //auteur
@@ -576,9 +576,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
                                          "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 6 WHERE images.id in (%s)), " //nom de version
                                          "COUNT(DISTINCT IFNULL(latitude, '')), " //OK
                                          "COUNT(DISTINCT IFNULL(longitude, '')), " //OK
-                                         "COUNT(DISTINCT IFNULL(altitude, '')), " //OK
-                                         "2, " //keywords
-                                         "2 " //catégories
+                                         "COUNT(DISTINCT IFNULL(altitude, '')) " //OK
                                          "FROM main.images "
                                          "WHERE id IN (%s)",
                                    images, images, images, images, images, images, images, images);
