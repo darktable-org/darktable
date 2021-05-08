@@ -1171,15 +1171,18 @@ static void _set_places_list(GtkWidget *lbox, dt_lib_module_t* self)
     volumes = g_drive_get_volumes (drive->data);    
     for (volume = volumes; volume; volume = volume->next)
     {
-      GMount *placesMount = g_volume_get_mount(volume->data);
-      GFile *placesFile = g_mount_get_root(placesMount);
-      g_object_unref (placesMount);
+      if(g_volume_get_mount(volume->data))
+      {
+        GMount *placesMount = g_volume_get_mount(volume->data);
+        GFile *placesFile = g_mount_get_root(placesMount);
+        g_object_unref (placesMount);
 
-      gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, g_volume_get_name(volume->data), 
-        DT_PLACES_PATH, g_file_get_path(placesFile), DT_PLACES_CUSTOM, FALSE, -1);
+        gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, g_volume_get_name(volume->data), 
+          DT_PLACES_PATH, g_file_get_path(placesFile), DT_PLACES_CUSTOM, FALSE, -1);
 
-      if(!g_strcmp0(g_file_get_path(placesFile), last_place))
-        gtk_tree_selection_select_iter(d->placesSelection, &iter);
+        if(!g_strcmp0(g_file_get_path(placesFile), last_place))
+          gtk_tree_selection_select_iter(d->placesSelection, &iter);
+      }
     }
   }
 
