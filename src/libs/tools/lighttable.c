@@ -227,10 +227,7 @@ static gboolean _lib_lighttable_layout_btn_release(GtkWidget *w, GdkEventButton 
   }
 
   _lib_lighttable_set_layout(self, new_layout);
-
-  // now we inverse the current button state to get the right state at the end
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), active);
-  return FALSE;
+  return TRUE;
 }
 
 void gui_init(dt_lib_module_t *self)
