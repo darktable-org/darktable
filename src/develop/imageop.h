@@ -107,7 +107,8 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_FENCE = 1 << 11,             // No module can be moved pass this one
   IOP_FLAGS_ALLOW_FAST_PIPE = 1 << 12,   // Module can work with a fast pipe
   IOP_FLAGS_UNSAFE_COPY = 1 << 13,       // Unsafe to copy as part of history
-  IOP_FLAGS_SPECIAL_GUIDES = 1 << 14     // handle the grid drawing directly
+  IOP_FLAGS_GUIDES_SPECIAL_DRAW = 1 << 14, // handle the grid drawing directly
+  IOP_FLAGS_GUIDES_WIDGET = 1 << 15        // require the guides widget
 } dt_iop_flags_t;
 
 /** status of a module*/
@@ -279,6 +280,12 @@ typedef struct dt_iop_module_t
   GtkWidget *fusion_slider;
 
   GSList *widget_list;
+  /** show/hide guide button */
+  GtkWidget *guides_toggle;
+  /** list of closures: show, enable/disable */
+  GSList *accel_closures;
+  GSList *accel_closures_local;
+  gboolean local_closures_connected;
 
   /** flag in case the module has troubles (bad settings) - if TRUE, show a warning sign next to module label */
   gboolean has_trouble;
