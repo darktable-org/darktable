@@ -5542,8 +5542,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   }
 
   // green-equilibrate over full image excludes tiling
-  if(d->green_eq == DT_IOP_GREEN_EQ_FULL || d->green_eq == DT_IOP_GREEN_EQ_BOTH) piece->process_tiling_ready = 0;
-
+  // The details mask is written inside process, this does not allow tiling.
+  if((d->green_eq == DT_IOP_GREEN_EQ_FULL || d->green_eq == DT_IOP_GREEN_EQ_BOTH) ||
+     ((use_method & DEMOSAIC_DUAL) && (d->dual_thrs > 0.0f)) ||
+     (piece->pipe->want_detail_mask == (DT_DEV_DETAIL_MASK_REQUIRED | DT_DEV_DETAIL_MASK_DEMOSAIC)))
+  {
+    piece->process_tiling_ready = 0;
+  }
+ 
   if (self->dev->image_storage.flags & DT_IMAGE_4BAYER)
   {
     // 4Bayer images not implemented in OpenCL yet
