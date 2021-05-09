@@ -57,6 +57,16 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
+typedef enum _set_controls
+{
+  BOX_LEFT   = 1 << 0,
+  BOX_RIGHT  = 1 << 1,
+  BOX_TOP    = 1 << 2,
+  BOX_BOTTOM = 1 << 3,
+
+  BOX_ALL    = BOX_LEFT | BOX_RIGHT | BOX_TOP | BOX_BOTTOM
+} dt_box_control_set;
+
 typedef struct dt_lib_print_settings_t
 {
   GtkWidget *profile, *intent, *style, *style_mode, *papers, *media;
@@ -85,8 +95,9 @@ typedef struct dt_lib_print_settings_t
   gboolean creation;
   gboolean dragging;
   float x1, y1, x2, y2;
-  int selected;          // selected area in imgs.box
-  int sel_control;       // which border/corner is selected
+  int selected;                    // selected area in imgs.box
+  int last_selected;               // last selected area to edit
+  dt_box_control_set sel_controls; // which border/corner is selected
   float click_pos_x, click_pos_y;
 } dt_lib_print_settings_t;
 
@@ -1296,20 +1307,20 @@ static gboolean _expose_again(gpointer user_data)
 
 void _get_control(dt_lib_print_settings_t *ps, float x, float y)
 {
-    const float dist = 20.0;
+  const float dist = 20.0;
 
-    const dt_image_box *b = &ps->imgs.box[ps->selected];
+  const dt_image_box *b = &ps->imgs.box[ps->selected];
 
-    if(fabsf((float)b->screen.x - x) < dist)
-      ps->sel_control = 1;
-    else if(fabsf((float)b->screen.y - y) < dist)
-      ps->sel_control = 2;
-    else if(fabsf((float)(b->screen.x + b->screen.width) - x) < dist)
-      ps->sel_control = 3;
-    else if(fabsf((float)(b->screen.y + b->screen.height) - y) < dist)
-      ps->sel_control = 4;
-    else
-      ps->sel_control = 0;
+  if(fabsf((float)b->screen.x - x) < dist)
+    ps->sel_controls = BOX_LEFT;
+  else if(fabsf((float)b->screen.y - y) < dist)
+    ps->sel_controls = BOX_TOP;
+  else if(fabsf((float)(b->screen.x + b->screen.width) - x) < dist)
+    ps->sel_controls = BOX_RIGHT;
+  else if(fabsf((float)(b->screen.y + b->screen.height) - y) < dist)
+    ps->sel_controls = BOX_BOTTOM;
+  else
+    ps->sel_controls = BOX_ALL;
 }
 
 int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressure, int which)
@@ -1326,24 +1337,24 @@ int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressur
     const float dx = x - ps->click_pos_x;
     const float dy = y - ps->click_pos_y;
 
-    switch(ps->sel_control)
+    switch(ps->sel_controls)
     {
-       case 0:
+       case BOX_ALL:
          ps->x1 = b->screen.x + dx;
          ps->y1 = b->screen.y + dy;
          ps->x2 = b->screen.x + b->screen.width + dx;
          ps->y2 = b->screen.y + b->screen.height + dy;
          break;
-       case 1:
+       case BOX_LEFT:
          ps->x1 = b->screen.x + dx;
          break;
-       case 2:
+       case BOX_TOP:
          ps->y1 = b->screen.y + dy;
          break;
-       case 3:
+       case BOX_RIGHT:
          ps->x2 = b->screen.x + b->screen.width + dx;
          break;
-       case 4:
+       case BOX_BOTTOM:
          ps->y2 = b->screen.y + b->screen.height + dy;
          break;
        default:
@@ -1354,6 +1365,7 @@ int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressur
   else
   {
     const int bidx = dt_printing_get_image_box(&ps->imgs, x, y);
+    ps->sel_controls = 0;
 
     if(bidx == -1)
     {
@@ -1362,8 +1374,9 @@ int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressur
     }
     else
     {
-      if(ps->selected != bidx) expose = TRUE;
+      expose = TRUE;
       ps->selected = bidx;
+      _get_control(ps, x, y);
     }
   }
 
@@ -1458,6 +1471,33 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
   return 0;
 }
 
+void _cairo_rectangle(cairo_t *cr, const int sel_controls,
+                               const int x1, const int y1, const int x2, const int y2)
+{
+  const float sel_width = 3.0;
+  const float std_width = 1.0;
+
+  cairo_move_to (cr, x1, y1);
+  cairo_set_line_width(cr, (sel_controls & BOX_LEFT) ? sel_width : std_width);
+  cairo_line_to (cr, x1, y2);
+  cairo_stroke(cr);
+
+  cairo_move_to (cr, x1, y2);
+  cairo_set_line_width(cr, (sel_controls & BOX_BOTTOM) ? sel_width : std_width);
+  cairo_line_to (cr, x2, y2);
+  cairo_stroke(cr);
+
+  cairo_move_to (cr, x2, y2);
+  cairo_set_line_width(cr, (sel_controls & BOX_RIGHT) ? sel_width : std_width);
+  cairo_line_to (cr, x2, y1);
+  cairo_stroke(cr);
+
+  cairo_move_to (cr, x2, y1);
+  cairo_set_line_width(cr, (sel_controls & BOX_TOP) ? sel_width : std_width);
+  cairo_line_to (cr, x1, y1);
+  cairo_stroke(cr);
+}
+
 void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,
                      int32_t pointerx, int32_t pointery)
 {
@@ -1522,7 +1562,9 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
 
     if(k == ps->selected || img->imgid == -1)
     {
-      cairo_rectangle(cr, img->screen.x, img->screen.y, img->screen.width, img->screen.height);
+      _cairo_rectangle(cr, ps->sel_controls,
+                       img->screen.x, img->screen.y,
+                       img->screen.x + img->screen.width, img->screen.y + img->screen.height);
       cairo_stroke(cr);
     }
   }
@@ -1530,12 +1572,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
   // now display new area if any
   if(ps->dragging)
   {
-    const float dx = fmaxf(0.0f, ps->x2 - ps->x1);
-    const float dy = fmaxf(0.0f, ps->y2 - ps->y1);
-
-    // FIXME: highlight the selected border
-    cairo_rectangle(cr, ps->x1, ps->y1, dx, dy);
-    cairo_stroke(cr);
+    _cairo_rectangle(cr, ps->sel_controls, ps->x1, ps->y1, ps->x2, ps->y2);
   }
 }
 
