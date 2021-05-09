@@ -471,7 +471,7 @@ void gui_init(dt_lib_module_t *self)
   int line = 0;
 
 
-  d->remove_button = dt_ui_button_new(_("remove"), _("only remove from darktable, don't delete file on disk"), NULL);
+  d->remove_button = dt_ui_button_new(_("remove"), _("remove images from the image library, without deleting"), NULL);
   gtk_grid_attach(grid, d->remove_button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(d->remove_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(0));
 
@@ -491,7 +491,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->create_hdr_button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(d->create_hdr_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(7));
 
-  d->duplicate_button = dt_ui_button_new(_("duplicate"), _("add a duplicate to the collection, including its history stack"), NULL);
+  d->duplicate_button = dt_ui_button_new(_("duplicate"), _("add a duplicate to the image library, including its history stack"), NULL);
   gtk_grid_attach(grid, d->duplicate_button, 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(d->duplicate_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(3));
 
