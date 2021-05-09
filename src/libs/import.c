@@ -172,20 +172,20 @@ int position()
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "import from camera"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "copy & import from camera"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "tethered shoot"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "import in-place"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "copy and import"), GDK_KEY_i, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "add to library"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "copy & import"), GDK_KEY_i, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
 
-  dt_accel_connect_button_lib(self, "import in-place", GTK_WIDGET(d->import_inplace));
-  dt_accel_connect_button_lib(self, "copy and import", GTK_WIDGET(d->import_copy));
+  dt_accel_connect_button_lib(self, "add to library", GTK_WIDGET(d->import_inplace));
+  dt_accel_connect_button_lib(self, "copy & import", GTK_WIDGET(d->import_copy));
   if(d->tethered_shoot) dt_accel_connect_button_lib(self, "tethered shoot", GTK_WIDGET(d->tethered_shoot));
-  if(d->import_camera) dt_accel_connect_button_lib(self, "import from camera", GTK_WIDGET(d->import_camera));
+  if(d->import_camera) dt_accel_connect_button_lib(self, "copy & import from camera", GTK_WIDGET(d->import_camera));
 }
 
 #ifdef HAVE_GPHOTO2
@@ -251,7 +251,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       GtkWidget *vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
       if(camera->can_import == TRUE)
       {
-        gtk_box_pack_start(GTK_BOX(vbx), (ib = gtk_button_new_with_label(_("import from camera"))), FALSE,
+        gtk_box_pack_start(GTK_BOX(vbx), (ib = gtk_button_new_with_label(_("copy & import from camera"))), FALSE,
                            FALSE, 0);
         gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(ib))), PANGO_ELLIPSIZE_END);
         d->import_camera = GTK_BUTTON(ib);
@@ -1402,9 +1402,9 @@ static void _set_expander_content(GtkWidget *rbox, dt_lib_module_t* self)
 
 static const char *const _import_text[] =
 {
-  N_("import in-place"),
-  N_("copy and import"),
-  N_("import from camera")
+  N_("add to library"),
+  N_("copy & import"),
+  N_("copy & import from camera")
 };
 
 const char *folder_tooltip = N_("choose the root of the folder tree below"
@@ -1734,16 +1734,16 @@ void gui_init(dt_lib_module_t *self)
 
   // add import buttons
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *widget = dt_ui_button_new(_("import in-place..."),
-                                       _("import images in-place without renaming"),
+  GtkWidget *widget = dt_ui_button_new(_("add to library..."),
+                                       _("add existing images to the library"),
                                        "lighttable_panels.html#import_from_fs");
   d->import_inplace = GTK_BUTTON(widget);
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_import_from_callback), self);
-  widget = dt_ui_button_new(_("copy and import..."),
-                            _("copy and optionally rename images before importing them"
+  widget = dt_ui_button_new(_("copy & import..."),
+                            _("copy and optionally rename images before adding them to the library"
                               "\npatterns can be defined to rename the images and specify the destination folders"),
                             "lighttable_panels.html#import_from_fs");
   d->import_copy = GTK_BUTTON(widget);

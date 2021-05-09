@@ -835,7 +835,7 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
     gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete"), _DT_DELETE_DIALOG_CHOICE_DELETE);
     gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete all files"), _DT_DELETE_DIALOG_CHOICE_DELETE_ALL);
   }
-  gtk_dialog_add_button(GTK_DIALOG(dialog), _("only remove from the collection"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
+  gtk_dialog_add_button(GTK_DIALOG(dialog), _("only remove from the image library"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
   gtk_dialog_add_button(GTK_DIALOG(dialog), _("skip to next file"), _DT_DELETE_DIALOG_CHOICE_CONTINUE);
   gtk_dialog_add_button(GTK_DIALOG(dialog), _("stop process"), _DT_DELETE_DIALOG_CHOICE_STOP);
 

@@ -116,7 +116,7 @@ static void _populate_collect_combo(GtkWidget *w);
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("collect images");
+  return _("create collection");
 }
 
 void *legacy_params(struct dt_lib_module_t *self,

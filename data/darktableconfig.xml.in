@@ -397,8 +397,8 @@
     <name>ask_before_remove</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>ask before removing images from darktable</shortdescription>
-    <longdescription>always ask the user before any image is removed from darktable</longdescription>
+    <shortdescription>ask before removing images from the library</shortdescription>
+    <longdescription>always ask the user before any image is removed from the library</longdescription>
   </dtconfig>
   <dtconfig prefs="security">
     <name>ask_before_delete</name>
@@ -1319,8 +1319,8 @@
     <name>plugins/lighttable/collect/single-click</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>use single-click in the collect module</shortdescription>
-    <longdescription>check this option to use single-click to select items in the collect module. this will allow you to do range selections for date-time and numeric values.</longdescription>
+    <shortdescription>use single-click in the create collection module</shortdescription>
+    <longdescription>check this option to use single-click to select items in the create collection module. this will allow you to do range selections for date-time and numeric values.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/collect/num_rules</name>
