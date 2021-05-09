@@ -432,8 +432,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
             }
 
             const float *const inptr = (const float *const)ivoid + (size_t)c;
-            const float pi0 = bufptr[c * 2] - roi_in->x;
-            const float pi1 = bufptr[c * 2 + 1] - roi_in->y;
+            const float pi0 = fmaxf(fminf(bufptr[c * 2] - roi_in->x, roi_in->width - 1.0f), 0.0f);
+            const float pi1 = fmaxf(fminf(bufptr[c * 2 + 1] - roi_in->y, roi_in->height - 1.0f), 0.0f);
             out[c] = dt_interpolation_compute_sample(interpolation, inptr, pi0, pi1, roi_in->width,
                                                      roi_in->height, ch, ch_width);
           }
@@ -448,8 +448,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
             // take green channel distortion also for alpha channel
             const float *const inptr = (const float *const)ivoid + (size_t)3;
-            const float pi0 = bufptr[2] - roi_in->x;
-            const float pi1 = bufptr[3] - roi_in->y;
+            const float pi0 = fmaxf(fminf(bufptr[2] - roi_in->x, roi_in->width - 1.0f), 0.0f);
+            const float pi1 = fmaxf(fminf(bufptr[3] - roi_in->y, roi_in->height - 1.0f), 0.0f);
             out[3] = dt_interpolation_compute_sample(interpolation, inptr, pi0, pi1, roi_in->width,
                                                      roi_in->height, ch, ch_width);
           }
@@ -537,8 +537,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
             }
 
             float *bufptr = ((float *)buf) + c;
-            const float pi0 = buf2ptr[c * 2] - roi_in->x;
-            const float pi1 = buf2ptr[c * 2 + 1] - roi_in->y;
+            const float pi0 = fmaxf(fminf(buf2ptr[c * 2] - roi_in->x, roi_in->width - 1.0f), 0.0f);
+            const float pi1 = fmaxf(fminf(buf2ptr[c * 2 + 1] - roi_in->y, roi_in->height - 1.0f), 0.0f);
             out[c] = dt_interpolation_compute_sample(interpolation, bufptr, pi0, pi1, roi_in->width,
                                                      roi_in->height, ch, ch_width);
           }
@@ -553,8 +553,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
             // take green channel distortion also for alpha channel
             float *bufptr = ((float *)buf) + 3;
-            const float pi0 = buf2ptr[2] - roi_in->x;
-            const float pi1 = buf2ptr[3] - roi_in->y;
+            const float pi0 = fmaxf(fminf(buf2ptr[2] - roi_in->x, roi_in->width - 1.0f), 0.0f);
+            const float pi1 = fmaxf(fminf(buf2ptr[3] - roi_in->y, roi_in->height - 1.0f), 0.0f);
             out[3] = dt_interpolation_compute_sample(interpolation, bufptr, pi0, pi1, roi_in->width,
                                                      roi_in->height, ch, ch_width);
           }
@@ -1057,12 +1057,16 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 #endif
       for(size_t k = 0; k < nbpoints; k++)
       {
-        const float x = buf[6 * k + 0];
-        const float y = buf[6 * k + 3];
-        xm = isnan(x) ? xm : MIN(xm, x);
-        xM = isnan(x) ? xM : MAX(xM, x);
-        ym = isnan(y) ? ym : MIN(ym, y);
-        yM = isnan(y) ? yM : MAX(yM, y);
+        // iterate over RGB channels x and y coordinates
+        for(size_t c = 0; c < 6; c+=2)
+        {
+          const float x = buf[6 * k + c];
+          const float y = buf[6 * k + c + 1];
+          xm = isnan(x) ? xm : MIN(xm, x);
+          xM = isnan(x) ? xM : MAX(xM, x);
+          ym = isnan(y) ? ym : MIN(ym, y);
+          yM = isnan(y) ? yM : MAX(yM, y);
+        }
       }
     }
 
