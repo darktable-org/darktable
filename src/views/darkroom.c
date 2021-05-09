@@ -653,7 +653,7 @@ void expose(
   }
 
   // draw guide lines if needed
-  if(!dev->gui_module || !(dev->gui_module->flags() & IOP_FLAGS_SPECIAL_GUIDES))
+  if(!dev->gui_module || !(dev->gui_module->flags() & IOP_FLAGS_GUIDES_SPECIAL_DRAW))
   {
     // we restrict the drawing to the image only
     // the drawing is done on the preview pipe reference
@@ -1468,17 +1468,25 @@ static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 }
 
 /* overlay color */
-static gboolean _overlay_color_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+static gboolean _guides_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
-  GtkWidget *pop = gtk_popover_new(widget);
-  gtk_widget_set_size_request(GTK_WIDGET(pop), 350, -1);
-#if GTK_CHECK_VERSION(3, 16, 0)
-  g_object_set(G_OBJECT(pop), "transitions-enabled", FALSE, NULL);
-#endif
-  // add new widgets
-  gtk_container_add(GTK_CONTAINER(pop), dt_guides_get_widgets(darktable.develop->gui_module));
-  _toolbar_show_popup(pop);
-  return TRUE;
+  const GdkEventButton *e = (GdkEventButton *)event;
+  if(e->button == 3)
+  {
+    dt_guides_show_popup(widget, darktable.develop->gui_module, FALSE);
+    return TRUE;
+  }
+  else
+  {
+    dt_guides_button_toggled();
+    dt_control_queue_redraw_center();
+  }
+  return FALSE;
+}
+
+static void _guides_view_changed(gpointer instance, dt_view_t *old_view, dt_view_t *new_view, dt_lib_module_t *self)
+{
+  dt_guides_update_button_state();
 }
 
 /* overexposed */
@@ -2520,11 +2528,15 @@ void gui_init(dt_view_t *self)
   /* create grid changer popup tool */
   {
     // the button
-    GtkWidget *guides_btn = dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, CPF_STYLE_FLAT, NULL);
-    gtk_widget_set_tooltip_text(guides_btn, _("set the guide lines"));
-    g_signal_connect(G_OBJECT(guides_btn), "button-press-event", G_CALLBACK(_overlay_color_quickbutton_pressed),
-                     dev);
-    dt_view_manager_module_toolbox_add(darktable.view_manager, guides_btn, DT_VIEW_DARKROOM | DT_VIEW_TETHERING);
+    darktable.view_manager->guides_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, CPF_STYLE_FLAT, NULL);
+    gtk_widget_set_tooltip_text(darktable.view_manager->guides_toggle, _("set the guide lines"));
+    g_signal_connect(G_OBJECT(darktable.view_manager->guides_toggle), "button-press-event",
+                     G_CALLBACK(_guides_quickbutton_pressed), dev);
+    dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.view_manager->guides_toggle,
+                                       DT_VIEW_DARKROOM | DT_VIEW_TETHERING);
+    // we want to update button state each time the view change
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
+                                    G_CALLBACK(_guides_view_changed), dev);
   }
 
   darktable.view_manager->proxy.darkroom.get_layout = _lib_darkroom_get_layout;
