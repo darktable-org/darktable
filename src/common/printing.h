@@ -33,9 +33,9 @@ typedef struct _image_box
   int32_t imgid;
   int32_t max_width, max_height;
   int32_t exp_width, exp_height;
-  dt_image_pos pos;              // relative pos in per 10000
-  dt_image_pos screen;           // current screen pos
-  dt_image_pos print;            // current print pos depending on paper size + DPI
+  dt_image_pos pos;              // relative pos (in per 10000)
+  dt_image_pos screen;           // current screen pos (in pixels)
+  dt_image_pos print;            // current print pos (in mm) depending on paper size + DPI
   uint16_t *buf;
 } dt_image_box;
 
@@ -44,7 +44,7 @@ typedef struct dt_images_box
   gboolean auto_fit;
   int count;
   dt_image_box box[MAX_IMAGE_PER_PAGE];
-  dt_image_pos screen_page;      // this is for reference and is the box of the white page
+  dt_image_pos screen_page;      // this is for reference and is the box of the white page (in mm)
                                  // in print module.
 } dt_images_box;
 

@@ -75,6 +75,9 @@ typedef struct dt_lib_print_settings_t
   GtkWidget *info;
   GtkWidget *autofit;
   GtkWidget *stack;
+  GtkWidget *b_x, *b_y;
+  GtkWidget *b_width, *b_height;
+  GtkWidget *del;
   GList *profiles;
   GtkButton *print_button;
   GtkToggleButton *lock_button;
@@ -129,9 +132,13 @@ typedef struct _dialog_description
   const char *name;
 } dialog_description_t;
 
-static double units[3] = {1.0, 0.1, 1.0/25.4};
+static const float units[3] = {1.0, 0.1, 1.0/25.4};
 
 static void _update_slider (dt_lib_print_settings_t *ps);
+static void _width_changed(GtkWidget *widget, gpointer user_data);
+static void _height_changed(GtkWidget *widget, gpointer user_data);
+static void _x_changed(GtkWidget *widget, gpointer user_data);
+static void _y_changed(GtkWidget *widget, gpointer user_data);
 
 static const int min_borders = -100; // this is in mm
 
@@ -379,8 +386,10 @@ static void _get_auto_max_size(dt_print_info_t *prt, dt_image_box *img)
   img->max_height = (int)(pa_height * prt->printer.resolution);
 }
 
-void _compute_print_box(dt_print_info_t *prt, dt_image_box *box) //dt_images_box *imgs, const int index)
+void _compute_print_box(dt_print_info_t *prt, dt_image_box *box)
 {
+  // then compute the print in mm given the current page
+
   float width, height;
   _get_page_dimention(prt, &width, &height);
 
@@ -403,6 +412,44 @@ void _compute_print_box(dt_print_info_t *prt, dt_image_box *box) //dt_images_box
     box->print.width  = (box->pos.width * width_pix) / 10000.0f;
     box->print.height = (box->pos.height * height_pix) / 10000.0f;
   }
+}
+
+static inline float _percent_unit_of(dt_lib_print_settings_t *ps, float ref, float value)
+{
+  return (value / 10000.0f) * ref * units[ps->unit];
+}
+
+void _fill_box_values(dt_lib_print_settings_t *ps)
+{
+  float x = 0.0f, y = 0.0f, swidth = 0.0f, sheight = 0.0f;
+
+  if(ps->last_selected != -1)
+  {
+    dt_image_box *b = &ps->imgs.box[ps->last_selected];
+
+    float width, height;
+    _get_page_dimention(&ps->prt, &width, &height);
+
+    x = _percent_unit_of(ps, width, (float)b->pos.x);
+    y = _percent_unit_of(ps, height, (float)b->pos.y);
+    swidth = _percent_unit_of(ps, width, (float)b->pos.width);
+    sheight = _percent_unit_of(ps, height, (float)b->pos.height);
+
+    // update box values
+    _compute_print_box(&ps->prt, b);
+  }
+
+  ++darktable.gui->reset;
+
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_x), x);
+
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_y), y);
+
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_width), swidth);
+
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_height), sheight);
+
+  --darktable.gui->reset;
 }
 
 static int _export_and_setup_pos(dt_job_t *job, dt_image_box *img)
@@ -531,13 +578,44 @@ static int _print_job_run(dt_job_t *job)
   return 0;
 }
 
-static void
-_page_new_area_clicked (GtkWidget *widget, gpointer user_data)
+static void _page_new_area_clicked (GtkWidget *widget, gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
+  if(ps->imgs.count == MAX_IMAGE_PER_PAGE)
+  {
+    dt_control_log(_("maximum image per page reached"));
+    return;
+  }
+
   ps->creation = TRUE;
+}
+
+static void _page_delete_area_clicked(GtkWidget *widget, gpointer user_data)
+{
+  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  if(ps->last_selected == -1) return;
+
+  for(int k=ps->last_selected; k<MAX_IMAGE_PER_PAGE-1; k++)
+  {
+    memcpy(&ps->imgs.box[k], &ps->imgs.box[k+1], sizeof(dt_image_box));
+  }
+  ps->last_selected = -1;
+  ps->selected = -1;
+  ps->imgs.box[MAX_IMAGE_PER_PAGE-1].imgid = -1;
+  ps->imgs.count--;
+
+  if(ps->imgs.count > 0)
+    ps->selected = 0;
+  else
+    gtk_widget_set_sensitive(ps->del, FALSE);
+
+  _fill_box_values(ps);
+
+  dt_control_queue_redraw_center();
 }
 
 static void _print_job_cleanup(void *p)
@@ -877,14 +955,25 @@ _update_slider (dt_lib_print_settings_t *ps)
   const int pa_max_height = ps->prt.paper.height - ps->prt.printer.hw_margin_top - ps->prt.printer.hw_margin_bottom - min_size;
   const int pa_max_width  = ps->prt.paper.width  - ps->prt.printer.hw_margin_left - ps->prt.printer.hw_margin_right - min_size;
 
-  gtk_spin_button_set_range (GTK_SPIN_BUTTON(ps->b_top),
-                             min_borders * units[ps->unit], (pa_max_height - ps->prt.page.margin_bottom) * units[ps->unit]);
-  gtk_spin_button_set_range (GTK_SPIN_BUTTON(ps->b_left),
-                             min_borders * units[ps->unit], (pa_max_width - ps->prt.page.margin_right) * units[ps->unit]);
-  gtk_spin_button_set_range (GTK_SPIN_BUTTON(ps->b_right),
-                             min_borders * units[ps->unit], (pa_max_width - ps->prt.page.margin_left) * units[ps->unit]);
-  gtk_spin_button_set_range (GTK_SPIN_BUTTON(ps->b_bottom),
-                             min_borders * units[ps->unit], (pa_max_height - ps->prt.page.margin_top) * units[ps->unit]);
+  gtk_spin_button_set_range(GTK_SPIN_BUTTON(ps->b_top),
+                            min_borders * units[ps->unit], (pa_max_height - ps->prt.page.margin_bottom) * units[ps->unit]);
+  gtk_spin_button_set_range(GTK_SPIN_BUTTON(ps->b_left),
+                            min_borders * units[ps->unit], (pa_max_width - ps->prt.page.margin_right) * units[ps->unit]);
+  gtk_spin_button_set_range(GTK_SPIN_BUTTON(ps->b_right),
+                            min_borders * units[ps->unit], (pa_max_width - ps->prt.page.margin_left) * units[ps->unit]);
+  gtk_spin_button_set_range(GTK_SPIN_BUTTON(ps->b_bottom),
+                            min_borders * units[ps->unit], (pa_max_height - ps->prt.page.margin_top) * units[ps->unit]);
+
+#if 0
+  gtk_spin_button_set_range(GTK_SPIN_BUTTON(ps->b_y),
+                            min_borders * units[ps->unit], (pa_max_height - ps->prt.page.margin_bottom) * units[ps->unit]);
+  gtk_spin_button_set_range(GTK_SPIN_BUTTON(ps->b_x),
+                            min_borders * units[ps->unit], (pa_max_width - ps->prt.page.margin_right) * units[ps->unit]);
+  gtk_spin_button_set_range(GTK_SPIN_BUTTON(ps->b_width),
+                            min_borders * units[ps->unit], (pa_max_width - ps->prt.page.margin_left) * units[ps->unit]);
+  gtk_spin_button_set_range(GTK_SPIN_BUTTON(ps->b_height),
+                            min_borders * units[ps->unit], (pa_max_height - ps->prt.page.margin_top) * units[ps->unit]);
+#endif
 }
 
 static void
@@ -983,6 +1072,8 @@ _page_autofit_callback(GtkWidget *check, gpointer user_data)
 
   dt_conf_set_bool("plugins/print/print/autofit", is_active);
 
+  _fill_box_values(ps);
+
   dt_control_queue_redraw_center();
 }
 
@@ -1044,12 +1135,22 @@ _unit_changed (GtkWidget *combo, dt_lib_module_t *self)
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_left),   n_digits);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_right),  n_digits);
 
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_x),      n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_y),      n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_width),  n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_height), n_digits);
+
   const float incr = units[ps->unit];
 
   gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_top), incr, incr);
   gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_bottom), incr, incr);
   gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_left), incr, incr);
   gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_right), incr, incr);
+
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_x), incr, incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_y), incr, incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_width), incr, incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_height), incr, incr);
 
   _update_slider (ps);
 
@@ -1059,6 +1160,7 @@ _unit_changed (GtkWidget *combo, dt_lib_module_t *self)
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left),   margin_left * units[ps->unit]);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right),  margin_right * units[ps->unit]);
 
+  _fill_box_values(ps);
 }
 
 static void
@@ -1331,7 +1433,13 @@ int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressur
 
   gboolean expose = FALSE;
 
-  if(ps->dragging)
+  if(ps->creation && ps->dragging)
+  {
+    ps->x2 = x;
+    ps->y2 = y;
+    expose = TRUE;
+  }
+  else if(ps->dragging)
   {
     dt_image_box *b = &ps->imgs.box[ps->selected];
     const float dx = x - ps->click_pos_x;
@@ -1362,7 +1470,7 @@ int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressur
     }
     expose = TRUE;
   }
-  else
+  else if(!ps->creation)
   {
     const int bidx = dt_printing_get_image_box(&ps->imgs, x, y);
     ps->sel_controls = 0;
@@ -1376,6 +1484,7 @@ int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressur
     {
       expose = TRUE;
       ps->selected = bidx;
+      _fill_box_values(ps);
       _get_control(ps, x, y);
     }
   }
@@ -1385,6 +1494,21 @@ int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressur
   return 0;
 }
 
+void _compute_rel_pos(dt_lib_print_settings_t *ps, dt_image_box *box)
+{
+  // compute the printing position & width as % of the page
+
+  const float ofsx        = (float)ps->imgs.screen_page.x;
+  const float ofsy        = (float)ps->imgs.screen_page.y;
+  const float page_width  = (float)ps->imgs.screen_page.width;
+  const float page_height = (float)ps->imgs.screen_page.height;
+
+  box->pos.x      = 10000.0f * (((float)box->screen.x - ofsx) / page_width);
+  box->pos.y      = 10000.0f * (((float)box->screen.y - ofsy) / page_height);
+  box->pos.width  = 10000.0f * ((float)box->screen.width / page_width);
+  box->pos.height = 10000.0f * ((float)box->screen.height / page_height);
+}
+
 int button_released(struct dt_lib_module_t *self, double x, double y, int which, uint32_t state)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
@@ -1392,6 +1516,9 @@ int button_released(struct dt_lib_module_t *self, double x, double y, int which,
   if(ps->dragging)
   {
     int idx = -1;
+
+    ps->last_selected = ps->selected;
+    gtk_widget_set_sensitive(ps->del, TRUE);
 
     // handle new area
     if(ps->creation)
@@ -1420,17 +1547,8 @@ int button_released(struct dt_lib_module_t *self, double x, double y, int which,
       box->screen.width  = dx;
       box->screen.height = dy;
 
-      // compute the printing position & width as % of the page
-
-      const float ofsx        = (float)ps->imgs.screen_page.x;
-      const float ofsy        = (float)ps->imgs.screen_page.y;
-      const float page_width  = (float)ps->imgs.screen_page.width;
-      const float page_height = (float)ps->imgs.screen_page.height;
-
-      box->pos.x      = 10000.0f * (((float)box->screen.x - ofsx) / page_width);
-      box->pos.y      = 10000.0f * (((float)box->screen.y - ofsy) / page_height);
-      box->pos.width  = 10000.0f * ((float)box->screen.width / page_width);
-      box->pos.height = 10000.0f * ((float)box->screen.height / page_height);
+      _compute_rel_pos(ps, box);
+      _fill_box_values(ps);
     }
   }
 
@@ -1523,6 +1641,8 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     ps->imgs.box[0].screen.width  = iwidth;
     ps->imgs.box[0].screen.height = iheight;
 
+    _compute_rel_pos(ps, &ps->imgs.box[0]);
+
     ps->imgs.count = 1;
   }
 
@@ -1576,6 +1696,88 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
   }
 }
 
+// horizontal mm to pixels
+static int _mm_to_hscreen(dt_lib_print_settings_t *ps, float value, const gboolean offset)
+{
+  float width, height;
+  _get_page_dimention(&ps->prt, &width, &height);
+
+  printf("=> %d  %.2f %.2f\n", ps->imgs.screen_page.width, value, width);
+
+  return (offset ? ps->imgs.screen_page.x : 0) + (ps->imgs.screen_page.width * (value / width));
+}
+
+static int _mm_to_vscreen(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
+{
+  float width, height;
+  _get_page_dimention(&ps->prt, &width, &height);
+
+  return (offset ? ps->imgs.screen_page.y : 0) + (ps->imgs.screen_page.height * (value / height));
+}
+
+static void _width_changed(GtkWidget *widget, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)user_data;
+
+  const float nv = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
+  const float nv_mm = nv / units[ps->unit];
+
+  ps->imgs.box[ps->last_selected].screen.width = _mm_to_hscreen(ps, nv_mm, FALSE);
+
+  _compute_rel_pos(ps, &ps->imgs.box[ps->last_selected]);
+
+  dt_control_queue_redraw_center();
+}
+
+static void _height_changed(GtkWidget *widget, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)user_data;
+
+  const float nv = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
+  const float nv_mm = nv / units[ps->unit];
+
+  ps->imgs.box[ps->last_selected].screen.height = _mm_to_vscreen(ps, nv_mm, FALSE);
+
+  _compute_rel_pos(ps, &ps->imgs.box[ps->last_selected]);
+
+  dt_control_queue_redraw_center();
+}
+
+static void _x_changed(GtkWidget *widget, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)user_data;
+
+  const float nv = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
+  const float nv_mm = nv / units[ps->unit];
+
+  ps->imgs.box[ps->last_selected].screen.x = _mm_to_hscreen(ps, nv_mm, TRUE);
+
+  _compute_rel_pos(ps, &ps->imgs.box[ps->last_selected]);
+
+  dt_control_queue_redraw_center();
+}
+static void _y_changed(GtkWidget *widget, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)user_data;
+
+  const float nv = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
+  const float nv_mm = nv / units[ps->unit];
+
+  ps->imgs.box[ps->last_selected].screen.y = _mm_to_vscreen(ps, nv_mm, TRUE);
+
+  _compute_rel_pos(ps, &ps->imgs.box[ps->last_selected]);
+
+  dt_control_queue_redraw_center();
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {
@@ -1603,6 +1805,7 @@ gui_init (dt_lib_module_t *self)
   d->imgs.auto_fit = TRUE;
   d->creation = d->dragging = FALSE;
   d->selected = -1;
+  d->last_selected = 0;
 
   dt_init_print_info(&d->prt);
   dt_view_print_settings(darktable.view_manager, &d->prt, &d->imgs);
@@ -1622,15 +1825,30 @@ gui_init (dt_lib_module_t *self)
   d->b_right  = gtk_spin_button_new_with_range(0, 1000, 1);
   d->b_bottom = gtk_spin_button_new_with_range(0, 1000, 1);
 
-  gtk_entry_set_alignment (GTK_ENTRY(d->b_top), 1);
-  gtk_entry_set_alignment (GTK_ENTRY(d->b_left), 1);
-  gtk_entry_set_alignment (GTK_ENTRY(d->b_right), 1);
-  gtk_entry_set_alignment (GTK_ENTRY(d->b_bottom), 1);
+  d->b_x      = gtk_spin_button_new_with_range(0, 1000, 1);
+  d->b_y      = gtk_spin_button_new_with_range(0, 1000, 1);
+  d->b_width  = gtk_spin_button_new_with_range(0, 1000, 1);
+  d->b_height = gtk_spin_button_new_with_range(0, 1000, 1);
+
+  gtk_entry_set_alignment(GTK_ENTRY(d->b_top), 1);
+  gtk_entry_set_alignment(GTK_ENTRY(d->b_left), 1);
+  gtk_entry_set_alignment(GTK_ENTRY(d->b_right), 1);
+  gtk_entry_set_alignment(GTK_ENTRY(d->b_bottom), 1);
+
+  gtk_entry_set_alignment(GTK_ENTRY(d->b_x), 1);
+  gtk_entry_set_alignment(GTK_ENTRY(d->b_y), 1);
+  gtk_entry_set_alignment(GTK_ENTRY(d->b_width), 1);
+  gtk_entry_set_alignment(GTK_ENTRY(d->b_height), 1);
 
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_top));
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_left));
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_right));
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_bottom));
+
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_x));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_y));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_width));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_height));
 
   ////////////////////////// PRINTER SETTINGS
 
@@ -1876,12 +2094,62 @@ gui_init (dt_lib_module_t *self)
   gtk_stack_add_named(GTK_STACK(d->stack), hbox22, "autofit");
 
   // Manual fit
-  GtkWidget *mfitbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
+  GtkWidget *hfitbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+  GtkWidget *mfitbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *bnew = gtk_button_new_with_label(_("new image area"));
   g_signal_connect(G_OBJECT(bnew), "clicked", G_CALLBACK(_page_new_area_clicked), (gpointer)self);
-  gtk_box_pack_start(GTK_BOX(mfitbox), GTK_WIDGET(bnew), TRUE, TRUE, 0);
+  d->del = gtk_button_new_with_label(_("delete image area"));
+  g_signal_connect(G_OBJECT(d->del), "clicked", G_CALLBACK(_page_delete_area_clicked), (gpointer)self);
+  gtk_widget_set_sensitive(d->del, FALSE);
 
-  gtk_stack_add_named(GTK_STACK(d->stack), mfitbox, "manfit");
+  gtk_box_pack_start(GTK_BOX(mfitbox), GTK_WIDGET(bnew), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(mfitbox), GTK_WIDGET(d->del), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hfitbox), GTK_WIDGET(mfitbox), TRUE, TRUE, 0);
+
+  // X x Y
+  GtkWidget *box;
+
+  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
+  // d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
+  gtk_widget_set_tooltip_text(d->b_x, _("x origin"));
+  gtk_entry_set_width_chars(GTK_ENTRY(d->b_x), 5);
+
+  // d->b_y = gtk_spin_button_new_with_range(0, 1000, 1);
+  gtk_widget_set_tooltip_text(d->b_y, _("y origin"));
+  gtk_entry_set_width_chars(GTK_ENTRY(d->b_y), 5);
+
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(d->b_x), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(d->b_y), TRUE, TRUE, 0);
+
+  gtk_box_pack_start(GTK_BOX(hfitbox), GTK_WIDGET(box), TRUE, TRUE, 0);
+
+  // width x height
+  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
+  // d->b_width = gtk_spin_button_new_with_range(0, 1000, 1);
+  gtk_widget_set_tooltip_text(d->b_width, _("width"));
+  gtk_entry_set_width_chars(GTK_ENTRY(d->b_width), 5);
+
+  // d->b_height = gtk_spin_button_new_with_range(0, 1000, 1);
+  gtk_widget_set_tooltip_text(d->b_height, _("height"));
+  gtk_entry_set_width_chars(GTK_ENTRY(d->b_height), 5);
+
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(d->b_width), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(d->b_height), TRUE, TRUE, 0);
+
+  gtk_box_pack_start(GTK_BOX(hfitbox), GTK_WIDGET(box), TRUE, TRUE, 0);
+
+  gtk_stack_add_named(GTK_STACK(d->stack), hfitbox, "manfit");
+
+  gtk_widget_add_events(d->b_x, GDK_BUTTON_PRESS_MASK);
+  gtk_widget_add_events(d->b_y, GDK_BUTTON_PRESS_MASK);
+  gtk_widget_add_events(d->b_width, GDK_BUTTON_PRESS_MASK);
+  gtk_widget_add_events(d->b_height, GDK_BUTTON_PRESS_MASK);
+
+  g_signal_connect(G_OBJECT(d->b_x), "value-changed", G_CALLBACK(_x_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->b_y), "value-changed", G_CALLBACK(_y_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->b_width), "value-changed", G_CALLBACK(_width_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->b_height), "value-changed", G_CALLBACK(_height_changed), (gpointer)d);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->stack), TRUE, TRUE, 0);
 
@@ -2326,10 +2594,10 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     dt_bauhaus_combobox_set_from_text(ps->style, style);
   dt_bauhaus_combobox_set (ps->style_mode, style_mode);
 
-  gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_top), b_top * units[ps->unit]);
-  gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_bottom), b_bottom * units[ps->unit]);
-  gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_left), b_left * units[ps->unit]);
-  gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_right), b_right * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_top), b_top * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), b_bottom * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left), b_left * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), b_right * units[ps->unit]);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->dtba[alignment]),TRUE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->black_point_compensation), bpc);
@@ -2448,6 +2716,11 @@ gui_cleanup (dt_lib_module_t *self)
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_left));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_right));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_bottom));
+
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_x));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_y));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_width));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_right));
 
   g_list_free_full(ps->profiles, g_free);
   g_list_free_full(ps->paper_list, free);
