@@ -1283,8 +1283,8 @@ _intent_callback (GtkWidget *widget, dt_lib_module_t *self)
 
 static void _set_orientation(dt_lib_print_settings_t *ps)
 {
-  if (ps->imgs.auto_fit && ps->imgs.box[0].imgid <= 0)
-    return;
+//  if(ps->imgs.auto_fit || ps->imgs.box[0].imgid <= 0)
+//    return;
 
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf,
@@ -1308,8 +1308,8 @@ static void _print_settings_activate_or_update_callback(gpointer instance, int i
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  // only update via filmstrip if there is a single image
-  if(ps->imgs.count != 1) return;
+  // only update via filmstrip if autofit
+  if(!ps->imgs.auto_fit) return;
 
   ps->imgs.box[0].imgid = imgid;
   ps->imgs.box[0].screen.width = ps->imgs.box[0].screen.height = 0;
