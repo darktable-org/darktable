@@ -926,7 +926,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
       if(y % checker_1 < y % checker_2) color = checker_color_1;
       else color = checker_color_2;
     }
-    float *op = &opacities;
+    const float *op = (const float *)&opacities;
     float opacity = op[mask_type];
     const float opacity_comp = 1.0f - opacity;
 
