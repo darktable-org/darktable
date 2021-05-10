@@ -1303,9 +1303,6 @@ _intent_callback (GtkWidget *widget, dt_lib_module_t *self)
 
 static void _set_orientation(dt_lib_print_settings_t *ps)
 {
-//  if(ps->imgs.auto_fit || ps->imgs.box[0].imgid <= 0)
-//    return;
-
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf,
                       ps->imgs.box[0].imgid, DT_MIPMAP_0, DT_MIPMAP_BEST_EFFORT, 'r');
@@ -1664,6 +1661,9 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
+  // initial selection from gui_init is not working???
+  gtk_stack_set_visible_child_name(GTK_STACK(ps->stack), ps->imgs.auto_fit ? "autofit" : "manfit");
+
   if(ps->imgs.auto_fit)
   {
     _get_auto_max_size(&ps->prt, &ps->imgs.box[0]);
@@ -1847,7 +1847,7 @@ void gui_init (dt_lib_module_t *self)
   d->v_piccprofile = NULL;
   d->v_iccprofile = NULL;
   d->v_style = NULL;
-  d->imgs.auto_fit = TRUE;
+  d->imgs.auto_fit = dt_conf_get_bool("plugins/print/print/autofit");
   d->creation = d->dragging = FALSE;
   d->selected = -1;
   d->last_selected = 0;
@@ -1858,10 +1858,14 @@ void gui_init (dt_lib_module_t *self)
 
   d->profiles = _get_profiles();
 
+  d->imgs.count = 0;
   for(int k=0; k<MAX_IMAGE_PER_PAGE; k++)
   {
     d->imgs.box[k].imgid = -1;
+    d->imgs.box[k].screen.x = d->imgs.box[k].screen.y = 0;
     d->imgs.box[k].screen.width = d->imgs.box[k].screen.height = 0;
+    d->imgs.box[k].pos.x = d->imgs.box[k].pos.y = 0;
+    d->imgs.box[k].pos.width = d->imgs.box[k].pos.height = 0;
   }
 
   //  create the spin-button now as values could be set when the printer has no hardware margin
@@ -2113,7 +2117,7 @@ void gui_init (dt_lib_module_t *self)
 
   // auto sized or manual
 
-  d->autofit = gtk_check_button_new_with_label(_("auto fit"));
+  d->autofit = gtk_check_button_new_with_label(_("single image auto fit"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->autofit), TRUE, FALSE, 0);
   g_signal_connect(d->autofit, "toggled", G_CALLBACK(_page_autofit_callback), (gpointer)self);
 
