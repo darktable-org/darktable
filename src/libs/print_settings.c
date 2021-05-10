@@ -849,13 +849,10 @@ static void _reset_screen_box(dt_lib_print_settings_t *ps)
   {
     dt_image_box *box = &ps->imgs.box[k];
 
-    if(box->imgid != -1)
-    {
-      box->screen.x = ofsx + page_width * (box->pos.x / 10000.0f);
-      box->screen.y = ofsy + page_height * (box->pos.y / 10000.0f);
-      box->screen.width = page_width * (box->pos.width / 10000.0f);
-      box->screen.height = page_height * (box->pos.height / 10000.0f);
-    }
+    box->screen.x = ofsx + page_width * (box->pos.x / 10000.0f);
+    box->screen.y = ofsy + page_height * (box->pos.y / 10000.0f);
+    box->screen.width = page_width * (box->pos.width / 10000.0f);
+    box->screen.height = page_height * (box->pos.height / 10000.0f);
   }
 }
 
@@ -2592,12 +2589,29 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(int32_t);
 
   const char *media = buf;
-  if (!media) return 1;
+  if(!media) return 1;
   const int32_t media_len = strlen(media) + 1;
-  // buf += media_len;
+  buf += media_len;
+
+  ps->imgs.count = *(int32_t *)buf;
+  buf += sizeof(int32_t);
+
+  for(int k=0; k<ps->imgs.count; k++)
+  {
+    ps->imgs.box[k].pos.x = *(int32_t *)buf;
+    buf += sizeof(int32_t);
+    ps->imgs.box[k].pos.y = *(int32_t *)buf;
+    buf += sizeof(int32_t);
+    ps->imgs.box[k].pos.width = *(int32_t *)buf;
+    buf += sizeof(int32_t);
+    ps->imgs.box[k].pos.height = *(int32_t *)buf;
+    buf += sizeof(int32_t);
+  }
+
+  ps->reset_screen_box = TRUE;
 
   // ensure that the size is correct
-  if(size != printer_len + paper_len + media_len + profile_len + pprofile_len + style_len + 8 * sizeof(int32_t) + 4 * sizeof(double))
+  if(size != printer_len + paper_len + media_len + profile_len + pprofile_len + style_len + 8 * sizeof(int32_t) + 4 * sizeof(double) + sizeof(int32_t) + (ps->imgs.count * 4 * sizeof(int32_t)))
     return 1;
 
   // set the GUI with corresponding values
@@ -2650,6 +2664,8 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->dtba[alignment]),TRUE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->black_point_compensation), bpc);
+
+  dt_control_queue_redraw_center();
 
   return 0;
 }
@@ -2707,7 +2723,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   const int32_t style_len = strlen (style) + 1;
 
   // compute the size of all parameters
-  *size = printer_len + paper_len + media_len + profile_len + pprofile_len + style_len + 8 * sizeof(int32_t) + 4 * sizeof(double);
+  *size = printer_len + paper_len + media_len + profile_len + pprofile_len + style_len + 8 * sizeof(int32_t) + 4 * sizeof(double) + sizeof(int32_t) + (ps->imgs.count * 4 * sizeof(int32_t));
 
   // allocate the parameter buffer
   char *params = (char *)malloc(*size);
@@ -2750,6 +2766,22 @@ void *get_params(dt_lib_module_t *self, int *size)
   pos += sizeof(int32_t);
   memcpy(params+pos, media, media_len);
   pos += media_len;
+
+  // boxes
+  memcpy(params+pos, &ps->imgs.count, sizeof(int32_t));
+  pos += sizeof(int32_t);
+
+  for(int k=0; k<ps->imgs.count; k++)
+  {
+    memcpy(params+pos, &ps->imgs.box[k].pos.x, sizeof(int32_t));
+    pos += sizeof(int32_t);
+    memcpy(params+pos, &ps->imgs.box[k].pos.y, sizeof(int32_t));
+    pos += sizeof(int32_t);
+    memcpy(params+pos, &ps->imgs.box[k].pos.width, sizeof(int32_t));
+    pos += sizeof(int32_t);
+    memcpy(params+pos, &ps->imgs.box[k].pos.height, sizeof(int32_t));
+    pos += sizeof(int32_t);
+  }
 
   g_assert(pos == *size);
 
