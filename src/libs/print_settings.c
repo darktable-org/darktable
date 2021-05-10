@@ -102,6 +102,7 @@ typedef struct dt_lib_print_settings_t
   int last_selected;               // last selected area to edit
   dt_box_control_set sel_controls; // which border/corner is selected
   float click_pos_x, click_pos_y;
+  gboolean reset_screen_box;
 } dt_lib_print_settings_t;
 
 typedef struct dt_lib_print_job_t
@@ -633,8 +634,7 @@ static void _print_job_cleanup(void *p)
   free(params);
 }
 
-static void
-_print_button_clicked (GtkWidget *widget, gpointer user_data)
+static void _print_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
@@ -838,6 +838,27 @@ _printer_changed (GtkWidget *combo, const dt_lib_module_t *self)
     _set_printer (self, printer_name);
 }
 
+static void _reset_screen_box(dt_lib_print_settings_t *ps)
+{
+  const float ofsx        = (float)ps->imgs.screen_page.x;
+  const float ofsy        = (float)ps->imgs.screen_page.y;
+  const float page_width  = (float)ps->imgs.screen_page.width;
+  const float page_height = (float)ps->imgs.screen_page.height;
+
+  for(int k=0; k<MAX_IMAGE_PER_PAGE; k++)
+  {
+    dt_image_box *box = &ps->imgs.box[k];
+
+    if(box->imgid != -1)
+    {
+      box->screen.x = ofsx + page_width * (box->pos.x / 10000.0f);
+      box->screen.y = ofsy + page_height * (box->pos.y / 10000.0f);
+      box->screen.width = page_width * (box->pos.width / 10000.0f);
+      box->screen.height = page_height * (box->pos.height / 10000.0f);
+    }
+  }
+}
+
 static void
 _paper_changed (GtkWidget *combo, const dt_lib_module_t *self)
 {
@@ -852,8 +873,7 @@ _paper_changed (GtkWidget *combo, const dt_lib_module_t *self)
   if (paper)
     memcpy(&ps->prt.paper, paper, sizeof(dt_paper_info_t));
 
-  for(int k=0; k<MAX_IMAGE_PER_PAGE; k++)
-    ps->imgs.box[k].screen.width = ps->imgs.box[k].screen.height = 0;
+  ps->reset_screen_box = TRUE;
 
   dt_conf_set_string("plugins/print/print/paper", paper_name);
   dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
@@ -881,7 +901,8 @@ _media_changed (GtkWidget *combo, const dt_lib_module_t *self)
   _update_slider(ps);
 }
 
-static double to_mm(dt_lib_print_settings_t *ps, double value)
+static double
+to_mm(dt_lib_print_settings_t *ps, double value)
 {
   return value / units[ps->unit];
 }
@@ -1111,6 +1132,8 @@ _orientation_changed (GtkWidget *combo, dt_lib_module_t *self)
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
   ps->prt.page.landscape = dt_bauhaus_combobox_get (combo);
+
+  ps->reset_screen_box = TRUE;
 
   _update_slider (ps);
 }
@@ -1668,6 +1691,11 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
 
     ps->imgs.count = 1;
   }
+  else if(ps->reset_screen_box)
+  {
+    _reset_screen_box(ps);
+    ps->reset_screen_box = FALSE;
+  }
 
   const float scaler = 1.0f / darktable.gui->ppd_thb;
 
@@ -1799,8 +1827,7 @@ static void _y_changed(GtkWidget *widget, gpointer user_data)
   dt_control_queue_redraw_center();
 }
 
-void
-gui_init (dt_lib_module_t *self)
+void gui_init (dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *d = (dt_lib_print_settings_t*)malloc(sizeof(dt_lib_print_settings_t));
   self->data = d;
@@ -1827,6 +1854,7 @@ gui_init (dt_lib_module_t *self)
   d->creation = d->dragging = FALSE;
   d->selected = -1;
   d->last_selected = 0;
+  d->reset_screen_box = FALSE;
 
   dt_init_print_info(&d->prt);
   dt_view_print_settings(darktable.view_manager, &d->prt, &d->imgs);
@@ -2728,8 +2756,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   return params;
 }
 
-void
-gui_cleanup (dt_lib_module_t *self)
+void gui_cleanup (dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
@@ -2755,8 +2782,7 @@ gui_cleanup (dt_lib_module_t *self)
   self->data = NULL;
 }
 
-void
-gui_reset (dt_lib_module_t *self)
+void gui_reset (dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
