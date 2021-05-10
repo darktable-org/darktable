@@ -45,7 +45,9 @@ typedef struct dt_images_box
   int count;
   dt_image_box box[MAX_IMAGE_PER_PAGE];
   dt_image_pos screen_page;      // this is for reference and is the box of the white page (in mm)
-                                 // in print module.
+                                 // in print module. it is the full page.
+  dt_image_pos screen_page_area; // this is for reference and is the box of the white page (in mm)
+                                 // in print module. it is the page area (without margins).
 } dt_images_box;
 
 // return the box index or -1 if (x, y) coordinate is not over an image
