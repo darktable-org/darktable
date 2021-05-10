@@ -526,7 +526,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
 
       dt_toast_log(_("feather size: %3.2f%%"), (masks_border/fmaxf(radius_a, radius_b))*100.0f);
     }
-    else if(state == 0)
+    else if(dt_modifier_is(state, 0))
     {
       const float oldradius = radius_a;
 
