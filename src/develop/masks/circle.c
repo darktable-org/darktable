@@ -108,7 +108,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
         dt_conf_set_float("plugins/darkroom/masks/circle/border", masks_border);
       dt_toast_log(_("feather size: %3.2f%%"), (masks_border / masks_size)*100.0f);
     }
-    else if(state == 0)
+    else if(dt_modifier_is(state, 0))
     {
       if(up && masks_size > 0.001f)
         masks_size *= 0.97f;

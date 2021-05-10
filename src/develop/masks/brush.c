@@ -1113,7 +1113,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
       }
       dt_toast_log(_("hardness: %3.2f%%"), masks_hardness*100.0f);
     }
-    else if(state == 0)
+    else if(dt_modifier_is(state, 0))
     {
       const float amount = up ? 0.97f : 1.03f;
       float masks_border;
