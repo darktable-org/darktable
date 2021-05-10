@@ -3570,8 +3570,9 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   zoom_y = dt_control_get_dev_zoom_y();
   dt_dev_get_processed_size(dev, &procw, &proch);
   float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+  const float ppd = darktable.gui->ppd;
   const float fitscale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
-  float oldscale = scale;
+  const float oldscale = scale;
 
   // offset from center now (current zoom_{x,y} points there)
   float mouse_off_x = x - .5 * dev->width, mouse_off_y = y - .5 * dev->height;
@@ -3581,80 +3582,97 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   closeup = 0;
 
   const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
+  const float stepup = 0.1f * fabsf(1.0f - fitscale) / ppd; 
   if(up)
   {
-    if(fitscale <= 1.0f && (scale == 1.0f || scale == 2.0f) && constrained) return; // for large image size
-    else if(fitscale > 1.0f && fitscale <= 2.0f && scale == 2.0f && constrained) return; // for medium image size
+    if(fitscale <= 1.0f && (scale == (1.0f / ppd) || scale == (2.0f / ppd)) && constrained) return; // for large image size
+    else if(fitscale > 1.0f && fitscale <= 2.0f && scale == (2.0f / ppd) && constrained) return; // for medium image size
 
+    if((oldscale <= 1.0f / ppd) && constrained && (scale + stepup >= 1.0f / ppd))
+      scale = 1.0f / ppd;
+    else if((oldscale <= 2.0f / ppd) && constrained && (scale + stepup >= 2.0f / ppd))
+      scale = 2.0f / ppd;
     // calculate new scale
-    if(scale >= 16.0f)
+    else if(scale >= 16.0f / ppd)
       return;
-    else if(scale >= 8.0f)
-      scale = 16.0;
-    else if(scale >= 4.0f)
-      scale = 8.0;
-    else if(scale >= 2.0f)
-      scale = 4.0;
+    else if(scale >= 8.0f / ppd)
+      scale = 16.0f / ppd;
+    else if(scale >= 4.0f / ppd)
+      scale = 8.0f / ppd;
+    else if(scale >= 2.0f / ppd)
+      scale = 4.0f / ppd;
     else if(scale >= fitscale)
-      scale += .1f * fabsf(1.0f - fitscale);
+      scale += stepup;
     else
-      scale += .05f * fabsf(1.0f - fitscale);
+      scale += 0.5f * stepup;
   }
   else
   {
     if(fitscale <= 2.0f && ((scale == fitscale && constrained) || scale < 0.5 * fitscale)) return; // for large and medium image size
-    else if(fitscale > 2.0f && scale < 1.0f) return; // for small image size
+    else if(fitscale > 2.0f && scale < 1.0f / ppd) return; // for small image size
 
     // calculate new scale
     if(scale <= fitscale)
-      scale -= .05f * fabsf(1.0f - fitscale);
-    else if(scale <= 2.0f)
-      scale -= .1f * fabsf(1.0f - fitscale);
-    else if(scale <= 4.0f)
-      scale = 2.0f;
-    else if(scale <= 8.0f)
-      scale = 4.0f;
+      scale -= 0.5f * stepup;
+    else if(scale <= 2.0f / ppd)
+      scale -= stepup;
+    else if(scale <= 4.0f / ppd)
+      scale = 2.0f / ppd;
+    else if(scale <= 8.0f / ppd)
+      scale = 4.0f / ppd;
     else
-      scale = 8.0f;
+      scale = 8.0f / ppd;
   }
 
   if (fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
   {
-    if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f;
+    if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f / ppd;
     if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
     scale = fmaxf(scale, 0.5 * fitscale);
   }
   else if (fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
   {
-    if((scale - 2.0) * (oldscale - 2.0) < 0) scale = 2.0f;
+    if((scale - 2.0) * (oldscale - 2.0) < 0) scale = 2.0f / ppd;
     if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
     scale = fmaxf(scale, 0.5 * fitscale);
   }
-  else scale = fmaxf(scale, 1.0f); // for small image size, minimum at 1:1
-  scale = fminf(scale, 16.0f);
+  else scale = fmaxf(scale, 1.0f / ppd); // for small image size, minimum at 1:1
+  scale = fminf(scale, 16.0f / ppd);
 
-  // for 200% zoom we want pixel doubling instead of interpolation
-  if(scale > 15.9999f)
+  // for 200% zoom or more we want pixel doubling instead of interpolation
+  if(scale > 15.9999f / ppd)
   {
-    scale = 1.0f; // don't interpolate
-    closeup = 4;  // enable closeup mode (pixel doubling)
+    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+    zoom = DT_ZOOM_1;
+    closeup = (darktable.gui->ppd == 1) ? 4 : 3;
   }
-  else if(scale > 7.9999f)
+  else if(scale > 7.9999f / ppd)
   {
-    scale = 1.0f; // don't interpolate
-    closeup = 3;  // enable closeup mode (pixel doubling)
+    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+    zoom = DT_ZOOM_1;
+    closeup = (darktable.gui->ppd == 1) ? 3 : 2;
   }
-  else if(scale > 3.9999f)
+  else if(scale > 3.9999f / ppd)
   {
-    scale = 1.0f; // don't interpolate
-    closeup = 2;  // enable closeup mode (pixel doubling)
+    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+    zoom = DT_ZOOM_1;
+    closeup = (darktable.gui->ppd == 1) ? 2 : 1;
   }
-  else if(scale > 1.9999f)
+  else if(scale > 1.9999f / ppd)
   {
-    scale = 1.0f; // don't interpolate
-    closeup = 1;  // enable closeup mode (pixel doubling)
+    if(darktable.gui->ppd == 1)
+    {
+      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+      zoom = DT_ZOOM_1;
+      closeup = 1;
+    }
+    else
+    {
+      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+      zoom = DT_ZOOM_1;
+    }
   }
-
+  
   if(fabsf(scale - 1.0f) < 0.001f) zoom = DT_ZOOM_1;
   if(fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;
   dt_control_set_dev_zoom_scale(scale);
