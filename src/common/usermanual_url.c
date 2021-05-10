@@ -43,7 +43,7 @@ dt_help_url urls_db[] =
   {"metadata",                   "module-reference/utility-modules/shared/metadata-editor/"},
   {"tagging",                    "module-reference/utility-modules/shared/tagging/"},
   {"geotagging",                 "module-reference/utility-modules/shared/geotagging/"},
-  {"collect",                    "module-reference/utility-modules/shared/collect-images/"},
+  {"collect",                    "module-reference/utility-modules/shared/collections/"},
   {"recentcollect",              "module-reference/utility-modules/shared/recent-collections/"},
   {"metadata_view",              "module-reference/utility-modules/shared/image-information/"},
   {"export",                     "module-reference/utility-modules/shared/export/"},
