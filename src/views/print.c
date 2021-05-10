@@ -324,8 +324,11 @@ int try_enter(dt_view_t *self)
   // and drop the lock again.
   dt_image_cache_read_release(darktable.image_cache, img);
 
-  prt->imgs->count = 1;
-  prt->imgs->box[0].imgid = imgid;
+  if(prt->imgs->auto_fit)
+  {
+    prt->imgs->count = 1;
+    prt->imgs->box[0].imgid = imgid;
+  }
 
   return 0;
 }
