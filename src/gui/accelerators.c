@@ -1448,13 +1448,27 @@ gboolean _search_func(GtkTreeModel *model, gint column, const gchar *key, GtkTre
 
 static gboolean _fallback_type_is_relevant(dt_action_t *ac, dt_action_type_t type)
 {
-  if(type == DT_ACTION_TYPE_VALUE_FALLBACK) return TRUE;
-
   if(!ac) return FALSE;
 
   if(ac->type == type) return TRUE;
 
-  if(ac->type <= DT_ACTION_TYPE_SECTION)
+  if(ac->type >= DT_ACTION_TYPE_WIDGET)
+  {
+    if(type == DT_ACTION_TYPE_VALUE_FALLBACK)
+    {
+      const dt_action_def_t *def = _action_find_definition(ac);
+      if(def && def->elements)
+      {
+        const dt_action_element_def_t *el = def->elements;
+        do
+        {
+          if(el->effects == dt_action_effect_value) return TRUE;
+          el++;
+        } while (el->name);
+      }
+    }
+  }
+  else if(ac->type <= DT_ACTION_TYPE_SECTION)
     for(ac = ac->target; ac; ac = ac->next)
       if(_fallback_type_is_relevant(ac, type)) return TRUE;
 
