@@ -218,6 +218,11 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32
   prt->imgs->screen_page.width = pwidth;
   prt->imgs->screen_page.height = pheight;
 
+  prt->imgs->screen_page_area.x = ax;
+  prt->imgs->screen_page_area.y = ay;
+  prt->imgs->screen_page_area.width = awidth;
+  prt->imgs->screen_page_area.height = aheight;
+
   // display non-printable area
   cairo_set_source_rgb (cr, 0.1, 0.1, 0.1);
 

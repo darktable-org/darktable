@@ -139,6 +139,8 @@ static void _width_changed(GtkWidget *widget, gpointer user_data);
 static void _height_changed(GtkWidget *widget, gpointer user_data);
 static void _x_changed(GtkWidget *widget, gpointer user_data);
 static void _y_changed(GtkWidget *widget, gpointer user_data);
+static int _mm_to_hscreen(dt_lib_print_settings_t *ps, const float value, const gboolean offset);
+static int _mm_to_vscreen(dt_lib_print_settings_t *ps, const float value, const gboolean offset);
 
 static const int min_borders = -100; // this is in mm
 
@@ -1509,6 +1511,13 @@ void _compute_rel_pos(dt_lib_print_settings_t *ps, dt_image_box *box)
   box->pos.height = 10000.0f * ((float)box->screen.height / page_height);
 }
 
+static void _swap(float *a, float *b)
+{
+  const float tmp = *a;
+  *a = *b;
+  *b = tmp;
+}
+
 int button_released(struct dt_lib_module_t *self, double x, double y, int which, uint32_t state)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
@@ -1532,20 +1541,34 @@ int button_released(struct dt_lib_module_t *self, double x, double y, int which,
 
     if(idx != -1)
     {
-      // don't allow a too small area
-      const float dx = fmaxf(100.0f, ps->x2 - ps->x1);
-      const float dy = fmaxf(100.0f, ps->y2 - ps->y1);
+      // make sure the area is in the the printable area taking into account the margins
 
-      //  FIXME: check that the area is inside the page
+      // don't allow a too small area
+      if(ps->x2 < ps->x1) _swap(&ps->x1, &ps->x2);
+      if(ps->y2 < ps->y1) _swap(&ps->y1, &ps->y2);
+
+      const float dx = fminf(ps->imgs.screen_page_area.width,
+                             fmaxf(100.0f, ps->x2 - ps->x1));
+      const float dy = fminf(ps->imgs.screen_page_area.height,
+                             fmaxf(100.0f, ps->y2 - ps->y1));
 
       //  setup screen position & width
 
       dt_image_box *box = &ps->imgs.box[idx];
 
-      box->screen.x      = ps->x1;
-      box->screen.y      = ps->y1;
+      box->screen.x      = fmaxf(ps->imgs.screen_page_area.x, ps->x1);
+      box->screen.y      = fmaxf(ps->imgs.screen_page_area.y, ps->y1);
       box->screen.width  = dx;
       box->screen.height = dy;
+
+      if(box->screen.x + dx > ps->imgs.screen_page_area.x + ps->imgs.screen_page_area.width)
+      {
+        box->screen.width -= (box->screen.x + dx - ps->imgs.screen_page_area.x - ps->imgs.screen_page_area.width);
+      }
+      if(box->screen.y + dy > ps->imgs.screen_page_area.y + ps->imgs.screen_page_area.height)
+      {
+        box->screen.height -= (box->screen.y + dy - ps->imgs.screen_page_area.y - ps->imgs.screen_page_area.height);
+      }
 
       _compute_rel_pos(ps, box);
       _fill_box_values(ps);
@@ -1697,12 +1720,10 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
 }
 
 // horizontal mm to pixels
-static int _mm_to_hscreen(dt_lib_print_settings_t *ps, float value, const gboolean offset)
+static int _mm_to_hscreen(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
 {
   float width, height;
   _get_page_dimention(&ps->prt, &width, &height);
-
-  printf("=> %d  %.2f %.2f\n", ps->imgs.screen_page.width, value, width);
 
   return (offset ? ps->imgs.screen_page.x : 0) + (ps->imgs.screen_page.width * (value / width));
 }
