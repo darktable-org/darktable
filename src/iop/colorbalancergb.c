@@ -687,6 +687,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_colorspaces_iccprofile_info_cl_t *profile_info_cl;
   cl_float *profile_lut_cl = NULL;
 
+  cl_mem input_matrix_cl = NULL;
+  cl_mem output_matrix_cl = NULL;
+  cl_mem white_grading_RGB_cl = NULL;
+  cl_mem gamut_LUT = NULL;
+
   err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
                                             &dev_profile_info, &dev_profile_lut);
   if(err != CL_SUCCESS) goto error;
@@ -708,8 +713,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   mat3mul4((float *)input_matrix, (float *)XYZ_to_gradRGB, (float *)RGB_to_XYZ);
   mat3mul4((float *)output_matrix, (float *)XYZ_to_RGB, (float *)gradRGB_to_XYZ);
 
-  cl_mem input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
-  cl_mem output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
+  input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
+  output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
 
   // Test white point of the current space in grading RGB
   const float white_pipe_RGB[4] = { 1.f, 1.f, 1.f };
@@ -717,10 +722,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dot_product(white_pipe_RGB, input_matrix, white_grading_RGB);
   const float sum_white = white_grading_RGB[0] + white_grading_RGB[1] + white_grading_RGB[2];
   for_four_channels(c) white_grading_RGB[c] /= sum_white;
-  cl_mem white_grading_RGB_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), white_grading_RGB);
+  white_grading_RGB_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), white_grading_RGB);
 
   // Send gamut LUT to GPU
-  cl_mem gamut_LUT = dt_opencl_copy_host_to_device(devid, d->gamut_LUT, LUT_ELEM, 1, sizeof(float));
+  gamut_LUT = dt_opencl_copy_host_to_device(devid, d->gamut_LUT, LUT_ELEM, 1, sizeof(float));
 
   // Size of the checker
   const gint mask_display
@@ -779,10 +784,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
 error:
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
-  dt_opencl_release_mem_object(input_matrix_cl);
-  dt_opencl_release_mem_object(output_matrix_cl);
-  dt_opencl_release_mem_object(white_grading_RGB_cl);
-  dt_opencl_release_mem_object(gamut_LUT);
+  if(input_matrix_cl) dt_opencl_release_mem_object(input_matrix_cl);
+  if(output_matrix_cl) dt_opencl_release_mem_object(output_matrix_cl);
+  if(white_grading_RGB_cl) dt_opencl_release_mem_object(white_grading_RGB_cl);
+  if(gamut_LUT) dt_opencl_release_mem_object(gamut_LUT);
   dt_print(DT_DEBUG_OPENCL, "[opencl_colorbalancergb] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
