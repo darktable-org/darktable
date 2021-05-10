@@ -3070,7 +3070,7 @@ int scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_
   {
     dt_liquify_warp_t *warp = &g->temp->warp;
     const float complex strength_v = warp->strength - warp->point;
-    if(state == 0)
+    if(dt_modifier_is(state, 0))
     {
       //  change size
       float radius = 0.0f, r = 0.0f, phi = 0.0f;
