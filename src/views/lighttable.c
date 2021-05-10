@@ -421,7 +421,7 @@ static int _lighttable_expose_empty(dt_view_t *self, cairo_t *cr, int32_t width,
   cairo_line_to(cr, width * 0.5f, 0.0f);
   dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
   cairo_stroke(cr);
-  pango_layout_set_text(layout, _("or add images in the create collection module in the left panel"), -1);
+  pango_layout_set_text(layout, _("or add images in the collections module in the left panel"), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, offx, offy + 6 * ls - ink.height - ink.x);
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
