@@ -2163,21 +2163,21 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *hboxdim = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
   label = gtk_label_new(_("image width/height"));
-  gtk_box_pack_start(GTK_BOX(hboxdim),GTK_WIDGET(label),TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(hboxdim), GTK_WIDGET(label), TRUE, TRUE, DT_PIXEL_APPLY_DPI(3));
   d->width = gtk_label_new(_("width"));
-  gtk_box_pack_start(GTK_BOX(hboxdim),GTK_WIDGET(d->width),TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(hboxdim), GTK_WIDGET(d->width), TRUE, TRUE, 0);
   label = gtk_label_new(_(" x "));
-  gtk_box_pack_start(GTK_BOX(hboxdim),GTK_WIDGET(label),TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(hboxdim), GTK_WIDGET(label), TRUE, TRUE, 0);
   d->height = gtk_label_new(_("height"));
-  gtk_box_pack_start(GTK_BOX(hboxdim),GTK_WIDGET(d->height),TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(hboxdim), GTK_WIDGET(d->height), TRUE, TRUE, 0);
 
   //// image information (downscale/upscale)
 
   GtkWidget *hboxinfo = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
   label = gtk_label_new(_("scale factor"));
-  gtk_box_pack_start(GTK_BOX(hboxinfo),GTK_WIDGET(label),TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(hboxinfo), GTK_WIDGET(label), TRUE, TRUE, DT_PIXEL_APPLY_DPI(3));
   d->info = gtk_label_new("1.0");
-  gtk_box_pack_start(GTK_BOX(hboxinfo),GTK_WIDGET(d->info),TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(hboxinfo), GTK_WIDGET(d->info), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(hboxinfo,
                _("image scale factor from native printer DPI:\n"
                  " < 1 means that it is downscaled (best quality)\n"
@@ -2212,6 +2212,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->b_bottom), _("bottom margin"));
   gtk_grid_attach(bds, GTK_WIDGET(d->b_bottom), 1, 2, 1, 1);
 
+  gtk_widget_set_halign(GTK_WIDGET(bds), GTK_ALIGN_CENTER);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(bds), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (d->b_top), "value-changed",
@@ -2227,6 +2228,9 @@ void gui_init(dt_lib_module_t *self)
 
   const gboolean lock_active = dt_conf_get_bool("plugins/print/print/lock_borders");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->lock_button), lock_active);
+
+  gtk_widget_set_halign(GTK_WIDGET(hboxdim), GTK_ALIGN_CENTER);
+  gtk_widget_set_halign(GTK_WIDGET(hboxinfo), GTK_ALIGN_CENTER);
 
   // pack image dimension hbox here
 
