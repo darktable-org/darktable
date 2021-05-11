@@ -326,7 +326,8 @@ static gboolean _lib_modulegroups_test_visible(dt_lib_module_t *self, gchar *mod
 }
 
 // initialize item names, ...
-static void _basics_get_names_from_accel_path(gchar *path, char **id, char **module_op, gchar **widget_name)
+static void _basics_get_names_from_accel_path(gchar *path, void *data, char **id, char **module_op,
+                                              gchar **widget_name)
 {
   // path are in the form : <Darktable>/image operations/IMAGE_OP[/WIDGET/NAME]/dynamic
   gchar **elems = g_strsplit(path, "/", -1);
@@ -344,12 +345,25 @@ static void _basics_get_names_from_accel_path(gchar *path, char **id, char **mod
     if(module_op) *module_op = g_strdup(elems[2]);
     if(widget_name)
     {
-      if(g_strv_length(elems) > 5)
-        *widget_name = dt_util_dstrcat(NULL, "%s - %s", _(elems[3]), _(elems[4]));
-      else if(g_strv_length(elems) > 4)
-        *widget_name = dt_util_dstrcat(NULL, "%s", _(elems[3]));
+      if(data && DT_IS_BAUHAUS_WIDGET(data))
+      {
+        DtBauhausWidget *bw = DT_BAUHAUS_WIDGET(data);
+        if(g_strv_length(elems) > 5)
+          *widget_name = dt_util_dstrcat(NULL, "%s - %s", _(elems[3]), bw->label);
+        else if(g_strv_length(elems) > 4)
+          *widget_name = dt_util_dstrcat(NULL, "%s", bw->label);
+        else
+          *widget_name = g_strdup(_("on-off"));
+      }
       else
-        *widget_name = g_strdup(_("on-off"));
+      {
+        if(g_strv_length(elems) > 5)
+          *widget_name = dt_util_dstrcat(NULL, "%s - %s", _(elems[3]), _(elems[4]));
+        else if(g_strv_length(elems) > 4)
+          *widget_name = dt_util_dstrcat(NULL, "%s", _(elems[3]));
+        else
+          *widget_name = g_strdup(_("on-off"));
+      }
     }
   }
   g_strfreev(elems);
@@ -362,14 +376,30 @@ static void _basics_init_item(dt_lib_modulegroups_basic_item_t *item)
   if(g_strv_length(elems) > 0)
   {
     item->module_op = g_strdup(elems[0]);
-    if(g_strv_length(elems) > 2)
-      item->widget_name = dt_util_dstrcat(NULL, "%s - %s", _(elems[1]), _(elems[2]));
-    else if(g_strv_length(elems) > 1)
-      item->widget_name = dt_util_dstrcat(NULL, "%s", _(elems[1]));
+    if(item->widget && DT_IS_BAUHAUS_WIDGET(item->widget))
+    {
+      DtBauhausWidget *bw = DT_BAUHAUS_WIDGET(item->widget);
+      if(g_strv_length(elems) > 2)
+        item->widget_name = dt_util_dstrcat(NULL, "%s - %s", _(elems[1]), bw->label);
+      else if(g_strv_length(elems) > 1)
+        item->widget_name = dt_util_dstrcat(NULL, "%s", bw->label);
+      else
+      {
+        item->widget_name = g_strdup(_("on-off"));
+        item->widget_type = WIDGET_TYPE_ACTIVATE_BTN;
+      }
+    }
     else
     {
-      item->widget_name = g_strdup(_("on-off"));
-      item->widget_type = WIDGET_TYPE_ACTIVATE_BTN;
+      if(g_strv_length(elems) > 2)
+        item->widget_name = dt_util_dstrcat(NULL, "%s - %s", _(elems[1]), _(elems[2]));
+      else if(g_strv_length(elems) > 1)
+        item->widget_name = dt_util_dstrcat(NULL, "%s", _(elems[1]));
+      else
+      {
+        item->widget_name = g_strdup(_("on-off"));
+        item->widget_type = WIDGET_TYPE_ACTIVATE_BTN;
+      }
     }
   }
   g_strfreev(elems);
@@ -603,6 +633,10 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       item->old_parent_type = NONE;
       return;
     }
+
+    // reinit the item to be sure to have the right label
+    // as some module may have changed the label manually after gui_init
+    _basics_init_item(item);
 
     // save old values
     item->sensitive = gtk_widget_get_sensitive(item->widget);
@@ -2549,7 +2583,7 @@ static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_l
         {
           gchar *wid = NULL;
           gchar *wn = NULL;
-          _basics_get_names_from_accel_path(accel->path, &wid, NULL, &wn);
+          _basics_get_names_from_accel_path(accel->path, accel->closure->data, &wid, NULL, &wn);
           gchar *ws = dt_util_dstrcat(NULL, "|%s|", wid);
           if(g_list_find_custom(toggle ? d->basics : d->edit_basics, wid, _basics_item_find))
           {
