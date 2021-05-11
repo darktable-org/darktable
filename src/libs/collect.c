@@ -2793,7 +2793,7 @@ static void _populate_collect_combo(GtkWidget *w)
 void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("collect images settings"), GTK_WINDOW(win),
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("collections settings"), GTK_WINDOW(win),
                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                                  _("cancel"), GTK_RESPONSE_NONE,
                                                  _("save"), GTK_RESPONSE_YES, NULL);
