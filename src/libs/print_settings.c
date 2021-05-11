@@ -1822,10 +1822,18 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
 
     if(k == ps->selected || img->imgid == -1)
     {
-      _cairo_rectangle(cr, ps->sel_controls,
+      cairo_set_source_rgba(cr, .5, .5, .5, 1.0);
+      _cairo_rectangle(cr, (k == ps->selected) ? ps->sel_controls : 0,
                        img->screen.x, img->screen.y,
                        img->screen.x + img->screen.width, img->screen.y + img->screen.height);
       cairo_stroke(cr);
+    }
+
+    if(k == ps->imgs.motion_over)
+    {
+      cairo_set_source_rgba(cr, .4, .4, .4, 1.0);
+      cairo_rectangle(cr, img->screen.x, img->screen.y, img->screen.width, img->screen.height);
+      cairo_fill(cr);
     }
   }
 
@@ -1969,6 +1977,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->profiles = _get_profiles();
 
+  d->imgs.motion_over = -1;
   d->imgs.count = 0;
   for(int k=0; k<MAX_IMAGE_PER_PAGE; k++)
   {
