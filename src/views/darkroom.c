@@ -3563,11 +3563,10 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   // free zoom
   dt_dev_zoom_t zoom;
   int closeup, procw, proch;
-  float zoom_x, zoom_y;
   zoom = dt_control_get_dev_zoom();
   closeup = dt_control_get_dev_closeup();
-  zoom_x = dt_control_get_dev_zoom_x();
-  zoom_y = dt_control_get_dev_zoom_y();
+  float zoom_x = dt_control_get_dev_zoom_x();
+  float zoom_y = dt_control_get_dev_zoom_y();
   dt_dev_get_processed_size(dev, &procw, &proch);
   float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
   const float ppd = darktable.gui->ppd;
@@ -3575,14 +3574,17 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   const float oldscale = scale;
 
   // offset from center now (current zoom_{x,y} points there)
-  float mouse_off_x = x - .5 * dev->width, mouse_off_y = y - .5 * dev->height;
+  float mouse_off_x = x - 0.5f * dev->width;
+  float mouse_off_y = y - 0.5f * dev->height;
   zoom_x += mouse_off_x / (procw * scale);
   zoom_y += mouse_off_y / (proch * scale);
   zoom = DT_ZOOM_FREE;
   closeup = 0;
 
   const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
-  const float stepup = 0.1f * fabsf(1.0f - fitscale) / ppd;
+  const gboolean low_ppd = (darktable.gui->ppd == 1);
+  const float stepup = 0.1f * fabsf(1.0f - fitscale) / ppd; 
+
   if(up)
   {
     if(fitscale <= 1.0f && (scale == (1.0f / ppd) || scale == (2.0f / ppd)) && constrained) return; // for large image size
@@ -3644,23 +3646,23 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   {
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
-    closeup = (darktable.gui->ppd == 1) ? 4 : 3;
+    closeup = low_ppd ? 4 : 3;
   }
   else if(scale > 7.9999f / ppd)
   {
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
-    closeup = (darktable.gui->ppd == 1) ? 3 : 2;
+    closeup = low_ppd ? 3 : 2;
   }
   else if(scale > 3.9999f / ppd)
   {
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
-    closeup = (darktable.gui->ppd == 1) ? 2 : 1;
+    closeup = low_ppd ? 2 : 1;
   }
   else if(scale > 1.9999f / ppd)
   {
-    if(darktable.gui->ppd == 1)
+    if(low_ppd)
     {
       scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
       zoom = DT_ZOOM_1;
