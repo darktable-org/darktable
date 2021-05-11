@@ -33,6 +33,7 @@ typedef struct dt_lua_widget_type_t{
   void (*gui_init)(lua_State *L);
   void (*gui_cleanup)(lua_State *L, lua_widget widget);
   const char * name;
+  gboolean visible;
   size_t  alloc_size;
   struct dt_lua_widget_type_t *parent;
   // private, do not override
