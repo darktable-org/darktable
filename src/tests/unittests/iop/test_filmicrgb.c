@@ -99,12 +99,12 @@ static void test_pixel_rgb_norm_power(void **state)
     p[3] = 2.0f;  // to make sure pixel[3] has no influence
     float norm = pixel_rgb_norm_power(p);
     TR_DEBUG("pixel={%e, %e, %e) => norm=%e", p[0], p[1], p[2], norm);
-    float numerator = powf(p[0], 3) + powf(p[1], 3) + powf(p[2], 3);
-    float denominator = powf(p[0], 2) + powf(p[1], 2) + powf(p[2], 2);
+    float numerator = p[0] * p[0] * p[0] + p[1] * p[1] * p[1] + p[2] * p[2] * p[2];
+    float denominator = p[0] * p[0] + p[1] * p[1] + p[2] * p[2];
     float exp_norm = numerator / denominator;
     assert_float_equal(norm, exp_norm, E);
     assert_true(norm > 0.0f);
-    assert_true(norm <= 1.0f);
+    assert_true(norm <= 1.0f + 1e-6f);
   }
   testimg_free(ti);
 
