@@ -2592,8 +2592,11 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const
   p->rawdetail_mask_data = mask;
   memcpy(&p->rawdetail_mask_roi, roi_in, sizeof(dt_iop_roi_t));
 
-  const float wb[3] = {piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
-
+  float wb[3] = {piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
+  if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) == DT_DEV_DETAIL_MASK_RAWPREPARE)
+  {
+    wb[0] = wb[1] = wb[2] = 1.0f;
+  }
   dt_masks_calc_rawdetail_mask(rgb, mask, tmp, width, height, wb);
   dt_free_align(tmp);
   return FALSE;
@@ -2630,7 +2633,11 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
   if(tmp == NULL) goto error;
   {
     const int kernel = darktable.opencl->blendop->kernel_calc_Y0_mask;
-    const float wb[3] = {piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
+    float wb[3] = {piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
+    if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) == DT_DEV_DETAIL_MASK_RAWPREPARE)
+    {
+      wb[0] = wb[1] = wb[2] = 1.0f;
+    }
     size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &tmp);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &in);
