@@ -138,6 +138,8 @@ typedef struct _dialog_description
 
 static const float units[3] = {1.0, 0.1, 1.0/25.4};
 
+const float REL_POS_RATIO = 1000000.0f;
+
 static void _update_slider (dt_lib_print_settings_t *ps);
 static void _width_changed(GtkWidget *widget, gpointer user_data);
 static void _height_changed(GtkWidget *widget, gpointer user_data);
@@ -152,6 +154,71 @@ int
 position ()
 {
   return 990;
+}
+
+/* get paper dimention for the orientation (in mm) */
+static void _get_page_dimention(dt_print_info_t *prt, float *width, float *height)
+{
+  if(prt->page.landscape)
+  {
+    *width = prt->paper.height;
+    *height = prt->paper.width;
+  }
+  else
+  {
+    *width = prt->paper.width;
+    *height = prt->paper.height;
+  }
+}
+
+// unit conversion
+
+static double to_mm(dt_lib_print_settings_t *ps, double value)
+{
+  return value / units[ps->unit];
+}
+
+// horizontal mm to pixels
+static int _mm_to_hscreen(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
+{
+  float width, height;
+  _get_page_dimention(&ps->prt, &width, &height);
+
+  return roundf((offset ? ps->imgs.screen_page.x : 0)
+                + (ps->imgs.screen_page.width * value / width));
+}
+
+// vertial mm to pixels
+static int _mm_to_vscreen(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
+{
+  float width, height;
+  _get_page_dimention(&ps->prt, &width, &height);
+
+  return roundf((offset ? ps->imgs.screen_page.y : 0)
+                + (ps->imgs.screen_page.height * value / height));
+}
+
+static int _hscreen_to_mm(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
+{
+  float width, height;
+  _get_page_dimention(&ps->prt, &width, &height);
+
+  return roundf(width * (value - (offset ? (float)ps->imgs.screen_page.x : 0.0f))
+                / (float)ps->imgs.screen_page.width);
+}
+
+static int _vscreen_to_mm(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
+{
+  float width, height;
+  _get_page_dimention(&ps->prt, &width, &height);
+
+  return roundf(height * (value - (offset ? (float)ps->imgs.screen_page.y : 0.0f))
+                / (float)ps->imgs.screen_page.height);
+}
+
+static inline float _percent_unit_of(dt_lib_print_settings_t *ps, float ref, float value)
+{
+  return (value * ref * units[ps->unit]) / REL_POS_RATIO;
 }
 
 // callbacks for in-memory export
@@ -344,21 +411,6 @@ static void _create_pdf(dt_job_t *job, dt_images_box imgs, float width, float he
   dt_pdf_finish(pdf, &params->pdf_page, 1);
 }
 
-/* get paper dimention for the orientation (in mm) */
-static void _get_page_dimention(dt_print_info_t *prt, float *width, float *height)
-{
-  if(prt->page.landscape)
-  {
-    *width = prt->paper.height;
-    *height = prt->paper.width;
-  }
-  else
-  {
-    *width = prt->paper.width;
-    *height = prt->paper.height;
-  }
-}
-
 /* compute max image width/height when a single auto-fit image is used */
 static void _get_auto_max_size(dt_print_info_t *prt, dt_image_box *img)
 {
@@ -402,10 +454,10 @@ void _compute_print_box(dt_print_info_t *prt, dt_image_box *box)
   const float width_pix = dt_pdf_point_to_pixel(dt_pdf_mm_to_point(width), prt->printer.resolution);
   const float height_pix = dt_pdf_point_to_pixel(dt_pdf_mm_to_point(height), prt->printer.resolution);
 
-  const float img_height_percent =  10000.0f * ((float)box->exp_height / height_pix);
+  const float img_height_percent =  REL_POS_RATIO * ((float)box->exp_height / height_pix);
 
-  box->print.x = (box->pos.x * width_pix) / 10000.0f;
-  box->print.y = height_pix - ((box->pos.y + img_height_percent) * height_pix / 10000.0f);
+  box->print.x = (box->pos.x * width_pix) / REL_POS_RATIO;
+  box->print.y = height_pix - ((box->pos.y + img_height_percent) * height_pix / REL_POS_RATIO);
 
   // use real exported size if known
   if(box->exp_width != -1 && box->exp_height != -1)
@@ -415,14 +467,9 @@ void _compute_print_box(dt_print_info_t *prt, dt_image_box *box)
   }
   else
   {
-    box->print.width  = (box->pos.width * width_pix) / 10000.0f;
-    box->print.height = (box->pos.height * height_pix) / 10000.0f;
+    box->print.width  = (box->pos.width * width_pix) / REL_POS_RATIO;
+    box->print.height = (box->pos.height * height_pix) / REL_POS_RATIO;
   }
-}
-
-static inline float _percent_unit_of(dt_lib_print_settings_t *ps, float ref, float value)
-{
-  return (value / 10000.0f) * ref * units[ps->unit];
 }
 
 void _fill_box_values(dt_lib_print_settings_t *ps)
@@ -852,10 +899,10 @@ static void _reset_screen_box(dt_lib_print_settings_t *ps)
   {
     dt_image_box *box = &ps->imgs.box[k];
 
-    box->screen.x = ofsx + page_width * (box->pos.x / 10000.0f);
-    box->screen.y = ofsy + page_height * (box->pos.y / 10000.0f);
-    box->screen.width = page_width * (box->pos.width / 10000.0f);
-    box->screen.height = page_height * (box->pos.height / 10000.0f);
+    box->screen.x = ofsx + page_width * (box->pos.x / REL_POS_RATIO);
+    box->screen.y = ofsy + page_height * (box->pos.y / REL_POS_RATIO);
+    box->screen.width = page_width * (box->pos.width / REL_POS_RATIO);
+    box->screen.height = page_height * (box->pos.height / REL_POS_RATIO);
   }
 }
 
@@ -899,12 +946,6 @@ _media_changed (GtkWidget *combo, const dt_lib_module_t *self)
   dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
 
   _update_slider(ps);
-}
-
-static double
-to_mm(dt_lib_print_settings_t *ps, double value)
-{
-  return value / units[ps->unit];
 }
 
 static void
@@ -1546,10 +1587,10 @@ void _compute_rel_pos(dt_lib_print_settings_t *ps, dt_image_box *box)
   const float page_width  = (float)ps->imgs.screen_page.width;
   const float page_height = (float)ps->imgs.screen_page.height;
 
-  box->pos.x      = 10000.0f * (((float)box->screen.x - ofsx) / page_width);
-  box->pos.y      = 10000.0f * (((float)box->screen.y - ofsy) / page_height);
-  box->pos.width  = 10000.0f * ((float)box->screen.width / page_width);
-  box->pos.height = 10000.0f * ((float)box->screen.height / page_height);
+  box->pos.x      = REL_POS_RATIO * (((float)box->screen.x - ofsx) / page_width);
+  box->pos.y      = REL_POS_RATIO * (((float)box->screen.y - ofsy) / page_height);
+  box->pos.width  = REL_POS_RATIO * ((float)box->screen.width / page_width);
+  box->pos.height = REL_POS_RATIO * ((float)box->screen.height / page_height);
 }
 
 static void _swap(float *a, float *b)
@@ -1796,24 +1837,43 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
   if(ps->dragging)
   {
     _cairo_rectangle(cr, ps->sel_controls, ps->x1, ps->y1, ps->x2, ps->y2);
+
+    // display size-box
+    char dimensions[100];
+    PangoLayout *layout;
+    PangoRectangle ext;
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+    pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE);
+    layout = pango_cairo_create_layout(cr);
+    pango_layout_set_font_description(layout, desc);
+
+    snprintf(dimensions, sizeof(dimensions),
+             "(%.2f %.2f) -> (%.2f %.2f) | (%.2f x %.2f)",
+             _hscreen_to_mm(ps, ps->x1, TRUE) * units[ps->unit],
+             _vscreen_to_mm(ps, ps->y1, TRUE) * units[ps->unit],
+             _hscreen_to_mm(ps, ps->x2, TRUE) * units[ps->unit],
+             _vscreen_to_mm(ps, ps->y2, TRUE) * units[ps->unit],
+             _hscreen_to_mm(ps, fabsf(ps->x2 - ps->x1), FALSE) * units[ps->unit],
+             _hscreen_to_mm(ps, fabsf(ps->y2 - ps->y1), FALSE) * units[ps->unit]);
+
+    pango_layout_set_text(layout, dimensions, -1);
+    pango_layout_get_pixel_extents(layout, NULL, &ext);
+    const float text_w = ext.width;
+    const float text_h = DT_PIXEL_APPLY_DPI(16+2);
+    const float margin = DT_PIXEL_APPLY_DPI(6);
+    float xp = (ps->x1 + ps->x2 - text_w) * .5f;
+    float yp = ps->y1 - text_h - (margin * 2.0f);
+
+    cairo_set_source_rgba(cr, .5, .5, .5, .9);
+    dt_gui_draw_rounded_rectangle(cr, text_w + 2 * margin, text_h + 2 * margin,
+                                  xp - margin, yp - margin);
+    cairo_set_source_rgb(cr, .8, .8, .8);
+    cairo_move_to(cr, xp, yp);
+    pango_cairo_show_layout(cr, layout);
+    pango_font_description_free(desc);
+    g_object_unref(layout);
   }
-}
-
-// horizontal mm to pixels
-static int _mm_to_hscreen(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
-{
-  float width, height;
-  _get_page_dimention(&ps->prt, &width, &height);
-
-  return (offset ? ps->imgs.screen_page.x : 0) + (ps->imgs.screen_page.width * (value / width));
-}
-
-static int _mm_to_vscreen(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
-{
-  float width, height;
-  _get_page_dimention(&ps->prt, &width, &height);
-
-  return (offset ? ps->imgs.screen_page.y : 0) + (ps->imgs.screen_page.height * (value / height));
 }
 
 static void _width_changed(GtkWidget *widget, gpointer user_data)
