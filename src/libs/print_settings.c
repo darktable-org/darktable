@@ -138,7 +138,7 @@ typedef struct _dialog_description
 
 static const float units[3] = {1.0, 0.1, 1.0/25.4};
 
-static void _update_slider (dt_lib_print_settings_t *ps);
+static void _update_slider(dt_lib_print_settings_t *ps);
 static void _width_changed(GtkWidget *widget, gpointer user_data);
 static void _height_changed(GtkWidget *widget, gpointer user_data);
 static void _x_changed(GtkWidget *widget, gpointer user_data);
@@ -951,16 +951,22 @@ _update_slider(dt_lib_print_settings_t *ps)
 
   // if widget are created, let's display the current image size
 
-  if (ps->imgs.auto_fit
-      && ps->imgs.box[0].imgid != -1
-      && ps->width && ps->height
-      && ps->info)
+  const int k = ps->imgs.auto_fit ? 0 : ps->selected;
+
+  if(k > -1
+     && ps->imgs.box[k].imgid != -1
+     && ps->width && ps->height
+     && ps->info)
   {
     int32_t px=0, py=0, pwidth=0, pheight=0;
     int32_t ax=0, ay=0, awidth=0, aheight=0;
     int32_t ix=0, iy=0, iwidth=0, iheight=0;
-    int32_t iwpix=ps->imgs.box[0].screen.width, ihpix=ps->imgs.box[0].screen.height;
+    int32_t iwpix=ps->imgs.box[k].screen.width, ihpix=ps->imgs.box[k].screen.height;
     int32_t pa_width, pa_height;
+
+    dt_image_box *box = &ps->imgs.box[k];
+
+    if(!ps->imgs.auto_fit) _compute_print_box(&ps->prt, box);
 
     float width, height;
     _get_page_dimention(&ps->prt, &width, &height);
@@ -968,16 +974,16 @@ _update_slider(dt_lib_print_settings_t *ps)
     pa_width = (int32_t)width;
     pa_height = (int32_t)height;
 
-    dt_get_print_layout(ps->imgs.box[0].imgid, &ps->prt, pa_width, pa_height,
+    dt_get_print_layout(ps->imgs.box[k].imgid, &ps->prt, pa_width, pa_height,
                         &iwpix, &ihpix,
                         &px, &py, &pwidth, &pheight,
                         &ax, &ay, &awidth, &aheight,
                         &ix, &iy, &iwidth, &iheight);
 
-    if(ps->imgs.box[0].screen.width == 0 || ps->imgs.box[0].screen.height == 0)
+    if(box->print.width == 0 || box->print.height == 0)
     {
-      ps->imgs.box[0].screen.width = iwpix;
-      ps->imgs.box[0].screen.height = ihpix;
+      box->print.width = iwpix;
+      box->print.height = ihpix;
     }
 
     const double h = iheight * units[ps->unit];
@@ -995,15 +1001,17 @@ _update_slider(dt_lib_print_settings_t *ps)
     // compute the image down/up scale and report information
     double scale = 0.0;
 
+    printf("wxh %.2f %.2f\n", ps->imgs.box[k].print.width, ps->imgs.box[k].print.height);
+
     if(iwidth >= awidth)
       scale = dt_pdf_point_to_pixel(dt_pdf_mm_to_point((double)awidth),
-                                    ps->prt.printer.resolution) / ps->imgs.box[0].screen.width;
+                                    ps->prt.printer.resolution) / box->print.width;
     else
       scale = dt_pdf_point_to_pixel(dt_pdf_mm_to_point((double)aheight),
-                                    ps->prt.printer.resolution) / ps->imgs.box[0].screen.height;
+                                    ps->prt.printer.resolution) / box->print.height;
 
     value = g_strdup_printf(_("%3.2f (dpi:%d)"), scale,
-                            scale<=1.0
+                            scale <= 1.0
                             ? (int)ps->prt.printer.resolution
                             : (int)(ps->prt.printer.resolution / scale));
     gtk_label_set_text(GTK_LABEL(ps->info), value);
@@ -1056,7 +1064,7 @@ _top_border_callback(GtkWidget *spin, gpointer user_data)
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), value);
   }
 
-  _update_slider (ps);
+  _update_slider(ps);
 }
 
 static void
@@ -1067,7 +1075,7 @@ _bottom_border_callback(GtkWidget *spin, gpointer user_data)
   const double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spin));
 
   ps->prt.page.margin_bottom = to_mm(ps, value);
-  _update_slider (ps);
+  _update_slider(ps);
 }
 
 static void
@@ -1078,7 +1086,7 @@ _left_border_callback(GtkWidget *spin, gpointer user_data)
   const double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spin));
 
   ps->prt.page.margin_left = to_mm(ps, value);
-  _update_slider (ps);
+  _update_slider(ps);
 }
 
 static void
@@ -1089,7 +1097,7 @@ _right_border_callback(GtkWidget *spin, gpointer user_data)
   const double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spin));
 
   ps->prt.page.margin_right = to_mm(ps, value);
-  _update_slider (ps);
+  _update_slider(ps);
 }
 
 static void
@@ -1160,7 +1168,7 @@ _alignment_callback(GtkWidget *tb, gpointer user_data)
     g_signal_handlers_unblock_by_func (ps->dtba[i],_alignment_callback,user_data);
   }
   ps->prt.page.alignment = index;
-  _update_slider (ps);
+  _update_slider(ps);
 }
 
 static void
@@ -1172,7 +1180,7 @@ _orientation_changed(GtkWidget *combo, dt_lib_module_t *self)
 
   ps->reset_screen_box = TRUE;
 
-  _update_slider (ps);
+  _update_slider(ps);
 }
 
 static void
@@ -1214,7 +1222,7 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
   gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_width), incr, incr);
   gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_height), incr, incr);
 
-  _update_slider (ps);
+  _update_slider(ps);
 
   // convert margins to new unit
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_top),    margin_top * units[ps->unit]);
@@ -1652,6 +1660,8 @@ int button_released(struct dt_lib_module_t *self, double x, double y, int which,
       _fill_box_values(ps);
     }
   }
+
+  _update_slider(ps);
 
   ps->creation = FALSE;
   ps->dragging = FALSE;
