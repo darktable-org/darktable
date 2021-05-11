@@ -63,8 +63,11 @@ typedef enum _set_controls
   BOX_RIGHT  = 1 << 1,
   BOX_TOP    = 1 << 2,
   BOX_BOTTOM = 1 << 3,
-
-  BOX_ALL    = BOX_LEFT | BOX_RIGHT | BOX_TOP | BOX_BOTTOM
+  BOX_TOP_LEFT     = BOX_LEFT | BOX_TOP,
+  BOX_TOP_RIGHT    = BOX_RIGHT | BOX_TOP,
+  BOX_BOTTOM_LEFT  = BOX_LEFT | BOX_BOTTOM,
+  BOX_BOTTOM_RIGHT = BOX_RIGHT | BOX_BOTTOM,
+  BOX_ALL          = BOX_LEFT | BOX_RIGHT | BOX_TOP | BOX_BOTTOM
 } dt_box_control_set;
 
 typedef struct dt_lib_print_settings_t
@@ -1432,16 +1435,21 @@ void _get_control(dt_lib_print_settings_t *ps, float x, float y)
 
   const dt_image_box *b = &ps->imgs.box[ps->selected];
 
+  ps->sel_controls = 0;
+
   if(fabsf((float)b->screen.x - x) < dist)
-    ps->sel_controls = BOX_LEFT;
-  else if(fabsf((float)b->screen.y - y) < dist)
-    ps->sel_controls = BOX_TOP;
-  else if(fabsf((float)(b->screen.x + b->screen.width) - x) < dist)
-    ps->sel_controls = BOX_RIGHT;
-  else if(fabsf((float)(b->screen.y + b->screen.height) - y) < dist)
-    ps->sel_controls = BOX_BOTTOM;
-  else
-    ps->sel_controls = BOX_ALL;
+    ps->sel_controls |= BOX_LEFT;
+
+  if(fabsf((float)b->screen.y - y) < dist)
+    ps->sel_controls |= BOX_TOP;
+
+  if(fabsf((float)(b->screen.x + b->screen.width) - x) < dist)
+    ps->sel_controls |= BOX_RIGHT;
+
+  if(fabsf((float)(b->screen.y + b->screen.height) - y) < dist)
+    ps->sel_controls |= BOX_BOTTOM;
+
+  if(ps->sel_controls == 0) ps->sel_controls = BOX_ALL;
 }
 
 int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressure, int which)
@@ -1483,6 +1491,22 @@ int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressur
          break;
        case BOX_BOTTOM:
          ps->y2 = b->screen.y + b->screen.height + dy;
+         break;
+       case BOX_TOP_LEFT:
+         ps->x1 = b->screen.x + fmaxf(dx, dy);
+         ps->y1 = b->screen.y + fmaxf(dx, dy);
+         break;
+       case BOX_TOP_RIGHT:
+         ps->y1 = b->screen.y + fmaxf(dx, dy);
+         ps->x2 = b->screen.x + b->screen.width - fmaxf(dx, dy);
+         break;
+       case BOX_BOTTOM_LEFT:
+         ps->x1 = b->screen.x + fmaxf(dx, dy);
+         ps->y2 = b->screen.y + b->screen.height - fmaxf(dx, dy);
+         break;
+       case BOX_BOTTOM_RIGHT:
+         ps->x2 = b->screen.x + b->screen.width + fmaxf(dx, dy);
+         ps->y2 = b->screen.y + b->screen.height + fmaxf(dx, dy);
          break;
        default:
          break;
@@ -1635,25 +1659,56 @@ void _cairo_rectangle(cairo_t *cr, const int sel_controls,
   const float sel_width = 3.0;
   const float std_width = 1.0;
 
+  const gboolean all = sel_controls == BOX_ALL;
+
   cairo_move_to (cr, x1, y1);
-  cairo_set_line_width(cr, (sel_controls & BOX_LEFT) ? sel_width : std_width);
+  cairo_set_line_width(cr, (all || sel_controls == BOX_LEFT) ? sel_width : std_width);
   cairo_line_to (cr, x1, y2);
   cairo_stroke(cr);
 
   cairo_move_to (cr, x1, y2);
-  cairo_set_line_width(cr, (sel_controls & BOX_BOTTOM) ? sel_width : std_width);
+  cairo_set_line_width(cr, (all || sel_controls == BOX_BOTTOM) ? sel_width : std_width);
   cairo_line_to (cr, x2, y2);
   cairo_stroke(cr);
 
   cairo_move_to (cr, x2, y2);
-  cairo_set_line_width(cr, (sel_controls & BOX_RIGHT) ? sel_width : std_width);
+  cairo_set_line_width(cr, (all || sel_controls == BOX_RIGHT) ? sel_width : std_width);
   cairo_line_to (cr, x2, y1);
   cairo_stroke(cr);
 
   cairo_move_to (cr, x2, y1);
-  cairo_set_line_width(cr, (sel_controls & BOX_TOP) ? sel_width : std_width);
+  cairo_set_line_width(cr, (all || sel_controls == BOX_TOP) ? sel_width : std_width);
   cairo_line_to (cr, x1, y1);
   cairo_stroke(cr);
+
+  cairo_set_line_width(cr, sel_width);
+
+  if(sel_controls == BOX_TOP_LEFT)
+  {
+    cairo_rectangle (cr, x1, y1, DT_PIXEL_APPLY_DPI(15), DT_PIXEL_APPLY_DPI(15));
+    cairo_stroke(cr);
+  }
+
+  if(sel_controls == BOX_TOP_RIGHT)
+  {
+    cairo_rectangle (cr, x2 - DT_PIXEL_APPLY_DPI(15), y1,
+                     DT_PIXEL_APPLY_DPI(15), DT_PIXEL_APPLY_DPI(15));
+    cairo_stroke(cr);
+  }
+
+  if(sel_controls == BOX_BOTTOM_LEFT)
+  {
+    cairo_rectangle (cr, x1, y2 - DT_PIXEL_APPLY_DPI(15),
+                     DT_PIXEL_APPLY_DPI(15), DT_PIXEL_APPLY_DPI(15));
+    cairo_stroke(cr);
+  }
+
+  if(sel_controls == BOX_BOTTOM_RIGHT)
+  {
+    cairo_rectangle (cr, x2 - DT_PIXEL_APPLY_DPI(15), y2 - DT_PIXEL_APPLY_DPI(15),
+                     DT_PIXEL_APPLY_DPI(15), DT_PIXEL_APPLY_DPI(15));
+    cairo_stroke(cr);
+  }
 }
 
 void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,
