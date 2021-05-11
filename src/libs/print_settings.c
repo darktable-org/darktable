@@ -627,7 +627,7 @@ static int _print_job_run(dt_job_t *job)
   return 0;
 }
 
-static void _page_new_area_clicked (GtkWidget *widget, gpointer user_data)
+static void _page_new_area_clicked(GtkWidget *widget, gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
@@ -680,7 +680,7 @@ static void _print_job_cleanup(void *p)
   free(params);
 }
 
-static void _print_button_clicked (GtkWidget *widget, gpointer user_data)
+static void _print_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
@@ -876,7 +876,7 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
 }
 
 static void
-_printer_changed (GtkWidget *combo, const dt_lib_module_t *self)
+_printer_changed(GtkWidget *combo, const dt_lib_module_t *self)
 {
   const gchar *printer_name = dt_bauhaus_combobox_get_text(combo);
 
@@ -903,7 +903,7 @@ static void _reset_screen_box(dt_lib_print_settings_t *ps)
 }
 
 static void
-_paper_changed (GtkWidget *combo, const dt_lib_module_t *self)
+_paper_changed(GtkWidget *combo, const dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
@@ -925,7 +925,7 @@ _paper_changed (GtkWidget *combo, const dt_lib_module_t *self)
 }
 
 static void
-_media_changed (GtkWidget *combo, const dt_lib_module_t *self)
+_media_changed(GtkWidget *combo, const dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
@@ -945,7 +945,7 @@ _media_changed (GtkWidget *combo, const dt_lib_module_t *self)
 }
 
 static void
-_update_slider (dt_lib_print_settings_t *ps)
+_update_slider(dt_lib_print_settings_t *ps)
 {
   dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
 
@@ -1037,7 +1037,7 @@ _update_slider (dt_lib_print_settings_t *ps)
 }
 
 static void
-_top_border_callback (GtkWidget *spin, gpointer user_data)
+_top_border_callback(GtkWidget *spin, gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
@@ -1060,7 +1060,7 @@ _top_border_callback (GtkWidget *spin, gpointer user_data)
 }
 
 static void
-_bottom_border_callback (GtkWidget *spin, gpointer user_data)
+_bottom_border_callback(GtkWidget *spin, gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
@@ -1071,7 +1071,7 @@ _bottom_border_callback (GtkWidget *spin, gpointer user_data)
 }
 
 static void
-_left_border_callback (GtkWidget *spin, gpointer user_data)
+_left_border_callback(GtkWidget *spin, gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
@@ -1082,7 +1082,7 @@ _left_border_callback (GtkWidget *spin, gpointer user_data)
 }
 
 static void
-_right_border_callback (GtkWidget *spin, gpointer user_data)
+_right_border_callback(GtkWidget *spin, gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
@@ -1093,7 +1093,7 @@ _right_border_callback (GtkWidget *spin, gpointer user_data)
 }
 
 static void
-_lock_callback (GtkWidget *button, gpointer user_data)
+_lock_callback(GtkWidget *button, gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
@@ -1164,7 +1164,7 @@ _alignment_callback(GtkWidget *tb, gpointer user_data)
 }
 
 static void
-_orientation_changed (GtkWidget *combo, dt_lib_module_t *self)
+_orientation_changed(GtkWidget *combo, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
@@ -1176,7 +1176,7 @@ _orientation_changed (GtkWidget *combo, dt_lib_module_t *self)
 }
 
 static void
-_unit_changed (GtkWidget *combo, dt_lib_module_t *self)
+_unit_changed(GtkWidget *combo, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
@@ -1324,7 +1324,7 @@ _printer_intent_callback (GtkWidget *widget, dt_lib_module_t *self)
 }
 
 static void
-_printer_bpc_callback (GtkWidget *widget, dt_lib_module_t *self)
+_printer_bpc_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
   ps->v_black_point_compensation = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ps->black_point_compensation));
@@ -1332,7 +1332,7 @@ _printer_bpc_callback (GtkWidget *widget, dt_lib_module_t *self)
 }
 
 static void
-_intent_callback (GtkWidget *widget, dt_lib_module_t *self)
+_intent_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
   const int pos = dt_bauhaus_combobox_get(widget);
@@ -1935,7 +1935,7 @@ static void _y_changed(GtkWidget *widget, gpointer user_data)
   dt_control_queue_redraw_center();
 }
 
-void gui_init (dt_lib_module_t *self)
+void gui_init(dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *d = (dt_lib_print_settings_t*)malloc(sizeof(dt_lib_print_settings_t));
   self->data = d;
@@ -2903,7 +2903,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   return params;
 }
 
-void gui_cleanup (dt_lib_module_t *self)
+void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
