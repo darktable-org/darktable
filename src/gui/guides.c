@@ -50,17 +50,16 @@ typedef struct _guides_settings_t
 } _guides_settings_t;
 
 
-// return the index of the guide in the list or 0 if not found
+// return the index of the guide in the list or -1 if not found
 static int _guides_get_value(gchar *name)
 {
-  if(!g_strcmp0(name, "none")) return -1;
-  int i = 1;
+  int i = 0;
   for(GList *iter = darktable.guides; iter; iter = g_list_next(iter), i++)
   {
     dt_guides_t *guide = (dt_guides_t *)iter->data;
     if(!g_strcmp0(name, guide->name)) return i;
   }
-  return 0;
+  return -1;
 }
 
 static gchar *_conf_get_path(gchar *module_name, gchar *property_1, gchar *property_2)
@@ -87,6 +86,36 @@ static gchar *_conf_get_path(gchar *module_name, gchar *property_1, gchar *prope
     return dt_util_dstrcat(NULL, "guides/%s/%s%s/%s", cv->module_name, lay, module_name, property_1);
 }
 
+static dt_guides_t *_conf_get_guide(gchar *module_name)
+{
+  dt_guides_t *guide = NULL;
+  gchar *key = _conf_get_path(module_name, "guide", NULL);
+  if(dt_conf_key_exists(key))
+  {
+    gchar *val = dt_conf_get_string(key);
+    guide = (dt_guides_t *)g_list_nth_data(darktable.guides, _guides_get_value(val));
+    g_free(val);
+  }
+  g_free(key);
+
+  // if we don't have any valid guide, let's fallback to default one
+  // we don't do that for module specific as fallback is "follow global"
+  if(!guide && !g_strcmp0(module_name, "global"))
+  {
+    // global case : we fallback to "rule of third"
+    guide = (dt_guides_t *)g_list_nth_data(darktable.guides, 1);
+  }
+
+  return guide;
+}
+
+static gchar *_conf_get_guide_name(gchar *module_name)
+{
+  dt_guides_t *guide = _conf_get_guide(module_name);
+  if(guide) return guide->name;
+  return NULL;
+}
+
 static void dt_guides_draw_grid(cairo_t *cr, const float x, const float y, const float w, const float h,
                                 float zoom_scale, void *data)
 {
@@ -97,12 +126,10 @@ static void dt_guides_draw_grid(cairo_t *cr, const float x, const float y, const
   if(module)
   {
     // we verify that we want the module specific setting, not the global one
-    gchar *key = _conf_get_path(module->op, "guide", NULL);
-    gchar *val = dt_conf_get_string(key);
-    g_free(key);
-    if(!g_strcmp0(val, "grid"))
+    gchar *val = _conf_get_guide_name(module->op);
+    if(val && !g_strcmp0(val, "grid"))
     {
-      key = _conf_get_path(module->op, "grid_nbh", NULL);
+      gchar *key = _conf_get_path(module->op, "grid_nbh", NULL);
       if(dt_conf_key_exists(key)) nbh = dt_conf_get_int(key);
       g_free(key);
       key = _conf_get_path(module->op, "grid_nbv", NULL);
@@ -113,17 +140,14 @@ static void dt_guides_draw_grid(cairo_t *cr, const float x, const float y, const
       g_free(key);
       loaded = TRUE;
     }
-    g_free(val);
   }
   // if we want the global setting
   if(!loaded)
   {
-    gchar *key = _conf_get_path("guides", "guide", NULL);
-    gchar *val = dt_conf_get_string(key);
-    g_free(key);
-    if(!g_strcmp0(val, "grid"))
+    gchar *val = _conf_get_guide_name("global");
+    if(val && !g_strcmp0(val, "grid"))
     {
-      key = _conf_get_path("global", "grid_nbh", NULL);
+      gchar *key = _conf_get_path("global", "grid_nbh", NULL);
       if(dt_conf_key_exists(key)) nbh = dt_conf_get_int(key);
       g_free(key);
       key = _conf_get_path("global", "grid_nbv", NULL);
@@ -134,7 +158,6 @@ static void dt_guides_draw_grid(cairo_t *cr, const float x, const float y, const
       g_free(key);
       loaded = TRUE;
     }
-    g_free(val);
   }
   // if stille not loaded that mean we don't want to be here !
   if(!loaded) return;
@@ -495,30 +518,24 @@ static void _guides_draw_golden_mean(cairo_t *cr, const float x, const float y,
   if(module)
   {
     // we verify that we want the module specific setting, not the global one
-    gchar *key = _conf_get_path(module->op, "guide", NULL);
-    gchar *val = dt_conf_get_string(key);
-    g_free(key);
-    if(!g_strcmp0(val, "golden mean"))
+    gchar *val = _conf_get_guide_name(module->op);
+    if(val && !g_strcmp0(val, "golden mean"))
     {
-      key = _conf_get_path(module->op, "golden_extra", NULL);
+      gchar *key = _conf_get_path(module->op, "golden_extra", NULL);
       extra = dt_conf_get_int(key);
       g_free(key);
     }
-    g_free(val);
   }
   // if we want the global setting
   if(extra == -1)
   {
-    gchar *key = _conf_get_path("global", "guide", NULL);
-    gchar *val = dt_conf_get_string(key);
-    g_free(key);
-    if(!g_strcmp0(val, "golden mean"))
+    gchar *val = _conf_get_guide_name("global");
+    if(val && !g_strcmp0(val, "golden mean"))
     {
-      key = _conf_get_path("global", "golden_extra", NULL);
+      gchar *key = _conf_get_path("global", "golden_extra", NULL);
       extra = dt_conf_get_int(key);
       g_free(key);
     }
-    g_free(val);
   }
   // if extra is still -1 that mean we don't want to be here !
   if(extra < 0) return;
@@ -621,8 +638,7 @@ static void _settings_update_visibility(_guides_settings_t *gw)
   // show or hide the flip and extra widgets for global case
   if(gw->g_guides)
   {
-    dt_guides_t *guide
-        = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->g_guides) - 1);
+    dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->g_guides));
     gtk_widget_set_visible(gw->g_flip, (guide && guide->support_flip));
     gtk_widget_set_visible(gw->g_widgets, (guide && guide->widget));
     if((guide && guide->widget))
@@ -643,7 +659,7 @@ static void _settings_update_visibility(_guides_settings_t *gw)
   if(gw->module && gw->m_guides)
   {
     dt_guides_t *guide
-        = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->m_guides) - 2);
+        = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->m_guides) - 1);
     gtk_widget_set_visible(gw->m_flip, (guide && guide->support_flip));
     gtk_widget_set_visible(gw->m_widgets, (guide && guide->widget));
     if((guide && guide->widget))
@@ -668,8 +684,7 @@ static void _settings_flip_update(_guides_settings_t *gw)
   // we retrieve the global settings
   if(gw->g_guides)
   {
-    dt_guides_t *guide
-        = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->g_guides) - 1);
+    dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->g_guides));
     if(guide && guide->support_flip)
     {
       gchar *key = _conf_get_path("global", guide->name, "flip");
@@ -681,7 +696,7 @@ static void _settings_flip_update(_guides_settings_t *gw)
   if(gw->module && gw->m_guides)
   {
     dt_guides_t *guide
-        = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->m_guides) - 2);
+        = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->m_guides) - 1);
     if(guide && guide->support_flip)
     {
       gchar *key = _conf_get_path(gw->module->op, guide->name, "flip");
@@ -701,28 +716,17 @@ static void _settings_guides_changed(GtkWidget *w, _guides_settings_t *gw)
   if(w == gw->g_guides)
   {
     const int which = dt_bauhaus_combobox_get(gw->g_guides);
-    dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
+    dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which);
     gchar *key = _conf_get_path("global", "guide", NULL);
-    dt_conf_set_string(key, guide ? guide->name : "none");
+    dt_conf_set_string(key, guide ? guide->name : "rule of thirds");
     g_free(key);
   }
   else if(gw->module && w == gw->m_guides)
   {
     const int which = dt_bauhaus_combobox_get(gw->m_guides);
-    gchar *val = NULL;
-    if(which == 0)
-      val = g_strdup("none");
-    else
-    {
-      dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 2);
-      if(guide)
-        val = g_strdup(guide->name);
-      else
-        val = g_strdup("follow global");
-    }
+    dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
     gchar *key = _conf_get_path(gw->module->op, "guide", NULL);
-    dt_conf_set_string(key, val);
-    g_free(val);
+    dt_conf_set_string(key, guide ? guide->name : "follow global");
     g_free(key);
   }
 
@@ -730,6 +734,8 @@ static void _settings_guides_changed(GtkWidget *w, _guides_settings_t *gw)
   _settings_flip_update(gw);
   // we update the gui
   _settings_update_visibility(gw);
+  // we update global button state
+  dt_guides_update_button_state();
 
   // we update the drawing
   dt_control_queue_redraw_center();
@@ -743,7 +749,7 @@ static void _settings_flip_changed(GtkWidget *w, _guides_settings_t *gw)
   if(w == gw->g_flip)
   {
     const int which = dt_bauhaus_combobox_get(gw->g_guides);
-    dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
+    dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which);
     if(guide)
     {
       gchar *key = _conf_get_path("global", guide->name, "flip");
@@ -754,7 +760,7 @@ static void _settings_flip_changed(GtkWidget *w, _guides_settings_t *gw)
   else if(gw->module && w == gw->m_flip)
   {
     const int which = dt_bauhaus_combobox_get(gw->m_guides);
-    dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 2);
+    dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
     if(guide)
     {
       gchar *key = _conf_get_path(gw->module->op, guide->name, "flip");
@@ -802,7 +808,6 @@ void dt_guides_show_popup(GtkWidget *button, dt_iop_module_t *module, gboolean m
     gtk_widget_set_tooltip_text(gw->g_guides, _("guide lines to show permanently"));
     dt_bauhaus_widget_set_label(gw->g_guides, NULL, N_("global guide lines"));
     gtk_box_pack_start(GTK_BOX(vbox), gw->g_guides, TRUE, TRUE, 0);
-    dt_bauhaus_combobox_add(gw->g_guides, _("none"));
     for(GList *iter = darktable.guides; iter; iter = g_list_next(iter))
     {
       dt_guides_t *guide = (dt_guides_t *)iter->data;
@@ -826,9 +831,9 @@ void dt_guides_show_popup(GtkWidget *button, dt_iop_module_t *module, gboolean m
     key = _conf_get_path("global", "guide", NULL);
     val = dt_conf_get_string(key);
     g_free(key);
-    int i = MAX(0, _guides_get_value(val));
+    const int i = _guides_get_value(val);
     g_free(val);
-    dt_bauhaus_combobox_set(gw->g_guides, i);
+    dt_bauhaus_combobox_set(gw->g_guides, i < 0 ? 1 : i);
 
     g_signal_connect(G_OBJECT(gw->g_guides), "value-changed", G_CALLBACK(_settings_guides_changed), gw);
     g_signal_connect(G_OBJECT(gw->g_flip), "value-changed", G_CALLBACK(_settings_flip_changed), gw);
@@ -848,7 +853,6 @@ void dt_guides_show_popup(GtkWidget *button, dt_iop_module_t *module, gboolean m
     g_free(tx);
     g_free(tx2);
     gtk_box_pack_start(GTK_BOX(vbox), gw->m_guides, TRUE, TRUE, 0);
-    dt_bauhaus_combobox_add(gw->m_guides, _("none"));
     dt_bauhaus_combobox_add(gw->m_guides, _("follow global setting"));
     for(GList *iter = darktable.guides; iter; iter = g_list_next(iter))
     {
@@ -872,7 +876,7 @@ void dt_guides_show_popup(GtkWidget *button, dt_iop_module_t *module, gboolean m
 
     key = _conf_get_path(module->op, "guide", NULL);
     val = dt_conf_get_string(key);
-    int i = _guides_get_value(val) + 1;
+    const int i = _guides_get_value(val) + 1;
     g_free(val);
     g_free(key);
     dt_bauhaus_combobox_set(gw->m_guides, i);
@@ -963,7 +967,7 @@ void dt_guides_update_button_state()
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   GtkWidget *bt = darktable.view_manager->guides_toggle;
 
-  gchar *key, *val;
+  gchar *key;
   if(g_strcmp0(cv->module_name, "darkroom") == 0)
   {
     // darkroom is more complex as we have the global guides and module specific ones
@@ -979,21 +983,17 @@ void dt_guides_update_button_state()
         return;
       }
 
-      key = _conf_get_path(darktable.develop->gui_module->op, "guide", NULL);
-      val = dt_conf_get_string(key);
-      g_free(key);
-      if(g_strcmp0(val, "follow global"))
+      if(_conf_get_guide(darktable.develop->gui_module->op))
       {
         // we have a guide set for the module, so guides are not hidden
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bt), TRUE);
-        g_free(val);
         return;
       }
-      g_free(val);
     }
   }
 
   key = _conf_get_path("global", "hidden", NULL);
+  if(!dt_conf_key_exists(key)) dt_conf_set_bool(key, TRUE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bt), !dt_conf_get_bool(key));
   g_free(key);
 }
@@ -1003,7 +1003,7 @@ void dt_guides_button_toggled()
   if(!darktable.view_manager) return;
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
 
-  gchar *key, *val;
+  gchar *key;
   if(g_strcmp0(cv->module_name, "darkroom") == 0)
   {
     // darkroom is more complex as we have the global guides and module specific ones
@@ -1021,25 +1021,21 @@ void dt_guides_button_toggled()
         return;
       }
 
-      gchar *key2 = _conf_get_path(darktable.develop->gui_module->op, "guide", NULL);
-      val = dt_conf_get_string(key2);
-      g_free(key2);
-      if(g_strcmp0(val, "follow global"))
+      if(_conf_get_guide(darktable.develop->gui_module->op))
       {
         // there is a module specific guide set, so we hide it
         dt_conf_set_bool(key, TRUE);
         if(darktable.develop->gui_module->guides_toggle)
           gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(darktable.develop->gui_module->guides_toggle), TRUE);
-        g_free(val);
         g_free(key);
         return;
       }
-      g_free(val);
       g_free(key);
     }
   }
 
   key = _conf_get_path("global", "hidden", NULL);
+  if(!dt_conf_key_exists(key)) dt_conf_set_bool(key, TRUE);
   dt_conf_set_bool(key, !dt_conf_get_bool(key));
   g_free(key);
 }
@@ -1052,7 +1048,7 @@ void dt_guides_draw(cairo_t *cr, const float left, const float top, const float 
   dt_iop_module_t *module = darktable.develop->gui_module;
 
   // first, we look at the module specific guide
-  gchar *key, *val;
+  gchar *key;
   dt_guides_t *guide = NULL;
   gboolean global = FALSE;
   if(module)
@@ -1064,34 +1060,20 @@ void dt_guides_draw(cairo_t *cr, const float left, const float top, const float 
       return;
     }
 
-    key = _conf_get_path(module->op, "guide", NULL);
-    if(dt_conf_key_exists(key))
-    {
-      val = dt_conf_get_string(key);
-      if(!g_strcmp0(val, "none"))
-      {
-        // module specific value to not draw guides
-        g_free(val);
-        g_free(key);
-        return;
-      }
-      guide = (dt_guides_t *)g_list_nth_data(darktable.guides, _guides_get_value(val) - 1);
-      g_free(val);
-    }
-    g_free(key);
+    guide = _conf_get_guide(module->op);
   }
   // if still no valid guide, we try the global guide
   if(!guide)
   {
-    global = TRUE;
-    key = _conf_get_path("global", "guide", NULL);
-    if(dt_conf_key_exists(key))
+    key = _conf_get_path("global", "hidden", NULL);
+    if(!dt_conf_key_exists(key) || dt_conf_get_bool(key))
     {
-      val = dt_conf_get_string(key);
-      guide = (dt_guides_t *)g_list_nth_data(darktable.guides, _guides_get_value(val) - 1);
-      g_free(val);
+      g_free(key);
+      return;
     }
-    g_free(key);
+
+    global = TRUE;
+    guide = _conf_get_guide("global");
   }
   // if no guide at this point : nothing to draw :)
   if(!guide) return;
