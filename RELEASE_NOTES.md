@@ -390,6 +390,8 @@ You are strongly advised to take a backup first.
 
 - Storage removal - add darktable.destroy_storage() to remove a storage from the exporter
 
+- Widget visibility - add visible member to widgets for visibility control
+
 - Change API to 7.0.0 for darktable 3.6.0 due to all of the breaking changes this development cycle
 
 ## Changed Dependencies
