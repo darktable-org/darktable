@@ -118,6 +118,17 @@ inline float4 matrix_product(const float4 xyz, constant const float *const matri
   return (float4)(R, G, B, a);
 }
 
+
+// same as above but with 4×float padded matrix
+inline float4 matrix_product_float4(const float4 xyz, constant const float *const matrix)
+{
+  const float R = matrix[0] * xyz.x + matrix[1] * xyz.y + matrix[2]  * xyz.z;
+  const float G = matrix[4] * xyz.x + matrix[5] * xyz.y + matrix[6]  * xyz.z;
+  const float B = matrix[8] * xyz.x + matrix[9] * xyz.y + matrix[10] * xyz.z;
+  const float a = xyz.w;
+  return (float4)(R, G, B, a);
+}
+
 inline float get_rgb_matrix_luminance(const float4 rgb, constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
                                       constant const float *const matrix, read_only const image2d_t lut)
 {

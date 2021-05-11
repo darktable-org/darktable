@@ -918,13 +918,15 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
     gtk_init(&argc, &argv);
 
+    darktable.themes = NULL;
+
     // execute a performance check and configuration if needed
     int last_configure_version = dt_conf_get_int("performance_configuration_version_completed");
     if(last_configure_version < DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION)
     {
       // ask the user whether he/she would like
       // dt to make changes in the settings
-      gboolean run_configure = dt_gui_show_standalone_yes_no_dialog(
+      const gboolean run_configure = dt_gui_show_standalone_yes_no_dialog(
           _("darktable - run performance configuration?"),
           _("we have an updated performance configuration logic - executing that might improve the performance of "
             "darktable.\nthis will potentially overwrite some of your existing settings - especially in case you "
@@ -1037,8 +1039,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.pwstorage = dt_pwstorage_new();
 
   darktable.guides = dt_guides_init();
-
-  darktable.themes = NULL;
 
 #ifdef HAVE_GRAPHICSMAGICK
   /* GraphicsMagick init */

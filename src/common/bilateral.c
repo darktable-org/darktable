@@ -389,7 +389,7 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
       const float L = in[index];
       // trilinear lookup:
       const size_t gi = image_to_grid(b, i, j, L, &xf, &yf, &zf);
-      const float Lout = L
+      const float Lout = fmaxf( 0.0f, L
                          + norm * (buf[gi] * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
                                    + buf[gi + ox] * (xf) * (1.0f - yf) * (1.0f - zf)
                                    + buf[gi + oy] * (1.0f - xf) * (yf) * (1.0f - zf)
@@ -397,7 +397,7 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
                                    + buf[gi + oz] * (1.0f - xf) * (1.0f - yf) * (zf)
                                    + buf[gi + ox + oz] * (xf) * (1.0f - yf) * (zf)
                                    + buf[gi + oy + oz] * (1.0f - xf) * (yf) * (zf)
-                                   + buf[gi + ox + oy + oz] * (xf) * (yf) * (zf));
+                                   + buf[gi + ox + oy + oz] * (xf) * (yf) * (zf)));
       out[index] = Lout;
       // and copy color and mask
       out[index + 1] = in[index + 1];

@@ -246,7 +246,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     dt_iop_demosaic_params_v3_t *o = (dt_iop_demosaic_params_v3_t *)old_params;
     dt_iop_demosaic_params_v4_t *n = (dt_iop_demosaic_params_v4_t *)new_params;
     memcpy(n, o, sizeof *o);
-    n->dual_thrs = 0.15f;
+    n->dual_thrs = 0.20f;
     return 0;
   }
 
@@ -4380,7 +4380,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
     int width = roi_in->width;
     int height = roi_in->height;
-    const int passes = (data->demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 3 : 1;
+    const int passes = ((data->demosaicing_method & ~DEMOSAIC_DUAL) == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 3 : 1;
     const int ndir = 4 << (passes > 1);
     const int pad_tile = (passes == 1) ? 12 : 17;
 
@@ -5126,7 +5126,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     {
       high_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
       if(high_image == NULL) return FALSE;
-      if(!process_markesteijn_cl(self, piece, dev_in, high_image, roi_in, roi_in, FALSE)) return FALSE;
+      if(!process_markesteijn_cl(self, piece, dev_in, high_image, roi_in, roi_in, TRUE)) return FALSE;
     }
     else
     {
@@ -5542,8 +5542,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   }
 
   // green-equilibrate over full image excludes tiling
-  if(d->green_eq == DT_IOP_GREEN_EQ_FULL || d->green_eq == DT_IOP_GREEN_EQ_BOTH) piece->process_tiling_ready = 0;
-
+  // The details mask is written inside process, this does not allow tiling.
+  if((d->green_eq == DT_IOP_GREEN_EQ_FULL || d->green_eq == DT_IOP_GREEN_EQ_BOTH) ||
+     ((use_method & DEMOSAIC_DUAL) && (d->dual_thrs > 0.0f)) ||
+     (piece->pipe->want_detail_mask == (DT_DEV_DETAIL_MASK_REQUIRED | DT_DEV_DETAIL_MASK_DEMOSAIC)))
+  {
+    piece->process_tiling_ready = 0;
+  }
+ 
   if (self->dev->image_storage.flags & DT_IMAGE_4BAYER)
   {
     // 4Bayer images not implemented in OpenCL yet

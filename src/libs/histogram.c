@@ -44,7 +44,7 @@
 // RGB (or perceptual space), the spacing will be different
 // FIXME: would fewer gradations still produce a nice hue ring? are this many gradations (32 * 6 = 192) slow to draw on the scope?
 #define VECTORSCOPE_HUES 32
-
+#define VECTORSCOPE_BASE_LOG 30
 
 DT_MODULE(1)
 
@@ -65,9 +65,9 @@ typedef enum dt_lib_histogram_scope_type_t
 
 typedef enum dt_lib_histogram_scale_t
 {
-  DT_LIB_HISTOGRAM_LOGARITHMIC = 0,
-  DT_LIB_HISTOGRAM_LINEAR,
-  DT_LIB_HISTOGRAM_N // needs to be the last one
+  DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC = 0,
+  DT_LIB_HISTOGRAM_SCALE_LINEAR,
+  DT_LIB_HISTOGRAM_SCALE_N // needs to be the last one
 } dt_lib_histogram_scale_t;
 
 typedef enum dt_lib_histogram_waveform_type_t
@@ -86,7 +86,7 @@ typedef enum dt_lib_histogram_vectorscope_type_t
 
 // FIXME: are these lists available from the enum/options in darktableconfig.xml?
 const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] = { "histogram", "waveform", "vectorscope" };
-const gchar *dt_lib_histogram_histogram_scale_names[DT_LIB_HISTOGRAM_N] = { "logarithmic", "linear" };
+const gchar *dt_lib_histogram_scale_names[DT_LIB_HISTOGRAM_SCALE_N] = { "logarithmic", "linear" };
 const gchar *dt_lib_histogram_waveform_type_names[DT_LIB_HISTOGRAM_WAVEFORM_N] = { "overlaid", "parade" };
 const gchar *dt_lib_histogram_vectorscope_type_names[DT_LIB_HISTOGRAM_VECTORSCOPE_N] = { "u*v*", "AzBz" };
 
@@ -107,16 +107,19 @@ typedef struct dt_lib_histogram_t
   float hue_ring_rgb[6][VECTORSCOPE_HUES][4] DT_ALIGNED_ARRAY;
   float hue_ring_coord[6][VECTORSCOPE_HUES][2] DT_ALIGNED_ARRAY;
   const dt_iop_order_iccprofile_info_t *hue_ring_prof;
+  dt_lib_histogram_scale_t hue_ring_scale;
+  dt_lib_histogram_vectorscope_type_t hue_ring_colorspace;
   double vectorscope_radius;
-  float vectorscope_bounds[2];
   dt_pthread_mutex_t lock;
   GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
   GtkWidget *button_box;               // GtkButtonBox -- contains scope control buttons
+  GtkWidget *button_stack;             // GtkStack -- flips between red and colorspace buttons
   GtkWidget *scope_type_button;        // GtkButton -- histogram/waveform/vectorscope control
   GtkWidget *scope_view_button;        // GtkButton -- how to render the current scope
   GtkWidget *red_channel_button;       // GtkToggleButton -- enable/disable processing R channel
   GtkWidget *green_channel_button;     // GtkToggleButton -- enable/disable processing G channel
   GtkWidget *blue_channel_button;      // GtkToggleButton -- enable/disable processing B channel
+  GtkWidget *colorspace_button;        // GtkButton -- vectorscope colorspace
   // drag to change parameters
   gboolean dragging;
   int32_t button_down_x, button_down_y;
@@ -128,6 +131,7 @@ typedef struct dt_lib_histogram_t
   dt_lib_histogram_scale_t histogram_scale;
   dt_lib_histogram_waveform_type_t waveform_type;
   dt_lib_histogram_vectorscope_type_t vectorscope_type;
+  dt_lib_histogram_scale_t vectorscope_scale;
   double vectorscope_angle;
   gboolean red, green, blue;
 } dt_lib_histogram_t;
@@ -260,11 +264,11 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
       }
 }
 
-static void _lib_histogram_hue_ring(dt_lib_histogram_t *d)
+static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, const dt_iop_order_iccprofile_info_t *const vs_prof)
 {
-  // NOTE: this may be different from the output profile for _lib_histogram_process()
-  const dt_iop_order_iccprofile_info_t *const vs_prof = dt_ioppr_get_histogram_profile_info(darktable.develop);
-  if(!vs_prof || (d->vectorscope_radius != 0.f && vs_prof == d->hue_ring_prof))
+  if(vs_prof == d->hue_ring_prof &&
+     d->vectorscope_scale == d->hue_ring_scale &&
+     d->vectorscope_type == d->hue_ring_colorspace)
     return;
 
   // FIXME: as in colorbalancergb, repack matrix for SEE?
@@ -322,18 +326,45 @@ static void _lib_histogram_hue_ring(dt_lib_histogram_t *d)
   // FIXME: make an image buffer with all the hues relative to whitepoint to use as the pattern for drawing hue ring and false color scope variant?
   d->vectorscope_radius = max_radius;
   d->hue_ring_prof = vs_prof;
+  d->hue_ring_scale = d->vectorscope_scale;
+  d->hue_ring_colorspace = d->vectorscope_type;
+}
+
+static inline float baselog(float x, float bound)
+{
+  // FIXME: use dt's fastlog()?
+  return log1pf((VECTORSCOPE_BASE_LOG - 1.f) * x / bound) / log(VECTORSCOPE_BASE_LOG) * bound;
+}
+
+static inline void log_scale(const dt_lib_histogram_t *d, float *x, float *y, float r)
+{
+  if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
+  {
+    const float h = hypotf(*x,*y);
+    const float s = baselog(h, r);
+    *x *= s / h;
+    *y *= s / h;
+  }
 }
 
 static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const float *const input,
-                                               const dt_iop_order_iccprofile_info_t *const input_profile,
                                                dt_histogram_roi_t *const roi)
 {
   const int diam_px = d->vectorscope_diameter_px;
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
 
-  _lib_histogram_hue_ring(d);
+  // NOTE: this may be different from the output profile for _lib_histogram_process()
+  const dt_iop_order_iccprofile_info_t *vs_prof = dt_ioppr_get_histogram_profile_info(darktable.develop);
+  if(!vs_prof || isnan(vs_prof->matrix_in[0]))
+  {
+    fprintf(stderr, "[histogram] unsupported vectorscope profile %i %s, it will be replaced with linear rec2020\n", vs_prof->type, vs_prof->filename);
+    vs_prof = dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC);
+  }
+
+  _lib_histogram_hue_ring(d, vs_prof);
   // FIXME: particularly for u*v*, center on hue ring bounds rather than plot center, to be able to show a larger plot?
-  const float max_diam = d->vectorscope_radius * 2.f;
+  const float max_radius = d->vectorscope_radius;
+  const float max_diam = max_radius * 2.f;
 
   int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
   int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
@@ -353,16 +384,13 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   }
 
   // RGB -> chromaticity (processor-heavy), count into bins by chromaticity
-  // Need XYZ chromaticity. Work directly with process input data (no
-  // need to convert to histogram profile). It's enough to know input
-  // profile type.
   // FIXME: if we do convert to histogram RGB, should it be an absolute colorimetric conversion (would mean knowing the histogram profile whitepoint and un-adapting its matrices) and then we have a meaningful whitepoint and could plot spectral locus -- or the reverse, adapt the spectral locus to the histogram profile PCS (always D50)?
   // FIXME: pre-allocate? -- use the same buffer as for waveform?
   dt_atomic_int *const restrict binned = __builtin_assume_aligned(dt_alloc_align(64, sizeof(int) * diam_px * diam_px), 64);
   memset(binned, 0, sizeof(int) * diam_px * diam_px);
   // FIXME: move verbosed interleaved comments into a method note at the start, as the code itself is succinct and clear
   // FIXME: even with getting rid of the extra profile conversion hop there's no noticeable speedup -- maybe this loop is memory bound -- if can get rid of one of the output buffers and still no speedup, consider doing more work in this loop, such as atomic binning
-  float bounds_x = 0.f, bounds_y = 0.f;
+  // FIXME: make 2x2 averaging be conditional on preprocessor define
   // FIXME: average neighboring pixels on x but not y -- may be enough of an optimization
   const int sample_max_x = sample_width - (sample_width % 2);
   const int sample_max_y = sample_height - (sample_height % 2);
@@ -370,13 +398,24 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // FIXME: instead of scaling, if chromaticity really depends only on XY, then make a lookup on startup of for each grid cell on graph output the minimum XY to populate that cell, then either brute-force scan that LUT, or start from position of last pixel and scan, or do an optimized search (1/2, 1/2, 1/2, etc.) -- would also find point sample pixel this way
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, binned, sample_max_x, sample_max_y, roi, pt_sample_x, pt_sample_y, d, diam_px, max_diam, input_profile, vs_type) \
-  reduction(max : bounds_x, bounds_y) \
+  dt_omp_firstprivate(input, binned, sample_max_x, sample_max_y, roi, pt_sample_x, pt_sample_y, d, diam_px, max_radius, max_diam, vs_prof, vs_type) \
   schedule(static) collapse(2)
 #endif
   for(size_t y=0; y<sample_max_y; y+=2)
     for(size_t x=0; x<sample_max_x; x+=2)
     {
+      // FIXME: There are unnecessary color math hops. Right now the data
+      // comes into dt_lib_histogram_process() in a known profile
+      // (usually from pixelpipe). Then (usually) it gets converted to
+      // the histogram profile. Here it gets converted to XYZ D50 before
+      // making its way to L*u*v* or JzAzBz:
+      //   RGB (pixelpipe) -> XYZ(PCS, D50) -> RGB (histogram) -> XYZ (PCS, D50) -> chromaticity
+      // Given that the histogram profile is "well behaved" and the
+      // conversion to histogram profile is relative colorimetric, could
+      // instead:
+      //   RGB (pixelpipe) -> XYZ(PCS, D50) -> chromaticity
+      // A catch is that pixelpipe RGB may be a CLUT profile, hence would
+      // need to have an LCMS path unless histogram moves to before colorout.
       float RGB[4] DT_ALIGNED_PIXEL = {0.f}, XYZ_D50[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
       // FIXME: for speed, downsample 2x2 -> 1x1 here, which still should produce enough chromaticity data -- Question: AVERAGE(RGBx4) -> chromaticity, or AVERAGE((RGB -> chromaticity)x4)?
       // FIXME: could compromise and downsample to 2x1 -- may also be a bit faster than skipping rows
@@ -388,8 +427,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
             RGB[ch] += px[4U * (yy * roi->width + xx) + ch] * 0.25f;
 
       // this goes to the PCS which has standard illuminant D50
-      dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, input_profile->matrix_in, input_profile->lut_in,
-                                 input_profile->unbounded_coeffs_in, input_profile->lutsize, input_profile->nonlinearlut);
+      dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
+                                 vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
       // NOTE: see for comparison/reference rgb_to_JzCzhz() in color_picker.c
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
@@ -412,15 +451,13 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         // FIXME: The bulk of processing time is spent in the XYZ -> JzAzBz conversion in the 2*3 powf() in X'Y'Z' -> L'M'S'. Making a LUT for these, using _apply_trc() to do powf() work. It only needs to be accurate enough to be about on the right pixel for a diam_px x diam_px plot
         dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
       }
-
       // FIXME: we ignore the L or Jz components -- do they optimize out of the above code, or would in particular a XYZ_2_AzBz but helpful?
+      log_scale(d, chromaticity+1, chromaticity+2, max_radius);
       if(x == pt_sample_x && y == pt_sample_y)
       {
         d->vectorscope_pt[0] = chromaticity[1];
         d->vectorscope_pt[1] = chromaticity[2];
       }
-      bounds_x = MAX(bounds_x, fabsf(chromaticity[1]));
-      bounds_y = MAX(bounds_y, fabsf(chromaticity[2]));
 
       // FIXME: make cx,cy which are float, check 0 <= cx < 1, then multiply by diam_px
       const int out_x = diam_px * (chromaticity[1] / max_diam + 0.5f);
@@ -462,7 +499,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
       const float intensity = lut[(int)(MIN(1.f, b[0]) * lutmax)];
       float XYZ_D50[4] DT_ALIGNED_PIXEL, RGB[4] DT_ALIGNED_PIXEL;
-      const float hypot = hypotf(b[1], b[2]);
+      const float h = hypotf(b[1], b[2]);
 
       // FIXME: look into alternative ways to render this. From Sobotka: "Makes me wonder if full emission mixtures using the GL alpha transparency adding might help for visibility? I’d expect maximum volume of values add to display referred maximum white, while lower density volume of values are more visible and loosely representative of the mixture?"
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
@@ -470,8 +507,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         // FIXME: just convert Luv -> JzAzBz and fall through?
         b[0] = 40.f + intensity * 60.f;
         const float chroma = max_diam * (0.1 + 0.2 * (1.f - intensity));
-        b[1] = chroma * b[1] / hypot;
-        b[2] = chroma * b[2] / hypot;
+        b[1] *= chroma / h;
+        b[2] *= chroma / h;
         float xyY[4] DT_ALIGNED_PIXEL;
         dt_Luv_to_xyY(b, xyY);
         // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
@@ -481,8 +518,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       {
         b[0] = intensity * 0.02f;
         const float chroma = max_diam * (0.2 + 0.4 * (1.f - intensity));
-        b[1] = chroma * b[1] / hypot;
-        b[2] = chroma * b[2] / hypot;
+        b[1] *= chroma / h;
+        b[2] *= chroma / h;
         // FIXME: can optimize the XYZ_D65 -> RGB conversion by pre-multiplying matrix?
         float XYZ_D65[4] DT_ALIGNED_PIXEL;
         dt_JzAzBz_2_XYZ(b, XYZ_D65);
@@ -514,8 +551,8 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
                                      const dt_iop_order_iccprofile_info_t *const profile_info_from,
                                      const dt_iop_order_iccprofile_info_t *const profile_info_to)
 {
-  dt_times_t start_time = { 0 };
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
+  dt_times_t start;
+  dt_get_times(&start);
 
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   dt_develop_t *dev = darktable.develop;
@@ -566,40 +603,31 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   // in tether view, then the image is already converted by the
   // caller.
   // FIXME: do conversion in-place in the processing to save an extra buffer? -- at least for waveform, which already has to touch each pixel -- will need logic from _transform_matrix_rgb() -- or better yet a per-pixel callback within _transform_matrix_rgb()-ish code
-  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
+  // FIXME: in case of vectorscope, it needs XYZ data, so skip this conversion and instead it's enough that it has input & profile_info_from -- though then we don't see the result of a relative colorimetric conversion to the histogram profile...
+  float *img_display = dt_alloc_align_float((size_t)4 * width * height);
+  if(!img_display) return;
+  dt_ioppr_transform_image_colorspace_rgb(input, img_display, width, height,
+                                          profile_info_from, profile_info_to, "final histogram");
+  dt_pthread_mutex_lock(&d->lock);
+  switch(d->scope_type)
   {
-    dt_pthread_mutex_lock(&d->lock);
-    _lib_histogram_process_vectorscope(d, input, profile_info_from, &roi);
-    dt_pthread_mutex_unlock(&d->lock);
+    case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
+      _lib_histogram_process_histogram(d, img_display, &roi);
+      break;
+    case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
+      _lib_histogram_process_waveform(d, img_display, &roi);
+      break;
+    case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
+      _lib_histogram_process_vectorscope(d, img_display, &roi);
+      break;
+    case DT_LIB_HISTOGRAM_SCOPE_N:
+      dt_unreachable_codepath();
+      break;
   }
-  else
-  {
-    float *img_display = dt_alloc_align_float((size_t)4 * width * height);
-    if(!img_display) return;
-    dt_ioppr_transform_image_colorspace_rgb(input, img_display, width, height,
-                                            profile_info_from, profile_info_to, "final histogram");
-    dt_pthread_mutex_lock(&d->lock);
-    switch(d->scope_type)
-    {
-      case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-        _lib_histogram_process_histogram(d, img_display, &roi);
-        break;
-      case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-        _lib_histogram_process_waveform(d, img_display, &roi);
-        break;
-      default:
-        dt_unreachable_codepath();
-    }
-    dt_pthread_mutex_unlock(&d->lock);
-    dt_free_align(img_display);
-  }
+  dt_pthread_mutex_unlock(&d->lock);
+  dt_free_align(img_display);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_times_t end_time = { 0 };
-    dt_get_times(&end_time);
-    fprintf(stderr, "final %s took %.3f secs (%.3f CPU)\n", dt_lib_histogram_scope_type_names[d->scope_type], end_time.clock - start_time.clock, end_time.user - start_time.user);
-  }
+  dt_show_times_f(&start, "[histogram]", "final %s", dt_lib_histogram_scope_type_names[d->scope_type]);
 }
 
 
@@ -607,8 +635,8 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
                                           int width, int height, const uint8_t mask[3])
 {
   if(!d->histogram_max) return;
-  const float hist_max = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR ? d->histogram_max
-                                                                       : logf(1.0 + d->histogram_max);
+  const float hist_max = d->histogram_scale == DT_LIB_HISTOGRAM_SCALE_LINEAR ? d->histogram_max
+                                                                             : logf(1.0 + d->histogram_max);
   // The alpha of each histogram channel is 1, hence the primaries and
   // overlaid secondaries and neutral colors should be about the same
   // brightness. The combined group is then drawn with an alpha, which
@@ -623,7 +651,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
     if(mask[k])
     {
       set_color(cr, darktable.bauhaus->graph_colors[k]);
-      dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR);
+      dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_SCALE_LINEAR);
     }
   cairo_pop_group_to_source(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
@@ -681,21 +709,13 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   const float vs_radius = d->vectorscope_radius;
   const int diam_px = d->vectorscope_diameter_px;
   const int min_size = MIN(width, height);
-  const double angle = d->vectorscope_angle;
-  double bounds_x = fabs(cos(angle) * d->vectorscope_bounds[0] + sin(angle) * d->vectorscope_bounds[1]);
-  double bounds_y = fabs(sin(angle) * d->vectorscope_bounds[0] + cos(angle) * d->vectorscope_bounds[1]);
-  bounds_x = CLAMP(bounds_x, vs_radius * 0.4, vs_radius);
-  bounds_y = CLAMP(bounds_y, vs_radius * 0.4, vs_radius);
-  const double factor_x = vs_radius * ((float) width / min_size) / bounds_x;
-  const double factor_y = vs_radius * ((float) height / min_size) / bounds_y;
-  const double factor = MIN(factor_x, factor_y);
-  const double scale = min_size / (vs_radius * 2.) * factor;
+  const double scale = min_size / (vs_radius * 2.);
 
   cairo_save(cr);
 
   // background
-  cairo_pattern_t *p = cairo_pattern_create_radial(0.5 * width, 0.5 * height, factor * 0.5 * min_size,
-                                                   0.5 * width, 0.5 * height, factor * 0.5 * hypot(min_size, min_size));
+  cairo_pattern_t *p = cairo_pattern_create_radial(0.5 * width, 0.5 * height, 0.5 * min_size,
+                                                   0.5 * width, 0.5 * height, 0.5 * hypot(min_size, min_size));
   cairo_pattern_add_color_stop_rgb(p, 0., darktable.bauhaus->graph_bg.red, darktable.bauhaus->graph_bg.green, darktable.bauhaus->graph_bg.blue);
   cairo_pattern_add_color_stop_rgb(p, 1., darktable.bauhaus->graph_exterior.red, darktable.bauhaus->graph_exterior.green, darktable.bauhaus->graph_exterior.blue);
   cairo_rectangle(cr, 0, 0, width, height);
@@ -705,7 +725,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // FIXME: the areas to left/right of the scope could have some data (primaries, whitepoint, scale, etc.)
   cairo_translate(cr, width / 2., height / 2.);
-  cairo_rotate(cr, angle);
+  cairo_rotate(cr, d->vectorscope_angle);
 
   // traditional video editor's vectorscope is oriented with x-axis Y
   // -> B, y-axis C -> R but CIE 1976 UCS is graphed x-axis as u (G ->
@@ -715,14 +735,14 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // concentric circles as a scale
   set_color(cr, darktable.bauhaus->graph_grid);
-  const float grid_radius = d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV ? 100. : 0.01;
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
+  const float grid_radius = d->hue_ring_colorspace == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV ? 100. : 0.01;
   for(int i = 1; i < 1.f + ceilf(vs_radius/grid_radius); i++)
   {
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
-    cairo_arc(cr, 0., 0., grid_radius * scale * i, 0., M_PI * 2.);
-    cairo_stroke(cr);
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5));
-    cairo_arc(cr, 0., 0., grid_radius * scale * (i - 0.5), 0., M_PI * 2.);
+    float r = grid_radius * i;
+    if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
+      r = baselog(r, vs_radius);
+    cairo_arc(cr, 0., 0., r * scale, 0., M_PI * 2.);
     cairo_stroke(cr);
   }
 
@@ -734,18 +754,31 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // graticule: histogram profile hue ring
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
-  int n = 5, h = VECTORSCOPE_HUES - 1;
-  for(int i=0; i < 6 * VECTORSCOPE_HUES; i++)
+  float x = d->hue_ring_coord[5][VECTORSCOPE_HUES-1][0];
+  float y = d->hue_ring_coord[5][VECTORSCOPE_HUES-1][1];
+  log_scale(d, &x, &y, vs_radius);
+  for(int n=0; n<6; n++)
   {
-    cairo_move_to(cr, d->hue_ring_coord[n][h][0] * scale, d->hue_ring_coord[n][h][1] * scale);
-    n = i / VECTORSCOPE_HUES;
-    h = i % VECTORSCOPE_HUES;
-    // FIXME: can we pre-make a pattern with the hues radiating out, and use it as the "ink" to draw the hue ring and -- if in false color mode -- the vectorscope? will this be faster then drawing lots of lines each with their own color? will it allow for drawing the hue ring with splines and calculating fewer points?
-    // note that hue_ring_rgb and hue_ring_coord are calculated as float but converted here to double
-    cairo_set_source_rgba(cr, d->hue_ring_rgb[n][h][0], d->hue_ring_rgb[n][h][1], d->hue_ring_rgb[n][h][2], 0.5);
-    cairo_line_to(cr, d->hue_ring_coord[n][h][0] * scale, d->hue_ring_coord[n][h][1] * scale);
-    cairo_stroke(cr);
+    for(int h=0; h<VECTORSCOPE_HUES; h++)
+    {
+      cairo_move_to(cr, x*scale, y*scale);
+      // FIXME: can we pre-make a pattern with the hues radiating out, and use it as the "ink" to draw the hue ring and -- if in false color mode -- the vectorscope? will this be faster then drawing lots of lines each with their own color? will it allow for drawing the hue ring with splines and calculating fewer points? -- we might need a color pattern of the colorspace, then masked once to increase saturation and once for alpha?
+      // note that hue_ring_rgb and hue_ring_coord are calculated as float but converted here to double
+      cairo_set_source_rgba(cr, d->hue_ring_rgb[n][h][0], d->hue_ring_rgb[n][h][1], d->hue_ring_rgb[n][h][2], 0.5);
+      x = d->hue_ring_coord[n][h][0];
+      y = d->hue_ring_coord[n][h][1];
+      log_scale(d, &x, &y, vs_radius);
+      cairo_line_to(cr, x*scale, y*scale);
+      cairo_stroke(cr);
+      if(h==0)
+      {
+        cairo_arc(cr, x*scale, y*scale, DT_PIXEL_APPLY_DPI(2.), 0., M_PI * 2.);
+        cairo_set_source_rgba(cr, d->hue_ring_rgb[n][h][0], d->hue_ring_rgb[n][h][1], d->hue_ring_rgb[n][h][2], 1.);
+        cairo_fill_preserve(cr);
+        set_color(cr, darktable.bauhaus->graph_grid);
+        cairo_stroke(cr);
+      }
+    }
   }
 
   // vectorscope graph
@@ -760,8 +793,8 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_pattern_t *pattern = cairo_pattern_create_for_surface(source);
   cairo_matrix_t matrix;
   cairo_matrix_init_translate(&matrix, 0.5*diam_px/darktable.gui->ppd, 0.5*diam_px/darktable.gui->ppd);
-  cairo_matrix_scale(&matrix, (double)diam_px / min_size / factor / darktable.gui->ppd,
-                     (double)diam_px / min_size / factor / darktable.gui->ppd);
+  cairo_matrix_scale(&matrix, (double)diam_px / min_size / darktable.gui->ppd,
+                     (double)diam_px / min_size / darktable.gui->ppd);
   cairo_pattern_set_matrix(pattern, &matrix);
   cairo_set_source(cr, pattern);
   if(isnan(d->vectorscope_pt[0]))
@@ -796,8 +829,8 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 // FIXME: if exposure change regions are separate widgets, then we could have a menu to swap in different overlay widgets (sort of like basic adjustments) to adjust other things about the image, e.g. tone equalizer, color balance, etc.
 static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
-  dt_times_t start_time = { 0 };
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
+  dt_times_t start;
+  dt_get_times(&start);
 
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   dt_develop_t *dev = darktable.develop;
@@ -847,6 +880,7 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
+      // FIXME: now that vectorscope grid represents log scale, should histogram grid do the same?
       dt_draw_grid(cr, 4, 0, 0, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
@@ -899,13 +933,7 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
   cairo_paint(crf);
   cairo_surface_destroy(cst);
 
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_times_t end_time = { 0 };
-    dt_get_times(&end_time);
-    fprintf(stderr, "scope draw took %.3f secs (%.3f CPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-  }
-
+  dt_show_times_f(&start, "[histogram]", "scope draw");
   return TRUE;
 }
 
@@ -1074,21 +1102,21 @@ static void _histogram_scale_update(const dt_lib_histogram_t *d)
 {
   switch(d->histogram_scale)
   {
-    case DT_LIB_HISTOGRAM_LOGARITHMIC:
+    case DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC:
       gtk_widget_set_tooltip_text(d->scope_view_button, _("set scale to linear"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
                              dtgtk_cairo_paint_logarithmic_scale, CPF_NONE, NULL);
       break;
-    case DT_LIB_HISTOGRAM_LINEAR:
+    case DT_LIB_HISTOGRAM_SCALE_LINEAR:
       gtk_widget_set_tooltip_text(d->scope_view_button, _("set scale to logarithmic"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
                              dtgtk_cairo_paint_linear_scale, CPF_NONE, NULL);
       break;
-    case DT_LIB_HISTOGRAM_N:
+    case DT_LIB_HISTOGRAM_SCALE_N:
       dt_unreachable_codepath();
   }
   // FIXME: this should really redraw current iop if its background is a histogram (check request_histogram)
-  darktable.lib->proxy.histogram.is_linear = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR;
+  darktable.lib->proxy.histogram.is_linear = d->histogram_scale == DT_LIB_HISTOGRAM_SCALE_LINEAR;
 }
 
 static void _waveform_view_update(const dt_lib_histogram_t *d)
@@ -1119,17 +1147,31 @@ static void _waveform_view_update(const dt_lib_histogram_t *d)
 
 static void _vectorscope_view_update(dt_lib_histogram_t *d)
 {
-  // FIXME: add a "false color" variant, probably taking over the "red channel" button for this
+  switch(d->vectorscope_scale)
+  {
+    case DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC:
+      gtk_widget_set_tooltip_text(d->scope_view_button, _("set scale to linear"));
+      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
+                             dtgtk_cairo_paint_logarithmic_scale, CPF_NONE, NULL);
+      break;
+    case DT_LIB_HISTOGRAM_SCALE_LINEAR:
+      gtk_widget_set_tooltip_text(d->scope_view_button, _("set scale to logarithmic"));
+      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
+                             dtgtk_cairo_paint_linear_scale, CPF_NONE, NULL);
+      break;
+    case DT_LIB_HISTOGRAM_SCALE_N:
+      dt_unreachable_codepath();
+  }
   switch(d->vectorscope_type)
   {
     case DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV:
-      gtk_widget_set_tooltip_text(d->scope_view_button, _("set view to AzBz"));
-      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
+      gtk_widget_set_tooltip_text(d->colorspace_button, _("set view to AzBz"));
+      dtgtk_button_set_paint(DTGTK_BUTTON(d->colorspace_button),
                              dtgtk_cairo_paint_luv, CPF_NONE, NULL);
       break;
     case DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ:
-      gtk_widget_set_tooltip_text(d->scope_view_button, _("set view to u*v*"));
-      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
+      gtk_widget_set_tooltip_text(d->colorspace_button, _("set view to u*v*"));
+      dtgtk_button_set_paint(DTGTK_BUTTON(d->colorspace_button),
                              dtgtk_cairo_paint_jzazbz, CPF_NONE, NULL);
       break;
     case DT_LIB_HISTOGRAM_VECTORSCOPE_N:
@@ -1148,12 +1190,14 @@ static void _scope_type_update(dt_lib_histogram_t *d)
       gtk_widget_set_sensitive(d->red_channel_button, TRUE);
       gtk_widget_set_sensitive(d->green_channel_button, TRUE);
       gtk_widget_set_sensitive(d->blue_channel_button, TRUE);
+      gtk_stack_set_visible_child(GTK_STACK(d->button_stack), d->red_channel_button);
       _histogram_scale_update(d);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
       gtk_widget_set_tooltip_text(d->scope_type_button, _("set mode to vectorscope"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_type_button),
                              dtgtk_cairo_paint_waveform_scope, CPF_NONE, NULL);
+      gtk_stack_set_visible_child(GTK_STACK(d->button_stack), d->red_channel_button);
       // handles setting RGB channel button sensitive state
       _waveform_view_update(d);
       break;
@@ -1164,6 +1208,7 @@ static void _scope_type_update(dt_lib_histogram_t *d)
       gtk_widget_set_sensitive(d->red_channel_button, FALSE);
       gtk_widget_set_sensitive(d->green_channel_button, FALSE);
       gtk_widget_set_sensitive(d->blue_channel_button, FALSE);
+      gtk_stack_set_visible_child(GTK_STACK(d->button_stack), d->colorspace_button);
       _vectorscope_view_update(d);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
@@ -1178,11 +1223,6 @@ static void _scope_type_clicked(GtkWidget *button, dt_lib_histogram_t *d)
   dt_conf_set_string("plugins/darkroom/histogram/mode", dt_lib_histogram_scope_type_names[d->scope_type]);
   _scope_type_update(d);
 
-  // redraw scope now, even if it isn't up to date, so that there is
-  // immediate feedback on button press even though there will be a
-  // lag to process the scope data
-  dt_control_queue_redraw_widget(d->scope_draw);
-
   // generate data for changed scope and trigger widget redraw
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(cv->view(cv) == DT_VIEW_DARKROOM)
@@ -1196,9 +1236,9 @@ static void _scope_view_clicked(GtkWidget *button, dt_lib_histogram_t *d)
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      d->histogram_scale = (d->histogram_scale + 1) % DT_LIB_HISTOGRAM_N;
+      d->histogram_scale = (d->histogram_scale + 1) % DT_LIB_HISTOGRAM_SCALE_N;
       dt_conf_set_string("plugins/darkroom/histogram/histogram",
-                         dt_lib_histogram_histogram_scale_names[d->histogram_scale]);
+                         dt_lib_histogram_scale_names[d->histogram_scale]);
       _histogram_scale_update(d);
       dt_control_queue_redraw_widget(d->scope_draw);
       break;
@@ -1210,14 +1250,11 @@ static void _scope_view_clicked(GtkWidget *button, dt_lib_histogram_t *d)
       dt_control_queue_redraw_widget(d->scope_draw);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-      d->vectorscope_type = (d->vectorscope_type + 1) % DT_LIB_HISTOGRAM_VECTORSCOPE_N;
-      dt_conf_set_string("plugins/darkroom/histogram/vectorscope",
-                         dt_lib_histogram_vectorscope_type_names[d->vectorscope_type]);
+      d->vectorscope_scale = (d->vectorscope_scale + 1) % DT_LIB_HISTOGRAM_SCALE_N;
+      dt_conf_set_string("plugins/darkroom/histogram/vectorscope_scale",
+                         dt_lib_histogram_scale_names[d->vectorscope_scale]);
       _vectorscope_view_update(d);
-      // redraw empty scope for immediate visual feedback
-      d->vectorscope_radius = 0.f;
-      dt_control_queue_redraw_widget(d->scope_draw);
-      // trigger new process from scratch depending on whether CIELuv or JzAzBz
+      // trigger new process from scratch depending on whether linear or logarithmic
       // FIXME: it would be nice as with other scopes to make the initial processing independent of the view
       const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
       if(cv->view(cv) == DT_VIEW_DARKROOM)
@@ -1228,6 +1265,21 @@ static void _scope_view_clicked(GtkWidget *button, dt_lib_histogram_t *d)
     case DT_LIB_HISTOGRAM_SCOPE_N:
       dt_unreachable_codepath();
   }
+}
+
+static void _colorspace_clicked(GtkWidget *button, dt_lib_histogram_t *d)
+{
+  d->vectorscope_type = (d->vectorscope_type + 1) % DT_LIB_HISTOGRAM_VECTORSCOPE_N;
+  dt_conf_set_string("plugins/darkroom/histogram/vectorscope",
+                     dt_lib_histogram_vectorscope_type_names[d->vectorscope_type]);
+  _vectorscope_view_update(d);
+  // trigger new process from scratch depending on whether CIELuv or JzAzBz
+  // FIXME: it would be nice as with other scopes to make the initial processing independent of the view
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view(cv) == DT_VIEW_DARKROOM)
+    dt_dev_process_preview(darktable.develop);
+  else
+    dt_control_queue_redraw_center();
 }
 
 // FIXME: these all could be the same function with different user_data
@@ -1329,7 +1381,7 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      if(d->histogram_scale == DT_LIB_HISTOGRAM_LOGARITHMIC)
+      if(d->histogram_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
       {
         _scope_view_clicked(d->scope_view_button, d);
       }
@@ -1355,21 +1407,31 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
         d->vectorscope_type = DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV;
         dt_conf_set_string("plugins/darkroom/histogram/vectorscope",
                            dt_lib_histogram_vectorscope_type_names[d->vectorscope_type]);
+        d->vectorscope_scale = DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC;
+        dt_conf_set_string("plugins/darkroom/histogram/vectorscope_scale",
+                           dt_lib_histogram_scale_names[d->vectorscope_scale]);
         _scope_type_clicked(d->scope_type_button, d);
         d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
         dt_control_change_cursor(GDK_LEFT_PTR);
       }
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-      if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+      if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
       {
         _scope_view_clicked(d->scope_view_button, d);
       }
+      else if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+      {
+        d->vectorscope_scale = DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC;
+        dt_conf_set_string("plugins/darkroom/histogram/vectorscope_scale",
+                           dt_lib_histogram_scale_names[d->vectorscope_scale]);
+        _colorspace_clicked(d->colorspace_button, d);
+      }
       else
       {
-        d->histogram_scale = DT_LIB_HISTOGRAM_LOGARITHMIC;
+        d->histogram_scale = DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC;
         dt_conf_set_string("plugins/darkroom/histogram/histogram",
-                           dt_lib_histogram_histogram_scale_names[d->histogram_scale]);
+                           dt_lib_histogram_scale_names[d->histogram_scale]);
         // don't need to cancel dragging or lose highlight so long as vectorscope isn't draggable
         _scope_type_clicked(d->scope_type_button, d);
       }
@@ -1456,8 +1518,8 @@ void gui_init(dt_lib_module_t *self)
   g_free(str);
 
   str = dt_conf_get_string("plugins/darkroom/histogram/histogram");
-  for(dt_lib_histogram_scale_t i=0; i<DT_LIB_HISTOGRAM_N; i++)
-    if(g_strcmp0(str, dt_lib_histogram_histogram_scale_names[i]) == 0)
+  for(dt_lib_histogram_scale_t i=0; i<DT_LIB_HISTOGRAM_SCALE_N; i++)
+    if(g_strcmp0(str, dt_lib_histogram_scale_names[i]) == 0)
       d->histogram_scale = i;
   g_free(str);
 
@@ -1471,6 +1533,12 @@ void gui_init(dt_lib_module_t *self)
   for(dt_lib_histogram_vectorscope_type_t i=0; i<DT_LIB_HISTOGRAM_VECTORSCOPE_N; i++)
     if(g_strcmp0(str, dt_lib_histogram_vectorscope_type_names[i]) == 0)
       d->vectorscope_type = i;
+  g_free(str);
+
+  str = dt_conf_get_string("plugins/darkroom/histogram/vectorscope_scale");
+  for(dt_lib_histogram_scale_t i=0; i<DT_LIB_HISTOGRAM_SCALE_N; i++)
+    if(g_strcmp0(str, dt_lib_histogram_scale_names[i]) == 0)
+      d->vectorscope_scale = i;
   g_free(str);
 
   int a = dt_conf_get_int("plugins/darkroom/histogram/vectorscope/angle");
@@ -1512,6 +1580,8 @@ void gui_init(dt_lib_module_t *self)
   const int vectorscope_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px);
   d->vectorscope_graph = dt_alloc_align(64, sizeof(uint8_t) * 4U * vectorscope_stride * d->vectorscope_diameter_px);
   d->hue_ring_prof = NULL;
+  d->hue_ring_scale = DT_LIB_HISTOGRAM_SCALE_N;
+  d->hue_ring_colorspace = DT_LIB_HISTOGRAM_VECTORSCOPE_N;
   // initially no vectorscope to draw
   d->vectorscope_radius = 0.f;
 
@@ -1520,7 +1590,7 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: do need to pass self, or can wrap a callback as a lambda
   darktable.lib->proxy.histogram.module = self;
   darktable.lib->proxy.histogram.process = dt_lib_histogram_process;
-  darktable.lib->proxy.histogram.is_linear = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR;
+  darktable.lib->proxy.histogram.is_linear = d->histogram_scale == DT_LIB_HISTOGRAM_SCALE_LINEAR;
 
   // create widgets
   GtkWidget *overlay = gtk_overlay_new();
@@ -1542,6 +1612,7 @@ void gui_init(dt_lib_module_t *self)
   // icons/tooltips are updated, and button sensitivity is set as
   // needed.
 
+  // FIXME: the button transitions when they appear on mouseover (mouse enters scope widget) or change (mouse click) cause redraws of the entire scope -- is there a way to avoid this?
   // FIXME: this could be a combobox to allow for more types and not to have to swap the icon on click
   // icons will be filled in by _scope_type_update()
   d->scope_type_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
@@ -1549,13 +1620,18 @@ void gui_init(dt_lib_module_t *self)
   d->scope_view_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
   gtk_box_pack_start(GTK_BOX(d->button_box), d->scope_view_button, FALSE, FALSE, 0);
 
+  // the red togglebutton turns into colorspace button in vectorscope
+  d->button_stack = gtk_stack_new();
+  gtk_box_pack_start(GTK_BOX(d->button_box), d->button_stack, FALSE, FALSE, 0);
+
   // red/green/blue channel on/off
   // these are toggle boxes with a meaningful active state, unlike the type/view buttons
   d->red_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
   gtk_widget_set_name(d->red_channel_button, "red-channel-button");
   gtk_widget_set_tooltip_text(d->red_channel_button, d->red ? _("click to hide red channel") : _("click to show red channel"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->red_channel_button), d->red);
-  gtk_box_pack_start(GTK_BOX(d->button_box), d->red_channel_button, FALSE, FALSE, 0);
+  // FIXME: just use gtk_container_add() as don't care about name?
+  gtk_stack_add_named(GTK_STACK(d->button_stack), d->red_channel_button, "red");
 
   d->green_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
   gtk_widget_set_name(d->green_channel_button, "green-channel-button");
@@ -1568,6 +1644,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->blue_channel_button, d->blue ? _("click to hide blue channel") : _("click to show blue channel"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->blue_channel_button), d->blue);
   gtk_box_pack_start(GTK_BOX(d->button_box), d->blue_channel_button, FALSE, FALSE, 0);
+
+  d->colorspace_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
+  // FIXME: just use gtk_container_add() as don't care about name?
+  gtk_stack_add_named(GTK_STACK(d->button_stack), d->colorspace_button, "colorspace");
 
   // will change sensitivity of channel buttons, hence must run after all buttons are declared
   _scope_type_update(d);
@@ -1609,6 +1689,7 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(d->scope_type_button), "clicked", G_CALLBACK(_scope_type_clicked), d);
   g_signal_connect(G_OBJECT(d->scope_view_button), "clicked", G_CALLBACK(_scope_view_clicked), d);
+  g_signal_connect(G_OBJECT(d->colorspace_button), "clicked", G_CALLBACK(_colorspace_clicked), d);
 
   g_signal_connect(G_OBJECT(d->red_channel_button), "toggled", G_CALLBACK(_red_channel_toggle), d);
   g_signal_connect(G_OBJECT(d->green_channel_button), "toggled", G_CALLBACK(_green_channel_toggle), d);
