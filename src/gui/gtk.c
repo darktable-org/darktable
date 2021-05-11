@@ -3301,6 +3301,20 @@ void dt_gui_menu_popup(GtkMenu *menu, GtkWidget *button, GdkGravity widget_ancho
 #endif
 }
 
+// draw rounded rectangle
+void dt_gui_draw_rounded_rectangle(cairo_t *cr, float width, float height, float x, float y)
+{
+  const float radius = height / 5.0f;
+  const float degrees = M_PI / 180.0;
+  cairo_new_sub_path(cr);
+  cairo_arc(cr, x + width - radius, y + radius, radius, -90 * degrees, 0 * degrees);
+  cairo_arc(cr, x + width - radius, y + height - radius, radius, 0 * degrees, 90 * degrees);
+  cairo_arc(cr, x + radius, y + height - radius, radius, 90 * degrees, 180 * degrees);
+  cairo_arc(cr, x + radius, y + radius, radius, 180 * degrees, 270 * degrees);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
