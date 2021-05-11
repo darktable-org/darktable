@@ -100,7 +100,7 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
       dt_conf_set_float("plugins/darkroom/masks/gradient/compression", compression);
       dt_toast_log(_("compression: %3.2f%%"), compression*100.0f);
     }
-    else
+    else if (dt_modifier_is(state, 0)) // simple scroll to adjust curvature, calling func adjusts opacity with Ctrl
     {
       float curvature = dt_conf_get_float("plugins/darkroom/masks/gradient/curvature");
       if(up)
