@@ -138,15 +138,11 @@ typedef struct _dialog_description
 
 static const float units[3] = {1.0, 0.1, 1.0/25.4};
 
-const float REL_POS_RATIO = 1000000.0f;
-
 static void _update_slider (dt_lib_print_settings_t *ps);
 static void _width_changed(GtkWidget *widget, gpointer user_data);
 static void _height_changed(GtkWidget *widget, gpointer user_data);
 static void _x_changed(GtkWidget *widget, gpointer user_data);
 static void _y_changed(GtkWidget *widget, gpointer user_data);
-static int _mm_to_hscreen(dt_lib_print_settings_t *ps, const float value, const gboolean offset);
-static int _mm_to_vscreen(dt_lib_print_settings_t *ps, const float value, const gboolean offset);
 
 static const int min_borders = -100; // this is in mm
 
@@ -179,46 +175,46 @@ static double to_mm(dt_lib_print_settings_t *ps, double value)
 }
 
 // horizontal mm to pixels
-static int _mm_to_hscreen(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
+static float _mm_to_hscreen(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
 {
   float width, height;
   _get_page_dimention(&ps->prt, &width, &height);
 
-  return roundf((offset ? ps->imgs.screen_page.x : 0)
-                + (ps->imgs.screen_page.width * value / width));
+  return (offset ? ps->imgs.screen_page.x : 0)
+    + (ps->imgs.screen_page.width * value / width);
 }
 
 // vertial mm to pixels
-static int _mm_to_vscreen(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
+static float _mm_to_vscreen(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
 {
   float width, height;
   _get_page_dimention(&ps->prt, &width, &height);
 
-  return roundf((offset ? ps->imgs.screen_page.y : 0)
-                + (ps->imgs.screen_page.height * value / height));
+  return (offset ? ps->imgs.screen_page.y : 0)
+    + (ps->imgs.screen_page.height * value / height);
 }
 
-static int _hscreen_to_mm(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
+static float _hscreen_to_mm(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
 {
   float width, height;
   _get_page_dimention(&ps->prt, &width, &height);
 
-  return roundf(width * (value - (offset ? (float)ps->imgs.screen_page.x : 0.0f))
-                / (float)ps->imgs.screen_page.width);
+  return width * (value - (offset ? ps->imgs.screen_page.x : 0.0f))
+    / ps->imgs.screen_page.width;
 }
 
-static int _vscreen_to_mm(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
+static float _vscreen_to_mm(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
 {
   float width, height;
   _get_page_dimention(&ps->prt, &width, &height);
 
-  return roundf(height * (value - (offset ? (float)ps->imgs.screen_page.y : 0.0f))
-                / (float)ps->imgs.screen_page.height);
+  return height * (value - (offset ? ps->imgs.screen_page.y : 0.0f))
+    / ps->imgs.screen_page.height;
 }
 
 static inline float _percent_unit_of(dt_lib_print_settings_t *ps, float ref, float value)
 {
-  return (value * ref * units[ps->unit]) / REL_POS_RATIO;
+  return value * ref * units[ps->unit];
 }
 
 // callbacks for in-memory export
@@ -390,13 +386,13 @@ static void _create_pdf(dt_job_t *job, dt_images_box imgs, float width, float he
 
     //  PDF bounding-box has origin on bottom-left
     pdf_image[k]->bb_x      =
-      dt_pdf_pixel_to_point((float)imgs.box[k].print.x, params->prt.printer.resolution);
+      dt_pdf_pixel_to_point(imgs.box[k].print.x, params->prt.printer.resolution);
     pdf_image[k]->bb_y      =
-      dt_pdf_pixel_to_point((float)imgs.box[k].print.y, params->prt.printer.resolution);
+      dt_pdf_pixel_to_point(imgs.box[k].print.y, params->prt.printer.resolution);
     pdf_image[k]->bb_width  =
-      dt_pdf_pixel_to_point((float)imgs.box[k].print.width, params->prt.printer.resolution);
+      dt_pdf_pixel_to_point(imgs.box[k].print.width, params->prt.printer.resolution);
     pdf_image[k]->bb_height =
-      dt_pdf_pixel_to_point((float)imgs.box[k].print.height, params->prt.printer.resolution);
+      dt_pdf_pixel_to_point(imgs.box[k].print.height, params->prt.printer.resolution);
 
     if(imgs.auto_fit)
     {
@@ -454,10 +450,10 @@ void _compute_print_box(dt_print_info_t *prt, dt_image_box *box)
   const float width_pix = dt_pdf_point_to_pixel(dt_pdf_mm_to_point(width), prt->printer.resolution);
   const float height_pix = dt_pdf_point_to_pixel(dt_pdf_mm_to_point(height), prt->printer.resolution);
 
-  const float img_height_percent =  REL_POS_RATIO * ((float)box->exp_height / height_pix);
+  const float img_height_percent =  box->exp_height / height_pix;
 
-  box->print.x = (box->pos.x * width_pix) / REL_POS_RATIO;
-  box->print.y = height_pix - ((box->pos.y + img_height_percent) * height_pix / REL_POS_RATIO);
+  box->print.x = box->pos.x * width_pix;
+  box->print.y = height_pix - ((box->pos.y + img_height_percent) * height_pix);
 
   // use real exported size if known
   if(box->exp_width != -1 && box->exp_height != -1)
@@ -467,8 +463,8 @@ void _compute_print_box(dt_print_info_t *prt, dt_image_box *box)
   }
   else
   {
-    box->print.width  = (box->pos.width * width_pix) / REL_POS_RATIO;
-    box->print.height = (box->pos.height * height_pix) / REL_POS_RATIO;
+    box->print.width  = box->pos.width * width_pix;
+    box->print.height = box->pos.height * height_pix;
   }
 }
 
@@ -483,10 +479,10 @@ void _fill_box_values(dt_lib_print_settings_t *ps)
     float width, height;
     _get_page_dimention(&ps->prt, &width, &height);
 
-    x = _percent_unit_of(ps, width, (float)b->pos.x);
-    y = _percent_unit_of(ps, height, (float)b->pos.y);
-    swidth = _percent_unit_of(ps, width, (float)b->pos.width);
-    sheight = _percent_unit_of(ps, height, (float)b->pos.height);
+    x = _percent_unit_of(ps, width, b->pos.x);
+    y = _percent_unit_of(ps, height, b->pos.y);
+    swidth = _percent_unit_of(ps, width, b->pos.width);
+    sheight = _percent_unit_of(ps, height, b->pos.height);
 
     // update box values
     _compute_print_box(&ps->prt, b);
@@ -890,19 +886,19 @@ _printer_changed (GtkWidget *combo, const dt_lib_module_t *self)
 
 static void _reset_screen_box(dt_lib_print_settings_t *ps)
 {
-  const float ofsx        = (float)ps->imgs.screen_page.x;
-  const float ofsy        = (float)ps->imgs.screen_page.y;
-  const float page_width  = (float)ps->imgs.screen_page.width;
-  const float page_height = (float)ps->imgs.screen_page.height;
+  const float ofsx        = ps->imgs.screen_page.x;
+  const float ofsy        = ps->imgs.screen_page.y;
+  const float page_width  = ps->imgs.screen_page.width;
+  const float page_height = ps->imgs.screen_page.height;
 
   for(int k=0; k<MAX_IMAGE_PER_PAGE; k++)
   {
     dt_image_box *box = &ps->imgs.box[k];
 
-    box->screen.x = ofsx + page_width * (box->pos.x / REL_POS_RATIO);
-    box->screen.y = ofsy + page_height * (box->pos.y / REL_POS_RATIO);
-    box->screen.width = page_width * (box->pos.width / REL_POS_RATIO);
-    box->screen.height = page_height * (box->pos.height / REL_POS_RATIO);
+    box->screen.x = ofsx + page_width * box->pos.x;
+    box->screen.y = ofsy + page_height * box->pos.y;
+    box->screen.width = page_width * box->pos.width;
+    box->screen.height = page_height * box->pos.height;
   }
 }
 
@@ -1201,10 +1197,10 @@ _unit_changed (GtkWidget *combo, dt_lib_module_t *self)
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_left),   n_digits);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_right),  n_digits);
 
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_x),      n_digits);
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_y),      n_digits);
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_width),  n_digits);
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_height), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_x),      2);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_y),      2);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_width),  2);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_height), 2);
 
   const float incr = units[ps->unit];
 
@@ -1478,16 +1474,16 @@ void _get_control(dt_lib_print_settings_t *ps, float x, float y)
 
   ps->sel_controls = 0;
 
-  if(fabsf((float)b->screen.x - x) < dist)
+  if(fabsf(b->screen.x - x) < dist)
     ps->sel_controls |= BOX_LEFT;
 
-  if(fabsf((float)b->screen.y - y) < dist)
+  if(fabsf(b->screen.y - y) < dist)
     ps->sel_controls |= BOX_TOP;
 
-  if(fabsf((float)(b->screen.x + b->screen.width) - x) < dist)
+  if(fabsf((b->screen.x + b->screen.width) - x) < dist)
     ps->sel_controls |= BOX_RIGHT;
 
-  if(fabsf((float)(b->screen.y + b->screen.height) - y) < dist)
+  if(fabsf((b->screen.y + b->screen.height) - y) < dist)
     ps->sel_controls |= BOX_BOTTOM;
 
   if(ps->sel_controls == 0) ps->sel_controls = BOX_ALL;
@@ -1582,15 +1578,15 @@ void _compute_rel_pos(dt_lib_print_settings_t *ps, dt_image_box *box)
 {
   // compute the printing position & width as % of the page
 
-  const float ofsx        = (float)ps->imgs.screen_page.x;
-  const float ofsy        = (float)ps->imgs.screen_page.y;
-  const float page_width  = (float)ps->imgs.screen_page.width;
-  const float page_height = (float)ps->imgs.screen_page.height;
+  const float ofsx        = ps->imgs.screen_page.x;
+  const float ofsy        = ps->imgs.screen_page.y;
+  const float page_width  = ps->imgs.screen_page.width;
+  const float page_height = ps->imgs.screen_page.height;
 
-  box->pos.x      = REL_POS_RATIO * (((float)box->screen.x - ofsx) / page_width);
-  box->pos.y      = REL_POS_RATIO * (((float)box->screen.y - ofsy) / page_height);
-  box->pos.width  = REL_POS_RATIO * ((float)box->screen.width / page_width);
-  box->pos.height = REL_POS_RATIO * ((float)box->screen.height / page_height);
+  box->pos.x      = (box->screen.x - ofsx) / page_width;
+  box->pos.y      = (box->screen.y - ofsy) / page_height;
+  box->pos.width  = box->screen.width / page_width;
+  box->pos.height = box->screen.height / page_height;
 }
 
 static void _swap(float *a, float *b)
@@ -2717,20 +2713,20 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   for(int k=0; k<ps->imgs.count; k++)
   {
-    ps->imgs.box[k].pos.x = *(int32_t *)buf;
-    buf += sizeof(int32_t);
-    ps->imgs.box[k].pos.y = *(int32_t *)buf;
-    buf += sizeof(int32_t);
-    ps->imgs.box[k].pos.width = *(int32_t *)buf;
-    buf += sizeof(int32_t);
-    ps->imgs.box[k].pos.height = *(int32_t *)buf;
-    buf += sizeof(int32_t);
+    ps->imgs.box[k].pos.x = *(float *)buf;
+    buf += sizeof(float);
+    ps->imgs.box[k].pos.y = *(float *)buf;
+    buf += sizeof(float);
+    ps->imgs.box[k].pos.width = *(float *)buf;
+    buf += sizeof(float);
+    ps->imgs.box[k].pos.height = *(float *)buf;
+    buf += sizeof(float);
   }
 
   ps->reset_screen_box = TRUE;
 
   // ensure that the size is correct
-  if(size != printer_len + paper_len + media_len + profile_len + pprofile_len + style_len + 8 * sizeof(int32_t) + 4 * sizeof(double) + sizeof(int32_t) + (ps->imgs.count * 4 * sizeof(int32_t)))
+  if(size != printer_len + paper_len + media_len + profile_len + pprofile_len + style_len + 8 * sizeof(int32_t) + 4 * sizeof(double) + sizeof(int32_t) + (ps->imgs.count * 4 * sizeof(float)))
     return 1;
 
   // set the GUI with corresponding values
@@ -2842,7 +2838,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   const int32_t style_len = strlen (style) + 1;
 
   // compute the size of all parameters
-  *size = printer_len + paper_len + media_len + profile_len + pprofile_len + style_len + 8 * sizeof(int32_t) + 4 * sizeof(double) + sizeof(int32_t) + (ps->imgs.count * 4 * sizeof(int32_t));
+  *size = printer_len + paper_len + media_len + profile_len + pprofile_len + style_len + 8 * sizeof(int32_t) + 4 * sizeof(double) + sizeof(int32_t) + (ps->imgs.count * 4 * sizeof(float));
 
   // allocate the parameter buffer
   char *params = (char *)malloc(*size);
@@ -2892,13 +2888,13 @@ void *get_params(dt_lib_module_t *self, int *size)
 
   for(int k=0; k<ps->imgs.count; k++)
   {
-    memcpy(params+pos, &ps->imgs.box[k].pos.x, sizeof(int32_t));
+    memcpy(params+pos, &ps->imgs.box[k].pos.x, sizeof(float));
     pos += sizeof(int32_t);
-    memcpy(params+pos, &ps->imgs.box[k].pos.y, sizeof(int32_t));
+    memcpy(params+pos, &ps->imgs.box[k].pos.y, sizeof(float));
     pos += sizeof(int32_t);
-    memcpy(params+pos, &ps->imgs.box[k].pos.width, sizeof(int32_t));
+    memcpy(params+pos, &ps->imgs.box[k].pos.width, sizeof(float));
     pos += sizeof(int32_t);
-    memcpy(params+pos, &ps->imgs.box[k].pos.height, sizeof(int32_t));
+    memcpy(params+pos, &ps->imgs.box[k].pos.height, sizeof(float));
     pos += sizeof(int32_t);
   }
 

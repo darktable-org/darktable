@@ -25,7 +25,7 @@
 
 typedef struct _imgage_pos
 {
-  int32_t x, y, width, height;
+  float x, y, width, height;
 } dt_image_pos;
 
 typedef struct _image_box
