@@ -43,6 +43,7 @@ typedef struct dt_images_box
 {
   gboolean auto_fit;
   int count;
+  int32_t motion_over;
   dt_image_box box[MAX_IMAGE_PER_PAGE];
   dt_image_pos screen_page;      // this is for reference and is the box of the white page (in mm)
                                  // in print module. it is the full page.

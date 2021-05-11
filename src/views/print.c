@@ -141,6 +141,24 @@ static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, 
 
   if(bidx != -1)
     prt->imgs->box[bidx].imgid = prt->last_selected;
+
+  prt->imgs->motion_over = -1;
+  dt_control_queue_redraw_center();
+}
+
+static gboolean _drag_motion_received(GtkWidget *widget, GdkDragContext *dc,
+                                      gint x, gint y, guint time,
+                                      gpointer data)
+{
+  const dt_view_t *self = (dt_view_t *)data;
+  dt_print_t *prt = (dt_print_t *)self->data;
+
+  const int bidx = dt_printing_get_image_box(prt->imgs, x, y);
+  prt->imgs->motion_over = bidx;
+
+  if(bidx != -1) dt_control_queue_redraw_center();
+
+  return TRUE;
 }
 
 void
@@ -358,8 +376,9 @@ void enter(dt_view_t *self)
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
 
   gtk_drag_dest_set(widget, GTK_DEST_DEFAULT_ALL,
-                    target_list_internal, n_targets_internal, GDK_ACTION_MOVE);
+                    target_list_all, n_targets_all, GDK_ACTION_MOVE);
   g_signal_connect(widget, "drag-data-received", G_CALLBACK(_drag_and_drop_received), self);
+  g_signal_connect(widget, "drag-motion", G_CALLBACK(_drag_motion_received), self);
 
   dt_control_set_mouse_over_id(prt->imgs->box[0].imgid);
 }
@@ -374,6 +393,9 @@ void leave(dt_view_t *self)
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                G_CALLBACK(_view_print_filmstrip_activate_callback),
                                (gpointer)self);
+
+//  g_signal_disconnect(widget, "drag-data-received", G_CALLBACK(_drag_and_drop_received));
+//  g_signal_disconnect(widget, "drag-motion", G_CALLBACK(_drag_motion_received));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
