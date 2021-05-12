@@ -56,10 +56,7 @@ void dt_control_init(dt_control_t *s)
   s->actions = &s->actions_global;
 
   dt_action_define_key_pressed_accel(&s->actions_global, "toggle side borders", &s->accels.global_sideborders);
-  dt_action_define_key_pressed_accel(&s->actions_global, "toggle panels collapsing controls", &s->accels.global_collapsing_controls);
-  dt_action_define_key_pressed_accel(&s->actions_global, "slideshow view", &s->accels.slideshow_view);
   dt_action_define_key_pressed_accel(&s->actions_global, "show accels window", &s->accels.global_accels_window);
-  dt_action_define_key_pressed_accel(&s->actions_global, "toggle focus peaking", &s->accels.global_focus_peaking);
 
   s->widgets = g_hash_table_new(NULL, NULL);
   s->shortcuts = g_sequence_new(g_free);
