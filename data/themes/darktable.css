@@ -941,6 +941,11 @@ menuitem > arrow
   border: 0;
 }
 
+menuitem check
+{
+  margin-left: 0.5em;
+}
+
 popover
 {
   padding: 0.4em;
