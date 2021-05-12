@@ -473,13 +473,15 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
       gp_camera_get_config(cam->gpcam, &config, c->gpcontext);
       if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
       {
-        int value = spj->value;
-        int set_value_succeeds = gp_widget_set_value(widget, &value);
-        if(set_value_succeeds != GP_OK){
+        const int value = spj->value;
+        const int set_value_succeeds = gp_widget_set_value(widget, &value);
+        if(set_value_succeeds != GP_OK)
+        {
           dt_print(DT_DEBUG_CAMCTL, "[camera_control] setting int value %d on %s failed with code %d", spj->value, spj->name, set_value_succeeds);
         }
-        int set_config_succeeds = gp_camera_set_config(cam->gpcam, config, c->gpcontext);
-        if(set_value_succeeds != GP_OK){
+        const int set_config_succeeds = gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+        if(set_value_succeeds != GP_OK)
+        {
           dt_print(DT_DEBUG_CAMCTL, "[camera_control] setting config failed with code %d", set_config_succeeds);
         }
       }
@@ -507,13 +509,15 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
       gp_camera_get_config(cam->gpcam, &config, c->gpcontext);
       if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
       {
-        float value = spj->value;
-        int set_value_succeeds = gp_widget_set_value(widget, &value);
-        if(set_value_succeeds != GP_OK){
+        const float value = spj->value;
+        const int set_value_succeeds = gp_widget_set_value(widget, &value);
+        if(set_value_succeeds != GP_OK)
+        {
           dt_print(DT_DEBUG_CAMCTL, "[camera_control] setting int value %.2f on %s failed with code %d", spj->value, spj->name, set_value_succeeds);
         }
-        int set_config_succeeds = gp_camera_set_config(cam->gpcam, config, c->gpcontext);
-        if(set_value_succeeds != GP_OK){
+        const int set_config_succeeds = gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+        if(set_value_succeeds != GP_OK)
+        {
           dt_print(DT_DEBUG_CAMCTL, "[camera_control] setting config failed with code %d", set_config_succeeds);
         }
       }
