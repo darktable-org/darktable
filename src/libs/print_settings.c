@@ -147,7 +147,7 @@ static void _y_changed(GtkWidget *widget, gpointer user_data);
 static const int min_borders = -100; // this is in mm
 
 int
-position ()
+position()
 {
   return 990;
 }
@@ -1053,7 +1053,7 @@ _top_border_callback(GtkWidget *spin, gpointer user_data)
 
   ps->prt.page.margin_top = to_mm(ps, value);
 
-  if (ps->lock_activated == TRUE)
+  if(ps->lock_activated == TRUE)
   {
     ps->prt.page.margin_bottom = to_mm(ps, value);
     ps->prt.page.margin_left = to_mm(ps, value);
