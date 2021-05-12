@@ -342,7 +342,7 @@ int operation_tags()
 int operation_tags_filter()
 {
   // switch off watermark, it gets confused.
-  return IOP_TAG_DECORATION;
+  return IOP_TAG_DECORATION | IOP_TAG_CLIPPING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1354,7 +1354,13 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       {
         keystone_type_populate(self, FALSE, 0);
       }
+      // weird hack : commit_box use distort_transform routines with gui values to get params
+      // but this values are accurate only if clipping is the gui_module...
+      // so we temporary put back gui_module to clipping and revert once finished
+      dt_iop_module_t *old_gui = self->dev->gui_module;
+      self->dev->gui_module = self;
       commit_box(self, g, p);
+      self->dev->gui_module = old_gui;
       g->clip_max_pipe_hash = 0;
     }
   }
