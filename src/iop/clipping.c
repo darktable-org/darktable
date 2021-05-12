@@ -1354,7 +1354,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       {
         keystone_type_populate(self, FALSE, 0);
       }
-      // weird hack : commit_box use distort_transform routines with gui values to get params
+      // hack : commit_box use distort_transform routines with gui values to get params
       // but this values are accurate only if clipping is the gui_module...
       // so we temporary put back gui_module to clipping and revert once finished
       dt_iop_module_t *old_gui = self->dev->gui_module;
