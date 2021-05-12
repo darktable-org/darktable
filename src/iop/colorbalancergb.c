@@ -1584,7 +1584,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->global_H, _("hue of the global color offset"));
 
   g->global_C = dt_bauhaus_slider_from_params(self, "global_C");
-  dt_bauhaus_slider_set_soft_range(g->global_C, 0., 0.005);
+  dt_bauhaus_slider_set_soft_range(g->global_C, 0., 0.01);
   dt_bauhaus_slider_set_digits(g->global_C, 4);
   dt_bauhaus_slider_set_factor(g->global_C, 100.0f);
   dt_bauhaus_slider_set_format(g->global_C, "%.2f %%");
@@ -1593,7 +1593,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("shadows lift")), FALSE, FALSE, 0);
 
   g->shadows_Y = dt_bauhaus_slider_from_params(self, "shadows_Y");
-  dt_bauhaus_slider_set_soft_range(g->shadows_Y, -0.5, 0.5);
+  dt_bauhaus_slider_set_soft_range(g->shadows_Y, -1.0, 1.0);
   dt_bauhaus_slider_set_factor(g->shadows_Y, 100.0f);
   dt_bauhaus_slider_set_digits(g->shadows_Y, 4);
   dt_bauhaus_slider_set_format(g->shadows_Y, "%.2f %%");
@@ -1607,7 +1607,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->shadows_H, _("hue of the color gain in shadows"));
 
   g->shadows_C = dt_bauhaus_slider_from_params(self, "shadows_C");
-  dt_bauhaus_slider_set_soft_range(g->shadows_C, 0., 0.1);
+  dt_bauhaus_slider_set_soft_range(g->shadows_C, 0., 0.5);
   dt_bauhaus_slider_set_step(g->shadows_C, 0.01);
   dt_bauhaus_slider_set_digits(g->shadows_C, 4);
   dt_bauhaus_slider_set_factor(g->shadows_C, 100.0f);
@@ -1631,7 +1631,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->highlights_H, _("hue of the color gain in highlights"));
 
   g->highlights_C = dt_bauhaus_slider_from_params(self, "highlights_C");
-  dt_bauhaus_slider_set_soft_range(g->highlights_C, 0., 0.05);
+  dt_bauhaus_slider_set_soft_range(g->highlights_C, 0., 0.2);
   dt_bauhaus_slider_set_step(g->shadows_C, 0.01);
   dt_bauhaus_slider_set_digits(g->highlights_C, 4);
   dt_bauhaus_slider_set_factor(g->highlights_C, 100.0f);
@@ -1655,7 +1655,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->midtones_H, _("hue of the color exponent in midtones"));
 
   g->midtones_C = dt_bauhaus_slider_from_params(self, "midtones_C");
-  dt_bauhaus_slider_set_soft_range(g->midtones_C, 0., 0.02);
+  dt_bauhaus_slider_set_soft_range(g->midtones_C, 0., 0.1);
   dt_bauhaus_slider_set_step(g->midtones_C, 0.005);
   dt_bauhaus_slider_set_digits(g->midtones_C, 4);
   dt_bauhaus_slider_set_factor(g->midtones_C, 100.0f);
