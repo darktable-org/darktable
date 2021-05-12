@@ -418,7 +418,7 @@ static inline void _transform_lab_to_rgb_matrix(const float *const restrict imag
     const float *const restrict in = __builtin_assume_aligned(image_in + y, 16);
     float *const restrict out = __builtin_assume_aligned(image_out + y, 16);
 
-    float xyz[3] DT_ALIGNED_PIXEL;
+    float xyz[4] DT_ALIGNED_PIXEL;
     dt_Lab_to_XYZ(in, xyz);
     _ioppr_xyz_to_linear_rgb_matrix(xyz, out, matrix);
   }
@@ -467,8 +467,8 @@ static inline void _transform_matrix_rgb(const float *const restrict image_in,
     {
       const float *const restrict in = __builtin_assume_aligned(image_in + y, 16);
       float *const restrict out = __builtin_assume_aligned(image_out + y, 16);
-      float rgb[3] DT_ALIGNED_PIXEL;
-      float temp[3] DT_ALIGNED_PIXEL = { 0.f };
+      float rgb[4] DT_ALIGNED_PIXEL;
+      float temp[4] DT_ALIGNED_PIXEL = { 0.f };
 
       // linearize if non-linear input
       for(size_t c = 0; c < 3; c++)
@@ -674,7 +674,7 @@ static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profil
 
   if(!isnan(profile_info->matrix_in[0]) && !isnan(profile_info->matrix_out[0]) && profile_info->nonlinearlut)
   {
-    const float rgb[3] = { 0.1842f, 0.1842f, 0.1842f };
+    const float rgb[4] = { 0.1842f, 0.1842f, 0.1842f };
     profile_info->grey = dt_ioppr_get_rgb_matrix_luminance(rgb, profile_info->matrix_in, profile_info->lut_in, profile_info->unbounded_coeffs_in, profile_info->lutsize, profile_info->nonlinearlut);
   }
 
