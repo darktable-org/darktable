@@ -590,12 +590,12 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
   double pg_width  = prt->paper.width;
   double pg_height = prt->paper.height;
 
-  if (area_width==0)
+  if(area_width == 0)
     width = pg_width;
   else
     width = area_width;
 
-  if (area_height==0)
+  if(area_height == 0)
     height = pg_height;
   else
     height = area_height;
@@ -617,7 +617,7 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
     pg_height = tmp;
 
     //  only invert if we did not get a specific area
-    if (area_width == 0 && area_height == 0)
+    if(area_width == 0 && area_height == 0)
     {
       tmp = width;
       width = height;
@@ -697,7 +697,7 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
   *iwidth = *iwpix;
   *iheight = *ihpix;
 
-  if (*iwidth > *awidth)
+  if(*iwidth > *awidth)
   {
     scale =  (double)(*awidth) / (double)*iwidth;
     *iwidth = *awidth;
