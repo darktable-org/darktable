@@ -189,11 +189,11 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32
   if (prt->pinfo == NULL)
     return;
 
-  dt_get_print_layout (-1, prt->pinfo, width, height,
-                       &iwpix, &ihpix,
-                       &px, &py, &pwidth, &pheight,
-                       &ax, &ay, &awidth, &aheight,
-                       &ix, &iy, &iwidth, &iheight);
+  dt_get_print_layout(-1, prt->pinfo, width, height,
+                      &iwpix, &ihpix,
+                      &px, &py, &pwidth, &pheight,
+                      &ax, &ay, &awidth, &aheight,
+                      &ix, &iy, &iwidth, &iheight);
   // page w/h
   double pg_width  = prt->pinfo->paper.width;
   double pg_height = prt->pinfo->paper.height;
@@ -205,7 +205,7 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32
   double np_bottom = prt->pinfo->printer.hw_margin_bottom;
 
   // handle the landscape mode if needed
-  if (prt->pinfo->page.landscape)
+  if(prt->pinfo->page.landscape)
   {
     double tmp = pg_width;
     pg_width = pg_height;
