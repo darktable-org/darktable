@@ -70,7 +70,7 @@ static gboolean _gradient_slider_postponed_value_change(gpointer data)
   if(!DTGTK_GRADIENT_SLIDER(data)->is_dragging) DTGTK_GRADIENT_SLIDER(data)->timeout_handle = 0;
   else
   {
-    int delay = CLAMP(darktable.develop->average_delay * 3 / 2,
+    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2,
                             DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MIN,
                             DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MAX);
     DTGTK_GRADIENT_SLIDER(data)->timeout_handle = g_timeout_add(delay, _gradient_slider_postponed_value_change, data);
@@ -323,7 +323,7 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
       gslider->is_changed = TRUE;
       gslider->is_dragging = TRUE;
       // timeout_handle should always be zero here, but check just in case
-      int delay = CLAMP(darktable.develop->average_delay * 3 / 2,
+      const int delay = CLAMP(darktable.develop->average_delay * 3 / 2,
                               DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MIN,
                               DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MAX);
       if(!gslider->timeout_handle)

@@ -869,12 +869,8 @@ void init_key_accels(dt_view_t *self)
   dt_action_define_key_pressed_accel(&self->actions, "move page down and select", &ac->lighttable_sel_pagedown);
   dt_action_define_key_pressed_accel(&self->actions, "move start and select", &ac->lighttable_sel_start);
   dt_action_define_key_pressed_accel(&self->actions, "move end and select", &ac->lighttable_sel_end);
-  dt_action_define_key_pressed_accel(&self->actions, "scroll center", &ac->lighttable_center);
   dt_action_define_key_pressed_accel(&self->actions, "preview", &ac->lighttable_preview);
   dt_action_define_key_pressed_accel(&self->actions, "preview with focus detection", &ac->lighttable_preview_display_focus);
-  dt_action_define_key_pressed_accel(&self->actions, "toggle filmstrip or timeline", &ac->lighttable_timeline);
-  dt_action_define_key_pressed_accel(&self->actions, "preview zoom 100%", &ac->lighttable_preview_zoom_100);
-  dt_action_define_key_pressed_accel(&self->actions, "preview zoom fit", &ac->lighttable_preview_zoom_fit);
 
   // movement keys
   dt_accel_register_view(self, NC_("accel", "move page up"), GDK_KEY_Page_Up, 0);

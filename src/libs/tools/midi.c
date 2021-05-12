@@ -242,12 +242,12 @@ static gboolean poll_midi_devices(gpointer user_data)
     midi_device *midi = devices->data;
 
     PmEvent event[EVENT_BUFFER_SIZE];
-    int num_events = Pm_Read(midi->portmidi_in, event, EVENT_BUFFER_SIZE);
+    const int num_events = Pm_Read(midi->portmidi_in, event, EVENT_BUFFER_SIZE);
 
     for(int i = 0; i < num_events; i++)
     {
 
-      int event_status = Pm_MessageStatus(event[i].message);
+      const int event_status = Pm_MessageStatus(event[i].message);
       int event_data1 = Pm_MessageData1(event[i].message);
       int event_data2 = Pm_MessageData2(event[i].message);
 
