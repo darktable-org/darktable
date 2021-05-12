@@ -307,7 +307,7 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_GUIDES_WIDGET;
 }
 
 int operation_tags()

@@ -1473,7 +1473,7 @@ static gboolean _guides_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, 
   const GdkEventButton *e = (GdkEventButton *)event;
   if(e->button == 3)
   {
-    dt_guides_show_popup(widget, darktable.develop->gui_module, FALSE);
+    dt_guides_show_popup(widget);
     return TRUE;
   }
   else
