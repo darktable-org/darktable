@@ -2579,8 +2579,8 @@ static void dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
     {
       if(!d->timeout_handle)
       {
-        int delay = CLAMP(darktable.develop->average_delay * 3 / 2, DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN,
-                          DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX);
+        const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN,
+                                DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX);
         d->timeout_handle = g_timeout_add(delay, dt_bauhaus_slider_postponed_value_change, w);
       }
     }
