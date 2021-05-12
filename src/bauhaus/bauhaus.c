@@ -1752,10 +1752,10 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   gtk_style_context_get_color(context, GTK_STATE_FLAG_INSENSITIVE, &text_color_insensitive);
 
   GdkRGBA *fg_color = default_color_assign();
-  GdkRGBA *bg_color = default_color_assign();
+  GdkRGBA *bg_color;
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
 
-  gtk_style_context_get(context, state, "background-color", bg_color, NULL);
+  gtk_style_context_get(context, state, "background-color", &bg_color, NULL);
   gtk_style_context_get_color(context, state, fg_color);
 
   // draw background
@@ -1975,11 +1975,13 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   cairo_translate(cr, 0, darktable.bauhaus->widget_space);
 
   GdkRGBA *fg_color = default_color_assign();
+  GdkRGBA *bg_color;
   GdkRGBA *text_color = default_color_assign();
   const GtkStateFlags state = gtk_widget_get_state_flags(widget);
   gtk_style_context_get_color(context, state, text_color);
   gtk_render_background(context, cr, 0, 0, width, height + INNER_PADDING);
   gtk_style_context_get_color(context, state, fg_color);
+  gtk_style_context_get(context, state, "background-color", &bg_color, NULL);
 
   // draw type specific content:
   cairo_save(cr);
@@ -2053,7 +2055,7 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
         cairo_save(cr);
         cairo_rectangle(cr, 0, 0, width - darktable.bauhaus->quad_width - INNER_PADDING, height + INNER_PADDING);
         cairo_clip(cr);
-        dt_bauhaus_draw_indicator(w, d->pos, cr, *fg_color, darktable.bauhaus->indicator_border);
+        dt_bauhaus_draw_indicator(w, d->pos, cr, *fg_color, *bg_color);
         cairo_restore(cr);
 
         // TODO: merge that text with combo
@@ -2083,6 +2085,7 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
 
   gdk_rgba_free(text_color);
   gdk_rgba_free(fg_color);
+  gdk_rgba_free(bg_color);
 
   return TRUE;
 }

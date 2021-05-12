@@ -855,6 +855,17 @@ dialog headerbar entry
   min-height: 1em;
 }
 
+popover #bauhaus-slider
+{
+  background-color: @tooltip_bg_color;
+}
+
+#iop-plugin-ui #bauhaus-slider,
+#lib-plugin-ui #bauhaus-slider
+{
+  background-color: @plugin_bg_color;
+}
+
 #blending-box #dt-toggle-button
 {
   margin-top: 0;
