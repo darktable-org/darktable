@@ -2112,6 +2112,7 @@ static int _control_import_image_copy(const char *filename,
       }
     }
   }
+  g_free(data);
   g_free(output);
   g_free(basename);
   return res ? dt_import_session_film_id(session) : -1;
