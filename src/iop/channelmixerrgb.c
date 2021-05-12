@@ -2245,7 +2245,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
     cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
 
-    float RGB[3];
+    float RGB[4];
     dt_ioppr_lab_to_rgb_matrix(g->checker->values[k].Lab, RGB, work_profile->matrix_out, work_profile->lut_out,
                                work_profile->unbounded_coeffs_out, work_profile->lutsize,
                                work_profile->nonlinearlut);
