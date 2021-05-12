@@ -406,7 +406,13 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     }
     else
     {
+      // hack : commit_box use distort_transform routines with gui values to get params
+      // but this values are accurate only if crop is the gui_module...
+      // so we temporary put back gui_module to crop and revert once finished
+      dt_iop_module_t *old_gui = self->dev->gui_module;
+      self->dev->gui_module = self;
       _commit_box(self, g, p);
+      self->dev->gui_module = old_gui;
       g->clip_max_pipe_hash = 0;
     }
   }
