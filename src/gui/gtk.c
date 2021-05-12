@@ -39,6 +39,7 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/signal.h"
+#include "gui/guides.h"
 #include "gui/presets.h"
 #include "views/view.h"
 
@@ -217,6 +218,14 @@ static gboolean focuspeaking_switch_key_accel_callback(GtkAccelGroup *accel_grou
   // which will do the state toggling internally according to the button state we set here.
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(darktable.gui->focus_peaking_button), state);
 
+  return TRUE;
+}
+
+static gboolean _toggle_guides_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                              GdkModifierType modifier, gpointer data)
+{
+  dt_guides_button_toggled();
+  dt_guides_update_button_state();
   return TRUE;
 }
 
@@ -1330,6 +1339,10 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_accel_register_global(NC_("accel", "toggle focus peaking"), GDK_KEY_f, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_connect_global("toggle focus peaking",
                           g_cclosure_new(G_CALLBACK(focuspeaking_switch_key_accel_callback), NULL, NULL));
+
+  // toggle focus peaking everywhere
+  dt_accel_register_global(NC_("accel", "toggle guides"), GDK_KEY_g, 0);
+  dt_accel_connect_global("toggle guides", g_cclosure_new(G_CALLBACK(_toggle_guides_accel_callback), NULL, NULL));
 
   // View-switch
   dt_accel_register_global(NC_("accel", "switch view"), GDK_KEY_period, 0);
