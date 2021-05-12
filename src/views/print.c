@@ -140,7 +140,8 @@ static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, 
   const int bidx = dt_printing_get_image_box(prt->imgs, x, y);
 
   if(bidx != -1)
-    prt->imgs->box[bidx].imgid = prt->last_selected;
+    dt_printing_setup_image(prt->imgs, bidx, prt->last_selected,
+                            100, 100, ALIGNMENT_CENTER);
 
   prt->imgs->motion_over = -1;
   dt_control_queue_redraw_center();
@@ -177,7 +178,8 @@ void cleanup(dt_view_t *self)
   free(prt);
 }
 
-static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+static void expose_print_page(dt_view_t *self, cairo_t *cr,
+                              int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_print_t *prt = (dt_print_t *)self->data;
 
@@ -231,15 +233,9 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32
   // record the screen page dimention. this will be used to compute the actual
   // layout of the areas placed over the page.
 
-  prt->imgs->screen_page.x = px;
-  prt->imgs->screen_page.y = py;
-  prt->imgs->screen_page.width = pwidth;
-  prt->imgs->screen_page.height = pheight;
-
-  prt->imgs->screen_page_area.x = ax;
-  prt->imgs->screen_page_area.y = ay;
-  prt->imgs->screen_page_area.width = awidth;
-  prt->imgs->screen_page_area.height = aheight;
+  dt_printing_setup_display(prt->imgs,
+                            px, py, pwidth, pheight,
+                            ax, ay, awidth, aheight);
 
   // display non-printable area
   cairo_set_source_rgb (cr, 0.1, 0.1, 0.1);
@@ -342,11 +338,8 @@ int try_enter(dt_view_t *self)
   // and drop the lock again.
   dt_image_cache_read_release(darktable.image_cache, img);
 
-  if(prt->imgs->auto_fit)
-  {
-    prt->imgs->count = 1;
-    prt->imgs->box[0].imgid = imgid;
-  }
+  // we need to setup the selected image
+  prt->imgs->imgid_to_load = imgid;
 
   return 0;
 }
@@ -356,12 +349,12 @@ void enter(dt_view_t *self)
   dt_print_t *prt=(dt_print_t*)self->data;
 
   /* scroll filmstrip to the first selected image */
-  if(prt->imgs->box[0].imgid >= 0)
+  if(prt->imgs->imgid_to_load >= 0)
   {
     // change active image
     dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), prt->imgs->box[0].imgid, TRUE);
     dt_view_active_images_reset(FALSE);
-    dt_view_active_images_add(prt->imgs->box[0].imgid, TRUE);
+    dt_view_active_images_add(prt->imgs->imgid_to_load, TRUE);
   }
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
@@ -380,11 +373,13 @@ void enter(dt_view_t *self)
   g_signal_connect(widget, "drag-data-received", G_CALLBACK(_drag_and_drop_received), self);
   g_signal_connect(widget, "drag-motion", G_CALLBACK(_drag_motion_received), self);
 
-  dt_control_set_mouse_over_id(prt->imgs->box[0].imgid);
+  dt_control_set_mouse_over_id(prt->imgs->imgid_to_load);
 }
 
 void leave(dt_view_t *self)
 {
+  dt_print_t *prt=(dt_print_t*)self->data;
+
   /* disconnect from mipmap updated signal */
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_print_mipmaps_updated_signal_callback),
                                (gpointer)self);
@@ -394,6 +389,7 @@ void leave(dt_view_t *self)
                                G_CALLBACK(_view_print_filmstrip_activate_callback),
                                (gpointer)self);
 
+  dt_printing_clear_boxes(prt->imgs);
 //  g_signal_disconnect(widget, "drag-data-received", G_CALLBACK(_drag_and_drop_received));
 //  g_signal_disconnect(widget, "drag-motion", G_CALLBACK(_drag_motion_received));
 }

@@ -48,7 +48,6 @@ typedef struct dt_medium_info_t
 typedef struct dt_page_setup_t
 {
   gboolean landscape;
-  dt_alignment_t alignment;
   double margin_top, margin_bottom, margin_left, margin_right;
 } dt_page_setup_t;
 

@@ -710,49 +710,6 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
     *iheight = *aheight;
     *iwidth = (int32_t)(((double)*iwidth + 0.5) * scale);
   }
-
-  // now the image position (top-left corner coordinates) in the display area depending on the page
-  // alignment set by the user.
-
-  switch (prt->page.alignment)
-  {
-    case ALIGNMENT_TOP_LEFT:
-      *ix = bx;
-      *iy = by;
-      break;
-    case ALIGNMENT_TOP:
-      *ix = bx + (*awidth - *iwidth) / 2;
-      *iy = by;
-      break;
-    case ALIGNMENT_TOP_RIGHT:
-      *ix = br - *iwidth;
-      *iy = by;
-      break;
-    case ALIGNMENT_LEFT:
-      *ix = bx;
-      *iy = by + (*aheight - *iheight) / 2;
-      break;
-    case ALIGNMENT_CENTER:
-      *ix = bx + (*awidth - *iwidth) / 2;
-      *iy = by + (*aheight - *iheight) / 2;
-      break;
-    case ALIGNMENT_RIGHT:
-      *ix = br - *iwidth;
-      *iy = by + (*aheight - *iheight) / 2;
-      break;
-    case ALIGNMENT_BOTTOM_LEFT:
-      *ix = bx;
-      *iy = bb - *iheight;
-      break;
-    case ALIGNMENT_BOTTOM:
-      *ix = bx + (*awidth - *iwidth) / 2;
-      *iy = bb - *iheight;
-      break;
-    case ALIGNMENT_BOTTOM_RIGHT:
-      *ix = br - *iwidth;
-      *iy = bb - *iheight;
-      break;
-  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

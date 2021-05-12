@@ -2829,13 +2829,6 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
-  <dtconfig>
-    <name>plugins/print/print/autofit</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
   <dtconfig prefs="misc" section="interface">
     <name>ui_last/display_profile_source</name>
     <type>
