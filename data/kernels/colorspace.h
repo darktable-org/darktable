@@ -430,7 +430,7 @@ inline float4 gradingRGB_to_Ych(float4 RGB)
   RGB.y -= pD65[1];
 
   Ych.y = hypot(RGB.y, RGB.x);
-  Ych.z = (Ych.x == 0.f) ? 0.f : atan2(RGB.y, RGB.x);
+  Ych.z = atan2(RGB.y, RGB.x);
   Ych.w = RGB.w;
   return Ych;
 }
