@@ -605,7 +605,7 @@ double dt_control_job_get_progress(dt_job_t *job)
 void dt_control_jobs_init(dt_control_t *control)
 {
   // start threads
-  control->num_threads = CLAMP(dt_conf_get_int("worker_threads"), 1, 8);
+  control->num_threads = dt_worker_threads();
   control->thread = (pthread_t *)calloc(control->num_threads, sizeof(pthread_t));
   control->job = (dt_job_t **)calloc(control->num_threads, sizeof(dt_job_t *));
   dt_pthread_mutex_lock(&control->run_mutex);

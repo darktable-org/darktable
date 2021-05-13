@@ -175,13 +175,6 @@
     <longdescription>if enabled, cached thumbnails will be color managed so that lighttable and filmstrip can show correct colors. otherwise the results may look wrong once the display profile gets changed.</longdescription>
   </dtconfig>
   <dtconfig prefs="cpugpu" restart="true">
-    <name>worker_threads</name>
-    <type min="1" max="64">int</type>
-    <default>2</default>
-    <shortdescription>number of background threads</shortdescription>
-    <longdescription>this controls for example how many threads are used to create thumbnails during import. the cache will grow to a maximum of twice this number of full resolution image buffers (needs a restart).</longdescription>
-  </dtconfig>
-  <dtconfig prefs="cpugpu" restart="true">
     <name>host_memory_limit</name>
     <type>int</type>
     <default>1500</default>
