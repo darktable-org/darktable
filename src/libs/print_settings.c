@@ -2083,6 +2083,10 @@ void gui_init(dt_lib_module_t *self)
 
   // pack image dimension hbox here
 
+  label = dt_ui_section_label_new(_("image layout"));
+  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
+  dt_gui_add_help_link(self->widget, dt_get_help_url("print_image_layout"));
+
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hboxdim), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hboxinfo), TRUE, TRUE, 0);
 
@@ -2117,12 +2121,19 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_row_homogeneous(fitbut, TRUE);
 
   GtkWidget *bnew = gtk_button_new_with_label(_("new image area"));
+  gtk_widget_set_tooltip_text(bnew, _("add a new image area on the page\n"
+                                      "click and drag on the page to place the area\n"
+                                      "drag&drop image from film strip on it"));
+
   g_signal_connect(G_OBJECT(bnew), "clicked", G_CALLBACK(_page_new_area_clicked), (gpointer)self);
+
   d->del = gtk_button_new_with_label(_("delete image area"));
+  gtk_widget_set_tooltip_text(d->del, _("delete the currently selected image area"));
   g_signal_connect(G_OBJECT(d->del), "clicked", G_CALLBACK(_page_delete_area_clicked), (gpointer)self);
   gtk_widget_set_sensitive(d->del, FALSE);
 
   GtkWidget *bclear = gtk_button_new_with_label(_("clear layout"));
+  gtk_widget_set_tooltip_text(bclear, _("remove all image area from the page"));
   g_signal_connect(G_OBJECT(bclear), "clicked", G_CALLBACK(_page_clear_area_clicked), (gpointer)self);
 
   gtk_grid_attach(fitbut, GTK_WIDGET(bnew), 0, 0, 2, 1);
@@ -2137,11 +2148,11 @@ void gui_init(dt_lib_module_t *self)
 
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
   // d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
-  gtk_widget_set_tooltip_text(d->b_x, _("x origin"));
+  gtk_widget_set_tooltip_text(d->b_x, _("image area x origin (in current unit)"));
   gtk_entry_set_width_chars(GTK_ENTRY(d->b_x), 5);
 
   // d->b_y = gtk_spin_button_new_with_range(0, 1000, 1);
-  gtk_widget_set_tooltip_text(d->b_y, _("y origin"));
+  gtk_widget_set_tooltip_text(d->b_y, _("image area y origin (in current unit)"));
   gtk_entry_set_width_chars(GTK_ENTRY(d->b_y), 5);
 
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(d->b_x), TRUE, TRUE, 0);
@@ -2152,11 +2163,11 @@ void gui_init(dt_lib_module_t *self)
   // width x height
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
   // d->b_width = gtk_spin_button_new_with_range(0, 1000, 1);
-  gtk_widget_set_tooltip_text(d->b_width, _("width"));
+  gtk_widget_set_tooltip_text(d->b_width, _("image area width (in current unit)"));
   gtk_entry_set_width_chars(GTK_ENTRY(d->b_width), 5);
 
   // d->b_height = gtk_spin_button_new_with_range(0, 1000, 1);
-  gtk_widget_set_tooltip_text(d->b_height, _("height"));
+  gtk_widget_set_tooltip_text(d->b_height, _("image area height (in current unit)"));
   gtk_entry_set_width_chars(GTK_ENTRY(d->b_height), 5);
 
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(d->b_width), TRUE, TRUE, 0);
