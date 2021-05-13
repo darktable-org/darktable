@@ -260,7 +260,7 @@ You are strongly advised to take a backup first.
 
 - In the lighttable, when several images are selected, the image information module
   now displays the information only if every image share the same data. If data are
-  different, a \<various\> text is displayed.
+  different, a \<various values\> text is displayed.
 
 ## Bug Fixes
 

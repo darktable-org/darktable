@@ -168,8 +168,6 @@ static const char *_labels[] = {
   N_("categories"),
 };
 
-static const char *VARIOUS = N_("<various>");
-
 static gboolean _dndactive = FALSE;
 
 const char *name(dt_lib_module_t *self)
@@ -265,6 +263,17 @@ static dt_lib_metadata_info_t *_get_metadata_per_index(const int index, dt_lib_m
   return NULL;
 }
 
+static void _metadata_update_markup(const gint32 i, const char *const format, dt_lib_module_t *self)
+{
+  dt_lib_metadata_info_t *m = _get_metadata_per_index(i, self);
+  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+
+  GtkLabel *label = GTK_LABEL(gtk_grid_get_child_at(GTK_GRID(d->grid), 1, m->order));
+  char *markup = g_markup_printf_escaped(format, gtk_label_get_text(label));
+  gtk_label_set_markup(label, markup);
+  g_free(markup);
+}
+
 /* helper function for updating a metadata value */
 static void _metadata_update_value(const int i, const char *value, dt_lib_module_t *self)
 {
@@ -278,13 +287,6 @@ static void _metadata_update_value(const int i, const char *value, dt_lib_module
     m->value = g_strdup(str);
     GtkWidget *w_value = gtk_grid_get_child_at(GTK_GRID(d->grid), 1, m->order);
     gtk_label_set_text(GTK_LABEL(w_value), str);
-    if (g_strcmp0(str, VARIOUS) == 0)
-    {
-      const char *format = "<span style=\"italic\">\%s</span>";
-      char *markup = g_markup_printf_escaped (format, str);
-      gtk_label_set_markup (GTK_LABEL (w_value), markup);
-      g_free (markup);
-    }
     const char *tooltip = m->tooltip ? m->tooltip : m->value;
     gtk_widget_set_tooltip_text(GTK_WIDGET(w_value), tooltip);
   }
@@ -539,58 +541,54 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   {
     gchar *const images = dt_view_get_images_to_act_on_query(FALSE);
     sqlite3_stmt *stmt = NULL;
-    gchar *query = dt_util_dstrcat(NULL, "SELECT COUNT(DISTINCT film_id), " //OK
-                                         "2, " //id always different //OK
-                                         "COUNT(DISTINCT group_id), " //OK
-                                         "COUNT(DISTINCT filename), " //OK
-                                         "COUNT(DISTINCT version), " //OK
-                                         "COUNT(DISTINCT film_id || '/' || filename), " //chemin
-                                         "COUNT(DISTINCT flags & 2048), " //copie locale
-                                         "COUNT(DISTINCT import_timestamp), " //OK
-                                         "COUNT(DISTINCT change_timestamp), " //OK
-                                         "COUNT(DISTINCT export_timestamp), " //OK
-                                         "COUNT(DISTINCT print_timestamp), " //OK
+    gchar *query = dt_util_dstrcat(NULL, "SELECT COUNT(DISTINCT film_id), "
+                                         "2, " //id always different
+                                         "COUNT(DISTINCT group_id), "
+                                         "COUNT(DISTINCT filename), "
+                                         "COUNT(DISTINCT version), "
+                                         "COUNT(DISTINCT film_id || '/' || filename), " //path
+                                         "COUNT(DISTINCT flags & 2048), " //local copy
+                                         "COUNT(DISTINCT import_timestamp), "
+                                         "COUNT(DISTINCT change_timestamp), "
+                                         "COUNT(DISTINCT export_timestamp), "
+                                         "COUNT(DISTINCT print_timestamp), "
 #if SHOW_FLAGS
-                                         "COUNT(DISTINCT flags), " //OK
+                                         "COUNT(DISTINCT flags), "
 #endif
-                                         "COUNT(DISTINCT model), " //OK
-                                         "COUNT(DISTINCT maker), " //OK
-                                         "COUNT(DISTINCT lens), " //OK
-                                         "COUNT(DISTINCT aperture), " //OK
-                                         "COUNT(DISTINCT exposure), " //OK
-                                         "COUNT(DISTINCT IFNULL(exposure_bias, '')), " //OK
-                                         "COUNT(DISTINCT focal_length), " //OK
-                                         "COUNT(DISTINCT focus_distance), " //OK
-                                         "COUNT(DISTINCT iso), " //OK
-                                         "COUNT(DISTINCT datetime_taken), " //OK
-                                         "COUNT(DISTINCT width), " //OK
-                                         "COUNT(DISTINCT height), " //OK
+                                         "COUNT(DISTINCT model), "
+                                         "COUNT(DISTINCT maker), "
+                                         "COUNT(DISTINCT lens), "
+                                         "COUNT(DISTINCT aperture), "
+                                         "COUNT(DISTINCT exposure), "
+                                         "COUNT(DISTINCT IFNULL(exposure_bias, '')), "
+                                         "COUNT(DISTINCT focal_length), "
+                                         "COUNT(DISTINCT focus_distance), "
+                                         "COUNT(DISTINCT iso), "
+                                         "COUNT(DISTINCT datetime_taken), "
+                                         "COUNT(DISTINCT width), "
+                                         "COUNT(DISTINCT height), "
                                          "COUNT(DISTINCT IFNULL(output_width, '')), " //exported width
                                          "COUNT(DISTINCT IFNULL(output_height, '')), " //exported height
-                                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 2 WHERE images.id in (%s)), " //titre
+                                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 2 WHERE images.id in (%s)), " //title
                                          "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 3 WHERE images.id in (%s)), " //description
-                                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 0 WHERE images.id in (%s)), " //auteur
-                                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 1 WHERE images.id in (%s)), " //diffuseur
-                                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 4 WHERE images.id in (%s)), " //droits
+                                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 0 WHERE images.id in (%s)), " //creator
+                                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 1 WHERE images.id in (%s)), " //publisher
+                                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 4 WHERE images.id in (%s)), " //rights
                                          "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 5 WHERE images.id in (%s)), " //notes
-                                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 6 WHERE images.id in (%s)), " //nom de version
-                                         "COUNT(DISTINCT IFNULL(latitude, '')), " //OK
-                                         "COUNT(DISTINCT IFNULL(longitude, '')), " //OK
-                                         "COUNT(DISTINCT IFNULL(altitude, '')) " //OK
+                                         "(SELECT COUNT(DISTINCT IFNULL(value,'')) FROM images LEFT JOIN meta_data ON meta_data.id = images.id AND key = 6 WHERE images.id in (%s)), " //version name
+                                         "COUNT(DISTINCT IFNULL(latitude, '')), "
+                                         "COUNT(DISTINCT IFNULL(longitude, '')), "
+                                         "COUNT(DISTINCT IFNULL(altitude, '')) "
                                          "FROM main.images "
                                          "WHERE id IN (%s)",
                                    images, images, images, images, images, images, images, images);
-    double tt = dt_get_wtime();
+
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-    printf("Requête: %0.06f", dt_get_wtime()-tt);
 
     sqlite3_stmt *stmt_tags = NULL;
-    tt = dt_get_wtime();
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 dt_util_dstrcat(NULL, "SELECT flags, COUNT(DISTINCT imgid) FROM main.tagged_images JOIN data.tags ON data.tags.id = main.tagged_images.tagid AND name NOT LIKE 'darktable|%%' WHERE imgid in (%s) GROUP BY tagid", images),
                                 -1, &stmt_tags, NULL);
-
-    printf(" - %0.06f\n", dt_get_wtime()-tt);
     g_free(query);
 
     if (sqlite3_step(stmt) == SQLITE_ROW)
@@ -650,7 +648,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       {
         _metadata_update_tooltip(md, NULL, self);
       }
-      _metadata_update_value(md, VARIOUS, self);
+      _metadata_update_value(md, _("<various values>"), self);
+      _metadata_update_markup(md, "<span style=\"italic\">%s</span>", self);
       continue;
     }
 
@@ -989,7 +988,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       g_strlcpy(text, NODATA_STRING, sizeof(text));
 
       const uint32_t keyid = dt_metadata_get_keyid_by_display_order((uint32_t)(md - md_xmp_metadata));
-      const gchar *key = dt_metadata_get_key(keyid);
+      const gchar *const key = dt_metadata_get_key(keyid);
       const gboolean hidden = dt_metadata_get_type(keyid) == DT_METADATA_TYPE_INTERNAL;
       if(! hidden)
       {
@@ -1005,8 +1004,6 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     }
   }
   dt_image_cache_read_release(darktable.image_cache, img);
-
-  return;
 
   if(mouse_over_id >= 0)
   {
