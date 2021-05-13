@@ -101,7 +101,8 @@ uint64_t dt_dev_pixelpipe_cache_basichash(int imgid, struct dt_dev_pixelpipe_t *
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     dt_develop_t *dev = piece->module->dev;
-    if(!(dev->gui_module && (dev->gui_module->operation_tags_filter() & piece->module->operation_tags())))
+    if(!(dev->gui_module && dev->gui_module != piece->module
+         && (dev->gui_module->operation_tags_filter() & piece->module->operation_tags())))
     {
       hash = ((hash << 5) + hash) ^ piece->hash;
       if(piece->module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
@@ -137,8 +138,9 @@ uint64_t dt_dev_pixelpipe_cache_basichash_prior(int imgid, struct dt_dev_pixelpi
     if (module == (dt_iop_module_t *)modules->data)
       break;		// we've found the given module, so 'last' now contains the index of the prior active module
     dt_develop_t *dev = piece->module->dev;
-    if (piece->enabled &&
-        !(dev->gui_module && (dev->gui_module->operation_tags_filter() & piece->module->operation_tags())))
+    if(piece->enabled
+       && !(dev->gui_module && dev->gui_module != piece->module
+            && (dev->gui_module->operation_tags_filter() & piece->module->operation_tags())))
       last = k;
     pieces = g_list_next(pieces);
     modules = g_list_next(modules);
