@@ -416,8 +416,9 @@ inline float4 JzAzBz_to_JzCzhz(float4 JzAzBz)
 }
 
 
-inline float4 gradingRGB_to_Ych(float4 RGB, constant const float *const D65)
+inline float4 gradingRGB_to_Ych(float4 RGB)
 {
+  const float4 D65 = { 0.18600766f,  0.5908061f,   0.22318624f, 0.f };
   float4 Ych;
   Ych.x = fmax(0.67282368f * RGB.x + 0.47812261f * RGB.y + 0.01044966f * RGB.z, 0.f);
   const float a = RGB.x + RGB.y + RGB.z;
@@ -433,8 +434,10 @@ inline float4 gradingRGB_to_Ych(float4 RGB, constant const float *const D65)
 }
 
 
-inline float4 Ych_to_gradingRGB(const float4 Ych, constant const float *const D65)
+inline float4 Ych_to_gradingRGB(const float4 Ych)
 {
+  const float4 D65 = { 0.18600766f,  0.5908061f,   0.22318624f, 0.f };
+
   float4 RGB;
   RGB.x = Ych.y * native_cos(Ych.z) + D65[0];
   RGB.y = Ych.y * native_sin(Ych.z) + D65[1];

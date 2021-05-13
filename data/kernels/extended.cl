@@ -780,7 +780,6 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
                  const int width, const int height,
                  constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
                  constant const float *const matrix_in, constant const float *const matrix_out,
-                 constant const float *const white_grading_RGB,
                  read_only const image2d_t gamut_lut,
                  const float shadows_weight, const float highlights_weight, const float midtones_weight, const float mask_grey_fulcrum,
                  const float hue_angle, const float chroma_global, const float4 chroma, const float vibrance,
@@ -801,7 +800,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
 
   Ych = fmax(pix_in, 0.f);
   RGB = matrix_product_float4(Ych, matrix_in);
-  Ych = gradingRGB_to_Ych(RGB, white_grading_RGB);
+  Ych = gradingRGB_to_Ych(RGB);
 
   // Sanitize input : no negative luminance
   float Y = fmax(Ych.x, 0.f);
@@ -824,7 +823,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   const float vib = vibrance * (1.0f - native_powr(Ych.y, fabs(vibrance)));
   const float chroma_factor = fmax(1.f + chroma_boost + vib, 0.f);
   Ych.y = soft_clip(Ych.y * chroma_factor, max_chroma_h, max_chroma_h * 4.f);
-  RGB = Ych_to_gradingRGB(Ych, white_grading_RGB);
+  RGB = Ych_to_gradingRGB(Ych);
 
   // Color balance
 
@@ -900,7 +899,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
 
   Ych = JzAzBz_2_XYZ(Jab);
   RGB.xyz = matrix_dot(Ych, XYZ_to_RGB_D65).xyz;
-  Ych = gradingRGB_to_Ych(RGB, white_grading_RGB);
+  Ych = gradingRGB_to_Ych(RGB);
   Y = fmax(Ych.x, 0.f);
 
   // Gamut mapping
@@ -909,7 +908,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   const float out_max_chroma_h = Y * lookup_gamut(gamut_lut, Ych.z);
   Ych.y = soft_clip(Ych.y, out_max_chroma_h, out_max_chroma_h * 4.f);
 
-  RGB = Ych_to_gradingRGB(Ych, white_grading_RGB);
+  RGB = Ych_to_gradingRGB(Ych);
   RGB = matrix_product_float4(RGB, matrix_out);
 
   if(mask_display)
