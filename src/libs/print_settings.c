@@ -526,6 +526,15 @@ static void _page_new_area_clicked(GtkWidget *widget, gpointer user_data)
   ps->creation = TRUE;
 }
 
+static void _page_clear_area_clicked(GtkWidget *widget, gpointer user_data)
+{
+  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  dt_printing_clear_boxes(&ps->imgs);
+  dt_control_queue_redraw_center();
+}
+
 static void _page_delete_area_clicked(GtkWidget *widget, gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -2086,14 +2095,27 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *hfitbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *mfitbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+  GtkGrid *fitbut = GTK_GRID(gtk_grid_new());
+  gtk_grid_set_row_spacing(fitbut, DT_PIXEL_APPLY_DPI(3));
+  gtk_grid_set_column_spacing(fitbut, DT_PIXEL_APPLY_DPI(3));
+  gtk_grid_set_column_homogeneous(fitbut, TRUE);
+  gtk_grid_set_row_homogeneous(fitbut, TRUE);
+
   GtkWidget *bnew = gtk_button_new_with_label(_("new image area"));
   g_signal_connect(G_OBJECT(bnew), "clicked", G_CALLBACK(_page_new_area_clicked), (gpointer)self);
   d->del = gtk_button_new_with_label(_("delete image area"));
   g_signal_connect(G_OBJECT(d->del), "clicked", G_CALLBACK(_page_delete_area_clicked), (gpointer)self);
   gtk_widget_set_sensitive(d->del, FALSE);
 
-  gtk_box_pack_start(GTK_BOX(mfitbox), GTK_WIDGET(bnew), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(mfitbox), GTK_WIDGET(d->del), TRUE, TRUE, 0);
+  GtkWidget *bclear = gtk_button_new_with_label(_("clear layout"));
+  g_signal_connect(G_OBJECT(bclear), "clicked", G_CALLBACK(_page_clear_area_clicked), (gpointer)self);
+
+  gtk_grid_attach(fitbut, GTK_WIDGET(bnew), 0, 0, 2, 1);
+  gtk_grid_attach(fitbut, GTK_WIDGET(d->del), 0, 1, 1, 1);
+  gtk_grid_attach(fitbut, GTK_WIDGET(bclear), 1, 1, 1, 1);
+
+  gtk_box_pack_start(GTK_BOX(mfitbox), GTK_WIDGET(fitbut), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hfitbox), GTK_WIDGET(mfitbox), TRUE, TRUE, 0);
 
   // X x Y
