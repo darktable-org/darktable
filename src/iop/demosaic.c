@@ -3084,9 +3084,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef HAVE_OPENCL
 // color smoothing step by multiple passes of median filtering
 static int color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
-                              cl_mem dev_out, const dt_iop_roi_t *const roi_out)
+                              cl_mem dev_out, const dt_iop_roi_t *const roi_out, const int passes)
 {
-  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
 
   const int devid = piece->pipe->devid;
@@ -3110,7 +3109,7 @@ static int color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   cl_mem dev_t1 = dev_out;
   cl_mem dev_t2 = dev_tmp;
 
-  for(int pass = 0; pass < data->color_smoothing; pass++)
+  for(int pass = 0; pass < passes; pass++)
   {
     size_t sizes[] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
     size_t local[] = { locopt.sizex, locopt.sizey, 1 };
@@ -3642,7 +3641,7 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   // color smoothing
   if((data->color_smoothing) && smooth)
   {
-    if(!color_smoothing_cl(self, piece, dev_out, dev_out, roi_out))
+    if(!color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing))
       goto error;
   }
 
@@ -3894,7 +3893,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   // color smoothing
   if(data->color_smoothing)
   {
-    if(!color_smoothing_cl(self, piece, dev_out, dev_out, roi_out))
+    if(!color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing))
       goto error;
   }
 
@@ -4316,7 +4315,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   // color smoothing
   if((data->color_smoothing) && smooth)
   {
-    if(!color_smoothing_cl(self, piece, dev_out, dev_out, roi_out))
+    if(!color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing))
       goto error;
   }
 
@@ -5042,7 +5041,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
   // color smoothing
   if(data->color_smoothing)
   {
-    if(!color_smoothing_cl(self, piece, dev_out, dev_out, roi_out))
+    if(!color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing))
       goto error;
   }
 
@@ -5126,7 +5125,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     {
       high_image = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
       if(high_image == NULL) return FALSE;
-      if(!process_markesteijn_cl(self, piece, dev_in, high_image, roi_in, roi_in, TRUE)) return FALSE;
+      if(!process_markesteijn_cl(self, piece, dev_in, high_image, roi_in, roi_in, FALSE)) return FALSE;
     }
     else
     {
@@ -5173,7 +5172,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   blend = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
   details = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
   low_image = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
-  if((blend == NULL) || (low_image == NULL)) goto finish;
+  if((blend == NULL) || (low_image == NULL) || (details == NULL)) goto finish;
 
   gboolean showmask = FALSE;
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
@@ -5185,6 +5184,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(info) dt_get_times(&start_time);
   if(process_vng_cl(self, piece, dev_in, low_image, roi_in, roi_in, FALSE))
   {
+    if(!color_smoothing_cl(self, piece, low_image, low_image, roi_in, 2))
+    {
+      retval = FALSE;
+      goto finish;
+    }
     retval = dual_demosaic_cl(self, piece, details, blend, high_image, low_image, dev_aux, width, height, showmask);   
   } 
 
@@ -5208,7 +5212,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // color smoothing
   if(data->color_smoothing)
   {
-    if(!color_smoothing_cl(self, piece, dev_out, dev_out, roi_out))
+    if(!color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing))
     {
       retval = FALSE;
       goto finish;
@@ -5487,11 +5491,15 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
   if(!(use_method == DT_IOP_DEMOSAIC_PPG))
     d->median_thrs = 0.0f;
+
   if(passing)
   {
     d->green_eq = DT_IOP_GREEN_EQ_NO;
     d->color_smoothing = 0;
   }
+
+  if(use_method & DEMOSAIC_DUAL)
+    d->color_smoothing = 0;
 
   d->demosaicing_method = use_method;
 
@@ -5604,7 +5612,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   gtk_widget_set_visible(g->median_thrs, bayer && isppg);
   gtk_widget_set_visible(g->greeneq, !passing);
-  gtk_widget_set_visible(g->color_smoothing, !passing);
+  gtk_widget_set_visible(g->color_smoothing, !passing && !isdual);
   gtk_widget_set_visible(g->dual_mask, isdual);
   gtk_widget_set_visible(g->dual_thrs, isdual);
   dt_bauhaus_slider_set(g->median_thrs, p->median_thrs);
@@ -5671,7 +5679,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   gtk_widget_set_visible(g->median_thrs, bayer && isppg);
   gtk_widget_set_visible(g->greeneq, !passing);
-  gtk_widget_set_visible(g->color_smoothing, !passing);
+  gtk_widget_set_visible(g->color_smoothing, !passing && !isdual);
   gtk_widget_set_visible(g->dual_mask, isdual);
   gtk_widget_set_visible(g->dual_thrs, isdual);
 
