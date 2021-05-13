@@ -5491,11 +5491,15 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
   if(!(use_method == DT_IOP_DEMOSAIC_PPG))
     d->median_thrs = 0.0f;
-  if(passing || (use_method & DEMOSAIC_DUAL))
+
+  if(passing)
   {
     d->green_eq = DT_IOP_GREEN_EQ_NO;
     d->color_smoothing = 0;
   }
+
+  if(use_method & DEMOSAIC_DUAL)
+    d->color_smoothing = 0;
 
   d->demosaicing_method = use_method;
 
