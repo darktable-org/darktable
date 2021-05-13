@@ -2791,12 +2791,17 @@ void gui_reset(dt_lib_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(ps->black_point_compensation), FALSE);
   gtk_widget_set_sensitive(GTK_WIDGET(ps->style_mode), FALSE);
 
-  dt_printing_clear_boxes(&ps->imgs);
-
   // reset page orientation to fit the picture if a single one is displayed
 
-  if(ps->imgs.count == 1)
-    _set_orientation(ps, ps->imgs.box[0].imgid);
+  const int32_t imgid = (ps->imgs.count > 0) ? ps->imgs.box[0].imgid : -1;
+  dt_printing_clear_boxes(&ps->imgs);
+  ps->imgs.imgid_to_load = imgid;
+
+  ps->creation = ps->dragging = FALSE;
+  ps->selected = -1;
+  ps->last_selected = -1;
+
+  dt_control_queue_redraw_center();
 }
 
 void init_key_accels(dt_lib_module_t *self)
