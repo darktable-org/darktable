@@ -347,7 +347,8 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
 
   pipe->want_detail_mask &= DT_DEV_DETAIL_MASK_REQUIRED;
   if(raw_img)          pipe->want_detail_mask |= DT_DEV_DETAIL_MASK_DEMOSAIC;
-  else if(rawprep_img) pipe->want_detail_mask |= DT_DEV_DETAIL_MASK_RAWPREPARE; 
+  else if(rawprep_img)
+    pipe->want_detail_mask |= DT_DEV_DETAIL_MASK_RAWPREPARE;
 
   for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
   {
@@ -1219,7 +1220,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     // skip this module?
     if(!piece->enabled
-       || (dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
+       || (dev->gui_module && dev->gui_module != module
+           && dev->gui_module->operation_tags_filter() & module->operation_tags()))
       return dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_format, &roi_in,
                                           g_list_previous(modules), g_list_previous(pieces), pos - 1);
   }
@@ -2475,7 +2477,8 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop
 
     // skip this module?
     if(piece->enabled
-       && !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
+       && !(dev->gui_module && dev->gui_module != module
+            && dev->gui_module->operation_tags_filter() & module->operation_tags()))
     {
       module->modify_roi_out(module, piece, &roi_out, &roi_in);
     }
@@ -2527,8 +2530,8 @@ float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const dt_iop_modul
           dt_dev_pixelpipe_iop_t *module = (dt_dev_pixelpipe_iop_t *)iter->data;
 
           if(module->enabled
-            && !(module->module->dev->gui_module
-                 && (module->module->dev->gui_module->operation_tags_filter() & module->module->operation_tags())))
+             && !(module->module->dev->gui_module && module->module->dev->gui_module != module->module
+                  && (module->module->dev->gui_module->operation_tags_filter() & module->module->operation_tags())))
           {
             if(module->module->distort_mask
               && !(!strcmp(module->module->op, "finalscale") // hack against pipes not using finalscale
@@ -2610,7 +2613,7 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const
 #ifdef HAVE_OPENCL
 gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in, const dt_iop_roi_t *const roi_in, const int mode)
 {
-  dt_dev_pixelpipe_t *p = piece->pipe;  
+  dt_dev_pixelpipe_t *p = piece->pipe;
 
   if((p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED) == 0) return FALSE;
   if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) != mode) return FALSE;
@@ -2627,7 +2630,7 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
 
   mask = dt_alloc_align_float((size_t)width * height);
   if(mask == NULL) goto error;
-  out = dt_opencl_alloc_device(devid, width, height, sizeof(float));   
+  out = dt_opencl_alloc_device(devid, width, height, sizeof(float));
   if(out == NULL) goto error;
   tmp = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
   if(tmp == NULL) goto error;
@@ -2648,7 +2651,7 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
     dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(float), &wb[2]);
     const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) goto error;
-  }  
+  }
   {
     size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
     const int kernel = darktable.opencl->blendop->kernel_write_scharr_mask;
@@ -2658,7 +2661,7 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
     dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &height);
     const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) return FALSE;
-  }  
+  }
 
   {
     const int err = dt_opencl_read_host_from_device(devid, mask, out, width, height, sizeof(float));
@@ -2677,7 +2680,7 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
   dt_free_align(mask);
-  return TRUE;  
+  return TRUE;
 }
 #endif
 
@@ -2715,8 +2718,8 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, co
     {
       dt_dev_pixelpipe_iop_t *module = (dt_dev_pixelpipe_iop_t *)iter->data;
       if(module->enabled
-            && !(module->module->dev->gui_module && module->module->dev->gui_module->operation_tags_filter()
-                 & module->module->operation_tags()))
+         && !(module->module->dev->gui_module && module->module->dev->gui_module != module->module
+              && module->module->dev->gui_module->operation_tags_filter() & module->module->operation_tags()))
       {
         if(module->module->distort_mask
               && !(!strcmp(module->module->op, "finalscale") // hack against pipes not using finalscale
@@ -2727,13 +2730,13 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, co
           module->module->distort_mask(module->module, module, inmask, tmp, &module->processed_roi_in, &module->processed_roi_out);
           resmask = tmp;
           if(inmask != src) dt_free_align(inmask);
-          inmask = tmp; 
+          inmask = tmp;
         }
         if(module->module == target_module) break;
       }
     }
   }
-  return resmask;  
+  return resmask;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
