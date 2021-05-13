@@ -244,7 +244,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_plain(uint16_t *const out, const uint
             num++;
           }
         }
-      *outc = col / num;
+      if(num) *outc = col / num;
     }
   }
 }
@@ -431,14 +431,17 @@ void dt_iop_clip_and_zoom_mosaic_half_size_sse2(uint16_t *const out, const uint1
         num = ((maxi - px) / 2 + 1 - dx) * ((maxj - py) / 2 + 1 - dy);
       }
 
-      num = 1.0f / num;
-      col = _mm_mul_ps(col, _mm_set1_ps(num));
+      if(num > 1.0f)
+      {
+        num = 1.0f / num;
+        col = _mm_mul_ps(col, _mm_set1_ps(num));
 
-      float fcol[4] __attribute__((aligned(64)));
-      _mm_store_ps(fcol, col);
+        float fcol[4] __attribute__((aligned(64)));
+        _mm_store_ps(fcol, col);
 
-      const int c = (2 * ((y + rggby) % 2) + ((x + rggbx) % 2));
-      *outc = (uint16_t)(fcol[c]);
+        const int c = (2 * ((y + rggby) % 2) + ((x + rggbx) % 2));
+        *outc = (uint16_t)(fcol[c]);
+      }
       outc++;
     }
   }
