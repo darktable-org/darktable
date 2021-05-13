@@ -378,23 +378,30 @@ static void _create_pdf(dt_job_t *job, dt_images_box imgs, float width, float he
 */
   for(int k=0; k<imgs.count; k++)
   {
+    const int resolution = params->prt.printer.resolution;
+    const dt_image_box *box = &imgs.box[k];
+
     pdf_image[k] =
-      dt_pdf_add_image(pdf, (uint8_t *)imgs.box[k].buf, imgs.box[k].exp_width, imgs.box[k].exp_height,
+      dt_pdf_add_image(pdf, (uint8_t *)box->buf, box->exp_width, box->exp_height,
                        8, icc_id, 0.0);
 
     //  PDF bounding-box has origin on bottom-left
-    pdf_image[k]->bb_x      =
-      dt_pdf_pixel_to_point(imgs.box[k].print.x, params->prt.printer.resolution);
-    pdf_image[k]->bb_y      =
-      dt_pdf_pixel_to_point(imgs.box[k].print.y, params->prt.printer.resolution);
-    pdf_image[k]->bb_width  =
-      dt_pdf_pixel_to_point(imgs.box[k].print.width, params->prt.printer.resolution);
-    pdf_image[k]->bb_height =
-      dt_pdf_pixel_to_point(imgs.box[k].print.height, params->prt.printer.resolution);
+    pdf_image[k]->bb_x      = dt_pdf_pixel_to_point(box->print.x, resolution);
+    pdf_image[k]->bb_y      = dt_pdf_pixel_to_point(box->print.y, resolution);
+    pdf_image[k]->bb_width  = dt_pdf_pixel_to_point(box->print.width, resolution);
+    pdf_image[k]->bb_height = dt_pdf_pixel_to_point(box->print.height, resolution);
   }
 
   params->pdf_page = dt_pdf_add_page(pdf, pdf_image, imgs.count);
   dt_pdf_finish(pdf, &params->pdf_page, 1);
+
+  // now releases all the buf
+  for(int k=0; k<imgs.count; k++)
+  {
+    dt_image_box *box = &imgs.box[k];
+    g_free(box->buf);
+    box->buf = NULL;
+  }
 }
 
 void _fill_box_values(dt_lib_print_settings_t *ps)
