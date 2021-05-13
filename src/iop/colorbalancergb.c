@@ -423,6 +423,14 @@ static inline float soft_clip(const float x, const float soft_threshold, const f
   return (x > soft_threshold) ? soft_threshold + (1.f - expf(-(x - soft_threshold) / norm)) * norm : x;
 }
 
+static inline float PQ(const float x)
+{
+  // Perceptual quantizer https://doi.org/10.5594/j18290
+  const float y = powf(x * 1e-4f, 0.1593017578125f);
+  return powf((0.8359375f + 18.8515625f * y) / (1.f + 18.6875f * y),
+              134.034375f);
+}
+
 
 // Matrices from CIE 1931 2° XYZ D50 to Filmlight grading RGB D65 through CIE 2006 LMS
 /*
@@ -521,14 +529,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(Ych[2] > M_PI_F) Ych[2] -= 2.f * M_PI_F;
     else if(Ych[2] < -M_PI_F) Ych[2] += 2.f * M_PI_F;
 
-    // Get max allowed chroma in working RGB gamut at current output hue
-    const float max_chroma_h = Y * gamut_LUT[CLAMP((size_t)(LUT_ELEM * (Ych[2] + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1)];
-
     // Linear chroma : distance to achromatic at constant luminance in scene-referred
     const float chroma_boost = d->chroma_global + scalar_product(opacities, chroma);
     const float vibrance = d->vibrance * (1.0f - powf(Ych[1], fabsf(d->vibrance)));
     const float chroma_factor = fmaxf(1.f + chroma_boost + vibrance, 0.f);
-    Ych[1] = soft_clip(Ych[1] * chroma_factor, max_chroma_h, max_chroma_h * 4.f);
+    Ych[1] *= chroma_factor;
     Ych_to_gradingRGB(Ych, RGB);
 
     // Color balance
@@ -600,6 +605,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     JC[0] = fmaxf(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
     JC[1] = fmaxf(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
 
+    // Gamut mapping
+    const float out_max_chroma_h = JC[0] * gamut_LUT[CLAMP((size_t)(LUT_ELEM * (h + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1)];
+    JC[1] = soft_clip(JC[1], 0.8f * out_max_chroma_h, out_max_chroma_h);
+
     // Project back to JzAzBz
     Jab[0] = JC[0];
     Jab[1] = JC[1] * cosf(h);
@@ -607,17 +616,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     dt_JzAzBz_2_XYZ(Jab, Ych);
     dot_product(Ych, XYZ_to_RGB_D65, RGB);
-    gradingRGB_to_Ych(RGB, Ych);
-    Y = fmaxf(Ych[0], 0.f);
-
-    // Gamut mapping
-    // Note : no need to check hue is in [-PI; PI], gradingRGB_to_Ych uses atan2f()
-    // which always returns angles in [-PI; PI]
-    const float out_max_chroma_h = Y * gamut_LUT[CLAMP((size_t)(LUT_ELEM * (Ych[2] + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1)];
-    Ych[1] = soft_clip(Ych[1], out_max_chroma_h, out_max_chroma_h * 4.f);
-
-    Ych_to_gradingRGB(Ych, RGB);
     dot_product(RGB, output_matrix, pix_out);
+
     if(mask_display)
     {
       // draw checkerboard
@@ -895,12 +895,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // init the LUT between -pi and pi by increments of 1°
     for(size_t k = 0; k < LUT_ELEM; k++) LUT[k] = 0.f;
 
-    // Premultiply the matrix to speed-up
+    // D50 pipeline RGB to D50 XYZ
     float DT_ALIGNED_ARRAY RGB_to_XYZ[3][4];
     repack_3x3_to_3xSSE(work_profile->matrix_in, RGB_to_XYZ);
 
+    // XYZ D50 to XYZ D65 using CAT16
+    float DT_ALIGNED_ARRAY D50_to_D65[3][4] = { {  9.80760485e-01f, -4.25541784e-17f, -7.61959005e-19f, 0.f },
+                                                {  4.82934624e-17f,  1.01555271e+00f, -7.63213113e-18f, 0.f  },
+                                                { -6.47162968e-19f, -5.69389701e-19f,  1.30191586e+00f, 0.f } };
+
+    // Premultiply both matrices to go from D50 pipeline RGB to D65 XYZ in a single matrix dot product
     float DT_ALIGNED_ARRAY input_matrix[3][4];
-    mat3mul4((float *)input_matrix, (float *)XYZ_to_gradRGB, (float *)RGB_to_XYZ);
+    mat3mul4((float *)input_matrix, (float *)D50_to_D65, (float *)RGB_to_XYZ);
 
     // make RGB values vary between [0; 1] in working space, convert to Ych and get the max(c(h)))
 #ifdef _OPENMP
@@ -915,13 +921,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                                                   (float)g / (float)(STEPS - 1),
                                                   (float)b / (float)(STEPS - 1),
                                                   0.f };
+          float DT_ALIGNED_PIXEL XYZ[4] = { 0.f };
+          float DT_ALIGNED_PIXEL Jab[4] = { 0.f };
+          float DT_ALIGNED_PIXEL Jch[4] = { 0.f };
 
-          float DT_ALIGNED_PIXEL RGB[4] = { 0.f };
-          float DT_ALIGNED_PIXEL Ych[4] = { 0.f };
-          dot_product(rgb, input_matrix, RGB);
-          gradingRGB_to_Ych(RGB, Ych);
-          const size_t index = CLAMP((size_t)(LUT_ELEM * (Ych[2] + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1);
-          const float saturation = (Ych[0] > 0.f) ? Ych[1] / Ych[0] : 0.f;
+          dot_product(rgb, input_matrix, XYZ); // Go to D50 pipeline RGB to D65 XYZ in one step
+          dt_XYZ_2_JzAzBz(XYZ, Jab);           // this one expects D65 XYZ
+          Jch[0] = Jab[0];
+          Jch[1] = hypotf(Jab[2], Jab[1]);
+          Jch[2] = atan2f(Jab[2], Jab[1]);
+
+          const size_t index = CLAMP((size_t)(LUT_ELEM * (Jch[2] + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1);
+          const float saturation = (Jch[0] > 0.f) ? Jch[1] / Jch[0] : 0.f;
           if(LUT[index] < saturation) LUT[index] = saturation;
         }
 
