@@ -775,6 +775,15 @@ inline float4 matrix_dot(const float4 vector, const float4 matrix[3])
   return output;
 }
 
+inline float PQ(const float x)
+{
+  // Perceptual quantizer https://doi.org/10.5594/j18290
+  const float y = native_powr(x * 1e-4f, 0.1593017578125f);
+  return native_powr((0.8359375f + 18.8515625f * y) / (1.f + 18.6875f * y),
+              134.034375f);
+}
+
+
 kernel void
 colorbalancergb (read_only image2d_t in, write_only image2d_t out,
                  const int width, const int height,
@@ -815,14 +824,11 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   if(Ych.z > M_PI_F) Ych.z -= 2.f * M_PI_F;
   else if(Ych.z < -M_PI_F) Ych.z += 2.f * M_PI_F;
 
-  // Get max allowed chroma in working RGB gamut at current output hue
-  const float max_chroma_h = Y * lookup_gamut(gamut_lut, Ych.z);
-
   // Linear chroma : distance to achromatic at constant luminance in scene-referred
   const float chroma_boost = chroma_global + dot(opacities, chroma);
   const float vib = vibrance * (1.0f - native_powr(Ych.y, fabs(vibrance)));
   const float chroma_factor = fmax(1.f + chroma_boost + vib, 0.f);
-  Ych.y = soft_clip(Ych.y * chroma_factor, max_chroma_h, max_chroma_h * 4.f);
+  Ych.y *= chroma_factor;
   RGB = Ych_to_gradingRGB(Ych);
 
   // Color balance
@@ -892,6 +898,10 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   JC[0] = fmax(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
   JC[1] = fmax(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
 
+  // Gamut mapping
+  const float out_max_chroma_h = JC[0] * lookup_gamut(gamut_lut, h);
+  JC[1] = soft_clip(JC[1], 0.8f * out_max_chroma_h, out_max_chroma_h);
+
   // Project back to JzAzBz
   Jab.x = JC[0];
   Jab.y = JC[1] * native_cos(h);
@@ -899,16 +909,6 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
 
   Ych = JzAzBz_2_XYZ(Jab);
   RGB.xyz = matrix_dot(Ych, XYZ_to_RGB_D65).xyz;
-  Ych = gradingRGB_to_Ych(RGB);
-  Y = fmax(Ych.x, 0.f);
-
-  // Gamut mapping
-  // Note : no need to check hue is in [-PI; PI], gradingRGB_to_Ych uses atan2f()
-  // which always returns angles in [-PI; PI]
-  const float out_max_chroma_h = Y * lookup_gamut(gamut_lut, Ych.z);
-  Ych.y = soft_clip(Ych.y, out_max_chroma_h, out_max_chroma_h * 4.f);
-
-  RGB = Ych_to_gradingRGB(Ych);
   RGB = matrix_product_float4(RGB, matrix_out);
 
   if(mask_display)
