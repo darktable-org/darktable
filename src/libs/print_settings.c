@@ -103,6 +103,7 @@ typedef struct dt_lib_print_settings_t
   int last_selected;               // last selected area to edit
   dt_box_control_set sel_controls; // which border/corner is selected
   float click_pos_x, click_pos_y;
+  gboolean has_changed;
 } dt_lib_print_settings_t;
 
 typedef struct dt_lib_print_job_t
@@ -1242,8 +1243,15 @@ static void _print_settings_activate_or_update_callback(gpointer instance, int i
   // load an image with a simple click on the filmstrip only if a single image is present
   if(ps->imgs.count == 1)
   {
-    dt_printing_clear_box(&ps->imgs.box[0]);
-    _load_image_full_page(ps, imgid);
+    if(ps->has_changed)
+    {
+      dt_printing_setup_image(&ps->imgs, 0, imgid, 100, 100, ps->imgs.box[0].alignment);
+    }
+    else
+    {
+      dt_printing_clear_box(&ps->imgs.box[0]);
+      _load_image_full_page(ps, imgid);
+    }
   }
 }
 
@@ -1536,6 +1544,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
     ps->y2 = b->screen.y + b->screen.height;
 
     ps->last_selected = ps->selected;
+    ps->has_changed = TRUE;
 
     _get_control(ps, x, y);
   }
@@ -1730,6 +1739,7 @@ static void _width_changed(GtkWidget *widget, gpointer user_data)
                         box->screen.x, box->screen.y,
                         _mm_to_hscreen(ps, nv_mm, FALSE), box->screen.height);
 
+  ps->has_changed = TRUE;
   dt_control_queue_redraw_center();
 }
 
@@ -1748,6 +1758,7 @@ static void _height_changed(GtkWidget *widget, gpointer user_data)
                         box->screen.x, box->screen.y,
                         box->screen.width, _mm_to_vscreen(ps, nv_mm, FALSE));
 
+  ps->has_changed = TRUE;
   dt_control_queue_redraw_center();
 }
 
@@ -1766,6 +1777,7 @@ static void _x_changed(GtkWidget *widget, gpointer user_data)
                         _mm_to_hscreen(ps, nv_mm, TRUE), box->screen.y,
                         box->screen.width, box->screen.height);
 
+  ps->has_changed = TRUE;
   dt_control_queue_redraw_center();
 }
 
@@ -1784,6 +1796,7 @@ static void _y_changed(GtkWidget *widget, gpointer user_data)
                         box->screen.x, _mm_to_vscreen(ps, nv_mm, TRUE),
                         box->screen.width, box->screen.height);
 
+  ps->has_changed = TRUE;
   dt_control_queue_redraw_center();
 }
 
@@ -1813,6 +1826,7 @@ void gui_init(dt_lib_module_t *self)
   d->creation = d->dragging = FALSE;
   d->selected = -1;
   d->last_selected = -1;
+  d->has_changed = FALSE;
 
   dt_init_print_info(&d->prt);
   dt_view_print_settings(darktable.view_manager, &d->prt, &d->imgs);
@@ -2800,6 +2814,7 @@ void gui_reset(dt_lib_module_t *self)
   ps->creation = ps->dragging = FALSE;
   ps->selected = -1;
   ps->last_selected = -1;
+  ps->has_changed = FALSE;
 
   dt_control_queue_redraw_center();
 }
