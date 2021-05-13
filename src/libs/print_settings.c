@@ -403,20 +403,20 @@ void _fill_box_values(dt_lib_print_settings_t *ps)
 
   if(ps->last_selected != -1)
   {
-    dt_image_box *b = &ps->imgs.box[ps->last_selected];
+    dt_image_box *box = &ps->imgs.box[ps->last_selected];
 
     float width, height;
     _get_page_dimention(&ps->prt, &width, &height);
 
-    x = _percent_unit_of(ps, width, b->pos.x);
-    y = _percent_unit_of(ps, height, b->pos.y);
-    swidth = _percent_unit_of(ps, width, b->pos.width);
-    sheight = _percent_unit_of(ps, height, b->pos.height);
+    x       = _percent_unit_of(ps, width, box->pos.x);
+    y       = _percent_unit_of(ps, height, box->pos.y);
+    swidth  = _percent_unit_of(ps, width, box->pos.width);
+    sheight = _percent_unit_of(ps, height, box->pos.height);
 
     for(int i=0; i<9; i++)
     {
       ++darktable.gui->reset;
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->dtba[i]), (i == b->alignment));
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->dtba[i]), (i == box->alignment));
       --darktable.gui->reset;
     }
   }
