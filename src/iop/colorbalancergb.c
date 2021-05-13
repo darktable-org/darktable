@@ -464,13 +464,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   mat3mul4((float *)input_matrix, (float *)XYZ_to_gradRGB, (float *)RGB_to_XYZ);
   mat3mul4((float *)output_matrix, (float *)XYZ_to_RGB, (float *)gradRGB_to_XYZ);
 
-  // Test white point of the current space in grading RGB
-  const float white_pipe_RGB[4] = { 1.f, 1.f, 1.f };
-  float white_grading_RGB[4] = { 0.f };
-  dot_product(white_pipe_RGB, input_matrix, white_grading_RGB);
-  const float sum_white = white_grading_RGB[0] + white_grading_RGB[1] + white_grading_RGB[2];
-  for_four_channels(c) white_grading_RGB[c] /= sum_white;
-
   const float *const restrict in = __builtin_assume_aligned(((const float *const restrict)ivoid), 64);
   float *const restrict out = __builtin_assume_aligned(((float *const restrict)ovoid), 64);
   const float *const restrict gamut_LUT = __builtin_assume_aligned(((const float *const restrict)d->gamut_LUT), 64);
@@ -494,7 +487,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, roi_in, roi_out, d, g, mask_display, input_matrix, output_matrix, gamut_LUT, white_grading_RGB, \
+  dt_omp_firstprivate(in, out, roi_in, roi_out, d, g, mask_display, input_matrix, output_matrix, gamut_LUT, \
     global, highlights, shadows, midtones, chroma, saturation, brilliance, checker_1, checker_2) \
     schedule(static) collapse(2)
 #endif
@@ -510,7 +503,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     for_four_channels(c, aligned(pix_in:16)) Ych[c] = fmaxf(pix_in[c], 0.0f);
     dot_product(Ych, input_matrix, RGB);
-    gradingRGB_to_Ych(RGB, Ych, white_grading_RGB);
+    gradingRGB_to_Ych(RGB, Ych);
 
     // Sanitize input : no negative luminance
     float Y = fmaxf(Ych[0], 0.f);
@@ -536,7 +529,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float vibrance = d->vibrance * (1.0f - powf(Ych[1], fabsf(d->vibrance)));
     const float chroma_factor = fmaxf(1.f + chroma_boost + vibrance, 0.f);
     Ych[1] = soft_clip(Ych[1] * chroma_factor, max_chroma_h, max_chroma_h * 4.f);
-    Ych_to_gradingRGB(Ych, RGB, white_grading_RGB);
+    Ych_to_gradingRGB(Ych, RGB);
 
     // Color balance
     for_four_channels(c, aligned(RGB, opacities, opacities_comp, global, shadows, midtones, highlights:16))
@@ -554,12 +547,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     // for the Y midtones power (gamma), we need to go in Ych again because RGB doesn't preserve color
-    gradingRGB_to_Ych(RGB, Ych, white_grading_RGB);
+    gradingRGB_to_Ych(RGB, Ych);
     Y = Ych[0] = powf(fmaxf(Ych[0] / d->white_fulcrum, 0.f), d->midtones_Y) * d->white_fulcrum;
 
     // then the contrast
     Y = Ych[0] = d->grey_fulcrum * powf(Ych[0] / d->grey_fulcrum, d->contrast);
-    Ych_to_gradingRGB(Ych, RGB, white_grading_RGB);
+    Ych_to_gradingRGB(Ych, RGB);
 
     // Perceptual color adjustments
 
@@ -614,7 +607,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     dt_JzAzBz_2_XYZ(Jab, Ych);
     dot_product(Ych, XYZ_to_RGB_D65, RGB);
-    gradingRGB_to_Ych(RGB, Ych, white_grading_RGB);
+    gradingRGB_to_Ych(RGB, Ych);
     Y = fmaxf(Ych[0], 0.f);
 
     // Gamut mapping
@@ -623,7 +616,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float out_max_chroma_h = Y * gamut_LUT[CLAMP((size_t)(LUT_ELEM * (Ych[2] + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1)];
     Ych[1] = soft_clip(Ych[1], out_max_chroma_h, out_max_chroma_h * 4.f);
 
-    Ych_to_gradingRGB(Ych, RGB, white_grading_RGB);
+    Ych_to_gradingRGB(Ych, RGB);
     dot_product(RGB, output_matrix, pix_out);
     if(mask_display)
     {
@@ -689,7 +682,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   cl_mem input_matrix_cl = NULL;
   cl_mem output_matrix_cl = NULL;
-  cl_mem white_grading_RGB_cl = NULL;
   cl_mem gamut_LUT = NULL;
 
   err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
@@ -716,14 +708,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
   output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
 
-  // Test white point of the current space in grading RGB
-  const float white_pipe_RGB[4] = { 1.f, 1.f, 1.f };
-  float white_grading_RGB[4] = { 0.f };
-  dot_product(white_pipe_RGB, input_matrix, white_grading_RGB);
-  const float sum_white = white_grading_RGB[0] + white_grading_RGB[1] + white_grading_RGB[2];
-  for_four_channels(c) white_grading_RGB[c] /= sum_white;
-  white_grading_RGB_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), white_grading_RGB);
-
   // Send gamut LUT to GPU
   gamut_LUT = dt_opencl_copy_host_to_device(devid, d->gamut_LUT, LUT_ELEM, 1, sizeof(float));
 
@@ -742,34 +726,33 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 4, sizeof(cl_mem), (void *)&dev_profile_info);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 5, sizeof(cl_mem), (void *)&input_matrix_cl);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 6, sizeof(cl_mem), (void *)&output_matrix_cl);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 7, sizeof(cl_mem), (void *)&white_grading_RGB_cl);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 8, sizeof(cl_mem), (void *)&gamut_LUT);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 9, sizeof(float), (void *)&d->shadows_weight);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 10, sizeof(float), (void *)&d->highlights_weight);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 11, sizeof(float), (void *)&d->midtones_weight);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 12, sizeof(float), (void *)&d->mask_grey_fulcrum);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 13, sizeof(float), (void *)&d->hue_angle);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 14, sizeof(float), (void *)&d->chroma_global);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 15, 4 * sizeof(float), (void *)&d->chroma);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 16, sizeof(float), (void *)&d->vibrance);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 17, 4 * sizeof(float), (void *)&d->global);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 18, 4 * sizeof(float), (void *)&d->shadows);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 19, 4 * sizeof(float), (void *)&d->highlights);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 20, 4 * sizeof(float), (void *)&d->midtones);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 21, sizeof(float), (void *)&d->white_fulcrum);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 22, sizeof(float), (void *)&d->midtones_Y);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 23, sizeof(float), (void *)&d->grey_fulcrum);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 24, sizeof(float), (void *)&d->contrast);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 25, sizeof(float), (void *)&d->brilliance_global);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 26, 4 * sizeof(float), (void *)&d->brilliance);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 27, sizeof(float), (void *)&d->saturation_global);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 28, 4 * sizeof(float), (void *)&d->saturation);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 29, sizeof(int), (void *)&mask_display);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 30, sizeof(int), (void *)&mask_type);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 31, sizeof(int), (void *)&checker_1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 32, sizeof(int), (void *)&checker_2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 33, 4 * sizeof(float), (void *)&d->checker_color_1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 34, 4 * sizeof(float), (void *)&d->checker_color_2);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 7, sizeof(cl_mem), (void *)&gamut_LUT);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 8, sizeof(float), (void *)&d->shadows_weight);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 9, sizeof(float), (void *)&d->highlights_weight);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 10, sizeof(float), (void *)&d->midtones_weight);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 11, sizeof(float), (void *)&d->mask_grey_fulcrum);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 12, sizeof(float), (void *)&d->hue_angle);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 13, sizeof(float), (void *)&d->chroma_global);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 14, 4 * sizeof(float), (void *)&d->chroma);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 15, sizeof(float), (void *)&d->vibrance);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 16, 4 * sizeof(float), (void *)&d->global);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 17, 4 * sizeof(float), (void *)&d->shadows);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 18, 4 * sizeof(float), (void *)&d->highlights);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 19, 4 * sizeof(float), (void *)&d->midtones);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 20, sizeof(float), (void *)&d->white_fulcrum);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 21, sizeof(float), (void *)&d->midtones_Y);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 22, sizeof(float), (void *)&d->grey_fulcrum);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 23, sizeof(float), (void *)&d->contrast);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 24, sizeof(float), (void *)&d->brilliance_global);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 25, 4 * sizeof(float), (void *)&d->brilliance);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 26, sizeof(float), (void *)&d->saturation_global);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 27, 4 * sizeof(float), (void *)&d->saturation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 28, sizeof(int), (void *)&mask_display);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 29, sizeof(int), (void *)&mask_type);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 30, sizeof(int), (void *)&checker_1);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 31, sizeof(int), (void *)&checker_2);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 32, 4 * sizeof(float), (void *)&d->checker_color_1);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 33, 4 * sizeof(float), (void *)&d->checker_color_2);
 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_rgb, sizes);
   if(err != CL_SUCCESS) goto error;
@@ -778,7 +761,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   dt_opencl_release_mem_object(input_matrix_cl);
   dt_opencl_release_mem_object(output_matrix_cl);
-  dt_opencl_release_mem_object(white_grading_RGB_cl);
   dt_opencl_release_mem_object(gamut_LUT);
   return TRUE;
 
@@ -786,7 +768,6 @@ error:
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   if(input_matrix_cl) dt_opencl_release_mem_object(input_matrix_cl);
   if(output_matrix_cl) dt_opencl_release_mem_object(output_matrix_cl);
-  if(white_grading_RGB_cl) dt_opencl_release_mem_object(white_grading_RGB_cl);
   if(gamut_LUT) dt_opencl_release_mem_object(gamut_LUT);
   dt_print(DT_DEBUG_OPENCL, "[opencl_colorbalancergb] couldn't enqueue kernel! %d\n", err);
   return FALSE;
@@ -857,19 +838,19 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // measure the grading RGB of a pure white
   const float Ych_norm[4] = { 1.f, 0.f, 0.f, 0.f };
   float RGB_norm[4] = { 0.f };
-  Ych_to_gradingRGB(Ych_norm, RGB_norm, NULL);
+  Ych_to_gradingRGB(Ych_norm, RGB_norm);
 
   // global
   {
     float Ych[4] = { 1.f, p->global_C, DEG_TO_RAD(p->global_H), 0.f };
-    Ych_to_gradingRGB(Ych, d->global, NULL);
+    Ych_to_gradingRGB(Ych, d->global);
     for(size_t c = 0; c < 4; c++) d->global[c] = (d->global[c] - RGB_norm[c]) + RGB_norm[c] * p->global_Y;
   }
 
   // shadows
   {
     float Ych[4] = { 1.f, p->shadows_C, DEG_TO_RAD(p->shadows_H), 0.f };
-    Ych_to_gradingRGB(Ych, d->shadows, NULL);
+    Ych_to_gradingRGB(Ych, d->shadows);
     for(size_t c = 0; c < 4; c++) d->shadows[c] = 1.f + (d->shadows[c] - RGB_norm[c]) + p->shadows_Y;
     d->shadows_weight = 2.f + p->shadows_weight * 2.f;
   }
@@ -877,7 +858,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // highlights
   {
     float Ych[4] = { 1.f, p->highlights_C, DEG_TO_RAD(p->highlights_H), 0.f };
-    Ych_to_gradingRGB(Ych, d->highlights, NULL);
+    Ych_to_gradingRGB(Ych, d->highlights);
     for(size_t c = 0; c < 4; c++) d->highlights[c] = 1.f + (d->highlights[c] - RGB_norm[c]) + p->highlights_Y;
     d->highlights_weight = 2.f + p->highlights_weight * 2.f;
   }
@@ -885,7 +866,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // midtones
   {
     float Ych[4] = { 1.f, p->midtones_C, DEG_TO_RAD(p->midtones_H), 0.f };
-    Ych_to_gradingRGB(Ych, d->midtones, NULL);
+    Ych_to_gradingRGB(Ych, d->midtones);
     for(size_t c = 0; c < 4; c++) d->midtones[c] = 1.f / (1.f + (d->midtones[c] - RGB_norm[c]));
     d->midtones_Y = 1.f / (1.f + p->midtones_Y);
     d->white_fulcrum = exp2f(p->white_fulcrum);
@@ -921,17 +902,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     float DT_ALIGNED_ARRAY input_matrix[3][4];
     mat3mul4((float *)input_matrix, (float *)XYZ_to_gradRGB, (float *)RGB_to_XYZ);
 
-    // Test white point of the current space in grading RGB
-    const float white_pipe_RGB[4] = { 1.f, 1.f, 1.f };
-    float white_grading_RGB[4] = { 0.f };
-    dot_product(white_pipe_RGB, input_matrix, white_grading_RGB);
-    const float sum_white = white_grading_RGB[0] + white_grading_RGB[1] + white_grading_RGB[2];
-    for_four_channels(c) white_grading_RGB[c] /= sum_white;
-
     // make RGB values vary between [0; 1] in working space, convert to Ych and get the max(c(h)))
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(input_matrix, white_grading_RGB) schedule(static) dt_omp_sharedconst(LUT)
+      dt_omp_firstprivate(input_matrix) schedule(static) dt_omp_sharedconst(LUT)
 #endif
     for(size_t r = 0; r < STEPS; r++)
       for(size_t g = 0; g < STEPS; g++)
@@ -945,7 +919,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
           float DT_ALIGNED_PIXEL RGB[4] = { 0.f };
           float DT_ALIGNED_PIXEL Ych[4] = { 0.f };
           dot_product(rgb, input_matrix, RGB);
-          gradingRGB_to_Ych(RGB, Ych, white_grading_RGB);
+          gradingRGB_to_Ych(RGB, Ych);
           const size_t index = CLAMP((size_t)(LUT_ELEM * (Ych[2] + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1);
           const float saturation = (Ych[0] > 0.f) ? Ych[1] / Ych[0] : 0.f;
           if(LUT[index] < saturation) LUT[index] = saturation;
@@ -985,7 +959,7 @@ void pipe_RGB_to_Ych(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
                              work_profile->unbounded_coeffs_in, work_profile->lutsize,
                              work_profile->nonlinearlut);
   XYZ_to_gradingRGB(XYZ, LMS);
-  gradingRGB_to_Ych(LMS, Ych, NULL);
+  gradingRGB_to_Ych(LMS, Ych);
 
   if(Ych[2] < 0.f)
     Ych[2] = 2.f * M_PI + Ych[2];
@@ -1068,7 +1042,7 @@ static void paint_chroma_slider(GtkWidget *w, const float hue)
     float DT_ALIGNED_PIXEL RGB[4] = { 0.f };
     float DT_ALIGNED_PIXEL Ych[4] = { 0.75f, x, h, 0.f };
     float DT_ALIGNED_PIXEL LMS[4] = { 0.f };
-    Ych_to_gradingRGB(Ych, LMS, NULL);
+    Ych_to_gradingRGB(Ych, LMS);
     gradingRGB_to_XYZ(LMS, Ych);
     dt_XYZ_to_Rec709_D65(Ych, RGB);
     const float max_RGB = fmaxf(fmaxf(RGB[0], RGB[1]), RGB[2]);
@@ -1776,7 +1750,7 @@ void gui_init(dt_iop_module_t *self)
     float DT_ALIGNED_PIXEL RGB[4] = { 0.f };
     float DT_ALIGNED_PIXEL Ych[4] = { 0.75f, 0.2f, h, 0.f };
     float DT_ALIGNED_PIXEL LMS[4] = { 0.f };
-    Ych_to_gradingRGB(Ych, LMS, NULL);
+    Ych_to_gradingRGB(Ych, LMS);
     gradingRGB_to_XYZ(LMS, Ych);
     dt_XYZ_to_Rec709_D65(Ych, RGB);
     const float max_RGB = fmaxf(fmaxf(RGB[0], RGB[1]), RGB[2]);
