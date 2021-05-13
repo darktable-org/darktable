@@ -5743,7 +5743,8 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
 
-  GtkWidget *label_non_raw = dt_ui_label_new(_("demosaicing\nonly needed for raw images."));
+  GtkWidget *label_non_raw = dt_ui_label_new(_("not applicable"));
+  gtk_widget_set_tooltip_text(label_non_raw, _("demosaicing is only used for color raw images"));
 
   gtk_stack_add_named(GTK_STACK(self->widget), label_non_raw, "non_raw");
   gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "raw");
