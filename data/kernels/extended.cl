@@ -872,7 +872,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
 
   // Convert to JCh
   float JC[2] = { Jab.x, hypot(Jab.y, Jab.z) };               // brightness/chroma vector
-  const float h = (JC[1] == 0.f) ? 0.f : atan2(Jab.z, Jab.y);  // hue : (a, b) angle
+  const float h = atan2(Jab.z, Jab.y);  // hue : (a, b) angle
 
   // Project JC onto S, the saturation eigenvector, with orthogonal vector O.
   // Note : O should be = (C * cosf(T) - J * sinf(T)) = 0 since S is the eigenvector,

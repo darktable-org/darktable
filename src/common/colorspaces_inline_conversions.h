@@ -1074,7 +1074,7 @@ static inline void gradingRGB_to_Ych(float RGB[4], float Ych[3])
   RGB[1] -= D65[1];
 
   Ych[1] = hypotf(RGB[1], RGB[0]);
-  Ych[2] = (Ych[1] == 0.f) ? 0.f : atan2f(RGB[1], RGB[0]);
+  Ych[2] = atan2f(RGB[1], RGB[0]);
 }
 
 #ifdef _OPENMP
