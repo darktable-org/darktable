@@ -2504,7 +2504,7 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/histogram/height</name>
-    <type min="100" max="200">int</type>
+    <type min="100" max="250">int</type>
     <default>175</default>
     <shortdescription>height of the histogram module</shortdescription>
     <longdescription>height of the histogram module in the darkroom and tethering views</longdescription>
