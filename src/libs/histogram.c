@@ -1346,7 +1346,9 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
      dt_modifier_is(event->state, GDK_CONTROL_MASK) && !darktable.gui->reset)
   {
     /* set size of navigation draw area */
-    const float histheight = clamp_range_f(dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f + 10 * delta_y, 100.0f, 200.0f);
+    const float hmin = (float)dt_confgen_get_int("plugins/darkroom/histogram/height", DT_MIN);
+    const float hmax = (float)dt_confgen_get_int("plugins/darkroom/histogram/height", DT_MAX);
+    const float histheight = clamp_range_f(dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f + 10 * delta_y, hmin, hmax);
     dt_conf_set_int("plugins/darkroom/histogram/height", histheight);
     gtk_widget_set_size_request(widget, -1, DT_PIXEL_APPLY_DPI(histheight));
   }
