@@ -18,14 +18,8 @@
 
 #include "develop/imageop_math.h"
 #include <assert.h> // for assert
-#ifdef __SSE__
-#include <emmintrin.h> // for _mm_set_epi32, _mm_add_epi32
-#endif
 #include <glib.h> // for MIN, MAX, CLAMP, inline
 #include <math.h> // for round, floorf, fmaxf
-#ifdef __SSE__
-#include <xmmintrin.h> // for _mm_set_ps, _mm_mul_ps, _mm_set...
-#endif
 #include "common/darktable.h"        // for darktable, darktable_t, dt_code...
 #include "common/imageio.h"          // for FILTERS_ARE_4BAYER
 #include "common/interpolation.h"    // for dt_interpolation_new, dt_interp...
@@ -660,7 +654,7 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f(float *out, const fl
         num = ((maxi - px) / 2 + 1 - dx) * ((maxj - py) / 2 + 1 - dy);
       }
 
-      const float pix = col / num;
+      const float pix = (num) ? col / num : 0.0f;
       outc[0] = pix;
       outc[1] = pix;
       outc[2] = pix;
