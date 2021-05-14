@@ -23,8 +23,8 @@ inline float4 Lab_2_LCH(float4 Lab)
 
   H = (H > 0.0f) ? H / (2.0f*M_PI_F) : 1.0f - fabs(H) / (2.0f*M_PI_F);
 
-  float L = Lab.x;
-  float C = sqrt(Lab.y*Lab.y + Lab.z*Lab.z);
+  const float L = Lab.x;
+  const float C = sqrt(Lab.y*Lab.y + Lab.z*Lab.z);
 
   return (float4)(L, C, H, Lab.w);
 }
@@ -32,9 +32,9 @@ inline float4 Lab_2_LCH(float4 Lab)
 
 inline float4 LCH_2_Lab(float4 LCH)
 {
-  float L = LCH.x;
-  float a = cos(2.0f*M_PI_F*LCH.z) * LCH.y;
-  float b = sin(2.0f*M_PI_F*LCH.z) * LCH.y;
+  const float L = LCH.x;
+  const float a = cos(2.0f*M_PI_F*LCH.z) * LCH.y;
+  const float b = sin(2.0f*M_PI_F*LCH.z) * LCH.y;
 
   return (float4)(L, a, b, LCH.w);
 }
@@ -121,13 +121,13 @@ inline float4 XYZ_to_prophotorgb(float4 XYZ)
 
 inline float4 Lab_to_prophotorgb(float4 Lab)
 {
-  float4 XYZ = Lab_to_XYZ(Lab);
+  const float4 XYZ = Lab_to_XYZ(Lab);
   return XYZ_to_prophotorgb(XYZ);
 }
 
 inline float4 prophotorgb_to_Lab(float4 rgb)
 {
-  float4 XYZ = prophotorgb_to_XYZ(rgb);
+  const float4 XYZ = prophotorgb_to_XYZ(rgb);
   return XYZ_to_Lab(XYZ);
 }
 
@@ -136,13 +136,13 @@ inline float4 RGB_2_HSL(const float4 RGB)
   float H, S, L;
 
   // assumes that each channel is scaled to [0; 1]
-  float R = RGB.x;
-  float G = RGB.y;
-  float B = RGB.z;
+  const float R = RGB.x;
+  const float G = RGB.y;
+  const float B = RGB.z;
 
-  float var_Min = fmin(R, fmin(G, B));
-  float var_Max = fmax(R, fmax(G, B));
-  float del_Max = var_Max - var_Min;
+  const float var_Min = fmin(R, fmin(G, B));
+  const float var_Max = fmax(R, fmax(G, B));
+  const float del_Max = var_Max - var_Min;
 
   L = (var_Max + var_Min) / 2.0f;
 
@@ -156,9 +156,9 @@ inline float4 RGB_2_HSL(const float4 RGB)
     if (L < 0.5f) S = del_Max / (var_Max + var_Min);
     else          S = del_Max / (2.0f - var_Max - var_Min);
 
-    float del_R = (((var_Max - R) / 6.0f) + (del_Max / 2.0f)) / del_Max;
-    float del_G = (((var_Max - G) / 6.0f) + (del_Max / 2.0f)) / del_Max;
-    float del_B = (((var_Max - B) / 6.0f) + (del_Max / 2.0f)) / del_Max;
+    const float del_R = (((var_Max - R) / 6.0f) + (del_Max / 2.0f)) / del_Max;
+    const float del_G = (((var_Max - G) / 6.0f) + (del_Max / 2.0f)) / del_Max;
+    const float del_B = (((var_Max - B) / 6.0f) + (del_Max / 2.0f)) / del_Max;
 
     if      (R == var_Max) H = del_B - del_G;
     else if (G == var_Max) H = (1.0f / 3.0f) + del_R - del_B;
@@ -189,9 +189,9 @@ inline float4 HSL_2_RGB(const float4 HSL)
 {
   float R, G, B;
 
-  float H = HSL.x;
-  float S = HSL.y;
-  float L = HSL.z;
+  const float H = HSL.x;
+  const float S = HSL.y;
+  const float L = HSL.z;
 
   float var_1, var_2;
 
@@ -219,14 +219,14 @@ inline float4 RGB_2_HSV(const float4 RGB)
 {
   float4 HSV;
 
-  float minv = fmin(RGB.x, fmin(RGB.y, RGB.z));
-  float maxv = fmax(RGB.x, fmax(RGB.y, RGB.z));
-  float delta = maxv - minv;
+  const float minv = fmin(RGB.x, fmin(RGB.y, RGB.z));
+  const float maxv = fmax(RGB.x, fmax(RGB.y, RGB.z));
+  const float delta = maxv - minv;
 
   HSV.z = maxv;
   HSV.w = RGB.w;
 
-  if (fabs(maxv) > 1e-6f && fabs(delta) > 1e-6f)
+  if(fabs(maxv) > 1e-6f && fabs(delta) > 1e-6f)
   {
     HSV.y = delta / maxv;
   }
@@ -263,12 +263,12 @@ inline float4 HSV_2_RGB(const float4 HSV)
     return RGB;
   }
 
-  int i = floor(6.0f*HSV.x);
-  float v = HSV.z;
-  float w = HSV.w;
-  float p = v * (1.0f - HSV.y);
-  float q = v * (1.0f - HSV.y * (6.0f*HSV.x - i));
-  float t = v * (1.0f - HSV.y * (1.0f - (6.0f*HSV.x - i)));
+  const int i = floor(6.0f*HSV.x);
+  const float v = HSV.z;
+  const float w = HSV.w;
+  const float p = v * (1.0f - HSV.y);
+  const float q = v * (1.0f - HSV.y * (6.0f*HSV.x - i));
+  const float t = v * (1.0f - HSV.y * (1.0f - (6.0f*HSV.x - i)));
 
   switch (i)
   {
@@ -406,7 +406,7 @@ inline float4 JzAzBz_2_XYZ(const float4 JzAzBz)
 
 inline float4 JzAzBz_to_JzCzhz(float4 JzAzBz)
 {
-  float h = atan2(JzAzBz.z, JzAzBz.y) / (2.0f * M_PI_F);
+  const float h = atan2(JzAzBz.z, JzAzBz.y) / (2.0f * M_PI_F);
   float4 JzCzhz;
   JzCzhz.x = JzAzBz.x;
   JzCzhz.y = native_sqrt(JzAzBz.y * JzAzBz.y + JzAzBz.z * JzAzBz.z);
