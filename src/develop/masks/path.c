@@ -3107,7 +3107,7 @@ static void _path_set_hint_message(const dt_masks_form_gui_t *const gui, const d
                         "<b>cancel</b>: right-click"), msgbuf_len);
   else if(gui->creation)
     g_strlcat(msgbuf, _("<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
-                        "<b>finnish path</b>: right-click"), msgbuf_len);
+                        "<b>finish path</b>: right-click"), msgbuf_len);
   else if(gui->point_selected >= 0)
     g_strlcat(msgbuf, _("<b>move node</b>: drag, <b>remove node</b>: right-click\n"
                         "<b>switch smooth/sharp mode</b>: ctrl+click"), msgbuf_len);
