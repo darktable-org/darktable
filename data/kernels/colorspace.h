@@ -424,8 +424,10 @@ inline float4 gradingRGB_to_Ych(float4 RGB)
   const float a = RGB.x + RGB.y + RGB.z;
   RGB = (a == 0.f) ? (float4)0.f : RGB / a;
 
-  RGB.x -= D65[0];
-  RGB.y -= D65[1];
+  const float *pD65 = &D65;
+
+  RGB.x -= pD65[0];
+  RGB.y -= pD65[1];
 
   Ych.y = hypot(RGB.y, RGB.x);
   Ych.z = (Ych.x == 0.f) ? 0.f : atan2(RGB.y, RGB.x);
@@ -438,9 +440,10 @@ inline float4 Ych_to_gradingRGB(const float4 Ych)
 {
   const float4 D65 = { 0.18600766f,  0.5908061f,   0.22318624f, 0.f };
 
+  const float *pD65 = &D65;
   float4 RGB;
-  RGB.x = Ych.y * native_cos(Ych.z) + D65[0];
-  RGB.y = Ych.y * native_sin(Ych.z) + D65[1];
+  RGB.x = Ych.y * native_cos(Ych.z) + pD65[0];
+  RGB.y = Ych.y * native_sin(Ych.z) + pD65[1];
   RGB.z = 1.f - RGB.x - RGB.y;
 
   const float a = (0.67282368f * RGB.x + 0.47812261f * RGB.y + 0.01044966f * RGB.z);
