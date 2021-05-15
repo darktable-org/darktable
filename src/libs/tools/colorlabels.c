@@ -63,6 +63,12 @@ int position()
   return 1001;
 }
 
+static gboolean _lib_colorlabels_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  darktable.control->element = (GPOINTER_TO_INT(user_data) + 1) % 6;
+  return FALSE;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -88,8 +94,12 @@ void gui_init(dt_lib_module_t *self)
     gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_colorlabels_button_clicked_callback),
                      GINT_TO_POINTER(k));
-    gtk_widget_set_name(self->widget, "lib-label-colors");
+    g_signal_connect(G_OBJECT(button), "enter-notify-event", G_CALLBACK(_lib_colorlabels_enter_notify_callback),
+                     GINT_TO_POINTER(k));
+    dt_action_define(&darktable.control->actions_thumb, NULL, "color label", button, &dt_action_def_color_label);
   }
+
+  gtk_widget_set_name(self->widget, "lib-label-colors");
 }
 
 void gui_cleanup(dt_lib_module_t *self)
