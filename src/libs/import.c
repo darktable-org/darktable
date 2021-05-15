@@ -1040,10 +1040,13 @@ static gboolean places_button_press(GtkWidget *view, GdkEventButton *event, dt_l
       _update_folders_list(self);
       _update_files_list(self);
     }
-    // right-click: delete / hide place
+    // right-click: delete / hide place (if not selected)
     else if(button_pressed == 3)
     {
-      _remove_place(folder_path, iter, self);
+      if(g_strcmp0(folder_path, dt_conf_get_string("ui_last/import_last_place")))
+        _remove_place(folder_path, iter, self);
+      else
+        dt_toast_log(_("you can't delete the selected place"));
     }
 
     g_free(folder_name);
@@ -1373,7 +1376,6 @@ static void _remove_place(const gchar *folder, GtkTreeIter iter, dt_lib_module_t
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   const gchar *current_folders = dt_conf_get_string("ui_last/import_custom_places");
-  const gchar *last_place = dt_conf_get_string("ui_last/import_last_place");
   int type = 0;
   gtk_tree_model_get(GTK_TREE_MODEL(d->placesModel), &iter, DT_PLACES_TYPE, &type, -1);
 
@@ -1388,9 +1390,6 @@ static void _remove_place(const gchar *folder, GtkTreeIter iter, dt_lib_module_t
       dt_util_str_replace(current_folders, dt_util_dstrcat(NULL,"%s,", folder), ""));
 
   _update_places_list(self);
-
-  if(!g_strcmp0(folder, last_place))
-    dt_conf_set_string("ui_last/import_last_place", "");
 }
 
 static GList* _get_custom_places()
