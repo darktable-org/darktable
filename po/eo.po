@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-15 17:06+1000\n"
-"PO-Revision-Date: 2021-05-15 17:41+1000\n"
+"PO-Revision-Date: 2021-05-15 17:46+1000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: eo\n"
@@ -12482,7 +12482,7 @@ msgstr "ne aplikebla"
 
 #: ../src/iop/demosaic.c:5755
 msgid "demosaicing is only used for color raw images"
-msgstr "senmozaikigo estas uzata nur por koloraj krudaj bildoj."
+msgstr "senmozaikigo estas uzata nur por koloraj krudaj bildoj"
 
 #: ../src/iop/denoiseprofile.c:656
 msgid "wavelets: chroma only"
