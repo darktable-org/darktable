@@ -1252,32 +1252,36 @@ static void _update_places_list(dt_lib_module_t* self)
 
   // add default folders
 
-  GtkTreeIter iter;
+  GtkTreeIter iter, current_iter;
   d->placesSelection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->placesView));
   const gchar *last_place = dt_conf_get_string("ui_last/import_last_place");
+  char *current_place = "";
 
   if(dt_conf_get_bool("ui_last/import_dialog_show_home") && dt_loc_get_home_dir(NULL))
   {
+    current_place = (char *)dt_loc_get_home_dir(NULL);
     gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("home"), 
-      DT_PLACES_PATH, (char *)dt_loc_get_home_dir(NULL), DT_PLACES_TYPE, DT_TYPE_HOME, -1);
-    if(!g_strcmp0(dt_loc_get_home_dir(NULL), last_place))
+      DT_PLACES_PATH, current_place, DT_PLACES_TYPE, DT_TYPE_HOME, -1);
+    if(!g_strcmp0(current_place, last_place))
       gtk_tree_selection_select_iter(d->placesSelection, &iter);
+    current_iter = iter;
   }
   
-
   if(dt_conf_get_bool("ui_last/import_dialog_show_pictures") && g_get_user_special_dir(G_USER_DIRECTORY_PICTURES))
   {
-    // set pictures as default
-    if(last_place[0] == '\0')
-    {
-      last_place=g_get_user_special_dir(G_USER_DIRECTORY_PICTURES);
-      dt_conf_set_string("ui_last/import_last_place", last_place);
-    }
-
+    current_place = (char *)g_get_user_special_dir(G_USER_DIRECTORY_PICTURES);
     gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("pictures"), 
-      DT_PLACES_PATH, (char *)g_get_user_special_dir(G_USER_DIRECTORY_PICTURES), DT_PLACES_TYPE, DT_TYPE_PIC, -1);
-    if(!g_strcmp0(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES), last_place))
+      DT_PLACES_PATH, current_place, DT_PLACES_TYPE, DT_TYPE_PIC, -1);
+    if(!g_strcmp0(current_place, last_place))
       gtk_tree_selection_select_iter(d->placesSelection, &iter);
+    current_iter = iter;
+  }
+
+  // set home/pictures as default
+  if(last_place[0] == '\0')
+  {
+    dt_conf_set_string("ui_last/import_last_place", current_place);
+    gtk_tree_selection_select_iter(d->placesSelection, &current_iter);
   }
 
   // add mounted drives
