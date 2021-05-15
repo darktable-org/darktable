@@ -1385,6 +1385,18 @@ void _get_control(dt_lib_print_settings_t *ps, float x, float y)
   if(ps->sel_controls == 0) ps->sel_controls = BOX_ALL;
 }
 
+int mouse_leave(struct dt_lib_module_t *self)
+{
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  if(ps->last_selected != -1)
+  {
+    dt_control_set_mouse_over_id(ps->imgs.box[ps->last_selected].imgid);
+  }
+
+  return 0;
+}
+
 int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressure, int which)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
