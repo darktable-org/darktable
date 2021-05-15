@@ -762,6 +762,7 @@ static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   gchar *str = NULL;
   gchar *txt = NULL;
   gboolean startwildcard = FALSE;
+  gboolean expanded = FALSE;
 
   gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_TEXT, &txt, -1);
 
@@ -795,6 +796,7 @@ static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   if(dr->typing && g_strrstr(txt2, needle) != NULL)
   {
     gtk_tree_view_expand_to_path(d->view, path);
+    expanded = TRUE;
   }
 
   if(strlen(needle)==0)
@@ -806,14 +808,17 @@ static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
     gtk_tree_view_expand_to_path(d->view, path);
     gtk_tree_selection_select_path(gtk_tree_view_get_selection(d->view), path);
     gtk_tree_view_scroll_to_cell(d->view, path, NULL, FALSE, 0.2, 0);
+    expanded = TRUE;
   }
   else if(startwildcard && g_strrstr(haystack, needle+1) != NULL)
   {
     gtk_tree_view_expand_to_path(d->view, path);
+    expanded = TRUE;
   }
   else if(g_str_has_prefix(haystack, needle))
   {
     gtk_tree_view_expand_to_path(d->view, path);
+    expanded = TRUE;
   }
 
   g_free(haystack);
@@ -822,7 +827,7 @@ static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   g_free(str);
   g_free(txt);
 
-  return FALSE;
+  return expanded; // if we expanded the path, we can stop iteration (saves half on average)
 }
 
 static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
