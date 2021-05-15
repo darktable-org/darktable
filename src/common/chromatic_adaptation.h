@@ -373,17 +373,17 @@ const float DT_ALIGNED_ARRAY XYZ_D65_to_D50_Bradford[3][4]
         { -0.00924304f, 0.01505519f, 0.75187428f, 0.f } };
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(IN, OUT:16)
+#pragma omp declare simd aligned(XYZ_in, XYZ_out:16)
 #endif
-static inline void XYZ_D50_to_D65(const float IN[4], float OUT[4])
+static inline void XYZ_D50_to_D65(const float XYZ_in[4], float XYZ_out[4])
 {
-  dot_product(IN, XYZ_D50_to_D65_CAT16, OUT);
+  dot_product(XYZ_in, XYZ_D50_to_D65_CAT16, XYZ_out);
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(IN, OUT:16)
+#pragma omp declare simd aligned(XYZ_in, XYZ_out:16)
 #endif
-static inline void XYZ_D65_to_D50(const float IN[4], float OUT[4])
+static inline void XYZ_D65_to_D50(const float XYZ_in[4], float XYZ_out[4])
 {
-  dot_product(IN, XYZ_D65_to_D50_CAT16, OUT);
+  dot_product(XYZ_in, XYZ_D65_to_D50_CAT16, XYZ_out);
 }
