@@ -32,10 +32,6 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
-
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
 DT_MODULE_INTROSPECTION(2, dt_iop_cacorrect_params_t)
@@ -83,7 +79,7 @@ typedef struct dt_iop_cacorrect_data_t
 const char *name()
 {
   // make sure you put all your translatable strings into _() !
-  return _("chromatic aberrations");
+  return _("raw chromatic aberrations");
 }
 
 const char *description(struct dt_iop_module_t *self)
@@ -134,83 +130,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 #define INLINE inline
 #endif
 
-#ifdef __SSE2__
-
-typedef __m128i vmask;
-typedef __m128 vfloat;
-
-#define ZEROV _mm_setzero_ps()
-#define F2V(a) _mm_set1_ps((a))
-#define STVFU(x, y) _mm_storeu_ps(&x, y)
-#define LVFU(x) _mm_loadu_ps(&x)
-
-#define STC2VFU(a, v)                                                                                        \
-  {                                                                                                          \
-    __m128 TST1V = _mm_loadu_ps(&a);                                                                         \
-    __m128 TST2V = _mm_unpacklo_ps(v, v);                                                                    \
-    vmask cmask = _mm_set_epi32(0xffffffff, 0, 0xffffffff, 0);                                               \
-    _mm_storeu_ps(&a, vself(cmask, TST1V, TST2V));                                                           \
-    TST1V = _mm_loadu_ps((&a) + 4);                                                                          \
-    TST2V = _mm_unpackhi_ps(v, v);                                                                           \
-    _mm_storeu_ps((&a) + 4, vself(cmask, TST1V, TST2V));                                                     \
-  }
-
-static INLINE vfloat LC2VFU(float *a)
-{
-  // Load 8 floats from a and combine a[0],a[2],a[4] and a[6] into a vector of 4 floats
-  vfloat a1 = _mm_loadu_ps(a);
-  vfloat a2 = _mm_loadu_ps((a) + 4);
-  return _mm_shuffle_ps(a1, a2, _MM_SHUFFLE(2, 0, 2, 0));
-}
-static INLINE vfloat SQRV(vfloat a)
-{
-  return a * a;
-}
-static INLINE vfloat vmul2f(vfloat a)
-{
-  // fastest way to multiply by 2
-  return a + a;
-}
-static INLINE vfloat vcast_vf_f(float f)
-{
-  return _mm_set_ps(f, f, f, f);
-}
-static INLINE vmask vorm(vmask x, vmask y)
-{
-  return _mm_or_si128(x, y);
-}
-static INLINE vmask vandm(vmask x, vmask y)
-{
-  return _mm_and_si128(x, y);
-}
-static INLINE vmask vandnotm(vmask x, vmask y)
-{
-  return _mm_andnot_si128(x, y);
-}
-static INLINE vfloat vabsf(vfloat f)
-{
-  return (vfloat)vandnotm((vmask)vcast_vf_f(-0.0f), (vmask)f);
-}
-static INLINE vfloat vself(vmask mask, vfloat x, vfloat y)
-{
-  return (vfloat)vorm(vandm(mask, (vmask)x), vandnotm(mask, (vmask)y));
-}
-static INLINE float vhadd(vfloat a)
-{
-  // returns a[0] + a[1] + a[2] + a[3]
-  a += _mm_movehl_ps(a, a);
-  return _mm_cvtss_f32(_mm_add_ss(a, _mm_shuffle_ps(a, a, 1)));
-}
-static INLINE vfloat vintpf(vfloat a, vfloat b, vfloat c)
-{
-  // calculate a * b + (1 - a) * c (interpolate two values)
-  // following is valid:
-  // vintpf(a, b+x, c+x) = vintpf(a, b, c) + x
-  // vintpf(a, b*x, c*x) = vintpf(a, b, c) * x
-  return a * (b - c) + c;
-}
-
-#endif // __SSE2__
 
 static INLINE float SQR(float x)
 {
@@ -645,43 +564,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // end of initialization
 
-
-#ifdef __SSE2__
-          vfloat onev = F2V(1.f);
-          vfloat epsv = F2V(eps);
-#endif
           for(int rr = 3; rr < rr1 - 3; rr++)
           {
             int row = rr + top;
-            int cc = 3 + (FC(rr, 3, filters) & 1);
-            int indx = rr * ts + cc;
-            int c = FC(rr, cc, filters);
-#ifdef __SSE2__
-            for(; cc < cc1 - 9; cc += 8, indx += 8)
-            {
-              // compute directional weights using image gradients
-              vfloat wtuv = onev / SQRV(epsv + vabsf(LC2VFU(&rgb[1][indx + v1]) - LC2VFU(&rgb[1][indx - v1]))
-                                        + vabsf(LC2VFU(&rgb[c][indx]) - LC2VFU(&rgb[c][indx - v2]))
-                                        + vabsf(LC2VFU(&rgb[1][indx - v1]) - LC2VFU(&rgb[1][indx - v3])));
-              vfloat wtdv = onev / SQRV(epsv + vabsf(LC2VFU(&rgb[1][indx - v1]) - LC2VFU(&rgb[1][indx + v1]))
-                                        + vabsf(LC2VFU(&rgb[c][indx]) - LC2VFU(&rgb[c][indx + v2]))
-                                        + vabsf(LC2VFU(&rgb[1][indx + v1]) - LC2VFU(&rgb[1][indx + v3])));
-              vfloat wtlv = onev / SQRV(epsv + vabsf(LC2VFU(&rgb[1][indx + 1]) - LC2VFU(&rgb[1][indx - 1]))
-                                        + vabsf(LC2VFU(&rgb[c][indx]) - LC2VFU(&rgb[c][indx - 2]))
-                                        + vabsf(LC2VFU(&rgb[1][indx - 1]) - LC2VFU(&rgb[1][indx - 3])));
-              vfloat wtrv = onev / SQRV(epsv + vabsf(LC2VFU(&rgb[1][indx - 1]) - LC2VFU(&rgb[1][indx + 1]))
-                                        + vabsf(LC2VFU(&rgb[c][indx]) - LC2VFU(&rgb[c][indx + 2]))
-                                        + vabsf(LC2VFU(&rgb[1][indx + 1]) - LC2VFU(&rgb[1][indx + 3])));
-
-              // store in rgb array the interpolated G value at R/B grid points using directional weighted
-              // average
-              STC2VFU(rgb[1][indx], (wtuv * LC2VFU(&rgb[1][indx - v1]) + wtdv * LC2VFU(&rgb[1][indx + v1])
-                                     + wtlv * LC2VFU(&rgb[1][indx - 1]) + wtrv * LC2VFU(&rgb[1][indx + 1]))
-                                        / (wtuv + wtdv + wtlv + wtrv));
-            }
-
-#endif
-            for(; cc < cc1 - 3; cc += 2, indx += 2)
+            for(int cc = 3 + (FC(rr, 3, filters) & 1), indx = rr * ts + cc, c = FC(rr, cc, filters); cc < cc1 - 3; cc += 2, indx += 2)
             {
               // compute directional weights using image gradients
               float wtu = 1.f / SQR(eps + fabsf(rgb[1][indx + v1] - rgb[1][indx - v1])
@@ -713,50 +599,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
               }
             }
           }
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#ifdef __SSE2__
-          vfloat zd25v = F2V(0.25f);
-#endif
+
           for(int rr = 4; rr < rr1 - 4; rr++)
           {
-            int cc = 4 + (FC(rr, 2, filters) & 1), indx = rr * ts + cc, c = FC(rr, cc, filters);
-#ifdef __SSE2__
-            for(; cc < cc1 - 10; cc += 8, indx += 8)
-            {
-              vfloat rgb1v = LC2VFU(&rgb[1][indx]);
-              vfloat rgbcv = LC2VFU(&rgb[c][indx]);
-              vfloat temp1v
-                  = vabsf(vabsf((rgb1v - rgbcv) - (LC2VFU(&rgb[1][indx + v4]) - LC2VFU(&rgb[c][indx + v4])))
-                          + vabsf(LC2VFU(&rgb[1][indx - v4]) - LC2VFU(&rgb[c][indx - v4]) - rgb1v + rgbcv)
-                          - vabsf(LC2VFU(&rgb[1][indx - v4]) - LC2VFU(&rgb[c][indx - v4])
-                                  - LC2VFU(&rgb[1][indx + v4]) + LC2VFU(&rgb[c][indx + v4])));
-              STVFU(rbhpfv[indx >> 1], temp1v);
-              vfloat temp2v
-                  = vabsf(vabsf((rgb1v - rgbcv) - (LC2VFU(&rgb[1][indx + 4]) - LC2VFU(&rgb[c][indx + 4])))
-                          + vabsf(LC2VFU(&rgb[1][indx - 4]) - LC2VFU(&rgb[c][indx - 4]) - rgb1v + rgbcv)
-                          - vabsf(LC2VFU(&rgb[1][indx - 4]) - LC2VFU(&rgb[c][indx - 4])
-                                  - LC2VFU(&rgb[1][indx + 4]) + LC2VFU(&rgb[c][indx + 4])));
-              STVFU(rbhpfh[indx >> 1], temp2v);
-
-              // low and high pass 1D filters of G in vertical/horizontal directions
-              rgb1v = vmul2f(rgb1v);
-              vfloat glpfvv = zd25v * (rgb1v + LC2VFU(&rgb[1][indx + v2]) + LC2VFU(&rgb[1][indx - v2]));
-              vfloat glpfhv = zd25v * (rgb1v + LC2VFU(&rgb[1][indx + 2]) + LC2VFU(&rgb[1][indx - 2]));
-              rgbcv = vmul2f(rgbcv);
-              STVFU(rblpfv[indx >> 1],
-                    epsv + vabsf(glpfvv
-                                 - zd25v * (rgbcv + LC2VFU(&rgb[c][indx + v2]) + LC2VFU(&rgb[c][indx - v2]))));
-              STVFU(rblpfh[indx >> 1],
-                    epsv + vabsf(glpfhv
-                                 - zd25v * (rgbcv + LC2VFU(&rgb[c][indx + 2]) + LC2VFU(&rgb[c][indx - 2]))));
-              STVFU(grblpfv[indx >> 1],
-                    glpfvv + zd25v * (rgbcv + LC2VFU(&rgb[c][indx + v2]) + LC2VFU(&rgb[c][indx - v2])));
-              STVFU(grblpfh[indx >> 1],
-                    glpfhv + zd25v * (rgbcv + LC2VFU(&rgb[c][indx + 2]) + LC2VFU(&rgb[c][indx - 2])));
-            }
-
-#endif
-            for(; cc < cc1 - 4; cc += 2, indx += 2)
+            for(int cc = 4 + (FC(rr, 2, filters) & 1), indx = rr * ts + cc, c = FC(rr, cc, filters); cc < cc1 - 4; cc += 2, indx += 2)
             {
               rbhpfv[indx >> 1] = fabsf(
                   fabsf((rgb[1][indx] - rgb[c][indx]) - (rgb[1][indx + v4] - rgb[c][indx + v4]))
@@ -791,82 +637,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             }
           }
 
-#ifdef __SSE2__
-          vfloat zd3125v = F2V(0.3125f);
-          vfloat zd09375v = F2V(0.09375f);
-          vfloat zd1v = F2V(0.1f);
-          vfloat zd125v = F2V(0.125f);
-#endif
-
           // along line segments, find the point along each segment that minimizes the colour variance
           // averaged over the tile; evaluate for up/down and left/right away from R/B grid point
           for(int rr = 8; rr < rr1 - 8; rr++)
           {
-            int cc = 8 + (FC(rr, 2, filters) & 1);
-            int indx = rr * ts + cc;
-            int c = FC(rr, cc, filters);
-#ifdef __SSE2__
-            vfloat coeff00v = ZEROV;
-            vfloat coeff01v = ZEROV;
-            vfloat coeff02v = ZEROV;
-            vfloat coeff10v = ZEROV;
-            vfloat coeff11v = ZEROV;
-            vfloat coeff12v = ZEROV;
-            for(; cc < cc1 - 14; cc += 8, indx += 8)
-            {
-
-              // in linear interpolation, colour differences are a quadratic function of interpolation
-              // position;
-              // solve for the interpolation position that minimizes colour difference variance over the tile
-
-              // vertical
-              vfloat gdiffv
-                  = zd3125v * (LC2VFU(&rgb[1][indx + ts]) - LC2VFU(&rgb[1][indx - ts]))
-                    + zd09375v * (LC2VFU(&rgb[1][indx + ts + 1]) - LC2VFU(&rgb[1][indx - ts + 1])
-                                  + LC2VFU(&rgb[1][indx + ts - 1]) - LC2VFU(&rgb[1][indx - ts - 1]));
-              vfloat deltgrbv = LC2VFU(&rgb[c][indx]) - LC2VFU(&rgb[1][indx]);
-
-              vfloat gradwtv
-                  = vabsf(zd25v * LVFU(rbhpfv[indx >> 1])
-                          + zd125v * (LVFU(rbhpfv[(indx >> 1) + 1]) + LVFU(rbhpfv[(indx >> 1) - 1])))
-                    * (LVFU(grblpfv[(indx >> 1) - v1]) + LVFU(grblpfv[(indx >> 1) + v1]))
-                    / (epsv + zd1v * (LVFU(grblpfv[(indx >> 1) - v1]) + LVFU(grblpfv[(indx >> 1) + v1]))
-                       + LVFU(rblpfv[(indx >> 1) - v1]) + LVFU(rblpfv[(indx >> 1) + v1]));
-
-              coeff00v += gradwtv * deltgrbv * deltgrbv;
-              coeff01v += gradwtv * gdiffv * deltgrbv;
-              coeff02v += gradwtv * gdiffv * gdiffv;
-
-              // horizontal
-              gdiffv = zd3125v * (LC2VFU(&rgb[1][indx + 1]) - LC2VFU(&rgb[1][indx - 1]))
-                       + zd09375v * (LC2VFU(&rgb[1][indx + 1 + ts]) - LC2VFU(&rgb[1][indx - 1 + ts])
-                                     + LC2VFU(&rgb[1][indx + 1 - ts]) - LC2VFU(&rgb[1][indx - 1 - ts]));
-
-              gradwtv = vabsf(zd25v * LVFU(rbhpfh[indx >> 1])
-                              + zd125v * (LVFU(rbhpfh[(indx >> 1) + v1]) + LVFU(rbhpfh[(indx >> 1) - v1])))
-                        * (LVFU(grblpfh[(indx >> 1) - 1]) + LVFU(grblpfh[(indx >> 1) + 1]))
-                        / (epsv + zd1v * (LVFU(grblpfh[(indx >> 1) - 1]) + LVFU(grblpfh[(indx >> 1) + 1]))
-                           + LVFU(rblpfh[(indx >> 1) - 1]) + LVFU(rblpfh[(indx >> 1) + 1]));
-
-              coeff10v += gradwtv * deltgrbv * deltgrbv;
-              coeff11v += gradwtv * gdiffv * deltgrbv;
-              coeff12v += gradwtv * gdiffv * gdiffv;
-
-              //  In Mathematica,
-              //  f[x_]=Expand[Total[Flatten[
-              //  ((1-x) RotateLeft[Gint,shift1]+x
-              //  RotateLeft[Gint,shift2]-cfapad)^2[[dv;;-1;;2,dh;;-1;;2]]]]];
-              //  extremum = -.5Coefficient[f[x],x]/Coefficient[f[x],x^2]
-            }
-            coeff[0][0][c >> 1] += vhadd(coeff00v);
-            coeff[0][1][c >> 1] += vhadd(coeff01v);
-            coeff[0][2][c >> 1] += vhadd(coeff02v);
-            coeff[1][0][c >> 1] += vhadd(coeff10v);
-            coeff[1][1][c >> 1] += vhadd(coeff11v);
-            coeff[1][2][c >> 1] += vhadd(coeff12v);
-
-#endif
-            for(; cc < cc1 - 8; cc += 2, indx += 2)
+            for(int cc = 8 + (FC(rr, 2, filters) & 1), indx = rr * ts + cc, c = FC(rr, cc, filters); cc < cc1 - 8; cc += 2, indx += 2)
             {
 
               // in linear interpolation, colour differences are a quadratic function of interpolation
@@ -1348,32 +1123,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
           for(int rr = 4; rr < rr1 - 4; rr++)
           {
-            int cc = 4 + (FC(rr, 2, filters) & 1);
-            int c = FC(rr, cc, filters);
-#ifdef __SSE2__
-            vfloat shifthfracv = F2V(shifthfrac[c]);
-            vfloat shiftvfracv = F2V(shiftvfrac[c]);
-            for(; cc < cc1 - 10; cc += 8)
-            {
-              // perform CA correction using colour ratios or colour differences
-              vfloat Ginthfloorv
-                  = vintpf(shifthfracv, LC2VFU(&rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthceil[c]]),
-                           LC2VFU(&rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthfloor[c]]));
-              vfloat Ginthceilv
-                  = vintpf(shifthfracv, LC2VFU(&rgb[1][(rr + shiftvceil[c]) * ts + cc + shifthceil[c]]),
-                           LC2VFU(&rgb[1][(rr + shiftvceil[c]) * ts + cc + shifthfloor[c]]));
-              // Gint is bilinear interpolation of G at CA shift point
-              vfloat Gintv = vintpf(shiftvfracv, Ginthceilv, Ginthfloorv);
-
-              // determine R/B at grid points using colour differences at shift point plus interpolated G
-              // value at grid point
-              // but first we need to interpolate G-R/G-B to grid points...
-              STVFU(grbdiff[((rr)*ts + cc) >> 1], Gintv - LC2VFU(&rgb[c][(rr)*ts + cc]));
-              STVFU(gshift[((rr)*ts + cc) >> 1], Gintv);
-            }
-
-#endif
-            for(; cc < cc1 - 4; cc += 2)
+            for(int cc = 4 + (FC(rr, 2, filters) & 1), c = FC(rr, cc, filters); cc < cc1 - 4; cc += 2)
             {
               // perform CA correction using colour ratios or colour differences
               float Ginthfloor = intp(shifthfrac[c], rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthceil[c]],
@@ -1586,7 +1336,7 @@ static void _display_ca_error(struct dt_iop_module_t *self)
     dt_iop_set_module_trouble_message(self, _("error"),
                                       _("CA correction supports only RGB colour filter arrays"), NULL);
   else if(g->error == CACORRECT_ERROR_MATH)
-     dt_iop_set_module_trouble_message(self, _("error"),
+     dt_iop_set_module_trouble_message(self, _("bypassed while zooming in"),
                                       _("while calculating the correction parameters the internal maths failed so module is bypassed.\n"
                                         "you can get more info by running dt via the console."), NULL);
   else if(g->error == CACORRECT_ERROR_LIN)
@@ -1594,7 +1344,7 @@ static void _display_ca_error(struct dt_iop_module_t *self)
                                       _("internals maths found too few data points so restricted the order of the fit to linear.\n"
                                         "you might view bad correction results."), NULL);
   else if(g->error == CACORRECT_ERROR_SIZE)
-    dt_iop_set_module_trouble_message(self, _("bypassed"),
+    dt_iop_set_module_trouble_message(self, _("bypassed while zooming in"),
                                       _("to calculate good parameters for raw CA correction we want full sensor data or at least a sensible part of that.\n"
                                         "the image shown in darkroom would look vastly different from developed files so effect is bypassed now."), NULL);
   else

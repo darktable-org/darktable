@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "common/geo.h"
 #include <glib.h>
 #include <sqlite3.h>
 #include <stdint.h>
@@ -26,6 +27,7 @@ typedef enum dt_map_locations_type_t
 {
   MAP_LOCATION_SHAPE_ELLIPSE,
   MAP_LOCATION_SHAPE_RECTANGLE,
+  MAP_LOCATION_SHAPE_POLYGONS,
   MAP_LOCATION_SHAPE_MAX
 } dt_map_locations_type_t;
 
@@ -40,6 +42,8 @@ typedef struct dt_map_location_data_t
 {
   double lon, lat, delta1, delta2, ratio;
   int shape;
+  GList *polygons;
+  int plg_pts;
 } dt_map_location_data_t;
 
 typedef struct dt_location_draw_t
@@ -68,6 +72,9 @@ void dt_map_location_rename(const guint locid, const char *const name);
 // does the location name already exist
 gboolean dt_map_location_name_exists(const char *const name);
 
+// gets location's images number
+int dt_map_location_get_images_count(const guint locid);
+
 // retrieve list of tags which are on that path
 // to be freed with dt_map_location_free_result()
 GList *dt_map_location_get_locations_by_path(const gchar *path,
@@ -75,8 +82,7 @@ GList *dt_map_location_get_locations_by_path(const gchar *path,
 
 // retrieve list of locations which are on the map
 // to be freed with g_list_free_full(list, g_free)
-GList *dt_map_location_get_locations_on_map(const double lat0, const double lat1,
-                                            const double lon0, const double lon1);
+GList *dt_map_location_get_locations_on_map(const dt_map_box_t *const bbox);
 
 // free map location list
 void dt_map_location_free_result(GList **result);
@@ -97,7 +103,7 @@ GList *dt_map_location_find_locations(const guint imgid);
 void dt_map_location_update_locations(const guint imgid, const GList *tags);
 
 // update location's images - remove old ones and add new ones
-gboolean dt_map_location_update_images(const guint locid);
+gboolean dt_map_location_update_images(dt_location_draw_t *ld);
 
 // return root tag for location geotagging
 const char *dt_map_location_data_tag_root();
@@ -105,6 +111,16 @@ const char *dt_map_location_data_tag_root();
 // tell if the point (lon, lat) belongs to location
 gboolean dt_map_location_included(const float lon, const float lat,
                                   dt_map_location_data_t *g);
+
+// get the map box containing the polygon + flat polygons
+GList *dt_map_location_convert_polygons(void *polygons, dt_map_box_t *bbox, int *nb_pts);
+
+// get the polygons for the given location
+void dt_map_location_get_polygons(dt_location_draw_t *ld);
+
+// free flat polygons
+void dt_map_location_free_polygons(dt_location_draw_t *ld);
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

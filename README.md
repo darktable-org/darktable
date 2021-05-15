@@ -1,4 +1,4 @@
-[![icon](/data/pixmaps/idbutton.png?raw=true)](https://www.darktable.org/) darktable [![build status](https://travis-ci.com/darktable-org/darktable.svg?branch=master)](https://travis-ci.com/darktable-org/darktable) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/470/badge)](https://bestpractices.coreinfrastructure.org/projects/470)
+[![icon](/data/pixmaps/idbutton.png?raw=true)](https://www.darktable.org/) darktable [![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/darktable-org/darktable/CI/master)](https://github.com/darktable-org/darktable/actions/workflows/ci.yml?query=branch%3Amaster+is%3Acompleted+event%3Apush) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/470/badge)](https://bestpractices.coreinfrastructure.org/projects/470)
 =========
 
 darktable is an open source photography workflow application and non-destructive raw developer. A virtual lighttable and darkroom for photographers. It manages your digital negatives in a database, lets you view them through a zoomable lighttable and enables you to develop raw images, enhance them and export them on local or remote storage.
@@ -377,6 +377,8 @@ lighttable more responsive when you import large collections of images.
 However, this JPEG thumbnail is processed by the firmware of the camera, with proprietary algorithms,
 and colors, sharpness and contrast might not look the same as
 darktable processing, which is what you see when opening the darkroom. 
+Notice camera's manufacturers don't publish the pixel cuisine they perform in their firmware
+so their look is not exactly nor easily reproduceable externally.
 
 However, once RAW images have been previously edited in darktable, 
 the lighttable thumbnail should match exactly the darkroom preview because they are processed the same.

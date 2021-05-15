@@ -91,6 +91,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {13.0f }, "spots", 0},
   { {14.0f }, "retouch", 0},
   { {15.0f }, "lens", 0},
+  { {15.5f }, "cacorrectrgb", 0},
   { {16.0f }, "ashift", 0},
   { {17.0f }, "liquify", 0},
   { {18.0f }, "rotatepixels", 0},
@@ -98,6 +99,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {20.0f }, "flip", 0},
   { {21.0f }, "clipping", 0},
   { {21.5f }, "toneequal", 0},
+  { {21.7f }, "crop", 0},
   { {22.0f }, "graduatednd", 0},
   { {23.0f }, "basecurve", 0},
   { {24.0f }, "bilateral", 0},
@@ -135,7 +137,6 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {50.0f }, "levels", 0},
   { {50.2f }, "rgblevels", 0},
   { {50.5f }, "rgbcurve", 0},
-  { {50.7f }, "vibrancergb", 0},
   { {51.0f }, "relight", 0},
   { {52.0f }, "colorcorrection", 0},
   { {53.0f }, "sharpen", 0},
@@ -175,6 +176,8 @@ const dt_iop_order_entry_t v30_order[] = {
   { {11.0f }, "rotatepixels", 0},
   { {12.0f }, "scalepixels", 0},
   { {13.0f }, "lens", 0},
+  { {13.5f }, "cacorrectrgb", 0}, // correct chromatic aberrations after lens correction so that lensfun
+                                  // does not reintroduce chromatic aberrations when trying to correct them
   { {14.0f }, "hazeremoval", 0},
   { {15.0f }, "ashift", 0},
   { {16.0f }, "flip", 0},
@@ -185,7 +188,8 @@ const dt_iop_order_entry_t v30_order[] = {
   { {21.0f }, "exposure", 0},
   { {22.0f }, "mask_manager", 0},
   { {23.0f }, "tonemap", 0},
-  { {24.0f }, "toneequal", 0},
+  { {24.0f }, "toneequal", 0},       // last module that need enlarged roi_in
+  { {24.5f }, "crop", 0},            // should go after all modules that may need a wider roi_in
   { {25.0f }, "graduatednd", 0},
   { {26.0f }, "profile_gamma", 0},
   { {27.0f }, "equalizer", 0},
@@ -221,7 +225,6 @@ const dt_iop_order_entry_t v30_order[] = {
   { {41.5f }, "colorbalancergb", 0},    // scene-referred color manipulation
   { {42.0f }, "rgbcurve", 0},        // really versatile way to edit colour in scene-referred and display-referred workflow
   { {43.0f }, "rgblevels", 0},       // same
-  { {50.7f }, "vibrancergb", 0},     // same
   { {44.0f }, "basecurve", 0},       // conversion from scene-referred to display referred, reverse-engineered
                                   //    on camera JPEG default look
   { {45.0f }, "filmic", 0},          // same, but different (parametric) approach
@@ -656,7 +659,8 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
           _insert_before(iop_order_list, "negadoctor", "channelmixerrgb");
           _insert_before(iop_order_list, "negadoctor", "censorize");
           _insert_before(iop_order_list, "rgbcurve", "colorbalancergb");
-          _insert_before(iop_order_list, "rgbcurve", "vibrancergb");
+          _insert_before(iop_order_list, "ashift", "cacorrectrgb");
+          _insert_before(iop_order_list, "graduatednd", "crop");
         }
       }
       else if(version == DT_IOP_ORDER_LEGACY)
@@ -1029,7 +1033,7 @@ void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list, gboolean 
         // update multi_priority to be unique in iop list
         int multi_priority = start_multi_priority;
         int nb = 0;
-        
+
         for(const GList *s = entry_list; s; s = g_list_next(s))
         {
           dt_iop_order_entry_t *item = (dt_iop_order_entry_t *)s->data;
@@ -1495,7 +1499,7 @@ gboolean dt_ioppr_check_can_move_after_iop(GList *iop_list, dt_iop_module_t *mod
 
   // moving after module_prev is the same as moving before the very next one after module_prev
   dt_iop_module_t *module_next = NULL;
-  
+
   for(const GList *modules = g_list_last(iop_list); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;

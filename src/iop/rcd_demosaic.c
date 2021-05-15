@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@
 */
 
 /* Some notes about the algorithm
-* 1. The calculated data at the tiling borders RCD_BORDER must be at least 9 to be stable.
+* 1. The calculated data at the tiling borders RCD_BORDER must be at least 9 to be stable. Why does 8 **not** work?
 * 2. For the outermost tiles we only have to discard a 6 pixel border region interpolated otherwise.
 * 3. The tilesize has a significant influence on performance, the default is a good guess for modern
 *    x86/64 machines, tested on Xeon E-2288G, i5-8250U.
@@ -49,24 +49,24 @@
 #endif
 
 /* We don't want to use the -Ofast option in dt as it effects are not well specified and there have been issues
-   leading to crashes. 
+   leading to crashes.
    But we can use the 'fast-math' option in code sections if input data and algorithms are well defined.
-    
+
    We have defined input data and make sure there are no divide-by-zero or overflows by chosen eps
-   Reordering of instructions might lead to a slight loss of presision whigh is not significant here.  
+   Reordering of instructions might lead to a slight loss of presision whigh is not significant here.
    Not necessary in this code section
      threadsafe handling of errno
      signed zero handling
      handling of math interrupts
-     handling of rounding 
+     handling of rounding
      handling of overflows
 
-   The 'fp-contract=fast' option enables fused multiply&add if available 
+   The 'fp-contract=fast' option enables fused multiply&add if available
 */
 
 #ifdef __GNUC__
   #pragma GCC push_options
-  #pragma GCC optimize ("fast-math", "fp-contract=fast") 
+  #pragma GCC optimize ("fast-math", "fp-contract=fast")
 #endif
 
 #ifdef __GNUC__
@@ -97,134 +97,203 @@ static INLINE float intp(float a, float b, float c)
     return a * (b - c) + c;
 }
 
-// We might have negative data in input and also want to normalise 
+// We might have negative data in input and also want to normalise
 static INLINE float safe_in(float a, float scale)
 {
   return fmaxf(0.0f, a) * scale;
 }
 
+// We don't want to use the SIMD version as we might access unaligned memory
 static INLINE float sqrf(float a)
 {
   return a * a;
 }
 
-// The border interpolation has been taken from rt, adapted to dt.
-// The original dcraw based code had much stronger color artefacts in the border region. 
-static INLINE void approxit(float *out, const float *cfa, const float *sum, const int idx, const int c)
+/** This is basically ppg adopted to only write data to RCD_MARGIN */
+static void rcd_ppg_border(float *const out, const float *const in, const int width, const int height, const uint32_t filters, const int margin)
 {
-  float (*rgb)[4] = (void *)out;
-  if(c == 1)
+  const int border = margin + 3;
+  // write approximatad 3-pixel border region to out
+  float sum[8];
+  for(int j = 0; j < height; j++)
   {
-    rgb[idx][0] = sum[0] / sum[3];
-    rgb[idx][1] = fmaxf(0.0f, cfa[idx]);
-    rgb[idx][2] = sum[2] / sum[5];
-  }
-  else
-  {
-    rgb[idx][1] =  sum[1] / sum[4];
-    if (c == 0)
+    for(int i = 0; i < width; i++)
     {
-      rgb[idx][0] = fmaxf(0.0f, cfa[idx]);
-      rgb[idx][2] = sum[2] / sum[5];
-    }
-    else
-    {
-      rgb[idx][0] = sum[0] / sum[3];
-      rgb[idx][2] = fmaxf(0.0f, cfa[idx]);
-    }
-  }
-  rgb[idx][3] = 0.0f;
-}
-
-static void rcd_border_interpolate(dt_dev_pixelpipe_iop_t *piece, float *out, const float *cfa, dt_iop_roi_t *const roi_out,
-                                   const dt_iop_roi_t *const roi_in, const uint32_t filters, const int border)
-{
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-
-  if((width < 2 * border) || (height < 2 * border)) return;
-
-  const int cfarray[4] = {FC(roi_in->y, roi_in->x, filters), FC(roi_in->y, roi_in->x + 1, filters), FC(roi_in->y + 1, roi_in->x, filters), FC(roi_in->y + 1, roi_in->x + 1, filters)};
-
-  for(int i = 0; i < height; i++)
-  {
-    float sum[6];
-    for(int j = 0; j < border; j++)
-    {
-      for(int x = 0; x < 6; x++) { sum[x] = 0.0f; }
-      for(int i1 = i - 1; i1 < i + 2; i1++)
+      if(i == 3 && j >= 3 && j < height - 3) i = width - 3;
+      if(i == width) break;
+      memset(sum, 0, sizeof(float) * 8);
+      for(int y = j - 1; y != j + 2; y++)
       {
-        for(int j1 = j - 1; j1 < j + 2; j1++)
+        for(int x = i - 1; x != i + 2; x++)
         {
-          if((i1 > -1) && (i1 < height) && (j1 > -1))
+          if((y >= 0) && (x >= 0) && (y < height) && (x < width))
           {
-            const int c = FCRCD(i1, j1);
-            sum[c] += fmaxf(0.0f, cfa[i1 * width + j1]);
-            sum[c + 3]++;
+            const int f = FC(y, x, filters);
+            sum[f] += fmaxf(0.0f, in[(size_t)y * width + x]);
+            sum[f + 4]++;
           }
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j)); 
+      const int f = FC(j, i, filters);
+      for(int c = 0; c < 3; c++)
+      {
+        if(c != f && sum[c + 4] > 0.0f)
+          out[4 * ((size_t)j * width + i) + c] = sum[c] / sum[c + 4];
+        else
+          out[4 * ((size_t)j * width + i) + c] = fmaxf(0.0f, in[(size_t)j * width + i]);
+      }
     }
+  }
 
-    for(int j = width - border; j < width; j++)
+  const float *input = in;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(filters, out, width, height, border) \
+  shared(input) \
+  schedule(static)
+#endif
+  for(int j = 3; j < height - 3; j++)
+  {
+    float *buf = out + (size_t)4 * width * j + 4 * 3;
+    const float *buf_in = input + (size_t)width * j + 3;
+    for(int i = 3; i < width - 3; i++)
     {
-      for(int x = 0; x < 6; x++) { sum[x] = 0.0f; }
-      for(int i1 = i - 1; i1 < i + 2; i1++)
+      if(i == border && j >= border && j < height - border)
       {
-        for(int j1 = j - 1; j1 < j + 2; j1++)
+        i = width - border;
+        buf = out + (size_t)4 * width * j + 4 * i;
+        buf_in = input + (size_t)width * j + i;
+      }
+      if(i == width) break;
+
+      const int c = FC(j, i, filters);
+      float color[4];
+      const float pc = fmaxf(0.0f, buf_in[0]);
+      if(c == 0 || c == 2)
+      {
+        color[c] = pc;
+        const float pym  = fmaxf(0.0f, buf_in[-width * 1]);
+        const float pym2 = fmaxf(0.0f, buf_in[-width * 2]);
+        const float pym3 = fmaxf(0.0f, buf_in[-width * 3]);
+        const float pyM  = fmaxf(0.0f, buf_in[+width * 1]);
+        const float pyM2 = fmaxf(0.0f, buf_in[+width * 2]);
+        const float pyM3 = fmaxf(0.0f, buf_in[+width * 3]);
+        const float pxm  = fmaxf(0.0f, buf_in[-1]);
+        const float pxm2 = fmaxf(0.0f, buf_in[-2]);
+        const float pxm3 = fmaxf(0.0f, buf_in[-3]);
+        const float pxM  = fmaxf(0.0f, buf_in[+1]);
+        const float pxM2 = fmaxf(0.0f, buf_in[+2]);
+        const float pxM3 = fmaxf(0.0f, buf_in[+3]);
+
+        const float guessx = (pxm + pc + pxM) * 2.0f - pxM2 - pxm2;
+        const float diffx = (fabsf(pxm2 - pc) + fabsf(pxM2 - pc) + fabsf(pxm - pxM)) * 3.0f
+                            + (fabsf(pxM3 - pxM) + fabsf(pxm3 - pxm)) * 2.0f;
+        const float guessy = (pym + pc + pyM) * 2.0f - pyM2 - pym2;
+        const float diffy = (fabsf(pym2 - pc) + fabsf(pyM2 - pc) + fabsf(pym - pyM)) * 3.0f
+                            + (fabsf(pyM3 - pyM) + fabsf(pym3 - pym)) * 2.0f;
+        if(diffx > diffy)
         {
-          if((i1 > -1) && (i1 < height ) && (j1 < width))
-          {
-            const int c = FCRCD(i1, j1);
-            sum[c] += fmaxf(0.0f, cfa[i1 * width + j1]);
-            sum[c + 3]++;
-          }
+          // use guessy
+          const float m = fminf(pym, pyM);
+          const float M = fmaxf(pym, pyM);
+          color[1] = fmaxf(fminf(guessy * .25f, M), m);
+        }
+        else
+        {
+          const float m = fminf(pxm, pxM);
+          const float M = fmaxf(pxm, pxM);
+          color[1] = fmaxf(fminf(guessx * .25f, M), m);
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j)); 
+      else
+        color[1] = pc;
+
+      color[3] = 0.0f;
+      memcpy(buf, color, sizeof(float) * 4);
+      buf += 4;
+      buf_in++;
     }
   }
-  for(int i = 0; i < border; i++)
+// for all pixels: interpolate colors into float array
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(filters, out, width, height, margin) \
+  schedule(static)
+#endif
+  for(int j = 1; j < height - 1; j++)
   {
-    float sum[6];
-    for(int j = border; j < width - border; j++)
+    float *buf = out + (size_t)4 * width * j + 4;
+    for(int i = 1; i < width - 1; i++)
     {
-      for(int x = 0; x < 6; x++) { sum[x] = 0.0f; }
-      for(int i1 = i - 1; i1 < i + 2; i1++)
+      if(i == margin && j >= margin && j < height - margin)
       {
-        for(int j1 = j - 1; j1 < j + 2; j1++)
+        i = width - margin;
+        buf = out + (size_t)4 * (width * j + i);
+      }
+      const int c = FC(j, i, filters);
+      float color[4] = { buf[0], buf[1], buf[2], buf[3] };
+      const int linesize = 4 * width;
+      // fill all four pixels with correctly interpolated stuff: r/b for green1/2
+      // b for r and r for b
+      if(__builtin_expect(c & 1, 1)) // c == 1 || c == 3)
+      {
+        // calculate red and blue for green pixels:
+        // need 4-nbhood:
+        const float *nt = buf - linesize;
+        const float *nb = buf + linesize;
+        const float *nl = buf - 4;
+        const float *nr = buf + 4;
+        if(FC(j, i + 1, filters) == 0) // red nb in same row
         {
-          if((i1 > -1) && (i1 < height) && (j1 > -1))
-          {
-            const int c = FCRCD(i1, j1);
-            sum[c] += fmaxf(0.0f, cfa[i1 * width + j1]);
-            sum[c + 3]++;
-          }
+          color[2] = (nt[2] + nb[2] + 2.0f * color[1] - nt[1] - nb[1]) * .5f;
+          color[0] = (nl[0] + nr[0] + 2.0f * color[1] - nl[1] - nr[1]) * .5f;
+        }
+        else
+        {
+          // blue nb
+          color[0] = (nt[0] + nb[0] + 2.0f * color[1] - nt[1] - nb[1]) * .5f;
+          color[2] = (nl[2] + nr[2] + 2.0f * color[1] - nl[1] - nr[1]) * .5f;
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j)); 
-    }
-  }
-  for(int i = height - border; i < height; i++)
-  {
-    float sum[6];
-    for(int j = border; j < width - border; j++)
-    {
-      for(int x = 0; x < 6; x++) { sum[x] = 0.0f; }
-      for(int i1 = i - 1; i1 < i + 2; i1++)
+      else
       {
-        for(int j1 = j - 1; j1 < j + 2; j1++)
+        // get 4-star-nbhood:
+        const float *ntl = buf - 4 - linesize;
+        const float *ntr = buf + 4 - linesize;
+        const float *nbl = buf - 4 + linesize;
+        const float *nbr = buf + 4 + linesize;
+
+        if(c == 0)
         {
-          if((i1 > -1) && (i1 < height) && (j1 < width))
-          {
-            const int c = FCRCD(i1, j1);
-            sum[c] += fmaxf(0.0f, cfa[i1 * width + j1]);
-            sum[c + 3]++;
-          }
+          // red pixel, fill blue:
+          const float diff1  = fabsf(ntl[2] - nbr[2]) + fabsf(ntl[1] - color[1]) + fabsf(nbr[1] - color[1]);
+          const float guess1 = ntl[2] + nbr[2] + 2.0f * color[1] - ntl[1] - nbr[1];
+          const float diff2  = fabsf(ntr[2] - nbl[2]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
+          const float guess2 = ntr[2] + nbl[2] + 2.0f * color[1] - ntr[1] - nbl[1];
+          if(diff1 > diff2)
+            color[2] = guess2 * .5f;
+          else if(diff1 < diff2)
+            color[2] = guess1 * .5f;
+          else
+            color[2] = (guess1 + guess2) * .25f;
+        }
+        else // c == 2, blue pixel, fill red:
+        {
+          const float diff1  = fabsf(ntl[0] - nbr[0]) + fabsf(ntl[1] - color[1]) + fabsf(nbr[1] - color[1]);
+          const float guess1 = ntl[0] + nbr[0] + 2.0f * color[1] - ntl[1] - nbr[1];
+          const float diff2  = fabsf(ntr[0] - nbl[0]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
+          const float guess2 = ntr[0] + nbl[0] + 2.0f * color[1] - ntr[1] - nbl[1];
+          if(diff1 > diff2)
+            color[0] = guess2 * .5f;
+          else if(diff1 < diff2)
+            color[0] = guess1 * .5f;
+          else
+            color[0] = (guess1 + guess2) * .25f;
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j)); 
+      memcpy(buf, color, sizeof(float) * 4);
+      buf += 4;
     }
   }
 }
@@ -244,6 +313,8 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
     return;
   }
 
+  rcd_ppg_border(out, in, width, height, filters, RCD_MARGIN);
+
   const float scaler = fmaxf(piece->pipe->dsc.processed_maximum[0], fmaxf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
   const float revscaler = 1.0f / scaler;
 
@@ -256,7 +327,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
   #pragma omp parallel \
   dt_omp_firstprivate(width, height, cfarray, out, in, scaler, revscaler)
 #endif
-  { 
+  {
     float *const VH_Dir = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE);
     memset(VH_Dir, 0, sizeof(*VH_Dir) * RCD_TILESIZE * RCD_TILESIZE);
     float *const PQ_Dir = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE / 2);
@@ -266,8 +337,8 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
     float *const P_CDiff_Hpf = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE / 2);
     memset(P_CDiff_Hpf, 0, sizeof(*P_CDiff_Hpf) * RCD_TILESIZE * RCD_TILESIZE / 2);
     float *const Q_CDiff_Hpf = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE / 2);
-    memset(Q_CDiff_Hpf, 0, sizeof(*Q_CDiff_Hpf) * RCD_TILESIZE * RCD_TILESIZE / 2);  
- 
+    memset(Q_CDiff_Hpf, 0, sizeof(*Q_CDiff_Hpf) * RCD_TILESIZE * RCD_TILESIZE / 2);
+
     float (*const rgb)[RCD_TILESIZE * RCD_TILESIZE] = (void *)dt_alloc_align_float((size_t)3 * RCD_TILESIZE * RCD_TILESIZE);
 
     // No overlapping use so re-use same buffer
@@ -333,8 +404,8 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
           }
           for(int col = 4, indx = row * RCD_TILESIZE + col; col < tileCols - 4; col++, indx++ )
           {
-            float V_Stat = fmaxf(epssq,      V0[col - 4] +      V1[col - 4] +      V2[col - 4]);
-            float H_Stat = fmaxf(epssq, bufferH[col - 4] + bufferH[col - 3] + bufferH[col - 2]);
+            const float V_Stat = fmaxf(epssq,      V0[col - 4] +      V1[col - 4] +      V2[col - 4]);
+            const float H_Stat = fmaxf(epssq, bufferH[col - 4] + bufferH[col - 3] + bufferH[col - 2]);
             VH_Dir[indx] = V_Stat / ( V_Stat + H_Stat );
           }
           // rolling the line pointers
@@ -404,8 +475,8 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         {
           for(int col = 4 + (FCRCD(row, 0) & 1), indx = row * RCD_TILESIZE + col, indx2 = indx / 2, indx3 = (indx - w1 - 1) / 2, indx4 = (indx + w1 - 1) / 2; col < tileCols - 4; col += 2, indx += 2, indx2++, indx3++, indx4++ )
           {
-            float P_Stat = fmaxf(epssq, P_CDiff_Hpf[indx3]     + P_CDiff_Hpf[indx2] + P_CDiff_Hpf[indx4 + 1]);
-            float Q_Stat = fmaxf(epssq, Q_CDiff_Hpf[indx3 + 1] + Q_CDiff_Hpf[indx2] + Q_CDiff_Hpf[indx4]);
+            const float P_Stat = fmaxf(epssq, P_CDiff_Hpf[indx3]     + P_CDiff_Hpf[indx2] + P_CDiff_Hpf[indx4 + 1]);
+            const float Q_Stat = fmaxf(epssq, Q_CDiff_Hpf[indx3 + 1] + Q_CDiff_Hpf[indx2] + Q_CDiff_Hpf[indx4]);
             PQ_Dir[indx2] = P_Stat / (P_Stat + Q_Stat);
           }
         }
@@ -416,26 +487,26 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
           for(int col = 4 + (FCRCD(row, 0) & 1), indx = row * RCD_TILESIZE + col, c = 2 - FCRCD(row, col), pqindx = indx / 2, pqindx2 = (indx - w1 - 1) / 2, pqindx3 = (indx + w1 - 1) / 2; col < tileCols - 4; col += 2, indx += 2, pqindx++, pqindx2++, pqindx3++)
           {
             // Refined P/Q diagonal local discrimination
-            float PQ_Central_Value   = PQ_Dir[pqindx];
-            float PQ_Neighbourhood_Value = 0.25f * (PQ_Dir[pqindx2] + PQ_Dir[pqindx2 + 1] + PQ_Dir[pqindx3] + PQ_Dir[pqindx3 + 1]);
+            const float PQ_Central_Value   = PQ_Dir[pqindx];
+            const float PQ_Neighbourhood_Value = 0.25f * (PQ_Dir[pqindx2] + PQ_Dir[pqindx2 + 1] + PQ_Dir[pqindx3] + PQ_Dir[pqindx3 + 1]);
 
-            float PQ_Disc = (fabs(0.5f - PQ_Central_Value) < fabs(0.5f - PQ_Neighbourhood_Value)) ? PQ_Neighbourhood_Value : PQ_Central_Value;
+            const float PQ_Disc = (fabs(0.5f - PQ_Central_Value) < fabs(0.5f - PQ_Neighbourhood_Value)) ? PQ_Neighbourhood_Value : PQ_Central_Value;
 
             // Diagonal gradients
-            float NW_Grad = eps + fabs(rgb[c][indx - w1 - 1] - rgb[c][indx + w1 + 1]) + fabs(rgb[c][indx - w1 - 1] - rgb[c][indx - w3 - 3]) + fabs(rgb[1][indx] - rgb[1][indx - w2 - 2]);
-            float NE_Grad = eps + fabs(rgb[c][indx - w1 + 1] - rgb[c][indx + w1 - 1]) + fabs(rgb[c][indx - w1 + 1] - rgb[c][indx - w3 + 3]) + fabs(rgb[1][indx] - rgb[1][indx - w2 + 2]);
-            float SW_Grad = eps + fabs(rgb[c][indx - w1 + 1] - rgb[c][indx + w1 - 1]) + fabs(rgb[c][indx + w1 - 1] - rgb[c][indx + w3 - 3]) + fabs(rgb[1][indx] - rgb[1][indx + w2 - 2]);
-            float SE_Grad = eps + fabs(rgb[c][indx - w1 - 1] - rgb[c][indx + w1 + 1]) + fabs(rgb[c][indx + w1 + 1] - rgb[c][indx + w3 + 3]) + fabs(rgb[1][indx] - rgb[1][indx + w2 + 2]);
+            const float NW_Grad = eps + fabs(rgb[c][indx - w1 - 1] - rgb[c][indx + w1 + 1]) + fabs(rgb[c][indx - w1 - 1] - rgb[c][indx - w3 - 3]) + fabs(rgb[1][indx] - rgb[1][indx - w2 - 2]);
+            const float NE_Grad = eps + fabs(rgb[c][indx - w1 + 1] - rgb[c][indx + w1 - 1]) + fabs(rgb[c][indx - w1 + 1] - rgb[c][indx - w3 + 3]) + fabs(rgb[1][indx] - rgb[1][indx - w2 + 2]);
+            const float SW_Grad = eps + fabs(rgb[c][indx - w1 + 1] - rgb[c][indx + w1 - 1]) + fabs(rgb[c][indx + w1 - 1] - rgb[c][indx + w3 - 3]) + fabs(rgb[1][indx] - rgb[1][indx + w2 - 2]);
+            const float SE_Grad = eps + fabs(rgb[c][indx - w1 - 1] - rgb[c][indx + w1 + 1]) + fabs(rgb[c][indx + w1 + 1] - rgb[c][indx + w3 + 3]) + fabs(rgb[1][indx] - rgb[1][indx + w2 + 2]);
 
             // Diagonal colour differences
-            float NW_Est = rgb[c][indx - w1 - 1] - rgb[1][indx - w1 - 1];
-            float NE_Est = rgb[c][indx - w1 + 1] - rgb[1][indx - w1 + 1];
-            float SW_Est = rgb[c][indx + w1 - 1] - rgb[1][indx + w1 - 1];
-            float SE_Est = rgb[c][indx + w1 + 1] - rgb[1][indx + w1 + 1];
+            const float NW_Est = rgb[c][indx - w1 - 1] - rgb[1][indx - w1 - 1];
+            const float NE_Est = rgb[c][indx - w1 + 1] - rgb[1][indx - w1 + 1];
+            const float SW_Est = rgb[c][indx + w1 - 1] - rgb[1][indx + w1 - 1];
+            const float SE_Est = rgb[c][indx + w1 + 1] - rgb[1][indx + w1 + 1];
 
             // P/Q estimations
-            float P_Est = (NW_Grad * SE_Est + SE_Grad * NW_Est) / (NW_Grad + SE_Grad);
-            float Q_Est = (NE_Grad * SW_Est + SW_Grad * NE_Est) / (NE_Grad + SW_Grad);
+            const float P_Est = (NW_Grad * SE_Est + SE_Grad * NW_Est) / (NW_Grad + SE_Grad);
+            const float Q_Est = (NE_Grad * SW_Est + SW_Grad * NE_Est) / (NE_Grad + SW_Grad);
 
             // R@B and B@R interpolation
             rgb[c][indx] = rgb[1][indx] + intp(PQ_Disc, Q_Est, P_Est);
@@ -488,7 +559,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
             }
           }
         }
-          
+
         // For the outermost tiles in all directions we can use a smaller border margin
         const int first_vertical =   rowStart + ((tile_vertical == 0) ? RCD_MARGIN : RCD_BORDER);
         const int last_vertical =    rowEnd   - ((tile_vertical == num_vertical - 1)     ? RCD_MARGIN : RCD_BORDER);
@@ -513,10 +584,9 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
     dt_free_align(P_CDiff_Hpf);
     dt_free_align(Q_CDiff_Hpf);
   }
-  rcd_border_interpolate(piece, out, in, roi_out, roi_in, filters, RCD_MARGIN);
 }
 
-// revert rcd specific aggressive optimizing 
+// revert rcd specific aggressive optimizing
 #ifdef __GNUC__
   #pragma GCC pop_options
 #endif

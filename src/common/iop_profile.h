@@ -65,7 +65,10 @@ void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info)
 /** returns the profile info from dev profiles info list that matches (profile_type, profile_filename)
  * NULL if not found
  */
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev, const int profile_type, const char *profile_filename);
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev, dt_colorspaces_color_profile_type_t profile_type,
+                                    const char *profile_filename);
+
 /** adds the profile info from (profile_type, profile_filename) to the dev profiles info list if not already exists
  * returns the generated profile or the existing one
  */
@@ -257,7 +260,7 @@ static inline void _apply_trc(const float rgb_in[3], float rgb_out[3],
   aligned(xyz, rgb, matrix:16) \
   uniform(xyz, rgb, matrix)
 #endif
-static inline void _ioppr_linear_rgb_matrix_to_xyz(const float rgb[3], float xyz[3],
+static inline void _ioppr_linear_rgb_matrix_to_xyz(const float rgb[4], float xyz[4],
                                                    const float matrix[9])
 {
   for(size_t c = 0; c < 3; c++) xyz[c] = 0.0f;
@@ -273,7 +276,7 @@ static inline void _ioppr_linear_rgb_matrix_to_xyz(const float rgb[3], float xyz
   aligned(xyz, rgb, matrix:16) \
   uniform(xyz, rgb, matrix)
 #endif
-static inline void _ioppr_xyz_to_linear_rgb_matrix(const float xyz[3], float rgb[3],
+static inline void _ioppr_xyz_to_linear_rgb_matrix(const float xyz[4], float rgb[4],
                                                    const float matrix[9])
 {
   for(size_t c = 0; c < 3; c++) rgb[c] = 0.0f;
@@ -290,7 +293,7 @@ static inline void _ioppr_xyz_to_linear_rgb_matrix(const float xyz[3], float rgb
   aligned(lut_in:64) \
   uniform(rgb, matrix_in, lut_in, unbounded_coeffs_in)
 #endif
-static inline float dt_ioppr_get_rgb_matrix_luminance(const float rgb[3],
+static inline float dt_ioppr_get_rgb_matrix_luminance(const float rgb[4],
                                                       const float matrix_in[9], float *const lut_in[3],
                                                       const float unbounded_coeffs_in[3][3],
                                                       const int lutsize, const int nonlinearlut)
@@ -299,7 +302,7 @@ static inline float dt_ioppr_get_rgb_matrix_luminance(const float rgb[3],
 
   if(nonlinearlut)
   {
-    float linear_rgb[3] DT_ALIGNED_PIXEL;
+    float linear_rgb[4] DT_ALIGNED_PIXEL;
     _apply_trc(rgb, linear_rgb, lut_in, unbounded_coeffs_in, lutsize);
     luminance = matrix_in[3] * linear_rgb[0] + matrix_in[4] * linear_rgb[1] + matrix_in[5] * linear_rgb[2];
   }
@@ -316,14 +319,14 @@ static inline float dt_ioppr_get_rgb_matrix_luminance(const float rgb[3],
   aligned(lut_in:64) \
   uniform(rgb, xyz, matrix_in, lut_in, unbounded_coeffs_in)
 #endif
-static inline void dt_ioppr_rgb_matrix_to_xyz(const float rgb[3], float xyz[3],
+static inline void dt_ioppr_rgb_matrix_to_xyz(const float rgb[4], float xyz[4],
                                               const float matrix_in[9], float *const lut_in[3],
                                               const float unbounded_coeffs_in[3][3],
                                               const int lutsize, const int nonlinearlut)
 {
   if(nonlinearlut)
   {
-    float linear_rgb[3] DT_ALIGNED_PIXEL;
+    float linear_rgb[4] DT_ALIGNED_PIXEL;
     _apply_trc(rgb, linear_rgb, lut_in, unbounded_coeffs_in, lutsize);
     _ioppr_linear_rgb_matrix_to_xyz(linear_rgb, xyz, matrix_in);
   }
@@ -337,7 +340,7 @@ static inline void dt_ioppr_rgb_matrix_to_xyz(const float rgb[3], float xyz[3],
   aligned(lut_out:64) \
   uniform(rgb, xyz, matrix_out, lut_out, unbounded_coeffs_out)
 #endif
-static inline void dt_ioppr_xyz_to_rgb_matrix(const float xyz[3], float rgb[3],
+static inline void dt_ioppr_xyz_to_rgb_matrix(const float xyz[4], float rgb[4],
                                               const float matrix_out[9], float *const lut_out[3],
                                               const float unbounded_coeffs_out[3][3],
                                               const int lutsize, const int nonlinearlut)
@@ -359,17 +362,17 @@ static inline void dt_ioppr_xyz_to_rgb_matrix(const float xyz[3], float rgb[3],
   aligned(lut_out:64) \
   uniform(lab, rgb, matrix_out, lut_out, unbounded_coeffs_out)
 #endif
-static inline void dt_ioppr_lab_to_rgb_matrix(const float lab[3], float rgb[3],
+static inline void dt_ioppr_lab_to_rgb_matrix(const float lab[4], float rgb[4],
                                               const float matrix_out[9], float *const lut_out[3],
                                               const float unbounded_coeffs_out[3][3],
                                               const int lutsize, const int nonlinearlut)
 {
-  float xyz[3] DT_ALIGNED_PIXEL = { 0.f };
+  float xyz[4] DT_ALIGNED_PIXEL = { 0.f };
   dt_Lab_to_XYZ(lab, xyz);
 
   if(nonlinearlut)
   {
-    float linear_rgb[3] DT_ALIGNED_PIXEL;
+    float linear_rgb[4] DT_ALIGNED_PIXEL;
     _ioppr_xyz_to_linear_rgb_matrix(xyz, linear_rgb, matrix_out);
     _apply_trc(linear_rgb, rgb, lut_out, unbounded_coeffs_out, lutsize);
   }
@@ -390,7 +393,7 @@ static inline void dt_ioppr_rgb_matrix_to_lab(const float rgb[3], float lab[3],
                                               const float unbounded_coeffs_in[3][3],
                                               const int lutsize, const int nonlinearlut)
 {
-  float xyz[3] DT_ALIGNED_PIXEL = { 0.f };
+  float xyz[4] DT_ALIGNED_PIXEL = { 0.f };
   dt_ioppr_rgb_matrix_to_xyz(rgb, xyz, matrix_in, lut_in, unbounded_coeffs_in, lutsize, nonlinearlut);
   dt_XYZ_to_Lab(xyz, lab);
 }
@@ -406,8 +409,8 @@ static inline float dt_ioppr_get_profile_info_middle_grey(const dt_iop_order_icc
 static inline float dt_ioppr_compensate_middle_grey(const float x, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   // we transform the curve nodes from the image colorspace to lab
-  float lab[3] DT_ALIGNED_PIXEL = { 0.0f };
-  const float rgb[3] DT_ALIGNED_PIXEL = { x, x, x };
+  float lab[4] DT_ALIGNED_PIXEL = { 0.0f };
+  const float rgb[4] DT_ALIGNED_PIXEL = { x, x, x };
   dt_ioppr_rgb_matrix_to_lab(rgb, lab, profile_info->matrix_in, profile_info->lut_in, profile_info->unbounded_coeffs_in, profile_info->lutsize, profile_info->nonlinearlut);
   return lab[0] * .01f;
 }
@@ -418,8 +421,8 @@ static inline float dt_ioppr_compensate_middle_grey(const float x, const dt_iop_
 static inline float dt_ioppr_uncompensate_middle_grey(const float x, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   // we transform the curve nodes from lab to the image colorspace
-  const float lab[3] DT_ALIGNED_PIXEL = { x * 100.f, 0.0f, 0.0f };
-  float rgb[3] DT_ALIGNED_PIXEL = { 0.0f };
+  const float lab[4] DT_ALIGNED_PIXEL = { x * 100.f, 0.0f, 0.0f };
+  float rgb[4] DT_ALIGNED_PIXEL = { 0.0f };
 
   dt_ioppr_lab_to_rgb_matrix(lab, rgb, profile_info->matrix_out, profile_info->lut_out, profile_info->unbounded_coeffs_out, profile_info->lutsize, profile_info->nonlinearlut);
   return rgb[0];

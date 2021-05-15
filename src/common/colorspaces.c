@@ -147,8 +147,7 @@ static const dt_colorspaces_color_profile_t *_get_profile(dt_colorspaces_t *self
                                                           dt_colorspaces_profile_direction_t direction);
 
 static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
-                                                  float *lutb, const int lutsize, const int input,
-                                                  const int intent)
+                                                  float *lutb, const int lutsize, const int input)
 {
   // create an OpenCL processable matrix + tone curves from an cmsHPROFILE:
   // NOTE: may be invoked with matrix and LUT pointers set to null to find
@@ -157,11 +156,19 @@ static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, float *matri
   // check this first:
   if(!prof || !cmsIsMatrixShaper(prof)) return 1;
 
-  // if this profile contains LUT, it might also contain swapped matrix,
-  // so the only right way to handle it is to let LCMS apply it.
+  // there are some profiles that contain both a color LUT for some specific
+  // intent and a generic matrix. in some cases the matrix might be
+  // deliberately wrong with swapped blue and red channels in order to easily
+  // detect if a color managed software is applying the LUT or the matrix.
+  // thus, if this profile contains LUT for any intent, it might also contain
+  // swapped matrix, so the only right way to handle it is to let LCMS apply it.
   const int UsedDirection = input ? LCMS_USED_AS_INPUT : LCMS_USED_AS_OUTPUT;
 
-  if(cmsIsCLUT(prof, intent, UsedDirection)) return 1;
+  if(cmsIsCLUT(prof, INTENT_PERCEPTUAL, UsedDirection)
+     || cmsIsCLUT(prof, INTENT_RELATIVE_COLORIMETRIC, UsedDirection)
+     || cmsIsCLUT(prof, INTENT_ABSOLUTE_COLORIMETRIC, UsedDirection)
+     || cmsIsCLUT(prof, INTENT_SATURATION, UsedDirection))
+    return 1;
 
   cmsToneCurve *red_curve = cmsReadTag(prof, cmsSigRedTRCTag);
   cmsToneCurve *green_curve = cmsReadTag(prof, cmsSigGreenTRCTag);
@@ -252,15 +259,15 @@ static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, float *matri
 }
 
 int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
-                                                 float *lutb, const int lutsize, const int intent)
+                                                 float *lutb, const int lutsize)
 {
-  return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 1, intent);
+  return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 1);
 }
 
 int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
-                                                  float *lutb, const int lutsize, const int intent)
+                                                  float *lutb, const int lutsize)
 {
-  return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 0, intent);
+  return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 0);
 }
 
 static cmsHPROFILE dt_colorspaces_create_lab_profile()
@@ -437,7 +444,7 @@ static cmsHPROFILE dt_colorspaces_create_brg_profile()
 
 static cmsHPROFILE dt_colorspaces_create_gamma_rec709_rgb_profile(void)
 {
-  cmsFloat64Number srgb_parameters[5] = { 2.2, 1.0 / 1.099,  0.099 / 1.099, 1.0 / 4.5, 0.081 };
+  cmsFloat64Number srgb_parameters[5] = { 1/0.45, 1.0 / 1.099,  0.099 / 1.099, 1.0 / 4.5, 0.081 };
   cmsToneCurve *transferFunction = cmsBuildParametricToneCurve(NULL, 4, srgb_parameters);
 
   cmsHPROFILE profile = _create_lcms_profile("Gamma Rec709 RGB", "Gamma Rec709 RGB",
@@ -1431,7 +1438,7 @@ dt_colorspaces_t *dt_colorspaces_init()
                                      ++work_pos, ++display2_pos));
 
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_REC709, dt_colorspaces_create_gamma_rec709_rgb_profile(),
-                                     _("gamma Rec709 RGB"), ++in_pos, ++out_pos, -1, -1,
+                                     _("Rec709 RGB"), ++in_pos, ++out_pos, -1, -1,
                                      ++work_pos, -1));
 
   res->profiles = g_list_append(
@@ -1461,7 +1468,7 @@ dt_colorspaces_t *dt_colorspaces_init()
 
   res->profiles = g_list_append(
      res->profiles, _create_profile(DT_COLORSPACE_PROPHOTO_RGB, dt_colorspaces_create_linear_prophoto_rgb_profile(),
-                                    _("linear prophoto RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
+                                    _("linear ProPhoto RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
                                     ++work_pos, ++display2_pos));
 
   res->profiles = g_list_append(
@@ -1545,19 +1552,15 @@ dt_colorspaces_t *dt_colorspaces_init()
     dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)iter->data;
     // FIXME: do want to filter out non-RGB profiles for cases besides histogram profile? colorin is OK with RGB or XYZ, print is OK with anything which LCMS likes, otherwise things are more choosey
     const cmsColorSpaceSignature color_space = cmsGetColorSpace(prof->profile);
-    // The relative colorimetric intent is used for the histogram, clipping indicators and the global color picker.
-    // Some of these also rely on the profile matrix. LUT profiles don't make much sense in these applications
+    // The histogram profile is used for histogram, clipping indicators and the global color picker.
+    // Some of these also assume a matrix profile. LUT profiles don't make much sense in these applications
     // so filter out any profile that doesn't implement the relative colorimetric intent as a matrix (+ TRC).
     // For discussion, see e.g.
     // https://github.com/darktable-org/darktable/issues/7660#issuecomment-760143437
     // For the working profile we also require a matrix profile.
     const gboolean is_valid_matrix_profile
-        = dt_colorspaces_get_matrix_from_output_profile(prof->profile, NULL, NULL, NULL, NULL, 0,
-                                                        DT_INTENT_RELATIVE_COLORIMETRIC)
-              == 0
-          && dt_colorspaces_get_matrix_from_input_profile(prof->profile, NULL, NULL, NULL, NULL, 0,
-                                                          DT_INTENT_RELATIVE_COLORIMETRIC)
-                 == 0;
+        = dt_colorspaces_get_matrix_from_output_profile(prof->profile, NULL, NULL, NULL, NULL, 0) == 0
+          && dt_colorspaces_get_matrix_from_input_profile(prof->profile, NULL, NULL, NULL, NULL, 0) == 0;
     prof->out_pos = ++out_pos;
     prof->display_pos = ++display_pos;
     prof->display2_pos = ++display2_pos;
@@ -1692,9 +1695,9 @@ const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
      case DT_COLORSPACE_DISPLAY2:
        return _("system display profile (second window)");
      case DT_COLORSPACE_REC709:
-       return _("gamma22 Rec709");
+       return _("Rec709 RGB");
      case DT_COLORSPACE_PROPHOTO_RGB:
-       return _("ProPhoto RGB");
+       return _("linear ProPhoto RGB");
      case DT_COLORSPACE_PQ_REC2020:
        return _("PQ Rec2020");
      case DT_COLORSPACE_HLG_REC2020:

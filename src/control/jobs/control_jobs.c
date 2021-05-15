@@ -51,6 +51,15 @@
 #include "win/dtwin.h"
 #endif
 
+// Control of the collection updates during an import.  Start with a short interval to feel responsive,
+// but use fairly infrequent updates for large imports to minimize overall time.
+#define INIT_UPDATE_INTERVAL	0.5 //seconds
+#define MAX_UPDATE_INTERVAL     3.0 //seconds
+// How long (in seconds) between updates of the "importing N/M" progress indicator?  Should be relatively
+// short to avoid the impression that the import has gotten stuck.  Setting this too low will impact the
+// overall time for a large import.
+#define PROGRESS_UPDATE_INTERVAL 0.5
+
 typedef struct dt_control_datetime_t
 {
   long int offset;
@@ -567,6 +576,9 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
     if(newimgid != -1)
     {
       dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE, TRUE);
+      // a duplicate should keep the change time stamp of the original
+      dt_image_cache_set_change_timestamp_from_image(darktable.image_cache, newimgid, imgid);
+
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
     }
     t = g_list_next(t);
@@ -823,7 +835,7 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
     gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete"), _DT_DELETE_DIALOG_CHOICE_DELETE);
     gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete all files"), _DT_DELETE_DIALOG_CHOICE_DELETE_ALL);
   }
-  gtk_dialog_add_button(GTK_DIALOG(dialog), _("only remove from the collection"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
+  gtk_dialog_add_button(GTK_DIALOG(dialog), _("only remove from the image library"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
   gtk_dialog_add_button(GTK_DIALOG(dialog), _("skip to next file"), _DT_DELETE_DIALOG_CHOICE_CONTINUE);
   gtk_dialog_add_button(GTK_DIALOG(dialog), _("stop process"), _DT_DELETE_DIALOG_CHOICE_STOP);
 
@@ -894,7 +906,7 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename, gboole
       delete_success = g_file_delete(gfile, NULL /*cancellable*/, &gerror);
     }
 
-    // Delete is a success or the file does not exists: OK to remove from collection
+    // Delete is a success or the file does not exists: OK to remove from darktable
     if (delete_success
         || g_error_matches(gerror, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
     {
@@ -1534,14 +1546,14 @@ gboolean dt_control_remove_images()
 
     dialog = gtk_message_dialog_new(
         GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        ngettext("do you really want to remove %d image from the collection?",
-                 "do you really want to remove %d images from the collection?", number),
+        ngettext("do you really want to remove %d image from darktable\n(without deleting file on disk)?",
+                 "do you really want to remove %d images from darktable\n(without deleting files on disk)?", number),
         number);
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif
 
-    gtk_window_set_title(GTK_WINDOW(dialog), _("remove images?"));
+    gtk_window_set_title(GTK_WINDOW(dialog), ngettext(_("remove image?"), _("remove images?"), number));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
     if(res != GTK_RESPONSE_YES)
@@ -1577,8 +1589,8 @@ void dt_control_delete_images()
 
     dialog = gtk_message_dialog_new(
         GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        send_to_trash ? ngettext("do you really want to send %d image to trash?",
-                                 "do you really want to send %d images to trash?", number)
+        send_to_trash ? ngettext("do you really want to physically delete %d image\n(using trash if possible)?",
+                                 "do you really want to physically delete %d images\n(using trash if possible)?", number)
                       : ngettext("do you really want to physically delete %d image from disk?",
                                  "do you really want to physically delete %d images from disk?", number),
         number);
@@ -1586,7 +1598,7 @@ void dt_control_delete_images()
     dt_osx_disallow_fullscreen(dialog);
 #endif
 
-    gtk_window_set_title(GTK_WINDOW(dialog), send_to_trash ? _("trash images?") : _("delete images?"));
+    gtk_window_set_title(GTK_WINDOW(dialog), ngettext(_("delete image?"), _("delete images?"), number));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
     if(res != GTK_RESPONSE_YES)
@@ -1618,13 +1630,13 @@ void dt_control_delete_image(int imgid)
 
     dialog = gtk_message_dialog_new(
         GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        send_to_trash ? _("do you really want to send selected image to trash?")
+        send_to_trash ? _("do you really want to physically delete selected image (using trash if possible)?")
                       : _("do you really want to physically delete selected image from disk?"));
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif
 
-    gtk_window_set_title(GTK_WINDOW(dialog), send_to_trash ? _("trash images?") : _("delete images?"));
+    gtk_window_set_title(GTK_WINDOW(dialog), _("delete image?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
     if(res != GTK_RESPONSE_YES)
@@ -2058,7 +2070,7 @@ void dt_control_write_sidecar_files()
 }
 
 static int _control_import_image_copy(const char *filename,
-                                      struct dt_import_session_t *session)
+                                      struct dt_import_session_t *session, GList **imgs)
 {
   char *data = NULL;
   gsize size = 0;
@@ -2090,28 +2102,50 @@ static int _control_import_image_copy(const char *filename,
   {
     const int32_t imgid = dt_image_import(dt_import_session_film_id(session), output, FALSE, FALSE);
     if(!imgid) dt_control_log(_("error loading file `%s'"), output);
-    else if((imgid & 3) == 3)
+    else
     {
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
-      dt_control_queue_redraw_center();
+      *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(imgid));
+      if((imgid & 3) == 3)
+      {
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+        dt_control_queue_redraw_center();
+      }
     }
   }
+  g_free(data);
   g_free(output);
   g_free(basename);
   return res ? dt_import_session_film_id(session) : -1;
 }
 
-static int _control_import_image_insitu(const char *filename)
+static void _collection_update(double *last_update, double *update_interval)
+{
+  double currtime = dt_get_wtime();
+  if (currtime - *last_update > *update_interval)
+  {
+    *last_update = currtime;
+    // We want frequent updates at the beginning to make the import feel responsive, but large imports
+    // should use infrequent updates to get the fastest import.  So we gradually increase the interval
+    // between updates until it hits the pre-set maximum
+    if (*update_interval < MAX_UPDATE_INTERVAL)
+      *update_interval += 0.1;
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+    dt_control_queue_redraw_center();
+  }
+}
+
+static int _control_import_image_insitu(const char *filename, GList **imgs, double *last_update,
+                                        double *update_interval)
 {
   char *dirname = g_path_get_dirname(filename);
   dt_film_t film;
   const int filmid = dt_film_new(&film, dirname);
   const int32_t imgid = dt_image_import(filmid, filename, FALSE, FALSE);
   if(!imgid) dt_control_log(_("error loading file `%s'"), filename);
-  else if((imgid & 3) == 3)
+  else
   {
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
-    dt_control_queue_redraw_center();
+    *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(imgid));
+    _collection_update(last_update, update_interval);
   }
   g_free(dirname);
   return filmid;
@@ -2192,14 +2226,18 @@ static int32_t _control_import_job_run(dt_job_t *job)
   snprintf(message, sizeof(message), ngettext("importing %d image", "importing %d images", total), total);
   dt_control_job_set_progress_message(job, message);
 
+  GList *imgs = NULL;
   double fraction = 0.0f;
   int filmid = -1;
   int first_filmid = -1;
+  double last_coll_update = dt_get_wtime() - (INIT_UPDATE_INTERVAL/2.0);
+  double last_prog_update = last_coll_update;
+  double update_interval = INIT_UPDATE_INTERVAL;
   for(GList *img = t; img; img = g_list_next(img))
   {
     if(data->session)
     {
-      filmid = _control_import_image_copy((char *)img->data, data->session);
+      filmid = _control_import_image_copy((char *)img->data, data->session, &imgs);
       if(filmid != -1 && first_filmid == -1)
       {
         first_filmid = filmid;
@@ -2207,23 +2245,29 @@ static int32_t _control_import_job_run(dt_job_t *job)
         dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
         dt_conf_set_int("plugins/lighttable/collect/item0", 0);
         dt_conf_set_string("plugins/lighttable/collect/string0", output_path);
-        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+        _collection_update(&last_coll_update, &update_interval);
       }
     }
     else
-      filmid = _control_import_image_insitu((char *)img->data);
+      filmid = _control_import_image_insitu((char *)img->data, &imgs, &last_coll_update, &update_interval);
     if(filmid != -1)
       cntr++;
     fraction += 1.0 / total;
-    snprintf(message, sizeof(message), ngettext("importing %d/%d image", "importing %d/%d images", cntr), cntr, total);
-    dt_control_job_set_progress_message(job, message);
-    dt_control_job_set_progress(job, fraction);
-    g_usleep(100);
+    double currtime  = dt_get_wtime();
+    if (currtime - last_prog_update > PROGRESS_UPDATE_INTERVAL)
+    {
+      last_prog_update = currtime;
+      snprintf(message, sizeof(message), ngettext("importing %d/%d image", "importing %d/%d images", cntr), cntr, total);
+      dt_control_job_set_progress_message(job, message);
+      dt_control_job_set_progress(job, fraction);
+      g_usleep(100);
+    }
   }
 
   dt_control_log(ngettext("imported %d image", "imported %d images", cntr), cntr);
   dt_control_queue_redraw_center();
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, filmid);
   return 0;
 }

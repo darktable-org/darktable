@@ -162,6 +162,20 @@ static int usage(const char *argv0)
   return 1;
 }
 
+gboolean dt_is_dev_version()
+{
+  // a dev version as an odd number after the first dot
+  char *p = (char *)darktable_package_string;
+  while(*p && (*p != '.')) p++;
+  if(p && (*p != '\0'))
+  {
+    p++;
+    const int val = *p - '0';
+    return val % 2 == 0 ? FALSE : TRUE;
+  }
+  return FALSE;
+}
+
 gboolean dt_supported_image(const gchar *filename)
 {
   gboolean supported = FALSE;
@@ -904,13 +918,15 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
     gtk_init(&argc, &argv);
 
+    darktable.themes = NULL;
+
     // execute a performance check and configuration if needed
     int last_configure_version = dt_conf_get_int("performance_configuration_version_completed");
     if(last_configure_version < DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION)
     {
       // ask the user whether he/she would like
       // dt to make changes in the settings
-      gboolean run_configure = dt_gui_show_standalone_yes_no_dialog(
+      const gboolean run_configure = dt_gui_show_standalone_yes_no_dialog(
           _("darktable - run performance configuration?"),
           _("we have an updated performance configuration logic - executing that might improve the performance of "
             "darktable.\nthis will potentially overwrite some of your existing settings - especially in case you "
@@ -1023,8 +1039,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.pwstorage = dt_pwstorage_new();
 
   darktable.guides = dt_guides_init();
-
-  darktable.themes = NULL;
 
 #ifdef HAVE_GRAPHICSMAGICK
   /* GraphicsMagick init */
@@ -1607,7 +1621,7 @@ void dt_configure_performance()
     dt_conf_set_int("host_memory_limit", MAX(mem >> 11, dt_conf_get_int("host_memory_limit")));
     dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
     if(demosaic_quality == NULL || !strcmp(demosaic_quality, "always bilinear (fast)"))
-      dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
+      dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
     dt_conf_set_bool("ui/performance", FALSE);
   }
   else if(mem > (2lu << 20) && threads >= 4 && atom_cores == 0)
@@ -1620,7 +1634,7 @@ void dt_configure_performance()
     dt_conf_set_int("host_memory_limit", MAX(1500, dt_conf_get_int("host_memory_limit")));
     dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
     if(demosaic_quality == NULL ||!strcmp(demosaic_quality, "always bilinear (fast)"))
-      dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
+      dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
     dt_conf_set_bool("ui/performance", FALSE);
   }
   else if(mem < (1lu << 20) || threads <= 2 || atom_cores > 0)
@@ -1642,7 +1656,7 @@ void dt_configure_performance()
     dt_conf_set_int("worker_threads", 2);
     dt_conf_set_int("host_memory_limit", 1500);
     dt_conf_set_int("singlebuffer_limit", 16);
-    dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
+    dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
     dt_conf_set_bool("ui/performance", FALSE);
   }
 

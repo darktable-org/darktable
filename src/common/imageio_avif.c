@@ -258,9 +258,10 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
         break; /* SRGB */
 
       /*
-       * GAMMA22 BT709
+       * BT709
        */
-      case AVIF_TRANSFER_CHARACTERISTICS_BT470M:
+      case AVIF_TRANSFER_CHARACTERISTICS_BT709:
+      case AVIF_TRANSFER_CHARACTERISTICS_BT470M: /* support incorrectly tagged legacy files */
 
         switch (avif->matrixCoefficients) {
         case AVIF_MATRIX_COEFFICIENTS_BT709:
@@ -383,7 +384,7 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
 
         switch (avif->matrixCoefficients) {
         case AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-          cp->type = DT_COLORSPACE_PQ_P3;
+          cp->type = DT_COLORSPACE_HLG_P3;
           break;
         default:
           break;

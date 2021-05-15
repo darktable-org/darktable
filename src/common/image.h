@@ -134,20 +134,42 @@ typedef enum dt_image_orientation_t
 
 typedef enum dt_image_loader_t
 {
-  LOADER_UNKNOWN = 0,
-  LOADER_TIFF = 1,
-  LOADER_PNG = 2,
-  LOADER_J2K = 3,
-  LOADER_JPEG = 4,
-  LOADER_EXR = 5,
-  LOADER_RGBE = 6,
-  LOADER_PFM = 7,
-  LOADER_GM = 8,
-  LOADER_RAWSPEED = 9,
-  LOADER_PNM = 10,
-  LOADER_AVIF = 11,
-  LOADER_IM = 12,
+  LOADER_UNKNOWN  =  0,
+  LOADER_TIFF     =  1,
+  LOADER_PNG      =  2,
+  LOADER_J2K      =  3,
+  LOADER_JPEG     =  4,
+  LOADER_EXR      =  5,
+  LOADER_RGBE     =  6,
+  LOADER_PFM      =  7,
+  LOADER_GM       =  8,
+  LOADER_RAWSPEED =  9,
+  LOADER_PNM      = 10,
+  LOADER_AVIF     = 11,
+  LOADER_IM       = 12,
+  LOADER_COUNT    = 13, // keep last
 } dt_image_loader_t;
+
+static const struct
+{
+  const char *tooltip;
+  const char flag;
+} loaders_info[LOADER_COUNT] =
+{
+  { N_("unknown"),         '.'}, // EMPTY_FIELD
+  { N_("tiff"),            't'},
+  { N_("png"),             'p'},
+  { N_("j2k"),             'J'},
+  { N_("jpeg"),            'j'},
+  { N_("exr"),             'e'},
+  { N_("rgbe"),            'R'},
+  { N_("pfm"),             'P'},
+  { N_("GraphicsMagick"),  'g'},
+  { N_("rawspeed"),        'r'},
+  { N_("netpnm"),          'n'},
+  { N_("avif"),            'a'},
+  { N_("ImageMagick"),     'i'}
+};
 
 typedef struct dt_image_geoloc_t
 {
@@ -275,6 +297,8 @@ int dt_image_get_xmp_rating(const dt_image_t *img);
 int dt_image_get_xmp_rating_from_flags(const int flags);
 /** finds all xmp duplicates for the given image in the database. */
 GList* dt_image_find_duplicates(const char* filename);
+/** check if an image with the given filename is already imported (present in folder) */
+gboolean dt_images_already_imported(const gchar *folder, const gchar *filename);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
 uint32_t dt_image_import(int32_t film_id, const char *filename, gboolean override_ignore_jpegs,
                          gboolean raise_signals);

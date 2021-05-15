@@ -176,6 +176,9 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   pipe->output_backbuf_height = 0;
   pipe->output_imgid = 0;
 
+  pipe->rawdetail_mask_data = NULL;
+  pipe->want_detail_mask = DT_DEV_DETAIL_MASK_NONE;
+
   pipe->processing = 0;
   dt_atomic_set_int(&pipe->shutdown,FALSE);
   pipe->opencl_error = 0;
@@ -240,6 +243,8 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   pipe->output_backbuf_width = 0;
   pipe->output_backbuf_height = 0;
   pipe->output_imgid = 0;
+
+  dt_dev_clear_rawdetail_mask(pipe);
 
   if(pipe->forms)
   {
@@ -334,42 +339,61 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
   dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
   // find piece in nodes list
   dt_dev_pixelpipe_iop_t *piece = NULL;
-  gboolean hint = FALSE;
+
+  const dt_image_t *img = &pipe->image;
+  const int32_t imgid = img->id;
+  const gboolean rawprep_img = dt_image_is_rawprepare_supported(img);
+  const gboolean raw_img     = dt_image_is_raw(img);
+
+  pipe->want_detail_mask &= DT_DEV_DETAIL_MASK_REQUIRED;
+  if(raw_img)          pipe->want_detail_mask |= DT_DEV_DETAIL_MASK_DEMOSAIC;
+  else if(rawprep_img)
+    pipe->want_detail_mask |= DT_DEV_DETAIL_MASK_RAWPREPARE;
 
   for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
   {
     piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
-    const dt_image_t *img = &piece->pipe->image;
-    const int imgid = img->id;
 
     if(piece->module == hist->module)
     {
-      gboolean active = hist->enabled;
-
-      // demosaic must be OFF for non-raws and ON for raws
-      if(strcmp(piece->module->op, "demosaic") == 0)
-      {
-        if(dt_image_is_raw(img) && !active)
-        {
-          hint = TRUE;
-          active = TRUE;
-          fprintf(stderr,"[dt_dev_pixelpipe_synch] found disabled demosaic in history for raw `%s`, id: %i\n",
-            img->filename, imgid);
-        }
-        else if(!dt_image_is_raw(img) && active)
-        {
-          hint = TRUE;
-          active = FALSE;
-          fprintf(stderr,"[dt_dev_pixelpipe_synch] found enabled demosaic in history for non-raw `%s`, id: %i\n",
-            img->filename, imgid);
-        }
-      }
+      const gboolean active = hist->enabled;
       piece->enabled = active;
+
+      // Styles, presets or history copy&paste might set history items not appropriate for the image.
+      // Fixing that seemed to be almost impossible after long discussions but at least we can test,
+      // correct and add a problem hint here.
+      if((strcmp(piece->module->op, "demosaic") == 0) || (strcmp(piece->module->op, "rawprepare") == 0))
+      {
+        if(rawprep_img && !active)
+          piece->enabled = TRUE;
+        else if(!rawprep_img && active)
+          piece->enabled = FALSE;
+      }
+      else if((strcmp(piece->module->op, "rawdenoise") == 0) ||
+              (strcmp(piece->module->op, "hotpixels") == 0) ||
+              (strcmp(piece->module->op, "cacorrect") == 0))
+      {
+        if(!rawprep_img && active) piece->enabled = FALSE;
+      }
+
+      if(piece->enabled != hist->enabled)
+      {
+        if(piece->enabled)
+          dt_iop_set_module_trouble_message(piece->module, _("enabled as required"), _("history had module disabled but it is required for this type of image.\nlikely introduced by applying a preset, style or history copy&paste"), NULL);
+        else
+          dt_iop_set_module_trouble_message(piece->module, _("disabled as not appropriate"), _("history had module enabled but it is not allowed for this type of image.\nlikely introduced by applying a preset, style or history copy&paste"), NULL);
+        dt_print(DT_DEBUG_PARAMS, "[pixelpipe_synch] enabling mismatch for module %s in image %i\n", piece->module->op, imgid);
+      }
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
+
+      if(piece->blendop_data)
+      {
+        const dt_develop_blend_params_t *const bp = (const dt_develop_blend_params_t *)piece->blendop_data;
+        if(bp->details != 0.0f)
+          pipe->want_detail_mask |= DT_DEV_DETAIL_MASK_REQUIRED;
+      }
     }
   }
-  if(hint)
-    dt_control_log(_("history problem detected\nplease report via the issue tracker\nincluding the xmp file"));
 }
 
 void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
@@ -1196,7 +1220,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     // skip this module?
     if(!piece->enabled
-       || (dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
+       || (dev->gui_module && dev->gui_module != module
+           && dev->gui_module->operation_tags_filter() & module->operation_tags()))
       return dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_format, &roi_in,
                                           g_list_previous(modules), g_list_previous(pieces), pos - 1);
   }
@@ -2154,6 +2179,11 @@ post_process_collect_info:
     }
     if(dev->gui_attached && !dev->gui_leaving && pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
     {
+      // FIXME: read this from dt_ioppr_get_pipe_output_profile_info()?
+      const dt_iop_order_iccprofile_info_t *const display_profile
+        = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
+                                            darktable.color_profiles->display_filename, INTENT_RELATIVE_COLORIMETRIC);
+
       // Since histogram is being treated as the second-to-last link
       // in the pixelpipe and has a "process" call, why not treat it
       // as an iop? Granted, other views such as tether may also
@@ -2175,7 +2205,7 @@ post_process_collect_info:
           }
           darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, buf,
                                                  roi_out->width, roi_out->height,
-                                                 darktable.color_profiles->display_type, darktable.color_profiles->display_filename);
+                                                 display_profile, dt_ioppr_get_histogram_profile_info(dev));
           dt_free_align(buf);
         }
       }
@@ -2183,7 +2213,7 @@ post_process_collect_info:
       {
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, input,
                                                roi_in.width, roi_in.height,
-                                               darktable.color_profiles->display_type, darktable.color_profiles->display_filename);
+                                               display_profile, dt_ioppr_get_histogram_profile_info(dev));
       }
     }
   }
@@ -2447,7 +2477,8 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop
 
     // skip this module?
     if(piece->enabled
-       && !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
+       && !(dev->gui_module && dev->gui_module != module
+            && dev->gui_module->operation_tags_filter() & module->operation_tags()))
     {
       module->modify_roi_out(module, piece, &roi_out, &roi_in);
     }
@@ -2499,8 +2530,8 @@ float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const dt_iop_modul
           dt_dev_pixelpipe_iop_t *module = (dt_dev_pixelpipe_iop_t *)iter->data;
 
           if(module->enabled
-            && !(module->module->dev->gui_module && module->module->dev->gui_module->operation_tags_filter()
-                 & module->module->operation_tags()))
+             && !(module->module->dev->gui_module && module->module->dev->gui_module != module->module
+                  && (module->module->dev->gui_module->operation_tags_filter() & module->module->operation_tags())))
           {
             if(module->module->distort_mask
               && !(!strcmp(module->module->op, "finalscale") // hack against pipes not using finalscale
@@ -2539,6 +2570,173 @@ float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const dt_iop_modul
   }
 
   return raster_mask;
+}
+
+void dt_dev_clear_rawdetail_mask(dt_dev_pixelpipe_t *pipe)
+{
+  if(pipe->rawdetail_mask_data) dt_free_align(pipe->rawdetail_mask_data);
+  pipe->rawdetail_mask_data = NULL;
+}
+
+gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode)
+{
+  dt_dev_pixelpipe_t *p = piece->pipe;
+  if((p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED) == 0) return FALSE;
+  if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) != mode) return FALSE;
+
+  dt_dev_clear_rawdetail_mask(p);
+
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  float *mask = dt_alloc_align_float((size_t)width * height);
+  float *tmp = dt_alloc_align_float((size_t)width * height);
+  if((mask == NULL) || (tmp == NULL)) goto error;
+
+  p->rawdetail_mask_data = mask;
+  memcpy(&p->rawdetail_mask_roi, roi_in, sizeof(dt_iop_roi_t));
+
+  float wb[3] = {piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
+  if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) == DT_DEV_DETAIL_MASK_RAWPREPARE)
+  {
+    wb[0] = wb[1] = wb[2] = 1.0f;
+  }
+  dt_masks_calc_rawdetail_mask(rgb, mask, tmp, width, height, wb);
+  dt_free_align(tmp);
+  return FALSE;
+
+  error:
+  dt_free_align(mask);
+  dt_free_align(tmp);
+  return TRUE;
+}
+
+#ifdef HAVE_OPENCL
+gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in, const dt_iop_roi_t *const roi_in, const int mode)
+{
+  dt_dev_pixelpipe_t *p = piece->pipe;
+
+  if((p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED) == 0) return FALSE;
+  if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) != mode) return FALSE;
+
+  dt_dev_clear_rawdetail_mask(p);
+
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  cl_mem out = NULL;
+  cl_mem tmp = NULL;
+  float *mask = NULL;
+  const int devid = p->devid;
+
+  mask = dt_alloc_align_float((size_t)width * height);
+  if(mask == NULL) goto error;
+  out = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  if(out == NULL) goto error;
+  tmp = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
+  if(tmp == NULL) goto error;
+  {
+    const int kernel = darktable.opencl->blendop->kernel_calc_Y0_mask;
+    float wb[3] = {piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
+    if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) == DT_DEV_DETAIL_MASK_RAWPREPARE)
+    {
+      wb[0] = wb[1] = wb[2] = 1.0f;
+    }
+    size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &tmp);
+    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &in);
+    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &width);
+    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &height);
+    dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(float), &wb[0]);
+    dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(float), &wb[1]);
+    dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(float), &wb[2]);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+  {
+    size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    const int kernel = darktable.opencl->blendop->kernel_write_scharr_mask;
+    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &tmp);
+    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &out);
+    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &width);
+    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &height);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    if(err != CL_SUCCESS) return FALSE;
+  }
+
+  {
+    const int err = dt_opencl_read_host_from_device(devid, mask, out, width, height, sizeof(float));
+    if(err != CL_SUCCESS) goto error;
+  }
+
+  p->rawdetail_mask_data = mask;
+  memcpy(&p->rawdetail_mask_roi, roi_in, sizeof(dt_iop_roi_t));
+
+  dt_opencl_release_mem_object(out);
+  dt_opencl_release_mem_object(tmp);
+  return FALSE;
+
+  error:
+  dt_dev_clear_rawdetail_mask(p);
+  dt_opencl_release_mem_object(out);
+  dt_opencl_release_mem_object(tmp);
+  dt_free_align(mask);
+  return TRUE;
+}
+#endif
+
+// this expects a mask prepared by the demosaicer and distorts the mask through all pipeline modules
+// until target
+float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, const dt_iop_module_t *target_module)
+{
+  if(!pipe->rawdetail_mask_data) return NULL;
+  gboolean valid = FALSE;
+  const int check = pipe->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED;
+
+  GList *source_iter;
+  for(source_iter = pipe->nodes; source_iter; source_iter = g_list_next(source_iter))
+  {
+    const dt_dev_pixelpipe_iop_t *candidate = (dt_dev_pixelpipe_iop_t *)source_iter->data;
+    if(((!strcmp(candidate->module->op, "demosaic")) && candidate->enabled) && (check == DT_DEV_DETAIL_MASK_DEMOSAIC))
+    {
+      valid = TRUE;
+      break;
+    }
+    if(((!strcmp(candidate->module->op, "rawprepare")) && candidate->enabled) && (check == DT_DEV_DETAIL_MASK_RAWPREPARE))
+    {
+      valid = TRUE;
+      break;
+    }
+  }
+
+  if(!valid) return NULL;
+
+  float *resmask = src;
+  float *inmask  = src;
+  if(source_iter)
+  {
+    for(GList *iter = source_iter; iter; iter = g_list_next(iter))
+    {
+      dt_dev_pixelpipe_iop_t *module = (dt_dev_pixelpipe_iop_t *)iter->data;
+      if(module->enabled
+         && !(module->module->dev->gui_module && module->module->dev->gui_module != module->module
+              && module->module->dev->gui_module->operation_tags_filter() & module->module->operation_tags()))
+      {
+        if(module->module->distort_mask
+              && !(!strcmp(module->module->op, "finalscale") // hack against pipes not using finalscale
+                    && module->processed_roi_in.width == 0
+                    && module->processed_roi_in.height == 0))
+        {
+          float *tmp = dt_alloc_align_float((size_t)module->processed_roi_out.width * module->processed_roi_out.height);
+          module->module->distort_mask(module->module, module, inmask, tmp, &module->processed_roi_in, &module->processed_roi_out);
+          resmask = tmp;
+          if(inmask != src) dt_free_align(inmask);
+          inmask = tmp;
+        }
+        if(module->module == target_module) break;
+      }
+    }
+  }
+  return resmask;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

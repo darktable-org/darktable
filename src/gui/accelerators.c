@@ -525,7 +525,7 @@ static gboolean _tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean ke
     gchar *key_name = gtk_accelerator_get_label(key.accel_key, key.accel_mods);
     if(key_name && *key_name)
     {
-      char *tmp = g_strdup_printf("%s (%s)", text, key_name);
+      char *tmp = g_strdup_printf(_("%s\n(shortcut: %s)"), text, key_name);
       g_free(text);
       text = tmp;
     }

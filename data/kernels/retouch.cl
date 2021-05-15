@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "colorspace.cl"
+#include "colorspace.h"
 #include "common.h"
 
 typedef struct dt_iop_roi_t

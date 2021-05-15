@@ -174,6 +174,24 @@ static inline __m128 dt_prophotoRGB_to_XYZ_sse2(__m128 rgb)
 #endif
 
 #ifdef _OPENMP
+#pragma omp declare simd aligned(in,out)
+#endif
+static inline void dt_apply_transposed_color_matrix(const float *const in, const float matrix[3][4],
+                                                    float *const out)
+{
+  // Use a temp variable to accumulate the results.  GCC8 will optimize away the memory accesses for the
+  // temp array, while it writes the intermediate values to 'out' after each iteration if we don't use
+  // the temp.  That cuts total memory bandwidth by a third.
+  float DT_ALIGNED_PIXEL result[4] = { 0.0f };
+  for(int c = 0; c < 3; c++)
+    for_each_channel(r)
+    {
+      result[r] += matrix[c][r] * in[c];
+    }
+  copy_pixel(out, result);
+}
+
+#ifdef _OPENMP
 #pragma omp declare simd
 #endif
 static inline float cbrt_5f(float f)
@@ -207,7 +225,7 @@ static inline float lab_f(const float x)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(Lab, XYZ:16) uniform(Lab, XYZ)
 #endif
-static inline void dt_XYZ_to_Lab(const float XYZ[3], float Lab[3])
+static inline void dt_XYZ_to_Lab(const float XYZ[4], float Lab[4])
 {
   const float d50[3] = { 0.9642f, 1.0f, 0.8249f };
   float f[3] = { 0.0f };
@@ -231,7 +249,7 @@ static inline float lab_f_inv(const float x)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(Lab, XYZ:16) uniform(Lab, XYZ)
 #endif
-static inline void dt_Lab_to_XYZ(const float Lab[3], float XYZ[3])
+static inline void dt_Lab_to_XYZ(const float Lab[4], float XYZ[4])
 {
   const float d50[3] = { 0.9642f, 1.0f, 0.8249f };
   const float fy = (Lab[0] + 16.0f) / 116.0f;
@@ -391,42 +409,20 @@ static inline void dt_Lch_to_xyY(const float Lch[3], float xyY[3])
   dt_Luv_to_xyY(Luv, xyY);
 }
 
-/** uses D50 white point. */
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline void dt_XYZ_to_sRGB(const float *const XYZ, float *const sRGB)
-{
-  const float xyz_to_srgb_matrix[3][3] = { { 3.1338561, -1.6168667, -0.4906146 },
-                                           { -0.9787684, 1.9161415, 0.0334540 },
-                                           { 0.0719453, -0.2289914, 1.4052427 } };
-
-  // XYZ -> sRGB
-  float rgb[3] = { 0, 0, 0 };
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) rgb[r] += xyz_to_srgb_matrix[r][c] * XYZ[c];
-  // linear sRGB -> gamma corrected sRGB
-  for(int c = 0; c < 3; c++)
-    sRGB[c] = rgb[c] <= 0.0031308 ? 12.92 * rgb[c] : (1.0 + 0.055) * powf(rgb[c], 1.0 / 2.4) - 0.055;
-}
-
-
 /** Uses D50 **/
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
 static inline void dt_XYZ_to_Rec709_D50(const float *const XYZ, float *const sRGB)
 {
-  // linear sRGB == Rec709 with no gamma
-  const float xyz_to_srgb_matrix[3][3] = { {  3.1338561f, -1.6168667f, -0.4906146f },
-                                           { -0.9787684f,  1.9161415f,  0.0334540f },
-                                           {  0.0719453f, -0.2289914f,  1.4052427f } };
+  // transpose and pad the conversion matrix to enable vectorization
+  const float xyz_to_srgb_matrix_transposed[3][4] DT_ALIGNED_PIXEL =
+    { {  3.1338561f, -0.9787684f,  0.0719453f, 0.0f },
+      { -1.6168667f,  1.9161415f, -0.2289914f, 0.0f },
+      { -0.4906146f,  0.0334540f,  1.4052427f, 0.0f } };
 
-  // XYZ -> sRGB
-  float rgb[3] = { 0, 0, 0 };
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) rgb[r] += xyz_to_srgb_matrix[r][c] * XYZ[c];
-  for(int r = 0; r < 3; r++) sRGB[r] = rgb[r];
+  // XYZ -> linear sRGB
+  dt_apply_transposed_color_matrix(XYZ, xyz_to_srgb_matrix_transposed, sRGB);
 }
 
 
@@ -437,27 +433,42 @@ static inline void dt_XYZ_to_Rec709_D50(const float *const XYZ, float *const sRG
 static inline void dt_XYZ_to_Rec709_D65(const float *const XYZ, float *const sRGB)
 {
   // linear sRGB == Rec709 with no gamma
-  const float xyz_to_srgb_matrix[3][3] = { {  3.2404542f, -1.5371385f, -0.4985314f },
-                                           { -0.9692660f,  1.8760108f,  0.0415560f },
-                                           {  0.0556434f, -0.2040259f,  1.0572252f } };
+  // transpose and pad the conversion matrix to enable vectorization
+  const float xyz_to_srgb_transposed[3][4] DT_ALIGNED_PIXEL = {
+    {  3.2404542f, -0.9692660f,  0.0556434f, 0.0f },
+    { -1.5371385f,  1.8760108f, -0.2040259f, 0.0f },
+    { -0.4985314f,  0.0415560f,  1.0572252f, 0.0f },
+  };
+  // XYZ -> linear sRGB
+  dt_apply_transposed_color_matrix(XYZ, xyz_to_srgb_transposed, sRGB);
+}
 
-  // XYZ -> sRGB
-  float rgb[3] = { 0, 0, 0 };
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) rgb[r] += xyz_to_srgb_matrix[r][c] * XYZ[c];
-  for(int r = 0; r < 3; r++) sRGB[r] = rgb[r];
+
+/** uses D50 white point. */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(XYZ, sRGB)
+#endif
+static inline void dt_XYZ_to_sRGB(const float *const XYZ, float *const sRGB)
+{
+  // XYZ -> linear sRGB
+  float DT_ALIGNED_PIXEL rgb[4];
+  dt_XYZ_to_Rec709_D50(XYZ, rgb);
+  // linear sRGB -> gamma corrected sRGB
+  for(size_t c = 0; c < 3; c++)
+    sRGB[c] = rgb[c] <= 0.0031308f ? 12.92f * rgb[c] : (1.0f + 0.055f) * powf(rgb[c], 1.0f / 2.4f) - 0.055f;
 }
 
 
 /** uses D50 white point and clips the output to [0..1]. */
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd aligned(XYZ, sRGB)
 #endif
 static inline void dt_XYZ_to_sRGB_clipped(const float *const XYZ, float *const sRGB)
 {
-  dt_XYZ_to_sRGB(XYZ, sRGB);
+  float DT_ALIGNED_PIXEL result[4];
+  dt_XYZ_to_sRGB(XYZ, result);
 
-  for(int i = 0; i < 3; i++) sRGB[i] = CLIP(sRGB[i]);
+  for(int i = 0; i < 3; i++) sRGB[i] = CLIP(result[i]);
 }
 
 
@@ -467,86 +478,75 @@ static inline void dt_XYZ_to_sRGB_clipped(const float *const XYZ, float *const s
 static inline void dt_Rec709_to_XYZ_D50(const float *const DT_RESTRICT sRGB, float *const DT_RESTRICT XYZ_D50)
 {
   // Conversion matrix from http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html
+  // (transpose and pad the conversion matrix to enable vectorization)
   const float M[3][4] DT_ALIGNED_PIXEL = {
-      { 0.4360747f, 0.3850649f, 0.1430804f, 0.0f },
-      { 0.2225045f, 0.7168786f, 0.0606169f, 0.0f },
-      { 0.0139322f, 0.0971045f, 0.7141733f, 0.0f },
+    { 0.4360747f, 0.2225045f, 0.0139322f, 0.0f },
+    { 0.3850649f, 0.7168786f, 0.0971045f, 0.0f },
+    { 0.1430804f, 0.0606169f, 0.7141733f, 0.0f }
   };
-
-  // sRGB -> XYZ
-  for(size_t x = 0; x < 3; x++)
-      XYZ_D50[x] = M[x][0] * sRGB[0] + M[x][1] * sRGB[1] + M[x][2] * sRGB[2];
+  dt_apply_transposed_color_matrix(sRGB, M, XYZ_D50);
 }
 
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd aligned(sRGB, XYZ)
 #endif
 static inline void dt_sRGB_to_XYZ(const float *const sRGB, float *const XYZ)
 {
-  const float srgb_to_xyz[3][3] = { { 0.4360747, 0.3850649, 0.1430804 },
-                                    { 0.2225045, 0.7168786, 0.0606169 },
-                                    { 0.0139322, 0.0971045, 0.7141733 } };
-
-  // sRGB -> XYZ
-  XYZ[0] = XYZ[1] = XYZ[2] = 0.0;
-  float rgb[3] = { 0 };
+  float DT_ALIGNED_PIXEL rgb[4] = { 0 };
   // gamma corrected sRGB -> linear sRGB
   for(int c = 0; c < 3; c++)
-    rgb[c] = sRGB[c] <= 0.04045 ? sRGB[c] / 12.92 : powf((sRGB[c] + 0.055) / (1 + 0.055), 2.4);
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) XYZ[r] += srgb_to_xyz[r][c] * rgb[c];
+    rgb[c] = sRGB[c] <= 0.04045f ? sRGB[c] / 12.92f : powf((sRGB[c] + 0.055f) / (1.0f + 0.055f), 2.4f);
+  // linear sRGB -> XYZ
+  dt_Rec709_to_XYZ_D50(rgb, XYZ);
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd aligned(XYZ,rgb)
 #endif
 static inline void dt_XYZ_to_prophotorgb(const float *const XYZ, float *const rgb)
 {
-  const float xyz_to_rgb[3][3] = {
-    // prophoto rgb d50
-    { 1.3459433f, -0.2556075f, -0.0511118f},
-    {-0.5445989f,  1.5081673f,  0.0205351f},
-    { 0.0000000f,  0.0000000f,  1.2118128f},
+  // transpose and pad the conversion matrix to enable vectorization
+  const float xyz_to_rgb_transpose[3][4] = {
+    {  1.3459433f, -0.5445989f, 0.0000000f, 0.0f },
+    { -0.2556075f,  1.5081673f, 0.0000000f, 0.0f },
+    { -0.0511118f,  0.0205351f, 1.2118128f, 0.0f }
   };
-  rgb[0] = rgb[1] = rgb[2] = 0.0f;
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) rgb[r] += xyz_to_rgb[r][c] * XYZ[c];
+  dt_apply_transposed_color_matrix(XYZ,xyz_to_rgb_transpose,rgb);
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd aligned(rgb, XYZ)
 #endif
 static inline void dt_prophotorgb_to_XYZ(const float *const rgb, float *const XYZ)
 {
-  const float rgb_to_xyz[3][3] = {
+  // transpose and pad the conversion matrix to enable vectorization
+  const float rgb_to_xyz_transpose[3][4] = {
     // prophoto rgb
-    {0.7976749f, 0.1351917f, 0.0313534f},
-    {0.2880402f, 0.7118741f, 0.0000857f},
-    {0.0000000f, 0.0000000f, 0.8252100f},
+    { 0.7976749f, 0.2880402f, 0.0000000f, 0.0f },
+    { 0.1351917f, 0.7118741f, 0.0000000f, 0.0f },
+    { 0.0313534f, 0.0000857f, 0.8252100f, 0.0f }
   };
-  XYZ[0] = XYZ[1] = XYZ[2] = 0.0f;
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) XYZ[r] += rgb_to_xyz[r][c] * rgb[c];
+  dt_apply_transposed_color_matrix(rgb,rgb_to_xyz_transpose,XYZ);
 }
 
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd aligned(Lab, rgb)
 #endif
 static inline void dt_Lab_to_prophotorgb(const float *const Lab, float *const rgb)
 {
-  float XYZ[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
   dt_Lab_to_XYZ(Lab, XYZ);
   dt_XYZ_to_prophotorgb(XYZ, rgb);
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd aligned(rgb, Lab)
 #endif
 static inline void dt_prophotorgb_to_Lab(const float *const rgb, float *const Lab)
 {
-  float XYZ[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
   dt_prophotorgb_to_XYZ(rgb, XYZ);
   dt_XYZ_to_Lab(XYZ, Lab);
 }
@@ -939,6 +939,9 @@ static inline float scalar_product(const float v_1[4], const float v_2[4])
 static inline void dot_product(const float v_in[4], const float M[3][4], float v_out[4])
 {
   // specialized 3×4 dot products of 4×1 RGB-alpha pixels
+  #ifdef _OPENMP
+  #pragma omp simd aligned(M:64) aligned(v_in, v_out:16)
+  #endif
   for(size_t i = 0; i < 3; ++i) v_out[i] = scalar_product(v_in, M[i]);
 }
 
@@ -1056,16 +1059,16 @@ static inline void gradingRGB_to_XYZ(const float RGB[4], float XYZ[3])
 
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(Ych, RGB, D65_pipe: 16) uniform(D65_pipe)
+#pragma omp declare simd aligned(Ych, RGB: 16)
 #endif
-static inline void gradingRGB_to_Ych(float RGB[4], float Ych[3], const float *const DT_RESTRICT D65_pipe)
+static inline void gradingRGB_to_Ych(float RGB[4], float Ych[3])
 {
-  const float DT_ALIGNED_PIXEL D65_gradingRGB[4] = { 0.18600766,  0.5908061,   0.22318624, 0.f };
-  const float *const DT_RESTRICT D65 = (D65_pipe == NULL) ? D65_gradingRGB : D65_pipe;
+  const float DT_ALIGNED_PIXEL D65[4] = { 0.18600766f,  0.5908061f,   0.22318624f, 0.f };
 
   Ych[0] = fmaxf(0.67282368f * RGB[0] + 0.47812261f * RGB[1] + 0.01044966f * RGB[2], 0.f);
   const float a = RGB[0] + RGB[1] + RGB[2];
-  for(size_t c = 0; c < 4; c++) RGB[c] = (a == 0.f) ? 0.f : RGB[c] / a;
+
+  for_four_channels(c, aligned(RGB:16)) RGB[c] = (a == 0.f) ? 0.f : RGB[c] / a;
 
   RGB[0] -= D65[0];
   RGB[1] -= D65[1];
@@ -1075,19 +1078,18 @@ static inline void gradingRGB_to_Ych(float RGB[4], float Ych[3], const float *co
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(Ych, RGB, D65_pipe: 16) uniform(D65_pipe)
+#pragma omp declare simd aligned(Ych, RGB: 16)
 #endif
-static inline void Ych_to_gradingRGB(const float Ych[4], float RGB[3], const float *const DT_RESTRICT D65_pipe)
+static inline void Ych_to_gradingRGB(const float Ych[4], float RGB[4])
 {
-  const float DT_ALIGNED_PIXEL D65_gradingRGB[4] = { 0.18600766,  0.5908061,   0.22318624, 0.f };
-  const float *const DT_RESTRICT D65 = (D65_pipe == NULL) ? D65_gradingRGB : D65_pipe;
+  const float DT_ALIGNED_PIXEL D65[4] = { 0.18600766f,  0.5908061f,   0.22318624f, 0.f };
 
   RGB[0] = Ych[1] * cosf(Ych[2]) + D65[0];
   RGB[1] = Ych[1] * sinf(Ych[2]) + D65[1];
   RGB[2] = 1.f - RGB[0] - RGB[1];
 
   const float a = (0.67282368f * RGB[0] + 0.47812261f * RGB[1] + 0.01044966f * RGB[2]);
-  for(size_t c = 0; c < 3; ++c) RGB[c] = (a == 0.f) ? 0.f : RGB[c] * Ych[0] / a;
+  for_four_channels(c, aligned(RGB, Ych:16)) RGB[c] = (a == 0.f) ? 0.f : RGB[c] * Ych[0] / a;
 }
 
 

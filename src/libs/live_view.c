@@ -31,6 +31,14 @@
 #include "libs/lib_api.h"
 #include <gdk/gdkkeysyms.h>
 
+typedef enum dt_lib_live_view_focus_control_t
+{
+  DT_FOCUS_NEAR = 0,
+  DT_FOCUS_NEARER = 2,
+  DT_FOCUS_FAR = 4,
+  DT_FOCUS_FARTHER = 6
+} dt_lib_live_view_focus_control_t;
+
 typedef enum dt_lib_live_view_flip_t
 {
   FLAG_FLIP_NONE = 0,
@@ -67,7 +75,7 @@ typedef struct dt_lib_live_view_t
   gboolean splitline_dragging;
 
   GtkWidget *live_view, *live_view_zoom, *rotate_ccw, *rotate_cw, *flip;
-  GtkWidget *focus_out_small, *focus_out_big, *focus_in_small, *focus_in_big;
+  GtkWidget *auto_focus, *focus_out_small, *focus_out_big, *focus_in_small, *focus_in_big;
   GtkWidget *guide_selector, *flip_guides, *guides_widgets;
   GList *guides_widgets_list;
   GtkWidget *overlay, *overlay_id_box, *overlay_id, *overlay_mode, *overlay_splitline;
@@ -226,10 +234,77 @@ static void _zoom_live_view_clicked(GtkWidget *widget, gpointer user_data)
   }
 }
 
+static void _auto_focus_button_clicked(GtkWidget *widget, gpointer user_data)
+{
+  const char *property = "autofocusdrive";
+  CameraWidgetType property_type;
+  if(dt_camctl_camera_get_property_type(darktable.camctl, NULL, property, &property_type))
+  {
+    dt_print(DT_DEBUG_CAMCTL, "[camera control] unable to get property type for %s\n", property);
+  }
+  else
+  {
+    if(property_type == GP_WIDGET_TOGGLE)
+    {
+      dt_camctl_camera_set_property_toggle(darktable.camctl, NULL, property);
+    }
+    else
+    {
+      // TODO evaluate if this is the right thing to do in default scenario
+      dt_print(DT_DEBUG_CAMCTL, "[camera control] unable to set %s for property type %d\n", property, property_type);
+    }
+  }
+}
+
 static void _focus_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   int focus = GPOINTER_TO_INT(user_data);
-  dt_camctl_camera_set_property_choice(darktable.camctl, NULL, "manualfocusdrive", focus);
+  CameraWidgetType property_type;
+  if(dt_camctl_camera_get_property_type(darktable.camctl, NULL, "manualfocusdrive", &property_type))
+  {
+    // default to avoid breaking backwards compatibility
+    // note that this might not work on non-Canon EOS cameras
+    dt_camctl_camera_set_property_choice(darktable.camctl, NULL, "manualfocusdrive", focus);
+  }
+  else
+  {
+    // we need to check the property type here because of a peculiar difference between the property type that gphoto2
+    // supports for Canon EOS and Nikon systems. In particular, if you have a Canon, expect a TOGGLE or RADIO.
+    // If you have a Nikon, expect a RANGE.
+    switch(property_type)
+    {
+      case GP_WIDGET_RANGE:
+      {
+        float focus_amount;
+        switch(focus)
+        {
+          case DT_FOCUS_NEARER:
+            focus_amount = 250;
+            break;
+          case DT_FOCUS_NEAR:
+            focus_amount = 50;
+            break;
+          case DT_FOCUS_FAR:
+            focus_amount = -50;
+            break;
+          case DT_FOCUS_FARTHER:
+            focus_amount = -250;
+            break;
+          default:
+            focus_amount = 0;
+        }
+        dt_camctl_camera_set_property_float(darktable.camctl, NULL, "manualfocusdrive", focus_amount);
+        break;
+      }
+      case GP_WIDGET_TOGGLE | GP_WIDGET_RADIO:
+        dt_camctl_camera_set_property_choice(darktable.camctl, NULL, "manualfocusdrive", focus);
+        break;
+      default:
+        // TODO evaluate if this is the right thing to do in default scenario
+        dt_print(DT_DEBUG_CAMCTL, "[camera control] unable to set manualfocusdrive for property type %d", property_type);
+        break;
+    }
+  }
 }
 
 static void _toggle_flip_clicked(GtkWidget *widget, gpointer user_data)
@@ -265,7 +340,7 @@ void gui_init(dt_lib_module_t *self)
 
   // Setup gui
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, "live_view.html#live_view");
+  dt_gui_add_help_link(self->widget, dt_get_help_url("tethering_live_view"));
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
   lib->live_view = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT, NULL);
@@ -303,6 +378,7 @@ void gui_init(dt_lib_module_t *self)
   lib->focus_in_small
       = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT
                                                   | CPF_DIRECTION_LEFT, NULL); // TODO icon not centered
+  lib->auto_focus = dtgtk_button_new(dtgtk_cairo_paint_lock, CPF_STYLE_FLAT, NULL);
   lib->focus_out_small = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT
                                                                    | CPF_DIRECTION_RIGHT, NULL); // TODO same here
   lib->focus_out_big = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle,
@@ -310,26 +386,27 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(box), lib->focus_in_big, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), lib->focus_in_small, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), lib->auto_focus, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), lib->focus_out_small, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), lib->focus_out_big, TRUE, TRUE, 0);
 
   gtk_widget_set_tooltip_text(lib->focus_in_big, _("move focus point in (big steps)"));
   gtk_widget_set_tooltip_text(lib->focus_in_small, _("move focus point in (small steps)"));
+  gtk_widget_set_tooltip_text(lib->auto_focus, _("run autofocus"));
   gtk_widget_set_tooltip_text(lib->focus_out_small, _("move focus point out (small steps)"));
   gtk_widget_set_tooltip_text(lib->focus_out_big, _("move focus point out (big steps)"));
 
-  // Near 3
-  g_signal_connect(G_OBJECT(lib->focus_in_big), "clicked", G_CALLBACK(_focus_button_clicked),
-                   GINT_TO_POINTER(2));
-  // Near 1
-  g_signal_connect(G_OBJECT(lib->focus_in_small), "clicked", G_CALLBACK(_focus_button_clicked),
-                   GINT_TO_POINTER(0));
-  // Far 1
-  g_signal_connect(G_OBJECT(lib->focus_out_small), "clicked", G_CALLBACK(_focus_button_clicked),
-                   GINT_TO_POINTER(4));
-  // Far 3
-  g_signal_connect(G_OBJECT(lib->focus_out_big), "clicked", G_CALLBACK(_focus_button_clicked),
-                   GINT_TO_POINTER(6));
+
+  g_signal_connect(G_OBJECT(lib->focus_in_big), "clicked",
+                   G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(DT_FOCUS_NEARER));
+  g_signal_connect(G_OBJECT(lib->focus_in_small), "clicked",
+                   G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(DT_FOCUS_NEAR));
+  g_signal_connect(G_OBJECT(lib->auto_focus), "clicked",
+                   G_CALLBACK(_auto_focus_button_clicked), GINT_TO_POINTER(1));
+  g_signal_connect(G_OBJECT(lib->focus_out_small), "clicked",
+                   G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(DT_FOCUS_FAR));
+  g_signal_connect(G_OBJECT(lib->focus_out_big), "clicked",
+                   G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(DT_FOCUS_FARTHER));
 
   // Guides
   lib->guide_selector = dt_bauhaus_combobox_new(NULL);

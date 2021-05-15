@@ -786,9 +786,9 @@ static int _select_base_display_color(dt_iop_module_t *self, float *picked_color
                                  || self->picked_color_max[0] < 0.0f || self->picked_color[0] == 0.0f);
   if(!select_by_picker)
   {
-    float rgb[3] = { 0.0f, 0.3f, 0.7f };
-    float xyz[3];
-    float lab[3];
+    float DT_ALIGNED_PIXEL rgb[4] = { 0.0f, 0.3f, 0.7f };
+    float DT_ALIGNED_PIXEL xyz[4];
+    float DT_ALIGNED_PIXEL lab[4];
     dt_sRGB_to_XYZ(rgb, xyz);
     dt_XYZ_to_Lab(xyz, lab);
     dt_Lab_2_LCH(lab, picked_color);
@@ -972,8 +972,8 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
   Lab[1] *= Lab[0] / L0 * clip2;                                                                                  \
   Lab[2] *= Lab[0] / L0 * clip2;                                                                                  \
                                                                                                                   \
-  float xyz[3];                                                                                                   \
-  float rgb[3];                                                                                                   \
+  float DT_ALIGNED_PIXEL xyz[4];                                                                                  \
+  float DT_ALIGNED_PIXEL rgb[4];                                                                                  \
   dt_Lab_to_XYZ(Lab, xyz);                                                                                        \
   dt_XYZ_to_sRGB(xyz, rgb);                                                                                       \
                                                                                                                   \
@@ -1681,11 +1681,11 @@ static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
-  gdouble delta_y;
+  int delta_y;
 
   if(darktable.develop->darkroom_skip_mouse_events)
   {
-    if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+    if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
     {
       GtkAllocation allocation;
       gtk_widget_get_allocation(widget, &allocation);
@@ -1710,9 +1710,22 @@ static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event
     return TRUE;
   }
 
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  {
+    if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    {
+      //adjust aspect
+      const int aspect = dt_conf_get_int("plugins/darkroom/colorzones/aspect_percent");
+      dt_conf_set_int("plugins/darkroom/colorzones/aspect_percent", aspect + delta_y);
+      dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
+
+      return TRUE;
+    }
+  }
+
   if(c->selected < 0 && !c->edit_by_area) return TRUE;
 
-  if(dt_gui_get_scroll_delta(event, &delta_y))
+  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
     dt_iop_color_picker_reset(self, TRUE);
 
@@ -2384,7 +2397,9 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->colorpicker_set_values), "toggled", G_CALLBACK(_color_picker_callback), self);
 
   // the nice graph
-  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
+  const float aspect = dt_conf_get_int("plugins/darkroom/colorzones/aspect_percent") / 100.0;
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
+
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   GtkWidget *dabox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -2429,8 +2444,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                                 | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
-                                                 | darktable.gui->scroll_mask);
+                                                 | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
   gtk_widget_set_can_focus(GTK_WIDGET(c->area), TRUE);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(_area_draw_callback), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(_area_button_press_callback), self);

@@ -705,7 +705,7 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 
       if(!clipping)
       {
-        float _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float DT_ALIGNED_PIXEL _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
         for(int c = 0; c < 3; c++)
         {
@@ -720,7 +720,7 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
       }
       else
       {
-        float nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float DT_ALIGNED_PIXEL nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         for(int c = 0; c < 3; c++)
         {
           nRGB[c] = 0.0f;
@@ -730,13 +730,13 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
           }
         }
 
-        float cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float DT_ALIGNED_PIXEL cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         for(int c = 0; c < 3; c++)
         {
           cRGB[c] = CLAMP(nRGB[c], 0.0f, 1.0f);
         }
 
-        float XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         for(int c = 0; c < 3; c++)
         {
           XYZ[c] = 0.0f;
@@ -771,7 +771,7 @@ static void process_cmatrix_fastpath_simple(struct dt_iop_module_t *self, dt_dev
     float *in = (float *)ivoid + (size_t)ch * k;
     float *out = (float *)ovoid + (size_t)ch * k;
 
-    float _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float DT_ALIGNED_PIXEL _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
     for(int c = 0; c < 3; c++)
     {
@@ -805,7 +805,7 @@ static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self, dt_d
     float *in = (float *)ivoid + (size_t)ch * k;
     float *out = (float *)ovoid + (size_t)ch * k;
 
-    float nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float DT_ALIGNED_PIXEL nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
     for(int c = 0; c < 3; c++)
     {
       nRGB[c] = 0.0f;
@@ -815,13 +815,13 @@ static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self, dt_d
       }
     }
 
-    float cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float DT_ALIGNED_PIXEL cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
     for(int c = 0; c < 3; c++)
     {
       cRGB[c] = CLAMP(nRGB[c], 0.0f, 1.0f);
     }
 
-    float XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
     for(int c = 0; c < 3; c++)
     {
       XYZ[c] = 0.0f;
@@ -885,7 +885,7 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpip
 
       if(!clipping)
       {
-        float _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float DT_ALIGNED_PIXEL _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
         for(int c = 0; c < 3; c++)
         {
@@ -900,7 +900,7 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpip
       }
       else
       {
-        float nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float DT_ALIGNED_PIXEL nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         for(int c = 0; c < 3; c++)
         {
           nRGB[c] = 0.0f;
@@ -910,13 +910,13 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpip
           }
         }
 
-        float cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float DT_ALIGNED_PIXEL cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         for(int c = 0; c < 3; c++)
         {
           cRGB[c] = CLAMP(nRGB[c], 0.0f, 1.0f);
         }
 
-        float XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         for(int c = 0; c < 3; c++)
         {
           XYZ[c] = 0.0f;
@@ -1673,7 +1673,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   {
     // user wants us to clip to a given RGB profile
     if(dt_colorspaces_get_matrix_from_input_profile(d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
-                                                    LUT_SAMPLES, p->intent))
+                                                    LUT_SAMPLES))
     {
       piece->process_cl_ready = 0;
       d->cmatrix[0] = NAN;
@@ -1685,16 +1685,16 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     {
       float lutr[1], lutg[1], lutb[1];
       float omat[9];
-      dt_colorspaces_get_matrix_from_output_profile(d->nrgb, omat, lutr, lutg, lutb, 1, p->intent);
+      dt_colorspaces_get_matrix_from_output_profile(d->nrgb, omat, lutr, lutg, lutb, 1);
       mat3mul(d->nmatrix, omat, d->cmatrix);
-      dt_colorspaces_get_matrix_from_input_profile(d->nrgb, d->lmatrix, lutr, lutg, lutb, 1, p->intent);
+      dt_colorspaces_get_matrix_from_input_profile(d->nrgb, d->lmatrix, lutr, lutg, lutb, 1);
     }
   }
   else
   {
     // default mode: unbound processing
     if(dt_colorspaces_get_matrix_from_input_profile(d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
-                                                    LUT_SAMPLES, p->intent))
+                                                    LUT_SAMPLES))
     {
       piece->process_cl_ready = 0;
       d->cmatrix[0] = NAN;
@@ -1731,7 +1731,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     d->input = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC709, "", DT_PROFILE_DIRECTION_IN)->profile;
     d->clear_input = 0;
     if(dt_colorspaces_get_matrix_from_input_profile(d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
-                                                    LUT_SAMPLES, p->intent))
+                                                    LUT_SAMPLES))
     {
       piece->process_cl_ready = 0;
       d->cmatrix[0] = NAN;
@@ -1924,8 +1924,13 @@ void reload_defaults(dt_iop_module_t *module)
       struct avif_color_profile cp = {
           .type = DT_COLORSPACE_NONE,
       };
-
-      img->profile_size = dt_imageio_avif_read_color_profile(filename, &cp);
+      const dt_imageio_retval_t ret =
+          dt_imageio_avif_read_color_profile(filename, &cp);
+      if (ret != DT_IMAGEIO_OK)
+      {
+        g_free(ext);
+        return;
+      }
       if (cp.type != DT_COLORSPACE_NONE)
       {
         color_profile = cp.type;

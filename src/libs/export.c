@@ -1108,6 +1108,17 @@ void set_preferences(void *menu, dt_lib_module_t *self)
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
+static gboolean _next_widget(GtkWidget *width, GdkEventKey *ev, GtkWidget *next)
+{
+  if(ev->keyval == GDK_KEY_Tab)
+  {
+    gtk_widget_grab_focus(next);
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
@@ -1120,7 +1131,7 @@ void gui_init(dt_lib_module_t *self)
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
   gtk_style_context_add_class(context, "section_label_top");
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
-  dt_gui_add_help_link(self->widget, "export_selected.html#export_selected_usage");
+  dt_gui_add_help_link(self->widget, dt_get_help_url("export"));
 
   d->storage = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->storage, NULL, N_("target storage"));
@@ -1147,7 +1158,7 @@ void gui_init(dt_lib_module_t *self)
 
   label = dt_ui_section_label_new(_("format options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
-  dt_gui_add_help_link(self->widget, "export_selected.html#export_selected_usage");
+  dt_gui_add_help_link(self->widget, dt_get_help_url("export"));
 
   d->format = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->format, NULL, N_("file format"));
@@ -1169,7 +1180,7 @@ void gui_init(dt_lib_module_t *self)
 
   label = dt_ui_section_label_new(_("global options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
-  dt_gui_add_help_link(self->widget, "export_selected.html#export_selected_usage");
+  dt_gui_add_help_link(self->widget, dt_get_help_url("export"));
 
   d->dimensions_type = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->dimensions_type, NULL, N_("set size"));
@@ -1405,9 +1416,12 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(_height_changed), (gpointer)d);
 
   g_signal_connect(G_OBJECT(d->width), "button-press-event", G_CALLBACK(_widht_mdlclick), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->width), "key-press-event", G_CALLBACK(_next_widget), (gpointer)d->height);
   g_signal_connect(G_OBJECT(d->height), "button-press-event", G_CALLBACK(_height_mdlclick), (gpointer)d);
   g_signal_connect(G_OBJECT(d->print_width), "button-press-event", G_CALLBACK(_widht_mdlclick), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->print_width), "key-press-event", G_CALLBACK(_next_widget), (gpointer)d->print_height);
   g_signal_connect(G_OBJECT(d->print_height), "button-press-event", G_CALLBACK(_height_mdlclick), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->print_height), "key-press-event", G_CALLBACK(_next_widget), (gpointer)d->print_dpi);
 
   g_signal_connect(G_OBJECT(d->scale), "button-press-event", G_CALLBACK(_scale_mdlclick), (gpointer)d);
   g_signal_connect(G_OBJECT(d->scale), "changed", G_CALLBACK(_scale_changed), (gpointer)d);

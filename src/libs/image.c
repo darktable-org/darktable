@@ -172,7 +172,7 @@ static void button_clicked(GtkWidget *widget, gpointer user_data)
 static const char* _image_get_delete_button_label()
 {
 if (dt_conf_get_bool("send_to_trash"))
-  return _("trash");
+  return _("delete (trash)");
 else
   return _("delete");
 }
@@ -180,9 +180,9 @@ else
 static const char* _image_get_delete_button_tooltip()
 {
 if (dt_conf_get_bool("send_to_trash"))
-  return _("send file to trash");
+  return _("physically delete from disk (using trash if possible)");
 else
-  return _("physically delete from disk");
+  return _("physically delete from disk immediately");
 }
 
 static void _update(dt_lib_module_t *self)
@@ -457,7 +457,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   self->timeout_handle = 0;
   self->widget = gtk_notebook_new();
-  dt_gui_add_help_link(self->widget, "selected_images.html#selected_images_usage");
+  dt_gui_add_help_link(self->widget, dt_get_help_url("image"));
 
   GtkWidget *page1 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), _("images"), NULL);
   GtkWidget *page2 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), _("metadata"), NULL);
@@ -471,7 +471,7 @@ void gui_init(dt_lib_module_t *self)
   int line = 0;
 
 
-  d->remove_button = dt_ui_button_new(_("remove"), _("remove from the collection"), NULL);
+  d->remove_button = dt_ui_button_new(_("remove"), _("remove images from the image library, without deleting"), NULL);
   gtk_grid_attach(grid, d->remove_button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(d->remove_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(0));
 
@@ -491,7 +491,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->create_hdr_button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(d->create_hdr_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(7));
 
-  d->duplicate_button = dt_ui_button_new(_("duplicate"), _("add a duplicate to the collection, including its history stack"), NULL);
+  d->duplicate_button = dt_ui_button_new(_("duplicate"), _("add a duplicate to the image library, including its history stack"), NULL);
   gtk_grid_attach(grid, d->duplicate_button, 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(d->duplicate_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(3));
 
@@ -646,8 +646,8 @@ void gui_cleanup(dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "remove from collection"), GDK_KEY_Delete, 0);
-  dt_accel_register_lib(self, NC_("accel", "delete from disk or send to trash"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "remove from darktable"), GDK_KEY_Delete, 0);
+  dt_accel_register_lib(self, NC_("accel", "delete from disk using trash if possible"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "move to other folder"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "copy to other folder"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate selected images 90 degrees CW"), 0, 0);
@@ -672,8 +672,8 @@ void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
 
-  dt_accel_connect_button_lib(self, "remove from collection", d->remove_button);
-  dt_accel_connect_button_lib(self, "delete from disk or send to trash", d->delete_button);
+  dt_accel_connect_button_lib(self, "remove from darktable", d->remove_button);
+  dt_accel_connect_button_lib(self, "delete from disk using trash if possible", d->delete_button);
   dt_accel_connect_button_lib(self, "move to other folder", d->move_button);
   dt_accel_connect_button_lib(self, "copy to other folder", d->copy_button);
   dt_accel_connect_button_lib(self, "rotate selected images 90 degrees CW", d->rotate_cw_button);

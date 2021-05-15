@@ -497,7 +497,6 @@ GList *dt_selection_get_list(struct dt_selection_t *selection, const gboolean on
   {
     l = g_list_prepend(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
   }
-  if(only_visible && ordering) l = g_list_reverse(l);
   if(stmt) sqlite3_finalize(stmt);
 
   return l;

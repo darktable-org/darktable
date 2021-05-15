@@ -547,29 +547,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[11]);
       }
 
-      static const struct
-      {
-        char *tooltip;
-        char flag;
-      } loaders[] =
-      {
-        { N_("unknown"), EMPTY_FIELD},
-        { N_("tiff"), 't'},
-        { N_("png"), 'p'},
-        { N_("j2k"), 'J'},
-        { N_("jpeg"), 'j'},
-        { N_("exr"), 'e'},
-        { N_("rgbe"), 'R'},
-        { N_("pfm"), 'P'},
-        { N_("GraphicsMagick"), 'g'},
-        { N_("rawspeed"), 'r'},
-        { N_("netpnm"), 'n'},
-        { N_("avif"), 'a'},
-      };
-
-      const int loader = (unsigned int)img->loader < sizeof(loaders) / sizeof(*loaders) ? img->loader : 0;
-      value[13] = loaders[loader].flag;
-      char *loader_tooltip = g_strdup_printf(_("loader: %s"), _(loaders[loader].tooltip));
+      const int loader = (unsigned int)img->loader < LOADER_COUNT ? img->loader : 0;
+      value[13] = loaders_info[loader].flag;
+      char *loader_tooltip = g_strdup_printf(_("loader: %s"), _(loaders_info[loader].tooltip));
       tooltip_parts[next_tooltip_part++] = loader_tooltip;
 
       value[14] = '\0';

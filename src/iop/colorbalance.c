@@ -350,11 +350,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
         // transform the pixel to sRGB:
         // Lab -> XYZ
-        float XYZ[3] = { 0.0f };
+        float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
         dt_Lab_to_XYZ(in, XYZ);
 
         // XYZ -> sRGB
-        float rgb[3] = { 0.0f };
+        float DT_ALIGNED_PIXEL rgb[4] = { 0.0f };
         dt_XYZ_to_sRGB(XYZ, rgb);
 
         // do the calculation in RGB space
@@ -402,11 +402,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
         // transform the pixel to sRGB:
         // Lab -> XYZ
-        float XYZ[3] = { 0.0f };
+        float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
         dt_Lab_to_XYZ(in, XYZ);
 
         // XYZ -> sRGB
-        float rgb[3] = { 0.0f };
+        float DT_ALIGNED_PIXEL rgb[4] = { 0.0f };
         dt_XYZ_to_prophotorgb(XYZ, rgb);
 
         float luma = XYZ[1]; // the Y channel is the relative luminance
@@ -471,11 +471,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
         // transform the pixel to RGB:
         // Lab -> XYZ
-        float XYZ[3];
+        float DT_ALIGNED_PIXEL XYZ[4];
         dt_Lab_to_XYZ(in, XYZ);
 
         // XYZ -> RGB
-        float rgb[3];
+        float DT_ALIGNED_PIXEL rgb[4];
         dt_XYZ_to_prophotorgb(XYZ, rgb);
 
         float luma = XYZ[1]; // the Y channel is the RGB luminance
@@ -877,7 +877,7 @@ error:
 
 static inline void update_saturation_slider_color(GtkWidget *slider, float hue)
 {
-  float rgb[3];
+  float DT_ALIGNED_PIXEL rgb[4];
   if(hue != -1)
   {
     hsl2rgb(rgb, hue, 1.0, 0.5);
@@ -891,7 +891,7 @@ static inline void update_saturation_slider_color(GtkWidget *slider, float hue)
 static inline void set_RGB_sliders(GtkWidget *R, GtkWidget *G, GtkWidget *B, float hsl[3], float *p, int mode)
 {
 
-  float rgb[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL rgb[4] = { 0.0f };
   hsl2rgb(rgb, hsl[0], hsl[1], hsl[2]);
 
   if(hsl[0] != -1)
@@ -958,8 +958,8 @@ static void apply_autogrey(dt_iop_module_t *self)
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
-  float XYZ[3] = { 0.0f };
-  float rgb[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
+  float DT_ALIGNED_PIXEL rgb[4] = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
   dt_XYZ_to_prophotorgb((const float *)XYZ, rgb);
 
@@ -997,9 +997,9 @@ static void apply_lift_neutralize(dt_iop_module_t *self)
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
-  float XYZ[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
-  float RGB[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL RGB[4] = { 0.0f };
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
 // Save the patch color for the optimization
@@ -1036,9 +1036,9 @@ static void apply_gamma_neutralize(dt_iop_module_t *self)
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
-  float XYZ[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
-  float RGB[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL RGB[4] = { 0.0f };
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
 // Save the patch color for the optimization
@@ -1075,9 +1075,9 @@ static void apply_gain_neutralize(dt_iop_module_t *self)
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
-  float XYZ[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
-  float RGB[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL RGB[4] = { 0.0f };
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
 // Save the patch color for the optimization
@@ -1114,13 +1114,13 @@ static void apply_lift_auto(dt_iop_module_t *self)
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
-  float XYZ[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color_min, XYZ);
 
   g->luma_patches[LIFT] = XYZ[1];
   g->luma_patches_flags[LIFT] = USER_SELECTED;
 
-  float RGB[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL RGB[4] = { 0.0f };
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
   p->lift[CHANNEL_FACTOR] = -p->gain[CHANNEL_FACTOR] * XYZ[1] + 1.0f;
@@ -1138,13 +1138,13 @@ static void apply_gamma_auto(dt_iop_module_t *self)
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
-  float XYZ[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
 
   g->luma_patches[GAMMA] = XYZ[1];
   g->luma_patches_flags[GAMMA] = USER_SELECTED;
 
-  float RGB[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL RGB[4] = { 0.0f };
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
   p->gamma[CHANNEL_FACTOR]
@@ -1163,13 +1163,13 @@ static void apply_gain_auto(dt_iop_module_t *self)
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
-  float XYZ[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
   dt_Lab_to_XYZ((const float *)self->picked_color_max, XYZ);
 
   g->luma_patches[GAIN] = XYZ[1];
   g->luma_patches_flags[GAIN] = USER_SELECTED;
 
-  float RGB[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL RGB[4] = { 0.0f };
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
   p->gain[CHANNEL_FACTOR] = p->lift[CHANNEL_FACTOR] / (XYZ[1]);
@@ -1193,9 +1193,9 @@ static void apply_autocolor(dt_iop_module_t *self)
      * Some color patches were not picked by the user. Take a
      * picture-wide patch for these.
      */
-    float XYZ[3] = { 0.0f };
+    float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
     dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
-    float RGB[3] = { 0.0f };
+    float DT_ALIGNED_PIXEL RGB[4] = { 0.0f };
     dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
     // Save the patch color for the optimization
@@ -1231,8 +1231,8 @@ static void apply_autocolor(dt_iop_module_t *self)
   }
 
   // Get the average patches luma value (= neutral grey equivalents) after the CDL factors
-  float greys[3] = { 0.0 };
-  float XYZ[3] = { 0.0 };
+  float DT_ALIGNED_PIXEL greys[4] = { 0.0 };
+  float DT_ALIGNED_PIXEL XYZ[4] = { 0.0 };
   dt_prophotorgb_to_XYZ((const float *)samples_lift, (float *)XYZ);
   greys[0] = XYZ[1];
   dt_prophotorgb_to_XYZ((const float *)samples_gamma, (float *)XYZ);
@@ -1310,21 +1310,21 @@ static void apply_autoluma(dt_iop_module_t *self)
    */
   if(g->luma_patches_flags[LIFT] == INVALID)
   {
-    float XYZ[3] = { 0.0f };
+    float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
     dt_Lab_to_XYZ((const float *)self->picked_color_min, XYZ);
     g->luma_patches[LIFT] = XYZ[1];
     g->luma_patches_flags[LIFT] = AUTO_SELECTED;
   }
   if(g->luma_patches_flags[GAMMA] == INVALID)
   {
-    float XYZ[3] = { 0.0f };
+    float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
     dt_Lab_to_XYZ((const float *)self->picked_color, XYZ);
     g->luma_patches[GAMMA] = XYZ[1];
     g->luma_patches_flags[GAMMA] = AUTO_SELECTED;
   }
   if(g->luma_patches_flags[GAIN] == INVALID)
   {
-    float XYZ[3] = { 0.0f };
+    float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
     dt_Lab_to_XYZ((const float *)self->picked_color_max, XYZ);
     g->luma_patches[GAIN] = XYZ[1];
     g->luma_patches_flags[GAIN] = AUTO_SELECTED;
@@ -1412,7 +1412,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     case SLOPE_OFFSET_POWER:
     {
       // Correct the luminance in RGB parameters so we don't affect it
-      float XYZ[3];
+      float DT_ALIGNED_PIXEL XYZ[4];
 
       dt_prophotorgb_to_XYZ((const float *)&p->lift[CHANNEL_RED], XYZ);
       d->lift[CHANNEL_FACTOR] = p->lift[CHANNEL_FACTOR];
@@ -1451,7 +1451,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     case LIFT_GAMMA_GAIN:
     {
       // Correct the luminance in RGB parameters so we don't affect it
-      float XYZ[3];
+      float DT_ALIGNED_PIXEL XYZ[4];
       dt_prophotorgb_to_XYZ((const float *)&p->lift[CHANNEL_RED], XYZ);
       d->lift[CHANNEL_FACTOR] = p->lift[CHANNEL_FACTOR];
       d->lift[CHANNEL_RED] = (p->lift[CHANNEL_RED] - XYZ[1]) + 1.f;
@@ -1673,7 +1673,7 @@ static gboolean dt_iop_area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t
 
       double hue = angle / (2.0 * M_PI);
 
-      float rgb[3];
+      float DT_ALIGNED_PIXEL rgb[4];
       hsl2rgb(rgb, hue, 1.0, 0.5);
 
       *p++ = (((int)floor(rgb[0] * 255 + 0.5) << 16) | ((int)floor(rgb[1] * 255 + 0.5) << 8)

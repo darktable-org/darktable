@@ -1167,7 +1167,7 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
     fprintf(stderr, "[%s] %s\n", name, stderr_message ? stderr_message : trouble_msg);
   }
 
-  if(!dt_iop_is_hidden(module) && module->gui_data)
+  if(!dt_iop_is_hidden(module) && module->gui_data && dt_conf_get_bool("plugins/darkroom/show_warnings"))
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TROUBLE_MESSAGE,
                                   module, trouble_msg, trouble_tooltip);
 }
@@ -2461,7 +2461,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   for(int i = IOP_MODULE_LAST - 1; i > IOP_MODULE_LABEL; i--)
     if(hw[i]) gtk_box_pack_end(GTK_BOX(header), hw[i], FALSE, FALSE, 0);
 
-  dt_gui_add_help_link(header, "interacting.html");
+  dt_gui_add_help_link(header, dt_get_help_url("module_interacting"));
 
   gtk_widget_set_halign(hw[IOP_MODULE_LABEL], GTK_ALIGN_START);
   gtk_widget_set_halign(hw[IOP_MODULE_INSTANCE], GTK_ALIGN_END);
@@ -3077,7 +3077,10 @@ void dt_iop_cancel_history_update(dt_iop_module_t *module)
 
 char *dt_iop_warning_message(const char *message)
 {
-  return g_strdup_printf("<span foreground='red'>⚠</span> %s", message);
+  if(dt_conf_get_bool("plugins/darkroom/show_warnings"))
+    return g_strdup_printf("<span foreground='red'>⚠</span> %s", message);
+  else
+    return g_strdup_printf("%s", message);
 }
 
 char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text, const char *purpose, const char *input, const char *process,

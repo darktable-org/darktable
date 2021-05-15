@@ -678,7 +678,7 @@ gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
   // to go the full path (as the thumbnail will be flipped the wrong way round)
   const int incompatible = !strncmp(img.exif_maker, "Phase One", 9);
   const gboolean use_raw =
-    dt_conf_is_equal("plugins/lighttable/thumbnail_raw_min_level", "never");
+    !dt_conf_is_equal("plugins/lighttable/thumbnail_raw_min_level", "never");
 
   if(!img.verified_size && !dt_image_altered(imgid) && !use_raw && !incompatible)
   {
@@ -1670,6 +1670,24 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   // keywords side pane when trying to use it, which can lock up the whole dt GUI ..
   // if (new_tags_set) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,DT_SIGNAL_TAG_CHANGED);
   return id;
+}
+
+gboolean dt_images_already_imported(const gchar *folder, const gchar *filename)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT *"
+                              " FROM main.images, main.film_rolls"
+                              " WHERE film_rolls.folder = ?1"
+                              "       AND images.film_id = film_rolls.id"
+                              "       AND images.filename = ?2",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, folder, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, filename, -1, SQLITE_STATIC);
+  const gboolean result = sqlite3_step(stmt) == SQLITE_ROW;
+  sqlite3_finalize(stmt);
+
+  return result;
 }
 
 uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs,

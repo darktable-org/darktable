@@ -852,14 +852,14 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
         cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
         for(int k=DT_IOP_RGBCURVE_R; k<DT_IOP_RGBCURVE_MAX_CHANNELS; k++)
         {
-          set_color(cr, darktable.bauhaus->graph_primaries[k]);
+          set_color(cr, darktable.bauhaus->graph_colors[k]);
           dt_draw_histogram_8_zoomed(cr, hist, 4, k, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
                                      is_linear);
         }
       }
       else if(autoscale == DT_S_SCALE_MANUAL_RGB)
       {
-        set_color(cr, darktable.bauhaus->graph_primaries[ch]);
+        set_color(cr, darktable.bauhaus->graph_colors[ch]);
         dt_draw_histogram_8_zoomed(cr, hist, 4, ch, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
                                    is_linear);
       }
@@ -1412,8 +1412,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                                 | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
-                                                 | darktable.gui->scroll_mask);
+                                                 | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(_area_draw_callback), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(_area_button_press_callback), self);

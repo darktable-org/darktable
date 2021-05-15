@@ -298,7 +298,7 @@ int write_image(struct dt_imageio_module_data_t *data,
           break;
       case DT_COLORSPACE_REC709:
           image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
-          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_BT470M;
+          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_BT709;
           image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT709;
         break;
       case DT_COLORSPACE_LIN_REC709:

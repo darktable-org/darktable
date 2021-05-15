@@ -227,10 +227,7 @@ static gboolean _lib_lighttable_layout_btn_release(GtkWidget *w, GdkEventButton 
   }
 
   _lib_lighttable_set_layout(self, new_layout);
-
-  // now we inverse the current button state to get the right state at the end
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), active);
-  return FALSE;
+  return TRUE;
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -259,25 +256,34 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->layout_box, TRUE, TRUE, 0);
 
   d->layout_filemanager = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_grid, CPF_STYLE_FLAT, NULL);
+  dt_gui_add_help_link(d->layout_filemanager, dt_get_help_url("layout_filemanager"));
   gtk_widget_set_tooltip_text(d->layout_filemanager, _("click to enter filemanager layout."));
   g_signal_connect(G_OBJECT(d->layout_filemanager), "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_filemanager, TRUE, TRUE, 0);
+
   d->layout_zoomable = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_zoom, CPF_STYLE_FLAT, NULL);
+  dt_gui_add_help_link(d->layout_zoomable, dt_get_help_url("layout_zoomable"));
   gtk_widget_set_tooltip_text(d->layout_zoomable, _("click to enter zoomable lighttable layout."));
   g_signal_connect(G_OBJECT(d->layout_zoomable), "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_zoomable, TRUE, TRUE, 0);
+
   d->layout_culling_fix = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_fixed, CPF_STYLE_FLAT, NULL);
+  dt_gui_add_help_link(d->layout_culling_fix, dt_get_help_url("layout_culling"));
   g_signal_connect(G_OBJECT(d->layout_culling_fix), "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_culling_fix, TRUE, TRUE, 0);
+
   d->layout_culling_dynamic
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_dynamic, CPF_STYLE_FLAT, NULL);
+  dt_gui_add_help_link(d->layout_culling_dynamic, dt_get_help_url("layout_culling"));
   g_signal_connect(G_OBJECT(d->layout_culling_dynamic), "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_culling_dynamic, TRUE, TRUE, 0);
+
   d->layout_preview = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_fullpreview, CPF_STYLE_FLAT, NULL);
+  dt_gui_add_help_link(d->layout_preview, dt_get_help_url("layout_preview"));
   g_signal_connect(G_OBJECT(d->layout_preview), "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_preview, TRUE, TRUE, 0);
@@ -347,12 +353,11 @@ static void _lib_lighttable_zoom_slider_changed(GtkRange *range, gpointer user_d
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
 
   const int i = gtk_range_get_value(range);
-  _set_zoom(self, i);
   gchar *i_as_str = g_strdup_printf("%d", i);
   gtk_entry_set_text(GTK_ENTRY(d->zoom_entry), i_as_str);
+  _set_zoom(self, i);
   d->current_zoom = i;
   g_free(i_as_str);
-  dt_control_queue_redraw_center();
 }
 
 static gboolean _lib_lighttable_zoom_entry_changed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)

@@ -3,6 +3,7 @@ add_subdirectory(external)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
+include(CheckCXXSymbolExists)
 
 #
 # Add files for libdarktable
@@ -283,8 +284,8 @@ if(USE_OPENMP)
 endif(USE_OPENMP)
 
 if(USE_DARKTABLE_PROFILING)
-  add_definitions(-DUSE_DARKTABLE_PROFILING)
-  set(SOURCES ${SOURCES} "common/profiling.c")
+	add_definitions(-DUSE_DARKTABLE_PROFILING)
+	set(SOURCES ${SOURCES} "common/profiling.c")
 endif()
 
 #
@@ -328,7 +329,12 @@ if(USE_CAMERA_SUPPORT)
 endif(USE_CAMERA_SUPPORT)
 
 if(USE_OPENEXR)
-  find_package(OpenEXR)
+  find_package(OpenEXR 3.0 CONFIG)
+  if(TARGET OpenEXR::OpenEXR)
+    set(OpenEXR_LIBRARIES OpenEXR::OpenEXR)
+  else()
+    find_package(OpenEXR)
+  endif()
   if(OpenEXR_FOUND)
     include_directories(SYSTEM ${OpenEXR_INCLUDE_DIRS})
     list(APPEND LIBS ${OpenEXR_LIBRARIES})
@@ -388,6 +394,25 @@ find_package(Exiv2 0.24 REQUIRED)
 include_directories(SYSTEM ${Exiv2_INCLUDE_DIRS})
 list(APPEND LIBS ${Exiv2_LIBRARIES})
 add_definitions(${Exiv2_DEFINITIONS})
+
+# Optionally enable ISOBMFF support in Exiv2
+if (USE_ISOBMFF)
+  if(Exiv2_VERSION VERSION_GREATER_EQUAL "0.27.4")
+    # exiv2 >= 0.27.4 provides optional support for ISOBMFF files.
+    # This must be manually enabled during exiv2 build and can be checked with
+    # the EXV_ENABLE_BMFF symbol.
+    check_cxx_symbol_exists(EXV_ENABLE_BMFF "exiv2/exiv2.hpp" HAVE_EXV_ENABLE_BMFF)
+    if(HAVE_EXV_ENABLE_BMFF)
+      add_definitions(-DHAVE_LIBEXIV2_WITH_ISOBMFF=1)
+      set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} cr3 heif CACHE INTERNAL "")
+      message(STATUS "Exiv2 >= 0.27.4 found with ISOBMFF support (CR3, AVIF, HEIF)")
+    else()
+      message(STATUS "Exiv2 >= 0.27.4 found, but was not compiled with ISOBMFF support (CR3, AVIF, HEIF)")
+    endif()
+  else()
+    message(STATUS "Exiv2 <= 0.27.4 found, no support for ISOBMFF files (CR3, AVIF, HEIF)")
+  endif()
+endif()
 
 if(USE_OPENJPEG)
   find_package(OpenJPEG)
@@ -587,15 +612,9 @@ if(NOT CUSTOM_CFLAGS)
   #endif()
 
   #-g MUST be set for ALL builds, or there will be no support for them when bugs happen
-
-  # TODO: check if these flags bring some good :
-  # -ftree-loop-distribution -fivopts -fipa-matrix-reorg -ftracer -fvect-cost-model -fvariable-expansion-in-unroller
-  # -fprefetch-loop-arrays -ftree-vect-loop-version -freorder-blocks-and-partition -fmodulo-sched-allow-regmoves
-  # -ftree-loop-im -ftree-loop-ivcanon -fsplit-ivs-in-unroller -funroll-loops
-  # also, in IOPs, in-loops branches could be forced to be compiled as different loops variants
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MARCH} ${DT_REQ_INSTRUCTIONS} -g")
   set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -O2")
-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math -fno-finite-math-only")
   if(CMAKE_COMPILER_IS_GNUCC)
     if(BUILD_SSE2_CODEPATHS)
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
@@ -609,7 +628,7 @@ if(NOT CUSTOM_CFLAGS)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MARCH} ${DT_REQ_INSTRUCTIONS} -g")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O2")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -fno-finite-math-only")
   if(CMAKE_COMPILER_IS_GNUCXX)
     if(BUILD_SSE2_CODEPATHS)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
@@ -880,6 +899,7 @@ add_library(lib_darktable SHARED ${DARKTABLE_BINDIR}/preferences_gen.h ${DARKTAB
 # since this isn't the same directory we do have to manually set it
 set_source_files_properties(${DARKTABLE_BINDIR}/version_gen.c PROPERTIES GENERATED TRUE)
 
+add_dependencies(lib_darktable generate_conf)
 add_dependencies(lib_darktable generate_version)
 add_dependencies(lib_darktable generate_preferences)
 

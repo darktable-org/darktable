@@ -44,9 +44,11 @@ typedef enum _camctl_camera_job_type_t
   _JOB_TYPE_WRITE_CONFIG,
   /** Set's a property in config cache. \todo This shouldn't be a job in jobqueue !? */
   _JOB_TYPE_SET_PROPERTY_STRING,
+  _JOB_TYPE_SET_PROPERTY_TOGGLE,
   _JOB_TYPE_SET_PROPERTY_CHOICE,
   /** For some reason stopping live view needs to pass an int, not a string. */
   _JOB_TYPE_SET_PROPERTY_INT,
+  _JOB_TYPE_SET_PROPERTY_FLOAT,
   /** gets a property from config cache. \todo This shouldn't be a job in jobqueue !?  */
   _JOB_TYPE_GET_PROPERTY
 } _camctl_camera_job_type_t;
@@ -63,6 +65,12 @@ typedef struct _camctl_camera_set_property_string_job_t
   char *value;
 } _camctl_camera_set_property_string_job_t;
 
+typedef struct _camctl_camera_set_property_toggle_job_t
+{
+  _camctl_camera_job_type_t type;
+  char *name;
+} _camctl_camera_set_property_toggle_job_t;
+
 typedef struct _camctl_camera_set_property_choice_job_t
 {
   _camctl_camera_job_type_t type;
@@ -76,6 +84,13 @@ typedef struct _camctl_camera_set_property_int_job_t
   char *name;
   int value;
 } _camctl_camera_set_property_int_job_t;
+
+typedef struct _camctl_camera_set_property_float_job_t
+{
+  _camctl_camera_job_type_t type;
+  char *name;
+  float value;
+} _camctl_camera_set_property_float_job_t;
 
 /** Initializes camera */
 static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam);
@@ -429,7 +444,24 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
       gp_widget_free(config);
     }
     break;
+    case _JOB_TYPE_SET_PROPERTY_TOGGLE:
+    {
+      _camctl_camera_set_property_toggle_job_t *spj = (_camctl_camera_set_property_toggle_job_t *)job;
+      dt_print(DT_DEBUG_CAMCTL, "[camera_control] executing camera config job to toggle %s\n", spj->name);
 
+      CameraWidget *config; // Copy of camera configuration
+      CameraWidget *widget;
+      gp_camera_get_config(cam->gpcam, &config, c->gpcontext);
+      if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
+      {
+        const int value = 1;
+        gp_widget_set_value(widget, &value);
+        gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+      }
+      g_free(spj->name);
+      gp_widget_free(config);
+    }
+      break;
     case _JOB_TYPE_SET_PROPERTY_INT:
     {
       _camctl_camera_set_property_int_job_t *spj = (_camctl_camera_set_property_int_job_t *)job;
@@ -441,9 +473,17 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
       gp_camera_get_config(cam->gpcam, &config, c->gpcontext);
       if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
       {
-        int value = spj->value;
-        gp_widget_set_value(widget, &value);
-        gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+        const int value = spj->value;
+        const int set_value_succeeds = gp_widget_set_value(widget, &value);
+        if(set_value_succeeds != GP_OK)
+        {
+          dt_print(DT_DEBUG_CAMCTL, "[camera_control] setting int value %d on %s failed with code %d", spj->value, spj->name, set_value_succeeds);
+        }
+        const int set_config_succeeds = gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+        if(set_value_succeeds != GP_OK)
+        {
+          dt_print(DT_DEBUG_CAMCTL, "[camera_control] setting config failed with code %d", set_config_succeeds);
+        }
       }
       /* dt_pthread_mutex_lock( &cam->config_lock );
        CameraWidget *widget;
@@ -458,7 +498,33 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
       gp_widget_free(config);
     }
     break;
+    case _JOB_TYPE_SET_PROPERTY_FLOAT:
+    {
+      _camctl_camera_set_property_float_job_t *spj = (_camctl_camera_set_property_float_job_t *)job;
+      dt_print(DT_DEBUG_CAMCTL, "[camera_control] executing set camera config float job %s=%.2f\n", spj->name,
+               spj->value);
 
+      CameraWidget *config; // Copy of camera configuration
+      CameraWidget *widget;
+      gp_camera_get_config(cam->gpcam, &config, c->gpcontext);
+      if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
+      {
+        const float value = spj->value;
+        const int set_value_succeeds = gp_widget_set_value(widget, &value);
+        if(set_value_succeeds != GP_OK)
+        {
+          dt_print(DT_DEBUG_CAMCTL, "[camera_control] setting int value %.2f on %s failed with code %d", spj->value, spj->name, set_value_succeeds);
+        }
+        const int set_config_succeeds = gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+        if(set_value_succeeds != GP_OK)
+        {
+          dt_print(DT_DEBUG_CAMCTL, "[camera_control] setting config failed with code %d", set_config_succeeds);
+        }
+      }
+      g_free(spj->name);
+      gp_widget_free(config);
+    }
+      break;
     default:
       dt_print(DT_DEBUG_CAMCTL, "[camera_control] process of unknown job type 0x%x\n", j->type);
       break;
@@ -996,8 +1062,9 @@ static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
     gp_camera_get_config(cam->gpcam, &cam->configuration, c->gpcontext);
 
     // TODO: find a more robust way for this, once we find out how to do it with non-EOS cameras
-    cam->can_live_view_advanced = cam->can_live_view &&
-                                  dt_camctl_camera_property_exists(camctl, cam, "eoszoomposition");
+    cam->can_live_view_advanced = cam->can_live_view
+                                  && (dt_camctl_camera_property_exists(camctl, cam, "eoszoomposition")
+                                  || dt_camctl_camera_property_exists(camctl, cam, "manualfocusdrive"));
 
     // initialize timeout callbacks eg. keep alive, some cameras needs it.
     cam->gpcontext = camctl->gpcontext;
@@ -1419,6 +1486,24 @@ void dt_camctl_camera_set_property_string(const dt_camctl_t *c, const dt_camera_
   _camera_add_job(camctl, camera, job);
 }
 
+void dt_camctl_camera_set_property_toggle(const dt_camctl_t *c, const dt_camera_t *cam, const char *property_name)
+{
+  dt_camctl_t *camctl = (dt_camctl_t *)c;
+  if(!cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL)
+  {
+    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to set property from camera, camera==NULL\n");
+    return;
+  }
+  dt_camera_t *camera = (dt_camera_t *)cam;
+
+  _camctl_camera_set_property_toggle_job_t *job = g_malloc(sizeof(_camctl_camera_set_property_toggle_job_t));
+  job->type = _JOB_TYPE_SET_PROPERTY_TOGGLE;
+  job->name = g_strdup(property_name);
+
+  // Push the job on the jobqueue
+  _camera_add_job(camctl, camera, job);
+}
+
 void dt_camctl_camera_set_property_choice(const dt_camctl_t *c, const dt_camera_t *cam,
                                           const char *property_name, const int value)
 {
@@ -1451,6 +1536,26 @@ void dt_camctl_camera_set_property_int(const dt_camctl_t *c, const dt_camera_t *
   dt_camera_t *camera = (dt_camera_t *)cam;
 
   _camctl_camera_set_property_int_job_t *job = g_malloc(sizeof(_camctl_camera_set_property_int_job_t));
+  job->type = _JOB_TYPE_SET_PROPERTY_INT;
+  job->name = g_strdup(property_name);
+  job->value = value;
+
+  // Push the job on the jobqueue
+  _camera_add_job(camctl, camera, job);
+}
+
+void dt_camctl_camera_set_property_float(const dt_camctl_t *c, const dt_camera_t *cam,
+                                         const char *property_name, const float value)
+{
+  dt_camctl_t *camctl = (dt_camctl_t *)c;
+  if(!cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL)
+  {
+    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to set property from camera, camera==NULL\n");
+    return;
+  }
+  dt_camera_t *camera = (dt_camera_t *)cam;
+
+  _camctl_camera_set_property_float_job_t *job = g_malloc(sizeof(_camctl_camera_set_property_int_job_t));
   job->type = _JOB_TYPE_SET_PROPERTY_INT;
   job->name = g_strdup(property_name);
   job->value = value;
@@ -1500,6 +1605,35 @@ int dt_camctl_camera_property_exists(const dt_camctl_t *c, const dt_camera_t *ca
   dt_pthread_mutex_unlock(&camera->config_lock);
 
   return exists;
+}
+
+int dt_camctl_camera_get_property_type(const dt_camctl_t *c, const dt_camera_t *cam, const char *property_name, CameraWidgetType *widget_type)
+{
+  dt_camctl_t *camctl = (dt_camctl_t *)c;
+  if(!cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL)
+  {
+    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to get property type from camera, camera==NULL\n");
+    return -1;
+  }
+  dt_camera_t *camera = (dt_camera_t *)cam;
+  int retrieved_widget_type = GP_ERROR;
+  dt_pthread_mutex_lock(&camera->config_lock);
+  CameraWidget *widget;
+  int retrieved_property = gp_widget_get_child_by_name(camera->configuration, property_name, &widget);
+  if(retrieved_property != GP_OK)
+  {
+    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to get property %s from camera config. Error Code: %d\n", property_name, retrieved_property);
+  } else {
+    retrieved_widget_type = gp_widget_get_type(widget, widget_type);
+    if(retrieved_widget_type != GP_OK)
+    {
+      dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to get property type for %s from camera config. Error Code: %d\n",
+               property_name, retrieved_widget_type);
+    }
+  }
+  dt_pthread_mutex_unlock(&camera->config_lock);
+
+  return retrieved_property != GP_OK || retrieved_widget_type != GP_OK;
 }
 
 const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c, const dt_camera_t *cam,

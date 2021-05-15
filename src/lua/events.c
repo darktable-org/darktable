@@ -110,7 +110,7 @@ void dt_lua_event_add(lua_State *L, const char *evt_name)
   if(args != 3)
   {
     lua_pop(L, args);
-    dt_print(DT_DEBUG_LUA, "LUA ERROR : %s: wrong number of args for %s, expected 4, got %d\n", __FUNCTION__, evt_name, args);
+    dt_print(DT_DEBUG_LUA, "LUA ERROR : %s: wrong number of args for %s, expected 3, got %d\n", __FUNCTION__, evt_name, args);
     return;
   }
 

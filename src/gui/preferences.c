@@ -521,6 +521,14 @@ gboolean preferences_window_deleted(GtkWidget *widget, GdkEvent *event, gpointer
 }
 #endif
 
+static void _resize_dialog(GtkWidget *widget)
+{
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  dt_conf_set_int("ui_last/preferences_dialog_width", allocation.width);
+  dt_conf_set_int("ui_last/preferences_dialog_height", allocation.height);
+}
+
 void dt_gui_preferences_show()
 {
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
@@ -532,7 +540,10 @@ void dt_gui_preferences_show()
   g_signal_connect(G_OBJECT(_preferences_dialog), "delete-event", G_CALLBACK(preferences_window_deleted), NULL);
 #endif
 
-  gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog), DT_PIXEL_APPLY_DPI(1100), DT_PIXEL_APPLY_DPI(750));
+  gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog),
+                              dt_conf_get_int("ui_last/preferences_dialog_width"),
+                              dt_conf_get_int("ui_last/preferences_dialog_height"));
+  g_signal_connect(G_OBJECT(_preferences_dialog), "check-resize", G_CALLBACK(_resize_dialog), NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(_preferences_dialog);
 #endif
@@ -554,7 +565,6 @@ void dt_gui_preferences_show()
   GtkWidget *stack = gtk_stack_new();
   GtkWidget *stacksidebar = gtk_stack_sidebar_new();
   gtk_stack_sidebar_set_stack(GTK_STACK_SIDEBAR(stacksidebar), GTK_STACK(stack));
-  gtk_widget_set_size_request(stack, DT_PIXEL_APPLY_DPI(900), DT_PIXEL_APPLY_DPI(750));
   gtk_box_pack_start(GTK_BOX(box), stacksidebar, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), stack, TRUE, TRUE, 0);
 
@@ -1913,11 +1923,8 @@ void dt_gui_preferences_bool_update(GtkWidget *widget)
 GtkWidget *dt_gui_preferences_bool(GtkGrid *grid, const char *key, const guint col,
                                    const guint line, const gboolean swap)
 {
-  GtkWidget *w_label = gtk_label_new(_(dt_confgen_get_label(key)));
-  gtk_label_set_ellipsize(GTK_LABEL(w_label), PANGO_ELLIPSIZE_END);
+  GtkWidget *w_label = dt_ui_label_new(_(dt_confgen_get_label(key)));
   gtk_widget_set_tooltip_text(w_label, _(dt_confgen_get_tooltip(key)));
-  gtk_widget_set_halign(w_label, GTK_ALIGN_START);
-  gtk_label_set_xalign(GTK_LABEL(w_label), 0.0);
   GtkWidget *labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), w_label);
@@ -1965,11 +1972,8 @@ void dt_gui_preferences_int_update(GtkWidget *widget)
 GtkWidget *dt_gui_preferences_int(GtkGrid *grid, const char *key, const guint col,
                                   const guint line)
 {
-  GtkWidget *w_label = gtk_label_new(_(dt_confgen_get_label(key)));
-  gtk_label_set_ellipsize(GTK_LABEL(w_label), PANGO_ELLIPSIZE_END);
+  GtkWidget *w_label = dt_ui_label_new(_(dt_confgen_get_label(key)));
   gtk_widget_set_tooltip_text(w_label, _(dt_confgen_get_tooltip(key)));
-  gtk_widget_set_halign(w_label, GTK_ALIGN_START);
-  gtk_label_set_xalign(GTK_LABEL(w_label), 0.0);
   GtkWidget *labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), w_label);
@@ -1978,6 +1982,7 @@ GtkWidget *dt_gui_preferences_int(GtkGrid *grid, const char *key, const guint co
   GtkWidget *w = gtk_spin_button_new_with_range(min, max, 1.0);
   gtk_widget_set_name(w, key);
   gtk_widget_set_hexpand(w, FALSE);
+  dt_gui_key_accel_block_on_focus_connect(w);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(w), 0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(w), dt_conf_get_int(key));
   gtk_grid_attach(GTK_GRID(grid), labelev, col, line, 1, 1);
@@ -2054,11 +2059,8 @@ void dt_gui_preferences_enum_update(GtkWidget *widget)
 GtkWidget *dt_gui_preferences_enum(GtkGrid *grid, const char *key, const guint col,
                                    const guint line)
 {
-  GtkWidget *w_label = gtk_label_new(_(dt_confgen_get_label(key)));
-  gtk_label_set_ellipsize(GTK_LABEL(w_label), PANGO_ELLIPSIZE_END);
+  GtkWidget *w_label = dt_ui_label_new(_(dt_confgen_get_label(key)));
   gtk_widget_set_tooltip_text(w_label, _(dt_confgen_get_tooltip(key)));
-  gtk_widget_set_halign(w_label, GTK_ALIGN_START);
-  gtk_label_set_xalign(GTK_LABEL(w_label), 0.0);
   GtkWidget *labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), w_label);
@@ -2140,11 +2142,8 @@ void dt_gui_preferences_string_update(GtkWidget *widget)
 GtkWidget *dt_gui_preferences_string(GtkGrid *grid, const char *key, const guint col,
                                      const guint line)
 {
-  GtkWidget *w_label = gtk_label_new(_(dt_confgen_get_label(key)));
-  gtk_label_set_ellipsize(GTK_LABEL(w_label), PANGO_ELLIPSIZE_END);
+  GtkWidget *w_label = dt_ui_label_new(_(dt_confgen_get_label(key)));
   gtk_widget_set_tooltip_text(w_label, _(dt_confgen_get_tooltip(key)));
-  gtk_widget_set_halign(w_label, GTK_ALIGN_START);
-  gtk_label_set_xalign(GTK_LABEL(w_label), 0.0);
   GtkWidget *labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), w_label);

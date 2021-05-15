@@ -69,11 +69,13 @@ DT_MODULE_INTROSPECTION(3, dt_iop_channelmixer_rgb_params_t)
 
 #define CHANNEL_SIZE 4
 #define NORM_MIN 1e-6f
+#define INVERSE_SQRT_3 0.5773502691896258f
 
 typedef enum dt_iop_channelmixer_rgb_version_t
 {
   CHANNELMIXERRGB_V_1 = 0, // $DESCRIPTION: "version 1 (2020)"
-  CHANNELMIXERRGB_V_2 = 1  // $DESCRIPTION: "version 2 (2021)"
+  CHANNELMIXERRGB_V_2 = 1, // $DESCRIPTION: "version 2 (2021)"
+  CHANNELMIXERRGB_V_3 = 2, // $DESCRIPTION: "version 3 (Apr 2021)"
 } dt_iop_channelmixer_rgb_version_t;
 
 typedef struct dt_iop_channelmixer_rgb_params_t
@@ -96,7 +98,7 @@ typedef struct dt_iop_channelmixer_rgb_params_t
   gboolean clip;                   // $DEFAULT: TRUE $DESCRIPTION: "clip negative RGB from gamut"
 
   /* params of v3 */
-  dt_iop_channelmixer_rgb_version_t version; // $DEFAULT: CHANNELMIXERRGB_V_2 $DESCRIPTION: "saturation algorithm"
+  dt_iop_channelmixer_rgb_version_t version; // $DEFAULT: CHANNELMIXERRGB_V_3 $DESCRIPTION: "saturation algorithm"
 
   /* always add new params after this so we can import legacy params with memcpy on the common part of the struct */
 
@@ -269,7 +271,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_iop_channelmixer_rgb_params_t p;
   memset(&p, 0, sizeof(p));
 
-  p.version = CHANNELMIXERRGB_V_2;
+  p.version = CHANNELMIXERRGB_V_3;
 
   // bypass adaptation
   p.illuminant = DT_ILLUMINANT_PIPE;
@@ -573,6 +575,9 @@ static inline void luma_chroma(const float input[4], const float saturation[4], 
   const float mix = scalar_product(input, lightness);
   float norm = euclidean_norm(input);
 
+  // Compensate the norm to get color ratios (R, G, B) = (1, 1, 1) for grey (colorless) pixels.
+  if(version == CHANNELMIXERRGB_V_3) norm *= INVERSE_SQRT_3;
+
   // Ratios
   for(size_t c = 0; c < 3; c++) output[c] = input[c] / norm;
 
@@ -585,11 +590,7 @@ static inline void luma_chroma(const float input[4], const float saturation[4], 
       coeff_ratio += sqf(1.0f - output[c]) * saturation[c];
   }
   else
-  {
-    for(size_t c = 0; c < 3; c++)
-      coeff_ratio += output[c] * saturation[c];
-  }
-  coeff_ratio /= 3.f;
+    coeff_ratio = scalar_product(output, saturation) / 3.f;
 
   // Adjust the RGB ratios with the pixel correction
   for(size_t c = 0; c < 3; c++)
@@ -598,8 +599,13 @@ static inline void luma_chroma(const float input[4], const float saturation[4], 
     // otherwise bright saturated blues end up solid black
     const float min_ratio = (output[c] < 0.0f) ? output[c] : 0.0f;
     const float output_inverse = 1.0f - output[c];
-    output[c] = fmaxf(DT_FMA(output_inverse, coeff_ratio, output[c]), min_ratio); // output_inverse  * coeff_ratio + output
+    output[c] = fmaxf(DT_FMA(output_inverse, coeff_ratio, output[c]),
+                      min_ratio); // output_inverse  * coeff_ratio + output
   }
+
+  // The above interpolation between original pixel ratios and (1, 1, 1) might change the norm of the
+  // ratios. Compensate for that.
+  if(version == CHANNELMIXERRGB_V_3) norm /= euclidean_norm(output) * INVERSE_SQRT_3;
 
   // Apply colorfulness adjustment channel-wise and repack with lightness to get LMS back
   norm *= fmaxf(1.f + mix / avg, 0.f);
@@ -1136,8 +1142,8 @@ static inline void compute_patches_delta_E(const float *const restrict patches,
   for(size_t k = 0; k < checker->patches; k++)
   {
     // Convert to Lab
-    float Lab_test[4];
-    float XYZ_test[4];
+    float DT_ALIGNED_PIXEL Lab_test[4];
+    float DT_ALIGNED_PIXEL XYZ_test[4];
 
     // If exposure was normalized, denormalized it before
     for(size_t c = 0; c < 4; c++) XYZ_test[c] = patches[k * 4 + c];
@@ -1393,11 +1399,11 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   dt_Lab_to_XYZ(g->checker->values[g->checker->middle_grey].Lab, XYZ_grey_ref);
 
   // find test grey patch
-  float XYZ_grey_test[4];
+  float DT_ALIGNED_PIXEL XYZ_grey_test[4];
   for(size_t c = 0; c < 3; c++) XYZ_grey_test[c] = patches[g->checker->middle_grey * 4 + c];
 
   // compute reference illuminant
-  float D50_XYZ[4];
+  float DT_ALIGNED_PIXEL D50_XYZ[4];
   illuminant_xy_to_XYZ(0.34567f, 0.35850f, D50_XYZ);
 
   // normalize luminances - note : illuminant is normalized by definition
@@ -1410,17 +1416,17 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   }
 
   // convert XYZ to LMS
-  float LMS_grey_ref[4], LMS_grey_test[4], D50_LMS[4];
+  float DT_ALIGNED_PIXEL LMS_grey_ref[4], LMS_grey_test[4], D50_LMS[4];
   convert_any_XYZ_to_LMS(XYZ_grey_ref, LMS_grey_ref, kind);
   convert_any_XYZ_to_LMS(XYZ_grey_test, LMS_grey_test, kind);
   convert_any_XYZ_to_LMS(D50_XYZ, D50_LMS, kind);
 
   // solve the equation to find the scene illuminant
-  float illuminant[4] = { .0f };
+  float DT_ALIGNED_PIXEL illuminant[4] = { 0.0f };
   for(size_t c = 0; c < 3; c++) illuminant[c] = D50_LMS[c] * LMS_grey_test[c] / LMS_grey_ref[c];
 
   // convert back the illuminant to XYZ then xyY
-  float illuminant_XYZ[4], illuminant_xyY[4] = { .0f };
+  float DT_ALIGNED_PIXEL illuminant_XYZ[4], illuminant_xyY[4] = { .0f };
   convert_any_LMS_to_XYZ(illuminant, illuminant_XYZ, kind);
   const float Y_illu = illuminant_XYZ[1];
   for(size_t c = 0; c < 3; c++) illuminant_XYZ[c] /= Y_illu;
@@ -2239,7 +2245,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
     cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
 
-    float RGB[3];
+    float RGB[4];
     dt_ioppr_lab_to_rgb_matrix(g->checker->values[k].Lab, RGB, work_profile->matrix_out, work_profile->lut_out,
                                work_profile->unbounded_coeffs_out, work_profile->lutsize,
                                work_profile->nonlinearlut);
@@ -2760,7 +2766,7 @@ static void _convert_GUI_colors(dt_iop_channelmixer_rgb_params_t *p,
   }
   else
   {
-    float XYZ[4];
+    float DT_ALIGNED_PIXEL XYZ[4];
     if(work_profile)
     {
       dt_ioppr_rgb_matrix_to_xyz(LMS, XYZ, work_profile->matrix_in, work_profile->lut_in,
@@ -3169,7 +3175,11 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->scale_saturation_R, p->saturation[0]);
   dt_bauhaus_slider_set_soft(g->scale_saturation_G, p->saturation[1]);
   dt_bauhaus_slider_set_soft(g->scale_saturation_B, p->saturation[2]);
-  dt_bauhaus_combobox_set(g->saturation_version, p->version);
+
+  if(p->version != CHANNELMIXERRGB_V_3)
+    dt_bauhaus_combobox_set(g->saturation_version, p->version);
+  else
+    gtk_widget_hide(GTK_WIDGET(g->saturation_version));
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_sat), p->normalize_sat);
 

@@ -1279,13 +1279,20 @@ void modify_roi_in(struct dt_iop_module_t *module,
   cairo_region_destroy(roi_in_region);
 }
 
-static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count, gboolean inverted)
+static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points, const size_t points_count,
+                               const gboolean inverted)
 {
   const float scale = piece->iscale;
 
   // compute the extent of all points (all computations are done in RAW coordinate)
   float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
 
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(points_count, points, scale) \
+    schedule(static) if(points_count > 100) aligned(points:64) \
+    reduction(min:xmin, ymin) reduction(max:xmax, ymax)
+#endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     const float x = points[i] * scale;
@@ -1328,6 +1335,11 @@ static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
     const int y_last = extent.y + extent.height;
 
     // apply distortion to all points (this is a simple displacement given by a vector at this same point in the map)
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(points_count, points, scale, extent, map, map_size, y_last, x_last) \
+    schedule(static) if(points_count > 100) aligned(points:64)
+#endif
     for(size_t i = 0; i < points_count; i++)
     {
       float *px = &points[i*2];
@@ -1366,12 +1378,12 @@ static gboolean is_dragging(const dt_iop_liquify_gui_data_t *g)
   return g->dragging.elem != NULL;
 }
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points, size_t points_count)
 {
   return _distort_xtransform(self, piece, points, points_count, TRUE);
 }
 
-int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points, size_t points_count)
 {
   return _distort_xtransform(self, piece, points, points_count, FALSE);
 }
@@ -3058,7 +3070,7 @@ int scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_
   {
     dt_liquify_warp_t *warp = &g->temp->warp;
     const float complex strength_v = warp->strength - warp->point;
-    if(state == 0)
+    if(dt_modifier_is(state, 0))
     {
       //  change size
       float radius = 0.0f, r = 0.0f, phi = 0.0f;
@@ -3223,8 +3235,6 @@ int button_pressed(struct dt_iop_module_t *module,
 
 done:
   dt_iop_gui_leave_critical_section(module);
-  if(handled)
-    sync_pipe(module, TRUE);
   return handled;
 }
 

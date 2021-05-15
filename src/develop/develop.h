@@ -119,6 +119,13 @@ typedef enum dt_dev_pixelpipe_display_mask_t
   DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
 } dt_dev_pixelpipe_display_mask_t;
 
+typedef enum dt_develop_detail_mmask_t
+{
+  DT_DEV_DETAIL_MASK_NONE = 0,
+  DT_DEV_DETAIL_MASK_REQUIRED = 1,
+  DT_DEV_DETAIL_MASK_DEMOSAIC = 2,
+  DT_DEV_DETAIL_MASK_RAWPREPARE = 4
+} dt_develop_detail_mask_t;
 
 typedef enum dt_clipping_preview_mode_t
 {
@@ -228,6 +235,8 @@ typedef struct dt_develop_t
       void (*set)(struct dt_lib_module_t *self, uint32_t group);
       /* get current module group */
       uint32_t (*get)(struct dt_lib_module_t *self);
+      /* get activated module group */
+      uint32_t (*get_activated)(struct dt_lib_module_t *self);
       /* test if iop group flags matches modulegroup */
       gboolean (*test)(struct dt_lib_module_t *self, uint32_t group, struct dt_iop_module_t *module);
       /* switch to modulegroup */
@@ -425,6 +434,8 @@ void dt_dev_modulegroups_search_text_focus(dt_develop_t *dev);
 void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group);
 /** get the active modulegroup */
 uint32_t dt_dev_modulegroups_get(dt_develop_t *dev);
+/** get the activated modulegroup */
+uint32_t dt_dev_modulegroups_get_activated(dt_develop_t *dev);
 /** test if iop group flags matches modulegroup */
 gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, struct dt_iop_module_t *module);
 /** reorder the module list */
