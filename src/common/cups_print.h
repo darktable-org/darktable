@@ -100,7 +100,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
 //  - the page area (px, py, pwidth, pheight)
 //  - the printable area (ax, ay, awidth and aheight), the area without the borders
 // there is no unit, every returned values are based on the area size.
-void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
+void dt_get_print_layout(const dt_print_info_t *prt,
                          const int32_t area_width, const int32_t area_height,
                          int32_t *px, int32_t *py, int32_t *pwidth, int32_t *pheight,
                          int32_t *ax, int32_t *ay, int32_t *awidth, int32_t *aheight);
