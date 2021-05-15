@@ -1036,7 +1036,7 @@ static gboolean places_button_press(GtkWidget *view, GdkEventButton *event, dt_l
       GtkTreeSelection *place_selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
       gtk_tree_selection_select_path(place_selection, path);
       dt_conf_set_string("ui_last/import_last_place", folder_path);
-
+      dt_conf_set_string("ui_last/import_last_directory", "");
       _update_folders_list(self);
       _update_files_list(self);
     }
