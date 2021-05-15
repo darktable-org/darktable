@@ -3390,7 +3390,7 @@ msgstr "v4 (2020)"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:539
 msgid "v5 (2021)"
-msgstr "v5 (2020)"
+msgstr "v5 (2021)"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:543
 msgid "hard"
