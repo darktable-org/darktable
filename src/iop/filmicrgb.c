@@ -861,7 +861,7 @@ inline static void inpaint_noise(const float *const in, const float *const mask,
 
       // add noise to input
       float *const restrict pix_out = __builtin_assume_aligned(inpainted + index, 16);
-      for(size_t c = 0; c < 3; c++) pix_out[c] = pix_in[c] * (1.0f - weight) + weight * noise[c];
+      for(size_t c = 0; c < 3; c++) pix_out[c] = fmaxf(pix_in[c] * (1.0f - weight) + weight * noise[c], 0.f);
     }
 }
 
@@ -889,7 +889,7 @@ inline static void sparse_scalar_product(const float *const buf, const size_t in
     float acc = 0.0f;
     for(size_t k = 0; k < FSIZE; ++k)
       acc += filter[k] * buf[indices[k] + c];
-    result[c] = acc;
+    result[c] = fmaxf(acc, 0.f);
   }
 }
 
@@ -1084,7 +1084,7 @@ static inline void init_reconstruct(const float *const restrict in, const float 
 #endif
   for(size_t k = 0; k < height * width * ch; k++)
   {
-    reconstructed[k] = in[k] * (1.f - mask[k / ch]);
+    reconstructed[k] = fmaxf(in[k] * (1.f - mask[k / ch]), 0.f);
   }
 }
 
