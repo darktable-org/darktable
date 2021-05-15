@@ -607,7 +607,8 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
       iter = g_sequence_iter_next(iter))
   {
     dt_shortcut_t *s = g_sequence_get(iter);
-    if(s->action == action)
+    if(s->action == action &&
+       (s->element == DT_ACTION_ELEMENT_DEFAULT || s->element == darktable.control->element))
     {
       gchar *old_description = description;
       description = g_strdup_printf("%s\n%s", description ? description : "", _shortcut_description(s, TRUE));
@@ -2907,7 +2908,7 @@ void dt_action_define_fallback(dt_action_type_t type, const dt_action_def_t *act
   }
 }
 
-void dt_accel_register_shortcut(dt_action_t *owner, const gchar *path_string, guint accel_key, GdkModifierType mods)
+void dt_accel_register_shortcut(dt_action_t *owner, const gchar *path_string, guint element, guint effect, guint accel_key, GdkModifierType mods)
 {
   gchar **split_path = g_strsplit(path_string, "/", 0);
   gchar **split_trans = g_strsplit(g_dpgettext2(NULL, "accel", path_string), "/", g_strv_length(split_path));
@@ -2976,7 +2977,9 @@ void dt_accel_register_shortcut(dt_action_t *owner, const gchar *path_string, gu
     dt_shortcut_t s = { .key_device = DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE,
                         .mods = mods,
                         .speed = 1.0,
-                        .action = owner };
+                        .action = owner,
+                        .element = element,
+                        .effect = effect };
 
     gdk_keymap_translate_keyboard_state(keymap, keys[i].keycode, 0, 0, &s.key, NULL, NULL, NULL);
 
@@ -3027,18 +3030,18 @@ void dt_accel_connect_shortcut(dt_action_t *owner, const gchar *path_string, GCl
 
 void dt_accel_register_global(const gchar *path, guint accel_key, GdkModifierType mods)
 {
-  dt_accel_register_shortcut(&darktable.control->actions_global, path, accel_key, mods);
+  dt_accel_register_shortcut(&darktable.control->actions_global, path, 0, 0, accel_key, mods);
 }
 
 void dt_accel_register_view(dt_view_t *self, const gchar *path, guint accel_key, GdkModifierType mods)
 {
-  dt_accel_register_shortcut(&self->actions, path, accel_key, mods);
+  dt_accel_register_shortcut(&self->actions, path, 0, 0, accel_key, mods);
 }
 
 void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path, guint accel_key,
                            GdkModifierType mods)
 {
-  dt_accel_register_shortcut(&so->actions, path, accel_key, mods);
+  dt_accel_register_shortcut(&so->actions, path, 0, 0, accel_key, mods);
 }
 
 void dt_action_define_preset(dt_action_t *action, const gchar *name)
@@ -3126,7 +3129,7 @@ void dt_accel_register_lib_as_view(gchar *view_name, const gchar *path, guint ac
   }
   if(a)
   {
-    dt_accel_register_shortcut(a, path, accel_key, mods);
+    dt_accel_register_shortcut(a, path, 0, 0, accel_key, mods);
   }
   else
   {
@@ -3136,21 +3139,12 @@ void dt_accel_register_lib_as_view(gchar *view_name, const gchar *path, guint ac
 
 void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel_key, GdkModifierType mods)
 {
-  dt_accel_register_shortcut(&self->actions, path, accel_key, mods);
+  dt_accel_register_shortcut(&self->actions, path, 0, 0, accel_key, mods);
 }
 
 void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType mods)
 {
-  dt_accel_register_shortcut(&darktable.control->actions_lua, path, accel_key, mods);
-}
-
-void dt_accel_register_manual(const gchar *full_path, dt_view_type_flags_t views, guint accel_key,
-                              GdkModifierType mods)
-{
-  gchar **split_path = g_strsplit(full_path, "/", 3);
-  if(!strcmp(split_path[0], "views") && !strcmp(split_path[1], "thumbtable"))
-    dt_accel_register_shortcut(&darktable.control->actions_thumb, split_path[2], accel_key, mods);
-  g_strfreev(split_path);
+  dt_accel_register_shortcut(&darktable.control->actions_lua, path, 0, 0, accel_key, mods);
 }
 
 void dt_accel_connect_global(const gchar *path, GClosure *closure)
@@ -3216,14 +3210,6 @@ void dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path, GClosure *
 void dt_accel_connect_lua(const gchar *path, GClosure *closure)
 {
   dt_accel_connect_shortcut(&darktable.control->actions_lua, path, closure);
-}
-
-void dt_accel_connect_manual(GSList **list_ptr, const gchar *full_path, GClosure *closure)
-{
-  gchar **split_path = g_strsplit(full_path, "/", 3);
-  if(!strcmp(split_path[0], "views") && !strcmp(split_path[1], "thumbtable"))
-    dt_accel_connect_shortcut(&darktable.control->actions_thumb, split_path[2], closure);
-  g_strfreev(split_path);
 }
 
 void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *button)

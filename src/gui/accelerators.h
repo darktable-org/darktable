@@ -150,7 +150,7 @@ void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel
 //register lib shortcut but make it look like a view shortcut
 void dt_accel_register_lib_as_view(gchar *view_name, const gchar *path, guint accel_key, GdkModifierType mods);
 void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType mods);
-void dt_accel_register_manual(const gchar *full_path, dt_view_type_flags_t views, guint accel_key, GdkModifierType mods);
+void dt_accel_register_shortcut(dt_action_t *owner, const gchar *path_string, guint element, guint effect, guint accel_key, GdkModifierType mods);
 
 // Accelerator connection functions
 void dt_accel_connect_global(const gchar *path, GClosure *closure);
@@ -166,7 +166,7 @@ void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path, Gtk
 void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_instance_iop(dt_iop_module_t *module);
 void dt_accel_connect_lua(const gchar *path, GClosure *closure);
-void dt_accel_connect_manual(GSList **list_ptr, const gchar *full_path, GClosure *closure);
+void dt_accel_connect_shortcut(dt_action_t *owner, const gchar *path_string, GClosure *closure);
 
 // Disconnect function
 void dt_accel_cleanup_closures_iop(dt_iop_module_t *module); // rename to cleanup instance_list
