@@ -12,7 +12,7 @@ Comparisons between different darktable versions will also reflect
 performance changes between the versions (for example, on the same
 32-core AMD Threadripper using the v3.4 sidecar file, darktable v3.2.1
 rates ~410, darktable v3.4.0 rates ~645, and a development version
-v3.5.0 rated ~700).
+v3.5.0 rated ~690).
 
 Note that on a slow machine, it could easily take three to five
 minutes to run the benchmark.
@@ -25,7 +25,7 @@ top-level directory of your darktable source hierarchy:
 
    src/tests/benchmark/darktable-bench
 
-This will then run the default sidecar (v3.4) on the default image
+This will then run the default sidecar (v3.6) on the default image
 (mire1.cr2 from the integration test suite) using the darktable-cli in
 the build directory, or the darktable-cli on your search path.
 
@@ -90,12 +90,11 @@ If you specified the number of threads to use (for example, to check
 whether hyperthreading helps or hinders performance), that number will
 be included in the report
 
-      darktable 3.3.0+2208~gaf5eaafb6 ::: benchmark v3.4 ::: image mire1.cr2
+      darktable 3.5.0+2252~g0fffe6150 ::: benchmark v3.6 ::: image mire1.cr2
       Number of threads used:                    32
-      Average pixelpipe processing time:      5.182 seconds
-      Average overall processing time:        5.396 seconds
-      Throughput rating (higher is better):   667.1 (CPU only)
-
+      Average pixelpipe processing time:      5.381 seconds
+      Average overall processing time:        5.599 seconds
+      Throughput rating (higher is better):   642.9 (CPU only)
 
 
 Structure
@@ -106,7 +105,8 @@ darktable-bench		 : the benchmarking script (Python 3)
 darktable-bench-null.xmp : a sidecar file with minimal processing,
 			   used to warm up disk caches
 
-darktable-bench-3.4.xmp  : the default benchmarking sidecar
+darktable-bench-3.6.xmp  : the default benchmarking sidecar
+darktable-bench-3.4.xmp  : alternate sidecar for older version
 
 ../integration/images/mire1.cr2 : the default benchmarking image
 
