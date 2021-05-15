@@ -69,7 +69,7 @@ typedef struct dt_images_box
 } dt_images_box;
 
 // return the box index or -1 if (x, y) coordinate is not over an image
-int dt_printing_get_image_box(const dt_images_box *imgs, const int x, const int y);
+int32_t dt_printing_get_image_box(const dt_images_box *imgs, const int x, const int y);
 
 void dt_printing_clear_box(dt_image_box *img);
 void dt_printing_clear_boxes(dt_images_box *imgs);

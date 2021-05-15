@@ -288,19 +288,22 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   const dt_print_t *prt = (dt_print_t *)self->data;
 
   // if we are not hovering over a thumbnail in the filmstrip -> show metadata of first opened image.
-  int32_t mouse_over_id = dt_control_get_mouse_over_id();
+  const int32_t mouse_over_id = dt_control_get_mouse_over_id();
 
-  if(prt->imgs->count > 0 && mouse_over_id != prt->imgs->box[0].imgid)
+  if(prt->imgs->count == 1 && mouse_over_id != prt->imgs->box[0].imgid)
   {
-    mouse_over_id = prt->imgs->box[0].imgid;
-    dt_control_set_mouse_over_id(mouse_over_id);
+    dt_control_set_mouse_over_id(prt->imgs->box[0].imgid);
   }
-}
-void mouse_leave(dt_view_t *self)
-{
-  // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
-  const dt_print_t *prt = (dt_print_t *)self->data;
-  dt_control_set_mouse_over_id(prt->imgs->box[0].imgid);
+  else if(prt->imgs->count > 1)
+  {
+    const int bidx = dt_printing_get_image_box(prt->imgs, x, y);
+    if(bidx == -1)
+      dt_control_set_mouse_over_id(-1);
+    else if(mouse_over_id != prt->imgs->box[bidx].imgid)
+    {
+      dt_control_set_mouse_over_id(prt->imgs->box[bidx].imgid);
+    }
+  }
 }
 
 int try_enter(dt_view_t *self)
