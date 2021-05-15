@@ -189,7 +189,7 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr,
   if (prt->pinfo == NULL)
     return;
 
-  dt_get_print_layout(-1, prt->pinfo, width, height,
+  dt_get_print_layout(prt->pinfo, width, height,
                       &px, &py, &pwidth, &pheight,
                       &ax, &ay, &awidth, &aheight);
   // page w/h
