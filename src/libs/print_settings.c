@@ -357,7 +357,7 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
   return 0;
 }
 
-static void _create_pdf(dt_job_t *job, dt_images_box imgs, float width, float height)
+static void _create_pdf(dt_job_t *job, dt_images_box imgs, const float width, const float height)
 {
   dt_lib_print_job_t *params = dt_control_job_get_params(job);
 
@@ -441,7 +441,7 @@ void _fill_box_values(dt_lib_print_settings_t *ps)
   --darktable.gui->reset;
 }
 
-static int _export_and_setup_pos(dt_job_t *job, dt_image_box *img, int32_t idx)
+static int _export_and_setup_pos(dt_job_t *job, dt_image_box *img, const int32_t idx)
 {
   dt_lib_print_job_t *params = dt_control_job_get_params(job);
 
