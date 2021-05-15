@@ -181,7 +181,7 @@ def parse_commandline():
       DARKTABLE_TMP = os.environ['DARKTABLE_TMP']
    parser = argparse.ArgumentParser(description="Darktable performance benchmarking")
    parser.add_argument("-i","--image",metavar="FILE",help="the name of the image to use",default="mire1.cr2")
-   parser.add_argument("-v","--version",metavar="V",help="look for darktable version V sidecar",default="3.4")
+   parser.add_argument("-v","--version",metavar="V",help="look for darktable version V sidecar",default="3.6")
    parser.add_argument("-x","--xmp",metavar="FILE",help="the root name of the .xmp sidecar file to use",default="darktable-bench")
    parser.add_argument("-p","--program",metavar="EXE",help="full path to darktable-cli executable",default=DARKTABLE_CLI)
    parser.add_argument("-r","--reps",metavar="N",help="run N times and report average time",type=int,choices=range(1,10),default=3)
