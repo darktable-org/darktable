@@ -17,6 +17,17 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+inline float4 matrix_dot(const float4 vector, const float4 matrix[3])
+{
+  float4 output;
+  const float4 vector_copy = { vector.x, vector.y, vector.z, 0.f };
+  output.x = dot(vector_copy, matrix[0]);
+  output.y = dot(vector_copy, matrix[1]);
+  output.z = dot(vector_copy, matrix[2]);
+  output.w = vector.w;
+  return output;
+}
+
 inline float4 Lab_2_LCH(float4 Lab)
 {
   float H = atan2(Lab.z, Lab.y);
@@ -416,65 +427,127 @@ inline float4 JzAzBz_to_JzCzhz(float4 JzAzBz)
 }
 
 
-inline float4 gradingRGB_to_Ych(float4 RGB)
+// Convert CIE 1931 2° XYZ D65 to CIE 2006 LMS D65 (cone space)
+/*
+* The CIE 1931 XYZ 2° observer D65 is converted to CIE 2006 LMS D65 using the approximation by
+* Richard A. Kirk, Chromaticity coordinates for graphic arts based on CIE 2006 LMS
+* with even spacing of Munsell colours
+* https://doi.org/10.2352/issn.2169-2629.2019.27.38
+*/
+
+inline float4 XYZ_to_LMS(const float4 XYZ)
 {
-  const float4 D65 = { 0.18600766f,  0.5908061f,   0.22318624f, 0.f };
-  float4 Ych;
-  Ych.x = fmax(0.67282368f * RGB.x + 0.47812261f * RGB.y + 0.01044966f * RGB.z, 0.f);
-  const float a = RGB.x + RGB.y + RGB.z;
-  RGB = (a == 0.f) ? (float4)0.f : RGB / a;
+  const float4 XYZ_D65_to_LMS_2006_D65[3]
+    = { { 0.257085f, 0.859943f, -0.031061f, 0.f },
+        { -0.394427f, 1.175800f, 0.106423f, 0.f },
+        { 0.064856f, -0.076250f, 0.559067f, 0.f } };
 
-  const float *pD65 = &D65;
-
-  RGB.x -= pD65[0];
-  RGB.y -= pD65[1];
-
-  Ych.y = hypot(RGB.y, RGB.x);
-  Ych.z = (Ych.x == 0.f) ? 0.f : atan2(RGB.y, RGB.x);
-  Ych.w = RGB.w;
-  return Ych;
+  return matrix_dot(XYZ, XYZ_D65_to_LMS_2006_D65);
 }
 
 
-inline float4 Ych_to_gradingRGB(const float4 Ych)
+inline float4 LMS_to_XYZ(const float4 LMS)
 {
-  const float4 D65 = { 0.18600766f,  0.5908061f,   0.22318624f, 0.f };
+  const float4 LMS_2006_D65_to_XYZ_D65[3]
+    = { { 1.80794659f, -1.29971660f, 0.34785879f, 0.f },
+        { 0.61783960f, 0.39595453f, -0.04104687f, 0.f },
+        { -0.12546960f, 0.20478038f, 1.74274183f, 0.f } };
 
-  const float *pD65 = &D65;
-  float4 RGB;
-  RGB.x = Ych.y * native_cos(Ych.z) + pD65[0];
-  RGB.y = Ych.y * native_sin(Ych.z) + pD65[1];
-  RGB.z = 1.f - RGB.x - RGB.y;
-
-  const float a = (0.67282368f * RGB.x + 0.47812261f * RGB.y + 0.01044966f * RGB.z);
-  RGB = (a == 0.f) ? (float4)0.f : RGB * Ych.x / a;
-  RGB.w = Ych.w;
-  return RGB;
+  return matrix_dot(LMS, LMS_2006_D65_to_XYZ_D65);
 }
 
-/* Same as above but compute only Yrg */
-inline float4 gradingRGB_to_Yrg(float4 RGB)
-{
-  float4 Yrg;
-  Yrg.x = fmax(0.67282368f * RGB.x + 0.47812261f * RGB.y + 0.01044966f * RGB.z, 0.f);
-  const float a = RGB.x + RGB.y + RGB.z;
-  RGB = (a == 0.f) ? (float4)0.f : RGB / a;
 
-  Yrg.y = RGB.x;
-  Yrg.z = RGB.y;
-  Yrg.w = RGB.w;
-  return Yrg;
+/*
+* Convert from CIE 2006 LMS D65 to Filmlight RGB defined in
+* Richard A. Kirk, Chromaticity coordinates for graphic arts based on CIE 2006 LMS
+* with even spacing of Munsell colours
+* https://doi.org/10.2352/issn.2169-2629.2019.27.38
+*/
+
+inline float4 gradingRGB_to_LMS(const float4 RGB)
+{
+  const float4 filmlightRGB_D65_to_LMS_D65[3]
+    = { { 0.95f, 0.38f, 0.00f, 0.f },
+        { 0.05f, 0.62f, 0.03f, 0.f },
+        { 0.00f, 0.00f, 0.97f, 0.f } };
+
+  return matrix_dot(RGB, filmlightRGB_D65_to_LMS_D65);
 }
 
-inline float4 Yrg_to_gradingRGB(const float4 Yrg)
+inline float4 LMS_to_gradingRGB(const float4 LMS)
 {
-  float4 RGB;
-  RGB.x = Yrg.y;
-  RGB.y = Yrg.z;
-  RGB.z = 1.f - Yrg.y - Yrg.z;
+  const float4 LMS_D65_to_filmlightRGB_D65[3]
+    = { {  1.0877193f, -0.66666667f,  0.02061856f, 0.f },
+        { -0.0877193f,  1.66666667f, -0.05154639f, 0.f },
+        {         0.f,          0.f,  1.03092784f, 0.f } };
 
-  const float a = (0.67282368f * RGB.x + 0.47812261f * RGB.y + 0.01044966f * RGB.z);
-  RGB = (a == 0.f) ? (float4)0.f : RGB * Yrg.x / a;
-  RGB.w = Yrg.w;
-  return RGB;
+  return matrix_dot(LMS, LMS_D65_to_filmlightRGB_D65);
+}
+
+
+/*
+* Re-express the Filmlight RGB triplet as Yrg luminance/chromacity coordinates
+*/
+
+inline float4 LMS_to_Yrg(const float4 LMS)
+{
+  // compute luminance
+  const float Y = 0.68990272f * LMS.x + 0.34832189f * LMS.y;
+
+  // normalize LMS
+  const float a = LMS.x + LMS.y + LMS.z;
+  const float4 lms = (a == 0.f) ? 0.f : LMS / a;
+
+  // convert to Filmlight rgb (normalized)
+  const float4 rgb = LMS_to_gradingRGB(lms);
+
+  return (float4)(Y, rgb.x, rgb.y, LMS.w);
+}
+
+
+inline float4 Yrg_to_LMS(const float4 Yrg)
+{
+  const float Y = Yrg.x;
+
+  // reform rgb (normalized) from chroma
+  const float r = Yrg.y;
+  const float g = Yrg.z;
+  const float b = 1.f - r - g;
+  const float4 rgb = { r, g, b, 0.f };
+
+  // convert to lms (normalized)
+  const float4 lms = gradingRGB_to_LMS(rgb);
+
+  // denormalize to LMS
+  const float denom = (0.68990272f * lms.x + 0.34832189f * lms.y);
+  const float a = (denom == 0.f) ? 0.f : Y / denom;
+  return lms * a;
+}
+
+
+/*
+* Re-express Filmlight Yrg in polar coordinates Ych
+*/
+
+inline float4 Yrg_to_Ych(const float4 Yrg)
+{
+  const float D65[4] = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
+  const float Y = Yrg.x;
+  const float r = Yrg.y - D65[0];
+  const float g = Yrg.z - D65[1];
+  const float c = hypot(g, r);
+  const float h = atan2(g, r);
+  return (float4)(Y, c, h, Yrg.w);
+}
+
+
+inline float4 Ych_to_Yrg(const float4 Ych)
+{
+  const float D65[4] = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
+  const float Y = Ych.x;
+  const float c = Ych.y;
+  const float h = Ych.z;
+  const float r = c * native_cos(h) + D65[0];
+  const float g = c * native_sin(h) + D65[1];
+  return (float4)(Y, r, g, Ych.w);
 }

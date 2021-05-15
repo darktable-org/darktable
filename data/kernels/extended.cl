@@ -766,15 +766,6 @@ inline float soft_clip(const float x, const float soft_threshold, const float ha
 }
 
 
-inline float4 matrix_dot(const float4 vector, const float4 matrix[3])
-{
-  float4 output;
-  output.x = dot(vector, matrix[0]);
-  output.y = dot(vector, matrix[1]);
-  output.z = dot(vector, matrix[2]);
-  return output;
-}
-
 kernel void
 colorbalancergb (read_only image2d_t in, write_only image2d_t out,
                  const int width, const int height,
@@ -796,15 +787,27 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   if(x >= width || y >= height) return;
   const float4 pix_in = read_imagef(in, sampleri, (int2)(x, y));
 
-  float4 Ych, RGB;
+  float4 XYZ_D65 = 0.f;
+  float4 LMS = 0.f;
+  float4 RGB = 0.f;
+  float4 Yrg = 0.f;
+  float4 Ych = 0.f;
 
-  Ych = fmax(pix_in, 0.f);
-  RGB = matrix_product_float4(Ych, matrix_in);
-  Ych = gradingRGB_to_Ych(RGB);
+  // clip pipeline RGB
+  RGB = fmax(pix_in, 0.f);
+
+  // go to CIE 2006 LMS D65
+  LMS = matrix_product_float4(RGB, matrix_in);
+
+  // go to Filmlight Yrg
+  Yrg = LMS_to_Yrg(LMS);
+
+  // go to Ych
+  Ych = Yrg_to_Ych(Yrg);
 
   // Sanitize input : no negative luminance
-  float Y = fmax(Ych.x, 0.f);
-  const float4 opacities = opacity_masks(native_powr(Y, 0.4101205819200422f), // center middle grey in 50 %
+  Ych.x = fmax(Ych.x, 0.f);
+  const float4 opacities = opacity_masks(native_powr(Ych.x, 0.4101205819200422f), // center middle grey in 50 %
                                          shadows_weight, highlights_weight, midtones_weight, mask_grey_fulcrum);
   const float4 opacities_comp = (float4)1.f - opacities;
 
@@ -815,15 +818,20 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   if(Ych.z > M_PI_F) Ych.z -= 2.f * M_PI_F;
   else if(Ych.z < -M_PI_F) Ych.z += 2.f * M_PI_F;
 
-  // Get max allowed chroma in working RGB gamut at current output hue
-  const float max_chroma_h = Y * lookup_gamut(gamut_lut, Ych.z);
-
   // Linear chroma : distance to achromatic at constant luminance in scene-referred
   const float chroma_boost = chroma_global + dot(opacities, chroma);
   const float vib = vibrance * (1.0f - native_powr(Ych.y, fabs(vibrance)));
   const float chroma_factor = fmax(1.f + chroma_boost + vib, 0.f);
-  Ych.y = soft_clip(Ych.y * chroma_factor, max_chroma_h, max_chroma_h * 4.f);
-  RGB = Ych_to_gradingRGB(Ych);
+  Ych.y *= chroma_factor;
+
+  // Go to Yrg
+  Yrg = Ych_to_Yrg(Ych);
+
+  // Go to LMS
+  LMS = Yrg_to_LMS(Yrg);
+
+  // Go to Filmlight RGB
+  RGB = LMS_to_gradingRGB(LMS);
 
   // Color balance
 
@@ -837,36 +845,27 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   // midtones : power with sign preservation
   RGB = sign(RGB) * native_powr(fabs(RGB) / white_fulcrum, midtones) * white_fulcrum;
 
-  // for the Y midtones power (gamma), we need to go in Ych again because RGB doesn't preserve color
-  Ych = gradingRGB_to_Yrg(RGB);
-  Y = Ych.x = native_powr(fmax(Ych.x / white_fulcrum, 0.f), midtones_Y) * white_fulcrum;
+  // for the non-linear ops we need to go in Yrg again because RGB doesn't preserve color
+  LMS = gradingRGB_to_LMS(RGB);
+  Yrg = LMS_to_Yrg(LMS);
 
-  // then the contrast
-  Y = Ych.x = grey_fulcrum * native_powr(Ych.x / grey_fulcrum, contrast);
-  RGB = Yrg_to_gradingRGB(Ych);
+  // Y midtones power (gamma)
+  Yrg.x = native_powr(fmax(Yrg.x / white_fulcrum, 0.f), midtones_Y) * white_fulcrum;
+
+  // Y fulcrumed contrast
+  Yrg.x = grey_fulcrum * native_powr(Yrg.x / grey_fulcrum, contrast);
+
+  LMS = Yrg_to_LMS(Yrg);
+  XYZ_D65 = LMS_to_XYZ(LMS);
 
   // Perceptual color adjustments
 
-  // grading RGB to CIE 1931 XYZ 2° D65
-  const float4 RGB_to_XYZ_D65[3] = { { 1.64004888f, -0.10969806f, 0.49329934f, 0.f },
-                                     { 0.61055787f, 0.47749658f, -0.08730269f, 0.f },
-                                     { -0.10698534f, 0.07785058f, 1.66590006f, 0.f } };
-
-  const float4 XYZ_to_RGB_D65[3] = { { 0.54392489f, 0.14993776f, -0.15320716f, 0.f },
-                                     { -0.68327274f, 1.88816348f, 0.30127843f, 0.f },
-                                     { 0.06686186f, -0.07860825f, 0.57635773f, 0.f } };
-
   // Go to JzAzBz for perceptual saturation
-  // We can't use gradingRGB_to_XYZ() since it also does chromatic adaptation to D50
-  // and JzAzBz uses D65, same as grading RGB. So we use the matrices above instead
-  float4 Jab;
-  RGB.w = Ych.w = 0.f; // init the 4th element for the dot product
-  Ych.xyz = matrix_dot(RGB, RGB_to_XYZ_D65).xyz;
-  Jab = XYZ_to_JzAzBz(Ych);
+  float4 Jab = XYZ_to_JzAzBz(XYZ_D65);
 
   // Convert to JCh
   float JC[2] = { Jab.x, hypot(Jab.y, Jab.z) };               // brightness/chroma vector
-  const float h = (JC[1] == 0.f) ? 0.f : atan2(Jab.z, Jab.y);  // hue : (a, b) angle
+  const float h = atan2(Jab.z, Jab.y);  // hue : (a, b) angle
 
   // Project JC onto S, the saturation eigenvector, with orthogonal vector O.
   // Note : O should be = (C * cosf(T) - J * sinf(T)) = 0 since S is the eigenvector,
@@ -892,24 +891,19 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   JC[0] = fmax(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
   JC[1] = fmax(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
 
+  // Gamut mapping
+  const float out_max_chroma_h = JC[0] * lookup_gamut(gamut_lut, h);
+  JC[1] = soft_clip(JC[1], 0.8f * out_max_chroma_h, out_max_chroma_h);
+
   // Project back to JzAzBz
   Jab.x = JC[0];
   Jab.y = JC[1] * native_cos(h);
   Jab.z = JC[1] * native_sin(h);
 
-  Ych = JzAzBz_2_XYZ(Jab);
-  RGB.xyz = matrix_dot(Ych, XYZ_to_RGB_D65).xyz;
-  Ych = gradingRGB_to_Ych(RGB);
-  Y = fmax(Ych.x, 0.f);
+  XYZ_D65 = JzAzBz_2_XYZ(Jab);
 
-  // Gamut mapping
-  // Note : no need to check hue is in [-PI; PI], gradingRGB_to_Ych uses atan2f()
-  // which always returns angles in [-PI; PI]
-  const float out_max_chroma_h = Y * lookup_gamut(gamut_lut, Ych.z);
-  Ych.y = soft_clip(Ych.y, out_max_chroma_h, out_max_chroma_h * 4.f);
-
-  RGB = Ych_to_gradingRGB(Ych);
-  RGB = matrix_product_float4(RGB, matrix_out);
+  // Project back to D50 pipeline RGB
+  RGB = matrix_product_float4(XYZ_D65, matrix_out);
 
   if(mask_display)
   {
