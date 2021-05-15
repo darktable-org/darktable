@@ -185,17 +185,13 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr,
 
   int32_t px=0, py=0, pwidth=0, pheight=0;
   int32_t ax=0, ay=0, awidth=0, aheight=0;
-  int32_t ix=0, iy=0, iwidth=0, iheight=0;
-  int32_t iwpix=0, ihpix=0;
 
   if (prt->pinfo == NULL)
     return;
 
   dt_get_print_layout(-1, prt->pinfo, width, height,
-                      &iwpix, &ihpix,
                       &px, &py, &pwidth, &pheight,
-                      &ax, &ay, &awidth, &aheight,
-                      &ix, &iy, &iwidth, &iheight);
+                      &ax, &ay, &awidth, &aheight);
   // page w/h
   double pg_width  = prt->pinfo->paper.width;
   double pg_height = prt->pinfo->paper.height;
