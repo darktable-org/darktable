@@ -67,9 +67,10 @@ static void _import_from_dialog_free(dt_lib_module_t* self);
 static void _do_select_all(dt_lib_module_t* self);
 static void _do_select_none(dt_lib_module_t* self);
 static void _do_select_new(dt_lib_module_t* self);
+static void _update_places_list(dt_lib_module_t* self);
 static void _update_folders_list(dt_lib_module_t* self);
 static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t *self);
-static void _delete_custom_place(const char *folder, GtkTreeIter iter, dt_lib_module_t* self);
+static void _remove_place(const gchar *folder, GtkTreeIter iter, dt_lib_module_t* self);
 static GList* _get_custom_places();
 
 typedef enum dt_import_cols_t
@@ -96,9 +97,17 @@ typedef enum dt_places_cols_t
 {
   DT_PLACES_NAME = 0,
   DT_PLACES_PATH,
-  DT_PLACES_CUSTOM,
+  DT_PLACES_TYPE,
   DT_PLACES_NUM_COLS
 } dt_places_cols_t;
+
+typedef enum dt_places_type_t
+{
+  DT_TYPE_HOME = 1,
+  DT_TYPE_PIC,
+  DT_TYPE_MOUNT,
+  DT_TYPE_CUSTOM,
+} dt_places_type_t;
 
 typedef enum dt_import_case_t
 {
@@ -154,6 +163,7 @@ typedef struct dt_lib_import_t
     GtkWidget *info;
   } from;
   GtkListStore *placesModel;
+  GtkWidget *placesView;
   GtkTreeSelection *placesSelection;
 
 #ifdef USE_LUA
@@ -1030,10 +1040,10 @@ static gboolean places_button_press(GtkWidget *view, GdkEventButton *event, dt_l
       _update_folders_list(self);
       _update_files_list(self);
     }
-    // right-click: delete custom place 
+    // right-click: delete / hide place
     else if(button_pressed == 3)
     {
-      _delete_custom_place(folder_path, iter, self);
+      _remove_place(folder_path, iter, self);
     }
 
     g_free(folder_name);
@@ -1110,106 +1120,66 @@ static void _paned_position_changed(GtkWidget *widget, dt_lib_module_t* self)
   dt_conf_set_int("ui_last/import_dialog_paned_pos", position);
 }
 
-static void _set_places_list(GtkWidget *lbox, dt_lib_module_t* self)
+static void _paned_places_position_changed(GtkWidget *widget, dt_lib_module_t* self)
 {
-  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-
-  GtkWidget*         placesView;
-  GtkTreeViewColumn* placesColumn;
-  GList *drives, *drive, *volumes, *volume, *places;
-  GVolumeMonitor *placesMonitor;
-  placesMonitor = g_volume_monitor_get();
-  d->placesModel = gtk_list_store_new(DT_PLACES_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
-
-  placesView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(d->placesModel));
-  placesColumn = gtk_tree_view_column_new_with_attributes("places", gtk_cell_renderer_text_new(), "text", 0, NULL);
-  gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(placesView), DT_PLACES_PATH);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(placesView), placesColumn);
-  gtk_box_pack_start(GTK_BOX(lbox), placesView, FALSE, FALSE, 0);
-
-  const gchar *last_place = dt_conf_get_string("ui_last/import_last_place");
-
-  GtkTreeIter iter;
-  d->placesSelection = gtk_tree_view_get_selection(GTK_TREE_VIEW(placesView));
-
-  // add default folders
-  if(dt_loc_get_home_dir(NULL))
-  {
-    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("home"), 
-      DT_PLACES_PATH, (char *)dt_loc_get_home_dir(NULL), DT_PLACES_CUSTOM, FALSE, -1);
-    if(!g_strcmp0(dt_loc_get_home_dir(NULL), last_place))
-      gtk_tree_selection_select_iter(d->placesSelection, &iter);
-  }
-
-  if(g_get_user_special_dir(G_USER_DIRECTORY_DOCUMENTS))
-  {
-    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("documents"), 
-      DT_PLACES_PATH, (char *)g_get_user_special_dir(G_USER_DIRECTORY_DOCUMENTS), DT_PLACES_CUSTOM, FALSE, -1);
-    if(!g_strcmp0(g_get_user_special_dir(G_USER_DIRECTORY_DOCUMENTS), last_place))
-      gtk_tree_selection_select_iter(d->placesSelection, &iter);
-  }
-
-  if(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES))
-  {
-    // set pictures as default
-    if(last_place[0] == '\0')
-    {
-      last_place=g_get_user_special_dir(G_USER_DIRECTORY_PICTURES);
-      dt_conf_set_string("ui_last/import_last_place", last_place);
-    }
-
-    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("pictures"), 
-      DT_PLACES_PATH, (char *)g_get_user_special_dir(G_USER_DIRECTORY_PICTURES), DT_PLACES_CUSTOM, FALSE, -1);
-    if(!g_strcmp0(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES), last_place))
-      gtk_tree_selection_select_iter(d->placesSelection, &iter);
-  }
-
-  // add mounted drives
-  drives = g_volume_monitor_get_connected_drives(placesMonitor);
-  for (drive = drives; drive; drive = drive->next)
-  {
-    volumes = g_drive_get_volumes (drive->data);    
-    for (volume = volumes; volume; volume = volume->next)
-    {
-      if(g_volume_get_mount(volume->data))
-      {
-        GMount *placesMount = g_volume_get_mount(volume->data);
-        GFile *placesFile = g_mount_get_root(placesMount);
-        g_object_unref (placesMount);
-
-        gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, g_volume_get_name(volume->data), 
-          DT_PLACES_PATH, g_file_get_path(placesFile), DT_PLACES_CUSTOM, FALSE, -1);
-
-        if(!g_strcmp0(g_file_get_path(placesFile), last_place))
-          gtk_tree_selection_select_iter(d->placesSelection, &iter);
-      }
-    }
-  }
-
-  // add folders added by user
-  places = _get_custom_places(self);
-
-  while (places)
-  {
-    GList *next = places->next;
-
-    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, g_path_get_basename(places->data), 
-      DT_PLACES_PATH, (char *)places->data, DT_PLACES_CUSTOM, TRUE, -1);
-
-    if(!g_strcmp0(places->data, last_place))
-      gtk_tree_selection_select_iter(d->placesSelection, &iter);
-
-    places = next;
-  }
-
-  g_signal_connect(G_OBJECT(placesView), "button-press-event", G_CALLBACK(places_button_press), self);
-
-  GtkWidget *other_location = dt_ui_button_new(_("+ other location..."), _("chose another location not listed here"), NULL);
-  gtk_box_pack_start(GTK_BOX(lbox), other_location, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(other_location), "clicked", G_CALLBACK(_lib_import_select_folder), self);
+  const gint position = gtk_paned_get_position(GTK_PANED(widget));
+  dt_conf_set_int("ui_last/import_dialog_paned_places_pos", position);
 }
 
-static void _set_folders_list(GtkWidget *lbox, dt_lib_module_t* self)
+static void _places_reset_callback(GtkWidget *widget, dt_lib_module_t* self)
+{
+  dt_conf_set_bool("ui_last/import_dialog_show_home", TRUE);
+  dt_conf_set_bool("ui_last/import_dialog_show_pictures", TRUE);
+  dt_conf_set_bool("ui_last/import_dialog_show_mounted", TRUE);
+
+  _update_places_list(self);
+}
+
+static void _set_places_list(GtkWidget *places_paned, dt_lib_module_t* self)
+{
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  d->placesModel = gtk_list_store_new(DT_PLACES_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
+  d->placesView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(d->placesModel));
+
+  GtkWidget *places_top_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *places_header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_tooltip_text(places_header, _("choose the root of the folder tree below"));
+
+  GtkWidget *places_label = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(places_label), dt_util_dstrcat(NULL, "<b>  %s</b>",_("places")));
+  gtk_box_pack_start(GTK_BOX(places_header), places_label, FALSE, FALSE, 0);
+
+  GtkWidget *places_reset = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_tooltip_text(places_reset, _("restore all default places you have removed by right-click"));
+  g_signal_connect(places_reset, "clicked", G_CALLBACK(_places_reset_callback), self);
+  gtk_box_pack_end(GTK_BOX(places_header), places_reset, FALSE, FALSE, 0);
+
+  GtkWidget *places_add = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_tooltip_text(places_add, _("add a custom place\n\nright-click on a place to remove it"));
+  g_signal_connect(places_add, "clicked", G_CALLBACK(_lib_import_select_folder), self);
+  gtk_box_pack_end(GTK_BOX(places_header), places_add, FALSE, FALSE, 0);
+
+  gtk_box_pack_start(GTK_BOX(places_top_box), places_header, FALSE, FALSE, 0);
+
+  GtkWidget *placesWindow = gtk_scrolled_window_new(NULL, NULL);
+  gtk_widget_set_tooltip_text(placesWindow, _("you can add custom places using the plus icon"));
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(placesWindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(d->placesView),FALSE);
+  gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->placesView), DT_PLACES_PATH);
+  gtk_container_add(GTK_CONTAINER(placesWindow), GTK_WIDGET(d->placesView));
+
+  GtkTreeViewColumn* placesColumn = gtk_tree_view_column_new_with_attributes("", gtk_cell_renderer_text_new(), "text", 0, NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(d->placesView), placesColumn);
+
+  gtk_box_pack_start(GTK_BOX(places_top_box), placesWindow, TRUE, TRUE, 0);
+  gtk_paned_pack1(GTK_PANED(places_paned), places_top_box, TRUE, TRUE);
+
+
+  g_signal_connect(G_OBJECT(d->placesView), "button-press-event", G_CALLBACK(places_button_press), self);
+}
+
+static void _set_folders_list(GtkWidget *places_paned, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   GtkTreeStore *store = gtk_tree_store_new(DT_FOLDER_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN);
@@ -1238,7 +1208,7 @@ static void _set_folders_list(GtkWidget *lbox, dt_lib_module_t* self)
   gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(w), DT_PIXEL_APPLY_DPI(200));
   gtk_tree_view_set_model(d->from.folderview, GTK_TREE_MODEL(store));
   gtk_tree_view_set_headers_visible(d->from.folderview, TRUE);
-  gtk_box_pack_end(GTK_BOX(lbox), w, TRUE, TRUE, 0);
+  gtk_paned_pack2(GTK_PANED(places_paned), w, TRUE, TRUE);
 }
 
 static void _expand_folder(const char *folder, const gboolean select, dt_lib_module_t* self)
@@ -1267,6 +1237,86 @@ static void _expand_folder(const char *folder, const gboolean select, dt_lib_mod
         }
       }
     }
+  }
+}
+
+static void _update_places_list(dt_lib_module_t* self)
+{
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  gtk_list_store_clear(d->placesModel);
+
+  // add default folders
+
+  GtkTreeIter iter;
+  d->placesSelection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->placesView));
+  const gchar *last_place = dt_conf_get_string("ui_last/import_last_place");
+
+  if(dt_conf_get_bool("ui_last/import_dialog_show_home") && dt_loc_get_home_dir(NULL))
+  {
+    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("home"), 
+      DT_PLACES_PATH, (char *)dt_loc_get_home_dir(NULL), DT_PLACES_TYPE, DT_TYPE_HOME, -1);
+    if(!g_strcmp0(dt_loc_get_home_dir(NULL), last_place))
+      gtk_tree_selection_select_iter(d->placesSelection, &iter);
+  }
+  
+
+  if(dt_conf_get_bool("ui_last/import_dialog_show_pictures") && g_get_user_special_dir(G_USER_DIRECTORY_PICTURES))
+  {
+    // set pictures as default
+    if(last_place[0] == '\0')
+    {
+      last_place=g_get_user_special_dir(G_USER_DIRECTORY_PICTURES);
+      dt_conf_set_string("ui_last/import_last_place", last_place);
+    }
+
+    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("pictures"), 
+      DT_PLACES_PATH, (char *)g_get_user_special_dir(G_USER_DIRECTORY_PICTURES), DT_PLACES_TYPE, DT_TYPE_PIC, -1);
+    if(!g_strcmp0(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES), last_place))
+      gtk_tree_selection_select_iter(d->placesSelection, &iter);
+  }
+
+  // add mounted drives
+  if(dt_conf_get_bool("ui_last/import_dialog_show_mounted"))
+  {
+    GVolumeMonitor *placesMonitor = g_volume_monitor_get();
+    GList *drives, *drive, *volumes, *volume;
+    drives = g_volume_monitor_get_connected_drives(placesMonitor);
+
+    for (drive = drives; drive; drive = drive->next)
+    {
+      volumes = g_drive_get_volumes (drive->data);    
+      for (volume = volumes; volume; volume = volume->next)
+      {
+        if(g_volume_get_mount(volume->data))
+        {
+          GMount *placesMount = g_volume_get_mount(volume->data);
+          GFile *placesFile = g_mount_get_root(placesMount);
+          g_object_unref (placesMount);
+
+          gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, g_volume_get_name(volume->data), 
+            DT_PLACES_PATH, g_file_get_path(placesFile), DT_PLACES_TYPE, DT_TYPE_MOUNT, -1);
+
+          if(!g_strcmp0(g_file_get_path(placesFile), last_place))
+            gtk_tree_selection_select_iter(d->placesSelection, &iter);
+        }
+      }
+    }
+  }
+
+  // add folders added by user
+  GList *places = _get_custom_places(self);
+
+  while (places)
+  {
+    GList *next = places->next;
+
+    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, g_path_get_basename(places->data), 
+      DT_PLACES_PATH, (char *)places->data, DT_PLACES_TYPE, DT_TYPE_CUSTOM, -1);
+
+    if(!g_strcmp0(places->data, last_place))
+      gtk_tree_selection_select_iter(d->placesSelection, &iter);
+
+    places = next;
   }
 }
 
@@ -1308,7 +1358,7 @@ static void _add_custom_place(const gchar *folder, dt_lib_module_t* self)
       dt_util_dstrcat(NULL, "%s%s,", current_folders, folder));
 
     gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, g_path_get_basename(folder), 
-      DT_PLACES_PATH, (char *)folder, DT_PLACES_CUSTOM, TRUE, -1);
+      DT_PLACES_PATH, (char *)folder, DT_PLACES_TYPE, DT_TYPE_CUSTOM, -1);
   }
 
   dt_conf_set_string("ui_last/import_last_place", folder);
@@ -1317,26 +1367,28 @@ static void _add_custom_place(const gchar *folder, dt_lib_module_t* self)
 
 }
 
-static void _delete_custom_place(const gchar *folder, GtkTreeIter iter, dt_lib_module_t* self)
+static void _remove_place(const gchar *folder, GtkTreeIter iter, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   const gchar *current_folders = dt_conf_get_string("ui_last/import_custom_places");
   const gchar *last_place = dt_conf_get_string("ui_last/import_last_place");
+  int type = 0;
+  gtk_tree_model_get(GTK_TREE_MODEL(d->placesModel), &iter, DT_PLACES_TYPE, &type, -1);
 
-  int *is_custom = 0;
-  gtk_tree_model_get(GTK_TREE_MODEL(d->placesModel), &iter,
-                      DT_PLACES_CUSTOM, &is_custom, -1);
-
-  if (is_custom)
-  {
+  if(type == DT_TYPE_HOME)
+    dt_conf_set_bool("ui_last/import_dialog_show_home", FALSE);
+  if(type == DT_TYPE_PIC)
+    dt_conf_set_bool("ui_last/import_dialog_show_pictures", FALSE);
+  if(type == DT_TYPE_MOUNT)
+    dt_conf_set_bool("ui_last/import_dialog_show_mounted", FALSE);
+  if(type == DT_TYPE_CUSTOM)
     dt_conf_set_string("ui_last/import_custom_places", 
       dt_util_str_replace(current_folders, dt_util_dstrcat(NULL,"%s,", folder), ""));
 
-    gtk_list_store_remove(GTK_LIST_STORE(d->placesModel), &iter);
+  _update_places_list(self);
 
-    if(!g_strcmp0(folder, last_place))
-      dt_conf_set_string("ui_last/import_last_place", "");
-  }
+  if(!g_strcmp0(folder, last_place))
+    dt_conf_set_string("ui_last/import_last_place", "");
 }
 
 static GList* _get_custom_places()
@@ -1589,6 +1641,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(d->from.img_nb), TRUE, TRUE, 0);
 
   GtkWidget *paned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
+  gtk_paned_set_position(GTK_PANED(paned), dt_conf_get_int("ui_last/import_dialog_paned_pos"));
 
   // right pane
   GtkWidget *rbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
@@ -1635,8 +1688,16 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
     GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
     gtk_paned_pack1(GTK_PANED(paned), lbox, TRUE, FALSE);
 
-    _set_places_list(lbox, self);
-    _set_folders_list(lbox, self);
+    GtkWidget *places_paned = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
+
+    gtk_paned_set_position(GTK_PANED(places_paned), dt_conf_get_int("ui_last/import_dialog_paned_places_pos"));
+    g_signal_connect(places_paned, "notify::position", G_CALLBACK(_paned_places_position_changed), self);
+
+    _set_places_list(places_paned, self);
+    _set_folders_list(places_paned, self);
+    gtk_box_pack_start(GTK_BOX(lbox), places_paned, TRUE, TRUE, 0);
+
+    _update_places_list(self);
     _update_folders_list(self);
   }
 
