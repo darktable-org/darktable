@@ -1226,10 +1226,12 @@ static void _expand_folder(const char *folder, const gboolean select, dt_lib_mod
         GtkTreeIter parent;
         if(!gtk_tree_model_iter_parent(model, &parent, &iter))
           parent = iter;
-        GtkTreePath *path = gtk_tree_model_get_path(model, &parent);
-        gtk_tree_view_expand_to_path(d->from.folderview, path);
+        GtkTreePath *parent_path = gtk_tree_model_get_path(model, &parent);
+        GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
+        gtk_tree_view_expand_to_path(d->from.folderview, parent_path);
         gtk_tree_view_scroll_to_cell(d->from.folderview, path, NULL, TRUE, 0.5, 0.5);
         gtk_tree_path_free(path);
+        gtk_tree_path_free(parent_path);
         if(select)
         {
           GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.folderview);
