@@ -268,9 +268,8 @@ void dt_printing_setup_image(dt_images_box *imgs, const int idx,
   box->exp_height = height;
   box->alignment  = alignment;
 
-  const float img_height_percent =  box->exp_height / imgs->page_height;
-
-  // for the print (pdf) the origin is bottom/left, so y must be inverted compared to screen coordinate
+  // for the print (pdf) the origin is bottom/left, so y must be inverted compared to
+  // screen coordinates.
   box->print.x      = box->pos.x * imgs->page_width;
   box->print.y      = box->pos.y * imgs->page_height;
   box->print.width  = box->pos.width * imgs->page_width;
@@ -280,7 +279,7 @@ void dt_printing_setup_image(dt_images_box *imgs, const int idx,
   _align_pos(&box->print, box->alignment, box->exp_width, box->exp_height, &pos);
 
   box->print.x = pos.x;
-  box->print.y = imgs->page_height - ((box->pos.y + img_height_percent) * imgs->page_height);
+  box->print.y = imgs->page_height - (pos.y + pos.height);
   box->print.width = pos.width;
   box->print.height = pos.height;
 
