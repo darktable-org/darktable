@@ -629,7 +629,7 @@ filmic_inpaint_noise(read_only const image2d_t in, read_only image2d_t mask, wri
   const float4 sigma = i * noise_level / threshold;
   const float4 noise = dt_noise_generator_simd(noise_distribution, i, sigma, state);
   const float weight = (read_imagef(mask, sampleri, (int2)(x, y))).x;
-  const float4 o = i * (1.0f - weight) + weight * noise;
+  const float4 o = fmax(i * (1.0f - weight) + weight * noise, 0.f);
   write_imagef(out, (int2)(x, y), o);
 }
 
@@ -644,7 +644,7 @@ kernel void init_reconstruct(read_only const image2d_t in, read_only image2d_t m
 
   const float4 i = read_imagef(in, sampleri, (int2)(x, y));
   const float4 weight = 1.f - (read_imagef(mask, sampleri, (int2)(x, y))).x;
-  float4 o = i * weight;
+  float4 o = fmax(i * weight, 0.f);
 
   // copy masks and alpha
   o.w = i.w;
@@ -674,11 +674,11 @@ kernel void blur_2D_Bspline_vertical(read_only const image2d_t in, write_only im
   float4 accumulator = (float4)0.f;
   for(int jj = 0; jj < FSIZE; ++jj)
   {
-    const int yy = mad24(mult, (jj - FSTART), y);
+    const int yy = mult * (jj - FSTART) + y;
     accumulator += filter[jj] * read_imagef(in, sampleri, (int2)(x, clamp(yy, 0, height - 1)));
   }
 
-  write_imagef(out, (int2)(x, y), accumulator);
+  write_imagef(out, (int2)(x, y), fmax(accumulator, 0.f));
 }
 
 kernel void blur_2D_Bspline_horizontal(read_only const image2d_t in, write_only image2d_t out,
@@ -699,11 +699,11 @@ kernel void blur_2D_Bspline_horizontal(read_only const image2d_t in, write_only 
   float4 accumulator = (float4)0.f;
   for(int ii = 0; ii < FSIZE; ++ii)
   {
-    const int xx = mad24(mult, (ii - FSTART), x);
+    const int xx = mult * (ii - FSTART) + x;
     accumulator += filter[ii] * read_imagef(in, sampleri, (int2)(clamp(xx, 0, width - 1), y));
   }
 
-  write_imagef(out, (int2)(x, y), accumulator);
+  write_imagef(out, (int2)(x, y), fmax(accumulator, 0.f));
 }
 
 inline float fmaxabsf(const float a, const float b)
@@ -743,7 +743,7 @@ kernel void wavelets_detail_level(read_only const image2d_t detail, read_only im
 
 kernel void wavelets_reconstruct(read_only const image2d_t HF, read_only const image2d_t LF, read_only const image2d_t texture,
                                  read_only const image2d_t mask,
-                                 read_only const image2d_t reconstructed_read, write_only image2d_t reconstructed_write,
+                                 read_only image2d_t reconstructed_read, write_only image2d_t reconstructed_write,
                                  const int width, const int height,
                                  const float gamma, const float gamma_comp, const float beta, const float beta_comp, const float delta,
                                  const int s, const int scales, const dt_iop_filmicrgb_reconstruction_type_t variant)
