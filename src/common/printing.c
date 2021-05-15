@@ -53,7 +53,7 @@ void dt_printing_clear_boxes(dt_images_box *imgs)
   imgs->imgid_to_load = -1;
 }
 
-int dt_printing_get_image_box(const dt_images_box *imgs, const int x, const int y)
+int32_t dt_printing_get_image_box(const dt_images_box *imgs, const int x, const int y)
 {
   int box = -1;
 
