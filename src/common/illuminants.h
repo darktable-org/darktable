@@ -19,7 +19,6 @@
 #pragma once
 
 #include "common/chromatic_adaptation.h"
-#include "common/colorspaces_inline_conversions.h"
 #include "common/image.h"
 #include "external/adobe_coeff.c"
 
