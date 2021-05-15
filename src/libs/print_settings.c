@@ -1524,6 +1524,8 @@ int button_released(struct dt_lib_module_t *self, double x, double y, int which,
                              fmaxf(100.0f, ps->y2 - ps->y1));
 
       dt_printing_setup_box(&ps->imgs, idx, ps->x1, ps->y1, dx, dy);
+      // make the new created box the last edited one
+      ps->last_selected = idx;
       _fill_box_values(ps);
     }
   }
