@@ -134,7 +134,7 @@ typedef struct _dialog_description
   const char *name;
 } dialog_description_t;
 
-static const float units[3] = {1.0, 0.1, 1.0/25.4};
+static const float units[3] = {1.0f, 0.1f, 1.0f/25.4f};
 
 static void _update_slider(dt_lib_print_settings_t *ps);
 static void _width_changed(GtkWidget *widget, gpointer user_data);
@@ -167,7 +167,7 @@ static void _get_page_dimention(dt_print_info_t *prt, float *width, float *heigh
 
 // unit conversion
 
-static double to_mm(dt_lib_print_settings_t *ps, double value)
+static float to_mm(dt_lib_print_settings_t *ps, double value)
 {
   return value / units[ps->unit];
 }
@@ -670,22 +670,22 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
 
   // if there is 0 hardware margins, set the user margin to 17mm
 
-  if (ps->prt.printer.hw_margin_top == 0)
+  if(ps->prt.printer.hw_margin_top == 0)
   {
     ps->prt.page.margin_top = 17;
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_top), ps->prt.page.margin_top * units[ps->unit]);
   }
-  if (ps->prt.printer.hw_margin_bottom == 0)
+  if(ps->prt.printer.hw_margin_bottom == 0)
   {
     ps->prt.page.margin_bottom = 17;
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), ps->prt.page.margin_bottom * units[ps->unit]);
   }
-  if (ps->prt.printer.hw_margin_left == 0)
+  if(ps->prt.printer.hw_margin_left == 0)
   {
     ps->prt.page.margin_left = 17;
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left), ps->prt.page.margin_left * units[ps->unit]);
   }
-  if (ps->prt.printer.hw_margin_right == 0)
+  if(ps->prt.printer.hw_margin_right == 0)
   {
     ps->prt.page.margin_right = 17;
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), ps->prt.page.margin_right * units[ps->unit]);
