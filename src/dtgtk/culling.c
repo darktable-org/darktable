@@ -54,8 +54,7 @@ static void _list_remove_thumb(gpointer user_data)
 static int _get_selection_count()
 {
   int nb = 0;
-  gchar *query = dt_util_dstrcat(
-      NULL,
+  gchar *query = g_strdup(  //TODO: since this is a fixed string, do we need to copy?
       "SELECT count(*) FROM main.selected_images AS s, memory.collected_images as m WHERE s.imgid = m.imgid");
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -77,7 +76,7 @@ static int _thumb_get_imgid(int rowid)
 {
   int id = -1;
   sqlite3_stmt *stmt;
-  gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM memory.collected_images WHERE rowid=%d", rowid);
+  gchar *query = g_strdup_printf("SELECT imgid FROM memory.collected_images WHERE rowid=%d", rowid);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -92,7 +91,7 @@ static int _thumb_get_rowid(int imgid)
 {
   int id = -1;
   sqlite3_stmt *stmt;
-  gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
+  gchar *query = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -199,8 +198,7 @@ static void _thumbs_move(dt_culling_t *table, int move)
     if(table->navigate_inside_selection)
     {
       sqlite3_stmt *stmt;
-      gchar *query = dt_util_dstrcat(NULL,
-                                     "SELECT m.rowid FROM memory.collected_images as m, main.selected_images as s "
+      gchar *query = g_strdup_printf("SELECT m.rowid FROM memory.collected_images as m, main.selected_images as s "
                                      "WHERE m.imgid=s.imgid AND m.rowid<=%d "
                                      "ORDER BY m.rowid DESC LIMIT 1 OFFSET %d",
                                      table->offset, -1 * move);
@@ -214,8 +212,7 @@ static void _thumbs_move(dt_culling_t *table, int move)
         // if we are here, that means we don't have enough space to move as wanted. So we move to first position
         g_free(query);
         sqlite3_finalize(stmt);
-        query
-            = dt_util_dstrcat(NULL, "SELECT m.rowid FROM memory.collected_images as m, main.selected_images as s "
+        query = g_strdup_printf("SELECT m.rowid FROM memory.collected_images as m, main.selected_images as s "
                                     "WHERE m.imgid=s.imgid "
                                     "ORDER BY m.rowid LIMIT 1");
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -247,8 +244,7 @@ static void _thumbs_move(dt_culling_t *table, int move)
     if(table->navigate_inside_selection)
     {
       sqlite3_stmt *stmt;
-      gchar *query
-          = dt_util_dstrcat(NULL,
+      gchar *query = g_strdup_printf(
                             "SELECT COUNT(m.rowid) FROM memory.collected_images as m, main.selected_images as s "
                             "WHERE m.imgid=s.imgid AND m.rowid>%d",
                             table->offset);
@@ -264,8 +260,7 @@ static void _thumbs_move(dt_culling_t *table, int move)
       if(nb_after >= table->thumbs_count)
       {
         const int delta = MIN(nb_after + 1 - table->thumbs_count, move);
-        query = dt_util_dstrcat(NULL,
-                                "SELECT m.rowid FROM memory.collected_images as m, main.selected_images as s "
+        query = g_strdup_printf("SELECT m.rowid FROM memory.collected_images as m, main.selected_images as s "
                                 "WHERE m.imgid=s.imgid AND m.rowid>=%d "
                                 "ORDER BY m.rowid LIMIT 1 OFFSET %d",
                                 table->offset, delta);
@@ -287,8 +282,7 @@ static void _thumbs_move(dt_culling_t *table, int move)
     else
     {
       sqlite3_stmt *stmt;
-      gchar *query = dt_util_dstrcat(NULL,
-                                     "SELECT COUNT(m.rowid) FROM memory.collected_images as m "
+      gchar *query = g_strdup_printf("SELECT COUNT(m.rowid) FROM memory.collected_images as m "
                                      "WHERE m.rowid>%d",
                                      table->offset);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -1061,8 +1055,7 @@ static void _thumbs_prefetch(dt_culling_t *table)
   dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
   if(table->navigate_inside_selection)
   {
-    query
-        = dt_util_dstrcat(NULL,
+    query = g_strdup_printf(
                           "SELECT m.imgid "
                           "FROM memory.collected_images AS m, main.selected_images AS s "
                           "WHERE m.imgid = s.imgid"
@@ -1073,8 +1066,7 @@ static void _thumbs_prefetch(dt_culling_t *table)
   }
   else
   {
-    query
-        = dt_util_dstrcat(NULL,
+    query = g_strdup_printf(
                           "SELECT m.imgid "
                           "FROM memory.collected_images AS m "
                           "WHERE m.rowid > (SELECT mm.rowid FROM memory.collected_images AS mm WHERE mm.imgid=%d) "
@@ -1095,8 +1087,7 @@ static void _thumbs_prefetch(dt_culling_t *table)
   dt_thumbnail_t *prev = (dt_thumbnail_t *)(table->list)->data;
   if(table->navigate_inside_selection)
   {
-    query
-        = dt_util_dstrcat(NULL,
+    query = g_strdup_printf(
                           "SELECT m.imgid "
                           "FROM memory.collected_images AS m, main.selected_images AS s "
                           "WHERE m.imgid = s.imgid"
@@ -1107,8 +1098,7 @@ static void _thumbs_prefetch(dt_culling_t *table)
   }
   else
   {
-    query
-        = dt_util_dstrcat(NULL,
+    query = g_strdup_printf(
                           "SELECT m.imgid "
                           "FROM memory.collected_images AS m "
                           "WHERE m.rowid < (SELECT mm.rowid FROM memory.collected_images AS mm WHERE mm.imgid=%d) "
@@ -1132,8 +1122,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
 
   if(table->navigate_inside_selection)
   {
-    query = dt_util_dstrcat(NULL,
-                            "SELECT m.rowid, m.imgid, b.aspect_ratio "
+    query = g_strdup_printf("SELECT m.rowid, m.imgid, b.aspect_ratio "
                             "FROM memory.collected_images AS m, main.selected_images AS s, images AS b "
                             "WHERE m.imgid = b.id AND m.imgid = s.imgid AND m.rowid >= %d "
                             "ORDER BY m.rowid "
@@ -1142,8 +1131,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
   }
   else
   {
-    query = dt_util_dstrcat(NULL,
-                            "SELECT m.rowid, m.imgid, b.aspect_ratio "
+    query = g_strdup_printf("SELECT m.rowid, m.imgid, b.aspect_ratio "
                             "FROM (SELECT rowid, imgid "
                             "FROM memory.collected_images "
                             "WHERE rowid < %d + %d "
@@ -1232,8 +1220,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
      && g_list_shorter_than(newlist, _get_selection_count()))
   {
     const int nb = table->thumbs_count - g_list_length(newlist);
-    query = dt_util_dstrcat(NULL,
-                            "SELECT m.rowid, m.imgid, b.aspect_ratio "
+    query = g_strdup_printf("SELECT m.rowid, m.imgid, b.aspect_ratio "
                             "FROM memory.collected_images AS m, main.selected_images AS s, images AS b "
                             "WHERE m.imgid = b.id AND m.imgid = s.imgid AND m.rowid < %d "
                             "ORDER BY m.rowid DESC "
