@@ -210,7 +210,7 @@ typedef struct dt_image_t
   // common stuff
 
   // to understand this, look at comment for dt_histogram_roi_t
-  int32_t width, height, verified_size, final_width, final_height, p_width, p_height;
+  int32_t width, height, final_width, final_height, p_width, p_height;
   int32_t crop_x, crop_y, crop_width, crop_height;
   float aspect_ratio;
 

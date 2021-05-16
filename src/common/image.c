@@ -669,7 +669,7 @@ gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
   {
     *width = img.final_width;
     *height = img.final_height;
-    return 0;
+    return FALSE;
   }
 
   // special case if we try to load embedded preview of raw file
@@ -680,7 +680,7 @@ gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
   const gboolean use_raw =
     !dt_conf_is_equal("plugins/lighttable/thumbnail_raw_min_level", "never");
 
-  if(!img.verified_size && !dt_image_altered(imgid) && !use_raw && !incompatible)
+  if(!dt_image_altered(imgid) && !use_raw && !incompatible)
   {
     // we want to be sure to have the real image size.
     // some raw files need a pass via rawspeed to get it.
@@ -689,7 +689,6 @@ gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
     imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'w');
     dt_imageio_open(imgtmp, filename, NULL);
-    imgtmp->verified_size = 1;
     img = *imgtmp;
     dt_image_cache_write_release(darktable.image_cache, imgtmp, DT_IMAGE_CACHE_RELAXED);
   }
@@ -1702,7 +1701,7 @@ uint32_t dt_image_import_lua(const int32_t film_id, const char *filename, gboole
 
 void dt_image_init(dt_image_t *img)
 {
-  img->width = img->height = img->verified_size = 0;
+  img->width = img->height = 0;
   img->final_width = img->final_height = img->p_width = img->p_height = 0;
   img->aspect_ratio = 0.f;
   img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;

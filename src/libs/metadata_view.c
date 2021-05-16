@@ -634,18 +634,22 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     _metadata_update_value(md_exif_width, value, self);
     }
 
-    if(img->verified_size)
+    if(img->final_height > 0)
     {
       snprintf(value, sizeof(value), "%d", img->final_height);
-    _metadata_update_value(md_height, value, self);
-      snprintf(value, sizeof(value), "%d", img->final_width);
-    _metadata_update_value(md_width, value, self);
+      _metadata_update_value(md_height, value, self);
     }
     else
-    {
       _metadata_update_value(md_height, NODATA_STRING, self);
-      _metadata_update_value(md_width, NODATA_STRING, self);
+
+    if(img->final_width > 0)
+    {
+      snprintf(value, sizeof(value), "%d", img->final_width);
+      _metadata_update_value(md_width, value, self);
     }
+    else
+      _metadata_update_value(md_width, NODATA_STRING, self);
+
     /* XMP */
     for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     {
