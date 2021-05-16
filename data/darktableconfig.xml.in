@@ -2829,6 +2829,13 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/print/print/grid_size</name>
+    <type min="0" max="100">float</type>
+    <default>10</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
   <dtconfig prefs="misc" section="interface">
     <name>ui_last/display_profile_source</name>
     <type>
