@@ -146,6 +146,9 @@ typedef struct dt_bauhaus_widget_t
   dt_iop_module_t *module;
   // label text, short
   char label[256];
+  // section, short
+  gchar *section;
+  gboolean show_extended_label;
   // callback function to draw the quad icon
   dt_bauhaus_quad_paint_f quad_paint;
   // minimal modifiers for paint function.
