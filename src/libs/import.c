@@ -2114,11 +2114,11 @@ static void _set_default_preferences(dt_lib_module_t *self)
     if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
     {
       const char *metadata_name = dt_metadata_get_name(i);
-      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", metadata_name);
+      char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", metadata_name);
       const uint32_t flag = (dt_conf_get_int(setting) | DT_METADATA_FLAG_IMPORTED);
       dt_conf_set_int(setting, flag);
       g_free(setting);
-      setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", metadata_name);
+      setting = g_strdup_printf("ui_last/import_last_%s", metadata_name);
       dt_conf_set_string(setting, "");
       g_free(setting);
     }
@@ -2156,12 +2156,12 @@ static char *_get_current_configuration(dt_lib_module_t *self)
     if(dt_metadata_get_type_by_display_order(i) != DT_METADATA_TYPE_INTERNAL)
     {
       const char *metadata_name = dt_metadata_get_name_by_display_order(i);
-      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag",
-                                      metadata_name);
+      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag",
+                                       metadata_name);
       const gboolean imported = dt_conf_get_int(setting) & DT_METADATA_FLAG_IMPORTED;
       g_free(setting);
 
-      setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", metadata_name);
+      setting = g_strdup_printf("ui_last/import_last_%s", metadata_name);
       char *metadata_value = dt_conf_get_string(setting);
       pref = dt_util_dstrcat(pref, "%s=%d%s,", metadata_name, imported ? 1 : 0, metadata_value);
       g_free(setting);
@@ -2214,13 +2214,13 @@ static void _apply_preferences(const char *pref, dt_lib_module_t *self)
       // metadata
       const int j = dt_metadata_get_keyid_by_name(metadata_name);
       if(j == -1) continue;
-      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", metadata_name);
+      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", metadata_name);
       const uint32_t flag = (dt_conf_get_int(setting) & ~DT_METADATA_FLAG_IMPORTED) |
                             ((value[0] == '1') ? DT_METADATA_FLAG_IMPORTED : 0);
       dt_conf_set_int(setting, flag);
       g_free(setting);
       value++;
-      setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", metadata_name);
+      setting = g_strdup_printf("ui_last/import_last_%s", metadata_name);
       dt_conf_set_string(setting, value);
       g_free(setting);
     }
