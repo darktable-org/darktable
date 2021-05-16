@@ -275,7 +275,7 @@ static gchar *_datetime_tooltip(GDateTime *start, GDateTime *end, GTimeZone *tz)
   gchar *dtel = _utc_timeval_to_localtime_text(end, tz, FALSE);
   gchar *dtsu = _utc_timeval_to_utc_text(start, FALSE);
   gchar *dteu = _utc_timeval_to_utc_text(end, FALSE);
-  gchar *res = dt_util_dstrcat(NULL, "%s -> %s LT\n%s -> %s UTC", dtsl, dtel, dtsu, dteu);
+  gchar *res = g_strdup_printf("%s -> %s LT\n%s -> %s UTC", dtsl, dtel, dtsu, dteu);
   g_free(dtsl);
   g_free(dtel);
   g_free(dtsu);
@@ -362,7 +362,7 @@ static void _update_nb_images(dt_lib_module_t *self)
     valid = gtk_tree_model_iter_next(model, &iter);
   }
   d->map.nb_imgs = nb_imgs;
-  gchar *nb = dt_util_dstrcat(NULL, "%d/%d", nb_imgs, d->nb_imgs);
+  gchar *nb = g_strdup_printf("%d/%d", nb_imgs, d->nb_imgs);
   gtk_label_set_text(GTK_LABEL(d->map.nb_imgs_label), nb);
   g_free(nb);
 }
@@ -856,10 +856,10 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
     _set_up_label(t->name, GTK_ALIGN_START, grid, 0, line, PANGO_ELLIPSIZE_NONE);
     _set_up_label(dts, GTK_ALIGN_START, grid, 1, line, PANGO_ELLIPSIZE_NONE);
     _set_up_label(dte, GTK_ALIGN_START, grid, 2, line, PANGO_ELLIPSIZE_NONE);
-    char *nb = dt_util_dstrcat(NULL, "%d", t->nb_trkpt);
+    char *nb = g_strdup_printf("%d", t->nb_trkpt);
     _set_up_label(nb, GTK_ALIGN_CENTER, grid, 3, line, PANGO_ELLIPSIZE_NONE);
     g_free(nb);
-    nb = dt_util_dstrcat(NULL, "%d", nb_imgs);
+    nb = g_strdup_printf("%d", nb_imgs);
     _set_up_label(nb, GTK_ALIGN_CENTER, grid, 4, line, PANGO_ELLIPSIZE_NONE);
     g_free(nb);
     line++;
@@ -868,10 +868,10 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
     g_free(dte);
   }
 
-  char *nb = dt_util_dstrcat(NULL, "%d", total_pts);
+  char *nb = g_strdup_printf("%d", total_pts);
   _set_up_label(nb, GTK_ALIGN_CENTER, grid, 3, line, PANGO_ELLIPSIZE_NONE);
   g_free(nb);
-  nb = dt_util_dstrcat(NULL, "%d / %d", total_imgs, d->nb_imgs);
+  nb = g_strdup_printf("%d / %d", total_imgs, d->nb_imgs);
   _set_up_label(nb, GTK_ALIGN_CENTER, grid, 4, line, PANGO_ELLIPSIZE_NONE);
   g_free(nb);
 
