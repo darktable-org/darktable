@@ -535,7 +535,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     count = 1;
   }
 
-  gboolean skip[md_size] = {false};
+  gboolean skip[md_size] = {FALSE};
 
   if (count > 1)
   {
@@ -601,8 +601,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     sqlite3_finalize(stmt);
 
     // Tags and categories management
-    gboolean same_tags = true;
-    gboolean same_categories = true;
+    gboolean same_tags = TRUE;
+    gboolean same_categories = TRUE;
 
     while (sqlite3_step(stmt_tags) == SQLITE_ROW)
     {
@@ -636,7 +636,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   // Update the metadata values
   for (int32_t md = 0; md < md_size; md++)
   {
-    if (skip[md] == true)
+    if (skip[md] == TRUE)
     {
 #if SHOW_FLAGS
       if (md == md_internal_flags)
