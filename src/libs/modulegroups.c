@@ -100,7 +100,6 @@ typedef struct dt_lib_modulegroups_basic_item_t
   GtkPackType packtype;
   gboolean sensitive;
   gchar *tooltip;
-  gchar *label;
   gboolean visible;
   int grid_x, grid_y, grid_w, grid_h;
 
@@ -448,10 +447,10 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
       gtk_widget_set_tooltip_text(item->widget, item->tooltip);
     }
     // put back label
-    if(item->label && DT_IS_BAUHAUS_WIDGET(item->widget))
+    if(DT_IS_BAUHAUS_WIDGET(item->widget))
     {
       DtBauhausWidget *bw = DT_BAUHAUS_WIDGET(item->widget);
-      snprintf(bw->label, sizeof(bw->label), "%s", item->label);
+      bw->show_extended_label = FALSE;
     }
   }
   // cleanup item
@@ -466,11 +465,6 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
   {
     g_free(item->tooltip);
     item->tooltip = NULL;
-  }
-  if(item->label)
-  {
-    g_free(item->label);
-    item->label = NULL;
   }
 }
 
@@ -634,14 +628,9 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       return;
     }
 
-    // reinit the item to be sure to have the right label
-    // as some module may have changed the label manually after gui_init
-    _basics_init_item(item);
-
     // save old values
     item->sensitive = gtk_widget_get_sensitive(item->widget);
     item->tooltip = gtk_widget_get_tooltip_text(item->widget);
-    item->label = g_strdup(bw->label);
     item->visible = gtk_widget_get_visible(item->widget);
 
     // create new quick access widget
@@ -656,7 +645,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     g_object_unref(item->widget);
 
     // change the widget label to integrate section name
-    snprintf(bw->label, sizeof(bw->label), "%s", item->widget_name);
+    bw->show_extended_label = TRUE;
 
     // we put the temporary widget at the place of the real widget in the module
     // this avoid order mismatch when putting back the real widget
