@@ -452,8 +452,7 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
     {
       gchar *old = NULL;
 
-      gchar *q_tree_path = NULL;
-      q_tree_path = dt_util_dstrcat(q_tree_path, "%s%%", tree_path);
+      gchar *q_tree_path = g_strdup_printf("%s%%", tree_path);
       query = "SELECT id, folder FROM main.film_rolls WHERE folder LIKE ?1";
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, q_tree_path, -1, SQLITE_TRANSIENT);
@@ -466,8 +465,7 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
         id = sqlite3_column_int(stmt, 0);
         old = (gchar *)sqlite3_column_text(stmt, 1);
 
-        query = NULL;
-        query = dt_util_dstrcat(query, "UPDATE main.film_rolls SET folder=?1 WHERE id=?2");
+        query = g_strdup("UPDATE main.film_rolls SET folder=?1 WHERE id=?2");
 
         gchar trailing[1024] = { 0 };
         gchar final[1024] = { 0 };
@@ -538,8 +536,7 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
     /* Clean selected images, and add to the table those which are going to be deleted */
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
-    fullq = dt_util_dstrcat(fullq,
-                            "INSERT INTO main.selected_images"
+    fullq = g_strdup_printf("INSERT INTO main.selected_images"
                             " SELECT id"
                             " FROM main.images"
                             " WHERE film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%')",
@@ -987,16 +984,12 @@ static void tree_set_visibility(GtkTreeModel *model, gpointer data)
 static void _lib_folders_update_collection(const gchar *filmroll)
 {
 
-  gchar *complete_query = NULL;
-
   // remove from selected images where not in this query.
   sqlite3_stmt *stmt = NULL;
   const gchar *cquery = dt_collection_get_query(darktable.collection);
-  // complete_query = NULL;
   if(cquery && cquery[0] != '\0')
   {
-    complete_query
-        = dt_util_dstrcat(complete_query,
+    gchar *complete_query = g_strdup_printf(
                           "DELETE FROM main.selected_images WHERE imgid NOT IN (%s)",
                           cquery);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), complete_query, -1, &stmt, NULL);
@@ -1634,9 +1627,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
     {
       case DT_COLLECTION_PROP_CAMERA:; // camera
         int index = 0;
-        gchar *makermodel_query = NULL;
-        makermodel_query = dt_util_dstrcat(makermodel_query, "SELECT maker, model, COUNT(*) AS count "
-                "FROM main.images AS mi WHERE %s GROUP BY maker, model", where_ext);
+        gchar *makermodel_query = g_strdup_printf("SELECT maker, model, COUNT(*) AS count "
+                                                  "FROM main.images AS mi WHERE %s GROUP BY maker, model", where_ext);
 
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 makermodel_query,
@@ -1837,7 +1829,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
         {
           const int keyid = dt_metadata_get_keyid_by_display_order(property - DT_COLLECTION_PROP_METADATA);
           const char *name = (gchar *)dt_metadata_get_name(keyid);
-          char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+          char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
           const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
           g_free(setting);
           if(!hidden)
@@ -2791,7 +2783,7 @@ static void _populate_collect_combo(GtkWidget *w)
     {
       const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
       const gchar *name = dt_metadata_get_name(keyid);
-      gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
       const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
       g_free(setting);
       const int meta_type = dt_metadata_get_type(keyid);
@@ -3189,7 +3181,7 @@ void init(struct dt_lib_module_t *self)
     if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
     {
       const char *name = dt_metadata_get_name(i);
-      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
       const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
       g_free(setting);
 

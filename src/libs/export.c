@@ -1874,7 +1874,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     //  - old rest
 
     const gboolean omit = dt_conf_get_bool("omit_tag_hierarchy");
-    char *flags = dt_util_dstrcat(NULL, "%x", dt_lib_export_metadata_default_flags() | (omit ? DT_META_OMIT_HIERARCHY : 0));
+    gchar *flags = g_strdup_printf("%x", dt_lib_export_metadata_default_flags() | (omit ? DT_META_OMIT_HIERARCHY : 0));
     const int flags_size = strlen(flags) + 1;
     const size_t new_params_size = old_params_size + flags_size;
     void *new_params = calloc(1, new_params_size);
