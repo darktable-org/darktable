@@ -2754,9 +2754,9 @@ void dt_gui_load_theme(const char *theme)
   {
     //font name can only use period as decimal separator
     //but printf format strings use comma for some locales, so replace comma with period
-    gchar *font_size = dt_util_dstrcat(NULL, _("%.1f"), dt_conf_get_float("font_size"));
+    gchar *font_size = g_strdup_printf(_("%.1f"), dt_conf_get_float("font_size"));
     gchar *font_size_updated = dt_util_str_replace(font_size, ",", ".");
-    gchar *font_name = dt_util_dstrcat(NULL, _("Sans %s"), font_size_updated);
+    gchar *font_name = g_strdup_printf(_("Sans %s"), font_size_updated);
     g_object_set(gtk_settings_get_default(), "gtk-font-name", font_name, NULL);
     g_free(font_size_updated);
     g_free(font_size);
