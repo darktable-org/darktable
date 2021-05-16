@@ -555,7 +555,7 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection, int e
   else
     complete_string = g_strjoinv(complete_string, ((dt_collection_t *)collection)->where_ext);
 
-  gchar *where_ext = dt_strdup_printf("(1=1%s)", complete_string);
+  gchar *where_ext = g_strdup_printf("(1=1%s)", complete_string);
   g_free(complete_string);
 
   return where_ext;
@@ -2014,7 +2014,7 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
       }
       // 2. search the first imgid not in the list but AFTER the list (or in a gap inside the list)
       // we need to be carefull that some images in the list may not be present on screen (collapsed groups)
-      gchar *query = g_strdup_print( "SELECT imgid"
+      gchar *query = g_strdup_printf("SELECT imgid"
                                      " FROM memory.collected_images"
                                      " WHERE imgid NOT IN (%s)"
                                      "  AND rowid > (SELECT rowid"
@@ -2259,8 +2259,7 @@ int64_t dt_collection_get_image_position(const int32_t image_id, const int32_t t
   if (image_id >= 0)
   {
     sqlite3_stmt *stmt = NULL;
-    gchar *image_pos_query = g_strdup_printf(
-          image_pos_query,
+    gchar *image_pos_query = g_strdup(
           tagid ? "SELECT position FROM main.tagged_images WHERE imgid = ?1 AND tagid = ?2"
                 : "SELECT position FROM main.images WHERE id = ?1");
 
