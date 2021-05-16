@@ -684,8 +684,7 @@ static void _images_to_act_on_insert_in_list(GList **list, const int imgid, gboo
     else
     {
       sqlite3_stmt *stmt;
-      gchar *query = dt_util_dstrcat(
-          NULL,
+      gchar *query = g_strdup_printf(
           "SELECT id"
           "  FROM main.images"
           "  WHERE group_id = %d AND id IN (%s)",
@@ -765,7 +764,7 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
     {
       // column 1,2
       sqlite3_stmt *stmt;
-      gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM main.selected_images WHERE imgid=%d", mouseover);
+      gchar *query = g_strdup_printf("SELECT imgid FROM main.selected_images WHERE imgid=%d", mouseover);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
       {
@@ -873,7 +872,7 @@ gchar *dt_view_get_images_to_act_on_query(const gboolean only_visible)
     {
       // column 1,2
       sqlite3_stmt *stmt;
-      gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM main.selected_images WHERE imgid =%d", mouseover);
+      gchar *query = g_strdup_printf("SELECT imgid FROM main.selected_images WHERE imgid =%d", mouseover);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
       {
