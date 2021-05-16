@@ -89,13 +89,13 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
 
   // the group leader
   if(thumb->imgid == thumb->groupid)
-    tt = dt_util_dstrcat(tt, "\n<b>%s (%s)</b>", _("current"), _("leader"));
+    tt = g_strdup_printf("\n<b>%s (%s)</b>", _("current"), _("leader"));
   else
   {
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->groupid, 'r');
     if(img)
     {
-      tt = dt_util_dstrcat(tt, "\n<b>%s (%s)</b>", img->filename, _("leader"));
+      tt = g_strdup_printf("\n<b>%s (%s)</b>", img->filename, _("leader"));
       dt_image_cache_read_release(darktable.image_cache, img);
     }
   }
@@ -126,7 +126,7 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
   sqlite3_finalize(stmt);
 
   // and the number of grouped images
-  gchar *ttf = dt_util_dstrcat(NULL, "%d %s\n%s", nb, _("grouped images"), tt);
+  gchar *ttf = g_strdup_printf("%d %s\n%s", nb, _("grouped images"), tt);
   g_free(tt);
 
   // let's apply the tooltip
@@ -272,11 +272,10 @@ static void _thumb_write_extension(dt_thumbnail_t *thumb)
 {
   // fill the file extension label
   const char *ext = thumb->filename + strlen(thumb->filename);
-  gchar *ext2 = NULL;
   while(ext > thumb->filename && *ext != '.') ext--;
   ext++;
   gchar *uext = dt_view_extend_modes_str(ext, thumb->is_hdr, thumb->is_bw, thumb->is_bw_flow);
-  ext2 = dt_util_dstrcat(ext2, "%s", uext);
+  gchar *ext2 = g_strdup_printf("%s", uext);
   gtk_label_set_text(GTK_LABEL(thumb->w_ext), ext2);
   g_free(uext);
   g_free(ext2);
@@ -675,7 +674,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       }
       else
       {
-        gchar *z = dt_util_dstrcat(NULL, "%.0f%%", thumb->zoom * 100.0 / thumb->zoom_100);
+        gchar *z = g_strdup_printf("%.0f%%", thumb->zoom * 100.0 / thumb->zoom_100);
         gtk_label_set_text(GTK_LABEL(thumb->w_zoom), z);
         g_free(z);
       }
@@ -1736,7 +1735,7 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
     g_strfreev(ts);
     g_free(txt);
 
-    gchar *cl = dt_util_dstrcat(NULL, "dt_thumbnails_%d", i);
+    gchar *cl = g_strdup_printf("dt_thumbnails_%d", i);
     GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image);
     if(!gtk_style_context_has_class(context, cl))
     {
