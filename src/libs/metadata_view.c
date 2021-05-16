@@ -513,7 +513,6 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       sqlite3_stmt *stmt;
 
-      //SELECT COUNT(imgid), imgid FROM main.selected_images
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid, COUNT(imgid) FROM main.selected_images",
                                   -1, &stmt, NULL);
       if (sqlite3_step(stmt) == SQLITE_ROW)
@@ -523,14 +522,14 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       }
       sqlite3_finalize(stmt);
 
-      // Still -1 => no selection in progress
+      // Still 0 => no selection in progress
       if(count == 0)
       {
         goto fill_minuses;
       }
     }
   }
-  else
+  else // over an image
   {
     count = 1;
   }
