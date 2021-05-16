@@ -2502,8 +2502,7 @@ static gboolean _view_map_center_on_image_list(dt_view_t *self, const char* tabl
   double min_latitude = INFINITY;
   int count = 0;
 
-  char *query = dt_util_dstrcat(NULL,
-                                "SELECT MIN(latitude), MAX(latitude),"
+  gchar *query = g_strdup_printf("SELECT MIN(latitude), MAX(latitude),"
                                 "       MIN(longitude), MAX(longitude), COUNT(*)"
                                 " FROM main.images AS i "
                                 " JOIN %s AS l ON l.imgid = i.id "

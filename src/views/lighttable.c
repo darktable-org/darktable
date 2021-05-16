@@ -199,7 +199,7 @@ static void _lighttable_check_layout(dt_view_t *self)
     {
       int id = lib->thumbtable_offset;
       sqlite3_stmt *stmt;
-      gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid=%d",
+      gchar *query = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d",
                                      dt_conf_get_int("plugins/lighttable/culling_last_id"));
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -274,11 +274,11 @@ static void _culling_preview_reload_overlays(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
 
   // change overlays if needed for culling and preview
-  gchar *otxt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling/%d", DT_CULLING_MODE_CULLING);
+  gchar *otxt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", DT_CULLING_MODE_CULLING);
   dt_thumbnail_overlay_t over = dt_conf_get_int(otxt);
   dt_culling_set_overlays_mode(lib->culling, over);
   g_free(otxt);
-  otxt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling/%d", DT_CULLING_MODE_PREVIEW);
+  otxt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", DT_CULLING_MODE_PREVIEW);
   over = dt_conf_get_int(otxt);
   dt_culling_set_overlays_mode(lib->preview, over);
   g_free(otxt);
