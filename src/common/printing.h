@@ -60,8 +60,8 @@ typedef struct dt_screen_pos
 typedef struct dt_images_box
 {
   int32_t imgid_to_load;
-  int count;
   int32_t motion_over;
+  int count;
   dt_image_box box[MAX_IMAGE_PER_PAGE];
   float page_width, page_height;       // full print page in pixels
   float page_width_mm, page_height_mm; // full print page in mm
