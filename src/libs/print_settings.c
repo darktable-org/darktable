@@ -79,6 +79,7 @@ typedef struct dt_lib_print_settings_t
   GtkWidget *b_x, *b_y;
   GtkWidget *b_width, *b_height;
   GtkWidget *del;
+  GtkWidget *grid, *grid_size, *snap_grid;
   GList *profiles;
   GtkButton *print_button;
   GtkToggleButton *lock_button;
@@ -134,7 +135,7 @@ typedef struct _dialog_description
   const char *name;
 } dialog_description_t;
 
-static const float units[3] = {1.0f, 0.1f, 1.0f/25.4f};
+static const float units[3] = { 1.0f, 0.1f, 1.0f/25.4f };
 
 static void _update_slider(dt_lib_print_settings_t *ps);
 static void _width_changed(GtkWidget *widget, gpointer user_data);
@@ -1040,9 +1041,36 @@ _orientation_changed(GtkWidget *combo, dt_lib_module_t *self)
 }
 
 static void
+_snap_grid_callback(GtkWidget *widget, dt_lib_module_t *self)
+{
+  dt_control_queue_redraw_center();
+}
+
+static void
+_grid_callback(GtkWidget *widget, dt_lib_module_t *self)
+{
+  dt_control_queue_redraw_center();
+}
+
+static void _grid_size_changed(GtkWidget *widget, dt_lib_module_t *self)
+{
+  if(darktable.gui->reset) return;
+
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+  const float value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->grid_size));
+  dt_conf_set_float("plugins/print/print/grid_size", to_mm(ps, value));
+
+  dt_control_queue_redraw_center();
+}
+
+static void
 _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
 {
+  if(darktable.gui->reset) return;
+
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  const float grid_size = dt_conf_get_float("plugins/print/print/grid_size");
 
   const int unit = dt_bauhaus_combobox_get(combo);
   if(unit < 0) return; // shouldn't happen, but it could be -1 if nothing is selected
@@ -1056,10 +1084,14 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
 
   const int n_digits = (int)(1.0 / (units[ps->unit] * 10.0));
 
+  ++darktable.gui->reset;
+
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_top),    n_digits);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_bottom), n_digits);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_left),   n_digits);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_right),  n_digits);
+
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->grid_size),  n_digits);
 
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_x),      2);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_y),      2);
@@ -1078,6 +1110,8 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
   gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_width), incr, incr);
   gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_height), incr, incr);
 
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->grid_size), incr, incr);
+
   _update_slider(ps);
 
   // convert margins to new unit
@@ -1085,6 +1119,11 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), margin_bottom * units[ps->unit]);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left),   margin_left * units[ps->unit]);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right),  margin_right * units[ps->unit]);
+
+  // grid size
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->grid_size), grid_size * units[ps->unit]);
+
+  --darktable.gui->reset;
 
   _fill_box_values(ps);
 }
@@ -1458,6 +1497,38 @@ int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressur
          break;
     }
     expose = TRUE;
+
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ps->snap_grid)))
+    {
+      // V lines
+      const float step = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->grid_size)) * units[ps->unit];
+
+      // only display the grid if a step of 3 pixels
+      const float diff = DT_PIXEL_APPLY_DPI(3);
+
+      float grid_pos = (float)ps->imgs.screen.page.x;
+
+      const float h_step = _mm_to_hscreen(ps, step, FALSE);
+
+      while(grid_pos < ps->imgs.screen.page.x + ps->imgs.screen.page.width)
+      {
+        if(fabsf(ps->x1 - grid_pos) < diff) ps->x1 = grid_pos;
+        if(fabsf(ps->x2 - grid_pos) < diff) ps->x2 = grid_pos;
+        grid_pos += h_step;
+      }
+
+      // H lines
+      grid_pos = (float)ps->imgs.screen.page.y;
+
+      const float v_step = _mm_to_vscreen(ps, step, FALSE);
+
+      while(grid_pos < ps->imgs.screen.page.y + ps->imgs.screen.page.height)
+      {
+        if(fabsf(ps->y1 - grid_pos) < diff) ps->y1 = grid_pos;
+        if(fabsf(ps->y2 - grid_pos) < diff) ps->y2 = grid_pos;
+        grid_pos += v_step;
+      }
+    }
   }
   else if(!ps->creation)
   {
@@ -1642,6 +1713,45 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     // page is properly set before trying to display the image.
     _set_orientation(ps, ps->imgs.imgid_to_load);
     g_timeout_add(250, _expose_again, ps);
+  }
+
+  // display grid
+
+  // 1mm
+
+  const float step = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->grid_size)) * units[ps->unit];
+
+  // only display grid if spacing more than 5 pixels
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ps->grid))
+     && (int)_mm_to_hscreen(ps, step, FALSE) > DT_PIXEL_APPLY_DPI(5))
+  {
+    cairo_set_source_rgba(cr, 1, .2, .2, 1.0);
+    cairo_set_line_width(cr, 1.0);
+
+    // V lines
+    float grid_pos = (float)ps->imgs.screen.page.x;
+
+    const float h_step = _mm_to_hscreen(ps, step, FALSE);
+
+    while(grid_pos < ps->imgs.screen.page.x + ps->imgs.screen.page.width)
+    {
+      cairo_move_to(cr, grid_pos, ps->imgs.screen.page.y);
+      cairo_line_to(cr, grid_pos, ps->imgs.screen.page.y + ps->imgs.screen.page.height);
+      grid_pos += h_step;
+    }
+
+    // H lines
+    grid_pos = (float)ps->imgs.screen.page.y;
+
+    const float v_step = _mm_to_vscreen(ps, step, FALSE);
+
+    while(grid_pos < ps->imgs.screen.page.y + ps->imgs.screen.page.height)
+    {
+      cairo_move_to(cr, ps->imgs.screen.page.x, grid_pos);
+      cairo_line_to(cr, ps->imgs.screen.page.x + ps->imgs.screen.page.width, grid_pos);
+      grid_pos += v_step;
+    }
+    cairo_stroke(cr);
   }
 
   const float scaler = 1.0f / darktable.gui->ppd_thb;
@@ -1870,6 +1980,8 @@ void gui_init(dt_lib_module_t *self)
   d->b_width  = gtk_spin_button_new_with_range(0, 1000, 1);
   d->b_height = gtk_spin_button_new_with_range(0, 1000, 1);
 
+  d->grid_size = gtk_spin_button_new_with_range(0, 100, 0.1);
+
   gtk_entry_set_alignment(GTK_ENTRY(d->b_top), 1);
   gtk_entry_set_alignment(GTK_ENTRY(d->b_left), 1);
   gtk_entry_set_alignment(GTK_ENTRY(d->b_right), 1);
@@ -1880,6 +1992,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_alignment(GTK_ENTRY(d->b_width), 1);
   gtk_entry_set_alignment(GTK_ENTRY(d->b_height), 1);
 
+  gtk_entry_set_alignment(GTK_ENTRY(d->grid_size), 1);
+
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_top));
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_left));
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_right));
@@ -1889,6 +2003,8 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_y));
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_width));
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_height));
+
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->grid_size));
 
   ////////////////////////// PRINTER SETTINGS
 
@@ -2101,6 +2217,30 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_widget_set_halign(GTK_WIDGET(hboxdim), GTK_ALIGN_CENTER);
   gtk_widget_set_halign(GTK_WIDGET(hboxinfo), GTK_ALIGN_CENTER);
+
+  // grid & snap grid
+  {
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+    d->snap_grid = gtk_check_button_new_with_label(_("snap to grid"));
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(d->snap_grid), TRUE, TRUE, 0);
+
+    d->grid = gtk_check_button_new_with_label(_("display grid"));
+    // d->grid_size = gtk_spin_button_new_with_range(0, 100, 0.1);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->grid), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->grid_size), TRUE, TRUE, 0);
+
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(d->grid_size),
+                              dt_conf_get_float("plugins/print/print/grid_size") * units[d->unit]);
+
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 0);
+
+    g_signal_connect(G_OBJECT(d->grid_size), "value-changed", G_CALLBACK(_grid_size_changed), self);
+    g_signal_connect(G_OBJECT(d->grid), "toggled", G_CALLBACK(_grid_callback), self);
+    g_signal_connect(d->snap_grid, "toggled", G_CALLBACK(_snap_grid_callback), (gpointer)self);
+  }
 
   // pack image dimension hbox here
 
@@ -2805,6 +2945,8 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_width));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_right));
 
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->grid_size));
+
   g_list_free_full(ps->profiles, g_free);
   g_list_free_full(ps->paper_list, free);
   g_list_free_full(ps->media_list, free);
@@ -2825,6 +2967,8 @@ void gui_reset(dt_lib_module_t *self)
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), 17 * units[ps->unit]);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left), 17 * units[ps->unit]);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), 17 * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->grid_size), 10 * units[ps->unit]);
+
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->dtba[ALIGNMENT_CENTER]), TRUE);
   ps->prt.printer.intent = DT_INTENT_PERCEPTUAL;
   dt_bauhaus_combobox_set(ps->profile, 0);
