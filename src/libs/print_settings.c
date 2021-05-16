@@ -1677,7 +1677,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
         cairo_translate(cr, screen.x, screen.y);
         cairo_scale(cr, scaler, scaler);
         cairo_set_source_surface(cr, surf, 0, 0);
-        cairo_paint(cr);
+        cairo_paint_with_alpha(cr, ps->dragging ? 0.5 : 1.0);
         cairo_surface_destroy(surf);
         cairo_restore(cr);
         if(ps->busy) dt_control_log_busy_leave();
