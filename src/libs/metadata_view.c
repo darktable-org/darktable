@@ -570,41 +570,62 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     /* EXIF */
     _metadata_update_value(md_exif_model, img->camera_alias, self);
-    _metadata_update_value(md_exif_lens, img->exif_lens, self);
+
+    if(strlen(img->exif_lens) > 0)
+      _metadata_update_value(md_exif_lens, img->exif_lens, self);
+    else
+      _metadata_update_value(md_exif_lens, NODATA_STRING, self);
+
     _metadata_update_value(md_exif_maker, img->camera_maker, self);
 
-    snprintf(value, sizeof(value), "f/%.1f", img->exif_aperture);
-    _metadata_update_value(md_exif_aperture, value, self);
+    if(img->exif_aperture > 0.0f)
+    {
+      snprintf(value, sizeof(value), "f/%.1f", img->exif_aperture);
+      _metadata_update_value(md_exif_aperture, value, self);
+    }
+    else
+      _metadata_update_value(md_exif_aperture, NODATA_STRING, self);
 
-    char *exposure_str = dt_util_format_exposure(img->exif_exposure);
-    _metadata_update_value(md_exif_exposure, exposure_str, self);
-    g_free(exposure_str);
+    if(img->exif_exposure > 0.0f)
+    {
+      char *exposure_str = dt_util_format_exposure(img->exif_exposure);
+      _metadata_update_value(md_exif_exposure, exposure_str, self);
+      g_free(exposure_str);
+    }
+    else
+      _metadata_update_value(md_exif_exposure, NODATA_STRING, self);
 
     if(isnan(img->exif_exposure_bias))
-    {
       _metadata_update_value(md_exif_exposure_bias, NODATA_STRING, self);
-    }
     else
     {
       snprintf(value, sizeof(value), _("%+.2f EV"), img->exif_exposure_bias);
       _metadata_update_value(md_exif_exposure_bias, value, self);
     }
 
-    snprintf(value, sizeof(value), "%.0f mm", img->exif_focal_length);
-    _metadata_update_value(md_exif_focal_length, value, self);
+    if(img->exif_focal_length > 0.0f)
+    {
+      snprintf(value, sizeof(value), "%.0f mm", img->exif_focal_length);
+      _metadata_update_value(md_exif_focal_length, value, self);
+    }
+    else
+      _metadata_update_value(md_exif_focal_length, NODATA_STRING, self);
 
     if(isnan(img->exif_focus_distance) || fpclassify(img->exif_focus_distance) == FP_ZERO)
-    {
       _metadata_update_value(md_exif_focus_distance, NODATA_STRING, self);
-    }
     else
     {
       snprintf(value, sizeof(value), "%.2f m", img->exif_focus_distance);
       _metadata_update_value(md_exif_focus_distance, value, self);
     }
 
-    snprintf(value, sizeof(value), "%.0f", img->exif_iso);
-    _metadata_update_value(md_exif_iso, value, self);
+    if(img->exif_iso > 0.0f)
+    {
+      snprintf(value, sizeof(value), "%.0f", img->exif_iso);
+      _metadata_update_value(md_exif_iso, value, self);
+    }
+    else
+      _metadata_update_value(md_exif_iso, NODATA_STRING, self);
 
     struct tm tt_exif = { 0 };
     if(sscanf(img->exif_datetime_taken, "%d:%d:%d %d:%d:%d", &tt_exif.tm_year, &tt_exif.tm_mon,
