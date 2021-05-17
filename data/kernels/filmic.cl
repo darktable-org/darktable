@@ -16,7 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "basic.cl"
+#include "common.h"
+#include "colorspace.h"
+#include "color_conversion.h"
 #include "noise_generator.h"
 
 #define INVERSE_SQRT_3 0.5773502691896258f
