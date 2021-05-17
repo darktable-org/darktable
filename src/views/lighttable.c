@@ -108,7 +108,8 @@ static void _preview_quit(dt_view_t *self)
   dt_ui_restore_panels(darktable.gui->ui);
 
   // show/hide filmstrip & timeline when entering the view
-  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING
+     || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
   {
     // update thumbtable, to indicate if we navigate inside selection or not
     // this is needed as collection change is handle there
@@ -255,7 +256,8 @@ static void _lighttable_change_offset(dt_view_t *self, gboolean reset, gint imgi
   }
 
   // culling change (note that full_preview can be combined with culling)
-  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING
+     || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
   {
     dt_culling_change_offset_image(lib->culling, imgid);
   }
@@ -296,7 +298,8 @@ static void _culling_preview_refresh(dt_view_t *self)
   }
 
   // culling change (note that full_preview can be combined with culling)
-  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING
+     || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
   {
     dt_culling_full_redraw(lib->culling, TRUE);
   }
@@ -517,7 +520,7 @@ void enter(dt_view_t *self)
   dt_collection_hint_message(darktable.collection);
 
   // show/hide filmstrip & timeline when entering the view
-  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING || lib->preview_state)
+  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING || layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC || lib->preview_state)
   {
     dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
     dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
@@ -774,7 +777,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     }
   }
 
-  else if(lib->preview_state || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  else if(lib->preview_state || layout == DT_LIGHTTABLE_LAYOUT_CULLING
+          || layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
   {
     dt_culling_move_t move = DT_CULLING_MOVE_NONE;
     if(key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods)
@@ -937,7 +941,8 @@ static gboolean _accel_culling_zoom_100(GtkAccelGroup *accel_group, GObject *acc
 
   if(lib->preview_state)
     dt_culling_zoom_max(lib->preview);
-  else if(dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
+  else if(dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING
+          || dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
     dt_culling_zoom_max(lib->culling);
   else
     return FALSE;
@@ -953,7 +958,8 @@ static gboolean _accel_culling_zoom_fit(GtkAccelGroup *accel_group, GObject *acc
 
   if(lib->preview_state)
     dt_culling_zoom_fit(lib->preview);
-  else if(dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
+  else if(dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING
+          || dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
     dt_culling_zoom_fit(lib->culling);
   else
     return FALSE;
@@ -1039,7 +1045,8 @@ GSList *mouse_actions(const dt_view_t *self)
       lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_DRAG_DROP, GDK_BUTTON1_MASK, _("change image order"));
     }
   }
-  else if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  else if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING
+          || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
   {
     lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("scroll the collection"));
     lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("zoom all the images"));
