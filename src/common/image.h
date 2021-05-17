@@ -318,7 +318,7 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t user_fl
 dt_image_orientation_t dt_image_get_orientation(const int32_t imgid);
 /** get max width and height of the final processed image with its current hisotry stack */
 gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height);
-void dt_image_reset_final_size(const int32_t imgid);
+void dt_image_update_final_size(const int32_t imgid);
 /** set image location lon/lat/ele */
 void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc,
                            const gboolean undo_on, const gboolean group_on);

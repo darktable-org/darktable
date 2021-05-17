@@ -384,6 +384,10 @@ static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *
 {
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
   g->preview_ready = TRUE;
+  if(self->dev->gui_module != self)
+  {
+    dt_image_update_final_size(self->dev->preview_pipe->output_imgid);
+  }
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_preview_updated_callback), self);
 }
 
@@ -407,7 +411,9 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     }
     else
     {
-      DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_preview_updated_callback), self);
+      // once the pipe is recomputed, we want to update final sizes
+      DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                                      G_CALLBACK(_event_preview_updated_callback), self);
       // hack : commit_box use distort_transform routines with gui values to get params
       // but this values are accurate only if crop is the gui_module...
       // so we temporary put back gui_module to crop and revert once finished

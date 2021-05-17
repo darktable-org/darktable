@@ -115,7 +115,7 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
 
   /* make sure mipmaps are recomputed */
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
-  dt_image_reset_final_size(imgid);
+  dt_image_update_final_size(imgid);
 
   /* remove darktable|style|* tags */
   dt_tag_detach_by_string("darktable|style|%", imgid, FALSE, FALSE);
@@ -180,7 +180,7 @@ int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only
     // ugly but if not history_only => called from crawler - do not write the xmp
                                  history_only ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED);
     dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
-    dt_image_reset_final_size(imgid);
+    dt_image_update_final_size(imgid);
   }
   dt_unlock_image(imgid);
   // signal that the mipmap need to be updated
@@ -791,7 +791,7 @@ int dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_i
   dt_image_synch_xmp(dest_imgid);
 
   dt_mipmap_cache_remove(darktable.mipmap_cache, dest_imgid);
-  dt_image_reset_final_size(imgid);
+  dt_image_update_final_size(imgid);
 
   /* update the aspect ratio. recompute only if really needed for performance reasons */
   if(darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
