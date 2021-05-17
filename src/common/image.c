@@ -651,11 +651,20 @@ void dt_image_set_images_locations(const GList *imgs, const GArray *gloc, const 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
 }
 
-void dt_image_reset_final_size(const int32_t imgid)
+void dt_image_update_final_size(const int32_t imgid)
 {
+  int ww = 0, hh = 0;
+  if(darktable.develop && darktable.develop->pipe && darktable.develop->pipe->output_imgid == imgid)
+  {
+    dt_dev_pixelpipe_get_dimensions(darktable.develop->pipe, darktable.develop, darktable.develop->pipe->iwidth,
+                                    darktable.develop->pipe->iheight, &ww, &hh);
+  }
   dt_image_t *imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-  imgtmp->final_width = imgtmp->final_height = 0;
+  imgtmp->final_width = ww;
+  imgtmp->final_height = hh;
+  if(ww > 0 && hh > 0) imgtmp->verified_size = TRUE;
   dt_image_cache_write_release(darktable.image_cache, imgtmp, DT_IMAGE_CACHE_RELAXED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
 }
 
 gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
@@ -763,7 +772,7 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orienta
   dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
 
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
-  dt_image_reset_final_size(imgid);
+  dt_image_update_final_size(imgid);
   // write that through to xmp:
   dt_image_write_sidecar_file(imgid);
 }
