@@ -18904,11 +18904,11 @@ msgstr "hauteur"
 
 #: ../src/libs/metadata_view.c:154
 msgid "export width"
-msgstr "largeur exporté"
+msgstr "largeur recadrée"
 
 #: ../src/libs/metadata_view.c:155
 msgid "export height"
-msgstr "hauteur exporté"
+msgstr "hauteur recadrée"
 
 #: ../src/libs/metadata_view.c:163
 msgid "longitude"
