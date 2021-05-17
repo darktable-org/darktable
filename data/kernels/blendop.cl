@@ -18,6 +18,7 @@
 
 #include "colorspace.h"
 #include "color_conversion.h"
+#include "common.h"
 
 typedef enum dt_develop_blend_mode_t
 {
@@ -1517,4 +1518,3 @@ blendop_display_channel(__read_only image2d_t in_a, __read_only image2d_t in_b, 
 
   write_imagef(out, (int2)(x, y), a);
 }
-
