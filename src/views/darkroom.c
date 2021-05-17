@@ -907,7 +907,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
   if (!dt_history_hash_is_mipmap_synced(dev->image_storage.id))
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
-    dt_image_reset_final_size(dev->image_storage.id);
+    dt_image_update_final_size(dev->image_storage.id);
     dt_image_synch_xmp(dev->image_storage.id);
     dt_history_hash_set_mipmap(dev->image_storage.id);
   }
@@ -3100,7 +3100,7 @@ void leave(dt_view_t *self)
   if (!dt_history_hash_is_mipmap_synced(dev->image_storage.id))
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
-    dt_image_reset_final_size(dev->image_storage.id);
+    dt_image_update_final_size(dev->image_storage.id);
     // dump new xmp data
     dt_image_synch_xmp(dev->image_storage.id);
     dt_history_hash_set_mipmap(dev->image_storage.id);
@@ -3582,7 +3582,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   closeup = 0;
 
   const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
-  const float stepup = 0.1f * fabsf(1.0f - fitscale) / ppd; 
+  const float stepup = 0.1f * fabsf(1.0f - fitscale) / ppd;
   if(up)
   {
     if(fitscale <= 1.0f && (scale == (1.0f / ppd) || scale == (2.0f / ppd)) && constrained) return; // for large image size
@@ -3672,7 +3672,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       zoom = DT_ZOOM_1;
     }
   }
-  
+
   if(fabsf(scale - 1.0f) < 0.001f) zoom = DT_ZOOM_1;
   if(fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;
   dt_control_set_dev_zoom_scale(scale);
