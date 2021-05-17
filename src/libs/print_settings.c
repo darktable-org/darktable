@@ -1725,34 +1725,46 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ps->grid))
      && (int)_mm_to_hscreen(ps, step, FALSE) > DT_PIXEL_APPLY_DPI(5))
   {
-    cairo_set_source_rgba(cr, 1, .2, .2, 1.0);
-    cairo_set_line_width(cr, 1.0);
+    const double dash[] = { 5.0, 5.0 };
+    cairo_set_source_rgba(cr, 1, .2, .2, 0.6);
 
     // V lines
     float grid_pos = (float)ps->imgs.screen.page.x;
 
     const float h_step = _mm_to_hscreen(ps, step, FALSE);
+    int n = 0;
 
     while(grid_pos < ps->imgs.screen.page.x + ps->imgs.screen.page.width)
     {
+      cairo_set_dash(cr, dash, ((n % 5) == 0) ? 0 : 2, 5);
+      cairo_set_line_width(cr, ((n % 5) == 0) ? 1.0 : 0.5);
       cairo_move_to(cr, grid_pos, ps->imgs.screen.page.y);
       cairo_line_to(cr, grid_pos, ps->imgs.screen.page.y + ps->imgs.screen.page.height);
+      cairo_stroke(cr);
       grid_pos += h_step;
+      n++;
     }
 
     // H lines
     grid_pos = (float)ps->imgs.screen.page.y;
 
     const float v_step = _mm_to_vscreen(ps, step, FALSE);
+    n = 0;
 
     while(grid_pos < ps->imgs.screen.page.y + ps->imgs.screen.page.height)
     {
+      cairo_set_dash(cr, dash, ((n % 5) == 0) ? 0 : 2, 5);
+      cairo_set_line_width(cr, ((n % 5) == 0) ? 1.0 : 0.5);
       cairo_move_to(cr, ps->imgs.screen.page.x, grid_pos);
       cairo_line_to(cr, ps->imgs.screen.page.x + ps->imgs.screen.page.width, grid_pos);
+      cairo_stroke(cr);
       grid_pos += v_step;
+      n++;
     }
-    cairo_stroke(cr);
   }
+
+  // disable dash
+  cairo_set_dash(cr, NULL, 0, 0);
 
   const float scaler = 1.0f / darktable.gui->ppd_thb;
 
