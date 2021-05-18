@@ -115,6 +115,12 @@ void _lib_imageinfo_update_message(gpointer instance, dt_lib_module_t *self)
   g_free(msg);
 }
 
+void _lib_imageinfo_update_message2(gpointer instance, int query_change, gpointer imgs, const int next,
+                                    dt_lib_module_t *self)
+{
+  _lib_imageinfo_update_message(instance, self);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -138,6 +144,11 @@ void gui_init(dt_lib_module_t *self)
      image in darkroom when enter */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE,
                             G_CALLBACK(_lib_imageinfo_update_message), self);
+
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED,
+                                  G_CALLBACK(_lib_imageinfo_update_message), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+                                  G_CALLBACK(_lib_imageinfo_update_message2), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
