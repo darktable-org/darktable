@@ -40,8 +40,6 @@
 #include "lua/image.h"
 #endif
 
-#define SHOW_FLAGS 1
-
 DT_MODULE(1)
 
 typedef enum dt_metadata_pref_cols_t
@@ -83,9 +81,7 @@ enum
   md_internal_change_timestamp,
   md_internal_export_timestamp,
   md_internal_print_timestamp,
-#if SHOW_FLAGS
   md_internal_flags,
-#endif
 
   /* exif */
   md_exif_model,
@@ -134,9 +130,7 @@ static const char *_labels[] = {
   N_("change timestamp"),
   N_("export timestamp"),
   N_("print timestamp"),
-#if SHOW_FLAGS
   N_("flags"),
-#endif
 
   /* exif */
   N_("model"),
@@ -350,7 +344,6 @@ static gint _lib_metadata_sort_index(gconstpointer a, gconstpointer b)
   return ma->index - mb->index;
 }
 
-#if SHOW_FLAGS
 static void _metadata_get_flags(const dt_image_t *const img, char *const text, char *const tooltip, const size_t tooltip_size)
 {
 #define EMPTY_FIELD '.'
@@ -490,7 +483,6 @@ static void _metadata_get_flags(const dt_image_t *const img, char *const text, c
 #undef TRUE_FIELD
 #undef FLAG_NB
 }
-#endif // SHOW_FLAGS
 
 #ifdef USE_LUA
 static int lua_update_metadata(lua_State*L);
@@ -551,9 +543,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
                                          "COUNT(DISTINCT change_timestamp), "
                                          "COUNT(DISTINCT export_timestamp), "
                                          "COUNT(DISTINCT print_timestamp), "
-#if SHOW_FLAGS
                                          "COUNT(DISTINCT flags), "
-#endif
                                          "COUNT(DISTINCT model), "
                                          "COUNT(DISTINCT maker), "
                                          "COUNT(DISTINCT lens), "
@@ -637,12 +627,11 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   {
     if (skip[md] == TRUE)
     {
-#if SHOW_FLAGS
       if (md == md_internal_flags)
       {
         _metadata_update_tooltip(md, NULL, self);
       }
-#endif //SHOW_FLAGS
+
       if (md == md_internal_filmroll)
       {
         _metadata_update_tooltip(md, NULL, self);
@@ -726,8 +715,6 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
           _metadata_update_value(md_internal_print_timestamp, NODATA_STRING, self);
         break;
 
-        // TODO: decide if this should be removed for a release. maybe #ifdef'ing to only add it to git compiles?
-#if SHOW_FLAGS
       case md_internal_flags:
       {
         char tooltip_flags[300] = {0};
@@ -736,7 +723,6 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         _metadata_update_value(md_internal_flags, text, self);
       }
         break;
-#endif // SHOW_FLAGS
 
       case md_exif_model:
         _metadata_update_value(md_exif_model, img->camera_alias, self);
