@@ -116,6 +116,9 @@ typedef struct dt_shortcut_fallback_t
   float               speed;
 } dt_shortcut_fallback_t;
 
+#define DT_VALUE_PATTERN_PLUS_MINUS 2.f
+#define DT_VALUE_PATTERN_PERCENTAGE 4.f
+
 typedef struct dt_action_def_t
 {
   const gchar *name;

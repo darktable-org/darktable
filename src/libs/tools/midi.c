@@ -196,9 +196,9 @@ void update_with_move(midi_device *midi, PmTimestamp timestamp, gint controller,
     {
       if(isnan(new_position))
         ; // midi_write(midi, 0, 0xB, controller % 10, 0); // off
-      else if(new_position >= 4)
+      else if(new_position >= DT_VALUE_PATTERN_PERCENTAGE)
         midi_write(midi, 0, 0xB, controller % 10, 2); // fan
-      else if(new_position >= 2)
+      else if(new_position >= DT_VALUE_PATTERN_PLUS_MINUS)
         midi_write(midi, 0, 0xB, controller % 10, 4); // trim
       else
         midi_write(midi, 0, 0xB, controller % 10, 1); // pan
