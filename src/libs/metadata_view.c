@@ -507,7 +507,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid, COUNT(imgid) FROM main.selected_images",
                                   -1, &stmt, NULL);
-      if (sqlite3_step(stmt) == SQLITE_ROW)
+      if(sqlite3_step(stmt) == SQLITE_ROW)
       {
         mouse_over_id = sqlite3_column_int(stmt, 0);
         count = sqlite3_column_int(stmt, 1);
@@ -528,7 +528,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
   gboolean skip[md_size] = {FALSE};
 
-  if (count > 1)
+  if(count > 1)
   {
     gchar *const images = dt_view_get_images_to_act_on_query(FALSE);
     sqlite3_stmt *stmt = NULL;
@@ -580,9 +580,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
                                 -1, &stmt_tags, NULL);
     g_free(query);
 
-    if (sqlite3_step(stmt) == SQLITE_ROW)
+    if(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      for (int32_t md = 0; md < md_tag_names; md++)
+      for(int32_t md = 0; md < md_tag_names; md++)
       {
         skip[md] = (sqlite3_column_int(stmt, md) > 1);
       }
@@ -593,9 +593,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     gboolean same_tags = TRUE;
     gboolean same_categories = TRUE;
 
-    while (sqlite3_step(stmt_tags) == SQLITE_ROW)
+    while(sqlite3_step(stmt_tags) == SQLITE_ROW)
     {
-      if (sqlite3_column_int(stmt_tags, 0) & DT_TF_CATEGORY)
+      if(sqlite3_column_int(stmt_tags, 0) & DT_TF_CATEGORY)
       {
         same_categories &= (sqlite3_column_int(stmt_tags, 1) == count);
       }
@@ -614,25 +614,25 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   int img_id = mouse_over_id;
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, img_id, 'r');
 
-  if (!img) goto fill_minuses;
+  if(!img) goto fill_minuses;
 
-  if (img->film_id == -1)
+  if(img->film_id == -1)
   {
     dt_image_cache_read_release(darktable.image_cache, img);
     goto fill_minuses;
   }
 
   // Update the metadata values
-  for (int32_t md = 0; md < md_size; md++)
+  for(int32_t md = 0; md < md_size; md++)
   {
-    if (skip[md] == TRUE)
+    if(skip[md] == TRUE)
     {
-      if (md == md_internal_flags)
+      if(md == md_internal_flags)
       {
         _metadata_update_tooltip(md, NULL, self);
       }
 
-      if (md == md_internal_filmroll)
+      if(md == md_internal_filmroll)
       {
         _metadata_update_tooltip(md, NULL, self);
       }
@@ -643,7 +643,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     char text[PATH_MAX] = {0};
 
-    switch (md)
+    switch(md)
     {
       case md_internal_filmroll:
       {
@@ -751,7 +751,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
       case md_exif_exposure_bias:
         g_strlcpy(text, NODATA_STRING, sizeof(text));
-        if (!(isnan(img->exif_exposure_bias)))
+        if(!(isnan(img->exif_exposure_bias)))
         {
           (void)g_snprintf(text, sizeof(text), _("%+.2f EV"), (double)img->exif_exposure_bias);
         }
@@ -767,7 +767,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         (void)g_strlcpy(text, NODATA_STRING, sizeof(text));
         if(!(isnan(img->exif_focus_distance) || (fpclassify(img->exif_focus_distance) == FP_ZERO) ))
         {
-          (void)g_snprintf(text, sizeof(text), "%.2f m", (double)img->exif_focus_distance);
+          (void)g_snprintf(text, sizeof(text), _("%.2f m"), (double)img->exif_focus_distance);
         }
         _metadata_update_value(md_exif_focus_distance, text, self);
         break;
@@ -795,7 +795,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       break;
 
       case md_exif_width:
-        if (img->p_width && (img->p_width != img->width))
+        if(img->p_width && (img->p_width != img->width))
         {
           (void)g_snprintf(text, sizeof(text), "%d (%d)", img->p_width, img->width);
           _metadata_update_value(md_exif_width, text, self);
@@ -808,7 +808,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         break;
 
       case md_exif_height:
-        if (img->p_height && (img->p_height != img->height))
+        if(img->p_height && (img->p_height != img->height))
         {
           (void)g_snprintf(text, sizeof(text), "%d (%d)", img->p_height, img->height);
           _metadata_update_value(md_exif_height, text, self);
@@ -842,13 +842,13 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 //          break;
 
       case md_geotagging_lat:
-        if (isnan(img->geoloc.latitude))
+        if(isnan(img->geoloc.latitude))
         {
           _metadata_update_value(md_geotagging_lat, NODATA_STRING, self);
         }
         else
         {
-          if (dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
+          if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
           {
             gchar *latitude = dt_util_latitude_str((float)img->geoloc.latitude);
             _metadata_update_value(md_geotagging_lat, latitude, self);
@@ -918,7 +918,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
           for(GList *taglist = tags; taglist; taglist = g_list_next(taglist))
           {
             const char *tagname = ((dt_tag_t *)taglist->data)->leave;
-            if (!(((dt_tag_t *)taglist->data)->flags & DT_TF_CATEGORY))
+            if(!(((dt_tag_t *)taglist->data)->flags & DT_TF_CATEGORY))
             {
               // tags - just keywords
               length = length + strlen(tagname) + 2u;
@@ -935,7 +935,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
               // categories - needs parent category to make sense
               char *category = g_strdup(((dt_tag_t *)taglist->data)->tag);
               char *catend = g_strrstr(category, "|");
-              if (catend)
+              if(catend)
               {
                 catend[0] = '\0';
                 char *catstart = g_strrstr(category, "|");
@@ -968,7 +968,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     }
 
     //cases not handled by switch
-    if (md >= md_xmp_metadata && md < (md_xmp_metadata + DT_METADATA_NUMBER))
+    if(md >= md_xmp_metadata && md < (md_xmp_metadata + DT_METADATA_NUMBER))
     {
       g_strlcpy(text, NODATA_STRING, sizeof(text));
 
