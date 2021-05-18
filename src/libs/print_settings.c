@@ -211,6 +211,7 @@ static float _vscreen_to_mm(dt_lib_print_settings_t *ps, const float value, cons
     / ps->imgs.screen.page.height;
 }
 
+
 static inline float _percent_unit_of(dt_lib_print_settings_t *ps, float ref, float value)
 {
   return value * ref * units[ps->unit];
@@ -1852,10 +1853,51 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
   }
 
   // now display new area if any
-  if(ps->dragging)
+  if(ps->dragging || ps->selected != -1)
   {
+    float dx1, dy1, dx2, dy2, dwidth, dheight; // displayed values
+    float x1, y1, x2, y2;                      // box screen coordinates
+
+    if(ps->dragging)
+    {
+      x1      = ps->x1;
+      y1      = ps->y1;
+      x2      = ps->x2;
+      y2      = ps->y2;
+
+      dx1     = _hscreen_to_mm(ps, ps->x1, TRUE);
+      dy1     = _vscreen_to_mm(ps, ps->y1, TRUE);
+      dx2     = _hscreen_to_mm(ps, ps->x2, TRUE);
+      dy2     = _vscreen_to_mm(ps, ps->y2, TRUE);
+      dwidth  = fabsf(dx2 - dx1);
+      dheight = fabsf(dy2 - dy1);
+    }
+    else
+    {
+      const dt_image_box *box = &ps->imgs.box[ps->selected];
+
+      // we could use a simpler solution but we want to use the same formulae used
+      // to fill the editable box values to avoid discrepencies between values due
+      // to rounding errors.
+
+      float pwidth, pheight;
+      _get_page_dimention(&ps->prt, &pwidth, &pheight);
+
+      dx1     = _percent_unit_of(ps, pwidth, box->pos.x);
+      dy1     = _percent_unit_of(ps, pheight, box->pos.y);
+      dwidth  = _percent_unit_of(ps, pwidth, box->pos.width);
+      dheight = _percent_unit_of(ps, pheight, box->pos.height);
+      dx2     = dx1 + dwidth;
+      dy2     = dy1 + dheight;
+
+      x1 = box->screen.x;
+      y1 = box->screen.y;
+      x2 = box->screen.x + box->screen.width;
+      y2 = box->screen.y + box->screen.height;
+    }
+
     cairo_set_source_rgba(cr, .4, .4, .4, 1.0);
-    _cairo_rectangle(cr, ps->sel_controls, ps->x1, ps->y1, ps->x2, ps->y2);
+    _cairo_rectangle(cr, ps->sel_controls, x1, y1, x2, y2);
 
     // display size-box
     char dimensions[100];
@@ -1869,20 +1911,17 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
 
     snprintf(dimensions, sizeof(dimensions),
              "(%.2f %.2f) -> (%.2f %.2f) | (%.2f x %.2f)",
-             _hscreen_to_mm(ps, ps->x1, TRUE) * units[ps->unit],
-             _vscreen_to_mm(ps, ps->y1, TRUE) * units[ps->unit],
-             _hscreen_to_mm(ps, ps->x2, TRUE) * units[ps->unit],
-             _vscreen_to_mm(ps, ps->y2, TRUE) * units[ps->unit],
-             _hscreen_to_mm(ps, fabsf(ps->x2 - ps->x1), FALSE) * units[ps->unit],
-             _hscreen_to_mm(ps, fabsf(ps->y2 - ps->y1), FALSE) * units[ps->unit]);
+             dx1 * units[ps->unit],    dy1 * units[ps->unit],
+             dx2 * units[ps->unit],    dy2 * units[ps->unit],
+             dwidth * units[ps->unit], dheight * units[ps->unit]);
 
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, NULL, &ext);
     const float text_w = ext.width;
     const float text_h = DT_PIXEL_APPLY_DPI(16+2);
     const float margin = DT_PIXEL_APPLY_DPI(6);
-    const float xp = (ps->x1 + ps->x2 - text_w) * .5f;
-    const float yp = ps->y1 - text_h - (margin * 2.0f);
+    const float xp = (x1 + x2 - text_w) * .5f;
+    const float yp = y1 - text_h - (margin * 2.0f);
 
     cairo_set_source_rgba(cr, .5, .5, .5, .9);
     dt_gui_draw_rounded_rectangle(cr, text_w + 2 * margin, text_h + 2 * margin,
