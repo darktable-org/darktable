@@ -949,10 +949,9 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
   dt_iop_rgblevels_gui_data_t *c = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)self->params;
 
-  float bottop = -1e6;
-
   if(move_size)
   {
+    float bottop = -1e6;
     switch(effect)
     {
     case DT_ACTION_EFFECT_RESET:
