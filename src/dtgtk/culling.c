@@ -124,6 +124,8 @@ static gboolean _compute_sizes(dt_culling_t *table, gboolean force)
     dt_thumbnail_t *th = (dt_thumbnail_t *)table->list->data;
     if(th->imgid != table->offset_imgid || th->display_focus != table->focus) ret = TRUE;
   }
+  else if(table->offset_imgid > 0)
+    ret = TRUE;
 
   if(table->mode == DT_CULLING_MODE_CULLING)
   {
@@ -981,6 +983,7 @@ void dt_culling_init(dt_culling_t *table, int offset)
     if(sel_count == 0)
     {
       dt_control_log(_("no image selected !"));
+      first_id = -1;
     }
     table->navigate_inside_selection = TRUE;
     table->offset = _thumb_get_rowid(first_id);
