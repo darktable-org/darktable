@@ -3021,8 +3021,8 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
   }
 
   return d->pos +
-         ( d->min == -d->max ? 2 :
-         ( d->min == 0 && (d->max == 1 || d->max == 100) ? 4 : 0 ));
+         ( d->min == -d->max                             ? DT_VALUE_PATTERN_PLUS_MINUS :
+         ( d->min == 0 && (d->max == 1 || d->max == 100) ? DT_VALUE_PATTERN_PERCENTAGE : 0 ));
 }
 
 gboolean combobox_idle_value_changed(gpointer widget)

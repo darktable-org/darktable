@@ -530,11 +530,11 @@ static gchar *_shortcut_description(dt_shortcut_t *s, gboolean full)
 
     if(s->speed != 1.0) add_hint(_(", %s *%g"), _("speed"), s->speed);
 
-    const dt_action_element_def_t *def = _action_find_elements(s->action);
-    if(def)
+    const dt_action_def_t *def = _action_find_definition(s->action);
+    if(def && def->elements)
     {
-      if(s->element ) add_hint(", %s", def[s->element].name);
-      if(s->effect>0) add_hint(", %s", def[s->element].effects[s->effect]);
+      if(s->element || !def->fallbacks ) add_hint(", %s", def->elements[s->element].name);
+      if(s->effect > 0) add_hint(", %s", def->elements[s->element].effects[s->effect]);
     }
   }
 
@@ -580,7 +580,7 @@ GHashTable *dt_shortcut_category_lists(dt_view_type_flags_t v)
 static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
                                            GtkTooltip *tooltip, gpointer user_data)
 {
-  gchar *instructions = "";
+  gchar *markup_text = NULL;
   gchar *description = NULL;
   dt_action_t *action = NULL;
 
@@ -597,10 +597,13 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
     gtk_tree_view_set_tooltip_row(GTK_TREE_VIEW(widget), tooltip, path);
     gtk_tree_path_free(path);
 
-    instructions = _("click to filter shortcut list\ndouble click to define new shortcut");
+    markup_text = g_markup_escape_text(_("click to filter shortcut list\ndouble click to define new shortcut"), -1);
   }
   else
     action = g_hash_table_lookup(darktable.control->widgets, widget);
+
+  const dt_action_def_t *def = _action_find_definition(action);
+  gboolean has_fallbacks = def && def->fallbacks;
 
   for(GSequenceIter *iter = g_sequence_get_begin_iter(darktable.control->shortcuts);
       !g_sequence_iter_is_end(iter);
@@ -608,38 +611,31 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
   {
     dt_shortcut_t *s = g_sequence_get(iter);
     if(s->action == action &&
-       (s->element == DT_ACTION_ELEMENT_DEFAULT || s->element == darktable.control->element))
+       (s->element == darktable.control->element || (s->element == DT_ACTION_ELEMENT_DEFAULT && has_fallbacks)))
     {
-      gchar *old_description = description;
-      description = g_strdup_printf("%s\n%s", description ? description : "", _shortcut_description(s, TRUE));
-      g_free(old_description);
+      description = dt_util_dstrcat(description, "\n%s", _shortcut_description(s, TRUE));
     }
   }
 
   if(description)
   {
     gchar *original_markup = gtk_widget_get_tooltip_markup(widget);
-    gchar *instr_escaped = g_markup_escape_text(instructions, -1);
     gchar *desc_escaped = g_markup_escape_text(description, -1);
-    gchar *markup_text = g_strdup_printf("%s%s%s<span style='italic' foreground='red'>%s</span>",
-                                         instr_escaped, *instr_escaped ? "\n" : "",
-                                         original_markup ? original_markup : _("shortcuts:"), desc_escaped);
-    gtk_tooltip_set_markup(tooltip, markup_text);
+    markup_text = dt_util_dstrcat(markup_text, "%s%s<span style='italic' foreground='red'>%s</span>",
+                                  markup_text ? "\n" : "",
+                                  original_markup ? original_markup : _("shortcuts:"), desc_escaped);
     g_free(original_markup);
     g_free(desc_escaped);
-    g_free(instr_escaped);
-    g_free(markup_text);
     g_free(description);
-
-    return TRUE;
   }
-  else if(GTK_IS_TREE_VIEW(widget))
+
+  if(markup_text)
   {
-    gtk_tooltip_set_text(tooltip, instructions);
+    gtk_tooltip_set_markup(tooltip, markup_text);
+    g_free(markup_text);
 
     return TRUE;
   }
-
 
   return FALSE;
 }
