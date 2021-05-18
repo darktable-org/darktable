@@ -96,7 +96,7 @@ static inline void convert_CAT16_LMS_to_XYZ(const float LMS[4], float XYZ[4])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ, LMS:16) uniform(kind)
 #endif
-static inline void convert_any_LMS_to_XYZ(const float LMS[4], float XYZ[4], dt_adaptation_t kind)
+static inline void convert_any_LMS_to_XYZ(const float LMS[4], float XYZ[4], const dt_adaptation_t kind)
 {
   // helper function switching internally to the proper conversion
 
