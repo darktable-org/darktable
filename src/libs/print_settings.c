@@ -533,6 +533,7 @@ static void _page_new_area_clicked(GtkWidget *widget, gpointer user_data)
   }
 
   ps->creation = TRUE;
+  ps->has_changed = TRUE;
 }
 
 static void _page_clear_area_clicked(GtkWidget *widget, gpointer user_data)
@@ -540,7 +541,9 @@ static void _page_clear_area_clicked(GtkWidget *widget, gpointer user_data)
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
+  ps->has_changed = TRUE;
   dt_printing_clear_boxes(&ps->imgs);
+  gtk_widget_set_sensitive(ps->del, FALSE);
   dt_control_queue_redraw_center();
 }
 
@@ -567,6 +570,7 @@ static void _page_delete_area_clicked(GtkWidget *widget, gpointer user_data)
 
   _fill_box_values(ps);
 
+  ps->has_changed = TRUE;
   dt_control_queue_redraw_center();
 }
 
@@ -1436,6 +1440,39 @@ int mouse_leave(struct dt_lib_module_t *self)
   return 0;
 }
 
+static void _snap_to_grid(dt_lib_print_settings_t *ps, float *x, float *y)
+{
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ps->snap_grid)))
+  {
+    // V lines
+    const float step = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->grid_size)) * units[ps->unit];
+
+    // only display the grid if a step of 5 pixels
+    const float diff = DT_PIXEL_APPLY_DPI(5);
+
+    float grid_pos = (float)ps->imgs.screen.page.x;
+
+    const float h_step = _mm_to_hscreen(ps, step, FALSE);
+
+    while(grid_pos < ps->imgs.screen.page.x + ps->imgs.screen.page.width)
+    {
+      if(fabsf(*x - grid_pos) < diff) *x = grid_pos;
+      grid_pos += h_step;
+    }
+
+    // H lines
+    grid_pos = (float)ps->imgs.screen.page.y;
+
+    const float v_step = _mm_to_vscreen(ps, step, FALSE);
+
+    while(grid_pos < ps->imgs.screen.page.y + ps->imgs.screen.page.height)
+    {
+      if(fabsf(*y - grid_pos) < diff) *y = grid_pos;
+      grid_pos += v_step;
+    }
+  }
+}
+
 int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressure, int which)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
@@ -1446,6 +1483,7 @@ int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressur
   {
     ps->x2 = x;
     ps->y2 = y;
+    _snap_to_grid(ps, &ps->x2, &ps->y2);
     expose = TRUE;
   }
   else if(ps->dragging)
@@ -1498,37 +1536,8 @@ int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressur
     }
     expose = TRUE;
 
-    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ps->snap_grid)))
-    {
-      // V lines
-      const float step = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->grid_size)) * units[ps->unit];
-
-      // only display the grid if a step of 3 pixels
-      const float diff = DT_PIXEL_APPLY_DPI(3);
-
-      float grid_pos = (float)ps->imgs.screen.page.x;
-
-      const float h_step = _mm_to_hscreen(ps, step, FALSE);
-
-      while(grid_pos < ps->imgs.screen.page.x + ps->imgs.screen.page.width)
-      {
-        if(fabsf(ps->x1 - grid_pos) < diff) ps->x1 = grid_pos;
-        if(fabsf(ps->x2 - grid_pos) < diff) ps->x2 = grid_pos;
-        grid_pos += h_step;
-      }
-
-      // H lines
-      grid_pos = (float)ps->imgs.screen.page.y;
-
-      const float v_step = _mm_to_vscreen(ps, step, FALSE);
-
-      while(grid_pos < ps->imgs.screen.page.y + ps->imgs.screen.page.height)
-      {
-        if(fabsf(ps->y1 - grid_pos) < diff) ps->y1 = grid_pos;
-        if(fabsf(ps->y2 - grid_pos) < diff) ps->y2 = grid_pos;
-        grid_pos += v_step;
-      }
-    }
+    _snap_to_grid(ps, &ps->x1, &ps->y1);
+    _snap_to_grid(ps, &ps->x2, &ps->y2);
   }
   else if(!ps->creation)
   {
@@ -1624,6 +1633,8 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
     ps->selected = -1;
     ps->x1 = ps->x2 = x;
     ps->y1 = ps->y2 = y;
+
+    _snap_to_grid(ps, &ps->x1, &ps->y1);
   }
   else if(ps->selected != -1)
   {
@@ -1647,31 +1658,46 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
 void _cairo_rectangle(cairo_t *cr, const int sel_controls,
                                const int x1, const int y1, const int x2, const int y2)
 {
-  const float sel_width = 3.0;
-  const float std_width = 1.0;
+  const float sel_width = DT_PIXEL_APPLY_DPI(3.0);
+  const float std_width = DT_PIXEL_APPLY_DPI(1.0);
 
   const gboolean all = sel_controls == BOX_ALL;
 
-  cairo_move_to (cr, x1, y1);
+  cairo_move_to(cr, x1, y1);
   cairo_set_line_width(cr, (all || sel_controls == BOX_LEFT) ? sel_width : std_width);
-  cairo_line_to (cr, x1, y2);
+  cairo_line_to(cr, x1, y2);
   cairo_stroke(cr);
 
-  cairo_move_to (cr, x1, y2);
+  cairo_move_to(cr, x1, y2);
   cairo_set_line_width(cr, (all || sel_controls == BOX_BOTTOM) ? sel_width : std_width);
-  cairo_line_to (cr, x2, y2);
+  cairo_line_to(cr, x2, y2);
   cairo_stroke(cr);
 
-  cairo_move_to (cr, x2, y2);
+  cairo_move_to(cr, x2, y2);
   cairo_set_line_width(cr, (all || sel_controls == BOX_RIGHT) ? sel_width : std_width);
-  cairo_line_to (cr, x2, y1);
+  cairo_line_to(cr, x2, y1);
   cairo_stroke(cr);
 
-  cairo_move_to (cr, x2, y1);
+  cairo_move_to(cr, x2, y1);
   cairo_set_line_width(cr, (all || sel_controls == BOX_TOP) ? sel_width : std_width);
-  cairo_line_to (cr, x1, y1);
+  cairo_line_to(cr, x1, y1);
   cairo_stroke(cr);
 
+  if(sel_controls == 0)
+  {
+    const double dash[] = { DT_PIXEL_APPLY_DPI(3.0), DT_PIXEL_APPLY_DPI(3.0) };
+    cairo_set_dash(cr, dash, 2, 0);
+
+    // no image inside
+    cairo_move_to(cr, x1, y1);
+    cairo_line_to(cr, x2, y2);
+
+    cairo_move_to(cr, x1, y2);
+    cairo_line_to(cr, x2, y1);
+    cairo_stroke(cr);
+  }
+
+  cairo_set_dash(cr, NULL, 0, 0);
   cairo_set_line_width(cr, sel_width);
 
   if(sel_controls == BOX_TOP_LEFT)
@@ -1725,7 +1751,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ps->grid))
      && (int)_mm_to_hscreen(ps, step, FALSE) > DT_PIXEL_APPLY_DPI(5))
   {
-    const double dash[] = { 5.0, 5.0 };
+    const double dash[] = { DT_PIXEL_APPLY_DPI(5.0), DT_PIXEL_APPLY_DPI(5.0) };
     cairo_set_source_rgba(cr, 1, .2, .2, 0.6);
 
     // V lines
@@ -1736,8 +1762,8 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
 
     while(grid_pos < ps->imgs.screen.page.x + ps->imgs.screen.page.width)
     {
-      cairo_set_dash(cr, dash, ((n % 5) == 0) ? 0 : 2, 5);
-      cairo_set_line_width(cr, ((n % 5) == 0) ? 1.0 : 0.5);
+      cairo_set_dash(cr, dash, ((n % 5) == 0) ? 0 : 2, DT_PIXEL_APPLY_DPI(5));
+      cairo_set_line_width(cr, ((n % 5) == 0) ? DT_PIXEL_APPLY_DPI(1.0) : DT_PIXEL_APPLY_DPI(0.5));
       cairo_move_to(cr, grid_pos, ps->imgs.screen.page.y);
       cairo_line_to(cr, grid_pos, ps->imgs.screen.page.y + ps->imgs.screen.page.height);
       cairo_stroke(cr);
@@ -1753,8 +1779,8 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
 
     while(grid_pos < ps->imgs.screen.page.y + ps->imgs.screen.page.height)
     {
-      cairo_set_dash(cr, dash, ((n % 5) == 0) ? 0 : 2, 5);
-      cairo_set_line_width(cr, ((n % 5) == 0) ? 1.0 : 0.5);
+      cairo_set_dash(cr, dash, ((n % 5) == 0) ? 0 : 2, DT_PIXEL_APPLY_DPI(5));
+      cairo_set_line_width(cr, ((n % 5) == 0) ? DT_PIXEL_APPLY_DPI(1.0) : DT_PIXEL_APPLY_DPI(0.5));
       cairo_move_to(cr, ps->imgs.screen.page.x, grid_pos);
       cairo_line_to(cr, ps->imgs.screen.page.x + ps->imgs.screen.page.width, grid_pos);
       cairo_stroke(cr);
@@ -1764,6 +1790,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
   }
 
   // disable dash
+  cairo_set_source_rgba(cr, 1, .2, .2, 0.6);
   cairo_set_dash(cr, NULL, 0, 0);
 
   const float scaler = 1.0f / darktable.gui->ppd_thb;
@@ -1809,7 +1836,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
 
     if(k == ps->selected || img->imgid == -1)
     {
-      cairo_set_source_rgba(cr, .5, .5, .5, 1.0);
+      cairo_set_source_rgba(cr, .4, .4, .4, 1.0);
       _cairo_rectangle(cr, (k == ps->selected) ? ps->sel_controls : 0,
                        img->screen.x, img->screen.y,
                        img->screen.x + img->screen.width, img->screen.y + img->screen.height);
@@ -1818,7 +1845,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
 
     if(k == ps->imgs.motion_over)
     {
-      cairo_set_source_rgba(cr, .4, .4, .4, 1.0);
+      cairo_set_source_rgba(cr, .2, .2, .2, 1.0);
       cairo_rectangle(cr, img->screen.x, img->screen.y, img->screen.width, img->screen.height);
       cairo_fill(cr);
     }
@@ -1827,6 +1854,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
   // now display new area if any
   if(ps->dragging)
   {
+    cairo_set_source_rgba(cr, .4, .4, .4, 1.0);
     _cairo_rectangle(cr, ps->sel_controls, ps->x1, ps->y1, ps->x2, ps->y2);
 
     // display size-box
