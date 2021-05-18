@@ -179,8 +179,18 @@ typedef struct dt_iop_channelmixer_rbg_data_t
   dt_iop_channelmixer_rgb_version_t version;
 } dt_iop_channelmixer_rbg_data_t;
 
+typedef struct dt_iop_channelmixer_rgb_global_data_t
+{
+  int kernel_channelmixer_rgb_xyz;
+  int kernel_channelmixer_rgb_cat16;
+  int kernel_channelmixer_rgb_bradford_full;
+  int kernel_channelmixer_rgb_bradford_linear;
+  int kernel_channelmixer_rgb_rgb;
+} dt_iop_channelmixer_rgb_global_data_t;
 
-const char *name()
+
+const char *
+name()
 {
   return _("color calibration");
 }
@@ -1885,6 +1895,171 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     }
 }
 
+#if TRUE //HAVE_OPENCL
+int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_channelmixer_rbg_data_t *const d = (dt_iop_channelmixer_rbg_data_t *)piece->data;
+  dt_iop_channelmixer_rgb_global_data_t *const gd = (dt_iop_channelmixer_rgb_global_data_t *)self->global_data;
+  const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
+  //dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+
+  declare_cat_on_pipe(self, FALSE);
+
+  // dt_iop_have_required_input_format() has reset the trouble message.
+  // we must set it again in case of any trouble.
+  _check_for_wb_issue_and_set_trouble_message(self);
+
+  if(d->illuminant_type == DT_ILLUMINANT_CAMERA)
+  {
+    // The camera illuminant is a behaviour rather than a preset of values:
+    // it uses whatever is in the RAW EXIF. But it depends on what temperature.c is doing
+    // and needs to be updated accordingly, to give a consistent result.
+    // We initialise the CAT defaults using the temperature coeffs at startup, but if temperature
+    // is changed later, we get no notification of the change here, so we can't update the defaults.
+    // So we need to re-run the detection at runtime…
+    float x, y;
+    float custom_wb[4];
+    get_white_balance_coeff(self, custom_wb);
+
+    if(find_temperature_from_raw_coeffs(&(self->dev->image_storage), custom_wb, &(x), &(y)))
+    {
+      // Convert illuminant from xyY to XYZ
+      float XYZ[4];
+      illuminant_xy_to_XYZ(x, y, XYZ);
+
+      // Convert illuminant from XYZ to Bradford modified LMS
+      convert_any_XYZ_to_LMS(XYZ, d->illuminant, d->adaptation);
+      d->illuminant[3] = 0.f;
+    }
+  }
+
+  cl_int err = -999;
+
+  if(piece->colors != 4)
+  {
+    dt_control_log(_("channelmixerrgb works only on RGB input"));
+    return err;
+  }
+
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+
+  cl_mem input_matrix_cl = NULL;
+  cl_mem output_matrix_cl = NULL;
+  cl_mem MIX_cl = NULL;
+
+  float DT_ALIGNED_ARRAY RGB_to_XYZ[3][4];
+  float DT_ALIGNED_ARRAY XYZ_to_RGB[3][4];
+
+  // repack the matrices as flat AVX2-compliant matrice
+  if(work_profile)
+  {
+    // work profile can't be fetched in commit_params since it is not yet initialised
+    repack_3x3_to_3xSSE(work_profile->matrix_in, RGB_to_XYZ);
+    repack_3x3_to_3xSSE(work_profile->matrix_out, XYZ_to_RGB);
+  }
+
+  input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), RGB_to_XYZ);
+  output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), XYZ_to_RGB);
+  MIX_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), d->MIX);
+
+  // select the right kernel for the current LMS space
+  int kernel = gd->kernel_channelmixer_rgb_rgb;
+
+  switch(d->adaptation)
+  {
+    case DT_ADAPTATION_FULL_BRADFORD:
+    {
+      kernel = gd->kernel_channelmixer_rgb_bradford_full;
+      break;
+    }
+    case DT_ADAPTATION_LINEAR_BRADFORD:
+    {
+      kernel = gd->kernel_channelmixer_rgb_bradford_linear;
+      break;
+    }
+    case DT_ADAPTATION_CAT16:
+    {
+      kernel = gd->kernel_channelmixer_rgb_cat16;
+      break;
+    }
+    case DT_ADAPTATION_XYZ:
+    {
+      kernel = gd->kernel_channelmixer_rgb_xyz;
+      break;
+     }
+    case DT_ADAPTATION_RGB:
+    case DT_ADAPTATION_LAST:
+    {
+      kernel = gd->kernel_channelmixer_rgb_rgb;
+      break;
+    }
+  }
+
+  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&input_matrix_cl);
+  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(cl_mem), (void *)&output_matrix_cl);
+  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(cl_mem), (void *)&MIX_cl);
+  dt_opencl_set_kernel_arg(devid, kernel, 7, 4 * sizeof(float), (void *)&d->illuminant);
+  dt_opencl_set_kernel_arg(devid, kernel, 8, 4 * sizeof(float), (void *)&d->saturation);
+  dt_opencl_set_kernel_arg(devid, kernel, 9, 4 * sizeof(float), (void *)&d->lightness);
+  dt_opencl_set_kernel_arg(devid, kernel, 10, 4 * sizeof(float), (void *)&d->grey);
+  dt_opencl_set_kernel_arg(devid, kernel, 11, sizeof(float), (void *)&d->p);
+  dt_opencl_set_kernel_arg(devid, kernel, 12, sizeof(float), (void *)&d->gamut);
+  dt_opencl_set_kernel_arg(devid, kernel, 13, sizeof(int), (void *)&d->clip);
+  dt_opencl_set_kernel_arg(devid, kernel, 14, sizeof(int), (void *)&d->apply_grey);
+  dt_opencl_set_kernel_arg(devid, kernel, 15, sizeof(int), (void *)&d->version);
+  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  dt_opencl_release_mem_object(input_matrix_cl);
+  dt_opencl_release_mem_object(output_matrix_cl);
+  dt_opencl_release_mem_object(MIX_cl);
+  return TRUE;
+
+error:
+  if(input_matrix_cl) dt_opencl_release_mem_object(input_matrix_cl);
+  if(output_matrix_cl) dt_opencl_release_mem_object(output_matrix_cl);
+  if(MIX_cl) dt_opencl_release_mem_object(MIX_cl);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_channelmixerrgb] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 32; // extended.cl in programs.conf
+  dt_iop_channelmixer_rgb_global_data_t *gd
+      = (dt_iop_channelmixer_rgb_global_data_t *)malloc(sizeof(dt_iop_channelmixer_rgb_global_data_t));
+
+  module->data = gd;
+  gd->kernel_channelmixer_rgb_cat16 = dt_opencl_create_kernel(program, "channelmixerrgb_CAT16");
+  gd->kernel_channelmixer_rgb_bradford_full = dt_opencl_create_kernel(program, "channelmixerrgb_bradford_full");
+  gd->kernel_channelmixer_rgb_bradford_linear = dt_opencl_create_kernel(program, "channelmixerrgb_bradford_linear");
+  gd->kernel_channelmixer_rgb_xyz = dt_opencl_create_kernel(program, "channelmixerrgb_XYZ");
+  gd->kernel_channelmixer_rgb_rgb = dt_opencl_create_kernel(program, "channelmixerrgb_RGB");
+}
+
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_channelmixer_rgb_global_data_t *gd = (dt_iop_channelmixer_rgb_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_channelmixer_rgb_cat16);
+  dt_opencl_free_kernel(gd->kernel_channelmixer_rgb_bradford_full);
+  dt_opencl_free_kernel(gd->kernel_channelmixer_rgb_bradford_linear);
+  dt_opencl_free_kernel(gd->kernel_channelmixer_rgb_xyz);
+  dt_opencl_free_kernel(gd->kernel_channelmixer_rgb_rgb);
+  free(module->data);
+  module->data = NULL;
+}
+#endif
+
 
 static inline void update_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g,
                                        const float x_increment, const float y_increment)
@@ -2479,6 +2654,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 {
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)p1;
   dt_iop_channelmixer_rbg_data_t *d = (dt_iop_channelmixer_rbg_data_t *)piece->data;
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
 
   d->version = p->version;
 
@@ -2557,6 +2733,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // reference illuminant is hard-set D50 for darktable's pipeline
   // test illuminant is user params
   d->p = powf(0.818155f / d->illuminant[2], 0.0834f);
+
+  // Disable OpenCL path if we are in any kind of diagnose mode (only C path has diagnostics)
+  if(self->dev->gui_attached && g)
+  {
+    if( (g->run_profile && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW) || // color checker extraction mode
+        ( (d->illuminant_type == DT_ILLUMINANT_DETECT_EDGES ||
+           d->illuminant_type == DT_ILLUMINANT_DETECT_SURFACES ) && // WB extraction mode
+           piece->pipe->type == DT_DEV_PIXELPIPE_FULL ) )
+    {
+      piece->process_cl_ready = 0;
+    }
+  }
 }
 
 

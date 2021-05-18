@@ -17,6 +17,7 @@
 */
 
 #include "common.h"
+#include "colorspace.h"
 
 // must be in synch with dt_iop_colorspace_type_t in imageop.h
 typedef enum dt_iop_colorspace_type_t
@@ -106,26 +107,6 @@ inline float4 apply_trc_out(const float4 rgb_in, constant const dt_colorspaces_i
   const float G = lerp_lookup_unbounded(rgb_in.y, lut, profile_info->unbounded_coeffs_out[1], 4, profile_info->lutsize);
   const float B = lerp_lookup_unbounded(rgb_in.z, lut, profile_info->unbounded_coeffs_out[2], 5, profile_info->lutsize);
   const float a = rgb_in.w;
-  return (float4)(R, G, B, a);
-}
-
-inline float4 matrix_product(const float4 xyz, constant const float *const matrix)
-{
-  const float R = matrix[0] * xyz.x + matrix[1] * xyz.y + matrix[2] * xyz.z;
-  const float G = matrix[3] * xyz.x + matrix[4] * xyz.y + matrix[5] * xyz.z;
-  const float B = matrix[6] * xyz.x + matrix[7] * xyz.y + matrix[8] * xyz.z;
-  const float a = xyz.w;
-  return (float4)(R, G, B, a);
-}
-
-
-// same as above but with 4×float padded matrix
-inline float4 matrix_product_float4(const float4 xyz, constant const float *const matrix)
-{
-  const float R = matrix[0] * xyz.x + matrix[1] * xyz.y + matrix[2]  * xyz.z;
-  const float G = matrix[4] * xyz.x + matrix[5] * xyz.y + matrix[6]  * xyz.z;
-  const float B = matrix[8] * xyz.x + matrix[9] * xyz.y + matrix[10] * xyz.z;
-  const float a = xyz.w;
   return (float4)(R, G, B, a);
 }
 
