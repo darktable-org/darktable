@@ -1251,7 +1251,7 @@ static void _scope_view_clicked(GtkWidget *button, dt_lib_histogram_t *d)
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
       d->vectorscope_scale = (d->vectorscope_scale + 1) % DT_LIB_HISTOGRAM_SCALE_N;
-      dt_conf_set_string("plugins/darkroom/histogram/vectorscope_scale",
+      dt_conf_set_string("plugins/darkroom/histogram/vectorscope/scale",
                          dt_lib_histogram_scale_names[d->vectorscope_scale]);
       _vectorscope_view_update(d);
       // trigger new process from scratch depending on whether linear or logarithmic
@@ -1410,7 +1410,7 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
         dt_conf_set_string("plugins/darkroom/histogram/vectorscope",
                            dt_lib_histogram_vectorscope_type_names[d->vectorscope_type]);
         d->vectorscope_scale = DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC;
-        dt_conf_set_string("plugins/darkroom/histogram/vectorscope_scale",
+        dt_conf_set_string("plugins/darkroom/histogram/vectorscope/scale",
                            dt_lib_histogram_scale_names[d->vectorscope_scale]);
         _scope_type_clicked(d->scope_type_button, d);
         d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
@@ -1425,7 +1425,7 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
       else if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
         d->vectorscope_scale = DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC;
-        dt_conf_set_string("plugins/darkroom/histogram/vectorscope_scale",
+        dt_conf_set_string("plugins/darkroom/histogram/vectorscope/scale",
                            dt_lib_histogram_scale_names[d->vectorscope_scale]);
         _colorspace_clicked(d->colorspace_button, d);
       }
@@ -1512,7 +1512,6 @@ void gui_init(dt_lib_module_t *self)
   d->green = dt_conf_get_bool("plugins/darkroom/histogram/show_green");
   d->blue = dt_conf_get_bool("plugins/darkroom/histogram/show_blue");
 
-  // FIXME: this is now very legacy <= c3.2? -- lose this as now that conf enforces options (yes?) this will never happen
   gchar *str = dt_conf_get_string("plugins/darkroom/histogram/mode");
   for(dt_lib_histogram_scope_type_t i=0; i<DT_LIB_HISTOGRAM_SCOPE_N; i++)
     if(g_strcmp0(str, dt_lib_histogram_scope_type_names[i]) == 0)
@@ -1537,7 +1536,7 @@ void gui_init(dt_lib_module_t *self)
       d->vectorscope_type = i;
   g_free(str);
 
-  str = dt_conf_get_string("plugins/darkroom/histogram/vectorscope_scale");
+  str = dt_conf_get_string("plugins/darkroom/histogram/vectorscope/scale");
   for(dt_lib_histogram_scale_t i=0; i<DT_LIB_HISTOGRAM_SCALE_N; i++)
     if(g_strcmp0(str, dt_lib_histogram_scale_names[i]) == 0)
       d->vectorscope_scale = i;
