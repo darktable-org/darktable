@@ -653,6 +653,7 @@ void dt_image_set_images_locations(const GList *imgs, const GArray *gloc, const 
 
 void dt_image_update_final_size(const int32_t imgid)
 {
+  if(imgid <= 0) return;
   int ww = 0, hh = 0;
   if(darktable.develop && darktable.develop->pipe && darktable.develop->pipe->output_imgid == imgid)
   {
