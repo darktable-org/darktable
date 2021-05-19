@@ -2622,6 +2622,18 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/histogram/vectorscope/scale</name>
+    <type>
+      <enum>
+        <option>logarithmic</option>
+        <option>linear</option>
+      </enum>
+    </type>
+    <default>logarithmic</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/histogram/vectorscope/angle</name>
     <type>int</type>
     <default>270</default>
