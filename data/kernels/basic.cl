@@ -20,6 +20,7 @@
 
 #include "colorspace.h"
 #include "color_conversion.h"
+#include "common.h"
 #include "rgb_norms.h"
 
 int
@@ -157,7 +158,7 @@ exposure (read_only image2d_t in, write_only image2d_t out, const int width, con
 
   if(x >= width || y >= height) return;
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  pixel.xyz = (pixel.xyz - black)*scale;
+  pixel.xyz = ((pixel - black ) * scale).xyz;
   write_imagef (out, (int2)(x, y), pixel);
 }
 
