@@ -97,9 +97,9 @@ typedef struct dt_lib_histogram_t
   uint32_t *histogram;
   uint32_t histogram_max;
   // waveform buffers and dimensions
-  float *waveform_linear;
+  dt_atomic_int *waveform_linear;
   uint8_t *waveform_img[3];           // image per RGB channel
-  int waveform_width, waveform_height, waveform_max_width;
+  int waveform_bins, waveform_tones, waveform_max_bins;
   // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
   uint8_t *vectorscope_graph;
   float vectorscope_pt[2];            // point colorpicker position
@@ -186,65 +186,63 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d, const 
   d->histogram_max = MAX(MAX(histogram_max[0], histogram_max[1]), histogram_max[2]);
 }
 
-static void _lib_histogram_process_waveform_hori(dt_lib_histogram_t *const d, const float *const input,
-                                                 const dt_histogram_roi_t *const roi)
+static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const float *const input,
+                                            const dt_histogram_roi_t *const roi)
 {
+  // FIXME: for point sample, calculate whole graph and the point sample values, draw these on top of a dimmer graph
   const int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
   const int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
 
-  // Note that, with current constants, the input buffer is from the
-  // preview pixelpipe and should be <= 1440x900x4. The output buffer
-  // will be <= 360x175x4. Hence process works with a relatively small
-  // quantity of data.
-  const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
-  float *const restrict wf_linear = DT_IS_ALIGNED((float *const restrict)d->waveform_linear);
-
   // Use integral sized bins for columns, as otherwise they will be
   // unequal and have banding. Rely on draw to smoothly do horizontal
-  // scaling. For a 3:2 image, "landscape" orientation, bin_width will
-  // generally be 4, for "portrait" it will generally be 3.
-  // Note that waveform_stride is pre-initialized/hardcoded,
-  // but waveform_width varies, depending on preview image
-  // width and # of bins.
-  const size_t bin_width = ceilf(sample_width / (float)d->waveform_max_width);
-  const size_t wf_width = ceilf(sample_width / (float)bin_width);
-  d->waveform_width = wf_width;
-  const size_t wf_img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, wf_width);
-  const size_t wf_height = d->waveform_height;
-  dt_iop_image_fill(wf_linear, 0.0f, wf_width, wf_height, 3);
+  // scaling. For a horizontal waveform of a 3:2 image, "landscape"
+  // orientation, bin_width will generally be 4, for "portrait" it
+  // will generally be 3. Note that waveform_bins varies, depending on
+  // preview image width and # of bins.
+  const dt_lib_histogram_orient_t orient = d->scope_orient;
+  const int to_bin = orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? sample_width : sample_height;
+  const size_t samples_per_bin = ceilf(to_bin / (float)d->waveform_max_bins);
+  const size_t num_bins = ceilf(to_bin / (float)samples_per_bin);
+  d->waveform_bins = num_bins;
+  const size_t num_tones = d->waveform_tones;
+  // FIXME: uneeded optimization?
+  //const size_t width_i = num_tones-1;
+  //const float width_f = width_i;
 
-  // Every bin_width x height portion of the image is being described
-  // in a 1 pixel x waveform_height portion of the histogram.
-  // NOTE: if constant is decreased, will brighten output
-  const float brightness = wf_height / 40.0f;
-  const float scale = brightness / (sample_height * bin_width);
+  // Note that, with current constants, the input buffer is from the
+  // preview pixelpipe and should be <= 1440x900x4. The output buffer
+  // will be <= 360x128x3. Hence process works with a relatively small
+  // quantity of data.
+  dt_atomic_int *const restrict binned = DT_IS_ALIGNED((dt_atomic_int *const restrict)d->waveform_linear);
+  memset(binned, 0, sizeof(dt_atomic_int) * num_tones * num_bins * 3);
 
-  // 1.0 is at 8/9 of the height!
-  const size_t height_i = wf_height-1;
-  const float height_f = height_i;
-
-  // FIXME: for point sample, calculate whole graph and the point sample values, draw these on top of a dimmer graph
-  // count the colors
-  // FIXME: could flip x/y axes here and when reading to make row-wise iteration?
   // FIXME: Try histogram-style worker threads to process by row and consolidate results. Have the workers do colorspace conversion per-pixel. As there will be no intermediate buffer, even 20 per-thread output buffers will still use less memory.
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, wf_linear, roi, wf_width, wf_height, bin_width, height_f, height_i, scale) \
+  dt_omp_firstprivate(input, binned, roi, num_tones, num_bins, samples_per_bin, sample_height, sample_width, orient) \
   schedule(static)
 #endif
-  for(size_t out_x = 0; out_x < wf_width; out_x++)
-  {
-    const size_t x_from = out_x * bin_width + roi->crop_x;
-    const size_t x_high = MIN(x_from + bin_width, roi->width - roi->crop_width);
-    for(size_t in_x = x_from; in_x < x_high; in_x++)
-      for(size_t in_y = roi->crop_y; in_y < roi->height - roi->crop_height; in_y++)
-        for(size_t k = 0; k < 3; k++)
+  for(size_t y=0; y<sample_height; y++)
+    for(size_t x=0; x<sample_width; x++)
+    {
+      const float *const restrict px = DT_IS_ALIGNED((const float *const restrict)input +
+                                                     4U * ((y + roi->crop_y) * roi->width + x + roi->crop_x));
+      // FIXME: use for_each_channel?
+      for(size_t ch = 0; ch < 3; ch++)
+      {
+        // FIXME: instead of doing this math, apply a transform when drawing?
+        const float v = (8.0f / 9.0f) * px[ch];
+        // FIXME: faster to compare size_t tone than float v for bounds check?
+        // FIXME/NOTE: this changes prior behavior -- of out bounds pixels are not graphed rather than going to 0 -- is this better/worse?
+        if(!isnan(v) && v >= 0.0f && v <= 1.0f)
         {
-          const float v = 1.0f - (8.0f / 9.0f) * in[4U * (roi->width * in_y + in_x) + k];
-          const size_t out_y = isnan(v) ? 0 : MIN((size_t)fmaxf(v*height_f, 0.0f), height_i);
-          wf_linear[(k * wf_height + out_y) * wf_width + out_x] += scale;
+          const size_t bin = (orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? x : y) / samples_per_bin;
+          const size_t tone = (orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? 1.0f-v : v) * (num_tones-1);
+          // FIXME: store bin-wise or tone-wise?
+          dt_atomic_add_int(binned + (ch * num_bins + bin) * num_tones + tone, 1);
         }
-  }
+      }
+    }
 
   // shortcut to change from linear to display gamma -- borrow hybrid log-gamma LUT
   const dt_iop_order_iccprofile_info_t *const profile =
@@ -252,26 +250,29 @@ static void _lib_histogram_process_waveform_hori(dt_lib_histogram_t *const d, co
   // lut for all three channels should be the same
   const float *const restrict lut = DT_IS_ALIGNED((const float *const restrict)profile->lut_out[0]);
   const float lutmax = profile->lutsize - 1;
+  const size_t wf_img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8,
+                                                             orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? num_bins : num_tones);
 
-  // loops are too small (3 * 360 * 175 max iterations) to need threads
+  // Every bin_width x height portion of the image is being described
+  // in a 1 pixel x waveform_tones portion of the histogram.
+  // NOTE: if constant is decreased, will brighten output
+  // FIXME: instead of using an area-beased scale, figure out max bin count and scale to that?
+  const float brightness = num_tones / 40.0f;
+  const float scale = brightness / ((DT_LIB_HISTOGRAM_ORIENT_HORI ? sample_height : sample_width) * samples_per_bin);
+
+  // loops are too small (3 * 360 * 128 max iterations) to need threads
   for(size_t ch = 0; ch < 3; ch++)
-  {
-    uint8_t *const restrict wf_img = DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_img[ch]);
-    for(size_t y = 0; y < wf_height; y++)
-      for(size_t x = 0; x < wf_width; x++)
+    for(size_t bin = 0; bin < num_bins; bin++)
+      for(size_t tone = 0; tone < num_tones; tone++)
       {
-        const float linear = MIN(1.f, wf_linear[(ch * wf_height + y) * wf_width + x]);
-        const float display = lut[(int)(linear * lutmax)];
-        wf_img[y*wf_img_stride + x] = display * 255.f;
+        uint8_t *const restrict wf_img = DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_img[ch]);
+        const float linear = MIN(1.f, scale * binned[(ch * num_bins + bin) * num_tones + tone]);
+        const uint8_t display = lut[(int)(linear * lutmax)] * 255.f;
+        if(orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
+          wf_img[tone * wf_img_stride + bin] = display;
+        else
+          wf_img[bin * wf_img_stride + tone] = display;
       }
-  }
-}
-
-
-static void _lib_histogram_process_waveform_vert(dt_lib_histogram_t *const d, const float *const input,
-                                                 const dt_histogram_roi_t *const roi)
-{
-  // FIXME: STUB
 }
 
 static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, const dt_iop_order_iccprofile_info_t *const vs_prof)
@@ -570,7 +571,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   {
     dt_pthread_mutex_lock(&d->lock);
     memset(d->histogram, 0, sizeof(uint32_t) * 4 * HISTOGRAM_BINS);
-    d->waveform_width = 0;
+    d->waveform_bins = 0;
     d->vectorscope_radius = 0.f;
     dt_pthread_mutex_unlock(&d->lock);
     return;
@@ -624,12 +625,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
     case DT_LIB_HISTOGRAM_SCOPE_PARADE:
-      if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
-        _lib_histogram_process_waveform_hori(d, img_display, &roi);
-      else if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT)
-        _lib_histogram_process_waveform_vert(d, img_display, &roi);
-      else
-        dt_unreachable_codepath();
+      _lib_histogram_process_waveform(d, img_display, &roi);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
       _lib_histogram_process_vectorscope(d, img_display, &roi, profile_info_to);
@@ -681,9 +677,11 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
   // composite before scaling to screen dimensions, as scaling each
   // layer on draw causes a >2x slowdown
   const double alpha_chroma = 0.75, desat_over = 0.75, alpha_over = 0.35;
-  const size_t img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
+  const int img_width = d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? d->waveform_bins : d->waveform_tones;
+  const int img_height = d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? d->waveform_tones : d->waveform_bins;
+  const size_t img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, img_width);
   cairo_surface_t *cs[3] = { NULL, NULL, NULL };
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, d->waveform_width, d->waveform_height);
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, img_width, img_height);
 
   cairo_t *crt = cairo_create(cst);
   cairo_set_operator(crt, CAIRO_OPERATOR_ADD);
@@ -691,7 +689,7 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
     if(mask[ch])
     {
       cs[ch] = cairo_image_surface_create_for_data(d->waveform_img[ch], CAIRO_FORMAT_A8,
-                                                   d->waveform_width, d->waveform_height, img_stride);
+                                                   img_width, img_height, img_stride);
       cairo_set_source_rgba(crt, ch==0 ? 1.:0., ch==1 ? 1.:0., ch==2 ? 1.:0., alpha_chroma);
       cairo_mask_surface(crt, cs[ch], 0., 0.);
     }
@@ -707,7 +705,7 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
 
   // scale and write to output buffer
   cairo_save(cr);
-  cairo_scale(cr, (float)width/d->waveform_width, (float)height/d->waveform_height);
+  cairo_scale(cr, (float)width/img_width, (float)height/img_height);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_source_surface(cr, cst, 0., 0.);
   cairo_paint(cr);
@@ -719,19 +717,24 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, i
 {
   // same composite-to-temp optimization as in waveform code above
   const double alpha_chroma = 0.85, desat_over = 0.85, alpha_over = 0.65;
-  const size_t img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, d->waveform_width, d->waveform_height);
+  const int img_width = d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? d->waveform_bins : d->waveform_tones;
+  const int img_height = d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? d->waveform_tones : d->waveform_bins;
+  const size_t img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, img_width);
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, img_width, img_height);
 
   cairo_t *crt = cairo_create(cst);
-  // Though this scales and throws horizontal data on each composite,
-  // It appears to be fastest and least memory wasteful. The
-  // horizontal resolution will be visually equivalent to waveform.
-  cairo_scale(crt, 1./3., 1.);
+  // Though this scales and throws away data on each composite, it
+  // appears to be fastest and least memory wasteful. The bin-wise
+  // resolution will be visually equivalent to waveform.
+  if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
+    cairo_scale(crt, 1./3., 1.);
+  else
+    cairo_scale(crt, 1., 1./3.);
   for(int ch = 0; ch < 3; ch++)
   {
     cairo_surface_t *cs
       = cairo_image_surface_create_for_data(d->waveform_img[ch], CAIRO_FORMAT_A8,
-                                            d->waveform_width, d->waveform_height, img_stride);
+                                            img_width, img_height, img_stride);
     cairo_set_source_rgba(crt, ch==0 ? 1.:0., ch==1 ? 1.:0., ch==2 ? 1.:0., alpha_chroma);
     cairo_set_operator(crt, CAIRO_OPERATOR_ADD);
     cairo_mask_surface(crt, cs, 0., 0.);
@@ -739,12 +742,15 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, i
     cairo_set_source_rgba(crt, ch==0 ? 1.:desat_over, ch==1 ? 1.:desat_over, ch==2 ? 1.:desat_over, alpha_over);
     cairo_mask_surface(crt, cs, 0., 0.);
     cairo_surface_destroy(cs);
-    cairo_translate(crt, d->waveform_width, 0);
+    if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
+      cairo_translate(crt, img_width, 0);
+    else
+      cairo_translate(crt, 0, img_height);
   }
   cairo_destroy(crt);
 
   cairo_save(cr);
-  cairo_scale(cr, (float)width/d->waveform_width, (float)height/d->waveform_height);
+  cairo_scale(cr, (float)width/img_width, (float)height/img_height);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_source_surface(cr, cst, 0., 0.);
   cairo_paint(cr);
@@ -942,10 +948,12 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
     case DT_LIB_HISTOGRAM_SCOPE_PARADE:
-      dt_draw_waveform_lines(cr, 0, 0, width, height);
+      dt_draw_waveform_lines(cr, 0, 0, width, height,
+                             d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
       // grid is drawn with scope, as it depends on chromaticity scale
+      // FIXME: now that there is no auto-scale but logarithmic/linear, can draw grid here again?
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       dt_unreachable_codepath();
@@ -965,11 +973,11 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
         _lib_histogram_draw_histogram(d, cr, width, height, mask);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-        if(!d->waveform_width) break;
+        if(!d->waveform_bins) break;
         _lib_histogram_draw_waveform(d, cr, width, height, mask);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_PARADE:
-        if(!d->waveform_width) break;
+        if(!d->waveform_bins) break;
         _lib_histogram_draw_rgb_parade(d, cr, width, height);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
@@ -1187,12 +1195,12 @@ static void _scope_orient_update(const dt_lib_histogram_t *d)
     case DT_LIB_HISTOGRAM_ORIENT_HORI:
       gtk_widget_set_tooltip_text(d->scope_view_button, _("set scope to vertical"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
-                             dtgtk_cairo_paint_arrow, CPF_NONE | CPF_DIRECTION_LEFT, NULL);
+                             dtgtk_cairo_paint_arrow, CPF_DIRECTION_DOWN, NULL);
       break;
     case DT_LIB_HISTOGRAM_ORIENT_VERT:
       gtk_widget_set_tooltip_text(d->scope_view_button, _("set scale to horizontal"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
-                             dtgtk_cairo_paint_arrow, CPF_NONE | CPF_DIRECTION_DOWN, NULL);
+                             dtgtk_cairo_paint_arrow, CPF_DIRECTION_LEFT, NULL);
       break;
     case DT_LIB_HISTOGRAM_ORIENT_N:
       dt_unreachable_codepath();
@@ -1639,23 +1647,25 @@ void gui_init(dt_lib_module_t *self)
   // (regardless of ppd). Try to get enough detail for a (default)
   // 350px panel, possibly 2x that on hidpi.  The actual buffer
   // width will vary with integral binning of image.
-  // FIXME: increasing waveform_max_width increases processing speed less than increasing waveform_height -- tune these better?
-  d->waveform_max_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F]/2;
+  // FIXME: increasing waveform_max_bins increases processing speed less than increasing waveform_tones -- tune these better?
+  d->waveform_max_bins = darktable.mipmap_cache->max_width[DT_MIPMAP_F]/2;
   // initially no waveform to draw
-  d->waveform_width = 0;
+  d->waveform_bins = 0;
+  // should be at least 100, which is approx. # of tones the eye can see, larger #'s will make a more detailed scope display at cost of CPU usage
   // 175 rows is the default histogram widget height. It's OK if the
   // widget height changes from this, as the width will almost always
   // be scaled. 175 rows is reasonable CPU usage and represents plenty
   // of tonal gradation. 256 would match the # of bins in a regular
   // histogram.
-  d->waveform_height = 175;
+  d->waveform_tones = 128;
   // FIXME: combine with an intermediate buffer for vectorscope, as only use one or the other
-  d->waveform_linear = dt_iop_image_alloc(d->waveform_max_width, d->waveform_height, 3);
+  d->waveform_linear = dt_alloc_align(64, sizeof(dt_atomic_int) * d->waveform_max_bins * d->waveform_tones * 3U);
   // FIXME: combine waveform_8bit and vectorscope_graph, as only ever use one or the other
   // FIXME: keep alignment instead via single alloc via dt_alloc_perthread()?
+  const size_t bytes_hori = d->waveform_tones * cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_max_bins);
+  const size_t bytes_vert = d->waveform_max_bins * cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_tones);
   for(int ch=0; ch<3; ch++)
-    d->waveform_img[ch] = dt_alloc_align(64, sizeof(uint8_t) * d->waveform_height *
-                                         cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_max_width));
+    d->waveform_img[ch] = dt_alloc_align(64, sizeof(uint8_t) * MAX(bytes_hori, bytes_vert));
 
   // FIXME: what is the appropriate resolution for this: balance memory use, processing speed, helpful resolution
   d->vectorscope_diameter_px = 384;
