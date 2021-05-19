@@ -203,9 +203,9 @@ static inline void dt_draw_semilog_y_grid(cairo_t *cr, const int num, const int 
 
 
 static inline void dt_draw_waveform_lines(cairo_t *cr, const int left, const int top, const int right,
-                                          const int bottom)
+                                          const int bottom, const gboolean horizontal)
 {
-  //   float width = right - left;
+  float width = right - left;
   const float height = bottom - top;
   const int num = 9, middle = 5, white = 1;
   // FIXME: should this vary with ppd?
@@ -219,7 +219,10 @@ static inline void dt_draw_waveform_lines(cairo_t *cr, const int left, const int
   {
     cairo_set_dash(cr, &dashes, k == white || k == middle, 0);
     cairo_set_line_width(cr, k == white ? wd * 3 : k == middle ? wd * 2 : wd);
-    dt_draw_line(cr, left, top + k / (float)num * height, right, top + k / (float)num * height);
+    if(horizontal)
+      dt_draw_line(cr, left, top + k / (float)num * height, right, top + k / (float)num * height);
+    else
+      dt_draw_line(cr, right - k / (float)num * width, top, right - k / (float)num * width, bottom);
     cairo_stroke(cr);
   }
 
