@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <stddef.h>
 #include <math.h>
 #include <stdint.h>
 #ifdef __SSE__
