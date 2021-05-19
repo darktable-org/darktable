@@ -658,6 +658,34 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>ui_last/import_dialog_paned_places_pos</name>
+    <type>int</type>
+    <default>150</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/import_dialog_show_home</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/import_dialog_show_pictures</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/import_dialog_show_mounted</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>ui_last/import_dialog_width</name>
     <type>int</type>
     <default>800</default>
