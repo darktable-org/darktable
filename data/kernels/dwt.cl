@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common.h"
 
 kernel void
 dwt_add_img_to_layer(global float4 *img, global float4 *layer, int width, int height)

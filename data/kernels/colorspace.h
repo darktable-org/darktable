@@ -17,6 +17,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
+#include "common.h"
+
 inline float4 matrix_dot(const float4 vector, const float4 matrix[3])
 {
   float4 output;
@@ -26,6 +30,26 @@ inline float4 matrix_dot(const float4 vector, const float4 matrix[3])
   output.z = dot(vector_copy, matrix[2]);
   output.w = vector.w;
   return output;
+}
+
+
+inline float4 matrix_product(const float4 xyz, constant const float *const matrix)
+{
+  const float R = matrix[0] * xyz.x + matrix[1] * xyz.y + matrix[2] * xyz.z;
+  const float G = matrix[3] * xyz.x + matrix[4] * xyz.y + matrix[5] * xyz.z;
+  const float B = matrix[6] * xyz.x + matrix[7] * xyz.y + matrix[8] * xyz.z;
+  const float a = xyz.w;
+  return (float4)(R, G, B, a);
+}
+
+// same as above but with 4×float padded matrix
+inline float4 matrix_product_float4(const float4 xyz, constant const float *const matrix)
+{
+  const float R = matrix[0] * xyz.x + matrix[1] * xyz.y + matrix[2]  * xyz.z;
+  const float G = matrix[4] * xyz.x + matrix[5] * xyz.y + matrix[6]  * xyz.z;
+  const float B = matrix[8] * xyz.x + matrix[9] * xyz.y + matrix[10] * xyz.z;
+  const float a = xyz.w;
+  return (float4)(R, G, B, a);
 }
 
 inline float4 Lab_2_LCH(float4 Lab)
@@ -550,4 +574,143 @@ inline float4 Ych_to_Yrg(const float4 Ych)
   const float r = c * native_cos(h) + D65[0];
   const float g = c * native_sin(h) + D65[1];
   return (float4)(Y, r, g, Ych.w);
+}
+
+
+inline float4 dt_xyY_to_uvY(const float4 xyY)
+{
+  // This is the linear part of the chromaticity transform from CIE L*u*v* e.g. u'v'.
+  // See https://en.wikipedia.org/wiki/CIELUV
+  // It rescales the chromaticity diagram xyY in a more perceptual way,
+  // but it is still not hue-linear and not perfectly perceptual.
+  // As such, it is the only radiometricly-accurate representation of hue non-linearity in human vision system.
+  // Use it for "hue preserving" (as much as possible) gamut mapping in scene-referred space
+  const float denominator = -2.f * xyY.x + 12.f * xyY.y + 3.f;
+  float4 uvY;
+  uvY.x = 4.f * xyY.x / denominator; // u'
+  uvY.y = 9.f * xyY.y / denominator; // v'
+  uvY.z = xyY.z;                     // Y
+  uvY.w = xyY.w;
+  return uvY;
+}
+
+
+inline float4 dt_uvY_to_xyY(const float4 uvY)
+{
+  // This is the linear part of chromaticity transform from CIE L*u*v* e.g. u'v'.
+  // See https://en.wikipedia.org/wiki/CIELUV
+  // It rescales the chromaticity diagram xyY in a more perceptual way,
+  // but it is still not hue-linear and not perfectly perceptual.
+  // As such, it is the only radiometricly-accurate representation of hue non-linearity in human vision system.
+  // Use it for "hue preserving" (as much as possible) gamut mapping in scene-referred space
+  const float denominator = 6.0f * uvY.x - 16.f * uvY.y + 12.0f;
+  float4 xyY;
+  xyY.x = 9.f * uvY.x / denominator; // x
+  xyY.y = 4.f * uvY.y / denominator; // y
+  xyY.z = uvY.z;                     // Y
+  xyY.w = xyY.w;
+  return xyY;
+}
+
+inline float4 dt_xyY_to_XYZ(const float4 xyY)
+{
+  float4 XYZ;
+  XYZ.x = xyY.z * xyY.x / xyY.y;
+  XYZ.y = xyY.z;
+  XYZ.z = xyY.z * (1.f - xyY.x - xyY.y) / xyY.y;
+  XYZ.w = xyY.w;
+  return XYZ;
+}
+
+// port src/common/chromatic_adaptation.h
+
+inline float4 convert_XYZ_to_bradford_LMS(const float4 XYZ)
+{
+  // Warning : needs XYZ normalized with Y - you need to downscale before
+  const float4 XYZ_to_Bradford_LMS[3] = { {  0.8951f,  0.2664f, -0.1614f, 0.f },
+                                          { -0.7502f,  1.7135f,  0.0367f, 0.f },
+                                          {  0.0389f, -0.0685f,  1.0296f, 0.f } };
+
+  return matrix_dot(XYZ, XYZ_to_Bradford_LMS);
+}
+
+inline float4 convert_bradford_LMS_to_XYZ(const float4 LMS)
+{
+  // Warning : output XYZ normalized with Y - you need to upscale later
+  const float4 Bradford_LMS_to_XYZ[3] = { {  0.9870f, -0.1471f,  0.1600f, 0.f },
+                                          {  0.4323f,  0.5184f,  0.0493f, 0.f },
+                                          { -0.0085f,  0.0400f,  0.9685f, 0.f } };
+
+  return matrix_dot(LMS, Bradford_LMS_to_XYZ);
+}
+
+inline float4 convert_XYZ_to_CAT16_LMS(const float4 XYZ)
+{
+  // Warning : needs XYZ normalized with Y - you need to downscale before
+  const float4 XYZ_to_CAT16_LMS[3] = { {  0.401288f, 0.650173f, -0.051461f, 0.f },
+                                       { -0.250268f, 1.204414f,  0.045854f, 0.f },
+                                       { -0.002079f, 0.048952f,  0.953127f, 0.f } };
+
+  return matrix_dot(XYZ, XYZ_to_CAT16_LMS);
+}
+
+inline float4 convert_CAT16_LMS_to_XYZ(const float4 LMS)
+{
+  // Warning : output XYZ normalized with Y - you need to upscale later
+  const float4 CAT16_LMS_to_XYZ[3] = { {  1.862068f, -1.011255f,  0.149187f, 0.f },
+                                       {  0.38752f ,  0.621447f, -0.008974f, 0.f },
+                                       { -0.015841f, -0.034123f,  1.049964f, 0.f } };
+
+  return matrix_dot(LMS, CAT16_LMS_to_XYZ);
+}
+
+inline void bradford_adapt_D50(float4 *lms_in,
+                               const float4 origin_illuminant,
+                               const float p, const int full)
+{
+  // Bradford chromatic adaptation from origin to target D50 illuminant in LMS space
+  // p = powf(origin_illuminant[2] / D50[2], 0.0834f) needs to be precomputed for performance,
+  // since it is independent from current pixel values
+  // origin illuminant need also to be precomputed to LMS
+
+  // Precomputed D50 primaries in Bradford LMS for ICC transforms
+  const float4 D50 = { 0.996078f, 1.020646f, 0.818155f, 0.f };
+
+  if(full)
+  {
+    float4 temp = *lms_in / origin_illuminant;
+
+    // use linear Bradford if B is negative
+    temp.z = (temp.z > 0.f) ? native_powr(temp.z, p) : temp.z;
+
+    float4 lms_out = D50 * temp;
+  }
+  else
+    *lms_in *= D50 / origin_illuminant;
+}
+
+inline void CAT16_adapt_D50(float4 *lms_in,
+                            const float4 origin_illuminant,
+                            const float D, const int full)
+{
+  // CAT16 chromatic adaptation from origin to target D50 illuminant in LMS space
+  // D is the coefficient of adaptation, depending of the surround lighting
+  // origin illuminant need also to be precomputed to LMS
+
+  // Precomputed D50 primaries in CAT16 LMS for ICC transforms
+  const float4 D50 = { 0.994535f, 1.000997f, 0.833036f, 0.f };
+
+  if(full) *lms_in *= D50 / origin_illuminant;
+  else *lms_in *= (D * D50 / origin_illuminant + 1.f - D);
+}
+
+inline void XYZ_adapt_D50(float4 *lms_in,
+                          const float4 origin_illuminant)
+{
+  // XYZ chromatic adaptation from origin to target D65 illuminant in XYZ space
+  // origin illuminant need also to be precomputed to XYZ
+
+  // Precomputed D50 primaries in XYZ for camera WB adjustment
+  const float4 D50 = { 0.9642119944211994f, 1.0f, 0.8251882845188288f, 0.f };
+  *lms_in *= D50 / origin_illuminant;
 }
