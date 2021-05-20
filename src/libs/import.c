@@ -1150,6 +1150,18 @@ static gboolean _folders_button_press(GtkWidget *view, GdkEventButton *event, dt
     }
     gtk_tree_path_free(path);
   }
+
+  if(event->type == GDK_DOUBLE_BUTTON_PRESS)
+  {
+    GtkTreePath *path = NULL;
+    gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), event->x, event->y, &path, NULL, NULL, NULL); 
+    if(gtk_tree_view_row_expanded(d->from.folderview, path))
+      gtk_tree_view_collapse_row (d->from.folderview, path);
+    else
+      gtk_tree_view_expand_row (d->from.folderview, path, FALSE);
+    gtk_tree_path_free(path);
+  }
+
   g_timeout_add_full(G_PRIORITY_DEFAULT_IDLE, 100, _clear_parasitic_selection, self, NULL);
 	return res;
 }
