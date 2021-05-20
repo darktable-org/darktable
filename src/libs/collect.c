@@ -658,6 +658,14 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
       row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
     }
 
+    if(event->type == GDK_DOUBLE_BUTTON_PRESS)
+    {
+      if(gtk_tree_view_row_expanded(GTK_TREE_VIEW(treeview), path))
+        gtk_tree_view_collapse_row (GTK_TREE_VIEW(treeview), path);
+      else
+        gtk_tree_view_expand_row (GTK_TREE_VIEW(treeview), path, FALSE);
+    }
+
     gtk_tree_path_free(path);
 
     if((d->view_rule == DT_COLLECTION_PROP_DAY
