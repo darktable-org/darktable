@@ -227,11 +227,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
       // FIXME: use for_each_channel?
       for(size_t ch = 0; ch < 3; ch++)
       {
-        // FIXME: instead of doing this math, apply a transform when drawing?
-        const float v = (8.0f / 9.0f) * px[ch];
         const size_t bin = (orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? x : y) / samples_per_bin;
-        // FIXME: faster to flip tone in next loop or on display?
-        const size_t tone = (orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? 1.0f-v : v) * (num_tones-1);
+        const size_t tone = (8.0f / 9.0f) * px[ch] * (num_tones-1);
         // NOTE: this clamps NAN and < 0 to 0, but clips > 1
         if(tone <= num_tones-1)
           dt_atomic_add_int(binned + (ch * num_bins + bin) * num_tones + tone, 1);
@@ -699,9 +696,15 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_save(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
-    cairo_scale(cr, darktable.gui->ppd*width/d->waveform_bins, darktable.gui->ppd*height/d->waveform_tones);
+  {
+    // y=0 is at bottom of widget
+    cairo_translate(cr, 0., height);
+    cairo_scale(cr, darktable.gui->ppd*width/d->waveform_bins, -darktable.gui->ppd*height/d->waveform_tones);
+  }
   else
+  {
     cairo_scale(cr, darktable.gui->ppd*width/d->waveform_tones, darktable.gui->ppd*height/d->waveform_bins);
+  }
 
   for(int ch = 0; ch < 3; ch++)
     if(mask[2-ch])
@@ -714,11 +717,16 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, i
   cairo_save(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
+  {
+    cairo_translate(cr, 0., height);
     cairo_scale(cr, darktable.gui->ppd*width/(d->waveform_bins*3.),
-                darktable.gui->ppd*height/d->waveform_tones);
+                -darktable.gui->ppd*height/d->waveform_tones);
+  }
   else
+  {
     cairo_scale(cr, darktable.gui->ppd*width/d->waveform_tones,
                 darktable.gui->ppd*height/(d->waveform_bins*3.));
+  }
   for(int ch = 2; ch >= 0; ch--)
   {
     _lib_histogram_draw_waveform_channel(d, cr, ch, 0.9);
