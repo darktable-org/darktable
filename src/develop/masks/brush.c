@@ -2967,7 +2967,9 @@ const dt_masks_functions_t dt_masks_functions_brush = {
   .mouse_scrolled = _brush_events_mouse_scrolled,
   .button_pressed = _brush_events_button_pressed,
   .button_released = _brush_events_button_released,
-  .post_expose = _brush_events_post_expose
+  .post_expose = _brush_events_post_expose,
+  .supported_features = DT_MASK_SUPPORT_OPACITY | DT_MASK_SUPPORT_HARDNESS | DT_MASK_SUPPORT_SIZE |
+    DT_MASK_SUPPORT_PRESSURE | DT_MASK_SUPPORT_SMOOTHING
 };
 
 

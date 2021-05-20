@@ -42,6 +42,19 @@ typedef enum dt_masks_type_t
   DT_MASKS_NON_CLONE = 1 << 7
 } dt_masks_type_t;
 
+
+typedef enum dt_mask_feature_support_t
+{
+  DT_MASK_SUPPORT_NONE =           0,
+  DT_MASK_SUPPORT_OPACITY =   1 << 0, /* technically, all masks have at least that */
+  DT_MASK_SUPPORT_HARDNESS =  1 << 1, /* soft transition between full opacity and full transparency */
+  DT_MASK_SUPPORT_SIZE =      1 << 2, /* whatever allows global rescaling of the shape */
+  DT_MASK_SUPPORT_ROTATION =  1 << 3, /* whatever rotates irregular shapes around their center */
+  DT_MASK_SUPPORT_CURVATURE = 1 << 4, /* whatever bends the shape like a banana */
+  DT_MASK_SUPPORT_PRESSURE =  1 << 5, /* whatever wired to stylus + tablet pressure event */
+  DT_MASK_SUPPORT_SMOOTHING = 1 << 6  /* wathever smoothens freehand paths */
+} dt_mask_feature_support_t;
+
 /**masts states */
 typedef enum dt_masks_state_t
 {
@@ -196,6 +209,8 @@ typedef struct dt_masks_functions_t
   int (*button_released)(struct dt_iop_module_t *module, float pzx, float pzy, int which, uint32_t state,
                          struct dt_masks_form_t *form, int parentid, struct dt_masks_form_gui_t *gui, int index);
   void (*post_expose)(cairo_t *cr, float zoom_scale, struct dt_masks_form_gui_t *gui, int index, int num_points);
+
+dt_mask_feature_support_t supported_features;
 } dt_masks_functions_t;
 
 /** structure used to define a form */

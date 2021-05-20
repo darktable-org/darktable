@@ -123,7 +123,7 @@ const char **views(dt_lib_module_t *self)
            unloading/loading a module while switching views.
 
    */
-  static const char *v[] = {"*", NULL};
+  static const char *v[] = { "lighttable", "tethering", "map", "print", NULL };
   return v;
 }
 

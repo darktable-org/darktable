@@ -3157,7 +3157,8 @@ const dt_masks_functions_t dt_masks_functions_path = {
   .mouse_scrolled = _path_events_mouse_scrolled,
   .button_pressed = _path_events_button_pressed,
   .button_released = _path_events_button_released,
-  .post_expose = _path_events_post_expose
+  .post_expose = _path_events_post_expose,
+  .supported_features = DT_MASK_SUPPORT_OPACITY | DT_MASK_SUPPORT_HARDNESS
 };
 
 

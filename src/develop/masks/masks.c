@@ -15,15 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "develop/masks.h"
-#include "bauhaus/bauhaus.h"
-#include "common/debug.h"
-#include "common/mipmap_cache.h"
-#include "control/conf.h"
-#include "control/control.h"
-#include "common/undo.h"
-#include "develop/blend.h"
-#include "develop/imageop.h"
+#include "masks.h"
 
 #pragma GCC diagnostic ignored "-Wshadow"
 
@@ -72,30 +64,6 @@ GList *dt_masks_dup_forms_deep(GList *forms, dt_masks_form_t *form)
   return (GList *)g_list_copy_deep(forms, _dup_masks_form_cb, (gpointer)form);
 }
 
-static int _get_opacity(dt_masks_form_gui_t *gui, const dt_masks_form_t *form)
-{
-  const dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
-  const dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
-  if(!sel) return 0;
-  const int formid = sel->formid;
-
-  // look for apacity
-  const dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, fpt->parentid);
-  if(!grp || !(grp->type & DT_MASKS_GROUP)) return 0;
-
-  int opacity = 0;
-  for(GList *fpts = grp->points; fpts; fpts = g_list_next(fpts))
-  {
-    const dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
-    if(fpt->formid == formid)
-    {
-      opacity = fpt->opacity * 100;
-      break;
-    }
-  }
-
-  return opacity;
-}
 
 static dt_masks_type_t _get_all_types_in_group(dt_masks_form_t *form)
 {
@@ -140,8 +108,6 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, const dt_masks_form_t 
 
   int ftype = form->type;
 
-  int opacity = 100;
-
   const dt_masks_form_t *sel = form;
   if((ftype & DT_MASKS_GROUP) && (gui->group_edited >= 0))
   {
@@ -149,13 +115,8 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, const dt_masks_form_t 
     const dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
     sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(!sel) return;
-
-    opacity = _get_opacity(gui, form);
   }
-  else
-  {
-    opacity = (int)(dt_conf_get_float("plugins/darkroom/masks/opacity") * 100);
-  }
+  int opacity = get_mask_opacity(gui, form) * 100;
 
   if(sel->functions && sel->functions->set_hint_message)
   {
