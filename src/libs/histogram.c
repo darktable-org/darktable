@@ -222,17 +222,15 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   for(size_t y=0; y<sample_height; y++)
     for(size_t x=0; x<sample_width; x++)
     {
+      const size_t bin = (orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? x : y) / samples_per_bin;
       const float *const restrict px = DT_IS_ALIGNED((const float *const restrict)input +
                                                      4U * ((y + roi->crop_y) * roi->width + x + roi->crop_x));
-      // FIXME: use for_each_channel?
+      dt_atomic_int *const restrict out = DT_IS_ALIGNED(binned + bin * num_tones);
+      size_t tone[4] DT_ALIGNED_PIXEL;
+      for_each_channel(ch,aligned(px,tone:16))
+        tone[ch] = MIN((8.0f / 9.0f) * px[ch], 1.0f) * (num_tones-1);
       for(size_t ch = 0; ch < 3; ch++)
-      {
-        const size_t bin = (orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? x : y) / samples_per_bin;
-        const size_t tone = (8.0f / 9.0f) * px[ch] * (num_tones-1);
-        // NOTE: this clamps NAN and < 0 to 0, but clips > 1
-        if(tone <= num_tones-1)
-          dt_atomic_add_int(binned + (ch * num_bins + bin) * num_tones + tone, 1);
-      }
+        dt_atomic_add_int(out + ch * num_bins * num_tones + tone[ch], 1);
     }
 
   // shortcut to change from linear to display gamma -- borrow hybrid log-gamma LUT
@@ -251,13 +249,13 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   const float brightness = num_tones / 40.0f;
   const float scale = brightness / ((DT_LIB_HISTOGRAM_ORIENT_HORI ? sample_height : sample_width) * samples_per_bin);
 
-  // loops are too small (3 * 360 * 128 max iterations) to need threads
+  // too small (3 * 360 * 128 max iterations) to need threads
   for(size_t ch = 0; ch < 3; ch++)
     for(size_t bin = 0; bin < num_bins; bin++)
       for(size_t tone = 0; tone < num_tones; tone++)
       {
         uint8_t *const restrict wf_img = DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_img[ch]);
-        const float linear = MIN(1.f, scale * binned[(ch * num_bins + bin) * num_tones + tone]);
+        const float linear = MIN(1.f, scale * binned[num_tones * (ch * num_bins + bin) + tone]);
         const uint8_t display = lut[(int)(linear * lutmax)] * 255.f;
         if(orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
           wf_img[tone * wf_img_stride + bin] = display;
@@ -1660,7 +1658,9 @@ void gui_init(dt_lib_module_t *self)
   d->waveform_max_bins = darktable.mipmap_cache->max_width[DT_MIPMAP_F]/2;
   // initially no waveform to draw
   d->waveform_bins = 0;
-  // should be at least 100, which is approx. # of tones the eye can see, larger #'s will make a more detailed scope display at cost of CPU usage
+  // Should be at least 100 (approx. # of tones the eye can see) and
+  // multiple of 16 (for optimization), larger #'s will make a more
+  // detailed scope display at cost of CPU usage.
   // 175 rows is the default histogram widget height. It's OK if the
   // widget height changes from this, as the width will almost always
   // be scaled. 175 rows is reasonable CPU usage and represents plenty
