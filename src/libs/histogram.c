@@ -1347,6 +1347,7 @@ static void _scope_view_clicked(GtkWidget *button, dt_lib_histogram_t *d)
       d->scope_orient = (d->scope_orient + 1) % DT_LIB_HISTOGRAM_ORIENT_N;
       dt_conf_set_string("plugins/darkroom/histogram/orient",
                          dt_lib_histogram_orient_names[d->scope_orient]);
+      d->waveform_bins = 0;
       _scope_orient_update(d);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
