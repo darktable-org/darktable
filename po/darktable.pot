@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-19 08:48+0200\n"
+"POT-Creation-Date: 2021-05-20 09:06+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4671,49 +4671,49 @@ msgstr ""
 msgid "date/time re-applied to %d images"
 msgstr ""
 
-#: ../src/common/image.c:1925
+#: ../src/common/image.c:1926
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr ""
 
-#: ../src/common/image.c:1932
+#: ../src/common/image.c:1933
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr ""
 
-#: ../src/common/image.c:1939
+#: ../src/common/image.c:1940
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr ""
 
-#: ../src/common/image.c:1955
+#: ../src/common/image.c:1956
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr ""
 
-#: ../src/common/image.c:1965
+#: ../src/common/image.c:1966
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr ""
 
-#: ../src/common/image.c:1969
+#: ../src/common/image.c:1970
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr ""
 
-#: ../src/common/image.c:2266
+#: ../src/common/image.c:2267
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 
-#: ../src/common/image.c:2280
+#: ../src/common/image.c:2281
 msgid "cannot create local copy."
 msgstr ""
 
-#: ../src/common/image.c:2352 ../src/control/jobs/control_jobs.c:745
+#: ../src/common/image.c:2353 ../src/control/jobs/control_jobs.c:745
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 
-#: ../src/common/image.c:2530
+#: ../src/common/image.c:2531
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -11041,7 +11041,7 @@ msgid "weight of the shadows over the whole tonal range"
 msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1726
-msgid "position of the middle-grey reference for masking"
+msgid "position of the middle-gray reference for masking"
 msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1737
