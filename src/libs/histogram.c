@@ -210,8 +210,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   // will be <= 360x128x3. Hence process works with a relatively small
   // quantity of data.
   size_t bin_pad;
-  // FIXME: should be uint32_t or int?
-  int *const restrict partial_binned = dt_calloc_perthread(3U * num_bins * num_tones, sizeof(int), &bin_pad);
+  uint32_t *const restrict partial_binned = dt_calloc_perthread(3U * num_bins * num_tones, sizeof(uint32_t), &bin_pad);
 
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
@@ -222,7 +221,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   {
     const float *const restrict px = DT_IS_ALIGNED((const float *const restrict)input +
                                                    4U * ((y + roi->crop_y) * roi->width));
-    int *const restrict binned = dt_get_perthread(partial_binned, bin_pad);
+    uint32_t *const restrict binned = dt_get_perthread(partial_binned, bin_pad);
     for(size_t x=0; x<sample_width; x++)
     {
       const size_t bin = (orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? x : y) / samples_per_bin;
@@ -261,10 +260,10 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
       for(size_t tone = 0; tone < num_tones; tone++)
       {
         uint8_t *const restrict wf_img = DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_img[ch]);
-        int acc = 0;
+        uint32_t acc = 0;
         for(size_t n = 0; n < nthreads; n++)
         {
-          int *const restrict binned = dt_get_bythread(partial_binned, bin_pad, n);
+          uint32_t *const restrict binned = dt_get_bythread(partial_binned, bin_pad, n);
           acc += binned[num_tones * (ch * num_bins + bin) + tone];
         }
         const float linear = MIN(1.f, scale * acc);
