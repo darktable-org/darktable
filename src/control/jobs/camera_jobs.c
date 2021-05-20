@@ -337,6 +337,7 @@ static void dt_camera_import_cleanup(void *p)
 
   dt_import_session_destroy(params->shared.session);
 
+  params->camera->auto_unmount = DT_CAMCTL_TIMEOUT_MOUNT;
   free(params);
 }
 
@@ -344,7 +345,11 @@ dt_job_t *dt_camera_import_job_create(GList *images, struct dt_camera_t *camera,
                                       time_t time_override)
 {
   dt_job_t *job = dt_control_job_create(&dt_camera_import_job_run, "import selected images from camera");
-  if(!job) return NULL;
+  if(!job)
+  {
+    camera->auto_unmount = DT_CAMCTL_TIMEOUT_MOUNT;
+    return NULL;
+  }
   dt_camera_import_t *params = dt_camera_import_alloc();
   if(!params)
   {
