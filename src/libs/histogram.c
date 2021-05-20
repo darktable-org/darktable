@@ -251,7 +251,11 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   const float scale = brightness / ((DT_LIB_HISTOGRAM_ORIENT_HORI ? sample_height : sample_width) * samples_per_bin);
   size_t nthreads = dt_get_num_threads();
 
-  // too small (3 * 360 * 128 * nthreads max iterations) to need threads
+#if defined(_OPENMP)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(d, partial_binned, bin_pad, wf_img_stride, num_bins, num_tones, orient, lut, lutmax, scale, nthreads) \
+  schedule(static) collapse(3)
+#endif
   for(size_t ch = 0; ch < 3; ch++)
     for(size_t bin = 0; bin < num_bins; bin++)
       for(size_t tone = 0; tone < num_tones; tone++)
