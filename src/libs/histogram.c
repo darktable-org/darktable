@@ -205,9 +205,6 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   const size_t num_bins = ceilf(to_bin / (float)samples_per_bin);
   d->waveform_bins = num_bins;
   const size_t num_tones = d->waveform_tones;
-  // FIXME: uneeded optimization?
-  //const size_t width_i = num_tones-1;
-  //const float width_f = width_i;
 
   // Note that, with current constants, the input buffer is from the
   // preview pixelpipe and should be <= 1440x900x4. The output buffer
@@ -220,7 +217,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(input, binned, roi, num_tones, num_bins, samples_per_bin, sample_height, sample_width, orient) \
-  schedule(static)
+  schedule(static) collapse(2)
 #endif
   for(size_t y=0; y<sample_height; y++)
     for(size_t x=0; x<sample_width; x++)
@@ -232,15 +229,12 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
       {
         // FIXME: instead of doing this math, apply a transform when drawing?
         const float v = (8.0f / 9.0f) * px[ch];
-        // FIXME: faster to compare size_t tone than float v for bounds check?
-        // FIXME/NOTE: this changes prior behavior -- of out bounds pixels are not graphed rather than going to 0 -- is this better/worse?
-        if(!isnan(v) && v >= 0.0f && v <= 1.0f)
-        {
-          const size_t bin = (orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? x : y) / samples_per_bin;
-          const size_t tone = (orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? 1.0f-v : v) * (num_tones-1);
-          // FIXME: store bin-wise or tone-wise?
+        const size_t bin = (orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? x : y) / samples_per_bin;
+        // FIXME: faster to flip tone in next loop or on display?
+        const size_t tone = (orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? 1.0f-v : v) * (num_tones-1);
+        // NOTE: this clamps NAN and < 0 to 0, but clips > 1
+        if(tone <= num_tones-1)
           dt_atomic_add_int(binned + (ch * num_bins + bin) * num_tones + tone, 1);
-        }
       }
     }
 
