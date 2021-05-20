@@ -207,7 +207,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
 
   // Note that, with current constants, the input buffer is from the
   // preview pixelpipe and should be <= 1440x900x4. The output buffer
-  // will be <= 360x128x3. Hence process works with a relatively small
+  // will be <= 360x160x3. Hence process works with a relatively small
   // quantity of data.
   size_t bin_pad;
   uint32_t *const restrict partial_binned = dt_calloc_perthread(3U * num_bins * num_tones, sizeof(uint32_t), &bin_pad);
@@ -1650,8 +1650,8 @@ void gui_init(dt_lib_module_t *self)
   d->waveform_bins = 0;
   // should be at least 100 (approx. # of tones the eye can see) and
   // multiple of 16 (for optimization), larger #'s will make a more
-  // detailed scope display at cost of CPU usage
-  d->waveform_tones = 128;
+  // detailed scope display at cost of a bit of CPU/memory.
+  d->waveform_tones = 160;
   // FIXME: combine waveform_8bit and vectorscope_graph, as only ever use one or the other
   d->waveform_8bit = dt_alloc_align(64, sizeof(uint8_t) * 3 * d->waveform_tones *
                                     cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_max_bins));
