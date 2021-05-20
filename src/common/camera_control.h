@@ -30,6 +30,10 @@
 #include <gphoto2/gphoto2.h>
 #include <gtk/gtk.h>
 
+#define DT_CAMCTL_TIMEOUT_NOW
+#define DT_CAMCTL_TIMEOUT 40
+#define DT_CAMCTL_MAXTIMEOUT 0x7FFFFFFF
+#define DT_CAMCTL_TIMEOUT_MOUNT 4
 
 /** A camera object used for camera actions and callbacks */
 typedef struct dt_camera_t
@@ -83,6 +87,8 @@ typedef struct dt_camera_t
   /** gphoto2 context */
   GPContext *gpcontext;
 
+  /** housekeeping for unmounting */
+  int auto_unmount;
   /** Live view */
   gboolean is_live_viewing;
   /** The last preview image from the camera */
@@ -107,14 +113,20 @@ typedef struct dt_camera_t
   dt_pthread_mutex_t live_view_synch;
 } dt_camera_t;
 
-/** A dummy camera object used for locked cameras */
-typedef struct dt_camera_locked_t
+/** A dummy camera object used for unused cameras */
+typedef struct dt_camera_unused_t
 {
   /** A pointer to the model string of camera. */
   char *model;
   /** A pointer to the port string of camera. */
   char *port;
-} dt_camera_locked_t;
+  /** mark the camera as auto unmounted */
+  gboolean unmounted;
+  /** mark the camera as used by another application */
+  gboolean used;
+  /** if true it will be removed from the list to force a reconnect */
+  gboolean remove;
+} dt_camera_unused_t;
 
 /** Camera control status.
   These enumerations are passed back to host application using
@@ -157,8 +169,8 @@ typedef struct dt_camctl_t
   GList *listeners;
   /** List of cameras found and initialized by camera control.*/
   GList *cameras;
-  /** List of locked cameras found */
-  GList *locked_cameras;
+  /** List of unused cameras found */
+  GList *unused_cameras;
 
   /** The actual gphoto2 context */
   GPContext *gpcontext;
@@ -171,6 +183,8 @@ typedef struct dt_camctl_t
   const dt_camera_t *wanted_camera;
 
   const dt_camera_t *active_camera;
+
+  int ticker;
 } dt_camctl_t;
 
 
@@ -234,8 +248,8 @@ void dt_camctl_register_listener(const dt_camctl_t *c, dt_camctl_listener_t *lis
 void dt_camctl_unregister_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener);
 /** Check if there is any camera connected */
 gboolean dt_camctl_have_cameras(const dt_camctl_t *c);
-/** Check if there is any camera locked  */
-gboolean dt_camctl_have_locked_cameras(const dt_camctl_t *c);
+/** Check if there is any camera known but unused  */
+gboolean dt_camctl_have_unused_cameras(const dt_camctl_t *c);
 /** Selects a camera to be used by cam control, this camera is selected if NULL is passed as camera*/
 void dt_camctl_select_camera(const dt_camctl_t *c, const dt_camera_t *cam);
 /** Can tether...*/
