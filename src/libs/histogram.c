@@ -97,7 +97,6 @@ typedef struct dt_lib_histogram_t
   uint32_t *histogram;
   uint32_t histogram_max;
   // waveform buffers and dimensions
-  dt_atomic_int *waveform_linear;
   uint8_t *waveform_img[3];           // image per RGB channel
   int waveform_bins, waveform_tones, waveform_max_bins;
   // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
@@ -210,28 +209,30 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   // preview pixelpipe and should be <= 1440x900x4. The output buffer
   // will be <= 360x128x3. Hence process works with a relatively small
   // quantity of data.
-  dt_atomic_int *const restrict binned = DT_IS_ALIGNED((dt_atomic_int *const restrict)d->waveform_linear);
-  memset(binned, 0, sizeof(dt_atomic_int) * num_tones * num_bins * 3);
+  size_t bin_pad;
+  // FIXME: should be uint32_t or int?
+  int *const restrict partial_binned = dt_calloc_perthread(3U * num_bins * num_tones, sizeof(int), &bin_pad);
 
-  // FIXME: Try histogram-style worker threads to process by row and consolidate results. Have the workers do colorspace conversion per-pixel. As there will be no intermediate buffer, even 20 per-thread output buffers will still use less memory.
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, binned, roi, num_tones, num_bins, samples_per_bin, sample_height, sample_width, orient) \
-  schedule(static) collapse(2)
+  dt_omp_firstprivate(input, partial_binned, roi, num_tones, num_bins, bin_pad, samples_per_bin, sample_height, sample_width, orient) \
+  schedule(static)
 #endif
   for(size_t y=0; y<sample_height; y++)
+  {
+    const float *const restrict px = DT_IS_ALIGNED((const float *const restrict)input +
+                                                   4U * ((y + roi->crop_y) * roi->width));
+    int *const restrict binned = dt_get_perthread(partial_binned, bin_pad);
     for(size_t x=0; x<sample_width; x++)
     {
       const size_t bin = (orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? x : y) / samples_per_bin;
-      const float *const restrict px = DT_IS_ALIGNED((const float *const restrict)input +
-                                                     4U * ((y + roi->crop_y) * roi->width + x + roi->crop_x));
-      dt_atomic_int *const restrict out = DT_IS_ALIGNED(binned + bin * num_tones);
       size_t tone[4] DT_ALIGNED_PIXEL;
       for_each_channel(ch,aligned(px,tone:16))
-        tone[ch] = MIN((8.0f / 9.0f) * px[ch], 1.0f) * (num_tones-1);
+        tone[ch] = MIN((8.0f / 9.0f) * px[4U * (x + roi->crop_x) + ch], 1.0f) * (num_tones-1);
       for(size_t ch = 0; ch < 3; ch++)
-        dt_atomic_add_int(out + ch * num_bins * num_tones + tone[ch], 1);
+        binned[num_tones * (ch * num_bins + bin) + tone[ch]]++;
     }
+  }
 
   // shortcut to change from linear to display gamma -- borrow hybrid log-gamma LUT
   const dt_iop_order_iccprofile_info_t *const profile =
@@ -248,20 +249,29 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   // FIXME: instead of using an area-beased scale, figure out max bin count and scale to that?
   const float brightness = num_tones / 40.0f;
   const float scale = brightness / ((DT_LIB_HISTOGRAM_ORIENT_HORI ? sample_height : sample_width) * samples_per_bin);
+  size_t nthreads = dt_get_num_threads();
 
-  // too small (3 * 360 * 128 max iterations) to need threads
+  // too small (3 * 360 * 128 * nthreads max iterations) to need threads
   for(size_t ch = 0; ch < 3; ch++)
     for(size_t bin = 0; bin < num_bins; bin++)
       for(size_t tone = 0; tone < num_tones; tone++)
       {
         uint8_t *const restrict wf_img = DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_img[ch]);
-        const float linear = MIN(1.f, scale * binned[num_tones * (ch * num_bins + bin) + tone]);
+        int acc = 0;
+        for(size_t n = 0; n < nthreads; n++)
+        {
+          int *const restrict binned = dt_get_bythread(partial_binned, bin_pad, n);
+          acc += binned[num_tones * (ch * num_bins + bin) + tone];
+        }
+        const float linear = MIN(1.f, scale * acc);
         const uint8_t display = lut[(int)(linear * lutmax)] * 255.f;
         if(orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
           wf_img[tone * wf_img_stride + bin] = display;
         else
           wf_img[bin * wf_img_stride + tone] = display;
       }
+
+  dt_free_align(partial_binned);
 }
 
 static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, const dt_iop_order_iccprofile_info_t *const vs_prof)
@@ -1667,8 +1677,6 @@ void gui_init(dt_lib_module_t *self)
   // of tonal gradation. 256 would match the # of bins in a regular
   // histogram.
   d->waveform_tones = 128;
-  // FIXME: combine with an intermediate buffer for vectorscope, as only use one or the other
-  d->waveform_linear = dt_alloc_align(64, sizeof(dt_atomic_int) * d->waveform_max_bins * d->waveform_tones * 3U);
   // FIXME: combine waveform_8bit and vectorscope_graph, as only ever use one or the other
   // FIXME: keep alignment instead via single alloc via dt_alloc_perthread()?
   const size_t bytes_hori = d->waveform_tones * cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_max_bins);
@@ -1834,7 +1842,6 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
   free(d->histogram);
-  dt_free_align(d->waveform_linear);
   for(int ch=0; ch<3; ch++)
     dt_free_align(d->waveform_img[ch]);
   dt_free_align(d->vectorscope_graph);
