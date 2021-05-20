@@ -97,7 +97,7 @@ typedef struct dt_lib_histogram_t
   uint32_t *histogram;
   uint32_t histogram_max;
   // waveform histogram buffer and dimensions
-  float *waveform_linear;
+  dt_atomic_int *waveform_linear;
   uint8_t *waveform_8bit;
   int waveform_bins, waveform_tones, waveform_max_bins;
   // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
@@ -1639,7 +1639,7 @@ void gui_init(dt_lib_module_t *self)
   // detailed scope display at cost of CPU usage
   d->waveform_tones = 128;
   // FIXME: combine with an intermediate buffer for vectorscope, as only use one or the other
-  d->waveform_linear = dt_alloc_align(64, sizeof(int) * d->waveform_max_bins * d->waveform_tones * 3U);
+  d->waveform_linear = dt_alloc_align(64, sizeof(dt_atomic_int) * d->waveform_max_bins * d->waveform_tones * 3U);
   // FIXME: combine waveform_8bit and vectorscope_graph, as only ever use one or the other
   d->waveform_8bit = dt_alloc_align(64, sizeof(uint8_t) * 3 * d->waveform_tones *
                                     cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_max_bins));
