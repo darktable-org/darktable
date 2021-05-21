@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2020 darktable developers.
+    Copyright (C) 2015-2021 darktable developers.
 
     (based on code by johannes hanika)
 
