@@ -1288,9 +1288,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                        "FROM main.images AS mi "
                                        "WHERE mi.id NOT IN"
                                        "  (SELECT DISTINCT imgid FROM main.tagged_images AS ti"
-                                       "   WHERE ti.tagid NOT IN"
-                                       "    (SELECT id FROM data.tags WHERE"
-                                       "      SUBSTR(name, 1, 10) = 'darktable|'))",
+                                       "   WHERE ti.tagid NOT IN memory.darktable_tags)",
                                 _("not tagged"));
       }
       break;
