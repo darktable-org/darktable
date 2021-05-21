@@ -1755,7 +1755,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->grey_fulcrum, 0.01);
   dt_bauhaus_slider_set_digits(g->grey_fulcrum, 4);
   dt_bauhaus_slider_set_format(g->grey_fulcrum, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->grey_fulcrum, _("peak white luminance value used to normalize the power function"));
+  gtk_widget_set_tooltip_text(g->grey_fulcrum, _("peak gray luminance value used to normalize the power function"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("mask preview settings")), FALSE, FALSE, 0);
 
