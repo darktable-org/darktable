@@ -2072,9 +2072,11 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
     /* xgettext:no-c-format */
                                 _("use `%' as wildcard\n"
     /* xgettext:no-c-format */
-                                  "use `|%' to include all sub-hierarchies (ctrl-click)\n"
+                                  "left-click to include hierarchy + sub-hierarchies (suffix `*')\n"
     /* xgettext:no-c-format */
-                                  "use `*' to include hierarchy and sub-hierarchies (shift-click)"));
+                                  "shift+click to include only the current hierarchy (no suffix)\n"
+    /* xgettext:no-c-format */
+                                  "ctrl+click to include only sub-hierarchies (suffix `|%')"));
   }
   else if(property == DT_COLLECTION_PROP_GEOTAGGING)
   {
@@ -2082,9 +2084,11 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
     /* xgettext:no-c-format */
                                 _("use `%' as wildcard\n"
     /* xgettext:no-c-format */
-                                  "use `|%' to include all sub-locations (ctrl-click)\n"
+                                  "left-click to include location + sub-locations (suffix `*')\n"
     /* xgettext:no-c-format */
-                                  "use `*' to include locations and sub-locations (shift-click)"));
+                                  "shift+click to include only the current location (no suffix)\n"
+    /* xgettext:no-c-format */
+                                  "ctrl+click to include only sub-locations (suffix `|%')"));
   }
   else if(property == DT_COLLECTION_PROP_FOLDERS)
   {
@@ -2092,11 +2096,11 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
     /* xgettext:no-c-format */
                                 _("use `%' as wildcard\n"
     /* xgettext:no-c-format */
-                                  "ctrl+click to include only sub-folders\n"
+                                  "left-click to include current + sub-folders (suffix `*')\n"
     /* xgettext:no-c-format */
-                                  "shift+click to include current + sub-folders\n"
+                                  "shift+click to include only the current folder (no suffix)\n"
     /* xgettext:no-c-format */
-                                  "double-click to include only the current folder"));
+                                  "ctrl+click to include only sub-folders (suffix `|%')"));
   }
   else
   {
