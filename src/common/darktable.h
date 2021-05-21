@@ -195,6 +195,8 @@ static inline int dt_version()
 
 // returns true if the running darktable corresponds to a dev version
 gboolean dt_is_dev_version();
+// returns the darktable version as <major>.<minor>
+char *dt_version_major_minor();
 
 // Golden number (1+sqrt(5))/2
 #ifndef PHI
