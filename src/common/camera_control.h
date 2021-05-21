@@ -63,7 +63,12 @@ typedef struct dt_camera_t
   gboolean can_live_view_advanced;
   /** This camera/device can be remote controlled. */
   gboolean can_config;
-
+  /** This camera can read file previews */
+  gboolean can_file_preview;
+  /** This camera has some directory support */
+  gboolean can_directory;
+  /** This camera has exif support */
+  gboolean can_file_exif;
   /** Flag camera in tethering mode. \see dt_camera_tether_mode() */
   gboolean is_tethering;
 
