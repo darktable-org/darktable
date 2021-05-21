@@ -1127,7 +1127,9 @@ static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
     if((a.operations & GP_OPERATION_CAPTURE_PREVIEW)) cam->can_live_view = TRUE;
     if(cam->can_tether && (a.operations & GP_OPERATION_CONFIG)) cam->can_config = TRUE;
     if(!(a.file_operations & GP_FILE_OPERATION_NONE)) cam->can_import = TRUE;
-
+    if(cam->can_import && (a.file_operations & GP_FILE_OPERATION_PREVIEW)) cam->can_file_preview = TRUE;
+    if(cam->can_import && (a.file_operations & GP_FILE_OPERATION_EXIF)) cam->can_file_exif = TRUE;
+    if(!(a.folder_operations & GP_FOLDER_OPERATION_NONE)) cam->can_directory = TRUE;
     if(gp_camera_init(cam->gpcam, camctl->gpcontext) != GP_OK)
     {
       dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to initialize %s on port %s\n", cam->model,
