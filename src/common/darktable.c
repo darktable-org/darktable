@@ -176,6 +176,37 @@ gboolean dt_is_dev_version()
   return FALSE;
 }
 
+char *dt_version_major_minor()
+{
+  char ver[100] = { 0 };
+  g_strlcpy(ver, darktable_package_string, sizeof(ver));
+  int count = -1;
+  char *start = ver;
+  for(char *p = ver; *p; p++)
+  {
+    // first look for a number
+    if(count == -1)
+    {
+      if(*p >= '0' && *p <= '9')
+      {
+        count++;
+        start = p;
+      }
+    }
+    // then check for <major>.<minor>
+    else
+    {
+      if(*p == '.' || *p == '+') count++;
+      if(count == 2)
+      {
+        *p = '\0';
+        break;
+      }
+    }
+  }
+  return g_strdup(start);
+}
+
 gboolean dt_supported_image(const gchar *filename)
 {
   gboolean supported = FALSE;

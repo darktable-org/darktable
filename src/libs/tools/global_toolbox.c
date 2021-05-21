@@ -578,6 +578,14 @@ static void _main_do_event(GdkEvent *event, gpointer data)
              ? "context_help/dev_url"
              : "context_help/url");
 
+          // in case of a standard release, happend the dt version to the url
+          if(!dt_is_dev_version())
+          {
+            char *ver = dt_version_major_minor();
+            base_url = dt_util_dstrcat(base_url, "%s/", ver);
+            g_free(ver);
+          }
+
           char *last_base_url = dt_conf_get_string("context_help/last_url");
 
           // if url is https://www.darktable.org/usermanual/,
@@ -599,11 +607,16 @@ static void _main_do_event(GdkEvent *event, gpointer data)
 #endif
 
             gtk_window_set_title(GTK_WINDOW(dialog), _("access the online usermanual?"));
-            gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+            const gint res = gtk_dialog_run(GTK_DIALOG(dialog));
             gtk_widget_destroy(dialog);
             if(res == GTK_RESPONSE_YES)
             {
               dt_conf_set_string("context_help/last_url", last_base_url);
+            }
+            else
+            {
+              g_free(base_url);
+              base_url = NULL;
             }
           }
           if(base_url)
