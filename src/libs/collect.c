@@ -2537,7 +2537,6 @@ static void tag_changed(gpointer instance, gpointer self)
   {
     d->view_rule = -1;
     d->rule[d->active_rule].typing = FALSE;
-    _lib_collect_gui_update(self);
 
     //need to reload collection since we have tags as active collection filter
     dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
