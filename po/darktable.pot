@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-21 08:14+0200\n"
+"POT-Creation-Date: 2021-05-21 18:38+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -227,7 +227,7 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:4985 ../build/bin/preferences_gen.h:5039
 #: ../build/bin/preferences_gen.h:6861 ../build/bin/conf_gen.h:377
 #: ../build/bin/conf_gen.h:1010 ../build/bin/conf_gen.h:1026
-#: ../build/bin/conf_gen.h:2750
+#: ../build/bin/conf_gen.h:2756
 msgctxt "preferences"
 msgid "always"
 msgstr ""
@@ -599,17 +599,17 @@ msgid "white balance slider colors"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4855 ../build/bin/preferences_gen.h:4884
-#: ../build/bin/conf_gen.h:2704
+#: ../build/bin/conf_gen.h:2710
 msgctxt "preferences"
 msgid "no color"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4860 ../build/bin/conf_gen.h:2705
+#: ../build/bin/preferences_gen.h:4860 ../build/bin/conf_gen.h:2711
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4865 ../build/bin/conf_gen.h:2706
+#: ../build/bin/preferences_gen.h:4865 ../build/bin/conf_gen.h:2712
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr ""
@@ -628,17 +628,17 @@ msgid "colorbalance slider block layout"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4920 ../build/bin/preferences_gen.h:4949
-#: ../build/bin/conf_gen.h:2740
+#: ../build/bin/conf_gen.h:2746
 msgctxt "preferences"
 msgid "list"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4925 ../build/bin/conf_gen.h:2741
+#: ../build/bin/preferences_gen.h:4925 ../build/bin/conf_gen.h:2747
 msgctxt "preferences"
 msgid "tabs"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4930 ../build/bin/conf_gen.h:2742
+#: ../build/bin/preferences_gen.h:4930 ../build/bin/conf_gen.h:2748
 msgctxt "preferences"
 msgid "columns"
 msgstr ""
@@ -656,39 +656,39 @@ msgstr ""
 msgid "show right-side buttons in processing module headers"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4990 ../build/bin/conf_gen.h:2751
+#: ../build/bin/preferences_gen.h:4990 ../build/bin/conf_gen.h:2757
 msgctxt "preferences"
 msgid "active"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4995 ../build/bin/conf_gen.h:2752
+#: ../build/bin/preferences_gen.h:4995 ../build/bin/conf_gen.h:2758
 msgctxt "preferences"
 msgid "dim"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5000 ../build/bin/preferences_gen.h:7459
-#: ../build/bin/preferences_gen.h:7495 ../build/bin/conf_gen.h:2169
-#: ../build/bin/conf_gen.h:2753
+#: ../build/bin/preferences_gen.h:7495 ../build/bin/conf_gen.h:2175
+#: ../build/bin/conf_gen.h:2759
 msgctxt "preferences"
 msgid "auto"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5005 ../build/bin/conf_gen.h:2754
+#: ../build/bin/preferences_gen.h:5005 ../build/bin/conf_gen.h:2760
 msgctxt "preferences"
 msgid "fade"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5010 ../build/bin/conf_gen.h:2755
+#: ../build/bin/preferences_gen.h:5010 ../build/bin/conf_gen.h:2761
 msgctxt "preferences"
 msgid "fit"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5015 ../build/bin/conf_gen.h:2756
+#: ../build/bin/preferences_gen.h:5015 ../build/bin/conf_gen.h:2762
 msgctxt "preferences"
 msgid "smooth"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5020 ../build/bin/conf_gen.h:2757
+#: ../build/bin/preferences_gen.h:5020 ../build/bin/conf_gen.h:2763
 msgctxt "preferences"
 msgid "glide"
 msgstr ""
@@ -824,19 +824,19 @@ msgid "auto-apply pixel workflow defaults"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5461 ../build/bin/preferences_gen.h:5490
-#: ../build/bin/conf_gen.h:2590
+#: ../build/bin/conf_gen.h:2596
 msgctxt "preferences"
 msgid "scene-referred"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5466 ../build/bin/conf_gen.h:2591
+#: ../build/bin/preferences_gen.h:5466 ../build/bin/conf_gen.h:2597
 msgctxt "preferences"
 msgid "display-referred"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5471 ../build/bin/preferences_gen.h:7464
-#: ../build/bin/conf_gen.h:1622 ../build/bin/conf_gen.h:2170
-#: ../build/bin/conf_gen.h:2592
+#: ../build/bin/conf_gen.h:1622 ../build/bin/conf_gen.h:2176
+#: ../build/bin/conf_gen.h:2598
 msgctxt "preferences"
 msgid "none"
 msgstr ""
@@ -853,13 +853,13 @@ msgstr ""
 msgid "auto-apply chromatic adaptation defaults"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5526 ../build/bin/conf_gen.h:2600
+#: ../build/bin/preferences_gen.h:5526 ../build/bin/conf_gen.h:2606
 msgctxt "preferences"
 msgid "modern"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5531 ../build/bin/preferences_gen.h:5550
-#: ../build/bin/conf_gen.h:2601
+#: ../build/bin/conf_gen.h:2607
 msgctxt "preferences"
 msgid "legacy"
 msgstr ""
@@ -1318,17 +1318,17 @@ msgid "method to use for getting the display profile"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:7094 ../build/bin/preferences_gen.h:7123
-#: ../build/bin/conf_gen.h:2554
+#: ../build/bin/conf_gen.h:2560
 msgctxt "preferences"
 msgid "all"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:7099 ../build/bin/conf_gen.h:2555
+#: ../build/bin/preferences_gen.h:7099 ../build/bin/conf_gen.h:2561
 msgctxt "preferences"
 msgid "xatom"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:7104 ../build/bin/conf_gen.h:2556
+#: ../build/bin/preferences_gen.h:7104 ../build/bin/conf_gen.h:2562
 msgctxt "preferences"
 msgid "colord"
 msgstr ""
@@ -1443,12 +1443,12 @@ msgstr ""
 msgid "password storage backend to use"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:7469 ../build/bin/conf_gen.h:2171
+#: ../build/bin/preferences_gen.h:7469 ../build/bin/conf_gen.h:2177
 msgctxt "preferences"
 msgid "libsecret"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:7475 ../build/bin/conf_gen.h:2172
+#: ../build/bin/preferences_gen.h:7475 ../build/bin/conf_gen.h:2178
 msgctxt "preferences"
 msgid "kwallet"
 msgstr ""
@@ -1764,56 +1764,56 @@ msgid ""
 "limit the number of points imported with polygon in find location module"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2374
+#: ../build/bin/conf_gen.h:2380
 msgctxt "preferences"
 msgid "histogram"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2375
+#: ../build/bin/conf_gen.h:2381
 msgctxt "preferences"
 msgid "waveform"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2376
+#: ../build/bin/conf_gen.h:2382
 msgctxt "preferences"
 msgid "vectorscope"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2384 ../build/bin/conf_gen.h:2411
+#: ../build/bin/conf_gen.h:2390 ../build/bin/conf_gen.h:2417
 msgctxt "preferences"
 msgid "logarithmic"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2385 ../build/bin/conf_gen.h:2412
+#: ../build/bin/conf_gen.h:2391 ../build/bin/conf_gen.h:2418
 msgctxt "preferences"
 msgid "linear"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2393
+#: ../build/bin/conf_gen.h:2399
 msgctxt "preferences"
 msgid "overlaid"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2394
+#: ../build/bin/conf_gen.h:2400
 msgctxt "preferences"
 msgid "parade"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2402
+#: ../build/bin/conf_gen.h:2408
 msgctxt "preferences"
 msgid "u*v*"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2403
+#: ../build/bin/conf_gen.h:2409
 msgctxt "preferences"
 msgid "AzBz"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2691
+#: ../build/bin/conf_gen.h:2697
 msgid "camera time zone"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2692
+#: ../build/bin/conf_gen.h:2698
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -3117,7 +3117,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:528
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
-#: ../src/common/darktable.c:935 ../src/common/database.c:2543
+#: ../src/common/darktable.c:966 ../src/common/database.c:2543
 #: ../src/common/variables.c:465 ../src/develop/imageop_gui.c:302
 #: ../src/imageio/format/pdf.c:655 ../src/imageio/format/pdf.c:680
 #: ../src/libs/export.c:1277 ../src/libs/export.c:1283
@@ -3546,7 +3546,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:442
 #: ../src/gui/presets.c:58 ../src/iop/watermark.c:1153 ../src/libs/image.c:606
-#: ../src/libs/modulegroups.c:2390
+#: ../src/libs/modulegroups.c:2413
 msgid "color"
 msgstr ""
 
@@ -4329,32 +4329,32 @@ msgstr ""
 msgid "printing `%s' on `%s'"
 msgstr ""
 
-#: ../src/common/darktable.c:259
+#: ../src/common/darktable.c:290
 #, c-format
 msgid "found strange path `%s'"
 msgstr ""
 
-#: ../src/common/darktable.c:274
+#: ../src/common/darktable.c:305
 #, c-format
 msgid "error loading directory `%s'"
 msgstr ""
 
-#: ../src/common/darktable.c:297
+#: ../src/common/darktable.c:328
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr ""
 
-#: ../src/common/darktable.c:310 ../src/control/jobs/control_jobs.c:2104
+#: ../src/common/darktable.c:341 ../src/control/jobs/control_jobs.c:2104
 #: ../src/control/jobs/control_jobs.c:2144
 #, c-format
 msgid "error loading file `%s'"
 msgstr ""
 
-#: ../src/common/darktable.c:930
+#: ../src/common/darktable.c:961
 msgid "darktable - run performance configuration?"
 msgstr ""
 
-#: ../src/common/darktable.c:931
+#: ../src/common/darktable.c:962
 msgid ""
 "we have an updated performance configuration logic - executing that might "
 "improve the performance of darktable.\n"
@@ -4363,7 +4363,7 @@ msgid ""
 "would you like to execute this update of the performance configuration?\n"
 msgstr ""
 
-#: ../src/common/darktable.c:935 ../src/common/database.c:2543
+#: ../src/common/darktable.c:966 ../src/common/database.c:2543
 #: ../src/common/database.c:3601 ../src/common/variables.c:463
 #: ../src/develop/imageop_gui.c:303 ../src/imageio/format/pdf.c:656
 #: ../src/imageio/format/pdf.c:681 ../src/libs/export.c:1278
@@ -4410,7 +4410,7 @@ msgstr ""
 #: ../src/common/database.c:2536 ../src/libs/collect.c:2801
 #: ../src/libs/export_metadata.c:269 ../src/libs/import.c:1606
 #: ../src/libs/metadata.c:446 ../src/libs/metadata_view.c:1227
-#: ../src/libs/modulegroups.c:3451 ../src/libs/styles.c:439
+#: ../src/libs/modulegroups.c:3474 ../src/libs/styles.c:439
 #: ../src/libs/styles.c:614 ../src/libs/tagging.c:1359
 #: ../src/libs/tagging.c:1447 ../src/libs/tagging.c:1528
 #: ../src/libs/tagging.c:1653 ../src/libs/tagging.c:1927
@@ -4485,6 +4485,8 @@ msgid ""
 "the database schema has to be upgraded for\n"
 "\n"
 "<span style='italic'>%s</span>\n"
+"\n"
+"this might take a long time in case of a large database\n"
 "\n"
 "do you want to proceed or quit now to do a backup\n"
 msgstr ""
@@ -6275,8 +6277,8 @@ msgstr ""
 msgid "delete"
 msgstr ""
 
-#: ../src/develop/imageop.c:970 ../src/libs/modulegroups.c:3451
-#: ../src/libs/modulegroups.c:3804
+#: ../src/develop/imageop.c:970 ../src/libs/modulegroups.c:3474
+#: ../src/libs/modulegroups.c:3827
 msgid "rename"
 msgstr ""
 
@@ -7942,14 +7944,14 @@ msgstr ""
 
 #: ../src/gui/preferences.c:1549 ../src/gui/presets.c:173
 #: ../src/gui/presets.c:415 ../src/libs/lib.c:385
-#: ../src/libs/modulegroups.c:3682
+#: ../src/libs/modulegroups.c:3705
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr ""
 
 #: ../src/gui/preferences.c:1553 ../src/gui/presets.c:177
 #: ../src/gui/presets.c:419 ../src/libs/lib.c:389
-#: ../src/libs/modulegroups.c:3686
+#: ../src/libs/modulegroups.c:3709
 msgid "delete preset?"
 msgstr ""
 
@@ -8156,8 +8158,8 @@ msgstr ""
 msgid "update preset?"
 msgstr ""
 
-#: ../src/gui/presets.c:1099 ../src/libs/modulegroups.c:3769
-#: ../src/libs/modulegroups.c:3778
+#: ../src/gui/presets.c:1099 ../src/libs/modulegroups.c:3792
+#: ../src/libs/modulegroups.c:3801
 msgid "manage module layouts"
 msgstr ""
 
@@ -13115,7 +13117,7 @@ msgstr ""
 msgid "auto scale"
 msgstr ""
 
-#: ../src/iop/lens.cc:2373 ../src/libs/modulegroups.c:2391
+#: ../src/iop/lens.cc:2373 ../src/libs/modulegroups.c:2414
 msgid "correct"
 msgstr ""
 
@@ -15743,7 +15745,7 @@ msgid "create a 'virgin' duplicate of the image without any development"
 msgstr ""
 
 #: ../src/libs/duplicate.c:545 ../src/libs/image.c:494
-#: ../src/libs/modulegroups.c:3801
+#: ../src/libs/modulegroups.c:3824
 msgid "duplicate"
 msgstr ""
 
@@ -16463,7 +16465,7 @@ msgid "physically delete from disk immediately"
 msgstr ""
 
 #. delete
-#: ../src/libs/image.c:474 ../src/libs/modulegroups.c:3798
+#: ../src/libs/image.c:474 ../src/libs/modulegroups.c:3821
 #: ../src/libs/styles.c:861
 msgid "remove"
 msgstr ""
@@ -17472,335 +17474,336 @@ msgstr ""
 msgid "last modified layout"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:207
+#: ../src/libs/modulegroups.c:206
 msgid "modulegroups"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:352 ../src/libs/modulegroups.c:371
-#: ../src/libs/modulegroups.c:2503 ../src/libs/modulegroups.c:2520
-#: ../src/libs/modulegroups.c:2530
+#: ../src/libs/modulegroups.c:355 ../src/libs/modulegroups.c:364
+#: ../src/libs/modulegroups.c:387 ../src/libs/modulegroups.c:399
+#: ../src/libs/modulegroups.c:2526 ../src/libs/modulegroups.c:2543
+#: ../src/libs/modulegroups.c:2553
 msgid "on-off"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:544 ../src/libs/modulegroups.c:547
-#: ../src/libs/modulegroups.c:652
+#: ../src/libs/modulegroups.c:568 ../src/libs/modulegroups.c:571
+#: ../src/libs/modulegroups.c:675
 msgid ""
 "this quick access widget is disabled as there are multiple instances of this "
 "module present. Please use the full module to access this widget..."
 msgstr ""
 
-#: ../src/libs/modulegroups.c:659
+#: ../src/libs/modulegroups.c:682
 msgid ""
 "this quick access widget is disabled as it's hidden in the actual module "
 "configuration. Please use the full module to access this widget..."
 msgstr ""
 
-#: ../src/libs/modulegroups.c:665
+#: ../src/libs/modulegroups.c:688
 msgid "(some features may only be available in the full module interface)"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:691
+#: ../src/libs/modulegroups.c:714
 #, c-format
 msgid "go to the full version of the %s module"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1565 ../src/libs/modulegroups.c:1649
-#: ../src/libs/modulegroups.c:1682 ../src/libs/modulegroups.c:1733
-#: ../src/libs/modulegroups.c:1903
+#: ../src/libs/modulegroups.c:1588 ../src/libs/modulegroups.c:1672
+#: ../src/libs/modulegroups.c:1705 ../src/libs/modulegroups.c:1756
+#: ../src/libs/modulegroups.c:1926
 msgctxt "modulegroup"
 msgid "base"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1585
+#: ../src/libs/modulegroups.c:1608
 msgctxt "modulegroup"
 msgid "tone"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1593 ../src/libs/modulegroups.c:1696
-#: ../src/libs/modulegroups.c:1743
+#: ../src/libs/modulegroups.c:1616 ../src/libs/modulegroups.c:1719
+#: ../src/libs/modulegroups.c:1766
 msgctxt "modulegroup"
 msgid "color"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1608 ../src/libs/modulegroups.c:1704
-#: ../src/libs/modulegroups.c:1748
+#: ../src/libs/modulegroups.c:1631 ../src/libs/modulegroups.c:1727
+#: ../src/libs/modulegroups.c:1771
 msgctxt "modulegroup"
 msgid "correct"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1627 ../src/libs/modulegroups.c:1717
-#: ../src/libs/modulegroups.c:1761 ../src/libs/modulegroups.c:2394
+#: ../src/libs/modulegroups.c:1650 ../src/libs/modulegroups.c:1740
+#: ../src/libs/modulegroups.c:1784 ../src/libs/modulegroups.c:2417
 msgctxt "modulegroup"
 msgid "effect"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1643
+#: ../src/libs/modulegroups.c:1666
 msgid "modules: all"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1661 ../src/libs/modulegroups.c:1810
+#: ../src/libs/modulegroups.c:1684 ../src/libs/modulegroups.c:1833
 msgctxt "modulegroup"
 msgid "grading"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1669 ../src/libs/modulegroups.c:1829
-#: ../src/libs/modulegroups.c:2398
+#: ../src/libs/modulegroups.c:1692 ../src/libs/modulegroups.c:1852
+#: ../src/libs/modulegroups.c:2421
 msgctxt "modulegroup"
 msgid "effects"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1677
+#: ../src/libs/modulegroups.c:1700
 msgid "workflow: beginner"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1727
+#: ../src/libs/modulegroups.c:1750
 msgid "workflow: display-referred"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1770
+#: ../src/libs/modulegroups.c:1793
 msgid "workflow: scene-referred"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1776
+#: ../src/libs/modulegroups.c:1799
 msgctxt "modulegroup"
 msgid "technical"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1852
+#: ../src/libs/modulegroups.c:1875
 msgid "search only"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1858 ../src/libs/modulegroups.c:2164
-#: ../src/libs/modulegroups.c:2659
+#: ../src/libs/modulegroups.c:1881 ../src/libs/modulegroups.c:2187
+#: ../src/libs/modulegroups.c:2682
 msgctxt "modulegroup"
 msgid "deprecated"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1879
+#: ../src/libs/modulegroups.c:1902
 msgid "previous config"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1880
+#: ../src/libs/modulegroups.c:1903
 msgid "previous layout"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1884
+#: ../src/libs/modulegroups.c:1907
 msgid "previous config with new layout"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2036 ../src/libs/modulegroups.c:2506
-#: ../src/libs/modulegroups.c:2562
+#: ../src/libs/modulegroups.c:2059 ../src/libs/modulegroups.c:2529
+#: ../src/libs/modulegroups.c:2585
 msgid "remove this widget"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2182 ../src/libs/modulegroups.c:2420
+#: ../src/libs/modulegroups.c:2205 ../src/libs/modulegroups.c:2443
 msgid "remove this module"
 msgstr ""
 
 #. does it belong to recommended modules ?
-#: ../src/libs/modulegroups.c:2389
+#: ../src/libs/modulegroups.c:2412
 msgid "base"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2392
+#: ../src/libs/modulegroups.c:2415
 msgid "tone"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2395
+#: ../src/libs/modulegroups.c:2418
 msgid "technical"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2396
+#: ../src/libs/modulegroups.c:2419
 msgid "grading"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2402 ../src/libs/modulegroups.c:2410
+#: ../src/libs/modulegroups.c:2425 ../src/libs/modulegroups.c:2433
 msgid "add this module"
 msgstr ""
 
 #. show the submenu with all the modules
-#: ../src/libs/modulegroups.c:2432 ../src/libs/modulegroups.c:2605
+#: ../src/libs/modulegroups.c:2455 ../src/libs/modulegroups.c:2628
 msgid "all available modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2440 ../src/libs/modulegroups.c:2613
+#: ../src/libs/modulegroups.c:2463 ../src/libs/modulegroups.c:2636
 msgid "add module"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2445 ../src/libs/modulegroups.c:2618
+#: ../src/libs/modulegroups.c:2468 ../src/libs/modulegroups.c:2641
 msgid "remove module"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2523 ../src/libs/modulegroups.c:2532
-#: ../src/libs/modulegroups.c:2578 ../src/libs/modulegroups.c:2586
+#: ../src/libs/modulegroups.c:2546 ../src/libs/modulegroups.c:2555
+#: ../src/libs/modulegroups.c:2601 ../src/libs/modulegroups.c:2609
 msgid "add this widget"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2762
+#: ../src/libs/modulegroups.c:2785
 msgid "quick access panel"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2771
+#: ../src/libs/modulegroups.c:2794
 msgid "show only active modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2776
+#: ../src/libs/modulegroups.c:2799
 msgid ""
 "presets\n"
 "ctrl+click to manage"
 msgstr ""
 
 #. search box
-#: ../src/libs/modulegroups.c:2781
+#: ../src/libs/modulegroups.c:2804
 msgid "search module"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2787
+#: ../src/libs/modulegroups.c:2810
 msgid "search modules by name or tag"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2795
+#: ../src/libs/modulegroups.c:2818
 msgid "clear text"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2804
+#: ../src/libs/modulegroups.c:2827
 msgid ""
 "the following modules are deprecated because they have internal design "
 "mistakes which can't be solved and alternative modules which solve them.\n"
 "they will be removed for new edits in the next release."
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3046
+#: ../src/libs/modulegroups.c:3069
 msgid "basic icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3056
+#: ../src/libs/modulegroups.c:3079
 msgid "active icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3066
+#: ../src/libs/modulegroups.c:3089
 msgid "color icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3076
+#: ../src/libs/modulegroups.c:3099
 msgid "correct icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3086
+#: ../src/libs/modulegroups.c:3109
 msgid "effect icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3096
+#: ../src/libs/modulegroups.c:3119
 msgid "favorites icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3106
+#: ../src/libs/modulegroups.c:3129
 msgid "tone icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3116
+#: ../src/libs/modulegroups.c:3139
 msgid "grading icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3126
+#: ../src/libs/modulegroups.c:3149
 msgid "technical icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3159
+#: ../src/libs/modulegroups.c:3182
 msgid "quick access panel widgets"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3161
+#: ../src/libs/modulegroups.c:3184
 msgid "quick access"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3182
+#: ../src/libs/modulegroups.c:3205
 msgid "add widget to the quick access panel"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3214
+#: ../src/libs/modulegroups.c:3237
 msgid "group icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3223
+#: ../src/libs/modulegroups.c:3246
 msgid "group name"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3234
+#: ../src/libs/modulegroups.c:3257
 msgid "remove group"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3261
+#: ../src/libs/modulegroups.c:3284
 msgid "move group to the left"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3270
+#: ../src/libs/modulegroups.c:3293
 msgid "add module to the group"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3282
+#: ../src/libs/modulegroups.c:3305
 msgid "move group to the right"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3309 ../src/libs/modulegroups.c:3425
-#: ../src/libs/modulegroups.c:3807 ../src/libs/tagging.c:3082
+#: ../src/libs/modulegroups.c:3332 ../src/libs/modulegroups.c:3448
+#: ../src/libs/modulegroups.c:3830 ../src/libs/tagging.c:3082
 msgid "new"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3450
+#: ../src/libs/modulegroups.c:3473
 msgid "rename preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3457
+#: ../src/libs/modulegroups.c:3480
 msgid "new preset name :"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3458
+#: ../src/libs/modulegroups.c:3481
 msgid "a preset with this name already exists !"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3791
+#: ../src/libs/modulegroups.c:3814
 msgid "preset : "
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3798
+#: ../src/libs/modulegroups.c:3821
 msgid "remove the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3801
+#: ../src/libs/modulegroups.c:3824
 msgid "duplicate the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3804
+#: ../src/libs/modulegroups.c:3827
 msgid "rename the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3807
+#: ../src/libs/modulegroups.c:3830
 msgid "create a new empty preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3815
+#: ../src/libs/modulegroups.c:3838
 msgid "show search line"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3819
+#: ../src/libs/modulegroups.c:3842
 msgid "show quick access panel"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3828
+#: ../src/libs/modulegroups.c:3851
 msgid "auto-apply this preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3844
+#: ../src/libs/modulegroups.c:3867
 msgid "module groups"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3862
+#: ../src/libs/modulegroups.c:3885
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3870
+#: ../src/libs/modulegroups.c:3893
 msgid "reset"
 msgstr ""
 
@@ -18755,68 +18758,68 @@ msgstr ""
 msgid "show global preferences"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:596
+#: ../src/libs/tools/global_toolbox.c:623
 #, c-format
 msgid "do you want to access `%s'?"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:601
+#: ../src/libs/tools/global_toolbox.c:628
 msgid "access the online usermanual?"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:647
+#: ../src/libs/tools/global_toolbox.c:679
 msgid "help url opened in web browser"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:651
+#: ../src/libs/tools/global_toolbox.c:683
 msgid "error while opening help url in web browser"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:662
+#: ../src/libs/tools/global_toolbox.c:694
 msgid "there is no help available for this element"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:721
+#: ../src/libs/tools/global_toolbox.c:753
 msgctxt "accel"
 msgid "grouping"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:722
+#: ../src/libs/tools/global_toolbox.c:754
 msgctxt "accel"
 msgid "preferences"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:724
+#: ../src/libs/tools/global_toolbox.c:756
 msgctxt "accel"
 msgid "thumbnail overlays/no overlays"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:725
+#: ../src/libs/tools/global_toolbox.c:757
 msgctxt "accel"
 msgid "thumbnail overlays/overlays on mouse hover"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:726
+#: ../src/libs/tools/global_toolbox.c:758
 msgctxt "accel"
 msgid "thumbnail overlays/extended overlays on mouse hover"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:727
+#: ../src/libs/tools/global_toolbox.c:759
 msgctxt "accel"
 msgid "thumbnail overlays/permanent overlays"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:728
+#: ../src/libs/tools/global_toolbox.c:760
 msgctxt "accel"
 msgid "thumbnail overlays/permanent extended overlays"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:729
+#: ../src/libs/tools/global_toolbox.c:761
 msgctxt "accel"
 msgid "thumbnail overlays/permanent overlays extended on mouse hover"
 msgstr ""
 
-#: ../src/libs/tools/global_toolbox.c:730
+#: ../src/libs/tools/global_toolbox.c:762
 msgctxt "accel"
 msgid "thumbnail overlays/overlays block on mouse hover"
 msgstr ""
