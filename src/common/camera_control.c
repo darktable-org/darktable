@@ -857,9 +857,9 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
         GList *c_lock_item = c->unused_cameras;
         do
         {
-          dt_camera_unused_t *locked_cam = (dt_camera_unused_t *)c_lock_item->data;
-          in_unused |= ((g_strcmp0(locked_cam->model, camera->model) == 0) &&
-                        (g_strcmp0(locked_cam->port, camera->port) == 0));
+          dt_camera_unused_t *unused_cam = (dt_camera_unused_t *)c_lock_item->data;
+          in_unused |= ((g_strcmp0(unused_cam->model, camera->model) == 0) &&
+                        (g_strcmp0(unused_cam->port, camera->port) == 0));
         } while(c_lock_item && (c_lock_item = g_list_next(c_lock_item)) != NULL);
       }
 
@@ -989,7 +989,7 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
     GList *c_lock_item = c->unused_cameras;
     do
     {
-      dt_camera_unused_t *locked_cam = (dt_camera_unused_t *)c_lock_item->data;
+      dt_camera_unused_t *unused_cam = (dt_camera_unused_t *)c_lock_item->data;
       gboolean remove_cam = TRUE;
       for(int i = 0; i < gp_list_count(available_cameras); i++)
       {
@@ -997,13 +997,13 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
         const gchar *myport;
         gp_list_get_name(available_cameras, i, &mymodel);
         gp_list_get_value(available_cameras, i, &myport);
-        if((g_strcmp0(mymodel, locked_cam->model) == 0) && (g_strcmp0(myport, locked_cam->port) == 0))
-          remove_cam = locked_cam->remove;
+        if((g_strcmp0(mymodel, unused_cam->model) == 0) && (g_strcmp0(myport, unused_cam->port) == 0))
+          remove_cam = unused_cam->remove;
       }
       if(remove_cam)
       {
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] remove %s on port %s from locked list\n",
-                 locked_cam->model, locked_cam->port);
+        dt_print(DT_DEBUG_CAMCTL, "[camera_control] remove %s on port %s from ununsed camera list\n",
+                 unused_cam->model, unused_cam->port);
         dt_camera_unused_t *oldcam = (dt_camera_unused_t *)c_lock_item->data;
         camctl->unused_cameras = c_lock_item = g_list_delete_link(c->unused_cameras, c_lock_item);
         dt_camctl_unused_camera_destroy(oldcam);
