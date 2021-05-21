@@ -1261,33 +1261,36 @@ static void tree_view(dt_lib_collect_rule_t *dr)
           dt_conf_is_equal("plugins/lighttable/tagging/case_sensitivity", "insensitive");
 
         if(is_insensitive)
-          query = g_strdup_printf("SELECT name, 1 AS tagid , COUNT(*) AS count"
-                                  " FROM (SELECT DISTINCT name, id"
+          query = g_strdup_printf("SELECT name, 1 AS tagid, SUM(count) AS count"
+                                  " FROM (SELECT tagid, COUNT(*) as count"
                                   "   FROM main.images AS mi"
                                   "   JOIN main.tagged_images"
                                   "     ON id = imgid "
-                                  "   JOIN (SELECT lower(name) AS name, id AS tag_id FROM data.tags)"
-                                  "     ON tagid = tag_id"
-                                  "   WHERE %s)"
-                                  " GROUP BY name", where_ext);
+                                  "   WHERE %s"
+                                  "   GROUP BY tagid)"
+                                  " JOIN (SELECT lower(name) AS name, id AS tag_id FROM data.tags)"
+                                  "   ON tagid = tag_id"
+                                  "   GROUP BY name", where_ext);
         else
-          query = g_strdup_printf("SELECT name, tagid, COUNT(*) AS count"
-                                  " FROM main.images AS mi"
-                                  " JOIN main.tagged_images"
-                                  "   ON id = imgid "
+          query = g_strdup_printf("SELECT name, tagid, count"
+                                  " FROM (SELECT tagid, COUNT(*) AS count"
+                                  "  FROM main.images AS mi"
+                                  "  JOIN main.tagged_images"
+                                  "     ON id = imgid "
+                                  "  WHERE %s"
+                                  "  GROUP BY tagid)"
                                   " JOIN (SELECT name, id AS tag_id FROM data.tags)"
                                   "   ON tagid = tag_id"
-                                  " WHERE %s"
-                                  " GROUP BY name,tag_id", where_ext);
+                                  , where_ext);
 
         query = dt_util_dstrcat(query, " UNION ALL "
                                        "SELECT '%s' AS name, 0 as id, COUNT(*) AS count "
                                        "FROM main.images AS mi "
                                        "WHERE mi.id NOT IN"
                                        "  (SELECT DISTINCT imgid FROM main.tagged_images AS ti"
-                                       "   JOIN data.tags AS t"
-                                       "     ON t.id = ti.tagid"
-                                       "        AND SUBSTR(name, 1, 10) <> 'darktable|')",
+                                       "   WHERE ti.tagid NOT IN"
+                                       "    (SELECT id FROM data.tags WHERE"
+                                       "      SUBSTR(name, 1, 10) = 'darktable|'))",
                                 _("not tagged"));
       }
       break;
