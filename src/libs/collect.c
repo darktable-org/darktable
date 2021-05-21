@@ -599,6 +599,18 @@ static void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_c
 
 static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_collect_t *d)
 {
+  /* Get tree path for row that was clicked */
+  GtkTreePath *path = NULL;
+  int get_path = gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL);
+
+  if(event->type == GDK_DOUBLE_BUTTON_PRESS)
+  {
+    if(gtk_tree_view_row_expanded(GTK_TREE_VIEW(treeview), path))
+      gtk_tree_view_collapse_row (GTK_TREE_VIEW(treeview), path);
+    else
+      gtk_tree_view_expand_row (GTK_TREE_VIEW(treeview), path, FALSE);
+  }
+
   if(((d->view_rule == DT_COLLECTION_PROP_FOLDERS
        || d->view_rule == DT_COLLECTION_PROP_FILMROLL)
       && event->type == GDK_BUTTON_PRESS && event->button == 3)
@@ -609,11 +621,8 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
               (dt_modifier_is(event->state, GDK_SHIFT_MASK) || dt_modifier_is(event->state, GDK_CONTROL_MASK)))))
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
-    GtkTreePath *path = NULL;
 
-    /* Get tree path for row that was clicked */
-    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), (gint)event->x, (gint)event->y, &path, NULL, NULL,
-                                     NULL))
+    if(get_path)
     {
       if(d->singleclick && dt_modifier_is(event->state, GDK_SHIFT_MASK)
          && gtk_tree_selection_count_selected_rows(selection) > 0
@@ -656,14 +665,6 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
     else
     {
       row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
-    }
-
-    if(event->type == GDK_DOUBLE_BUTTON_PRESS)
-    {
-      if(gtk_tree_view_row_expanded(GTK_TREE_VIEW(treeview), path))
-        gtk_tree_view_collapse_row (GTK_TREE_VIEW(treeview), path);
-      else
-        gtk_tree_view_expand_row (GTK_TREE_VIEW(treeview), path, FALSE);
     }
 
     gtk_tree_path_free(path);
