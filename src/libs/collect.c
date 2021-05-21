@@ -2326,9 +2326,9 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
           g_free(text);
           text = n_text;
         }
-        /* if a tag has children, shift-clicking on a parent node should display all images in and under this
+        /* if a tag has children, left-clicking on a parent node should display all images in and under this
          * hierarchy. */
-        else if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+        else if(!dt_modifier_is(event->state, GDK_SHIFT_MASK))
         {
           gchar *n_text = g_strconcat(text, "*", NULL);
           g_free(text);
