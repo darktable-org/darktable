@@ -2186,6 +2186,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>context_help/use_default_url</name>
+    <type>boolean</type>
+    <default>true</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>context_help/url</name>
     <type>string</type>
     <default>https://darktable.org/usermanual/</default>
