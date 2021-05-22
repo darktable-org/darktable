@@ -297,7 +297,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
         // We need to do special cases for work/export colorspace
         // which dt_ioppr_get_histogram_profile_type() can't handle
         // when not in darkroom view.
-        const dt_iop_order_iccprofile_info_t *profile_to;
+        const dt_iop_order_iccprofile_info_t *profile_to = NULL;
         const dt_iop_order_iccprofile_info_t *const srgb_profile =
           dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", DT_INTENT_RELATIVE_COLORIMETRIC);
         if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
@@ -367,17 +367,19 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     dat.head.max_height = darktable.mipmap_cache->max_height[DT_MIPMAP_F];
     dat.head.style[0] = '\0';
 
-    dt_colorspaces_color_profile_type_t histogram_type;
-    const char *histogram_filename;
+    dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_NONE;
+    const char *histogram_filename = NULL;
     if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
     {
-      const dt_colorspaces_color_profile_t *work_profile = dt_colorspaces_get_work_profile(lib->image_id);
+      const dt_colorspaces_color_profile_t *work_profile =
+        dt_colorspaces_get_work_profile(lib->image_id);
       histogram_type = work_profile->type;
       histogram_filename = work_profile->filename;
     }
     else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
     {
-      const dt_colorspaces_color_profile_t *export_profile = dt_colorspaces_get_output_profile(lib->image_id, DT_COLORSPACE_NONE, NULL);
+      const dt_colorspaces_color_profile_t *export_profile =
+        dt_colorspaces_get_output_profile(lib->image_id, DT_COLORSPACE_NONE, NULL);
       histogram_type = export_profile->type;
       histogram_filename = export_profile->filename;
     }
@@ -400,8 +402,9 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
       const dt_iop_order_iccprofile_info_t *const histogram_profile =
         dt_ioppr_add_profile_info_to_list(darktable.develop, histogram_type, histogram_filename,
                                           DT_INTENT_RELATIVE_COLORIMETRIC);
-      darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, dat.buf, dat.head.width,
-                                             dat.head.height, histogram_profile, histogram_profile);
+      darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module,
+                                             dat.buf, dat.head.width, dat.head.height,
+                                             histogram_profile, histogram_profile);
       dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
       free(dat.buf);
     }
