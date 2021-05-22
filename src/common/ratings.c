@@ -208,6 +208,8 @@ enum
 
 static float _action_process_rating(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
+  float return_value = NAN;
+
   if(move_size)
   {
     if(element != DT_VIEW_REJECT)
@@ -257,14 +259,24 @@ static float _action_process_rating(gpointer target, dt_action_element_t element
                                                  r == 4 ? "★★★★" :
                                                  r == 5 ? "★★★★★" :
                                                  _("unknown"));
+          return_value = - r + (r >= element ? DT_VALUE_PATTERN_ACTIVE : 0);
         }
       }
     }
 
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING, imgs);
   }
+  else if(darktable.develop)
+  {
+    const int image_id = darktable.develop->image_storage.id;
+    if (image_id != -1)
+    {
+      int rating = dt_ratings_get(image_id);
+      return_value = - rating + (rating >= element ? DT_VALUE_PATTERN_ACTIVE : 0);
+    }
+  }
 
-  return NAN;
+  return return_value + DT_VALUE_PATTERN_SUM;
 }
 
 const gchar *dt_action_effect_rating[]

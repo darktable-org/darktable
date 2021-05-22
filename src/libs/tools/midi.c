@@ -73,7 +73,10 @@ typedef struct midi_device
   gboolean            syncing;
   gint                encoding;
   gint8               last_known[128];
-  gint8               last_type, last_data1, num_identical;
+  guint8              num_keys, num_knobs, first_key, first_knob, first_light;
+
+  int                 last_controller, last_received, last_diff, num_identical;
+  gboolean            is_x_touch_mini;
 } midi_device;
 
 const char *note_names[] = { "C","C#","D","D#","E","F","F#","G","G#","A","A#","B", NULL };
@@ -159,24 +162,60 @@ gint calculate_move(midi_device *midi, gint controller, gint velocity)
     break;
   default: // absolute
     {
-      int diff = velocity - midi->last_known[controller];
+      const int last = midi->last_known[controller];
       midi->last_known[controller] = velocity;
-/*
-      if(diff == 0)
+
+      int diff = 0;
+      if(last != -1)
       {
-        // detecting relative encoding?
-        if(++midi->num_identical == 5)
+        if(midi->num_identical)
         {
-          dt_print(DT_DEBUG_INPUT, "Controller: switching encoding %d\n", velocity);
-          midi->encoding = velocity;
+          if(velocity != midi->last_received && midi->last_received != -1)
+            midi->num_identical = 0;
+          else
+          {
+            // detecting relative encoding?
+            if(--midi->num_identical)
+              dt_control_log("%d more identical (down) moves before switching to relative encoding\n", midi->num_identical);
+            else
+            {
+              dt_control_log("switching encoding to relative (down = %d)\n", velocity);
+              midi->encoding = velocity;
+            }
+          }
         }
-        return 0;
+        else if(velocity == 0)
+        {
+          if(last == 0)
+            diff = -1;
+          else
+            diff = -1e6; // try to reach min in one step
+        }
+        else if(velocity == 127)
+        {
+          if(last == 127)
+            diff = 1;
+          else
+            diff = +1e6; // try to reach max in one step
+        }
+        else
+        {
+          diff = velocity - last;
+
+          if(controller == midi->last_controller &&
+             diff * midi->last_diff < 0)
+          {
+            int diff_received = velocity - midi->last_received;
+            if(abs(diff) > abs(diff_received))
+              diff = diff_received;
+          }
+        }
       }
-      else
-        midi->num_identical = 0;
-*/
-      if(velocity == 0) return -1e6; // try to reach min in one step
-      if(velocity == 127) return +1e6; // try to reach max in one step
+
+      midi->last_controller = controller;
+      midi->last_received   = velocity;
+      midi->last_diff       = diff;
+
       return diff;
     }
     break;
@@ -187,22 +226,18 @@ void update_with_move(midi_device *midi, PmTimestamp timestamp, gint controller,
 {
   float new_position = dt_shortcut_move(midi->id, timestamp, controller, move);
 
-  if(strstr(midi->info->name, "X-TOUCH MINI") && controller >= 1 && controller <= 18)
+  if(midi->is_x_touch_mini && controller != 9 && controller != 10)
   {
     // Light pattern always for 1-8 range, but CC=1-8 (bank A) or 11-18 (bank B).
-    // Can't determine which with certainty. Guess from last received command.
-    if( (controller <=  8 && (midi->last_type == 0xb ? midi->last_data1 <=  9 : midi->last_data1 <= 23)) ||
-        (controller >= 11 && (midi->last_type == 0xb ? midi->last_data1 >= 10 : midi->last_data1 >= 24)) )
-    {
-      if(isnan(new_position))
-        ; // midi_write(midi, 0, 0xB, controller % 10, 0); // off
-      else if(new_position >= DT_VALUE_PATTERN_PERCENTAGE)
-        midi_write(midi, 0, 0xB, controller % 10, 2); // fan
-      else if(new_position >= DT_VALUE_PATTERN_PLUS_MINUS)
-        midi_write(midi, 0, 0xB, controller % 10, 4); // trim
-      else
-        midi_write(midi, 0, 0xB, controller % 10, 1); // pan
-    }
+    if(isnan(new_position))
+      ; // midi_write(midi, 0, 0xB, controller % 10, 0); // off
+    else if(new_position >= DT_VALUE_PATTERN_PERCENTAGE ||
+            fmodf(new_position, DT_VALUE_PATTERN_ACTIVE) == DT_VALUE_PATTERN_SUM)
+      midi_write(midi, 0, 0xB, controller % 10, 2); // fan
+    else if(new_position >= DT_VALUE_PATTERN_PLUS_MINUS)
+      midi_write(midi, 0, 0xB, controller % 10, 4); // trim
+    else
+      midi_write(midi, 0, 0xB, controller % 10, 1); // pan
   }
 
   int rotor_position = 0;
@@ -221,12 +256,12 @@ void update_with_move(midi_device *midi, PmTimestamp timestamp, gint controller,
   }
   else if(!isnan(new_position))
   {
-    int c = - new_position - 1;
-    rotor_position = c > 11 ? c+107 : c*127./12.+1.25;
+    int c = - new_position;
+    if(c > 0) rotor_position = fmodf(c * 10.5f - (c > 13 ? 140.1f : 8.6f), 128);
   }
   else
   {
-    if(midi->last_known[controller] == 0) return;
+    /*if(midi->last_known[controller] == 0)*/ return;
   }
 
   midi->last_known[controller] = rotor_position;
@@ -259,24 +294,30 @@ static gboolean poll_midi_devices(gpointer user_data)
         event_type = 0x8; // note off
       }
 
-      midi->last_type = event_type;
       midi->channel = event_status & 0x0F;
-      midi->last_data1 = event_data1;
+
+      gboolean x_touch_mini_layer_B = FALSE;
 
       switch (event_type)
       {
       case 0x9:  // note on
         dt_print(DT_DEBUG_INPUT, "Note On: Channel %d, Data1 %d\n", midi->channel, event_data1);
 
+        x_touch_mini_layer_B = event_data1 > 23;
+
         dt_shortcut_key_press(midi->id, event[i].timestamp, event_data1);
         break;
       case 0x8:  // note off
         dt_print(DT_DEBUG_INPUT, "Note Off: Channel %d, Data1 %d\n", midi->channel, event_data1);
 
+        x_touch_mini_layer_B = event_data1 > 23;
+
         dt_shortcut_key_release(midi->id, event[i].timestamp, event_data1);
         break;
       case 0xb:  // controllers, sustain
         dt_print(DT_DEBUG_INPUT, "Controller: Channel %d, Data1 %d\n", midi->channel, event_data1);
+
+        x_touch_mini_layer_B = event_data1 > 9;
 
         int accum = 0;
         for(int j = i; j < num_events; j++)
@@ -294,7 +335,15 @@ static gboolean poll_midi_devices(gpointer user_data)
 
         break;
       default:
-        break;
+        continue; // x_touch_mini_layer_B has not been set
+      }
+
+      if(midi->is_x_touch_mini && midi->first_knob != (x_touch_mini_layer_B ? 11 : 1))
+      {
+        midi->first_knob  = x_touch_mini_layer_B ? 11 : 1;
+        midi->first_key   = x_touch_mini_layer_B ? 32 : 8;
+
+        for(int j = 0; (j != midi->first_knob || (j += midi->num_knobs)) && j < 128; j++) midi->last_known[j] = -1;
       }
     }
 
@@ -321,7 +370,6 @@ void midi_open_devices(dt_lib_module_t *self)
     const PmDeviceInfo *info = Pm_GetDeviceInfo(i);
     dt_print(DT_DEBUG_INPUT, "[midi_open_devices] found midi device '%s' via '%s'\n", info->name, info->interf);
 
-
     if(info->input && !strstr(info->name, "Midi Through Port"))
     {
       PortMidiStream *stream_in;
@@ -339,9 +387,21 @@ void midi_open_devices(dt_lib_module_t *self)
 
       midi_device *midi = (midi_device *)g_malloc0(sizeof(midi_device));
 
-      midi->id = id++;
-      midi->info = info;
+      midi->id          = id++;
+      midi->info        = info;
       midi->portmidi_in = stream_in;
+
+      midi->is_x_touch_mini = strstr(info->name, "X-TOUCH MINI") != NULL;
+
+      midi->num_knobs   = midi->is_x_touch_mini ? 8 : 128;
+      midi->first_knob  = midi->is_x_touch_mini ? 1 :   0;
+      midi->num_keys    = 16;
+      midi->first_key   = midi->is_x_touch_mini ? 8 :   0;
+      midi->first_light = 0;
+
+      midi->num_identical = midi->is_x_touch_mini ? 0 : 5; // countdown "relative down" moves received before switching to relative mode
+      midi->last_received = -1;
+      for(int j = 0; j < 128; j++) midi->last_known[j] = -1;
 
       for(int j = 0; j < Pm_CountDevices(); j++)
       {
@@ -382,24 +442,24 @@ void midi_close_devices(dt_lib_module_t *self)
   Pm_Terminate();
 }
 
-static void callback_image_changed(gpointer instance, gpointer user_data)
+//static void callback_image_changed(gpointer instance, gpointer user_data)
+static gboolean _timeout_midi_update(gpointer user_data)
 {
   GSList *devices = (GSList *)((dt_lib_module_t *)user_data)->data;
   while(devices)
   {
     midi_device *midi = devices->data;
 
-    for(int i = 0; i < 128; i++) update_with_move(midi, 0, i, 0);
-    // FIXME this needs to happen with lower priority to avoid flooding
-    // could be priority of slider update that is too high
-    // also; reduce range if it can be determined reliably
+    for(int i = 0; i < midi->num_knobs; i++) update_with_move(midi, 0, i + midi->first_knob, 0);
+
+    for(int i = 0; i < midi->num_keys; i++)
+      midi_write(midi, midi->is_x_touch_mini ? 0 : midi->channel, 0x9,
+                 i + midi->first_light, dt_shortcut_key_active(midi->id, i + midi->first_key));
 
     devices = devices->next;
   }
-}
 
-static void callback_view_changed(gpointer instance, dt_view_t *old_view, dt_view_t *new_view, gpointer data)
-{
+  return G_SOURCE_CONTINUE;
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -413,26 +473,24 @@ void gui_init(dt_lib_module_t *self)
 
   midi_open_devices(self);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
-                            G_CALLBACK(callback_view_changed), self);
+  g_timeout_add(250, _timeout_midi_update, self);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
-                            G_CALLBACK(callback_image_changed), self);
+  // dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
+  //                           G_CALLBACK(callback_image_changed), self);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
-                            G_CALLBACK(callback_image_changed), self);
+  // dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
+  //                           G_CALLBACK(callback_image_changed), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
- dt_control_signal_disconnect(darktable.signals,
-                               G_CALLBACK(callback_view_changed), self);
+  g_source_remove_by_user_data(self);
 
-  dt_control_signal_disconnect(darktable.signals,
-                               G_CALLBACK(callback_image_changed), self);
+  // dt_control_signal_disconnect(darktable.signals,
+  //                              G_CALLBACK(callback_image_changed), self);
 
-  dt_control_signal_disconnect(darktable.signals,
-                               G_CALLBACK(callback_image_changed), self);
+  // dt_control_signal_disconnect(darktable.signals,
+  //                              G_CALLBACK(callback_image_changed), self);
 
   midi_close_devices(self);
 }
