@@ -36,8 +36,6 @@ typedef struct dt_undo_tags_t
   GList *after; // list of tagid after
 } dt_undo_tags_t;
 
-static void dt_set_darktable_tags();
-
 static gchar *_get_tb_removed_tag_string_values(GList *before, GList *after)
 {
   GList *a = after;
@@ -574,7 +572,7 @@ gboolean dt_tag_detach_by_string(const char *name, const gint imgid, const gbool
 }
 
 // to be called before issuing any query based on memory.darktable_tags
-static void dt_set_darktable_tags()
+void dt_set_darktable_tags()
 {
   sqlite3_stmt *stmt;
 
