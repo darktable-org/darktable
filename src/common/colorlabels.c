@@ -247,6 +247,8 @@ const char *dt_colorlabels_to_string(int label)
 
 static float _action_process_color_label(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
+  float return_value = NAN;
+
   if(move_size)
   {
     GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(FALSE, TRUE, FALSE));
@@ -281,8 +283,16 @@ static float _action_process_color_label(gpointer target, dt_action_element_t el
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
                                imgs);
   }
+  else if(darktable.develop && element != 0)
+  {
+    const int image_id = darktable.develop->image_storage.id;
+    if (image_id != -1)
+    {
+      return_value = dt_colorlabels_check_label(image_id, element - 1);
+    }
+  }
 
-  return NAN;
+  return return_value;
 }
 
 const dt_action_element_def_t _action_elements_color_label[]

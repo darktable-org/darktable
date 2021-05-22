@@ -108,8 +108,8 @@ const gchar *dt_action_effect_value[]
       NULL };
 const gchar *dt_action_effect_selection[]
   = { N_("popup"),
-      N_("previous"),
       N_("next"),
+      N_("previous"),
       N_("reset"),
       N_("first"),
       N_("last"),
@@ -208,7 +208,7 @@ static float _action_process_button(gpointer target, dt_action_element_t element
     gdk_event_free(event);
   }
 
-  return 0;
+  return NAN;
 }
 
 static const dt_shortcut_fallback_t _action_fallbacks_toggle[]
@@ -1028,17 +1028,18 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
       break;
     case SHORTCUT_VIEW_SPEED:
       elements = _action_find_elements(s->action);
-      if(elements && elements[s->element].effects == dt_action_effect_value &&
-         (s->effect == DT_ACTION_EFFECT_DEFAULT_MOVE ||
-          s->effect == DT_ACTION_EFFECT_DEFAULT_KEY ||
-          s->effect == DT_ACTION_EFFECT_DEFAULT_UP ||
-          s->effect == DT_ACTION_EFFECT_DEFAULT_DOWN ||
-          (!s->effect && s->action->type == DT_ACTION_TYPE_FALLBACK)))
+      if(s->speed != 1.0 ||
+         (elements && elements[s->element].effects == dt_action_effect_value &&
+          (s->effect == DT_ACTION_EFFECT_DEFAULT_MOVE ||
+           s->effect == DT_ACTION_EFFECT_DEFAULT_KEY ||
+           s->effect == DT_ACTION_EFFECT_DEFAULT_UP ||
+           s->effect == DT_ACTION_EFFECT_DEFAULT_DOWN ||
+           (!s->effect && s->action->type == DT_ACTION_TYPE_FALLBACK))))
       {
         field_text = g_strdup_printf("%.3f", s->speed);
         if(s->speed == 1.0) weight = PANGO_WEIGHT_LIGHT;
-        editable = TRUE;
       }
+      editable = TRUE;
       break;
     case SHORTCUT_VIEW_INSTANCE:
       for(dt_action_t *owner = s->action; owner; owner = owner->owner)
@@ -2059,7 +2060,7 @@ gboolean _shortcut_closest_match(GSequenceIter **current, dt_shortcut_t *s, gboo
 {
   *current = g_sequence_iter_prev(*current);
   dt_shortcut_t *c = g_sequence_get(*current);
-dt_print(DT_DEBUG_INPUT, "  [_shortcut_closest_match] shortcut considered: %s\n", _shortcut_description(c, TRUE));
+//dt_print(DT_DEBUG_INPUT, "  [_shortcut_closest_match] shortcut considered: %s\n", _shortcut_description(c, TRUE));
 
   gboolean applicable;
   while((applicable =
@@ -2080,7 +2081,7 @@ dt_print(DT_DEBUG_INPUT, "  [_shortcut_closest_match] shortcut considered: %s\n"
 
     *current = g_sequence_iter_prev(*current);
     c = g_sequence_get(*current);
-dt_print(DT_DEBUG_INPUT, "  [_shortcut_closest_match] shortcut considered: %s\n", _shortcut_description(c, TRUE));
+//dt_print(DT_DEBUG_INPUT, "  [_shortcut_closest_match] shortcut considered: %s\n", _shortcut_description(c, TRUE));
   }
 
   if(applicable)
@@ -2321,7 +2322,7 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
 {
   int delay = 0;
   g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
-  if(time && time < _last_time + delay) return NAN;
+  if((!size && _last_time) || (time && time < _last_time + delay)) return NAN;
 
   _cancel_delayed_release();
   _last_time = 0;
@@ -2512,6 +2513,33 @@ void dt_shortcut_key_release(dt_input_device_t id, guint time, guint key)
   {
     fprintf(stderr, "[dt_shortcut_key_release] released key wasn't stored\n");
   }
+}
+
+gboolean dt_shortcut_key_active(dt_input_device_t id, guint key)
+{
+  dt_shortcut_t base_key
+    = { .key_device = id,
+        .key = key,
+        .views = darktable.view_manager->current_view->view(darktable.view_manager->current_view) };
+
+  GSequenceIter *existing = g_sequence_lookup(darktable.control->shortcuts, &base_key,
+                                              shortcut_compare_func, GINT_TO_POINTER(base_key.views));
+  if(existing)
+  {
+    dt_shortcut_t *s = g_sequence_get(existing);
+
+    if(s && s->action && s->action->type >= DT_ACTION_TYPE_WIDGET)
+    {
+      const dt_action_def_t *definition = _action_find_definition(s->action);
+      if(definition && definition->process)
+      {
+        float value = definition->process(s->action->target, s->element, s->effect, 0);
+        return fmodf(value, 1) <= DT_VALUE_PATTERN_ACTIVE || fmodf(value, 2) > .5;
+      }
+    }
+  }
+
+  return FALSE;
 }
 
 static guint _fix_keyval(GdkEvent *event)

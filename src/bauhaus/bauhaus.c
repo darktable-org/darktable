@@ -3037,6 +3037,7 @@ gboolean combobox_idle_value_changed(gpointer widget)
 static float _action_process_combo(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
   GtkWidget *widget = GTK_WIDGET(target);
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   int value = dt_bauhaus_combobox_get(widget);
 
   if(move_size)
@@ -3056,7 +3057,6 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
       move_size *= - 1;
     case DT_ACTION_EFFECT_NEXT:
       value = CLAMP(value + move_size, 0, dt_bauhaus_combobox_length(widget) - 1);
-      dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
 
       if(_combobox_next_entry(w->data.combobox.entries, &value, move_size > 0 ? 1 : -1))
       {
@@ -3079,6 +3079,12 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
     dt_accel_widget_toast(widget);
   }
 
+  GList *e = w->data.combobox.entries;
+  for(int above = value; above && e; above--, e = e->next)
+  {
+    dt_bauhaus_combobox_entry_t *entry = e->data;
+    if(entry && ! entry->sensitive) value--; // don't count unselectable combo items in value
+  }
   return - 1 - value;
 }
 
@@ -3103,6 +3109,8 @@ static const dt_shortcut_fallback_t _action_fallbacks_combo[]
   = { { .element = DT_ACTION_ELEMENT_SELECTION, .effect = DT_ACTION_EFFECT_RESET, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
       { .element = DT_ACTION_ELEMENT_BUTTON, .button = DT_SHORTCUT_LEFT },
       { .element = DT_ACTION_ELEMENT_BUTTON, .effect = DT_ACTION_EFFECT_TOGGLE_CTRL, .button = DT_SHORTCUT_LEFT, .mods = GDK_CONTROL_MASK },
+      { .move = DT_SHORTCUT_MOVE_SCROLL, .speed = -1 },
+      { .move = DT_SHORTCUT_MOVE_VERTICAL, .speed = -1 },
       { } };
 
 const dt_action_def_t dt_action_def_slider
