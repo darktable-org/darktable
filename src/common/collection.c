@@ -2149,25 +2149,25 @@ gboolean dt_collection_hint_message_internal(void *message)
 
 void dt_collection_hint_message(const dt_collection_t *collection)
 {
-  /* if relevant, determine offset of selection */
-  GList *selected_imgids = dt_collection_get_selected(collection, 1);
-  int selected = -1;
-
-  if(selected_imgids)
-  {
-    selected = GPOINTER_TO_INT(selected_imgids->data);
-    selected = dt_collection_image_offset_with_collection(collection, selected);
-    selected++;
-  }
   /* collection hinting */
   gchar *message;
 
   const int c = dt_collection_get_count_no_group(collection);
   const int cs = dt_collection_get_selected_count(collection);
-  g_list_free(selected_imgids);
 
   if(cs == 1)
   {
+    /* determine offset of the single selected image */
+    GList *selected_imgids = dt_collection_get_selected(collection, 1);
+    int selected = -1;
+
+    if(selected_imgids)
+    {
+      selected = GPOINTER_TO_INT(selected_imgids->data);
+      selected = dt_collection_image_offset_with_collection(collection, selected);
+      selected++;
+    }
+    g_list_free(selected_imgids);
     message = g_strdup_printf(_("%d image of %d (#%d) in current collection is selected"), cs, c, selected);
   }
   else
