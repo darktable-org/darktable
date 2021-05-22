@@ -36,7 +36,7 @@ darktable is an open source photography workflow application and non-destructive
 Documentation
 -------------
 
-The darktable user manual is maintained in the [dtdocs](https://github.com/darktable-org/dtdocs) repository. 
+The darktable user manual is maintained in the [dtdocs](https://github.com/darktable-org/dtdocs) repository.
 
 Lua API documentation is maintained in the [luadocs](https://github.com/darktable-org/luadocs) repository.
 
@@ -45,34 +45,34 @@ Requirements
 
 ### Supported platforms
 
-* Linux (64 bits), 
+* Linux (64 bits),
 * Free BSD (64 bits),
-* Windows 8 (64 bits), Windows 10 (64 bits), 
+* Windows 8 (64 bits), Windows 10 (64 bits),
 * MacOS X.
 
-*32 bits platforms are not officially supported, they might or might not work.* 
+*32 bits platforms are not officially supported, they might or might not work.*
 
-*Windows support is still young and suffers from bugs that do not affect Linux. If possible, 
+*Windows support is still young and suffers from bugs that do not affect Linux. If possible,
 prefer using darktable on Linux.*
 
-### Hardware 
+### Hardware
 
 (workable minimum / **recommended minimum**):
 * RAM: 4 GB / **8 GB**
-* CPU: Intel Pentium 4 / **Intel Core i5 4×2.4 GHz** 
+* CPU: Intel Pentium 4 / **Intel Core i5 4×2.4 GHz**
 * GPU: none / **Nvidia with 1024 CUDA cores, 4 GB, OpenCL 1.2 compatible**
 * free disk space: 250 MB / **1 GB**
 
-*darktable can run on lightweight configurations (even Raspberry Pi), but expect modules like denoising, local contrast, 
+*darktable can run on lightweight configurations (even Raspberry Pi), but expect modules like denoising, local contrast,
 contrast equalizer, retouch or liquify to be slow beyond usable.*
 
-*GPU is not mandatory but strongly recommended for a smoother experience. 
+*GPU is not mandatory but strongly recommended for a smoother experience.
 Nvidia GPU are recommended for safety because some AMD drivers behave unreliably with some modules (local contrast).*
 
 Installing
 ----------
 
-If the latest release is still not available as a pre-built package for your distribution, 
+If the latest release is still not available as a pre-built package for your distribution,
 you can build the software yourself following the instructions [below](#building).
 
 ### Latest release
@@ -86,7 +86,7 @@ you can build the software yourself following the instructions [below](#building
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
 
 *When using a pre-built package, ensure it has been built with Lua, OpenCL, OpenMP and Colord support.
-These are optional and will not prevent darktable from running if missing, 
+These are optional and will not prevent darktable from running if missing,
 but their absence will degrade user experience.
 Noticeably, some Flatpak, Snap and Appimage packages lack OpenCL and Lua support.*
 
@@ -103,22 +103,22 @@ Updating from older versions
 When updating darktable from an older release, you simply need to install
 the newest version. Files will be preserved.
 
-However, sometimes newer releases need to change the structure of the library database 
+However, sometimes newer releases need to change the structure of the library database
 (containing the whole list of images known to darktable, with their editing history). You will then
-be prompted with a request to either upgrade the database or to close the software. 
+be prompted with a request to either upgrade the database or to close the software.
 
-**The migration to a newer database structure/newer release means new and old edits 
+**The migration to a newer database structure/newer release means new and old edits
 will not be compatible anymore with older versions of darktable.** Upgrades are definitive.
-Newer versions are always compatible with older edits, but newer edits are generally 
+Newer versions are always compatible with older edits, but newer edits are generally
 not compatible with older versions.
 
-darktable automatically backs up the library database when a new version upgrades it 
+darktable automatically backs up the library database when a new version upgrades it
 (in `~/.config/darktable/library.db-pre-3.0.0` for example), so
-you can revert to the previous release by restoring this backup if needed 
+you can revert to the previous release by restoring this backup if needed
 (simply rename it `library.db`).
 
-If you try to open a newer database with an older software version, the parts of the editings done with new features
-will be discarded and you will loose them. This also applies to the sidecar XMP files.
+If you try to open a newer database with an older software version, the parts of the edits done with new features
+will be discarded and you will lose them. This also applies to the sidecar XMP files.
 
 If you plan to move regularly between 2 versions (new/unstable and old/stable) see [below](#testunstable-version)
 how to do it safely.
@@ -126,11 +126,11 @@ how to do it safely.
 Getting extensions
 ------------------
 
-Extensions and plugins use the Lua scripting language and can be downloaded [here](https://github.com/darktable-org/lua-scripts). Lua support is optional in darktable, ensure you have the interpreter `lua` and its development files (package 
-`lua-dev` or `lua-devel`, depending on distributions) installed on your system 
+Extensions and plugins use the Lua scripting language and can be downloaded [here](https://github.com/darktable-org/lua-scripts). Lua support is optional in darktable, ensure you have the interpreter `lua` and its development files (package
+`lua-dev` or `lua-devel`, depending on distributions) installed on your system
 while building or ensure the package you are using has been built with this library.
 
-Extensions allow to export for various media and websites, merge/stack/blend HDR, panoramas or focus bracketing, 
+Extensions allow to export for various media and websites, merge/stack/blend HDR, panoramas or focus bracketing,
 apply AI-based facial recognition, manage tags and GPS data, etc.
 
 Building
@@ -162,10 +162,10 @@ Optional dependencies with no version requirement:
 * Lensfun *(for lens automatic correction)*
 * OpenEXR *(for EXR import and export)*
 * OpenJPEG *(for Jpeg2000 export)*
-* Colord, Xatom *(for system display color profile fetching)* 
+* Colord, Xatom *(for system display color profile fetching)*
 * G'Mic *(for HaldcLUT support)*
 
-To install all the dependencies on Linux systems, you may use the source repositories of your distribution 
+To install all the dependencies on Linux systems, you may use the source repositories of your distribution
 (provided they are up-to-date):
 
 #### Fedora and RHEL
@@ -199,7 +199,7 @@ If mandatory dependencies are missing on your system, building the software will
 errors like `Package XXX has not been found` or `Command YYY has no provider on this system`.
 What you need to do, then, is to search which package provides the required missing package or command in your distribution,
 then install it. This can usually be done in your package manager (not the applications manager
-customarily provided by default in your distribution) or on the internet with a search engine. 
+customarily provided by default in your distribution) or on the internet with a search engine.
 You may need to install a package manager first (like Synaptic on Debian/Ubuntu, or DNF Dragora on Fedora/RHEL).
 
 This process might be tedious but you only need to do it once. See this
@@ -212,10 +212,10 @@ for one-line commands that will install most dependencies on the most frequent L
 
 The master branch contains the latest version of the source code and is intended:
 * as a working base for developers,
-* for beta-testers to chase bugs, 
+* for beta-testers to chase bugs,
 * for users willing to sacrifice stability for new features without waiting for next release.
 
-The master branch comes with no guarantee of stability, might corrupt your database and XMP files, 
+The master branch comes with no guarantee of stability, might corrupt your database and XMP files,
 might result in loss of data and edits history, and temporarily break compatibility with previous versions and commits.
 
 How dangerous is it ? Most of the time, it is fairly stable. As any rolling-release kind of deployment, bugs appear more often
@@ -235,7 +235,7 @@ See below (in "Using") how to start a test install of the unstable version witho
 
 3.4.1
 
-darktable project releases one major version every year, for Christmas, tagged with even numbers, (like 2.2, 2.4, 2.6, 3.0). 
+darktable project releases one major version every year, for Christmas, tagged with even numbers, (like 2.2, 2.4, 2.6, 3.0).
 Minor revisions are tagged with a third digit (like 3.0.1, 3.0.2) and mostly provide bug fixes and minor new features.
 You may want to compile these stable releases yourself in order to get better performance for your particular computer:
 
@@ -258,12 +258,12 @@ git submodule update --init
 
 #### Easy way
 
-WARNING: in case you have already built darktable in the past, don't forget to remove entirely (`rm -R`) the `build` 
-and `/opt/darktable` directories to avoid conflicting files from different versions. Many weird behaviours and transient 
-bugs have been reported that can be tracked down to the building cache not properly invalidating the changed dependencies, so 
-the safest way is to completely remove previously built binaries and restart from scratch. 
+WARNING: in case you have already built darktable in the past, don't forget to remove entirely (`rm -R`) the `build`
+and `/opt/darktable` directories to avoid conflicting files from different versions. Many weird behaviours and transient
+bugs have been reported that can be tracked down to the building cache not properly invalidating the changed dependencies, so
+the safest way is to completely remove previously built binaries and restart from scratch.
 
-darktable provides a shell script that automatically takes care of the building on Linux and MacOS for classic cases in a single command. 
+darktable provides a shell script that automatically takes care of the building on Linux and MacOS for classic cases in a single command.
 
 
 ```bash
@@ -277,15 +277,15 @@ If you want to install a test version alongside your regular/stable version, cha
 ```
 This builds the software for your own architecture only, with:
 
-* `-O3` optimization level, 
-* SSE/AVX support if detected, 
+* `-O3` optimization level,
+* SSE/AVX support if detected,
 * OpenMP support (multi-threading and vectorization) if detected,
 * OpenCL support (GPU offloading) if detected,
 * Lua scripting support if detected.
 
 #### Manual way
 
-You can alternatively use the manual building to pass on custom arguments. 
+You can alternatively use the manual building to pass on custom arguments.
 
 ##### Linux/MacOS
 
@@ -311,8 +311,8 @@ To use a test version of darktable without damaging your regular/stable version 
 /opt/darktable-test/bin/darktable --configdir "~/.config/darktable-test"
 ```
 
-and ensure to disable the option "write sidecar file for each image" in preferences -> storage -> XMP. This way, 
-your regular/stable version will save its configuration files in `~/.config/darktable`, as usual, and 
+and ensure to disable the option "write sidecar file for each image" in preferences -> storage -> XMP. This way,
+your regular/stable version will save its configuration files in `~/.config/darktable`, as usual, and
 the test/unstable one in `~/.config/darktable-test`, so they will not produce database conflicts.
 
 #### Regular/stable version
@@ -353,9 +353,9 @@ Check that you have the latest [gphoto2 library](http://www.gphoto.org/ "gphoto2
 
 ### Why is my lens not detected/corrected in darkroom ?
 
-Lens correction profiles are provided by Lensfun, which has 2 parts: a program and a database. 
-Most Linux distributions provide a recent-enough version of the program, 
-but the majority provide an outdated version of the database. If 
+Lens correction profiles are provided by Lensfun, which has 2 parts: a program and a database.
+Most Linux distributions provide a recent-enough version of the program,
+but the majority provide an outdated version of the database. If
 [Lensfun](https://lensfun.github.io/) is correctly installed, then update its database in a terminal by running:
 
 ```
@@ -365,25 +365,25 @@ lensfun-update-data
 or alternatively
 
 ```
-/usr/bin/g-lensfun-update-data 
+/usr/bin/g-lensfun-update-data
 ```
 
 ### Why are the thumbnails in lighttable looking different than the preview in darkroom ?
 
 For RAW files never edited before in darktable (when you only imported them), the lighttable uses by default
-the embedded JPEG thumbnail put in the RAW file by your camera. Loading this JPEG file is faster and makes the 
-lighttable more responsive when you import large collections of images. 
+the embedded JPEG thumbnail put in the RAW file by your camera. Loading this JPEG file is faster and makes the
+lighttable more responsive when you import large collections of images.
 
 However, this JPEG thumbnail is processed by the firmware of the camera, with proprietary algorithms,
 and colors, sharpness and contrast might not look the same as
-darktable processing, which is what you see when opening the darkroom. 
+darktable processing, which is what you see when opening the darkroom.
 Notice camera's manufacturers don't publish the pixel cuisine they perform in their firmware
-so their look is not exactly nor easily reproduceable externally.
+so their look is not exactly nor easily reproducible externally.
 
-However, once RAW images have been previously edited in darktable, 
+However, once RAW images have been previously edited in darktable,
 the lighttable thumbnail should match exactly the darkroom preview because they are processed the same.
 
-To never see the embedded JPEG thumbnail in lighttable, for RAW files, you can check the option 
+To never see the embedded JPEG thumbnail in lighttable, for RAW files, you can check the option
 "don't use embedded preview JPEG but half-size raw" in preferences -> lighttable.
 
 Wiki
