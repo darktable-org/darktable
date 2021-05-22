@@ -344,8 +344,10 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     }
     else
     {
-      cairo_translate(cr, (width - cairo_image_surface_get_width(surf)) / 2,
-                      (height - cairo_image_surface_get_height(surf)) / 2);
+      const float scaler = 1.0f / darktable.gui->ppd_thb;
+      cairo_translate(cr, (width - cairo_image_surface_get_width(surf) * scaler) / 2,
+                      (height - cairo_image_surface_get_height(surf) * scaler) / 2);
+      cairo_scale(cr, scaler, scaler);
       cairo_set_source_surface(cr, surf, 0.0, 0.0);
       cairo_paint(cr);
       cairo_surface_destroy(surf);
