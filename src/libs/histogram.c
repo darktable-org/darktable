@@ -658,18 +658,22 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_restore(cr);
 }
 
-static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t *cr, int ch, double alpha)
+static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t *cr, int ch,
+                                                 double alpha_chroma, double alpha_white)
 {
-  // FIXME: force a recalc/redraw when colors have changed via user entering new CSS in preferences -- is there a signal for this?
-  // waveform data is BGR, need to flip to RGB
-  const GdkRGBA primary = darktable.bauhaus->graph_colors[2-ch];
-  cairo_set_source_rgba(cr, primary.red, primary.green, primary.blue, alpha);
   const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
   cairo_surface_t *surface
     = dt_cairo_image_surface_create_for_data(d->waveform_8bit + (2-ch) * d->waveform_height * wf_8bit_stride,
                                              CAIRO_FORMAT_A8,
                                              d->waveform_width, d->waveform_height, wf_8bit_stride);
+
+  cairo_set_source_rgba(cr, ch==2 ? 1.:0., ch==1 ? 1.:0., ch==0 ? 1.:0., alpha_chroma);
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_mask_surface(cr, surface, 0., 0.);
+  cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
+  cairo_set_source_rgba(cr, 1, 1, 1, alpha_white);
+  cairo_mask_surface(cr, surface, 0., 0.);
+
   cairo_surface_destroy(surface);
 }
 
@@ -678,25 +682,24 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
                                          const uint8_t mask[3])
 {
   cairo_save(cr);
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+
   cairo_scale(cr, darktable.gui->ppd*width/d->waveform_width,
               darktable.gui->ppd*height/d->waveform_height);
 
   for(int ch = 0; ch < 3; ch++)
     if(mask[2-ch])
-      _lib_histogram_draw_waveform_channel(d, cr, ch, 0.6);
+      _lib_histogram_draw_waveform_channel(d, cr, ch, 0.65, 0.15);
   cairo_restore(cr);
 }
 
 static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, int width, int height)
 {
   cairo_save(cr);
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_scale(cr, darktable.gui->ppd*width/(d->waveform_width*3),
               darktable.gui->ppd*height/d->waveform_height);
   for(int ch = 2; ch >= 0; ch--)
   {
-    _lib_histogram_draw_waveform_channel(d, cr, ch, 0.9);
+    _lib_histogram_draw_waveform_channel(d, cr, ch, 0.95, 0.75);
     cairo_translate(cr, d->waveform_width/darktable.gui->ppd, 0);
   }
   cairo_restore(cr);
