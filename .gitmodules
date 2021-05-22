@@ -1,0 +1,16 @@
+[submodule "src/external/rawspeed"]
+	path = src/external/rawspeed
+	url = https://github.com/darktable-org/rawspeed.git
+	branch = develop
+[submodule "src/external/OpenCL"]
+	path = src/external/OpenCL
+	url = https://github.com/KhronosGroup/OpenCL-Headers.git
+[submodule "src/external/libxcf"]
+	path = src/external/libxcf
+	url = https://github.com/houz/libxcf.git
+[submodule "src/external/whereami"]
+	path = src/external/whereami
+	url = https://github.com/gpakosz/whereami
+[submodule "src/tests/integration"]
+	path = src/tests/integration
+	url = https://github.com/darktable-org/darktable-tests.git

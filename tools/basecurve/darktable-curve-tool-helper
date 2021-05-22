@@ -1,0 +1,257 @@
+#!/bin/bash
+
+#############################################################################
+# Copyright(C) 2014 Edouard Gomez
+#
+# Licensed under the GPLv3 or later
+# As of this writing it can be found at http://www.gnu.org/licenses/gpl.txt
+#############################################################################
+
+_script_dir="$(dirname "$0")"
+_script_dir="$(cd "$_script_dir" && pwd -P)"
+
+#############################################################################
+# Script vars
+#############################################################################
+
+_raw=""
+_keep=0
+_quiet=0
+_raw=""
+_jpeg=""
+_args=""
+_state=""
+_dt_curve_tool=""
+
+#############################################################################
+# Script functions
+#############################################################################
+
+print_help()
+{
+cat <<EOF
+usage: darktable-curve-tool-helper [OPTIONS] <RAW> [JPEG]
+
+OPTIONS:
+
+Standard
+-s, --state   darktable-curve-tool state file path (default: program's default)
+-q, --quiet   Quiet mode, do not print final message (default: no)
+-h, --help    Print this help message
+
+Advanced
+-k, --keep                      Keep intermediary PPM files (default: no)
+    --darktable-curve-tool-path <PATH> Path to darktable-curve-tool binary
+                                (default: either found in PATH or same dir
+                                 as this script)
+EOF
+}
+
+parse_args()
+{
+    while [ $# -gt 0 ] ; do
+        case $1 in
+        -k|--keep)
+            _keep=1
+            ;;
+        -q|--quiet)
+            _quiet=1
+            ;;
+        -s|--state)
+            shift
+            _state="$1"
+            ;;
+        -h|--help)
+            print_help
+            exit 0
+            ;;
+        --darktable-curve-tool-path)
+            shift
+            _dt_curve_tool="$1"
+            ;;
+        *)
+            _args="$_args $1"
+            ;;
+        esac
+        shift
+    done
+}
+
+check_tools()
+{
+    for _tool in convert dcraw exiftool ; do
+        _tpath="$(which $_tool)"
+        if [ ! -f "$_tpath" -o ! -x "$_tpath" ] ; then
+            printf "error: '%s' not found.\n" "$_tool"
+            exit 1
+        fi
+    done
+}
+
+setup_sources()
+{
+    _raw="$1"
+    _jpeg="$2"
+}
+
+generate_ppm_raw()
+{
+    local _src="$1"
+    local _dst="$2"
+    local _base="$(printf "%s" "$_src" | sed s,'\(.*\)\..*$','\1',g)"
+    local _tmpppm="${_base}.ppm"
+
+    dcraw -6 -W -g 1 1 -w "$_src"
+    mv "$_tmpppm" "$_dst"
+}
+
+extract_jpeg_from_raw()
+{
+    local _src="$1"
+    local _dst="$2"
+    local _make="$(exiftool -Make -t "$_src" | cut -d "$(printf '\t')" -f 2)"
+
+    case "$_make" in
+    [Nn][Ii][Kk][Oo][Nn]*|[Pp][Ee][Nn][Tt][Aa][Xx]*)
+        exiftool -b -JpgFromRaw "$_src" > "$_dst"
+        ;;
+    [Cc][Aa][Nn][Oo][Nn]*|[Ss][Oo][Nn][Yy]*)
+        exiftool -b -PreviewImage "$_src" > "$_dst"
+        ;;
+    *)
+        printf "unknown camera manufacturer %s, please provide a sample file to darktable developers to see if an embedded JPEG could be used" "$_make"
+        ;;
+    esac
+}
+
+generate_ppm_jpeg()
+{
+    local _srcraw="$1"
+    local _srcjpeg="$2"
+    local _dst="$3"
+
+    local _orientation="$(exiftool -t -n -Orientation "$_srcraw" | cut -d "$(printf '\t')" -f 2)"
+    local _transform=""
+
+    case "$_orientation" in
+    1) _transform="";;
+    2) _transform="-flip horizontal";;
+    3) _transform="-rotate 180";;
+    4) _transform="-flip vertical";;
+    5) _transform="-transpose";;
+    6) _transform="-rotate 90";;
+    7) _transform="-transverse";;
+    8) _transform="-rotate 270";;
+    *) _transform="";;
+    esac
+
+    convert $_transform "$_srcjpeg" "$_dst"
+}
+
+setup_dt_curve_tool()
+{
+    local _ret=0
+
+    if [ -z "$_dt_curve_tool" -o ! -x "$_dt_curve_tool" ] ; then
+        if [ -x "$_script_dir/darktable-curve-tool" ] ; then
+            _dt_curve_tool="$_script_dir/darktable-curve-tool"
+        else
+            _tmp="$(which darktable-curve-tool)"
+            if [ $? -eq 0 ] ; then
+                _dt_curve_tool="$_tmp"
+            else
+                _ret=1
+            fi
+        fi
+    fi
+
+    return $_ret
+}
+
+#############################################################################
+# Script starts here
+#############################################################################
+
+# check tools availability
+check_tools
+
+# parse arguments
+parse_args "$@"
+
+# first setup source file vars, first is the raw and second is the JPEG if any
+setup_sources "$_args"
+
+# bail out if no raw
+if [ ! -f "$_raw" ] ; then
+    printf "error: input raw file not found\n"
+    exit 1
+fi
+
+# find out our main tool
+setup_dt_curve_tool
+
+# bail out if tool not found
+if [ $? -ne 0 ] ; then
+    printf "error: darktable-curve-tool not found\n"
+    exit 1
+fi
+
+# some intermediary vars
+_base="$(printf "%s" "$_raw" | sed s,'\(.*\)\..*$','\1',g)"
+_ppm16="${_base}-16.ppm"
+_ppm8="${_base}-8.ppm"
+
+# generate the PPM from the raw file
+generate_ppm_raw "$_raw" "$_ppm16"
+if [ ! -f "$_ppm16" ] ; then
+    printf "error: failed generating the PPM from the raw file\n"
+    exit 1
+fi
+
+# Figure out what JPEG file the script will use
+_jpegtmp=""
+if [ -z "$_jpeg" -o ! -f "$_jpeg" ] ; then
+    if [ -f "$_base.JPG" ] ; then
+        _jpeg="$_base.JPG"
+    elif [ -f "$_base.jpg" ] ; then
+        _jpeg="$_base.jpg"
+    else
+        _jpegtmp="${_base}.jpg"
+        _jpeg="$_jpegtmp"
+        extract_jpeg_from_raw "$_raw" "$_jpegtmp"
+    fi
+fi
+
+# bail out if no suitable JPEG
+if [ ! -f "$_jpeg" ] ; then
+    printf "error: no JPEG on command line or extracted from raw found\n"
+    exit 1
+fi
+
+# generate PPM from JPEG file
+generate_ppm_jpeg "$_raw" "$_jpeg" "$_ppm8"
+if [ ! -f "$_ppm8" ] ; then
+    printf "error: failed generating the PPM from the JPEG file\n"
+    exit 1
+fi
+
+# clean temporary extracted JPEG if any
+if [ -n "$_jpegtmp" -a -f "$_jpegtmp" ] ; then
+    rm -f "$_jpegtmp"
+fi
+
+# turn the state file to a valid option for darktable-curve-tool
+if [ -n "$_state" ] ; then
+    _state="-s $_state"
+fi
+
+# analyze the images
+"$_dt_curve_tool" $_state "$_ppm16" "$_ppm8"
+if [ $_keep -eq 0 ] ; then
+    rm -f "$_ppm16" "$_ppm8"
+fi
+
+if [ $_quiet -eq 0 ] ; then
+    printf "if you accumulated enough data, you can now output the curves with\n"
+    printf "darktable-curve-tool %s -z -e %s -n 16\n" "$_state" "$_raw"
+fi

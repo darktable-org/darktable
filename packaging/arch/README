@@ -1,0 +1,15 @@
+Archlinux
+=========
+
+To build the package under Archlinux, grab the package tarball from the current
+release[1] or the latest git version[2] and build the package with makepkg[3].
+
+[1] http://aur.archlinux.org/packages.php?ID=31518
+[2] http://aur.archlinux.org/packages.php?ID=31515
+[3] http://wiki.archlinux.org/index.php/Makepkg
+
+
+To ease things you could also install yaourt[4], which should automatically
+download, build and install the package.
+
+[4] http://wiki.archlinux.org/index.php/Yaourt

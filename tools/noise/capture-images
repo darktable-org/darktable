@@ -1,0 +1,89 @@
+#!/bin/bash
+
+set -e
+
+scriptname=$(basename $0)
+scriptdir=$(cd $(dirname $0) && pwd)
+
+. "$scriptdir/subr.sh"
+
+# --------------------------------------------------------------------
+# Read command line arguments.
+# --------------------------------------------------------------------
+
+usage() {
+	cat <<EOF
+$scriptname [OPTION]...
+
+Available options:
+    -d DIR     Use DIR to read and write profiling input RAW images.
+    -h         Display this usage.
+    -i ISO     Limit capture to ISO sensitivity; can be specified multiple
+               times for multiple ISO settings.
+    -P         Re-do tethered input images capture.
+    -p SEC     Wait SEC seconds between each shot; useful if using a flash
+               for instance.
+EOF
+}
+
+while getopts ":d:hi:p:" opt; do
+	case $opt in
+	d)
+		profiling_dir=$OPTARG
+		;;
+	h)
+		usage
+		exit 0
+		;;
+	i)
+		iso_settings=$(add_to_list "$iso_settings" $OPTARG)
+		;;
+	P)
+		force_profiling_shots=1
+		;;
+	p)
+		pause_between_shots=$OPTARG
+		;;
+	esac
+done
+shift $((OPTIND-1))
+
+# Sort user-specified ISO settings.
+if [ "$iso_settings" ]; then
+	iso_settings=$(sort_iso_list $iso_settings)
+fi
+
+# Check for required tools.
+echo "===> Check for required tools"
+missing_tool=0
+
+if ! image_info_tools_installed; then
+	missing_tool=1
+fi
+if ! image_export_tools_installed; then
+	missing_tool=1
+fi
+if ! tethering_tools_installed; then
+	missing_tool=1
+fi
+
+if [ "$missing_tool" = "1" ]; then
+	exit 1
+fi
+
+# --------------------------------------------------------------------
+# Main code.
+# --------------------------------------------------------------------
+
+# If the user didn't specified a profiling shots directory, use a
+# default one.
+#
+# Defaults to /var/tmp/darktable-noise-profiling/$camera/profiling.
+
+auto_set_profiling_dir "-d"
+
+# Check for existing input images.
+list_input_images
+
+# Take the required shots.
+auto_capture_images

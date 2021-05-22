@@ -1,0 +1,552 @@
+
+=head1 NAME
+
+darktable - a digital photography workflow application
+
+=head1 SYNOPSIS
+
+    darktable [options] [IMG_1234.{RAW,...}|image_folder/]
+
+Options:
+
+    --cachedir <user cache directory>
+    --conf <key>=<value>
+    --configdir <user config directory>
+    -d {all,cache,camctl,camsupport,control,dev,fswatch,imageio,input,
+        ioporder,lighttable,lua,masks,memory,nan,opencl,params,perf,
+        pwstorage,print,signal,sql,undo}
+    --datadir <data directory>
+    --disable-opencl
+    -h, --help
+    --library <library file>
+    --localedir <locale directory>
+    --luacmd <lua command>
+    --moduledir <module directory>
+    --noiseprofiles <noiseprofiles json file>
+    -t <num openmp threads>
+    --tmpdir <tmp directory>
+    --version
+
+=head1 DESCRIPTION
+
+B<darktable> is a digital photography workflow application for B<Linux>, B<Mac OS X> and several other B<Unices>.
+
+The application is designed to ease editing and consistent processing of large
+photo sessions and provides an easy to use digital lighttable and a set
+of sophisticated post-processing tools.
+
+Most processing is done in 32-bit floating point per channel mode in device independent
+B<CIE L*a*b*> color space.
+B<darktable> is also fully color managed, which gives you full control over the look of the photos.
+
+The application relies on a modern plugin architecture thus making it easy for
+3rd party developers to extend the existing capabilities of the application.
+All lighttable and darkroom features are implemented as plugins, so you can
+create your plugins reusing existing code.
+Most workflow specific things can also be scripted in B<Lua>.
+
+=head1 OPTIONS
+
+=over
+
+=item B<IMG_1234.RAW or image_folder/>
+
+You may optionally supply the filename of an image or the name of a folder containing image files.
+If a filename is given darktable starts in darkroom view with that file opened.
+If a folder is given darktable starts in lighttable view with the content of that folder as the current collection.
+If there is already an instance of darktable running (using the same library) the image or folder will be opened
+there, using B<D-Bus> to communicate between the two processes.
+
+=item B<< --cachedir <cache directory> >>
+
+darktable keeps a cache of image thumbnails for fast image preview and of precompiled OpenCL binaries for fast startup.
+By default the cache is located in C<$HOME/.cache/darktable/>.
+There may exist multiple thumbnail caches in parallel - one for each library file.
+
+=item B<< --conf <key>=<value> >>
+
+darktable supports a rich set of configuration parameters which the
+user defines in C<darktablerc> - darktable's configuration file in the
+user config directory.
+You may temporarily overwrite individual settings on the command line with this option - however, these
+settings will not be stored in C<darktablerc>.
+
+=item B<< --configdir <config directory> >>
+
+This option defines the directory where darktable stores the user specific configuration.
+The default place is C<$HOME/.config/darktable/>.
+
+=item B<< -d <debug option> >>
+
+This option enables debug output to the terminal.
+There are several subsystems of darktable and debugging of each of them can be activated separately.
+You can use this option multiple times if you want debugging output of more than one subsystem.
+
+A few of those debug options are:
+
+=over
+
+=item B<control>
+
+Enable job queue debugging.
+If you redirect darktable's output to B<control.log> and call B<./tools/create_control_svg.sh control.log>,
+you will get a nice B<control.svg> with a visualization of the threads' work.
+
+=item B<cache>
+
+This will give you a lot of debugging info about the thumbnail cache for lighttable mode.
+If compiled in debug mode, this will also tell you where in the code a certain buffer has last been locked.
+
+=item B<perf>
+
+Use this for performance tweaking your darkroom modules.
+It will rdtsc-measure the runtimes of all plugins and print them to stdout.
+
+=item B<all>
+
+Enable all debugging output. In general this is not very useful.
+
+=back
+
+=item B<< --datadir <data directory> >>
+
+This option defines the directory where darktable finds its runtime data.
+The default place depends on your installation.
+Typical places are C</opt/darktable/share/darktable/> and C</usr/share/darktable/>.
+
+=item B<--disable-opencl>
+
+Prevent darktable from initializing the OpenCL subsystem.
+Use this option in case darktable crashes at startup due to a defective OpenCL implementation.
+
+=item B<-h>, B<--help>
+
+Show the available command line options and exit.
+
+=item B<< --library <library file> >>
+
+darktable keeps image information in an sqlite database for fast access.
+The default location of that database file is C<$HOME/.config/darktable/library.db>.
+You may give an alternative location, e.g. if you want to do some experiments without compromising your original library.db.
+If the database file does not exist, darktable creates it for you.
+You may also give C<:memory:> as a library file in which case the database is kept in system memory - all
+changes are discarded when darktable terminates.
+
+=item B<< --localedir <locale directory> >>
+
+The place where darktable finds its language specific text strings.
+The default place depends on your installation.
+Typical places are C</opt/darktable/share/locale/> and C</usr/share/locale/>.
+
+=item B<< --luacmd <lua command> >>
+
+A string containing lua commands to execute after lua initialization.
+These commands will be run after your C<luarc> file.
+
+If lua is not compiled in, this option will be accepted but won't do anything.
+
+=item B<< --moduledir <module directory> >>
+
+darktable has a modular structure and organizes its modules as shared libraries for loading at runtime.
+With this option you tell darktable where to look for its shared libraries.
+The default place depends on your installation; typical places are
+C</opt/darktable/lib/darktable/> and C</usr/lib/darktable/>.
+
+=item B<< --noiseprofiles <noiseprofiles json file> >>
+
+darktable's profiled denoise module uses camera specific profile data that gets loaded from an external JSON file.
+With this option the file to be loaded can be changed to allow testing alternative profiles.
+The default profile file is C<noiseprofiles.json> and is typically found in
+C</opt/darktable/share/darktable/> or C</usr/share/darktable/>.
+
+=item B<< -t <num openmp threads> >>
+
+darktable uses OpenMP to parallelize many computation steps and make use of all the available CPU cores.
+With this option you can specify the number of threads to use. Valid values are between C<1> and C<100>.
+
+=item B<< --tmpdir <tmp directory> >>
+
+The place where darktable stores its temporary files.
+If this option is not supplied darktable uses the system default.
+
+=item B<--version>
+
+Show the darktable version along with some important build options and exit.
+
+=back
+
+=head1 DEFAULT KEYBINDINGS
+
+=head3 All modes
+
+=over
+
+=item B<l>
+
+Switch to lighttable view
+
+=item B<d>
+
+Switch to darkroom view
+
+=item B<t>
+
+Switch to tethered capture view
+
+=item B<m>
+
+Switch to map view
+
+=item B<s>
+
+Switch to slideshow view
+
+=item B<p>
+
+Switch to print view
+
+=item B<.>
+
+Switch between lighttable and darkroom views
+
+=item B<Ctrl-q>
+
+Quit
+
+=item B<F11>
+
+Switch between fullscreen and normal modes of the application's window
+
+=item B<Esc>
+
+Leave fullscreen mode
+
+=item B<Ctrl-h>
+
+Show/hide header
+
+=item B<Tab>
+
+Show/hide sidebars
+
+=back
+
+=head3 Lighttable mode
+
+=over
+
+=item B<g, Shift-g>
+
+Navigate to top, bottom row
+
+=item B<PageUp, PageDown>
+
+Navigate one page up, down
+
+=item B<'>
+
+Scroll center
+
+=item B<Down, Left, Right, Up>
+
+Scroll down, left, right, up
+
+=item B<z>
+
+Preview image
+
+=item B<Ctrl-z>
+
+Preview image with focus detection
+
+=item B<F1, F2, F3, F4, F5>
+
+Color labels: toggle red, yellow, green, blue and purple
+
+=item B<1, 2, 3, 4, 5>
+
+Star rating
+
+=item B<0>
+
+Strip all stars
+
+=item B<r>
+
+Mark as rejected
+
+=item B<l>
+
+Realign images to the grid
+
+=item B<Alt-1>
+
+Zoom in on first visible image
+
+=item B<Alt-2, 3>
+
+Adjust zoom
+
+=item B<Alt-4>
+
+Zoom out completely
+
+=item B<Ctrl-a>
+
+Select all images
+
+=item B<Ctrl-Shift-a>
+
+Select no images
+
+=item B<Ctrl-i>
+
+Invert selection
+
+=item B<Ctrl-d>
+
+Duplicate image
+
+=item B<Ctrl-g, Ctrl-Shift-g>
+
+Group/ungroup selected images
+
+=item B<Delete>
+
+Remove image from collection
+
+=item B<Ctrl-c, Ctrl-Shift-c>
+
+Copy all, selected history
+
+=item B<Ctrl-v, Ctrl-Shift-v>
+
+Paste all, selected history
+
+=item B<Space>
+
+Toggle selection of an image
+
+=item B<Return>
+
+Select an image
+
+=item B<Ctrl-e>
+
+Export currently selected images
+
+=item B<Ctrl-k>
+
+Jump back to the previous collection
+
+=item B<Ctrl-t>
+
+Open a popup to quickly tag an image
+
+=item B<Ctrl-Shift-i>
+
+Import a folder
+
+=item B<Ctrl-j>
+
+Jump to the filmroll of an image
+
+=back
+
+=head3 Darkroom mode
+
+=over
+
+=item B<Alt-1, 2, 3>
+
+Zoom to 1:1, fill, and fit, respectively
+
+=item B<Ctrl-f>
+
+Show/hide filmstrip
+
+=item B<Space, Backspace>
+
+Step to next, previous image
+
+=item B<Ctrl-e>
+
+Export current image
+
+=item B<Ctrl-c, Ctrl-Shift-c>
+
+Copy all, selected history
+
+=item B<Ctrl-v, Ctrl-Shift-v>
+
+Paste all, selected history
+
+=item B<o>
+
+Toggle show of over- and under-exposure
+
+=item B<Ctrl-g>
+
+Toggle gamut check
+
+=item B<Ctrl-s>
+
+Toggle softproofing
+
+=item B<Enter>
+
+In Crop & Rotate module, commit the crop
+
+=item B<[, ]>
+
+In Flip module, rotate 90 degrees ccw, cw
+
+=item B<< <, > >>
+
+When drawing masks, decrease, increase brush opacity, respectively
+
+=item B<{, }>
+
+When drawing masks, decrease, increase brush hardness, respectively
+
+=item B<[, ]>
+
+When drawing masks, decrease, increase brush size, respectively
+
+=back
+
+=head3 Tethered mode
+
+=over
+
+=item B<Ctrl-f>
+
+Show/hide filmstrip
+
+=item B<v>
+
+Toggle live view
+
+=back
+
+=head3 Map mode
+
+=over
+
+=item B<Ctrl-f>
+
+Show/hide filmstrip
+
+=item B<Ctrl-z>
+
+Undo
+
+=item B<Ctrl-r>
+
+Redo
+
+=back
+
+=head3 Filmstrip (when the cursor is on top of the filmstrip)
+
+=over
+
+=item B<F1, F2, F3, F4, F5>
+
+Color labels: toggle red, yellow, green, blue and purple
+
+=item B<1, 2, 3, 4, 5>
+
+Star rating
+
+=item B<0>
+
+Strip all stars
+
+=item B<r>
+
+Mark as rejected
+
+=item B<Ctrl-d>
+
+Duplicate image
+
+=item B<Ctrl-a>
+
+Select all images
+
+=item B<Ctrl-Shift-a>
+
+Select no images
+
+=item B<Ctrl-i>
+
+Invert selection
+
+=item B<Ctrl-c, Ctrl-Shift-c>
+
+Copy all, selected history
+
+=item B<Ctrl-v, Ctrl-Shift-v>
+
+Paste all, selected history
+
+=back
+
+=head3 Slideshow mode
+
+=over
+
+=item B<Space>
+
+Start/stop playback
+
+=back
+
+=head1 SEE ALSO
+
+L<darktable-cli(1)|darktable-cli(1)>
+
+=head1 OTHER INFO
+
+Please visit B<darktable>'s website for news, blog and bug tracker: L<https://www.darktable.org/>
+
+L<https://www.darktable.org/usermanual/> The complete darktable usermanual.
+
+B<darktablerc.html> An overview over all default config settings.
+The default place depends on your installation.
+Typical places are C</opt/darktable/share/doc/darktable/> and C</usr/share/doc/darktable/>.
+
+=head1 REPORTING BUGS
+
+Please use the bug tracker on
+L<https://github.com/darktable-org/darktable/issues> to report
+bugs, feature requests and so on.
+
+=head1 AUTHORS
+
+The principal developer of darktable is Johannes Hanika.
+The (hopefully) complete list of contributors to the project is:
+
+DREGGNAUTHORS -- don't translate this line!
+
+This man page was written by Alexandre Prokoudine
+E<lt>alexandre.prokoudine@gmail.comE<gt> and Richard Levitte
+E<lt>richard@levittr.orgE<gt>.
+Additions were made by Tobias Ellinghaus E<lt>me@houz.orgE<gt>.
+
+=head1 HISTORY
+
+The project was started by Johannes Hanika in early 2009 to fill the gap
+(or, rather, a black hole) of a digital photography workflow tool on Linux.
+
+=head1 COPYRIGHT AND LICENSE
+
+B<Copyright (C)> 2009-2017 by Authors.
+
+B<darktable> is free software; you can redistribute it and/or modify it
+under the terms of the GPL v3 or (at your option) any later version.
+
+=for comment
+$Date: 2017-01-20$
+$Release: 2.3$

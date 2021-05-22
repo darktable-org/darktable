@@ -1,0 +1,148 @@
+
+=head1 NAME
+
+darktable-cli - a command line darktable variant
+
+=head1 SYNOPSIS
+
+    darktable-cli IMG_1234.{RAW,...} [<xmp file>] <output file> [options] [--core <darktable options>]
+
+Options:
+
+    --width <max width>
+    --height <max height>
+    --bpp <bpp>
+    --hq <0|1|false|true>
+    --upscale <0|1|false|true>
+    --export_masks <0|1|false|true>
+    --style <style name>
+    --style-overwrite
+    --apply-custom-presets <0|1|false|true>
+    --verbose
+    --help
+    --version
+
+=head1 DESCRIPTION
+
+B<darktable> is a digital photography workflow application for B<Linux>, B<Mac OS X> and several other B<Unices>.
+It's described further in L<darktable(1)|darktable(1)>.
+
+B<darktable-cli> is a command line variant to be used to export images
+given the raw file and the accompanying xmp file.
+
+=head1 OPTIONS
+
+The user needs to supply an input filename and an output filename.
+All other parameters are optional.
+
+=over
+
+=item B<< <input file>  >>
+
+The name of the input file to export.
+
+=item B<< <xmp file>  >>
+
+The optional name of an XMP sidecar file containing the history stack
+data to be applied during export.
+If this option is not given darktable will search for an XMP file that
+belongs to the given input file.
+
+=item B<< <output file>  >>
+
+The name of the output file.
+darktable derives the export file format from the file extension.
+You can also use all the variables available in B<darktable>'s export module in the output filename.
+
+=item B<< --width <max width>  >>
+
+This optional parameter allows one to limit the width of the exported
+image to that number of pixels.
+
+=item B<< --height <max height>  >>
+
+This optional parameter allows one to limit the height of the exported
+image to that number of pixels.
+
+=item B<< --bpp <bpp>  >>
+
+An optional parameter to define the bit depth of the exported image;
+allowed values depend on the file format.
+Currently this option is not yet functional.
+If you need to define the bit depth you need to use the following workaround:
+
+    --core --conf plugins/imageio/format/<FORMAT>/bpp=<VALUE>
+
+where B<FORMAT> is the name of the selected output format, for example B<png>.
+
+=item B<< --hq <0|1|true|false>  >>
+
+A flag that defines whether to use high quality resampling during export.
+Defaults to true.
+
+=item B<< --upscale <0|1|true|false>  >>
+
+A flag that defines whether to allow upscaling during export.
+Defaults to false.
+
+=item B<< --export_masks <0|1|true|false>  >>
+
+A flag that defines whether masks used in the image will be stored as layers in the
+exported image (provided the format supports it).
+Defaults to false.
+
+=item B<< --style <style name>  >>
+
+Specify the name of a style to be applied during export.  If a style
+is specified, the path to the darktable configuration directory must
+also be specified (i.e. --core --configdir ~/.config/darktable).
+Defaults to no style specified.
+
+=item B<< --style-overwrite  >>
+
+The specified style overwrites the history stack instead of being
+appended to it.
+
+=item B<< --apply-custom-presets  >>
+
+With this option you can decide if darktable loads its set of default parameters from
+B<data.db> and applies them. Otherwise the defaults that ship with darktable are used.
+
+Set this flag to false in order to run multiple instances.
+
+=item B<< --verbose  >>
+
+Enables verbose output.
+
+=item B<< --core <darktable options>  >>
+
+All command line parameters following B<--core> are passed
+to the darktable core and handled as standard parameters.
+See L<darktable(1)|darktable(1)> for a detailed description of the options.
+
+=back
+
+=head1 SEE ALSO
+
+L<darktable(1)|darktable(1)>
+
+=head1 AUTHORS
+
+The principal developer of darktable is Johannes Hanika.
+The (hopefully) complete list of contributors to the project is:
+
+DREGGNAUTHORS -- don't translate this line!
+
+This man page was written by Richard Levitte E<lt>richard@levitte.orgE<gt>.
+Additions were made by Tobias Ellinghaus E<lt>me@houz.orgE<gt>.
+
+=head1 COPYRIGHT AND LICENSE
+
+B<Copyright (C)> 2009-2019 by Authors.
+
+B<darktable> is free software; you can redistribute it and/or modify it
+under the terms of the GPL v3 or (at your option) any later version.
+
+=for comment
+$Date: 2019-11-27$
+$Release: 3.0$

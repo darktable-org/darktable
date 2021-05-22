@@ -1,0 +1,16 @@
+body {
+  padding-bottom: 30px;
+}
+
+.nav-tabs > li, .nav-pills > li {
+  float:none;
+  display:inline-block;
+}
+
+.nav-tabs, .nav-pills {
+  text-align:center;
+}
+
+.tab-pane img{
+  margin-top: 10px;
+}

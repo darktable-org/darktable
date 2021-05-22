@@ -1,0 +1,42 @@
+
+=head1 NAME
+
+darktable-cltest - check if there is a usable OpenCL environment for darktable to use
+
+=head1 SYNOPSIS
+
+    darktable-cltest
+
+=head1 DESCRIPTION
+
+B<darktable> is a digital photography workflow application for B<Linux>, B<Mac OS X> and several other B<Unices>.
+It's described further in L<darktable(1)|darktable(1)>.
+
+B<darktable-cltest> checks if there is a usable OpenCL environment on your system that darktable can use.
+It emits some debug output that is equivalent to calling B<darktable -d opencl> and then terminates.
+
+=head1 SEE ALSO
+
+L<darktable(1)|darktable(1)>
+
+=head1 AUTHORS
+
+The principal developer of darktable is Johannes Hanika.
+The (hopefully) complete list of contributors to the project is:
+
+DREGGNAUTHORS -- don't translate this line!
+
+This man page was written by Ulrich Pegelow E<lt>ulrich.pegelow@tongareva.deE<gt> as part of the usermanual.
+It was turned into a man page by Tobias Ellinghaus E<lt>me@houz.orgE<gt>.
+
+
+=head1 COPYRIGHT AND LICENSE
+
+B<Copyright (C)> 2009-2017 by Authors.
+
+B<darktable> is free software; you can redistribute it and/or modify it
+under the terms of the GPL v3 or (at your option) any later version.
+
+=for comment
+$Date: 2017-01-20$
+$Release: 2.3$

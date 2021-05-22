@@ -1,0 +1,131 @@
+a:link    { font-weight:bold; font-style:normal; color:white;   text-decoration:none; }
+a:visited { font-weight:bold; font-style:normal; color:white;   text-decoration:none; }
+a:focus   { font-weight:bold; font-style:normal; color:white;   text-decoration:underline; }
+a:hover   { font-weight:bold; font-style:normal; color:#6a6868; text-decoration:none; }
+
+body{
+  background-color:#5a5858;
+  font-family:trebuchet ms,bitstream vera sans,verdana,helvetica,arial,sans-serif; font-size: 8pt;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+body.navbody{
+  font-family:trebuchet ms,bitstream vera sans,verdana,helvetica,arial,sans-serif; font-size: 8pt;
+  background-color:#d2d0d0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.title{
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 50pt;
+  margin-bottom: -5pt;
+  background-color:#5a5858;
+  color:#d2d0d0;
+  padding: 0pt;
+  font-weight:bold;
+  font-size:20pt;
+  width: 746px; /* width of page + padding. */
+}
+.page{
+  background-color:#d2d0d0;
+  padding: 20pt;
+  padding-bottom: 40pt;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 0pt;
+  margin-bottom: 0pt;
+  width: 692px;
+  counter-reset: section;
+  border-style:solid;
+  border-width:1px;
+  border-color:#222222;
+}
+.footer{
+  background-image:none;
+  background-color:#5a5858;
+  padding: 0pt;
+  text-align:right;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 5pt;
+  margin-bottom: 20pt;
+  width: 692px;
+}
+
+.dia img {
+  align-self: center;
+}
+
+.page div {
+  height:250px;
+  float:left;
+  max-width:200px;
+  margin:0px;
+  margin-right:30px;
+  margin-bottom:30px;
+}
+
+.page .dia{
+  background-color:#5a5858;
+  margin-right:10pt;
+  margin-bottom:10pt;
+  margin-top:4px;
+  width:200px;
+  height:200px;
+  border-style:solid;
+  border-width:1px;
+  border-color:#222222;
+  display:table-cell;
+  vertical-align:middle;
+  text-align:center;
+  display: flex;
+  justify-content: center;
+}
+/* IE/Mac \*//*/
+* html .page a {
+    display: block;
+}
+* html .page a span {
+    display: inline-block;
+    height: 100%;
+    width: 1px;
+}
+/**/
+
+
+.page .dia *{
+  max-width:200px;
+  max-height:200px;
+  border-style:none;
+  vertical-align:middle;
+}
+
+.headline{
+  position:relative;
+  margin-bottom:10pt;
+  margin-left:2em;
+  color:#6a6868;
+  vertical-align:text-top;
+}
+h1, h2{
+  /*position:relative;*/
+  margin-bottom:5pt;
+  color:#6a6868;
+  margin-top:4pt;
+  font-size:12pt;
+  text-align:left;
+}
+
+br{
+  margin-bottom:1em;
+}
+
+.text{
+  line-height:12pt;
+  margin-bottom:20pt;
+}

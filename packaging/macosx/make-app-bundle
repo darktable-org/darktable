@@ -1,0 +1,100 @@
+#!/bin/bash
+set -e -o pipefail
+trap 'echo "${BASH_SOURCE[0]}{${FUNCNAME[0]}}:${LINENO}: Error: command \`${BASH_COMMAND}\` failed with exit code $?"' ERR
+cd "$(dirname "$0")"/
+
+lensfun-update-data || true
+cp -R ~/.local/share/lensfun .
+~/.local/bin/gtk-mac-bundler darktable.bundle
+mv package/darktable.app/Contents/MacOS/darktable-bin package/darktable.app/Contents/MacOS/darktable
+mv package/darktable.app/Contents/Resources/lib/gdk-pixbuf-2.0/*/loaders.cache package/darktable.app/Contents/Resources/etc/gtk-3.0/
+rm -Rf lensfun
+sed -i '' 's|/opt/local/share/locale||' package/darktable.app/Contents/Resources/etc/gtk-3.0/gtk.immodules
+glib-compile-schemas package/darktable.app/Contents/Resources/share/glib-2.0/schemas/
+sed -i '' 's|{VERSION}|'$(git describe --tags --long --match '*[0-9.][0-9.][0-9]'|cut -d- -f2|sed 's/^\([0-9]*\.[0-9]*\)$/\1.0/')'|' package/darktable.app/Contents/Info.plist
+sed -i '' 's|{COMMITS}|'$(git describe --tags --long --match '*[0-9.][0-9.][0-9]'|cut -d- -f3)'|' package/darktable.app/Contents/Info.plist
+for i in package/darktable.app/Contents/MacOS/darktable{,-chart,-cli,-cltest,-generate-cache}
+do
+	install_name_tool -rpath @loader_path/../lib/darktable @loader_path/../Resources/lib/darktable "$i"
+done
+ln -s /Applications package/
+#copy gtk-osx-application translations if we can find them
+IFS=""
+port contents gtk-osx-application-common-gtk\* | sed "s|^ */|/|" | grep "\.lproj/GtkosxApplication\.strings$" | while read -r i
+do
+	mkdir package/darktable.app/Contents/Resources/"$(basename "$(dirname "$i")")"
+	cp "$i" package/darktable.app/Contents/Resources/"$(basename "$(dirname "$i")")"
+done
+
+if [ -z "$STRIPDEBUGINFO" ]
+then
+	find package/darktable.app/Contents/Resources/lib/darktable \( -name \*.dylib -or -name \*.so \) -exec dsymutil \{} \;
+	for i in package/darktable.app/Contents/MacOS/darktable{,-chart,-cli,-cltest,-generate-cache,-curve-tool,-noiseprofile}
+	do
+		dsymutil "$i"
+	done
+fi
+
+if [ -n "$CODECERT" ]
+then
+	find package/darktable.app/Contents/Resources/lib -type d -name \*.dSYM -prune -or -type f -exec codesign --verbose --force --options runtime -s "${CODECERT}" \{} \;
+	codesign --deep --verbose --force --options runtime -s "${CODECERT}" package/darktable.app
+fi
+
+PROGN=darktable
+
+# Creating temporary rw image
+hdiutil create -srcfolder package -volname "${PROGN}" -fs HFS+ \
+      -fsargs "-c c=64,a=16,e=16" -format UDRW pack.temp.dmg
+
+# mounting image without autoopen to create window style params
+device=$(hdiutil attach -readwrite -noverify -autoopen "pack.temp.dmg" | \
+         egrep '^/dev/' | sed 1q | awk '{print $1}')
+
+echo '
+ tell application "Finder"
+	tell disk "'${PROGN}'"
+		set current view of container window to icon view
+		set toolbar visible of container window to false
+		set statusbar visible of container window to false
+		set the bounds of container window to {400, 100, 885, 330}
+		set theViewOptions to the icon view options of container window
+		set arrangement of theViewOptions to not arranged
+		set icon size of theViewOptions to 72
+		set position of item "'${PROGN}'" of container window to {100, 100}
+		set position of item "Applications" of container window to {375, 100}
+		update without registering applications
+	end tell
+ end tell
+' | osascript
+
+# Finalizing creation
+chmod -Rf go-w /Volumes/"${PROGN}"
+sync
+hdiutil detach ${device}
+DMG="${PROGN}-$(git describe --tags|sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')"
+hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o "${DMG}"
+rm -f pack.temp.dmg
+rm -Rf package
+if [ -n "${APPLEID}" ]
+then
+	UUID="$(xcrun altool --notarize-app --primary-bundle-id org.darktable -u "${APPLEID}" -p "${APPLEPW}" -f "${DMG}".dmg --output-format xml | grep -A 1 '<key>RequestUUID</key>' | tail -n 1 | cut -d'>' -f2 | cut -d'<' -f1)"
+	if [ -n "${UUID}" ]
+	then
+		STATUS="in progress"
+		while [ "${STATUS}" = "in progress" ]
+		do
+			echo "Waiting 1 minute for notarization to complete..."
+			sleep 60
+			STATUS="$(xcrun altool --notarization-info "${UUID}" -u "${APPLEID}" -p "${APPLEPW}" --output-format xml | grep -A 1 '<key>Status</key>' | tail -n 1 | cut -d'>' -f2 | cut -d'<' -f1)"
+		done
+		if [ "${STATUS}" = "success" ]
+		then
+			xcrun stapler staple "${DMG}".dmg
+		else
+			echo "Notarization unsuccessful: ${STATUS}!"
+		fi
+	else
+		echo "Failed to upload package for notarization!"
+	fi
+fi

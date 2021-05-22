@@ -1,0 +1,66 @@
+#!/bin/bash
+#
+# Copyright (c) 2012, James C. McPherson. All rights reserved.
+#
+# This script takes an installed build of darktable
+# (see https://www.darktable.org) and turns it into a new IPS package
+# ready for distribution
+#
+
+PKGSEND=/usr/bin/pkgsend
+PKGRECV=/usr/bin/pkgrecv
+PKGREPO=/usr/bin/pkgrepo
+PKGDEPOT=/usr/lib/pkg.depotd
+
+MKDIR=/usr/bin/mkdir
+ECHO=/usr/bin/echo
+GZIP=/usr/bin/gzip
+SED=/usr/bin/sed
+SLEEP=/usr/bin/sleep
+KILL=/usr/bin/kill
+PGREP=/usr/bin/pgrep
+AWK=/usr/bin/nawk
+GIT=/usr/bin/git
+
+REPODIR=/tmp/darktable.repo.$$
+# change MYPUBLISHER if you want
+MYPUBLISHER=
+CSET=`git rev-parse --short=15 --verify HEAD`
+# change the VERSION depending on what the latest Release is
+RELEASE=1.0.3
+SUFFIX=
+if [ "$1" = "-r" ]; then
+    SUFFIX=""
+    VERSION=${RELEASE}
+else
+    SUFFIX="-git"
+    VERSION=`git describe HEAD |awk -F"-" '{print $3}'`
+fi
+
+
+if [ ! -f /opt/darktable/share/doc/darktable/README.Solaris ]; then
+    sudo cp README.Solaris /opt/darktable/share/doc/darktable
+fi
+
+# update the manifest...
+${SED} -e"s,|CHANGESET|,$CSET,g" -e"s,|VERSION|,$VERSION,g" \
+    -e"s,|SUFFIX|,$SUFFIX,g" -e"s,|RELEASE|,${RELEASE},g" \
+    < darktable-manifest.pkg5.base > manifest.$CSET
+${MKDIR} -p ${REPODIR}
+${PKGREPO} create ${REPODIR}
+${PKGREPO} add-publisher -s ${REPODIR} ${MYPUBLISHER:-JMCP}
+
+# startup the pkg.depotd server on a high (>1024) port number
+${PKGDEPOT} -p 24602 -d ${REPODIR} > /tmp/dt.depotd.log.$$ 2>&1 &
+${SLEEP} 30
+${PKGSEND} publish -s http://localhost:24602 --fmri-in-manifest \
+	-d / manifest.$CSET
+
+${PKGRECV} -s http://localhost:24602 -d Darktable.$CSET.p5p \
+    -a "darktable/darktable$SUFFIX"
+${GZIP} -9 Darktable.$CSET.p5p
+
+# kill off the depotd:
+${KILL} $( ${PGREP} -n pkg.depotd )
+
+

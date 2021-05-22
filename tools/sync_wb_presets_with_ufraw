@@ -1,0 +1,76 @@
+#!/usr/bin/env ruby
+
+require './rawspeed_common.rb'
+
+require 'net/http'
+
+DTPRESETS=File.expand_path("../src/external/wb_presets.c", File.dirname(__FILE__))
+UFRAWPRESETS=URI('http://ufraw.cvs.sourceforge.net/viewvc/ufraw/ufraw/wb_presets.c?content-type=text%2Fplain')
+
+puts "Fetching ufraw presets from their CVS, may take a moment..."
+ufraw_presets = {}
+Net::HTTP.get(UFRAWPRESETS).each_line do |line|
+  if line[0..2] == "  {"
+    lineparts = line.split('"')
+    cameraname = [lineparts[1].upcase, lineparts[3].upcase]
+    if cameraname.join.strip != ""
+      ufraw_presets[cameraname] ||= []
+      ufraw_presets[cameraname] << line
+    end
+  end
+end
+
+dt_presets = {}
+File.open(DTPRESETS) do |f|
+  f.each do |line|
+    if line[0..2] == "  {"
+      lineparts = line.split('"')
+      cameraname = [lineparts[1], lineparts[3]]
+      dt_presets[cameraname] ||= []
+      dt_presets[cameraname] << line
+    end
+  end
+end
+
+forward_hash, backward_hash = RawSpeedCommon.generate_hashes()
+
+grab_from_ufraw = []
+forward_hash.each do |exif_name, clean_name|
+  if(ufraw_presets[exif_name] && !dt_presets[clean_name])
+    grab_from_ufraw << [exif_name, clean_name]
+  end
+end
+
+submit_to_ufraw = []
+backward_hash.each do |clean_name, exif_names|
+  if dt_presets[clean_name] 
+    exif_names.keys.each do |exif_name|
+      if !ufraw_presets[exif_name]
+        submit_to_ufraw << [clean_name, exif_name]
+      end
+    end
+  end
+end
+
+def change_makermodel(line, make, model)
+  lineparts = line.split('"')
+  lineparts[1] = make
+  lineparts[3] = model
+  lineparts.join('"')
+end
+
+puts "Found #{grab_from_ufraw.size} cameras to copy ufraw->darktable"
+grab_from_ufraw.each do |exif_name, clean_name|
+  ufraw_presets[exif_name].each do |line|
+    puts change_makermodel(line, *clean_name)
+  end
+  puts ""
+end
+
+puts "Found #{submit_to_ufraw.size} cameras to submit darktable->ufraw"
+submit_to_ufraw.each do |clean_name, exif_name|
+  dt_presets[clean_name].each do |line|
+    puts change_makermodel(line, *exif_name)
+  end
+  puts ""
+end

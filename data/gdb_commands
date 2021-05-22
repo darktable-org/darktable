@@ -1,0 +1,6 @@
+set logging redirect on
+where
+echo \n=========\n\n
+info threads
+echo \n=========\n
+thread apply all bt full

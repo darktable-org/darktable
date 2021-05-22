@@ -1,0 +1,15 @@
+include(Prebuilt)
+
+include(LibFindMacros)
+libfind_pkg_check_modules(OSMGpsMap osmgpsmap-1.0)
+foreach(i ${OSMGpsMap_LIBRARIES})
+  find_library(_osmgpsmap_LIBRARY NAMES ${i} HINTS ${OSMGpsMap_LIBRARY_DIRS})
+  LIST(APPEND OSMGpsMap_LIBRARY ${_osmgpsmap_LIBRARY})
+  unset(_osmgpsmap_LIBRARY CACHE)
+endforeach(i)
+set(OSMGpsMap_LIBRARIES ${OSMGpsMap_LIBRARY})
+unset(OSMGpsMap_LIBRARY CACHE)
+
+if(OSMGpsMap_FOUND)
+  set(OSMGpsMap ON CACHE BOOL "Build with libosmgpsmap support.")
+endif(OSMGpsMap_FOUND)

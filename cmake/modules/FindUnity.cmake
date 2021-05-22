@@ -1,0 +1,15 @@
+include(Prebuilt)
+
+include(LibFindMacros)
+libfind_pkg_check_modules(Unity unity)
+foreach(i ${Unity_LIBRARIES})
+	find_library(_unity_LIBRARY NAMES ${i} HINTS ${Unity_LIBRARY_DIRS})
+	LIST(APPEND Unity_LIBRARY ${_unity_LIBRARY})
+	unset(_unity_LIBRARY CACHE)
+endforeach(i)
+set(Unity_LIBRARIES ${Unity_LIBRARY})
+unset(Unity_LIBRARY CACHE)
+
+if(Unity_FOUND)
+  set(Unity ON CACHE BOOL "Build with libunity support.")
+endif(Unity_FOUND)

@@ -1,0 +1,43 @@
+#
+#
+
+This is a build of the darktable RAW photo processing tool v1.0 from
+https://www.darktable.org for Solaris 11.
+
+Environment settings used to create this build of the package:
+
+PATH=/usr/gcc/4.6/bin:/usr/gnu/bin:/usr/bin:/usr/sfw/bin:/usr/sbin:/sbin:/usr/perl5/bin
+
+CXXFLAGS="-D__SUNOS__=1 -D__unix__=1 -msse3  -D__SSE3__ -D__SSE__ -D__SSE2__  -DOS_SOLARIS=1 -D_XPG6=1 -D_XOPEN_SOURCE=600 -I/opt/darktable/include -I/opt/darktable/include/OpenEXR"
+CFLAGS="-D__SUNOS__=1 -D__unix__=1 -msse3  -D__SSE3__ -D__SSE__ -D__SSE2__  -DOS_SOLARIS=1 -D_XPG6=1 -D_XOPEN_SOURCE=600 -I/opt/darktable/include -I/opt/darktable/include/OpenEXR"
+PKG_CONFIG_PATH=/opt/darktable/lib/pkgconfig:/usr/lib/pkgconfig
+LDFLAGS="-R/opt/darktable/lib:/usr/gcc/4.6/lib -L/opt/darktable/lib -L/usr/gcc/4.6/lib "
+
+LC_MESSAGES=
+LC_COLLATE=
+LANG=en_US.UTF-8
+TZ=localtime
+LC_CTYPE=
+LC_TIME=
+
+
+This build uses OpenMP, but DOES NOT use OpenCL since there is currently
+no Solaris version of that library.
+
+
+This build was created with Solaris 11 from pkg.oracle.com and GCC 4.6
+sourced from the SFE repo at http://pkg.openindiana.org/sfe.
+
+To add SFE as a publisher, utter
+
+# pkg set-publisher -g http://pkg.openindiana.org/sfe sfe
+
+
+If you have questions or comments about this package, please contact the
+maintainer, James C. McPherson.
+
+
+http://www.jmcp.homeunix.com/blog
+
+
+

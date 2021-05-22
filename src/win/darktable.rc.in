@@ -1,0 +1,37 @@
+#include <winver.h>
+#define RC_BUILD
+#include "../version_gen.c"
+
+#define DT_VERSION  DT_MAJOR,DT_MINOR,DT_PATCH,DT_N_COMMITS
+
+
+IDI_ICON1               ICON    DISCARDABLE     "../../data/pixmaps/dt_logo_128x128.ico"
+
+VS_VERSION_INFO VERSIONINFO
+  FILEVERSION DT_VERSION
+  PRODUCTVERSION DT_VERSION
+  FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+  FILEFLAGS VS_FF_PRERELEASE
+  FILEOS VOS__WINDOWS32
+  FILETYPE VFT_APP
+  FILESUBTYPE VFT2_UNKNOWN
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904b0"
+    BEGIN
+      VALUE "CompanyName",      "The darktable team"
+      VALUE "FileDescription",  "darktable photo workflow software"
+      VALUE "FileVersion",      "${PROJECT_VERSION}"
+      VALUE "InternalName",     "darktable"
+      VALUE "LegalCopyright",   "Copyright \xa9 2009-" LAST_COMMIT_YEAR
+      VALUE "OriginalFilename", "darktable.exe"
+      VALUE "ProductName",      "darktable"
+      VALUE "ProductVersion",   "${PROJECT_VERSION}"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x0409,1200
+  END
+END

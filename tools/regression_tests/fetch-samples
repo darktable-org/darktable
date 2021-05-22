@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+
+MAKES=["aptus","canon","epson","fuji","hasselblad","kodak","leica","mamiya",
+       "minolta","nikon","olympus","panasonic","pentax","polaroid","ricoh",
+       "samsung","sigma","sony", "changelog"]
+BASEURL="https://rawsamples.ch/index.php/en/"
+RAWURL="https://rawsamples.ch/"
+
+require 'nokogiri'
+require 'open-uri'
+require 'fileutils'
+
+$stderr.puts "== Fetching raw file samples from rawsamples.ch"
+MAKES.each do |make|
+  doc = Nokogiri::HTML(open(BASEURL+make))
+  doc.css("a").each do |link|
+    if link.attribute("href")
+      dest = link.attribute("href").value
+      if dest.index("raws/")
+        # Found a raw file to download
+        filename = dest.split("raws/")[1]
+        file_extension = filename.split(".")[-1].downcase
+        filename = File.expand_path "data/samples/#{filename}", File.dirname(__FILE__)
+        if !File.exists?(filename)
+          if ["txt","ppm","jpg"].include?(file_extension)
+            #puts "Ignoring #{filename}"
+          else
+            FileUtils.mkdir_p File.dirname(filename)
+            source = (dest.index("http://") ? dest : RAWURL+dest)
+            puts "Downloading #{filename} from #{source}"
+            system "curl -f -# '#{source}' --create-dirs -o #{filename}"
+            if file_extension == "zip"
+              puts "Unpacking #{filename}"
+              system "unzip -o #{filename} -d #{File.dirname(filename)}"
+            elsif file_extension == "7z"
+              puts "Unpacking #{filename}"
+              system "7zr e -y -o#{File.dirname(filename)} #{filename}"
+            end
+          end
+        end
+      end
+    end
+  end
+end

@@ -1,0 +1,350 @@
+\documentclass[a4paper,twoside]{scrartcl}
+
+\usepackage{graphicx,color}
+\graphicspath{{images/}{../htdocs/images/header/}}
+
+\usepackage{mparhack}
+
+% \usepackage[a4paper]{geometry}
+% \geometry{%
+% twoside,%
+% %height=.7\paperheight,%
+% %width=.7\paperwidth,%
+% top=.1\paperheight,%
+% bottom=.2\paperheight,%
+% left=.1\paperwidth,%
+% right=.2\paperwidth%
+% %bindingoffset
+% }
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhead{}
+\fancyfoot{}
+\fancyfoot[LE,RO]{\iffloatpage{}{\thepage}}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\oddsidemargin}{.1\paperwidth}
+\setlength{\evensidemargin}{.2\paperwidth}
+\setlength{\headheight}{.1\paperheight}
+\setlength{\headsep}{0pt}
+\setlength{\topmargin}{0pt}
+\setlength{\voffset}{-1in}
+\setlength{\hoffset}{-1in}
+\setlength{\textwidth}{.7\paperwidth}
+\setlength{\textheight}{.7\paperheight}
+\setlength{\marginparwidth}{.1\paperwidth}
+
+\newcommand{\nicesection}[2]{%
+\cleardoublepage
+\fbox{\includegraphics[width=\linewidth]{#1}}%
+\vspace*{-1em}%
+\section{\hfill #2}
+\hrule
+\vspace*{\baselineskip}%
+}
+
+\fboxsep0pt
+\setlength{\parindent}{0pt}
+
+\newcommand{\todo}[1]{{\color{red}\bf TODO: #1}}
+\newcommand{\comment}[1]{}
+\definecolor{codecol}{rgb}{0.1,0.2,0.5}
+\newcommand{\code}[1]{\texttt{\color{codecol}#1}}
+
+\frenchspacing
+% \usepackage[T1]{fontenc}
+% \usepackage[condensed,math]{iwona}
+
+%\usepackage[T1]{fontenc}
+%\usepackage[urw-garamond]{mathdesign}
+
+\usepackage[T1]{fontenc}
+\usepackage[scaled]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+%\setkomafont{sectioning}{\sfdefault}
+
+
+\title{darktable Programmer's Guide}
+\author{hanatos}
+
+\begin{document}
+
+\fbox{\includegraphics[width=\linewidth]{header12}}%
+\vspace*{-1em}%
+\section*{\hfill darktable Programmer's Guide}
+\hrule
+
+\vspace*{4\baselineskip}
+
+{\hfill version \input version.tex }
+
+\thispagestyle{empty}
+
+\newpage
+\tableofcontents
+
+
+\nicesection{header1}{Introduction}
+\label{sec:introduction}
+
+
+\nicesection{header2}{System Layout}
+
+\resizebox{\linewidth}{!}{\input{graphs/system.pdftex_t}}
+
+\subsection{Module Descriptions}
+
+\begin{description}
+  \item[gui] using gtk2 and cairo.
+\end{description}
+\begin{description}
+  \item[control]
+  \item[control, scheduler] using pthreads and a custom job queuing system.
+\end{description}
+\begin{description}
+  \item[image]
+  \item[image cache]
+  \item[mipmap cache]
+  \item[db]
+  \item[imageio]
+\end{description}
+\begin{description}
+  \item[library] this is the lighttable module.
+  \item[film]
+\end{description}
+\begin{description}
+  \item[develop] this implements the darktable.
+  \item[pixelpipe]
+  \item[image operation (iop) modules, aka plug-ins]
+\end{description}
+
+\newpage
+\subsection{Image Loading Data Flow}
+
+\paragraph{Related Modules}
+\begin{itemize}
+  \item imageio \code{dt\_imageio\_*}
+  \item db (messily hidden in sqlite3 statements all over the place)
+  \item image cache \code{dt\_image\_cache\_*}
+  \item mip cache \code{dt\_mipmap\_cache\_*}
+  \item image \code{dt\_image\_t}
+\end{itemize}
+
+\paragraph{in image cache}
+\begin{itemize}
+  \item \code{dt\_image\_import}
+
+  db $\rightarrow$ image struct, trigger imageio disk $\rightarrow$ image entry in db if miss,
+                metadata through libraw/magick
+  
+ 
+\end{itemize}
+
+\paragraph{in mip cache}
+\begin{itemize}
+  \item \code{dt\_image\_get}
+
+      db $\rightarrow$ mip[0--4], trigger imageio disk $\rightarrow$ mip4 and mip4 $\rightarrow$ mip[0-3] if miss.
+
+  
+      db $\rightarrow$ mipf, trigger mip4 $\rightarrow$ mipf or pixels $\rightarrow$ mipf if miss.
+\end{itemize}
+
+\paragraph{in imageio}
+\begin{itemize}
+  \item \code{dt\_imageio\_open\_preview}
+
+    disk $\rightarrow$ mip[0--4] entries in db (load thumbnail).
+    \begin{itemize}
+      \item[\todo{}]  \code{dt\_imageio\_open\_ldr\_preview}
+      \item \code{dt\_imageio\_open\_raw\_preview}
+    \end{itemize}
+  \item mip4 $\rightarrow$ mipf (by guessed reverse gamma) \code{dt\_image\_preview\_to\_raw}.
+  \item full pixels $\rightarrow$ mipf (downscaling) \code{dt\_image\_raw\_to\_preview}.
+  \item mip4 $\rightarrow$ mip[0--3] \code{dt\_image\_update\_mipmaps}.
+\end{itemize}
+
+image import: only load \code{dt\_image\_t} and mip[0--4] to database.
+
+\code{dt\_image\_get}: check mipmap cache, check database, else \code{dt\_imageio\_open[\_preview]}.
+
+The buffers are as follows:
+
+\begin{description}
+  \item[\code{DT\_IMAGE\_MIP0-4}] are used for rendering in light table mode. These are either loaded from the embedded
+    thumbnail in the raw files (if the \code{never\_use\_embedded\_thumb} key is not set), or store small versions of
+    processed buffers.
+
+    The function \code{dt\_imageio\_open\_preview} will fill these low-dynamic range buffers ready for display. If a history
+    stack is present (i.e.\ the image is {\em altered}), this function will load \code{MIPF} instead.
+
+  \item[\code{DT\_IMAGE\_MIPF}] is used by the preview pipe or by pipelines spawned by the light table when creating
+    \code{DT\_IMAGE\_MIP0-4}. It stores a capped-size four float per pixel representation of the input image.
+
+    This buffer is needed to reduce the overall mem requirements and still process multiple thumbnails of large images
+    in parallel. darktable rather stores and prefetches a few low-resolution \code{MIPF} buffers instead of full images.
+
+    \code{MIPF} can never be explicitly loaded.
+
+    \code{MIPF} are written if a prefetch is requested for fast darkroom mode entering later on, or by \code{dt\_imageio\_open\_preview}
+    if the image is altered. It is also written if a full image is requested, to avoid duplicate file accesses in this case.
+
+  \item[\code{DT\_IMAGE\_FULL}] is the full image buffer as read from disk. That is, raw images will store one \code{uint16\_t}
+    per pixel, mosaiced input data, while high dynamic range input will result in a four float buffer.
+
+\end{description}
+
+
+\newpage
+\subsection{Cache Interfaces}
+
+\subsubsection{Image Cache}
+
+\code{dt\_image\_cache\_t}
+
+\subsubsection{Mipmap Cache}
+
+\code{dt\_image\_t}
+
+\begin{description}
+  \item{\code{dt\_image\_get}} get buffer or, if missed, a lower resolution (launch job in bg for correct resolution)
+  \item{\code{dt\_image\_load}} Load buffer in this thread, return exactly this resolution.
+    No locking is performed, so be sure to acquire the lock using \code{dt\_image\_alloc} before.
+\end{description}
+
+\subsubsection{Homebrew Pixelpipe Cache}
+
+\newpage
+\subsection{Plug-in Interface}
+
+For examples, have a look at \code{src/iop/*.\{h,c\}}, and also see the method declarations in \code{src/common/imageop.h}.
+
+Pixel processing is done in pipelines (\code{src/develop/pixelpipe\_hb.c}) with fixed order of the modules,
+observe the current status with e.g.
+
+\code{grep priority src/iop/*.c | sort -t '=' -k 2}.
+
+At the time of this writing, the main pixel pipeline stack is organised as follows:
+
+\medskip
+
+\begin{tabular}{lrl}
+module name & priority & input color format \\
+\hline
+rawimport      &  100  &  - \\ 
+exposure       &  150  &  fff input color space \\
+temperature    &  200  &  fff input color space \\
+highlights     &  250  &  fff input color space \\
+basecurve      &  260  &  fff input color space \\
+profile\_gamma &  299  &  fff input color space \\
+colorin        &  300  &  fff input color space \\
+colortransfer  &  350  &  fff $L^*a^*b^*$ \\
+equalizer      &  500  &  fff $L^*a^*b^*$ \\
+monochrome     &  550  &  fff $L^*a^*b^*$ \\
+tonecurve      &  700  &  fff $L^*a^*b^*$ \\
+colorzones     &  750  &  fff $L^*a^*b^*$ \\
+colorcorrection&  800  &  fff $L^*a^*b^*$ \\
+colorout       &  900  &  fff $L^*a^*b^*$ \\
+lens           &  940  &  fff output color space \\
+clipping       &  950  &  fff output color space \\
+grain          &  965  &  fff output color space \\
+clahe          &  966  &  fff output color space \\
+velvia         &  967  &  fff output color space \\
+splittoning    &  968  &  fff output color space \\
+vignette       &  970  &  fff output color space \\
+sharpen        &  990  &  fff output color space \\
+gamma          & 1000  &  fff output color space \\
+               &   -   &  ccc output color space \\
+\end{tabular}
+
+\medskip
+
+where fff is $3\times32$ bit float, ccc is $3\times8$ bit int, and the input
+color space depends on your camera or type of input data, and the output color space will
+be sRGB (including gamma correction, i.e.\ it is non-linear) most of the time.
+
+$L^*a^*b^*$ is a special variant of $L^*ab$, where $L^* \in [0, 100]$ and $a, b \in [-128, 128]$, but $a^* = a/L^*$ and $b^* = b/L^*$.
+This makes sure that changes in $L^*$ transparently result in the correct adjustment in saturation:
+$a_{out} = a_{in} \cdot L^*_{out}/L^*_{in}$ and
+$b_{out} = b_{in} \cdot L^*_{out}/L^*_{in}$.
+
+
+Each module has to implement a \code{process} function, which is responsible for processing of three types of
+pipelines: preview, full, and export. Most of the time, this can be handled transparently, i.e.\ needs no special
+handling in the module. The pipelines are as follows:
+
+\begin{description}
+  \item[preview] all of the image, but downsampled to low resolution for the navigation view, approximate full image statistics, and fast scrolling.
+  \item[full] full resolution, but only the part that can currently be seen (the region of interest, roi, will be adjusted accordingly).
+  \item[export] full image at full resolution, no gui data is inited for the module.
+\end{description}
+
+and can be identified by the pipeline struct, which carries a \code{pipe->type} flag. This struct can in turn be found
+via the pipeline data piece which is passed to \code{process}: \code{piece->pipe}.
+
+\paragraph{Regions of Interest}
+
+A region of interest holds $x,y,w,h$, and scale information. The semantics are as follows: multiply the whole resolution image by
+the scale value, then crop it to the window defined by $x, y, w, h$. The passed input buffer will be a contiguous block of values as defined by
+the input color space, pixel by pixel and row by row. The output buffer should be in the same format, but the extent should match the
+output region of interest.
+
+
+\subsubsection{Most important Gui Callbacks}
+
+\begin{description}
+  \item \code{gui\_init} gui thread, init the widget (not called for export)
+  \item \code{gui\_update} gui thread, make the gui match the modules parameters (not called for export)
+  \item \code{commit\_params} core thread + gui thread in synch, copy module->params to module->data
+  \item \code{process} core thread, execute the op on the input buffer
+  \item \code{modify\_roi\_in}
+  \item \code{modify\_roi\_out} core thread, optional, only needed if input and output buffers are of different size.
+    For examples, see \code{src/iop/lens.c} and \code{src/iop/clipping.c}.
+\end{description}
+
+\subsubsection{Data Structures}
+
+\begin{description}
+  \item[\code{dt\_iop\_*\_params\_t module->\{params, default\_params, factory\_params\}}]
+
+  This struct should only be modified by the gui thread. The three fields exist only once per module: \code{params}
+  store the currently active parameters, \code{default\_params} are the default parameters (possibly adjusted by the
+  user), and \code{factory\_params} are dt's factory defaults (automatically copied by the core after \code{init} has been
+  called).
+
+  Also, don't store pointers to additional memory in this struct. It will be
+  stored in the database as blob and copied byte-wise as you defined it. This
+  means that your pointer will point to garbage memory after leaving/re-entering
+  darkroom mode, or during export.
+
+  \item[\code{dt\_iop\_*\_data\_t piece->data}]
+  This struct lives in pixel pipeline domain, and thus exists once for the full and once for the preview pipeline.
+  It should only be modified by the core thread (which calls \code{commit\_params} and \code{process}).
+
+  \item[\code{dt\_iop\_*\_gui\_data\_t module->gui\_data}]
+  You can use this struct to store your gui data (from the gui thread, obviously). It exists once per module and should be inited in \code{gui\_init} and
+  cleaned up in \code{gui\_cleanup}. Note that gtk+ widgets are cleaned up implicitly while the widget is destroyed.
+
+  \item[\code{dt\_iop\_*\_global\_data\_t module->data}]
+  Core thread global data for all pipes (such as lensfun description database).
+\end{description}
+
+
+\subsubsection{A most useless Example}
+
+
+\todo{script to generate as up-to-date minimal dt header set to compile external plugins}
+
+\todo{a silly template module line by line: render a checker board on top of your input image.}
+
+See \code{src/iop/useless.c}.
+
+Change \code{src/iop/Makefile.am}:
+\begin{verbatim}
+libuseless_la_SOURCES=useless.c
+dtplugins_LTLIBRARIES=libtonecurve.la [..] libcolortransfer.la libuseless.la
+\end{verbatim}
+
+\end{document}

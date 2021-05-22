@@ -1,0 +1,41 @@
+#!/bin/bash
+
+set -e
+
+scriptname=$(basename $0)
+scriptdir=$(cd $(dirname $0) && pwd)
+
+. "$scriptdir/subr.sh"
+
+# --------------------------------------------------------------------
+# Read command line arguments.
+# --------------------------------------------------------------------
+
+usage() {
+	cat <<EOF
+$scriptname <original RAW image> [<jpeg version>]
+EOF
+}
+
+orig_image=$1
+jpeg_image=$2
+
+# Check for required tools.
+echo "===> Check for required tools"
+missing_tool=0
+
+if ! image_export_tools_installed; then
+	missing_tool=1
+fi
+
+if [ "$missing_tool" = "1" ]; then
+	exit 1
+fi
+
+# Check if jpeg export exists.
+if [ -z "$jpeg_image" ]; then
+	jpeg_image="${image%.*}-large.jpg"
+	export_large_jpeg "$orig_image" "$jpeg_image"
+fi
+
+check_exposure "$orig_image" "$jpeg_image"

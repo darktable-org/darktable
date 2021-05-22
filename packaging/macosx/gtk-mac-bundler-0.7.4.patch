@@ -1,0 +1,72 @@
+diff -uNr gtk-mac-bundler-0.7.4-orig/bundler/bundler.py gtk-mac-bundler-0.7.4/bundler/bundler.py
+--- gtk-mac-bundler-0.7.4-orig/bundler/bundler.py	2014-11-06 22:34:11.000000000 +0300
++++ gtk-mac-bundler-0.7.4/bundler/bundler.py	2015-10-14 14:41:15.000000000 +0300
+@@ -377,6 +377,9 @@
+                 if not "(compatibility" in line:
+                     return False
+ 
++                if line.startswith("@rpath/"):
++                    return False
++
+                 if line.startswith("/usr/X11"):
+                     print "Warning, found X11 library dependency, you most likely don't want that:", line.strip().split()[0]
+ 
+@@ -568,7 +571,6 @@
+ 
+     def copy_translations(self):
+         translations = self.project.get_translations()
+-        prefix = self.project.get_prefix()
+ 
+ 
+         def name_filter(filename):
+@@ -585,14 +587,21 @@
+             if program.name == "" or program.name == None:
+                 raise "No program name to tranlate!"
+ 
++            p = re.compile("^\${prefix(:.*?)?}/")
++            m = p.match(program.source)
++            prefixname = m.group(1)
++            if prefixname == None:
++                prefixname = "default"
++            else:
++                prefixname = prefixname[1:]
++            prefix = self.project.get_prefix(prefixname)
+             source = self.project.evaluate_path(program.source)
+             if source == None:
+                 raise "Failed to parse translation source!"
+             for root, trees, files in os.walk(source):
+                 for file in filter(name_filter, files):
+                     path = os.path.join(root, file)
+-                    self.copy_path(Path("${prefix}" + path[len(prefix):], 
+-                                        program.dest))
++                    self.copy_path(Path("${prefix:" + prefixname + "}" + path[len(prefix):], None))
+ 
+ 
+     def run(self):
+@@ -611,9 +620,6 @@
+         self.create_pkglist()
+         self.copy_plist()
+ 
+-        # Note: could move this to xml file...
+-        self.copy_path(Path("${prefix}/lib/charset.alias"))
+-
+         # Main binary
+         path = self.project.get_main_binary()
+         source = self.project.evaluate_path(path.source)
+@@ -643,7 +649,6 @@
+ 
+         self.copy_icon_themes()
+ 
+-        self.create_pango_setup()
+         self.create_gtk_immodules_setup()
+         self.create_gdk_pixbuf_loaders_setup()
+ 
+diff -uNr gtk-mac-bundler-0.7.4-orig/gtk-mac-bundler.in gtk-mac-bundler-0.7.4/gtk-mac-bundler.in
+--- gtk-mac-bundler-0.7.4-orig/gtk-mac-bundler.in	2014-11-06 22:34:11.000000000 +0300
++++ gtk-mac-bundler-0.7.4/gtk-mac-bundler.in	2020-08-30 15:03:21.000000000 +0300
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python2
+ import sys
+ sys.path.insert(0, '@PATH@')
+ 

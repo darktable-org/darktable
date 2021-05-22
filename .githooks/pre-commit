@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Hash using its key as a search Regex, and its value as associated
+# error message.
+
+declare -A PATTERNS;
+PATTERNS['src/external/rawspeed']="use --no-verify to change rawspeed";
+PATTERNS['src/external/OpenCL']="use --no-verify to change OpenCL";
+PATTERNS['src/external/libxcf']="use --no-verify to change libxcf";
+PATTERNS['src/external/whereami']="use --no-verify to change whereami";
+PATTERNS['src/tests/integration']="use --no-verify to change integration";
+
+# Loop over staged files and check for any specific pattern listed in
+# PATTERNS keys.
+# Filter only added (A), copied (C), modified (M) files
+
+declare -a errors
+
+for file in $(git diff --staged --name-only --diff-filter=ACM --no-color); do
+    for elem in ${!PATTERNS[*]} ; do
+        if [ -n "${PATTERNS[${file}]}" ]; then
+            errors+=("${PATTERNS[${file}]}")
+        fi
+    done
+done
+
+# Print errors
+for error in "${errors[@]}"; do
+  echo -e "\033[1;31m${error}\033[0m"
+done
+
+# If there is any error, then stop commit creation
+if [ ${#errors[@]} -ne 0 ]; then
+  exit 1
+fi

@@ -1,0 +1,15 @@
+include(Prebuilt)
+
+include(LibFindMacros)
+libfind_pkg_check_modules(ColordGTK colord-gtk)
+foreach(i ${ColordGTK_LIBRARIES})
+  find_library(_colordgtk_LIBRARY NAMES ${i} HINTS ${ColordGTK_LIBRARY_DIRS})
+  LIST(APPEND ColordGTK_LIBRARY ${_colordgtk_LIBRARY})
+  unset(_colordgtk_LIBRARY CACHE)
+endforeach(i)
+set(ColordGTK_LIBRARIES ${ColordGTK_LIBRARY})
+unset(ColordGTK_LIBRARY CACHE)
+
+if(ColordGTK_FOUND)
+  set(ColordGTK ON CACHE BOOL "Build with libcolord-gtk support.")
+endif(ColordGTK_FOUND)

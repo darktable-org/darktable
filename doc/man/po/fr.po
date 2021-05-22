@@ -1,0 +1,1744 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Traduction des manpages de darktable\n"
+"POT-Creation-Date: 2017-12-20 23:34+0100\n"
+"PO-Revision-Date: 2017-12-21 00:04+0100\n"
+"Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
+"Language-Team: Michel Leblond <michel.leblond62@gmail.com>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.0.5\n"
+
+#. type: =head1
+#: darktable.pod:2 darktable-cli.pod:2 darktable-generate-cache.pod:2
+#: darktable-cltest.pod:2 darktable-cmstest.pod:2
+msgid "NAME"
+msgstr "NOM"
+
+#. type: textblock
+#: darktable.pod:4
+msgid "darktable - a digital photography workflow application"
+msgstr ""
+"darktable - une application fournissant un flux de travail de traitement des "
+"photos numériques"
+
+#. type: =head1
+#: darktable.pod:6 darktable-cli.pod:6 darktable-generate-cache.pod:6
+#: darktable-cltest.pod:6 darktable-cmstest.pod:6
+msgid "SYNOPSIS"
+msgstr "SYNOPSIS"
+
+#. type: verbatim
+#: darktable.pod:8
+#, no-wrap
+msgid ""
+"    darktable [options] [IMG_1234.{RAW,...}|image_folder/]\n"
+"\n"
+msgstr ""
+"    darktable [options] [IMG_1234.{RAW,...}|répertoire_images/]\n"
+"\n"
+
+#. type: textblock
+#: darktable.pod:10 darktable-cli.pod:10
+msgid "Options:"
+msgstr "Options :"
+
+#. type: verbatim
+#: darktable.pod:12
+#, no-wrap
+#| msgid ""
+#|"    -d {all,cache,camctl,camsupport,control,dev,fswatch,imageio,input,\n"
+#|"        ioporder,lighttable,lua,masks,memory,nan,opencl,params,perf,\n"
+#|"        pwstorage,print,signal,sql,undo}\n"
+#| "    --disable-opencl\n"
+#| "    --library <library file>\n"
+#| "    --datadir <data directory>\n"
+#| "    --moduledir <module directory>\n"
+#| "    --tmpdir <tmp directory>\n"
+#| "    --configdir <user config directory>\n"
+#| "    --cachedir <user cache directory>\n"
+#| "    --localedir <locale directory>\n"
+#| "    --luacmd <lua command>\n"
+#| "    --conf <key>=<value>\n"
+#| "    --noiseprofiles <noiseprofiles json file>\n"
+#| "    --help\n"
+#| "    --version\n"
+#| "\n"
+msgid ""
+"    --cachedir <user cache directory>\n"
+"    --conf <key>=<value>\n"
+"    --configdir <user config directory>\n"
+"    -d {all,cache,camctl,camsupport,control,dev,fswatch,imageio,input,\n"
+"        ioporder,lighttable,lua,masks,memory,nan,opencl,params,perf,\n"
+"        pwstorage,print,signal,sql,undo}\n"
+"    --datadir <data directory>\n"
+"    --disable-opencl\n"
+"    -h, --help\n"
+"    --library <library file>\n"
+"    --localedir <locale directory>\n"
+"    --luacmd <lua command>\n"
+"    --moduledir <module directory>\n"
+"    --noiseprofiles <noiseprofiles json file>\n"
+"    -t <num openmp threads>\n"
+"    --tmpdir <tmp directory>\n"
+"    --version\n"
+"\n"
+msgstr ""
+"    --cachedir <répertoire du cache de l'utilisateur>\n"
+"    --conf <clef>=<valeur>\n"
+"    --configdir <répertoire de configuration de l'utilisateur>\n"
+"    -d {all,cache,camctl,camsupport,control,dev,fswatch,imageio,input,\n"
+"        ioporder,lighttable,lua,masks,memory,nan,opencl,params,perf,\n"
+"        pwstorage,print,signal,sql,undo}\n"
+"    --datadir <répertoire des données>\n"
+"    --disable-opencl\n"
+"    -h, --help\n"
+"    --library <fichier de bibliothèque>\n"
+"    --localedir <répertoire local>\n"
+"    --luacmd <commande Lua>\n"
+"    --moduledir <répertoire des modules>\n"
+"    --noiseprofiles <fichier json des profils de bruit>\n"
+"    -t <nombre de fils d'exécution OpenMp>\n"
+"    --tmpdir <répertoire temporaire>\n"
+"    --version\n"
+"\n"
+
+#. type: =head1
+#: darktable.pod:29 darktable-cli.pod:19 darktable-generate-cache.pod:10
+#: darktable-cltest.pod:10 darktable-cmstest.pod:10
+msgid "DESCRIPTION"
+msgstr "DESCRIPTION"
+
+#. type: textblock
+#: darktable.pod:31
+msgid ""
+"B<darktable> is a digital photography workflow application for B<Linux>, "
+"B<Mac OS X> and several other B<Unices>."
+msgstr ""
+"B<darktable> est une application fournissant un flux de travail pour le "
+"traitement des photos numériques sous B<Linux>, B<Mac OS X> et plusieurs "
+"autres B<Unix>."
+
+#. type: textblock
+#: darktable.pod:33
+msgid ""
+"The application is designed to ease editing and consistent processing of "
+"large photo sessions and provides an easy to use digital lighttable and a "
+"set of sophisticated post-processing tools."
+msgstr ""
+"L'application est conçue pour faciliter l'édition et le traitement cohérent "
+"des grandes séances photo. Elle fournit une table lumineuse numérique facile "
+"à utiliser et un ensemble d'outils sophistiqués de post-traitement."
+
+#. type: textblock
+#: darktable.pod:37
+msgid ""
+"Most processing is done in 32-bit floating point per channel mode in device "
+"independent B<CIE L*a*b*> color space.  B<darktable> is also fully color "
+"managed, which gives you full control over the look of the photos."
+msgstr ""
+"La plupart des traitements sont effectués en mode virgule flottante 32 bits "
+"dans l'espace colorimétrique B<CIE L*a*b*> indépendant du périphérique. "
+"B<darktable> gère aussi parfaitement la couleur, ce qui vous donne un "
+"contrôle total de l'apparence des photos."
+
+#. type: textblock
+#: darktable.pod:41
+msgid ""
+"The application relies on a modern plugin architecture thus making it easy "
+"for 3rd party developers to extend the existing capabilities of the "
+"application.  All lighttable and darkroom features are implemented as "
+"plugins, so you can create your plugins reusing existing code.  Most "
+"workflow specific things can also be scripted in B<Lua>."
+msgstr ""
+"L'application repose sur une architecture moderne de plugins rendant aisée "
+"l'extension des capacités existantes de l'application par des développeurs "
+"tiers. Toutes les fonctionnalités de la table lumineuse et de la chambre "
+"noire sont implémentées sous forme de plugins. Vous pouvez ainsi créer vos "
+"plugins en réutilisant le code existant. La plupart des actions spécifiques "
+"du flux de travail peuvent aussi être écrites dans un script B<Lua>."
+
+#. type: =head1
+#: darktable.pod:47 darktable-cli.pod:27 darktable-generate-cache.pod:18
+msgid "OPTIONS"
+msgstr "OPTIONS"
+
+#. type: =item
+#: darktable.pod:51
+msgid "B<IMG_1234.RAW or image_folder/>"
+msgstr "B<IMG_1234.RAW ou répertoire_images/>"
+
+#. type: textblock
+#: darktable.pod:53
+msgid ""
+"You may optionally supply the filename of an image or the name of a folder "
+"containing image files.  If a filename is given darktable starts in darkroom "
+"view with that file opened.  If a folder is given darktable starts in "
+"lighttable view with the content of that folder as the current collection.  "
+"If there is already an instance of darktable running (using the same "
+"library) the image or folder will be opened there, using B<D-Bus> to "
+"communicate between the two processes."
+msgstr ""
+"Vous pouvez optionnellement fournir le nom de fichier d'une image ou le nom "
+"d'un répertoire contenant des fichiers image. Si un nom de fichier est donné "
+"darktable démarre en mode chambre noire avec ce fichier ouvert. Si un "
+"répertoire est donné darktable démarre en mode table lumineuse avec le "
+"contenu de ce répertoire comme collection courante. Si une instance de "
+"darktable est déjà en cours d'exécution (utilisant la même bibliothèque) "
+"l'image ou le répertoire y sera ouvert, en utilisant B<D-Bus> pour "
+"communiquer entre les deux processus."
+
+#. type: =item
+#: darktable.pod:59
+msgid "B<< --cachedir <cache directory> >>"
+msgstr "B<< --cachedir <répertoire cache> >>"
+
+#. type: textblock
+#: darktable.pod:61
+msgid ""
+"darktable keeps a cache of image thumbnails for fast image preview and of "
+"precompiled OpenCL binaries for fast startup.  By default the cache is "
+"located in C<$HOME/.cache/darktable/>.  There may exist multiple thumbnail "
+"caches in parallel - one for each library file."
+msgstr ""
+"darktable conserve un cache de miniatures des images pour une "
+"prévisualisation rapide et un cache d'exécutables OpenCL pour un démarrage "
+"rapide. Par défaut les caches se trouve dans C<$HOME/.cache/darktable/>. Il "
+"peut y avoir plusieurs caches de miniatures en parallèle - un pour chaque "
+"fichier de bibliothèque."
+
+#. type: =item
+#: darktable.pod:65
+msgid "B<< --conf <key>=<value> >>"
+msgstr "B<< --conf <clé>=<valeur> >>"
+
+#. type: textblock
+#: darktable.pod:67
+msgid ""
+"darktable supports a rich set of configuration parameters which the user "
+"defines in C<darktablerc> - darktable's configuration file in the user "
+"config directory.  You may temporarily overwrite individual settings on the "
+"command line with this option - however, these settings will not be stored "
+"in C<darktablerc>."
+msgstr ""
+"darktable offre un riche ensemble de paramètres de configuration que "
+"l'utilisateur définit dans C<darktablerc> - le fichier de configuration de "
+"darktable dans le répertoire de configuration de l'utilisateur. Avec cette "
+"option vous pouvez remplacer temporairement des réglages individuels - "
+"cependant ces réglages ne seront pas stockés dans C<darktablerc>."
+
+#. type: =item
+#: darktable.pod:73
+msgid "B<< --configdir <config directory> >>"
+msgstr "B<< --configdir <répertoire de configuration> >>"
+
+#. type: textblock
+#: darktable.pod:75
+msgid ""
+"This option defines the directory where darktable stores the user specific "
+"configuration.  The default place is C<$HOME/.config/darktable/>."
+msgstr ""
+"Cette option définit le répertoire où darktable stocke la configuration "
+"spécifique de l'utilisateur. L'emplacement par défaut est C<$HOME/.config/"
+"darktable/>."
+
+#. type: =item
+#: darktable.pod:78
+msgid "B<< -d <debug option> >>"
+msgstr "B<< -d <option de débogage> >>"
+
+#. type: textblock
+#: darktable.pod:80
+msgid ""
+"This option enables debug output to the terminal.  There are several "
+"subsystems of darktable and debugging of each of them can be activated "
+"separately.  You can use this option multiple times if you want debugging "
+"output of more than one subsystem."
+msgstr ""
+"Cette option permet la sortie du débogage dans le terminal. Il y a plusieurs "
+"sous-systèmes dans darktable et le débogage de chacun d'eux peut être activé "
+"séparément.Vous pouvez utiliser cette option plusieurs fois si vous "
+"souhaitez des sorties de débogage pour plus d'un sous-système."
+
+#. type: textblock
+#: darktable.pod:84
+msgid "A few of those debug options are:"
+msgstr "Voici quelques unes de ces options de débogage :"
+
+#. type: =item
+#: darktable.pod:88
+msgid "B<control>"
+msgstr "B<control>"
+
+#. type: textblock
+#: darktable.pod:90
+msgid ""
+"Enable job queue debugging.  If you redirect darktable's output to B<control."
+"log> and call B<./tools/create_control_svg.sh control.log>, you will get a "
+"nice B<control.svg> with a visualization of the threads' work."
+msgstr ""
+"Activer la file des tâches de débogage. Si vous redirigez la sortie de "
+"darktable vers B<controle.log> et lancez B<./tools/create_control_svg.sh "
+"controle.log>, vous obtiendrez un  B<controle.svg> sympathique avec une "
+"visualisation du travail des fils d'exécution."
+
+#. type: =item
+#: darktable.pod:94
+msgid "B<cache>"
+msgstr "B<cache>"
+
+#. type: textblock
+#: darktable.pod:96
+msgid ""
+"This will give you a lot of debugging info about the thumbnail cache for "
+"lighttable mode.  If compiled in debug mode, this will also tell you where "
+"in the code a certain buffer has last been locked."
+msgstr ""
+"Ceci vous donnera de nombreuses informations de débogage concernant le cache "
+"des miniatures du mode table lumineuse. Si darktable a été compilé en mode "
+"débogage, ceci vous dira à quel endroit du code un tampon particulier a été "
+"verrouillé pour la dernière fois."
+
+#. type: =item
+#: darktable.pod:99
+msgid "B<perf>"
+msgstr "B<perf>"
+
+#. type: textblock
+#: darktable.pod:101
+msgid ""
+"Use this for performance tweaking your darkroom modules.  It will rdtsc-"
+"measure the runtimes of all plugins and print them to stdout."
+msgstr ""
+"Utilisez ceci pour peaufiner la performance de vos modules de chambre noire. "
+"Il mesurera (mesure rdtsc) les temps d'exécution de tous les plugins et les "
+"affichera sur la sortie."
+
+#. type: =item
+#: darktable.pod:104
+msgid "B<all>"
+msgstr "B<all>"
+
+#. type: textblock
+#: darktable.pod:106
+msgid "Enable all debugging output. In general this is not very useful."
+msgstr ""
+"Active toutes les sorties de débogage. En général ceci n'est pas très utile."
+
+#. type: =item
+#: darktable.pod:110
+msgid "B<< --datadir <data directory> >>"
+msgstr "B<< --datadir <répertoire des données> >>"
+
+#. type: textblock
+#: darktable.pod:112
+msgid ""
+"This option defines the directory where darktable finds its runtime data.  "
+"The default place depends on your installation.  Typical places are C</opt/"
+"darktable/share/darktable/> and C</usr/share/darktable/>."
+msgstr ""
+"Cette option définit le répertoire où darktable trouvera ses données "
+"d'exécution. L'emplacement par défaut dépend de votre installation. C</opt/"
+"darktable/share/darktable/> et C</usr/share/darktable/> sont des "
+"emplacements typiques."
+
+#. type: =item
+#: darktable.pod:116
+msgid "B<--disable-opencl>"
+msgstr "B<--disable-opencl>"
+
+#. type: textblock
+#: darktable.pod:118
+msgid ""
+"Prevent darktable from initializing the OpenCL subsystem.  Use this option "
+"in case darktable crashes at startup due to a defective OpenCL "
+"implementation."
+msgstr ""
+"Empêcher darktable d'initialiser le sous-système OpenCL. Utilisez cette "
+"option en cas de plantage de darktable au démarrage dû à une implémentation "
+"défectueuse d'OpenCL."
+
+#. type: =item
+#: darktable.pod:121
+#| msgid "B<-h, --help>"
+msgid "B<-h>, B<--help>"
+msgstr "B<-h>, B<--help>"
+
+#. type: textblock
+#: darktable.pod:123
+msgid "Show the available command line options and exit."
+msgstr "Montre les options de la ligne de commande et quitte."
+
+#. type: =item
+#: darktable.pod:125
+msgid "B<< --library <library file> >>"
+msgstr "B<< --library <fichier de bibliothèque> >>"
+
+#. type: textblock
+#: darktable.pod:127
+msgid ""
+"darktable keeps image information in an sqlite database for fast access.  "
+"The default location of that database file is C<$HOME/.config/darktable/"
+"library.db>.  You may give an alternative location, e.g. if you want to do "
+"some experiments without compromising your original library.db.  If the "
+"database file does not exist, darktable creates it for you.  You may also "
+"give C<:memory:> as a library file in which case the database is kept in "
+"system memory - all changes are discarded when darktable terminates."
+msgstr ""
+"Pour un accès rapide darktable conserve les informations de l'image dans une "
+"base de données sqlite. L'emplacement par défaut de ce fichier de base de "
+"données est C<$HOME/.config/darktable/library.db>. Vous pouvez donner un "
+"emplacement alternatif si, par exemple, vous souhaitez faire quelques "
+"expérimentations sans corrompre votre bibliothèque library.db originale. "
+"Vous pouvez aussi donner C<:memory:> comme fichier de bibliothèque. Dans ce "
+"cas la base de données est conservée dans la mémoire du système - toutes les "
+"modifications seront détruites à la fin de l'exécution de darktable."
+
+#. type: =item
+#: darktable.pod:134
+msgid "B<< --localedir <locale directory> >>"
+msgstr "B<< --localedir <répertoire des locales> >>"
+
+#. type: textblock
+#: darktable.pod:136
+msgid ""
+"The place where darktable finds its language specific text strings.  The "
+"default place depends on your installation.  Typical places are C</opt/"
+"darktable/share/locale/> and C</usr/share/locale/>."
+msgstr ""
+"L'emplacement où darktable trouve ses chaînes de texte spécifique à la "
+"langue. L'emplacement par défaut dépend de votre installation. C</opt/"
+"darktable/share/locale/> et C</usr/share/locale/> sont des emplacements "
+"typiques."
+
+#. type: =item
+#: darktable.pod:140
+msgid "B<< --luacmd <lua command> >>"
+msgstr "B<< --luacmd <commande lua> >>"
+
+#. type: textblock
+#: darktable.pod:142
+msgid ""
+"A string containing lua commands to execute after lua initialization.  These "
+"commands will be run after your C<luarc> file."
+msgstr ""
+"Une chaîne de caractères contenant les commandes lua à exécuter après "
+"l'initialisation de lua. Ces commandes seront exécutées après celles de "
+"votre fichier C<luarc>."
+
+#. type: textblock
+#: darktable.pod:145
+msgid ""
+"If lua is not compiled in, this option will be accepted but won't do "
+"anything."
+msgstr ""
+"Si lua n'a pas été activé à la compilation, cette option sera acceptée mais "
+"sera sans effet."
+
+#. type: =item
+#: darktable.pod:147
+msgid "B<< --moduledir <module directory> >>"
+msgstr "B<< --moduledir <répertoire des modules> >>"
+
+#. type: textblock
+#: darktable.pod:149
+msgid ""
+"darktable has a modular structure and organizes its modules as shared "
+"libraries for loading at runtime.  With this option you tell darktable where "
+"to look for its shared libraries.  The default place depends on your "
+"installation; typical places are C</opt/darktable/lib/darktable/> and C</usr/"
+"lib/darktable/>."
+msgstr ""
+"darktable a une structure modulaire et organise ses modules sous forme de "
+"bibliothèques partagées à charger au cours de l'exécution. Avec cette option "
+"vous dites à darktable où il doit chercher ses bibliothèques partagées. "
+"L'emplacement par défaut dépend de votre installation ; C</opt/darktable/lib/"
+"darktable/> et C</usr/lib/darktable/> sont des emplacements typiques."
+
+#. type: =item
+#: darktable.pod:154
+msgid "B<< --noiseprofiles <noiseprofiles json file> >>"
+msgstr "B<< --noiseprofiles <fichier json des profils de bruit> >>"
+
+#. type: textblock
+#: darktable.pod:156
+msgid ""
+"darktable's profiled denoise module uses camera specific profile data that "
+"gets loaded from an external JSON file.  With this option the file to be "
+"loaded can be changed to allow testing alternative profiles.  The default "
+"profile file is C<noiseprofiles.json> and is typically found in C</opt/"
+"darktable/share/darktable/> or C</usr/share/darktable/>."
+msgstr ""
+"Le module de réduction du bruit (profil) de darktable utilise des données de "
+"profil spécifiques au boîtier, chargées à partir d'un fichier externe json. "
+"Avec cette option on peut changer le fichier à charger pour permettre de "
+"tester des profils alternatifs. Le fichier de profil par défaut est "
+"C<noiseprofiles.json> et se trouve typiquement dans C</opt/darktable/share/"
+"darktable/> ou C</usr/share/darktable/>."
+
+#. type: =item
+#: darktable.pod:161
+msgid "B<< -t <num openmp threads> >>"
+msgstr "B<< -t <num openmp threads> >>"
+
+#. type: textblock
+#: darktable.pod:163
+msgid ""
+"darktable uses OpenMP to parallelize many computation steps and make use of "
+"all the available CPU cores.  With this option you can specify the number of "
+"threads to use. Valid values are between C<1> and C<100>."
+msgstr ""
+"darktable utilise OpenMp pour paralléliser de nombreuses étapes du calcul et "
+"fait usage de tous les cœurs CPU disponibles. Avec cette option vous pouvez "
+"spécifier le nombre de fils d'exécution à utiliser."
+
+#. type: =item
+#: darktable.pod:166
+msgid "B<< --tmpdir <tmp directory> >>"
+msgstr "B<< --tmpdir <répertoire tmp> >>"
+
+#. type: textblock
+#: darktable.pod:168
+msgid ""
+"The place where darktable stores its temporary files.  If this option is not "
+"supplied darktable uses the system default."
+msgstr ""
+"L'emplacement où darktable stocke ses fichiers temporaires. Si cette option "
+"n'est pas fournie darktable utilise le répertoire par défaut du système."
+
+#. type: =item
+#: darktable.pod:171 darktable-generate-cache.pod:29
+msgid "B<--version>"
+msgstr "B<--version>"
+
+#. type: textblock
+#: darktable.pod:173
+msgid ""
+"Show the darktable version along with some important build options and exit."
+msgstr ""
+"Montre qu'elle est la version de darktable ainsi que quelques options "
+"importantes de compilation et quitte."
+
+#. type: =head1
+#: darktable.pod:177
+msgid "DEFAULT KEYBINDINGS"
+msgstr "RACCOURCIS CLAVIER PAR DÉFAUT"
+
+#. type: =head3
+#: darktable.pod:179
+msgid "All modes"
+msgstr "Tous les modes"
+
+#. type: =item
+#: darktable.pod:183 darktable.pod:277
+msgid "B<l>"
+msgstr "B<l>"
+
+#. type: textblock
+#: darktable.pod:185
+msgid "Switch to lighttable view"
+msgstr "Passer à la vue table lumineuse"
+
+#. type: =item
+#: darktable.pod:187
+msgid "B<d>"
+msgstr "B<d>"
+
+#. type: textblock
+#: darktable.pod:189
+msgid "Switch to darkroom view"
+msgstr "Passer à la vue chambre noire"
+
+#. type: =item
+#: darktable.pod:191
+msgid "B<t>"
+msgstr "B<t>"
+
+#. type: textblock
+#: darktable.pod:193
+msgid "Switch to tethered capture view"
+msgstr "Passer à la vue capture"
+
+#. type: =item
+#: darktable.pod:195
+msgid "B<m>"
+msgstr "B<m>"
+
+#. type: textblock
+#: darktable.pod:197
+msgid "Switch to map view"
+msgstr "Passer à la vue carte"
+
+#. type: =item
+#: darktable.pod:199
+msgid "B<s>"
+msgstr "B<s>"
+
+#. type: textblock
+#: darktable.pod:201
+msgid "Switch to slideshow view"
+msgstr "Passer à la vue diaporama"
+
+#. type: =item
+#: darktable.pod:203
+msgid "B<p>"
+msgstr "B<p>"
+
+#. type: textblock
+#: darktable.pod:205
+msgid "Switch to print view"
+msgstr "Passer à la vue impression"
+
+#. type: =item
+#: darktable.pod:207
+msgid "B<.>"
+msgstr "B<.>"
+
+#. type: textblock
+#: darktable.pod:209
+msgid "Switch between lighttable and darkroom views"
+msgstr "Basculer entre les vues table lumineuse et chambre noire"
+
+#. type: =item
+#: darktable.pod:211
+msgid "B<Ctrl-q>"
+msgstr "B<Ctrl-q>"
+
+#. type: textblock
+#: darktable.pod:213
+msgid "Quit"
+msgstr "Quitter"
+
+#. type: =item
+#: darktable.pod:215
+msgid "B<F11>"
+msgstr "B<F11>"
+
+#. type: textblock
+#: darktable.pod:217
+msgid "Switch between fullscreen and normal modes of the application's window"
+msgstr ""
+"Basculer entre les modes plein écran et normal de la fenêtre de l'application"
+
+#. type: =item
+#: darktable.pod:219
+msgid "B<Esc>"
+msgstr "B<Esc>"
+
+#. type: textblock
+#: darktable.pod:221
+msgid "Leave fullscreen mode"
+msgstr "Quitter le mode plein écran"
+
+#. type: =item
+#: darktable.pod:223
+msgid "B<Ctrl-h>"
+msgstr "B<Ctrl-h>"
+
+#. type: textblock
+#: darktable.pod:225
+msgid "Show/hide header"
+msgstr "Montrer/cacher l'entête"
+
+#. type: =item
+#: darktable.pod:227
+msgid "B<Tab>"
+msgstr "B<Tab>"
+
+#. type: textblock
+#: darktable.pod:229
+msgid "Show/hide sidebars"
+msgstr "Montrer/cacher les panneaux latéraux"
+
+#. type: =head3
+#: darktable.pod:233
+msgid "Lighttable mode"
+msgstr "Mode table lumineuse"
+
+#. type: =item
+#: darktable.pod:237
+msgid "B<g, Shift-g>"
+msgstr "B<g, Shift-g>"
+
+#. type: textblock
+#: darktable.pod:239
+msgid "Navigate to top, bottom row"
+msgstr "Naviguer vers la rangée du haut, du bas"
+
+#. type: =item
+#: darktable.pod:241
+msgid "B<PageUp, PageDown>"
+msgstr "B<PageUp, PageDown>"
+
+#. type: textblock
+#: darktable.pod:243
+msgid "Navigate one page up, down"
+msgstr "Naviguer une page vers le haut, vers le bas"
+
+#. type: =item
+#: darktable.pod:245
+msgid "B<'>"
+msgstr "B<'>"
+
+#. type: textblock
+#: darktable.pod:247
+msgid "Scroll center"
+msgstr "Défiler vers le centre"
+
+#. type: =item
+#: darktable.pod:249
+msgid "B<Down, Left, Right, Up>"
+msgstr "B<Down, Left, Right, Up>"
+
+#. type: textblock
+#: darktable.pod:251
+msgid "Scroll down, left, right, up"
+msgstr "Défiler vers le bas, vers la gauche, vers la droite, vers le haut"
+
+#. type: =item
+#: darktable.pod:253
+msgid "B<z>"
+msgstr "B<z>"
+
+#. type: textblock
+#: darktable.pod:255
+msgid "Preview image"
+msgstr "Aperçu de l'image"
+
+#. type: =item
+#: darktable.pod:257 darktable.pod:439
+msgid "B<Ctrl-z>"
+msgstr "B<Ctrl-z>"
+
+#. type: textblock
+#: darktable.pod:259
+msgid "Preview image with focus detection"
+msgstr "Aperçu de l'image avec détection du focus"
+
+#. type: =item
+#: darktable.pod:261 darktable.pod:453
+msgid "B<F1, F2, F3, F4, F5>"
+msgstr "B<F1, F2, F3, F4, F5>"
+
+#. type: textblock
+#: darktable.pod:263 darktable.pod:455
+msgid "Color labels: toggle red, yellow, green, blue and purple"
+msgstr ""
+"Labels de couleurs : basculer en rouge, en jaune, en vert, en bleu et en "
+"violet"
+
+#. type: =item
+#: darktable.pod:265 darktable.pod:457
+msgid "B<1, 2, 3, 4, 5>"
+msgstr "B<1, 2, 3, 4, 5>"
+
+#. type: textblock
+#: darktable.pod:267 darktable.pod:459
+msgid "Star rating"
+msgstr "Évaluation par étoiles"
+
+#. type: =item
+#: darktable.pod:269 darktable.pod:461
+msgid "B<0>"
+msgstr "B<0>"
+
+#. type: textblock
+#: darktable.pod:271 darktable.pod:463
+msgid "Strip all stars"
+msgstr "Enlever toutes le étoiles"
+
+#. type: =item
+#: darktable.pod:273 darktable.pod:465
+msgid "B<r>"
+msgstr "B<r>"
+
+#. type: textblock
+#: darktable.pod:275 darktable.pod:467
+msgid "Mark as rejected"
+msgstr "Marquer comme rejeté"
+
+#. type: textblock
+#: darktable.pod:279
+msgid "Realign images to the grid"
+msgstr "Réaligner les images sur la grille"
+
+#. type: =item
+#: darktable.pod:281
+msgid "B<Alt-1>"
+msgstr "B<Alt-1>"
+
+#. type: textblock
+#: darktable.pod:283
+msgid "Zoom in on first visible image"
+msgstr "Zoomer la première image visible"
+
+#. type: =item
+#: darktable.pod:285
+msgid "B<Alt-2, 3>"
+msgstr "B<Alt-2, 3>"
+
+#. type: textblock
+#: darktable.pod:287
+msgid "Adjust zoom"
+msgstr "Ajuster le zoom"
+
+#. type: =item
+#: darktable.pod:289
+msgid "B<Alt-4>"
+msgstr "B<Alt-4>"
+
+#. type: textblock
+#: darktable.pod:291
+msgid "Zoom out completely"
+msgstr "Dé-zoomer complètement"
+
+#. type: =item
+#: darktable.pod:293 darktable.pod:473
+msgid "B<Ctrl-a>"
+msgstr "B<Ctrl-a>"
+
+#. type: textblock
+#: darktable.pod:295 darktable.pod:475
+msgid "Select all images"
+msgstr "Sélectionner toutes les images"
+
+#. type: =item
+#: darktable.pod:297 darktable.pod:477
+msgid "B<Ctrl-Shift-a>"
+msgstr "B<Ctrl-Shift-a>"
+
+#. type: textblock
+#: darktable.pod:299 darktable.pod:479
+msgid "Select no images"
+msgstr "Désélectionner toutes les images"
+
+#. type: =item
+#: darktable.pod:301 darktable.pod:481
+msgid "B<Ctrl-i>"
+msgstr "B<Ctrl-i>"
+
+#. type: textblock
+#: darktable.pod:303 darktable.pod:483
+msgid "Invert selection"
+msgstr "Inverser la sélection"
+
+#. type: =item
+#: darktable.pod:305 darktable.pod:469
+msgid "B<Ctrl-d>"
+msgstr "B<Ctrl-d>"
+
+#. type: textblock
+#: darktable.pod:307 darktable.pod:471
+msgid "Duplicate image"
+msgstr "Cloner l'image"
+
+#. type: =item
+#: darktable.pod:309
+msgid "B<Ctrl-g, Ctrl-Shift-g>"
+msgstr "B<Ctrl-g, Ctrl-Shift-g>"
+
+#. type: textblock
+#: darktable.pod:311
+msgid "Group/ungroup selected images"
+msgstr "Grouper/dégrouper les images sélectionnées"
+
+#. type: =item
+#: darktable.pod:313
+msgid "B<Delete>"
+msgstr "B<Delete>"
+
+#. type: textblock
+#: darktable.pod:315
+msgid "Remove image from collection"
+msgstr "Supprimer l'image de la collection"
+
+#. type: =item
+#: darktable.pod:317 darktable.pod:375 darktable.pod:485
+msgid "B<Ctrl-c, Ctrl-Shift-c>"
+msgstr "B<Ctrl-c, Ctrl-Shift-c>"
+
+#. type: textblock
+#: darktable.pod:319 darktable.pod:377 darktable.pod:487
+msgid "Copy all, selected history"
+msgstr "Copier tout l'historique, l'historique sélectionné"
+
+#. type: =item
+#: darktable.pod:321 darktable.pod:379 darktable.pod:489
+msgid "B<Ctrl-v, Ctrl-Shift-v>"
+msgstr "B<Ctrl-v, Ctrl-Shift-v>"
+
+#. type: textblock
+#: darktable.pod:323 darktable.pod:381 darktable.pod:491
+msgid "Paste all, selected history"
+msgstr "Coller tout l'historique, l'historique sélectionné"
+
+#. type: =item
+#: darktable.pod:325 darktable.pod:499
+msgid "B<Space>"
+msgstr "B<Space>"
+
+#. type: textblock
+#: darktable.pod:327
+msgid "Toggle selection of an image"
+msgstr "Sélectionner/désélectionner une image"
+
+#. type: =item
+#: darktable.pod:329
+msgid "B<Return>"
+msgstr "B<Return>"
+
+#. type: textblock
+#: darktable.pod:331
+msgid "Select an image"
+msgstr "Sélectionner une image"
+
+#. type: =item
+#: darktable.pod:333 darktable.pod:371
+msgid "B<Ctrl-e>"
+msgstr "B<Ctrl-e>"
+
+#. type: textblock
+#: darktable.pod:335
+msgid "Export currently selected images"
+msgstr "Exporter les images actuellement sélectionnées"
+
+#. type: =item
+#: darktable.pod:337
+msgid "B<Ctrl-k>"
+msgstr "B<Ctrl-k>"
+
+#. type: textblock
+#: darktable.pod:339
+msgid "Jump back to the previous collection"
+msgstr "Retourner à la collection précédente"
+
+#. type: =item
+#: darktable.pod:341
+msgid "B<Ctrl-t>"
+msgstr "B<Ctrl-t>"
+
+#. type: textblock
+#: darktable.pod:343
+msgid "Open a popup to quickly tag an image"
+msgstr "Ouvrir une fenêtre contextuelle pour étiqueter rapidement une image"
+
+#. type: =item
+#: darktable.pod:345
+msgid "B<Ctrl-Shift-i>"
+msgstr "B<Ctrl-Shift-i>"
+
+#. type: textblock
+#: darktable.pod:347
+msgid "Import a folder"
+msgstr "Importer un répertoire"
+
+#. type: =item
+#: darktable.pod:349
+msgid "B<Ctrl-j>"
+msgstr "B<Ctrl-j>"
+
+#. type: textblock
+#: darktable.pod:351
+msgid "Jump to the filmroll of an image"
+msgstr "Sauter à la pellicule d'une image"
+
+#. type: =head3
+#: darktable.pod:355
+msgid "Darkroom mode"
+msgstr "Mode chambre noire"
+
+#. type: =item
+#: darktable.pod:359
+msgid "B<Alt-1, 2, 3>"
+msgstr "B<Alt-1, 2, 3>"
+
+#. type: textblock
+#: darktable.pod:361
+msgid "Zoom to 1:1, fill, and fit, respectively"
+msgstr "Zoomer à 1:1, remplir, ajuster, respectivement"
+
+#. type: =item
+#: darktable.pod:363 darktable.pod:421 darktable.pod:435
+msgid "B<Ctrl-f>"
+msgstr "B<Ctrl-f>"
+
+#. type: textblock
+#: darktable.pod:365 darktable.pod:423 darktable.pod:437
+msgid "Show/hide filmstrip"
+msgstr "Montrer/cacher le bandeau"
+
+#. type: =item
+#: darktable.pod:367
+msgid "B<Space, Backspace>"
+msgstr "B<Space, Backspace>"
+
+#. type: textblock
+#: darktable.pod:369
+msgid "Step to next, previous image"
+msgstr "Sauter à l'image suivante, précédente"
+
+#. type: textblock
+#: darktable.pod:373
+msgid "Export current image"
+msgstr "Exporter l'image courante"
+
+#. type: =item
+#: darktable.pod:383
+msgid "B<o>"
+msgstr "B<o>"
+
+#. type: textblock
+#: darktable.pod:385
+msgid "Toggle show of over- and under-exposure"
+msgstr "Basculer entre montrer les zones surexposées et sousexposées"
+
+#. type: =item
+#: darktable.pod:387
+msgid "B<Ctrl-g>"
+msgstr "B<Ctrl-g>"
+
+#. type: textblock
+#: darktable.pod:389
+msgid "Toggle gamut check"
+msgstr "Activer/désactiver la vérification de gamut"
+
+#. type: =item
+#: darktable.pod:391
+msgid "B<Ctrl-s>"
+msgstr "B<Ctrl-s>"
+
+#. type: textblock
+#: darktable.pod:393
+msgid "Toggle softproofing"
+msgstr "Activer/désactiver l'épreuvage"
+
+#. type: =item
+#: darktable.pod:395
+msgid "B<Enter>"
+msgstr "B<Enter>"
+
+#. type: textblock
+#: darktable.pod:397
+msgid "In Crop & Rotate module, commit the crop"
+msgstr "Dans le module recadrer et pivoter, valider le recadrage"
+
+#. type: =item
+#: darktable.pod:399 darktable.pod:411
+msgid "B<[, ]>"
+msgstr "B<[, ]>"
+
+#. type: textblock
+#: darktable.pod:401
+msgid "In Flip module, rotate 90 degrees ccw, cw"
+msgstr ""
+"Dans le module rotation tourner de 90 degrés dans le sens anti-horaire, dans "
+"le sens horaire"
+
+#. type: =item
+#: darktable.pod:403
+msgid "B<< <, > >>"
+msgstr "B<< <, > >>"
+
+#. type: textblock
+#: darktable.pod:405
+msgid "When drawing masks, decrease, increase brush opacity, respectively"
+msgstr ""
+"Lors du dessin d'un masque, diminuer, augmenter l'opacité du pinceau, "
+"respectivement"
+
+#. type: =item
+#: darktable.pod:407
+msgid "B<{, }>"
+msgstr "B<{, }>"
+
+#. type: textblock
+#: darktable.pod:409
+msgid "When drawing masks, decrease, increase brush hardness, respectively"
+msgstr ""
+"Lors du dessin d'un masque,diminuer, augmenter la dureté du pinceau, "
+"respectivement"
+
+#. type: textblock
+#: darktable.pod:413
+msgid "When drawing masks, decrease, increase brush size, respectively"
+msgstr ""
+"Lors du dessin d'un masque, diminuer, augmenter la taille du pinceau, "
+"respectivement"
+
+#. type: =head3
+#: darktable.pod:417
+msgid "Tethered mode"
+msgstr "Mode capture"
+
+#. type: =item
+#: darktable.pod:425
+msgid "B<v>"
+msgstr "B<v>"
+
+#. type: textblock
+#: darktable.pod:427
+msgid "Toggle live view"
+msgstr "Activer/désactiver la visée directe"
+
+#. type: =head3
+#: darktable.pod:431
+msgid "Map mode"
+msgstr "Mode carte"
+
+#. type: textblock
+#: darktable.pod:441
+msgid "Undo"
+msgstr "Annuler"
+
+#. type: =item
+#: darktable.pod:443
+msgid "B<Ctrl-r>"
+msgstr "B<Ctrl-r>"
+
+#. type: textblock
+#: darktable.pod:445
+msgid "Redo"
+msgstr "Refaire"
+
+#. type: =head3
+#: darktable.pod:449
+msgid "Filmstrip (when the cursor is on top of the filmstrip)"
+msgstr "Bandeau (quand le curseur est en haut du bandeau)"
+
+#. type: =head3
+#: darktable.pod:495
+msgid "Slideshow mode"
+msgstr "Mode diaporama"
+
+#. type: textblock
+#: darktable.pod:501
+msgid "Start/stop playback"
+msgstr "Démarrer/arrêter la lecture"
+
+#. type: =head1
+#: darktable.pod:505 darktable-cli.pod:94 darktable-generate-cache.pod:57
+#: darktable-cltest.pod:18 darktable-cmstest.pod:17
+msgid "SEE ALSO"
+msgstr "VOIR AUSSI"
+
+#. type: textblock
+#: darktable.pod:507
+msgid "L<darktable-cli(1)|darktable-cli(1)>"
+msgstr "L<darktable-cli(1)|darktable-cli(1)>"
+
+#. type: =head1
+#: darktable.pod:509
+msgid "OTHER INFO"
+msgstr "AUTRES INFORMATIONS"
+
+#. type: textblock
+#: darktable.pod:511
+msgid ""
+"Please visit B<darktable>'s website for news, blog and bug tracker: "
+"L<https://www.darktable.org/>"
+msgstr ""
+"Veuillez visiter le site web de B<darktable> pour des nouvelles, un blog et "
+"un système de suivi des bogues : L<http://www.darktable.org/>"
+
+#. type: textblock
+#: darktable.pod:513
+msgid ""
+"L<https://www.darktable.org/usermanual/> The complete darktable usermanual."
+msgstr ""
+"L<https://www.darktable.org/usermanual/> Le manuel utilisateur complet de "
+"darktable."
+
+#. type: textblock
+#: darktable.pod:515
+msgid ""
+"B<darktablerc.html> An overview over all default config settings.  The "
+"default place depends on your installation.  Typical places are C</opt/"
+"darktable/share/doc/darktable/> and C</usr/share/doc/darktable/>."
+msgstr ""
+"B<darktablerc.html> Une vue d'ensemble de tous les réglages de configuration "
+"par défaut. L'emplacement par défaut dépend de votre installation. C</opt/"
+"darktable/share/doc/darktable/> et C</usr/share/doc/darktable/> sont des "
+"emplacements typiques."
+
+#. type: =head1
+#: darktable.pod:519
+msgid "REPORTING BUGS"
+msgstr "SIGNALER DES BOGUES"
+
+#. type: textblock
+#: darktable.pod:521
+msgid ""
+"Please use the bug tracker on L<https://www.darktable.org/redmine/projects/"
+"darktable/issues/> to report bugs, feature requests and so on."
+msgstr ""
+"Veuillez utilisez le système de suivi de bogues sur L<https://www.darktable."
+"org/redmine/projects/darktable/issues/> pour signaler des bogues, des "
+"demandes de fonctionnalité, etc."
+
+#. type: =head1
+#: darktable.pod:525 darktable-cli.pod:98 darktable-generate-cache.pod:61
+#: darktable-cltest.pod:22 darktable-cmstest.pod:21
+msgid "AUTHORS"
+msgstr "AUTEURS"
+
+#. type: textblock
+#: darktable.pod:527 darktable-cli.pod:100 darktable-generate-cache.pod:63
+#: darktable-cltest.pod:24 darktable-cmstest.pod:23
+msgid ""
+"The principal developer of darktable is Johannes Hanika.  The (hopefully) "
+"complete list of contributors to the project is:"
+msgstr ""
+"Le principal développeur de darktable est Johannes Hanika. La liste, on "
+"l'espère complète, des contributeurs du projet est :"
+
+#. type: textblock
+#: darktable.pod:530 darktable-cli.pod:103 darktable-generate-cache.pod:66
+#: darktable-cltest.pod:27 darktable-cmstest.pod:26
+msgid "DREGGNAUTHORS -- don't translate this line!"
+msgstr "DREGGNAUTHORS"
+
+#. type: textblock
+#: darktable.pod:532
+msgid ""
+"This man page was written by Alexandre Prokoudine E<lt>alexandre."
+"prokoudine@gmail.comE<gt> and Richard Levitte E<lt>richard@levittr."
+"orgE<gt>.  Additions were made by Tobias Ellinghaus E<lt>me@houz.orgE<gt>."
+msgstr ""
+"Ce manpage a été écrit par Alexandre Prokoudine E<lt>alexandre."
+"prokoudine@gmail.comE<gt> et Richard Levitte E<lt>richard@levittr.orgE<gt>.  "
+"Des compléments ont été ajoutés par Tobias Ellinghaus E<lt>me@houz.orgE<gt>."
+
+#. type: =head1
+#: darktable.pod:537
+msgid "HISTORY"
+msgstr "HISTORIQUE"
+
+#. type: textblock
+#: darktable.pod:539
+msgid ""
+"The project was started by Johannes Hanika in early 2009 to fill the gap "
+"(or, rather, a black hole) of a digital photography workflow tool on Linux."
+msgstr ""
+"Le projet a été lancé au début de 2009 par Johannes Hanika pour combler un "
+"fossé (ou plutôt un trou noir) ; le manque sous Linux d'un outil fournissant "
+"un flux de travail pour le traitement des photos numériques. "
+
+#. type: =head1
+#: darktable.pod:542 darktable-cli.pod:108 darktable-generate-cache.pod:72
+#: darktable-cltest.pod:33 darktable-cmstest.pod:31
+msgid "COPYRIGHT AND LICENSE"
+msgstr "COPYRIGHT ET LICENCE"
+
+#. type: textblock
+#: darktable.pod:544 darktable-cli.pod:110 darktable-generate-cache.pod:74
+#: darktable-cltest.pod:35 darktable-cmstest.pod:33
+msgid "B<Copyright (C)> 2009-2017 by Authors."
+msgstr "B<Copyright (C)> 2009-2017 par les Auteurs."
+
+#. type: textblock
+#: darktable.pod:546 darktable-cli.pod:112 darktable-generate-cache.pod:76
+#: darktable-cltest.pod:37 darktable-cmstest.pod:35
+msgid ""
+"B<darktable> is free software; you can redistribute it and/or modify it "
+"under the terms of the GPL v3 or (at your option) any later version."
+msgstr ""
+"B<darktable> est un logiciel libre ; vous pouvez le redistribuer ou le "
+"modifier selon les termes de la GPL v3 ou, à votre choix, selon les termes "
+"de toute autre version ultérieure."
+
+#. type: =for
+#: darktable.pod:549 darktable-cli.pod:115 darktable-generate-cache.pod:79
+#: darktable-cltest.pod:40 darktable-cmstest.pod:38
+msgid "comment $Date: 2017-01-20$ $Release: 2.3$"
+msgstr "comment $Date: 2017-01-20$ $Release: 2.3$"
+
+#. type: textblock
+#: darktable-cli.pod:4
+msgid "darktable-cli - a command line darktable variant"
+msgstr "darktable-cli - une version de darktable en ligne de commande"
+
+#. type: verbatim
+#: darktable-cli.pod:8
+#, no-wrap
+msgid ""
+"    darktable-cli IMG_1234.{RAW,...} [<xmp file>] <output file> [options] [--core <darktable options>]\n"
+"\n"
+msgstr ""
+"    darktable-cli IMG_1234.{RAW,...} [<fichier xmp>] <fichier de sortie> [options] [--core <options de darktable>]\n"
+"\n"
+
+#. type: verbatim
+#: darktable-cli.pod:12
+#, no-wrap
+msgid ""
+"    --width <max width>\n"
+"    --height <max height>\n"
+"    --bpp <bpp>\n"
+"    --hq <0|1|true|false>\n"
+"    --upscale <0|1|true|false>\n"
+"    --verbose\n"
+"\n"
+msgstr ""
+"    --width <largeur maximale>\n"
+"    --height <hauteur maximale>\n"
+"    --bpp <bpp>\n"
+"    --hq <0|1|true|false>\n"
+"    --upscale <0|1|true|false>\n"
+"    --verbose\n"
+"\n"
+
+#. type: textblock
+#: darktable-cli.pod:21 darktable-generate-cache.pod:12 darktable-cltest.pod:12
+#: darktable-cmstest.pod:12
+msgid ""
+"B<darktable> is a digital photography workflow application for B<Linux>, "
+"B<Mac OS X> and several other B<Unices>.  It's described further in "
+"L<darktable(1)|darktable(1)>."
+msgstr ""
+"B<darktable> est une application fournissant un flux de travail pour le "
+"traitement des photos numériques sous B<Linux>, B<Mac OS X> et plusieurs "
+"autres B<Unix>. Il est décrit plus loin dans L<darktable(1)|darktable(1)>"
+
+#. type: textblock
+#: darktable-cli.pod:24
+msgid ""
+"B<darktable-cli> is a command line variant to be used to export images given "
+"the raw file and the accompanying xmp file."
+msgstr ""
+"B<darktable-cli> est une version en ligne de commande utilisée pour exporter "
+"des images étant donnés le fichier RAW et le fichier lié XMP."
+
+#. type: textblock
+#: darktable-cli.pod:29
+msgid ""
+"The user needs to supply an input filename and an output filename.  All "
+"other parameters are optional."
+msgstr ""
+"L'utilisateur doit fournir un nom de fichier d'entrée et un nom de fichier "
+"de sortie. Tous les autres paramètres sont optionnels. "
+
+#. type: =item
+#: darktable-cli.pod:34
+msgid "B<< <input file> >>"
+msgstr "B<< <fichier d'entrée> >>"
+
+#. type: textblock
+#: darktable-cli.pod:36
+msgid "The name of the input file to export."
+msgstr "Le nom du fichier à exporter."
+
+#. type: =item
+#: darktable-cli.pod:38
+msgid "B<< <xmp file> >>"
+msgstr "B<< <fichier XMP> >>"
+
+#. type: textblock
+#: darktable-cli.pod:40
+msgid ""
+"The optional name of an XMP sidecar file containing the history stack data "
+"to be applied during export.  If this option is not given darktable will "
+"search for an XMP file that belongs to the given input file."
+msgstr ""
+"Le nom optionnel d'un fichier lié XMP contenant les données de la pile de "
+"l'historique devant être appliquées lors de l'exportation. Si cette option "
+"n'est pas donnée darktable recherchera un fichier XMP en relation avec le "
+"fichier d'entrée."
+
+#. type: =item
+#: darktable-cli.pod:45
+msgid "B<< <output file> >>"
+msgstr "B<< <fichier de sortie> >>"
+
+#. type: textblock
+#: darktable-cli.pod:47
+msgid ""
+"The name of the output file.  darktable derives the export file format from "
+"the file extension.  You can also use all the variables available in "
+"B<darktable>'s export module in the output filename."
+msgstr ""
+"Le nom du fichier de sortie. darktable déduit le format d'exportation à "
+"partir de l'extension du fichier. Dans le nom de fichier de sortie vous "
+"pouvez aussi utiliser toutes les variables disponibles dans le module "
+"exportation de B<darktable>."
+
+#. type: =item
+#: darktable-cli.pod:51
+msgid "B<< --width <max width> >>"
+msgstr "B<< --width <largeur maximale> >>"
+
+#. type: textblock
+#: darktable-cli.pod:53
+msgid ""
+"This optional parameter allows one to limit the width of the exported image "
+"to that number of pixels."
+msgstr ""
+"Ce paramètre optionnel permet de limiter la largeur de l'image exportée à ce "
+"nombre de pixels."
+
+#. type: =item
+#: darktable-cli.pod:56
+msgid "B<< --height <max height> >>"
+msgstr "B<< --height <hauteur maximale> >>"
+
+#. type: textblock
+#: darktable-cli.pod:58
+msgid ""
+"This optional parameter allows one to limit the height of the exported image "
+"to that number of pixels."
+msgstr ""
+"Ce paramètre optionnel permet de limiter la hauteur de l'image exportée à ce "
+"nombre de pixels."
+
+#. type: =item
+#: darktable-cli.pod:61
+msgid "B<< --bpp <bpp> >>"
+msgstr "B<< --bpp <bpp> >>"
+
+#. type: textblock
+#: darktable-cli.pod:63
+msgid ""
+"An optional parameter to define the bit depth of the exported image; allowed "
+"values depend on the file format.  Currently this option is not yet "
+"functional.  If you need to define the bit depth you need to use the "
+"following workaround:"
+msgstr ""
+"Un paramètre optionnel pour définir la profondeur de bits de l'image "
+"exportée ; les valeurs autorisées dépendent du format de fichier. "
+"Actuellement cette option n'est pas encore fonctionnelle. Si vous avez "
+"besoin de définir la profondeur de bits, vous devez utiliser la solution "
+"suivante :"
+
+#. type: verbatim
+#: darktable-cli.pod:68
+#, no-wrap
+msgid ""
+"    --core --conf plugins/imageio/format/<FORMAT>/bpp=<VALUE>\n"
+"\n"
+msgstr ""
+"    --core --conf plugins/imageio/format/<FORMAT>/bpp=<VALEUR>\n"
+"\n"
+
+#. type: textblock
+#: darktable-cli.pod:70
+msgid ""
+"where B<FORMAT> is the name of the selected output format, for example "
+"B<png>."
+msgstr "où <FORMAT> est le nom du format de sortie choisi, par exemple B<png>"
+
+#. type: =item
+#: darktable-cli.pod:72
+msgid "B<< --hq <0|1|true|false> >>"
+msgstr "B<< --hq <0|1|true|false> >>"
+
+#. type: textblock
+#: darktable-cli.pod:74
+msgid ""
+"A flag that defines whether to use high quality resampling during export.  "
+"Defaults to true."
+msgstr ""
+"Un drapeau qui indique s'il faut utiliser le ré-échantillonnage de haute "
+"qualité lors l'exportation. true par défaut."
+
+#. type: =item
+#: darktable-cli.pod:77
+msgid "B<< --upscale <0|1|true|false> >>"
+msgstr "B<< --upscale <0|1|true|false> >>"
+
+#. type: textblock
+#: darktable-cli.pod:79
+msgid ""
+"A flag that defines whether to allow upscaling during export.  Defaults to "
+"false."
+msgstr ""
+"Un drapeau qui indique si l'agrandissement est autorisé lors de "
+"l'exportation. false par défaut."
+
+#. type: =item
+#: darktable-cli.pod:82
+msgid "B<< --verbose >>"
+msgstr "B<< --verbose >>"
+
+#. type: textblock
+#: darktable-cli.pod:84
+msgid "Enables verbose output."
+msgstr "Autoriser la sortie détaillée."
+
+#. type: =item
+#: darktable-cli.pod:86 darktable-generate-cache.pod:49
+msgid "B<< --core <darktable options> >>"
+msgstr "B<< --core <options de darktable> >>"
+
+#. type: textblock
+#: darktable-cli.pod:88 darktable-generate-cache.pod:51
+msgid ""
+"All command line parameters following B<--core> are passed to the darktable "
+"core and handled as standard parameters.  See L<darktable(1)|darktable(1)> "
+"for a detailed description of the options."
+msgstr ""
+"Toutes les paramètres de la ligne de commande suivant B<--core> sont passés "
+"au noyau de darktable et manipulés comme des paramètres standard. Voyez  "
+"L<darktable(1)|darktable(1)> pour une description détaillée des ces options."
+
+#. type: textblock
+#: darktable-cli.pod:96 darktable-generate-cache.pod:59 darktable-cltest.pod:20
+#: darktable-cmstest.pod:19
+msgid "L<darktable(1)|darktable(1)>"
+msgstr "L<darktable(1)|darktable(1)>"
+
+#. type: textblock
+#: darktable-cli.pod:105
+msgid ""
+"This man page was written by Richard Levitte E<lt>richard@levitte.orgE<gt>.  "
+"Additions were made by Tobias Ellinghaus E<lt>me@houz.orgE<gt>."
+msgstr ""
+"Ce manpage a été écrit par Richard Levitte E<lt>richard@levitte.orgE<gt>.  "
+"Des compléments ont été ajoutés par Tobias Ellinghaus E<lt>me@houz.orgE<gt>."
+
+#. type: textblock
+#: darktable-generate-cache.pod:4
+msgid "darktable-generate-cache - update darktable's thumbnail cache"
+msgstr ""
+"darktable-generate-cache - met à jour le cache des miniatures de darktable"
+
+#. type: verbatim
+#: darktable-generate-cache.pod:8
+#, no-wrap
+msgid ""
+"    darktable-generate-cache [-h, --help; --version] [-m, --max-mip <0-7>] [--core <darktable options>]\n"
+"\n"
+msgstr ""
+"    darktable-generate-cache [-h, --help; --version] [-m, --max-mip <0-7>] [--core <darktable options>]\n"
+"\n"
+
+#. type: textblock
+#: darktable-generate-cache.pod:15
+msgid ""
+"B<darktable-generate-cache> updates darktable's thumbnail cache.  You can "
+"start this program to generate all missing thumbnails in the background when "
+"your computer is idle."
+msgstr ""
+"B<darktable-generate-cache> met à jour le cache des miniatures de darktable. "
+"Vous pouvez démarrer ce programme pour générer en arrière-plan toutes les "
+"miniatures manquantes lorsque votre ordinateur est inactif."
+
+#. type: textblock
+#: darktable-generate-cache.pod:20
+msgid ""
+"All parameters are optional.  If started without parameters B<darktable-"
+"generate-cache> uses reasonable defaults."
+msgstr ""
+"Tous les paramètres sont optionnels. S'il est lancé sans paramètre   "
+"B<darktable-generate-cache> utilise des valeurs par défaut raisonnables."
+
+#. type: =item
+#: darktable-generate-cache.pod:25
+msgid "B<-h, --help>"
+msgstr "B<-h, --help>"
+
+#. type: textblock
+#: darktable-generate-cache.pod:27
+msgid "Gives usage information and terminates."
+msgstr "Donne des informations d'utilisation et se termine."
+
+#. type: textblock
+#: darktable-generate-cache.pod:31
+msgid "Gives copyright and version information and terminates."
+msgstr "Donne des informations de copyright et de version et se termine."
+
+#. type: =item
+#: darktable-generate-cache.pod:33
+msgid "B<< --min-mip <0-7> >>"
+msgstr "B<< --min-mip <0-7> >>"
+
+#. type: =item
+#: darktable-generate-cache.pod:35
+msgid "B<< -m, --max-mip <0-7> >>"
+msgstr "B<< -m, --max-mip <0-7> >>"
+
+#. type: textblock
+#: darktable-generate-cache.pod:37
+msgid ""
+"B<darktable> can handle and store thumbnails with up to eight different "
+"resolution steps for each image.  These parameters define which maximum "
+"resolution should be generated and default to a range of B<0-2>.  There is "
+"normally no need to generate all possible resolutions here; missing ones "
+"will be automatically generated by darktable the moment they are needed.  "
+"When asked to generate multiple resolutions at once, the lower-resolution "
+"images are quickly downsampled from the highest-resolution image."
+msgstr ""
+"B<darktable> peut gérer et stocker, pour chaque image, des miniatures ayant "
+"jusqu'à huit niveaux différents de résolution. Ce paramètre définit le "
+"nombre maximum de résolutions qui doivent être générées, la valeur par "
+"défaut est B<0-2>. Il n'est normalement pas nécessaire de générer ici toutes "
+"les résolutions possibles ; celles qui manquent seront générées "
+"automatiquement par darktable au moment où elles seront nécessaires. Quand "
+"on demande la génération de multiple résolutions à la fois, les images de "
+"plus faible résolution sont rapidement générées par sous-échantillonnage de "
+"l'image ayant la plus forte résolution."
+
+#. type: =item
+#: darktable-generate-cache.pod:42
+msgid "B<< --min-imgid <N> >>"
+msgstr "B<< --min-imgid <N> >>"
+
+#. type: =item
+#: darktable-generate-cache.pod:44
+msgid "B<< --max-imgid <N> >>"
+msgstr "B<< --max-imgid <N> >>"
+
+#. type: textblock
+#: darktable-generate-cache.pod:46
+msgid ""
+"Specifies the range of internal image IDs from the database to work on.  If "
+"no range is given, B<darktable-generate-cache> will process all images from "
+"the entire collection."
+msgstr ""
+"Spécifie la plage des IDS des images de la base de données sur laquelle il "
+"faut travailler. Si aucune plage n'est donnée, B<dartable-generate-cache> "
+"traitera toutes les images de la collection. "
+
+#. type: textblock
+#: darktable-generate-cache.pod:68 darktable-cltest.pod:29
+#: darktable-cmstest.pod:28
+msgid ""
+"This man page was written by Ulrich Pegelow E<lt>ulrich.pegelow@tongareva."
+"deE<gt> as part of the usermanual.  It was turned into a man page by Tobias "
+"Ellinghaus E<lt>me@houz.orgE<gt>."
+msgstr ""
+"Ce man-page a été écrit par Ulrich Pegelow E<lt>ulrich.pegelow@tongareva."
+"deE<gt> dans le cadre du manuel utilisateur. Il a été transformé en man-page "
+"par Tobias Ellinghaus E<lt>me@houz.orgE<gt>."
+
+#. type: textblock
+#: darktable-cltest.pod:4
+msgid ""
+"darktable-cltest - check if there is a usable OpenCL environment for "
+"darktable to use"
+msgstr ""
+"darktable-cltest - teste s'il y a un environnement OpenCL utilisable par "
+"darktable"
+
+#. type: verbatim
+#: darktable-cltest.pod:8
+#, no-wrap
+msgid ""
+"    darktable-cltest\n"
+"\n"
+msgstr ""
+"    darktable-cltest\n"
+"\n"
+
+#. type: textblock
+#: darktable-cltest.pod:15
+msgid ""
+"B<darktable-cltest> checks if there is a usable OpenCL environment on your "
+"system that darktable can use.  It emits some debug output that is "
+"equivalent to calling B<darktable -d opencl> and then terminates."
+msgstr ""
+"B<darktable-cltest> teste s'il y a sur votre système un environnement OpenCL "
+"utilisable par darktable. Il émet une sortie de débogage équivalente à celle "
+"qu'on obtient par l'appel B<darktable -d opencl> et puis s'arrête."
+
+#. type: textblock
+#: darktable-cmstest.pod:4
+msgid ""
+"darktable-cmstest - test if the color management subsystem of your computer "
+"is correctly configured"
+msgstr ""
+"darktable-cmstest - teste si le sous-système de gestion de la couleur de "
+"votre ordinateur est correctement configuré."
+
+#. type: verbatim
+#: darktable-cmstest.pod:8
+#, no-wrap
+msgid ""
+"    darktable-cmstest\n"
+"\n"
+msgstr ""
+"    darktable-cmstest\n"
+"\n"
+
+#. type: textblock
+#: darktable-cmstest.pod:15
+msgid ""
+"B<darktable-cmstest> investigates if the color management subsystem of your "
+"computer is correctly configured and it displays some useful information "
+"about the installed monitor profile(s)."
+msgstr ""
+"B<darktable-cmstest> teste si le sous-système de gestion de la couleur de "
+"votre ordinateur est correctement configuré et affiche des informations "
+"utiles concernant le(s) profil(s) écran installé(s)."
+
+#~ msgid "comment $Date: 2015-11-17$ $Release: 2.0$"
+#~ msgstr "comment $Date: 2015-11-17$ $Release: 2.0$"
+
+#~ msgid "RELATED"
+#~ msgstr "EN RELATION"
+
+#~ msgid ""
+#~ "B<darktable-viewer> screensaver version of darktable.  Shows the last "
+#~ "active collection in full screen as a slideshow.  Using the slideshow "
+#~ "mode of darktable is encouraged."
+#~ msgstr ""
+#~ "B<darktable-viewer> la version économiseur d'écran de darktable, montre "
+#~ "la dernière collection active en mode plein écran comme un diaporama. "
+#~ "Utiliser le mode diaporama de darktable est encouragé."
+
+#~ msgid ""
+#~ "darktable-viewer - a stand-alone slideshow viewer that displays the "
+#~ "images of your current collection fullscreen"
+#~ msgstr ""
+#~ "darktable-viewer - une visionneuse de diaporama autonome qui affiche en "
+#~ "plein écran les images de votre collection courante."
+
+#~ msgid ""
+#~ "    darktable-viewer [-h, --help; --version] [--random] [--repeat] [--"
+#~ "core <darktable options>]\n"
+#~ "\n"
+#~ msgstr ""
+#~ "    darktable-viewer [-h, --help; --version] [--random] [--repeat] [--"
+#~ "core <darktable options>]\n"
+#~ "\n"
+
+#~ msgid ""
+#~ "B<darktable-viewer> is a stand-alone slideshow viewer that displays the "
+#~ "images of your current collection fullscreen.  Press B<Esc> to stop."
+#~ msgstr ""
+#~ "B<darktable-viewer> est une visionneuse de diaporama autonome qui affiche "
+#~ "en plein écran les images de votre collection courante. Tapez B<Esc> pour "
+#~ "stopper."
+
+#~ msgid ""
+#~ "All parameters are optional.  If started without parameters B<darktable-"
+#~ "viewer> uses reasonable defaults."
+#~ msgstr ""
+#~ "Tous les paramètres sont optionnels. S'il est lancé sans paramètre  "
+#~ "B<darktable-viewer> utilise des valeurs par défaut raisonnables."
+
+#~ msgid "B<--random>"
+#~ msgstr "B<--random>"
+
+#~ msgid "Displays images in random instead of the default sequential order."
+#~ msgstr ""
+#~ "Affiche les images dans un ordre aléatoire au lieu de l'ordre séquentiel "
+#~ "par défaut."
+
+#~ msgid "B<--repeat>"
+#~ msgstr "B<--repeat>"
+
+#~ msgid ""
+#~ "Continues the slideshow in an endless loop instead of terminating after "
+#~ "the last image."
+#~ msgstr ""
+#~ "Continue le diaporama dans une boucle sans fin au lieu de s'arrêter après "
+#~ "la dernière image."
+
+#~ msgid "show/hide film strip"
+#~ msgstr "Montrer, cacher le bandeau"
