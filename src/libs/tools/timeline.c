@@ -889,6 +889,12 @@ static void _lib_timeline_collection_changed(gpointer instance, dt_collection_ch
 }
 
 
+static gboolean _timespec_has_date_only(const char *const spec)
+{
+  // spec could be "YYYY:MM", "YYYY:MM:DD", "YYYY:MM:DD HH", etc.
+  return strlen(spec) <= 10; // is string YYYY:MM:DD or shorter?
+}
+
 // add the selected portions to the collect
 static void _selection_collect(dt_lib_timeline_t *strip, dt_lib_timeline_mode_t mode)
 {
@@ -921,7 +927,7 @@ static void _selection_collect(dt_lib_timeline_t *strip, dt_lib_timeline_mode_t 
   if(strip->start_x == strip->stop_x)
   {
     coll = _time_format_for_db(strip->start_t, (strip->zoom + 1) / 2 * 2 + 2, FALSE);
-    date_only = strlen(coll) <= 10; //YYYY:MM:DD or shorter
+    date_only = _timespec_has_date_only(coll);
   }
   else
   {
@@ -938,7 +944,7 @@ static void _selection_collect(dt_lib_timeline_t *strip, dt_lib_timeline_mode_t 
     if(d1 && d2)
     {
       coll = g_strdup_printf("[%s;%s]", d1, d2);
-      date_only = strlen(d1) <= 10 && strlen(d2) <= 10; //both are YYYY:MM:DD or shorter
+      date_only = _timespec_has_date_only(d1) && _timespec_has_date_only(d2);
     }
     g_free(d1);
     g_free(d2);
