@@ -294,11 +294,9 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
             tmp_f[p + k] = dt_noise_generator(DT_NOISE_UNIFORM, p_buf[p + k], 0.5f, 0, state) / 255.0f;
         }
 
-        // Do colorspace conversion here rather than having histogram
-        // process do it. We need to do special cases for work/export
-        // colorspace which dt_ioppr_get_histogram_profile_type()
-        // can't handle when not in darkroom view. Plus we can do an
-        // in-place conversion which saves allocating an extra buffer.
+        // We need to do special cases for work/export colorspace
+        // which dt_ioppr_get_histogram_profile_type() can't handle
+        // when not in darkroom view.
         const dt_iop_order_iccprofile_info_t *profile_to;
         const dt_iop_order_iccprofile_info_t *const srgb_profile =
           dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", DT_INTENT_RELATIVE_COLORIMETRIC);
@@ -367,35 +365,39 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     dat.head.max_height = darktable.mipmap_cache->max_height[DT_MIPMAP_F];
     dat.head.style[0] = '\0';
 
-    dt_colorspaces_color_profile_type_t icc_type;
-    const char *icc_filename;
-    const char _icc_filename[1] = { 0 };
+    dt_colorspaces_color_profile_type_t histogram_type;
+    const char *histogram_filename;
     if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
     {
       const dt_colorspaces_color_profile_t *work_profile = dt_colorspaces_get_work_profile(lib->image_id);
-      icc_type = work_profile->type;
-      icc_filename = work_profile->filename;
+      histogram_type = work_profile->type;
+      histogram_filename = work_profile->filename;
     }
     else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
     {
-      icc_type = DT_COLORSPACE_NONE; // use the colorout profile
-      icc_filename = _icc_filename;
+      const dt_colorspaces_color_profile_t *export_profile = dt_colorspaces_get_output_profile(lib->image_id, DT_COLORSPACE_NONE, NULL);
+      histogram_type = export_profile->type;
+      histogram_filename = export_profile->filename;
     }
     else
     {
-      dt_ioppr_get_histogram_profile_type(&icc_type, &icc_filename);
+      // special cases above as this can't handle work/export profile
+      // when not in darkroom view
+      dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
     }
 
     // this uses the export rather than thumbnail pipe -- slower, but
     // as we're not competing with the full pixelpipe, it's a
     // reasonable trade-off for a histogram which matches that in
     // darkroom view
+    // FIXME: instead export image in work profile, then pass that to histogram process as well as converting to display profile for output, eliminating dt_view_image_get_surface() above
     if(!dt_imageio_export_with_flags(lib->image_id, "unused", &format, (dt_imageio_module_data_t *)&dat, TRUE,
-                                     FALSE, FALSE, FALSE, FALSE, NULL, FALSE, FALSE, icc_type, icc_filename,
+                                     FALSE, FALSE, FALSE, FALSE, NULL, FALSE, FALSE, histogram_type, histogram_filename,
                                      DT_INTENT_PERCEPTUAL, NULL, NULL, 1, 1, NULL))
     {
       const dt_iop_order_iccprofile_info_t *const histogram_profile =
-        dt_ioppr_get_histogram_profile_info(darktable.develop);
+        dt_ioppr_add_profile_info_to_list(darktable.develop, histogram_type, histogram_filename,
+                                          DT_INTENT_RELATIVE_COLORIMETRIC);
       darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, dat.buf, dat.head.width,
                                              dat.head.height, histogram_profile, histogram_profile);
       dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
