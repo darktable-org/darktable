@@ -1127,31 +1127,30 @@ void dtgtk_cairo_paint_rgb_parade(cairo_t *cr, gint x, gint y, gint w, gint h, g
 {
   PREAMBLE(1, 0, 0)
 
-  const GdkRGBA *const primaries = darktable.bauhaus->graph_colors;
   cairo_pattern_t *pat;
 
   pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);
-  cairo_pattern_add_color_stop_rgba(pat, 0.0, primaries[0].red, primaries[0].green, primaries[0].blue, primaries[0].alpha * 0.2);
-  cairo_pattern_add_color_stop_rgba(pat, 0.4, primaries[0].red, primaries[0].green, primaries[0].blue, primaries[0].alpha * 0.7);
-  cairo_pattern_add_color_stop_rgba(pat, 1.0, primaries[0].red, primaries[0].green, primaries[0].blue, primaries[0].alpha * 0.3);
+  cairo_pattern_add_color_stop_rgba(pat, 0.0, 0.8, 0.3, 0.3, 0.2);
+  cairo_pattern_add_color_stop_rgba(pat, 0.4, 0.8, 0.3, 0.3, 0.7);
+  cairo_pattern_add_color_stop_rgba(pat, 1.0, 0.8, 0.3, 0.3, 0.3);
   cairo_rectangle(cr, 0.0, 0.1, 1.0/3.0, 0.7);
   cairo_set_source(cr, pat);
   cairo_fill(cr);
   cairo_pattern_destroy(pat);
 
   pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);
-  cairo_pattern_add_color_stop_rgba(pat, 0.0, primaries[1].red, primaries[1].green, 0.0, primaries[1].alpha * 0.1);
-  cairo_pattern_add_color_stop_rgba(pat, 0.6, primaries[1].red, primaries[1].green, 0.0, primaries[1].alpha * 0.8);
-  cairo_pattern_add_color_stop_rgba(pat, 1.0, primaries[1].red, primaries[1].green, 0.0, primaries[1].alpha * 0.4);
+  cairo_pattern_add_color_stop_rgba(pat, 0.0, 0.4, 0.8, 0.4, 0.1);
+  cairo_pattern_add_color_stop_rgba(pat, 0.6, 0.4, 0.8, 0.4, 0.8);
+  cairo_pattern_add_color_stop_rgba(pat, 1.0, 0.4, 0.8, 0.4, 0.4);
   cairo_rectangle(cr, 1.0/3.0, 0.2, 1.0/3.0, 0.7);
   cairo_set_source(cr, pat);
   cairo_fill(cr);
   cairo_pattern_destroy(pat);
 
   pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);
-  cairo_pattern_add_color_stop_rgba(pat, 0.0, primaries[2].red, 0.0, primaries[2].blue, primaries[2].alpha * 0.4);
-  cairo_pattern_add_color_stop_rgba(pat, 0.5, primaries[2].red, 0.0, primaries[2].blue, primaries[2].alpha * 0.9);
-  cairo_pattern_add_color_stop_rgba(pat, 1.0, primaries[2].red, 0.0, primaries[2].blue, primaries[2].alpha * 0.5);
+  cairo_pattern_add_color_stop_rgba(pat, 0.0, 0.4, 0.4, 0.8, 0.4);
+  cairo_pattern_add_color_stop_rgba(pat, 0.5, 0.4, 0.4, 0.8, 0.9);
+  cairo_pattern_add_color_stop_rgba(pat, 1.0, 0.4, 0.4, 0.8, 0.5);
   cairo_rectangle(cr, 2.0/3.0, 0.1, 1.0/3.0, 0.7);
   cairo_set_source(cr, pat);
   cairo_fill(cr);
