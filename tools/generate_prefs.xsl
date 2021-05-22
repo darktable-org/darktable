@@ -457,6 +457,14 @@ gboolean restart_required = FALSE;
   </xsl:for-each>
   <xsl:value-of select="$dialog_end" />
 
+  <!-- dialog: recentcollect -->
+
+  <xsl:text>&#xA;GtkWidget *dt_prefs_init_dialog_recentcollect</xsl:text><xsl:value-of select="$dialog_start"/>
+  <xsl:for-each select="./dtconfiglist/dtconfig[@dialog='recentcollect']">
+      <xsl:apply-templates select="." mode="tab_block"/>
+  </xsl:for-each>
+  <xsl:value-of select="$dialog_end" />
+
   <!-- dialog: import -->
 
   <xsl:text>&#xA;GtkWidget *dt_prefs_init_dialog_import</xsl:text><xsl:value-of select="$dialog_start"/>
