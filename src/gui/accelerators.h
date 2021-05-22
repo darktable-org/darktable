@@ -63,6 +63,7 @@ typedef struct dt_input_driver_definition_t
 dt_input_device_t dt_register_input_driver(dt_lib_module_t *module, const dt_input_driver_definition_t *callbacks);
 void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key);
 void dt_shortcut_key_release(dt_input_device_t id, guint time, guint key);
+gboolean dt_shortcut_key_active(dt_input_device_t id, guint key);
 float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size);
 
 typedef enum dt_shortcut_flag_t
@@ -118,6 +119,8 @@ typedef struct dt_shortcut_fallback_t
 
 #define DT_VALUE_PATTERN_PLUS_MINUS 2.f
 #define DT_VALUE_PATTERN_PERCENTAGE 4.f
+#define DT_VALUE_PATTERN_ACTIVE    -1.f/2
+#define DT_VALUE_PATTERN_SUM       -1.f/4
 
 typedef struct dt_action_def_t
 {

@@ -2321,19 +2321,22 @@ static float _action_process_zones(gpointer target, dt_action_element_t element,
   dt_iop_colorzones_node_t *curve = p->curve[ch];
   float x = (float)element / 7.0;
 
+  gboolean close_enough = FALSE;
+  for(c->selected = 0;
+      c->selected < p->curve_num_nodes[ch];
+      c->selected++)
+  {
+    if((close_enough = fabsf(curve[c->selected].x - x) <= 1./16)) break;
+  }
+
+  float return_value = close_enough
+                     ? curve[c->selected].y
+                     : dt_draw_curve_calc_value(c->minmax_curve[ch], x);
+
   if(move_size)
   {
-    gboolean close_enough = FALSE;
-    for(c->selected = 0;
-        c->selected < p->curve_num_nodes[ch];
-        c->selected++)
-    {
-      if((close_enough = fabsf(curve[c->selected].x - x) <= 1./16)) break;
-    }
-
     if(!close_enough)
-      c->selected = _add_node(curve, &p->curve_num_nodes[ch],
-                              x, dt_draw_curve_calc_value(c->minmax_curve[ch], x));
+      c->selected = _add_node(curve, &p->curve_num_nodes[ch], x, return_value);
 
     float bottop = -1e6;
     switch(effect)
@@ -2350,13 +2353,15 @@ static float _action_process_zones(gpointer target, dt_action_element_t element,
       move_size *= -1;
     case DT_ACTION_EFFECT_UP:
       _move_point_internal(self, target, 0.f, move_size / 100, 0);
+      return_value = curve[c->selected].y;
+      break;
     default:
       fprintf(stderr, "[_action_process_zones] unknown shortcut effect (%d) for color zones\n", effect);
       break;
     }
   }
 
-  return dt_draw_curve_calc_value(c->minmax_curve[ch], x) + DT_VALUE_PATTERN_PLUS_MINUS;
+  return return_value + DT_VALUE_PATTERN_PLUS_MINUS;
 }
 
 const dt_action_element_def_t _action_elements_zones[]

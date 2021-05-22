@@ -2965,10 +2965,10 @@ static float _action_process_tabs(gpointer target, dt_action_element_t element, 
       gtk_notebook_set_current_page(notebook, element);
       break;
     case DT_ACTION_EFFECT_NEXT:
-      gtk_notebook_prev_page(notebook);
+      gtk_notebook_next_page(notebook);
       break;
     case DT_ACTION_EFFECT_PREVIOUS:
-      gtk_notebook_next_page(notebook);
+      gtk_notebook_prev_page(notebook);
       break;
     default:
       fprintf(stderr, "[_action_process_tabs] unknown shortcut effect (%d) for tabs\n", effect);
@@ -2976,7 +2976,9 @@ static float _action_process_tabs(gpointer target, dt_action_element_t element, 
     }
   }
 
-  return -1 - gtk_notebook_get_current_page(notebook);
+  const int c = gtk_notebook_get_current_page(notebook);
+
+  return -1 - c + (c == element ? DT_VALUE_PATTERN_ACTIVE : 0);
 }
 
 static dt_action_element_t _action_identify_tabs(GtkWidget *w)
