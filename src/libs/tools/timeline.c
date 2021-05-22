@@ -907,8 +907,8 @@ static void _selection_collect(dt_lib_timeline_t *strip, dt_lib_timeline_mode_t 
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", nb_rules - 1);
     gchar *string = dt_conf_get_string(confname);
     string = g_strstrip(string);
-    if((prop == DT_COLLECTION_PROP_TIME && rmode == 0) || !string || strlen(string) == 0
-       || g_strcmp0(string, "%") == 0)
+    if(((prop == DT_COLLECTION_PROP_TIME || prop == DT_COLLECTION_PROP_DAY) && rmode == 0)
+       || !string || strlen(string) == 0 || g_strcmp0(string, "%") == 0)
       new_rule = nb_rules - 1;
     else
       new_rule = nb_rules;
@@ -917,9 +917,11 @@ static void _selection_collect(dt_lib_timeline_t *strip, dt_lib_timeline_mode_t 
 
   // we construct the rule
   gchar *coll = NULL;
+  gboolean date_only = FALSE;
   if(strip->start_x == strip->stop_x)
   {
     coll = _time_format_for_db(strip->start_t, (strip->zoom + 1) / 2 * 2 + 2, FALSE);
+    date_only = strlen(coll) <= 10; //YYYY:MM:DD or shorter
   }
   else
   {
@@ -933,7 +935,11 @@ static void _selection_collect(dt_lib_timeline_t *strip, dt_lib_timeline_mode_t 
     }
     gchar *d1 = _time_format_for_db(start, (strip->zoom + 1) / 2 * 2 + 2, FALSE);
     gchar *d2 = _time_format_for_db(stop, (strip->zoom + 1) / 2 * 2 + 2, FALSE);
-    if(d1 && d2) coll = g_strdup_printf("[%s;%s]", d1, d2);
+    if(d1 && d2)
+    {
+      coll = g_strdup_printf("[%s;%s]", d1, d2);
+      date_only = strlen(d1) <= 10 && strlen(d2) <= 10; //both are YYYY:MM:DD or shorter
+    }
     g_free(d1);
     g_free(d2);
   }
@@ -943,7 +949,7 @@ static void _selection_collect(dt_lib_timeline_t *strip, dt_lib_timeline_mode_t 
     dt_conf_set_int("plugins/lighttable/collect/num_rules", new_rule + 1);
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", new_rule);
-    dt_conf_set_int(confname, DT_COLLECTION_PROP_TIME);
+    dt_conf_set_int(confname, date_only ? DT_COLLECTION_PROP_DAY : DT_COLLECTION_PROP_TIME);
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", new_rule);
     dt_conf_set_int(confname, 0);
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", new_rule);
