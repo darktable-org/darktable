@@ -19,6 +19,7 @@
 #pragma once
 
 GtkWidget *dt_prefs_init_dialog_collect(GtkWidget *dialog);
+GtkWidget *dt_prefs_init_dialog_recentcollect(GtkWidget *dialog);
 GtkWidget *dt_prefs_init_dialog_import(GtkWidget *dialog);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
