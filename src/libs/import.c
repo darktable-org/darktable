@@ -133,8 +133,9 @@ typedef struct dt_lib_import_t
   GtkButton *import_copy;
   GtkButton *import_camera;
   GtkButton *tethered_shoot;
-  GtkButton *remount_camera;
-
+  GtkButton *mount_camera;
+  GtkButton *unmount_camera;
+  
   GtkWidget *ignore_exif, *rating, *apply_metadata, *recursive;
   GtkWidget *import_new;
   dt_import_metadata_t metadata;
@@ -199,7 +200,8 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "tethered shoot"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "add to library"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "copy & import"), GDK_KEY_i, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_lib(self, NC_("accel", "reconnect camera"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "mount camera"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "unmount camera"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -210,7 +212,8 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "copy & import", GTK_WIDGET(d->import_copy));
   if(d->tethered_shoot) dt_accel_connect_button_lib(self, "tethered shoot", GTK_WIDGET(d->tethered_shoot));
   if(d->import_camera) dt_accel_connect_button_lib(self, "copy & import from camera", GTK_WIDGET(d->import_camera));
-  if(d->remount_camera) dt_accel_connect_button_lib(self, "reconnect camera", GTK_WIDGET(d->remount_camera));
+  if(d->mount_camera) dt_accel_connect_button_lib(self, "mount camera", GTK_WIDGET(d->mount_camera));
+  if(d->unmount_camera) dt_accel_connect_button_lib(self, "unmount camera", GTK_WIDGET(d->unmount_camera));
 }
 
 #ifdef HAVE_GPHOTO2
@@ -218,18 +221,15 @@ void connect_key_accels(dt_lib_module_t *self)
 /* show import from camera dialog */
 static void _lib_import_from_camera_callback(GtkButton *button, dt_lib_module_t *self)
 {
-  // disable unmounting for VERY long
-  // this is reverted at the end of this fuction, also we take of the auto unmounting counter per camera device
-  // in the jobs section.
   dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
-  camctl->ticker = DT_CAMCTL_MAXTIMEOUT;
+  camctl->import_ui = TRUE;
 
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   d->import_case = DT_IMPORT_CAMERA;
   _import_from_dialog_new(self);
   _import_from_dialog_run(self);
   _import_from_dialog_free(self);
-  camctl->ticker = DT_CAMCTL_TIMEOUT;
+  camctl->import_ui = FALSE;
 }
 
 /* enter tethering mode for camera */
@@ -240,12 +240,16 @@ static void _lib_import_tethered_callback(GtkToggleButton *button, gpointer data
   dt_ctl_switch_mode_to("tethering");
 }
 
-static void _lib_import_remount_callback(GtkToggleButton *button, gpointer data)
+static void _lib_import_mount_callback(GtkToggleButton *button, gpointer data)
 {
   dt_camera_unused_t *camera = (dt_camera_unused_t *)data;
-  camera->remove = TRUE;
-  dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
-  camctl->ticker = 2;
+  camera->trymount = TRUE;
+}
+
+static void _lib_import_unmount_callback(GtkToggleButton *button, gpointer data)
+{
+  dt_camera_t *camera = (dt_camera_t *)data;
+  camera->unmount = TRUE;
 }
 
 /** update the device list */
@@ -255,7 +259,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
 
   /* cleanup of widgets in devices container*/
   dt_gui_container_remove_children(GTK_CONTAINER(d->devices));
-  d->import_camera = d->tethered_shoot = d->remount_camera = NULL;
+  d->import_camera = d->tethered_shoot = d->mount_camera = d->unmount_camera = NULL;
   dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
   dt_pthread_mutex_lock(&camctl->lock);
 
@@ -286,7 +290,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       }
 
       /* add camera actions buttons */
-      GtkWidget *ib = NULL, *tb = NULL;
+      GtkWidget *ib = NULL, *tb = NULL, *um = NULL;
       GtkWidget *vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
       if(camera->can_import == TRUE)
       {
@@ -297,10 +301,12 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       }
       if(camera->can_tether == TRUE)
       {
-        gtk_box_pack_start(GTK_BOX(vbx), (tb = gtk_button_new_with_label(_("tethered shoot"))), FALSE, FALSE,
-                           0);
+        gtk_box_pack_start(GTK_BOX(vbx), (tb = gtk_button_new_with_label(_("tethered shoot"))), FALSE, FALSE, 0);
         d->tethered_shoot = GTK_BUTTON(tb);
       }
+
+      gtk_box_pack_start(GTK_BOX(vbx), (um = gtk_button_new_with_label(_("unmout camera"))), FALSE, FALSE, 0);
+      d->unmount_camera = GTK_BUTTON(um);
 
       if(ib)
       {
@@ -315,6 +321,11 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(tb)), GTK_ALIGN_CENTER);
         dt_gui_add_help_link(tb, dt_get_help_url("import_camera"));
       }
+
+      g_signal_connect(G_OBJECT(um), "clicked", G_CALLBACK(_lib_import_unmount_callback), camera);
+      gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(um)), GTK_ALIGN_CENTER);
+      dt_gui_add_help_link(um, dt_get_help_url("mount_camera"));
+
       gtk_box_pack_start(GTK_BOX(d->devices), vbx, FALSE, FALSE, 0);
     }
   }
@@ -332,21 +343,19 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       if(camera->used)
         gtk_widget_set_tooltip_text(label, _("camera was locked by another application\n"
                     "make sure it is not mounted on the computer an more\nor quit the locking application"));
-      else if(camera->unmounted)
-        gtk_widget_set_tooltip_text(label, _("this camera had been unmounted automatically"));
-      else
+      else if(camera->boring)
         gtk_widget_set_tooltip_text(label, _("tethering and importing was disabled for this camera"));
 
-      GtkWidget *im = gtk_button_new_with_label(_("connect camera"));
+      GtkWidget *im = gtk_button_new_with_label(_("mount camera"));
       GtkWidget *vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
       gtk_box_pack_start(GTK_BOX(vbx), im, FALSE, FALSE, 0);
       gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(im))), PANGO_ELLIPSIZE_END);
-      d->remount_camera = GTK_BUTTON(im);
+      d->mount_camera = GTK_BUTTON(im);
 
-      g_signal_connect(G_OBJECT(im), "clicked", G_CALLBACK(_lib_import_remount_callback), camera);
+      g_signal_connect(G_OBJECT(im), "clicked", G_CALLBACK(_lib_import_mount_callback), camera);
       gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(im)), GTK_ALIGN_CENTER);
-      dt_gui_add_help_link(im, dt_get_help_url("connect_camera"));
+      dt_gui_add_help_link(im, dt_get_help_url("mount_camera"));
 
       gtk_box_pack_start(GTK_BOX(d->devices), vbx, FALSE, FALSE, 0);
     }
@@ -1838,7 +1847,6 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
 #ifdef HAVE_GPHOTO2
       if(d->import_case == DT_IMPORT_CAMERA)
       {
-        d->camera->auto_unmount = DT_CAMCTL_MAXTIMEOUT;
         dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG,
                            dt_camera_import_job_create(imgs, d->camera, datetime_override));
       }
