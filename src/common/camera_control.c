@@ -822,14 +822,12 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
     gp_list_get_value(available_cameras, i, &s);
     testcam->port = g_strdup(s);
 
-    // FIXME we should better test elsewhere for special port drivers
-/*
-    if(!strncmp(camera->port, "disk:", 5))
+    // FIXME we might better test elsewhere for special port drivers, have it active while debugging
+    if(!(strncmp(testcam->port, "disk:", 5)) && !(darktable.unmuted & DT_DEBUG_CAMCTL))
     {
-      g_free(camera);
+      g_free(testcam);
       continue;
     }
-*/
 
     GList *citem;
     // look for freshly connected cameras;
