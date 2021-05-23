@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -51,8 +51,11 @@ uint32_t container(dt_lib_module_t *self)
 
 typedef struct dt_lib_select_t
 {
-  GtkWidget *select_all_button, *select_none_button, *select_invert_button, *select_film_roll_button,
-      *select_untouched_button;
+  GtkWidget *select_all_button;
+  GtkWidget *select_none_button;
+  GtkWidget *select_invert_button;
+  GtkWidget *select_film_roll_button;
+  GtkWidget *select_untouched_button;
 } dt_lib_select_t;
 
 void gui_update(dt_lib_module_t *self)

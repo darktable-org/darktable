@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2218,7 +2218,7 @@ void gui_update(dt_lib_module_t *self)
 
 static void _lib_collect_gui_update(dt_lib_module_t *self)
 {
-  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  dt_lib_collect_t *const d = (dt_lib_collect_t *)self->data;
 
   // we check if something has changed since last call
   if(d->view_rule != -1) return;
@@ -2279,7 +2279,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
     _set_tooltip(d->rule + i);
   }
 
-  // update list of proposals
+  // update list of proposals if the module's contents are visible
   d->active_rule = active;
   dt_lib_gui_queue_update(self);
   --darktable.gui->reset;

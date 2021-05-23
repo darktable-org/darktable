@@ -55,6 +55,7 @@ typedef struct dt_lib_metadata_t
   char *name[DT_METADATA_NUMBER];
   GtkWidget *label[DT_METADATA_NUMBER];
   GtkWidget *apply_button;
+  gboolean init_layout;
   GList *last_act_on;
 } dt_lib_metadata_t;
 
