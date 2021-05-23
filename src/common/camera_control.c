@@ -974,7 +974,7 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
   if(changed_camera)
   {
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CAMERA_DETECTED);
-    camctl->tickmask = 0x0F;
+    camctl->tickmask = 0x07;
   }
   else
     camctl->tickmask = 0x1F;  
