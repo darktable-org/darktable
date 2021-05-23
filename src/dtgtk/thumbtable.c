@@ -1334,7 +1334,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
 {
   if(!user_data) return;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  if(query_change == DT_COLLECTION_CHANGE_RELOAD)
+  if(query_change == DT_COLLECTION_CHANGE_RELOAD || query_change == DT_COLLECTION_CHANGE_NONE)
   {
     int old_hover = dt_control_get_mouse_over_id();
     /** Here's how it works
@@ -2181,7 +2181,7 @@ static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, 
     }
   }
 
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NONE, imgs);
   return TRUE;
 }
 static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,

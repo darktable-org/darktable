@@ -2489,7 +2489,8 @@ static void collection_updated(gpointer instance, dt_collection_change_t query_c
   // update tree
   d->view_rule = -1;
   d->rule[d->active_rule].typing = FALSE;
-  _lib_collect_gui_update(self);
+  if (query_change != DT_COLLECTION_CHANGE_NONE)
+    _lib_collect_gui_update(self);
 }
 
 
