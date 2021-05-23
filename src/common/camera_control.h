@@ -30,11 +30,6 @@
 #include <gphoto2/gphoto2.h>
 #include <gtk/gtk.h>
 
-#define DT_CAMCTL_TIMEOUT_NOW
-#define DT_CAMCTL_TIMEOUT 40
-#define DT_CAMCTL_MAXTIMEOUT 0x7FFFFFFF
-#define DT_CAMCTL_TIMEOUT_MOUNT 4
-
 /** A camera object used for camera actions and callbacks */
 typedef struct dt_camera_t
 {
@@ -92,8 +87,10 @@ typedef struct dt_camera_t
   /** gphoto2 context */
   GPContext *gpcontext;
 
-  /** housekeeping for unmounting */
-  int auto_unmount;
+  /** flag to unmount */
+  gboolean unmount;
+  /** flag true while importing */
+  gboolean is_importing;
   /** Live view */
   gboolean is_live_viewing;
   /** The last preview image from the camera */
@@ -126,11 +123,11 @@ typedef struct dt_camera_unused_t
   /** A pointer to the port string of camera. */
   char *port;
   /** mark the camera as auto unmounted */
-  gboolean unmounted;
+  gboolean boring;
   /** mark the camera as used by another application */
   gboolean used;
   /** if true it will be removed from the list to force a reconnect */
-  gboolean remove;
+  gboolean trymount;
 } dt_camera_unused_t;
 
 /** Camera control status.
@@ -189,7 +186,9 @@ typedef struct dt_camctl_t
 
   const dt_camera_t *active_camera;
 
+  gboolean import_ui;
   int ticker;
+  int tickmask;
 } dt_camctl_t;
 
 
