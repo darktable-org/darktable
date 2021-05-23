@@ -668,7 +668,6 @@ dt_camctl_t *dt_camctl_new()
 
   dt_pthread_mutex_init(&camctl->lock, NULL);
   dt_pthread_mutex_init(&camctl->listeners_lock, NULL);
-  camctl->ticker = DT_CAMCTL_TIMEOUT / 2; 
   return camctl;
 }
 
@@ -773,33 +772,16 @@ void dt_camctl_unregister_listener(const dt_camctl_t *c, dt_camctl_listener_t *l
   dt_pthread_mutex_unlock(&camctl->listeners_lock);
 }
 
-static gint _compare_camera_by_port(gconstpointer a, gconstpointer b)
+static gint _compare_camera_by_camera(gconstpointer a, gconstpointer b)
 {
-  dt_camera_t *ca = (dt_camera_t *)a;
-  dt_camera_t *cb = (dt_camera_t *)b;
-  return g_strcmp0(ca->port, cb->port);
+  dt_camera_unused_t *ca = (dt_camera_unused_t *)a;
+  dt_camera_unused_t *cb = (dt_camera_unused_t *)b;
+  return g_strcmp0(ca->model, cb->model);
 }
 
 static int cameras_cnt = -1;
 static int ports_cnt = -1;
 
-/* Handling camera devices in darktable
-
-We have a polling backthread looking every few seconds for devices available via gphoto2, all found devices
-are kept in one of two lists in dt_camctl_t
-- ctl->cameras         dt_camera_t of the currently connected/mounted cameras
-- ctl->unused_cameras  dt_camera_unused_t of all cameras found that are **not** mounter
-
-This function
-- checks for cameras freshly connected, if this 'new' camera is not in the unused_cameras list it is
-  tested via _camera_initialize(c, camera) and
-  - if successful is included in the ctl->cameras list or
-  - otherwise in the ctl->unused_cameras list.
-- automatically unmounts a camera after ~15secs but keeps the camera as known in the ctl->unused_cameras list
-  to allow remounting via a click button in the import ui section
-- cameras either found not available (used by other applicatons) or non sufficient (no import or tethering offered)
-  are also kept in ctl->unused_cameras
-*/
 static void dt_camctl_update_cameras(const dt_camctl_t *c)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
@@ -833,106 +815,50 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
 
   for(int i = 0; i < gp_list_count(available_cameras); i++)
   {
-    dt_camera_t *camera = g_malloc0(sizeof(dt_camera_t));
+    dt_camera_unused_t *testcam = g_malloc0(sizeof(dt_camera_unused_t));
     const gchar *s;
     gp_list_get_name(available_cameras, i, &s);
-    camera->model = g_strdup(s);
+    testcam->model = g_strdup(s);
     gp_list_get_value(available_cameras, i, &s);
-    camera->port = g_strdup(s);
+    testcam->port = g_strdup(s);
 
+    // FIXME we should better test elsewhere for special port drivers
+/*
     if(!strncmp(camera->port, "disk:", 5))
     {
       g_free(camera);
       continue;
     }
+*/
 
     GList *citem;
-    if( ((citem = g_list_find_custom(c->cameras, camera, _compare_camera_by_port)) == NULL)
-       || g_strcmp0(((dt_camera_t *)citem->data)->model, camera->model) != 0)
+    // look for freshly connected cameras;
+    if(((citem = g_list_find_custom(c->cameras, testcam, _compare_camera_by_camera)) == NULL)
+       || g_strcmp0(((dt_camera_unused_t *)citem->data)->port, testcam->port) != 0)
     {
-      /* We might have a new camera here, only test & include if not in the unused list */
-      gboolean in_unused = FALSE;
-      if(dt_camctl_have_unused_cameras(camctl))
+      GList *c2item;
+      if(((c2item = g_list_find_custom(c->unused_cameras, testcam, _compare_camera_by_camera)) == NULL)
+         || g_strcmp0(((dt_camera_unused_t *)c2item->data)->port, testcam->port) != 0)
       {
-        GList *unused_item = c->unused_cameras;
-        do
-        {
-          dt_camera_unused_t *unused_cam = (dt_camera_unused_t *)unused_item->data;
-          in_unused |= ((g_strcmp0(unused_cam->model, camera->model) == 0) &&
-                        (g_strcmp0(unused_cam->port, camera->port) == 0));
-        } while(unused_item && (unused_item = g_list_next(unused_item)) != NULL);
-      }
-
-      if((citem == NULL) & !in_unused)
-      {
-        // Newly connected camera
-        if(_camera_initialize(c, camera) == FALSE)
-        {
-          dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to initialize %s on port %s, likely "
-                                    "causes are: locked by another application, no access to udev etc.\n",
-                   camera->model, camera->port);
-
-          /* Ok we found a new camera but it is not available so we keep track of it in unused_camera list */
-          dt_camera_unused_t *unused_camera = g_malloc0(sizeof(dt_camera_unused_t));
-          unused_camera->model = g_strdup(camera->model);
-          unused_camera->port = g_strdup(camera->port);
-          unused_camera->unmounted = FALSE;
-          unused_camera->remove = FALSE;
-          unused_camera->used = TRUE;         
-          camctl->unused_cameras = g_list_append(camctl->unused_cameras, unused_camera);
-          g_free(camera);
-          continue;
-        }
-
-        // Check if camera has capabilities for being presented to darktable
-        if(camera->can_import == FALSE && camera->can_tether == FALSE)
-        {
-          dt_print(
-              DT_DEBUG_CAMCTL,
-              "[camera_control] %s on port %s doesn't support import or tether, skipping\n",
-              camera->model, camera->port);
-          /* Ok we found a new camera but it is not interesting */
-          dt_camera_unused_t *unused_camera = g_malloc0(sizeof(dt_camera_unused_t));
-          unused_camera->model = g_strdup(camera->model);
-          unused_camera->port = g_strdup(camera->port);
-          unused_camera->unmounted = FALSE;
-          unused_camera->remove = FALSE;
-          unused_camera->used = FALSE;         
-          camctl->unused_cameras = g_list_append(camctl->unused_cameras, unused_camera);
-          dt_camctl_camera_destroy(camera);
-          continue;
-        }
-
-        // Fetch some summary of camera
-        if(gp_camera_get_summary(camera->gpcam, &camera->summary, c->gpcontext) == GP_OK)
-        {
-          // Remove device property summary:
-          char *eos = strstr(camera->summary.text, "Device Property Summary:\n");
-          if(eos) eos[0] = '\0';
-        }
-
-        // Add to camera list
-        camctl->cameras = g_list_append(camctl->cameras, camera);
+        dt_camera_unused_t *unused_camera = g_malloc0(sizeof(dt_camera_unused_t));
+        unused_camera->model = g_strdup(testcam->model);
+        unused_camera->port = g_strdup(testcam->port);
+        camctl->unused_cameras = g_list_append(camctl->unused_cameras, unused_camera);
+        dt_print(DT_DEBUG_CAMCTL, "[camera_control] found new %s on port %s\n", testcam->model, testcam->port);
         changed_camera = TRUE;
-
-        // Notify listeners of connected camera
-        _dispatch_camera_connected(camctl, camera);
       }
-      else
-        g_free(camera);
     }
-    else
-      g_free(camera);
+    g_free(testcam);
   }
 
-  /* check c->cameras in available_cameras */
-  if(dt_camctl_have_cameras(camctl))
+  /* check unused_cameras being unplugged */
+  if(dt_camctl_have_unused_cameras(camctl))
   {
-    GList *citem = c->cameras;
+    GList *unused_item = c->unused_cameras;
     do
     {
-      dt_camera_t *cam = (dt_camera_t *)citem->data;
-      gboolean remove_cam = TRUE;
+      dt_camera_unused_t *cam = (dt_camera_unused_t *)unused_item->data;
+      gboolean removed = TRUE;
       for(int i = 0; i < gp_list_count(available_cameras); i++)
       {
         const gchar *mymodel;
@@ -940,89 +866,118 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
         gp_list_get_name(available_cameras, i, &mymodel);
         gp_list_get_value(available_cameras, i, &myport);
         if((g_strcmp0(mymodel, cam->model) == 0) && (g_strcmp0(myport, cam->port) == 0))
-          remove_cam = FALSE;
+          removed = FALSE;
       }
-      // the tested camera is in the cameras list but not available any more
-      if(remove_cam)
-      {
-        /* remove camera from camera list.. */
-        dt_camera_t *oldcam = (dt_camera_t *)citem->data;
-        camctl->cameras = citem = g_list_delete_link(c->cameras, citem);
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] ERROR: %s on port %s disconnected\n", cam->model, cam->port);
-        dt_control_log(_("camera %s on port %s disconnected while mounted"), cam->model, cam->port);
-        /* This camera was still in use but has been uplugged in a hot state.
-           We can't do dt_camctl_camera_destroy(oldcam) here as the device is not available any more.
-           Instead we can just free dt internal data and mutexes avoiding memleaks.
-           FIXME: any gphoto2 hooks? Not found yet
-        */
-        dt_camctl_camera_destroy_struct(oldcam);
+      if(removed)
+      { 
+        dt_print(DT_DEBUG_CAMCTL, "[camera_control] remove %s on port %s from ununsed camera list\n", cam->model, cam->port);
+        dt_camera_unused_t *oldcam = (dt_camera_unused_t *)unused_item->data;
+        camctl->unused_cameras = unused_item = g_list_delete_link(c->unused_cameras, unused_item);
+        dt_camctl_unused_camera_destroy(oldcam);
         changed_camera = TRUE;
       }
       else
       {
-        // the tested camera is available and in use; test for automatic unmounting
-        cam->auto_unmount -= 1;      
-        if(cam->auto_unmount < 0)
+        if(cam->trymount)
         {
-          dt_print(DT_DEBUG_CAMCTL, "[camera_control] auto-unmount %s on port %s\n", cam->model, cam->port);
-          dt_camera_t *oldcam = (dt_camera_t *)citem->data;
-          /* we keep this in the locked list as unmounted */
-          dt_camera_unused_t *unused_camera = g_malloc0(sizeof(dt_camera_unused_t));
-          unused_camera->model = g_strdup(cam->model);
-          unused_camera->port = g_strdup(cam->port);
-          unused_camera->unmounted = TRUE;
-          unused_camera->remove = FALSE;
-          unused_camera->used = FALSE;
-          camctl->unused_cameras = g_list_append(camctl->unused_cameras, unused_camera);
-          camctl->cameras = citem = g_list_delete_link(c->cameras, citem);
-          dt_camctl_camera_destroy(oldcam);
+          cam->trymount = FALSE;
+          dt_camera_t *camera = g_malloc0(sizeof(dt_camera_t));
+          camera->model = g_strdup(cam->model);
+          camera->port = g_strdup(cam->port);
+
+          if(_camera_initialize(camctl, camera) == FALSE)
+          {
+            dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to initialize %s on port %s, likely "
+                        "causes are: locked by another application, no access to udev etc.\n", cam->model, cam->port);
+            g_free(camera);
+            cam->used = TRUE;
+            continue;
+          }
+
+          if(camera->can_import == FALSE && camera->can_tether == FALSE)
+          {
+            dt_print(
+              DT_DEBUG_CAMCTL, "[camera_control] %s on port %s doesn't support import or tether, skipping\n",
+              camera->model, camera->port);
+            g_free(camera);
+            cam->boring = TRUE;
+            continue;
+          }
+
+          // Fetch some summary of camera
+          if(gp_camera_get_summary(camera->gpcam, &camera->summary, c->gpcontext) == GP_OK)
+          {
+            // Remove device property summary:
+            char *eos = strstr(camera->summary.text, "Device Property Summary:\n");
+            if(eos) eos[0] = '\0';
+          }
+          // Add to camera list
+          camctl->cameras = g_list_append(camctl->cameras, camera);
           changed_camera = TRUE;
-          dt_pthread_mutex_unlock(&camctl->lock);
+
+          dt_print(DT_DEBUG_CAMCTL, "[camera_control] remove %s on port %s from ununsed camera list as mounted\n", cam->model, cam->port);
+          dt_camera_unused_t *oldcam = (dt_camera_unused_t *)unused_item->data;
+          camctl->unused_cameras = unused_item = g_list_delete_link(c->unused_cameras, unused_item);
+          dt_camctl_unused_camera_destroy(oldcam);
+         // Notify listeners of connected camera
+         _dispatch_camera_connected(camctl, camera);
         }
       }
-    } while(citem && (citem = g_list_next(citem)) != NULL);
+    } while(unused_item && (unused_item = g_list_next(unused_item)) != NULL);
   }
 
-  /* check unused_cameras in available_cameras */
-  if(dt_camctl_have_unused_cameras(camctl))
+  if(dt_camctl_have_cameras(camctl))
   {
-    GList *unused_item = c->unused_cameras;
+    GList *citem = c->cameras;
     do
     {
-      dt_camera_unused_t *unused_cam = (dt_camera_unused_t *)unused_item->data;
-      gboolean remove_cam = TRUE;
+      dt_camera_t *cam = (dt_camera_t *)citem->data;
+      gboolean removed = TRUE;
       for(int i = 0; i < gp_list_count(available_cameras); i++)
       {
         const gchar *mymodel;
         const gchar *myport;
         gp_list_get_name(available_cameras, i, &mymodel);
         gp_list_get_value(available_cameras, i, &myport);
-        if((g_strcmp0(mymodel, unused_cam->model) == 0) && (g_strcmp0(myport, unused_cam->port) == 0))
-          remove_cam = unused_cam->remove;
+        if((g_strcmp0(mymodel, cam->model) == 0) && (g_strcmp0(myport, cam->port) == 0))
+          removed = FALSE;
       }
-      if(remove_cam)
+      if(removed)
       {
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] remove %s on port %s from ununsed camera list\n",
-                 unused_cam->model, unused_cam->port);
-        dt_camera_unused_t *oldcam = (dt_camera_unused_t *)unused_item->data;
-        camctl->unused_cameras = unused_item = g_list_delete_link(c->unused_cameras, unused_item);
-        dt_camctl_unused_camera_destroy(oldcam);
+        dt_camera_t *oldcam = (dt_camera_t *)citem->data;
+        camctl->cameras = citem = g_list_delete_link(c->cameras, citem);
+        dt_print(DT_DEBUG_CAMCTL, "[camera_control] ERROR: %s on port %s disconnected\n", cam->model, cam->port);
+        dt_control_log(_("camera %s on port %s disconnected while mounted"), cam->model, cam->port);
+        dt_camctl_camera_destroy_struct(oldcam);
         changed_camera = TRUE;
       }
-    } while(unused_item && (unused_item = g_list_next(unused_item)) != NULL);
+      else if(cam->unmount)
+      {
+        dt_camera_unused_t *unused_camera = g_malloc0(sizeof(dt_camera_unused_t));
+        unused_camera->model = g_strdup(cam->model);
+        unused_camera->port = g_strdup(cam->port);
+        camctl->unused_cameras = g_list_append(camctl->unused_cameras, unused_camera);
+        dt_print(DT_DEBUG_CAMCTL, "[camera_control] unmounted %s on port %s\n", cam->model, cam->port);
+        dt_camera_t *oldcam = (dt_camera_t *)citem->data;
+        camctl->cameras = citem = g_list_delete_link(camctl->cameras, citem);
+        dt_camctl_camera_destroy(oldcam);
+        changed_camera = TRUE;
+      }
+    } while(citem && (citem = g_list_next(citem)) != NULL);
   }
 
   gp_list_unref(available_cameras);
 
   dt_pthread_mutex_unlock(&camctl->lock);
-
   // tell the world that we are done. this assumes that there is just one global camctl.
   // if there would ever be more it would be easy to pass c with the signal.
   if(changed_camera)
   {
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CAMERA_DETECTED);
-    camctl->ticker = DT_CAMCTL_TIMEOUT / 2;
+    camctl->tickmask = 0x0F;
   }
+  else
+    camctl->tickmask = 0x1F;  
 }
 
 void *dt_update_cameras_thread(void *ptr)
@@ -1041,17 +996,11 @@ void *dt_update_cameras_thread(void *ptr)
     const dt_view_t *cv = (darktable.view_manager) ? dt_view_manager_get_current_view(darktable.view_manager) : NULL;    
     if(camctl)
     {
-      camctl->ticker -= 1;     
-      if(cv && (cv->view(cv) == DT_VIEW_LIGHTTABLE))
-      {
-        if(camctl->ticker < 0)
-        {
-          camctl->ticker = DT_CAMCTL_TIMEOUT;
-          dt_camctl_update_cameras(camctl);
-        }
-      }
-      else
-        camctl->ticker = DT_CAMCTL_TIMEOUT;
+      camctl->ticker += 1;     
+      if(((camctl->ticker & camctl->tickmask) == 0) &&
+         (camctl->import_ui == FALSE) &&
+         (cv && (cv->view(cv) == DT_VIEW_LIGHTTABLE)))
+        dt_camctl_update_cameras(camctl);
     }
   }
   return 0;
@@ -1151,8 +1100,7 @@ static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
                                 (CameraTimeoutStopFunc)_camera_stop_timeout_func, cam);
     // initialize the list of open gphoto files
     cam->open_gpfiles = NULL;
-    // unmount in ~15sec
-    cam->auto_unmount = DT_CAMCTL_TIMEOUT_MOUNT;
+    cam->is_importing = FALSE;
     dt_pthread_mutex_init(&cam->jobqueue_lock, NULL);
     dt_pthread_mutex_init(&cam->config_lock, NULL);
     dt_pthread_mutex_init(&cam->live_view_buffer_mutex, NULL);
@@ -2001,6 +1949,7 @@ static const char *_dispatch_request_image_path(const dt_camctl_t *c, time_t *ex
   dt_pthread_mutex_unlock(&camctl->listeners_lock);
   return path;
 }
+
 
 static void _dispatch_camera_connected(const dt_camctl_t *c, const dt_camera_t *camera)
 {
