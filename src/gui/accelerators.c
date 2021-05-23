@@ -435,14 +435,14 @@ static gchar *_shortcut_key_move_name(dt_input_device_t id, guint key_or_move, g
           ? callbacks->move_to_string(key_or_move, display)
           : callbacks->key_to_string(key_or_move, display);
 
-        if(display)
+        if(display && id == 0)
           post_name = without_device;
         else
         {
           char id_str[2] = "\0\0";
           if(id) id_str[0] = '0' + id;
 
-          name = g_strdup_printf("%s%s:%s", callbacks->name, id_str, without_device);
+          name = g_strdup_printf("%s%s:%s", display ? "" : callbacks->name, id_str, without_device);
           g_free(without_device);
         }
         break;
@@ -2320,15 +2320,9 @@ static void ungrab_grab_widget()
 
 float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size)
 {
-  int delay = 0;
-  g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
-  if((!size && _last_time) || (time && time < _last_time + delay)) return NAN;
-
-  _cancel_delayed_release();
-  _last_time = 0;
-
-  if(grab_widget)
-    ungrab_grab_widget();
+  // int delay = 0;
+  // g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
+  // if(time && time < _last_time + delay) return NAN;
 
   _sc.move_device = id;
   _sc.move = move;
@@ -2349,30 +2343,40 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
 
   if(darktable.control->mapping_widget && !_sc.action && size != 0) lookup_mapping_widget();
 
-  if(size)
-    dt_print(DT_DEBUG_INPUT, "  [dt_shortcut_move] shortcut received: %s\n", _shortcut_description(&_sc, TRUE));
-
   float return_value = 0;
-  if(_sc.action)
-  {
-    define_new_mapping();
-  }
+  if(!size)
+    return_value = process_mapping(size);
   else
   {
-    if(pressed_keys)
-    {
-      // check pressed_keys each loop; can be emptied if losing grab during processing
-      for(GSList *k = pressed_keys; k; k = pressed_keys ? k->next : NULL)
-      {
-        dt_device_key_t *device_key = k->data;
-        _sc.key_device = device_key->key_device;
-        _sc.key = device_key->key;
+    _cancel_delayed_release();
+    _last_time = 0;
 
-        return_value = process_mapping(size);
-      }
+    if(grab_widget)
+      ungrab_grab_widget();
+
+    dt_print(DT_DEBUG_INPUT, "  [dt_shortcut_move] shortcut received: %s\n", _shortcut_description(&_sc, TRUE));
+
+    if(_sc.action)
+    {
+      define_new_mapping();
     }
     else
-      return_value = process_mapping(size);
+    {
+      if(!pressed_keys)
+        return_value = process_mapping(size);
+      else
+      {
+        // pressed_keys can be emptied if losing grab during processing
+        for(GSList *k = pressed_keys; k; k = pressed_keys ? k->next : NULL)
+        {
+          dt_device_key_t *device_key = k->data;
+          _sc.key_device = device_key->key_device;
+          _sc.key = device_key->key;
+
+          return_value = process_mapping(size);
+        }
+      }
+    }
   }
 
   _sc.move_device = 0;

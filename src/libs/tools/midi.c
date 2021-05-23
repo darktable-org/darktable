@@ -171,17 +171,16 @@ gint calculate_move(midi_device *midi, gint controller, gint velocity)
         if(midi->num_identical)
         {
           if(velocity != midi->last_received && midi->last_received != -1)
+          {
+            dt_control_log(_("using absolute encoding; reinitialise to switch to relative"));
             midi->num_identical = 0;
+          }
+          else if(--midi->num_identical)
+            dt_control_log(_("%d more identical (down) moves before switching to relative encoding"), midi->num_identical);
           else
           {
-            // detecting relative encoding?
-            if(--midi->num_identical)
-              dt_control_log("%d more identical (down) moves before switching to relative encoding\n", midi->num_identical);
-            else
-            {
-              dt_control_log("switching encoding to relative (down = %d)\n", velocity);
-              midi->encoding = velocity;
-            }
+            dt_control_log(_("switching encoding to relative (down = %d)"), velocity);
+            midi->encoding = velocity;
           }
         }
         else if(velocity == 0)
@@ -266,7 +265,7 @@ void update_with_move(midi_device *midi, PmTimestamp timestamp, gint controller,
 
   midi->last_known[controller] = rotor_position;
   midi_write(midi, midi->channel, 0xB, controller, rotor_position);
-  dt_print(DT_DEBUG_INPUT, "Controller: Channel %d, controller %d, position: %d\n", midi->channel, controller, rotor_position);
+//dt_print(DT_DEBUG_INPUT, "Controller: Channel %d, controller %d, position: %d\n", midi->channel, controller, rotor_position);
 }
 
 static gboolean poll_midi_devices(gpointer user_data)
@@ -315,8 +314,6 @@ static gboolean poll_midi_devices(gpointer user_data)
         dt_shortcut_key_release(midi->id, event[i].timestamp, event_data1);
         break;
       case 0xb:  // controllers, sustain
-        dt_print(DT_DEBUG_INPUT, "Controller: Channel %d, Data1 %d\n", midi->channel, event_data1);
-
         x_touch_mini_layer_B = event_data1 > 9;
 
         int accum = 0;
