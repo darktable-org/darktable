@@ -649,6 +649,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   for(int k = 0; k < 3; k++)
     if(mask[k])
     {
+      // FIXME: this is the last place in dt these are used -- if can eliminate, then can directly set button colors in CSS and simplify things
       set_color(cr, darktable.bauhaus->graph_colors[k]);
       dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_SCALE_LINEAR);
     }
@@ -659,7 +660,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
 }
 
 static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t *cr, int ch,
-                                                 double alpha_chroma, double alpha_white)
+                                                 double alpha_chroma, double desat_over, double alpha_over)
 {
   const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
   cairo_surface_t *surface
@@ -671,7 +672,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_mask_surface(cr, surface, 0., 0.);
   cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
-  cairo_set_source_rgba(cr, 1, 1, 1, alpha_white);
+  cairo_set_source_rgba(cr, ch==2 ? 1.:desat_over, ch==1 ? 1.:desat_over, ch==0 ? 1.:desat_over, alpha_over);
   cairo_mask_surface(cr, surface, 0., 0.);
 
   cairo_surface_destroy(surface);
@@ -688,7 +689,7 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
 
   for(int ch = 0; ch < 3; ch++)
     if(mask[2-ch])
-      _lib_histogram_draw_waveform_channel(d, cr, ch, 0.65, 0.15);
+      _lib_histogram_draw_waveform_channel(d, cr, ch, 0.75, 0.75, 0.35);
   cairo_restore(cr);
 }
 
@@ -699,7 +700,7 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, i
               darktable.gui->ppd*height/d->waveform_height);
   for(int ch = 2; ch >= 0; ch--)
   {
-    _lib_histogram_draw_waveform_channel(d, cr, ch, 0.95, 0.75);
+    _lib_histogram_draw_waveform_channel(d, cr, ch, 0.85, 0.85, 0.65);
     cairo_translate(cr, d->waveform_width/darktable.gui->ppd, 0);
   }
   cairo_restore(cr);
