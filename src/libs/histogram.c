@@ -659,48 +659,64 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_restore(cr);
 }
 
-static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t *cr, int ch,
-                                                 double alpha_chroma, double desat_over, double alpha_over)
-{
-  const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
-  cairo_surface_t *surface
-    = dt_cairo_image_surface_create_for_data(d->waveform_8bit + (2-ch) * d->waveform_height * wf_8bit_stride,
-                                             CAIRO_FORMAT_A8,
-                                             d->waveform_width, d->waveform_height, wf_8bit_stride);
-
-  cairo_set_source_rgba(cr, ch==2 ? 1.:0., ch==1 ? 1.:0., ch==0 ? 1.:0., alpha_chroma);
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  cairo_mask_surface(cr, surface, 0., 0.);
-  cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
-  cairo_set_source_rgba(cr, ch==2 ? 1.:desat_over, ch==1 ? 1.:desat_over, ch==0 ? 1.:desat_over, alpha_over);
-  cairo_mask_surface(cr, surface, 0., 0.);
-
-  cairo_surface_destroy(surface);
-}
-
 static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
                                          int width, int height,
                                          const uint8_t mask[3])
 {
+  const double alpha_chroma = 0.75, desat_over = 0.75, alpha_over = 0.35;
+  const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
+  cairo_surface_t *surfaces[3] = { NULL, NULL, NULL };
   cairo_save(cr);
-
   cairo_scale(cr, darktable.gui->ppd*width/d->waveform_width,
               darktable.gui->ppd*height/d->waveform_height);
 
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   for(int ch = 0; ch < 3; ch++)
     if(mask[2-ch])
-      _lib_histogram_draw_waveform_channel(d, cr, ch, 0.75, 0.75, 0.35);
+    {
+      surfaces[ch]
+        = dt_cairo_image_surface_create_for_data(d->waveform_8bit + (2-ch) * d->waveform_height * wf_8bit_stride,
+                                                 CAIRO_FORMAT_A8,
+                                                 d->waveform_width, d->waveform_height, wf_8bit_stride);
+      cairo_set_source_rgba(cr, ch==2 ? 1.:0., ch==1 ? 1.:0., ch==0 ? 1.:0., alpha_chroma);
+      cairo_mask_surface(cr, surfaces[ch], 0., 0.);
+    }
+
+  cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
+  for(int ch = 0; ch < 3; ch++)
+    if(surfaces[ch])
+    {
+      cairo_set_source_rgba(cr, ch==2 ? 1.:desat_over, ch==1 ? 1.:desat_over, ch==0 ? 1.:desat_over, alpha_over);
+      cairo_mask_surface(cr, surfaces[ch], 0., 0.);
+      cairo_surface_destroy(surfaces[ch]);
+    }
+
   cairo_restore(cr);
 }
 
 static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, int width, int height)
 {
+  const double alpha_chroma = 0.85, desat_over = 0.85, alpha_over = 0.65;
+  const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
   cairo_save(cr);
   cairo_scale(cr, darktable.gui->ppd*width/(d->waveform_width*3),
               darktable.gui->ppd*height/d->waveform_height);
+
   for(int ch = 2; ch >= 0; ch--)
   {
-    _lib_histogram_draw_waveform_channel(d, cr, ch, 0.85, 0.85, 0.65);
+    cairo_surface_t *surface
+      = dt_cairo_image_surface_create_for_data(d->waveform_8bit + (2-ch) * d->waveform_height * wf_8bit_stride,
+                                               CAIRO_FORMAT_A8,
+                                               d->waveform_width, d->waveform_height, wf_8bit_stride);
+
+    cairo_set_source_rgba(cr, ch==2 ? 1.:0., ch==1 ? 1.:0., ch==0 ? 1.:0., alpha_chroma);
+    cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+    cairo_mask_surface(cr, surface, 0., 0.);
+    cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
+    cairo_set_source_rgba(cr, ch==2 ? 1.:desat_over, ch==1 ? 1.:desat_over, ch==0 ? 1.:desat_over, alpha_over);
+    cairo_mask_surface(cr, surface, 0., 0.);
+
+    cairo_surface_destroy(surface);
     cairo_translate(cr, d->waveform_width/darktable.gui->ppd, 0);
   }
   cairo_restore(cr);
