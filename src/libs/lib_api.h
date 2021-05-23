@@ -70,6 +70,9 @@ OPTIONAL(void, view_enter, struct dt_lib_module_t *self, struct dt_view_t *old_v
 /** entering a view, only called if lib is displayed on the old view */
 OPTIONAL(void, view_leave, struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view);
 
+/** optional callback to be notified when the module is expanded */
+OPTIONAL(void, on_expand, struct dt_lib_module_t *self);
+
 /** optional event callbacks for big center widget. */
 /** optional method called after lighttable expose. */
 OPTIONAL(void, gui_post_expose, struct dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,
