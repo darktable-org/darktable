@@ -1610,8 +1610,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(!strcmp(escaped_text, _("not tagged")))
       {
         query = g_strdup_printf("(id NOT IN (SELECT DISTINCT imgid FROM main.tagged_images "
-                                       "WHERE tagid NOT IN (SELECT id FROM data.tags "
-                                                           "WHERE SUBSTR(name, 1, 10) = 'darktable|')))");
+                                            "WHERE tagid NOT IN memory.darktable_tags))");
       }
       else if(is_insensitive)
       {
