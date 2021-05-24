@@ -750,7 +750,7 @@ inline float4 opacity_masks(const float x,
 
 #define LUT_ELEM 360 // gamut LUT number of elements: resolution of 1°
 
-inline float lookup_gamut(read_only const image2d_t gamut_lut, const float x)
+inline float lookup_gamut(read_only image2d_t gamut_lut, const float x)
 {
   const int xi = clamp((int)(LUT_ELEM * (x + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1);
   return read_imagef(gamut_lut, sampleri, (int2)(xi, 0)).x;
@@ -771,7 +771,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
                  const int width, const int height,
                  constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
                  constant const float *const matrix_in, constant const float *const matrix_out,
-                 read_only const image2d_t gamut_lut,
+                 read_only image2d_t gamut_lut,
                  const float shadows_weight, const float highlights_weight, const float midtones_weight, const float mask_grey_fulcrum,
                  const float hue_angle, const float chroma_global, const float4 chroma, const float vibrance,
                  const float4 global_offset, const float4 shadows, const float4 highlights, const float4 midtones,

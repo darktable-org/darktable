@@ -331,7 +331,7 @@ inline float4 chroma_adapt_RGB(const float4 RGB,
 */
 
 kernel void
-channelmixerrgb_CAT16(read_only const image2d_t in, write_only image2d_t out,
+channelmixerrgb_CAT16(read_only image2d_t in, write_only image2d_t out,
                       const int width, const int height,
                       constant const float *const RGB_to_XYZ,
                       constant const float *const XYZ_to_RGB,
@@ -411,7 +411,7 @@ channelmixerrgb_CAT16(read_only const image2d_t in, write_only image2d_t out,
 
 
 kernel void
-channelmixerrgb_bradford_linear(read_only const image2d_t in, write_only image2d_t out,
+channelmixerrgb_bradford_linear(read_only image2d_t in, write_only image2d_t out,
                                 const int width, const int height,
                                 constant const float *const RGB_to_XYZ,
                                 constant const float *const XYZ_to_RGB,
@@ -490,7 +490,7 @@ channelmixerrgb_bradford_linear(read_only const image2d_t in, write_only image2d
 }
 
 kernel void
-channelmixerrgb_bradford_full(read_only const image2d_t in, write_only image2d_t out,
+channelmixerrgb_bradford_full(read_only image2d_t in, write_only image2d_t out,
                               const int width, const int height,
                               constant const float *const RGB_to_XYZ,
                               constant const float *const XYZ_to_RGB,
@@ -570,7 +570,7 @@ channelmixerrgb_bradford_full(read_only const image2d_t in, write_only image2d_t
 
 
 kernel void
-channelmixerrgb_XYZ(read_only const image2d_t in, write_only image2d_t out,
+channelmixerrgb_XYZ(read_only image2d_t in, write_only image2d_t out,
                     const int width, const int height,
                     constant const float *const RGB_to_XYZ,
                     constant const float *const XYZ_to_RGB,
@@ -649,7 +649,7 @@ channelmixerrgb_XYZ(read_only const image2d_t in, write_only image2d_t out,
 }
 
 kernel void
-channelmixerrgb_RGB(read_only const image2d_t in, write_only image2d_t out,
+channelmixerrgb_RGB(read_only image2d_t in, write_only image2d_t out,
                     const int width, const int height,
                     constant const float *const RGB_to_XYZ,
                     constant const float *const XYZ_to_RGB,

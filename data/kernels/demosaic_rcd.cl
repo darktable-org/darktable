@@ -32,7 +32,7 @@ inline float calcBlendFactor(float val, float threshold)
 }
 
 // Populate cfa and rgb data by normalized input
-__kernel void rcd_populate (__read_only const image2d_t in, global float *cfa, global float *rgb0, global float *rgb1, global float *rgb2, const int w, const int height, const unsigned int filters, const float scale)
+__kernel void rcd_populate (__read_only image2d_t in, global float *cfa, global float *rgb0, global float *rgb1, global float *rgb2, const int w, const int height, const unsigned int filters, const float scale)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
@@ -270,7 +270,7 @@ __kernel void rcd_step_5_2(global float *VH_dir, global float *rgb0, global floa
   }
 }
 
-__kernel void calc_Y0_mask(global float *mask, __read_only const image2d_t in, const int w, const int height, const float red, const float green, const float blue)
+__kernel void calc_Y0_mask(global float *mask, __read_only image2d_t in, const int w, const int height, const float red, const float green, const float blue)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
@@ -350,7 +350,7 @@ __kernel void calc_detail_blend(global float *in, global float *out, const int w
   out[idx] = detail ? blend : 1.0f - blend;
 }
 
-__kernel void readin_mask(global float *mask, __read_only const image2d_t in, const int w, const int height)
+__kernel void readin_mask(global float *mask, __read_only image2d_t in, const int w, const int height)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
@@ -372,7 +372,7 @@ __kernel void writeout_mask(global const float *mask, __write_only image2d_t out
   write_imagef(out, (int2)(col, row), val);  
 }
 
-__kernel void write_blended_dual(__read_only const image2d_t high, __read_only const image2d_t low, __write_only image2d_t out, const int w, const int height, global float *mask, const int showmask)
+__kernel void write_blended_dual(__read_only image2d_t high, __read_only image2d_t low, __write_only image2d_t out, const int w, const int height, global float *mask, const int showmask)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
@@ -427,7 +427,7 @@ __kernel void fastblur_mask_9x9(global float *src, global float *out, const int 
   out[oidx] = ICLAMP(val, 0.0f, 1.0f);
 }
 
-kernel void rcd_border_green(read_only const image2d_t in, write_only image2d_t out, const int width, const int height,
+kernel void rcd_border_green(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                     const unsigned int filters, local float *buffer, const int border)
 {
   const int x = get_global_id(0);
@@ -526,7 +526,7 @@ kernel void rcd_border_green(read_only const image2d_t in, write_only image2d_t 
   }
   write_imagef (out, (int2)(x, y), color);
 }
-kernel void rcd_border_redblue(read_only const image2d_t in, write_only image2d_t out, const int width, const int height,
+kernel void rcd_border_redblue(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                       const unsigned int filters, local float4 *buffer, const int border)
 {
   // image in contains full green and sparse r b
