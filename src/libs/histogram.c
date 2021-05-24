@@ -208,6 +208,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   const size_t bin_width = ceilf(sample_width / (float)d->waveform_max_width);
   const size_t wf_width = ceilf(sample_width / (float)bin_width);
   d->waveform_width = wf_width;
+  const size_t wf_img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, wf_width);
   const size_t wf_height = d->waveform_height;
   dt_iop_image_fill(wf_linear, 0.0f, wf_width, wf_height, 3);
 
@@ -250,45 +251,19 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   // lut for all three channels should be the same
   const float *const restrict lut = DT_IS_ALIGNED((const float *const restrict)profile->lut_out[0]);
   const float lutmax = profile->lutsize - 1;
-  const size_t stride_a8 = cairo_format_stride_for_width(CAIRO_FORMAT_A8, wf_width);
-  const size_t stride_argb32 = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, wf_width);
-  uint8_t *const restrict img_tmp = dt_alloc_align(64, sizeof(uint8_t) * wf_height * stride_a8);
-  // FIXME: change these if RGB parade
-  //const double alpha_chroma = 0.75, desat_over = 0.75, alpha_over = 0.35;
-  //const double alpha_chroma = 0.85, desat_over = 0.85, alpha_over = 0.65;
-  const double alpha_chroma = 0.7, desat_over = 0.8, alpha_over = 0.5;
 
   // loops are too small (3 * 360 * 175 max iterations) to need threads
   for(size_t ch = 0; ch < 3; ch++)
   {
+    uint8_t *const restrict wf_img = DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_img[ch]);
     for(size_t y = 0; y < wf_height; y++)
       for(size_t x = 0; x < wf_width; x++)
       {
         const float linear = MIN(1.f, wf_linear[(ch * wf_height + y) * wf_width + x]);
         const float display = lut[(int)(linear * lutmax)];
-        img_tmp[y*stride_a8 + x] = display * 255.f;
+        wf_img[y*wf_img_stride + x] = display * 255.f;
       }
-    cairo_surface_t *source
-      = cairo_image_surface_create_for_data(img_tmp, CAIRO_FORMAT_A8, wf_width, wf_height, stride_a8);
-    // FIXME: why is this necessary, if the initial draw is via CAIRO_OPERATOR_SOURCE?
-    memset(d->waveform_img[ch], 0, stride_argb32 * wf_height);
-    cairo_surface_t *dest
-      = cairo_image_surface_create_for_data(d->waveform_img[ch], CAIRO_FORMAT_ARGB32, wf_width, wf_height, stride_argb32);
-    cairo_t *cr = cairo_create(dest);
-    cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-    cairo_set_source_rgba(cr, ch==0 ? 1.:0., ch==1 ? 1.:0., ch==2 ? 1.:0., alpha_chroma);
-    cairo_mask_surface(cr, source, 0., 0.);
-    // FIXME: is screen operator enough?
-    cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
-    cairo_set_source_rgba(cr, ch==0 ? 1.:desat_over, ch==1 ? 1.:desat_over, ch==2 ? 1.:desat_over, alpha_over);
-    cairo_mask_surface(cr, source, 0., 0.);
-    cairo_surface_destroy(source);
-    cairo_destroy(cr);
-    cairo_surface_flush(dest);
-    cairo_surface_destroy(dest);
   }
-
-  dt_free_align(img_tmp);
 }
 
 static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, const dt_iop_order_iccprofile_info_t *const vs_prof)
@@ -690,21 +665,31 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
                                          int width, int height,
                                          const uint8_t mask[3])
 {
-  const size_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, d->waveform_width);
+  const double alpha_chroma = 0.75, desat_over = 0.75, alpha_over = 0.35;
+  const size_t wf_img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
+  cairo_surface_t *surfaces[3] = { NULL, NULL, NULL };
   cairo_save(cr);
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_scale(cr, darktable.gui->ppd*width/d->waveform_width,
               darktable.gui->ppd*height/d->waveform_height);
 
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   for(int ch = 0; ch < 3; ch++)
-    if(mask[ch])
+    if(mask[2-ch])
     {
-      cairo_surface_t *cst
-        = dt_cairo_image_surface_create_for_data(d->waveform_img[ch], CAIRO_FORMAT_ARGB32,
-                                                 d->waveform_width, d->waveform_height, stride);
-      cairo_set_source_surface(cr, cst, 0, 0);
-      cairo_paint_with_alpha(cr, 0.7);
-      cairo_surface_destroy(cst);
+      surfaces[ch]
+        = dt_cairo_image_surface_create_for_data(d->waveform_img[2-ch], CAIRO_FORMAT_A8,
+                                                 d->waveform_width, d->waveform_height, wf_img_stride);
+      cairo_set_source_rgba(cr, ch==2 ? 1.:0., ch==1 ? 1.:0., ch==0 ? 1.:0., alpha_chroma);
+      cairo_mask_surface(cr, surfaces[ch], 0., 0.);
+    }
+
+  cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
+  for(int ch = 0; ch < 3; ch++)
+    if(surfaces[ch])
+    {
+      cairo_set_source_rgba(cr, ch==2 ? 1.:desat_over, ch==1 ? 1.:desat_over, ch==0 ? 1.:desat_over, alpha_over);
+      cairo_mask_surface(cr, surfaces[ch], 0., 0.);
+      cairo_surface_destroy(surfaces[ch]);
     }
 
   cairo_restore(cr);
@@ -712,21 +697,26 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
 
 static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, int width, int height)
 {
-  const size_t wf_img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, d->waveform_width);
+  const double alpha_chroma = 0.85, desat_over = 0.85, alpha_over = 0.65;
+  const size_t wf_img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
   cairo_save(cr);
   cairo_scale(cr, darktable.gui->ppd*width/(d->waveform_width*3),
               darktable.gui->ppd*height/d->waveform_height);
-  // FIXME: do want this?
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 
-  for(int ch = 0; ch < 3; ch++)
+  for(int ch = 2; ch >= 0; ch--)
   {
-    cairo_surface_t *cst
-      = dt_cairo_image_surface_create_for_data(d->waveform_img[ch], CAIRO_FORMAT_ARGB32,
+    cairo_surface_t *surface
+      = dt_cairo_image_surface_create_for_data(d->waveform_img[2-ch], CAIRO_FORMAT_A8,
                                                d->waveform_width, d->waveform_height, wf_img_stride);
-    cairo_set_source_surface(cr, cst, 0, 0);
-    cairo_paint(cr);
-    cairo_surface_destroy(cst);
+
+    cairo_set_source_rgba(cr, ch==2 ? 1.:0., ch==1 ? 1.:0., ch==0 ? 1.:0., alpha_chroma);
+    cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+    cairo_mask_surface(cr, surface, 0., 0.);
+    cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
+    cairo_set_source_rgba(cr, ch==2 ? 1.:desat_over, ch==1 ? 1.:desat_over, ch==0 ? 1.:desat_over, alpha_over);
+    cairo_mask_surface(cr, surface, 0., 0.);
+
+    cairo_surface_destroy(surface);
     cairo_translate(cr, d->waveform_width/darktable.gui->ppd, 0);
   }
   cairo_restore(cr);
@@ -1602,9 +1592,10 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: combine with an intermediate buffer for vectorscope, as only use one or the other
   d->waveform_linear = dt_iop_image_alloc(d->waveform_max_width, d->waveform_height, 3);
   // FIXME: combine waveform_8bit and vectorscope_graph, as only ever use one or the other
+  // FIXME: keep alignment instead via single alloc via dt_alloc_perthread()?
   for(int ch=0; ch<3; ch++)
     d->waveform_img[ch] = dt_alloc_align(64, sizeof(uint8_t) * d->waveform_height *
-                                         cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, d->waveform_max_width));
+                                         cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_max_width));
 
   // FIXME: what is the appropriate resolution for this: balance memory use, processing speed, helpful resolution
   d->vectorscope_diameter_px = 384;
