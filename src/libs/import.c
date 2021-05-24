@@ -309,7 +309,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
         d->tethered_shoot = GTK_BUTTON(tb);
       }
 
-      gtk_box_pack_start(GTK_BOX(vbx), (um = gtk_button_new_with_label(_("unmout camera"))), FALSE, FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(vbx), (um = gtk_button_new_with_label(_("unmount camera"))), FALSE, FALSE, 0);
       d->unmount_camera = GTK_BUTTON(um);
 
       if(ib)
@@ -345,10 +345,10 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       gtk_box_pack_start(GTK_BOX(d->devices), label, FALSE, FALSE, 0);
 
       if(camera->used)
-        gtk_widget_set_tooltip_text(label, _("camera was locked by another application\n"
-                    "make sure it is not mounted on the computer an more\nor quit the locking application"));
+        gtk_widget_set_tooltip_text(label, _("camera is locked by another application\n"
+                    "make sure it is no longer mounted\nor quit the locking application"));
       else if(camera->boring)
-        gtk_widget_set_tooltip_text(label, _("tethering and importing was disabled for this camera"));
+        gtk_widget_set_tooltip_text(label, _("tethering and importing is disabled for this camera"));
 
       GtkWidget *im = gtk_button_new_with_label(_("mount camera"));
       GtkWidget *vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
