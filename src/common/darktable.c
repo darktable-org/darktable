@@ -1025,6 +1025,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_database_perform_maintenance(darktable.db);
   }
 
+  // init darktable tags table
+  dt_set_darktable_tags();
+
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
 
