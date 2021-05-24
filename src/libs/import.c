@@ -244,12 +244,16 @@ static void _lib_import_mount_callback(GtkToggleButton *button, gpointer data)
 {
   dt_camera_unused_t *camera = (dt_camera_unused_t *)data;
   camera->trymount = TRUE;
+  dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
+  camctl->tickmask = 3;
 }
 
 static void _lib_import_unmount_callback(GtkToggleButton *button, gpointer data)
 {
   dt_camera_t *camera = (dt_camera_t *)data;
   camera->unmount = TRUE;
+  dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
+  camctl->tickmask = 3;
 }
 
 /** update the device list */

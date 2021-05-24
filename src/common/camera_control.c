@@ -649,6 +649,8 @@ dt_camctl_t *dt_camctl_new()
 
   // Initialize gphoto2 context and setup dispatch callbacks
   camctl->gpcontext = gp_context_new();
+  camctl->ticker = 1;
+  camctl->tickmask = 0x0F;
 
 #ifdef HAVE_GPHOTO_25_OR_NEWER
   gp_context_set_status_func(camctl->gpcontext, (GPContextStatusFunc)_status_func_dispatch25, camctl);
@@ -782,10 +784,10 @@ static gint _compare_camera_by_camera(gconstpointer a, gconstpointer b)
 static int cameras_cnt = -1;
 static int ports_cnt = -1;
 
-static void dt_camctl_update_cameras(const dt_camctl_t *c)
+static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
-  if(!camctl) return;
+  if(!camctl) return FALSE;
 
   dt_pthread_mutex_lock(&camctl->lock);
   gboolean changed_camera = FALSE;
@@ -970,12 +972,9 @@ static void dt_camctl_update_cameras(const dt_camctl_t *c)
   // tell the world that we are done. this assumes that there is just one global camctl.
   // if there would ever be more it would be easy to pass c with the signal.
   if(changed_camera)
-  {
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CAMERA_DETECTED);
-    camctl->tickmask = 0x07;
-  }
-  else
-    camctl->tickmask = 0x1F;  
+
+  return changed_camera;
 }
 
 void *dt_update_cameras_thread(void *ptr)
@@ -994,11 +993,14 @@ void *dt_update_cameras_thread(void *ptr)
     const dt_view_t *cv = (darktable.view_manager) ? dt_view_manager_get_current_view(darktable.view_manager) : NULL;    
     if(camctl)
     {
-      camctl->ticker += 1;     
-      if(((camctl->ticker & camctl->tickmask) == 0) &&
-         (camctl->import_ui == FALSE) &&
-         (cv && (cv->view(cv) == DT_VIEW_LIGHTTABLE)))
-        dt_camctl_update_cameras(camctl);
+      if((camctl->import_ui == FALSE) && (cv && (cv->view(cv) == DT_VIEW_LIGHTTABLE)))
+      {
+        camctl->ticker += 1;     
+        if((camctl->ticker & camctl->tickmask) == 0)
+          camctl->tickmask = (dt_camctl_update_cameras(camctl)) ? 0x03 : 0x1F;
+      }
+      else
+        camctl->tickmask = 3; // want to be responsive right after other modes are done
     }
   }
   return 0;
