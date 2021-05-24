@@ -888,7 +888,9 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
           if(_camera_initialize(camctl, camera) == FALSE)
           {
             dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to initialize %s on port %s, likely "
-                        "causes are: locked by another application, no access to udev etc.\n", cam->model, cam->port);
+                        "causes are: locked by another application, no access to udev etc.\n", camera->model, camera->port);
+            dt_control_log(_("failed to initialize %s on port %s, likely "
+                        "causes are: locked by another application, no access to udev etc"), camera->model, camera->port);
             g_free(camera);
             cam->used = TRUE;
             continue;
@@ -896,9 +898,10 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
 
           if(camera->can_import == FALSE && camera->can_tether == FALSE)
           {
-            dt_print(
-              DT_DEBUG_CAMCTL, "[camera_control] %s on port %s doesn't support import or tether, skipping\n",
-              camera->model, camera->port);
+            dt_print(DT_DEBUG_CAMCTL, "[camera_control] %s on port %s doesn't support import or tether\n",
+                               camera->model, camera->port);
+            dt_control_log(_("%s on port %s is not interesting because it supports neither tethering nor import"),
+                               camera->model, camera->port);
             g_free(camera);
             cam->boring = TRUE;
             continue;
