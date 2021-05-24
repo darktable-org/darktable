@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,8 +35,6 @@ typedef struct dt_undo_tags_t
   GList *before; // list of tagid before
   GList *after; // list of tagid after
 } dt_undo_tags_t;
-
-static void dt_set_darktable_tags();
 
 static gchar *_get_tb_removed_tag_string_values(GList *before, GList *after)
 {
@@ -166,27 +164,31 @@ gboolean dt_tag_new(const char *name, guint *tagid)
   }
   sqlite3_finalize(stmt);
 
-  if(g_strstr_len(name, -1, "darktable|") == name)
-  {
-    // clear darktable tags list to make sure the new tag will be added by next call to dt_set_darktable_tags()
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.darktable_tags", NULL, NULL, NULL);
-  }
-
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "INSERT INTO data.tags (id, name) VALUES (NULL, ?1)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  if(tagid != NULL)
+  guint id = 0;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM data.tags WHERE name = ?1", -1,
+                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
+  if(sqlite3_step(stmt) == SQLITE_ROW) id = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  if(id && g_strstr_len(name, -1, "darktable|") == name)
   {
-    *tagid = 0;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM data.tags WHERE name = ?1", -1,
-                                &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
-    if(sqlite3_step(stmt) == SQLITE_ROW) *tagid = sqlite3_column_int(stmt, 0);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "INSERT INTO memory.darktable_tags (tagid) VALUES (?1)",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+    sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
+
+  if(tagid != NULL)
+    *tagid = id;
 
   return TRUE;
 }
@@ -214,13 +216,20 @@ guint dt_tag_remove(const guint tagid, gboolean final)
   if(final == TRUE)
   {
     // let's actually remove the tag
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM data.tags WHERE id=?1", -1, &stmt,
-                                NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM data.tags WHERE id=?1",
+                                -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.tagged_images WHERE tagid=?1",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    // remove it also form darktable tags table if it is there
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM memory.darktable_tags WHERE tagid=?1",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
     sqlite3_step(stmt);
@@ -247,6 +256,9 @@ void dt_tag_delete_tag_batch(const char *flatlist)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   g_free(query);
+
+  // make sure the darktable tags table is up to date
+  dt_set_darktable_tags();
 }
 
 guint dt_tag_remove_list(GList *tag_list)
@@ -573,35 +585,24 @@ gboolean dt_tag_detach_by_string(const char *name, const gint imgid, const gbool
   return dt_tag_detach(tagid, imgid, undo_on, group_on);
 }
 
-// to be called before issuing any query based on memory.darktable_tags
-static void dt_set_darktable_tags()
+void dt_set_darktable_tags()
 {
-  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.darktable_tags", NULL, NULL, NULL);
 
+  sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT COUNT(*) FROM memory.darktable_tags",
+                              "INSERT INTO memory.darktable_tags (tagid)"
+                              " SELECT DISTINCT id"
+                              " FROM data.tags"
+                              " WHERE name LIKE 'darktable|%%'",
                               -1, &stmt, NULL);
   sqlite3_step(stmt);
-  const guint count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
-
-  if (!count)
-  {
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO memory.darktable_tags (tagid)"
-                                " SELECT DISTINCT id"
-                                " FROM data.tags"
-                                " WHERE name LIKE 'darktable|%%'",
-                                -1, &stmt, NULL);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-  }
 }
 
 uint32_t dt_tag_get_attached(const gint imgid, GList **result, const gboolean ignore_dt_tags)
 {
   sqlite3_stmt *stmt;
-  dt_set_darktable_tags();
   uint32_t nb_selected = 0;
   char *images = NULL;
   if(imgid > 0)
@@ -669,7 +670,6 @@ static uint32_t _tag_get_attached_export(const gint imgid, GList **result)
   if(!(imgid > 0)) return 0;
 
   sqlite3_stmt *stmt;
-  dt_set_darktable_tags();
   char *query = NULL;
   query = dt_util_dstrcat(query,
                           "SELECT DISTINCT T.id, T.name, T.flags, T.synonyms"
@@ -835,7 +835,6 @@ static GList *_tag_get_tags(const gint imgid, const dt_tag_type_t type)
   }
 
   sqlite3_stmt *stmt;
-  dt_set_darktable_tags();
   char query[256] = { 0 };
   snprintf(query, sizeof(query), "SELECT DISTINCT T.id"
                                  "  FROM main.tagged_images AS I"
@@ -1048,8 +1047,6 @@ uint32_t dt_tag_get_suggestions(GList **result)
 {
   sqlite3_stmt *stmt;
 
-  dt_set_darktable_tags();
-
   /* list tags and count */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO memory.taglist (id, count)"
@@ -1238,8 +1235,6 @@ uint32_t dt_tag_images_count(gint tagid)
 uint32_t dt_tag_get_with_usage(GList **result)
 {
   sqlite3_stmt *stmt;
-
-  dt_set_darktable_tags();
 
   /* Select tags that are similar to the keyword and are actually used to tag images*/
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),

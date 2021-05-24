@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -348,13 +348,12 @@ static inline void log_scale(const dt_lib_histogram_t *d, float *x, float *y, fl
 }
 
 static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const float *const input,
-                                               dt_histogram_roi_t *const roi)
+                                               dt_histogram_roi_t *const roi,
+                                               const dt_iop_order_iccprofile_info_t *vs_prof)
 {
   const int diam_px = d->vectorscope_diameter_px;
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
 
-  // NOTE: this may be different from the output profile for _lib_histogram_process()
-  const dt_iop_order_iccprofile_info_t *vs_prof = dt_ioppr_get_histogram_profile_info(darktable.develop);
   if(!vs_prof || isnan(vs_prof->matrix_in[0]))
   {
     fprintf(stderr, "[histogram] unsupported vectorscope profile %i %s, it will be replaced with linear rec2020\n", vs_prof->type, vs_prof->filename);
@@ -618,7 +617,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
       _lib_histogram_process_waveform(d, img_display, &roi);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-      _lib_histogram_process_vectorscope(d, img_display, &roi);
+      _lib_histogram_process_vectorscope(d, img_display, &roi, profile_info_to);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       dt_unreachable_codepath();

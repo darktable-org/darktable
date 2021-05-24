@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2020 darktable developers.
+    Copyright (C) 2019-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -115,7 +115,12 @@ void _lib_imageinfo_update_message(gpointer instance, dt_lib_module_t *self)
   g_free(msg);
 }
 
-void _lib_imageinfo_update_message2(gpointer instance, int query_change, gpointer imgs, const int next,
+static void _lib_imageinfo_update_message2(gpointer instance, gpointer imgs, dt_lib_module_t *self)
+{
+  _lib_imageinfo_update_message(instance, self);
+}
+
+void _lib_imageinfo_update_message3(gpointer instance, int query_change, gpointer imgs, const int next,
                                     dt_lib_module_t *self)
 {
   _lib_imageinfo_update_message(instance, self);
@@ -146,14 +151,16 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_lib_imageinfo_update_message), self);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED,
-                                  G_CALLBACK(_lib_imageinfo_update_message), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                                   G_CALLBACK(_lib_imageinfo_update_message2), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+                                  G_CALLBACK(_lib_imageinfo_update_message3), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_imageinfo_update_message), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_imageinfo_update_message2), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_imageinfo_update_message3), self);
 
   g_free(self->data);
   self->data = NULL;

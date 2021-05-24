@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1261,33 +1261,34 @@ static void tree_view(dt_lib_collect_rule_t *dr)
           dt_conf_is_equal("plugins/lighttable/tagging/case_sensitivity", "insensitive");
 
         if(is_insensitive)
-          query = g_strdup_printf("SELECT name, 1 AS tagid , COUNT(*) AS count"
-                                  " FROM (SELECT DISTINCT name, id"
+          query = g_strdup_printf("SELECT name, 1 AS tagid, SUM(count) AS count"
+                                  " FROM (SELECT tagid, COUNT(*) as count"
                                   "   FROM main.images AS mi"
                                   "   JOIN main.tagged_images"
                                   "     ON id = imgid "
-                                  "   JOIN (SELECT lower(name) AS name, id AS tag_id FROM data.tags)"
-                                  "     ON tagid = tag_id"
-                                  "   WHERE %s)"
-                                  " GROUP BY name", where_ext);
+                                  "   WHERE %s"
+                                  "   GROUP BY tagid)"
+                                  " JOIN (SELECT lower(name) AS name, id AS tag_id FROM data.tags)"
+                                  "   ON tagid = tag_id"
+                                  "   GROUP BY name", where_ext);
         else
-          query = g_strdup_printf("SELECT name, tagid, COUNT(*) AS count"
-                                  " FROM main.images AS mi"
-                                  " JOIN main.tagged_images"
-                                  "   ON id = imgid "
+          query = g_strdup_printf("SELECT name, tagid, count"
+                                  " FROM (SELECT tagid, COUNT(*) AS count"
+                                  "  FROM main.images AS mi"
+                                  "  JOIN main.tagged_images"
+                                  "     ON id = imgid "
+                                  "  WHERE %s"
+                                  "  GROUP BY tagid)"
                                   " JOIN (SELECT name, id AS tag_id FROM data.tags)"
                                   "   ON tagid = tag_id"
-                                  " WHERE %s"
-                                  " GROUP BY name,tag_id", where_ext);
+                                  , where_ext);
 
         query = dt_util_dstrcat(query, " UNION ALL "
                                        "SELECT '%s' AS name, 0 as id, COUNT(*) AS count "
                                        "FROM main.images AS mi "
                                        "WHERE mi.id NOT IN"
                                        "  (SELECT DISTINCT imgid FROM main.tagged_images AS ti"
-                                       "   JOIN data.tags AS t"
-                                       "     ON t.id = ti.tagid"
-                                       "        AND SUBSTR(name, 1, 10) <> 'darktable|')",
+                                       "   WHERE ti.tagid NOT IN memory.darktable_tags)",
                                 _("not tagged"));
       }
       break;
@@ -2537,7 +2538,6 @@ static void tag_changed(gpointer instance, gpointer self)
   {
     d->view_rule = -1;
     d->rule[d->active_rule].typing = FALSE;
-    _lib_collect_gui_update(self);
 
     //need to reload collection since we have tags as active collection filter
     dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),

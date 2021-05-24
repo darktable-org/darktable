@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2019-2020 darktable developers.
+   Copyright (C) 2019-2021 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -3904,7 +3904,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->grey_point_target, 4);
   dt_bauhaus_slider_set_format(g->grey_point_target, "%.4f %%");
   gtk_widget_set_tooltip_text(g->grey_point_target,
-                              _("midde gray value of the target display or color space.\n"
+                              _("middle gray value of the target display or color space.\n"
                                 "you should never touch that unless you know what you are doing."));
 
   g->white_point_target = dt_bauhaus_slider_from_params(self, "white_point_target");

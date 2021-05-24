@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -146,6 +146,9 @@ typedef struct dt_bauhaus_widget_t
   dt_iop_module_t *module;
   // label text, short
   char label[256];
+  // section, short
+  gchar *section;
+  gboolean show_extended_label;
   // callback function to draw the quad icon
   dt_bauhaus_quad_paint_f quad_paint;
   // minimal modifiers for paint function.

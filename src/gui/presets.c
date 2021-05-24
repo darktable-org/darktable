@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1148,7 +1148,9 @@ static void _menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
     {
       // create top entry
       gtk_tree_store_append(treestore, &toplevel, NULL);
-      gtk_tree_store_set(treestore, &toplevel, 0, iop->name(), 1, FALSE, 2, FALSE, -1);
+      gchar *iopname = g_markup_escape_text(iop->name(), -1);
+      gtk_tree_store_set(treestore, &toplevel, 0, iopname, 1, FALSE, 2, FALSE, -1);
+      g_free(iopname);
 
       /* query presets for module */
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1164,13 +1166,15 @@ static void _menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
       {
         nb++;
         const char *name = (char *)sqlite3_column_text(stmt, 0);
+        gchar *presetname = g_markup_escape_text(name, -1);
         // is this preset part of the list ?
         gchar *txt = dt_util_dstrcat(NULL, "ꬹ%s|%sꬹ", iop->op, name);
         const gboolean inlist = (config && strstr(config, txt));
         g_free(txt);
         gtk_tree_store_append(treestore, &child, &toplevel);
-        gtk_tree_store_set(treestore, &child, 0, name, 1, inlist, 2, TRUE, 3, g_strdup(iop->op), 4, g_strdup(name),
+        gtk_tree_store_set(treestore, &child, 0, presetname, 1, inlist, 2, TRUE, 3, g_strdup(iop->op), 4, g_strdup(name),
                            -1);
+        g_free(presetname);
       }
 
       sqlite3_finalize(stmt);
@@ -1253,7 +1257,7 @@ void dt_gui_favorite_presets_menu_show()
         if(config && strstr(config, txt))
         {
           GtkMenuItem *mi = (GtkMenuItem *)gtk_menu_item_new_with_label(name);
-          gchar *tt = dt_util_dstrcat(NULL, "<b>%s %s</b> %s", iop->name(), iop->multi_name, name);
+          gchar *tt = g_markup_printf_escaped("<b>%s %s</b> %s", iop->name(), iop->multi_name, name);
           gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), tt);
           g_free(tt);
           g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);

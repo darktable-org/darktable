@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -195,6 +195,8 @@ static inline int dt_version()
 
 // returns true if the running darktable corresponds to a dev version
 gboolean dt_is_dev_version();
+// returns the darktable version as <major>.<minor>
+char *dt_version_major_minor();
 
 // Golden number (1+sqrt(5))/2
 #ifndef PHI

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2731,7 +2731,7 @@ void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
   char *label_text = g_markup_printf_escaped(_("the database schema has to be upgraded for\n"
                                                "\n"
                                                "<span style='italic'>%s</span>\n"
-                                               "\n"
+                                               "\nthis might take a long time in case of a large database\n\n"
                                                "do you want to proceed or quit now to do a backup\n"),
                                                dbname);
 

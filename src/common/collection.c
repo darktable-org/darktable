@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1609,9 +1609,8 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
       if(!strcmp(escaped_text, _("not tagged")))
       {
-        query = g_strdup_printf("(id NOT IN (SELECT DISTINCT imgid FROM main.tagged_images AS a "
-                                       "JOIN data.tags AS b ON a.tagid = b.id "
-                                       "AND SUBSTR(name, 1, 10) <> 'darktable|'))");
+        query = g_strdup_printf("(id NOT IN (SELECT DISTINCT imgid FROM main.tagged_images "
+                                            "WHERE tagid NOT IN memory.darktable_tags))");
       }
       else if(is_insensitive)
       {
@@ -1620,16 +1619,15 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           // shift-click adds an asterix * to include items in and under this hierarchy
           // without using a wildcard % which also would include similar named items
           escaped_text[escaped_length-1] = '\0';
-          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images AS a "
-                                         "JOIN data.tags AS b ON a.tagid = b.id "
-                                         "WHERE name LIKE '%s' OR name LIKE '%s|%%'))",
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images WHERE tagid IN "
+                                         "(SELECT id FROM data.tags WHERE name LIKE '%s' OR name LIKE '%s|%%')))",
                                   escaped_text, escaped_text);
         }
         else
         {
           // default
-          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
-                                       "data.tags AS b ON a.tagid = b.id WHERE name LIKE '%s'))",
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images WHERE tagid IN "
+                                       "(SELECT id FROM data.tags WHERE name LIKE '%s')))",
                                   escaped_text);
         }
       }
@@ -1640,26 +1638,25 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           // shift-click adds an asterix * to include items in and under this hierarchy
           // without using a wildcard % which also would include similar named items
           escaped_text[escaped_length-1] = '\0';
-          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images AS a "
-                                         "JOIN data.tags AS b ON a.tagid = b.id "
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images WHERE tagid IN "
+                                         "(SELECT id FROM data.tags "
                                          "WHERE name = '%s'"
-                                         "  OR SUBSTR(name, 1, LENGTH('%s') + 1) = '%s|'))",
+                                         "  OR SUBSTR(name, 1, LENGTH('%s') + 1) = '%s|')))",
                                   escaped_text, escaped_text, escaped_text);
         }
         else if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '%'))
         {
           // ends with % or |%
           escaped_text[escaped_length-1] = '\0';
-          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images AS a "
-                                         "JOIN data.tags AS b ON a.tagid = b.id "
-                                         "WHERE SUBSTR(name, 1, LENGTH('%s')) = '%s'))",
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images WHERE tagid IN "
+                                         "(SELECT id FROM data.tags WHERE SUBSTR(name, 1, LENGTH('%s')) = '%s')))",
                                   escaped_text, escaped_text);
         }
         else
         {
           // default
-          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
-                                       "data.tags AS b ON a.tagid = b.id WHERE name = '%s'))",
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images WHERE tagid IN "
+                                       "(SELECT id FROM data.tags WHERE name = '%s')))",
                                   escaped_text);
         }
       }
@@ -2149,25 +2146,25 @@ gboolean dt_collection_hint_message_internal(void *message)
 
 void dt_collection_hint_message(const dt_collection_t *collection)
 {
-  /* if relevant, determine offset of selection */
-  GList *selected_imgids = dt_collection_get_selected(collection, 1);
-  int selected = -1;
-
-  if(selected_imgids)
-  {
-    selected = GPOINTER_TO_INT(selected_imgids->data);
-    selected = dt_collection_image_offset_with_collection(collection, selected);
-    selected++;
-  }
   /* collection hinting */
   gchar *message;
 
   const int c = dt_collection_get_count_no_group(collection);
   const int cs = dt_collection_get_selected_count(collection);
-  g_list_free(selected_imgids);
 
   if(cs == 1)
   {
+    /* determine offset of the single selected image */
+    GList *selected_imgids = dt_collection_get_selected(collection, 1);
+    int selected = -1;
+
+    if(selected_imgids)
+    {
+      selected = GPOINTER_TO_INT(selected_imgids->data);
+      selected = dt_collection_image_offset_with_collection(collection, selected);
+      selected++;
+    }
+    g_list_free(selected_imgids);
     message = g_strdup_printf(_("%d image of %d (#%d) in current collection is selected"), cs, c, selected);
   }
   else

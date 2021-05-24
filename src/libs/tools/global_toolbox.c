@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -554,6 +554,28 @@ static char *get_help_url(GtkWidget *widget)
   return NULL;
 }
 
+static char *_get_base_url()
+{
+  const gboolean use_default_url =
+    dt_conf_get_bool("context_help/use_default_url");
+  const char *c_base_url = dt_confgen_get
+    (dt_is_dev_version() ? "context_help/dev_url" : "context_help/url",
+     DT_DEFAULT);
+  char *base_url = dt_conf_get_string
+    (dt_is_dev_version() ? "context_help/dev_url" : "context_help/url");
+
+  if(use_default_url)
+  {
+    // want to use default URL, reset darktablerc
+    dt_conf_set_string
+      (dt_is_dev_version() ? "context_help/dev_url" : "context_help/url",
+       c_base_url);
+    return g_strdup(c_base_url);
+  }
+  else
+    return base_url;
+}
+
 static void _main_do_event(GdkEvent *event, gpointer data)
 {
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)data;
@@ -573,10 +595,15 @@ static void _main_do_event(GdkEvent *event, gpointer data)
         {
           GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
           dt_print(DT_DEBUG_CONTROL, "[context help] opening `%s'\n", help_url);
-          char *base_url = dt_conf_get_string
-            (dt_is_dev_version()
-             ? "context_help/dev_url"
-             : "context_help/url");
+          char *base_url = _get_base_url();
+
+          // in case of a standard release, happend the dt version to the url
+          if(!dt_is_dev_version())
+          {
+            char *ver = dt_version_major_minor();
+            base_url = dt_util_dstrcat(base_url, "%s/", ver);
+            g_free(ver);
+          }
 
           char *last_base_url = dt_conf_get_string("context_help/last_url");
 
@@ -599,11 +626,16 @@ static void _main_do_event(GdkEvent *event, gpointer data)
 #endif
 
             gtk_window_set_title(GTK_WINDOW(dialog), _("access the online usermanual?"));
-            gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+            const gint res = gtk_dialog_run(GTK_DIALOG(dialog));
             gtk_widget_destroy(dialog);
             if(res == GTK_RESPONSE_YES)
             {
               dt_conf_set_string("context_help/last_url", last_base_url);
+            }
+            else
+            {
+              g_free(base_url);
+              base_url = NULL;
             }
           }
           if(base_url)

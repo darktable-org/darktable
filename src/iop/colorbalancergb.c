@@ -89,11 +89,11 @@ typedef struct dt_iop_colorbalancergb_params_t
   float brilliance_shadows;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
 
   /* params of v3 */
-  float mask_grey_fulcrum;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "mask middle-grey fulcrum"
+  float mask_grey_fulcrum;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "mask middle-gray fulcrum"
 
   /* params of v4 */
   float vibrance;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0 $DESCRIPTION: "global vibrance"
-  float grey_fulcrum;     // $MIN:  0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "contrast grey fulcrum"
+  float grey_fulcrum;     // $MIN:  0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "contrast gray fulcrum"
   float contrast;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0. $DESCRIPTION: "contrast"
 
   /* add future params after this so the legacy params import can use a blind memcpy */
@@ -327,7 +327,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float brilliance_shadows;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
 
       /* params of v3 */
-      float mask_grey_fulcrum;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "middle-grey fulcrum"
+      float mask_grey_fulcrum;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "middle-gray fulcrum"
 
     } dt_iop_colorbalancergb_params_v3_t;
 
@@ -1723,7 +1723,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->mask_grey_fulcrum, 0.01);
   dt_bauhaus_slider_set_format(g->mask_grey_fulcrum, "%.2f %%");
   dt_bauhaus_slider_set_factor(g->mask_grey_fulcrum, 100.0f);
-  gtk_widget_set_tooltip_text(g->mask_grey_fulcrum, _("position of the middle-grey reference for masking"));
+  gtk_widget_set_tooltip_text(g->mask_grey_fulcrum, _("position of the middle-gray reference for masking"));
   dt_bauhaus_widget_set_quad_paint(g->mask_grey_fulcrum, dtgtk_cairo_paint_showmask,
                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->mask_grey_fulcrum, TRUE);
@@ -1755,7 +1755,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->grey_fulcrum, 0.01);
   dt_bauhaus_slider_set_digits(g->grey_fulcrum, 4);
   dt_bauhaus_slider_set_format(g->grey_fulcrum, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->grey_fulcrum, _("peak white luminance value used to normalize the power function"));
+  gtk_widget_set_tooltip_text(g->grey_fulcrum, _("peak gray luminance value used to normalize the power function"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("mask preview settings")), FALSE, FALSE, 0);
 
