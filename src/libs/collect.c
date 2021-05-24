@@ -2490,7 +2490,26 @@ static void collection_updated(gpointer instance, dt_collection_change_t query_c
   // update tree
   d->view_rule = -1;
   d->rule[d->active_rule].typing = FALSE;
-  _lib_collect_gui_update(self);
+
+  // determine if we want to refresh the tree or not
+  gboolean refresh = TRUE;
+  if(query_change == DT_COLLECTION_CHANGE_RELOAD && changed_property != DT_COLLECTION_PROP_UNDEF)
+  {
+    // if we only reload the collection, that means that we don't change the query itself
+    // so we only rebuild the treeview if a used property has changed
+    refresh = FALSE;
+    for(int i = 0; i <= d->active_rule; i++)
+    {
+      const int item = _combo_get_active_collection(d->rule[i].combo);
+      if(item == changed_property)
+      {
+        refresh = TRUE;
+        break;
+      }
+    }
+  }
+
+  if(refresh) _lib_collect_gui_update(self);
 }
 
 
