@@ -85,8 +85,9 @@ static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t
 #endif
 }
 
-static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
-                                        int next, dt_lib_module_t *self)
+static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change,
+                                         dt_collection_properties_t changed_property, gpointer imgs, int next,
+                                         dt_lib_module_t *self)
 {
   _update(self);
 }
@@ -167,7 +168,7 @@ void gui_cleanup(dt_lib_module_t *self)
 }
 
 #ifdef USE_LUA
-typedef struct 
+typedef struct
 {
   const char* key;
   dt_lib_module_t * self;
@@ -242,7 +243,7 @@ static int lua_register_selection(lua_State *L)
   const char * tooltip = lua_tostring(L, 3);
   if(tooltip)
     gtk_widget_set_tooltip_text(button, tooltip);
-  
+
   gtk_widget_set_name(button, name);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), button, NULL, GTK_POS_BOTTOM, 2, 1);
 
@@ -302,7 +303,7 @@ static int lua_destroy_selection(lua_State *L)
       // remove the widget
 
       gtk_grid_remove_row(GTK_GRID(self->widget), row);
-      break; 
+      break;
     }
   }
 

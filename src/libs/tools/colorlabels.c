@@ -102,7 +102,7 @@ static void _lib_colorlabels_button_clicked_callback(GtkWidget *w, gpointer user
 {
   const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE, FALSE);
   dt_colorlabels_toggle_label_on_list(imgs, GPOINTER_TO_INT(user_data), TRUE);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
                              g_list_copy((GList *)imgs));
 }
 

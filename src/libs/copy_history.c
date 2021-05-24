@@ -174,7 +174,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     }
     else
     {
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                                  g_list_copy((GList *)imgs));
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED,
                                     g_list_copy((GList *)imgs), 0);
@@ -201,7 +201,7 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
 
   const int missing = dt_history_compress_on_list(imgs);
 
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              g_list_copy((GList *)imgs));
   dt_control_queue_redraw_center();
   if (missing)
@@ -276,7 +276,8 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
   {
     dt_history_delete_on_list(imgs, TRUE);
     GList *imgs_copy = g_list_copy((GList *)imgs);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs_copy); // frees imgs_copy
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                               imgs_copy); // frees imgs_copy
     dt_control_queue_redraw_center();
   }
 }
@@ -296,7 +297,7 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
 
   if(dt_history_paste_on_list(imgs, TRUE))
   {
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                                g_list_copy((GList *)imgs));
   }
 }
@@ -313,7 +314,8 @@ static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   GList* imgs_copy = g_list_copy((GList*)imgs);
   if(dt_history_paste_parts_on_list(imgs_copy, TRUE))
   {
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs_copy); // frees imgs_copy
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                               imgs_copy); // frees imgs_copy
   }
   else
   {
@@ -334,8 +336,9 @@ static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t
   _update(self);
 }
 
-static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
-                                        int next, dt_lib_module_t *self)
+static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change,
+                                         dt_collection_properties_t changed_property, gpointer imgs, int next,
+                                         dt_lib_module_t *self)
 {
   _update(self);
 }
