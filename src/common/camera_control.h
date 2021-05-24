@@ -30,7 +30,6 @@
 #include <gphoto2/gphoto2.h>
 #include <gtk/gtk.h>
 
-
 /** A camera object used for camera actions and callbacks */
 typedef struct dt_camera_t
 {
@@ -59,7 +58,12 @@ typedef struct dt_camera_t
   gboolean can_live_view_advanced;
   /** This camera/device can be remote controlled. */
   gboolean can_config;
-
+  /** This camera can read file previews */
+  gboolean can_file_preview;
+  /** This camera has some directory support */
+  gboolean can_directory;
+  /** This camera has exif support */
+  gboolean can_file_exif;
   /** Flag camera in tethering mode. \see dt_camera_tether_mode() */
   gboolean is_tethering;
 
@@ -83,6 +87,10 @@ typedef struct dt_camera_t
   /** gphoto2 context */
   GPContext *gpcontext;
 
+  /** flag to unmount */
+  gboolean unmount;
+  /** flag true while importing */
+  gboolean is_importing;
   /** Live view */
   gboolean is_live_viewing;
   /** The last preview image from the camera */
@@ -107,14 +115,20 @@ typedef struct dt_camera_t
   dt_pthread_mutex_t live_view_synch;
 } dt_camera_t;
 
-/** A dummy camera object used for locked cameras */
-typedef struct dt_camera_locked_t
+/** A dummy camera object used for unused cameras */
+typedef struct dt_camera_unused_t
 {
   /** A pointer to the model string of camera. */
   char *model;
   /** A pointer to the port string of camera. */
   char *port;
-} dt_camera_locked_t;
+  /** mark the camera as auto unmounted */
+  gboolean boring;
+  /** mark the camera as used by another application */
+  gboolean used;
+  /** if true it will be removed from the list to force a reconnect */
+  gboolean trymount;
+} dt_camera_unused_t;
 
 /** Camera control status.
   These enumerations are passed back to host application using
@@ -157,8 +171,8 @@ typedef struct dt_camctl_t
   GList *listeners;
   /** List of cameras found and initialized by camera control.*/
   GList *cameras;
-  /** List of locked cameras found */
-  GList *locked_cameras;
+  /** List of unused cameras found */
+  GList *unused_cameras;
 
   /** The actual gphoto2 context */
   GPContext *gpcontext;
@@ -171,6 +185,10 @@ typedef struct dt_camctl_t
   const dt_camera_t *wanted_camera;
 
   const dt_camera_t *active_camera;
+
+  gboolean import_ui;
+  int ticker;
+  int tickmask;
 } dt_camctl_t;
 
 
@@ -234,8 +252,8 @@ void dt_camctl_register_listener(const dt_camctl_t *c, dt_camctl_listener_t *lis
 void dt_camctl_unregister_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener);
 /** Check if there is any camera connected */
 gboolean dt_camctl_have_cameras(const dt_camctl_t *c);
-/** Check if there is any camera locked  */
-gboolean dt_camctl_have_locked_cameras(const dt_camctl_t *c);
+/** Check if there is any camera known but unused  */
+gboolean dt_camctl_have_unused_cameras(const dt_camctl_t *c);
 /** Selects a camera to be used by cam control, this camera is selected if NULL is passed as camera*/
 void dt_camctl_select_camera(const dt_camctl_t *c, const dt_camera_t *cam);
 /** Can tether...*/
