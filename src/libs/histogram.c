@@ -664,60 +664,77 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
                                          int width, int height,
                                          const uint8_t mask[3])
 {
+  // composite before scaling to screen dimensions, as scaling each
+  // layer on draw causes a >2x slowdown
   const double alpha_chroma = 0.75, desat_over = 0.75, alpha_over = 0.35;
-  const size_t wf_img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
-  cairo_surface_t *surfaces[3] = { NULL, NULL, NULL };
+  const size_t img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
+  cairo_surface_t *cs[3] = { NULL, NULL, NULL };
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, d->waveform_width, d->waveform_height);
+
+  cairo_t *crt = cairo_create(cst);
+  cairo_set_operator(crt, CAIRO_OPERATOR_ADD);
+  for(int ch = 0; ch < 3; ch++)
+    if(mask[ch])
+    {
+      cs[ch] = cairo_image_surface_create_for_data(d->waveform_img[ch], CAIRO_FORMAT_A8,
+                                                   d->waveform_width, d->waveform_height, img_stride);
+      cairo_set_source_rgba(crt, ch==0 ? 1.:0., ch==1 ? 1.:0., ch==2 ? 1.:0., alpha_chroma);
+      cairo_mask_surface(crt, cs[ch], 0., 0.);
+    }
+  cairo_set_operator(crt, CAIRO_OPERATOR_HARD_LIGHT);
+  for(int ch = 0; ch < 3; ch++)
+    if(cs[ch])
+    {
+      cairo_set_source_rgba(crt, ch==0 ? 1.:desat_over, ch==1 ? 1.:desat_over, ch==2 ? 1.:desat_over, alpha_over);
+      cairo_mask_surface(crt, cs[ch], 0., 0.);
+      cairo_surface_destroy(cs[ch]);
+    }
+  cairo_destroy(crt);
+
+  // scale and write to output buffer
   cairo_save(cr);
-  cairo_scale(cr, darktable.gui->ppd*width/d->waveform_width,
-              darktable.gui->ppd*height/d->waveform_height);
-
+  cairo_scale(cr, (float)width/d->waveform_width, (float)height/d->waveform_height);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  for(int ch = 0; ch < 3; ch++)
-    if(mask[2-ch])
-    {
-      surfaces[ch]
-        = dt_cairo_image_surface_create_for_data(d->waveform_img[2-ch], CAIRO_FORMAT_A8,
-                                                 d->waveform_width, d->waveform_height, wf_img_stride);
-      cairo_set_source_rgba(cr, ch==2 ? 1.:0., ch==1 ? 1.:0., ch==0 ? 1.:0., alpha_chroma);
-      cairo_mask_surface(cr, surfaces[ch], 0., 0.);
-    }
-
-  cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
-  for(int ch = 0; ch < 3; ch++)
-    if(surfaces[ch])
-    {
-      cairo_set_source_rgba(cr, ch==2 ? 1.:desat_over, ch==1 ? 1.:desat_over, ch==0 ? 1.:desat_over, alpha_over);
-      cairo_mask_surface(cr, surfaces[ch], 0., 0.);
-      cairo_surface_destroy(surfaces[ch]);
-    }
-
+  cairo_set_source_surface(cr, cst, 0., 0.);
+  cairo_paint(cr);
+  cairo_surface_destroy(cst);
   cairo_restore(cr);
 }
 
 static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, int width, int height)
 {
+  // same composite-to-temp optimization as in waveform code above
   const double alpha_chroma = 0.85, desat_over = 0.85, alpha_over = 0.65;
-  const size_t wf_img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
-  cairo_save(cr);
-  cairo_scale(cr, darktable.gui->ppd*width/(d->waveform_width*3),
-              darktable.gui->ppd*height/d->waveform_height);
+  const size_t img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, d->waveform_width, d->waveform_height);
 
-  for(int ch = 2; ch >= 0; ch--)
+  cairo_t *crt = cairo_create(cst);
+  // Though this scales and throws horizontal data on each composite,
+  // It appears to be fastest and least memory wasteful. The
+  // horizontal resolution will be visually equivalent to waveform.
+  cairo_scale(crt, 1./3., 1.);
+  for(int ch = 0; ch < 3; ch++)
   {
-    cairo_surface_t *surface
-      = dt_cairo_image_surface_create_for_data(d->waveform_img[2-ch], CAIRO_FORMAT_A8,
-                                               d->waveform_width, d->waveform_height, wf_img_stride);
-
-    cairo_set_source_rgba(cr, ch==2 ? 1.:0., ch==1 ? 1.:0., ch==0 ? 1.:0., alpha_chroma);
-    cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-    cairo_mask_surface(cr, surface, 0., 0.);
-    cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
-    cairo_set_source_rgba(cr, ch==2 ? 1.:desat_over, ch==1 ? 1.:desat_over, ch==0 ? 1.:desat_over, alpha_over);
-    cairo_mask_surface(cr, surface, 0., 0.);
-
-    cairo_surface_destroy(surface);
-    cairo_translate(cr, d->waveform_width/darktable.gui->ppd, 0);
+    cairo_surface_t *cs
+      = cairo_image_surface_create_for_data(d->waveform_img[ch], CAIRO_FORMAT_A8,
+                                            d->waveform_width, d->waveform_height, img_stride);
+    cairo_set_source_rgba(crt, ch==0 ? 1.:0., ch==1 ? 1.:0., ch==2 ? 1.:0., alpha_chroma);
+    cairo_set_operator(crt, CAIRO_OPERATOR_ADD);
+    cairo_mask_surface(crt, cs, 0., 0.);
+    cairo_set_operator(crt, CAIRO_OPERATOR_HARD_LIGHT);
+    cairo_set_source_rgba(crt, ch==0 ? 1.:desat_over, ch==1 ? 1.:desat_over, ch==2 ? 1.:desat_over, alpha_over);
+    cairo_mask_surface(crt, cs, 0., 0.);
+    cairo_surface_destroy(cs);
+    cairo_translate(crt, d->waveform_width, 0);
   }
+  cairo_destroy(crt);
+
+  cairo_save(cr);
+  cairo_scale(cr, (float)width/d->waveform_width, (float)height/d->waveform_height);
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+  cairo_set_source_surface(cr, cst, 0., 0.);
+  cairo_paint(cr);
+  cairo_surface_destroy(cst);
   cairo_restore(cr);
 }
 
