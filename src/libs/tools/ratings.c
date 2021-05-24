@@ -190,7 +190,7 @@ static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventBu
   {
     const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE, FALSE);
     dt_ratings_apply_on_list(imgs, d->current, TRUE);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING,
                                g_list_copy((GList *)imgs));
 
     dt_control_queue_redraw_center();

@@ -120,8 +120,8 @@ static void _lib_imageinfo_update_message2(gpointer instance, gpointer imgs, dt_
   _lib_imageinfo_update_message(instance, self);
 }
 
-void _lib_imageinfo_update_message3(gpointer instance, int query_change, gpointer imgs, const int next,
-                                    dt_lib_module_t *self)
+void _lib_imageinfo_update_message3(gpointer instance, int query_change, int changed_property, gpointer imgs,
+                                    const int next, dt_lib_module_t *self)
 {
   _lib_imageinfo_update_message(instance, self);
 }

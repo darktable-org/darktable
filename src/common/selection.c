@@ -48,8 +48,9 @@ static void _selection_raise_signal()
 }
 
 /* updates the internal collection of an selection */
-static void _selection_update_collection(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
-                                         int next, gpointer user_data);
+static void _selection_update_collection(gpointer instance, dt_collection_change_t query_change,
+                                         dt_collection_properties_t changed_property, gpointer imgs, int next,
+                                         gpointer user_data);
 
 static void _selection_select(dt_selection_t *selection, uint32_t imgid)
 {
@@ -89,7 +90,8 @@ static void _selection_select(dt_selection_t *selection, uint32_t imgid)
   dt_collection_hint_message(darktable.collection);
 }
 
-void _selection_update_collection(gpointer instance, dt_collection_change_t query_change, gpointer imgs, int next,
+void _selection_update_collection(gpointer instance, dt_collection_change_t query_change,
+                                  dt_collection_properties_t changed_property, gpointer imgs, int next,
                                   gpointer user_data)
 {
   dt_selection_t *selection = (dt_selection_t *)user_data;
@@ -111,7 +113,7 @@ const dt_selection_t *dt_selection_new()
   dt_selection_t *s = g_malloc0(sizeof(dt_selection_t));
 
   /* initialize the collection copy */
-  _selection_update_collection(NULL, DT_COLLECTION_CHANGE_RELOAD, NULL, -1, (gpointer)s);
+  _selection_update_collection(NULL, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL, -1, (gpointer)s);
 
   /* initialize last_single_id based on current database */
   s->last_single_id = -1;

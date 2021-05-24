@@ -912,7 +912,7 @@ void dt_image_set_aspect_ratio_to(const int32_t imgid, const float aspect_ratio,
 
     if(raise && darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                                 g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
+                                 DT_COLLECTION_PROP_ASPECT_RATIO, g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
   }
 }
 
@@ -936,7 +936,7 @@ void dt_image_set_aspect_ratio_if_different(const int32_t imgid, const float asp
 
     if(raise && darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                                 g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
+                                 DT_COLLECTION_PROP_ASPECT_RATIO, g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
   }
 }
 
@@ -952,7 +952,7 @@ void dt_image_reset_aspect_ratio(const int32_t imgid, const gboolean raise)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 
   if(raise && darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_ASPECT_RATIO,
                                g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
 }
 
@@ -1180,7 +1180,7 @@ static int32_t _image_duplicate_with_version(const int32_t imgid, const int32_t 
     }
     dt_grouping_add_to_group(grpid, newid);
 
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
   }
   return newid;
 }
@@ -1388,7 +1388,7 @@ static int _image_read_duplicates(const uint32_t id, const char *filename, const
     {
       // now it is safe to set the duplicate group-id
       dt_grouping_add_to_group(grpid, newid);
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
     }
 
     count_xmps_processed++;
@@ -2227,7 +2227,8 @@ int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gc
         // write xmp file
         dt_image_write_sidecar_file(newid);
 
-        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                                   NULL);
       }
 
       g_free(filename);
