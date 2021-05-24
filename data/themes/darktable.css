@@ -1117,7 +1117,7 @@ dialog scrollbar
   border-radius: 0.35em;
   min-height: 0.42em;
   min-width: 0.42em;
-  margin: 0.07em;
+  padding: 0.07em;
 }
 
 /*--------------------------
