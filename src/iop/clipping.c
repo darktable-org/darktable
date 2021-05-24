@@ -3056,23 +3056,41 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
         if(g->shift_hold)
         {
           /* the center is locked, scale crop radial with locked ratio */
-          gboolean flag = FALSE;
-          float length = 0.0f;
           float xx = 0.0f;
           float yy = 0.0f;
-
           if(grab & GRAB_LEFT || grab & GRAB_RIGHT) xx = (grab & GRAB_LEFT) ? (pzx - bzx) : (bzx - pzx);
           if(grab & GRAB_TOP || grab & GRAB_BOTTOM) yy = (grab & GRAB_TOP) ? (pzy - bzy) : (bzy - pzy);
 
-          length = (fabsf(xx) > fabsf(yy)) ? xx : yy;
+          float ratio = fmaxf((g->prev_clip_w - 2.0f * xx) / g->prev_clip_w,
+                              (g->prev_clip_h - 2.0f * yy) / g->prev_clip_h);
 
-          if((g->prev_clip_w - (length + length)) < 0.1f || (g->prev_clip_h - (length + length)) < 0.1f)
-            flag = TRUE;
+          // ensure we don't get too small crop size
+          if(g->prev_clip_w * ratio < 0.1f) ratio = 0.1f / g->prev_clip_w;
+          if(g->prev_clip_h * ratio < 0.1f) ratio = 0.1f / g->prev_clip_h;
 
-          g->clip_x = flag ? g->clip_x : g->prev_clip_x + length;
-          g->clip_y = flag ? g->clip_y : g->prev_clip_y + length;
-          g->clip_w = fmaxf(0.1f, g->prev_clip_w - (length + length));
-          g->clip_h = fmaxf(0.1f, g->prev_clip_h - (length + length));
+          // ensure we don't have too big crop size
+          if(g->prev_clip_w * ratio > g->clip_max_w) ratio = g->clip_max_w / g->prev_clip_w;
+          if(g->prev_clip_h * ratio > g->clip_max_h) ratio = g->clip_max_h / g->prev_clip_h;
+
+          // now that we are sure that the crop size is correct, we have to adjust top & left
+          float nx = g->prev_clip_x - (g->prev_clip_w * ratio - g->prev_clip_w) / 2.0f;
+          float ny = g->prev_clip_y - (g->prev_clip_h * ratio - g->prev_clip_h) / 2.0f;
+          float nw = g->prev_clip_w * ratio;
+          float nh = g->prev_clip_h * ratio;
+
+          // move crop area to the right if needed
+          nx = fmaxf(nx, g->clip_max_x);
+          // move crop area to the left if needed
+          nx = fminf(nx, g->clip_max_w + g->clip_max_x - nw);
+          // move crop area to the bottom if needed
+          ny = fmaxf(ny, g->clip_max_y);
+          // move crop area to the top if needed
+          ny = fminf(ny, g->clip_max_h + g->clip_max_y - nh);
+
+          g->clip_x = nx;
+          g->clip_y = ny;
+          g->clip_w = nw;
+          g->clip_h = nh;
         }
         else
         {
