@@ -159,7 +159,8 @@ static int import_images(lua_State *L)
     }
     luaA_push(L, dt_lua_image_t, &result);
     // force refresh of thumbtable view
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_prepend(NULL, GINT_TO_POINTER(result)));
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                               g_list_prepend(NULL, GINT_TO_POINTER(result)));
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
     dt_control_queue_redraw_center();
 
