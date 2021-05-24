@@ -457,6 +457,7 @@ static void _capture_mipmaps_updated_signal_callback(gpointer instance, int imgi
   lib->image_id = imgid;
   dt_view_active_images_reset(FALSE);
   dt_view_active_images_add(lib->image_id, TRUE);
+  dt_thumbtable_full_redraw(dt_ui_thumbtable(darktable.gui->ui), TRUE);
 
   dt_control_queue_redraw_center();
 }
