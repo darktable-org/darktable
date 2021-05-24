@@ -92,6 +92,7 @@ typedef enum dt_lib_collect_cols_t
   DT_LIB_COLLECT_COL_PATH,
   DT_LIB_COLLECT_COL_VISIBLE,
   DT_LIB_COLLECT_COL_UNREACHABLE,
+  DT_LIB_COLLECT_COL_CHECKED,
   DT_LIB_COLLECT_COL_COUNT,
   DT_LIB_COLLECT_COL_INDEX,
   DT_LIB_COLLECT_NUM_COLS
@@ -113,6 +114,7 @@ static void collection_updated(gpointer instance, dt_collection_change_t query_c
 static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, GdkEventButton *event, dt_lib_collect_t *d);
 static int is_time_property(int property);
 static void _populate_collect_combo(GtkWidget *w);
+static void _update_visible_access_status(dt_lib_module_t *self);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -680,6 +682,57 @@ static gboolean view_onPopupMenu(GtkWidget *treeview, dt_lib_collect_t *d)
   return TRUE; /* we handled this */
 }
 
+int _combo_get_active_collection(GtkWidget *combo)
+{
+  return GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(combo)) - 1;
+}
+
+static gboolean _clear_list_status(GtkWidget *treeview, GtkTreeModel *model)
+{
+  int count = 0;
+  GtkTreeIter iter;
+
+  // clear all status to ensure the status will be checked again in case the
+  // directory has been deleted/renamed while darktable is running.
+  gtk_tree_model_get_iter_first(model, &iter);
+  do
+  {
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_CHECKED, 0, -1);
+    count++;
+  }
+  while(gtk_tree_model_iter_next(model, &iter));
+
+  return FALSE; /* let signal continue */
+}
+
+static gboolean _view_enter_evt(GtkWidget *treeview, GdkEvent *e, dt_lib_module_t *self)
+{
+  // clear visibility check status, it will be set by the motion & scroll
+  // callback below and only for the visible items.
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  dt_lib_collect_rule_t *dr = (d->rule + d->active_rule);
+
+  const int property = _combo_get_active_collection(dr->combo);
+
+  // only handle list as getting tree visible path is not working properly.
+  // another way to lazy update the access permissions is implemented.
+  if(property == DT_COLLECTION_PROP_FILMROLL)
+  {
+    GtkTreeModel *model = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(d->listfilter));
+    _clear_list_status(treeview, model);
+    _update_visible_access_status(self);
+  }
+
+  return FALSE; /* let signal continue */
+}
+
+static gboolean _view_scroll_evt(GtkWidget *treeview, GdkEvent *e, dt_lib_module_t *d)
+{
+  _update_visible_access_status(d);
+
+  return FALSE; /* let signal continue */
+}
+
 static dt_lib_collect_t *get_collect(dt_lib_collect_rule_t *r)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)(((char *)r) - r->num * sizeof(dt_lib_collect_rule_t));
@@ -740,11 +793,6 @@ static gboolean range_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter
   g_free(str);
 
   return FALSE;
-}
-
-int _combo_get_active_collection(GtkWidget *combo)
-{
-  return GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(combo)) - 1;
 }
 
 gboolean _combo_set_active_collection(GtkWidget *combo, const int property)
@@ -1601,6 +1649,51 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)tree_expand, dr);
 }
 
+static void _update_visible_access_status(dt_lib_module_t *self)
+{
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  dt_lib_collect_rule_t *dr = (d->rule + d->active_rule);
+
+  const int property = _combo_get_active_collection(dr->combo);
+
+  // only handle list as getting tree visible path is not working properly.
+  // another way to lazy update the access permissions is implemented.
+  if(property != DT_COLLECTION_PROP_FILMROLL) return;
+
+  GtkTreePath *start_path = NULL, *end_path = NULL;
+
+  if(gtk_tree_view_get_visible_range(GTK_TREE_VIEW(d->view), &start_path, &end_path))
+  {
+    while(gtk_tree_path_compare(start_path, end_path) <= 0)
+    {
+      GtkTreeModel *model =
+        gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(d->listfilter));
+      GtkTreeIter iter;
+      if(!gtk_tree_model_get_iter(model, &iter, start_path)) return;
+
+      gchar *filepath = NULL;
+      gboolean checked = FALSE;
+      gtk_tree_model_get(model, &iter,
+                         DT_LIB_COLLECT_COL_PATH, &filepath,
+                         DT_LIB_COLLECT_COL_CHECKED, &checked,
+                         -1);
+
+      if(!checked)
+      {
+        gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+                           DT_LIB_COLLECT_COL_UNREACHABLE,
+                           !(g_file_test(filepath, G_FILE_TEST_IS_DIR)),
+                           DT_LIB_COLLECT_COL_CHECKED, TRUE, -1);
+      }
+
+      gtk_tree_path_next(start_path);
+    }
+
+    gtk_tree_path_free(start_path);
+    gtk_tree_path_free(end_path);
+  }
+}
+
 static void list_view(dt_lib_collect_rule_t *dr)
 {
   // update related list
@@ -1912,7 +2005,9 @@ static void list_view(dt_lib_collect_rule_t *dr)
         if(property == DT_COLLECTION_PROP_FILMROLL)
         {
           gtk_list_store_set(GTK_LIST_STORE(model), &iter,
-                             DT_LIB_COLLECT_COL_UNREACHABLE, !(g_file_test(value, G_FILE_TEST_IS_DIR)), -1);
+                             DT_LIB_COLLECT_COL_UNREACHABLE, FALSE,
+                             DT_LIB_COLLECT_COL_CHECKED, FALSE,
+                             -1);
         }
 
         g_free(text);
@@ -2154,6 +2249,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
 
   // update list of proposals
   update_view(d->rule + d->active_rule);
+
   --darktable.gui->reset;
 }
 
@@ -2891,6 +2987,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_set_headers_visible(view, FALSE);
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(view_onButtonPressed), d);
   g_signal_connect(G_OBJECT(view), "popup-menu", G_CALLBACK(view_onPopupMenu), d);
+  g_signal_connect(G_OBJECT(view), "enter-notify-event", G_CALLBACK(_view_enter_evt), self);
+  g_signal_connect(G_OBJECT(view), "scroll-event", G_CALLBACK(_view_scroll_evt), self);
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
@@ -2902,7 +3000,7 @@ void gui_init(dt_lib_module_t *self)
 
   GtkTreeModel *listmodel
       = GTK_TREE_MODEL(gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
-                                          G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT));
+                                          G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT));
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(listmodel), DT_LIB_COLLECT_COL_INDEX,
                   (GtkTreeIterCompareFunc)_sort_model_func, self, NULL);
   d->listfilter = gtk_tree_model_filter_new(listmodel, NULL);
@@ -2910,7 +3008,7 @@ void gui_init(dt_lib_module_t *self)
 
   GtkTreeModel *treemodel
       = GTK_TREE_MODEL(gtk_tree_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
-                                          G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT));
+                                          G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT));
   d->treefilter = gtk_tree_model_filter_new(treemodel, NULL);
   gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(d->treefilter), DT_LIB_COLLECT_COL_VISIBLE);
   g_object_unref(treemodel);
