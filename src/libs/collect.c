@@ -962,7 +962,6 @@ static gboolean tree_reveal_func(GtkTreeModel *model, GtkTreePath *path, GtkTree
 
   while(gtk_tree_model_iter_parent(model, &parent, &child))
   {
-    gtk_tree_model_get(model, &parent, DT_LIB_COLLECT_COL_VISIBLE, &state, -1);
     gtk_tree_store_set(GTK_TREE_STORE(model), &parent, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
     child = parent;
   }
@@ -1192,6 +1191,18 @@ void tree_count_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeM
   }
 
   g_free(name);
+}
+
+static void _set_folder_reachability(GtkTreeModel *model, GtkTreeIter *iter)
+{
+  GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
+  GtkTreeIter model_iter;
+  gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(model), &model_iter, iter);
+  char *pth;
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &pth, -1);
+  gtk_tree_store_set(GTK_TREE_STORE(store), &model_iter, DT_LIB_COLLECT_COL_UNREACHABLE,
+                     !(g_file_test(pth, G_FILE_TEST_IS_DIR)), -1);
+  g_free(pth);
 }
 
 static const char *UNCATEGORIZED_TAG = N_("uncategorized");
@@ -1513,9 +1524,6 @@ static void tree_view(dt_lib_collect_rule_t *dr)
               }
             }
 
-            if(property == DT_COLLECTION_PROP_FOLDERS)
-              gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_UNREACHABLE,
-                                 !(g_file_test(pth, G_FILE_TEST_IS_DIR)), -1);
             common_length++;
             parent = iter;
             g_free(pth2);
@@ -1599,6 +1607,17 @@ static void tree_view(dt_lib_collect_rule_t *dr)
   }
   else
     gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)tree_expand, dr);
+
+  if(property == DT_COLLECTION_PROP_FOLDERS)
+  {
+    GtkTreeIter iter;
+    gboolean valid = gtk_tree_model_get_iter_first(d->treefilter, &iter);
+    while(valid)
+    {
+      _set_folder_reachability(d->treefilter, &iter);
+      valid = gtk_tree_model_iter_next(d->treefilter, &iter);
+    }
+  }
 }
 
 static void list_view(dt_lib_collect_rule_t *dr)
@@ -2826,6 +2845,22 @@ static gint _sort_model_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b
   return ib - ia;
 }
 
+static void _row_expanded(GtkTreeView *view, GtkTreeIter *iter,
+                          GtkTreePath *path, dt_lib_collect_t *d)
+{
+  if(d->view_rule == DT_COLLECTION_PROP_FOLDERS)
+  {
+    GtkTreeModel *model = gtk_tree_view_get_model(view);
+    GtkTreeIter child, parent = *iter;
+    gboolean valid = gtk_tree_model_iter_children(model, &child, &parent);
+    while(valid)
+    {
+      _set_folder_reachability(model, &child);
+      valid = gtk_tree_model_iter_next(model, &child);
+    }
+  }
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)calloc(1, sizeof(dt_lib_collect_t));
@@ -2891,6 +2926,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_set_headers_visible(view, FALSE);
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(view_onButtonPressed), d);
   g_signal_connect(G_OBJECT(view), "popup-menu", G_CALLBACK(view_onPopupMenu), d);
+  g_signal_connect(G_OBJECT(view), "row-expanded", G_CALLBACK(_row_expanded), d);
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
