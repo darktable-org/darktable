@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-21 18:38+0200\n"
-"PO-Revision-Date: 2021-05-21 18:40+0200\n"
+"POT-Creation-Date: 2021-05-25 07:56+0200\n"
+"PO-Revision-Date: 2021-05-25 07:56+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1673,7 +1673,7 @@ msgstr ""
 "enregistrées par certains appareils photo"
 
 #: ../build/bin/preferences_gen.h:7566 ../src/control/jobs/control_jobs.c:2312
-#: ../src/libs/import.c:176
+#: ../src/libs/import.c:177
 msgid "import"
 msgstr "importer"
 
@@ -2177,7 +2177,7 @@ msgstr "préserver couleur"
 #: ../src/iop/clipping.c:1893 ../src/iop/clipping.c:2151
 #: ../src/iop/clipping.c:2167 ../src/iop/clipping.c:2302
 #: ../src/iop/clipping.c:2329 ../src/iop/crop.c:1253 ../src/iop/crop.c:1280
-#: ../src/iop/lens.cc:2232 ../src/iop/retouch.c:422 ../src/libs/collect.c:1812
+#: ../src/iop/lens.cc:2232 ../src/iop/retouch.c:422 ../src/libs/collect.c:1813
 #: ../src/libs/colorpicker.c:633 ../src/libs/export.c:1083
 #: ../src/libs/live_view.c:420 ../src/libs/live_view.c:445
 #: ../src/libs/live_view.c:454 ../src/libs/print_settings.c:1463
@@ -2382,7 +2382,7 @@ msgstr "aberrations chromatiques très larges"
 #: ../src/iop/bilateral.cc:317 ../src/iop/channelmixer.c:625
 #: ../src/iop/channelmixer.c:635 ../src/iop/channelmixerrgb.c:3782
 #: ../src/iop/temperature.c:1879 ../src/iop/temperature.c:2030
-#: ../src/libs/collect.c:1713 ../src/views/darkroom.c:2543
+#: ../src/libs/collect.c:1714 ../src/views/darkroom.c:2543
 msgid "red"
 msgstr "rouge"
 
@@ -2392,7 +2392,7 @@ msgstr "rouge"
 #: ../src/iop/bilateral.cc:322 ../src/iop/channelmixer.c:626
 #: ../src/iop/channelmixer.c:641 ../src/iop/channelmixerrgb.c:3783
 #: ../src/iop/temperature.c:1863 ../src/iop/temperature.c:1881
-#: ../src/iop/temperature.c:2031 ../src/libs/collect.c:1713
+#: ../src/iop/temperature.c:2031 ../src/libs/collect.c:1714
 #: ../src/views/darkroom.c:2544
 msgid "green"
 msgstr "vert"
@@ -2403,7 +2403,7 @@ msgstr "vert"
 #: ../src/iop/bilateral.cc:327 ../src/iop/channelmixer.c:627
 #: ../src/iop/channelmixer.c:647 ../src/iop/channelmixerrgb.c:3784
 #: ../src/iop/temperature.c:1883 ../src/iop/temperature.c:2032
-#: ../src/libs/collect.c:1713
+#: ../src/libs/collect.c:1714
 msgid "blue"
 msgstr "bleu"
 
@@ -4115,7 +4115,7 @@ msgstr "Imprimer vos images"
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
 #: ../src/iop/lut3d.c:1556 ../src/libs/collect.c:426
 #: ../src/libs/copy_history.c:108 ../src/libs/geotagging.c:938
-#: ../src/libs/import.c:1426 ../src/libs/lib.c:235 ../src/libs/styles.c:385
+#: ../src/libs/import.c:1468 ../src/libs/lib.c:235 ../src/libs/styles.c:385
 #: ../src/libs/styles.c:529 ../src/libs/tagging.c:2299
 #: ../src/libs/tagging.c:2340
 msgid "_cancel"
@@ -4273,14 +4273,30 @@ msgstr ""
 "impossible d'obtenir les paramètres du module de format, exportation "
 "abandonnée..."
 
-#: ../src/common/camera_control.c:829
+#: ../src/common/camera_control.c:892
 #, c-format
 msgid ""
-"new camera '%s' found but it is locked by another application\n"
-"make sure it is not mounted on the computer"
+"failed to initialize `%s' on port `%s', likely causes are: locked by another "
+"application, no access to devices etc"
 msgstr ""
-"nouvel appareil photo « %s » trouvé mais bloqué par une autre application\n"
-"assurez vous qu'il n'est pas monté par l'ordinateur."
+"échec d'initialisation de « %s » sur le port « %s », les causes probable "
+"sont qu'il est bloqué par une autre application, ou permissions "
+"insuffisantes aux périphériques, etc"
+
+#: ../src/common/camera_control.c:903
+#, c-format
+msgid ""
+"`%s' on port `%s' is not interesting because it supports neither tethering "
+"nor import"
+msgstr ""
+"« %s » sur le port « %s » n'est pas utilisable car sans support pour la "
+"capture ou de l'importation"
+
+#: ../src/common/camera_control.c:953
+#, c-format
+msgid "camera `%s' on port %s disconnected while mounted"
+msgstr ""
+"appareil photo « %s » sur le port « %s » déconnecté lorsqu'il était monté"
 
 #: ../src/common/collection.c:640
 msgid "too much time to update aspect ratio for the collection"
@@ -4382,36 +4398,36 @@ msgid "module order"
 msgstr "ordre des modules"
 
 #: ../src/common/collection.c:1500 ../src/develop/lightroom.c:830
-#: ../src/iop/temperature.c:1869 ../src/libs/collect.c:1713
+#: ../src/iop/temperature.c:1869 ../src/libs/collect.c:1714
 #: ../src/views/darkroom.c:2545
 msgid "yellow"
 msgstr "jaune"
 
-#: ../src/common/collection.c:1506 ../src/libs/collect.c:1713
+#: ../src/common/collection.c:1506 ../src/libs/collect.c:1714
 msgid "purple"
 msgstr "violet"
 
 #: ../src/common/collection.c:1520 ../src/common/collection.c:1528
-#: ../src/libs/collect.c:1673
+#: ../src/libs/collect.c:1674
 msgid "basic"
 msgstr "basique"
 
-#: ../src/common/collection.c:1522 ../src/libs/collect.c:1673
+#: ../src/common/collection.c:1522 ../src/libs/collect.c:1674
 msgid "auto applied"
 msgstr "appliqué automatiquement"
 
-#: ../src/common/collection.c:1524 ../src/libs/collect.c:1673
+#: ../src/common/collection.c:1524 ../src/libs/collect.c:1674
 msgid "altered"
 msgstr "développées"
 
 #: ../src/common/collection.c:1536 ../src/common/collection.c:1610
-#: ../src/libs/collect.c:1163 ../src/libs/collect.c:1291
-#: ../src/libs/collect.c:1313 ../src/libs/collect.c:1416
-#: ../src/libs/collect.c:2315
+#: ../src/libs/collect.c:1163 ../src/libs/collect.c:1292
+#: ../src/libs/collect.c:1314 ../src/libs/collect.c:1417
+#: ../src/libs/collect.c:2316
 msgid "not tagged"
 msgstr "non positionnée"
 
-#: ../src/common/collection.c:1537 ../src/libs/collect.c:1313
+#: ../src/common/collection.c:1537 ../src/libs/collect.c:1314
 #: ../src/libs/map_locations.c:768
 msgid "tagged"
 msgstr "positionnée"
@@ -4420,25 +4436,25 @@ msgstr "positionnée"
 msgid "tagged*"
 msgstr "positionnée*"
 
-#: ../src/common/collection.c:1559 ../src/libs/collect.c:1685
+#: ../src/common/collection.c:1559 ../src/libs/collect.c:1686
 msgid "not copied locally"
 msgstr "non copiée localement"
 
 #. grouping
-#: ../src/common/collection.c:1860 ../src/libs/collect.c:1787
+#: ../src/common/collection.c:1857 ../src/libs/collect.c:1788
 msgid "group leaders"
 msgstr "tête de groupe"
 
-#: ../src/common/collection.c:1891 ../src/libs/collect.c:1848
+#: ../src/common/collection.c:1888 ../src/libs/collect.c:1849
 msgid "not defined"
 msgstr "non défini"
 
-#: ../src/common/collection.c:2171
+#: ../src/common/collection.c:2168
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr "%d image sur %d (#%d) sélectionnée dans la collection courante"
 
-#: ../src/common/collection.c:2177
+#: ../src/common/collection.c:2174
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -4706,7 +4722,7 @@ msgid "error starting darktable"
 msgstr "erreur de lancement de darktable"
 
 #: ../src/common/database.c:2536 ../src/libs/collect.c:2801
-#: ../src/libs/export_metadata.c:269 ../src/libs/import.c:1606
+#: ../src/libs/export_metadata.c:269 ../src/libs/import.c:1648
 #: ../src/libs/metadata.c:446 ../src/libs/metadata_view.c:1227
 #: ../src/libs/modulegroups.c:3474 ../src/libs/styles.c:439
 #: ../src/libs/styles.c:614 ../src/libs/tagging.c:1359
@@ -4959,7 +4975,7 @@ msgstr[1] "supprimer les répertoires vides ?"
 
 #: ../src/common/film.c:316 ../src/gui/preferences.c:831
 #: ../src/gui/styles_dialog.c:445 ../src/libs/geotagging.c:839
-#: ../src/libs/import.c:1493
+#: ../src/libs/import.c:1535
 msgid "name"
 msgstr "nom"
 
@@ -5361,7 +5377,7 @@ msgstr "versions modifiées de fichier xmp trouvées"
 msgid "_close"
 msgstr "_fermer"
 
-#: ../src/control/crawler.c:417 ../src/libs/import.c:1629
+#: ../src/control/crawler.c:417 ../src/libs/import.c:1671
 #: ../src/libs/select.c:133
 msgid "select all"
 msgstr "tout sélectionner"
@@ -5408,7 +5424,7 @@ msgid_plural "importing %d images from camera"
 msgstr[0] "importation de %d image depuis l'appareil photo"
 msgstr[1] "importation de %d images depuis l'appareil photo"
 
-#: ../src/control/jobs/camera_jobs.c:354
+#: ../src/control/jobs/camera_jobs.c:357
 msgid "import images from camera"
 msgstr "importer des images depuis le boîtier"
 
@@ -7236,13 +7252,13 @@ msgstr "images groupées"
 msgid "fit"
 msgstr "ajusté"
 
-#: ../src/dtgtk/thumbtable.c:1141
+#: ../src/dtgtk/thumbtable.c:1182
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr ""
 "vous avez modifié le paramètre contrôlant la génération des miniatures\n"
 
-#: ../src/dtgtk/thumbtable.c:1143
+#: ../src/dtgtk/thumbtable.c:1184
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
@@ -7250,7 +7266,7 @@ msgstr ""
 "toutes les miniatures doivent être invalidées.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1145
+#: ../src/dtgtk/thumbtable.c:1186
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
@@ -7259,7 +7275,7 @@ msgstr ""
 "les miniatures du cache à partir du niveau %d doivent être invalidées.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1148
+#: ../src/dtgtk/thumbtable.c:1189
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
@@ -7268,7 +7284,7 @@ msgstr ""
 "les miniatures du cache en dessous du niveau %d doivent être invalidées.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1150
+#: ../src/dtgtk/thumbtable.c:1191
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
@@ -7277,163 +7293,163 @@ msgstr ""
 "les miniatures du cache entre les niveaux %d et %d doivent être invalidées.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1153
+#: ../src/dtgtk/thumbtable.c:1194
 msgid "do you want to do that now?"
 msgstr "voulez-vous faire cela maintenant ?"
 
-#: ../src/dtgtk/thumbtable.c:1161
+#: ../src/dtgtk/thumbtable.c:1202
 msgid "cached thumbnails invalidation"
 msgstr "invalidation du cache des miniatures"
 
-#: ../src/dtgtk/thumbtable.c:2167 ../src/libs/metadata_view.c:379
+#: ../src/dtgtk/thumbtable.c:2215 ../src/libs/metadata_view.c:379
 msgid "image rejected"
 msgstr "image rejetée"
 
-#: ../src/dtgtk/thumbtable.c:2169 ../src/dtgtk/thumbtable.c:2171
-#: ../src/dtgtk/thumbtable.c:2173 ../src/dtgtk/thumbtable.c:2175
-#: ../src/dtgtk/thumbtable.c:2177
+#: ../src/dtgtk/thumbtable.c:2217 ../src/dtgtk/thumbtable.c:2219
+#: ../src/dtgtk/thumbtable.c:2221 ../src/dtgtk/thumbtable.c:2223
+#: ../src/dtgtk/thumbtable.c:2225
 #, c-format
 msgid "image rated to %s"
 msgstr "image notée à « %s »"
 
-#: ../src/dtgtk/thumbtable.c:2179
+#: ../src/dtgtk/thumbtable.c:2227
 msgid "image rated to 0 star"
 msgstr "image notée à 0 étoile"
 
-#: ../src/dtgtk/thumbtable.c:2212
+#: ../src/dtgtk/thumbtable.c:2260
 #, c-format
 msgid "colorlabels set to %s"
 msgstr "labels de couleur positionnés à « %s »"
 
-#: ../src/dtgtk/thumbtable.c:2214
+#: ../src/dtgtk/thumbtable.c:2262
 msgid "all colorlabels removed"
 msgstr "tous les labels de couleur supprimés"
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:2339
+#: ../src/dtgtk/thumbtable.c:2387
 msgctxt "accel"
 msgid "views/thumbtable/rate 0"
 msgstr "vues/miniature/pas d'étoile"
 
-#: ../src/dtgtk/thumbtable.c:2340
+#: ../src/dtgtk/thumbtable.c:2388
 msgctxt "accel"
 msgid "views/thumbtable/rate 1"
 msgstr "vues/miniature/1 étoile"
 
-#: ../src/dtgtk/thumbtable.c:2341
+#: ../src/dtgtk/thumbtable.c:2389
 msgctxt "accel"
 msgid "views/thumbtable/rate 2"
 msgstr "vues/miniature/2 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:2342
+#: ../src/dtgtk/thumbtable.c:2390
 msgctxt "accel"
 msgid "views/thumbtable/rate 3"
 msgstr "vues/miniature/3 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:2343
+#: ../src/dtgtk/thumbtable.c:2391
 msgctxt "accel"
 msgid "views/thumbtable/rate 4"
 msgstr "vues/miniature/4 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:2344
+#: ../src/dtgtk/thumbtable.c:2392
 msgctxt "accel"
 msgid "views/thumbtable/rate 5"
 msgstr "vues/miniature/5 étoiles"
 
-#: ../src/dtgtk/thumbtable.c:2345
+#: ../src/dtgtk/thumbtable.c:2393
 msgctxt "accel"
 msgid "views/thumbtable/rate reject"
 msgstr "vues/miniature/rejeter"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2348
+#: ../src/dtgtk/thumbtable.c:2396
 msgctxt "accel"
 msgid "views/thumbtable/copy history"
 msgstr "vues/miniature/copie historique"
 
-#: ../src/dtgtk/thumbtable.c:2349
+#: ../src/dtgtk/thumbtable.c:2397
 msgctxt "accel"
 msgid "views/thumbtable/copy history parts"
 msgstr "vues/miniature/copier une partie du développement"
 
-#: ../src/dtgtk/thumbtable.c:2351
+#: ../src/dtgtk/thumbtable.c:2399
 msgctxt "accel"
 msgid "views/thumbtable/paste history"
 msgstr "vues/miniature/coller le développement"
 
-#: ../src/dtgtk/thumbtable.c:2352
+#: ../src/dtgtk/thumbtable.c:2400
 msgctxt "accel"
 msgid "views/thumbtable/paste history parts"
 msgstr "vues/miniature/coller une partie du développement"
 
-#: ../src/dtgtk/thumbtable.c:2354
+#: ../src/dtgtk/thumbtable.c:2402
 msgctxt "accel"
 msgid "views/thumbtable/discard history"
 msgstr "vues/miniature/supprimer historique"
 
-#: ../src/dtgtk/thumbtable.c:2356
+#: ../src/dtgtk/thumbtable.c:2404
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image"
 msgstr "vues/miniature/cloner l'image"
 
-#: ../src/dtgtk/thumbtable.c:2357
+#: ../src/dtgtk/thumbtable.c:2405
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image virgin"
 msgstr "vues/miniature/dupliquer image vierge"
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:2361
+#: ../src/dtgtk/thumbtable.c:2409
 msgctxt "accel"
 msgid "views/thumbtable/color red"
 msgstr "vues/miniature/couleur rouge"
 
-#: ../src/dtgtk/thumbtable.c:2362
+#: ../src/dtgtk/thumbtable.c:2410
 msgctxt "accel"
 msgid "views/thumbtable/color yellow"
 msgstr "vues/miniature/couleur jaune"
 
-#: ../src/dtgtk/thumbtable.c:2363
+#: ../src/dtgtk/thumbtable.c:2411
 msgctxt "accel"
 msgid "views/thumbtable/color green"
 msgstr "vues/miniature/couleur vert"
 
-#: ../src/dtgtk/thumbtable.c:2364
+#: ../src/dtgtk/thumbtable.c:2412
 msgctxt "accel"
 msgid "views/thumbtable/color blue"
 msgstr "vues/miniature/couleur bleue"
 
-#: ../src/dtgtk/thumbtable.c:2365
+#: ../src/dtgtk/thumbtable.c:2413
 msgctxt "accel"
 msgid "views/thumbtable/color purple"
 msgstr "vues/miniature/couleur violette"
 
-#: ../src/dtgtk/thumbtable.c:2366
+#: ../src/dtgtk/thumbtable.c:2414
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
 msgstr "vues/miniature/aucun label couleur"
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:2369
+#: ../src/dtgtk/thumbtable.c:2417
 msgctxt "accel"
 msgid "views/thumbtable/select all"
 msgstr "vues/miniature/tout sélectionner"
 
-#: ../src/dtgtk/thumbtable.c:2370
+#: ../src/dtgtk/thumbtable.c:2418
 msgctxt "accel"
 msgid "views/thumbtable/select none"
 msgstr "vues/miniature/ne rien sélectionner"
 
-#: ../src/dtgtk/thumbtable.c:2372
+#: ../src/dtgtk/thumbtable.c:2420
 msgctxt "accel"
 msgid "views/thumbtable/invert selection"
 msgstr "vues/miniature/inverser sélection"
 
-#: ../src/dtgtk/thumbtable.c:2373
+#: ../src/dtgtk/thumbtable.c:2421
 msgctxt "accel"
 msgid "views/thumbtable/select film roll"
 msgstr "vues/miniature/sélectionner film"
 
-#: ../src/dtgtk/thumbtable.c:2374
+#: ../src/dtgtk/thumbtable.c:2422
 msgctxt "accel"
 msgid "views/thumbtable/select untouched"
 msgstr "vues/miniature/non développées"
@@ -8498,7 +8514,7 @@ msgstr "sélectionne le fichier à importer"
 
 #: ../src/gui/preferences.c:1639 ../src/gui/preferences.c:1728
 #: ../src/libs/collect.c:427 ../src/libs/copy_history.c:109
-#: ../src/libs/geotagging.c:939 ../src/libs/import.c:1427
+#: ../src/libs/geotagging.c:939 ../src/libs/import.c:1469
 #: ../src/libs/styles.c:530
 msgid "_open"
 msgstr "_ouvrir"
@@ -11390,21 +11406,21 @@ msgstr "la marge haute ne peut pas dépasser la marge basse"
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr "la marge basse ne peut pas dépasser la marge haute"
 
-#: ../src/iop/clipping.c:3462 ../src/iop/crop.c:1779
+#: ../src/iop/clipping.c:3480 ../src/iop/crop.c:1798
 msgid "commit"
 msgstr "valider"
 
-#: ../src/iop/clipping.c:3473 ../src/iop/crop.c:1790
+#: ../src/iop/clipping.c:3491 ../src/iop/crop.c:1809
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s sur bords] recadrer"
 
-#: ../src/iop/clipping.c:3475 ../src/iop/crop.c:1792
+#: ../src/iop/clipping.c:3493 ../src/iop/crop.c:1811
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s sur bords] recadrer avec ratio"
 
-#: ../src/iop/clipping.c:3476 ../src/iop/crop.c:1793
+#: ../src/iop/clipping.c:3494 ../src/iop/crop.c:1812
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] définir/orienter l'horizon"
@@ -13237,7 +13253,7 @@ msgstr "gris moyen cible"
 
 #: ../src/iop/filmic.c:1755
 msgid ""
-"midde grey value of the target display or color space.\n"
+"middle grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
 msgstr ""
 "valeur du gris moyen de la cible de sortie ou de l'espace de couleur.\n"
@@ -13591,7 +13607,7 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:3907
 msgid ""
-"midde gray value of the target display or color space.\n"
+"middle gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
 msgstr ""
 "valeur du gris moyen de la cible de sortie ou de l'espace de couleur.\n"
@@ -16769,19 +16785,19 @@ msgstr "enlever..."
 msgid "uncategorized"
 msgstr "sans catégorie"
 
-#: ../src/libs/collect.c:1685
+#: ../src/libs/collect.c:1686
 msgid "copied locally"
 msgstr "copiée localement"
 
-#: ../src/libs/collect.c:1787
+#: ../src/libs/collect.c:1788
 msgid "group followers"
 msgstr "membres du groupe"
 
-#: ../src/libs/collect.c:2032
+#: ../src/libs/collect.c:2033
 msgid "use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "utiliser <, <=, >, >=, <>, =, [;] comme opérateurs"
 
-#: ../src/libs/collect.c:2037
+#: ../src/libs/collect.c:2038
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "type dates in the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"
@@ -16790,12 +16806,12 @@ msgstr ""
 "entrer les dates sous la forme : AAAA:MM:JJ HH:MM:SS (uniquement l'année est "
 "obligatoire)"
 
-#: ../src/libs/collect.c:2044
+#: ../src/libs/collect.c:2045
 #, no-c-format
 msgid "use `%' as wildcard and `,' to separate values"
 msgstr "utiliser « % » en caractère joker et « , » pour séparer les valeurs"
 
-#: ../src/libs/collect.c:2050
+#: ../src/libs/collect.c:2051
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -16807,7 +16823,7 @@ msgstr ""
 "utiliser « * » pour inclure la hiérarchie et les sous-hiérarchies (shift-"
 "clic)"
 
-#: ../src/libs/collect.c:2060
+#: ../src/libs/collect.c:2061
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -16819,7 +16835,7 @@ msgstr ""
 "utiliser « * » pour inclure la hiérarchie et les sous-locations (majuscule-"
 "clic)"
 
-#: ../src/libs/collect.c:2070
+#: ../src/libs/collect.c:2071
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -16832,17 +16848,17 @@ msgstr ""
 "shift+clic pour inclure le dossier courant et les sous-dossiers\n"
 "double-clic pour inclure seulement le dossier courant"
 
-#: ../src/libs/collect.c:2081
+#: ../src/libs/collect.c:2082
 #, no-c-format
 msgid "use `%' as wildcard"
 msgstr "utilisez « % » en caractère joker"
 
-#: ../src/libs/collect.c:2133 ../src/libs/collect.c:2148
+#: ../src/libs/collect.c:2134 ../src/libs/collect.c:2149
 #: ../src/libs/collect.c:2683
 msgid "clear this rule"
 msgstr "supprimer cette condition"
 
-#: ../src/libs/collect.c:2137
+#: ../src/libs/collect.c:2138
 msgid "clear this rule or add new rules"
 msgstr "supprimer cette condition ou en ajouter une nouvelle"
 
@@ -17703,11 +17719,11 @@ msgstr "nombre d'images  par rapport aux images sélectionnées"
 msgid "histogram"
 msgstr "histogramme"
 
-#: ../src/libs/histogram.c:981 ../src/libs/histogram.c:1601
+#: ../src/libs/histogram.c:980 ../src/libs/histogram.c:1600
 msgid "ctrl+scroll to change display height"
 msgstr "ctrl+molette pour changer la hauteur"
 
-#: ../src/libs/histogram.c:988
+#: ../src/libs/histogram.c:987
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets\n"
@@ -17717,7 +17733,7 @@ msgstr ""
 "le double-clic réinitialise\n"
 "ctrl+molette pour changer la hauteur"
 
-#: ../src/libs/histogram.c:993
+#: ../src/libs/histogram.c:992
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets\n"
@@ -17727,108 +17743,108 @@ msgstr ""
 "le double-clic réinitialise\n"
 "ctrl+molette pour changer la hauteur"
 
-#: ../src/libs/histogram.c:1106 ../src/libs/histogram.c:1153
+#: ../src/libs/histogram.c:1105 ../src/libs/histogram.c:1152
 msgid "set scale to linear"
 msgstr "afficher en mode linéaire"
 
-#: ../src/libs/histogram.c:1111 ../src/libs/histogram.c:1158
+#: ../src/libs/histogram.c:1110 ../src/libs/histogram.c:1157
 msgid "set scale to logarithmic"
 msgstr "afficher en mode logarithmique"
 
-#: ../src/libs/histogram.c:1128
+#: ../src/libs/histogram.c:1127
 msgid "set view to RGB parade"
 msgstr "afficher en mode parade RVB"
 
-#: ../src/libs/histogram.c:1136
+#: ../src/libs/histogram.c:1135
 msgid "set view to waveform"
 msgstr "afficher en mode forme d'onde"
 
-#: ../src/libs/histogram.c:1168
+#: ../src/libs/histogram.c:1167
 msgid "set view to AzBz"
 msgstr "afficher en mode AzBz"
 
-#: ../src/libs/histogram.c:1173
+#: ../src/libs/histogram.c:1172
 msgid "set view to u*v*"
 msgstr "afficher en mode u*v*"
 
-#: ../src/libs/histogram.c:1187
+#: ../src/libs/histogram.c:1186
 msgid "set mode to waveform"
 msgstr "afficher en mode forme d'onde"
 
-#: ../src/libs/histogram.c:1197
+#: ../src/libs/histogram.c:1196
 msgid "set mode to vectorscope"
 msgstr "afficher en mode vectorscope"
 
-#: ../src/libs/histogram.c:1205
+#: ../src/libs/histogram.c:1204
 msgid "set mode to histogram"
 msgstr "afficher en mode histogramme"
 
-#: ../src/libs/histogram.c:1289 ../src/libs/histogram.c:1325
-#: ../src/libs/histogram.c:1632
+#: ../src/libs/histogram.c:1288 ../src/libs/histogram.c:1324
+#: ../src/libs/histogram.c:1631
 msgid "click to hide red channel"
 msgstr "cacher le canal rouge"
 
-#: ../src/libs/histogram.c:1289 ../src/libs/histogram.c:1325
-#: ../src/libs/histogram.c:1632
+#: ../src/libs/histogram.c:1288 ../src/libs/histogram.c:1324
+#: ../src/libs/histogram.c:1631
 msgid "click to show red channel"
 msgstr "afficher le canal rouge"
 
-#: ../src/libs/histogram.c:1297 ../src/libs/histogram.c:1323
-#: ../src/libs/histogram.c:1639
+#: ../src/libs/histogram.c:1296 ../src/libs/histogram.c:1322
+#: ../src/libs/histogram.c:1638
 msgid "click to hide green channel"
 msgstr "cacher le canal vert"
 
-#: ../src/libs/histogram.c:1297 ../src/libs/histogram.c:1323
-#: ../src/libs/histogram.c:1639
+#: ../src/libs/histogram.c:1296 ../src/libs/histogram.c:1322
+#: ../src/libs/histogram.c:1638
 msgid "click to show green channel"
 msgstr "afficher le canal vert"
 
-#: ../src/libs/histogram.c:1305 ../src/libs/histogram.c:1324
-#: ../src/libs/histogram.c:1645
+#: ../src/libs/histogram.c:1304 ../src/libs/histogram.c:1323
+#: ../src/libs/histogram.c:1644
 msgid "click to hide blue channel"
 msgstr "cacher le canal bleu"
 
-#: ../src/libs/histogram.c:1305 ../src/libs/histogram.c:1324
-#: ../src/libs/histogram.c:1645
+#: ../src/libs/histogram.c:1304 ../src/libs/histogram.c:1323
+#: ../src/libs/histogram.c:1644
 msgid "click to show blue channel"
 msgstr "afficher le canal bleu"
 
-#: ../src/libs/histogram.c:1748
+#: ../src/libs/histogram.c:1747
 msgctxt "accel"
 msgid "histogram/hide histogram"
 msgstr "histogramme/cacher histogramme"
 
-#: ../src/libs/histogram.c:1749
+#: ../src/libs/histogram.c:1748
 msgctxt "accel"
 msgid "hide histogram"
 msgstr "cacher histogramme"
 
-#: ../src/libs/histogram.c:1750
+#: ../src/libs/histogram.c:1749
 msgctxt "accel"
 msgid "histogram/cycle histogram modes"
 msgstr "histogramme/cycler sur les modes de l'histogramme"
 
-#: ../src/libs/histogram.c:1751
+#: ../src/libs/histogram.c:1750
 msgctxt "accel"
 msgid "cycle histogram modes"
 msgstr "cycler sur les modes de l'histogramme"
 
-#: ../src/libs/histogram.c:1752
+#: ../src/libs/histogram.c:1751
 msgctxt "accel"
 msgid "histogram/switch histogram mode"
 msgstr "histogramme/changer le mode de l'histogramme"
 
-#: ../src/libs/histogram.c:1753
+#: ../src/libs/histogram.c:1752
 msgctxt "accel"
 msgid "switch histogram mode"
 msgstr "changer le mode de l'histogramme"
 
-#: ../src/libs/histogram.c:1754
+#: ../src/libs/histogram.c:1753
 msgctxt "accel"
 msgid "histogram/switch histogram type"
 msgstr "histogramme/changer le type de l'histogramme"
 
-#: ../src/libs/histogram.c:1755
+#: ../src/libs/histogram.c:1754
 msgctxt "accel"
 msgid "switch histogram type"
 msgstr "changer le type de l'histogramme"
@@ -18215,65 +18231,97 @@ msgctxt "accel"
 msgid "ungroup"
 msgstr "dégrouper"
 
-#: ../src/libs/import.c:198
+#: ../src/libs/import.c:199
 msgctxt "accel"
 msgid "copy & import from camera"
 msgstr "copier & importer depuis le boîtier"
 
-#: ../src/libs/import.c:199
+#: ../src/libs/import.c:200
 msgctxt "accel"
 msgid "tethered shoot"
 msgstr "commander le boîtier"
 
-#: ../src/libs/import.c:200
+#: ../src/libs/import.c:201
 msgctxt "accel"
 msgid "add to library"
 msgstr "ajouter à la bibliothèque"
 
-#: ../src/libs/import.c:201
+#: ../src/libs/import.c:202
 msgctxt "accel"
 msgid "copy & import"
 msgstr "copier & importer"
 
-#: ../src/libs/import.c:267
+#: ../src/libs/import.c:203
+msgctxt "accel"
+msgid "mount camera"
+msgstr "monter appareil photo"
+
+#: ../src/libs/import.c:204
+msgctxt "accel"
+msgid "unmount camera"
+msgstr "démonter appareil photo"
+
+#: ../src/libs/import.c:291
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "appareil « %s » connecté sur le port « %s »."
 
-#: ../src/libs/import.c:277 ../src/libs/import.c:1596
+#: ../src/libs/import.c:301 ../src/libs/import.c:1638
 msgid "copy & import from camera"
 msgstr "copier & importer depuis le boîtier"
 
-#: ../src/libs/import.c:284
+#: ../src/libs/import.c:308
 msgid "tethered shoot"
 msgstr "commander le boîtier"
 
-#: ../src/libs/import.c:701
+#: ../src/libs/import.c:312
+msgid "unmount camera"
+msgstr "démonter appareil photo"
+
+#: ../src/libs/import.c:348
+msgid ""
+"camera is locked by another application\n"
+"make sure it is no longer mounted\n"
+"or quit the locking application"
+msgstr ""
+"l'appareil photo est bloqué par une autre application\n"
+"assurez vous qu'il n'est plus monté\n"
+"ou quitter l'application le bloquant"
+
+#: ../src/libs/import.c:351
+msgid "tethering and importing is disabled for this camera"
+msgstr "la capture et l'importation sont désactivées pour ce boîtier"
+
+#: ../src/libs/import.c:353
+msgid "mount camera"
+msgstr "monter appareil photo"
+
+#: ../src/libs/import.c:743
 #, c-format
 msgid "%d image out of %d selected"
 msgid_plural "%d images out of %d selected"
 msgstr[0] "%d image sélectionnée parmi %d"
 msgstr[1] "%d images sélectionnées parmi %d"
 
-#: ../src/libs/import.c:1049
+#: ../src/libs/import.c:1091
 msgid "you can't delete the selected place"
 msgstr "impossible de supprimer l'emplacement actuellement sélectionné"
 
-#: ../src/libs/import.c:1149
+#: ../src/libs/import.c:1191
 msgid "choose the root of the folder tree below"
 msgstr "choisir la racine des répertoires ci-dessous"
 
-#: ../src/libs/import.c:1152
+#: ../src/libs/import.c:1194
 msgid "places"
 msgstr "emplacements"
 
-#: ../src/libs/import.c:1156
+#: ../src/libs/import.c:1198
 msgid "restore all default places you have removed by right-click"
 msgstr ""
 "restaurer tous les emplacements par défaut qui ont été supprimés avec un "
 "clic-droit"
 
-#: ../src/libs/import.c:1161
+#: ../src/libs/import.c:1203
 msgid ""
 "add a custom place\n"
 "\n"
@@ -18283,87 +18331,87 @@ msgstr ""
 "\n"
 "clic-droit pour supprimer un emplacement"
 
-#: ../src/libs/import.c:1168
+#: ../src/libs/import.c:1210
 msgid "you can add custom places using the plus icon"
 msgstr "ajouter des emplacements personnalisés en cliquant sur l'icône"
 
-#: ../src/libs/import.c:1193
+#: ../src/libs/import.c:1235
 msgid "select a folder to see the content"
 msgstr "sélectionner un dossier pour voir le contenu"
 
-#: ../src/libs/import.c:1196
+#: ../src/libs/import.c:1238
 msgid "folders"
 msgstr "dossiers"
 
-#: ../src/libs/import.c:1263
+#: ../src/libs/import.c:1305
 msgid "home"
 msgstr "dossier personnel"
 
-#: ../src/libs/import.c:1273
+#: ../src/libs/import.c:1315
 msgid "pictures"
 msgstr "images"
 
-#: ../src/libs/import.c:1426
+#: ../src/libs/import.c:1468
 msgid "open folder"
 msgstr "ouvrir le dossier"
 
-#: ../src/libs/import.c:1489
+#: ../src/libs/import.c:1531
 msgid "mark already imported pictures"
 msgstr "indique les images déjà importées"
 
-#: ../src/libs/import.c:1513
+#: ../src/libs/import.c:1555
 msgid "modified"
 msgstr "modifié"
 
-#: ../src/libs/import.c:1518
+#: ../src/libs/import.c:1560
 msgid "file 'modified date/time', may be different from 'Exif date/time'"
 msgstr ""
 "la « date/heure de modification » du fichier peut être différente de « date/"
 "heure exif »"
 
-#: ../src/libs/import.c:1530
+#: ../src/libs/import.c:1572
 msgid "show/hide thumbnails"
 msgstr "montrer/cacher les miniatures"
 
 #. collapsible section
-#: ../src/libs/import.c:1566
+#: ../src/libs/import.c:1608
 msgid "naming rules"
 msgstr "règles de nommage"
 
-#: ../src/libs/import.c:1594
+#: ../src/libs/import.c:1636
 msgid "add to library"
 msgstr "ajouter à la bibliothèque"
 
-#: ../src/libs/import.c:1595
+#: ../src/libs/import.c:1637
 msgid "copy & import"
 msgstr "copier & importer"
 
-#: ../src/libs/import.c:1633 ../src/libs/select.c:137
+#: ../src/libs/import.c:1675 ../src/libs/select.c:137
 msgid "select none"
 msgstr "rien sélectionner"
 
-#: ../src/libs/import.c:1639
+#: ../src/libs/import.c:1681
 msgid "select new"
 msgstr "sélectionner nouveaux"
 
-#: ../src/libs/import.c:1684
+#: ../src/libs/import.c:1726
 msgid "please wait while prefetching the list of images from camera..."
 msgstr ""
 "merci de patienter pendant la récupération des images de votre boîtier..."
 
-#: ../src/libs/import.c:1899
+#: ../src/libs/import.c:1943
 msgid "add to library..."
 msgstr "ajouter à la bibliothèque..."
 
-#: ../src/libs/import.c:1900
+#: ../src/libs/import.c:1944
 msgid "add existing images to the library"
 msgstr "ajoute des images à la bibliothèque"
 
-#: ../src/libs/import.c:1907
+#: ../src/libs/import.c:1951
 msgid "copy & import..."
 msgstr "copier & importer..."
 
-#: ../src/libs/import.c:1908
+#: ../src/libs/import.c:1952
 msgid ""
 "copy and optionally rename images before adding them to the library\n"
 "patterns can be defined to rename the images and specify the destination "
@@ -18375,7 +18423,7 @@ msgstr ""
 "destination"
 
 #. collapsible section
-#: ../src/libs/import.c:1934
+#: ../src/libs/import.c:1974
 msgid "parameters"
 msgstr "paramètres"
 
@@ -20581,12 +20629,12 @@ msgstr "boîte à outils de module"
 msgid "timeline"
 msgstr "chronologie"
 
-#: ../src/libs/tools/timeline.c:1438
+#: ../src/libs/tools/timeline.c:1450
 msgctxt "accel"
 msgid "start selection"
 msgstr "début de sélection"
 
-#: ../src/libs/tools/timeline.c:1439
+#: ../src/libs/tools/timeline.c:1451
 msgctxt "accel"
 msgid "stop selection"
 msgstr "fin de sélection"
@@ -21376,7 +21424,7 @@ msgstr "capture"
 msgid "new session initiated '%s'"
 msgstr "nouvelle session initiée « %s »"
 
-#: ../src/views/tethering.c:441
+#: ../src/views/tethering.c:448
 msgid "no camera with tethering support available for use..."
 msgstr "aucun boîtier disponible pour la capture..."
 
