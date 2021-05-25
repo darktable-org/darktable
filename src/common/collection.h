@@ -117,7 +117,8 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_LAST,
 
   DT_COLLECTION_PROP_UNDEF,
-  DT_COLLECTION_PROP_RATING // this one goes here as not used currently in collect.c
+  DT_COLLECTION_PROP_RATING, // this one goes here as not used currently in collect.c
+  DT_COLLECTION_PROP_SORT
 } dt_collection_properties_t;
 
 typedef enum dt_collection_rating_comperator_t
