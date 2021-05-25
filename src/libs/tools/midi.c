@@ -256,7 +256,13 @@ void update_with_move(midi_device *midi, PmTimestamp timestamp, gint controller,
   else if(!isnan(new_position))
   {
     int c = - new_position;
-    if(c > 0) rotor_position = fmodf(c * 10.5f - (c > 13 ? 140.1f : 8.6f), 128);
+    if(c > 1)
+    {
+      if(midi->is_x_touch_mini)
+        rotor_position = fmodf(c * 10.5f - (c > 13 ? 140.1f : 8.6f), 128);
+      else
+        rotor_position = fmodf(c * 9.0f - 10.f, 128);
+    }
   }
   else
   {
@@ -390,10 +396,10 @@ void midi_open_devices(dt_lib_module_t *self)
 
       midi->is_x_touch_mini = strstr(info->name, "X-TOUCH MINI") != NULL;
 
-      midi->num_knobs   = midi->is_x_touch_mini ? 8 : 128;
-      midi->first_knob  = midi->is_x_touch_mini ? 1 :   0;
-      midi->num_keys    = 16;
-      midi->first_key   = midi->is_x_touch_mini ? 8 :   0;
+      midi->num_knobs   = midi->is_x_touch_mini ?  8 : 128;
+      midi->first_knob  = midi->is_x_touch_mini ?  1 :   0;
+      midi->num_keys    = midi->is_x_touch_mini ? 16 : 128;
+      midi->first_key   = midi->is_x_touch_mini ?  8 :   0;
       midi->first_light = 0;
 
       midi->num_identical = midi->is_x_touch_mini ? 0 : 5; // countdown "relative down" moves received before switching to relative mode
