@@ -407,6 +407,8 @@ static void _zoom_preset_change(uint64_t val)
   zoom_y = dt_control_get_dev_zoom_y();
   dt_dev_get_processed_size(dev, &procw, &proch);
   float scale = 0;
+  const float ppd = darktable.gui->ppd;
+  const gboolean low_ppd = (darktable.gui->ppd == 1);
   closeup = 0;
   if(val == 0u)
   {
@@ -423,36 +425,28 @@ static void _zoom_preset_change(uint64_t val)
   else if(val == 2u)
   {
     // 100%
-    if(darktable.gui->ppd == 1)
+    if(low_ppd == 1)
     {
       scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
       zoom = DT_ZOOM_1;
     }
     else
     {
-      scale = 0.5f;
+      scale = 1.0f / ppd;
       zoom = DT_ZOOM_FREE;
     }
   }
   else if(val == 3u)
   {
     // 200%
-    if(darktable.gui->ppd == 1)
-    {
-      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-      zoom = DT_ZOOM_1;
-      closeup = 1;
-    }
-    else
-    {
-      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-      zoom = DT_ZOOM_1;
-    }
+    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+    zoom = DT_ZOOM_1;
+    if(low_ppd) closeup = 1;
   }
   else if(val == 4u)
   {
     // 50%
-    scale = 0.5f / (float)darktable.gui->ppd;
+    scale = 0.5f / ppd;
     zoom = DT_ZOOM_FREE;
   }
   else if(val == 5u)
@@ -460,21 +454,21 @@ static void _zoom_preset_change(uint64_t val)
     // 1600%
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
-    closeup = (darktable.gui->ppd == 1) ? 4 : 3;
+    closeup = (low_ppd) ? 4 : 3;
   }
   else if(val == 6u)
   {
     // 400%
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
-    closeup = (darktable.gui->ppd == 1) ? 2 : 1;
+    closeup = (low_ppd) ? 2 : 1;
   }
   else if(val == 7u)
   {
     // 800%
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
-    closeup = (darktable.gui->ppd == 1) ? 3 : 2;
+    closeup = (low_ppd) ? 3 : 2;
   }
 
   // zoom_x = (1.0/(scale*(1<<closeup)))*(zoom_x - .5f*dev->width )/procw;

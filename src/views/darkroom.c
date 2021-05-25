@@ -3459,7 +3459,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
     dt_dev_get_processed_size(dev, &procw, &proch);
     float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
     const float ppd = darktable.gui->ppd;
-    const gboolean low_ppd = darktable.gui->ppd == 1;
+    const gboolean low_ppd = (darktable.gui->ppd == 1);
     const float mouse_off_x = x - 0.5f * dev->width;
     const float mouse_off_y = y - 0.5f * dev->height;
     zoom_x += mouse_off_x / (procw * scale);
@@ -3487,7 +3487,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       else
       {
         zoom = DT_ZOOM_FREE;
-        scale = 0.5f;
+        scale = 1.0f / ppd;
       }
     }
     dt_control_set_dev_zoom_scale(scale);
@@ -3680,17 +3680,9 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   }
   else if(scale > 1.9999f / ppd)
   {
-    if(low_ppd)
-    {
-      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-      zoom = DT_ZOOM_1;
-      closeup = 1;
-    }
-    else
-    {
-      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-      zoom = DT_ZOOM_1;
-    }
+    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+    zoom = DT_ZOOM_1;
+    if(low_ppd) closeup = 1;
   }
 
   if(fabsf(scale - 1.0f) < 0.001f) zoom = DT_ZOOM_1;
@@ -4340,17 +4332,9 @@ static void second_window_scrolled(GtkWidget *widget, dt_develop_t *dev, double 
   }
   else if(scale > 1.9999f / ppd)
   {
-    if(low_ppd)
-    {
-      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-      zoom = DT_ZOOM_1;
-      closeup = 1;
-    }
-    else
-    {
-      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-      zoom = DT_ZOOM_1;
-    }
+   scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+   zoom = DT_ZOOM_1;
+   if(low_ppd) closeup = 1;
   }
 
   if(fabsf(scale - 1.0f) < 0.001f) zoom = DT_ZOOM_1;
@@ -4439,7 +4423,7 @@ static int second_window_button_pressed(GtkWidget *widget, dt_develop_t *dev, do
       else
       {
         zoom = DT_ZOOM_FREE;
-        scale = 0.5f;
+        scale = 1.0f / ppd;
       }
     }
     dt_second_window_set_zoom_scale(dev, scale);
