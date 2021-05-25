@@ -2124,6 +2124,11 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+    // if we have remove something from selection, we need to raise a signal
+    if(sqlite3_changes(dt_database_get(darktable.db)) > 0)
+    {
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+    }
 
     /* free allocated strings */
     g_free(complete_query);
