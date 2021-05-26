@@ -867,8 +867,9 @@ static gboolean _time_is_visible(dt_lib_timeline_time_t t, dt_lib_timeline_t *st
   return TRUE;
 }
 
-static void _lib_timeline_collection_changed(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
-                                             int next, gpointer user_data)
+static void _lib_timeline_collection_changed(gpointer instance, dt_collection_change_t query_change,
+                                             dt_collection_properties_t changed_property, gpointer imgs, int next,
+                                             gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
@@ -962,7 +963,8 @@ static void _selection_collect(dt_lib_timeline_t *strip, dt_lib_timeline_mode_t 
     dt_conf_set_string(confname, coll);
     g_free(coll);
 
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
+                               NULL);
   }
 }
 
@@ -1187,7 +1189,8 @@ static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton
       if(dt_conf_get_int(confname) == DT_COLLECTION_PROP_TIME)
       {
         dt_conf_set_int("plugins/lighttable/collect/num_rules", nb_rules - 1);
-        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                                   NULL);
 
         strip->selecting = FALSE;
       }
@@ -1503,7 +1506,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->timeline, TRUE, TRUE, 0);
 
   // we update the selection with actual collect rules
-  _lib_timeline_collection_changed(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, NULL, -1, self);
+  _lib_timeline_collection_changed(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL, -1, self);
 
   /* initialize view manager proxy */
   darktable.view_manager->proxy.timeline.module = self;
