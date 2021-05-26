@@ -520,7 +520,25 @@ static void _piwigo_album_changed(GtkComboBox *cb, gpointer data)
     gtk_widget_show_all(GTK_WIDGET(ui->create_box));
   }
   else
+  {
     gtk_widget_hide(GTK_WIDGET(ui->create_box));
+
+    // As the album name is have spaces as prefix (for indentation) and a
+    // count of entries in parenthesis as suffix, we need to do some clean-up.
+    gchar *v = g_strstrip(g_strdup(value));
+    gchar *p = v + strlen(v) - 1;
+    if(*p == ')')
+    {
+      while(*p && *p != '(') p--;
+      if(*p == '(')
+      {
+        p--;
+        *p = '\0';
+      }
+    }
+    dt_conf_set_string("storage/piwigo/last_album", v);
+    g_free(v);
+  }
 }
 
 /** Refresh albums */
@@ -701,14 +719,22 @@ static void _piwigo_login_clicked(GtkButton *button, gpointer data)
 {
   dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)data;
   _piwigo_ctx_destroy(&ui->api);
-  _piwigo_refresh_albums(ui, NULL);
+
+  gchar *last_album = dt_conf_get_string("storage/piwigo/last_album");
+  _piwigo_refresh_albums(ui, last_album);
+  dt_conf_set_string("storage/piwigo/last_album", last_album);
+  g_free(last_album);
 }
 
 // Refresh button pressed...
 static void _piwigo_refresh_clicked(GtkButton *button, gpointer data)
 {
   dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)data;
+
+  gchar *last_album = dt_conf_get_string("storage/piwigo/last_album");
   _piwigo_refresh_albums(ui, NULL);
+  dt_conf_set_string("storage/piwigo/last_album", last_album);
+  g_free(last_album);
 }
 
 const char *name(const struct dt_imageio_module_storage_t *self)
