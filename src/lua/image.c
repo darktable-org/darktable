@@ -219,7 +219,7 @@ static int rating_member(lua_State *L)
     my_image->flags &= ~DT_VIEW_RATINGS_MASK;
     my_image->flags |= my_score;
     releasewriteimage(L, my_image);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING,
                                g_list_prepend(NULL, GINT_TO_POINTER(my_image->id)));
     return 0;
   }
@@ -321,7 +321,7 @@ static int colorlabel_member(lua_State *L)
     {
       dt_colorlabels_remove_label(imgid, colorlabel_index);
     }
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
                                g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
     return 0;
   }

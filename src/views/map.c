@@ -138,8 +138,9 @@ static void _view_map_drag_set_icon(const dt_view_t *self, GdkDragContext *conte
                              const int imgid, const int count);
 
 /* callback when the collection changes */
-static void _view_map_collection_changed(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
-                                         int next, gpointer user_data);
+static void _view_map_collection_changed(gpointer instance, dt_collection_change_t query_change,
+                                         dt_collection_properties_t changed_property, gpointer imgs, int next,
+                                         gpointer user_data);
 /* callback when the selection changes */
 static void _view_map_selection_changed(gpointer instance, gpointer user_data);
 /* callback when images geotags change */
@@ -2435,8 +2436,9 @@ static void _view_map_check_preference_changed(gpointer instance, gpointer user_
   if(_view_map_prefs_changed(lib)) g_signal_emit_by_name(lib->map, "changed");
 }
 
-static void _view_map_collection_changed(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
-                                         int next, gpointer user_data)
+static void _view_map_collection_changed(gpointer instance, dt_collection_change_t query_change,
+                                         dt_collection_properties_t changed_property, gpointer imgs, int next,
+                                         gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
   dt_map_t *lib = (dt_map_t *)self->data;

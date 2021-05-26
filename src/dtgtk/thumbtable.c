@@ -1371,7 +1371,8 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 }
 
 // this is called each time collected images change
-static void _dt_collection_changed_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
+static void _dt_collection_changed_callback(gpointer instance, dt_collection_change_t query_change,
+                                            dt_collection_properties_t changed_property, gpointer imgs,
                                             const int next, gpointer user_data)
 {
   if(!user_data) return;
@@ -1743,7 +1744,7 @@ static void _event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint
         // set order to "user defined" (this shouldn't trigger anything)
         const int32_t mouse_over_id = dt_control_get_mouse_over_id();
         dt_collection_move_before(mouse_over_id, table->drag_list);
-        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                                    g_list_copy(table->drag_list));
         success = TRUE;
       }
@@ -2229,7 +2230,7 @@ static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, 
     }
   }
 
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING, imgs);
   return TRUE;
 }
 static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
@@ -2264,7 +2265,8 @@ static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable,
     }
   }
 
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
+                             imgs);
   return TRUE;
 }
 static gboolean _accel_copy(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
@@ -2288,7 +2290,7 @@ static gboolean _accel_paste(GtkAccelGroup *accel_group, GObject *acceleratable,
 
   const gboolean ret = dt_history_paste_on_list(imgs, TRUE);
   if(ret)
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, imgs);
   else
     g_list_free(imgs);
 
@@ -2305,7 +2307,7 @@ static gboolean _accel_paste_parts(GtkAccelGroup *accel_group, GObject *accelera
 
   const gboolean ret = dt_history_paste_parts_on_list(imgs, TRUE);
   if(ret)
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, imgs);
   else
     g_list_free(imgs);
 
@@ -2318,7 +2320,7 @@ static gboolean _accel_hist_discard(GtkAccelGroup *accel_group, GObject *acceler
   GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE, FALSE));
   const gboolean ret = dt_history_delete_on_list(imgs, TRUE);
   if(ret)
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, imgs);
   else
     g_list_free(imgs);
   return TRUE;
@@ -2342,7 +2344,7 @@ static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *accelerata
 
   dt_undo_end_group(darktable.undo);
 
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   return TRUE;
 }

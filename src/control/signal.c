@@ -52,7 +52,7 @@ static GType uint_arg[] = { G_TYPE_UINT };
 static GType pointer_arg[] = { G_TYPE_POINTER };
 static GType pointer_2arg[] = { G_TYPE_POINTER, G_TYPE_POINTER };
 static GType pointer_trouble[] = { G_TYPE_POINTER, G_TYPE_STRING, G_TYPE_STRING };
-static GType collection_args[] = { G_TYPE_UINT, G_TYPE_POINTER, G_TYPE_UINT };
+static GType collection_args[] = { G_TYPE_UINT, G_TYPE_UINT, G_TYPE_POINTER, G_TYPE_UINT };
 static GType image_export_arg[]
     = { G_TYPE_UINT, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER };
 static GType history_will_change_arg[]
@@ -60,8 +60,8 @@ static GType history_will_change_arg[]
 static GType geotag_arg[] = { G_TYPE_POINTER, G_TYPE_UINT };
 
 // callback for the destructor of DT_SIGNAL_COLLECTION_CHANGED
-static void _collection_changed_destroy_callback(gpointer instance, int query_change, gpointer imgs,
-                                                 const int next, gpointer user_data)
+static void _collection_changed_destroy_callback(gpointer instance, int query_change, int changed_property,
+                                                 gpointer imgs, const int next, gpointer user_data)
 {
   if(imgs)
   {
@@ -113,13 +113,13 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   { "dt-viewmanager-thumbtable-activate", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg,
     NULL, FALSE }, // DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE
 
-  { "dt-collection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 3, collection_args,
+  { "dt-collection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 4, collection_args,
     G_CALLBACK(_collection_changed_destroy_callback), FALSE }, // DT_SIGNAL_COLLECTION_CHANGED
   { "dt-selection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_SELECTION_CHANGED
   { "dt-tag-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_TAG_CHANGED
-  { "dt-geotag-changed", NULL, NULL, G_TYPE_NONE,  g_cclosure_marshal_generic, 2, geotag_arg,
+  { "dt-geotag-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, geotag_arg,
     G_CALLBACK(_image_geotag_destroy_callback), FALSE }, // DT_SIGNAL_GEOTAG_CHANGED
   { "dt-metadata-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL,
     FALSE }, // DT_SIGNAL_METADATA_CHANGED

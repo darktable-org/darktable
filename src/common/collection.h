@@ -114,7 +114,11 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_MODULE,
   DT_COLLECTION_PROP_ORDER,
 
-  DT_COLLECTION_PROP_LAST
+  DT_COLLECTION_PROP_LAST,
+
+  DT_COLLECTION_PROP_UNDEF,
+  DT_COLLECTION_PROP_RATING, // this one goes here as not used currently in collect.c
+  DT_COLLECTION_PROP_SORT
 } dt_collection_properties_t;
 
 typedef enum dt_collection_rating_comperator_t
@@ -245,7 +249,7 @@ uint32_t dt_collection_get_selected_count(const dt_collection_t *collection);
 
 /** update query by conf vars */
 void dt_collection_update_query(const dt_collection_t *collection, dt_collection_change_t query_change,
-                                GList *list);
+                                dt_collection_properties_t changed_property, GList *list);
 
 /** updates the hint message for collection */
 void dt_collection_hint_message(const dt_collection_t *collection);

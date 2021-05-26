@@ -105,7 +105,7 @@ static void _group_helper_function(void)
     darktable.gui->expanded_group_id = new_group_id;
   else
     darktable.gui->expanded_group_id = -1;
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_GROUPING, imgs);
   dt_control_queue_redraw_center();
 }
 
@@ -130,7 +130,8 @@ static void _ungroup_helper_function(void)
   if(imgs != NULL)
   {
     darktable.gui->expanded_group_id = -1;
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_reverse(imgs));
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_GROUPING,
+                               g_list_reverse(imgs));
     dt_control_queue_redraw_center();
   }
 }
@@ -274,8 +275,9 @@ static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t
   _update(self);
 }
 
-static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
-                                        int next, dt_lib_module_t *self)
+static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change,
+                                         dt_collection_properties_t changed_property, gpointer imgs, int next,
+                                         dt_lib_module_t *self)
 {
   _update(self);
 }
@@ -371,7 +373,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
     {
       dt_undo_end_group(darktable.undo);
       dt_image_synch_xmps(imgs);
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_METADATA,
                                  g_list_copy((GList *)imgs));
       dt_control_queue_redraw_center();
     }

@@ -96,7 +96,7 @@ static void _lib_duplicate_new_clicked_callback(GtkWidget *widget, GdkEventButto
   if (newid <= 0) return;
   dt_history_delete_on_image(newid);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
 }
 static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
@@ -105,7 +105,7 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEven
   const int newid = dt_image_duplicate(imgid);
   if (newid <= 0) return;
   dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE, TRUE);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
 }
 
@@ -136,7 +136,7 @@ static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
 
   // and we remove the image
   dt_control_delete_image(imgid);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
 }
 
@@ -487,7 +487,8 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
 }
 
 static void _lib_duplicate_collection_changed(gpointer instance, dt_collection_change_t query_change,
-                                              gpointer imgs, int next, dt_lib_module_t *self)
+                                              dt_collection_properties_t changed_property, gpointer imgs, int next,
+                                              dt_lib_module_t *self)
 {
   _lib_duplicate_init_callback(instance, self);
 }

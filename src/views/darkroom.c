@@ -3178,7 +3178,7 @@ void leave(dt_view_t *self)
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 
   // darkroom development could have changed a collection, so update that before being back in lighttable
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              g_list_prepend(NULL, GINT_TO_POINTER(darktable.develop->image_storage.id)));
 
   darktable.develop->image_storage.id = -1;
@@ -3582,7 +3582,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
 
   const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
   const gboolean low_ppd = (darktable.gui->ppd == 1);
-  const float stepup = 0.1f * fabsf(1.0f - fitscale) / ppd; 
+  const float stepup = 0.1f * fabsf(1.0f - fitscale) / ppd;
 
   if(up)
   {
@@ -4244,7 +4244,7 @@ static void second_window_scrolled(GtkWidget *widget, dt_develop_t *dev, double 
 
   const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
   const gboolean low_ppd = (dev->second_window.ppd == 1);
-  const float stepup = 0.1f * fabsf(1.0f - fitscale) / ppd; 
+  const float stepup = 0.1f * fabsf(1.0f - fitscale) / ppd;
   if(up)
   {
     if(fitscale <= 1.0f && (scale == (1.0f / ppd) || scale == (2.0f / ppd)) && constrained) return; // for large image size

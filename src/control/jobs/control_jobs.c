@@ -158,7 +158,8 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
   }
   dt_film_remove_empty();
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                             g_list_copy(params->index));
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -546,7 +547,8 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   g_free(directory);
 
   // refresh the thumbtable view
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_prepend(NULL, GINT_TO_POINTER(imageid)));
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                             g_list_prepend(NULL, GINT_TO_POINTER(imageid)));
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
 
@@ -579,7 +581,7 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
       // a duplicate should keep the change time stamp of the original
       dt_image_cache_set_change_timestamp_from_image(darktable.image_cache, newimgid, imgid);
 
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
     }
     t = g_list_next(t);
     fraction += 1.0 / total;
@@ -618,7 +620,8 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
 
   dt_undo_end_group(darktable.undo);
 
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_ASPECT_RATIO,
+                             g_list_copy(params->index));
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -657,7 +660,8 @@ static int32_t dt_control_monochrome_images_job_run(dt_job_t *job)
 
   dt_undo_end_group(darktable.undo);
 
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                             g_list_copy(params->index));
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -774,7 +778,8 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
     list = g_list_delete_link(list, list);
   }
   dt_film_remove_empty();
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                             g_list_copy(params->index));
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
 
@@ -1090,7 +1095,8 @@ delete_next_file:
   }
   g_list_free(list);
   dt_film_remove_empty();
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                             g_list_copy(params->index));
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
@@ -1254,7 +1260,8 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
     dt_control_job_set_progress(job, fraction);
   }
 
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_LOCAL_COPY,
+                             g_list_copy(params->index));
   if(tag_change) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
@@ -1300,7 +1307,8 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(params->index));
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                             g_list_copy(params->index));
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
@@ -2107,7 +2115,8 @@ static int _control_import_image_copy(const char *filename,
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(imgid));
       if((imgid & 3) == 3)
       {
-        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                                   NULL);
         dt_control_queue_redraw_center();
       }
     }
@@ -2129,7 +2138,7 @@ static void _collection_update(double *last_update, double *update_interval)
     // between updates until it hits the pre-set maximum
     if (*update_interval < MAX_UPDATE_INTERVAL)
       *update_interval += 0.1;
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
     dt_control_queue_redraw_center();
   }
 }
