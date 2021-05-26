@@ -18254,12 +18254,12 @@ msgstr "copier & importer"
 #: ../src/libs/import.c:203
 msgctxt "accel"
 msgid "mount camera"
-msgstr "monter appareil photo"
+msgstr "monter le boîtier"
 
 #: ../src/libs/import.c:204
 msgctxt "accel"
 msgid "unmount camera"
-msgstr "démonter appareil photo"
+msgstr "démonter le boîtier"
 
 #: ../src/libs/import.c:291
 #, c-format
@@ -18276,7 +18276,7 @@ msgstr "commander le boîtier"
 
 #: ../src/libs/import.c:312
 msgid "unmount camera"
-msgstr "démonter appareil photo"
+msgstr "démonter le boîtier"
 
 #: ../src/libs/import.c:348
 msgid ""
@@ -18294,7 +18294,7 @@ msgstr "la capture et l'importation sont désactivées pour ce boîtier"
 
 #: ../src/libs/import.c:353
 msgid "mount camera"
-msgstr "monter appareil photo"
+msgstr "monter le boîtier"
 
 #: ../src/libs/import.c:743
 #, c-format
