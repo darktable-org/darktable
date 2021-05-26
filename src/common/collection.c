@@ -652,7 +652,8 @@ void dt_collection_set_sort(const dt_collection_t *collection, dt_collection_sor
 
   if(sort != DT_COLLECTION_SORT_NONE)
   {
-    if( sort != params->sort ) params->sort_second_order = params->sort;/*remember previous sorting criteria if new one is selected*/
+    if(sort != params->sort)
+      params->sort_second_order = params->sort;/*remember previous sorting criteria if new one is selected*/
     params->sort = sort;
   }
   if(reverse != -1) params->descending = reverse;
@@ -815,11 +816,11 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
 
         switch(local_order)
         {
-          case DT_COLLECTION_SORT_DATETIME: colname = "datetime_taken" ; break ;
+          case DT_COLLECTION_SORT_DATETIME:         colname = "datetime_taken" ; break ;
           case DT_COLLECTION_SORT_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
           case DT_COLLECTION_SORT_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
           case DT_COLLECTION_SORT_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
-          case DT_COLLECTION_SORT_PRINT_TIMESTAMP: colname = "print_timestamp" ; break ;
+          case DT_COLLECTION_SORT_PRINT_TIMESTAMP:  colname = "print_timestamp" ; break ;
           default: colname = "";
         }
         sq = dt_util_dstrcat(sq, "ORDER BY %s DESC, %s, filename DESC, version DESC", colname, second_order);
