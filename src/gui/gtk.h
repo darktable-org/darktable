@@ -378,9 +378,6 @@ extern const struct dt_action_def_t dt_action_def_tabs_none;
 
 GtkNotebook *dt_ui_notebook_new(struct dt_action_def_t *def);
 
-// clears all the pages of the notebook
-void dt_ui_notebook_clear(GtkNotebook *notebook);
-
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip);
 
 // show a dialog box with 2 buttons in case some user interaction is required BEFORE dt's gui is initialised.
