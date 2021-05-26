@@ -307,7 +307,6 @@ const dt_action_element_def_t _action_elements_color_label[]
 const dt_action_def_t dt_action_def_color_label
   = { N_("color label"),
       _action_process_color_label,
-      NULL,
       _action_elements_color_label };
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

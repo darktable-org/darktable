@@ -3116,13 +3116,11 @@ static const dt_shortcut_fallback_t _action_fallbacks_combo[]
 const dt_action_def_t dt_action_def_slider
   = { N_("slider"),
       _action_process_slider,
-      NULL,
       _action_elements_slider,
       _action_fallbacks_slider };
 const dt_action_def_t dt_action_def_combo
   = { N_("dropdown"),
       _action_process_combo,
-      NULL,
       _action_elements_combo,
       _action_fallbacks_combo };
 
