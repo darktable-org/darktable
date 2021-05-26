@@ -126,7 +126,6 @@ typedef struct dt_action_def_t
 {
   const gchar *name;
   float (*process)(gpointer target, dt_action_element_t, dt_action_effect_t, float size);
-  dt_action_element_t (*identify)(GtkWidget *w);
   const dt_action_element_def_t *elements;
   const dt_shortcut_fallback_t *fallbacks;
 } dt_action_def_t;

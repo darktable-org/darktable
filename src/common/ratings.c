@@ -298,7 +298,6 @@ const dt_action_element_def_t _action_elements_rating[]
 const dt_action_def_t dt_action_def_rating
   = { N_("rating"),
       _action_process_rating,
-      NULL,
       _action_elements_rating };
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

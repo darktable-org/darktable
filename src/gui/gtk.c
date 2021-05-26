@@ -2947,11 +2947,26 @@ static void notebook_size_callback(GtkNotebook *notebook, GdkRectangle *allocati
   g_free(sizes);
 }
 
-void dt_ui_notebook_clear(GtkNotebook *notebook)
+// GTK_STATE_FLAG_PRELIGHT does not seem to get set on the label on hover so
+// state-flags-changed cannot update darktable.control->element for shortcut mapping
+static gboolean notebook_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
-  if(gtk_notebook_get_n_pages(notebook) >= 2)
-    g_signal_handlers_disconnect_by_func(G_OBJECT(notebook), G_CALLBACK(notebook_size_callback), NULL);
-  dt_gui_container_destroy_children(GTK_CONTAINER(notebook));
+  GtkAllocation notebook_alloc, label_alloc;
+  gtk_widget_get_allocation(widget, &notebook_alloc);
+
+  GtkNotebook *notebook = GTK_NOTEBOOK(widget);
+  const int n = gtk_notebook_get_n_pages(notebook);
+  for(int i = 0; i < n; i++)
+  {
+    gtk_widget_get_allocation(gtk_notebook_get_tab_label(notebook, gtk_notebook_get_nth_page(notebook, i)), &label_alloc);
+    if(event->x + notebook_alloc.x < label_alloc.x + label_alloc.width)
+    {
+      darktable.control->element = i;
+      break;
+    }
+  }
+
+  return FALSE;
 }
 
 static float _action_process_tabs(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
@@ -2981,11 +2996,6 @@ static float _action_process_tabs(gpointer target, dt_action_element_t element, 
   return -1 - c + (c == element ? DT_VALUE_PATTERN_ACTIVE : 0);
 }
 
-static dt_action_element_t _action_identify_tabs(GtkWidget *w)
-{
-  return gtk_notebook_get_current_page(GTK_NOTEBOOK(w));
-}
-
 const gchar *dt_action_effect_tabs[]
   = { N_("activate"),
       N_("next"),
@@ -3003,7 +3013,6 @@ GtkNotebook *dt_ui_notebook_new(dt_action_def_t *def)
     _current_action_def = def;
     def->name = "tabs";
     def->process = _action_process_tabs;
-    def->identify = _action_identify_tabs;
   }
 
   return _current_notebook;
@@ -3020,14 +3029,15 @@ GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const ch
   GtkWidget *page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   if(strlen(text) > 2)
     gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  if(tooltip || strlen(text) > 1)
-    gtk_widget_set_tooltip_text(label, tooltip ? tooltip : text);
+  if(tooltip) gtk_widget_set_tooltip_text(label, tooltip);
   gint page_num = gtk_notebook_append_page(notebook, page, label);
   gtk_container_child_set(GTK_CONTAINER(notebook), page, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
-  // GTK_STATE_FLAG_PRELIGHT does not get set on the label on hover so
-  // state-flags-changed doesn't work to update darktable.control->element for shortcut mapping
-  if(page_num == 1)
+  if(page_num == 1 &&
+     !g_signal_handler_find(G_OBJECT(notebook), G_SIGNAL_MATCH_FUNC, 0, 0, NULL, notebook_size_callback, NULL))
+  {
     g_signal_connect(G_OBJECT(notebook), "size-allocate", G_CALLBACK(notebook_size_callback), NULL);
+    g_signal_connect(G_OBJECT(notebook), "motion-notify-event", G_CALLBACK(notebook_motion_notify_callback), NULL);
+  }
   if(_current_action_def)
   {
     dt_action_element_def_t *elements = calloc(page_num + 2, sizeof(dt_action_element_def_t));
@@ -3051,19 +3061,16 @@ const dt_action_element_def_t _action_elements_tabs_all_rgb[]
 const dt_action_def_t dt_action_def_tabs_all_rgb
   = { N_("tabs"),
       _action_process_tabs,
-      _action_identify_tabs,
       _action_elements_tabs_all_rgb };
 
 const dt_action_def_t dt_action_def_tabs_rgb
   = { N_("tabs"),
       _action_process_tabs,
-      _action_identify_tabs,
       _action_elements_tabs_all_rgb + 1 };
 
 const dt_action_def_t dt_action_def_tabs_none
   = { N_("tabs"),
       _action_process_tabs,
-      _action_identify_tabs,
       _action_elements_tabs_all_rgb + 4 };
 
 static gint _get_container_row_heigth(GtkWidget *w)

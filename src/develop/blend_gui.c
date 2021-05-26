@@ -2094,7 +2094,7 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
     dt_iop_color_picker_reset(module, TRUE);
 
     /* remove tabs before adding others */
-    dt_ui_notebook_clear(GTK_NOTEBOOK(bd->channel_tabs));
+    dt_gui_container_destroy_children(GTK_CONTAINER(bd->channel_tabs));
 
     bd->channel_tabs_csp = bd->csp;
 

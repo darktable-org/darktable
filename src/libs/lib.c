@@ -31,6 +31,13 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+typedef enum dt_action_element_lib_t
+{
+  DT_ACTION_ELEMENT_SHOW = 0,
+  DT_ACTION_ELEMENT_RESET = 1,
+  DT_ACTION_ELEMENT_PRESETS = 2,
+} dt_action_element_lib_t;
+
 typedef struct dt_lib_module_info_t
 {
   char *plugin_name;
@@ -1121,6 +1128,12 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
   return TRUE;
 }
 
+static gboolean _header_enter_notify_callback(GtkWidget *eventbox, GdkEventCrossing *event, gpointer user_data)
+{
+  darktable.control->element = GPOINTER_TO_INT(user_data);
+  return FALSE;
+}
+
 GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 {
   /* check if module is expandable */
@@ -1146,6 +1159,8 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   /* setup the header box */
   g_signal_connect(G_OBJECT(header_evb), "button-press-event", G_CALLBACK(_lib_plugin_header_button_press),
                    module);
+  g_signal_connect(G_OBJECT(header_evb), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
+                   GINT_TO_POINTER(DT_ACTION_ELEMENT_SHOW));
 
   /*
    * initialize the header widgets
@@ -1172,8 +1187,9 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 
   /* add preset button if module has implementation */
   module->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(module->presets_button, _("presets"));
   g_signal_connect(G_OBJECT(module->presets_button), "clicked", G_CALLBACK(presets_popup_callback), module);
+  g_signal_connect(G_OBJECT(module->presets_button), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
+                   GINT_TO_POINTER(DT_ACTION_ELEMENT_PRESETS));
   if(!module->get_params && !module->set_preferences) gtk_widget_set_sensitive(GTK_WIDGET(module->presets_button), FALSE);
   gtk_widget_set_name(GTK_WIDGET(module->presets_button), "module-preset-button");
   dt_action_define(&module->actions, NULL, NULL, module->presets_button, NULL);
@@ -1181,8 +1197,9 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 
   /* add reset button if module has implementation */
   module->reset_button = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(module->reset_button, _("reset parameters"));
   g_signal_connect(G_OBJECT(module->reset_button), "clicked", G_CALLBACK(dt_lib_gui_reset_callback), module);
+  g_signal_connect(G_OBJECT(module->reset_button), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
+                   GINT_TO_POINTER(DT_ACTION_ELEMENT_RESET));
   if(!module->gui_reset) gtk_widget_set_sensitive(module->reset_button, FALSE);
   gtk_widget_set_name(module->reset_button, "module-reset-button");
   dt_action_define(&module->actions, NULL, NULL, module->reset_button, NULL);
@@ -1425,13 +1442,6 @@ gboolean dt_lib_presets_can_autoapply(dt_lib_module_t *mod)
   return mod->preset_autoapply(mod);
 }
 
-typedef enum dt_action_element_lib_t
-{
-  DT_ACTION_ELEMENT_SHOW = 0,
-  DT_ACTION_ELEMENT_RESET = 1,
-  DT_ACTION_ELEMENT_PRESETS = 2,
-} dt_action_element_lib_t;
-
 static float _action_process(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
   dt_lib_module_t *module = target;
@@ -1455,18 +1465,6 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
   return 0;
 }
 
-static dt_action_element_t _action_identify(GtkWidget *w)
-{
-  const gchar *name = gtk_widget_get_name(w);
-
-  if(!strcmp(name, "module-reset-button"))
-    return DT_ACTION_ELEMENT_RESET;
-  if(!strcmp(name, "module-preset-button"))
-    return DT_ACTION_ELEMENT_PRESETS;
-
-  return DT_ACTION_ELEMENT_SHOW;
-}
-
 static const dt_action_element_def_t _action_elements[]
   = { { N_("show"), dt_action_effect_toggle },
       { N_("reset"), dt_action_effect_activate },
@@ -1482,7 +1480,6 @@ static const dt_shortcut_fallback_t _action_fallbacks[]
 const dt_action_def_t dt_action_def_lib
   = { N_("utility module"),
       _action_process,
-      _action_identify,
       _action_elements,
       _action_fallbacks };
 

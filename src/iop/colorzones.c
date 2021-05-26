@@ -2378,7 +2378,6 @@ const dt_action_element_def_t _action_elements_zones[]
 const dt_action_def_t dt_action_def_zones
   = { N_("color zones"),
       _action_process_zones,
-      NULL,
       _action_elements_zones };
 
 void gui_reset(struct dt_iop_module_t *self)

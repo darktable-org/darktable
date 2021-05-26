@@ -576,10 +576,11 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget, GdkEventMotion *
       if(d2 < dist)
       {
         c->handle_move = k;
-        darktable.control->element = k;
         dist = d2;
       }
     }
+
+    darktable.control->element = c->handle_move;
 
     gtk_widget_queue_draw(widget);
   }
@@ -990,7 +991,6 @@ const dt_action_element_def_t _action_elements_levels[]
 const dt_action_def_t dt_action_def_levels
   = { N_("levels"),
       _action_process,
-      NULL,
       _action_elements_levels };
 
 void gui_init(dt_iop_module_t *self)

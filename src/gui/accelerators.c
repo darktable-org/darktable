@@ -220,7 +220,6 @@ static const dt_shortcut_fallback_t _action_fallbacks_toggle[]
 const dt_action_def_t dt_action_def_toggle
   = { N_("toggle"),
       _action_process_toggle,
-      NULL,
       _action_elements_toggle,
       _action_fallbacks_toggle };
 
@@ -233,7 +232,6 @@ static const dt_shortcut_fallback_t _action_fallbacks_button[]
 const dt_action_def_t dt_action_def_button
   = { N_("button"),
       _action_process_button,
-      NULL,
       _action_elements_button,
       _action_fallbacks_button };
 
@@ -249,7 +247,6 @@ static const dt_shortcut_fallback_t _action_fallbacks_value[]
 
 const dt_action_def_t dt_action_def_value
   = { N_("value"),
-      NULL,
       NULL,
       _action_elements_value_fallback,
       _action_fallbacks_value };
@@ -533,7 +530,7 @@ static gchar *_shortcut_description(dt_shortcut_t *s, gboolean full)
     const dt_action_def_t *def = _action_find_definition(s->action);
     if(def && def->elements)
     {
-      if(s->element || !def->fallbacks ) add_hint(", %s", def->elements[s->element].name);
+      // if(s->element || !def->fallbacks ) add_hint(", %s", def->elements[s->element].name);  // "+fallback"
       if(s->effect > 0) add_hint(", %s", def->elements[s->element].effects[s->effect]);
     }
   }
@@ -600,10 +597,28 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
     markup_text = g_markup_escape_text(_("click to filter shortcut list\ndouble click to define new shortcut"), -1);
   }
   else
+  {
     action = g_hash_table_lookup(darktable.control->widgets, widget);
+
+    if(darktable.control->mapping_widget)
+      markup_text = g_markup_escape_text(_("press keys with mouse click and scroll or move combinations to create a shortcut\n"
+                                           "click to open shortcut configuration\n"
+                                           "right click to exit mapping mode"), -1);
+  }
 
   const dt_action_def_t *def = _action_find_definition(action);
   gboolean has_fallbacks = def && def->fallbacks;
+
+  if(def && (darktable.control->element || !has_fallbacks))
+  {
+    const gchar *element_name = NULL;
+    for(int i = 0; i <= darktable.control->element; i++)
+    {
+      element_name = def->elements[i].name;
+      if(!element_name) break;
+    }
+    if(element_name) description = g_markup_escape_text(_(element_name), -1);
+  }
 
   for(GSequenceIter *iter = g_sequence_get_begin_iter(darktable.control->shortcuts);
       !g_sequence_iter_is_end(iter);
@@ -613,21 +628,24 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
     if(s->action == action &&
        (s->element == darktable.control->element || (s->element == DT_ACTION_ELEMENT_DEFAULT && has_fallbacks)))
     {
-      description = dt_util_dstrcat(description, "\n%s", _shortcut_description(s, TRUE));
+      gchar *desc_escaped = g_markup_escape_text(_shortcut_description(s, TRUE), -1);
+      description = dt_util_dstrcat(description, "%s<span style='italic' foreground='red'>%s</span>",
+                                                 description ? "\n" : "", desc_escaped);
+      g_free(desc_escaped);
     }
   }
 
-  if(description)
+  gchar *original_markup = gtk_widget_get_tooltip_markup(widget);
+  if(description || (original_markup && markup_text))
   {
-    gchar *original_markup = gtk_widget_get_tooltip_markup(widget);
-    gchar *desc_escaped = g_markup_escape_text(description, -1);
-    markup_text = dt_util_dstrcat(markup_text, "%s%s<span style='italic' foreground='red'>%s</span>",
-                                  markup_text ? "\n" : "",
-                                  original_markup ? original_markup : _("shortcuts:"), desc_escaped);
-    g_free(original_markup);
-    g_free(desc_escaped);
+    markup_text = dt_util_dstrcat(markup_text, "%s%s%s%s",
+                                  markup_text? "\n\n" : "",
+                                  original_markup ? original_markup : "",
+                                  original_markup && description ? "\n" : "",
+                                  description ? description : "");
     g_free(description);
   }
+  g_free(original_markup);
 
   if(markup_text)
   {
@@ -2024,12 +2042,10 @@ static void lookup_mapping_widget()
     }
   }
 
-  const dt_action_def_t *def = _action_find_definition(_sc.action);
   _sc.element = 0;
+  const dt_action_def_t *def = _action_find_definition(_sc.action);
   if(def && def->elements && def->elements[0].name)
-    _sc.element = def->identify
-                ? def->identify(darktable.control->mapping_widget)
-                : darktable.control->element;
+    _sc.element = darktable.control->element;
 }
 
 static void define_new_mapping()
