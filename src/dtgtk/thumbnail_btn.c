@@ -42,7 +42,7 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
 {
   g_return_val_if_fail(DTGTK_IS_THUMBNAIL_BTN(widget), FALSE);
 
-  if(gtk_widget_get_allocated_height(widget) < 2 || gtk_widget_get_allocated_height(widget) < 2) return TRUE;
+  if(gtk_widget_get_allocated_height(widget) < 2 || gtk_widget_get_allocated_width(widget) < 2) return TRUE;
 
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
 
