@@ -604,6 +604,10 @@ static int register_shortcut_event(lua_State *L)
 
   // set up the accelerator path
   dt_accel_connect_lua(tmp, g_cclosure_new(G_CALLBACK(shortcut_callback), tmp, closure_destroy));
+
+  // free temporary buffer
+  free(tmp);
+
   return result;
 }
 
@@ -628,6 +632,10 @@ static int destroy_shortcut_event(lua_State *L)
 
   // remove the accelerator from the lua shortcuts
   dt_accel_deregister_lua(tmp);
+
+  // free temporary buffer
+  free(tmp);
+
   return result;
 }
 
