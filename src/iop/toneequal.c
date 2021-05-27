@@ -1216,7 +1216,7 @@ static int compute_channels_factors(const float factors[PIXEL_CHAN], float out[C
     out[i] = pixel_correction(centers_params[i], factors, sigma);
 
     // check they are in [-2, 2] EV and not NAN
-    if(out[i] < 0.25f || out[i] > 4.0f || out[i] != out[i]) valid = 0;
+    if(isnan(out[i]) || out[i] < 0.25f || out[i] > 4.0f) valid = 0;
   }
 
   return valid;
@@ -2274,7 +2274,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
-  if(correction != correction || exposure_in != exposure_in) return; // something went wrong
+  if(isnan(correction) || isnan(exposure_in)) return; // something went wrong
 
   // set custom cursor dimensions
   const double outer_radius = 16.;
