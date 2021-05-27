@@ -235,22 +235,17 @@ static void _text_entry_changed_callback(GtkEntry *entry, dt_lib_module_t *self)
   _lib_modulegroups_update_iop_visibility(self);
 }
 
-static gboolean _text_entry_icon_press_callback(GtkEntry *entry, GtkEntryIconPosition icon_pos, GdkEvent *event,
-                                                dt_lib_module_t *self)
-{
-  const dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-
-  gtk_entry_set_text(GTK_ENTRY(d->text_entry), "");
-
-  return TRUE;
-}
-
 static gboolean _text_entry_key_press_callback(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
 
   if(event->keyval == GDK_KEY_Escape)
   {
     gtk_entry_set_text(GTK_ENTRY(widget), "");
+    gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+    return TRUE;
+  }
+  else if(event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
+  {
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
     return TRUE;
   }
@@ -2715,23 +2710,14 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(self->presets_button, "button-press-event", G_CALLBACK(_presets_pressed), self);
 
   /* search box */
-  GtkWidget *label = gtk_label_new(_("search module"));
-  gtk_box_pack_start(GTK_BOX(d->hbox_search_box), label, FALSE, TRUE, 0);
-
-  d->text_entry = gtk_entry_new();
-  gtk_widget_add_events(d->text_entry, GDK_FOCUS_CHANGE_MASK);
-
-  gtk_widget_set_tooltip_text(d->text_entry, _("search modules by name or tag"));
-  gtk_widget_add_events(d->text_entry, GDK_KEY_PRESS_MASK);
+  d->text_entry = gtk_search_entry_new();
+  gtk_entry_set_placeholder_text(GTK_ENTRY(d->text_entry), _("search modules by name or tag"));
   g_signal_connect(G_OBJECT(d->text_entry), "changed", G_CALLBACK(_text_entry_changed_callback), self);
-  g_signal_connect(G_OBJECT(d->text_entry), "icon-press", G_CALLBACK(_text_entry_icon_press_callback), self);
   g_signal_connect(G_OBJECT(d->text_entry), "key-press-event", G_CALLBACK(_text_entry_key_press_callback), self);
   gtk_box_pack_start(GTK_BOX(d->hbox_search_box), d->text_entry, TRUE, TRUE, 0);
   gtk_entry_set_width_chars(GTK_ENTRY(d->text_entry), 0);
-  gtk_entry_set_icon_from_icon_name(GTK_ENTRY(d->text_entry), GTK_ENTRY_ICON_SECONDARY, "edit-clear");
   gtk_entry_set_icon_tooltip_text(GTK_ENTRY(d->text_entry), GTK_ENTRY_ICON_SECONDARY, _("clear text"));
   gtk_widget_set_name(GTK_WIDGET(d->hbox_search_box), "search-box");
-
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_buttons, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_search_box, TRUE, TRUE, 0);

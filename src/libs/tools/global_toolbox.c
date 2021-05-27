@@ -802,6 +802,9 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
     if(event_widget == d->keymap_button)
       break;
 
+    if(GTK_IS_ENTRY(event_widget))
+      break;
+
     if(event->button.button != GDK_BUTTON_PRIMARY)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->keymap_button), FALSE);
     else
