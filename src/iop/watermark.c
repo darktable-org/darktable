@@ -929,9 +929,8 @@ static void load_watermarks(const char *basedir, dt_iop_watermark_gui_data_t *g)
     // remember the whole filename for later
     g->watermarks_filenames = g_list_append(g->watermarks_filenames, g_strdup(filename));
     // ... and remove the file extension from the string shown in the gui
-    char *c = filename + strlen(filename);
-    while(c >= filename && *c != '.') *c-- = '\0';
-    if(*c == '.') *c = '\0';
+    char *c = strrchr(filename, '.');
+    if(c) *c = '\0';
     dt_bauhaus_combobox_add(g->watermarks, filename);
   }
 
