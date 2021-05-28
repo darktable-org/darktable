@@ -2341,6 +2341,22 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
                      G_CALLBACK(_display_mask_indicator_callback), module);
     gtk_widget_set_sensitive(module->mask_indicator, !raster && module->enabled);
     gtk_box_pack_end(GTK_BOX(module->header), module->mask_indicator, FALSE, FALSE, 0);
+
+    // in dynamic modes, we need to put the mask indicator after the drawing area
+    GList *children = gtk_container_get_children(GTK_CONTAINER(module->header));
+    GList *child = g_list_last(children);
+
+    for(child = g_list_last(children); child && GTK_IS_BUTTON(child->data); child = g_list_previous(child));
+
+    if(GTK_IS_DRAWING_AREA(child->data))
+    {
+      GValue position = G_VALUE_INIT;
+      g_value_init (&position, G_TYPE_INT);
+      gtk_container_child_get_property(GTK_CONTAINER(module->header), child->data ,"position", &position);
+      gtk_box_reorder_child(GTK_BOX(module->header), module->mask_indicator, g_value_get_int(&position));
+    }
+    g_list_free(children);
+
     dt_iop_show_hide_header_buttons(module->header, NULL, FALSE, FALSE);
   }
 
