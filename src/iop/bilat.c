@@ -184,7 +184,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   {
     // the total scale is composed of scale before input to the pipeline (iscale),
     // and the scale of the roi.
-    const float scale = piece->iscale / roi_in->scale;
+    const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
     const float sigma_r = d->sigma_r; // does not depend on scale
     const float sigma_s = d->sigma_s / scale;
     cl_int err = -666;
@@ -231,7 +231,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
   if(d->mode == s_mode_bilateral)
   {
-    const float scale = piece->iscale / roi_in->scale;
+    // used to adjuste blur level depending on size. Don't amplify noise if magnified > 100%
+    const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
     const float sigma_r = d->sigma_r;
     const float sigma_s = d->sigma_s / scale;
 
@@ -306,7 +307,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
-  const float scale = piece->iscale / roi_in->scale;
+  // used to adjuste blur level depending on size. Don't amplify noise if magnified > 100%
+  const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const float sigma_r = d->sigma_r; // does not depend on scale
   const float sigma_s = d->sigma_s / scale;
 
@@ -335,7 +337,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
-  const float scale = piece->iscale / roi_in->scale;
+  // used to adjuste blur level depending on size. Don't amplify noise if magnified > 100%
+  const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const float sigma_r = d->sigma_r; // does not depend on scale
   const float sigma_s = d->sigma_s / scale;
 
