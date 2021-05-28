@@ -152,7 +152,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float sigma_2 = data->radius_2 * roi_in->scale / piece->iscale;
   const size_t pixel_radius = data->pixelate * roi_in->scale / piece->iscale;
 
-  const float scale = piece->iscale / roi_in->scale;
+  // used to adjuste blur level depending on size. Don't amplify noise if magnified > 100%
+  const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const float noise = data->noise / scale;
 
   float RGBmax[4], RGBmin[4];
