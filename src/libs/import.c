@@ -1338,11 +1338,11 @@ static void _update_places_list(dt_lib_module_t* self)
       volumes = g_drive_get_volumes(drive->data);
       for (volume = volumes; volume; volume = volume->next)
       {
-        if(g_volume_get_mount(volume->data))
+        GMount *placesMount = g_volume_get_mount(volume->data);
+        if(placesMount)
         {
-          GMount *placesMount = g_volume_get_mount(volume->data);
           GFile *placesFile = g_mount_get_root(placesMount);
-          g_object_unref (placesMount);
+          g_object_unref(placesMount);
 
           gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME,
                                             g_volume_get_name(volume->data), DT_PLACES_PATH,
@@ -1352,7 +1352,9 @@ static void _update_places_list(dt_lib_module_t* self)
             gtk_tree_selection_select_iter(d->placesSelection, &iter);
         }
       }
+      g_list_free(volumes);
     }
+    g_list_free(drives);
   }
 
   // add folders added by user
@@ -1370,6 +1372,7 @@ static void _update_places_list(dt_lib_module_t* self)
 
     places = next;
   }
+  g_list_free(places);
 }
 
 static void _update_folders_list(dt_lib_module_t* self)
