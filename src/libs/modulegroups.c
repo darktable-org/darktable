@@ -571,6 +571,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     g_object_ref(item->widget);
     gtk_container_remove(GTK_CONTAINER(item->old_parent), item->widget);
     gtk_box_pack_start(GTK_BOX(item->box), item->widget, TRUE, TRUE, 0);
+    gtk_widget_set_hexpand(item->widget, FALSE);
     g_object_unref(item->widget);
 
     // change the widget label to integrate section name
