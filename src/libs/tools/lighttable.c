@@ -339,6 +339,7 @@ static void _set_zoom(dt_lib_module_t *self, int zoom)
   if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     dt_conf_set_int("plugins/lighttable/culling_num_images", zoom);
+    dt_control_queue_redraw_center();
   }
   else if(d->layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || d->layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
   {
