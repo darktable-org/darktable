@@ -3292,7 +3292,7 @@ int button_released(struct dt_iop_module_t *module,
         _start_new_shape(module);
       else
         btn_make_radio_callback(g->btn_node_tool, NULL, module);
-      handled = dragged ? 2 : 1;
+      handled = 2;
     }
     else if(gtk_toggle_button_get_active(g->btn_line_tool))
     {
