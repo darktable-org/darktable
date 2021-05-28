@@ -61,6 +61,29 @@ typedef struct dt_prtctl_t
   void *user_data;
 } dt_prtctl_t;
 
+// add helper functions to convert PPD en float numbers to local based numbers for scanf
+// replacechar from: https://stackoverflow.com/questions/32496497/standard-function-to-replace-character-or-substring-in-a-char-array/32496721
+int replacechar (char *str, char orig, char rep)
+{
+  char *ix = str;
+  int n = 0;
+  while ((ix = strchr (ix, orig)) != NULL)
+    {
+      *ix++ = rep;
+      n++;
+    }
+  return n;
+}
+
+void convert_str_to_loc_numbers (char *data)
+{
+  struct lconv *currentLocalConv;
+  currentLocalConv = localeconv ();
+  char loc_decimal_point = currentLocalConv->decimal_point[0];
+  char en_decimal_point = '.';
+  replacechar(data,en_decimal_point,loc_decimal_point);
+}
+
 // initialize the pinfo structure
 void dt_init_print_info(dt_print_info_t *pinfo)
 {
@@ -105,6 +128,9 @@ void dt_get_printer_info(const char *printer_name, dt_printer_info_t *pinfo)
 
       if (attr)
       {
+        // scanf use local number format and PPD has en numbers
+        convert_str_to_loc_numbers(attr->value);
+
         sscanf(attr->value, "%lf %lf %lf %lf",
                &pinfo->hw_margin_left, &pinfo->hw_margin_bottom,
                &pinfo->hw_margin_right, &pinfo->hw_margin_top);
