@@ -2342,6 +2342,13 @@ gboolean dt_dev_modulegroups_is_visible(dt_develop_t *dev, gchar *module)
   return FALSE;
 }
 
+int dt_dev_modulegroups_basics_module_toggle(dt_develop_t *dev, GtkWidget *widget, gboolean doit)
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.basics_module_toggle)
+    return dev->proxy.modulegroups.basics_module_toggle(dev->proxy.modulegroups.module, widget, doit);
+  return 0;
+}
+
 void dt_dev_masks_list_change(dt_develop_t *dev)
 {
   if(dev->proxy.masks.module && dev->proxy.masks.list_change)

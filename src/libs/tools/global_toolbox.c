@@ -763,6 +763,29 @@ static gboolean _resize_shortcuts_dialog(GtkWidget *widget, GdkEvent *event, gpo
   return FALSE;
 }
 
+static void _set_mapping_mode_cursor(GtkWidget *widget)
+{
+  GdkCursorType cursor = GDK_DIAMOND_CROSS;
+
+  if(GTK_IS_EVENT_BOX(widget)) widget = gtk_bin_get_child(GTK_BIN(widget));
+
+  if(widget && !strcmp(gtk_widget_get_name(widget), "module-header"))
+    cursor = GDK_BASED_ARROW_DOWN;
+  else if(darktable.control->mapping_widget && darktable.develop)
+  {
+    switch(dt_dev_modulegroups_basics_module_toggle(darktable.develop, widget, FALSE))
+    {
+    case  1: cursor = GDK_SB_UP_ARROW; break;
+    case -1: cursor = GDK_SB_DOWN_ARROW; break;
+    default: cursor = GDK_BOX_SPIRAL;
+    }
+  }
+
+  dt_control_allow_change_cursor();
+  dt_control_change_cursor(cursor);
+  dt_control_forbid_change_cursor();
+}
+
 static void _main_do_event_keymap(GdkEvent *event, gpointer data)
 {
   GtkWidget *event_widget = gtk_get_event_widget(event);
@@ -773,21 +796,10 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
   case GDK_LEAVE_NOTIFY:
     if(event->crossing.mode == GDK_CROSSING_NORMAL || event->crossing.mode == GDK_CROSSING_UNGRAB)
     {
-      GdkCursorType cursor = GDK_DIAMOND_CROSS;
-
       darktable.control->mapping_widget = event->type == GDK_ENTER_NOTIFY &&
                                           g_hash_table_lookup(darktable.control->widgets, event_widget)
                                         ? event_widget : NULL;
-
-      if(darktable.control->mapping_widget) cursor = GDK_BOX_SPIRAL;
-
-      if(GTK_IS_EVENT_BOX(event_widget)) event_widget = gtk_bin_get_child(GTK_BIN(event_widget));
-      if(event_widget && !strcmp(gtk_widget_get_name(event_widget), "module-header"))
-        cursor = GDK_BASED_ARROW_DOWN;
-
-      dt_control_allow_change_cursor();
-      dt_control_change_cursor(cursor);
-      dt_control_forbid_change_cursor();
+      _set_mapping_mode_cursor(event_widget);
     }
     break;
   case GDK_BUTTON_PRESS:
@@ -807,6 +819,14 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
 
     if(event->button.button != GDK_BUTTON_PRIMARY)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->keymap_button), FALSE);
+    else if(dt_modifier_is(event->button.state, GDK_CONTROL_MASK))
+    {
+      if(darktable.develop)
+      {
+        dt_dev_modulegroups_basics_module_toggle(darktable.develop, event_widget, TRUE);
+        _set_mapping_mode_cursor(event_widget);
+      }
+    }
     else
     {
       // allow opening modules to map widgets inside
@@ -828,7 +848,7 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
 
       //grab the content area of the dialog
       GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(shortcuts_dialog));
-      gtk_box_pack_start(GTK_BOX(content), dt_shortcuts_prefs(gtk_get_event_widget(event)), TRUE, TRUE, 0);
+      gtk_box_pack_start(GTK_BOX(content), dt_shortcuts_prefs(event_widget), TRUE, TRUE, 0);
 
       gtk_widget_show_all(shortcuts_dialog);
       gtk_dialog_run(GTK_DIALOG(shortcuts_dialog));
