@@ -639,7 +639,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_cacorrectrgb_params_t *d = (dt_iop_cacorrectrgb_params_t *)piece->data;
-  const float scale = piece->iscale / roi_in->scale;
+  // used to adjuste blur level depending on size. Don't amplify noise if magnified > 100%
+  const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const int ch = piece->colors;
   const size_t width = roi_out->width;
   const size_t height = roi_out->height;
