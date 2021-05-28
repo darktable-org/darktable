@@ -2349,12 +2349,12 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
     for(child = g_list_last(children); child && GTK_IS_BUTTON(child->data); child = g_list_previous(child));
 
     if(GTK_IS_DRAWING_AREA(child->data))
-      {
+    {
       GValue position = G_VALUE_INIT;
       g_value_init (&position, G_TYPE_INT);
       gtk_container_child_get_property(GTK_CONTAINER(module->header), child->data ,"position", &position);
       gtk_box_reorder_child(GTK_BOX(module->header), module->mask_indicator, g_value_get_int(&position));
-      }
+    }
     g_list_free(children);
 
     dt_iop_show_hide_header_buttons(module->header, NULL, FALSE, FALSE);
