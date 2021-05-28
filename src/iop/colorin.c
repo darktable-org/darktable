@@ -1656,6 +1656,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       input_format = TYPE_RGBA_FLT;
       break;
     case cmsSigXYZData:
+      // FIXME: even though this is allowed/works, dt_ioppr_generate_profile_info still complains about these profiles
       input_format = TYPE_XYZA_FLT;
       break;
     default:
@@ -1718,7 +1719,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     d->nrgb = NULL;
   }
 
-  // user selected a non-supported output profile, check that:
+  // user selected a non-supported input profile, check that:
   if(!d->xform_cam_Lab && isnan(d->cmatrix[0]))
   {
     if(p->type == DT_COLORSPACE_FILE)
