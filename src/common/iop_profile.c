@@ -797,22 +797,22 @@ dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev,
 {
   dt_iop_order_iccprofile_info_t *profile_info = dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
 
-  if(isnan(profile_info->matrix_in[0]) || isnan(profile_info->matrix_out[0]))
-  {
-    /* We have a camera input matrix, these are not generated from files but in colorin,
-    * so we need to fetch and replace them from somewhere.
-    */
-    memcpy(profile_info->matrix_in, matrix_in, sizeof(profile_info->matrix_in));
-    mat3inv_float(profile_info->matrix_out, profile_info->matrix_in);
-  }
-
-  if(profile_info == NULL || isnan(profile_info->matrix_in[0]) || isnan(profile_info->matrix_out[0]))
+  if(profile_info == NULL)
   {
     fprintf(stderr,
             "[dt_ioppr_set_pipe_input_profile_info] unsupported input profile %i %s, it will be replaced with "
             "linear rec2020\n",
             type, filename);
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", intent);
+  }
+
+  if(profile_info->type >= DT_COLORSPACE_EMBEDDED_ICC && profile_info->type <= DT_COLORSPACE_ALTERNATE_MATRIX)
+  {
+    /* We have a camera input matrix, these are not generated from files but in colorin,
+    * so we need to fetch and replace them from somewhere.
+    */
+    memcpy(profile_info->matrix_in, matrix_in, sizeof(profile_info->matrix_in));
+    mat3inv_float(profile_info->matrix_out, profile_info->matrix_in);
   }
   pipe->input_profile_info = profile_info;
 
