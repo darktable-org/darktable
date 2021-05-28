@@ -2800,17 +2800,26 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   roi_in->width /= roi_out->scale;
   roi_in->height /= roi_out->scale;
   roi_in->scale = 1.0f;
+
+  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
+  const int method = data->demosaicing_method;
+  const gboolean passthrough = (method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
+                               (method == DT_IOP_DEMOSAIC_PASSTHR_MONOX);
+
   // clamp to even x/y, to make demosaic pattern still hold..
-  if(piece->pipe->dsc.filters != 9u)
+  if(!passthrough)
   {
-    roi_in->x = MAX(0, roi_in->x & ~1);
-    roi_in->y = MAX(0, roi_in->y & ~1);
-  }
-  else
-  {
-    // Markesteijn needs factors of 3
-    roi_in->x = MAX(0, roi_in->x - (roi_in->x % 3));
-    roi_in->y = MAX(0, roi_in->y - (roi_in->y % 3));
+    if(piece->pipe->dsc.filters != 9u)
+    {
+      roi_in->x = MAX(0, roi_in->x & ~1);
+      roi_in->y = MAX(0, roi_in->y & ~1);
+    }
+    else
+    {
+      // Markesteijn needs factors of 3
+      roi_in->x = MAX(0, roi_in->x - (roi_in->x % 3));
+      roi_in->y = MAX(0, roi_in->y - (roi_in->y % 3));
+    }
   }
 
   // clamp numeric inaccuracies to full buffer, to avoid scaling/copying in pixelpipe:
