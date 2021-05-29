@@ -1379,9 +1379,7 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
                                        gboolean lua_locking, gboolean raise_signals)
 {
   char *normalized_filename = dt_util_normalize_path(filename);
-  if(!normalized_filename
-     || !g_file_test(normalized_filename, G_FILE_TEST_IS_REGULAR)
-     || dt_util_get_file_size(normalized_filename) == 0)
+  if(!normalized_filename || !dt_util_test_image_file(normalized_filename))
   {
     g_free(normalized_filename);
     return 0;
