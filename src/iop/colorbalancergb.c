@@ -625,13 +625,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     SO[1] = SO[0] * fminf(fmaxf(T * boosts[1], -T), DT_M_PI_F / 2.f - T);
     SO[0] = fmaxf(SO[0] * boosts[0], 0.f);
 
+    // Gamut mapping
+    const float out_max_sat_h = gamut_LUT[CLAMP((size_t)(LUT_ELEM * (h + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1)];
+    SO[1] = soft_clip(SO[1], 0.8f * out_max_sat_h, out_max_sat_h);
+
     // Project back to JCh, that is rotate back of -T angle
     JC[0] = fmaxf(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
     JC[1] = fmaxf(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
-
-    // Gamut mapping
-    const float out_max_chroma_h = JC[0] * gamut_LUT[CLAMP((size_t)(LUT_ELEM * (h + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1)];
-    JC[1] = soft_clip(JC[1], 0.8f * out_max_chroma_h, out_max_chroma_h);
 
     // Project back to JzAzBz
     Jab[0] = JC[0];
