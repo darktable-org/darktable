@@ -252,7 +252,7 @@ typedef struct dt_iop_clipping_gui_data_t
   int cropping, straightening, applied;
   gboolean shift_hold;
   gboolean ctrl_hold;
-  int old_width, old_height;
+  gboolean preview_ready;
 } dt_iop_clipping_gui_data_t;
 
 typedef struct dt_iop_clipping_data_t
@@ -1322,6 +1322,17 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
 }
 
+static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *self)
+{
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  g->preview_ready = TRUE;
+  if(self->dev->gui_module != self)
+  {
+    dt_image_update_final_size(self->dev->preview_pipe->output_imgid);
+  }
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_preview_updated_callback), self);
+}
+
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
@@ -1330,24 +1341,21 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   {
     if(in)
     {
+      DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                                      G_CALLBACK(_event_preview_updated_callback), self);
+
       // got focus, grab stuff to gui:
       // need to get gui stuff for the first time for this image,
       g->clip_x = fmaxf(p->cx, 0.0f);
       g->clip_w = fminf(fabsf(p->cw) - p->cx, 1.0f);
       g->clip_y = fmaxf(p->cy, 0.0f);
       g->clip_h = fminf(fabsf(p->ch) - p->cy, 1.0f);
-      if(g->clip_x > 0 || g->clip_y > 0 || g->clip_h < 1.0f || g->clip_w < 1.0f)
-      {
-        g->old_width = self->dev->preview_pipe->backbuf_width;
-        g->old_height = self->dev->preview_pipe->backbuf_height;
-      }
-      else
-      {
-        g->old_width = g->old_height = -1;
-      }
     }
     else
     {
+      DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                                      G_CALLBACK(_event_preview_updated_callback), self);
+
       // lost focus, commit current params:
       // if the keystone setting is not finished, we discard it
       if(p->k_apply == 0 && p->k_type < 4 && p->k_type > 0)
@@ -1364,6 +1372,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       g->clip_max_pipe_hash = 0;
     }
   }
+  else if(in)
+    g->preview_ready = TRUE;
 }
 
 
@@ -2140,7 +2150,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->k_drag = FALSE;
   g->k_show = -1;
   g->k_selected = -1;
-  g->old_width = g->old_height = -1;
+  g->preview_ready = FALSE;
 
   g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
 
@@ -2451,10 +2461,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
   // we don't do anything if the image is not ready
-  if(self->dev->preview_pipe->backbuf_width == g->old_width
-     && self->dev->preview_pipe->backbuf_height == g->old_height)
-    return;
-  g->old_width = g->old_height = -1;
+  if(!g->preview_ready) return;
 
   // reapply box aspect to be sure that the ratio has not been modified by the keystone transform
   apply_box_aspect(self, GRAB_HORIZONTAL);
@@ -2887,12 +2894,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
   // we don't do anything if the image is not ready
-  if((self->dev->preview_pipe->backbuf_width == g->old_width
-      && self->dev->preview_pipe->backbuf_height == g->old_height)
-     || self->dev->preview_loading)
-    return 0;
-
-  g->old_width = g->old_height = -1;
+  if(!g->preview_ready) return 0;
 
   const float wd = self->dev->preview_pipe->backbuf_width;
   const float ht = self->dev->preview_pipe->backbuf_height;
@@ -3262,10 +3264,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   // we don't do anything if the image is not ready
-  if(self->dev->preview_pipe->backbuf_width == g->old_width
-     && self->dev->preview_pipe->backbuf_height == g->old_height)
-    return 0;
-  g->old_width = g->old_height = -1;
+  if(!g->preview_ready) return 0;
 
   if(g->straightening)
   {
@@ -3314,10 +3313,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   // we don't do anything if the image is not ready
-  if(self->dev->preview_pipe->backbuf_width == g->old_width
-     && self->dev->preview_pipe->backbuf_height == g->old_height)
-    return 0;
-  g->old_width = g->old_height = -1;
+  if(!g->preview_ready) return 0;
 
   // avoid unexpected back to lt mode:
   if(type == GDK_2BUTTON_PRESS && which == 1)
