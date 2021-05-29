@@ -1326,7 +1326,8 @@ static void _action_row_activated(GtkTreeView *tree_view, GtkTreePath *path, Gtk
   _sc.element = DT_ACTION_ELEMENT_DEFAULT;
   _sc.instance = 0;
 
-  if(_sc.action->type > DT_ACTION_TYPE_SECTION || _sc.action->type == DT_ACTION_TYPE_IOP || _sc.action->type == DT_ACTION_TYPE_LIB)
+  if(_action_find_definition(_sc.action) || (_sc.action->type > DT_ACTION_TYPE_SECTION && _sc.action->type < DT_ACTION_TYPE_WIDGET))
+
     grab_in_tree_view(tree_view);
   else
     _sc.action = NULL;
