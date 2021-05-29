@@ -887,13 +887,13 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   SO[1] = SO[0] * clamp(T * boosts[1], -T, M_PI_F / 2.f - T);
   SO[0] = fmax(SO[0] * boosts[0], 0.f);
 
+  // Gamut mapping
+  const float out_max_sat_h = lookup_gamut(gamut_lut, h);
+  SO[1] = soft_clip(SO[1], 0.8f * out_max_sat_h, out_max_sat_h);
+
   // Project back to JCh, that is rotate back of -T angle
   JC[0] = fmax(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
   JC[1] = fmax(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
-
-  // Gamut mapping
-  const float out_max_chroma_h = JC[0] * lookup_gamut(gamut_lut, h);
-  JC[1] = soft_clip(JC[1], 0.8f * out_max_chroma_h, out_max_chroma_h);
 
   // Project back to JzAzBz
   Jab.x = JC[0];
