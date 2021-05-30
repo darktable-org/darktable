@@ -2004,7 +2004,7 @@ void dt_shortcuts_select_view(dt_view_type_flags_t view)
 
 static GSList *pressed_keys = NULL; // list of currently pressed keys
 static guint _pressed_button = 0;
-static guint _last_time = 0;
+static guint _last_time = 0, _last_mapping_time = 0;
 static guint _timeout_source = 0;
 static guint focus_loss_key = 0;
 static guint focus_loss_press = 0;
@@ -2053,23 +2053,6 @@ static void lookup_mapping_widget()
   const dt_action_def_t *def = _action_find_definition(_sc.action);
   if(def && def->elements && def->elements[0].name)
     _sc.element = darktable.control->element;
-}
-
-static void define_new_mapping()
-{
-  dt_shortcut_t s = _sc;
-  if(insert_shortcut(&s, TRUE))
-  {
-    gchar *label = _action_full_label(s.action);
-    dt_control_log(_("%s assigned to %s"), _shortcut_description(&s, TRUE), label);
-    g_free(label);
-  }
-
-  darktable.control->mapping_widget = NULL;
-  _sc.action = NULL;
-  _sc.instance = 0;
-
-  dt_shortcuts_save(FALSE);
 }
 
 static gboolean _widget_invisible(GtkWidget *w)
@@ -2193,6 +2176,8 @@ static float process_mapping(float move_size)
   float return_value = NAN;
 
   dt_shortcut_t fsc = _sc;
+  fsc.action = NULL;
+  fsc.element  = 0;
   if(_shortcut_match(&fsc))
   {
     dt_action_t *owner = fsc.action;
@@ -2343,10 +2328,6 @@ static void ungrab_grab_widget()
 
 float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size)
 {
-  // int delay = 0;
-  // g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
-  // if(time && time < _last_time + delay) return NAN;
-
   _sc.move_device = id;
   _sc.move = move;
   _sc.speed = 1.0;
@@ -2364,8 +2345,6 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
   _sc.mods &= gdk_keymap_get_modifier_mask(keymap, GDK_MODIFIER_INTENT_DEFAULT_MOD_MASK);
   gdk_keymap_add_virtual_modifiers(keymap, &_sc.mods);
 
-  if(darktable.control->mapping_widget && !_sc.action && size != 0) lookup_mapping_widget();
-
   float return_value = 0;
   if(!size)
     return_value = process_mapping(size);
@@ -2379,9 +2358,29 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
 
     dt_print(DT_DEBUG_INPUT, "  [dt_shortcut_move] shortcut received: %s\n", _shortcut_description(&_sc, TRUE));
 
+    if(darktable.control->mapping_widget && !_sc.action) lookup_mapping_widget();
     if(_sc.action)
     {
-      define_new_mapping();
+      if(!time || time > _last_mapping_time + 1000 || time < _last_mapping_time)
+      {
+        _last_mapping_time = time;
+
+        dt_shortcut_t s = _sc;
+        if(insert_shortcut(&s, TRUE))
+        {
+          gchar *label = _action_full_label(s.action);
+          dt_control_log(_("%s assigned to %s"), _shortcut_description(&s, TRUE), label);
+          g_free(label);
+
+          if(darktable.control->mapping_widget)
+            gtk_widget_trigger_tooltip_query(darktable.control->mapping_widget);
+        }
+
+        dt_shortcuts_save(FALSE);
+      }
+
+      _sc.action = NULL;
+      _sc.instance = 0;
     }
     else
     {
@@ -2634,7 +2633,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     break;
   case GDK_GRAB_BROKEN:
     if(event->grab_broken.implicit) break;
-//case GDK_WINDOW_STATE:
+  case GDK_WINDOW_STATE:
     event->focus_change.in = FALSE; // fall through to GDK_FOCUS_CHANGE
   case GDK_FOCUS_CHANGE: // dialog boxes and switch to other app release grab
     if(event->focus_change.in)
@@ -2647,7 +2646,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
       ungrab_grab_widget();
       _sc = (dt_shortcut_t) { 0 };
     }
-    break;
+    return FALSE;
   case GDK_SCROLL:
     _sc.mods = event->scroll.state;
 
