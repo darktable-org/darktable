@@ -534,9 +534,10 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       // copy preview image into final surface
       if(tmp_surface)
       {
-        const float scale = fminf(image_w / (float)buf_width, image_h / (float)buf_height) * darktable.gui->ppd_thb;
-        const int img_width = buf_width * scale;
-        const int img_height = buf_height * scale;
+        float scale = fminf(image_w / (float)buf_width, image_h / (float)buf_height) * darktable.gui->ppd_thb;
+        const int img_width = roundf(buf_width * scale);
+        const int img_height = roundf(buf_height * scale);
+        scale = fmaxf(img_width / (float)buf_width, img_height / (float)buf_height);
         thumb->img_surf = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
         cairo_t *cr2 = cairo_create(thumb->img_surf);
         cairo_scale(cr2, scale, scale);
