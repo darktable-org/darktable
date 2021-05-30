@@ -5204,22 +5204,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // scale aux buffer to output buffer
     const int err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_aux, roi_out, roi_in);
     if(err != CL_SUCCESS)
-    {
       retval = FALSE;
-      goto finish;
-    }
   }
   
-  // color smoothing
-  if(data->color_smoothing)
-  {
-    if(!color_smoothing_cl(self, piece, dev_out, dev_out, roi_out, data->color_smoothing))
-    {
-      retval = FALSE;
-      goto finish;
-    }
-  }
-
   finish:
   dt_opencl_release_mem_object(high_image);
   dt_opencl_release_mem_object(low_image);
