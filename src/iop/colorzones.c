@@ -2101,9 +2101,9 @@ static gboolean _area_key_press_callback(GtkWidget *widget, GdkEventKey *event, 
 {
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
 
-  if(darktable.develop->darkroom_skip_mouse_events) return TRUE;
+  if(darktable.develop->darkroom_skip_mouse_events) return FALSE;
 
-  if(c->selected < 0) return TRUE;
+  if(c->selected < 0) return FALSE;
 
   int handled = 0;
   float dx = 0.0f, dy = 0.0f;
@@ -2128,7 +2128,7 @@ static gboolean _area_key_press_callback(GtkWidget *widget, GdkEventKey *event, 
     dx = -DT_IOP_COLORZONES_DEFAULT_STEP;
   }
 
-  if(!handled) return TRUE;
+  if(!handled) return FALSE;
 
   dt_iop_color_picker_reset(self, TRUE);
   return _move_point_internal(self, widget, dx, dy, event->state);

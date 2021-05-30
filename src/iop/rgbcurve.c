@@ -662,12 +662,12 @@ static gboolean _area_key_press_callback(GtkWidget *widget, GdkEventKey *event, 
   dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)self->params;
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
 
-  if(darktable.develop->darkroom_skip_mouse_events) return TRUE;
+  if(darktable.develop->darkroom_skip_mouse_events) return FALSE;
 
   // if autoscale is on: do not modify g and b curves
   if((p->curve_autoscale != DT_S_SCALE_MANUAL_RGB) && g->channel != DT_IOP_RGBCURVE_R) return TRUE;
 
-  if(g->selected < 0) return TRUE;
+  if(g->selected < 0) return FALSE;
 
   int handled = 0;
   float dx = 0.0f, dy = 0.0f;
@@ -692,7 +692,7 @@ static gboolean _area_key_press_callback(GtkWidget *widget, GdkEventKey *event, 
     dx = -RGBCURVE_DEFAULT_STEP;
   }
 
-  if(!handled) return TRUE;
+  if(!handled) return FALSE;
 
   dt_iop_color_picker_reset(self, TRUE);
   return _move_point_internal(self, widget, dx, dy, event->state);

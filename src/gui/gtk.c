@@ -613,6 +613,7 @@ void dt_gui_key_accel_block_on_focus_disconnect(GtkWidget *w)
 
 void dt_gui_key_accel_block_on_focus_connect(GtkWidget *w)
 {
+  gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);
   // FIXME no longer needed; dt_shortcut_dispatcher checks if Entry has focus
 }
 

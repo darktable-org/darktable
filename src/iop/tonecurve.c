@@ -1108,9 +1108,9 @@ static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event
   int autoscale_ab = p->tonecurve_autoscale_ab;
 
   // if autoscale_ab is on: do not modify a and b curves
-  if((autoscale_ab != DT_S_SCALE_MANUAL) && ch != ch_L) return TRUE;
+  if((autoscale_ab != DT_S_SCALE_MANUAL) && ch != ch_L) return FALSE;
 
-  if(c->selected < 0) return TRUE;
+  if(c->selected < 0) return FALSE;
 
   int handled = 0;
   float dx = 0.0f, dy = 0.0f;
@@ -1135,7 +1135,7 @@ static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event
     dx = -TONECURVE_DEFAULT_STEP;
   }
 
-  if(!handled) return TRUE;
+  if(!handled) return FALSE;
 
   return _move_point_internal(self, widget, dx, dy, event->state);
 }
