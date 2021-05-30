@@ -119,7 +119,6 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
     img->print_timestamp = sqlite3_column_int(stmt, 32);
     img->final_width = sqlite3_column_int(stmt, 33);
     img->final_height = sqlite3_column_int(stmt, 34);
-    if(img->final_width > 0 && img->final_height > 0) img->verified_size = TRUE;
 
     // buffer size? colorspace?
     if(img->flags & DT_IMAGE_LDR)
