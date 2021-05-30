@@ -2034,7 +2034,7 @@ static gboolean dt_iop_basecurve_key_press(GtkWidget *widget, GdkEventKey *event
     dx = -BASECURVE_DEFAULT_STEP;
   }
 
-  if(!handled) return TRUE;
+  if(!handled) return FALSE;
 
   return _move_point_internal(self, widget, dx, dy, event->state);
 }
