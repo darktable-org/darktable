@@ -388,6 +388,7 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
       gtk_widget_set_sensitive(item->widget, item->sensitive);
       gtk_widget_set_visible(item->widget, item->visible);
       gtk_widget_set_tooltip_text(item->widget, item->tooltip);
+      gtk_widget_set_has_tooltip(item->widget, TRUE); // even if no tip, to show shortcuts
     }
     // put back label
     if(DT_IS_BAUHAUS_WIDGET(item->widget))
@@ -2740,7 +2741,7 @@ void gui_init(dt_lib_module_t *self)
   /* search box */
   d->text_entry = gtk_search_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(d->text_entry), _("search modules by name or tag"));
-  g_signal_connect(G_OBJECT(d->text_entry), "changed", G_CALLBACK(_text_entry_changed_callback), self);
+  g_signal_connect(G_OBJECT(d->text_entry), "search-changed", G_CALLBACK(_text_entry_changed_callback), self);
   g_signal_connect(G_OBJECT(d->text_entry), "key-press-event", G_CALLBACK(_text_entry_key_press_callback), self);
   gtk_box_pack_start(GTK_BOX(d->hbox_search_box), d->text_entry, TRUE, TRUE, 0);
   gtk_entry_set_width_chars(GTK_ENTRY(d->text_entry), 0);
