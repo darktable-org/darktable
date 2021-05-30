@@ -822,7 +822,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
       case md_width:
         (void)g_strlcpy(text, NODATA_STRING, sizeof(text));
-        if(img->verified_size)
+        if(img->final_width > 0)
         {
           (void)g_snprintf(text, sizeof(text), "%d", img->final_width);
         }
@@ -831,7 +831,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
       case md_height:
         (void)g_strlcpy(text, NODATA_STRING, sizeof(text));
-        if(img->verified_size)
+        if(img->final_height > 0)
         {
           (void)g_snprintf(text, sizeof(text), "%d", img->final_height);
         }
