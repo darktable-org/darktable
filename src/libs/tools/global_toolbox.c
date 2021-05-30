@@ -793,14 +793,12 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
   switch(event->type)
   {
   case GDK_ENTER_NOTIFY:
-  case GDK_LEAVE_NOTIFY:
-    if(event->crossing.mode == GDK_CROSSING_NORMAL || event->crossing.mode == GDK_CROSSING_UNGRAB)
-    {
-      darktable.control->mapping_widget = event->type == GDK_ENTER_NOTIFY &&
-                                          g_hash_table_lookup(darktable.control->widgets, event_widget)
-                                        ? event_widget : NULL;
-      _set_mapping_mode_cursor(event_widget);
-    }
+    if(event->crossing.mode == GDK_CROSSING_UNGRAB) break;
+  case GDK_GRAB_BROKEN:
+  case GDK_FOCUS_CHANGE:
+    darktable.control->mapping_widget = g_hash_table_lookup(darktable.control->widgets, event_widget)
+                                      ? event_widget : NULL;
+    _set_mapping_mode_cursor(event_widget);
     break;
   case GDK_BUTTON_PRESS:
     if(gdk_display_device_is_grabbed(gdk_window_get_display(event->button.window), event->button.device))
