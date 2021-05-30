@@ -24,10 +24,6 @@
    implemented also by Ingo Weyrich.
 */
 
-// dual_demosaic is always called **after** the high-frequency demosaicer (rcd, amaze or one of the non-bayer demosaicers)
-// and expects the data available in rgb_data as rgba quadruples. 
-
-// improve UI experience
 static float slider2contrast(float slider)
 {
   return 0.005f * powf(slider, 1.1f);
@@ -56,7 +52,7 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
   }
   const gboolean info = ((darktable.unmuted & (DT_DEBUG_DEMOSAIC | DT_DEBUG_PERF)) && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL));
 
-  vng_interpolate(vng_image, raw_data, roi_out, roi_in, filters, xtrans, DEMOSAIC_FULL_SCALE);
+  vng_interpolate(vng_image, raw_data, roi_out, roi_in, filters, xtrans, FALSE);
   color_smoothing(vng_image, roi_out, 2);
 
   dt_times_t start_blend = { 0 }, end_blend = { 0 };
