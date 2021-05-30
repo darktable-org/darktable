@@ -949,7 +949,7 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
       {
         dt_camera_t *oldcam = (dt_camera_t *)citem->data;
         camctl->cameras = citem = g_list_delete_link(c->cameras, citem);
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] ERROR: %s on port %s disconnected\n", cam->model, cam->port);
+        dt_print(DT_DEBUG_CAMCTL, "[camera_control] ERROR: %s on port %s disconnected while mounted\n", cam->model, cam->port);
         dt_control_log(_("camera `%s' on port %s disconnected while mounted"), cam->model, cam->port);
         dt_camctl_camera_destroy_struct(oldcam);
         changed_camera = TRUE;
@@ -1070,7 +1070,7 @@ static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
     err = gp_camera_set_port_info(cam->gpcam, pi);
     if(err != GP_OK)
     {
-      dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to gp_camera_set_port_infogp_port_info_list_get_info %s\n", cam->model);
+      dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to gp_camera_set_port_info %s\n", cam->model);
       return FALSE;
     }
 
