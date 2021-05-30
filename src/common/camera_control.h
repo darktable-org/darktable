@@ -89,6 +89,8 @@ typedef struct dt_camera_t
 
   /** flag to unmount */
   gboolean unmount;
+  /** flag noting a runtime ptp error condition */
+  gboolean ptperror;
   /** flag true while importing */
   gboolean is_importing;
   /** Live view */

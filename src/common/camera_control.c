@@ -171,16 +171,21 @@ static void _disable_debug()
 static void _error_func_dispatch25(GPContext *context, const char *text, void *data)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)data;
-
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] gphoto2 error: %s\n", text);
 
   if(strstr(text, "PTP"))
   {
-
-    /* remove camera for camctl camera list */
+    /* the camera updating thread should get a note about an error from here */
     GList *ci = g_list_find(camctl->cameras, camctl->active_camera);
-    if(ci) camctl->cameras = g_list_remove(camctl->cameras, ci);
-
+    if(ci)
+    {
+      dt_camera_t *cam = (dt_camera_t *)ci->data;
+      dt_print(DT_DEBUG_CAMCTL, "[camera_control] PTP error `%s' for camera %s on port %s\n", text, cam->model, cam->port);
+      dt_control_log(_("camera `%s' on port `%s' error %s\n"
+                       "\nmake sure your camera allows access and is not mounted otherwise"), cam->model, cam->port, text);
+      cam->ptperror = TRUE;
+    }
+      
     /* notify client of camera connection broken */
     _dispatch_camera_error(camctl, camctl->active_camera, CAMERA_CONNECTION_BROKEN);
 
@@ -950,19 +955,23 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
         dt_camera_t *oldcam = (dt_camera_t *)citem->data;
         camctl->cameras = citem = g_list_delete_link(c->cameras, citem);
         dt_print(DT_DEBUG_CAMCTL, "[camera_control] ERROR: %s on port %s disconnected while mounted\n", cam->model, cam->port);
-        dt_control_log(_("camera `%s' on port %s disconnected while mounted"), cam->model, cam->port);
+        dt_control_log(_("camera `%s' on port `%s' disconnected while mounted"), cam->model, cam->port);
         dt_camctl_camera_destroy_struct(oldcam);
         changed_camera = TRUE;
       }
-      else if(cam->unmount)
+      else if((cam->ptperror) || (cam->unmount))
       {
+        if(cam->ptperror)
+          dt_control_log(_("camera `%s' on port `%s' needs to be remounted\n"
+                         "make sure it allows access and is not mounted otherwise"), cam->model, cam->port);
+
         dt_camera_unused_t *unused_camera = g_malloc0(sizeof(dt_camera_unused_t));
         unused_camera->model = g_strdup(cam->model);
         unused_camera->port = g_strdup(cam->port);
         camctl->unused_cameras = g_list_append(camctl->unused_cameras, unused_camera);
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] unmounted %s on port %s\n", cam->model, cam->port);
+
         dt_camera_t *oldcam = (dt_camera_t *)citem->data;
-        camctl->cameras = citem = g_list_delete_link(camctl->cameras, citem);
+        camctl->cameras = citem = g_list_delete_link(c->cameras, citem);
         dt_camctl_camera_destroy(oldcam);
         changed_camera = TRUE;
       }
