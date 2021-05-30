@@ -3910,7 +3910,7 @@ error:
 
 static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
                           cl_mem dev_out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                          const gboolean smooth)
+                          const gboolean smooth, const int only_vng_linear)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
@@ -4980,7 +4980,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       if(err != CL_SUCCESS) goto error;
 
       // VNG processing
-      if(!process_vng_cl(self, piece, dev_edge_in, dev_edge_out, &roi, &roi, smooth))
+      if(!process_vng_cl(self, piece, dev_edge_in, dev_edge_out, &roi, &roi, smooth, qual_flags & DEMOSAIC_ONLY_VNG_LINEAR))
         goto error;
 
       // adjust for "good" part, dropping linear border where possible
@@ -5111,12 +5111,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
   else if(demosaicing_method ==  DT_IOP_DEMOSAIC_VNG4 || demosaicing_method == DT_IOP_DEMOSAIC_VNG)
   {
-    if(!process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE)) return FALSE;
+    if(!process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE, FALSE)) return FALSE;
   }
   else if((demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN || demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) &&
     !(qual_flags & DEMOSAIC_XTRANS_FULL))
   {
-    if(!process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE)) return FALSE;
+    if(!process_vng_cl(self, piece, dev_in, dev_out, roi_in, roi_out, TRUE, qual_flags & DEMOSAIC_ONLY_VNG_LINEAR)) return FALSE;
   }
   else if(((demosaicing_method & ~DEMOSAIC_DUAL) == DT_IOP_DEMOSAIC_MARKESTEIJN ) ||
           ((demosaicing_method & ~DEMOSAIC_DUAL) == DT_IOP_DEMOSAIC_MARKESTEIJN_3))
@@ -5153,6 +5153,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     goto finish;
   }
 
+  // This is dual demosaicing only stuff
   const int scaled = (roi_out->width != roi_in->width || roi_out->height != roi_in->height);
 
   int width = roi_out->width;
@@ -5182,7 +5183,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   if(info) dt_get_times(&start_time);
-  if(process_vng_cl(self, piece, dev_in, low_image, roi_in, roi_in, FALSE))
+  if(process_vng_cl(self, piece, dev_in, low_image, roi_in, roi_in, FALSE, FALSE))
   {
     if(!color_smoothing_cl(self, piece, low_image, low_image, roi_in, 2))
     {
