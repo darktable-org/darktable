@@ -641,6 +641,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   d->width = p->width;
   d->height = p->height;
 
+  // const gboolean is_monochrome = (piece->pipe->image.flags & DT_IMAGE_MONOCHROME) != 0;
   if(piece->pipe->dsc.filters)
   {
     const float white = (float)p->raw_white_point;
@@ -748,10 +749,26 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
   dt_iop_rawprepare_params_t *p = (dt_iop_rawprepare_params_t *)self->params;
 
-  for(int i = 0; i < 4; i++)
+  const gboolean is_monochrome = (self->dev->image_storage.flags & DT_IMAGE_MONOCHROME) != 0;
+  if(is_monochrome)
   {
-    dt_bauhaus_slider_set_soft(g->black_level_separate[i], p->raw_black_level_separate[i]);
+    // we might have to deal with old edits, so get avarage first
+    int av = 2; // for rounding
+    for(int i = 0; i < 4; i++)
+      av += p->raw_black_level_separate[i];
+
+    for(int i = 0; i < 4; i++)
+      dt_bauhaus_slider_set_soft(g->black_level_separate[i], av / 4);
   }
+  else
+  {
+    for(int i = 0; i < 4; i++)
+      dt_bauhaus_slider_set_soft(g->black_level_separate[i], p->raw_black_level_separate[i]);
+  }
+
+  // don't show upper three black levels for monochromes
+  for(int i = 1; i < 4; i++)
+    gtk_widget_set_visible(g->black_level_separate[i], !is_monochrome);     
 
   dt_bauhaus_slider_set_soft(g->white_point, p->raw_white_point);
 
@@ -761,6 +778,23 @@ void gui_update(dt_iop_module_t *self)
     dt_bauhaus_slider_set_soft(g->y, p->y);
     dt_bauhaus_slider_set_soft(g->width, p->width);
     dt_bauhaus_slider_set_soft(g->height, p->height);
+  }
+}
+
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
+{
+  dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
+  dt_iop_rawprepare_params_t *p = (dt_iop_rawprepare_params_t *)self->params;
+
+  const gboolean is_monochrome = (self->dev->image_storage.flags & DT_IMAGE_MONOCHROME) != 0;
+  if(is_monochrome)
+  {
+    if(w == g->black_level_separate[0])
+    {
+      const int val = p->raw_black_level_separate[0];
+      for(int i = 1; i < 4; i++)
+        dt_bauhaus_slider_set_soft(g->black_level_separate[i], val);
+    }
   }
 }
 
