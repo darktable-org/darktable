@@ -1555,7 +1555,7 @@ static gboolean _sanity_check(const float x, const int selected, const int nodes
   return point_valid;
 }
 
-static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state)
+static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, int node, float dx, float dy, guint state)
 {
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
@@ -1582,37 +1582,37 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
   dy *= multiplier;
   if(p->splines_version == DT_IOP_COLORZONES_SPLINES_V1)
     // do not move the first or last nodes on the x-axis
-    if(c->selected == 0 || c->selected == p->curve_num_nodes[ch] - 1) dx = 0.f;
+    if(node == 0 || node == p->curve_num_nodes[ch] - 1) dx = 0.f;
 
-  float new_x = CLAMP(curve[c->selected].x + dx, 0.0f, 1.0f);
-  const float new_y = CLAMP(curve[c->selected].y + dy, 0.0f, 1.0f);
+  float new_x = CLAMP(curve[node].x + dx, 0.0f, 1.0f);
+  const float new_y = CLAMP(curve[node].y + dy, 0.0f, 1.0f);
 
-  if(_sanity_check(new_x, c->selected, p->curve_num_nodes[ch], p->curve[ch]))
+  if(_sanity_check(new_x, node, p->curve_num_nodes[ch], p->curve[ch]))
   {
     if(p->splines_version == DT_IOP_COLORZONES_SPLINES_V1)
     {
-      curve[c->selected].x = new_x;
-      curve[c->selected].y = new_y;
+      curve[node].x = new_x;
+      curve[node].y = new_y;
 
-      if(p->channel == DT_IOP_COLORZONES_h && (c->selected == 0 || c->selected == p->curve_num_nodes[ch] - 1))
+      if(p->channel == DT_IOP_COLORZONES_h && (node == 0 || node == p->curve_num_nodes[ch] - 1))
       {
-        if(c->selected == 0)
+        if(node == 0)
         {
-          curve[p->curve_num_nodes[ch] - 1].x = 1.f - curve[c->selected].x;
-          curve[p->curve_num_nodes[ch] - 1].y = curve[c->selected].y;
+          curve[p->curve_num_nodes[ch] - 1].x = 1.f - curve[node].x;
+          curve[p->curve_num_nodes[ch] - 1].y = curve[node].y;
         }
         else
         {
-          curve[0].x = 1.f - curve[c->selected].x;
-          curve[0].y = curve[c->selected].y;
+          curve[0].x = 1.f - curve[node].x;
+          curve[0].y = curve[node].y;
         }
       }
     }
     else
     {
-      if(p->channel == DT_IOP_COLORZONES_h && (c->selected == 0 || c->selected == p->curve_num_nodes[ch] - 1))
+      if(p->channel == DT_IOP_COLORZONES_h && (node == 0 || node == p->curve_num_nodes[ch] - 1))
       {
-        if(c->selected == 0)
+        if(node == 0)
         {
           if(new_x + 1.f - curve[p->curve_num_nodes[ch] - 1].x < DT_IOP_COLORZONES_MIN_X_DISTANCE)
             new_x = curve[p->curve_num_nodes[ch] - 1].x + DT_IOP_COLORZONES_MIN_X_DISTANCE - 1.f;
@@ -1623,8 +1623,8 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
             new_x = curve[0].x + 1.f - DT_IOP_COLORZONES_MIN_X_DISTANCE;
         }
       }
-      curve[c->selected].x = new_x;
-      curve[c->selected].y = new_y;
+      curve[node].x = new_x;
+      curve[node].y = new_y;
     }
 
     dt_iop_queue_history_update(self, FALSE);
@@ -1738,7 +1738,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event
     else
     {
       delta_y *= -DT_IOP_COLORZONES_DEFAULT_STEP;
-      return _move_point_internal(self, widget, 0.f, delta_y, event->state);
+      return _move_point_internal(self, widget, c->selected, 0.f, delta_y, event->state);
     }
   }
 
@@ -1816,7 +1816,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget, GdkEventMotion *
                        - _mouse_to_curve(old_m_y - translate_mouse_y, c->zoom_factor, c->offset_y);
 
       dt_iop_color_picker_reset(self, TRUE);
-      return _move_point_internal(self, widget, dx, dy, event->state);
+      return _move_point_internal(self, widget, c->selected, dx, dy, event->state);
     }
   }
 
@@ -2131,7 +2131,7 @@ static gboolean _area_key_press_callback(GtkWidget *widget, GdkEventKey *event, 
   if(!handled) return FALSE;
 
   dt_iop_color_picker_reset(self, TRUE);
-  return _move_point_internal(self, widget, dx, dy, event->state);
+  return _move_point_internal(self, widget, c->selected, dx, dy, event->state);
 }
 
 static void _channel_tabs_switch_callback(GtkNotebook *notebook, GtkWidget *page, guint page_num,
@@ -2322,21 +2322,19 @@ static float _action_process_zones(gpointer target, dt_action_element_t element,
   float x = (float)element / 7.0;
 
   gboolean close_enough = FALSE;
-  for(c->selected = 0;
-      c->selected < p->curve_num_nodes[ch];
-      c->selected++)
-  {
-    if((close_enough = fabsf(curve[c->selected].x - x) <= 1./16)) break;
-  }
+  int node = 0;
+  while(node < p->curve_num_nodes[ch] &&
+        !(close_enough = fabsf(curve[node].x - x) <= 1./16))
+    node++;
 
   float return_value = close_enough
-                     ? curve[c->selected].y
+                     ? curve[node].y
                      : dt_draw_curve_calc_value(c->minmax_curve[ch], x);
 
   if(move_size)
   {
     if(!close_enough)
-      c->selected = _add_node(curve, &p->curve_num_nodes[ch], x, return_value);
+      node = _add_node(curve, &p->curve_num_nodes[ch], x, return_value);
 
     float bottop = -1e6;
     switch(effect)
@@ -2352,8 +2350,8 @@ static float _action_process_zones(gpointer target, dt_action_element_t element,
     case DT_ACTION_EFFECT_DOWN:
       move_size *= -1;
     case DT_ACTION_EFFECT_UP:
-      _move_point_internal(self, target, 0.f, move_size / 100, 0);
-      return_value = curve[c->selected].y;
+      _move_point_internal(self, target, node, 0.f, move_size / 100, 0);
+      return_value = curve[node].y;
       break;
     default:
       fprintf(stderr, "[_action_process_zones] unknown shortcut effect (%d) for color zones\n", effect);
