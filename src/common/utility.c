@@ -700,6 +700,14 @@ guint dt_util_string_count_char(const char *text, const char needle)
   return count;
 }
 
+void dt_util_str_to_loc_numbers_format(char *data)
+{
+  const struct lconv *currentLocalConv = localeconv ();
+  const gchar loc_decimal_point = currentLocalConv->decimal_point[0];
+  const gchar *en_decimal_point = ".";
+  g_strdelimit(data,en_decimal_point,loc_decimal_point);
+}
+
 GList *dt_util_str_to_glist(const gchar *separator, const gchar *text)
 {
   if(text == NULL) return NULL;

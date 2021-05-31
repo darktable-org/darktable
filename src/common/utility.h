@@ -45,6 +45,8 @@ gboolean dt_util_is_dir_empty(const char *dirname);
 gchar *dt_util_foo_to_utf8(const char *string);
 /** returns the number of occurence of character in a text. */
 guint dt_util_string_count_char(const char *text, const char needle);
+/* helper function to convert en float numbers to local based numbers for scanf */
+void dt_util_str_to_loc_numbers_format(char *data);
 
 typedef enum dt_logo_season_t
 {
