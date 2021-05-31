@@ -494,7 +494,7 @@ static int get_white_balance_coeff(struct dt_iop_module_t *self, float custom_wb
 #endif
 static inline float euclidean_norm(const float vector[4])
 {
-  return sqrtf(fmaxf(sqf(vector[0]) + sqf(vector[1]) + sqf(vector[2]), 1e-6f));
+  return fmaxf(sqrtf(sqf(vector[0]) + sqf(vector[1]) + sqf(vector[2])), NORM_MIN);
 }
 
 
@@ -581,7 +581,7 @@ static inline void luma_chroma(const float input[4], const float saturation[4], 
                                float output[4], const dt_iop_channelmixer_rgb_version_t version)
 {
   // Compute euclidean norm and flat lightness adjustment
-  const float avg = (input[0] + input[1] + input[2]) / 3.0f;
+  const float avg = fmaxf((input[0] + input[1] + input[2]) / 3.0f, NORM_MIN);
   const float mix = scalar_product(input, lightness);
   float norm = euclidean_norm(input);
 
@@ -873,7 +873,7 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
       dot_product(RGB, RGB_to_XYZ, XYZ);
 
       // Convert to xyY
-      const float sum = fmaxf(XYZ[0] + XYZ[1] + XYZ[2], 1e-6f);
+      const float sum = fmaxf(XYZ[0] + XYZ[1] + XYZ[2], NORM_MIN);
       XYZ[0] /= sum;   // x
       XYZ[2] = XYZ[1]; // Y
       XYZ[1] /= sum;   // y
@@ -950,7 +950,8 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
 
         // Compute the Minkowski p-norm for regularization
         const float p = 8.f;
-        const float p_norm = powf(powf(fabsf(central_average[0]), p) + powf(fabsf(central_average[1]), p), 1.f / p) + 1e-6f;
+        const float p_norm
+            = powf(powf(fabsf(central_average[0]), p) + powf(fabsf(central_average[1]), p), 1.f / p) + NORM_MIN;
         const float weight = var[0] * var[1] * var[2];
 
         #pragma unroll
@@ -986,9 +987,9 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
 
         // Compute the Minkowski p-norm for regularization
         const float p = 8.f;
-        const float p_norm = powf(powf(fabsf(dd[0]), p) + powf(fabsf(dd[1]), p), 1.f / p) + 1e-6f;
+        const float p_norm = powf(powf(fabsf(dd[0]), p) + powf(fabsf(dd[1]), p), 1.f / p) + NORM_MIN;
 
-        #pragma unroll
+#pragma unroll
         for(size_t c = 0; c < 2; c++) xyY[c] -= dd[c] / p_norm;
         elements += 1.f;
       }
@@ -3612,7 +3613,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   dot_product(RGB, RGB_to_XYZ, XYZ);
 
   // Convert to xyY
-  const float sum = fmaxf(XYZ[0] + XYZ[1] + XYZ[2], 1e-6f);
+  const float sum = fmaxf(XYZ[0] + XYZ[1] + XYZ[2], NORM_MIN);
   XYZ[0] /= sum;   // x
   XYZ[2] = XYZ[1]; // Y
   XYZ[1] /= sum;   // y
