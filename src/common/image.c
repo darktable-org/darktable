@@ -681,23 +681,13 @@ gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
     return 0;
   }
 
-  // we want to be sure to have the real image size.
-  // raw files need a pass via rawspeed to get it.
-  char filename[PATH_MAX] = { 0 };
-  gboolean from_cache = TRUE;
-  dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
-  imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-  dt_imageio_open(imgtmp, filename, NULL);
-  img = *imgtmp;
-  dt_image_cache_write_release(darktable.image_cache, imgtmp, DT_IMAGE_CACHE_RELAXED);
-
   // and now we can do the pipe stuff to get final image size
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
   dt_dev_load_image(&dev, imgid);
 
   dt_dev_pixelpipe_t pipe;
-  int wd = img.width, ht = img.height;
+  int wd = dev.image_storage.width, ht = dev.image_storage.height;
   int res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
   if(res)
   {
