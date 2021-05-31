@@ -641,7 +641,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   d->width = p->width;
   d->height = p->height;
 
-  // const gboolean is_monochrome = (piece->pipe->image.flags & DT_IMAGE_MONOCHROME) != 0;
   if(piece->pipe->dsc.filters)
   {
     const float white = (float)p->raw_white_point;
