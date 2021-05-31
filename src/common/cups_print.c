@@ -61,15 +61,6 @@ typedef struct dt_prtctl_t
   void *user_data;
 } dt_prtctl_t;
 
-// add helper functions to convert PPD en float numbers to local based numbers for scanf
-void dt_convert_str_to_loc_numbers(char *data)
-{
-  const struct lconv *currentLocalConv = localeconv ();
-  const gchar loc_decimal_point = currentLocalConv->decimal_point[0];
-  const gchar *en_decimal_point = ".";
-  g_strdelimit(data,en_decimal_point,loc_decimal_point);
-}
-
 // initialize the pinfo structure
 void dt_init_print_info(dt_print_info_t *pinfo)
 {
@@ -115,7 +106,7 @@ void dt_get_printer_info(const char *printer_name, dt_printer_info_t *pinfo)
       if (attr)
       {
         // scanf use local number format and PPD has en numbers
-        dt_convert_str_to_loc_numbers(attr->value);
+        dt_util_str_to_loc_numbers_format(attr->value);
 
         sscanf(attr->value, "%lf %lf %lf %lf",
                &pinfo->hw_margin_left, &pinfo->hw_margin_bottom,
