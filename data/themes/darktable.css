@@ -71,7 +71,7 @@
 @define-color selected_bg_color @grey_35; /* legacy stuff */
 @define-color border_color @grey_10; /* border, when used */
 @define-color bg_color @grey_15; /* general background */
-@define-color fg_color @grey_75; /* general text */
+@define-color fg_color @grey_70; /* general text */
 @define-color base_color @fg_color; /* legacy stuff */
 @define-color text_color @grey_05; /* same */
 @define-color disabled_fg_color @grey_40; /* disabled controls */
@@ -180,6 +180,7 @@
   color: @fg_color;
   font-size: 1em;
   font-family: sans-serif;
+  font-weight: normal;
   box-shadow:none;
   outline-style:none;
   text-shadow:none;
@@ -374,6 +375,19 @@ overshoot.right
 {
   background-color: transparent;
   border: 0;
+}
+
+/* Other buttons */
+
+radiobutton radio,
+radiobutton label
+{
+  padding: 0.25em;
+}
+
+spinbutton>button
+{
+  margin: 0.14em 0.07em;
 }
 
 /*------------------------
@@ -2150,6 +2164,72 @@ Details :
   border: 1px solid @lighttable_bg_color;
 }
 
+/* Last active images animation */
+@keyframes lastactive
+{
+  0% {border-color: @lighttable_bg_color; border-width : 0.14em;}
+  50% {border-color: @thumbnail_bg50_color; border-width : 0.28em;}
+  100% {border-color: @lighttable_bg_color; border-width : 0.14em;}
+}
+
+.dt_last_active #thumb_back
+{
+  animation-name: lastactive;
+  animation-duration: 4s;
+  animation-timing-function: linear;
+  animation-iteration-count: 3;
+}
+
+/* set selected image and/or focus one */
+#thumb_main:active #thumb_back,
+#thumb_main:selected #thumb_back
+{
+  background-color: shade(@thumbnail_selected_bg_color, 1.05);
+  border-color: shade(@thumbnail_selected_bg_color, 1.15);
+}
+
+/* set hover effect */
+#thumb_main:hover #thumb_back
+{
+  background-color: @thumbnail_hover_bg_color;
+}
+
+/*-----------------
+  - Image options -
+  -----------------*/
+
+#thumb_image
+{
+  margin: 25px; /* not real pixels. This is used as a per thousand of the thumb size and couldn't be scalable */
+}
+
+.dt_thumbnails_2 #thumb_image /* update consistently margins if big thumbnails (less images per row) are shown */
+{
+  margin: 1.4em;
+}
+
+#thumb_ext /* adjust margin to better align to group, audio... icons and match to near all thumbnails sizes */
+{
+  margin-top: -0.07em;
+}
+
+/* Set top margin on active image in filmstrip */
+#thumb_main:active #thumb_back
+{
+  border-top: 0.105em solid @border_color;
+}
+
+/* Set top cursor on active image in filmstrip */
+#thumb_cursor
+{
+  color: transparent;
+}
+
+#thumbtable_filmstrip #thumb_main:active #thumb_cursor
+{
+  color: @border_color;
+}
+
 /* Set border color around thumbnails */
 .dt_group_left #thumb_back
 {
@@ -2173,72 +2253,6 @@ Details :
   border-left : 4px solid rgb(255, 187, 0);
 }
 
-/* Last active images animation */
-@keyframes lastactive
-{
-  0% {border-color: @lighttable_bg_color; border-width : 0.14em;}
-  50% {border-color: @thumbnail_bg50_color; border-width : 0.28em;}
-  100% {border-color: @lighttable_bg_color; border-width : 0.14em;}
-}
-
-.dt_last_active #thumb_back
-{
-  animation-name: lastactive;
-  animation-duration: 4s;
-  animation-timing-function: linear;
-  animation-iteration-count: 3;
-}
-
-/* set selected image and/or focus one */
-#thumb_main:active #thumb_back,
-#thumb_main:selected #thumb_back
-{
-  background-color: shade(@thumbnail_selected_bg_color, 1.05);
-  border: 1px solid shade(@thumbnail_selected_bg_color, 1.15);
-}
-
-/* set hover effect */
-#thumb_main:hover #thumb_back
-{
-  background-color: @thumbnail_hover_bg_color;
-}
-
-/*-----------------
-  - Image options -
-  -----------------*/
-
-#thumb_image
-{
-  margin: 25px; /* not real pixels. This is used as a per thousand of the thumb size and couldn't be scalable */
-}
-
-.dt_thumbnails_2 #thumb_image, /* update consistently margins if big thumbnails (less images per row) are shown */
-.dt_thumbnails_2#thumb_image
-{
-  margin: 1.4em;
-}
-
-#thumb_ext /* adjust margin to better align to group, audio... icons and match to near all thumbnails sizes */
-{
-  margin-top: -0.07em;
-}
-
-/* Set top margin on active image in filmstrip */
-#thumb_main:active #thumb_back
-{
-  border-top: 0.105em solid @border_color;
-}
-/* Set top cursor on active image in filmstrip */
-#thumb_cursor
-{
-  color: transparent;
-}
-
-#thumbtable_filmstrip #thumb_main:active #thumb_cursor
-{
-  color: @border_color;
-}
-
 /*----------------------------------------
   - Popover overlays menu from star icon -
   ----------------------------------------*/
@@ -2249,17 +2263,6 @@ Details :
   padding: 0.28em 0;
   margin: 0 0.35em 0.35em 0.35em;
   border-bottom: 0.07em inset @button_border;
-}
-
-radiobutton radio,
-radiobutton label
-{
-  padding: 0.25em;
-}
-
-spinbutton>button
-{
-  margin: 0.14em 0.07em;
 }
 
 #show-tooltip

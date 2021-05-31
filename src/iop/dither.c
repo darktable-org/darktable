@@ -247,9 +247,11 @@ static inline void _diffuse_error_sse(float *val, const __m128 err, const float 
 static inline float clipnan(const float x)
 {
   // convert NaN to 0.5, otherwise clamp to between 0.0 and 1.0
-  return (x > 0.0f) ? ((x < 1.0f) ? x : 1.0f) : (x == x) ? 0.0f : 0.5f;
-//                                  ^      ^                ^       ^
-//                          0<x<1 --+ x>1--+  not-NaN x<0---+  NaN--+
+  return (x > 0.0f) ? ((x < 1.0f) ? x    // 0 < x < 1
+                                  : 1.0f // x >= 1
+                       )
+         : isnan(x) ? 0.5f  // x is NaN
+                    : 0.0f; // x <= 0
 }
 
 static inline void clipnan_pixel(float *const restrict out, const float *const restrict in)

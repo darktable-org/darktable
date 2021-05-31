@@ -1879,6 +1879,11 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blur_radius = o->blur_radius;
     n->contrast = o->contrast;
     n->brightness = o->brightness;
+    // fix intermediate devel versions for details mask and initialize n->details to proper values if something was wrong
+    memcpy(&n->details, &o->reserved, sizeof(float));
+    if(isnan(n->details)) n->details = 0.0f;
+    n->details = fminf(1.0f, fmaxf(-1.0f, n->details));
+
     memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
     memcpy(n->blendif_boost_factors, o->blendif_boost_factors, sizeof(float) * DEVELOP_BLENDIF_SIZE);
     memcpy(n->raster_mask_source, o->raster_mask_source, sizeof(n->raster_mask_source));

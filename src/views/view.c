@@ -1019,9 +1019,11 @@ dt_view_surface_value_t dt_view_image_get_surface(int imgid, int width, int heig
   }
 
   // so we create a new image surface to return
-  const float scale = fminf(width / (float)buf_wd, height / (float)buf_ht) * darktable.gui->ppd_thb;
-  const int img_width = buf_wd * scale;
-  const int img_height = buf_ht * scale;
+  float scale = fminf(width / (float)buf_wd, height / (float)buf_ht) * darktable.gui->ppd_thb;
+  const int img_width = roundf(buf_wd * scale);
+  const int img_height = roundf(buf_ht * scale);
+  // due to the forced rounding above, we need to recompute scaling
+  scale = fmaxf(img_width / (float)buf_wd, img_height / (float)buf_ht);
   *surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
 
   // we transfer cached image on a cairo_surface (with colorspace transform if needed)

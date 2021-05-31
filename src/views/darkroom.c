@@ -3451,33 +3451,52 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   if(which == 2)
   {
     // zoom to 1:1 2:1 and back
-    dt_dev_zoom_t zoom;
-    int closeup, procw, proch;
-    float zoom_x, zoom_y;
-    zoom = dt_control_get_dev_zoom();
-    closeup = dt_control_get_dev_closeup();
-    zoom_x = dt_control_get_dev_zoom_x();
-    zoom_y = dt_control_get_dev_zoom_y();
+    int procw, proch;
+    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    int closeup = dt_control_get_dev_closeup();
+    float zoom_x = dt_control_get_dev_zoom_x();
+    float zoom_y = dt_control_get_dev_zoom_y();
     dt_dev_get_processed_size(dev, &procw, &proch);
-    const float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
-    zoom_x += (1.0 / scale) * (x - .5f * dev->width) / procw;
-    zoom_y += (1.0 / scale) * (y - .5f * dev->height) / proch;
-    if(zoom == DT_ZOOM_1)
+    float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+    const float ppd = darktable.gui->ppd;
+    const gboolean low_ppd = (darktable.gui->ppd == 1);
+    const float mouse_off_x = x - 0.5f * dev->width;
+    const float mouse_off_y = y - 0.5f * dev->height;
+    zoom_x += mouse_off_x / (procw * scale);
+    zoom_y += mouse_off_y / (proch * scale);
+    const float tscale = scale * ppd;
+    closeup = 0;
+    if((tscale > 0.95f) && (tscale < 1.05f)) // we are at 100% and switch to 200%
     {
-      if(!closeup)
-        closeup = 1;
+      zoom = DT_ZOOM_1;
+      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+      if(low_ppd) closeup = 1;
+    }
+    else if((tscale > 1.95f) && (tscale < 2.05f)) // at 200% so switch to zoomfit           
+    {
+      zoom = DT_ZOOM_FIT;
+      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
+    }
+    else // other than 100 or 200% so zoom to 100 %
+    {
+      if(low_ppd)
+      {
+        zoom = DT_ZOOM_1;
+        scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+      }
       else
       {
-        zoom = DT_ZOOM_FIT;
-        zoom_x = zoom_y = 0.0f;
-        closeup = 0;
+        zoom = DT_ZOOM_FREE;
+        scale = 1.0f / ppd;
       }
     }
-    else
-      zoom = DT_ZOOM_1;
+    dt_control_set_dev_zoom_scale(scale);
+    dt_control_set_dev_closeup(closeup);
+    scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+    zoom_x -= mouse_off_x / (procw * scale);
+    zoom_y -= mouse_off_y / (proch * scale);
     dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
     dt_control_set_dev_zoom(zoom);
-    dt_control_set_dev_closeup(closeup);
     dt_control_set_dev_zoom_x(zoom_x);
     dt_control_set_dev_zoom_y(zoom_y);
     dt_dev_invalidate(dev);
@@ -3661,17 +3680,9 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   }
   else if(scale > 1.9999f / ppd)
   {
-    if(low_ppd)
-    {
-      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-      zoom = DT_ZOOM_1;
-      closeup = 1;
-    }
-    else
-    {
-      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-      zoom = DT_ZOOM_1;
-    }
+    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+    zoom = DT_ZOOM_1;
+    if(low_ppd) closeup = 1;
   }
 
   if(fabsf(scale - 1.0f) < 0.001f) zoom = DT_ZOOM_1;
@@ -4321,17 +4332,9 @@ static void second_window_scrolled(GtkWidget *widget, dt_develop_t *dev, double 
   }
   else if(scale > 1.9999f / ppd)
   {
-    if(low_ppd)
-    {
-      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-      zoom = DT_ZOOM_1;
-      closeup = 1;
-    }
-    else
-    {
-      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-      zoom = DT_ZOOM_1;
-    }
+   scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+   zoom = DT_ZOOM_1;
+   if(low_ppd) closeup = 1;
   }
 
   if(fabsf(scale - 1.0f) < 0.001f) zoom = DT_ZOOM_1;
@@ -4383,34 +4386,53 @@ static int second_window_button_pressed(GtkWidget *widget, dt_develop_t *dev, do
   {
     // zoom to 1:1 2:1 and back
     int procw, proch;
-
     dt_dev_zoom_t zoom = dt_second_window_get_dev_zoom(dev);
     int closeup = dt_second_window_get_dev_closeup(dev);
     float zoom_x = dt_second_window_get_dev_zoom_x(dev);
     float zoom_y = dt_second_window_get_dev_zoom_y(dev);
     dt_second_window_get_processed_size(dev, &procw, &proch);
-    const float scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 0);
+    float scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 0);
+    const float ppd = dev->second_window.ppd;
+    const gboolean low_ppd = dev->second_window.ppd == 1;
 
-    zoom_x += (1.0 / scale) * (x - .5f * dev->second_window.width) / procw;
-    zoom_y += (1.0 / scale) * (y - .5f * dev->second_window.height) / proch;
+    const float mouse_off_x = x - 0.5f * dev->second_window.width;
+    const float mouse_off_y = y - 0.5f * dev->second_window.height;
+    zoom_x += mouse_off_x / (procw * scale);
+    zoom_y += mouse_off_y / (proch * scale);
+    const float tscale = scale * ppd;
+    closeup = 0;
 
-    if(zoom == DT_ZOOM_1)
+    if((tscale > 0.95f) && (tscale < 1.05f)) // we are at 100% and switch to 200%
     {
-      if(!closeup)
-        closeup = 1;
+      zoom = DT_ZOOM_1;
+      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+      if(low_ppd) closeup = 1;
+    }
+    else if((tscale > 1.95f) && (tscale < 2.05f)) // at 200% so switch to zoomfit           
+    {
+      zoom = DT_ZOOM_FIT;
+      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
+    }
+    else // other than 100 or 200% so zoom to 100 %
+    {
+      if(low_ppd)
+      {
+        zoom = DT_ZOOM_1;
+        scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+      }
       else
       {
-        zoom = DT_ZOOM_FIT;
-        zoom_x = zoom_y = 0.0f;
-        closeup = 0;
+        zoom = DT_ZOOM_FREE;
+        scale = 1.0f / ppd;
       }
     }
-    else
-      zoom = DT_ZOOM_1;
-
+    dt_second_window_set_zoom_scale(dev, scale);
+    dt_second_window_set_dev_closeup(dev, closeup);
+    scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 0);
+    zoom_x -= mouse_off_x / (procw * scale);
+    zoom_y -= mouse_off_y / (proch * scale);
     dt_second_window_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
     dt_second_window_set_dev_zoom(dev, zoom);
-    dt_second_window_set_dev_closeup(dev, closeup);
     dt_second_window_set_dev_zoom_x(dev, zoom_x);
     dt_second_window_set_dev_zoom_y(dev, zoom_y);
 
