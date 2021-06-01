@@ -1249,9 +1249,9 @@ GList* dt_image_find_duplicates(const char* filename)
   // concatenate filename and sidecar extension
   g_strlcpy(pattern,  filename, sizeof(pattern));
   g_strlcpy(pattern + fn_len, xmp, sizeof(pattern) - fn_len);
-  if (access(pattern, R_OK) == 0)
+  if(dt_util_test_image_file(pattern))
   {
-    // the default sidecar exists and is readable, so add it to the list
+    // the default sidecar exists, is readable and is a regular file with lenght > 0, so add it to the list
     files = g_list_prepend(files, g_strdup(pattern));
   }
 
