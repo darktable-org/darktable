@@ -410,7 +410,7 @@ if (USE_ISOBMFF)
       message(STATUS "Exiv2 >= 0.27.4 found, but was not compiled with ISOBMFF support (CR3, AVIF, HEIF)")
     endif()
   else()
-    message(STATUS "Exiv2 <= 0.27.4 found, no support for ISOBMFF files (CR3, AVIF, HEIF)")
+    message(STATUS "Exiv2 < 0.27.4 found, no support for ISOBMFF files (CR3, AVIF, HEIF)")
   endif()
 endif()
 
