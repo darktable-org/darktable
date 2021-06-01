@@ -593,7 +593,7 @@ static int register_shortcut_event(lua_State *L)
   // 5 is the action to perform (checked)
   // 6 is the key itself
 
-  // duplicate the key for use elsewhere
+  // duplicate the key for use elsewhere - do not free as it's in use elsewhere
   char *tmp = strdup(luaL_checkstring(L, 6));
 
   // register the event
@@ -604,9 +604,6 @@ static int register_shortcut_event(lua_State *L)
 
   // set up the accelerator path
   dt_accel_connect_lua(tmp, g_cclosure_new(G_CALLBACK(shortcut_callback), tmp, closure_destroy));
-
-  // free temporary buffer
-  free(tmp);
 
   return result;
 }
