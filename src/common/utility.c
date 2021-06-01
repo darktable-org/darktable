@@ -98,8 +98,9 @@ guint dt_util_str_occurence(const gchar *haystack, const gchar *needle)
 
 gchar *dt_util_str_replace(const gchar *string, const gchar *pattern, const gchar *substitute)
 {
-  gint occurences = dt_util_str_occurence(string, pattern);
-  gchar *nstring;
+  const gint occurences = dt_util_str_occurence(string, pattern);
+  gchar *nstring = NULL;
+
   if(occurences)
   {
     nstring = g_malloc_n(strlen(string) + (occurences * strlen(substitute)) + 1, sizeof(gchar));
@@ -193,7 +194,7 @@ gchar *dt_util_fix_path(const gchar *path)
   /* check if path has a prepended tilde */
   if(path[0] == '~')
   {
-    size_t len = strlen(path);
+    const size_t len = strlen(path);
     char *user = NULL;
     int off = 1;
 
@@ -696,7 +697,7 @@ guint dt_util_string_count_char(const char *text, const char needle)
   guint count = 0;
   while(text[0])
   {
-    if (text[0] == needle) count ++;
+    if(text[0] == needle) count ++;
     text ++;
   }
   return count;
@@ -730,7 +731,7 @@ GList *dt_util_str_to_glist(const gchar *separator, const gchar *text)
       prev = next + strlen(separator);
       len = strlen(prev);
       list = g_list_prepend(list, item);
-      if (!len) list = g_list_prepend(list, g_strdup(""));
+      if(!len) list = g_list_prepend(list, g_strdup(""));
     }
     else
     {
@@ -747,7 +748,7 @@ GList *dt_util_str_to_glist(const gchar *separator, const gchar *text)
 // format exposure time given in seconds to a string in a unified way
 char *dt_util_format_exposure(const float exposuretime)
 {
-  char *result;
+  char *result = NULL;
   if(exposuretime >= 1.0f)
   {
     if(nearbyintf(exposuretime) == exposuretime)
@@ -780,13 +781,13 @@ char *dt_read_file(const char *const filename, size_t *filesize)
   if(!fd) return NULL;
 
   fseek(fd, 0, SEEK_END);
-  size_t end = ftell(fd);
+  const size_t end = ftell(fd);
   rewind(fd);
 
   char *content = (char *)malloc(sizeof(char) * end);
   if(!content) return NULL;
 
-  size_t count = fread(content, sizeof(char), end, fd);
+  const size_t count = fread(content, sizeof(char), end, fd);
   fclose(fd);
   if (count == end)
   {
@@ -806,7 +807,7 @@ void dt_copy_file(const char *const sourcefile, const char *dst)
   if(fin && fout)
   {
     fseek(fin, 0, SEEK_END);
-    size_t end = ftell(fin);
+    const size_t end = ftell(fin);
     rewind(fin);
     content = (char *)g_malloc_n(end, sizeof(char));
     if(content == NULL) goto END;
