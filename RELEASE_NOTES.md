@@ -261,6 +261,8 @@ You are strongly advised to take a backup first.
   now displays the information only if every image share the same data. If data are
   different, a \<various values\> text is displayed.
 
+- In the export module, the last visited Piwigo album is now remembered between sessions.
+
 ## Bug Fixes
 
 - Fix ellipse and gradient rotation angle when distortion modules are
