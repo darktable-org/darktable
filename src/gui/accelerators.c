@@ -1425,12 +1425,12 @@ static void _action_selection_changed(GtkTreeSelection *selection, gpointer data
 
 gboolean _search_func(GtkTreeModel *model, gint column, const gchar *key, GtkTreeIter *iter, gpointer search_data)
 {
-  gboolean different = TRUE;
+  gchar *key_case = g_utf8_casefold(key, -1), *label_case = NULL;
   if(column == 1)
   {
     dt_action_t *action = NULL;
     gtk_tree_model_get(model, iter, 0, &action, -1);
-    different = !strstr(action->label, key);
+    label_case = g_utf8_casefold(action->label, -1);
   }
   else
   {
@@ -1442,11 +1442,14 @@ gboolean _search_func(GtkTreeModel *model, gint column, const gchar *key, GtkTre
       if(s->action)
       {
         gchar *label = _action_full_label(s->action);
-        different = !strstr(label, key);
+        label_case = g_utf8_casefold(label, -1);
         g_free(label);
       }
     }
   }
+  gboolean different = label_case ? !strstr(label_case, key_case) : TRUE;
+  g_free(key_case);
+  g_free(label_case);
   if(!different)
   {
     GtkTreePath *path = gtk_tree_model_get_path(model, iter);
