@@ -30,6 +30,9 @@
 #define DT_OPENCL_MAX_EVENTS 256
 #define DT_OPENCL_MAX_ERRORS 5
 #define DT_OPENCL_MAX_INCLUDES 7
+#define DT_OPENCL_VENDOR_AMD 4098
+#define DT_OPENCL_VENDOR_NVIDIA 4318
+#define DT_OPENCL_VENDOR_INTEL 0x8086u
 
 #include "common/darktable.h"
 

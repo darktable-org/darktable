@@ -405,7 +405,10 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   escapedkerneldir = dt_util_str_replace(kerneldir, " ", "\\ ");
 #endif
 
-  options = g_strdup_printf("-w -cl-fast-relaxed-math %s -D%s=1 -I%s",
+  const char* math_flag = vendor_id == DT_OPENCL_VENDOR_AMD ? "-cl-finite-math-only" : "-cl-fast-relaxed-math";
+
+  options = g_strdup_printf("-w %s %s -D%s=1 -I%s",
+                            math_flag,
                             (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""),
                             dt_opencl_get_vendor_by_id(vendor_id), escapedkerneldir);
   cl->dev[dev].options = strdup(options);
@@ -943,13 +946,13 @@ static const char *dt_opencl_get_vendor_by_id(unsigned int id)
 
   switch(id)
   {
-    case 4098:
+    case DT_OPENCL_VENDOR_AMD:
       vendor = "AMD";
       break;
-    case 4318:
+    case DT_OPENCL_VENDOR_NVIDIA:
       vendor = "NVIDIA";
       break;
-    case 0x8086u:
+    case DT_OPENCL_VENDOR_INTEL:
       vendor = "INTEL";
       break;
     default:
