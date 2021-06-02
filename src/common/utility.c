@@ -661,7 +661,7 @@ gchar *dt_util_normalize_path(const gchar *_input)
     return NULL;
 
   wchar_t LongPath[MAX_PATH] = {0};
-  DWORD size = GetLongPathNameW(wfilename, LongPath, MAX_PATH);
+  const DWORD size = GetLongPathNameW(wfilename, LongPath, MAX_PATH);
   g_free(wfilename);
   if(size == 0 || size > MAX_PATH)
     return NULL;
@@ -680,7 +680,7 @@ gchar *dt_util_normalize_path(const gchar *_input)
   if(!filename)
     return NULL;
 
-  char drive_letter = g_ascii_toupper(filename[0]);
+  const char drive_letter = g_ascii_toupper(filename[0]);
   if(drive_letter < 'A' || drive_letter > 'Z' || filename[1] != ':')
   {
     g_free(filename);
