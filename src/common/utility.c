@@ -291,7 +291,7 @@ gboolean dt_util_test_image_file(const char *filename)
 
   const gboolean regular = (S_ISREG(stats.st_mode)) != 0;
   const gboolean size_ok = stats.st_size > 0;
-  return regular & size_ok;
+  return regular && size_ok;
 }
 
 gboolean dt_util_is_dir_empty(const char *dirname)
