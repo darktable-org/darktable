@@ -63,7 +63,7 @@ static void _import_session_cleanup_filmroll(dt_import_session_t *self)
 }
 
 
-static int _import_session_initialize_filmroll(dt_import_session_t *self, const char *path)
+static gboolean _import_session_initialize_filmroll(dt_import_session_t *self, const char *path)
 {
   int32_t film_id;
 
@@ -75,7 +75,7 @@ static int _import_session_initialize_filmroll(dt_import_session_t *self, const 
   {
     fprintf(stderr, "failed to create session path %s.\n", path);
     _import_session_cleanup_filmroll(self);
-    return 1;
+    return TRUE;
   }
 
   /* open one or initialize a filmroll for the session */
@@ -85,13 +85,13 @@ static int _import_session_initialize_filmroll(dt_import_session_t *self, const 
   {
     fprintf(stderr, "[import_session] Failed to initialize film roll.\n");
     _import_session_cleanup_filmroll(self);
-    return 1;
+    return TRUE;
   }
 
   /* every thing is good lets setup current path */
   self->current_path = path;
 
-  return 0;
+  return FALSE;
 }
 
 
@@ -307,14 +307,30 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
   return self->current_filename;
 }
 
+gboolean _dt_test_writable_dir(const char *path)
+{
+  if(path == NULL) return FALSE;
+  if(!(g_file_test(path, G_FILE_TEST_EXISTS))) return FALSE;
+  if(!(g_file_test(path, G_FILE_TEST_IS_DIR))) return FALSE;
+  if(g_access(path, W_OK)) return FALSE;
+  return TRUE;
+}
 
 const char *dt_import_session_path(struct dt_import_session_t *self, gboolean current)
 {
   char *pattern;
   char *new_path;
 
-  if(current && self->current_path != NULL) return self->current_path;
+  const gboolean currentok = _dt_test_writable_dir(self->current_path);
 
+  if(current && self->current_path != NULL)
+  {
+    // the current path might not be a writable directory so test for that 
+    if(currentok) return self->current_path;
+    // the current path is not valid so we can't  cleanup
+    self->current_path = NULL;
+    return NULL;
+  }
   /* check if expanded path differs from current */
   pattern = _import_session_path_pattern();
   if(pattern == NULL)
@@ -330,9 +346,11 @@ const char *dt_import_session_path(struct dt_import_session_t *self, gboolean cu
   if(self->current_path && strcmp(self->current_path, new_path) == 0)
   {
     g_free(new_path);
-    return self->current_path;
+    if(currentok) return self->current_path;
   }
 
+
+  if(!currentok) self->current_path = NULL;
   /* we need to initialize a new filmroll for the new path */
   if(_import_session_initialize_filmroll(self, new_path) != 0)
   {
