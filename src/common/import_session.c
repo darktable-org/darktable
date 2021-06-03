@@ -316,11 +316,10 @@ gboolean _dt_test_writable_dir(const char *path)
   return TRUE;
 }
 
-const char *dt_import_session_path(struct dt_import_session_t *self, gboolean current)
+static const char *_import_session_path(struct dt_import_session_t *self, gboolean current)
 {
   char *pattern;
   char *new_path;
-
   const gboolean currentok = _dt_test_writable_dir(self->current_path);
 
   if(current && self->current_path != NULL)
@@ -349,18 +348,28 @@ const char *dt_import_session_path(struct dt_import_session_t *self, gboolean cu
     if(currentok) return self->current_path;
   }
 
-
   if(!currentok) self->current_path = NULL;
   /* we need to initialize a new filmroll for the new path */
   if(_import_session_initialize_filmroll(self, new_path) != 0)
   {
     g_free(new_path);
-    fprintf(stderr, "[import_session] Failed to get session path.\n");
     return NULL;
   }
-
   return self->current_path;
 }
+
+const char *dt_import_session_path(struct dt_import_session_t *self, gboolean current)
+{
+  const char *path = _import_session_path(self, current);
+  if(path == NULL)
+  {
+    fprintf(stderr, "[import_session] Failed to get session path.\n");
+    dt_control_log(_("requested session path not available."
+                     "device not mounted?"));
+  }
+  return path;  
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
