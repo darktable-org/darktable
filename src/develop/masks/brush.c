@@ -1399,7 +1399,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
         // start and end point of the segment
         GList *pt = g_list_nth(form->points, gui->seg_selected);
         dt_masks_point_brush_t *point0 = (dt_masks_point_brush_t *)pt->data;
-        dt_masks_point_brush_t *point1 = (dt_masks_point_brush_t *)g_list_next(pt)->data;
+        dt_masks_point_brush_t *point1 = (dt_masks_point_brush_t *)g_list_next_wraparound(pt, form->points)->data;
         bzpt->border[0] = point0->border[0] * (1.0f - t) + point1->border[0] * t;
         bzpt->border[1] = point0->border[1] * (1.0f - t) + point1->border[1] * t;
         bzpt->hardness = point0->hardness * (1.0f - t) + point1->hardness * t;
