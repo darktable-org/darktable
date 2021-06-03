@@ -1348,6 +1348,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     d->cy = CLAMPF(p->cy, 0.0f, 0.9f);
     d->cw = CLAMPF(fabsf(p->cw), 0.1f, 1.0f);
     d->ch = CLAMPF(fabsf(p->ch), 0.1f, 1.0f);
+    // we show a error on stderr if we have clamped something
+    if(d->cx != p->cx || d->cy != p->cy || d->cw != fabsf(p->cw) || d->ch != fabsf(p->ch))
+    {
+      fprintf(stderr, "[crop&rotate] invalid crop datas for %d : x=%0.04f y=%0.04f w=%0.04f h=%0.04f\n",
+              pipe->image.id, p->cx, p->cy, p->cw, p->ch);
+    }
   }
 }
 
