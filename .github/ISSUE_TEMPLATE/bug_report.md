@@ -9,7 +9,7 @@ assignees: ''
 **Introduction**
 _This section is provided for information only. Please delete if no longer required._
 
-Before raising a bug/issue please check that it has not already been reported 
+Before raising a bug/issue please check that it has not already been reported
 by searching https://github.com/darktable-org/darktable/issues.
 
 Please be aware that most developers work on this project in their free time.
@@ -74,3 +74,6 @@ _Please provide any additional information you think may be useful, for example:
  - Are the steps above reproducible with a fresh edit (i.e. after discarding history)? **yes/no**
  - If the issue is with the output image, attach an XMP file if (you'll have to change the extension to `.txt`)
  - Is the issue still present using an empty/new config-dir (e.g. start darktable with --configdir "/tmp")? **yes/no**
+ - Do you use lua scripts?
+   - What lua scripts start automatically?
+   - What lua scripts were running when the bug occurred?
