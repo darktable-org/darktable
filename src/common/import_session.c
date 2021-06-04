@@ -310,9 +310,15 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
 gboolean _dt_test_writable_dir(const char *path)
 {
   if(path == NULL) return FALSE;
-  if(!(g_file_test(path, G_FILE_TEST_EXISTS))) return FALSE;
-  if(!(g_file_test(path, G_FILE_TEST_IS_DIR))) return FALSE;
-  if(g_access(path, W_OK)) return FALSE;
+#ifdef _WIN32
+  struct _stati64 stats;
+  if(_stati64(path, &stats)) return FALSE;
+#else
+  struct stat stats;
+  if(stat(path, &stats)) return FALSE;
+#endif
+  if(S_ISDIR(stats.st_mode) == 0) return FALSE;  
+  if(g_access(path, W_OK | X_OK) != 0) return FALSE;
   return TRUE;
 }
 
@@ -321,6 +327,7 @@ static const char *_import_session_path(struct dt_import_session_t *self, gboole
   char *pattern;
   char *new_path;
   const gboolean currentok = _dt_test_writable_dir(self->current_path);
+  fprintf(stderr, " _import_session_path testing `%s' %i", self->current_path, currentok);
 
   if(current && self->current_path != NULL)
   {
