@@ -373,10 +373,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
   else
   {
-    d->cx = p->cx;
-    d->cy = p->cy;
-    d->cw = p->cw;
-    d->ch = p->ch;
+    d->cx = CLAMPF(p->cx, 0.0f, 0.9f);
+    d->cy = CLAMPF(p->cy, 0.0f, 0.9f);
+    d->cw = CLAMPF(p->cw, 0.1f, 1.0f);
+    d->ch = CLAMPF(p->ch, 0.1f, 1.0f);
   }
 }
 
