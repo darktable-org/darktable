@@ -259,7 +259,7 @@ int dt_lua_style_apply(lua_State *L)
     luaA_to(L, dt_style_t, &style, 1);
     luaA_to(L, dt_lua_image_t, &imgid, 2);
   }
-  dt_styles_apply_to_image(style.name, FALSE, imgid);
+  dt_styles_apply_to_image(style.name, FALSE, FALSE, imgid);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   return 1;
 }
