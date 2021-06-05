@@ -316,7 +316,7 @@ static const char *_import_session_path(struct dt_import_session_t *self, gboole
 
   if(current && self->current_path != NULL)
   {
-    // the current path might not be a writable directory so test for that 
+    // the current path might not be a writable directory so test for that
     if(currentok) return self->current_path;
     // the current path is not valid so we can't  cleanup
     self->current_path = NULL;
@@ -359,7 +359,7 @@ const char *dt_import_session_path(struct dt_import_session_t *self, gboolean cu
     dt_control_log(_("requested session path not available."
                      "device not mounted?"));
   }
-  return path;  
+  return path;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
