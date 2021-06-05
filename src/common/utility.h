@@ -37,8 +37,8 @@ GList *dt_util_glist_uniq(GList *items);
 /** fixes the given path by replacing a possible tilde with the correct home directory */
 gchar *dt_util_fix_path(const gchar *path);
 size_t dt_utf8_strlcpy(char *dest, const char *src, size_t n);
-/** get the size of a file in bytes */
-off_t dt_util_get_file_size(const char *filename);
+/** returns true if a file is regular, has read access and a filesize > 0 */
+gboolean dt_util_test_image_file(const char *filename);
 /** returns true if dirname is empty */
 gboolean dt_util_is_dir_empty(const char *dirname);
 /** returns a valid UTF-8 string for the given char array. has to be freed with g_free(). */

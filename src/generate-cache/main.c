@@ -104,8 +104,8 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mip
       char filename[PATH_MAX] = { 0 };
       snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
 
-      // if the thumbnail is already on disc - do nothing
-      if(!access(filename, R_OK)) continue;
+      // if a valid thumbnail file is already on disc - do nothing
+      if(dt_util_test_image_file(filename)) continue;
 
       // else, generate thumbnail and store in mipmap cache.
       dt_mipmap_buffer_t buf;
