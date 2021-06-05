@@ -1558,7 +1558,7 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
   char *composed = g_build_filename(lutfolder, p->filepath, NULL);
-  if (strlen(p->filepath) == 0 || access(composed, F_OK) == -1)
+  if (strlen(p->filepath) == 0 || g_access(composed, F_OK) == -1)
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), lutfolder);
   else
     gtk_file_chooser_select_filename(GTK_FILE_CHOOSER(filechooser), composed);

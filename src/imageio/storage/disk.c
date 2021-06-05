@@ -244,7 +244,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   dt_image_full_path(imgid, input_dir, sizeof(input_dir), &from_cache);
   // set max_width and max_height values to expand them afterwards in darktable variables
   dt_variables_set_max_width_height(d->vp, fdata->max_width, fdata->max_height);
-  int fail = 0;
+  gboolean fail = FALSE;
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
@@ -285,14 +285,14 @@ try_again:
     {
       fprintf(stderr, "[imageio_storage_disk] could not create directory: `%s'!\n", output_dir);
       dt_control_log(_("could not create directory `%s'!"), output_dir);
-      fail = 1;
+      fail = TRUE;
       goto failed;
     }
     if(g_access(output_dir, W_OK | X_OK) != 0)
     {
       fprintf(stderr, "[imageio_storage_disk] could not write to directory: `%s'!\n", output_dir);
       dt_control_log(_("could not write to directory `%s'!"), output_dir);
-      fail = 1;
+      fail = TRUE;
       goto failed;
     }
 

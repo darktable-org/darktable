@@ -2546,11 +2546,11 @@ void dt_database_show_error(const dt_database_t *db)
         int status = 0;
 
         char *lck_filename = g_strconcat(lck_dirname, "/data.db.lock", NULL);
-        if(access(lck_filename, F_OK) != -1)
+        if(g_access(lck_filename, F_OK) != -1)
           status += remove(lck_filename);
 
         lck_filename = g_strconcat(lck_dirname, "/library.db.lock", NULL);
-        if(access(lck_filename, F_OK) != -1)
+        if(g_access(lck_filename, F_OK) != -1)
           status += remove(lck_filename);
 
         if(status==0)
@@ -3474,14 +3474,14 @@ static void _database_delete_mipmaps_files()
 
   snprintf(mipmapfilename, sizeof(mipmapfilename), "%s/mipmaps", cachedir);
 
-  if(access(mipmapfilename, F_OK) != -1)
+  if(g_access(mipmapfilename, F_OK) != -1)
   {
     fprintf(stderr, "[mipmap_cache] dropping old version file: %s\n", mipmapfilename);
     g_unlink(mipmapfilename);
 
     snprintf(mipmapfilename, sizeof(mipmapfilename), "%s/mipmaps.fallback", cachedir);
 
-    if(access(mipmapfilename, F_OK) != -1) g_unlink(mipmapfilename);
+    if(g_access(mipmapfilename, F_OK) != -1) g_unlink(mipmapfilename);
   }
 }
 
