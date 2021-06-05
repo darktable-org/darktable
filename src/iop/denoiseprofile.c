@@ -2197,7 +2197,8 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   float toY0U0V0[9]; //TODO: change OpenCL kernels to use 3x4 matrices
   float toRGB[9] ;
   for(size_t k = 0; k < 3; k++)
-    for_each_channel(c)
+    for(size_t c = 0; c < 3; c++)
+    //(we can't use for_each_channel here because it can iterate over four elements)
     {
       toRGB[3*k+c] = toRGB_tmp[k][c] * d->strength * scale;
       toY0U0V0[3*k+c] = toY0U0V0_tmp[k][c] / (d->strength * scale);
