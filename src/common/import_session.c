@@ -356,7 +356,7 @@ const char *dt_import_session_path(struct dt_import_session_t *self, gboolean cu
   if(path == NULL)
   {
     fprintf(stderr, "[import_session] Failed to get session path.\n");
-    dt_control_log(_("requested session path not available."
+    dt_control_log(_("requested session path not available. "
                      "device not mounted?"));
   }
   return path;
