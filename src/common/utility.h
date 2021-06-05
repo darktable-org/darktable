@@ -39,6 +39,8 @@ gchar *dt_util_fix_path(const gchar *path);
 size_t dt_utf8_strlcpy(char *dest, const char *src, size_t n);
 /** returns true if a file is regular, has read access and a filesize > 0 */
 gboolean dt_util_test_image_file(const char *filename);
+/** returns true if the path represents a directory with write access */
+gboolean dt_util_test_writable_dir(const char *path);
 /** returns true if dirname is empty */
 gboolean dt_util_is_dir_empty(const char *dirname);
 /** returns a valid UTF-8 string for the given char array. has to be freed with g_free(). */
