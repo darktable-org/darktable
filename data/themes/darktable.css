@@ -317,7 +317,6 @@ textview
   background-color: @field_bg;
   border: 0.035em solid @border_color;
   margin: 0.14em 0;
-  padding: 0.07em;
   font-family: sans;
 }
 
@@ -796,7 +795,7 @@ dialog .dialog-action-box button:last-child
 /* remove left margin only on dialog filechooser box */
 dialog filechooser
 {
-  margin-left: -0.42em; 
+  margin-left: -0.42em;
 }
 
 /* Set title headerbar and main buttons for some themes and/or desktops environment */
@@ -1277,7 +1276,7 @@ margin: 0 0.14em;
 /*--------------------------------
   - Module layouts manager dialog -
   --------------------------------*/
-  
+
 /* set top box header */
 #modulegroups_editor_setting
 {
