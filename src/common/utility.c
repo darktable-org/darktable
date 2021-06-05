@@ -278,17 +278,20 @@ size_t dt_utf8_strlcpy(char *dest, const char *src, size_t n)
   return s - src;
 }
 
-off_t dt_util_get_file_size(const char *filename)
+gboolean dt_util_test_image_file(const char *filename)
 {
+  if(g_access(filename, R_OK)) return FALSE;
 #ifdef _WIN32
-  struct _stati64 st;
-  if(_stati64(filename, &st) == 0) return st.st_size;
+  struct _stati64 stats;
+  if(_stati64(filename, &stats)) return FALSE;
 #else
-  struct stat st;
-  if(stat(filename, &st) == 0) return st.st_size;
+  struct stat stats;
+  if(stat(filename, &stats)) return FALSE;
 #endif
 
-  return -1;
+  const gboolean regular = (S_ISREG(stats.st_mode)) != 0;
+  const gboolean size_ok = stats.st_size > 0;
+  return regular && size_ok;
 }
 
 gboolean dt_util_is_dir_empty(const char *dirname)
