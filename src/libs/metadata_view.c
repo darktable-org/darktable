@@ -1458,10 +1458,10 @@ void gui_reset(dt_lib_module_t *self)
 static int lua_update_values(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, 1);
-  dt_lua_module_entry_push(L,"lib", self->plugin_name);
+  dt_lua_module_entry_push(L, "lib", self->plugin_name);
   lua_getuservalue(L, 2);
-  lua_getfield(L,3, "values");
-  lua_getfield(L,3, "indexes");
+  lua_getfield(L, 3, "values");
+  lua_getfield(L, 3, "indexes");
   lua_pushnil(L);
   while(lua_next(L, 4) != 0)
   {
@@ -1475,7 +1475,7 @@ static int lua_update_values(lua_State *L)
 static int lua_update_metadata(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, 1);
-  int32_t imgid = lua_tointeger(L,2);
+  int32_t imgid = lua_tointeger(L, 2);
   gboolean have_updates = false;
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
   lua_getuservalue(L, -1);
