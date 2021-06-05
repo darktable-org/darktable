@@ -294,6 +294,22 @@ gboolean dt_util_test_image_file(const char *filename)
   return regular && size_ok;
 }
 
+gboolean dt_util_test_writable_dir(const char *path)
+{
+  if(path == NULL) return FALSE;
+#ifdef _WIN32
+  struct _stati64 stats;
+  if(_stati64(path, &stats)) return FALSE;
+#else
+  struct stat stats;
+  if(stat(path, &stats)) return FALSE;
+#endif
+  if(S_ISDIR(stats.st_mode) == 0) return FALSE;  
+  if(g_access(path, W_OK | X_OK) != 0) return FALSE;
+  return TRUE;
+}
+
+
 gboolean dt_util_is_dir_empty(const char *dirname)
 {
   int n = 0;
