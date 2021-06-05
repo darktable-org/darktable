@@ -247,7 +247,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   // NOTE: if constant is decreased, will brighten output
   // FIXME: instead of using an area-beased scale, figure out max bin count and scale to that?
   const float brightness = num_tones / 40.0f;
-  const float scale = brightness / ((DT_LIB_HISTOGRAM_ORIENT_HORI ? sample_height : sample_width) * samples_per_bin);
+  const float scale = brightness / ((orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? sample_height : sample_width) * samples_per_bin);
   size_t nthreads = dt_get_num_threads();
 
 #if defined(_OPENMP)
