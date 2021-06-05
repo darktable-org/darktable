@@ -1335,7 +1335,7 @@ void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
 
 
     if(visible)
-      gtk_widget_show_all(GTK_WIDGET(widget));
+      gtk_widget_show(GTK_WIDGET(widget));
     else
       gtk_widget_hide(GTK_WIDGET(widget));
   }
