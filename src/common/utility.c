@@ -16,6 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <locale.h>
+
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "common/grealpath.h"
@@ -96,8 +98,9 @@ guint dt_util_str_occurence(const gchar *haystack, const gchar *needle)
 
 gchar *dt_util_str_replace(const gchar *string, const gchar *pattern, const gchar *substitute)
 {
-  gint occurences = dt_util_str_occurence(string, pattern);
-  gchar *nstring;
+  const gint occurences = dt_util_str_occurence(string, pattern);
+  gchar *nstring = NULL;
+
   if(occurences)
   {
     nstring = g_malloc_n(strlen(string) + (occurences * strlen(substitute)) + 1, sizeof(gchar));
@@ -191,7 +194,7 @@ gchar *dt_util_fix_path(const gchar *path)
   /* check if path has a prepended tilde */
   if(path[0] == '~')
   {
-    size_t len = strlen(path);
+    const size_t len = strlen(path);
     char *user = NULL;
     int off = 1;
 
@@ -275,18 +278,37 @@ size_t dt_utf8_strlcpy(char *dest, const char *src, size_t n)
   return s - src;
 }
 
-off_t dt_util_get_file_size(const char *filename)
+gboolean dt_util_test_image_file(const char *filename)
 {
+  if(g_access(filename, R_OK)) return FALSE;
 #ifdef _WIN32
-  struct _stati64 st;
-  if(_stati64(filename, &st) == 0) return st.st_size;
+  struct _stati64 stats;
+  if(_stati64(filename, &stats)) return FALSE;
 #else
-  struct stat st;
-  if(stat(filename, &st) == 0) return st.st_size;
+  struct stat stats;
+  if(stat(filename, &stats)) return FALSE;
 #endif
 
-  return -1;
+  const gboolean regular = (S_ISREG(stats.st_mode)) != 0;
+  const gboolean size_ok = stats.st_size > 0;
+  return regular && size_ok;
 }
+
+gboolean dt_util_test_writable_dir(const char *path)
+{
+  if(path == NULL) return FALSE;
+#ifdef _WIN32
+  struct _stati64 stats;
+  if(_stati64(path, &stats)) return FALSE;
+#else
+  struct stat stats;
+  if(stat(path, &stats)) return FALSE;
+#endif
+  if(S_ISDIR(stats.st_mode) == 0) return FALSE;  
+  if(g_access(path, W_OK | X_OK) != 0) return FALSE;
+  return TRUE;
+}
+
 
 gboolean dt_util_is_dir_empty(const char *dirname)
 {
@@ -658,7 +680,7 @@ gchar *dt_util_normalize_path(const gchar *_input)
     return NULL;
 
   wchar_t LongPath[MAX_PATH] = {0};
-  DWORD size = GetLongPathNameW(wfilename, LongPath, MAX_PATH);
+  const DWORD size = GetLongPathNameW(wfilename, LongPath, MAX_PATH);
   g_free(wfilename);
   if(size == 0 || size > MAX_PATH)
     return NULL;
@@ -677,7 +699,7 @@ gchar *dt_util_normalize_path(const gchar *_input)
   if(!filename)
     return NULL;
 
-  char drive_letter = g_ascii_toupper(filename[0]);
+  const char drive_letter = g_ascii_toupper(filename[0]);
   if(drive_letter < 'A' || drive_letter > 'Z' || filename[1] != ':')
   {
     g_free(filename);
@@ -694,10 +716,18 @@ guint dt_util_string_count_char(const char *text, const char needle)
   guint count = 0;
   while(text[0])
   {
-    if (text[0] == needle) count ++;
+    if(text[0] == needle) count ++;
     text ++;
   }
   return count;
+}
+
+void dt_util_str_to_loc_numbers_format(char *data)
+{
+  const struct lconv *currentLocalConv = localeconv();
+  const gchar loc_decimal_point = currentLocalConv->decimal_point[0];
+  const gchar *en_decimal_point = ".";
+  g_strdelimit(data, en_decimal_point, loc_decimal_point);
 }
 
 GList *dt_util_str_to_glist(const gchar *separator, const gchar *text)
@@ -720,7 +750,7 @@ GList *dt_util_str_to_glist(const gchar *separator, const gchar *text)
       prev = next + strlen(separator);
       len = strlen(prev);
       list = g_list_prepend(list, item);
-      if (!len) list = g_list_prepend(list, g_strdup(""));
+      if(!len) list = g_list_prepend(list, g_strdup(""));
     }
     else
     {
@@ -737,7 +767,7 @@ GList *dt_util_str_to_glist(const gchar *separator, const gchar *text)
 // format exposure time given in seconds to a string in a unified way
 char *dt_util_format_exposure(const float exposuretime)
 {
-  char *result;
+  char *result = NULL;
   if(exposuretime >= 1.0f)
   {
     if(nearbyintf(exposuretime) == exposuretime)
@@ -770,13 +800,13 @@ char *dt_read_file(const char *const filename, size_t *filesize)
   if(!fd) return NULL;
 
   fseek(fd, 0, SEEK_END);
-  size_t end = ftell(fd);
+  const size_t end = ftell(fd);
   rewind(fd);
 
   char *content = (char *)malloc(sizeof(char) * end);
   if(!content) return NULL;
 
-  size_t count = fread(content, sizeof(char), end, fd);
+  const size_t count = fread(content, sizeof(char), end, fd);
   fclose(fd);
   if (count == end)
   {
@@ -796,7 +826,7 @@ void dt_copy_file(const char *const sourcefile, const char *dst)
   if(fin && fout)
   {
     fseek(fin, 0, SEEK_END);
-    size_t end = ftell(fin);
+    const size_t end = ftell(fin);
     rewind(fin);
     content = (char *)g_malloc_n(end, sizeof(char));
     if(content == NULL) goto END;

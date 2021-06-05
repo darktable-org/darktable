@@ -50,7 +50,7 @@ inline float sqf(const float x)
 
 inline float euclidean_norm(const float4 input)
 {
-  return native_sqrt(sqf(input.x) + sqf(input.y) + sqf(input.z));
+  return fmax(native_sqrt(sqf(input.x) + sqf(input.y) + sqf(input.z)), NORM_MIN);
 }
 
 inline float4 gamut_mapping(const float4 input, const float compression, const int clip)
@@ -106,7 +106,7 @@ inline float4 luma_chroma(const float4 input, const float4 saturation, const flo
   float4 output;
 
   // Compute euclidean norm and flat lightness adjustment
-  const float avg = (input.x + input.y + input.z) / 3.0f;
+  const float avg = fmax((input.x + input.y + input.z) / 3.0f, NORM_MIN);
   const float mix = dot(input, lightness);
   float norm = euclidean_norm(input);
 

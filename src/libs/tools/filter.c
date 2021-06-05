@@ -55,7 +55,7 @@ static void _lib_filter_reverse_button_changed(GtkDarktableToggleButton *widget,
 /* callback for rating comparator combobox change */
 static void _lib_filter_comparator_changed(GtkComboBox *widget, gpointer user_data);
 /* updates the query and redraws the view */
-static void _lib_filter_update_query(dt_lib_module_t *self);
+static void _lib_filter_update_query(dt_lib_module_t *self, dt_collection_properties_t changed_property);
 /* make sure that the comparator button matches what is shown in the filter dropdown */
 static gboolean _lib_filter_sync_combobox_and_comparator(dt_lib_module_t *self);
 /* save the images order if the first collect filter is on tag*/
@@ -300,7 +300,7 @@ static void _lib_filter_combobox_changed(GtkComboBox *widget, gpointer user_data
   _lib_filter_sync_combobox_and_comparator(user_data);
 
   /* update the query and view */
-  _lib_filter_update_query(user_data);
+  _lib_filter_update_query(user_data, DT_COLLECTION_PROP_RATING);
 }
 
 /* save the images order if the first collect filter is on tag*/
@@ -339,14 +339,14 @@ static void _lib_filter_reverse_button_changed(GtkDarktableToggleButton *widget,
   _lib_filter_set_tag_order(user_data);
 
   /* update query and view */
-  _lib_filter_update_query(user_data);
+  _lib_filter_update_query(user_data, DT_COLLECTION_PROP_SORT);
 }
 
 static void _lib_filter_comparator_changed(GtkComboBox *widget, gpointer user_data)
 {
   dt_collection_set_rating_comparator(darktable.collection, gtk_combo_box_get_active(widget));
 
-  _lib_filter_update_query(user_data);
+  _lib_filter_update_query(user_data, DT_COLLECTION_PROP_RATING);
 }
 
 static void _lib_filter_sort_combobox_changed(GtkComboBox *widget, gpointer user_data)
@@ -358,16 +358,16 @@ static void _lib_filter_sort_combobox_changed(GtkComboBox *widget, gpointer user
   _lib_filter_set_tag_order(user_data);
 
   /* update the query and view */
-  _lib_filter_update_query(user_data);
+  _lib_filter_update_query(user_data, DT_COLLECTION_PROP_SORT);
 }
 
-static void _lib_filter_update_query(dt_lib_module_t *self)
+static void _lib_filter_update_query(dt_lib_module_t *self, dt_collection_properties_t changed_property)
 {
   /* sometimes changes */
   dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
 
   /* updates query */
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, changed_property, NULL);
 }
 
 static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
@@ -416,7 +416,7 @@ static int sort_cb(lua_State *L)
     dt_collection_set_sort(darktable.collection, (uint32_t)value, 0);
     const dt_collection_sort_t sort = dt_collection_get_sort_field(darktable.collection);
     gtk_combo_box_set_active(GTK_COMBO_BOX(d->sort), _filter_get_items(sort));
-    _lib_filter_update_query(self);
+    _lib_filter_update_query(self, DT_COLLECTION_PROP_SORT);
   }
   luaA_push(L, dt_collection_sort_t, &tmp);
   return 1;
@@ -437,7 +437,7 @@ static int sort_order_cb(lua_State *L)
     gtk_combo_box_set_active(GTK_COMBO_BOX(d->sort), _filter_get_items(sort));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->reverse),
                                dt_collection_get_sort_descending(darktable.collection));
-    _lib_filter_update_query(self);
+    _lib_filter_update_query(self, DT_COLLECTION_PROP_SORT);
   }
   luaA_push(L, dt_collection_sort_order_t, &tmp);
   return 1;
@@ -454,7 +454,7 @@ static int rating_cb(lua_State *L)
     luaA_to(L,dt_collection_filter_t,&value,1);
     dt_collection_set_rating(darktable.collection, (uint32_t)value);
     gtk_combo_box_set_active(GTK_COMBO_BOX(d->filter), dt_collection_get_rating(darktable.collection));
-    _lib_filter_update_query(self);
+    _lib_filter_update_query(self, DT_COLLECTION_PROP_RATING);
   }
   luaA_push(L, dt_collection_filter_t, &tmp);
   return 1;
@@ -471,7 +471,7 @@ static int rating_comparator_cb(lua_State *L)
     luaA_to(L,dt_collection_rating_comperator_t,&value,1);
     dt_collection_set_rating_comparator(darktable.collection, (uint32_t)value);
     gtk_combo_box_set_active(GTK_COMBO_BOX(d->comparator), dt_collection_get_rating_comparator(darktable.collection));
-    _lib_filter_update_query(self);
+    _lib_filter_update_query(self, DT_COLLECTION_PROP_RATING);
   }
   luaA_push(L, dt_collection_rating_comperator_t, &tmp);
   return 1;

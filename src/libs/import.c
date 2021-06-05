@@ -1302,18 +1302,18 @@ static void _update_places_list(dt_lib_module_t* self)
   if(dt_conf_get_bool("ui_last/import_dialog_show_home") && dt_loc_get_home_dir(NULL))
   {
     current_place = (char *)dt_loc_get_home_dir(NULL);
-    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("home"), 
-      DT_PLACES_PATH, current_place, DT_PLACES_TYPE, DT_TYPE_HOME, -1);
+    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("home"), DT_PLACES_PATH,
+                                      current_place, DT_PLACES_TYPE, DT_TYPE_HOME, -1);
     if(!g_strcmp0(current_place, last_place))
       gtk_tree_selection_select_iter(d->placesSelection, &iter);
     current_iter = iter;
   }
-  
+
   if(dt_conf_get_bool("ui_last/import_dialog_show_pictures") && g_get_user_special_dir(G_USER_DIRECTORY_PICTURES))
   {
     current_place = (char *)g_get_user_special_dir(G_USER_DIRECTORY_PICTURES);
-    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("pictures"), 
-      DT_PLACES_PATH, current_place, DT_PLACES_TYPE, DT_TYPE_PIC, -1);
+    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("pictures"), DT_PLACES_PATH,
+                                      current_place, DT_PLACES_TYPE, DT_TYPE_PIC, -1);
     if(!g_strcmp0(current_place, last_place))
       gtk_tree_selection_select_iter(d->placesSelection, &iter);
     current_iter = iter;
@@ -1335,23 +1335,26 @@ static void _update_places_list(dt_lib_module_t* self)
 
     for (drive = drives; drive; drive = drive->next)
     {
-      volumes = g_drive_get_volumes (drive->data);    
+      volumes = g_drive_get_volumes(drive->data);
       for (volume = volumes; volume; volume = volume->next)
       {
-        if(g_volume_get_mount(volume->data))
+        GMount *placesMount = g_volume_get_mount(volume->data);
+        if(placesMount)
         {
-          GMount *placesMount = g_volume_get_mount(volume->data);
           GFile *placesFile = g_mount_get_root(placesMount);
-          g_object_unref (placesMount);
+          g_object_unref(placesMount);
 
-          gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, g_volume_get_name(volume->data), 
-            DT_PLACES_PATH, g_file_get_path(placesFile), DT_PLACES_TYPE, DT_TYPE_MOUNT, -1);
+          gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME,
+                                            g_volume_get_name(volume->data), DT_PLACES_PATH,
+                                            g_file_get_path(placesFile), DT_PLACES_TYPE, DT_TYPE_MOUNT, -1);
 
           if(!g_strcmp0(g_file_get_path(placesFile), last_place))
             gtk_tree_selection_select_iter(d->placesSelection, &iter);
         }
       }
+      g_list_free(volumes);
     }
+    g_list_free(drives);
   }
 
   // add folders added by user
@@ -1361,14 +1364,15 @@ static void _update_places_list(dt_lib_module_t* self)
   {
     GList *next = places->next;
 
-    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, g_path_get_basename(places->data), 
-      DT_PLACES_PATH, (char *)places->data, DT_PLACES_TYPE, DT_TYPE_CUSTOM, -1);
+    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, g_path_get_basename(places->data),
+                                      DT_PLACES_PATH, (char *)places->data, DT_PLACES_TYPE, DT_TYPE_CUSTOM, -1);
 
     if(!g_strcmp0(places->data, last_place))
       gtk_tree_selection_select_iter(d->placesSelection, &iter);
 
     places = next;
   }
+  g_list_free(places);
 }
 
 static void _update_folders_list(dt_lib_module_t* self)
@@ -1405,11 +1409,10 @@ static void _add_custom_place(const gchar *folder, dt_lib_module_t* self)
 
   if(!g_strrstr(current_folders, folder))
   {
-    dt_conf_set_string("ui_last/import_custom_places", 
-      dt_util_dstrcat(NULL, "%s%s,", current_folders, folder));
+    dt_conf_set_string("ui_last/import_custom_places", dt_util_dstrcat(NULL, "%s%s,", current_folders, folder));
 
-    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, g_path_get_basename(folder), 
-      DT_PLACES_PATH, (char *)folder, DT_PLACES_TYPE, DT_TYPE_CUSTOM, -1);
+    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, g_path_get_basename(folder),
+                                      DT_PLACES_PATH, (char *)folder, DT_PLACES_TYPE, DT_TYPE_CUSTOM, -1);
   }
 
   dt_conf_set_string("ui_last/import_last_place", folder);
@@ -1432,8 +1435,8 @@ static void _remove_place(const gchar *folder, GtkTreeIter iter, dt_lib_module_t
   if(type == DT_TYPE_MOUNT)
     dt_conf_set_bool("ui_last/import_dialog_show_mounted", FALSE);
   if(type == DT_TYPE_CUSTOM)
-    dt_conf_set_string("ui_last/import_custom_places", 
-      dt_util_str_replace(current_folders, dt_util_dstrcat(NULL,"%s,", folder), ""));
+    dt_conf_set_string("ui_last/import_custom_places",
+                       dt_util_str_replace(current_folders, dt_util_dstrcat(NULL, "%s,", folder), ""));
 
   _update_places_list(self);
 }
@@ -1768,7 +1771,8 @@ static void _import_set_collection(const char *dirname)
     dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
     dt_conf_set_int("plugins/lighttable/collect/item0", 0);
     dt_conf_set_string("plugins/lighttable/collect/string0", dirname);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
+                               NULL);
   }
 }
 

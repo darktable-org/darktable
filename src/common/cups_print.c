@@ -105,6 +105,9 @@ void dt_get_printer_info(const char *printer_name, dt_printer_info_t *pinfo)
 
       if (attr)
       {
+        // scanf use local number format and PPD has en numbers
+        dt_util_str_to_loc_numbers_format(attr->value);
+
         sscanf(attr->value, "%lf %lf %lf %lf",
                &pinfo->hw_margin_left, &pinfo->hw_margin_bottom,
                &pinfo->hw_margin_right, &pinfo->hw_margin_top);

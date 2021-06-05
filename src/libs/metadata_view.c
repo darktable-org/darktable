@@ -496,10 +496,10 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
   if(mouse_over_id == -1)
   {
-    const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+     const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
     if(cv->view(cv) == DT_VIEW_DARKROOM)
     {
-      mouse_over_id = darktable.develop->image_storage.id;
+       mouse_over_id = darktable.develop->image_storage.id;
     }
     else
     {
@@ -822,7 +822,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
       case md_width:
         (void)g_strlcpy(text, NODATA_STRING, sizeof(text));
-        if(img->verified_size)
+        if(img->final_width > 0)
         {
           (void)g_snprintf(text, sizeof(text), "%d", img->final_width);
         }
@@ -831,7 +831,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
       case md_height:
         (void)g_strlcpy(text, NODATA_STRING, sizeof(text));
-        if(img->verified_size)
+        if(img->final_height > 0)
         {
           (void)g_snprintf(text, sizeof(text), "%d", img->final_height);
         }
@@ -1455,76 +1455,81 @@ void gui_reset(dt_lib_module_t *self)
 }
 
 #ifdef USE_LUA
-static int lua_update_values(lua_State*L)
+static int lua_update_values(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, 1);
-  dt_lua_module_entry_push(L,"lib",self->plugin_name);
-  lua_getuservalue(L,2);
-  lua_getfield(L,3,"values");
-  lua_getfield(L,3,"indexes");
+  dt_lua_module_entry_push(L, "lib", self->plugin_name);
+  lua_getuservalue(L, 2);
+  lua_getfield(L, 3, "values");
+  lua_getfield(L, 3, "indexes");
   lua_pushnil(L);
   while(lua_next(L, 4) != 0)
   {
-    lua_getfield(L,5,lua_tostring(L,-2));
-    int index = lua_tointeger(L,-1);
-    _metadata_update_value(index,luaL_checkstring(L,7),self);
-    lua_pop(L,2);
+    lua_getfield(L, 5, lua_tostring(L,-2));
+    int index = lua_tointeger(L, -1);
+    _metadata_update_value(index, luaL_checkstring(L, 7), self);
+    lua_pop(L, 2);
   }
   return 0;
 }
-static int lua_update_metadata(lua_State*L)
+static int lua_update_metadata(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, 1);
-  int32_t imgid = lua_tointeger(L,2);
-  dt_lua_module_entry_push(L,"lib",self->plugin_name);
-  lua_getuservalue(L,-1);
-  lua_getfield(L,4,"callbacks");
-  lua_getfield(L,4,"values");
+  int32_t imgid = lua_tointeger(L, 2);
+  gboolean have_updates = false;
+  dt_lua_module_entry_push(L, "lib", self->plugin_name);
+  lua_getuservalue(L, -1);
+  lua_getfield(L, 4, "callbacks");
+  lua_getfield(L, 4, "values");
   lua_pushnil(L);
   while(lua_next(L, 5) != 0)
   {
+    have_updates = true;
     if(imgid > 0)
     {
-      lua_pushvalue(L,-1);
-      luaA_push(L,dt_lua_image_t,&imgid);
-      lua_call(L,1,1);
+      lua_pushvalue(L, -1);
+      luaA_push(L, dt_lua_image_t, &imgid);
+      lua_call(L, 1, 1);
     }
     else
     {
       lua_pushstring(L, "-");
     }
-    lua_pushvalue(L,7);
-    lua_pushvalue(L,9);
-    lua_settable(L,6);
+    lua_pushvalue(L, 7);
+    lua_pushvalue(L, 9);
+    lua_settable(L, 6);
     lua_pop(L, 2);
   }
-  lua_pushcfunction(L,lua_update_values);
-  dt_lua_gtk_wrap(L);
-  lua_pushlightuserdata(L,self);
-  lua_call(L,1,0);
+  if(have_updates)
+  {
+    lua_pushcfunction(L, lua_update_values);
+    dt_lua_gtk_wrap(L);
+    lua_pushlightuserdata(L, self);
+    lua_call(L, 1, 0);
+  }
   return 0;
 }
 
 static int lua_register_info(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
-  dt_lua_module_entry_push(L,"lib",self->plugin_name);
-  lua_getuservalue(L,-1);
-  const char* key = luaL_checkstring(L,1);
-  luaL_checktype(L,2,LUA_TFUNCTION);
+  dt_lua_module_entry_push(L, "lib", self->plugin_name);
+  lua_getuservalue(L, -1);
+  const char* key = luaL_checkstring(L, 1);
+  luaL_checktype(L, 2, LUA_TFUNCTION);
   {
-    lua_getfield(L,-1,"callbacks");
-    lua_pushstring(L,key);
-    lua_pushvalue(L,2);
-    lua_settable(L,5);
-    lua_pop(L,1);
+    lua_getfield(L, -1, "callbacks");
+    lua_pushstring(L, key);
+    lua_pushvalue(L, 2);
+    lua_settable(L, 5);
+    lua_pop(L, 1);
   }
   {
-    lua_getfield(L,-1,"values");
-    lua_pushstring(L,key);
-    lua_pushstring(L,NODATA_STRING);
-    lua_settable(L,5);
-    lua_pop(L,1);
+    lua_getfield(L, -1, "values");
+    lua_pushstring(L, key);
+    lua_pushstring(L, NODATA_STRING);
+    lua_settable(L, 5);
+    lua_pop(L, 1);
   }
   {
     dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
@@ -1556,11 +1561,11 @@ static int lua_register_info(lua_State *L)
     d->metadata = g_list_append(d->metadata, m);
 
     {
-      lua_getfield(L,-1,"indexes");
-      lua_pushstring(L,key);
-      lua_pushinteger(L,index);
-      lua_settable(L,5);
-      lua_pop(L,1);
+      lua_getfield(L, -1, "indexes");
+      lua_pushstring(L, key);
+      lua_pushinteger(L, index);
+      lua_settable(L, 5);
+      lua_pop(L, 1);
     }
     // apply again preferences because it's already done
     char *pref = dt_conf_get_string("plugins/lighttable/metadata_view/visible");
@@ -1573,45 +1578,45 @@ static int lua_register_info(lua_State *L)
 static int lua_destroy_info(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
-  dt_lua_module_entry_push(L,"lib",self->plugin_name);
-  lua_getuservalue(L,-1);
-  const char* key = luaL_checkstring(L,1);
+  dt_lua_module_entry_push(L, "lib", self->plugin_name);
+  lua_getuservalue(L, -1);
+  const char* key = luaL_checkstring(L, 1);
   {
-    lua_getfield(L,-1,"callbacks");
-    lua_pushstring(L,key);
+    lua_getfield(L, -1, "callbacks");
+    lua_pushstring(L, key);
     lua_pushnil(L);
-    lua_settable(L,4);
-    lua_pop(L,1);
+    lua_settable(L, 4);
+    lua_pop(L, 1);
   }
   {
-    lua_getfield(L,-1,"values");
-    lua_pushstring(L,key);
+    lua_getfield(L, -1, "values");
+    lua_pushstring(L, key);
     lua_pushnil(L);
-    lua_settable(L,4);
-    lua_pop(L,1);
+    lua_settable(L, 4);
+    lua_pop(L, 1);
   }
-  lua_getfield(L,-1,"indexes");
-  lua_getfield(L,-1,key);
-  const int index = lua_tointeger(L,-1);
-  lua_pop(L,1);
+  lua_getfield(L, -1, "indexes");
+  lua_getfield(L, -1, key);
+  const int index = lua_tointeger(L, -1);
+  lua_pop(L, 1);
   {
-    lua_pushstring(L,key);
+    lua_pushstring(L, key);
     lua_pushnil(L);
-    lua_settable(L,4);
+    lua_settable(L, 4);
   }
   // decrement all indexes > index
   lua_pushnil(L);
-  while(lua_next(L,-2) != 0) {
-    int i = lua_tointeger(L,-1);
+  while(lua_next(L, -2) != 0) {
+    int i = lua_tointeger(L, -1);
     if(i > index)
     {
-      lua_pop(L,1);
-      lua_pushvalue(L,-1);
+      lua_pop(L, 1);
+      lua_pushvalue(L, -1);
       i--;
-      lua_pushinteger(L,i);
-      lua_settable(L,-4);
+      lua_pushinteger(L, i);
+      lua_settable(L, -4);
     }
-    else lua_pop(L,1);
+    else lua_pop(L, 1);
   }
 
   {
@@ -1650,26 +1655,26 @@ void init(struct dt_lib_module_t *self)
   lua_State *L = darktable.lua_state.state;
   int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
   lua_pushlightuserdata(L, self);
-  lua_pushcclosure(L, lua_register_info,1);
+  lua_pushcclosure(L, lua_register_info, 1);
   dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "register_info");
 
   lua_pushlightuserdata(L, self);
-  lua_pushcclosure(L, lua_destroy_info,1);
+  lua_pushcclosure(L, lua_destroy_info, 1);
   dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "destroy_info");
 
   dt_lua_module_entry_push(L,"lib",self->plugin_name);
-  lua_getuservalue(L,-1);
+  lua_getuservalue(L, -1);
   lua_newtable(L);
-  lua_setfield(L,-2,"callbacks");
+  lua_setfield(L, -2, "callbacks");
   lua_newtable(L);
-  lua_setfield(L,-2,"values");
+  lua_setfield(L, -2, "values");
   lua_newtable(L);
-  lua_setfield(L,-2,"indexes");
-  lua_pop(L,2);
+  lua_setfield(L, -2, "indexes");
+  lua_pop(L, 2);
 }
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

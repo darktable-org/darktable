@@ -108,7 +108,8 @@ typedef struct _range_t
 static void _lib_collect_gui_update(dt_lib_module_t *self);
 static void _lib_folders_update_collection(const gchar *filmroll);
 static void entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *dr);
-static void collection_updated(gpointer instance, dt_collection_change_t query_change, gpointer imgs, int next,
+static void collection_updated(gpointer instance, dt_collection_change_t query_change,
+                               dt_collection_properties_t changed_property, gpointer imgs, int next,
                                gpointer self);
 static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, GdkEventButton *event, dt_lib_collect_t *d);
 static int is_time_property(int property);
@@ -384,7 +385,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   _lib_collect_gui_update(self);
 
   /* update view */
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
   return 0;
 }
 
@@ -1006,8 +1007,8 @@ static void _lib_folders_update_collection(const gchar *filmroll)
   if(!darktable.collection->clone)
   {
     dt_collection_memory_update();
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_NEW_QUERY, NULL,
-                            -1);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_NEW_QUERY,
+                                  DT_COLLECTION_PROP_UNDEF, NULL, -1);
   }
 }
 
@@ -2167,7 +2168,7 @@ void gui_reset(dt_lib_module_t *self)
   d->active_rule = 0;
   d->view_rule = -1;
   dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
 static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
@@ -2218,7 +2219,7 @@ static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
   c->view_rule = -1;
   if(order_request)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
 static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, GdkEventButton *event, dt_lib_collect_t *d)
@@ -2366,7 +2367,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
                                   darktable.view_manager->proxy.module_collect.module);
   if(order_request)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
   dt_control_queue_redraw_center();
@@ -2414,7 +2415,7 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
   }
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                   darktable.view_manager->proxy.module_collect.module);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
   d->typing = FALSE;
@@ -2461,7 +2462,7 @@ static void menuitem_mode(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     c->active_rule = active;
     c->view_rule = -1;
   }
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
 static void menuitem_mode_change(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
@@ -2477,11 +2478,11 @@ static void menuitem_mode_change(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d
   }
   dt_lib_collect_t *c = get_collect(d);
   c->view_rule = -1;
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
-static void collection_updated(gpointer instance, dt_collection_change_t query_change, gpointer imgs, int next,
-                               gpointer self)
+static void collection_updated(gpointer instance, dt_collection_change_t query_change,
+                               dt_collection_properties_t changed_property, gpointer imgs, int next, gpointer self)
 {
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
   dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
@@ -2489,7 +2490,26 @@ static void collection_updated(gpointer instance, dt_collection_change_t query_c
   // update tree
   d->view_rule = -1;
   d->rule[d->active_rule].typing = FALSE;
-  _lib_collect_gui_update(self);
+
+  // determine if we want to refresh the tree or not
+  gboolean refresh = TRUE;
+  if(query_change == DT_COLLECTION_CHANGE_RELOAD && changed_property != DT_COLLECTION_PROP_UNDEF)
+  {
+    // if we only reload the collection, that means that we don't change the query itself
+    // so we only rebuild the treeview if a used property has changed
+    refresh = FALSE;
+    for(int i = 0; i <= d->active_rule; i++)
+    {
+      const int item = _combo_get_active_collection(d->rule[i].combo);
+      if(item == changed_property)
+      {
+        refresh = TRUE;
+        break;
+      }
+    }
+  }
+
+  if(refresh) _lib_collect_gui_update(self);
 }
 
 
@@ -2512,7 +2532,7 @@ static void filmrolls_imported(gpointer instance, int film_id, gpointer self)
 
 static void preferences_changed(gpointer instance, gpointer self)
 {
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
 static void filmrolls_removed(gpointer instance, gpointer self)
@@ -2542,7 +2562,7 @@ static void tag_changed(gpointer instance, gpointer self)
     //need to reload collection since we have tags as active collection filter
     dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_TAG, NULL);
     dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                       darktable.view_manager->proxy.module_collect.module);
   }
@@ -2559,7 +2579,7 @@ static void tag_changed(gpointer instance, gpointer self)
       // we have tags as one of rules, needs reload.
       dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                       darktable.view_manager->proxy.module_collect.module);
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_TAG, NULL);
       dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                         darktable.view_manager->proxy.module_collect.module);
     }
@@ -2583,7 +2603,8 @@ static void _geotag_changed(gpointer instance, GList *imgs, const int locid, gpo
       //need to reload collection since we have geotags as active collection filter
       dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                       darktable.view_manager->proxy.module_collect.module);
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_GEOTAGGING,
+                                 NULL);
       dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                         darktable.view_manager->proxy.module_collect.module);
     }
@@ -2623,7 +2644,8 @@ static void metadata_changed(gpointer instance, int type, gpointer self)
      || (prop >= DT_COLLECTION_PROP_METADATA
          && prop < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER))
   {
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_METADATA,
+                               NULL);
   }
 }
 
@@ -2668,7 +2690,7 @@ static void menuitem_clear(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
   }
 
   c->view_rule = -1;
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
 static gboolean popup_button_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_rule_t *d)
@@ -2808,7 +2830,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   gtk_widget_show_all(dialog);
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
 void set_preferences(void *menu, dt_lib_module_t *self)
@@ -2931,7 +2953,8 @@ void gui_init(dt_lib_module_t *self)
   }
 
   // force redraw collection images because of late update of the table memory.darktable_iop_names
-  if(has_iop_name_rule) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+  if(has_iop_name_rule)
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_MODULE, NULL);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, G_CALLBACK(collection_updated),
                             self);

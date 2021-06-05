@@ -171,16 +171,21 @@ static void _disable_debug()
 static void _error_func_dispatch25(GPContext *context, const char *text, void *data)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)data;
-
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] gphoto2 error: %s\n", text);
 
   if(strstr(text, "PTP"))
   {
-
-    /* remove camera for camctl camera list */
+    /* the camera updating thread should get a note about an error from here */
     GList *ci = g_list_find(camctl->cameras, camctl->active_camera);
-    if(ci) camctl->cameras = g_list_remove(camctl->cameras, ci);
-
+    if(ci)
+    {
+      dt_camera_t *cam = (dt_camera_t *)ci->data;
+      dt_print(DT_DEBUG_CAMCTL, "[camera_control] PTP error `%s' for camera %s on port %s\n", text, cam->model, cam->port);
+      dt_control_log(_("camera `%s' on port `%s' error %s\n"
+                       "\nmake sure your camera allows access and is not mounted otherwise"), cam->model, cam->port, text);
+      cam->ptperror = TRUE;
+    }
+      
     /* notify client of camera connection broken */
     _dispatch_camera_error(camctl, camctl->active_camera, CAMERA_CONNECTION_BROKEN);
 
@@ -720,7 +725,7 @@ void dt_camctl_destroy(dt_camctl_t *camctl)
   // Go thru all c->cameras and release them..
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] destroy darktable camcontrol\n");
   gp_context_cancel(camctl->gpcontext);
-  
+
   for(GList *it = camctl->cameras; it; it = g_list_delete_link(it, it))
   {
     dt_camctl_camera_destroy((dt_camera_t *)it->data);
@@ -869,7 +874,7 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
           removed = FALSE;
       }
       if(removed)
-      { 
+      {
         dt_print(DT_DEBUG_CAMCTL, "[camera_control] remove %s on port %s from ununsed camera list\n", cam->model, cam->port);
         dt_camera_unused_t *oldcam = (dt_camera_unused_t *)unused_item->data;
         camctl->unused_cameras = unused_item = g_list_delete_link(c->unused_cameras, unused_item);
@@ -889,8 +894,8 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
           {
             dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to initialize %s on port %s, likely "
                         "causes are: locked by another application, no access to udev etc.\n", camera->model, camera->port);
-            dt_control_log(_("failed to initialize %s on port %s, likely "
-                        "causes are: locked by another application, no access to udev etc"), camera->model, camera->port);
+            dt_control_log(_("failed to initialize `%s' on port `%s', likely "
+                        "causes are: locked by another application, no access to devices etc"), camera->model, camera->port);
             g_free(camera);
             cam->used = TRUE;
             continue;
@@ -900,7 +905,7 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
           {
             dt_print(DT_DEBUG_CAMCTL, "[camera_control] %s on port %s doesn't support import or tether\n",
                                camera->model, camera->port);
-            dt_control_log(_("%s on port %s is not interesting because it supports neither tethering nor import"),
+            dt_control_log(_("`%s' on port `%s' is not interesting because it supports neither tethering nor import"),
                                camera->model, camera->port);
             g_free(camera);
             cam->boring = TRUE;
@@ -949,20 +954,24 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
       {
         dt_camera_t *oldcam = (dt_camera_t *)citem->data;
         camctl->cameras = citem = g_list_delete_link(c->cameras, citem);
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] ERROR: %s on port %s disconnected\n", cam->model, cam->port);
-        dt_control_log(_("camera %s on port %s disconnected while mounted"), cam->model, cam->port);
+        dt_print(DT_DEBUG_CAMCTL, "[camera_control] ERROR: %s on port %s disconnected while mounted\n", cam->model, cam->port);
+        dt_control_log(_("camera `%s' on port `%s' disconnected while mounted"), cam->model, cam->port);
         dt_camctl_camera_destroy_struct(oldcam);
         changed_camera = TRUE;
       }
-      else if(cam->unmount)
+      else if((cam->ptperror) || (cam->unmount))
       {
+        if(cam->ptperror)
+          dt_control_log(_("camera `%s' on port `%s' needs to be remounted\n"
+                         "make sure it allows access and is not mounted otherwise"), cam->model, cam->port);
+
         dt_camera_unused_t *unused_camera = g_malloc0(sizeof(dt_camera_unused_t));
         unused_camera->model = g_strdup(cam->model);
         unused_camera->port = g_strdup(cam->port);
         camctl->unused_cameras = g_list_append(camctl->unused_cameras, unused_camera);
-        dt_print(DT_DEBUG_CAMCTL, "[camera_control] unmounted %s on port %s\n", cam->model, cam->port);
+
         dt_camera_t *oldcam = (dt_camera_t *)citem->data;
-        camctl->cameras = citem = g_list_delete_link(camctl->cameras, citem);
+        camctl->cameras = citem = g_list_delete_link(c->cameras, citem);
         dt_camctl_camera_destroy(oldcam);
         changed_camera = TRUE;
       }
@@ -993,12 +1002,12 @@ void *dt_update_cameras_thread(void *ptr)
   {
     g_usleep(100000);
     dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
-    const dt_view_t *cv = (darktable.view_manager) ? dt_view_manager_get_current_view(darktable.view_manager) : NULL;    
+    const dt_view_t *cv = (darktable.view_manager) ? dt_view_manager_get_current_view(darktable.view_manager) : NULL;
     if(camctl)
     {
       if((camctl->import_ui == FALSE) && (cv && (cv->view(cv) == DT_VIEW_LIGHTTABLE)))
       {
-        camctl->ticker += 1;     
+        camctl->ticker += 1;
         if((camctl->ticker & camctl->tickmask) == 0)
           camctl->tickmask = (dt_camctl_update_cameras(camctl)) ? 0x03 : 0x1F;
       }
@@ -1052,7 +1061,7 @@ static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
       dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to gp_abilities_list_get_abilities %s\n", cam->model);
       return FALSE;
     }
-    
+
     err = gp_camera_set_abilities(cam->gpcam, a);
     if(err != GP_OK)
      {
@@ -1070,7 +1079,7 @@ static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
     err = gp_camera_set_port_info(cam->gpcam, pi);
     if(err != GP_OK)
     {
-      dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to gp_camera_set_port_infogp_port_info_list_get_info %s\n", cam->model);
+      dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to gp_camera_set_port_info %s\n", cam->model);
       return FALSE;
     }
 

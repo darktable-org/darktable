@@ -228,7 +228,7 @@ gboolean dt_imageio_has_mono_preview(const char *filename)
 {
   dt_colorspaces_color_profile_type_t color_space;
   uint8_t *tmp = NULL;
-  int32_t thumb_width, thumb_height = 0;
+  int32_t thumb_width = 0, thumb_height = 0;
   gboolean mono = FALSE;
 
   if(dt_imageio_large_thumbnail(filename, &tmp, &thumb_width, &thumb_height, &color_space))

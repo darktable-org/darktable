@@ -37,14 +37,18 @@ GList *dt_util_glist_uniq(GList *items);
 /** fixes the given path by replacing a possible tilde with the correct home directory */
 gchar *dt_util_fix_path(const gchar *path);
 size_t dt_utf8_strlcpy(char *dest, const char *src, size_t n);
-/** get the size of a file in bytes */
-off_t dt_util_get_file_size(const char *filename);
+/** returns true if a file is regular, has read access and a filesize > 0 */
+gboolean dt_util_test_image_file(const char *filename);
+/** returns true if the path represents a directory with write access */
+gboolean dt_util_test_writable_dir(const char *path);
 /** returns true if dirname is empty */
 gboolean dt_util_is_dir_empty(const char *dirname);
 /** returns a valid UTF-8 string for the given char array. has to be freed with g_free(). */
 gchar *dt_util_foo_to_utf8(const char *string);
 /** returns the number of occurence of character in a text. */
 guint dt_util_string_count_char(const char *text, const char needle);
+/* helper function to convert en float numbers to local based numbers for scanf */
+void dt_util_str_to_loc_numbers_format(char *data);
 
 typedef enum dt_logo_season_t
 {

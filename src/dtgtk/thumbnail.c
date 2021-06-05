@@ -534,9 +534,10 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       // copy preview image into final surface
       if(tmp_surface)
       {
-        const float scale = fminf(image_w / (float)buf_width, image_h / (float)buf_height) * darktable.gui->ppd_thb;
-        const int img_width = buf_width * scale;
-        const int img_height = buf_height * scale;
+        float scale = fminf(image_w / (float)buf_width, image_h / (float)buf_height) * darktable.gui->ppd_thb;
+        const int img_width = roundf(buf_width * scale);
+        const int img_height = roundf(buf_height * scale);
+        scale = fmaxf(img_width / (float)buf_width, img_height / (float)buf_height);
         thumb->img_surf = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
         cairo_t *cr2 = cairo_create(thumb->img_surf);
         cairo_scale(cr2, scale, scale);
@@ -865,7 +866,7 @@ static gboolean _event_rating_release(GtkWidget *widget, GdkEventButton *event, 
     if(rating != DT_VIEW_DESERT)
     {
       dt_ratings_apply_on_image(thumb->imgid, rating, TRUE, TRUE, TRUE);
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING,
                                  g_list_prepend(NULL, GINT_TO_POINTER(thumb->imgid)));
     }
   }
@@ -903,7 +904,8 @@ static gboolean _event_grouping_release(GtkWidget *widget, GdkEventButton *event
     }
     else // expand the group
       darktable.gui->expanded_group_id = thumb->groupid;
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_GROUPING,
+                               NULL);
   }
   return FALSE;
 }
@@ -949,7 +951,8 @@ static void _dt_image_info_changed_callback(gpointer instance, gpointer imgs, gp
 
 // this is called each time collected images change
 // we only use this because the image infos may have changed
-static void _dt_collection_changed_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
+static void _dt_collection_changed_callback(gpointer instance, dt_collection_change_t query_change,
+                                            dt_collection_properties_t changed_property, gpointer imgs,
                                             const int next, gpointer user_data)
 {
   if(!user_data || !imgs) return;

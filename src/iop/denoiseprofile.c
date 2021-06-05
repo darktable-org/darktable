@@ -701,8 +701,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
   if(d->mode == MODE_NLMEANS || d->mode == MODE_NLMEANS_AUTO)
   {
-    const int P = ceilf(d->radius * fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f)); // pixel filter size
-    const int K = ceilf(d->nbhood * fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f)); // nbhood
+    const int P = ceilf(d->radius * fminf(fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f), 1.0f)); // pixel filter size
+    const int K = ceilf(d->nbhood * fminf(fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f), 1.0f)); // nbhood
     const int K_scattered = ceilf(d->scattering * (K * K * K + 7.0 * K * sqrt(K)) / 6.0) + K;
 
     tiling->factor = 2.0f + 0.25f; // in + out + tmp
@@ -717,7 +717,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   {
     const int max_max_scale = DT_IOP_DENOISE_PROFILE_BANDS; // hard limit
     int max_scale = 0;
-    const float scale = roi_in->scale / piece->iscale;
+    const float scale = fminf(roi_in->scale / piece->iscale, 1.0f);
     // largest desired filter on input buffer (20% of input dim)
     const float supp0
         = fminf(2 * (2u << (max_max_scale - 1)) + 1,
@@ -1226,7 +1226,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 #define MAX_MAX_SCALE DT_IOP_DENOISE_PROFILE_BANDS // hard limit
 
   int max_scale = 0;
-  const float in_scale = roi_in->scale / piece->iscale;
+  const float in_scale = fminf(roi_in->scale / piece->iscale, 1.0f);
   // largest desired filter on input buffer (20% of input dim)
   const float supp0 = MIN(2 * (2u << (MAX_MAX_SCALE - 1)) + 1,
                           MAX(piece->buf_in.height * piece->iscale, piece->buf_in.width * piece->iscale) * 0.2f);
@@ -1535,7 +1535,7 @@ static void process_nlmeans_cpu(dt_dev_pixelpipe_iop_t *piece,
     return;
 
   // adjust to zoom size:
-  const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
+  const float scale = fminf(fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f), 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
   int K = d->nbhood; // nbhood
   const float scattering = nlmeans_scattering(&K,d,piece,scale);
@@ -1729,7 +1729,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   cl_int err = -999;
 
-  const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
+  const float scale = fminf(fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f), 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
   int K = d->nbhood; // nbhood
   const float scattering = nlmeans_scattering(&K,d,piece,scale);
@@ -1848,7 +1848,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   cl_int err = -999;
 
-  const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
+  const float scale = fminf(fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f), 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
   int K = d->nbhood; // nbhood
   const float scattering = nlmeans_scattering(&K,d,piece,scale);
@@ -2080,7 +2080,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 
   const int max_max_scale = DT_IOP_DENOISE_PROFILE_BANDS; // hard limit
   int max_scale = 0;
-  const float scale = roi_in->scale / piece->iscale;
+  const float scale = fminf(roi_in->scale / piece->iscale, 1.0f);
   // largest desired filter on input buffer (20% of input dim)
   const float supp0
       = MIN(2 * (2u << (max_max_scale - 1)) + 1,
@@ -2197,7 +2197,8 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   float toY0U0V0[9]; //TODO: change OpenCL kernels to use 3x4 matrices
   float toRGB[9] ;
   for(size_t k = 0; k < 3; k++)
-    for_each_channel(c)
+    for(size_t c = 0; c < 3; c++)
+    //(we can't use for_each_channel here because it can iterate over four elements)
     {
       toRGB[3*k+c] = toRGB_tmp[k][c] * d->strength * scale;
       toY0U0V0[3*k+c] = toY0U0V0_tmp[k][c] / (d->strength * scale);
@@ -3680,7 +3681,7 @@ void gui_init(dt_iop_module_t *self)
                                                        "denoise chroma and luma separately."));
   gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match.\n"
                                            "increase for more sharpness on strong edges, and better denoising of smooth areas.\n"
-                                           "if details are oversmoothed, reduce this value or increase the details slider."));
+                                           "if details are oversmoothed, reduce this value or increase the central pixel weight slider."));
   gtk_widget_set_tooltip_text(g->nbhood, _("emergency use only: radius of the neighbourhood to search patches in. "
                                            "increase for better denoising performance, but watch the long runtimes! "
                                            "large radii can be very slow. you have been warned"));
