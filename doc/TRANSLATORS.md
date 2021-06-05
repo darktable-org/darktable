@@ -1,6 +1,96 @@
-# darktable User Interface Translation How-To
+[wiki](https://github.com/darktable-org/darktable/wiki/Translations)
+# Introduction
 
-darktable's user interface can be translated into many languages. For this, the application uses gettext engine. It works like this: there is a text based editable PO file that contains a number of sequences like: a line in English, a line in target language and a reference to a line in source code where original text in English comes from. The build system then creates a binary version of each PO file with MO file extension and places it in a system directory where a running instance of darktable will pick and use it.
+darktable's user interface can be translated into many languages. 
+
+In short, to support a translation, the build process needs a xx.po file with the two-letter language code, e.g. fr.po.
+
+To make sure your translation makes it into an official build:
+- subscribe to the relevant [mailing list](https://www.darktable.org/contact/)
+- ensure you keep your translation up to date to avoid large work just before the release
+- entry criteria:
+  - no more than 20 untranslated strings 
+  - no more than 50 fuzzy strings 
+
+## How darktable uses the .po files
+
+The application uses gettext engine for translation, and it works like this, a text based editable PO file contains a number of sequences containing: 
+- a line in English (source language)
+- a line in target language, and 
+- a reference to a line in source code where original text in English comes from. 
+
+The build system then creates a binary version of each PO file with MO file extension and places it in a system directory where a running instance of darktable will pick it up and use it to replace English text with target language text.
+
+## How to contribute:
+- Send your po file via email (see `(officially) Translate the darktable User Interface for darktable releases (how-to, no git, just email)` below)
+- Submit a pull request with your po file (see `Translate the darktable User Interface for darktable releases (how-to, git)`)
+- 
+
+# (officially) Translate the darktable User Interface for darktable releases (how-to, no git, just email)
+
+1. Get the PO file for your language from the repository -> [po](../po)
+
+2. To support making release translations easier, the darktable build process automatically creates a PO template (.POT) file, `darktable.pot` to use as base.
+
+3. Get the latest [darktable.pot](../po/darktable.pot) file.
+
+4. Put both files on the same directory. Open the po file with a po file editor, e.g. poedit:
+    ```
+    `$ poedit <lang>.po`
+    ```
+5. Update the PO file using the POT file: go to menu `[Catalog]` ->
+`[Update from POT file...]` and select `darktable.pot` file.
+
+6. Start translating. Saving will update `<lang>.po`.
+
+7. When you are done, `bzip2` your PO file and send it to the [mailing list](https://www.darktable.org/contact/) or per instructions on the [wiki](https://github.com/darktable-org/darktable/wiki/Translations).
+
+8. That's all!
+
+## Translate the darktable User Interface for darktable releases (how-to, git)
+
+1. Fork darktable
+2. Fetch source code from your repository, preferably using git, and set darktable as upstream e.g.: 
+    ```
+    git clone git://github.com/<some-user-profile>/darktable.git
+
+    ```
+3. Set original repository as upstream ans sync master [relevant guide](https://ardalis.com/syncing-a-fork-of-a-github-repository-with-upstream/): 
+    ```
+    [first time only] git remote add upstream https://github.com/darktable-org/darktable.git
+    git checkout master
+    git fetch upstream
+    git merge upstream/master
+    git push
+    ``` 
+
+4. The latest [darktable.pot](../po/darktable.pot) file should now be available. To support making release translations easier, the darktable build process automatically creates the PO template (.POT) file, `darktable.pot` to use as base.
+
+5. Get the PO file for your language from the repository -> [po](../po)
+    
+    >If it doesn't exist, just create it using your po file editor, and [darktable.pot](../po/darktable.pot) 
+
+6. The po file must be in the po folder. Open the po file with a po file editor, e.g. poedit:
+    ```
+    `$ poedit <lang>.po`
+    ```
+7.  Update the PO file using the POT file: go to menu `[Catalog]` ->
+`[Update from POT file...]` and select `darktable.pot` file.
+
+6. Start translating. Saving will update `<lang>.po`.
+
+7. When done, push your changes to your fork on github:
+   ```  
+        git push
+
+   ```
+
+8. Create pull request on github using ```Compare accross forks" : 
+   ```
+    https://github.com/darktable-org/darktable
+    ```
+
+# (old) How to translate darktable's User Interface during development
 
 To start working on your translation you need to:
 
@@ -12,7 +102,10 @@ To start working on your translation you need to:
 
     Copy the checked out source code tree somewhere to work on it or, if you know git well enough, create your own branch and work on it.
 
-2. Build darktable and install it
+2. Build darktable and install it:
+    
+    * See [README.md](README.md) for general build instructions.
+    * For Windows builds, see [BUILD.md](/packaging/windows/BUILD.md). 
 
 3. Create a new PO file for your language. For this you will need a package called `intltool` and some PO editor, preferably poedit(formerly known as poEdit).
 
@@ -73,7 +166,7 @@ To update your translation from working your tree:
 
 ---
 
-# A1. some more git magic:
+# Some git magic:
 
 
 This might be handy if you want to send a patch instead of the whole file:
