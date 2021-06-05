@@ -233,7 +233,6 @@ int dt_view_manager_switch(dt_view_manager_t *vm, const char *view_name)
 
 int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 {
-  fprintf(stderr, "in dt_view_manager_switch_by_view\n");
   dt_view_t *old_view = vm->current_view;
   dt_view_t *new_view = (dt_view_t *)nv; // views belong to us, we can de-const them :-)
 
@@ -377,7 +376,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
       char var[1024];
       gboolean expanded = FALSE;
       gboolean visible = dt_lib_is_visible(plugin);
-      //dt_lib_set_visible(plugin, visible);
       if(plugin->expandable(plugin))
       {
         snprintf(var, sizeof(var), "plugins/%s/%s/expanded", new_view->module_name, plugin->plugin_name);
