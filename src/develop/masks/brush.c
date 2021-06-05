@@ -2399,7 +2399,7 @@ static void _brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_fo
           cairo_set_line_width(cr, 3.0 / zoom_scale);
         dt_draw_set_color_overlay(cr, 0.4, 0.8);
         cairo_stroke_preserve(cr);
-        if(gui->seg_selected == seg2)
+        if(gui->group_selected == index && gui->seg_selected == seg2)
           cairo_set_line_width(cr, 5.0 / zoom_scale);
         else if((gui->group_selected == index)
            && (gui->form_selected || gui->form_dragging))
