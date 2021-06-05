@@ -226,7 +226,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
     {
       const size_t bin = (orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? x : y) / samples_per_bin;
       size_t tone[4] DT_ALIGNED_PIXEL;
-      for_each_channel(ch,aligned(px,tones:16))
+      for_each_channel(ch,aligned(px,tone:16))
         tone[ch] = MIN((8.0f / 9.0f) * px[4U * (x+ roi->crop_x) + ch], 1.0f) * (num_tones-1);
       for(size_t ch = 0; ch < 3; ch++)
         binned[num_tones * (ch * num_bins + bin) + tone[ch]]++;
@@ -248,7 +248,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   // NOTE: if constant is decreased, will brighten output
   // FIXME: instead of using an area-beased scale, figure out max bin count and scale to that?
   const float brightness = num_tones / 40.0f;
-  const float scale = brightness / ((DT_LIB_HISTOGRAM_ORIENT_HORI ? sample_height : sample_width) * samples_per_bin);
+  const float scale = brightness / ((orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? sample_height : sample_width) * samples_per_bin);
   size_t nthreads = dt_get_num_threads();
 
 #if defined(_OPENMP)
