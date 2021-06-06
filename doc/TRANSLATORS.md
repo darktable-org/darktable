@@ -58,37 +58,44 @@ The build system then creates a binary version of each PO file with MO file exte
 3. Set original repository as upstream ans sync master [relevant guide](https://ardalis.com/syncing-a-fork-of-a-github-repository-with-upstream/): 
     ```
     [first time only] git remote add upstream https://github.com/darktable-org/darktable.git
-    git checkout master
-    git fetch upstream
-    git merge upstream/master
-    git push
+    $ git checkout master
+    $ git fetch upstream
+    $ git merge upstream/master
+    $ git push
     ``` 
+4. Create a branch for the target language if there isn't one already.
+    ```
+    $ git checkout -b <target language>
+    ```
+5. The latest [darktable.pot](../po/darktable.pot) file should now be available. To support making release translations easier, the darktable build process automatically creates the PO template (.POT) file, `darktable.pot` to use as base.
 
-4. The latest [darktable.pot](../po/darktable.pot) file should now be available. To support making release translations easier, the darktable build process automatically creates the PO template (.POT) file, `darktable.pot` to use as base.
-
-5. Get the PO file for your language from the repository -> [po](../po)
+6. Get the PO file for the target language from the repository -> [po](../po)
     
-    >If it doesn't exist, just create it using your po file editor, and [darktable.pot](../po/darktable.pot) 
+    >If it doesn't exist, just create it using your po file editor, and [darktable.pot](../po/darktable.pot)
+    >
+    >Convention is to name these with the two-letter language code ```<lang>.po```
 
-6. The po file must be in the po folder. Open the po file with a po file editor, e.g. poedit:
+7. The po file must be in the po folder. Open the po file with a po file editor, e.g. poedit:
     ```
-    `$ poedit <lang>.po`
+    $ poedit <lang>.po
     ```
-7.  Update the PO file using the POT file: go to menu `[Catalog]` ->
+8.  Update the PO file using the POT file: go to menu `[Catalog]` ->
 `[Update from POT file...]` and select `darktable.pot` file.
 
 6. Start translating. Saving will update `<lang>.po`.
-
-7. When done, push your changes to your fork on github:
+7. Commit your changes often.
+8. When done, sync your repository with upstream master, and push your changes to your remote branch fork on github:
    ```  
-        git push
-
+    $ git checkout master
+    $ git fetch upstream
+    $ git merge upstream/master
+    $ git push
+    $ git checkout -b <target language>
+    $ git fetch upstream
+    $ git merge upstream/master
    ```
 
-8. Create pull request on github using ```Compare accross forks" : 
-   ```
-    https://github.com/darktable-org/darktable
-    ```
+9. Create pull request on https://github.com/darktable-org/darktable using Compare accross forks".
 
 # (old) How to translate darktable's User Interface during development
 
