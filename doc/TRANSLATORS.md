@@ -21,10 +21,9 @@ The application uses gettext engine for translation, and it works like this, a t
 
 The build system then creates a binary version of each PO file with MO file extension and places it in a system directory where a running instance of darktable will pick it up and use it to replace English text with target language text.
 
-## How to contribute:
+## How to contribute to the official repo:
 - Send your po file via email (see `(officially) Translate the darktable User Interface for darktable releases (how-to, no git, just email)` below)
-- Submit a pull request with your po file (see `Translate the darktable User Interface for darktable releases (how-to, git)`)
-- 
+- Submit a pull request with your po file (see `(officially) Translate the darktable User Interface for darktable releases (how-to, git)`)
 
 # (officially) Translate the darktable User Interface for darktable releases (how-to, no git, just email)
 
@@ -35,8 +34,8 @@ The build system then creates a binary version of each PO file with MO file exte
 3. Get the latest [darktable.pot](../po/darktable.pot) file.
 
 4. Put both files on the same directory. Open the po file with a po file editor, e.g. poedit:
-    ```
-    `$ poedit <lang>.po`
+    ```bash
+    $ poedit <lang>.po
     ```
 5. Update the PO file using the POT file: go to menu `[Catalog]` ->
 `[Update from POT file...]` and select `darktable.pot` file.
@@ -52,19 +51,21 @@ The build system then creates a binary version of each PO file with MO file exte
 1. Fork darktable
 2. Fetch source code from your repository, preferably using git, and set darktable as upstream e.g.: 
     ```
-    git clone git://github.com/<some-user-profile>/darktable.git
+    $ git clone git://github.com/<some-user-profile>/darktable.git
 
     ```
 3. Set original repository as upstream ans sync master [relevant guide](https://ardalis.com/syncing-a-fork-of-a-github-repository-with-upstream/): 
-    ```
-    [first time only] git remote add upstream https://github.com/darktable-org/darktable.git
+    ```bash
+    # Do this the first time only 
+    $ git remote add upstream https://github.com/darktable-org/darktable.git
+    # Do these as often as necessary to sync your master and origin/master with remote.
     $ git checkout master
     $ git fetch upstream
     $ git merge upstream/master
     $ git push
     ``` 
 4. Create a branch for the target language if there isn't one already.
-    ```
+    ```bash
     $ git checkout -b <target language>
     ```
 5. The latest [darktable.pot](../po/darktable.pot) file should now be available. To support making release translations easier, the darktable build process automatically creates the PO template (.POT) file, `darktable.pot` to use as base.
@@ -76,7 +77,7 @@ The build system then creates a binary version of each PO file with MO file exte
     >Convention is to name these with the two-letter language code ```<lang>.po```
 
 7. The po file must be in the po folder. Open the po file with a po file editor, e.g. poedit:
-    ```
+    ```bash
     $ poedit <lang>.po
     ```
 8.  Update the PO file using the POT file: go to menu `[Catalog]` ->
@@ -85,26 +86,77 @@ The build system then creates a binary version of each PO file with MO file exte
 6. Start translating. Saving will update `<lang>.po`.
 7. Commit your changes often.
 8. When done, sync your repository with upstream master, and push your changes to your remote branch fork on github:
-   ```  
+    ```bash 
+    # Sync up master, origin/master with upstream/master
     $ git checkout master
     $ git fetch upstream
     $ git merge upstream/master
     $ git push
-    $ git checkout -b <target language>
-    $ git fetch upstream
-    $ git merge upstream/master
+    $ git checkout <target language branch>
+    $ git pull --rebase
+    $ git push
+
    ```
 
-9. Create pull request on https://github.com/darktable-org/darktable using Compare accross forks".
+9. Create pull request on https://github.com/darktable-org/darktable using Compare accross forks" function.
+    ```
+    base repositry:darktable-org/darktable base:master <-- head repository: youraccount/yourfork comppare <target language branch> 
+    ```
+10. Hope you did everything right, and wait for merge. 
+11. That's all!
 
+# Translate a patch for the darktable User Interface for darktable releases (how-to, git):
+
+This might be handy if you want to send a patch instead of the whole file.
+
+Create a new branch `yourlanguage`:
+
+```
+$ git checkout -b yourlanguage
+```
+
+Then make your translation changes as above,
+
+```bash
+$ git add po/XX.po
+$ git commit -a
+```
+
+In case the `master` branch changed, do a
+
+```bash
+$ git pull
+```
+
+If your master and `origin/master` diverged:
+
+```bash
+$ git checkout master
+$ git reset --hard origin master
+```
+
+Rebase your patch to the current `master`:
+
+```bash
+$ git checkout yourlanguage
+$ git rebase master
+```
+
+Create patches relative to current `master`:
+
+```bash
+$ git format-patch master
+```
 # (old) How to translate darktable's User Interface during development
+
+_This was the old guide for performing translations and requires building from code. It's still useful for forks and other custom development so leaving it here for the more technically inclined._
 
 To start working on your translation you need to:
 
 1. Fetch source code, preferably using git. Here is the magic command:
 
-    ```
-    git clone git://github.com/darktable-org/darktable.git
+    ```bash
+    $ git clone git://github.com/darktable-org/darktable.git
     ```
 
     Copy the checked out source code tree somewhere to work on it or, if you know git well enough, create your own branch and work on it.
@@ -116,7 +168,7 @@ To start working on your translation you need to:
 
 3. Create a new PO file for your language. For this you will need a package called `intltool` and some PO editor, preferably poedit(formerly known as poEdit).
 
-    ```
+    ```bash
     $ cd darktable/po/
     $ intltool-update -pot
     ```
@@ -141,26 +193,26 @@ To update your translation from working your tree:
 
 1. Switch to `master` branch by:
 
-    ```
+    ```bash
     $ git checkout master
     ```
 
 2. Update and merge changes from `master` branch:
 
-    ```
+    ```bash
     $ git pull --rebase
     ```
 
 3. Run
 
-    ```
+    ```bash
     $ cd po/
     $ intltool-update --pot
     ```
 
 4. Run
 
-    ```
+    ```bash
     $ intltool-update your_PO_file
     ````
 
@@ -169,52 +221,5 @@ To update your translation from working your tree:
 5. Update translation, send it to the list.
 
     That's all.
-
-
 ---
-
-# Some git magic:
-
-
-This might be handy if you want to send a patch instead of the whole file:
-
-Create a new branch `yourlanguage`:
-
-```
-$ git checkout -b yourlanguage
-```
-
-Then make your translation changes as above,
-
-```
-$ git add po/XX.po
-$ git commit -a
-```
-
-In case the `master` branch changed, do a
-
-```
-$ git pull
-```
-
-If your master and `origin/master` diverged:
-
-```
-$ git checkout master
-$ git reset --hard origin master
-```
-
-Rebase your patch to the current `master`:
-
-```
-$ git checkout yourlanguage
-$ git rebase master
-```
-
-Create patches relative to current `master`:
-
-```
-$ git format-patch master
-```
-
 :)
