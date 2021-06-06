@@ -600,6 +600,8 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
     color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);
   else if(dsc->channels == 4u && image_cst == iop_cs_rgb && (picker_cst == iop_cs_HSL || picker_cst == iop_cs_JzCzhz))
     color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);
+  else if(dsc->channels == 4u) // This is a fallback, better than crashing as happens with monochromes
+    color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);
   else if(dsc->channels == 1u && dsc->filters != 0u && dsc->filters != 9u)
     color_picker_helper_bayer(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
   else if(dsc->channels == 1u && dsc->filters == 9u)
