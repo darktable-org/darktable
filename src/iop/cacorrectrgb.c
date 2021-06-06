@@ -286,15 +286,15 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
     {
       const size_t c = (kc + guide + 1) % 3;
       const float pixel = fmaxf(in[k * 4 + c], 1E-6f);
-      float log_diff = log2f(pixel / pixelg);
+      const float log_diff = log2f(pixel / pixelg);
       logdiffs[kc] = log_diff;
     }
     // regularization of logdiff to avoid too many problems with noise:
     // we lower the weights of pixels with too high logdiff
-    float maxlogdiff = fmaxf(fabsf(logdiffs[0]), fabsf(logdiffs[1]));
+    const float maxlogdiff = fmaxf(fabsf(logdiffs[0]), fabsf(logdiffs[1]));
     if(maxlogdiff > DT_CACORRECTRGB_MAX_EV_DIFF)
     {
-      float correction_weight = DT_CACORRECTRGB_MAX_EV_DIFF / maxlogdiff;
+      const float correction_weight = DT_CACORRECTRGB_MAX_EV_DIFF / maxlogdiff;
       weightl *= correction_weight;
       weighth *= correction_weight;
     }
@@ -421,10 +421,10 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
         }
         // regularization of logdiff to avoid too many problems with noise:
         // we lower the weights of pixels with too high logdiff
-        float maxlogdiff = fmaxf(fabsf(logdiffs[0]), fabsf(logdiffs[1]));
+        const float maxlogdiff = fmaxf(fabsf(logdiffs[0]), fabsf(logdiffs[1]));
         if(maxlogdiff > DT_CACORRECTRGB_MAX_EV_DIFF)
         {
-          float correction_weight = DT_CACORRECTRGB_MAX_EV_DIFF / maxlogdiff;
+          const float correction_weight = DT_CACORRECTRGB_MAX_EV_DIFF / maxlogdiff;
           w *= correction_weight;
         }
         for(size_t kc = 0; kc <= 1; kc++)
@@ -453,10 +453,10 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
         }
         // regularization of logdiff to avoid too many problems with noise:
         // we lower the weights of pixels with too high logdiff
-        float maxlogdiff = fmaxf(fabsf(logdiffs[0]), fabsf(logdiffs[1]));
+        const float maxlogdiff = fmaxf(fabsf(logdiffs[0]), fabsf(logdiffs[1]));
         if(maxlogdiff > DT_CACORRECTRGB_MAX_EV_DIFF)
         {
-          float correction_weight = DT_CACORRECTRGB_MAX_EV_DIFF / maxlogdiff;
+          const float correction_weight = DT_CACORRECTRGB_MAX_EV_DIFF / maxlogdiff;
           w *= correction_weight;
         }
         for(size_t kc = 0; kc <= 1; kc++)
