@@ -1,3 +1,10 @@
+# Afrikaans translations for darktable package.
+# This file is distributed under the same license as the darktable package.
+# Original translation by @thisnamewasnottaken on github.
+# Reference Dictionaires
+# >> https://rieme.co.za/
+# >> https://github.com/casperl/Afrikaanse-rekenaarterme
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
@@ -6,7 +13,7 @@ msgstr ""
 "PO-Revision-Date: \n"
 "Last-Translator: thisnamewasnottaken <8645373+thisnamewasnottaken@users."
 "noreply.github.com>\n"
-"Language-Team: \n"
+"Language-Team: @git|thisnamewasnottaken\n"
 "Language: af\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
