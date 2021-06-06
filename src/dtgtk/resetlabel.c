@@ -36,7 +36,7 @@ static gboolean _reset_label_callback(GtkDarktableResetLabel *label, GdkEventBut
   {
     memcpy(((char *)label->module->params) + label->offset,
            ((char *)label->module->default_params) + label->offset, label->size);
-    label->module->gui_update(label->module);
+    if(label->module->gui_update) label->module->gui_update(label->module);
     dt_dev_add_history_item(darktable.develop, label->module, FALSE);
     return TRUE;
   }
