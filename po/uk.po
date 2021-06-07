@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-01 22:52+0200\n"
-"PO-Revision-Date: 2021-06-02 16:00+0300\n"
+"POT-Creation-Date: 2021-06-05 19:42+0200\n"
+"PO-Revision-Date: 2021-06-07 08:20+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -2123,8 +2123,8 @@ msgstr "уточнена"
 #: ../build/lib/darktable/plugins/introspection_colorin.c:301
 #: ../build/lib/darktable/plugins/introspection_vignette.c:263
 #: ../src/common/history.c:854 ../src/common/history.c:857
-#: ../src/common/history.c:873 ../src/common/styles.c:1102
-#: ../src/common/styles.c:1106 ../src/develop/blend_gui.c:101
+#: ../src/common/history.c:873 ../src/common/styles.c:1108
+#: ../src/common/styles.c:1112 ../src/develop/blend_gui.c:101
 #: ../src/develop/blend_gui.c:124 ../src/develop/blend_gui.c:2981
 #: ../src/develop/develop.c:2223 ../src/imageio/format/avif.c:812
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:666
@@ -2362,7 +2362,7 @@ msgstr "радіус"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:73
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:136
-#: ../src/iop/bloom.c:407 ../src/iop/denoiseprofile.c:3643
+#: ../src/iop/bloom.c:407 ../src/iop/denoiseprofile.c:3644
 #: ../src/iop/grain.c:581 ../src/iop/hazeremoval.c:203
 #: ../src/iop/hotpixels.c:381 ../src/iop/nlmeans.c:527 ../src/iop/velvia.c:337
 msgid "strength"
@@ -2955,7 +2955,7 @@ msgstr "насиченість"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:267
 #: ../src/iop/atrous.c:1370 ../src/iop/atrous.c:1374
-#: ../src/iop/denoiseprofile.c:3369 ../src/iop/rawdenoise.c:759
+#: ../src/iop/denoiseprofile.c:3370 ../src/iop/rawdenoise.c:759
 msgid "smooth"
 msgstr "плавно"
 
@@ -3499,7 +3499,7 @@ msgstr "виявляти за 3 сусідніми"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:51
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:118
 #: ../src/iop/bilat.c:429 ../src/iop/colorbalance.c:1882
-#: ../src/iop/denoiseprofile.c:3627 ../src/iop/exposure.c:877
+#: ../src/iop/denoiseprofile.c:3628 ../src/iop/exposure.c:877
 #: ../src/iop/levels.c:689 ../src/iop/profile_gamma.c:691
 #: ../src/libs/copy_history.c:405 ../src/libs/export.c:1372
 #: ../src/libs/image.c:592 ../src/libs/print_settings.c:1503
@@ -5000,8 +5000,8 @@ msgstr ""
 "вам потрібно скопіювати історію із зображення, перш ніж вставити її в інше"
 
 #: ../src/common/history.c:854 ../src/common/history.c:857
-#: ../src/common/history.c:873 ../src/common/styles.c:1102
-#: ../src/common/styles.c:1106 ../src/develop/blend_gui.c:125
+#: ../src/common/history.c:873 ../src/common/styles.c:1108
+#: ../src/common/styles.c:1112 ../src/develop/blend_gui.c:125
 #: ../src/develop/develop.c:2223 ../src/imageio/format/avif.c:810
 #: ../src/iop/ashift.c:4705 ../src/libs/live_view.c:505
 msgid "on"
@@ -5048,49 +5048,49 @@ msgstr "дату/час скасовано. зображень: %d"
 msgid "date/time re-applied to %d images"
 msgstr "дату/час повторно застосовано. зображень: %d"
 
-#: ../src/common/image.c:1903
+#: ../src/common/image.c:1901
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "не вдається отримати доступ до локальної копії `%s'"
 
-#: ../src/common/image.c:1910
+#: ../src/common/image.c:1908
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "не вдається записати локальну копію `%s'"
 
-#: ../src/common/image.c:1917
+#: ../src/common/image.c:1915
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "помилка переміщення локальної копії `%s' -> `%s'"
 
-#: ../src/common/image.c:1933
+#: ../src/common/image.c:1931
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "помилка переміщення `%s': файл не знайдено"
 
-#: ../src/common/image.c:1943
+#: ../src/common/image.c:1941
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "помилка переміщення `%s' -> `%s': файл існує"
 
-#: ../src/common/image.c:1947
+#: ../src/common/image.c:1945
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "помилка переміщення `%s' -> `%s'"
 
-#: ../src/common/image.c:2245
+#: ../src/common/image.c:2243
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "неможливо створити локальну копію, коли оригінал недоступний."
 
-#: ../src/common/image.c:2259
+#: ../src/common/image.c:2257
 msgid "cannot create local copy."
 msgstr "неможливо створити локальну копію."
 
-#: ../src/common/image.c:2331 ../src/control/jobs/control_jobs.c:749
+#: ../src/common/image.c:2329 ../src/control/jobs/control_jobs.c:749
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "неможливо видалити локальну копію, коли оригінал недоступний."
 
-#: ../src/common/image.c:2509
+#: ../src/common/image.c:2507
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -5134,6 +5134,10 @@ msgid ""
 msgstr ""
 "не вдалося розгорнути до унікального імені файлу для сесії, перевірте "
 "налаштування сеансу імпорту."
+
+#: ../src/common/import_session.c:359
+msgid "requested session path not available. device not mounted?"
+msgstr "запитаний шлях сеансу недоступний. пристрій не змонтовано?"
 
 #: ../src/common/iop_order.c:59 ../src/libs/ioporder.c:202
 msgid "legacy"
@@ -5282,8 +5286,8 @@ msgstr "стиль з іменем '%s' вже існує"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:408 ../src/common/styles.c:412
 #: ../src/common/styles.c:498 ../src/common/styles.c:581
-#: ../src/common/styles.c:987 ../src/common/styles.c:1560
-#: ../src/common/styles.c:1579
+#: ../src/common/styles.c:993 ../src/common/styles.c:1566
+#: ../src/common/styles.c:1585
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -5295,7 +5299,7 @@ msgid "style named '%s' successfully created"
 msgstr "стиль '%s' успішно створено"
 
 #: ../src/common/styles.c:640 ../src/common/styles.c:664
-#: ../src/common/styles.c:702
+#: ../src/common/styles.c:703
 msgid "no image selected!"
 msgstr "жодне зображення не вибрано!"
 
@@ -5312,48 +5316,48 @@ msgstr "не вибрано ні зображень, ні стилів!"
 msgid "no styles selected!"
 msgstr "жоден стиль не вибрано!"
 
-#: ../src/common/styles.c:688
+#: ../src/common/styles.c:689
 msgid "style successfully applied!"
 msgid_plural "styles successfully applied!"
 msgstr[0] "стиль успішно застосовано!"
 msgstr[1] "стилі успішно застосовані!"
 msgstr[2] "стилів успішно застосовано!"
 
-#: ../src/common/styles.c:759
+#: ../src/common/styles.c:760
 #, c-format
 msgid "module `%s' version mismatch: %d != %d"
 msgstr "невідповідність версій модуля `%s': %d != %d"
 
-#: ../src/common/styles.c:1196
+#: ../src/common/styles.c:1202
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "не вдається перезаписати стильовий файл для %s"
 
-#: ../src/common/styles.c:1202
+#: ../src/common/styles.c:1208
 #, c-format
 msgid "style file for %s exists"
 msgstr "стильовий файл для %s існує"
 
-#: ../src/common/styles.c:1450
+#: ../src/common/styles.c:1456
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "стиль %s було успішно імпортовано"
 
 #. Failed to open file, clean up.
-#: ../src/common/styles.c:1494
+#: ../src/common/styles.c:1500
 #, c-format
 msgid "could not read file `%s'"
 msgstr "не вдається прочитати файл `%s'"
 
-#: ../src/common/utility.c:467
+#: ../src/common/utility.c:486
 msgid "above sea level"
 msgstr "над рівнем моря"
 
-#: ../src/common/utility.c:468
+#: ../src/common/utility.c:487
 msgid "below sea level"
 msgstr "нижче рівня моря"
 
-#: ../src/common/utility.c:519 ../src/iop/watermark.c:576
+#: ../src/common/utility.c:538 ../src/iop/watermark.c:576
 #: ../src/libs/metadata_view.c:903
 msgid "m"
 msgstr "м"
@@ -6277,7 +6281,7 @@ msgid "gray"
 msgstr "сірий"
 
 #: ../src/develop/blend_gui.c:1998 ../src/develop/blend_gui.c:2025
-#: ../src/iop/channelmixerrgb.c:3783 ../src/iop/denoiseprofile.c:3544
+#: ../src/iop/channelmixerrgb.c:3783 ../src/iop/denoiseprofile.c:3545
 #: ../src/iop/rawdenoise.c:907 ../src/iop/rgbcurve.c:1382
 #: ../src/iop/rgblevels.c:956
 msgid "R"
@@ -6288,7 +6292,7 @@ msgid "sliders for red channel"
 msgstr "повзунки для каналу червоного"
 
 #: ../src/develop/blend_gui.c:2001 ../src/develop/blend_gui.c:2028
-#: ../src/iop/channelmixerrgb.c:3784 ../src/iop/denoiseprofile.c:3545
+#: ../src/iop/channelmixerrgb.c:3784 ../src/iop/denoiseprofile.c:3546
 #: ../src/iop/rawdenoise.c:908 ../src/iop/rgbcurve.c:1383
 #: ../src/iop/rgblevels.c:957
 msgid "G"
@@ -6299,7 +6303,7 @@ msgid "sliders for green channel"
 msgstr "повзунки для каналу зеленого"
 
 #: ../src/develop/blend_gui.c:2004 ../src/develop/blend_gui.c:2031
-#: ../src/iop/channelmixerrgb.c:3785 ../src/iop/denoiseprofile.c:3546
+#: ../src/iop/channelmixerrgb.c:3785 ../src/iop/denoiseprofile.c:3547
 #: ../src/iop/rawdenoise.c:909 ../src/iop/rgbcurve.c:1384
 #: ../src/iop/rgblevels.c:958
 msgid "B"
@@ -6886,41 +6890,41 @@ msgstr[0] "%s було імпортовано"
 msgstr[1] "%s було імпортовано"
 msgstr[2] "%s було імпортовано"
 
-#: ../src/develop/masks/brush.c:1114 ../src/develop/masks/brush.c:1198
+#: ../src/develop/masks/brush.c:1111 ../src/develop/masks/brush.c:1195
 #, c-format
 msgid "hardness: %3.2f%%"
 msgstr "жорсткість: %3.2f%%"
 
-#: ../src/develop/masks/brush.c:1138 ../src/develop/masks/brush.c:1180
-#: ../src/develop/masks/brush.c:1187 ../src/develop/masks/circle.c:122
+#: ../src/develop/masks/brush.c:1135 ../src/develop/masks/brush.c:1177
+#: ../src/develop/masks/brush.c:1184 ../src/develop/masks/circle.c:122
 #: ../src/develop/masks/circle.c:176 ../src/develop/masks/ellipse.c:555
 #: ../src/develop/masks/ellipse.c:642 ../src/develop/masks/path.c:1097
 #, c-format
 msgid "size: %3.2f%%"
 msgstr "розмір: %3.2f%%"
 
-#: ../src/develop/masks/brush.c:2899
+#: ../src/develop/masks/brush.c:2906
 msgid "[BRUSH creation] change size"
 msgstr "[ПЕНЗЕЛЬ - створення] змінити розмір"
 
-#: ../src/develop/masks/brush.c:2901
+#: ../src/develop/masks/brush.c:2908
 msgid "[BRUSH creation] change hardness"
 msgstr "[ПЕНЗЕЛЬ - створення] змінити жорсткість"
 
-#: ../src/develop/masks/brush.c:2902
+#: ../src/develop/masks/brush.c:2909
 msgid "[BRUSH] change opacity"
 msgstr "[ПЕНЗЕЛЬ] змінити непрозорість"
 
-#: ../src/develop/masks/brush.c:2903
+#: ../src/develop/masks/brush.c:2910
 msgid "[BRUSH] change hardness"
 msgstr "[ПЕНЗЕЛЬ] змінити жорсткість"
 
-#: ../src/develop/masks/brush.c:2914
+#: ../src/develop/masks/brush.c:2921
 #, c-format
 msgid "brush #%d"
 msgstr "пензель #%d"
 
-#: ../src/develop/masks/brush.c:2923
+#: ../src/develop/masks/brush.c:2930
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
@@ -6929,7 +6933,7 @@ msgstr ""
 "<b>розмір</b>: прокрутка, <b>жорсткість</b>: shift+прокрутка\n"
 "<b>непрозорість</b>: ctrl+прокрутка (%d%%)"
 
-#: ../src/develop/masks/brush.c:2927
+#: ../src/develop/masks/brush.c:2934
 #, c-format
 msgid ""
 "<b>hardness</b>: scroll, <b>size</b>: shift+scroll\n"
@@ -6938,7 +6942,7 @@ msgstr ""
 "<b>жорсткість</b>: прокрутка, <b>розмір</b>: shift+прокрутка\n"
 "<b>непрозорість</b>: ctrl+прокрутка (%d%%)"
 
-#: ../src/develop/masks/brush.c:2930
+#: ../src/develop/masks/brush.c:2937
 msgid "<b>size</b>: scroll"
 msgstr "<b>розмір</b>: прокрутка"
 
@@ -7636,7 +7640,7 @@ msgstr "не вдається створити каталог '%s'!\n"
 #, c-format
 msgid "warning: no images are matching the requested image id range\n"
 msgstr ""
-"попередження: жодне зображення не відповідає запитуваному діапазону id "
+"попередження: жодне зображення не відповідає запитаному діапазону id "
 "зображень\n"
 
 #: ../src/generate-cache/main.c:86
@@ -8212,7 +8216,7 @@ msgid "golden spiral"
 msgstr "золота спіраль"
 
 #: ../src/gui/guides.c:444 ../src/imageio/format/pdf.c:667
-#: ../src/iop/denoiseprofile.c:3543 ../src/iop/lens.cc:2238
+#: ../src/iop/denoiseprofile.c:3544 ../src/iop/lens.cc:2238
 #: ../src/iop/rawdenoise.c:906 ../src/libs/tools/filter.c:175
 msgid "all"
 msgstr "всі"
@@ -9847,12 +9851,12 @@ msgstr "усунення розмиття: середнє розмиття, ін
 msgid "deblur: fine blur, strength 1"
 msgstr "усунення розмиття: дрібне розмиття, інтенсивність 1"
 
-#: ../src/iop/atrous.c:1350 ../src/iop/denoiseprofile.c:3352
+#: ../src/iop/atrous.c:1350 ../src/iop/denoiseprofile.c:3353
 #: ../src/iop/rawdenoise.c:742
 msgid "coarse"
 msgstr "грубі деталі"
 
-#: ../src/iop/atrous.c:1357 ../src/iop/denoiseprofile.c:3360
+#: ../src/iop/atrous.c:1357 ../src/iop/denoiseprofile.c:3361
 #: ../src/iop/rawdenoise.c:750
 msgid "fine"
 msgstr "дрібні деталі"
@@ -9861,7 +9865,7 @@ msgstr "дрібні деталі"
 msgid "contrasty"
 msgstr "контрастно"
 
-#: ../src/iop/atrous.c:1375 ../src/iop/denoiseprofile.c:3374
+#: ../src/iop/atrous.c:1375 ../src/iop/denoiseprofile.c:3375
 #: ../src/iop/rawdenoise.c:764
 msgid "noisy"
 msgstr "шумно"
@@ -12637,29 +12641,29 @@ msgstr "знешумлення (профільоване)"
 msgid "denoise using noise statistics profiled on sensors."
 msgstr "знешумлення з використанням статистичних профілів шуму сенсорів."
 
-#: ../src/iop/denoiseprofile.c:2664
+#: ../src/iop/denoiseprofile.c:2665
 #, c-format
 msgid "found match for ISO %d"
 msgstr "знайдено збіг для ISO %d"
 
-#: ../src/iop/denoiseprofile.c:2673
+#: ../src/iop/denoiseprofile.c:2674
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "інтерпольовано з ISO %d і %d"
 
-#: ../src/iop/denoiseprofile.c:3050 ../src/iop/denoiseprofile.c:3633
+#: ../src/iop/denoiseprofile.c:3051 ../src/iop/denoiseprofile.c:3634
 msgid "compute variance"
 msgstr "обчислити дисперсію"
 
-#: ../src/iop/denoiseprofile.c:3551
+#: ../src/iop/denoiseprofile.c:3552
 msgid "Y0"
 msgstr "Y0"
 
-#: ../src/iop/denoiseprofile.c:3552
+#: ../src/iop/denoiseprofile.c:3553
 msgid "U0V0"
 msgstr "U0V0"
 
-#: ../src/iop/denoiseprofile.c:3585
+#: ../src/iop/denoiseprofile.c:3586
 msgid ""
 "use only with a perfectly\n"
 "uniform image if you want to\n"
@@ -12669,55 +12673,55 @@ msgstr ""
 "однорідним зображенням, якщо хочете\n"
 "оцінити дисперсію шуму."
 
-#: ../src/iop/denoiseprofile.c:3591
+#: ../src/iop/denoiseprofile.c:3592
 msgid "variance red: "
 msgstr "дисперсія червоного: "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3594
+#: ../src/iop/denoiseprofile.c:3595
 msgid "variance computed on the red channel"
 msgstr "дисперсія, обчислена на червоному каналі"
 
-#: ../src/iop/denoiseprofile.c:3599
+#: ../src/iop/denoiseprofile.c:3600
 msgid "variance green: "
 msgstr "дисперсія зеленого: "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3602
+#: ../src/iop/denoiseprofile.c:3603
 msgid "variance computed on the green channel"
 msgstr "дисперсія, обчислена на зеленому каналі"
 
-#: ../src/iop/denoiseprofile.c:3607
+#: ../src/iop/denoiseprofile.c:3608
 msgid "variance blue: "
 msgstr "дисперсія синього: "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3610
+#: ../src/iop/denoiseprofile.c:3611
 msgid "variance computed on the blue channel"
 msgstr "дисперсія, обчислена на синьому каналі"
 
-#: ../src/iop/denoiseprofile.c:3620 ../src/libs/export.c:1304
+#: ../src/iop/denoiseprofile.c:3621 ../src/libs/export.c:1304
 #: ../src/libs/print_settings.c:1181 ../src/libs/print_settings.c:1399
 msgid "profile"
 msgstr "профіль"
 
-#: ../src/iop/denoiseprofile.c:3628
+#: ../src/iop/denoiseprofile.c:3629
 msgid "non-local means"
 msgstr "нелокальні середні"
 
-#: ../src/iop/denoiseprofile.c:3629
+#: ../src/iop/denoiseprofile.c:3630
 msgid "non-local means auto"
 msgstr "нелокальні середні, авто"
 
-#: ../src/iop/denoiseprofile.c:3630
+#: ../src/iop/denoiseprofile.c:3631
 msgid "wavelets"
 msgstr "вейвлети"
 
-#: ../src/iop/denoiseprofile.c:3631
+#: ../src/iop/denoiseprofile.c:3632
 msgid "wavelets auto"
 msgstr "вейвлети, авто"
 
-#: ../src/iop/denoiseprofile.c:3658
+#: ../src/iop/denoiseprofile.c:3659
 msgid ""
 "adapt denoising according to the\n"
 "white balance coefficients.\n"
@@ -12733,7 +12737,7 @@ msgstr ""
 "слід відключити, якщо попередній екземпляр\n"
 "було використано в режимі змішування кольорів."
 
-#: ../src/iop/denoiseprofile.c:3664
+#: ../src/iop/denoiseprofile.c:3665
 msgid ""
 "fix bugs in anscombe transform resulting\n"
 "in undersmoothing of the green channel in\n"
@@ -12753,11 +12757,11 @@ msgstr ""
 "увімкнення цієї опції змінить отримуване вами знешумлення.\n"
 "після ввімкнення ви не зможете повернутися до старого алгоритму."
 
-#: ../src/iop/denoiseprofile.c:3673
+#: ../src/iop/denoiseprofile.c:3674
 msgid "profile used for variance stabilization"
 msgstr "профіль, що використовується для стабілізації дисперсії"
 
-#: ../src/iop/denoiseprofile.c:3674
+#: ../src/iop/denoiseprofile.c:3675
 msgid ""
 "method used in the denoising core.\n"
 "non-local means works best for `lightness' blending,\n"
@@ -12767,7 +12771,7 @@ msgstr ""
 "нелокальні середні працюють краще для змішування яскравості,\n"
 "вейвлети працюють краще для змішування кольоровості"
 
-#: ../src/iop/denoiseprofile.c:3677
+#: ../src/iop/denoiseprofile.c:3678
 msgid ""
 "color representation used within the algorithm.\n"
 "RGB keeps the RGB channels separated,\n"
@@ -12779,7 +12783,7 @@ msgstr ""
 "тоді як Y0U0V0 об'єднує канали, щоб\n"
 "знешумлювати кольоровість і яскравість окремо."
 
-#: ../src/iop/denoiseprofile.c:3681
+#: ../src/iop/denoiseprofile.c:3682
 msgid ""
 "radius of the patches to match.\n"
 "increase for more sharpness on strong edges, and better denoising of smooth "
@@ -12793,7 +12797,7 @@ msgstr ""
 "якщо деталі занадто згладжені, зменште це значення або збільште повзунок "
 "ваги центрального пікселя."
 
-#: ../src/iop/denoiseprofile.c:3684
+#: ../src/iop/denoiseprofile.c:3685
 msgid ""
 "emergency use only: radius of the neighbourhood to search patches in. "
 "increase for better denoising performance, but watch the long runtimes! "
@@ -12803,7 +12807,7 @@ msgstr ""
 "для кращого знешумлення, але слідкуйте за тривалим часом роботи! великі "
 "радіуси можуть бути дуже повільними. вас попередили!"
 
-#: ../src/iop/denoiseprofile.c:3687
+#: ../src/iop/denoiseprofile.c:3688
 msgid ""
 "scattering of the neighbourhood to search patches in.\n"
 "increase for better coarse-grain noise reduction.\n"
@@ -12813,7 +12817,7 @@ msgstr ""
 "збільшуйте для кращого знешумлення грубозернистого шуму.\n"
 "не впливає на час виконання."
 
-#: ../src/iop/denoiseprofile.c:3690
+#: ../src/iop/denoiseprofile.c:3691
 msgid ""
 "increase the weight of the central pixel\n"
 "of the patch in the patch comparison.\n"
@@ -12825,11 +12829,11 @@ msgstr ""
 "корисно для відновлення деталей, коли розмір\n"
 "зразка досить великий."
 
-#: ../src/iop/denoiseprofile.c:3694
+#: ../src/iop/denoiseprofile.c:3695
 msgid "finetune denoising strength"
 msgstr "тонка настройка інтенсивності знешумлення"
 
-#: ../src/iop/denoiseprofile.c:3695
+#: ../src/iop/denoiseprofile.c:3696
 msgid ""
 "controls the way parameters are autoset\n"
 "increase if shadows are not denoised enough\n"
@@ -12841,7 +12845,7 @@ msgstr ""
 "або якщо залишається кольоровий шум.\n"
 "це може статися, якщо ваше зображення недоекспоноване."
 
-#: ../src/iop/denoiseprofile.c:3699
+#: ../src/iop/denoiseprofile.c:3700
 msgid ""
 "finetune shadows denoising.\n"
 "decrease to denoise more aggressively\n"
@@ -12851,7 +12855,7 @@ msgstr ""
 "зменшуйте, щоб більш агресивно знешумлювати\n"
 "темні ділянки зображення."
 
-#: ../src/iop/denoiseprofile.c:3702
+#: ../src/iop/denoiseprofile.c:3703
 msgid ""
 "correct color cast in shadows.\n"
 "decrease if shadows are too purple.\n"
@@ -12861,7 +12865,7 @@ msgstr ""
 "зменшити, якщо тіні занадто пурпурні.\n"
 "збільшити, якщо тіні занадто зелені."
 
-#: ../src/iop/denoiseprofile.c:3705
+#: ../src/iop/denoiseprofile.c:3706
 msgid ""
 "upgrade the variance stabilizing algorithm.\n"
 "new algorithm extends the current one.\n"
