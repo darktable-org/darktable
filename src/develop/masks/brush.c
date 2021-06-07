@@ -1313,8 +1313,8 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
       if(!guipt) return 0;
       // we start the form dragging
       gui->source_dragging = TRUE;
-      gui->dx = guipt->source[2] - gui->posx;
-      gui->dy = guipt->source[3] - gui->posy;
+      gui->dx = guipt->source[0] - gui->posx;
+      gui->dy = guipt->source[1] - gui->posy;
       return 1;
     }
     else if(gui->form_selected && gui->edit_mode == DT_MASKS_EDIT_FULL)
