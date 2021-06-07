@@ -630,6 +630,9 @@ static int destroy_shortcut_event(lua_State *L)
   // remove the accelerator from the lua shortcuts
   dt_accel_deregister_lua(tmp);
 
+  // free temporary buffer
+  free(tmp);
+
   return result;
 }
 
