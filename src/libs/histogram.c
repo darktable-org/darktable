@@ -739,7 +739,18 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
     cairo_stroke(cr);
   }
 
-  // FIXME: draw hue ring as a mask on the background, then don't calculate hue ring colors
+  cairo_surface_t *bkgd_surface =
+    dt_cairo_image_surface_create_for_data(d->vectorscope_bkgd, CAIRO_FORMAT_RGB24,
+                                           diam_px, diam_px,
+                                           cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px));
+  cairo_pattern_t *bkgd_pat = cairo_pattern_create_for_surface(bkgd_surface);
+  // FIXME: is there an easier way to do this work?
+  cairo_matrix_t matrix;
+  cairo_matrix_init_translate(&matrix, 0.5*diam_px/darktable.gui->ppd, 0.5*diam_px/darktable.gui->ppd);
+  cairo_matrix_scale(&matrix, (double)diam_px / min_size / darktable.gui->ppd,
+                     (double)diam_px / min_size / darktable.gui->ppd);
+  cairo_pattern_set_matrix(bkgd_pat, &matrix);
+
   // FIXME: also add hue rings (monochrome/dotted) for input/work/output profiles
   // from Sobotka:
   // 1. The input encoding primaries. How dd the image start out life? What is valid data within that? What is invalid introduced by error of camera virtual primaries solving or math such as resampling an image such that negative lobes result?
@@ -748,31 +759,36 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // graticule: histogram profile hue ring
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  float x = d->hue_ring_coord[5][VECTORSCOPE_HUES-1][0];
-  float y = d->hue_ring_coord[5][VECTORSCOPE_HUES-1][1];
-  log_scale(d, &x, &y, vs_radius);
   for(int n=0; n<6; n++)
-  {
     for(int h=0; h<VECTORSCOPE_HUES; h++)
     {
-      cairo_move_to(cr, x*scale, y*scale);
-      // FIXME: can we pre-make a pattern with the hues radiating out, and use it as the "ink" to draw the hue ring and -- if in false color mode -- the vectorscope? will this be faster then drawing lots of lines each with their own color? will it allow for drawing the hue ring with splines and calculating fewer points? -- we might need a color pattern of the colorspace, then masked once to increase saturation and once for alpha?
       // note that hue_ring_rgb and hue_ring_coord are calculated as float but converted here to double
-      cairo_set_source_rgba(cr, d->hue_ring_rgb[n][h][0], d->hue_ring_rgb[n][h][1], d->hue_ring_rgb[n][h][2], 0.5);
-      x = d->hue_ring_coord[n][h][0];
-      y = d->hue_ring_coord[n][h][1];
+      //cairo_set_source_rgba(cr, d->hue_ring_rgb[n][h][0], d->hue_ring_rgb[n][h][1], d->hue_ring_rgb[n][h][2], 0.5);
+      float x = d->hue_ring_coord[n][h][0];
+      float y = d->hue_ring_coord[n][h][1];
+      // FIXME: do this in _lib_histogram_vectorscope_bkgd()
       log_scale(d, &x, &y, vs_radius);
       cairo_line_to(cr, x*scale, y*scale);
-      cairo_stroke(cr);
-      if(h==0)
-      {
-        cairo_arc(cr, x*scale, y*scale, DT_PIXEL_APPLY_DPI(2.), 0., M_PI * 2.);
-        cairo_set_source_rgba(cr, d->hue_ring_rgb[n][h][0], d->hue_ring_rgb[n][h][1], d->hue_ring_rgb[n][h][2], 1.);
-        cairo_fill_preserve(cr);
-        set_color(cr, darktable.bauhaus->graph_grid);
-        cairo_stroke(cr);
-      }
     }
+  cairo_close_path(cr);
+  cairo_set_source(cr, bkgd_pat);
+  // FIXME: this should be drawn with 50% alpha to make it dimmer, as should the faded out vectorscope on point sample -- make a second RGBA32 buffer which is 50% alpha? -- or paint this to a temporary surface then composite it over at 50%?
+  cairo_stroke(cr);
+
+  // draw primary/secondary nodes
+  for(int n=0; n<6; n++)
+  {
+    float x = d->hue_ring_coord[n][0][0];
+    float y = d->hue_ring_coord[n][0][1];
+    // FIXME: do this in _lib_histogram_vectorscope_bkgd()
+    log_scale(d, &x, &y, vs_radius);
+    cairo_arc(cr, x*scale, y*scale, DT_PIXEL_APPLY_DPI(2.), 0., M_PI * 2.);
+    // FIXME: mask bkgd instead of setting color?
+    // FIXME: if do have colors here, are they just vertex_rgb?
+    cairo_set_source_rgba(cr, d->hue_ring_rgb[n][0][0], d->hue_ring_rgb[n][0][1], d->hue_ring_rgb[n][0][2], 1.);
+    cairo_fill_preserve(cr);
+    set_color(cr, darktable.bauhaus->graph_grid);
+    cairo_stroke(cr);
   }
 
   // vectorscope graph
@@ -782,20 +798,8 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
     dt_cairo_image_surface_create_for_data(d->vectorscope_graph, CAIRO_FORMAT_A8,
                                            diam_px, diam_px,
                                            cairo_format_stride_for_width(CAIRO_FORMAT_A8, diam_px));
-  cairo_surface_t *bkgd_surface =
-    dt_cairo_image_surface_create_for_data(d->vectorscope_bkgd, CAIRO_FORMAT_RGB24,
-                                           diam_px, diam_px,
-                                           cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px));
-
   cairo_pattern_t *graph_pat = cairo_pattern_create_for_surface(graph_surface);
-  cairo_pattern_t *bkgd_pat = cairo_pattern_create_for_surface(bkgd_surface);
-  // FIXME: is there an easier way to do this work?
-  cairo_matrix_t matrix;
-  cairo_matrix_init_translate(&matrix, 0.5*diam_px/darktable.gui->ppd, 0.5*diam_px/darktable.gui->ppd);
-  cairo_matrix_scale(&matrix, (double)diam_px / min_size / darktable.gui->ppd,
-                     (double)diam_px / min_size / darktable.gui->ppd);
   cairo_pattern_set_matrix(graph_pat, &matrix);
-  cairo_pattern_set_matrix(bkgd_pat, &matrix);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_source(cr, bkgd_pat);
 #if 0
