@@ -100,8 +100,7 @@ typedef struct dt_lib_histogram_t
   uint8_t *waveform_8bit;
   int waveform_width, waveform_height, waveform_max_width;
   // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
-  uint8_t *vectorscope_graph;
-  uint8_t *vectorscope_bkgd;
+  uint8_t *vectorscope_graph, *vectorscope_bkgd, *vectorscope_bkgd_dim;
   float vectorscope_pt[2];            // point colorpicker position
   int vectorscope_diameter_px;
   // FIXME: These arrays could instead be alloc'd/free'd. Would the only concern about making dt_lib_histogram_t large so long be if it were stored in the DB?
@@ -353,7 +352,6 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   for(size_t y = 0; y < diam_px; y++)
     for(size_t x = 0; x < diam_px; x++)
     {
-      uint8_t *const restrict px = d->vectorscope_bkgd + y * stride + x * 4U;
       // FIXME: should be / (diam_px-1)? same in other places?
       float a = max_radius * 2.0f * (x / (float)(diam_px-1) - 0.5f);
       float b = max_radius * 2.0f * (y / (float)(diam_px-1) - 0.5f);
@@ -383,9 +381,14 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       }
       // FIXME: a custom matrix could do this flip and write directly to pixel buffer
       dt_XYZ_to_Rec709_D50(XYZ_D50, RGB);
+      uint8_t *const restrict px = d->vectorscope_bkgd + y * stride + x * 4U;
+      uint8_t *const restrict px_dim = d->vectorscope_bkgd_dim + y * stride + x * 4U;
       // BGR/RGB flip is for pixelpipe vs. Cairo color?
       for(int ch=0; ch<3; ch++)
+      {
         px[2U-ch] = CLAMP((int)(RGB[ch] * 255.0f), 0, 255);
+        px_dim[2U-ch] = px[2U-ch] / 2;
+      }
     }
 
   d->vectorscope_radius = max_radius;
@@ -739,17 +742,24 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
     cairo_stroke(cr);
   }
 
+  // FIXME: these different background patterns are hacky -- could try to do something clever and have one buffer which has 50% alpha and lives as both RGB24 (full) and ARGB32 (dim)
   cairo_surface_t *bkgd_surface =
     dt_cairo_image_surface_create_for_data(d->vectorscope_bkgd, CAIRO_FORMAT_RGB24,
                                            diam_px, diam_px,
                                            cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px));
+  cairo_surface_t *bkgd_dim_surface =
+    dt_cairo_image_surface_create_for_data(d->vectorscope_bkgd_dim, CAIRO_FORMAT_RGB24,
+                                           diam_px, diam_px,
+                                           cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px));
   cairo_pattern_t *bkgd_pat = cairo_pattern_create_for_surface(bkgd_surface);
+  cairo_pattern_t *bkgd_dim_pat = cairo_pattern_create_for_surface(bkgd_dim_surface);
   // FIXME: is there an easier way to do this work?
   cairo_matrix_t matrix;
   cairo_matrix_init_translate(&matrix, 0.5*diam_px/darktable.gui->ppd, 0.5*diam_px/darktable.gui->ppd);
   cairo_matrix_scale(&matrix, (double)diam_px / min_size / darktable.gui->ppd,
                      (double)diam_px / min_size / darktable.gui->ppd);
   cairo_pattern_set_matrix(bkgd_pat, &matrix);
+  cairo_pattern_set_matrix(bkgd_dim_pat, &matrix);
 
   // FIXME: also add hue rings (monochrome/dotted) for input/work/output profiles
   // from Sobotka:
@@ -759,6 +769,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // graticule: histogram profile hue ring
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+  cairo_set_source(cr, bkgd_dim_pat);
   for(int n=0; n<6; n++)
     for(int h=0; h<VECTORSCOPE_HUES; h++)
     {
@@ -771,7 +782,6 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       cairo_line_to(cr, x*scale, y*scale);
     }
   cairo_close_path(cr);
-  cairo_set_source(cr, bkgd_pat);
   // FIXME: this should be drawn with 50% alpha to make it dimmer, as should the faded out vectorscope on point sample -- make a second RGBA32 buffer which is 50% alpha? -- or paint this to a temporary surface then composite it over at 50%?
   cairo_stroke(cr);
 
@@ -801,26 +811,21 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_pattern_t *graph_pat = cairo_pattern_create_for_surface(graph_surface);
   cairo_pattern_set_matrix(graph_pat, &matrix);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  cairo_set_source(cr, bkgd_pat);
+  cairo_set_source(cr, isnan(d->vectorscope_pt[0]) ? bkgd_pat : bkgd_dim_pat);
 #if 0
   // for debugging background color
   cairo_paint(cr);
 #else
   cairo_mask(cr, graph_pat);
+  //cairo_mask_surface(cr, graph_surface, 0., 0.);
   cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
-  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.6);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, isnan(d->vectorscope_pt[0]) ? 0.6 : 0.3);
   cairo_mask(cr, graph_pat);
 #endif
-  //cairo_mask_surface(cr, graph_surface, 0., 0.);
-  // FIXME: how will handle fading background for point sample? draw to another surface?
-  /*
-  if(isnan(d->vectorscope_pt[0]))
-    cairo_paint(cr);
-  else
-    cairo_paint_with_alpha(cr, 0.5);
-  */
   cairo_pattern_destroy(bkgd_pat);
   cairo_surface_destroy(bkgd_surface);
+  cairo_pattern_destroy(bkgd_dim_pat);
+  cairo_surface_destroy(bkgd_dim_surface);
   cairo_pattern_destroy(graph_pat);
   cairo_surface_destroy(graph_surface);
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
@@ -1604,6 +1609,8 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: note that the background can be lower resolution than the graph -- test/compare?
   d->vectorscope_bkgd = dt_alloc_align(64, sizeof(uint8_t) * 4U * d->vectorscope_diameter_px *
                                        cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px));
+  d->vectorscope_bkgd_dim = dt_alloc_align(64, sizeof(uint8_t) * 4U * d->vectorscope_diameter_px *
+                                           cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px));
   d->hue_ring_prof = NULL;
   d->hue_ring_scale = DT_LIB_HISTOGRAM_SCALE_N;
   d->hue_ring_colorspace = DT_LIB_HISTOGRAM_VECTORSCOPE_N;
@@ -1761,6 +1768,8 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_free_align(d->waveform_linear);
   dt_free_align(d->waveform_8bit);
   dt_free_align(d->vectorscope_graph);
+  dt_free_align(d->vectorscope_bkgd);
+  dt_free_align(d->vectorscope_bkgd_dim);
   dt_pthread_mutex_destroy(&d->lock);
 
   g_free(self->data);
