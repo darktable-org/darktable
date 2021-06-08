@@ -157,6 +157,10 @@ Var AR_RegFlags
   !define MUI_HEADERIMAGE
   !define MUI_ABORTWARNING
 
+; GPL is not an EULA, no need to agree to it.
+  !define MUI_LICENSEPAGE_BUTTON $(^NextBtn)
+  !define MUI_LICENSEPAGE_TEXT_BOTTOM "You are now aware of your rights. Click Next to continue."
+
 ;----------------------------------------
 ; based upon a script of "Written by KiCHiK 2003-01-18 05:57:02"
 ;----------------------------------------
