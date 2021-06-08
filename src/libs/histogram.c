@@ -366,12 +366,9 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   // chromaticities for drawing both hue ring and graph
   const int diam_px = d->vectorscope_diameter_px;
   const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
-  // loop appears to be too small to benefit w/OpenMP
-  // FIXME: is this still true? -- all this will only run once per colorspace change, so doesn't need to be extra-fast
   for(size_t y = 0; y < diam_px; y++)
     for(size_t x = 0; x < diam_px; x++)
     {
-      // FIXME: should be / (diam_px-1)? same in other places?
       float a = 2.0f * (x / (float)(diam_px-1) - 0.5f);
       float b = 2.0f * (y / (float)(diam_px-1) - 0.5f);
       float s = max_radius;
@@ -383,11 +380,11 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       a *= s;
       b *= s;
       dt_aligned_pixel_t RGB;
-      // FIXME: the L and Jz values are set by visual experimentation to show saturation heading away from center w/in graph -- is there a better way?
+      // FIXME: the L and Jz values are set by visual experimentation to give good saturation in graph, including center and primary/secondary nodes -- is there a better way?
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
         // uv values can get huge at corners in logarithmic scale, so clamp to avoid weird colors
-        const dt_aligned_pixel_t Luv = {50.0f, CLAMP(a,-100.0f,100.0f), CLAMP(b,-100.0f,100.0f)};
+        const dt_aligned_pixel_t Luv = {28.0f, CLAMP(a,-100.0f,100.0f), CLAMP(b,-100.0f,100.0f)};
         dt_aligned_pixel_t xyY, XYZ_D50;
         dt_Luv_to_xyY(Luv, xyY);
         // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
@@ -396,7 +393,7 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       }
       else if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ)
       {
-        const dt_aligned_pixel_t JzAzBz = {0.007f, a, b};
+        const dt_aligned_pixel_t JzAzBz = {0.003f, a, b};
         dt_aligned_pixel_t XYZ_D65;
         dt_JzAzBz_2_XYZ(JzAzBz, XYZ_D65);
         dt_XYZ_to_Rec709_D65(XYZ_D65, RGB);
@@ -408,10 +405,8 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       // FIXME: convert to RGB display space instead of sRGB
       // conversion cribbed from colorbalancergb
       // normalize with hue-preserving method (sort-of) to prevent gamut-clipping in sRGB
-#if 1
       const float max_RGB = MAX(MAX(RGB[0], RGB[1]), RGB[2]);
       for(size_t c = 0; c < 3; c++) RGB[c] = powf(RGB[c] / max_RGB, 1.f / 2.2f);
-#endif
       uint8_t *const restrict px = d->vectorscope_bkgd + y * stride + x * 4U;
       // BGR/RGB flip is for pixelpipe vs. Cairo color?
       for(int ch=0; ch<3; ch++)
@@ -800,7 +795,6 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   cairo_save(cr);
 
-#if 1
   // background
   cairo_pattern_t *p = cairo_pattern_create_radial(0.5 * width, 0.5 * height, 0.5 * min_size,
                                                    0.5 * width, 0.5 * height, 0.5 * hypot(min_size, min_size));
@@ -810,7 +804,6 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_set_source(cr, p);
   cairo_fill(cr);
   cairo_pattern_destroy(p);
-#endif
 
   // FIXME: the areas to left/right of the scope could have some data (primaries, whitepoint, scale, etc.)
   cairo_translate(cr, width / 2., height / 2.);
@@ -840,6 +833,8 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
                                            diam_px, diam_px,
                                            cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px));
   cairo_pattern_t *bkgd_pat = cairo_pattern_create_for_surface(bkgd_surface);
+  // primary nodes circles may extend to outside of pattern
+  cairo_pattern_set_extend(bkgd_pat, CAIRO_EXTEND_PAD);
   // FIXME: is there an easier way to do this work?
   cairo_matrix_t matrix;
   cairo_matrix_init_translate(&matrix, 0.5*diam_px/darktable.gui->ppd, 0.5*diam_px/darktable.gui->ppd);
@@ -871,15 +866,12 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_paint_with_alpha(cr, 0.4);
 
   // primary/secondary nodes
-  double vertex_rgb[6][3] DT_ALIGNED_PIXEL = {{1.0, 0.2, 0.2}, {1.0, 1.0, 0.2},
-                                              {0.2, 1.0, 0.2}, {0.2, 1.0, 1.0},
-                                              {0.2, 0.2, 1.0}, {1.0, 0.2, 1.0} };
   for(int n=0; n<6; n++)
   {
     float x = d->hue_ring[n][0][0];
     float y = d->hue_ring[n][0][1];
     cairo_arc(cr, x*scale, y*scale, DT_PIXEL_APPLY_DPI(2.), 0., M_PI * 2.);
-    cairo_set_source_rgb(cr, vertex_rgb[n][0], vertex_rgb[n][1],  vertex_rgb[n][2]);
+    cairo_set_source(cr, bkgd_pat);
     cairo_fill_preserve(cr);
     set_color(cr, darktable.bauhaus->graph_grid);
     cairo_stroke(cr);
@@ -887,7 +879,6 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // vectorscope graph
   // FIXME: use cairo_pattern_set_filter()?
-  // FIXME: use cairo_pattern_set_extend() with CAIRO_EXTEND_PAD?
   cairo_surface_t *graph_surface =
     dt_cairo_image_surface_create_for_data(d->vectorscope_graph, CAIRO_FORMAT_A8,
                                            diam_px, diam_px,
@@ -898,16 +889,11 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   if(!isnan(d->vectorscope_pt[0]))
     cairo_push_group(cr);
   cairo_set_source(cr, bkgd_pat);
-#if 0
-  // for debugging background color
-  cairo_paint(cr);
-#else
   cairo_mask(cr, graph_pat);
   //cairo_mask_surface(cr, graph_surface, 0., 0.);
   cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
-  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.4);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
   cairo_mask(cr, graph_pat);
-#endif
   cairo_pattern_destroy(bkgd_pat);
   cairo_surface_destroy(bkgd_surface);
   cairo_pattern_destroy(graph_pat);
