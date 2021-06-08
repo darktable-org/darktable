@@ -315,20 +315,22 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       delta[ch]=(vertex_rgb[(k+1)%6][ch] - vertex_rgb[k][ch]) / VECTORSCOPE_HUES;
     for(int i=0; i < VECTORSCOPE_HUES; i++)
     {
-      float rgb[4] DT_ALIGNED_PIXEL, XYZ_D50[4] DT_ALIGNED_PIXEL, intermed[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
+      float rgb[4] DT_ALIGNED_PIXEL, XYZ_D50[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
       for_each_channel(ch,aligned(vertex_rgb,delta,rgb:16))
         rgb[ch] = vertex_rgb[k][ch] + delta[ch] * i;
       dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
                                  vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
-        dt_XYZ_to_xyY(XYZ_D50, intermed);
-        dt_xyY_to_Luv(intermed, chromaticity);
+        float xyY[4] DT_ALIGNED_PIXEL;
+        dt_XYZ_to_xyY(XYZ_D50, xyY);
+        dt_xyY_to_Luv(xyY, chromaticity);
       }
       else
       {
-        dt_XYZ_D50_2_XYZ_D65(XYZ_D50, intermed);
-        dt_XYZ_2_JzAzBz(intermed, chromaticity);
+        float XYZ_D65[4] DT_ALIGNED_PIXEL;
+        dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
+        dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
       }
       d->hue_ring[k][i][0] = chromaticity[1];
       d->hue_ring[k][i][1] = chromaticity[2];
@@ -340,7 +342,7 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       for(int i=0; i < VECTORSCOPE_HUES; i++)
         log_scale(d, &d->hue_ring[k][i][0], &d->hue_ring[k][i][1], max_radius);
 
-  // chromaticities for drawing both hue ring and grpah
+  // chromaticities for drawing both hue ring and graph
   const int diam_px = d->vectorscope_diameter_px;
   const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
   // loop appears to be too small to benefit w/OpenMP
@@ -349,15 +351,22 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
     for(size_t x = 0; x < diam_px; x++)
     {
       // FIXME: should be / (diam_px-1)? same in other places?
-      float a = max_radius * 2.0f * (x / (float)(diam_px-1) - 0.5f);
-      float b = max_radius * 2.0f * (y / (float)(diam_px-1) - 0.5f);
-      // FIXME: should we be doing log_scale of [-1,1] rather than [-max_diam,max_diam]?
-      log_scale(d, &a, &b, max_radius);
+      float a = 2.0f * (x / (float)(diam_px-1) - 0.5f);
+      float b = 2.0f * (y / (float)(diam_px-1) - 0.5f);
+      float s = max_radius;
+      if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
+      {
+        const float h = hypotf(a,b);
+        s *= powf(VECTORSCOPE_BASE_LOG, h) / (VECTORSCOPE_BASE_LOG * h);
+      }
+      a *= s;
+      b *= s;
       float RGB[4] DT_ALIGNED_PIXEL;
-      // FIXME: look at how hue controls on colorbalance rgb are drawn -- what lightness level -- use similar math
+      // FIXME: the L and Jz values are set by visual experimentation to show saturation heading away from center w/in graph -- is there a better way?
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
-        const float Luv[4] DT_ALIGNED_PIXEL = {65.0f, a, b};
+        // uv values can get huge at corners in logarithmic scale, so clamp to avoid weird colors
+        const float Luv[4] DT_ALIGNED_PIXEL = {50.0f, CLAMP(a,-100.0f,100.0f), CLAMP(b,-100.0f,100.0f)};
         float xyY[4] DT_ALIGNED_PIXEL, XYZ_D50[4] DT_ALIGNED_PIXEL;
         dt_Luv_to_xyY(Luv, xyY);
         // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
@@ -366,7 +375,7 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       }
       else if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ)
       {
-        const float JzAzBz[4] DT_ALIGNED_PIXEL = {0.008f, a, b};
+        const float JzAzBz[4] DT_ALIGNED_PIXEL = {0.007f, a, b};
         float XYZ_D65[4] DT_ALIGNED_PIXEL;
         dt_JzAzBz_2_XYZ(JzAzBz, XYZ_D65);
         dt_XYZ_to_Rec709_D65(XYZ_D65, RGB);
@@ -378,8 +387,10 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       // FIXME: convert to RGB display space instead of sRGB
       // conversion cribbed from colorbalancergb
       // normalize with hue-preserving method (sort-of) to prevent gamut-clipping in sRGB
+#if 1
       const float max_RGB = fmaxf(fmaxf(RGB[0], RGB[1]), RGB[2]);
       for(size_t c = 0; c < 3; c++) RGB[c] = powf(RGB[c] / max_RGB, 1.f / 2.2f);
+#endif
       uint8_t *const restrict px = d->vectorscope_bkgd + y * stride + x * 4U;
       // BGR/RGB flip is for pixelpipe vs. Cairo color?
       for(int ch=0; ch<3; ch++)
@@ -504,8 +515,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       }
 
       // FIXME: make cx,cy which are float, check 0 <= cx < 1, then multiply by diam_px
-      const int out_x = diam_px * (chromaticity[1] / max_diam + 0.5f);
-      const int out_y = diam_px * (chromaticity[2] / max_diam + 0.5f);
+      const int out_x = (diam_px-1) * (chromaticity[1] / max_diam + 0.5f);
+      const int out_y = (diam_px-1) * (chromaticity[2] / max_diam + 0.5f);
 
       // clip any out-of-scale values, so there aren't light edges
       if(out_x >= 0 && out_x <= diam_px-1 && out_y >= 0 && out_y <= diam_px-1)
@@ -809,7 +820,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_mask(cr, graph_pat);
   //cairo_mask_surface(cr, graph_surface, 0., 0.);
   cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
-  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.6);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.4);
   cairo_mask(cr, graph_pat);
 #endif
   cairo_pattern_destroy(bkgd_pat);
