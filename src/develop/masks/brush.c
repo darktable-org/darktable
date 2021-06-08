@@ -1415,7 +1415,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
         gui->seg_selected = -1;
         dt_control_queue_redraw_center();
       }
-      else if(gui->seg_selected >= 0 && gui->seg_selected < nb - 1)
+      else if(gui->seg_selected < nb - 1)
       {
         // we move the entire segment
         gui->seg_dragging = gui->seg_selected;
