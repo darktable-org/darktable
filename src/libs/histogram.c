@@ -269,6 +269,7 @@ static inline float baselog(float x, float bound)
 
 static inline void log_scale(const dt_lib_histogram_t *d, float *x, float *y, float r)
 {
+  // FIXME: test for this in caller rather than here?
   if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
   {
     const float h = hypotf(*x,*y);
@@ -773,17 +774,18 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       cairo_line_to(cr, x*scale, y*scale);
     }
   cairo_close_path(cr);
-  // FIXME: this should be drawn with 50% alpha to make it dimmer, as should the faded out vectorscope on point sample -- make a second RGBA32 buffer which is 50% alpha? -- or paint this to a temporary surface then composite it over at 50%?
   cairo_stroke(cr);
 
-  // draw primary/secondary nodes
+  // primary/secondary nodes
+  double vertex_rgb[6][4] DT_ALIGNED_PIXEL = {{1.0, 0.2, 0.2}, {1.0, 1.0, 0.2},
+                                              {0.2, 1.0, 0.2}, {0.2, 1.0, 1.0},
+                                              {0.2, 0.2, 1.0}, {1.0, 0.2, 1.0} };
   for(int n=0; n<6; n++)
   {
     float x = d->hue_ring[n][0][0];
     float y = d->hue_ring[n][0][1];
     cairo_arc(cr, x*scale, y*scale, DT_PIXEL_APPLY_DPI(2.), 0., M_PI * 2.);
-    // FIXME: use vertex RGB colors instead of background?, with hard light effect?
-    cairo_set_source(cr, bkgd_pat);
+    cairo_set_source_rgb(cr, vertex_rgb[n][0], vertex_rgb[n][1],  vertex_rgb[n][2]);
     cairo_fill_preserve(cr);
     set_color(cr, darktable.bauhaus->graph_grid);
     cairo_stroke(cr);
