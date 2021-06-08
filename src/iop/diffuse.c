@@ -39,45 +39,72 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
+#include <complex.h>
+
 DT_MODULE_INTROSPECTION(1, dt_iop_diffuse_params_t)
 
 #define MAX_NUM_SCALES 12
 typedef struct dt_iop_diffuse_params_t
 {
   // global parameters
-  int iterations;       // $MIN: 1   $MAX: 12   $DEFAULT: 1  $DESCRIPTION: "iterations"
-  float sharpness;         // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "sharpness"
-  int radius;           // $MIN: 1   $MAX: 1024   $DEFAULT: 8  $DESCRIPTION: "radius"
-  float regularization; // $MIN: 0. $MAX: 6.   $DEFAULT: 0. $DESCRIPTION: "edge and noise avoiding"
-  float noise_threshold;// $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "edge/surface threshold"
-  float anisotropy;          // $MIN: -8. $MAX: 8.   $DEFAULT: 0. $DESCRIPTION: "anisotropy"
+  int iterations;           // $MIN: 1   $MAX: 128   $DEFAULT: 1  $DESCRIPTION: "iterations"
+  float sharpness;          // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "sharpness"
+  int radius;               // $MIN: 1   $MAX: 256   $DEFAULT: 8  $DESCRIPTION: "radius"
+  float regularization;     // $MIN: 0. $MAX: 6.   $DEFAULT: 0. $DESCRIPTION: "edge sensitivity"
+  float variance_threshold; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "edge threshold"
 
-  // masking
+  float anisotropy_first;         // $MIN: -4. $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "1st order anisotropy"
+  float anisotropy_second;        // $MIN: -4. $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "2nd order anisotropy"
+  float anisotropy_third;         // $MIN: -4. $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "3rd order anisotropy"
+  float anisotropy_fourth;        // $MIN: -4. $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "4th order anisotropy"
+
   float threshold; // $MIN: 0.  $MAX: 8.   $DEFAULT: 0. $DESCRIPTION: "luminance masking threshold"
 
-  // first order derivative, anisotropic, aka first order integral of wavelets details scales
-  float first;       // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "1st order (gradient)"
-
-  // second order deritavite, isotropic, aka wavelets details scales
+  float first; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "1st order (gradient)"
   float second; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "2nd order (laplacian)"
-
-  // third order derivative, anisotropic, aka first order derivative of wavelets details scales
-  float third;       // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "3rd order (gradient of laplacian)"
-
-  // fourth order derivative, anisotropic, aka second order derivative of wavelets details scales
-  float fourth;       // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "4th order (laplacian of laplacian)"
+  float third; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "3rd order (gradient of laplacian)"
+  float fourth; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "4th order (laplacian of laplacian)"
 } dt_iop_diffuse_params_t;
 
 
 typedef struct dt_iop_diffuse_gui_data_t
 {
   GtkWidget *iterations, *fourth, *third, *second, *radius, *sharpness, *threshold, *regularization, *first,
-      *anisotropy, *regularization_first, *noise_threshold;
+      *anisotropy_first, *anisotropy_second, *anisotropy_third, *anisotropy_fourth, *regularization_first, *variance_threshold;
 } dt_iop_diffuse_gui_data_t;
+
+typedef struct dt_iop_diffuse_global_data_t
+{
+  int kernel_wavelets_decompose;
+  int kernel_diffuse;
+  int kernel_init;
+} dt_iop_diffuse_global_data_t;
 
 
 // only copy params struct to avoid a commit_params()
 typedef struct dt_iop_diffuse_params_t dt_iop_diffuse_data_t;
+
+
+typedef enum dt_isotropy_t
+{
+  DT_ISOTROPY_ISOTROPE = 0, // diffuse in all directions with same intensity
+  DT_ISOTROPY_ISOPHOTE = 1, // diffuse more in the isophote direction (orthogonal to gradient)
+  DT_ISOTROPY_GRADIENT = 2  // diffuse more in the gradient direction
+} dt_isotropy_t;
+
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline dt_isotropy_t check_isotropy_mode(const float anisotropy)
+{
+  // user param is negative, positive or zero. The sign encodes the direction of diffusion, the magnitude encodes the ratio of anisotropy
+  // ultimately, the anisotropy factor needs to be positive before going into the exponential
+  if(anisotropy == 0.f) return DT_ISOTROPY_ISOTROPE;
+  else if(anisotropy > 0.f) return DT_ISOTROPY_ISOPHOTE;
+  else return DT_ISOTROPY_GRADIENT; // if(anisotropy > 0.f)
+}
+
 
 const char *name()
 {
@@ -120,75 +147,143 @@ void init_presets(dt_iop_module_so_t *self)
   dt_iop_diffuse_params_t p;
   memset(&p, 0, sizeof(p));
 
-  p.iterations = 8;
-  p.radius = 8;
-  p.sharpness = 0.01f;
+  // deblurring presets
+  p.sharpness = 0.0f;
   p.threshold = 0.0f;
-  p.noise_threshold = -0.1f;
-  p.regularization = 4.5f;
-  p.anisotropy = 3.5f;
+  p.variance_threshold = 0.f;
 
-  p.first = +0.15f;
-  p.second = -0.15f;
-  p.third = 0.30f;
-  p.fourth = -0.30f;
-  dt_gui_presets_add_generic(_("remove medium lens blur"), self->op, self->version(), &p, sizeof(p), 1,
-                             DEVELOP_BLEND_CS_RGB_SCENE);
+  p.anisotropy_first = -4.f;
+  p.anisotropy_second = -4.f;
+  p.anisotropy_third = +2.f;
+  p.anisotropy_fourth = -4.f;
 
-  p.iterations = 4;
-  p.regularization = 4.f;
-  dt_gui_presets_add_generic(_("remove soft lens blur"), self->op, self->version(), &p, sizeof(p), 1,
-                             DEVELOP_BLEND_CS_RGB_SCENE);
-
-  p.iterations = 12;
-  p.regularization = 5.f;
-  dt_gui_presets_add_generic(_("remove heavy lens blur"), self->op, self->version(), &p, sizeof(p), 1,
-                             DEVELOP_BLEND_CS_RGB_SCENE);
+  p.first = -0.25f;
+  p.second = -0.50f;
+  p.third = +0.40f;
+  p.fourth = -0.40f;
 
   p.iterations = 4;
   p.radius = 4;
-  p.sharpness = 0.0f;
-  p.threshold = 0.2f;
-  p.noise_threshold = -0.1f;
-  p.regularization = 0.f;
-  p.anisotropy = 3.f;
-
-  p.first = +0.5f;
-  p.second = -0.5f;
-  p.third = +0.5f;
-  p.fourth = +0.5f;
-  dt_gui_presets_add_generic(_("denoise"), self->op, self->version(), &p, sizeof(p), 1,
+  p.regularization = 4.5f;
+  dt_gui_presets_add_generic(_("remove soft lens blur"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.iterations = 8;
+  p.radius = 8;
+  p.regularization = 5.5f;
+  dt_gui_presets_add_generic(_("remove medium lens blur"), self->op, self->version(), &p, sizeof(p), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.iterations = 12;
+  p.radius = 12;
+  p.regularization = 5.7f;
+  dt_gui_presets_add_generic(_("remove heavy lens blur"), self->op, self->version(), &p, sizeof(p), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.iterations = 20;
+  p.radius = 16.f;
+  p.sharpness = 0.f;
+  p.variance_threshold = 0.0f;
+
+  p.anisotropy_first = 0.f;
+  p.anisotropy_second = 0.f;
+  p.anisotropy_third = 0.f;
+  p.anisotropy_fourth = 0.f;
+
+  dt_gui_presets_add_generic(_("remove hazing"), self->op, self->version(), &p, sizeof(p), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.iterations = 5;
+  p.radius = 8;
+  p.sharpness = 0.0f;
+  p.threshold = 0.0f;
+  p.variance_threshold = 0.f;
+  p.regularization = 5.f;
+
+  p.anisotropy_first = -1.f;
+  p.anisotropy_second = -1.f;
+  p.anisotropy_third = 1.f;
+  p.anisotropy_fourth = 1.f;
+
+  p.first = -0.10f;
+  p.second = -0.10f;
+  p.third = +0.10f;
+  p.fourth = +0.10f;
+  dt_gui_presets_add_generic(_("denoise"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.iterations = 2;
+  p.radius = 32;
+  p.sharpness = 0.0f;
+  p.threshold = 0.0f;
+  p.variance_threshold = 0.f;
+  p.regularization = 4.f;
+
+  p.anisotropy_first = 0.f;
+  p.anisotropy_second = +4.f;
+  p.anisotropy_third = +4.f;
+  p.anisotropy_fourth = +4.f;
+
+  p.first = +0.0f;
+  p.second = +0.25f;
+  p.third = +0.25f;
+  p.fourth = +0.25f;
+  dt_gui_presets_add_generic(_("surface blur"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+
 
   p.iterations = 2;
   p.radius = 16;
   p.sharpness = 0.0f;
   p.threshold = 0.0f;
-  p.noise_threshold = 0.f;
+  p.variance_threshold = 0.f;
   p.regularization = 0.f;
-  p.anisotropy = 3.f;
+
+  p.anisotropy_first = 0.f;
+  p.anisotropy_second = 0.f;
+  p.anisotropy_third = 0.f;
+  p.anisotropy_fourth = 0.f;
 
   p.first = +0.25f;
   p.second = +0.25f;
   p.third = +0.25f;
   p.fourth = +0.25f;
-  dt_gui_presets_add_generic(_("diffuse"), self->op, self->version(), &p, sizeof(p), 1,
-                             DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("diffuse"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 1;
-  p.radius = 6;
+  p.radius = 8;
   p.sharpness = 0.5f;
   p.threshold = 0.0f;
-  p.noise_threshold = 6.f;
-  p.regularization = 0.f;
-  p.anisotropy = 0.f;
+  p.variance_threshold = 0.25f;
+  p.regularization = 1.f;
 
-  p.first = +0.1f;
-  p.second = +0.1f;
-  p.third = +0.1f;
-  p.fourth = +0.1f;
+  p.anisotropy_first = +4.f;
+  p.anisotropy_second = +4.f;
+  p.anisotropy_third = +4.f;
+  p.anisotropy_fourth = +4.f;
+
+  p.first = +0.25f;
+  p.second = +0.25f;
+  p.third = +0.25f;
+  p.fourth = +0.25f;
   dt_gui_presets_add_generic(_("increase perceptual acutance"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.iterations = 4;
+  p.radius = 64;
+  p.sharpness = -0.05f;
+  p.threshold = 0.0f;
+  p.variance_threshold = 0.f;
+  p.regularization = 4.f;
+
+  p.anisotropy_first = -4.f;
+  p.anisotropy_second = +4.f;
+  p.anisotropy_third = +4.f;
+  p.anisotropy_fourth = +4.f;
+
+  p.first = -0.50f;
+  p.second = 0.f;
+  p.third = +0.25f;
+  p.fourth = +0.25f;
+  dt_gui_presets_add_generic(_("simulate watercolour"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 // B spline filter
@@ -212,8 +307,10 @@ static inline float equivalent_sigma_at_step(const float sigma, const unsigned i
   // First step is s = 0
   // see
   // https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/#Multi-scale-iterative-scheme
-  if(s == 0) return sigma;
-  else return sqrtf(sqf(equivalent_sigma_at_step(sigma, s - 1)) + sqf(exp2f((float)s) * sigma));
+  if(s == 0)
+    return sigma;
+  else
+    return sqrtf(sqf(equivalent_sigma_at_step(sigma, s - 1)) + sqf(exp2f((float)s) * sigma));
 }
 
 static inline unsigned int num_steps_to_reach_equivalent_sigma(const float sigma_filter, const float sigma_final)
@@ -224,21 +321,20 @@ static inline unsigned int num_steps_to_reach_equivalent_sigma(const float sigma
   float radius = sigma_filter;
   while(radius < sigma_final)
   {
-    fprintf(stdout, "computed radius : %f\n", radius);
     ++s;
     radius = sqrtf(sqf(radius) + sqf((float)(1 << s) * sigma_filter));
   }
-  fprintf(stdout, "computed radius : %f\n", radius);
   return s + 1;
 }
 
 inline static void blur_2D_Bspline(const float *const restrict in, float *const restrict HF,
-                                   float *const restrict LF, const int mult, const size_t width, const size_t height)
+                                   float *const restrict LF, const int mult, const size_t width,
+                                   const size_t height)
 {
   // see https://arxiv.org/pdf/1711.09791.pdf
 #ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(width, height, in, LF, HF, mult) schedule(simd               \
-                                                                                               : static)          \
+#pragma omp parallel for default(none) dt_omp_firstprivate(width, height, in, LF, HF, mult) schedule(simd         \
+                                                                                                     : static)    \
     collapse(2)
 #endif
   for(size_t i = 0; i < height; i++)
@@ -248,9 +344,6 @@ inline static void blur_2D_Bspline(const float *const restrict in, float *const 
       const size_t index = (i * width + j) * 4;
       float DT_ALIGNED_PIXEL acc[4] = { 0.f };
 
-#ifdef _OPENMP
-#pragma omp simd aligned(in : 64) aligned(acc:16)
-#endif
       for(size_t ii = 0; ii < FSIZE; ++ii)
         for(size_t jj = 0; jj < FSIZE; ++jj)
         {
@@ -260,10 +353,9 @@ inline static void blur_2D_Bspline(const float *const restrict in, float *const 
 
           const float DT_ALIGNED_ARRAY filter[FSIZE]
               = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
-
           const float filters = filter[ii] * filter[jj];
 
-          for(size_t c = 0; c < 4; c++) acc[c] += filters * in[k_index + c];
+          for_four_channels(c, aligned(in : 64) aligned(acc : 16)) acc[c] += filters * in[k_index + c];
         }
 
       for_four_channels(c, aligned(in, HF, LF : 64) aligned(acc : 16))
@@ -275,65 +367,221 @@ inline static void blur_2D_Bspline(const float *const restrict in, float *const 
   }
 }
 
-static inline void init_reconstruct(float *const restrict reconstructed, const size_t width, const size_t height,
-                                    const size_t ch)
+static inline void init_reconstruct(float *const restrict reconstructed, const size_t width, const size_t height)
 {
 // init the reconstructed buffer with non-clipped and partially clipped pixels
-// Note : it's a simple multiplied alpha blending where mask = alpha weight
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(reconstructed, width, height, ch)                 \
-    schedule(simd                                                                                                 \
-             : static) aligned(reconstructed : 64)
+#pragma omp parallel for simd default(none) dt_omp_firstprivate(reconstructed, width, height)                 \
+    schedule(simd:static) aligned(reconstructed:64)
 #endif
-  for(size_t k = 0; k < height * width * ch; k++)
-  {
-    reconstructed[k] = 0.f;
-  }
+  for(size_t k = 0; k < height * width * 4; k++) reconstructed[k] = 0.f;
 }
+
 
 // Discretization parameters for the Partial Derivative Equation solver
 #define H 1         // spatial step
 #define KAPPA 0.25f // 0.25 if h = 1, 1 if h = 2
 
-static inline void heat_PDE_inpanting(const float *const restrict high_freq, const float *const restrict low_freq,
-                                      const uint8_t *const restrict mask, float *const restrict output,
-                                      const size_t width, const size_t height, const size_t ch,
-                                      const float fourth, const float third, const float second,
-                                      const float first_layer, const float anisotropy,
-                                      const float regularization, const float noise_threshold, const float final_radius, const float factor,
-                                      const int current_step, const int scales, const float zoom)
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(pixels:64) uniform(pixels)
+#endif
+static inline complex float find_gradient(const float pixels[9][4], const size_t c)
 {
-  // Simultaneous inpainting for image structure and fourth using anisotropic heat transfer model
+  // Compute the gradient with centered finite differences in a 3×3 stencil
+  // warning : x is vertical, y is horizontal, same orientations as C buffers
+  // We store the gradient as a complex numper : real = du(i, j) / dx ; imaginary = du(i, j) / dy
+  return ((pixels[7][c] - pixels[1][c]) + I * (pixels[5][c] - pixels[3][c])) / 2.f;
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(pixels:64) uniform(pixels)
+#endif
+static inline complex float find_laplacian(const float pixels[9][4], const size_t c)
+{
+  // Compute the laplacian with centered finite differences in a 3×3 stencil
+  // warning : x is vertical, y is horizontal
+  // We store the laplacian as a complex numper : real = d²u(i, j) / dx² ; imaginary = d²u(i, j) / dy²
+  return (pixels[7][c] + pixels[1][c]) + I * (pixels[5][c] + pixels[3][c]) - 2.f * pixels[4][c] * (1.f + I);
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline void compute_anisotropic_direction(const complex float gradient, const float anisotropy,
+                                                 float *const restrict c2,
+                                                 float *const restrict cos_theta, float *const restrict sin_theta,
+                                                 float *const restrict cos_theta2, float *const restrict sin_theta2)
+{
+  // find the argument and magnitude of the gradient
+  // output the factor of anisotropy c2
+  // output cos(argument) and sin(argument) to build the matrix of rotation
+  const float magnitude = cabsf(gradient);
+  const float theta = cargf(gradient);
+
+  *sin_theta = sinf(theta);
+  *cos_theta = cosf(theta);
+
+  *cos_theta2 = sqf(*cos_theta);
+  *sin_theta2 = sqf(*sin_theta);
+
+  *c2 = expf(-magnitude / anisotropy); // c² in https://www.researchgate.net/publication/220663968
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a:16)
+#endif
+static inline void rotation_matrix_isophote(const float c2,
+                                            const float cos_theta, const float sin_theta,
+                                            const float cos_theta2, const float sin_theta2,
+                                            float a[2][2])
+{
+  // Write the coefficients of a square symmetrical matrice of rotation of the gradient :
+  // [[ a11, a12 ],
+  //  [ a12, a22 ]]
+  // taken from https://www.researchgate.net/publication/220663968
+  // c dampens the gradient direction
+  a[0][0] = cos_theta2 + c2 * sin_theta2;
+  a[1][1] = c2 * cos_theta2 + sin_theta2;
+  a[0][1] = a[1][0] = (c2 - 1.0f) * cos_theta * sin_theta;
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a:16)
+#endif
+static inline void rotation_matrix_gradient(const float c2,
+                                            const float cos_theta, const float sin_theta,
+                                            const float cos_theta2, const float sin_theta2,
+                                            float a[2][2])
+{
+  // Write the coefficients of a square symmetrical matrice of rotation of the gradient :
+  // [[ a11, a12 ],
+  //  [ a12, a22 ]]
+  // based on https://www.researchgate.net/publication/220663968 and inverted
+  // c dampens the isophote direction
+  a[0][0] = c2 * cos_theta2 + sin_theta2;
+  a[1][1] = cos_theta2 + c2 * sin_theta2;
+  a[0][1] = a[1][0] = (1.0f - c2) * cos_theta * sin_theta;
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(kernel: 64) aligned(a:16)
+#endif
+static inline void build_matrix(const float a[2][2], float kernel[9])
+{
+  const float b11 = -a[0][1] / 2.0f;
+  const float b13 = -b11;
+  const float b22 = -2.0f * (a[0][0] + a[1][1]);
+
+  // build the kernel of rotated anisotropic laplacian
+  // from https://www.researchgate.net/publication/220663968 :
+  // [ [ -a12 / 2,  a22,           a12 / 2  ],
+  //   [ a11,      -2 (a11 + a22), a11      ],
+  //   [ a12 / 2,   a22,          -a12 / 2  ] ]
+  kernel[0] = b11;
+  kernel[1] = a[1][1];
+  kernel[2] = b13;
+  kernel[3] = a[0][0];
+  kernel[4] = b22;
+  kernel[5] = a[0][0];
+  kernel[6] = b13;
+  kernel[7] = a[1][1];
+  kernel[8] = b11;
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(kernel: 64)
+#endif
+static inline void isotrope_laplacian(float kernel[9])
+{
+  // see in https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/#Second-order-isotropic-finite-differences
+  // for references (Oono & Puri)
+  kernel[0] = 0.25f;
+  kernel[1] = 0.5f;
+  kernel[2] = 0.25f;
+  kernel[3] = 0.5f;
+  kernel[4] = -3.f;
+  kernel[5] = 0.5f;
+  kernel[6] = 0.25f;
+  kernel[7] = 0.5f;
+  kernel[8] = 0.25f;
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(pixels, kernel: 64) uniform(pixels, anisotropy, isotropy_type)
+#endif
+static inline void compute_kernel(const float pixels[9][4], const size_t c,
+                                   const float anisotropy, const dt_isotropy_t isotropy_type,
+                                   const int gradient, float kernel[9])
+{
+  // if gradient == TRUE, follow the direction of the gradient
+  // if gradient == FALSE, follow the direction of the derivative of the gradient
+
+  // Build the matrix of rotation with anisotropy
+
+  switch(isotropy_type)
+  {
+    case(DT_ISOTROPY_ISOTROPE):
+    default:
+    {
+      isotrope_laplacian(kernel);
+      break;
+    }
+    case(DT_ISOTROPY_ISOPHOTE):
+    {
+      float DT_ALIGNED_ARRAY a[2][2] = { { 0.f } };
+      float c2, cos_theta, cos_theta2, sin_theta, sin_theta2;
+      compute_anisotropic_direction((gradient) ? find_gradient(pixels, c)
+                                               : find_laplacian(pixels, c),
+                                     anisotropy, &c2, &cos_theta, &sin_theta, &cos_theta2, &sin_theta2);
+      rotation_matrix_isophote(c2, cos_theta, sin_theta, cos_theta2, sin_theta2, a);
+      build_matrix(a, kernel);
+      break;
+    }
+    case(DT_ISOTROPY_GRADIENT):
+    {
+      float DT_ALIGNED_ARRAY a[2][2] = { { 0.f } };
+      float c2, cos_theta, cos_theta2, sin_theta, sin_theta2;
+      compute_anisotropic_direction((gradient) ? find_gradient(pixels, c)
+                                               : find_laplacian(pixels, c),
+                                     anisotropy, &c2, &cos_theta, &sin_theta, &cos_theta2, &sin_theta2);
+      rotation_matrix_gradient(c2, cos_theta, sin_theta, cos_theta2, sin_theta2, a);
+      build_matrix(a, kernel);
+      break;
+    }
+  }
+}
+
+static inline void heat_PDE_diffusion(const float *const restrict high_freq, const float *const restrict low_freq,
+                                      const uint8_t *const restrict mask, const int has_mask,
+                                      float *const restrict output, const size_t width, const size_t height,
+                                      const float anisotropy[4], const dt_isotropy_t isotropy_type[4],
+                                      const float regularization, const float variance_threshold,
+                                      const int current_radius, const int is_last_step,
+                                      const float ABCD[4], const float strength,
+                                      const int compute_first, const int compute_second,
+                                      const int compute_third, const int compute_fourth,
+                                      const int compute_variance)
+{
+  // Simultaneous inpainting for image structure and texture using anisotropic heat transfer model
   // https://www.researchgate.net/publication/220663968
-  // modified for a multi-scale wavelet setup
-
-
-  const int compute_fourth = TRUE;
-  //(fourth != 0.f);
-
-  const int has_mask = (mask != NULL);
-  const int last_step = (scales - 1) == current_step;
+  // modified as follow :
+  //  * apply it in a multi-scale wavelet setup : we basically solve it twice, on the wavelets LF and HF layers.
+  //  * replace the manual texture direction/distance selection by an automatic detection similar to the structure one,
+  //  * generalize the framework for isotropic diffusion and anisotropic weighted on the isophote direction
+  //  * add a variance regularization to better avoid edges.
+  // The sharpness setting mimics the contrast equalizer effect by simply multiplying the HF by some gain.
 
   float *const restrict out = DT_IS_ALIGNED(output);
   const float *const restrict LF = DT_IS_ALIGNED(low_freq);
   const float *const restrict HF = DT_IS_ALIGNED(high_freq);
 
-  const int current_radius = equivalent_sigma_at_step(B_SPLINE_SIGMA, current_step);
-  const float real_radius = equivalent_sigma_at_step(B_SPLINE_SIGMA, current_step) * zoom;
-
-  const float norm_lapl = expf(-sqf(real_radius) / sqf(final_radius));
-  const float DT_ALIGNED_ARRAY ABCD[4] = { fourth * KAPPA * norm_lapl, third * KAPPA * norm_lapl,
-                                           second * norm_lapl, first_layer * KAPPA * norm_lapl };
-
-  const float strength = factor * norm_lapl + 1.f;
-
-  fprintf(stdout, "current radius : %i, real radius : %f, final radius : %f, norm : %f, sharpness : %f\n", current_radius,
-          real_radius, final_radius, norm_lapl, strength);
-
 #ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(                                                       \
-    out, mask, HF, LF, height, width, ch, ABCD, has_mask, current_radius, compute_fourth, noise_threshold, \
-    anisotropy, regularization, real_radius, last_step, strength) schedule(dynamic) collapse(2)
+#pragma omp parallel for default(none)                                                                            \
+    dt_omp_firstprivate(out, mask, HF, LF, height, width, ABCD, has_mask, current_radius, compute_first,          \
+                        compute_second, compute_third, compute_fourth, compute_variance, variance_threshold,      \
+                        anisotropy, regularization, is_last_step, strength, isotropy_type) schedule(simd:static) collapse(2)
 #endif
   for(size_t i = 0; i < height; ++i)
     for(size_t j = 0; j < width; ++j)
@@ -344,257 +592,112 @@ static inline void heat_PDE_inpanting(const float *const restrict high_freq, con
 
       if(opacity)
       {
-        // build arrays of pointers to the pixels we will need here,
-        // to be super clear with compiler about cache management
-        const float *restrict neighbour_pixel_HF[9];
-        const float *restrict neighbour_pixel_LF[9];
+        // non-local neighbours coordinates
+        const size_t j_neighbours[3]
+            = { CLAMP((int)(j - current_radius * H), (int)0, (int)width - 1),   // y - mult
+                j,                                                              // y
+                CLAMP((int)(j + current_radius * H), (int)0, (int)width - 1) }; // y + mult
 
-        // non-local neighbours
-        const size_t j_neighbours[3] = { CLAMP((int)(j - current_radius * H), (int)0, (int)width - 1),   // y - mult
-                                         j,                                                              // y
-                                         CLAMP((int)(j + current_radius * H), (int)0, (int)width - 1) }; // y + mult
+        const size_t i_neighbours[3]
+            = { CLAMP((int)(i - current_radius * H), (int)0, (int)height - 1),   // x - mult
+                i,                                                               // x
+                CLAMP((int)(i + current_radius * H), (int)0, (int)height - 1) }; // x + mult
 
-        const size_t i_neighbours[3] = { CLAMP((int)(i - current_radius * H), (int)0, (int)height - 1),   // x - mult
-                                         i,                                                               // x
-                                         CLAMP((int)(i + current_radius * H), (int)0, (int)height - 1) }; // x + mult
+        // fetch non-local pixels and store them locally and contiguously
+        float DT_ALIGNED_ARRAY neighbour_pixel_HF[9][4];
+        float DT_ALIGNED_ARRAY neighbour_pixel_LF[9][4];
 
         for(size_t ii = 0; ii < 3; ii++)
           for(size_t jj = 0; jj < 3; jj++)
-          {
-            neighbour_pixel_HF[3 * ii + jj] = __builtin_assume_aligned(HF + (i_neighbours[ii] * width + j_neighbours[jj]) * 4, 16);
-            neighbour_pixel_LF[3 * ii + jj] = __builtin_assume_aligned(LF + (i_neighbours[ii] * width + j_neighbours[jj]) * 4, 16);
-          }
-
-        // assert(grad_pixel[4] == lapl_pixel[4] == center)
-        const float *const restrict center_HF = neighbour_pixel_HF[4];
-        const float *const restrict center_LF = neighbour_pixel_LF[4];
-
-        const float *const restrict north = neighbour_pixel_LF[1];
-        const float *const restrict south = neighbour_pixel_LF[7];
-        const float *const restrict east = neighbour_pixel_LF[5];
-        const float *const restrict west = neighbour_pixel_LF[3];
-
-        const float *const restrict north_far = neighbour_pixel_LF[1];
-        const float *const restrict south_far = neighbour_pixel_LF[7];
-        const float *const restrict east_far = neighbour_pixel_LF[5];
-        const float *const restrict west_far = neighbour_pixel_LF[3];
-
-        float DT_ALIGNED_ARRAY kern_grad[9][4];
-        float DT_ALIGNED_ARRAY kern_lap[9][4];
-        float DT_ALIGNED_ARRAY kern_first[9][4];
-
-// build the local anisotropic convolution filters
-#ifdef _OPENMP
-#pragma omp simd aligned(north, south, west, east, north_far, south_far, east_far, west_far, center_LF : 16)      \
-    aligned(kern_grad, kern_lap, kern_first : 64)
-#endif
-        for(size_t c = 0; c < 4; c++)
-        {
-          // Compute the gradient with centered finite differences - warning : x is vertical, y is horizontal
-          {
-            const float grad_x_LF = (south[c] - north[c]) / 2.0f; // du(i, j) / dx
-            const float grad_y_LF = (east[c] - west[c]) / 2.0f;   // du(i, j) / dy
-
-            // Find the dampening factor
-            const float tv_LF = hypotf(grad_x_LF, grad_y_LF);
-
-            // Find the direction of the gradient
-            const float theta = atan2f(grad_y_LF, grad_x_LF);
-
-            // Find the gradient rotation coefficients for the matrix
-            const float sin_theta = sinf(theta);
-            const float cos_theta = cosf(theta);
-            const float sin_theta2 = sqf(sin_theta);
-            const float cos_theta2 = sqf(cos_theta);
-
-            const float c2 = expf(-tv_LF / anisotropy);
-            const float a11 = cos_theta2 + c2 * sin_theta2;
-            const float a12 = (c2 - 1.0f) * cos_theta * sin_theta;
-            const float a22 = c2 * cos_theta2 + sin_theta2;
-
-            // Build the convolution kernel for the third extraction
-            // gradient of laplacian
+            for_four_channels(c, aligned(neighbour_pixel_LF, neighbour_pixel_HF, HF, LF : 64))
             {
-              const float b11 = -a12 / 2.0f;
-              const float b13 = -b11;
-              const float b22 = -2.0f * (a11 + a22);
-
-              kern_grad[0][c] = b11;
-              kern_grad[1][c] = a22;
-              kern_grad[2][c] = b13;
-              kern_grad[3][c] = a11;
-              kern_grad[4][c] = b22;
-              kern_grad[5][c] = a11;
-              kern_grad[6][c] = b13;
-              kern_grad[7][c] = a22;
-              kern_grad[8][c] = b11;
+              neighbour_pixel_HF[3 * ii + jj][c] = HF[(i_neighbours[ii] * width + j_neighbours[jj]) * 4 + c];
+              neighbour_pixel_LF[3 * ii + jj][c] = LF[(i_neighbours[ii] * width + j_neighbours[jj]) * 4 + c];
             }
 
-            // Build the convolution kernel for the first
-            // integral of laplacian (== divergence of the gradient)
-            {
-              const float b11 = a12 / 2.0f;
-              const float b22 = a11 + a22;
-
-              kern_first[0][c] = b11 / b22;
-              kern_first[1][c] = a22 / b22;
-              kern_first[2][c] = b11 / b22;
-              kern_first[3][c] = a11 / b22;
-              kern_first[4][c] = b22 / b22;
-              kern_first[5][c] = a11 / b22;
-              kern_first[6][c] = b11 / b22;
-              kern_first[7][c] = a22 / b22;
-              kern_first[8][c] = b11 / b22;
-            }
-          }
-
-          // Compute the non-local laplacian
-          if(compute_fourth)
-          {
-            // Compute the laplacian with centered finite differences - warning : x is vertical, y is horizontal
-            const float grad_x_LF
-                = (south_far[c] + north_far[c] - 2.f * center_LF[c]); // du(i, j) / dx
-            const float grad_y_LF
-                = (east_far[c] + west_far[c] - 2.f * center_LF[c]); // du(i, j) / dy
-
-            // Find the dampening factor
-            const float tv_LF = hypotf(grad_x_LF, grad_y_LF);
-            const float c2 = expf(-tv_LF / anisotropy);
-
-            // Find the direction of the gradient
-            const float theta = atan2f(grad_y_LF, grad_x_LF);
-
-            // Find the gradient rotation coefficients for the matrix
-            const float sin_theta = sinf(theta);
-            const float cos_theta = cosf(theta);
-            const float sin_theta2 = sqf(sin_theta);
-            const float cos_theta2 = sqf(cos_theta);
-
-            // Build the convolution kernel for the fourth extraction
-            const float a11 = cos_theta2 + c2 * sin_theta2;
-            const float a12 = (c2 - 1.0f) * cos_theta * sin_theta;
-            const float a22 = c2 * cos_theta2 + sin_theta2;
-
-            const float b11 = a12 / sqrtf(2.f);
-            const float b22 = -2.f * (a11 + a22) - 4.f * a12 / sqrtf(2.f);
-
-            kern_lap[0][c] = b11;
-            kern_lap[1][c] = a22;
-            kern_lap[2][c] = b11;
-            kern_lap[3][c] = a11;
-            kern_lap[4][c] = b22;
-            kern_lap[5][c] = a11;
-            kern_lap[6][c] = b11;
-            kern_lap[7][c] = a22;
-            kern_lap[8][c] = b11;
-          }
-        }
-
-        // Convolve anisotropic filters at current pixel for directional derivatives
-        float DT_ALIGNED_ARRAY derivatives[4][4];
-        float DT_ALIGNED_PIXEL TV[4] = { 0.f };
-
-#ifdef _OPENMP
-#pragma omp simd aligned(kern_grad, kern_first, kern_lap, derivatives, neighbour_pixel_HF : 64)          \
-    aligned(center_HF, TV : 16)
-#endif
-        for(size_t c = 0; c < 4; c++)
+        for_four_channels(c, aligned(neighbour_pixel_LF, neighbour_pixel_HF, out, LF, HF : 64) \
+            aligned(anisotropy, isotropy_type, ABCD :16))
         {
-          float acc1 = 0.f;
-          float acc2 = 0.f;
-          float acc3 = 0.f;
-          float acc4 = 0.f;
+          // build the local anisotropic convolution filters for gradients and laplacians
+          float DT_ALIGNED_ARRAY kern_first[9], kern_second[9], kern_third[9], kern_fourth[9];
+          compute_kernel(neighbour_pixel_LF, c, anisotropy[0], isotropy_type[0], TRUE, kern_first);
+          compute_kernel(neighbour_pixel_LF, c, anisotropy[1], isotropy_type[1], FALSE, kern_second);
+          compute_kernel(neighbour_pixel_HF, c, anisotropy[2], isotropy_type[2], TRUE, kern_third);
+          compute_kernel(neighbour_pixel_HF, c, anisotropy[3], isotropy_type[3], FALSE, kern_fourth);
 
+          // convolve filters and compute the variance and the regularization term
+          float DT_ALIGNED_PIXEL derivatives[4] = { 0.f };
+          float variance = 0.f;
           for(size_t k = 0; k < 9; k++)
           {
-            // Convolve the first term
-            acc1 += kern_first[k][c] * neighbour_pixel_HF[k][c];
-
-            // Convolve first-order term (gradient)
-            acc2 += kern_grad[k][c] * neighbour_pixel_HF[k][c];
-
-            // Convolve second-order term (laplacian)
-            acc3 += kern_lap[k][c] * neighbour_pixel_HF[k][c];
-
-            // Compute "Total Variation" (it's not a real TV)
-            acc4 += neighbour_pixel_HF[k][c] * neighbour_pixel_HF[k][c];
+            derivatives[0] += kern_first[k] * neighbour_pixel_LF[k][c];
+            derivatives[1] += kern_second[k] * neighbour_pixel_LF[k][c];
+            derivatives[2] += kern_third[k] * neighbour_pixel_HF[k][c];
+            derivatives[3] += kern_fourth[k] * neighbour_pixel_HF[k][c];
+            variance += sqf(neighbour_pixel_HF[k][c]);
           }
+          variance = variance_threshold + variance / 9.f * regularization;
 
-          TV[c] = noise_threshold + acc4 / 9.f * regularization;
-
-          derivatives[c][0] = acc3;
-          derivatives[c][1] = acc2;
-          derivatives[c][2] = -center_HF[c];
-          derivatives[c][3] = -acc1;
-        }
-
-// Update the solution
-#ifdef _OPENMP
-#pragma omp simd aligned(out, derivatives, LF, HF : 64) aligned(TV, ABCD : 16)
-#endif
-        for(size_t c = 0; c < 4; c++)
-        {
+          // compute the update
           float acc = 0.f;
-          for(size_t k = 0; k < 4; k++) acc += derivatives[c][k] * ABCD[k];
-          acc = (HF[index + c] + acc / TV[c]) * strength;
+          for(size_t k = 0; k < 4; k++) acc += derivatives[k] * ABCD[k];
+          acc = (HF[index + c] + acc / variance) * strength;
 
-          out[index + c] += (last_step) ? acc + LF[index + c] : acc;
+          // update the solution
+          out[index + c] += (is_last_step) ? acc + LF[index + c] : acc;
         }
       }
       else
       {
-#ifdef _OPENMP
-#pragma omp simd aligned(out, HF, LF : 64)
-#endif
-        for(size_t c = 0; c < 4; c++)
-          out[index + c] += (last_step) ? HF[index + c] + LF[index + c] : HF[index + c];
+        // only copy input to output, do nothing
+        for_four_channels(c, aligned(out, HF, LF : 64))
+          out[index + c] += (is_last_step) ? HF[index + c] + LF[index + c] : HF[index + c];
       }
     }
 }
 
-static inline gint reconstruct_highlights(const float *const restrict in, float *const restrict reconstructed,
-                                          const uint8_t *const restrict mask, const size_t ch,
-                                          const dt_iop_diffuse_data_t *const data, dt_dev_pixelpipe_iop_t *piece,
-                                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline float compute_anisotropy_factor(const float user_param)
+{
+  // compute the K param in c evaluation from https://www.researchgate.net/publication/220663968
+  // but in a perceptually-even way, for better GUI interaction
+  const float normalize = expf(1.f) - 1.f;
+  if(user_param == 0.f) return FLT_MAX;
+  else return expf(fabsf(1.f / user_param) - 1.f) / normalize;
+}
+
+static inline gint wavelets_process(const float *const restrict in, float *const restrict reconstructed,
+                                    const uint8_t *const restrict mask, const size_t width,
+                                    const size_t height, const dt_iop_diffuse_data_t *const data,
+                                    const float final_radius, const float zoom, const int scales)
 {
   gint success = TRUE;
 
-  const float zoom = fmaxf(piece->iscale / roi_in->scale, 1.0f);
-  const float final_radius = data->radius * 3.0f / zoom;
-  const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
-  const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
-  fprintf(stdout, "scales : %i\n", scales);
+  const float DT_ALIGNED_PIXEL anisotropy[4]
+      = { compute_anisotropy_factor(data->anisotropy_first),
+          compute_anisotropy_factor(data->anisotropy_second),
+          compute_anisotropy_factor(data->anisotropy_third),
+          compute_anisotropy_factor(data->anisotropy_fourth)};
 
-  float third = data->third;
-  float fourth = data->fourth;
-  float second = data->second;
-  float first = data->first;
-  float anisotropy = expf(-data->anisotropy);
+  const dt_isotropy_t DT_ALIGNED_PIXEL isotropy_type[4]
+      = { check_isotropy_mode(data->anisotropy_first),
+          check_isotropy_mode(data->anisotropy_second),
+          check_isotropy_mode(data->anisotropy_third),
+          check_isotropy_mode(data->anisotropy_fourth) };
+
   float regularization = powf(10.f, data->regularization) - 1.f;
-  float noise_threshold = powf(10.f, data->noise_threshold);
+  float variance_threshold = powf(10.f, data->variance_threshold);
 
   // wavelets scales buffers
-  float *const restrict LF_even
-      = dt_alloc_align_float(roi_out->width * roi_out->height * ch); // low-frequencies RGB
-  float *const restrict LF_odd
-      = dt_alloc_align_float(roi_out->width * roi_out->height * ch);                      // low-frequencies RGB
-  float *const restrict HF = dt_alloc_align_float(roi_out->width * roi_out->height * ch); // high-frequencies RGB
-
-  if(!LF_even || !LF_odd || !HF)
-  {
-    dt_control_log(_("filmic highlights reconstruction failed to allocate memory, check your RAM settings"));
-    success = FALSE;
-    goto error;
-  }
+  float *const restrict LF_even = dt_alloc_align_float(width * height * 4); // low-frequencies RGB
+  float *const restrict LF_odd = dt_alloc_align_float(width * height * 4);  // low-frequencies RGB
+  float *const restrict HF = dt_alloc_align_float(width * height * 4);      // high-frequencies RGB
 
   // Init reconstructed with valid parts of image
-  init_reconstruct(reconstructed, roi_out->width, roi_out->height, ch);
+  init_reconstruct(reconstructed, width, height);
 
   // À trous wavelet decompose
   // there is a paper from a guy we know that explains it : https://jo.dreggn.org/home/2010_atrous.pdf
   // the wavelets decomposition here is the same as the equalizer/atrous module,
-  // but simplified because we don't need the edge-aware term, so we can seperate the convolution kernel
-  // with a vertical and horizontal blur, wich is 10 multiply-add instead of 25 by pixel.
   for(int s = 0; s < scales; ++s)
   {
     const float *restrict detail; // buffer containing this scale's input
@@ -617,16 +720,28 @@ static inline gint reconstruct_highlights(const float *const restrict in, float 
       LF = LF_odd;
     }
 
-    // Compute wavelets low-frequency scales
-    blur_2D_Bspline(detail, HF, LF, 1 << s, roi_out->width, roi_out->height);
-    fprintf(stdout, "mult : %i\n", 1 << s);
+    const float current_radius = equivalent_sigma_at_step(B_SPLINE_SIGMA, s);
+    const float real_radius = current_radius * zoom;
 
-    heat_PDE_inpanting(HF, LF, mask, reconstructed, roi_out->width, roi_out->height, ch, fourth, third,
-                       second, first, anisotropy, regularization, noise_threshold, data->radius,
-                       data->sharpness, s, scales, zoom);
+    const float norm = expf(-sqf(real_radius) / sqf(data->radius));
+    const float DT_ALIGNED_ARRAY ABCD[4] = { data->first * KAPPA * norm, data->second * KAPPA * norm,
+                                             data->third * KAPPA * norm, data->fourth * KAPPA * norm };
+    const float strength = data->sharpness * norm + 1.f;
+    const int is_last_step = (scales - 1) == s;
+
+    /* Debug
+    fprintf(stdout, "scale %i : mult = %i ; current rad = %.0f ; real rad = %.0f ; norm = %f ; strength = %f\n", s,
+            1 << s, current_radius, real_radius, norm, strength);
+    */
+
+    // Compute wavelets low-frequency scales
+    blur_2D_Bspline(detail, HF, LF, 1 << s, width, height);
+    heat_PDE_diffusion(HF, LF, mask, (mask != NULL), reconstructed, width, height, anisotropy, isotropy_type, regularization,
+                       variance_threshold, current_radius, is_last_step, ABCD, strength, (data->first != 0.f),
+                       (data->second != 0.f), (data->third != 0.f), (data->fourth != 0.f),
+                       (data->regularization != 0.f || data->variance_threshold != 0.f || TRUE));
   }
 
-error:
   if(HF) dt_free_align(HF);
   if(LF_even) dt_free_align(LF_even);
   if(LF_odd) dt_free_align(LF_odd);
@@ -635,91 +750,158 @@ error:
 
 
 static inline void build_mask(const float *const restrict input, uint8_t *const restrict mask,
-                              const float threshold, const size_t width, const size_t height, const size_t ch)
+                              const float threshold, const size_t width, const size_t height)
 {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(input, mask, height, width, ch, threshold)        \
-    schedule(dynamic) aligned(mask, input : 64)
+#pragma omp parallel for simd default(none) dt_omp_firstprivate(input, mask, height, width, threshold)        \
+    schedule(simd:static) aligned(mask, input : 64)
 #endif
-  for(size_t k = 0; k < height * width * ch; k += ch)
+  for(size_t k = 0; k < height * width * 4; k += 4)
   {
-    mask[k / ch] = (input[k] > threshold || input[k + 1] > threshold || input[k + 2] > threshold);
+    // TRUE if any channel is above threshold
+    mask[k / 4] = (input[k] > threshold || input[k + 1] > threshold || input[k + 2] > threshold);
   }
 }
 
+static inline void inpaint_mask(float *const restrict inpainted, const float *const restrict original,
+                                const uint8_t *const restrict mask, const float noise,
+                                const size_t width, const size_t height)
+{
+  // init the reconstruction with noise inside the masked areas
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(inpainted, original, mask, width, height, noise) schedule(simd:static)
+#endif
+  for(size_t k = 0; k < height * width * 4; k += 4)
+  {
+    if(mask[k / 4])
+    {
+      const uint32_t i = k / width;
+      const uint32_t j = k - i;
+      uint32_t DT_ALIGNED_ARRAY state[4]
+          = { splitmix32(j + 1), splitmix32((j + 1) * (i + 3)),
+              splitmix32(1337), splitmix32(666) };
+      xoshiro128plus(state);
+      xoshiro128plus(state);
+      xoshiro128plus(state);
+      xoshiro128plus(state);
+
+      for_four_channels(c, aligned(inpainted, state:64)) inpainted[k + c] = fmaxf(gaussian_noise(1.f, noise, i % 2 || j % 2, state), 0.f);
+    }
+    else
+    {
+      for_four_channels(c, aligned(original, inpainted:64)) inpainted[k + c] = original[k + c];
+    }
+  }
+}
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict ivoid,
              void *const restrict ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_diffuse_data_t *const data = (dt_iop_diffuse_data_t *)piece->data;
 
-  if(piece->colors != 4)
-  {
-    dt_control_log(_("filmic works only on RGB input"));
-    return;
-  }
-
-  const size_t ch = 4;
   float *restrict in = DT_IS_ALIGNED((float *const restrict)ivoid);
   float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
-  float *const restrict temp1 = dt_alloc_align_float(roi_out->width * roi_out->height * ch);
-  float *const restrict temp2 = dt_alloc_align_float(roi_out->width * roi_out->height * ch);
+
+  float *const restrict temp1 = dt_alloc_align_float(roi_out->width * roi_out->height * 4);
+  float *const restrict temp2 = dt_alloc_align_float(roi_out->width * roi_out->height * 4);
+
+  float *restrict temp_in = NULL;
+  float *restrict temp_out = NULL;
+
   uint8_t *restrict mask = NULL;
+
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
+  const float final_radius = data->radius * 2.f / scale;
+
+  const int iterations = MAX(ceilf((float)data->iterations / scale), 1);
+  const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
+  const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
 
   if(data->threshold > 0.f)
   {
-    const float blur = (float)data->radius / scale;
+    // build a boolean mask, TRUE where image is above threshold, FALSE otherwise
+    mask = dt_alloc_align(64, roi_out->width * roi_out->height * sizeof(float));
+    build_mask(in, mask, data->threshold, roi_out->width, roi_out->height);
 
-    // build a boolean mask, TRUE where image is above threshold
-    mask = dt_alloc_align(64, roi_out->width * roi_out->height * sizeof(uint8_t));
-    build_mask(in, mask, data->threshold, roi_out->width, roi_out->height, ch);
-
-    // init the inpainting area with blur
-    float RGBmax[4], RGBmin[4];
-    for(int k = 0; k < 4; k++)
-    {
-      RGBmax[k] = INFINITY;
-      RGBmin[k] = 0.f;
-    }
-
-    dt_gaussian_t *g = dt_gaussian_init(roi_out->width, roi_out->height, ch, RGBmax, RGBmin, blur, 0);
-    if(!g) return;
-    dt_gaussian_blur_4c(g, in, temp1);
-    dt_gaussian_free(g);
-
-    // add noise and restore valid parts where mask = FALSE
-    const float noise = 0.2;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(in, temp1, mask, roi_out, ch, noise) schedule(dynamic)
-#endif
-    for(size_t k = 0; k < roi_out->height * roi_out->width * ch; k += ch)
-    {
-      if(mask[k / ch])
-      {
-        const uint32_t i = k / roi_out->width;
-        const uint32_t j = k - i;
-        uint32_t DT_ALIGNED_ARRAY state[4]
-            = { splitmix32(j + 1), splitmix32((j + 1) * (i + 3)), splitmix32(1337), splitmix32(666) };
-        xoshiro128plus(state);
-        xoshiro128plus(state);
-        xoshiro128plus(state);
-        xoshiro128plus(state);
-
-        for(size_t c = 0; c < 4; c++) temp1[k + c] = gaussian_noise(temp1[k + c], noise, i % 2 || j % 2, state);
-      }
-      else
-      {
-        for(size_t c = 0; c < 4; c++) temp1[k + c] = in[k + c];
-      }
-    }
+    // init the inpainting area with noise
+    inpaint_mask(temp1, in, mask, 0.2f, roi_out->width, roi_out->height);
 
     in = temp1;
   }
 
-  float *restrict temp_in = NULL;
-  float *restrict temp_out = NULL;
+  for(int it = 0; it < iterations; it++)
+  {
+    if(it == 0)
+    {
+      temp_in = in;
+      temp_out = temp2;
+    }
+    else if(it % 2 == 0)
+    {
+      temp_in = temp1;
+      temp_out = temp2;
+    }
+    else
+    {
+      temp_in = temp2;
+      temp_out = temp1;
+    }
+
+    if(it == (int)iterations - 1) temp_out = out;
+    wavelets_process(temp_in, temp_out, mask, roi_out->width, roi_out->height, data, final_radius, scale, scales);
+  }
+
+  if(mask) dt_free_align(mask);
+  if(temp1) dt_free_align(temp1);
+  if(temp2) dt_free_align(temp2);
+}
+
+#if FALSE // HAVE_OPENCL
+static inline cl_int wavelets_process_cl(cl_mem in, cl_mem reconstructed, cl_mem mask, const size_t ch,
+                                          const dt_iop_diffuse_data_t *const data, dt_dev_pixelpipe_iop_t *piece,
+                                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  gint success = TRUE;
+
+  const float zoom = fmaxf(piece->iscale / roi_in->scale, 1.0f);
+  const float final_radius = data->radius * 3.0f / zoom;
+  const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
+  const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
+  fprintf(stdout, "scales : %i\n", scales);
+
+  /* TODO */
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse, 3, sizeof(int), (void *)&height);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_diffuse, sizes);
+
+  return success;
+}
+
+int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_diffuse_data_t *const data = (dt_iop_diffuse_data_t *)piece->data;
+  dt_iop_diffuse_global_data_t *const gd = (dt_iop_diffuse_global_data_t *)self->global_data;
+
+  cl_int err = -999;
+
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+
+  cl_mem temp_in = NULL;
+  cl_mem temp_out = NULL;
+  cl_mem temp1 = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float));
+  cl_mem temp2 = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float));
+  if(!temp1 || !temp2) goto error;
+
+  const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const int iterations = CLAMP(ceilf((float)data->iterations / scale), 1, MAX_NUM_SCALES);
 
   for(int it = 0; it < iterations; it++)
@@ -741,13 +923,42 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     }
 
     if(it == (int)iterations - 1) temp_out = out;
-    reconstruct_highlights(temp_in, temp_out, mask, ch, data, piece, roi_in, roi_out);
+    err = wavelets_process_cl(temp_in, temp_out, mask, ch, data, piece, roi_in, roi_out);
   }
 
-  if(mask) dt_free_align(mask);
-  if(temp1) dt_free_align(temp1);
-  if(temp2) dt_free_align(temp2);
+
+  if(err != CL_SUCCESS) goto error;
+
+  // cleanup and exit on success
+  if(temp1) dt_opencl_release_mem_object(temp1);
+  if(temp2) dt_opencl_release_mem_object(temp2);
+  return TRUE;
+
+error:
+  if(temp1) dt_opencl_release_mem_object(temp1);
+  if(temp2) dt_opencl_release_mem_object(temp2);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_diffuse] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
 }
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 33; // extended.cl in programs.conf
+  dt_iop_diffuse_global_data_t *gd = (dt_iop_diffuse_global_data_t *)malloc(sizeof(dt_iop_diffuse_global_data_t));
+
+  module->data = gd;
+  gd->kernel_diffuse = dt_opencl_create_kernel(program, "diffuse");
+}
+
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_diffuse_global_data_t *gd = (dt_iop_diffuse_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_diffuse);
+  free(module->data);
+  module->data = NULL;
+}
+#endif
 
 
 void gui_update(struct dt_iop_module_t *self)
@@ -760,12 +971,16 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->second, p->second);
   dt_bauhaus_slider_set_soft(g->first, p->first);
 
-  dt_bauhaus_slider_set_soft(g->noise_threshold, p->noise_threshold);
+  dt_bauhaus_slider_set_soft(g->variance_threshold, p->variance_threshold);
   dt_bauhaus_slider_set_soft(g->regularization, p->regularization);
-  dt_bauhaus_slider_set_soft(g->anisotropy, p->anisotropy);
   dt_bauhaus_slider_set_soft(g->radius, p->radius);
   dt_bauhaus_slider_set_soft(g->sharpness, p->sharpness);
   dt_bauhaus_slider_set_soft(g->threshold, p->threshold);
+
+  dt_bauhaus_slider_set_soft(g->anisotropy_first, p->anisotropy_first);
+  dt_bauhaus_slider_set_soft(g->anisotropy_second, p->anisotropy_second);
+  dt_bauhaus_slider_set_soft(g->anisotropy_third, p->anisotropy_third);
+  dt_bauhaus_slider_set_soft(g->anisotropy_fourth, p->anisotropy_fourth);
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -789,70 +1004,103 @@ void gui_init(struct dt_iop_module_t *self)
                    "low values diffuse closer.\n"
                    "if you plan on denoising, the radius should be around the width of your lens blur."));
 
-  g->anisotropy = dt_bauhaus_slider_from_params(self, "anisotropy");
-  dt_bauhaus_slider_set_digits(g->anisotropy, 4);
-  gtk_widget_set_tooltip_text(g->anisotropy,
-                              _("anisotropy of the diffusion.\n"
-                                "high values force the diffusion to be 1D and perpendicular to edges.\n"
-                                "low values allow the diffusion to be 2D and uniform, like a classic blur."));
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion typology")), FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("edges management")), FALSE,
-                     FALSE, 0);
+  g->first = dt_bauhaus_slider_from_params(self, "first");
+  dt_bauhaus_slider_set_factor(g->first, 100.0f);
+  dt_bauhaus_slider_set_digits(g->first, 4);
+  dt_bauhaus_slider_set_format(g->first, "%+.2f %%");
+  gtk_widget_set_tooltip_text(g->first, _("smoothing or sharpening of smooth details (gradients).\n"
+                                          "positive values diffuse and blur.\n"
+                                          "negative values sharpen.\n"
+                                          "zero does nothing."));
+
+  g->second = dt_bauhaus_slider_from_params(self, "second");
+  dt_bauhaus_slider_set_digits(g->second, 4);
+  dt_bauhaus_slider_set_factor(g->second, 100.0f);
+  dt_bauhaus_slider_set_format(g->second, "%+.2f %%");
+
+  g->third = dt_bauhaus_slider_from_params(self, "third");
+  dt_bauhaus_slider_set_digits(g->third, 4);
+  dt_bauhaus_slider_set_factor(g->third, 100.0f);
+  dt_bauhaus_slider_set_format(g->third, "%+.2f %%");
+  gtk_widget_set_tooltip_text(g->third, _("smoothing or sharpening of sharp details.\n"
+                                          "positive values diffuse and blur.\n"
+                                          "negative values sharpen.\n"
+                                          "zero does nothing."));
+
+  g->fourth = dt_bauhaus_slider_from_params(self, "fourth");
+  dt_bauhaus_slider_set_digits(g->fourth, 4);
+  dt_bauhaus_slider_set_factor(g->fourth, 100.0f);
+  dt_bauhaus_slider_set_format(g->fourth, "%+.2f %%");
+  gtk_widget_set_tooltip_text(g->fourth, _("smoothing or sharpening of sharp details (gradients).\n"
+                                           "positive values diffuse and blur.\n"
+                                           "negative values sharpen.\n"
+                                           "zero does nothing."));
+
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion directionnality")), FALSE, FALSE, 0);
+
+  g->anisotropy_first = dt_bauhaus_slider_from_params(self, "anisotropy_first");
+  dt_bauhaus_slider_set_digits(g->anisotropy_first, 4);
+  dt_bauhaus_slider_set_factor(g->anisotropy_first, 100.0f);
+  dt_bauhaus_slider_set_format(g->anisotropy_first, "%+.2f %%");
+  gtk_widget_set_tooltip_text(g->anisotropy_first,
+                              _("anisotropy of the diffusion.\n"
+                                "zero makes the diffusion isotrope (same in all directions)\n"
+                                "positives make the diffusion follow isophotes more closely\n"
+                                "negatives make the diffusion follow gradients more closely"));
+
+  g->anisotropy_second = dt_bauhaus_slider_from_params(self, "anisotropy_second");
+  dt_bauhaus_slider_set_digits(g->anisotropy_second, 4);
+  dt_bauhaus_slider_set_factor(g->anisotropy_second, 100.0f);
+  dt_bauhaus_slider_set_format(g->anisotropy_second, "%+.2f %%");
+  gtk_widget_set_tooltip_text(g->anisotropy_second,
+                              _("anisotropy of the diffusion.\n"
+                                "zero makes the diffusion isotrope (same in all directions)\n"
+                                "positives make the diffusion follow isophotes more closely\n"
+                                "negatives make the diffusion follow gradients more closely"));
+
+  g->anisotropy_third = dt_bauhaus_slider_from_params(self, "anisotropy_third");
+  dt_bauhaus_slider_set_digits(g->anisotropy_third, 4);
+  dt_bauhaus_slider_set_factor(g->anisotropy_third, 100.0f);
+  dt_bauhaus_slider_set_format(g->anisotropy_third, "%+.2f %%");
+  gtk_widget_set_tooltip_text(g->anisotropy_third,
+                              _("anisotropy of the diffusion.\n"
+                                "zero makes the diffusion isotrope (same in all directions)\n"
+                                "positives make the diffusion follow isophotes more closely\n"
+                                "negatives make the diffusion follow gradients more closely"));
+
+  g->anisotropy_fourth = dt_bauhaus_slider_from_params(self, "anisotropy_fourth");
+  dt_bauhaus_slider_set_digits(g->anisotropy_fourth, 4);
+  dt_bauhaus_slider_set_factor(g->anisotropy_fourth, 100.0f);
+  dt_bauhaus_slider_set_format(g->anisotropy_fourth, "%+.2f %%");
+  gtk_widget_set_tooltip_text(g->anisotropy_fourth,
+                              _("anisotropy of the diffusion.\n"
+                                "zero makes the diffusion isotrope (same in all directions)\n"
+                                "positives make the diffusion follow isophotes more closely\n"
+                                "negatives make the diffusion follow gradients more closely"));
+
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("edges management")), FALSE, FALSE, 0);
 
   g->sharpness = dt_bauhaus_slider_from_params(self, "sharpness");
   dt_bauhaus_slider_set_factor(g->sharpness, 100.0f);
   dt_bauhaus_slider_set_format(g->sharpness, "%.2f %%");
   gtk_widget_set_tooltip_text(g->sharpness,
-                              _("weight of each iterations sharpness.\n"
-                                "100 % is suitable for diffusion, inpainting and blurring.\n"
-                                "lower if noise, halos or any artifact appear as you add more iterations."));
+                              _("increase or decrease the sharpness of the highest frequencies"));
 
 
   g->regularization = dt_bauhaus_slider_from_params(self, "regularization");
-  g->noise_threshold = dt_bauhaus_slider_from_params(self, "noise_threshold");
+  g->variance_threshold = dt_bauhaus_slider_from_params(self, "variance_threshold");
 
-
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion typology")), FALSE,
-                     FALSE, 0);
-
-  g->first = dt_bauhaus_slider_from_params(self, "first");
-  dt_bauhaus_slider_set_factor(g->first, 100.0f);
-  dt_bauhaus_slider_set_digits(g->first, 4);
-  dt_bauhaus_slider_set_format(g->first, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->first, _("smoothing or sharpening of smooth details (gradients).\n"
-                                         "positive values diffuse and blur.\n"
-                                         "negative values sharpen.\n"
-                                         "zero does nothing."));
-
-  g->second = dt_bauhaus_slider_from_params(self, "second");
-  dt_bauhaus_slider_set_digits(g->second, 4);
-  dt_bauhaus_slider_set_factor(g->second, 100.0f);
-  dt_bauhaus_slider_set_format(g->second, "%.2f %%");
-
-  g->third = dt_bauhaus_slider_from_params(self, "third");
-  dt_bauhaus_slider_set_digits(g->third, 4);
-  dt_bauhaus_slider_set_factor(g->third, 100.0f);
-  dt_bauhaus_slider_set_format(g->third, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->third, _("smoothing or sharpening of sharp details.\n"
-                                              "positive values diffuse and blur.\n"
-                                              "negative values sharpen.\n"
-                                              "zero does nothing."));
-
-  g->fourth = dt_bauhaus_slider_from_params(self, "fourth");
-  dt_bauhaus_slider_set_digits(g->fourth, 4);
-  dt_bauhaus_slider_set_factor(g->fourth, 100.0f);
-  dt_bauhaus_slider_set_format(g->fourth, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->fourth, _("smoothing or sharpening of sharp details (gradients).\n"
-                                            "positive values diffuse and blur.\n"
-                                            "negative values sharpen.\n"
-                                            "zero does nothing."));
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion spatiality")), FALSE, FALSE, 0);
 
   g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
+  dt_bauhaus_slider_set_factor(g->threshold, 100.0f);
+  dt_bauhaus_slider_set_format(g->threshold, "%.2f %%");
   gtk_widget_set_tooltip_text(g->threshold,
                               _("luminance threshold for the mask.\n"
                                 "0. disables the luminance masking and applies the module on the whole image.\n"
-                                "any higher value will exclude pixels whith luminance lower than the threshold.\n"
+                                "any higher value excludes pixels whith luminance lower than the threshold.\n"
                                 "this can be used to inpaint highlights."));
 }
