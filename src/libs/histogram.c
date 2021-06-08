@@ -305,6 +305,7 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
                                              {0.f, 1.f, 0.f}, {0.f, 1.f, 1.f},
                                              {0.f, 0.f, 1.f}, {1.f, 0.f, 1.f} };
   float max_radius = 0.f;
+  const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
   for(int k=0; k<6; k++)
   {
     float delta[4] DT_ALIGNED_PIXEL;
@@ -317,8 +318,7 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
         rgb[ch] = vertex_rgb[k][ch] + delta[ch] * i;
       dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
                                  vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
-      // FIXME: keep d->vectorscope_type in local variable for speed?
-      if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+      if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
         dt_XYZ_to_xyY(XYZ_D50, intermed);
         dt_xyY_to_Luv(intermed, chromaticity);
@@ -328,16 +328,18 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
         dt_XYZ_D50_2_XYZ_D65(XYZ_D50, intermed);
         dt_XYZ_2_JzAzBz(intermed, chromaticity);
       }
-      // FIXME: log_scale these coords here rather than when drawing the hue ring
       d->hue_ring[k][i][0] = chromaticity[1];
       d->hue_ring[k][i][1] = chromaticity[2];
       max_radius = MAX(max_radius, hypotf(chromaticity[1], chromaticity[2]));
     }
   }
+  if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
+    for(int k=0; k<6; k++)
+      for(int i=0; i < VECTORSCOPE_HUES; i++)
+        log_scale(d, &d->hue_ring[k][i][0], &d->hue_ring[k][i][1], max_radius);
 
   // chromaticities for drawing both hue ring and grpah
   const int diam_px = d->vectorscope_diameter_px;
-  const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
   const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
   // loop appears to be too small to benefit w/OpenMP
   // FIXME: is this still true? -- all this will only run once per colorspace change, so doesn't need to be extra-fast
@@ -768,8 +770,6 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       // note that hue_ring coords are calculated as float but converted here to double
       float x = d->hue_ring[n][h][0];
       float y = d->hue_ring[n][h][1];
-      // FIXME: do this in _lib_histogram_vectorscope_bkgd()
-      log_scale(d, &x, &y, vs_radius);
       cairo_line_to(cr, x*scale, y*scale);
     }
   cairo_close_path(cr);
@@ -781,8 +781,6 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   {
     float x = d->hue_ring[n][0][0];
     float y = d->hue_ring[n][0][1];
-    // FIXME: do this in _lib_histogram_vectorscope_bkgd()
-    log_scale(d, &x, &y, vs_radius);
     cairo_arc(cr, x*scale, y*scale, DT_PIXEL_APPLY_DPI(2.), 0., M_PI * 2.);
     // FIXME: use vertex RGB colors instead of background?, with hard light effect?
     cairo_set_source(cr, bkgd_pat);
