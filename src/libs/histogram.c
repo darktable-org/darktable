@@ -40,10 +40,9 @@
 
 #define HISTOGRAM_BINS 256
 // # of gradations between each primary/secondary to draw the hue ring
-// Note that this is gradations of CIE 1931 xy, when converted to
-// RGB (or perceptual space), the spacing will be different
-// FIXME: would fewer gradations still produce a nice hue ring? are this many gradations (32 * 6 = 192) slow to draw on the scope?
-#define VECTORSCOPE_HUES 32
+// this is tuned to most degenerate case -- curve to blue primary in Luv in linear ProPhoto RGB
+// FIXME: why does the blue curve in to the center point? is this a color processing bug or a relic of a luminance of that primary
+#define VECTORSCOPE_HUES 48
 #define VECTORSCOPE_BASE_LOG 30
 
 DT_MODULE(1)
@@ -103,9 +102,7 @@ typedef struct dt_lib_histogram_t
   uint8_t *vectorscope_graph, *vectorscope_bkgd, *vectorscope_bkgd_dim;
   float vectorscope_pt[2];            // point colorpicker position
   int vectorscope_diameter_px;
-  // FIXME: These arrays could instead be alloc'd/free'd. Would the only concern about making dt_lib_histogram_t large so long be if it were stored in the DB?
-  float hue_ring_rgb[6][VECTORSCOPE_HUES][4] DT_ALIGNED_ARRAY;
-  float hue_ring_coord[6][VECTORSCOPE_HUES][2] DT_ALIGNED_ARRAY;
+  float hue_ring[6][VECTORSCOPE_HUES][2] DT_ALIGNED_ARRAY;
   const dt_iop_order_iccprofile_info_t *hue_ring_prof;
   dt_lib_histogram_scale_t hue_ring_scale;
   dt_lib_histogram_vectorscope_type_t hue_ring_colorspace;
@@ -320,10 +317,6 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
         rgb[ch] = vertex_rgb[k][ch] + delta[ch] * i;
       dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
                                  vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
-      // Try to represent hue in profile colorspace. Values may be
-      // outside [0,1] but cairo_set_source_rgba will clamp. Compare
-      // to illuminant_xy_to_RGB.
-      dt_XYZ_to_Rec709_D50(XYZ_D50, d->hue_ring_rgb[k][i]);
       // FIXME: keep d->vectorscope_type in local variable for speed?
       if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
@@ -336,9 +329,8 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
         dt_XYZ_2_JzAzBz(intermed, chromaticity);
       }
       // FIXME: log_scale these coords here rather than when drawing the hue ring
-      d->hue_ring_coord[k][i][0] = chromaticity[1];
-      d->hue_ring_coord[k][i][1] = chromaticity[2];
-      // FIXME: max radius isn't log scaled?
+      d->hue_ring[k][i][0] = chromaticity[1];
+      d->hue_ring[k][i][1] = chromaticity[2];
       max_radius = MAX(max_radius, hypotf(chromaticity[1], chromaticity[2]));
     }
   }
@@ -773,10 +765,9 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   for(int n=0; n<6; n++)
     for(int h=0; h<VECTORSCOPE_HUES; h++)
     {
-      // note that hue_ring_rgb and hue_ring_coord are calculated as float but converted here to double
-      //cairo_set_source_rgba(cr, d->hue_ring_rgb[n][h][0], d->hue_ring_rgb[n][h][1], d->hue_ring_rgb[n][h][2], 0.5);
-      float x = d->hue_ring_coord[n][h][0];
-      float y = d->hue_ring_coord[n][h][1];
+      // note that hue_ring coords are calculated as float but converted here to double
+      float x = d->hue_ring[n][h][0];
+      float y = d->hue_ring[n][h][1];
       // FIXME: do this in _lib_histogram_vectorscope_bkgd()
       log_scale(d, &x, &y, vs_radius);
       cairo_line_to(cr, x*scale, y*scale);
@@ -788,14 +779,13 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   // draw primary/secondary nodes
   for(int n=0; n<6; n++)
   {
-    float x = d->hue_ring_coord[n][0][0];
-    float y = d->hue_ring_coord[n][0][1];
+    float x = d->hue_ring[n][0][0];
+    float y = d->hue_ring[n][0][1];
     // FIXME: do this in _lib_histogram_vectorscope_bkgd()
     log_scale(d, &x, &y, vs_radius);
     cairo_arc(cr, x*scale, y*scale, DT_PIXEL_APPLY_DPI(2.), 0., M_PI * 2.);
-    // FIXME: mask bkgd instead of setting color?
-    // FIXME: if do have colors here, are they just vertex_rgb?
-    cairo_set_source_rgba(cr, d->hue_ring_rgb[n][0][0], d->hue_ring_rgb[n][0][1], d->hue_ring_rgb[n][0][2], 1.);
+    // FIXME: use vertex RGB colors instead of background?, with hard light effect?
+    cairo_set_source(cr, bkgd_pat);
     cairo_fill_preserve(cr);
     set_color(cr, darktable.bauhaus->graph_grid);
     cairo_stroke(cr);
