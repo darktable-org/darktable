@@ -566,8 +566,10 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
       if(document != NULL)
         root = xmlDocGetRootElement(document);
 
-      if(document == NULL || root == NULL){
-        dt_print(DT_DEBUG_CONTROL, "[styles] file %s is not a style file\n", (char*)filename->data);
+      if(document == NULL || root == NULL)
+      {
+        dt_print(DT_DEBUG_CONTROL,
+                 "[styles] file %s is not a style file\n", (char*)filename->data);
         continue;
       }
 
