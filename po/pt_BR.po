@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-06-05 16:09-0300\n"
-"PO-Revision-Date: 2021-06-05 16:12-0300\n"
+"PO-Revision-Date: 2021-06-08 10:05-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -11868,24 +11868,20 @@ msgid "mask preview settings"
 msgstr "configurações de pré-visualização de máscara"
 
 #: ../src/iop/colorbalancergb.c:1763
-#, fuzzy
 msgid "checkerboard color 1"
-msgstr "cor da borda"
+msgstr "cor 1 do tabuleiro"
 
 #: ../src/iop/colorbalancergb.c:1766 ../src/iop/colorbalancergb.c:1775
-#, fuzzy
 msgid "select color of the checkerboard from a swatch"
-msgstr "selecione a cor das sombras em uma amostra"
+msgstr "selecione a cor do tabuleiro em uma amostra"
 
 #: ../src/iop/colorbalancergb.c:1772
-#, fuzzy
 msgid "checkerboard color 2"
-msgstr "cor da borda"
+msgstr "cor 2 do tabuleiro"
 
 #: ../src/iop/colorbalancergb.c:1782
-#, fuzzy
 msgid "checkerboard size"
-msgstr "tamanho da borda"
+msgstr "tamanho do tabuleiro"
 
 #: ../src/iop/colorchecker.c:115
 msgid "color look up table"
@@ -12864,7 +12860,7 @@ msgstr ""
 
 #: ../src/iop/dither.c:97 ../src/iop/vignette.c:997
 msgid "dithering"
-msgstr "dithering"
+msgstr "matização"
 
 #: ../src/iop/dither.c:102
 msgid ""
@@ -12877,7 +12873,7 @@ msgstr ""
 #. add the preset.
 #: ../src/iop/dither.c:131
 msgid "dither"
-msgstr "dither"
+msgstr "matizar"
 
 #: ../src/iop/dither.c:888
 msgid "radius for blurring step"
