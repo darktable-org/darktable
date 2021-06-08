@@ -777,7 +777,6 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // vectorscope graph
   // FIXME: use cairo_pattern_set_filter()?
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   // FIXME: use cairo_pattern_set_extend() with CAIRO_EXTEND_PAD?
   cairo_surface_t *graph_surface =
     dt_cairo_image_surface_create_for_data(d->vectorscope_graph, CAIRO_FORMAT_A8,
@@ -788,7 +787,6 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
                                            diam_px, diam_px,
                                            cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px));
 
-  // FIXME: do one pass in color with bkgd, one pass with hard light with gray
   cairo_pattern_t *graph_pat = cairo_pattern_create_for_surface(graph_surface);
   cairo_pattern_t *bkgd_pat = cairo_pattern_create_for_surface(bkgd_surface);
   // FIXME: is there an easier way to do this work?
@@ -798,9 +796,17 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
                      (double)diam_px / min_size / darktable.gui->ppd);
   cairo_pattern_set_matrix(graph_pat, &matrix);
   cairo_pattern_set_matrix(bkgd_pat, &matrix);
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_source(cr, bkgd_pat);
-  //cairo_paint(cr);
+#if 0
+  // for debugging background color
+  cairo_paint(cr);
+#else
   cairo_mask(cr, graph_pat);
+  cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.6);
+  cairo_mask(cr, graph_pat);
+#endif
   //cairo_mask_surface(cr, graph_surface, 0., 0.);
   // FIXME: how will handle fading background for point sample? draw to another surface?
   /*
