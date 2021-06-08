@@ -353,30 +353,33 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       float b = max_radius * 2.0f * (y / (float)(diam_px-1) - 0.5f);
       // FIXME: should we be doing log_scale of [-1,1] rather than [-max_diam,max_diam]?
       log_scale(d, &a, &b, max_radius);
-      float XYZ_D50[4] DT_ALIGNED_PIXEL, RGB[4] DT_ALIGNED_PIXEL;
+      float RGB[4] DT_ALIGNED_PIXEL;
       // FIXME: look at how hue controls on colorbalance rgb are drawn -- what lightness level -- use similar math
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
         const float Luv[4] DT_ALIGNED_PIXEL = {65.0f, a, b};
-        float xyY[4] DT_ALIGNED_PIXEL;
+        float xyY[4] DT_ALIGNED_PIXEL, XYZ_D50[4] DT_ALIGNED_PIXEL;
         dt_Luv_to_xyY(Luv, xyY);
         // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
         dt_xyY_to_XYZ(xyY, XYZ_D50);
+        dt_XYZ_to_Rec709_D50(XYZ_D50, RGB);
       }
       else if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ)
       {
         const float JzAzBz[4] DT_ALIGNED_PIXEL = {0.008f, a, b};
-        // FIXME: can optimize the XYZ_D65 -> RGB conversion by pre-multiplying matrix?
         float XYZ_D65[4] DT_ALIGNED_PIXEL;
         dt_JzAzBz_2_XYZ(JzAzBz, XYZ_D65);
-        dt_XYZ_D65_2_XYZ_D50(XYZ_D65, XYZ_D50);
+        dt_XYZ_to_Rec709_D65(XYZ_D65, RGB);
       }
       else
       {
         dt_unreachable_codepath();
       }
-      // FIXME: a custom matrix could do this flip and write directly to pixel buffer
-      dt_XYZ_to_Rec709_D50(XYZ_D50, RGB);
+      // FIXME: convert to RGB display space instead of sRGB
+      // conversion cribbed from colorbalancergb
+      // normalize with hue-preserving method (sort-of) to prevent gamut-clipping in sRGB
+      const float max_RGB = fmaxf(fmaxf(RGB[0], RGB[1]), RGB[2]);
+      for(size_t c = 0; c < 3; c++) RGB[c] = powf(RGB[c] / max_RGB, 1.f / 2.2f);
       uint8_t *const restrict px = d->vectorscope_bkgd + y * stride + x * 4U;
       // BGR/RGB flip is for pixelpipe vs. Cairo color?
       for(int ch=0; ch<3; ch++)
@@ -701,6 +704,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   cairo_save(cr);
 
+#if 1
   // background
   cairo_pattern_t *p = cairo_pattern_create_radial(0.5 * width, 0.5 * height, 0.5 * min_size,
                                                    0.5 * width, 0.5 * height, 0.5 * hypot(min_size, min_size));
@@ -710,6 +714,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_set_source(cr, p);
   cairo_fill(cr);
   cairo_pattern_destroy(p);
+#endif
 
   // FIXME: the areas to left/right of the scope could have some data (primaries, whitepoint, scale, etc.)
   cairo_translate(cr, width / 2., height / 2.);
