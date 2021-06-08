@@ -1379,7 +1379,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
     {
       const guint nb = g_list_length(form->points);
       gui->point_edited = -1;
-      if(dt_modifier_is(state, GDK_CONTROL_MASK))
+      if(dt_modifier_is(state, GDK_CONTROL_MASK) && gui->seg_selected < nb - 1)
       {
         // we add a new point to the brush
         dt_masks_point_brush_t *bzpt = (dt_masks_point_brush_t *)(malloc(sizeof(dt_masks_point_brush_t)));
