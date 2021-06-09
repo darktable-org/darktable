@@ -634,7 +634,6 @@ static void _refresh_track_list(dt_lib_module_t *self)
   if(!d->map.gpx) return;
 
   GList *trkseg = dt_gpx_get_trkseg(d->map.gpx);
-  int total_pts = 0;
   _remove_images_from_map(self);
   for(GList *i = d->imgs; i; i = g_list_next(i))
     ((dt_sel_img_t *)i->data)->segid = -1;
@@ -646,7 +645,6 @@ static void _refresh_track_list(dt_lib_module_t *self)
   {
     dt_gpx_track_segment_t *t = (dt_gpx_track_segment_t *)ts->data;
     gchar *dts = _utc_timeval_to_localtime_text(t->start_dt, d->tz_camera, TRUE);
-    total_pts += t->nb_trkpt;
     const int nb_imgs = _count_images_per_track(t, ts->next ? ts->next->data : NULL, self);
     gboolean active;
     gtk_tree_model_get(model, &iter, DT_GEO_TRACKS_ACTIVE, &active, -1);
@@ -684,7 +682,6 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
   for(GList *i = d->imgs; i; i = g_list_next(i))
     ((dt_sel_img_t *)i->data)->segid = -1;
 
-  int total_pts = 0;
   int segid = 0;
   const gboolean active = gtk_toggle_button_get_active(
                           GTK_TOGGLE_BUTTON(gtk_tree_view_column_get_widget(d->map.sel_tracks)));
@@ -707,7 +704,6 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
     segid++;
     g_free(dts);
     g_free(tooltip);
-    total_pts += t->nb_trkpt;
   }
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->map.gpx_view), model);
   g_object_unref(model);
