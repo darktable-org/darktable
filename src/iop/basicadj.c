@@ -883,7 +883,7 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   const int imax = 65536 >> histcompr;
   int overex = 0;
   float sum = 0.f, hisum = 0.f, losum = 0.f;
-  float ave = 0.f, hidev = 0.f, lodev = 0.f;
+  float ave = 0.f;
 
   // find average luminance
   _get_sum_and_average(histogram, hist_size, &sum, &ave);
@@ -928,7 +928,6 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
       }
     }
 
-    lodev += (xlog(ave + 1.f) - xlog((float)i + 1.f)) * histogram[i];
     losum += histogram[i];
   }
 
@@ -945,7 +944,6 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
       }
     }
 
-    hidev += (xlog((float)i + 1.f) - xlog(ave + 1.f)) * histogram[i];
     hisum += histogram[i];
   }
 
