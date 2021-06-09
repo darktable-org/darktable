@@ -3561,7 +3561,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   // in commit_param, we avoid dividing by zero automatically, but user needs a notification
   if((p->grey[0] != 0.f) || (p->grey[1] != 0.f) || (p->grey[2] != 0.f))
     if((p->grey[0] + p->grey[1] + p->grey[2] == 0.f) && p->normalize_grey)
-      dt_control_log(_("color calibration: the sum of the grey channel parameters is zero, normalization will be disabled."));
+      dt_control_log(_("color calibration: the sum of the gray channel parameters is zero, normalization will be disabled."));
 
   if(w == g->adaptation)
   {
