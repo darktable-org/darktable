@@ -354,10 +354,10 @@ void init_presets(dt_iop_module_so_t *self)
   // so we can just init them all to 0.f in batch
   // Then, only 4 params have to be manually inited to non-zero values
   dt_iop_colorbalancergb_params_t p = { 0.f };
-  p.shadows_weight = 1.f;        // $MIN:  0.0 $MAX:   3.0 $DEFAULT: 1.0 $DESCRIPTION: "shadows fall-off"
-  p.highlights_weight = 1.f;     // $MIN:  0.0 $MAX:   3.0 $DEFAULT: 1.0 $DESCRIPTION: "highlights fall-off"
-  p.mask_grey_fulcrum = 0.1845f; // $MIN:  0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "mask middle-gray fulcrum"
-  p.grey_fulcrum = 0.1845f;      // $MIN:  0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "contrast gray fulcrum"
+  p.shadows_weight = 1.f;        // DEFAULT: 1.0 DESCRIPTION: "shadows fall-off"
+  p.highlights_weight = 1.f;     // DEFAULT: 1.0 DESCRIPTION: "highlights fall-off"
+  p.mask_grey_fulcrum = 0.1845f; // DEFAULT: 0.1845 DESCRIPTION: "mask middle-gray fulcrum"
+  p.grey_fulcrum = 0.1845f;      // DEFAULT: 0.1845 DESCRIPTION: "contrast gray fulcrum"
 
   // preset
   p.chroma_global = 0.2f;
