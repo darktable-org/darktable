@@ -1149,12 +1149,9 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
 
       // Take the found CalibrationIlluminant / ColorMatrix pair.
-      // D65 or default: just copy. Otherwise multiply by the specific correction matrix.
+      // D65 or unknown: just copy; otherwise multiply by the specific correction matrix.
       if(illu != -1)
       {
-       // If no supported Illuminant is found it's better NOT to use the found matrix.
-       // The colorin module will write an error message and use a fallback matrix
-       // instead of showing wrong colors.
         switch(illu)
         {
           case 23:
@@ -1185,8 +1182,12 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
             for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = colmatrix[i];
             break;
         }
-        // Maybe there is a predefined camera matrix in adobe_coeff?
-        // This is tested to possibly override the matrix.
+      }
+      else
+      {
+        // If no CalibrationIlluminant / ColorMatrix is found try adobe_coeff, otherwise
+        // the colorin module will write an error message and use a fallback matrix
+        // instead of showing wrong colors.
         colmatrix[0] = NAN;
         dt_dcraw_adobe_coeff(img->camera_makermodel, (float(*)[12])colmatrix);
         if(!isnan(colmatrix[0]))
