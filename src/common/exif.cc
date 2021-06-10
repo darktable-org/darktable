@@ -1188,7 +1188,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         // Maybe there is a predefined camera matrix in adobe_coeff?
         // This is tested to possibly override the matrix.
         colmatrix[0] = NAN;
-        dt_dcraw_adobe_coeff(img->camera_model, (float(*)[12])colmatrix);
+        dt_dcraw_adobe_coeff(img->camera_makermodel, (float(*)[12])colmatrix);
         if(!isnan(colmatrix[0]))
           for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = colmatrix[i];
       }
