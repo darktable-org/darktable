@@ -485,7 +485,9 @@ void expose(
           NULL,
           _("darktable could not load `%s', switching to lighttable now.\n\n"
             "please check that the camera model that produced the image is supported in darktable\n"
-            "(list of supported cameras is at https://www.darktable.org/resources/camera-support/)."),
+            "(list of supported cameras is at https://www.darktable.org/resources/camera-support/).\n"
+            "if you are sure that the camera model is supported, please consider opening an issue\n"
+            "at https://github.com/darktable-org/darktable"),
           dev->image_storage.filename);
       if(dev->image_invalid_cnt > 400)
       {
