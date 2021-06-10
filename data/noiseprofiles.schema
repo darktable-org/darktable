@@ -19,7 +19,7 @@
         "properties": {
           "maker": {
             "type": "string",
-            "pattern": "^[a-zA-Z., ]+$",
+            "pattern": "^[a-zA-Z ]+$",
             "enum": [
               "Canon",
               "Fujifilm",
@@ -33,7 +33,6 @@
               "Pentax",
               "Raspberrypi",
               "Ricoh",
-              "RICOH IMAGING COMPANY, LTD.",
               "Samsung",
               "Sony",
               "YI TECHNOLOGY"
