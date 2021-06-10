@@ -75,8 +75,6 @@ extern "C" {
 #include "develop/masks.h"
 }
 
-#include "external/adobe_coeff.c"
-
 #define DT_XMP_EXIF_VERSION 4
 
 // persistent list of exiv2 tags. set up in dt_init()
@@ -1108,13 +1106,13 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         { 1.0206905, 0.0091588, -0.0228796, 0.0115005, 0.9984917, -0.0076762, -0.0043619, 0.0072053,
           0.8853432 }, // 22 = D75
         { 0.8446965, -0.1179225, 0.3948108, -0.1366303, 1.1041226, 0.1291718, 0.0798489, -0.1348999,
-          3.1924009 }, // 17 = Standard light A
+          3.1924009 }, // 17 = Standard light A, also 3 = tungsten
         { 0.9415037, -0.0321240, 0.0584672, -0.0428238, 1.0250998, 0.0203309, 0.0101511, -0.0161170,
           1.2847354 }, // 18 = Standard light B
         { 0.9904476, -0.0071683, -0.0116156, -0.0123712, 1.0155950, -0.0029282, -0.0035635, 0.0067697,
           0.9181569 }, // 19 = Standard light C
         { 0.9212269, -0.0449128, 0.1211620, -0.0553723, 1.0277243, 0.0403563, 0.0235086, -0.0391019,
-          1.6390644 }  // F2 = cool white
+          1.6390644 }  // 14 = F2 cool white
       };
 
       if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant1")) illu1 = pos->toLong();
@@ -1123,25 +1121,25 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       Exiv2::ExifData::const_iterator cm2_pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix2"));
 
       // Which is the wanted colormatrix?
-      // If we have D65 in Illuminant1 we use it; otherwise we prefer Illuminant2 because it's the higher
-      // color temperature and thus closer to D65
-      if(illu1 == 21 && cm1_pos != exifData.end() && cm1_pos->count() == 9 && cm1_pos->size())
+      // If we have D65 in Illuminant1 we use it; otherwise we prefer Illuminant2 because it's
+      // hopefully the higher color temperature and thus closer to D65
+      if(illu1 == 21 && cm1_pos != exifData.end() && cm1_pos->count() == 9)
       {
         for(int i = 0; i < 9; i++) colmatrix[i] = cm1_pos->toFloat(i);
         illu = illu1;
       }
-      else if(illu2 != -1 && cm2_pos != exifData.end() && cm2_pos->count() == 9 && cm2_pos->size())
+      else if(illu2 != -1 && cm2_pos != exifData.end() && cm2_pos->count() == 9)
       {
         for(int i = 0; i < 9; i++) colmatrix[i] = cm2_pos->toFloat(i);
         illu = illu2;
       }
-      else if(illu1 != -1 && cm1_pos != exifData.end() && cm1_pos->count() == 9 && cm1_pos->size())
+      else if(illu1 != -1 && cm1_pos != exifData.end() && cm1_pos->count() == 9)
       {
         for(int i = 0; i < 9; i++) colmatrix[i] = cm1_pos->toFloat(i);
         illu = illu1;
       }
       // In a few cases we only have one color matrix; it should not be corrected
-      if(illu == -1 && cm1_pos != exifData.end() && cm1_pos->count() == 9 && cm1_pos->size())
+      if(illu == -1 && cm1_pos != exifData.end() && cm1_pos->count() == 9)
       {
         for(int i = 0; i < 9; i++) colmatrix[i] = cm1_pos->toFloat(i);
         illu = 0;
@@ -1150,6 +1148,9 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
       // Take the found CalibrationIlluminant / ColorMatrix pair.
       // D65 or unknown: just copy; otherwise multiply by the specific correction matrix.
+      // If no CalibrationIlluminant / ColorMatrix is found, the colorin module will
+      // try adobe_coeff or otherwise write an error message and use a fallback matrix
+      // instead of showing wrong colors.
       if(illu != -1)
       {
         switch(illu)
@@ -1163,6 +1164,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
           case 22:
             mat3mul(img->d65_color_matrix, correctmat[2], colmatrix);
             break;
+          case 3:
           case 17:
             mat3mul(img->d65_color_matrix, correctmat[3], colmatrix);
             break;
@@ -1172,9 +1174,6 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
           case 19:
             mat3mul(img->d65_color_matrix, correctmat[5], colmatrix);
             break;
-          case 3:
-            mat3mul(img->d65_color_matrix, correctmat[3], colmatrix);
-            break;
           case 14:
             mat3mul(img->d65_color_matrix, correctmat[6], colmatrix);
             break;
@@ -1182,16 +1181,6 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
             for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = colmatrix[i];
             break;
         }
-      }
-      else
-      {
-        // If no CalibrationIlluminant / ColorMatrix is found try adobe_coeff, otherwise
-        // the colorin module will write an error message and use a fallback matrix
-        // instead of showing wrong colors.
-        colmatrix[0] = NAN;
-        dt_dcraw_adobe_coeff(img->camera_makermodel, (float(*)[12])colmatrix);
-        if(!isnan(colmatrix[0]))
-          for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = colmatrix[i];
       }
     }
 
