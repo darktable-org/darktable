@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-09 17:50+0200\n"
-"PO-Revision-Date: 2021-06-09 17:52+0200\n"
+"POT-Creation-Date: 2021-06-11 17:42+0200\n"
+"PO-Revision-Date: 2021-06-11 17:46+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2380,7 +2380,7 @@ msgstr "aberrations chromatiques très larges"
 #: ../src/iop/bilateral.cc:317 ../src/iop/channelmixer.c:625
 #: ../src/iop/channelmixer.c:635 ../src/iop/channelmixerrgb.c:3783
 #: ../src/iop/temperature.c:1879 ../src/iop/temperature.c:2030
-#: ../src/libs/collect.c:1715 ../src/views/darkroom.c:2543
+#: ../src/libs/collect.c:1715 ../src/views/darkroom.c:2545
 msgid "red"
 msgstr "rouge"
 
@@ -2391,7 +2391,7 @@ msgstr "rouge"
 #: ../src/iop/channelmixer.c:641 ../src/iop/channelmixerrgb.c:3784
 #: ../src/iop/temperature.c:1863 ../src/iop/temperature.c:1881
 #: ../src/iop/temperature.c:2031 ../src/libs/collect.c:1715
-#: ../src/views/darkroom.c:2544
+#: ../src/views/darkroom.c:2546
 msgid "green"
 msgstr "vert"
 
@@ -3458,7 +3458,7 @@ msgstr "biais tons moyens"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:80
 #: ../build/lib/darktable/plugins/introspection_highlights.c:139
-#: ../src/iop/exposure.c:843 ../src/views/darkroom.c:2246
+#: ../src/iop/exposure.c:843 ../src/views/darkroom.c:2248
 msgid "clipping threshold"
 msgstr "seuil de troncature"
 
@@ -3501,7 +3501,7 @@ msgstr "détection par 3 voisins"
 #: ../src/iop/levels.c:689 ../src/iop/profile_gamma.c:691
 #: ../src/libs/copy_history.c:405 ../src/libs/export.c:1372
 #: ../src/libs/image.c:592 ../src/libs/print_settings.c:1503
-#: ../src/libs/styles.c:847 ../src/views/darkroom.c:2218
+#: ../src/libs/styles.c:847 ../src/views/darkroom.c:2220
 msgid "mode"
 msgstr "mode"
 
@@ -4421,7 +4421,7 @@ msgstr "ordre des modules"
 
 #: ../src/common/collection.c:1501 ../src/develop/lightroom.c:830
 #: ../src/iop/temperature.c:1869 ../src/libs/collect.c:1715
-#: ../src/views/darkroom.c:2545
+#: ../src/views/darkroom.c:2547
 msgid "yellow"
 msgstr "jaune"
 
@@ -4494,7 +4494,7 @@ msgid "export profile"
 msgstr "profil d'exportation"
 
 #: ../src/common/colorspaces.c:1408 ../src/common/colorspaces.c:1692
-#: ../src/views/darkroom.c:2411
+#: ../src/views/darkroom.c:2413
 msgid "softproof profile"
 msgstr "épreuvage écran"
 
@@ -5632,7 +5632,7 @@ msgstr[1] "exportation de %d images..."
 msgid "exporting %d / %d to %s"
 msgstr "exportation %d / %d vers %s"
 
-#: ../src/control/jobs/control_jobs.c:1415 ../src/views/darkroom.c:795
+#: ../src/control/jobs/control_jobs.c:1415 ../src/views/darkroom.c:797
 #: ../src/views/print.c:313
 #, c-format
 msgid "image `%s' is currently unavailable"
@@ -6260,7 +6260,7 @@ msgstr "conditions de fusion sur le canal gris"
 
 #: ../src/develop/blend_gui.c:1997 ../src/develop/blend_gui.c:2024
 #: ../src/iop/channelmixerrgb.c:3789 ../src/iop/levels.c:674
-#: ../src/views/darkroom.c:2542
+#: ../src/views/darkroom.c:2544
 msgid "gray"
 msgstr "gris"
 
@@ -7594,7 +7594,7 @@ msgstr "lumière du soir"
 msgid "underwater"
 msgstr "sous l'eau"
 
-#: ../src/external/wb_presets.c:77 ../src/views/darkroom.c:2297
+#: ../src/external/wb_presets.c:77 ../src/views/darkroom.c:2299
 msgid "black & white"
 msgstr "noir et blanc"
 
@@ -12270,21 +12270,21 @@ msgstr "rendu (sortie)"
 
 #: ../src/iop/colorout.c:870 ../src/libs/export.c:1329
 #: ../src/libs/print_settings.c:1235 ../src/libs/print_settings.c:1448
-#: ../src/views/darkroom.c:2384 ../src/views/darkroom.c:2391
+#: ../src/views/darkroom.c:2386 ../src/views/darkroom.c:2393
 #: ../src/views/lighttable.c:1320 ../src/views/lighttable.c:1327
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:871 ../src/libs/export.c:1330
 #: ../src/libs/print_settings.c:1236 ../src/libs/print_settings.c:1449
-#: ../src/views/darkroom.c:2385 ../src/views/darkroom.c:2392
+#: ../src/views/darkroom.c:2387 ../src/views/darkroom.c:2394
 #: ../src/views/lighttable.c:1321 ../src/views/lighttable.c:1328
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:872 ../src/libs/export.c:1331
 #: ../src/libs/print_settings.c:1237 ../src/libs/print_settings.c:1450
-#: ../src/views/darkroom.c:2386 ../src/views/darkroom.c:2393
+#: ../src/views/darkroom.c:2388 ../src/views/darkroom.c:2395
 #: ../src/views/lighttable.c:1322 ../src/views/lighttable.c:1329
 msgctxt "rendering intent"
 msgid "saturation"
@@ -12292,7 +12292,7 @@ msgstr "saturation"
 
 #: ../src/iop/colorout.c:873 ../src/libs/export.c:1332
 #: ../src/libs/print_settings.c:1238 ../src/libs/print_settings.c:1451
-#: ../src/views/darkroom.c:2387 ../src/views/darkroom.c:2394
+#: ../src/views/darkroom.c:2389 ../src/views/darkroom.c:2396
 #: ../src/views/lighttable.c:1323 ../src/views/lighttable.c:1330
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
@@ -13218,7 +13218,7 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1705 ../src/libs/export.c:1327
 #: ../src/libs/print_settings.c:1234 ../src/libs/print_settings.c:1445
-#: ../src/views/darkroom.c:2383 ../src/views/darkroom.c:2390
+#: ../src/views/darkroom.c:2385 ../src/views/darkroom.c:2392
 #: ../src/views/lighttable.c:1319 ../src/views/lighttable.c:1326
 msgid "intent"
 msgstr "rendu"
@@ -13440,7 +13440,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3089 ../src/iop/toneequal.c:3093
 #: ../src/iop/toneequal.c:3097 ../src/iop/toneequal.c:3101
 #: ../src/iop/toneequal.c:3105 ../src/libs/metadata_view.c:756
-#: ../src/views/darkroom.c:2309
+#: ../src/views/darkroom.c:2311
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f IL"
@@ -15878,7 +15878,7 @@ msgstr "neutre boîtier"
 msgid "green channel coefficient"
 msgstr "coefficient canal vert"
 
-#: ../src/iop/temperature.c:1865 ../src/views/darkroom.c:2547
+#: ../src/iop/temperature.c:1865 ../src/views/darkroom.c:2549
 msgid "magenta"
 msgstr "magenta"
 
@@ -15886,7 +15886,7 @@ msgstr "magenta"
 msgid "magenta channel coefficient"
 msgstr "coefficient canal magenta"
 
-#: ../src/iop/temperature.c:1867 ../src/views/darkroom.c:2546
+#: ../src/iop/temperature.c:1867 ../src/views/darkroom.c:2548
 msgid "cyan"
 msgstr "cyan"
 
@@ -20664,68 +20664,73 @@ msgstr "options lua"
 msgid ""
 "darktable could not load `%s', switching to lighttable now.\n"
 "\n"
-"please check the image (use exiv2 or exiftool) for corrupted data. if the "
-"image seems to\n"
-"be intact, please consider opening an issue at https://github.com/darktable-"
-"org/darktable."
+"please check that the camera model that produced the image is supported in "
+"darktable\n"
+"(list of supported cameras is at https://www.darktable.org/resources/camera-"
+"support/).\n"
+"if you are sure that the camera model is supported, please consider opening "
+"an issue\n"
+"at https://github.com/darktable-org/darktable"
 msgstr ""
 "darktable n'a pas réussi à charger « %s », retour vers la table lumineuse.\n"
 "\n"
-"vérifiez (avec exiv2 or exiftool) que l'image n'est pas corrompue. si "
-"l'image semble intacte,\n"
-"alors considérez l'ouverture d'un ticket ici https://github.com/darktable-"
-"org/darktable."
+"vérifiez que l'appareil photo est supporté par darktable\n"
+"(la liste des appareils supportés est ici https://www.darktable.org/"
+"resources/camera-support/).\n"
+"si vous êtes certain que l'appareil est supporté, alors considérez "
+"l'ouverture d'un ticket\n"
+"ici https://github.com/darktable-org/darktable."
 
-#: ../src/views/darkroom.c:500
+#: ../src/views/darkroom.c:502
 #, c-format
 msgctxt "darkroom"
 msgid "loading `%s' ..."
 msgstr "chargement « %s » ..."
 
-#: ../src/views/darkroom.c:744
+#: ../src/views/darkroom.c:746
 msgid "gamut check"
 msgstr "vérification de gamut"
 
-#: ../src/views/darkroom.c:744
+#: ../src/views/darkroom.c:746
 msgid "soft proof"
 msgstr "épreuvage"
 
 #. fail :(
-#: ../src/views/darkroom.c:782 ../src/views/print.c:300
+#: ../src/views/darkroom.c:784 ../src/views/print.c:300
 msgid "no image to open !"
 msgstr "aucune image à ouvrir !"
 
-#: ../src/views/darkroom.c:1256
+#: ../src/views/darkroom.c:1258
 msgid "no userdefined presets for favorite modules were found"
 msgstr "aucun préréglage trouvé pour les modules favoris"
 
-#: ../src/views/darkroom.c:1261
+#: ../src/views/darkroom.c:1263
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "applique le style « %s » à l'image actuelle"
 
-#: ../src/views/darkroom.c:1390
+#: ../src/views/darkroom.c:1392
 msgid "no styles have been created yet"
 msgstr "aucun style disponible"
 
-#: ../src/views/darkroom.c:2153
+#: ../src/views/darkroom.c:2155
 msgid "quick access to presets"
 msgstr "accès rapide aux préréglages"
 
-#: ../src/views/darkroom.c:2162
+#: ../src/views/darkroom.c:2164
 msgid "quick access for applying any of your styles"
 msgstr "accès rapide à vos styles"
 
-#: ../src/views/darkroom.c:2175
+#: ../src/views/darkroom.c:2177
 msgid "display a second darkroom image window"
 msgstr "activer l'affichage secondaire de la chambre noire"
 
-#: ../src/views/darkroom.c:2185
+#: ../src/views/darkroom.c:2187
 msgid "toggle ISO 12646 color assessment conditions"
 msgstr ""
 "activer ou désactiver les conditions d'évaluation des couleurs ISO 12646"
 
-#: ../src/views/darkroom.c:2195
+#: ../src/views/darkroom.c:2197
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -20733,47 +20738,47 @@ msgstr ""
 "activer/désactiver les zones sur-/sous-exposées raw\n"
 "clic-droit pour les options"
 
-#: ../src/views/darkroom.c:2219
+#: ../src/views/darkroom.c:2221
 msgid "mark with CFA color"
 msgstr "marquer les couleurs CFA"
 
-#: ../src/views/darkroom.c:2220
+#: ../src/views/darkroom.c:2222
 msgid "mark with solid color"
 msgstr "marquer avec une couleur unie"
 
-#: ../src/views/darkroom.c:2221
+#: ../src/views/darkroom.c:2223
 msgid "false color"
 msgstr "fausse couleur"
 
-#: ../src/views/darkroom.c:2223
+#: ../src/views/darkroom.c:2225
 msgid "select how to mark the clipped pixels"
 msgstr "sélectionner comment marquer les pixels tronqués"
 
-#: ../src/views/darkroom.c:2230 ../src/views/darkroom.c:2296
+#: ../src/views/darkroom.c:2232 ../src/views/darkroom.c:2298
 msgid "color scheme"
 msgstr "schéma de couleur"
 
-#: ../src/views/darkroom.c:2231
+#: ../src/views/darkroom.c:2233
 msgctxt "solidcolor"
 msgid "red"
 msgstr "rouge"
 
-#: ../src/views/darkroom.c:2232
+#: ../src/views/darkroom.c:2234
 msgctxt "solidcolor"
 msgid "green"
 msgstr "vert"
 
-#: ../src/views/darkroom.c:2233
+#: ../src/views/darkroom.c:2235
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/views/darkroom.c:2234
+#: ../src/views/darkroom.c:2236
 msgctxt "solidcolor"
 msgid "black"
 msgstr "noir"
 
-#: ../src/views/darkroom.c:2238
+#: ../src/views/darkroom.c:2240
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -20781,7 +20786,7 @@ msgstr ""
 "sélectionner la couleur pour marquer les sur-expositions.\n"
 "utiliser uniquement si le mode est « marquer avec une couleur unie »"
 
-#: ../src/views/darkroom.c:2248
+#: ../src/views/darkroom.c:2250
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -20791,7 +20796,7 @@ msgstr ""
 "1.0 - niveau blanc\n"
 "0.0 - niveau noir"
 
-#: ../src/views/darkroom.c:2259
+#: ../src/views/darkroom.c:2261
 msgid ""
 "toggle clipping indication\n"
 "right click for options"
@@ -20799,27 +20804,27 @@ msgstr ""
 "activer/désactiver les zones tronquées\n"
 "clic-droit pour les options"
 
-#: ../src/views/darkroom.c:2282
+#: ../src/views/darkroom.c:2284
 msgid "clipping preview mode"
 msgstr "seuil de troncature"
 
-#: ../src/views/darkroom.c:2283
+#: ../src/views/darkroom.c:2285
 msgid "full gamut"
 msgstr "gamut complet"
 
-#: ../src/views/darkroom.c:2284
+#: ../src/views/darkroom.c:2286
 msgid "any RGB channel"
 msgstr "un canal RVB"
 
-#: ../src/views/darkroom.c:2285
+#: ../src/views/darkroom.c:2287
 msgid "luminance only"
 msgstr "luminance seulement"
 
-#: ../src/views/darkroom.c:2286
+#: ../src/views/darkroom.c:2288
 msgid "saturation only"
 msgstr "saturation seulement"
 
-#: ../src/views/darkroom.c:2288
+#: ../src/views/darkroom.c:2290
 msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes\n"
@@ -20827,23 +20832,23 @@ msgstr ""
 "sélectionne le mode de prévisualisation\n"
 "gamut complet est la combinaison de tous les autres modes.\n"
 
-#: ../src/views/darkroom.c:2298
+#: ../src/views/darkroom.c:2300
 msgid "red & blue"
 msgstr "rouge et bleu"
 
-#: ../src/views/darkroom.c:2299
+#: ../src/views/darkroom.c:2301
 msgid "purple & green"
 msgstr "violet et vert"
 
-#: ../src/views/darkroom.c:2301
+#: ../src/views/darkroom.c:2303
 msgid "select colors to indicate clipping"
 msgstr "sélectionne les couleurs indiquant le troncature"
 
-#: ../src/views/darkroom.c:2310
+#: ../src/views/darkroom.c:2312
 msgid "lower threshold"
 msgstr "seuil bas"
 
-#: ../src/views/darkroom.c:2311
+#: ../src/views/darkroom.c:2313
 msgid ""
 "clipping threshold for the black point,\n"
 "in EV, relatively to white (0 EV).\n"
@@ -20862,11 +20867,11 @@ msgstr ""
 "un papier couleur brillant produit des noirs à -8.00 IL,\n"
 "un papier noir et blanc brillant produit des noirs à -9.00 IL."
 
-#: ../src/views/darkroom.c:2327
+#: ../src/views/darkroom.c:2329
 msgid "upper threshold"
 msgstr "seuil haut"
 
-#: ../src/views/darkroom.c:2329
+#: ../src/views/darkroom.c:2331
 #, no-c-format
 msgid ""
 "clipping threshold for the white point.\n"
@@ -20875,7 +20880,7 @@ msgstr ""
 "seuil de troncature du point blanc.\n"
 "100% est la luminance moyenne de crête."
 
-#: ../src/views/darkroom.c:2341
+#: ../src/views/darkroom.c:2343
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -20883,7 +20888,7 @@ msgstr ""
 "activer/désactiver l'épreuvage écran\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:2355
+#: ../src/views/darkroom.c:2357
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -20891,39 +20896,39 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:2409 ../src/views/lighttable.c:1333
+#: ../src/views/darkroom.c:2411 ../src/views/lighttable.c:1333
 msgid "display profile"
 msgstr "profil (écran)"
 
-#: ../src/views/darkroom.c:2410 ../src/views/lighttable.c:1336
+#: ../src/views/darkroom.c:2412 ../src/views/lighttable.c:1336
 msgid "preview display profile"
 msgstr "profil (écran secondaire)"
 
-#: ../src/views/darkroom.c:2412
+#: ../src/views/darkroom.c:2414
 msgid "histogram profile"
 msgstr "profil de l'histogramme"
 
-#: ../src/views/darkroom.c:2476 ../src/views/lighttable.c:1372
+#: ../src/views/darkroom.c:2478 ../src/views/lighttable.c:1372
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage dans %s ou %s"
 
-#: ../src/views/darkroom.c:2479 ../src/views/lighttable.c:1375
+#: ../src/views/darkroom.c:2481 ../src/views/lighttable.c:1375
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage secondaire dans « %s » ou « %s »"
 
-#: ../src/views/darkroom.c:2482
+#: ../src/views/darkroom.c:2484
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "profils ICC d'épreuvage dans %s ou %s"
 
-#: ../src/views/darkroom.c:2485
+#: ../src/views/darkroom.c:2487
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "profils ICC pour l'histogramme et la pipette dans %s ou %s"
 
-#: ../src/views/darkroom.c:2520
+#: ../src/views/darkroom.c:2522
 msgid ""
 "set the color of lines that overlay the image (drawn masks, crop and rotate "
 "guides etc.)"
@@ -20931,203 +20936,203 @@ msgstr ""
 "sélectionne la couleur des masques et des guides de recadrage superposés à "
 "l'image"
 
-#: ../src/views/darkroom.c:2541
+#: ../src/views/darkroom.c:2543
 msgid "overlay color"
 msgstr "couleur des superpositions"
 
-#: ../src/views/darkroom.c:2549
+#: ../src/views/darkroom.c:2551
 msgid "set overlay color"
 msgstr "sélectionne la couleur pour les superpositions"
 
-#: ../src/views/darkroom.c:3852
+#: ../src/views/darkroom.c:3854
 msgid "keyboard shortcut slider precision: fine"
 msgstr "précision raccourcis clavier des réglettes : fine"
 
-#: ../src/views/darkroom.c:3854
+#: ../src/views/darkroom.c:3856
 msgid "keyboard shortcut slider precision: normal"
 msgstr "précision raccourcis clavier des réglettes : standard"
 
-#: ../src/views/darkroom.c:3856
+#: ../src/views/darkroom.c:3858
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "précision raccourcis clavier des réglettes : grossière"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3893
+#: ../src/views/darkroom.c:3895
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom en gros plan"
 
-#: ../src/views/darkroom.c:3894
+#: ../src/views/darkroom.c:3896
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoomer"
 
-#: ../src/views/darkroom.c:3895
+#: ../src/views/darkroom.c:3897
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajusté"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:3898 ../src/views/lighttable.c:893
+#: ../src/views/darkroom.c:3900 ../src/views/lighttable.c:893
 msgctxt "accel"
 msgid "zoom in"
 msgstr "zoom"
 
-#: ../src/views/darkroom.c:3899 ../src/views/lighttable.c:895
+#: ../src/views/darkroom.c:3901 ../src/views/lighttable.c:895
 msgctxt "accel"
 msgid "zoom out"
 msgstr "dézoom"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3902
+#: ../src/views/darkroom.c:3904
 msgctxt "accel"
 msgid "image forward"
 msgstr "image suivante"
 
-#: ../src/views/darkroom.c:3903
+#: ../src/views/darkroom.c:3905
 msgctxt "accel"
 msgid "image back"
 msgstr "image précédente"
 
 #. toggle ISO 12646 color assessment condition
-#: ../src/views/darkroom.c:3906
+#: ../src/views/darkroom.c:3908
 msgctxt "accel"
 msgid "color assessment"
 msgstr "évaluation des couleurs"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3909
+#: ../src/views/darkroom.c:3911
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "sur-exposition raw"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3912
+#: ../src/views/darkroom.c:3914
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sur-exposition"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:3915
+#: ../src/views/darkroom.c:3917
 msgctxt "accel"
 msgid "cycle overlay colors"
 msgstr "changer la couleur des superpositions"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3918
+#: ../src/views/darkroom.c:3920
 msgctxt "accel"
 msgid "softproof"
 msgstr "épreuvage"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3921
+#: ../src/views/darkroom.c:3923
 msgctxt "accel"
 msgid "gamut check"
 msgstr "vérification de gamut"
 
 #. toggle visibility of drawn masks for current gui module
-#: ../src/views/darkroom.c:3924
+#: ../src/views/darkroom.c:3926
 msgctxt "accel"
 msgid "show drawn masks"
 msgstr "afficher les masques dessinés"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3927
+#: ../src/views/darkroom.c:3929
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "augmenter la taille du pinceau"
 
-#: ../src/views/darkroom.c:3928
+#: ../src/views/darkroom.c:3930
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "diminuer la taille du pinceau"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3931
+#: ../src/views/darkroom.c:3933
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "augmenter la dureté du pinceau"
 
-#: ../src/views/darkroom.c:3932
+#: ../src/views/darkroom.c:3934
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "diminuer la dureté du pinceau"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3935
+#: ../src/views/darkroom.c:3937
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "augmenter la luminosité du pinceau"
 
-#: ../src/views/darkroom.c:3936
+#: ../src/views/darkroom.c:3938
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "diminuer la luminosité du pinceau"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:3939
+#: ../src/views/darkroom.c:3941
 msgctxt "accel"
 msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3942 ../src/views/lighttable.c:885
+#: ../src/views/darkroom.c:3944 ../src/views/lighttable.c:885
 #: ../src/views/map.c:2073
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:3943 ../src/views/lighttable.c:886
+#: ../src/views/darkroom.c:3945 ../src/views/lighttable.c:886
 #: ../src/views/map.c:2074
 msgctxt "accel"
 msgid "redo"
 msgstr "refaire"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:3946
+#: ../src/views/darkroom.c:3948
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "permet de recadrer et zoomer pendant l'édition des masques"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3949
+#: ../src/views/darkroom.c:3951
 msgctxt "accel"
 msgid "search modules"
 msgstr "rechercher module"
 
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:3952
+#: ../src/views/darkroom.c:3954
 msgctxt "accel"
 msgid "change keyboard shortcut slider precision"
 msgstr "changer la précision des raccourcis clavier des réglettes"
 
-#: ../src/views/darkroom.c:4063
+#: ../src/views/darkroom.c:4065
 msgid "switch to lighttable"
 msgstr "passer à la table lumineuse"
 
-#: ../src/views/darkroom.c:4064 ../src/views/lighttable.c:1033
+#: ../src/views/darkroom.c:4066 ../src/views/lighttable.c:1033
 msgid "zoom in the image"
 msgstr "zoom dans l'image"
 
-#: ../src/views/darkroom.c:4065
+#: ../src/views/darkroom.c:4067
 msgid "unbounded zoom in the image"
 msgstr "zoom sans limites dans l'image"
 
-#: ../src/views/darkroom.c:4066
+#: ../src/views/darkroom.c:4068
 msgid "zoom to 100% 200% and back"
 msgstr "zoom à 100% 200% en cycle"
 
-#: ../src/views/darkroom.c:4068
+#: ../src/views/darkroom.c:4070
 msgid "[modules] expand module without closing others"
 msgstr "[modules] déplie le module sans replier les autres"
 
-#: ../src/views/darkroom.c:4070
+#: ../src/views/darkroom.c:4072
 msgid "[modules] change module position in pipe"
 msgstr "[modules] change la position du module dans le flux"
 
 #. workaround for GTK Quartz backend bug
-#: ../src/views/darkroom.c:4729 ../src/views/darkroom.c:4747
+#: ../src/views/darkroom.c:4731 ../src/views/darkroom.c:4749
 msgid "darktable - darkroom preview"
 msgstr "darktable - pré-visualisation chambre noire"
 
