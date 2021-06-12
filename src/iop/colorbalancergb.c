@@ -445,7 +445,7 @@ static inline float soft_clip(const float x, const float soft_threshold, const f
 
 
 
-inline float lookup_gamut(const float *const gamut_lut, const float x)
+static inline float lookup_gamut(const float *const gamut_lut, const float x)
 {
   // WARNING : x should be between [-pi ; pi ], which is the default output of atan2 anyway
 
