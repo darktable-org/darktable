@@ -752,8 +752,38 @@ inline float4 opacity_masks(const float x,
 
 inline float lookup_gamut(read_only image2d_t gamut_lut, const float x)
 {
-  const int xi = clamp((int)(LUT_ELEM * (x + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1);
-  return read_imagef(gamut_lut, sampleri, (int2)(xi, 0)).x;
+  // WARNING : x should be between [-pi ; pi ], which is the default output of atan2 anyway
+
+  // convert in LUT coordinate
+  const float x_test = (x + M_PI_F) / (2.f * M_PI_F);
+
+  // find the 2 closest integer coordinates (next/previous)
+  float x_prev = floor(x_test);
+  float x_next = ceil(x_test);
+
+  // get the 2 closest LUT elements at integer coordinates
+  // cycle on the hue ring if out of bounds
+  int xi = (int)x_prev;
+  if(xi < 0) xi = LUT_ELEM - 1;
+  else if(xi > LUT_ELEM - 1) xi = 0;
+
+  int xii = (int)x_next;
+  if(xii < 0) xii = LUT_ELEM - 1;
+  else if(xii > LUT_ELEM - 1) xii = 0;
+
+  // fetch the corresponding y values
+  const float y_prev = read_imagef(gamut_lut, sampleri, (int2)(xi, 0)).x;
+  const float y_next = read_imagef(gamut_lut, sampleri, (int2)(xii, 0)).x;
+
+  // assume that we are exactly on an integer LUT element
+  float out = y_prev;
+
+  if(x_next != x_prev)
+    // we are between 2 LUT elements : do linear interpolation
+    // actually, we only add the slope term on the previous one
+    out += (x_test - x_prev) * (y_next - y_prev) / (x_next - x_prev);
+
+  return out;
 }
 
 
@@ -824,7 +854,31 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   const float chroma_factor = fmax(1.f + chroma_boost + vib, 0.f);
   Ych.y *= chroma_factor;
 
-  // Go to Yrg
+  // Do a test conversion to Yrg
+  Yrg = Ych_to_Yrg(Ych);
+
+  // Gamut-clip in Yrg at constant hue and luminance
+  // e.g. find the max chroma value that fits in gamut at the current hue
+  const float D65[4] = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
+  float max_c = Ych.y;
+  const float cos_h = native_cos(Ych.z);
+  const float sin_h = native_sin(Ych.z);
+
+  if(Yrg.y < 0.f)
+  {
+    max_c = fmin(-D65[0] / cos_h, max_c);
+  }
+  if(Yrg.z < 0.f)
+  {
+    max_c = fmin(-D65[1] / sin_h, max_c);
+  }
+  if(Yrg.y + Yrg.z > 1.f)
+  {
+    max_c = fmin((1.f - D65[0] - D65[1]) / (cos_h + sin_h), max_c);
+  }
+
+  // Overwrite chroma with the sanitized value and go to Yrg for real
+  Ych.y = max_c;
   Yrg = Ych_to_Yrg(Ych);
 
   // Go to LMS
@@ -887,13 +941,18 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   SO[1] = SO[0] * clamp(T * boosts[1], -T, M_PI_F / 2.f - T);
   SO[0] = fmax(SO[0] * boosts[0], 0.f);
 
-  // Gamut mapping
-  const float out_max_sat_h = lookup_gamut(gamut_lut, h);
-  SO[1] = soft_clip(SO[1], 0.8f * out_max_sat_h, out_max_sat_h);
-
   // Project back to JCh, that is rotate back of -T angle
   JC[0] = fmax(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
   JC[1] = fmax(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
+
+  // Gamut mapping
+  const float out_max_sat_h = lookup_gamut(gamut_lut, h);
+  float sat = (JC[0] > 0.f) ? JC[1] / JC[0] : 0.f;
+  sat = soft_clip(sat, 0.9f * out_max_sat_h, out_max_sat_h);
+  const float max_C_at_sat = JC[0] * sat;
+  const float max_J_at_sat = (sat > 0.f) ? JC[1] / sat : 0.f;
+  JC[0] = (JC[0] + max_J_at_sat) / 2.f;
+  JC[1] = (JC[1] + max_C_at_sat) / 2.f;
 
   // Project back to JzAzBz
   Jab.x = JC[0];
