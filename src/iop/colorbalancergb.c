@@ -444,6 +444,44 @@ static inline float soft_clip(const float x, const float soft_threshold, const f
 }
 
 
+
+inline float lookup_gamut(const float *const gamut_lut, const float x)
+{
+  // WARNING : x should be between [-pi ; pi ], which is the default output of atan2 anyway
+
+  // convert in LUT coordinate
+  const float x_test = (x + M_PI_F) / (2.f * M_PI_F);
+
+  // find the 2 closest integer coordinates (next/previous)
+  float x_prev = floorf(x_test);
+  float x_next = ceilf(x_test);
+
+  // get the 2 closest LUT elements at integer coordinates
+  // cycle on the hue ring if out of bounds
+  int xi = (int)x_prev;
+  if(xi < 0) xi = LUT_ELEM - 1;
+  else if(xi > LUT_ELEM - 1) xi = 0;
+
+  int xii = (int)x_next;
+  if(xii < 0) xii = LUT_ELEM - 1;
+  else if(xii > LUT_ELEM - 1) xii = 0;
+
+  // fetch the corresponding y values
+  const float y_prev = gamut_lut[xi];
+  const float y_next = gamut_lut[xii];
+
+  // assume that we are exactly on an integer LUT element
+  float out = y_prev;
+
+  if(x_next != x_prev)
+    // we are between 2 LUT elements : do linear interpolation
+    // actually, we only add the slope term on the previous one
+    out += (x_test - x_prev) * (y_next - y_prev) / (x_next - x_prev);
+
+  return out;
+}
+
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -579,7 +617,31 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float chroma_factor = fmaxf(1.f + chroma_boost + vibrance, 0.f);
     Ych[1] *= chroma_factor;
 
-    // Go to Yrg
+    // Do a test conversion to Yrg
+    Ych_to_Yrg(Ych, Yrg);
+
+    // Gamut-clip in Yrg at constant hue and luminance
+    // e.g. find the max chroma value that fits in gamut at the current hue
+    const float D65[4] = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
+    float max_c = Ych[1];
+    const float cos_h = cosf(Ych[2]);
+    const float sin_h = sinf(Ych[2]);
+
+    if(Yrg[1] < 0.f)
+    {
+      max_c = fminf(-D65[0] / cos_h, max_c);
+    }
+    if(Yrg[2] < 0.f)
+    {
+      max_c = fminf(-D65[1] / sin_h, max_c);
+    }
+    if(Yrg[1] + Yrg[2] > 1.f)
+    {
+      max_c = fminf((1.f - D65[0] - D65[1]) / (cos_h + sin_h), max_c);
+    }
+
+    // Overwrite chroma with the sanitized value and go to Yrg for real
+    Ych[1] = max_c;
     Ych_to_Yrg(Ych, Yrg);
 
     // Go to LMS
@@ -644,13 +706,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     SO[1] = SO[0] * fminf(fmaxf(T * boosts[1], -T), DT_M_PI_F / 2.f - T);
     SO[0] = fmaxf(SO[0] * boosts[0], 0.f);
 
-    // Gamut mapping
-    const float out_max_sat_h = gamut_LUT[CLAMP((size_t)(LUT_ELEM * (h + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1)];
-    SO[1] = soft_clip(SO[1], 0.8f * out_max_sat_h, out_max_sat_h);
-
     // Project back to JCh, that is rotate back of -T angle
     JC[0] = fmaxf(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
     JC[1] = fmaxf(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
+
+    // Gamut mapping
+    const float out_max_sat_h = lookup_gamut(gamut_LUT, h);
+    float sat = (JC[0] > 0.f) ? JC[1] / JC[0] : 0.f;
+    sat = soft_clip(sat, 0.9f * out_max_sat_h, out_max_sat_h);
+    const float max_C_at_sat = JC[0] * sat;
+    const float max_J_at_sat = (sat > 0.f) ? JC[1] / sat : 0.f;
+    JC[0] = (JC[0] + max_J_at_sat) / 2.f;
+    JC[1] = (JC[1] + max_C_at_sat) / 2.f;
 
     // Project back to JzAzBz
     Jab[0] = JC[0];
@@ -979,7 +1046,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // make RGB values vary between [0; 1] in working space, convert to Ych and get the max(c(h)))
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(input_matrix) schedule(static) dt_omp_sharedconst(LUT)
+      dt_omp_firstprivate(input_matrix) schedule(static) dt_omp_sharedconst(LUT) \
+      collapse(3)
 #endif
     for(size_t r = 0; r < STEPS; r++)
       for(size_t g = 0; g < STEPS; g++)
@@ -999,9 +1067,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
           Jch[1] = hypotf(Jab[2], Jab[1]);
           Jch[2] = atan2f(Jab[2], Jab[1]);
 
-          const size_t index = CLAMP((size_t)(LUT_ELEM * (Jch[2] + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1);
-          const float saturation = (Jch[0] > 0.f) ? Jch[1] / Jch[0] : 0.f;
-          if(LUT[index] < saturation) LUT[index] = saturation;
+          const size_t index = (LUT_ELEM - 1) * (Jch[2] + M_PI_F) / (2.f * M_PI_F);
+          // The 6.f factor is an ugly hack to prevent false-positives in gamut detection.
+          // we shouldn't need it, which means there is a well-hidden bug somewhere.
+          // for the time being, this will prevent gamut clipping of valid colors
+          const float saturation = (Jch[0] > 0.f) ? 6.f * Jch[1] / Jch[0] : 0.f;
+          LUT[index] = fmaxf(saturation, LUT[index]);
         }
 
     d->lut_inited = TRUE;
