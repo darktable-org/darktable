@@ -954,10 +954,42 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   JC[0] = (JC[0] + max_J_at_sat) / 2.f;
   JC[1] = (JC[1] + max_C_at_sat) / 2.f;
 
-  // Project back to JzAzBz
+  // Gamut-clip in Jch at constant hue and lightness,
+  // e.g. find the max chroma available at current hue that doesn't
+  // yield negative L'M'S' values, which will need to be clipped during conversion
+  const float cos_H = native_cos(h);
+  const float sin_H = native_sin(h);
+
+  const float d0 = 1.6295499532821566e-11f;
+  const float d = -0.56f;
+  float Iz = JC[0] + d0;
+  Iz /= (1.f + d - d * Iz);
+
+  const float4 AI[3] = { {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
+                         {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
+                         {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f } };
+
+  // Do a test conversion to L'M'S'
+  const float4 IzAzBz = { Iz, JC[1] * cos_H, JC[1] * sin_H, 0.f };
+  LMS.x = dot(AI[0], IzAzBz);
+  LMS.y = dot(AI[1], IzAzBz);
+  LMS.z = dot(AI[2], IzAzBz);
+
+  // Clip chroma
+  float max_C = JC[1];
+  if(LMS.x < 0.f)
+    max_C = fmin(-Iz / (AI[0].y * cos_H + AI[0].z * sin_H), max_C);
+
+  if(LMS.y < 0.f)
+    max_C = fmin(-Iz / (AI[1].y * cos_H + AI[1].z * sin_H), max_C);
+
+  if(LMS.z < 0.f)
+    max_C = fmin(-Iz / (AI[2].y * cos_H + AI[2].z * sin_H), max_C);
+
+  // Project back to JzAzBz for real
   Jab.x = JC[0];
-  Jab.y = JC[1] * native_cos(h);
-  Jab.z = JC[1] * native_sin(h);
+  Jab.y = max_C * cos_H;
+  Jab.z = max_C * sin_H;
 
   XYZ_D65 = JzAzBz_2_XYZ(Jab);
 
