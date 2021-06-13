@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-11 17:42+0200\n"
-"PO-Revision-Date: 2021-06-11 22:00+0200\n"
+"POT-Creation-Date: 2021-06-13 18:38+0200\n"
+"PO-Revision-Date: 2021-06-13 19:39+0200\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -191,11 +191,10 @@ msgstr "doppelte Bewertung mit einem Stern setzt nicht null Sterne"
 
 #: ../build/bin/preferences_gen.h:3671
 msgid ""
-"do not have the rating of one star behave as documented in the manual--an "
-"image rated one star twice will result in a zero star rating."
+"defines whether rating an image one star twice will zero out star rating."
 msgstr ""
-"Sorgt dafür, dass im Gegensatz zur Beschreibung im Handbuch ein Bild bei "
-"doppelter Bewertung mit einem Stern nicht auf null Sterne gesetzt wird."
+"definiert, dass die doppelte Bewertung eines Bildes mit einem Stern diese "
+"nicht auf null setzt"
 
 #: ../build/bin/preferences_gen.h:3693 ../build/bin/preferences_gen.h:4389
 msgid "show scrollbars for central view"
@@ -802,7 +801,7 @@ msgid "other views"
 msgstr "andere Ansichten"
 
 #: ../build/bin/preferences_gen.h:5109
-msgid "map / geolocalisation"
+msgid "map / geolocalization"
 msgstr "Karte / Geolokalisierung"
 
 #: ../build/bin/preferences_gen.h:5129
@@ -862,7 +861,7 @@ msgstr "Lanczos2"
 #: ../build/bin/preferences_gen.h:5317
 msgid ""
 "pixel interpolator used in modules for rotation, lens correction, liquify, "
-"clipping and final scaling (bilinear, bicubic, lanczos2)."
+"cropping and final scaling (bilinear, bicubic, lanczos2)."
 msgstr ""
 "Pixel-Interpolation, die in Modulen für Rotation, Objektivkorrektur, "
 "Verflüssigen, Zuschneiden und Skalieren benutzt wird (bilinear, bikubisch, "
@@ -21499,6 +21498,13 @@ msgstr "Tastenbelegung"
 #: ../src/views/view.c:1793
 msgid "Action"
 msgstr "Aktion"
+
+#~ msgid ""
+#~ "do not have the rating of one star behave as documented in the manual--an "
+#~ "image rated one star twice will result in a zero star rating."
+#~ msgstr ""
+#~ "Sorgt dafür, dass im Gegensatz zur Beschreibung im Handbuch ein Bild bei "
+#~ "doppelter Bewertung mit einem Stern nicht auf null Sterne gesetzt wird."
 
 #~ msgid ""
 #~ "if set to a positive, non-zero value this variable defines the minimum "
