@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-11 18:57-0300\n"
-"PO-Revision-Date: 2021-06-12 17:40-0300\n"
+"POT-Creation-Date: 2021-06-13 18:00-0300\n"
+"PO-Revision-Date: 2021-06-13 18:04-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2969,7 +2969,7 @@ msgstr "raio para detecção de bordas"
 #: ../build/lib/darktable/plugins/introspection_defringe.c:106
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:219
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:418
-#: ../src/iop/bloom.c:403 ../src/iop/colorbalancergb.c:1762
+#: ../src/iop/bloom.c:403 ../src/iop/colorbalancergb.c:1873
 #: ../src/iop/colorreconstruction.c:1284 ../src/iop/hotpixels.c:376
 #: ../src/iop/sharpen.c:729
 msgid "threshold"
@@ -4284,7 +4284,9 @@ msgstr ""
 msgid ""
 "failed to initialize `%s' on port `%s', likely causes are: locked by another "
 "application, no access to devices etc"
-msgstr "falha ao iniciar `%s` na porta %s, tipicas causas são: travada por outra aplicaçào, sem acesso a udev etc"
+msgstr ""
+"falha ao iniciar `%s` na porta %s, tipicas causas são: travada por outra "
+"aplicaçào, sem acesso a udev etc"
 
 #: ../src/common/camera_control.c:908
 #, c-format
@@ -11065,7 +11067,7 @@ msgstr "azul na entrada"
 
 #: ../src/iop/channelmixerrgb.c:3786
 msgid "colorfulness"
-msgstr "colorfulness (colorido)"
+msgstr "saturação"
 
 #: ../src/iop/channelmixerrgb.c:3801
 msgid "calibrate with a color checker"
@@ -11439,7 +11441,8 @@ msgstr "balanço de cor"
 
 #: ../src/iop/colorbalance.c:153
 msgid "lift gamma gain|cdl|color grading|contrast|saturation|hue"
-msgstr "elevação de ganho de gama|cdl|gradação de cores|contraste|saturação|matiz"
+msgstr ""
+"elevação de ganho de gama|cdl|gradação de cores|contraste|saturação|matiz"
 
 #: ../src/iop/colorbalance.c:158 ../src/iop/colorbalancergb.c:170
 msgid "affect color, brightness and contrast"
@@ -11553,7 +11556,7 @@ msgid "RGBL"
 msgstr "RGBL"
 
 #. Page master
-#: ../src/iop/colorbalance.c:1902 ../src/iop/colorbalancergb.c:1508
+#: ../src/iop/colorbalance.c:1902 ../src/iop/colorbalancergb.c:1619
 msgid "master"
 msgstr "mestre"
 
@@ -11657,76 +11660,70 @@ msgstr "balanço de cor rgb"
 #: ../src/iop/colorbalancergb.c:165
 msgid ""
 "offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance"
-msgstr "inclinação do deslocamento de potência|cdl|gradação de cores|contraste|croma_realces|matiz|vibrância"
+msgstr ""
+"inclinação do deslocamento de potência|cdl|gradação de cores|contraste|"
+"croma_realces|matiz|vibrância"
 
 #: ../src/iop/colorbalancergb.c:368
-#, fuzzy
 msgid "add basic colorfulness"
-msgstr "colorfulness (colorido)"
+msgstr "adicionar saturação de base"
 
-#: ../src/iop/colorbalancergb.c:712
+#: ../src/iop/colorbalancergb.c:809
 msgid "colorbalance works only on RGB input"
 msgstr "balanço de cores somente funciona com entrada RGB"
 
-#: ../src/iop/colorbalancergb.c:1147 ../src/iop/colorzones.c:2218
+#: ../src/iop/colorbalancergb.c:1258 ../src/iop/colorzones.c:2218
 #: ../src/iop/retouch.c:1817 ../src/iop/toneequal.c:1838
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
 "não é possível mostrar máscaras quando a máscara de mesclagem é mostrada"
 
-#: ../src/iop/colorbalancergb.c:1508
+#: ../src/iop/colorbalancergb.c:1619
 msgid "global grading"
 msgstr "gradação global"
 
-#: ../src/iop/colorbalancergb.c:1514
+#: ../src/iop/colorbalancergb.c:1625
 msgid "rotate all hues by an angle, at the same luminance"
 msgstr "rotacionar todas as matizes por um ângulo, na mesma luminância"
 
-#: ../src/iop/colorbalancergb.c:1521
+#: ../src/iop/colorbalancergb.c:1632
 msgid "increase colorfulness mostly on low-chroma colors"
-msgstr ""
-"aumentar o colorido (colorfulness) principalmente em cores com croma baixo"
+msgstr "aumentar a riqueza de cores principalmente em cores com croma baixo"
 
-#: ../src/iop/colorbalancergb.c:1528
+#: ../src/iop/colorbalancergb.c:1639
 msgid "increase the contrast at constant chromaticity"
 msgstr "aumentar o contraste com cromaticidade constante"
 
-#: ../src/iop/colorbalancergb.c:1530
+#: ../src/iop/colorbalancergb.c:1641
 msgid "linear chroma grading"
 msgstr "gradação linear de croma"
 
-#: ../src/iop/colorbalancergb.c:1537
+#: ../src/iop/colorbalancergb.c:1648
 msgid "increase colorfulness at same luminance globally"
-msgstr "aumentar o colorido (colorfulness) na mesma luminância globalmente"
+msgstr "aumentar a riqueza de cores na mesma luminância globalmente"
 
-#: ../src/iop/colorbalancergb.c:1543
+#: ../src/iop/colorbalancergb.c:1654
 msgid "increase colorfulness at same luminance mostly in shadows"
-msgstr ""
-"aumentar o colorido (colorfulness) na mesma luminância principalmente nas "
-"sombras"
+msgstr "aumentar a riqueza de cores na mesma luminância principalmente nas sombras"
 
-#: ../src/iop/colorbalancergb.c:1549
+#: ../src/iop/colorbalancergb.c:1660
 msgid "increase colorfulness at same luminance mostly in midtones"
-msgstr ""
-"aumentar o colorido (colorfulness) na mesma luminância principalmente nos "
-"meios-tons"
+msgstr "aumentar a riqueza de cores na mesma luminância principalmente nos meios-tons"
 
-#: ../src/iop/colorbalancergb.c:1555
+#: ../src/iop/colorbalancergb.c:1666
 msgid "increase colorfulness at same luminance mostly in highlights"
-msgstr ""
-"aumentar o colorido (colorfulness) na mesma luminância principalmente nos "
-"realces"
+msgstr "aumentar a riqueza de cores na mesma luminância principalmente nos realces"
 
-#: ../src/iop/colorbalancergb.c:1557
+#: ../src/iop/colorbalancergb.c:1668
 msgid "perceptual saturation grading"
 msgstr "gradação de saturação perceptual"
 
-#: ../src/iop/colorbalancergb.c:1564
+#: ../src/iop/colorbalancergb.c:1675
 msgid "add or remove saturation by an absolute amount"
 msgstr "adicionar ou remover saturação em quantidade absoluta"
 
-#: ../src/iop/colorbalancergb.c:1571 ../src/iop/colorbalancergb.c:1578
-#: ../src/iop/colorbalancergb.c:1585
+#: ../src/iop/colorbalancergb.c:1682 ../src/iop/colorbalancergb.c:1689
+#: ../src/iop/colorbalancergb.c:1696
 msgid ""
 "increase or decrease saturation proportionally to the original pixel "
 "saturation"
@@ -11734,16 +11731,16 @@ msgstr ""
 "aumentar ou diminuir a saturação proporcionalmente à saturação original do "
 "pixel"
 
-#: ../src/iop/colorbalancergb.c:1588
+#: ../src/iop/colorbalancergb.c:1699
 msgid "perceptual brilliance grading"
 msgstr "gradação de brilhância perceptual"
 
-#: ../src/iop/colorbalancergb.c:1595
+#: ../src/iop/colorbalancergb.c:1706
 msgid "add or remove brilliance by an absolute amount"
 msgstr "adicionar ou remover brilhância em quantidade absoluta"
 
-#: ../src/iop/colorbalancergb.c:1602 ../src/iop/colorbalancergb.c:1609
-#: ../src/iop/colorbalancergb.c:1616
+#: ../src/iop/colorbalancergb.c:1713 ../src/iop/colorbalancergb.c:1720
+#: ../src/iop/colorbalancergb.c:1727
 msgid ""
 "increase or decrease brilliance proportionally to the original pixel "
 "brilliance"
@@ -11752,132 +11749,132 @@ msgstr ""
 "pixel"
 
 #. Page 4-ways
-#: ../src/iop/colorbalancergb.c:1620
+#: ../src/iop/colorbalancergb.c:1731
 msgid "4 ways"
 msgstr "4 vias"
 
-#: ../src/iop/colorbalancergb.c:1620
+#: ../src/iop/colorbalancergb.c:1731
 msgid "selective color grading"
 msgstr "gradação de cores seletiva"
 
-#: ../src/iop/colorbalancergb.c:1622
+#: ../src/iop/colorbalancergb.c:1733
 msgid "global offset"
 msgstr "deslocamento global"
 
-#: ../src/iop/colorbalancergb.c:1629
+#: ../src/iop/colorbalancergb.c:1740
 msgid "global luminance offset"
 msgstr "deslocamento global de luminância"
 
-#: ../src/iop/colorbalancergb.c:1636
+#: ../src/iop/colorbalancergb.c:1747
 msgid "hue of the global color offset"
 msgstr "matiz do deslocamento global de cor"
 
-#: ../src/iop/colorbalancergb.c:1643
+#: ../src/iop/colorbalancergb.c:1754
 msgid "chroma of the global color offset"
 msgstr "croma do deslocamento global de cor"
 
-#: ../src/iop/colorbalancergb.c:1645
+#: ../src/iop/colorbalancergb.c:1756
 msgid "shadows lift"
 msgstr "elevação de sombras"
 
-#: ../src/iop/colorbalancergb.c:1652
+#: ../src/iop/colorbalancergb.c:1763
 msgid "luminance gain in shadows"
 msgstr "gnaho de luminância nas sombras"
 
-#: ../src/iop/colorbalancergb.c:1659
+#: ../src/iop/colorbalancergb.c:1770
 msgid "hue of the color gain in shadows"
 msgstr "matiz do ganho de cor nas sombras"
 
-#: ../src/iop/colorbalancergb.c:1667
+#: ../src/iop/colorbalancergb.c:1778
 msgid "chroma of the color gain in shadows"
 msgstr "croma do ganho de cor nas sombras"
 
-#: ../src/iop/colorbalancergb.c:1669
+#: ../src/iop/colorbalancergb.c:1780
 msgid "highlights gain"
 msgstr "ganho em realces"
 
-#: ../src/iop/colorbalancergb.c:1676
+#: ../src/iop/colorbalancergb.c:1787
 msgid "luminance gain in highlights"
 msgstr "ganho de luminância em realces"
 
-#: ../src/iop/colorbalancergb.c:1683
+#: ../src/iop/colorbalancergb.c:1794
 msgid "hue of the color gain in highlights"
 msgstr "matiz do ganho de cor em realces"
 
-#: ../src/iop/colorbalancergb.c:1691
+#: ../src/iop/colorbalancergb.c:1802
 msgid "chroma of the color gain in highlights"
 msgstr "croma do ganho de cor em realces"
 
-#: ../src/iop/colorbalancergb.c:1693
+#: ../src/iop/colorbalancergb.c:1804
 msgid "power"
 msgstr "potência"
 
-#: ../src/iop/colorbalancergb.c:1700
+#: ../src/iop/colorbalancergb.c:1811
 msgid "luminance exponent in midtones"
 msgstr "luminância do expoente de cor nos meios-tons"
 
-#: ../src/iop/colorbalancergb.c:1707
+#: ../src/iop/colorbalancergb.c:1818
 msgid "hue of the color exponent in midtones"
 msgstr "matiz do expoente de cor nos meios-tons"
 
-#: ../src/iop/colorbalancergb.c:1715
+#: ../src/iop/colorbalancergb.c:1826
 msgid "chroma of the color exponent in midtones"
 msgstr "croma do expoente de cor nos meios-tons"
 
 #. Page masks
-#: ../src/iop/colorbalancergb.c:1718
+#: ../src/iop/colorbalancergb.c:1829
 msgid "masks"
 msgstr "máscaras"
 
-#: ../src/iop/colorbalancergb.c:1718
+#: ../src/iop/colorbalancergb.c:1829
 msgid "isolate luminances"
 msgstr "isolar luminâncias"
 
-#: ../src/iop/colorbalancergb.c:1720
+#: ../src/iop/colorbalancergb.c:1831
 msgid "luminance ranges"
 msgstr "faixas de luminância"
 
-#: ../src/iop/colorbalancergb.c:1734
+#: ../src/iop/colorbalancergb.c:1845
 msgid "weight of the shadows over the whole tonal range"
 msgstr "peso das sombras sobre a faixa tonal total"
 
-#: ../src/iop/colorbalancergb.c:1745
+#: ../src/iop/colorbalancergb.c:1856
 msgid "position of the middle-gray reference for masking"
 msgstr "posição da referência de cinza médio para mascaramento"
 
-#: ../src/iop/colorbalancergb.c:1756
+#: ../src/iop/colorbalancergb.c:1867
 msgid "weights of highlights over the whole tonal range"
 msgstr "peso dos realces sobre a faixa tonal total"
 
-#: ../src/iop/colorbalancergb.c:1769
+#: ../src/iop/colorbalancergb.c:1880
 msgid "peak white luminance value used to normalize the power function"
 msgstr ""
 "valor de pico de luminância de branco usado para normalizar a função de "
 "potência"
 
-#: ../src/iop/colorbalancergb.c:1777
+#: ../src/iop/colorbalancergb.c:1888
 msgid "peak gray luminance value used to normalize the power function"
 msgstr ""
 "valor de pico de luminância de branco usado para normalizar a função de "
 "potência"
 
-#: ../src/iop/colorbalancergb.c:1779
+#: ../src/iop/colorbalancergb.c:1890
 msgid "mask preview settings"
 msgstr "configurações de pré-visualização de máscara"
 
-#: ../src/iop/colorbalancergb.c:1782
+#: ../src/iop/colorbalancergb.c:1893
 msgid "checkerboard color 1"
 msgstr "cor 1 do tabuleiro"
 
-#: ../src/iop/colorbalancergb.c:1785 ../src/iop/colorbalancergb.c:1794
+#: ../src/iop/colorbalancergb.c:1896 ../src/iop/colorbalancergb.c:1905
 msgid "select color of the checkerboard from a swatch"
 msgstr "selecione a cor do tabuleiro em uma amostra"
 
-#: ../src/iop/colorbalancergb.c:1791
+#: ../src/iop/colorbalancergb.c:1902
 msgid "checkerboard color 2"
 msgstr "cor 2 do tabuleiro"
 
-#: ../src/iop/colorbalancergb.c:1801
+#: ../src/iop/colorbalancergb.c:1912
 msgid "checkerboard size"
 msgstr "tamanho do tabuleiro"
 
@@ -14000,7 +13997,9 @@ msgstr "inverte"
 
 #: ../src/iop/invert.c:115
 msgid "this module is deprecated. please use the negadoctor module instead."
-msgstr "este módulo foi descontinuado. por favor, ao invés dele use o módulo analista de negativos."
+msgstr ""
+"este módulo foi descontinuado. por favor, ao invés dele use o módulo "
+"analista de negativos."
 
 #: ../src/iop/invert.c:120
 msgid "invert film negatives"
@@ -20493,9 +20492,12 @@ msgid ""
 msgstr ""
 "o darktable não conseguiu carregar `%s'; mudando para a mesa de luz agora.\n"
 "\n"
-"por favor verifique se a câmera que produziu a imagem é suportada no darktable.\n"
-"(a lista de câmeras suportadas está em https://www.darktable.org/resources/camera-support/)\n"
-"se você está certo de que o modelo da câmera é suportado, por favor considere abrir um issue em https://github.com/darktable-org/darktable"
+"por favor verifique se a câmera que produziu a imagem é suportada no "
+"darktable.\n"
+"(a lista de câmeras suportadas está em https://www.darktable.org/resources/"
+"camera-support/)\n"
+"se você está certo de que o modelo da câmera é suportado, por favor "
+"considere abrir um issue em https://github.com/darktable-org/darktable"
 
 #: ../src/views/darkroom.c:502
 #, c-format
