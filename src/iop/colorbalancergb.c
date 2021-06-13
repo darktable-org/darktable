@@ -41,8 +41,8 @@
 
 //#include <gtk/gtk.h>
 #include <stdlib.h>
-#define LUT_ELEM 360 // gamut LUT number of elements: resolution of 1°
-#define STEPS 72     // so we test 72×72×72 combinations of RGB in [0; 1] to build the gamut LUT
+#define LUT_ELEM 360     // gamut LUT number of elements: resolution of 1°
+#define STEPS 92         // so we test 92×92×92 combinations of RGB in [0; 1] to build the gamut LUT
 
 // Filmlight Yrg puts red at 330°, while usual HSL wheels put it at 360/0°
 // so shift in GUI only it to not confuse people. User params are always degrees,
@@ -348,6 +348,25 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+void init_presets(dt_iop_module_so_t *self)
+{
+  // Note : all the elements of the params structure are scalar floats,
+  // so we can just init them all to 0.f in batch
+  // Then, only 4 params have to be manually inited to non-zero values
+  dt_iop_colorbalancergb_params_t p = { 0.f };
+  p.shadows_weight = 1.f;        // DEFAULT: 1.0 DESCRIPTION: "shadows fall-off"
+  p.highlights_weight = 1.f;     // DEFAULT: 1.0 DESCRIPTION: "highlights fall-off"
+  p.mask_grey_fulcrum = 0.1845f; // DEFAULT: 0.1845 DESCRIPTION: "mask middle-gray fulcrum"
+  p.grey_fulcrum = 0.1845f;      // DEFAULT: 0.1845 DESCRIPTION: "contrast gray fulcrum"
+
+  // preset
+  p.chroma_global = 0.2f;
+  p.saturation_shadows = 0.1f;
+  p.saturation_midtones = 0.05f;
+  p.saturation_highlights = -0.05f;
+
+  dt_gui_presets_add_generic(_("add basic colorfulness"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+}
 
 /* Custom matrix handling for speed */
 static inline void repack_3x3_to_3xSSE(const float input[9], float output[3][4])
@@ -422,6 +441,43 @@ static inline float soft_clip(const float x, const float soft_threshold, const f
   // hard threshold must be > soft threshold
   const float norm = hard_threshold - soft_threshold;
   return (x > soft_threshold) ? soft_threshold + (1.f - expf(-(x - soft_threshold) / norm)) * norm : x;
+}
+
+
+static inline float lookup_gamut(const float *const gamut_lut, const float x)
+{
+  // WARNING : x should be between [-pi ; pi ], which is the default output of atan2 anyway
+
+  // convert in LUT coordinate
+  const float x_test = (LUT_ELEM - 1) * (x + M_PI_F) / (2.f * M_PI_F);
+
+  // find the 2 closest integer coordinates (next/previous)
+  float x_prev = floorf(x_test);
+  float x_next = ceilf(x_test);
+
+  // get the 2 closest LUT elements at integer coordinates
+  // cycle on the hue ring if out of bounds
+  int xi = (int)x_prev;
+  if(xi < 0) xi = LUT_ELEM - 1;
+  else if(xi > LUT_ELEM - 1) xi = 0;
+
+  int xii = (int)x_next;
+  if(xii < 0) xii = LUT_ELEM - 1;
+  else if(xii > LUT_ELEM - 1) xii = 0;
+
+  // fetch the corresponding y values
+  const float y_prev = gamut_lut[xi];
+  const float y_next = gamut_lut[xii];
+
+  // assume that we are exactly on an integer LUT element
+  float out = y_prev;
+
+  if(x_next != x_prev)
+    // we are between 2 LUT elements : do linear interpolation
+    // actually, we only add the slope term on the previous one
+    out += (x_test - x_prev) * (y_next - y_prev) / (x_next - x_prev);
+
+  return out;
 }
 
 
@@ -560,7 +616,31 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float chroma_factor = fmaxf(1.f + chroma_boost + vibrance, 0.f);
     Ych[1] *= chroma_factor;
 
-    // Go to Yrg
+    // Do a test conversion to Yrg
+    Ych_to_Yrg(Ych, Yrg);
+
+    // Gamut-clip in Yrg at constant hue and luminance
+    // e.g. find the max chroma value that fits in gamut at the current hue
+    const float D65[4] = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
+    float max_c = Ych[1];
+    const float cos_h = cosf(Ych[2]);
+    const float sin_h = sinf(Ych[2]);
+
+    if(Yrg[1] < 0.f)
+    {
+      max_c = fminf(-D65[0] / cos_h, max_c);
+    }
+    if(Yrg[2] < 0.f)
+    {
+      max_c = fminf(-D65[1] / sin_h, max_c);
+    }
+    if(Yrg[1] + Yrg[2] > 1.f)
+    {
+      max_c = fminf((1.f - D65[0] - D65[1]) / (cos_h + sin_h), max_c);
+    }
+
+    // Overwrite chroma with the sanitized value and go to Yrg for real
+    Ych[1] = max_c;
     Ych_to_Yrg(Ych, Yrg);
 
     // Go to LMS
@@ -625,18 +705,54 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     SO[1] = SO[0] * fminf(fmaxf(T * boosts[1], -T), DT_M_PI_F / 2.f - T);
     SO[0] = fmaxf(SO[0] * boosts[0], 0.f);
 
-    // Gamut mapping
-    const float out_max_sat_h = gamut_LUT[CLAMP((size_t)(LUT_ELEM * (h + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1)];
-    SO[1] = soft_clip(SO[1], 0.8f * out_max_sat_h, out_max_sat_h);
-
     // Project back to JCh, that is rotate back of -T angle
     JC[0] = fmaxf(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
     JC[1] = fmaxf(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
 
-    // Project back to JzAzBz
+    // Gamut mapping
+    const float out_max_sat_h = lookup_gamut(gamut_LUT, h);
+    float sat = (JC[0] > 0.f) ? JC[1] / JC[0] : 0.f;
+    sat = soft_clip(sat, 0.8f * out_max_sat_h, out_max_sat_h);
+    const float max_C_at_sat = JC[0] * sat;
+    const float max_J_at_sat = (sat > 0.f) ? JC[1] / sat : 0.f;
+    JC[0] = (JC[0] + max_J_at_sat) / 2.f;
+    JC[1] = (JC[1] + max_C_at_sat) / 2.f;
+
+    // Gamut-clip in Jch at constant hue and lightness,
+    // e.g. find the max chroma available at current hue that doesn't
+    // yield negative L'M'S' values, which will need to be clipped during conversion
+    const float cos_H = cosf(h);
+    const float sin_H = sinf(h);
+
+    const float d0 = 1.6295499532821566e-11f;
+    const float dd = -0.56f;
+    float Iz = JC[0] + d0;
+    Iz /= (1.f + dd - dd * Iz);
+
+    const float DT_ALIGNED_ARRAY AI[3][4]
+        = { {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
+            {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
+            {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f } };
+
+    // Do a test conversion to L'M'S'
+    const float IzAzBz[4] = { Iz, JC[1] * cos_H, JC[1] * sin_H, 0.f };
+    dot_product(IzAzBz, AI, LMS);
+
+    // Clip chroma
+    float max_C = JC[1];
+    if(LMS[0] < 0.f)
+      max_C = fmin(-Iz / (AI[0][1] * cos_H + AI[0][2] * sin_H), max_C);
+
+    if(LMS[1] < 0.f)
+      max_C = fmin(-Iz / (AI[1][1] * cos_H + AI[1][2] * sin_H), max_C);
+
+    if(LMS[2] < 0.f)
+      max_C = fmin(-Iz / (AI[2][1] * cos_H + AI[2][2] * sin_H), max_C);
+
+    // Project back to JzAzBz for real
     Jab[0] = JC[0];
-    Jab[1] = JC[1] * cosf(h);
-    Jab[2] = JC[1] * sinf(h);
+    Jab[1] = max_C * cos_H;
+    Jab[2] = max_C * sin_H;
 
     dt_JzAzBz_2_XYZ(Jab, XYZ_D65);
 
@@ -944,7 +1060,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // this will be used to prevent users to mess up their images by pushing chroma out of gamut
   if(!d->lut_inited && d->gamut_LUT)
   {
-    float *const restrict LUT = d->gamut_LUT;
+    float *const restrict LUT = dt_alloc_align_float(LUT_ELEM);
 
     // init the LUT between -pi and pi by increments of 1°
     for(size_t k = 0; k < LUT_ELEM; k++) LUT[k] = 0.f;
@@ -960,7 +1076,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // make RGB values vary between [0; 1] in working space, convert to Ych and get the max(c(h)))
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(input_matrix) schedule(static) dt_omp_sharedconst(LUT)
+      dt_omp_firstprivate(input_matrix) schedule(static) dt_omp_sharedconst(LUT) \
+      collapse(3)
 #endif
     for(size_t r = 0; r < STEPS; r++)
       for(size_t g = 0; g < STEPS; g++)
@@ -980,11 +1097,24 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
           Jch[1] = hypotf(Jab[2], Jab[1]);
           Jch[2] = atan2f(Jab[2], Jab[1]);
 
-          const size_t index = CLAMP((size_t)(LUT_ELEM * (Jch[2] + M_PI_F) / (2.f * M_PI_F)), 0, LUT_ELEM - 1);
+          const size_t index = roundf((LUT_ELEM - 1) * (Jch[2] + M_PI_F) / (2.f * M_PI_F));
           const float saturation = (Jch[0] > 0.f) ? Jch[1] / Jch[0] : 0.f;
-          if(LUT[index] < saturation) LUT[index] = saturation;
+          LUT[index] = fmaxf(saturation, LUT[index]);
         }
 
+    // anti-aliasing on the LUT (simple 5-taps 1D box average)
+    for(size_t k = 2; k < LUT_ELEM - 2; k++)
+    {
+      d->gamut_LUT[k] = (LUT[k - 2] + LUT[k - 1] + LUT[k] + LUT[k + 1] + LUT[k + 2]) / 5.f;
+    }
+
+    // handle bounds
+    d->gamut_LUT[0] = (LUT[LUT_ELEM - 2] + LUT[LUT_ELEM - 1] + LUT[0] + LUT[1] + LUT[2]) / 5.f;
+    d->gamut_LUT[1] = (LUT[LUT_ELEM - 1] + LUT[0] + LUT[1] + LUT[2] + LUT[3]) / 5.f;
+    d->gamut_LUT[LUT_ELEM - 1] = (LUT[LUT_ELEM - 3] + LUT[LUT_ELEM - 2] + LUT[LUT_ELEM - 1] + LUT[0] + LUT[1]) / 5.f;
+    d->gamut_LUT[LUT_ELEM - 2] = (LUT[LUT_ELEM - 4] + LUT[LUT_ELEM - 3] + LUT[LUT_ELEM - 2] + LUT[LUT_ELEM - 1] + LUT[0]) / 5.f;
+
+    dt_free_align(LUT);
     d->lut_inited = TRUE;
   }
 }

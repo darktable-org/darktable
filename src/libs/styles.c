@@ -562,7 +562,16 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
       /* extract name from xml file */
       gchar *bname = "";
       xmlDoc *document = xmlReadFile((char*)filename->data, NULL, 0);
-      xmlNode *root = xmlDocGetRootElement(document);
+      xmlNode *root = NULL;
+      if(document != NULL)
+        root = xmlDocGetRootElement(document);
+
+      if(document == NULL || root == NULL)
+      {
+        dt_print(DT_DEBUG_CONTROL,
+                 "[styles] file %s is not a style file\n", (char*)filename->data);
+        continue;
+      }
 
       for(xmlNode *node = root->children->children; node; node = node->next)
       {

@@ -81,6 +81,7 @@ typedef struct dt_lib_geotagging_t
   time_t datetime;
   time_t datetime0;
   time_t offset;
+  gboolean editing;
   uint32_t imgid;
   GList* imgs;
   int nb_imgs;
@@ -633,7 +634,6 @@ static void _refresh_track_list(dt_lib_module_t *self)
   if(!d->map.gpx) return;
 
   GList *trkseg = dt_gpx_get_trkseg(d->map.gpx);
-  int total_pts = 0;
   _remove_images_from_map(self);
   for(GList *i = d->imgs; i; i = g_list_next(i))
     ((dt_sel_img_t *)i->data)->segid = -1;
@@ -645,7 +645,6 @@ static void _refresh_track_list(dt_lib_module_t *self)
   {
     dt_gpx_track_segment_t *t = (dt_gpx_track_segment_t *)ts->data;
     gchar *dts = _utc_timeval_to_localtime_text(t->start_dt, d->tz_camera, TRUE);
-    total_pts += t->nb_trkpt;
     const int nb_imgs = _count_images_per_track(t, ts->next ? ts->next->data : NULL, self);
     gboolean active;
     gtk_tree_model_get(model, &iter, DT_GEO_TRACKS_ACTIVE, &active, -1);
@@ -683,7 +682,6 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
   for(GList *i = d->imgs; i; i = g_list_next(i))
     ((dt_sel_img_t *)i->data)->segid = -1;
 
-  int total_pts = 0;
   int segid = 0;
   const gboolean active = gtk_toggle_button_get_active(
                           GTK_TOGGLE_BUTTON(gtk_tree_view_column_get_widget(d->map.sel_tracks)));
@@ -706,7 +704,6 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
     segid++;
     g_free(dts);
     g_free(tooltip);
-    total_pts += t->nb_trkpt;
   }
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->map.gpx_view), model);
   g_object_unref(model);
@@ -1284,6 +1281,7 @@ static void _display_datetime(dt_lib_datetime_t *dtw, const time_t datetime,
     g_signal_handlers_unblock_by_func(d->dt.widget[i], _datetime_entry_changed, self);
 }
 
+// read the current date/time and make correction (field under/overflow)
 static time_t _read_datetime_entry(dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
@@ -1316,14 +1314,17 @@ static void _datetime_entry_changed(GtkWidget *entry, dt_lib_module_t *self)
   const gboolean locked = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->lock_offset));
   if(!locked)
   {
-    d->datetime = _read_datetime_entry(self);
-    if(d->datetime > 0)
-      d->offset = d->datetime - d->datetime0;
-    _display_offset(d->offset, d->datetime > 0, self);
+    if(!d->editing)
+    {
+      d->datetime = _read_datetime_entry(self);
+      if(d->datetime > 0)
+        d->offset = d->datetime - d->datetime0;
+      _display_offset(d->offset, d->datetime > 0, self);
 #ifdef HAVE_MAP
-    if(d->map.view)
-      _refresh_track_list(self);
+      if(d->map.view)
+        _refresh_track_list(self);
 #endif
+    }
   }
 }
 
@@ -1449,6 +1450,7 @@ static gboolean _datetime_scroll_over(GtkWidget *w, GdkEventScroll *event, dt_li
   return TRUE;
 }
 
+// type 0 date/time, 1 original date/time, 2 offset
 static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_lib_module_t *self)
 {
   GtkWidget *flow = gtk_flow_box_new();
@@ -1501,6 +1503,7 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
 
 static gboolean _datetime_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
 {
+  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   switch(event->keyval)
   {
     case GDK_KEY_Escape:
@@ -1508,11 +1511,11 @@ static gboolean _datetime_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_l
       // reset
       _refresh_image_datetime(self);
 #ifdef HAVE_MAP
-      dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
       if(d->map.view)
         _refresh_track_list(self);
 #endif
       gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+      d->editing = FALSE;
       return FALSE;
     }
     // allow  0 .. 9, left/right/home/end movement using arrow keys and del/backspace
@@ -1536,7 +1539,6 @@ static gboolean _datetime_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_l
     case GDK_KEY_KP_8:
     case GDK_KEY_9:
     case GDK_KEY_KP_9:
-    case GDK_KEY_Tab:
     case GDK_KEY_Delete:
     case GDK_KEY_KP_Delete:
     case GDK_KEY_BackSpace:
@@ -1546,6 +1548,14 @@ static gboolean _datetime_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_l
     case GDK_KEY_KP_Home:
     case GDK_KEY_End:
     case GDK_KEY_KP_End:
+      d->editing = TRUE;
+      return FALSE;
+
+    case GDK_KEY_Tab:
+    case GDK_KEY_Return:
+    case GDK_KEY_KP_Enter:
+      d->editing = FALSE;
+      g_signal_emit_by_name(d->dt.widget[0], "changed");
       return FALSE;
 
     default: // block everything else

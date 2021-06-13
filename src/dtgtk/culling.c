@@ -353,9 +353,9 @@ static gboolean _zoom_and_shift(dt_thumbnail_t *th, const int x_offset, const in
     posy -= (gtk_widget_get_allocated_height(th->w_image_box) - ih) / 2;
   }
 
-  // we change the value and sanitize them
-  th->zoomx = fmaxf(iw - th->img_width * z_ratio, fminf(0.0f, posx - (posx - th->zoomx) * z_ratio));
-  th->zoomy = fmaxf(ih - th->img_height * z_ratio, fminf(0.0f, posy - (posy - th->zoomy) * z_ratio));
+  // we change the value. Values will be sanitized in the drawing event
+  th->zoomx = posx - (posx - th->zoomx) * z_ratio;
+  th->zoomy = posy - (posy - th->zoomy) * z_ratio;
 
   dt_thumbnail_image_refresh(th);
 

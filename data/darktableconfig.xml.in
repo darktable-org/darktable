@@ -200,7 +200,7 @@
     <type min="2" max="64">int</type>
     <default>16</default>
     <shortdescription>minimum amount of memory (in MB) for a single buffer in tiling</shortdescription>
-    <longdescription>if set to a positive, non-zero value this variable defines the minimum amount of memory (in MB) that tiling should take for a single image buffer. has precedence over heuristics based on host_memory_limit (needs a restart).</longdescription>
+    <longdescription>minimum amount of memory (in MB) that tiling should take for a single image buffer (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_memory_headroom</name>
@@ -1984,7 +1984,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>rating an image one star twice will not zero out the rating</shortdescription>
-    <longdescription>do not have the rating of one star behave as documented in the manual--an image rated one star twice will result in a zero star rating.</longdescription>
+    <longdescription>defines whether rating an image one star twice will zero out star rating.</longdescription>
   </dtconfig>
  <dtconfig prefs="lighttable" section="general">
     <name>lighttable/ui/scrollbars</name>
@@ -2106,7 +2106,7 @@
     </type>
     <default>bicubic</default>
     <shortdescription>pixel interpolator (warp)</shortdescription>
-    <longdescription>pixel interpolator used in modules for rotation, lens correction, liquify, clipping and final scaling (bilinear, bicubic, lanczos2).</longdescription>
+    <longdescription>pixel interpolator used in modules for rotation, lens correction, liquify, cropping and final scaling (bilinear, bicubic, lanczos2).</longdescription>
   </dtconfig>
   <dtconfig prefs="processing">
     <name>plugins/lighttable/export/pixel_interpolator</name>
