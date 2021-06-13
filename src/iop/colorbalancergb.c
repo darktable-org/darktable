@@ -42,7 +42,7 @@
 //#include <gtk/gtk.h>
 #include <stdlib.h>
 #define LUT_ELEM 360     // gamut LUT number of elements: resolution of 1°
-#define STEPS 92         // so we test 72×72×72 combinations of RGB in [0; 1] to build the gamut LUT
+#define STEPS 92         // so we test 92×92×92 combinations of RGB in [0; 1] to build the gamut LUT
 
 // Filmlight Yrg puts red at 330°, while usual HSL wheels put it at 360/0°
 // so shift in GUI only it to not confuse people. User params are always degrees,
