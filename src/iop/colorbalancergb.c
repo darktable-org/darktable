@@ -444,7 +444,6 @@ static inline float soft_clip(const float x, const float soft_threshold, const f
 }
 
 
-
 static inline float lookup_gamut(const float *const gamut_lut, const float x)
 {
   // WARNING : x should be between [-pi ; pi ], which is the default output of atan2 anyway
@@ -719,10 +718,41 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     JC[0] = (JC[0] + max_J_at_sat) / 2.f;
     JC[1] = (JC[1] + max_C_at_sat) / 2.f;
 
-    // Project back to JzAzBz
+    // Gamut-clip in Jch at constant hue and lightness,
+    // e.g. find the max chroma available at current hue that doesn't
+    // yield negative L'M'S' values, which will need to be clipped during conversion
+    const float cos_H = cosf(h);
+    const float sin_H = sinf(h);
+
+    const float d0 = 1.6295499532821566e-11f;
+    const float dd = -0.56f;
+    float Iz = JC[0] + d0;
+    Iz /= (1.f + dd - dd * Iz);
+
+    const float DT_ALIGNED_ARRAY AI[3][4]
+        = { {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
+            {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
+            {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f } };
+
+    // Do a test conversion to L'M'S'
+    const float IzAzBz[4] = { Iz, JC[1] * cos_H, JC[1] * sin_H, 0.f };
+    dot_product(IzAzBz, AI, LMS);
+
+    // Clip chroma
+    float max_C = JC[1];
+    if(LMS[0] < 0.f)
+      max_C = fmin(-Iz / (AI[0][1] * cos_H + AI[0][2] * sin_H), max_C);
+
+    if(LMS[1] < 0.f)
+      max_C = fmin(-Iz / (AI[1][1] * cos_H + AI[1][2] * sin_H), max_C);
+
+    if(LMS[2] < 0.f)
+      max_C = fmin(-Iz / (AI[2][1] * cos_H + AI[2][2] * sin_H), max_C);
+
+    // Project back to JzAzBz for real
     Jab[0] = JC[0];
-    Jab[1] = JC[1] * cosf(h);
-    Jab[2] = JC[1] * sinf(h);
+    Jab[1] = max_C * cos_H;
+    Jab[2] = max_C * sin_H;
 
     dt_JzAzBz_2_XYZ(Jab, XYZ_D65);
 
