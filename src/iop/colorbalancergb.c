@@ -1098,9 +1098,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
           Jch[2] = atan2f(Jab[2], Jab[1]);
 
           const size_t index = roundf((LUT_ELEM - 1) * (Jch[2] + M_PI_F) / (2.f * M_PI_F));
-          // The 6.f factor is an ugly hack to prevent false-positives in gamut detection.
-          // we shouldn't need it, which means there is a well-hidden bug somewhere.
-          // for the time being, this will prevent gamut clipping of valid colors
           const float saturation = (Jch[0] > 0.f) ? Jch[1] / Jch[0] : 0.f;
           LUT[index] = fmaxf(saturation, LUT[index]);
         }
