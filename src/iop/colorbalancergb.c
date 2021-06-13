@@ -41,8 +41,8 @@
 
 //#include <gtk/gtk.h>
 #include <stdlib.h>
-#define LUT_ELEM 360 // gamut LUT number of elements: resolution of 1°
-#define STEPS 72     // so we test 72×72×72 combinations of RGB in [0; 1] to build the gamut LUT
+#define LUT_ELEM 360     // gamut LUT number of elements: resolution of 1°
+#define STEPS 92         // so we test 72×72×72 combinations of RGB in [0; 1] to build the gamut LUT
 
 // Filmlight Yrg puts red at 330°, while usual HSL wheels put it at 360/0°
 // so shift in GUI only it to not confuse people. User params are always degrees,
@@ -449,7 +449,7 @@ static inline float lookup_gamut(const float *const gamut_lut, const float x)
   // WARNING : x should be between [-pi ; pi ], which is the default output of atan2 anyway
 
   // convert in LUT coordinate
-  const float x_test = (x + M_PI_F) / (2.f * M_PI_F);
+  const float x_test = (LUT_ELEM - 1) * (x + M_PI_F) / (2.f * M_PI_F);
 
   // find the 2 closest integer coordinates (next/previous)
   float x_prev = floorf(x_test);
@@ -712,7 +712,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // Gamut mapping
     const float out_max_sat_h = lookup_gamut(gamut_LUT, h);
     float sat = (JC[0] > 0.f) ? JC[1] / JC[0] : 0.f;
-    sat = soft_clip(sat, 0.9f * out_max_sat_h, out_max_sat_h);
+    sat = soft_clip(sat, 0.8f * out_max_sat_h, out_max_sat_h);
     const float max_C_at_sat = JC[0] * sat;
     const float max_J_at_sat = (sat > 0.f) ? JC[1] / sat : 0.f;
     JC[0] = (JC[0] + max_J_at_sat) / 2.f;
@@ -1060,7 +1060,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // this will be used to prevent users to mess up their images by pushing chroma out of gamut
   if(!d->lut_inited && d->gamut_LUT)
   {
-    float *const restrict LUT = d->gamut_LUT;
+    float *const restrict LUT = dt_alloc_align_float(LUT_ELEM);
 
     // init the LUT between -pi and pi by increments of 1°
     for(size_t k = 0; k < LUT_ELEM; k++) LUT[k] = 0.f;
@@ -1097,14 +1097,27 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
           Jch[1] = hypotf(Jab[2], Jab[1]);
           Jch[2] = atan2f(Jab[2], Jab[1]);
 
-          const size_t index = (LUT_ELEM - 1) * (Jch[2] + M_PI_F) / (2.f * M_PI_F);
+          const size_t index = roundf((LUT_ELEM - 1) * (Jch[2] + M_PI_F) / (2.f * M_PI_F));
           // The 6.f factor is an ugly hack to prevent false-positives in gamut detection.
           // we shouldn't need it, which means there is a well-hidden bug somewhere.
           // for the time being, this will prevent gamut clipping of valid colors
-          const float saturation = (Jch[0] > 0.f) ? 6.f * Jch[1] / Jch[0] : 0.f;
+          const float saturation = (Jch[0] > 0.f) ? Jch[1] / Jch[0] : 0.f;
           LUT[index] = fmaxf(saturation, LUT[index]);
         }
 
+    // anti-aliasing on the LUT (simple 5-taps 1D box average)
+    for(size_t k = 2; k < LUT_ELEM - 2; k++)
+    {
+      d->gamut_LUT[k] = (LUT[k - 2] + LUT[k - 1] + LUT[k] + LUT[k + 1] + LUT[k + 2]) / 5.f;
+    }
+
+    // handle bounds
+    d->gamut_LUT[0] = (LUT[LUT_ELEM - 2] + LUT[LUT_ELEM - 1] + LUT[0] + LUT[1] + LUT[2]) / 5.f;
+    d->gamut_LUT[1] = (LUT[LUT_ELEM - 1] + LUT[0] + LUT[1] + LUT[2] + LUT[3]) / 5.f;
+    d->gamut_LUT[LUT_ELEM - 1] = (LUT[LUT_ELEM - 3] + LUT[LUT_ELEM - 2] + LUT[LUT_ELEM - 1] + LUT[0] + LUT[1]) / 5.f;
+    d->gamut_LUT[LUT_ELEM - 2] = (LUT[LUT_ELEM - 4] + LUT[LUT_ELEM - 3] + LUT[LUT_ELEM - 2] + LUT[LUT_ELEM - 1] + LUT[0]) / 5.f;
+
+    dt_free_align(LUT);
     d->lut_inited = TRUE;
   }
 }

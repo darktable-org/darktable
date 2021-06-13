@@ -755,7 +755,7 @@ inline float lookup_gamut(read_only image2d_t gamut_lut, const float x)
   // WARNING : x should be between [-pi ; pi ], which is the default output of atan2 anyway
 
   // convert in LUT coordinate
-  const float x_test = (x + M_PI_F) / (2.f * M_PI_F);
+  const float x_test = (LUT_ELEM - 1) * (x + M_PI_F) / (2.f * M_PI_F);
 
   // find the 2 closest integer coordinates (next/previous)
   float x_prev = floor(x_test);
@@ -948,7 +948,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   // Gamut mapping
   const float out_max_sat_h = lookup_gamut(gamut_lut, h);
   float sat = (JC[0] > 0.f) ? JC[1] / JC[0] : 0.f;
-  sat = soft_clip(sat, 0.9f * out_max_sat_h, out_max_sat_h);
+  sat = soft_clip(sat, 0.8f * out_max_sat_h, out_max_sat_h);
   const float max_C_at_sat = JC[0] * sat;
   const float max_J_at_sat = (sat > 0.f) ? JC[1] / sat : 0.f;
   JC[0] = (JC[0] + max_J_at_sat) / 2.f;
