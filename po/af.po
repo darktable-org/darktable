@@ -4,7 +4,7 @@
 # Reference Dictionaires
 # >> https://rieme.co.za/
 # >> https://github.com/casperl/Afrikaanse-rekenaarterme
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
@@ -309,6 +309,12 @@ msgid ""
 "should choose the *always* option.\n"
 "(more comments in the manual)"
 msgstr ""
+"as die posseëlprentjiegrootte groter is as hierdie waarde, sal dit verwerk "
+"word met behulp van raw lêer in plaas van die ingebedde voorskou JPEG (beter "
+"maar stadiger).\n"
+"as u alle posseëlprentjies en voorafgegeede beelde in die beste gehalte wil "
+"hê, moet u die * altyd * opsie kies.\n"
+"(meer kommentaar in die handleiding)"
 
 #: ../build/bin/preferences_gen.h:3832
 #, fuzzy
@@ -324,6 +330,11 @@ msgid ""
 "should choose the *always* option.\n"
 "(more comments in the manual)"
 msgstr ""
+"as die posseëlprentjiegrootte groter is as hierdie waarde, sal dit verwerk "
+"word met behulp van die volle gehalte lewering pad (beter, maar stadiger).\n"
+"as u alle posseëlprentjies en voorafverwerkte beelde in die beste gehalte "
+"wil hê, moet u die * altyd * opsie kies.\n"
+"(meer kommentaar in die handleiding)"
 
 #: ../build/bin/preferences_gen.h:3927
 msgid "delimiters for size categories"
@@ -562,6 +573,8 @@ msgid ""
 "show gray loading screen when navigating between images in the darkroom\n"
 "disable to just show a toast message"
 msgstr ""
+"wys grys laaiskerm wanneer jy tussen beelde in die donkerkamer navigeer\n"
+"deaktiveer om net 'n \"toast\" boodskap te wys"
 
 #: ../build/bin/preferences_gen.h:4584
 msgid "modules"
@@ -786,6 +799,8 @@ msgid ""
 "if enabled, an icon will be shown in the header of any processing modules "
 "that have a mask applied"
 msgstr ""
+"indien dit geaktiveer is, sal 'n ikoon in die kop van enige "
+"verwerkingsmodules gewys word wat 'n masker toegepas het"
 
 #: ../build/bin/preferences_gen.h:5106
 msgid "other views"
@@ -1033,6 +1048,10 @@ msgid ""
 "these messages can be false-positive and should be disregarded if you know "
 "what you are doing. this option will hide them all the time."
 msgstr ""
+"vertoon boodskappe in modules om beginnersgebruikers te waarsku wanneer nie-"
+"standaard- en moontlik skadelike instellings in die pyplyn gebruik word.\n"
+"hierdie boodskappe kan 'n vals-positief wees en moet verontagsaam word as jy "
+"weet wat jy doen. hierdie opsie sal hulle die hele tyd versteek."
 
 #: ../build/bin/preferences_gen.h:5725
 msgid "security"
@@ -1351,7 +1370,7 @@ msgid ""
 "this option indicates when to check database fragmentation and perform "
 "maintenance"
 msgstr ""
-"Hierdie opsie dui aan wanneer om databasisfragmentering te kontroleer en "
+"hierdie opsie dui aan wanneer om databasisfragmentering te kontroleer en "
 "instandhouding uit te voer"
 
 #: ../build/bin/preferences_gen.h:6636
@@ -1461,22 +1480,19 @@ msgstr ""
 "inskrywings in xmp-etikette kan redelik groot word en mag die beskikbare "
 "stoor-ruimte oorskry om die geskiedenis stapel in uitset lêers te stoor. "
 "hierdie opsie laat xmp-etikette toe om gekompakteer te word en stoor spasie "
-"te verminder"
+"te verminder."
 
 #: ../build/bin/preferences_gen.h:6910
 msgid "look for updated xmp files on startup"
 msgstr "kyk vir bygewerkte xmp-lêers tydens selflaai"
 
 #: ../build/bin/preferences_gen.h:6924
-#, fuzzy
 msgid ""
 "check file modification times of all xmp files on startup to check if any "
 "got updated in the meantime"
 msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"Kontroleer lêermodifikasie-tye van alle xmp-lêers by selflaai om te "
-"kontroleer of daar enige tyd in die tussentyd opgedateer is\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
+"kontroleer lêermodifikasie-tye van alle xmp-lêers by selflaai om te "
+"kontroleer of daar enige opdaterings intussen plaasgevind het"
 
 #: ../build/bin/preferences_gen.h:6952
 msgid "miscellaneous"
@@ -1547,7 +1563,7 @@ msgid ""
 "this option allows to force a specific means of getting the current display "
 "profile. this is useful when one alternative gives wrong results"
 msgstr ""
-"Hierdie opsie maak dit moontlik om 'n spesifieke manier te dwing om die "
+"hierdie opsie maak dit moontlik om 'n spesifieke manier te dwing om die "
 "huidige vertoonprofiel te kry. Dit is nuttig wanneer een alternatief "
 "verkeerde resultate gee"
 
@@ -1617,15 +1633,12 @@ msgid "prefer enabled instances"
 msgstr "verkies geaktiveerde gevalle"
 
 #: ../build/bin/preferences_gen.h:7287
-#, fuzzy
 msgid ""
 "after applying the above rule, if instances of the module are active, ignore "
 "inactive instances"
 msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
 "na die toepassing van bogenoemde reël, indien gevalle van die module aktief "
-"is, ignoreer onaktiewe gevalle\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
+"is, ignoreer onaktiewe gevalle"
 
 #: ../build/bin/preferences_gen.h:7309
 msgid "prefer unmasked instances"
@@ -1746,12 +1759,14 @@ msgstr "lêernaampatroon wat vir 'n invoersessie gebruik word"
 
 #: ../build/bin/preferences_gen.h:7760
 msgid "do not set the 'uncategorized' entry for tags"
-msgstr ""
+msgstr "moenie die 'ongekategoriseerde' inskrywing vir etikette stel nie"
 
 #: ../build/bin/preferences_gen.h:7774
 msgid ""
 "do not set the 'uncategorized' entry for tags which do not have children"
 msgstr ""
+"moenie die 'ongekategoriseerde' inskrywing stel vir etikette wat nie kinders "
+"het nie"
 
 #: ../build/bin/preferences_gen.h:7796
 msgid "tags case sensitivity"
@@ -1814,6 +1829,8 @@ msgid ""
 "sort the following collections in descending order: 'film roll' by folder, "
 "'folder', 'times' (e.g. 'date taken')"
 msgstr ""
+"sorteer die volgende versamelings in dalende volgorde: 'filmrol' per vouer, "
+"'gids', 'tye' (bv. 'datum geneem')"
 
 #: ../build/bin/conf_gen.h:435
 msgctxt "preferences"
@@ -1836,7 +1853,7 @@ msgstr "kies slegs nuwe beelde"
 
 #: ../build/bin/conf_gen.h:762
 msgid "only select images that have not already been imported"
-msgstr ""
+msgstr "kies net beelde wat nie reeds ingevoer is nie"
 
 #: ../build/bin/conf_gen.h:767
 #, fuzzy
@@ -1892,10 +1909,8 @@ msgid "import tags from xmp"
 msgstr "voer xmp etikette in"
 
 #: ../build/bin/conf_gen.h:835
-#, fuzzy
-#| msgid "initial import rating"
 msgid "initial rating"
-msgstr "aanvanklike invoer gradering"
+msgstr "aanvanklike gradering"
 
 #: ../build/bin/conf_gen.h:836
 msgid "initial star rating for all images when importing a filmroll"
@@ -1903,15 +1918,16 @@ msgstr ""
 "aanvanklike stergradering vir alle beelde wanneer jy 'n filmroll invoer"
 
 #: ../build/bin/conf_gen.h:841
-#, fuzzy
 msgid "ignore exif rating"
-msgstr "gradering"
+msgstr "ignoreer exif gradering"
 
 #: ../build/bin/conf_gen.h:842
 msgid ""
 "ignore exif rating. if not set and exif rating is found, it overrides "
 "'initial rating'"
 msgstr ""
+"ignoreer exif gradering. indien nie gestel nie en exif-gradering gevind "
+"word, oorheers dit 'aanvanklike gradering'"
 
 #: ../build/bin/conf_gen.h:847
 msgid "import job"
@@ -1991,6 +2007,8 @@ msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
 msgstr ""
+"die minimum aantal beelde om 'n beeldegroep op te stel. kan die "
+"berekeningstyd beïnvloed."
 
 #: ../build/bin/conf_gen.h:1626
 msgctxt "preferences"
@@ -2023,6 +2041,7 @@ msgstr "max"
 msgid ""
 "limit the number of points imported with polygon in find location module"
 msgstr ""
+"beperk die aantal punte wat ingevoer word met poligon in die vind plek module"
 
 #: ../build/bin/conf_gen.h:2386
 msgctxt "preferences"
@@ -3131,10 +3150,8 @@ msgid "Markesteijn 3-pass"
 msgstr "Markesteijn 3-pass"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:218
-#, fuzzy
-#| msgid "frequency domain chroma (slow)"
 msgid "frequency domain chroma"
-msgstr "frekwensie domein chroma (stadig)"
+msgstr "frekwensie domein chroma"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:219
 msgid "Markesteijn 3-pass + VNG"
@@ -4692,13 +4709,9 @@ msgid "found strange path `%s'"
 msgstr "het vreemde pad ' %s ' gevind"
 
 #: ../src/common/darktable.c:305
-#, fuzzy, c-format
+#, c-format
 msgid "error loading directory `%s'"
-msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"kon nie gids `%s' laai nie\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"kon nie gids ' %s ' laai nie"
+msgstr "kon nie gids ' %s ' laai nie"
 
 #: ../src/common/darktable.c:328
 #, c-format
@@ -4707,13 +4720,9 @@ msgstr "lêer ' %s ' het onbekende formaat!"
 
 #: ../src/common/darktable.c:341 ../src/control/jobs/control_jobs.c:2112
 #: ../src/control/jobs/control_jobs.c:2153
-#, fuzzy, c-format
+#, c-format
 msgid "error loading file `%s'"
-msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"kon nie lêer `%s ' laai nie\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"kon nie lêer ' %s ' laai nie"
+msgstr "kon nie lêer ' %s ' laai nie"
 
 #: ../src/common/darktable.c:961
 msgid "darktable - run performance configuration?"
@@ -4772,6 +4781,31 @@ msgid ""
 "      otherwise you risk generating serious inconsistencies in your database."
 "</i>\n"
 msgstr ""
+"\n"
+"Jammer, darktable kon nie begin word nie (databasis is gesluit)\n"
+"\n"
+"Hoe om hierdie probleem op te los?\n"
+"\n"
+"1 - As darktable reeds oop is, \n"
+"      klik kanselleer en gebruik óf daardie darktable sessie óf sluit dit "
+"voordat jy probeer om darktable te herlaai \n"
+"      (proses-ID <i><b>%d</b></i> die databasisslotte geskep)\n"
+"\n"
+"2 - As jy nie 'n lopende instansie van darktable kan vind nie, probeer om "
+"jou sessie of jou rekenaar te herlaai. \n"
+"      Dit sal alle lopende programme sluit en hopelik die databasisse korrek "
+"sluit. \n"
+"\n"
+"3 - As jy dit gedoen het of seker is dat geen ander gevalle van darktable "
+"loop nie, \n"
+"      dit beteken waarskynlik dat die laaste geval abnormaal beëindig is. \n"
+"      Klik op die \"verwyder databasis slot lêers\" knoppie om die lêers te "
+"verwyder <i>data.db.lock</i> en <i>library.db.lock</i>.  \n"
+"\n"
+"<i><u>Waarskuwing!</u> Moenie hierdie lêers skrap sonder om eers die "
+"bogenoemde kontrole te onderneem nie, \n"
+"      anders loop jy die risiko om ernstige teenstrydighede in jou databasis "
+"te skep.</i>\n"
 
 #: ../src/common/database.c:2535
 msgid "error starting darktable"
@@ -4832,6 +4866,11 @@ msgid ""
 "db.lock</i>\n"
 "in folder <a href=\"file:///%s\">%s</a>.\n"
 msgstr ""
+"\n"
+"ten minste een lêer kon nie verwyder word nie.\n"
+"jy kan probeer om die lêers handmatig te skrap <i>data.db.lock</i> en "
+"<i>library.db.lock</i>\n"
+"in vouer <a href=\"file:///%s\">%s</a>.\n"
 
 #: ../src/common/database.c:2680
 #, c-format
@@ -5124,40 +5163,24 @@ msgid "cannot write local copy `%s'"
 msgstr "kan nie plaaslike kopie `%s' skryf nie"
 
 #: ../src/common/image.c:1915
-#, fuzzy, c-format
+#, c-format
 msgid "error moving local copy `%s' -> `%s'"
-msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"kon nie plaaslike kopie `%s'-> `%s' skuif nie\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"problem met verskuiwing van plaaslike beeld afskrifte `%s' -> `%s'"
+msgstr "kon nie plaaslike kopie `%s'-> `%s' skuif nie"
 
 #: ../src/common/image.c:1931
-#, fuzzy, c-format
+#, c-format
 msgid "error moving `%s': file not found"
-msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"kon nie `%s' skuif nie: lêer nie gevind nie\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"problem met verskuiwing `%s': lêer nie gevind nie"
+msgstr "problem met verskuiwing van `%s': lêer nie gevind nie"
 
 #: ../src/common/image.c:1941
-#, fuzzy, c-format
+#, c-format
 msgid "error moving `%s' -> `%s': file exists"
-msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"kon nie `%s'-> `%s' skuif nie: lêer bestaan\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"problem met verskuiwing `%s' -> `%s':  lêer bestaan klaar"
+msgstr "problem met verskuiwing `%s' -> `%s': lêer bestaan klaar"
 
 #: ../src/common/image.c:1945
-#, fuzzy, c-format
+#, c-format
 msgid "error moving `%s' -> `%s'"
-msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"kon nie `%s'-> `%s' skuif nie\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"problem met verskuiwing  `%s' -> `%s'"
+msgstr "problem met verskuiwing `%s' -> `%s'"
 
 #: ../src/common/image.c:2243
 msgid "cannot create local copy when the original file is not accessible."
@@ -5221,7 +5244,7 @@ msgstr ""
 
 #: ../src/common/import_session.c:359
 msgid "requested session path not available. device not mounted?"
-msgstr ""
+msgstr "aangevraagde sessiepad nie beskikbaar nie. toestel nie gemonteer nie?"
 
 #: ../src/common/iop_order.c:59 ../src/libs/ioporder.c:202
 msgid "legacy"
@@ -5862,13 +5885,9 @@ msgid "export images"
 msgstr "voer beelde uit"
 
 #: ../src/control/jobs/control_jobs.c:1964
-#, fuzzy, c-format
+#, c-format
 msgid "adding time offset to %d image"
-msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"pas tydsverskil toe op %d beeld\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"pas tydsverskil toe op %d beeld"
+msgstr "pas tydsverskil toe op %d beeld"
 
 #: ../src/control/jobs/control_jobs.c:1964
 #, fuzzy, c-format
@@ -6157,20 +6176,14 @@ msgid "difference (deprecated)"
 msgstr "verskil (verouderd)"
 
 #: ../src/develop/blend_gui.c:83
-#, fuzzy
-#| msgctxt "blendmode"
-#| msgid "inverse (deprecated)"
 msgctxt "blendmode"
 msgid "subtract inverse (deprecated)"
-msgstr "inverse (verouderd)"
+msgstr "verwyder omgekeerde (verouderd)"
 
 #: ../src/develop/blend_gui.c:84
-#, fuzzy
-#| msgctxt "blendmode"
-#| msgid "inverse (deprecated)"
 msgctxt "blendmode"
 msgid "divide inverse (deprecated)"
-msgstr "inverse (verouderd)"
+msgstr "verdeel teenoorgestelde (verouderd)"
 
 #: ../src/develop/blend_gui.c:88
 msgctxt "blendoperation"
@@ -6740,13 +6753,8 @@ msgid "mask blur"
 msgstr "masker blur"
 
 #: ../src/develop/blend_gui.c:3110
-#, fuzzy
 msgid "radius for gaussian blur of blend mask"
-msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"radius vir gaussiese vervaging van versnit masker\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"radius vir gaussiese Blur van versnit masker"
+msgstr "radius vir gaussiese vervaging van versnit masker"
 
 #: ../src/develop/blend_gui.c:3115 ../src/iop/retouch.c:2354
 #: ../src/libs/history.c:892
@@ -6876,10 +6884,8 @@ msgid "unknown mask"
 msgstr "onbekende masker"
 
 #: ../src/develop/imageop.c:2369
-#, fuzzy
-#| msgid "drawn & parametric mask"
 msgid "drawn + parametric mask"
-msgstr "getekende & paramemetriese masker"
+msgstr "getekende + paramemetriese masker"
 
 #: ../src/develop/imageop.c:2378
 msgid "this module has a"
@@ -6887,7 +6893,7 @@ msgstr "hierdie module het 'n"
 
 #: ../src/develop/imageop.c:2382
 msgid "click to display (module must be activated first)"
-msgstr ""
+msgstr "klik om te vertoon (module moet eers geaktiveer word)"
 
 #: ../src/develop/imageop.c:2439
 #, fuzzy
@@ -6952,6 +6958,10 @@ msgid ""
 "the data format does not match\n"
 "its requirements."
 msgstr ""
+"jy het hierdie module in\n"
+"'n posisie in die pyplyn waar\n"
+"die dataformaat nie ooreenstem\n"
+"met die vereistes nie."
 
 #: ../src/develop/imageop_gui.c:440
 #, c-format
@@ -7023,6 +7033,8 @@ msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
+"<b>grootte</b>: rol, <b>hardheid</b>: shift + rol\n"
+"<b>deursigtigheid</b>: ctrl+rol (%d%%)"
 
 #: ../src/develop/masks/brush.c:2934
 #, c-format
@@ -7030,6 +7042,8 @@ msgid ""
 "<b>hardness</b>: scroll, <b>size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
+"<b>hardheid</b>: rol, <b>grootte</b>: shift + rol\n"
+"<b>deursigtigheid</b>: ctrl+rol (%d%%)"
 
 #: ../src/develop/masks/brush.c:2937
 #, fuzzy
@@ -7039,9 +7053,9 @@ msgstr "TCA B"
 #: ../src/develop/masks/circle.c:109 ../src/develop/masks/circle.c:159
 #: ../src/develop/masks/ellipse.c:527 ../src/develop/masks/ellipse.c:612
 #: ../src/develop/masks/path.c:1034 ../src/develop/masks/path.c:1041
-#, fuzzy, c-format
+#, c-format
 msgid "feather size: %3.2f%%"
-msgstr "[PATH] change feather size"
+msgstr "veergrootte: %3.2f%%"
 
 #: ../src/develop/masks/circle.c:1322
 msgid "[CIRCLE] change size"
@@ -7066,6 +7080,8 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
+"<b>groote</b>: rol, <b>veergrootte</b>: shift + rol\n"
+"<b>deursigtigheid</b>: ctrl+rol (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:491 ../src/develop/masks/ellipse.c:593
 #, c-format
@@ -7102,7 +7118,7 @@ msgstr ""
 
 #: ../src/develop/masks/ellipse.c:2210
 msgid "<b>rotate</b>: ctrl+drag"
-msgstr ""
+msgstr "<b>roteer</b>: ctrl+sleep"
 
 #: ../src/develop/masks/ellipse.c:2213
 #, c-format
@@ -7283,6 +7299,10 @@ msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
 msgstr ""
+"geskiedenis het module gedeaktiveer, maar dit is nodig vir hierdie tipe "
+"beeld.\n"
+"waarskynlik ingestel deur die toepassing van 'n voorafbepaalde, styl of "
+"geskiedenis kopie&pasta"
 
 #: ../src/develop/pixelpipe_hb.c:384
 msgid "disabled as not appropriate"
@@ -7293,6 +7313,10 @@ msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
 msgstr ""
+"geskiedenis het module geaktiveer, maar dit word nie toegelaat vir hierdie "
+"tipe beeld nie.\n"
+"waarskynlik ingestel deur die toepassing van 'n voorafbepaalde, styl of "
+"geskiedenis kopie&plak"
 
 #: ../src/develop/pixelpipe_hb.c:2398
 msgid ""
@@ -7357,12 +7381,16 @@ msgstr "passing"
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr ""
+"jy het die instellings verander wat verband hou met hoe posseëlprentjie "
+"gegenereer word.\n"
 
 #: ../src/dtgtk/thumbtable.c:1184
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
 msgstr ""
+"alle verkaste posseëlprentjies moet ontgeldig word.\n"
+"\n"
 
 #: ../src/dtgtk/thumbtable.c:1186
 #, c-format
@@ -7406,11 +7434,8 @@ msgid "image rated to %s"
 msgstr "beeld waardeer tot %s"
 
 #: ../src/dtgtk/thumbtable.c:2228
-#, fuzzy
-#| msgid "image has %d star"
-#| msgid_plural "image has %d stars"
 msgid "image rated to 0 star"
-msgstr "beeld het %d ster"
+msgstr "beeld gradeer tot 0 sterre"
 
 #: ../src/dtgtk/thumbtable.c:2261
 #, fuzzy, c-format
@@ -8477,6 +8502,8 @@ msgstr "stoor CSS en pas toe"
 #: ../src/gui/preferences.c:476
 msgid "click to save and apply the CSS tweaks entered in this editor"
 msgstr ""
+"klik om die CSS-tweaks wat in hierdie redakteur ingetik is, te stoor en toe "
+"te pas"
 
 #. load default text with some pointers
 #: ../src/gui/preferences.c:494
@@ -8918,7 +8945,7 @@ msgstr "12 bit"
 
 #: ../src/imageio/format/avif.c:449
 msgid "invalid AVIF bit depth!"
-msgstr "ongeldige AVIF bit diepte"
+msgstr "ongeldige AVIF bit diepte!"
 
 #: ../src/imageio/format/avif.c:691
 msgid "AVIF (8/10/12-bit)"
@@ -8943,7 +8970,7 @@ msgstr "grysskaal"
 
 #: ../src/imageio/format/avif.c:795
 msgid "saving as grayscale will reduce the size for black & white images"
-msgstr ""
+msgstr "spaar as grysskaal sal die grootte vir swart & wit beelde verminder"
 
 #: ../src/imageio/format/avif.c:808
 msgid "tiling"
@@ -9865,85 +9892,40 @@ msgid "clarity"
 msgstr "duidelikheid"
 
 #: ../src/iop/atrous.c:889
-#, fuzzy
 msgid "deblur: large blur, strength 3"
-msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"deblur: groot vervaag, krag 3\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"ontvaag: groot vervaag, krag 3"
+msgstr "ontvaag: groot vervaag, krag 3"
 
 #: ../src/iop/atrous.c:906
-#, fuzzy
 msgid "deblur: medium blur, strength 3"
-msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"deblur: medium vervaag, krag 3\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"ontvaag: medium vervaag, krag 3"
+msgstr "ontvaag: medium vervaag, krag 3"
 
 #: ../src/iop/atrous.c:922
-#, fuzzy
 msgid "deblur: fine blur, strength 3"
-msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"deblur: fyn vervaag, krag 3\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"ontvaag: fyn vervaag, krag 3"
+msgstr "ontvaag: fyn vervaag, krag 3"
 
 #: ../src/iop/atrous.c:940
-#, fuzzy
 msgid "deblur: large blur, strength 2"
-msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"deblur: groot vervaag, krag 2\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"ontvaag: groot vervaag, krag 2"
+msgstr "ontvaag: groot vervaag, krag 2"
 
 #: ../src/iop/atrous.c:957
-#, fuzzy
 msgid "deblur: medium blur, strength 2"
-msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"deblur: medium vervaag, krag 2\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"ontvaag: medium vervaag, krag 2"
+msgstr "ontvaag: medium vervaag, krag 2"
 
 #: ../src/iop/atrous.c:973
-#, fuzzy
 msgid "deblur: fine blur, strength 2"
-msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"deblur: fyn vervaag, krag 2\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"ontvaag: fyn vervaag, krag 2"
+msgstr "ontvaag: fyn vervaag, krag 2"
 
 #: ../src/iop/atrous.c:991
-#, fuzzy
 msgid "deblur: large blur, strength 1"
-msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"deblur: groot vervaag, krag 1\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"ontvaag: groot vervaag, krag 1"
+msgstr "ontvaag: groot vervaag, krag 1"
 
 #: ../src/iop/atrous.c:1008
-#, fuzzy
 msgid "deblur: medium blur, strength 1"
-msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"deblur: medium vervaag, krag 1\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"ontvaag: medium vervaag, krag 1"
+msgstr "ontvaag: medium vervaag, krag 1"
 
 #: ../src/iop/atrous.c:1024
-#, fuzzy
 msgid "deblur: fine blur, strength 1"
-msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"deblur: fyn vervaag, krag 1\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"ontvaag: fyn vervaag, krag 1"
+msgstr "ontvaag: fyn vervaag, krag 1"
 
 #: ../src/iop/atrous.c:1350 ../src/iop/denoiseprofile.c:3353
 #: ../src/iop/rawdenoise.c:742
@@ -10059,7 +10041,7 @@ msgstr "konica minolta soortgelyk"
 
 #: ../src/iop/basecurve.c:215
 msgid "samsung like"
-msgstr "Samsung soortgelyk"
+msgstr "samsung soortgelyk"
 
 #: ../src/iop/basecurve.c:216
 msgid "fujifilm like"
@@ -10583,7 +10565,7 @@ msgstr "lineêr, raw"
 
 #: ../src/iop/cacorrect.c:1337
 msgid "CA correction supports only RGB colour filter arrays"
-msgstr ""
+msgstr "CA regstelling ondersteun slegs RGB kleur filter skikkings"
 
 #: ../src/iop/cacorrect.c:1339 ../src/iop/cacorrect.c:1347
 msgid "bypassed while zooming in"
@@ -10613,7 +10595,7 @@ msgstr ""
 
 #: ../src/iop/cacorrect.c:1460
 msgid "iteration runs, default is twice"
-msgstr ""
+msgstr "iterasie lopies, verstek is twee keer"
 
 #: ../src/iop/cacorrect.c:1463
 msgid "activate colorshift correction for blue & red channels"
@@ -10715,10 +10697,8 @@ msgid "radius_1"
 msgstr "radius_1"
 
 #: ../src/iop/censorize.c:421
-#, fuzzy
-#| msgid "deflate"
 msgid "pixelate"
-msgstr "afblaas"
+msgstr "pixeleer"
 
 #: ../src/iop/censorize.c:424
 msgid "radius_2"
@@ -11217,7 +11197,7 @@ msgstr "Datacolor SpyderCheckr 48 post-2018"
 
 #: ../src/iop/channelmixerrgb.c:3819
 msgid "choose the vendor and the type of your chart"
-msgstr ""
+msgstr "kies die verkoper en die tipe van jou grafiek"
 
 #: ../src/iop/channelmixerrgb.c:3823
 #, fuzzy
@@ -11792,7 +11772,7 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1509
 msgid "increase the contrast at constant chromaticity"
-msgstr ""
+msgstr "verhoog die kontras teen konstante chromatiteit"
 
 #: ../src/iop/colorbalancergb.c:1511
 #, fuzzy
@@ -11816,14 +11796,12 @@ msgid "increase colorfulness at same luminance mostly in highlights"
 msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1538
-#, fuzzy
-#| msgid "color saturation adjustment"
 msgid "perceptual saturation grading"
-msgstr "gradering"
+msgstr "perseptuele versadiging gradering"
 
 #: ../src/iop/colorbalancergb.c:1545
 msgid "add or remove saturation by an absolute amount"
-msgstr ""
+msgstr "voeg versadiging by of verwyder deur 'n absolute hoeveelheid"
 
 #: ../src/iop/colorbalancergb.c:1552 ../src/iop/colorbalancergb.c:1559
 #: ../src/iop/colorbalancergb.c:1566
@@ -11839,7 +11817,7 @@ msgstr "gradering"
 
 #: ../src/iop/colorbalancergb.c:1576
 msgid "add or remove brilliance by an absolute amount"
-msgstr ""
+msgstr "voeg briljantheid by of verwyder deur 'n absolute bedrag"
 
 #: ../src/iop/colorbalancergb.c:1583 ../src/iop/colorbalancergb.c:1590
 #: ../src/iop/colorbalancergb.c:1597
@@ -11872,16 +11850,12 @@ msgid "global luminance offset"
 msgstr "globale luminasie verreken"
 
 #: ../src/iop/colorbalancergb.c:1617
-#, fuzzy
-#| msgid "changes the local contrast"
 msgid "hue of the global color offset"
-msgstr "globale luminasie verreken"
+msgstr "kleur van die globale kleur verreken"
 
 #: ../src/iop/colorbalancergb.c:1624
-#, fuzzy
-#| msgid "changes the local contrast"
 msgid "chroma of the global color offset"
-msgstr "globale verreken"
+msgstr "chroma van die globale kleur verreken"
 
 #: ../src/iop/colorbalancergb.c:1626
 msgid "shadows lift"
@@ -11939,11 +11913,11 @@ msgstr "midtone"
 
 #: ../src/iop/colorbalancergb.c:1688
 msgid "hue of the color exponent in midtones"
-msgstr ""
+msgstr "kleur van die kleur eksponent in midtones"
 
 #: ../src/iop/colorbalancergb.c:1696
 msgid "chroma of the color exponent in midtones"
-msgstr ""
+msgstr "chroma van die kleur eksponent in midtones"
 
 #. Page masks
 #: ../src/iop/colorbalancergb.c:1699
@@ -11964,7 +11938,7 @@ msgstr "luminansie"
 
 #: ../src/iop/colorbalancergb.c:1715
 msgid "weight of the shadows over the whole tonal range"
-msgstr ""
+msgstr "gewig van die skaduwees oor die hele tonale reeks"
 
 #: ../src/iop/colorbalancergb.c:1726
 #, fuzzy
@@ -11974,7 +11948,7 @@ msgstr "posisie van die beeldinligtingslyn"
 
 #: ../src/iop/colorbalancergb.c:1737
 msgid "weights of highlights over the whole tonal range"
-msgstr ""
+msgstr "gewigte van hoogtepunte oor die hele tonale reeks"
 
 #: ../src/iop/colorbalancergb.c:1750
 msgid "peak white luminance value used to normalize the power function"
@@ -12654,7 +12628,7 @@ msgstr "rekonstrueer volle RGB pixels van 'n sensor kleur filter skikking lees"
 
 #: ../src/iop/demosaic.c:5216
 msgid "[dual demosaic_cl] internal problem"
-msgstr ""
+msgstr "[dubbele demosaic_cl] interne probleem"
 
 #: ../src/iop/demosaic.c:5559
 #, c-format
@@ -13753,18 +13727,12 @@ msgstr "opsies"
 # #-#-#-#-#  catalog.po (darktable)  #-#-#-#-#
 # desaturation needs a word.
 #: ../src/iop/filmicrgb.c:3924
-#, fuzzy
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
 msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
 "v3 is darktable 3.0 ont-versadiging metode, dieselfde as kleur balans.\n"
 "v4 is 'n nuwer ont-versadiging metode, gebaseer op spektrale suiwerheid van "
-"lig.\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"V3 is darktable 3.0 ont-versadiging metode, dieselfde as kleur balans.\n"
-"V4 is 'n nuwer ont-versadiging metode, gebaseer op spektrale suiwerheid van "
 "lig."
 
 #: ../src/iop/filmicrgb.c:3928
@@ -15201,7 +15169,7 @@ msgstr "oorbelig"
 
 #: ../src/iop/overexposed.c:131 ../src/iop/overexposed.c:368
 msgid "module overexposed failed in buffer allocation"
-msgstr ""
+msgstr "module oorblootstel het misluk in buffertoewysing"
 
 #: ../src/iop/overexposed.c:157 ../src/iop/overexposed.c:378
 #, fuzzy
@@ -15507,7 +15475,7 @@ msgstr "aktiveer vervaag instrument"
 #: ../src/iop/retouch.c:2166 ../src/iop/retouch.c:2170
 #: ../src/iop/retouch.c:2174 ../src/iop/retouch.c:2178
 msgid "change algorithm for current form"
-msgstr ""
+msgstr "verander algoritme vir huidige vorm"
 
 #: ../src/iop/retouch.c:2170 ../src/iop/retouch.c:2187
 msgid "activate fill tool"
@@ -15524,11 +15492,11 @@ msgstr "aktiveer genesingsinstrument"
 #. overwrite tooltip ourself to handle shift+click
 #: ../src/iop/retouch.c:2182
 msgid "ctrl+click to change tool for current form"
-msgstr ""
+msgstr "ctrl+klik om instrument vir huidige vorm te verander"
 
 #: ../src/iop/retouch.c:2183
 msgid "shift+click to set the tool as default"
-msgstr ""
+msgstr "shift+klik om die instrument as verstek te stel"
 
 #: ../src/iop/retouch.c:2202
 msgid "scales:"
@@ -18418,10 +18386,9 @@ msgid "tethered shoot"
 msgstr "'tethered' sessie"
 
 #: ../src/libs/import.c:201
-#, fuzzy
 msgctxt "accel"
 msgid "add to library"
-msgstr "voeg gradient by"
+msgstr "voeg by biblioteek"
 
 #: ../src/libs/import.c:202
 msgctxt "accel"
@@ -18454,10 +18421,8 @@ msgid "tethered shoot"
 msgstr "'tethered' sessie"
 
 #: ../src/libs/import.c:312
-#, fuzzy
-#| msgid "find camera"
 msgid "unmount camera"
-msgstr "% camera"
+msgstr "onmount kamera"
 
 #: ../src/libs/import.c:348
 msgid ""
@@ -18465,6 +18430,9 @@ msgid ""
 "make sure it is no longer mounted\n"
 "or quit the locking application"
 msgstr ""
+"kamera is gesluit deur 'n ander toepassing\n"
+"maak seker dat dit nie meer gemonteer is nie\n"
+"of sluit die toepassing wat dit gesluit het"
 
 #: ../src/libs/import.c:351
 #, fuzzy
@@ -18477,13 +18445,11 @@ msgid "mount camera"
 msgstr "monteer camera"
 
 #: ../src/libs/import.c:743
-#, fuzzy, c-format
-#| msgid "no image selected!"
+#, c-format
 msgid "%d image out of %d selected"
 msgid_plural "%d images out of %d selected"
-msgstr[0] "%d afbeelding van de %d uit de huidige collectie is geselecteerd"
-msgstr[1] ""
-"%d afbeeldingen van de %d uit de huidige collectie zijn geselecteerd"
+msgstr[0] "%d beeld uit %d geselekteer"
+msgstr[1] "%d beelde uit %d geselekteer"
 
 #: ../src/libs/import.c:1091
 msgid "you can't delete the selected place"
@@ -18491,7 +18457,7 @@ msgstr "jy kan nie die uitgesoekte plek skrap nie"
 
 #: ../src/libs/import.c:1191
 msgid "choose the root of the folder tree below"
-msgstr ""
+msgstr "kies die wortel van die vouerboom hier onder"
 
 #: ../src/libs/import.c:1194
 msgid "places"
@@ -18507,10 +18473,13 @@ msgid ""
 "\n"
 "right-click on a place to remove it"
 msgstr ""
+"voeg 'n persoonlike plek by\n"
+"\n"
+"regsklik op 'n plek om dit te verwyder"
 
 #: ../src/libs/import.c:1210
 msgid "you can add custom places using the plus icon"
-msgstr ""
+msgstr "jy kan persoonlike plekke byvoeg deur die plus-ikoon te gebruik"
 
 #: ../src/libs/import.c:1235
 #, fuzzy
@@ -19450,14 +19419,12 @@ msgid "show only active modules"
 msgstr "wys slegs aktiewe modules"
 
 #: ../src/libs/modulegroups.c:2799
-#, fuzzy
-#| msgid ""
-#| "%s\n"
-#| "ctrl+click to %s"
 msgid ""
 "presets\n"
 "ctrl+click to manage"
-msgstr "bestuur vinnige voorafbepaaldes"
+msgstr ""
+"voorafbepaaldes\n"
+"ctrl+klik om te bestuur"
 
 #. search box
 #: ../src/libs/modulegroups.c:2804
@@ -19530,7 +19497,7 @@ msgstr "vinnige toegang"
 
 #: ../src/libs/modulegroups.c:3205
 msgid "add widget to the quick access panel"
-msgstr ""
+msgstr "voeg widget by die vinnige toegangspaneel"
 
 #: ../src/libs/modulegroups.c:3237
 msgid "group icon"
@@ -19586,8 +19553,6 @@ msgid "remove the preset"
 msgstr "verwyder..."
 
 #: ../src/libs/modulegroups.c:3824
-#, fuzzy
-#| msgid "duplicate this preset"
 msgid "duplicate the preset"
 msgstr "dupliseer hierdie voorafbepaalde"
 
@@ -20552,16 +20517,14 @@ msgstr "posseëlprentjies oorleg vir grootte"
 
 #: ../src/libs/tools/global_toolbox.c:255
 #: ../src/libs/tools/global_toolbox.c:318
-#, fuzzy
 msgid ""
 "duration before the block overlay is hidden after each mouse movement on the "
 "image\n"
 "set -1 to never hide the overlay"
 msgstr ""
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"#-#-#-#-#  catalog.po (darktable)  #-#-#-#-#\n"
-"duur voor die blokoverlay weggesteek is na elke muis beweging op die beeld\n"
-"stel-1 om nooit die overlay weg te steek nie"
+"duur voor die blok oorleg weggesteek word na elke muis beweging op die "
+"beeld\n"
+"stel-1 om nooit die oorleg weg te steek nie"
 
 #: ../src/libs/tools/global_toolbox.c:260
 #: ../src/libs/tools/global_toolbox.c:323
@@ -20736,7 +20699,7 @@ msgstr "klik om uitleg te verruil"
 
 #: ../src/libs/tools/lighttable.c:122
 msgid "click to enter culling layout in fixed mode."
-msgstr ""
+msgstr "klik om uitdunningsuitleg in vaste modus in te voer."
 
 #: ../src/libs/tools/lighttable.c:124 ../src/libs/tools/lighttable.c:129
 #, fuzzy
@@ -20759,7 +20722,7 @@ msgstr "klik om uitleg te verruil"
 
 #: ../src/libs/tools/lighttable.c:267
 msgid "click to enter zoomable lighttable layout."
-msgstr "klik om zoembare lighttable layout in te tree"
+msgstr "klik om zoembare lighttable layout in te tree."
 
 #. view accels
 #: ../src/libs/tools/lighttable.c:565
@@ -20771,11 +20734,9 @@ msgid "toggle filemanager layout"
 msgstr "kleurbalance glyer blok uitleg"
 
 #: ../src/libs/tools/lighttable.c:566
-#, fuzzy
-#| msgid "zoomable light table"
 msgctxt "accel"
 msgid "toggle zoomable lighttable layout"
-msgstr "zoembare lig tafel"
+msgstr "wissel zoembare ligtafeluitleg"
 
 #: ../src/libs/tools/lighttable.c:567
 #, fuzzy
@@ -20824,11 +20785,9 @@ msgid "toggle sticky preview mode with focus detection"
 msgstr "'sticky' voorskou met fokus opsporing"
 
 #: ../src/libs/tools/lighttable.c:574
-#, fuzzy
-#| msgid "click to cycle layout"
 msgctxt "accel"
 msgid "exit current layout"
-msgstr "vorige uitleg"
+msgstr "verlaat huidige uitleg"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
