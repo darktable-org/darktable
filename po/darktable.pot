@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-11 17:42+0200\n"
+"POT-Creation-Date: 2021-06-13 18:38+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -186,8 +186,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:3671
 msgid ""
-"do not have the rating of one star behave as documented in the manual--an "
-"image rated one star twice will result in a zero star rating."
+"defines whether rating an image one star twice will zero out star rating."
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:3693 ../build/bin/preferences_gen.h:4389
@@ -722,7 +721,7 @@ msgid "other views"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5109
-msgid "map / geolocalisation"
+msgid "map / geolocalization"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5129
@@ -781,7 +780,7 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:5317
 msgid ""
 "pixel interpolator used in modules for rotation, lens correction, liquify, "
-"clipping and final scaling (bilinear, bicubic, lanczos2)."
+"cropping and final scaling (bilinear, bicubic, lanczos2)."
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5339
