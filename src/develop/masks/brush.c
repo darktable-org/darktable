@@ -975,7 +975,7 @@ static void _brush_get_distance(float x, float y, float as, dt_masks_form_gui_t 
       const float dd = (sdx * sdx) + (sdy * sdy);
       *dist = fminf(*dist, dd);
 
-      if(*dist == dd && current_seg > 0 && dd < as2)
+      if(*dist == dd && dd < as2)
       {
         if(*inside == 0)
         {
@@ -1033,6 +1033,11 @@ static void _brush_get_distance(float x, float y, float as, dt_masks_form_gui_t 
       }
     }
   }
+
+  // if inside border detected and not in a segment, then we are in range to allow
+  // moving the whole brush.
+  if(*inside && *inside_border && *near == -1)
+    *dist = 0.0f;
 }
 
 static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points, int *points_count,
@@ -1308,8 +1313,8 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
       if(!guipt) return 0;
       // we start the form dragging
       gui->source_dragging = TRUE;
-      gui->dx = guipt->source[2] - gui->posx;
-      gui->dy = guipt->source[3] - gui->posy;
+      gui->dx = guipt->source[0] - gui->posx;
+      gui->dy = guipt->source[1] - gui->posy;
       return 1;
     }
     else if(gui->form_selected && gui->edit_mode == DT_MASKS_EDIT_FULL)
@@ -1374,7 +1379,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
     {
       const guint nb = g_list_length(form->points);
       gui->point_edited = -1;
-      if(dt_modifier_is(state, GDK_CONTROL_MASK))
+      if(dt_modifier_is(state, GDK_CONTROL_MASK) && gui->seg_selected < nb - 1)
       {
         // we add a new point to the brush
         dt_masks_point_brush_t *bzpt = (dt_masks_point_brush_t *)(malloc(sizeof(dt_masks_point_brush_t)));
@@ -1410,7 +1415,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
         gui->seg_selected = -1;
         dt_control_queue_redraw_center();
       }
-      else if(gui->seg_selected >= 0 && gui->seg_selected < nb - 1)
+      else if(gui->seg_selected < nb - 1)
       {
         // we move the entire segment
         gui->seg_dragging = gui->seg_selected;

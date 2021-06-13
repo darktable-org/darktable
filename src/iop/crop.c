@@ -389,6 +389,8 @@ static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *
     dt_image_update_final_size(self->dev->preview_pipe->output_imgid);
   }
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_preview_updated_callback), self);
+  // force max size to be recomputed
+  g->clip_max_pipe_hash = 0;
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)

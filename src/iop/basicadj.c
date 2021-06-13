@@ -48,7 +48,7 @@ typedef struct dt_iop_basicadj_params_t
   float contrast;       // $MIN: -1.0 $MAX: 5.0 $DEFAULT: 0.0
   dt_iop_rgb_norms_t preserve_colors; /* $DEFAULT: DT_RGB_NORM_LUMINANCE
                                          $DESCRIPTION:"preserve colors" */
-  float middle_grey;    // $MIN: 0.05 $MAX: 100 $DEFAULT: 18.42 $DESCRIPTION: "middle grey"
+  float middle_grey;    // $MIN: 0.05 $MAX: 100 $DEFAULT: 18.42 $DESCRIPTION: "middle gray"
   float brightness;     // $MIN: -4.0 $MAX: 4.0 $DEFAULT: 0.0
   float saturation;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
   float vibrance;       // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
@@ -615,7 +615,7 @@ void gui_init(struct dt_iop_module_t *self)
                       dt_bauhaus_slider_from_params(self, "middle_grey"));
   dt_bauhaus_slider_set_step(g->sl_middle_grey, .5);
   dt_bauhaus_slider_set_format(g->sl_middle_grey, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->sl_middle_grey, _("middle grey adjustment"));
+  gtk_widget_set_tooltip_text(g->sl_middle_grey, _("middle gray adjustment"));
   g_signal_connect(G_OBJECT(g->sl_middle_grey), "quad-pressed", G_CALLBACK(_color_picker_callback), self);
 
   g->sl_brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
@@ -883,7 +883,7 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   const int imax = 65536 >> histcompr;
   int overex = 0;
   float sum = 0.f, hisum = 0.f, losum = 0.f;
-  float ave = 0.f, hidev = 0.f, lodev = 0.f;
+  float ave = 0.f;
 
   // find average luminance
   _get_sum_and_average(histogram, hist_size, &sum, &ave);
@@ -928,7 +928,6 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
       }
     }
 
-    lodev += (xlog(ave + 1.f) - xlog((float)i + 1.f)) * histogram[i];
     losum += histogram[i];
   }
 
@@ -945,7 +944,6 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
       }
     }
 
-    hidev += (xlog((float)i + 1.f) - xlog(ave + 1.f)) * histogram[i];
     hisum += histogram[i];
   }
 

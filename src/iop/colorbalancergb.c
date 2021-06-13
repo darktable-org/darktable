@@ -348,6 +348,25 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+void init_presets(dt_iop_module_so_t *self)
+{
+  // Note : all the elements of the params structure are scalar floats,
+  // so we can just init them all to 0.f in batch
+  // Then, only 4 params have to be manually inited to non-zero values
+  dt_iop_colorbalancergb_params_t p = { 0.f };
+  p.shadows_weight = 1.f;        // DEFAULT: 1.0 DESCRIPTION: "shadows fall-off"
+  p.highlights_weight = 1.f;     // DEFAULT: 1.0 DESCRIPTION: "highlights fall-off"
+  p.mask_grey_fulcrum = 0.1845f; // DEFAULT: 0.1845 DESCRIPTION: "mask middle-gray fulcrum"
+  p.grey_fulcrum = 0.1845f;      // DEFAULT: 0.1845 DESCRIPTION: "contrast gray fulcrum"
+
+  // preset
+  p.chroma_global = 0.2f;
+  p.saturation_shadows = 0.1f;
+  p.saturation_midtones = 0.05f;
+  p.saturation_highlights = -0.05f;
+
+  dt_gui_presets_add_generic(_("add basic colorfulness"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+}
 
 /* Custom matrix handling for speed */
 static inline void repack_3x3_to_3xSSE(const float input[9], float output[3][4])

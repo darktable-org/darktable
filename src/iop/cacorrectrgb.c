@@ -245,7 +245,7 @@ dt_omp_firstprivate(blurred_in, blurred_manifold_lower, blurred_manifold_higher,
   }
 }
 
-#define DT_CACORRECTRGB_MAX_EV_DIFF 3.0f
+#define DT_CACORRECTRGB_MAX_EV_DIFF 2.0f
 static void get_manifolds(const float* const restrict in, const size_t width, const size_t height,
                           const size_t ch, const float sigma, const float sigma2,
                           const dt_iop_cacorrectrgb_guide_channel_t guide,
@@ -279,17 +279,30 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
   {
     const float pixelg = fmaxf(in[k * 4 + guide], 1E-6f);
     const float avg = blurred_in[k * 4 + guide];
-    const float weighth = (pixelg >= avg);
-    const float weightl = (pixelg <= avg);
+    float weighth = (pixelg >= avg);
+    float weightl = (pixelg <= avg);
+    float logdiffs[2];
     for(size_t kc = 0; kc <= 1; kc++)
     {
       const size_t c = (kc + guide + 1) % 3;
       const float pixel = fmaxf(in[k * 4 + c], 1E-6f);
-      // we limit log diff to 3EV maximum as higher range may be due to
-      // noise and may result in artefacts
-      const float log_diff = fminf(fmaxf(log2f(pixel / pixelg), -DT_CACORRECTRGB_MAX_EV_DIFF), DT_CACORRECTRGB_MAX_EV_DIFF);
-      manifold_higher[k * 4 + c] = log_diff * weighth;
-      manifold_lower[k * 4 + c] = log_diff * weightl;
+      const float log_diff = log2f(pixel / pixelg);
+      logdiffs[kc] = log_diff;
+    }
+    // regularization of logdiff to avoid too many problems with noise:
+    // we lower the weights of pixels with too high logdiff
+    const float maxlogdiff = fmaxf(fabsf(logdiffs[0]), fabsf(logdiffs[1]));
+    if(maxlogdiff > DT_CACORRECTRGB_MAX_EV_DIFF)
+    {
+      const float correction_weight = DT_CACORRECTRGB_MAX_EV_DIFF / maxlogdiff;
+      weightl *= correction_weight;
+      weighth *= correction_weight;
+    }
+    for(size_t kc = 0; kc <= 1; kc++)
+    {
+      const size_t c = (kc + guide + 1) % 3;
+      manifold_higher[k * 4 + c] = logdiffs[kc] * weighth;
+      manifold_lower[k * 4 + c] = logdiffs[kc] * weightl;
     }
     manifold_higher[k * 4 + guide] = pixelg * weighth;
     manifold_lower[k * 4 + guide] = pixelg * weightl;
@@ -398,12 +411,26 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
 
       if(pixelg > avgg)
       {
+        float logdiffs[2];
         for(size_t kc = 0; kc <= 1; kc++)
         {
           const size_t c = (guide + kc + 1) % 3;
           const float pixel = fmaxf(in[k * 4 + c], 1E-6f);
-          const float log_diff = fminf(fmaxf(log2f(pixel) - pixelg, -DT_CACORRECTRGB_MAX_EV_DIFF), DT_CACORRECTRGB_MAX_EV_DIFF);
-          manifold_higher[k * 4 + c] = log_diff * w;
+          const float log_diff = log2f(pixel) - pixelg;
+          logdiffs[kc] = log_diff;
+        }
+        // regularization of logdiff to avoid too many problems with noise:
+        // we lower the weights of pixels with too high logdiff
+        const float maxlogdiff = fmaxf(fabsf(logdiffs[0]), fabsf(logdiffs[1]));
+        if(maxlogdiff > DT_CACORRECTRGB_MAX_EV_DIFF)
+        {
+          const float correction_weight = DT_CACORRECTRGB_MAX_EV_DIFF / maxlogdiff;
+          w *= correction_weight;
+        }
+        for(size_t kc = 0; kc <= 1; kc++)
+        {
+          const size_t c = (kc + guide + 1) % 3;
+          manifold_higher[k * 4 + c] = logdiffs[kc] * w;
         }
         manifold_higher[k * 4 + guide] = fmaxf(in[k * 4 + guide], 0.0f) * w;
         manifold_higher[k * 4 + 3] = w;
@@ -416,12 +443,26 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
       }
       else
       {
+        float logdiffs[2];
         for(size_t kc = 0; kc <= 1; kc++)
         {
           const size_t c = (guide + kc + 1) % 3;
           const float pixel = fmaxf(in[k * 4 + c], 1E-6f);
-          const float log_diff = fminf(fmaxf(log2f(pixel) - pixelg, -DT_CACORRECTRGB_MAX_EV_DIFF), DT_CACORRECTRGB_MAX_EV_DIFF);
-          manifold_lower[k * 4 + c] = log_diff * w;
+          const float log_diff = log2f(pixel) - pixelg;
+          logdiffs[kc] = log_diff;
+        }
+        // regularization of logdiff to avoid too many problems with noise:
+        // we lower the weights of pixels with too high logdiff
+        const float maxlogdiff = fmaxf(fabsf(logdiffs[0]), fabsf(logdiffs[1]));
+        if(maxlogdiff > DT_CACORRECTRGB_MAX_EV_DIFF)
+        {
+          const float correction_weight = DT_CACORRECTRGB_MAX_EV_DIFF / maxlogdiff;
+          w *= correction_weight;
+        }
+        for(size_t kc = 0; kc <= 1; kc++)
+        {
+          const size_t c = (kc + guide + 1) % 3;
+          manifold_lower[k * 4 + c] = logdiffs[kc] * w;
         }
         manifold_lower[k * 4 + guide] = fmaxf(in[k * 4 + guide], 0.0f) * w;
         manifold_lower[k * 4 + 3] = w;
