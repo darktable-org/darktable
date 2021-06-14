@@ -2808,9 +2808,9 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   }
   else
   {
-    // Markesteijn needs factors of 3
-    roi_in->x = MAX(0, roi_in->x - (roi_in->x % 3));
-    roi_in->y = MAX(0, roi_in->y - (roi_in->y % 3));
+    // Markesteijn needs factors of 3, 6 seems to be safer for tiling.
+    roi_in->x = MAX(0, roi_in->x - (roi_in->x % 6));
+    roi_in->y = MAX(0, roi_in->y - (roi_in->y % 6));
   }
 
   // clamp numeric inaccuracies to full buffer, to avoid scaling/copying in pixelpipe:
@@ -5265,7 +5265,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   {
     // X-Trans pattern full Markesteijn processing
     const int ndir = (demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 8 : 4;
-    const int overlap = (demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 17 : 12;
+    const int overlap = (demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 18 : 12;
 
     tiling->factor = 1.0f + ioratio;
     tiling->factor += ndir * 1.0f      // rgb
@@ -5282,8 +5282,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
     tiling->maxbuf = 1.0f;
     tiling->overhead = 0;
-    tiling->xalign = 3;
-    tiling->yalign = 3;
+    tiling->xalign = 6;
+    tiling->yalign = 6;
     tiling->overlap = overlap;
   }
   else if(demosaicing_method == DT_IOP_DEMOSAIC_RCD)
