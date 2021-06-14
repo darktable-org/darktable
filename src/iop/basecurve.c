@@ -966,7 +966,7 @@ static inline void apply_legacy_curve(
       else
         out[k+i] = dt_iop_eval_exp(unbounded_coeffs, f);
     }
-    out[k+3] = in[k+3];
+    out[k+3] = fmaxf(in[k+3], 0.f);
   }
 }
 
@@ -1006,7 +1006,7 @@ static inline void apply_curve(
     {
       out[k+c] = (ratio * in[k+c]);
     }
-    out[k+3] = in[k+3];
+    out[k+3] = fmaxf(in[k+3], 0.f);
   }
 }
 
@@ -1311,9 +1311,9 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 #endif
   for(size_t k = 0; k < (size_t)4 * wd * ht; k += 4)
   {
-    out[k + 0] = comb[0][k + 0];
-    out[k + 1] = comb[0][k + 1];
-    out[k + 2] = comb[0][k + 2];
+    out[k + 0] = fmaxf(comb[0][k + 0], 0.f);
+    out[k + 1] = fmaxf(comb[0][k + 1], 0.f);
+    out[k + 2] = fmaxf(comb[0][k + 2], 0.f);
     out[k + 3] = in[k + 3]; // pass on 4th channel
   }
 
