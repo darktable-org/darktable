@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-06-13 18:38+0200\n"
-"PO-Revision-Date: 2021-06-13 23:45+0200\n"
+"PO-Revision-Date: 2021-06-14 22:58+0200\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -380,13 +380,12 @@ msgid "brush size (relative)"
 msgstr "Dimensione pennello (relativa)"
 
 #: ../build/bin/preferences_gen.h:4140
-#, fuzzy
 msgid ""
 "off - pressure reading ignored, hardness/opacity/brush size - pressure "
 "reading controls specified attribute, absolute/relative - pressure reading "
 "is taken directly as attribute value or multiplied with pre-defined setting."
 msgstr ""
-"off - lettura pressione ignorata, durezza/opacità/dimensione pennello - la "
+"Off - lettura pressione ignorata, durezza/opacità/dimensione pennello - la "
 "lettura pressione controlla attributi specificati, assoluto/relativo - la "
 "lettura pressione è presa direttamente come valore dell'attributo o "
 "moltiplicata in base alle impostazioni predefinite."
@@ -472,7 +471,6 @@ msgid "double click to reset to `%d'"
 msgstr "Doppio click per ripristinare a '%d'"
 
 #: ../build/bin/preferences_gen.h:4367
-#, fuzzy
 msgid ""
 "process the image in darkroom mode with a small border. set to 0 if you "
 "don't want any border."
@@ -649,7 +647,6 @@ msgid "effect emulation"
 msgstr "Simulazione dell'effetto"
 
 #: ../build/bin/preferences_gen.h:4887
-#, fuzzy
 msgid ""
 "visual indication of temperature adjustments.\n"
 "in 'illuminant color' mode slider colors represent the color of the light "
@@ -661,7 +658,7 @@ msgstr ""
 "In modalità 'Colore fonte luminosa' i selettori scorrevoli dei colori "
 "rappresentano il colore della sorgente luminosa,\n"
 "in 'Emulazione effetto' i selettori scorrevoli dei colori rappresentano "
-"l'effetto che la regolazione avrà sulla scena."
+"l'effetto che la regolazione avrà sulla scena"
 
 #: ../build/bin/preferences_gen.h:4909
 msgid "colorbalance slider block layout"
@@ -872,13 +869,13 @@ msgid "select directory"
 msgstr "Seleziona cartella"
 
 #: ../build/bin/preferences_gen.h:5428
-#, fuzzy
 msgid ""
 "this folder (and sub-folders) contains Lut files used by lut3d modules. "
 "(need a restart)."
 msgstr ""
-"Questa cartella (e le sotto-cartelle) contiene i files Lut usate dal modulo "
-"lut3d.(Richiede il riavvio)."
+"Questa cartella (e le sotto-cartelle) contiene i files Lut usate dal modulo"
+" lut3d. "
+"(Richiede il riavvio)."
 
 #: ../build/bin/preferences_gen.h:5450
 msgid "auto-apply pixel workflow defaults"
@@ -904,7 +901,6 @@ msgid "none"
 msgstr "Nessuno"
 
 #: ../build/bin/preferences_gen.h:5493
-#, fuzzy
 msgid ""
 "scene-referred workflow is based on linear modules and will auto-apply "
 "filmic and exposure,\n"
@@ -912,8 +908,8 @@ msgid ""
 "curve and the legacy module pipe order."
 msgstr ""
 "Il flusso di lavoro riferito alla scena si basa su moduli lineari ed "
-"applicherà automaticamente filmic ed esposizione.\n"
-"Il flusso di lavoro riferito allo schermo si basa su moduli Lab ed applicherà "
+"applicherà automaticamente filmic ed esposizione,\n"
+"il flusso di lavoro riferito allo schermo si basa su moduli Lab ed applicherà "
 "automaticamente la curva base ed il vecchio ordinamento dei moduli."
 
 #: ../build/bin/preferences_gen.h:5515
@@ -970,7 +966,6 @@ msgid "auto-apply sharpen"
 msgstr "Applica nitidezza automatica"
 
 #: ../build/bin/preferences_gen.h:5625
-#, fuzzy
 msgid ""
 "this added sharpen is not recommended on cameras without a low-pass filter. "
 "you should disable this option if you use one of those more recent cameras "
@@ -1121,7 +1116,6 @@ msgid "enable disk backend for thumbnail cache"
 msgstr "Gestore disco per la cache delle anteprime"
 
 #: ../build/bin/preferences_gen.h:6214
-#, fuzzy
 msgid ""
 "if enabled, write thumbnails to disk (.cache/darktable/) when evicted from "
 "the memory cache. note that this can take a lot of memory (several gigabytes "
@@ -1143,7 +1137,6 @@ msgid "enable disk backend for full preview cache"
 msgstr "Abilita la gestione disco per la cache delle anteprime"
 
 #: ../build/bin/preferences_gen.h:6250
-#, fuzzy
 msgid ""
 "if enabled, write full preview to disk (.cache/darktable/) when evicted from "
 "the memory cache. note that this can take a lot of memory (several gigabytes "
@@ -1156,7 +1149,7 @@ msgstr ""
 "memoria (alcuni gigabyte per 20mila immagini) e le anteprime memorizzate non "
 "verranno mai più eliminate. Tuttavia, se si vuole è possibile cancellarle "
 "manualmente. Le prestazioni della modalità Tavolo Luminoso verranno "
-"incrementate notevolmente ingrandendo l'immagine."
+"incrementate notevolmente ingrandendo l'immagine in modalità pieno schermo."
 
 #: ../build/bin/preferences_gen.h:6272
 msgid "number of background threads"
@@ -1408,7 +1401,6 @@ msgid "only large entries"
 msgstr "Solo quelli grandi"
 
 #: ../build/bin/preferences_gen.h:6888
-#, fuzzy
 msgid ""
 "entries in xmp tags can get rather large and may exceed the available space "
 "to store the history stack in output files. this option allows xmp tags to "
@@ -1423,7 +1415,6 @@ msgid "look for updated xmp files on startup"
 msgstr "Controlla file XMP aggiornati all'avvio"
 
 #: ../build/bin/preferences_gen.h:6924
-#, fuzzy
 msgid ""
 "check file modification times of all xmp files on startup to check if any "
 "got updated in the meantime"
@@ -1517,7 +1508,6 @@ msgid "omit hierarchy in simple tag lists"
 msgstr "Nasconde la gerarchia e visualizza una lista di etichette"
 
 #: ../build/bin/preferences_gen.h:7170
-#, fuzzy
 msgid ""
 "when creating XMP file the hierarchical tags are also added as a simple list "
 "of non-hierarchical ones to make them visible to some other programs. when "
@@ -1525,7 +1515,8 @@ msgid ""
 "ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
 "Quando si crea il file XMP le etichette gerarchiche vengono aggiunte come una "
-"lista di etichette non-gerarchiche per renderle visibili ad altri programmi. "
+"semplice lista di etichette non-gerarchiche per renderle visibili ad altri"
+" programmi. "
 "Quando questa opzione è abilitata darktable includerà solo l'ultima parte e "
 "ignorerà il resto. In questo modo 'foo|bar|baz' diventerà solamente 'baz'."
 
@@ -1646,7 +1637,6 @@ msgid "executable for playing audio files"
 msgstr "Applicazione per file audio"
 
 #: ../build/bin/preferences_gen.h:7538
-#, fuzzy
 msgid ""
 "this external program is used to play audio files some cameras record to "
 "keep notes for images"
@@ -1768,10 +1758,9 @@ msgid ""
 msgstr ""
 
 #: ../build/bin/conf_gen.h:435
-#, fuzzy
 msgctxt "preferences"
 msgid "true"
-msgstr "VERO"
+msgstr "Vero"
 
 #: ../build/bin/conf_gen.h:436
 msgctxt "preferences"
@@ -1779,10 +1768,9 @@ msgid "active module"
 msgstr ""
 
 #: ../build/bin/conf_gen.h:437
-#, fuzzy
 msgctxt "preferences"
 msgid "false"
-msgstr "FALSO"
+msgstr "Falso"
 
 #: ../build/bin/conf_gen.h:761
 msgid "select only new pictures"
@@ -1996,10 +1984,9 @@ msgid "parade"
 msgstr ""
 
 #: ../build/bin/conf_gen.h:2414
-#, fuzzy
 msgctxt "preferences"
 msgid "u*v*"
-msgstr "U0V0"
+msgstr "u*v*"
 
 #: ../build/bin/conf_gen.h:2415
 msgctxt "preferences"
@@ -2011,7 +1998,6 @@ msgid "camera time zone"
 msgstr "Fuso orario fotocamera"
 
 #: ../build/bin/conf_gen.h:2704
-#, fuzzy
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -2593,14 +2579,12 @@ msgid "none (bypass)"
 msgstr "Nessuno (bypass)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:560
-#, fuzzy
 msgid "version 1 (2020)"
-msgstr "Versione"
+msgstr "Versione 1 (2020)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:561
-#, fuzzy
 msgid "version 2 (2021)"
-msgstr "Versione"
+msgstr "Versione 2 (2021)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:562
 msgid "version 3 (Apr 2021)"
@@ -3043,9 +3027,8 @@ msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-passaggio"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:217
-#, fuzzy
 msgid "Markesteijn 3-pass"
-msgstr "Markesteijn 1-passaggio"
+msgstr "Markesteijn 3-passaggi"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:218
 msgid "frequency domain chroma"
@@ -3216,7 +3199,7 @@ msgstr "luce soffusa/ricostruisci"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:237
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:430
 msgid "gray/colorful details"
-msgstr ""
+msgstr "Dettagli grigi/colorati"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:243
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:434
@@ -3357,9 +3340,8 @@ msgid "v4 (2020)"
 msgstr "v4 (2020)"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:539
-#, fuzzy
 msgid "v5 (2021)"
-msgstr "v3 (2019)"
+msgstr "v5 (2021)"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:543
 msgid "hard"
@@ -4029,15 +4011,14 @@ msgid "graphics;photography;raw;"
 msgstr "grafica;fotografia;raw;"
 
 #: ../data/darktable.appdata.xml.in.h:2
-#, fuzzy
 msgid ""
 "darktable manages your digital negatives in a database and lets you view "
 "them through a lighttable. It also enables you to develop raw images and "
 "enhance them in a darkroom."
 msgstr ""
-"darktable gestisce i tuoi negativi digitali in un database e ti permette di "
+"Darktable gestisce i tuoi negativi digitali in un database e ti permette di "
 "vederli attraverso un Tavolo Luminoso. Ti permette inoltre di sviluppare le "
-"immagini raw e di migliorarle nella Camera Oscura."
+"immagini raw e di migliorarle in una Camera Oscura."
 
 #: ../data/darktable.appdata.xml.in.h:3
 msgid ""
@@ -4470,7 +4451,7 @@ msgstr "sRGB (sicuro per il web)"
 
 #: ../src/common/colorspaces.c:1441 ../src/common/colorspaces.c:1698
 msgid "Rec709 RGB"
-msgstr ""
+msgstr "Rec709 RGB"
 
 #: ../src/common/colorspaces.c:1451
 msgid "PQ Rec2020 RGB"
@@ -4489,9 +4470,8 @@ msgid "HLG P3 RGB"
 msgstr "HLG P3 RGB"
 
 #: ../src/common/colorspaces.c:1471 ../src/common/colorspaces.c:1700
-#, fuzzy
 msgid "linear ProPhoto RGB"
-msgstr "Lineare prophoto RGB"
+msgstr "Lineare ProPhoto RGB"
 
 #: ../src/common/colorspaces.c:1476 ../src/common/colorspaces.c:1668
 msgid "linear XYZ"
@@ -4667,7 +4647,7 @@ msgstr ""
 
 #: ../src/common/database.c:2535
 msgid "error starting darktable"
-msgstr ""
+msgstr "Errore avviando Darktable"
 
 #: ../src/common/database.c:2536 ../src/libs/collect.c:2823
 #: ../src/libs/export_metadata.c:269 ../src/libs/import.c:1651
@@ -4710,9 +4690,8 @@ msgid "ok"
 msgstr "ok"
 
 #: ../src/common/database.c:2562 ../src/iop/cacorrect.c:1336
-#, fuzzy
 msgid "error"
-msgstr "ERRORE"
+msgstr "Errore"
 
 #: ../src/common/database.c:2563
 #, c-format
@@ -6501,7 +6480,6 @@ msgid "combine masks"
 msgstr "Combina le maschere"
 
 #: ../src/develop/blend_gui.c:3078
-#, fuzzy
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
@@ -6683,7 +6661,6 @@ msgid "unknown mask"
 msgstr ""
 
 #: ../src/develop/imageop.c:2369
-#, fuzzy
 msgid "drawn + parametric mask"
 msgstr "Maschera parametrica e disegnata"
 
@@ -8491,9 +8468,8 @@ msgid "edit `%s' for module `%s'"
 msgstr "Modifica '%s' per il modulo '%s'"
 
 #: ../src/gui/presets.c:478
-#, fuzzy
 msgid "_export..."
-msgstr "_Esporta"
+msgstr "_Esporta..."
 
 #: ../src/gui/presets.c:496 ../src/libs/lib.c:255
 msgid "name of the preset"
@@ -8696,14 +8672,12 @@ msgid "8 bit"
 msgstr "8 bit"
 
 #: ../src/imageio/format/avif.c:92
-#, fuzzy
 msgid "10 bit"
-msgstr "8 bit"
+msgstr "10 bit"
 
 #: ../src/imageio/format/avif.c:96
-#, fuzzy
 msgid "12 bit"
-msgstr "8 bit"
+msgstr "12 bit"
 
 #: ../src/imageio/format/avif.c:449
 msgid "invalid AVIF bit depth!"
@@ -10789,6 +10763,7 @@ msgstr ""
 #: ../src/iop/channelmixerrgb.c:3503
 msgid "white balance successfully extracted from raw image"
 msgstr ""
+"Il bilanciamento del bianco è stato estratto con successo dall'immagine raw"
 
 #. We need to recompute only the full preview
 #: ../src/iop/channelmixerrgb.c:3509
@@ -10800,6 +10775,8 @@ msgid ""
 "color calibration: the sum of the gray channel parameters is zero, "
 "normalization will be disabled."
 msgstr ""
+"Calibrazione colore: la somma dei parametri del canale grigio è zero, "
+"la normalizzazione verrà disabilitata"
 
 #. Page CAT
 #: ../src/iop/channelmixerrgb.c:3679
@@ -11447,7 +11424,7 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:368
 msgid "add basic colorfulness"
-msgstr ""
+msgstr "Aggiungi colorazione di base"
 
 #: ../src/iop/colorbalancergb.c:712
 msgid "colorbalance works only on RGB input"
@@ -11470,7 +11447,7 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1521
 msgid "increase colorfulness mostly on low-chroma colors"
-msgstr ""
+msgstr "Aumenta la colorazione soprattutto sui colori a bassa crominanza"
 
 #: ../src/iop/colorbalancergb.c:1528
 msgid "increase the contrast at constant chromaticity"
@@ -11482,19 +11459,20 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1537
 msgid "increase colorfulness at same luminance globally"
-msgstr ""
+msgstr "Aumenta la colorazione alla stessa luminanza globale"
 
 #: ../src/iop/colorbalancergb.c:1543
 msgid "increase colorfulness at same luminance mostly in shadows"
-msgstr ""
+msgstr "Aumenta la colorazione alla stessa luminanza soprattutto sulle ombre"
 
 #: ../src/iop/colorbalancergb.c:1549
 msgid "increase colorfulness at same luminance mostly in midtones"
-msgstr ""
+msgstr "Aumenta la colorazione alla stessa luminanza soprattutto sui toni medi"
 
 #: ../src/iop/colorbalancergb.c:1555
 msgid "increase colorfulness at same luminance mostly in highlights"
 msgstr ""
+"Aumenta la colorazione alla stessa luminanza soprattutto alle alte luci"
 
 #: ../src/iop/colorbalancergb.c:1557
 msgid "perceptual saturation grading"
@@ -18705,7 +18683,6 @@ msgid "base"
 msgstr "Base"
 
 #: ../src/libs/modulegroups.c:1608
-#, fuzzy
 msgctxt "modulegroup"
 msgid "tone"
 msgstr "Tonalità"
@@ -18797,9 +18774,8 @@ msgid "base"
 msgstr "Base"
 
 #: ../src/libs/modulegroups.c:2415
-#, fuzzy
 msgid "tone"
-msgstr "Tono"
+msgstr "Tonalità"
 
 #: ../src/libs/modulegroups.c:2418
 msgid "technical"
@@ -18955,9 +18931,8 @@ msgid "a preset with this name already exists !"
 msgstr ""
 
 #: ../src/libs/modulegroups.c:3814
-#, fuzzy
 msgid "preset : "
-msgstr "Preset"
+msgstr "Preimpstazione : "
 
 #: ../src/libs/modulegroups.c:3821
 msgid "remove the preset"
