@@ -2462,7 +2462,7 @@ const wb_data wb_preset[] =
   { "Canon", "EOS M100", Tungsten        , 0, { 1.0810546875, 1, 1.8857421875, 0 } },
   { "Canon", "EOS M100", Shade           , 0, { 1.8232421875, 1, 1.1015625, 0 } },
   { "Canon", "EOS M100", Fluorescent     , 0, { 1.3544921875, 1, 1.7021484375, 0 } },
-  
+
   //Canon EOS R Firmware Version 1.8.0
   { "Canon", "EOS R", Daylight            , -9, { 1.7900390625, 1, 1.640625, 0 } },
   { "Canon", "EOS R", Daylight            , -8, { 1.8125, 1, 1.6181640625, 0 } },
@@ -2697,8 +2697,6 @@ const wb_data wb_preset[] =
   { "Canon", "EOS RP", Flash               , 8, { 2.4794921875, 1, 1.3212890625, 0 } },
   { "Canon", "EOS RP", Flash               , 9, { 2.509765625, 1, 1.302734375, 0 } },
 
-
-
   // Canon EOS R5 Firmware Version 1.3.1
   { "Canon", "EOS R5", Daylight            , -9, { 1.7041015625, 1, 2.1650390625, 0 } },
   { "Canon", "EOS R5", Daylight            , -8, { 1.7236328125, 1, 2.1337890625, 0 } },
@@ -2815,6 +2813,14 @@ const wb_data wb_preset[] =
   { "Canon", "EOS R5", Flash               , 7, { 2.4267578125, 1, 1.4443359375, 0 } },
   { "Canon", "EOS R5", Flash               , 8, { 2.4560546875, 1, 1.421875, 0 } },
   { "Canon", "EOS R5", Flash               , 9, { 2.4912109375, 1, 1.400390625, 0 } },
+
+  { "Canon", "EOS R6", Daylight                   , 0, { 1.8681640625, 1, 1.53515625, 0 } },
+  { "Canon", "EOS R6", Shade                      , 0, { 2.16015625, 1, 1.3193359375, 0 } },
+  { "Canon", "EOS R6", Cloudy                     , 0, { 2.015625, 1, 1.421875, 0 } },
+  { "Canon", "EOS R6", Tungsten                   , 0, { 1.31640625, 1, 2.240234375, 0 } },
+  { "Canon", "EOS R6", CoolWhiteFluorescent       , 0, { 1.5634765625, 1, 2.169921875, 0 } },
+  { "Canon", "EOS R6", WhiteFluorescent           , 0, { 1.5634765625, 1, 2.169921875, 0 } },
+  { "Canon", "EOS R6", Flash                      , 0, { 2.060546875, 1, 1.3974609375, 0 } },
 
   { "Fujifilm", "FinePix E900", Daylight, 0,		{ 1.571875, 1, 1.128125, 0 } },
   { "Fujifilm", "FinePix E900", Shade, 0,		{ 1.668750, 1, 1.006250, 0 } },
