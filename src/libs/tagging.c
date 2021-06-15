@@ -2068,6 +2068,7 @@ static void _pop_menu_dictionary_set_as_tag(GtkWidget *menuitem, dt_lib_module_t
 
   _init_treeview(self, 1);
   _show_tag_on_view(d->dictionary_view, tagname);
+  g_free(tagname);
 
 }
 
@@ -2216,6 +2217,7 @@ static gboolean _click_on_view_dictionary(GtkWidget *view, GdkEventButton *event
         if(d->drag.path) gtk_tree_path_free(d->drag.path);
         d->drag.path = path;
         d->drag.lastpath = NULL;
+        gtk_tree_path_free(path);
         return FALSE;
       }
       else
@@ -2231,6 +2233,7 @@ static gboolean _click_on_view_dictionary(GtkWidget *view, GdkEventButton *event
         else if(d->tree_flag && button_pressed == 1 && shift_pressed)
         {
           gtk_tree_view_expand_row(GTK_TREE_VIEW(view), path, TRUE);
+          gtk_tree_path_free(path);
           return TRUE;
         }
         else if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
@@ -2261,7 +2264,7 @@ static gboolean _row_tooltip_setup(GtkWidget *treeview, gint x, gint y, gboolean
       char *tagname;
       guint tagid;
       guint flags;
-      char *synonyms;
+      char *synonyms = NULL;
       gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_ID, &tagid, DT_LIB_TAGGING_COL_TAG, &tagname,
               DT_LIB_TAGGING_COL_FLAGS, &flags, DT_LIB_TAGGING_COL_SYNONYM, &synonyms, -1);
       if (tagid)
@@ -2275,8 +2278,8 @@ static gboolean _row_tooltip_setup(GtkWidget *treeview, gint x, gint y, gboolean
           g_free(text);
           res = TRUE;
         }
-        g_free(synonyms);
       }
+      g_free(synonyms);
       g_free(tagname);
     }
   }
@@ -2597,6 +2600,7 @@ static gboolean _match_selected_func(GtkEntryCompletion *completion, GtkTreeMode
   cur_pos = cut_off;
   gtk_editable_insert_text(e, tag, -1, &cur_pos);
   gtk_editable_set_position(e, cur_pos);
+  g_free(tag);  // release result of gtk_tree_model_get
   return TRUE;
 }
 
@@ -2621,14 +2625,11 @@ static gboolean _completion_match_func(GtkEntryCompletion *completion, const gch
 
   GtkTreeModel *model = gtk_entry_completion_get_model(completion);
   const int column = gtk_entry_completion_get_text_column(completion);
-  char *tag = NULL;
 
   if(gtk_tree_model_get_column_type(model, column) != G_TYPE_STRING)
   {
     return FALSE;
   }
-
-  gtk_tree_model_get(model, iter, column, &tag, -1);
 
   const gchar *lastTag = g_strrstr(key, ",");
   if(lastTag != NULL)
@@ -2643,6 +2644,9 @@ static gboolean _completion_match_func(GtkEntryCompletion *completion, const gch
   {
     return FALSE;
   }
+
+  char *tag = NULL;
+  gtk_tree_model_get(model, iter, column, &tag, -1);
 
   if(tag)
   {
@@ -2770,6 +2774,7 @@ static void _event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint
       _init_treeview(self, 0);
       _raise_signal_tag_changed(self);
       dt_image_synch_xmp(-1);
+      gtk_tree_path_free(path); // release result of gtk_tree_view_get_path_at_pos above
       success = TRUE;
     }
   }
