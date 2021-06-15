@@ -962,9 +962,9 @@ static inline void apply_legacy_curve(
       const float f = in[k+i] * mul;
       // use base curve for values < 1, else use extrapolation.
       if(f < 1.0f)
-        out[k+i] = table[CLAMP((int)(f * 0x10000ul), 0, 0xffff)];
+        out[k+i] = fmaxf(table[CLAMP((int)(f * 0x10000ul), 0, 0xffff)], 0.f);
       else
-        out[k+i] = dt_iop_eval_exp(unbounded_coeffs, f);
+        out[k+i] = fmaxf(dt_iop_eval_exp(unbounded_coeffs, f), 0.f);
     }
     out[k+3] = in[k+3];
   }
@@ -1004,7 +1004,7 @@ static inline void apply_curve(
     }
     for(size_t c = 0; c < 3; c++)
     {
-      out[k+c] = (ratio * in[k+c]);
+      out[k+c] = fmaxf(ratio * in[k+c], 0.f);
     }
     out[k+3] = in[k+3];
   }
@@ -1311,9 +1311,9 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 #endif
   for(size_t k = 0; k < (size_t)4 * wd * ht; k += 4)
   {
-    out[k + 0] = comb[0][k + 0];
-    out[k + 1] = comb[0][k + 1];
-    out[k + 2] = comb[0][k + 2];
+    out[k + 0] = fmaxf(comb[0][k + 0], 0.f);
+    out[k + 1] = fmaxf(comb[0][k + 1], 0.f);
+    out[k + 2] = fmaxf(comb[0][k + 2], 0.f);
     out[k + 3] = in[k + 3]; // pass on 4th channel
   }
 
