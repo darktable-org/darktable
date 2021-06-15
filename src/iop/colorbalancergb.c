@@ -728,6 +728,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float dd = -0.56f;
     float Iz = JC[0] + d0;
     Iz /= (1.f + dd - dd * Iz);
+    Iz = fmaxf(Iz, 0.f);
 
     const float DT_ALIGNED_ARRAY AI[3][4]
         = { {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },

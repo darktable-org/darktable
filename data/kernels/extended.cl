@@ -964,6 +964,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   const float d = -0.56f;
   float Iz = JC[0] + d0;
   Iz /= (1.f + d - d * Iz);
+  Iz = fmax(Iz, 0.f);
 
   const float4 AI[3] = { {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
                          {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
