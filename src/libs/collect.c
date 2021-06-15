@@ -2085,7 +2085,9 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
   }
 
   //set the combobox tooltip as well
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->combo), gtk_widget_get_tooltip_text(d->text));
+  gchar *tip = gtk_widget_get_tooltip_text(d->text);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->combo), tip);
+  g_free(tip);
 }
 
 
