@@ -388,7 +388,7 @@ inline float4 XYZ_to_JzAzBz(float4 XYZ_D65)
   temp1.y = dot(A[1], temp2);
   temp1.z = dot(A[2], temp2);
   // Iz -> Jz
-  temp1.x = 0.44f * temp1.x / (1.0f - 0.56f * temp1.x) - 1.6295499532821566e-11f;
+  temp1.x = fmax(0.44f * temp1.x / (1.0f - 0.56f * temp1.x) - 1.6295499532821566e-11f, 0.f);
   return temp1;
 }
 
@@ -415,7 +415,7 @@ inline float4 JzAzBz_2_XYZ(const float4 JzAzBz)
   // Jz -> Iz
   IzAzBz = JzAzBz;
   IzAzBz.x += d0;
-  IzAzBz.x = IzAzBz.x / (1.0f + d - d * IzAzBz.x);
+  IzAzBz.x = fmax(IzAzBz.x / (1.0f + d - d * IzAzBz.x), 0.f);
   // IzAzBz -> L'M'S'
   LMS.x = dot(AI[0], IzAzBz);
   LMS.y = dot(AI[1], IzAzBz);

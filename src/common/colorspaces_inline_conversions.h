@@ -832,7 +832,7 @@ static inline void dt_XYZ_2_JzAzBz(const float *const DT_RESTRICT XYZ_D65, float
 #endif
   for(int i = 0; i < 3; i++) JzAzBz[i] = A[i][0] * LMS[0] + A[i][1] * LMS[1] + A[i][2] * LMS[2];
   // Iz -> Jz
-  JzAzBz[0] = ((1.0f + d) * JzAzBz[0]) / (1.0f + d * JzAzBz[0]) - d0;
+  JzAzBz[0] = fmaxf(((1.0f + d) * JzAzBz[0]) / (1.0f + d * JzAzBz[0]) - d0, 0.f);
 }
 
 #ifdef _OPENMP
@@ -886,7 +886,7 @@ static inline void dt_JzAzBz_2_XYZ(const float *const DT_RESTRICT JzAzBz, float 
   float IzAzBz[4] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f, 0.0f };
 
   IzAzBz[0] = JzAzBz[0] + d0;
-  IzAzBz[0] = IzAzBz[0] / (1.0f + d - d * IzAzBz[0]);
+  IzAzBz[0] = fmaxf(IzAzBz[0] / (1.0f + d - d * IzAzBz[0]), 0.f);
   IzAzBz[1] = JzAzBz[1];
   IzAzBz[2] = JzAzBz[2];
 
