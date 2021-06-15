@@ -2,11 +2,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-11 17:42+0200\n"
-"PO-Revision-Date: 2021-06-12 11:55+0200\n"
-"Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
-"Language-Team: Kevin Vermassen <info@kevinvermassen.be>; Ger Siemerink <g."
-"siemerink@gmail.com>\n"
+"POT-Creation-Date: 2021-06-13 18:38+0200\n"
+"PO-Revision-Date: 2021-06-15 21:48+0200\n"
+"Last-Translator: Kevin Vermassen <info@kevinvermassen.be>\n"
+"Language-Team: Kevin Vermassen <info@kevinvermassen.be>\n"
 "Language: nl_NL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -186,12 +185,10 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:3671
 msgid ""
-"do not have the rating of one star behave as documented in the manual--an "
-"image rated one star twice will result in a zero star rating."
+"defines whether rating an image one star twice will zero out star rating."
 msgstr ""
-"laat de beoordeling van een ster zich niet gedragen zoals beschreven in de "
-"handleiding--het tweemaal beoordelen met één ster geeft een beoordeling van "
-"nul sterren."
+"bepaalt of het tweemaal toewijzen van één ster aan een afbeelding de "
+"beoordeling op nul zet."
 
 #: ../build/bin/preferences_gen.h:3693 ../build/bin/preferences_gen.h:4389
 msgid "show scrollbars for central view"
@@ -790,7 +787,7 @@ msgid "other views"
 msgstr "andere weergaven"
 
 #: ../build/bin/preferences_gen.h:5109
-msgid "map / geolocalisation"
+msgid "map / geolocalization"
 msgstr "kaart / geolokalisatie"
 
 #: ../build/bin/preferences_gen.h:5129
@@ -849,11 +846,10 @@ msgstr "lanczos2"
 #: ../build/bin/preferences_gen.h:5317
 msgid ""
 "pixel interpolator used in modules for rotation, lens correction, liquify, "
-"clipping and final scaling (bilinear, bicubic, lanczos2)."
+"cropping and final scaling (bilinear, bicubic, lanczos2)."
 msgstr ""
 "pixelinterpolator gebruikt in modules voor rotatie, lenscorrectie, vloeibaar "
-"maken, clipping en uiteindelijke schaalvergroting (bilineair, bicubisch, "
-"lanczos2)."
+"maken, bijsnijden en uiteindelijke schaling (bilineair, bicubic, lanczos2)."
 
 #: ../build/bin/preferences_gen.h:5339
 msgid "pixel interpolator (scaling)"
@@ -21398,6 +21394,14 @@ msgstr "Accel"
 #: ../src/views/view.c:1793
 msgid "Action"
 msgstr "Actie"
+
+#~ msgid ""
+#~ "do not have the rating of one star behave as documented in the manual--an "
+#~ "image rated one star twice will result in a zero star rating."
+#~ msgstr ""
+#~ "laat de beoordeling van een ster zich niet gedragen zoals beschreven in "
+#~ "de handleiding--het tweemaal beoordelen met één ster geeft een "
+#~ "beoordeling van nul sterren."
 
 #~ msgid ""
 #~ "if set to a positive, non-zero value this variable defines the minimum "
