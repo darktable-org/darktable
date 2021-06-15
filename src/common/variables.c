@@ -392,7 +392,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
                                "<span foreground='#%02x%02x%02x'>⬤ </span>",
                                (guint)(c.red*255), (guint)(c.green*255), (guint)(c.blue*255));
     }
-    g_list_free(res);
+    g_list_free_full(res, &g_free);
   }
   else if(has_prefix(variable, "LABELS"))
   {
@@ -410,7 +410,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
       result = dt_util_glist_to_str(",", labels);
       g_list_free(labels);
     }
-    g_list_free(res);
+    g_list_free_full(res, &g_free);
   }
   else if(has_prefix(variable, "TITLE"))
   {
