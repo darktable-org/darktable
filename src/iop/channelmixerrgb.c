@@ -2739,6 +2739,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   if(self->dev->gui_attached && g)
   {
     if( (g->run_profile && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW) || // color checker extraction mode
+        (g->run_validation && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW) || // delta E validation
         ( (d->illuminant_type == DT_ILLUMINANT_DETECT_EDGES ||
            d->illuminant_type == DT_ILLUMINANT_DETECT_SURFACES ) && // WB extraction mode
            piece->pipe->type == DT_DEV_PIXELPIPE_FULL ) )
