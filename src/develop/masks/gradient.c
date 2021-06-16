@@ -653,9 +653,9 @@ static int _gradient_get_points(dt_develop_t *dev, float x, float y, float rotat
 
 //  gboolean in_frame = FALSE;
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(nthreads, pts, pts_count, count, cosv, sinv, xstart, xdelta, curvature, scale, x, y, wd, ht, c_padded_size) \
-  schedule(static) if(count > 100) aligned(points:64)
+#pragma omp parallel for simd default(none)                                                                       \
+    dt_omp_firstprivate(nthreads, pts, pts_count, count, cosv, sinv, xstart, xdelta, curvature, scale, x, y, wd,  \
+                        ht, c_padded_size, points) schedule(static) if(count > 100) aligned(points : 64)
 #endif
   for(int i = 3; i < count; i++)
   {
