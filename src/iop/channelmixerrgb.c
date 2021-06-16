@@ -638,13 +638,13 @@ static inline void loop_switch(const float *const restrict in, float *const rest
   aligned(in, out, XYZ_to_RGB, RGB_to_XYZ, MIX:64) aligned(illuminant, saturation, lightness, grey:16)\
   schedule(simd:static)
 #endif
-  for(size_t k = 0; k < height * width * ch; k += ch)
+  for(size_t k = 0; k < height * width * 4; k += 4)
   {
     // intermediate temp buffers
     float DT_ALIGNED_PIXEL temp_one[4];
     float DT_ALIGNED_PIXEL temp_two[4];
 
-    for(size_t c = 0; c < 3; c++)
+    for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++)
       temp_two[c] = (clip) ? fmaxf(in[k + c], 0.0f) : in[k + c];
 
     /* WE START IN PIPELINE RGB */
@@ -741,7 +741,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
         // Convert from RGB to XYZ
         dot_product(temp_one, RGB_to_XYZ, temp_two);
 
-        for(size_t c = 0; c < 3; ++c) temp_one[c] = temp_two[c];
+        for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; ++c) temp_one[c] = temp_two[c];
         break;
       }
     }
@@ -752,7 +752,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
     if(do_gamut_mapping)
       gamut_mapping(temp_one, gamut, clip, temp_two);
     else
-      for(size_t c = 0; c < 3; ++c) temp_two[c] = temp_one[c];
+      for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; ++c) temp_two[c] = temp_one[c];
 
     // convert to LMS, XYZ or pipeline RGB
     switch(kind)
@@ -777,13 +777,13 @@ static inline void loop_switch(const float *const restrict in, float *const rest
     /* FROM HERE WE ARE IN LMS, XYZ OR PIPELINE RGB depending on user param - DATA IS IN temp_one */
 
     // Clip in LMS
-    if(clip) for(size_t c = 0; c < 3; c++) temp_one[c] = fmaxf(temp_one[c], 0.0f);
+    if(clip) for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++) temp_one[c] = fmaxf(temp_one[c], 0.0f);
 
     // Apply lightness / saturation adjustment
     luma_chroma(temp_one, saturation, lightness, temp_two, version);
 
     // Clip in LMS
-    if(clip) for(size_t c = 0; c < 3; c++) temp_two[c] = fmaxf(temp_two[c], 0.0f);
+    if(clip) for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++) temp_two[c] = fmaxf(temp_two[c], 0.0f);
 
     // Save
     if(apply_grey)
@@ -819,15 +819,15 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
       // Clip in XYZ
-      if(clip) for(size_t c = 0; c < 3; c++) temp_one[c] = fmaxf(temp_one[c], 0.0f);
+      if(clip) for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++) temp_one[c] = fmaxf(temp_one[c], 0.0f);
 
       // Convert back to RGB
       dot_product(temp_one, XYZ_to_RGB, temp_two);
 
       if(clip)
-        for(size_t c = 0; c < 3; c++) out[k + c] = fmaxf(temp_two[c], 0.0f);
+        for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++) out[k + c] = fmaxf(temp_two[c], 0.0f);
       else
-        for(size_t c = 0; c < 3; c++) out[k + c] = temp_two[c];
+        for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++) out[k + c] = temp_two[c];
 
       out[k + 3] = in[k + 3]; // alpha mask
     }
