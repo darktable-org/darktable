@@ -341,6 +341,7 @@ channelmixerrgb_CAT16(read_only image2d_t in, write_only image2d_t out,
                       const float4 lightness,
                       const float4 grey,
                       const float p, const float gamut, const int clip, const int apply_grey,
+                      const int do_gamut_mapping,
                       const dt_iop_channelmixer_rgb_version_t version)
 {
   const dt_adaptation_t kind = DT_ADAPTATION_CAT16;
@@ -364,7 +365,7 @@ channelmixerrgb_CAT16(read_only image2d_t in, write_only image2d_t out,
   /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
   // Gamut mapping happens in XYZ space no matter what
-  XYZ = gamut_mapping(XYZ, gamut, clip);
+  if(do_gamut_mapping) XYZ = gamut_mapping(XYZ, gamut, clip);
 
   // convert to LMS, XYZ or pipeline RGB
   unswitch_convert_XYZ_to_any_LMS(kind);
@@ -421,6 +422,7 @@ channelmixerrgb_bradford_linear(read_only image2d_t in, write_only image2d_t out
                                 const float4 lightness,
                                 const float4 grey,
                                 const float p, const float gamut, const int clip, const int apply_grey,
+                                const int do_gamut_mapping,
                                 const dt_iop_channelmixer_rgb_version_t version)
 {
   const dt_adaptation_t kind = DT_ADAPTATION_LINEAR_BRADFORD;
@@ -444,7 +446,7 @@ channelmixerrgb_bradford_linear(read_only image2d_t in, write_only image2d_t out
   /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
   // Gamut mapping happens in XYZ space no matter what
-  XYZ = gamut_mapping(XYZ, gamut, clip);
+  if(do_gamut_mapping) XYZ = gamut_mapping(XYZ, gamut, clip);
 
   // convert to LMS, XYZ or pipeline RGB
   unswitch_convert_XYZ_to_any_LMS(kind);
@@ -500,6 +502,7 @@ channelmixerrgb_bradford_full(read_only image2d_t in, write_only image2d_t out,
                               const float4 lightness,
                               const float4 grey,
                               const float p, const float gamut, const int clip, const int apply_grey,
+                              const int do_gamut_mapping,
                               const dt_iop_channelmixer_rgb_version_t version)
 {
   const dt_adaptation_t kind = DT_ADAPTATION_FULL_BRADFORD;
@@ -523,7 +526,7 @@ channelmixerrgb_bradford_full(read_only image2d_t in, write_only image2d_t out,
   /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
   // Gamut mapping happens in XYZ space no matter what
-  XYZ = gamut_mapping(XYZ, gamut, clip);
+  if(do_gamut_mapping) XYZ = gamut_mapping(XYZ, gamut, clip);
 
   // convert to LMS, XYZ or pipeline RGB
   unswitch_convert_XYZ_to_any_LMS(kind);
@@ -580,6 +583,7 @@ channelmixerrgb_XYZ(read_only image2d_t in, write_only image2d_t out,
                     const float4 lightness,
                     const float4 grey,
                     const float p, const float gamut, const int clip, const int apply_grey,
+                    const int do_gamut_mapping,
                     const dt_iop_channelmixer_rgb_version_t version)
 {
   const dt_adaptation_t kind = DT_ADAPTATION_XYZ;
@@ -603,7 +607,7 @@ channelmixerrgb_XYZ(read_only image2d_t in, write_only image2d_t out,
   /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
   // Gamut mapping happens in XYZ space no matter what
-  XYZ = gamut_mapping(XYZ, gamut, clip);
+  if(do_gamut_mapping) XYZ = gamut_mapping(XYZ, gamut, clip);
 
   // convert to LMS, XYZ or pipeline RGB
   unswitch_convert_XYZ_to_any_LMS(kind);
@@ -659,6 +663,7 @@ channelmixerrgb_RGB(read_only image2d_t in, write_only image2d_t out,
                     const float4 lightness,
                     const float4 grey,
                     const float p, const float gamut, const int clip, const int apply_grey,
+                    const int do_gamut_mapping,
                     const dt_iop_channelmixer_rgb_version_t version)
 {
   const dt_adaptation_t kind = DT_ADAPTATION_RGB;
@@ -682,7 +687,7 @@ channelmixerrgb_RGB(read_only image2d_t in, write_only image2d_t out,
   /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
   // Gamut mapping happens in XYZ space no matter what
-  XYZ = gamut_mapping(XYZ, gamut, clip);
+  if(do_gamut_mapping) XYZ = gamut_mapping(XYZ, gamut, clip);
 
   // convert to LMS, XYZ or pipeline RGB
   unswitch_convert_XYZ_to_any_LMS(kind);
