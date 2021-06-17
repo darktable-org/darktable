@@ -406,12 +406,34 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   escapedkerneldir = dt_util_str_replace(kerneldir, " ", "\\ ");
 #endif
 
-  options = g_strdup_printf("-w -cl-fast-relaxed-math %s -D%s=1 -I%s",
+  gchar* compile_option_name_id = g_strdup_printf("opencl_building_gpu%d", k);
+  gchar* compile_option_name_cname = g_strdup_printf("opencl_building_gpu%s", cl->dev[dev].cname);
+  gchar* compile_opt = NULL;
+
+  if(dt_conf_key_exists(compile_option_name_id))
+  {
+    compile_opt = dt_conf_get_string(compile_option_name_id);
+  }
+  else if (dt_conf_key_exists(compile_option_name_cname))
+  {
+    compile_opt = dt_conf_get_string(compile_option_name_cname);
+  }
+  else
+  {
+    compile_opt = g_strdup("-cl-fast-relaxed-math");
+  }
+
+  options = g_strdup_printf("-w %s %s -D%s=1 -I%s",
+                            compile_opt,
                             (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""),
                             dt_opencl_get_vendor_by_id(vendor_id), escapedkerneldir);
   cl->dev[dev].options = strdup(options);
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] options for OpenCL compiler: %s\n", options);
+
+  g_free(compile_opt);
+  g_free(compile_option_name_cname);
+  g_free(compile_option_name_id);
 
   g_free(options);
   options = NULL;
@@ -936,13 +958,13 @@ static const char *dt_opencl_get_vendor_by_id(unsigned int id)
 
   switch(id)
   {
-    case 4098:
+    case DT_OPENCL_VENDOR_AMD:
       vendor = "AMD";
       break;
-    case 4318:
+    case DT_OPENCL_VENDOR_NVIDIA:
       vendor = "NVIDIA";
       break;
-    case 0x8086u:
+    case DT_OPENCL_VENDOR_INTEL:
       vendor = "INTEL";
       break;
     default:
