@@ -1159,7 +1159,7 @@ gboolean accel_search_children(dt_gui_accel_search_t *search_data, GtkTreeIter *
 
   GtkTreePath *childpath = gtk_tree_model_get_path(tvmodel, parent);
 
-  gboolean match = strstr(row_data, search_term) != NULL;
+  const gboolean match = strstr(row_data, search_term) != NULL;
   g_free(row_data);
   if(match)
   {

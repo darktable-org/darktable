@@ -68,7 +68,7 @@ static gboolean find_metadata_iter_per_text(GtkTreeModel *model, GtkTreeIter *it
   while (valid)
   {
     gtk_tree_model_get(model, &it, col, &name, -1);
-    gboolean found = g_strcmp0(text, name) == 0;
+    const gboolean found = g_strcmp0(text, name) == 0;
     g_free(name);
     if(found)
     {
