@@ -2216,8 +2216,8 @@ static gboolean _click_on_view_dictionary(GtkWidget *view, GdkEventButton *event
         d->drag.tagname = tagname;
         if(d->drag.path) gtk_tree_path_free(d->drag.path);
         d->drag.path = path;
+        if(d->drag.lastpath) gtk_tree_path_free(d->drag.lastpath);
         d->drag.lastpath = NULL;
-        gtk_tree_path_free(path);
         return FALSE;
       }
       else
@@ -2884,7 +2884,7 @@ static void _event_dnd_end(GtkWidget *widget, GdkDragContext *context, dt_lib_mo
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_tagging_t *d = (dt_lib_tagging_t *)malloc(sizeof(dt_lib_tagging_t));
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)calloc(sizeof(dt_lib_tagging_t),1);
   self->data = (void *)d;
   d->last_tag = NULL;
   self->timeout_handle = 0;
