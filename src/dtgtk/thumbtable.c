@@ -2256,7 +2256,7 @@ static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable,
                                  "<span foreground='#%02x%02x%02x'>⬤ </span>",
                                  (guint)(c.red*255), (guint)(c.green*255), (guint)(c.blue*255));
       }
-      g_list_free_full(res, &g_free);
+      g_list_free(res);
       if(result)
         dt_toast_markup_log(_("colorlabels set to %s"), result);
       else
