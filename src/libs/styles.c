@@ -123,7 +123,7 @@ static gboolean _get_node_for_name(GtkTreeModel *model, gboolean root, GtkTreeIt
   {
     gchar *name;
     gtk_tree_model_get(model, iter, DT_STYLES_COL_NAME, &name, -1);
-    gboolean match = !g_strcmp0(name, parent_name);
+    const gboolean match = !g_strcmp0(name, parent_name);
     g_free(name);
     if(match)
     {
