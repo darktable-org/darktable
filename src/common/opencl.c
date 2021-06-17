@@ -535,9 +535,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
 
   // work-around to fix a bug in some AMD OpenCL compilers, which would fail parsing certain numerical
   // constants if locale is different from "C".
-  // we save the current locale, set locale to "C", and restore the previous setting after OpenCL is
-  // initialized
-  char *locale = strdup(setlocale(LC_ALL, NULL));
+  // we set locale to "C", and restore the environment one after OpenCL is initialized
   setlocale(LC_ALL, "C");
 
   int handles = dt_conf_get_int("opencl_number_event_handles");
@@ -853,11 +851,7 @@ finally:
   free(all_num_devices);
   free(all_platforms);
 
-  if(locale)
-  {
-    setlocale(LC_ALL, locale);
-    free(locale);
-  }
+  setlocale(LC_ALL, "");
 
   return;
 }
