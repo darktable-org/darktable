@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-06-13 18:38+0200\n"
-"PO-Revision-Date: 2021-06-16 22:51+0200\n"
+"PO-Revision-Date: 2021-06-18 23:21+0200\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -162,6 +162,9 @@ msgid ""
 "module. this will allow you to do range selections for date-time and numeric "
 "values."
 msgstr ""
+"Abilita questa opzione per utilizzare il click singolo per selezionare "
+"oggetti nel pannello della collezione. Questo vi permetterà di effettuare "
+"selezioni in base a valori data/ora e numerici."
 
 #: ../build/bin/preferences_gen.h:3585
 msgid "expand a single utility module at a time"
@@ -194,6 +197,8 @@ msgstr ""
 msgid ""
 "defines whether rating an image one star twice will zero out star rating."
 msgstr ""
+"Definisce se valutare un'immagine con una stella per due volte azzera la"
+" valutazione."
 
 #: ../build/bin/preferences_gen.h:3693 ../build/bin/preferences_gen.h:4389
 msgid "show scrollbars for central view"
@@ -298,6 +303,14 @@ msgid ""
 "should choose the *always* option.\n"
 "(more comments in the manual)"
 msgstr ""
+"Se la dimensione dell'anteprima è maggiore di questo valore, verrà processato "
+"usando il file raw file al posto dell'anteprima memorizzata nel JPEG"
+" (migliore "
+"ma più lento).\n"
+"Se vuoi tutte tutte le anteprime e le immagini pre-elaborate nella miglior"
+" qualità "
+"dovresti scegliere l'opzione *sempre*.\n"
+"(altri commenti nel manuale)"
 
 #: ../build/bin/preferences_gen.h:3832
 msgid "high quality processing from size"
@@ -311,6 +324,13 @@ msgid ""
 "should choose the *always* option.\n"
 "(more comments in the manual)"
 msgstr ""
+"Se la dimensione dell'anteprima è maggiore di questo valore, verrà processato "
+"usando la via dell'elaborazione in massima qualità (migliore "
+"ma più lento).\n"
+"Se vuoi tutte tutte le anteprime e le immagini pre-elaborate nella miglior"
+" qualità "
+"dovresti scegliere l'opzione *sempre*.\n"
+"(altri commenti nel manuale)"
 
 #: ../build/bin/preferences_gen.h:3927
 msgid "delimiters for size categories"
@@ -507,6 +527,12 @@ msgid ""
 "the settings for full-size export. X-Trans sensors use VNG rather than RCD "
 "as middle ground."
 msgstr ""
+"Interpolazione quando la visualizzazione in modalità Camera Oscura non è 1:1: "
+"bilineare è più veloce, ma non molto definita. Una via di mezzo si ottiene "
+"usando RCD + le modalità di interpolazione specificate nell'opzione "
+"'interpolatore pixel' (scheda di processo), pieno usa esattamente le "
+"impostazioni per l'esportazione nella dimensione massima. I sensori X-Trans "
+"usano VNG anziché RCD come via di mezzo."
 
 #: ../build/bin/preferences_gen.h:4490
 msgid "reduce resolution of preview image"
@@ -541,13 +567,17 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4560
 msgid "show loading screen between images"
-msgstr ""
+msgstr "Mostra la schermata di caricamento tra le immagini"
 
 #: ../build/bin/preferences_gen.h:4574
 msgid ""
 "show gray loading screen when navigating between images in the darkroom\n"
 "disable to just show a toast message"
 msgstr ""
+"Mostra la schermata di caricamento grigia mentre navighi tra le immagini"
+" nella "
+"Camera Oscura\n"
+"Disabilita per mostrare solamente un messaggio di benvenuto"
 
 #: ../build/bin/preferences_gen.h:4584
 msgid "modules"
@@ -1010,7 +1040,7 @@ msgstr "Chiedi prima di rimuovere le immagini dalla libreria"
 
 #: ../build/bin/preferences_gen.h:5754
 msgid "always ask the user before any image is removed from the library"
-msgstr ""
+msgstr "Chiedi sempre prima di rimuovere qualsiasi file dalla libreria"
 
 #: ../build/bin/preferences_gen.h:5776
 msgid "ask before deleting images from disk"
@@ -1939,15 +1969,19 @@ msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
 msgstr ""
+"Sono disponibili tre opzioni: miniature immagini, solo il conto delle"
+" immagini "
+"del gruppo o niente"
 
 #: ../build/bin/conf_gen.h:1641
 msgid "max polygon points"
-msgstr ""
+msgstr "Punti massimi del poligono"
 
 #: ../build/bin/conf_gen.h:1642
 msgid ""
 "limit the number of points imported with polygon in find location module"
 msgstr ""
+"Limita il numero di punti importati con il poligono nel modulo trova località"
 
 #: ../build/bin/conf_gen.h:2386
 msgctxt "preferences"
@@ -2264,7 +2298,7 @@ msgstr "Spostamento cornice"
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:42
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:91
 msgid "avoid colorshift"
-msgstr ""
+msgstr "Evita lo spostamento colore"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:48
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:95
@@ -4645,6 +4679,36 @@ msgid ""
 "      otherwise you risk generating serious inconsistencies in your database."
 "</i>\n"
 msgstr ""
+"\n"
+"  Scusa, darktable non può esser avviato (il database è bloccato)\n"
+"\n"
+"  Come puoi risolvere questo problema?\n"
+"\n"
+"  1 - Se un'altra istanza di darktable è già aperta, \n"
+"      clicca annulla e usa quell'istanza oppure chiudila prima "
+"di tentare di riavviare darktable \n"
+"      (il processo ID <i><b>%d</b></i> ha creato il blocco del database)\n"
+"\n"
+"  2 - Se non riesci a trovare un istanza avviata di darktable, prova a"
+" riavviare "
+"la sessione o il tuo computer. \n"
+"      Questo chiuderà tutti i programmi avviati e si spera chiuda i databases "
+"correttamente. \n"
+"\n"
+"  3 - Se hai già fatto questo o sei certo che nessun'altra istanza di "
+"darktable è in corso, \n"
+"      significa probabilmente che l'ultima istanza si è chiusa in modo"
+" anomalo. \n"
+"      Clicca sul pulsante \"Cancella i file di blocco del database\" per"
+" rimuovere i files "
+"<i>data.db.lock</i> e <i>library.db.lock</i>.  \n"
+"\n"
+"\n"
+"      <i><u>Attenzione!</u> Non cancellare questi files senza prima esserti"
+" assicurato "
+"dei controlli sopra, \n"
+"      altrimenti rischi di generare inconsistenze serie sul tuo database."
+"</i>\n"
 
 #: ../src/common/database.c:2535
 msgid "error starting darktable"
@@ -4666,13 +4730,15 @@ msgstr "Elimina i file di blocco del database"
 
 #: ../src/common/database.c:2542
 msgid "are you sure?"
-msgstr ""
+msgstr "Sei sicuro?"
 
 #: ../src/common/database.c:2543
 msgid ""
 "\n"
 "do you really want to delete the lock files?\n"
 msgstr ""
+"\n"
+"Vuoi veramente eliminare i file di blocco?\n"
 
 #: ../src/common/database.c:2557 ../src/libs/export_metadata.c:160
 #: ../src/libs/geotagging.c:818
@@ -4685,6 +4751,9 @@ msgid ""
 "successfully deleted the lock files.\n"
 "you can now restart darktable\n"
 msgstr ""
+"\n"
+"File di blocco cancellati con successo.\n"
+"Ora puoi riavviare darktable\n"
 
 #: ../src/common/database.c:2559 ../src/common/database.c:2566
 msgid "ok"
@@ -4703,6 +4772,11 @@ msgid ""
 "db.lock</i>\n"
 "in folder <a href=\"file:///%s\">%s</a>.\n"
 msgstr ""
+"\n"
+"Non dovrebbe esser rimosso almeno un file.\n"
+"Puoi provare a cancellare manualmente i file <i>data.db.lock</i> e <i>library."
+"db.lock</i>\n"
+"nella cartella <a href=\"file:///%s\">%s</a>.\n"
 
 #: ../src/common/database.c:2680
 #, c-format
@@ -5434,7 +5508,7 @@ msgstr "Elimina fisicamente tutti i files"
 
 #: ../src/control/jobs/control_jobs.c:843
 msgid "only remove from the image library"
-msgstr ""
+msgstr "Rimuovi solamente dalla libreria delle immagini"
 
 #: ../src/control/jobs/control_jobs.c:844
 msgid "skip to next file"
@@ -7038,10 +7112,12 @@ msgid ""
 "<b>move segment</b>: drag\n"
 "<b>add node</b>: ctrl+click"
 msgstr ""
+"<b>segmento di spostamento</b>: trascina\n"
+"<b>aggiungi un nodo</b>: ctrl+click"
 
 #: ../src/develop/pixelpipe_hb.c:382
 msgid "enabled as required"
-msgstr ""
+msgstr "Abilitato come richiesto"
 
 #: ../src/develop/pixelpipe_hb.c:382
 msgid ""
@@ -7051,7 +7127,7 @@ msgstr ""
 
 #: ../src/develop/pixelpipe_hb.c:384
 msgid "disabled as not appropriate"
-msgstr ""
+msgstr "Disabilitato come non appropriato"
 
 #: ../src/develop/pixelpipe_hb.c:384
 msgid ""
@@ -7123,12 +7199,15 @@ msgstr "Adatta"
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr ""
+"Hai cambiato le impostazioni relative al come le anteprime sono generate.\n"
 
 #: ../src/dtgtk/thumbtable.c:1184
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
 msgstr ""
+"Tutte le anteprime memorizzate necessitano di esser invalidate.\n"
+"\n"
 
 #: ../src/dtgtk/thumbtable.c:1186
 #, c-format
@@ -7136,6 +7215,9 @@ msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
 "\n"
 msgstr ""
+"Le anteprime memorizzate a partire dal livello %d necessitano di esser"
+" invalidate.\n"
+"\n"
 
 #: ../src/dtgtk/thumbtable.c:1189
 #, c-format
@@ -7143,6 +7225,9 @@ msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
 "\n"
 msgstr ""
+"Le anteprime memorizzate sotto il livello %d necessitano di esser"
+" invalidate.\n"
+"\n"
 
 #: ../src/dtgtk/thumbtable.c:1191
 #, c-format
@@ -7150,14 +7235,17 @@ msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
 "\n"
 msgstr ""
+"Le anteprime memorizzate tra il livello %d e %d necessitano di esser"
+" invalidate.\n"
+"\n"
 
 #: ../src/dtgtk/thumbtable.c:1194
 msgid "do you want to do that now?"
-msgstr ""
+msgstr "Vuoi farlo ora?"
 
 #: ../src/dtgtk/thumbtable.c:1202
 msgid "cached thumbnails invalidation"
-msgstr ""
+msgstr "Invalidazione anteprime memorizzate"
 
 #: ../src/dtgtk/thumbtable.c:2216 ../src/libs/metadata_view.c:379
 msgid "image rejected"
@@ -7168,20 +7256,20 @@ msgstr "Immagine scartata"
 #: ../src/dtgtk/thumbtable.c:2226
 #, c-format
 msgid "image rated to %s"
-msgstr ""
+msgstr "Immagine valutata a %s"
 
 #: ../src/dtgtk/thumbtable.c:2228
 msgid "image rated to 0 star"
-msgstr ""
+msgstr "Immagine valutata 0 stelle"
 
 #: ../src/dtgtk/thumbtable.c:2261
 #, c-format
 msgid "colorlabels set to %s"
-msgstr ""
+msgstr "Etichette colore impostate a %s"
 
 #: ../src/dtgtk/thumbtable.c:2263
 msgid "all colorlabels removed"
-msgstr ""
+msgstr "Rimosse tutte le etichette colore"
 
 #. setup rating key accelerators
 #: ../src/dtgtk/thumbtable.c:2389
@@ -7606,6 +7694,8 @@ msgid ""
 "%s\n"
 "(shortcut: %s)"
 msgstr ""
+"%s\n"
+"(scorciatoia: %s)"
 
 #: ../src/gui/accelerators.c:605
 #, c-format
@@ -8121,7 +8211,7 @@ msgstr "Impossibile copiare la coda di sviluppo da un'immagine non modificata"
 #. grid headers
 #: ../src/gui/import_metadata.c:410
 msgid "metadata presets"
-msgstr ""
+msgstr "Preimpostazioni dei metadati"
 
 #: ../src/gui/import_metadata.c:413
 msgid ""
@@ -8129,6 +8219,9 @@ msgid ""
 "double-click on a label to clear the corresponding entry\n"
 "double-click on 'preset' to clear all entries"
 msgstr ""
+"Metadati da applicare in modo predefinito\n"
+"Doppio click su un etichetta per ripulirne il contenuto\n"
+"Doppio click su una 'preimpostazione' per ripulirle tutte"
 
 #: ../src/gui/import_metadata.c:423
 msgid "from xmp"
@@ -8225,7 +8318,7 @@ msgstr ""
 #. checkbox to allow user to modify theme with user.css
 #: ../src/gui/preferences.c:442
 msgid "modify selected theme with CSS tweaks below"
-msgstr "Modifica il tema selezionato con il CSS qui sotto"
+msgstr "Modifica il tema selezionato con le modifiche al CSS sotto"
 
 #: ../src/gui/preferences.c:450
 msgid "modify theme with CSS keyed below (saved to user.css)"
@@ -8234,11 +8327,12 @@ msgstr "Modifico il tema con le chiavi CSS qui sotto (salvate in user.css)"
 #: ../src/gui/preferences.c:470
 msgctxt "usercss"
 msgid "save CSS and apply"
-msgstr ""
+msgstr "Salva e applica il CSS"
 
 #: ../src/gui/preferences.c:476
 msgid "click to save and apply the CSS tweaks entered in this editor"
 msgstr ""
+"Clicca per salvare e applicare le modifiche al CSS inserite in questo editor"
 
 #. load default text with some pointers
 #: ../src/gui/preferences.c:494
@@ -8460,7 +8554,7 @@ msgstr "_seleziona come destinazione di output"
 #: ../src/gui/presets.c:400
 #, c-format
 msgid "preset %s was successfully exported"
-msgstr ""
+msgstr "La preimpostazione %s è stata esportata con successo"
 
 #: ../src/gui/presets.c:475
 #, c-format
@@ -8681,7 +8775,7 @@ msgstr "12 bit"
 
 #: ../src/imageio/format/avif.c:449
 msgid "invalid AVIF bit depth!"
-msgstr ""
+msgstr "Profondità di bit AVIF invalida!"
 
 #: ../src/imageio/format/avif.c:691
 msgid "AVIF (8/10/12-bit)"
@@ -9875,6 +9969,7 @@ msgstr "Scala per il grafico"
 #: ../src/iop/basicadj.c:135
 msgid "this module is deprecated. please use the quick access panel instead."
 msgstr ""
+"Questo modulo è deprecato. Piuttosto usa il pannello di accesso rapido."
 
 #: ../src/iop/basicadj.c:140
 msgid "basic adjustments"
@@ -10339,7 +10434,7 @@ msgstr ""
 
 #: ../src/iop/cacorrect.c:1463
 msgid "activate colorshift correction for blue & red channels"
-msgstr ""
+msgstr "Attiva la correzione dello spostamento colore per i canali blu e rosso"
 
 #: ../src/iop/cacorrect.c:1470
 msgid ""
@@ -11535,7 +11630,7 @@ msgstr "Tonalità dello spostamento del colore globale"
 
 #: ../src/iop/colorbalancergb.c:1643
 msgid "chroma of the global color offset"
-msgstr ""
+msgstr "Crominanza dello spostamento colore globale"
 
 #: ../src/iop/colorbalancergb.c:1645
 msgid "shadows lift"
@@ -11575,7 +11670,7 @@ msgstr "Power"
 
 #: ../src/iop/colorbalancergb.c:1700
 msgid "luminance exponent in midtones"
-msgstr ""
+msgstr "Luminanza dell'esponente colore nei toni medi"
 
 #: ../src/iop/colorbalancergb.c:1707
 msgid "hue of the color exponent in midtones"
@@ -11583,7 +11678,7 @@ msgstr "Tonalità dell'esponente colore nei toni medi"
 
 #: ../src/iop/colorbalancergb.c:1715
 msgid "chroma of the color exponent in midtones"
-msgstr ""
+msgstr "Crominanza dell'esponente colore nei toni medi"
 
 #. Page masks
 #: ../src/iop/colorbalancergb.c:1718
@@ -11592,23 +11687,23 @@ msgstr "Maschere"
 
 #: ../src/iop/colorbalancergb.c:1718
 msgid "isolate luminances"
-msgstr ""
+msgstr "Isola luminanze"
 
 #: ../src/iop/colorbalancergb.c:1720
 msgid "luminance ranges"
-msgstr ""
+msgstr "Gamme di luminanza"
 
 #: ../src/iop/colorbalancergb.c:1734
 msgid "weight of the shadows over the whole tonal range"
-msgstr ""
+msgstr "Pesi delle ombre sull'intera gamma tonale"
 
 #: ../src/iop/colorbalancergb.c:1745
 msgid "position of the middle-gray reference for masking"
-msgstr ""
+msgstr "Posiziona il riferimento al grigio medio per creare la maschera"
 
 #: ../src/iop/colorbalancergb.c:1756
 msgid "weights of highlights over the whole tonal range"
-msgstr ""
+msgstr "Pesi delle alteluci sull'intera gamma tonale"
 
 #: ../src/iop/colorbalancergb.c:1769
 msgid "peak white luminance value used to normalize the power function"
@@ -11620,11 +11715,11 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1779
 msgid "mask preview settings"
-msgstr ""
+msgstr "Impostazioni maschera di anteprima"
 
 #: ../src/iop/colorbalancergb.c:1782
 msgid "checkerboard color 1"
-msgstr ""
+msgstr "Scheda di controllo colore 1"
 
 #: ../src/iop/colorbalancergb.c:1785 ../src/iop/colorbalancergb.c:1794
 msgid "select color of the checkerboard from a swatch"
@@ -11632,11 +11727,11 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1791
 msgid "checkerboard color 2"
-msgstr ""
+msgstr "Scheda di controllo colore 2"
 
 #: ../src/iop/colorbalancergb.c:1801
 msgid "checkerboard size"
-msgstr ""
+msgstr "Dimensione scheda di controllo colore"
 
 #: ../src/iop/colorchecker.c:115
 msgid "color look up table"
@@ -12238,7 +12333,7 @@ msgstr "Ritaglio|distorsione"
 
 #: ../src/iop/crop.c:142
 msgid "change the framing"
-msgstr ""
+msgstr "Modifica la cornice"
 
 #: ../src/iop/crop.c:1126
 msgid "crop settings"
@@ -12339,7 +12434,7 @@ msgstr ""
 
 #: ../src/iop/demosaic.c:5726
 msgid "display blending mask"
-msgstr ""
+msgstr "Visualizza la maschera di fusione"
 
 #: ../src/iop/demosaic.c:5733
 msgid "how many color smoothing median steps after demosaicing"
@@ -12356,7 +12451,7 @@ msgstr "Non applicabile"
 
 #: ../src/iop/demosaic.c:5743
 msgid "demosaicing is only used for color raw images"
-msgstr ""
+msgstr "La demosaicizzazione è usata per il colore delle immagini raw"
 
 #: ../src/iop/denoiseprofile.c:656
 msgid "wavelets: chroma only"
@@ -12814,6 +12909,9 @@ msgid ""
 "this is a reading a lightmeter would give you on the scene.\n"
 "adjust so highlights clipping is avoided"
 msgstr ""
+"Numero di stop tra il grigio medio ed il bianco puro\n"
+"Questa è la lettura della scena che darebbe un esposimetro.\n"
+"Aggiusta in modo che sia evitato il taglio delle alteluci"
 
 #: ../src/iop/filmic.c:1624 ../src/iop/filmicrgb.c:3755
 msgid ""
@@ -13472,7 +13570,7 @@ msgstr "mappatura tonale globale"
 
 #: ../src/iop/globaltonemap.c:105
 msgid "this module is deprecated. please use the filmic rgb module instead."
-msgstr ""
+msgstr "Questo modulo è deprecato. Piuttosto usa il modulo filmic RGB."
 
 #: ../src/iop/globaltonemap.c:643
 msgid "operator"
@@ -13752,7 +13850,7 @@ msgstr "inverti"
 
 #: ../src/iop/invert.c:115
 msgid "this module is deprecated. please use the negadoctor module instead."
-msgstr ""
+msgstr "Questo modulo è deprecato. Piuttosto usa il modulo negadoctor."
 
 #: ../src/iop/invert.c:120
 msgid "invert film negatives"
@@ -14713,11 +14811,11 @@ msgstr "Sovraesposizione"
 
 #: ../src/iop/overexposed.c:131 ../src/iop/overexposed.c:368
 msgid "module overexposed failed in buffer allocation"
-msgstr ""
+msgstr "Il modulo sovraesposizione ha fallito nell'allocazione del buffer"
 
 #: ../src/iop/overexposed.c:157 ../src/iop/overexposed.c:378
 msgid "module overexposed failed in color conversion"
-msgstr ""
+msgstr "Il modulo sovraesposizione ha fallito nella conversione colore"
 
 #: ../src/iop/profile_gamma.c:95
 msgid "unbreak input profile"
@@ -14765,6 +14863,8 @@ msgid ""
 "number of stops between middle gray and pure black\n"
 "this is a reading a posemeter would give you on the scene"
 msgstr ""
+"Numero di stop tra il grigio medio ed il nero puro\n"
+"Questa è la lettura della scena che vi darebbe un esposimetro"
 
 #: ../src/iop/profile_gamma.c:672
 msgid ""
@@ -15000,7 +15100,7 @@ msgstr "Attiva strumento sfocatura"
 #: ../src/iop/retouch.c:2166 ../src/iop/retouch.c:2170
 #: ../src/iop/retouch.c:2174 ../src/iop/retouch.c:2178
 msgid "change algorithm for current form"
-msgstr ""
+msgstr "Cambia l'algoritmo per la forma attuale"
 
 #: ../src/iop/retouch.c:2170 ../src/iop/retouch.c:2187
 msgid "activate fill tool"
@@ -15017,7 +15117,7 @@ msgstr "Attiva strumento cerotto"
 #. overwrite tooltip ourself to handle shift+click
 #: ../src/iop/retouch.c:2182
 msgid "ctrl+click to change tool for current form"
-msgstr ""
+msgstr "Ctrl+click per modificare lo strumento per la forma attuale"
 
 #: ../src/iop/retouch.c:2183
 msgid "shift+click to set the tool as default"
@@ -15433,7 +15533,7 @@ msgstr "rimozione macchie"
 
 #: ../src/iop/spots.c:61
 msgid "this module is deprecated. please use the retouch module instead."
-msgstr ""
+msgstr "Questo modulo è deprecato. Piuttosto usa il modulo ritocco."
 
 #: ../src/iop/spots.c:66
 msgid "remove sensor dust spots"
@@ -15535,7 +15635,7 @@ msgstr "Modificato dall'utente"
 #: ../src/iop/temperature.c:1586
 msgctxt "white balance"
 msgid "camera reference"
-msgstr ""
+msgstr "Riferimento fotocamera"
 
 #: ../src/iop/temperature.c:1864 ../src/iop/temperature.c:1882
 msgid "green channel coefficient"
@@ -15619,7 +15719,7 @@ msgstr "Imposta il bilanciamento del bianco come Modificato dall'Utente"
 
 #: ../src/iop/temperature.c:2067
 msgid "camera reference"
-msgstr ""
+msgstr "Riferimento fotocamera"
 
 #: ../src/iop/temperature.c:2070
 msgid ""
@@ -16061,6 +16161,8 @@ msgid ""
 "this module is deprecated. please use the vibrance slider in the color "
 "balance rgb module instead."
 msgstr ""
+"Questo modulo è deprecato. Piuttosto usa il selettore scorrevole della "
+"vibranza nel modulo bilanciamento colore RGB."
 
 #: ../src/iop/vibrance.c:93
 msgid ""
@@ -16555,7 +16657,7 @@ msgstr "darktable"
 
 #: ../src/libs/collect.c:2821
 msgid "collections settings"
-msgstr ""
+msgstr "Impostazioni raccolte"
 
 #: ../src/libs/collect.c:2824 ../src/libs/export_metadata.c:269
 #: ../src/libs/metadata.c:447 ../src/libs/metadata_view.c:1227
@@ -16680,11 +16782,11 @@ msgstr "cancella la coda di sviluppo dell'immagine?"
 
 #: ../src/libs/copy_history.c:373
 msgid "selective copy..."
-msgstr ""
+msgstr "Copia selettiva..."
 
 #: ../src/libs/copy_history.c:374
 msgid "choose which modules to copy from the source image"
-msgstr ""
+msgstr "Scegli quale modulo copiare dall'immagine sorgente"
 
 #: ../src/libs/copy_history.c:379
 msgid ""
@@ -16696,11 +16798,11 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:383
 msgid "selective paste..."
-msgstr ""
+msgstr "Incolla selettivo..."
 
 #: ../src/libs/copy_history.c:384
 msgid "choose which modules to paste to the target image(s)"
-msgstr ""
+msgstr "Scegli quali moduli incollare sull'/sulle immagine/i di destinazione"
 
 #: ../src/libs/copy_history.c:389 ../src/libs/image.c:583
 msgid "paste"
@@ -16809,7 +16911,7 @@ msgstr "Gestore duplicati"
 #: ../src/libs/duplicate.c:263
 #, no-c-format
 msgid "preview is only possible for zoom lower than 200%%..."
-msgstr ""
+msgstr "Anteprima è possible per zoom inferiori al 200%%..."
 
 #: ../src/libs/duplicate.c:543 ../src/libs/history.c:1026
 #: ../src/libs/snapshots.c:459
@@ -17199,17 +17301,20 @@ msgstr "Elimina metadati etichetta"
 
 #: ../src/libs/geotagging.c:375
 msgid "apply offset and geo-location"
-msgstr ""
+msgstr "Applica lo spostamento e la geo localizzazione"
 
 #: ../src/libs/geotagging.c:376 ../src/libs/geotagging.c:1859
 msgid "apply geo-location"
-msgstr ""
+msgstr "Applica la geo localizzazione"
 
 #: ../src/libs/geotagging.c:378
 msgid ""
 "apply offset and geo-location to matching images\n"
 "double operation: two ctrl-Z to undo"
 msgstr ""
+"Applica lo spostamento e la geo localizzazione alle immagini "
+"corrispondenti\n"
+"Doppia operazione: due ctrl-Z per annullare"
 
 #: ../src/libs/geotagging.c:380 ../src/libs/geotagging.c:1860
 msgid "apply geo-location to matching images"
@@ -17217,7 +17322,7 @@ msgstr "Applica la geo localizzazione alle immagini corrispondenti"
 
 #: ../src/libs/geotagging.c:817
 msgid "GPX file track segments"
-msgstr ""
+msgstr "File GPX dei segmenti di tracciato"
 
 #: ../src/libs/geotagging.c:837 ../src/libs/geotagging.c:1818
 msgid "start time"
@@ -17260,11 +17365,11 @@ msgstr ""
 
 #: ../src/libs/geotagging.c:1693
 msgid "original date/time"
-msgstr ""
+msgstr "Data/ora originale"
 
 #: ../src/libs/geotagging.c:1699
 msgid "date/time offset"
-msgstr ""
+msgstr "Spostamento della data/ora"
 
 #: ../src/libs/geotagging.c:1701
 msgid "offset or difference ([-]dd hh:mm:ss)"
@@ -17281,7 +17386,7 @@ msgstr "Applica lo spostamento"
 
 #: ../src/libs/geotagging.c:1713
 msgid "apply offset to selected images"
-msgstr ""
+msgstr "Applica lo spostamento alle immagini selezionate"
 
 #: ../src/libs/geotagging.c:1717
 msgid "apply date/time"
@@ -17601,7 +17706,7 @@ msgstr "Rimuovi"
 
 #: ../src/libs/image.c:476
 msgid "remove images from the image library, without deleting"
-msgstr ""
+msgstr "Elimina le immagini dalla libreria immagini, senza cancellarle"
 
 #: ../src/libs/image.c:484
 msgid "move..."
@@ -17630,6 +17735,8 @@ msgstr "Crea HDR dagli scatti selezionati"
 #: ../src/libs/image.c:496
 msgid "add a duplicate to the image library, including its history stack"
 msgstr ""
+"Aggiungi un duplicato alla libreria delle immagini, includendo la coda di"
+" sviluppo"
 
 #: ../src/libs/image.c:502
 msgid "rotate selected images 90 degrees CCW"
@@ -17998,15 +18105,15 @@ msgstr "Seleziona nuovo"
 
 #: ../src/libs/import.c:1729
 msgid "please wait while prefetching the list of images from camera..."
-msgstr ""
+msgstr "Attendere la prelettura della lista delle immagini dalla fotocamera..."
 
 #: ../src/libs/import.c:1947
 msgid "add to library..."
-msgstr ""
+msgstr "Aggiungi alla libreria..."
 
 #: ../src/libs/import.c:1948
 msgid "add existing images to the library"
-msgstr ""
+msgstr "Aggiungi alla libreria le immagini esistenti"
 
 #: ../src/libs/import.c:1955
 msgid "copy & import..."
@@ -18018,6 +18125,11 @@ msgid ""
 "patterns can be defined to rename the images and specify the destination "
 "folders"
 msgstr ""
+"Copia ed eventualmente rinomina le immagini prima di aggiungerle alla "
+"libreria\n"
+"Possono esser definiti dei modelli per rinominare le immagini e specificare"
+" la "
+"cartella di destinazione"
 
 #. collapsible section
 #: ../src/libs/import.c:1978
@@ -18280,6 +18392,8 @@ msgstr "Vai alla raccolta (Tavolo Luminoso)"
 msgid ""
 "terminate edit (press enter or escape) before selecting another location"
 msgstr ""
+"Termina la modifica (premi Invio o Esc) prima di selezionare una nuova "
+"località"
 
 #: ../src/libs/map_locations.c:971
 msgid ""
@@ -18296,6 +18410,19 @@ msgid ""
 "right-click for other actions: delete location and go to collection,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
+"Elenco delle località personalizzate,\n"
+"clicca con il mouse per visualizzare o nascondere una località sulla "
+"mappa:\n"
+"- rotella mouse all'interno della forma per ridimensionarla,\n"
+"- rotella mouse + <Shift> o <Ctrl> per modificarne la larghezza o l'altezza\n"
+"- clicca all'interno della forma e trascina per modificarne la posizione\n"
+"- Ctrl+click per spostare un'immagine dentro la località\n"
+"- Ctrl+click per modificare il nome della località\n"
+"- il simbolo pipe '|' spezza il nome in diversi livelli\n"
+"- per cancellare un gruppo di località, cancellane il nome\n"
+"- premi Invio per validare il nuovo nome, Esc per terminare la modifica\n"
+"- Click destro per altre azioni: cancella la località e vai alla raccolta,\n"
+"- Ctrl+rotella mouse per ridimensionare la finestra"
 
 #: ../src/libs/map_locations.c:998
 msgid ""
@@ -18925,7 +19052,7 @@ msgstr "Muovi gruppo a sinistra"
 
 #: ../src/libs/modulegroups.c:3293
 msgid "add module to the group"
-msgstr ""
+msgstr "Aggiungi il modulo al gruppo"
 
 #: ../src/libs/modulegroups.c:3305
 msgid "move group to the right"
@@ -18942,7 +19069,7 @@ msgstr "Rinomina la preimpostazione"
 
 #: ../src/libs/modulegroups.c:3480
 msgid "new preset name :"
-msgstr ""
+msgstr "Nuovo nome della preimpostazione:"
 
 #: ../src/libs/modulegroups.c:3481
 msgid "a preset with this name already exists !"
@@ -18954,15 +19081,15 @@ msgstr "Preimpstazione : "
 
 #: ../src/libs/modulegroups.c:3821
 msgid "remove the preset"
-msgstr ""
+msgstr "Rimuovi la preimpostazione"
 
 #: ../src/libs/modulegroups.c:3824
 msgid "duplicate the preset"
-msgstr ""
+msgstr "Duplica la preimpostazione"
 
 #: ../src/libs/modulegroups.c:3827
 msgid "rename the preset"
-msgstr ""
+msgstr "Rinomina la preimpostazione"
 
 #: ../src/libs/modulegroups.c:3830
 msgid "create a new empty preset"
@@ -18974,11 +19101,11 @@ msgstr "Visualizza linea di ricerca"
 
 #: ../src/libs/modulegroups.c:3842
 msgid "show quick access panel"
-msgstr ""
+msgstr "Mostra il pannello di accesso rapido"
 
 #: ../src/libs/modulegroups.c:3851
 msgid "auto-apply this preset"
-msgstr ""
+msgstr "Applica automaticamente questa preimpostazione"
 
 #: ../src/libs/modulegroups.c:3867
 msgid "module groups"
@@ -20078,7 +20205,7 @@ msgstr "Click per entrare nel layout anteprima."
 
 #: ../src/libs/tools/lighttable.c:122
 msgid "click to enter culling layout in fixed mode."
-msgstr ""
+msgstr "Clicca per entrare nel layout selezione in modalità fissa."
 
 #: ../src/libs/tools/lighttable.c:124 ../src/libs/tools/lighttable.c:129
 msgid "click to exit culling layout."
@@ -20086,7 +20213,7 @@ msgstr "Clicca per uscire dal layout selezione."
 
 #: ../src/libs/tools/lighttable.c:127
 msgid "click to enter culling layout in dynamic mode."
-msgstr ""
+msgstr "Clicca per entrare nel layout selezione in modalità dinamica."
 
 #: ../src/libs/tools/lighttable.c:260
 msgid "click to enter filemanager layout."
@@ -20131,11 +20258,12 @@ msgstr "Attiva modalità anteprima adesiva"
 msgctxt "accel"
 msgid "toggle sticky preview mode with focus detection"
 msgstr ""
+"Attiva la modalità anteprima adesiva con rilevamento punti di messa a fuoco"
 
 #: ../src/libs/tools/lighttable.c:574
 msgctxt "accel"
 msgid "exit current layout"
-msgstr ""
+msgstr "Esci dal layout corrente"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
@@ -20675,7 +20803,7 @@ msgstr "Prova a disattivare  le impostazioni del filtro dal pannello di sopra"
 
 #: ../src/views/lighttable.c:427
 msgid "or add images in the collections module in the left panel"
-msgstr ""
+msgstr "o aggiungi le immagini nel modulo raccolte nel pannello sinistro"
 
 #. movement keys
 #: ../src/views/lighttable.c:856
