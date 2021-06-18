@@ -119,12 +119,13 @@ static gboolean _get_node_for_name(GtkTreeModel *model, gboolean root, GtkTreeIt
   }
 
   // here we have iter to be on the right level, let's check if we can find parent_name
-  gchar *name;
-
   do
   {
+    gchar *name;
     gtk_tree_model_get(model, iter, DT_STYLES_COL_NAME, &name, -1);
-    if(!g_strcmp0(name, parent_name))
+    const gboolean match = !g_strcmp0(name, parent_name);
+    g_free(name);
+    if(match)
     {
       return TRUE;
     }
@@ -218,7 +219,11 @@ static void _styles_row_activated_callback(GtkTreeView *view, GtkTreePath *path,
   gtk_tree_model_get(model, &iter, DT_STYLES_COL_FULLNAME, &name, -1);
 
   const GList *list = dt_view_get_images_to_act_on(TRUE, TRUE, FALSE);
-  if(name) dt_styles_apply_to_list(name, list, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
+  if(name)
+  {
+    dt_styles_apply_to_list(name, list, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
+    g_free(name);
+  }
 }
 
 // get list of style names from selection
