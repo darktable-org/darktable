@@ -524,14 +524,14 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
   GtkTreeIter iter, model_iter;
   GtkTreeModel *model;
 
-  gchar *filmroll_path = NULL;
-  gchar *fullq = NULL;
-
   /* Get info about the filmroll (or parent) selected */
   model = gtk_tree_view_get_model(treeview);
   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
   if (gtk_tree_selection_get_selected(selection, &model, &iter))
   {
+    gchar *filmroll_path = NULL;
+    gchar *fullq = NULL;
+
     gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &filmroll_path, -1);
 
     /* Clean selected images, and add to the table those which are going to be deleted */
@@ -544,6 +544,7 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
                             " WHERE film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%')",
                             filmroll_path);
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
+    g_free(filmroll_path);
 
     if (dt_control_remove_images())
     {
@@ -2084,7 +2085,9 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
   }
 
   //set the combobox tooltip as well
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->combo), gtk_widget_get_tooltip_text(d->text));
+  gchar *tip = gtk_widget_get_tooltip_text(d->text);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->combo), tip);
+  g_free(tip);
 }
 
 

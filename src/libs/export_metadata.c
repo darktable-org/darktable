@@ -68,7 +68,9 @@ static gboolean find_metadata_iter_per_text(GtkTreeModel *model, GtkTreeIter *it
   while (valid)
   {
     gtk_tree_model_get(model, &it, col, &name, -1);
-    if (g_strcmp0(text, name) == 0)
+    const gboolean found = g_strcmp0(text, name) == 0;
+    g_free(name);
+    if(found)
     {
       if (iter) *iter = it;
       return TRUE;
@@ -115,6 +117,7 @@ static gboolean click_on_metadata_list(GtkWidget *view, GdkEventButton *event, d
       if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
       {
         add_selected_metadata(GTK_TREE_VIEW(view), d);
+        gtk_tree_path_free(path);
         return TRUE;
       }
     }

@@ -1047,6 +1047,8 @@ static gboolean _menuitem_manage_quick_presets_traverse(GtkTreeModel *model, Gtk
   {
     *txt = dt_util_dstrcat(*txt, "ꬹ%s|%sꬹ", iop_name, preset);
   }
+  g_free(iop_name);
+  g_free(preset);
 
   return FALSE;
 }

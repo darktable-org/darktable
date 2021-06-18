@@ -957,7 +957,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     else
     {
       caption = g_path_get_basename(img->filename);
-      (g_strrstr(caption, "."))[0] = '\0'; // chop extension...
+      gchar *dot = g_strrstr(caption, ".");
+      if(dot) dot[0] = '\0'; // chop extension...
     }
 
     GList *desc = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
