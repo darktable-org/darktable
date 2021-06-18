@@ -458,18 +458,11 @@ You are strongly advised to take a backup first.
 
 ## Translations
 
-- Catalan
-- Czech
-- Danish
+- Afrikaans
 - German
-- European Spanish
+- Esperanto
 - French
-- Hebrew
-- Hungarian
-- Italian
-- Japanese
-- Norwegian Bokmål
 - Dutch
-- Polish
-- Russian
+- Brazilian Portuguese
 - Slovenian
+- Ukrainian
