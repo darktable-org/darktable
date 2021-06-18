@@ -1734,6 +1734,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
 int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
 {
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
+  dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
   // we don't do anything if the image is not ready
   if(!g->preview_ready) return 0;
 
@@ -1741,13 +1742,15 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   g->shift_hold = FALSE;
   g->ctrl_hold = FALSE;
   g->cropping = 0;
+
+  // we save the crop into the params now so params are kept in synch with gui settings
+  _commit_box(self, g, p);
   return 1;
 }
 
 int button_pressed(struct dt_iop_module_t *self, double x, double y, double pressure, int which, int type,
                    uint32_t state)
 {
-
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
   // we don't do anything if the image is not ready
