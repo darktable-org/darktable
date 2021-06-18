@@ -411,9 +411,50 @@ You are strongly advised to take a backup first.
 
 ### Base Support
 
+- Fujifilm GFX100S (compressed)
+- Fujifilm X-E4 (compressed)
+- Fujifilm X-S10 (compressed)
+- Leica D-Lux 7 (4:3, 1:1, 16:9, 3:2)
+- Nikon Z 6_2 (14bit-compressed, 14bit-uncompressed, 12bit-compressed, 12bit-uncompressed)
+- Nikon Z 7_2 (14bit-compressed, 14bit-uncompressed, 12bit-compressed, 12bit-uncompressed)
+- Panasonic DC-G100 (4:3)
+- Panasonic DC-G110 (4:3)
+- Panasonic DC-GF10 (4:3)
+- Panasonic GF90 (4:3)
+- Pentax K-3 Mark III
+- Ricoh GR III (dng)
+- Sony ILCE-1
+- Sony ILCE-7SM3
+- Sony ILCE-QX1
+
 ### White Balance Presets
 
+- Fujifilm GFX100S
+- Fujifilm X-E4
+- Nikon D780
+- Panasonic DC-FZ10002
+- Panasonic DMC-G8
+- Panasonic DMC-G80
+- Panasonic DMC-G81
+- Panasonic DMC-G85
+- Ricoh GR III
+- Samsung GX20
+
 ### Noise Profiles
+
+- Canon PowerShot S110
+- Nikon COOLPIX P950
+- Nikon Z 7_2
+- Olympus E-M10 Mark IV
+- Pentax K-3 Mark III
+- Samsung GX10
+- Samsung GX20
+- Sony ILCE-1
+- Sony ILCE-7C
+
+### Custom Color matrices
+
+- Samsung GX20
 
 ## Translations
 
