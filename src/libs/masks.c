@@ -1506,6 +1506,7 @@ static void _lib_masks_remove_item(dt_lib_module_t *self, int formid, int parent
       {
         gtk_tree_store_remove(GTK_TREE_STORE(model), &iter);
       }
+      gtk_tree_path_free(path);
     }
   }
 }

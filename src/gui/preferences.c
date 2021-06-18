@@ -1159,7 +1159,9 @@ gboolean accel_search_children(dt_gui_accel_search_t *search_data, GtkTreeIter *
 
   GtkTreePath *childpath = gtk_tree_model_get_path(tvmodel, parent);
 
-  if(strstr(row_data, search_term))
+  const gboolean match = strstr(row_data, search_term) != NULL;
+  g_free(row_data);
+  if(match)
   {
     search_data->curr_found_count++;
     if(search_data->curr_found_count > search_data->last_found_count)
