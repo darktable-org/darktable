@@ -607,7 +607,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   else
   {
     // gaussian blur
-    tiling->factor = 2.0f + fmax(1.0f, (float)dt_gaussian_memory_use(width, height, channels) / basebuffer);
+    tiling->factor = 2.0f + fmax(1.0f, (float)dt_gaussian_memory_use_CPU(width, height, channels) / basebuffer);
+    tiling->factor_cl = 2.0f + fmax(1.0f, (float)dt_gaussian_memory_use(width, height, channels) / basebuffer);
     tiling->maxbuf = fmax(1.0f, (float)dt_gaussian_singlebuffer_size(width, height, channels) / basebuffer);
   }
 

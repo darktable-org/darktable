@@ -94,6 +94,13 @@ size_t dt_gaussian_memory_use(const int width,    // width of input image
   return mem_use;
 }
 
+size_t dt_gaussian_memory_use_CPU(const int width,    // width of input image
+                                  const int height,   // height of input image
+                                  const int channels) // channels per pixel
+{
+  return sizeof(float) * channels * width * height;
+}
+
 size_t dt_gaussian_singlebuffer_size(const int width,    // width of input image
                                      const int height,   // height of input image
                                      const int channels) // channels per pixel
