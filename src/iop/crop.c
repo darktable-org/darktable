@@ -877,26 +877,36 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   if(w == g->cx)
   {
-    dt_bauhaus_slider_set_soft_min(g->cw, p->cx + 0.10);
     g->clip_w = g->clip_x + g->clip_w - p->cx;
     g->clip_x = p->cx;
+    _aspect_apply(self, GRAB_LEFT);
   }
   else if(w == g->cw)
   {
-    dt_bauhaus_slider_set_soft_max(g->cx, p->cw - 0.10);
     g->clip_w = p->cw - g->clip_x;
+    _aspect_apply(self, GRAB_RIGHT);
   }
   else if(w == g->cy)
   {
-    dt_bauhaus_slider_set_soft_min(g->ch, p->cy + 0.10);
     g->clip_h = g->clip_y + g->clip_h - p->cy;
     g->clip_y = p->cy;
+    _aspect_apply(self, GRAB_TOP);
   }
   else if(w == g->ch)
   {
-    dt_bauhaus_slider_set_soft_max(g->cy, p->ch - 0.10);
     g->clip_h = p->ch - g->clip_y;
+    _aspect_apply(self, GRAB_BOTTOM);
   }
+
+  // update all sliders, as their values may have change to keep aspect ratio
+  dt_bauhaus_slider_set(g->cx, g->clip_x);
+  dt_bauhaus_slider_set_soft_min(g->cw, g->clip_x + 0.10);
+  dt_bauhaus_slider_set(g->cy, g->clip_y);
+  dt_bauhaus_slider_set_soft_min(g->ch, g->clip_y + 0.10);
+  dt_bauhaus_slider_set(g->cw, g->clip_x + g->clip_w);
+  dt_bauhaus_slider_set_soft_max(g->cx, g->clip_x + g->clip_w - 0.10);
+  dt_bauhaus_slider_set(g->ch, g->clip_y + g->clip_h);
+  dt_bauhaus_slider_set_soft_max(g->cy, g->clip_y + g->clip_h - 0.10);
 
   --darktable.gui->reset;
 
