@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-06-13 18:38+0200\n"
-"PO-Revision-Date: 2021-06-18 23:21+0200\n"
+"PO-Revision-Date: 2021-06-19 23:59+0200\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -792,13 +792,16 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5064
 msgid "show mask indicator in module headers"
-msgstr ""
+msgstr "Visualizza l'indicatore della maschera nell'intestazione dei moduli"
 
 #: ../build/bin/preferences_gen.h:5078
 msgid ""
 "if enabled, an icon will be shown in the header of any processing modules "
 "that have a mask applied"
 msgstr ""
+"Se abilitato, verrà mostrata un'icona nell'intestazione di tutti i moduli di"
+" elaborazione "
+"che hanno una maschera applicata"
 
 #: ../build/bin/preferences_gen.h:5106
 msgid "other views"
@@ -806,7 +809,7 @@ msgstr "Altre viste"
 
 #: ../build/bin/preferences_gen.h:5109
 msgid "map / geolocalization"
-msgstr ""
+msgstr "Mappa / Geolocalizzazione"
 
 #: ../build/bin/preferences_gen.h:5129
 msgid "pretty print the image location"
@@ -868,10 +871,13 @@ msgid ""
 "pixel interpolator used in modules for rotation, lens correction, liquify, "
 "cropping and final scaling (bilinear, bicubic, lanczos2)."
 msgstr ""
+"L'intepolatore di pixel viene nei moduli per la rotazione, nella correzione "
+"obiettivo, fluidifica, ritaglia e riscala finale (bilineare, bicubica,"
+" lanczos2)."
 
 #: ../build/bin/preferences_gen.h:5339
 msgid "pixel interpolator (scaling)"
-msgstr ""
+msgstr "Intepolatore pixel (ridimensionamento)"
 
 #: ../build/bin/preferences_gen.h:5365 ../build/bin/preferences_gen.h:5384
 #: ../build/bin/conf_gen.h:1932
@@ -883,6 +889,8 @@ msgstr "lanczos3"
 msgid ""
 "pixel interpolator used for scaling (bilinear, bicubic, lanczos2, lanczos3)."
 msgstr ""
+"L'intepolatore di pixel è usato per il ridimensionamento (bilineare,"
+" bicubica, lanczos2, lanczo3)."
 
 #: ../build/bin/preferences_gen.h:5409
 msgid "3D lut root folder"
@@ -1020,7 +1028,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5683
 msgid "show warning messages"
-msgstr ""
+msgstr "Mostra i messaggi di avviso"
 
 #: ../build/bin/preferences_gen.h:5697
 msgid ""
@@ -1029,6 +1037,13 @@ msgid ""
 "these messages can be false-positive and should be disregarded if you know "
 "what you are doing. this option will hide them all the time."
 msgstr ""
+"Mostra i messaggi nei moduli per avvisare gli utenti principianti quando"
+" impostazioni "
+"non-standard e potenzialmente dannose sono usate nella are used nella coda di "
+"sviluppo.\n"
+"Questi messaggi posson esser falsi positivi e dovrebbero esser ignorati se"
+" sai cosa stai "
+"facendo. Questa opzione li nasconderà per tutto il tempo."
 
 #: ../build/bin/preferences_gen.h:5725
 msgid "security"
@@ -1036,11 +1051,11 @@ msgstr "Sicurezza"
 
 #: ../build/bin/preferences_gen.h:5740
 msgid "ask before removing images from the library"
-msgstr "Chiedi prima di rimuovere le immagini dalla libreria"
+msgstr "Chiedi prima di rimuovere le immagini dalla biblioteca"
 
 #: ../build/bin/preferences_gen.h:5754
 msgid "always ask the user before any image is removed from the library"
-msgstr "Chiedi sempre prima di rimuovere qualsiasi file dalla libreria"
+msgstr "Chiedi sempre prima di rimuovere qualsiasi file dalla biblioteca"
 
 #: ../build/bin/preferences_gen.h:5776
 msgid "ask before deleting images from disk"
@@ -1115,7 +1130,7 @@ msgstr "Chiedi prima di eliminare un preset"
 
 #: ../build/bin/preferences_gen.h:6076
 msgid "will ask for confirmation before deleting or overwriting a preset"
-msgstr ""
+msgstr "Chiedi conferma prima di eliminare o sovrascrivere una preimpostazione"
 
 #: ../build/bin/preferences_gen.h:6098
 msgid "ask before exporting in overwrite mode"
@@ -1123,7 +1138,7 @@ msgstr "Chiedi prima di esportare in modalità sovrascrivi"
 
 #: ../build/bin/preferences_gen.h:6112
 msgid "will ask for confirmation before exporting files in overwrite mode"
-msgstr ""
+msgstr "Chiedi conferma prima di esportare i file in modalità sovrascrittura"
 
 #: ../build/bin/preferences_gen.h:6140
 msgid "cpu / gpu / memory"
@@ -1222,6 +1237,8 @@ msgid ""
 "minimum amount of memory (in MB) that tiling should take for a single image "
 "buffer (needs a restart)."
 msgstr ""
+"Ammontare minimo di memoria (in MB) che il tiling dovrebbe prendere per il "
+"buffer di una singola immagine (richiede il riavvio)."
 
 #: ../build/bin/preferences_gen.h:6409
 msgid "activate OpenCL support"
@@ -1728,7 +1745,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:7796
 msgid "tags case sensitivity"
-msgstr ""
+msgstr "Etichette sensibili alle maiuscole"
 
 #: ../build/bin/preferences_gen.h:7807 ../build/bin/conf_gen.h:410
 msgctxt "preferences"
@@ -1746,6 +1763,9 @@ msgid ""
 "tags case sensitivity. without the Sqlite ICU extension, insensivity works "
 "only for the 26 latin letters"
 msgstr ""
+"Etichette sensibili alle maiuscole. Senza l'estensione Sqlite ICU,"
+" l'insensibilità "
+"funziona solo per le 26 lettere latine"
 
 #: ../build/bin/preferences_gen.h:7856
 msgid "number of folder levels to show in lists"
@@ -1787,6 +1807,8 @@ msgid ""
 "sort the following collections in descending order: 'film roll' by folder, "
 "'folder', 'times' (e.g. 'date taken')"
 msgstr ""
+"Riordina le seguenti raccolte in ordine decrescente: 'rullino' per cartella, "
+"'cartella', 'tempi' (es. 'data di scatto')"
 
 #: ../build/bin/conf_gen.h:435
 msgctxt "preferences"
@@ -1796,7 +1818,7 @@ msgstr "Vero"
 #: ../build/bin/conf_gen.h:436
 msgctxt "preferences"
 msgid "active module"
-msgstr ""
+msgstr "Modulo attivo"
 
 #: ../build/bin/conf_gen.h:437
 msgctxt "preferences"
@@ -1805,15 +1827,15 @@ msgstr "Falso"
 
 #: ../build/bin/conf_gen.h:761
 msgid "select only new pictures"
-msgstr ""
+msgstr "Seleziona solo le nuove immagini"
 
 #: ../build/bin/conf_gen.h:762
 msgid "only select images that have not already been imported"
-msgstr ""
+msgstr "Solo le immagini selezionate che non sono ancora state importate"
 
 #: ../build/bin/conf_gen.h:767
 msgid "ignore JPEG images"
-msgstr ""
+msgstr "Ignora le immagini JPEG"
 
 #: ../build/bin/conf_gen.h:768
 msgid ""
@@ -1833,7 +1855,7 @@ msgstr "Applica alcuni metadati a tutte le immagini appena importate."
 
 #: ../build/bin/conf_gen.h:779
 msgid "recursive directory"
-msgstr ""
+msgstr "Cartelle ricorsive"
 
 #: ../build/bin/conf_gen.h:780
 msgid "recursive directory traversal when importing filmrolls"
@@ -1858,7 +1880,7 @@ msgstr ""
 
 #: ../build/bin/conf_gen.h:809
 msgid "import tags from xmp"
-msgstr ""
+msgstr "Importa le etichette dal XMP"
 
 #: ../build/bin/conf_gen.h:835
 msgid "initial rating"
@@ -1870,13 +1892,15 @@ msgstr "Valutazione iniziale di tutte le immagini quando importi un rullino"
 
 #: ../build/bin/conf_gen.h:841
 msgid "ignore exif rating"
-msgstr ""
+msgstr "Ignora la valutazione EXIF"
 
 #: ../build/bin/conf_gen.h:842
 msgid ""
 "ignore exif rating. if not set and exif rating is found, it overrides "
 "'initial rating'"
 msgstr ""
+"Ignora la valutazione EXIF. Se non impostato ed è trovata la "
+"valutazione EXIF, sovrascrive la 'valutazione iniziale'"
 
 #: ../build/bin/conf_gen.h:847
 msgid "import job"
@@ -1884,7 +1908,7 @@ msgstr "Importa lavoro"
 
 #: ../build/bin/conf_gen.h:848
 msgid "name of the import job"
-msgstr ""
+msgstr "Nome del lavoro importato"
 
 #: ../build/bin/conf_gen.h:853
 msgid "override today's date"
@@ -1897,10 +1921,14 @@ msgid ""
 "$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS).\n"
 "let the field empty otherwise"
 msgstr ""
+"Inserisci una data/ora valida (in formato YYYY-MM-DD[Thh:mm:ss]) se "
+"vuoi sovrascrivere la data/ora corrente usata quando espandi variabili:\n"
+"$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS).\n"
+"Altrimenti lascia i campi vuoti"
 
 #: ../build/bin/conf_gen.h:859
 msgid "keep this window open"
-msgstr ""
+msgstr "Tieni questa finestra aperta"
 
 #: ../build/bin/conf_gen.h:860
 msgid "keep this window open to run several imports"
@@ -1928,7 +1956,7 @@ msgstr "Immagini massime"
 
 #: ../build/bin/conf_gen.h:1604
 msgid "the maximum number of image thumbnails drawn on the map"
-msgstr ""
+msgstr "Numero massimo di miniature riportate sulla mappa"
 
 #: ../build/bin/conf_gen.h:1611
 msgid "group size factor"
@@ -1939,6 +1967,8 @@ msgid ""
 "increase or decrease the spatial size of images groups on the map. can "
 "influence the calculation time"
 msgstr ""
+"Aumenta o diminuisci la dimensione degli spazi dei gruppi di immagini "
+"sulla mappa. Può influenzare il tempo di calcolo"
 
 #: ../build/bin/conf_gen.h:1619
 msgid "min images per group"
@@ -1949,6 +1979,8 @@ msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
 msgstr ""
+"Il numero minimo di immagini che compone un gruppo di immagini "
+"sulla mappa Può influenzare il tempo di calcolo."
 
 #: ../build/bin/conf_gen.h:1626
 msgctxt "preferences"
@@ -1962,7 +1994,7 @@ msgstr "Calcolo"
 
 #: ../build/bin/conf_gen.h:1629
 msgid "thumbnail display"
-msgstr ""
+msgstr "Visualizza miniature"
 
 #: ../build/bin/conf_gen.h:1630
 msgid ""
@@ -2358,7 +2390,7 @@ msgstr "Modo correzione"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:85
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:144
 msgid "very large chromatic aberration"
-msgstr ""
+msgstr "Aberrazione cromatica molto ampia"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
 #: ../src/common/collection.c:1499 ../src/develop/blend_gui.c:2000
@@ -2401,17 +2433,17 @@ msgstr "Scurisci solamente"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:166
 msgid "brighten only"
-msgstr ""
+msgstr "Schiarisci solamente"
 
 #: ../build/lib/darktable/plugins/introspection_censorize.c:51
 #: ../build/lib/darktable/plugins/introspection_censorize.c:112
 msgid "input blur radius"
-msgstr ""
+msgstr "Imposta il raggio di sfocatura"
 
 #: ../build/lib/darktable/plugins/introspection_censorize.c:57
 #: ../build/lib/darktable/plugins/introspection_censorize.c:116
 msgid "pixellation radius"
-msgstr ""
+msgstr "Raggio di pixelizzazione"
 
 #: ../build/lib/darktable/plugins/introspection_censorize.c:63
 #: ../build/lib/darktable/plugins/introspection_censorize.c:120
@@ -3067,7 +3099,7 @@ msgstr "Markesteijn 3-passaggi"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:218
 msgid "frequency domain chroma"
-msgstr ""
+msgstr "Frequency domain chroma"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:219
 msgid "Markesteijn 3-pass + VNG"
@@ -4811,6 +4843,13 @@ msgid ""
 "\n"
 "do you want to proceed or quit now to do a backup\n"
 msgstr ""
+"Lo schema del database deve essere aggiornato per\n"
+"\n"
+"<span style='italic'>%s</span>\n"
+"\n"
+"Potrebbe richiedere molto tempo nel caso di un grande database\n"
+"\n"
+"Vuoi procedere o esci ora per fare un backup\n"
 
 #: ../src/common/database.c:2739
 msgid "darktable - schema migration"
@@ -5014,7 +5053,7 @@ msgstr "Immagine orfana"
 #: ../src/common/image.c:502
 #, c-format
 msgid "geo-location undone for %d images"
-msgstr ""
+msgstr "Geolocalizzazione non effettuata per %d immagini"
 
 #: ../src/common/image.c:503
 #, c-format
@@ -5508,7 +5547,7 @@ msgstr "Elimina fisicamente tutti i files"
 
 #: ../src/control/jobs/control_jobs.c:843
 msgid "only remove from the image library"
-msgstr "Rimuovi solamente dalla libreria delle immagini"
+msgstr "Rimuovi solamente dalla biblioteca delle immagini"
 
 #: ../src/control/jobs/control_jobs.c:844
 msgid "skip to next file"
@@ -10533,15 +10572,15 @@ msgstr "Rumore"
 
 #: ../src/iop/censorize.c:429
 msgid "radius of gaussian blur before pixellation"
-msgstr "Raggio della sfocatura gaussiana prima di pixellare"
+msgstr "Raggio della sfocatura gaussiana prima della pixelizzazione"
 
 #: ../src/iop/censorize.c:430
 msgid "radius of gaussian blur after pixellation"
-msgstr "Raggio della sfocatura gaussiana dopo la pixellizzazione"
+msgstr "Raggio della sfocatura gaussiana dopo la pixelizzazione"
 
 #: ../src/iop/censorize.c:431
 msgid "radius of the intermediate pixellation"
-msgstr "Raggio della pixellizzazione intermedia"
+msgstr "Raggio della pixelizzazione intermedia"
 
 #: ../src/iop/censorize.c:432
 msgid "amount of noise to add at the end"
@@ -10906,6 +10945,16 @@ msgid ""
 "• XYZ is a simple scaling in XYZ space. It is not recommended in general.\n"
 "• none disables any adaptation and uses pipeline working RGB."
 msgstr ""
+"Scegli il metodo per adattare l'illuminante\n"
+"e lo spaziocolore in cui lavora il modulo: \n"
+"• Linear Bradford (1985) è consistente con la serie di strumenti ICC v4.\n"
+"• CAT16 (2016) è più robusto ed accurato.\n"
+"• Bradford non-lineare (1985) è l'originale Bradford,\n"
+"può produrre risultati migliori della versione lineare, ma è inaffidabile.\n"
+"• XYZ è una semplice scalatura nello spazio XYZ. In generale non è"
+" raccomandato.\n"
+"• nessuno, disabilità ogni adattamento ed usa la coda di sviluppo che lavora"
+" in RGB."
 
 #: ../src/iop/channelmixerrgb.c:3700
 msgid ""
@@ -10949,7 +10998,7 @@ msgstr "Calibra con un color checker"
 
 #: ../src/iop/channelmixerrgb.c:3804
 msgid "use a color checker target to autoset CAT and channels"
-msgstr ""
+msgstr "Usa un campione colore obiettivo per auto impostare CAT e canali"
 
 #: ../src/iop/channelmixerrgb.c:3811
 msgid "chart"
@@ -10957,11 +11006,11 @@ msgstr "Diagramma"
 
 #: ../src/iop/channelmixerrgb.c:3812
 msgid "Xrite ColorChecker 24 pre-2014"
-msgstr ""
+msgstr "Xrite ColorChecker 24 pre-2014"
 
 #: ../src/iop/channelmixerrgb.c:3813
 msgid "Xrite ColorChecker 24 post-2014"
-msgstr ""
+msgstr "Xrite ColorChecker 24 post-2014"
 
 #: ../src/iop/channelmixerrgb.c:3814
 msgid "Datacolor SpyderCheckr 24 pre-2018"
@@ -10981,7 +11030,7 @@ msgstr "Datacolor SpyderCheckr 48 post-2018"
 
 #: ../src/iop/channelmixerrgb.c:3819
 msgid "choose the vendor and the type of your chart"
-msgstr ""
+msgstr "Scegli il venditore ed il tipo del tuo diagramma"
 
 #: ../src/iop/channelmixerrgb.c:3823
 msgid "optimize for"
@@ -11031,6 +11080,9 @@ msgid ""
 "useful when the perspective correction is sloppy or\n"
 "the patches frame cast a shadows on the edges of the patch."
 msgstr ""
+"Riduci il raggio dei campioni per selezionare più o meno parte centrale.\n"
+"Utile quando la correzione prospettica è is approssimativa o \n"
+"il riquadro dei campioni proietta ombre ai vertici del campione."
 
 #: ../src/iop/channelmixerrgb.c:3850
 msgid "the delta E is using the CIE 2000 formula."
@@ -11038,7 +11090,7 @@ msgstr "Il delta E sta usando la formula CIE 2000."
 
 #: ../src/iop/channelmixerrgb.c:3856
 msgid "accept the computed profile and set it in the module"
-msgstr ""
+msgstr "Accetta il profilo corrotto ed impostalo nel modulo"
 
 #: ../src/iop/channelmixerrgb.c:3861
 msgid "recompute the profile"
@@ -11554,11 +11606,11 @@ msgstr "Aumenta la colorazione soprattutto sui colori a bassa crominanza"
 
 #: ../src/iop/colorbalancergb.c:1528
 msgid "increase the contrast at constant chromaticity"
-msgstr ""
+msgstr "Aumenta il contrasto con cromaticità costante"
 
 #: ../src/iop/colorbalancergb.c:1530
 msgid "linear chroma grading"
-msgstr ""
+msgstr "Gradiente cromatico lineare"
 
 #: ../src/iop/colorbalancergb.c:1537
 msgid "increase colorfulness at same luminance globally"
@@ -11579,11 +11631,11 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1557
 msgid "perceptual saturation grading"
-msgstr ""
+msgstr "Gradiente di saturazioen percettivo"
 
 #: ../src/iop/colorbalancergb.c:1564
 msgid "add or remove saturation by an absolute amount"
-msgstr ""
+msgstr "Aggiungi o togli saturazione attraverso un ammontare assoluto"
 
 #: ../src/iop/colorbalancergb.c:1571 ../src/iop/colorbalancergb.c:1578
 #: ../src/iop/colorbalancergb.c:1585
@@ -11591,14 +11643,16 @@ msgid ""
 "increase or decrease saturation proportionally to the original pixel "
 "saturation"
 msgstr ""
+"Aumenta o riduci saturazione proporzionalmente alla saturazione "
+"originale dei pixel"
 
 #: ../src/iop/colorbalancergb.c:1588
 msgid "perceptual brilliance grading"
-msgstr ""
+msgstr "Gradiente percettivo di brillantezza"
 
 #: ../src/iop/colorbalancergb.c:1595
 msgid "add or remove brilliance by an absolute amount"
-msgstr ""
+msgstr "Aggiungi o togli brillantezza attraverso un ammontare assoluto"
 
 #: ../src/iop/colorbalancergb.c:1602 ../src/iop/colorbalancergb.c:1609
 #: ../src/iop/colorbalancergb.c:1616
@@ -11606,6 +11660,8 @@ msgid ""
 "increase or decrease brilliance proportionally to the original pixel "
 "brilliance"
 msgstr ""
+"Aumenta o riduci brillantezza proporzionalmente a quella "
+"originale dei pixel"
 
 #. Page 4-ways
 #: ../src/iop/colorbalancergb.c:1620
@@ -11614,7 +11670,7 @@ msgstr "4 vie"
 
 #: ../src/iop/colorbalancergb.c:1620
 msgid "selective color grading"
-msgstr ""
+msgstr "Gradiente selettivo colore"
 
 #: ../src/iop/colorbalancergb.c:1622
 msgid "global offset"
@@ -11622,7 +11678,7 @@ msgstr "Spostamento globale"
 
 #: ../src/iop/colorbalancergb.c:1629
 msgid "global luminance offset"
-msgstr ""
+msgstr "Spostamento della luminanza globale"
 
 #: ../src/iop/colorbalancergb.c:1636
 msgid "hue of the global color offset"
@@ -11708,10 +11764,14 @@ msgstr "Pesi delle alteluci sull'intera gamma tonale"
 #: ../src/iop/colorbalancergb.c:1769
 msgid "peak white luminance value used to normalize the power function"
 msgstr ""
+"Valore di picco della luminanza del bianco usato per normalizzare "
+"la funzione di forza"
 
 #: ../src/iop/colorbalancergb.c:1777
 msgid "peak gray luminance value used to normalize the power function"
 msgstr ""
+"Valore di picco della luminanza del grigio usato per normalizzare "
+"la funzione di forza"
 
 #: ../src/iop/colorbalancergb.c:1779
 msgid "mask preview settings"
@@ -12407,6 +12467,9 @@ msgid ""
 "bayer sensor demosaicing method, PPG and RCD are fast, AMaZE is slow.\n"
 "dual demosaicers double processing time."
 msgstr ""
+"Metodo demosaicizzazione per sensore bayer, PPG e RCD sono veloci, AMaZE è"
+" lento.\n"
+"Doppia demosaicizzazione raddoppia il tempo di elaborazione."
 
 #: ../src/iop/demosaic.c:5713
 msgid ""
@@ -12414,6 +12477,10 @@ msgid ""
 "chroma are slow.\n"
 "dual demosaicers double processing time."
 msgstr ""
+"Metodo demosaicizzazione per sensore xtrans, Markesteijn 3 passaggi e"
+" Frequency "
+"domain chroma sono lenti.\n"
+"Doppia demosaicizzazione raddoppia il tempo di elaborazione."
 
 #: ../src/iop/demosaic.c:5718
 msgid ""
@@ -12431,6 +12498,9 @@ msgid ""
 "set to 0.0 for high frequency content.\n"
 "set to 1.0 for flat content."
 msgstr ""
+"Soglia di contrasto per doppia demosaicizzazione.\n"
+"Imposta a 0.0 per contenuto ad alta frequenza.\n"
+"Imposta a 1.0 per contenuto piatto."
 
 #: ../src/iop/demosaic.c:5726
 msgid "display blending mask"
@@ -12920,6 +12990,10 @@ msgid ""
 "increase to get more contrast.\n"
 "decrease to recover more details in low-lights."
 msgstr ""
+"Numero di stop tra il grigio medio ed il nero puro.\n"
+"Questa è la lettura che darebbe un esposimetro sulla scena.\n"
+"Aumenta per ottenere maggior contrasto.\n"
+"Diminuisci per recuperare dettagli nelle luci basse."
 
 #: ../src/iop/filmic.c:1635
 msgid ""
@@ -13071,6 +13145,9 @@ msgid ""
 "middle gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
 msgstr ""
+"Valore del grigio medio dello schermo o dello spazio colore di "
+"destinazione.\n"
+"Non lo dovresti mai modificare senza sapere cosa stai facendo."
 
 #: ../src/iop/filmic.c:1764 ../src/iop/filmicrgb.c:3915
 msgid ""
@@ -14138,6 +14215,9 @@ msgid ""
 "scroll to change size - shift+scroll to change strength - ctrl+scroll to "
 "change direction"
 msgstr ""
+"Click e trascina per aggiungere un punto\n"
+"(rotella mouse) per modificare la dimensione - Maiusc+(rotella mouse) per "
+"modificare la durezza - Ctrl+(rotella mouse) per cambiare direzione"
 
 #: ../src/iop/liquify.c:3581
 msgid ""
@@ -15894,7 +15974,7 @@ msgid ""
 "scroll over image to change tone exposure\n"
 "shift+scroll for large steps; ctrl+scroll for small steps"
 msgstr ""
-"Rotella del mouse sopra l'immagine per modificare il tono dell'esposizione\n"
+"(rotella mouse) sopra l'immagine per modificare il tono dell'esposizione\n"
 "Maiusc+(rotella mouse) per modificare rapidamente\n"
 "Ctrl+(rotella mouse) per modificare finemente."
 
@@ -16594,6 +16674,10 @@ msgid ""
 "shift+click to include current + sub-folders\n"
 "double-click to include only the current folder"
 msgstr ""
+"Usa `%' come jolly\n"
+"ctrl+click per includere solo le sottocartelle\n"
+"shift+click per includere la corrente e le sottocartelle\n"
+"doppio click per includere solo la cartella corrente"
 
 #: ../src/libs/collect.c:2083
 #, no-c-format
@@ -17362,6 +17446,8 @@ msgid ""
 "enter the new date/time (yyyy:mm:dd hh:mm:ss)\n"
 "key in the new numbers or scroll over the cell"
 msgstr ""
+"Inserisci la nuova data/ora (yyyy:mm:dd hh:mm:ss)\n"
+"Digita nei nuovi numeri o scorri sopra la cella"
 
 #: ../src/libs/geotagging.c:1693
 msgid "original date/time"
@@ -17378,6 +17464,7 @@ msgstr "Spostamento o differenza ([-]dd hh:mm:ss)"
 #: ../src/libs/geotagging.c:1704
 msgid "lock date/time offset value to apply it onto another selection"
 msgstr ""
+"Vedi il valore di spostamento data/ora per applicarlo in un altra selezione"
 
 #. apply
 #: ../src/libs/geotagging.c:1713
@@ -17412,7 +17499,7 @@ msgstr "File GPX"
 
 #: ../src/libs/geotagging.c:1783
 msgid "select a GPX track file..."
-msgstr ""
+msgstr "Seleziona un file tracciato GPX..."
 
 #: ../src/libs/geotagging.c:1800
 msgid ""
@@ -17430,7 +17517,7 @@ msgstr "Anteprima immagini"
 
 #: ../src/libs/geotagging.c:1844
 msgid "show on map matching images"
-msgstr ""
+msgstr "Mostra sulla mappa le immagini corrispondenti"
 
 #: ../src/libs/geotagging.c:1847
 msgid "select images"
@@ -17438,11 +17525,11 @@ msgstr "Seleziona immagini"
 
 #: ../src/libs/geotagging.c:1847
 msgid "select matching images"
-msgstr ""
+msgstr "Seleziona le immagini corrispondenti"
 
 #: ../src/libs/geotagging.c:1856
 msgid "number of matching images versus selected images"
-msgstr ""
+msgstr "Numero di immagini corrispondenti contro immagini selezionate"
 
 #: ../src/libs/histogram.c:141
 msgid "histogram"
@@ -17482,19 +17569,19 @@ msgstr "Imposta la scala a Logaritmica"
 
 #: ../src/libs/histogram.c:1127
 msgid "set view to RGB parade"
-msgstr ""
+msgstr "Imposta la vista su parata RGB"
 
 #: ../src/libs/histogram.c:1135
 msgid "set view to waveform"
-msgstr ""
+msgstr "Imposta la vista su forma d'onda"
 
 #: ../src/libs/histogram.c:1167
 msgid "set view to AzBz"
-msgstr ""
+msgstr "Imposta la vista su AzBz"
 
 #: ../src/libs/histogram.c:1172
 msgid "set view to u*v*"
-msgstr ""
+msgstr "Imposta la vista a u*v*"
 
 #: ../src/libs/histogram.c:1186
 msgid "set mode to waveform"
@@ -17502,7 +17589,7 @@ msgstr "Imposta la modalità alla forma d'onda"
 
 #: ../src/libs/histogram.c:1196
 msgid "set mode to vectorscope"
-msgstr ""
+msgstr "Imposta modo su vettorscopio"
 
 #: ../src/libs/histogram.c:1204
 msgid "set mode to histogram"
@@ -17692,7 +17779,7 @@ msgstr "Elimina (cestino)"
 
 #: ../src/libs/image.c:184
 msgid "physically delete from disk (using trash if possible)"
-msgstr ""
+msgstr "Elimina fisicamente dal disco (usando il cestino se possibile)"
 
 #: ../src/libs/image.c:186
 msgid "physically delete from disk immediately"
@@ -17706,7 +17793,7 @@ msgstr "Rimuovi"
 
 #: ../src/libs/image.c:476
 msgid "remove images from the image library, without deleting"
-msgstr "Elimina le immagini dalla libreria immagini, senza cancellarle"
+msgstr "Elimina le immagini dalla biblioteca immagini, senza cancellarle"
 
 #: ../src/libs/image.c:484
 msgid "move..."
@@ -17735,7 +17822,7 @@ msgstr "Crea HDR dagli scatti selezionati"
 #: ../src/libs/image.c:496
 msgid "add a duplicate to the image library, including its history stack"
 msgstr ""
-"Aggiungi un duplicato alla libreria delle immagini, includendo la coda di"
+"Aggiungi un duplicato alla biblioteca delle immagini, includendo la coda di"
 " sviluppo"
 
 #: ../src/libs/image.c:502
@@ -17857,7 +17944,7 @@ msgstr "Imposta la selezione per immagini a colori"
 #: ../src/libs/image.c:651
 msgctxt "accel"
 msgid "remove from darktable"
-msgstr ""
+msgstr "Rimuovi da Darktable"
 
 #: ../src/libs/image.c:652
 msgctxt "accel"
@@ -17963,7 +18050,7 @@ msgstr "Scatto in tethering"
 #: ../src/libs/import.c:201
 msgctxt "accel"
 msgid "add to library"
-msgstr "Aggiungi alla libreria"
+msgstr "Aggiungi alla biblioteca"
 
 #: ../src/libs/import.c:202
 msgctxt "accel"
@@ -18003,10 +18090,13 @@ msgid ""
 "make sure it is no longer mounted\n"
 "or quit the locking application"
 msgstr ""
+"La fotocamera è bloccata da un'altra applicazione\n"
+"assicurati che non sia più montata\n"
+"o chiudi l'applicazione che la blocca"
 
 #: ../src/libs/import.c:351
 msgid "tethering and importing is disabled for this camera"
-msgstr ""
+msgstr "Tethering e importazione sono disabilitati per questa fotocamera"
 
 #: ../src/libs/import.c:353
 msgid "mount camera"
@@ -18016,7 +18106,7 @@ msgstr "Monta la fotocamera"
 #, c-format
 msgid "%d image out of %d selected"
 msgid_plural "%d images out of %d selected"
-msgstr[0] ""
+msgstr[0] "%d immagine fuori dai %d selezionati"
 msgstr[1] ""
 
 #: ../src/libs/import.c:1091
@@ -18034,6 +18124,7 @@ msgstr "Luoghi"
 #: ../src/libs/import.c:1198
 msgid "restore all default places you have removed by right-click"
 msgstr ""
+"Ripristina tutti i luoghi predefiniti che hai rimosso con il click destro"
 
 #: ../src/libs/import.c:1203
 msgid ""
@@ -18041,14 +18132,17 @@ msgid ""
 "\n"
 "right-click on a place to remove it"
 msgstr ""
+"Aggiungi un luogo personalizzato\n"
+"\n"
+"click destro sul luogo per rimuoverlo"
 
 #: ../src/libs/import.c:1210
 msgid "you can add custom places using the plus icon"
-msgstr ""
+msgstr "Puoi aggiungere luoghi personalizzati usando l'icona \"+\""
 
 #: ../src/libs/import.c:1235
 msgid "select a folder to see the content"
-msgstr ""
+msgstr "Seleziona una cartella per vedere il contenuto"
 
 #: ../src/libs/import.c:1238
 msgid "folders"
@@ -18064,11 +18158,11 @@ msgstr "Immagini"
 
 #: ../src/libs/import.c:1471
 msgid "open folder"
-msgstr ""
+msgstr "Apri cartella"
 
 #: ../src/libs/import.c:1534
 msgid "mark already imported pictures"
-msgstr ""
+msgstr "Marca le immagini già importate"
 
 #: ../src/libs/import.c:1558
 msgid "modified"
@@ -18077,10 +18171,11 @@ msgstr "Modificato"
 #: ../src/libs/import.c:1563
 msgid "file 'modified date/time', may be different from 'Exif date/time'"
 msgstr ""
+"La 'data/ora di modifica' del file, può esser differente dalla 'data/ora Exif'"
 
 #: ../src/libs/import.c:1575
 msgid "show/hide thumbnails"
-msgstr ""
+msgstr "Mostra/nascondi miniature"
 
 #. collapsible section
 #: ../src/libs/import.c:1611
@@ -18089,7 +18184,7 @@ msgstr "Modelli nominazione"
 
 #: ../src/libs/import.c:1639
 msgid "add to library"
-msgstr "Aggiungi alla libreria"
+msgstr "Aggiungi alla biblioteca"
 
 #: ../src/libs/import.c:1640
 msgid "copy & import"
@@ -18109,15 +18204,15 @@ msgstr "Attendere la prelettura della lista delle immagini dalla fotocamera..."
 
 #: ../src/libs/import.c:1947
 msgid "add to library..."
-msgstr "Aggiungi alla libreria..."
+msgstr "Aggiungi alla biblioteca..."
 
 #: ../src/libs/import.c:1948
 msgid "add existing images to the library"
-msgstr "Aggiungi alla libreria le immagini esistenti"
+msgstr "Aggiungi alla biblioteca le immagini esistenti"
 
 #: ../src/libs/import.c:1955
 msgid "copy & import..."
-msgstr ""
+msgstr "Copia e importa..."
 
 #: ../src/libs/import.c:1956
 msgid ""
@@ -18126,7 +18221,7 @@ msgid ""
 "folders"
 msgstr ""
 "Copia ed eventualmente rinomina le immagini prima di aggiungerle alla "
-"libreria\n"
+"biblioteca\n"
 "Possono esser definiti dei modelli per rinominare le immagini e specificare"
 " la "
 "cartella di destinazione"
@@ -18441,7 +18536,7 @@ msgstr "Mostra tutto"
 
 #: ../src/libs/map_locations.c:1009
 msgid "show all locations which are on the visible map"
-msgstr ""
+msgstr "Mostra tutte le località che si trovano sulla mappa visibile"
 
 #: ../src/libs/map_settings.c:39
 msgid "map settings"
@@ -18463,7 +18558,7 @@ msgstr "Immagini filtrate"
 #: ../src/libs/map_settings.c:197
 msgctxt "accel"
 msgid "thumbnail display"
-msgstr ""
+msgstr "Visualizza miniature"
 
 #: ../src/libs/masks.c:245
 #, c-format
@@ -18520,7 +18615,7 @@ msgstr "Editor metadati"
 
 #: ../src/libs/metadata.c:79 ../src/libs/metadata.c:115
 msgid "<leave unchanged>"
-msgstr ""
+msgstr "<leave unchanged>"
 
 #: ../src/libs/metadata.c:445 ../src/libs/metadata_view.c:1225
 msgid "metadata settings"
@@ -18536,6 +18631,10 @@ msgid ""
 "it will be visible from metadata editor, collection and import module\n"
 "it will be also exported"
 msgstr ""
+"Seleziona se i metadati corrispondenti sono di tuo interesse.\n"
+"Sarà visibile dal gestore dei metadati, dalle collezioni e dal modulo di "
+"importazione\n"
+"Sarà inoltre esportato"
 
 #: ../src/libs/metadata.c:503 ../src/libs/tagging.c:1559
 #: ../src/libs/tagging.c:1698
@@ -18740,7 +18839,7 @@ msgstr "Caricatore: %s"
 
 #: ../src/libs/metadata_view.c:639
 msgid "<various values>"
-msgstr ""
+msgstr "<various values>"
 
 #: ../src/libs/metadata_view.c:652
 #, c-format
@@ -18767,6 +18866,9 @@ msgid ""
 "untick to hide metadata which are not of interest for you\n"
 "if different settings are needed, use presets"
 msgstr ""
+"Trascina e rilascia una riga alla volta finché ottieni l'ordine desiderato\n"
+"deseleziona per nascondere i metadati che non ti interessano\n"
+"se sono necessarie impostazioni differenti, usa le preimpostazioni"
 
 #: ../src/libs/modulegroups.c:42
 msgid "modules: default"
@@ -18814,6 +18916,8 @@ msgstr ""
 #: ../src/libs/modulegroups.c:688
 msgid "(some features may only be available in the full module interface)"
 msgstr ""
+"(alcune caratteristiche potrebbero esser disponibili solo nell'interfaccia "
+"completa del modulo)"
 
 #: ../src/libs/modulegroups.c:714
 #, c-format
@@ -18937,7 +19041,7 @@ msgstr "Aggiungi questo modulo"
 #. show the submenu with all the modules
 #: ../src/libs/modulegroups.c:2455 ../src/libs/modulegroups.c:2628
 msgid "all available modules"
-msgstr ""
+msgstr "Tutti i moduli disponibili"
 
 #: ../src/libs/modulegroups.c:2463 ../src/libs/modulegroups.c:2636
 msgid "add module"
@@ -18954,7 +19058,7 @@ msgstr "Aggiungi questo widget"
 
 #: ../src/libs/modulegroups.c:2785
 msgid "quick access panel"
-msgstr ""
+msgstr "Pannello di accesso rapido"
 
 #: ../src/libs/modulegroups.c:2794
 msgid "show only active modules"
@@ -18965,6 +19069,8 @@ msgid ""
 "presets\n"
 "ctrl+click to manage"
 msgstr ""
+"Preimpostazioni\n"
+"ctrl+click per gestirle"
 
 #. search box
 #: ../src/libs/modulegroups.c:2804
@@ -18985,6 +19091,9 @@ msgid ""
 "mistakes which can't be solved and alternative modules which solve them.\n"
 "they will be removed for new edits in the next release."
 msgstr ""
+"I seguenti moduli sono deprecati perché hanno degli errori interni di design "
+"che non possono esser risolti e moduli alternativi che li risolvono.\n"
+"Saranno rimossi nelle nuove edizione della prossima versione."
 
 #: ../src/libs/modulegroups.c:3069
 msgid "basic icon"
@@ -19700,6 +19809,9 @@ msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierarchy use rename path instead. Aborting."
 msgstr ""
+"Il carattere '|' non è permesso per rinominare l'etichetta.\n"
+"Per modificare la gerarchia rinomina il percorso piuttosto. Operazione "
+"annullata."
 
 #: ../src/libs/tagging.c:1767
 #, c-format
@@ -21096,7 +21208,7 @@ msgstr "Doppio click destro"
 
 #: ../src/views/view.c:1538
 msgid "Drag and drop"
-msgstr "Drag and drop"
+msgstr "Trascina e rilascia"
 
 #: ../src/views/view.c:1541
 msgid "Left click+Drag"
