@@ -157,7 +157,7 @@ void dt_accel_register_global(const gchar *path, guint accel_key, GdkModifierTyp
   dt_accel_t *accel = (dt_accel_t *)g_malloc0(sizeof(dt_accel_t));
 
   dt_accel_path_global(accel_path, sizeof(accel_path), path);
-  gtk_accel_map_add_entry(accel_path, accel_key, mods);
+  gtk_accel_map_add_entry(accel_path, accel_key, dt_map_ctrl_bit_to_cmd(mods));
 
   g_strlcpy(accel->path, accel_path, sizeof(accel->path));
   dt_accel_path_global_translated(accel_path, sizeof(accel_path), path);
@@ -175,7 +175,7 @@ void dt_accel_register_view(dt_view_t *self, const gchar *path, guint accel_key,
   dt_accel_t *accel = (dt_accel_t *)g_malloc0(sizeof(dt_accel_t));
 
   dt_accel_path_view(accel_path, sizeof(accel_path), self->module_name, path);
-  gtk_accel_map_add_entry(accel_path, accel_key, mods);
+  gtk_accel_map_add_entry(accel_path, accel_key, dt_map_ctrl_bit_to_cmd(mods));
 
   g_strlcpy(accel->path, accel_path, sizeof(accel->path));
   dt_accel_path_view_translated(accel_path, sizeof(accel_path), self, path);
@@ -193,7 +193,7 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *
   dt_accel_t *accel = (dt_accel_t *)g_malloc0(sizeof(dt_accel_t));
 
   dt_accel_path_iop(accel->path, sizeof(accel->path), so->op, path);
-  gtk_accel_map_add_entry(accel->path, accel_key, mods);
+  gtk_accel_map_add_entry(accel->path, accel_key, dt_map_ctrl_bit_to_cmd(mods));
   dt_accel_path_iop_translated(accel->translated_path, sizeof(accel->translated_path), so, path);
 
   g_strlcpy(accel->module, so->op, sizeof(accel->module));
@@ -210,7 +210,7 @@ void dt_accel_register_lib_as_view(gchar *view_name, const gchar *path, guint ac
   if (dt_accel_find_by_path(accel_path)) return; // return if nothing to add, to avoid multiple entries
 
   dt_accel_t *accel = (dt_accel_t *)g_malloc0(sizeof(dt_accel_t));
-  gtk_accel_map_add_entry(accel_path, accel_key, mods);
+  gtk_accel_map_add_entry(accel_path, accel_key, dt_map_ctrl_bit_to_cmd(mods));
   g_strlcpy(accel->path, accel_path, sizeof(accel->path));
 
   snprintf(accel_path, sizeof(accel_path), "<Darktable>/%s/%s/%s", C_("accel", "views"),
@@ -247,7 +247,7 @@ void dt_accel_register_lib_for_views(dt_lib_module_t *self, dt_view_type_flags_t
 
   dt_accel_t *accel = (dt_accel_t *)g_malloc0(sizeof(dt_accel_t));
 
-  gtk_accel_map_add_entry(accel_path, accel_key, mods);
+  gtk_accel_map_add_entry(accel_path, accel_key, dt_map_ctrl_bit_to_cmd(mods));
   g_strlcpy(accel->path, accel_path, sizeof(accel->path));
   dt_accel_path_lib_translated(accel_path, sizeof(accel_path), self, path);
   g_strlcpy(accel->translated_path, accel_path, sizeof(accel->translated_path));
@@ -351,7 +351,7 @@ void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType m
   dt_accel_t *accel = (dt_accel_t *)g_malloc0(sizeof(dt_accel_t));
 
   dt_accel_path_lua(accel_path, sizeof(accel_path), path);
-  gtk_accel_map_add_entry(accel_path, accel_key, mods);
+  gtk_accel_map_add_entry(accel_path, accel_key, dt_map_ctrl_bit_to_cmd(mods));
 
   g_strlcpy(accel->path, accel_path, sizeof(accel->path));
   dt_accel_path_lua_translated(accel_path, sizeof(accel_path), path);
@@ -370,7 +370,7 @@ void dt_accel_register_manual(const gchar *full_path, dt_view_type_flags_t views
   dt_accel_t *accel = (dt_accel_t *)g_malloc0(sizeof(dt_accel_t));
 
   dt_accel_path_manual(accel_path, sizeof(accel_path), full_path);
-  gtk_accel_map_add_entry(accel_path, accel_key, mods);
+  gtk_accel_map_add_entry(accel_path, accel_key, dt_map_ctrl_bit_to_cmd(mods));
 
   g_strlcpy(accel->path, accel_path, sizeof(accel->path));
   dt_accel_path_manual_translated(accel_path, sizeof(accel_path), full_path);
