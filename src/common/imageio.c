@@ -696,8 +696,10 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     goto error;
   }
 
+  const gboolean use_style = !thumbnail_export && format_params->style[0] != '\0';
+  const gboolean appending = format_params->style_append != FALSE;
   //  If a style is to be applied during export, add the iop params into the history
-  if(!thumbnail_export && format_params->style[0] != '\0')
+  if(use_style)
   {
     GList *style_items = dt_styles_get_item_list(format_params->style, TRUE, -1);
     if(!style_items)
@@ -708,14 +710,13 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
 
     GList *modules_used = NULL;
 
-    dt_dev_pop_history_items_ext(&dev, dev.history_end);
-
-    dt_ioppr_update_for_style_items(&dev, style_items, format_params->style_append);
+    dt_dev_pop_history_items_ext(&dev, appending ? dev.history_end : 0);
+    dt_ioppr_update_for_style_items(&dev, style_items, appending);
 
     for(GList *st_items = style_items; st_items; st_items = g_list_next(st_items))
     {
       dt_style_item_t *st_item = (dt_style_item_t *)st_items->data;
-      dt_styles_apply_style_item(&dev, st_item, &modules_used, format_params->style_append);
+      dt_styles_apply_style_item(&dev, st_item, &modules_used, appending);
     }
 
     g_list_free(modules_used);
@@ -728,6 +729,27 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, buf.iscale);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
+  if(darktable.unmuted & DT_DEBUG_IMAGEIO)
+  {
+    fprintf(stderr,"[dt_imageio_export_with_flags] ");
+    if(use_style)
+    {
+      if(appending) fprintf(stderr,"appending style `%s'\n", format_params->style);
+      else          fprintf(stderr,"overwrite style `%s'\n", format_params->style);
+    }
+    else fprintf(stderr,"\n");
+    int cnt = 0;
+    for(GList *nodes = pipe.nodes; nodes; nodes = g_list_next(nodes))
+    {
+      dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
+      if(piece->enabled)
+      {
+        cnt++;
+        fprintf(stderr," %s", piece->module->op);
+      }
+    }
+    fprintf(stderr," (%i)\n", cnt);
+  }
 
   if(filter)
   {
