@@ -2179,18 +2179,18 @@ void gui_init(dt_iop_module_t *self)
       G_CALLBACK(rt_select_algorithm_callback), TRUE, 0, 0, dtgtk_cairo_paint_tool_heal, hbox_algo);
 
   // overwrite tooltip ourself to handle shift+click
-  gchar *tt2 = dt_util_dstrcat(NULL, "%s\n%s", N_("ctrl+click to change tool for current form"),
-                               N_("shift+click to set the tool as default"));
-  gchar *tt = dt_util_dstrcat(NULL, "%s\n%s", N_("activate blur tool"), tt2);
+  gchar *tt2 = dt_util_dstrcat(NULL, "%s\n%s", _("ctrl+click to change tool for current form"),
+                               _("shift+click to set the tool as default"));
+  gchar *tt = dt_util_dstrcat(NULL, "%s\n%s", _("activate blur tool"), tt2);
   gtk_widget_set_tooltip_text(g->bt_blur, tt);
   g_free(tt);
-  tt = dt_util_dstrcat(NULL, "%s\n%s", N_("activate fill tool"), tt2);
+  tt = dt_util_dstrcat(NULL, "%s\n%s", _("activate fill tool"), tt2);
   gtk_widget_set_tooltip_text(g->bt_fill, tt);
   g_free(tt);
-  tt = dt_util_dstrcat(NULL, "%s\n%s", N_("activate cloning tool"), tt2);
+  tt = dt_util_dstrcat(NULL, "%s\n%s", _("activate cloning tool"), tt2);
   gtk_widget_set_tooltip_text(g->bt_clone, tt);
   g_free(tt);
-  tt = dt_util_dstrcat(NULL, "%s\n%s", N_("activate healing tool"), tt2);
+  tt = dt_util_dstrcat(NULL, "%s\n%s", _("activate healing tool"), tt2);
   gtk_widget_set_tooltip_text(g->bt_heal, tt);
   g_free(tt);
   g_free(tt2);
