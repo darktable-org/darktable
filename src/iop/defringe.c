@@ -118,6 +118,9 @@ const dt_iop_roi_t *roi_out, dt_develop_tiling_t *tiling)
   const size_t basebuffer = width*height*channels*sizeof(float);
 
   tiling->factor = 2.0f + (float)dt_gaussian_memory_use(width, height, channels)/basebuffer;
+#ifdef HAVE_OPENCL
+  tiling->factor_cl = 2.0f + (float)dt_gaussian_memory_use_cl(width, height, channels)/basebuffer;
+#endif
   tiling->maxbuf = fmax(1.0f, (float)dt_gaussian_singlebuffer_size(width, height, channels)/basebuffer);
   tiling->overhead = 0;
   tiling->overlap = p->window;
