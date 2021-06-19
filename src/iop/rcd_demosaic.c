@@ -66,7 +66,7 @@
 
 #ifdef __GNUC__
   #pragma GCC push_options
-  #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "fp-contract=fast", "no-math-errno")
+  #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "no-math-errno")
 #endif
 
 #ifdef __GNUC__
