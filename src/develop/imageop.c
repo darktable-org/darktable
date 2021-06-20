@@ -1857,9 +1857,6 @@ static void dt_iop_gui_reset_callback(GtkButton *button, GdkEventButton *event, 
     /* update ui to default params*/
     dt_iop_gui_update(module);
 
-    /* and give focus to the module*/
-    dt_iop_request_focus(module);
-
     dt_dev_add_history_item(module->dev, module, TRUE);
   }
 
