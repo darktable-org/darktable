@@ -223,8 +223,8 @@ int dt_presets_import_from_file(const char *preset_path)
   const int multi_priority = get_preset_element_int(doc, "multi_priority");
   gchar *multi_name = get_preset_element(doc, "multi_name");
   const int filter = get_preset_element_int(doc, "filter");
-  const int def = get_preset_element_int(doc, "filter");
-  const int format = get_preset_element_int(doc, "filter");
+  const int def = get_preset_element_int(doc, "def");
+  const int format = get_preset_element_int(doc, "format");
   xmlFreeDoc(doc);
 
   int blendop_params_len = 0;
