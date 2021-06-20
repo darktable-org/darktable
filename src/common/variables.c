@@ -44,6 +44,10 @@ typedef struct dt_variables_data_t
   /* export settings for image maximum width and height taken from GUI */
   int max_width;
   int max_height;
+  int sensor_width;
+  int sensor_height;
+  int export_width;
+  int export_height;
 
   char *homedir;
   char *pictures_folder;
@@ -141,6 +145,13 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
     if(!isnan(img->geoloc.elevation)) params->data->elevation = img->geoloc.elevation;
 
     params->data->flags = img->flags;
+
+    params->data->max_height = img->p_height;
+    params->data->max_width = img->p_width;
+    params->data->sensor_height = img->height;
+    params->data->sensor_width = img->width;
+    params->data->export_height = img->final_height;
+    params->data->export_width = img->final_width;
 
     if(params->img == NULL) dt_image_cache_read_release(darktable.image_cache, img);
   }
@@ -468,6 +479,14 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%d", params->data->max_width);
   else if(has_prefix(variable, "MAX_HEIGHT"))
     result = g_strdup_printf("%d", params->data->max_height);
+  else if(has_prefix(variable, "SENSOR_WIDTH"))
+    result = g_strdup_printf("%d", params->data->sensor_width);
+  else if(has_prefix(variable, "SENSOR_HEIGHT"))
+    result = g_strdup_printf("%d", params->data->sensor_height);
+  else if(has_prefix(variable, "EXPORT_WIDTH"))
+    result = g_strdup_printf("%d", params->data->export_width);
+  else if(has_prefix(variable, "EXPORT_HEIGHT"))
+    result = g_strdup_printf("%d", params->data->export_height);
   else if (has_prefix(variable, "CATEGORY"))
   {
     // CATEGORY should be followed by n [0,9] and "(category)". category can contain 0 or more '|'
