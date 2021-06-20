@@ -216,7 +216,7 @@ typedef dt_progress_t *dt_lua_backgroundjob_t;
 
 static int job_canceled(lua_State *L)
 {
-  lua_getuservalue(L, 1);
+  lua_getiuservalue(L, 1, 1);
   lua_getfield(L, -1, "cancel_callback");
   lua_pushvalue(L, -3);
   lua_call(L,1,0);
@@ -250,7 +250,7 @@ static int lua_create_job(lua_State *L)
   luaA_push(L, dt_lua_backgroundjob_t, &progress);
   if(cancellable)
   {
-    lua_getuservalue(L, -1);
+    lua_getiuservalue(L, -1, 1);
     lua_pushvalue(L, 3);
     lua_setfield(L, -2, "cancel_callback");
     lua_pop(L, 1);

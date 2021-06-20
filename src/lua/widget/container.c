@@ -34,7 +34,7 @@ static int container_reset(lua_State* L)
 {
   lua_container container;
   luaA_to(L,lua_container,&container,1);
-  lua_getuservalue(L,1);
+  lua_getiuservalue(L, 1, 1);
   GList *children = gtk_container_get_children(GTK_CONTAINER(container->widget));
   for(const GList *curelt = children; curelt; curelt = g_list_next(curelt))
   {      
@@ -81,7 +81,7 @@ static int child_added(lua_State *L)
 {
   lua_widget widget;
   luaA_to(L, lua_widget,&widget,2);
-  lua_getuservalue(L,1);
+  lua_getiuservalue(L, 1, 1);
   luaA_push(L,lua_widget,&widget);
   lua_pushvalue(L,2);
   lua_settable(L,-3);
@@ -92,7 +92,7 @@ static int child_removed(lua_State *L)
 {
   lua_widget widget;
   luaA_to(L, lua_widget,&widget,2),
-  lua_getuservalue(L,1);
+  lua_getiuservalue(L, 1, 1);
   luaA_push(L,lua_widget,&widget);
   lua_pushnil(L);
   lua_settable(L,-3);
@@ -138,7 +138,7 @@ static int container_numindex(lua_State*L)
       // they should be done by child_added, but
       // there can be a race with lua's GC, so do it now.
       // child_added doing it a second time is harmless
-      lua_getuservalue(L,1);
+      lua_getiuservalue(L, 1, 1);
       luaA_push(L,lua_widget,&widget);
       lua_pushvalue(L,3);
       lua_settable(L,-3);

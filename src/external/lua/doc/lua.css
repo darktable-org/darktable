@@ -10,7 +10,7 @@ body {
 	line-height: 1.25 ;
 	margin: 16px auto ;
 	padding: 32px ;
-	border: solid #a0a0a0 1px ;
+	border: solid #ccc 1px ;
 	border-radius: 20px ;
 	max-width: 70em ;
 	width: 90% ;
@@ -111,36 +111,29 @@ pre.session {
 	border-radius: 8px ;
 }
 
-td.gutter {
-	width: 4% ;
-}
-
-table.columns {
+table {
 	border: none ;
 	border-spacing: 0 ;
 	border-collapse: collapse ;
 }
 
+td {
+	padding: 0 ;
+	margin: 0 ;
+}
+
+td.gutter {
+	width: 4% ;
+}
+
 table.columns td {
 	vertical-align: top ;
-	padding: 0 ;
 	padding-bottom: 1em ;
 	text-align: justify ;
 	line-height: 1.25 ;
 }
 
-p.logos a:link:hover, p.logos a:visited:hover {
-	background-color: inherit ;
-}
-
-table.book {
-	border: none ;
-	border-spacing: 0 ;
-	border-collapse: collapse ;
-}
-
 table.book td {
-	padding: 0 ;
 	vertical-align: top ;
 }
 
@@ -157,6 +150,10 @@ table.book span {
 	text-align: left ;
 	display: block ;
 	margin-top: 0.25em ;
+}
+
+p.logos a:link:hover, p.logos a:visited:hover {
+	background-color: inherit ;
 }
 
 img {

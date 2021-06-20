@@ -317,9 +317,9 @@ static int autotype_tostring(lua_State *L)
 static int full_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
 {
   size_t type_size = luaA_typesize(L, type_id);
-  void *udata = lua_newuserdata(L, type_size);
+  void *udata = lua_newuserdatauv(L, type_size, 1);
   lua_newtable(L);
-  lua_setuservalue(L, -2);
+  lua_setiuservalue(L, -2, 1);
   if(cin)
   {
     memcpy(udata, cin, type_size);
@@ -360,7 +360,7 @@ static int int_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
   if(lua_isnoneornil(L, -1))
   {
     lua_pop(L, 1);
-    int *udata = lua_newuserdata(L, sizeof(int));
+    int *udata = lua_newuserdatauv(L, sizeof(int), 1);
     *udata = singleton;
     luaL_setmetatable(L, luaA_typename(L, type_id));
     lua_pushinteger(L, singleton);
@@ -403,9 +403,9 @@ static int gpointer_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
   if(lua_isnoneornil(L, -1))
   {
     lua_pop(L, 1);
-    gpointer *udata = lua_newuserdata(L, sizeof(gpointer));
+    gpointer *udata = lua_newuserdatauv(L, sizeof(gpointer), 1);
     lua_newtable(L);
-    lua_setuservalue(L, -2);
+    lua_setiuservalue(L, -2, 1);
     *udata = singleton;
     luaL_setmetatable(L, luaA_typename(L, type_id));
     lua_pushlightuserdata(L, singleton);
@@ -679,9 +679,9 @@ luaA_Type dt_lua_init_singleton(lua_State *L, const char *unique_name, void *dat
   luaA_Type type_id = luaA_type_add(L, tmp_name, sizeof(void *));
   init_metatable(L, type_id);
 
-  void **udata = lua_newuserdata(L, sizeof(void *));
+  void **udata = lua_newuserdatauv(L, sizeof(void *), 1);
   lua_newtable(L);
-  lua_setuservalue(L, -2);
+  lua_setiuservalue(L, -2, 1);
   if(!data)
   {
     memset(udata, 0, sizeof(void *));

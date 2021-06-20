@@ -36,13 +36,13 @@
 // 3.2.0 was 6.0.0 (removed facebook, flickr, and picasa from types.dt_imageio_storage_module_t)
 // 3.6.0 was 7.0.0 (added naming to events, selections, and actions)
 /* incompatible API change */
-#define LUA_API_VERSION_MAJOR 7
+#define LUA_API_VERSION_MAJOR 8
 /* backward compatible API change */
 #define LUA_API_VERSION_MINOR 0
 /* bugfixes that should not change anything to the API */
 #define LUA_API_VERSION_PATCH 0
 /* suffix for unstable version */
-#define LUA_API_VERSION_SUFFIX ""
+#define LUA_API_VERSION_SUFFIX "dev"
 
 /** initialize lua stuff at DT start time */
 int dt_lua_init_configuration(lua_State *L);
