@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-06-13 18:38+0200\n"
-"PO-Revision-Date: 2021-06-19 23:59+0200\n"
+"PO-Revision-Date: 2021-06-21 00:00+0200\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -7044,7 +7044,7 @@ msgstr ""
 
 #: ../src/develop/masks/gradient.c:1465
 msgid "<b>rotate</b>: drag"
-msgstr ""
+msgstr "<b>ruota</b>: trascina"
 
 #: ../src/develop/masks/masks.c:131
 msgid "[SHAPE] remove shape"
@@ -8818,7 +8818,7 @@ msgstr "Profondità di bit AVIF invalida!"
 
 #: ../src/imageio/format/avif.c:691
 msgid "AVIF (8/10/12-bit)"
-msgstr ""
+msgstr "AVIF (8/10/12-bit)"
 
 #: ../src/imageio/format/avif.c:764 ../src/imageio/format/pdf.c:690
 #: ../src/imageio/format/png.c:527 ../src/imageio/format/tiff.c:808
@@ -8827,7 +8827,7 @@ msgstr "Profondità di bit"
 
 #: ../src/imageio/format/avif.c:777
 msgid "color information stored in an image, higher is better"
-msgstr ""
+msgstr "Informazioni colore memorizzate in un'immagine, maggiori è meglio"
 
 #: ../src/imageio/format/avif.c:789
 msgid "rgb colors"
@@ -8840,6 +8840,8 @@ msgstr "Scala di grigio"
 #: ../src/imageio/format/avif.c:795
 msgid "saving as grayscale will reduce the size for black & white images"
 msgstr ""
+"Salvando come scala di grigi ridurrà la dimensione delle immagini in bianco e"
+" nero"
 
 #: ../src/imageio/format/avif.c:808
 msgid "tiling"
@@ -8859,7 +8861,7 @@ msgstr "Tipo di compressione"
 
 #: ../src/imageio/format/avif.c:841
 msgid "the compression for the image"
-msgstr ""
+msgstr "La compressione per l'immagine"
 
 #. min
 #. max
@@ -8884,6 +8886,15 @@ msgid ""
 "    81% -  90% -> YUV422\n"
 "     5% -  80% -> YUV420\n"
 msgstr ""
+"La qualità dell'immagine, minor qualità significa minori dettagli.\n"
+"\n"
+"I seguenti si applicano solo ad impostazioni a perdita\n"
+"\n"
+"formato pixel basato sulla qualità:\n"
+"\n"
+"    91% - 100% -> YUV444\n"
+"    81% -  90% -> YUV422\n"
+"     5% -  80% -> YUV420\n"
 
 #: ../src/imageio/format/copy.c:109 ../src/libs/copy_history.c:378
 #: ../src/libs/image.c:578
@@ -10062,7 +10073,7 @@ msgstr "Regolazione contrasto"
 
 #: ../src/iop/basicadj.c:618
 msgid "middle gray adjustment"
-msgstr ""
+msgstr "Regolazione grigio medio"
 
 #: ../src/iop/basicadj.c:623 ../src/iop/colisa.c:320
 msgid "brightness adjustment"
@@ -10430,7 +10441,7 @@ msgstr "Lineare, raw"
 
 #: ../src/iop/cacorrect.c:1337
 msgid "CA correction supports only RGB colour filter arrays"
-msgstr ""
+msgstr "La correzione CA supportata solo su filtri colore RGB"
 
 #: ../src/iop/cacorrect.c:1339 ../src/iop/cacorrect.c:1347
 msgid "bypassed while zooming in"
@@ -10480,6 +10491,8 @@ msgid ""
 "automatic chromatic aberration correction\n"
 "only for bayer raw files"
 msgstr ""
+"Correzione automatica aberrazioni cromatiche\n"
+"Solo per file raw bayer"
 
 #: ../src/iop/cacorrectrgb.c:161 ../src/iop/defringe.c:75
 msgid "chromatic aberrations"
@@ -10510,6 +10523,10 @@ msgid ""
 "high values can lead to overshooting\n"
 "and edge bleeding."
 msgstr ""
+"Bilancia tra ammorbidire i colori\n"
+"e preservarli.\n"
+"Valori elevati possono portare troppo in alto\n"
+"e bordi troppo definiti."
 
 #: ../src/iop/cacorrectrgb.c:762
 msgid "advanced parameters"
@@ -10525,6 +10542,13 @@ msgid ""
 "efficient to correct blue\n"
 "chromatic aberration."
 msgstr ""
+"Modo di correzione da usare.\n"
+"Può aiutare con istanze\n"
+"multiple per immagini molto\n"
+"danneggiate.\n"
+"Scurisci solo è particolarmente\n"
+"efficace per correggere le "
+"abberrazioni cromatiche blu."
 
 #: ../src/iop/cacorrectrgb.c:772
 msgid ""
@@ -10794,6 +10818,13 @@ msgid ""
 "exposure compensation : \t%+.2f EV\n"
 "black offset : \t%+.4f"
 msgstr ""
+"\n"
+"<b>Report della qualità del profilo: %s</b>\n"
+"output ΔE : \tavg. %.2f ; \tmax. %.2f\n"
+"\n"
+"<b>Valori di normalizzazione</b>\n"
+"compensazione esposizione: \t%+.2f EV\n"
+"spostamento del nero: \t%+.4f"
 
 #. our second biggest problem : another channelmixerrgb instance is doing CAT
 #. earlier in the pipe.
@@ -11576,6 +11607,8 @@ msgstr "Bilanciamento colore RGB"
 msgid ""
 "offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance"
 msgstr ""
+"Sposta la forza di calo|cdl|gradiente colore|contrasto|croma delle alte luci "
+"|tono|vibranza"
 
 #: ../src/iop/colorbalancergb.c:368
 msgid "add basic colorfulness"
@@ -11783,7 +11816,7 @@ msgstr "Scheda di controllo colore 1"
 
 #: ../src/iop/colorbalancergb.c:1785 ../src/iop/colorbalancergb.c:1794
 msgid "select color of the checkerboard from a swatch"
-msgstr ""
+msgstr "Seleziona il colore della scheda di controllo colore da un campione"
 
 #: ../src/iop/colorbalancergb.c:1791
 msgid "checkerboard color 2"
@@ -12687,6 +12720,11 @@ msgid ""
 "if details are oversmoothed, reduce this value or increase the central pixel "
 "weight slider."
 msgstr ""
+"Raggio dei campioni da confrontare.\n"
+"Aumentalo se vuoi incidere maggiormente sul bordi netti e ridurre meglio il "
+"rumore nelle aree uniformi.\n"
+"Se i dettagli dovessero risultare troppo ammorbiditi, riduci questo valore "
+"oppure aumenta il selettore scorrevole del peso del pixel centrale."
 
 #: ../src/iop/denoiseprofile.c:3685
 msgid ""
@@ -13531,6 +13569,10 @@ msgid ""
 "fix the global exposure in the exposure module instead.\n"
 "disable to use standard 18.45 %% middle gray."
 msgstr ""
+"Abilita per inserire un valore personalizzato del grigio medio.\n"
+"In generale non è raccomandato.\n"
+"Piuttosto correggi l'esposizione globale nel modulo esposizione.\n"
+"Disabilita per usare il grigio medio standard 18.45 %%."
 
 #: ../src/iop/filmicrgb.c:3951
 msgid ""
@@ -13539,6 +13581,11 @@ msgid ""
 "this keeps the middle gray on the identity line and improves fast tuning.\n"
 "disable if you want a manual control."
 msgstr ""
+"Abilita per per auto impostare la durezza dell'aspetto basato sui punti del "
+"bianco e del nero della scena.\n"
+"Questo mantiene il grigio medio sulla linea di identità e ottimizza la messa "
+"a punto veloce.\n"
+"Disabilita se vuoi un controllo manuale."
 
 #: ../src/iop/filmicrgb.c:3957
 msgid ""
@@ -14225,6 +14272,9 @@ msgid ""
 "scroll to change size - shift+scroll to change strength - ctrl+scroll to "
 "change direction"
 msgstr ""
+"Click per aggiungere una linea\n"
+"Rotella mouse per modificare la dimensione - Maiusc+(rotella mouse) "
+"per modificare la durezza - Ctrl+(rotella mouse) per modificare la direzione"
 
 #: ../src/iop/liquify.c:3585
 msgid ""
@@ -14232,6 +14282,9 @@ msgid ""
 "scroll to change size - shift+scroll to change strength - ctrl+scroll to "
 "change direction"
 msgstr ""
+"Click per aggiungere una curva\n"
+"Rotella mouse per modificare la dimensione - Maiusc+(rotella mouse) per "
+"modificare la durezza - Ctrl+(rotella mouse) per modificare la direzione"
 
 #: ../src/iop/liquify.c:3588
 msgid "click to edit nodes"
@@ -15005,6 +15058,9 @@ msgid ""
 "\n"
 "touch with great care!"
 msgstr ""
+"Regola le specifiche tecniche del sensore raw.\n"
+"\n"
+"Ritocca con gran attenzione!"
 
 #: ../src/iop/rawprepare.c:123
 msgid "passthrough"
@@ -17510,6 +17566,12 @@ msgid ""
 "zone\n"
 "- more detailed time information hovering the row"
 msgstr ""
+"Lista dei tracciati nel file GPX, per ogni segmento:\n"
+"- la data/ora di inizio nell'orario locale (LT)\n"
+"- il numero di punti del tracciato\n"
+"- il numero di immagini corrispondenti sulla base della data/ora delle"
+" immagini, spostamento e zona oraria\n"
+"- informazioni sul tempo più dettagliate passando sopra la riga"
 
 #: ../src/libs/geotagging.c:1839
 msgid "preview images"
@@ -18106,8 +18168,8 @@ msgstr "Monta la fotocamera"
 #, c-format
 msgid "%d image out of %d selected"
 msgid_plural "%d images out of %d selected"
-msgstr[0] "%d immagine fuori dai %d selezionati"
-msgstr[1] ""
+msgstr[0] "%d immagine fuori dal %d selezionato"
+msgstr[1] "%d immagini fuori dalle %d selezionate"
 
 #: ../src/libs/import.c:1091
 msgid "you can't delete the selected place"
@@ -18525,6 +18587,10 @@ msgid ""
 "or even polygon if available (select first a polygon place in 'find "
 "location' module)"
 msgstr ""
+"Seleziona la forma del limite della località sulla mappa, cerchio o"
+" rettangolo\n"
+"o è disponibile il poligono (prima seleziona il luogo del poligono nel modulo "
+"'trova località')"
 
 #: ../src/libs/map_locations.c:1002
 msgid "add a new location on the center of the visible map"
@@ -20434,6 +20500,17 @@ msgid ""
 "an issue\n"
 "at https://github.com/darktable-org/darktable"
 msgstr ""
+"Darktable non può caricare `%s', passa ora al Tavolo Luminosoto.\n"
+"\n"
+"Per favore, controlla che il modello di fotocamera che ha prodotto l'immagine "
+"sia supportato in Darktable\n"
+"(la lista delle fotocamere supportate è qui"
+" https://www.darktable.org/resources/camera-"
+"support/).\n"
+"Se sei sicuro che il modello di fotocamera è supportato, prendi in"
+" considerazione di aprire "
+"un issue\n"
+"in https://github.com/darktable-org/darktable"
 
 #: ../src/views/darkroom.c:502
 #, c-format
