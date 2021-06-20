@@ -877,26 +877,36 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   if(w == g->cx)
   {
-    dt_bauhaus_slider_set_soft_min(g->cw, p->cx + 0.10);
     g->clip_w = g->clip_x + g->clip_w - p->cx;
     g->clip_x = p->cx;
+    _aspect_apply(self, GRAB_LEFT);
   }
   else if(w == g->cw)
   {
-    dt_bauhaus_slider_set_soft_max(g->cx, p->cw - 0.10);
     g->clip_w = p->cw - g->clip_x;
+    _aspect_apply(self, GRAB_RIGHT);
   }
   else if(w == g->cy)
   {
-    dt_bauhaus_slider_set_soft_min(g->ch, p->cy + 0.10);
     g->clip_h = g->clip_y + g->clip_h - p->cy;
     g->clip_y = p->cy;
+    _aspect_apply(self, GRAB_TOP);
   }
   else if(w == g->ch)
   {
-    dt_bauhaus_slider_set_soft_max(g->cy, p->ch - 0.10);
     g->clip_h = p->ch - g->clip_y;
+    _aspect_apply(self, GRAB_BOTTOM);
   }
+
+  // update all sliders, as their values may have change to keep aspect ratio
+  dt_bauhaus_slider_set(g->cx, g->clip_x);
+  dt_bauhaus_slider_set_soft_min(g->cw, g->clip_x + 0.10);
+  dt_bauhaus_slider_set(g->cy, g->clip_y);
+  dt_bauhaus_slider_set_soft_min(g->ch, g->clip_y + 0.10);
+  dt_bauhaus_slider_set(g->cw, g->clip_x + g->clip_w);
+  dt_bauhaus_slider_set_soft_max(g->cx, g->clip_x + g->clip_w - 0.10);
+  dt_bauhaus_slider_set(g->ch, g->clip_y + g->clip_h);
+  dt_bauhaus_slider_set_soft_max(g->cy, g->clip_y + g->clip_h - 0.10);
 
   --darktable.gui->reset;
 
@@ -1665,35 +1675,23 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       }
 
       _aspect_apply(self, grab);
-      // we save crop params too
-      float points[4]
-          = { g->clip_x * wd, g->clip_y * ht, (g->clip_x + g->clip_w) * wd, (g->clip_y + g->clip_h) * ht };
 
-      if(dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
-                                           DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 2))
-      {
-        dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
-        if(piece)
-        {
-          // only update the sliders, not the dt_iop_cropping_params_t structure, so that the call to
-          // dt_control_queue_redraw_center below doesn't go rerun the pixelpipe because it thinks that
-          // the image has changed when it actually hasn't, yet.  The actual clipping parameters get set
-          // from the sliders when the iop loses focus, at which time the final selected crop is applied.
+      // only update the sliders, not the dt_iop_cropping_params_t structure, so that the call to
+      // dt_control_queue_redraw_center below doesn't go rerun the pixelpipe because it thinks that
+      // the image has changed when it actually hasn't, yet.  The actual clipping parameters get set
+      // from the sliders when the iop loses focus, at which time the final selected crop is applied.
+      ++darktable.gui->reset;
 
-          ++darktable.gui->reset;
+      dt_bauhaus_slider_set(g->cx, g->clip_x);
+      dt_bauhaus_slider_set_soft_min(g->cw, g->clip_x + 0.10);
+      dt_bauhaus_slider_set(g->cy, g->clip_y);
+      dt_bauhaus_slider_set_soft_min(g->ch, g->clip_y + 0.10);
+      dt_bauhaus_slider_set(g->cw, g->clip_x + g->clip_w);
+      dt_bauhaus_slider_set_soft_max(g->cx, g->clip_x + g->clip_w - 0.10);
+      dt_bauhaus_slider_set(g->ch, g->clip_y + g->clip_h);
+      dt_bauhaus_slider_set_soft_max(g->cy, g->clip_y + g->clip_h - 0.10);
 
-          dt_bauhaus_slider_set(g->cx, g->clip_x);
-          dt_bauhaus_slider_set_soft_min(g->cw, g->clip_x + 0.10);
-          dt_bauhaus_slider_set(g->cy, g->clip_y);
-          dt_bauhaus_slider_set_soft_min(g->ch, g->clip_y + 0.10);
-          dt_bauhaus_slider_set(g->cw, g->clip_x + g->clip_w);
-          dt_bauhaus_slider_set_soft_max(g->cx, g->clip_x + g->clip_w - 0.10);
-          dt_bauhaus_slider_set(g->ch, g->clip_y + g->clip_h);
-          dt_bauhaus_slider_set_soft_max(g->cy, g->clip_y + g->clip_h - 0.10);
-
-          --darktable.gui->reset;
-        }
-      }
+      --darktable.gui->reset;
     }
     dt_control_queue_redraw_center();
     return 1;
@@ -1734,6 +1732,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
 int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
 {
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
+  dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
   // we don't do anything if the image is not ready
   if(!g->preview_ready) return 0;
 
@@ -1741,13 +1740,15 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   g->shift_hold = FALSE;
   g->ctrl_hold = FALSE;
   g->cropping = 0;
+
+  // we save the crop into the params now so params are kept in synch with gui settings
+  _commit_box(self, g, p);
   return 1;
 }
 
 int button_pressed(struct dt_iop_module_t *self, double x, double y, double pressure, int which, int type,
                    uint32_t state)
 {
-
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
   // we don't do anything if the image is not ready
