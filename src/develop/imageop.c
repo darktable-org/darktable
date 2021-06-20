@@ -2021,7 +2021,7 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded, gboolea
   /* handle shiftclick on expander, hide all except this */
   if(collapse_others)
   {
-    const int current_group = dt_dev_modulegroups_get(module->dev);
+    const int current_group = dt_dev_modulegroups_get_activated(module->dev);
     const gboolean group_only = dt_conf_get_bool("darkroom/ui/single_module_group_only");
 
     GList *iop = module->dev->iop;

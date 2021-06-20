@@ -465,7 +465,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
         {
           // add up the initial columns of the sliding window of total patch distortion
           float distortion = 0.0;
-          for (int i = col_min - radius; i < col_min+radius; i++)
+          for (int i = col_min - radius; i < MIN(col_min+radius, col_max); i++)
           {
             distortion += col_sums[i];
           }
@@ -510,7 +510,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
           }
           const int pcol_min = chunk_left - MIN(radius,MIN(chunk_left,chunk_left+scol));
           const int pcol_max = chunk_right + MIN(radius,MIN(width-chunk_right,width-(chunk_right+scol)));
-          if (row < row_top)
+          if (row < MIN(row_top, row_bot))
           {
             // top edge of patch was above top of RoI, so it had a value of zero; just add in the new row
             const float *bot_row = inbuf + (row+1+radius)*stride;
@@ -551,7 +551,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
               _mm_prefetch(bot_px+offset+stride, _MM_HINT_T0);
             }
           }
-          else if (row + 1 < row_max) // don't bother updating if last iteration
+          else if (row >= row_top && row + 1 < row_max) // don't bother updating if last iteration
           {
             // new row of the patch is below the bottom of RoI, so its value is zero; just subtract the old row
 #ifndef CACHE_PIXDIFFS
@@ -689,7 +689,7 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
         {
           // add up the initial columns of the sliding window of total patch distortion
           float distortion = 0.0;
-          for (int i = col_min - radius; i < col_min+radius; i++)
+          for (int i = col_min - radius; i < MIN(col_min+radius, col_max); i++)
           {
             distortion += col_sums[i];
           }
@@ -728,7 +728,7 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
           }
           const int pcol_min = chunk_left - MIN(radius,MIN(chunk_left,chunk_left+scol));
           const int pcol_max = chunk_right + MIN(radius,MIN(width-chunk_right,width-(chunk_right+scol)));
-          if (row < row_top)
+          if (row < MIN(row_top, row_bot))
           {
             // top edge of patch was above top of RoI, so it had a value of zero; just add in the new row
             const float *bot_row = inbuf + (row+1+radius)*stride;
@@ -770,7 +770,7 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
               _mm_prefetch(bot_px+offset+stride, _MM_HINT_T0);
             }
           }
-          else if (row + 1 < row_max) // don't bother updating if last iteration
+          else if (row >= row_top && row + 1 < row_max) // don't bother updating if last iteration
           {
             // new row of the patch is below the bottom of RoI, so its value is zero; just subtract the old row
 #ifndef CACHE_PIXDIFFS_SSE
