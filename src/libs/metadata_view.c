@@ -1459,7 +1459,7 @@ static int lua_update_values(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, 1);
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
-  lua_getuservalue(L, 2);
+  lua_getiuservalue(L, 2, 1);
   lua_getfield(L, 3, "values");
   lua_getfield(L, 3, "indexes");
   lua_pushnil(L);
@@ -1478,7 +1478,7 @@ static int lua_update_metadata(lua_State *L)
   int32_t imgid = lua_tointeger(L, 2);
   gboolean have_updates = false;
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
-  lua_getuservalue(L, -1);
+  lua_getiuservalue(L, -1, 1);
   lua_getfield(L, 4, "callbacks");
   lua_getfield(L, 4, "values");
   lua_pushnil(L);
@@ -1514,7 +1514,7 @@ static int lua_register_info(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
-  lua_getuservalue(L, -1);
+  lua_getiuservalue(L, -1, 1);
   const char* key = luaL_checkstring(L, 1);
   luaL_checktype(L, 2, LUA_TFUNCTION);
   {
@@ -1579,7 +1579,7 @@ static int lua_destroy_info(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
-  lua_getuservalue(L, -1);
+  lua_getiuservalue(L, -1, 1);
   const char* key = luaL_checkstring(L, 1);
   {
     lua_getfield(L, -1, "callbacks");
@@ -1667,7 +1667,7 @@ void init(struct dt_lib_module_t *self)
   dt_lua_type_register_const_type(L, my_type, "destroy_info");
 
   dt_lua_module_entry_push(L,"lib",self->plugin_name);
-  lua_getuservalue(L, -1);
+  lua_getiuservalue(L, -1, 1);
   lua_newtable(L);
   lua_setfield(L, -2, "callbacks");
   lua_newtable(L);

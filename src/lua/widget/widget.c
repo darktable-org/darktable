@@ -150,7 +150,7 @@ void dt_lua_widget_set_callback(lua_State *L, int index, const char *name)
 {
   luaL_argcheck(L, dt_lua_isa(L, index, lua_widget), index, "lua_widget expected");
   luaL_checktype(L, -1, LUA_TFUNCTION);
-  lua_getuservalue(L, index);
+  lua_getiuservalue(L, index, 1);
   lua_pushvalue(L, -2);
   lua_setfield(L, -2, name);
   lua_pop(L, 2);
@@ -159,7 +159,7 @@ void dt_lua_widget_set_callback(lua_State *L, int index, const char *name)
 void dt_lua_widget_get_callback(lua_State *L, int index, const char *name)
 {
   luaL_argcheck(L, dt_lua_isa(L, index, lua_widget), index, "lua_widget expected");
-  lua_getuservalue(L, index);
+  lua_getiuservalue(L, index, 1);
   lua_getfield(L, -1, name);
   lua_remove(L, -2);
 }
@@ -170,7 +170,7 @@ int dt_lua_widget_trigger_callback(lua_State *L)
   lua_widget widget;
   luaA_to(L, lua_widget, &widget, 1);
   const char* name = lua_tostring(L, 2);
-  lua_getuservalue(L, 1);
+  lua_getiuservalue(L, 1, 1);
   lua_getfield(L, -1, name);
   if(!lua_isnil(L, -1)) {
     lua_pushvalue(L, 1);
