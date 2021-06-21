@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-06-13 18:38+0200\n"
-"PO-Revision-Date: 2021-06-21 00:00+0200\n"
+"PO-Revision-Date: 2021-06-21 23:41+0200\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -2448,7 +2448,7 @@ msgstr "Raggio di pixelizzazione"
 #: ../build/lib/darktable/plugins/introspection_censorize.c:63
 #: ../build/lib/darktable/plugins/introspection_censorize.c:120
 msgid "output blur radius"
-msgstr ""
+msgstr "Raggio di sfocatura di uscita"
 
 #: ../build/lib/darktable/plugins/introspection_censorize.c:69
 #: ../build/lib/darktable/plugins/introspection_censorize.c:124
@@ -2493,7 +2493,7 @@ msgstr "Taglia i valori RGB negativi dalla gamma"
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:342
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:493
 msgid "saturation algorithm"
-msgstr ""
+msgstr "Algoritmo di saturazione"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:507
 msgid "same as pipeline (D50)"
@@ -2655,7 +2655,7 @@ msgstr "Versione 2 (2021)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:562
 msgid "version 3 (Apr 2021)"
-msgstr ""
+msgstr "Versione 3 (aprile 2021)"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:142
 #: ../build/lib/darktable/plugins/introspection_clipping.c:303
@@ -2753,7 +2753,7 @@ msgstr "Tonalità"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:291
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:496
 msgid "shadows fall-off"
-msgstr ""
+msgstr "Caduta delle ombre"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:297
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:500
@@ -2763,7 +2763,7 @@ msgstr "Fulcro del bianco"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:303
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:504
 msgid "highlights fall-off"
-msgstr ""
+msgstr "Caduta delle alteluci"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:309
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:351
@@ -2827,7 +2827,7 @@ msgstr "Globale"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:387
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:560
 msgid "mask middle-gray fulcrum"
-msgstr ""
+msgstr "Fulcro della maschera del grigio medio"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:393
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:564
@@ -2837,7 +2837,7 @@ msgstr "Vibranza globale"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:399
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:568
 msgid "contrast gray fulcrum"
-msgstr ""
+msgstr "Fulcro del contrasto del grigio"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:405
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:572
@@ -3032,7 +3032,7 @@ msgstr "Metodo demosaicizzazione"
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:114
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:177
 msgid "switch dual threshold"
-msgstr ""
+msgstr "Doppia soglia di cambio"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:191
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:198
@@ -3078,7 +3078,7 @@ msgstr "AMaZE + VNG4"
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:213
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:220
 msgid "passthrough (monochrome)"
-msgstr ""
+msgstr "Passaggio (monocromia)"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:214
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:221
@@ -3103,7 +3103,7 @@ msgstr "Frequency domain chroma"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:219
 msgid "Markesteijn 3-pass + VNG"
-msgstr ""
+msgstr "Markesteijn 3-pass + VNG"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:125
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:300
@@ -3237,7 +3237,7 @@ msgstr "Automatico"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:406
 #: ../src/iop/filmic.c:1598
 msgid "middle gray luminance"
-msgstr ""
+msgstr "Luminanza grigio medio"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:207
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:410
@@ -3282,7 +3282,7 @@ msgstr "Scala gamma dinamica"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:442
 #: ../src/iop/filmic.c:1752
 msgid "target middle gray"
-msgstr ""
+msgstr "Grigio medio obiettivo"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:261
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:446
@@ -3681,7 +3681,7 @@ msgstr "Gamma dinamica"
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:91
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:162
 msgid "middle gray luma"
-msgstr ""
+msgstr "Luminosità grigio medio"
 
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:103
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:170
@@ -3809,7 +3809,7 @@ msgstr "Colore"
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:223
 #: ../src/iop/rgbcurve.c:1445
 msgid "compensate middle gray"
-msgstr ""
+msgstr "Compensa il grigio medio"
 
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:246
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:148
@@ -4204,7 +4204,7 @@ msgstr "Intento ICC non valido per --icc-intent: '%s'\n"
 #: ../src/cli/main.c:396
 #, c-format
 msgid "warning: unknown option '%s'\n"
-msgstr ""
+msgstr "Attenzione: opzione sconosciuta %s\n"
 
 #: ../src/cli/main.c:454
 #, c-format
@@ -4261,7 +4261,7 @@ msgstr "Estensione del file di output troppo lunga: %s\n"
 #: ../src/cli/main.c:625
 #, c-format
 msgid "no output file extension given\n"
-msgstr ""
+msgstr "Non è stata data alcuna estensione al file di output\n"
 
 #: ../src/cli/main.c:664
 msgid ""
@@ -4295,6 +4295,9 @@ msgid ""
 "\n"
 "make sure your camera allows access and is not mounted otherwise"
 msgstr ""
+"Fotocamera `%s' sulla porta `%s' errore %s\n"
+"\n"
+"Accerta che la tua fotocamera permetta l'accesso e non sia montata altrimenti"
 
 #: ../src/common/camera_control.c:897
 #, c-format
@@ -4302,6 +4305,9 @@ msgid ""
 "failed to initialize `%s' on port `%s', likely causes are: locked by another "
 "application, no access to devices etc"
 msgstr ""
+"Errore nell'inizializzare `%s' sulla porta `%s', possibili cause sono:"
+" bloccata da "
+"un'altra applicazone, nessun accesso al dispositivo, ecc."
 
 #: ../src/common/camera_control.c:908
 #, c-format
@@ -4309,11 +4315,13 @@ msgid ""
 "`%s' on port `%s' is not interesting because it supports neither tethering "
 "nor import"
 msgstr ""
+"`%s' sulla porta `%s' non è interessata perchè non supporta nè il tethering, "
+"nè l'importazione"
 
 #: ../src/common/camera_control.c:958
 #, c-format
 msgid "camera `%s' on port `%s' disconnected while mounted"
-msgstr ""
+msgstr "Fotocamera `%s' sulla porta `%s' disconnessa mentre era montata"
 
 #: ../src/common/camera_control.c:965
 #, c-format
@@ -4321,6 +4329,8 @@ msgid ""
 "camera `%s' on port `%s' needs to be remounted\n"
 "make sure it allows access and is not mounted otherwise"
 msgstr ""
+"La fotocamera `%s' sulla porta `%s' ha bisogno di esser rimontata\n"
+"Accerta che la tua fotocamera permetta l'accesso e non sia montata altrimenti"
 
 #: ../src/common/collection.c:640
 msgid "too much time to update aspect ratio for the collection"
@@ -4563,6 +4573,8 @@ msgstr "BRG (per test)"
 msgid ""
 "profile `%s' not usable as histogram profile. it has been replaced by sRGB!"
 msgstr ""
+"Il profilo `%s' non utilizzabile come profilo istogramma. E' stato sostituito"
+" da sRGB!"
 
 #: ../src/common/colorspaces.c:1676
 msgid "embedded ICC profile"
@@ -5063,12 +5075,12 @@ msgstr "Geo-localizzazione riapplicata alle %d immagini"
 #: ../src/common/image.c:522
 #, c-format
 msgid "date/time undone for %d images"
-msgstr ""
+msgstr "Data/ora annullata per le %d immagini"
 
 #: ../src/common/image.c:523
 #, c-format
 msgid "date/time re-applied to %d images"
-msgstr ""
+msgstr "Data/ora ri-applicata alle %d immagini"
 
 #: ../src/common/image.c:1901
 #, c-format
@@ -5163,6 +5175,8 @@ msgstr ""
 #: ../src/common/import_session.c:359
 msgid "requested session path not available. device not mounted?"
 msgstr ""
+"Il percorso della sessione richiesta non è disponibile. E' montato il"
+" dispositivo?"
 
 #: ../src/common/iop_order.c:59 ../src/libs/ioporder.c:202
 msgid "legacy"
@@ -5679,7 +5693,11 @@ msgid_plural ""
 "do you really want to remove %d images from darktable\n"
 "(without deleting files on disk)?"
 msgstr[0] ""
+"Sicuro di voler eliminare l'immagine %d da Darktable\n"
+"(senza cancellare il file dal disco)?"
 msgstr[1] ""
+"Sicuro di voler eliminare le immagini %d da Darktable\n"
+"(senza cancellare i file dal disco)?"
 
 #: ../src/control/jobs/control_jobs.c:1564
 msgid "remove image?"
@@ -5704,7 +5722,11 @@ msgid_plural ""
 "do you really want to physically delete %d images\n"
 "(using trash if possible)?"
 msgstr[0] ""
+"Sei sicuro di voler eliminare fisicamente l'immagine %d\n"
+"(usando il cestino se possibile)?"
 msgstr[1] ""
+"Sei sicuro di voler eliminare fisicamente le immagini %d\n"
+"(usando il cestino se possibile)?"
 
 #: ../src/control/jobs/control_jobs.c:1602
 #, c-format
@@ -5727,6 +5749,8 @@ msgid ""
 "do you really want to physically delete selected image (using trash if "
 "possible)?"
 msgstr ""
+"Sei sicuro di voler eliminare fisicamente l'immagine selezionata (usando "
+"il cestino se possibile)?"
 
 #: ../src/control/jobs/control_jobs.c:1642
 msgid "do you really want to physically delete selected image from disk?"
@@ -5808,7 +5832,7 @@ msgstr "Aggiungo compens. oraria ad %d immagine"
 #: ../src/control/jobs/control_jobs.c:1964
 #, c-format
 msgid "setting date/time of %d image"
-msgstr ""
+msgstr "Impostazione data/ora dell'immagine %d"
 
 #: ../src/control/jobs/control_jobs.c:1965
 #, c-format
@@ -5818,7 +5842,7 @@ msgstr "Aggiungo compens. oraria alle %d immagini"
 #: ../src/control/jobs/control_jobs.c:1965
 #, c-format
 msgid "setting date/time of %d images"
-msgstr ""
+msgstr "Impostazione data/ora delle immagini %d"
 
 #: ../src/control/jobs/control_jobs.c:2006
 #, c-format
@@ -5901,7 +5925,7 @@ msgstr "Impossibile allocare il buffer per la fusione"
 
 #: ../src/develop/blend.c:819
 msgid "detail mask CL blending problem"
-msgstr ""
+msgstr "Dettaglia il problema della maschera CL di fusione"
 
 #: ../src/develop/blend_gui.c:46 ../src/libs/live_view.c:478
 msgctxt "blendmode"
@@ -6082,12 +6106,12 @@ msgstr "Differenza (deprecato)"
 #: ../src/develop/blend_gui.c:83
 msgctxt "blendmode"
 msgid "subtract inverse (deprecated)"
-msgstr ""
+msgstr "Sottrazione inversa (deprecato)"
 
 #: ../src/develop/blend_gui.c:84
 msgctxt "blendmode"
 msgid "divide inverse (deprecated)"
-msgstr ""
+msgstr "Divisione inversa (deprecato)"
 
 #: ../src/develop/blend_gui.c:88
 msgctxt "blendoperation"
@@ -6158,19 +6182,19 @@ msgstr "Inclusiva & invertita"
 
 #: ../src/develop/blend_gui.c:117
 msgid "output before blur"
-msgstr ""
+msgstr "Risultato prima di sfocare"
 
 #: ../src/develop/blend_gui.c:118
 msgid "input before blur"
-msgstr ""
+msgstr "Input prima di sfocare"
 
 #: ../src/develop/blend_gui.c:119
 msgid "output after blur"
-msgstr ""
+msgstr "Risultato dopo aver sfocato"
 
 #: ../src/develop/blend_gui.c:120
 msgid "input after blur"
-msgstr ""
+msgstr "Input dopo aver sfocato"
 
 #: ../src/develop/blend_gui.c:854 ../src/develop/blend_gui.c:2198
 #: ../src/develop/imageop.c:3115
@@ -6458,7 +6482,7 @@ msgstr "Mostra e modifica elementi della maschera"
 
 #: ../src/develop/blend_gui.c:2346
 msgid "show and edit in restricted mode"
-msgstr ""
+msgstr "Mostra e modifica in modalità ristretta"
 
 #: ../src/develop/blend_gui.c:2351 ../src/libs/masks.c:1021
 #: ../src/libs/masks.c:1049 ../src/libs/masks.c:1631
@@ -6467,7 +6491,7 @@ msgstr "Aggiungi gradiente"
 
 #: ../src/develop/blend_gui.c:2351
 msgid "add multiple gradients"
-msgstr ""
+msgstr "Aggiungi più gradienti"
 
 #: ../src/develop/blend_gui.c:2356 ../src/iop/retouch.c:2144
 #: ../src/libs/masks.c:1033 ../src/libs/masks.c:1657
@@ -6563,7 +6587,7 @@ msgstr "Seleziona il metodo di fusione"
 
 #: ../src/develop/blend_gui.c:3053
 msgid "toggle blend order"
-msgstr ""
+msgstr "Nascondi l'ordine di miscelazione"
 
 #: ../src/develop/blend_gui.c:3056
 msgid ""
@@ -6571,6 +6595,10 @@ msgid ""
 "by default the output will be blended on top of the input,\n"
 "order can be reversed by clicking on the icon (input on top of output)"
 msgstr ""
+"Nascondi l'ordine di miscelazione tra l'input e l'output del modulo,\n"
+"per default l'output è miscelato al di sopra dell'input,\n"
+"l'ordine può esser invertito cliccando sull'icona (input al di sopra"
+" dell'output)"
 
 #: ../src/develop/blend_gui.c:3062 ../src/libs/history.c:891
 msgid "blend fulcrum"
@@ -6611,7 +6639,7 @@ msgstr "Applica la maschera in modalità normale o invertita"
 
 #: ../src/develop/blend_gui.c:3088
 msgid "details threshold"
-msgstr ""
+msgstr "Soglia dei dettagli"
 
 #: ../src/develop/blend_gui.c:3090
 msgid ""
@@ -6619,6 +6647,9 @@ msgid ""
 "positive values selects areas with strong details, \n"
 "negative values select flat areas"
 msgstr ""
+"Aggiusta la soglia per la maschera dettagli (usando dati grezzi), \n"
+"valori positivi selezionano aree con elevati dettagli, \n"
+"valori negativi selezionano aree piatte"
 
 #: ../src/develop/blend_gui.c:3094 ../src/libs/history.c:895
 msgid "feathering guide"
@@ -6629,6 +6660,9 @@ msgid ""
 "choose to guide mask by input or output image and\n"
 "choose to apply feathering before or after mask blur"
 msgstr ""
+"Scegli di far guidare la maschera dall'immagine di inputo o di "
+"output e\n"
+"scegli di applicare la sfumatura prima o dopo la maschera di sfocatura"
 
 #: ../src/develop/blend_gui.c:3101 ../src/libs/history.c:894
 msgid "feathering radius"
@@ -6677,7 +6711,7 @@ msgstr "Aggiustamento fine maschera"
 
 #: ../src/develop/blend_gui.c:3136
 msgid "display mask and/or color channel"
-msgstr ""
+msgstr "Visualizza la maschera e/o canale colore"
 
 #: ../src/develop/blend_gui.c:3138
 msgid ""
@@ -6692,7 +6726,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:3143
 msgid "temporarily switch off blend mask"
-msgstr ""
+msgstr "Disattiva temporaneamente la maschera di fusione"
 
 #: ../src/develop/blend_gui.c:3145
 msgid "temporarily switch off blend mask. only for module in focus"
@@ -6779,17 +6813,19 @@ msgstr "Maschera parametrica e disegnata"
 
 #: ../src/develop/imageop.c:2378
 msgid "this module has a"
-msgstr ""
+msgstr "Questo modulo ha un"
 
 #: ../src/develop/imageop.c:2382
 msgid "click to display (module must be activated first)"
-msgstr ""
+msgstr "Clicca per mostrare (il modulo deve esser attivato prima)"
 
 #: ../src/develop/imageop.c:2439
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
 msgstr ""
+"Azioni con istanze multiple\n"
+"click col tasto destro del mouse crea una nuova istanza"
 
 #: ../src/develop/imageop.c:2450
 msgid ""
@@ -6810,6 +6846,8 @@ msgid ""
 "presets\n"
 "right-click to apply on new instance"
 msgstr ""
+"Preimpostazioni\n"
+"Clicca col tasto destro del mouse per applicare su una nuova istanza"
 
 #: ../src/develop/imageop.c:2741 ../src/develop/imageop.c:2763
 msgid "ERROR"
@@ -6825,7 +6863,7 @@ msgstr "Elaborazione"
 
 #: ../src/develop/imageop.c:3186
 msgid "unsupported input"
-msgstr ""
+msgstr "Ingresso non supportato"
 
 #: ../src/develop/imageop.c:3187
 msgid ""
@@ -6834,6 +6872,10 @@ msgid ""
 "the data format does not match\n"
 "its requirements."
 msgstr ""
+"Hai messo questo modulo in una\n"
+"posizione nella coda di sviluppo dove\n"
+"il formato dei dati non corrisponde\n"
+"ai suoi requisiti."
 
 #: ../src/develop/imageop_gui.c:440
 #, c-format
@@ -6868,7 +6910,7 @@ msgstr[1] "%s sono stati importati con successo"
 #: ../src/develop/masks/brush.c:1116 ../src/develop/masks/brush.c:1200
 #, c-format
 msgid "hardness: %3.2f%%"
-msgstr ""
+msgstr "Durezza: %3.2f%%"
 
 #: ../src/develop/masks/brush.c:1140 ../src/develop/masks/brush.c:1182
 #: ../src/develop/masks/brush.c:1189 ../src/develop/masks/circle.c:122
@@ -6905,6 +6947,8 @@ msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
+"<b>dimensione</b>: rotella mouse, <b>durezza</b>: shift+rotella mouse\n"
+"<b>opacità</b>: ctrl+rotella mouse(%d%%)"
 
 #: ../src/develop/masks/brush.c:2939
 #, c-format
@@ -6912,17 +6956,19 @@ msgid ""
 "<b>hardness</b>: scroll, <b>size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
+"<b>durezza</b>: rotella mouse, <b>dimensione</b>: shift+rotella mouse\n"
+"<b>opacità</b>: ctrl+rotella mouse (%d%%)"
 
 #: ../src/develop/masks/brush.c:2942
 msgid "<b>size</b>: scroll"
-msgstr ""
+msgstr "<b>dimensione</b>: rotella mouse"
 
 #: ../src/develop/masks/circle.c:109 ../src/develop/masks/circle.c:159
 #: ../src/develop/masks/ellipse.c:527 ../src/develop/masks/ellipse.c:612
 #: ../src/develop/masks/path.c:1034 ../src/develop/masks/path.c:1041
 #, c-format
 msgid "feather size: %3.2f%%"
-msgstr ""
+msgstr "dimensione sfumatura: %3.2f%%"
 
 #: ../src/develop/masks/circle.c:1322
 msgid "[CIRCLE] change size"
@@ -6947,6 +6993,9 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
+"<b>dimensione</b>: rotella mouse, <b>dimensione sfumatura</b>: shift+rotella"
+" mouse\n"
+"<b>opacità</b>: ctrl+rotella mouse (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:491 ../src/develop/masks/ellipse.c:593
 #, c-format
@@ -6980,6 +7029,10 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
+"<b>dimensione</b>: rotella mouse, <b>dimensione sfumatura</b>: shift+rotella"
+" mouse\n"
+"<b>rotazione</b>: ctrl+shift+rotella mouse, <b>opacità</b>: ctrl+rotella"
+" mouse (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:2210
 msgid "<b>rotate</b>: ctrl+drag"
@@ -6992,16 +7045,20 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl"
 "+scroll (%d%%)"
 msgstr ""
+"<b>modo sfumatura</b>: shift+click, <b>ruota</b>: ctrl+trascina\n"
+"<b>dimensione</b>: rotella mouse, <b>dimensione sfumatura</b>: shift+rotella"
+" mouse, "
+" <b>opacità</b>: ctrl + rotella mouse (%d%%)"
 
 #: ../src/develop/masks/gradient.c:101 ../src/develop/masks/gradient.c:140
 #, c-format
 msgid "compression: %3.2f%%"
-msgstr ""
+msgstr "Compressione: %3.2f%%"
 
 #: ../src/develop/masks/gradient.c:111 ../src/develop/masks/gradient.c:150
 #, c-format
 msgid "curvature: %3.2f%%"
-msgstr ""
+msgstr "Curvatura: %3.2f%%"
 
 #: ../src/develop/masks/gradient.c:1434
 msgid "[GRADIENT on pivot] rotate shape"
@@ -7034,6 +7091,8 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
+"<b>curvatura</b>: rotella mouse, <b>compressione</b>: shift+rotella mouse\n"
+"<b>rotazione</b>: click+trascina, <b>opacità</b>: ctrl+rotella mouse (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1462
 #, c-format
@@ -7041,6 +7100,8 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
+"<b>curvatura</b>: rotella mouse, <b>compressione</b>: shift+rotella mouse\n"
+"<b>opacità</b>: ctrl+rotella mouse (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1465
 msgid "<b>rotate</b>: drag"
@@ -7127,24 +7188,33 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
+"<b>aggiungi un nodo</b>: click, <b>aggiungi un nodo ad angolo</b>:ctrl+click\n"
+"<b>elimina</b>: click col tasto destro"
 
 #: ../src/develop/masks/path.c:3109
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
+"<b>aggiungi un nodo</b>: click, <b>aggiungi un nodo ad angolo</b>:ctrl+click\n"
+"<b>termina il tracciato</b>: click col tasto destro"
 
 #: ../src/develop/masks/path.c:3112
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
 msgstr ""
+"<b>sposta il nodo</b>: trascina, <b>rimuovi il nodo</b>: click col "
+"tasto destro\n"
+"<b>accendi il modo ammorbidisci/nitidezza</b>: ctrl+click"
 
 #: ../src/develop/masks/path.c:3115
 msgid ""
 "<b>node curvature</b>: drag\n"
 "<b>reset curvature</b>: right-click"
 msgstr ""
+"<b>node curvature</b>: drag\n"
+"<b>reset curvature</b>: right-click"
 
 #: ../src/develop/masks/path.c:3117
 msgid ""
@@ -7163,6 +7233,11 @@ msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
 msgstr ""
+"La cronologia ha il modulo disabilitato ma è richiesto per questo tipo di"
+" immagine.\n"
+"Probabilmente introdotto applicando una preimpostazione, uno stile o un copia"
+" e incolla "
+"della cronologia"
 
 #: ../src/develop/pixelpipe_hb.c:384
 msgid "disabled as not appropriate"
@@ -7173,6 +7248,11 @@ msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
 msgstr ""
+"La cronologia ha il modulo abilitato ma non è permesso per questo tipo di"
+" immagine.\n"
+"Probabilmente introdotto applicando una preimpostazione, uno stile o un copia"
+" e incolla "
+"della cronologia"
 
 #: ../src/develop/pixelpipe_hb.c:2398
 msgid ""
@@ -8854,6 +8934,11 @@ msgid ""
 "makes encoding faster. the impact on quality reduction is negligible, but "
 "increases the file size."
 msgstr ""
+"Affianca un immagine ai segmenti.\n"
+"\n"
+"Rende la codifica più veloce. L'impatto sulla riduzione della qualità è"
+" trascurabile, "
+"ma aumenta la dimensione del file."
 
 #: ../src/imageio/format/avif.c:833 ../src/imageio/format/webp.c:325
 msgid "compression type"
@@ -10464,6 +10549,10 @@ msgid ""
 "to linear.\n"
 "you might view bad correction results."
 msgstr ""
+"I calcoli interni hanno trovato troppi pochi punti di dati perciò è stato"
+" limitato"
+"l'ordine di adattamento a lineare.\n"
+"Potresti vedere il risultato di cattive correzioni."
 
 #: ../src/iop/cacorrect.c:1348
 msgid ""
@@ -10480,7 +10569,7 @@ msgstr ""
 
 #: ../src/iop/cacorrect.c:1460
 msgid "iteration runs, default is twice"
-msgstr ""
+msgstr "Iterazioni di esecuzione, in modo predefinito è due volte"
 
 #: ../src/iop/cacorrect.c:1463
 msgid "activate colorshift correction for blue & red channels"
@@ -10511,6 +10600,12 @@ msgid ""
 "try changing guide channel if you\n"
 "have artifacts."
 msgstr ""
+"Il canale usa come riferimenti per\n"
+"correggere gli altri canali.\n"
+"Usa un canale più acuto se alcuni\n"
+"canali sono sfocati.\n"
+"Prova a modificare il canale guida se\n"
+"hai artefatti."
 
 #: ../src/iop/cacorrectrgb.c:755
 msgid "increase for stronger correction"
@@ -10560,6 +10655,13 @@ msgid ""
 "colors too much on other\n"
 "images."
 msgstr ""
+"Esegue un approccio iterativo\n"
+"con diversi raggi.\n"
+"Incrementa il risultato delle immagini\n"
+"con aberrazioni cromatiche molto\n"
+"ampie, ma i colori possono esser\n"
+"troppo morbidi sulle altre\n"
+"immagini."
 
 #: ../src/iop/censorize.c:77
 msgid "censorize"
@@ -10806,6 +10908,22 @@ msgid ""
 "exposure compensation : \t%+.2f EV\n"
 "black offset : \t%+.4f"
 msgstr ""
+"\n"
+"<b>Rapporto di qualità del profilo: %s</b>\n"
+"input  ΔE : \tavg. %.2f ; \tmax. %.2f\n"
+"WB ΔE : \tavg. %.2f ; \tmax. %.2f\n"
+"output ΔE : \tavg. %.2f ; \tmax. %.2f\n"
+"\n"
+"<b>Dati profilo</b>\n"
+"illuminante :  \t%.0f K \t%s \n"
+"matrice nello spazio di adattamento:\n"
+"<tt>%+.4f \t%+.4f \t%+.4f\n"
+"%+.4f \t%+.4f \t%+.4f\n"
+"%+.4f \t%+.4f \t%+.4f</tt>\n"
+"\n"
+"<b>Valori di normalizzazione</b>\n"
+"compensazione esposizione : \t%+.2f EV\n"
+"spostamento del nero : \t%+.4f"
 
 #: ../src/iop/channelmixerrgb.c:1698
 #, c-format
@@ -10819,7 +10937,7 @@ msgid ""
 "black offset : \t%+.4f"
 msgstr ""
 "\n"
-"<b>Report della qualità del profilo: %s</b>\n"
+"<b>Rapporto di qualità del profilo: %s</b>\n"
 "output ΔE : \tavg. %.2f ; \tmax. %.2f\n"
 "\n"
 "<b>Valori di normalizzazione</b>\n"
@@ -11100,6 +11218,14 @@ msgid ""
 "none is a trade-off between both\n"
 "the others are special behaviours to protect some hues"
 msgstr ""
+"Scegli i colori che andranno ottimizzati con maggior priorità.\n"
+"Colori neutri danno il più basso delta E medio ma un maggior valore massimo"
+" del delta E\n"
+"Colori saturati danno il più basso valore massimo di delta E ma un maggiore"
+" delta E "
+"medio\n"
+"Non c'è un compromesso tra i due\n"
+"Gli altri sono comportamenti speciali per conservare un po' le tonalità"
 
 #: ../src/iop/channelmixerrgb.c:3841
 msgid "patch scale"
