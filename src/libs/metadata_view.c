@@ -494,6 +494,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   int32_t mouse_over_id = dt_control_get_mouse_over_id();
   int32_t count = 0;
 
+  gchar *images = NULL;
+
   if(mouse_over_id == -1)
   {
      const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
@@ -503,16 +505,21 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     }
     else
     {
+      images = dt_view_get_images_to_act_on_query(FALSE);
       sqlite3_stmt *stmt;
-
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid, COUNT(imgid) FROM main.selected_images",
-                                  -1, &stmt, NULL);
+      gchar *query = dt_util_dstrcat(NULL,
+                                     "SELECT id, COUNT(id) "
+                                     "FROM main.images "
+                                     "WHERE id IN (%s)",
+                                     images);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       if(sqlite3_step(stmt) == SQLITE_ROW)
       {
         mouse_over_id = sqlite3_column_int(stmt, 0);
         count = sqlite3_column_int(stmt, 1);
       }
       sqlite3_finalize(stmt);
+      g_free(query);
 
       // Still 0 => no selection in progress
       if(count == 0)
@@ -530,7 +537,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
   if(count > 1)
   {
-    gchar *const images = dt_view_get_images_to_act_on_query(FALSE);
+    if(!images) images = dt_view_get_images_to_act_on_query(FALSE);
     sqlite3_stmt *stmt = NULL;
     gchar *query = dt_util_dstrcat(NULL, "SELECT COUNT(DISTINCT film_id), "
                                          "2, " //id always different
@@ -610,6 +617,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     sqlite3_finalize(stmt_tags);
   }
+
+  g_free(images);
 
   int img_id = mouse_over_id;
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, img_id, 'r');
