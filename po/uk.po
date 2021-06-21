@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-06-13 18:38+0200\n"
-"PO-Revision-Date: 2021-06-13 23:42+0300\n"
+"PO-Revision-Date: 2021-06-21 20:42+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -81,7 +81,7 @@ msgstr "загальні"
 
 #: ../build/bin/preferences_gen.h:3513
 msgid "hide built-in presets for utility modules"
-msgstr "приховати вбудовані пресети допоміжних модулів"
+msgstr "приховати вбудовані пресети сервісних модулів"
 
 #: ../build/bin/preferences_gen.h:3524 ../build/bin/preferences_gen.h:3560
 #: ../build/bin/preferences_gen.h:3596 ../build/bin/preferences_gen.h:3632
@@ -148,7 +148,7 @@ msgstr "ВИМКНЕНО"
 
 #: ../build/bin/preferences_gen.h:3527
 msgid "hides built-in presets of utility modules in presets menu."
-msgstr "приховує вбудовані пресети допоміжних модулів в меню пресетів."
+msgstr "приховує вбудовані пресети сервісних модулів в меню пресетів."
 
 #: ../build/bin/preferences_gen.h:3549
 msgid "use single-click in the collections module"
@@ -166,7 +166,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:3585
 msgid "expand a single utility module at a time"
-msgstr "розгортати одночасно лише один допоміжний модуль"
+msgstr "розгортати одночасно лише один сервісний модуль"
 
 #: ../build/bin/preferences_gen.h:3599
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
@@ -174,8 +174,7 @@ msgstr "ця опція переключає поведінку shift+клік �
 
 #: ../build/bin/preferences_gen.h:3621
 msgid "scroll to utility modules when expanded/collapsed"
-msgstr ""
-"спробувати помістити розгорнутий допоміжний модуль якнайвище в списку модулів"
+msgstr "спробувати помістити розгорнутий сервісний модуль якнайвище"
 
 #: ../build/bin/preferences_gen.h:3635 ../build/bin/preferences_gen.h:4822
 msgid ""
@@ -630,8 +629,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4772
 msgid "expand the module when it is activated, and collapse it when disabled"
-msgstr ""
-"розгортати модуль, коли він активований, і згортати, коли його вимкнено"
+msgstr "розгортати активований модуль і згортати, коли його вимкнено"
 
 #: ../build/bin/preferences_gen.h:4786
 msgid ""
@@ -643,8 +641,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4808
 msgid "scroll to processing modules when expanded/collapsed"
-msgstr ""
-"спробувати помістити розгорнутий модуль обробки якнайвище в списку модулів"
+msgstr "спробувати помістити розгорнутий модуль обробки якнайвище"
 
 #: ../build/bin/preferences_gen.h:4844
 msgid "white balance slider colors"
@@ -1140,7 +1137,7 @@ msgstr "cpu / gpu / пам'ять"
 
 #: ../build/bin/preferences_gen.h:6155
 msgid "memory in megabytes to use for thumbnail cache"
-msgstr "розмір кеша мініатюр (в мегабайтах)"
+msgstr "розмір кеша мініатюр (в МБ)"
 
 #: ../build/bin/preferences_gen.h:6178
 msgid ""
@@ -1263,7 +1260,7 @@ msgstr "профіль планування OpenCL"
 #: ../build/bin/conf_gen.h:425 ../src/gui/preferences.c:976
 msgctxt "preferences"
 msgid "default"
-msgstr "за умовчанням"
+msgstr "за замовчуванням"
 
 #: ../build/bin/preferences_gen.h:6467 ../build/bin/conf_gen.h:426
 msgctxt "preferences"
@@ -1284,7 +1281,7 @@ msgid ""
 "sequentially on the GPU."
 msgstr ""
 "визначає, як завдання попереднього перегляду і повного конвеєра плануються в "
-"системах із підтримкою OpenCL. \"за умовчанням\" - GPU обробляє повний "
+"системах із підтримкою OpenCL. \"за замовчуванням\" - GPU обробляє повний "
 "конвеєр, а CPU конвеєр попереднього перегляду; кілька GPU - два конвеєра "
 "обробляються паралельно на двох різних GPU; дуже швидкий GPU - два конвеєра "
 "обробляються послідовно на GPU."
@@ -1585,7 +1582,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:7237
 msgid "prefer expanded instances"
-msgstr "пріоритет розкритих екземплярів"
+msgstr "пріоритет розгорнутих екземплярів"
 
 #: ../build/bin/preferences_gen.h:7251
 msgid "if instances of the module are expanded, ignore collapsed instances"
@@ -7707,7 +7704,7 @@ msgstr "модулі обробки"
 #: ../src/gui/accelerators.c:140
 msgctxt "accel"
 msgid "utility modules"
-msgstr "допоміжні модулі"
+msgstr "сервісні модулі"
 
 #: ../src/gui/accelerators.c:146
 msgctxt "accel"
@@ -8763,7 +8760,7 @@ msgstr "список швидких пресетів..."
 
 #: ../src/gui/presets.c:1411
 msgid "(default)"
-msgstr "(за умовчанням)"
+msgstr "(за замовчуванням)"
 
 #: ../src/gui/presets.c:1430
 msgid "disabled: wrong module version"
@@ -9435,7 +9432,7 @@ msgid ""
 "specify http:// if non secure server"
 msgstr ""
 "ім'я сервера\n"
-"протокол за умовчанням - https\n"
+"протокол за замовчуванням - https\n"
 "вказуйте http:// при потребі"
 
 #: ../src/imageio/storage/piwigo.c:790
@@ -14749,8 +14746,8 @@ msgstr "менеджер масок"
 #: ../src/iop/monochrome.c:97
 msgid "quickly convert an image to black & white using a variable color filter"
 msgstr ""
-"швидко перетворює зображення в чорно-біле за допомогою змінного кольорового "
-"фільтра"
+"швидко перетворює зображення в чорно-біле за допомогою фільтра змінних "
+"кольорів"
 
 #: ../src/iop/monochrome.c:127
 msgid "red filter"
@@ -18797,7 +18794,7 @@ msgstr ""
 "стандартними метаданими).\n"
 "<залишити незмінним> - вибрані зображення мають різні метадані.\n"
 "у такому випадку клік правою кнопкою дає можливість вибрати щось із них.\n"
-"натисніть клавішу escape, щоб вийти зі спливаючого вікна"
+"натисніть клавішу escape, щоб вийти зі спливного вікна"
 
 #: ../src/libs/metadata.c:775
 msgid "write metadata for selected images"
@@ -19265,7 +19262,7 @@ msgstr "додати віджет до панелі швидкого досту�
 
 #: ../src/libs/modulegroups.c:3237
 msgid "group icon"
-msgstr "іконка групи"
+msgstr "значок групи"
 
 #: ../src/libs/modulegroups.c:3246
 msgid "group name"
