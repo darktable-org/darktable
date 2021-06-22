@@ -334,9 +334,9 @@ static void _basics_init_item(dt_lib_modulegroups_basic_item_t *item)
     else
     {
       if(g_strv_length(elems) > 2)
-        item->widget_name = dt_util_dstrcat(NULL, "%s - %s", _(elems[1]), _(elems[2]));
+        item->widget_name = g_strdup_printf("%s - %s", _(elems[1]), _(elems[2]));
       else if(g_strv_length(elems) > 1)
-        item->widget_name = dt_util_dstrcat(NULL, "%s", _(elems[1]));
+        item->widget_name = g_strdup_printf("%s", _(elems[1]));
       else
       {
         item->widget_name = g_strdup(_("on-off"));
