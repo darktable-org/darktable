@@ -882,9 +882,9 @@ static gboolean _event_grouping_release(GtkWidget *widget, GdkEventButton *event
   if(event->button == 1 && !thumb->moved)
   {
     //TODO: will succeed if either or *both* of Shift and Control are pressed.  Do we want this?
-    if(event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) // just add the whole group to the selection. TODO:
-                                                           // make this also work for collapsed groups.
+    if(dt_modifier_is(event->state, GDK_SHIFT_MASK) | dt_modifier_is(event->state, GDK_CONTROL_MASK))
     {
+      // just add the whole group to the selection. TODO: make this also work for collapsed groups.
       sqlite3_stmt *stmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(
           dt_database_get(darktable.db),
