@@ -1480,7 +1480,7 @@ static void _remove_place(const gchar *folder, GtkTreeIter iter, dt_lib_module_t
 static GList* _get_custom_places()
 {
   GList *places = NULL;
-  char *saved = dt_conf_get_string("ui_last/import_custom_places");
+  gchar *saved = dt_conf_get_string("ui_last/import_custom_places");
   const int nb_saved = saved[0] ? dt_util_str_occurence(saved, ",") + 1 : 0;
   char *folders = saved;
 
@@ -1496,6 +1496,7 @@ static GList* _get_custom_places()
         folders = next + 1;
     }
   }
+  g_free(saved);
   return places;
 }
 
