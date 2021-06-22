@@ -1301,15 +1301,19 @@ static void _update_places_list(dt_lib_module_t* self)
   const gchar *last_place = dt_conf_get_string("ui_last/import_last_place");
   gchar *current_place = g_strdup("");
 
-  if(dt_conf_get_bool("ui_last/import_dialog_show_home") && dt_loc_get_home_dir(NULL))
+  if(dt_conf_get_bool("ui_last/import_dialog_show_home"))
   {
-    g_free(current_place);
-    current_place = dt_loc_get_home_dir(NULL);
-    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("home"), DT_PLACES_PATH,
-                                      current_place, DT_PLACES_TYPE, DT_TYPE_HOME, -1);
-    if(!g_strcmp0(current_place, last_place))
-      gtk_tree_selection_select_iter(d->placesSelection, &iter);
-    current_iter = iter;
+    gchar *homedir = dt_loc_get_home_dir(NULL);
+    if(homedir)
+    {
+      g_free(current_place);
+      current_place = homedir;
+      gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("home"), DT_PLACES_PATH,
+                                        current_place, DT_PLACES_TYPE, DT_TYPE_HOME, -1);
+      if(!g_strcmp0(current_place, last_place))
+        gtk_tree_selection_select_iter(d->placesSelection, &iter);
+      current_iter = iter;
+    }
   }
 
   if(dt_conf_get_bool("ui_last/import_dialog_show_pictures") && g_get_user_special_dir(G_USER_DIRECTORY_PICTURES))
