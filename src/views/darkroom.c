@@ -2968,7 +2968,7 @@ void enter(dt_view_t *self)
   dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), dev->image_storage.id, TRUE);
 
   // get last active plugin:
-  gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
+  const char *active_plugin = dt_conf_get_conststring("plugins/darkroom/active");
   if(active_plugin)
   {
     for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
@@ -2976,7 +2976,6 @@ void enter(dt_view_t *self)
       dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
       if(!strcmp(module->op, active_plugin)) dt_iop_request_focus(module);
     }
-    g_free(active_plugin);
   }
 
   // update module multishow state now modules are loaded
