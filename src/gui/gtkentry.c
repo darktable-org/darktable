@@ -74,6 +74,7 @@ static gboolean on_match_select(GtkEntryCompletion *widget, GtkTreeModel *model,
   gtk_editable_set_position(e, p);
   g_value_unset(&value);
   g_free(addtext);
+  g_free(s);
   return TRUE;
 }
 
