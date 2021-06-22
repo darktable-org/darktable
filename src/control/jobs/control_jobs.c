@@ -1722,6 +1722,7 @@ void dt_control_move_images()
     if(res != GTK_RESPONSE_YES) goto abort;
   }
 
+  g_free(dir);
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
   return;
 
@@ -1791,6 +1792,7 @@ void dt_control_copy_images()
     if(res != GTK_RESPONSE_YES) goto abort;
   }
 
+  g_free(dir);
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
   return;
 

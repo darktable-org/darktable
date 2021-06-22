@@ -159,8 +159,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
-    char *dtfilename;
-    dtfilename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    gchar *dtfilename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     if(dt_history_load_and_apply_on_list(dtfilename, imgs) != 0)
     {
       GtkWidget *dialog
