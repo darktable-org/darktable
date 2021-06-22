@@ -1937,7 +1937,7 @@ int dt_collection_serialize(char *buf, int bufsize)
   return 0;
 }
 
-void dt_collection_deserialize(char *buf)
+void dt_collection_deserialize(const char *buf)
 {
   int num_rules = 0;
   sscanf(buf, "%d", &num_rules);
