@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-06-19 06:37-0300\n"
-"PO-Revision-Date: 2021-06-20 10:20-0300\n"
+"PO-Revision-Date: 2021-06-22 16:50-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -8754,7 +8754,7 @@ msgstr "editar esta predefinição..."
 
 #: ../src/gui/presets.c:1461 ../src/libs/lib.c:675
 msgid "delete this preset"
-msgstr "exclui esta predefinição"
+msgstr "excluir esta predefinição"
 
 #: ../src/gui/presets.c:1467 ../src/libs/lib.c:683
 msgid "store new preset.."
@@ -18642,7 +18642,7 @@ msgstr "duplicar esta forma"
 
 #: ../src/libs/masks.c:1119
 msgid "delete this shape"
-msgstr "exclui esta forma"
+msgstr "excluir esta forma"
 
 #: ../src/libs/masks.c:1125
 msgid "remove from group"
