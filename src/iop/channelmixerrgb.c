@@ -1635,11 +1635,11 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   check_if_close_to_daylight(x, y, &temperature, &test_illuminant, NULL);
   gchar *string;
   if(test_illuminant == DT_ILLUMINANT_D)
-    string = "(daylight)";
+    string = _("(daylight)");
   else if(test_illuminant == DT_ILLUMINANT_BB)
-    string = "(black body)";
+    string = _("(black body)");
   else
-    string = "(invalid)";
+    string = _("(invalid)");
 
   gchar *diagnostic;
   if(post_mix_delta_E <= 1.2f)
