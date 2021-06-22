@@ -72,7 +72,9 @@ static int value_member(lua_State *L)
     gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(file_chooser_button->widget),value);
     return 0;
   }
-  lua_pushstring(L,gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(file_chooser_button->widget)));
+  gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(file_chooser_button->widget));
+  lua_pushstring(L,filename);
+  g_free(filename);
   return 1;
 }
 
