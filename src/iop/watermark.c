@@ -1034,7 +1034,9 @@ static void fontsel_callback(GtkWidget *button, gpointer user_data)
   if(darktable.gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
-  g_strlcpy(p->font, gtk_font_chooser_get_font(GTK_FONT_CHOOSER(button)), sizeof(p->font));
+  gchar *fontname = gtk_font_chooser_get_font(GTK_FONT_CHOOSER(button));
+  g_strlcpy(p->font, fontname, sizeof(p->font));
+  g_free(fontname);
   dt_conf_set_string("plugins/darkroom/watermark/font", p->font);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
