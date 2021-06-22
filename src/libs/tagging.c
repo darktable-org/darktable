@@ -2747,6 +2747,7 @@ static void _event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint
       g_free(name);
       g_free(d->drag.tagname);
       d->drag.tagname = NULL;
+      gtk_tree_path_free(path); // release result of gtk_tree_view_get_path_at_pos above
       success = TRUE;
     }
   }
