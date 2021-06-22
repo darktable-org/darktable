@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-20 01:19-0500\n"
-"PO-Revision-Date: 2021-06-21 13:19-0500\n"
+"POT-Creation-Date: 2021-06-21 21:29-0500\n"
+"PO-Revision-Date: 2021-06-22 00:44-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -187,10 +187,11 @@ msgid "rating an image one star twice will not zero out the rating"
 msgstr "Puntuar una imagen con una estrella dos veces no anulará el puntaje"
 
 #: ../build/bin/preferences_gen.h:3671
-#, fuzzy
 msgid ""
 "defines whether rating an image one star twice will zero out star rating."
-msgstr "Puntuar una imagen con una estrella dos veces no anulará el puntaje"
+msgstr ""
+"Determina si al puntuar una imagen dos veces con una estrella se elimina el "
+"puntaje (0 estrellas)"
 
 #: ../build/bin/preferences_gen.h:3693 ../build/bin/preferences_gen.h:4389
 msgid "show scrollbars for central view"
@@ -857,13 +858,13 @@ msgid "lanczos2"
 msgstr "Lanczos2"
 
 #: ../build/bin/preferences_gen.h:5317
-#, fuzzy
 msgid ""
 "pixel interpolator used in modules for rotation, lens correction, liquify, "
 "cropping and final scaling (bilinear, bicubic, lanczos2)."
 msgstr ""
-"Indica el interpolador de pixel que será usado para la rotación, corrección "
-"de lente, licuar, recorte y escalado final (bilineal, bicúbico, lanczos2)"
+"Indica el interpolador de pixel usado en los módulos para la rotación, "
+"corrección de lente, licuar, recorte y escalado final (bilineal, bicúbico, "
+"lanczos2)"
 
 #: ../build/bin/preferences_gen.h:5339
 msgid "pixel interpolator (scaling)"
@@ -1037,16 +1038,14 @@ msgid "security"
 msgstr "seguridad"
 
 #: ../build/bin/preferences_gen.h:5740
-#, fuzzy
 msgid "ask before removing images from the library"
-msgstr "Preguntar antes de eliminar las imágenes de darktable"
+msgstr "Preguntar antes de eliminar las imágenes de la fototeca"
 
 #: ../build/bin/preferences_gen.h:5754
-#, fuzzy
 msgid "always ask the user before any image is removed from the library"
 msgstr ""
 "Solicita siempre la confirmación al usuario antes de quitar cualquier imagen "
-"de darktable"
+"de la fototeca"
 
 #: ../build/bin/preferences_gen.h:5776
 msgid "ask before deleting images from disk"
@@ -1225,11 +1224,12 @@ msgid "minimum amount of memory (in MB) for a single buffer in tiling"
 msgstr "Mínima cantidad de memoria para un único búfer de bandas (en MB)"
 
 #: ../build/bin/preferences_gen.h:6387
-#, fuzzy
 msgid ""
 "minimum amount of memory (in MB) that tiling should take for a single image "
 "buffer (needs a restart)."
-msgstr "Mínima cantidad de memoria para un único búfer de bandas (en MB)"
+msgstr ""
+"Cantidad mínima de memoria (en MB) que necesita el proceso por bandas para "
+"un único búfer de imagen (necesita reiniciar)."
 
 #: ../build/bin/preferences_gen.h:6409
 msgid "activate OpenCL support"
@@ -2132,7 +2132,7 @@ msgstr "específico"
 #: ../src/develop/blend_gui.c:124 ../src/develop/blend_gui.c:2981
 #: ../src/develop/develop.c:2223 ../src/imageio/format/avif.c:812
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:666
-#: ../src/iop/ashift.c:4704 ../src/libs/live_view.c:504
+#: ../src/iop/ashift.c:4716 ../src/libs/live_view.c:504
 msgid "off"
 msgstr "inactivo"
 
@@ -2182,7 +2182,7 @@ msgstr "preservar los colores"
 #: ../src/iop/basecurve.c:2098 ../src/iop/channelmixerrgb.c:3832
 #: ../src/iop/clipping.c:1905 ../src/iop/clipping.c:2163
 #: ../src/iop/clipping.c:2179 ../src/iop/clipping.c:2314
-#: ../src/iop/clipping.c:2341 ../src/iop/crop.c:1255 ../src/iop/crop.c:1282
+#: ../src/iop/clipping.c:2341 ../src/iop/crop.c:1265 ../src/iop/crop.c:1292
 #: ../src/iop/lens.cc:2232 ../src/iop/retouch.c:422 ../src/libs/collect.c:1815
 #: ../src/libs/colorpicker.c:633 ../src/libs/export.c:1084
 #: ../src/libs/live_view.c:420 ../src/libs/live_view.c:445
@@ -2816,9 +2816,8 @@ msgstr "parámetros generales"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:387
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:560
-#, fuzzy
 msgid "mask middle-gray fulcrum"
-msgstr "punto de referencia del gris medio"
+msgstr "máscara del punto de referencia del gris medio"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:393
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:564
@@ -2827,9 +2826,8 @@ msgstr "intensidad general"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:399
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:568
-#, fuzzy
 msgid "contrast gray fulcrum"
-msgstr "punto de referencia de contraste"
+msgstr "contraste del punto de referencia del gris"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:405
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:572
@@ -3389,7 +3387,6 @@ msgid "RGB euclidean norm"
 msgstr "RGB norma euclidiana"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:533
-#, fuzzy
 msgid "RGB euclidean norm (legacy)"
 msgstr "RGB norma euclidiana (heredado)"
 
@@ -3449,7 +3446,7 @@ msgstr "densidad"
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:144
 #: ../build/lib/darktable/plugins/introspection_watermark.c:118
 #: ../build/lib/darktable/plugins/introspection_watermark.c:235
-#: ../src/iop/ashift.c:4687
+#: ../src/iop/ashift.c:4699
 msgid "rotation"
 msgstr "rotación"
 
@@ -4293,6 +4290,10 @@ msgid ""
 "\n"
 "make sure your camera allows access and is not mounted otherwise"
 msgstr ""
+"Error %s en el puerto «%s» con la cámara «%s» \n"
+"\n"
+"Asegúrese de que la cámara permita el acceso y que no está en otro modo de "
+"montaje."
 
 #: ../src/common/camera_control.c:897
 #, c-format
@@ -4300,6 +4301,9 @@ msgid ""
 "failed to initialize `%s' on port `%s', likely causes are: locked by another "
 "application, no access to devices etc"
 msgstr ""
+"No se ha podido inicializar «%s» en el puerto «%s». Las causas más probables "
+"son: bloqueo de uso por otra aplicación, falta de permiso de acceso a los "
+"dispositivos, etc."
 
 #: ../src/common/camera_control.c:908
 #, c-format
@@ -4307,11 +4311,13 @@ msgid ""
 "`%s' on port `%s' is not interesting because it supports neither tethering "
 "nor import"
 msgstr ""
+"«%s» en el puerto «%s» no es utilizable porque no existe soporte para la "
+"captura o la importación"
 
 #: ../src/common/camera_control.c:958
 #, c-format
 msgid "camera `%s' on port `%s' disconnected while mounted"
-msgstr ""
+msgstr "La cámara «%s» en el puerto «%s» se desconectó mientras estaba montada"
 
 #: ../src/common/camera_control.c:965
 #, c-format
@@ -4319,6 +4325,8 @@ msgid ""
 "camera `%s' on port `%s' needs to be remounted\n"
 "make sure it allows access and is not mounted otherwise"
 msgstr ""
+"La cámara «%s» en el puerto «%s» necesita volver a montarse.\n"
+"Asegúrese de que permita el acceso y que no este en otro modo de montaje."
 
 #: ../src/common/collection.c:640
 msgid "too much time to update aspect ratio for the collection"
@@ -4516,9 +4524,8 @@ msgid "sRGB (web-safe)"
 msgstr "sRGB (fiable para internet)"
 
 #: ../src/common/colorspaces.c:1441 ../src/common/colorspaces.c:1698
-#, fuzzy
 msgid "Rec709 RGB"
-msgstr "RGB gamma Rec709"
+msgstr "Rec709 RGB"
 
 #: ../src/common/colorspaces.c:1451
 msgid "PQ Rec2020 RGB"
@@ -4537,7 +4544,6 @@ msgid "HLG P3 RGB"
 msgstr "RGB P3 HLG"
 
 #: ../src/common/colorspaces.c:1471 ../src/common/colorspaces.c:1700
-#, fuzzy
 msgid "linear ProPhoto RGB"
 msgstr "ProPhoto lineal RGB"
 
@@ -4715,6 +4721,35 @@ msgid ""
 "      otherwise you risk generating serious inconsistencies in your database."
 "</i>\n"
 msgstr ""
+"\n"
+"  Lo sentimos: darktable no pudo iniciarse (la base de datos está "
+"bloqueada).\n"
+"\n"
+"  Para resolver el problema:\n"
+"\n"
+"  1 - Si otra instancia de darktable está abierta, \n"
+"      pulse cancelar e intente usar esa instancia o ciérrela antes de volver "
+"a ejecutar darktable\n"
+"      (el proceso con ID <i><b>%d</b></i> creó los bloqueos de la base de "
+"datos).\n"
+"\n"
+"  2 - Si no puede encontrar una instancia en ejecución de darktable, intente "
+"reiniciar su sesión o su ordenador.\n"
+"      Esto cerrará todos los programas en ejecución y si todo va bien, "
+"cerrará las bases de datos correctamente. \n"
+"\n"
+"  3 - Si ha hecho esto o está seguro de que no hay otras instancias de "
+"darktable en ejecución, \n"
+"      probablemente signifique que la última instancia fue terminada "
+"abruptamente. \n"
+"      Pulse en el botón \"borrar los archivos de bloqueo de las bases de "
+"datos\" y así eliminar <i>data.db.lock</i> y <i>library.db.lock</i>.  \n"
+"\n"
+"\n"
+"      <i><u>Advertencia:</u> No elimine estos archivos sin antes realizar "
+"las comprobaciones anteriores, \n"
+"       de lo contrario, corre el riesgo de generar inconsistencias graves en "
+"la base de datos.</i>\n"
 
 #: ../src/common/database.c:2535
 msgid "error starting darktable"
@@ -4806,7 +4841,7 @@ msgstr ""
 
 #. the database has to be upgraded, let's ask user
 #: ../src/common/database.c:2731
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
 "\n"
@@ -4818,7 +4853,10 @@ msgid ""
 msgstr ""
 "El esquema de la base de datos tiene que ser actualizado para:\n"
 "\n"
-"<span style = \"italic\">% s </span>\n"
+"<span style='italic'>%s</span>\n"
+"\n"
+"En el caso de que sea una base de datos grande, pudiera llevar mucho "
+"tiempo .\n"
 "\n"
 "¿Desea continuar o salir ahora para hacer una copia de seguridad?\n"
 
@@ -4993,7 +5031,7 @@ msgstr "Necesita copiar el historial de una imagen antes de pegarlo en otra"
 #: ../src/common/history.c:873 ../src/common/styles.c:1108
 #: ../src/common/styles.c:1112 ../src/develop/blend_gui.c:125
 #: ../src/develop/develop.c:2223 ../src/imageio/format/avif.c:810
-#: ../src/iop/ashift.c:4705 ../src/libs/live_view.c:505
+#: ../src/iop/ashift.c:4717 ../src/libs/live_view.c:505
 msgid "on"
 msgstr "activo"
 
@@ -5513,9 +5551,8 @@ msgid "physically delete all files"
 msgstr "borrar físicamente todos los archivos del disco"
 
 #: ../src/control/jobs/control_jobs.c:843
-#, fuzzy
 msgid "only remove from the image library"
-msgstr "quitar solo de la colección"
+msgstr "Quitar solamente de la fototeca"
 
 #: ../src/control/jobs/control_jobs.c:844
 msgid "skip to next file"
@@ -5865,9 +5902,8 @@ msgid "import image"
 msgstr "importar imagen"
 
 #: ../src/develop/blend.c:290
-#, fuzzy
 msgid "detail mask blending error"
-msgstr "fusión de máscara : ninguno"
+msgstr "Error de mezcla de la máscara de detalle"
 
 #: ../src/develop/blend.c:458 ../src/develop/blend.c:868
 #, c-format
@@ -5879,9 +5915,8 @@ msgid "could not allocate buffer for blending"
 msgstr "No se pudo asignar el búfer para la mezcla"
 
 #: ../src/develop/blend.c:819
-#, fuzzy
 msgid "detail mask CL blending problem"
-msgstr "fusión de máscara : ninguno"
+msgstr "Problema de mezcla en la máscara de detalle CL"
 
 #: ../src/develop/blend_gui.c:46 ../src/libs/live_view.c:478
 msgctxt "blendmode"
@@ -6060,16 +6095,14 @@ msgid "difference (deprecated)"
 msgstr "diferencia (obsoleto)"
 
 #: ../src/develop/blend_gui.c:83
-#, fuzzy
 msgctxt "blendmode"
 msgid "subtract inverse (deprecated)"
-msgstr "inverso  (obsoleto)"
+msgstr "sustracción inversa (obsoleto)"
 
 #: ../src/develop/blend_gui.c:84
-#, fuzzy
 msgctxt "blendmode"
 msgid "divide inverse (deprecated)"
-msgstr "inverso  (obsoleto)"
+msgstr "división inversa (obsoleto)"
 
 #: ../src/develop/blend_gui.c:88
 msgctxt "blendoperation"
@@ -6104,17 +6137,17 @@ msgid "uniformly"
 msgstr "uniformemente"
 
 #: ../src/develop/blend_gui.c:103 ../src/develop/blend_gui.c:2329
-#: ../src/develop/blend_gui.c:2994 ../src/develop/imageop.c:2371
+#: ../src/develop/blend_gui.c:2994 ../src/develop/imageop.c:2368
 msgid "drawn mask"
 msgstr "trazar máscara"
 
 #: ../src/develop/blend_gui.c:104 ../src/develop/blend_gui.c:2141
-#: ../src/develop/blend_gui.c:3001 ../src/develop/imageop.c:2373
+#: ../src/develop/blend_gui.c:3001 ../src/develop/imageop.c:2370
 msgid "parametric mask"
 msgstr "máscara paramétrica"
 
 #: ../src/develop/blend_gui.c:105 ../src/develop/blend_gui.c:2510
-#: ../src/develop/blend_gui.c:3019 ../src/develop/imageop.c:2375
+#: ../src/develop/blend_gui.c:3019 ../src/develop/imageop.c:2372
 msgid "raster mask"
 msgstr "máscara de matriz de pixeles"
 
@@ -6139,32 +6172,28 @@ msgid "inclusive & inverted"
 msgstr "inclusivo e invertido"
 
 #: ../src/develop/blend_gui.c:117
-#, fuzzy
 msgid "output before blur"
-msgstr "radio de desenfoque de salida"
+msgstr "salida antes del desenfoque"
 
 #: ../src/develop/blend_gui.c:118
-#, fuzzy
 msgid "input before blur"
-msgstr "azul (entrada)"
+msgstr "entrada antes del desenfoque"
 
 #: ../src/develop/blend_gui.c:119
-#, fuzzy
 msgid "output after blur"
-msgstr "saturación de salida"
+msgstr "salida después del desenfoque"
 
 #: ../src/develop/blend_gui.c:120
-#, fuzzy
 msgid "input after blur"
-msgstr "azul (entrada)"
+msgstr "entrada después del desenfoque"
 
 #: ../src/develop/blend_gui.c:854 ../src/develop/blend_gui.c:2198
-#: ../src/develop/imageop.c:3115
+#: ../src/develop/imageop.c:3112
 msgid "input"
 msgstr "entrada"
 
 #: ../src/develop/blend_gui.c:854 ../src/develop/blend_gui.c:2198
-#: ../src/develop/imageop.c:3117
+#: ../src/develop/imageop.c:3114
 msgid "output"
 msgstr "salida"
 
@@ -6546,9 +6575,8 @@ msgid "choose blending mode"
 msgstr "Elegir el modo de fusión"
 
 #: ../src/develop/blend_gui.c:3053
-#, fuzzy
 msgid "toggle blend order"
-msgstr "activar paneles laterales"
+msgstr "alternar el orden de fusión"
 
 #: ../src/develop/blend_gui.c:3056
 msgid ""
@@ -6556,6 +6584,9 @@ msgid ""
 "by default the output will be blended on top of the input,\n"
 "order can be reversed by clicking on the icon (input on top of output)"
 msgstr ""
+"Cambia el orden de mezcla entre la entrada y la salida del módulo,\n"
+"Por defecto, la salida se mezclará sobre la de entrada.\n"
+"El orden puede invertirse pulsando en el ícono (la entrada sobre la salida)."
 
 #: ../src/develop/blend_gui.c:3062 ../src/libs/history.c:891
 msgid "blend fulcrum"
@@ -6595,9 +6626,8 @@ msgid "apply mask in normal or inverted mode"
 msgstr "Añadir la máscara en modo normal o invertido"
 
 #: ../src/develop/blend_gui.c:3088
-#, fuzzy
 msgid "details threshold"
-msgstr "umbral del borde"
+msgstr "umbral de detalles"
 
 #: ../src/develop/blend_gui.c:3090
 msgid ""
@@ -6605,17 +6635,22 @@ msgid ""
 "positive values selects areas with strong details, \n"
 "negative values select flat areas"
 msgstr ""
+"Ajusta el umbral de la máscara de detalles (utilizando los datos la imagen "
+"en bruto), \n"
+"Los valores positivos seleccionan áreas con fuertes detalles.\n"
+"Los valores negativos seleccionan áreas planas."
 
 #: ../src/develop/blend_gui.c:3094 ../src/libs/history.c:895
 msgid "feathering guide"
 msgstr "guía de difuminado"
 
 #: ../src/develop/blend_gui.c:3095
-#, fuzzy
 msgid ""
 "choose to guide mask by input or output image and\n"
 "choose to apply feathering before or after mask blur"
-msgstr "Elegir la máscara guía para la imágen de entrada o salida"
+msgstr ""
+"Elegir la máscara guía para la imagen de entrada o salida y\n"
+"optar por aplicar el difuminado antes o después del desenfoque de máscara."
 
 #: ../src/develop/blend_gui.c:3101 ../src/libs/history.c:894
 msgid "feathering radius"
@@ -6685,14 +6720,14 @@ msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 "Desactivar temporalmente la máscara de fusión. Solo para el módulo enfocado"
 
-#: ../src/develop/develop.c:1507 ../src/gui/presets.c:967
+#: ../src/develop/develop.c:1507 ../src/gui/presets.c:966
 msgid "display-referred default"
 msgstr "basado en la pantalla (predefinido)"
 
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
 #. we need an initial exposure boost. This might be too much in some cases but…
 #. (the preset name is used in develop.c)
-#: ../src/develop/develop.c:1509 ../src/gui/presets.c:969
+#: ../src/develop/develop.c:1509 ../src/gui/presets.c:968
 #: ../src/iop/exposure.c:272 ../src/iop/exposure.c:281
 msgid "scene-referred default"
 msgstr "basado en la escena (predefinido)"
@@ -6729,12 +6764,12 @@ msgstr "borrar"
 msgid "rename"
 msgstr "renombrar"
 
-#: ../src/develop/imageop.c:1040 ../src/develop/imageop.c:2470
+#: ../src/develop/imageop.c:1040 ../src/develop/imageop.c:2467
 #, c-format
 msgid "%s is switched on"
 msgstr "%s está activado"
 
-#: ../src/develop/imageop.c:1040 ../src/develop/imageop.c:2470
+#: ../src/develop/imageop.c:1040 ../src/develop/imageop.c:2467
 #, c-format
 msgid "%s is switched off"
 msgstr "%s está desactivado"
@@ -6753,23 +6788,23 @@ msgctxt "accel"
 msgid "fusion"
 msgstr "fusión"
 
-#: ../src/develop/imageop.c:2365
+#: ../src/develop/imageop.c:2362
 msgid "unknown mask"
 msgstr "máscara desconocida"
 
-#: ../src/develop/imageop.c:2369
+#: ../src/develop/imageop.c:2366
 msgid "drawn + parametric mask"
 msgstr "trazo + máscara paramétrica"
 
-#: ../src/develop/imageop.c:2378
+#: ../src/develop/imageop.c:2375
 msgid "this module has a"
 msgstr "Este módulo contiene:"
 
-#: ../src/develop/imageop.c:2382
+#: ../src/develop/imageop.c:2379
 msgid "click to display (module must be activated first)"
 msgstr "Pulse para mostrar (el módulo tiene que estar activo)"
 
-#: ../src/develop/imageop.c:2439
+#: ../src/develop/imageop.c:2436
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -6777,7 +6812,7 @@ msgstr ""
 "Gestión de acciones para el módulo.\n"
 "Pulse el botón secundario para crear un módulo nuevo."
 
-#: ../src/develop/imageop.c:2450
+#: ../src/develop/imageop.c:2447
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -6786,12 +6821,12 @@ msgstr ""
 "Ctrl+Clic para volver a aplicar cualquier preajuste automático"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2458 ../src/gui/preferences.c:813
+#: ../src/develop/imageop.c:2455 ../src/gui/preferences.c:813
 #: ../src/libs/lib.c:1205
 msgid "presets"
 msgstr "preajustes"
 
-#: ../src/develop/imageop.c:2460
+#: ../src/develop/imageop.c:2457
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -6800,23 +6835,23 @@ msgstr ""
 "Pulse el botón secundario sobre el preajuste para establecerlo en un módulo "
 "nuevo"
 
-#: ../src/develop/imageop.c:2741 ../src/develop/imageop.c:2763
+#: ../src/develop/imageop.c:2738 ../src/develop/imageop.c:2760
 msgid "ERROR"
 msgstr "ERROR"
 
-#: ../src/develop/imageop.c:3114
+#: ../src/develop/imageop.c:3111
 msgid "purpose"
 msgstr "finalidad\t"
 
-#: ../src/develop/imageop.c:3116
+#: ../src/develop/imageop.c:3113
 msgid "process"
 msgstr "proceso"
 
-#: ../src/develop/imageop.c:3186
+#: ../src/develop/imageop.c:3183
 msgid "unsupported input"
 msgstr "Entrada incompatible"
 
-#: ../src/develop/imageop.c:3187
+#: ../src/develop/imageop.c:3184
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -8723,40 +8758,40 @@ msgstr "¿Realmente desea borrar el ajuste predefinido «%s»?"
 msgid "update preset?"
 msgstr "Actualizar preajuste"
 
-#: ../src/gui/presets.c:1101 ../src/libs/modulegroups.c:3792
+#: ../src/gui/presets.c:1100 ../src/libs/modulegroups.c:3792
 #: ../src/libs/modulegroups.c:3801
 msgid "manage module layouts"
 msgstr "Gestionar la disposición de los módulos"
 
-#: ../src/gui/presets.c:1109
+#: ../src/gui/presets.c:1108
 msgid "manage quick presets"
 msgstr "Gestionar los preajustes rápidos"
 
-#: ../src/gui/presets.c:1280
+#: ../src/gui/presets.c:1279
 msgid "manage quick presets list..."
 msgstr "gestionar los preajustes rápidos..."
 
-#: ../src/gui/presets.c:1413
+#: ../src/gui/presets.c:1412
 msgid "(default)"
 msgstr "(por defecto)"
 
-#: ../src/gui/presets.c:1432
+#: ../src/gui/presets.c:1431
 msgid "disabled: wrong module version"
 msgstr "desactivado: versión errónea del módulo"
 
-#: ../src/gui/presets.c:1457 ../src/libs/lib.c:671
+#: ../src/gui/presets.c:1456 ../src/libs/lib.c:671
 msgid "edit this preset.."
 msgstr "editar este preajuste.."
 
-#: ../src/gui/presets.c:1461 ../src/libs/lib.c:675
+#: ../src/gui/presets.c:1460 ../src/libs/lib.c:675
 msgid "delete this preset"
 msgstr "borrar este preajuste"
 
-#: ../src/gui/presets.c:1467 ../src/libs/lib.c:683
+#: ../src/gui/presets.c:1466 ../src/libs/lib.c:683
 msgid "store new preset.."
 msgstr "almacenar nuevo preajuste.."
 
-#: ../src/gui/presets.c:1473 ../src/libs/lib.c:695
+#: ../src/gui/presets.c:1472 ../src/libs/lib.c:695
 msgid "update preset"
 msgstr "actualizar preajuste"
 
@@ -9591,40 +9626,40 @@ msgstr "horizontal"
 msgid "vertical"
 msgstr "vertical"
 
-#: ../src/iop/ashift.c:4703 ../src/iop/clipping.c:2307 ../src/iop/crop.c:1248
+#: ../src/iop/ashift.c:4715 ../src/iop/clipping.c:2307 ../src/iop/crop.c:1258
 #: ../src/libs/live_view.c:413
 msgid "guides"
 msgstr "guías"
 
-#: ../src/iop/ashift.c:4743
+#: ../src/iop/ashift.c:4755
 msgid "automatic fit"
 msgstr "ajuste automático"
 
-#: ../src/iop/ashift.c:4757
+#: ../src/iop/ashift.c:4769
 msgid "get structure"
 msgstr "obtener estructura"
 
-#: ../src/iop/ashift.c:4773
+#: ../src/iop/ashift.c:4785
 msgid "rotate image"
 msgstr "Rotar imagen"
 
-#: ../src/iop/ashift.c:4774 ../src/iop/ashift.c:4775
+#: ../src/iop/ashift.c:4786 ../src/iop/ashift.c:4787
 msgid "apply lens shift correction in one direction"
 msgstr "Efectúa la corrección del desplazamiento de lente en una dirección"
 
-#: ../src/iop/ashift.c:4776
+#: ../src/iop/ashift.c:4788
 msgid "shear the image along one diagonal"
 msgstr "Corta la imagen de acuerdo a la diagonal"
 
-#: ../src/iop/ashift.c:4777
+#: ../src/iop/ashift.c:4789
 msgid "display guide lines overlay"
 msgstr "Mostrar lineas guías superpuestas"
 
-#: ../src/iop/ashift.c:4778 ../src/iop/clipping.c:2188
+#: ../src/iop/ashift.c:4790 ../src/iop/clipping.c:2188
 msgid "automatically crop to avoid black edges"
 msgstr "Cortar automáticamente para evitar bordes negros"
 
-#: ../src/iop/ashift.c:4779
+#: ../src/iop/ashift.c:4791
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -9632,13 +9667,13 @@ msgstr ""
 "Modelo del lente de la corrección de perspectiva: genérico o en función de "
 "la distancia focal"
 
-#: ../src/iop/ashift.c:4781
+#: ../src/iop/ashift.c:4793
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 "Distancia focal del lente. Se fija el valor por defecto desde los datos Exif "
 "si están disponibles."
 
-#: ../src/iop/ashift.c:4783
+#: ../src/iop/ashift.c:4795
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
@@ -9647,7 +9682,7 @@ msgstr ""
 "desde los datos Exif si están disponibles. Normalmente los ajustes manuales "
 "son requeridos."
 
-#: ../src/iop/ashift.c:4786
+#: ../src/iop/ashift.c:4798
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -9655,13 +9690,13 @@ msgstr ""
 "Nivel de corrección en función de la lente. Se fija el valor máximo como "
 "corrrespondencia total de la lente. Se fija en cero para los genéricos."
 
-#: ../src/iop/ashift.c:4788
+#: ../src/iop/ashift.c:4800
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "Ajusta la relación de aspecto de la imagen mediante cambiar la escala "
 "horizontal y vertical"
 
-#: ../src/iop/ashift.c:4789
+#: ../src/iop/ashift.c:4801
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -9671,7 +9706,7 @@ msgstr ""
 "Ctrl+Clic para corregir solo la rotación\n"
 "Mayús+Clic para corregir el desplazamiento del lente"
 
-#: ../src/iop/ashift.c:4792
+#: ../src/iop/ashift.c:4804
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -9681,7 +9716,7 @@ msgstr ""
 "Ctrl+Clic para solo corregir la rotación\n"
 "Mayús+Clic para solo corregir el desplazamiento del lente"
 
-#: ../src/iop/ashift.c:4795
+#: ../src/iop/ashift.c:4807
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -9695,7 +9730,7 @@ msgstr ""
 "Mayús+Clic para solo corregir el desplazamiento del lente\n"
 "Ctrl+Mayús+Clic para ajustar la rotación y el desplazamiento del lente"
 
-#: ../src/iop/ashift.c:4801
+#: ../src/iop/ashift.c:4813
 msgid ""
 "analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
@@ -9707,30 +9742,30 @@ msgstr ""
 "Mayús+Clic para mejoras adicionales en el detalle\n"
 "Ctrl+Mayús+Clic para una combinación de ambos métodos"
 
-#: ../src/iop/ashift.c:4805
+#: ../src/iop/ashift.c:4817
 msgid "remove line structure information"
 msgstr "Eliminar la información de la estructura lineal"
 
-#: ../src/iop/ashift.c:4806
+#: ../src/iop/ashift.c:4818
 msgid "toggle visibility of structure lines"
 msgstr "Cambiar la visibilidad de las líneas de la estructura"
 
-#: ../src/iop/ashift.c:4838
+#: ../src/iop/ashift.c:4850
 #, c-format
 msgid "[%s on segment] select segment"
 msgstr "[%s en el segmento] seleccionar segmento"
 
-#: ../src/iop/ashift.c:4840
+#: ../src/iop/ashift.c:4852
 #, c-format
 msgid "[%s on segment] unselect segment"
 msgstr "[%s en el segmento] anular selección de segmento"
 
-#: ../src/iop/ashift.c:4842
+#: ../src/iop/ashift.c:4854
 #, c-format
 msgid "[%s] select all segments from zone"
 msgstr "[%s] seleccionar todos los segmentos de la zona"
 
-#: ../src/iop/ashift.c:4844
+#: ../src/iop/ashift.c:4856
 #, c-format
 msgid "[%s] unselect all segments from zone"
 msgstr "[%s] anular la selección de todos los segmentos de la zona"
@@ -10101,7 +10136,6 @@ msgid "contrast adjustment"
 msgstr "Ajusta el contraste"
 
 #: ../src/iop/basicadj.c:618
-#, fuzzy
 msgid "middle gray adjustment"
 msgstr "Ajusta el gris medio"
 
@@ -10312,7 +10346,7 @@ msgstr "2:1"
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:973 ../src/iop/clipping.c:2202 ../src/iop/crop.c:1144
+#: ../src/iop/borders.c:973 ../src/iop/clipping.c:2202 ../src/iop/crop.c:1154
 msgid "golden cut"
 msgstr "proporción áurea"
 
@@ -10332,7 +10366,7 @@ msgstr "DIN"
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:978 ../src/iop/clipping.c:2192 ../src/iop/crop.c:1134
+#: ../src/iop/borders.c:978 ../src/iop/clipping.c:2192 ../src/iop/crop.c:1144
 #: ../src/libs/collect.c:261
 msgid "square"
 msgstr "cuadrado"
@@ -10369,7 +10403,7 @@ msgstr "2/3"
 msgid "size of the border in percent of the full image"
 msgstr "tamaño del borde en porcentaje de la imagen completa"
 
-#: ../src/iop/borders.c:1041 ../src/iop/clipping.c:2289 ../src/iop/crop.c:1230
+#: ../src/iop/borders.c:1041 ../src/iop/clipping.c:2289 ../src/iop/crop.c:1240
 msgid "aspect"
 msgstr "aspecto"
 
@@ -10444,9 +10478,8 @@ msgstr "seleccionar color del marco de la imagen"
 
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/cacorrect.c:82
-#, fuzzy
 msgid "raw chromatic aberrations"
-msgstr "aberración cromática"
+msgstr "aberración cromática raw"
 
 #: ../src/iop/cacorrect.c:87
 msgid "correct chromatic aberrations for Bayer sensors"
@@ -10539,9 +10572,8 @@ msgid "chromatic aberrations"
 msgstr "aberración cromática"
 
 #: ../src/iop/cacorrectrgb.c:166
-#, fuzzy
 msgid "correct chromatic aberrations"
-msgstr "aberración cromática"
+msgstr "Corrige las aberraciones cromáticas"
 
 #: ../src/iop/cacorrectrgb.c:748
 msgid ""
@@ -10552,11 +10584,16 @@ msgid ""
 "try changing guide channel if you\n"
 "have artifacts."
 msgstr ""
+"Canal utilizado como referencia para\n"
+"corregir a los otros canales.\n"
+"Utilice el canal más nítido si los demás\n"
+"canales están borrosos.\n"
+"intente cambiar el canal guía si\n"
+"muestra anomalías."
 
 #: ../src/iop/cacorrectrgb.c:755
-#, fuzzy
 msgid "increase for stronger correction"
-msgstr "corrección de color"
+msgstr "Incrementar para una corrección más intensa"
 
 #: ../src/iop/cacorrectrgb.c:757
 msgid ""
@@ -10565,6 +10602,10 @@ msgid ""
 "high values can lead to overshooting\n"
 "and edge bleeding."
 msgstr ""
+"Equilibra entre suavizar los colores\\n\n"
+"y la preservación de los mismos.\n"
+"Los valores altos pueden llevar a un exceso de color\n"
+"y a la aparición de halos."
 
 #: ../src/iop/cacorrectrgb.c:762
 msgid "advanced parameters"
@@ -10598,6 +10639,13 @@ msgid ""
 "colors too much on other\n"
 "images."
 msgstr ""
+"Ejecuta un enfoque iterativo\n"
+"con varios radios.\n"
+"Mejora el resultado en imágenes\n"
+"con aberraciones cromáticas muy marcadas\n"
+"aberraciones cromáticas, pero puede suavizar\n"
+"demasiado los colores en otras\n"
+"imágenes."
 
 #: ../src/iop/censorize.c:77
 msgid "censorize"
@@ -10924,9 +10972,8 @@ msgid "auto-detection of white balance completed"
 msgstr "Detección del balance de blancos completa"
 
 #: ../src/iop/channelmixerrgb.c:1947
-#, fuzzy
 msgid "channelmixerrgb works only on RGB input"
-msgstr "Película sólo trabaja con una entrada RGB"
+msgstr "mezclador de canal rgb sólo trabaja con una entrada RGB"
 
 #: ../src/iop/channelmixerrgb.c:3251
 #, c-format
@@ -11004,7 +11051,6 @@ msgid "auto-detection of white balance started…"
 msgstr "Se ha iniciado la autodetección del balance de blancos..."
 
 #: ../src/iop/channelmixerrgb.c:3572
-#, fuzzy
 msgid ""
 "color calibration: the sum of the gray channel parameters is zero, "
 "normalization will be disabled."
@@ -11242,7 +11288,7 @@ msgid "change the framing and correct the perspective"
 msgstr "Cambia el encuadre y corrige la perspectiva"
 
 #: ../src/iop/clipping.c:1399 ../src/iop/clipping.c:2191 ../src/iop/crop.c:450
-#: ../src/iop/crop.c:1133
+#: ../src/iop/crop.c:1143
 msgid "original image"
 msgstr "imagen original"
 
@@ -11277,7 +11323,7 @@ msgid "flip"
 msgstr "voltear"
 
 #: ../src/iop/clipping.c:2166 ../src/iop/clipping.c:2344
-#: ../src/iop/colorbalance.c:1890 ../src/iop/crop.c:1285
+#: ../src/iop/colorbalance.c:1890 ../src/iop/crop.c:1295
 #: ../src/libs/live_view.c:448
 msgid "both"
 msgstr "ambos"
@@ -11304,83 +11350,83 @@ msgstr "perspectiva"
 msgid "set perspective correction for your image"
 msgstr "Seleccionar corrección de perspectiva para su imagen"
 
-#: ../src/iop/clipping.c:2190 ../src/iop/crop.c:1132
+#: ../src/iop/clipping.c:2190 ../src/iop/crop.c:1142
 msgid "freehand"
 msgstr "libre"
 
-#: ../src/iop/clipping.c:2193 ../src/iop/crop.c:1135
+#: ../src/iop/clipping.c:2193 ../src/iop/crop.c:1145
 msgid "10:8 in print"
 msgstr "10:8 en impresión"
 
-#: ../src/iop/clipping.c:2194 ../src/iop/crop.c:1136
+#: ../src/iop/clipping.c:2194 ../src/iop/crop.c:1146
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:2195 ../src/iop/crop.c:1137
+#: ../src/iop/clipping.c:2195 ../src/iop/crop.c:1147
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:2196 ../src/iop/crop.c:1138
+#: ../src/iop/clipping.c:2196 ../src/iop/crop.c:1148
 msgid "8.5x11, letter"
 msgstr "8.5x11, carta"
 
-#: ../src/iop/clipping.c:2197 ../src/iop/crop.c:1139
+#: ../src/iop/clipping.c:2197 ../src/iop/crop.c:1149
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:2198 ../src/iop/crop.c:1140
+#: ../src/iop/clipping.c:2198 ../src/iop/crop.c:1150
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:2199 ../src/iop/crop.c:1141
+#: ../src/iop/clipping.c:2199 ../src/iop/crop.c:1151
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:2200 ../src/iop/crop.c:1142
+#: ../src/iop/clipping.c:2200 ../src/iop/crop.c:1152
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:2201 ../src/iop/crop.c:1143
+#: ../src/iop/clipping.c:2201 ../src/iop/crop.c:1153
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:2203 ../src/iop/crop.c:1145
+#: ../src/iop/clipping.c:2203 ../src/iop/crop.c:1155
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:2204 ../src/iop/crop.c:1146
+#: ../src/iop/clipping.c:2204 ../src/iop/crop.c:1156
 msgid "widescreen"
 msgstr "pantalla ancha"
 
-#: ../src/iop/clipping.c:2205 ../src/iop/crop.c:1147
+#: ../src/iop/clipping.c:2205 ../src/iop/crop.c:1157
 msgid "2:1, univisium"
 msgstr "2:1, univisium"
 
-#: ../src/iop/clipping.c:2206 ../src/iop/crop.c:1148
+#: ../src/iop/clipping.c:2206 ../src/iop/crop.c:1158
 msgid "cinemascope"
 msgstr "cinemascopio"
 
-#: ../src/iop/clipping.c:2207 ../src/iop/crop.c:1149
+#: ../src/iop/clipping.c:2207 ../src/iop/crop.c:1159
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:2208 ../src/iop/crop.c:1150
+#: ../src/iop/clipping.c:2208 ../src/iop/crop.c:1160
 msgid "anamorphic"
 msgstr "anamórfico"
 
-#: ../src/iop/clipping.c:2209 ../src/iop/crop.c:1151
+#: ../src/iop/clipping.c:2209 ../src/iop/crop.c:1161
 msgid "3:1, panorama"
 msgstr "3:1, panorámica"
 
-#: ../src/iop/clipping.c:2241 ../src/iop/clipping.c:2253 ../src/iop/crop.c:1183
-#: ../src/iop/crop.c:1195
+#: ../src/iop/clipping.c:2241 ../src/iop/clipping.c:2253 ../src/iop/crop.c:1193
+#: ../src/iop/crop.c:1205
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr ""
 "Formato de proporción de aspecto no válido para «%s». Debería ser \"número:"
 "número\""
 
-#: ../src/iop/clipping.c:2300 ../src/iop/crop.c:1241
+#: ../src/iop/clipping.c:2300 ../src/iop/crop.c:1251
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square"
@@ -11388,61 +11434,61 @@ msgstr ""
 "Fija la relación de aspecto\n"
 "La lista está ordenada desde la más cuadrada hasta la más rectangular"
 
-#: ../src/iop/clipping.c:2336 ../src/iop/crop.c:1277
+#: ../src/iop/clipping.c:2336 ../src/iop/crop.c:1287
 #: ../src/libs/live_view.c:440
 msgid "display guide lines to help compose your photograph"
 msgstr "Mostrar lineas guía para ayudar a componer su fotografía"
 
-#: ../src/iop/clipping.c:2340 ../src/iop/clipping.c:2345 ../src/iop/crop.c:1281
-#: ../src/iop/crop.c:1286 ../src/libs/live_view.c:449
+#: ../src/iop/clipping.c:2340 ../src/iop/clipping.c:2345 ../src/iop/crop.c:1291
+#: ../src/iop/crop.c:1296 ../src/libs/live_view.c:449
 msgid "flip guides"
 msgstr "Invertir guías"
 
-#: ../src/iop/clipping.c:2342 ../src/iop/crop.c:1283
+#: ../src/iop/clipping.c:2342 ../src/iop/crop.c:1293
 #: ../src/libs/live_view.c:446
 msgid "horizontally"
 msgstr "horizontalmente"
 
-#: ../src/iop/clipping.c:2343 ../src/iop/crop.c:1284
+#: ../src/iop/clipping.c:2343 ../src/iop/crop.c:1294
 #: ../src/libs/live_view.c:447
 msgid "vertically"
 msgstr "verticalmente"
 
-#: ../src/iop/clipping.c:2352 ../src/iop/crop.c:1296
+#: ../src/iop/clipping.c:2352 ../src/iop/crop.c:1306
 msgid "margins"
 msgstr "márgenes"
 
-#: ../src/iop/clipping.c:2358 ../src/iop/crop.c:1324
+#: ../src/iop/clipping.c:2358 ../src/iop/crop.c:1334
 msgid "the left margin cannot overlap with the right margin"
 msgstr "El margen izquierdo no puede superponerse con el margen derecho"
 
-#: ../src/iop/clipping.c:2365 ../src/iop/crop.c:1331
+#: ../src/iop/clipping.c:2365 ../src/iop/crop.c:1341
 msgid "the right margin cannot overlap with the left margin"
 msgstr "El margen derecho no puede superponerse con el margen izquierdo"
 
-#: ../src/iop/clipping.c:2371 ../src/iop/crop.c:1337
+#: ../src/iop/clipping.c:2371 ../src/iop/crop.c:1347
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr "El margen superior no puede superponerse con el margen inferior"
 
-#: ../src/iop/clipping.c:2378 ../src/iop/crop.c:1344
+#: ../src/iop/clipping.c:2378 ../src/iop/crop.c:1354
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr "El margen inferior no puede superponerse con el margen superior"
 
-#: ../src/iop/clipping.c:3478 ../src/iop/crop.c:1788
+#: ../src/iop/clipping.c:3478 ../src/iop/crop.c:1801
 msgid "commit"
 msgstr "aceptar"
 
-#: ../src/iop/clipping.c:3489 ../src/iop/crop.c:1799
+#: ../src/iop/clipping.c:3489 ../src/iop/crop.c:1812
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s en los bordes] recortar"
 
-#: ../src/iop/clipping.c:3491 ../src/iop/crop.c:1801
+#: ../src/iop/clipping.c:3491 ../src/iop/crop.c:1814
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s en los bordes] recortar manteniendo la proporción"
 
-#: ../src/iop/clipping.c:3492 ../src/iop/crop.c:1802
+#: ../src/iop/clipping.c:3492 ../src/iop/crop.c:1815
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] definir o rotar horizonte"
@@ -11683,12 +11729,11 @@ msgid "color balance rgb"
 msgstr "balance de color rgb"
 
 #: ../src/iop/colorbalancergb.c:165
-#, fuzzy
 msgid ""
 "offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance"
 msgstr ""
 "translación potencia pendiente | cdl | calibración de color | contraste | "
-"luces en crominancia | tono"
+"luces en crominancia | tono | intensidad"
 
 #: ../src/iop/colorbalancergb.c:368
 msgid "add basic colorfulness"
@@ -11714,14 +11759,12 @@ msgid "rotate all hues by an angle, at the same luminance"
 msgstr "Rotar las tonalidades mediante un ángulo, con la misma luminancia"
 
 #: ../src/iop/colorbalancergb.c:1633
-#, fuzzy
 msgid "increase colorfulness mostly on low-chroma colors"
-msgstr ""
-"Aumentar la coloración con la misma luminancia especialmente en las sombras"
+msgstr "Aumentar la coloración especialmente en los colores con croma bajo"
 
 #: ../src/iop/colorbalancergb.c:1640
 msgid "increase the contrast at constant chromaticity"
-msgstr ""
+msgstr "Aumenta el contraste con una cromaticidad constante"
 
 #: ../src/iop/colorbalancergb.c:1642
 msgid "linear chroma grading"
@@ -11871,7 +11914,6 @@ msgid "weight of the shadows over the whole tonal range"
 msgstr "Ponderación de las sombras en toda la gama tonal"
 
 #: ../src/iop/colorbalancergb.c:1857
-#, fuzzy
 msgid "position of the middle-gray reference for masking"
 msgstr "Posición de la referencia al gris medio para el enmascaramiento"
 
@@ -11886,10 +11928,9 @@ msgstr ""
 "potencia"
 
 #: ../src/iop/colorbalancergb.c:1889
-#, fuzzy
 msgid "peak gray luminance value used to normalize the power function"
 msgstr ""
-"Valor máximo de la luminancia blanca utilizado para normalizar la función de "
+"Valor máximo de la luminancia gris utilizado para normalizar la función de "
 "potencia"
 
 #: ../src/iop/colorbalancergb.c:1891
@@ -12519,11 +12560,10 @@ msgid "reframe|distortion"
 msgstr "reencuadre|distorsión"
 
 #: ../src/iop/crop.c:142
-#, fuzzy
 msgid "change the framing"
-msgstr "cambiar a: y"
+msgstr "Cambiar el encuadre"
 
-#: ../src/iop/crop.c:1126
+#: ../src/iop/crop.c:1136
 msgid "crop settings"
 msgstr "opciones de recorte"
 
@@ -12814,7 +12854,6 @@ msgstr ""
 "reducir el ruido de croma y luma por separado."
 
 #: ../src/iop/denoiseprofile.c:3682
-#, fuzzy
 msgid ""
 "radius of the patches to match.\n"
 "increase for more sharpness on strong edges, and better denoising of smooth "
@@ -12822,11 +12861,11 @@ msgid ""
 "if details are oversmoothed, reduce this value or increase the central pixel "
 "weight slider."
 msgstr ""
-"Radio de los parches a igualar.\n"
-"Aumentar para obtener más nitidez en bordes fuertes, y mejor eliminación de "
-"ruido en áreas lisas.\n"
+"Radio de los parches para que coincidan.\n"
+"Aumentar para obtener más nitidez en los bordes fuertes y una mejor "
+"eliminación de ruido en áreas lisas.\n"
 "Si los detalles están demasiado suavizados, reduzca este valor o aumente el "
-"control deslizante de detalles."
+"peso del pixel central."
 
 #: ../src/iop/denoiseprofile.c:3685
 msgid ""
@@ -13280,7 +13319,6 @@ msgstr ""
 "excepto si se desea lograr un aspecto difuminado"
 
 #: ../src/iop/filmic.c:1755 ../src/iop/filmicrgb.c:3907
-#, fuzzy
 msgid ""
 "middle gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -16851,6 +16889,11 @@ msgid ""
 "shift+click to include current + sub-folders\n"
 "double-click to include only the current folder"
 msgstr ""
+"Use '%' como comodín.\n"
+"Use Ctrl+Clic para incluir solamente las subcarpetas.\n"
+"Use Mayús+Clic para incluir la carpeta actual + las subcarpetas\n"
+".\n"
+"Doble Clic para incluir solamente la carpeta actual."
 
 #: ../src/libs/collect.c:2084
 #, no-c-format
@@ -17904,9 +17947,8 @@ msgid "mask mode"
 msgstr "modo de máscara"
 
 #: ../src/libs/history.c:890
-#, fuzzy
 msgid "blend operation"
-msgstr "Opciones de fusión"
+msgstr "operación de fusión"
 
 #: ../src/libs/history.c:899
 msgid "raster mask instance"
@@ -18004,10 +18046,8 @@ msgstr ""
 "seleccionadas"
 
 #: ../src/libs/image.c:496
-#, fuzzy
 msgid "add a duplicate to the image library, including its history stack"
-msgstr ""
-"Añadir un duplicado a la colección, incluyendo el historial de acciones"
+msgstr "Añadir un duplicado a la fototeca, incluyendo el historial de acciones"
 
 #: ../src/libs/image.c:502
 msgid "rotate selected images 90 degrees CCW"
@@ -18232,10 +18272,9 @@ msgid "tethered shoot"
 msgstr "captura"
 
 #: ../src/libs/import.c:201
-#, fuzzy
 msgctxt "accel"
 msgid "add to library"
-msgstr "añadir a la libreria"
+msgstr "añadir a la fototeca"
 
 #: ../src/libs/import.c:202
 msgctxt "accel"
@@ -18270,19 +18309,18 @@ msgid "unmount camera"
 msgstr "desmontar cámara"
 
 #: ../src/libs/import.c:348
-#, fuzzy
 msgid ""
 "camera is locked by another application\n"
 "make sure it is no longer mounted\n"
 "or quit the locking application"
 msgstr ""
-"La nueva cámara «%s» encontrada se encuentra bloqueada por otra aplicación.\n"
-"Asegúrese de que no esté como dispositivo montado."
+"La cámara se encuentra bloqueada por otra aplicación.\n"
+"Asegúrese de que no se encuentre montada o\n"
+"salga de la aplicación de bloqueo."
 
 #: ../src/libs/import.c:351
-#, fuzzy
 msgid "tethering and importing is disabled for this camera"
-msgstr "Comenzando a importar imágenes desde la cámara"
+msgstr "La captura y la importación están inhabilitadas en esta cámara"
 
 #: ../src/libs/import.c:353
 msgid "mount camera"
@@ -18310,6 +18348,8 @@ msgstr "lugares"
 #: ../src/libs/import.c:1198
 msgid "restore all default places you have removed by right-click"
 msgstr ""
+"Restaura todos los lugares predeterminados que se hayan quitado pulsando el "
+"botón secundario"
 
 #: ../src/libs/import.c:1203
 msgid ""
@@ -18317,15 +18357,17 @@ msgid ""
 "\n"
 "right-click on a place to remove it"
 msgstr ""
+"Añade un lugar personalizable.\n"
+"\n"
+"Use el botón secundario para quitarlo."
 
 #: ../src/libs/import.c:1210
 msgid "you can add custom places using the plus icon"
-msgstr ""
+msgstr "Se pueden añadir lugares mediante el ícono del signo +"
 
 #: ../src/libs/import.c:1235
-#, fuzzy
 msgid "select a folder to see the content"
-msgstr "Seleccionar una carpeta para importar"
+msgstr "Seleccione una carpeta para ver el contenido"
 
 #: ../src/libs/import.c:1238
 msgid "folders"
@@ -18367,9 +18409,8 @@ msgid "naming rules"
 msgstr "reglas de nombrado"
 
 #: ../src/libs/import.c:1639
-#, fuzzy
 msgid "add to library"
-msgstr "libreria"
+msgstr "añadir a la fototeca"
 
 #: ../src/libs/import.c:1640
 msgid "copy & import"
@@ -18389,12 +18430,11 @@ msgstr "Espere mientras se carga la lista de imágenes desde la cámara..."
 
 #: ../src/libs/import.c:1947
 msgid "add to library..."
-msgstr ""
+msgstr "añadir a la fototeca"
 
 #: ../src/libs/import.c:1948
-#, fuzzy
 msgid "add existing images to the library"
-msgstr "Añadir componentes a la lista"
+msgstr "añadir imágenes existentes a la fototeca"
 
 #: ../src/libs/import.c:1955
 msgid "copy & import..."
@@ -18406,6 +18446,10 @@ msgid ""
 "patterns can be defined to rename the images and specify the destination "
 "folders"
 msgstr ""
+"Copiar y, opcionalmente, renombrar las imágenes antes de añadirlas a la "
+"fototeca\n"
+"Se pueden definir patrones para renombrar las imágenes y especificar las "
+"carpetas de destino."
 
 #. collapsible section
 #: ../src/libs/import.c:1978
@@ -19247,13 +19291,12 @@ msgid "show only active modules"
 msgstr "Mostrar únicamente los módulos activos"
 
 #: ../src/libs/modulegroups.c:2799
-#, fuzzy
 msgid ""
 "presets\n"
 "ctrl+click to manage"
 msgstr ""
-"%s\n"
-"Ctrl+Clic para %s"
+"Preajustes\n"
+"Use Ctrl+Clic para gestionar"
 
 #. search box
 #: ../src/libs/modulegroups.c:2804
@@ -19324,9 +19367,8 @@ msgid "quick access"
 msgstr "acceso rápido"
 
 #: ../src/libs/modulegroups.c:3205
-#, fuzzy
 msgid "add widget to the quick access panel"
-msgstr "Mostrar panel de control modular"
+msgstr "Añade un componente al panel de control modular"
 
 #: ../src/libs/modulegroups.c:3237
 msgid "group icon"
@@ -20622,7 +20664,7 @@ msgid "lua options"
 msgstr "opciones de Lua"
 
 #: ../src/views/darkroom.c:486
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "darktable could not load `%s', switching to lighttable now.\n"
 "\n"
@@ -20636,10 +20678,12 @@ msgid ""
 msgstr ""
 "darktable no pudo cargar «%s». Regresando a la mesa de luz...\n"
 "\n"
-"Verifique con exiv2 o exiftool si la imagen contiene datos corruptos. Si no "
-"encuentra ningún error,\n"
-"considere reportar la incidencia en https://github.com/darktable-org/"
-"darktable."
+"Compruebe que el módelo de la cámara que originó la imagen sea compatible "
+"con darktable \n"
+"(la lista de cámaras con soporte se encuentra en https://www.darktable.org/"
+"resources/camera-support/).\n"
+"Si está seguro que el modelo es compatible, considere reportar el problema\n"
+"en https://github.com/darktable-org/darktable."
 
 #: ../src/views/darkroom.c:502
 #, c-format
@@ -21119,9 +21163,8 @@ msgid "try to relax the filter settings in the top panel"
 msgstr "pruebe con condiciones de filtro más flexibles, en el panel superior"
 
 #: ../src/views/lighttable.c:427
-#, fuzzy
 msgid "or add images in the collections module in the left panel"
-msgstr "o agregue imágenes con el módulo de recolección en el panel izquierdo"
+msgstr "o añada imágenes con el módulo de colección en el panel izquierdo."
 
 #. movement keys
 #: ../src/views/lighttable.c:856
