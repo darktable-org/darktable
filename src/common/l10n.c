@@ -297,7 +297,7 @@ dt_l10n_t *dt_l10n_init(gboolean init_list)
   result->selected = -1;
   result->sys_default = -1;
 
-  char *ui_lang = dt_conf_get_string("ui_last/gui_language");
+  gchar *ui_lang = dt_conf_get_string("ui_last/gui_language");
   const char *old_env = g_getenv("LANGUAGE");
 
 #if defined(_WIN32)
