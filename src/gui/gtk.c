@@ -257,14 +257,16 @@ static gchar *_panels_get_view_path(char *suffix)
     g_snprintf(lay, sizeof(lay), "%d/", dt_view_darkroom_get_layout(darktable.view_manager));
   }
 
-  return dt_util_dstrcat(NULL, "%s/ui/%s%s", cv->module_name, lay, suffix);
+  return g_strdup_printf("%s/ui/%s%s", cv->module_name, lay, suffix);
 }
 
 static gchar *_panels_get_panel_path(dt_ui_panel_t panel, char *suffix)
 {
   gchar *v = _panels_get_view_path("");
   if(!v) return NULL;
-  return dt_util_dstrcat(v, "%s%s", _ui_panel_config_names[panel], suffix);
+  gchar *path = dt_util_dstrcat(v, "%s%s", _ui_panel_config_names[panel], suffix);
+  g_free(v);
+  return path;
 }
 
 static gboolean _panel_is_visible(dt_ui_panel_t panel)
