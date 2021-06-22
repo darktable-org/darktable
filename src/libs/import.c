@@ -1299,11 +1299,12 @@ static void _update_places_list(dt_lib_module_t* self)
   GtkTreeIter iter, current_iter;
   d->placesSelection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->placesView));
   const gchar *last_place = dt_conf_get_string("ui_last/import_last_place");
-  char *current_place = "";
+  gchar *current_place = g_strdup("");
 
   if(dt_conf_get_bool("ui_last/import_dialog_show_home") && dt_loc_get_home_dir(NULL))
   {
-    current_place = (char *)dt_loc_get_home_dir(NULL);
+    g_free(current_place);
+    current_place = dt_loc_get_home_dir(NULL);
     gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("home"), DT_PLACES_PATH,
                                       current_place, DT_PLACES_TYPE, DT_TYPE_HOME, -1);
     if(!g_strcmp0(current_place, last_place))
@@ -1313,7 +1314,8 @@ static void _update_places_list(dt_lib_module_t* self)
 
   if(dt_conf_get_bool("ui_last/import_dialog_show_pictures") && g_get_user_special_dir(G_USER_DIRECTORY_PICTURES))
   {
-    current_place = (char *)g_get_user_special_dir(G_USER_DIRECTORY_PICTURES);
+    g_free(current_place);
+    current_place = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES));
     gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("pictures"), DT_PLACES_PATH,
                                       current_place, DT_PLACES_TYPE, DT_TYPE_PIC, -1);
     if(!g_strcmp0(current_place, last_place))
@@ -1327,6 +1329,7 @@ static void _update_places_list(dt_lib_module_t* self)
     dt_conf_set_string("ui_last/import_last_place", current_place);
     gtk_tree_selection_select_iter(d->placesSelection, &current_iter);
   }
+  g_free(current_place);
 
   // add mounted drives
   if(dt_conf_get_bool("ui_last/import_dialog_show_mounted"))
