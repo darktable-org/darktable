@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-21 21:29-0500\n"
-"PO-Revision-Date: 2021-06-22 00:44-0500\n"
+"POT-Creation-Date: 2021-06-23 02:18-0500\n"
+"PO-Revision-Date: 2021-06-23 03:11-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -803,7 +803,7 @@ msgstr "mapa / geolocalización"
 
 #: ../build/bin/preferences_gen.h:5129
 msgid "pretty print the image location"
-msgstr "Imprimir la ubicación de la imagen"
+msgstr "Formato comprensible de la ubicación de la imagen"
 
 #: ../build/bin/preferences_gen.h:5143
 msgid ""
@@ -1204,7 +1204,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6318
 msgid "host memory limit (in MB) for tiling"
-msgstr "Límite de memoria (en MB) para el proceso por bandas"
+msgstr "Límite de memoria para el proceso por bandas (en MB)"
 
 #: ../build/bin/preferences_gen.h:6341
 msgid ""
@@ -1571,7 +1571,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:7216
 msgid "keyboard shortcuts with multiple instances"
-msgstr "Atajos de teclado con varios duplicados del módulo"
+msgstr "atajos de teclado con varios duplicados del módulo"
 
 #: ../build/bin/preferences_gen.h:7221
 msgid ""
@@ -2802,7 +2802,7 @@ msgstr "tonos medios"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:524
 #: ../src/iop/filmic.c:1681
 msgid "global saturation"
-msgstr "saturación global"
+msgstr "saturación general"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:357
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:540
@@ -2989,7 +2989,7 @@ msgstr "método"
 
 #: ../build/lib/darktable/plugins/introspection_defringe.c:124
 msgid "global average (fast)"
-msgstr "promedio global (rápido)"
+msgstr "promedio general (rápido)"
 
 #: ../build/lib/darktable/plugins/introspection_defringe.c:125
 msgid "local average (slow)"
@@ -3368,7 +3368,7 @@ msgstr "versión del generador de curvas segmentarias"
 #: ../src/common/variables.c:465 ../src/develop/imageop_gui.c:302
 #: ../src/imageio/format/pdf.c:655 ../src/imageio/format/pdf.c:680
 #: ../src/libs/export.c:1278 ../src/libs/export.c:1284
-#: ../src/libs/export.c:1291 ../src/libs/metadata_view.c:686
+#: ../src/libs/export.c:1291 ../src/libs/metadata_view.c:695
 msgid "no"
 msgstr "no"
 
@@ -4117,7 +4117,7 @@ msgstr "Mostrar imágenes en un mapa"
 
 #: ../data/darktable.appdata.xml.in.h:9
 msgid "Print your images"
-msgstr "Imprimir tus imagenes"
+msgstr "Imprimir tus imágenes"
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1676
 #: ../src/control/jobs/control_jobs.c:1749 ../src/gui/hist_dialog.c:185
@@ -4687,7 +4687,7 @@ msgstr ""
 #: ../src/develop/imageop_gui.c:303 ../src/imageio/format/pdf.c:656
 #: ../src/imageio/format/pdf.c:681 ../src/libs/export.c:1279
 #: ../src/libs/export.c:1285 ../src/libs/export.c:1292
-#: ../src/libs/metadata_view.c:686
+#: ../src/libs/metadata_view.c:695
 msgid "yes"
 msgstr "sí"
 
@@ -4757,7 +4757,7 @@ msgstr "Error de inicio de darktable"
 
 #: ../src/common/database.c:2536 ../src/libs/collect.c:2826
 #: ../src/libs/export_metadata.c:272 ../src/libs/import.c:1651
-#: ../src/libs/metadata.c:447 ../src/libs/metadata_view.c:1227
+#: ../src/libs/metadata.c:447 ../src/libs/metadata_view.c:1236
 #: ../src/libs/modulegroups.c:3474 ../src/libs/styles.c:444
 #: ../src/libs/styles.c:628 ../src/libs/tagging.c:1360
 #: ../src/libs/tagging.c:1448 ../src/libs/tagging.c:1529
@@ -5390,7 +5390,7 @@ msgid "below sea level"
 msgstr "bajo el nivel del mar"
 
 #: ../src/common/utility.c:538 ../src/iop/watermark.c:576
-#: ../src/libs/metadata_view.c:903
+#: ../src/libs/metadata_view.c:912
 msgid "m"
 msgstr "m"
 
@@ -6115,7 +6115,7 @@ msgid "reverse"
 msgstr "invertir"
 
 #: ../src/develop/blend_gui.c:93 ../src/imageio/format/webp.c:357
-#: ../src/libs/metadata.c:446 ../src/libs/metadata_view.c:1226
+#: ../src/libs/metadata.c:446 ../src/libs/metadata_view.c:1235
 msgid "default"
 msgstr "por defecto"
 
@@ -7697,7 +7697,7 @@ msgstr "Creando toda la caché de miniaturas de la mesa de luz\n"
 #: ../src/gui/accelerators.c:98
 msgctxt "accel"
 msgid "global"
-msgstr "opciones globales"
+msgstr "opciones generales"
 
 #: ../src/gui/accelerators.c:103 ../src/gui/accelerators.c:216
 msgctxt "accel"
@@ -8401,11 +8401,11 @@ msgid ""
 "default is 96 DPI on most systems.\n"
 "(needs a restart)."
 msgstr ""
-"Configuración global de la resolución de la Interfaz Gráfica de Usuario: "
+"Configuración general de la resolución de la Interfaz Gráfica de Usuario: "
 "redimensiona los controles, botones, etiquetas, etc.\n"
 "Incrementar para una interfaz magnificada, disminuir para que más contenido "
 "quepa en la ventana.\n"
-"Configurar en -1 para usar la resolución global definida por el sistema.\n"
+"Configurar en -1 para usar la resolución general definida por el sistema.\n"
 "Por defecto en la mayoría de los sistemas, es 96 PPP.\n"
 "Es necesario un reinicio del programa para aplicar los cambios."
 
@@ -8970,8 +8970,8 @@ msgid ""
 "do a 1:1 copy of the selected files.\n"
 "the global options below do not apply!"
 msgstr ""
-"hacer una copia 1:1 de los archivos seleccionados.\n"
-"las opciones globales de abajo se ignoran"
+"Realiza una copia 1:1 de los archivos seleccionados.\n"
+"Las opciones generales de abajo se ignoran."
 
 #: ../src/imageio/format/exr.cc:189
 msgid "the selected output profile doesn't work well with exr"
@@ -10180,7 +10180,7 @@ msgstr "contraste local"
 
 #: ../src/iop/bilat.c:99
 msgid "manipulate local and global contrast separately"
-msgstr "Controlar por separado los contrastes local y global"
+msgstr "Controlar por separado los contrastes local y general"
 
 #: ../src/iop/bilat.c:101 ../src/iop/bilat.c:103 ../src/iop/bloom.c:82
 #: ../src/iop/bloom.c:84 ../src/iop/colisa.c:86 ../src/iop/colisa.c:88
@@ -10973,7 +10973,7 @@ msgstr "Detección del balance de blancos completa"
 
 #: ../src/iop/channelmixerrgb.c:1947
 msgid "channelmixerrgb works only on RGB input"
-msgstr "mezclador de canal rgb sólo trabaja con una entrada RGB"
+msgstr "El mezclador de canal rgb sólo funciona con una entrada en RGB"
 
 #: ../src/iop/channelmixerrgb.c:3251
 #, c-format
@@ -12135,7 +12135,7 @@ msgstr ""
 
 #: ../src/iop/colorcorrection.c:282
 msgid "set the global saturation"
-msgstr "establece la saturación global"
+msgstr "Define la saturación general"
 
 #: ../src/iop/colorin.c:127
 msgid "input color profile"
@@ -12595,12 +12595,12 @@ msgid ""
 " - static: fast, only uses the threshold as a static limit"
 msgstr ""
 "Método de protección de color:\n"
-" • Promedio global (rápido): Se pueden mostrar vistas previas levemente "
+" • Promedio general (rápido): Se pueden mostrar vistas previas levemente "
 "defectuosas al hacer una gran ampliación. A veces puede oscilar entre "
 "proteger mucho o casi nada la saturación, en comparación con el promedio "
 "local.\n"
 " • Promedio local (lento): Puede proteger la saturación mejor que el "
-"promedio global utilizando los pixeles cercanos como referencia de color, "
+"promedio general utilizando los pixeles cercanos como referencia de color, "
 "por lo que permite una mayor desaturación cuando sea requerido. \n"
 " • Estático (rápido): Usa sólo el umbral como límite estático."
 
@@ -13246,7 +13246,7 @@ msgid ""
 "you need to set this value below 100%\n"
 "if the chrominance preservation is enabled."
 msgstr ""
-"Desatura globalmente la entrada del módulo. \n"
+"Desatura la entrada del módulo a nivel general. \n"
 "Es necesario establecer este valor por debajo del 100% \n"
 "si la preservación de la crominancia está habilitada."
 
@@ -13484,7 +13484,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3081 ../src/iop/toneequal.c:3085
 #: ../src/iop/toneequal.c:3089 ../src/iop/toneequal.c:3093
 #: ../src/iop/toneequal.c:3097 ../src/iop/toneequal.c:3101
-#: ../src/iop/toneequal.c:3105 ../src/libs/metadata_view.c:756
+#: ../src/iop/toneequal.c:3105 ../src/libs/metadata_view.c:765
 #: ../src/views/darkroom.c:2311
 #, c-format
 msgid "%+.2f EV"
@@ -13840,7 +13840,7 @@ msgstr "operador"
 
 #: ../src/iop/globaltonemap.c:644
 msgid "the global tonemap operator"
-msgstr "operador global de mapeo tonal"
+msgstr "Operador general de mapeo tonal"
 
 #: ../src/iop/globaltonemap.c:647
 msgid ""
@@ -15018,7 +15018,7 @@ msgid ""
 "to adjust the global contrast while avoiding clipping shadows."
 msgstr ""
 "Corrige la densidad del negro después de la inversión,\n"
-"para adecuar el contraste global mientras se evitan recortes en las sombras."
+"para adecuar el contraste general mientras se evitan recortes en las sombras."
 
 #: ../src/iop/negadoctor.c:973
 msgid ""
@@ -16322,9 +16322,9 @@ msgid ""
 "'averaged eigf' is a geometric mean of 'no' and 'exposure-independent guided "
 "filter' methods"
 msgstr ""
-"No: afecta el contraste global y local (es seguro si sólo se añade "
+"No: afecta el contraste general y local (es seguro si sólo se añade "
 "contraste).\n"
-"Filtro guiado: solo afecta el contraste global tratando de preservar el "
+"Filtro guiado: solo afecta el contraste general tratando de preservar el "
 "contraste local.\n"
 "Filtro guiado promediado: es una media geométrica de ambos métodos (\"No\" y "
 "\"Filtro guiado\").\n"
@@ -16939,7 +16939,7 @@ msgstr "archivos"
 
 #: ../src/libs/collect.c:2776 ../src/libs/export_metadata.c:292
 #: ../src/libs/image.c:465 ../src/libs/image.c:570 ../src/libs/metadata.c:487
-#: ../src/libs/metadata.c:658 ../src/libs/metadata_view.c:1258
+#: ../src/libs/metadata.c:658 ../src/libs/metadata_view.c:1267
 msgid "metadata"
 msgstr "metadatos"
 
@@ -16960,14 +16960,14 @@ msgid "collections settings"
 msgstr "Parámetros de las colecciones"
 
 #: ../src/libs/collect.c:2827 ../src/libs/export_metadata.c:272
-#: ../src/libs/metadata.c:447 ../src/libs/metadata_view.c:1227
+#: ../src/libs/metadata.c:447 ../src/libs/metadata_view.c:1236
 #: ../src/libs/tagging.c:1529 ../src/libs/tagging.c:1654
 #: ../src/libs/tagging.c:1928
 msgid "save"
 msgstr "guardar"
 
 #: ../src/libs/collect.c:2841 ../src/libs/export.c:1107
-#: ../src/libs/metadata.c:581 ../src/libs/metadata_view.c:1338
+#: ../src/libs/metadata.c:581 ../src/libs/metadata_view.c:1347
 msgid "preferences..."
 msgstr "preferencias"
 
@@ -17272,7 +17272,7 @@ msgstr "formato de archivo"
 
 #: ../src/libs/export.c:1182
 msgid "global options"
-msgstr "opciones globales"
+msgstr "opciones generales"
 
 #: ../src/libs/export.c:1187
 msgid "set size"
@@ -17802,11 +17802,11 @@ msgstr "Volver a oscilograma simple"
 
 #: ../src/libs/histogram.c:1167
 msgid "set view to AzBz"
-msgstr "Vista en AzBz"
+msgstr "Visualizar en AzBz"
 
 #: ../src/libs/histogram.c:1172
 msgid "set view to u*v*"
-msgstr "Vista en u*v*"
+msgstr "Visualizar en u*v*"
 
 #: ../src/libs/histogram.c:1186
 msgid "set mode to waveform"
@@ -18017,7 +18017,7 @@ msgstr "quitar"
 
 #: ../src/libs/image.c:476
 msgid "remove images from the image library, without deleting"
-msgstr "Quita imágenes de la biblioteca sin borrarlas"
+msgstr "Quita imágenes de la fototeca sin borrarlas"
 
 #: ../src/libs/image.c:484
 msgid "move..."
@@ -18434,7 +18434,7 @@ msgstr "añadir a la fototeca"
 
 #: ../src/libs/import.c:1948
 msgid "add existing images to the library"
-msgstr "añadir imágenes existentes a la fototeca"
+msgstr "Añadir imágenes existentes a la fototeca"
 
 #: ../src/libs/import.c:1955
 msgid "copy & import..."
@@ -18847,11 +18847,11 @@ msgstr "editor de metadatos"
 msgid "<leave unchanged>"
 msgstr "<dejar sin cambios>"
 
-#: ../src/libs/metadata.c:445 ../src/libs/metadata_view.c:1225
+#: ../src/libs/metadata.c:445 ../src/libs/metadata_view.c:1234
 msgid "metadata settings"
 msgstr "Configuración de metadatos"
 
-#: ../src/libs/metadata.c:493 ../src/libs/metadata_view.c:1269
+#: ../src/libs/metadata.c:493 ../src/libs/metadata_view.c:1278
 msgid "visible"
 msgstr "visible"
 
@@ -19064,11 +19064,11 @@ msgstr[1] "La imagen tiene %d estrellas"
 msgid "loader: %s"
 msgstr "cargando: %s"
 
-#: ../src/libs/metadata_view.c:639
+#: ../src/libs/metadata_view.c:648
 msgid "<various values>"
 msgstr "<múltiples valores>"
 
-#: ../src/libs/metadata_view.c:652
+#: ../src/libs/metadata_view.c:661
 #, c-format
 msgid ""
 "double click to jump to film roll\n"
@@ -19077,17 +19077,17 @@ msgstr ""
 "doble clic para saltar al carrete\n"
 "%s"
 
-#: ../src/libs/metadata_view.c:770
+#: ../src/libs/metadata_view.c:779
 #, c-format
 msgid "%.2f m"
 msgstr "%.2f m"
 
-#: ../src/libs/metadata_view.c:1064
+#: ../src/libs/metadata_view.c:1073
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "saltar al carrete"
 
-#: ../src/libs/metadata_view.c:1264
+#: ../src/libs/metadata_view.c:1273
 msgid ""
 "drag and drop one row at a time until you get the desired order\n"
 "untick to hide metadata which are not of interest for you\n"
@@ -20474,7 +20474,7 @@ msgstr ""
 
 #: ../src/libs/tools/global_toolbox.c:500
 msgid "show global preferences"
-msgstr "Mostrar preferencias globales"
+msgstr "Mostrar preferencias generales"
 
 #: ../src/libs/tools/global_toolbox.c:623
 #, c-format
@@ -21430,7 +21430,7 @@ msgstr "Nueva sesión iniciada «%s»"
 
 #: ../src/views/tethering.c:448
 msgid "no camera with tethering support available for use..."
-msgstr "No hay ninguna cámara con soporte de captura disponible para su uso..."
+msgstr "No se encuentra disponible ninguna cámara con soporte de captura"
 
 #: ../src/views/view.c:1520
 msgid "Left click"
