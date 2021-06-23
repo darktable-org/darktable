@@ -1,26 +1,18 @@
---- science/gmic/Portfile.orig	2020-04-22 19:12:01.000000000 +0300
-+++ science/gmic/Portfile	2020-04-22 19:36:26.000000000 +0300
-@@ -42,14 +42,9 @@
-                     size    6195597
+--- science/gmic/Portfile.orig	2021-06-23 22:07:46.000000000 +0200
++++ science/gmic/Portfile	2021-06-23 22:09:30.000000000 +0200
+@@ -45,7 +45,6 @@
+                     size    7401418
  
  depends_lib         port:curl \
 -                    path:lib/libavcodec.dylib:ffmpeg \
                      port:fftw-3 \
--                    port:GraphicsMagick \
--                    port:ilmbase \
-                     port:jpeg \
-                     port:libpng \
--                    port:opencv \
--                    port:openexr \
-                     port:tiff \
-                     port:zlib
- 
-@@ -88,6 +83,8 @@
+                     port:GraphicsMagick \
+                     port:ilmbase \
+@@ -91,6 +90,7 @@
      }
  
      configure.args-append       -DCUSTOM_CFLAGS=ON \
 +                                -DENABLE_FFMPEG=OFF \
-+                                -DENABLE_OPENCV=OFF \
                                  -DENABLE_OPENMP=OFF \
                                  -DENABLE_X=OFF
  
