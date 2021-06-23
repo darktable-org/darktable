@@ -22,9 +22,9 @@ You are strongly advised to take a backup first.
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-- Almost 2146 commits to darktable+rawspeed since 3.4
-- 700 pull requests handled
-- 116 issues closed
+- Almost 2680 commits to darktable+rawspeed since 3.4
+- 954 pull requests handled
+- 110 issues closed
 
 ## The Big Ones
 
