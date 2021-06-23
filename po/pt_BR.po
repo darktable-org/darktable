@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-06-19 06:37-0300\n"
-"PO-Revision-Date: 2021-06-22 16:50-0300\n"
+"PO-Revision-Date: 2021-06-23 09:12-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -6449,7 +6449,7 @@ msgstr "mostrar e editar no modo restrito"
 #: ../src/develop/blend_gui.c:2351 ../src/libs/masks.c:1021
 #: ../src/libs/masks.c:1049 ../src/libs/masks.c:1632
 msgid "add gradient"
-msgstr "addiciona gradiente"
+msgstr "adiciona gradiente"
 
 #: ../src/develop/blend_gui.c:2351
 msgid "add multiple gradients"
