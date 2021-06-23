@@ -232,7 +232,7 @@ static void save_usercss(GtkTextBuffer *buffer)
   GtkTextIter start, end;
   gtk_text_buffer_get_start_iter(buffer, &start);
   gtk_text_buffer_get_end_iter(buffer, &end);
-  const gchar *usercsscontent = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
+  gchar *usercsscontent = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
 
   //write to file
   GError *error = NULL;
@@ -241,7 +241,7 @@ static void save_usercss(GtkTextBuffer *buffer)
     fprintf(stderr, "%s: error saving css to %s: %s\n", G_STRFUNC, usercsspath, error->message);
     g_clear_error(&error);
   }
-
+  g_free(usercsscontent);
 }
 
 static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
