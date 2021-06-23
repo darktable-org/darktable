@@ -62,7 +62,9 @@ static int text_member(lua_State *L)
     gtk_text_buffer_set_text(textbuffer, text, -1);
     return 0;
   }
-  lua_pushstring(L, gtk_text_buffer_get_all_text(textbuffer));
+  gchar *text = gtk_text_buffer_get_all_text(textbuffer);
+  lua_pushstring(L, text);
+  g_free(text);
   return 1;
 }
 
@@ -84,8 +86,9 @@ static int tostring_member(lua_State *L)
   lua_text_view widget;
   luaA_to(L, lua_text_view, &widget, 1);
   GtkTextBuffer * textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget->widget));
-  const gchar *text = gtk_text_buffer_get_all_text(textbuffer);
+  gchar *text = gtk_text_buffer_get_all_text(textbuffer);
   gchar *res = g_strdup_printf("%s (\"%s\")", G_OBJECT_TYPE_NAME(widget->widget), text ? text : "");
+  g_free(text);
   lua_pushstring(L, res);
   g_free(res);
   return 1;
