@@ -1191,7 +1191,9 @@ static void _set_places_list(GtkWidget *places_paned, dt_lib_module_t* self)
   gtk_widget_set_tooltip_text(places_header, _("choose the root of the folder tree below"));
 
   GtkWidget *places_label = gtk_label_new(NULL);
-  gtk_label_set_markup(GTK_LABEL(places_label), dt_util_dstrcat(NULL, "<b>  %s</b>",_("places")));
+  gchar *markup = dt_util_dstrcat(NULL, "<b>  %s</b>",_("places"));
+  gtk_label_set_markup(GTK_LABEL(places_label), markup);
+  g_free(markup);
   gtk_box_pack_start(GTK_BOX(places_header), places_label, FALSE, FALSE, 0);
 
   GtkWidget *places_reset = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
@@ -1409,7 +1411,9 @@ static void _add_custom_place(const gchar *folder, dt_lib_module_t* self)
 
   if(!g_strrstr(current_folders, folder))
   {
-    dt_conf_set_string("ui_last/import_custom_places", dt_util_dstrcat(NULL, "%s%s,", current_folders, folder));
+    gchar *place = dt_util_dstrcat(NULL, "%s%s,", current_folders, folder);
+    dt_conf_set_string("ui_last/import_custom_places", place);
+    g_free(place);
 
     gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, g_path_get_basename(folder),
                                       DT_PLACES_PATH, (char *)folder, DT_PLACES_TYPE, DT_TYPE_CUSTOM, -1);
@@ -1435,8 +1439,13 @@ static void _remove_place(const gchar *folder, GtkTreeIter iter, dt_lib_module_t
   if(type == DT_TYPE_MOUNT)
     dt_conf_set_bool("ui_last/import_dialog_show_mounted", FALSE);
   if(type == DT_TYPE_CUSTOM)
-    dt_conf_set_string("ui_last/import_custom_places",
-                       dt_util_str_replace(current_folders, dt_util_dstrcat(NULL, "%s,", folder), ""));
+  {
+    gchar *pattern = dt_util_dstrcat(NULL, "%s,", folder);
+    gchar *place = dt_util_str_replace(current_folders, pattern, "");
+    dt_conf_set_string("ui_last/import_custom_places", place);
+    g_free(pattern);
+    g_free(place);
+  }
 
   _update_places_list(self);
 }
