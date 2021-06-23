@@ -480,7 +480,7 @@ void expose(
 
     if(dev->image_invalid_cnt)
     {
-      fontsize = DT_PIXEL_APPLY_DPI(20);
+      fontsize = DT_PIXEL_APPLY_DPI(16);
       load_txt = dt_util_dstrcat(
           NULL,
           _("darktable could not load `%s', switching to lighttable now.\n\n"
