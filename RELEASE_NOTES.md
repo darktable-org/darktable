@@ -457,12 +457,16 @@ You are strongly advised to take a backup first.
 - Samsung GX20
 
 ## Translations
-
 - Afrikaans
 - German
 - Esperanto
+- European Spanish
 - French
+- Hebrew
+- Hungarian
+- Italian
 - Dutch
 - Brazilian Portuguese
+- Russian
 - Slovenian
 - Ukrainian
