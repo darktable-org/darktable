@@ -968,9 +968,7 @@ static void _choose_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   }
   if(res == GTK_RESPONSE_OK)
   {
-    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
-    dt_conf_set_string("ui_last/gpx_last_directory", folder);
-    g_free(folder);
+    dt_conf_set_folder_from_file_chooser("ui_last/gpx_last_directory", filechooser);
 
     gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
 

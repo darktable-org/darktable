@@ -382,9 +382,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
       dt_presets_save_to_file(g->old_id, name, filedir);
       dt_control_log(_("preset %s was successfully exported"), name);
       g_free(filedir);
-      gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
-      dt_conf_set_string("ui_last/export_path", folder);
-      g_free(folder);
+      dt_conf_set_folder_from_file_chooser("ui_last/export_path", filechooser);
     }
 
     gtk_widget_destroy(GTK_WIDGET(filechooser));

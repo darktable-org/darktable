@@ -133,6 +133,12 @@ void dt_conf_set_string(const char *name, const char *val)
   if(dt_conf_set_if_not_overridden(name, str)) g_free(str);
 }
 
+void dt_conf_set_folder_from_file_chooser(const char *name, GtkWidget *chooser)
+{
+  gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser));
+  if(dt_conf_set_if_not_overridden(name, folder)) g_free(folder);
+}
+
 int dt_conf_get_int_fast(const char *name)
 {
   const char *str = dt_conf_get_var(name);

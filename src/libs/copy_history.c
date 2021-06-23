@@ -182,9 +182,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     if(act_on_any)
     {
       //remember last import path if applying history to multiple images
-      gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
-      dt_conf_set_string("ui_last/import_path", folder);
-      g_free(folder);
+      dt_conf_set_folder_from_file_chooser("ui_last/import_path", filechooser);
     }
     g_free(dtfilename);
   }
