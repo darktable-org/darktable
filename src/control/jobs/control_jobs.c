@@ -1690,9 +1690,7 @@ void dt_control_move_images()
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
-    dt_conf_set_string("ui_last/copymove_path", folder);
-    g_free(folder);
+    dt_conf_set_folder_from_file_chooser("ui_last/copymove_path", filechooser);
   }
   gtk_widget_destroy(filechooser);
 
@@ -1763,9 +1761,7 @@ void dt_control_copy_images()
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
-    dt_conf_set_string("ui_last/copymove_path", folder);
-    g_free(folder);
+    dt_conf_set_folder_from_file_chooser("ui_last/copymove_path", filechooser);
   }
   gtk_widget_destroy(filechooser);
 

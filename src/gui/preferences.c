@@ -1023,9 +1023,7 @@ static void import_export(GtkButton *button, gpointer data)
       gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
       gtk_accel_map_save(filename);
       g_free(filename);
-      gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser));
-      dt_conf_set_string("ui_last/export_path", folder);
-      g_free(folder);
+      dt_conf_set_folder_from_file_chooser("ui_last/export_path", chooser);
     }
     gtk_widget_destroy(chooser);
   }
@@ -1058,9 +1056,7 @@ static void import_export(GtkButton *button, gpointer data)
         snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", confdir);
         gtk_accel_map_save(accelpath);
 
-        gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser));
-        dt_conf_set_string("ui_last/import_path", folder);
-        g_free(folder);
+        dt_conf_set_folder_from_file_chooser("ui_last/import_path", chooser);
       }
       g_free(filename);
     }
@@ -1161,9 +1157,7 @@ static void import_preset(GtkButton *button, gpointer data)
     gtk_tree_store_clear(tree_store);
     tree_insert_presets(tree_store);
 
-    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser));
-    dt_conf_set_string("ui_last/import_path", folder);
-    g_free(folder);
+    dt_conf_set_folder_from_file_chooser("ui_last/import_path", chooser);
   }
   gtk_widget_destroy(chooser);
 }
@@ -1213,9 +1207,7 @@ static void export_preset(GtkButton *button, gpointer data)
 
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "END TRANSACTION", NULL, NULL, NULL);
 
-    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
-    dt_conf_set_string("ui_last/export_path", folder);
-    g_free(folder);
+    dt_conf_set_folder_from_file_chooser("ui_last/export_path", filechooser);
 
     g_free(filedir);
   }

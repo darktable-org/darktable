@@ -518,9 +518,7 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
       }
       dt_control_log(_("style %s was successfully exported"), (char*)style->data);
     }
-    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
-    dt_conf_set_string("ui_last/export_path", folder);
-    g_free(folder);
+    dt_conf_set_folder_from_file_chooser("ui_last/export_path", filechooser);
     g_free(filedir);
   }
   gtk_widget_destroy(filechooser);
@@ -707,9 +705,7 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
 
     dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
     _gui_styles_update_view(d);
-    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
-    dt_conf_set_string("ui_last/import_path", folder);
-    g_free(folder);
+    dt_conf_set_folder_from_file_chooser("ui_last/import_path", filechooser);
   }
   gtk_widget_destroy(filechooser);
 }
