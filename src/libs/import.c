@@ -1501,7 +1501,7 @@ static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t *self)
     dt_conf_set_string("ui_last/import_last_directory", "");
     dt_conf_set_bool("ui_last/import_recursive", FALSE);
     dt_gui_preferences_bool_update(d->recursive);
-    g_slist_free(list);
+    g_slist_free_full(list, g_free);
     _update_folders_list(self);
     _update_files_list(self);
   }
