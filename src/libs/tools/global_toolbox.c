@@ -597,7 +597,7 @@ static void _main_do_event(GdkEvent *event, gpointer data)
           dt_print(DT_DEBUG_CONTROL, "[context help] opening `%s'\n", help_url);
           char *base_url = _get_base_url();
 
-          // in case of a standard release, happend the dt version to the url
+          // in case of a standard release, append the dt version to the url
           if(!dt_is_dev_version())
           {
             char *ver = dt_version_major_minor();
