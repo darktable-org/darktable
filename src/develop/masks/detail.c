@@ -23,7 +23,7 @@
   They contain threshold weighed values of pixel-wise local signal changes so they can be
   understood as "areas with or without local detail". 
   
-  As the DM using algoritms (like dual demosaicing, sharpening ...) are all pixel peeping we
+  As the DM using algorithms (like dual demosaicing, sharpening ...) are all pixel peeping we
   want the "original data" from the sensor to calculate it.
   (Calculating the mask from the modules roi might not detect such regions at all because of
   scaling / rotating artefacts, some blurring earlier in the pipeline, color changes ...)

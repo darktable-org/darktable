@@ -75,12 +75,12 @@ static GList* _get_custom_places();
 
 typedef enum dt_import_cols_t
 {
-  DT_IMPORT_SEL_THUMB = 0,      // active / deactive thumbnails
+  DT_IMPORT_SEL_THUMB = 0,      // active / inactive thumbnails
   DT_IMPORT_THUMB,              // thumbnail
   DT_IMPORT_UI_FILENAME,        // displayed filename
   DT_IMPORT_FILENAME,           // filename
   DT_IMPORT_UI_DATETIME,        // displayed datetime
-  DT_IMPORT_UI_EXISTS,          // wether the picture is already imported
+  DT_IMPORT_UI_EXISTS,          // whether the picture is already imported
   DT_IMPORT_DATETIME,           // file datetime
   DT_IMPORT_NUM_COLS
 } dt_import_cols_t;
