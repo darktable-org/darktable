@@ -324,6 +324,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.normalize_grey = TRUE;
 
   // Create B&W presets
+  p.clip = TRUE;
   p.grey[0] = 0.f;
   p.grey[1] = 1.f;
   p.grey[2] = 0.f;
@@ -410,6 +411,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.normalize_G = TRUE;
   p.normalize_B = TRUE;
   p.normalize_grey = FALSE;
+  p.clip = FALSE;
   dt_gui_presets_add_generic(_("basic channel mixer"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
