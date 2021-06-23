@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-06-11 20:36+0300\n"
-"PO-Revision-Date: 2021-06-22 12:08+0300\n"
+"PO-Revision-Date: 2021-06-23 10:09+0300\n"
 "Last-Translator: Timur Davletshin <timur.davletshin@gmail.com>\n"
 "Language-Team: русский\n"
 "Language: ru\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 "
 "&& (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Poedit 2.4.3\n"
+"X-Generator: Poedit 2.2.1\n"
 
 #: ../build/bin/preferences_gen.h:67 ../build/bin/preferences_gen.h:3510
 #: ../build/bin/preferences_gen.h:3546 ../build/bin/preferences_gen.h:3582
@@ -1041,7 +1041,7 @@ msgid ""
 "moving or deleting images."
 msgstr ""
 "Всегда запрашивать подтверждение на удаление пустых каталогов. Может произойти "
-"после перемещения или удаления последего снимка из каталога."
+"после перемещения или удаления последнего снимка из каталога."
 
 #: ../build/bin/preferences_gen.h:5992
 msgid "ask before deleting a tag"
@@ -2636,7 +2636,7 @@ msgstr "Вес теней"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:297
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:500
 msgid "white fulcrum"
-msgstr "Белая точка"
+msgstr "Белый, опорная точка"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:303
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:504
@@ -2704,7 +2704,7 @@ msgstr "Общая яркость"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:387
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:560
 msgid "mask middle-gray fulcrum"
-msgstr "Серая точка"
+msgstr "Серый, опорная точка"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:393
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:564
@@ -2714,7 +2714,7 @@ msgstr "Общая сочность"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:399
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:568
 msgid "contrast gray fulcrum"
-msgstr "Серая точка"
+msgstr "Серый, опорная точка"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:405
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:572
@@ -7115,28 +7115,28 @@ msgstr "Настройки кэша миниатюр были изменены\n
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
-msgstr "Требуетс сброс кэша миниатюр\n"
+msgstr "Требуется сброс кэша миниатюр\n"
 
 #: ../src/dtgtk/thumbtable.c:1186
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
 "\n"
-msgstr "Требуетс сброс кэша миниатюр начиная с уровня %d\n"
+msgstr "Требуется сброс кэша миниатюр начиная с уровня %d\n"
 
 #: ../src/dtgtk/thumbtable.c:1189
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
 "\n"
-msgstr "Требуетс сброс кэша миниатюр ниже уровня %d\n"
+msgstr "Требуется сброс кэша миниатюр ниже уровня %d\n"
 
 #: ../src/dtgtk/thumbtable.c:1191
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
 "\n"
-msgstr "Требуетс сброс кэша миниатюр между уровнями %d и %d\n"
+msgstr "Требуется сброс кэша миниатюр между уровнями %d и %d\n"
 
 #: ../src/dtgtk/thumbtable.c:1194
 msgid "do you want to do that now?"
@@ -7969,7 +7969,7 @@ msgstr "$(DESKTOP) — каталог рабочего стола"
 
 #: ../src/gui/gtkentry.c:228
 msgid "$(OPENCL_ACTIVATED) - whether OpenCL is activated"
-msgstr "$(OPENCL_ACTIVATED) — поддержа OpenCL"
+msgstr "$(OPENCL_ACTIVATED) — поддержка OpenCL"
 
 #: ../src/gui/gtkentry.c:229
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
@@ -10344,7 +10344,7 @@ msgid ""
 "efficient to correct blue\n"
 "chromatic aberration."
 msgstr ""
-"Режим корреции хроматических аберраций.\n"
+"Режим коррекции хроматических аберраций.\n"
 "Может быть использован при работе с несколькими копиями модуля.\n"
 "Режим «Затемнение» эффективно устраняет синюю кайму вокруг объектов."
 
@@ -10643,7 +10643,7 @@ msgstr ""
 #. earlier in the pipe.
 #: ../src/iop/channelmixerrgb.c:1720
 msgid "double CAT applied"
-msgstr "Модель применена дважды"
+msgstr "Повторное преобразование цветового пространства"
 
 #: ../src/iop/channelmixerrgb.c:1721
 msgid ""
@@ -11593,11 +11593,11 @@ msgstr "Вес светов относительно остальной част
 
 #: ../src/iop/colorbalancergb.c:1769
 msgid "peak white luminance value used to normalize the power function"
-msgstr "Пиковое значение в светах, используемое для нормализации"
+msgstr "Пиковое значение белого, используемое для нормализации"
 
 #: ../src/iop/colorbalancergb.c:1777
 msgid "peak gray luminance value used to normalize the power function"
-msgstr "Пиковое значение серой точки, используемое для нормализации"
+msgstr "Пиковое значение серого, используемое для нормализации"
 
 #: ../src/iop/colorbalancergb.c:1779
 msgid "mask preview settings"
@@ -14732,11 +14732,11 @@ msgstr ""
 
 #: ../src/iop/relight.c:54
 msgid "fill-light 0.25EV with 4 zones"
-msgstr "Заполнение светом на 0.25EV по 4 зонам"
+msgstr "Заполнение светом на 0.25 EV по 4 зонам"
 
 #: ../src/iop/relight.c:58
 msgid "fill-shadow -0.25EV with 4 zones"
-msgstr "Заполнение тенью на -0.25EV по 4 зонам"
+msgstr "Заполнение тенью на -0.25 EV по 4 зонам"
 
 #: ../src/iop/relight.c:87
 msgid "fill light"
@@ -15827,7 +15827,7 @@ msgid ""
 "the picker will auto-adjust the average exposure at -4EV."
 msgstr ""
 "Коррекция экспозиции маски.\n"
-"Среднее значение выставлено на -4EV."
+"Среднее значение выставлено на -4 EV."
 
 #: ../src/iop/toneequal.c:3217
 msgid ""
@@ -15838,7 +15838,7 @@ msgid ""
 msgstr ""
 "Коррекция контраста маски для борьбы с усредняющим\n"
 "эффектом управляемого фильтра и для подгонки контраста\n"
-"под -4EV."
+"под -4 EV."
 
 #: ../src/iop/toneequal.c:3236 ../src/iop/toneequal.c:3240
 msgid "display exposure mask"
@@ -16177,7 +16177,7 @@ msgid ""
 msgstr ""
 "Шагов коррекции экспозиции на каждый снимок в вилке.\n"
 "Данный параметр настраивается в камере и обычно составляет\n"
-"3 шага на 1EV коррекции экспозиции."
+"3 шага на 1 EV коррекции экспозиции."
 
 #. user specified properties
 #: ../src/libs/camera.c:520
@@ -16879,7 +16879,7 @@ msgstr "Экспортировать данные Exif"
 
 #: ../src/libs/export_metadata.c:290
 msgid "export dt xmp metadata (from metadata editor module)"
-msgstr "Экспортировать метаданные xmp (модуль редактирования метаданных)"
+msgstr "Экспортировать метаданные XMP (модуль редактирования метаданных)"
 
 #: ../src/libs/export_metadata.c:300
 msgid "only embedded"
@@ -19646,8 +19646,8 @@ msgstr "и..."
 #: ../src/libs/tools/darktable.c:308
 msgid "translator-credits"
 msgstr ""
-"Александр Прокудин <alexandre.prokoudine@gmail.com>, Тимур Давлетшин <timur."
-"davletshin@gmail.com>"
+"Тимур Давлетшин <timur.davletshin@gmail.com>, Александр Прокудин <alexandre."
+"prokoudine@gmail.com>"
 
 #: ../src/libs/tools/filmstrip.c:53
 msgid "filmstrip"
