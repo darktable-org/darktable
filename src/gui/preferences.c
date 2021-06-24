@@ -491,14 +491,18 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
     else
     {
       //load default text with some pointers
-      gtk_text_buffer_set_text(buffer, _("/* ERROR Loading user.css */"), -1);
+      gchar *errtext = g_strconcat("/* ", _("ERROR Loading user.css"), " */", NULL);
+      gtk_text_buffer_set_text(buffer, errtext, -1);
+      g_free(errtext);
     }
     g_free(usercsscontent);
   }
   else
   {
     //load default text
-    gtk_text_buffer_set_text(buffer, _("/* Enter CSS theme tweaks here */\n\n"), -1);
+    gchar *deftext = g_strconcat("/* ", _("Enter CSS theme tweaks here"), " */\n\n", NULL);
+    gtk_text_buffer_set_text(buffer, deftext, -1);
+    g_free(deftext);
   }
 
 }
