@@ -2552,6 +2552,7 @@ void dt_database_show_error(const dt_database_t *db)
         lck_filename = g_strconcat(lck_dirname, "/library.db.lock", NULL);
         if(g_access(lck_filename, F_OK) != -1)
           status += remove(lck_filename);
+        g_free(lck_filename);
 
         if(status==0)
           dt_gui_show_standalone_yes_no_dialog(_("done"),
