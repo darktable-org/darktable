@@ -65,6 +65,7 @@ static gchar* _dt_full_locale_name(const char *locale)
         }
         j++;
       }
+      g_strfreev(locales);
     }
   }
   return NULL;
