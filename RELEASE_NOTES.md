@@ -14,15 +14,15 @@ $ sha256sum darktable-3.8.0.exe
 ??? darktable-3.8.0.exe
 ```
 
-When updating from the currently stable 3.4.x series, please bear in
+When updating from the currently stable 3.6.x series, please bear in
 mind that your edits will be preserved during this process, but the new
-library and configuration will not be usable with 3.4.x any more.
+library and configuration will not be usable with 3.6.x any more.
 
 You are strongly advised to take a backup first.
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-- Almost 2680 commits to darktable+rawspeed since 3.4
+- Almost 2680 commits to darktable+rawspeed since 3.6
 - 954 pull requests handled
 - 110 issues closed
 
@@ -40,7 +40,7 @@ You are strongly advised to take a backup first.
 ## RawSpeed changes
 
 
-## Camera support, compared to 3.4.1
+## Camera support, compared to 3.6
 
 ### Base Support
 
