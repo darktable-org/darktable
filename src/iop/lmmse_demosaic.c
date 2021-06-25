@@ -38,7 +38,7 @@
 
 #ifdef __GNUC__
   #pragma GCC push_options
-  #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "fp-contract=fast", "no-math-errno")
+  #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "no-math-errno")
 #endif
 
 #define LMMSE_TILESIZE 128
@@ -102,9 +102,9 @@ static INLINE float median9f(float a0, float a1, float a2, float a3, float a4, f
 static INLINE float calc_gamma(float val, float *table)
 {
   const float index = val * 65535.0f;
-  const int idx = (int)index;
   if(index < 0.0f)      return 0.0f;
   if(index > 65534.99f) return 1.0f;
+  const int idx = (int)index;
 
   const float diff = index - (float)idx;
   const float p1 = table[idx];
@@ -128,68 +128,68 @@ static void refinement(const int width, const int height, float *const restrict 
 {
   const int r1 = 4 * width;
   const int r2 = 8 * width;
-  const float magic = (0.5f * scaler) / 65535.0f; 
   for(int b = 0; b < 2; b++)
   {
-#ifdef _OPENMP
-  #pragma omp parallel
-#endif
-    {
       // Reinforce interpolated green pixels on RED/BLUE pixel locations
 #ifdef _OPENMP
-      #pragma omp for
+  #pragma omp parallel for simd default(none) \
+  dt_omp_sharedconst(out, width, height, filters, r1, r2) \
+  schedule(simd:static) aligned(out : 64) 
 #endif
-      for(int row = 2; row < height - 2; row++)
+    for(int row = 2; row < height - 2; row++)
+    {
+      for(int col = 2 + (FC(row, 2, filters) & 1), c = FC(row, col, filters); col < width - 2; col += 2)
       {
-        for(int col = 2 + (FC(row, 2, filters) & 1), c = FC(row, col, filters); col < width - 2; col += 2)
-        {
-          float *rgb = &out[4 * (width * row + col)];
-          const float dL = 1.0f / (1.0f + fabsf(rgb[c - c2] - rgb[c]) + fabsf(rgb[1 + c1] - rgb[1 - c1]));
-          const float dR = 1.0f / (1.0f + fabsf(rgb[c + c2] - rgb[c]) + fabsf(rgb[1 + c1] - rgb[1 - c1]));
-          const float dU = 1.0f / (1.0f + fabsf(rgb[c - r2] - rgb[c]) + fabsf(rgb[1 + r1] - rgb[1 - r1]));
-          const float dD = 1.0f / (1.0f + fabsf(rgb[c + r2] - rgb[c]) + fabsf(rgb[1 + r1] - rgb[1 - r1]));
-          const float v0 = (rgb[c] + magic + ((rgb[1 - c1] - rgb[c - c1]) * dL + (rgb[1 + c1] - rgb[c + c1]) * dR + (rgb[1 - r1] - rgb[c - r1]) * dU + (rgb[1 + r1] - rgb[c + r1]) * dD ) / (dL + dR + dU + dD));
-          rgb[1] = fmaxf(0.0f, v0);
-        }
+        float *rgb = &out[4 * (width * row + col)];
+        const float dL = 1.0f / (1.0f + fabsf(rgb[c - c2] - rgb[c]) + fabsf(rgb[1 + c1] - rgb[1 - c1]));
+        const float dR = 1.0f / (1.0f + fabsf(rgb[c + c2] - rgb[c]) + fabsf(rgb[1 + c1] - rgb[1 - c1]));
+        const float dU = 1.0f / (1.0f + fabsf(rgb[c - r2] - rgb[c]) + fabsf(rgb[1 + r1] - rgb[1 - r1]));
+        const float dD = 1.0f / (1.0f + fabsf(rgb[c + r2] - rgb[c]) + fabsf(rgb[1 + r1] - rgb[1 - r1]));
+        const float v0 = (rgb[c] + ((rgb[1 - c1] - rgb[c - c1]) * dL + (rgb[1 + c1] - rgb[c + c1]) * dR + (rgb[1 - r1] - rgb[c - r1]) * dU + (rgb[1 + r1] - rgb[c + r1]) * dD ) / (dL + dR + dU + dD));
+        rgb[1] = fmaxf(0.0f, v0);
       }
+    }
 
       // Reinforce interpolated red/blue pixels on GREEN pixel locations
 #ifdef _OPENMP
-      #pragma omp for
+  #pragma omp parallel for simd default(none) \
+  dt_omp_sharedconst(out, width, height, filters, r1, r2) \
+  schedule(simd:static) aligned(out : 64) 
 #endif
-      for(int row = 2; row < height - 2; row++)
+    for(int row = 2; row < height - 2; row++)
+    {
+      for(int col = 2 + (FC(row, 3, filters) & 1), c = FC(row, col + 1, filters); col < width - 2; col += 2)
       {
-        for(int col = 2 + (FC(row, 3, filters) & 1), c = FC(row, col + 1, filters); col < width - 2; col += 2)
+        float *rgb = &out[4 * (width * row + col)];
+        for(int i = 0; i < 2; c = 2 - c, i++)
         {
-          float *rgb = &out[4 * (width * row + col)];
-          for(int i = 0; i < 2; c = 2 - c, i++)
-          {
-            const float dL = 1.0f / (1.0f + fabsf(rgb[1 - c2] - rgb[1]) + fabsf(rgb[c + c1] - rgb[c - c1]));
-            const float dR = 1.0f / (1.0f + fabsf(rgb[1 + c2] - rgb[1]) + fabsf(rgb[c + c1] - rgb[c - c1]));
-            const float dU = 1.0f / (1.0f + fabsf(rgb[1 - r2] - rgb[1]) + fabsf(rgb[c + r1] - rgb[c - r1]));
-            const float dD = 1.0f / (1.0f + fabsf(rgb[1 + r2] - rgb[1]) + fabsf(rgb[c + r1] - rgb[c - r1]));
-            const float v0 = (rgb[1] + magic - ((rgb[1 - c1] - rgb[c - c1]) * dL + (rgb[1 + c1] - rgb[c + c1]) * dR + (rgb[1 - r1] - rgb[c - r1]) * dU + (rgb[1 + r1] - rgb[c + r1]) * dD ) / (dL + dR + dU + dD));
-            rgb[c] = fmaxf(0.0f, v0);
-          }
-        }
-      }
-      // Reinforce integrated red/blue pixels on BLUE/RED pixel locations
-#ifdef _OPENMP
-      #pragma omp for
-#endif
-      for(int row = 2; row < height - 2; row++)
-      {
-        for(int col = 2 + (FC(row, 2, filters) & 1), c = 2 - FC(row, col, filters); col < width - 2; col += 2)
-        {
-          float *rgb = &out[4 * (width * row + col)];
-          const int d = 2 - c;
-          const float dL = 1.0f / (1.0f + fabsf(rgb[d - c2] - rgb[d]) + fabsf(rgb[1 + c1] - rgb[1 - c1]));
-          const float dR = 1.0f / (1.0f + fabsf(rgb[d + c2] - rgb[d]) + fabsf(rgb[1 + c1] - rgb[1 - c1]));
-          const float dU = 1.0f / (1.0f + fabsf(rgb[d - r2] - rgb[d]) + fabsf(rgb[1 + r1] - rgb[1 - r1]));
-          const float dD = 1.0f / (1.0f + fabsf(rgb[d + r2] - rgb[d]) + fabsf(rgb[1 + r1] - rgb[1 - r1]));
-          const float v0 = (rgb[1] + magic - ((rgb[1 - c1] - rgb[c - c1]) * dL + (rgb[1 + c1] - rgb[c + c1]) * dR + (rgb[1 - r1] - rgb[c - r1]) * dU + (rgb[1 + r1] - rgb[c + r1]) * dD ) / (dL + dR + dU + dD));
+          const float dL = 1.0f / (1.0f + fabsf(rgb[1 - c2] - rgb[1]) + fabsf(rgb[c + c1] - rgb[c - c1]));
+          const float dR = 1.0f / (1.0f + fabsf(rgb[1 + c2] - rgb[1]) + fabsf(rgb[c + c1] - rgb[c - c1]));
+          const float dU = 1.0f / (1.0f + fabsf(rgb[1 - r2] - rgb[1]) + fabsf(rgb[c + r1] - rgb[c - r1]));
+          const float dD = 1.0f / (1.0f + fabsf(rgb[1 + r2] - rgb[1]) + fabsf(rgb[c + r1] - rgb[c - r1]));
+          const float v0 = (rgb[1] - ((rgb[1 - c1] - rgb[c - c1]) * dL + (rgb[1 + c1] - rgb[c + c1]) * dR + (rgb[1 - r1] - rgb[c - r1]) * dU + (rgb[1 + r1] - rgb[c + r1]) * dD ) / (dL + dR + dU + dD));
           rgb[c] = fmaxf(0.0f, v0);
         }
+      }
+    }
+      // Reinforce integrated red/blue pixels on BLUE/RED pixel locations
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_sharedconst(out, width, height, filters, r1, r2) \
+  schedule(simd:static) aligned(out : 64) 
+#endif
+    for(int row = 2; row < height - 2; row++)
+    {
+      for(int col = 2 + (FC(row, 2, filters) & 1), c = 2 - FC(row, col, filters); col < width - 2; col += 2)
+      {
+        float *rgb = &out[4 * (width * row + col)];
+        const int d = 2 - c;
+        const float dL = 1.0f / (1.0f + fabsf(rgb[d - c2] - rgb[d]) + fabsf(rgb[1 + c1] - rgb[1 - c1]));
+        const float dR = 1.0f / (1.0f + fabsf(rgb[d + c2] - rgb[d]) + fabsf(rgb[1 + c1] - rgb[1 - c1]));
+        const float dU = 1.0f / (1.0f + fabsf(rgb[d - r2] - rgb[d]) + fabsf(rgb[1 + r1] - rgb[1 - r1]));
+        const float dD = 1.0f / (1.0f + fabsf(rgb[d + r2] - rgb[d]) + fabsf(rgb[1 + r1] - rgb[1 - r1]));
+        const float v0 = (rgb[1] - ((rgb[1 - c1] - rgb[c - c1]) * dL + (rgb[1 + c1] - rgb[c + c1]) * dR + (rgb[1 - r1] - rgb[c - r1]) * dU + (rgb[1 + r1] - rgb[c + r1]) * dD ) / (dL + dR + dU + dD));
+        rgb[c] = fmaxf(0.0f, v0);
       }
     }
   }
@@ -267,10 +267,10 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
 #endif
     for(int rrr = BORDER_AROUND; rrr < grp_height - BORDER_AROUND; rrr++)
     {
-      for(int ccc = BORDER_AROUND, row = rrr - BORDER_AROUND; ccc < grp_width - BORDER_AROUND; ccc++)
+      for(int ccc = BORDER_AROUND, row = rrr - BORDER_AROUND, col = ccc - BORDER_AROUND; ccc < grp_width - BORDER_AROUND; ccc++, col++)
       {
         float *rix0 = qix[4] + rrr * grp_width + ccc;
-        rix0[0] = calc_gamma(revscaler * in[row * width + ccc - BORDER_AROUND], gamma_in);
+        rix0[0] = calc_gamma(revscaler * in[row * width + col], gamma_in);
       }
     }
 
@@ -284,20 +284,20 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
       for(int cc = 2 + (FC(rr, 2, filters) & 1); cc < grp_width - 2; cc += 2)
       {
         rix[4] = qix[4] + rr * grp_width + cc;
-        float v0 = 0.0625f * (rix[4][-w1 - 1] + rix[4][-w1 + 1] + rix[4][w1 - 1] + rix[4][w1 + 1]) + 0.25f * rix[4][0];
+        const float v0 = 0.0625f * (rix[4][-w1 - 1] + rix[4][-w1 + 1] + rix[4][w1 - 1] + rix[4][w1 + 1]) + 0.25f * rix[4][0];
         // horizontal
         rix[0] = qix[0] + rr * grp_width + cc;
         rix[0][0] = -0.25f * (rix[4][ -2] + rix[4][ 2]) + 0.5f * (rix[4][ -1] + rix[4][0] + rix[4][ 1]);
-        float Y = v0 + 0.5f * rix[0][0];
+        const float Y0 = v0 + 0.5f * rix[0][0];
 
-        rix[0][0] = (rix[4][0] > 1.75f * Y) ? median3f(rix[0][0], rix[4][ -1], rix[4][ 1]) : limf(rix[0][0], 0.0f, 1.0f);
+        rix[0][0] = (rix[4][0] > 1.75f * Y0) ? median3f(rix[0][0], rix[4][ -1], rix[4][ 1]) : limf(rix[0][0], 0.0f, 1.0f);
         rix[0][0] -= rix[4][0];
         // vertical
         rix[1] = qix[1] + rr * grp_width + cc;
         rix[1][0] = -0.25f * (rix[4][-w2] + rix[4][w2]) + 0.5f * (rix[4][-w1] + rix[4][0] + rix[4][w1]);
-        Y = v0 + 0.5f * rix[1][0];
+        const float Y1 = v0 + 0.5f * rix[1][0];
 
-        rix[1][0] = (rix[4][0] > 1.75f * Y) ? median3f(rix[1][0], rix[4][-w1], rix[4][w1]) : limf(rix[1][0], 0.0f, 1.0f);
+        rix[1][0] = (rix[4][0] > 1.75f * Y1) ? median3f(rix[1][0], rix[4][-w1], rix[4][w1]) : limf(rix[1][0], 0.0f, 1.0f);
         rix[1][0] -= rix[4][0];
       }
 
@@ -406,7 +406,6 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
       {
         const int c = FC(rr, cc, filters);
         rix[c] = qix[c] + rr * grp_width + cc;
-
         rix[c][0] = ((row_in >= 0) && (row_in < height) && (col_in >= 0) && (col_in < width)) ? calc_gamma(revscaler * in[row_in * width + col_in], gamma_in) : 0.0f;
 
         if(c != 1)
@@ -458,7 +457,11 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
     // Apply 3x3 median filter
     // Compute median(R-G) and median(B-G)
 #ifdef _OPENMP
-    #pragma omp parallel for private(rix)
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(rix) \
+  dt_omp_sharedconst(w1, grp_width, grp_height) \
+  shared(qix) \
+  schedule(simd:static) 
 #endif
     for(int rr = 1; rr < grp_height - 1; rr++)
     {
@@ -480,7 +483,11 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
 
     // red/blue at GREEN pixel locations & red/blue and green at BLUE/RED pixel locations
 #ifdef _OPENMP
-    #pragma omp parallel for private (rix)
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(rix) \
+  dt_omp_sharedconst(grp_width, grp_height, filters) \
+  shared(qix) \
+  schedule(simd:static) 
 #endif
     for(int rr = 0; rr < grp_height; rr++)
     {
@@ -557,26 +564,21 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
 
   // write result to out
 #ifdef _OPENMP
-  #pragma omp parallel for
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(qix) \
+  dt_omp_sharedconst(out, in, gamma_out, grp_width, width, height, filters, scaler) \
+  schedule(simd:static) aligned(out, in, gamma_out : 64) 
 #endif
   for(int row = 0; row < height; row++)
   {
-    for(int col = 0, rr = row + BORDER_AROUND; col < width; col++)
+    for(int col = 0, rr = row + BORDER_AROUND, cc = col + BORDER_AROUND; col < width; col++, cc++)
     {
-      const int cc = col + BORDER_AROUND;
       const int c = FC(row, col, filters);
       const int oidx = 4 * (row * width + col);
-      for(int i = 0; i < 3; i++)
+      for(int i = 0; i < DT_PIXEL_SIMD_CHANNELS; i++)
       {
-        if(i != c)
-        {
-          float *rix0 = qix[i] + rr * grp_width + cc;
-          out[oidx + i] = fmaxf(0.0f, scaler * calc_gamma(rix0[0], gamma_out));
-        }
-        else
-        {
-          out[oidx + i] = fmaxf(0.0f, in[row * width + col]);
-        }
+        const float val = (i == c) ? in[row * width + col] : scaler * calc_gamma(qix[i][rr * grp_width + cc], gamma_out); 
+        out[oidx + i] = fmaxf(0.0f, val);
       }
       out[oidx + 3] = 0.0f;
     }
