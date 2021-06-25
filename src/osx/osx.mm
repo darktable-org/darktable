@@ -230,6 +230,11 @@ void dt_osx_prepare_environment()
         g_setenv("CAMLIBS", cam_path, TRUE);
         g_free(cam_path);
       }
+      {
+        gchar* gio_path = g_build_filename(lib_path, "gio", "modules", NULL);
+        g_setenv("GIO_MODULE_DIR", gio_path, TRUE);
+        g_free(gio_path);
+      }
       g_free(lib_path);
     }
     g_free(res_path);
