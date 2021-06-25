@@ -109,7 +109,7 @@ typedef enum dt_iop_demosaic_lmmse_t
   LMMSE_REFINE_0 = 0,   // $DESCRIPTION: "basic"
   LMMSE_REFINE_1 = 1,   // $DESCRIPTION: "median"
   LMMSE_REFINE_2 = 2,   // $DESCRIPTION: "3x median"
-  LMMSE_REFINE_3 = 3,   // $DESCRIPTION: "3x median + refine"
+  LMMSE_REFINE_3 = 3,   // $DESCRIPTION: "refine + 3x median"
 } dt_iop_demosaic_lmmse_t;
 
 typedef struct dt_iop_demosaic_params_t
@@ -118,7 +118,7 @@ typedef struct dt_iop_demosaic_params_t
   float median_thrs; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "edge threshold"
   dt_iop_demosaic_smooth_t color_smoothing; // $DEFAULT: DEMOSAIC_SMOOTH_OFF $DESCRIPTION: "color smoothing"
   dt_iop_demosaic_method_t demosaicing_method; // $DEFAULT: DT_IOP_DEMOSAIC_RCD $DESCRIPTION: "demosaicing method"
-  dt_iop_demosaic_lmmse_t lmmse_refine; // $DEFAULT: LMMSE_REFINE_1 $DESCRIPTION: "lmmse refinement"
+  dt_iop_demosaic_lmmse_t lmmse_refine; // $DEFAULT: LMMSE_REFINE_1 $DESCRIPTION: "lmmse refine"
   float dual_thrs; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.20 $DESCRIPTION: "switch dual threshold"
 } dt_iop_demosaic_params_t;
 
@@ -5630,67 +5630,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
-{
-  dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
-  dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-
-  const gboolean bayer = (self->dev->image_storage.buf_dsc.filters != 9u);
-  dt_iop_demosaic_method_t use_method = p->demosaicing_method;
-  const gboolean xmethod = use_method & DEMOSAIC_XTRANS;
-
-  if(bayer && xmethod)   use_method = DT_IOP_DEMOSAIC_RCD;
-  if(!bayer && !xmethod) use_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
-
-  const gboolean isppg = (use_method == DT_IOP_DEMOSAIC_PPG);
-  const gboolean isdual = (use_method & DEMOSAIC_DUAL);
-  const gboolean islmmse = (p->demosaicing_method == DT_IOP_DEMOSAIC_LMMSE);
-  const gboolean passing = ((use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
-                            (use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
-                            (use_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
-                            (use_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX));
-
-  gtk_widget_set_visible(g->demosaic_method_bayer, bayer);
-  gtk_widget_set_visible(g->demosaic_method_xtrans, !bayer);
-  if(bayer)
-    dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayer, use_method);
-  else
-    dt_bauhaus_combobox_set_from_value(g->demosaic_method_xtrans, use_method);
-
-  gtk_widget_set_visible(g->median_thrs, bayer && isppg);
-  gtk_widget_set_visible(g->greeneq, !passing);
-  gtk_widget_set_visible(g->color_smoothing, !passing && !isdual);
-  gtk_widget_set_visible(g->dual_mask, isdual);
-  gtk_widget_set_visible(g->dual_thrs, isdual);
-  gtk_widget_set_visible(g->lmmse_refine, islmmse);
-
-  dt_bauhaus_slider_set(g->median_thrs, p->median_thrs);
-  dt_bauhaus_combobox_set(g->color_smoothing, p->color_smoothing);
-  dt_bauhaus_combobox_set(g->greeneq, p->green_eq);
-  dt_bauhaus_combobox_set(g->lmmse_refine, p->lmmse_refine);
-  dt_bauhaus_slider_set(g->dual_thrs, p->dual_thrs);
-
-  g->show_mask = FALSE;
-  dt_bauhaus_widget_set_quad_active(g->dual_mask, g->show_mask);
-  dt_bauhaus_widget_set_quad_toggle(g->dual_mask, g->show_mask);
-
-  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
-
-  dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'w');
-  int changed = img->flags & DT_IMAGE_MONOCHROME_BAYER;
-  if((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
-     (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX))
-    img->flags |= DT_IMAGE_MONOCHROME_BAYER;
-  else
-    img->flags &= ~DT_IMAGE_MONOCHROME_BAYER;
-  const int mask_bw = dt_image_monochrome_flags(img);
-  changed ^= img->flags & DT_IMAGE_MONOCHROME_BAYER;
-
-  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-  if(changed)
-    dt_imageio_update_monochrome_workflow_tag(self->dev->image_storage.id, mask_bw);
-}
-
 void reload_defaults(dt_iop_module_t *module)
 {
   dt_iop_demosaic_params_t *d = (dt_iop_demosaic_params_t *)module->default_params;
@@ -5713,13 +5652,19 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
 
   const gboolean bayer = (self->dev->image_storage.buf_dsc.filters != 9u);
-  const gboolean isppg = (p->demosaicing_method == DT_IOP_DEMOSAIC_PPG);
-  const gboolean isdual = (p->demosaicing_method & DEMOSAIC_DUAL);
-  const gboolean islmmse = (p->demosaicing_method == DT_IOP_DEMOSAIC_LMMSE);
-  const gboolean passing = ((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
-                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
-                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
-                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX));
+  dt_iop_demosaic_method_t use_method = p->demosaicing_method;
+  const gboolean xmethod = use_method & DEMOSAIC_XTRANS;
+
+  if(bayer && xmethod)   use_method = DT_IOP_DEMOSAIC_RCD;
+  if(!bayer && !xmethod) use_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+
+  const gboolean isppg = (use_method == DT_IOP_DEMOSAIC_PPG);
+  const gboolean isdual = (use_method & DEMOSAIC_DUAL);
+  const gboolean islmmse = (use_method == DT_IOP_DEMOSAIC_LMMSE);
+  const gboolean passing = ((use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
+                            (use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
+                            (use_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
+                            (use_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX));
 
   gtk_widget_set_visible(g->demosaic_method_bayer, bayer);
   gtk_widget_set_visible(g->demosaic_method_xtrans, !bayer);
@@ -5748,6 +5693,25 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(changed)
     dt_imageio_update_monochrome_workflow_tag(self->dev->image_storage.id, mask_bw);
 }
+void gui_update(struct dt_iop_module_t *self)
+{
+  dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
+  dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
+
+  gui_changed(self, NULL, NULL);
+
+  dt_bauhaus_slider_set(g->median_thrs, p->median_thrs);
+  dt_bauhaus_combobox_set(g->color_smoothing, p->color_smoothing);
+  dt_bauhaus_combobox_set(g->greeneq, p->green_eq);
+  dt_bauhaus_combobox_set(g->lmmse_refine, p->lmmse_refine);
+  dt_bauhaus_slider_set(g->dual_thrs, p->dual_thrs);
+
+  g->show_mask = FALSE;
+  dt_bauhaus_widget_set_quad_active(g->dual_mask, g->show_mask);
+  dt_bauhaus_widget_set_quad_toggle(g->dual_mask, g->show_mask);
+
+  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
+}
 
 static void show_mask_callback(GtkWidget *slider, gpointer user_data)
 {
@@ -5770,7 +5734,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->demosaic_method_bayer = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
   for(int i=0;i<7;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayer, 9);
-  gtk_widget_set_tooltip_text(g->demosaic_method_bayer, _("bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are slow.\nFor high ISO images LMMSE is suited best.\ndual demosaicers double processing time."));
+  gtk_widget_set_tooltip_text(g->demosaic_method_bayer, _("bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are slow.\nLMMSE is suited best for high ISO images.\ndual demosaicers double processing time."));
 
   g->demosaic_method_xtrans = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
   for(int i=0;i<9;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_xtrans, 0);
