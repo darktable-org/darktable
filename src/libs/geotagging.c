@@ -938,12 +938,7 @@ static void _choose_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   dt_osx_disallow_fullscreen(filechooser);
 #endif
 
-  char *last_directory = dt_conf_get_string("ui_last/gpx_last_directory");
-  if(last_directory != NULL)
-  {
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), last_directory);
-    g_free(last_directory);
-  }
+  dt_conf_get_folder_to_file_chooser("ui_last/gpx_last_directory", filechooser);
 
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());

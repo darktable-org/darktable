@@ -1496,9 +1496,7 @@ static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t *self)
 #endif
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
-
-  const gchar *last_place = dt_conf_get_string("ui_last/import_last_place");
-  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), last_place);
+  dt_conf_get_folder_to_file_chooser("ui_last/import_last_place", filechooser);
 
   // run the dialog
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)

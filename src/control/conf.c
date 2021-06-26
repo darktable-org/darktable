@@ -305,6 +305,18 @@ gchar *dt_conf_get_string(const char *name)
   return g_strdup(str);
 }
 
+gboolean dt_conf_get_folder_to_file_chooser(const char *name, GtkWidget *chooser)
+{
+  gchar *folder = dt_conf_get_string(name);
+  if (folder)
+  {
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser),folder);
+    g_free(folder);
+    return TRUE;
+  }
+  return FALSE;
+}
+
 gboolean dt_conf_is_equal(const char *name, const char *value)
 {
   const char *str = dt_conf_get_var(name);
