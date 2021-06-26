@@ -190,14 +190,14 @@ inline void compute_kern(const float4 c2,
     }
     case(DT_ISOTROPY_ISOPHOTE):
     {
-      float4 a[2][2] = { { 0.f } };
+      float4 a[2][2] = { { (float4)0.f } };
       rotation_matrix_isophote(c2, cos_theta, sin_theta, cos_theta2, sin_theta2, a);
       build_matrix(a, kern);
       break;
     }
     case(DT_ISOTROPY_GRADIENT):
     {
-      float4 a[2][2] = { { 0.f } };
+      float4 a[2][2] = { { (float4)0.f } };
       rotation_matrix_gradient(c2, cos_theta, sin_theta, cos_theta2, sin_theta2, a);
       build_matrix(a, kern);
       break;
