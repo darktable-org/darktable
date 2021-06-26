@@ -24,14 +24,15 @@
 typedef struct dt_film_import1_t
 {
   dt_film_t *film;
+  GList *imagelist;
 } dt_film_import1_t;
 
-static void dt_film_import1(dt_job_t *job, dt_film_t *film);
+static void _film_import1(dt_job_t *job, dt_film_t *film, GList *images);
 
 static int32_t dt_film_import1_run(dt_job_t *job)
 {
   dt_film_import1_t *params = dt_control_job_get_params(job);
-  dt_film_import1(job, params->film);
+  _film_import1(job, params->film, NULL); // import the given film, collecting its images
   dt_pthread_mutex_lock(&params->film->images_mutex);
   params->film->ref--;
   dt_pthread_mutex_unlock(&params->film->images_mutex);
@@ -75,6 +76,73 @@ dt_job_t *dt_film_import1_create(dt_film_t *film)
   dt_pthread_mutex_lock(&film->images_mutex);
   film->ref++;
   dt_pthread_mutex_unlock(&film->images_mutex);
+  return job;
+}
+
+static int32_t _pathlist_import_run(dt_job_t *job)
+{
+  dt_film_import1_t *params = dt_control_job_get_params(job);
+  _film_import1(job, NULL, params->imagelist); // import the specified images, creating filmrolls as needed
+  g_list_free_full(params->imagelist, g_free);
+
+  // notify the user via the window manager
+  dt_ui_notify_user();
+  return 0;
+}
+
+static void _pathlist_import_cleanup(void *p)
+{
+  dt_film_import1_t *params = p;
+  g_list_free_full(params->imagelist, g_free);
+  free(params);
+}
+
+dt_job_t *dt_pathlist_import_create(int argc, char *argv[])
+{
+  dt_job_t *job = dt_control_job_create(&_pathlist_import_run, "import commandline images");
+  if(!job) return NULL;
+  dt_film_import1_t *params = (dt_film_import1_t *)calloc(1, sizeof(dt_film_import1_t));
+  if(!params)
+  {
+    dt_control_job_dispose(job);
+    return NULL;
+  }
+  dt_control_job_add_progress(job, _("import images"), FALSE);
+  dt_control_job_set_params(job, params, _pathlist_import_cleanup);
+  params->film = NULL;
+  // now collect all of the images to be imported
+  params->imagelist = NULL;
+  for(int i = 1; i < argc; i++)
+  {
+    char *path = dt_util_normalize_path(argv[i]);
+    if(!g_file_test(path, G_FILE_TEST_IS_DIR))
+    {
+      // add just the given name to the list of images to import
+      params->imagelist = g_list_prepend(params->imagelist, path);
+    }
+    else
+    {
+      // iterate over the directory, extracting image files
+      GDir *cdir = g_dir_open(path, 0, NULL);
+      if (cdir)
+      {
+        while(TRUE)
+        {
+          const gchar *fname = g_dir_read_name(cdir);
+          if(!fname) break;  			// no more files in directory
+          if(fname[0] == '.') continue; 	// skip hidden files
+          gchar *fullname = g_build_filename(path, fname, NULL);
+          if(!g_file_test(fullname, G_FILE_TEST_IS_DIR) && dt_supported_image(fname))
+            params->imagelist = g_list_prepend(params->imagelist, fullname);
+          else
+            g_free(fullname);
+        }
+      }
+      g_dir_close(cdir);
+      g_free(path);
+    }
+  }
+  params->imagelist = g_list_reverse(params->imagelist);
   return job;
 }
 
@@ -159,17 +227,19 @@ static int _film_filename_cmp(gchar *a, gchar *b)
   return ret;
 }
 
-static void dt_film_import1(dt_job_t *job, dt_film_t *film)
+static void _film_import1(dt_job_t *job, dt_film_t *film, GList *images)
 {
-  gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
-
-  /* first of all gather all images to import */
-  GList *images = NULL;
-  images = _film_recursive_get_files(film->dirname, recursive, &images);
-  if(images == NULL)
+  // first, gather all images to import if not already given
+  if (!images)
   {
-    dt_control_log(_("no supported images were found to be imported"));
-    return;
+    gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
+
+    images = _film_recursive_get_files(film->dirname, recursive, &images);
+    if(images == NULL)
+    {
+      dt_control_log(_("no supported images were found to be imported"));
+      return;
+    }
   }
 
 #ifdef USE_LUA
@@ -291,6 +361,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, film->id);
 
+  //QUESTION: should this come after _apply_filmroll_gpx, since that can change geotags again?
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, all_imgs, 0);
 
   _apply_filmroll_gpx(cfr);
