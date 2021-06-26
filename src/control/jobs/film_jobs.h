@@ -23,6 +23,7 @@
 #include <inttypes.h>
 
 dt_job_t *dt_film_import1_create(dt_film_t *film);
+dt_job_t *dt_pathlist_import_create(int argc, char *argv[]);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
