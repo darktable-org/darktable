@@ -53,6 +53,7 @@ typedef struct dt_lib_collect_rule_t
   GtkWidget *text;
   GtkWidget *button;
   gboolean typing;
+  gchar *searchstring;
 } dt_lib_collect_rule_t;
 
 typedef struct dt_lib_collect_t
@@ -837,12 +838,11 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *)data;
   gchar *str = NULL;
   gboolean visible = FALSE;
-
-  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, -1);
+  gboolean was_visible;
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_VISIBLE, &was_visible, -1);
 
   gchar *haystack = g_utf8_strdown(str, -1);
-  gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
-  if(g_str_has_suffix(needle, "%")) needle[strlen(needle) - 1] = '\0';
+  const gchar *needle = dr->searchstring;
 
   const int property = _combo_get_active_collection(dr->combo);
   if(property == DT_COLLECTION_PROP_APERTURE
@@ -891,20 +891,14 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
     g_free(number);
     g_free(number2);
   }
-  else if (property == DT_COLLECTION_PROP_FILENAME)
+  else if (property == DT_COLLECTION_PROP_FILENAME && strchr(needle,',') != NULL)
   {
     GList *list = dt_util_str_to_glist(",", needle);
 
     for (const GList *l = list; l; l = g_list_next(l))
     {
-      if(g_str_has_prefix((char *)l->data, "%"))
-      {
-        if((visible = (g_strrstr(haystack, (char *)l->data + 1) != NULL))) break;
-      }
-      else
-      {
-        if((visible = (g_strrstr(haystack, (char *)l->data) != NULL))) break;
-      }
+      const char *name = (char *)l->data;
+      if((visible = (g_strrstr(haystack, name + (name[0]=='%')) != NULL))) break;
     }
 
     g_list_free_full(list, g_free);
@@ -912,18 +906,29 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   }
   else
   {
-    if(g_str_has_prefix(needle, "%"))
-      visible = (g_strrstr(haystack, needle + 1) != NULL);
+    if (needle[0] == '%')
+      needle++;
+    if (!needle[0])
+    {
+      // empty search string matches all
+      visible = TRUE;
+    }
+    else if (!needle[1])
+    {
+      // single-char search, use faster strchr instead of strstr
+      visible = (strchr(haystack, needle[0]) != NULL);
+    }
     else
+    {
       visible = (g_strrstr(haystack, needle) != NULL);
+    }
   }
 
   g_free(haystack);
-  g_free(needle);
-
   g_free(str);
 
-  gtk_list_store_set(GTK_LIST_STORE(model), iter, DT_LIB_COLLECT_COL_VISIBLE, visible, -1);
+  if (visible != was_visible)
+    gtk_list_store_set(GTK_LIST_STORE(model), iter, DT_LIB_COLLECT_COL_VISIBLE, visible, -1);
   return FALSE;
 }
 
@@ -1962,7 +1967,14 @@ static void list_view(dt_lib_collect_rule_t *dr)
                     || property == DT_COLLECTION_PROP_ORDER
                     || (property >= DT_COLLECTION_PROP_METADATA
                         && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)))
+  {
+    gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
+    if(g_str_has_suffix(needle, "%")) needle[strlen(needle) - 1] = '\0';
+    dr->searchstring = needle;
     gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)list_match_string, dr);
+    dr->searchstring = NULL;
+    g_free(needle);
+  }
   // we update list selection
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
 
