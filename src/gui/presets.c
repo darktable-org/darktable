@@ -55,7 +55,7 @@ static const char *_dt_gui_presets_aperture_value_str[]
 
 // format string and corresponding flag stored into the database
 static const char *_dt_gui_presets_format_value_str[5]
-    = { N_("normal images"), N_("raw"), N_("HDR"), N_("monochrome"), N_("color") };
+    = { N_("non-raw images"), N_("raw files"), N_("HDR"), N_("monochrome"), N_("color") };
 static const int _dt_gui_presets_format_flag[5] = { FOR_LDR, FOR_RAW, FOR_HDR, FOR_NOT_MONO, FOR_NOT_COLOR };
 
 // this is also called for non-gui applications linking to libdarktable!
