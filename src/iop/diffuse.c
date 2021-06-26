@@ -759,7 +759,7 @@ static inline gint wavelets_process(const float *const restrict in, float *const
   float *restrict residual; // will store the temp buffer containing the last step of blur
   for(int s = 0; s < scales; ++s)
   {
-    fprintf(stdout, "Wavelet decompose : scale %i\n", s);
+    /* fprintf(stdout, "Wavelet decompose : scale %i\n", s); */
     const int mult = 1 << s;
 
     const float *restrict buffer_in;
@@ -810,8 +810,10 @@ static inline gint wavelets_process(const float *const restrict in, float *const
                                              data->third * KAPPA * norm, data->fourth * KAPPA * norm };
     const float strength = data->sharpness * norm + 1.f;
 
+    /* debug
     fprintf(stdout, "PDE solve : scale %i : mult = %i ; current rad = %.0f ; real rad = %.0f ; norm = %f ; strength = %f\n", s,
             1 << s, current_radius, real_radius, norm, strength);
+    */
 
     const float *restrict buffer_in;
     float *restrict buffer_out;
@@ -991,8 +993,7 @@ error:
   for(int s = 0; s < scales; s++) if(HF[s]) dt_free_align(HF[s]);
 }
 
-#if TRUE
- // HAVE_OPENCL
+#if HAVE_OPENCL
 static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reconstructed, cl_mem mask,
                                          const size_t sizes[3], const int width, const int height,
                                          const dt_iop_diffuse_data_t *const data,
