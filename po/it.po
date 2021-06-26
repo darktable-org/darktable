@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-06-13 18:38+0200\n"
-"PO-Revision-Date: 2021-06-21 23:41+0200\n"
+"PO-Revision-Date: 2021-06-23 23:23+0200\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -3681,7 +3681,7 @@ msgstr "Gamma dinamica"
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:91
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:162
 msgid "middle gray luma"
-msgstr "Luminosità grigio medio"
+msgstr "Luminanza del grigio medio"
 
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:103
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:170
@@ -11551,11 +11551,11 @@ msgstr "Simile a Kodachrome"
 
 #: ../src/iop/colorbalance.c:943
 msgid "optimize luma from patches"
-msgstr "Ottimizza luminosità dai campioni"
+msgstr "Ottimizza luminanza dai campioni"
 
 #: ../src/iop/colorbalance.c:945 ../src/iop/colorbalance.c:2092
 msgid "optimize luma"
-msgstr "Ottimizza luminosità"
+msgstr "Ottimizza luminanza"
 
 #: ../src/iop/colorbalance.c:949
 msgid "neutralize colors from patches"
@@ -11719,7 +11719,7 @@ msgstr "Ottimizzatori automatici"
 
 #: ../src/iop/colorbalance.c:2093
 msgid "fit the whole histogram and center the average luma"
-msgstr "Adatta l'istogramma e centra la luminosità media"
+msgstr "Adatta l'istogramma e centra la luminanza media"
 
 #: ../src/iop/colorbalance.c:2099
 msgid "optimize the RGB curves to remove color casts"
@@ -12836,7 +12836,7 @@ msgstr ""
 "Rappresentazione colore utilizzata dall'algoritmo.\n"
 "RGB tiene separati i canali RGB,\n"
 "mentre Y0U0V0 combina i canali per ridurre separatamente\n"
-"il rumore di luminosità e quello di crominanza."
+"il rumore di luminanza e quello di crominanza."
 
 #: ../src/iop/denoiseprofile.c:3682
 msgid ""
@@ -15115,7 +15115,7 @@ msgstr "Fattore esponenziale gamma"
 
 #: ../src/iop/profile_gamma.c:660
 msgid "adjust to match the average luma of the subject"
-msgstr "Regola sulla luminosità media del soggetto"
+msgstr "Regola sulla luminanza media del soggetto"
 
 #: ../src/iop/profile_gamma.c:666
 msgid ""
