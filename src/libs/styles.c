@@ -396,12 +396,7 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
 #endif
-  gchar *import_path = dt_conf_get_string("ui_last/export_path");
-  if(import_path != NULL)
-  {
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), import_path);
-    g_free(import_path);
-  }
+  dt_conf_get_folder_to_file_chooser("ui_last/export_path", filechooser);
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -538,13 +533,7 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
 #endif
-  gchar *import_path = dt_conf_get_string("ui_last/import_path");
-  if(import_path != NULL)
-  {
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), import_path);
-    g_free(import_path);
-  }
-
+  dt_conf_get_folder_to_file_chooser("ui_last/import_path", filechooser);
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
 
   GtkFileFilter *filter;
