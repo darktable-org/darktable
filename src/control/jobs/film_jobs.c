@@ -83,7 +83,7 @@ static int32_t _pathlist_import_run(dt_job_t *job)
 {
   dt_film_import1_t *params = dt_control_job_get_params(job);
   _film_import1(job, NULL, params->imagelist); // import the specified images, creating filmrolls as needed
-  g_list_free_full(params->imagelist, g_free);
+  params->imagelist = NULL;  // the import will have freed the image list
 
   // notify the user via the window manager
   dt_ui_notify_user();
@@ -93,7 +93,6 @@ static int32_t _pathlist_import_run(dt_job_t *job)
 static void _pathlist_import_cleanup(void *p)
 {
   dt_film_import1_t *params = p;
-  g_list_free_full(params->imagelist, g_free);
   free(params);
 }
 
@@ -359,7 +358,7 @@ static void _film_import1(dt_job_t *job, dt_film_t *film, GList *images)
   dt_control_queue_redraw_center();
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, film->id);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, film ? film->id : cfr->id);
 
   //QUESTION: should this come after _apply_filmroll_gpx, since that can change geotags again?
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, all_imgs, 0);
