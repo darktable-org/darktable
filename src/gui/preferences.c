@@ -1011,12 +1011,7 @@ static void import_export(GtkButton *button, gpointer data)
     dt_osx_disallow_fullscreen(chooser);
 #endif
     gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(chooser), TRUE);
-    gchar *exported_path = dt_conf_get_string("ui_last/export_path");
-    if(exported_path != NULL)
-    {
-      gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser), exported_path);
-      g_free(exported_path);
-    }
+    dt_conf_get_folder_to_file_chooser("ui_last/export_path", chooser);
     gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(chooser), "keyboardrc");
     if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
     {
@@ -1037,12 +1032,7 @@ static void import_export(GtkButton *button, gpointer data)
     dt_osx_disallow_fullscreen(chooser);
 #endif
 
-    gchar *import_path = dt_conf_get_string("ui_last/import_path");
-    if(import_path != NULL)
-    {
-      gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser), import_path);
-      g_free(import_path);
-    }
+    dt_conf_get_folder_to_file_chooser("ui_last/import_path", chooser);
     if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
     {
       gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
@@ -1126,12 +1116,7 @@ static void import_preset(GtkButton *button, gpointer data)
   dt_osx_disallow_fullscreen(chooser);
 #endif
 
-  gchar *import_path = dt_conf_get_string("ui_last/import_path");
-  if(import_path != NULL)
-  {
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser), import_path);
-    g_free(import_path);
-  }
+  dt_conf_get_folder_to_file_chooser("ui_last/import_path", chooser);
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(chooser), TRUE);
 
   GtkFileFilter *filter;
@@ -1171,12 +1156,7 @@ static void export_preset(GtkButton *button, gpointer data)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
 #endif
-  gchar *import_path = dt_conf_get_string("ui_last/export_path");
-  if(import_path != NULL)
-  {
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), import_path);
-    g_free(import_path);
-  }
+  dt_conf_get_folder_to_file_chooser("ui_last/export_path", filechooser);
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)

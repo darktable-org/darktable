@@ -125,24 +125,14 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     {
       // handle situation where there's some problem with cache/film_id
       // i guess that's impossible, but better safe than sorry ;)
-      gchar *import_path = dt_conf_get_string("ui_last/import_path");
-      if(import_path != NULL)
-      {
-        gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), import_path);
-        g_free(import_path);
-      }
+      dt_conf_get_folder_to_file_chooser("ui_last/import_path", filechooser);
     }
     dt_image_cache_read_release(darktable.image_cache, img);
   }
   else
   {
     // multiple images, use "last import" preference
-    gchar *import_path = dt_conf_get_string("ui_last/import_path");
-    if(import_path != NULL)
-    {
-      gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), import_path);
-      g_free(import_path);
-    }
+    dt_conf_get_folder_to_file_chooser("ui_last/import_path", filechooser);
   }
 
   GtkFileFilter *filter;
