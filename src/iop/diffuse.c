@@ -20,8 +20,10 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
+#include "common/fast_guided_filter.h"
 #include "common/gaussian.h"
 #include "common/image.h"
+#include "common/imagebuf.h"
 #include "common/iop_profile.h"
 #include "common/opencl.h"
 #include "control/control.h"
@@ -41,6 +43,9 @@
 
 #include <complex.h>
 
+// Set to one to output intermediate image steps as PFM in /tmp
+#define DEBUG_DUMP_PFM 0
+
 DT_MODULE_INTROSPECTION(1, dt_iop_diffuse_params_t)
 
 #define MAX_NUM_SCALES 12
@@ -49,14 +54,14 @@ typedef struct dt_iop_diffuse_params_t
   // global parameters
   int iterations;           // $MIN: 1   $MAX: 128   $DEFAULT: 1  $DESCRIPTION: "iterations"
   float sharpness;          // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "sharpness"
-  int radius;               // $MIN: 1   $MAX: 256   $DEFAULT: 8  $DESCRIPTION: "radius"
-  float regularization;     // $MIN: 0. $MAX: 6.   $DEFAULT: 0. $DESCRIPTION: "edge sensitivity"
-  float variance_threshold; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "edge threshold"
+  int radius;               // $MIN: 1   $MAX: 1024   $DEFAULT: 8  $DESCRIPTION: "radius"
+  float regularization;     // $MIN: 0. $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "edge sensitivity"
+  float variance_threshold; // $MIN: -4. $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "edge threshold"
 
-  float anisotropy_first;         // $MIN: -4. $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "1st order anisotropy"
-  float anisotropy_second;        // $MIN: -4. $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "2nd order anisotropy"
-  float anisotropy_third;         // $MIN: -4. $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "3rd order anisotropy"
-  float anisotropy_fourth;        // $MIN: -4. $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "4th order anisotropy"
+  float anisotropy_first;         // $MIN: -5. $MAX: 5.   $DEFAULT: 0. $DESCRIPTION: "1st order anisotropy"
+  float anisotropy_second;        // $MIN: -5. $MAX: 5.   $DEFAULT: 0. $DESCRIPTION: "2nd order anisotropy"
+  float anisotropy_third;         // $MIN: -5. $MAX: 5.   $DEFAULT: 0. $DESCRIPTION: "3rd order anisotropy"
+  float anisotropy_fourth;        // $MIN: -5. $MAX: 5.   $DEFAULT: 0. $DESCRIPTION: "4th order anisotropy"
 
   float threshold; // $MIN: 0.  $MAX: 8.   $DEFAULT: 0. $DESCRIPTION: "luminance masking threshold"
 
@@ -76,8 +81,9 @@ typedef struct dt_iop_diffuse_gui_data_t
 typedef struct dt_iop_diffuse_global_data_t
 {
   int kernel_wavelets_decompose;
-  int kernel_diffuse;
-  int kernel_init;
+  int kernel_diffuse_build_mask;
+  int kernel_diffuse_inpaint_mask;
+  int kernel_diffuse_pde;
 } dt_iop_diffuse_global_data_t;
 
 
@@ -152,63 +158,68 @@ void init_presets(dt_iop_module_so_t *self)
   p.threshold = 0.0f;
   p.variance_threshold = 0.f;
 
-  p.anisotropy_first = -4.f;
+  p.anisotropy_first = +2.f;
   p.anisotropy_second = -4.f;
   p.anisotropy_third = +2.f;
   p.anisotropy_fourth = -4.f;
 
-  p.first = -0.25f;
-  p.second = -0.50f;
-  p.third = +0.40f;
-  p.fourth = -0.40f;
+  p.first = +0.3333f;
+  p.second = -0.5000f;
+  p.third = +0.02f;
+  p.fourth = -0.04f;
 
-  p.iterations = 4;
-  p.radius = 4;
-  p.regularization = 4.5f;
-  dt_gui_presets_add_generic(_("remove soft lens blur"), self->op, self->version(), &p, sizeof(p), 1,
-                             DEVELOP_BLEND_CS_RGB_SCENE);
+  p.regularization = 2.f;
 
   p.iterations = 8;
   p.radius = 8;
-  p.regularization = 5.5f;
-  dt_gui_presets_add_generic(_("remove medium lens blur"), self->op, self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("lens deblur: soft"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 12;
   p.radius = 12;
-  p.regularization = 5.7f;
-  dt_gui_presets_add_generic(_("remove heavy lens blur"), self->op, self->version(), &p, sizeof(p), 1,
+  dt_gui_presets_add_generic(_("lens deblur: medium"), self->op, self->version(), &p, sizeof(p), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.iterations = 16;
+  p.radius = 16;
+  dt_gui_presets_add_generic(_("lens deblur: hard"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 20;
-  p.radius = 16.f;
+  p.radius = 512;
   p.sharpness = 0.f;
   p.variance_threshold = 0.0f;
+  p.regularization = 2.f;
 
-  p.anisotropy_first = 0.f;
-  p.anisotropy_second = 0.f;
-  p.anisotropy_third = 0.f;
-  p.anisotropy_fourth = 0.f;
+  p.first = +0.02f;
+  p.second = -0.10;
+  p.third = +0.02;
+  p.fourth = -0.10f;
 
-  dt_gui_presets_add_generic(_("remove hazing"), self->op, self->version(), &p, sizeof(p), 1,
+  p.anisotropy_first = 2.f;
+  p.anisotropy_second = 2.f;
+  p.anisotropy_third = 2.f;
+  p.anisotropy_fourth = 2.f;
+
+  dt_gui_presets_add_generic(_("dehaze"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 5;
-  p.radius = 8;
+  p.radius = 5;
   p.sharpness = 0.0f;
   p.threshold = 0.0f;
   p.variance_threshold = 0.f;
-  p.regularization = 5.f;
+  p.regularization = 4.f;
 
-  p.anisotropy_first = -1.f;
-  p.anisotropy_second = -1.f;
-  p.anisotropy_third = 1.f;
-  p.anisotropy_fourth = 1.f;
+  p.anisotropy_first = +4.f;
+  p.anisotropy_second = +4.f;
+  p.anisotropy_third = +4.f;
+  p.anisotropy_fourth = +4.f;
 
-  p.first = -0.10f;
-  p.second = -0.10f;
-  p.third = +0.10f;
-  p.fourth = +0.10f;
+  p.first = +0.3333f;
+  p.second = +0.3333f;
+  p.third = +0.04f;
+  p.fourth = +0.02f;
   dt_gui_presets_add_generic(_("denoise"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 2;
@@ -216,22 +227,22 @@ void init_presets(dt_iop_module_so_t *self)
   p.sharpness = 0.0f;
   p.threshold = 0.0f;
   p.variance_threshold = 0.f;
-  p.regularization = 4.f;
+  p.regularization = 3.f;
 
-  p.anisotropy_first = 0.f;
+  p.anisotropy_first = +4.f;
   p.anisotropy_second = +4.f;
   p.anisotropy_third = +4.f;
   p.anisotropy_fourth = +4.f;
 
-  p.first = +0.0f;
-  p.second = +0.25f;
-  p.third = +0.25f;
-  p.fourth = +0.25f;
+  p.first = +1.f;
+  p.second = +1.f;
+  p.third = +1.f;
+  p.fourth = +1.f;
   dt_gui_presets_add_generic(_("surface blur"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
 
-  p.iterations = 2;
-  p.radius = 16;
+  p.iterations = 1;
+  p.radius = 32;
   p.sharpness = 0.0f;
   p.threshold = 0.0f;
   p.variance_threshold = 0.f;
@@ -242,48 +253,88 @@ void init_presets(dt_iop_module_so_t *self)
   p.anisotropy_third = 0.f;
   p.anisotropy_fourth = 0.f;
 
-  p.first = +0.25f;
-  p.second = +0.25f;
-  p.third = +0.25f;
-  p.fourth = +0.25f;
-  dt_gui_presets_add_generic(_("diffuse"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  p.first = +0.5f;
+  p.second = +0.5f;
+  p.third = +0.5f;
+  p.fourth = +0.5f;
+  dt_gui_presets_add_generic(_("bloom"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 1;
-  p.radius = 8;
-  p.sharpness = 0.5f;
+  p.radius = 4;
+  p.sharpness = 0.0f;
   p.threshold = 0.0f;
-  p.variance_threshold = 0.25f;
-  p.regularization = 1.f;
+  p.variance_threshold = 0.f;
+  p.regularization = 2.f;
 
   p.anisotropy_first = +4.f;
   p.anisotropy_second = +4.f;
   p.anisotropy_third = +4.f;
   p.anisotropy_fourth = +4.f;
 
-  p.first = +0.25f;
-  p.second = +0.25f;
-  p.third = +0.25f;
-  p.fourth = +0.25f;
-  dt_gui_presets_add_generic(_("increase perceptual acutance"), self->op, self->version(), &p, sizeof(p), 1,
+  p.first = -0.5f;
+  p.second = -0.5f;
+  p.third = -0.25f;
+  p.fourth = -0.25f;
+  dt_gui_presets_add_generic(_("sharpen sensor demosaicing"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 4;
   p.radius = 64;
-  p.sharpness = -0.05f;
+  p.sharpness = 0.0f;
   p.threshold = 0.0f;
   p.variance_threshold = 0.f;
-  p.regularization = 4.f;
+  p.regularization = 2.f;
 
-  p.anisotropy_first = -4.f;
+  p.anisotropy_first = 0.f;
   p.anisotropy_second = +4.f;
   p.anisotropy_third = +4.f;
   p.anisotropy_fourth = +4.f;
 
-  p.first = -0.50f;
+  p.first = 0.f;
   p.second = 0.f;
-  p.third = +0.25f;
-  p.fourth = +0.25f;
+  p.third = +0.5f;
+  p.fourth = +0.5f;
   dt_gui_presets_add_generic(_("simulate watercolour"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.iterations = 50;
+  p.radius = 64;
+  p.sharpness = 0.0f;
+  p.threshold = 0.0f;
+  p.variance_threshold = 0.f;
+  p.regularization = 4.f;
+
+  p.anisotropy_first = -5.f;
+  p.anisotropy_second = -5.f;
+  p.anisotropy_third = -5.f;
+  p.anisotropy_fourth = -5.f;
+
+  p.first = -1.f;
+  p.second = -1.f;
+  p.third = -1.f;
+  p.fourth = -1.f;
+  dt_gui_presets_add_generic(_("simulate line drawing"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  // local contrast
+  p.sharpness = 0.0f;
+  p.threshold = 0.0f;
+  p.variance_threshold = 0.f;
+
+  p.anisotropy_first = -4.f;
+  p.anisotropy_second = -4.f;
+  p.anisotropy_third = -4.f;
+  p.anisotropy_fourth = +4.f;
+
+  p.first = -0.50f;
+  p.second = -0.50f;
+  p.third = -0.20f;
+  p.fourth = +0.25f;
+
+  p.iterations = 4;
+  p.radius = 256;
+  p.regularization = 3.5f;
+  dt_gui_presets_add_generic(_("add local contrast"), self->op, self->version(), &p, sizeof(p), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
+
 }
 
 // B spline filter
@@ -328,20 +379,20 @@ static inline unsigned int num_steps_to_reach_equivalent_sigma(const float sigma
 }
 
 inline static void blur_2D_Bspline(const float *const restrict in, float *const restrict HF,
-                                   float *const restrict LF, const int mult, const size_t width,
-                                   const size_t height)
+                                   float *const restrict LF,
+                                   const size_t width, const size_t height, const int mult)
 {
-  // see https://arxiv.org/pdf/1711.09791.pdf
+  // Blur and compute the decimated wavelet at once
 #ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(width, height, in, LF, HF, mult) schedule(simd         \
-                                                                                                     : static)    \
+#pragma omp parallel for default(none) dt_omp_firstprivate(width, height, in, LF, HF, mult) \
+    schedule(simd: static)    \
     collapse(2)
 #endif
   for(size_t i = 0; i < height; i++)
   {
     for(size_t j = 0; j < width; j++)
     {
-      const size_t index = (i * width + j) * 4;
+      const size_t index = (i * width + j) * 4; // full scale
       float DT_ALIGNED_PIXEL acc[4] = { 0.f };
 
       for(size_t ii = 0; ii < FSIZE; ++ii)
@@ -386,47 +437,25 @@ static inline void init_reconstruct(float *const restrict reconstructed, const s
 #ifdef _OPENMP
 #pragma omp declare simd aligned(pixels:64) uniform(pixels)
 #endif
-static inline complex float find_gradient(const float pixels[9][4], const size_t c)
+static inline void find_gradient(const float pixels[9][4], const size_t c, float xy[2])
 {
   // Compute the gradient with centered finite differences in a 3×3 stencil
-  // warning : x is vertical, y is horizontal, same orientations as C buffers
-  // We store the gradient as a complex numper : real = du(i, j) / dx ; imaginary = du(i, j) / dy
-  return ((pixels[7][c] - pixels[1][c]) + I * (pixels[5][c] - pixels[3][c])) / 2.f;
+  // warning : x is vertical, y is horizontal
+  xy[0] = (pixels[7][c] - pixels[1][c]) / 2.f;
+  xy[1] = (pixels[5][c] - pixels[3][c]) / 2.f;
 }
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(pixels:64) uniform(pixels)
 #endif
-static inline complex float find_laplacian(const float pixels[9][4], const size_t c)
+static inline void find_laplacian(const float pixels[9][4], const size_t c, float xy[2])
 {
   // Compute the laplacian with centered finite differences in a 3×3 stencil
   // warning : x is vertical, y is horizontal
-  // We store the laplacian as a complex numper : real = d²u(i, j) / dx² ; imaginary = d²u(i, j) / dy²
-  return (pixels[7][c] + pixels[1][c]) + I * (pixels[5][c] + pixels[3][c]) - 2.f * pixels[4][c] * (1.f + I);
+  xy[0] = (pixels[7][c] + pixels[1][c]) - 2.f * pixels[4][c];
+  xy[1] = (pixels[5][c] + pixels[3][c]) - 2.f * pixels[4][c];
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline void compute_anisotropic_direction(const complex float gradient, const float anisotropy,
-                                                 float *const restrict c2,
-                                                 float *const restrict cos_theta, float *const restrict sin_theta,
-                                                 float *const restrict cos_theta2, float *const restrict sin_theta2)
-{
-  // find the argument and magnitude of the gradient
-  // output the factor of anisotropy c2
-  // output cos(argument) and sin(argument) to build the matrix of rotation
-  const float magnitude = cabsf(gradient);
-  const float theta = cargf(gradient);
-
-  *sin_theta = sinf(theta);
-  *cos_theta = cosf(theta);
-
-  *cos_theta2 = sqf(*cos_theta);
-  *sin_theta2 = sqf(*sin_theta);
-
-  *c2 = expf(-magnitude / anisotropy); // c² in https://www.researchgate.net/publication/220663968
-}
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(a:16)
@@ -441,9 +470,9 @@ static inline void rotation_matrix_isophote(const float c2,
   //  [ a12, a22 ]]
   // taken from https://www.researchgate.net/publication/220663968
   // c dampens the gradient direction
-  a[0][0] = cos_theta2 + c2 * sin_theta2;
-  a[1][1] = c2 * cos_theta2 + sin_theta2;
-  a[0][1] = a[1][0] = (c2 - 1.0f) * cos_theta * sin_theta;
+  a[0][0] = clamp_simd(cos_theta2 + c2 * sin_theta2);
+  a[1][1] = clamp_simd(c2 * cos_theta2 + sin_theta2);
+  a[0][1] = a[1][0] = clamp_simd((c2 - 1.0f) * cos_theta * sin_theta);
 }
 
 #ifdef _OPENMP
@@ -459,9 +488,9 @@ static inline void rotation_matrix_gradient(const float c2,
   //  [ a12, a22 ]]
   // based on https://www.researchgate.net/publication/220663968 and inverted
   // c dampens the isophote direction
-  a[0][0] = c2 * cos_theta2 + sin_theta2;
-  a[1][1] = cos_theta2 + c2 * sin_theta2;
-  a[0][1] = a[1][0] = (1.0f - c2) * cos_theta * sin_theta;
+  a[0][0] = clamp_simd(c2 * cos_theta2 + sin_theta2);
+  a[1][1] = clamp_simd(cos_theta2 + c2 * sin_theta2);
+  a[0][1] = a[1][0] = clamp_simd((1.0f - c2) * cos_theta * sin_theta);
 }
 
 
@@ -470,8 +499,8 @@ static inline void rotation_matrix_gradient(const float c2,
 #endif
 static inline void build_matrix(const float a[2][2], float kernel[9])
 {
-  const float b11 = -a[0][1] / 2.0f;
-  const float b13 = -b11;
+  const float b13 = a[0][1] / 2.0f;
+  const float b11 = -b13;
   const float b22 = -2.0f * (a[0][0] + a[1][1]);
 
   // build the kernel of rotated anisotropic laplacian
@@ -509,15 +538,14 @@ static inline void isotrope_laplacian(float kernel[9])
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(pixels, kernel: 64) uniform(pixels, anisotropy, isotropy_type)
+#pragma omp declare simd aligned(kernel: 64) uniform(isotropy_type)
 #endif
-static inline void compute_kernel(const float pixels[9][4], const size_t c,
-                                   const float anisotropy, const dt_isotropy_t isotropy_type,
-                                   const int gradient, float kernel[9])
+static inline void compute_kernel(const float c2,
+                                  const float cos_theta, const float sin_theta,
+                                  const float cos_theta2, const float sin_theta2,
+                                  const dt_isotropy_t isotropy_type,
+                                  float kernel[9])
 {
-  // if gradient == TRUE, follow the direction of the gradient
-  // if gradient == FALSE, follow the direction of the derivative of the gradient
-
   // Build the matrix of rotation with anisotropy
 
   switch(isotropy_type)
@@ -531,10 +559,6 @@ static inline void compute_kernel(const float pixels[9][4], const size_t c,
     case(DT_ISOTROPY_ISOPHOTE):
     {
       float DT_ALIGNED_ARRAY a[2][2] = { { 0.f } };
-      float c2, cos_theta, cos_theta2, sin_theta, sin_theta2;
-      compute_anisotropic_direction((gradient) ? find_gradient(pixels, c)
-                                               : find_laplacian(pixels, c),
-                                     anisotropy, &c2, &cos_theta, &sin_theta, &cos_theta2, &sin_theta2);
       rotation_matrix_isophote(c2, cos_theta, sin_theta, cos_theta2, sin_theta2, a);
       build_matrix(a, kernel);
       break;
@@ -542,10 +566,6 @@ static inline void compute_kernel(const float pixels[9][4], const size_t c,
     case(DT_ISOTROPY_GRADIENT):
     {
       float DT_ALIGNED_ARRAY a[2][2] = { { 0.f } };
-      float c2, cos_theta, cos_theta2, sin_theta, sin_theta2;
-      compute_anisotropic_direction((gradient) ? find_gradient(pixels, c)
-                                               : find_laplacian(pixels, c),
-                                     anisotropy, &c2, &cos_theta, &sin_theta, &cos_theta2, &sin_theta2);
       rotation_matrix_gradient(c2, cos_theta, sin_theta, cos_theta2, sin_theta2, a);
       build_matrix(a, kernel);
       break;
@@ -558,11 +578,8 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
                                       float *const restrict output, const size_t width, const size_t height,
                                       const float anisotropy[4], const dt_isotropy_t isotropy_type[4],
                                       const float regularization, const float variance_threshold,
-                                      const int current_radius, const int is_last_step,
-                                      const float ABCD[4], const float strength,
-                                      const int compute_first, const int compute_second,
-                                      const int compute_third, const int compute_fourth,
-                                      const int compute_variance)
+                                      const float current_radius_square, const int mult,
+                                      const float ABCD[4], const float strength)
 {
   // Simultaneous inpainting for image structure and texture using anisotropic heat transfer model
   // https://www.researchgate.net/publication/220663968
@@ -579,29 +596,29 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                                            \
-    dt_omp_firstprivate(out, mask, HF, LF, height, width, ABCD, has_mask, current_radius, compute_first,          \
-                        compute_second, compute_third, compute_fourth, compute_variance, variance_threshold,      \
-                        anisotropy, regularization, is_last_step, strength, isotropy_type) schedule(simd:static) collapse(2)
+    dt_omp_firstprivate(out, mask, HF, LF, height, width, ABCD, has_mask, variance_threshold,      \
+                        anisotropy, regularization, mult, strength, isotropy_type, current_radius_square) \
+                        schedule(simd:static) collapse(2)
 #endif
   for(size_t i = 0; i < height; ++i)
     for(size_t j = 0; j < width; ++j)
     {
       const size_t idx = (i * width + j);
       const size_t index = idx * 4;
-      uint8_t opacity = (has_mask) ? mask[idx] : 1;
+      const uint8_t opacity = (has_mask) ? mask[idx] : 1;
 
       if(opacity)
       {
         // non-local neighbours coordinates
         const size_t j_neighbours[3]
-            = { CLAMP((int)(j - current_radius * H), (int)0, (int)width - 1),   // y - mult
-                j,                                                              // y
-                CLAMP((int)(j + current_radius * H), (int)0, (int)width - 1) }; // y + mult
+            = { CLAMP((int)(j - mult * H), (int)0, (int)width - 1),   // y - mult
+                j,                                                    // y
+                CLAMP((int)(j + mult * H), (int)0, (int)width - 1) }; // y + mult
 
         const size_t i_neighbours[3]
-            = { CLAMP((int)(i - current_radius * H), (int)0, (int)height - 1),   // x - mult
-                i,                                                               // x
-                CLAMP((int)(i + current_radius * H), (int)0, (int)height - 1) }; // x + mult
+            = { CLAMP((int)(i - mult * H), (int)0, (int)height - 1),   // x - mult
+                i,                                                     // x
+                CLAMP((int)(i + mult * H), (int)0, (int)height - 1) }; // x + mult
 
         // fetch non-local pixels and store them locally and contiguously
         float DT_ALIGNED_ARRAY neighbour_pixel_HF[9][4];
@@ -619,11 +636,38 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
             aligned(anisotropy, isotropy_type, ABCD :16))
         {
           // build the local anisotropic convolution filters for gradients and laplacians
+          // we use the low freq layer all the type as it is less likely to be nosy
+          float gradient[2], laplacian[2]; // x, y for each channel
+          find_gradient(neighbour_pixel_LF, c, gradient);
+          find_laplacian(neighbour_pixel_LF, c, laplacian);
+
+          const float magnitude_grad = hypotf(gradient[0], gradient[1]);
+          const float magnitude_lapl = hypotf(laplacian[0], laplacian[1]);
+
+          const float theta_grad = atan2f(gradient[1], gradient[0]);
+          const float theta_lapl = atan2f(laplacian[1], laplacian[0]);
+
+          const float cos_theta_grad = cosf(theta_grad);
+          const float cos_theta_lapl = cosf(theta_lapl);
+          const float sin_theta_grad = sinf(theta_grad);
+          const float sin_theta_lapl = sinf(theta_lapl);
+
+          const float cos_theta_grad_sq = sqf(cos_theta_grad);
+          const float sin_theta_grad_sq = sqf(sin_theta_grad);
+          const float cos_theta_lapl_sq = sqf(cos_theta_lapl);
+          const float sin_theta_lapl_sq = sqf(sin_theta_lapl);
+
+          // c² in https://www.researchgate.net/publication/220663968
+          const float c2[4] = { expf(-magnitude_grad / anisotropy[0]),
+                                expf(-magnitude_lapl / anisotropy[1]),
+                                expf(-magnitude_grad / anisotropy[2]),
+                                expf(-magnitude_lapl / anisotropy[3]) };
+
           float DT_ALIGNED_ARRAY kern_first[9], kern_second[9], kern_third[9], kern_fourth[9];
-          compute_kernel(neighbour_pixel_LF, c, anisotropy[0], isotropy_type[0], TRUE, kern_first);
-          compute_kernel(neighbour_pixel_LF, c, anisotropy[1], isotropy_type[1], FALSE, kern_second);
-          compute_kernel(neighbour_pixel_HF, c, anisotropy[2], isotropy_type[2], TRUE, kern_third);
-          compute_kernel(neighbour_pixel_HF, c, anisotropy[3], isotropy_type[3], FALSE, kern_fourth);
+          compute_kernel(c2[0], cos_theta_grad, sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type[0], kern_first);
+          compute_kernel(c2[1], cos_theta_lapl, sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type[1], kern_second);
+          compute_kernel(c2[2], cos_theta_grad, sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type[2], kern_third);
+          compute_kernel(c2[3], cos_theta_lapl, sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type[3], kern_fourth);
 
           // convolve filters and compute the variance and the regularization term
           float DT_ALIGNED_PIXEL derivatives[4] = { 0.f };
@@ -636,7 +680,12 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
             derivatives[3] += kern_fourth[k] * neighbour_pixel_HF[k][c];
             variance += sqf(neighbour_pixel_HF[k][c]);
           }
-          variance = variance_threshold + variance / 9.f * regularization;
+          // Regularize the variance taking into account the blurring scale.
+          // This allows to keep the scene-referred variance roughly constant
+          // regardless of the wavelet scale where we compute it.
+          // Prevents large scale halos when deblurring.
+          variance /= 9.f / current_radius_square;
+          variance = variance_threshold + variance * regularization;
 
           // compute the update
           float acc = 0.f;
@@ -644,14 +693,14 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           acc = (HF[index + c] + acc / variance) * strength;
 
           // update the solution
-          out[index + c] += (is_last_step) ? acc + LF[index + c] : acc;
+          out[index + c] = fmaxf(acc + LF[index + c], 0.f);
         }
       }
       else
       {
         // only copy input to output, do nothing
         for_four_channels(c, aligned(out, HF, LF : 64))
-          out[index + c] += (is_last_step) ? HF[index + c] + LF[index + c] : HF[index + c];
+          out[index + c] = HF[index + c] + LF[index + c];
       }
     }
 }
@@ -665,10 +714,27 @@ static inline float compute_anisotropy_factor(const float user_param)
   else return expf(fabsf(1.f / user_param) - 1.f) / normalize;
 }
 
+#if DEBUG_DUMP_PFM
+static void dump_PFM(const char *filename, const float* out, const uint32_t w, const uint32_t h)
+{
+  FILE *f = g_fopen(filename, "wb");
+  fprintf(f, "PF\n%d %d\n-1.0\n", w, h);
+  for(int j = h - 1 ; j >= 0 ; j--)
+    for(int i = 0 ; i < w ; i++)
+      for(int c = 0 ; c < 3 ; c++)
+        fwrite(out + (j * w + i) * 4 + c, 1, sizeof(float), f);
+  fclose(f);
+}
+#endif
+
 static inline gint wavelets_process(const float *const restrict in, float *const restrict reconstructed,
                                     const uint8_t *const restrict mask, const size_t width,
                                     const size_t height, const dt_iop_diffuse_data_t *const data,
-                                    const float final_radius, const float zoom, const int scales)
+                                    const float final_radius, const float zoom, const int scales,
+                                    const int has_mask,
+                                    float *const restrict HF[MAX_NUM_SCALES],
+                                    float *const restrict LF_odd,
+                                    float *const restrict LF_even)
 {
   gint success = TRUE;
 
@@ -676,7 +742,7 @@ static inline gint wavelets_process(const float *const restrict in, float *const
       = { compute_anisotropy_factor(data->anisotropy_first),
           compute_anisotropy_factor(data->anisotropy_second),
           compute_anisotropy_factor(data->anisotropy_third),
-          compute_anisotropy_factor(data->anisotropy_fourth)};
+          compute_anisotropy_factor(data->anisotropy_fourth) };
 
   const dt_isotropy_t DT_ALIGNED_PIXEL isotropy_type[4]
       = { check_isotropy_mode(data->anisotropy_first),
@@ -687,39 +753,55 @@ static inline gint wavelets_process(const float *const restrict in, float *const
   float regularization = powf(10.f, data->regularization) - 1.f;
   float variance_threshold = powf(10.f, data->variance_threshold);
 
-  // wavelets scales buffers
-  float *const restrict LF_even = dt_alloc_align_float(width * height * 4); // low-frequencies RGB
-  float *const restrict LF_odd = dt_alloc_align_float(width * height * 4);  // low-frequencies RGB
-  float *const restrict HF = dt_alloc_align_float(width * height * 4);      // high-frequencies RGB
-
-  // Init reconstructed with valid parts of image
-  init_reconstruct(reconstructed, width, height);
-
-  // À trous wavelet decompose
+  // À trous decimated wavelet decompose
   // there is a paper from a guy we know that explains it : https://jo.dreggn.org/home/2010_atrous.pdf
   // the wavelets decomposition here is the same as the equalizer/atrous module,
+  float *restrict residual; // will store the temp buffer containing the last step of blur
   for(int s = 0; s < scales; ++s)
   {
-    const float *restrict detail; // buffer containing this scale's input
-    float *restrict LF;           // output buffer for the current scale
+    fprintf(stdout, "Wavelet decompose : scale %i\n", s);
+    const int mult = 1 << s;
 
-    // swap buffers so we only need 2 LF buffers : the LF at scale (s-1) and the one at current scale (s)
+    const float *restrict buffer_in;
+    float *restrict buffer_out;
+
     if(s == 0)
     {
-      detail = in;
-      LF = LF_odd;
+      buffer_in = in;
+      buffer_out = LF_odd;
     }
     else if(s % 2 != 0)
     {
-      detail = LF_odd;
-      LF = LF_even;
+      buffer_in = LF_odd;
+      buffer_out = LF_even;
     }
     else
     {
-      detail = LF_even;
-      LF = LF_odd;
+      buffer_in = LF_even;
+      buffer_out = LF_odd;
     }
 
+    blur_2D_Bspline(buffer_in, HF[s], buffer_out, width, height, mult);
+
+    residual = buffer_out;
+
+#if DEBUG_DUMP_PFM
+    char name[64];
+    sprintf(name, "/tmp/scale-input-%i.pfm", s);
+    dump_PFM(name, buffer_in, width, height);
+
+    sprintf(name, "/tmp/scale-blur-%i.pfm", s);
+    dump_PFM(name, buffer_out, width, height);
+#endif
+  }
+
+  // will store the temp buffer NOT containing the last step of blur
+  float *restrict temp = (residual == LF_even) ? LF_odd : LF_even;
+
+  int count = 0;
+  for(int s = scales - 1; s > -1; --s)
+  {
+    const int mult = 1 << s;
     const float current_radius = equivalent_sigma_at_step(B_SPLINE_SIGMA, s);
     const float real_radius = current_radius * zoom;
 
@@ -727,24 +809,45 @@ static inline gint wavelets_process(const float *const restrict in, float *const
     const float DT_ALIGNED_ARRAY ABCD[4] = { data->first * KAPPA * norm, data->second * KAPPA * norm,
                                              data->third * KAPPA * norm, data->fourth * KAPPA * norm };
     const float strength = data->sharpness * norm + 1.f;
-    const int is_last_step = (scales - 1) == s;
 
-    /* Debug
-    fprintf(stdout, "scale %i : mult = %i ; current rad = %.0f ; real rad = %.0f ; norm = %f ; strength = %f\n", s,
+    fprintf(stdout, "PDE solve : scale %i : mult = %i ; current rad = %.0f ; real rad = %.0f ; norm = %f ; strength = %f\n", s,
             1 << s, current_radius, real_radius, norm, strength);
-    */
+
+    const float *restrict buffer_in;
+    float *restrict buffer_out;
+
+    if(count == 0)
+    {
+      buffer_in = residual;
+      buffer_out = temp;
+    }
+    else if(count % 2 != 0)
+    {
+      buffer_in = temp;
+      buffer_out = residual;
+    }
+    else
+    {
+      buffer_in = residual;
+      buffer_out = temp;
+    }
+
+    if(s == 0) buffer_out = reconstructed;
 
     // Compute wavelets low-frequency scales
-    blur_2D_Bspline(detail, HF, LF, 1 << s, width, height);
-    heat_PDE_diffusion(HF, LF, mask, (mask != NULL), reconstructed, width, height, anisotropy, isotropy_type, regularization,
-                       variance_threshold, current_radius, is_last_step, ABCD, strength, (data->first != 0.f),
-                       (data->second != 0.f), (data->third != 0.f), (data->fourth != 0.f),
-                       (data->regularization != 0.f || data->variance_threshold != 0.f || TRUE));
+    heat_PDE_diffusion(HF[s], buffer_in, mask, has_mask, buffer_out, width, height,
+                       anisotropy, isotropy_type, regularization,
+                       variance_threshold, sqf(current_radius), mult, ABCD, strength);
+
+#if DEBUG_DUMP_PFM
+    char name[64];
+    sprintf(name, "/tmp/scale-up-unblur-%i.pfm", s);
+    dump_PFM(name, buffer_out, width, height);
+#endif
+
+    count++;
   }
 
-  if(HF) dt_free_align(HF);
-  if(LF_even) dt_free_align(LF_even);
-  if(LF_odd) dt_free_align(LF_odd);
   return success;
 }
 
@@ -764,13 +867,13 @@ static inline void build_mask(const float *const restrict input, uint8_t *const 
 }
 
 static inline void inpaint_mask(float *const restrict inpainted, const float *const restrict original,
-                                const uint8_t *const restrict mask, const float noise,
+                                const uint8_t *const restrict mask,
                                 const size_t width, const size_t height)
 {
   // init the reconstruction with noise inside the masked areas
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(inpainted, original, mask, width, height, noise) schedule(simd:static)
+  dt_omp_firstprivate(inpainted, original, mask, width, height) schedule(simd:static)
 #endif
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
@@ -786,7 +889,7 @@ static inline void inpaint_mask(float *const restrict inpainted, const float *co
       xoshiro128plus(state);
       xoshiro128plus(state);
 
-      for_four_channels(c, aligned(inpainted, state:64)) inpainted[k + c] = fmaxf(gaussian_noise(1.f, noise, i % 2 || j % 2, state), 0.f);
+      for_four_channels(c, aligned(inpainted, original, state:64)) inpainted[k + c] = fabsf(gaussian_noise(original[k + c], original[k + c], i % 2 || j % 2, state));
     }
     else
     {
@@ -798,7 +901,12 @@ static inline void inpaint_mask(float *const restrict inpainted, const float *co
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict ivoid,
              void *const restrict ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  int out_of_memory = FALSE;
+
   const dt_iop_diffuse_data_t *const data = (dt_iop_diffuse_data_t *)piece->data;
+
+  const size_t width = roi_out->width;
+  const size_t height = roi_out->height;
 
   float *restrict in = DT_IS_ALIGNED((float *const restrict)ivoid);
   float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
@@ -809,23 +917,45 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   float *restrict temp_in = NULL;
   float *restrict temp_out = NULL;
 
-  uint8_t *restrict mask = NULL;
+  uint8_t *const restrict mask = dt_alloc_align(64, roi_out->width * roi_out->height * sizeof(uint8_t));
 
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const float final_radius = data->radius * 2.f / scale;
 
-  const int iterations = MAX(ceilf((float)data->iterations / scale), 1);
+  const int iterations = MAX(ceilf((float)data->iterations), 1);
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
-  const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
+  const int scales = CLAMP(diffusion_scales, 2, MAX_NUM_SCALES);
 
-  if(data->threshold > 0.f)
+  // wavelets scales buffers
+  float *restrict HF[MAX_NUM_SCALES];
+  for(int s = 0; s < scales; s++)
+  {
+    HF[s] = dt_alloc_align_float(width * height * 4);
+    if(!HF[s]) out_of_memory = TRUE;
+  }
+
+  // temp buffer for blurs. We will need to cycle between them for memory efficiency
+  float *const restrict LF_odd = dt_alloc_align_float(width * height * 4);
+  float *const restrict LF_even = dt_alloc_align_float(width * height * 4);
+
+  // PAUSE !
+  // check that all buffers exist before processing,
+  // because we use a lot of memory here.
+  if(!temp1 || !temp2 || !LF_odd || !LF_even || out_of_memory)
+  {
+    dt_control_log(_("diffuse/sharpen failed to allocate memory, check your RAM settings"));
+    goto error;
+  }
+
+  const int has_mask = (data->threshold > 0.f);
+
+  if(has_mask)
   {
     // build a boolean mask, TRUE where image is above threshold, FALSE otherwise
-    mask = dt_alloc_align(64, roi_out->width * roi_out->height * sizeof(float));
     build_mask(in, mask, data->threshold, roi_out->width, roi_out->height);
 
     // init the inpainting area with noise
-    inpaint_mask(temp1, in, mask, 0.2f, roi_out->width, roi_out->height);
+    inpaint_mask(temp1, in, mask, roi_out->width, roi_out->height);
 
     in = temp1;
   }
@@ -849,36 +979,147 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     }
 
     if(it == (int)iterations - 1) temp_out = out;
-    wavelets_process(temp_in, temp_out, mask, roi_out->width, roi_out->height, data, final_radius, scale, scales);
+    wavelets_process(temp_in, temp_out, mask, roi_out->width, roi_out->height, data, final_radius, scale, scales, has_mask, HF, LF_odd, LF_even);
   }
 
+error:
   if(mask) dt_free_align(mask);
   if(temp1) dt_free_align(temp1);
   if(temp2) dt_free_align(temp2);
+  if(LF_even) dt_free_align(LF_even);
+  if(LF_odd) dt_free_align(LF_odd);
+  for(int s = 0; s < scales; s++) if(HF[s]) dt_free_align(HF[s]);
 }
 
-#if FALSE // HAVE_OPENCL
-static inline cl_int wavelets_process_cl(cl_mem in, cl_mem reconstructed, cl_mem mask, const size_t ch,
-                                          const dt_iop_diffuse_data_t *const data, dt_dev_pixelpipe_iop_t *piece,
-                                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+#if TRUE
+ // HAVE_OPENCL
+static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reconstructed, cl_mem mask,
+                                         const size_t sizes[3], const int width, const int height,
+                                         const dt_iop_diffuse_data_t *const data,
+                                         dt_iop_diffuse_global_data_t *const gd,
+                                         const float final_radius, const float zoom, const int scales,
+                                         const int has_mask,
+                                         cl_mem HF[MAX_NUM_SCALES],
+                                         cl_mem LF_odd,
+                                         cl_mem LF_even)
 {
-  gint success = TRUE;
+  cl_int err = -999;
 
-  const float zoom = fmaxf(piece->iscale / roi_in->scale, 1.0f);
-  const float final_radius = data->radius * 3.0f / zoom;
-  const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
-  const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
-  fprintf(stdout, "scales : %i\n", scales);
+  const float DT_ALIGNED_PIXEL anisotropy[4]
+      = { compute_anisotropy_factor(data->anisotropy_first),
+          compute_anisotropy_factor(data->anisotropy_second),
+          compute_anisotropy_factor(data->anisotropy_third),
+          compute_anisotropy_factor(data->anisotropy_fourth) };
 
-  /* TODO */
+  const dt_isotropy_t DT_ALIGNED_PIXEL isotropy_type[4]
+      = { check_isotropy_mode(data->anisotropy_first),
+          check_isotropy_mode(data->anisotropy_second),
+          check_isotropy_mode(data->anisotropy_third),
+          check_isotropy_mode(data->anisotropy_fourth) };
 
-  dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse, 3, sizeof(int), (void *)&height);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_diffuse, sizes);
+  float regularization = powf(10.f, data->regularization) - 1.f;
+  float variance_threshold = powf(10.f, data->variance_threshold);
 
-  return success;
+
+  // À trous wavelet decompose
+  // there is a paper from a guy we know that explains it : https://jo.dreggn.org/home/2010_atrous.pdf
+  // the wavelets decomposition here is the same as the equalizer/atrous module,
+  cl_mem residual;
+  for(int s = 0; s < scales; ++s)
+  {
+    const int mult = 1 << s;
+
+    cl_mem buffer_in;
+    cl_mem buffer_out;
+
+    if(s == 0)
+    {
+      buffer_in = in;
+      buffer_out = LF_odd;
+    }
+    else if(s % 2 != 0)
+    {
+      buffer_in = LF_odd;
+      buffer_out = LF_even;
+    }
+    else
+    {
+      buffer_in = LF_even;
+      buffer_out = LF_odd;
+    }
+
+    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 0, sizeof(cl_mem), (void *)&buffer_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 1, sizeof(cl_mem), (void *)&HF[s]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 2, sizeof(cl_mem), (void *)&buffer_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 3, sizeof(int), (void *)&mult);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 4, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 5, sizeof(int), (void *)&height);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_wavelets_decompose, sizes);
+    if(err != CL_SUCCESS) return err;
+
+    residual = buffer_out;
+  }
+
+  // will store the temp buffer NOT containing the last step of blur
+  cl_mem temp = (residual == LF_even) ? LF_odd : LF_even;
+
+  int count = 0;
+  for(int s = scales - 1; s > -1; --s)
+  {
+    const int mult = 1 << s;
+    const float current_radius = equivalent_sigma_at_step(B_SPLINE_SIGMA, s);
+    const float real_radius = current_radius * zoom;
+    const float current_radius_square = sqf(current_radius);
+
+    const float norm = expf(-sqf(real_radius) / sqf(data->radius));
+    const float DT_ALIGNED_ARRAY ABCD[4] = { data->first * KAPPA * norm, data->second * KAPPA * norm,
+                                             data->third * KAPPA * norm, data->fourth * KAPPA * norm };
+    const float strength = data->sharpness * norm + 1.f;
+
+    cl_mem buffer_in;
+    cl_mem buffer_out;
+
+    if(count == 0)
+    {
+      buffer_in = residual;
+      buffer_out = temp;
+    }
+    else if(count % 2 != 0)
+    {
+      buffer_in = temp;
+      buffer_out = residual;
+    }
+    else
+    {
+      buffer_in = residual;
+      buffer_out = temp;
+    }
+
+    if(s == 0) buffer_out = reconstructed;
+
+    // Compute wavelets low-frequency scales
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 0, sizeof(cl_mem), (void *)&HF[s]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 1, sizeof(cl_mem), (void *)&buffer_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 2, sizeof(cl_mem), (void *)&mask);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 3, sizeof(int), (void *)&has_mask);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 4, sizeof(cl_mem), (void *)&buffer_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 5, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 6, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 7, 4 * sizeof(float), (void *)&anisotropy);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 8, 4 * sizeof(dt_isotropy_t), (void *)&isotropy_type);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 9, sizeof(float), (void *)&regularization);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 10, sizeof(float), (void *)&variance_threshold);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 11, sizeof(float), (void *)&current_radius_square);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 12, sizeof(int), (void *)&mult);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 13, 4 * sizeof(float), (void *)&ABCD);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 14, sizeof(float), (void *)&strength);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_diffuse_pde, sizes);
+    if(err != CL_SUCCESS) return err;
+
+    count++;
+  }
+
+  return err;
 }
 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
@@ -886,6 +1127,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   const dt_iop_diffuse_data_t *const data = (dt_iop_diffuse_data_t *)piece->data;
   dt_iop_diffuse_global_data_t *const gd = (dt_iop_diffuse_global_data_t *)self->global_data;
+
+  int out_of_memory = FALSE;
 
   cl_int err = -999;
 
@@ -895,14 +1138,69 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
+  cl_mem in = dev_in;
+
+  cl_mem temp1 = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
+  cl_mem temp2 = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
+
   cl_mem temp_in = NULL;
   cl_mem temp_out = NULL;
-  cl_mem temp1 = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float));
-  cl_mem temp2 = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float));
-  if(!temp1 || !temp2) goto error;
+
+  cl_mem mask = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(uint8_t));
 
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
-  const int iterations = CLAMP(ceilf((float)data->iterations / scale), 1, MAX_NUM_SCALES);
+  const float final_radius = data->radius * 2.f / scale;
+
+  const int iterations = MAX(ceilf((float)data->iterations), 1);
+  const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
+  const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
+
+  // wavelets scales buffers
+  cl_mem HF[MAX_NUM_SCALES];
+  for(int s = 0; s < scales; s++)
+  {
+    HF[s] = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
+    if(!HF[s]) out_of_memory = TRUE;
+  }
+
+  // temp buffer for blurs. We will need to cycle between them for memory efficiency
+  cl_mem LF_even = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
+  cl_mem LF_odd = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
+
+  // PAUSE !
+  // check that all buffers exist before processing,
+  // because we use a lot of memory here.
+  if(!temp1 || !temp2 || !LF_odd || !LF_even || out_of_memory)
+  {
+    dt_control_log(_("diffuse/sharpen failed to allocate memory, check your RAM settings"));
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    goto error;
+  }
+
+  const int has_mask = (data->threshold > 0.f);
+
+  if(has_mask)
+  {
+    // build a boolean mask, TRUE where image is above threshold, FALSE otherwise
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_build_mask, 0, sizeof(cl_mem), (void *)&in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_build_mask, 1, sizeof(cl_mem), (void *)&mask);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_build_mask, 2, sizeof(float), (void *)&data->threshold);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_build_mask, 3, sizeof(int), (void *)&roi_out->width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_build_mask, 4, sizeof(int), (void *)&roi_out->height);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_diffuse_build_mask, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+    // init the inpainting area with noise
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_inpaint_mask, 0, sizeof(cl_mem), (void *)&temp1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_inpaint_mask, 1, sizeof(cl_mem), (void *)&in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_inpaint_mask, 2, sizeof(cl_mem), (void *)&mask);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_inpaint_mask, 3, sizeof(int), (void *)&roi_out->width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_inpaint_mask, 4, sizeof(int), (void *)&roi_out->height);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_diffuse_inpaint_mask, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+    in = temp1;
+  }
 
   for(int it = 0; it < iterations; it++)
   {
@@ -922,21 +1220,28 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       temp_out = temp1;
     }
 
-    if(it == (int)iterations - 1) temp_out = out;
-    err = wavelets_process_cl(temp_in, temp_out, mask, ch, data, piece, roi_in, roi_out);
+    if(it == (int)iterations - 1) temp_out = dev_out;
+    err = wavelets_process_cl(devid, temp_in, temp_out, mask, sizes, width, height, data, gd, final_radius, scale, scales, has_mask, HF, LF_odd, LF_even);
+    if(err != CL_SUCCESS) goto error;
   }
 
-
-  if(err != CL_SUCCESS) goto error;
-
   // cleanup and exit on success
-  if(temp1) dt_opencl_release_mem_object(temp1);
-  if(temp2) dt_opencl_release_mem_object(temp2);
+  dt_opencl_release_mem_object(mask);
+  dt_opencl_release_mem_object(temp1);
+  dt_opencl_release_mem_object(temp2);
+  dt_opencl_release_mem_object(LF_even);
+  dt_opencl_release_mem_object(LF_odd);
+  for(int s = 0; s < scales; s++) dt_opencl_release_mem_object(HF[s]);
   return TRUE;
 
 error:
   if(temp1) dt_opencl_release_mem_object(temp1);
   if(temp2) dt_opencl_release_mem_object(temp2);
+  if(mask) dt_opencl_release_mem_object(mask);
+  if(LF_even) dt_opencl_release_mem_object(LF_even);
+  if(LF_odd) dt_opencl_release_mem_object(LF_odd);
+  for(int s = 0; s < scales; s++) if(HF[s]) dt_opencl_release_mem_object(HF[s]);
+
   dt_print(DT_DEBUG_OPENCL, "[opencl_diffuse] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -947,14 +1252,20 @@ void init_global(dt_iop_module_so_t *module)
   dt_iop_diffuse_global_data_t *gd = (dt_iop_diffuse_global_data_t *)malloc(sizeof(dt_iop_diffuse_global_data_t));
 
   module->data = gd;
-  gd->kernel_diffuse = dt_opencl_create_kernel(program, "diffuse");
+  gd->kernel_diffuse_build_mask = dt_opencl_create_kernel(program, "build_mask");
+  gd->kernel_diffuse_inpaint_mask = dt_opencl_create_kernel(program, "inpaint_mask");
+  gd->kernel_wavelets_decompose = dt_opencl_create_kernel(program, "diffuse_blur_bspline");
+  gd->kernel_diffuse_pde = dt_opencl_create_kernel(program, "diffuse_pde");
 }
 
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_diffuse_global_data_t *gd = (dt_iop_diffuse_global_data_t *)module->data;
-  dt_opencl_free_kernel(gd->kernel_diffuse);
+  dt_opencl_free_kernel(gd->kernel_diffuse_build_mask);
+  dt_opencl_free_kernel(gd->kernel_diffuse_inpaint_mask);
+  dt_opencl_free_kernel(gd->kernel_wavelets_decompose);
+  dt_opencl_free_kernel(gd->kernel_diffuse_pde);
   free(module->data);
   module->data = NULL;
 }
