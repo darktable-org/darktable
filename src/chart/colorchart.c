@@ -327,6 +327,7 @@ chart_t *parse_cht(const char *filename)
               }
 
               if(!first_label) first_label = label;
+              g_free(last_label);
               last_label = label;
 
               // store it
@@ -369,6 +370,7 @@ chart_t *parse_cht(const char *filename)
           if(kl == 'X' || kl == 'Y')
             g_hash_table_insert(result->patch_sets, g_strdup_printf("%s .. %s", first_label, last_label), labels);
 
+          g_free(last_label);
           free(y_label);
           free(x_label);
         }
