@@ -32,9 +32,9 @@
 /* about performance tested with 45mpix images (AMaZE is 0.45 here)
                       untiled           tiled
    basic:             0.5               0.15
-   median:            0.6 (default)     0.23
-   3xmedian:          0.8               0.40
-   3xmed + 2xrefine:  1.2               0.75
+   median:            0.6 (default)     0.25
+   3xmedian:          0.8               0.42
+   3xmed + 2xrefine:  1.2               0.80
 */
 
 /* Why tiling?
@@ -487,7 +487,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
           }
 
           // red/blue at GREEN pixel locations & red/blue and green at BLUE/RED pixel locations
-          for(int rr = 0; rr < last_rr / 3; rr++)
+          for(int rr = 0; rr < last_rr - 1; rr++)
           {
             rix[0] = qix[0] + rr * LMMSE_GRP;
             rix[1] = qix[1] + rr * LMMSE_GRP;
