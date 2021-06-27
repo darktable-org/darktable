@@ -584,6 +584,12 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
   if(GTK_IS_TREE_VIEW(widget))
   {
     if(!gtk_widget_is_sensitive(widget)) return FALSE;
+    if(user_data) // shortcuts treeview
+    {
+      gtk_tooltip_set_text(tooltip, _("press Del to delete selected shortcut\ndouble click to add new shortcut"));
+      return TRUE;
+    }
+
     GtkTreePath *path = NULL;
     GtkTreeModel *model;
     GtkTreeIter iter;
@@ -1532,6 +1538,7 @@ static void _resize_shortcuts_view(GtkWidget *view, GdkRectangle *allocation, gp
 GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
 {
   _selected_action = g_hash_table_lookup(darktable.control->widgets, widget);
+  darktable.control->element = 0;
 
   GtkWidget *container = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
 
@@ -1566,6 +1573,8 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_tree_view_set_search_equal_func(shortcuts_view, _search_func, shortcuts_view, NULL);
   gtk_tree_selection_set_select_function(gtk_tree_view_get_selection(shortcuts_view),
                                          shortcut_selection_function, NULL, NULL);
+  g_object_set(shortcuts_view, "has-tooltip", TRUE, NULL);
+  g_signal_connect(G_OBJECT(shortcuts_view), "query-tooltip", G_CALLBACK(_shortcut_tooltip_callback), GINT_TO_POINTER(TRUE));
   g_signal_connect(G_OBJECT(shortcuts_view), "row-activated", G_CALLBACK(_shortcut_row_activated), filtered_shortcuts);
   g_signal_connect(G_OBJECT(shortcuts_view), "key-press-event", G_CALLBACK(_shortcut_key_pressed), NULL);
   g_signal_connect(G_OBJECT(shortcuts_store), "row-inserted", G_CALLBACK(_shortcut_row_inserted), shortcuts_view);
@@ -1646,7 +1655,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_tree_view_set_search_column(actions_view, 1); // fake column for _search_func
   gtk_tree_view_set_search_equal_func(actions_view, _search_func, actions_view, NULL);
   g_object_set(actions_view, "has-tooltip", TRUE, NULL);
-  g_signal_connect(G_OBJECT(actions_view), "query-tooltip", G_CALLBACK(_shortcut_tooltip_callback), actions_store);
+  g_signal_connect(G_OBJECT(actions_view), "query-tooltip", G_CALLBACK(_shortcut_tooltip_callback), NULL);
   g_signal_connect(G_OBJECT(actions_view), "row-activated", G_CALLBACK(_action_row_activated), actions_store);
   g_signal_connect(G_OBJECT(actions_view), "button-press-event", G_CALLBACK(_action_view_click), actions_store);
   g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(actions_view)), "changed",
