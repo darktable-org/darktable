@@ -639,7 +639,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           // we use the low freq layer all the type as it is less likely to be nosy
           float gradient[2], laplacian[2]; // x, y for each channel
           find_gradient(neighbour_pixel_LF, c, gradient);
-          find_laplacian(neighbour_pixel_LF, c, laplacian);
+          find_gradient(neighbour_pixel_HF, c, laplacian);
 
           const float magnitude_grad = hypotf(gradient[0], gradient[1]);
           const float magnitude_lapl = hypotf(laplacian[0], laplacian[1]);
@@ -690,7 +690,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           // compute the update
           float acc = 0.f;
           for(size_t k = 0; k < 4; k++) acc += derivatives[k] * ABCD[k];
-          acc = (HF[index + c] + acc / variance) * strength;
+          acc = (HF[index + c] * strength + acc / variance);
 
           // update the solution
           out[index + c] = fmaxf(acc + LF[index + c], 0.f);
