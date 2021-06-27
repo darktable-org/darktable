@@ -124,11 +124,11 @@ static INLINE float calc_gamma(float val, float *table)
 #ifdef _OPENMP
   #pragma omp declare simd aligned(out)
 #endif
-static void refinement(const int width, const int height, float *const restrict out, const uint32_t filters, const float scaler)
+static void refinement(const int width, const int height, float *const restrict out, const uint32_t filters, const int refines)
 {
   const int r1 = 4 * width;
   const int r2 = 8 * width;
-  for(int b = 0; b < 2; b++)
+  for(int b = 0; b < refines; b++)
   {
       // Reinforce interpolated green pixels on RED/BLUE pixel locations
 #ifdef _OPENMP
@@ -231,9 +231,9 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
   h4 /= hs;
 
   // median filter iterations
-  int iter = (mode < 2) ? mode : 3;
+  const int medians = (mode < 2) ? mode : 3;
   // refinement steps
-  const gboolean refine = mode > 2;
+  const int refine = (mode > 2) ? mode - 2 : 0;
  
   float *rix[5];
   float *qix[5];
@@ -452,7 +452,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
   } // End of parallelization 1
 
   // median filter/
-  for(int pass = 0; pass < iter; pass++)
+  for(int pass = 0; pass < medians; pass++)
   {
     // Apply 3x3 median filter
     // Compute median(R-G) and median(B-G)
@@ -586,7 +586,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
 
   if(refine)
   {
-    refinement(width, height, out, filters, scaler);
+    refinement(width, height, out, filters, refine);
   }
 
   dt_free_align(buffer);

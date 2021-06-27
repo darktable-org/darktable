@@ -109,7 +109,8 @@ typedef enum dt_iop_demosaic_lmmse_t
   LMMSE_REFINE_0 = 0,   // $DESCRIPTION: "basic"
   LMMSE_REFINE_1 = 1,   // $DESCRIPTION: "median"
   LMMSE_REFINE_2 = 2,   // $DESCRIPTION: "3x median"
-  LMMSE_REFINE_3 = 3,   // $DESCRIPTION: "refine + 3x median"
+  LMMSE_REFINE_3 = 3,   // $DESCRIPTION: "refine & medians"
+  LMMSE_REFINE_4 = 4,   // $DESCRIPTION: "2x refine + medians"
 } dt_iop_demosaic_lmmse_t;
 
 typedef struct dt_iop_demosaic_params_t
