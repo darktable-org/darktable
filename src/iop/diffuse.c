@@ -54,9 +54,9 @@ typedef struct dt_iop_diffuse_params_t
   // global parameters
   int iterations;           // $MIN: 1   $MAX: 128   $DEFAULT: 1  $DESCRIPTION: "iterations"
   float sharpness;          // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "sharpness"
-  int radius;               // $MIN: 1   $MAX: 1024   $DEFAULT: 8  $DESCRIPTION: "radius"
+  int radius;               // $MIN: 1   $MAX: 512   $DEFAULT: 8  $DESCRIPTION: "radius"
   float regularization;     // $MIN: 0. $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "edge sensitivity"
-  float variance_threshold; // $MIN: -4. $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "edge threshold"
+  float variance_threshold; // $MIN: -2. $MAX: 2.   $DEFAULT: 0. $DESCRIPTION: "edge threshold"
 
   float anisotropy_first;         // $MIN: -5. $MAX: 5.   $DEFAULT: 0. $DESCRIPTION: "1st order anisotropy"
   float anisotropy_second;        // $MIN: -5. $MAX: 5.   $DEFAULT: 0. $DESCRIPTION: "2nd order anisotropy"
@@ -158,15 +158,15 @@ void init_presets(dt_iop_module_so_t *self)
   p.threshold = 0.0f;
   p.variance_threshold = 0.f;
 
-  p.anisotropy_first = +2.f;
-  p.anisotropy_second = -4.f;
-  p.anisotropy_third = +2.f;
+  p.anisotropy_first = -4.f;
+  p.anisotropy_second = +4.f;
+  p.anisotropy_third = +4.f;
   p.anisotropy_fourth = -4.f;
 
-  p.first = +0.3333f;
-  p.second = -0.5000f;
-  p.third = +0.02f;
-  p.fourth = -0.04f;
+  p.first = -0.5f;
+  p.second = +0.3333f;
+  p.third = -0.1f;
+  p.fourth = +0.1f;
 
   p.regularization = 2.f;
 
@@ -191,10 +191,10 @@ void init_presets(dt_iop_module_so_t *self)
   p.variance_threshold = 0.0f;
   p.regularization = 2.f;
 
-  p.first = +0.02f;
-  p.second = -0.10;
-  p.third = +0.02;
-  p.fourth = -0.10f;
+  p.first = -0.10f;
+  p.second = +0.2f;
+  p.third = -0.10f;
+  p.fourth = +0.02f;
 
   p.anisotropy_first = 2.f;
   p.anisotropy_second = 2.f;
@@ -206,9 +206,9 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.iterations = 5;
   p.radius = 5;
-  p.sharpness = 0.0f;
-  p.threshold = 0.0f;
-  p.variance_threshold = 0.f;
+  p.sharpness = 0.f;
+  p.threshold = 0.f;
+  p.variance_threshold = -0.25f;
   p.regularization = 4.f;
 
   p.anisotropy_first = +4.f;
@@ -216,10 +216,10 @@ void init_presets(dt_iop_module_so_t *self)
   p.anisotropy_third = +4.f;
   p.anisotropy_fourth = +4.f;
 
-  p.first = +0.3333f;
-  p.second = +0.3333f;
-  p.third = +0.04f;
-  p.fourth = +0.02f;
+  p.first = -0.25f;
+  p.second = +0.50f;
+  p.third = -0.05f;
+  p.fourth = +0.10f;
   dt_gui_presets_add_generic(_("denoise"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 2;
@@ -273,9 +273,13 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.first = -0.5f;
   p.second = -0.5f;
-  p.third = -0.25f;
-  p.fourth = -0.25f;
-  dt_gui_presets_add_generic(_("sharpen sensor demosaicing"), self->op, self->version(), &p, sizeof(p), 1,
+  p.third = -0.5f;
+  p.fourth = +0.25f;
+  dt_gui_presets_add_generic(_("sharpen demosaicing (no AA filter)"), self->op, self->version(), &p, sizeof(p), 1,
+                             DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.radius = 8;
+  dt_gui_presets_add_generic(_("sharpen demosaicing (AA filter)"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 4;
