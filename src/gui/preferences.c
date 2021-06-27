@@ -972,40 +972,18 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
       }
       sqlite3_finalize(stmt);
 
-      GtkWidget *dialog = gtk_message_dialog_new
-        (GTK_WINDOW(_preferences_dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
-         GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-         _("do you really want to delete the preset `%s'?"), name);
-#ifdef GDK_WINDOWING_QUARTZ
-      dt_osx_disallow_fullscreen(dialog);
-#endif
-      gtk_window_set_title(GTK_WINDOW(dialog), _("delete preset?"));
+      dt_gui_presets_confirm_and_delete(_preferences_dialog, name, operation, rowid);
 
-      if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
-      {
-        //deregistering accel...
-        if(operation)
-        {
+      GtkTreeStore *tree_store = GTK_TREE_STORE(model);
+      gtk_tree_store_clear(tree_store);
+      tree_insert_presets(tree_store);
 
-// FIXME!! remove preset shortcuts/action; refactor from edit_preset_response
-
-        }
-
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "DELETE FROM data.presets WHERE rowid=?1 AND writeprotect=0", -1, &stmt, NULL);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
-        sqlite3_step(stmt);
-        sqlite3_finalize(stmt);
-        GtkTreeStore *tree_store = GTK_TREE_STORE(model);
-        gtk_tree_store_clear(tree_store);
-        tree_insert_presets(tree_store);
-      }
-      gtk_widget_destroy(dialog);
       if(operation)
         g_free(operation);
     }
     else
       g_object_unref(editable);
+
     g_free(name);
 
     return TRUE;

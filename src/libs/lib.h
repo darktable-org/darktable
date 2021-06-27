@@ -148,13 +148,13 @@ void dt_lib_queue_postponed_update(dt_lib_module_t *mod, void (*update_fn)(dt_li
 void dt_lib_cancel_postponed_update(dt_lib_module_t *mod);
 
 // apply a preset to the given module
-gboolean dt_lib_presets_apply(const gchar *preset, gchar *module_name, int module_version);
+gboolean dt_lib_presets_apply(const gchar *preset, const gchar *module_name, int module_version);
 // duplicate a preset
-gchar *dt_lib_presets_duplicate(const gchar *preset, gchar *module_name, int module_version);
+gchar *dt_lib_presets_duplicate(const gchar *preset, const gchar *module_name, int module_version);
 // remove a preset
-void dt_lib_presets_remove(const gchar *preset, gchar *module_name, int module_version);
+void dt_lib_presets_remove(const gchar *preset, const gchar *module_name, int module_version);
 // update a preset
-void dt_lib_presets_update(const gchar *preset, gchar *module_name, int module_version, const gchar *newname,
+void dt_lib_presets_update(const gchar *preset, const gchar *module_name, int module_version, const gchar *newname,
                            const gchar *desc, const void *params, const int32_t params_size);
 // know if the module can autoapply presets
 gboolean dt_lib_presets_can_autoapply(dt_lib_module_t *mod);
