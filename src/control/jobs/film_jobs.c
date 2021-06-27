@@ -231,7 +231,7 @@ static void _film_import1(dt_job_t *job, dt_film_t *film, GList *images)
   // first, gather all images to import if not already given
   if (!images)
   {
-    gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
+    const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
 
     images = _film_recursive_get_files(film->dirname, recursive, &images);
     if(images == NULL)
