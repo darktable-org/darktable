@@ -89,15 +89,16 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mip
 
   // go through all images:
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id FROM main.images WHERE id >= ?1 AND id <= ?2", -1, &stmt, 0);
+                              "SELECT id, filename FROM main.images WHERE id >= ?1 AND id <= ?2", -1, &stmt, 0);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, min_imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int32_t imgid = sqlite3_column_int(stmt, 0);
+    const char *imgfilename = (const char*)sqlite3_column_text(stmt, 1);
 
     counter++;
-    fprintf(stderr, "image %zu/%zu (%.02f%%) (id:%d)\n", counter, image_count, 100.0 * counter / (float)image_count, imgid);
+    fprintf(stderr, "image %zu/%zu (%.02f%%) (id:%d, file=%s)\n", counter, image_count, 100.0 * counter / (float)image_count, imgid, imgfilename);
 
     for(int k = max_mip; k >= min_mip && k >= 0; k--)
     {
