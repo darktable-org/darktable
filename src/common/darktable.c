@@ -58,6 +58,7 @@
 #include "control/control.h"
 #include "control/crawler.h"
 #include "control/jobs/control_jobs.h"
+#include "control/jobs/film_jobs.h"
 #include "control/signal.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
@@ -1237,28 +1238,15 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #ifndef MAC_INTEGRATION
     // load image(s) specified on cmdline.
     // this has to happen after lua is initialized as image import can run lua code
-    // If only one image is listed, attempt to load it in darkroom
-    int last_id = 0;
-    gboolean only_single_images = TRUE;
-    int loaded_images = 0;
-
-    for(int i = 1; i < argc; i++)
+    if (argc == 2)
     {
-      gboolean single_image = FALSE;
-      if(argv[i] == NULL || *argv[i] == '\0') continue;
-      int new_id = dt_load_from_string(argv[i], FALSE, &single_image);
-      if(new_id > 0)
-      {
-        last_id = new_id;
-        loaded_images++;
-        if(!single_image) only_single_images = FALSE;
-      }
+      // If only one image is listed, attempt to load it in darkroom
+      (void)dt_load_from_string(argv[1], TRUE, NULL);
     }
-
-    if(loaded_images == 1 && only_single_images)
+    else
     {
-      dt_control_set_mouse_over_id(last_id);
-      dt_ctl_switch_mode_to("darkroom");
+      // when multiple names are given, fire up a background job to import them
+      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, dt_pathlist_import_create(argc,argv));
     }
 #endif
   }
