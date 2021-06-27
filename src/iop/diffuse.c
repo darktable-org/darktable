@@ -65,10 +65,10 @@ typedef struct dt_iop_diffuse_params_t
 
   float threshold; // $MIN: 0.  $MAX: 8.   $DEFAULT: 0. $DESCRIPTION: "luminance masking threshold"
 
-  float first; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "1st order (gradient)"
-  float second; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "2nd order (laplacian)"
-  float third; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "3rd order (gradient of laplacian)"
-  float fourth; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "4th order (laplacian of laplacian)"
+  float first; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "1st order speed"
+  float second; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "2nd order speed"
+  float third; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "3rd order speed"
+  float fourth; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "4th order speed"
 } dt_iop_diffuse_params_t;
 
 
@@ -1316,7 +1316,7 @@ void gui_init(struct dt_iop_module_t *self)
                    "low values diffuse closer.\n"
                    "if you plan on denoising, the radius should be around the width of your lens blur."));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion typology")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion speed")), FALSE, FALSE, 0);
 
   g->first = dt_bauhaus_slider_from_params(self, "first");
   dt_bauhaus_slider_set_factor(g->first, 100.0f);
@@ -1331,6 +1331,10 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->second, 4);
   dt_bauhaus_slider_set_factor(g->second, 100.0f);
   dt_bauhaus_slider_set_format(g->second, "%+.2f %%");
+  gtk_widget_set_tooltip_text(g->second, _("smoothing or sharpening of sharp details.\n"
+                                          "positive values diffuse and blur.\n"
+                                          "negative values sharpen.\n"
+                                          "zero does nothing."));
 
   g->third = dt_bauhaus_slider_from_params(self, "third");
   dt_bauhaus_slider_set_digits(g->third, 4);
@@ -1400,9 +1404,17 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->sharpness,
                               _("increase or decrease the sharpness of the highest frequencies"));
 
-
   g->regularization = dt_bauhaus_slider_from_params(self, "regularization");
+  gtk_widget_set_tooltip_text(g->regularization,
+                              _("define the sensitivity of the variance penalty for edges.\n"
+                                "increase to exclude more edges from diffusion,\n"
+                                "if fringes or halos appear."));
+
   g->variance_threshold = dt_bauhaus_slider_from_params(self, "variance_threshold");
+  gtk_widget_set_tooltip_text(g->variance_threshold,
+                              _("define the variance threshold between edge amplification and penalty.\n"
+                                "decrease if you want pixels on smooth surfaces get a diffusion boost,\n"
+                                "while pixels on edges still get penalized."));
 
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion spatiality")), FALSE, FALSE, 0);
