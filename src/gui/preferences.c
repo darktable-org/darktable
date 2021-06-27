@@ -232,7 +232,7 @@ static void save_usercss(GtkTextBuffer *buffer)
   GtkTextIter start, end;
   gtk_text_buffer_get_start_iter(buffer, &start);
   gtk_text_buffer_get_end_iter(buffer, &end);
-  const gchar *usercsscontent = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
+  gchar *usercsscontent = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
 
   //write to file
   GError *error = NULL;
@@ -241,7 +241,7 @@ static void save_usercss(GtkTextBuffer *buffer)
     fprintf(stderr, "%s: error saving css to %s: %s\n", G_STRFUNC, usercsspath, error->message);
     g_clear_error(&error);
   }
-
+  g_free(usercsscontent);
 }
 
 static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
@@ -1627,7 +1627,9 @@ static void import_export(GtkButton *button, gpointer data)
     gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(chooser), "keyboardrc");
     if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
     {
-      gtk_accel_map_save(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)));
+      gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
+      gtk_accel_map_save(filename);
+      g_free(filename);
       gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser));
       dt_conf_set_string("ui_last/export_path", folder);
       g_free(folder);
@@ -1652,10 +1654,11 @@ static void import_export(GtkButton *button, gpointer data)
     }
     if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
     {
-      if(g_file_test(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)), G_FILE_TEST_EXISTS))
+      gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
+      if(g_file_test(filename, G_FILE_TEST_EXISTS))
       {
         // Loading the file
-        gtk_accel_map_load(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)));
+        gtk_accel_map_load(filename);
 
         // Saving to the permanent keyboardrc
         dt_loc_get_user_config_dir(confdir, sizeof(confdir));
@@ -1666,6 +1669,7 @@ static void import_export(GtkButton *button, gpointer data)
         dt_conf_set_string("ui_last/import_path", folder);
         g_free(folder);
       }
+      g_free(filename);
     }
     gtk_widget_destroy(chooser);
   }
