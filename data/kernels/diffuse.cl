@@ -252,7 +252,7 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
     // we use the low freq layer all the type as it is less likely to be nosy
     float4 gradient[2], laplacian[2];
     find_gradient(neighbour_pixel_LF, gradient);
-    find_laplacian(neighbour_pixel_LF, laplacian);
+    find_gradient(neighbour_pixel_HF, laplacian);
 
     const float4 magnitude_grad = hypot(gradient[0], gradient[1]);
     const float4 magnitude_lapl = hypot(laplacian[0], laplacian[1]);
@@ -308,7 +308,7 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
     float4 acc = (float4)0.f;
     for(int k = 0; k < 4; k++) acc += derivatives[k] * ((float *)&ABCD)[k];
     float4 hf = read_imagef(HF, samplerA, (int2)(x, y));
-    acc = (hf + acc / variance) * strength;
+    acc = (hf * strength + acc / variance);
 
     // update the solution
     float4 lf = read_imagef(LF, samplerA, (int2)(x, y));
