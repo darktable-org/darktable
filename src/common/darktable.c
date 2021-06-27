@@ -1243,7 +1243,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       // If only one image is listed, attempt to load it in darkroom
       (void)dt_load_from_string(argv[1], TRUE, NULL);
     }
-    else
+    else if (argc > 2)
     {
       // when multiple names are given, fire up a background job to import them
       dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, dt_pathlist_import_create(argc,argv));
