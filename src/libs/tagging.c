@@ -1647,7 +1647,12 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
   gint tag_count;
   gint img_count;
   dt_tag_count_tags_images(tagname, &tag_count, &img_count);
-  if (tag_count == 0) return;
+  if (tag_count == 0)
+  {
+    g_free(tagname);
+    g_free(synonyms_list);
+    return;
+  }
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("edit"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -1841,6 +1846,7 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
   }
   _init_treeview(self, 0);
   gtk_widget_destroy(dialog);
+  g_free(synonyms_list);
   g_free(tagname);
 }
 
@@ -2747,6 +2753,7 @@ static void _event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint
       g_free(name);
       g_free(d->drag.tagname);
       d->drag.tagname = NULL;
+      gtk_tree_path_free(path); // release result of gtk_tree_view_get_path_at_pos above
       success = TRUE;
     }
   }
