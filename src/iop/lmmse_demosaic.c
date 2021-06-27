@@ -30,10 +30,19 @@
 */
 
 /* about performance tested with 45mpix images (AMaZE is 0.45 here)
-   basic:         0.5
-   median:        0.6 (default)
-   3xmedian:      0.8
-   3xmed +refine: 1.2
+                      untiled           tiled
+   basic:             0.5               0.15
+   median:            0.6 (default)     0.23
+   3xmedian:          0.8               0.40
+   3xmed + 2xrefine:  1.2               0.75
+*/
+
+/* Why tiling?
+   The internal tiling vastly reduces memory footprint and allows data processing to be done mostly
+   with in-cache data thus increasing performance.
+
+   As the borders are calculated with reduced precision due to the algo there is an overlapping
+   area which is not used for the internal tiles. 
 */
 
 #ifdef __GNUC__
@@ -45,6 +54,11 @@
 #define LMMSE_OVERLAP 8
 #define BORDER_AROUND 4
 #define LMMSE_TILEVALID (LMMSE_TILESIZE - 2 * LMMSE_OVERLAP)
+#define LMMSE_GRP (LMMSE_TILESIZE + 2 * BORDER_AROUND)
+#define w1 (LMMSE_GRP)
+#define w2 (LMMSE_GRP * 2)
+#define w3 (LMMSE_GRP * 3)
+#define w4 (LMMSE_GRP * 4)
 
 static INLINE float limf(float x, float min, float max)
 {
@@ -124,13 +138,13 @@ static INLINE float calc_gamma(float val, float *table)
 #ifdef _OPENMP
   #pragma omp declare simd aligned(out)
 #endif
-static void refinement(const int width, const int height, float *const restrict out, const uint32_t filters, const int refines)
+static void refinement(const int width, const int height, float *const restrict out, const uint32_t filters, const int refine)
 {
   const int r1 = 4 * width;
   const int r2 = 8 * width;
-  for(int b = 0; b < refines; b++)
+  for(int b = 0; b < refine; b++)
   {
-      // Reinforce interpolated green pixels on RED/BLUE pixel locations
+    // Reinforce interpolated green pixels on RED/BLUE pixel locations
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_sharedconst(out, width, height, filters, r1, r2) \
@@ -150,7 +164,7 @@ static void refinement(const int width, const int height, float *const restrict 
       }
     }
 
-      // Reinforce interpolated red/blue pixels on GREEN pixel locations
+    // Reinforce interpolated red/blue pixels on GREEN pixel locations
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_sharedconst(out, width, height, filters, r1, r2) \
@@ -172,7 +186,7 @@ static void refinement(const int width, const int height, float *const restrict 
         }
       }
     }
-      // Reinforce integrated red/blue pixels on BLUE/RED pixel locations
+    // Reinforce integrated red/blue pixels on BLUE/RED pixel locations
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_sharedconst(out, width, height, filters, r1, r2) \
@@ -211,12 +225,6 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
     dt_control_log(_("[lmmse_demosaic] too small area"));
     return;
   }
-  const int grp_height = height + 2 * BORDER_AROUND;
-  const int grp_width = width + 2 * BORDER_AROUND;
-  const int w1 = grp_width;
-  const int w2 = 2 * w1;
-  const int w3 = 3 * w1;
-  const int w4 = 4 * w1;
 
   float h0 = 1.0f;
   float h1 = expf( -1.0f / 8.0f);
@@ -234,362 +242,354 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
   const int medians = (mode < 2) ? mode : 3;
   // refinement steps
   const int refine = (mode > 2) ? mode - 2 : 0;
- 
-  float *rix[5];
-  float *qix[5];
-  float *buffer = dt_alloc_align_float(grp_height * grp_width * 5);
-
-  if(!buffer)
-  {
-    dt_free_align(buffer);
-    dt_control_log(_("[lmmse_demosaic] can't allocate buffer"));
-    fprintf(stderr, "[lmmse_demosaic] can't allocate buffer\n");
-    return;
-  }
-
-  qix[0] = buffer;
-  for(int i = 1; i < 5; i++)
-  {
-    qix[i] = qix[i - 1] + grp_height * grp_width;
-  }
-
-  memset(buffer, 0, sizeof(float) * grp_height * grp_width * 5);
 
   const float scaler = fmaxf(piece->pipe->dsc.processed_maximum[0], fmaxf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
   const float revscaler = 1.0f / scaler;
 
+  const int num_vertical =   1 + (height - 2 * LMMSE_OVERLAP -1) / LMMSE_TILEVALID;
+  const int num_horizontal = 1 + (width  - 2 * LMMSE_OVERLAP -1) / LMMSE_TILEVALID;
 #ifdef _OPENMP
-    #pragma omp parallel private(rix)
+  #pragma omp parallel \
+  dt_omp_firstprivate(width, height, out, in, scaler, revscaler, filters)
 #endif
   {
-#ifdef _OPENMP
-    #pragma omp for
-#endif
-    for(int rrr = BORDER_AROUND; rrr < grp_height - BORDER_AROUND; rrr++)
+    float *rix[6];
+    float *qix[6];
+    float *buffer = dt_alloc_align_float(LMMSE_GRP * LMMSE_GRP * 6);
+
+    qix[0] = buffer;
+    for(int i = 1; i < 6; i++)
     {
-      for(int ccc = BORDER_AROUND, row = rrr - BORDER_AROUND, col = ccc - BORDER_AROUND; ccc < grp_width - BORDER_AROUND; ccc++, col++)
-      {
-        float *rix0 = qix[4] + rrr * grp_width + ccc;
-        rix0[0] = calc_gamma(revscaler * in[row * width + col], gamma_in);
-      }
+      qix[i] = qix[i - 1] + LMMSE_GRP * LMMSE_GRP;
     }
+    memset(buffer, 0, sizeof(float) * LMMSE_GRP * LMMSE_GRP * 6);
 
-    // G-R(B)
 #ifdef _OPENMP
-    #pragma omp for schedule(dynamic,16)
+  #pragma omp for schedule(simd:dynamic, 6) collapse(2)
 #endif
-    for(int rr = 2; rr < grp_height - 2; rr++)
+    for(int tile_vertical = 0; tile_vertical < num_vertical; tile_vertical++)
     {
-      // G-R(B) at R(B) location
-      for(int cc = 2 + (FC(rr, 2, filters) & 1); cc < grp_width - 2; cc += 2)
+      for(int tile_horizontal = 0; tile_horizontal < num_horizontal; tile_horizontal++)
       {
-        rix[4] = qix[4] + rr * grp_width + cc;
-        const float v0 = 0.0625f * (rix[4][-w1 - 1] + rix[4][-w1 + 1] + rix[4][w1 - 1] + rix[4][w1 + 1]) + 0.25f * rix[4][0];
-        // horizontal
-        rix[0] = qix[0] + rr * grp_width + cc;
-        rix[0][0] = -0.25f * (rix[4][ -2] + rix[4][ 2]) + 0.5f * (rix[4][ -1] + rix[4][0] + rix[4][ 1]);
-        const float Y0 = v0 + 0.5f * rix[0][0];
+        const int rowStart = tile_vertical * LMMSE_TILEVALID;
+        const int rowEnd = MIN(rowStart + LMMSE_TILESIZE, height);
 
-        rix[0][0] = (rix[4][0] > 1.75f * Y0) ? median3f(rix[0][0], rix[4][ -1], rix[4][ 1]) : limf(rix[0][0], 0.0f, 1.0f);
-        rix[0][0] -= rix[4][0];
-        // vertical
-        rix[1] = qix[1] + rr * grp_width + cc;
-        rix[1][0] = -0.25f * (rix[4][-w2] + rix[4][w2]) + 0.5f * (rix[4][-w1] + rix[4][0] + rix[4][w1]);
-        const float Y1 = v0 + 0.5f * rix[1][0];
+        const int colStart = tile_horizontal * LMMSE_TILEVALID;
+        const int colEnd = MIN(colStart + LMMSE_TILESIZE, width);
 
-        rix[1][0] = (rix[4][0] > 1.75f * Y1) ? median3f(rix[1][0], rix[4][-w1], rix[4][w1]) : limf(rix[1][0], 0.0f, 1.0f);
-        rix[1][0] -= rix[4][0];
-      }
+        const int tileRows = MIN(rowEnd - rowStart, LMMSE_TILESIZE);
+        const int tileCols = MIN(colEnd - colStart, LMMSE_TILESIZE);
 
-      // G-R(B) at G location
-      for(int ccc = 2 + (FC(rr, 3, filters) & 1); ccc < grp_width - 2; ccc += 2)
-      {
-        rix[0] = qix[0] + rr * grp_width + ccc;
-        rix[1] = qix[1] + rr * grp_width + ccc;
-        rix[4] = qix[4] + rr * grp_width + ccc;
-        rix[0][0] = 0.25f * (rix[4][ -2] + rix[4][ 2]) - 0.5f * (rix[4][ -1] + rix[4][0] + rix[4][ 1]);
-        rix[1][0] = 0.25f * (rix[4][-w2] + rix[4][w2]) - 0.5f * (rix[4][-w1] + rix[4][0] + rix[4][w1]);
-        rix[0][0] = limf(rix[0][0], -1.0f, 0.0f) + rix[4][0];
-        rix[1][0] = limf(rix[1][0], -1.0f, 0.0f) + rix[4][0];
-      }
-    }
+        const int last_rr = tileRows + 2 * BORDER_AROUND;
+        const int last_cc = tileCols + 2 * BORDER_AROUND;
 
-    // apply low pass filter on differential colors
-#ifdef _OPENMP
-    #pragma omp for
-#endif
-    for (int rr = 4; rr < grp_height - 4; rr++)
-    {
-      for(int cc = 4; cc < grp_width - 4; cc++)
-      {
-        rix[0] = qix[0] + rr * grp_width + cc;
-        rix[2] = qix[2] + rr * grp_width + cc;
-        rix[2][0] = h0 * rix[0][0] + h1 * (rix[0][ -1] + rix[0][ 1]) + h2 * (rix[0][ -2] + rix[0][ 2]) + h3 * (rix[0][ -3] + rix[0][ 3]) + h4 * (rix[0][ -4] + rix[0][ 4]);
-        rix[1] = qix[1] + rr * grp_width + cc;
-        rix[3] = qix[3] + rr * grp_width + cc;
-        rix[3][0] = h0 * rix[1][0] + h1 * (rix[1][-w1] + rix[1][w1]) + h2 * (rix[1][-w2] + rix[1][w2]) + h3 * (rix[1][-w3] + rix[1][w3]) + h4 * (rix[1][-w4] + rix[1][w4]);
-      }
-    }
-#ifdef _OPENMP
-    #pragma omp for
-#endif
-    for(int rr = 4; rr < grp_height - 4; rr++)
-    {
-      for(int cc = 4 + (FC(rr, 4, filters) & 1); cc < grp_width - 4; cc += 2)
-      {
-        rix[0] = qix[0] + rr * grp_width + cc;
-        rix[1] = qix[1] + rr * grp_width + cc;
-        rix[2] = qix[2] + rr * grp_width + cc;
-        rix[3] = qix[3] + rr * grp_width + cc;
-        rix[4] = qix[4] + rr * grp_width + cc;
-        // horizontal
-        float p1 = rix[2][-4];
-        float p2 = rix[2][-3];
-        float p3 = rix[2][-2];
-        float p4 = rix[2][-1];
-        float p5 = rix[2][ 0];
-        float p6 = rix[2][ 1];
-        float p7 = rix[2][ 2];
-        float p8 = rix[2][ 3];
-        float p9 = rix[2][ 4];
-        float mu = (p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9) / 9.0f;
-        float vx = 1e-7f + sqrf(p1 - mu) + sqrf(p2 - mu) + sqrf(p3 - mu) + sqrf(p4 - mu) + sqrf(p5 - mu) + sqrf(p6 - mu) + sqrf(p7 - mu) + sqrf(p8 - mu) + sqrf(p9 - mu);
-        p1 -= rix[0][-4];
-        p2 -= rix[0][-3];
-        p3 -= rix[0][-2];
-        p4 -= rix[0][-1];
-        p5 -= rix[0][ 0];
-        p6 -= rix[0][ 1];
-        p7 -= rix[0][ 2];
-        p8 -= rix[0][ 3];
-        p9 -= rix[0][ 4];
-        float vn = 1e-7f + sqrf(p1) + sqrf(p2) + sqrf(p3) + sqrf(p4) + sqrf(p5) + sqrf(p6) + sqrf(p7) + sqrf(p8) + sqrf(p9);
-        float xh = (rix[0][0] * vx + rix[2][0] * vn) / (vx + vn);
-        float vh = vx * vn / (vx + vn);
-
-        // vertical
-        p1 = rix[3][-w4];
-        p2 = rix[3][-w3];
-        p3 = rix[3][-w2];
-        p4 = rix[3][-w1];
-        p5 = rix[3][  0];
-        p6 = rix[3][ w1];
-        p7 = rix[3][ w2];
-        p8 = rix[3][ w3];
-        p9 = rix[3][ w4];
-        mu = (p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9) / 9.0f;
-        vx = 1e-7f + sqrf(p1 - mu) + sqrf(p2 - mu) + sqrf(p3 - mu) + sqrf(p4 - mu) + sqrf(p5 - mu) + sqrf(p6 - mu) + sqrf(p7 - mu) + sqrf(p8 - mu) + sqrf(p9 - mu);
-        p1 -= rix[1][-w4];
-        p2 -= rix[1][-w3];
-        p3 -= rix[1][-w2];
-        p4 -= rix[1][-w1];
-        p5 -= rix[1][  0];
-        p6 -= rix[1][ w1];
-        p7 -= rix[1][ w2];
-        p8 -= rix[1][ w3];
-        p9 -= rix[1][ w4];
-        vn = 1e-7f + sqrf(p1) + sqrf(p2) + sqrf(p3) + sqrf(p4) + sqrf(p5) + sqrf(p6) + sqrf(p7) + sqrf(p8) + sqrf(p9);
-        float xv = (rix[1][0] * vx + rix[3][0] * vn) / (vx + vn);
-        float vv = vx * vn / (vx + vn);
-        // interpolated G-R(B)
-        rix[4][0] = (xh * vv + xv * vh) / (vh + vv);
-      }
-    }
-
-    // copy CFA values
-#ifdef _OPENMP
-    #pragma omp for
-#endif
-    for(int rr = 0; rr < grp_height; rr++)
-    {
-      for(int cc = 0, row_in = rr - BORDER_AROUND, col_in = cc - BORDER_AROUND; cc < grp_width; cc++, col_in++)
-      {
-        const int c = FC(rr, cc, filters);
-        rix[c] = qix[c] + rr * grp_width + cc;
-        rix[c][0] = ((row_in >= 0) && (row_in < height) && (col_in >= 0) && (col_in < width)) ? calc_gamma(revscaler * in[row_in * width + col_in], gamma_in) : 0.0f;
-
-        if(c != 1)
+        for(int rrr = BORDER_AROUND; rrr < tileRows + BORDER_AROUND; rrr++)
         {
-          rix[1] = qix[1] + rr * grp_width + cc;
-          rix[4] = qix[4] + rr * grp_width + cc;
-          rix[1][0] = rix[c][0] + rix[4][0];
+          for(int ccc = BORDER_AROUND; ccc < tileCols + BORDER_AROUND; ccc++)
+          {
+            const int row = rrr - BORDER_AROUND + rowStart;
+            const int col = ccc - BORDER_AROUND + colStart;
+
+            float *cfa = qix[5] + rrr * LMMSE_GRP + ccc;
+            cfa[0] = calc_gamma(revscaler * in[row * width + col], gamma_in);
+          }
         }
-      }
-    }
 
-    // bilinear interpolation for R/B
-    // interpolate R/B at G location
-#ifdef _OPENMP
-    #pragma omp for
-#endif
-    for(int rr = 1; rr < grp_height - 1; rr++)
-    {
-      for(int cc = 1 + (FC(rr, 2, filters) & 1), c = FC(rr, cc + 1, filters); cc < grp_width - 1; cc += 2)
-      {
-        rix[c] = qix[c] + rr * grp_width + cc;
-        rix[1] = qix[1] + rr * grp_width + cc;
-        rix[c][0] = rix[1][0] + 0.5f * (rix[c][ -1] - rix[1][ -1] + rix[c][ 1] - rix[1][ 1]);
-        c = 2 - c;
-        rix[c] = qix[c] + rr * grp_width + cc;
-        rix[c][0] = rix[1][0] + 0.5f * (rix[c][-w1] - rix[1][-w1] + rix[c][w1] - rix[1][w1]);
-        c = 2 - c;
-      }
-    }
-
-    // interpolate R/B at B/R location
-#ifdef _OPENMP
-    #pragma omp for
-#endif
-    for(int rr = 1; rr < grp_height - 1; rr++)
-    {
-      for(int cc = 1 + (FC(rr, 1, filters) & 1), c = 2 - FC(rr, cc, filters); cc < grp_width - 1; cc += 2)
-      {
-        rix[c] = qix[c] + rr * grp_width + cc;
-        rix[1] = qix[1] + rr * grp_width + cc;
-        rix[c][0] = rix[1][0] + 0.25f * (rix[c][-w1] - rix[1][-w1] + rix[c][ -1] - rix[1][ -1] + rix[c][  1] - rix[1][  1] + rix[c][ w1] - rix[1][ w1]);
-      }
-    }
-  } // End of parallelization 1
-
-  // median filter/
-  for(int pass = 0; pass < medians; pass++)
-  {
-    // Apply 3x3 median filter
-    // Compute median(R-G) and median(B-G)
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(rix) \
-  dt_omp_sharedconst(w1, grp_width, grp_height) \
-  shared(qix) \
-  schedule(simd:static) 
-#endif
-    for(int rr = 1; rr < grp_height - 1; rr++)
-    {
-      for(int c = 0; c < 3; c += 2)
-      {
-        const int d = c + 3 - (c == 0 ? 0 : 1);
-        for(int cc = 1; cc < grp_width - 1; cc++)
+        // G-R(B)
+        for(int rr = 2; rr < last_rr - 2; rr++)
         {
-          rix[d] = qix[d] + rr * grp_width + cc;
-          rix[c] = qix[c] + rr * grp_width + cc;
-          rix[1] = qix[1] + rr * grp_width + cc;
-          // Assign 3x3 differential color values
-          rix[d][0] = median9f(rix[c][-w1-1] - rix[1][-w1-1], rix[c][-w1  ] - rix[1][-w1  ], rix[c][-w1+1] - rix[1][-w1+1],
-                               rix[c][   -1] - rix[1][   -1], rix[c][    0] - rix[1][    0], rix[c][    1] - rix[1][    1],
-                               rix[c][ w1-1] - rix[1][ w1-1], rix[c][ w1  ] - rix[1][ w1  ], rix[c][ w1+1] - rix[1][ w1+1]);
+          // G-R(B) at R(B) location
+          for(int cc = 2 + (FC(rr, 2, filters) & 1); cc < last_cc - 2; cc += 2)
+          {
+            float *cfa = qix[5] + rr * LMMSE_GRP + cc;
+            const float v0 = 0.0625f * (cfa[-w1 - 1] + cfa[-w1 + 1] + cfa[w1 - 1] + cfa[w1 + 1]) + 0.25f * cfa[0];
+            // horizontal
+            rix[0] = qix[0] + rr * LMMSE_GRP + cc;
+            rix[0][0] = -0.25f * (cfa[ -2] + cfa[ 2]) + 0.5f * (cfa[ -1] + cfa[0] + cfa[ 1]);
+            const float Y0 = v0 + 0.5f * rix[0][0];
+    
+            rix[0][0] = (cfa[0] > 1.75f * Y0) ? median3f(rix[0][0], cfa[ -1], cfa[ 1]) : limf(rix[0][0], 0.0f, 1.0f);
+            rix[0][0] -= cfa[0];
+            // vertical
+            rix[1] = qix[1] + rr * LMMSE_GRP + cc;
+            rix[1][0] = -0.25f * (cfa[-w2] + cfa[w2]) + 0.5f * (cfa[-w1] + cfa[0] + cfa[w1]);
+            const float Y1 = v0 + 0.5f * rix[1][0];
+    
+            rix[1][0] = (cfa[0] > 1.75f * Y1) ? median3f(rix[1][0], cfa[-w1], cfa[w1]) : limf(rix[1][0], 0.0f, 1.0f);
+            rix[1][0] -= cfa[0];
+          }
+    
+          // G-R(B) at G location
+          for(int ccc = 2 + (FC(rr, 3, filters) & 1); ccc < LMMSE_GRP - 2; ccc += 2)
+          {
+            float *cfa = qix[5] + rr * LMMSE_GRP + ccc;
+            rix[0] = qix[0] + rr * LMMSE_GRP + ccc;
+            rix[1] = qix[1] + rr * LMMSE_GRP + ccc;
+            rix[0][0] = 0.25f * (cfa[ -2] + cfa[ 2]) - 0.5f * (cfa[ -1] + cfa[0] + cfa[ 1]);
+            rix[1][0] = 0.25f * (cfa[-w2] + cfa[w2]) - 0.5f * (cfa[-w1] + cfa[0] + cfa[w1]);
+            rix[0][0] = limf(rix[0][0], -1.0f, 0.0f) + cfa[0];
+            rix[1][0] = limf(rix[1][0], -1.0f, 0.0f) + cfa[0];
+          }
+        }
+
+        // apply low pass filter on differential colors
+        for (int rr = 4; rr < last_rr - 4; rr++)
+        {
+          for(int cc = 4; cc < last_cc - 4; cc++)
+          {
+            rix[0] = qix[0] + rr * LMMSE_GRP + cc;
+            rix[2] = qix[2] + rr * LMMSE_GRP + cc;
+            rix[2][0] = h0 * rix[0][0] + h1 * (rix[0][ -1] + rix[0][ 1]) + h2 * (rix[0][ -2] + rix[0][ 2]) + h3 * (rix[0][ -3] + rix[0][ 3]) + h4 * (rix[0][ -4] + rix[0][ 4]);
+            rix[1] = qix[1] + rr * LMMSE_GRP + cc;
+            rix[3] = qix[3] + rr * LMMSE_GRP + cc;
+            rix[3][0] = h0 * rix[1][0] + h1 * (rix[1][-w1] + rix[1][w1]) + h2 * (rix[1][-w2] + rix[1][w2]) + h3 * (rix[1][-w3] + rix[1][w3]) + h4 * (rix[1][-w4] + rix[1][w4]);
+          }
+        }
+
+        for(int rr = 4; rr < last_rr - 4; rr++)
+        {
+          for(int cc = 4 + (FC(rr, 4, filters) & 1); cc < last_cc - 4; cc += 2)
+          {
+            rix[0] = qix[0] + rr * LMMSE_GRP + cc;
+            rix[1] = qix[1] + rr * LMMSE_GRP + cc;
+            rix[2] = qix[2] + rr * LMMSE_GRP + cc;
+            rix[3] = qix[3] + rr * LMMSE_GRP + cc;
+            float *interp = qix[4] + rr * LMMSE_GRP + cc;
+            // horizontal
+            float p1 = rix[2][-4];
+            float p2 = rix[2][-3];
+            float p3 = rix[2][-2];
+            float p4 = rix[2][-1];
+            float p5 = rix[2][ 0];
+            float p6 = rix[2][ 1];
+            float p7 = rix[2][ 2];
+            float p8 = rix[2][ 3];
+            float p9 = rix[2][ 4];
+            float mu = (p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9) / 9.0f;
+            float vx = 1e-7f + sqrf(p1 - mu) + sqrf(p2 - mu) + sqrf(p3 - mu) + sqrf(p4 - mu) + sqrf(p5 - mu) + sqrf(p6 - mu) + sqrf(p7 - mu) + sqrf(p8 - mu) + sqrf(p9 - mu);
+            p1 -= rix[0][-4];
+            p2 -= rix[0][-3];
+            p3 -= rix[0][-2];
+            p4 -= rix[0][-1];
+            p5 -= rix[0][ 0];
+            p6 -= rix[0][ 1];
+            p7 -= rix[0][ 2];
+            p8 -= rix[0][ 3];
+            p9 -= rix[0][ 4];
+            float vn = 1e-7f + sqrf(p1) + sqrf(p2) + sqrf(p3) + sqrf(p4) + sqrf(p5) + sqrf(p6) + sqrf(p7) + sqrf(p8) + sqrf(p9);
+            float xh = (rix[0][0] * vx + rix[2][0] * vn) / (vx + vn);
+            float vh = vx * vn / (vx + vn);
+    
+            // vertical
+            p1 = rix[3][-w4];
+            p2 = rix[3][-w3];
+            p3 = rix[3][-w2];
+            p4 = rix[3][-w1];
+            p5 = rix[3][  0];
+            p6 = rix[3][ w1];
+            p7 = rix[3][ w2];
+            p8 = rix[3][ w3];
+            p9 = rix[3][ w4];
+            mu = (p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9) / 9.0f;
+            vx = 1e-7f + sqrf(p1 - mu) + sqrf(p2 - mu) + sqrf(p3 - mu) + sqrf(p4 - mu) + sqrf(p5 - mu) + sqrf(p6 - mu) + sqrf(p7 - mu) + sqrf(p8 - mu) + sqrf(p9 - mu);
+            p1 -= rix[1][-w4];
+            p2 -= rix[1][-w3];
+            p3 -= rix[1][-w2];
+            p4 -= rix[1][-w1];
+            p5 -= rix[1][  0];
+            p6 -= rix[1][ w1];
+            p7 -= rix[1][ w2];
+            p8 -= rix[1][ w3];
+            p9 -= rix[1][ w4];
+            vn = 1e-7f + sqrf(p1) + sqrf(p2) + sqrf(p3) + sqrf(p4) + sqrf(p5) + sqrf(p6) + sqrf(p7) + sqrf(p8) + sqrf(p9);
+            float xv = (rix[1][0] * vx + rix[3][0] * vn) / (vx + vn);
+            float vv = vx * vn / (vx + vn);
+            // interpolated G-R(B)
+            interp[0] = (xh * vv + xv * vh) / (vh + vv);
+          }
+        }
+
+        // copy CFA values
+        for(int rr = 0; rr < last_rr; rr++)
+        {
+          for(int cc = 0; cc < last_cc; cc++)
+          {
+            const int row_in = rr - BORDER_AROUND + rowStart;
+            const int col_in = cc - BORDER_AROUND + colStart;
+
+            const int c = FC(rr, cc, filters);
+            rix[c] = qix[c] + rr * LMMSE_GRP + cc;
+            rix[c][0] = ((row_in >= 0) && (row_in < height) && (col_in >= 0) && (col_in < width)) ? qix[5][rr * LMMSE_GRP + cc] : 0.0f;
+    
+            if(c != 1)
+            {
+              rix[1] = qix[1] + rr * LMMSE_GRP + cc;
+              float *interp = qix[4] + rr * LMMSE_GRP + cc;
+              rix[1][0] = rix[c][0] + interp[0];
+            }
+          }
+        }
+
+        // bilinear interpolation for R/B
+        // interpolate R/B at G location
+        for(int rr = 1; rr < last_rr - 1; rr++)
+        {
+          for(int cc = 1 + (FC(rr, 2, filters) & 1), c = FC(rr, cc + 1, filters); cc < last_cc - 1; cc += 2)
+          {
+            rix[c] = qix[c] + rr * LMMSE_GRP + cc;
+            rix[1] = qix[1] + rr * LMMSE_GRP + cc;
+            rix[c][0] = rix[1][0] + 0.5f * (rix[c][ -1] - rix[1][ -1] + rix[c][ 1] - rix[1][ 1]);
+            c = 2 - c;
+            rix[c] = qix[c] + rr * LMMSE_GRP + cc;
+            rix[c][0] = rix[1][0] + 0.5f * (rix[c][-w1] - rix[1][-w1] + rix[c][w1] - rix[1][w1]);
+            c = 2 - c;
+          }
+        }
+    
+        // interpolate R/B at B/R location
+        for(int rr = 1; rr < last_rr - 1; rr++)
+        {
+          for(int cc = 1 + (FC(rr, 1, filters) & 1), c = 2 - FC(rr, cc, filters); cc < last_cc - 1; cc += 2)
+          {
+            rix[c] = qix[c] + rr * LMMSE_GRP + cc;
+            rix[1] = qix[1] + rr * LMMSE_GRP + cc;
+            rix[c][0] = rix[1][0] + 0.25f * (rix[c][-w1] - rix[1][-w1] + rix[c][ -1] - rix[1][ -1] + rix[c][  1] - rix[1][  1] + rix[c][ w1] - rix[1][ w1]);
+          }
+        }
+
+        // median filter/
+        for(int pass = 0; pass < medians; pass++)
+        {
+          // Apply 3x3 median filter
+          // Compute median(R-G) and median(B-G)
+          for(int rr = 1; rr < last_rr - 1; rr++)
+          {
+            for(int c = 0; c < 3; c += 2)
+            {
+              const int d = c + 3 - (c == 0 ? 0 : 1);
+              for(int cc = 1; cc < last_cc - 1; cc++)
+              {
+                rix[d] = qix[d] + rr * LMMSE_GRP + cc;
+                rix[c] = qix[c] + rr * LMMSE_GRP + cc;
+                rix[1] = qix[1] + rr * LMMSE_GRP + cc;
+                // Assign 3x3 differential color values
+                rix[d][0] = median9f(rix[c][-w1-1] - rix[1][-w1-1],
+                                     rix[c][-w1  ] - rix[1][-w1  ],
+                                     rix[c][-w1+1] - rix[1][-w1+1],
+                                     rix[c][   -1] - rix[1][   -1],
+                                     rix[c][    0] - rix[1][    0],
+                                     rix[c][    1] - rix[1][    1],
+                                     rix[c][ w1-1] - rix[1][ w1-1],
+                                     rix[c][ w1  ] - rix[1][ w1  ],
+                                     rix[c][ w1+1] - rix[1][ w1+1]);
+              }
+            }
+          }
+
+          // red/blue at GREEN pixel locations & red/blue and green at BLUE/RED pixel locations
+          for(int rr = 0; rr < last_rr / 3; rr++)
+          {
+            rix[0] = qix[0] + rr * LMMSE_GRP;
+            rix[1] = qix[1] + rr * LMMSE_GRP;
+            rix[2] = qix[2] + rr * LMMSE_GRP;
+            rix[3] = qix[3] + rr * LMMSE_GRP;
+            rix[4] = qix[4] + rr * LMMSE_GRP;
+            int c0 = FC(rr, 0, filters);
+            int c1 = FC(rr, 1, filters);
+      
+            if(c0 == 1)
+            {
+              c1 = 2 - c1;
+              const int d = c1 + 3 - (c1 == 0 ? 0 : 1);
+              int cc;
+              for(cc = 0; cc < last_cc - 1; cc += 2)
+              {
+                rix[0][0] = rix[1][0] + rix[3][0];
+                rix[2][0] = rix[1][0] + rix[4][0];
+                rix[0]++;
+                rix[1]++;
+                rix[2]++;
+                rix[3]++;
+                rix[4]++;
+                rix[c1][0] = rix[1][0] + rix[d][0];
+                rix[1][0] = 0.5f * (rix[0][0] - rix[3][0] + rix[2][0] - rix[4][0]);
+                rix[0]++;
+                rix[1]++;
+                rix[2]++;
+                rix[3]++;
+                rix[4]++;
+              }
+      
+              if(cc < last_cc)
+              { // remaining pixel, only if width is odd
+                rix[0][0] = rix[1][0] + rix[3][0];
+                rix[2][0] = rix[1][0] + rix[4][0];
+              }
+            }
+            else
+            {
+              c0 = 2 - c0;
+              const int d = c0 + 3 - (c0 == 0 ? 0 : 1);
+              int cc;
+              for(cc = 0; cc < last_cc - 1; cc += 2)
+              {
+                rix[c0][0] = rix[1][0] + rix[d][0];
+                rix[1][0] = 0.5f * (rix[0][0] - rix[3][0] + rix[2][0] - rix[4][0]);
+                rix[0]++;
+                rix[1]++;
+                rix[2]++;
+                rix[3]++;
+                rix[4]++;
+                rix[0][0] = rix[1][0] + rix[3][0];
+                rix[2][0] = rix[1][0] + rix[4][0];
+                rix[0]++;
+                rix[1]++;
+                rix[2]++;
+                rix[3]++;
+                rix[4]++;
+              }
+      
+              if(cc < last_cc)
+              { // remaining pixel, only if width is odd
+                rix[c0][0] = rix[1][0] + rix[d][0];
+                rix[1][0] = 0.5f * (rix[0][0] - rix[3][0] + rix[2][0] - rix[4][0]);
+              }
+            }
+          }
+        }
+
+        // write result to out
+        // For the outermost tiles in all directions we also write the otherwise overlapped area
+        const int first_vertical =   rowStart + ((tile_vertical == 0)                    ? 0 : LMMSE_OVERLAP);
+        const int last_vertical =    rowEnd   - ((tile_vertical == num_vertical - 1)     ? 0 : LMMSE_OVERLAP);
+        const int first_horizontal = colStart + ((tile_horizontal == 0)                  ? 0 : LMMSE_OVERLAP);
+        const int last_horizontal =  colEnd   - ((tile_horizontal == num_horizontal - 1) ? 0 : LMMSE_OVERLAP);
+        for(int row = first_vertical; row < last_vertical; row++)
+        {
+          for(int col = first_horizontal; col < last_horizontal; col++)
+          {
+
+            const int rr = row - rowStart + BORDER_AROUND;
+            const int cc = col - colStart + BORDER_AROUND;
+            const int c = FC(row, col, filters);
+            const int oidx = 4 * (row * width + col);
+
+            for(int i = 0; i < 3; i++)
+            {
+              const float val = (i == c) ? in[row * width + col] : scaler * calc_gamma(qix[i][rr * LMMSE_GRP + cc], gamma_out); 
+              out[oidx + i] = fmaxf(0.0f, val);
+            }
+            out[oidx + 3] = 0.0f;
+          }
         }
       }
     }
-
-    // red/blue at GREEN pixel locations & red/blue and green at BLUE/RED pixel locations
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(rix) \
-  dt_omp_sharedconst(grp_width, grp_height, filters) \
-  shared(qix) \
-  schedule(simd:static) 
-#endif
-    for(int rr = 0; rr < grp_height; rr++)
-    {
-      rix[0] = qix[0] + rr * grp_width;
-      rix[1] = qix[1] + rr * grp_width;
-      rix[2] = qix[2] + rr * grp_width;
-      rix[3] = qix[3] + rr * grp_width;
-      rix[4] = qix[4] + rr * grp_width;
-      int c0 = FC(rr, 0, filters);
-      int c1 = FC(rr, 1, filters);
-
-      if(c0 == 1)
-      {
-        c1 = 2 - c1;
-        const int d = c1 + 3 - (c1 == 0 ? 0 : 1);
-        int cc;
-
-        for(cc = 0; cc < grp_width - 1; cc += 2)
-        {
-          rix[0][0] = rix[1][0] + rix[3][0];
-          rix[2][0] = rix[1][0] + rix[4][0];
-          rix[0]++;
-          rix[1]++;
-          rix[2]++;
-          rix[3]++;
-          rix[4]++;
-          rix[c1][0] = rix[1][0] + rix[d][0];
-          rix[1][0] = 0.5f * (rix[0][0] - rix[3][0] + rix[2][0] - rix[4][0]);
-          rix[0]++;
-          rix[1]++;
-          rix[2]++;
-          rix[3]++;
-          rix[4]++;
-        }
-
-        if(cc < grp_width)
-        { // remaining pixel, only if width is odd
-          rix[0][0] = rix[1][0] + rix[3][0];
-          rix[2][0] = rix[1][0] + rix[4][0];
-        }
-      }
-      else
-      {
-        c0 = 2 - c0;
-        const int d = c0 + 3 - (c0 == 0 ? 0 : 1);
-        int cc;
-
-        for(cc = 0; cc < grp_width - 1; cc += 2)
-        {
-          rix[c0][0] = rix[1][0] + rix[d][0];
-          rix[1][0] = 0.5f * (rix[0][0] - rix[3][0] + rix[2][0] - rix[4][0]);
-          rix[0]++;
-          rix[1]++;
-          rix[2]++;
-          rix[3]++;
-          rix[4]++;
-          rix[0][0] = rix[1][0] + rix[3][0];
-          rix[2][0] = rix[1][0] + rix[4][0];
-          rix[0]++;
-          rix[1]++;
-          rix[2]++;
-          rix[3]++;
-          rix[4]++;
-        }
-
-        if(cc < grp_width)
-        { // remaining pixel, only if width is odd
-          rix[c0][0] = rix[1][0] + rix[d][0];
-          rix[1][0] = 0.5f * (rix[0][0] - rix[3][0] + rix[2][0] - rix[4][0]);
-        }
-      }
-    }
+    dt_free_align(buffer);
   }
-
-  // write result to out
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(qix) \
-  dt_omp_sharedconst(out, in, gamma_out, grp_width, width, height, filters, scaler) \
-  schedule(simd:static) aligned(out, in, gamma_out : 64) 
-#endif
-  for(int row = 0; row < height; row++)
-  {
-    for(int col = 0, rr = row + BORDER_AROUND, cc = col + BORDER_AROUND; col < width; col++, cc++)
-    {
-      const int c = FC(row, col, filters);
-      const int oidx = 4 * (row * width + col);
-      for(int i = 0; i < DT_PIXEL_SIMD_CHANNELS; i++)
-      {
-        const float val = (i == c) ? in[row * width + col] : scaler * calc_gamma(qix[i][rr * grp_width + cc], gamma_out); 
-        out[oidx + i] = fmaxf(0.0f, val);
-      }
-      out[oidx + 3] = 0.0f;
-    }
-  }
-
   if(refine)
   {
     refinement(width, height, out, filters, refine);
   }
-
-  dt_free_align(buffer);
 }
 
 // revert specific aggressive optimizing
@@ -601,4 +601,9 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
 #undef LMMSE_OVERLAP
 #undef BORDER_AROUND
 #undef LMMSE_TILEVALID
+#undef LMMSE_GRP
+#undef w1
+#undef w2
+#undef w3
+#undef w4
 
