@@ -220,7 +220,7 @@ static int _film_filename_cmp(gchar *a, gchar *b)
 {
   gchar *a_basename = g_path_get_basename(a);
   gchar *b_basename = g_path_get_basename(b);
-  int ret = g_strcmp0(a_basename, b_basename);
+  const int ret = g_strcmp0(a_basename, b_basename);
   g_free(a_basename);
   g_free(b_basename);
   return ret;
@@ -336,7 +336,7 @@ static void _film_import1(dt_job_t *job, dt_film_t *film, GList *images)
 
     all_imgs = g_list_prepend(all_imgs, GINT_TO_POINTER(imgid));
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
-    double curr_time = dt_get_wtime();
+    const double curr_time = dt_get_wtime();
     // if we've imported at least four images without an update, and it's been at least half a second since the last
     //   one, update the interface
     if(pending >= 4 && curr_time - last_update > 0.5)
