@@ -324,7 +324,9 @@ static void response_callback_file(GtkDialog *dialog, gint response_id, pref_ele
   {
     char pref_name[1024];
     get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-    dt_conf_set_string(pref_name, gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(cur_elt->widget)));
+    gchar *file = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(cur_elt->widget));
+    dt_conf_set_string(pref_name, file);
+    g_free(file);
   }
 }
 
@@ -485,6 +487,7 @@ static gboolean reset_widget_lua(GtkWidget *label, GdkEventButton *event, pref_e
     lua_call(L,3,0);
     dt_lua_unlock();
     dt_conf_set_string(pref_name, old_str);
+    free(old_str);
     return TRUE;
   }
   return FALSE;

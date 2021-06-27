@@ -2341,7 +2341,7 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
 
     // in dynamic modes, we need to put the mask indicator after the drawing area
     GList *children = gtk_container_get_children(GTK_CONTAINER(module->header));
-    GList *child = g_list_last(children);
+    GList *child;
 
     for(child = g_list_last(children); child && GTK_IS_BUTTON(child->data); child = g_list_previous(child));
 
