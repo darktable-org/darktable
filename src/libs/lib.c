@@ -25,6 +25,7 @@
 #include "dtgtk/icon.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -105,99 +106,9 @@ static gchar *get_active_preset_name(dt_lib_module_info_t *minfo)
   return name;
 }
 
-static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_lib_presets_edit_dialog_t *g)
-{
-  gint dlg_ret;
-  gint is_new = 0;
-
-  if(response_id == GTK_RESPONSE_ACCEPT)
-  {
-    sqlite3_stmt *stmt;
-
-    // now delete preset, so we can re-insert the new values:
-    dt_lib_presets_remove(g->original_name, g->plugin_name, g->version);
-
-    const char *name = gtk_entry_get_text(g->name);
-    if(((g->old_id >= 0) && (strcmp(g->original_name, name) != 0)) || (g->old_id < 0))
-    {
-
-      // editing existing preset with different name or store new preset -> check for a preset with the same
-      // name:
-
-      DT_DEBUG_SQLITE3_PREPARE_V2(
-          dt_database_get(darktable.db),
-          "SELECT name"
-          " FROM data.presets"
-          " WHERE name = ?1 AND operation=?2 AND op_version=?3", -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, g->plugin_name, -1, SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, g->version);
-
-      if(sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        sqlite3_finalize(stmt);
-
-        GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-        GtkWidget *dlg_overwrite = gtk_message_dialog_new(
-            GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO,
-            _("preset `%s' already exists.\ndo you want to overwrite?"), name);
-#ifdef GDK_WINDOWING_QUARTZ
-        dt_osx_disallow_fullscreen(dlg_overwrite);
-#endif
-        gtk_window_set_title(GTK_WINDOW(dlg_overwrite), _("overwrite preset?"));
-        dlg_ret = gtk_dialog_run(GTK_DIALOG(dlg_overwrite));
-        gtk_widget_destroy(dlg_overwrite);
-
-        // if result is BUTTON_NO exit without destroy dialog, to permit other name
-        if(dlg_ret == GTK_RESPONSE_NO) return;
-      }
-      else
-      {
-        is_new = 1;
-        sqlite3_finalize(stmt);
-      }
-    }
-
-    if(is_new == 0)
-    {
-      // delete preset, so we can re-insert the new values:
-      dt_lib_presets_remove(name, g->plugin_name, g->version);
-    }
-
-    // commit all the user input fields
-    dt_action_rename_preset(&g->module->actions, g->original_name, name);
-
-    DT_DEBUG_SQLITE3_PREPARE_V2
-      (dt_database_get(darktable.db),
-       "INSERT INTO data.presets (name, description, operation, op_version, op_params,"
-       "  blendop_params, blendop_version, enabled, model, maker, lens,"
-       "  iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max,"
-       "  focal_length_min, focal_length_max, writeprotect,"
-       "  autoapply, filter, def, format)"
-       " VALUES (?1, ?2, ?3, ?4, ?5, NULL, 0, 1, "
-       "         '%', '%', '%', 0, 340282346638528859812000000000000000000, 0, 100000000, 0, "
-       "          100000000, 0, 1000, 0, 0, 0, 0, 0)",
-       -1, &stmt, NULL);
-
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, gtk_entry_get_text(g->description), -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, g->plugin_name, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, g->version);
-    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, g->params, g->params_size, SQLITE_TRANSIENT);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-
-    dt_gui_store_last_preset(name);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PRESETS_CHANGED,
-                                  g_strdup(g->plugin_name));
-  }
-  gtk_widget_destroy(GTK_WIDGET(dialog));
-  g_free(g->original_name);
-  free(g);
-}
-
 static void edit_preset(const char *name_in, dt_lib_module_info_t *minfo)
 {
+  // get the original name of the preset
   gchar *name = NULL;
   if(name_in == NULL)
   {
@@ -207,57 +118,29 @@ static void edit_preset(const char *name_in, dt_lib_module_info_t *minfo)
   else
     name = g_strdup(name_in);
 
-  GtkWidget *dialog;
-  /* Create the widgets */
-  char title[1024];
-  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-  snprintf(title, sizeof(title), _("edit `%s'"), name);
-  dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                       _("_cancel"), GTK_RESPONSE_REJECT, _("_ok"), GTK_RESPONSE_ACCEPT, NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(dialog);
-#endif
-  GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  gtk_container_add(content_area, GTK_WIDGET(box));
-
-  dt_lib_presets_edit_dialog_t *g
-      = (dt_lib_presets_edit_dialog_t *)g_malloc0(sizeof(dt_lib_presets_edit_dialog_t));
-  g->old_id = -1;
-  g_strlcpy(g->plugin_name, minfo->plugin_name, sizeof(g->plugin_name));
-  g->version = minfo->version;
-  g->params_size = minfo->params_size;
-  g->params = minfo->params;
-  g->name = GTK_ENTRY(gtk_entry_new());
-  g->module = minfo->module;
-  g->original_name = name;
-  gtk_entry_set_text(g->name, name);
-  gtk_box_pack_start(box, GTK_WIDGET(g->name), FALSE, FALSE, 0);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->name), _("name of the preset"));
-
-  g->description = GTK_ENTRY(gtk_entry_new());
-  gtk_box_pack_start(box, GTK_WIDGET(g->description), FALSE, FALSE, 0);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->description), _("description or further information"));
-
+  // find the rowid of the preset
+  int rowid = -1;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "SELECT rowid, description"
-      " FROM data.presets"
-      " WHERE name = ?1 AND operation = ?2 AND op_version = ?3",
-      -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT rowid"
+                              " FROM data.presets"
+                              " WHERE name = ?1 AND operation = ?2 AND op_version = ?3",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, minfo->plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo->version);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    g->old_id = sqlite3_column_int(stmt, 0);
-    gtk_entry_set_text(g->description, (const char *)sqlite3_column_text(stmt, 1));
+    rowid = sqlite3_column_int(stmt, 0);
   }
   sqlite3_finalize(stmt);
 
-  g_signal_connect(dialog, "response", G_CALLBACK(edit_preset_response), g);
-  gtk_widget_show_all(dialog);
+  // if we don't have a valid rowid, just exit, there's a problem !
+  if(rowid < 0) return;
+
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+  dt_gui_presets_show_edit_dialog(name, minfo->plugin_name, rowid, NULL, NULL, TRUE, TRUE, FALSE,
+                                  GTK_WINDOW(window));
 }
 
 static void menuitem_update_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
