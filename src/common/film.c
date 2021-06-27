@@ -254,7 +254,7 @@ int dt_film_import(const char *dirname)
   }
 
   // when called without job system running the import will be done synchronously and destroy the film object
-  int filmid = film->id;
+  const int filmid = film->id;
 
   /* at last put import film job on queue */
   film->last_loaded = 0;
