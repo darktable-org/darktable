@@ -142,6 +142,9 @@ typedef unsigned int u_int;
 /* Helper to force stack vectors to be aligned on 64 bits blocks to enable AVX2 */
 #define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, 64)
 
+// utility type to ease declaration of aligned small arrays to hold a pixel (and document their purpose)
+typedef DT_ALIGNED_PIXEL float dt_aligned_pixel_t[4];
+
 #ifndef _RELEASE
 #include "common/poison.h"
 #endif
