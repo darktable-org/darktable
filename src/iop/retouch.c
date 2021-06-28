@@ -2874,7 +2874,7 @@ static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 #endif
   for(int i = 0; i < size; i += ch)
   {
-    float Lab[3] = { 0 };
+    dt_aligned_pixel_t Lab = { 0 };
 
     if(work_profile)
     {
@@ -2884,7 +2884,7 @@ static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     }
     else
     {
-      float DT_ALIGNED_PIXEL XYZ[4];
+      dt_aligned_pixel_t XYZ;
       dt_linearRGB_to_XYZ(img_src + i, XYZ);
       dt_XYZ_to_Lab(XYZ, Lab);
     }
@@ -3430,7 +3430,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
           else if(algo == DT_IOP_RETOUCH_FILL)
           {
             // add a brightness to the color so it can be fine-adjusted by the user
-            float DT_ALIGNED_PIXEL fill_color[4];
+            dt_aligned_pixel_t fill_color;
 
             if(p->rt_forms[index].fill_mode == DT_IOP_RETOUCH_FILL_ERASE)
             {
@@ -3535,10 +3535,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   // decompose it
   dwt_decompose(dwt_p, rt_process_forms);
 
-  float levels[3] = { 0.f };
-  levels[0] = p->preview_levels[0];
-  levels[1] = p->preview_levels[1];
-  levels[2] = p->preview_levels[2];
+  dt_aligned_pixel_t levels = { p->preview_levels[0], p->preview_levels[1], p->preview_levels[2] };
 
   // process auto levels
   if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
@@ -4247,7 +4244,7 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
           else if(algo == DT_IOP_RETOUCH_FILL)
           {
             // add a brightness to the color so it can be fine-adjusted by the user
-            float fill_color[3];
+            dt_aligned_pixel_t fill_color;
 
             if(p->rt_forms[index].fill_mode == DT_IOP_RETOUCH_FILL_ERASE)
             {
@@ -4378,10 +4375,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   err = dwt_decompose_cl(dwt_p, rt_process_forms_cl);
   if(err != CL_SUCCESS) goto cleanup;
 
-  float levels[3] = { 0.f };
-  levels[0] = p->preview_levels[0];
-  levels[1] = p->preview_levels[1];
-  levels[2] = p->preview_levels[2];
+  dt_aligned_pixel_t levels = { p->preview_levels[0], p->preview_levels[1], p->preview_levels[2] };
 
   // process auto levels
   if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)

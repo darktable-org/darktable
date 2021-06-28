@@ -851,8 +851,8 @@ inline static void inpaint_noise(const float *const in, const float *const mask,
       const size_t index = idx * 4;
       const float weight = mask[idx];
       const float *const restrict pix_in = __builtin_assume_aligned(in + index, 16);
-      float DT_ALIGNED_ARRAY noise[4] = { 0.f };
-      float DT_ALIGNED_ARRAY sigma[4] = { 0.f };
+      dt_aligned_pixel_t noise = { 0.f };
+      dt_aligned_pixel_t sigma = { 0.f };
       const int DT_ALIGNED_ARRAY flip[4] = { TRUE, FALSE, TRUE, FALSE };
 
       for_each_channel(c,aligned(pix_in))

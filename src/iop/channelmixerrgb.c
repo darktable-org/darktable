@@ -2595,8 +2595,8 @@ static void commit_profile_callback(GtkWidget *widget, GdkEventButton *event, gp
   dt_bauhaus_combobox_set(g->illuminant, p->illuminant);
   dt_bauhaus_slider_set(g->temperature, p->temperature);
 
-  float xyY[3] = { p->x, p->y, 1.f };
-  float Lch[3] = { 0 };
+  dt_aligned_pixel_t xyY = { p->x, p->y, 1.f };
+  dt_aligned_pixel_t Lch = { 0 };
   dt_xyY_to_Lch(xyY, Lch);
   dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
   dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
@@ -2646,8 +2646,8 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
   dt_bauhaus_combobox_set(g->illuminant, p->illuminant);
   dt_bauhaus_combobox_set(g->adaptation, p->adaptation);
 
-  const float xyY[3] = { p->x, p->y, 1.f };
-  float Lch[3];
+  const dt_aligned_pixel_t xyY = { p->x, p->y, 1.f };
+  dt_aligned_pixel_t Lch;
   dt_xyY_to_Lch(xyY, Lch);
   dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
   dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
@@ -2935,10 +2935,10 @@ static void update_xy_color(dt_iop_module_t *self)
   {
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
     const float x = x_min + stop * x_range;
-    float RGB[4];
+    dt_aligned_pixel_t RGB;
 
-    const float Lch[3] = { 100.f, 50.f, x / 180.f * M_PI };
-    float xyY[3] = { 0 };
+    const dt_aligned_pixel_t Lch = { 100.f, 50.f, x / 180.f * M_PI };
+    dt_aligned_pixel_t xyY = { 0 };
     dt_Lch_to_xyY(Lch, xyY);
     illuminant_xy_to_RGB(xyY[0], xyY[1], RGB);
     dt_bauhaus_slider_set_stop(g->illum_x, stop, RGB[0], RGB[1], RGB[2]);
@@ -2949,11 +2949,11 @@ static void update_xy_color(dt_iop_module_t *self)
   {
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
     const float y = (y_min + stop * y_range) / 2.0f;
-    float RGB[4] = { 0 };
+    dt_aligned_pixel_t RGB = { 0 };
 
     // Find current hue
-    float xyY[3] = { p->x, p->y, 1.f };
-    float Lch[3] = { 0 };
+    dt_aligned_pixel_t xyY = { p->x, p->y, 1.f };
+    dt_aligned_pixel_t Lch = { 0 };
     dt_xyY_to_Lch(xyY, Lch);
 
     // Replace chroma by current step
@@ -3008,7 +3008,7 @@ static void update_R_colors(dt_iop_module_t *self)
   const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, self->dev->pipe);
 
   // scale params if needed
-  float RGB[3] = { p->red[0], p->red[1], p->red[2] };
+  dt_aligned_pixel_t RGB = { p->red[0], p->red[1], p->red[2] };
 
   if(p->normalize_R)
   {
@@ -3074,7 +3074,7 @@ static void update_B_colors(dt_iop_module_t *self)
   const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, self->dev->pipe);
 
   // scale params if needed
-  float RGB[3] = { p->blue[0], p->blue[1], p->blue[2] };
+  dt_aligned_pixel_t RGB = { p->blue[0], p->blue[1], p->blue[2] };
 
   if(p->normalize_B)
   {
@@ -3139,7 +3139,7 @@ static void update_G_colors(dt_iop_module_t *self)
   const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, self->dev->pipe);
 
   // scale params if needed
-  float RGB[3] = { p->green[0], p->green[1], p->green[2] };
+  dt_aligned_pixel_t RGB = { p->green[0], p->green[1], p->green[2] };
 
   if(p->normalize_G)
   {
@@ -3306,12 +3306,12 @@ static void illum_xy_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
 
-  float Lch[3] = { 0 };
+  dt_aligned_pixel_t Lch = { 0 };
   Lch[0] = 100.f;
   Lch[2] = dt_bauhaus_slider_get(g->illum_x) / 180. * M_PI;
   Lch[1] = dt_bauhaus_slider_get(g->illum_y);
 
-  float xyY[3] = { 0 };
+  dt_aligned_pixel_t xyY = { 0 };
   dt_Lch_to_xyY(Lch, xyY);
   p->x = xyY[0];
   p->y = xyY[1];
@@ -3486,8 +3486,8 @@ void reload_defaults(dt_iop_module_t *module)
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)module->gui_data;
   if(g)
   {
-    const float xyY[3] = { d->x, d->y, 1.f };
-    float Lch[3] = { 0 };
+    const dt_aligned_pixel_t xyY = { d->x, d->y, 1.f };
+    dt_aligned_pixel_t Lch = { 0 };
     dt_xyY_to_Lch(xyY, Lch);
 
     dt_bauhaus_slider_set_default(g->illum_x, Lch[2] / M_PI * 180.f);
@@ -3566,8 +3566,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
     // force-update all the illuminant sliders in case something above changed them
     // notice the hue/chroma of the illuminant has to be computed on-the-fly anyway
-    float xyY[3] = { p->x, p->y, 1.f };
-    float Lch[3];
+    dt_aligned_pixel_t xyY = { p->x, p->y, 1.f };
+    dt_aligned_pixel_t Lch;
     dt_xyY_to_Lch(xyY, Lch);
 
     // If the chroma is zero then there is not a meaningful hue angle. In this case
@@ -3658,8 +3658,8 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   dt_bauhaus_combobox_set(g->illuminant, p->illuminant);
   dt_bauhaus_combobox_set(g->adaptation, p->adaptation);
 
-  const float xyY[3] = { p->x, p->y, 1.f };
-  float Lch[3] = { 0 };
+  const dt_aligned_pixel_t xyY = { p->x, p->y, 1.f };
+  dt_aligned_pixel_t Lch = { 0 };
   dt_xyY_to_Lch(xyY, Lch);
   dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
   dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
