@@ -146,7 +146,7 @@ static float compute_center_pixel_norm(const float center_weight, const int radi
 }
 
 // compute the channel-normed squared difference between two pixels
-static inline float pixel_difference(const float* const pix1, const float* pix2, const float norm[4])
+static inline float pixel_difference(const float* const pix1, const float* pix2, const dt_aligned_pixel_t norm)
 {
   dt_aligned_pixel_t sum = { 0.f, 0.f, 0.f, 0.f };
   for_each_channel(i, aligned(sum:16))
@@ -186,7 +186,7 @@ static inline __m128 channel_difference_sse2(const float* const pix1, const floa
 
 #if defined(__SSE2__)
 // compute the channel-normed squared difference between two pixels
-static inline float pixel_difference_sse2(const float* const pix1, const float* pix2, const float norm[4])
+static inline float pixel_difference_sse2(const float* const pix1, const float* pix2, const dt_aligned_pixel_t norm)
 {
   const __m128 px1 = _mm_load_ps(pix1);
   const __m128 px2 = _mm_load_ps(pix2);

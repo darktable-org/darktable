@@ -180,7 +180,7 @@ static inline void CCT_to_xy_blackbody(const float t, float *x, float *y)
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void illuminant_xy_to_XYZ(const float x, const float y, float XYZ[3])
+static inline void illuminant_xy_to_XYZ(const float x, const float y, dt_aligned_pixel_t XYZ)
 {
   XYZ[0] = x / y;             // X
   XYZ[1] = 1.f;               // Y is always 1 by definition, for an illuminant
@@ -191,7 +191,7 @@ static inline void illuminant_xy_to_XYZ(const float x, const float y, float XYZ[
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void illuminant_xy_to_RGB(const float x, const float y, float RGB[4])
+static inline void illuminant_xy_to_RGB(const float x, const float y, dt_aligned_pixel_t RGB)
 {
   // Get an sRGB preview of current illuminant
   dt_aligned_pixel_t XYZ;
@@ -210,7 +210,7 @@ static inline void illuminant_xy_to_RGB(const float x, const float y, float RGB[
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void illuminant_CCT_to_RGB(const float t, float RGB[4])
+static inline void illuminant_CCT_to_RGB(const float t, dt_aligned_pixel_t RGB)
 {
   float x, y;
   if(t > 4000.f)
@@ -223,12 +223,13 @@ static inline void illuminant_CCT_to_RGB(const float t, float RGB[4])
 
 
 // Fetch image from pipeline and read EXIF for camera RAW WB coeffs
-static inline int find_temperature_from_raw_coeffs(const dt_image_t *img, const float custom_wb[4], float *chroma_x, float *chroma_y);
+static inline int find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_aligned_pixel_t custom_wb,
+                                                   float *chroma_x, float *chroma_y);
 
 
 static inline int illuminant_to_xy(const dt_illuminant_t illuminant, // primary type of illuminant
                                    const dt_image_t *img,            // image container
-                                   const float custom_wb[4],         // optional user-set WB coeffs
+                                   const dt_aligned_pixel_t custom_wb, // optional user-set WB coeffs
                                    float *x_out, float *y_out,       // chromaticity output
                                    const float t,                    // temperature in K, if needed
                                    const dt_illuminant_fluo_t fluo,  // sub-type of fluorescent illuminant, if needed
@@ -327,7 +328,8 @@ static inline int illuminant_to_xy(const dt_illuminant_t illuminant, // primary 
 }
 
 
-static inline void WB_coeffs_to_illuminant_xy(const float CAM_to_XYZ[4][3], const float WB[4], float *x, float *y)
+static inline void WB_coeffs_to_illuminant_xy(const float CAM_to_XYZ[4][3], const dt_aligned_pixel_t WB,
+                                              float *x, float *y)
 {
   // Find the illuminant chromaticity x y from RAW WB coeffs and camera input matrice
   dt_aligned_pixel_t XYZ, LMS;
@@ -390,7 +392,8 @@ static inline void matrice_pseudoinverse(float (*in)[3], float (*out)[3], int si
 }
 
 
-static int find_temperature_from_raw_coeffs(const dt_image_t *img, const float custom_wb[4], float *chroma_x, float *chroma_y)
+static int find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_aligned_pixel_t custom_wb,
+                                            float *chroma_x, float *chroma_y)
 {
   if(img == NULL) return FALSE;
   if(!dt_image_is_matrix_correction_supported(img)) return FALSE;
