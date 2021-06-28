@@ -224,10 +224,10 @@ static inline float lab_f(const float x)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(Lab, XYZ:16) uniform(Lab, XYZ)
 #endif
-static inline void dt_XYZ_to_Lab(const float XYZ[4], float Lab[4])
+static inline void dt_XYZ_to_Lab(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t Lab)
 {
-  const float d50[3] = { 0.9642f, 1.0f, 0.8249f };
-  float f[3] = { 0.0f };
+  const dt_aligned_pixel_t d50 = { 0.9642f, 1.0f, 0.8249f };
+  dt_aligned_pixel_t f = { 0.0f };
   for(int i = 0; i < 3; i++) f[i] = lab_f(XYZ[i] / d50[i]);
   Lab[0] = 116.0f * f[1] - 16.0f;
   Lab[1] = 500.0f * (f[0] - f[1]);
@@ -248,13 +248,13 @@ static inline float lab_f_inv(const float x)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(Lab, XYZ:16) uniform(Lab, XYZ)
 #endif
-static inline void dt_Lab_to_XYZ(const float Lab[4], float XYZ[4])
+static inline void dt_Lab_to_XYZ(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t XYZ)
 {
-  const float d50[3] = { 0.9642f, 1.0f, 0.8249f };
+  const dt_aligned_pixel_t d50 = { 0.9642f, 1.0f, 0.8249f };
   const float fy = (Lab[0] + 16.0f) / 116.0f;
   const float fx = Lab[1] / 500.0f + fy;
   const float fz = fy - Lab[2] / 200.0f;
-  const float f[3] = { fx, fy, fz };
+  const dt_aligned_pixel_t f = { fx, fy, fz };
   for(int i = 0; i < 3; i++) XYZ[i] = d50[i] * lab_f_inv(f[i]);
 }
 
@@ -262,7 +262,7 @@ static inline void dt_Lab_to_XYZ(const float Lab[4], float XYZ[4])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(xyY, XYZ:16)
 #endif
-static inline void dt_XYZ_to_xyY(const float XYZ[3], float xyY[3])
+static inline void dt_XYZ_to_xyY(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t xyY)
 {
   const float sum = XYZ[0] + XYZ[1] + XYZ[2];
   xyY[0] = XYZ[0] / sum;
@@ -274,7 +274,7 @@ static inline void dt_XYZ_to_xyY(const float XYZ[3], float xyY[3])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(xyY, XYZ:16)
 #endif
-static inline void dt_xyY_to_XYZ(const float xyY[3], float XYZ[3])
+static inline void dt_xyY_to_XYZ(const dt_aligned_pixel_t xyY, dt_aligned_pixel_t XYZ)
 {
   XYZ[0] = xyY[2] * xyY[0] / xyY[1];
   XYZ[1] = xyY[2];
@@ -285,7 +285,7 @@ static inline void dt_xyY_to_XYZ(const float xyY[3], float XYZ[3])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(xyY, uvY:16)
 #endif
-static inline void dt_xyY_to_uvY(const float xyY[3], float uvY[3])
+static inline void dt_xyY_to_uvY(const dt_aligned_pixel_t xyY, dt_aligned_pixel_t uvY)
 {
   // This is the linear part of the chromaticity transform from CIE L*u*v* e.g. u'v'.
   // See https://en.wikipedia.org/wiki/CIELUV
@@ -311,7 +311,7 @@ static inline float cbf(const float x)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(xyY, Luv:16)
 #endif
-static inline void dt_xyY_to_Luv(const float xyY[3], float Luv[3])
+static inline void dt_xyY_to_Luv(const dt_aligned_pixel_t xyY, dt_aligned_pixel_t Luv)
 {
   // This is the second, non-linear, part of the the 1976 CIE L*u*v* transform.
   // See https://en.wikipedia.org/wiki/CIELUV
@@ -319,7 +319,7 @@ static inline void dt_xyY_to_Luv(const float xyY[3], float Luv[3])
   // Don't ever use it for pixel-processing, it sucks, it's old, it kills kittens and makes your mother cry.
   // Seriously, don't.
   // You need to convert Luv parameters to XYZ or RGB and properly process pixels in RGB or XYZ or related spaces.
-  float uvY[3];
+  dt_aligned_pixel_t uvY;
   dt_xyY_to_uvY(xyY, uvY);
 
   // We assume Yn == 1 == peak luminance
@@ -334,7 +334,7 @@ static inline void dt_xyY_to_Luv(const float xyY[3], float Luv[3])
 }
 
 
-static inline void dt_Luv_to_Lch(const float Luv[3], float Lch[3])
+static inline void dt_Luv_to_Lch(const dt_aligned_pixel_t Luv, dt_aligned_pixel_t Lch)
 {
   Lch[0] = Luv[0];                 // L stays L
   Lch[1] = hypotf(Luv[2], Luv[1]); // chroma radius
@@ -343,9 +343,9 @@ static inline void dt_Luv_to_Lch(const float Luv[3], float Lch[3])
 }
 
 
-static inline void dt_xyY_to_Lch(const float xyY[3], float Lch[3])
+static inline void dt_xyY_to_Lch(const dt_aligned_pixel_t xyY, dt_aligned_pixel_t Lch)
 {
-  float Luv[3];
+  dt_aligned_pixel_t Luv;
   dt_xyY_to_Luv(xyY, Luv);
   dt_Luv_to_Lch(Luv, Lch);
 }
@@ -354,7 +354,7 @@ static inline void dt_xyY_to_Lch(const float xyY[3], float Lch[3])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(uvY, xyY:16)
 #endif
-static inline void dt_uvY_to_xyY(const float uvY[3], float xyY[3])
+static inline void dt_uvY_to_xyY(const dt_aligned_pixel_t uvY, dt_aligned_pixel_t xyY)
 {
   // This is the linear part of chromaticity transform from CIE L*u*v* e.g. u'v'.
   // See https://en.wikipedia.org/wiki/CIELUV
@@ -372,7 +372,7 @@ static inline void dt_uvY_to_xyY(const float uvY[3], float xyY[3])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(xyY, Luv:16)
 #endif
-static inline void dt_Luv_to_xyY(const float Luv[3], float xyY[3])
+static inline void dt_Luv_to_xyY(const dt_aligned_pixel_t Luv, dt_aligned_pixel_t xyY)
 {
   // This is the second, non-linear, part of the the 1976 CIE L*u*v* transform.
   // See https://en.wikipedia.org/wiki/CIELUV
@@ -380,7 +380,7 @@ static inline void dt_Luv_to_xyY(const float Luv[3], float xyY[3])
   // Don't ever use it for pixel-processing, it sucks, it's old, it kills kittens and makes your mother cry.
   // Seriously, don't.
   // You need to convert Luv parameters to XYZ or RGB and properly process pixels in RGB or XYZ or related spaces.
-  float uvY[3];
+  dt_aligned_pixel_t uvY;
 
   // We assume Yn == 1 == peak luminance
   static const float threshold = 8.0f;
@@ -394,16 +394,16 @@ static inline void dt_Luv_to_xyY(const float Luv[3], float xyY[3])
   // Output is normalized for all channels
 }
 
-static inline void dt_Lch_to_Luv(const float Lch[3], float Luv[3])
+static inline void dt_Lch_to_Luv(const dt_aligned_pixel_t Lch, dt_aligned_pixel_t Luv)
 {
   Luv[0] = Lch[0];                // L stays L
   Luv[1] = Lch[1] * cosf(Lch[2]); // radius * cos(angle)
   Luv[2] = Lch[1] * sinf(Lch[2]); // radius * sin(angle)
 }
 
-static inline void dt_Lch_to_xyY(const float Lch[3], float xyY[3])
+static inline void dt_Lch_to_xyY(const dt_aligned_pixel_t Lch, dt_aligned_pixel_t xyY)
 {
-  float Luv[3];
+  dt_aligned_pixel_t Luv;
   dt_Lch_to_Luv(Lch, Luv);
   dt_Luv_to_xyY(Luv, xyY);
 }

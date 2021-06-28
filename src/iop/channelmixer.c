@@ -222,7 +222,7 @@ static void process_hsl_v1(dt_dev_pixelpipe_iop_t *piece, const float *const res
   for(size_t k = 0; k < pixel_count; k += ch)
   {
     float h, s, l, hmix, smix, lmix;
-    float rgb[3];
+    dt_aligned_pixel_t rgb;
 
     // Calculate the HSL mix
     hmix = clamp_simd(in[k + 0] * hsl_matrix[0]) + (in[k + 1] * hsl_matrix[1]) + (in[k + 2] * hsl_matrix[2]);
@@ -241,7 +241,7 @@ static void process_hsl_v1(dt_dev_pixelpipe_iop_t *piece, const float *const res
     }
     else // no HSL copy in[] to out[]
     {
-      for(int c = 0; c < 3; c++) rgb[c] = in[k + c];
+      for_each_channel(c,aligned(rgb,in)) rgb[c] = in[k + c];
     }
 
     // Calculate RGB mix
@@ -270,9 +270,9 @@ static void process_hsl_v2(dt_dev_pixelpipe_iop_t *piece, const float *const res
 #endif
   for(size_t k = 0; k < pixel_count; k += ch)
   {
-    float rgb[3] = { in[k], in[k + 1], in[k + 2] };
+    dt_aligned_pixel_t rgb = { in[k], in[k + 1], in[k + 2] };
 
-    float hsl_mix[3];
+    dt_aligned_pixel_t hsl_mix;
     for(int i = 0, j = 0; i < 3; i++, j += 3)
     {
       hsl_mix[i] = clamp_simd(hsl_matrix[j + 0] * rgb[0]
@@ -283,11 +283,11 @@ static void process_hsl_v2(dt_dev_pixelpipe_iop_t *piece, const float *const res
     // If HSL mix is used apply to out[]
     if(hsl_mix[0] != 0.0 || hsl_mix[1] != 0.0 || hsl_mix[2] != 0.0)
     {
-      float hsl[3];
+      dt_aligned_pixel_t hsl;
       // rgb2hsl expects all values to be clipped
-      for(int i = 0; i < 3; i++)
+      for_each_channel(c)
       {
-        rgb[i] = clamp_simd(rgb[i]);
+        rgb[c] = clamp_simd(rgb[c]);
       }
       // mix into HSL output channels
       rgb2hsl(rgb, &hsl[0], &hsl[1], &hsl[2]);
@@ -534,13 +534,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
 
   // Gray
-  float graymix[3] = { p->red[CHANNEL_GRAY], p->green[CHANNEL_GRAY], p->blue[CHANNEL_GRAY] };
+  dt_aligned_pixel_t graymix = { p->red[CHANNEL_GRAY], p->green[CHANNEL_GRAY], p->blue[CHANNEL_GRAY] };
   const gboolean gray_mix_mode = (graymix[0] != 0.0f || graymix[1] != 0.0f || graymix[2] != 0.0f) ? TRUE : FALSE;
 
   // Recompute the 3x3 RGB matrix
   if(gray_mix_mode)
   {
-    float mixed_gray[3];
+    dt_aligned_pixel_t mixed_gray;
     for(int i = 0; i < 3; i++)
     {
       mixed_gray[i] = (graymix[0] * d->rgb_matrix[i]

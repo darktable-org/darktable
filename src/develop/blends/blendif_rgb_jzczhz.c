@@ -141,9 +141,9 @@ static inline void _blendif_jzczhz(const float *const restrict pixels, float *co
 {
   for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_RGB_CH)
   {
-    float XYZ_D65[3] DT_ALIGNED_PIXEL;
-    float JzAzBz[3] DT_ALIGNED_PIXEL;
-    float JzCzhz[3] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t XYZ_D65;
+    dt_aligned_pixel_t JzAzBz;
+    dt_aligned_pixel_t JzCzhz;
 
     // use the matrix_out of the hacked profile for blending to use the
     // conversion from RGB to XYZ D65 (instead of XYZ D50)
@@ -749,11 +749,11 @@ static inline float _rgb_luminance(const float *const restrict rgb,
 static inline void _rgb_to_JzCzhz(const float *const restrict rgb, float *const restrict JzCzhz,
                                   const dt_iop_order_iccprofile_info_t *const restrict profile)
 {
-  float JzAzBz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+  dt_aligned_pixel_t JzAzBz = { 0.0f, 0.0f, 0.0f };
 
   if(profile)
   {
-    float XYZ_D65[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+    dt_aligned_pixel_t XYZ_D65 = { 0.0f, 0.0f, 0.0f };
     // use the matrix_out of the hacked profile for blending to use the
     // conversion from RGB to XYZ D65 (instead of XYZ D50)
     dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D65, profile->matrix_out, profile->lut_in, profile->unbounded_coeffs_in,
@@ -873,7 +873,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       const float factor = 1.0f / exp2f(boost_factors[DEVELOP_BLENDIF_Jz_in]);
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float JzCzhz[3] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t JzCzhz;
         _rgb_to_JzCzhz(a + j, JzCzhz, profile);
         const float c = clamp_simd(JzCzhz[0] * factor);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
@@ -886,7 +886,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       const float factor = 1.0f / exp2f(boost_factors[DEVELOP_BLENDIF_Jz_out]);
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float JzCzhz[3] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t JzCzhz;
         _rgb_to_JzCzhz(b + j, JzCzhz, profile);
         const float c = clamp_simd(JzCzhz[0] * factor);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
@@ -899,7 +899,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       const float factor = 1.0f / exp2f(boost_factors[DEVELOP_BLENDIF_Cz_in]);
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float JzCzhz[3] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t JzCzhz;
         _rgb_to_JzCzhz(a + j, JzCzhz, profile);
         const float c = clamp_simd(JzCzhz[1] * factor);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
@@ -912,7 +912,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       const float factor = 1.0f / exp2f(boost_factors[DEVELOP_BLENDIF_Cz_out]);
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float JzCzhz[3] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t JzCzhz;
         _rgb_to_JzCzhz(b + j, JzCzhz, profile);
         const float c = clamp_simd(JzCzhz[1] * factor);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
@@ -924,7 +924,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       // no boost factor for hues
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float JzCzhz[3] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t JzCzhz;
         _rgb_to_JzCzhz(a + j, JzCzhz, profile);
         const float c = clamp_simd(JzCzhz[2]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
@@ -935,7 +935,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       // no boost factor for hues
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float JzCzhz[3] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t JzCzhz;
         _rgb_to_JzCzhz(b + j, JzCzhz, profile);
         const float c = clamp_simd(JzCzhz[2]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;

@@ -172,7 +172,7 @@ static inline void _blendif_hsl(const float *const restrict pixels, float *const
 {
   for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_RGB_CH)
   {
-    float HSL[3] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t HSL;
     dt_RGB_2_HSL(pixels + j, HSL);
     float factor = 1.0f;
     for(size_t i = 0; i < 3; i++)
@@ -732,10 +732,8 @@ static void _blend_lightness(const float *const restrict a, const float *const r
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[3] DT_ALIGNED_PIXEL;
-    float tb[3] DT_ALIGNED_PIXEL;
-    float tta[3] DT_ALIGNED_PIXEL;
-    float ttb[3] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
+    dt_aligned_pixel_t tta, ttb;
 
     _PX_COPY(a + j, ta);
     _PX_COPY(b + j, tb);
@@ -767,10 +765,8 @@ static void _blend_chromaticity(const float *const restrict a, const float *cons
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[3] DT_ALIGNED_PIXEL;
-    float tb[3] DT_ALIGNED_PIXEL;
-    float tta[3] DT_ALIGNED_PIXEL;
-    float ttb[3] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
+    dt_aligned_pixel_t tta, ttb;
 
     _PX_COPY(a + j, ta);
     _PX_COPY(b + j, tb);
@@ -802,10 +798,8 @@ static void _blend_hue(const float *const restrict a, const float *const restric
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[3] DT_ALIGNED_PIXEL;
-    float tb[3] DT_ALIGNED_PIXEL;
-    float tta[3] DT_ALIGNED_PIXEL;
-    float ttb[3] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
+    dt_aligned_pixel_t tta, ttb;
 
     _PX_COPY(a + j, ta);
     _PX_COPY(b + j, tb);
@@ -840,10 +834,8 @@ static void _blend_color(const float *const restrict a, const float *const restr
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     float local_opacity = mask[i];
-    float ta[3] DT_ALIGNED_PIXEL;
-    float tb[3] DT_ALIGNED_PIXEL;
-    float tta[3] DT_ALIGNED_PIXEL;
-    float ttb[3] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
+    dt_aligned_pixel_t tta, ttb;
 
     _PX_COPY(a + j, ta);
     _PX_COPY(b + j, tb);
@@ -879,10 +871,8 @@ static void _blend_coloradjust(const float *const restrict a, const float *const
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[3] DT_ALIGNED_PIXEL;
-    float tb[3] DT_ALIGNED_PIXEL;
-    float tta[3] DT_ALIGNED_PIXEL;
-    float ttb[3] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
+    dt_aligned_pixel_t tta, ttb;
 
     _PX_COPY(a + j, ta);
     _PX_COPY(b + j, tb);
@@ -918,8 +908,7 @@ static void _blend_HSV_value(const float *const restrict a, const float *const r
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[3] DT_ALIGNED_PIXEL;
-    float tb[3] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     dt_RGB_2_HSV(a + j, ta);
     dt_RGB_2_HSV(b + j, tb);
@@ -946,8 +935,7 @@ static void _blend_HSV_color(const float *const restrict a, const float *const r
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[3] DT_ALIGNED_PIXEL;
-    float tb[3] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     dt_RGB_2_HSV(a + j, ta);
     dt_RGB_2_HSV(b + j, tb);
@@ -1239,7 +1227,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       // no boost factors for HSL
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float HSL[3] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t HSL;
         dt_RGB_2_HSL(a + j, HSL);
         const float c = clamp_simd(HSL[0]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
@@ -1250,7 +1238,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       // no boost factors for HSL
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float HSL[3] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t HSL;
         dt_RGB_2_HSL(b + j, HSL);
         const float c = clamp_simd(HSL[0]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
@@ -1261,7 +1249,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       // no boost factors for HSL
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float HSL[3] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t HSL;
         dt_RGB_2_HSL(a + j, HSL);
         const float c = clamp_simd(HSL[1]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
@@ -1272,7 +1260,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       // no boost factors for HSL
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float HSL[3] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t HSL;
         dt_RGB_2_HSL(b + j, HSL);
         const float c = clamp_simd(HSL[1]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
@@ -1283,7 +1271,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       // no boost factors for HSL
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float HSL[3] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t HSL;
         dt_RGB_2_HSL(a + j, HSL);
         const float c = clamp_simd(HSL[2]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
@@ -1294,7 +1282,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       // no boost factors for HSL
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float HSL[3] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t HSL;
         dt_RGB_2_HSL(b + j, HSL);
         const float c = clamp_simd(HSL[2]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;

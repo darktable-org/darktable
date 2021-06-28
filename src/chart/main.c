@@ -609,7 +609,7 @@ static void print_patches(dt_lut_t *self, FILE *fd, GList *patch_names)
       continue;
     }
 
-    float source_Lab[3] = { 0.0 }, reference_Lab[3] = { 0.0 };
+    dt_aligned_pixel_t source_Lab = { 0.0 }, reference_Lab = { 0.0 };
     get_Lab_from_box(source_patch, source_Lab);
     get_Lab_from_box(reference_patch, reference_Lab);
 
@@ -753,7 +753,7 @@ static void add_patches_to_array(dt_lut_t *self, GList *patch_names, int *N, int
       continue;
     }
 
-    float source_Lab[3] = { 0.0 }, reference_Lab[3] = { 0.0 };
+    dt_aligned_pixel_t source_Lab = { 0.0 }, reference_Lab = { 0.0 };
     get_Lab_from_box(source_patch, source_Lab);
     get_Lab_from_box(reference_patch, reference_Lab);
 
@@ -1371,7 +1371,7 @@ static void update_table(dt_lut_t *self)
     box_t *box = (box_t *)g_hash_table_lookup(self->chart->box_table, name);
     if(box)
     {
-      float Lab[3] = { 0.0 };
+      dt_aligned_pixel_t Lab = { 0.0 };
       char *s_Lab_in, *s_RGB_in, *s_deltaE_1976, *s_deltaE_2000;
       float deltaE_1976 = 0.0, deltaE_2000 = 0.0;
 
@@ -1380,7 +1380,7 @@ static void update_table(dt_lut_t *self)
       box_t *patch = (box_t *)g_hash_table_lookup(self->picked_source_patches, name);
       if(patch)
       {
-        float in_Lab[3] = { 0.0 };
+        dt_aligned_pixel_t in_Lab = { 0.0 };
         get_Lab_from_box(patch, in_Lab);
         s_RGB_in = g_strdup_printf("%d; %d; %d", (int)(patch->rgb[0] * 255 + 0.5),
                                    (int)(patch->rgb[1] * 255 + 0.5), (int)(patch->rgb[2] * 255 + 0.5));
