@@ -187,10 +187,10 @@ static inline void convert_any_LMS_to_RGB(const float LMS[4], float RGB[4], dt_a
 #pragma omp declare simd uniform(origin_illuminant) \
   aligned(lms_in, lms_out, origin_illuminant:16)
 #endif
-static inline void bradford_adapt_D65(const float lms_in[4],
-                                      const float origin_illuminant[4],
+static inline void bradford_adapt_D65(const dt_aligned_pixel_t lms_in,
+                                      const dt_aligned_pixel_t origin_illuminant,
                                       const float p, const int full,
-                                      float lms_out[4])
+                                      dt_aligned_pixel_t lms_out)
 {
   // Bradford chromatic adaptation from origin to target D65 illuminant in LMS space
   // p = powf(origin_illuminant[2] / D65[2], 0.0834f) needs to be precomputed for performance,
@@ -198,13 +198,12 @@ static inline void bradford_adapt_D65(const float lms_in[4],
   // origin illuminant need also to be precomputed to LMS
 
   // Precomputed D65 primaries in Bradford LMS for camera WB adjustment
-  const float DT_ALIGNED_PIXEL D65[4] = { 0.941238f, 1.040633f, 1.088932f, 0.f };
+  const dt_aligned_pixel_t D65 = { 0.941238f, 1.040633f, 1.088932f, 0.f };
 
-
-  float DT_ALIGNED_PIXEL temp[4] = { lms_in[0] / origin_illuminant[0],
-                                     lms_in[1] / origin_illuminant[1],
-                                     lms_in[2] / origin_illuminant[2],
-                                     0.f };
+  dt_aligned_pixel_t temp = { lms_in[0] / origin_illuminant[0],
+                              lms_in[1] / origin_illuminant[1],
+                              lms_in[2] / origin_illuminant[2],
+                              0.f };
 
   // use linear Bradford if B is negative
   if(full) temp[2] = (temp[2] > 0.f) ? powf(temp[2], p) : temp[2];
@@ -219,10 +218,10 @@ static inline void bradford_adapt_D65(const float lms_in[4],
 #pragma omp declare simd uniform(origin_illuminant) \
   aligned(lms_in, lms_out, origin_illuminant:16)
 #endif
-static inline void bradford_adapt_D50(const float lms_in[4],
-                                      const float origin_illuminant[4],
+static inline void bradford_adapt_D50(const dt_aligned_pixel_t lms_in,
+                                      const dt_aligned_pixel_t origin_illuminant,
                                       const float p, const int full,
-                                      float lms_out[4])
+                                      dt_aligned_pixel_t lms_out)
 {
   // Bradford chromatic adaptation from origin to target D50 illuminant in LMS space
   // p = powf(origin_illuminant[2] / D50[2], 0.0834f) needs to be precomputed for performance,
@@ -230,13 +229,12 @@ static inline void bradford_adapt_D50(const float lms_in[4],
   // origin illuminant need also to be precomputed to LMS
 
   // Precomputed D50 primaries in Bradford LMS for ICC transforms
-  const float DT_ALIGNED_PIXEL D50[4] = { 0.996078f, 1.020646f, 0.818155f, 0.f };
+  const dt_aligned_pixel_t D50 = { 0.996078f, 1.020646f, 0.818155f, 0.f };
 
-
-  float DT_ALIGNED_PIXEL temp[4] = { lms_in[0] / origin_illuminant[0],
-                                     lms_in[1] / origin_illuminant[1],
-                                     lms_in[2] / origin_illuminant[2],
-                                     0.f };
+  dt_aligned_pixel_t temp = { lms_in[0] / origin_illuminant[0],
+                              lms_in[1] / origin_illuminant[1],
+                              lms_in[2] / origin_illuminant[2],
+                              0.f };
 
   // use linear Bradford if B is negative
   if(full) temp[2] = (temp[2] > 0.f) ? powf(temp[2], p) : temp[2];
@@ -253,17 +251,16 @@ static inline void bradford_adapt_D50(const float lms_in[4],
 #pragma omp declare simd uniform(origin_illuminant) \
   aligned(lms_in, lms_out, origin_illuminant:16)
 #endif
-static inline void CAT16_adapt_D65(const float lms_in[4],
-                                      const float origin_illuminant[4],
-                                      const float D, const int full,
-                                      float lms_out[4])
+static inline void CAT16_adapt_D65(const dt_aligned_pixel_t lms_in,
+                                   const dt_aligned_pixel_t origin_illuminant,
+                                   const float D, const int full, dt_aligned_pixel_t lms_out)
 {
   // CAT16 chromatic adaptation from origin to target D65 illuminant in LMS space
   // D is the coefficient of adaptation, depending of the surround lighting
   // origin illuminant need also to be precomputed to LMS
 
   // Precomputed D65 primaries in CAT16 LMS for camera WB adjustment
-  const float DT_ALIGNED_PIXEL D65[4] = { 0.97553267f, 1.01647859f, 1.0848344f, 0.f };
+  const dt_aligned_pixel_t D65 = { 0.97553267f, 1.01647859f, 1.0848344f, 0.f };
 
   if(full)
   {
@@ -284,17 +281,17 @@ static inline void CAT16_adapt_D65(const float lms_in[4],
 #pragma omp declare simd uniform(origin_illuminant) \
   aligned(lms_in, lms_out, origin_illuminant:16)
 #endif
-static inline void CAT16_adapt_D50(const float lms_in[4],
-                                      const float origin_illuminant[4],
+static inline void CAT16_adapt_D50(const dt_aligned_pixel_t lms_in,
+                                      const dt_aligned_pixel_t origin_illuminant,
                                       const float D, const int full,
-                                      float lms_out[4])
+                                      dt_aligned_pixel_t lms_out)
 {
   // CAT16 chromatic adaptation from origin to target D50 illuminant in LMS space
   // D is the coefficient of adaptation, depending of the surround lighting
   // origin illuminant need also to be precomputed to LMS
 
   // Precomputed D50 primaries in CAT16 LMS for ICC transforms
-  const float DT_ALIGNED_PIXEL D50[4] = { 0.994535f, 1.000997f, 0.833036f, 0.f };
+  const dt_aligned_pixel_t D50 = { 0.994535f, 1.000997f, 0.833036f, 0.f };
 
   if(full)
   {
@@ -316,15 +313,15 @@ static inline void CAT16_adapt_D50(const float lms_in[4],
 #pragma omp declare simd uniform(origin_illuminant) \
   aligned(lms_in, lms_out, origin_illuminant:16)
 #endif
-static inline void XYZ_adapt_D65(const float lms_in[4],
-                                      const float origin_illuminant[4],
-                                      float lms_out[4])
+static inline void XYZ_adapt_D65(const dt_aligned_pixel_t lms_in,
+                                 const dt_aligned_pixel_t origin_illuminant,
+                                 dt_aligned_pixel_t lms_out)
 {
   // XYZ chromatic adaptation from origin to target D65 illuminant in XYZ space
   // origin illuminant need also to be precomputed to XYZ
 
   // Precomputed D65 primaries in XYZ for camera WB adjustment
-  const float DT_ALIGNED_PIXEL D65[4] = { 0.9504285453771807f, 1.0f, 1.0889003707981277f, 0.f };
+  const dt_aligned_pixel_t D65 = { 0.9504285453771807f, 1.0f, 1.0889003707981277f, 0.f };
 
   lms_out[0] = lms_in[0] * D65[0] / origin_illuminant[0];
   lms_out[1] = lms_in[1] * D65[1] / origin_illuminant[1];
@@ -335,15 +332,15 @@ static inline void XYZ_adapt_D65(const float lms_in[4],
 #pragma omp declare simd uniform(origin_illuminant) \
   aligned(lms_in, lms_out, origin_illuminant:16)
 #endif
-static inline void XYZ_adapt_D50(const float lms_in[4],
-                                      const float origin_illuminant[4],
-                                      float lms_out[4])
+static inline void XYZ_adapt_D50(const dt_aligned_pixel_t lms_in,
+                                 const dt_aligned_pixel_t origin_illuminant,
+                                 dt_aligned_pixel_t lms_out)
 {
   // XYZ chromatic adaptation from origin to target D65 illuminant in XYZ space
   // origin illuminant need also to be precomputed to XYZ
 
   // Precomputed D50 primaries in XYZ for camera WB adjustment
-  const float DT_ALIGNED_PIXEL D50[4] = { 0.9642119944211994f, 1.0f, 0.8251882845188288f, 0.f };
+  const dt_aligned_pixel_t D50 = { 0.9642119944211994f, 1.0f, 0.8251882845188288f, 0.f };
 
   lms_out[0] = lms_in[0] * D50[0] / origin_illuminant[0];
   lms_out[1] = lms_in[1] * D50[1] / origin_illuminant[1];

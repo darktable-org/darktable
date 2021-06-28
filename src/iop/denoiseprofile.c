@@ -750,9 +750,9 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 }
 
 static inline void precondition(const float *const in, float *const buf, const int wd, const int ht,
-                                const float a[4], const float b[4])
+                                const dt_aligned_pixel_t a, const dt_aligned_pixel_t b)
 {
-  const float DT_ALIGNED_PIXEL sigma2_plus_3_8[4]
+  const dt_aligned_pixel_t sigma2_plus_3_8
       = { (b[0] / a[0]) * (b[0] / a[0]) + 3.f / 8.f,
           (b[1] / a[1]) * (b[1] / a[1]) + 3.f / 8.f,
           (b[2] / a[2]) * (b[2] / a[2]) + 3.f / 8.f,
@@ -775,10 +775,10 @@ static inline void precondition(const float *const in, float *const buf, const i
   }
 }
 
-static inline void backtransform(float *const buf, const int wd, const int ht, const float a[4],
-                                 const float b[4])
+static inline void backtransform(float *const buf, const int wd, const int ht, const dt_aligned_pixel_t a,
+                                 const dt_aligned_pixel_t b)
 {
-  const float DT_ALIGNED_PIXEL sigma2_plus_1_8[4]
+  const dt_aligned_pixel_t sigma2_plus_1_8
       = { (b[0] / a[0]) * (b[0] / a[0]) + 1.f / 8.f,
           (b[1] / a[1]) * (b[1] / a[1]) + 1.f / 8.f,
           (b[2] / a[2]) * (b[2] / a[2]) + 1.f / 8.f,
@@ -833,14 +833,13 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
 // is a suitable function.
 // This is the function we use here.
 static inline void precondition_v2(const float *const in, float *const buf, const int wd, const int ht,
-                                   const float a, const float p[4], const float b, const float wb[4])
+                                   const float a, const dt_aligned_pixel_t p, const float b,
+                                   const dt_aligned_pixel_t wb)
 {
   const size_t npixels = (size_t)wd * ht;
-  const float DT_ALIGNED_PIXEL expon[4] = { -p[0] / 2 + 1, -p[1] / 2 + 1, -p[2] / 2 + 1, 1.0f };
-  const float DT_ALIGNED_PIXEL denom[4] = { (-p[0] + 2) * sqrtf(a),
-                                            (-p[1] + 2) * sqrtf(a),
-                                            (-p[2] + 2) * sqrtf(a),
-                                            1.0f };
+  const dt_aligned_pixel_t expon = { -p[0] / 2 + 1, -p[1] / 2 + 1, -p[2] / 2 + 1, 1.0f };
+  const dt_aligned_pixel_t denom = { (-p[0] + 2) * sqrtf(a), (-p[1] + 2) * sqrtf(a),
+                                     (-p[2] + 2) * sqrtf(a), 1.0f };
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -916,18 +915,15 @@ static inline void precondition_v2(const float *const in, float *const buf, cons
 // control the bias:
 // we replace the 2 * p * constant / (2 - p) part of delta by user
 // defined bias controller.
-static inline void backtransform_v2(float *const buf, const int wd, const int ht, const float a, const float p[4],
-                                    const float b, const float bias, const float wb[4])
+static inline void backtransform_v2(float *const buf, const int wd, const int ht, const float a,
+                                    const dt_aligned_pixel_t p, const float b, const float bias,
+                                    const dt_aligned_pixel_t wb)
 {
   const size_t npixels = (size_t)wd * ht;
-  const float DT_ALIGNED_PIXEL expon[4] = { 1.0f / (1.0f - p[0] / 2.0f),
-                                            1.0f / (1.0f - p[1] / 2.0f),
-                                            1.0f / (1.0f - p[2] / 2.0f),
-                                            1.0f };
-  const float DT_ALIGNED_PIXEL denom[4] = { 4.0f / (sqrtf(a) * (2.0f - p[0])),
-                                            4.0f / (sqrtf(a) * (2.0f - p[1])),
-                                            4.0f / (sqrtf(a) * (2.0f - p[2])),
-                                            1.0f };
+  const dt_aligned_pixel_t expon = { 1.0f / (1.0f - p[0] / 2.0f), 1.0f / (1.0f - p[1] / 2.0f),
+                                     1.0f / (1.0f - p[2] / 2.0f), 1.0f };
+  const dt_aligned_pixel_t denom = { 4.0f / (sqrtf(a) * (2.0f - p[0])), 4.0f / (sqrtf(a) * (2.0f - p[1])),
+                                     4.0f / (sqrtf(a) * (2.0f - p[2])), 1.0f };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(npixels, buf, b, bias, wb)   \
@@ -947,7 +943,8 @@ static inline void backtransform_v2(float *const buf, const int wd, const int ht
 }
 
 static inline void precondition_Y0U0V0(const float *const in, float *const buf, const int wd, const int ht,
-                                       const float a, const float p[4], const float b, const float toY0U0V0[3][4])
+                                       const float a, const dt_aligned_pixel_t p, const float b,
+                                       const float toY0U0V0[3][4])
 {
   const dt_aligned_pixel_t expon = { -p[0] / 2 + 1, -p[1] / 2 + 1, -p[2] / 2 + 1, 1.0f };
   const dt_aligned_pixel_t scale = { 2.0f / ((-p[0] + 2) * sqrtf(a)),
@@ -1156,16 +1153,12 @@ static void variance_stabilizing_xform(float thrs[4], const int scale, const int
   const float sigma_band = powf(varf, scale) * sigma;
   // determine thrs as bayesshrink
   const float sb2 = sigma_band * sigma_band;
-  const float DT_ALIGNED_PIXEL var_y[4] = { sum_y2[0] / (npixels - 1.0f),
-                                            sum_y2[1] / (npixels - 1.0f),
-                                            sum_y2[2] / (npixels - 1.0f),
-                                            0.0f };
-  const float DT_ALIGNED_PIXEL std_x[4] = { sqrtf(MAX(1e-6f, var_y[0] - sb2)),
-                                            sqrtf(MAX(1e-6f, var_y[1] - sb2)),
-                                            sqrtf(MAX(1e-6f, var_y[2] - sb2)),
-                                            1.0f };
+  const dt_aligned_pixel_t var_y = { sum_y2[0] / (npixels - 1.0f), sum_y2[1] / (npixels - 1.0f),
+                                     sum_y2[2] / (npixels - 1.0f), 0.0f };
+  const dt_aligned_pixel_t std_x = { sqrtf(MAX(1e-6f, var_y[0] - sb2)), sqrtf(MAX(1e-6f, var_y[1] - sb2)),
+                                     sqrtf(MAX(1e-6f, var_y[2] - sb2)), 1.0f };
   // add 8.0 here because it seemed a little weak
-  float DT_ALIGNED_PIXEL adjt[4] = { 8.0f, 8.0f, 8.0f, 0.0f };
+  dt_aligned_pixel_t adjt = { 8.0f, 8.0f, 8.0f, 0.0f };
 
   const int offset_scale = DT_IOP_DENOISE_PROFILE_BANDS - max_scale;
   const int band_index = DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1);
@@ -1268,15 +1261,15 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     return;
   }
 
-  float DT_ALIGNED_PIXEL wb[4];  // the "unused" fourth element enables vectorization
-  const float DT_ALIGNED_PIXEL wb_weights[4] = { 2.0f, 1.0f, 2.0f, 0.0f };
+  dt_aligned_pixel_t wb;  // the "unused" fourth element enables vectorization
+  const dt_aligned_pixel_t wb_weights = { 2.0f, 1.0f, 2.0f, 0.0f };
   compute_wb_factors(wb,d,piece,wb_weights);
 
   // adaptive p depending on white balance (the "unused" fourth element enables vectorization
-  const float DT_ALIGNED_PIXEL p[4] = { MAX(d->shadows + 0.1 * logf(in_scale / wb[0]), 0.0f),
-                                        MAX(d->shadows + 0.1 * logf(in_scale / wb[1]), 0.0f),
-                                        MAX(d->shadows + 0.1 * logf(in_scale / wb[2]), 0.0f),
-                                        0.0f };
+  const dt_aligned_pixel_t p = { MAX(d->shadows + 0.1 * logf(in_scale / wb[0]), 0.0f),
+                                 MAX(d->shadows + 0.1 * logf(in_scale / wb[1]), 0.0f),
+                                 MAX(d->shadows + 0.1 * logf(in_scale / wb[2]), 0.0f),
+                                 0.0f };
 
   const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
 

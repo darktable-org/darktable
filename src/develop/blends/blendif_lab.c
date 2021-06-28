@@ -352,7 +352,7 @@ void dt_develop_blendif_lab_make_mask(struct dt_dev_pixelpipe_iop_t *piece, cons
 #endif
 static inline void _blend_Lab_scale(const float *i, float *o)
 {
-  const float DT_ALIGNED_PIXEL scale[4] = { 1/100.0f, 1/128.0f, 1/128.0f, 1.0f };
+  const dt_aligned_pixel_t scale = { 1/100.0f, 1/128.0f, 1/128.0f, 1.0f };
   for_each_channel(c)
     o[c] = i[c] * scale[c];
 }
@@ -362,7 +362,7 @@ static inline void _blend_Lab_scale(const float *i, float *o)
 #endif
 static inline void _blend_Lab_rescale(const float *i, float *o)
 {
-  const float DT_ALIGNED_PIXEL scale[4] = { 100.0f, 128.0f, 128.0f, 1.0f };
+  const dt_aligned_pixel_t scale = { 100.0f, 128.0f, 128.0f, 1.0f };
   for_each_channel(c)
     o[c] = i[c] * scale[c];
 }
@@ -1519,8 +1519,8 @@ void dt_develop_blendif_lab_blend(struct dt_dev_pixelpipe_iop_t *piece,
   {
     _blend_row_func *const blend = _choose_blend_func(d->blend_mode);
     // minimum and maximum values after scaling !!!
-    const float min[4] DT_ALIGNED_PIXEL = { 0.0f, -1.0f, -1.0f, 0.0f };
-    const float max[4] DT_ALIGNED_PIXEL = { 1.0f, 1.0f, 1.0f, 1.0f };
+    const dt_aligned_pixel_t min = { 0.0f, -1.0f, -1.0f, 0.0f };
+    const dt_aligned_pixel_t max = { 1.0f, 1.0f, 1.0f, 1.0f };
 
     float *tmp_buffer = dt_alloc_align_float(owidth * oheight * DT_BLENDIF_LAB_CH);
     if (tmp_buffer != NULL)
