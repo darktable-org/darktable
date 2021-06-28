@@ -175,7 +175,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     rgb2hsl(in+k, &h, &s, &l);
     if(l < data->balance - compress)
     {
-      float DT_ALIGNED_PIXEL mixrgb[4];
+      dt_aligned_pixel_t mixrgb;
       hsl2rgb(mixrgb, data->shadow_hue, data->shadow_saturation, l);
 
       const float ra = CLIP((data->balance - compress - l) * 2.0f);
@@ -186,7 +186,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else if(l > data->balance + compress)
     {
-      float DT_ALIGNED_PIXEL mixrgb[4];
+      dt_aligned_pixel_t mixrgb;
       hsl2rgb(mixrgb, data->highlight_hue, data->highlight_saturation, l);
 
       const float ra = CLIP((l - (data->balance + compress)) * 2.0f);

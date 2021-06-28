@@ -786,9 +786,9 @@ static int _select_base_display_color(dt_iop_module_t *self, float *picked_color
                                  || self->picked_color_max[0] < 0.0f || self->picked_color[0] == 0.0f);
   if(!select_by_picker)
   {
-    float DT_ALIGNED_PIXEL rgb[4] = { 0.0f, 0.3f, 0.7f };
-    float DT_ALIGNED_PIXEL xyz[4];
-    float DT_ALIGNED_PIXEL lab[4];
+    dt_aligned_pixel_t rgb = { 0.0f, 0.3f, 0.7f };
+    dt_aligned_pixel_t xyz;
+    dt_aligned_pixel_t lab;
     dt_sRGB_to_XYZ(rgb, xyz);
     dt_XYZ_to_Lab(xyz, lab);
     dt_Lab_2_LCH(lab, picked_color);
@@ -826,7 +826,7 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
           = dt_ioppr_get_histogram_profile_info(self->dev);
       const dt_iop_order_iccprofile_info_t *const work_profile
           = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
-      float DT_ALIGNED_PIXEL pick_mean[4], pick_min[4], pick_max[4];
+      dt_aligned_pixel_t pick_mean, pick_min, pick_max;
       int converted_cst;
 
       if(work_profile && histogram_profile)

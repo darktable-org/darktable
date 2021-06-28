@@ -243,8 +243,8 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
   // convert picker RGB 2 HSL
   float H = .0f, S = .0f, L = .0f;
-  float DT_ALIGNED_PIXEL XYZ[4];
-  float DT_ALIGNED_PIXEL rgb[4];
+  dt_aligned_pixel_t XYZ;
+  dt_aligned_pixel_t rgb;
   dt_Lab_to_XYZ(self->picked_color, XYZ);
   dt_XYZ_to_sRGB(XYZ, rgb);
   rgb2hsl(rgb, &H, &S, &L);
@@ -279,9 +279,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_colorize_data_t *d = (dt_iop_colorize_data_t *)piece->data;
 
   /* create Lab */
-  float DT_ALIGNED_PIXEL rgb[4] = { 0 };
-  float DT_ALIGNED_PIXEL XYZ[4] = { 0 };
-  float DT_ALIGNED_PIXEL Lab[4] = { 0 };
+  dt_aligned_pixel_t rgb = { 0 };
+  dt_aligned_pixel_t XYZ = { 0 };
+  dt_aligned_pixel_t Lab = { 0 };
   hsl2rgb(rgb, p->hue, p->saturation, p->lightness / 100.0);
 
   if(p->version == 1)

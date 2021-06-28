@@ -293,12 +293,12 @@ static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, const dt_iop_order_ic
   float max_radius = 0.f;
   for(int k=0; k<6; k++)
   {
-    float delta[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t delta;
     for_each_channel(ch,aligned(vertex_rgb,delta:16))
       delta[ch]=(vertex_rgb[(k+1)%6][ch] - vertex_rgb[k][ch]) / VECTORSCOPE_HUES;
     for(int i=0; i < VECTORSCOPE_HUES; i++)
     {
-      float rgb[4] DT_ALIGNED_PIXEL, XYZ_D50[4] DT_ALIGNED_PIXEL, intermed[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
+      dt_aligned_pixel_t rgb, XYZ_D50, intermed, chromaticity;
       for_each_channel(ch,aligned(vertex_rgb,delta,rgb:16))
         rgb[ch] = vertex_rgb[k][ch] + delta[ch] * i;
       dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
@@ -415,7 +415,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       //   RGB (pixelpipe) -> XYZ(PCS, D50) -> chromaticity
       // A catch is that pixelpipe RGB may be a CLUT profile, hence would
       // need to have an LCMS path unless histogram moves to before colorout.
-      float RGB[4] DT_ALIGNED_PIXEL = {0.f}, XYZ_D50[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
+      dt_aligned_pixel_t RGB = {0.f}, XYZ_D50, chromaticity;
       // FIXME: for speed, downsample 2x2 -> 1x1 here, which still should produce enough chromaticity data -- Question: AVERAGE(RGBx4) -> chromaticity, or AVERAGE((RGB -> chromaticity)x4)?
       // FIXME: could compromise and downsample to 2x1 -- may also be a bit faster than skipping rows
       const float *const restrict px = DT_IS_ALIGNED((const float *const restrict)input +
@@ -432,7 +432,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
         // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
-        float xyY_D50[4] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t xyY_D50;
         dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
         // using D50 correct u*v* (not u'v') to be relative to the whitepoint (important for vectorscope) and as u*v* is more evenly spaced
         dt_xyY_to_Luv(xyY_D50, chromaticity);
@@ -440,7 +440,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       else
       {
         // FIXME: can skip a hop by pre-multipying matrices: see colorbalancergb and dt_develop_blendif_init_masking_profile() for how to make hacked profile
-        float XYZ_D65[4] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t XYZ_D65;
         // If the profile whitepoint is D65, its RGB -> XYZ conversion
         // matrix has been adapted to D50 (PCS standard) via
         // Bradford. Using Bradford again to adapt back to D65 gives a
@@ -492,12 +492,11 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         continue;
       }
 
-      float b[4] DT_ALIGNED_PIXEL = {scale * count,
-        max_diam * (((out_x + 0.5f) / diam_px) - 0.5f),
-        max_diam * (((out_y + 0.5f) / diam_px) - 0.5f)};
+      dt_aligned_pixel_t b = {scale * count,  max_diam * (((out_x + 0.5f) / diam_px) - 0.5f),
+                              max_diam * (((out_y + 0.5f) / diam_px) - 0.5f)};
 
       const float intensity = lut[(int)(MIN(1.f, b[0]) * lutmax)];
-      float XYZ_D50[4] DT_ALIGNED_PIXEL, RGB[4] DT_ALIGNED_PIXEL;
+      dt_aligned_pixel_t XYZ_D50, RGB;
       const float h = hypotf(b[1], b[2]);
 
       // FIXME: look into alternative ways to render this. From Sobotka: "Makes me wonder if full emission mixtures using the GL alpha transparency adding might help for visibility? I’d expect maximum volume of values add to display referred maximum white, while lower density volume of values are more visible and loosely representative of the mixture?"
@@ -508,7 +507,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         const float chroma = max_diam * (0.1 + 0.2 * (1.f - intensity));
         b[1] *= chroma / h;
         b[2] *= chroma / h;
-        float xyY[4] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t xyY;
         dt_Luv_to_xyY(b, xyY);
         // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
         dt_xyY_to_XYZ(xyY, XYZ_D50);
@@ -520,7 +519,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         b[1] *= chroma / h;
         b[2] *= chroma / h;
         // FIXME: can optimize the XYZ_D65 -> RGB conversion by pre-multiplying matrix?
-        float XYZ_D65[4] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t XYZ_D65;
         dt_JzAzBz_2_XYZ(b, XYZ_D65);
         dt_XYZ_D65_2_XYZ_D50(XYZ_D65, XYZ_D50);
       }

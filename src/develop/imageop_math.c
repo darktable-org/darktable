@@ -282,7 +282,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out, const float *cons
 
     for(int x = 0; x < roi_out->width; x++)
     {
-      float col[4] = { 0, 0, 0, 0 };
+      dt_aligned_pixel_t col = { 0, 0, 0, 0 };
 
       const float fx = (x + roi_out->x) * px_footprint;
       int px = (int)fx & ~1;
@@ -291,7 +291,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_f(float *const out, const float *cons
 
       const int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
 
-      float p[4];
+      dt_aligned_pixel_t p;
       float num = 0;
 
       // upper left 2x2 block of sampling region
@@ -704,7 +704,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in
 
     for(int x = 0; x < roi_out->width; x++)
     {
-      float col[4] = { 0, 0, 0, 0 };
+      dt_aligned_pixel_t col = { 0, 0, 0, 0 };
 
       const float fx = (x + roi_out->x) * px_footprint;
       int px = (int)fx & ~1;

@@ -156,7 +156,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const float noise = data->noise / scale;
 
-  float RGBmax[4], RGBmin[4];
+  dt_aligned_pixel_t RGBmax, RGBmin;
   for(int k = 0; k < 4; k++)
   {
     RGBmax[k] = INFINITY;
@@ -207,7 +207,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         const point_t box[5] = { tl, { br.x, tl.y }, cc, { tl.x, br.y }, br };
 
         // find the average color over the big pixel
-        float DT_ALIGNED_PIXEL RGB[4] = { 0.f };
+        dt_aligned_pixel_t RGB = { 0.f };
         for(size_t k = 0; k < 5; k++)
         {
           const float *const restrict pix_in = __builtin_assume_aligned(input + (width * box[k].y + box[k].x) * 4, 16);

@@ -380,8 +380,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
 struct border_positions_t
 {
-  float DT_ALIGNED_PIXEL bcolor[4];
-  float DT_ALIGNED_PIXEL flcolor[4];
+  dt_aligned_pixel_t bcolor;
+  dt_aligned_pixel_t flcolor;
   int border_top;		// 0..bt is rows of top border outside the frameline
   int fl_top;			//bt..ft is the top frameline
   int image_top;		//ft..it is the top border inside the frameline

@@ -219,7 +219,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       // luminance is ok, so check for saturation
       else
       {
-        float DT_ALIGNED_ARRAY saturation[4] = { 0.f };
+        dt_aligned_pixel_t saturation = { 0.f };
 
         for_each_channel(c,aligned(saturation, img_tmp : 64))
         {
@@ -298,7 +298,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                                                 work_profile->lutsize, work_profile->nonlinearlut);
       if(luminance < upper && luminance > lower)
       {
-        float DT_ALIGNED_ARRAY saturation[4] = { 0.f };
+        dt_aligned_pixel_t saturation = { 0.f };
 
         for_each_channel(c,aligned(saturation, img_tmp : 64))
         {

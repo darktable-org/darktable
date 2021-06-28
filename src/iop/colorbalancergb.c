@@ -409,7 +409,7 @@ static void mat3mul4(float *restrict dst, const float *const restrict m1, const 
 static inline void opacity_masks(const float x,
                                  const float shadows_weight, const float highlights_weight,
                                  const float midtones_weight, const float mask_grey_fulcrum,
-                                 float output[4], float output_comp[4])
+                                 dt_aligned_pixel_t output, dt_aligned_pixel_t output_comp)
 {
   const float x_offset = (x - mask_grey_fulcrum);
   const float x_offset_norm = x_offset / mask_grey_fulcrum;
@@ -565,11 +565,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float *const restrict pix_in = __builtin_assume_aligned(in + k, 16);
     float *const restrict pix_out = __builtin_assume_aligned(out + k, 16);
 
-    float DT_ALIGNED_PIXEL XYZ_D65[4] = { 0.f };
-    float DT_ALIGNED_PIXEL LMS[4] = { 0.f };
-    float DT_ALIGNED_PIXEL RGB[4] = { 0.f };
-    float DT_ALIGNED_PIXEL Yrg[4] = { 0.f };
-    float DT_ALIGNED_PIXEL Ych[4] = { 0.f };
+    dt_aligned_pixel_t XYZ_D65 = { 0.f };
+    dt_aligned_pixel_t LMS = { 0.f };
+    dt_aligned_pixel_t RGB = { 0.f };
+    dt_aligned_pixel_t Yrg = { 0.f };
+    dt_aligned_pixel_t Ych = { 0.f };
 
     // clip pipeline RGB
     for_four_channels(c, aligned(pix_in:16)) RGB[c] = fmaxf(pix_in[c], 0.0f);
@@ -598,8 +598,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     Ych[0] = fmaxf(Ych[0], 0.f);
 
     // Opacities for luma masks
-    float DT_ALIGNED_PIXEL opacities[4];
-    float DT_ALIGNED_PIXEL opacities_comp[4];
+    dt_aligned_pixel_t opacities;
+    dt_aligned_pixel_t opacities_comp;
     opacity_masks(powf(Ych[0], 0.4101205819200422f), // center middle grey in 50 %
                   d->shadows_weight, d->highlights_weight, d->midtones_weight, d->mask_grey_fulcrum, opacities, opacities_comp);
 
@@ -678,7 +678,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     LMS_to_XYZ(LMS, XYZ_D65);
 
     // Perceptual color adjustments
-    float DT_ALIGNED_PIXEL Jab[4] = { 0.f };
+    dt_aligned_pixel_t Jab = { 0.f };
     dt_XYZ_2_JzAzBz(XYZ_D65, Jab);
 
     // Convert to JCh
@@ -768,7 +768,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(mask_display)
     {
       // draw checkerboard
-      float DT_ALIGNED_PIXEL color[4];
+      dt_aligned_pixel_t color;
       if(i % checker_1 < i % checker_2)
       {
         if(j % checker_1 < j % checker_2) for_four_channels(c) color[c] = d->checker_color_2[c];
@@ -1013,14 +1013,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // global
   {
-    float Ych[4] = { 1.f, p->global_C, DEG_TO_RAD(p->global_H), 0.f };
+    dt_aligned_pixel_t Ych = { 1.f, p->global_C, DEG_TO_RAD(p->global_H), 0.f };
     Ych_to_gradingRGB(Ych, d->global);
     for(size_t c = 0; c < 4; c++) d->global[c] = (d->global[c] - RGB_norm[c]) + RGB_norm[c] * p->global_Y;
   }
 
   // shadows
   {
-    float Ych[4] = { 1.f, p->shadows_C, DEG_TO_RAD(p->shadows_H), 0.f };
+    dt_aligned_pixel_t Ych = { 1.f, p->shadows_C, DEG_TO_RAD(p->shadows_H), 0.f };
     Ych_to_gradingRGB(Ych, d->shadows);
     for(size_t c = 0; c < 4; c++) d->shadows[c] = 1.f + (d->shadows[c] - RGB_norm[c]) + p->shadows_Y;
     d->shadows_weight = 2.f + p->shadows_weight * 2.f;
@@ -1028,7 +1028,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // highlights
   {
-    float Ych[4] = { 1.f, p->highlights_C, DEG_TO_RAD(p->highlights_H), 0.f };
+    dt_aligned_pixel_t Ych = { 1.f, p->highlights_C, DEG_TO_RAD(p->highlights_H), 0.f };
     Ych_to_gradingRGB(Ych, d->highlights);
     for(size_t c = 0; c < 4; c++) d->highlights[c] = 1.f + (d->highlights[c] - RGB_norm[c]) + p->highlights_Y;
     d->highlights_weight = 2.f + p->highlights_weight * 2.f;
@@ -1036,7 +1036,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // midtones
   {
-    float Ych[4] = { 1.f, p->midtones_C, DEG_TO_RAD(p->midtones_H), 0.f };
+    dt_aligned_pixel_t Ych = { 1.f, p->midtones_C, DEG_TO_RAD(p->midtones_H), 0.f };
     Ych_to_gradingRGB(Ych, d->midtones);
     for(size_t c = 0; c < 4; c++) d->midtones[c] = 1.f / (1.f + (d->midtones[c] - RGB_norm[c]));
     d->midtones_Y = 1.f / (1.f + p->midtones_Y);
@@ -1160,8 +1160,8 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
   dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)self->params;
 
-  float Ych[4] = { 0.f };
-  float max_Ych[4] = { 0.f };
+  dt_aligned_pixel_t Ych = { 0.f };
+  dt_aligned_pixel_t max_Ych = { 0.f };
   pipe_RGB_to_Ych(self, piece, (const float *)self->picked_color, Ych);
   pipe_RGB_to_Ych(self, piece, (const float *)self->picked_color_max, max_Ych);
   float hue = RAD_TO_DEG(Ych[2]) + 180.f;   // take the opponent color
@@ -1228,9 +1228,9 @@ static void paint_chroma_slider(GtkWidget *w, const float hue)
     const float x = x_min + stop * x_range;
     const float h = DEG_TO_RAD(hue);
 
-    float DT_ALIGNED_PIXEL RGB[4] = { 0.f };
-    float DT_ALIGNED_PIXEL Ych[4] = { 0.75f, x, h, 0.f };
-    float DT_ALIGNED_PIXEL XYZ[4] = { 0.f };
+    dt_aligned_pixel_t RGB = { 0.f };
+    dt_aligned_pixel_t Ych = { 0.75f, x, h, 0.f };
+    dt_aligned_pixel_t XYZ = { 0.f };
     Ych_to_XYZ(Ych, XYZ);
     dt_XYZ_to_Rec709_D65(XYZ, RGB);
     const float max_RGB = fmaxf(fmaxf(RGB[0], RGB[1]), RGB[2]);
@@ -1399,7 +1399,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   for(size_t k = 0 ; k < LUT_ELEM; k++)
   {
     const float Y = k / (float)(LUT_ELEM - 1);
-    float output[4];
+    dt_aligned_pixel_t output;
     opacity_masks(Y, shadows_weight, highlights_weight, midtones_weight, mask_grey_fulcrum, output, NULL);
     for(size_t c = 0; c < 3; c++) LUT[c][k] = output[c];
   }
@@ -1939,9 +1939,9 @@ void gui_init(dt_iop_module_t *self)
   {
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
     const float h = DEG_TO_RAD(stop * (360.f));
-    float DT_ALIGNED_PIXEL RGB[4] = { 0.f };
-    float DT_ALIGNED_PIXEL Ych[4] = { 0.75f, 0.2f, h, 0.f };
-    float DT_ALIGNED_PIXEL XYZ[4] = { 0.f };
+    dt_aligned_pixel_t RGB = { 0.f };
+    dt_aligned_pixel_t Ych = { 0.75f, 0.2f, h, 0.f };
+    dt_aligned_pixel_t XYZ = { 0.f };
     Ych_to_XYZ(Ych, XYZ);
     dt_XYZ_to_Rec709_D65(XYZ, RGB);
     const float max_RGB = fmaxf(fmaxf(RGB[0], RGB[1]), RGB[2]);

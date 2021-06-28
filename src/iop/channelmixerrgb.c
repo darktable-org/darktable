@@ -170,7 +170,7 @@ typedef struct dt_iop_channelmixer_rbg_data_t
   float DT_ALIGNED_PIXEL saturation[CHANNEL_SIZE];
   float DT_ALIGNED_PIXEL lightness[CHANNEL_SIZE];
   float DT_ALIGNED_PIXEL grey[CHANNEL_SIZE];
-  float DT_ALIGNED_PIXEL illuminant[4]; // XYZ coordinates of illuminant
+  dt_aligned_pixel_t illuminant; // XYZ coordinates of illuminant
   float p, gamut;
   int apply_grey;
   int clip;

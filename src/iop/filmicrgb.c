@@ -143,7 +143,7 @@ typedef enum dt_iop_filmicrgb_reconstruction_type_t
 
 typedef struct dt_iop_filmic_rgb_spline_t
 {
-  float DT_ALIGNED_PIXEL M1[4], M2[4], M3[4], M4[4], M5[4]; // factors for the interpolation polynom
+  dt_aligned_pixel_t M1, M2, M3, M4, M5;                    // factors for the interpolation polynom
   float latitude_min, latitude_max;                         // bounds of the latitude == linear part by design
   float y[5];                                               // controls nodes
   float x[5];                                               // controls nodes
@@ -1163,7 +1163,7 @@ static inline void filmic_split_v1(const float *const restrict in, float *const 
   {
     const float *const restrict pix_in = in + k;
     float *const restrict pix_out = out + k;
-    float DT_ALIGNED_ARRAY temp[4];
+    dt_aligned_pixel_t temp;
 
     // Log tone-mapping
     for(int c = 0; c < 3; c++)
@@ -1205,7 +1205,7 @@ static inline void filmic_split_v2_v3(const float *const restrict in, float *con
   {
     const float *const restrict pix_in = in + k;
     float *const restrict pix_out = out + k;
-    float DT_ALIGNED_ARRAY temp[4];
+    dt_aligned_pixel_t temp;
 
     // Log tone-mapping
     for(int c = 0; c < 3; c++)
@@ -1247,7 +1247,7 @@ static inline void filmic_chroma_v1(const float *const restrict in, float *const
     const float *const restrict pix_in = in + k;
     float *const restrict pix_out = out + k;
 
-    float DT_ALIGNED_ARRAY ratios[4] = { 0.0f };
+    dt_aligned_pixel_t ratios = { 0.0f };
     float norm = fmaxf(get_pixel_norm(pix_in, variant, work_profile), NORM_MIN);
 
     // Save the ratios
@@ -1308,7 +1308,7 @@ static inline void filmic_chroma_v2_v3(const float *const restrict in, float *co
     float norm = fmaxf(get_pixel_norm(pix_in, variant, work_profile), NORM_MIN);
 
     // Save the ratios
-    float DT_ALIGNED_ARRAY ratios[4] = { 0.0f };
+    dt_aligned_pixel_t ratios = { 0.0f };
 
     for_each_channel(c,aligned(pix_in))
       ratios[c] = pix_in[c] / norm;

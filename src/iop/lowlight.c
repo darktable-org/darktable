@@ -144,7 +144,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     float *in = (float *)i + ch * k;
     float *out = (float *)o + ch * k;
-    float DT_ALIGNED_PIXEL XYZ[4], XYZ_s[4];
+    dt_aligned_pixel_t XYZ, XYZ_s;
     float V;
     float w;
 

@@ -166,7 +166,7 @@ static void rcd_ppg_border(float *const out, const float *const in, const int wi
       if(i == width) break;
 
       const int c = FC(j, i, filters);
-      float color[4];
+      dt_aligned_pixel_t color;
       const float pc = fmaxf(0.0f, buf_in[0]);
       if(c == 0 || c == 2)
       {
@@ -230,7 +230,7 @@ static void rcd_ppg_border(float *const out, const float *const in, const int wi
         buf = out + (size_t)4 * (width * j + i);
       }
       const int c = FC(j, i, filters);
-      float color[4] = { buf[0], buf[1], buf[2], buf[3] };
+      dt_aligned_pixel_t color = { buf[0], buf[1], buf[2], buf[3] };
       const int linesize = 4 * width;
       // fill all four pixels with correctly interpolated stuff: r/b for green1/2
       // b for r and r for b

@@ -373,7 +373,7 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
 
   const float f = levels - 1;
   const float rf = 1.0 / f;
-  float DT_ALIGNED_PIXEL err[4];
+  dt_aligned_pixel_t err;
 
   // dither without error diffusion on very tiny images
   if(width < 3 || height < 3)

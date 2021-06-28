@@ -162,7 +162,7 @@ static void gui_update_from_coeffs(dt_iop_module_t *self)
   const dt_image_t *img = &self->dev->image_storage;
   if(img->flags & DT_IMAGE_4BAYER)
   {
-    float rgb[4];
+    dt_aligned_pixel_t rgb;
     for(int k = 0; k < 4; k++) rgb[k] = p->color[k];
 
     dt_colorspaces_cygm_to_rgb(rgb, 1, g->CAM_to_RGB);
