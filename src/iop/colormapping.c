@@ -344,7 +344,7 @@ static void kmeans(const float *col, const int width, const int height, const in
       for(int k = 0; k < n; k++)
       {
         const float L = col[4 * (width * j + i)];
-        const float Lab[3] = { L, col[4 * (width * j + i) + 1], col[4 * (width * j + i) + 2] };
+        const dt_aligned_pixel_t Lab = { L, col[4 * (width * j + i) + 1], col[4 * (width * j + i) + 2] };
         // determine dist to mean_out
         const int c = get_cluster(Lab, n, mean_out);
 #ifdef _OPENMP
@@ -543,7 +543,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       for(size_t j = 0; j < 4*npixels; j += 4)
       {
         const float L = in[j];
-        const float Lab[3] = { L, in[j + 1], in[j + 2] };
+        const dt_aligned_pixel_t Lab = { L, in[j + 1], in[j + 2] };
 
         // transfer back scaled and blurred delta L to output L
         out[j] = 2.0f * (out[j] - 50.0f) + L;
