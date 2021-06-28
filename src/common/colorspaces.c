@@ -501,8 +501,8 @@ int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)
   float result[9];
   if(mat3inv(result, primaries)) return -1;
 
-  const float whitepoint[3] = { xn / yn, 1.0f, (1.0f - xn - yn) / yn };
-  float coeff[3];
+  const dt_aligned_pixel_t whitepoint = { xn / yn, 1.0f, (1.0f - xn - yn) / yn };
+  dt_aligned_pixel_t coeff;
 
   // get inverse primary whitepoint
   mat3mulv(coeff, result, whitepoint);
@@ -522,7 +522,7 @@ int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)
   float chad_inv[9];
   if(mat3inv(chad_inv, lam_rigg)) return -1;
 
-  float cone_src_rgb[3], cone_dst_rgb[3];
+  dt_aligned_pixel_t cone_src_rgb, cone_dst_rgb;
   mat3mulv(cone_src_rgb, lam_rigg, dn);
   mat3mulv(cone_dst_rgb, lam_rigg, d50);
 
@@ -943,7 +943,7 @@ static void dt_colorspaces_create_cmatrix(float cmatrix[4][3], float mat[3][3])
 static cmsHPROFILE dt_colorspaces_create_xyzmatrix_profile(float mat[3][3])
 {
   // mat: cam -> xyz
-  float x[3], y[3];
+  dt_aligned_pixel_t x, y;
   for(int k = 0; k < 3; k++)
   {
     const float norm = mat[0][k] + mat[1][k] + mat[2][k];
@@ -2211,7 +2211,7 @@ void dt_colorspaces_cygm_to_rgb(float *out, int num, double CAM_to_RGB[3][4])
   for(int i = 0; i < num; i++)
   {
     float *in = &out[i*4];
-    float o[3] = {0.0f,0.0f,0.0f};
+    dt_aligned_pixel_t o = {0.0f,0.0f,0.0f};
     for(int c = 0; c < 3; c++)
       for(int k = 0; k < 4; k++)
         o[c] += CAM_to_RGB[c][k] * in[k];
@@ -2228,7 +2228,7 @@ void dt_colorspaces_rgb_to_cygm(float *out, int num, double RGB_to_CAM[4][3])
   for(int i = 0; i < num; i++)
   {
     float *in = &out[i*3];
-    float o[4] = {0.0f,0.0f,0.0f,0.0f};
+    dt_aligned_pixel_t o = {0.0f,0.0f,0.0f,0.0f};
     for(int c = 0; c < 4; c++)
       for(int k = 0; k < 3; k++)
         o[c] += RGB_to_CAM[c][k] * in[k];

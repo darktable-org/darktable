@@ -280,7 +280,7 @@ typedef struct dt_control_merge_hdr_t
 
   float whitelevel;
   float epsw;
-  float wb_coeffs[3];
+  dt_aligned_pixel_t wb_coeffs;
   char camera_makermodel[128];
 
   // 0 - ok; 1 - errors, abort

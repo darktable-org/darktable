@@ -40,8 +40,8 @@ typedef struct box_t
   float w, h;
   // color
   dt_colorspaces_color_profile_type_t color_space;
-  float color[3]; // either XYZ or Lab, depending on color_space
-  float rgb[3];   // color converted to sRGB for rough displaying of patches
+  dt_aligned_pixel_t color; // either XYZ or Lab, depending on color_space
+  dt_aligned_pixel_t rgb;   // color converted to sRGB for rough displaying of patches
 } box_t;
 
 typedef struct chart_t

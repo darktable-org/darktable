@@ -788,9 +788,9 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
                                        float *pick_color_rgb_mean, float *pick_color_lab_min,
                                        float *pick_color_lab_max, float *pick_color_lab_mean)
 {
-  float picked_color_rgb_min[3] = { 0.0f };
-  float picked_color_rgb_max[3] = { 0.0f };
-  float picked_color_rgb_mean[3] = { 0.0f };
+  dt_aligned_pixel_t picked_color_rgb_min = { 0.0f };
+  dt_aligned_pixel_t picked_color_rgb_max = { 0.0f };
+  dt_aligned_pixel_t picked_color_rgb_mean = { 0.0f };
 
   for(int k = 0; k < 3; k++) picked_color_rgb_min[k] = FLT_MAX;
   for(int k = 0; k < 3; k++) picked_color_rgb_max[k] = FLT_MIN;
@@ -805,7 +805,7 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   point[0] = MIN(roi_in->width - 1, MAX(0, pick_point[0] * roi_in->width));
   point[1] = MIN(roi_in->height - 1, MAX(0, pick_point[1] * roi_in->height));
 
-  float rgb[3] = { 0.0f };
+  dt_aligned_pixel_t rgb = { 0.0f };
 
   const float w = 1.0 / ((box[3] - box[1] + 1) * (box[2] - box[0] + 1));
 
@@ -2099,8 +2099,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       if((*out_format)->datatype == TYPE_FLOAT && (*out_format)->channels == 4)
       {
         int hasinf = 0, hasnan = 0;
-        float min[3] = { FLT_MAX };
-        float max[3] = { FLT_MIN };
+        dt_aligned_pixel_t min = { FLT_MAX };
+        dt_aligned_pixel_t max = { FLT_MIN };
 
         for(int k = 0; k < 4 * roi_out->width * roi_out->height; k++)
         {
@@ -2614,7 +2614,9 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const
   p->rawdetail_mask_data = mask;
   memcpy(&p->rawdetail_mask_roi, roi_in, sizeof(dt_iop_roi_t));
 
-  float wb[3] = {piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
+  dt_aligned_pixel_t wb = { piece->pipe->dsc.temperature.coeffs[0],
+                            piece->pipe->dsc.temperature.coeffs[1],
+                            piece->pipe->dsc.temperature.coeffs[2] };
   if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) == DT_DEV_DETAIL_MASK_RAWPREPARE)
   {
     wb[0] = wb[1] = wb[2] = 1.0f;
@@ -2655,7 +2657,9 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
   if(tmp == NULL) goto error;
   {
     const int kernel = darktable.opencl->blendop->kernel_calc_Y0_mask;
-    float wb[3] = {piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
+    dt_aligned_pixel_t wb = { piece->pipe->dsc.temperature.coeffs[0],
+                              piece->pipe->dsc.temperature.coeffs[1],
+                              piece->pipe->dsc.temperature.coeffs[2] };
     if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) == DT_DEV_DETAIL_MASK_RAWPREPARE)
     {
       wb[0] = wb[1] = wb[2] = 1.0f;

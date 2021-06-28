@@ -35,12 +35,12 @@ static inline size_t _box_size(const int *const box)
 static inline void rgb_to_JzCzhz(const float *const rgb, float *const JzCzhz,
                                  const dt_iop_order_iccprofile_info_t *const profile)
 {
-  float XYZ_D65[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
-  float JzAzBz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+  dt_aligned_pixel_t XYZ_D65 = { 0.0f, 0.0f, 0.0f };
+  dt_aligned_pixel_t JzAzBz = { 0.0f, 0.0f, 0.0f };
 
   if(profile)
   {
-    float XYZ_D50[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+    dt_aligned_pixel_t XYZ_D50 = { 0.0f, 0.0f, 0.0f };
     dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D50, profile->matrix_in, profile->lut_in, profile->unbounded_coeffs_in,
                                profile->lutsize, profile->nonlinearlut);
     dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
