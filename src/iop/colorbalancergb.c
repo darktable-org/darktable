@@ -621,7 +621,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     // Gamut-clip in Yrg at constant hue and luminance
     // e.g. find the max chroma value that fits in gamut at the current hue
-    const float D65[4] = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
+    const dt_aligned_pixel_t D65 = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
     float max_c = Ych[1];
     const float cos_h = cosf(Ych[2]);
     const float sin_h = sinf(Ych[2]);
@@ -736,7 +736,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f } };
 
     // Do a test conversion to L'M'S'
-    const float IzAzBz[4] = { Iz, JC[1] * cos_H, JC[1] * sin_H, 0.f };
+    const dt_aligned_pixel_t IzAzBz = { Iz, JC[1] * cos_H, JC[1] * sin_H, 0.f };
     dot_product(IzAzBz, AI, LMS);
 
     // Clip chroma
@@ -1007,8 +1007,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->hue_angle = M_PI * p->hue_angle / 180.f;
 
   // measure the grading RGB of a pure white
-  const float Ych_norm[4] = { 1.f, 0.f, 0.f, 0.f };
-  float RGB_norm[4] = { 0.f };
+  const dt_aligned_pixel_t Ych_norm = { 1.f, 0.f, 0.f, 0.f };
+  dt_aligned_pixel_t RGB_norm = { 0.f };
   Ych_to_gradingRGB(Ych_norm, RGB_norm);
 
   // global
@@ -1084,13 +1084,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       for(size_t g = 0; g < STEPS; g++)
         for(size_t b = 0; b < STEPS; b++)
         {
-          const float DT_ALIGNED_PIXEL rgb[4] = { (float)r / (float)(STEPS - 1),
-                                                  (float)g / (float)(STEPS - 1),
-                                                  (float)b / (float)(STEPS - 1),
-                                                  0.f };
-          float DT_ALIGNED_PIXEL XYZ[4] = { 0.f };
-          float DT_ALIGNED_PIXEL Jab[4] = { 0.f };
-          float DT_ALIGNED_PIXEL Jch[4] = { 0.f };
+          const dt_aligned_pixel_t rgb = { (float)r / (float)(STEPS - 1), (float)g / (float)(STEPS - 1),
+                                           (float)b / (float)(STEPS - 1), 0.f };
+          dt_aligned_pixel_t XYZ = { 0.f };
+          dt_aligned_pixel_t Jab = { 0.f };
+          dt_aligned_pixel_t Jch = { 0.f };
 
           dot_product(rgb, input_matrix, XYZ); // Go to D50 pipeline RGB to D65 XYZ in one step
           dt_XYZ_2_JzAzBz(XYZ, Jab);           // this one expects D65 XYZ
