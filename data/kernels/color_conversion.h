@@ -43,8 +43,9 @@ typedef struct dt_colorspaces_iccprofile_info_cl_t
   float grey;
 } dt_colorspaces_iccprofile_info_cl_t;
 
-inline float lerp_lookup_unbounded(const float x, read_only image2d_t lut,
-                                   constant const float *const unbounded_coeffs, const int n_lut, const int lutsize)
+static inline float lerp_lookup_unbounded(const float x, read_only image2d_t lut,
+                                          constant const float *const unbounded_coeffs,
+                                          const int n_lut, const int lutsize)
 {
   // in case the tone curve is marked as linear, return the fast
   // path to linear unbounded (does not clip x at 1)
@@ -66,14 +67,14 @@ inline float lerp_lookup_unbounded(const float x, read_only image2d_t lut,
   else return x;
 }
 
-inline float lookup(read_only image2d_t lut, const float x)
+static inline float lookup(read_only image2d_t lut, const float x)
 {
   const int xi = clamp((int)(x * 0x10000ul), 0, 0xffff);
   const int2 p = (int2)((xi & 0xff), (xi >> 8));
   return read_imagef(lut, sampleri, p).x;
 }
 
-inline float lookup_unbounded(read_only image2d_t lut, const float x, constant const float *const a)
+static inline float lookup_unbounded(read_only image2d_t lut, const float x, constant const float *const a)
 {
   // in case the tone curve is marked as linear, return the fast
   // path to linear unbounded (does not clip x at 1)
@@ -90,8 +91,9 @@ inline float lookup_unbounded(read_only image2d_t lut, const float x, constant c
   else return x;
 }
 
-inline float4 apply_trc_in(const float4 rgb_in, constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
-                           read_only image2d_t lut)
+static inline float4 apply_trc_in(const float4 rgb_in,
+                                  constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                  read_only image2d_t lut)
 {
   const float R = lerp_lookup_unbounded(rgb_in.x, lut, profile_info->unbounded_coeffs_in[0], 0, profile_info->lutsize);
   const float G = lerp_lookup_unbounded(rgb_in.y, lut, profile_info->unbounded_coeffs_in[1], 1, profile_info->lutsize);
@@ -100,8 +102,9 @@ inline float4 apply_trc_in(const float4 rgb_in, constant const dt_colorspaces_ic
   return (float4)(R, G, B, a);
 }
 
-inline float4 apply_trc_out(const float4 rgb_in, constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
-                            read_only image2d_t lut)
+static inline float4 apply_trc_out(const float4 rgb_in,
+                                   constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                   read_only image2d_t lut)
 {
   const float R = lerp_lookup_unbounded(rgb_in.x, lut, profile_info->unbounded_coeffs_out[0], 3, profile_info->lutsize);
   const float G = lerp_lookup_unbounded(rgb_in.y, lut, profile_info->unbounded_coeffs_out[1], 4, profile_info->lutsize);
@@ -110,8 +113,9 @@ inline float4 apply_trc_out(const float4 rgb_in, constant const dt_colorspaces_i
   return (float4)(R, G, B, a);
 }
 
-inline float get_rgb_matrix_luminance(const float4 rgb, constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
-                                      constant const float *const matrix, read_only image2d_t lut)
+static inline float get_rgb_matrix_luminance(const float4 rgb,
+                                             constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                             constant const float *const matrix, read_only image2d_t lut)
 {
   float luminance = 0.f;
 
@@ -128,8 +132,9 @@ inline float get_rgb_matrix_luminance(const float4 rgb, constant const dt_colors
   return luminance;
 }
 
-inline float4 rgb_matrix_to_xyz(const float4 rgb, constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
-                                constant const float *const matrix, read_only image2d_t lut)
+static inline float4 rgb_matrix_to_xyz(const float4 rgb,
+                                       constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                       constant const float *const matrix, read_only image2d_t lut)
 {
   float4 out;
   if(profile_info->nonlinearlut)
@@ -144,7 +149,7 @@ inline float4 rgb_matrix_to_xyz(const float4 rgb, constant const dt_colorspaces_
   return out;
 }
 
-inline float dt_camera_rgb_luminance(const float4 rgb)
+static inline float dt_camera_rgb_luminance(const float4 rgb)
 {
   const float4 coeffs = { 0.2225045f, 0.7168786f, 0.0606169f, 0.0f };
   return dot(rgb, coeffs);
