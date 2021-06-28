@@ -949,11 +949,11 @@ static inline void backtransform_v2(float *const buf, const int wd, const int ht
 static inline void precondition_Y0U0V0(const float *const in, float *const buf, const int wd, const int ht,
                                        const float a, const float p[4], const float b, const float toY0U0V0[3][4])
 {
-  const float DT_ALIGNED_PIXEL expon[4] = { -p[0] / 2 + 1, -p[1] / 2 + 1, -p[2] / 2 + 1, 1.0f };
-  const float DT_ALIGNED_PIXEL scale[4] = { 2.0f / ((-p[0] + 2) * sqrtf(a)),
-                                            2.0f / ((-p[1] + 2) * sqrtf(a)),
-                                            2.0f / ((-p[2] + 2) * sqrtf(a)),
-                                            1.0f };
+  const dt_aligned_pixel_t expon = { -p[0] / 2 + 1, -p[1] / 2 + 1, -p[2] / 2 + 1, 1.0f };
+  const dt_aligned_pixel_t scale = { 2.0f / ((-p[0] + 2) * sqrtf(a)),
+                                     2.0f / ((-p[1] + 2) * sqrtf(a)),
+                                     2.0f / ((-p[2] + 2) * sqrtf(a)),
+                                     1.0f };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(buf, ht, in, wd, b, toY0U0V0) \
@@ -979,18 +979,19 @@ static inline void precondition_Y0U0V0(const float *const in, float *const buf, 
   }
 }
 
-static inline void backtransform_Y0U0V0(float *const buf, const int wd, const int ht, const float a, const float p[4],
-                                        const float b, const float bias, const float wb[4], const float toRGB[3][4])
+static inline void backtransform_Y0U0V0(float *const buf, const int wd, const int ht, const float a,
+                                        const dt_aligned_pixel_t p, const float b, const float bias,
+                                        const dt_aligned_pixel_t wb, const float toRGB[3][4])
 {
-  const float DT_ALIGNED_PIXEL bias_wb[4] = { bias * wb[0], bias * wb[1], bias * wb[2], 0.0f };
-  const float DT_ALIGNED_PIXEL expon[4] = {  1.0f / (1.0f - p[0] / 2.0f),
-                                             1.0f / (1.0f - p[1] / 2.0f),
-                                             1.0f / (1.0f - p[2] / 2.0f),
-                                             1.0f };
-  const float DT_ALIGNED_PIXEL scale[4] = { (sqrtf(a) * (2.0f - p[0])) / 4.0f,
-                                            (sqrtf(a) * (2.0f - p[1])) / 4.0f,
-                                            (sqrtf(a) * (2.0f - p[2])) / 4.0f,
-                                            1.0f };
+  const dt_aligned_pixel_t bias_wb = { bias * wb[0], bias * wb[1], bias * wb[2], 0.0f };
+  const dt_aligned_pixel_t expon = {  1.0f / (1.0f - p[0] / 2.0f),
+                                      1.0f / (1.0f - p[1] / 2.0f),
+                                      1.0f / (1.0f - p[2] / 2.0f),
+                                      1.0f };
+  const dt_aligned_pixel_t scale = { (sqrtf(a) * (2.0f - p[0])) / 4.0f,
+                                     (sqrtf(a) * (2.0f - p[1])) / 4.0f,
+                                     (sqrtf(a) * (2.0f - p[2])) / 4.0f,
+                                     1.0f };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(buf, ht, wd, b, bias_wb, toRGB, expon, scale)  \

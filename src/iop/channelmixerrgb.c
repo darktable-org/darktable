@@ -646,7 +646,8 @@ static inline void luma_chroma(const float input[4], const float saturation[4], 
 static inline void loop_switch(const float *const restrict in, float *const restrict out,
                                const size_t width, const size_t height, const size_t ch,
                                const float XYZ_to_RGB[3][4], const float RGB_to_XYZ[3][4], const float MIX[3][4],
-                               const float illuminant[4], const float saturation[4], const float lightness[4], const float grey[4],
+                               const dt_aligned_pixel_t illuminant, const dt_aligned_pixel_t saturation,
+                               const dt_aligned_pixel_t lightness, const dt_aligned_pixel_t grey,
                                const float p, const float gamut, const int clip, const int apply_grey,
                                const dt_adaptation_t kind,
                                const dt_iop_channelmixer_rgb_version_t version)
@@ -860,7 +861,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
 
 static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_t illuminant,
                                   const size_t width, const size_t height, const size_t ch,
-                                  const float RGB_to_XYZ[3][4], float xyz[4])
+                                  const float RGB_to_XYZ[3][4], dt_aligned_pixel_t xyz)
 {
   /**
    * Detect the chromaticity of the illuminant based on the grey edges hypothesis.
