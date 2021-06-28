@@ -564,7 +564,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 #ifdef _OPENMP
 #pragma omp declare simd aligned(pixel:16)
 #endif
-static inline float pixel_rgb_norm_power(const float pixel[4])
+static inline float pixel_rgb_norm_power(const dt_aligned_pixel_t pixel)
 {
   // weird norm sort of perceptual. This is black magic really, but it looks good.
   // the full norm is (R^3 + G^3 + B^3) / (R^2 + G^2 + B^2) and it should be in ]0; +infinity[
@@ -588,7 +588,7 @@ static inline float pixel_rgb_norm_power(const float pixel[4])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(pixel : 16) uniform(variant, work_profile)
 #endif
-static inline float get_pixel_norm(const float pixel[4], const dt_iop_filmicrgb_methods_type_t variant,
+static inline float get_pixel_norm(const dt_aligned_pixel_t pixel, const dt_iop_filmicrgb_methods_type_t variant,
                                    const dt_iop_order_iccprofile_info_t *const work_profile)
 {
   // a newly added norm should satisfy the condition that it is linear with respect to grey pixels:

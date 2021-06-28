@@ -1020,8 +1020,8 @@ static inline void backtransform_Y0U0V0(float *const buf, const int wd, const in
 
 // called by: process_wavelets, nlmeans_precondition, nlmeans_precondition_cl, process_variance,
 //     process_wavelets_cl
-static void compute_wb_factors(float wb[4],const dt_iop_denoiseprofile_data_t *const d,
-                               const dt_dev_pixelpipe_iop_t *const piece, const float weights[4])
+static void compute_wb_factors(dt_aligned_pixel_t wb,const dt_iop_denoiseprofile_data_t *const d,
+                               const dt_dev_pixelpipe_iop_t *const piece, const dt_aligned_pixel_t weights)
 {
   const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
                          + piece->pipe->dsc.temperature.coeffs[2])
@@ -1091,7 +1091,7 @@ static gboolean invert_matrix(const float in[3][4], float out[3][4])
 
 // create the white balance adaptative conversion matrices
 // supposes toY0U0V0 already contains the "normal" conversion matrix
-static void set_up_conversion_matrices(float toY0U0V0[3][4], float toRGB[3][4], float wb[4])
+static void set_up_conversion_matrices(float toY0U0V0[3][4], float toRGB[3][4], dt_aligned_pixel_t wb)
 {
   // for an explanation of the spirit of the choice of the coefficients of the
   // Y0U0V0 conversion matrix, see part 12.3.3 page 190 of
@@ -1143,7 +1143,7 @@ static void set_up_conversion_matrices(float toY0U0V0[3][4], float toRGB[3][4], 
   }
 }
 
-static void variance_stabilizing_xform(float thrs[4], const int scale, const int max_scale, const size_t npixels,
+static void variance_stabilizing_xform(dt_aligned_pixel_t thrs, const int scale, const int max_scale, const size_t npixels,
                                        const float *const sum_y2, const dt_iop_denoiseprofile_data_t *const d)
 {
   // variance stabilizing transform maps sigma to unity.
@@ -1418,7 +1418,7 @@ static float nlmeans_scattering(int *nbhood, const dt_iop_denoiseprofile_data_t 
 // called by process_nlmeans_cpu
 // must keep synchronized with nlmeans_precondition_cl below
 static float nlmeans_precondition(const dt_iop_denoiseprofile_data_t *const d,
-                                  const dt_dev_pixelpipe_iop_t *const piece, float wb[4],
+                                  const dt_dev_pixelpipe_iop_t *const piece, dt_aligned_pixel_t wb,
                                   const void *const ivoid, const dt_iop_roi_t *const roi_in,
                                   float scale, float *in, dt_aligned_pixel_t aa,
                                   dt_aligned_pixel_t bb, dt_aligned_pixel_t p)
@@ -1457,8 +1457,9 @@ static float nlmeans_precondition(const dt_iop_denoiseprofile_data_t *const d,
 // called by process_nlmeans_cl
 // must keep synchronized with nlmeans_precondition above
 static float nlmeans_precondition_cl(const dt_iop_denoiseprofile_data_t *const d,
-                                     const dt_dev_pixelpipe_iop_t *const piece, float wb[4],
-                                     float scale, float aa[4], float bb[4], float p[4])
+                                     const dt_dev_pixelpipe_iop_t *const piece, dt_aligned_pixel_t wb,
+                                     float scale, dt_aligned_pixel_t aa, dt_aligned_pixel_t bb,
+                                     dt_aligned_pixel_t p)
 {
   // the "unused" fourth element enables vectorization
   const dt_aligned_pixel_t wb_weights = { 1.0f, 1.0f, 1.0f, 0.0f };
@@ -1612,7 +1613,7 @@ static void sum_rec(const size_t npixels, const float *in, float *out)
 }
 
 /* this gives (npixels-1)*V[X] */
-static void variance_rec(const size_t npixels, const float *in, float *out, const float mean[4])
+static void variance_rec(const size_t npixels, const float *in, float *out, const dt_aligned_pixel_t mean)
 {
   if(npixels <= 3)
   {

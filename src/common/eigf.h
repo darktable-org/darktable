@@ -111,8 +111,8 @@ dt_omp_firstprivate(guide, mask, in, Ndim) \
     maxmg = MAX(maxmg,pixelmg);
   }
 
-  float max[4] = {maxg, maxg2, maxm, maxmg};
-  float min[4] = {ming, ming2, minm, minmg};
+  dt_aligned_pixel_t max = {maxg, maxg2, maxm, maxmg};
+  dt_aligned_pixel_t min = {ming, ming2, minm, minmg};
   dt_gaussian_t *g = dt_gaussian_init(width, height, 4, max, min, sigma, 0);
   if(!g) return;
   dt_gaussian_blur_4c(g, in, out);

@@ -1480,7 +1480,7 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
       debug_extra("output %p [% 4d % 4d]\n", out, ox, oy);
 
       // This will hold the resulting pixel
-      DT_ALIGNED_PIXEL float vs[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      dt_aligned_pixel_t vs = { 0.0f, 0.0f, 0.0f, 0.0f };
 
       // Number of horizontal samples contributing to the output
       int hl = hlength[hlidx++]; // H(orizontal) L(ength)
@@ -1490,7 +1490,7 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
         // This is our input line
         size_t baseidx_vindex = (size_t)vindex[viidx++] * in_stride_floats;
 
-        DT_ALIGNED_PIXEL float vhs[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        dt_aligned_pixel_t vhs = { 0.0f, 0.0f, 0.0f, 0.0f };
 
         for(int ix = 0; ix < hl; ix++)
         {
@@ -1498,7 +1498,7 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
           const size_t baseidx = baseidx_vindex + (size_t)hindex[hiidx++] * 4;
           const float htap = hkernel[hkidx++];
           // Convince gcc 10 to vectorize
-          DT_ALIGNED_PIXEL float tmp[4] = { in[baseidx], in[baseidx+1], in[baseidx+2], in[baseidx+3] };
+          dt_aligned_pixel_t tmp = { in[baseidx], in[baseidx+1], in[baseidx+2], in[baseidx+3] };
           for_each_channel(c, aligned(tmp,vhs:16)) vhs[c] += tmp[c] * htap;
         }
 

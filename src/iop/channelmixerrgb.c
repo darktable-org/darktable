@@ -455,7 +455,7 @@ void init_presets(dt_iop_module_so_t *self)
 }
 
 
-static int get_white_balance_coeff(struct dt_iop_module_t *self, float custom_wb[4])
+static int get_white_balance_coeff(struct dt_iop_module_t *self, dt_aligned_pixel_t custom_wb)
 {
   // Init output with a no-op
   for(size_t k = 0; k < 4; k++) custom_wb[k] = 1.f;
@@ -494,7 +494,7 @@ static int get_white_balance_coeff(struct dt_iop_module_t *self, float custom_wb
 #ifdef _OPENMP
 #pragma omp declare simd aligned(vector:16)
 #endif
-static inline float euclidean_norm(const float vector[4])
+static inline float euclidean_norm(const dt_aligned_pixel_t vector)
 {
   return fmaxf(sqrtf(sqf(vector[0]) + sqf(vector[1]) + sqf(vector[2])), NORM_MIN);
 }
@@ -503,7 +503,7 @@ static inline float euclidean_norm(const float vector[4])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(vector:16)
 #endif
-static inline void downscale_vector(float vector[4], const float scaling)
+static inline void downscale_vector(dt_aligned_pixel_t vector, const float scaling)
 {
   // check zero or NaN
   const int valid = (scaling > NORM_MIN) && !isnan(scaling);
@@ -514,7 +514,7 @@ static inline void downscale_vector(float vector[4], const float scaling)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(vector:16)
 #endif
-static inline void upscale_vector(float vector[4], const float scaling)
+static inline void upscale_vector(dt_aligned_pixel_t vector, const float scaling)
 {
   const int valid = (scaling > NORM_MIN) && !isnan(scaling);
   for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] * (scaling + NORM_MIN) : vector[c] * NORM_MIN;

@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/image_compression.h"
+#include "common/darktable.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -32,7 +33,7 @@ void dt_image_uncompress(const uint8_t *in, float *out, const int32_t width, con
 {
   dt_image_float_int_t L[16];
   float chrom[4][3];
-  const float fac[3] = { 4., 2., 4. };
+  const dt_aligned_pixel_t fac = { 4., 2., 4. };
   uint16_t L16[16];
   int32_t n_zeroes, Lbias;
   uint8_t r[4], b[4];
@@ -93,7 +94,7 @@ void dt_image_compress(const float *in, uint8_t *out, const int32_t width, const
       Lmin = 0x7fff;
       for(int q = 0; q < 4; q++)
       {
-        float chrom[3] = { 0, 0, 0 };
+        dt_aligned_pixel_t chrom = { 0, 0, 0 };
         for(int pj = 0; pj < 2; pj++)
         {
           for(int pi = 0; pi < 2; pi++)

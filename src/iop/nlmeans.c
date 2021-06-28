@@ -227,7 +227,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float max_L = 120.0f, max_C = 512.0f;
   const float nL = 1.0f / max_L, nC = 1.0f / max_C;
   const float nL2 = nL * nL, nC2 = nC * nC;
-  const float weight[4] = { d->luma, d->chroma, d->chroma, 1.0f };
+  const dt_aligned_pixel_t weight = { d->luma, d->chroma, d->chroma, 1.0f };
 
   const int devid = piece->pipe->devid;
   cl_mem dev_U2 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * width * height);

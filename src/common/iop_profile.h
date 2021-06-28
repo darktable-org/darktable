@@ -241,7 +241,7 @@ static inline float eval_exp(const float coeff[3], const float x)
   aligned(lut:64) \
   uniform(rgb_in, rgb_out, unbounded_coeffs, lut)
 #endif
-static inline void _apply_trc(const float rgb_in[3], float rgb_out[3],
+static inline void _apply_trc(const dt_aligned_pixel_t rgb_in, dt_aligned_pixel_t rgb_out,
                               float *const lut[3],
                               const float unbounded_coeffs[3][3],
                               const int lutsize)
@@ -260,7 +260,7 @@ static inline void _apply_trc(const float rgb_in[3], float rgb_out[3],
   aligned(xyz, rgb, matrix:16) \
   uniform(xyz, rgb, matrix)
 #endif
-static inline void _ioppr_linear_rgb_matrix_to_xyz(const float rgb[4], float xyz[4],
+static inline void _ioppr_linear_rgb_matrix_to_xyz(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t xyz,
                                                    const float matrix[9])
 {
   for(size_t c = 0; c < 3; c++) xyz[c] = 0.0f;
@@ -276,7 +276,7 @@ static inline void _ioppr_linear_rgb_matrix_to_xyz(const float rgb[4], float xyz
   aligned(xyz, rgb, matrix:16) \
   uniform(xyz, rgb, matrix)
 #endif
-static inline void _ioppr_xyz_to_linear_rgb_matrix(const float xyz[4], float rgb[4],
+static inline void _ioppr_xyz_to_linear_rgb_matrix(const dt_aligned_pixel_t xyz, dt_aligned_pixel_t rgb,
                                                    const float matrix[9])
 {
   for(size_t c = 0; c < 3; c++) rgb[c] = 0.0f;
@@ -293,7 +293,7 @@ static inline void _ioppr_xyz_to_linear_rgb_matrix(const float xyz[4], float rgb
   aligned(lut_in:64) \
   uniform(rgb, matrix_in, lut_in, unbounded_coeffs_in)
 #endif
-static inline float dt_ioppr_get_rgb_matrix_luminance(const float rgb[4],
+static inline float dt_ioppr_get_rgb_matrix_luminance(const dt_aligned_pixel_t rgb,
                                                       const float matrix_in[9], float *const lut_in[3],
                                                       const float unbounded_coeffs_in[3][3],
                                                       const int lutsize, const int nonlinearlut)

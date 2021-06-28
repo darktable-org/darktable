@@ -1092,7 +1092,7 @@ error:
   g_free(utf8);
 }
 
-void rgb2hsl(const float rgb[3], float *h, float *s, float *l)
+void rgb2hsl(const dt_aligned_pixel_t rgb, float *h, float *s, float *l)
 {
   const float r = rgb[0], g = rgb[1], b = rgb[2];
   const float pmax = fmaxf(r, fmax(g, b));
@@ -1136,7 +1136,7 @@ static inline float hue2rgb(float m1, float m2, float hue)
     return hue < 4.0f ? (m1 + (m2 - m1) * (4.0f - hue)) : m1;
 }
 
-void hsl2rgb(float rgb[3], float h, float s, float l)
+void hsl2rgb(dt_aligned_pixel_t rgb, float h, float s, float l)
 {
   float m1, m2;
   if(s == 0)
@@ -2172,7 +2172,8 @@ int dt_colorspaces_conversion_matrices_rgb(const char *name,
   return TRUE;
 }
 
-void dt_colorspaces_cygm_apply_coeffs_to_rgb(float *out, const float *in, int num, double RGB_to_CAM[4][3], double CAM_to_RGB[3][4], float coeffs[4])
+void dt_colorspaces_cygm_apply_coeffs_to_rgb(float *out, const float *in, int num, double RGB_to_CAM[4][3],
+                                             double CAM_to_RGB[3][4], dt_aligned_pixel_t coeffs)
 {
   // Create the CAM to RGB with applied WB matrix
   double CAM_to_RGB_WB[3][4];

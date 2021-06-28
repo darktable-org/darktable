@@ -47,7 +47,7 @@ const float DT_ALIGNED_ARRAY Bradford_LMS_to_XYZ[3][4] = { {  0.9870f, -0.1471f,
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ, LMS:16)
 #endif
-static inline void convert_XYZ_to_bradford_LMS(const float XYZ[4], float LMS[4])
+static inline void convert_XYZ_to_bradford_LMS(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t LMS)
 {
   // Warning : needs XYZ normalized with Y - you need to downscale before
   dot_product(XYZ, XYZ_to_Bradford_LMS, LMS);
@@ -56,7 +56,7 @@ static inline void convert_XYZ_to_bradford_LMS(const float XYZ[4], float LMS[4])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ, LMS:16)
 #endif
-static inline void convert_bradford_LMS_to_XYZ(const float LMS[4], float XYZ[4])
+static inline void convert_bradford_LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t XYZ)
 {
   // Warning : output XYZ normalized with Y - you need to upscale later
   dot_product(LMS, Bradford_LMS_to_XYZ, XYZ);
@@ -77,7 +77,7 @@ const float DT_ALIGNED_ARRAY CAT16_LMS_to_XYZ[3][4] = { {  1.862068f, -1.011255f
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ, LMS:16)
 #endif
-static inline void convert_XYZ_to_CAT16_LMS(const float XYZ[4], float LMS[4])
+static inline void convert_XYZ_to_CAT16_LMS(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t LMS)
 {
   // Warning : needs XYZ normalized with Y - you need to downscale before
   dot_product(XYZ, XYZ_to_CAT16_LMS, LMS);
@@ -86,7 +86,7 @@ static inline void convert_XYZ_to_CAT16_LMS(const float XYZ[4], float LMS[4])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ, LMS:16)
 #endif
-static inline void convert_CAT16_LMS_to_XYZ(const float LMS[4], float XYZ[4])
+static inline void convert_CAT16_LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t XYZ)
 {
   // Warning : output XYZ normalized with Y - you need to upscale later
   dot_product(LMS, CAT16_LMS_to_XYZ, XYZ);
@@ -96,7 +96,8 @@ static inline void convert_CAT16_LMS_to_XYZ(const float LMS[4], float XYZ[4])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ, LMS:16) uniform(kind)
 #endif
-static inline void convert_any_LMS_to_XYZ(const float LMS[4], float XYZ[4], const dt_adaptation_t kind)
+static inline void convert_any_LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t XYZ,
+                                          const dt_adaptation_t kind)
 {
   // helper function switching internally to the proper conversion
 
@@ -130,7 +131,7 @@ static inline void convert_any_LMS_to_XYZ(const float LMS[4], float XYZ[4], cons
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ, LMS:16) uniform(kind)
 #endif
-static inline void convert_any_XYZ_to_LMS(const float XYZ[4], float LMS[4], dt_adaptation_t kind)
+static inline void convert_any_XYZ_to_LMS(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t LMS, dt_adaptation_t kind)
 {
   // helper function switching internally to the proper conversion
 
@@ -164,7 +165,7 @@ static inline void convert_any_XYZ_to_LMS(const float XYZ[4], float LMS[4], dt_a
 #ifdef _OPENMP
 #pragma omp declare simd aligned(RGB, LMS:16) uniform(kind)
 #endif
-static inline void convert_any_LMS_to_RGB(const float LMS[4], float RGB[4], dt_adaptation_t kind)
+static inline void convert_any_LMS_to_RGB(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t RGB, dt_adaptation_t kind)
 {
   // helper function switching internally to the proper conversion
   dt_aligned_pixel_t XYZ = { 0.f };
@@ -372,7 +373,7 @@ const float DT_ALIGNED_ARRAY XYZ_D65_to_D50_Bradford[3][4]
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ_in, XYZ_out:16)
 #endif
-static inline void XYZ_D50_to_D65(const float XYZ_in[4], float XYZ_out[4])
+static inline void XYZ_D50_to_D65(const dt_aligned_pixel_t XYZ_in, dt_aligned_pixel_t XYZ_out)
 {
   dot_product(XYZ_in, XYZ_D50_to_D65_CAT16, XYZ_out);
 }
@@ -380,7 +381,7 @@ static inline void XYZ_D50_to_D65(const float XYZ_in[4], float XYZ_out[4])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ_in, XYZ_out:16)
 #endif
-static inline void XYZ_D65_to_D50(const float XYZ_in[4], float XYZ_out[4])
+static inline void XYZ_D65_to_D50(const dt_aligned_pixel_t XYZ_in, dt_aligned_pixel_t XYZ_out)
 {
   dot_product(XYZ_in, XYZ_D65_to_D50_CAT16, XYZ_out);
 }

@@ -42,7 +42,7 @@
   telling a) we want a DM and b) we want it from either demosaic or from rawprepare.
   If such a flag has not been previously set we will force a pipeline reprocessing.
   
-  gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode, const float wb[3]);
+  gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode, const dt_aligned_pixel_t wb);
   or it's _cl equivalent write a preliminary mask holding signal-change values for every pixel.
   These mask values are calculated as
   a) get Y0 for every pixel
@@ -188,7 +188,8 @@ void dt_masks_blur_9x9(float *const restrict src, float *const restrict out, con
   dt_masks_extend_border(out, width, height, 4);
 }
 
-void dt_masks_calc_rawdetail_mask(float *const restrict src, float *const restrict mask, float *const restrict tmp, const int width, const int height, const float wb[3])
+void dt_masks_calc_rawdetail_mask(float *const restrict src, float *const restrict mask, float *const restrict tmp,
+                                  const int width, const int height, const dt_aligned_pixel_t wb)
 {
   const int msize = width * height;
 #ifdef _OPENMP

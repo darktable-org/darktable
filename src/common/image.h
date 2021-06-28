@@ -244,7 +244,7 @@ typedef struct dt_image_t
   float pixel_aspect_ratio;
 
   /* White balance coeffs from the raw */
-  float wb_coeffs[4];
+  dt_aligned_pixel_t wb_coeffs;
 
   /* DefaultUserCrop */
   float usercrop[4];

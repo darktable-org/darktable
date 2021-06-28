@@ -24,6 +24,7 @@
 #ifdef __SSE__
 #include <xmmintrin.h>
 #endif
+#include "common/darktable.h"
 
 // work around missing standard math.h symbols
 /** ln(10) */
@@ -190,7 +191,7 @@ static inline float scalar_product(const float v_1[4], const float v_2[4])
 #ifdef _OPENMP
 #pragma omp declare simd uniform(M) aligned(M:64) aligned(v_in, v_out:16)
 #endif
-static inline void dot_product(const float v_in[4], const float M[3][4], float v_out[4])
+static inline void dot_product(const dt_aligned_pixel_t v_in, const float M[3][4], dt_aligned_pixel_t v_out)
 {
   // specialized 3×4 dot products of 4×1 RGB-alpha pixels
   #ifdef _OPENMP
