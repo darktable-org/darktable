@@ -1062,7 +1062,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             else if(hm[d] > hm[d + 4])
               hm[d + 4] = 0;
           }
-          float avg[4] = { 0.0f };
+          dt_aligned_pixel_t avg = { 0.0f };
           for(int d = 0; d < ndir; d++)
           {
             if(hm[d] >= maxval)
@@ -2135,7 +2135,7 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
               hm[d + 4] = 0;
           }
 
-          float avg[4] = { 0.f };
+          dt_aligned_pixel_t avg = { 0.f };
           for(int d = 0; d < ndir; d++)
           {
             if(hm[d] >= maxval)
@@ -2221,7 +2221,7 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
   for(int row = 0; row < roi_out->height; row++)
     for(int col = 0; col < roi_out->width; col++)
     {
-      float sum[4] = { 0.0f };
+      dt_aligned_pixel_t sum = { 0.0f };
       uint8_t count[4] = { 0 };
       if(col == 1 && row >= 1 && row < roi_out->height - 1) col = roi_out->width - 1;
       // average all the adjoining pixels inside image by color
@@ -2301,7 +2301,7 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
     const float *buf_in = in + roi_in->width * row + 1;
     for(int col = 1; col < roi_out->width - 1; col++)
     {
-      float sum[4] = { 0.0f };
+      dt_aligned_pixel_t sum = { 0.0f };
       int *ip = &(lookup[row % size][col % size][0]);
       // for each adjoining pixel not of this pixel's color, sum up its weighted values
       for(int i = *ip++; i--; ip += 3) sum[ip[2]] += buf_in[ip[0]] * ip[1];
@@ -2461,7 +2461,7 @@ static void vng_interpolate(float *out, const float *const in,
         continue;
       }
       const float thold = gmin + (gmax * 0.5f);
-      float sum[4] = { 0.0f };
+      dt_aligned_pixel_t sum = { 0.0f };
       const int color = fcol(row + roi_in->y, col + roi_in->x, filters4, xtrans);
       int num = 0;
       for(g = 0; g < 8; g++, ip += 2) /* Average the neighbors */
@@ -2650,7 +2650,7 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
     for(int i = 3; i < roi_out->width - 3; i++)
     {
       const int c = FC(j, i, filters);
-      float color[4];
+      dt_aligned_pixel_t color;
       const float pc = buf_in[0];
       // if(__builtin_expect(c == 0 || c == 2, 1))
       if(c == 0 || c == 2)

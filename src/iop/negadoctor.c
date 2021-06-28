@@ -107,9 +107,9 @@ typedef struct dt_iop_negadoctor_params_t
 
 typedef struct dt_iop_negadoctor_data_t
 {
-  float DT_ALIGNED_PIXEL Dmin[4];         // color of film substrate
-  float DT_ALIGNED_PIXEL wb_high[4];      // white balance RGB coeffs / Dmax
-  float DT_ALIGNED_PIXEL offset[4];       // inversion offset
+  dt_aligned_pixel_t Dmin;                // color of film substrate
+  dt_aligned_pixel_t wb_high;             // white balance RGB coeffs / Dmax
+  dt_aligned_pixel_t offset;              // inversion offset
   float black;                            // display black level
   float gamma;                            // display gamma
   float soft_clip;                        // highlights roll-off
@@ -184,9 +184,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     typedef struct dt_iop_negadoctor_params_v1_t
     {
       dt_iop_negadoctor_filmstock_t film_stock;
-      float DT_ALIGNED_PIXEL Dmin[4];         // color of film substrate
-      float DT_ALIGNED_PIXEL wb_high[4];      // white balance RGB coeffs (illuminant)
-      float DT_ALIGNED_PIXEL wb_low[4];       // white balance RGB offsets (base light)
+      dt_aligned_pixel_t Dmin;                // color of film substrate
+      dt_aligned_pixel_t wb_high;             // white balance RGB coeffs (illuminant)
+      dt_aligned_pixel_t wb_low;              // white balance RGB offsets (base light)
       float D_max;                            // max density of film
       float offset;                           // inversion offset
       float black;                            // display black level

@@ -873,7 +873,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
       const dt_iop_order_iccprofile_info_t *const work_profile
           = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
 
-      float DT_ALIGNED_PIXEL picker_mean[4], picker_min[4], picker_max[4];
+      dt_aligned_pixel_t picker_mean, picker_min, picker_max;
 
       // the global live samples ...
       GSList *samples = darktable.lib->proxy.colorpicker.live_samples;

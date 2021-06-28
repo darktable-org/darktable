@@ -317,7 +317,7 @@ static inline void interpolate_color_xtrans(const void *const ivoid, void *const
                           { 1,  0, -3},
                           { 2,  3,  0}};
   // record ratios of color transitions 0:unused, 1:RG, 2:RB, and 3:GB
-  float ratios[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  dt_aligned_pixel_t ratios = {1.0f, 1.0f, 1.0f, 1.0f};
 
   // passes are 0:+x, 1:-x, 2:+y, 3:-y
   // dims are 0:traverse a row, 1:traverse a column

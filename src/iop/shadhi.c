@@ -331,8 +331,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(data->shadhi_algo == SHADHI_ALGO_GAUSSIAN)
   {
-    float Labmax[4] = { 100.0f, 128.0f, 128.0f, 1.0f };
-    float Labmin[4] = { 0.0f, -128.0f, -128.0f, 0.0f };
+    dt_aligned_pixel_t Labmax = { 100.0f, 128.0f, 128.0f, 1.0f };
+    dt_aligned_pixel_t Labmin = { 0.0f, -128.0f, -128.0f, 0.0f };
 
     if(unbound_mask)
     {
@@ -501,8 +501,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(d->shadhi_algo == SHADHI_ALGO_GAUSSIAN)
   {
-    float Labmax[4] = { 100.0f, 128.0f, 128.0f, 1.0f };
-    float Labmin[4] = { 0.0f, -128.0f, -128.0f, 0.0f };
+    dt_aligned_pixel_t Labmax = { 100.0f, 128.0f, 128.0f, 1.0f };
+    dt_aligned_pixel_t Labmin = { 0.0f, -128.0f, -128.0f, 0.0f };
 
     if(unbound_mask)
     {
