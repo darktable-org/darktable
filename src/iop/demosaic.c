@@ -5347,7 +5347,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     else
       tiling->factor += smooth;                        // + smooth
     tiling->maxbuf = 1.0f;
-    tiling->factor += 5;
+    tiling->overhead = sizeof(float) * LMMSE_GRP * LMMSE_GRP * 6 * MAX(1, darktable.num_openmp_threads);
     tiling->xalign = 2;
     tiling->yalign = 2;
     tiling->overlap = 10;
@@ -5380,6 +5380,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   }
   return;
 }
+#undef RCD_TILESIZE
+#undef LMMSE_GRP
 
 void init_global(dt_iop_module_so_t *module)
 {
@@ -5569,7 +5571,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
       break;
     case DT_IOP_DEMOSAIC_LMMSE:
       piece->process_cl_ready = 0;
-      piece->process_tiling_ready = 0;
       break;
     case DT_IOP_DEMOSAIC_RCD_VNG:
       piece->process_cl_ready = 1;

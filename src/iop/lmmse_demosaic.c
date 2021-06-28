@@ -44,17 +44,19 @@
    As the borders are calculated with reduced precision due to the algo there is an overlapping
    area which is not used for the internal tiles. 
 */
+#ifndef LMMSE_GRP
+  #define LMMSE_GRP 136
+#endif
 
 #ifdef __GNUC__
   #pragma GCC push_options
   #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "no-math-errno")
 #endif
 
-#define LMMSE_TILESIZE 128
 #define LMMSE_OVERLAP 8
 #define BORDER_AROUND 4
+#define LMMSE_TILESIZE (LMMSE_GRP - 2 * BORDER_AROUND)
 #define LMMSE_TILEVALID (LMMSE_TILESIZE - 2 * LMMSE_OVERLAP)
-#define LMMSE_GRP (LMMSE_TILESIZE + 2 * BORDER_AROUND)
 #define w1 (LMMSE_GRP)
 #define w2 (LMMSE_GRP * 2)
 #define w3 (LMMSE_GRP * 3)
@@ -601,7 +603,6 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
 #undef LMMSE_OVERLAP
 #undef BORDER_AROUND
 #undef LMMSE_TILEVALID
-#undef LMMSE_GRP
 #undef w1
 #undef w2
 #undef w3
