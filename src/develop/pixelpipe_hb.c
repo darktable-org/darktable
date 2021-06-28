@@ -672,7 +672,7 @@ static void pixelpipe_picker(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     return;
   }
 
-  float min[4] DT_ALIGNED_PIXEL, max[4] DT_ALIGNED_PIXEL, avg[4] DT_ALIGNED_PIXEL;
+  dt_aligned_pixel_t min, max, avg;
   for(int k = 0; k < 4; k++)
   {
     min[k] = INFINITY;
@@ -757,7 +757,7 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_dev_pixel
   box[2] = region[0];
   box[3] = region[1];
 
-  float min[4] DT_ALIGNED_PIXEL, max[4] DT_ALIGNED_PIXEL, avg[4] DT_ALIGNED_PIXEL;
+  dt_aligned_pixel_t min, max, avg;
   for(int k = 0; k < 4; k++)
   {
     min[k] = INFINITY;

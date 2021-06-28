@@ -195,9 +195,9 @@ typedef struct dt_iop_colorreconstruct_bilateral_t
 
 static inline float hue_conversion(const float HSL_Hue)
 {
-  float DT_ALIGNED_PIXEL rgb[4] = { 0 };
-  float DT_ALIGNED_PIXEL XYZ[4] = { 0 };
-  float DT_ALIGNED_PIXEL Lab[4] = { 0 };
+  dt_aligned_pixel_t rgb = { 0 };
+  dt_aligned_pixel_t XYZ = { 0 };
+  dt_aligned_pixel_t Lab = { 0 };
 
   hsl2rgb(rgb, HSL_Hue, 1.0f, 0.5f);
 

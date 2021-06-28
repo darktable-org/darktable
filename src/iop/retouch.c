@@ -2806,7 +2806,7 @@ static void image_rgb2lab(float *img_src, const int width, const int height, con
 #endif
   for(int i = 0; i < stride; i += ch)
   {
-    float DT_ALIGNED_PIXEL XYZ[4];
+    dt_aligned_pixel_t XYZ;
 
     dt_linearRGB_to_XYZ(img_src + i, XYZ);
     dt_XYZ_to_Lab(XYZ, img_src + i);
@@ -2847,7 +2847,7 @@ static void image_lab2rgb(float *img_src, const int width, const int height, con
 #endif
   for(int i = 0; i < stride; i += ch)
   {
-    float DT_ALIGNED_PIXEL XYZ[4];
+    dt_aligned_pixel_t XYZ;
 
     dt_Lab_to_XYZ(img_src + i, XYZ);
     dt_XYZ_to_linearRGB(XYZ, img_src + i);
@@ -2933,7 +2933,7 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
     }
     else
     {
-      float DT_ALIGNED_PIXEL XYZ[4];
+      dt_aligned_pixel_t XYZ;
 
       dt_linearRGB_to_XYZ(img_src + i, XYZ);
       dt_XYZ_to_Lab(XYZ, img_src + i);
@@ -2962,7 +2962,7 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
     }
     else
     {
-      float DT_ALIGNED_PIXEL XYZ[4];
+      dt_aligned_pixel_t XYZ;
 
       dt_Lab_to_XYZ(img_src + i, XYZ);
       dt_XYZ_to_linearRGB(XYZ, img_src + i);
