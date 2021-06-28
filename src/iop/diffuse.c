@@ -58,10 +58,10 @@ typedef struct dt_iop_diffuse_params_t
   float regularization;     // $MIN: 0. $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "edge sensitivity"
   float variance_threshold; // $MIN: -2. $MAX: 2.   $DEFAULT: 0. $DESCRIPTION: "edge threshold"
 
-  float anisotropy_first;         // $MIN: -5. $MAX: 5.   $DEFAULT: 0. $DESCRIPTION: "1st order anisotropy"
-  float anisotropy_second;        // $MIN: -5. $MAX: 5.   $DEFAULT: 0. $DESCRIPTION: "2nd order anisotropy"
-  float anisotropy_third;         // $MIN: -5. $MAX: 5.   $DEFAULT: 0. $DESCRIPTION: "3rd order anisotropy"
-  float anisotropy_fourth;        // $MIN: -5. $MAX: 5.   $DEFAULT: 0. $DESCRIPTION: "4th order anisotropy"
+  float anisotropy_first;         // $MIN: -10. $MAX: 10.   $DEFAULT: 0. $DESCRIPTION: "1st order anisotropy"
+  float anisotropy_second;        // $MIN: -10. $MAX: 10.   $DEFAULT: 0. $DESCRIPTION: "2nd order anisotropy"
+  float anisotropy_third;         // $MIN: -10. $MAX: 10.   $DEFAULT: 0. $DESCRIPTION: "3rd order anisotropy"
+  float anisotropy_fourth;        // $MIN: -10. $MAX: 10.   $DEFAULT: 0. $DESCRIPTION: "4th order anisotropy"
 
   float threshold; // $MIN: 0.  $MAX: 8.   $DEFAULT: 0. $DESCRIPTION: "luminance masking threshold"
 
@@ -158,48 +158,48 @@ void init_presets(dt_iop_module_so_t *self)
   p.threshold = 0.0f;
   p.variance_threshold = 0.f;
 
-  p.anisotropy_first = -4.f;
-  p.anisotropy_second = +4.f;
-  p.anisotropy_third = +4.f;
-  p.anisotropy_fourth = -4.f;
+  p.anisotropy_first = -5.f;
+  p.anisotropy_second = +5.f;
+  p.anisotropy_third = -5.f;
+  p.anisotropy_fourth = +2.f;
 
   p.first = -0.5f;
-  p.second = +0.3333f;
-  p.third = -0.1f;
-  p.fourth = +0.1f;
+  p.second = +0.25f;
+  p.third = -0.25f;
+  p.fourth = -0.05f;
 
-  p.regularization = 2.f;
+  p.regularization = 1.f;
 
-  p.iterations = 8;
+  p.iterations = 4;
   p.radius = 8;
   dt_gui_presets_add_generic(_("lens deblur: soft"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  p.iterations = 12;
+  p.iterations = 6;
   p.radius = 12;
   dt_gui_presets_add_generic(_("lens deblur: medium"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  p.iterations = 16;
+  p.iterations = 8;
   p.radius = 16;
   dt_gui_presets_add_generic(_("lens deblur: hard"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  p.iterations = 20;
+  p.iterations = 10;
   p.radius = 512;
   p.sharpness = 0.f;
   p.variance_threshold = 0.0f;
   p.regularization = 2.f;
 
-  p.first = -0.10f;
-  p.second = +0.2f;
-  p.third = -0.10f;
-  p.fourth = +0.02f;
+  p.first = -0.30f;
+  p.second = +0.15f;
+  p.third = -0.20f;
+  p.fourth = +0.10f;
 
   p.anisotropy_first = 2.f;
-  p.anisotropy_second = 2.f;
+  p.anisotropy_second = 4.f;
   p.anisotropy_third = 2.f;
-  p.anisotropy_fourth = 2.f;
+  p.anisotropy_fourth = 4.f;
 
   dt_gui_presets_add_generic(_("dehaze"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
@@ -211,16 +211,34 @@ void init_presets(dt_iop_module_so_t *self)
   p.variance_threshold = -0.25f;
   p.regularization = 4.f;
 
-  p.anisotropy_first = +4.f;
-  p.anisotropy_second = +4.f;
-  p.anisotropy_third = +4.f;
-  p.anisotropy_fourth = +4.f;
+  p.anisotropy_first = -5.f;
+  p.anisotropy_second = +5.f;
+  p.anisotropy_third = -5.f;
+  p.anisotropy_fourth = +5.f;
 
   p.first = -0.25f;
   p.second = +0.50f;
   p.third = -0.05f;
   p.fourth = +0.10f;
-  dt_gui_presets_add_generic(_("denoise"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("denoise: soft"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.iterations = 100;
+  p.radius = 8;
+  p.sharpness = 0.f;
+  p.threshold = 0.f;
+  p.variance_threshold = -0.25f;
+  p.regularization = 1.f;
+
+  p.anisotropy_first = 0.f;
+  p.anisotropy_second = 0.f;
+  p.anisotropy_third = 0.f;
+  p.anisotropy_fourth = +5.f;
+
+  p.first = -0.02f;
+  p.second = 0.0f;
+  p.third = 0.0 f;
+  p.fourth = +0.05f;
+  dt_gui_presets_add_generic(_("denoise: soft"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 2;
   p.radius = 32;
@@ -264,12 +282,12 @@ void init_presets(dt_iop_module_so_t *self)
   p.sharpness = 0.0f;
   p.threshold = 0.0f;
   p.variance_threshold = 0.f;
-  p.regularization = 2.f;
+  p.regularization = 0.f;
 
-  p.anisotropy_first = +4.f;
-  p.anisotropy_second = +4.f;
-  p.anisotropy_third = +4.f;
-  p.anisotropy_fourth = +4.f;
+  p.anisotropy_first = +5.f;
+  p.anisotropy_second = +5.f;
+  p.anisotropy_third = +5.f;
+  p.anisotropy_fourth = +5.f;
 
   p.first = -0.5f;
   p.second = -0.5f;
@@ -338,6 +356,25 @@ void init_presets(dt_iop_module_so_t *self)
   p.regularization = 3.5f;
   dt_gui_presets_add_generic(_("add local contrast"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.iterations = 32;
+  p.radius = 4;
+  p.sharpness = 0.0f;
+  p.threshold = 1.41f;
+  p.variance_threshold = 0.f;
+  p.regularization = 0.f;
+
+  p.anisotropy_first = +0.f;
+  p.anisotropy_second = +0.f;
+  p.anisotropy_third = +2.f;
+  p.anisotropy_fourth = +2.f;
+
+  p.first = +0.0f;
+  p.second = +0.0f;
+  p.third = +0.02f;
+  p.fourth = +0.02f;
+  dt_gui_presets_add_generic(_("inpaint highlights"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+
 
 }
 
@@ -713,9 +750,8 @@ static inline float compute_anisotropy_factor(const float user_param)
 {
   // compute the K param in c evaluation from https://www.researchgate.net/publication/220663968
   // but in a perceptually-even way, for better GUI interaction
-  const float normalize = expf(1.f) - 1.f;
   if(user_param == 0.f) return FLT_MAX;
-  else return expf(fabsf(1.f / user_param) - 1.f) / normalize;
+  else return 1.f / sqf(user_param);
 }
 
 #if DEBUG_DUMP_PFM
@@ -1016,11 +1052,17 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
           compute_anisotropy_factor(data->anisotropy_third),
           compute_anisotropy_factor(data->anisotropy_fourth) };
 
+  fprintf(stdout, "anisotropy : %f ; %f ; %f ; %f \n",
+                  anisotropy[0], anisotropy[1], anisotropy[2], anisotropy[3]);
+
   const dt_isotropy_t DT_ALIGNED_PIXEL isotropy_type[4]
       = { check_isotropy_mode(data->anisotropy_first),
           check_isotropy_mode(data->anisotropy_second),
           check_isotropy_mode(data->anisotropy_third),
           check_isotropy_mode(data->anisotropy_fourth) };
+
+  fprintf(stdout, "type : %d ; %d ; %d ; %d \n",
+                  isotropy_type[0], isotropy_type[1], isotropy_type[2], isotropy_type[3]);
 
   float regularization = powf(10.f, data->regularization) - 1.f;
   float variance_threshold = powf(10.f, data->variance_threshold);
