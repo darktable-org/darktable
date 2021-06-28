@@ -378,7 +378,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
   for(size_t j = 0; j < (size_t)width * height * ch; j += ch)
   {
-    float ta[3], tb[3];
+    dt_aligned_pixel_t ta, tb;
     _Lab_scale(&in[j], ta);
     // invert and desaturate the blurred output pixel
     out[j + 0] = 100.0f - out[j + 0];

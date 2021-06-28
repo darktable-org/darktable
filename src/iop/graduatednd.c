@@ -429,7 +429,7 @@ static int set_points_from_grad(struct dt_iop_module_t *self, float *xa, float *
 
 static inline void update_saturation_slider_end_color(GtkWidget *slider, float hue)
 {
-  float rgb[3];
+  dt_aligned_pixel_t rgb;
   hsl2rgb(rgb, hue, 1.0, 0.5);
   dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
 }

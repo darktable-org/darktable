@@ -607,7 +607,7 @@ static void process_lch_bayer(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
             H *= ratio;
           }
 
-          float RGB[3] = { 0.0f, 0.0f, 0.0f };
+          dt_aligned_pixel_t RGB = { 0.0f, 0.0f, 0.0f };
 
           /*
            * backtransform proof, sage:
@@ -708,9 +708,9 @@ static void process_lch_xtrans(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 
         if(clipped)
         {
-          float mean[3] = { 0.0f, 0.0f, 0.0f };
+          dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f };
+          dt_aligned_pixel_t RGBmax = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
           int cnt[3] = { 0, 0, 0 };
-          float RGBmax[3] = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
           for(int jj = -1; jj <= 1; jj++)
           {
@@ -747,7 +747,7 @@ static void process_lch_xtrans(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
             H *= ratio;
           }
 
-          float RGB[3] = { 0.0f, 0.0f, 0.0f };
+          dt_aligned_pixel_t RGB = { 0.0f, 0.0f, 0.0f };
 
           RGB[0] = L - H / 6.0f + C / SQRT12;
           RGB[1] = L - H / 6.0f - C / SQRT12;

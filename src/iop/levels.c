@@ -190,7 +190,7 @@ static void dt_iop_levels_compute_levels_automatic(dt_dev_pixelpipe_iop_t *piece
 
   uint32_t total = piece->histogram_stats.pixels;
 
-  float thr[3];
+  dt_aligned_pixel_t thr;
   for(int k = 0; k < 3; k++)
   {
     thr[k] = (float)total * d->percentiles[k] / 100.0f;
@@ -256,7 +256,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
      && self->picked_color_max[0] >= 0.0f
      && mean_picked_color != c->last_picked_color)
   {
-    float previous_color[3];
+    dt_aligned_pixel_t previous_color;
     previous_color[0] = p->levels[0];
     previous_color[1] = p->levels[1];
     previous_color[2] = p->levels[2];

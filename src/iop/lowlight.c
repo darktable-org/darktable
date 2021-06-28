@@ -129,8 +129,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float threshold = 0.01f;
 
   // scotopic white, blue saturated
-  float Lab_sw[3] = { 100.0f, 0, -d->blueness };
-  float XYZ_sw[3];
+  dt_aligned_pixel_t Lab_sw = { 100.0f, 0, -d->blueness };
+  dt_aligned_pixel_t XYZ_sw;
 
   dt_Lab_to_XYZ(Lab_sw, XYZ_sw);
 
@@ -197,8 +197,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_out->height;
 
   // scotopic white, blue saturated
-  float Lab_sw[3] = { 100.0f, 0.0f, -d->blueness };
-  float XYZ_sw[4];
+  dt_aligned_pixel_t Lab_sw = { 100.0f, 0.0f, -d->blueness };
+  dt_aligned_pixel_t XYZ_sw;
 
   dt_Lab_to_XYZ(Lab_sw, XYZ_sw);
 

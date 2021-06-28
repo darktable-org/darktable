@@ -217,7 +217,7 @@ void correct_pixel_trilinear(const float *const in, float *const out,
 
     int rgbi[3], i, j;
     float tmp[6];
-    float rgbd[3];
+    dt_aligned_pixel_t rgbd;
 
     for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
 
@@ -294,7 +294,7 @@ void correct_pixel_tetrahedral(const float *const in, float *const out,
     float *const output = ((float *const)out) + k;
 
     int rgbi[3];
-    float rgbd[3];
+    dt_aligned_pixel_t rgbd;
     for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
 
     rgbd[0] = input[0] * (float)(level - 1);
@@ -382,7 +382,7 @@ void correct_pixel_pyramid(const float *const in, float *const out,
     float *const output = ((float *const)out) + k;
 
     int rgbi[3];
-    float rgbd[3];
+    dt_aligned_pixel_t rgbd;
     for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
 
     rgbd[0] = input[0] * (float)(level - 1);

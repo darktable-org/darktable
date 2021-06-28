@@ -2144,7 +2144,7 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
               avg[3]++;
             }
           }
-          float rgbpix[3];
+          dt_aligned_pixel_t rgbpix;
           for(int c = 0; c < 3; c++) rgbpix[c] = avg[c] / avg[3];
           // preserve all components of Markesteijn for this pixel
           const float y = 0.2627f * rgbpix[0] + 0.6780f * rgbpix[1] + 0.0593f * rgbpix[2];
@@ -2716,7 +2716,7 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
     {
       // also prefetch direct nbs top/bottom
       const int c = FC(j, i, filters);
-      float color[4] = { buf[0], buf[1], buf[2], buf[3] };
+      dt_aligned_pixel_t color = { buf[0], buf[1], buf[2], buf[3] };
 
       // fill all four pixels with correctly interpolated stuff: r/b for green1/2
       // b for r and r for b
