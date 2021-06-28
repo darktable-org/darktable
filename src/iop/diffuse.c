@@ -236,9 +236,9 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.first = -0.02f;
   p.second = 0.0f;
-  p.third = 0.0 f;
+  p.third = 0.0f;
   p.fourth = +0.05f;
-  dt_gui_presets_add_generic(_("denoise: soft"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("denoise: hard (slow)"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 2;
   p.radius = 32;
@@ -1052,8 +1052,10 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
           compute_anisotropy_factor(data->anisotropy_third),
           compute_anisotropy_factor(data->anisotropy_fourth) };
 
+  /*
   fprintf(stdout, "anisotropy : %f ; %f ; %f ; %f \n",
                   anisotropy[0], anisotropy[1], anisotropy[2], anisotropy[3]);
+  */
 
   const dt_isotropy_t DT_ALIGNED_PIXEL isotropy_type[4]
       = { check_isotropy_mode(data->anisotropy_first),
@@ -1061,8 +1063,10 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
           check_isotropy_mode(data->anisotropy_third),
           check_isotropy_mode(data->anisotropy_fourth) };
 
+  /*
   fprintf(stdout, "type : %d ; %d ; %d ; %d \n",
                   isotropy_type[0], isotropy_type[1], isotropy_type[2], isotropy_type[3]);
+  */
 
   float regularization = powf(10.f, data->regularization) - 1.f;
   float variance_threshold = powf(10.f, data->variance_threshold);
