@@ -215,7 +215,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
         // nearest neighbour splatting:
         const size_t grid_index = base + image_to_relgrid(b, i, L, &xf, &zf);
         // sum up payload here
-        const float contrib[4] =
+        const dt_aligned_pixel_t contrib =
         {
           (1.0f - xf) * (1.0f - yf) * 100.0f / sigma_s,	// precompute the contributions along the first two dimensions
           xf * (1.0f - yf) * 100.0f / sigma_s,
