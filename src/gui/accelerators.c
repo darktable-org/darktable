@@ -638,7 +638,9 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
   {
     dt_shortcut_t *s = g_sequence_get(iter);
     if(s->action == action &&
-       (s->element == darktable.control->element || (s->element == DT_ACTION_ELEMENT_DEFAULT && has_fallbacks)))
+       (darktable.control->element == -1 ||
+        s->element == darktable.control->element ||
+        (s->element == DT_ACTION_ELEMENT_DEFAULT && has_fallbacks)))
     {
       gchar *desc_escaped = g_markup_escape_text(_shortcut_description(s, TRUE), -1);
       description = dt_util_dstrcat(description, "%s<span style='italic' foreground='red'>%s</span>",
@@ -1538,7 +1540,7 @@ static void _resize_shortcuts_view(GtkWidget *view, GdkRectangle *allocation, gp
 GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
 {
   _selected_action = g_hash_table_lookup(darktable.control->widgets, widget);
-  darktable.control->element = 0;
+  darktable.control->element = -1;
 
   GtkWidget *container = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
 
