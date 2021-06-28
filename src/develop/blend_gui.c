@@ -1474,9 +1474,9 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
     dt_develop_blend_params_t *bp = module->blend_params;
 
     const int tab = data->tab;
-    float raw_min[4] DT_ALIGNED_PIXEL, raw_max[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t raw_min, raw_max;
     float picker_min[8] DT_ALIGNED_PIXEL, picker_max[8] DT_ALIGNED_PIXEL;
-    float picker_values[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t picker_values;
 
     const int in_out = ((dt_key_modifier_state() == GDK_CONTROL_MASK) && data->output_channels_shown) ? 1 : 0;
 

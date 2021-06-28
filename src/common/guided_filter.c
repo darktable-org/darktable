@@ -139,7 +139,7 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
     {
       size_t i = i_imgg - source.left;
       const float *pixel_ = get_color_pixel(imgg, i_imgg + (size_t)j_imgg * imgg.width);
-      float DT_ALIGNED_PIXEL pixel[4] =
+      dt_aligned_pixel_t pixel =
         { pixel_[0] * guide_weight, pixel_[1] * guide_weight, pixel_[2] * guide_weight, pixel_[3] * guide_weight };
       const float input = img.data[i_imgg + (size_t)j_imgg * img.width];
       meanpx[4*i+INP_MEAN] = input;
