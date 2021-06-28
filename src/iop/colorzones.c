@@ -397,7 +397,7 @@ void process_display(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
     float *in = (float *)ivoid + ch * k;
     float *out = (float *)ovoid + ch * k;
 
-    float LCh[3];
+    dt_aligned_pixel_t LCh;
 
     dt_Lab_2_LCH(in, LCh);
 
@@ -442,7 +442,7 @@ void process_v1(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, con
     float *in = (float *)ivoid + ch * k;
     float *out = (float *)ovoid + ch * k;
 
-    float LCh[3];
+    dt_aligned_pixel_t LCh;
 
     dt_Lab_2_LCH(in, LCh);
 
@@ -959,7 +959,7 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
 #define DT_COLORZONES_CELLSJ 36
 
 #define COLORZONES_DRAW_BACKGROUD_BOX                                                                             \
-  float Lab[3];                                                                                                   \
+  dt_aligned_pixel_t Lab;                                                                                         \
   dt_LCH_2_Lab(LCh, Lab);                                                                                         \
   const float L0 = Lab[0];                                                                                        \
   /* gamut mapping magic from iop/exposure.c: */                                                                  \
@@ -972,8 +972,8 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
   Lab[1] *= Lab[0] / L0 * clip2;                                                                                  \
   Lab[2] *= Lab[0] / L0 * clip2;                                                                                  \
                                                                                                                   \
-  float DT_ALIGNED_PIXEL xyz[4];                                                                                  \
-  float DT_ALIGNED_PIXEL rgb[4];                                                                                  \
+  dt_aligned_pixel_t xyz;                                                                                         \
+  dt_aligned_pixel_t rgb;                                                                                         \
   dt_Lab_to_XYZ(Lab, xyz);                                                                                        \
   dt_XYZ_to_sRGB(xyz, rgb);                                                                                       \
                                                                                                                   \
@@ -993,7 +993,7 @@ static void _draw_background(cairo_t *cr, dt_iop_colorzones_params_t *p, dt_iop_
   {
     for(int i = 0; i < cellsi; i++)
     {
-      float LCh[3] = { 0 };
+      dt_aligned_pixel_t LCh = { 0 };
 
       const float jj = _mouse_to_curve(1.0f - ((float)j - .5f) / (float)(cellsj - 1), c->zoom_factor, c->offset_y);
       const float jjh
@@ -1162,7 +1162,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
   // if color picker is active we use it as base color
   // otherwise we use a light blue
   // we will work on LCh
-  float picked_color[3], picker_min[3], picker_max[3];
+  dt_aligned_pixel_t picked_color, picker_min, picker_max;
   const int select_by_picker = _select_base_display_color(self, picked_color, picker_min, picker_max);
 
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
@@ -1455,7 +1455,7 @@ static gboolean _bottom_area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_i
   // if color picker is active we use it as base color
   // otherwise we use a light blue
   // we will work on LCh
-  float picked_color[3], picker_min[3], picker_max[3];
+  dt_aligned_pixel_t picked_color, picker_min, picker_max;
   _select_base_display_color(self, picked_color, picker_min, picker_max);
   const float normalize_C = (128.f * sqrtf(2.f));
 
@@ -1468,7 +1468,7 @@ static gboolean _bottom_area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_i
     const float ii = _mouse_to_curve(((float)i + .5f) / (float)(cellsi - 1), c->zoom_factor, c->offset_x);
     const float iih = _mouse_to_curve((float)i / (float)(cellsi - 1), c->zoom_factor, c->offset_x);
 
-    float LCh[3];
+    dt_aligned_pixel_t LCh;
 
     switch(p.channel)
     {

@@ -780,7 +780,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
      && self->picked_color_max[0] >= 0.0f
      && mean_picked_color != c->last_picked_color)
   {
-    float previous_color[3];
+    dt_aligned_pixel_t previous_color;
     previous_color[0] = p->levels[channel][0];
     previous_color[1] = p->levels[channel][1];
     previous_color[2] = p->levels[channel][2];
