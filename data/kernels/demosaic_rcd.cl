@@ -18,12 +18,12 @@
 
 #include "common.h"
 
-inline float sqrf(float a)
+static inline float sqrf(float a)
 {
   return (a * a);
 }
 
-inline float calcBlendFactor(float val, float threshold)
+static inline float calcBlendFactor(float val, float threshold)
 {
     // sigmoid function
     // result is in ]0;1] range

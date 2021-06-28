@@ -722,15 +722,15 @@ colorbalance_cdl (read_only image2d_t in, write_only image2d_t out, const int wi
 }
 
 
-inline float sqf(const float x)
+static inline float sqf(const float x)
 {
   return x * x;
 }
 
 
-inline float4 opacity_masks(const float x,
-                            const float shadows_weight, const float highlights_weight,
-                            const float midtones_weight, const float mask_grey_fulcrum)
+static inline float4 opacity_masks(const float x,
+                                   const float shadows_weight, const float highlights_weight,
+                                   const float midtones_weight, const float mask_grey_fulcrum)
 {
   float4 output;
   const float x_offset = (x - mask_grey_fulcrum);
@@ -750,7 +750,7 @@ inline float4 opacity_masks(const float x,
 
 #define LUT_ELEM 360 // gamut LUT number of elements: resolution of 1°
 
-inline float lookup_gamut(read_only image2d_t gamut_lut, const float x)
+static inline float lookup_gamut(read_only image2d_t gamut_lut, const float x)
 {
   // WARNING : x should be between [-pi ; pi ], which is the default output of atan2 anyway
 
@@ -787,7 +787,7 @@ inline float lookup_gamut(read_only image2d_t gamut_lut, const float x)
 }
 
 
-inline float soft_clip(const float x, const float soft_threshold, const float hard_threshold)
+static inline float soft_clip(const float x, const float soft_threshold, const float hard_threshold)
 {
   // use an exponential soft clipping above soft_threshold
   // hard threshold must be > soft threshold
