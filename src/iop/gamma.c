@@ -66,7 +66,7 @@ static inline void _write_pixel(const float *const restrict in, uint8_t *const r
                                 const float *const restrict mask_color, const float alpha)
 {
   // takes a linear RGB pixel as input
-  float pixel[4] DT_ALIGNED_PIXEL;
+  dt_aligned_pixel_t pixel;
 
   // linear sRGB (REC 709) -> gamma corrected sRGB
   for(size_t c = 0; c < 3; c++)
@@ -108,7 +108,7 @@ static inline void _XYZ_to_REC_709_normalized(const float *const restrict XYZ, f
 static void _channel_display_monochrome(const float *const restrict in, uint8_t *const restrict out,
                                         const size_t buffsize, const float alpha)
 {
-  const float mask_color[4] DT_ALIGNED_PIXEL = { 1.0f, 1.0f, 0.0f }; // yellow; "unused" element enables vectorization
+  const dt_aligned_pixel_t mask_color = { 1.0f, 1.0f, 0.0f }; // yellow; "unused" element enables vectorization
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) schedule(static) aligned(in, out: 64) aligned(mask_color: 16) \
@@ -116,7 +116,7 @@ static void _channel_display_monochrome(const float *const restrict in, uint8_t 
 #endif
   for(size_t j = 0; j < buffsize; j += 4)
   {
-    float pixel[4] DT_ALIGNED_PIXEL = { in[j + 1], in[j + 1], in[j + 1], in[j + 1] };
+    dt_aligned_pixel_t pixel = { in[j + 1], in[j + 1], in[j + 1], in[j + 1] };
     _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
   }
 }
@@ -128,7 +128,7 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
                                          const size_t buffsize, const float alpha,
                                          dt_dev_pixelpipe_display_mask_t channel)
 {
-  const float mask_color[4] DT_ALIGNED_PIXEL = { 1.0f, 1.0f, 0.0f }; // yellow, "unused" element aids vectorization
+  const dt_aligned_pixel_t mask_color = { 1.0f, 1.0f, 0.0f }; // yellow, "unused" element aids vectorization
 
   switch(channel & DT_DEV_PIXELPIPE_DISPLAY_ANY & ~DT_DEV_PIXELPIPE_DISPLAY_OUTPUT)
   {
@@ -139,11 +139,11 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        float xyz[4] DT_ALIGNED_PIXEL;
-        float pixel[4] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t xyz;
+        dt_aligned_pixel_t pixel;
         // colors with "a" exceeding the range [-56,56] range will yield colors not representable in sRGB
         const float value = fminf(fmaxf(in[j + 1] * 256.0f - 128.0f, -56.0f), 56.0f);
-        const float DT_ALIGNED_PIXEL lab[4] = { 79.0f - value * (11.0f / 56.0f), value, 0.0f };
+        const dt_aligned_pixel_t lab = { 79.0f - value * (11.0f / 56.0f), value, 0.0f };
         dt_Lab_to_XYZ(lab, xyz);
         _XYZ_to_REC_709_normalized(xyz, pixel, 0.75f);
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
@@ -156,11 +156,10 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        float xyz[4] DT_ALIGNED_PIXEL;
-        float pixel[4] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t xyz, pixel;
         // colors with "b" exceeding the range [-65,65] range will yield colors not representable in sRGB
         const float value = fminf(fmaxf(in[j + 1] * 256.0f - 128.0f, -65.0f), 65.0f);
-        const float DT_ALIGNED_PIXEL lab[4] = { 60.0f + value * (2.0f / 65.0f), 0.0f, value };
+        const dt_aligned_pixel_t lab = { 60.0f + value * (2.0f / 65.0f), 0.0f, value };
         dt_Lab_to_XYZ(lab, xyz);
         _XYZ_to_REC_709_normalized(xyz, pixel, 0.75f);
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
@@ -173,7 +172,7 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        const float DT_ALIGNED_PIXEL pixel[4] = { in[j + 1], 0.0f, 0.0f, 0.0f };
+        const dt_aligned_pixel_t pixel = { in[j + 1], 0.0f, 0.0f, 0.0f };
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
       }
       break;
@@ -184,7 +183,7 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        const float DT_ALIGNED_PIXEL pixel[4] = { 0.0f, in[j + 1], 0.0f, 0.0f };
+        const dt_aligned_pixel_t pixel = { 0.0f, in[j + 1], 0.0f, 0.0f };
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
       }
       break;
@@ -195,7 +194,7 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        const float DT_ALIGNED_PIXEL pixel[4] = { 0.0f, 0.0f, in[j + 1], 0.0f };
+        const dt_aligned_pixel_t pixel = { 0.0f, 0.0f, in[j + 1], 0.0f };
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
       }
       break;
@@ -208,7 +207,7 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        const float DT_ALIGNED_PIXEL pixel[4] = { 0.5f, 0.5f * (1.0f - in[j + 1]), 0.5f, 0.0f };
+        const dt_aligned_pixel_t pixel = { 0.5f, 0.5f * (1.0f - in[j + 1]), 0.5f, 0.0f };
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
       }
       break;
@@ -219,10 +218,8 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        float DT_ALIGNED_PIXEL lch[4] = { 65.0f, 37.0f, in[j + 1], 0.0f };
-        float lab[4] DT_ALIGNED_PIXEL;
-        float xyz[4] DT_ALIGNED_PIXEL;
-        float pixel[4] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t lch = { 65.0f, 37.0f, in[j + 1], 0.0f };
+        dt_aligned_pixel_t lab, xyz, pixel;
         dt_LCH_2_Lab(lch, lab);
         dt_Lab_to_XYZ(lab, xyz);
         _XYZ_to_REC_709_normalized(xyz, pixel, 0.75f);
@@ -236,8 +233,8 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        float DT_ALIGNED_PIXEL hsl[4] = { in[j + 1], 0.5f, 0.5f, 0.0f };
-        float DT_ALIGNED_PIXEL pixel[4];
+        dt_aligned_pixel_t hsl = { in[j + 1], 0.5f, 0.5f, 0.0f };
+        dt_aligned_pixel_t pixel;
         dt_HSL_2_RGB(hsl, pixel);
         _normalize_color(pixel, 0.75f);
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
@@ -250,10 +247,10 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        const float DT_ALIGNED_PIXEL JzCzhz[4] = { 0.011f, 0.01f, in[j + 1] };
-        float JzAzBz[4] DT_ALIGNED_PIXEL;
-        float XYZ_D65[4] DT_ALIGNED_PIXEL;
-        float pixel[4] DT_ALIGNED_PIXEL;
+        const dt_aligned_pixel_t JzCzhz = { 0.011f, 0.01f, in[j + 1] };
+        dt_aligned_pixel_t JzAzBz;
+        dt_aligned_pixel_t XYZ_D65;
+        dt_aligned_pixel_t pixel;
         dt_JzCzhz_2_JzAzBz(JzCzhz, JzAzBz);
         dt_JzAzBz_2_XYZ(JzAzBz, XYZ_D65);
         dt_XYZ_to_Rec709_D65(XYZ_D65, pixel);
@@ -277,7 +274,7 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 static void _mask_display(const float *const restrict in, uint8_t *const restrict out, const size_t buffsize,
                           const float alpha)
 {
-  const float mask_color[4] DT_ALIGNED_PIXEL = { 1.0f, 1.0f, 0.0f }; // yellow, "unused" element aids vectorization
+  const dt_aligned_pixel_t mask_color = { 1.0f, 1.0f, 0.0f }; // yellow, "unused" element aids vectorization
 
   #ifdef _OPENMP
   #pragma omp parallel for simd default(none) schedule(static) aligned(in, out: 64) aligned(mask_color: 16) \
@@ -286,7 +283,7 @@ static void _mask_display(const float *const restrict in, uint8_t *const restric
     for(size_t j = 0; j < buffsize; j+= 4)
     {
       const float gray = 0.3f * in[j + 0] + 0.59f * in[j + 1] + 0.11f * in[j + 2];
-      const float DT_ALIGNED_PIXEL pixel[4] = { gray, gray, gray, gray };
+      const dt_aligned_pixel_t pixel = { gray, gray, gray, gray };
       _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
     }
 }
