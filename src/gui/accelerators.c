@@ -643,7 +643,7 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
         (s->element == DT_ACTION_ELEMENT_DEFAULT && has_fallbacks)))
     {
       gchar *desc_escaped = g_markup_escape_text(_shortcut_description(s, TRUE), -1);
-      description = dt_util_dstrcat(description, "%s<span style='italic' foreground='red'>%s</span>",
+      description = dt_util_dstrcat(description, "%s<b><big>%s</big></b>",
                                                  description ? "\n" : "", desc_escaped);
       g_free(desc_escaped);
     }
