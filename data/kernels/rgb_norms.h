@@ -27,7 +27,7 @@
    DT_RGB_NORM_POWER = 6
  } dt_iop_rgb_norms_t;
 
-inline float
+static inline float
 dt_rgb_norm(const float4 in, const int norm, const int work_profile,
   constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
 {
