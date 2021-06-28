@@ -1179,9 +1179,9 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
       {
         imgs = g_list_prepend(imgs, grp->data);
         g_array_append_val(gloc, geoloc);
+        cntr++;
       }
       g_list_free(grps);
-      cntr++;
     }
     g_date_time_unref(utc_time);
   } while((t = g_list_next(t)) != NULL);
