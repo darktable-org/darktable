@@ -24,7 +24,7 @@
 #define INVERSE_SQRT_3 0.5773502691896258f
 
 // In case the OpenCL driver doesn't have a dot method
-inline float vdot(const float4 vec1, const float4 vec2)
+static inline float vdot(const float4 vec1, const float4 vec2)
 {
     return vec1.x * vec2.x + vec1.y * vec2.y + vec1.z * vec2.z;
 }
@@ -148,7 +148,7 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
 
 
 /* Norms */
-inline float pixel_rgb_norm_power(const float4 pixel)
+static inline float pixel_rgb_norm_power(const float4 pixel)
 {
   // weird norm sort of perceptual. This is black magic really, but it looks good.
   const float4 RGB = fabs(pixel);
@@ -157,16 +157,16 @@ inline float pixel_rgb_norm_power(const float4 pixel)
   return (RGB_cubic.x + RGB_cubic.y + RGB_cubic.z) / fmax(RGB_square.x + RGB_square.y + RGB_square.z, 1e-12f);
 }
 
-inline float pixel_rgb_norm_euclidean(const float4 pixel)
+static inline float pixel_rgb_norm_euclidean(const float4 pixel)
 {
   const float4 RGB = pixel;
   const float4 RGB_square = RGB * RGB;
   return native_sqrt(RGB_square.x + RGB_square.y + RGB_square.z);
 }
 
-inline float get_pixel_norm(const float4 pixel, const dt_iop_filmicrgb_methods_type_t variant,
-                            constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
-                            read_only image2d_t lut, const int use_work_profile)
+static inline float get_pixel_norm(const float4 pixel, const dt_iop_filmicrgb_methods_type_t variant,
+                                   constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                   read_only image2d_t lut, const int use_work_profile)
 {
   switch(variant)
   {
@@ -195,7 +195,7 @@ inline float get_pixel_norm(const float4 pixel, const dt_iop_filmicrgb_methods_t
 
 /* Saturation */
 
-inline float filmic_desaturate_v1(const float x, const float sigma_toe, const float sigma_shoulder, const float saturation)
+static inline float filmic_desaturate_v1(const float x, const float sigma_toe, const float sigma_shoulder, const float saturation)
 {
   const float radius_toe = x;
   const float radius_shoulder = 1.0f - x;
@@ -207,7 +207,7 @@ inline float filmic_desaturate_v1(const float x, const float sigma_toe, const fl
 }
 
 
-inline float filmic_desaturate_v2(const float x, const float sigma_toe, const float sigma_shoulder, const float saturation)
+static inline float filmic_desaturate_v2(const float x, const float sigma_toe, const float sigma_shoulder, const float saturation)
 {
   const float radius_toe = x;
   const float radius_shoulder = 1.0f - x;
@@ -219,16 +219,16 @@ inline float filmic_desaturate_v2(const float x, const float sigma_toe, const fl
 }
 
 
-inline float4 linear_saturation(const float4 x, const float luminance, const float saturation)
+static inline float4 linear_saturation(const float4 x, const float luminance, const float saturation)
 {
   return (float4)luminance + (float4)saturation * (x - (float4)luminance);
 }
 
 
-inline float filmic_spline(const float x,
-                           const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
-                           const float latitude_min, const float latitude_max,
-                           const dt_iop_filmicrgb_curve_type_t type[2])
+static inline float filmic_spline(const float x,
+                                  const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
+                                  const float latitude_min, const float latitude_max,
+                                  const dt_iop_filmicrgb_curve_type_t type[2])
 {
   // if type polynomial :
   // y = M5 * x⁴ + M4 * x³ + M3 * x² + M2 * x¹ + M1 * x⁰
@@ -292,29 +292,29 @@ inline float filmic_spline(const float x,
 #define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
 
 
-inline float log_tonemapping_v1(const float x,
-                                const float grey, const float black,
-                                const float dynamic_range)
+static inline float log_tonemapping_v1(const float x,
+                                       const float grey, const float black,
+                                       const float dynamic_range)
 {
   const float temp = (native_log2(x / grey) - black) / dynamic_range;
   return clamp(temp, NORM_MIN, 1.f);
 }
 
-inline float log_tonemapping_v2(const float x,
-                                const float grey, const float black,
-                                const float dynamic_range)
+static inline float log_tonemapping_v2(const float x,
+                                       const float grey, const float black,
+                                       const float dynamic_range)
 {
   return clamp((native_log2(x / grey) - black) / dynamic_range, 0.f, 1.f);
 }
 
-inline float4 filmic_split_v1(const float4 i,
-                              const float dynamic_range, const float black_exposure, const float grey_value,
-                              constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
-                              read_only image2d_t lut, const int use_work_profile,
-                              const float sigma_toe, const float sigma_shoulder, const float saturation,
-                              const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
-                              const float latitude_min, const float latitude_max, const float output_power,
-                              const dt_iop_filmicrgb_curve_type_t type[2])
+static inline float4 filmic_split_v1(const float4 i,
+                                     const float dynamic_range, const float black_exposure, const float grey_value,
+                                     constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                     read_only image2d_t lut, const int use_work_profile,
+                                     const float sigma_toe, const float sigma_shoulder, const float saturation,
+                                     const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
+                                     const float latitude_min, const float latitude_max, const float output_power,
+                                     const dt_iop_filmicrgb_curve_type_t type[2])
 {
   float4 o;
 
@@ -344,14 +344,14 @@ inline float4 filmic_split_v1(const float4 i,
   return o;
 }
 
-inline float4 filmic_split_v2_v3(const float4 i,
-                                 const float dynamic_range, const float black_exposure, const float grey_value,
-                                 constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
-                                 read_only image2d_t lut, const int use_work_profile,
-                                 const float sigma_toe, const float sigma_shoulder, const float saturation,
-                                 const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
-                                 const float latitude_min, const float latitude_max, const float output_power,
-                                 const dt_iop_filmicrgb_curve_type_t type[2])
+static inline float4 filmic_split_v2_v3(const float4 i,
+                                        const float dynamic_range, const float black_exposure, const float grey_value,
+                                        constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                        read_only image2d_t lut, const int use_work_profile,
+                                        const float sigma_toe, const float sigma_shoulder, const float saturation,
+                                        const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
+                                        const float latitude_min, const float latitude_max, const float output_power,
+                                        const dt_iop_filmicrgb_curve_type_t type[2])
 {
   float4 o;
 
@@ -430,15 +430,15 @@ filmicrgb_split (read_only image2d_t in, write_only image2d_t out,
 }
 
 
-inline float4 filmic_chroma_v1(const float4 i,
-                               const float dynamic_range, const float black_exposure, const float grey_value,
-                               constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
-                               read_only image2d_t lut, const int use_work_profile,
-                               const float sigma_toe, const float sigma_shoulder, const float saturation,
-                               const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
-                               const float latitude_min, const float latitude_max, const float output_power,
-                               const dt_iop_filmicrgb_methods_type_t variant,
-                               const dt_iop_filmicrgb_curve_type_t type[2])
+static inline float4 filmic_chroma_v1(const float4 i,
+                                      const float dynamic_range, const float black_exposure, const float grey_value,
+                                      constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                      read_only image2d_t lut, const int use_work_profile,
+                                      const float sigma_toe, const float sigma_shoulder, const float saturation,
+                                      const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
+                                      const float latitude_min, const float latitude_max, const float output_power,
+                                      const dt_iop_filmicrgb_methods_type_t variant,
+                                      const dt_iop_filmicrgb_curve_type_t type[2])
 {
   float norm = fmax(get_pixel_norm(i, variant, profile_info, lut, use_work_profile), NORM_MIN);
 
@@ -471,16 +471,16 @@ inline float4 filmic_chroma_v1(const float4 i,
 }
 
 
-inline float4 filmic_chroma_v2_v3(const float4 i,
-                                  const float dynamic_range, const float black_exposure, const float grey_value,
-                                  constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
-                                  read_only image2d_t lut, const int use_work_profile,
-                                  const float sigma_toe, const float sigma_shoulder, const float saturation,
-                                  const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
-                                  const float latitude_min, const float latitude_max, const float output_power,
-                                  const dt_iop_filmicrgb_methods_type_t variant,
-                                  const dt_iop_filmicrgb_colorscience_type_t colorscience_version,
-                                  const dt_iop_filmicrgb_curve_type_t type[2])
+static inline float4 filmic_chroma_v2_v3(const float4 i,
+                                         const float dynamic_range, const float black_exposure, const float grey_value,
+                                         constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                         read_only image2d_t lut, const int use_work_profile,
+                                         const float sigma_toe, const float sigma_shoulder, const float saturation,
+                                         const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
+                                         const float latitude_min, const float latitude_max, const float output_power,
+                                         const dt_iop_filmicrgb_methods_type_t variant,
+                                         const dt_iop_filmicrgb_colorscience_type_t colorscience_version,
+                                         const dt_iop_filmicrgb_curve_type_t type[2])
 {
   float norm = fmax(get_pixel_norm(i, variant, profile_info, lut, use_work_profile), NORM_MIN);
 
@@ -708,14 +708,14 @@ kernel void blur_2D_Bspline_horizontal(read_only image2d_t in, write_only image2
   write_imagef(out, (int2)(x, y), fmax(accumulator, 0.f));
 }
 
-inline float fmaxabsf(const float a, const float b)
+static inline float fmaxabsf(const float a, const float b)
 {
   // Find the max in absolute value and return it with its sign
   return (fabs(a) > fabs(b) && !isnan(a)) ? a :
                                           (isnan(b)) ? 0.f : b;
 }
 
-inline float fminabsf(const float a, const float b)
+static inline float fminabsf(const float a, const float b)
 {
   // Find the min in absolute value and return it with its sign
   return (fabs(a) < fabs(b) && !isnan(a)) ? a :

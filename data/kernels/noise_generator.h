@@ -27,7 +27,7 @@ typedef enum dt_noise_distribution_t
 } dt_noise_distribution_t;
 
 
-inline unsigned int splitmix32(const unsigned long seed)
+static inline unsigned int splitmix32(const unsigned long seed)
 {
   // fast random number generator
   // reference : https://gist.github.com/imneme/6179748664e88ef3c34860f44309fc71
@@ -38,13 +38,13 @@ inline unsigned int splitmix32(const unsigned long seed)
 
 
 
-inline unsigned rol32(const unsigned int x, const int k)
+static inline unsigned rol32(const unsigned int x, const int k)
 {
   return (x << k) | (x >> (32 - k));
 }
 
 
-inline float xoshiro128plus(uint state[4])
+static inline float xoshiro128plus(uint state[4])
 {
   // fast random number generator
   // reference : http://prng.di.unimi.it/
@@ -63,14 +63,14 @@ inline float xoshiro128plus(uint state[4])
 }
 
 
-inline float4 uniform_noise_simd(const float4 mu, const float4 sigma, uint state[4])
+static inline float4 uniform_noise_simd(const float4 mu, const float4 sigma, uint state[4])
 {
   const float4 noise = { xoshiro128plus(state), xoshiro128plus(state), xoshiro128plus(state), 0.f };
   return mu + 2.0f * (noise - 0.5f) * sigma;
 }
 
 
-inline float4 gaussian_noise_simd(const float4 mu, const float4 sigma, uint state[4])
+static inline float4 gaussian_noise_simd(const float4 mu, const float4 sigma, uint state[4])
 {
   // Create gaussian noise centered in mu of standard deviation sigma
   // state should be initialized with xoshiro256_init() before calling and private in thread
@@ -99,7 +99,7 @@ inline float4 gaussian_noise_simd(const float4 mu, const float4 sigma, uint stat
 }
 
 
-inline float4 poisson_noise_simd(const float4 mu, const float4 sigma, uint state[4])
+static inline float4 poisson_noise_simd(const float4 mu, const float4 sigma, uint state[4])
 {
   // create poissonian noise - It's just gaussian noise with Anscombe transform applied
   float4 u1, u2;
@@ -127,9 +127,9 @@ inline float4 poisson_noise_simd(const float4 mu, const float4 sigma, uint state
 }
 
 
-inline float4 dt_noise_generator_simd(const dt_noise_distribution_t distribution,
-                                      const float4 mu, const float4 param,
-                                      uint state[4])
+static inline float4 dt_noise_generator_simd(const dt_noise_distribution_t distribution,
+                                             const float4 mu, const float4 param,
+                                             uint state[4])
 {
   // vector version
 
