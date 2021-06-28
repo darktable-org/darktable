@@ -1136,13 +1136,14 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
   piece->data = NULL;
 }
 
-void pipe_RGB_to_Ych(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float RGB[4], float Ych[4])
+void pipe_RGB_to_Ych(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_aligned_pixel_t RGB,
+                     dt_aligned_pixel_t Ych)
 {
   const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   if(work_profile == NULL) return; // no point
 
-  float DT_ALIGNED_ARRAY XYZ_D50[4] = { 0.f };
-  float DT_ALIGNED_ARRAY XYZ_D65[4] = { 0.f };
+  dt_aligned_pixel_t XYZ_D50 = { 0.f };
+  dt_aligned_pixel_t XYZ_D65 = { 0.f };
 
   dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, work_profile->matrix_in, work_profile->lut_in,
                              work_profile->unbounded_coeffs_in, work_profile->lutsize,
