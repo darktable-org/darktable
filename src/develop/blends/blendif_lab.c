@@ -143,7 +143,7 @@ static inline void _blendif_lch(const float *const restrict pixels, float *const
   const float c_scale = 1.0f / (128.0f * sqrtf(2.0f));
   for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_LAB_CH)
   {
-    float LCH[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t LCH;
     dt_Lab_2_LCH(pixels + j, LCH);
     float factor = 1.0f;
     factor *= _blendif_compute_factor(LCH[1] * c_scale, invert_mask[0], parameters);
@@ -380,8 +380,7 @@ static void _blend_normal_bounded(const float *const restrict a, const float *co
   {
     size_t j = i * DT_BLENDIF_LAB_CH;
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -407,8 +406,7 @@ static void _blend_normal_unbounded(const float *const restrict a, const float *
   {
     size_t j = i * DT_BLENDIF_LAB_CH;
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -432,8 +430,7 @@ static void _blend_lighten(const float *const restrict a, const float *const res
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -461,8 +458,7 @@ static void _blend_darken(const float *const restrict a, const float *const rest
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -490,8 +486,7 @@ static void _blend_multiply(const float *const restrict a, const float *const re
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -519,8 +514,7 @@ static void _blend_average(const float *const restrict a, const float *const res
   {
     size_t j = i * DT_BLENDIF_LAB_CH;
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -545,8 +539,7 @@ static void _blend_add(const float *const restrict a, const float *const restric
   {
     size_t j = i * DT_BLENDIF_LAB_CH;
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -571,8 +564,7 @@ static void _blend_subtract(const float *const restrict a, const float *const re
   {
     size_t j = i * DT_BLENDIF_LAB_CH;
     float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -597,8 +589,7 @@ static void _blend_difference(const float *const restrict a, const float *const 
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -628,8 +619,7 @@ static void _blend_difference2(const float *const restrict a, const float *const
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -658,8 +648,7 @@ static void _blend_screen(const float *const restrict a, const float *const rest
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -695,8 +684,7 @@ static void _blend_overlay(const float *const restrict a, const float *const res
   {
     const float local_opacity = mask[i];
     const float local_opacity2 = local_opacity * local_opacity;
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(&a[j], ta);
     _blend_Lab_scale(&b[j], tb);
@@ -735,8 +723,7 @@ static void _blend_softlight(const float *const restrict a, const float *const r
   {
     const float local_opacity = mask[i];
     const float local_opacity2 = local_opacity * local_opacity;
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -774,8 +761,7 @@ static void _blend_hardlight(const float *const restrict a, const float *const r
   {
     const float local_opacity = mask[i];
     const float local_opacity2 = local_opacity * local_opacity;
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -814,8 +800,7 @@ static void _blend_vividlight(const float *const restrict a, const float *const 
   {
     const float local_opacity = mask[i];
     const float local_opacity2 = local_opacity * local_opacity;
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -854,8 +839,7 @@ static void _blend_linearlight(const float *const restrict a, const float *const
   {
     const float local_opacity = mask[i];
     const float local_opacity2 = local_opacity * local_opacity;
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -890,8 +874,7 @@ static void _blend_pinlight(const float *const restrict a, const float *const re
   {
     const float local_opacity = mask[i];
     const float local_opacity2 = local_opacity * local_opacity;
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -928,8 +911,7 @@ static void _blend_lightness(const float *const restrict a, const float *const r
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -956,10 +938,8 @@ static void _blend_chromaticity(const float *const restrict a, const float *cons
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
-    float tta[4] DT_ALIGNED_PIXEL;
-    float ttb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
+    dt_aligned_pixel_t tta, ttb;
 
     _blend_Lab_scale(a + j, ta);
     _CLAMP_XYZ(ta, min, max);
@@ -991,10 +971,8 @@ static void _blend_hue(const float *const restrict a, const float *const restric
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
-    float tta[4] DT_ALIGNED_PIXEL;
-    float ttb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
+    dt_aligned_pixel_t tta, ttb;
 
     _blend_Lab_scale(a + j, ta);
     _CLAMP_XYZ(ta, min, max);
@@ -1029,10 +1007,8 @@ static void _blend_color(const float *const restrict a, const float *const restr
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
-    float tta[4] DT_ALIGNED_PIXEL;
-    float ttb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
+    dt_aligned_pixel_t tta, ttb;
 
     _blend_Lab_scale(a + j, ta);
     _CLAMP_XYZ(ta, min, max);
@@ -1068,10 +1044,8 @@ static void _blend_coloradjust(const float *const restrict a, const float *const
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
-    float tta[4] DT_ALIGNED_PIXEL;
-    float ttb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
+    dt_aligned_pixel_t tta, ttb;
 
     _blend_Lab_scale(a + j, ta);
     _CLAMP_XYZ(ta, min, max);
@@ -1107,8 +1081,7 @@ static void _blend_Lab_lightness(const float *const restrict a, const float *con
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -1133,8 +1106,7 @@ static void _blend_Lab_a(const float *const restrict a, const float *const restr
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -1159,8 +1131,7 @@ static void _blend_Lab_b(const float *const restrict a, const float *const restr
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -1186,8 +1157,7 @@ static void _blend_Lab_color(const float *const restrict a, const float *const r
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
     float local_opacity = mask[i];
-    float ta[4] DT_ALIGNED_PIXEL;
-    float tb[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t ta, tb;
 
     _blend_Lab_scale(a + j, ta);
     _blend_Lab_scale(b + j, tb);
@@ -1382,7 +1352,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       const float factor = 1.0f / (128.0f * sqrtf(2.0f) * exp2f(boost_factors[DEVELOP_BLENDIF_C_in]));
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
-        float LCH[4] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t LCH;
         dt_Lab_2_LCH(a + j, LCH);
         const float c = clamp_simd(LCH[1] * factor);
         _display_channel_value(b + j, c, mask[i]);
@@ -1394,7 +1364,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       const float factor = 1.0f / (128.0f * sqrtf(2.0f) * exp2f(boost_factors[DEVELOP_BLENDIF_C_out]));
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
-        float LCH[4] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t LCH;
         dt_Lab_2_LCH(b + j, LCH);
         const float c = clamp_simd(LCH[1] * factor);
         _display_channel_value(b + j, c, mask[i]);
@@ -1405,7 +1375,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       // no boost factor for hues
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
-        float LCH[4] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t LCH;
         dt_Lab_2_LCH(a + j, LCH);
         const float c = clamp_simd(LCH[2]);
         _display_channel_value(b + j, c, mask[i]);
@@ -1415,7 +1385,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       // no boost factor for hues
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
-        float LCH[4] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t LCH;
         dt_Lab_2_LCH(b + j, LCH);
         const float c = clamp_simd(LCH[2]);
         _display_channel_value(b + j, c, mask[i]);
@@ -1494,7 +1464,7 @@ void dt_develop_blendif_lab_blend(struct dt_dev_pixelpipe_iop_t *piece,
 #endif
       for(size_t j = 0; j < buffsize; j += DT_BLENDIF_LAB_CH)
       {
-        float pixel[4] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t pixel;
         for_each_channel(c,aligned(b))
           pixel[c] = b[j+c];
         dt_ioppr_rgb_matrix_to_lab(pixel, b + j, profile->matrix_in, profile->lut_in,
@@ -1509,7 +1479,7 @@ void dt_develop_blendif_lab_blend(struct dt_dev_pixelpipe_iop_t *piece,
 #endif
       for(size_t j = 0; j < buffsize; j += DT_BLENDIF_LAB_CH)
       {
-        float XYZ[4] DT_ALIGNED_PIXEL;
+        dt_aligned_pixel_t XYZ;
         dt_Rec709_to_XYZ_D50(b + j, XYZ);
         dt_XYZ_to_Lab(XYZ, b + j);
       }
