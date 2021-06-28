@@ -282,9 +282,11 @@ static inline int _init_unbounded_coeffs(float *const lutr, float *const lutg, f
     // omit luts marked as linear (negative as marker)
     if(lut[k][0] >= 0.0f)
     {
-      const float x[4] DT_ALIGNED_PIXEL = { 0.7f, 0.8f, 0.9f, 1.0f };
-      const float y[4] DT_ALIGNED_PIXEL = { extrapolate_lut(lut[k], x[0], lutsize), extrapolate_lut(lut[k], x[1], lutsize), extrapolate_lut(lut[k], x[2], lutsize),
-                                            extrapolate_lut(lut[k], x[3], lutsize) };
+      const dt_aligned_pixel_t x = { 0.7f, 0.8f, 0.9f, 1.0f };
+      const dt_aligned_pixel_t y = { extrapolate_lut(lut[k], x[0], lutsize),
+                                     extrapolate_lut(lut[k], x[1], lutsize),
+                                     extrapolate_lut(lut[k], x[2], lutsize),
+                                     extrapolate_lut(lut[k], x[3], lutsize) };
       dt_iop_estimate_exp(x, y, 4, unbounded_coeffs[k]);
 
       nonlinearlut++;
@@ -676,7 +678,7 @@ static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profil
 
   if(!isnan(profile_info->matrix_in[0]) && !isnan(profile_info->matrix_out[0]) && profile_info->nonlinearlut)
   {
-    const float rgb[4] = { 0.1842f, 0.1842f, 0.1842f };
+    const dt_aligned_pixel_t rgb = { 0.1842f, 0.1842f, 0.1842f };
     profile_info->grey = dt_ioppr_get_rgb_matrix_luminance(rgb, profile_info->matrix_in, profile_info->lut_in, profile_info->unbounded_coeffs_in, profile_info->lutsize, profile_info->nonlinearlut);
   }
 

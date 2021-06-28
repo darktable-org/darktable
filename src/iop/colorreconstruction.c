@@ -603,7 +603,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float sigma_s = fmax(data->spatial, 1.0f) / scale;
   const float hue = hue_conversion(data->hue); // convert to LCH hue which better fits to Lab colorspace
 
-  const float params[4] = { hue, M_PI*M_PI/8, 0.0f, 0.0f };
+  const dt_aligned_pixel_t params = { hue, M_PI*M_PI/8, 0.0f, 0.0f };
 
   dt_iop_colorreconstruct_bilateral_t *b;
   dt_iop_colorreconstruct_bilateral_frozen_t *can = NULL;

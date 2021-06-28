@@ -524,7 +524,8 @@ static inline void upscale_vector(float vector[4], const float scaling)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(input, output:16) uniform(compression, clip)
 #endif
-static inline void gamut_mapping(const float input[4], const float compression, const int clip, float output[4])
+static inline void gamut_mapping(const dt_aligned_pixel_t input, const float compression, const int clip,
+                                 dt_aligned_pixel_t output)
 {
   // Get the sum XYZ
   const float sum = input[0] + input[1] + input[2];
@@ -533,10 +534,10 @@ static inline void gamut_mapping(const float input[4], const float compression, 
   if(sum > 0.f && Y > 0.f)
   {
     // Convert to xyY
-    float xyY[4] DT_ALIGNED_PIXEL = { input[0] / sum, input[1] / sum , Y, 0.0f };
+    dt_aligned_pixel_t xyY = { input[0] / sum, input[1] / sum , Y, 0.0f };
 
     // Convert to uvY
-    float uvY[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t uvY;
     dt_xyY_to_uvY(xyY, uvY);
 
     // Get the chromaticity difference with white point uv
@@ -585,8 +586,9 @@ static inline void gamut_mapping(const float input[4], const float compression, 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(input, output, saturation, lightness:16) uniform(saturation, lightness)
 #endif
-static inline void luma_chroma(const float input[4], const float saturation[4], const float lightness[4],
-                               float output[4], const dt_iop_channelmixer_rgb_version_t version)
+static inline void luma_chroma(const dt_aligned_pixel_t input, const dt_aligned_pixel_t saturation,
+                               const dt_aligned_pixel_t lightness, dt_aligned_pixel_t output,
+                               const dt_iop_channelmixer_rgb_version_t version)
 {
   // Compute euclidean norm
   float norm = euclidean_norm(input);
@@ -660,8 +662,8 @@ static inline void loop_switch(const float *const restrict in, float *const rest
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
     // intermediate temp buffers
-    float DT_ALIGNED_PIXEL temp_one[4];
-    float DT_ALIGNED_PIXEL temp_two[4];
+    dt_aligned_pixel_t temp_one;
+    dt_aligned_pixel_t temp_two;
 
     for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++)
       temp_two[c] = (clip) ? fmaxf(in[k + c], 0.0f) : in[k + c];
@@ -888,8 +890,8 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
     for(size_t j = 0; j < width; j++)
     {
       const size_t index = (i * width + j) * ch;
-      float DT_ALIGNED_PIXEL RGB[4];
-      float DT_ALIGNED_PIXEL XYZ[4];
+      dt_aligned_pixel_t RGB;
+      dt_aligned_pixel_t XYZ;
 
       // Clip negatives
       for_each_channel(c,aligned(in))
@@ -914,7 +916,7 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
     }
 
   float elements = 0.f;
-  float xyY[4] = { 0.f };
+  dt_aligned_pixel_t xyY = { 0.f };
 
   if(illuminant == DT_ILLUMINANT_DETECT_SURFACES)
   {
@@ -938,7 +940,7 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
           central_average[c] = fmaxf(central_average[c], 0.0f);
         }
 
-        float var[4] = { 0.f };
+        dt_aligned_pixel_t var = { 0.f };
 
         // compute patch-wise variance
         // If variance = 0, we are on a flat surface and want to discard that patch.
@@ -1177,8 +1179,8 @@ static inline void compute_patches_delta_E(const float *const restrict patches,
   for(size_t k = 0; k < checker->patches; k++)
   {
     // Convert to Lab
-    float DT_ALIGNED_PIXEL Lab_test[4];
-    float DT_ALIGNED_PIXEL XYZ_test[4];
+    dt_aligned_pixel_t Lab_test;
+    dt_aligned_pixel_t XYZ_test;
 
     // If exposure was normalized, denormalized it before
     for(size_t c = 0; c < 4; c++) XYZ_test[c] = patches[k * 4 + c];
@@ -1374,7 +1376,7 @@ static const extraction_result_t _extract_patches(const float *const restrict in
     for(size_t c = 0; c < 3; c++) patches[k * 4 + c] /= (float)num_elem;
 
     // Convert to XYZ
-    float XYZ[4] = { 0 };
+    dt_aligned_pixel_t XYZ = { 0 };
     dot_product(patches + k * 4, RGB_to_XYZ, XYZ);
     for(size_t c = 0; c < 3; c++) patches[k * 4 + c] = XYZ[c];
   }
@@ -1382,14 +1384,14 @@ static const extraction_result_t _extract_patches(const float *const restrict in
   /* match global exposure */
   // white exposure depends on camera settings and raw white point,
   // we want our profile to be independent from that
-  float XYZ_white_ref[4];
+  dt_aligned_pixel_t XYZ_white_ref;
   float *XYZ_white_test = patches + g->checker->white * 4;
   dt_Lab_to_XYZ(g->checker->values[g->checker->white].Lab, XYZ_white_ref);
   const float exposure = XYZ_white_ref[1] / XYZ_white_test[1];
 
   // black point is evaluated by rawspeed on each picture using the dark pixels
   // we want our profile to be also independent from its discrepancies
-  float XYZ_black_ref[4];
+  dt_aligned_pixel_t XYZ_black_ref;
   float *XYZ_black_test = patches + g->checker->black * 4;
   dt_Lab_to_XYZ(g->checker->values[g->checker->black].Lab, XYZ_black_ref);
   float black = 0.f;
@@ -1430,15 +1432,15 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   /* find the scene illuminant */
 
   // find reference grey patch
-  float XYZ_grey_ref[4];
+  dt_aligned_pixel_t XYZ_grey_ref;
   dt_Lab_to_XYZ(g->checker->values[g->checker->middle_grey].Lab, XYZ_grey_ref);
 
   // find test grey patch
-  float DT_ALIGNED_PIXEL XYZ_grey_test[4];
+  dt_aligned_pixel_t XYZ_grey_test;
   for(size_t c = 0; c < 3; c++) XYZ_grey_test[c] = patches[g->checker->middle_grey * 4 + c];
 
   // compute reference illuminant
-  float DT_ALIGNED_PIXEL D50_XYZ[4];
+  dt_aligned_pixel_t D50_XYZ;
   illuminant_xy_to_XYZ(0.34567f, 0.35850f, D50_XYZ);
 
   // normalize luminances - note : illuminant is normalized by definition
@@ -1451,17 +1453,17 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   }
 
   // convert XYZ to LMS
-  float DT_ALIGNED_PIXEL LMS_grey_ref[4], LMS_grey_test[4], D50_LMS[4];
+  dt_aligned_pixel_t LMS_grey_ref, LMS_grey_test, D50_LMS;
   convert_any_XYZ_to_LMS(XYZ_grey_ref, LMS_grey_ref, kind);
   convert_any_XYZ_to_LMS(XYZ_grey_test, LMS_grey_test, kind);
   convert_any_XYZ_to_LMS(D50_XYZ, D50_LMS, kind);
 
   // solve the equation to find the scene illuminant
-  float DT_ALIGNED_PIXEL illuminant[4] = { 0.0f };
+  dt_aligned_pixel_t illuminant = { 0.0f };
   for(size_t c = 0; c < 3; c++) illuminant[c] = D50_LMS[c] * LMS_grey_test[c] / LMS_grey_ref[c];
 
   // convert back the illuminant to XYZ then xyY
-  float DT_ALIGNED_PIXEL illuminant_XYZ[4], illuminant_xyY[4] = { .0f };
+  dt_aligned_pixel_t illuminant_XYZ, illuminant_xyY = { .0f };
   convert_any_LMS_to_XYZ(illuminant, illuminant_XYZ, kind);
   const float Y_illu = illuminant_XYZ[1];
   for(size_t c = 0; c < 3; c++) illuminant_XYZ[c] /= Y_illu;
@@ -1484,10 +1486,10 @@ void extract_color_checker(const float *const restrict in, float *const restrict
     const float Y = sample[1];
     downscale_vector(sample, Y);
 
-    float LMS[4];
+    dt_aligned_pixel_t LMS;
     convert_any_XYZ_to_LMS(sample, LMS, kind);
 
-    float temp[4];
+    dt_aligned_pixel_t temp;
 
     switch(kind)
     {
@@ -1536,11 +1538,11 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   for(size_t k = 0; k < g->checker->patches; k++)
   {
     float *const sample = patches + k * 4;
-    float LMS_test[4];
+    dt_aligned_pixel_t LMS_test;
     convert_any_XYZ_to_LMS(sample, LMS_test, kind);
 
     float *const reference = g->checker->values[k].Lab;
-    float XYZ_ref[4], LMS_ref[4];
+    dt_aligned_pixel_t XYZ_ref, LMS_ref;
     dt_Lab_to_XYZ(reference, XYZ_ref);
     convert_any_XYZ_to_LMS(XYZ_ref, LMS_ref, kind);
 
@@ -1628,8 +1630,8 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   for(size_t k = 0; k < g->checker->patches; k++)
   {
     float *const sample = patches + k * 4;
-    float LMS_test[4];
-    float temp[4] = { 0.f };
+    dt_aligned_pixel_t LMS_test;
+    dt_aligned_pixel_t temp = { 0.f };
 
     // Restore the original exposure of the patch
     for(size_t c = 0; c < 3; c++) temp[c] = sample[c];
@@ -1843,13 +1845,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     // is changed later, we get no notification of the change here, so we can't update the defaults.
     // So we need to re-run the detection at runtime…
     float x, y;
-    float custom_wb[4];
+    dt_aligned_pixel_t custom_wb;
     get_white_balance_coeff(self, custom_wb);
 
     if(find_temperature_from_raw_coeffs(&(self->dev->image_storage), custom_wb, &(x), &(y)))
     {
       // Convert illuminant from xyY to XYZ
-      float XYZ[4];
+      dt_aligned_pixel_t XYZ;
       illuminant_xy_to_XYZ(x, y, XYZ);
 
       // Convert illuminant from XYZ to Bradford modified LMS
@@ -1944,13 +1946,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // is changed later, we get no notification of the change here, so we can't update the defaults.
     // So we need to re-run the detection at runtime…
     float x, y;
-    float custom_wb[4];
+    dt_aligned_pixel_t custom_wb;
     get_white_balance_coeff(self, custom_wb);
 
     if(find_temperature_from_raw_coeffs(&(self->dev->image_storage), custom_wb, &(x), &(y)))
     {
       // Convert illuminant from xyY to XYZ
-      float XYZ[4];
+      dt_aligned_pixel_t XYZ;
       illuminant_xy_to_XYZ(x, y, XYZ);
 
       // Convert illuminant from XYZ to Bradford modified LMS
@@ -2445,7 +2447,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
     cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
 
-    float RGB[4];
+    dt_aligned_pixel_t RGB;
     dt_ioppr_lab_to_rgb_matrix(g->checker->values[k].Lab, RGB, work_profile->matrix_out, work_profile->lut_out,
                                work_profile->unbounded_coeffs_out, work_profile->lutsize,
                                work_profile->nonlinearlut);
@@ -2731,7 +2733,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // find x y coordinates of illuminant for CIE 1931 2° observer
   float x = p->x;
   float y = p->y;
-  float custom_wb[4];
+  dt_aligned_pixel_t custom_wb;
   get_white_balance_coeff(self, custom_wb);
   illuminant_to_xy(p->illuminant, &(self->dev->image_storage), custom_wb, &x, &y, p->temperature, p->illum_fluo, p->illum_led);
 
@@ -2742,7 +2744,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->illuminant_type = p->illuminant;
 
   // Convert illuminant from xyY to XYZ
-  float XYZ[4];
+  dt_aligned_pixel_t XYZ;
   illuminant_xy_to_XYZ(x, y, XYZ);
 
   // Convert illuminant from XYZ to Bradford modified LMS
@@ -2971,7 +2973,8 @@ static void update_xy_color(dt_iop_module_t *self)
 }
 
 static void _convert_GUI_colors(dt_iop_channelmixer_rgb_params_t *p,
-                                const struct dt_iop_order_iccprofile_info_t *const work_profile, const float LMS[4], float RGB[4])
+                                const struct dt_iop_order_iccprofile_info_t *const work_profile,
+                                const dt_aligned_pixel_t LMS, dt_aligned_pixel_t RGB)
 {
   if(p->adaptation != DT_ADAPTATION_RGB)
   {
@@ -2980,7 +2983,7 @@ static void _convert_GUI_colors(dt_iop_channelmixer_rgb_params_t *p,
   }
   else
   {
-    float DT_ALIGNED_PIXEL XYZ[4];
+    dt_aligned_pixel_t XYZ;
     if(work_profile)
     {
       dt_ioppr_rgb_matrix_to_xyz(LMS, XYZ, work_profile->matrix_in, work_profile->lut_in,
@@ -3027,8 +3030,8 @@ static void update_R_colors(dt_iop_module_t *self)
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
     const float RR = RR_min + stop * RR_range;
     const float stop_R = RR + RGB[1] + RGB[2];
-    const float LMS[4] = { 0.5f * stop_R, 0.5f, 0.5f };
-    float RGB_t[4] = { 0.5f };
+    const dt_aligned_pixel_t LMS = { 0.5f * stop_R, 0.5f, 0.5f };
+    dt_aligned_pixel_t RGB_t = { 0.5f };
     _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_red_R, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
@@ -3042,8 +3045,8 @@ static void update_R_colors(dt_iop_module_t *self)
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
     const float RG = RG_min + stop * RG_range;
     const float stop_R = RGB[0] + RG + RGB[2];
-    const float LMS[4] = { 0.5f * stop_R, 0.5f, 0.5f };
-    float RGB_t[4] = { 0.5f };
+    const dt_aligned_pixel_t LMS = { 0.5f * stop_R, 0.5f, 0.5f };
+    dt_aligned_pixel_t RGB_t = { 0.5f };
     _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_red_G, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
@@ -3057,8 +3060,8 @@ static void update_R_colors(dt_iop_module_t *self)
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
     const float RB = RB_min + stop * RB_range;
     const float stop_R = RGB[0] + RGB[1] + RB;
-    const float LMS[4] = { 0.5f * stop_R, 0.5f, 0.5f };
-    float RGB_t[4] = { 0.5f };
+    const dt_aligned_pixel_t LMS = { 0.5f * stop_R, 0.5f, 0.5f };
+    dt_aligned_pixel_t RGB_t = { 0.5f };
     _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_red_B, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
@@ -3093,8 +3096,8 @@ static void update_B_colors(dt_iop_module_t *self)
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
     const float BR = BR_min + stop * BR_range;
     const float stop_B = BR + RGB[1] + RGB[2];
-    const float LMS[4] = { 0.5f, 0.5f, 0.5f * stop_B };
-    float RGB_t[4] = { 0.5f };
+    const dt_aligned_pixel_t LMS = { 0.5f, 0.5f, 0.5f * stop_B };
+    dt_aligned_pixel_t RGB_t = { 0.5f };
     _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_blue_R, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
@@ -3108,8 +3111,8 @@ static void update_B_colors(dt_iop_module_t *self)
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
     const float BG = BG_min + stop * BG_range;
     const float stop_B = RGB[0] + BG + RGB[2];
-    const float LMS[4] = { 0.5f , 0.5f, 0.5f * stop_B };
-    float RGB_t[4] = { 0.5f };
+    const dt_aligned_pixel_t LMS = { 0.5f , 0.5f, 0.5f * stop_B };
+    dt_aligned_pixel_t RGB_t = { 0.5f };
     _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_blue_G, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
@@ -3123,8 +3126,8 @@ static void update_B_colors(dt_iop_module_t *self)
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
     const float BB = BB_min + stop * BB_range;
     const float stop_B = RGB[0] + RGB[1] + BB;
-    const float LMS[4] = { 0.5f, 0.5f, 0.5f * stop_B , 0.f};
-    float RGB_t[4] = { 0.5f };
+    const dt_aligned_pixel_t LMS = { 0.5f, 0.5f, 0.5f * stop_B , 0.f};
+    dt_aligned_pixel_t RGB_t = { 0.5f };
     _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_blue_B, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
@@ -3158,8 +3161,8 @@ static void update_G_colors(dt_iop_module_t *self)
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
     const float GR = GR_min + stop * GR_range;
     const float stop_G = GR + RGB[1] + RGB[2];
-    const float LMS[4] = { 0.5f , 0.5f * stop_G, 0.5f };
-    float RGB_t[4] = { 0.5f };
+    const dt_aligned_pixel_t LMS = { 0.5f , 0.5f * stop_G, 0.5f };
+    dt_aligned_pixel_t RGB_t = { 0.5f };
     _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_green_R, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
@@ -3173,8 +3176,8 @@ static void update_G_colors(dt_iop_module_t *self)
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
     const float GG = GG_min + stop * GG_range;
     const float stop_G = RGB[0] + GG + RGB[2];
-    const float LMS[4] = { 0.5f, 0.5f * stop_G, 0.5f };
-    float RGB_t[4] = { 0.5f };
+    const dt_aligned_pixel_t LMS = { 0.5f, 0.5f * stop_G, 0.5f };
+    dt_aligned_pixel_t RGB_t = { 0.5f };
     _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_green_G, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
@@ -3188,8 +3191,8 @@ static void update_G_colors(dt_iop_module_t *self)
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
     const float GB = GB_min + stop * GB_range;
     const float stop_G = RGB[0] + RGB[1] + GB;
-    const float LMS[4] = { 0.5f, 0.5f * stop_G , 0.5f};
-    float RGB_t[4] = { 0.5f };
+    const dt_aligned_pixel_t LMS = { 0.5f, 0.5f * stop_G , 0.5f};
+    dt_aligned_pixel_t RGB_t = { 0.5f };
     _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_green_B, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
@@ -3226,8 +3229,8 @@ static gboolean illuminant_color_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   // Paint illuminant color - we need to recompute it in full in case camera RAW is chosen
   float x = p->x;
   float y = p->y;
-  float RGB[4] = { 0 };
-  float custom_wb[4];
+  dt_aligned_pixel_t RGB = { 0 };
+  dt_aligned_pixel_t custom_wb;
   get_white_balance_coeff(self, custom_wb);
   illuminant_to_xy(p->illuminant, &(self->dev->image_storage), custom_wb,
                    &x, &y, p->temperature, p->illum_fluo, p->illum_led);
@@ -3252,7 +3255,7 @@ static void update_approx_cct(dt_iop_module_t *self)
 
   float x = p->x;
   float y = p->y;
-  float custom_wb[4];
+  dt_aligned_pixel_t custom_wb;
   get_white_balance_coeff(self, custom_wb);
   illuminant_to_xy(p->illuminant, &(self->dev->image_storage), custom_wb, &x, &y, p->temperature, p->illum_fluo, p->illum_led);
 
@@ -3466,7 +3469,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   const dt_image_t *img = &module->dev->image_storage;
 
-  float custom_wb[4];
+  dt_aligned_pixel_t custom_wb;
   if(!CAT_already_applied
      && is_modern
      && !get_white_balance_coeff(module, custom_wb))
@@ -3524,7 +3527,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     if(p->illuminant == DT_ILLUMINANT_CAMERA)
     {
       // Get camera WB and update illuminant
-      float custom_wb[4];
+      dt_aligned_pixel_t custom_wb;
       get_white_balance_coeff(self, custom_wb);
       const int found = find_temperature_from_raw_coeffs(&(self->dev->image_storage), custom_wb, &(p->x), &(p->y));
       check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
@@ -3639,7 +3642,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   repack_3x3_to_3xSSE(work_profile->matrix_in, RGB_to_XYZ);
 
   // Convert to XYZ
-  float XYZ[4] = { 0 };
+  dt_aligned_pixel_t XYZ = { 0 };
   dot_product(RGB, RGB_to_XYZ, XYZ);
 
   // Convert to xyY
@@ -3758,7 +3761,7 @@ void gui_init(struct dt_iop_module_t *self)
   {
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
     const float t = min_temp + stop * (max_temp - min_temp);
-    float RGB[4] = { 0 };
+    dt_aligned_pixel_t RGB = { 0 };
     illuminant_CCT_to_RGB(t, RGB);
     dt_bauhaus_slider_set_stop(g->temperature, stop, RGB[0], RGB[1], RGB[2]);
   }

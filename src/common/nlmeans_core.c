@@ -160,9 +160,9 @@ static inline float pixel_difference(const float* const pix1, const float* pix2,
 // optimized: pixel_difference(pix1, pix2, norm) - pixel_difference(pix3, pix4, norm)
 static inline float diff_of_pixels_diff(const float* const pix1, const float* pix2,
                                         const float* const pix3, const float* pix4,
-                                        const float norm[4])
+                                        const dt_aligned_pixel_t norm)
 {
-  float DT_ALIGNED_PIXEL sum[4] = { 0.f, 0.f, 0.f, 0.f };
+  dt_aligned_pixel_t sum = { 0.f, 0.f, 0.f, 0.f };
   for_each_channel(i, aligned(sum:16))
   {
     const float diff1 = pix1[i] - pix2[i];
@@ -174,7 +174,7 @@ static inline float diff_of_pixels_diff(const float* const pix1, const float* pi
 
 #if defined(__SSE2__)
 // compute the channel-normed squared difference between two pixels; don't do horizontal sum until later
-static inline __m128 channel_difference_sse2(const float* const pix1, const float* pix2, const float norm[4])
+static inline __m128 channel_difference_sse2(const float* const pix1, const float* pix2, const dt_aligned_pixel_t norm)
 {
   const __m128 px1 = _mm_load_ps(pix1);
   const __m128 px2 = _mm_load_ps(pix2);
@@ -392,13 +392,13 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
 {
   // define the factors for applying blending between the original image and the denoised version
   // if running in RGB space, 'luma' should equal 'chroma'
-  const float DT_ALIGNED_PIXEL weight[4] = { params->luma, params->chroma, params->chroma, 1.0f };
-  const float DT_ALIGNED_PIXEL invert[4] = { 1.0f - params->luma, 1.0f - params->chroma, 1.0f - params->chroma, 0.0f };
+  const dt_aligned_pixel_t weight = { params->luma, params->chroma, params->chroma, 1.0f };
+  const dt_aligned_pixel_t invert = { 1.0f - params->luma, 1.0f - params->chroma, 1.0f - params->chroma, 0.0f };
   const bool skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
 
   // define the normalization to convert central pixel differences into central pixel weights
   const float cp_norm = compute_center_pixel_norm(params->center_weight,params->patch_radius);
-  const float DT_ALIGNED_PIXEL center_norm[4] = { cp_norm, cp_norm, cp_norm, 1.0f };
+  const dt_aligned_pixel_t center_norm = { cp_norm, cp_norm, cp_norm, 1.0f };
 
   // define the patches to be compared when denoising a pixel
   const size_t stride = 4 * roi_in->width;
@@ -482,7 +482,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
               distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
               const float wt = gh(distortion * sharpness);
               const float *const inpx = in+4*col;
-              const float DT_ALIGNED_PIXEL pixel[4] = { inpx[offset],  inpx[offset+1], inpx[offset+2], 1.0f };
+              const dt_aligned_pixel_t pixel = { inpx[offset],  inpx[offset+1], inpx[offset+2], 1.0f };
               for_four_channels(c,aligned(pixel,out:16))
               {
                 out[4*col+c] += pixel[c] * wt;
@@ -500,7 +500,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
                                            / (1.0f + params->center_weight);
               const float wt = gh(fmaxf(0.0f, dissimilarity * sharpness - 2.0f));
               const float *const inpx = in + 4*col;
-              const float DT_ALIGNED_PIXEL pixel[4] = { inpx[offset],  inpx[offset+1], inpx[offset+2], 1.0f };
+              const dt_aligned_pixel_t pixel = { inpx[offset],  inpx[offset+1], inpx[offset+2], 1.0f };
               for_four_channels(c,aligned(pixel,out:16))
               {
                 out[4*col+c] += pixel[c] * wt;
@@ -622,7 +622,7 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
 
   // define the normalization to convert central pixel differences into central pixel weights
   const float cp_norm = compute_center_pixel_norm(params->center_weight,params->patch_radius);
-  const float DT_ALIGNED_PIXEL center_norm[4] = { cp_norm, cp_norm, cp_norm, 1.0f };
+  const dt_aligned_pixel_t center_norm = { cp_norm, cp_norm, cp_norm, 1.0f };
 
   // define the patches to be compared when denoising a pixel
   const size_t stride = 4 * roi_in->width;
