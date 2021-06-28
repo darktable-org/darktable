@@ -1219,9 +1219,9 @@ static void apply_autocolor(dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 
   // Build the CDL-corrected samples (after the factors)
-  float samples_lift[3] = { 0.f };
-  float samples_gamma[3] = { 0.f };
-  float samples_gain[3] = { 0.f };
+  dt_aligned_pixel_t samples_lift = { 0.f };
+  dt_aligned_pixel_t samples_gamma = { 0.f };
+  dt_aligned_pixel_t samples_gain = { 0.f };
 
   for (int c = 0; c < 3; ++c)
   {
@@ -1231,8 +1231,8 @@ static void apply_autocolor(dt_iop_module_t *self)
   }
 
   // Get the average patches luma value (= neutral grey equivalents) after the CDL factors
-  float DT_ALIGNED_PIXEL greys[4] = { 0.0 };
-  float DT_ALIGNED_PIXEL XYZ[4] = { 0.0 };
+  dt_aligned_pixel_t greys = { 0.0 };
+  dt_aligned_pixel_t XYZ = { 0.0 };
   dt_prophotorgb_to_XYZ((const float *)samples_lift, (float *)XYZ);
   greys[0] = XYZ[1];
   dt_prophotorgb_to_XYZ((const float *)samples_gamma, (float *)XYZ);
@@ -1241,9 +1241,9 @@ static void apply_autocolor(dt_iop_module_t *self)
   greys[2] = XYZ[1];
 
   // Get the current params
-  float RGB_lift[3] = { p->lift[CHANNEL_RED] - 1.0f, p->lift[CHANNEL_GREEN] - 1.0f, p->lift[CHANNEL_BLUE] - 1.0f };
-  float RGB_gamma[3] = { p->gamma[CHANNEL_RED], p->gamma[CHANNEL_GREEN], p->gamma[CHANNEL_BLUE] };
-  float RGB_gain[3] = { p->gain[CHANNEL_RED], p->gain[CHANNEL_GREEN], p->gain[CHANNEL_BLUE] };
+  dt_aligned_pixel_t RGB_lift = { p->lift[CHANNEL_RED] - 1.0f, p->lift[CHANNEL_GREEN] - 1.0f, p->lift[CHANNEL_BLUE] - 1.0f };
+  dt_aligned_pixel_t RGB_gamma = { p->gamma[CHANNEL_RED], p->gamma[CHANNEL_GREEN], p->gamma[CHANNEL_BLUE] };
+  dt_aligned_pixel_t RGB_gain = { p->gain[CHANNEL_RED], p->gain[CHANNEL_GREEN], p->gain[CHANNEL_BLUE] };
 
   /** Optimization loop :
   * We try to find the CDL curves that neutralize the 3 input color patches, while not affecting the overall lightness.

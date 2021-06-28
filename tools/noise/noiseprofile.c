@@ -343,10 +343,10 @@ int main(int argc, char *arg[])
       for(int k=0;k<3;k++) std[i][k] *= max;
   // output variance per brightness level:
   // fprintf(stdout, "# bin std_r std_g std_b hist_r hist_g hist_b cdf_r cdf_g cdf_b\n");
-  float sum[3] = {0.0f};
+  dt_aligned_pixel_t sum = {0.0f};
   for(int i=0;i<N;i++)
     for(int k=0;k<3;k++) sum[k] += std[i][k];
-  float cdf[3] = {0.0f};
+  dt_aligned_pixel_t cdf = {0.0f};
   for(int i=0;i<N;i++)
   {
     fprintf(stdout, "%f %f %f %f %f %f %f %f %f %f\n", i/(float)N, std[i][0], std[i][1], std[i][2],

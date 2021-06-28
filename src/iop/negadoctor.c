@@ -510,7 +510,7 @@ static void WB_low_picker_update(dt_iop_module_t *self)
   GdkRGBA color;
   color.alpha = 1.0f;
 
-  float WB_low_invert[3];
+  dt_aligned_pixel_t WB_low_invert;
   for(size_t c = 0; c < 3; ++c) WB_low_invert[c] = 2.0f - p->wb_low[c];
   const float WB_low_max = v_maxf(WB_low_invert);
   for(size_t c = 0; c < 3; ++c) WB_low_invert[c] /= WB_low_max;
@@ -533,10 +533,7 @@ static void WB_low_picker_callback(GtkColorButton *widget, dt_iop_module_t *self
   GdkRGBA c;
   gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &c);
 
-  float RGB[3];
-  RGB[0] = 2.0f - c.red;
-  RGB[1] = 2.0f - c.green;
-  RGB[2] = 2.0f - c.blue;
+  dt_aligned_pixel_t RGB = { 2.0f - c.red, 2.0f - c.green, 2.0f - c.blue };
 
   float RGB_min = v_minf(RGB);
   for(size_t k = 0; k < 3; k++) p->wb_low[k] = RGB[k] / RGB_min;
@@ -561,7 +558,7 @@ static void WB_high_picker_update(dt_iop_module_t *self)
   GdkRGBA color;
   color.alpha = 1.0f;
 
-  float WB_high_invert[3];
+  dt_aligned_pixel_t WB_high_invert;
   for(size_t c = 0; c < 3; ++c) WB_high_invert[c] = 2.0f - p->wb_high[c];
   const float WB_high_max = v_maxf(WB_high_invert);
   for(size_t c = 0; c < 3; ++c) WB_high_invert[c] /= WB_high_max;
@@ -584,11 +581,7 @@ static void WB_high_picker_callback(GtkColorButton *widget, dt_iop_module_t *sel
   GdkRGBA c;
   gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &c);
 
-  float RGB[3];
-  RGB[0] = 2.0f - c.red;
-  RGB[1] = 2.0f - c.green;
-  RGB[2] = 2.0f - c.blue;
-
+  dt_aligned_pixel_t RGB = { 2.0f - c.red, 2.0f - c.green, 2.0f - c.blue };
   float RGB_min = v_minf(RGB);
   for(size_t k = 0; k < 3; k++) p->wb_high[k] = RGB[k] / RGB_min;
 
@@ -633,7 +626,7 @@ static void apply_auto_Dmax(dt_iop_module_t *self)
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
   dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
 
-  float RGB[3];
+  dt_aligned_pixel_t RGB;
   for(int c = 0; c < 3; c++)
   {
     RGB[c] = log10f(p->Dmin[c] / fmaxf(self->picked_color_min[c], THRESHOLD));
@@ -657,7 +650,7 @@ static void apply_auto_offset(dt_iop_module_t *self)
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
   dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
 
-  float RGB[3];
+  dt_aligned_pixel_t RGB;
   for(int c = 0; c < 3; c++)
     RGB[c] = log10f(p->Dmin[c] / fmaxf(self->picked_color_max[c], THRESHOLD)) / p->D_max;
 
@@ -680,7 +673,7 @@ static void apply_auto_WB_low(dt_iop_module_t *self)
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
   dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
 
-  float RGB_min[3];
+  dt_aligned_pixel_t RGB_min;
   for(int c = 0; c < 3; c++)
     RGB_min[c] = log10f(p->Dmin[c] / fmaxf(self->picked_color[c], THRESHOLD)) / p->D_max;
 
@@ -706,7 +699,7 @@ static void apply_auto_WB_high(dt_iop_module_t *self)
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
   dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
 
-  float RGB_min[3];
+  dt_aligned_pixel_t RGB_min;
   for(int c = 0; c < 3; c++)
     RGB_min[c] = fabsf(-1.0f / (p->offset * p->wb_low[c] - log10f(p->Dmin[c] / fmaxf(self->picked_color[c], THRESHOLD)) / p->D_max));
 
@@ -732,7 +725,7 @@ static void apply_auto_black(dt_iop_module_t *self)
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
   dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
 
-  float RGB[3];
+  dt_aligned_pixel_t RGB;
   for(int c = 0; c < 3; c++)
   {
     RGB[c] = -log10f(p->Dmin[c] / fmaxf(self->picked_color_max[c], THRESHOLD));
@@ -758,7 +751,7 @@ static void apply_auto_exposure(dt_iop_module_t *self)
   dt_iop_negadoctor_gui_data_t *g = (dt_iop_negadoctor_gui_data_t *)self->gui_data;
   dt_iop_negadoctor_params_t *p = (dt_iop_negadoctor_params_t *)self->params;
 
-  float RGB[3];
+  dt_aligned_pixel_t RGB;
   for(int c = 0; c < 3; c++)
   {
     RGB[c] = -log10f(p->Dmin[c] / fmaxf(self->picked_color_min[c], THRESHOLD));

@@ -424,7 +424,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(size_t k = 0; k < (size_t)ch * npixels; k += ch)
     {
-      float xyz[3];
+      dt_aligned_pixel_t xyz;
       dt_Lab_to_XYZ(in + k, xyz);
 
       for(int c = 0; c < 3; c++)

@@ -98,8 +98,8 @@ static inline gboolean _convert_color_space(const GdkRGBA *restrict sample, GdkR
   dt_iop_order_iccprofile_info_t *histogram_profile = dt_ioppr_get_histogram_profile_info(darktable.develop);
   dt_iop_order_iccprofile_info_t *display_profile = dt_ioppr_get_pipe_output_profile_info(darktable.develop->pipe);
 
-  float RGB[3] = { sample->red, sample->green, sample->blue };
-  float XYZ[3];
+  dt_aligned_pixel_t RGB = { sample->red, sample->green, sample->blue };
+  dt_aligned_pixel_t XYZ;
 
   if(!(histogram_profile && display_profile)) return TRUE; // no need to paint, color will be wrong
 
@@ -300,7 +300,7 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
     const float *picked_rgb = (i == 0) ? sample->picked_color_rgb_mean :
                               (i == 1) ? sample->picked_color_rgb_min
                                        : sample->picked_color_rgb_max;
-    float rgb[3];
+    dt_aligned_pixel_t rgb;
     for(size_t c = 0; c < 3; c++) rgb[c] = picked_rgb[c];
 
     GdkRGBA color_in = { rgb[0], rgb[1], rgb[2], 1.f };

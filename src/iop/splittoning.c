@@ -265,7 +265,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 static inline void update_colorpicker_color(GtkWidget *colorpicker, float hue, float sat)
 {
-  float rgb[3];
+  dt_aligned_pixel_t rgb;
   hsl2rgb(rgb, hue, sat, 0.5);
 
   GdkRGBA color = (GdkRGBA){.red = rgb[0], .green = rgb[1], .blue = rgb[2], .alpha = 1.0 };
@@ -274,7 +274,7 @@ static inline void update_colorpicker_color(GtkWidget *colorpicker, float hue, f
 
 static inline void update_saturation_slider_end_color(GtkWidget *slider, float hue)
 {
-  float rgb[3];
+  dt_aligned_pixel_t rgb;
   hsl2rgb(rgb, hue, 1.0, 0.5);
   dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
 }
@@ -284,7 +284,7 @@ static inline void update_balance_slider_colors(
     float shadow_hue,
     float highlight_hue)
 {
-  float rgb[3];
+  dt_aligned_pixel_t rgb;
   if(shadow_hue != -1)
   {
     hsl2rgb(rgb, shadow_hue, 1.0, 0.5);
@@ -336,7 +336,8 @@ static void colorpick_callback(GtkColorButton *widget, dt_iop_module_t *self)
 
   dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
 
-  float color[3], h, s, l;
+  dt_aligned_pixel_t color;
+  float h, s, l;
 
   GdkRGBA c;
   gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &c);
