@@ -272,7 +272,7 @@ inline static void histogram_helper_cs_Lab(const dt_dev_histogram_collection_par
 inline static void __attribute__((__unused__)) histogram_helper_cs_Lab_LCh_helper_process_pixel_float(
     const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel, uint32_t *histogram)
 {
-  float LCh[3];
+  dt_aligned_pixel_t LCh;
   dt_Lab_2_LCH(pixel, LCh);
   const uint32_t L = PS((LCh[0] / 100.f), histogram_params);
   const uint32_t C = PS((LCh[1] / (128.0f * sqrtf(2.0f))), histogram_params);

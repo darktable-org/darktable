@@ -29,7 +29,7 @@
 #define RAD2DEG(rad) (rad * 180.0 / M_PI)
 
 // http://www.brucelindbloom.com/index.html?Eqn_DeltaE_CIE76.html
-float dt_colorspaces_deltaE_1976(float Lab0[3], float Lab1[3])
+float dt_colorspaces_deltaE_1976(dt_aligned_pixel_t Lab0, dt_aligned_pixel_t Lab1)
 {
   float dE = 0.0;
   for(int i = 0; i < 3; i++)
@@ -41,7 +41,7 @@ float dt_colorspaces_deltaE_1976(float Lab0[3], float Lab1[3])
 }
 
 // http://www.brucelindbloom.com/index.html?Eqn_DeltaE_CIE2000.html
-float dt_colorspaces_deltaE_2000(float Lab0[3], float Lab1[3])
+float dt_colorspaces_deltaE_2000(dt_aligned_pixel_t Lab0, dt_aligned_pixel_t Lab1)
 {
   float L_ip = (Lab0[0] + Lab1[0]) * 0.5;
   float C1 = sqrtf(Lab0[1] * Lab0[1] + Lab0[2] * Lab0[2]);

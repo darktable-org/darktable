@@ -85,7 +85,7 @@ static inline void dt_imageio_dng_write_tiff_header(
   // uint32_t exif_offs;
   uint8_t buf[1024];
   uint8_t cnt = 0;
-  float coeff[3];
+  dt_aligned_pixel_t coeff;
   float XYZ_CAM[12];
   // this matrix is generic for XYZ->sRGB / D65
   int m[9] = { 3240454, -1537138, -498531, -969266, 1876010, 41556, 55643, -204025, 1057225 };

@@ -73,8 +73,8 @@ static inline double compute_error(
     const double Lt = target[0][i];
     const double L0 = tonecurve_apply(c, Lt);
     const double L1 = tonecurve_apply(c, Lt + residual_L[i]);
-    float Lab0[3] = { L0, target[1][i], target[2][i] };
-    float Lab1[3] = { L1, target[1][i], target[2][i] };
+    dt_aligned_pixel_t Lab0 = { L0, target[1][i], target[2][i] };
+    dt_aligned_pixel_t Lab1 = { L1, target[1][i], target[2][i] };
     const double localerr = dt_colorspaces_deltaE_2000(Lab0, Lab1);
     err += localerr;
 #else
@@ -94,8 +94,8 @@ static inline double compute_error(
     const double Lt = target[0][i];
     const double L0 = tonecurve_apply(c, Lt);
     const double L1 = tonecurve_apply(c, Lt + residual_L[i]);
-    float Lab0[3] = {L0, target[1][i], target[2][i]};
-    float Lab1[3] = {L1, target[1][i], target[2][i]};
+    dt_aligned_pixel_t Lab0 = {L0, target[1][i], target[2][i]};
+    dt_aligned_pixel_t Lab1 = {L1, target[1][i], target[2][i]};
     err += dt_colorspaces_deltaE_2000(Lab0, Lab1);
 #else
     const double Lt = target[0][i];

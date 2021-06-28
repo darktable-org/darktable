@@ -713,7 +713,7 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in
 
       const int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
 
-      float p[3];
+      dt_aligned_pixel_t p;
       float num = 0;
 
       // upper left 2x2 block of sampling region
@@ -874,7 +874,7 @@ void dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(float *out, const float *
 
     for(int x = 0; x < roi_out->width; x++, outc += 4)
     {
-      float col[3] = { 0.0f };
+      dt_aligned_pixel_t col = { 0.0f };
       int num = 0;
       const int px = CLAMPS((int)round((x + roi_out->x - 0.5f) * px_footprint), 0, roi_in->width - 3);
       const int xmax = MIN(roi_in->width - 3, px + 3 * samples);

@@ -35,8 +35,8 @@ typedef enum dt_color_checker_targets
 // helper to deal with patch color
 typedef struct dt_color_checker_patch
 {
-  const char *name;     // mnemonic name for the patch
-  float Lab[3];         // reference color in CIE Lab
+  const char *name;        // mnemonic name for the patch
+  dt_aligned_pixel_t Lab;  // reference color in CIE Lab
 
   // (x, y) position of the patch center, relatively to the guides (white dots)
   // in ratio of the grid dimension along that axis
