@@ -331,8 +331,8 @@ blendif_factor_rgb_hsl(const float4 input, const float4 output,
 }
 
 
-inline float4 rgb_to_JzCzhz(float4 rgb, constant dt_colorspaces_iccprofile_info_cl_t *profile_info,
-                            read_only image2d_t profile_lut, const int use_work_profile)
+static inline float4 rgb_to_JzCzhz(float4 rgb, constant dt_colorspaces_iccprofile_info_cl_t *profile_info,
+                                   read_only image2d_t profile_lut, const int use_work_profile)
 {
   float4 xyz = rgb;
   if(use_work_profile != 0)
