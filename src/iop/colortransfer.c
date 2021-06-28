@@ -282,7 +282,7 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
       for(int k = 0; k < n; k++)
       {
         const float L = col[3 * (roi->width * j + i)];
-        const float Lab[3] = { L, col[3 * (roi->width * j + i) + 1], col[3 * (roi->width * j + i) + 2] };
+        const dt_aligned_pixel_t Lab = { L, col[3 * (roi->width * j + i) + 1], col[3 * (roi->width * j + i) + 2] };
         // determine dist to mean_out
         const int c = get_cluster(Lab, n, mean_out);
 #ifdef _OPENMP
@@ -411,7 +411,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       for(int i = 0; i < roi_out->width; i++)
       {
         const float L = in[j];
-        const float Lab[3] = { L, in[j + 1], in[j + 2] };
+        const dt_aligned_pixel_t Lab = { L, in[j + 1], in[j + 2] };
 // a, b: subtract mean, scale nvar/var, add nmean
 #if 0 // single cluster, gives color banding
         const int ki = get_cluster(in + j, data->n, mean);
