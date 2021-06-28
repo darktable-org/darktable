@@ -819,10 +819,10 @@ static void dt_interpolation_compute_pixel4c_plain(const struct dt_interpolation
     in = in - (itor->width - 1) * (4 + linestride);
 
     // Apply the kernel
-    float pixel[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    dt_aligned_pixel_t pixel = { 0.0f, 0.0f, 0.0f, 0.0f };
     for(int i = 0; i < 2 * itor->width; i++)
     {
-      float h[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      dt_aligned_pixel_t h = { 0.0f, 0.0f, 0.0f, 0.0f };
       for(int j = 0; j < 2 * itor->width; j++)
       {
         for(int c = 0; c < 3; c++) h[c] += kernelh[j] * in[j * 4 + c];
@@ -853,11 +853,11 @@ static void dt_interpolation_compute_pixel4c_plain(const struct dt_interpolation
     prepare_tap_boundaries(&ytap_first, &ytap_last, bordermode, 2 * itor->width, iy, height);
 
     // Apply the kernel
-    float pixel[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    dt_aligned_pixel_t pixel = { 0.0f, 0.0f, 0.0f, 0.0f };
     for(int i = ytap_first; i < ytap_last; i++)
     {
       const int clip_y = clip(iy + i, 0, height - 1, bordermode);
-      float h[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      dt_aligned_pixel_t h = { 0.0f, 0.0f, 0.0f, 0.0f };
       for(int j = xtap_first; j < xtap_last; j++)
       {
         const int clip_x = clip(ix + j, 0, width - 1, bordermode);

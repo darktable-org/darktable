@@ -194,7 +194,7 @@ static inline void illuminant_xy_to_XYZ(const float x, const float y, float XYZ[
 static inline void illuminant_xy_to_RGB(const float x, const float y, float RGB[4])
 {
   // Get an sRGB preview of current illuminant
-  float DT_ALIGNED_PIXEL XYZ[4];
+  dt_aligned_pixel_t XYZ;
   illuminant_xy_to_XYZ(x, y, XYZ);
 
   // Fixme : convert to RGB display space instead of sRGB but first the display profile should be global in dt,
@@ -330,8 +330,7 @@ static inline int illuminant_to_xy(const dt_illuminant_t illuminant, // primary 
 static inline void WB_coeffs_to_illuminant_xy(const float CAM_to_XYZ[4][3], const float WB[4], float *x, float *y)
 {
   // Find the illuminant chromaticity x y from RAW WB coeffs and camera input matrice
-  float XYZ[4];
-  float LMS[4];
+  dt_aligned_pixel_t XYZ, LMS;
   // Simulate white point, aka convert (1, 1, 1) in camera space to XYZ
   // warning : we multiply the transpose of CAM_to_XYZ  since the pseudoinverse transposes it
   XYZ[0] = CAM_to_XYZ[0][0] / WB[0] + CAM_to_XYZ[1][0] / WB[1] + CAM_to_XYZ[2][0] / WB[2];
@@ -406,10 +405,7 @@ static int find_temperature_from_raw_coeffs(const dt_image_t *img, const float c
   if(!has_valid_coeffs) return FALSE;
 
   // Get white balance camera factors
-  float WB[4] = { img->wb_coeffs[0],
-                  img->wb_coeffs[1],
-                  img->wb_coeffs[2],
-                  img->wb_coeffs[3] };
+  dt_aligned_pixel_t WB = { img->wb_coeffs[0], img->wb_coeffs[1], img->wb_coeffs[2], img->wb_coeffs[3] };
 
   // Adapt the camera coeffs with custom white balance if provided
   // this can deal with WB coeffs that don't use the input matrix reference

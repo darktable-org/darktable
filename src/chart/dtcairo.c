@@ -196,7 +196,7 @@ cairo_surface_t *cairo_surface_create_from_xyz_data(const float *const image, co
     const float *iter = image + y * width * 3;
     for(int x = 0; x < width; x++, iter += 3)
     {
-      float DT_ALIGNED_PIXEL sRGB[4];
+      dt_aligned_pixel_t sRGB;
       int32_t pixel = 0;
       dt_XYZ_to_sRGB_clipped(iter, sRGB);
       for(int c = 0; c < 3; c++) pixel |= ((int)(sRGB[c] * 255) & 0xff) << (16 - c * 8);

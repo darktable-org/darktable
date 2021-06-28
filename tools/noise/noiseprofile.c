@@ -164,7 +164,8 @@ int main(int argc, char *arg[])
   // correction requested?
   if(argc >= 9 && !strcmp(arg[2], "-c"))
   {
-    const float a[3] = {atof(arg[3]), atof(arg[4]), atof(arg[5])}, b[3] = {atof(arg[6]), atof(arg[7]), atof(arg[8])};
+    const dt_aligned_pixel_t a = { atof(arg[3]), atof(arg[4]), atof(arg[5]) },
+                             b = { atof(arg[6]), atof(arg[7]), atof(arg[8]) };
     // const float m[3] = {1, 1, 1};
     //   2.0f*sqrt(a[0]*1.0f+b[0])/a[0],
     //   2.0f*sqrt(a[1]*1.0f+b[1])/a[1],

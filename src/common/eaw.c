@@ -69,10 +69,10 @@ static inline __m128 weight_sse2(const __m128 *c1, const __m128 *c2, const float
   do                                                                                                         \
   {                                                                                                          \
     const float f = filter[(ii)] * filter[(jj)];                                                             \
-    float DT_ALIGNED_PIXEL wp[4];                                                                            \
+    dt_aligned_pixel_t wp;                                                                                   \
     weight(px, px2, sharpen, wp);                                                                            \
-    float DT_ALIGNED_PIXEL w[4];                                                                             \
-    float DT_ALIGNED_PIXEL pd[4];                                                                            \
+    dt_aligned_pixel_t w;                                                                                    \
+    dt_aligned_pixel_t pd;                                                                                   \
     for_four_channels(c,aligned(px2))                                                                        \
     {                                                                                                        \
       w[c] = f * wp[c];                                                                                      \
@@ -96,8 +96,8 @@ static inline __m128 weight_sse2(const __m128 *c1, const __m128 *c2, const float
 #endif
 
 #define SUM_PIXEL_PROLOGUE                                                                                   \
-  float DT_ALIGNED_PIXEL sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };                                                \
-  float DT_ALIGNED_PIXEL wgt[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+  dt_aligned_pixel_t sum = { 0.0f, 0.0f, 0.0f, 0.0f };                                                       \
+  dt_aligned_pixel_t wgt = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 #if defined(__SSE2__)
 #define SUM_PIXEL_PROLOGUE_SSE                                                                               \
@@ -387,7 +387,7 @@ static inline float dn_weight_sse(const __m128 *c1, const __m128 *c2, const floa
 
 typedef struct _aligned_pixel {
   union {
-    float DT_ALIGNED_PIXEL v[4];
+    dt_aligned_pixel_t v;
 #ifdef __SSE2__
     __m128 sse;
 #endif
@@ -410,7 +410,7 @@ static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newva
     const float f = filter[(ii)] * filter[(jj)];                                                             \
     const float wp = dn_weight(px, px2, inv_sigma2);                                                         \
     const float w = f * wp;                                                                                  \
-    float DT_ALIGNED_PIXEL pd[4];                                                                            \
+    dt_aligned_pixel_t pd;                                                                                   \
     for_each_channel(c,aligned(px2))                                                                         \
     {                                                                                                        \
       pd[c] = w * px2[c];                                                                                    \
@@ -461,7 +461,7 @@ static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newva
 #endif
 
 void eaw_dn_decompose(float *const restrict out, const float *const restrict in, float *const restrict detail,
-                      float sum_squared[4], const int scale, const float inv_sigma2,
+                      dt_aligned_pixel_t sum_squared, const int scale, const float inv_sigma2,
                       const int32_t width, const int32_t height)
 {
   const int mult = 1u << scale;
@@ -556,7 +556,7 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
 
 #if defined(__SSE2__)
 void eaw_dn_decompose_sse(float *const restrict out, const float *const restrict in, float *const restrict detail,
-                                 float sum_squared[4], const int scale, const float inv_sigma2,
+                          dt_aligned_pixel_t sum_squared, const int scale, const float inv_sigma2,
                                  const int32_t width, const int32_t height)
 {
   const int mult = 1u << scale;

@@ -359,8 +359,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_bilateral_free(b);
   }
 
-  const float max[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-  const float min[4] = { 0.0f, -1.0f, -1.0f, 0.0f };
+  const dt_aligned_pixel_t max = { 1.0f, 1.0f, 1.0f, 1.0f };
+  const dt_aligned_pixel_t min = { 0.0f, -1.0f, -1.0f, 0.0f };
   const float lmin = 0.0f;
   const float lmax = max[0] + fabsf(min[0]);
   const float halfmax = lmax / 2.0;

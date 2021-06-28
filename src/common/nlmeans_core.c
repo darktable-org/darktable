@@ -148,7 +148,7 @@ static float compute_center_pixel_norm(const float center_weight, const int radi
 // compute the channel-normed squared difference between two pixels
 static inline float pixel_difference(const float* const pix1, const float* pix2, const float norm[4])
 {
-  float DT_ALIGNED_PIXEL sum[4] = { 0.f, 0.f, 0.f, 0.f };
+  dt_aligned_pixel_t sum = { 0.f, 0.f, 0.f, 0.f };
   for_each_channel(i, aligned(sum:16))
   {
     const float diff = pix1[i] - pix2[i];

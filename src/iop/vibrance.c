@@ -124,7 +124,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float sw = sqrtf((in[k + 1] * in[k + 1]) + (in[k + 2] * in[k + 2])) / 256.0f;
     const float ls = 1.0f - ((amount * sw) * .25f);
     const float ss = 1.0f + (amount * sw);
-    const float weights[4] = { ls, ss, ss, 1.0f };
+    const dt_aligned_pixel_t weights = { ls, ss, ss, 1.0f };
 #ifdef _OPENMP
 #pragma omp simd aligned(in, out : 16)
 #endif

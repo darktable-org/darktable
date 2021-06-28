@@ -375,7 +375,7 @@ static void blur_horizontal_4ch(float *const restrict buf, const size_t height, 
   for(int y = 0; y < height; y++)
   {
     float *const restrict scratch = dt_get_perthread(scanlines,padded_size);
-    float DT_ALIGNED_PIXEL L[4] = { 0, 0, 0, 0 };
+    dt_aligned_pixel_t L = { 0, 0, 0, 0 };
     size_t hits = 0;
     const size_t index = (size_t)4 * y * width;
     float *const restrict bufp = buf + index;
@@ -427,8 +427,8 @@ static void blur_horizontal_4ch(float *const restrict buf, const size_t height, 
 static void blur_horizontal_4ch_Kahan(float *const restrict buf, const size_t width,
                                       const size_t radius, float *const restrict scratch)
 {
-  float DT_ALIGNED_PIXEL L[4] = { 0, 0, 0, 0 };
-  float DT_ALIGNED_PIXEL comp[4] = { 0, 0, 0, 0 };
+  dt_aligned_pixel_t L = { 0, 0, 0, 0 };
+  dt_aligned_pixel_t comp = { 0, 0, 0, 0 };
   size_t hits = 0;
   // add up the left half of the window
   for (size_t x = 0; x < MIN(radius,width) ; x++)
@@ -817,7 +817,7 @@ static void blur_vertical_4wide(float *const restrict buf, const size_t height, 
   size_t mask = 1;
   for(size_t r = (2*radius+1); r > 1 ; r >>= 1) mask = (mask << 1) | 1;
 
-  float DT_ALIGNED_PIXEL L[4] = { 0, 0, 0, 0 };
+  dt_aligned_pixel_t L = { 0, 0, 0, 0 };
   size_t hits = 0;
   // add up the left half of the window
   for (size_t y = 0; y < MIN(radius, height); y++)
@@ -876,8 +876,8 @@ static void blur_vertical_4wide_Kahan(float *const restrict buf, const size_t he
   size_t mask = 1;
   for(size_t r = (2*radius+1); r > 1 ; r >>= 1) mask = (mask << 1) | 1;
 
-  float DT_ALIGNED_PIXEL L[4] = { 0, 0, 0, 0 };
-  float DT_ALIGNED_PIXEL comp[4] = { 0, 0, 0, 0 };
+  dt_aligned_pixel_t L = { 0, 0, 0, 0 };
+  dt_aligned_pixel_t comp = { 0, 0, 0, 0 };
   size_t hits = 0;
   // add up the left half of the window
   for (size_t y = 0; y < MIN(radius, height); y++)

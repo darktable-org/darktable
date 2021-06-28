@@ -229,7 +229,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float *const m = piece->pipe->dsc.processed_maximum;
 
-  const float film_rgb_f[4]
+  const dt_aligned_pixel_t film_rgb_f
       = { d->color[0] * m[0], d->color[1] * m[1], d->color[2] * m[2], d->color[3] * m[3] };
 
   // FIXME: it could be wise to make this a NOP when picking colors. not sure about that though.
@@ -313,7 +313,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
   const float *const m = piece->pipe->dsc.processed_maximum;
 
-  const float film_rgb_f[4]
+  const dt_aligned_pixel_t film_rgb_f
       = { d->color[0] * m[0], d->color[1] * m[1], d->color[2] * m[2], d->color[3] * m[3] };
 
   // FIXME: it could be wise to make this a NOP when picking colors. not sure about that though.

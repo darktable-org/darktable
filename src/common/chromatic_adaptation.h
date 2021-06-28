@@ -167,7 +167,7 @@ static inline void convert_any_XYZ_to_LMS(const float XYZ[4], float LMS[4], dt_a
 static inline void convert_any_LMS_to_RGB(const float LMS[4], float RGB[4], dt_adaptation_t kind)
 {
   // helper function switching internally to the proper conversion
-  float DT_ALIGNED_PIXEL XYZ[4] = { 0.f };
+  dt_aligned_pixel_t XYZ = { 0.f };
   convert_any_LMS_to_XYZ(LMS, XYZ, kind);
 
   // Fixme : convert to RGB display space instead of sRGB but first the display profile should be global in dt,

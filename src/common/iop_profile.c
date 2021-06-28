@@ -377,7 +377,7 @@ static inline void _transform_rgb_to_lab_matrix(const float *const restrict imag
     for(size_t y = 0; y < stride; y += ch)
     {
       float *const restrict in = __builtin_assume_aligned(image_out + y, 16);
-      float xyz[4] DT_ALIGNED_PIXEL; // already inited in _ioppr_linear_rgb_matrix_to_xyz()
+      dt_aligned_pixel_t xyz; // inited in _ioppr_linear_rgb_matrix_to_xyz()
       _ioppr_linear_rgb_matrix_to_xyz(in, xyz, matrix);
       dt_XYZ_to_Lab(xyz, in);
     }
@@ -394,7 +394,7 @@ static inline void _transform_rgb_to_lab_matrix(const float *const restrict imag
       const float *const restrict in = __builtin_assume_aligned(image_in + y, 16);
       float *const restrict out = __builtin_assume_aligned(image_out + y, 16);
 
-      float xyz[4] DT_ALIGNED_PIXEL; // already inited in _ioppr_linear_rgb_matrix_to_xyz()
+      dt_aligned_pixel_t xyz; // inited in _ioppr_linear_rgb_matrix_to_xyz()
       _ioppr_linear_rgb_matrix_to_xyz(in, xyz, matrix);
       dt_XYZ_to_Lab(xyz, out);
     }
@@ -420,7 +420,7 @@ static inline void _transform_lab_to_rgb_matrix(const float *const restrict imag
     const float *const restrict in = __builtin_assume_aligned(image_in + y, 16);
     float *const restrict out = __builtin_assume_aligned(image_out + y, 16);
 
-    float xyz[4] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t xyz;
     dt_Lab_to_XYZ(in, xyz);
     _ioppr_xyz_to_linear_rgb_matrix(xyz, out, matrix);
   }
@@ -469,8 +469,8 @@ static inline void _transform_matrix_rgb(const float *const restrict image_in,
     {
       const float *const restrict in = __builtin_assume_aligned(image_in + y, 16);
       float *const restrict out = __builtin_assume_aligned(image_out + y, 16);
-      float rgb[4] DT_ALIGNED_PIXEL;
-      float temp[4] DT_ALIGNED_PIXEL = { 0.f };
+      dt_aligned_pixel_t rgb;
+      dt_aligned_pixel_t temp = { 0.f };
 
       // linearize if non-linear input
       for(size_t c = 0; c < 3; c++)
