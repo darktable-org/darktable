@@ -347,7 +347,7 @@ static inline void dt_ioppr_xyz_to_rgb_matrix(const float xyz[4], float rgb[4],
 {
   if(nonlinearlut)
   {
-    float linear_rgb[3] DT_ALIGNED_PIXEL;
+    dt_aligned_pixel_t linear_rgb;
     _ioppr_xyz_to_linear_rgb_matrix(xyz, linear_rgb, matrix_out);
     _apply_trc(linear_rgb, rgb, lut_out, unbounded_coeffs_out, lutsize);
   }

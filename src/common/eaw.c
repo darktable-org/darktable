@@ -28,9 +28,9 @@
 
 static inline void weight(const float *c1, const float *c2, const float sharpen, float *weight)
 {
-  float DT_ALIGNED_PIXEL square[4];
-  for(int c = 0; c < 3; c++) square[c] = c1[c] - c2[c];
-  for(int c = 0; c < 3; c++) square[c] = square[c] * square[c];
+  dt_aligned_pixel_t square;
+  for_each_channel(c) square[c] = c1[c] - c2[c];
+  for_each_channel(c) square[c] = square[c] * square[c];
 
   const float wl = dt_fast_expf(-sharpen * square[0]);
   const float wc = dt_fast_expf(-sharpen * (square[1] + square[2]));
@@ -358,9 +358,9 @@ void eaw_synthesize_sse2(float *const out, const float *const in, const float *c
 static inline float dn_weight(const float *c1, const float *c2, const float inv_sigma2)
 {
   // 3d distance based on color
-  float DT_ALIGNED_PIXEL sqr[4];
-  for(int c = 0; c < 3; c++) // don't use for_each_channel here, that substantially hurts performance by preventing
-  {                          // other vectorization
+  dt_aligned_pixel_t sqr;
+  for_each_channel(c)
+  {
     const float diff = c1[c] - c2[c];
     sqr[c] = diff * diff;
   }

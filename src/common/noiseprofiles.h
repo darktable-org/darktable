@@ -28,8 +28,8 @@ typedef struct dt_noiseprofile_t
   char *maker;
   char *model;
   int iso;
-  float a[3]; // poissonian part
-  float b[3]; // gaussian part
+  float a[4]; // poissonian part; use 4 instead of 3 elements to aid vectorization
+  float b[4]; // gaussian part
 }
 dt_noiseprofile_t;
 
