@@ -1643,6 +1643,15 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
 
     _snap_to_grid(ps, &ps->x1, &ps->y1);
   }
+  else if(ps->selected > 0
+          && (which == 2 || (which == 1 && dt_modifier_is(state, GDK_CONTROL_MASK))))
+  {
+    // middle click (or ctrl-click), move selected image down
+    dt_image_box b;
+    memcpy(&b, &ps->imgs.box[ps->selected], sizeof(dt_image_box));
+    memcpy(&ps->imgs.box[ps->selected], &ps->imgs.box[ps->selected-1], sizeof(dt_image_box));
+    memcpy(&ps->imgs.box[ps->selected-1], &b, sizeof(dt_image_box));
+  }
   else if(ps->selected != -1 && which == 1)
   {
     dt_image_box *b = &ps->imgs.box[ps->selected];
