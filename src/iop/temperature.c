@@ -1028,8 +1028,10 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
       coeffs_tint[3] /= coeffs_tint[1];
       coeffs_tint[1] = 1.0;
 
-      float sRGB_K[3] = { dayligh_white[0]*coeffs_K[0], dayligh_white[1]*coeffs_K[1], dayligh_white[2]*coeffs_K[2] };
-      float sRGB_tint[3] = {cur_white[0]*coeffs_tint[0], cur_white[1]*coeffs_tint[1], cur_white[2]*coeffs_tint[2]};
+      dt_aligned_pixel_t sRGB_K = { dayligh_white[0]*coeffs_K[0], dayligh_white[1]*coeffs_K[1],
+                                    dayligh_white[2]*coeffs_K[2] };
+      dt_aligned_pixel_t sRGB_tint = {cur_white[0]*coeffs_tint[0], cur_white[1]*coeffs_tint[1],
+                                      cur_white[2]*coeffs_tint[2]};
       const float maxsRGB_K = fmaxf(fmaxf(sRGB_K[0], sRGB_K[1]), sRGB_K[2]);
       const float maxsRGB_tint = fmaxf(fmaxf(sRGB_tint[0], sRGB_tint[1]),sRGB_tint[2]);
 
