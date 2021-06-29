@@ -1657,6 +1657,8 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
     ps->has_changed = TRUE;
 
     _get_control(ps, x, y);
+
+    dt_control_change_cursor(GDK_HAND1);
   }
   else if(ps->selected != -1 && which == 3)
   {
