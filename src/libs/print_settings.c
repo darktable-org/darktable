@@ -1637,7 +1637,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
 
     _snap_to_grid(ps, &ps->x1, &ps->y1);
   }
-  else if(ps->selected != -1)
+  else if(ps->selected != -1 && which == 1)
   {
     dt_image_box *b = &ps->imgs.box[ps->selected];
 
@@ -1651,6 +1651,19 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
     ps->has_changed = TRUE;
 
     _get_control(ps, x, y);
+  }
+  else if(ps->selected != -1 && which == 3)
+  {
+    dt_image_box *b = &ps->imgs.box[ps->selected];
+
+    // if image present remove it, otherwise remove the box
+    if(b->imgid != -1)
+      b->imgid = -1;
+    else
+      dt_printing_clear_box(b);
+
+    ps->last_selected = ps->selected;
+    ps->has_changed = TRUE;
   }
 
   return 0;
