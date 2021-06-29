@@ -177,6 +177,8 @@ static void dt_control_image_enumerator_cleanup(void *p)
 
   g_list_free(params->index);
   params->index = NULL;
+  //FIXME: we need to free params->data to avoid a memory leak, but doing so here causes memory corruption....
+//  g_free(params->data);
 
   free(params);
 }
@@ -1466,6 +1468,7 @@ static void dt_control_gpx_apply_job_cleanup(void *p)
   dt_control_image_enumerator_t *params = p;
 
   dt_control_gpx_apply_t *data = params->data;
+  params->data = NULL;
   g_free(data->filename);
   g_free(data->tz);
 
@@ -1700,6 +1703,7 @@ void dt_control_move_images()
 
   // ugly, but we need to set this after constructing the job:
   ((dt_control_image_enumerator_t *)dt_control_job_get_params(job))->data = dir;
+  // the job's cleanup function is responsible for freeing dir, so we don't do that here
 
   if(dt_conf_get_bool("ask_before_move"))
   {
@@ -1722,7 +1726,6 @@ void dt_control_move_images()
     if(res != GTK_RESPONSE_YES) goto abort;
   }
 
-  g_free(dir);
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
   return;
 
@@ -1773,6 +1776,7 @@ void dt_control_copy_images()
 
   // ugly, but we need to set this after constructing the job:
   ((dt_control_image_enumerator_t *)dt_control_job_get_params(job))->data = dir;
+  // the job's cleanup function is responsible for freeing dir, so we don't do that here
 
   if(dt_conf_get_bool("ask_before_copy"))
   {
@@ -1792,7 +1796,6 @@ void dt_control_copy_images()
     if(res != GTK_RESPONSE_YES) goto abort;
   }
 
-  g_free(dir);
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
   return;
 
