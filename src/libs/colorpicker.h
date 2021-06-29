@@ -34,13 +34,13 @@ typedef struct dt_colorpicker_sample_t
   int locked;
 
   /** The actual picked colors */
-  float picked_color_rgb_mean[3];
-  float picked_color_rgb_min[3];
-  float picked_color_rgb_max[3];
+  dt_aligned_pixel_t picked_color_rgb_mean;
+  dt_aligned_pixel_t picked_color_rgb_min;
+  dt_aligned_pixel_t picked_color_rgb_max;
 
-  float picked_color_lab_mean[3];
-  float picked_color_lab_min[3];
-  float picked_color_lab_max[3];
+  dt_aligned_pixel_t picked_color_lab_mean;
+  dt_aligned_pixel_t picked_color_lab_min;
+  dt_aligned_pixel_t picked_color_lab_max;
 
   /** The GUI elements */
   GtkWidget *container;
