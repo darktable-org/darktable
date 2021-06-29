@@ -451,31 +451,6 @@ static inline void transform(float *x, float *o, const float *m, const float t_h
   o[0] *= (1.0f + o[1] * t_v);
 }
 
-static void _check_crop_values(dt_iop_module_t *self)
-{
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  if(!g) return;
-
-  ++darktable.gui->reset;
-  if(g->clip_x != p->cx || g->clip_y != p->cy || g->clip_w != fabsf(p->cw) - p->cx
-     || g->clip_h != fabsf(p->ch) - p->cy)
-  {
-    gchar *er = dt_util_dstrcat(NULL,
-                                _("incorrect crop data have been detected\n"
-                                  "we have sanitized them, but this is a bug.\n"
-                                  "if you manage to reproduce, please fill an issue in github\n"
-                                  "so we can try to fix it. thanks !\n"
-                                  "incorrect datas : x=%0.04f y=%0.04f w=%0.04f h=%0.04f"),
-                                p->cx, p->cy, p->cw, p->ch);
-    dt_iop_set_module_trouble_message(self, _("incorrect crop"), er, "incorrect crop");
-    g_free(er);
-  }
-  else
-    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
-  --darktable.gui->reset;
-}
-
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points, size_t points_count)
 {
   // as dt_iop_roi_t contain int values and not floats, we can have some rounding errors
@@ -1365,8 +1340,7 @@ static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *
   {
     dt_image_update_final_size(self->dev->preview_pipe->output_imgid);
   }
-  // verify that we have sane crop value in parameters
-  _check_crop_values(self);
+
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_preview_updated_callback), self);
   // force max size to be recomputed
   g->clip_max_pipe_hash = 0;
@@ -1882,9 +1856,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   --darktable.gui->reset;
 
-  // if we have clamp something, let's inform the user that there's an error
-  _check_crop_values(self);
-
   commit_box(self, g, p);
 
   if(w == g->crop_auto) dt_control_queue_redraw_center();
@@ -2051,8 +2022,6 @@ void gui_update(struct dt_iop_module_t *self)
   g->clip_y = CLAMPF(p->cy, 0.0f, 0.9f);
   g->clip_w = CLAMPF(fabsf(p->cw) - p->cx, 0.1f, 1.0f - g->clip_x);
   g->clip_h = CLAMPF(fabsf(p->ch) - p->cy, 0.1f, 1.0f - g->clip_y);
-  // if we have clamp something, let's inform the user that there's an error
-  _check_crop_values(self);
 
   dt_bauhaus_combobox_set(g->crop_auto, p->crop_auto);
 }
