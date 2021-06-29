@@ -1721,7 +1721,7 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   if(thumb->container == DT_THUMBNAIL_CONTAINER_LIGHTTABLE)
   {
     // we get the corresponding size
-    const char *txt = dt_conf_get_conststring("plugins/lighttable/thumbnail_sizes");
+    const char *txt = dt_conf_get_string_const("plugins/lighttable/thumbnail_sizes");
     gchar **ts = g_strsplit(txt, "|", -1);
     int i = 0;
     while(ts[i])

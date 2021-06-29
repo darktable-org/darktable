@@ -421,7 +421,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_png_t *d = (dt_imageio_png_t *)calloc(1, sizeof(dt_imageio_png_t));
-  const char *bpp = dt_conf_get_conststring("plugins/imageio/format/png/bpp");
+  const char *bpp = dt_conf_get_string_const("plugins/imageio/format/png/bpp");
   d->bpp = atoi(bpp);
   if(d->bpp != 8 && d->bpp != 16)
     d->bpp = 8;
@@ -510,7 +510,7 @@ void gui_init(dt_imageio_module_format_t *self)
 {
   dt_imageio_png_gui_t *gui = (dt_imageio_png_gui_t *)malloc(sizeof(dt_imageio_png_gui_t));
   self->gui_data = (void *)gui;
-  const char *conf_bpp = dt_conf_get_conststring("plugins/imageio/format/png/bpp");
+  const char *conf_bpp = dt_conf_get_string_const("plugins/imageio/format/png/bpp");
   int bpp = atoi(conf_bpp);
 
   // PNG compression level might actually be zero!

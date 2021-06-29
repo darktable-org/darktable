@@ -305,14 +305,14 @@ gchar *dt_conf_get_string(const char *name)
   return g_strdup(str);
 }
 
-const char *dt_conf_get_conststring(const char *name)
+const char *dt_conf_get_string_const(const char *name)
 {
   return dt_conf_get_var(name);
 }
 
 gboolean dt_conf_get_folder_to_file_chooser(const char *name, GtkWidget *chooser)
 {
-  const gchar *folder = dt_conf_get_conststring(name);
+  const gchar *folder = dt_conf_get_string_const(name);
   if (folder)
   {
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser),folder);

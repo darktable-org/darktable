@@ -1117,7 +1117,7 @@ static uint32_t _lib_modulegroups_get(dt_lib_module_t *self)
 static dt_lib_modulegroup_iop_visibility_type_t _preset_retrieve_old_search_pref(gchar **ret)
 {
   // show the search box ?
-  const char *show_text_entry = dt_conf_get_conststring("plugins/darkroom/search_iop_by_text");
+  const char *show_text_entry = dt_conf_get_string_const("plugins/darkroom/search_iop_by_text");
   dt_lib_modulegroup_iop_visibility_type_t val = DT_MODULEGROUP_SEARCH_IOP_TEXT_GROUPS_VISIBLE;
 
   if(strcmp(show_text_entry, "show search text") == 0)
@@ -2086,7 +2086,7 @@ static void _manage_editor_save(dt_lib_module_t *self)
   g_free(params);
 
   // update groups
-  const char *preset = dt_conf_get_conststring("plugins/darkroom/modulegroups_preset");
+  const char *preset = dt_conf_get_string_const("plugins/darkroom/modulegroups_preset");
   if(g_strcmp0(preset, d->edit_preset) == 0)
   {
     // and we update the gui
@@ -3643,7 +3643,7 @@ static void _manage_preset_delete(GtkWidget *widget, dt_lib_module_t *self)
     // if the deleted preset was the one currently in use, load default preset
     if(dt_conf_key_exists("plugins/darkroom/modulegroups_preset"))
     {
-      const char *cur = dt_conf_get_conststring("plugins/darkroom/modulegroups_preset");
+      const char *cur = dt_conf_get_string_const("plugins/darkroom/modulegroups_preset");
       if(g_strcmp0(cur, d->edit_preset) == 0)
       {
         dt_conf_set_string("plugins/darkroom/modulegroups_preset", C_("modulegroup", FALLBACK_PRESET_NAME));
@@ -3825,7 +3825,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   gtk_widget_show_all(vb_main);
 
   // and we select the current one
-  const char *preset = dt_conf_get_conststring("plugins/darkroom/modulegroups_preset");
+  const char *preset = dt_conf_get_string_const("plugins/darkroom/modulegroups_preset");
   _manage_editor_load(preset, self);
 
   gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(d->dialog))), vb_main);
@@ -3861,7 +3861,7 @@ void view_enter(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
     dt_gui_key_accel_block_on_focus_connect(d->text_entry);
 
     // and we initialize the buttons too
-    const char *preset = dt_conf_get_conststring("plugins/darkroom/modulegroups_preset");
+    const char *preset = dt_conf_get_string_const("plugins/darkroom/modulegroups_preset");
     if(!dt_lib_presets_apply(preset, self->plugin_name, self->version()))
       dt_lib_presets_apply(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version());
 

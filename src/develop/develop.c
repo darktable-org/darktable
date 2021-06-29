@@ -200,7 +200,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
 
 float dt_dev_get_preview_downsampling()
 {
-  const char *preview_downsample = dt_conf_get_conststring("preview_downsampling");
+  const char *preview_downsample = dt_conf_get_string_const("preview_downsampling");
   const float downsample = (g_strcmp0(preview_downsample, "original") == 0) ? 1.0f
         : (g_strcmp0(preview_downsample, "to 1/2")==0) ? 0.5f
         : (g_strcmp0(preview_downsample, "to 1/3")==0) ? 1/3.0f
@@ -1432,7 +1432,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     return FALSE;
   }
 
-  const char *workflow = dt_conf_get_conststring("plugins/darkroom/workflow");
+  const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
   const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
   const gboolean is_display_referred = strcmp(workflow, "display-referred") == 0;
   const gboolean is_workflow_none = strcmp(workflow, "none") == 0;

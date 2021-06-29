@@ -363,7 +363,7 @@ static gboolean _lib_location_search(gpointer user_data)
   clear_search(lib);
 
   /* build the query url */
-  const char *search_url = dt_conf_get_conststring("plugins/map/geotagging_search_url");
+  const char *search_url = dt_conf_get_string_const("plugins/map/geotagging_search_url");
   query = g_strdup_printf(search_url, text, LIMIT_RESULT);
   /* load url */
   curl = curl_easy_init();

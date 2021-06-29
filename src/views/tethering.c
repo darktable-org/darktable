@@ -511,7 +511,7 @@ void enter(dt_view_t *self)
   /* initialize a session */
   lib->session = dt_import_session_new();
 
-  const char *tmp = dt_conf_get_conststring("plugins/session/jobcode");
+  const char *tmp = dt_conf_get_string_const("plugins/session/jobcode");
   if(tmp != NULL)
   {
     _capture_view_set_jobcode(self, tmp);
