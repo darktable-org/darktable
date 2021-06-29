@@ -533,6 +533,7 @@ static void _page_new_area_clicked(GtkWidget *widget, gpointer user_data)
     return;
   }
 
+  dt_control_change_cursor(GDK_PLUS);
   ps->creation = TRUE;
   ps->has_changed = TRUE;
 }
@@ -1480,6 +1481,9 @@ int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressur
 
   gboolean expose = FALSE;
 
+  if(ps->creation)
+    dt_control_change_cursor(GDK_PLUS);
+
   if(ps->creation && ps->dragging)
   {
     ps->x2 = x;
@@ -1615,6 +1619,8 @@ int button_released(struct dt_lib_module_t *self, double x, double y, int which,
 
   ps->creation = FALSE;
   ps->dragging = FALSE;
+
+  dt_control_change_cursor(GDK_LEFT_PTR);
 
   return 0;
 }
