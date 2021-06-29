@@ -310,10 +310,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = piece->colors;
 
   // these are RGB values!
-  const float gain[3] = { d->gain[CHANNEL_RED] * d->gain[CHANNEL_FACTOR],
-                          d->gain[CHANNEL_GREEN] * d->gain[CHANNEL_FACTOR],
-                          d->gain[CHANNEL_BLUE] * d->gain[CHANNEL_FACTOR] },
-              contrast = (d->contrast != 0.0f) ? 1.0f / d->contrast : 1000000.0f,
+  const dt_aligned_pixel_t gain = { d->gain[CHANNEL_RED] * d->gain[CHANNEL_FACTOR],
+                                    d->gain[CHANNEL_GREEN] * d->gain[CHANNEL_FACTOR],
+                                    d->gain[CHANNEL_BLUE] * d->gain[CHANNEL_FACTOR] };
+  const float contrast = (d->contrast != 0.0f) ? 1.0f / d->contrast : 1000000.0f,
               grey = d->grey / 100.0f;
 
   // For neutral parameters, skip the computations doing x^1 or (x-a)*1 + a to save time
@@ -914,7 +914,7 @@ static inline void set_HSL_sliders(GtkWidget *hue, GtkWidget *sat, float RGB[4])
   * Only the RGB values are saved and used in the computations.
   * The HSL sliders are merely an interface.
   */
-  float RGB_norm[3] = { (RGB[CHANNEL_RED] / 2.0f), (RGB[CHANNEL_GREEN] / 2.0f), (RGB[CHANNEL_BLUE] / 2.0f) };
+  dt_aligned_pixel_t RGB_norm = { (RGB[CHANNEL_RED] / 2.0f), (RGB[CHANNEL_GREEN] / 2.0f), (RGB[CHANNEL_BLUE] / 2.0f) };
 
   float h, s, l;
   rgb2hsl(RGB_norm, &h, &s, &l);

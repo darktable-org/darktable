@@ -213,9 +213,9 @@ typedef struct dt_iop_module_t
   /** single point to pick if in point mode */
   float color_picker_point[2];
   /** place to store the picked color of module input. */
-  float picked_color[4], picked_color_min[4], picked_color_max[4];
+  dt_aligned_pixel_t picked_color, picked_color_min, picked_color_max;
   /** place to store the picked color of module output (before blending). */
-  float picked_output_color[4], picked_output_color_min[4], picked_output_color_max[4];
+  dt_aligned_pixel_t picked_output_color, picked_output_color_min, picked_output_color_max;
   /** pointer to pre-module histogram data; if available: histogram_bins_count bins with 4 channels each */
   uint32_t *histogram;
   /** stats of captured histogram */

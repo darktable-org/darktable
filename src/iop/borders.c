@@ -400,7 +400,7 @@ struct border_positions_t
 };
 
 // this will be called from inside an OpenMP parallel section, so no need to parallelize further
-static inline void set_pixels(float *buf, const float color[4], const int npixels)
+static inline void set_pixels(float *buf, const dt_aligned_pixel_t color, const int npixels)
 {
   for (int i = 0; i < npixels; i++)
   {
