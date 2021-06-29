@@ -595,17 +595,17 @@ static void _print_button_clicked(GtkWidget *widget, gpointer user_data)
 
   const int imgid = ps->imgs.box[0].imgid;
 
-  if (imgid == -1)
+  if(imgid == -1)
   {
     dt_control_log(_("cannot print until a picture is selected"));
     return;
   }
-  if (strlen(ps->prt.printer.name) == 0 || ps->prt.printer.resolution == 0)
+  if(strlen(ps->prt.printer.name) == 0 || ps->prt.printer.resolution == 0)
   {
     dt_control_log(_("cannot print until a printer is selected"));
     return;
   }
-  if (ps->prt.paper.width == 0 || ps->prt.paper.height == 0)
+  if(ps->prt.paper.width == 0 || ps->prt.paper.height == 0)
   {
     dt_control_log(_("cannot print until a paper is selected"));
     return;
@@ -671,7 +671,7 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
 
   // if this is a turboprint printer, disable the printer profile
 
-  if (ps->prt.printer.is_turboprint)
+  if(ps->prt.printer.is_turboprint)
     dt_bauhaus_combobox_set(ps->pprofile, 0);
 
   // if there is 0 hardware margins, set the user margin to 17mm
@@ -720,7 +720,7 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
     const dt_paper_info_t *p = (dt_paper_info_t *)papers->data;
     dt_bauhaus_combobox_add(ps->papers, p->common_name);
 
-    if (ispaperset == FALSE && (!g_strcmp0(default_paper, p->common_name) || default_paper[0] == '\0'))
+    if(ispaperset == FALSE && (!g_strcmp0(default_paper, p->common_name) || default_paper[0] == '\0'))
     {
       dt_bauhaus_combobox_set(ps->papers, np);
       ispaperset = TRUE;
@@ -730,11 +730,11 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
   }
 
   //  paper not found in this printer
-  if (!ispaperset) dt_bauhaus_combobox_set(ps->papers, 0);
+  if(!ispaperset) dt_bauhaus_combobox_set(ps->papers, 0);
 
   const dt_paper_info_t *paper = dt_get_paper(ps->paper_list, default_paper);
 
-  if (paper)
+  if(paper)
     memcpy(&ps->prt.paper, paper, sizeof(dt_paper_info_t));
 
   g_free (default_paper);
@@ -761,7 +761,7 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
     const dt_medium_info_t *m = (dt_medium_info_t *)media->data;
     dt_bauhaus_combobox_add(ps->media, m->common_name);
 
-    if (ismediaset == FALSE && (!g_strcmp0(default_medium, m->common_name) || default_medium[0] == '\0'))
+    if(ismediaset == FALSE && (!g_strcmp0(default_medium, m->common_name) || default_medium[0] == '\0'))
     {
       dt_bauhaus_combobox_set(ps->media, np);
       ismediaset = TRUE;
@@ -771,11 +771,11 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
   }
 
   //  media not found in this printer
-  if (!ismediaset) dt_bauhaus_combobox_set(ps->media, 0);
+  if(!ismediaset) dt_bauhaus_combobox_set(ps->media, 0);
 
   const dt_medium_info_t *medium = dt_get_medium(ps->media_list, default_medium);
 
-  if (medium)
+  if(medium)
     memcpy(&ps->prt.medium, medium, sizeof(dt_medium_info_t));
 
   g_free (default_medium);
@@ -788,7 +788,7 @@ _printer_changed(GtkWidget *combo, const dt_lib_module_t *self)
 {
   const gchar *printer_name = dt_bauhaus_combobox_get_text(combo);
 
-  if (printer_name)
+  if(printer_name)
     _set_printer (self, printer_name);
 }
 
@@ -803,7 +803,7 @@ _paper_changed(GtkWidget *combo, const dt_lib_module_t *self)
 
   const dt_paper_info_t *paper = dt_get_paper(ps->paper_list, paper_name);
 
-  if (paper)
+  if(paper)
     memcpy(&ps->prt.paper, paper, sizeof(dt_paper_info_t));
 
   float width, height;
@@ -828,7 +828,7 @@ _media_changed(GtkWidget *combo, const dt_lib_module_t *self)
 
   const dt_medium_info_t *medium = dt_get_medium(ps->media_list, medium_name);
 
-  if (medium)
+  if(medium)
     memcpy(&ps->prt.medium, medium, sizeof(dt_medium_info_t));
 
   dt_conf_set_string("plugins/print/print/medium", medium_name);
@@ -1258,7 +1258,7 @@ static void _set_orientation(dt_lib_print_settings_t *ps, int32_t imgid)
   // If there's a mipmap available, figure out orientation based upon
   // its dimensions. Otherwise, don't touch orientation until the
   // mipmap arrives.
-  if (buf.size != DT_MIPMAP_NONE)
+  if(buf.size != DT_MIPMAP_NONE)
   {
     ps->prt.page.landscape = (buf.width > buf.height);
     dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
@@ -1356,7 +1356,7 @@ static void _new_printer_callback(dt_printer_info_t *printer, void *user_data)
 
   dt_bauhaus_combobox_add(d->printers, printer->name);
 
-  if (!g_strcmp0(default_printer, printer->name) || default_printer[0]=='\0')
+  if(!g_strcmp0(default_printer, printer->name) || default_printer[0]=='\0')
   {
     dt_bauhaus_combobox_set(d->printers, count);
     _set_printer(self, printer->name);
@@ -2143,7 +2143,7 @@ void gui_init(dt_lib_module_t *self)
   g_free (printer_profile);
 
   // profile not found, maybe a profile has been removed? revert to none
-  if (combo_idx == -1)
+  if(combo_idx == -1)
   {
     dt_conf_set_int("plugins/print/printer/icctype", DT_COLORSPACE_NONE);
     dt_conf_set_string("plugins/print/printer/iccprofile", "");
@@ -2461,7 +2461,7 @@ void gui_init(dt_lib_module_t *self)
     }
   }
 
-  if (combo_idx == -1)
+  if(combo_idx == -1)
   {
     dt_conf_set_int("plugins/print/print/icctype", DT_COLORSPACE_NONE);
     dt_conf_set_string("plugins/print/print/iccprofile", "");
@@ -2512,7 +2512,7 @@ void gui_init(dt_lib_module_t *self)
     dt_style_t *style=(dt_style_t *)st_iter->data;
     dt_bauhaus_combobox_add(d->style, style->name);
     n++;
-    if (g_strcmp0(style->name,current_style)==0)
+    if(g_strcmp0(style->name,current_style)==0)
     {
       g_free(d->v_style);
       d->v_style = g_strdup(current_style);
@@ -2525,7 +2525,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->style, _("temporary style to use while printing"));
 
   // style not found, maybe a style has been removed? revert to none
-  if (combo_idx == -1)
+  if(combo_idx == -1)
   {
     dt_conf_set_string("plugins/print/print/style", "");
     g_free(d->v_style);
@@ -2752,12 +2752,12 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   // get individual items
   const char *printer = buf;
-  if (!printer) return 1;
+  if(!printer) return 1;
   const int32_t printer_len = strlen(printer) + 1;
   buf += printer_len;
 
   const char *paper = buf;
-  if (!paper) return 1;
+  if(!paper) return 1;
   const int32_t paper_len = strlen(paper) + 1;
   buf += paper_len;
 
@@ -2768,7 +2768,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf +=  sizeof(int32_t);
 
   const char *f_profile = buf;
-  if (!f_profile) return 1;
+  if(!f_profile) return 1;
   const int32_t profile_len = strlen(f_profile) + 1;
   buf += profile_len;
 
@@ -2779,7 +2779,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf +=  sizeof(int32_t);
 
   const char *f_pprofile = buf;
-  if (!f_pprofile) return 1;
+  if(!f_pprofile) return 1;
   const int32_t pprofile_len = strlen(f_pprofile) + 1;
   buf += pprofile_len;
 
@@ -2790,7 +2790,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(int32_t);
 
   const char *style = buf;
-  if (!style) return 1;
+  if(!style) return 1;
   const int32_t style_len = strlen(style) + 1;
   buf += style_len;
 
@@ -2837,13 +2837,13 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     return 1;
 
   // set the GUI with corresponding values
-  if (printer[0] != '\0')
+  if(printer[0] != '\0')
     dt_bauhaus_combobox_set_from_text(ps->printers, printer);
 
-  if (paper[0] != '\0')
+  if(paper[0] != '\0')
     dt_bauhaus_combobox_set_from_text(ps->papers, paper);
 
-  if (media[0] != '\0')
+  if(media[0] != '\0')
     dt_bauhaus_combobox_set_from_text(ps->media, media);
 
   dt_bauhaus_combobox_set (ps->orientation, landscape);
@@ -2875,7 +2875,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   dt_bauhaus_combobox_set (ps->pintent, pintent);
   ps->prt.printer.intent = pintent;
 
-  if (style[0] != '\0')
+  if(style[0] != '\0')
     dt_bauhaus_combobox_set_from_text(ps->style, style);
   dt_bauhaus_combobox_set (ps->style_mode, style_mode);
 
