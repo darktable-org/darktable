@@ -868,7 +868,6 @@ inline static void inpaint_noise(const float *const in, const float *const mask,
     }
 }
 
-
 inline static void wavelets_reconstruct_RGB(const float *const restrict HF, const float *const restrict LF,
                                             const float *const restrict texture, const float *const restrict mask,
                                             float *const restrict reconstructed, const size_t width,

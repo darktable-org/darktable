@@ -2098,7 +2098,7 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
           float complex C18m = qmat[7] * modulator[6];
           qmat[0] = *(i_src + row * TS + col) - C2m - C3m - C5m - C6m - 2.0f * C7m - C12m - C18m;
           // get the rgb components from fdc
-          float rgbpix[3] = { 0.f, 0.f, 0.f };
+          dt_aligned_pixel_t rgbpix = { 0.f, 0.f, 0.f };
           // multiply with the inverse matrix of M
           for(int color = 0; color < 3; color++)
             for(int c = 0; c < 8; c++)
