@@ -158,17 +158,17 @@ void init_presets(dt_iop_module_so_t *self)
   p.threshold = 0.0f;
   p.variance_threshold = 0.f;
 
-  p.anisotropy_first = -5.f;
+  p.anisotropy_first = +5.f;
   p.anisotropy_second = +5.f;
-  p.anisotropy_third = -5.f;
-  p.anisotropy_fourth = +2.f;
+  p.anisotropy_third = +5.f;
+  p.anisotropy_fourth = +5.f;
 
   p.first = -0.5f;
   p.second = +0.25f;
   p.third = -0.25f;
-  p.fourth = -0.05f;
+  p.fourth = +0.125f;
 
-  p.regularization = 1.f;
+  p.regularization = 2.f;
 
   p.iterations = 4;
   p.radius = 8;
@@ -282,17 +282,17 @@ void init_presets(dt_iop_module_so_t *self)
   p.sharpness = 0.0f;
   p.threshold = 0.0f;
   p.variance_threshold = 0.f;
-  p.regularization = 0.f;
+  p.regularization = 1.f;
 
-  p.anisotropy_first = +5.f;
-  p.anisotropy_second = +5.f;
-  p.anisotropy_third = +5.f;
-  p.anisotropy_fourth = +5.f;
+  p.anisotropy_first = +1.f;
+  p.anisotropy_second = +1.f;
+  p.anisotropy_third = +1.f;
+  p.anisotropy_fourth = +1.f;
 
-  p.first = -0.5f;
-  p.second = -0.5f;
-  p.third = -0.5f;
-  p.fourth = +0.25f;
+  p.first = -0.25f;
+  p.second = -0.25f;
+  p.third = -0.25f;
+  p.fourth = -0.25f;
   dt_gui_presets_add_generic(_("sharpen demosaicing (no AA filter)"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
