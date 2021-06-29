@@ -53,20 +53,39 @@ void dt_printing_clear_boxes(dt_images_box *imgs)
   imgs->imgid_to_load = -1;
 }
 
+static inline float sqrf(float a)
+{
+  return a * a;
+}
+
 int32_t dt_printing_get_image_box(const dt_images_box *imgs, const int x, const int y)
 {
   int box = -1;
+  float dist = FLT_MAX;
 
   for(int k=0; k<imgs->count; k++)
   {
     const dt_image_box *b = &imgs->box[k];
 
+    const float x1 = b->screen.x;
+    const float x2 = b->screen.x + b->screen.width;
+    const float y1 = b->screen.y;
+    const float y2 = b->screen.y + b->screen.height;
+
     // check if over a box
-    if(x > b->screen.x && x < (b->screen.x + b->screen.width)
-       && y > b->screen.y && y < (b->screen.y + b->screen.height))
+    if(x > x1 && x < x2 && y > y1 && y < y2)
     {
-      box = k;
-      break;
+      // compute min dist
+      float dd = sqrf(x1 - x);
+      dd = fminf(dd, sqrf(x2 - x));
+      dd = fminf(dd, sqrf(y1 - y));
+      dd = fminf(dd, sqrf(y2 - y));
+
+      if(dd < dist)
+      {
+        box = k;
+        dist = dd;
+      }
     }
   }
 
