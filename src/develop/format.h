@@ -20,6 +20,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/darktable.h"
 
 struct dt_dev_pixelpipe_iop_t;
 struct dt_dev_pixelpipe_t;
@@ -51,11 +52,11 @@ typedef struct dt_iop_buffer_dsc_t
   struct
   {
     int enabled;
-    float coeffs[4];
+    dt_aligned_pixel_t coeffs;
   } temperature;
 
   /** sensor saturation, propagated through the operations */
-  float processed_maximum[4];
+  dt_aligned_pixel_t processed_maximum;
 
   /** colorspace of the image */
   int cst;

@@ -279,7 +279,7 @@ typedef struct dt_develop_t
 
     // is the WB module using D65 illuminant and not doing full chromatic adaptation ?
     gboolean wb_is_D65;
-    float wb_coeffs[4];
+    dt_aligned_pixel_t wb_coeffs;
 
   } proxy;
 

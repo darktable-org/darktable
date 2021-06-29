@@ -340,7 +340,7 @@ static inline void WB_coeffs_to_illuminant_xy(const float CAM_to_XYZ[4][3], cons
   XYZ[2] = CAM_to_XYZ[0][2] / WB[0] + CAM_to_XYZ[1][2] / WB[1] + CAM_to_XYZ[2][2] / WB[2];
 
   // Matrices white point is D65. We need to convert it for darktable's pipe (D50)
-  static const float DT_ALIGNED_PIXEL D65[4] = { 0.941238f, 1.040633f, 1.088932f, 0.f };
+  static const dt_aligned_pixel_t D65 = { 0.941238f, 1.040633f, 1.088932f, 0.f };
   const float p = powf(1.088932f / 0.818155f, 0.0834f);
 
   convert_XYZ_to_bradford_LMS(XYZ, LMS);

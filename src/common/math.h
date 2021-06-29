@@ -172,7 +172,7 @@ static inline void mul_mat_vec_2(const float *m, const float *p, float *o)
 #ifdef _OPENMP
 #pragma omp declare simd uniform(v_2) aligned(v_1, v_2:16)
 #endif
-static inline float scalar_product(const float v_1[4], const float v_2[4])
+static inline float scalar_product(const dt_aligned_pixel_t v_1, const dt_aligned_pixel_t v_2)
 {
   // specialized 3×1 dot products 2 4×1 RGB-alpha pixels.
   // v_2 needs to be uniform along loop increments, e.g. independent from current pixel values
