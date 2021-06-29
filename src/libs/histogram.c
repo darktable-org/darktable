@@ -1511,27 +1511,27 @@ void gui_init(dt_lib_module_t *self)
   d->green = dt_conf_get_bool("plugins/darkroom/histogram/show_green");
   d->blue = dt_conf_get_bool("plugins/darkroom/histogram/show_blue");
 
-  const char *str = dt_conf_get_conststring("plugins/darkroom/histogram/mode");
+  const char *str = dt_conf_get_string_const("plugins/darkroom/histogram/mode");
   for(dt_lib_histogram_scope_type_t i=0; i<DT_LIB_HISTOGRAM_SCOPE_N; i++)
     if(g_strcmp0(str, dt_lib_histogram_scope_type_names[i]) == 0)
       d->scope_type = i;
 
-  str = dt_conf_get_conststring("plugins/darkroom/histogram/histogram");
+  str = dt_conf_get_string_const("plugins/darkroom/histogram/histogram");
   for(dt_lib_histogram_scale_t i=0; i<DT_LIB_HISTOGRAM_SCALE_N; i++)
     if(g_strcmp0(str, dt_lib_histogram_scale_names[i]) == 0)
       d->histogram_scale = i;
 
-  str = dt_conf_get_conststring("plugins/darkroom/histogram/waveform");
+  str = dt_conf_get_string_const("plugins/darkroom/histogram/waveform");
   for(dt_lib_histogram_waveform_type_t i=0; i<DT_LIB_HISTOGRAM_WAVEFORM_N; i++)
     if(g_strcmp0(str, dt_lib_histogram_waveform_type_names[i]) == 0)
       d->waveform_type = i;
 
-  str = dt_conf_get_conststring("plugins/darkroom/histogram/vectorscope");
+  str = dt_conf_get_string_const("plugins/darkroom/histogram/vectorscope");
   for(dt_lib_histogram_vectorscope_type_t i=0; i<DT_LIB_HISTOGRAM_VECTORSCOPE_N; i++)
     if(g_strcmp0(str, dt_lib_histogram_vectorscope_type_names[i]) == 0)
       d->vectorscope_type = i;
 
-  str = dt_conf_get_conststring("plugins/darkroom/histogram/vectorscope/scale");
+  str = dt_conf_get_string_const("plugins/darkroom/histogram/vectorscope/scale");
   for(dt_lib_histogram_scale_t i=0; i<DT_LIB_HISTOGRAM_SCALE_N; i++)
     if(g_strcmp0(str, dt_lib_histogram_scale_names[i]) == 0)
       d->vectorscope_scale = i;

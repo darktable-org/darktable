@@ -72,7 +72,7 @@ int position()
 static gboolean _goto_previous(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                GdkModifierType modifier, gpointer data)
 {
-  const char *line = dt_conf_get_conststring("plugins/lighttable/recentcollect/line1");
+  const char *line = dt_conf_get_string_const("plugins/lighttable/recentcollect/line1");
   if(line)
   {
     dt_collection_deserialize(line);
@@ -162,7 +162,7 @@ static void _button_pressed(GtkButton *button, gpointer user_data)
   if(n < 0) return;
   char confname[200];
   snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", n);
-  const char *line = dt_conf_get_conststring(confname);
+  const char *line = dt_conf_get_string_const(confname);
   if(line)
   {
     dt_collection_deserialize(line);
@@ -205,7 +205,7 @@ static void _lib_recentcollection_updated(gpointer instance, dt_collection_chang
   {
     // is it already in the current list?
     snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", k);
-    const char *line = dt_conf_get_conststring(confname);
+    const char *line = dt_conf_get_string_const(confname);
     if(!line) continue;
     if(!strcmp(line, buf))
     {
@@ -257,7 +257,7 @@ static void _lib_recentcollection_updated(gpointer instance, dt_collection_chang
   {
     char str[2048] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", k);
-    const char *line2 = dt_conf_get_conststring(confname);
+    const char *line2 = dt_conf_get_string_const(confname);
     if(line2 && line2[0] != '\0') pretty_print(line2, str, sizeof(str));
     gtk_widget_set_tooltip_text(d->item[k].button, str);
     gtk_button_set_label(GTK_BUTTON(d->item[k].button), str);

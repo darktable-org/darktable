@@ -114,7 +114,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(d->map_source_dropdown), renderer, FALSE);
   gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(d->map_source_dropdown), renderer, "text", 0, NULL);
 
-  const char *map_source = dt_conf_get_conststring("plugins/map/map_source");
+  const char *map_source = dt_conf_get_string_const("plugins/map/map_source");
   int selection = OSM_GPS_MAP_SOURCE_OPENSTREETMAP - 1, entry = 0;
   GtkTreeIter iter;
   for(int i = 1; i < OSM_GPS_MAP_SOURCE_LAST; i++)
@@ -177,7 +177,7 @@ static gboolean _thumbnail_change(GtkAccelGroup *accel_group, GObject *accelerat
 {
   dt_lib_map_settings_t *d = (dt_lib_map_settings_t *)self->data;
 
-  const char *str = dt_conf_get_conststring("plugins/map/images_thumbnail");
+  const char *str = dt_conf_get_string_const("plugins/map/images_thumbnail");
   if(!g_strcmp0(str, "thumbnail"))
     dt_conf_set_string("plugins/map/images_thumbnail", "count");
   else if(!g_strcmp0(str, "count"))

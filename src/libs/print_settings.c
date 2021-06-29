@@ -708,7 +708,7 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
 
   dt_conf_set_string("plugins/print/print/printer", printer_name);
 
-  const char *default_paper = dt_conf_get_conststring("plugins/print/print/paper");
+  const char *default_paper = dt_conf_get_string_const("plugins/print/print/paper");
 
   // next add corresponding papers
 
@@ -748,7 +748,7 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
 
   // next add corresponding supported media
 
-  const char *default_medium = dt_conf_get_conststring("plugins/print/print/medium");
+  const char *default_medium = dt_conf_get_string_const("plugins/print/print/medium");
 
   // first clear current list
 
@@ -784,8 +784,6 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
 
   if(medium)
     memcpy(&ps->prt.medium, medium, sizeof(dt_medium_info_t));
-
-  g_free (default_medium);
 
   dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
 }
@@ -2152,7 +2150,7 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->pprofile), TRUE, TRUE, 0);
   int printer_profile_type = dt_conf_get_int("plugins/print/printer/icctype");
-  const char *printer_profile = dt_conf_get_conststring("plugins/print/printer/iccprofile");
+  const char *printer_profile = dt_conf_get_string_const("plugins/print/printer/iccprofile");
   combo_idx = -1;
   n = 0;
 
@@ -2476,7 +2474,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->profile, _("image settings"));
 
   const int icctype = dt_conf_get_int("plugins/print/print/icctype");
-  const gchar *iccprofile = dt_conf_get_conststring("plugins/print/print/iccprofile");
+  const gchar *iccprofile = dt_conf_get_string_const("plugins/print/print/iccprofile");
   combo_idx = -1;
   n = 0;
 
@@ -2537,7 +2535,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->style, _("none"));
 
   GList *styles = dt_styles_get_list("");
-  const char *current_style = dt_conf_get_conststring("plugins/print/print/style");
+  const char *current_style = dt_conf_get_string_const("plugins/print/print/style");
   combo_idx = -1; n=0;
 
   for(const GList *st_iter = styles; st_iter; st_iter = g_list_next(st_iter))

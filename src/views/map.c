@@ -655,7 +655,7 @@ void init(dt_view_t *self)
 
     OsmGpsMapSource_t map_source
         = OSM_GPS_MAP_SOURCE_OPENSTREETMAP; // open street map should be a nice default ...
-    const char *old_map_source = dt_conf_get_conststring("plugins/map/map_source");
+    const char *old_map_source = dt_conf_get_string_const("plugins/map/map_source");
     if(old_map_source && old_map_source[0] != '\0')
     {
       // find the number of the stored map_source
@@ -2714,7 +2714,7 @@ static gboolean _view_map_prefs_changed(dt_map_t *lib)
   gboolean filter_images_drawn = dt_conf_get_bool("plugins/map/filter_images_drawn");
   if(lib->filter_images_drawn != filter_images_drawn) prefs_changed = TRUE;
 
-  const char *thumbnail = dt_conf_get_conststring("plugins/map/images_thumbnail");
+  const char *thumbnail = dt_conf_get_string_const("plugins/map/images_thumbnail");
   lib->thumbnail = !g_strcmp0(thumbnail, "thumbnail") ? DT_MAP_THUMB_THUMB :
                    !g_strcmp0(thumbnail, "count") ? DT_MAP_THUMB_COUNT : DT_MAP_THUMB_NONE;
 

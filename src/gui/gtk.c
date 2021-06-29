@@ -187,7 +187,7 @@ static gboolean toggle_tooltip_visibility(GtkAccelGroup *accel_group, GObject *a
     dt_control_log(_("tooltip visibility can only be toggled if compositing is enabled in your window manager"));
   }
 
-  const char *theme = dt_conf_get_conststring("ui_last/theme");
+  const char *theme = dt_conf_get_string_const("ui_last/theme");
   dt_gui_load_theme(theme);
   dt_bauhaus_load_theme();
 
@@ -1129,7 +1129,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_loc_get_sharedir(sharedir, sizeof(sharedir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
-  const char *css_theme = dt_conf_get_conststring("ui_last/theme");
+  const char *css_theme = dt_conf_get_string_const("ui_last/theme");
   if(css_theme)
   {
     g_strlcpy(gui->gtkrc, css_theme, sizeof(gui->gtkrc));

@@ -50,7 +50,7 @@ const dt_pwstorage_t *dt_pwstorage_new()
 
   if(pwstorage == NULL) return NULL;
 
-  const char *_backend_str = dt_conf_get_conststring("plugins/pwstorage/pwstorage_backend");
+  const char *_backend_str = dt_conf_get_string_const("plugins/pwstorage/pwstorage_backend");
   gint _backend = PW_STORAGE_BACKEND_NONE;
 
   if(strcmp(_backend_str, "auto") == 0)

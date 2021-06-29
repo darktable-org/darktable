@@ -3570,7 +3570,7 @@ gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_tim
 
   char *later_info = NULL;
   char *size_info = g_format_size(size);
-  const char *config = dt_conf_get_conststring("database/maintenance_check");
+  const char *config = dt_conf_get_string_const("database/maintenance_check");
   if((closing_time && (!g_strcmp0(config, "on both"))) || !g_strcmp0(config, "on startup"))
   {
     later_info = _("click later to be asked on next startup");
@@ -3613,7 +3613,7 @@ gboolean dt_database_maybe_maintenance(const struct dt_database_t *db, const gbo
   if(_is_mem_db(db))
     return FALSE;
 
-  const char *config = dt_conf_get_conststring("database/maintenance_check");
+  const char *config = dt_conf_get_string_const("database/maintenance_check");
 
   if(!g_strcmp0(config, "never"))
   {
@@ -3806,7 +3806,7 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
   if(_is_mem_db(db))
     return FALSE;
 
-  const char *config = dt_conf_get_conststring("database/create_snapshot");
+  const char *config = dt_conf_get_string_const("database/create_snapshot");
   if(!g_strcmp0(config, "never"))
   {
     // early bail out on "never"

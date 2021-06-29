@@ -611,7 +611,7 @@ void *get_params(dt_imageio_module_format_t *self)
     return NULL;
   }
 
-  const char *bpp = dt_conf_get_conststring("plugins/imageio/format/avif/bpp");
+  const char *bpp = dt_conf_get_string_const("plugins/imageio/format/avif/bpp");
   d->bit_depth = atoi(bpp);
   if(d->bit_depth < 8 || d->bit_depth > 12)
   {

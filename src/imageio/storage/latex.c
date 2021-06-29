@@ -156,7 +156,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   widget = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(widget), 0);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-  const char *dir = dt_conf_get_conststring("plugins/imageio/storage/latex/file_directory");
+  const char *dir = dt_conf_get_string_const("plugins/imageio/storage/latex/file_directory");
   if(dir)
   {
     gtk_entry_set_text(GTK_ENTRY(widget), dir);
@@ -191,7 +191,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->title_entry));
   // TODO: support title, author, subject, keywords (collect tags?)
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->title_entry), _("enter the title of the book"));
-  dir = dt_conf_get_conststring("plugins/imageio/storage/latex/title");
+  dir = dt_conf_get_string_const("plugins/imageio/storage/latex/title");
   if(dir)
   {
     gtk_entry_set_text(GTK_ENTRY(d->title_entry), dir);
@@ -426,10 +426,10 @@ void *get_params(dt_imageio_module_storage_t *self)
   d->l = NULL;
   dt_variables_params_init(&d->vp);
 
-  const char *text = dt_conf_get_conststring("plugins/imageio/storage/latex/file_directory");
+  const char *text = dt_conf_get_string_const("plugins/imageio/storage/latex/file_directory");
   g_strlcpy(d->filename, text, sizeof(d->filename));
 
-  text = dt_conf_get_conststring("plugins/imageio/storage/latex/title");
+  text = dt_conf_get_string_const("plugins/imageio/storage/latex/title");
   g_strlcpy(d->title, text, sizeof(d->title));
 
   return d;
