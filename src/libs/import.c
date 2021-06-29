@@ -568,7 +568,7 @@ static void _thumb_set_in_listview(GtkTreeModel *model, GtkTreeIter *iter,
   else
 #endif
   {
-    const char *folder = dt_conf_get_conststring("ui_last/import_last_directory");
+    const char *folder = dt_conf_get_string_const("ui_last/import_last_directory");
     char *fullname = g_build_filename(folder, filename, NULL);
     pixbuf = thumb_sel ? _import_get_thumbnail(fullname) : d->from.eye;
     g_free(fullname);
@@ -1100,7 +1100,7 @@ static gboolean _places_button_press(GtkWidget *view, GdkEventButton *event, dt_
     // right-click: delete / hide place (if not selected)
     else if(button_pressed == 3)
     {
-      if(g_strcmp0(folder_path, dt_conf_get_conststring("ui_last/import_last_place")))
+      if(g_strcmp0(folder_path, dt_conf_get_string_const("ui_last/import_last_place")))
         _remove_place(folder_path, iter, self);
       else
         dt_toast_log(_("you can't delete the selected place"));
@@ -1315,7 +1315,7 @@ static void _update_places_list(dt_lib_module_t* self)
 
   GtkTreeIter iter, current_iter;
   d->placesSelection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->placesView));
-  const char *last_place = dt_conf_get_conststring("ui_last/import_last_place");
+  const char *last_place = dt_conf_get_string_const("ui_last/import_last_place");
   char *current_place = "";
 
   if(dt_conf_get_bool("ui_last/import_dialog_show_home"))
@@ -1409,7 +1409,7 @@ static void _update_folders_list(dt_lib_module_t* self)
   g_object_ref(model);
   gtk_tree_view_set_model(d->from.folderview, NULL);
   gtk_tree_store_clear(GTK_TREE_STORE(model));
-  const char *last_place = dt_conf_get_conststring("ui_last/import_last_place");
+  const char *last_place = dt_conf_get_string_const("ui_last/import_last_place");
   char *folder = dt_conf_get_string("ui_last/import_last_directory");
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
                                        GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
@@ -1431,7 +1431,7 @@ static void _update_folders_list(dt_lib_module_t* self)
 static void _add_custom_place(const gchar *folder, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  const char *current_folders = dt_conf_get_conststring("ui_last/import_custom_places");
+  const char *current_folders = dt_conf_get_string_const("ui_last/import_custom_places");
   GtkTreeIter iter;
 
   if(!g_strrstr(current_folders, folder))
@@ -1455,7 +1455,7 @@ static void _add_custom_place(const gchar *folder, dt_lib_module_t* self)
 static void _remove_place(const gchar *folder, GtkTreeIter iter, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  const char *current_folders = dt_conf_get_conststring("ui_last/import_custom_places");
+  const char *current_folders = dt_conf_get_string_const("ui_last/import_custom_places");
   int type = 0;
   gtk_tree_model_get(GTK_TREE_MODEL(d->placesModel), &iter, DT_PLACES_TYPE, &type, -1);
 
@@ -2145,7 +2145,7 @@ static char *_get_current_configuration(dt_lib_module_t *self)
     }
     else if(_pref[i].type == DT_STRING)
     {
-      const char *s = dt_conf_get_conststring(_pref[i].key);
+      const char *s = dt_conf_get_string_const(_pref[i].key);
       pref = dt_util_dstrcat(pref, "%s=%s,", _pref[i].name, s);
     }
   }
@@ -2161,14 +2161,14 @@ static char *_get_current_configuration(dt_lib_module_t *self)
       g_free(setting);
 
       setting = g_strdup_printf("ui_last/import_last_%s", metadata_name);
-      const char *metadata_value = dt_conf_get_conststring(setting);
+      const char *metadata_value = dt_conf_get_string_const(setting);
       pref = dt_util_dstrcat(pref, "%s=%d%s,", metadata_name, imported ? 1 : 0, metadata_value);
       g_free(setting);
     }
   }
   // must be the last (comma separated list)
   const gboolean imported = dt_conf_get_bool("ui_last/import_last_tags_imported");
-  const char *tags_value = dt_conf_get_conststring("ui_last/import_last_tags");
+  const char *tags_value = dt_conf_get_string_const("ui_last/import_last_tags");
   pref = dt_util_dstrcat(pref, "%s=%d%s,", "tags", imported ? 1 : 0, tags_value);
   if(pref && *pref) pref[strlen(pref) - 1] = '\0';
 

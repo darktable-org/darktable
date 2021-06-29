@@ -1288,7 +1288,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
       }
 
       gui->pressure_sensitivity = DT_MASKS_PRESSURE_OFF;
-      const char *psens = dt_conf_get_conststring("pressure_sensitivity");
+      const char *psens = dt_conf_get_string_const("pressure_sensitivity");
       if(psens)
       {
         if(!strcmp(psens, "hardness (absolute)"))
@@ -1634,7 +1634,7 @@ static int _brush_events_button_released(struct dt_iop_module_t *module, float p
       }
 
       float factor = 0.01f;
-      const char *smoothing = dt_conf_get_conststring("brush_smoothing");
+      const char *smoothing = dt_conf_get_string_const("brush_smoothing");
       if(!strcmp(smoothing, "low"))
         factor = 0.0025f;
       else if(!strcmp(smoothing, "medium"))

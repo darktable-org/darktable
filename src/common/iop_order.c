@@ -690,7 +690,7 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
   // and new image not yet loaded or whose history has been reset.
   if(!iop_order_list)
   {
-    const char *workflow = dt_conf_get_conststring("plugins/darkroom/workflow");
+    const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
     dt_iop_order_t iop_order_version = strcmp(workflow, "display-referred") == 0 ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_V30;
 
     if(iop_order_version == DT_IOP_ORDER_LEGACY)

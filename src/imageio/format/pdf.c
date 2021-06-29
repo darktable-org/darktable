@@ -582,7 +582,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_grid_attach(grid, GTK_WIDGET(d->title), 1, line, 1, 1);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->title));
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->title), _("enter the title of the pdf"));
-  const char *str = dt_conf_get_conststring("plugins/imageio/format/pdf/title");
+  const char *str = dt_conf_get_string_const("plugins/imageio/format/pdf/title");
   if(str)
   {
     gtk_entry_set_text(GTK_ENTRY(d->title), str);
@@ -628,7 +628,7 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->border));
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->border), _("empty space around the pdf\n"
                                                        "format: size + unit\nexamples: 10 mm, 1 inch"));
-  str = dt_conf_get_conststring("plugins/imageio/format/pdf/border");
+  str = dt_conf_get_string_const("plugins/imageio/format/pdf/border");
   if(str)
   {
     gtk_entry_set_text(GTK_ENTRY(d->border), str);
@@ -761,13 +761,13 @@ void *get_params(dt_imageio_module_format_t *self)
 
   if(d)
   {
-    const char *text = dt_conf_get_conststring("plugins/imageio/format/pdf/title");
+    const char *text = dt_conf_get_string_const("plugins/imageio/format/pdf/title");
     g_strlcpy(d->params.title, text, sizeof(d->params.title));
 
-    text = dt_conf_get_conststring("plugins/imageio/format/pdf/border");
+    text = dt_conf_get_string_const("plugins/imageio/format/pdf/border");
     g_strlcpy(d->params.border, text, sizeof(d->params.border));
 
-    text = dt_conf_get_conststring("plugins/imageio/format/pdf/size");
+    text = dt_conf_get_string_const("plugins/imageio/format/pdf/size");
     g_strlcpy(d->params.size, text, sizeof(d->params.size));
 
     d->params.bpp = dt_conf_get_int("plugins/imageio/format/pdf/bpp");

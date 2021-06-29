@@ -1102,7 +1102,7 @@ const struct dt_interpolation *dt_interpolation_new(enum dt_interpolation_type t
   if(type == DT_INTERPOLATION_USERPREF)
   {
     // Find user preferred interpolation method
-    const char *uipref = dt_conf_get_conststring("plugins/lighttable/export/pixel_interpolator");
+    const char *uipref = dt_conf_get_string_const("plugins/lighttable/export/pixel_interpolator");
     for(int i = DT_INTERPOLATION_FIRST; uipref && i < DT_INTERPOLATION_LAST; i++)
     {
       if(!strcmp(uipref, dt_interpolator[i].name))
@@ -1120,7 +1120,7 @@ const struct dt_interpolation *dt_interpolation_new(enum dt_interpolation_type t
   else if(type == DT_INTERPOLATION_USERPREF_WARP)
   {
     // Find user preferred interpolation method
-    const char *uipref = dt_conf_get_conststring("plugins/lighttable/export/pixel_interpolator_warp");
+    const char *uipref = dt_conf_get_string_const("plugins/lighttable/export/pixel_interpolator_warp");
     for(int i = DT_INTERPOLATION_FIRST; uipref && i < DT_INTERPOLATION_LAST; i++)
     {
       if(!strcmp(uipref, dt_interpolator[i].name))

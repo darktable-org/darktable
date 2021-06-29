@@ -1911,7 +1911,7 @@ static void _preference_changed(gpointer instance, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
 
-  const char *config = dt_conf_get_conststring("plugins/darkroom/temperature/colored_sliders");
+  const char *config = dt_conf_get_string_const("plugins/darkroom/temperature/colored_sliders");
   g->colored_sliders = g_strcmp0(config, "no color"); // true if config != "no color"
   g->blackbody_is_confusing = g->colored_sliders && g_strcmp0(config, "illuminant color"); // true if config != "illuminant color"
 
@@ -1937,7 +1937,7 @@ void gui_init(struct dt_iop_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
                             G_CALLBACK(_develop_ui_pipe_finished_callback), self);
 
-  const char *config = dt_conf_get_conststring("plugins/darkroom/temperature/colored_sliders");
+  const char *config = dt_conf_get_string_const("plugins/darkroom/temperature/colored_sliders");
   g->colored_sliders = g_strcmp0(config, "no color"); // true if config != "no color"
   g->blackbody_is_confusing = g->colored_sliders && g_strcmp0(config, "illuminant color"); // true if config != "illuminant color"
   g->expand_coeffs = dt_conf_get_bool("plugins/darkroom/temperature/expand_coefficients");

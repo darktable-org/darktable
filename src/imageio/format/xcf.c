@@ -230,7 +230,7 @@ void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_xcf_t *d = (dt_imageio_xcf_t *)calloc(1, sizeof(dt_imageio_xcf_t));
 
-  const char *conf_bpp = dt_conf_get_conststring("plugins/imageio/format/xcf/bpp");
+  const char *conf_bpp = dt_conf_get_string_const("plugins/imageio/format/xcf/bpp");
   d->bpp = atoi(conf_bpp);
   if(d->bpp != 16 && d->bpp != 32)
     d->bpp = 8;
@@ -329,7 +329,7 @@ void gui_init(dt_imageio_module_format_t *self)
   int bpp = 32;
   if(dt_conf_key_exists("plugins/imageio/format/xcf/bpp"))
   {
-    const char *conf_bpp = dt_conf_get_conststring("plugins/imageio/format/xcf/bpp");
+    const char *conf_bpp = dt_conf_get_string_const("plugins/imageio/format/xcf/bpp");
     bpp = atoi(conf_bpp);
   }
 

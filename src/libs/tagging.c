@@ -2295,7 +2295,7 @@ static gboolean _row_tooltip_setup(GtkWidget *treeview, gint x, gint y, gboolean
 
 static void _import_button_clicked(GtkButton *button, dt_lib_module_t *self)
 {
-  const char *last_dirname = dt_conf_get_conststring("plugins/lighttable/tagging/last_import_export_location");
+  const char *last_dirname = dt_conf_get_string_const("plugins/lighttable/tagging/last_import_export_location");
   if(!last_dirname || !*last_dirname)
   {
     last_dirname = g_get_home_dir();
@@ -2334,7 +2334,7 @@ static void _export_button_clicked(GtkButton *button, dt_lib_module_t *self)
 {
   GDateTime *now = g_date_time_new_now_local();
   char *export_filename = g_date_time_format(now, "darktable_tags_%F_%R.txt");
-  const char *last_dirname = dt_conf_get_conststring("plugins/lighttable/tagging/last_import_export_location");
+  const char *last_dirname = dt_conf_get_string_const("plugins/lighttable/tagging/last_import_export_location");
   if(!last_dirname || !*last_dirname)
   {
     last_dirname = g_get_home_dir();

@@ -2968,7 +2968,7 @@ void enter(dt_view_t *self)
   dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), dev->image_storage.id, TRUE);
 
   // get last active plugin:
-  const char *active_plugin = dt_conf_get_conststring("plugins/darkroom/active");
+  const char *active_plugin = dt_conf_get_string_const("plugins/darkroom/active");
   if(active_plugin)
   {
     for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))

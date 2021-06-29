@@ -104,8 +104,8 @@ static void _import_session_migrate_old_config()
 static gchar *_import_session_path_pattern()
 {
   gchar *res = NULL;
-  const char *base = dt_conf_get_conststring("session/base_directory_pattern");
-  const char *sub = dt_conf_get_conststring("session/sub_directory_pattern");
+  const char *base = dt_conf_get_string_const("session/base_directory_pattern");
+  const char *sub = dt_conf_get_string_const("session/sub_directory_pattern");
 
   if(!sub || !base)
   {

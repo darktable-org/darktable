@@ -443,7 +443,7 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
 
     GtkWidget *metadata_entry = gtk_entry_new();
     setting = g_strdup_printf("ui_last/import_last_%s", metadata_name);
-    const char *str = dt_conf_get_conststring(setting);
+    const char *str = dt_conf_get_string_const(setting);
     _set_up_entry(metadata_entry, str, metadata_name, i + DT_META_META_VALUE, metadata);
     g_free(setting);
     g_signal_connect(GTK_ENTRY(metadata_entry), "changed",
@@ -471,7 +471,7 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
 
   GtkWidget *entry = gtk_entry_new();
   gtk_widget_set_visible(entry, TRUE);
-  const char *str = dt_conf_get_conststring("ui_last/import_last_tags");
+  const char *str = dt_conf_get_string_const("ui_last/import_last_tags");
   _set_up_entry(entry, str, "tags", DT_META_TAGS_VALUE, metadata);
   gtk_widget_set_tooltip_text(entry, _("comma separated list of tags"));
   g_signal_connect(GTK_ENTRY(entry), "changed",
@@ -523,7 +523,7 @@ void dt_import_metadata_update(dt_import_metadata_t *metadata)
     GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(metadata->grid), 1, i + DT_META_META_VALUE);
     const gchar *metadata_name = dt_metadata_get_name_by_display_order(i);
     gchar *setting = g_strdup_printf("ui_last/import_last_%s", metadata_name);
-    const char *meta = dt_conf_get_conststring(setting);
+    const char *meta = dt_conf_get_string_const(setting);
     g_signal_handlers_block_by_func(w, _import_metadata_changed, metadata);
     gtk_entry_set_text(GTK_ENTRY(w), meta);
     g_signal_handlers_unblock_by_func(w, _import_metadata_changed, metadata);
@@ -538,7 +538,7 @@ void dt_import_metadata_update(dt_import_metadata_t *metadata)
   }
 
   GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(metadata->grid), 1, DT_META_TAGS_VALUE);
-  const char *tags = dt_conf_get_conststring("ui_last/import_last_tags");
+  const char *tags = dt_conf_get_string_const("ui_last/import_last_tags");
   g_signal_handlers_block_by_func(w, _import_tags_changed, metadata);
   gtk_entry_set_text(GTK_ENTRY(w), tags);
   g_signal_handlers_unblock_by_func(w, _import_tags_changed, metadata);

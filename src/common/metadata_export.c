@@ -31,7 +31,7 @@ const char formula_keyword[] = "plugins/lighttable/export/metadata_formula";
 
 uint32_t dt_lib_export_metadata_get_conf_flags(void)
 {
-  const char *metadata_flags = dt_conf_get_conststring(flags_keyword);
+  const char *metadata_flags = dt_conf_get_string_const(flags_keyword);
   const int32_t flags = strtol(metadata_flags, NULL, 16);
   return flags;
 }

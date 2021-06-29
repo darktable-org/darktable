@@ -918,7 +918,7 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module)
 {
   dt_image_t *image = &module->dev->image_storage;
 
-  const char *workflow = dt_conf_get_conststring("plugins/darkroom/workflow");
+  const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
   const gboolean is_display_referred = strcmp(workflow, "display-referred") == 0;
   const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
   const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
