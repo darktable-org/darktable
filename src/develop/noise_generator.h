@@ -140,7 +140,7 @@ static inline float dt_noise_generator(const dt_noise_distribution_t distributio
 #endif
 static inline void uniform_noise_simd(const float mu[3], const float sigma[3], uint32_t state[4], float out[3])
 {
-  const float DT_ALIGNED_ARRAY noise[3] = { xoshiro128plus(state), xoshiro128plus(state), xoshiro128plus(state) };
+  const dt_aligned_pixel_t noise = { xoshiro128plus(state), xoshiro128plus(state), xoshiro128plus(state) };
 
   #pragma unroll
   for(size_t c = 0; c < 3; c++)
@@ -158,8 +158,8 @@ static inline void gaussian_noise_simd(const float mu[3], const float sigma[3], 
   // flip needs to be flipped every next iteration
   // reference : https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
 
-  float DT_ALIGNED_ARRAY u1[3] = { 0.f };
-  float DT_ALIGNED_ARRAY u2[3] = { 0.f };
+  dt_aligned_pixel_t u1 = { 0.f };
+  dt_aligned_pixel_t u2 = { 0.f };
 
   #pragma unroll
   for(size_t c = 0; c < 3; c++)
@@ -169,7 +169,7 @@ static inline void gaussian_noise_simd(const float mu[3], const float sigma[3], 
   for(size_t c = 0; c < 3; c++)
     u2[c] = xoshiro128plus(state);
 
-  float DT_ALIGNED_ARRAY noise[3] = { 0.f };
+  dt_aligned_pixel_t noise = { 0.f };
 
   #pragma unroll
   for(size_t c = 0; c < 3; c++)
@@ -189,8 +189,8 @@ static inline void gaussian_noise_simd(const float mu[3], const float sigma[3], 
 static inline void poisson_noise_simd(const float mu[3], const float sigma[3], const int flip[3], uint32_t state[4], float out[3])
 {
   // create poissonian noise - It's just gaussian noise with Anscombe transform applied
-  float DT_ALIGNED_ARRAY u1[3] = { 0.f };
-  float DT_ALIGNED_ARRAY u2[3] = { 0.f };
+  dt_aligned_pixel_t u1 = { 0.f };
+  dt_aligned_pixel_t u2 = { 0.f };
 
   #pragma unroll
   for(size_t c = 0; c < 3; c++)
@@ -199,7 +199,7 @@ static inline void poisson_noise_simd(const float mu[3], const float sigma[3], c
     u2[c] = xoshiro128plus(state);
   }
 
-  float DT_ALIGNED_ARRAY noise[3] = { 0.f };
+  dt_aligned_pixel_t noise = { 0.f };
 
   #pragma unroll
   for(size_t c = 0; c < 3; c++)
@@ -209,7 +209,7 @@ static inline void poisson_noise_simd(const float mu[3], const float sigma[3], c
   }
 
   // now we have gaussian noise, then apply Anscombe transform to get poissonian one
-  float DT_ALIGNED_ARRAY r[3] = { 0.f };
+  dt_aligned_pixel_t r = { 0.f };
 
   #pragma unroll
   for(size_t c = 0; c < 3; c++)
