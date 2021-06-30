@@ -1682,6 +1682,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
   int delta_y;
+  gdouble delta;
 
   if(darktable.develop->darkroom_skip_mouse_events)
   {
@@ -1725,20 +1726,20 @@ static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event
 
   if(c->selected < 0 && !c->edit_by_area) return TRUE;
 
-  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
+  if(dt_gui_get_scroll_delta(event, &delta))
   {
     dt_iop_color_picker_reset(self, TRUE);
 
     if(c->edit_by_area)
     {
       const int bands = p->curve_num_nodes[c->channel];
-      c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.2 / bands, 1.0);
+      c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta), 0.2 / bands, 1.0);
       gtk_widget_queue_draw(widget);
     }
     else
     {
-      delta_y *= -DT_IOP_COLORZONES_DEFAULT_STEP;
-      return _move_point_internal(self, widget, 0.f, delta_y, event->state);
+      delta *= -DT_IOP_COLORZONES_DEFAULT_STEP;
+      return _move_point_internal(self, widget, 0.f, delta, event->state);
     }
   }
 

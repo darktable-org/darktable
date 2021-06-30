@@ -790,17 +790,21 @@ static gboolean lowlight_scrolled(GtkWidget *widget, GdkEventScroll *event, gpoi
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
-  int delta_y;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
   {
-    if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    int delta_y;
+    if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
     {
       //adjust aspect
       const int aspect = dt_conf_get_int("plugins/darkroom/lowlight/aspect_percent");
       dt_conf_set_int("plugins/darkroom/lowlight/aspect_percent", aspect + delta_y);
       dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
     }
-    else
+  }
+  else
+  {
+    gdouble delta_y;
+    if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
     {
       c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.2 / DT_IOP_LOWLIGHT_BANDS, 1.0);
       gtk_widget_queue_draw(widget);
