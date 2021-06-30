@@ -1601,10 +1601,8 @@ int button_released(struct dt_lib_module_t *self, double x, double y, int which,
       if(ps->x2 < ps->x1) _swap(&ps->x1, &ps->x2);
       if(ps->y2 < ps->y1) _swap(&ps->y1, &ps->y2);
 
-      const float dx = fminf(ps->imgs.screen.print_area.width,
-                             fmaxf(100.0f, ps->x2 - ps->x1));
-      const float dy = fminf(ps->imgs.screen.print_area.height,
-                             fmaxf(100.0f, ps->y2 - ps->y1));
+      const float dx = ps->x2 - ps->x1;
+      const float dy = ps->y2 - ps->y1;
 
       dt_printing_setup_box(&ps->imgs, idx, ps->x1, ps->y1, dx, dy);
       // make the new created box the last edited one
