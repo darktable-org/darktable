@@ -2445,6 +2445,9 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
+  // if sizes are not ready (module disabled), just ignore this
+  if(g->buf_width == 0 || g->buf_height == 0) return;
+
   // skip if fitting is still running
   if(g->fitting) return;
 
