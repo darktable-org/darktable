@@ -1951,7 +1951,11 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     const float text_h = DT_PIXEL_APPLY_DPI(16+2);
     const float margin = DT_PIXEL_APPLY_DPI(6);
     const float xp = (x1 + x2 - text_w) * .5f;
-    const float yp = y1 - text_h - (margin * 2.0f);
+    float yp = y1 - text_h - (margin * 2.0f);
+
+    // put text in the center if not enought space on top
+    if(yp < text_h)
+      yp = (y1 + y2 - text_h) * .5f;
 
     cairo_set_source_rgba(cr, .5, .5, .5, .9);
     dt_gui_draw_rounded_rectangle(cr, text_w + 2 * margin, text_h + 2 * margin,
