@@ -156,11 +156,13 @@ void dt_printing_setup_box(dt_images_box *imgs, const int idx,
 
   if(box->screen.x + dx > imgs->screen.print_area.x + imgs->screen.print_area.width)
   {
-    box->screen.width -= (box->screen.x + dx - imgs->screen.print_area.x - imgs->screen.print_area.width);
+    const float off = (box->screen.x + dx - imgs->screen.print_area.x - imgs->screen.print_area.width);
+    box->screen.x = fmaxf(imgs->screen.print_area.x, box->screen.x - off);
   }
   if(box->screen.y + dy > imgs->screen.print_area.y + imgs->screen.print_area.height)
   {
-    box->screen.height -= (box->screen.y + dy - imgs->screen.print_area.y - imgs->screen.print_area.height);
+    const float off = (box->screen.y + dy - imgs->screen.print_area.y - imgs->screen.print_area.height);
+    box->screen.y = fmaxf(imgs->screen.print_area.y, box->screen.y - off);
   }
 
   _compute_rel_pos(imgs, &box->screen, &box->pos);
