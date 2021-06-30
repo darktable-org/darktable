@@ -1496,9 +1496,7 @@ int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressur
     dt_image_box *b = &ps->imgs.box[ps->selected];
     const float dx = x - ps->click_pos_x;
     const float dy = y - ps->click_pos_y;
-    const float signx = dx >= 0 ? 1 : -1;
-    const float signy = dx >= 0 ? 1 : -1;
-    const float dxdy = fmaxf(fabsf(dx), fabsf(dy));
+    const float coef = dx / b->screen.width;
 
     switch(ps->sel_controls)
     {
@@ -1521,20 +1519,20 @@ int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressur
          ps->y2 = b->screen.y + b->screen.height + dy;
          break;
        case BOX_TOP_LEFT:
-         ps->x1 = b->screen.x + signx * dxdy;
-         ps->y1 = b->screen.y + signy * dxdy;
+         ps->x1 = b->screen.x + dx;
+         ps->y1 = b->screen.y + (coef * b->screen.height);
          break;
        case BOX_TOP_RIGHT:
-         ps->x2 = b->screen.x + b->screen.width + signx * dxdy;
-         ps->y1 = b->screen.y - signy * dxdy;
+         ps->x2 = b->screen.x + b->screen.width + dx;
+         ps->y1 = b->screen.y - (coef * b->screen.height);
          break;
        case BOX_BOTTOM_LEFT:
-         ps->x1 = b->screen.x + signx * dxdy;
-         ps->y2 = b->screen.y + b->screen.height - signy * dxdy;
+         ps->x1 = b->screen.x + dx;
+         ps->y2 = b->screen.y + b->screen.height - (coef * b->screen.height);
          break;
        case BOX_BOTTOM_RIGHT:
-         ps->x2 = b->screen.x + b->screen.width + signx * dxdy;
-         ps->y2 = b->screen.y + b->screen.height + signy * dxdy;
+         ps->x2 = b->screen.x + b->screen.width + dx;
+         ps->y2 = b->screen.y + b->screen.height + (coef * b->screen.height);
          break;
        default:
          break;
