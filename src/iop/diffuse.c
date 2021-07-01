@@ -156,7 +156,7 @@ void init_presets(dt_iop_module_so_t *self)
   // deblurring presets
   p.sharpness = 0.0f;
   p.threshold = 0.0f;
-  p.variance_threshold = 0.f;
+  p.variance_threshold = +0.2f;
 
   p.anisotropy_first = +5.f;
   p.anisotropy_second = +5.f;
@@ -726,7 +726,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           // regardless of the wavelet scale where we compute it.
           // Prevents large scale halos when deblurring.
           variance /= 9.f / current_radius_square;
-          variance = variance_threshold + variance * regularization;
+          variance = variance_threshold + sqrtf(variance * regularization);
 
           // compute the update
           float acc = 0.f;
@@ -966,7 +966,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   const int iterations = MAX(ceilf((float)data->iterations), 1);
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
-  const int scales = CLAMP(diffusion_scales, 2, MAX_NUM_SCALES);
+  const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
 
   // wavelets scales buffers
   float *restrict HF[MAX_NUM_SCALES];
@@ -1463,8 +1463,9 @@ void gui_init(struct dt_iop_module_t *self)
   g->variance_threshold = dt_bauhaus_slider_from_params(self, "variance_threshold");
   gtk_widget_set_tooltip_text(g->variance_threshold,
                               _("define the variance threshold between edge amplification and penalty.\n"
-                                "decrease if you want pixels on smooth surfaces get a diffusion boost,\n"
-                                "while pixels on edges still get penalized."));
+                                "decrease if you want pixels on smooth surfaces get a boost,\n"
+                                "increase if you see noise appear on smooth surfaces or\n"
+                                "if dark areas seem oversharpened compared to bright areas."));
 
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion spatiality")), FALSE, FALSE, 0);
