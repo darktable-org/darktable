@@ -2151,6 +2151,7 @@ static void _collection_update(double *last_update, double *update_interval)
 static int _control_import_image_insitu(const char *filename, GList **imgs, double *last_update,
                                         double *update_interval)
 {
+  dt_conf_set_int("ui_last/import_last_image", -1);
   char *dirname = g_path_get_dirname(filename);
   dt_film_t film;
   const int filmid = dt_film_new(&film, dirname);
@@ -2160,6 +2161,7 @@ static int _control_import_image_insitu(const char *filename, GList **imgs, doub
   {
     *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(imgid));
     _collection_update(last_update, update_interval);
+    dt_conf_set_int("ui_last/import_last_image", imgid);
   }
   g_free(dirname);
   return filmid;
@@ -2330,7 +2332,12 @@ static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_o
 
   dt_control_import_t *data = params->data;
   if(inplace)
+  {
     data->session = NULL;
+    // if unique image => synchronous
+    if(!imgs->next)
+      dt_control_job_wait(job);
+  }
   else
   {
     data->session = dt_import_session_new();

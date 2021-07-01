@@ -135,7 +135,7 @@ typedef struct dt_lib_import_t
   GtkButton *tethered_shoot;
   GtkButton *mount_camera;
   GtkButton *unmount_camera;
-  
+
   GtkWidget *ignore_exif, *rating, *apply_metadata, *recursive;
   GtkWidget *import_new;
   dt_import_metadata_t metadata;
@@ -1859,6 +1859,7 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
     g_list_free_full(paths, (GDestroyNotify)gtk_tree_path_free);
     if(imgs)
     {
+      const gboolean unique = !imgs->next;
       imgs = g_list_reverse(imgs);
       time_t datetime_override = 0;
       if(d->import_case != DT_IMPORT_INPLACE)
@@ -1884,6 +1885,12 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
         if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->recursive)))
           folder = dt_util_dstrcat(folder, "%%");
         _import_set_collection(folder);
+        const int imgid = dt_conf_get_int("ui_last/import_last_image");
+        if(unique && imgid != -1)
+        {
+          dt_control_set_mouse_over_id(imgid);
+          dt_ctl_switch_mode_to("darkroom");
+        }
       }
     }
     gtk_tree_selection_unselect_all(selection);
