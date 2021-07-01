@@ -40,7 +40,7 @@
    with in-cache data thus increasing performance.
 
    The performance has been tested on a E-2288G for 45mpix images, tiling improves performance > 2-fold.
-   times in sec: basic (0.5->0.15), median (0.6->0.24), 3xmedian (0.8->0.42), 3xmedian + 2x refine (1.2->0.5)
+   times in sec: basic (0.5->0.15), median (0.6->0.18), 3xmedian (0.8->0.22), 3xmedian + 2x refine (1.2->0.30)
    The default is now 2 times slower than RCD and 2 times faster than AMaZE 
 */
 
@@ -170,7 +170,6 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
   dt_omp_firstprivate(width, height, out, in, scaler, revscaler, filters)
 #endif
   {
-    float *rix[6];
     float *qix[6];
     float *buffer = dt_alloc_align_float(LMMSE_GRP * LMMSE_GRP * 6);
 
@@ -201,15 +200,13 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
         const int last_rr = tileRows + 2 * BORDER_AROUND;
         const int last_cc = tileCols + 2 * BORDER_AROUND;
 
-        for(int rrr = BORDER_AROUND; rrr < tileRows + BORDER_AROUND; rrr++)
+        for(int rrr = BORDER_AROUND, row = rowStart; rrr < tileRows + BORDER_AROUND; rrr++, row++)
         {
-          for(int ccc = BORDER_AROUND; ccc < tileCols + BORDER_AROUND; ccc++)
+          float *cfa = qix[5] + rrr * LMMSE_GRP + BORDER_AROUND;
+          int idx = row * width + colStart; 
+          for(int ccc = BORDER_AROUND, col = colStart; ccc < tileCols + BORDER_AROUND; ccc++, col++, cfa++, idx++)
           {
-            const int row = rrr - BORDER_AROUND + rowStart;
-            const int col = ccc - BORDER_AROUND + colStart;
-
-            float *cfa = qix[5] + rrr * LMMSE_GRP + ccc;
-            cfa[0] = calc_gamma(revscaler * in[row * width + col], gamma_in);
+            cfa[0] = calc_gamma(revscaler * in[idx], gamma_in);
           }
         }
 
@@ -222,31 +219,30 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
             float *cfa = qix[5] + rr * LMMSE_GRP + cc;
             const float v0 = 0.0625f * (cfa[-w1 - 1] + cfa[-w1 + 1] + cfa[w1 - 1] + cfa[w1 + 1]) + 0.25f * cfa[0];
             // horizontal
-            rix[0] = qix[0] + rr * LMMSE_GRP + cc;
-            rix[0][0] = -0.25f * (cfa[ -2] + cfa[ 2]) + 0.5f * (cfa[ -1] + cfa[0] + cfa[ 1]);
-            const float Y0 = v0 + 0.5f * rix[0][0];
-    
-            rix[0][0] = (cfa[0] > 1.75f * Y0) ? median3f(rix[0][0], cfa[ -1], cfa[ 1]) : limf(rix[0][0], 0.0f, 1.0f);
-            rix[0][0] -= cfa[0];
+            float *hdiff = qix[0] + rr * LMMSE_GRP + cc;
+            hdiff[0] = -0.25f * (cfa[ -2] + cfa[ 2]) + 0.5f * (cfa[ -1] + cfa[0] + cfa[ 1]);
+            const float Y0 = v0 + 0.5f * hdiff[0];
+            hdiff[0] = (cfa[0] > 1.75f * Y0) ? median3f(hdiff[0], cfa[ -1], cfa[ 1]) : limf(hdiff[0], 0.0f, 1.0f);
+            hdiff[0] -= cfa[0];
+
             // vertical
-            rix[1] = qix[1] + rr * LMMSE_GRP + cc;
-            rix[1][0] = -0.25f * (cfa[-w2] + cfa[w2]) + 0.5f * (cfa[-w1] + cfa[0] + cfa[w1]);
-            const float Y1 = v0 + 0.5f * rix[1][0];
-    
-            rix[1][0] = (cfa[0] > 1.75f * Y1) ? median3f(rix[1][0], cfa[-w1], cfa[w1]) : limf(rix[1][0], 0.0f, 1.0f);
-            rix[1][0] -= cfa[0];
+            float *vdiff = qix[1] + rr * LMMSE_GRP + cc;
+            vdiff[0] = -0.25f * (cfa[-w2] + cfa[w2]) + 0.5f * (cfa[-w1] + cfa[0] + cfa[w1]);
+            const float Y1 = v0 + 0.5f * vdiff[0];
+            vdiff[0] = (cfa[0] > 1.75f * Y1) ? median3f(vdiff[0], cfa[-w1], cfa[w1]) : limf(vdiff[0], 0.0f, 1.0f);
+            vdiff[0] -= cfa[0];
           }
     
           // G-R(B) at G location
           for(int ccc = 2 + (FC(rr, 3, filters) & 1); ccc < last_cc - 2; ccc += 2)
           {
             float *cfa = qix[5] + rr * LMMSE_GRP + ccc;
-            rix[0] = qix[0] + rr * LMMSE_GRP + ccc;
-            rix[1] = qix[1] + rr * LMMSE_GRP + ccc;
-            rix[0][0] = 0.25f * (cfa[ -2] + cfa[ 2]) - 0.5f * (cfa[ -1] + cfa[0] + cfa[ 1]);
-            rix[1][0] = 0.25f * (cfa[-w2] + cfa[w2]) - 0.5f * (cfa[-w1] + cfa[0] + cfa[w1]);
-            rix[0][0] = limf(rix[0][0], -1.0f, 0.0f) + cfa[0];
-            rix[1][0] = limf(rix[1][0], -1.0f, 0.0f) + cfa[0];
+            float *hdiff = qix[0] + rr * LMMSE_GRP + ccc;
+            float *vdiff = qix[1] + rr * LMMSE_GRP + ccc;
+            hdiff[0] = 0.25f * (cfa[ -2] + cfa[ 2]) - 0.5f * (cfa[ -1] + cfa[0] + cfa[ 1]);
+            vdiff[0] = 0.25f * (cfa[-w2] + cfa[w2]) - 0.5f * (cfa[-w1] + cfa[0] + cfa[w1]);
+            hdiff[0] = limf(hdiff[0], -1.0f, 0.0f) + cfa[0];
+            vdiff[0] = limf(vdiff[0], -1.0f, 0.0f) + cfa[0];
           }
         }
 
@@ -255,12 +251,12 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
         {
           for(int cc = 4; cc < last_cc - 4; cc++)
           {
-            rix[0] = qix[0] + rr * LMMSE_GRP + cc;
-            rix[2] = qix[2] + rr * LMMSE_GRP + cc;
-            rix[2][0] = h0 * rix[0][0] + h1 * (rix[0][ -1] + rix[0][ 1]) + h2 * (rix[0][ -2] + rix[0][ 2]) + h3 * (rix[0][ -3] + rix[0][ 3]) + h4 * (rix[0][ -4] + rix[0][ 4]);
-            rix[1] = qix[1] + rr * LMMSE_GRP + cc;
-            rix[3] = qix[3] + rr * LMMSE_GRP + cc;
-            rix[3][0] = h0 * rix[1][0] + h1 * (rix[1][-w1] + rix[1][w1]) + h2 * (rix[1][-w2] + rix[1][w2]) + h3 * (rix[1][-w3] + rix[1][w3]) + h4 * (rix[1][-w4] + rix[1][w4]);
+            float *hdiff = qix[0] + rr * LMMSE_GRP + cc;
+            float *vdiff = qix[1] + rr * LMMSE_GRP + cc;
+            float *hlp   = qix[2] + rr * LMMSE_GRP + cc;
+            float *vlp   = qix[3] + rr * LMMSE_GRP + cc;
+            hlp[0] = h0 * hdiff[0] + h1 * (hdiff[ -1] + hdiff[ 1]) + h2 * (hdiff[ -2] + hdiff[ 2]) + h3 * (hdiff[ -3] + hdiff[ 3]) + h4 * (hdiff[ -4] + hdiff[ 4]);
+            vlp[0] = h0 * vdiff[0] + h1 * (vdiff[-w1] + vdiff[w1]) + h2 * (vdiff[-w2] + vdiff[w2]) + h3 * (vdiff[-w3] + vdiff[w3]) + h4 * (vdiff[-w4] + vdiff[w4]);
           }
         }
 
@@ -268,59 +264,59 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
         {
           for(int cc = 4 + (FC(rr, 4, filters) & 1); cc < last_cc - 4; cc += 2)
           {
-            rix[0] = qix[0] + rr * LMMSE_GRP + cc;
-            rix[1] = qix[1] + rr * LMMSE_GRP + cc;
-            rix[2] = qix[2] + rr * LMMSE_GRP + cc;
-            rix[3] = qix[3] + rr * LMMSE_GRP + cc;
+            float *hdiff = qix[0] + rr * LMMSE_GRP + cc;
+            float *vdiff = qix[1] + rr * LMMSE_GRP + cc;
+            float *hlp   = qix[2] + rr * LMMSE_GRP + cc;
+            float *vlp   = qix[3] + rr * LMMSE_GRP + cc;
             float *interp = qix[4] + rr * LMMSE_GRP + cc;
             // horizontal
-            float p1 = rix[2][-4];
-            float p2 = rix[2][-3];
-            float p3 = rix[2][-2];
-            float p4 = rix[2][-1];
-            float p5 = rix[2][ 0];
-            float p6 = rix[2][ 1];
-            float p7 = rix[2][ 2];
-            float p8 = rix[2][ 3];
-            float p9 = rix[2][ 4];
+            float p1 = hlp[-4];
+            float p2 = hlp[-3];
+            float p3 = hlp[-2];
+            float p4 = hlp[-1];
+            float p5 = hlp[ 0];
+            float p6 = hlp[ 1];
+            float p7 = hlp[ 2];
+            float p8 = hlp[ 3];
+            float p9 = hlp[ 4];
             float mu = (p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9) / 9.0f;
             float vx = 1e-7f + sqrf(p1 - mu) + sqrf(p2 - mu) + sqrf(p3 - mu) + sqrf(p4 - mu) + sqrf(p5 - mu) + sqrf(p6 - mu) + sqrf(p7 - mu) + sqrf(p8 - mu) + sqrf(p9 - mu);
-            p1 -= rix[0][-4];
-            p2 -= rix[0][-3];
-            p3 -= rix[0][-2];
-            p4 -= rix[0][-1];
-            p5 -= rix[0][ 0];
-            p6 -= rix[0][ 1];
-            p7 -= rix[0][ 2];
-            p8 -= rix[0][ 3];
-            p9 -= rix[0][ 4];
+            p1 -= hdiff[-4];
+            p2 -= hdiff[-3];
+            p3 -= hdiff[-2];
+            p4 -= hdiff[-1];
+            p5 -= hdiff[ 0];
+            p6 -= hdiff[ 1];
+            p7 -= hdiff[ 2];
+            p8 -= hdiff[ 3];
+            p9 -= hdiff[ 4];
             float vn = 1e-7f + sqrf(p1) + sqrf(p2) + sqrf(p3) + sqrf(p4) + sqrf(p5) + sqrf(p6) + sqrf(p7) + sqrf(p8) + sqrf(p9);
-            float xh = (rix[0][0] * vx + rix[2][0] * vn) / (vx + vn);
+            float xh = (hdiff[0] * vx + hlp[0] * vn) / (vx + vn);
             float vh = vx * vn / (vx + vn);
     
             // vertical
-            p1 = rix[3][-w4];
-            p2 = rix[3][-w3];
-            p3 = rix[3][-w2];
-            p4 = rix[3][-w1];
-            p5 = rix[3][  0];
-            p6 = rix[3][ w1];
-            p7 = rix[3][ w2];
-            p8 = rix[3][ w3];
-            p9 = rix[3][ w4];
+            p1 = vlp[-w4];
+            p2 = vlp[-w3];
+            p3 = vlp[-w2];
+            p4 = vlp[-w1];
+            p5 = vlp[  0];
+            p6 = vlp[ w1];
+            p7 = vlp[ w2];
+            p8 = vlp[ w3];
+            p9 = vlp[ w4];
             mu = (p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9) / 9.0f;
             vx = 1e-7f + sqrf(p1 - mu) + sqrf(p2 - mu) + sqrf(p3 - mu) + sqrf(p4 - mu) + sqrf(p5 - mu) + sqrf(p6 - mu) + sqrf(p7 - mu) + sqrf(p8 - mu) + sqrf(p9 - mu);
-            p1 -= rix[1][-w4];
-            p2 -= rix[1][-w3];
-            p3 -= rix[1][-w2];
-            p4 -= rix[1][-w1];
-            p5 -= rix[1][  0];
-            p6 -= rix[1][ w1];
-            p7 -= rix[1][ w2];
-            p8 -= rix[1][ w3];
-            p9 -= rix[1][ w4];
+            p1 -= vdiff[-w4];
+            p2 -= vdiff[-w3];
+            p3 -= vdiff[-w2];
+            p4 -= vdiff[-w1];
+            p5 -= vdiff[  0];
+            p6 -= vdiff[ w1];
+            p7 -= vdiff[ w2];
+            p8 -= vdiff[ w3];
+            p9 -= vdiff[ w4];
             vn = 1e-7f + sqrf(p1) + sqrf(p2) + sqrf(p3) + sqrf(p4) + sqrf(p5) + sqrf(p6) + sqrf(p7) + sqrf(p8) + sqrf(p9);
-            float xv = (rix[1][0] * vx + rix[3][0] * vn) / (vx + vn);
+            float xv = (vdiff[0] * vx + vlp[0] * vn) / (vx + vn);
             float vv = vx * vn / (vx + vn);
             // interpolated G-R(B)
             interp[0] = (xh * vv + xv * vh) / (vh + vv);
@@ -351,12 +347,12 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
         {
           for(int cc = 1 + (FC(rr, 2, filters) & 1), c = FC(rr, cc + 1, filters); cc < last_cc - 1; cc += 2)
           {
-            rix[c] = qix[c] + rr * LMMSE_GRP + cc;
-            rix[1] = qix[1] + rr * LMMSE_GRP + cc;
-            rix[c][0] = rix[1][0] + 0.5f * (rix[c][ -1] - rix[1][ -1] + rix[c][ 1] - rix[1][ 1]);
+            float *colc = qix[c] + rr * LMMSE_GRP + cc;
+            float *col1 = qix[1] + rr * LMMSE_GRP + cc;
+            colc[0] = col1[0] + 0.5f * (colc[ -1] - col1[ -1] + colc[ 1] - col1[ 1]);
             c = 2 - c;
-            rix[c] = qix[c] + rr * LMMSE_GRP + cc;
-            rix[c][0] = rix[1][0] + 0.5f * (rix[c][-w1] - rix[1][-w1] + rix[c][w1] - rix[1][w1]);
+            colc = qix[c] + rr * LMMSE_GRP + cc;
+            colc[0] = col1[0] + 0.5f * (colc[-w1] - col1[-w1] + colc[w1] - col1[w1]);
             c = 2 - c;
           }
         }
@@ -366,9 +362,9 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
         {
           for(int cc = 1 + (FC(rr, 1, filters) & 1), c = 2 - FC(rr, cc, filters); cc < last_cc - 1; cc += 2)
           {
-            rix[c] = qix[c] + rr * LMMSE_GRP + cc;
-            rix[1] = qix[1] + rr * LMMSE_GRP + cc;
-            rix[c][0] = rix[1][0] + 0.25f * (rix[c][-w1] - rix[1][-w1] + rix[c][ -1] - rix[1][ -1] + rix[c][  1] - rix[1][  1] + rix[c][ w1] - rix[1][ w1]);
+            float *colc = qix[c] + rr * LMMSE_GRP + cc;
+            float *col1 = qix[1] + rr * LMMSE_GRP + cc;
+            colc[0] = col1[0] + 0.25f * (colc[-w1] - col1[-w1] + colc[ -1] - col1[ -1] + colc[  1] - col1[  1] + colc[ w1] - col1[ w1]);
           }
         }
 
@@ -391,19 +387,19 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
               const int d = c + 3 - (c == 0 ? 0 : 1);
               for(int cc = 1; cc < last_cc - 1; cc++)
               {
-                rix[d] = qix[d] + rr * LMMSE_GRP + cc;
-                rix[c] = qix[c] + rr * LMMSE_GRP + cc;
-                rix[1] = qix[1] + rr * LMMSE_GRP + cc;
+                float *corr = qix[d] + rr * LMMSE_GRP + cc;
+                float *colc = qix[c] + rr * LMMSE_GRP + cc;
+                float *col1 = qix[1] + rr * LMMSE_GRP + cc;
                 // Assign 3x3 differential color values
-                rix[d][0] = median9f(rix[c][-w1-1] - rix[1][-w1-1],
-                                     rix[c][-w1  ] - rix[1][-w1  ],
-                                     rix[c][-w1+1] - rix[1][-w1+1],
-                                     rix[c][   -1] - rix[1][   -1],
-                                     rix[c][    0] - rix[1][    0],
-                                     rix[c][    1] - rix[1][    1],
-                                     rix[c][ w1-1] - rix[1][ w1-1],
-                                     rix[c][ w1  ] - rix[1][ w1  ],
-                                     rix[c][ w1+1] - rix[1][ w1+1]);
+                corr[0] = median9f(colc[-w1-1] - col1[-w1-1],
+                                   colc[-w1  ] - col1[-w1  ],
+                                   colc[-w1+1] - col1[-w1+1],
+                                   colc[   -1] - col1[   -1],
+                                   colc[    0] - col1[    0],
+                                   colc[    1] - col1[    1],
+                                   colc[ w1-1] - col1[ w1-1],
+                                   colc[ w1  ] - col1[ w1  ],
+                                   colc[ w1+1] - col1[ w1+1]);
               }
             }
           }
@@ -411,11 +407,11 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
           // red/blue at GREEN pixel locations & red/blue and green at BLUE/RED pixel locations
           for(int rr = rrmin; rr < rrmax - 1; rr++)
           {
-            rix[0] = qix[0] + rr * LMMSE_GRP + ccmin;
-            rix[1] = qix[1] + rr * LMMSE_GRP + ccmin;
-            rix[2] = qix[2] + rr * LMMSE_GRP + ccmin;
-            rix[3] = qix[3] + rr * LMMSE_GRP + ccmin;
-            rix[4] = qix[4] + rr * LMMSE_GRP + ccmin;
+            float *col0 = qix[0] + rr * LMMSE_GRP + ccmin;
+            float *col1 = qix[1] + rr * LMMSE_GRP + ccmin;
+            float *col2 = qix[2] + rr * LMMSE_GRP + ccmin;
+            float *corr3 = qix[3] + rr * LMMSE_GRP + ccmin;
+            float *corr4 = qix[4] + rr * LMMSE_GRP + ccmin;
             int c0 = FC(rr, 0, filters);
             int c1 = FC(rr, 1, filters);
       
@@ -424,57 +420,69 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
               c1 = 2 - c1;
               const int d = c1 + 3 - (c1 == 0 ? 0 : 1);
               int cc;
+              float *col_c1 = qix[c1] + rr * LMMSE_GRP + ccmin;
+              float *corr_d = qix[d] + rr * LMMSE_GRP + ccmin;
               for(cc = ccmin; cc < ccmax - 1; cc += 2)
               {
-                rix[0][0] = rix[1][0] + rix[3][0];
-                rix[2][0] = rix[1][0] + rix[4][0];
-                rix[0]++;
-                rix[1]++;
-                rix[2]++;
-                rix[3]++;
-                rix[4]++;
-                rix[c1][0] = rix[1][0] + rix[d][0];
-                rix[1][0] = 0.5f * (rix[0][0] - rix[3][0] + rix[2][0] - rix[4][0]);
-                rix[0]++;
-                rix[1]++;
-                rix[2]++;
-                rix[3]++;
-                rix[4]++;
+                col0[0] = col1[0] + corr3[0];
+                col2[0] = col1[0] + corr4[0];
+                col0++;
+                col1++;
+                col2++;
+                corr3++;
+                corr4++;
+                col_c1++;
+                corr_d++;
+                col_c1[0] = col1[0] + corr_d[0];
+                col1[0] = 0.5f * (col0[0] - corr3[0] + col2[0] - corr4[0]);
+                col0++;
+                col1++;
+                col2++;
+                corr3++;
+                corr4++;
+                col_c1++;
+                corr_d++;
               }
       
               if(cc < ccmax)
               { // remaining pixel, only if width is odd
-                rix[0][0] = rix[1][0] + rix[3][0];
-                rix[2][0] = rix[1][0] + rix[4][0];
+                col0[0] = col1[0] + corr3[0];
+                col2[0] = col1[0] + corr4[0];
               }
             }
             else
             {
               c0 = 2 - c0;
               const int d = c0 + 3 - (c0 == 0 ? 0 : 1);
+              float *col_c0 = qix[c0] + rr * LMMSE_GRP + ccmin;
+              float *corr_d = qix[d] + rr * LMMSE_GRP + ccmin;
               int cc;
               for(cc = ccmin; cc < ccmax - 1; cc += 2)
               {
-                rix[c0][0] = rix[1][0] + rix[d][0];
-                rix[1][0] = 0.5f * (rix[0][0] - rix[3][0] + rix[2][0] - rix[4][0]);
-                rix[0]++;
-                rix[1]++;
-                rix[2]++;
-                rix[3]++;
-                rix[4]++;
-                rix[0][0] = rix[1][0] + rix[3][0];
-                rix[2][0] = rix[1][0] + rix[4][0];
-                rix[0]++;
-                rix[1]++;
-                rix[2]++;
-                rix[3]++;
-                rix[4]++;
-              }
+                col_c0[0] = col1[0] + corr_d[0];
+                col1[0] = 0.5f * (col0[0] - corr3[0] + col2[0] - corr4[0]);
+                col0++;
+                col1++;
+                col2++;
+                corr3++;
+                corr4++;
+                col_c0++;
+                corr_d++;
+                col0[0] = col1[0] + corr3[0];
+                col2[0] = col1[0] + corr4[0];
+                col0++;
+                col1++;
+                col2++;
+                corr3++;
+                corr4++;
+                col_c0++;
+                corr_d++;
+             }
       
               if(cc < ccmax)
               { // remaining pixel, only if width is odd
-                rix[c0][0] = rix[1][0] + rix[d][0];
-                rix[1][0] = 0.5f * (rix[0][0] - rix[3][0] + rix[2][0] - rix[4][0]);
+                col_c0[0] = col1[0] + corr_d[0];
+                col1[0] = 0.5f * (col0[0] - corr3[0] + col2[0] - corr4[0]);
               }
             }
           }
@@ -552,17 +560,19 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
         const int last_vertical =    rowEnd   - ((tile_vertical == num_vertical - 1)     ? 0 : LMMSE_OVERLAP);
         const int first_horizontal = colStart + ((tile_horizontal == 0)                  ? 0 : LMMSE_OVERLAP);
         const int last_horizontal =  colEnd   - ((tile_horizontal == num_horizontal - 1) ? 0 : LMMSE_OVERLAP);
-        for(int row = first_vertical; row < last_vertical; row++)
+        for(int row = first_vertical, rr = row - rowStart + BORDER_AROUND; row < last_vertical; row++, rr++)
         {
-          for(int col = first_horizontal; col < last_horizontal; col++)
+          float *dest = out + 4 * (row * width + first_horizontal);
+          const int idx = rr * LMMSE_GRP + first_horizontal - colStart + BORDER_AROUND;
+          float *col0 = qix[0] + idx;
+          float *col1 = qix[1] + idx;
+          float *col2 = qix[2] + idx;
+          for(int col = first_horizontal; col < last_horizontal; col++, dest +=4, col0++, col1++, col2++)
           {
-            const int rr = row - rowStart + BORDER_AROUND;
-            const int cc = col - colStart + BORDER_AROUND;
-            const int oidx = 4 * (row * width + col);
-            out[oidx + 0] = scaler * calc_gamma(qix[0][rr * LMMSE_GRP + cc], gamma_out); 
-            out[oidx + 1] = scaler * calc_gamma(qix[1][rr * LMMSE_GRP + cc], gamma_out); 
-            out[oidx + 2] = scaler * calc_gamma(qix[2][rr * LMMSE_GRP + cc], gamma_out); 
-            out[oidx + 3] = 0.0f;
+            dest[0] = scaler * calc_gamma(col0[0], gamma_out); 
+            dest[1] = scaler * calc_gamma(col1[0], gamma_out); 
+            dest[2] = scaler * calc_gamma(col2[0], gamma_out); 
+            dest[3] = 0.0f;
           }
         }
       }
