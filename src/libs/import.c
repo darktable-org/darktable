@@ -581,7 +581,7 @@ static void _thumb_set_in_listview(GtkTreeModel *model, GtkTreeIter *iter,
   g_free(filename);
 }
 
-static gboolean _thumb_toggled(GtkWidget *view, GdkEventButton *event, dt_lib_module_t *self)
+static gboolean _files_button_press(GtkWidget *view, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   if((event->type == GDK_BUTTON_PRESS && event->button == 1))
@@ -600,10 +600,26 @@ static gboolean _thumb_toggled(GtkWidget *view, GdkEventButton *event, dt_lib_mo
         gboolean thumb_sel;
         gtk_tree_model_get(model, &iter, DT_IMPORT_SEL_THUMB, &thumb_sel, -1);
         _thumb_set_in_listview(model, &iter, !thumb_sel, self);
+        gtk_tree_path_free(path);
         return TRUE;
       }
     }
     gtk_tree_path_free(path);
+  }
+  else if((event->type == GDK_2BUTTON_PRESS && event->button == 1))
+  {
+    GtkTreePath *path = NULL;
+    // Get tree path for row that was clicked
+    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)event->x, (gint)event->y,
+                                     &path, NULL, NULL, NULL))
+    {
+      GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
+      gtk_tree_selection_unselect_all(selection);
+      gtk_tree_selection_select_path(selection, path);
+      gtk_dialog_response(GTK_DIALOG(d->from.dialog), GTK_RESPONSE_ACCEPT);
+      gtk_tree_path_free(path);
+      return TRUE;
+    }
   }
   return FALSE;
 }
@@ -1057,7 +1073,7 @@ static gboolean _clear_parasitic_selection(gpointer user_data)
   return FALSE;
 }
 
-static gboolean places_button_press(GtkWidget *view, GdkEventButton *event, dt_lib_module_t *self)
+static gboolean _places_button_press(GtkWidget *view, GdkEventButton *event, dt_lib_module_t *self)
 {
   gboolean res = FALSE;
   GtkTreePath *path = NULL;
@@ -1101,7 +1117,7 @@ static gboolean places_button_press(GtkWidget *view, GdkEventButton *event, dt_l
   return res;
 }
 
-static gboolean _button_press(GtkWidget *view, GdkEventButton *event, dt_lib_module_t *self)
+static gboolean _folders_button_press(GtkWidget *view, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   gboolean res = FALSE;
@@ -1225,7 +1241,7 @@ static void _set_places_list(GtkWidget *places_paned, dt_lib_module_t* self)
   gtk_paned_pack1(GTK_PANED(places_paned), places_top_box, TRUE, TRUE);
 
 
-  g_signal_connect(G_OBJECT(d->placesView), "button-press-event", G_CALLBACK(places_button_press), self);
+  g_signal_connect(G_OBJECT(d->placesView), "button-press-event", G_CALLBACK(_places_button_press), self);
 }
 
 static void _set_folders_list(GtkWidget *places_paned, dt_lib_module_t* self)
@@ -1246,7 +1262,7 @@ static void _set_folders_list(GtkWidget *places_paned, dt_lib_module_t* self)
   gtk_tree_view_column_set_resizable(column, TRUE);
   gtk_tree_view_set_expander_column(d->from.folderview, column);
   g_signal_connect(d->from.folderview, "row-expanded", G_CALLBACK(_row_expanded), self);
-  g_signal_connect(G_OBJECT(d->from.folderview), "button-press-event", G_CALLBACK(_button_press), self);
+  g_signal_connect(G_OBJECT(d->from.folderview), "button-press-event", G_CALLBACK(_folders_button_press), self);
   gtk_tree_view_column_set_sort_column_id(column, DT_FOLDER_PATH);
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store), DT_FOLDER_PATH,
                                 dt_conf_get_bool("ui_last/import_last_folder_descending")
@@ -1603,7 +1619,7 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(128));
   d->from.pixcol = column;
   g_signal_connect(G_OBJECT(d->from.treeview), "button-press-event",
-                   G_CALLBACK(_thumb_toggled), self);
+                   G_CALLBACK(_files_button_press), self);
 
   GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.treeview);
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
