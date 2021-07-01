@@ -2535,13 +2535,27 @@ void dt_shortcut_key_release(dt_input_device_t id, guint time, guint key)
         g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
 
         guint passed_time = time - _last_time;
+
+        if(passed_time > delay) _sc.press |= DT_SHORTCUT_LONG;
+
+        if(!_sc.press && !_sc.action)
+        {
+          dt_shortcut_t key_23press = { .key_device = id, .key = key, .press = DT_SHORTCUT_DOUBLE, .views =
+                                        darktable.view_manager->current_view->view(darktable.view_manager->current_view) };
+          GSequenceIter *double_press = g_sequence_search(darktable.control->shortcuts, &key_23press, shortcut_compare_func,
+                                                          GINT_TO_POINTER(key_23press.views));
+          if(double_press)
+          {
+            dt_shortcut_t *dp = g_sequence_get(double_press);
+            if(!dp || dp->key_device != id || dp->key != key || dp->press <= DT_SHORTCUT_LONG)
+              passed_time = delay;
+          }
+        }
+
         if(passed_time < delay && !(_sc.press & DT_SHORTCUT_TRIPLE))
           _timeout_source = g_timeout_add(delay - passed_time, _key_release_delayed, NULL);
         else
-        {
-          if(passed_time > delay) _sc.press |= DT_SHORTCUT_LONG;
           _key_release_delayed(GINT_TO_POINTER(passed_time > 2 * delay)); // call immediately
-        }
       }
       else
       {
