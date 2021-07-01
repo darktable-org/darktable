@@ -302,7 +302,7 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
     // regardless of the wavelet scale where we compute it.
     // Prevents large scale halos when deblurring.
     variance /= 9.f / current_radius_square;
-    variance = variance_threshold + variance * regularization;
+    variance = variance_threshold + native_sqrt(variance * regularization);
 
     // compute the update
     float4 acc = (float4)0.f;
