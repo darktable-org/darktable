@@ -26,6 +26,10 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
+
+#define DT_RATINGS_UPGRADE -1
+#define DT_RATINGS_DOWNGRADE -2
 
 typedef struct dt_undo_ratings_t
 {
@@ -110,16 +114,25 @@ static void _ratings_apply(const GList *imgs, const int rating, GList **undo, co
   for(const GList *images = imgs; images; images = g_list_next(images))
   {
     const int image_id = GPOINTER_TO_INT(images->data);
+    const int old_rating = dt_ratings_get(image_id);
     if(undo_on)
     {
       dt_undo_ratings_t *undoratings = (dt_undo_ratings_t *)malloc(sizeof(dt_undo_ratings_t));
       undoratings->imgid = image_id;
-      undoratings->before = dt_ratings_get(image_id);
+      undoratings->before = old_rating;
       undoratings->after = rating;
       *undo = g_list_append(*undo, undoratings);
     }
 
-    _ratings_apply_to_image(image_id, rating);
+    int new_rating = rating;
+    if(old_rating == DT_VIEW_REJECT && rating < DT_VIEW_DESERT)
+      new_rating = DT_VIEW_REJECT;
+    else if(rating == DT_RATINGS_UPGRADE)
+      new_rating = MIN(DT_VIEW_STAR_5, old_rating + 1);
+    else if(rating == DT_RATINGS_DOWNGRADE)
+      new_rating = MAX(DT_VIEW_DESERT, old_rating - 1);
+
+    _ratings_apply_to_image(image_id, new_rating);
   }
 }
 
@@ -186,6 +199,106 @@ void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean
   else
     dt_control_log(_("no images selected to apply rating"));
 }
+enum
+{
+  DT_ACTION_EFFECT_SELECT = DT_ACTION_EFFECT_DEFAULT_KEY,
+  DT_ACTION_EFFECT_UPGRADE = DT_ACTION_EFFECT_DEFAULT_UP,
+  DT_ACTION_EFFECT_DOWNGRADE = DT_ACTION_EFFECT_DEFAULT_DOWN,
+};
+
+static float _action_process_rating(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  float return_value = NAN;
+
+  if(move_size)
+  {
+    if(element != DT_VIEW_REJECT)
+    {
+      switch(effect)
+      {
+      case DT_ACTION_EFFECT_SELECT:
+        break;
+      case DT_ACTION_EFFECT_UPGRADE:
+        element = DT_RATINGS_UPGRADE;
+        break;
+      case DT_ACTION_EFFECT_DOWNGRADE:
+        element = DT_RATINGS_DOWNGRADE;
+        break;
+      default:
+        fprintf(stderr, "[_action_process_rating] unknown shortcut effect (%d) for rating\n", effect);
+        break;
+      }
+    }
+
+    GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(FALSE, TRUE, FALSE));
+    dt_ratings_apply_on_list(imgs, element, TRUE);
+
+    // if we are in darkroom we show a message as there might be no other indication
+    const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
+    if(v->view(v) == DT_VIEW_DARKROOM && g_list_is_singleton(imgs) && darktable.develop->preview_pipe)
+    {
+      // we verify that the image is the active one
+      const int id = GPOINTER_TO_INT(imgs->data);
+      if(id == darktable.develop->preview_pipe->output_imgid)
+      {
+        const dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'r');
+        if(img)
+        {
+          const int r = img->flags & DT_IMAGE_REJECTED ? DT_VIEW_REJECT : (img->flags & DT_VIEW_RATINGS_MASK);
+          dt_image_cache_read_release(darktable.image_cache, img);
+
+          // translate in human readable value
+          if(r == DT_VIEW_REJECT)
+            dt_toast_log(_("image rejected"));
+          else if(r == 0)
+            dt_toast_log(_("image rated to 0 star"));
+          else
+            dt_toast_log(_("image rated to %s"), r == 1 ? "★" :
+                                                 r == 2 ? "★★" :
+                                                 r == 3 ? "★★★" :
+                                                 r == 4 ? "★★★★" :
+                                                 r == 5 ? "★★★★★" :
+                                                 _("unknown"));
+          return_value = - r + (r >= element ? DT_VALUE_PATTERN_ACTIVE : 0);
+        }
+      }
+    }
+
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING, imgs);
+  }
+  else if(darktable.develop)
+  {
+    const int image_id = darktable.develop->image_storage.id;
+    if (image_id != -1)
+    {
+      int rating = dt_ratings_get(image_id);
+      return_value = - rating + (rating >= element ? DT_VALUE_PATTERN_ACTIVE : 0);
+    }
+  }
+
+  return return_value + DT_VALUE_PATTERN_SUM;
+}
+
+const gchar *dt_action_effect_rating[]
+  = { N_("select"),
+      N_("upgrade"),
+      N_("downgrade"),
+      NULL };
+
+const dt_action_element_def_t _action_elements_rating[]
+  = { { N_("zero"  ), dt_action_effect_rating },
+      { N_("one"   ), dt_action_effect_rating },
+      { N_("two"   ), dt_action_effect_rating },
+      { N_("three" ), dt_action_effect_rating },
+      { N_("four"  ), dt_action_effect_rating },
+      { N_("five"  ), dt_action_effect_rating },
+      { N_("reject"), dt_action_effect_activate },
+      { NULL } };
+
+const dt_action_def_t dt_action_def_rating
+  = { N_("rating"),
+      _action_process_rating,
+      _action_elements_rating };
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

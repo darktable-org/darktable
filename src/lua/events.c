@@ -84,7 +84,7 @@ int dt_lua_event_trigger_wrapper(lua_State *L)
 
 /*
  *
- * dt_lua_event_list is a table (array) of tables, 
+ * dt_lua_event_list is a table (array) of tables,
  * 1 for each type of event (shortcut, exit, post-image-import, etc.)
  *
  * Each event table (structure) contains the following:
@@ -433,7 +433,7 @@ static int lua_register_event(lua_State *L)
   const char *evt_name = luaL_checkstring(L, 2);
 
   const int nparams = lua_gettop(L);
- 
+
   // check the callback is a function
   luaL_checktype(L, 3, LUA_TFUNCTION);
 
@@ -507,7 +507,7 @@ static int lua_destroy_event(lua_State *L)
    // call the register function
   lua_call(L, nparams + 2, 0);
 
-  // check if there are any events left and set in use 
+  // check if there are any events left and set in use
   // if event type is shortcut, we have to count the tables
   // otherwise we can just take the size
 
@@ -628,7 +628,7 @@ static int destroy_shortcut_event(lua_State *L)
   int result = dt_lua_event_keyed_destroy(L); // will raise an error in case of duplicate key
 
   // remove the accelerator from the lua shortcuts
-  dt_accel_deregister_lua(tmp);
+  dt_accel_rename_lua(tmp, NULL);
 
   // free temporary buffer
   free(tmp);

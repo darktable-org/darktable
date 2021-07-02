@@ -3710,6 +3710,8 @@ void gui_init(dt_iop_module_t *self)
   // don't make the area square to safe some vertical space -- it's not interactive anyway
   const float aspect = dt_conf_get_int("plugins/darkroom/filmicrgb/aspect_percent") / 100.0;
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
+  g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
+  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
 
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_BUTTON_PRESS_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
@@ -3722,10 +3724,12 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(area_scroll_callback), self);
 
   // Init GTK notebook
-  g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
+  static struct dt_action_def_t notebook_def = { };
+  g->notebook = dt_ui_notebook_new(&notebook_def);
+  dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
 
   // Page SCENE
-  self->widget = dt_ui_notebook_page(g->notebook, _("scene"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, N_("scene"), NULL);
 
   g->grey_point_source
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "grey_point_source"));
@@ -3775,7 +3779,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->auto_button, FALSE, FALSE, 0);
 
   // Page RECONSTRUCT
-  self->widget = dt_ui_notebook_page(g->notebook, _("reconstruct"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, N_("reconstruct"), NULL);
 
   GtkWidget *label = dt_ui_section_label_new(_("highlights clipping"));
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
@@ -3849,7 +3853,7 @@ void gui_init(dt_iop_module_t *self)
                                 "decrease if you see magenta or out-of-gamut highlights."));
 
   // Page LOOK
-  self->widget = dt_ui_notebook_page(g->notebook, _("look"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, N_("look"), NULL);
 
   g->contrast = dt_bauhaus_slider_from_params(self, N_("contrast"));
   dt_bauhaus_slider_set_soft_range(g->contrast, 1.0, 2.0);
@@ -3889,7 +3893,7 @@ void gui_init(dt_iop_module_t *self)
                                                "increase if shadows and/or highlights are under-saturated."));
 
   // Page DISPLAY
-  self->widget = dt_ui_notebook_page(g->notebook, _("display"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, N_("display"), NULL);
 
   // Black slider
   g->black_point_target = dt_bauhaus_slider_from_params(self, "black_point_target");
@@ -3916,7 +3920,7 @@ void gui_init(dt_iop_module_t *self)
                                                        "this should be 100%\nexcept if you want a faded look"));
 
   // Page OPTIONS
-  self->widget = dt_ui_notebook_page(g->notebook, _("options"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, N_("options"), NULL);
 
   // Color science
   g->version = dt_bauhaus_combobox_from_params(self, "version");

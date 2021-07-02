@@ -2154,9 +2154,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->k_selected = -1;
   g->preview_ready = FALSE;
 
-  g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
+  static struct dt_action_def_t notebook_def = { };
+  g->notebook = dt_ui_notebook_new(&notebook_def);
+  dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
 
-  self->widget = dt_ui_notebook_page(g->notebook, _("main"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, N_("main"), NULL);
 
   g->hvflip = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->hvflip, NULL, N_("flip"));
@@ -2349,7 +2351,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   guides_presets_set_visibility(g, guide);
 
-  self->widget = dt_ui_notebook_page(g->notebook, _("margins"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, N_("margins"), NULL);
 
   g->cx = dt_bauhaus_slider_from_params(self, "cx");
   dt_bauhaus_slider_set_digits(g->cx, 4);

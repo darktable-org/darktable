@@ -615,7 +615,7 @@ void gui_init(dt_lib_module_t *self)
   // The picker button, mode and statistic combo boxes
   GtkWidget *picker_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  data->statistic_selector = dt_bauhaus_combobox_new(NULL);
+  data->statistic_selector = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_combobox_add(data->statistic_selector, _("mean"));
   dt_bauhaus_combobox_add(data->statistic_selector, _("min"));
   dt_bauhaus_combobox_add(data->statistic_selector, _("max"));
@@ -625,7 +625,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_valign(data->statistic_selector, GTK_ALIGN_END);
   gtk_box_pack_start(GTK_BOX(picker_row), data->statistic_selector, TRUE, TRUE, 0);
 
-  data->color_mode_selector = dt_bauhaus_combobox_new(NULL);
+  data->color_mode_selector = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_combobox_add(data->color_mode_selector, _("RGB"));
   dt_bauhaus_combobox_add(data->color_mode_selector, _("Lab"));
   dt_bauhaus_combobox_add(data->color_mode_selector, _("LCh"));

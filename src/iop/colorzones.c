@@ -1555,7 +1555,7 @@ static gboolean _sanity_check(const float x, const int selected, const int nodes
   return point_valid;
 }
 
-static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state)
+static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, int node, float dx, float dy, guint state)
 {
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
@@ -1582,37 +1582,37 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
   dy *= multiplier;
   if(p->splines_version == DT_IOP_COLORZONES_SPLINES_V1)
     // do not move the first or last nodes on the x-axis
-    if(c->selected == 0 || c->selected == p->curve_num_nodes[ch] - 1) dx = 0.f;
+    if(node == 0 || node == p->curve_num_nodes[ch] - 1) dx = 0.f;
 
-  float new_x = CLAMP(curve[c->selected].x + dx, 0.0f, 1.0f);
-  const float new_y = CLAMP(curve[c->selected].y + dy, 0.0f, 1.0f);
+  float new_x = CLAMP(curve[node].x + dx, 0.0f, 1.0f);
+  const float new_y = CLAMP(curve[node].y + dy, 0.0f, 1.0f);
 
-  if(_sanity_check(new_x, c->selected, p->curve_num_nodes[ch], p->curve[ch]))
+  if(_sanity_check(new_x, node, p->curve_num_nodes[ch], p->curve[ch]))
   {
     if(p->splines_version == DT_IOP_COLORZONES_SPLINES_V1)
     {
-      curve[c->selected].x = new_x;
-      curve[c->selected].y = new_y;
+      curve[node].x = new_x;
+      curve[node].y = new_y;
 
-      if(p->channel == DT_IOP_COLORZONES_h && (c->selected == 0 || c->selected == p->curve_num_nodes[ch] - 1))
+      if(p->channel == DT_IOP_COLORZONES_h && (node == 0 || node == p->curve_num_nodes[ch] - 1))
       {
-        if(c->selected == 0)
+        if(node == 0)
         {
-          curve[p->curve_num_nodes[ch] - 1].x = 1.f - curve[c->selected].x;
-          curve[p->curve_num_nodes[ch] - 1].y = curve[c->selected].y;
+          curve[p->curve_num_nodes[ch] - 1].x = 1.f - curve[node].x;
+          curve[p->curve_num_nodes[ch] - 1].y = curve[node].y;
         }
         else
         {
-          curve[0].x = 1.f - curve[c->selected].x;
-          curve[0].y = curve[c->selected].y;
+          curve[0].x = 1.f - curve[node].x;
+          curve[0].y = curve[node].y;
         }
       }
     }
     else
     {
-      if(p->channel == DT_IOP_COLORZONES_h && (c->selected == 0 || c->selected == p->curve_num_nodes[ch] - 1))
+      if(p->channel == DT_IOP_COLORZONES_h && (node == 0 || node == p->curve_num_nodes[ch] - 1))
       {
-        if(c->selected == 0)
+        if(node == 0)
         {
           if(new_x + 1.f - curve[p->curve_num_nodes[ch] - 1].x < DT_IOP_COLORZONES_MIN_X_DISTANCE)
             new_x = curve[p->curve_num_nodes[ch] - 1].x + DT_IOP_COLORZONES_MIN_X_DISTANCE - 1.f;
@@ -1623,8 +1623,8 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
             new_x = curve[0].x + 1.f - DT_IOP_COLORZONES_MIN_X_DISTANCE;
         }
       }
-      curve[c->selected].x = new_x;
-      curve[c->selected].y = new_y;
+      curve[node].x = new_x;
+      curve[node].y = new_y;
     }
 
     dt_iop_queue_history_update(self, FALSE);
@@ -1738,7 +1738,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event
     else
     {
       delta_y *= -DT_IOP_COLORZONES_DEFAULT_STEP;
-      return _move_point_internal(self, widget, 0.f, delta_y, event->state);
+      return _move_point_internal(self, widget, c->selected, 0.f, delta_y, event->state);
     }
   }
 
@@ -1752,13 +1752,15 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget, GdkEventMotion *
 
   const int inset = DT_IOP_COLORZONES_INSET;
 
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+
+  const int height = allocation.height - 2 * inset;
+  const int width = allocation.width - 2 * inset;
+
   // drag the draw area
   if(darktable.develop->darkroom_skip_mouse_events)
   {
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(widget, &allocation);
-    const int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
-
     const float mx = c->mouse_x;
     const float my = c->mouse_y;
 
@@ -1782,17 +1784,13 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget, GdkEventMotion *
   const int nodes = p->curve_num_nodes[ch];
   dt_iop_colorzones_node_t *curve = p->curve[ch];
 
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-
-  const int height = allocation.height - 2 * inset;
-  const int width = allocation.width - 2 * inset;
-
   const double old_m_x = c->mouse_x;
   const double old_m_y = fabs(c->mouse_y);
 
   c->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
   c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+
+  darktable.control->element = 7 * _mouse_to_curve(c->mouse_x, c->zoom_factor, c->offset_x) + 0.5f;
 
   // move a node
   if(event->state & GDK_BUTTON1_MASK)
@@ -1818,7 +1816,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget, GdkEventMotion *
                        - _mouse_to_curve(old_m_y - translate_mouse_y, c->zoom_factor, c->offset_y);
 
       dt_iop_color_picker_reset(self, TRUE);
-      return _move_point_internal(self, widget, dx, dy, event->state);
+      return _move_point_internal(self, widget, c->selected, dx, dy, event->state);
     }
   }
 
@@ -2103,9 +2101,9 @@ static gboolean _area_key_press_callback(GtkWidget *widget, GdkEventKey *event, 
 {
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
 
-  if(darktable.develop->darkroom_skip_mouse_events) return TRUE;
+  if(darktable.develop->darkroom_skip_mouse_events) return FALSE;
 
-  if(c->selected < 0) return TRUE;
+  if(c->selected < 0) return FALSE;
 
   int handled = 0;
   float dx = 0.0f, dy = 0.0f;
@@ -2130,10 +2128,10 @@ static gboolean _area_key_press_callback(GtkWidget *widget, GdkEventKey *event, 
     dx = -DT_IOP_COLORZONES_DEFAULT_STEP;
   }
 
-  if(!handled) return TRUE;
+  if(!handled) return FALSE;
 
   dt_iop_color_picker_reset(self, TRUE);
-  return _move_point_internal(self, widget, dx, dy, event->state);
+  return _move_point_internal(self, widget, c->selected, dx, dy, event->state);
 }
 
 static void _channel_tabs_switch_callback(GtkNotebook *notebook, GtkWidget *page, guint page_num,
@@ -2313,6 +2311,73 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   dt_control_queue_redraw_widget(self->widget);
 }
 
+static float _action_process_zones(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
+  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+  dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
+
+  int ch = c->channel;
+  dt_iop_colorzones_node_t *curve = p->curve[ch];
+  float x = (float)element / 7.0;
+
+  gboolean close_enough = FALSE;
+  int node = 0;
+  while(node < p->curve_num_nodes[ch] &&
+        !(close_enough = fabsf(curve[node].x - x) <= 1./16))
+    node++;
+
+  float return_value = close_enough
+                     ? curve[node].y
+                     : dt_draw_curve_calc_value(c->minmax_curve[ch], x);
+
+  if(move_size)
+  {
+    if(!close_enough)
+      node = _add_node(curve, &p->curve_num_nodes[ch], x, return_value);
+
+    float bottop = -1e6;
+    switch(effect)
+    {
+    case DT_ACTION_EFFECT_RESET:
+      // FIXME delete node (or don't create one if !close_enough)
+      // refactor from right-click on node
+      break;
+    case DT_ACTION_EFFECT_BOTTOM:
+      bottop *= -1;
+    case DT_ACTION_EFFECT_TOP:
+      move_size = bottop;
+    case DT_ACTION_EFFECT_DOWN:
+      move_size *= -1;
+    case DT_ACTION_EFFECT_UP:
+      _move_point_internal(self, target, node, 0.f, move_size / 100, 0);
+      return_value = curve[node].y;
+      break;
+    default:
+      fprintf(stderr, "[_action_process_zones] unknown shortcut effect (%d) for color zones\n", effect);
+      break;
+    }
+  }
+
+  return return_value + DT_VALUE_PATTERN_PLUS_MINUS;
+}
+
+const dt_action_element_def_t _action_elements_zones[]
+  = { { N_("red"    ), dt_action_effect_value },
+      { N_("orange" ), dt_action_effect_value },
+      { N_("yellow" ), dt_action_effect_value },
+      { N_("green"  ), dt_action_effect_value },
+      { N_("aqua"   ), dt_action_effect_value },
+      { N_("blue"   ), dt_action_effect_value },
+      { N_("purple" ), dt_action_effect_value },
+      { N_("magenta"), dt_action_effect_value },
+      { NULL } };
+
+const dt_action_def_t dt_action_def_zones
+  = { N_("color zones"),
+      _action_process_zones,
+      _action_elements_zones };
+
 void gui_reset(struct dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
@@ -2367,11 +2432,13 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
-  c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
+  static dt_action_def_t notebook_def = { };
+  c->channel_tabs = dt_ui_notebook_new(&notebook_def);
+  dt_action_define_iop(self, NULL, N_("channel"), GTK_WIDGET(c->channel_tabs), &notebook_def);
 
-  dt_ui_notebook_page(c->channel_tabs, _("lightness"), NULL);
-  dt_ui_notebook_page(c->channel_tabs, _("saturation"), NULL);
-  dt_ui_notebook_page(c->channel_tabs, _("hue"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, N_("lightness"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, N_("saturation"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, N_("hue"), NULL);
 
   gtk_widget_show(gtk_notebook_get_nth_page(c->channel_tabs, c->channel));
   gtk_notebook_set_current_page(c->channel_tabs, c->channel);
@@ -2443,8 +2510,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(c->strength, _("make effect stronger or weaker"));
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK
-                                                 | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                                 | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
+                                           | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                                           | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
+                                           | darktable.gui->scroll_mask);
+  g_object_set_data(G_OBJECT(c->area), "iop-instance", self);
+  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(c->area), &dt_action_def_zones);
   gtk_widget_set_can_focus(GTK_WIDGET(c->area), TRUE);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(_area_draw_callback), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(_area_button_press_callback), self);

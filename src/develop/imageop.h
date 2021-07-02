@@ -33,6 +33,7 @@ typedef struct dt_iop_roi_t
 #include "common/darktable.h"
 #include "common/introspection.h"
 #include "common/opencl.h"
+#include "common/action.h"
 #include "control/settings.h"
 #include "develop/pixelpipe.h"
 #include "dtgtk/togglebutton.h"
@@ -151,6 +152,8 @@ struct dt_iop_module_so_t;
 struct dt_iop_module_t;
 typedef struct dt_iop_module_so_t
 {
+  dt_action_t actions; // !!! NEEDS to be FIRST (to be able to cast convert)
+
 #define INCLUDE_API_FROM_MODULE_H
 #include "iop/iop_api.h"
 
@@ -162,9 +165,8 @@ typedef struct dt_iop_module_so_t
    * read-only then. */
   dt_iop_global_data_t *data;
   /** gui is also only inited once at startup. */
-  dt_iop_gui_data_t *gui_data;
+//  dt_iop_gui_data_t *gui_data;
   /** which results in this widget here, too. */
-  GtkWidget *widget;
   /** button used to show/hide this module in the plugin list. */
   dt_iop_module_state_t state;
 
@@ -178,6 +180,8 @@ typedef struct dt_iop_module_so_t
 
 typedef struct dt_iop_module_t
 {
+  dt_action_type_t actions; // !!! NEEDS to be FIRST (to be able to cast convert)
+
 #define INCLUDE_API_FROM_MODULE_H
 #include "iop/iop_api.h"
 
@@ -271,10 +275,9 @@ typedef struct dt_iop_module_t
   GtkWidget *presets_button;
   /** fusion slider */
   GtkWidget *fusion_slider;
-  /** list of closures: show, enable/disable */
-  GSList *accel_closures;
-  GSList *accel_closures_local;
-  gboolean local_closures_connected;
+
+  GSList *widget_list;
+
   /** flag in case the module has troubles (bad settings) - if TRUE, show a warning sign next to module label */
   gboolean has_trouble;
   /** the corresponding SO object */
@@ -378,6 +381,8 @@ void dt_iop_gui_init(dt_iop_module_t *module);
 /** reloads certain gui/param defaults when the image was switched. */
 void dt_iop_reload_defaults(dt_iop_module_t *module);
 
+extern const struct dt_action_def_t dt_action_def_iop;
+
 /*
  * must be called in dt_dev_change_image() to fix wrong histogram in levels
  * just after switching images and before full redraw
@@ -403,6 +408,8 @@ dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *op
 dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules, const char *operation, const char *multi_name);
 /** count instances of a module **/
 int dt_iop_count_instances(dt_iop_module_so_t *module);
+/** return preferred module instance for shortcuts **/
+dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module);
 
 /** returns true if module is the first instance of this operation in the pipe */
 gboolean dt_iop_is_first_instance(GList *modules, dt_iop_module_t *module);
@@ -414,9 +421,6 @@ int get_module_flags(const char *op);
 /** returns the localized plugin name for a given op name. must not be freed. */
 gchar *dt_iop_get_localized_name(const gchar *op);
 gchar *dt_iop_get_localized_aliases(const gchar *op);
-
-/** Connects common accelerators to an iop module */
-void dt_iop_connect_common_accels(dt_iop_module_t *module);
 
 /** set multi_priority and update raster mask links */
 void dt_iop_update_multi_priority(dt_iop_module_t *module, int new_priority);

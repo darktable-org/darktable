@@ -30,6 +30,17 @@ typedef enum dt_gui_presets_format_flag_t
   FOR_NOT_COLOR = 1 << 4
 } dt_gui_presets_format_flag_t;
 
+enum // Lib and iop presets
+{
+  DT_ACTION_EFFECT_SHOW = DT_ACTION_EFFECT_DEFAULT_KEY,
+//DT_ACTION_EFFECT_UP,
+//DT_ACTION_EFFECT_DOWN,
+  DT_ACTION_EFFECT_STORE = 3,
+  DT_ACTION_EFFECT_DELETE = 4,
+  DT_ACTION_EFFECT_EDIT = 5,
+  DT_ACTION_EFFECT_UPDATE = 6,
+  DT_ACTION_EFFECT_PREFERENCES = 7,
+};
 typedef struct dt_gui_presets_edit_dialog_t
 {
   GtkWindow *parent;
@@ -107,6 +118,9 @@ void dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module);
 /** show popupmenu for favorite modules */
 void dt_gui_favorite_presets_menu_show();
 
+/** apply a preset to the current module **/
+void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module);
+
 /** apply any auto presets that are appropriate for the current module **/
 gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module);
 
@@ -116,6 +130,8 @@ void dt_gui_presets_show_iop_edit_dialog(const char *name_in, dt_iop_module_t *m
 void dt_gui_presets_show_edit_dialog(const char *name_in, const char *module_name, int rowid,
                                      GCallback final_callback, gpointer data, gboolean allow_name_change,
                                      gboolean allow_desc_change, gboolean allow_remove, GtkWindow *parent);
+
+void dt_gui_presets_confirm_and_delete(GtkWidget *parent_dialog, const char *name, const char *module_name, int rowid);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

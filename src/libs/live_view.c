@@ -409,7 +409,7 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(DT_FOCUS_FARTHER));
 
   // Guides
-  lib->guide_selector = dt_bauhaus_combobox_new(NULL);
+  lib->guide_selector = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(lib->guide_selector, NULL, N_("guides"));
   gtk_box_pack_start(GTK_BOX(self->widget), lib->guide_selector, TRUE, TRUE, 0);
 
@@ -440,7 +440,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(lib->guide_selector, _("display guide lines to help compose your photograph"));
   g_signal_connect(G_OBJECT(lib->guide_selector), "value-changed", G_CALLBACK(guides_presets_changed), lib);
 
-  lib->flip_guides = dt_bauhaus_combobox_new(NULL);
+  lib->flip_guides = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(lib->flip_guides, NULL, N_("flip"));
   dt_bauhaus_combobox_add(lib->flip_guides, _("none"));
   dt_bauhaus_combobox_add(lib->flip_guides, _("horizontally"));
@@ -449,7 +449,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(lib->flip_guides, _("flip guides"));
   gtk_box_pack_start(GTK_BOX(self->widget), lib->flip_guides, TRUE, TRUE, 0);
 
-  lib->overlay = dt_bauhaus_combobox_new(NULL);
+  lib->overlay = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(lib->overlay, NULL, N_("overlay"));
   dt_bauhaus_combobox_add(lib->overlay, _("none"));
   dt_bauhaus_combobox_add(lib->overlay, _("selected image"));
@@ -473,7 +473,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show(lib->overlay_id);
   gtk_widget_show(label);
 
-  lib->overlay_mode = dt_bauhaus_combobox_new(NULL);
+  lib->overlay_mode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(lib->overlay_mode, NULL, N_("overlay mode"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "normal"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "xor"));
@@ -499,7 +499,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(lib->overlay_mode), "value-changed", G_CALLBACK(_overlay_mode_changed), lib);
   gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay_mode, TRUE, TRUE, 0);
 
-  lib->overlay_splitline = dt_bauhaus_combobox_new(NULL);
+  lib->overlay_splitline = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(lib->overlay_splitline, NULL, N_("split line"));
   dt_bauhaus_combobox_add(lib->overlay_splitline, _("off"));
   dt_bauhaus_combobox_add(lib->overlay_splitline, _("on"));
