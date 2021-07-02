@@ -39,7 +39,7 @@
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 
-DT_MODULE(3)
+DT_MODULE(4)
 
 const char *name(dt_lib_module_t *self)
 {
@@ -2765,6 +2765,31 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
 
     *new_size = new_params_size;
     *new_version = 3;
+    return new_params;
+  }
+  else if(old_version == 3)
+  {
+    // no box
+    size_t new_params_size = old_params_size + sizeof(int32_t) + 4 * sizeof(float);
+    void *new_params = calloc(1, new_params_size);
+
+    memcpy(new_params, old_params, old_params_size);
+
+    // single image box specified
+    int32_t idx = old_params_size;
+    *(int32_t *)(new_params + idx) = 1;
+    idx += sizeof(int32_t);
+    *(float *)(new_params + idx) = 0.0f;
+    idx += sizeof(float);
+    *(float *)(new_params + idx) = 0.0f;
+    idx += sizeof(float);
+    *(float *)(new_params + idx) = 100.0f;
+    idx += sizeof(float);
+    *(float *)(new_params + idx) = 100.0f;
+    // idx += sizeof(float);
+
+    *new_size = new_params_size;
+    *new_version = 4;
     return new_params;
   }
 
