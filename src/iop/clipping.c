@@ -451,7 +451,6 @@ static inline void transform(float *x, float *o, const float *m, const float t_h
   o[0] *= (1.0f + o[1] * t_v);
 }
 
-
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points, size_t points_count)
 {
   // as dt_iop_roi_t contain int values and not floats, we can have some rounding errors
@@ -673,7 +672,12 @@ static int _iop_clipping_set_max_clip(struct dt_iop_module_t *self)
   if(!piece) return 0;
 
   float wp = piece->buf_out.width, hp = piece->buf_out.height;
-  float points[8] = { 0.0f, 0.0f, wp, hp, p->cx * wp, p->cy * hp, fabsf(p->cw) * wp, fabsf(p->ch) * hp };
+  const float cx = CLAMPF(p->cx, 0.0f, 0.9f);
+  const float cy = CLAMPF(p->cy, 0.0f, 0.9f);
+  const float cw = CLAMPF(fabsf(p->cw), 0.1f, 1.0f);
+  const float ch = CLAMPF(fabsf(p->ch), 0.1f, 1.0f);
+
+  float points[8] = { 0.0f, 0.0f, wp, hp, cx * wp, cy * hp, cw * wp, ch * hp };
   if(!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 4))
     return 0;
 
@@ -1319,6 +1323,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     d->cy = CLAMPF(p->cy, 0.0f, 0.9f);
     d->cw = CLAMPF(fabsf(p->cw), 0.1f, 1.0f);
     d->ch = CLAMPF(fabsf(p->ch), 0.1f, 1.0f);
+    // we show a error on stderr if we have clamped something
+    if(d->cx != p->cx || d->cy != p->cy || d->cw != fabsf(p->cw) || d->ch != fabsf(p->ch))
+    {
+      fprintf(stderr, "[crop&rotate] invalid crop datas for %d : x=%0.04f y=%0.04f w=%0.04f h=%0.04f\n",
+              pipe->image.id, p->cx, p->cy, p->cw, p->ch);
+    }
   }
 }
 
@@ -1330,6 +1340,7 @@ static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *
   {
     dt_image_update_final_size(self->dev->preview_pipe->output_imgid);
   }
+
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_preview_updated_callback), self);
   // force max size to be recomputed
   g->clip_max_pipe_hash = 0;
@@ -1348,10 +1359,10 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 
       // got focus, grab stuff to gui:
       // need to get gui stuff for the first time for this image,
-      g->clip_x = fmaxf(p->cx, 0.0f);
-      g->clip_w = fminf(fabsf(p->cw) - p->cx, 1.0f);
-      g->clip_y = fmaxf(p->cy, 0.0f);
-      g->clip_h = fminf(fabsf(p->ch) - p->cy, 1.0f);
+      g->clip_x = CLAMPF(p->cx, 0.0f, 0.9f);
+      g->clip_y = CLAMPF(p->cy, 0.0f, 0.9f);
+      g->clip_w = CLAMPF(fabsf(p->cw) - p->cx, 0.1f, 1.0f - g->clip_x);
+      g->clip_h = CLAMPF(fabsf(p->ch) - p->cy, 0.1f, 1.0f - g->clip_y);
     }
     else
     {
@@ -2007,10 +2018,10 @@ void gui_update(struct dt_iop_module_t *self)
 
   // reset gui draw box to what we have in the parameters:
   g->applied = 1;
-  g->clip_x = p->cx;
-  g->clip_w = fabsf(p->cw) - p->cx;
-  g->clip_y = p->cy;
-  g->clip_h = fabsf(p->ch) - p->cy;
+  g->clip_x = CLAMPF(p->cx, 0.0f, 0.9f);
+  g->clip_y = CLAMPF(p->cy, 0.0f, 0.9f);
+  g->clip_w = CLAMPF(fabsf(p->cw) - p->cx, 0.1f, 1.0f - g->clip_x);
+  g->clip_h = CLAMPF(fabsf(p->ch) - p->cy, 0.1f, 1.0f - g->clip_y);
 
   dt_bauhaus_combobox_set(g->crop_auto, p->crop_auto);
 }
@@ -3249,15 +3260,10 @@ static void commit_box(dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_
     dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
     if(piece)
     {
-      p->cx = points[0] / (float)piece->buf_out.width;
-      p->cy = points[1] / (float)piece->buf_out.height;
-      p->cw = copysignf(points[2] / (float)piece->buf_out.width, p->cw);
-      p->ch = copysignf(points[3] / (float)piece->buf_out.height, p->ch);
-      // verify that the crop area stay in the image area
-      if(p->cx >= 1.0f) p->cx = 0.5f;
-      if(p->cy >= 1.0f) p->cy = 0.5f;
-      p->cw = CLAMPF(p->cw, -1.0f, 1.0f);
-      p->ch = CLAMPF(p->ch, -1.0f, 1.0f);
+      p->cx = CLAMPF(points[0] / (float)piece->buf_out.width, 0.0f, 0.9f);
+      p->cy = CLAMPF(points[1] / (float)piece->buf_out.height, 0.0f, 0.9f);
+      p->cw = copysignf(CLAMPF(points[2] / (float)piece->buf_out.width, 0.1f, 1.0f), p->cw);
+      p->ch = copysignf(CLAMPF(points[3] / (float)piece->buf_out.height, 0.1f, 1.0f), p->ch);
     }
   }
   g->applied = 1;
