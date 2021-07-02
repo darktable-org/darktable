@@ -902,11 +902,12 @@ void gui_init(dt_iop_module_t *self)
 
   c->channel = dt_conf_get_int("plugins/darkroom/rawdenoise/gui_channel");
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
+  dt_action_define_iop(self, NULL, N_("channel"), GTK_WIDGET(c->channel_tabs), &dt_action_def_tabs_all_rgb);
 
-  dt_ui_notebook_page(c->channel_tabs, _("all"), NULL);
-  dt_ui_notebook_page(c->channel_tabs, _("R"), NULL);
-  dt_ui_notebook_page(c->channel_tabs, _("G"), NULL);
-  dt_ui_notebook_page(c->channel_tabs, _("B"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, N_("all"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, N_("R"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, N_("G"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, N_("B"), NULL);
 
   gtk_widget_show(gtk_notebook_get_nth_page(c->channel_tabs, c->channel));
   gtk_notebook_set_current_page(c->channel_tabs, c->channel);
@@ -930,13 +931,15 @@ void gui_init(dt_iop_module_t *self)
 
   const float aspect = dt_conf_get_int("plugins/darkroom/rawdenoise/aspect_percent") / 100.0;
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
+  g_object_set_data(G_OBJECT(c->area), "iop-instance", self);
+  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(c->area), NULL);
 
   gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(c->area), FALSE, FALSE, 0);
 
-  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK
-                                                 | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                                 | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
+  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
+                                           | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                                           | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(rawdenoise_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(rawdenoise_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(rawdenoise_button_release), self);

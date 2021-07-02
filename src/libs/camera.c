@@ -254,11 +254,7 @@ static void _show_property_popupmenu_clicked(GtkWidget *widget, gpointer user_da
 {
   dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
 
-#if GTK_CHECK_VERSION(3, 22, 0)
-  gtk_menu_popup_at_pointer(lib->gui.properties_menu, NULL);
-#else
-  gtk_menu_popup(lib->gui.properties_menu, NULL, NULL, NULL, NULL, 1, gtk_get_current_event_time());
-#endif
+  dt_gui_menu_popup(lib->gui.properties_menu, widget, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 }
 
 static void _lib_property_add_to_gui(dt_lib_camera_property_t *prop, dt_lib_camera_t *lib)

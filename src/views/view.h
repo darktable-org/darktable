@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "common/action.h"
 #include "common/history.h"
 #include "common/image.h"
 #ifdef HAVE_PRINT
@@ -125,6 +126,8 @@ typedef struct dt_mouse_action_t
 struct dt_view_t;
 typedef struct dt_view_t
 {
+  dt_action_t actions; // !!! NEEDS to be FIRST (to be able to cast convert)
+
 #define INCLUDE_API_FROM_MODULE_H
 #include "views/view_api.h"
 
@@ -138,9 +141,6 @@ typedef struct dt_view_t
   // scroll bar control
   float vscroll_size, vscroll_lower, vscroll_viewport_size, vscroll_pos;
   float hscroll_size, hscroll_lower, hscroll_viewport_size, hscroll_pos;
-
-  GSList *accel_closures;
-  GtkWidget *dynamic_accel_current;
 } dt_view_t;
 
 typedef enum dt_view_image_over_t

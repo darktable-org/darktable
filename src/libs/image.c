@@ -461,8 +461,8 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_notebook_new();
   dt_gui_add_help_link(self->widget, dt_get_help_url("image"));
 
-  GtkWidget *page1 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), _("images"), NULL);
-  GtkWidget *page2 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), _("metadata"), NULL);
+  GtkWidget *page1 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), N_("images"), NULL);
+  GtkWidget *page2 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), N_("metadata"), NULL);
 
   // images operations
   d->page1 = gtk_grid_new();
@@ -588,7 +588,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->clear_metadata_button, 4, line++, 2, 1);
   g_signal_connect(G_OBJECT(d->clear_metadata_button), "clicked", G_CALLBACK(clear_metadata_callback), self);
 
-  GtkWidget *pastemode = dt_bauhaus_combobox_new(NULL);
+  GtkWidget *pastemode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(pastemode, NULL, N_("mode"));
   dt_bauhaus_combobox_add(pastemode, _("merge"));
   dt_bauhaus_combobox_add(pastemode, _("overwrite"));
@@ -662,7 +662,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "refresh exif"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "set monochrome image"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "set color image"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "replace metadata"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "copy metadata"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "paste metadata"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "clear metadata"), 0, 0);
   // Grouping keys

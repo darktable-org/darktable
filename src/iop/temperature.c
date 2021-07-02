@@ -223,27 +223,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_RAW;
 }
 
-static gboolean _set_preset_spot(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                 GdkModifierType modifier, dt_iop_module_t *self)
-{
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t*)self->gui_data;
-  dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_SPOT);
-  return TRUE;
-}
-
-// allow autoconcatenation. use #pragma push_macro("N_") #pragma pop_macro("N_") if needed
-#undef N_
-#define N_(String) String
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_iop(self, FALSE, N_("settings") "`" N_("from image area"), 0, 0);
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_accel_connect_iop(self, "settings" "`" "from image area", g_cclosure_new(G_CALLBACK(_set_preset_spot), (gpointer)self, NULL));
-}
-
 /*
  * Spectral power distribution functions
  * https://en.wikipedia.org/wiki/Spectral_power_distribution
@@ -2055,6 +2034,7 @@ void gui_init(struct dt_iop_module_t *self)
   // picker to depend on the number of color channels of the pixels. It is done like this as we may not know the
   // actual kind of data we are using in the GUI (it is part of the pipeline).
   g->colorpicker = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_AREA, NULL, iop_cs_NONE);
+  dt_action_define_iop(self, N_("settings"), N_("from image area"), g->colorpicker, &dt_action_def_toggle);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker), dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->colorpicker, _("set white balance to detected from area"));
 
@@ -2077,7 +2057,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(box_enabled, g->buttonbar, TRUE, TRUE, 0);
 
   g->presets = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->presets, NULL, N_("settings")); // relabel to settings to remove confusion between module presets and white balance settings
+  dt_bauhaus_widget_set_label(g->presets, N_("settings"), N_("settings")); // relabel to settings to remove confusion between module presets and white balance settings
   gtk_widget_set_tooltip_text(g->presets, _("choose white balance setting"));
   gtk_box_pack_start(box_enabled, g->presets, TRUE, TRUE, 0);
 
