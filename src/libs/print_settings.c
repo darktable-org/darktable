@@ -2712,8 +2712,8 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
       pprofile_filename = &pprofile[1]; // the old code had a '/' in the beginning
     }
 
-    int32_t new_profile_len = strlen(profile_filename) + 1;
-    int32_t new_pprofile_len = strlen(pprofile_filename) + 1;
+    const int32_t new_profile_len = strlen(profile_filename) + 1;
+    const int32_t new_pprofile_len = strlen(pprofile_filename) + 1;
 
     // now we got everything to reassemble the new params
     size_t new_params_size = old_params_size - profile_len - pprofile_len;
