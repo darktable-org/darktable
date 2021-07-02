@@ -169,9 +169,9 @@ const char *description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("affect color, brightness and contrast"),
                                       _("corrective or creative"),
-                                      _("linear, Lab, scene-referred"),
+                                      _("linear, RGB, scene-referred"),
                                       _("non-linear, RGB"),
-                                      _("non-linear, Lab, scene-referred"));
+                                      _("non-linear, RGB, scene-referred"));
 }
 
 int flags()

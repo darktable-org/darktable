@@ -137,7 +137,7 @@ const char *description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("add or remove local contrast, sharpness, acutance"),
                                       _("corrective and creative"),
-                                      _("linear, RGB, scene-referred"),
+                                      _("linear, Lab, scene-referred"),
                                       _("frequential, RGB"),
                                       _("linear, Lab, scene-referred"));
 }
