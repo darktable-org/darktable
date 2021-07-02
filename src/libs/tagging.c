@@ -128,6 +128,8 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "attach"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "detach"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "new"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "import..."), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "export..."), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "tag"), GDK_KEY_t, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "redo last tag"), GDK_KEY_t, GDK_MOD1_MASK);
 }
@@ -139,6 +141,8 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "attach", d->attach_button);
   dt_accel_connect_button_lib(self, "detach", d->detach_button);
   dt_accel_connect_button_lib(self, "new", d->new_button);
+  dt_accel_connect_button_lib(self, "import...", d->import_button);
+  dt_accel_connect_button_lib(self, "export...", d->export_button);
   dt_accel_connect_lib(self, "tag", g_cclosure_new(G_CALLBACK(_lib_tagging_tag_show), self, NULL));
   dt_accel_connect_lib(self, "redo last tag", g_cclosure_new(G_CALLBACK(_lib_tagging_tag_redo), self, NULL));
 }
