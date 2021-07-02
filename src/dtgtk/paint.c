@@ -209,15 +209,17 @@ void dtgtk_cairo_paint_flip(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   if((flags & CPF_DIRECTION_UP)) // Rotate -90 degrees
     cairo_transform(cr, &rotation_matrix);
 
-  cairo_move_to(cr, 0.05, 0.50);
+  cairo_move_to(cr, 0.05, 0.4);
   cairo_line_to(cr, 0.05, 0);
-  cairo_line_to(cr, 0.95, 0.50);
-  cairo_line_to(cr, 0.2, 0.50);
+  cairo_line_to(cr, 0.95, 0.4);
+  cairo_line_to(cr, 0.05, 0.4);
+  cairo_fill_preserve(cr);
   cairo_stroke(cr);
 
-  cairo_move_to(cr, 0.05, 0.62);
+  cairo_move_to(cr, 0.05, 0.6);
   cairo_line_to(cr, 0.05, 1.0);
-  cairo_line_to(cr, 0.95, 0.62);
+  cairo_line_to(cr, 0.95, 0.6);
+  cairo_line_to(cr, 0.05, 0.6);
   cairo_stroke(cr);
 
   FINISH
