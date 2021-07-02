@@ -640,6 +640,8 @@ void init(dt_view_t *self)
 
   dt_map_t *lib = (dt_map_t *)self->data;
 
+  darktable.view_manager->proxy.map.view = self;
+
   if(darktable.gui)
   {
     lib->image_pin = _init_image_pin();
@@ -2023,7 +2025,6 @@ void enter(dt_view_t *self)
   gtk_widget_show_all(GTK_WIDGET(lib->map));
 
   /* setup proxy functions */
-  darktable.view_manager->proxy.map.view = self;
   darktable.view_manager->proxy.map.center_on_location = _view_map_center_on_location;
   darktable.view_manager->proxy.map.center_on_bbox = _view_map_center_on_bbox;
   darktable.view_manager->proxy.map.show_osd = _view_map_show_osd;

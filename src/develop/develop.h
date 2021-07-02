@@ -247,6 +247,8 @@ typedef struct dt_develop_t
       void (*search_text_focus)(struct dt_lib_module_t *self);
       /* test if module is preset in one of the current groups */
       gboolean (*test_visible)(struct dt_lib_module_t *self, gchar *module);
+      /* add or remove module or widget in current quick access list */
+      gboolean (*basics_module_toggle)(struct dt_lib_module_t *self, GtkWidget *widget, gboolean doit);
     } modulegroups;
 
     // snapshots plugin hooks
@@ -442,6 +444,8 @@ gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, struct dt_i
 void dt_dev_reorder_gui_module_list(dt_develop_t *dev);
 /** test if the iop is visible in current groups layout **/
 gboolean dt_dev_modulegroups_is_visible(dt_develop_t *dev, gchar *module);
+/** add or remove module or widget in current quick access list **/
+int dt_dev_modulegroups_basics_module_toggle(dt_develop_t *dev, GtkWidget *widget, gboolean doit);
 
 /** request snapshot */
 void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename);

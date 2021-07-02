@@ -1156,29 +1156,29 @@ gui_init (dt_lib_module_t *self)
   ////////////////////////// PRINTER SETTINGS
 
   // create papers combo as filled when adding printers
-  d->papers = dt_bauhaus_combobox_new(NULL);
+  d->papers = dt_bauhaus_combobox_new_action(DT_ACTION(self));
 
   label = dt_ui_section_label_new(_("printer"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url("print_settings_printer"));
-  d->printers = dt_bauhaus_combobox_new(NULL);
+  d->printers = dt_bauhaus_combobox_new_action(DT_ACTION(self));
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->printers, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->printers), "value-changed", G_CALLBACK(_printer_changed), self);
 
   //// media
 
-  d->media = dt_bauhaus_combobox_new(NULL);
+  d->media = dt_bauhaus_combobox_new_action(DT_ACTION(self));
 
-  dt_bauhaus_widget_set_label(d->media, NULL, N_("media"));
+  dt_bauhaus_widget_set_label(d->media, N_("printer"), N_("media"));
 
   g_signal_connect(G_OBJECT(d->media), "value-changed", G_CALLBACK(_media_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->media), TRUE, TRUE, 0);
 
   //  Add printer profile combo
 
-  d->pprofile = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->pprofile, NULL, N_("profile"));
+  d->pprofile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+  dt_bauhaus_widget_set_label(d->pprofile, N_("printer"), N_("profile"));
 
   int combo_idx, n;
 
@@ -1230,8 +1230,8 @@ gui_init (dt_lib_module_t *self)
 
   //  Add printer intent combo
 
-  d->pintent = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->pintent, NULL, N_("intent"));
+  d->pintent = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+  dt_bauhaus_widget_set_label(d->pintent, N_("printer"), N_("intent"));
   dt_bauhaus_combobox_add(d->pintent, _("perceptual"));
   dt_bauhaus_combobox_add(d->pintent, _("relative colorimetric"));
   dt_bauhaus_combobox_add(d->pintent, C_("rendering intent", "saturation"));
@@ -1271,14 +1271,14 @@ gui_init (dt_lib_module_t *self)
 
   //// portrait / landscape
 
-  d->orientation = dt_bauhaus_combobox_new(NULL);
+  d->orientation = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(d->orientation, NULL, N_("orientation"));
   dt_bauhaus_combobox_add(d->orientation, _("portrait"));
   dt_bauhaus_combobox_add(d->orientation, _("landscape"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->orientation), TRUE, TRUE, 0);
 
-  GtkWidget *ucomb = dt_bauhaus_combobox_new(NULL);
+  GtkWidget *ucomb = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_combobox_add(ucomb, _("mm"));
   dt_bauhaus_combobox_add(ucomb, _("cm"));
   dt_bauhaus_combobox_add(ucomb, _("inch"));
@@ -1395,7 +1395,7 @@ gui_init (dt_lib_module_t *self)
 
   //  Add export profile combo
 
-  d->profile = dt_bauhaus_combobox_new(NULL);
+  d->profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(d->profile, NULL, N_("profile"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->profile), TRUE, TRUE, 0);
@@ -1441,7 +1441,7 @@ gui_init (dt_lib_module_t *self)
 
   //  Add export intent combo
 
-  d->intent = dt_bauhaus_combobox_new(NULL);
+  d->intent = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(d->intent, NULL, N_("intent"));
 
   dt_bauhaus_combobox_add(d->intent, _("image settings"));
@@ -1457,7 +1457,7 @@ gui_init (dt_lib_module_t *self)
 
   //  Add export style combo
 
-  d->style = dt_bauhaus_combobox_new(NULL);
+  d->style = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(d->style, NULL, N_("style"));
 
   dt_bauhaus_combobox_add(d->style, _("none"));
@@ -1499,7 +1499,7 @@ gui_init (dt_lib_module_t *self)
 
   //  Whether to add/replace style items
 
-  d->style_mode = dt_bauhaus_combobox_new(NULL);
+  d->style_mode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(d->style_mode, NULL, N_("mode"));
 
   dt_bauhaus_combobox_add(d->style_mode, _("replace history"));

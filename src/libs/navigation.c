@@ -538,13 +538,7 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
     g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)5);
     gtk_menu_shell_append(menu, item);
 
-    gtk_widget_show_all(GTK_WIDGET(menu));
-
-#if GTK_CHECK_VERSION(3, 22, 0)
-    gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
-#else
-    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
-#endif
+    dt_gui_menu_popup(GTK_MENU(menu), NULL, 0, 0);
 
     return TRUE;
   }

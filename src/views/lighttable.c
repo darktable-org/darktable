@@ -852,6 +852,26 @@ static gboolean zoom_min_callback(GtkAccelGroup *accel_group, GObject *accelerat
 
 void init_key_accels(dt_view_t *self)
 {
+  dt_control_accels_t *ac = &darktable.control->accels;
+  dt_action_define_key_pressed_accel(&self->actions, "move up", &ac->lighttable_up);
+  dt_action_define_key_pressed_accel(&self->actions, "move down", &ac->lighttable_down);
+  dt_action_define_key_pressed_accel(&self->actions, "move left", &ac->lighttable_left);
+  dt_action_define_key_pressed_accel(&self->actions, "move right", &ac->lighttable_right);
+  dt_action_define_key_pressed_accel(&self->actions, "move page up", &ac->lighttable_pageup);
+  dt_action_define_key_pressed_accel(&self->actions, "move page down", &ac->lighttable_pagedown);
+  dt_action_define_key_pressed_accel(&self->actions, "move start", &ac->lighttable_start);
+  dt_action_define_key_pressed_accel(&self->actions, "move end", &ac->lighttable_end);
+  dt_action_define_key_pressed_accel(&self->actions, "move up and select", &ac->lighttable_sel_up);
+  dt_action_define_key_pressed_accel(&self->actions, "move down and select", &ac->lighttable_sel_down);
+  dt_action_define_key_pressed_accel(&self->actions, "move left and select", &ac->lighttable_sel_left);
+  dt_action_define_key_pressed_accel(&self->actions, "move right and select", &ac->lighttable_sel_right);
+  dt_action_define_key_pressed_accel(&self->actions, "move page up and select", &ac->lighttable_sel_pageup);
+  dt_action_define_key_pressed_accel(&self->actions, "move page down and select", &ac->lighttable_sel_pagedown);
+  dt_action_define_key_pressed_accel(&self->actions, "move start and select", &ac->lighttable_sel_start);
+  dt_action_define_key_pressed_accel(&self->actions, "move end and select", &ac->lighttable_sel_end);
+  dt_action_define_key_pressed_accel(&self->actions, "preview", &ac->lighttable_preview);
+  dt_action_define_key_pressed_accel(&self->actions, "preview with focus detection", &ac->lighttable_preview_display_focus);
+
   // movement keys
   dt_accel_register_view(self, NC_("accel", "move page up"), GDK_KEY_Page_Up, 0);
   dt_accel_register_view(self, NC_("accel", "move page down"), GDK_KEY_Page_Down, 0);
