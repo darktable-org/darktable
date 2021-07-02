@@ -1393,7 +1393,8 @@ const dt_masks_functions_t dt_masks_functions_circle = {
   .mouse_scrolled = _circle_events_mouse_scrolled,
   .button_pressed = _circle_events_button_pressed,
   .button_released = _circle_events_button_released,
-  .post_expose = _circle_events_post_expose
+  .post_expose = _circle_events_post_expose,
+  .supported_features = DT_MASK_SUPPORT_OPACITY | DT_MASK_SUPPORT_HARDNESS | DT_MASK_SUPPORT_SIZE
 };
 
 

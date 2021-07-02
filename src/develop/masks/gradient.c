@@ -1494,7 +1494,8 @@ const dt_masks_functions_t dt_masks_functions_gradient = {
   .mouse_scrolled = _gradient_events_mouse_scrolled,
   .button_pressed = _gradient_events_button_pressed,
   .button_released = _gradient_events_button_released,
-  .post_expose = _gradient_events_post_expose
+  .post_expose = _gradient_events_post_expose,
+  .supported_features = DT_MASK_SUPPORT_OPACITY | DT_MASK_SUPPORT_HARDNESS | DT_MASK_SUPPORT_ROTATION | DT_MASK_SUPPORT_CURVATURE
 };
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

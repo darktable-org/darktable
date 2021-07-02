@@ -2287,7 +2287,8 @@ const dt_masks_functions_t dt_masks_functions_ellipse = {
   .mouse_scrolled = _ellipse_events_mouse_scrolled,
   .button_pressed = _ellipse_events_button_pressed,
   .button_released = _ellipse_events_button_released,
-  .post_expose = _ellipse_events_post_expose
+  .post_expose = _ellipse_events_post_expose,
+  .supported_features = DT_MASK_SUPPORT_OPACITY | DT_MASK_SUPPORT_HARDNESS | DT_MASK_SUPPORT_SIZE | DT_MASK_SUPPORT_ROTATION
 };
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
