@@ -201,10 +201,10 @@ static void _commit_box(dt_iop_module_t *self, dt_iop_crop_gui_data_t *g, dt_iop
       p->cw = points[2] / (float)piece->buf_out.width;
       p->ch = points[3] / (float)piece->buf_out.height;
       // verify that the crop area stay in the image area
-      if(p->cx >= 1.0f) p->cx = 0.5f;
-      if(p->cy >= 1.0f) p->cy = 0.5f;
-      p->cw = CLAMPF(p->cw, 0.0f, 1.0f);
-      p->ch = CLAMPF(p->ch, 0.0f, 1.0f);
+      p->cx = CLAMPF(p->cx, 0.0f, 0.9f);
+      p->cy = CLAMPF(p->cy, 0.0f, 0.9f);
+      p->cw = CLAMPF(p->cw, 0.1f, 1.0f);
+      p->ch = CLAMPF(p->ch, 0.1f, 1.0f);
     }
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -405,10 +405,10 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
                                       G_CALLBACK(_event_preview_updated_callback), self);
       // got focus, grab stuff to gui:
       // need to get gui stuff for the first time for this image,
-      g->clip_x = fmaxf(p->cx, 0.0f);
-      g->clip_w = fminf(p->cw - p->cx, 1.0f);
-      g->clip_y = fmaxf(p->cy, 0.0f);
-      g->clip_h = fminf(p->ch - p->cy, 1.0f);
+      g->clip_x = CLAMPF(p->cx, 0.0f, 0.9f);
+      g->clip_y = CLAMPF(p->cy, 0.0f, 0.9f);
+      g->clip_w = CLAMPF(p->cw - p->cx, 0.1f, 1.0f - g->clip_x);
+      g->clip_h = CLAMPF(p->ch - p->cy, 0.1f, 1.0f - g->clip_y);
       g->preview_ready = FALSE;
     }
     else
