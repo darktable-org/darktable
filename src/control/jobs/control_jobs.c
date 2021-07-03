@@ -89,6 +89,7 @@ typedef struct dt_control_export_t
 typedef struct dt_control_import_t
 {
   struct dt_import_session_t *session;
+  gboolean *wait;
 } dt_control_import_t;
 
 typedef struct dt_control_image_enumerator_t
@@ -2285,6 +2286,8 @@ static int32_t _control_import_job_run(dt_job_t *job)
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, filmid);
+  if(data->wait)
+    *data->wait = FALSE;  // resume caller
   return 0;
 }
 
@@ -2315,7 +2318,7 @@ static void *_control_import_alloc()
 }
 
 static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_override,
-                                            const gboolean inplace)
+                                            const gboolean inplace, gboolean *wait)
 {
   dt_job_t *job = dt_control_job_create(&_control_import_job_run, "import");
   if(!job) return NULL;
@@ -2331,13 +2334,9 @@ static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_o
   params->index = imgs;
 
   dt_control_import_t *data = params->data;
+  data->wait = wait;
   if(inplace)
-  {
     data->session = NULL;
-    // if unique image => synchronous
-    if(!imgs->next)
-      dt_control_job_wait(job);
-  }
   else
   {
     data->session = dt_import_session_new();
@@ -2352,8 +2351,12 @@ static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_o
 
 void dt_control_import(GList *imgs, const time_t datetime_override, const gboolean inplace)
 {
+  gboolean wait = !imgs->next && inplace;
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     _control_import_job_create(imgs, datetime_override, inplace));
+                     _control_import_job_create(imgs, datetime_override, inplace, wait ? &wait : NULL));
+  // if import in place single image => synchronous import
+  while(wait)
+    g_usleep(100);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
