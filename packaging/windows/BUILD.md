@@ -6,7 +6,7 @@ B) Cross compile on Linux
 How to make a darktable windows installer (64 bit only):
 
 * Install MSYS2 (instructions and prerequisites can be found on official website: https://msys2.github.io/).
-   
+
 * Update the base MSYS2 system until no further updates are available using: `$ pacman -Syu`
 
 * From MSYS2 terminal, install x64 developer tools and x86_64 toolchain and git from the MSYS2 prompt:
@@ -24,10 +24,9 @@ How to make a darktable windows installer (64 bit only):
     ```
     $ pacman -S mingw-w64-x86_64-gmic
     ```
-    *Note: GMIC. Waiting for GMIC 9.3 you may need to rename libopencv_core4xx and libopencv_videoio4xx to libopencv_core440 and libopencv_videoio440 in the bin folder of darktable to get lut3d available.*
 
 * For gphoto2:
-    * You need to restart the MINGW64 or MSYS terminal to have CAMLIBS and IOLIBS environment variables properly set for LIBGPHOTO are available. 
+    * You need to restart the MINGW64 or MSYS terminal to have CAMLIBS and IOLIBS environment variables properly set for LIBGPHOTO are available.
     * make sure they aren't pointing into your normal windows installation in case you already have darktable installed. You can check them with:
         ```
         $ echo $CAMLIBS
@@ -59,7 +58,7 @@ How to make a darktable windows installer (64 bit only):
    	export CMAKE_BUILD_PARALLEL_LEVEL="6"
     ```
    to your .bash_profile file. This would use 6 cores.
-   
+
 * Execute the following command to actviate profile changes `$ . .bash_profile`
 
 * From MINGW64 terminal, clone darktable git repository (in this example into ~/darktable):
