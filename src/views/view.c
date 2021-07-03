@@ -1720,7 +1720,7 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
       context = gtk_widget_get_style_context(list);
       gtk_style_context_add_class(context, "accels_window_list");
       GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-      GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("Shortcut"), renderer, "text", 0, NULL);
+      GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("shortcut"), renderer, "text", 0, NULL);
       gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
       column = gtk_tree_view_column_new_with_attributes(_("Action"), renderer, "text", 1, NULL);
       gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
