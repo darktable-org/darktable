@@ -91,9 +91,7 @@ const struct _modifier_name
       { GDK_CONTROL_MASK, N_("ctrl" ) },
       { GDK_MOD1_MASK   , N_("alt"  ) },
       { GDK_MOD2_MASK   , N_("cmd"  ) },
-      { GDK_SUPER_MASK  , N_("super") },
-      { GDK_HYPER_MASK  , N_("hyper") },
-      { GDK_META_MASK   , N_("meta" ) },
+      { GDK_MOD5_MASK   , N_("altgr") },
       { 0, NULL } };
 
 static dt_shortcut_t _sc = { 0 };  //  shortcut under construction
@@ -2356,8 +2354,8 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
 
   GdkKeymap *keymap = gdk_keymap_get_for_display(gdk_display_get_default());
   if(id) _sc.mods = gdk_keymap_get_modifier_state(keymap);
-  _sc.mods &= gdk_keymap_get_modifier_mask(keymap, GDK_MODIFIER_INTENT_DEFAULT_MOD_MASK);
-  gdk_keymap_add_virtual_modifiers(keymap, &_sc.mods);
+  _sc.mods &= GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK | GDK_MOD5_MASK |
+              gdk_keymap_get_modifier_mask(keymap, GDK_MODIFIER_INTENT_PRIMARY_ACCELERATOR);
 
   float return_value = 0;
   if(!size)
@@ -2637,7 +2635,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
   switch(event->type)
   {
   case GDK_KEY_PRESS:
-    if(event->key.is_modifier) return FALSE;
+    if(event->key.is_modifier || event->key.keyval == GDK_KEY_ISO_Level3_Shift) return FALSE;
 
     _sc.mods = event->key.state;
 
@@ -2647,7 +2645,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     dt_shortcut_key_press(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, event->key.time, _fix_keyval(event));
     break;
   case GDK_KEY_RELEASE:
-    if(event->key.is_modifier)
+    if(event->key.is_modifier || event->key.keyval == GDK_KEY_ISO_Level3_Shift)
     {
       if(_sc.action)
         dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, 1);
@@ -3045,10 +3043,8 @@ void dt_accel_register_shortcut(dt_action_t *owner, const gchar *path_string, gu
     // find the first key in group 0, if any
     while(i < n_keys - 1 && (keys[i].group > 0 || keys[i].level > 1)) i++;
 
-    if(keys[i].level > 1)
-      fprintf(stderr, "[dt_accel_register_shortcut] expected to find a key in group 0 with only shift\n");
-
-    if(keys[i].level == 1) mods |= GDK_SHIFT_MASK;
+    if(keys[i].level & 1) mods |= GDK_SHIFT_MASK;
+    if(keys[i].level & 2) mods |= GDK_MOD5_MASK;
 
     mods = _mods_fix_primary(mods);
 
