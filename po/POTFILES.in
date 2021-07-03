@@ -212,6 +212,7 @@ src/iop/defringe.c
 src/iop/demosaic.c
 src/iop/denoiseprofile.c
 src/iop/dither.c
+src/iop/dual_demosaic.c
 src/iop/equalizer.c
 src/iop/exposure.c
 src/iop/filmic.c
@@ -230,6 +231,7 @@ src/iop/invert.c
 src/iop/lens.cc
 src/iop/levels.c
 src/iop/liquify.c
+src/iop/lmmse_demosaic.c
 src/iop/lowlight.c
 src/iop/lowpass.c
 src/iop/lut3d.c
@@ -242,6 +244,7 @@ src/iop/profile_gamma.c
 src/iop/rawdenoise.c
 src/iop/rawoverexposed.c
 src/iop/rawprepare.c
+src/iop/rcd_demosaic.c
 src/iop/relight.c
 src/iop/retouch.c
 src/iop/rgbcurve.c
