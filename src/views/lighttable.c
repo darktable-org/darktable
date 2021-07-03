@@ -719,9 +719,9 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       }
 
       _preview_enter(self, FALSE, focus, mouse_over_id);
-      return 1;
+      return TRUE;
     }
-    return 0;
+    return TRUE;
   }
 
   // navigation accels for thumbtable layouts
