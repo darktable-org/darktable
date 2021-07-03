@@ -66,7 +66,7 @@
 
 #ifdef __GNUC__
   #pragma GCC push_options
-  #pragma GCC optimize ("fast-math", "fp-contract=fast")
+  #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "no-math-errno")
 #endif
 
 #ifdef __GNUC__
@@ -74,8 +74,6 @@
 #else
   #define INLINE inline
 #endif
-
-#define FCRCD(row, col) (cfarray[(((row) & 1)<<1) | ((col) & 1)])
 
 #define RCD_BORDER 9          // avoid tile-overlap errors
 #define RCD_MARGIN 6          // for the outermost tiles we can have a smaller outer border
@@ -318,14 +316,12 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
   const float scaler = fmaxf(piece->pipe->dsc.processed_maximum[0], fmaxf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
   const float revscaler = 1.0f / scaler;
 
-  const int cfarray[4] = {FC(roi_in->y, roi_in->x, filters), FC(roi_in->y, roi_in->x + 1, filters), FC(roi_in->y + 1, roi_in->x, filters), FC(roi_in->y + 1, roi_in->x + 1, filters)};
-
   const int num_vertical = 1 + (height - 2 * RCD_BORDER -1) / RCD_TILEVALID;
   const int num_horizontal = 1 + (width - 2 * RCD_BORDER -1) / RCD_TILEVALID;
 
 #ifdef _OPENMP
   #pragma omp parallel \
-  dt_omp_firstprivate(width, height, cfarray, out, in, scaler, revscaler)
+  dt_omp_firstprivate(width, height, filters, out, in, scaler, revscaler)
 #endif
   {
     float *const VH_Dir = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE);
@@ -365,8 +361,8 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         // Step 0: fill data and make sure data are not negative.
         for(int row = rowStart; row < rowEnd; row++)
         {
-          const int c0 = FCRCD(row, colStart);
-          const int c1 = FCRCD(row, colStart + 1);
+          const int c0 = FC(row, colStart, filters);
+          const int c1 = FC(row, colStart + 1, filters);
           for(int col = colStart, indx = (row - rowStart) * RCD_TILESIZE, in_indx = row * width + colStart; col < colEnd; col++, indx++, in_indx++)
           {
             cfa[indx] = rgb[c0][indx] = rgb[c1][indx] = safe_in(in[in_indx], revscaler);
@@ -416,7 +412,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         // Step 2.1: Low pass filter incorporating green, red and blue local samples from the raw data
         for(int row = 2; row < tileRows - 2; row++)
         {
-          for(int col = 2 + (FCRCD(row, 0) & 1), indx = row * RCD_TILESIZE + col, lp_indx = indx / 2; col < tileCols - 2; col += 2, indx +=2, lp_indx++)
+          for(int col = 2 + (FC(row, 0, filters) & 1), indx = row * RCD_TILESIZE + col, lp_indx = indx / 2; col < tileCols - 2; col += 2, indx +=2, lp_indx++)
           {
             lpf[lp_indx] = cfa[indx]
                         + 0.5f * (cfa[indx - w1]     + cfa[indx + w1] +     cfa[indx - 1] +      cfa[indx + 1])
@@ -428,7 +424,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         // Step 3.1: Populate the green channel at blue and red CFA positions
         for(int row = 4; row < tileRows - 4; row++)
         {
-          for(int col = 4 + (FCRCD(row, 0) & 1), indx = row * RCD_TILESIZE + col, lpindx = indx / 2; col < tileCols - 4; col += 2, indx += 2, lpindx++)
+          for(int col = 4 + (FC(row, 0, filters) & 1), indx = row * RCD_TILESIZE + col, lpindx = indx / 2; col < tileCols - 4; col += 2, indx += 2, lpindx++)
           {
             const float cfai = cfa[indx];
 
@@ -473,7 +469,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         // Step 4.1: Obtain the P/Q diagonals directional discrimination strength
         for(int row = 4; row < tileRows - 4; row++)
         {
-          for(int col = 4 + (FCRCD(row, 0) & 1), indx = row * RCD_TILESIZE + col, indx2 = indx / 2, indx3 = (indx - w1 - 1) / 2, indx4 = (indx + w1 - 1) / 2; col < tileCols - 4; col += 2, indx += 2, indx2++, indx3++, indx4++ )
+          for(int col = 4 + (FC(row, 0, filters) & 1), indx = row * RCD_TILESIZE + col, indx2 = indx / 2, indx3 = (indx - w1 - 1) / 2, indx4 = (indx + w1 - 1) / 2; col < tileCols - 4; col += 2, indx += 2, indx2++, indx3++, indx4++ )
           {
             const float P_Stat = fmaxf(epssq, P_CDiff_Hpf[indx3]     + P_CDiff_Hpf[indx2] + P_CDiff_Hpf[indx4 + 1]);
             const float Q_Stat = fmaxf(epssq, Q_CDiff_Hpf[indx3 + 1] + Q_CDiff_Hpf[indx2] + Q_CDiff_Hpf[indx4]);
@@ -484,7 +480,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         // Step 4.2: Populate the red and blue channels at blue and red CFA positions
         for(int row = 4; row < tileRows - 4; row++)
         {
-          for(int col = 4 + (FCRCD(row, 0) & 1), indx = row * RCD_TILESIZE + col, c = 2 - FCRCD(row, col), pqindx = indx / 2, pqindx2 = (indx - w1 - 1) / 2, pqindx3 = (indx + w1 - 1) / 2; col < tileCols - 4; col += 2, indx += 2, pqindx++, pqindx2++, pqindx3++)
+          for(int col = 4 + (FC(row, 0, filters) & 1), indx = row * RCD_TILESIZE + col, c = 2 - FC(row, col, filters), pqindx = indx / 2, pqindx2 = (indx - w1 - 1) / 2, pqindx3 = (indx + w1 - 1) / 2; col < tileCols - 4; col += 2, indx += 2, pqindx++, pqindx2++, pqindx3++)
           {
             // Refined P/Q diagonal local discrimination
             const float PQ_Central_Value   = PQ_Dir[pqindx];
@@ -516,7 +512,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         // Step 4.3: Populate the red and blue channels at green CFA positions
         for(int row = 4; row < tileRows - 4; row++)
         {
-          for(int col = 4 + (FCRCD(row, 1) & 1), indx = row * RCD_TILESIZE + col; col < tileCols - 4; col += 2, indx +=2)
+          for(int col = 4 + (FC(row, 1, filters) & 1), indx = row * RCD_TILESIZE + col; col < tileCols - 4; col += 2, indx +=2)
           {
             // Refined vertical and horizontal local discrimination
             const float VH_Central_Value = VH_Dir[indx];
@@ -591,7 +587,6 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
   #pragma GCC pop_options
 #endif
 
-#undef FCRCD
 #undef RCD_BORDER
 #undef RCD_MARGIN
 #undef RCD_TILEVALID
