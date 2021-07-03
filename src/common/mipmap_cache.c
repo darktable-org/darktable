@@ -536,10 +536,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   // adjust numbers to be large enough to hold what mem limit suggests.
   // we want at least 100MB, and consider 8G just still reasonable.
   const int64_t cache_memory = dt_conf_get_int64("cache_memory");
-  const int worker_threads = dt_conf_get_int("worker_threads");
   const size_t max_mem = CLAMPS(cache_memory, 100u << 20, ((size_t)8) << 30);
-  const uint32_t parallel = CLAMP(worker_threads, 1, 8);
-
   // Fixed sizes for the thumbnail mip levels, selected for coverage of most screen sizes
   int32_t mipsizes[DT_MIPMAP_F][2] = {
     { 180, 110 },             // mip0 - ~1/2 size previous one
@@ -587,8 +584,9 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   dt_cache_set_allocate_callback(&cache->mip_thumbs.cache, dt_mipmap_cache_allocate_dynamic, cache);
   dt_cache_set_cleanup_callback(&cache->mip_thumbs.cache, dt_mipmap_cache_deallocate_dynamic, cache);
 
-  const int full_entries
-      = MAX(2, parallel); // even with one thread you want two buffers. one for dr one for thumbs.
+  // even with one thread you want two buffers. one for dr one for thumbs.
+  // Also have the nr of cache entries larger than worker threads
+  const int full_entries = 2 * dt_worker_threads();
   const int32_t max_mem_bufs = nearest_power_of_two(full_entries);
 
   // for this buffer, because it can be very busy during import
