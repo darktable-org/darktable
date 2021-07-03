@@ -119,10 +119,10 @@ endif(Gphoto2_FOUND)
 
 # the modules specific to map mode
 if(USE_MAP)
-	add_library(location MODULE "location.c")
-	add_library(map_settings MODULE "map_settings.c")
+  add_library(location MODULE "location.c")
+  add_library(map_settings MODULE "map_settings.c")
   add_library(map_locations MODULE "map_locations.c")
-	set(MODULES ${MODULES} location map_settings map_locations)
+  set(MODULES ${MODULES} location map_settings map_locations)
 endif(USE_MAP)
 
 # the modules specific to geotagging module
