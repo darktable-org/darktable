@@ -1573,6 +1573,10 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   g_object_unref(G_OBJECT(filtered_shortcuts));
   gtk_tree_view_set_search_column(shortcuts_view, 0); // fake column for _search_func
   gtk_tree_view_set_search_equal_func(shortcuts_view, _search_func, shortcuts_view, NULL);
+  GtkWidget *search_shortcuts = gtk_search_entry_new();
+  gtk_entry_set_placeholder_text(GTK_ENTRY(search_shortcuts), _("search shortcuts"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(search_shortcuts), "incrementally search the list of shortcuts\npress up or down keys to cycle through matches");
+  gtk_tree_view_set_search_entry(shortcuts_view, GTK_ENTRY(search_shortcuts));
   gtk_tree_selection_set_select_function(gtk_tree_view_get_selection(shortcuts_view),
                                          shortcut_selection_function, NULL, NULL);
   g_object_set(shortcuts_view, "has-tooltip", TRUE, NULL);
@@ -1656,6 +1660,10 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   g_object_unref(actions_store);
   gtk_tree_view_set_search_column(actions_view, 1); // fake column for _search_func
   gtk_tree_view_set_search_equal_func(actions_view, _search_func, actions_view, NULL);
+  GtkWidget *search_actions = gtk_search_entry_new();
+  gtk_tree_view_set_search_entry(actions_view, GTK_ENTRY(search_actions));
+  gtk_entry_set_placeholder_text(GTK_ENTRY(search_actions), _("search actions"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(search_actions), "incrementally search the list of actions\npress up or down keys to cycle through matches");
   g_object_set(actions_view, "has-tooltip", TRUE, NULL);
   g_signal_connect(G_OBJECT(actions_view), "query-tooltip", G_CALLBACK(_shortcut_tooltip_callback), NULL);
   g_signal_connect(G_OBJECT(actions_view), "row-activated", G_CALLBACK(_action_row_activated), actions_store);
@@ -1696,7 +1704,30 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   if(split_position) gtk_paned_set_position(GTK_PANED(container), split_position);
   g_signal_connect(G_OBJECT(shortcuts_view), "size-allocate", G_CALLBACK(_resize_shortcuts_view), container);
 
-  return container;
+  GtkWidget *button_bar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+  gtk_box_pack_start(GTK_BOX(button_bar), search_shortcuts, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(button_bar), search_actions, FALSE, FALSE, 0);
+
+  GtkWidget *defaults_button = gtk_button_new_with_label("defaults");
+  gtk_widget_set_sensitive(defaults_button, FALSE);
+  gtk_widget_set_tooltip_text(defaults_button, "to be implemented");
+  gtk_box_pack_end(GTK_BOX(button_bar), defaults_button, FALSE, FALSE, 0);
+
+  GtkWidget *export_button = gtk_button_new_with_label("export...");
+  gtk_widget_set_sensitive(export_button, FALSE);
+  gtk_widget_set_tooltip_text(export_button, "to be implemented");
+  gtk_box_pack_end(GTK_BOX(button_bar), export_button, FALSE, FALSE, 0);
+
+  GtkWidget *import_button = gtk_button_new_with_label("import...");
+  gtk_widget_set_sensitive(import_button, FALSE);
+  gtk_widget_set_tooltip_text(import_button, "to be implemented");
+  gtk_box_pack_end(GTK_BOX(button_bar), import_button, FALSE, FALSE, 0);
+
+  GtkWidget *top_level = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+  gtk_box_pack_start(GTK_BOX(top_level), container, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(top_level), button_bar, FALSE, FALSE, 0);
+
+  return top_level;
 }
 
 void dt_shortcuts_save(gboolean backup)
