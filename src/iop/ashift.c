@@ -33,6 +33,7 @@
 #include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "dtgtk/button.h"
+#include "dtgtk/expander.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
@@ -112,18 +113,18 @@ DT_MODULE_INTROSPECTION(4, dt_iop_ashift_params_t)
 
 const char *name()
 {
-  return _("perspective correction");
+  return _("rotation and perspective");
 }
 
 const char *aliases()
 {
-  return _("keystone|distortion");
+  return _("rotation|keystone|distortion");
 }
 
 const char *description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("distort perspective automatically"),
-                                      _("corrective"),
+  return dt_iop_set_description(self, _("rotate or distort perspective"),
+                                      _("corrective or creative"),
                                       _("linear, RGB, scene-referred"),
                                       _("geometric, RGB"),
                                       _("linear, RGB, scene-referred"));
@@ -155,6 +156,13 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 {
   return iop_cs_rgb;
 }
+
+typedef enum dt_iop_ashift_method_t
+{
+  ASHIFT_METHOD_NONE = 0,
+  ASHIFT_METHOD_AUTO,
+  ASHIFT_METHOD_DRAW
+} dt_iop_ashift_method_t;
 
 typedef enum dt_iop_ashift_homodir_t
 {
@@ -391,6 +399,17 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *structure;
   GtkWidget *clean;
   GtkWidget *eye;
+  GtkWidget *values_expander;
+  GtkWidget *values_box;
+  GtkWidget *values_toggle;
+  GtkWidget *method;
+  GtkGrid *auto_grid;
+  GtkGrid *draw_grid;
+  GtkWidget *draw_v;
+  GtkWidget *draw_h;
+  GtkWidget *draw_both;
+  GtkWidget *draw_clean;
+  gboolean values_expanded;
   int lines_suppressed;
   int fitting;
   int isflipped;
@@ -4414,6 +4433,17 @@ void gui_update(struct dt_iop_module_t *self)
 
   // copy crop box into shadow variables
   shadow_crop_box(p,g);
+
+  // update perspective method
+  const dt_iop_ashift_method_t method = dt_bauhaus_combobox_get(g->method);
+  gtk_widget_set_visible(GTK_WIDGET(g->auto_grid), (method == ASHIFT_METHOD_AUTO));
+  gtk_widget_set_visible(GTK_WIDGET(g->draw_grid), (method == ASHIFT_METHOD_DRAW));
+
+  // update values expander
+  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->values_toggle));
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->values_toggle), dtgtk_cairo_paint_solid_arrow,
+                               CPF_STYLE_BOX | (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->values_expander), active);
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -4620,6 +4650,41 @@ static float log2_curve(GtkWidget *self, float inval, dt_bauhaus_curve_t dir)
   return outval;
 }
 
+static void _event_values_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->values_toggle));
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->values_expander), active);
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->values_toggle), dtgtk_cairo_paint_solid_arrow,
+                               CPF_STYLE_BOX | (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
+  g->values_expanded = active;
+  dt_conf_set_bool("plugins/darkroom/ashift/expand_values", active);
+}
+
+static void _event_values_expander_click(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
+{
+  if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return;
+
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->values_toggle),
+                               !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->values_toggle)));
+}
+
+static void _event_method_changed(GtkWidget *widget, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+  const dt_iop_ashift_method_t method = dt_bauhaus_combobox_get(g->method);
+  gtk_widget_set_visible(GTK_WIDGET(g->auto_grid), (method == ASHIFT_METHOD_AUTO));
+  gtk_widget_set_visible(GTK_WIDGET(g->draw_grid), (method == ASHIFT_METHOD_DRAW));
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_ashift_gui_data_t *g = IOP_GUI_ALLOC(ashift);
@@ -4669,6 +4734,103 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->rotation, "%.2f°");
   dt_bauhaus_slider_set_soft_range(g->rotation, -ROTATION_RANGE, ROTATION_RANGE);
 
+  g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
+  g_signal_connect(G_OBJECT(g->cropmode), "value-changed", G_CALLBACK(cropmode_callback), self);
+
+  g->method = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->method, NULL, N_("perspective method"));
+  dt_bauhaus_combobox_add(g->method, _("none"));
+  dt_bauhaus_combobox_add(g->method, _("automatic"));
+  dt_bauhaus_combobox_add(g->method, _("drawing"));
+  g_signal_connect(G_OBJECT(g->method), "value-changed", G_CALLBACK(_event_method_changed), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->method, TRUE, TRUE, 0);
+
+  g->auto_grid = GTK_GRID(gtk_grid_new());
+  gtk_grid_set_row_spacing(g->auto_grid, 2 * DT_BAUHAUS_SPACE);
+  gtk_grid_set_column_spacing(g->auto_grid, DT_PIXEL_APPLY_DPI(10));
+
+  gtk_grid_attach(g->auto_grid, dt_ui_label_new(_("automatic fit")), 0, 0, 1, 1);
+
+  g->fit_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 1, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_v), TRUE);
+  gtk_grid_attach(g->auto_grid, g->fit_v, 1, 0, 1, 1);
+
+  g->fit_h = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 2, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_h), TRUE);
+  gtk_grid_attach(g->auto_grid, g->fit_h, 2, 0, 1, 1);
+
+  g->fit_both = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 3, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_both), TRUE);
+  gtk_grid_attach(g->auto_grid, g->fit_both, 3, 0, 1, 1);
+
+  gtk_grid_attach(g->auto_grid, dt_ui_label_new(_("get structure")), 0, 1, 1, 1);
+
+  g->structure = dtgtk_button_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->structure), TRUE);
+  gtk_grid_attach(g->auto_grid, g->structure, 1, 1, 1, 1);
+
+  g->clean = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->clean), TRUE);
+  gtk_grid_attach(g->auto_grid, g->clean, 2, 1, 1, 1);
+
+  g->eye = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->eye), TRUE);
+  gtk_grid_attach(g->auto_grid, g->eye, 3, 1, 1, 1);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->auto_grid), TRUE, TRUE, 0);
+
+  g->draw_grid = GTK_GRID(gtk_grid_new());
+  gtk_grid_set_row_spacing(g->draw_grid, 2 * DT_BAUHAUS_SPACE);
+  gtk_grid_set_column_spacing(g->draw_grid, DT_PIXEL_APPLY_DPI(10));
+
+  gtk_grid_attach(g->draw_grid, dt_ui_label_new(_("automatic fit")), 0, 0, 1, 1);
+
+  g->draw_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 1, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->draw_v), TRUE);
+  gtk_grid_attach(g->draw_grid, g->draw_v, 1, 0, 1, 1);
+
+  g->draw_h = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 2, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->draw_h), TRUE);
+  gtk_grid_attach(g->draw_grid, g->draw_h, 2, 0, 1, 1);
+
+  g->draw_both = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 3, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->draw_both), TRUE);
+  gtk_grid_attach(g->draw_grid, g->draw_both, 3, 0, 1, 1);
+
+  g->draw_clean = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->draw_clean), TRUE);
+  gtk_grid_attach(g->draw_grid, g->draw_clean, 4, 0, 1, 1);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->draw_grid), TRUE, TRUE, 0);
+
+  // we put the detailled values under an expander
+  g->values_expanded = dt_conf_get_bool("plugins/darkroom/ashift/expand_values");
+  GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
+  GtkWidget *header_evb = gtk_event_box_new();
+  GtkWidget *destdisp = dt_ui_section_label_new(_("perspective values"));
+  GtkStyleContext *context = gtk_widget_get_style_context(destdisp_head);
+  gtk_style_context_add_class(context, "section-expander");
+  gtk_container_add(GTK_CONTAINER(header_evb), destdisp);
+
+  g->values_toggle
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->values_toggle), g->values_expanded);
+  gtk_widget_set_name(GTK_WIDGET(g->values_toggle), "control-button");
+
+  GtkWidget *main_box = self->widget;
+  g->values_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  gtk_box_pack_start(GTK_BOX(destdisp_head), header_evb, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(destdisp_head), g->values_toggle, FALSE, FALSE, 0);
+
+  g->values_expander = dtgtk_expander_new(destdisp_head, g->values_box);
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->values_expander), TRUE);
+  gtk_box_pack_end(GTK_BOX(main_box), g->values_expander, FALSE, FALSE, 0);
+
+  g_signal_connect(G_OBJECT(g->values_toggle), "toggled", G_CALLBACK(_event_values_button_changed), (gpointer)self);
+
+  g_signal_connect(G_OBJECT(header_evb), "button-release-event", G_CALLBACK(_event_values_expander_click),
+                   (gpointer)self);
+
   g->lensshift_v = dt_bauhaus_slider_from_params(self, "lensshift_v");
   dt_bauhaus_slider_set_soft_range(g->lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
   dt_bauhaus_slider_set_digits(g->lensshift_v, 3);
@@ -4680,12 +4842,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->shear = dt_bauhaus_slider_from_params(self, "shear");
   dt_bauhaus_slider_set_soft_range(g->shear, -SHEAR_RANGE, SHEAR_RANGE);
 
-  g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
-  g_signal_connect(G_OBJECT(g->cropmode), "value-changed", G_CALLBACK(cropmode_callback), self);
-
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
-
-  GtkWidget *saved_widget = self->widget;
   self->widget = g->specifics = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->f_length = dt_bauhaus_slider_from_params(self, "f_length");
@@ -4708,42 +4865,9 @@ void gui_init(struct dt_iop_module_t *self)
   g->aspect = dt_bauhaus_slider_from_params(self, "aspect");
   dt_bauhaus_slider_set_curve(g->aspect, log2_curve);
 
-  self->widget = saved_widget;
-  gtk_box_pack_start(GTK_BOX(self->widget), g->specifics, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->values_box), g->specifics, TRUE, TRUE, 0);
 
-  GtkGrid *grid = GTK_GRID(gtk_grid_new());
-  gtk_grid_set_row_spacing(grid, 2 * DT_BAUHAUS_SPACE);
-  gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
-
-  gtk_grid_attach(grid, dt_ui_label_new(_("automatic fit")), 0, 0, 1, 1);
-
-  g->fit_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 1, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_v), TRUE);
-  gtk_grid_attach(grid, g->fit_v, 1, 0, 1, 1);
-
-  g->fit_h = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 2, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_h), TRUE);
-  gtk_grid_attach(grid, g->fit_h, 2, 0, 1, 1);
-
-  g->fit_both = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 3, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_both), TRUE);
-  gtk_grid_attach(grid, g->fit_both, 3, 0, 1, 1);
-
-  gtk_grid_attach(grid, dt_ui_label_new(_("get structure")), 0, 1, 1, 1);
-
-  g->structure = dtgtk_button_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->structure), TRUE);
-  gtk_grid_attach(grid, g->structure, 1, 1, 1, 1);
-
-  g->clean = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->clean), TRUE);
-  gtk_grid_attach(grid, g->clean, 2, 1, 1, 1);
-
-  g->eye = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->eye), TRUE);
-  gtk_grid_attach(grid, g->eye, 3, 1, 1, 1);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), TRUE, TRUE, 0);
+  self->widget = main_box;
 
   gtk_widget_set_tooltip_text(g->rotation, _("rotate image"));
   gtk_widget_set_tooltip_text(g->lensshift_v, _("apply lens shift correction in one direction"));
