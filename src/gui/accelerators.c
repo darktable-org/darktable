@@ -525,7 +525,7 @@ static gchar *_shortcut_description(dt_shortcut_t *s, gboolean full)
     else
     if(s->instance != 0) add_hint(", %s %+d", _("relative instance"), s->instance);
 
-    if(s->speed != 1.0) add_hint(_(", %s *%g"), _("speed"), s->speed);
+    if(s->speed != 1.0) add_hint(", %s *%g", _("speed"), s->speed);
 
     const dt_action_def_t *def = _action_find_definition(s->action);
     if(def && def->elements)
