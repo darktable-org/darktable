@@ -3,6 +3,8 @@
 
 darktable is an open source photography workflow application and non-destructive raw developer. A virtual lighttable and darkroom for photographers. It manages your digital negatives in a database, lets you view them through a zoomable lighttable and enables you to develop raw images, enhance them and export them on local or remote storage.
 
+darktable is **not** a free Adobe® Lightroom® replacement.
+
 [https://www.darktable.org/](https://www.darktable.org/ "darktable homepage")
 
 ## Table of Contents
@@ -77,11 +79,11 @@ you can build the software yourself following the instructions [below](#building
 
 ### Latest release
 
-3.4.1 (stable)
+3.6.0 (stable)
 
-* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-3.4.1/darktable-3.4.1.1-win64.exe)
-* [Download executable for Mac OS](https://github.com/darktable-org/darktable/releases/download/release-3.4.1/darktable-3.4.1.dmg)
-* [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable&package=darktable)
+* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-3.6.0/darktable-3.6.0-win64.exe)
+* [Download executable for Mac OS](https://github.com/darktable-org/darktable/releases/download/release-3.6.0/darktable-3.6.0.3.dmg)
+* [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
 
