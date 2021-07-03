@@ -63,9 +63,9 @@
 
 enum
 {
-  DT_ACTION_ELEMENT_FOCUS = 0,
+  DT_ACTION_ELEMENT_SHOW = 0,
   DT_ACTION_ELEMENT_ENABLE = 1,
-  DT_ACTION_ELEMENT_SHOW = 2,
+  DT_ACTION_ELEMENT_FOCUS = 2,
   DT_ACTION_ELEMENT_INSTANCE = 3,
   DT_ACTION_ELEMENT_RESET = 4,
   DT_ACTION_ELEMENT_PRESETS = 5,
@@ -441,7 +441,7 @@ static gboolean _header_enter_notify_callback(GtkWidget *eventbox, GdkEventCross
 
 static gboolean _header_motion_notify_show_callback(GtkWidget *eventbox, GdkEventCrossing *event, GtkWidget *header)
 {
-  darktable.control->element = DT_ACTION_ELEMENT_FOCUS;
+  darktable.control->element = DT_ACTION_ELEMENT_SHOW;
   return dt_iop_show_hide_header_buttons(header, event, TRUE, FALSE);
 }
 
@@ -3227,9 +3227,9 @@ const gchar *dt_action_effect_instance[]
       NULL };
 
 static const dt_action_element_def_t _action_elements[]
-  = { { N_("focus"), dt_action_effect_toggle },
+  = { { N_("show"), dt_action_effect_toggle },
       { N_("enable"), dt_action_effect_toggle },
-      { N_("show"), dt_action_effect_toggle },
+      { N_("focus"), dt_action_effect_toggle },
       { N_("instance"), dt_action_effect_instance },
       { N_("reset"), dt_action_effect_activate },
       { N_("presets"), dt_action_effect_presets },
@@ -3237,7 +3237,7 @@ static const dt_action_element_def_t _action_elements[]
 
 static const dt_shortcut_fallback_t _action_fallbacks[]
   = { { .element = DT_ACTION_ELEMENT_ENABLE, .button = DT_SHORTCUT_LEFT },
-      { .element = DT_ACTION_ELEMENT_SHOW, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_LONG },
+      { .element = DT_ACTION_ELEMENT_FOCUS, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_LONG },
       { .element = DT_ACTION_ELEMENT_INSTANCE, .button = DT_SHORTCUT_RIGHT, .click = DT_SHORTCUT_DOUBLE },
       { .element = DT_ACTION_ELEMENT_RESET, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
       { .element = DT_ACTION_ELEMENT_PRESETS, .button = DT_SHORTCUT_RIGHT },
