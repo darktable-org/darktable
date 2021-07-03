@@ -123,6 +123,7 @@ static void collection_updated(gpointer instance, dt_collection_change_t query_c
 static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, GdkEventButton *event, dt_lib_collect_t *d);
 static int is_time_property(int property);
 static void _populate_collect_combo(GtkWidget *w);
+int last_state = 0;
 
 const char *name(dt_lib_module_t *self)
 {
@@ -605,10 +606,14 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
 
   if(event->type == GDK_DOUBLE_BUTTON_PRESS)
   {
-    if(gtk_tree_view_row_expanded(GTK_TREE_VIEW(treeview), path))
-      gtk_tree_view_collapse_row (GTK_TREE_VIEW(treeview), path);
-    else
-      gtk_tree_view_expand_row (GTK_TREE_VIEW(treeview), path, FALSE);
+    if(event->state == last_state)
+    {
+      if(gtk_tree_view_row_expanded(GTK_TREE_VIEW(treeview), path))
+        gtk_tree_view_collapse_row (GTK_TREE_VIEW(treeview), path);
+      else
+        gtk_tree_view_expand_row (GTK_TREE_VIEW(treeview), path, FALSE);
+    }
+    last_state = event->state;
   }
 
   if(((d->view_rule == DT_COLLECTION_PROP_FOLDERS
