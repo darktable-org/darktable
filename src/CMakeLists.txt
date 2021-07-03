@@ -806,6 +806,8 @@ if(BUILD_PRINT)
       "common/cups_print.h"
       "common/cups_print.c"
       "common/printprof.c"
+      "common/printing.h"
+      "common/printing.c"
       )
     set(SOURCES ${SOURCES} ${SOURCE_FILES_PRINT})
     list(APPEND LIBS ${CUPS_LIBRARIES})

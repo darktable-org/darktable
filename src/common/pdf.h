@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2015-2020 darktable developers.
+ *    Copyright (C) 2015-2021 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -81,8 +81,8 @@ typedef struct dt_pdf_page_t
 
 static const struct
 {
-  char  *name;
-  float  factor;
+  const char  *name;
+  const float  factor;
 } dt_pdf_units[] =
 {
   {N_("mm"),   dt_pdf_mm_to_point(1.0)},
@@ -96,9 +96,9 @@ static const int dt_pdf_units_n = sizeof(dt_pdf_units) / sizeof(dt_pdf_units[0])
 
 static const struct
 {
-  char  *name;
-  float  width;
-  float  height;
+  const char  *name;
+  const float  width;
+  const float  height;
 } dt_pdf_paper_sizes[] =
 {
   {N_("a4"),     dt_pdf_mm_to_point(210),   dt_pdf_mm_to_point(297)},

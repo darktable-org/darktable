@@ -116,6 +116,7 @@ src/common/opencl.c
 src/common/pdf.h
 src/common/points.h
 src/common/printprof.c
+src/common/printing.c
 src/common/pwstorage/pwstorage.c
 src/common/ratings.c
 src/common/styles.c

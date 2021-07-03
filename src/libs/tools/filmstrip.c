@@ -16,23 +16,15 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/collection.h"
-#include "common/colorlabels.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "common/history.h"
-#include "common/image_cache.h"
-#include "common/mipmap_cache.h"
-#include "common/ratings.h"
 #include "common/selection.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
-#include "gui/drag_and_drop.h"
 #include "gui/gtk.h"
-#include "gui/hist_dialog.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #include "views/view.h"
