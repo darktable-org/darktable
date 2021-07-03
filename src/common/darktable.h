@@ -344,7 +344,7 @@ void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 void dt_gettime_t(char *datetime, size_t datetime_len, time_t t);
 void dt_gettime(char *datetime, size_t datetime_len);
-
+int dt_worker_threads();
 void *dt_alloc_align(size_t alignment, size_t size);
 static inline float *dt_alloc_align_float(size_t pixels)
 {
