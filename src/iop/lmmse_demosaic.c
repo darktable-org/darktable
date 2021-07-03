@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@
 
    The performance has been tested on a E-2288G for 45mpix images, tiling improves performance > 2-fold.
    times in sec: basic (0.5->0.15), median (0.6->0.18), 3xmedian (0.8->0.22), 3xmedian + 2x refine (1.2->0.30)
-   The default is now 2 times slower than RCD and 2 times faster than AMaZE 
+   The default is now 2 times slower than RCD and 2 times faster than AMaZE
 */
 
 #ifndef LMMSE_GRP
@@ -69,7 +69,7 @@ static INLINE float limf(float x, float min, float max)
 
 static INLINE float median3f(float x0, float x1, float x2)
 {
-  return fmaxf(fminf(x0,x1), fminf(x2, fmaxf(x0,x1))); 
+  return fmaxf(fminf(x0,x1), fminf(x2, fmaxf(x0,x1)));
 }
 
 static INLINE float median9f(float a0, float a1, float a2, float a3, float a4, float a5, float a6, float a7, float a8)
@@ -203,7 +203,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
         for(int rrr = BORDER_AROUND, row = rowStart; rrr < tileRows + BORDER_AROUND; rrr++, row++)
         {
           float *cfa = qix[5] + rrr * LMMSE_GRP + BORDER_AROUND;
-          int idx = row * width + colStart; 
+          int idx = row * width + colStart;
           for(int ccc = BORDER_AROUND, col = colStart; ccc < tileCols + BORDER_AROUND; ccc++, col++, cfa++, idx++)
           {
             cfa[0] = calc_gamma(revscaler * in[idx], gamma_in);
@@ -232,7 +232,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
             vdiff[0] = (cfa[0] > 1.75f * Y1) ? median3f(vdiff[0], cfa[-w1], cfa[w1]) : limf(vdiff[0], 0.0f, 1.0f);
             vdiff[0] -= cfa[0];
           }
-    
+
           // G-R(B) at G location
           for(int ccc = 2 + (FC(rr, 3, filters) & 1); ccc < last_cc - 2; ccc += 2)
           {
@@ -293,7 +293,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
             float vn = 1e-7f + sqrf(p1) + sqrf(p2) + sqrf(p3) + sqrf(p4) + sqrf(p5) + sqrf(p6) + sqrf(p7) + sqrf(p8) + sqrf(p9);
             float xh = (hdiff[0] * vx + hlp[0] * vn) / (vx + vn);
             float vh = vx * vn / (vx + vn);
-    
+
             // vertical
             p1 = vlp[-w4];
             p2 = vlp[-w3];
@@ -356,7 +356,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
             c = 2 - c;
           }
         }
-    
+
         // interpolate R/B at B/R location
         for(int rr = 1; rr < last_rr - 1; rr++)
         {
@@ -414,7 +414,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
             float *corr4 = qix[4] + rr * LMMSE_GRP + ccmin;
             int c0 = FC(rr, 0, filters);
             int c1 = FC(rr, 1, filters);
-      
+
             if(c0 == 1)
             {
               c1 = 2 - c1;
@@ -443,7 +443,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
                 col_c1++;
                 corr_d++;
               }
-      
+
               if(cc < ccmax)
               { // remaining pixel, only if width is odd
                 col0[0] = col1[0] + corr3[0];
@@ -478,7 +478,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
                 col_c0++;
                 corr_d++;
              }
-      
+
               if(cc < ccmax)
               { // remaining pixel, only if width is odd
                 col_c0[0] = col1[0] + corr_d[0];
@@ -508,7 +508,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
             for(int cc = ccmin + 2 + (FC(rr, 2, filters) & 1), c = FC(rr, cc, filters); cc < ccmax - 2; cc += 2)
             {
               float *rgb1 = qix[1] + rr * LMMSE_GRP + cc;
-              float *rgbc = qix[c] + rr * LMMSE_GRP + cc; 
+              float *rgbc = qix[c] + rr * LMMSE_GRP + cc;
 
               const float dL = 1.0f / (1.0f + fabsf(rgbc[ -2] - rgbc[0]) + fabsf(rgb1[ 1] - rgb1[ -1]));
               const float dR = 1.0f / (1.0f + fabsf(rgbc[  2] - rgbc[0]) + fabsf(rgb1[ 1] - rgb1[ -1]));
@@ -525,7 +525,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
               for(int i = 0; i < 2; c = 2 - c, i++)
               {
                 float *rgb1 = qix[1] + rr * LMMSE_GRP + cc;
-                float *rgbc = qix[c] + rr * LMMSE_GRP + cc; 
+                float *rgbc = qix[c] + rr * LMMSE_GRP + cc;
 
                 const float dL = 1.0f / (1.0f + fabsf(rgb1[ -2] - rgb1[0]) + fabsf(rgbc[ 1] - rgbc[ -1]));
                 const float dR = 1.0f / (1.0f + fabsf(rgb1[  2] - rgb1[0]) + fabsf(rgbc[ 1] - rgbc[ -1]));
@@ -542,7 +542,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
             {
               const int d = 2 - c;
               float *rgb1 = qix[1] + rr * LMMSE_GRP + cc;
-              float *rgbc = qix[c] + rr * LMMSE_GRP + cc; 
+              float *rgbc = qix[c] + rr * LMMSE_GRP + cc;
               float *rgbd = qix[d] + rr * LMMSE_GRP + cc;
 
               const float dL = 1.0f / (1.0f + fabsf(rgbd[ -2] - rgbd[0]) + fabsf(rgb1[ 1] - rgb1[ -1]));
@@ -569,9 +569,9 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
           float *col2 = qix[2] + idx;
           for(int col = first_horizontal; col < last_horizontal; col++, dest +=4, col0++, col1++, col2++)
           {
-            dest[0] = scaler * calc_gamma(col0[0], gamma_out); 
-            dest[1] = scaler * calc_gamma(col1[0], gamma_out); 
-            dest[2] = scaler * calc_gamma(col2[0], gamma_out); 
+            dest[0] = scaler * calc_gamma(col0[0], gamma_out);
+            dest[1] = scaler * calc_gamma(col1[0], gamma_out);
+            dest[2] = scaler * calc_gamma(col2[0], gamma_out);
             dest[3] = 0.0f;
           }
         }
@@ -594,4 +594,3 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
 #undef w2
 #undef w3
 #undef w4
-
