@@ -23,6 +23,7 @@
 #include "common/image.h"
 #ifdef HAVE_PRINT
 #include "common/cups_print.h"
+#include "common/printing.h"
 #endif
 #ifdef HAVE_MAP
 #include "common/geo.h"
@@ -345,7 +346,7 @@ typedef struct dt_view_manager_t
     struct
     {
       struct dt_view_t *view;
-      void (*print_settings)(const dt_view_t *view, dt_print_info_t *pinfo);
+      void (*print_settings)(const dt_view_t *view, dt_print_info_t *pinfo, dt_images_box *imgs);
     } print;
 #endif
   } proxy;
@@ -470,7 +471,7 @@ void dt_view_map_drag_set_icon(const dt_view_manager_t *vm, GdkDragContext *cont
  * Print View Proxy
  */
 #ifdef HAVE_PRINT
-void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo);
+void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo, dt_images_box *imgs);
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

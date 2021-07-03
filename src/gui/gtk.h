@@ -438,6 +438,7 @@ void dt_gui_container_remove_children(GtkContainer *container);
 void dt_gui_container_destroy_children(GtkContainer *container);
 
 void dt_gui_menu_popup(GtkMenu *menu, GtkWidget *button, GdkGravity widget_anchor, GdkGravity menu_anchor);
+void dt_gui_draw_rounded_rectangle(cairo_t *cr, float width, float height, float x, float y);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
