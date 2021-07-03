@@ -586,7 +586,7 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
     if(!gtk_widget_is_sensitive(widget)) return FALSE;
     if(user_data) // shortcuts treeview
     {
-      gtk_tooltip_set_text(tooltip, _("press Del to delete selected shortcut\ndouble click to add new shortcut"));
+      gtk_tooltip_set_text(tooltip, _("press Del to delete selected shortcut\ndouble click to add new shortcut\nstart typing for incremental search"));
       return TRUE;
     }
 
@@ -600,7 +600,7 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
     gtk_tree_view_set_tooltip_row(GTK_TREE_VIEW(widget), tooltip, path);
     gtk_tree_path_free(path);
 
-    markup_text = g_markup_escape_text(_("click to filter shortcut list\ndouble click to define new shortcut"), -1);
+    markup_text = g_markup_escape_text(_("click to filter shortcut list\ndouble click to define new shortcut\nstart typing for incremental search"), -1);
   }
   else
   {
@@ -1215,7 +1215,8 @@ static void grab_in_tree_view(GtkTreeView *tree_view)
                                              "a key can be double or triple pressed, with a long last press\n"
                                              "while the key is held, a combination of mouse buttons can be (double/triple/long) clicked\n"
                                              "still holding the key (and modifiers and/or buttons) a scroll or mouse move can be added\n"
-                                             "connected devices can send keys or moves using their physical controllers"));
+                                             "connected devices can send keys or moves using their physical controllers\n\n"
+                                             "right-click to cancel"));
   g_set_weak_pointer(&grab_window, gtk_widget_get_toplevel(grab_widget));
   if(_sc.action && _sc.action->type == DT_ACTION_TYPE_FALLBACK)
     dt_shortcut_key_press(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, 0);
