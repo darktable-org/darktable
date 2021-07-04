@@ -135,7 +135,7 @@ typedef struct dt_lib_import_t
   GtkButton *tethered_shoot;
   GtkButton *mount_camera;
   GtkButton *unmount_camera;
-  
+
   GtkWidget *ignore_exif, *rating, *apply_metadata, *recursive;
   GtkWidget *import_new;
   dt_import_metadata_t metadata;
@@ -709,7 +709,7 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
       if(include_jpegs || (ext && g_ascii_strncasecmp(ext, ".jpg", sizeof(".jpg"))
                                && g_ascii_strncasecmp(ext, ".jpeg", sizeof(".jpeg"))))
       {
-        const gboolean already_imported = dt_images_already_imported(folder, &fullname[folder_lgth + 1]);
+        const gboolean already_imported = dt_images_already_imported(fullname);
         GtkTreeIter iter;
         gtk_list_store_append(d->from.store, &iter);
         gtk_list_store_set(d->from.store, &iter,
