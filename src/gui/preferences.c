@@ -1015,21 +1015,14 @@ static void import_export(GtkButton *button, gpointer data)
     dt_osx_disallow_fullscreen(chooser);
 #endif
     gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(chooser), TRUE);
-    gchar *exported_path = dt_conf_get_string("ui_last/export_path");
-    if(exported_path != NULL)
-    {
-      gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser), exported_path);
-      g_free(exported_path);
-    }
+    dt_conf_get_folder_to_file_chooser("ui_last/export_path", chooser);
     gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(chooser), "keyboardrc");
     if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
     {
       gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
       gtk_accel_map_save(filename);
       g_free(filename);
-      gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser));
-      dt_conf_set_string("ui_last/export_path", folder);
-      g_free(folder);
+      dt_conf_set_folder_from_file_chooser("ui_last/export_path", chooser);
     }
     gtk_widget_destroy(chooser);
   }
@@ -1043,12 +1036,7 @@ static void import_export(GtkButton *button, gpointer data)
     dt_osx_disallow_fullscreen(chooser);
 #endif
 
-    gchar *import_path = dt_conf_get_string("ui_last/import_path");
-    if(import_path != NULL)
-    {
-      gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser), import_path);
-      g_free(import_path);
-    }
+    dt_conf_get_folder_to_file_chooser("ui_last/import_path", chooser);
     if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
     {
       gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
@@ -1062,9 +1050,7 @@ static void import_export(GtkButton *button, gpointer data)
         snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", confdir);
         gtk_accel_map_save(accelpath);
 
-        gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser));
-        dt_conf_set_string("ui_last/import_path", folder);
-        g_free(folder);
+        dt_conf_set_folder_from_file_chooser("ui_last/import_path", chooser);
       }
       g_free(filename);
     }
@@ -1134,12 +1120,7 @@ static void import_preset(GtkButton *button, gpointer data)
   dt_osx_disallow_fullscreen(chooser);
 #endif
 
-  gchar *import_path = dt_conf_get_string("ui_last/import_path");
-  if(import_path != NULL)
-  {
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser), import_path);
-    g_free(import_path);
-  }
+  dt_conf_get_folder_to_file_chooser("ui_last/import_path", chooser);
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(chooser), TRUE);
 
   GtkFileFilter *filter;
@@ -1165,9 +1146,7 @@ static void import_preset(GtkButton *button, gpointer data)
     gtk_tree_store_clear(tree_store);
     tree_insert_presets(tree_store);
 
-    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser));
-    dt_conf_set_string("ui_last/import_path", folder);
-    g_free(folder);
+    dt_conf_set_folder_from_file_chooser("ui_last/import_path", chooser);
   }
   gtk_widget_destroy(chooser);
 }
@@ -1181,12 +1160,7 @@ static void export_preset(GtkButton *button, gpointer data)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
 #endif
-  gchar *import_path = dt_conf_get_string("ui_last/export_path");
-  if(import_path != NULL)
-  {
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), import_path);
-    g_free(import_path);
-  }
+  dt_conf_get_folder_to_file_chooser("ui_last/export_path", filechooser);
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -1217,9 +1191,7 @@ static void export_preset(GtkButton *button, gpointer data)
 
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "END TRANSACTION", NULL, NULL, NULL);
 
-    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
-    dt_conf_set_string("ui_last/export_path", folder);
-    g_free(folder);
+    dt_conf_set_folder_from_file_chooser("ui_last/export_path", filechooser);
 
     g_free(filedir);
   }
