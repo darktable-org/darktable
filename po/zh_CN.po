@@ -14,7 +14,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.6.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-07-03 22:40+0200\n"
-"PO-Revision-Date: 2021-07-04 13:30-0500\n"
+"PO-Revision-Date: 2021-07-04 14:13-0500\n"
 "Last-Translator: Tianhao Chai <cth451@gmail.com>\n"
 "Language-Team: 汉语 <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -1559,7 +1559,7 @@ msgstr "会话选项"
 
 #: ../build/bin/preferences_gen.h:7505
 msgid "base directory naming pattern"
-msgstr "基于目录命名模式"
+msgstr "基准目录命名模式"
 
 #: ../build/bin/preferences_gen.h:7523 ../build/bin/preferences_gen.h:7563
 msgid "part of full import path for an import session"
@@ -1789,7 +1789,7 @@ msgstr "切换地图叠加层的能见性"
 
 #: ../build/bin/conf_gen.h:1587
 msgid "filtered images"
-msgstr "已过滤图像"
+msgstr "过滤图像"
 
 #: ../build/bin/conf_gen.h:1588
 msgid "when set limit the images drawn to the current filmstrip"
@@ -2133,7 +2133,7 @@ msgstr "局部拉普拉斯滤波"
 #: ../build/lib/darktable/plugins/introspection_borders.c:251
 #: ../src/common/collection.c:696 ../src/libs/tools/filter.c:97
 msgid "aspect ratio"
-msgstr "对调宽高比"
+msgstr "宽高比"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:128
 #: ../build/lib/darktable/plugins/introspection_borders.c:263
@@ -16666,11 +16666,11 @@ msgstr "元数据"
 
 #: ../src/libs/collect.c:2806
 msgid "times"
-msgstr "次数"
+msgstr "时间"
 
 #: ../src/libs/collect.c:2814
 msgid "capture details"
-msgstr "保留细节"
+msgstr "拍摄细节"
 
 #: ../src/libs/collect.c:2823 ../src/libs/tools/darktable.c:65
 msgid "darktable"
@@ -17453,11 +17453,11 @@ msgstr ""
 
 #: ../src/libs/histogram.c:1105 ../src/libs/histogram.c:1152
 msgid "set scale to linear"
-msgstr "将等级设置为线性"
+msgstr "将比例尺设置为线性"
 
 #: ../src/libs/histogram.c:1110 ../src/libs/histogram.c:1157
 msgid "set scale to logarithmic"
-msgstr "将等级设置为对数"
+msgstr "将比例尺设置为对数"
 
 #: ../src/libs/histogram.c:1127
 msgid "set view to RGB parade"
@@ -20322,7 +20322,7 @@ msgstr "快速访问预设"
 
 #: ../src/views/darkroom.c:2164
 msgid "quick access for applying any of your styles"
-msgstr "快速途经应用你的样式"
+msgstr "快速访问并应用您的样式"
 
 #: ../src/views/darkroom.c:2178
 msgid "display a second darkroom image window"
