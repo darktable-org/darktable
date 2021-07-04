@@ -25,6 +25,7 @@
 #include "common/dtpthread.h"
 
 #include <glib.h>
+#include <gtk/gtk.h>
 #include <inttypes.h>
 
 typedef enum dt_confgen_type_t
@@ -76,6 +77,7 @@ void dt_conf_set_int64(const char *name, int64_t val);
 void dt_conf_set_float(const char *name, float val);
 void dt_conf_set_bool(const char *name, int val);
 void dt_conf_set_string(const char *name, const char *val);
+void dt_conf_set_folder_from_file_chooser(const char *name, GtkWidget *chooser);
 int dt_conf_get_int_fast(const char *name);
 int dt_conf_get_int(const char *name);
 int64_t dt_conf_get_int64_fast(const char *name);
@@ -87,6 +89,7 @@ int64_t dt_conf_get_and_sanitize_int64(const char *name, int64_t min, int64_t ma
 float dt_conf_get_and_sanitize_float(const char *name, float min, float max);
 int dt_conf_get_bool(const char *name);
 gchar *dt_conf_get_string(const char *name);
+gboolean dt_conf_get_folder_to_file_chooser(const char *name, GtkWidget *chooser);
 gboolean dt_conf_is_equal(const char *name, const char *value);
 void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries);
 void dt_conf_cleanup(dt_conf_t *cf);
