@@ -2353,7 +2353,7 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
     _sc.effect = DT_ACTION_EFFECT_DEFAULT_KEY;
 
   GdkKeymap *keymap = gdk_keymap_get_for_display(gdk_display_get_default());
-  if(id) _sc.mods = gdk_keymap_get_modifier_state(keymap);
+  if(id) _sc.mods = dt_key_modifier_state();
   _sc.mods &= GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK | GDK_MOD5_MASK |
               gdk_keymap_get_modifier_mask(keymap, GDK_MODIFIER_INTENT_PRIMARY_ACCELERATOR);
 
