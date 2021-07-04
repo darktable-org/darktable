@@ -577,7 +577,7 @@ static inline void gamut_mapping(const float input[4], const float compression, 
   else
   {
     // sum of channels == 0, and/or Y == 0 so we have black
-    for(size_t c = 0; c < 3; c++) output[c] = input[c];
+    for(size_t c = 0; c < 3; c++) output[c] = 0.f;
   }
 }
 
