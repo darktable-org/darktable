@@ -56,48 +56,58 @@ static inline float euclidean_norm(const float4 input)
 static inline float4 gamut_mapping(const float4 input, const float compression, const int clip)
 {
   // Get the sum XYZ
-  float sum = input.x + input.y + input.z;
-  sum = fmax(sum, NORM_MIN);
+  const float sum = input.x + input.y + input.z;
+  const float Y = input.y;
 
-  // Convert to xyY
-  float Y = fmax(input.y, 0.f);
-  float4 xyY = { input.x / sum, input.y / sum , Y, 0.0f };
+  float4 output;
 
-  // Convert to uvY
-  float4 uvY = dt_xyY_to_uvY(xyY);
+  if(sum > 0.f && Y > 0.f)
+  {
+    // Convert to xyY
+    float4 xyY = { input.x / sum, input.y / sum , Y, 0.0f };
 
-  // Get the chromaticity difference with white point uv
-  const float2 D50 = { 0.20915914598542354f, 0.488075320769787f };
-  const float2 delta = D50 - uvY.xy;
-  const float Delta = Y * (sqf(delta.x) + sqf(delta.y));
+    // Convert to uvY
+    float4 uvY = dt_xyY_to_uvY(xyY);
 
-  // Compress chromaticity (move toward white point)
-  const float correction = (compression == 0.0f) ? 0.f : native_powr(Delta, compression);
+    // Get the chromaticity difference with white point uv
+    const float2 D50 = { 0.20915914598542354f, 0.488075320769787f };
+    const float2 delta = D50 - uvY.xy;
+    const float Delta = Y * (sqf(delta.x) + sqf(delta.y));
 
-  // Ensure the correction does not bring our uyY vector the other side of D50
-  // that would switch to the opposite color, so we clip at D50
-  const float2 tmp =  correction * delta + uvY.xy;
-  uvY.xy = (uvY.xy > D50) ? fmax(tmp, D50)
-                          : fmin(tmp, D50);
+    // Compress chromaticity (move toward white point)
+    const float correction = (compression == 0.0f) ? 0.f : native_powr(Delta, compression);
 
-  // Convert back to xyY
-  xyY = dt_uvY_to_xyY(uvY);
+    // Ensure the correction does not bring our uyY vector the other side of D50
+    // that would switch to the opposite color, so we clip at D50
+    const float2 tmp =  correction * delta + uvY.xy;
+    uvY.xy = (uvY.xy > D50) ? fmax(tmp, D50)
+                            : fmin(tmp, D50);
 
-  // Clip upon request
-  if(clip) xyY.xy = fmax(xyY.xy, 0.0f);
+    // Convert back to xyY
+    xyY = dt_uvY_to_xyY(uvY);
 
-  // Check sanity of y
-  // since we later divide by y, it can't be zero
-  xyY.y = fmax(xyY.y, NORM_MIN);
+    // Clip upon request
+    if(clip) xyY.xy = fmax(xyY.xy, 0.0f);
 
-  // Check sanity of x and y :
-  // since Z = Y (1 - x - y) / y, if x + y >= 1, Z will be negative
-  const float scale = xyY.x + xyY.y;
-  const int sanitize = (scale >= 1.f);
-  xyY.xy = (sanitize) ? xyY.xy / scale : xyY.xy;
+    // Check sanity of y
+    // since we later divide by y, it can't be zero
+    xyY.y = fmax(xyY.y, NORM_MIN);
 
-  // Convert back to XYZ
-  return dt_xyY_to_XYZ(xyY);
+    // Check sanity of x and y :
+    // since Z = Y (1 - x - y) / y, if x + y >= 1, Z will be negative
+    const float scale = xyY.x + xyY.y;
+    const int sanitize = (scale >= 1.f);
+    xyY.xy = (sanitize) ? xyY.xy / scale : xyY.xy;
+
+    // Convert back to XYZ
+    output = dt_xyY_to_XYZ(xyY);
+  }
+  else
+  {
+    // sum of channels == 0, and/or Y == 0 so we have black
+    output = (float4)0.f;
+  }
+  return output;
 }
 
 static inline float4 luma_chroma(const float4 input, const float4 saturation, const float4 lightness,
@@ -105,42 +115,54 @@ static inline float4 luma_chroma(const float4 input, const float4 saturation, co
 {
   float4 output;
 
-  // Compute euclidean norm and flat lightness adjustment
-  const float avg = fmax((input.x + input.y + input.z) / 3.0f, NORM_MIN);
-  const float mix = dot(input, lightness);
+  // Compute euclidean norm
   float norm = euclidean_norm(input);
+  const float avg = fmax((input.x + input.y + input.z) / 3.0f, NORM_MIN);
 
-  // Compensate the norm to get color ratios (R, G, B) = (1, 1, 1) for grey (colorless) pixels.
-  if(version == CHANNELMIXERRGB_V_3) norm *= INVERSE_SQRT_3;
+  if(norm > 0.f && avg > 0.f)
+  {
+    // Compute flat lightness adjustment
+    const float mix = dot(input, lightness);
 
-  // Ratios
-  // WARNING : dot product below uses all 4 channels, you need to make sure
-  // input.w != NaN since saturation.w = 0.f
-  output = input / norm;
+    // Compensate the norm to get color ratios (R, G, B) = (1, 1, 1) for grey (colorless) pixels.
+    if(version == CHANNELMIXERRGB_V_3) norm *= INVERSE_SQRT_3;
 
-  // Compute ratios and a flat colorfulness adjustment for the whole pixel
-  float coeff_ratio = 0.f;
+    // Ratios
+    // WARNING : dot product below uses all 4 channels, you need to make sure
+    // input.w != NaN since saturation.w = 0.f
+    output = input / norm;
 
-  if(version == CHANNELMIXERRGB_V_1)
-    coeff_ratio = dot((1.f - output), saturation);
+    // Compute ratios and a flat colorfulness adjustment for the whole pixel
+    float coeff_ratio = 0.f;
+
+    if(version == CHANNELMIXERRGB_V_1)
+      coeff_ratio = dot((1.f - output), saturation);
+    else
+      coeff_ratio = dot(output, saturation) / 3.f;
+
+    // Adjust the RGB ratios with the pixel correction
+
+    // if the ratio was already invalid (negative), we accept the result to be invalid too
+    // otherwise bright saturated blues end up solid black
+    const float4 min_ratio = (output < 0.0f) ? output : 0.0f;
+    const float4 output_inverse = 1.0f - output;
+    output = fmax(output_inverse * coeff_ratio + output, min_ratio);
+
+    // The above interpolation between original pixel ratios and (1, 1, 1) might change the norm of the
+    // ratios. Compensate for that.
+    if(version == CHANNELMIXERRGB_V_3) norm /= euclidean_norm(output) * INVERSE_SQRT_3;
+
+    // Apply colorfulness adjustment channel-wise and repack with lightness to get LMS back
+    norm *= fmax(1.f + mix / avg, 0.f);
+    output *= norm;
+  }
   else
-    coeff_ratio = dot(output, saturation) / 3.f;
+  {
+    // we have black, 0 stays 0, no luminance = no color
+    output = input;
+  }
 
-  // Adjust the RGB ratios with the pixel correction
-
-  // if the ratio was already invalid (negative), we accept the result to be invalid too
-  // otherwise bright saturated blues end up solid black
-  const float4 min_ratio = (output < 0.0f) ? output : 0.0f;
-  const float4 output_inverse = 1.0f - output;
-  output = fmax(output_inverse * coeff_ratio + output, min_ratio);
-
-  // The above interpolation between original pixel ratios and (1, 1, 1) might change the norm of the
-  // ratios. Compensate for that.
-  if(version == CHANNELMIXERRGB_V_3) norm /= euclidean_norm(output) * INVERSE_SQRT_3;
-
-  // Apply colorfulness adjustment channel-wise and repack with lightness to get LMS back
-  norm *= fmax(1.f + mix / avg, 0.f);
-  return output * norm;
+  return output;
 }
 
 #define unswitch_convert_any_LMS_to_XYZ(kind) \
@@ -343,7 +365,6 @@ channelmixerrgb_CAT16(read_only image2d_t in, write_only image2d_t out,
                       const float4 lightness,
                       const float4 grey,
                       const float p, const float gamut, const int clip, const int apply_grey,
-                      const int do_gamut_mapping,
                       const dt_iop_channelmixer_rgb_version_t version)
 {
   const dt_adaptation_t kind = DT_ADAPTATION_CAT16;
@@ -367,7 +388,7 @@ channelmixerrgb_CAT16(read_only image2d_t in, write_only image2d_t out,
   /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
   // Gamut mapping happens in XYZ space no matter what
-  if(do_gamut_mapping) XYZ = gamut_mapping(XYZ, gamut, clip);
+  XYZ = gamut_mapping(XYZ, gamut, clip);
 
   // convert to LMS, XYZ or pipeline RGB
   unswitch_convert_XYZ_to_any_LMS(kind);
@@ -424,7 +445,6 @@ channelmixerrgb_bradford_linear(read_only image2d_t in, write_only image2d_t out
                                 const float4 lightness,
                                 const float4 grey,
                                 const float p, const float gamut, const int clip, const int apply_grey,
-                                const int do_gamut_mapping,
                                 const dt_iop_channelmixer_rgb_version_t version)
 {
   const dt_adaptation_t kind = DT_ADAPTATION_LINEAR_BRADFORD;
@@ -448,7 +468,7 @@ channelmixerrgb_bradford_linear(read_only image2d_t in, write_only image2d_t out
   /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
   // Gamut mapping happens in XYZ space no matter what
-  if(do_gamut_mapping) XYZ = gamut_mapping(XYZ, gamut, clip);
+  XYZ = gamut_mapping(XYZ, gamut, clip);
 
   // convert to LMS, XYZ or pipeline RGB
   unswitch_convert_XYZ_to_any_LMS(kind);
@@ -504,7 +524,6 @@ channelmixerrgb_bradford_full(read_only image2d_t in, write_only image2d_t out,
                               const float4 lightness,
                               const float4 grey,
                               const float p, const float gamut, const int clip, const int apply_grey,
-                              const int do_gamut_mapping,
                               const dt_iop_channelmixer_rgb_version_t version)
 {
   const dt_adaptation_t kind = DT_ADAPTATION_FULL_BRADFORD;
@@ -528,7 +547,7 @@ channelmixerrgb_bradford_full(read_only image2d_t in, write_only image2d_t out,
   /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
   // Gamut mapping happens in XYZ space no matter what
-  if(do_gamut_mapping) XYZ = gamut_mapping(XYZ, gamut, clip);
+  XYZ = gamut_mapping(XYZ, gamut, clip);
 
   // convert to LMS, XYZ or pipeline RGB
   unswitch_convert_XYZ_to_any_LMS(kind);
@@ -585,7 +604,6 @@ channelmixerrgb_XYZ(read_only image2d_t in, write_only image2d_t out,
                     const float4 lightness,
                     const float4 grey,
                     const float p, const float gamut, const int clip, const int apply_grey,
-                    const int do_gamut_mapping,
                     const dt_iop_channelmixer_rgb_version_t version)
 {
   const dt_adaptation_t kind = DT_ADAPTATION_XYZ;
@@ -609,7 +627,7 @@ channelmixerrgb_XYZ(read_only image2d_t in, write_only image2d_t out,
   /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
   // Gamut mapping happens in XYZ space no matter what
-  if(do_gamut_mapping) XYZ = gamut_mapping(XYZ, gamut, clip);
+  XYZ = gamut_mapping(XYZ, gamut, clip);
 
   // convert to LMS, XYZ or pipeline RGB
   unswitch_convert_XYZ_to_any_LMS(kind);
@@ -665,7 +683,6 @@ channelmixerrgb_RGB(read_only image2d_t in, write_only image2d_t out,
                     const float4 lightness,
                     const float4 grey,
                     const float p, const float gamut, const int clip, const int apply_grey,
-                    const int do_gamut_mapping,
                     const dt_iop_channelmixer_rgb_version_t version)
 {
   const dt_adaptation_t kind = DT_ADAPTATION_RGB;
@@ -689,7 +706,7 @@ channelmixerrgb_RGB(read_only image2d_t in, write_only image2d_t out,
   /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
   // Gamut mapping happens in XYZ space no matter what
-  if(do_gamut_mapping) XYZ = gamut_mapping(XYZ, gamut, clip);
+  XYZ = gamut_mapping(XYZ, gamut, clip);
 
   // convert to LMS, XYZ or pipeline RGB
   unswitch_convert_XYZ_to_any_LMS(kind);
