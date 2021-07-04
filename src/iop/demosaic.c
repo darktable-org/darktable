@@ -3044,7 +3044,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
       else if((demosaicing_method & ~DEMOSAIC_DUAL) == DT_IOP_DEMOSAIC_RCD)
       {
-        rcd_demosaic(piece, tmp, pixels, &roo, &roi, piece->pipe->dsc.filters);
+        rcd_demosaic(piece, tmp, in, &roo, &roi, piece->pipe->dsc.filters);
       }
       else if(demosaicing_method == DT_IOP_DEMOSAIC_LMMSE)
       {
