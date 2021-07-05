@@ -1660,9 +1660,9 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
         // Olympus thumbnail data
         "Exif.Olympus.Thumbnail",
         "Exif.Olympus.ThumbnailOffset",
-        "Exif.Olympus.ThumbnailLength"
+        "Exif.Olympus.ThumbnailLength",
 
-        "Exif.Image.BaselineExposureOffset",
+        "Exif.Image.BaselineExposureOffset"
         };
       static const guint n_keys = G_N_ELEMENTS(keys);
       dt_remove_exif_keys(exifData, keys, n_keys);
