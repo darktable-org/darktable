@@ -2539,6 +2539,7 @@ void dt_shortcut_key_release(dt_input_device_t id, guint time, guint key)
 
         if(!_sc.press && !_sc.action)
         {
+          // detect if any double or triple press shortcuts exist for this key; otherwise skip delay
           dt_shortcut_t key_23press = { .key_device = id, .key = key, .press = DT_SHORTCUT_DOUBLE, .views =
                                         darktable.view_manager->current_view->view(darktable.view_manager->current_view) };
           GSequenceIter *double_press = g_sequence_search(darktable.control->shortcuts, &key_23press, shortcut_compare_func,
@@ -2547,7 +2548,11 @@ void dt_shortcut_key_release(dt_input_device_t id, guint time, guint key)
           {
             dt_shortcut_t *dp = g_sequence_get(double_press);
             if(!dp || dp->key_device != id || dp->key != key || dp->press <= DT_SHORTCUT_LONG)
-              passed_time = delay;
+            {
+              dp = g_sequence_get(g_sequence_iter_prev(double_press));
+              if(!dp || dp->key_device != id || dp->key != key || dp->press <= DT_SHORTCUT_LONG)
+                passed_time = delay;
+            }
           }
         }
 
