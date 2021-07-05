@@ -700,6 +700,20 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>ui_last/shortcuts_dialog_width</name>
+    <type>int</type>
+    <default>1100</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/shortcuts_dialog_height</name>
+    <type>int</type>
+    <default>750</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>ui_last/preferences_dialog_width</name>
     <type>int</type>
     <default>1100</default>
