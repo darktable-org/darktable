@@ -1142,7 +1142,7 @@ static char **split_path(const char *path)
 typedef struct name_key_tuple_t
 {
   char *name, *collate_key;
-  int count;
+  int count, status;
 } name_key_tuple_t;
 
 static void free_tuple(gpointer data)
@@ -1255,9 +1255,12 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     switch (property)
     {
       case DT_COLLECTION_PROP_FOLDERS:
-        query = g_strdup_printf("SELECT folder, film_rolls_id, COUNT(*) AS count"
+        query = g_strdup_printf("SELECT folder, film_rolls_id, COUNT(*) AS count, status"
                                 " FROM main.images AS mi"
-                                " JOIN (SELECT id AS film_rolls_id, folder FROM main.film_rolls)"
+                                " JOIN (SELECT fr.id AS film_rolls_id, folder, status"
+                                "       FROM main.film_rolls AS fr"
+                                "       JOIN memory.film_folder AS ff"
+                                "       ON fr.id = ff.id)"
                                 "   ON film_id = film_rolls_id "
                                 " WHERE %s"
                                 " GROUP BY folder, film_rolls_id", where_ext);
@@ -1392,6 +1395,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       tuple->name = name;
       tuple->collate_key = collate_key;
       tuple->count = count;
+      tuple->status = property == DT_COLLECTION_PROP_FOLDERS ? sqlite3_column_int(stmt, 3) : 0;
       sorted_names = g_list_prepend(sorted_names, tuple);
     }
     sqlite3_finalize(stmt);
@@ -1411,6 +1415,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       name_key_tuple_t *tuple = (name_key_tuple_t *)names->data;
       char *name = tuple->name;
       const int count = tuple->count;
+      const int status = tuple->status;
       if(name == NULL) continue; // safeguard against degenerated db entries
 
       // this is just for tags
@@ -1502,7 +1507,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                               DT_LIB_COLLECT_COL_TEXT, *token,
                                               DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
                                               DT_LIB_COLLECT_COL_COUNT, (*(token + 1)?0:count),
-                                              DT_LIB_COLLECT_COL_INDEX, index, -1);
+                                              DT_LIB_COLLECT_COL_INDEX, index,
+                                              DT_LIB_COLLECT_COL_UNREACHABLE, (*(token + 1) ? 0 : !status), -1);
             index++;
             // also add the item count to parents
             if((property == DT_COLLECTION_PROP_DAY
@@ -1520,9 +1526,6 @@ static void tree_view(dt_lib_collect_rule_t *dr)
               }
             }
 
-            if(property == DT_COLLECTION_PROP_FOLDERS)
-              gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_UNREACHABLE,
-                                 !(g_file_test(pth, G_FILE_TEST_IS_DIR)), -1);
             common_length++;
             parent = iter;
             g_free(pth2);
@@ -1871,10 +1874,12 @@ static void list_view(dt_lib_collect_rule_t *dr)
           g_free(filmroll_sort);
 
           g_snprintf(query, sizeof(query),
-                     "SELECT folder, film_rolls_id, COUNT(*) AS count"
+                     "SELECT folder, film_rolls_id, COUNT(*) AS count, status"
                      " FROM main.images AS mi"
-                     " JOIN (SELECT id AS film_rolls_id, folder"
-                     "       FROM main.film_rolls)"
+                     " JOIN (SELECT fr.id AS film_rolls_id, folder, status"
+                     "       FROM main.film_rolls AS fr"
+                     "        JOIN memory.film_folder AS ff"
+                     "        ON ff.id = fr.id)"
                      "   ON film_id = film_rolls_id "
                      " WHERE %s"
                      " GROUP BY folder"
@@ -1896,9 +1901,11 @@ static void list_view(dt_lib_collect_rule_t *dr)
         if(folder == NULL) continue; // safeguard against degenerated db entries
 
         gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+        int status = 0;
         if(property == DT_COLLECTION_PROP_FILMROLL)
         {
           folder = dt_image_film_roll_name(folder);
+          status = !sqlite3_column_int(stmt, 3);
         }
         const gchar *value = (gchar *)sqlite3_column_text(stmt, 0);
         const int count = sqlite3_column_int(stmt, 2);
@@ -1913,14 +1920,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, folder,
                            DT_LIB_COLLECT_COL_ID, sqlite3_column_int(stmt, 1), DT_LIB_COLLECT_COL_TOOLTIP,
                            escaped_text, DT_LIB_COLLECT_COL_PATH, value, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
-                           DT_LIB_COLLECT_COL_COUNT, count,
+                           DT_LIB_COLLECT_COL_COUNT, count, DT_LIB_COLLECT_COL_UNREACHABLE, status,
                            -1);
-
-        if(property == DT_COLLECTION_PROP_FILMROLL)
-        {
-          gtk_list_store_set(GTK_LIST_STORE(model), &iter,
-                             DT_LIB_COLLECT_COL_UNREACHABLE, !(g_file_test(value, G_FILE_TEST_IS_DIR)), -1);
-        }
 
         g_free(text);
         g_free(escaped_text);
