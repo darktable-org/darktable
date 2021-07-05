@@ -297,8 +297,12 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 
   if(new_view->try_enter)
   {
-    int error = new_view->try_enter(new_view);
-    if(error) return error;
+    const int error = new_view->try_enter(new_view);
+    if(error)
+    {
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE, old_view, new_view);
+      return error;
+    }
   }
 
   /* cleanup current view before initialization of new  */
