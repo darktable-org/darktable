@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2019-2020 darktable developers.
+   Copyright (C) 2021 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -106,9 +106,12 @@ static inline dt_isotropy_t check_isotropy_mode(const float anisotropy)
 {
   // user param is negative, positive or zero. The sign encodes the direction of diffusion, the magnitude encodes the ratio of anisotropy
   // ultimately, the anisotropy factor needs to be positive before going into the exponential
-  if(anisotropy == 0.f) return DT_ISOTROPY_ISOTROPE;
-  else if(anisotropy > 0.f) return DT_ISOTROPY_ISOPHOTE;
-  else return DT_ISOTROPY_GRADIENT; // if(anisotropy > 0.f)
+  if(anisotropy == 0.f)
+    return DT_ISOTROPY_ISOTROPE;
+  else if(anisotropy > 0.f)
+    return DT_ISOTROPY_ISOPHOTE;
+  else
+    return DT_ISOTROPY_GRADIENT; // if(anisotropy > 0.f)
 }
 
 
@@ -258,7 +261,6 @@ void init_presets(dt_iop_module_so_t *self)
   p.fourth = +1.f;
   dt_gui_presets_add_generic(_("surface blur"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
-
   p.iterations = 1;
   p.radius = 32;
   p.sharpness = 0.0f;
@@ -374,8 +376,6 @@ void init_presets(dt_iop_module_so_t *self)
   p.third = +0.02f;
   p.fourth = +0.02f;
   dt_gui_presets_add_generic(_("inpaint highlights"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
-
-
 }
 
 // B spline filter
@@ -750,8 +750,10 @@ static inline float compute_anisotropy_factor(const float user_param)
 {
   // compute the K param in c evaluation from https://www.researchgate.net/publication/220663968
   // but in a perceptually-even way, for better GUI interaction
-  if(user_param == 0.f) return FLT_MAX;
-  else return 1.f / sqf(user_param);
+  if(user_param == 0.f)
+    return FLT_MAX;
+  else
+    return 1.f / sqf(user_param);
 }
 
 #if DEBUG_DUMP_PFM
