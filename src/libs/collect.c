@@ -70,6 +70,7 @@ typedef struct dt_lib_collect_t
 
   gboolean singleclick;
   struct dt_lib_collect_params_t *params;
+  GVolumeMonitor *vmonitor;
 } dt_lib_collect_t;
 
 typedef struct dt_lib_collect_params_rule_t
@@ -2864,6 +2865,26 @@ static gint _sort_model_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b
   return ib - ia;
 }
 
+void _mount_changed(GVolumeMonitor *volume_monitor, GMount *mount, dt_lib_module_t *self)
+{
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  dt_collection_set_film_status();
+  // very rough update (rebuild the view). As these events are not too many that remains acceptable
+  // adding film_id to treeview and listview would be cleaner to update just the parameter "reachable"
+  dt_lib_collect_rule_t *dr = d->rule + d->active_rule;
+  const int property = _combo_get_active_collection(dr->combo);
+  if(property == DT_COLLECTION_PROP_FOLDERS)
+  {
+    d->view_rule = -1;
+    tree_view(dr);
+  }
+  else if(property == DT_COLLECTION_PROP_FILMROLL)
+  {
+    d->view_rule = -1;
+    list_view(dr);
+  }
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)calloc(1, sizeof(dt_lib_collect_t));
@@ -2968,6 +2989,10 @@ void gui_init(dt_lib_module_t *self)
     dt_collection_set_tag_id((dt_collection_t *)darktable.collection, dt_tag_get_tag_id_by_name(tag));
   }
 
+  d->vmonitor = g_volume_monitor_get();
+  g_signal_connect(G_OBJECT(d->vmonitor), "mount-changed", G_CALLBACK(_mount_changed), self);
+  g_signal_connect(G_OBJECT(d->vmonitor), "mount-added", G_CALLBACK(_mount_changed), self);
+
   // force redraw collection images because of late update of the table memory.darktable_iop_names
   if(has_iop_name_rule)
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_MODULE, NULL);
@@ -3020,6 +3045,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
   g_object_unref(d->treefilter);
   g_object_unref(d->listfilter);
+  g_object_unref(d->vmonitor);
 
   /* TODO: Make sure we are cleaning up all allocations */
 
