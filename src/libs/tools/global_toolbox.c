@@ -760,6 +760,9 @@ static gboolean _resize_shortcuts_dialog(GtkWidget *widget, GdkEvent *event, gpo
   gtk_window_get_position(GTK_WINDOW(widget), &_shortcuts_dialog_posize.x, &_shortcuts_dialog_posize.y);
   gtk_window_get_size(GTK_WINDOW(widget), &_shortcuts_dialog_posize.w, &_shortcuts_dialog_posize.h);
 
+  dt_conf_set_int("ui_last/shortcuts_dialog_width", _shortcuts_dialog_posize.w);
+  dt_conf_set_int("ui_last/shortcuts_dialog_height", _shortcuts_dialog_posize.h);
+
   return FALSE;
 }
 
@@ -836,7 +839,9 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
       GtkWidget *shortcuts_dialog = gtk_dialog_new_with_buttons(_("shortcuts"), GTK_WINDOW(main_window),
                                                                 GTK_DIALOG_DESTROY_WITH_PARENT, NULL, NULL);
       if(!_shortcuts_dialog_posize.w)
-        gtk_window_set_default_size(GTK_WINDOW(shortcuts_dialog), DT_PIXEL_APPLY_DPI(1100), DT_PIXEL_APPLY_DPI(750));
+        gtk_window_set_default_size(GTK_WINDOW(shortcuts_dialog),
+                                    DT_PIXEL_APPLY_DPI(dt_conf_get_int("ui_last/shortcuts_dialog_width")),
+                                    DT_PIXEL_APPLY_DPI(dt_conf_get_int("ui_last/shortcuts_dialog_height")));
       else
       {
         gtk_window_move(GTK_WINDOW(shortcuts_dialog), _shortcuts_dialog_posize.x, _shortcuts_dialog_posize.y);
