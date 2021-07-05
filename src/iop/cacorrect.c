@@ -1334,7 +1334,7 @@ static void _display_ca_error(struct dt_iop_module_t *self)
 
   if(g->error == CACORRECT_ERROR_CFA)
     dt_iop_set_module_trouble_message(self, _("error"),
-                                      _("CA correction supports only RGB colour filter arrays"), NULL);
+                                      _("raw CA correction supports only standard RGB bayer filter arrays"), NULL);
   else if(g->error == CACORRECT_ERROR_MATH)
      dt_iop_set_module_trouble_message(self, _("bypassed while zooming in"),
                                       _("while calculating the correction parameters the internal maths failed so module is bypassed.\n"
