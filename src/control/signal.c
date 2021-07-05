@@ -110,6 +110,8 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
 
   { "dt-viewmanager-view-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, pointer_2arg, NULL,
     FALSE }, // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
+  { "dt-viewmanager-view-cannot-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, pointer_2arg, NULL,
+    FALSE }, // DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE
   { "dt-viewmanager-thumbtable-activate", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg,
     NULL, FALSE }, // DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE
 

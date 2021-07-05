@@ -55,6 +55,13 @@ typedef enum dt_signal_t
    */
   DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
 
+  /** \brief This signal is raised by viewmanager when a view has changed.
+    1 : dt_view_t * the old view
+    2 : dt_view_t * the new (current) view
+    no returned value
+   */
+  DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE,
+
   /** \bief This signal is raised when a thumb is doubleclicked in
     thumbtable (filemananger, filmstrip)
     1 : int the imageid of the thumbnail
