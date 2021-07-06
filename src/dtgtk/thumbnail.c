@@ -275,10 +275,8 @@ static void _thumb_write_extension(dt_thumbnail_t *thumb)
   while(ext > thumb->filename && *ext != '.') ext--;
   ext++;
   gchar *uext = dt_view_extend_modes_str(ext, thumb->is_hdr, thumb->is_bw, thumb->is_bw_flow);
-  gchar *ext2 = g_strdup_printf("%s", uext);
-  gtk_label_set_text(GTK_LABEL(thumb->w_ext), ext2);
+  gtk_label_set_text(GTK_LABEL(thumb->w_ext), uext);
   g_free(uext);
-  g_free(ext2);
 }
 
 static gboolean _event_cursor_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)

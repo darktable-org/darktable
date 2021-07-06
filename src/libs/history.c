@@ -1067,7 +1067,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     const dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
     gchar *label;
     if(!hitem->multi_name[0] || strcmp(hitem->multi_name, "0") == 0)
-      label = g_strdup_printf("%s", hitem->module->name());
+      label = g_strdup(hitem->module->name());
     else
       label = g_strdup_printf("%s %s", hitem->module->name(), hitem->multi_name);
 

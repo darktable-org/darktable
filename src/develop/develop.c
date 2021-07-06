@@ -2574,7 +2574,7 @@ gchar *dt_history_item_get_name(const struct dt_iop_module_t *module)
   gchar *label;
   /* create a history button and add to box */
   if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
-    label = g_strdup_printf("%s", module->name());
+    label = g_strdup(module->name());
   else
     label = g_strdup_printf("%s %s", module->name(), module->multi_name);
   return label;
@@ -2585,7 +2585,7 @@ gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module)
   gchar *label;
   /* create a history button and add to box */
   if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
-    label = g_strdup_printf("%s", module->name());
+    label = g_strdup(module->name());
   else
     label = g_markup_printf_escaped("%s <span size=\"smaller\">%s</span>", module->name(), module->multi_name);
   return label;
