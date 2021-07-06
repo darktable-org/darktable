@@ -149,6 +149,7 @@ static void _iop_init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *mod
 
 static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEventButton *e, dt_iop_color_picker_t *self)
 {
+  printf("in _iop_color_picker_callback_button_press\n");
   dt_iop_module_t *module = self->module ? self->module : dt_iop_get_colorout_module();
 
   if(!module || darktable.gui->reset) return FALSE;
@@ -163,7 +164,7 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
   _iop_color_picker_reset(module->picker);
 
   if (module->picker != self || (kind == DT_COLOR_PICKER_POINT_AREA &&
-      (ctrl_key_pressed ^ (darktable.lib->proxy.colorpicker.size == DT_COLORPICKER_SIZE_BOX))))
+      (ctrl_key_pressed ^ (darktable.lib->proxy.colorpicker.primary_sample->size == DT_COLORPICKER_SIZE_BOX))))
   {
     module->picker = self;
 
@@ -213,6 +214,7 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
 
 static void _iop_color_picker_callback(GtkWidget *button, dt_iop_color_picker_t *self)
 {
+  printf("in _iop_color_picker_callback\n");
   _iop_color_picker_callback_button_press(button, NULL, self);
 }
 

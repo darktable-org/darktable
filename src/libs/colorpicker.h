@@ -30,6 +30,7 @@ typedef struct dt_colorpicker_sample_t
   /** The sample area or point */
   float point[2];
   dt_boundingbox_t box;
+  // FIXME: this should be an enum
   int size;
   int locked;
 
