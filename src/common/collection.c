@@ -217,7 +217,7 @@ int dt_collection_update(const dt_collection_t *collection)
     /* add default filters */
     if(collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)
     {
-      wq = dt_util_dstrcat(wq, "%s (film_id = %d)", and_operator(&and_term), collection->params.film_id);
+      wq = g_strdup_printf("%s (film_id = %d)", and_operator(&and_term), collection->params.film_id);
     }
     // DON'T SELECT IMAGES MARKED TO BE DELETED.
     wq = dt_util_dstrcat(wq, " %s (flags & %d) != %d",
@@ -243,9 +243,16 @@ int dt_collection_update(const dt_collection_t *collection)
                            rejected_check);
 
     if(collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
-      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash WHERE imgid=mi.id AND history_hash.imgid=id AND (basic_hash IS NULL OR current_hash != basic_hash) AND (auto_hash IS NULL OR current_hash != auto_hash))", and_operator(&and_term));
+      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash "
+                                           "WHERE imgid=mi.id AND history_hash.imgid=id AND "
+                                           " (basic_hash IS NULL OR current_hash != basic_hash) AND "
+                                           " (auto_hash IS NULL OR current_hash != auto_hash))",
+                           and_operator(&and_term));
     else if(collection->params.filter_flags & COLLECTION_FILTER_UNALTERED)
-      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash WHERE imgid=mi.id AND history_hash.imgid=id AND (current_hash == basic_hash OR current_hash == auto_hash))", and_operator(&and_term));
+      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash "
+                                           "WHERE imgid=mi.id AND history_hash.imgid=id AND "
+                                           " (current_hash == basic_hash OR current_hash == auto_hash))",
+                           and_operator(&and_term));
 
     /* add where ext if wanted */
     if((collection->params.query_flags & COLLECTION_QUERY_USE_WHERE_EXT))
@@ -254,7 +261,7 @@ int dt_collection_update(const dt_collection_t *collection)
     g_free(rejected_check);
   }
   else
-    wq = dt_util_dstrcat(wq, "%s", where_ext);
+    wq = g_strdup(where_ext);
 
   g_free(where_ext);
 
@@ -1052,7 +1059,7 @@ GList *dt_collection_get(const dt_collection_t *collection, int limit, gboolean 
     if(selected)
       q = g_strdup_printf("SELECT id FROM main.selected_images AS s JOIN (%s) AS mi WHERE mi.id = s.imgid LIMIT -1, ?3", query);
     else
-      q = g_strdup_printf("%s", query);
+      q = g_strdup(query);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), q, -1, &stmt, NULL);
 
