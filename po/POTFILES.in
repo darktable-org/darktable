@@ -32,6 +32,7 @@ build/lib/darktable/plugins/introspection_crop.c
 build/lib/darktable/plugins/introspection_defringe.c
 build/lib/darktable/plugins/introspection_demosaic.c
 build/lib/darktable/plugins/introspection_denoiseprofile.c
+build/lib/darktable/plugins/introspection_diffuse.c
 build/lib/darktable/plugins/introspection_dither.c
 build/lib/darktable/plugins/introspection_equalizer.c
 build/lib/darktable/plugins/introspection_exposure.c
