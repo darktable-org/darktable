@@ -1391,7 +1391,7 @@ static void _dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int3
     if(isdefault)
       label = g_strdup_printf("%s %s", name, _("(default)"));
     else
-      label = g_strdup_printf("%s", name);
+      label = g_strdup(name);
     mi = gtk_menu_item_new_with_label(label);
     g_free(label);
 

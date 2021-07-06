@@ -2751,7 +2751,7 @@ void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
 
 void dt_database_backup(const char *filename)
 {
-  char *version = g_strdup_printf("%s", darktable_package_version);
+  char *version = g_strdup(darktable_package_version);
   int k = 0;
   // get plain version (no commit id)
   while(version[k])
