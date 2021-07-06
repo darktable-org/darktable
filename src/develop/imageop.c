@@ -3072,7 +3072,7 @@ char *dt_iop_warning_message(const char *message)
   if(dt_conf_get_bool("plugins/darkroom/show_warnings"))
     return g_strdup_printf("<span foreground='red'>⚠</span> %s", message);
   else
-    return g_strdup_printf("%s", message);
+    return g_strdup(message);
 }
 
 char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text, const char *purpose, const char *input, const char *process,
