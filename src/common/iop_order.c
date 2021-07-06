@@ -106,6 +106,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {25.0f }, "profile_gamma", 0},
   { {26.0f }, "hazeremoval", 0},
   { {27.0f }, "colorin", 0},
+  { {27.5f }, "diffuse", 0},
   { {27.5f }, "channelmixerrgb", 0},
   { {27.5f }, "censorize", 0},
   { {27.5f }, "negadoctor", 0},
@@ -194,6 +195,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {26.0f }, "profile_gamma", 0},
   { {27.0f }, "equalizer", 0},
   { {28.0f }, "colorin", 0},
+  { {28.5f }, "diffuse", 0},
   { {28.5f }, "channelmixerrgb", 0},
   { {28.5f }, "censorize", 0},
   { {28.5f }, "negadoctor", 0},      // Cineon film encoding comes after scanner input color profile
@@ -661,6 +663,7 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
           _insert_before(iop_order_list, "rgbcurve", "colorbalancergb");
           _insert_before(iop_order_list, "ashift", "cacorrectrgb");
           _insert_before(iop_order_list, "graduatednd", "crop");
+          _insert_before(iop_order_list, "channelmixerrgb", "diffuse");
         }
       }
       else if(version == DT_IOP_ORDER_LEGACY)
