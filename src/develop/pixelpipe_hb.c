@@ -585,7 +585,7 @@ static void histogram_collect_cl(int devid, dt_dev_pixelpipe_iop_t *piece, cl_me
 }
 #endif
 
-// helper for color picking
+// helper for per-module color picking
 static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *roi, dt_aligned_pixel_t picked_color,
                                    dt_aligned_pixel_t picked_color_min, dt_aligned_pixel_t picked_color_max,
                                    dt_pixelpipe_picker_source_t picker_source, int *box)
@@ -605,7 +605,7 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   dt_boundingbox_t fbox = { 0.0f };
 
   // get absolute pixel coordinates in final preview image
-  if(darktable.lib->proxy.colorpicker.size)
+  if(darktable.lib->proxy.colorpicker.primary_sample->size)
   {
     for(int k = 0; k < 4; k += 2) fbox[k] = module->color_picker_box[k] * wd;
     for(int k = 1; k < 4; k += 2) fbox[k] = module->color_picker_box[k] * ht;
@@ -634,7 +634,7 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   box[2] = fmaxf(fbox[0], fbox[2]);
   box[3] = fmaxf(fbox[1], fbox[3]);
 
-  if(!darktable.lib->proxy.colorpicker.size)
+  if(!darktable.lib->proxy.colorpicker.primary_sample->size)
   {
     // if we are sampling one point, make sure that we actually sample it.
     for(int k = 2; k < 4; k++) box[k] += 1;
@@ -1000,10 +1000,17 @@ static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
+  // FIXME: can just pass in darktable.lib->proxy.colorpicker.primary_sample rather than its values?
   _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab, xform_rgb2rgb,
-      dev->gui_module->color_picker_box, dev->gui_module->color_picker_point, darktable.lib->proxy.colorpicker.size,
-      darktable.lib->proxy.colorpicker.picked_color_rgb_min, darktable.lib->proxy.colorpicker.picked_color_rgb_max, darktable.lib->proxy.colorpicker.picked_color_rgb_mean,
-      darktable.lib->proxy.colorpicker.picked_color_lab_min, darktable.lib->proxy.colorpicker.picked_color_lab_max, darktable.lib->proxy.colorpicker.picked_color_lab_mean);
+      darktable.lib->proxy.colorpicker.primary_sample->box,
+      darktable.lib->proxy.colorpicker.primary_sample->point,
+      darktable.lib->proxy.colorpicker.primary_sample->size,
+      darktable.lib->proxy.colorpicker.primary_sample->picked_color_rgb_min,
+      darktable.lib->proxy.colorpicker.primary_sample->picked_color_rgb_max,
+      darktable.lib->proxy.colorpicker.primary_sample->picked_color_rgb_mean,
+      darktable.lib->proxy.colorpicker.primary_sample->picked_color_lab_min,
+      darktable.lib->proxy.colorpicker.primary_sample->picked_color_lab_max,
+      darktable.lib->proxy.colorpicker.primary_sample->picked_color_lab_mean);
 
   if(xform_rgb2lab) cmsDeleteTransform(xform_rgb2lab);
   if(xform_rgb2rgb) cmsDeleteTransform(xform_rgb2rgb);
@@ -2171,6 +2178,7 @@ post_process_collect_info:
     if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0)
        && darktable.lib->proxy.colorpicker.live_samples && input) // samples to pick
     {
+      printf("live samples picking\n");
       _pixelpipe_pick_live_samples((const float *const )input, &roi_in);
     }
 
@@ -2178,12 +2186,15 @@ post_process_collect_info:
       return 1;
 
     // Picking RGB for primary colorpicker output and converting to Lab
+    // FIXME: continue to sample even after colorpicker lib loses focus!
     if(dev->gui_attached && pipe == dev->preview_pipe
        && (strcmp(module->op, "gamma") == 0) // only gamma provides meaningful RGB data
        && dev->gui_module && !strcmp(dev->gui_module->op, "colorout")
        && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
-       && darktable.lib->proxy.colorpicker.picked_color_rgb_mean && input) // colorpicker module active
+       && darktable.lib->proxy.colorpicker.primary_sample && input) // colorpicker module active
     {
+      // FIXME: this does pretty much the same work as _pixelpipe_pick_live_samples() -- just have the first live sample be the primary colorpicker output and lose the routine below
+      printf("primary colorpicker picking\n");
       _pixelpipe_pick_primary_colorpicker(dev, (const float *const )input, &roi_in);
 
       if(module->widget) dt_control_queue_redraw_widget(module->widget);
@@ -2207,6 +2218,7 @@ post_process_collect_info:
       // benefit via a histogram.
       if(input == NULL)
       {
+        // FIXME: really get rid of this case -- colorpicker does just fine with skipping when (if??) input is NULL
         // input may not be available, so we use the output from gamma
         // this may lead to some rounding errors
         // FIXME: under what circumstances would input not be available? when this iop's result is pulled in from cache?

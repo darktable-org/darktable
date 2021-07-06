@@ -705,7 +705,7 @@ void expose(
 
     const float *box = dev->gui_module->color_picker_box;
     const float *point = dev->gui_module->color_picker_point;
-    if(darktable.lib->proxy.colorpicker.size)
+    if(darktable.lib->proxy.colorpicker.primary_sample && darktable.lib->proxy.colorpicker.primary_sample->size)
     {
       cairo_translate(cri, 1.0 / zoom_scale, 1.0 / zoom_scale);
 
@@ -3304,9 +3304,11 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   if(height_i > capht) offy = (capht - height_i) * .5f;
   int handled = 0;
 
+  // FIXME: can get away with only testing primary colorpicker?
   if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && ctl->button_down
      && ctl->button_down_which == 1)
   {
+    printf("darkroom: mouse moved in colorpicker\n");
     // module requested a color box
     if(mouse_in_imagearea(self, x, y))
     {
@@ -3317,19 +3319,24 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
       float zoom_x, zoom_y;
       dt_dev_get_pointer_zoom_pos(dev, x + offx, y + offy, &zoom_x, &zoom_y);
 
-      if(darktable.lib->proxy.colorpicker.size)
+      if(darktable.lib->proxy.colorpicker.primary_sample)
       {
-        dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(dev->gui_module->color_picker_point[0], .5f + zoom_x) - delta_x);
-        dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(dev->gui_module->color_picker_point[1], .5f + zoom_y) - delta_y);
-        dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(dev->gui_module->color_picker_point[0], .5f + zoom_x) + delta_x);
-        dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(dev->gui_module->color_picker_point[1], .5f + zoom_y) + delta_y);
-      }
-      else
-      {
-        dev->gui_module->color_picker_point[0] = .5f + zoom_x;
-        dev->gui_module->color_picker_point[1] = .5f + zoom_y;
+        if(darktable.lib->proxy.colorpicker.primary_sample->size)
+        {
+          // FIXME: don't set the module box if enough to set primary sample!
+          darktable.lib->proxy.colorpicker.primary_sample->box[0] = dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(dev->gui_module->color_picker_point[0], .5f + zoom_x) - delta_x);
+          darktable.lib->proxy.colorpicker.primary_sample->box[1] = dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(dev->gui_module->color_picker_point[1], .5f + zoom_y) - delta_y);
+          darktable.lib->proxy.colorpicker.primary_sample->box[2] = dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(dev->gui_module->color_picker_point[0], .5f + zoom_x) + delta_x);
+          darktable.lib->proxy.colorpicker.primary_sample->box[3] = dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(dev->gui_module->color_picker_point[1], .5f + zoom_y) + delta_y);
+        }
+        else
+        {
+          // FIXME: don't set the module point if enough to set primary sample!
+          darktable.lib->proxy.colorpicker.primary_sample->point[0] = dev->gui_module->color_picker_point[0] = .5f + zoom_x;
+          darktable.lib->proxy.colorpicker.primary_sample->point[1] = dev->gui_module->color_picker_point[1] = .5f + zoom_y;
 
-        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+          dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+        }
       }
     }
     dt_control_queue_redraw();
@@ -3417,6 +3424,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   int handled = 0;
   if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 1)
   {
+    printf("darkroom: button pressed in colorpicker\n");
     float zoom_x, zoom_y;
     dt_dev_get_pointer_zoom_pos(dev, x + offx, y + offy, &zoom_x, &zoom_y);
     if(mouse_in_imagearea(self, x, y))
@@ -3428,14 +3436,16 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       zoom_x += 0.5f;
       zoom_y += 0.5f;
 
-      dev->gui_module->color_picker_point[0] = zoom_x;
-      dev->gui_module->color_picker_point[1] = zoom_y;
+      darktable.lib->proxy.colorpicker.primary_sample->point[0] = dev->gui_module->color_picker_point[0] = zoom_x;
+      darktable.lib->proxy.colorpicker.primary_sample->point[1] = dev->gui_module->color_picker_point[1] = zoom_y;
 
-      if(darktable.lib->proxy.colorpicker.size)
+      if(darktable.lib->proxy.colorpicker.primary_sample && darktable.lib->proxy.colorpicker.primary_sample->size)
       {
+        printf("darkroom: button pressed in colorpicker with primary sample with nonzero size\n");
         gboolean on_corner_prev_box = TRUE;
         float opposite_x, opposite_y;
 
+        // FIXME: test the primary sample box?
         if(fabsf(zoom_x - dev->gui_module->color_picker_box[0]) < .005f)
           opposite_x = dev->gui_module->color_picker_box[2];
         else if(fabsf(zoom_x - dev->gui_module->color_picker_box[2]) < .005f)
@@ -3443,6 +3453,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         else
           on_corner_prev_box = FALSE;
 
+        // FIXME: test the primary sample box?
         if(fabsf(zoom_y - dev->gui_module->color_picker_box[1]) < .005f)
           opposite_y = dev->gui_module->color_picker_box[3];
         else if(fabsf(zoom_y - dev->gui_module->color_picker_box[3]) < .005f)
@@ -3452,15 +3463,17 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
 
         if(on_corner_prev_box)
         {
-          dev->gui_module->color_picker_point[0] = opposite_x;
-          dev->gui_module->color_picker_point[1] = opposite_y;
+          // FIXME: don't set the module color picker point?
+          darktable.lib->proxy.colorpicker.primary_sample->point[0] = dev->gui_module->color_picker_point[0] = opposite_x;
+          darktable.lib->proxy.colorpicker.primary_sample->point[1] = dev->gui_module->color_picker_point[1] = opposite_y;
         }
         else
         {
-          dev->gui_module->color_picker_box[0] = fmaxf(0.0, zoom_x - delta_x);
-          dev->gui_module->color_picker_box[1] = fmaxf(0.0, zoom_y - delta_y);
-          dev->gui_module->color_picker_box[2] = fminf(1.0, zoom_x + delta_x);
-          dev->gui_module->color_picker_box[3] = fminf(1.0, zoom_y + delta_y);
+          // FIXME: don't set the module color picker box?
+          darktable.lib->proxy.colorpicker.primary_sample->box[0] = dev->gui_module->color_picker_box[0] = fmaxf(0.0, zoom_x - delta_x);
+          darktable.lib->proxy.colorpicker.primary_sample->box[1] = dev->gui_module->color_picker_box[1] = fmaxf(0.0, zoom_y - delta_y);
+          darktable.lib->proxy.colorpicker.primary_sample->box[2] = dev->gui_module->color_picker_box[2] = fminf(1.0, zoom_x + delta_x);
+          darktable.lib->proxy.colorpicker.primary_sample->box[3] = dev->gui_module->color_picker_box[3] = fminf(1.0, zoom_y + delta_y);
         }
       }
       else
@@ -3475,8 +3488,10 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 3)
   {
     // default is hardcoded this way
-    dev->gui_module->color_picker_box[0] = dev->gui_module->color_picker_box[1] = .01f;
-    dev->gui_module->color_picker_box[2] = dev->gui_module->color_picker_box[3] = .99f;
+    darktable.lib->proxy.colorpicker.primary_sample->box[0] = darktable.lib->proxy.colorpicker.primary_sample->box[1] =
+      dev->gui_module->color_picker_box[0] = dev->gui_module->color_picker_box[1] = .01f;
+    darktable.lib->proxy.colorpicker.primary_sample->box[2] = darktable.lib->proxy.colorpicker.primary_sample->box[3] =
+      dev->gui_module->color_picker_box[2] = dev->gui_module->color_picker_box[3] = .99f;
 
     dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
     dt_control_queue_redraw();

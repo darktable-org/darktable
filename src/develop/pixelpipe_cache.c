@@ -20,6 +20,7 @@
 #include "develop/format.h"
 #include "develop/pixelpipe_hb.h"
 #include "libs/lib.h"
+#include "libs/colorpicker.h"
 #include <stdlib.h>
 
 
@@ -107,7 +108,7 @@ uint64_t dt_dev_pixelpipe_cache_basichash(int imgid, struct dt_dev_pixelpipe_t *
       hash = ((hash << 5) + hash) ^ piece->hash;
       if(piece->module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
       {
-        if(darktable.lib->proxy.colorpicker.size)
+        if(darktable.lib->proxy.colorpicker.primary_sample->size)
         {
           const char *str = (const char *)piece->module->color_picker_box;
           for(size_t i = 0; i < sizeof(float) * 4; i++) hash = ((hash << 5) + hash) ^ str[i];
