@@ -2868,18 +2868,20 @@ static gint _sort_model_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b
 void _mount_changed(GVolumeMonitor *volume_monitor, GMount *mount, dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
-  dt_collection_set_film_status();
+  dt_film_set_folder_status();
   // very rough update (rebuild the view). As these events are not too many that remains acceptable
   // adding film_id to treeview and listview would be cleaner to update just the parameter "reachable"
   dt_lib_collect_rule_t *dr = d->rule + d->active_rule;
   const int property = _combo_get_active_collection(dr->combo);
   if(property == DT_COLLECTION_PROP_FOLDERS)
   {
+    d->rule[d->active_rule].typing = FALSE;
     d->view_rule = -1;
     tree_view(dr);
   }
   else if(property == DT_COLLECTION_PROP_FILMROLL)
   {
+    d->rule[d->active_rule].typing = FALSE;
     d->view_rule = -1;
     list_view(dr);
   }
