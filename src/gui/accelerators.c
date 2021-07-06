@@ -1389,12 +1389,14 @@ static gboolean _action_view_click(GtkWidget *widget, GdkEventButton *event, gpo
 
         return TRUE;
       }
+      else
+        gtk_tree_selection_select_path(selection, path);
     }
     else
       gtk_tree_selection_unselect_all(selection);
   }
 
-  return FALSE;
+  return TRUE;
 }
 
 static gboolean _action_view_map(GtkTreeView *view, GdkEvent *event, gpointer found_iter)
