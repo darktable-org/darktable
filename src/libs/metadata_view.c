@@ -507,8 +507,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       images = dt_view_get_images_to_act_on_query(FALSE);
       sqlite3_stmt *stmt;
-      gchar *query = dt_util_dstrcat(NULL,
-                                     "SELECT id, COUNT(id) "
+      gchar *query = g_strdup_printf("SELECT id, COUNT(id) "
                                      "FROM main.images "
                                      "WHERE id IN (%s)",
                                      images);
