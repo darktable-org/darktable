@@ -1353,7 +1353,7 @@
   <dtconfig>
     <name>plugins/lighttable/collect/num_rules</name>
     <type>int</type>
-    <default>0</default>
+    <default>1</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -1367,7 +1367,7 @@
   <dtconfig>
     <name>plugins/lighttable/collect/string0</name>
     <type>string</type>
-    <default/>
+    <default>%</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
