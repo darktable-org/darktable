@@ -192,7 +192,7 @@ static void _update_sample_label(dt_colorpicker_sample_t *sample)
 
   // Setting the output label
   char text[128] = { 0 };
-  float alt[3] = { 0 };
+  dt_aligned_pixel_t alt = { 0 };
 
   switch(model)
   {

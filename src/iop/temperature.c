@@ -523,10 +523,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         const size_t p = (size_t)j * width + i;
         out[p] = in[p] * d_coeffs[FC(offset_j, i + roi_out->x, filters)];
       }
-      const float DT_ALIGNED_PIXEL coeffs[4] = { d_coeffs[FC(offset_j, i + roi_out->x, filters)],
-                                                 d_coeffs[FC(offset_j, i + roi_out->x + 1,filters)],
-                                                 d_coeffs[FC(offset_j, i + roi_out->x + 2, filters)],
-                                                 d_coeffs[FC(offset_j, i + roi_out->x + 3, filters)] };
+      const dt_aligned_pixel_t coeffs = { d_coeffs[FC(offset_j, i + roi_out->x, filters)],
+                                          d_coeffs[FC(offset_j, i + roi_out->x + 1,filters)],
+                                          d_coeffs[FC(offset_j, i + roi_out->x + 2, filters)],
+                                          d_coeffs[FC(offset_j, i + roi_out->x + 3, filters)] };
       // process sensels four at a time
       for(; i < (width & ~3); i += 4)
       {

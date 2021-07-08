@@ -339,7 +339,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // do the bulk of the row four at a time
     for(int i = 0; i < width; i += 4)
     {
-      float DT_ALIGNED_PIXEL sum[4] = { 0.0f };
+      dt_aligned_pixel_t sum = { 0.0f };
       for(int k = start_row; k <= end_row; k++)
       {
         const int k_adj = k - (j-rad);
@@ -357,7 +357,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       for(int k = start_row; k <= end_row; k++)
       {
         const int k_adj = k - (j-rad);
-        temp_buf[i] += mat[k_adj] * in[4*(k*width+i)];
+        sum += mat[k_adj] * in[4*(k*width+i)];
       }
       temp_buf[i] = sum;
     }
