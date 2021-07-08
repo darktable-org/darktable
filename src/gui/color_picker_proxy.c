@@ -17,6 +17,7 @@
 */
 
 #include "gui/color_picker_proxy.h"
+#include "libs/colorpicker.h"
 #include "bauhaus/bauhaus.h"
 #include "libs/lib.h"
 #include "control/control.h"
@@ -161,7 +162,8 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
 
   _iop_color_picker_reset(module->picker);
 
-  if (module->picker != self || (ctrl_key_pressed && kind == DT_COLOR_PICKER_POINT_AREA))
+  if (module->picker != self || (kind == DT_COLOR_PICKER_POINT_AREA &&
+      (ctrl_key_pressed ^ (darktable.lib->proxy.colorpicker.size == DT_COLORPICKER_SIZE_BOX))))
   {
     module->picker = self;
 
