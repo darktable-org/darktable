@@ -501,10 +501,8 @@ static inline void find_laplacian(const float pixels[9][4], const size_t c, floa
 #ifdef _OPENMP
 #pragma omp declare simd aligned(a:16)
 #endif
-static inline void rotation_matrix_isophote(const float c2,
-                                            const float cos_theta, const float sin_theta,
-                                            const float cos_theta2, const float sin_theta2,
-                                            float a[2][2])
+static inline void rotation_matrix_isophote(const float c2, const float cos_theta_sin_theta,
+                                            const float cos_theta2, const float sin_theta2, float a[2][2])
 {
   // Write the coefficients of a square symmetrical matrice of rotation of the gradient :
   // [[ a11, a12 ],
@@ -513,16 +511,14 @@ static inline void rotation_matrix_isophote(const float c2,
   // c dampens the gradient direction
   a[0][0] = clamp_simd(cos_theta2 + c2 * sin_theta2);
   a[1][1] = clamp_simd(c2 * cos_theta2 + sin_theta2);
-  a[0][1] = a[1][0] = clamp_simd((c2 - 1.0f) * cos_theta * sin_theta);
+  a[0][1] = a[1][0] = clamp_simd((c2 - 1.0f) * cos_theta_sin_theta);
 }
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(a:16)
 #endif
-static inline void rotation_matrix_gradient(const float c2,
-                                            const float cos_theta, const float sin_theta,
-                                            const float cos_theta2, const float sin_theta2,
-                                            float a[2][2])
+static inline void rotation_matrix_gradient(const float c2, const float cos_theta_sin_theta,
+                                            const float cos_theta2, const float sin_theta2, float a[2][2])
 {
   // Write the coefficients of a square symmetrical matrice of rotation of the gradient :
   // [[ a11, a12 ],
@@ -531,7 +527,7 @@ static inline void rotation_matrix_gradient(const float c2,
   // c dampens the isophote direction
   a[0][0] = clamp_simd(c2 * cos_theta2 + sin_theta2);
   a[1][1] = clamp_simd(cos_theta2 + c2 * sin_theta2);
-  a[0][1] = a[1][0] = clamp_simd((1.0f - c2) * cos_theta * sin_theta);
+  a[0][1] = a[1][0] = clamp_simd((1.0f - c2) * cos_theta_sin_theta);
 }
 
 
@@ -581,11 +577,8 @@ static inline void isotrope_laplacian(float kernel[9])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(kernel: 64) uniform(isotropy_type)
 #endif
-static inline void compute_kernel(const float c2,
-                                  const float cos_theta, const float sin_theta,
-                                  const float cos_theta2, const float sin_theta2,
-                                  const dt_isotropy_t isotropy_type,
-                                  float kernel[9])
+static inline void compute_kernel(const float c2, const float cos_theta_sin_theta, const float cos_theta2,
+                                  const float sin_theta2, const dt_isotropy_t isotropy_type, float kernel[9])
 {
   // Build the matrix of rotation with anisotropy
 
@@ -600,14 +593,14 @@ static inline void compute_kernel(const float c2,
     case(DT_ISOTROPY_ISOPHOTE):
     {
       float DT_ALIGNED_ARRAY a[2][2] = { { 0.f } };
-      rotation_matrix_isophote(c2, cos_theta, sin_theta, cos_theta2, sin_theta2, a);
+      rotation_matrix_isophote(c2, cos_theta_sin_theta, cos_theta2, sin_theta2, a);
       build_matrix(a, kernel);
       break;
     }
     case(DT_ISOTROPY_GRADIENT):
     {
       float DT_ALIGNED_ARRAY a[2][2] = { { 0.f } };
-      rotation_matrix_gradient(c2, cos_theta, sin_theta, cos_theta2, sin_theta2, a);
+      rotation_matrix_gradient(c2, cos_theta_sin_theta, cos_theta2, sin_theta2, a);
       build_matrix(a, kernel);
       break;
     }
@@ -684,28 +677,40 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           find_gradient(neighbour_pixel_LF, c, gradient);
           find_gradient(neighbour_pixel_HF, c, laplacian);
 
-          const float magnitude_grad = hypotf(gradient[0], gradient[1]);
-          const float magnitude_lapl = hypotf(laplacian[0], laplacian[1]);
+          const float magnitude_grad = sqrtf(sqf(gradient[0]) + sqf(gradient[1]));
+          // Compute cos(arg(grad)) = dx / hypot - force arg(grad) = 0 if hypot == 0
+          gradient[0] = (magnitude_grad != 0.f) ? gradient[0] / magnitude_grad : 1.f; // cos(0)
+          // Compute sin (arg(grad))= dy / hypot - force arg(grad) = 0 if hypot == 0
+          gradient[1] = (magnitude_grad != 0.f) ? gradient[1] / magnitude_grad : 0.f; // sin(0)
+          // Warning : now gradient[2] = { cos(arg(grad)) , sin(arg(grad)) }
 
-          const float cos_theta_grad = gradient[0] / magnitude_grad;
-          const float cos_theta_lapl = laplacian[0] / magnitude_lapl;
-          const float sin_theta_grad = gradient[1] / magnitude_grad;
-          const float sin_theta_lapl = laplacian[1] / magnitude_lapl;
+          const float magnitude_lapl = sqrtf(sqf(laplacian[0]) + sqf(laplacian[1]));
+          // Compute cos(arg(lapl)) = dx / hypot - force arg(lapl) = 0 if hypot == 0
+          laplacian[0] = (magnitude_lapl != 0.f) ? laplacian[0] / magnitude_lapl : 1.f; // cos(0)
+          // Compute sin (arg(lapl))= dy / hypot - force arg(lapl) = 0 if hypot == 0
+          laplacian[1] = (magnitude_lapl != 0.f) ? laplacian[1] / magnitude_lapl : 0.f; // sin(0)
+          // Warning : now laplacian[2] = { cos(arg(lapl)) , sin(arg(lapl)) }
 
-          const float cos_theta_grad_sq = sqf(cos_theta_grad);
-          const float sin_theta_grad_sq = sqf(sin_theta_grad);
-          const float cos_theta_lapl_sq = sqf(cos_theta_lapl);
-          const float sin_theta_lapl_sq = sqf(sin_theta_lapl);
+          const float cos_theta_grad_sq = sqf(gradient[0]);
+          const float sin_theta_grad_sq = sqf(gradient[1]);
+          const float cos_theta_sin_theta_grad = gradient[0] * gradient[1];
+          const float cos_theta_lapl_sq = sqf(laplacian[0]);
+          const float sin_theta_lapl_sq = sqf(laplacian[1]);
+          const float cos_theta_sin_theta_lapl = laplacian[0] * laplacian[1];
 
           // c² in https://www.researchgate.net/publication/220663968
           const float c2[4] = { expf(-magnitude_grad * anisotropy[0]), expf(-magnitude_lapl * anisotropy[1]),
                                 expf(-magnitude_grad * anisotropy[2]), expf(-magnitude_lapl * anisotropy[3]) };
 
           float DT_ALIGNED_ARRAY kern_first[9], kern_second[9], kern_third[9], kern_fourth[9];
-          compute_kernel(c2[0], cos_theta_grad, sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type[0], kern_first);
-          compute_kernel(c2[1], cos_theta_lapl, sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type[1], kern_second);
-          compute_kernel(c2[2], cos_theta_grad, sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type[2], kern_third);
-          compute_kernel(c2[3], cos_theta_lapl, sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type[3], kern_fourth);
+          compute_kernel(c2[0], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type[0],
+                         kern_first);
+          compute_kernel(c2[1], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type[1],
+                         kern_second);
+          compute_kernel(c2[2], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type[2],
+                         kern_third);
+          compute_kernel(c2[3], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type[3],
+                         kern_fourth);
 
           // convolve filters and compute the variance and the regularization term
           float DT_ALIGNED_PIXEL derivatives[4] = { 0.f };
