@@ -635,11 +635,13 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
   const float *const restrict LF = DT_IS_ALIGNED(low_freq);
   const float *const restrict HF = DT_IS_ALIGNED(high_freq);
 
+  const float regularization_factor = regularization * current_radius_square / 9.f;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                                            \
-    dt_omp_firstprivate(out, mask, HF, LF, height, width, ABCD, has_mask, variance_threshold,      \
-                        anisotropy, regularization, mult, strength, isotropy_type, current_radius_square) \
-                        schedule(simd:static) collapse(2)
+    dt_omp_firstprivate(out, mask, HF, LF, height, width, ABCD, has_mask, variance_threshold, anisotropy,         \
+                        regularization_factor, mult, strength, isotropy_type) schedule(simd                       \
+                                                                                       : static) collapse(2)
 #endif
   for(size_t i = 0; i < height; ++i)
     for(size_t j = 0; j < width; ++j)
@@ -720,8 +722,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           // This allows to keep the scene-referred variance roughly constant
           // regardless of the wavelet scale where we compute it.
           // Prevents large scale halos when deblurring.
-          variance /= 9.f / current_radius_square;
-          variance = variance_threshold + sqrtf(variance * regularization);
+          variance = variance_threshold + sqrtf(variance * regularization_factor);
 
           // compute the update
           float acc = 0.f;
