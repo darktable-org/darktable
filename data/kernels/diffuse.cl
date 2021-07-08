@@ -269,10 +269,10 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
 
     // c² in https://www.researchgate.net/publication/220663968
     // warning : in c2[s], s is the order of the derivative
-    const float4 c2[4] = { native_exp(-magnitude_grad / anisotropy.x),
-                           native_exp(-magnitude_lapl / anisotropy.y),
-                           native_exp(-magnitude_grad / anisotropy.z),
-                           native_exp(-magnitude_lapl / anisotropy.w) };
+    const float4 c2[4] = { native_exp(-magnitude_grad * anisotropy.x),
+                           native_exp(-magnitude_lapl * anisotropy.y),
+                           native_exp(-magnitude_grad * anisotropy.z),
+                           native_exp(-magnitude_lapl * anisotropy.w) };
 
     float4 kern_first[9], kern_second[9], kern_third[9], kern_fourth[9];
     compute_kern(c2[0], cos_theta_grad, sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type.x, kern_first);
