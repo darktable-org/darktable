@@ -257,13 +257,10 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
     const float4 magnitude_grad = hypot(gradient[0], gradient[1]);
     const float4 magnitude_lapl = hypot(laplacian[0], laplacian[1]);
 
-    const float4 theta_grad = atan2(gradient[1], gradient[0]);
-    const float4 theta_lapl = atan2(laplacian[1], laplacian[0]);
-
-    const float4 cos_theta_grad = native_cos(theta_grad);
-    const float4 cos_theta_lapl = native_cos(theta_lapl);
-    const float4 sin_theta_grad = native_sin(theta_grad);
-    const float4 sin_theta_lapl = native_sin(theta_lapl);
+    const float4 cos_theta_grad = gradient[0] / magnitude_grad;
+    const float4 cos_theta_lapl = laplacian[0] / magnitude_lapl;
+    const float4 sin_theta_grad = gradient[1] / magnitude_grad;
+    const float4 sin_theta_lapl = laplacian[1] / magnitude_lapl;
 
     const float4 cos_theta_grad_sq = sqf(cos_theta_grad);
     const float4 sin_theta_grad_sq = sqf(sin_theta_grad);
