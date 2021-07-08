@@ -322,9 +322,9 @@ static void _basics_init_item(dt_lib_modulegroups_basic_item_t *item)
     {
       DtBauhausWidget *bw = DT_BAUHAUS_WIDGET(item->widget);
       if(g_strv_length(elems) > 2)
-        item->widget_name = dt_util_dstrcat(NULL, "%s - %s", _(elems[1]), bw->label);
+        item->widget_name = g_strdup_printf("%s - %s", _(elems[1]), bw->label);
       else if(g_strv_length(elems) > 1)
-        item->widget_name = dt_util_dstrcat(NULL, "%s", bw->label);
+        item->widget_name = g_strdup_printf("%s", bw->label);
       else
       {
         item->widget_name = g_strdup(_("on-off"));
@@ -334,9 +334,9 @@ static void _basics_init_item(dt_lib_modulegroups_basic_item_t *item)
     else
     {
       if(g_strv_length(elems) > 2)
-        item->widget_name = dt_util_dstrcat(NULL, "%s - %s", _(elems[1]), _(elems[2]));
+        item->widget_name = g_strdup_printf("%s - %s", _(elems[1]), _(elems[2]));
       else if(g_strv_length(elems) > 1)
-        item->widget_name = dt_util_dstrcat(NULL, "%s", _(elems[1]));
+        item->widget_name = g_strdup_printf("%s", _(elems[1]));
       else
       {
         item->widget_name = g_strdup(_("on-off"));
@@ -618,7 +618,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     }
     else
     {
-      gchar *txt = dt_util_dstrcat(NULL, "%s (%s)\n\n%s%s%s", item->widget_name, item->module->name(),
+      gchar *txt = g_strdup_printf("%s (%s)\n\n%s%s%s", item->widget_name, item->module->name(),
                                    item->tooltip ? item->tooltip : "", item->tooltip ? "\n\n" : "",
                                    _("(some features may only be available in the full module interface)"));
       gtk_widget_set_tooltip_text(item->widget, txt);
@@ -646,7 +646,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     // we create the link to the full iop
     GtkWidget *wbt = dtgtk_button_new(dtgtk_cairo_paint_link, CPF_STYLE_FLAT, NULL);
     gtk_widget_show(wbt);
-    gchar *tt = dt_util_dstrcat(NULL, _("go to the full version of the %s module"), item->module->name());
+    gchar *tt = g_strdup_printf(_("go to the full version of the %s module"), item->module->name());
     gtk_widget_set_tooltip_text(wbt, tt);
     gtk_widget_set_name(wbt, "basics-link");
     gtk_widget_set_valign(wbt, GTK_ALIGN_CENTER);
@@ -1186,10 +1186,10 @@ static gchar *_preset_retrieve_old_layout_updated()
       {
         // get previous visibility values
         const int group = module->default_group();
-        gchar *key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/visible", module->op);
+        gchar *key = g_strdup_printf("plugins/darkroom/%s/visible", module->op);
         const gboolean visi = dt_conf_get_bool(key);
         g_free(key);
-        key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/favorite", module->op);
+        key = g_strdup_printf("plugins/darkroom/%s/favorite", module->op);
         const gboolean fav = dt_conf_get_bool(key);
         g_free(key);
 
@@ -1242,7 +1242,7 @@ static gchar *_preset_retrieve_old_layout(const char *list, const char *list_fav
 
       if(!dt_iop_so_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
       {
-        gchar *search = dt_util_dstrcat(NULL, "|%s|", module->op);
+        gchar *search = g_strdup_printf("|%s|", module->op);
         gchar *key;
 
         // get previous visibility values
@@ -1264,7 +1264,7 @@ static gchar *_preset_retrieve_old_layout(const char *list, const char *list_fav
         }
         else if(i > 0)
         {
-          key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/modulegroup", module->op);
+          key = g_strdup_printf("plugins/darkroom/%s/modulegroup", module->op);
           group = dt_conf_get_int(key);
           g_free(key);
         }
@@ -1274,7 +1274,7 @@ static gchar *_preset_retrieve_old_layout(const char *list, const char *list_fav
           visi = (strstr(list, search) != NULL);
         else
         {
-          key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/visible", module->op);
+          key = g_strdup_printf("plugins/darkroom/%s/visible", module->op);
           visi = dt_conf_get_bool(key);
           g_free(key);
         }
@@ -1284,7 +1284,7 @@ static gchar *_preset_retrieve_old_layout(const char *list, const char *list_fav
           fav = (strstr(list_fav, search) != NULL);
         else if(i == 0)
         {
-          key = dt_util_dstrcat(NULL, "plugins/darkroom/%s/favorite", module->op);
+          key = g_strdup_printf("plugins/darkroom/%s/favorite", module->op);
           fav = dt_conf_get_bool(key);
           g_free(key);
         }
@@ -1476,16 +1476,14 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
 #define SNQA()                                                                                                    \
   {                                                                                                               \
     g_free(tx);                                                                                                   \
-    tx = NULL;                                                                                                    \
-    tx = dt_util_dstrcat(tx, "1ꬹ0||");                                                                          \
+    tx = g_strdup("1ꬹ0||");                                                                                       \
   }
 
 // start quick access
 #define SQA()                                                                                                     \
   {                                                                                                               \
     g_free(tx);                                                                                                   \
-    tx = NULL;                                                                                                    \
-    tx = dt_util_dstrcat(tx, "1ꬹ1||");                                                                          \
+    tx = g_strdup_printf("1ꬹ1||");                                                                                \
     if(is_modern)                                                                                                 \
     {                                                                                                             \
       AM("channelmixerrgb/temperature");                                                                          \
@@ -1992,7 +1990,7 @@ static void _manage_editor_basics_update_list(dt_lib_module_t *self)
         {
           GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
           gtk_widget_set_name(hb, "modulegroups-iop-header");
-          gchar *lbn = dt_util_dstrcat(NULL, "%s\n    %s", module->name(), item->widget_name);
+          gchar *lbn = g_strdup_printf("%s\n    %s", module->name(), item->widget_name);
           GtkWidget *lb = gtk_label_new(lbn);
           gtk_label_set_ellipsize(GTK_LABEL(lb), PANGO_ELLIPSIZE_END);
           gtk_label_set_xalign(GTK_LABEL(lb), 0.0);
@@ -2063,7 +2061,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   _preset_from_string(self, (char *)params, FALSE);
 
-  gchar *tx = dt_util_dstrcat(NULL, "plugins/darkroom/%s/last_preset", self->plugin_name);
+  gchar *tx = g_strdup_printf("plugins/darkroom/%s/last_preset", self->plugin_name);
 
   gchar *value = dt_conf_get_string(tx);
   dt_conf_set_string("plugins/darkroom/modulegroups_preset", value);
@@ -2537,7 +2535,6 @@ static GtkWidget *_build_menu_from_actions(dt_action_t *actions, dt_lib_module_t
             g_signal_connect(G_OBJECT(item_top), "activate", callback, self);
             gtk_menu_shell_append(GTK_MENU_SHELL(base_menu), item_top);
           }
-
           g_free(delimited_id);
         }
         g_free(action_id);
@@ -3377,7 +3374,7 @@ static void _manage_editor_preset_action(GtkWidget *btn, dt_lib_module_t *self)
   else if(btn == d->presets_btn_new)
     new_name = g_strdup(_("new"));
   else if(btn == d->presets_btn_dup)
-    new_name = dt_util_dstrcat(NULL, "%s_1", d->edit_preset);
+    new_name = g_strdup_printf("%s_1", d->edit_preset);
   else
     return;
 

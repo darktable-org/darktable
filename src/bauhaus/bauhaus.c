@@ -1680,6 +1680,14 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
   }
 }
 
+static gchar *_build_label(const dt_bauhaus_widget_t *w)
+{
+  if(w->show_extended_label && w->section)
+    return g_strdup_printf("%s - %s", w->section, w->label);
+  else
+    return g_strdup(w->label);
+}
+
 static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_bauhaus_widget_t *w = darktable.bauhaus->current;
@@ -1791,11 +1799,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       float label_width = width - darktable.bauhaus->quad_width - INNER_PADDING * 2.0 - value_width;
       if(label_width > 0)
       {
-        gchar *lb = NULL;
-        if(w->show_extended_label && w->section)
-          lb = dt_util_dstrcat(NULL, "%s - %s", w->section, w->label);
-        else
-          lb = g_strdup(w->label);
+        gchar *lb = _build_label(w);
         show_pango_text(w, context, cr, lb, 0, 0, label_width, FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE, FALSE);
         g_free(lb);
       }
@@ -1867,11 +1871,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       if(show_box_label)
       {
         set_color(cr, text_color);
-        gchar *lb = NULL;
-        if(w->show_extended_label && w->section)
-          lb = dt_util_dstrcat(NULL, "%s - %s", w->section, w->label);
-        else
-          lb = g_strdup(w->label);
+        gchar *lb = _build_label(w);
         show_pango_text(w, context, cr, lb, INNER_PADDING, darktable.bauhaus->widget_space,
                         wd - INNER_PADDING - darktable.bauhaus->quad_width - first_label_width, FALSE, FALSE,
                         PANGO_ELLIPSIZE_END, FALSE, TRUE);
@@ -1981,11 +1981,7 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
       const float available_width = width - darktable.bauhaus->quad_width - INNER_PADDING;
 
       //calculate total widths of label and combobox
-      gchar *label_text = NULL;
-      if(w->show_extended_label && w->section)
-        label_text = dt_util_dstrcat(NULL, "%s - %s", w->section, w->label);
-      else
-        label_text = g_strdup(w->label);
+      gchar *label_text = _build_label(w);
       const float label_width
           = show_pango_text(w, context, cr, label_text, 0, 0, 0, FALSE, TRUE, PANGO_ELLIPSIZE_END, FALSE, TRUE);
       const float combo_width
@@ -2049,11 +2045,7 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
         g_free(text);
       }
       // label on top of marker:
-      gchar *label_text = NULL;
-      if(w->show_extended_label && w->section)
-        label_text = dt_util_dstrcat(NULL, "%s - %s", w->section, w->label);
-      else
-        label_text = g_strdup(w->label);
+      gchar *label_text = _build_label(w);
       set_color(cr, *text_color);
       float label_width = width - darktable.bauhaus->quad_width - INNER_PADDING - value_width;
       if(label_width > 0)

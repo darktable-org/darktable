@@ -169,8 +169,7 @@ static void _update(dt_lib_module_t *self)
   if(images)
   {
     sqlite3_stmt *stmt;
-    char *query = NULL;
-    query = dt_util_dstrcat(query,
+    gchar *query = g_strdup_printf(
                             "SELECT key, value, COUNT(id) AS ct FROM main.meta_data"
                             " WHERE id IN (%s)"
                             " GROUP BY key, value ORDER BY value",
@@ -335,7 +334,7 @@ static void _update_layout(dt_lib_module_t *self)
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     const gchar *name = dt_metadata_get_name_by_display_order(i);
-    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
     const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
     g_free(setting);
     const int type = dt_metadata_get_type_by_display_order(i);
@@ -466,7 +465,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
     if(type != DT_METADATA_TYPE_INTERNAL)
     {
       name[i] = (gchar *)dt_metadata_get_name_by_display_order(i);
-      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name[i]);
+      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name[i]);
       const uint32_t flag = dt_conf_get_int(setting);
       g_free(setting);
       visible[i] = !(flag & DT_METADATA_FLAG_HIDDEN);
@@ -551,7 +550,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
                          -1);
       if(i < DT_METADATA_NUMBER)
       {
-        char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name[i]);
+        gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name[i]);
         uint32_t flag = dt_conf_get_int(setting);
         if(new_visible !=  visible[i])
         {
@@ -635,7 +634,7 @@ static gboolean _click_on_textview(GtkWidget *textview, GdkEventButton *event, d
   gtk_widget_get_allocation(GTK_WIDGET(d->swindow[i]), &metadata_allocation);
   // popup height
   const gchar *name = dt_metadata_get_name_by_display_order(i);
-  gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_text_height", name);
+  gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_text_height", name);
   const gint height = dt_conf_get_int(setting) * 5;
   g_free(setting);
 
@@ -740,7 +739,7 @@ void gui_init(dt_lib_module_t *self)
                                 "italic", "style", PANGO_STYLE_ITALIC, NULL);
 
     const char *name = (char *)dt_metadata_get_name_by_display_order(i);
-    d->setting_name[i] = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_text_height", name);
+    d->setting_name[i] = g_strdup_printf("plugins/lighttable/metadata/%s_text_height", name);
 
     GtkWidget *swindow = dt_ui_scroll_wrap(GTK_WIDGET(textview), 100, d->setting_name[i]);
 

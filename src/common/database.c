@@ -1429,8 +1429,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     const gboolean basecurve_auto_apply = strcmp(workflow, "display-referred") == 0;
     g_free(workflow);
     const gboolean sharpen_auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
-    char *query = NULL;
-    query = dt_util_dstrcat(query,
+    char *query = g_strdup_printf(
                             "SELECT id, CASE WHEN imgid IS NULL THEN 0 ELSE 1 END as altered "
                             // first, images which are both in images and history (avoids history orphans)
                             "FROM (SELECT DISTINCT id FROM main.images JOIN main.history ON imgid = id) "

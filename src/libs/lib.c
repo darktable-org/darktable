@@ -385,7 +385,7 @@ gchar *dt_lib_presets_duplicate(const gchar *preset, const gchar *module_name, i
   while(ko)
   {
     i++;
-    gchar *tx = dt_util_dstrcat(NULL, "%s_%d", preset, i);
+    gchar *tx = g_strdup_printf("%s_%d", preset, i);
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
         "SELECT name"
@@ -398,7 +398,7 @@ gchar *dt_lib_presets_duplicate(const gchar *preset, const gchar *module_name, i
     sqlite3_finalize(stmt);
     g_free(tx);
   }
-  gchar *nname = dt_util_dstrcat(NULL, "%s_%d", preset, i);
+  gchar *nname = g_strdup_printf("%s_%d", preset, i);
 
   // and we duplicate the entry
   DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -469,7 +469,7 @@ gboolean dt_lib_presets_apply(const gchar *preset, const gchar *module_name, int
         dt_lib_module_t *module = (dt_lib_module_t *)it->data;
         if(!strncmp(module->plugin_name, module_name, 128))
         {
-          gchar *tx = dt_util_dstrcat(NULL, "plugins/darkroom/%s/last_preset", module_name);
+          gchar *tx = g_strdup_printf("plugins/darkroom/%s/last_preset", module_name);
           dt_conf_set_string(tx, preset);
           g_free(tx);
           res = module->set_params(module, blob, length);
@@ -1234,7 +1234,7 @@ static gchar *_get_lib_view_path(dt_lib_module_t *module, char *suffix)
     g_snprintf(lay, sizeof(lay), "%d/", dt_view_darkroom_get_layout(darktable.view_manager));
   }
 
-  return dt_util_dstrcat(NULL, "plugins/%s/%s%s%s", cv->module_name, lay, module->plugin_name, suffix);
+  return g_strdup_printf("plugins/%s/%s%s%s", cv->module_name, lay, module->plugin_name, suffix);
 }
 
 gboolean dt_lib_is_visible(dt_lib_module_t *module)

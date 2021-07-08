@@ -507,8 +507,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       images = dt_view_get_images_to_act_on_query(FALSE);
       sqlite3_stmt *stmt;
-      gchar *query = dt_util_dstrcat(NULL,
-                                     "SELECT id, COUNT(id) "
+      gchar *query = g_strdup_printf("SELECT id, COUNT(id) "
                                      "FROM main.images "
                                      "WHERE id IN (%s)",
                                      images);
@@ -539,7 +538,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   {
     if(!images) images = dt_view_get_images_to_act_on_query(FALSE);
     sqlite3_stmt *stmt = NULL;
-    gchar *query = dt_util_dstrcat(NULL, "SELECT COUNT(DISTINCT film_id), "
+    gchar *query = g_strdup_printf("SELECT COUNT(DISTINCT film_id), "
                                          "2, " //id always different
                                          "COUNT(DISTINCT group_id), "
                                          "COUNT(DISTINCT filename), "
@@ -582,9 +581,13 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
     sqlite3_stmt *stmt_tags = NULL;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                dt_util_dstrcat(NULL, "SELECT flags, COUNT(DISTINCT imgid) FROM main.tagged_images JOIN data.tags ON data.tags.id = main.tagged_images.tagid AND name NOT LIKE 'darktable|%%' WHERE imgid in (%s) GROUP BY tagid", images),
-                                -1, &stmt_tags, NULL);
+    gchar *tag_query = g_strdup_printf("SELECT flags, COUNT(DISTINCT imgid) "
+                                       "FROM main.tagged_images "
+                                       "JOIN data.tags "
+                                       "ON data.tags.id = main.tagged_images.tagid AND name NOT LIKE 'darktable|%%' "
+                                       "WHERE imgid in (%s) GROUP BY tagid", images);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), tag_query, -1, &stmt_tags, NULL);
+    g_free(tag_query);
     g_free(query);
 
     if(sqlite3_step(stmt) == SQLITE_ROW)

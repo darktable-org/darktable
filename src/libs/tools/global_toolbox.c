@@ -141,10 +141,10 @@ static void _overlays_toggle_culling_button(GtkWidget *w, gpointer user_data)
 
   dt_culling_mode_t cmode = DT_CULLING_MODE_CULLING;
   if(dt_view_lighttable_preview_state(darktable.view_manager)) cmode = DT_CULLING_MODE_PREVIEW;
-  gchar *txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling/%d", cmode);
+  gchar *txt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", cmode);
   dt_conf_set_int(txt, over);
   g_free(txt);
-  txt = dt_util_dstrcat(NULL, "plugins/lighttable/tooltips/culling/%d", cmode);
+  txt = g_strdup_printf("plugins/lighttable/tooltips/culling/%d", cmode);
   dt_conf_set_bool(txt, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->over_culling_tt)));
   g_free(txt);
   dt_view_lighttable_culling_preview_reload_overlays(darktable.view_manager);
@@ -176,7 +176,7 @@ static void _overlays_timeout_changed(GtkWidget *w, gpointer user_data)
   {
     dt_culling_mode_t cmode = DT_CULLING_MODE_CULLING;
     if(dt_view_lighttable_preview_state(darktable.view_manager)) cmode = DT_CULLING_MODE_PREVIEW;
-    gchar *txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling_block_timeout/%d", cmode);
+    gchar *txt = g_strdup_printf("plugins/lighttable/overlays/culling_block_timeout/%d", cmode);
     dt_conf_set_int(txt, val);
     g_free(txt);
 
@@ -220,7 +220,7 @@ static void _overlays_show_popup(dt_lib_module_t *self)
   if(thumbs_state)
   {
     // we write the label with the size category
-    gchar *txt = dt_util_dstrcat(NULL, "%s %d (%d %s)", _("thumbnails overlays for size"),
+    gchar *txt = g_strdup_printf("%s %d (%d %s)", _("thumbnails overlays for size"),
                                  dt_ui_thumbtable(darktable.gui->ui)->prefs_size,
                                  dt_ui_thumbtable(darktable.gui->ui)->thumb_size, _("px"));
     gtk_label_set_text(GTK_LABEL(d->over_label), txt);
@@ -287,11 +287,11 @@ static void _overlays_show_popup(dt_lib_module_t *self)
       gtk_label_set_text(GTK_LABEL(d->over_culling_label), _("preview overlays"));
 
     // we get and set the current value
-    gchar *otxt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling/%d", cmode);
+    gchar *otxt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", cmode);
     dt_thumbnail_overlay_t mode = dt_conf_get_int(otxt);
     g_free(otxt);
 
-    otxt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling_block_timeout/%d", cmode);
+    otxt = g_strdup_printf("plugins/lighttable/overlays/culling_block_timeout/%d", cmode);
     int timeout = 2;
     if(!dt_conf_key_exists(otxt))
       timeout = dt_conf_get_int("plugins/lighttable/overlay_timeout");
@@ -325,7 +325,7 @@ static void _overlays_show_popup(dt_lib_module_t *self)
       gtk_widget_set_tooltip_text(d->over_culling_timeout, _("timeout only available for block overlay"));
     }
 
-    otxt = dt_util_dstrcat(NULL, "plugins/lighttable/tooltips/culling/%d", cmode);
+    otxt = g_strdup_printf("plugins/lighttable/tooltips/culling/%d", cmode);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->over_culling_tt), dt_conf_get_bool(otxt));
     g_free(otxt);
 

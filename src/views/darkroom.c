@@ -482,8 +482,7 @@ void expose(
     if(dev->image_invalid_cnt)
     {
       fontsize = DT_PIXEL_APPLY_DPI(16);
-      load_txt = dt_util_dstrcat(
-          NULL,
+      load_txt = g_strdup_printf(
           _("darktable could not load `%s', switching to lighttable now.\n\n"
             "please check that the camera model that produced the image is supported in darktable\n"
             "(list of supported cameras is at https://www.darktable.org/resources/camera-support/).\n"
@@ -500,7 +499,7 @@ void expose(
     {
       fontsize = DT_PIXEL_APPLY_DPI(14);
       if(dt_conf_get_bool("darkroom/ui/loading_screen"))
-        load_txt = dt_util_dstrcat(NULL, C_("darkroom", "loading `%s' ..."), dev->image_storage.filename);
+        load_txt = g_strdup_printf(C_("darkroom", "loading `%s' ..."), dev->image_storage.filename);
       else
         load_txt = g_strdup(dev->image_storage.filename);
     }
@@ -1136,9 +1135,9 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
 
   // we new offset and imgid after the jump
   sqlite3_stmt *stmt;
-  gchar *query = dt_util_dstrcat(NULL, "SELECT rowid, imgid "
-                                          "FROM memory.collected_images "
-                                          "WHERE rowid=(SELECT rowid FROM memory.collected_images WHERE imgid=%d)+%d",
+  gchar *query = g_strdup_printf("SELECT rowid, imgid "
+                                 "FROM memory.collected_images "
+                                 "WHERE rowid=(SELECT rowid FROM memory.collected_images WHERE imgid=%d)+%d",
                                  imgid, diff);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1159,7 +1158,7 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
     // in this case, let's use the image before current offset
     new_offset = MAX(1, dt_ui_thumbtable(darktable.gui->ui)->offset - 1);
     sqlite3_stmt *stmt2;
-    gchar *query2 = dt_util_dstrcat(NULL, "SELECT imgid FROM memory.collected_images WHERE rowid=%d", new_offset);
+    gchar *query2 = g_strdup_printf("SELECT imgid FROM memory.collected_images WHERE rowid=%d", new_offset);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt2, NULL);
     if(sqlite3_step(stmt2) == SQLITE_ROW)
     {

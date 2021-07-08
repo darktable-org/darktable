@@ -168,7 +168,7 @@ void dt_metadata_init()
   {
     const int type = dt_metadata_get_type(i);
     const char *name = (gchar *)dt_metadata_get_name(i);
-    char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+    char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
     if(!dt_conf_key_exists(setting))
     {
       // per default should be imported - ignored if "write_sidecar_files" set
@@ -264,9 +264,8 @@ static void _bulk_remove_metadata(const int img, const gchar *metadata_list)
 {
   if(img > 0 && metadata_list)
   {
-    char *query = NULL;
     sqlite3_stmt *stmt;
-    query = dt_util_dstrcat(query, "DELETE FROM main.meta_data WHERE id = %d AND key IN (%s)", img, metadata_list);
+    gchar *query = g_strdup_printf("DELETE FROM main.meta_data WHERE id = %d AND key IN (%s)", img, metadata_list);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -278,9 +277,8 @@ static void _bulk_add_metadata(gchar *metadata_list)
 {
   if(metadata_list)
   {
-    char *query = NULL;
     sqlite3_stmt *stmt;
-    query = dt_util_dstrcat(query, "INSERT INTO main.meta_data (id, key, value) VALUES %s", metadata_list);
+    gchar *query = g_strdup_printf("INSERT INTO main.meta_data (id, key, value) VALUES %s", metadata_list);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -328,8 +326,8 @@ GList *dt_metadata_get_list_id(const int id)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const gchar *value = (const char *)sqlite3_column_text(stmt, 1);
-    const gchar *ckey = dt_util_dstrcat(NULL, "%d", sqlite3_column_int(stmt, 0));
-    const gchar *cvalue = g_strdup(value ? value : ""); // to avoid NULL value
+    gchar *ckey = g_strdup_printf("%d", sqlite3_column_int(stmt, 0));
+    gchar *cvalue = g_strdup(value ? value : ""); // to avoid NULL value
     metadata = g_list_append(metadata, (gpointer)ckey);
     metadata = g_list_append(metadata, (gpointer)cvalue);
   }
@@ -589,7 +587,7 @@ void dt_metadata_set(const int imgid, const char *key, const char *value, const 
       GList *undo = NULL;
       if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
 
-      const gchar *ckey = dt_util_dstrcat(NULL, "%d", keyid);
+      const gchar *ckey = g_strdup_printf("%d", keyid);
       const gchar *cvalue = _cleanup_metadata_value(value);
       GList *metadata = NULL;
       metadata = g_list_append(metadata, (gpointer)ckey);
@@ -620,7 +618,7 @@ void dt_metadata_set_import(const int imgid, const char *key, const char *value)
     if(!imported && dt_metadata_get_type(keyid) != DT_METADATA_TYPE_INTERNAL)
     {
       const gchar *name = dt_metadata_get_name(keyid);
-      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+      char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
       imported = dt_conf_get_int(setting) & DT_METADATA_FLAG_IMPORTED;
       g_free(setting);
     }
@@ -632,7 +630,7 @@ void dt_metadata_set_import(const int imgid, const char *key, const char *value)
       {
         GList *undo = NULL;
 
-        const gchar *ckey = dt_util_dstrcat(NULL, "%d", keyid);
+        const gchar *ckey = g_strdup_printf("%d", keyid);
         const gchar *cvalue = _cleanup_metadata_value(value);
         GList *metadata = NULL;
         metadata = g_list_append(metadata, (gpointer)ckey);
@@ -657,7 +655,7 @@ void dt_metadata_set_list(const GList *imgs, GList *key_value, const gboolean un
     const int keyid = dt_metadata_get_keyid(key);
     if(keyid != -1) // known key
     {
-      const gchar *ckey = dt_util_dstrcat(NULL, "%d", keyid);
+      const gchar *ckey = g_strdup_printf("%d", keyid);
       kv = g_list_next(kv);
       const gchar *value = (const gchar *)kv->data;
       kv = g_list_next(kv);
@@ -700,13 +698,13 @@ void dt_metadata_clear(const GList *imgs, const gboolean undo_on)
     if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
     {
       const gchar *name = dt_metadata_get_name(i);
-      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+      char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
       const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
       g_free(setting);
       if(!hidden)
       {
         // caution: metadata is a simple list here
-        metadata = g_list_prepend(metadata, dt_util_dstrcat(NULL, "%d", i));
+        metadata = g_list_prepend(metadata, g_strdup_printf("%d", i));
       }
     }
   }
