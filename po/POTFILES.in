@@ -212,6 +212,7 @@ src/iop/crop.c
 src/iop/defringe.c
 src/iop/demosaic.c
 src/iop/denoiseprofile.c
+src/iop/diffuse.c
 src/iop/dither.c
 src/iop/dual_demosaic.c
 src/iop/equalizer.c
