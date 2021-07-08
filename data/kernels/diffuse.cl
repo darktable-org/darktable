@@ -223,6 +223,8 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
 
   const char opacity = (has_mask) ? read_imageui(mask, sampleri, (int2)(x, y)).x : 1;
 
+  const float4 regularization_factor = regularization * current_radius_square / 9.f;
+
   float4 out;
 
   if(opacity)
@@ -298,8 +300,7 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
     // This allows to keep the scene-referred variance roughly constant
     // regardless of the wavelet scale where we compute it.
     // Prevents large scale halos when deblurring.
-    variance /= 9.f / current_radius_square;
-    variance = variance_threshold + native_sqrt(variance * regularization);
+    variance = variance_threshold + native_sqrt(variance * regularization_factor);
 
     // compute the update
     float4 acc = (float4)0.f;
