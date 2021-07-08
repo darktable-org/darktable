@@ -167,7 +167,7 @@ void dt_collection_memory_update()
                         NULL, NULL, NULL);
 
   // 2. insert collected images into the temporary table
-  gchar *ins_query = dt_util_dstrcat(NULL, "INSERT INTO memory.collected_images (imgid) %s", query);
+  gchar *ins_query = g_strdup_printf("INSERT INTO memory.collected_images (imgid) %s", query);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), ins_query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
@@ -217,7 +217,7 @@ int dt_collection_update(const dt_collection_t *collection)
     /* add default filters */
     if(collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)
     {
-      wq = dt_util_dstrcat(wq, "%s (film_id = %d)", and_operator(&and_term), collection->params.film_id);
+      wq = g_strdup_printf("%s (film_id = %d)", and_operator(&and_term), collection->params.film_id);
     }
     // DON'T SELECT IMAGES MARKED TO BE DELETED.
     wq = dt_util_dstrcat(wq, " %s (flags & %d) != %d",
@@ -243,9 +243,16 @@ int dt_collection_update(const dt_collection_t *collection)
                            rejected_check);
 
     if(collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
-      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash WHERE imgid=mi.id AND history_hash.imgid=id AND (basic_hash IS NULL OR current_hash != basic_hash) AND (auto_hash IS NULL OR current_hash != auto_hash))", and_operator(&and_term));
+      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash "
+                                           "WHERE imgid=mi.id AND history_hash.imgid=id AND "
+                                           " (basic_hash IS NULL OR current_hash != basic_hash) AND "
+                                           " (auto_hash IS NULL OR current_hash != auto_hash))",
+                           and_operator(&and_term));
     else if(collection->params.filter_flags & COLLECTION_FILTER_UNALTERED)
-      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash WHERE imgid=mi.id AND history_hash.imgid=id AND (current_hash == basic_hash OR current_hash == auto_hash))", and_operator(&and_term));
+      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash "
+                                           "WHERE imgid=mi.id AND history_hash.imgid=id AND "
+                                           " (current_hash == basic_hash OR current_hash == auto_hash))",
+                           and_operator(&and_term));
 
     /* add where ext if wanted */
     if((collection->params.query_flags & COLLECTION_QUERY_USE_WHERE_EXT))
@@ -254,7 +261,7 @@ int dt_collection_update(const dt_collection_t *collection)
     g_free(rejected_check);
   }
   else
-    wq = dt_util_dstrcat(wq, "%s", where_ext);
+    wq = g_strdup(where_ext);
 
   g_free(where_ext);
 
@@ -555,7 +562,7 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection, int e
   else
     complete_string = g_strjoinv(complete_string, ((dt_collection_t *)collection)->where_ext);
 
-  gchar *where_ext = dt_util_dstrcat(NULL, "(1=1%s)", complete_string);
+  gchar *where_ext = g_strdup_printf("(1=1%s)", complete_string);
   g_free(complete_string);
 
   return where_ext;
@@ -618,11 +625,9 @@ static void _collection_update_aspect_ratio(const dt_collection_t *collection)
   {
     const float MAX_TIME = 7.0;
     const gchar *where_ext = dt_collection_get_extended_where(collection, -1);
-    gchar *query = NULL;
     sqlite3_stmt *stmt = NULL;
 
-    query = dt_util_dstrcat
-      (query,
+    gchar *query = g_strdup_printf(
        "SELECT id"
        " FROM main.images"
        " WHERE %s AND (aspect_ratio=0.0 OR aspect_ratio IS NULL)", where_ext);
@@ -711,7 +716,7 @@ const char *dt_collection_name(dt_collection_properties_t prop)
         if(type != DT_METADATA_TYPE_INTERNAL)
         {
           const char *name = (gchar *)dt_metadata_get_name_by_display_order(i);
-          char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+          char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
           const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
           free(setting);
           if(!hidden) col_name = _(name);
@@ -724,7 +729,6 @@ const char *dt_collection_name(dt_collection_properties_t prop)
 
 gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
 {
-  gchar *sq = NULL;
   gchar *second_order = NULL;/*string for previous sorting criteria as second order sorting criteria*/
 
   switch(collection->params.sort_second_order)/*build ORDER BY string for second order*/
@@ -747,60 +751,61 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
           case DT_COLLECTION_SORT_PRINT_TIMESTAMP:  colname = "print_timestamp" ; break ;
           default: colname = "";
         }
-      second_order = dt_util_dstrcat(NULL, "%s %s", colname, (collection->params.descending ? "DESC" : ""));
+      second_order = g_strdup_printf("%s %s", colname, (collection->params.descending ? "DESC" : ""));
       break;
       }
 
     case DT_COLLECTION_SORT_RATING:
-      second_order = dt_util_dstrcat(NULL, "CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END %s", (collection->params.descending ? "" : "DESC"));
+      second_order = g_strdup_printf("CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END %s", (collection->params.descending ? "" : "DESC"));
       break;
 
     case DT_COLLECTION_SORT_FILENAME:
-      second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));
+      second_order = g_strdup_printf("filename %s", (collection->params.descending ? "DESC" : ""));
       break;
 
     case DT_COLLECTION_SORT_ID:
-      second_order = dt_util_dstrcat(NULL, "mi.id %s", (collection->params.descending ? "DESC" : ""));
+      second_order = g_strdup_printf("mi.id %s", (collection->params.descending ? "DESC" : ""));
       break;
 
     case DT_COLLECTION_SORT_COLOR:
-      second_order = dt_util_dstrcat(NULL, "color %s", (collection->params.descending ? "" : "DESC"));
+      second_order = g_strdup_printf("color %s", (collection->params.descending ? "" : "DESC"));
       break;
 
     case DT_COLLECTION_SORT_GROUP:
-      second_order = dt_util_dstrcat(NULL, "group_id %s, mi.id-group_id != 0", (collection->params.descending ? "DESC" : ""));
+      second_order = g_strdup_printf("group_id %s, mi.id-group_id != 0", (collection->params.descending ? "DESC" : ""));
       break;
 
     case DT_COLLECTION_SORT_PATH:
-      second_order = dt_util_dstrcat(NULL, "folder %s, filename %s", (collection->params.descending ? "DESC" : ""), (collection->params.descending ? "DESC" : ""));
+      second_order = g_strdup_printf("folder %s, filename %s", (collection->params.descending ? "DESC" : ""), (collection->params.descending ? "DESC" : ""));
       break;
 
     case DT_COLLECTION_SORT_CUSTOM_ORDER:
-      second_order = dt_util_dstrcat(NULL, "position %s", (collection->params.descending ? "DESC" : ""));
+      second_order = g_strdup_printf("position %s", (collection->params.descending ? "DESC" : ""));
       break;
 
      case DT_COLLECTION_SORT_TITLE:
      case DT_COLLECTION_SORT_DESCRIPTION:/*same sorting for TITLE and DESCRIPTION -> Fall through*/
-       second_order = dt_util_dstrcat(NULL, "m.value %s", (collection->params.descending ? "DESC" : ""));
+       second_order = g_strdup_printf("m.value %s", (collection->params.descending ? "DESC" : ""));
        break;
 
     case DT_COLLECTION_SORT_ASPECT_RATIO:
-      second_order = dt_util_dstrcat(NULL, "aspect_ratio %s", (collection->params.descending ? "DESC" : ""));
+      second_order = g_strdup_printf("aspect_ratio %s", (collection->params.descending ? "DESC" : ""));
       break;
 
     case DT_COLLECTION_SORT_SHUFFLE:
       /* do not remember shuffle for second order */
-      if(!second_order) second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));/*only set if not yet initialized*/
+      if(!second_order) second_order = g_strdup_printf("filename %s", (collection->params.descending ? "DESC" : ""));/*only set if not yet initialized*/
       break;
 
     case DT_COLLECTION_SORT_NONE:/*fall through for default*/
     default:
       // shouldn't happen
-      second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));
+      second_order = g_strdup_printf("filename %s", (collection->params.descending ? "DESC" : ""));
       break;
   }
 
 
+  gchar *sq = NULL;
   if(collection->params.descending)
   {
     switch(collection->params.sort)
@@ -823,60 +828,60 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
           case DT_COLLECTION_SORT_PRINT_TIMESTAMP:  colname = "print_timestamp" ; break ;
           default: colname = "";
         }
-        sq = dt_util_dstrcat(sq, "ORDER BY %s DESC, %s, filename DESC, version DESC", colname, second_order);
+        sq = g_strdup_printf("ORDER BY %s DESC, %s, filename DESC, version DESC", colname, second_order);
         break;
         }
 
       case DT_COLLECTION_SORT_RATING:
-        sq = dt_util_dstrcat(sq, "ORDER BY CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END, %s, filename DESC, version DESC", second_order);
+        sq = g_strdup_printf("ORDER BY CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END, %s, filename DESC, version DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_FILENAME:
-        sq = dt_util_dstrcat(sq, "ORDER BY filename DESC, %s, version DESC", second_order);
+        sq = g_strdup_printf("ORDER BY filename DESC, %s, version DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_ID:
-        sq = dt_util_dstrcat(sq, "ORDER BY mi.id DESC"); /* makes no sense to consider second order here since ID is unique ;) */
+        sq = g_strdup_printf("ORDER BY mi.id DESC"); /* makes no sense to consider second order here since ID is unique ;) */
         break;
 
       case DT_COLLECTION_SORT_COLOR:
-        sq = dt_util_dstrcat(sq, "ORDER BY color, %s, filename DESC, version DESC", second_order);
+        sq = g_strdup_printf("ORDER BY color, %s, filename DESC, version DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_GROUP:
-        sq = dt_util_dstrcat(sq, "ORDER BY group_id DESC, %s, mi.id-group_id != 0, mi.id DESC", second_order);
+        sq = g_strdup_printf("ORDER BY group_id DESC, %s, mi.id-group_id != 0, mi.id DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_PATH:
-        sq = dt_util_dstrcat(sq, "ORDER BY folder DESC, filename DESC, %s, version DESC", second_order);
+        sq = g_strdup_printf("ORDER BY folder DESC, filename DESC, %s, version DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_CUSTOM_ORDER:
-        sq = dt_util_dstrcat(sq, "ORDER BY position DESC, %s, filename DESC, version DESC", second_order);
+        sq = g_strdup_printf("ORDER BY position DESC, %s, filename DESC, version DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_TITLE:
-        sq = dt_util_dstrcat(sq, "ORDER BY m.value DESC, filename DESC, version DESC");
+        sq = g_strdup_printf("ORDER BY m.value DESC, filename DESC, version DESC");
         break;
 
       case DT_COLLECTION_SORT_DESCRIPTION:
-        sq = dt_util_dstrcat(sq, "ORDER BY m.value DESC, filename DESC, version DESC");
+        sq = g_strdup_printf("ORDER BY m.value DESC, filename DESC, version DESC");
         break;
 
       case DT_COLLECTION_SORT_ASPECT_RATIO:
-        sq = dt_util_dstrcat(sq, "ORDER BY aspect_ratio DESC, %s, filename DESC, version DESC", second_order);
+        sq = g_strdup_printf("ORDER BY aspect_ratio DESC, %s, filename DESC, version DESC", second_order);
         break;
 
 
       case DT_COLLECTION_SORT_SHUFFLE:
-        sq = dt_util_dstrcat(sq, "ORDER BY RANDOM()"); /* do not consider second order for shuffle */
+        sq = g_strdup("ORDER BY RANDOM()"); /* do not consider second order for shuffle */
         /* do not remember shuffle for second order */
         break;
 
       case DT_COLLECTION_SORT_NONE:
       default:/*fall through for default*/
         // shouldn't happen
-        sq = dt_util_dstrcat(sq, "ORDER BY mi.id DESC");
+        sq = g_strdup("ORDER BY mi.id DESC");
         break;
     }
   }
@@ -902,59 +907,59 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
           case DT_COLLECTION_SORT_PRINT_TIMESTAMP:  colname = "print_timestamp" ; break ;
           default: colname = "";
         }
-        sq = dt_util_dstrcat(sq, "ORDER BY %s, %s, filename, version", colname, second_order);
+        sq = g_strdup_printf("ORDER BY %s, %s, filename, version", colname, second_order);
         break;
         }
 
       case DT_COLLECTION_SORT_RATING:
-        sq = dt_util_dstrcat(sq, "ORDER BY CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END DESC, %s, filename, version", second_order);
+        sq = g_strdup_printf("ORDER BY CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END DESC, %s, filename, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_FILENAME:
-        sq = dt_util_dstrcat(sq, "ORDER BY filename, %s, version", second_order);
+        sq = g_strdup_printf("ORDER BY filename, %s, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_ID:
-        sq = dt_util_dstrcat(sq, "ORDER BY mi.id"); /* makes no sense to consider second order here since ID is unique ;) */
+        sq = g_strdup_printf("ORDER BY mi.id"); /* makes no sense to consider second order here since ID is unique ;) */
         break;
 
       case DT_COLLECTION_SORT_COLOR:
-        sq = dt_util_dstrcat(sq, "ORDER BY color DESC, %s, filename, version", second_order);
+        sq = g_strdup_printf("ORDER BY color DESC, %s, filename, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_GROUP:
-        sq = dt_util_dstrcat(sq, "ORDER BY group_id, %s, mi.id-group_id != 0, mi.id", second_order);
+        sq = g_strdup_printf("ORDER BY group_id, %s, mi.id-group_id != 0, mi.id", second_order);
         break;
 
       case DT_COLLECTION_SORT_PATH:
-        sq = dt_util_dstrcat(sq, "ORDER BY folder, filename, %s, version", second_order);
+        sq = g_strdup_printf("ORDER BY folder, filename, %s, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_CUSTOM_ORDER:
-        sq = dt_util_dstrcat(sq, "ORDER BY position, %s, filename, version", second_order);
+        sq = g_strdup_printf("ORDER BY position, %s, filename, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_TITLE:
-        sq = dt_util_dstrcat(sq, "ORDER BY m.value, filename, version");
+        sq = g_strdup_printf("ORDER BY m.value, filename, version");
         break;
 
       case DT_COLLECTION_SORT_DESCRIPTION:
-        sq = dt_util_dstrcat(sq, "ORDER BY m.value, filename, version");
+        sq = g_strdup_printf("ORDER BY m.value, filename, version");
         break;
 
       case DT_COLLECTION_SORT_ASPECT_RATIO:
-        sq = dt_util_dstrcat(sq, "ORDER BY aspect_ratio, %s, filename, version", second_order);
+        sq = g_strdup_printf("ORDER BY aspect_ratio, %s, filename, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_SHUFFLE:
-        sq = dt_util_dstrcat(sq, "ORDER BY RANDOM()"); /* do not consider second order for shuffle */
+        sq = g_strdup("ORDER BY RANDOM()"); /* do not consider second order for shuffle */
         /* do not remember shuffle for second order */
         break;
 
       case DT_COLLECTION_SORT_NONE:
       default:/*fall through for default*/
         // shouldn't happen
-        sq = dt_util_dstrcat(sq, "ORDER BY mi.id");
+        sq = g_strdup("ORDER BY mi.id");
         break;
     }
   }
@@ -1001,11 +1006,11 @@ static uint32_t _dt_collection_compute_count(const dt_collection_t *collection, 
   if((collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
   {
     gchar *where_ext = dt_collection_get_extended_where(collection, -1);
-    count_query = dt_util_dstrcat(NULL, "SELECT COUNT(DISTINCT main.images.id) FROM main.images AS mi %s", where_ext);
+    count_query = g_strdup_printf("SELECT COUNT(DISTINCT main.images.id) FROM main.images AS mi %s", where_ext);
     g_free(where_ext);
   }
   else
-    count_query = dt_util_dstrcat(count_query, "SELECT COUNT(DISTINCT mi.id) %s", fq);
+    count_query = g_strdup_printf("SELECT COUNT(DISTINCT mi.id) %s", fq);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), count_query, -1, &stmt, NULL);
   if((collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
@@ -1054,7 +1059,7 @@ GList *dt_collection_get(const dt_collection_t *collection, int limit, gboolean 
     if(selected)
       q = g_strdup_printf("SELECT id FROM main.selected_images AS s JOIN (%s) AS mi WHERE mi.id = s.imgid LIMIT -1, ?3", query);
     else
-      q = g_strdup_printf("%s", query);
+      q = g_strdup(query);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), q, -1, &stmt, NULL);
 
@@ -1320,14 +1325,14 @@ void dt_collection_split_operator_exposure(const gchar *input, char **number1, c
     gchar *n1 = g_match_info_fetch(match_info, 2);
 
     if(strstr(g_match_info_fetch(match_info, 1), "1/") != NULL)
-      *number1 = dt_util_dstrcat(NULL, "1.0/%s", n1);
+      *number1 = g_strdup_printf("1.0/%s", n1);
     else
       *number1 = n1;
 
     gchar *n2 = g_match_info_fetch(match_info, 5);
 
     if(strstr(g_match_info_fetch(match_info, 4), "1/") != NULL)
-      *number2 = dt_util_dstrcat(NULL, "1.0/%s", n2);
+      *number2 = g_strdup_printf("1.0/%s", n2);
     else
       *number2 = n2;
 
@@ -1351,7 +1356,7 @@ void dt_collection_split_operator_exposure(const gchar *input, char **number1, c
     gchar *n1 = g_match_info_fetch(match_info, 3);
 
     if(strstr(g_match_info_fetch(match_info, 2), "1/") != NULL)
-      *number1 = dt_util_dstrcat(NULL, "1.0/%s", n1);
+      *number1 = g_strdup_printf("1.0/%s", n1);
     else
       *number1 = n1;
 
@@ -1428,8 +1433,6 @@ void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList
 
 gchar *dt_collection_get_makermodel(const char *exif_maker, const char *exif_model)
 {
-  gchar *makermodel = NULL;
-
   char maker[64];
   char model[64];
   char alias[64];
@@ -1440,9 +1443,7 @@ gchar *dt_collection_get_makermodel(const char *exif_maker, const char *exif_mod
                                 alias, sizeof(alias));
 
   // Create the makermodel by concatenation
-
-  makermodel = dt_util_dstrcat(makermodel, "%s %s", maker, model);
-
+  gchar *makermodel = g_strdup_printf("%s %s", maker, model);
   return makermodel;
 }
 
@@ -1527,7 +1528,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
               "AND (auto_hash IS NULL OR current_hash != auto_hash) "
             : "";
         const char *condition2 = (strcmp(escaped_text, _("basic")) == 0) ? "not" : "";
-        query = dt_util_dstrcat(query, "(id %s IN (SELECT imgid FROM main.history_hash %s)) ",
+        query = g_strdup_printf("(id %s IN (SELECT imgid FROM main.history_hash %s)) ",
                                 condition2, condition);
       }
       break;
@@ -1784,7 +1785,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     }
 
     case DT_COLLECTION_PROP_DAY:
-    // query = dt_util_dstrcat(NULL, "(datetime_taken like '%%%s%%')", escaped_text);
+    // query = g_strdup_printf("(datetime_taken like '%%%s%%')", escaped_text);
     // break;
 
     case DT_COLLECTION_PROP_TIME:
@@ -1835,18 +1836,18 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = dt_util_dstrcat(query, "((strftime('%%Y:%%m:%%d:%%H:%%M:%%S', %s, 'unixepoch', 'localtime') >= '%s')"
-                                           "AND (strftime('%%Y:%%m:%%d:%%H:%%M:%%S', %s, 'unixepoch', 'localtime') <= '%s'))",
+          query = g_strdup_printf("((strftime('%%Y:%%m:%%d:%%H:%%M:%%S', %s, 'unixepoch', 'localtime') >= '%s')"
+                                  "AND (strftime('%%Y:%%m:%%d:%%H:%%M:%%S', %s, 'unixepoch', 'localtime') <= '%s'))",
                                   colname, number1, colname, number2);
       }
       else if((strcmp(operator, "=") == 0 || strcmp(operator, "") == 0) && number1)
-        query = dt_util_dstrcat(query, "(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') LIKE '%s')", colname, number1);
+        query = g_strdup_printf("(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') LIKE '%s')", colname, number1);
       else if(strcmp(operator, "<>") == 0 && number1)
-        query = dt_util_dstrcat(query, "(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') NOT LIKE '%s')", colname, number1);
+        query = g_strdup_printf("(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') NOT LIKE '%s')", colname, number1);
       else if(number1)
-        query = dt_util_dstrcat(query, "(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') %s '%s')", colname, operator, number1);
+        query = g_strdup_printf("(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') %s '%s')", colname, operator, number1);
       else
-        query = dt_util_dstrcat(query, "(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') LIKE '%%%s%%')", colname, escaped_text);
+        query = g_strdup_printf("(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') LIKE '%%%s%%')", colname, escaped_text);
 
       g_free(operator);
       g_free(number1);
@@ -1855,14 +1856,14 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_GROUPING: // grouping
-      query = dt_util_dstrcat(query, "(id %s group_id)", (strcmp(escaped_text, _("group leaders")) == 0) ? "=" : "!=");
+      query = g_strdup_printf("(id %s group_id)", (strcmp(escaped_text, _("group leaders")) == 0) ? "=" : "!=");
       break;
 
     case DT_COLLECTION_PROP_MODULE: // dev module
       {
-        query = dt_util_dstrcat(query, "(id IN (SELECT imgid AS id FROM main.history AS h "
-                                       "JOIN memory.darktable_iop_names AS m ON m.operation = h.operation "
-                                       "WHERE h.enabled = 1 AND m.name LIKE '%s'))", escaped_text);
+        query = g_strdup_printf("(id IN (SELECT imgid AS id FROM main.history AS h "
+                                "JOIN memory.darktable_iop_names AS m ON m.operation = h.operation "
+                                "WHERE h.enabled = 1 AND m.name LIKE '%s'))", escaped_text);
       }
       break;
 
@@ -2020,8 +2021,7 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
       }
       // 2. search the first imgid not in the list but AFTER the list (or in a gap inside the list)
       // we need to be carefull that some images in the list may not be present on screen (collapsed groups)
-      gchar *query = dt_util_dstrcat(NULL,
-                                     "SELECT imgid"
+      gchar *query = g_strdup_printf("SELECT imgid"
                                      " FROM memory.collected_images"
                                      " WHERE imgid NOT IN (%s)"
                                      "  AND rowid > (SELECT rowid"
@@ -2041,8 +2041,7 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
       // 3. if next is still unvalid, let's try to find the first untouched image BEFORE the list
       if(next < 0)
       {
-        query = dt_util_dstrcat(NULL,
-                                "SELECT imgid"
+        query = g_strdup_printf("SELECT imgid"
                                 " FROM memory.collected_images"
                                 " WHERE imgid NOT IN (%s)"
                                 "   AND rowid < (SELECT rowid"
@@ -2116,11 +2115,9 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
   // remove from selected images where not in this query.
   sqlite3_stmt *stmt = NULL;
   const gchar *cquery = dt_collection_get_query_no_group(collection);
-  gchar *complete_query = NULL;
   if(cquery && cquery[0] != '\0')
   {
-    complete_query
-        = dt_util_dstrcat(complete_query, "DELETE FROM main.selected_images WHERE imgid NOT IN (%s)", cquery);
+    gchar *complete_query = g_strdup_printf("DELETE FROM main.selected_images WHERE imgid NOT IN (%s)", cquery);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), complete_query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
@@ -2269,9 +2266,7 @@ int64_t dt_collection_get_image_position(const int32_t image_id, const int32_t t
   if (image_id >= 0)
   {
     sqlite3_stmt *stmt = NULL;
-    gchar *image_pos_query = NULL;
-    image_pos_query = dt_util_dstrcat(
-          image_pos_query,
+    gchar *image_pos_query = g_strdup(
           tagid ? "SELECT position FROM main.tagged_images WHERE imgid = ?1 AND tagid = ?2"
                 : "SELECT position FROM main.images WHERE id = ?1");
 
