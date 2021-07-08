@@ -37,7 +37,6 @@
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
-#include "gui/guides.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 #include "libs/modulegroups.h"
@@ -132,7 +131,8 @@ const char *description(struct dt_iop_module_t *self)
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_ALLOW_FAST_PIPE;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_ALLOW_FAST_PIPE
+         | IOP_FLAGS_GUIDES_WIDGET;
 }
 
 int default_group()
@@ -378,7 +378,6 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *lensshift_v;
   GtkWidget *lensshift_h;
   GtkWidget *shear;
-  GtkWidget *guide_lines;
   GtkWidget *cropmode;
   GtkWidget *mode;
   GtkWidget *specifics;
@@ -395,7 +394,6 @@ typedef struct dt_iop_ashift_gui_data_t
   int lines_suppressed;
   int fitting;
   int isflipped;
-  int show_guides;
   int isselecting;
   int isdeselecting;
   dt_iop_ashift_bounding_t isbounding;
@@ -3553,25 +3551,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_restore(cr);
   }
 
-  // show guide lines on request
-  if(g->show_guides)
-  {
-    dt_guides_t *guide = (dt_guides_t *)darktable.guides->data;
-    double dashes = DT_PIXEL_APPLY_DPI(5.0);
-    cairo_save(cr);
-    cairo_rectangle(cr, 0, 0, width, height);
-    cairo_clip(cr);
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
-    cairo_set_source_rgb(cr, .8, .8, .8);
-    cairo_set_dash(cr, &dashes, 1, 0);
-    guide->draw(cr, 0, 0, width, height, 1.0, guide->user_data);
-    cairo_stroke_preserve(cr);
-    cairo_set_dash(cr, &dashes, 0, 0);
-    cairo_set_source_rgba(cr, 0.3, .3, .3, .8);
-    cairo_stroke(cr);
-    cairo_restore(cr);
-  }
-
   // structural data are currently being collected or fit procedure is running? -> skip
   if(g->fitting) return;
 
@@ -4094,16 +4073,6 @@ static void cropmode_callback(GtkWidget *widget, gpointer user_data)
   swap_shadow_crop_box(p,g);
 }
 
-static void guide_lines_callback(GtkWidget *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  g->show_guides = dt_bauhaus_combobox_get(widget);
-  dt_iop_request_focus(self);
-  dt_control_queue_redraw_center();
-}
-
 static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -4438,7 +4407,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->orthocorr, p->orthocorr);
   dt_bauhaus_slider_set(g->aspect, p->aspect);
   dt_bauhaus_combobox_set(g->mode, p->mode);
-  dt_bauhaus_combobox_set(g->guide_lines, g->show_guides);
   dt_bauhaus_combobox_set(g->cropmode, p->cropmode);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), 0);
 
@@ -4521,7 +4489,6 @@ void reload_defaults(dt_iop_module_t *module)
     g->shear_range = SHEAR_RANGE_SOFT;
     g->lines_suppressed = 0;
     g->lines_version = 0;
-    g->show_guides = 0;
     g->isselecting = 0;
     g->isdeselecting = 0;
     g->isbounding = ASHIFT_BOUNDING_OFF;
@@ -4686,7 +4653,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->lensshift_v_range = LENSSHIFT_RANGE_SOFT;
   g->lensshift_h_range = LENSSHIFT_RANGE_SOFT;
   g->shear_range = SHEAR_RANGE_SOFT;
-  g->show_guides = 0;
   g->isselecting = 0;
   g->isdeselecting = 0;
   g->isbounding = ASHIFT_BOUNDING_OFF;
@@ -4713,12 +4679,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->shear = dt_bauhaus_slider_from_params(self, "shear");
   dt_bauhaus_slider_set_soft_range(g->shear, -SHEAR_RANGE, SHEAR_RANGE);
-
-  g->guide_lines = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->guide_lines, NULL, N_("guides"));
-  dt_bauhaus_combobox_add(g->guide_lines, _("off"));
-  dt_bauhaus_combobox_add(g->guide_lines, _("on"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);
 
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
   g_signal_connect(G_OBJECT(g->cropmode), "value-changed", G_CALLBACK(cropmode_callback), self);
@@ -4789,7 +4749,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->lensshift_v, _("apply lens shift correction in one direction"));
   gtk_widget_set_tooltip_text(g->lensshift_h, _("apply lens shift correction in one direction"));
   gtk_widget_set_tooltip_text(g->shear, _("shear the image along one diagonal"));
-  gtk_widget_set_tooltip_text(g->guide_lines, _("display guide lines overlay"));
   gtk_widget_set_tooltip_text(g->cropmode, _("automatically crop to avoid black edges"));
   gtk_widget_set_tooltip_text(g->mode, _("lens model of the perspective correction: "
                                          "generic or according to the focal length"));
@@ -4820,7 +4779,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->clean, _("remove line structure information"));
   gtk_widget_set_tooltip_text(g->eye, _("toggle visibility of structure lines"));
 
-  g_signal_connect(G_OBJECT(g->guide_lines), "value-changed", G_CALLBACK(guide_lines_callback), self);
   g_signal_connect(G_OBJECT(g->fit_v), "button-press-event", G_CALLBACK(fit_v_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->fit_h), "button-press-event", G_CALLBACK(fit_h_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->fit_both), "button-press-event", G_CALLBACK(fit_both_button_clicked), (gpointer)self);

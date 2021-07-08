@@ -501,6 +501,11 @@ spinbutton>button
   margin-top: 0.42em;
 }
 
+#guides-line
+{
+  padding: 0 0.84em;
+}
+
 /* icon buttons in modules main body */
 #iop-plugin-ui-main #dt-button,
 #iop-plugin-ui-main #dt-toggle-button,
@@ -936,6 +941,11 @@ menuitem > arrow
   border: 0;
 }
 
+menuitem check
+{
+  margin-left: 0.5em;
+}
+
 popover
 {
   padding: 0.4em;
@@ -999,14 +1009,16 @@ popover separator
 
 notebook tabs,
 #modules-tabs,
-#blending-tabs
+#blending-tabs,
+#guides-line
 {
   color: @button_fg;
   font-family: sans-serif;
 }
 
 #modules-tabs,
-#blending-tabs
+#blending-tabs,
+#guides-line
 {
   background-color: @button_border;
 }
@@ -1017,7 +1029,8 @@ notebook tabs,
   padding: 0.1em;
 }
 
-#blending-tabs #dt-toggle-button
+#blending-tabs #dt-toggle-button,
+#guides-line #dt-toggle-button
 {
   font-size: 0.8em;
   min-height: 1.55em;
@@ -1030,6 +1043,11 @@ notebook tabs,
   min-width: 0em;
   padding-left: 0.2em;
   padding-right: 0.2em;
+}
+
+#guides-line #dt-toggle-button
+{
+  min-width: 1.55em;
 }
 
 #blending-tabs #dt-button
@@ -1047,7 +1065,8 @@ notebook tabs,
 
 /* Do not apply border-radius to group modules icons and masks icons */
 #modules-tabs button,
-#blending-tabs button
+#blending-tabs button,
+#guides-line button
 {
   border-radius: 0;
   border: 0;

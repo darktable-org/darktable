@@ -242,6 +242,9 @@ typedef struct dt_view_manager_t
     guint audio_player_event_source;
   } audio;
 
+  // toggle button for guides (in the module toolbox)
+  GtkWidget *guides_toggle;
+
   /*
    * Proxy
    */
