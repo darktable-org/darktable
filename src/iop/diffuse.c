@@ -685,13 +685,10 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           const float magnitude_grad = hypotf(gradient[0], gradient[1]);
           const float magnitude_lapl = hypotf(laplacian[0], laplacian[1]);
 
-          const float theta_grad = atan2f(gradient[1], gradient[0]);
-          const float theta_lapl = atan2f(laplacian[1], laplacian[0]);
-
-          const float cos_theta_grad = cosf(theta_grad);
-          const float cos_theta_lapl = cosf(theta_lapl);
-          const float sin_theta_grad = sinf(theta_grad);
-          const float sin_theta_lapl = sinf(theta_lapl);
+          const float cos_theta_grad = gradient[0] / magnitude_grad;
+          const float cos_theta_lapl = laplacian[0] / magnitude_lapl;
+          const float sin_theta_grad = gradient[1] / magnitude_grad;
+          const float sin_theta_lapl = laplacian[1] / magnitude_lapl;
 
           const float cos_theta_grad_sq = sqf(cos_theta_grad);
           const float sin_theta_grad_sq = sqf(sin_theta_grad);
