@@ -359,7 +359,7 @@ static inline void WB_coeffs_to_illuminant_xy(const float CAM_to_XYZ[4][3], cons
 
 static inline void matrice_pseudoinverse(float (*in)[3], float (*out)[3], int size)
 {
-  float work[3][6];
+  float DT_ALIGNED_ARRAY work[3][6];
 
   for(int i = 0; i < 3; i++)
   {

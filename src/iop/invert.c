@@ -163,7 +163,7 @@ static void gui_update_from_coeffs(dt_iop_module_t *self)
   if(img->flags & DT_IMAGE_4BAYER)
   {
     dt_aligned_pixel_t rgb;
-    for(int k = 0; k < 4; k++) rgb[k] = p->color[k];
+    for_four_channels(k) rgb[k] = p->color[k];
 
     dt_colorspaces_cygm_to_rgb(rgb, 1, g->CAM_to_RGB);
 
@@ -177,16 +177,16 @@ static void gui_update_from_coeffs(dt_iop_module_t *self)
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
-  static float old[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+  static dt_aligned_pixel_t old = { 0.0f, 0.0f, 0.0f, 0.0f };
 
   const float *grayrgb = self->picked_color;
 
   if(grayrgb[0] == old[0] && grayrgb[1] == old[1] && grayrgb[2] == old[2] && grayrgb[3] == old[3]) return;
 
-  for(int k = 0; k < 4; k++) old[k] = grayrgb[k];
+  for_four_channels(k) old[k] = grayrgb[k];
 
   dt_iop_invert_params_t *p = self->params;
-  for(int k = 0; k < 4; k++) p->color[k] = grayrgb[k];
+  for_four_channels(k) p->color[k] = grayrgb[k];
 
   ++darktable.gui->reset;
   gui_update_from_coeffs(self);

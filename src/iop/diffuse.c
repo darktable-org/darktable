@@ -488,7 +488,7 @@ static inline void init_reconstruct(float *const restrict reconstructed, const s
 #ifdef _OPENMP
 #pragma omp declare simd aligned(pixels:64) aligned(xy:16) uniform(pixels)
 #endif
-static inline void find_gradients(const float pixels[9][4], float xy[2][4])
+static inline void find_gradients(const dt_aligned_pixel_t pixels[9], dt_aligned_pixel_t xy[2])
 {
   // Compute the gradient with centered finite differences in a 3×3 stencil
   // warning : x is vertical, y is horizontal
@@ -502,7 +502,7 @@ static inline void find_gradients(const float pixels[9][4], float xy[2][4])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(pixels:64) aligned(xy:16) uniform(pixels)
 #endif
-static inline void find_laplacians(const float pixels[9][4], float xy[2][4])
+static inline void find_laplacians(const dt_aligned_pixel_t pixels[9], dt_aligned_pixel_t xy[2])
 {
   // Compute the laplacian with centered finite differences in a 3×3 stencil
   // warning : x is vertical, y is horizontal
@@ -517,8 +517,9 @@ static inline void find_laplacians(const float pixels[9][4], float xy[2][4])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(a, c2, cos_theta_sin_theta, cos_theta2, sin_theta2:16)
 #endif
-static inline void rotation_matrix_isophote(const float c2[4], const float cos_theta_sin_theta[4],
-                                            const float cos_theta2[4], const float sin_theta2[4], float a[2][2][4])
+static inline void rotation_matrix_isophote(const dt_aligned_pixel_t c2, const dt_aligned_pixel_t cos_theta_sin_theta,
+                                            const dt_aligned_pixel_t cos_theta2,
+                                            const dt_aligned_pixel_t sin_theta2, dt_aligned_pixel_t a[2][2])
 {
   // Write the coefficients of a square symmetrical matrice of rotation of the gradient :
   // [[ a11, a12 ],
@@ -536,8 +537,9 @@ static inline void rotation_matrix_isophote(const float c2[4], const float cos_t
 #ifdef _OPENMP
 #pragma omp declare simd aligned(a, c2, cos_theta_sin_theta, cos_theta2, sin_theta2:16)
 #endif
-static inline void rotation_matrix_gradient(const float c2[4], const float cos_theta_sin_theta[4],
-                                            const float cos_theta2[4], const float sin_theta2[4], float a[2][2][4])
+static inline void rotation_matrix_gradient(const dt_aligned_pixel_t c2, const dt_aligned_pixel_t cos_theta_sin_theta,
+                                            const dt_aligned_pixel_t cos_theta2,
+                                            const dt_aligned_pixel_t sin_theta2, dt_aligned_pixel_t a[2][2])
 {
   // Write the coefficients of a square symmetrical matrice of rotation of the gradient :
   // [[ a11, a12 ],
@@ -556,7 +558,7 @@ static inline void rotation_matrix_gradient(const float c2[4], const float cos_t
 #ifdef _OPENMP
 #pragma omp declare simd aligned(a, kernel: 64)
 #endif
-static inline void build_matrix(const float a[2][2][4], float kernel[9][4])
+static inline void build_matrix(const dt_aligned_pixel_t a[2][2], dt_aligned_pixel_t kernel[9])
 {
   for_each_channel(c)
   {
@@ -584,7 +586,7 @@ static inline void build_matrix(const float a[2][2][4], float kernel[9][4])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(kernel: 64)
 #endif
-static inline void isotrope_laplacian(float kernel[9][4])
+static inline void isotrope_laplacian(dt_aligned_pixel_t kernel[9])
 {
   // see in https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/#Second-order-isotropic-finite-differences
   // for references (Oono & Puri)
@@ -605,8 +607,9 @@ static inline void isotrope_laplacian(float kernel[9][4])
 #ifdef _OPENMP
 #pragma omp declare simd aligned(kernel, c2: 64) uniform(isotropy_type)
 #endif
-static inline void compute_kernel(const float c2[4], const float cos_theta_sin_theta[4], const float cos_theta2[4],
-                                  const float sin_theta2[4], const dt_isotropy_t isotropy_type, float kernel[9][4])
+static inline void compute_kernel(const dt_aligned_pixel_t c2, const dt_aligned_pixel_t cos_theta_sin_theta,
+                                  const dt_aligned_pixel_t cos_theta2, const dt_aligned_pixel_t sin_theta2,
+                                  const dt_isotropy_t isotropy_type, dt_aligned_pixel_t kernel[9])
 {
   // Build the matrix of rotation with anisotropy
 
@@ -620,14 +623,14 @@ static inline void compute_kernel(const float c2[4], const float cos_theta_sin_t
     }
     case(DT_ISOTROPY_ISOPHOTE):
     {
-      float DT_ALIGNED_ARRAY a[2][2][4] = { { { 0.f } } };
+      dt_aligned_pixel_t a[2][2] = { { { 0.f } } };
       rotation_matrix_isophote(c2, cos_theta_sin_theta, cos_theta2, sin_theta2, a);
       build_matrix(a, kernel);
       break;
     }
     case(DT_ISOTROPY_GRADIENT):
     {
-      float DT_ALIGNED_ARRAY a[2][2][4] = { { { 0.f } } };
+      dt_aligned_pixel_t a[2][2] = { { { 0.f } } };
       rotation_matrix_gradient(c2, cos_theta_sin_theta, cos_theta2, sin_theta2, a);
       build_matrix(a, kernel);
       break;
@@ -638,10 +641,10 @@ static inline void compute_kernel(const float c2[4], const float cos_theta_sin_t
 static inline void heat_PDE_diffusion(const float *const restrict high_freq, const float *const restrict low_freq,
                                       const uint8_t *const restrict mask, const int has_mask,
                                       float *const restrict output, const size_t width, const size_t height,
-                                      const float anisotropy[4], const dt_isotropy_t isotropy_type[4],
+                                      const dt_aligned_pixel_t anisotropy, const dt_isotropy_t isotropy_type[4],
                                       const float regularization, const float variance_threshold,
                                       const float current_radius_square, const int mult,
-                                      const float ABCD[4], const float strength)
+                                      const dt_aligned_pixel_t ABCD, const float strength)
 {
   // Simultaneous inpainting for image structure and texture using anisotropic heat transfer model
   // https://www.researchgate.net/publication/220663968
@@ -687,8 +690,8 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
               MIN((int)(j + mult * H), (int)width - 1) }; // y + mult
 
         // fetch non-local pixels and store them locally and contiguously
-        float DT_ALIGNED_ARRAY neighbour_pixel_HF[9][4];
-        float DT_ALIGNED_ARRAY neighbour_pixel_LF[9][4];
+        dt_aligned_pixel_t neighbour_pixel_HF[9];
+        dt_aligned_pixel_t neighbour_pixel_LF[9];
 
         for(size_t ii = 0; ii < 3; ii++)
           for(size_t jj = 0; jj < 3; jj++)
@@ -702,15 +705,15 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           }
 
         // c² in https://www.researchgate.net/publication/220663968
-        float DT_ALIGNED_ARRAY c2[4][4];
+        dt_aligned_pixel_t c2[4];
         // build the local anisotropic convolution filters for gradients and laplacians
-        float DT_ALIGNED_PIXEL gradient[2][4], DT_ALIGNED_PIXEL laplacian[2][4]; // x, y for each channel
+        dt_aligned_pixel_t gradient[2], laplacian[2]; // x, y for each channel
         find_gradients(neighbour_pixel_LF, gradient);
         find_gradients(neighbour_pixel_HF, laplacian);
 
-        float DT_ALIGNED_PIXEL cos_theta_grad_sq[4];
-        float DT_ALIGNED_PIXEL sin_theta_grad_sq[4];
-        float DT_ALIGNED_PIXEL cos_theta_sin_theta_grad[4];
+        dt_aligned_pixel_t cos_theta_grad_sq;
+        dt_aligned_pixel_t sin_theta_grad_sq;
+        dt_aligned_pixel_t cos_theta_sin_theta_grad;
         for_each_channel(c)
         {
           float magnitude_grad = sqrtf(sqf(gradient[0][c]) + sqf(gradient[1][c]));
@@ -726,9 +729,9 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           cos_theta_sin_theta_grad[c] = gradient[0][c] * gradient[1][c];
         }
 
-        float DT_ALIGNED_PIXEL cos_theta_lapl_sq[4];
-        float DT_ALIGNED_PIXEL sin_theta_lapl_sq[4];
-        float DT_ALIGNED_PIXEL cos_theta_sin_theta_lapl[4];
+        dt_aligned_pixel_t cos_theta_lapl_sq;
+        dt_aligned_pixel_t sin_theta_lapl_sq;
+        dt_aligned_pixel_t cos_theta_sin_theta_lapl;
         for_each_channel(c)
         {
           float magnitude_lapl = sqrtf(sqf(laplacian[0][c]) + sqf(laplacian[1][c]));
@@ -750,7 +753,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           dt_fast_expf_4wide(c2[k], c2[k]);
         }
 
-        float DT_ALIGNED_ARRAY kern_first[9][4], kern_second[9][4], kern_third[9][4], kern_fourth[9][4];
+        dt_aligned_pixel_t kern_first[9], kern_second[9], kern_third[9], kern_fourth[9];
         compute_kernel(c2[0], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type[0],
                        kern_first);
         compute_kernel(c2[1], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type[1],
@@ -760,8 +763,8 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         compute_kernel(c2[3], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type[3],
                        kern_fourth);
 
-        float DT_ALIGNED_PIXEL derivatives[4][4] = { { 0.f } };
-        float DT_ALIGNED_PIXEL variance[4] = { 0.f };
+        dt_aligned_pixel_t derivatives[4] = { { 0.f } };
+        dt_aligned_pixel_t variance = { 0.f };
         // convolve filters and compute the variance and the regularization term
         for(size_t k = 0; k < 9; k++)
         {
@@ -783,7 +786,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           variance[c] = variance_threshold + sqrtf(variance[c] * regularization_factor);
         }
         // compute the update
-        float DT_ALIGNED_PIXEL acc[4] = { 0.f };
+        dt_aligned_pixel_t acc = { 0.f };
         for(size_t k = 0; k < 4; k++)
         {
           for_each_channel(c, aligned(acc,derivatives,ABCD))
@@ -838,7 +841,7 @@ static inline gint wavelets_process(const float *const restrict in, float *const
 {
   gint success = TRUE;
 
-  const float DT_ALIGNED_PIXEL anisotropy[4]
+  const dt_aligned_pixel_t anisotropy
       = { compute_anisotropy_factor(data->anisotropy_first),
           compute_anisotropy_factor(data->anisotropy_second),
           compute_anisotropy_factor(data->anisotropy_third),
@@ -910,8 +913,8 @@ static inline gint wavelets_process(const float *const restrict in, float *const
     const float real_radius = current_radius * zoom;
 
     const float norm = expf(-sqf(real_radius - (float)data->radius_center) / sqf(data->radius));
-    const float DT_ALIGNED_ARRAY ABCD[4] = { data->first * KAPPA * norm, data->second * KAPPA * norm,
-                                             data->third * KAPPA * norm, data->fourth * KAPPA * norm };
+    const dt_aligned_pixel_t ABCD = { data->first * KAPPA * norm, data->second * KAPPA * norm,
+                                      data->third * KAPPA * norm, data->fourth * KAPPA * norm };
     const float strength = data->sharpness * norm + 1.f;
 
     /* debug
@@ -1110,7 +1113,7 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
 {
   cl_int err = -999;
 
-  const float DT_ALIGNED_PIXEL anisotropy[4]
+  const dt_aligned_pixel_t anisotropy
       = { compute_anisotropy_factor(data->anisotropy_first),
           compute_anisotropy_factor(data->anisotropy_second),
           compute_anisotropy_factor(data->anisotropy_third),
@@ -1187,8 +1190,8 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
     const float current_radius_square = sqf(current_radius);
 
     const float norm = expf(-sqf(real_radius - (float)data->radius_center) / sqf(data->radius));
-    const float DT_ALIGNED_ARRAY ABCD[4] = { data->first * KAPPA * norm, data->second * KAPPA * norm,
-                                             data->third * KAPPA * norm, data->fourth * KAPPA * norm };
+    const dt_aligned_pixel_t ABCD = { data->first * KAPPA * norm, data->second * KAPPA * norm,
+                                      data->third * KAPPA * norm, data->fourth * KAPPA * norm };
     const float strength = data->sharpness * norm + 1.f;
 
     cl_mem buffer_in;

@@ -76,7 +76,8 @@ static void dt_heal_add(const float *const restrict first_buffer, const float *c
 }
 
 // define a custom reduction operation to handle a 3-vector of floats
-typedef struct _aligned_pixel { float DT_ALIGNED_PIXEL v[4]; } _aligned_pixel;
+// we can't return an array from a function, so wrap the array type in a struct
+typedef struct _aligned_pixel { dt_aligned_pixel_t v; } _aligned_pixel;
 #ifdef _OPENMP
 static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newval)
 {
@@ -110,7 +111,7 @@ static float dt_heal_laplace_iteration(float *const restrict pixels, const float
     const size_t j4 = Aidx[i * 5 + 4];
     const float a = Adiag[i];
 
-    float DT_ALIGNED_PIXEL diff[4];
+    dt_aligned_pixel_t diff;
     for_each_channel(k,aligned(pixels))
     {
       diff[k] = w * (a * pixels[j0 + k] - (pixels[j1 + k] + pixels[j2 + k] + pixels[j3 + k] + pixels[j4 + k]));
