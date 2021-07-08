@@ -18,16 +18,16 @@
 
 #include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
-#include "common/debug.h"
-#include "common/exif.h"
 #include "common/collection.h"
+#include "common/debug.h"
 #include "common/dtpthread.h"
+#include "common/exif.h"
+#include "common/history.h"
 #include "common/imagebuf.h"
 #include "common/imageio_rawspeed.h"
 #include "common/interpolation.h"
 #include "common/iop_group.h"
 #include "common/module.h"
-#include "common/history.h"
 #include "common/opencl.h"
 #include "common/usermanual_url.h"
 #include "control/control.h"
@@ -41,9 +41,10 @@
 #include "dtgtk/gradientslider.h"
 #include "dtgtk/icon.h"
 #include "gui/accelerators.h"
-#include "gui/gtk.h"
-#include "gui/presets.h"
 #include "gui/color_picker_proxy.h"
+#include "gui/gtk.h"
+#include "gui/guides.h"
+#include "gui/presets.h"
 #include "libs/modulegroups.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -1960,6 +1961,9 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   /* update sticky accels window */
   if(darktable.view_manager->accels_window.window && darktable.view_manager->accels_window.sticky)
     dt_view_accels_refresh(darktable.view_manager);
+
+  // update guides button state
+  dt_guides_update_button_state();
 
   dt_control_change_cursor(GDK_LEFT_PTR);
   dt_control_queue_redraw_center();

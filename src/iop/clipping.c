@@ -227,11 +227,6 @@ typedef struct dt_iop_clipping_gui_data_t
   GList *aspect_list;
   GtkWidget *aspect_presets;
 
-  GtkWidget *guide_lines;
-  GtkWidget *flip_guides;
-  GtkWidget *guides_widgets;
-  GList *guides_widgets_list;
-
   GtkWidget *keystone_type;
   GtkWidget *crop_auto;
 
@@ -331,7 +326,8 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_ALLOW_FAST_PIPE;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_ALLOW_FAST_PIPE
+         | IOP_FLAGS_GUIDES_SPECIAL_DRAW | IOP_FLAGS_GUIDES_WIDGET;
 }
 
 int operation_tags()
@@ -2066,54 +2062,6 @@ static void aspect_flip(GtkWidget *button, dt_iop_module_t *self)
   key_swap_callback(NULL, NULL, 0, 0, self);
 }
 
-// TODO once we depend on GTK3 >= 3.12 use the name as in 2f491cf8355a81554b98de538fe862d6ad9b62e5
-static void guides_presets_set_visibility(dt_iop_clipping_gui_data_t *g, int which)
-{
-    gtk_widget_set_no_show_all(g->guides_widgets, TRUE);
-    gtk_widget_hide(g->guides_widgets);
-    gtk_widget_set_no_show_all(g->flip_guides, TRUE);
-    gtk_widget_hide(g->flip_guides);
-
-  if(which != 0)
-  {
-    GtkWidget *widget = g_list_nth_data(g->guides_widgets_list, which - 1);
-    if(widget)
-    {
-      gtk_widget_set_no_show_all(g->guides_widgets, FALSE);
-      gtk_widget_show_all(g->guides_widgets);
-      gtk_stack_set_visible_child(GTK_STACK(g->guides_widgets), widget);
-    }
-
-    if(((dt_guides_t *)g_list_nth_data(darktable.guides, which - 1))->support_flip)
-    {
-      gtk_widget_set_no_show_all(g->flip_guides, FALSE);
-      gtk_widget_show_all(g->flip_guides);
-    }
-  }
-}
-
-static void guides_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
-{
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  int which = dt_bauhaus_combobox_get(combo);
-  guides_presets_set_visibility(g, which);
-
-  // remember setting
-  dt_conf_set_int("plugins/darkroom/clipping/guide", which);
-
-  dt_control_queue_redraw_center();
-}
-
-static void guides_flip_changed(GtkWidget *combo, dt_iop_module_t *self)
-{
-  int flip = dt_bauhaus_combobox_get(combo);
-
-  // remember setting
-  dt_conf_set_int("plugins/darkroom/clipping/flip_guides", flip);
-
-  dt_control_queue_redraw_center();
-}
-
 static gint _aspect_ratio_cmp(const dt_iop_clipping_aspect_t *a, const dt_iop_clipping_aspect_t *b)
 {
   // want most square at the end, and the most non-square at the beginning
@@ -2316,53 +2264,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->aspect_presets), "quad-pressed", G_CALLBACK(aspect_flip), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_presets, TRUE, TRUE, 0);
 
-  g->guide_lines = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->guide_lines, NULL, N_("guides"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);
-
-  g->guides_widgets = gtk_stack_new();
-  gtk_stack_set_homogeneous(GTK_STACK(g->guides_widgets), FALSE);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->guides_widgets, TRUE, TRUE, 0);
-
-  dt_bauhaus_combobox_add(g->guide_lines, _("none"));
-  int i = 0;
-  for(GList *iter = darktable.guides; iter; iter = g_list_next(iter), i++)
-  {
-    GtkWidget *widget = NULL;
-    dt_guides_t *guide = (dt_guides_t *)iter->data;
-    dt_bauhaus_combobox_add(g->guide_lines, _(guide->name));
-    if(guide->widget)
-    {
-      // generate some unique name so that we can have the same name several times
-      char name[5];
-      snprintf(name, sizeof(name), "%d", i);
-      widget = guide->widget(self, guide->user_data);
-      gtk_widget_show_all(widget);
-      gtk_stack_add_named(GTK_STACK(g->guides_widgets), widget, name);
-    }
-    g->guides_widgets_list = g_list_append(g->guides_widgets_list, widget);
-  }
-
-  int guide = dt_conf_get_int("plugins/darkroom/clipping/guide");
-  dt_bauhaus_combobox_set(g->guide_lines, guide);
-
-  gtk_widget_set_tooltip_text(g->guide_lines, _("display guide lines to help compose your photograph"));
-  g_signal_connect(G_OBJECT(g->guide_lines), "value-changed", G_CALLBACK(guides_presets_changed), self);
-
-  g->flip_guides = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->flip_guides, NULL, N_("flip guides"));
-  dt_bauhaus_combobox_add(g->flip_guides, _("none"));
-  dt_bauhaus_combobox_add(g->flip_guides, _("horizontally"));
-  dt_bauhaus_combobox_add(g->flip_guides, _("vertically"));
-  dt_bauhaus_combobox_add(g->flip_guides, _("both"));
-  gtk_widget_set_tooltip_text(g->flip_guides, _("flip guides"));
-  g_signal_connect(G_OBJECT(g->flip_guides), "value-changed", G_CALLBACK(guides_flip_changed), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->flip_guides, TRUE, TRUE, 0);
-  dt_bauhaus_combobox_set(g->flip_guides, dt_conf_get_int("plugins/darkroom/clipping/flip_guides"));
-
-  guides_presets_set_visibility(g, guide);
-
-  self->widget = dt_ui_notebook_page(g->notebook, N_("margins"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, _("margins"), NULL);
 
   g->cx = dt_bauhaus_slider_from_params(self, "cx");
   dt_bauhaus_slider_set_digits(g->cx, 4);
@@ -2547,39 +2449,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   }
 
   // draw crop area guides
-  const int guide_flip = dt_bauhaus_combobox_get(g->flip_guides);
-  const float left = g->clip_x * wd;
-  const float top = g->clip_y * ht;
-  const float cwidth = g->clip_w * wd;
-  const float cheight = g->clip_h * ht;
-
-  // save context
-  cairo_save(cr);
-  cairo_rectangle(cr, left, top, cwidth, cheight);
-  cairo_clip(cr);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
-  dt_draw_set_color_overlay(cr, 0.8, 1.0);
-  cairo_set_dash(cr, &dashes, 1, 0);
-
-  // Move coordinates to local center selection.
-  cairo_translate(cr, (cwidth / 2 + left), (cheight / 2 + top));
-
-  // Flip horizontal.
-  if(guide_flip & FLAG_FLIP_HORIZONTAL) cairo_scale(cr, -1, 1);
-  // Flip vertical.
-  if(guide_flip & FLAG_FLIP_VERTICAL) cairo_scale(cr, 1, -1);
-
-  const int which = dt_bauhaus_combobox_get(g->guide_lines);
-  const dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
-  if(guide)
-  {
-    guide->draw(cr, -cwidth / 2.0, -cheight / 2.0, cwidth, cheight, zoom_scale, guide->user_data);
-    cairo_stroke_preserve(cr);
-    cairo_set_dash(cr, &dashes, 0, 0);
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
-    cairo_stroke(cr);
-  }
-  cairo_restore(cr);
+  dt_guides_draw(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht, zoom_scale);
 
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
   dt_draw_set_color_overlay(cr, 0.3, 1.0);
