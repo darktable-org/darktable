@@ -696,10 +696,8 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           const float sin_theta_lapl_sq = sqf(sin_theta_lapl);
 
           // c² in https://www.researchgate.net/publication/220663968
-          const float c2[4] = { expf(-magnitude_grad / anisotropy[0]),
-                                expf(-magnitude_lapl / anisotropy[1]),
-                                expf(-magnitude_grad / anisotropy[2]),
-                                expf(-magnitude_lapl / anisotropy[3]) };
+          const float c2[4] = { expf(-magnitude_grad * anisotropy[0]), expf(-magnitude_lapl * anisotropy[1]),
+                                expf(-magnitude_grad * anisotropy[2]), expf(-magnitude_lapl * anisotropy[3]) };
 
           float DT_ALIGNED_ARRAY kern_first[9], kern_second[9], kern_third[9], kern_fourth[9];
           compute_kernel(c2[0], cos_theta_grad, sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type[0], kern_first);
@@ -745,12 +743,10 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
 
 static inline float compute_anisotropy_factor(const float user_param)
 {
-  // compute the K param in c evaluation from https://www.researchgate.net/publication/220663968
+  // compute the inverse of the K param in c evaluation from
+  // https://www.researchgate.net/publication/220663968
   // but in a perceptually-even way, for better GUI interaction
-  if(user_param == 0.f)
-    return FLT_MAX;
-  else
-    return 1.f / sqf(user_param);
+  return sqf(user_param);
 }
 
 #if DEBUG_DUMP_PFM
