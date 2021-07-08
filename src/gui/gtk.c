@@ -264,9 +264,7 @@ static gchar *_panels_get_panel_path(dt_ui_panel_t panel, char *suffix)
 {
   gchar *v = _panels_get_view_path("");
   if(!v) return NULL;
-  gchar *path = dt_util_dstrcat(v, "%s%s", _ui_panel_config_names[panel], suffix);
-  g_free(v);
-  return path;
+  return dt_util_dstrcat(v, "%s%s", _ui_panel_config_names[panel], suffix);
 }
 
 static gboolean _panel_is_visible(dt_ui_panel_t panel)
