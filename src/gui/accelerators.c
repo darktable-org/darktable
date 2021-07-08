@@ -2870,7 +2870,7 @@ void dt_action_define_key_pressed_accel(dt_action_t *action, const gchar *path, 
 {
   dt_action_t *new_action = calloc(1, sizeof(dt_action_t));
   new_action->id = path_without_symbols(path);
-  new_action->label = g_strdup(Q_(path));
+  new_action->label = g_strdup(g_dpgettext2(NULL, "accel", path));
   new_action->type = DT_ACTION_TYPE_KEY_PRESSED;
   new_action->target = key;
   new_action->owner = action;
