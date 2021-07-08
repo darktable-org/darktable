@@ -448,7 +448,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
                     (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(omithierarchy)) ? DT_META_OMIT_HIERARCHY : 0)
                     );
 
-    newlist = dt_util_dstrcat(NULL,"%x", newflags);
+    newlist = g_strdup_printf("%x", newflags);
     GtkTreeIter iter;
     gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(d->liststore), &iter);
     while(valid)

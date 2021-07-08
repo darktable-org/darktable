@@ -1209,7 +1209,7 @@ static void _set_places_list(GtkWidget *places_paned, dt_lib_module_t* self)
   gtk_widget_set_tooltip_text(places_header, _("choose the root of the folder tree below"));
 
   GtkWidget *places_label = gtk_label_new(NULL);
-  gchar *markup = dt_util_dstrcat(NULL, "<b>  %s</b>",_("places"));
+  gchar *markup = g_strdup_printf("<b>  %s</b>",_("places"));
   gtk_label_set_markup(GTK_LABEL(places_label), markup);
   g_free(markup);
   gtk_box_pack_start(GTK_BOX(places_header), places_label, FALSE, FALSE, 0);
@@ -1437,7 +1437,7 @@ static void _add_custom_place(const gchar *folder, dt_lib_module_t* self)
 
   if(!g_strrstr(current_folders, folder))
   {
-    gchar *place = dt_util_dstrcat(NULL, "%s%s,", current_folders, folder);
+    gchar *place = g_strdup_printf("%s%s,", current_folders, folder);
     dt_conf_set_string("ui_last/import_custom_places", place);
     g_free(place);
 
@@ -1468,7 +1468,7 @@ static void _remove_place(const gchar *folder, GtkTreeIter iter, dt_lib_module_t
     dt_conf_set_bool("ui_last/import_dialog_show_mounted", FALSE);
   if(type == DT_TYPE_CUSTOM)
   {
-    gchar *pattern = dt_util_dstrcat(NULL, "%s,", folder);
+    gchar *pattern = g_strdup_printf("%s,", folder);
     gchar *place = dt_util_str_replace(current_folders, pattern, "");
     dt_conf_set_string("ui_last/import_custom_places", place);
     g_free(pattern);
@@ -2114,11 +2114,11 @@ static void _set_default_preferences(dt_lib_module_t *self)
     if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
     {
       const char *metadata_name = dt_metadata_get_name(i);
-      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", metadata_name);
+      char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", metadata_name);
       const uint32_t flag = (dt_conf_get_int(setting) | DT_METADATA_FLAG_IMPORTED);
       dt_conf_set_int(setting, flag);
       g_free(setting);
-      setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", metadata_name);
+      setting = g_strdup_printf("ui_last/import_last_%s", metadata_name);
       dt_conf_set_string(setting, "");
       g_free(setting);
     }
@@ -2156,12 +2156,12 @@ static char *_get_current_configuration(dt_lib_module_t *self)
     if(dt_metadata_get_type_by_display_order(i) != DT_METADATA_TYPE_INTERNAL)
     {
       const char *metadata_name = dt_metadata_get_name_by_display_order(i);
-      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag",
-                                      metadata_name);
+      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag",
+                                       metadata_name);
       const gboolean imported = dt_conf_get_int(setting) & DT_METADATA_FLAG_IMPORTED;
       g_free(setting);
 
-      setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", metadata_name);
+      setting = g_strdup_printf("ui_last/import_last_%s", metadata_name);
       char *metadata_value = dt_conf_get_string(setting);
       pref = dt_util_dstrcat(pref, "%s=%d%s,", metadata_name, imported ? 1 : 0, metadata_value);
       g_free(setting);
@@ -2214,13 +2214,13 @@ static void _apply_preferences(const char *pref, dt_lib_module_t *self)
       // metadata
       const int j = dt_metadata_get_keyid_by_name(metadata_name);
       if(j == -1) continue;
-      char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", metadata_name);
+      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", metadata_name);
       const uint32_t flag = (dt_conf_get_int(setting) & ~DT_METADATA_FLAG_IMPORTED) |
                             ((value[0] == '1') ? DT_METADATA_FLAG_IMPORTED : 0);
       dt_conf_set_int(setting, flag);
       g_free(setting);
       value++;
-      setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", metadata_name);
+      setting = g_strdup_printf("ui_last/import_last_%s", metadata_name);
       dt_conf_set_string(setting, value);
       g_free(setting);
     }
