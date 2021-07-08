@@ -2529,6 +2529,7 @@ void gui_init(dt_view_t *self)
   {
     // the button
     darktable.view_manager->guides_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, CPF_STYLE_FLAT, NULL);
+    dt_action_define(&self->actions, NULL, "show guide lines", darktable.view_manager->guides_toggle, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(darktable.view_manager->guides_toggle,
                                 _("toggle guide lines\nright click for guides options"));
     g_signal_connect(G_OBJECT(darktable.view_manager->guides_toggle), "button-press-event",
@@ -3873,6 +3874,9 @@ void init_key_accels(dt_view_t *self)
 
   // toggle visibility of drawn masks for current gui module
   dt_accel_register_view(self, NC_("accel", "show drawn masks"), 0, 0);
+
+  // toggle visibility of guide lines
+  dt_accel_register_view(self, NC_("accel", "show guide lines"), 0, 0);
 
   // brush size +/-
   dt_accel_register_view(self, NC_("accel", "increase brush size"), 0, 0);
