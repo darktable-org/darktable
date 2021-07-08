@@ -3878,6 +3878,9 @@ void init_key_accels(dt_view_t *self)
   // toggle visibility of guide lines
   dt_accel_register_view(self, NC_("accel", "show guide lines"), 0, 0);
 
+  // toggle visibility of second window
+  dt_accel_register_view(self, NC_("accel", "second window"), 0, 0);
+
   // brush size +/-
   dt_accel_register_view(self, NC_("accel", "increase brush size"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "decrease brush size"), 0, 0);
