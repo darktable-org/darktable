@@ -1329,7 +1329,7 @@ static int detail_enhance(const float *const in, float *const out, const int wid
 #endif
   for(size_t index = 0; index < 4*npixels; index += 4)
   {
-    float XYZ[3];
+    dt_aligned_pixel_t XYZ;
     dt_Lab_to_XYZ(out + index, XYZ);
     XYZ_to_sRGB(XYZ, out + index);
   }

@@ -138,12 +138,12 @@ static inline float dt_noise_generator(const dt_noise_distribution_t distributio
 #ifdef _OPENMP
 #pragma omp declare simd uniform(sigma) aligned(state:64) aligned(mu, sigma, out:16)
 #endif
-static inline void uniform_noise_simd(const float mu[3], const float sigma[3], uint32_t state[4], float out[3])
+static inline void uniform_noise_simd(const dt_aligned_pixel_t mu, const dt_aligned_pixel_t sigma,
+                                      uint32_t state[4], dt_aligned_pixel_t out)
 {
   const dt_aligned_pixel_t noise = { xoshiro128plus(state), xoshiro128plus(state), xoshiro128plus(state) };
 
-  #pragma unroll
-  for(size_t c = 0; c < 3; c++)
+  for_each_channel(c)
     out[c] = mu[c] + 2.0f * (noise[c] - 0.5f) * sigma[c];
 }
 
@@ -151,7 +151,8 @@ static inline void uniform_noise_simd(const float mu[3], const float sigma[3], u
 #ifdef _OPENMP
 #pragma omp declare simd uniform(sigma) aligned(state:64) aligned(mu, sigma, flip, out:16)
 #endif
-static inline void gaussian_noise_simd(const float mu[3], const float sigma[3], const int flip[3], uint32_t state[4], float out[3])
+static inline void gaussian_noise_simd(const dt_aligned_pixel_t mu, const dt_aligned_pixel_t sigma,
+                                       const int flip[4], uint32_t state[4], dt_aligned_pixel_t out)
 {
   // Create gaussian noise centered in mu of standard deviation sigma
   // state should be initialized with xoshiro256_init() before calling and private in thread
@@ -171,22 +172,22 @@ static inline void gaussian_noise_simd(const float mu[3], const float sigma[3], 
 
   dt_aligned_pixel_t noise = { 0.f };
 
-  #pragma unroll
-  for(size_t c = 0; c < 3; c++)
+  for_each_channel(c)
   {
     noise[c] = (flip[c]) ? sqrtf(-2.0f * logf(u1[c])) * cosf(2.f * M_PI * u2[c]) :
                            sqrtf(-2.0f * logf(u1[c])) * sinf(2.f * M_PI * u2[c]);
   }
 
-  #pragma unroll
-  for(size_t c = 0; c < 3; c++) out[c] = noise[c] * sigma[c] + mu[c];
+  for_each_channel(c)
+    out[c] = noise[c] * sigma[c] + mu[c];
 }
 
 
 #ifdef _OPENMP
 #pragma omp declare simd uniform(sigma) aligned(state:64) aligned(mu, sigma, flip, out:16)
 #endif
-static inline void poisson_noise_simd(const float mu[3], const float sigma[3], const int flip[3], uint32_t state[4], float out[3])
+static inline void poisson_noise_simd(const dt_aligned_pixel_t mu, const dt_aligned_pixel_t sigma, const int flip[4],
+                                      uint32_t state[4], dt_aligned_pixel_t out)
 {
   // create poissonian noise - It's just gaussian noise with Anscombe transform applied
   dt_aligned_pixel_t u1 = { 0.f };
@@ -201,8 +202,7 @@ static inline void poisson_noise_simd(const float mu[3], const float sigma[3], c
 
   dt_aligned_pixel_t noise = { 0.f };
 
-  #pragma unroll
-  for(size_t c = 0; c < 3; c++)
+  for_each_channel(c)
   {
     noise[c] = (flip[c]) ? sqrtf(-2.0f * logf(u1[c])) * cosf(2.f * M_PI * u2[c]) :
                            sqrtf(-2.0f * logf(u1[c])) * sinf(2.f * M_PI * u2[c]);
@@ -212,7 +212,7 @@ static inline void poisson_noise_simd(const float mu[3], const float sigma[3], c
   dt_aligned_pixel_t r = { 0.f };
 
   #pragma unroll
-  for(size_t c = 0; c < 3; c++)
+  for_each_channel(c)
   {
     r[c] = noise[c] * sigma[c] + 2.0f * sqrtf(fmaxf(mu[c] + 3.f / 8.f, 0.0f));
     out[c] = (r[c] * r[c] - sigma[c] * sigma[c]) / 4.f - 3.f / 8.f;
@@ -224,8 +224,8 @@ static inline void poisson_noise_simd(const float mu[3], const float sigma[3], c
 #pragma omp declare simd uniform(distribution, param) aligned(state:64) aligned(mu, param, flip, out:16)
 #endif
 static inline void dt_noise_generator_simd(const dt_noise_distribution_t distribution,
-                                           const float mu[3], const float param[3], const int flip[3],
-                                           uint32_t state[4], float out[3])
+                                           const dt_aligned_pixel_t mu, const dt_aligned_pixel_t param,
+                                           const int flip[4], uint32_t state[4], dt_aligned_pixel_t out)
 {
   // vector version
 

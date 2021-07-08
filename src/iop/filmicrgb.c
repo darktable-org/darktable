@@ -662,8 +662,9 @@ static inline float exp_tonemapping_v2(const float x, const float grey, const fl
 #ifdef _OPENMP
 #pragma omp declare simd aligned(M1, M2, M3, M4 : 16) uniform(M1, M2, M3, M4, M5, latitude_min, latitude_max)
 #endif
-static inline float filmic_spline(const float x, const float M1[4], const float M2[4], const float M3[4],
-                                  const float M4[4], const float M5[4], const float latitude_min,
+static inline float filmic_spline(const float x, const dt_aligned_pixel_t M1, const dt_aligned_pixel_t M2,
+                                  const dt_aligned_pixel_t M3, const dt_aligned_pixel_t M4,
+                                  const dt_aligned_pixel_t M5, const float latitude_min,
                                   const float latitude_max, const dt_iop_filmicrgb_curve_type_t type[2])
 {
   // if type polynomial :
