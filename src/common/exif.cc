@@ -1176,7 +1176,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       else
         illu[1] = DT_LS_Unknown;
       // So far the Exif.Image.CalibrationIlluminant3 tag and friends have not been implemented and there are no images to test
-#if EXIV2_MINOR_VERSION >= 24
+#if EXIV2_VERSION >= EXIV2_MAKE_VERSION(0,27,4)
       if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant3")) illu[2] = (dt_dng_illuminant_t) pos->toLong();
       Exiv2::ExifData::const_iterator cm3_pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix3"));
       if((illu[2] != DT_LS_Unknown) && (cm3_pos != exifData.end()) && (cm3_pos->count() == 9))
