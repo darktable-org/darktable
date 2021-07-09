@@ -2655,10 +2655,10 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     if(event->type != GDK_KEY_PRESS && event->type != GDK_FOCUS_CHANGE)
       return FALSE;
 
-    if(GTK_IS_WINDOW(w))
+    if(GTK_IS_WINDOW(w) && event->type == GDK_KEY_PRESS)
     {
-      GtkWidget *focused_widget = gtk_window_get_focus(GTK_WINDOW(w));
-      if(focused_widget && gtk_widget_event(focused_widget, event))
+      if(gtk_window_propagate_key_event(GTK_WINDOW(w), &event->key) ||
+         gtk_widget_event(dt_ui_center(darktable.gui->ui), event))
         return TRUE;
     }
   }
