@@ -631,9 +631,8 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
-  gchar *bpp = dt_conf_get_string("plugins/imageio/format/tiff/bpp");
+  const char *bpp = dt_conf_get_string_const("plugins/imageio/format/tiff/bpp");
   d->bpp = atoi(bpp);
-  g_free(bpp);
   if(d->bpp == 16)
     d->bpp = 16;
   else if(d->bpp == 32)

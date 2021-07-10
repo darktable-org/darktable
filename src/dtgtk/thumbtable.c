@@ -79,7 +79,7 @@ static int _thumbs_get_prefs_size(dt_thumbtable_t *table)
   // we get the size delimitations to differentiate sizes categories
   // one we set as many categories as we want (this can be useful if
   // we want to finetune css very precisely)
-  gchar *txt = dt_conf_get_string("plugins/lighttable/thumbnail_sizes");
+  const char *txt = dt_conf_get_string_const("plugins/lighttable/thumbnail_sizes");
   gchar **ts = g_strsplit(txt, "|", -1);
   int i = 0;
   while(ts[i])
@@ -89,7 +89,6 @@ static int _thumbs_get_prefs_size(dt_thumbtable_t *table)
     i++;
   }
   g_strfreev(ts);
-  g_free(txt);
   return i;
 }
 
@@ -1150,12 +1149,10 @@ static void _thumbtable_restore_scrollbars(dt_thumbtable_t *table)
 static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
 {
   // we get "new values"
-  gchar *hq = dt_conf_get_string("plugins/lighttable/thumbnail_hq_min_level");
+  const char *hq = dt_conf_get_string_const("plugins/lighttable/thumbnail_hq_min_level");
   dt_mipmap_size_t hql = dt_mipmap_cache_get_min_mip_from_pref(hq);
-  g_free(hq);
-  gchar *embedded = dt_conf_get_string("plugins/lighttable/thumbnail_raw_min_level");
+  const char *embedded = dt_conf_get_string_const("plugins/lighttable/thumbnail_raw_min_level");
   dt_mipmap_size_t embeddedl = dt_mipmap_cache_get_min_mip_from_pref(embedded);
-  g_free(embedded);
 
   int min_level = 8;
   int max_level = 0;
@@ -1771,12 +1768,10 @@ dt_thumbtable_t *dt_thumbtable_new()
   dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
 
   // get thumb generation pref for reference in case of change
-  gchar *tx = dt_conf_get_string("plugins/lighttable/thumbnail_hq_min_level");
+  const char *tx = dt_conf_get_string_const("plugins/lighttable/thumbnail_hq_min_level");
   table->pref_hq = dt_mipmap_cache_get_min_mip_from_pref(tx);
-  g_free(tx);
-  tx = dt_conf_get_string("plugins/lighttable/thumbnail_raw_min_level");
+  tx = dt_conf_get_string_const("plugins/lighttable/thumbnail_raw_min_level");
   table->pref_embedded = dt_mipmap_cache_get_min_mip_from_pref(tx);
-  g_free(tx);
 
   // set css name and class
   gtk_widget_set_name(table->widget, "thumbtable_filemanager");

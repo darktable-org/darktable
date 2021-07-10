@@ -1892,10 +1892,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->controls, _("color-grading mapping method"));
   g_signal_connect(G_OBJECT(g->controls), "value-changed", G_CALLBACK(controls_callback), self);
 
-  gchar *mode = dt_conf_get_string("plugins/darkroom/colorbalance/controls");
+  const char *mode = dt_conf_get_string_const("plugins/darkroom/colorbalance/controls");
   dt_bauhaus_combobox_set(g->controls, !g_strcmp0(mode, "RGBL") ? RGBL :
                                        !g_strcmp0(mode, "BOTH") ? BOTH : HSL);
-  g_free(mode);
 
   g->master_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 

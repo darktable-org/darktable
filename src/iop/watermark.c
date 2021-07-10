@@ -1169,23 +1169,21 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_entry_set_width_chars(GTK_ENTRY(g->text), 1);
   gtk_widget_set_tooltip_text(g->text, _("text string, tag:\n$(WATERMARK_TEXT)"));
   dt_gui_key_accel_block_on_focus_connect(g->text);
-  gchar *str = dt_conf_get_string("plugins/darkroom/watermark/text");
+  const char *str = dt_conf_get_string_const("plugins/darkroom/watermark/text");
   gtk_entry_set_text(GTK_ENTRY(g->text), str);
-  g_free(str);
 
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->text, label, GTK_POS_RIGHT, 2, 1);
 
   // Text font
   label = dtgtk_reset_label_new(_("font"), self, &p->font, sizeof(p->font));
-  str = dt_conf_get_string("plugins/darkroom/watermark/font");
+  str = dt_conf_get_string_const("plugins/darkroom/watermark/font");
   g->fontsel = gtk_font_button_new_with_font(str==NULL?"DejaVu Sans 10":str);
   GtkWidget *child = dt_gui_container_first_child(GTK_CONTAINER(gtk_bin_get_child(GTK_BIN(g->fontsel))));
   gtk_label_set_ellipsize(GTK_LABEL(child), PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_tooltip_text(g->fontsel, _("text font, tags:\n$(WATERMARK_FONT_FAMILY)\n"
                                             "$(WATERMARK_FONT_STYLE)\n$(WATERMARK_FONT_WEIGHT)"));
   gtk_font_button_set_show_size (GTK_FONT_BUTTON(g->fontsel), FALSE);
-  g_free(str);
 
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->fontsel, label, GTK_POS_RIGHT, 2, 1);

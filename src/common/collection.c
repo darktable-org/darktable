@@ -1926,19 +1926,18 @@ int dt_collection_serialize(char *buf, int bufsize)
     buf += c;
     bufsize -= c;
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", k);
-    gchar *str = dt_conf_get_string(confname);
+    const char *str = dt_conf_get_string_const(confname);
     if(str && (str[0] != '\0'))
       c = snprintf(buf, bufsize, "%s$", str);
     else
       c = snprintf(buf, bufsize, "%%$");
     buf += c;
     bufsize -= c;
-    g_free(str);
   }
   return 0;
 }
 
-void dt_collection_deserialize(char *buf)
+void dt_collection_deserialize(const char *buf)
 {
   int num_rules = 0;
   sscanf(buf, "%d", &num_rules);

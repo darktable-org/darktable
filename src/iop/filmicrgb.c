@@ -2544,9 +2544,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   module->default_enabled = FALSE;
 
-  gchar *workflow = dt_conf_get_string("plugins/darkroom/workflow");
-  const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
-  g_free(workflow);
+  const gboolean is_scene_referred = dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred");
 
   if(dt_image_is_matrix_correction_supported(&module->dev->image_storage) && is_scene_referred)
   {

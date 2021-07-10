@@ -1405,11 +1405,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show_all(d->grid);
   gtk_widget_set_no_show_all(d->grid, TRUE);
   _lib_metadata_setup_grid(self);
-  char *pref = dt_conf_get_string("plugins/lighttable/metadata_view/visible");
+  const char *pref = dt_conf_get_string_const("plugins/lighttable/metadata_view/visible");
   if(!strlen(pref))
     _display_default(self);
   _apply_preferences(pref, self);
-  g_free(pref);
 
   /* lets signup for mouse over image change signals */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
@@ -1580,9 +1579,8 @@ static int lua_register_info(lua_State *L)
       lua_pop(L, 1);
     }
     // apply again preferences because it's already done
-    char *pref = dt_conf_get_string("plugins/lighttable/metadata_view/visible");
+    const char *pref = dt_conf_get_string_const("plugins/lighttable/metadata_view/visible");
     _apply_preferences(pref, self);
-    g_free(pref);
   }
   return 0;
 }

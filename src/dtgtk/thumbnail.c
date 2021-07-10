@@ -1721,7 +1721,7 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   if(thumb->container == DT_THUMBNAIL_CONTAINER_LIGHTTABLE)
   {
     // we get the corresponding size
-    gchar *txt = dt_conf_get_string("plugins/lighttable/thumbnail_sizes");
+    const char *txt = dt_conf_get_string_const("plugins/lighttable/thumbnail_sizes");
     gchar **ts = g_strsplit(txt, "|", -1);
     int i = 0;
     while(ts[i])
@@ -1731,7 +1731,6 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
       i++;
     }
     g_strfreev(ts);
-    g_free(txt);
 
     gchar *cl = g_strdup_printf("dt_thumbnails_%d", i);
     GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image);
