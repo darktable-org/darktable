@@ -3724,8 +3724,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       dt_dev_invalidate(darktable.develop);
       dt_control_queue_redraw_center();
     }
-    else
-      return 0;
+
+    return TRUE;
   }
 
   if(key == GDK_KEY_Left || key == GDK_KEY_Right || key == GDK_KEY_Up || key == GDK_KEY_Down)
