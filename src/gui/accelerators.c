@@ -785,6 +785,12 @@ static void remove_shortcut(GSequenceIter *shortcut)
       o = g_sequence_get(g_sequence_iter_next(shortcut));
     o->direction = 0;
   }
+  else if(s->action && s->action->type == DT_ACTION_TYPE_KEY_PRESSED && s->action->target)
+  {
+    GtkAccelKey *key = s->action->target;
+    key->accel_key = 0;
+    key->accel_mods = 0;
+  }
 
   g_sequence_remove(shortcut);
 }
@@ -821,6 +827,16 @@ static void add_shortcut(dt_shortcut_t *shortcut, dt_view_type_flags_t view)
   if(shortcut->action && shortcut->action->type == DT_ACTION_TYPE_KEY_PRESSED && shortcut->action->target)
   {
     GtkAccelKey *key = shortcut->action->target;
+
+    if(key->accel_key)
+    {
+      dt_shortcut_t old_sc = *shortcut;
+      old_sc.key = key->accel_key;
+      old_sc.mods = key->accel_mods;
+      GSequenceIter *existing = g_sequence_lookup(darktable.control->shortcuts, &old_sc, shortcut_compare_func, GINT_TO_POINTER(view));
+      if(existing) remove_shortcut(existing);
+    }
+
     key->accel_key = shortcut->key;
     key->accel_mods = shortcut->mods;
   }
@@ -842,17 +858,26 @@ static void _shortcut_row_inserted(GtkTreeModel *tree_model, GtkTreePath *path, 
 
 static gboolean insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
 {
-  if(shortcut->action && shortcut->action && shortcut->action->type == DT_ACTION_TYPE_KEY_PRESSED &&
-     (shortcut->key_device != DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE ||
-      shortcut->move_device != DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE || shortcut->move != DT_SHORTCUT_MOVE_NONE ||
-      shortcut->press || shortcut->button))
+  if(shortcut->action && shortcut->action && shortcut->action->type == DT_ACTION_TYPE_KEY_PRESSED)
   {
-    fprintf(stderr, "[insert_shortcut] only key+mods type shortcut supported for key_pressed style accelerators\n");
-    dt_control_log(_("only key + ctrl/shift/alt supported for this shortcut"));
-    return FALSE;
+    if(shortcut->key_device != DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE ||
+       shortcut->move_device != DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE || shortcut->move != DT_SHORTCUT_MOVE_NONE ||
+       shortcut->press || shortcut->button)
+    {
+      fprintf(stderr, "[insert_shortcut] only key+mods type shortcut supported for key_pressed style accelerators\n");
+      dt_control_log(_("only key + ctrl/shift/alt supported for this shortcut"));
+      return FALSE;
+    }
+
+    GtkAccelKey *key = shortcut->action->target;
+    if(key && key->accel_key)
+    {
+      gchar *question = g_markup_printf_escaped("\n%s\n", _("Overwrite existing shortcut?"));
+      gboolean overwrite = !confirm || dt_gui_show_standalone_yes_no_dialog(_("only one shortcut allowed"), question, _("no"), _("yes"));
+      g_free(question);
+      if(!overwrite) return FALSE;
+    }
   }
-  // FIXME: prevent multiple shortcuts because only the last one will work.
-  // better solution; incorporate these special case accelerators into standard shortcut framework
 
   dt_shortcut_t *s = calloc(sizeof(dt_shortcut_t), 1);
   *s = *shortcut;
@@ -2632,10 +2657,10 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     if(event->type != GDK_KEY_PRESS && event->type != GDK_FOCUS_CHANGE)
       return FALSE;
 
-    if(GTK_IS_WINDOW(w))
+    if(GTK_IS_WINDOW(w) && event->type == GDK_KEY_PRESS)
     {
-      GtkWidget *focused_widget = gtk_window_get_focus(GTK_WINDOW(w));
-      if(focused_widget && gtk_widget_event(focused_widget, event))
+      if(gtk_window_propagate_key_event(GTK_WINDOW(w), &event->key) ||
+         gtk_widget_event(dt_ui_center(darktable.gui->ui), event))
         return TRUE;
     }
   }
@@ -2648,7 +2673,8 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     _sc.mods = event->key.state;
 
     // FIXME: eventually clean up per-view and global key_pressed handlers
-    if(dt_control_key_pressed_override(event->key.keyval, dt_gui_translated_key_state(&event->key))) return TRUE;
+    if(!grab_widget && !darktable.control->mapping_widget &&
+       dt_control_key_pressed_override(event->key.keyval, dt_gui_translated_key_state(&event->key))) return TRUE;
 
     dt_shortcut_key_press(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, event->key.time, _fix_keyval(event));
     break;
@@ -2659,9 +2685,6 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
         dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, 1);
       return FALSE;
     }
-
-    // FIXME: release also handled by window key_released, in case not in shortcut grab
-    if(dt_control_key_pressed_override(event->key.keyval, dt_gui_translated_key_state(&event->key))) return TRUE;
 
     dt_shortcut_key_release(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, event->key.time, _fix_keyval(event));
     break;
