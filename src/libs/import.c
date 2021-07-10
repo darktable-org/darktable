@@ -1316,7 +1316,7 @@ static void _update_places_list(dt_lib_module_t* self)
   GtkTreeIter iter, current_iter;
   d->placesSelection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->placesView));
   const char *last_place = dt_conf_get_string_const("ui_last/import_last_place");
-  char *current_place = "";
+  char *current_place = NULL;
 
   if(dt_conf_get_bool("ui_last/import_dialog_show_home"))
   {
