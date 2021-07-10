@@ -2573,10 +2573,10 @@ void gui_init(dt_view_t *self)
     dt_action_define(&self->actions, "guide lines", "toggle", darktable.view_manager->guides_toggle, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(darktable.view_manager->guides_toggle,
                                 _("toggle guide lines\nright click for guides options"));
-    GtkWidget *popover = dt_guides_popover(self, darktable.view_manager->guides_toggle);
+    darktable.view_manager->guides_popover = dt_guides_popover(self, darktable.view_manager->guides_toggle);
     g_signal_connect(G_OBJECT(darktable.view_manager->guides_toggle), "clicked",
                      G_CALLBACK(_guides_quickbutton_clicked), dev);
-    connect_button_press_release(darktable.view_manager->guides_toggle, popover);
+    connect_button_press_release(darktable.view_manager->guides_toggle, darktable.view_manager->guides_popover);
     dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.view_manager->guides_toggle,
                                        DT_VIEW_DARKROOM | DT_VIEW_TETHERING);
     // we want to update button state each time the view change
