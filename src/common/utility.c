@@ -283,7 +283,14 @@ gboolean dt_util_test_image_file(const char *filename)
   if(g_access(filename, R_OK)) return FALSE;
 #ifdef _WIN32
   struct _stati64 stats;
-  if(_stati64(filename, &stats)) return FALSE;
+
+  // the code this replaced used utf8 paths with no problem
+  // utf8 paths will not work in this context for no reason 
+  // that I can figure out, but converting utf8 to utf16 works
+  // fine.
+  
+  wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
+  if(_wstati64(wfilename, &stats)) return FALSE;
 #else
   struct stat stats;
   if(stat(filename, &stats)) return FALSE;
