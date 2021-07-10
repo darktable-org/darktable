@@ -101,15 +101,11 @@ static void _import_session_migrate_old_config()
 }
 
 
-static char *_import_session_path_pattern()
+static gchar *_import_session_path_pattern()
 {
-  char *res;
-  char *base;
-  char *sub;
-
-  res = NULL;
-  base = dt_conf_get_string("session/base_directory_pattern");
-  sub = dt_conf_get_string("session/sub_directory_pattern");
+  gchar *res = NULL;
+  const char *base = dt_conf_get_string_const("session/base_directory_pattern");
+  const char *sub = dt_conf_get_string_const("session/sub_directory_pattern");
 
   if(!sub || !base)
   {
@@ -124,17 +120,13 @@ static char *_import_session_path_pattern()
 #endif
 
 bail_out:
-  g_free(base);
-  g_free(sub);
   return res;
 }
 
 
 static char *_import_session_filename_pattern()
 {
-  char *name;
-
-  name = dt_conf_get_string("session/filename_pattern");
+  gchar *name = dt_conf_get_string("session/filename_pattern");
   if(!name)
   {
     fprintf(stderr, "[import_session] No name configured...\n");
@@ -248,7 +240,7 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
 {
   const char *path;
   char *fname, *previous_fname;
-  char *pattern;
+  gchar *pattern;
   gchar *result_fname;
 
   /* expand next filename */
@@ -309,7 +301,7 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
 
 static const char *_import_session_path(struct dt_import_session_t *self, gboolean current)
 {
-  char *pattern;
+  gchar *pattern;
   char *new_path;
   const gboolean currentok = dt_util_test_writable_dir(self->current_path);
   fprintf(stderr, " _import_session_path testing `%s' %i", self->current_path, currentok);

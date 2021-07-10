@@ -287,9 +287,8 @@ void dt_imageio_cleanup(dt_imageio_t *iio)
 dt_imageio_module_format_t *dt_imageio_get_format()
 {
   dt_imageio_t *iio = darktable.imageio;
-  gchar *format_name = dt_conf_get_string("plugins/lighttable/export/format_name");
+  const char *format_name = dt_conf_get_string_const("plugins/lighttable/export/format_name");
   dt_imageio_module_format_t *format = dt_imageio_get_format_by_name(format_name);
-  g_free(format_name);
   // if the format from the config isn't available default to jpeg, if that's not available either just use
   // the first we have
   if(!format) format = dt_imageio_get_format_by_name("jpeg");
@@ -300,9 +299,8 @@ dt_imageio_module_format_t *dt_imageio_get_format()
 dt_imageio_module_storage_t *dt_imageio_get_storage()
 {
   dt_imageio_t *iio = darktable.imageio;
-  gchar *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
+  const char *storage_name = dt_conf_get_string_const("plugins/lighttable/export/storage_name");
   dt_imageio_module_storage_t *storage = dt_imageio_get_storage_by_name(storage_name);
-  g_free(storage_name);
   // if the storage from the config isn't available default to disk, if that's not available either just use
   // the first we have
   if(!storage) storage = dt_imageio_get_storage_by_name("disk");

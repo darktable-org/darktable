@@ -2219,7 +2219,7 @@ gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *ev
      event->detail == GDK_NOTIFY_INFERIOR ||
      event->mode != GDK_CROSSING_NORMAL)) return TRUE;
 
-  gchar *config = dt_conf_get_string("darkroom/ui/hide_header_buttons");
+  const char *config = dt_conf_get_string_const("darkroom/ui/hide_header_buttons");
 
   gboolean dynamic = FALSE;
   double opacity = 1.0;
@@ -2236,8 +2236,6 @@ gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *ev
     ;
   else
     dynamic = TRUE;
-
-  g_free(config);
 
   GList *children = gtk_container_get_children(GTK_CONTAINER(header));
 

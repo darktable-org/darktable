@@ -72,11 +72,10 @@ int position()
 static gboolean _goto_previous(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                GdkModifierType modifier, gpointer data)
 {
-  gchar *line = dt_conf_get_string("plugins/lighttable/recentcollect/line1");
+  const char *line = dt_conf_get_string_const("plugins/lighttable/recentcollect/line1");
   if(line)
   {
     dt_collection_deserialize(line);
-    g_free(line);
   }
   return TRUE;
 }
@@ -93,7 +92,7 @@ void connect_key_accels(dt_lib_module_t *self)
 }
 
 
-static void pretty_print(char *buf, char *out, size_t outsize)
+static void pretty_print(const char *buf, char *out, size_t outsize)
 {
   memset(out, 0, outsize);
 
@@ -163,11 +162,10 @@ static void _button_pressed(GtkButton *button, gpointer user_data)
   if(n < 0) return;
   char confname[200];
   snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", n);
-  gchar *line = dt_conf_get_string(confname);
+  const char *line = dt_conf_get_string_const(confname);
   if(line)
   {
     dt_collection_deserialize(line);
-    g_free(line);
     // position will be updated when the list of recent collections is.
     // that way it'll also catch cases when this is triggered by a signal,
     // not only our button press here.
@@ -207,17 +205,15 @@ static void _lib_recentcollection_updated(gpointer instance, dt_collection_chang
   {
     // is it already in the current list?
     snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", k);
-    gchar *line = dt_conf_get_string(confname);
+    const char *line = dt_conf_get_string_const(confname);
     if(!line) continue;
     if(!strcmp(line, buf))
     {
       snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/pos%1d", k);
       new_pos = dt_conf_get_int(confname);
       n = k;
-      g_free(line);
       break;
     }
-    g_free(line);
   }
   if(n < 0)
   {
@@ -261,9 +257,8 @@ static void _lib_recentcollection_updated(gpointer instance, dt_collection_chang
   {
     char str[2048] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", k);
-    gchar *line2 = dt_conf_get_string(confname);
+    const char *line2 = dt_conf_get_string_const(confname);
     if(line2 && line2[0] != '\0') pretty_print(line2, str, sizeof(str));
-    g_free(line2);
     gtk_widget_set_tooltip_text(d->item[k].button, str);
     gtk_button_set_label(GTK_BUTTON(d->item[k].button), str);
     GtkWidget *child = gtk_bin_get_child(GTK_BIN(d->item[k].button));

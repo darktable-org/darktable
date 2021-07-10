@@ -188,30 +188,26 @@ static int read_pref(lua_State *L)
   {
     case pref_enum:
     {
-      char *str = dt_conf_get_string(pref_name);
+      const char *str = dt_conf_get_string_const(pref_name);
       lua_pushstring(L, str);
-      g_free(str);
       break;
     }
     case pref_dir:
     {
-      char *str = dt_conf_get_string(pref_name);
+      const char *str = dt_conf_get_string_const(pref_name);
       lua_pushstring(L, str);
-      g_free(str);
       break;
     }
     case pref_file:
     {
-      char *str = dt_conf_get_string(pref_name);
+      const char *str = dt_conf_get_string_const(pref_name);
       lua_pushstring(L, str);
-      g_free(str);
       break;
     }
     case pref_string:
     {
-      char *str = dt_conf_get_string(pref_name);
+      const char *str = dt_conf_get_string_const(pref_name);
       lua_pushstring(L, str);
-      g_free(str);
       break;
     }
     case pref_bool:
@@ -225,9 +221,8 @@ static int read_pref(lua_State *L)
       break;
     case pref_lua:
     {
-      char *str = dt_conf_get_string(pref_name);
+      const char *str = dt_conf_get_string_const(pref_name);
       lua_pushstring(L, str);
-      g_free(str);
       break;
     }
   }
@@ -476,7 +471,7 @@ static gboolean reset_widget_lua(GtkWidget *label, GdkEventButton *event, pref_e
   {
     char pref_name[1024];
     get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-    char *old_str = dt_conf_get_string(pref_name);
+    gchar *old_str = dt_conf_get_string(pref_name);
     dt_conf_set_string(pref_name, cur_elt->type_data.lua_data.default_value);
     dt_lua_lock_silent();
     lua_State * L = darktable.lua_state.state;
@@ -487,7 +482,7 @@ static gboolean reset_widget_lua(GtkWidget *label, GdkEventButton *event, pref_e
     lua_call(L,3,0);
     dt_lua_unlock();
     dt_conf_set_string(pref_name, old_str);
-    free(old_str);
+    g_free(old_str);
     return TRUE;
   }
   return FALSE;
@@ -501,7 +496,7 @@ static void update_widget_enum(pref_element* cur_elt,GtkWidget* dialog,GtkWidget
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_enum), cur_elt);
   g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_enum), cur_elt);
   gtk_combo_box_set_active(GTK_COMBO_BOX(cur_elt->widget), 0);
-  char*value = dt_conf_get_string(pref_name);
+  const char *value = dt_conf_get_string_const(pref_name);
   do {
     char * active_entry = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(cur_elt->widget));
     if(!active_entry)
@@ -521,7 +516,6 @@ static void update_widget_enum(pref_element* cur_elt,GtkWidget* dialog,GtkWidget
       g_free(active_entry);
     }
   } while(true);
-  g_free(value);
 }
 
 
@@ -529,9 +523,8 @@ static void update_widget_dir(pref_element* cur_elt,GtkWidget* dialog,GtkWidget*
 {
   char pref_name[1024];
   get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-  gchar *str = dt_conf_get_string(pref_name);
+  const char *str = dt_conf_get_string_const(pref_name);
   gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(cur_elt->widget), str);
-  g_free(str);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_dir), cur_elt);
   g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_dir), cur_elt);
 }
@@ -541,9 +534,8 @@ static void update_widget_file(pref_element* cur_elt,GtkWidget* dialog,GtkWidget
 {
   char pref_name[1024];
   get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
-  gchar *str = dt_conf_get_string(pref_name);
+  const char *str = dt_conf_get_string_const(pref_name);
   gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(cur_elt->widget), str);
-  g_free(str);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_file), cur_elt);
   g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_file), cur_elt);
 }
@@ -555,9 +547,8 @@ static void update_widget_string(pref_element* cur_elt,GtkWidget* dialog,GtkWidg
   get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_string), cur_elt);
   g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_string), cur_elt);
-  char* str = dt_conf_get_string(pref_name);
+  const char *str = dt_conf_get_string_const(pref_name);
   gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), str);
-  g_free(str);
 }
 
 

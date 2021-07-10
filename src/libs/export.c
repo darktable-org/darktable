@@ -182,13 +182,10 @@ static void _update(dt_lib_module_t *self)
   const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
   const gboolean has_act_on = imgs != NULL;
 
-  char *format_name = dt_conf_get_string(CONFIG_PREFIX "format_name");
-  char *storage_name = dt_conf_get_string(CONFIG_PREFIX "storage_name");
+  const char *format_name = dt_conf_get_string_const(CONFIG_PREFIX "format_name");
+  const char *storage_name = dt_conf_get_string_const(CONFIG_PREFIX "storage_name");
   const int format_index = dt_imageio_get_index_of_format(dt_imageio_get_format_by_name(format_name));
   const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
-
-  g_free(format_name);
-  g_free(storage_name);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->export_button), has_act_on && format_index != -1 && storage_index != -1);
 }
@@ -289,13 +286,10 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
 
   // get the format_name and storage_name settings which are plug-ins name and not necessary what is displayed on the combobox.
   // note that we cannot take directly the combobox entry index as depending on the storage some format are not listed.
-  char *format_name = dt_conf_get_string(CONFIG_PREFIX "format_name");
-  char *storage_name = dt_conf_get_string(CONFIG_PREFIX "storage_name");
+  const char *format_name = dt_conf_get_string_const(CONFIG_PREFIX "format_name");
+  const char *storage_name = dt_conf_get_string_const(CONFIG_PREFIX "storage_name");
   const int format_index = dt_imageio_get_index_of_format(dt_imageio_get_format_by_name(format_name));
   const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
-
-  g_free(format_name);
-  g_free(storage_name);
 
   if(format_index == -1)
   {
@@ -341,12 +335,11 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
   const gboolean upscale = dt_conf_get_bool(CONFIG_PREFIX "upscale");
   const gboolean high_quality = dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing");
   const gboolean export_masks = dt_conf_get_bool(CONFIG_PREFIX "export_masks");
-  char *tmp = dt_conf_get_string(CONFIG_PREFIX "style");
   const gboolean style_append = dt_conf_get_bool(CONFIG_PREFIX "style_append");
+  const char *tmp = dt_conf_get_string_const(CONFIG_PREFIX "style");
   if(tmp)
   {
     g_strlcpy(style, tmp, sizeof(style));
-    g_free(tmp);
   }
 
   // if upscale is activated and only one dimension is 0 we adjust it to ensure
@@ -378,7 +371,7 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
   g_free(icc_filename);
 
   _scale_optim();
-  gtk_entry_set_text(GTK_ENTRY(d->scale), dt_conf_get_string(CONFIG_PREFIX "resizing_factor"));
+  gtk_entry_set_text(GTK_ENTRY(d->scale), dt_conf_get_string_const(CONFIG_PREFIX "resizing_factor"));
 }
 
 static void _scale_changed(GtkEntry *spin, dt_lib_export_t *d)
@@ -695,13 +688,11 @@ static void _format_changed(GtkWidget *widget, dt_lib_export_t *d)
 
 static void _get_max_output_dimension(dt_lib_export_t *d, uint32_t *width, uint32_t *height)
 {
-  gchar *storage_name = dt_conf_get_string(CONFIG_PREFIX "storage_name");
+  const char *storage_name = dt_conf_get_string_const(CONFIG_PREFIX "storage_name");
   dt_imageio_module_storage_t *storage = dt_imageio_get_storage_by_name(storage_name);
-  g_free(storage_name);
 
-  char *format_name = dt_conf_get_string(CONFIG_PREFIX "format_name");
+  const char *format_name = dt_conf_get_string_const(CONFIG_PREFIX "format_name");
   dt_imageio_module_format_t *format = dt_imageio_get_format_by_name(format_name);
-  g_free(format_name);
 
   if(storage && format)
   {
@@ -797,9 +788,8 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
   _update_formats_combobox(d);
 
   // Lets try to set selected format if fail select first in list..
-  gchar *format_name = dt_conf_get_string(CONFIG_PREFIX "format_name");
+  const char *format_name = dt_conf_get_string_const(CONFIG_PREFIX "format_name");
   const dt_imageio_module_format_t *format = dt_imageio_get_format_by_name(format_name);
-  g_free(format_name);
 
   if(format == NULL
      || dt_bauhaus_combobox_set_from_text(d->format, format->name()) == FALSE)
@@ -1036,9 +1026,8 @@ static void _update_formats_combobox(dt_lib_export_t *d)
   dt_bauhaus_combobox_clear(d->format);
 
   // Get current selected storage
-  gchar *storage_name = dt_conf_get_string(CONFIG_PREFIX "storage_name");
+  const char *storage_name = dt_conf_get_string_const(CONFIG_PREFIX "storage_name");
   dt_imageio_module_storage_t *storage = dt_imageio_get_storage_by_name(storage_name);
-  g_free(storage_name);
 
   // Add supported formats to combobox
   gboolean empty = TRUE;
@@ -1203,9 +1192,8 @@ void gui_init(dt_lib_module_t *self)
   d->print_dpi = gtk_entry_new();
   gtk_widget_set_tooltip_text(d->print_dpi, _("resolution in dot per inch"));
   gtk_entry_set_width_chars(GTK_ENTRY(d->print_dpi), 4);
-  char *dpi = dt_conf_get_string(CONFIG_PREFIX "print_dpi");
+  const char *dpi = dt_conf_get_string_const(CONFIG_PREFIX "print_dpi");
   gtk_entry_set_text(GTK_ENTRY(d->print_dpi), dpi);
-  g_free(dpi);
 
   dt_gui_key_accel_block_on_focus_connect(d->print_width);
   dt_gui_key_accel_block_on_focus_connect(d->print_height);
@@ -1252,7 +1240,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->scale = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(d->scale), 5);
-  gtk_entry_set_text (GTK_ENTRY(d->scale), dt_conf_get_string(CONFIG_PREFIX "resizing_factor"));
+  gtk_entry_set_text (GTK_ENTRY(d->scale), dt_conf_get_string_const(CONFIG_PREFIX "resizing_factor"));
   gtk_widget_set_tooltip_text(d->scale, _("it can be an integer, decimal number or simple fraction.\n"
                                           "zero or empty values are equal to 1.\n"
                                           "click middle mouse button to reset to 1."));
@@ -1431,12 +1419,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show_all(self->widget);
   gtk_widget_set_no_show_all(self->widget, TRUE);
 
-  gchar* setting = dt_conf_get_string(CONFIG_PREFIX "width");
+  const char* setting = dt_conf_get_string_const(CONFIG_PREFIX "width");
   gtk_entry_set_text(GTK_ENTRY(d->width), setting);
-  g_free(setting);
-  setting = dt_conf_get_string(CONFIG_PREFIX "height");
+  setting = dt_conf_get_string_const(CONFIG_PREFIX "height");
   gtk_entry_set_text(GTK_ENTRY(d->height), setting);
-  g_free(setting);
   dt_bauhaus_combobox_set(d->dimensions_type, dt_conf_get_int(CONFIG_PREFIX "dimensions_type"));
 
   const gboolean is_scaling = dt_conf_is_equal(CONFIG_PREFIX "resizing", "scaling");
@@ -1458,9 +1444,8 @@ void gui_init(dt_lib_module_t *self)
   _print_size_update_display(d);
 
   // Set storage
-  setting = dt_conf_get_string(CONFIG_PREFIX "storage_name");
+  setting = dt_conf_get_string_const(CONFIG_PREFIX "storage_name");
   const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(setting));
-  g_free(setting);
   dt_bauhaus_combobox_set(d->storage, storage_index);
 
   dt_bauhaus_combobox_set(d->upscale, dt_conf_get_bool(CONFIG_PREFIX "upscale") ? 1 : 0);
@@ -1493,8 +1478,7 @@ void gui_init(dt_lib_module_t *self)
   // style
   // set it to none if the var is not set or the style doesn't exist anymore
   gboolean rc = FALSE;
-  setting = NULL;
-  setting = dt_conf_get_string(CONFIG_PREFIX "style");
+  setting = dt_conf_get_string_const(CONFIG_PREFIX "style");
   if(setting != NULL && strlen(setting) > 0)
   {
     rc = dt_bauhaus_combobox_set_from_text(d->style, setting);
@@ -1503,7 +1487,6 @@ void gui_init(dt_lib_module_t *self)
   }
   else
     dt_bauhaus_combobox_set(d->style, 0);
-  g_free(setting);
 
   // style mode to overwrite as it was the initial behavior
   dt_bauhaus_combobox_set(d->style_mode, dt_conf_get_bool(CONFIG_PREFIX "style_append"));

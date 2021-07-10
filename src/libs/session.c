@@ -114,9 +114,8 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(lib->gui.button1), "clicked", G_CALLBACK(create_callback), self);
 
-  gchar *str = dt_conf_get_string("plugins/session/jobcode");
+  const char *str = dt_conf_get_string_const("plugins/session/jobcode");
   gtk_entry_set_text(lib->gui.entry1, str);
-  g_free(str);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

@@ -31,9 +31,8 @@ const char formula_keyword[] = "plugins/lighttable/export/metadata_formula";
 
 uint32_t dt_lib_export_metadata_get_conf_flags(void)
 {
-  char *metadata_flags = dt_conf_get_string(flags_keyword);
+  const char *metadata_flags = dt_conf_get_string_const(flags_keyword);
   const int32_t flags = strtol(metadata_flags, NULL, 16);
-  g_free(metadata_flags);
   return flags;
 }
 
@@ -47,7 +46,7 @@ char *dt_lib_export_metadata_get_conf(void)
     char *conf_keyword = g_strdup_printf("%s%d", formula_keyword, i);
     while (dt_conf_key_exists(conf_keyword))
     {
-      char *nameformula = dt_conf_get_string(conf_keyword);
+      gchar *nameformula = dt_conf_get_string(conf_keyword);
       g_free(conf_keyword);
       if(nameformula[0])
       {

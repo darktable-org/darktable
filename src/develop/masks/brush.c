@@ -1288,7 +1288,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
       }
 
       gui->pressure_sensitivity = DT_MASKS_PRESSURE_OFF;
-      char *psens = dt_conf_get_string("pressure_sensitivity");
+      const char *psens = dt_conf_get_string_const("pressure_sensitivity");
       if(psens)
       {
         if(!strcmp(psens, "hardness (absolute)"))
@@ -1301,7 +1301,6 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
           gui->pressure_sensitivity = DT_MASKS_PRESSURE_OPACITY_REL;
         else if(!strcmp(psens, "brush size (relative)"))
           gui->pressure_sensitivity = DT_MASKS_PRESSURE_BRUSHSIZE_REL;
-        g_free(psens);
       }
 
       dt_control_queue_redraw_center();
@@ -1635,14 +1634,13 @@ static int _brush_events_button_released(struct dt_iop_module_t *module, float p
       }
 
       float factor = 0.01f;
-      char *smoothing = dt_conf_get_string("brush_smoothing");
+      const char *smoothing = dt_conf_get_string_const("brush_smoothing");
       if(!strcmp(smoothing, "low"))
         factor = 0.0025f;
       else if(!strcmp(smoothing, "medium"))
         factor = 0.01f;
       else if(!strcmp(smoothing, "high"))
         factor = 0.04f;
-      g_free(smoothing);
 
       // accuracy level for node elimination, dependent on brush size
       const float epsilon2 = factor * MAX(BORDER_MIN, masks_border) * MAX(BORDER_MIN, masks_border);

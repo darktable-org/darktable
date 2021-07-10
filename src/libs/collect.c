@@ -330,11 +330,10 @@ static void _lib_collect_update_params(dt_lib_collect_t *d)
 
     /* get string */
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", i);
-    gchar *string = dt_conf_get_string(confname);
+    const char *string = dt_conf_get_string_const(confname);
     if(string != NULL)
     {
       g_strlcpy(p->rule[i].string, string, PARAM_STRING_SIZE);
-      g_free(string);
     }
 
     // fprintf(stderr,"[%i] %d,%d,%s\n",i, p->rule[i].item, p->rule[i].mode,  p->rule[i].string);
@@ -1852,7 +1851,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
         // filmroll
         {
           gchar *order_by = NULL;
-          gchar *filmroll_sort = dt_conf_get_string("plugins/collect/filmroll_sort");
+          const char *filmroll_sort = dt_conf_get_string_const("plugins/collect/filmroll_sort");
           if(strcmp(filmroll_sort, "id") == 0)
             order_by = g_strdup("film_rolls_id DESC");
           else
@@ -1860,7 +1859,6 @@ static void list_view(dt_lib_collect_rule_t *dr)
               order_by = g_strdup("folder DESC");
             else
               order_by = g_strdup("folder");
-          g_free(filmroll_sort);
 
           g_snprintf(query, sizeof(query),
                      "SELECT folder, film_rolls_id, COUNT(*) AS count"
@@ -2123,14 +2121,13 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
     _combo_set_active_collection(d->rule[i].combo, dt_conf_get_int(confname));
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", i);
-    gchar *text = dt_conf_get_string(confname);
+    const char *text = dt_conf_get_string_const(confname);
     if(text)
     {
       g_signal_handlers_block_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
       gtk_entry_set_text(GTK_ENTRY(d->rule[i].text), text);
       gtk_editable_set_position(GTK_EDITABLE(d->rule[i].text), -1);
       g_signal_handlers_unblock_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
-      g_free(text);
       d->rule[i].typing = FALSE;
     }
 
@@ -2955,7 +2952,7 @@ void gui_init(dt_lib_module_t *self)
 
   if(_combo_get_active_collection(d->rule[0].combo) == DT_COLLECTION_PROP_TAG)
   {
-    gchar *tag = dt_conf_get_string("plugins/lighttable/collect/string0");
+    const char *tag = dt_conf_get_string_const("plugins/lighttable/collect/string0");
     dt_collection_set_tag_id((dt_collection_t *)darktable.collection, dt_tag_get_tag_id_by_name(tag));
   }
 
