@@ -297,12 +297,8 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 
   if(new_view->try_enter)
   {
-    const int error = new_view->try_enter(new_view);
-    if(error)
-    {
-      dt_view_manager_switch_by_view(vm, old_view);
-      return error;
-    }
+    int error = new_view->try_enter(new_view);
+    if(error) return error;
   }
 
   /* cleanup current view before initialization of new  */
