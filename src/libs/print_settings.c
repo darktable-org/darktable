@@ -708,7 +708,7 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
 
   dt_conf_set_string("plugins/print/print/printer", printer_name);
 
-  char *default_paper = dt_conf_get_string("plugins/print/print/paper");
+  const char *default_paper = dt_conf_get_string_const("plugins/print/print/paper");
 
   // next add corresponding papers
 
@@ -746,11 +746,9 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
   if(paper)
     memcpy(&ps->prt.paper, paper, sizeof(dt_paper_info_t));
 
-  g_free (default_paper);
-
   // next add corresponding supported media
 
-  char *default_medium = dt_conf_get_string("plugins/print/print/medium");
+  const char *default_medium = dt_conf_get_string_const("plugins/print/print/medium");
 
   // first clear current list
 
@@ -786,8 +784,6 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
 
   if(medium)
     memcpy(&ps->prt.medium, medium, sizeof(dt_medium_info_t));
-
-  g_free (default_medium);
 
   dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
 }
@@ -2154,7 +2150,7 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->pprofile), TRUE, TRUE, 0);
   int printer_profile_type = dt_conf_get_int("plugins/print/printer/icctype");
-  gchar *printer_profile = dt_conf_get_string("plugins/print/printer/iccprofile");
+  const char *printer_profile = dt_conf_get_string_const("plugins/print/printer/iccprofile");
   combo_idx = -1;
   n = 0;
 
@@ -2177,8 +2173,6 @@ void gui_init(dt_lib_module_t *self)
       }
     }
   }
-
-  g_free (printer_profile);
 
   // profile not found, maybe a profile has been removed? revert to none
   if(combo_idx == -1)
@@ -2480,7 +2474,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->profile, _("image settings"));
 
   const int icctype = dt_conf_get_int("plugins/print/print/icctype");
-  gchar *iccprofile = dt_conf_get_string("plugins/print/print/iccprofile");
+  const gchar *iccprofile = dt_conf_get_string_const("plugins/print/print/iccprofile");
   combo_idx = -1;
   n = 0;
 
@@ -2508,7 +2502,6 @@ void gui_init(dt_lib_module_t *self)
     d->v_iccprofile = g_strdup("");
     combo_idx = 0;
   }
-  g_free (iccprofile);
 
   dt_bauhaus_combobox_set(d->profile, combo_idx);
 
@@ -2542,7 +2535,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->style, _("none"));
 
   GList *styles = dt_styles_get_list("");
-  gchar *current_style = dt_conf_get_string("plugins/print/print/style");
+  const char *current_style = dt_conf_get_string_const("plugins/print/print/style");
   combo_idx = -1; n=0;
 
   for(const GList *st_iter = styles; st_iter; st_iter = g_list_next(st_iter))
@@ -2557,7 +2550,6 @@ void gui_init(dt_lib_module_t *self)
       combo_idx=n;
     }
   }
-  g_free(current_style);
   g_list_free_full(styles, dt_style_free);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->style), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(d->style, _("temporary style to use while printing"));

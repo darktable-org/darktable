@@ -50,7 +50,7 @@ const dt_pwstorage_t *dt_pwstorage_new()
 
   if(pwstorage == NULL) return NULL;
 
-  gchar *_backend_str = dt_conf_get_string("plugins/pwstorage/pwstorage_backend");
+  const char *_backend_str = dt_conf_get_string_const("plugins/pwstorage/pwstorage_backend");
   gint _backend = PW_STORAGE_BACKEND_NONE;
 
   if(strcmp(_backend_str, "auto") == 0)
@@ -83,8 +83,6 @@ const dt_pwstorage_t *dt_pwstorage_new()
     dt_control_log(_("GNOME Keyring backend is no longer supported. configure a different one"));
     _backend = PW_STORAGE_BACKEND_NONE;
   }
-
-  g_free(_backend_str);
 
   switch(_backend)
   {

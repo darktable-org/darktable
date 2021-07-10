@@ -171,12 +171,11 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   widget = gtk_entry_new();
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-  gchar *dir = dt_conf_get_string("plugins/imageio/storage/disk/file_directory");
+  const char *dir = dt_conf_get_string_const("plugins/imageio/storage/disk/file_directory");
   if(dir)
   {
     gtk_entry_set_text(GTK_ENTRY(widget), dir);
     gtk_editable_set_position(GTK_EDITABLE(widget), strlen(dir));
-    g_free(dir);
   }
 
   dt_gtkentry_setup_completion(GTK_ENTRY(widget), dt_gtkentry_get_default_path_compl_list());
@@ -362,9 +361,8 @@ void *get_params(dt_imageio_module_storage_t *self)
 {
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)calloc(1, sizeof(dt_imageio_disk_t));
 
-  char *text = dt_conf_get_string("plugins/imageio/storage/disk/file_directory");
+  const char *text = dt_conf_get_string_const("plugins/imageio/storage/disk/file_directory");
   g_strlcpy(d->filename, text, sizeof(d->filename));
-  g_free(text);
 
   d->onsave_action = dt_conf_get_int("plugins/imageio/storage/disk/overwrite");
 

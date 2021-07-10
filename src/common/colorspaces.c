@@ -1494,18 +1494,14 @@ dt_colorspaces_t *dt_colorspaces_init()
   res->display2_type = dt_conf_get_int("ui_last/color/display2_type");
   res->softproof_type = dt_conf_get_int("ui_last/color/softproof_type");
   res->histogram_type = dt_conf_get_int("ui_last/color/histogram_type");
-  char *tmp = dt_conf_get_string("ui_last/color/display_filename");
+  const char *tmp = dt_conf_get_string_const("ui_last/color/display_filename");
   g_strlcpy(res->display_filename, tmp, sizeof(res->display_filename));
-  g_free(tmp);
-  tmp = dt_conf_get_string("ui_last/color/display2_filename");
+  tmp = dt_conf_get_string_const("ui_last/color/display2_filename");
   g_strlcpy(res->display2_filename, tmp, sizeof(res->display2_filename));
-  g_free(tmp);
-  tmp = dt_conf_get_string("ui_last/color/softproof_filename");
+  tmp = dt_conf_get_string_const("ui_last/color/softproof_filename");
   g_strlcpy(res->softproof_filename, tmp, sizeof(res->softproof_filename));
-  g_free(tmp);
-  tmp = dt_conf_get_string("ui_last/color/histogram_filename");
+  tmp = dt_conf_get_string_const("ui_last/color/histogram_filename");
   g_strlcpy(res->histogram_filename, tmp, sizeof(res->histogram_filename));
-  g_free(tmp);
   res->display_intent = dt_conf_get_int("ui_last/color/display_intent");
   res->display2_intent = dt_conf_get_int("ui_last/color/display2_intent");
   res->softproof_intent = dt_conf_get_int("ui_last/color/softproof_intent");
@@ -1828,16 +1824,15 @@ void dt_colorspaces_set_display_profile(const dt_colorspaces_color_profile_type_
   gboolean use_xatom = TRUE;
 #if defined USE_COLORDGTK
   gboolean use_colord = TRUE;
-  gchar *display_profile_source = (profile_type == DT_COLORSPACE_DISPLAY2)
-                                      ? dt_conf_get_string("ui_last/display2_profile_source")
-                                      : dt_conf_get_string("ui_last/display_profile_source");
+  const char *display_profile_source = (profile_type == DT_COLORSPACE_DISPLAY2)
+                                      ? dt_conf_get_string_const("ui_last/display2_profile_source")
+                                      : dt_conf_get_string_const("ui_last/display_profile_source");
   if(display_profile_source)
   {
     if(!strcmp(display_profile_source, "xatom"))
       use_colord = FALSE;
     else if(!strcmp(display_profile_source, "colord"))
       use_xatom = FALSE;
-    g_free(display_profile_source);
   }
 #endif
 

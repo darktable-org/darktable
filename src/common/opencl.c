@@ -526,7 +526,6 @@ end:
 
 void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboolean print_statistics)
 {
-  char *str;
   dt_pthread_mutex_init(&cl->lock, NULL);
   cl->inited = 0;
   cl->enabled = 0;
@@ -577,28 +576,24 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl related configuration options:\n");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] \n");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl: %d\n", dt_conf_get_bool("opencl"));
-  str = dt_conf_get_string("opencl_scheduling_profile");
+  const char *str = dt_conf_get_string_const("opencl_scheduling_profile");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_scheduling_profile: '%s'\n", str);
-  g_free(str);
-  str = dt_conf_get_string("opencl_library");
+  str = dt_conf_get_string_const("opencl_library");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_library: '%s'\n", str);
-  g_free(str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_memory_requirement: %d\n",
            dt_conf_get_int("opencl_memory_requirement"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_memory_headroom: %d\n",
            dt_conf_get_int("opencl_memory_headroom"));
-  str = dt_conf_get_string("opencl_device_priority");
+  str = dt_conf_get_string_const("opencl_device_priority");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_device_priority: '%s'\n", str);
-  g_free(str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_mandatory_timeout: %d\n",
            dt_conf_get_int("opencl_mandatory_timeout"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_size_roundup: %d\n",
            dt_conf_get_int("opencl_size_roundup"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_async_pixelpipe: %d\n",
            dt_conf_get_bool("opencl_async_pixelpipe"));
-  str = dt_conf_get_string("opencl_synch_cache");
+  str = dt_conf_get_string_const("opencl_synch_cache");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_synch_cache: %s\n", str);
-  g_free(str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_number_event_handles: %d\n",
            dt_conf_get_int("opencl_number_event_handles"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_micro_nap: %d\n", dt_conf_get_int("opencl_micro_nap"));
@@ -614,14 +609,13 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] \n");
 
   // look for explicit definition of opencl_runtime library in preferences
-  char *library = dt_conf_get_string("opencl_library");
+  const char *library = dt_conf_get_string_const("opencl_library");
 
   // dynamically load opencl runtime
   if((cl->dlocl = dt_dlopencl_init(library)) == NULL)
   {
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_init] no working opencl library found. Continue with opencl disabled\n");
-    g_free(library);
     goto finally;
   }
   else
@@ -629,7 +623,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl library '%s' found on your system and loaded\n",
              cl->dlocl->library);
   }
-  g_free(library);
 
   cl_int err;
   all_platforms = malloc(sizeof(cl_platform_id) * DT_OPENCL_MAX_PLATFORMS);
@@ -772,7 +765,7 @@ finally:
 
     char checksum[64];
     snprintf(checksum, sizeof(checksum), "%u", cl->crc);
-    char *oldchecksum = dt_conf_get_string("opencl_checksum");
+    const char *oldchecksum = dt_conf_get_string_const("opencl_checksum");
 
     // check if the configuration (OpenCL device setup) has changed, indicated by checksum != oldchecksum
     if(strcasecmp(oldchecksum, "OFF") != 0 && strcmp(oldchecksum, checksum) != 0)
@@ -821,7 +814,6 @@ finally:
         dt_control_log(_("opencl scheduling profile set to default."));
       }
     }
-    g_free(oldchecksum);
 
     // apply config settings for scheduling profile: sets device priorities and pixelpipe synchronization timeout
     dt_opencl_scheduling_profile_t profile = dt_opencl_get_scheduling_profile();
@@ -2521,9 +2513,8 @@ int dt_opencl_update_settings(void)
 
   if(darktable.opencl->scheduling_profile != profile)
   {
-    char *pstr = dt_conf_get_string("opencl_scheduling_profile");
+    const char *pstr = dt_conf_get_string_const("opencl_scheduling_profile");
     dt_print(DT_DEBUG_OPENCL, "[opencl_update_scheduling_profile] scheduling profile set to %s\n", pstr);
-    g_free(pstr);
     dt_opencl_apply_scheduling_profile(profile);
   }
 
@@ -2531,9 +2522,8 @@ int dt_opencl_update_settings(void)
 
   if(darktable.opencl->sync_cache != sync)
   {
-    char *pstr = dt_conf_get_string("opencl_synch_cache");
+    const char *pstr = dt_conf_get_string_const("opencl_synch_cache");
     dt_print(DT_DEBUG_OPENCL, "[opencl_update_synch_cache] sync cache set to %s\n", pstr);
-    g_free(pstr);
     darktable.opencl->sync_cache = sync;
   }
 
@@ -2543,7 +2533,7 @@ int dt_opencl_update_settings(void)
 /** read scheduling profile for config variables */
 static dt_opencl_scheduling_profile_t dt_opencl_get_scheduling_profile(void)
 {
-  char *pstr = dt_conf_get_string("opencl_scheduling_profile");
+  const char *pstr = dt_conf_get_string_const("opencl_scheduling_profile");
   if(!pstr) return OPENCL_PROFILE_DEFAULT;
 
   dt_opencl_scheduling_profile_t profile = OPENCL_PROFILE_DEFAULT;
@@ -2553,15 +2543,13 @@ static dt_opencl_scheduling_profile_t dt_opencl_get_scheduling_profile(void)
   else if(!strcmp(pstr, "very fast GPU"))
     profile = OPENCL_PROFILE_VERYFAST_GPU;
 
-  g_free(pstr);
-
   return profile;
 }
 
 /** read config of when/if to synch to cache */
 static dt_opencl_sync_cache_t dt_opencl_get_sync_cache(void)
 {
-  char *pstr = dt_conf_get_string("opencl_synch_cache");
+  const char *pstr = dt_conf_get_string_const("opencl_synch_cache");
   if(!pstr) return OPENCL_SYNC_ACTIVE_MODULE;
 
   dt_opencl_sync_cache_t sync = OPENCL_SYNC_ACTIVE_MODULE;
@@ -2570,8 +2558,6 @@ static dt_opencl_sync_cache_t dt_opencl_get_sync_cache(void)
     sync = OPENCL_SYNC_TRUE;
   else if(!strcmp(pstr, "false"))
     sync = OPENCL_SYNC_FALSE;
-
-  g_free(pstr);
 
   return sync;
 }
@@ -2586,8 +2572,6 @@ static void dt_opencl_set_synchronization_timeout(int value)
 /** adjust opencl subsystem according to scheduling profile */
 static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t profile)
 {
-  char *str;
-
   dt_pthread_mutex_lock(&darktable.opencl->lock);
   darktable.opencl->scheduling_profile = profile;
 
@@ -2603,9 +2587,7 @@ static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t pr
       break;
     case OPENCL_PROFILE_DEFAULT:
     default:
-      str = dt_conf_get_string("opencl_device_priority");
-      dt_opencl_update_priorities(str);
-      g_free(str);
+      dt_opencl_update_priorities(dt_conf_get_string_const("opencl_device_priority"));
       dt_opencl_set_synchronization_timeout(dt_conf_get_int("pixelpipe_synchronization_timeout"));
       break;
   }
