@@ -571,13 +571,13 @@ GList *dt_guides_init()
 {
   GList *guides = NULL;
 
-  _guides_add_guide(&guides, _("grid"), _guides_draw_grid, _guides_gui_grid, NULL, NULL, FALSE);
-  _guides_add_guide(&guides, _("rules of thirds"), _guides_draw_rules_of_thirds, NULL, NULL, NULL, FALSE);
-  _guides_add_guide(&guides, _("metering"), _guides_draw_metering, NULL, NULL, NULL, FALSE);
-  _guides_add_guide(&guides, _("perspective"), _guides_draw_perspective, NULL, NULL, NULL, FALSE); // TODO: make the number of lines configurable with a slider?
-  _guides_add_guide(&guides, _("diagonal method"), _guides_draw_diagonal_method, NULL, NULL, NULL, FALSE);
-  _guides_add_guide(&guides, _("harmonious triangles"), _guides_draw_harmonious_triangles, NULL, NULL, NULL, TRUE);
-  _guides_add_guide(&guides, _("golden mean"), _guides_draw_golden_mean, _guides_gui_golden_mean, NULL, NULL, TRUE);
+  _guides_add_guide(&guides, N_("grid"), _guides_draw_grid, _guides_gui_grid, NULL, NULL, FALSE);
+  _guides_add_guide(&guides, N_("rules of thirds"), _guides_draw_rules_of_thirds, NULL, NULL, NULL, FALSE);
+  _guides_add_guide(&guides, N_("metering"), _guides_draw_metering, NULL, NULL, NULL, FALSE);
+  _guides_add_guide(&guides, N_("perspective"), _guides_draw_perspective, NULL, NULL, NULL, FALSE); // TODO: make the number of lines configurable with a slider?
+  _guides_add_guide(&guides, N_("diagonal method"), _guides_draw_diagonal_method, NULL, NULL, NULL, FALSE);
+  _guides_add_guide(&guides, N_("harmonious triangles"), _guides_draw_harmonious_triangles, NULL, NULL, NULL, TRUE);
+  _guides_add_guide(&guides, N_("golden mean"), _guides_draw_golden_mean, _guides_gui_golden_mean, NULL, NULL, TRUE);
 
   return guides;
 }
