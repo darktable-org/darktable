@@ -35,6 +35,9 @@
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #include "views/view.h"
+#ifndef _WIN32
+#include <gio/gunixmounts.h>
+#endif
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -70,7 +73,11 @@ typedef struct dt_lib_collect_t
 
   gboolean singleclick;
   struct dt_lib_collect_params_t *params;
+#ifdef _WIN32
   GVolumeMonitor *vmonitor;
+#else
+  GUnixMountMonitor *vmonitor;
+#endif
 } dt_lib_collect_t;
 
 typedef struct dt_lib_collect_params_rule_t
@@ -2865,7 +2872,11 @@ static gint _sort_model_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b
   return ib - ia;
 }
 
+#ifdef _WIN32
 void _mount_changed(GVolumeMonitor *volume_monitor, GMount *mount, dt_lib_module_t *self)
+#else
+void _mount_changed(GUnixMountMonitor *monitor, dt_lib_module_t *self)
+#endif
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
   dt_film_set_folder_status();
@@ -2991,9 +3002,14 @@ void gui_init(dt_lib_module_t *self)
     dt_collection_set_tag_id((dt_collection_t *)darktable.collection, dt_tag_get_tag_id_by_name(tag));
   }
 
+#ifdef _WIN32
   d->vmonitor = g_volume_monitor_get();
   g_signal_connect(G_OBJECT(d->vmonitor), "mount-changed", G_CALLBACK(_mount_changed), self);
   g_signal_connect(G_OBJECT(d->vmonitor), "mount-added", G_CALLBACK(_mount_changed), self);
+#else
+  d->vmonitor = g_unix_mount_monitor_get();
+  g_signal_connect(G_OBJECT(d->vmonitor), "mounts-changed", G_CALLBACK(_mount_changed), self);
+#endif
 
   // force redraw collection images because of late update of the table memory.darktable_iop_names
   if(has_iop_name_rule)
