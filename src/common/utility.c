@@ -290,12 +290,10 @@ gboolean dt_util_test_image_file(const char *filename)
   // fine.
 
   wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
-  if(int result = _wstati64(wfilename, &stats))
-  {
-    g_free(wfilename);
-    if(result) return FALSE;
-  } 
-#else
+  int result = _wstati64(wfilename, &stats);
+  g_free(wfilename);
+  if(result) return FALSE; // there was an error
+ #else
   struct stat stats;
   if(stat(filename, &stats)) return FALSE;
 #endif
