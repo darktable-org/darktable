@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-10 09:01-0300\n"
-"PO-Revision-Date: 2021-07-10 09:37-0300\n"
+"POT-Creation-Date: 2021-07-11 14:56-0300\n"
+"PO-Revision-Date: 2021-07-11 16:10-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -3434,12 +3434,12 @@ msgstr "versão do gerador de splines"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/darktable.c:920 ../src/common/database.c:2540
 #: ../src/common/variables.c:465 ../src/develop/imageop_gui.c:302
-#: ../src/gui/accelerators.c:895 ../src/gui/accelerators.c:912
-#: ../src/gui/accelerators.c:925 ../src/gui/accelerators.c:964
-#: ../src/gui/accelerators.c:1260 ../src/imageio/format/pdf.c:653
-#: ../src/imageio/format/pdf.c:678 ../src/libs/export.c:1266
-#: ../src/libs/export.c:1272 ../src/libs/export.c:1279
-#: ../src/libs/metadata_view.c:698
+#: ../src/gui/accelerators.c:876 ../src/gui/accelerators.c:920
+#: ../src/gui/accelerators.c:937 ../src/gui/accelerators.c:950
+#: ../src/gui/accelerators.c:989 ../src/gui/accelerators.c:1285
+#: ../src/imageio/format/pdf.c:653 ../src/imageio/format/pdf.c:678
+#: ../src/libs/export.c:1266 ../src/libs/export.c:1272
+#: ../src/libs/export.c:1279 ../src/libs/metadata_view.c:698
 msgid "no"
 msgstr "não"
 
@@ -4773,12 +4773,13 @@ msgstr ""
 
 #: ../src/common/darktable.c:920 ../src/common/database.c:2540
 #: ../src/common/database.c:3598 ../src/common/variables.c:463
-#: ../src/develop/imageop_gui.c:303 ../src/gui/accelerators.c:895
-#: ../src/gui/accelerators.c:912 ../src/gui/accelerators.c:925
-#: ../src/gui/accelerators.c:964 ../src/gui/accelerators.c:1260
-#: ../src/imageio/format/pdf.c:654 ../src/imageio/format/pdf.c:679
-#: ../src/libs/export.c:1267 ../src/libs/export.c:1273
-#: ../src/libs/export.c:1280 ../src/libs/metadata_view.c:698
+#: ../src/develop/imageop_gui.c:303 ../src/gui/accelerators.c:876
+#: ../src/gui/accelerators.c:920 ../src/gui/accelerators.c:937
+#: ../src/gui/accelerators.c:950 ../src/gui/accelerators.c:989
+#: ../src/gui/accelerators.c:1285 ../src/imageio/format/pdf.c:654
+#: ../src/imageio/format/pdf.c:679 ../src/libs/export.c:1267
+#: ../src/libs/export.c:1273 ../src/libs/export.c:1280
+#: ../src/libs/metadata_view.c:698
 msgid "yes"
 msgstr "sim"
 
@@ -5580,10 +5581,9 @@ msgid "lua scripts"
 msgstr "scripts lua"
 
 #: ../src/control/control.c:55
-#, fuzzy
 msgctxt "accel"
 msgid "fallbacks"
-msgstr "pretos"
+msgstr "alternativas"
 
 #: ../src/control/control.c:244
 msgid "working..."
@@ -7070,7 +7070,7 @@ msgstr "habilitar"
 msgid "focus"
 msgstr "foco"
 
-#: ../src/develop/imageop.c:3235 ../src/gui/accelerators.c:1620
+#: ../src/develop/imageop.c:3235 ../src/gui/accelerators.c:1645
 msgid "instance"
 msgstr "instância"
 
@@ -7923,11 +7923,11 @@ msgstr "próxima"
 msgid "previous"
 msgstr "anterior"
 
-#: ../src/gui/accelerators.c:112 ../src/gui/accelerators.c:1002
+#: ../src/gui/accelerators.c:112 ../src/gui/accelerators.c:1027
 msgid "first"
 msgstr "primeira"
 
-#: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:1003
+#: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:1028
 msgid "last"
 msgstr "última"
 
@@ -8028,7 +8028,7 @@ msgstr "última instância"
 msgid "relative instance"
 msgstr "instância relativa"
 
-#: ../src/gui/accelerators.c:526 ../src/gui/accelerators.c:1610
+#: ../src/gui/accelerators.c:526 ../src/gui/accelerators.c:1635
 msgid "speed"
 msgstr "velocidade"
 
@@ -8081,62 +8081,69 @@ msgid "active view"
 msgstr "vista ativa"
 
 #: ../src/gui/accelerators.c:752
-#, fuzzy
 msgid "fallbacks"
-msgstr "pretos"
+msgstr "alternativas"
 
-#: ../src/gui/accelerators.c:851
+#: ../src/gui/accelerators.c:868
 msgid "only key + ctrl/shift/alt supported for this shortcut"
 msgstr "somente tecla + ctrl/shift/alt suportados para este atalho"
 
-#: ../src/gui/accelerators.c:893
+#: ../src/gui/accelerators.c:875
+msgid "overwrite existing shortcut?"
+msgstr "sobrescrever atalhos existentes?"
+
+#: ../src/gui/accelerators.c:876
+msgid "only one shortcut allowed"
+msgstr "somente um atalho permitido"
+
+#: ../src/gui/accelerators.c:918
 msgid "create separate shortcuts for up and down move?"
 msgstr "criar atalhos separados para movimentos para cima e para baixo?"
 
-#: ../src/gui/accelerators.c:895
+#: ../src/gui/accelerators.c:920
 msgid "shortcut for move exists with single effect"
 msgstr "atalho para movimento existe com único efeito"
 
-#: ../src/gui/accelerators.c:910
+#: ../src/gui/accelerators.c:935
 msgid "reset the settings of the shortcut?"
 msgstr "redefinir a configuração do atalho?"
 
-#: ../src/gui/accelerators.c:912
+#: ../src/gui/accelerators.c:937
 msgid "shortcut exists with different settings"
 msgstr "existe um atalho com configuração diferente"
 
 #. there should be no other clashes because same mapping already existed
-#: ../src/gui/accelerators.c:923
+#: ../src/gui/accelerators.c:948
 msgid "remove the shortcut?"
 msgstr "remover o atalho?"
 
-#: ../src/gui/accelerators.c:925
+#: ../src/gui/accelerators.c:950
 msgid "shortcut already exists"
 msgstr "o atalho já existe"
 
-#: ../src/gui/accelerators.c:961
+#: ../src/gui/accelerators.c:986
 msgid "remove these existing shortcuts?"
 msgstr "remover estes atalhos existentes?"
 
-#: ../src/gui/accelerators.c:963
+#: ../src/gui/accelerators.c:988
 msgid "clashing shortcuts exist"
 msgstr "há atalhos conflitantes"
 
 #. or 3, but change char relative[] = "-2" to "-1"
 #. NUM_INSTANCES
-#: ../src/gui/accelerators.c:1001
+#: ../src/gui/accelerators.c:1026
 msgid "preferred"
 msgstr "preferido"
 
-#: ../src/gui/accelerators.c:1004
+#: ../src/gui/accelerators.c:1029
 msgid "second"
 msgstr "segundo"
 
-#: ../src/gui/accelerators.c:1005
+#: ../src/gui/accelerators.c:1030
 msgid "last but one"
 msgstr "penúltimo"
 
-#: ../src/gui/accelerators.c:1212
+#: ../src/gui/accelerators.c:1237
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -8161,50 +8168,50 @@ msgstr ""
 "\n"
 "clique direito para cancelar"
 
-#: ../src/gui/accelerators.c:1259
+#: ../src/gui/accelerators.c:1284
 msgid "remove the selected shortcut?"
 msgstr "excluir os atalhos selecionados?"
 
-#: ../src/gui/accelerators.c:1260
+#: ../src/gui/accelerators.c:1285
 msgid "removing shortcut"
 msgstr "removendo atalho"
 
 #. Setting up the cell renderers
-#: ../src/gui/accelerators.c:1586 ../src/views/view.c:1724
+#: ../src/gui/accelerators.c:1611 ../src/views/view.c:1724
 msgid "shortcut"
 msgstr "atalho"
 
-#: ../src/gui/accelerators.c:1588 ../src/gui/accelerators.c:1668
+#: ../src/gui/accelerators.c:1613 ../src/gui/accelerators.c:1693
 msgid "action"
 msgstr "ação"
 
-#: ../src/gui/accelerators.c:1597
+#: ../src/gui/accelerators.c:1622
 msgid "element"
 msgstr "elemento"
 
-#: ../src/gui/accelerators.c:1604
+#: ../src/gui/accelerators.c:1629
 msgid "effect"
 msgstr "efeito"
 
-#: ../src/gui/accelerators.c:1674 ../src/libs/export_metadata.c:190
+#: ../src/gui/accelerators.c:1699 ../src/libs/export_metadata.c:190
 msgid "type"
 msgstr "tipo"
 
-#: ../src/gui/accelerators.c:2012
+#: ../src/gui/accelerators.c:2037
 msgid "input devices reinitialised"
 msgstr "dispositivos de entrada reinicializados"
 
-#: ../src/gui/accelerators.c:2299
+#: ../src/gui/accelerators.c:2324
 #, c-format
 msgid "no fallback for %s (%s)"
-msgstr ""
+msgstr "nenhuma alternativa para %s (%s)"
 
-#: ../src/gui/accelerators.c:2303
+#: ../src/gui/accelerators.c:2328
 #, c-format
 msgid "%s not assigned"
 msgstr "%s não associado"
 
-#: ../src/gui/accelerators.c:2387
+#: ../src/gui/accelerators.c:2412
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s associado a %s"
@@ -9945,12 +9952,12 @@ msgstr "distorcer perspectiva automaticamente"
 msgid "corrective"
 msgstr "corretivo"
 
-#: ../src/iop/ashift.c:127 ../src/iop/ashift.c:129 ../src/iop/atrous.c:140
-#: ../src/iop/basicadj.c:147 ../src/iop/bilateral.cc:100
-#: ../src/iop/bilateral.cc:102 ../src/iop/channelmixerrgb.c:209
-#: ../src/iop/channelmixerrgb.c:211 ../src/iop/clipping.c:317
-#: ../src/iop/clipping.c:319 ../src/iop/colorin.c:137 ../src/iop/crop.c:141
-#: ../src/iop/crop.c:142 ../src/iop/demosaic.c:227
+#: ../src/iop/ashift.c:127 ../src/iop/ashift.c:129 ../src/iop/basicadj.c:147
+#: ../src/iop/bilateral.cc:100 ../src/iop/bilateral.cc:102
+#: ../src/iop/channelmixerrgb.c:209 ../src/iop/channelmixerrgb.c:211
+#: ../src/iop/clipping.c:317 ../src/iop/clipping.c:319
+#: ../src/iop/colorbalancergb.c:172 ../src/iop/colorin.c:137
+#: ../src/iop/crop.c:141 ../src/iop/crop.c:142 ../src/iop/demosaic.c:227
 #: ../src/iop/denoiseprofile.c:670 ../src/iop/denoiseprofile.c:672
 #: ../src/iop/diffuse.c:135 ../src/iop/diffuse.c:136 ../src/iop/exposure.c:115
 #: ../src/iop/exposure.c:117 ../src/iop/flip.c:106 ../src/iop/flip.c:107
@@ -10150,15 +10157,15 @@ msgstr "adiciona ou remove contraste local, nitidez, agudez"
 msgid "corrective and creative"
 msgstr "corretivo e criativo"
 
+#: ../src/iop/atrous.c:140 ../src/iop/atrous.c:142
+#: ../src/iop/colorbalance.c:160
+msgid "linear, Lab, scene-referred"
+msgstr "Linear, Lab, relativo à cena"
+
 #: ../src/iop/atrous.c:141 ../src/iop/censorize.c:85
 #: ../src/iop/hazeremoval.c:113
 msgid "frequential, RGB"
 msgstr "frequencial, RGB"
-
-#: ../src/iop/atrous.c:142 ../src/iop/colorbalance.c:160
-#: ../src/iop/colorbalancergb.c:172
-msgid "linear, Lab, scene-referred"
-msgstr "Linear, Lab, relativo à cena"
 
 #: ../src/iop/atrous.c:778
 msgctxt "eq_preset"
@@ -10388,12 +10395,12 @@ msgstr "linear, RGB, relativo à exibição"
 msgid "non-linear, RGB"
 msgstr "não-linear, RGB"
 
-#: ../src/iop/basecurve.c:342 ../src/iop/colorout.c:94 ../src/iop/dither.c:104
-#: ../src/iop/dither.c:106 ../src/iop/filmicrgb.c:339
-#: ../src/iop/graduatednd.c:153 ../src/iop/negadoctor.c:159
-#: ../src/iop/profile_gamma.c:104 ../src/iop/rgblevels.c:124
-#: ../src/iop/vignette.c:159 ../src/iop/vignette.c:161
-#: ../src/iop/watermark.c:291 ../src/iop/watermark.c:293
+#: ../src/iop/basecurve.c:342 ../src/iop/dither.c:104 ../src/iop/dither.c:106
+#: ../src/iop/filmicrgb.c:339 ../src/iop/graduatednd.c:153
+#: ../src/iop/negadoctor.c:159 ../src/iop/profile_gamma.c:104
+#: ../src/iop/rgblevels.c:124 ../src/iop/vignette.c:159
+#: ../src/iop/vignette.c:161 ../src/iop/watermark.c:291
+#: ../src/iop/watermark.c:293
 msgid "non-linear, RGB, display-referred"
 msgstr "não-linear, RGB, relativo à exibição"
 
@@ -10466,7 +10473,7 @@ msgstr "aplicar ajustes usuais à imagem"
 msgid "creative"
 msgstr "criativo"
 
-#: ../src/iop/basicadj.c:149
+#: ../src/iop/basicadj.c:149 ../src/iop/colorbalancergb.c:174
 msgid "non-linear, RGB, scene-referred"
 msgstr "não-linear, RGB, relativo à cena"
 
@@ -11882,7 +11889,7 @@ msgstr ""
 msgid "affect color, brightness and contrast"
 msgstr "afeta cor, brilho e contraste"
 
-#: ../src/iop/colorbalance.c:162 ../src/iop/colorbalancergb.c:174
+#: ../src/iop/colorbalance.c:162
 msgid "non-linear, Lab, scene-referred"
 msgstr "não-linear, Lab, relativo à cena"
 
@@ -12335,9 +12342,10 @@ msgstr "faz correções de espaço de cor e aplica aparências"
 
 #: ../src/iop/colorchecker.c:127 ../src/iop/colorchecker.c:129
 #: ../src/iop/colorize.c:106 ../src/iop/colormapping.c:154
-#: ../src/iop/colorreconstruction.c:136 ../src/iop/colorzones.c:146
-#: ../src/iop/defringe.c:82 ../src/iop/levels.c:132 ../src/iop/monochrome.c:99
-#: ../src/iop/shadhi.c:198 ../src/iop/tonecurve.c:214 ../src/iop/vibrance.c:96
+#: ../src/iop/colorout.c:92 ../src/iop/colorreconstruction.c:136
+#: ../src/iop/colorzones.c:146 ../src/iop/defringe.c:82 ../src/iop/levels.c:132
+#: ../src/iop/monochrome.c:99 ../src/iop/shadhi.c:198
+#: ../src/iop/tonecurve.c:214 ../src/iop/vibrance.c:96
 msgid "linear or non-linear, Lab, display-referred"
 msgstr "linear ou não-linear, Lab, relativo à exibição"
 
@@ -12650,9 +12658,9 @@ msgstr ""
 "converte o RGB de referência da pipeline para qualquer RGB de exposição\n"
 "usando perfis de cor para remapear valores RGB"
 
-#: ../src/iop/colorout.c:92
-msgid "linear or non-linear, RGB or Lab, display-referred"
-msgstr "linear u não-linear, RGB ou Lab, relativo à exibição"
+#: ../src/iop/colorout.c:94
+msgid "non-linear, RGB or Lab, display-referred"
+msgstr "não-linear, RGB ou Lab, relativo à exibição"
 
 #: ../src/iop/colorout.c:675
 msgid "missing output profile has been replaced by sRGB!"
@@ -12981,16 +12989,16 @@ msgstr ""
 "reconstrói pixels RGB completamente de uma leitura de array de filtro de "
 "sensor colorido"
 
-#: ../src/iop/demosaic.c:5249
+#: ../src/iop/demosaic.c:5258
 msgid "[dual demosaic_cl] internal problem"
 msgstr "[dual demosaic_cl] problema interno"
 
-#: ../src/iop/demosaic.c:5616
+#: ../src/iop/demosaic.c:5625
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' matriz de cores não encontrada para imagem 4bayer!"
 
-#: ../src/iop/demosaic.c:5736
+#: ../src/iop/demosaic.c:5745
 msgid ""
 "bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -13002,7 +13010,7 @@ msgstr ""
 "LMMSE é melhor para imagens com ISO alto.\n"
 "interpoladores cromáticos duplos duplicam tempo de processamento."
 
-#: ../src/iop/demosaic.c:5740
+#: ../src/iop/demosaic.c:5749
 msgid ""
 "xtrans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -13012,7 +13020,7 @@ msgstr ""
 "croma no domínio da frequencia são lentos.\n"
 "interpoladores cromátios duplos duplicam tempo de processamento."
 
-#: ../src/iop/demosaic.c:5745
+#: ../src/iop/demosaic.c:5754
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -13022,7 +13030,7 @@ msgstr ""
 "defina 0.0 para desativar.\n"
 "defina 1.0 para ignorar bordas."
 
-#: ../src/iop/demosaic.c:5750
+#: ../src/iop/demosaic.c:5759
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content.\n"
@@ -13032,11 +13040,11 @@ msgstr ""
 "defina em 0.0 para conteúdo de alta frequência.\n"
 "defina em 1.0 para conteúdo plano."
 
-#: ../src/iop/demosaic.c:5753
+#: ../src/iop/demosaic.c:5762
 msgid "display blending mask"
 msgstr "mostrar máscara de mesclagem"
 
-#: ../src/iop/demosaic.c:5760
+#: ../src/iop/demosaic.c:5769
 msgid ""
 "LMMSE refinement steps. the median steps avarage the output,\n"
 "refine adds some recalculation of red & blue channels."
@@ -13044,19 +13052,19 @@ msgstr ""
 "passos de refinamento LMMSE. os passos de mediana calculam média da saída,\n"
 "os de refinamento adicionam algum recálculo de canais vermelho & azul."
 
-#: ../src/iop/demosaic.c:5763
+#: ../src/iop/demosaic.c:5772
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "quantos passos de suavização média após interpolação cromática"
 
-#: ../src/iop/demosaic.c:5766
+#: ../src/iop/demosaic.c:5775
 msgid "green channels matching method"
 msgstr "método de correspondência canal verde"
 
-#: ../src/iop/demosaic.c:5772
+#: ../src/iop/demosaic.c:5781
 msgid "not applicable"
 msgstr "não aplicável"
 
-#: ../src/iop/demosaic.c:5773
+#: ../src/iop/demosaic.c:5782
 msgid "demosaicing is only used for color raw images"
 msgstr "demosaic só é usado em imagens RAW."
 
@@ -21996,6 +22004,9 @@ msgstr "ações com mouse"
 #: ../src/views/view.c:1726
 msgid "Action"
 msgstr "Ação"
+
+#~ msgid "linear or non-linear, RGB or Lab, display-referred"
+#~ msgstr "linear u não-linear, RGB ou Lab, relativo à exibição"
 
 #~ msgid "enable focus-peaking mode"
 #~ msgstr "habilita foco máximo"
