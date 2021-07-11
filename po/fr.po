@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-07-10 17:38+0200\n"
-"PO-Revision-Date: 2021-07-10 17:38+0200\n"
+"PO-Revision-Date: 2021-07-11 12:53+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 3.0\n"
+"X-Generator: Poedit 2.4.2\n"
 
 #: ../build/bin/preferences_gen.h:67 ../build/bin/preferences_gen.h:3472
 #: ../build/bin/preferences_gen.h:3508 ../build/bin/preferences_gen.h:3544
@@ -2789,7 +2789,7 @@ msgstr "changement de teinte"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:363
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:544
 msgid "global brilliance"
-msgstr "vibrance globale"
+msgstr "brillance globale"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:387
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:560
@@ -12212,7 +12212,7 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1702
 msgid "perceptual brilliance grading"
-msgstr "gradation de la brillance perceptuelle"
+msgstr "gradation de brillance perceptuelle"
 
 #: ../src/iop/colorbalancergb.c:1709
 msgid "add or remove brilliance by an absolute amount"
