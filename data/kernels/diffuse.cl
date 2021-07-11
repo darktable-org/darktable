@@ -112,9 +112,9 @@ inline void rotation_matrix_isophote(const float4 c2,
   //  [ a12, a22 ]]
   // taken from https://www.researchgate.net/publication/220663968
   // c dampens the gradient direction
-  a[0][0] = clamp(cos_theta2 + c2 * sin_theta2, 0.f, 1.f);
-  a[1][1] = clamp(c2 * cos_theta2 + sin_theta2, 0.f, 1.f);
-  a[0][1] = a[1][0] = clamp((c2 - 1.0f) * cos_theta_sin_theta, 0.f, 1.f);
+  a[0][0] = cos_theta2 + c2 * sin_theta2;
+  a[1][1] = c2 * cos_theta2 + sin_theta2;
+  a[0][1] = a[1][0] = (c2 - 1.0f) * cos_theta_sin_theta;
 }
 
 inline void rotation_matrix_gradient(const float4 c2,
@@ -127,9 +127,9 @@ inline void rotation_matrix_gradient(const float4 c2,
   //  [ a12, a22 ]]
   // based on https://www.researchgate.net/publication/220663968 and inverted
   // c dampens the isophote direction
-  a[0][0] = clamp(c2 * cos_theta2 + sin_theta2, 0.f, 1.f);
-  a[1][1] = clamp(cos_theta2 + c2 * sin_theta2, 0.f, 1.f);
-  a[0][1] = a[1][0] = clamp((1.0f - c2) * cos_theta_sin_theta, 0.f, 1.f);
+  a[0][0] = c2 * cos_theta2 + sin_theta2;
+  a[1][1] = cos_theta2 + c2 * sin_theta2;
+  a[0][1] = a[1][0] = (1.0f - c2) * cos_theta_sin_theta;
 }
 
 
