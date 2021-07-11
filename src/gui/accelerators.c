@@ -873,7 +873,7 @@ static gboolean insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
     if(key && key->accel_key)
     {
       gchar *question = g_markup_printf_escaped("\n%s\n", _("overwrite existing shortcut?"));
-      gboolean overwrite = !confirm || dt_gui_show_standalone_yes_no_dialog(_("only one shortcut allowed"), question, _("no"), _("yes"));
+      const gboolean overwrite = !confirm || dt_gui_show_standalone_yes_no_dialog(_("only one shortcut allowed"), question, _("no"), _("yes"));
       g_free(question);
       if(!overwrite) return FALSE;
     }
