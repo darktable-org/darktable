@@ -232,17 +232,25 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
         COMPONENT DTApplication)
   endif(LensFun_FOUND)
 
-  # Add .mo files
-  file(STRINGS ${CMAKE_SOURCE_DIR}/po/LINGUAS LINGUAS)
-  foreach(language in ${LINGUAS})
-    file(GLOB mofiles C:\\msys64\\mingw64\\share\\locale\\${language}\\LC_MESSAGES/*)
-    foreach(sysfile ${mofiles})
-      string(REPLACE "\\" "/" sysfile ${sysfile})
-      install(FILES ${sysfile}
-              DESTINATION ${CMAKE_INSTALL_LOCALEDIR}/${language}/LC_MESSAGES
-              COMPONENT DTApplication)
-    endforeach(sysfile)
-  endforeach()
+  # Add iso-codes
+  if(IsoCodes_FOUND)
+    install(FILES
+        "${IsoCodes_LOCATION}/iso_639-2.json"
+        DESTINATION share/iso-codes/json/
+        COMPONENT DTApplication
+    )
+    file(GLOB IsoCodes_MO_FILES RELATIVE "${IsoCodes_LOCALEDIR}" "${IsoCodes_LOCALEDIR}/*/LC_MESSAGES/iso_639.mo")
+    foreach(MO ${IsoCodes_MO_FILES})
+      string(REPLACE "iso_639.mo" "" MO_TARGET_DIR "${MO}")
+      install(FILES "${IsoCodes_LOCALEDIR}/${MO}" DESTINATION "share/locale/${MO_TARGET_DIR}" COMPONENT DTApplication)
+      file(GLOB mofiles "${IsoCodes_LOCALEDIR}/${MO_TARGET_DIR}/*")
+      foreach(sysfile ${mofiles})
+        install(FILES ${sysfile}
+                DESTINATION ${CMAKE_INSTALL_LOCALEDIR}/${language}/LC_MESSAGES
+                COMPONENT DTApplication)
+      endforeach(sysfile)
+    endforeach()
+  endif(IsoCodes_FOUND)
 
   # Add ca-cert for curl
   install(FILES
