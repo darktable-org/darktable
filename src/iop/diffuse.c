@@ -477,25 +477,31 @@ static inline void init_reconstruct(float *const restrict reconstructed, const s
 
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(pixels:64) uniform(pixels)
+#pragma omp declare simd aligned(pixels:64) aligned(xy:16) uniform(pixels)
 #endif
-static inline void find_gradient(const float pixels[9][4], const size_t c, float xy[2])
+static inline void find_gradients(const float pixels[9][4], float xy[2][4])
 {
   // Compute the gradient with centered finite differences in a 3×3 stencil
   // warning : x is vertical, y is horizontal
-  xy[0] = (pixels[7][c] - pixels[1][c]) / 2.f;
-  xy[1] = (pixels[5][c] - pixels[3][c]) / 2.f;
+  for_four_channels(c,aligned(pixels:64) aligned(xy))
+  {
+    xy[0][c] = (pixels[7][c] - pixels[1][c]) / 2.f;
+    xy[1][c] = (pixels[5][c] - pixels[3][c]) / 2.f;
+  }
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(pixels:64) uniform(pixels)
+#pragma omp declare simd aligned(pixels:64) aligned(xy:16) uniform(pixels)
 #endif
-static inline void find_laplacian(const float pixels[9][4], const size_t c, float xy[2])
+static inline void find_laplacians(const float pixels[9][4], float xy[2][4])
 {
   // Compute the laplacian with centered finite differences in a 3×3 stencil
   // warning : x is vertical, y is horizontal
-  xy[0] = (pixels[7][c] + pixels[1][c]) - 2.f * pixels[4][c];
-  xy[1] = (pixels[5][c] + pixels[3][c]) - 2.f * pixels[4][c];
+  for_four_channels(c, aligned(xy) aligned(pixels:64))
+  {
+    xy[0][c] = (pixels[7][c] + pixels[1][c]) - 2.f * pixels[4][c];
+    xy[1][c] = (pixels[5][c] + pixels[3][c]) - 2.f * pixels[4][c];
+  }
 }
 
 
@@ -533,7 +539,7 @@ static inline void rotation_matrix_gradient(const float c2, const float cos_thet
 
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(kernel: 64) aligned(a:16)
+#pragma omp declare simd aligned(a, kernel: 64)
 #endif
 static inline void build_matrix(const float a[2][2], float kernel[9])
 {
@@ -671,48 +677,61 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
               neighbour_pixel_LF[3 * ii + jj][c] = LF[(i_neighbours[ii] * width + j_neighbours[jj]) * 4 + c];
             }
 
+        // build the local anisotropic convolution filters for gradients and laplacians
+        float DT_ALIGNED_PIXEL gradient[2][4], DT_ALIGNED_PIXEL laplacian[2][4]; // x, y for each channel
+        find_gradients(neighbour_pixel_LF, gradient);
+        find_gradients(neighbour_pixel_HF, laplacian);
+
+        float DT_ALIGNED_PIXEL cos_theta_grad_sq[4];
+        float DT_ALIGNED_PIXEL sin_theta_grad_sq[4];
+        float DT_ALIGNED_PIXEL cos_theta_sin_theta_grad[4];
+        float DT_ALIGNED_PIXEL magnitude_grad[4];
+        for_four_channels(c)
+        {
+          magnitude_grad[c] = sqrtf(sqf(gradient[0][c]) + sqf(gradient[1][c]));
+          // Compute cos(arg(grad)) = dx / hypot - force arg(grad) = 0 if hypot == 0
+          gradient[0][c] = (magnitude_grad[c] != 0.f) ? gradient[0][c] / magnitude_grad[c] : 1.f; // cos(0)
+          // Compute sin (arg(grad))= dy / hypot - force arg(grad) = 0 if hypot == 0
+          gradient[1][c] = (magnitude_grad[c] != 0.f) ? gradient[1][c] / magnitude_grad[c] : 0.f; // sin(0)
+          // Warning : now gradient = { cos(arg(grad)) , sin(arg(grad)) }
+          cos_theta_grad_sq[c] = sqf(gradient[0][c]);
+          sin_theta_grad_sq[c] = sqf(gradient[1][c]);
+          cos_theta_sin_theta_grad[c] = gradient[0][c] * gradient[1][c];
+        }
+
+        float DT_ALIGNED_PIXEL cos_theta_lapl_sq[4];
+        float DT_ALIGNED_PIXEL sin_theta_lapl_sq[4];
+        float DT_ALIGNED_PIXEL cos_theta_sin_theta_lapl[4];
+        float DT_ALIGNED_PIXEL magnitude_lapl[4];
+        for_four_channels(c)
+        {
+          magnitude_lapl[c] = sqrtf(sqf(laplacian[0][c]) + sqf(laplacian[1][c]));
+          // Compute cos(arg(lapl)) = dx / hypot - force arg(lapl) = 0 if hypot == 0
+          laplacian[0][c] = (magnitude_lapl[c] != 0.f) ? laplacian[0][c] / magnitude_lapl[c] : 1.f; // cos(0)
+          // Compute sin (arg(lapl))= dy / hypot - force arg(lapl) = 0 if hypot == 0
+          laplacian[1][c] = (magnitude_lapl[c] != 0.f) ? laplacian[1][c] / magnitude_lapl[c] : 0.f; // sin(0)
+          // Warning : now laplacian = { cos(arg(lapl)) , sin(arg(lapl)) }
+          cos_theta_lapl_sq[c] = sqf(laplacian[0][c]);
+          sin_theta_lapl_sq[c] = sqf(laplacian[1][c]);
+          cos_theta_sin_theta_lapl[c] = laplacian[0][c] * laplacian[1][c];
+        }
+
         for_four_channels(c, aligned(neighbour_pixel_LF, neighbour_pixel_HF, out, LF, HF : 64) \
             aligned(anisotropy, isotropy_type, ABCD :16))
         {
-          // build the local anisotropic convolution filters for gradients and laplacians
-          float gradient[2], laplacian[2]; // x, y for each channel
-          find_gradient(neighbour_pixel_LF, c, gradient);
-          find_gradient(neighbour_pixel_HF, c, laplacian);
-
-          const float magnitude_grad = sqrtf(sqf(gradient[0]) + sqf(gradient[1]));
-          // Compute cos(arg(grad)) = dx / hypot - force arg(grad) = 0 if hypot == 0
-          gradient[0] = (magnitude_grad != 0.f) ? gradient[0] / magnitude_grad : 1.f; // cos(0)
-          // Compute sin (arg(grad))= dy / hypot - force arg(grad) = 0 if hypot == 0
-          gradient[1] = (magnitude_grad != 0.f) ? gradient[1] / magnitude_grad : 0.f; // sin(0)
-          // Warning : now gradient[2] = { cos(arg(grad)) , sin(arg(grad)) }
-
-          const float magnitude_lapl = sqrtf(sqf(laplacian[0]) + sqf(laplacian[1]));
-          // Compute cos(arg(lapl)) = dx / hypot - force arg(lapl) = 0 if hypot == 0
-          laplacian[0] = (magnitude_lapl != 0.f) ? laplacian[0] / magnitude_lapl : 1.f; // cos(0)
-          // Compute sin (arg(lapl))= dy / hypot - force arg(lapl) = 0 if hypot == 0
-          laplacian[1] = (magnitude_lapl != 0.f) ? laplacian[1] / magnitude_lapl : 0.f; // sin(0)
-          // Warning : now laplacian[2] = { cos(arg(lapl)) , sin(arg(lapl)) }
-
-          const float cos_theta_grad_sq = sqf(gradient[0]);
-          const float sin_theta_grad_sq = sqf(gradient[1]);
-          const float cos_theta_sin_theta_grad = gradient[0] * gradient[1];
-          const float cos_theta_lapl_sq = sqf(laplacian[0]);
-          const float sin_theta_lapl_sq = sqf(laplacian[1]);
-          const float cos_theta_sin_theta_lapl = laplacian[0] * laplacian[1];
-
           // c² in https://www.researchgate.net/publication/220663968
           const float c2[4]
-              = { dt_fast_expf(-magnitude_grad * anisotropy[0]), dt_fast_expf(-magnitude_lapl * anisotropy[1]),
-                  dt_fast_expf(-magnitude_grad * anisotropy[2]), dt_fast_expf(-magnitude_lapl * anisotropy[3]) };
+              = { dt_fast_expf(-magnitude_grad[c] * anisotropy[0]), dt_fast_expf(-magnitude_lapl[c] * anisotropy[1]),
+                  dt_fast_expf(-magnitude_grad[c] * anisotropy[2]), dt_fast_expf(-magnitude_lapl[c] * anisotropy[3]) };
 
           float DT_ALIGNED_ARRAY kern_first[9], kern_second[9], kern_third[9], kern_fourth[9];
-          compute_kernel(c2[0], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type[0],
+          compute_kernel(c2[0], cos_theta_sin_theta_grad[c], cos_theta_grad_sq[c], sin_theta_grad_sq[c], isotropy_type[0],
                          kern_first);
-          compute_kernel(c2[1], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type[1],
+          compute_kernel(c2[1], cos_theta_sin_theta_lapl[c], cos_theta_lapl_sq[c], sin_theta_lapl_sq[c], isotropy_type[1],
                          kern_second);
-          compute_kernel(c2[2], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type[2],
+          compute_kernel(c2[2], cos_theta_sin_theta_grad[c], cos_theta_grad_sq[c], sin_theta_grad_sq[c], isotropy_type[2],
                          kern_third);
-          compute_kernel(c2[3], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type[3],
+          compute_kernel(c2[3], cos_theta_sin_theta_lapl[c], cos_theta_lapl_sq[c], sin_theta_lapl_sq[c], isotropy_type[3],
                          kern_fourth);
 
           // convolve filters and compute the variance and the regularization term
