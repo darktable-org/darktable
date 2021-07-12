@@ -491,18 +491,21 @@ void dt_film_set_folder_status()
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT id, folder FROM main.film_rolls",
                               -1, &stmt, NULL);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT INTO memory.film_folder (id, status) "
+                              "VALUES (?1, ?2)",
+                              -1, &stmt2, NULL);
+
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int filmid = sqlite3_column_int(stmt, 0);
     const char *folder = (char *)sqlite3_column_text(stmt, 1);
     const int status = g_file_test(folder, G_FILE_TEST_IS_DIR);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT INTO memory.film_folder (id, status) "
-                                "VALUES (?1, ?2)",
-                                -1, &stmt2, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, filmid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt2, 2, status);
     sqlite3_step(stmt2);
+    sqlite3_reset(stmt2);
   }
   sqlite3_finalize(stmt);
   sqlite3_finalize(stmt2);
