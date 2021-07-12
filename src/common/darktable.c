@@ -1007,10 +1007,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   }
 
   // we initialize grouping early because it's needed for collection init
+  // idem for folder reachability
   if(init_gui)
   {
     darktable.gui = (dt_gui_gtk_t *)calloc(1, sizeof(dt_gui_gtk_t));
     darktable.gui->grouping = dt_conf_get_bool("ui_last/grouping");
+    dt_film_set_folder_status();
   }
 
   // initialize collection query
