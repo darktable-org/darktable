@@ -251,7 +251,6 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
       }
 
     // build the local anisotropic convolution filters for gradients and laplacians
-    // we use the low freq layer all the type as it is less likely to be nosy
     float4 gradient[2], laplacian[2];
     find_gradient(neighbour_pixel_LF, gradient);
     find_gradient(neighbour_pixel_HF, laplacian);
