@@ -186,24 +186,27 @@ static float _action_process_toggle(gpointer target, dt_action_element_t element
 
 static float _action_process_button(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
+  if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
+
   if(move_size && gtk_widget_is_sensitive(target))
   {
-    GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
-    event->button.state = effect == DT_ACTION_EFFECT_ACTIVATE_CTRL
-                        ? GDK_CONTROL_MASK : 0;
-    event->button.button = effect == DT_ACTION_EFFECT_ACTIVATE_RIGHT
-                         ? GDK_BUTTON_SECONDARY : GDK_BUTTON_PRIMARY;
+    if(effect != DT_ACTION_EFFECT_ACTIVATE || !gtk_widget_activate(GTK_WIDGET(target)))
+    {
+      GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
+      event->button.state = effect == DT_ACTION_EFFECT_ACTIVATE_CTRL
+                          ? GDK_CONTROL_MASK : 0;
+      event->button.button = effect == DT_ACTION_EFFECT_ACTIVATE_RIGHT
+                          ? GDK_BUTTON_SECONDARY : GDK_BUTTON_PRIMARY;
 
-    if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
-    event->button.window = gtk_widget_get_window(target);
-    g_object_ref(event->button.window);
+      event->button.window = gtk_widget_get_window(target);
+      g_object_ref(event->button.window);
 
-    if(!gtk_widget_event(target, event))
-      gtk_button_clicked(GTK_BUTTON(target));
-    event->type = GDK_BUTTON_RELEASE;
-    gtk_widget_event(target, event);
+      gtk_widget_event(target, event);
+      event->type = GDK_BUTTON_RELEASE;
+      gtk_widget_event(target, event);
 
-    gdk_event_free(event);
+      gdk_event_free(event);
+    }
   }
 
   return NAN;
@@ -2117,9 +2120,10 @@ static void lookup_mapping_widget()
 
 static gboolean _widget_invisible(GtkWidget *w)
 {
+  GtkWidget *p = gtk_widget_get_parent(w);
   return (!GTK_IS_WIDGET(w) ||
           !gtk_widget_get_visible(w) ||
-          !gtk_widget_get_visible(gtk_widget_get_parent(w)));
+          (g_strcmp0(gtk_widget_get_name(p), "lib-plugin-ui-main") && !gtk_widget_get_visible(p)));
 }
 
 gboolean _shortcut_closest_match(GSequenceIter **current, dt_shortcut_t *s, gboolean *fully_matched)
