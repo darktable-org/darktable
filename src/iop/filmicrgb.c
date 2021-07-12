@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
+#include "common/bspline.h"
 #include "common/dwt.h"
 #include "common/image.h"
 #include "common/iop_profile.h"
@@ -866,86 +867,6 @@ inline static void inpaint_noise(const float *const in, const float *const mask,
 }
 
 
-// B spline filter
-#define FSIZE 5
-
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(buf, indices, result:64)
-#endif
-inline static void sparse_scalar_product(const float *const buf, const size_t indices[FSIZE], float result[4])
-{
-  // scalar product of 2 3×5 vectors stored as RGB planes and B-spline filter,
-  // e.g. RRRRR - GGGGG - BBBBB
-
-  const float DT_ALIGNED_ARRAY filter[FSIZE] =
-                        { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
-
-  #ifdef _OPENMP
-  #pragma omp simd
-  #endif
-  for(size_t c = 0; c < 4; ++c)
-  {
-    float acc = 0.0f;
-    for(size_t k = 0; k < FSIZE; ++k)
-      acc += filter[k] * buf[indices[k] + c];
-    result[c] = fmaxf(acc, 0.f);
-  }
-}
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(in, out:64) aligned(tempbuf:16)
-#endif
-inline static void blur_2D_Bspline(const float *const restrict in, float *const restrict out,
-                                   float *const restrict tempbuf,
-                                   const size_t width, const size_t height, const int mult)
-{
-  // À-trous B-spline interpolation/blur shifted by mult
-  #ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(width, height, mult)  \
-    dt_omp_sharedconst(out, in, tempbuf) \
-    schedule(simd:static)
-  #endif
-  for(size_t row = 0; row < height; row++)
-  {
-    // get a thread-private one-row temporary buffer
-    float *const temp = tempbuf + 4 * width * dt_get_thread_num();
-    // interleave the order in which we process the rows so that we minimize cache misses
-    const size_t i = dwt_interleave_rows(row, height, mult);
-    // Convolve B-spline filter over columns: for each pixel in the current row, compute vertical blur
-    size_t DT_ALIGNED_ARRAY indices[FSIZE] = { 0 };
-    // Start by computing the array indices of the pixels of interest; the offsets from the current pixel stay
-    // unchanged over the entire row, so we can compute once and just offset the base address while iterating
-    // over the row
-    for(size_t ii = 0; ii < FSIZE; ++ii)
-    {
-      const size_t r = CLAMP(mult * (int)(ii - (FSIZE - 1) / 2) + (int)i, (int)0, (int)height - 1);
-      indices[ii] = 4 * r * width;
-    }
-    for(size_t j = 0; j < width; j++)
-    {
-      // Compute the vertical blur of the current pixel and store it in the temp buffer for the row
-      sparse_scalar_product(in + j * 4, indices, temp + j * 4);
-    }
-    // Convolve B-spline filter horizontally over current row
-    for(size_t j = 0; j < width; j++)
-    {
-      // Compute the array indices of the pixels of interest; since the offsets will change near the ends of
-      // the row, we need to recompute for each pixel
-      for(size_t jj = 0; jj < FSIZE; ++jj)
-      {
-        const size_t col = CLAMP(mult * (int)(jj - (FSIZE - 1) / 2) + (int)j, (int)0, (int)width - 1);
-        indices[jj] = 4 * col;
-      }
-      // Compute the horizontal blur of the already vertically-blurred pixel and store the result at the proper
-      //  row/column location in the output buffer
-      sparse_scalar_product(temp, indices, out + (i * width + j) * 4);
-    }
-  }
-}
-
-
 inline static void wavelets_reconstruct_RGB(const float *const restrict HF, const float *const restrict LF,
                                             const float *const restrict texture, const float *const restrict mask,
                                             float *const restrict reconstructed, const size_t width,
@@ -1109,16 +1030,16 @@ static int get_scales(const dt_iop_roi_t *roi_in, const dt_dev_pixelpipe_iop_t *
   /* How many wavelets scales do we need to compute at current zoom level ?
    * 0. To get the same preview no matter the zoom scale, the relative image coverage ratio of the filter at
    * the coarsest wavelet level should always stay constant.
-   * 1. The image coverage of each B spline filter of size `FSIZE` is `2^(level) * (FSIZE - 1) / 2 + 1` pixels
-   * 2. The coarsest level filter at full resolution should cover `1/FSIZE` of the largest image dimension.
-   * 3. The coarsest level filter at current zoom level should cover `scale/FSIZE` of the largest image dimension.
+   * 1. The image coverage of each B spline filter of size `BSPLINE_FSIZE` is `2^(level) * (BSPLINE_FSIZE - 1) / 2 + 1` pixels
+   * 2. The coarsest level filter at full resolution should cover `1/BSPLINE_FSIZE` of the largest image dimension.
+   * 3. The coarsest level filter at current zoom level should cover `scale/BSPLINE_FSIZE` of the largest image dimension.
    *
    * So we compute the level that solves 1. subject to 3. Of course, integer rounding doesn't make that 1:1
    * accurate.
    */
   const float scale = roi_in->scale / piece->iscale;
   const size_t size = MAX(piece->buf_in.height * piece->iscale, piece->buf_in.width * piece->iscale);
-  const int scales = floorf(log2f((2.0f * size * scale / ((FSIZE - 1) * FSIZE)) - 1.0f));
+  const int scales = floorf(log2f((2.0f * size * scale / ((BSPLINE_FSIZE - 1) * BSPLINE_FSIZE)) - 1.0f));
   return CLAMP(scales, 1, MAX_NUM_SCALES);
 }
 
