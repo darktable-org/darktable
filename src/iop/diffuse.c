@@ -716,8 +716,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           cos_theta_sin_theta_lapl[c] = laplacian[0][c] * laplacian[1][c];
         }
 
-        for_four_channels(c, aligned(neighbour_pixel_LF, neighbour_pixel_HF, out, LF, HF : 64) \
-            aligned(anisotropy, isotropy_type, ABCD :16))
+        for(size_t c = 0; c < 3; c++) // the body of this loop can't vectorize, so don't compute the fourth channel
         {
           // c² in https://www.researchgate.net/publication/220663968
           const float c2[4]
