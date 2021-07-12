@@ -20,6 +20,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
+#include "common/dwt.h"
 #include "common/fast_guided_filter.h"
 #include "common/gaussian.h"
 #include "common/image.h"
@@ -633,10 +634,17 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                                            \
     dt_omp_firstprivate(out, mask, HF, LF, height, width, ABCD, has_mask, variance_threshold, anisotropy,         \
-                        regularization_factor, mult, strength, isotropy_type) schedule(simd                       \
-                                                                                       : static) collapse(2)
+                        regularization_factor, mult, strength, isotropy_type) schedule(static)
 #endif
-  for(size_t i = 0; i < height; ++i)
+  for(size_t row = 0; row < height; ++row)
+  {
+    // interleave the order in which we process the rows so that we minimize cache misses
+    const size_t i = dwt_interleave_rows(row, height, mult);
+    // compute the 'above' and 'below' coordinates, clamping them to the image, once for the entire row
+    const size_t i_neighbours[3]
+      = { MAX((int)(i - mult * H), (int)0),            // x - mult
+          i,                                           // x
+          MIN((int)(i + mult * H), (int)height - 1) }; // x + mult
     for(size_t j = 0; j < width; ++j)
     {
       const size_t idx = (i * width + j);
@@ -647,14 +655,9 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
       {
         // non-local neighbours coordinates
         const size_t j_neighbours[3]
-            = { CLAMP((int)(j - mult * H), (int)0, (int)width - 1),   // y - mult
-                j,                                                    // y
-                CLAMP((int)(j + mult * H), (int)0, (int)width - 1) }; // y + mult
-
-        const size_t i_neighbours[3]
-            = { CLAMP((int)(i - mult * H), (int)0, (int)height - 1),   // x - mult
-                i,                                                     // x
-                CLAMP((int)(i + mult * H), (int)0, (int)height - 1) }; // x + mult
+          = { MAX((int)(j - mult * H), (int)0),            // y - mult
+              j,                                          // y
+              MIN((int)(j + mult * H), (int)width - 1) }; // y + mult
 
         // fetch non-local pixels and store them locally and contiguously
         float DT_ALIGNED_ARRAY neighbour_pixel_HF[9][4];
@@ -745,6 +748,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           out[index + c] = HF[index + c] + LF[index + c];
       }
     }
+  }
 }
 
 static inline float compute_anisotropy_factor(const float user_param)
