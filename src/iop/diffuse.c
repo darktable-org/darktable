@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/bspline.h"
 #include "common/darktable.h"
 #include "common/fast_guided_filter.h"
 #include "common/gaussian.h"
@@ -419,46 +420,6 @@ static inline unsigned int num_steps_to_reach_equivalent_sigma(const float sigma
   return s + 1;
 }
 
-inline static void blur_2D_Bspline(const float *const restrict in, float *const restrict HF,
-                                   float *const restrict LF,
-                                   const size_t width, const size_t height, const int mult)
-{
-  // Blur and compute the decimated wavelet at once
-#ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(width, height, in, LF, HF, mult) \
-    schedule(simd: static)    \
-    collapse(2)
-#endif
-  for(size_t i = 0; i < height; i++)
-  {
-    for(size_t j = 0; j < width; j++)
-    {
-      const size_t index = (i * width + j) * 4; // full scale
-      float DT_ALIGNED_PIXEL acc[4] = { 0.f };
-
-      for(size_t ii = 0; ii < FSIZE; ++ii)
-        for(size_t jj = 0; jj < FSIZE; ++jj)
-        {
-          const size_t row = CLAMP((int)i + mult * (int)(ii - (FSIZE - 1) / 2), (int)0, (int)height - 1);
-          const size_t col = CLAMP((int)j + mult * (int)(jj - (FSIZE - 1) / 2), (int)0, (int)width - 1);
-          const size_t k_index = (row * width + col) * 4;
-
-          const float DT_ALIGNED_ARRAY filter[FSIZE]
-              = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
-          const float filters = filter[ii] * filter[jj];
-
-          for_four_channels(c, aligned(in : 64) aligned(acc : 16)) acc[c] += filters * in[k_index + c];
-        }
-
-      for_four_channels(c, aligned(in, HF, LF : 64) aligned(acc : 16))
-      {
-        LF[index + c] = acc[c];
-        HF[index + c] = in[index + c] - acc[c];
-      }
-    }
-  }
-}
-
 static inline void init_reconstruct(float *const restrict reconstructed, const size_t width, const size_t height)
 {
 // init the reconstructed buffer with non-clipped and partially clipped pixels
@@ -822,7 +783,7 @@ static inline gint wavelets_process(const float *const restrict in, float *const
       buffer_out = LF_odd;
     }
 
-    blur_2D_Bspline(buffer_in, HF[s], buffer_out, width, height, mult);
+    decompose_2D_Bspline(buffer_in, HF[s], buffer_out, width, height, mult);
 
     residual = buffer_out;
 
