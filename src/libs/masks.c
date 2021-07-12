@@ -844,9 +844,6 @@ static void _tree_cell_edited(GtkCellRendererText *cell, gchar *path_string, gch
 
   g_strlcpy(form->name, text, sizeof(form->name));
   dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
-
-  // and we update the cell text
-  _set_iter_name(lm, form, 0, 1.0f, model, &iter);
 }
 
 static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *self)
