@@ -672,7 +672,6 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
             aligned(anisotropy, isotropy_type, ABCD :16))
         {
           // build the local anisotropic convolution filters for gradients and laplacians
-          // we use the low freq layer all the type as it is less likely to be nosy
           float gradient[2], laplacian[2]; // x, y for each channel
           find_gradient(neighbour_pixel_LF, c, gradient);
           find_gradient(neighbour_pixel_HF, c, laplacian);
