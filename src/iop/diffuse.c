@@ -699,8 +699,9 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           const float cos_theta_sin_theta_lapl = laplacian[0] * laplacian[1];
 
           // c² in https://www.researchgate.net/publication/220663968
-          const float c2[4] = { expf(-magnitude_grad * anisotropy[0]), expf(-magnitude_lapl * anisotropy[1]),
-                                expf(-magnitude_grad * anisotropy[2]), expf(-magnitude_lapl * anisotropy[3]) };
+          const float c2[4]
+              = { dt_fast_expf(-magnitude_grad * anisotropy[0]), dt_fast_expf(-magnitude_lapl * anisotropy[1]),
+                  dt_fast_expf(-magnitude_grad * anisotropy[2]), dt_fast_expf(-magnitude_lapl * anisotropy[3]) };
 
           float DT_ALIGNED_ARRAY kern_first[9], kern_second[9], kern_third[9], kern_fourth[9];
           compute_kernel(c2[0], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type[0],
