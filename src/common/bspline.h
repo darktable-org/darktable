@@ -10,24 +10,55 @@
 #ifdef _OPENMP
 #pragma omp declare simd aligned(buf, indices, result:64)
 #endif
-inline static void sparse_scalar_product(const float *const buf, const size_t indices[BSPLINE_FSIZE], float result[4])
+static inline void sparse_scalar_product(const float *const restrict buf, const size_t indices[BSPLINE_FSIZE],
+                                         float *const restrict result)
 {
   // scalar product of 2 3×5 vectors stored as RGB planes and B-spline filter,
   // e.g. RRRRR - GGGGG - BBBBB
-
-  const float DT_ALIGNED_ARRAY filter[BSPLINE_FSIZE] =
-                        { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
-
-  #ifdef _OPENMP
-  #pragma omp simd
-  #endif
-  for(size_t c = 0; c < 4; ++c)
+  for_each_channel(c, aligned(buf,indices,result))
   {
-    float acc = 0.0f;
-    for(size_t k = 0; k < BSPLINE_FSIZE; ++k)
-      acc += filter[k] * buf[indices[k] + c];
-    result[c] = fmaxf(acc, 0.f);
+    result[c] = MAX(0.0f, ((buf[indices[0]+c] + 4.0f*(buf[indices[1]+c] + buf[indices[3]+c])
+                           + 6.0f*buf[indices[2]+c] + buf[indices[4]+c])
+                           /16.0f));
   }
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in, temp)
+#endif
+static inline void _bspline_vertical_pass(const float *const restrict in, float *const restrict temp,
+                                          size_t row, size_t width, size_t height, int mult)
+{
+  size_t DT_ALIGNED_ARRAY indices[BSPLINE_FSIZE];
+  indices[0] = 4 * width * MAX((int)row - 2 * mult, 0);
+  indices[1] = 4 * width * MAX((int)row - mult, 0);
+  indices[2] = 4 * width * row;
+  indices[3] = 4 * width * MIN(row + mult, height-1);
+  indices[4] = 4 * width * MIN(row + 2 * mult, height-1);
+  for(size_t j = 0; j < width; j++)
+  {
+    // Compute the vertical blur of the current pixel and store it in the temp buffer for the row
+    sparse_scalar_product(in + j * 4, indices, temp + j * 4);
+  }
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(temp, out)
+#endif
+static inline void _bspline_horizontal(const float *const restrict temp, float *const restrict out,
+                                       size_t col, size_t width, int mult)
+{
+  // Compute the array indices of the pixels of interest; since the offsets will change near the ends of
+  // the row, we need to recompute for each pixel
+  size_t DT_ALIGNED_ARRAY indices[BSPLINE_FSIZE];
+  indices[0] = 4 * MAX((int)col - 2 * mult, 0);
+  indices[1] = 4 * MAX((int)col - mult,  0);
+  indices[2] = 4 * col;
+  indices[3] = 4 * MIN(col + mult, width-1);
+  indices[4] = 4 * MIN(col + 2 * mult, width-1);
+  // Compute the horizontal blur of the already vertically-blurred pixel and store the result at the proper
+  //  row/column location in the output buffer
+  sparse_scalar_product(temp, indices, out);
 }
 
 #ifdef _OPENMP
@@ -42,7 +73,7 @@ inline static void blur_2D_Bspline(const float *const restrict in, float *const 
   #pragma omp parallel for default(none) \
     dt_omp_firstprivate(width, height, mult)  \
     dt_omp_sharedconst(out, in, tempbuf) \
-    schedule(simd:static)
+    schedule(static)
   #endif
   for(size_t row = 0; row < height; row++)
   {
@@ -51,91 +82,53 @@ inline static void blur_2D_Bspline(const float *const restrict in, float *const 
     // interleave the order in which we process the rows so that we minimize cache misses
     const size_t i = dwt_interleave_rows(row, height, mult);
     // Convolve B-spline filter over columns: for each pixel in the current row, compute vertical blur
-    size_t DT_ALIGNED_ARRAY indices[BSPLINE_FSIZE] = { 0 };
     // Start by computing the array indices of the pixels of interest; the offsets from the current pixel stay
     // unchanged over the entire row, so we can compute once and just offset the base address while iterating
     // over the row
-    for(size_t ii = 0; ii < BSPLINE_FSIZE; ++ii)
-    {
-      const size_t r = CLAMP(mult * (int)(ii - (BSPLINE_FSIZE - 1) / 2) + (int)i, (int)0, (int)height - 1);
-      indices[ii] = 4 * r * width;
-    }
-    for(size_t j = 0; j < width; j++)
-    {
-      // Compute the vertical blur of the current pixel and store it in the temp buffer for the row
-      sparse_scalar_product(in + j * 4, indices, temp + j * 4);
-    }
+    _bspline_vertical_pass(in, temp, i, width, height, mult);
     // Convolve B-spline filter horizontally over current row
     for(size_t j = 0; j < width; j++)
     {
-      // Compute the array indices of the pixels of interest; since the offsets will change near the ends of
-      // the row, we need to recompute for each pixel
-      for(size_t jj = 0; jj < BSPLINE_FSIZE; ++jj)
-      {
-        const size_t col = CLAMP(mult * (int)(jj - (BSPLINE_FSIZE - 1) / 2) + (int)j, (int)0, (int)width - 1);
-        indices[jj] = 4 * col;
-      }
-      // Compute the horizontal blur of the already vertically-blurred pixel and store the result at the proper
-      //  row/column location in the output buffer
-      sparse_scalar_product(temp, indices, out + (i * width + j) * 4);
+      _bspline_horizontal(temp, out + (i * width + j) * 4, j, width, mult);
     }
   }
 }
 
 
-inline static void decompose_2D_Bspline(const float *const restrict in, float *const restrict HF,
-                                        float *const restrict LF,
-                                        const size_t width, const size_t height, const int mult)
+inline static void decompose_2D_Bspline(const float *const DT_ALIGNED_PIXEL restrict in,
+                                        float *const DT_ALIGNED_PIXEL restrict HF,
+                                        float *const DT_ALIGNED_PIXEL restrict LF,
+                                        const size_t width, const size_t height, const int mult,
+                                        float *const tempbuf, size_t padded_size)
 {
-  size_t padded_size;
-  float *tempbuf = dt_alloc_perthread_float(4 * width, &padded_size); //TODO: alloc in caller
   // Blur and compute the decimated wavelet at once
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(width, height, in, LF, HF, mult, tempbuf, padded_size) \
-    schedule(simd: static)
+    dt_omp_firstprivate(width, height, mult, padded_size) \
+    dt_omp_sharedconst(in, HF, LF, tempbuf)  \
+    schedule(static)
 #endif
   for(size_t row = 0; row < height; row++)
   {
     // get a thread-private one-row temporary buffer
-    float *restrict const temp = dt_get_perthread(tempbuf, padded_size);
+    float *restrict DT_ALIGNED_ARRAY const temp = dt_get_perthread(tempbuf, padded_size);
     // interleave the order in which we process the rows so that we minimize cache misses
     const size_t i = dwt_interleave_rows(row, height, mult);
     // Convolve B-spline filter over columns: for each pixel in the current row, compute vertical blur
-    size_t DT_ALIGNED_ARRAY indices[BSPLINE_FSIZE] = { 0 };
     // Start by computing the array indices of the pixels of interest; the offsets from the current pixel stay
     // unchanged over the entire row, so we can compute once and just offset the base address while iterating
     // over the row
-    for(size_t ii = 0; ii < BSPLINE_FSIZE; ++ii)
-    {
-      const size_t r = CLAMP(mult * (int)(ii - (BSPLINE_FSIZE - 1) / 2) + (int)i, (int)0, (int)height - 1);
-      indices[ii] = 4 * r * width;
-    }
-    for(size_t j = 0; j < width; j++)
-    {
-      // Compute the vertical blur of the current pixel and store it in the temp buffer for the row
-      sparse_scalar_product(in + j * 4, indices, temp + j * 4);
-    }
+    _bspline_vertical_pass(in, temp, i, width, height, mult);
     // Convolve B-spline filter horizontally over current row
     for(size_t j = 0; j < width; j++)
     {
-      // Compute the array indices of the pixels of interest; since the offsets will change near the ends of
-      // the row, we need to recompute for each pixel
-      for(size_t jj = 0; jj < BSPLINE_FSIZE; ++jj)
-      {
-        const size_t col = CLAMP(mult * (int)(jj - (BSPLINE_FSIZE - 1) / 2) + (int)j, (int)0, (int)width - 1);
-        indices[jj] = 4 * col;
-      }
       size_t index = 4U * (i * width + j);
-      // Compute the horizontal blur of the already vertically-blurred pixel and store the result at the proper
-      //  row/column location in the LF output buffer
-      sparse_scalar_product(temp, indices, LF + index);
+      _bspline_horizontal(temp, LF + index, j, width, mult);
       // compute the HF component by subtracting the LF from the original input
       for_each_channel(c)
         HF[index + c] = in[index + c] - LF[index + c];
     }
   }
-  dt_free_align(tempbuf);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

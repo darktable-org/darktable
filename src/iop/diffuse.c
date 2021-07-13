@@ -809,6 +809,9 @@ static inline gint wavelets_process(const float *const restrict in, float *const
   // there is a paper from a guy we know that explains it : https://jo.dreggn.org/home/2010_atrous.pdf
   // the wavelets decomposition here is the same as the equalizer/atrous module,
   float *restrict residual; // will store the temp buffer containing the last step of blur
+  // allocate a one-row temporary buffer for the decomposition
+  size_t padded_size;
+  float *const DT_ALIGNED_ARRAY tempbuf = dt_alloc_perthread_float(4 * width, &padded_size); //TODO: alloc in caller
   for(int s = 0; s < scales; ++s)
   {
     /* fprintf(stdout, "Wavelet decompose : scale %i\n", s); */
@@ -833,7 +836,7 @@ static inline gint wavelets_process(const float *const restrict in, float *const
       buffer_out = LF_odd;
     }
 
-    decompose_2D_Bspline(buffer_in, HF[s], buffer_out, width, height, mult);
+    decompose_2D_Bspline(buffer_in, HF[s], buffer_out, width, height, mult, tempbuf, padded_size);
 
     residual = buffer_out;
 
@@ -846,6 +849,7 @@ static inline gint wavelets_process(const float *const restrict in, float *const
     dump_PFM(name, buffer_out, width, height);
 #endif
   }
+  dt_free_align(tempbuf);
 
   // will store the temp buffer NOT containing the last step of blur
   float *restrict temp = (residual == LF_even) ? LF_odd : LF_even;
