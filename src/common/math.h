@@ -212,6 +212,11 @@ static inline float dt_log2f(const float f)
 #endif
 }
 
+union float_int {
+  float f;
+  int k;
+};
+
 // fast approximation of expf()
 /****** if you change this function, you need to make the same change in data/kernels/{basecurve,basic}.cl ***/
 #ifdef _OPENMP
@@ -227,10 +232,7 @@ static inline float dt_fast_expf(const float x)
   // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
   // without max clamping (doesn't work for large x, but is faster):
   const int k0 = i1 + x * (i2 - i1);
-  union {
-      float f;
-      int k;
-  } u;
+  union float_int u;
   u.k = k0 > 0 ? k0 : 0;
   return u.f;
 }
@@ -244,10 +246,7 @@ static inline void dt_fast_expf_4wide(const float x[4], float result[4])
   const int i2 = 0x402DF854u; // 0x40000000u;
   // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
   // without max clamping (doesn't work for large x, but is faster):
-  union {
-      float f;
-      int k;
-  } u[4];
+  union float_int u[4];
 #ifdef _OPENMP
 #pragma omp simd aligned(x, result)
 #endif
