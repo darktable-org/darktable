@@ -1315,7 +1315,7 @@ static void _update_places_list(dt_lib_module_t* self)
 
   GtkTreeIter iter, current_iter;
   d->placesSelection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->placesView));
-  const char *last_place = dt_conf_get_string_const("ui_last/import_last_place");
+  char *last_place = dt_conf_get_string("ui_last/import_last_place");
   char *current_place = NULL;
 
   if(dt_conf_get_bool("ui_last/import_dialog_show_home"))
@@ -1399,6 +1399,11 @@ static void _update_places_list(dt_lib_module_t* self)
     if(!g_strcmp0(places->data, last_place))
       gtk_tree_selection_select_iter(d->placesSelection, &iter);
   }
+  g_free(last_place);
+  // the list returned by _get_custom_places references a single string that has been split on commas.  Release it
+  // by freeing the data of the list's first node
+  if(places)
+    g_free(places->data);
   g_list_free(places);
 }
 
@@ -1496,7 +1501,7 @@ static GList* _get_custom_places()
         folders = next + 1;
     }
   }
-  g_free(saved);
+//  g_free(saved);  // we can't free the string here, because the returned list points into it
   return places;
 }
 
