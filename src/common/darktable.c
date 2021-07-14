@@ -329,7 +329,7 @@ static void dt_codepaths_init()
 #endif
   {
     darktable.codepath.OPENMP_SIMD = 1;
-    fprintf(stderr, "[dt_codepaths_init] will be using HIGHLY EXPERIMENTAL plain OpenMP SIMD codepath.\n");
+    fprintf(stderr, "[dt_codepaths_init] will be using experimental plain OpenMP SIMD codepath.\n");
   }
 
 #if defined(__SSE__)
@@ -338,7 +338,7 @@ static void dt_codepaths_init()
   {
     fprintf(stderr, "[dt_codepaths_init] SSE2-optimized codepath is disabled or unavailable.\n");
     fprintf(stderr,
-            "[dt_codepaths_init] expect a LOT of functionality to be broken. you have been warned.\n");
+            "[dt_codepaths_init] some functionality may be broken. you have been warned.\n");
   }
 }
 
