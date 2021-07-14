@@ -21,7 +21,6 @@ set(LUA_SOURCES
 	"src/lzio.c"
 	"src/lauxlib.c"
 	"src/lbaselib.c"
-	"src/lbitlib.c"
 	"src/lcorolib.c"
 	"src/ldblib.c"
 	"src/liolib.c"
