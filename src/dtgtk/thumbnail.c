@@ -231,7 +231,7 @@ static void _thumb_draw_image(dt_thumbnail_t *thumb, cairo_t *cr)
   if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) >= 1)
   {
     cairo_save(cr);
-    float scaler = 1.0f / darktable.gui->ppd_thb;
+    const float scaler = 1.0f / darktable.gui->ppd_thb;
     cairo_scale(cr, scaler, scaler);
 
     cairo_set_source_surface(cr, thumb->img_surf, thumb->zoomx * darktable.gui->ppd,
@@ -495,7 +495,9 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
   }
 
   // if image surface has no more ref. let's samitize it's value to NULL
-  if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) < 1) thumb->img_surf = NULL;
+  if(thumb->img_surf
+     && cairo_surface_get_reference_count(thumb->img_surf) < 1)
+    thumb->img_surf = NULL;
 
   // if we don't have it in memory, we want the image surface
   dt_view_surface_value_t res = DT_VIEW_SURFACE_OK;
@@ -506,7 +508,8 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     _thumb_set_image_area(thumb, IMG_TO_FIT);
     gtk_widget_get_size_request(thumb->w_image_box, &image_w, &image_h);
 
-    if(v->view(v) == DT_VIEW_DARKROOM && dev->preview_pipe->output_imgid == thumb->imgid
+    if(v->view(v) == DT_VIEW_DARKROOM
+       && dev->preview_pipe->output_imgid == thumb->imgid
        && dev->preview_pipe->output_backbuf)
     {
       // the current thumb is the one currently developed in darkroom
@@ -572,7 +575,8 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       cairo_surface_t *img_surf = NULL;
       if(thumb->zoomable)
       {
-        if(thumb->zoom > 1.0f) thumb->zoom = MIN(thumb->zoom, dt_thumbnail_get_zoom100(thumb));
+        if(thumb->zoom > 1.0f)
+          thumb->zoom = MIN(thumb->zoom, dt_thumbnail_get_zoom100(thumb));
         res = dt_view_image_get_surface(thumb->imgid, image_w * thumb->zoom, image_h * thumb->zoom, &img_surf, FALSE);
       }
       else
@@ -585,7 +589,8 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         // if we succeed to get an image (even a smaller one)
         cairo_surface_t *tmp_surf = thumb->img_surf;
         thumb->img_surf = img_surf;
-        if(tmp_surf && cairo_surface_get_reference_count(tmp_surf) > 0) cairo_surface_destroy(tmp_surf);
+        if(tmp_surf && cairo_surface_get_reference_count(tmp_surf) > 0)
+          cairo_surface_destroy(tmp_surf);
       }
     }
 
@@ -618,7 +623,8 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
           = CLAMP(thumb->zoomy, (nhi * darktable.gui->ppd_thb - thumb->img_height) / darktable.gui->ppd_thb, 0);
 
       // for overlay block, we need to resize it
-      if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) _thumb_resize_overlays(thumb);
+      if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+        _thumb_resize_overlays(thumb);
     }
 
     // if we don't have the right size of the image now, we reload it again
@@ -664,7 +670,9 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     }
 
     // and we can also set the zooming level if needed
-    if(res == DT_VIEW_SURFACE_OK && thumb->zoomable && thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+    if(res == DT_VIEW_SURFACE_OK
+       && thumb->zoomable
+       && thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
     {
       if(thumb->zoom_100 < 1.0 || thumb->zoom <= 1.0f)
       {
