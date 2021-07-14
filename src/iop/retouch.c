@@ -3367,7 +3367,7 @@ static void retouch_heal(float *const in, dt_iop_roi_t *const roi_in, const int 
   rt_copy_in_to_out(in, roi_in, img_dest, roi_mask_scaled, ch, 0, 0);
 
   // heal it
-  dt_heal(img_src, img_dest, mask_scaled, roi_mask_scaled->width, roi_mask_scaled->height, ch, use_sse);
+  dt_heal(img_src, img_dest, mask_scaled, roi_mask_scaled->width, roi_mask_scaled->height, ch);
 
   // copy healed (temp) image to destination image
   rt_copy_image_masked(img_dest, in, roi_in, ch, mask_scaled, roi_mask_scaled, opacity, use_sse);
