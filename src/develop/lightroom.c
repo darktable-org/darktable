@@ -1063,7 +1063,7 @@ static inline float round5(double x)
   return round(x * 100000.f) / 100000.f;
 }
 
-void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
+gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 {
   gboolean refresh_needed = FALSE;
   char imported[256] = { 0 };
@@ -1075,7 +1075,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   if(!pathname)
   {
     if(!iauto) dt_control_log(_("cannot find lightroom XMP!"));
-    return;
+    return FALSE;
   }
 
   // Load LR xmp
@@ -1090,7 +1090,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   if(doc == NULL)
   {
     g_free(pathname);
-    return;
+    return FALSE;
   }
 
   // Enter first node, xmpmeta
@@ -1101,14 +1101,14 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   {
     g_free(pathname);
     xmlFreeDoc(doc);
-    return;
+    return FALSE;
   }
 
   if(xmlStrcmp(entryNode->name, (const xmlChar *)"xmpmeta"))
   {
     if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
     g_free(pathname);
-    return;
+    return FALSE;
   }
 
   // Check that this is really a Lightroom document
@@ -1119,7 +1119,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   {
     g_free(pathname);
     xmlFreeDoc(doc);
-    return;
+    return FALSE;
   }
 
   xmlXPathRegisterNs(xpathCtx, BAD_CAST "stEvt", BAD_CAST "http://ns.adobe.com/xap/1.0/sType/ResourceEvent#");
@@ -1132,7 +1132,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     xmlXPathFreeContext(xpathCtx);
     g_free(pathname);
     xmlFreeDoc(doc);
-    return;
+    return FALSE;
   }
 
   xmlNodeSetPtr xnodes = xpathObj->nodesetval;
@@ -1150,7 +1150,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       xmlFree(value);
       if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
       g_free(pathname);
-      return;
+      return TRUE;
     }
     xmlFree(value);
   }
@@ -1559,6 +1559,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
     }
   }
+  return TRUE;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -929,6 +929,18 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
       dev->preview2_pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
     }
   }
+
+  if(!no_image)
+  { 
+    if((dev->image_storage.flags & DT_IMAGE_MODS) == 0)
+    {
+      dev->image_storage.flags |= DT_IMAGE_MODS;
+      const uint32_t imgid = dev->image_storage.id;
+      dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+      img->flags |= DT_IMAGE_MODS;
+      dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    }
+  }
 }
 
 void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable, const int no_image)
@@ -1579,6 +1591,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   }
 
   image->flags |= DT_IMAGE_AUTO_PRESETS_APPLIED | DT_IMAGE_NO_LEGACY_PRESETS;
+  image->flags &= ~DT_IMAGE_MODS;
 
   // make sure these end up in the image_cache; as the history is not correct right now
   // we don't write the sidecar here but later in dt_dev_read_history_ext
@@ -1779,7 +1792,15 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     dt_print(DT_DEBUG_PARAMS, "[history] temporary history merged with image history\n");
 
     //  first time we are loading the image, try to import lightroom .xmp if any
-    if(dev->image_loading && first_run) dt_lightroom_import(dev->image_storage.id, dev, TRUE);
+    if(dev->image_loading && first_run)
+    {
+      if(dt_lightroom_import(dev->image_storage.id, dev, TRUE))
+      {
+        dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+        image->flags |= DT_IMAGE_MODS;
+        dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
+      }
+    }
   }
 
   sqlite3_stmt *stmt;

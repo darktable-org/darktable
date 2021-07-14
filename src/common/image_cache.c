@@ -227,6 +227,48 @@ void dt_image_cache_read_release(dt_image_cache_t *cache, const dt_image_t *img)
   dt_cache_release(&cache->cache, img->cache_entry);
 }
 
+void _img_write_sidecar_file(dt_image_t *img)
+{
+  const dt_imageio_write_xmp_t xmp_mode = dt_image_get_xmp_mode();
+  if(xmp_mode == DT_WRITE_XMP_NEVER) return;  
+
+  if((xmp_mode == DT_WRITE_XMP_LAZY) && ((img->flags & DT_IMAGE_MODS) == 0)) return;
+  const int imgid = img->id;  
+  char filename[PATH_MAX] = { 0 };
+
+  // FIRST: check if the original file is present
+  gboolean from_cache = FALSE;
+  dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
+
+  if(!g_file_test(filename, G_FILE_TEST_EXISTS))
+  {
+    // OTHERWISE: check if the local copy exists
+    from_cache = TRUE;
+    dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
+
+    //  nothing to do, the original is not accessible and there is no local copy
+    if(!from_cache) return;
+  }
+
+  dt_image_path_append_version(imgid, filename, sizeof(filename));
+  g_strlcat(filename, ".xmp", sizeof(filename));
+
+  if(!dt_exif_xmp_write(imgid, filename))
+  {
+    // put the timestamp into db. this can't be done in exif.cc since that code gets called
+    // for the copy exporter, too
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "UPDATE main.images SET write_timestamp = STRFTIME('%s', 'now') WHERE id = ?1",
+       -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
+}
+
+
 // drops the write privileges on an image struct.
 // this triggers a write-through to sql, and if the setting
 // is present, also to xmp sidecar files (safe setting).
@@ -303,7 +345,8 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   {
     // rest about sidecars:
     // also synch dttags file:
-    dt_image_write_sidecar_file(img->id);
+    // we have to use this special code to avoid unsupported recursive cache locking
+    _img_write_sidecar_file(img);
   }
   dt_cache_release(&cache->cache, img->cache_entry);
 }

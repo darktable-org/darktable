@@ -189,6 +189,7 @@ static void _image_set_monochrome_flag(const int32_t imgid, gboolean monochrome,
     if(changed)
     {
       const int mask = dt_image_monochrome_flags(img);
+      img->flags |= DT_IMAGE_MODS;
       dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
       dt_imageio_update_monochrome_workflow_tag(imgid, mask);
 
@@ -291,10 +292,20 @@ void dt_image_film_roll(const dt_image_t *img, char *pathname, size_t pathname_l
   pathname[pathname_len - 1] = '\0';
 }
 
+dt_imageio_write_xmp_t dt_image_get_xmp_mode()
+{
+  if(dt_conf_get_bool("write_sidecar_files"))
+  {
+    if(dt_conf_get_bool("lazy_sidecar_files")) return DT_WRITE_XMP_LAZY;
+    else return DT_WRITE_XMP_ALWAYS;
+  }
+  else return DT_WRITE_XMP_NEVER;
+}
+
 gboolean dt_image_safe_remove(const int32_t imgid)
 {
   // always safe to remove if we do not have .xmp
-  if(!dt_conf_get_bool("write_sidecar_files")) return TRUE;
+  if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER) return TRUE;
 
   // check whether the original file is accessible
   char pathname[PATH_MAX] = { 0 };
@@ -1604,7 +1615,13 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   if((res != 0) && (nb_xmp == 0))
   {
     // Search for Lightroom sidecar file, import tags if found
-    dt_lightroom_import(id, NULL, TRUE);
+    if(dt_lightroom_import(id, NULL, TRUE))
+    {
+      dt_image_t *image = dt_image_cache_get(darktable.image_cache, id, 'w');
+      image->flags |= DT_IMAGE_MODS;
+      dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
+    }
+
     // Make sure that lightroom xmp data (label in particular) are saved in dt xmp
     dt_image_write_sidecar_file(id);
   }
@@ -2387,7 +2404,9 @@ void dt_image_write_sidecar_file(const int32_t imgid)
 {
   // TODO: compute hash and don't write if not needed!
   // write .xmp file
-  if(imgid > 0 && dt_conf_get_bool("write_sidecar_files"))
+  const dt_imageio_write_xmp_t xmp_mode = dt_image_get_xmp_mode();
+
+  if(imgid > 0 && (xmp_mode != DT_WRITE_XMP_NEVER))
   {
     char filename[PATH_MAX] = { 0 };
 
@@ -2408,6 +2427,16 @@ void dt_image_write_sidecar_file(const int32_t imgid)
     dt_image_path_append_version(imgid, filename, sizeof(filename));
     g_strlcat(filename, ".xmp", sizeof(filename));
 
+    gboolean write_xmp = (xmp_mode == DT_WRITE_XMP_ALWAYS);
+    if(xmp_mode == DT_WRITE_XMP_LAZY)
+    {
+      dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+      if(img->flags & DT_IMAGE_MODS) write_xmp = TRUE;
+      dt_image_cache_read_release(darktable.image_cache, img);
+    }
+
+    if(!write_xmp) return;
+
     if(!dt_exif_xmp_write(imgid, filename))
     {
       // put the timestamp into db. this can't be done in exif.cc since that code gets called
@@ -2427,7 +2456,7 @@ void dt_image_write_sidecar_file(const int32_t imgid)
 void dt_image_synch_xmps(const GList *img)
 {
   if(!img) return;
-  if(dt_conf_get_bool("write_sidecar_files"))
+  if(dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER)
   {
     for(const GList *imgs = img; imgs; imgs = g_list_next(imgs))
     {
@@ -2451,7 +2480,7 @@ void dt_image_synch_xmp(const int selected)
 
 void dt_image_synch_all_xmp(const gchar *pathname)
 {
-  if(dt_conf_get_bool("write_sidecar_files"))
+  if(dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER)
   {
     sqlite3_stmt *stmt;
     gchar *imgfname = g_path_get_basename(pathname);
@@ -2480,7 +2509,7 @@ void dt_image_synch_all_xmp(const gchar *pathname)
 void dt_image_local_copy_synch(void)
 {
   // nothing to do if not creating .xmp
-  if(!dt_conf_get_bool("write_sidecar_files")) return;
+  if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER) return;
 
   sqlite3_stmt *stmt;
 

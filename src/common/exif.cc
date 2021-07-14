@@ -538,7 +538,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       }
     }
 
-    if(dt_conf_get_bool("write_sidecar_files") ||
+    if((dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER) ||
        dt_conf_get_bool("ui_last/import_last_tags_imported"))
     {
       GList *tags = NULL;
@@ -3171,12 +3171,13 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     if(preset_applied > 0)
     {
       img->flags |= DT_IMAGE_AUTO_PRESETS_APPLIED;
+      img->flags |= DT_IMAGE_MODS;
     }
     else
     {
       // not found for old or buggy xmp where it was found but history was 0
       img->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
-
+      img->flags &= ~DT_IMAGE_MODS;
       if(preset_applied < 0)
       {
         fprintf(stderr,"[exif] dt_exif_xmp_read for %s, id %i found auto_presets_applied but there was no history\n",filename,img->id);
