@@ -1395,7 +1395,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       tuple->name = name;
       tuple->collate_key = collate_key;
       tuple->count = count;
-      tuple->status = property == DT_COLLECTION_PROP_FOLDERS ? sqlite3_column_int(stmt, 3) : 0;
+      tuple->status = property == DT_COLLECTION_PROP_FOLDERS ? sqlite3_column_int(stmt, 3) : -1;
       sorted_names = g_list_prepend(sorted_names, tuple);
     }
     sqlite3_finalize(stmt);
