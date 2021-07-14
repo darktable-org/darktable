@@ -38,10 +38,6 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
-
 #include <librsvg/rsvg.h>
 // ugh, ugly hack. why do people break stuff all the time?
 #ifndef RSVG_CAIRO_H
@@ -289,75 +285,37 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_zonesystem_data_t *const d = (const dt_iop_zonesystem_data_t *const)piece->data;
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return;
 
+  const dt_iop_zonesystem_data_t *const d = (const dt_iop_zonesystem_data_t *const)piece->data;
   process_common_setup(self, piece, ivoid, ovoid, roi_in, roi_out);
 
-  const int ch = piece->colors;
   const int size = d->params.size;
 
-  const float *const in = (const float *const)ivoid;
-  float *const out = (float *const)ovoid;
-
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(ch, d, in, out, roi_out, size) \
-  schedule(static) \
-  collapse(2)
-#endif
-  for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
-  {
-    for(int c = 0; c < 3; c++)
-    {
-      /* remap lightness into zonemap and apply lightness */
-      const int rz = CLAMPS(in[k] * d->rzscale, 0, size - 2); // zone index
-      const float zs = ((rz > 0) ? (d->zonemap_offset[rz] / in[k]) : 0) + d->zonemap_scale[rz];
-
-      const size_t p = (size_t)k + c;
-      out[p] = in[p] * zs;
-    }
-  }
-
-  process_common_cleanup(self, piece, ivoid, ovoid, roi_in, roi_out);
-}
-
-#if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  const dt_iop_zonesystem_data_t *const d = (const dt_iop_zonesystem_data_t *const)piece->data;
-
-  process_common_setup(self, piece, ivoid, ovoid, roi_in, roi_out);
-
-  const int ch = piece->colors;
-  const int size = d->params.size;
+  const float *const restrict in = (const float *const)ivoid;
+  float *const restrict out = (float *const)ovoid;
+  const size_t npixels = roi_out->width * roi_out->height;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out, size) \
-  schedule(static) collapse(2)
+  dt_omp_firstprivate(d, in, out, npixels, size) \
+  schedule(static)
 #endif
-  for(int j = 0; j < roi_out->height; j++)
+  for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
   {
-    for(int i = 0; i < roi_out->width; i++)
+    /* remap lightness into zonemap and apply lightness */
+    const int rz = CLAMPS(in[k] * d->rzscale, 0, size - 2); // zone index
+    const float zs = ((rz > 0) ? (d->zonemap_offset[rz] / in[k]) : 0) + d->zonemap_scale[rz];
+    for_each_channel(c,aligned(in,out))
     {
-      /* remap lightness into zonemap and apply lightness */
-      const float *in = (float *)ivoid + ch * ((size_t)j * roi_out->width + i);
-      float *out = (float *)ovoid + ch * ((size_t)j * roi_out->width + i);
-
-      const int rz = CLAMPS(in[0] * d->rzscale, 0, size - 2); // zone index
-
-      const float zs = ((rz > 0) ? (d->zonemap_offset[rz] / in[0]) : 0) + d->zonemap_scale[rz];
-
-      _mm_stream_ps(out, _mm_mul_ps(_mm_load_ps(in), _mm_set1_ps(zs)));
+      out[k+c] = in[k+c] * zs;
     }
   }
 
-  _mm_sfence();
-
   process_common_cleanup(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
-#endif
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
