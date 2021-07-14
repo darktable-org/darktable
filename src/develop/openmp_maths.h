@@ -104,6 +104,14 @@ static inline float v_minf(const float vector[3])
   return fminf(fminf(vector[0], vector[1]), vector[2]);
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(vector:16)
+#endif
+static inline float v_sumf(const float vector[3])
+{
+  return vector[0] + vector[1] + vector[2];
+}
+
 
 #ifdef _OPENMP
 #pragma omp declare simd
