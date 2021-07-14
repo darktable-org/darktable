@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2020 darktable developers.
+    Copyright (C) 2017-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
  * the 3 buffers must have the same size, but mask_buffer is 1 channel and is tested for != 0.f
  */
 void dt_heal(const float *const src_buffer, float *dest_buffer, const float *const mask_buffer, const int width,
-             const int height, const int ch, const int use_sse);
+             const int height, const int ch);
 
 #ifdef HAVE_OPENCL
 

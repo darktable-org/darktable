@@ -20,9 +20,6 @@
 #include "develop/imageop.h"
 #include "develop/openmp_maths.h"
 #include "heal.h"
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 
 /* Based on the original source code of GIMP's Healing Tool, by Jean-Yves Couleaud
  *
@@ -78,55 +75,6 @@ static void dt_heal_add(const float *const restrict first_buffer, const float *c
   for(size_t i = 0; i < i_size; i++) result_buffer[i] = first_buffer[i] + second_buffer[i];
 }
 
-#if defined(__SSE__)
-static float dt_heal_laplace_iteration_sse(float *const restrict pixels, const float *const restrict Adiag,
-                                           const int *const restrict Aidx,
-                                           const float w, const int nmask_from, const int nmask_to)
-{
-  float err = 0.f;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(Adiag, Aidx, w, nmask_from, nmask_to) \
-  dt_omp_sharedconst(pixels) \
-  schedule(static) \
-  reduction(+ : err)
-#endif
-  for(int i = nmask_from; i < nmask_to; i++)
-  {
-    const int ii = i * 5;
-    const int j0 = Aidx[ii + 0];
-    const int j1 = Aidx[ii + 1];
-    const int j2 = Aidx[ii + 2];
-    const int j3 = Aidx[ii + 3];
-    const int j4 = Aidx[ii + 4];
-
-    const __m128 valb_a = _mm_set1_ps(Adiag[i]);
-    const __m128 valb_w = { w, w, w, w };
-
-    const __m128 valb_j0 = _mm_load_ps(pixels + j0); // center
-    const __m128 valb_j1 = _mm_load_ps(pixels + j1); // E
-    const __m128 valb_j2 = _mm_load_ps(pixels + j2); // S
-    const __m128 valb_j3 = _mm_load_ps(pixels + j3); // W
-    const __m128 valb_j4 = _mm_load_ps(pixels + j4); // N
-
-    /*  float diff = w * (a * pixels[j0 + k] -
-                            (pixels[j1 + k] +
-                             pixels[j2 + k] +
-                             pixels[j3 + k] +
-                             pixels[j4 + k]));*/
-    __m128 valb_diff = valb_w * ((valb_a * valb_j0) - (valb_j1 + valb_j2 + valb_j3 + valb_j4));
-
-    /*  pixels[j0 + k] -= diff;*/
-    _mm_store_ps(pixels + j0, (valb_j0 - valb_diff));
-    __m128 valb_err = valb_diff * valb_diff;
-    err += valb_err[0] + valb_err[1] + valb_err[2];
-  }
-
-  return err;
-}
-#endif
-
 // define a custom reduction operation to handle a 3-vector of floats
 typedef struct _aligned_pixel { float DT_ALIGNED_PIXEL v[4]; } _aligned_pixel;
 static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newval)
@@ -142,12 +90,8 @@ static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newva
 // Perform one iteration of Gauss-Seidel, and return the sum squared residual.
 static float dt_heal_laplace_iteration(float *const restrict pixels, const float *const restrict Adiag,
                                        const int *const restrict Aidx, const float w,
-                                       const int nmask_from, const int nmask_to, const int use_sse)
+                                       const int nmask_from, const int nmask_to)
 {
-#if defined(__SSE__)
-  if(use_sse) return dt_heal_laplace_iteration_sse(pixels, Adiag, Aidx, w, nmask_from, nmask_to);
-#endif
-
   _aligned_pixel err = { { 0.f } };
 
 #ifdef _OPENMP
@@ -180,7 +124,7 @@ static float dt_heal_laplace_iteration(float *const restrict pixels, const float
 
 // Solve the laplace equation for pixels and store the result in-place.
 static void dt_heal_laplace_loop(float *pixels, const int width, const int height,
-                                 const float *const mask, const int use_sse)
+                                 const float *const mask)
 {
   int nmask = 0;
   int nmask2 = 0;
@@ -255,8 +199,8 @@ static void dt_heal_laplace_loop(float *pixels, const int width, const int heigh
   for(int iter = 0; iter < max_iter; iter++)
   {
     // process red/black cells separate
-    float err = dt_heal_laplace_iteration(pixels, Adiag, Aidx, w, 0, nmask2, use_sse);
-    err += dt_heal_laplace_iteration(pixels, Adiag, Aidx, w, nmask2, nmask, use_sse);
+    float err = dt_heal_laplace_iteration(pixels, Adiag, Aidx, w, 0, nmask2);
+    err += dt_heal_laplace_iteration(pixels, Adiag, Aidx, w, nmask2, nmask);
 
     if(err < err_exit) break;
   }
@@ -274,7 +218,7 @@ cleanup:
  * http://www.tgeorgiev.net/Photoshop_Healing.pdf
  */
 void dt_heal(const float *const src_buffer, float *dest_buffer, const float *const mask_buffer, const int width,
-             const int height, const int ch, const int use_sse)
+             const int height, const int ch)
 {
   if(ch != 4)
   {
@@ -292,7 +236,7 @@ void dt_heal(const float *const src_buffer, float *dest_buffer, const float *con
   /* subtract pattern from image and store the result in diff */
   dt_heal_sub(dest_buffer, src_buffer, diff_buffer, width, height);
 
-  dt_heal_laplace_loop(diff_buffer, width, height, mask_buffer, use_sse);
+  dt_heal_laplace_loop(diff_buffer, width, height, mask_buffer);
 
   /* add solution to original image and store in dest */
   dt_heal_add(diff_buffer, src_buffer, dest_buffer, width, height);
@@ -380,7 +324,7 @@ cl_int dt_heal_cl(heal_params_cl_t *p, cl_mem dev_src, cl_mem dev_dest, const fl
   }
 
   // I couldn't make it run fast on opencl (the reduction takes forever), so just call the cpu version
-  dt_heal(src_buffer, dest_buffer, mask_buffer, width, height, ch, 0);
+  dt_heal(src_buffer, dest_buffer, mask_buffer, width, height, ch);
 
   err = dt_opencl_write_buffer_to_device(p->devid, dest_buffer, dev_dest, 0, sizeof(float) * width * height * ch,
                                          TRUE);
