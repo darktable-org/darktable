@@ -380,9 +380,6 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("inpaint highlights"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
-// B spline filter
-#define FSIZE 5
-
 // The B spline best approximate a Gaussian of standard deviation :
 // see https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/
 #define B_SPLINE_SIGMA 1.0553651328015339f
