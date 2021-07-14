@@ -30,6 +30,8 @@ static inline void _bspline_vertical_pass(const float *const restrict in, float 
                                           size_t row, size_t width, size_t height, int mult)
 {
   size_t DT_ALIGNED_ARRAY indices[BSPLINE_FSIZE];
+  // compute the index offsets of the pixels of interest; since the offsets are the same for the entire row,
+  // we only need to do this once and can then process the entire row
   indices[0] = 4 * width * MAX((int)row - 2 * mult, 0);
   indices[1] = 4 * width * MAX((int)row - mult, 0);
   indices[2] = 4 * width * row;
@@ -82,9 +84,6 @@ inline static void blur_2D_Bspline(const float *const restrict in, float *const 
     // interleave the order in which we process the rows so that we minimize cache misses
     const size_t i = dwt_interleave_rows(row, height, mult);
     // Convolve B-spline filter over columns: for each pixel in the current row, compute vertical blur
-    // Start by computing the array indices of the pixels of interest; the offsets from the current pixel stay
-    // unchanged over the entire row, so we can compute once and just offset the base address while iterating
-    // over the row
     _bspline_vertical_pass(in, temp, i, width, height, mult);
     // Convolve B-spline filter horizontally over current row
     for(size_t j = 0; j < width; j++)
@@ -115,9 +114,6 @@ inline static void decompose_2D_Bspline(const float *const DT_ALIGNED_PIXEL rest
     // interleave the order in which we process the rows so that we minimize cache misses
     const size_t i = dwt_interleave_rows(row, height, mult);
     // Convolve B-spline filter over columns: for each pixel in the current row, compute vertical blur
-    // Start by computing the array indices of the pixels of interest; the offsets from the current pixel stay
-    // unchanged over the entire row, so we can compute once and just offset the base address while iterating
-    // over the row
     _bspline_vertical_pass(in, temp, i, width, height, mult);
     // Convolve B-spline filter horizontally over current row
     for(size_t j = 0; j < width; j++)
