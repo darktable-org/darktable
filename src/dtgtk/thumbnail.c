@@ -839,6 +839,16 @@ static gboolean _event_rating_press(GtkWidget *widget, GdkEventButton *event, gp
 {
   return TRUE;
 }
+
+static void _set_rejected_gui_status(dt_thumbnail_t *thumb)
+{
+  const int new_rating = dt_ratings_get(thumb->imgid);
+  if(new_rating == DT_VIEW_REJECT)
+    gtk_widget_set_name(thumb->w_back, "thumb_back_rejected");
+  else
+    gtk_widget_set_name(thumb->w_back, "thumb_back");
+}
+
 static gboolean _event_rating_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
@@ -866,6 +876,9 @@ static gboolean _event_rating_release(GtkWidget *widget, GdkEventButton *event, 
       dt_ratings_apply_on_image(thumb->imgid, rating, TRUE, TRUE, TRUE);
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING,
                                  g_list_prepend(NULL, GINT_TO_POINTER(thumb->imgid)));
+
+      if(rating == DT_VIEW_REJECT)
+        _set_rejected_gui_status(thumb);
     }
   }
   return TRUE;
@@ -1186,7 +1199,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     gtk_widget_set_events(thumb->w_back, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                              | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                                              | GDK_POINTER_MOTION_MASK);
-    gtk_widget_set_name(thumb->w_back, "thumb_back");
+    _set_rejected_gui_status(thumb);
     g_signal_connect(G_OBJECT(thumb->w_back), "motion-notify-event", G_CALLBACK(_event_main_motion), thumb);
     g_signal_connect(G_OBJECT(thumb->w_back), "leave-notify-event", G_CALLBACK(_event_main_leave), thumb);
     gtk_widget_show(thumb->w_back);
