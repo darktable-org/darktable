@@ -874,20 +874,25 @@ static inline void display_luminance_mask(const float *const restrict in,
   const size_t out_height = (roi_in->height > roi_out->height) ? roi_out->height : roi_in->height;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(luminance, out, in, in_width, out_width, out_height, offset_x, offset_y, ch) \
-schedule(static) aligned(luminance, out, in:64) collapse(3)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(luminance, out, in, in_width, out_width, out_height, offset_x, offset_y, ch) \
+  schedule(static) collapse(2)
 #endif
   for(size_t i = 0 ; i < out_height; ++i)
     for(size_t j = 0; j < out_width; ++j)
-      for(size_t c = 0; c < ch; ++c)
+    {
+      // normalize the mask intensity between -8 EV and 0 EV for clarity,
+      // and add a "gamma" 2.0 for better legibility in shadows
+      const float intensity = sqrtf(fminf(fmaxf(luminance[(i + offset_y) * in_width  + (j + offset_x)] - 0.00390625f, 0.f) / 0.99609375f, 1.f));
+      const size_t index = (i * out_width + j) * ch;
+      // set gray level for the mask
+      for_each_channel(c,aligned(out))
       {
-        // normalize the mask intensity between -8 EV and 0 EV for clarity,
-        // and add a "gamma" 2.0 for better legibility in shadows
-        const float intensity = sqrtf(fminf(fmaxf(luminance[(i + offset_y) * in_width  + (j + offset_x)] - 0.00390625f, 0.f) / 0.99609375f, 1.f));
-        out[(i * out_width + j) * ch + c] = (c == 3) ? in[((i + offset_y) * in_width + (j + offset_x)) * ch + 3]
-                                                     : intensity;
+        out[index + c] = intensity;
       }
+      // copy alpha channel
+      out[index + 3] = in[((i + offset_y) * in_width + (j + offset_x)) * ch + 3];
+    }
 }
 
 
