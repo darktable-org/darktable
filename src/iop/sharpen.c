@@ -277,30 +277,6 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
-static void subtract_blurred(const int rad, const dt_iop_sharpen_data_t *const data,
-                             const float *const restrict in, float *const restrict out,
-                             const dt_iop_roi_t *const roi_out)
-{
-  const size_t npixels = (size_t)roi_out->height * roi_out->width;
-  const float threshold = data->threshold;
-  const float amount = data->amount;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, npixels, threshold, amount) \
-  schedule(static)
-#endif
-  // subtract blurred image, if diff > thrs, add *amount to original image
-  for(size_t index = 0; index < npixels; index++)
-  {
-    out[4*index + 1] = in[4*index + 1];
-    out[4*index + 2] = in[4*index + 2];
-    const float diff = in[4*index] - out[4*index];
-    const float absdiff = fabs(diff);
-    const float detail = (absdiff > threshold) ? copysignf(MAX(absdiff - threshold, 0.0f), diff) : 0.0f;
-    out[4*index] = in[4*index] + detail * amount;
-  }
-}
-
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -353,8 +329,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       // fill in the top/bottom border with unchanged luma values from the input image.
       const float *const restrict row_in = in + (size_t)4 * j * width;
       float *const restrict row_out = ((float*)ovoid) + (size_t)4 * j * width;
-      for(size_t i = 0; i < width; i++)
-        row_out[4*i] = row_in[4*i];
+      memcpy(row_out, row_in, 4 * sizeof(float) * width);
       continue;
     }
     // Get a thread-local temporary buffer for processing the current row of the image.
@@ -392,7 +367,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // we can skip the left-most and right-most pixels for the same reason as we skipped the top and bottom borders.
     float *const restrict row_out = ((float*)ovoid) + (size_t)4 * j * width;
     for(int i = 0; i < rad; i++)
-      row_out[4*i] = in[4*(j*width+i)];  //copy unsharpened border pixel's luma
+      copy_pixel(row_out + 4*i, in + 4*(j*width+i));  //copy unsharpened border pixel
+    const float threshold = data->threshold;
+    const float amount = data->amount;
     for(int i = rad; i < roi_out->width - rad; i++)
     {
       float sum = 0.0f;
@@ -401,17 +378,22 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         int k_adj = k - (i-rad);
         sum += mat[k_adj] * temp_buf[k];
       }
-      row_out[4*i] = sum;
+      // subtract the blurred pixel's luma from the original input pixel's luma
+      const size_t index = 4 * (j * width + i);
+      const float diff = in[index] - sum;
+      const float absdiff = fabs(diff);
+      const float detail = (absdiff > threshold) ? copysignf(MAX(absdiff - threshold, 0.0f), diff) : 0.0f;
+      row_out[4*i] = in[index] + detail * amount;
+      row_out[4*i + 1] = in[index + 1];
+      row_out[4*i + 2] = in[index + 2];
     }
     for(int i = roi_out->width - rad; i < roi_out->width; i++)
-      row_out[4*i] = in[4*(j*width+i)];  //copy unsharpened border pixel's luma
+      copy_pixel(row_out + 4*i, in + 4*(j*width+i));  //copy unsharpened border pixel
   }
 
   dt_free_align(mat);
   dt_free_align(tmp);
 
-  subtract_blurred(rad, data, ivoid, ovoid, roi_out);
-  
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
