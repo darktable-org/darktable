@@ -319,7 +319,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_omp_firstprivate(in, ovoid, mat, rad, width, roi_in, roi_out, tmp, padded_size) \
   schedule(static)
 #endif
-//  for(int j = rad; j < roi_out->height - rad; j++)
   for(int j = 0; j < roi_out->height; j++)
   {
     // We skip the top and bottom 'rad' rows because the kernel would extend beyond the edge of the image, resulting
@@ -335,15 +334,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // Get a thread-local temporary buffer for processing the current row of the image.
     float *const restrict temp_buf = dt_get_perthread(tmp, padded_size);
     // vertically blur the pixels of the current row into the temp buffer
-    size_t start_row = j-rad;
-    size_t end_row = j+rad;
+    const size_t start_row = j-rad;
+    const size_t end_row = j+rad;
     // do the bulk of the row four at a time
     for(int i = 0; i < width; i += 4)
     {
       float DT_ALIGNED_PIXEL sum[4] = { 0.0f };
       for(int k = start_row; k <= end_row; k++)
       {
-        int k_adj = k - (j-rad);
+        const int k_adj = k - (j-rad);
         for_four_channels(c,aligned(in))
           sum[c] += mat[k_adj] * in[4*(k*width+i+c)];
       }
@@ -357,7 +356,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       float sum = 0.0f;
       for(int k = start_row; k <= end_row; k++)
       {
-        int k_adj = k - (j-rad);
+        const int k_adj = k - (j-rad);
         temp_buf[i] += mat[k_adj] * in[4*(k*width+i)];
       }
       temp_buf[i] = sum;
@@ -375,7 +374,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       float sum = 0.0f;
       for(int k = i-rad; k <= i+rad; k++)
       {
-        int k_adj = k - (i-rad);
+        const int k_adj = k - (i-rad);
         sum += mat[k_adj] * temp_buf[k];
       }
       // subtract the blurred pixel's luma from the original input pixel's luma
