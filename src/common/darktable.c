@@ -334,12 +334,10 @@ static void dt_codepaths_init()
 
 #if defined(__SSE__)
   if(darktable.codepath._no_intrinsics)
-#endif
   {
     fprintf(stderr, "[dt_codepaths_init] SSE2-optimized codepath is disabled or unavailable.\n");
-    fprintf(stderr,
-            "[dt_codepaths_init] some functionality may be broken. you have been warned.\n");
   }
+#endif
 }
 
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
