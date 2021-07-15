@@ -913,7 +913,7 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) reduction(+:xyY, elements) \
-  dt_omp_firstprivate(width, height, temp) \
+  dt_omp_firstprivate(width, height, temp, ch) \
   schedule(simd:static)
 #endif
     for(size_t i = 2 * OFF; i < height - 4 * OFF; i += OFF)
@@ -981,7 +981,7 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
   {
     #ifdef _OPENMP
 #pragma omp parallel for default(none) reduction(+:xyY, elements) \
-  dt_omp_firstprivate(width, height, temp) \
+  dt_omp_firstprivate(width, height, temp, ch) \
   schedule(simd:static)
 #endif
     for(size_t i = 2 * OFF; i < height - 4 * OFF; i += OFF)
