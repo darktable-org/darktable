@@ -473,9 +473,9 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
     keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
     dt_omp_firstprivate(points_count, points, d, factor, k_space, ma, mb, md, me, mg, mh, kxa, kya) \
-    schedule(static) if(points_count > 100) aligned(points:64) aligned(k_space:16)
+    schedule(static) if(points_count > 100)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
