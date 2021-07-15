@@ -109,9 +109,9 @@ static inline void interpolate_bilinear(const float *const restrict in, const si
 {
   // Fast vectorized bilinear interpolation on ch channels
 #ifdef _OPENMP
-#pragma omp parallel for simd collapse(2) default(none) \
-  schedule(simd:static) aligned(in, out:64) \
-  dt_omp_firstprivate(in, out, width_out, height_out, width_in, height_in, ch)
+#pragma omp parallel for collapse(2) default(none) \
+  dt_omp_firstprivate(in, out, width_out, height_out, width_in, height_in, ch) \
+  schedule(simd:static)
 #endif
   for(size_t i = 0; i < height_out; i++)
   {
@@ -153,7 +153,7 @@ static inline void interpolate_bilinear(const float *const restrict in, const si
       // Interpolate over ch layers
       float *const pixel_out = (float *)out + (i * width_out + j) * ch;
 
-#pragma unroll
+//#pragma unroll //LLVM warns it can't unroll -- presumably because 'ch' is not a constant
       for(size_t c = 0; c < ch; c++)
       {
         pixel_out[c] = Dy_prev * (Q_SW[c] * Dx_next + Q_SE[c] * Dx_prev) +
