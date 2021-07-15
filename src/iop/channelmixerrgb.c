@@ -873,10 +873,9 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
 
    // Convert RGB to xy
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(width, height, ch, in, temp, RGB_to_XYZ) \
-  aligned(in, temp, RGB_to_XYZ:64) collapse(2)\
-  schedule(simd:static)
+  collapse(2) schedule(simd:static)
 #endif
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
@@ -886,7 +885,8 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
       float DT_ALIGNED_PIXEL XYZ[4];
 
       // Clip negatives
-      for(size_t c = 0; c < 3; c++) RGB[c] = fmaxf(in[index + c], 0.0f);
+      for_each_channel(c,aligned(in))
+        RGB[c] = fmaxf(in[index + c], 0.0f);
 
       // Convert to XYZ
       dot_product(RGB, RGB_to_XYZ, XYZ);
@@ -912,9 +912,8 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
   if(illuminant == DT_ILLUMINANT_DETECT_SURFACES)
   {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) reduction(+:xyY, elements) \
-  dt_omp_firstprivate(width, height, ch, temp) \
-  aligned(temp:64) \
+#pragma omp parallel for default(none) reduction(+:xyY, elements) \
+  dt_omp_firstprivate(width, height, temp) \
   schedule(simd:static)
 #endif
     for(size_t i = 2 * OFF; i < height - 4 * OFF; i += OFF)
@@ -981,9 +980,8 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
   else if(illuminant == DT_ILLUMINANT_DETECT_EDGES)
   {
     #ifdef _OPENMP
-#pragma omp parallel for simd default(none) reduction(+:xyY, elements) \
-  dt_omp_firstprivate(width, height, ch, temp) \
-  aligned(temp:64) \
+#pragma omp parallel for default(none) reduction(+:xyY, elements) \
+  dt_omp_firstprivate(width, height, temp) \
   schedule(simd:static)
 #endif
     for(size_t i = 2 * OFF; i < height - 4 * OFF; i += OFF)
