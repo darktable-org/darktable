@@ -1346,7 +1346,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   const size_t checker_2 = 2 * checker_1;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(data, graph_height, line_height, checker_1, checker_2) \
   schedule(static) collapse(2)
 #endif
