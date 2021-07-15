@@ -832,9 +832,9 @@ inline static void inpaint_noise(const float *const in, const float *const mask,
   // solver used in wavelets reconstruction to generate texture
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, mask, inpainted, width, height, noise_level, noise_distribution, threshold) \
-  schedule(simd:static) aligned(mask, in, inpainted:64) collapse(2)
+  schedule(simd:static) collapse(2)
 #endif
   for(size_t i = 0; i < height; i++)
     for(size_t j = 0; j < width; j++)
@@ -855,7 +855,7 @@ inline static void inpaint_noise(const float *const in, const float *const mask,
       float DT_ALIGNED_ARRAY sigma[4] = { 0.f };
       const int DT_ALIGNED_ARRAY flip[4] = { TRUE, FALSE, TRUE, FALSE };
 
-      for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++)
+      for_each_channel(c,aligned(pix_in))
         sigma[c] = pix_in[c] * noise_level / threshold;
 
       // create statistical noise
@@ -863,7 +863,7 @@ inline static void inpaint_noise(const float *const in, const float *const mask,
 
       // add noise to input
       float *const restrict pix_out = __builtin_assume_aligned(inpainted + index, 16);
-      for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++)
+      for_each_channel(c,aligned(pix_in,pix_out))
         pix_out[c] = fmaxf(pix_in[c] * (1.0f - weight) + weight * noise[c], 0.f);
     }
 }
@@ -1398,13 +1398,13 @@ static inline void restore_ratios(float *const restrict ratios, const float *con
                                   const size_t width, const size_t height)
 {
   #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
     dt_omp_firstprivate(width, height, norms, ratios) \
-    schedule(simd:static) aligned(norms, ratios:64) collapse(2)
+    schedule(simd:static)
   #endif
-  for(size_t k = 0; k < height * width * 4; k += 4)
-    for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++)
-      ratios[k + c] = clamp_simd(ratios[k + c]) * norms[k / 4];
+  for(size_t k = 0; k < height * width; k++)
+    for_each_channel(c,aligned(norms,ratios))
+      ratios[4*k + c] = clamp_simd(ratios[4*k + c]) * norms[k];
 }
 
 
