@@ -193,9 +193,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 static void normalize_manifolds(const float *const restrict blurred_in, float *const restrict blurred_manifold_lower, float *const restrict blurred_manifold_higher, const size_t width, const size_t height, const dt_iop_cacorrectrgb_guide_channel_t guide)
 {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
 dt_omp_firstprivate(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide) \
-  schedule(simd:static) aligned(blurred_in, blurred_manifold_lower, blurred_manifold_higher:64)
+  schedule(simd:static)
 #endif
   for(size_t k = 0; k < width * height; k++)
   {
@@ -225,7 +225,7 @@ dt_omp_firstprivate(blurred_in, blurred_manifold_lower, blurred_manifold_higher,
       // we make a smooth transition between full manifold at
       // weighth = 0.05f to full average at weighth = 0.01f
       const float w = (weighth - 0.01f) / (0.05f - 0.01f);
-      for(size_t c = 0; c < 3; c++)
+      for_each_channel(c,aligned(blurred_manifold_higher,blurred_in))
       {
         blurred_manifold_higher[k * 4 + c] = w * blurred_manifold_higher[k * 4 + c]
                                            + (1.0f - w) * blurred_in[k * 4 + c];
@@ -236,7 +236,7 @@ dt_omp_firstprivate(blurred_in, blurred_manifold_lower, blurred_manifold_higher,
       // we make a smooth transition between full manifold at
       // weightl = 0.05f to full average at weightl = 0.01f
       const float w = (weightl - 0.01f) / (0.05f - 0.01f);
-      for(size_t c = 0; c < 3; c++)
+      for_each_channel(c,aligned(blurred_manifold_lower,blurred_in))
       {
         blurred_manifold_lower[k * 4 + c] = w * blurred_manifold_lower[k * 4 + c]
                                           + (1.0f - w) * blurred_in[k * 4 + c];
@@ -247,15 +247,15 @@ dt_omp_firstprivate(blurred_in, blurred_manifold_lower, blurred_manifold_higher,
 
 #define DT_CACORRECTRGB_MAX_EV_DIFF 2.0f
 static void get_manifolds(const float* const restrict in, const size_t width, const size_t height,
-                          const size_t ch, const float sigma, const float sigma2,
+                          const float sigma, const float sigma2,
                           const dt_iop_cacorrectrgb_guide_channel_t guide,
                           float* const restrict manifolds, gboolean refine_manifolds)
 {
-  float *const restrict blurred_in = dt_alloc_align_float(width * height * ch);
-  float *const restrict manifold_higher = dt_alloc_align_float(width * height * ch);
-  float *const restrict manifold_lower = dt_alloc_align_float(width * height * ch);
-  float *const restrict blurred_manifold_higher = dt_alloc_align_float(width * height * ch);
-  float *const restrict blurred_manifold_lower = dt_alloc_align_float(width * height * ch);
+  float *const restrict blurred_in = dt_alloc_align_float(width * height * 4);
+  float *const restrict manifold_higher = dt_alloc_align_float(width * height * 4);
+  float *const restrict manifold_lower = dt_alloc_align_float(width * height * 4);
+  float *const restrict blurred_manifold_higher = dt_alloc_align_float(width * height * 4);
+  float *const restrict blurred_manifold_lower = dt_alloc_align_float(width * height * 4);
 
   float max[4] = {INFINITY, INFINITY, INFINITY, INFINITY};
   float min[4] = {-INFINITY, -INFINITY, -INFINITY, 0.0f};
@@ -271,9 +271,9 @@ static void get_manifolds(const float* const restrict in, const size_t width, co
   // lower manifold is the blur of all pixels that are below average
   // we use the guide channel to categorize the pixels as above or below average
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
 dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, height, guide) \
-  schedule(simd:static) aligned(in, blurred_in, manifold_lower, manifold_higher:64)
+  schedule(simd:static)
 #endif
   for(size_t k = 0; k < width * height; k++)
   {
@@ -340,9 +340,9 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
     // improve result especially on very degraded images
     // we use a blur of normal size for this step
   #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_manifold_lower, blurred_manifold_higher, width, height, guide) \
-    schedule(simd:static) aligned(in, blurred_in, manifold_lower, manifold_higher, blurred_manifold_lower, blurred_manifold_higher:64)
+    schedule(simd:static)
   #endif
     for(size_t k = 0; k < width * height; k++)
     {
@@ -436,7 +436,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
         manifold_higher[k * 4 + 3] = w;
         // manifold_lower still contains the values from first iteration
         // -> reset it.
-        for(size_t c = 0; c < 4; c++)
+        for_four_channels(c)
         {
           manifold_lower[k * 4 + c] = 0.0f;
         }
@@ -506,17 +506,16 @@ dt_omp_firstprivate(manifolds, blurred_manifold_lower, blurred_manifold_higher, 
 
 static void apply_correction(const float* const restrict in,
                           const float* const restrict manifolds,
-                          const size_t width, const size_t height,
-                          const size_t ch, const float sigma,
+                          const size_t width, const size_t height, const float sigma,
                           const dt_iop_cacorrectrgb_guide_channel_t guide,
                           const dt_iop_cacorrectrgb_mode_t mode,
                           float* const restrict out)
 
 {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
 dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma, mode) \
-  schedule(simd:static) aligned(in, manifolds, out)
+  schedule(simd:static)
 #endif
   for(size_t k = 0; k < width * height; k++)
   {
@@ -579,8 +578,7 @@ dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma, mode) \
 }
 
 static void reduce_artifacts(const float* const restrict in,
-                          const size_t width, const size_t height,
-                          const size_t ch, const float sigma,
+                          const size_t width, const size_t height, const float sigma,
                           const dt_iop_cacorrectrgb_guide_channel_t guide,
                           const float safety,
                           float* const restrict out)
@@ -588,23 +586,23 @@ static void reduce_artifacts(const float* const restrict in,
 {
   // in_out contains the 2 guided channels of in, and the 2 guided channels of out
   // it allows to blur all channels in one 4-channel gaussian blur instead of 2
-  float *const restrict in_out = dt_alloc_align_float(width * height * ch);
+  float *const restrict DT_ALIGNED_PIXEL in_out = dt_alloc_align_float(width * height * 4);
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(in, out, in_out, width, height, guide, ch) \
-  schedule(simd:static) aligned(in, out, in_out:64)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, out, in_out, width, height, guide)        \
+  schedule(simd:static)
 #endif
   for(size_t k = 0; k < width * height; k++)
   {
     for(size_t kc = 0; kc <= 1; kc++)
     {
       const size_t c = (guide + kc + 1) % 3;
-      in_out[k * ch + kc * 2 + 0] = in[k * 4 + c];
-      in_out[k * ch + kc * 2 + 1] = out[k * 4 + c];
+      in_out[k * 4 + kc * 2 + 0] = in[k * 4 + c];
+      in_out[k * 4 + kc * 2 + 1] = out[k * 4 + c];
     }
   }
 
-  float *const restrict blurred_in_out = dt_alloc_align_float(width * height * ch);
+  float *const restrict blurred_in_out = dt_alloc_align_float(width * height * 4);
   float max[4] = {INFINITY, INFINITY, INFINITY, INFINITY};
   float min[4] = {0.0f, 0.0f, 0.0f, 0.0f};
   dt_gaussian_t *g = dt_gaussian_init(width, height, 4, max, min, sigma, 0);
@@ -624,7 +622,7 @@ dt_omp_firstprivate(in, out, in_out, width, height, guide, ch) \
   // introduces artifacts in practice.
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(in, out, blurred_in_out, width, height, guide, safety, ch) \
+dt_omp_firstprivate(in, out, blurred_in_out, width, height, guide, safety) \
   schedule(simd:static) aligned(in, out, blurred_in_out:64)
 #endif
   for(size_t k = 0; k < width * height; k++)
@@ -632,14 +630,14 @@ dt_omp_firstprivate(in, out, blurred_in_out, width, height, guide, safety, ch) \
     float w = 1.0f;
     for(size_t kc = 0; kc <= 1; kc++)
     {
-      const float avg_in = log2f(fmaxf(blurred_in_out[k * ch + kc * 2 + 0], 1E-6f));
-      const float avg_out = log2f(fmaxf(blurred_in_out[k * ch + kc * 2 + 1], 1E-6f));
+      const float avg_in = log2f(fmaxf(blurred_in_out[k * 4 + kc * 2 + 0], 1E-6f));
+      const float avg_out = log2f(fmaxf(blurred_in_out[k * 4 + kc * 2 + 1], 1E-6f));
       w *= expf(-fmaxf(fabsf(avg_out - avg_in), 0.01f) * safety);
     }
     for(size_t kc = 0; kc <= 1; kc++)
     {
       const size_t c = (guide + kc + 1) % 3;
-      out[k * ch + c] = fmaxf(1.0f - w, 0.0f) * fmaxf(in[k * ch + c], 0.0f) + w * fmaxf(out[k * ch + c], 0.0f);
+      out[k * 4 + c] = fmaxf(1.0f - w, 0.0f) * fmaxf(in[k * 4 + c], 0.0f) + w * fmaxf(out[k * 4 + c], 0.0f);
     }
   }
   dt_free_align(blurred_in_out);
@@ -658,7 +656,7 @@ static void reduce_chromatic_aberrations(const float* const restrict in,
   const float downsize = fminf(3.0f, sigma);
   const size_t ds_width = width / downsize;
   const size_t ds_height = height / downsize;
-  float *const restrict ds_in = dt_alloc_align_float(ds_width * ds_height * ch);
+  float *const restrict ds_in = dt_alloc_align_float(ds_width * ds_height * 4);
   // we use only one variable for both higher and lower manifolds in order
   // to save time by doing only one bilinear interpolation instead of 2.
   float *const restrict ds_manifolds = dt_alloc_align_float(ds_width * ds_height * 6);
@@ -666,7 +664,7 @@ static void reduce_chromatic_aberrations(const float* const restrict in,
   interpolate_bilinear(in, width, height, ds_in, ds_width, ds_height, 4);
 
   // Compute manifolds
-  get_manifolds(ds_in, ds_width, ds_height, ch, sigma / downsize, sigma2 / downsize, guide, ds_manifolds, refine_manifolds);
+  get_manifolds(ds_in, ds_width, ds_height, sigma / downsize, sigma2 / downsize, guide, ds_manifolds, refine_manifolds);
   dt_free_align(ds_in);
 
   // upscale manifolds
@@ -674,15 +672,19 @@ static void reduce_chromatic_aberrations(const float* const restrict in,
   interpolate_bilinear(ds_manifolds, ds_width, ds_height, manifolds, width, height, 6);
   dt_free_align(ds_manifolds);
 
-  apply_correction(in, manifolds, width, height, ch, sigma, guide, mode, out);
+  apply_correction(in, manifolds, width, height, sigma, guide, mode, out);
   dt_free_align(manifolds);
 
-  reduce_artifacts(in, width, height, ch, sigma, guide, safety, out);
+  reduce_artifacts(in, width, height, sigma, guide, safety, out);
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // ivoid has been copied to ovoid and the module's trouble flag has been set
+
   dt_iop_cacorrectrgb_params_t *d = (dt_iop_cacorrectrgb_params_t *)piece->data;
   // used to adjuste blur level depending on size. Don't amplify noise if magnified > 100%
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
@@ -693,12 +695,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float* out = (float*)ovoid;
   const float sigma = fmaxf(d->radius / scale, 1.0f);
   const float sigma2 = fmaxf(d->radius * d->radius / scale, 1.0f);
-
-  if(ch != 4)
-  {
-    memcpy(out, in, width * height * ch * sizeof(float));
-    return;
-  }
 
   // whether to be very conservative in preserving the original image, or to
   // keep algorithm result even if it overshoots
