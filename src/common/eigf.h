@@ -85,9 +85,9 @@ static inline void eigf_variance_analysis(const float *const restrict guide, // 
   float minmg = 10000000.0f;
   float maxmg = 0.0f;
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
 dt_omp_firstprivate(guide, mask, in, Ndim) \
-  schedule(simd:static) aligned(guide, mask, in:64) \
+  schedule(simd:static) \
   reduction(max:maxg, maxm, maxg2, maxmg)\
   reduction(min:ming, minm, ming2, minmg)
 #endif
@@ -148,9 +148,9 @@ static inline void eigf_variance_analysis_no_mask(const float *const restrict gu
   float ming2 = 10000000.0f;
   float maxg2 = 0.0f;
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
 dt_omp_firstprivate(guide, in, Ndim) \
-  schedule(simd:static) aligned(guide, in:64) \
+  schedule(simd:static) \
   reduction(max:maxg, maxg2)\
   reduction(min:ming, ming2)
 #endif
