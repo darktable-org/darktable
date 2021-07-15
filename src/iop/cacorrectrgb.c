@@ -621,9 +621,9 @@ static void reduce_artifacts(const float* const restrict in,
   // we use the same weight for all channels, as using different weights
   // introduces artefacts in practice.
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
 dt_omp_firstprivate(in, out, blurred_in_out, width, height, guide, safety) \
-  schedule(simd:static) aligned(in, out, blurred_in_out:64)
+  schedule(simd:static)
 #endif
   for(size_t k = 0; k < width * height; k++)
   {
