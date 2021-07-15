@@ -275,25 +275,88 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
+static float *const init_gaussian_kernel(const int rad, const size_t mat_size, const float sigma2)
+{
+  float weight = 0.0f;
+  float *const mat = dt_alloc_align_float(mat_size);
+  memset(mat, 0, sizeof(float) * mat_size);
+  for(int l = -rad; l <= rad; l++) weight += mat[l + rad] = expf(-l * l / (2.f * sigma2));
+  for(int l = -rad; l <= rad; l++) mat[l + rad] /= weight;
+  return mat;
+}
+
+static void fill_unsharpened_border(const int rad, const float *const restrict in, float *const restrict out,
+                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const size_t row_size = (size_t)4 * sizeof(float) * roi_out->width;
+  for(int j = 0; j < rad; j++)
+    memcpy(out + (size_t)4 * j * roi_out->width, in + (size_t)4 * j * roi_in->width, row_size);
+  for(int j = roi_out->height - rad; j < roi_out->height; j++)
+    memcpy(out + (size_t)4 * j * roi_out->width, in + (size_t)4 * j * roi_in->width, row_size);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, out, rad, roi_out) \
+  schedule(static)
+#endif
+  for(int j = rad; j < roi_out->height - rad; j++)
+  {
+    const size_t rowstart = (size_t)4 * roi_out->width * j;
+    for(int i = 0; i < rad; i++)
+      out[rowstart + 4 * i] = in[rowstart + 4 * i];
+    for(int i = roi_out->width - rad; i < roi_out->width; i++)
+      out[rowstart + 4 * i] = in[rowstart + 4 * i];
+  }
+}
+
+static void subtract_blurred(const int rad, const dt_iop_sharpen_data_t *const data,
+                             const float *const restrict in, float *const restrict out,
+                             const dt_iop_roi_t *const roi_out)
+{
+  const size_t npixels = (size_t)roi_out->height * roi_out->width;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, out, npixels) \
+  dt_omp_sharedconst(data) \
+  schedule(static)
+#endif
+  // subtract blurred image, if diff > thrs, add *amount to original image
+  for(size_t index = 0; index < 4 * npixels; index += 4)
+  {
+    const float diff = in[index] - out[index];
+    if(fabsf(diff) > data->threshold)
+    {
+      const float detail = copysignf(fmaxf(fabsf(diff) - data->threshold, 0.0), diff);
+      out[index] = in[index] + detail * data->amount;
+    }
+    else
+      out[index] = in[index];
+    out[index + 1] = in[index + 1];
+    out[index + 2] = in[index + 2];
+  }
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return;
   const dt_iop_sharpen_data_t *const data = (dt_iop_sharpen_data_t *)piece->data;
-  const int ch = piece->colors;
   const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
   // Special case handling: very small image with one or two dimensions below 2*rad+1 treat as no sharpening and just
   // pass through.  This avoids handling of all kinds of border cases below.
   if(rad == 0 ||
      (roi_out->width < 2 * rad + 1 || roi_out->height < 2 * rad + 1))
   {
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, 4);
     return;
   }
 
   float *restrict tmp;
   if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 1, &tmp, 0))
   {
-    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
+    dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out, TRUE);
     return;
   }
 
@@ -301,69 +364,62 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int wd4 = (wd & 3) ? (wd >> 2) + 1 : wd >> 2;
 
   const size_t mat_size = (size_t)4 * wd4;
-  float *const mat = dt_alloc_align_float(mat_size);
-  memset(mat, 0, sizeof(float) * mat_size);
-
   const float sigma2 = (1.0f / (2.5 * 2.5)) * (data->radius * roi_in->scale / piece->iscale)
                        * (data->radius * roi_in->scale / piece->iscale);
-  float weight = 0.0f;
-
-  // init gaussian kernel
-  for(int l = -rad; l <= rad; l++) weight += mat[l + rad] = expf(-l * l / (2.f * sigma2));
-  for(int l = -rad; l <= rad; l++) mat[l + rad] /= weight;
+  float *const mat = init_gaussian_kernel(rad, mat_size, sigma2);
 
 // gauss blur the image horizontally
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ivoid, mat, rad, roi_in, roi_out, tmp, wd4) \
+  dt_omp_firstprivate(ivoid, mat, rad, roi_in, roi_out, tmp, wd4) \
   schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
-    const float *in = ((float *)ivoid) + (size_t)ch * (j * roi_in->width + rad);
+    const float *in = ((float *)ivoid) + (size_t)4 * (j * roi_in->width + rad);
     float *out = tmp + (size_t)j * roi_out->width + rad;
     int i;
     for(i = rad; i < roi_out->width - wd4 * 4 + rad; i++)
     {
-      const float *inp = in - ch * rad;
+      const float *inp = in - 4 * rad;
       __attribute__((aligned(64))) float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-      for(int k = 0; k < wd4 * 4; k += 4, inp += 4 * ch)
+      for(int k = 0; k < wd4 * 4; k += 4, inp += 4 * 4)
       {
         for(int c = 0; c < 4; c++)
         {
-          sum[c] += ((mat[k + c]) * (inp[ch * c]));
+          sum[c] += ((mat[k + c]) * (inp[4 * c]));
         }
       }
       *out = sum[0] + sum[1] + sum[2] + sum[3];
       out++;
-      in += ch;
+      in += 4;
     }
     for(; i < roi_out->width - rad; i++)
     {
-      const float *inp = in - ch * rad;
+      const float *inp = in - 4 * rad;
       const float *m = mat;
       float sum = 0.0f;
-      for(int k = -rad; k <= rad; k++, m++, inp += ch)
+      for(int k = -rad; k <= rad; k++, m++, inp += 4)
       {
         sum += *m * *inp;
       }
       *out = sum;
       out++;
-      in += ch;
+      in += 4;
     }
   }
 
 // gauss blur the image vertically
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, mat, ovoid, rad, roi_in, roi_out, tmp, wd4) \
+  dt_omp_firstprivate(mat, ovoid, rad, roi_in, roi_out, tmp, wd4) \
   schedule(static)
 #endif
   for(int j = rad; j < roi_out->height - wd4 * 4 + rad; j++)
   {
     const float *in = tmp + (size_t)j * roi_in->width;
-    float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
+    float *out = ((float *)ovoid) + (size_t)4 * j * roi_out->width;
 
     const int step = roi_in->width;
 
@@ -380,19 +436,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         }
       }
       *out = sum[0] + sum[1] + sum[2] + sum[3];
-      out += ch;
+      out += 4;
       in++;
     }
   }
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, mat, ovoid, rad, roi_in, roi_out, tmp, wd4) \
+  dt_omp_firstprivate(mat, ovoid, rad, roi_in, roi_out, tmp, wd4) \
   schedule(static)
 #endif
   for(int j = roi_out->height - wd4 * 4 + rad; j < roi_out->height - rad; j++)
   {
     const float *in = tmp + (size_t)j * roi_in->width;
-    float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
+    float *out = ((float *)ovoid) + (size_t)4 * j * roi_out->width;
     const int step = roi_in->width;
 
     for(int i = 0; i < roi_out->width; i++)
@@ -402,87 +458,44 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       float sum = 0.0f;
       for(int k = -rad; k <= rad; k++, m++, inp += step) sum += *m * *inp;
       *out = sum;
-      out += ch;
+      out += 4;
       in++;
     }
   }
 
   dt_free_align(mat);
-
-  // fill unsharpened border
-  for(int j = 0; j < rad; j++)
-    memcpy(((float *)ovoid) + (size_t)ch * j * roi_out->width,
-           ((float *)ivoid) + (size_t)ch * j * roi_in->width, (size_t)ch * sizeof(float) * roi_out->width);
-  for(int j = roi_out->height - rad; j < roi_out->height; j++)
-    memcpy(((float *)ovoid) + (size_t)ch * j * roi_out->width,
-           ((float *)ivoid) + (size_t)ch * j * roi_in->width, (size_t)ch * sizeof(float) * roi_out->width);
-
   dt_free_align(tmp);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ivoid, ovoid, rad, roi_out) \
-  schedule(static)
-#endif
-  for(int j = rad; j < roi_out->height - rad; j++)
-  {
-    float *in = ((float *)ivoid) + (size_t)ch * roi_out->width * j;
-    float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
-    for(int i = 0; i < rad; i++) out[ch * i] = in[ch * i];
-    for(int i = roi_out->width - rad; i < roi_out->width; i++) out[ch * i] = in[ch * i];
-  }
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, data, ivoid, ovoid, roi_out) \
-  schedule(static)
-#endif
-  // subtract blurred image, if diff > thrs, add *amount to original image
-  for(int j = 0; j < roi_out->height; j++)
-  {
-    float *in = (float *)ivoid + (size_t)j * ch * roi_out->width;
-    float *out = (float *)ovoid + (size_t)j * ch * roi_out->width;
-
-    for(int i = 0; i < roi_out->width; i++)
-    {
-      out[1] = in[1];
-      out[2] = in[2];
-      const float diff = in[0] - out[0];
-      if(fabsf(diff) > data->threshold)
-      {
-        const float detail = copysignf(fmaxf(fabsf(diff) - data->threshold, 0.0), diff);
-        out[0] = in[0] + detail * data->amount;
-      }
-      else
-        out[0] = in[0];
-      out += ch;
-      in += ch;
-    }
-  }
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  fill_unsharpened_border(rad, ivoid, ovoid, roi_in, roi_out);
+  subtract_blurred(rad, data, ivoid, ovoid, roi_out);
+  
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #if defined(__SSE__)
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return;
+
   const dt_iop_sharpen_data_t *const data = (dt_iop_sharpen_data_t *)piece->data;
-  const int ch = piece->colors;
   const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
   // Special case handling: very small image with one or two dimensions below 2*rad+1 treat as no sharpening and just
   // pass through.  This avoids handling of all kinds of border cases below.
   if(rad == 0 ||
      (roi_out->width < 2 * rad + 1 || roi_out->height < 2 * rad + 1))
   {
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, 4);
     return;
   }
 
   float *restrict tmp;
   if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 1, &tmp, 0))
   {
-    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
+    dt_iop_copy_image_roi(ovoid, ivoid, 4, roi_in, roi_out, TRUE);
     return;
   }
 
@@ -490,56 +503,47 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const int wd4 = (wd & 3) ? (wd >> 2) + 1 : wd >> 2;
 
   const size_t mat_size = (size_t)4 * wd4;
-  float *const mat = dt_alloc_align_float(mat_size);
-  memset(mat, 0, sizeof(float) * mat_size);
-
   const float sigma2 = (1.0f / (2.5 * 2.5)) * (data->radius * roi_in->scale / piece->iscale)
                        * (data->radius * roi_in->scale / piece->iscale);
-  float weight = 0.0f;
 
-  // init gaussian kernel
-  for(int l = -rad; l <= rad; l++) weight += mat[l + rad] = expf(-l * l / (2.f * sigma2));
-  for(int l = -rad; l <= rad; l++) mat[l + rad] /= weight;
+  float *const mat = init_gaussian_kernel(rad, mat_size, sigma2);
 
 // gauss blur the image horizontally
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ivoid, mat, rad, roi_in, roi_out, tmp, wd4) \
+  dt_omp_firstprivate(ivoid, mat, rad, roi_in, roi_out, tmp, wd4) \
   schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
-    const float *in = ((float *)ivoid) + (size_t)ch * (j * roi_in->width + rad);
+    const float *in = ((float *)ivoid) + (size_t)4 * (j * roi_in->width + rad);
     float *out = tmp + (size_t)j * roi_out->width + rad;
     int i;
     for(i = rad; i < roi_out->width - wd4 * 4 + rad; i++)
     {
-      const float *inp = in - ch * rad;
-      __attribute__((aligned(64))) float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      const float *inp = in - 4 * rad;
       __m128 msum = _mm_setzero_ps();
 
-      for(int k = 0; k < wd4 * 4; k += 4, inp += 4 * ch)
+      for(int k = 0; k < wd4 * 4; k += 4, inp += 4 * 4)
       {
-        msum = _mm_add_ps(
-            msum, _mm_mul_ps(_mm_load_ps(mat + k), _mm_set_ps(inp[3 * ch], inp[2 * ch], inp[ch], inp[0])));
+        msum = msum + (_mm_load_ps(mat + k) * _mm_set_ps(inp[3 * 4], inp[2 * 4], inp[4], inp[0]));
       }
-      _mm_store_ps(sum, msum);
-      *out = sum[0] + sum[1] + sum[2] + sum[3];
+      *out = msum[0] + msum[1] + msum[2] + msum[3];
       out++;
-      in += ch;
+      in += 4;
     }
     for(; i < roi_out->width - rad; i++)
     {
-      const float *inp = in - ch * rad;
+      const float *inp = in - 4 * rad;
       const float *m = mat;
       float sum = 0.0f;
-      for(int k = -rad; k <= rad; k++, m++, inp += ch)
+      for(int k = -rad; k <= rad; k++, m++, inp += 4)
       {
         sum += *m * *inp;
       }
       *out = sum;
       out++;
-      in += ch;
+      in += 4;
     }
   }
   _mm_sfence();
@@ -547,17 +551,15 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 // gauss blur the image vertically
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, mat, ovoid, rad, roi_in, roi_out, tmp, wd4) \
+  dt_omp_firstprivate(mat, ovoid, rad, roi_in, roi_out, tmp, wd4) \
   schedule(static)
 #endif
   for(int j = rad; j < roi_out->height - wd4 * 4 + rad; j++)
   {
     const float *in = tmp + (size_t)j * roi_in->width;
-    float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
+    float *out = ((float *)ovoid) + (size_t)4 * j * roi_out->width;
 
     const int step = roi_in->width;
-
-    __attribute__((aligned(64))) float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
     for(int i = 0; i < roi_out->width; i++)
     {
@@ -566,24 +568,22 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
       for(int k = 0; k < wd4 * 4; k += 4, inp += step * 4)
       {
-        msum = _mm_add_ps(msum, _mm_mul_ps(_mm_load_ps(mat + k),
-                                           _mm_set_ps(inp[3 * step], inp[2 * step], inp[step], inp[0])));
+        msum = msum + (_mm_load_ps(mat + k) * _mm_set_ps(inp[3 * step], inp[2 * step], inp[step], inp[0]));
       }
-      _mm_store_ps(sum, msum);
-      *out = sum[0] + sum[1] + sum[2] + sum[3];
-      out += ch;
+      *out = msum[0] + msum[1] + msum[2] + msum[3];
+      out += 4;
       in++;
     }
   }
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ivoid, mat, ovoid, rad, roi_in, roi_out, tmp, wd4) \
+  dt_omp_firstprivate(ivoid, mat, ovoid, rad, roi_in, roi_out, tmp, wd4) \
   schedule(static)
 #endif
   for(int j = roi_out->height - wd4 * 4 + rad; j < roi_out->height - rad; j++)
   {
     const float *in = tmp + (size_t)j * roi_in->width;
-    float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
+    float *out = ((float *)ovoid) + (size_t)4 * j * roi_out->width;
     const int step = roi_in->width;
 
     for(int i = 0; i < roi_out->width; i++)
@@ -593,68 +593,21 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       float sum = 0.0f;
       for(int k = -rad; k <= rad; k++, m++, inp += step) sum += *m * *inp;
       *out = sum;
-      out += ch;
+      out += 4;
       in++;
     }
   }
 
-  dt_free_align(mat);
-
   _mm_sfence();
 
-  // fill unsharpened border
-  for(int j = 0; j < rad; j++)
-    memcpy(((float *)ovoid) + (size_t)ch * j * roi_out->width,
-           ((float *)ivoid) + (size_t)ch * j * roi_in->width, (size_t)ch * sizeof(float) * roi_out->width);
-  for(int j = roi_out->height - rad; j < roi_out->height; j++)
-    memcpy(((float *)ovoid) + (size_t)ch * j * roi_out->width,
-           ((float *)ivoid) + (size_t)ch * j * roi_in->width, (size_t)ch * sizeof(float) * roi_out->width);
-
+  dt_free_align(mat);
   dt_free_align(tmp);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ivoid, ovoid, rad, roi_out) \
-  schedule(static)
-#endif
-  for(int j = rad; j < roi_out->height - rad; j++)
-  {
-    float *in = ((float *)ivoid) + (size_t)ch * roi_out->width * j;
-    float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
-    for(int i = 0; i < rad; i++) out[ch * i] = in[ch * i];
-    for(int i = roi_out->width - rad; i < roi_out->width; i++) out[ch * i] = in[ch * i];
-  }
+  fill_unsharpened_border(rad, ivoid, ovoid, roi_in, roi_out);
+  subtract_blurred(rad, data, ivoid, ovoid, roi_out);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ivoid, ovoid, roi_out) \
-  dt_omp_sharedconst(data) \
-  schedule(static)
-#endif
-  // subtract blurred image, if diff > thrs, add *amount to original image
-  for(int j = 0; j < roi_out->height; j++)
-  {
-    float *in = (float *)ivoid + (size_t)j * ch * roi_out->width;
-    float *out = (float *)ovoid + (size_t)j * ch * roi_out->width;
-
-    for(int i = 0; i < roi_out->width; i++)
-    {
-      out[1] = in[1];
-      out[2] = in[2];
-      const float diff = in[0] - out[0];
-      if(fabsf(diff) > data->threshold)
-      {
-        const float detail = copysignf(fmaxf(fabsf(diff) - data->threshold, 0.0), diff);
-        out[0] = in[0] + detail * data->amount;
-      }
-      else
-        out[0] = in[0];
-      out += ch;
-      in += ch;
-    }
-  }
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 #endif
 
