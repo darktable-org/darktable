@@ -1288,9 +1288,9 @@ static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
     dt_omp_firstprivate(points_count, points, scale) \
-    schedule(static) if(points_count > 100) aligned(points:64) \
+    schedule(simd:static) if(points_count > 100)          \
     reduction(min:xmin, ymin) reduction(max:xmax, ymax)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
@@ -1336,9 +1336,9 @@ static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 
     // apply distortion to all points (this is a simple displacement given by a vector at this same point in the map)
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
     dt_omp_firstprivate(points_count, points, scale, extent, map, map_size, y_last, x_last) \
-    schedule(static) if(points_count > 100) aligned(points:64)
+    schedule(static) if(points_count > 100)
 #endif
     for(size_t i = 0; i < points_count; i++)
     {
