@@ -76,8 +76,8 @@ static void dt_heal_add(const float *const restrict first_buffer, const float *c
 }
 
 // define a custom reduction operation to handle a 3-vector of floats
-#ifdef _OPENMP
 typedef struct _aligned_pixel { float DT_ALIGNED_PIXEL v[4]; } _aligned_pixel;
+#ifdef _OPENMP
 static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newval)
 {
   for_each_channel(c) acc.v[c] += newval.v[c];
