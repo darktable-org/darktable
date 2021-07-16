@@ -161,28 +161,24 @@ static void dt_heal_laplace_loop(float *pixels, const int width, const int heigh
       {
         if(mask[j + i * width])
         {
-#define A_NEIGHBOR(o, di, dj)                                                                                     \
-  if((dj < 0 && j == 0) || (dj > 0 && j == width - 1) || (di < 0 && i == 0) || (di > 0 && i == height - 1))       \
-    Aidx[o + nmask * 5] = zero;                                                                                   \
-  else                                                                                                            \
-    Aidx[o + nmask * 5] = ((i + di) * width + (j + dj)) * 4;
+#define A_POS(di, dj) (((i + di) * width + (j  + dj)) * 4)
 
           /* Omit Dirichlet conditions for any neighbors off the
            * edge of the canvas.
            */
           Adiag[nmask] = 4 - (i == 0) - (j == 0) - (i == height - 1) - (j == width - 1);
-          A_NEIGHBOR(0, 0, 0);
-          A_NEIGHBOR(1, 0, 1);
-          A_NEIGHBOR(2, 1, 0);
-          A_NEIGHBOR(3, 0, -1);
-          A_NEIGHBOR(4, -1, 0);
+          Aidx[5 * nmask] = A_POS(0,0);
+          Aidx[5 * nmask + 1] = (j == width-1) ? zero : A_POS(0,1);
+          Aidx[5 * nmask + 2] = (i == height-1) ? zero : A_POS(1,0);
+          Aidx[5 * nmask + 3] = (j == 0) ? zero : A_POS(0,-1);
+          Aidx[5 * nmask + 4] = (i == 0) ? zero : A_POS(-1,0);
           nmask++;
         }
       }
     }
   }
 
-#undef A_NEIGHBOR
+#undef A_POS
 
   /* Empirically optimal over-relaxation factor. (Benchmarked on
    * round brushes, at least. I don't know whether aspect ratio
