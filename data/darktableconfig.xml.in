@@ -393,49 +393,49 @@
     <shortdescription>assumed maximum sane number of tiles</shortdescription>
     <longdescription>if during tiling this number is exceeded darktable assumes that tiling is not possible and falls back to untiled processing - with all system memory limits taking full effect. in case you want to process huge images you may want to increase this number.</longdescription>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>ask_before_remove</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>ask before removing images from the library</shortdescription>
     <longdescription>always ask the user before any image is removed from the library</longdescription>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>ask_before_delete</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>ask before deleting images from disk</shortdescription>
     <longdescription>always ask the user before any image file is deleted</longdescription>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>ask_before_discard</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>ask before discarding history stack</shortdescription>
     <longdescription>always ask the user before history stack is discarded on any image</longdescription>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>send_to_trash</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>try to use trash when deleting images</shortdescription>
     <longdescription>send files to trash instead of permanently deleting files on system that supports it</longdescription>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>ask_before_move</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>ask before moving images from film roll folder</shortdescription>
     <longdescription>always ask the user before any image file is moved.</longdescription>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>ask_before_copy</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>ask before copying images to new film roll folder</shortdescription>
     <longdescription>always ask the user before any image file is copied.</longdescription>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>ask_before_rmdir</name>
     <type>bool</type>
     <default>false</default>
@@ -1595,7 +1595,7 @@
     <shortdescription>show the export module in the darkroom view (as well as in lighttable)</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>plugins/lighttable/tagging/ask_before_delete_tag</name>
     <type>bool</type>
     <default>true</default>
@@ -1700,21 +1700,21 @@
     <shortdescription>height of the metadata version name field</shortdescription>
     <longdescription>maximum height the metadata textview will grow to before scrolling</longdescription>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>plugins/lighttable/style/ask_before_delete_style</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>ask before deleting a style</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>plugins/lighttable/preset/ask_before_delete_preset</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>ask before deleting a preset</shortdescription>
     <longdescription>will ask for confirmation before deleting or overwriting a preset</longdescription>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>plugins/lighttable/export/ask_before_export_overwrite</name>
     <type>bool</type>
     <default>true</default>
@@ -2404,7 +2404,7 @@
     <shortdescription>XCF bit depth (bpp)</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="misc" section="other">
+  <dtconfig prefs="security" section="other">
     <name>plugins/pwstorage/pwstorage_backend</name>
     <type>
       <enum>
@@ -2870,7 +2870,7 @@
     <shortdescription>look for updated xmp files on startup</shortdescription>
     <longdescription>check file modification times of all xmp files on startup to check if any got updated in the meantime</longdescription>
   </dtconfig>
-  <dtconfig prefs="misc" section="other">
+  <dtconfig prefs="security" section="other">
     <name>plugins/lighttable/audio_player</name>
     <type>string</type>
     <default>${DEFCONFIG_AUDIOPLAYER}</default>

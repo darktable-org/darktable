@@ -293,7 +293,34 @@ gboolean restart_required = FALSE;
 
   <xsl:text>&#xA;static void&#xA;init_tab_security</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("security"), _("security"));&#xA;</xsl:text>
 
-  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='security']">
+  <!-- general (confirmations) section -->
+  <xsl:text>
+    {
+      GtkWidget *seclabel = gtk_label_new(_("general"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+    }
+  </xsl:text>
+
+  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='security' and @section='general']">
+    <xsl:apply-templates select="." mode="tab_block"/>
+  </xsl:for-each>
+  <!--<xsl:value-of select="$tab_end" />-->
+
+  <!-- others section -->
+  <xsl:text>
+   {
+      GtkWidget *seclabel = gtk_label_new(_("other"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+   }
+  </xsl:text>
+
+  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='security' and @section='other']">
     <xsl:apply-templates select="." mode="tab_block"/>
   </xsl:for-each>
   <xsl:value-of select="$tab_end" />
@@ -385,23 +412,9 @@ gboolean restart_required = FALSE;
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='misc' and @section='accel']">
     <xsl:apply-templates select="." mode="tab_block"/>
   </xsl:for-each>
-
-<xsl:text>
-   {
-      GtkWidget *seclabel = gtk_label_new(_("other"));
-      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_name(lbox, "pref_section");
-      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
-   }
-</xsl:text>
-
-  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='misc' and @section='other']">
-    <xsl:apply-templates select="." mode="tab_block"/>
-  </xsl:for-each>
   <xsl:value-of select="$tab_end" />
 
-        <!-- import -->
+  <!-- import -->
 
   <xsl:text>&#xA;static void&#xA;init_tab_import</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("import"), _("import"));&#xA;</xsl:text>
 
