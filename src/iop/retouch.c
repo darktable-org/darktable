@@ -2850,7 +2850,7 @@ static void image_lab2rgb(float *img_src, const int width, const int height, con
 }
 
 static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const img_src,
-                             const int width, const int height, const int ch, float levels[3], int use_sse)
+                             const int width, const int height, const int ch, float levels[3])
 {
   const int size = width * height * ch;
   float l_max = -INFINITY;
@@ -2896,7 +2896,7 @@ static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 }
 
 static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *img_src, const int width,
-                             const int height, const int ch, const float levels[3], int use_sse)
+                             const int height, const int ch, const float levels[3])
 {
   const int size = width * height * ch;
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
@@ -3174,75 +3174,57 @@ static void rt_copy_mask_to_alpha(float *const img, dt_iop_roi_t *const roi_img,
   }
 }
 
-#if defined(__SSE__)
-static void retouch_fill_sse(float *const in, dt_iop_roi_t *const roi_in, float *const mask_scaled,
-                             dt_iop_roi_t *const roi_mask_scaled, const float opacity,
-                             const float *const fill_color)
+static void retouch_fill(float *const in, dt_iop_roi_t *const roi_in, const int ch, float *const mask_scaled,
+                         dt_iop_roi_t *const roi_mask_scaled, const float opacity, const float *const fill_color)
 {
-  const int ch = 4;
-
-  const float valf4_fill[4] = { fill_color[0], fill_color[1], fill_color[2], 0.f };
-  const __m128 val_fill = _mm_load_ps(valf4_fill);
-
+  if(ch == 4)
+  {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, in, mask_scaled, opacity, roi_in, roi_mask_scaled, val_fill) \
+#pragma omp parallel for default(none)                                  \
+  dt_omp_firstprivate(fill_color, in, mask_scaled, opacity, roi_in, roi_mask_scaled) \
   schedule(static)
 #endif
-  for(int yy = 0; yy < roi_mask_scaled->height; yy++)
-  {
-    const int mask_index = yy * roi_mask_scaled->width;
-    const int dest_index
-        = (((yy + roi_mask_scaled->y - roi_in->y) * roi_in->width) + (roi_mask_scaled->x - roi_in->x)) * ch;
-
-    float *d = in + dest_index;
-    const float *m = mask_scaled + mask_index;
-
-    for(int xx = 0; xx < roi_mask_scaled->width; xx++, d += ch, m++)
+    for(int yy = 0; yy < roi_mask_scaled->height; yy++)
     {
-      const float f = (*m) * opacity;
+      const int mask_index = yy * roi_mask_scaled->width;
+      const int dest_index
+        = (((yy + roi_mask_scaled->y - roi_in->y) * roi_in->width) + (roi_mask_scaled->x - roi_in->x)) * 4;
 
-      const __m128 val1_f = _mm_set1_ps(1.0f - f);
-      const __m128 valf = _mm_set1_ps(f);
+      float *d = in + dest_index;
+      const float *m = mask_scaled + mask_index;
 
-      _mm_store_ps(d, _mm_add_ps(_mm_mul_ps(_mm_load_ps(d), val1_f), _mm_mul_ps(val_fill, valf)));
+      for(int xx = 0; xx < roi_mask_scaled->width; xx++)
+      {
+        const float f = m[xx] * opacity;
+
+        for_each_channel(c,aligned(d,fill_color))
+          d[4*xx+c] = d[4*xx+c] * (1.0f - f) + fill_color[c] * f;
+      }
     }
-  }
-}
-#endif
-
-static void retouch_fill(float *const in, dt_iop_roi_t *const roi_in, const int ch, float *const mask_scaled,
-                         dt_iop_roi_t *const roi_mask_scaled, const float opacity, const float *const fill_color,
-                         const int use_sse)
-{
-#if defined(__SSE__)
-  if(ch == 4 && use_sse)
-  {
-    retouch_fill_sse(in, roi_in, mask_scaled, roi_mask_scaled, opacity, fill_color);
     return;
   }
-#endif
-  const int ch1 = (ch == 4) ? ch - 1 : ch;
+  //TODO: check if we can ever be called on single-channel image
+  assert(ch == 1);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ch1, fill_color, in, mask_scaled, opacity, roi_in, roi_mask_scaled) \
+  dt_omp_firstprivate(fill_color, in, mask_scaled, opacity, roi_in, roi_mask_scaled) \
   schedule(static)
 #endif
   for(int yy = 0; yy < roi_mask_scaled->height; yy++)
   {
     const int mask_index = yy * roi_mask_scaled->width;
     const int dest_index
-        = (((yy + roi_mask_scaled->y - roi_in->y) * roi_in->width) + (roi_mask_scaled->x - roi_in->x)) * ch;
+        = (((yy + roi_mask_scaled->y - roi_in->y) * roi_in->width) + (roi_mask_scaled->x - roi_in->x));
 
     float *d = in + dest_index;
     const float *m = mask_scaled + mask_index;
 
-    for(int xx = 0; xx < roi_mask_scaled->width; xx++, d += ch, m++)
+    for(int xx = 0; xx < roi_mask_scaled->width; xx++)
     {
-      const float f = (*m) * opacity;
+      const float f = m[xx] * opacity;
 
-      for(int c = 0; c < ch1; c++) d[c] = d[c] * (1.0f - f) + fill_color[c] * f;
+      d[xx] = d[xx] * (1.0f - f) + fill_color[0] * f;
     }
   }
 }
@@ -3516,7 +3498,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
           else if(algo == DT_IOP_RETOUCH_FILL)
           {
             // add a brightness to the color so it can be fine-adjusted by the user
-            float fill_color[3];
+            float DT_ALIGNED_PIXEL fill_color[4];
 
             if(p->rt_forms[index].fill_mode == DT_IOP_RETOUCH_FILL_ERASE)
             {
@@ -3528,9 +3510,9 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
               fill_color[1] = p->rt_forms[index].fill_color[1] + p->rt_forms[index].fill_brightness;
               fill_color[2] = p->rt_forms[index].fill_color[2] + p->rt_forms[index].fill_brightness;
             }
+            fill_color[3] = 0.0f;
 
-            retouch_fill(layer, roi_layer, wt_p->ch, mask_scaled, &roi_mask_scaled, form_opacity, fill_color,
-                         wt_p->use_sse);
+            retouch_fill(layer, roi_layer, wt_p->ch, mask_scaled, &roi_mask_scaled, form_opacity, fill_color);
           }
           else
             fprintf(stderr, "rt_process_forms: unknown algorithm %i\n", algo);
@@ -3634,7 +3616,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
       dt_iop_gui_leave_critical_section(self);
 
       levels[0] = levels[1] = levels[2] = 0;
-      rt_process_stats(self, piece, in_retouch, roi_rt->width, roi_rt->height, ch, levels, use_sse);
+      rt_process_stats(self, piece, in_retouch, roi_rt->width, roi_rt->height, ch, levels);
       rt_clamp_minmax(levels, levels);
 
       for(int i = 0; i < 3; i++) g->preview_levels[i] = levels[i];
@@ -3652,7 +3634,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   // if user wants to preview a detail scale adjust levels
   if(dwt_p->return_layer > 0 && dwt_p->return_layer < dwt_p->scales + 1)
   {
-    rt_adjust_levels(self, piece, in_retouch, roi_rt->width, roi_rt->height, ch, levels, use_sse);
+    rt_adjust_levels(self, piece, in_retouch, roi_rt->width, roi_rt->height, ch, levels);
   }
 
   // copy alpha channel if needed
@@ -3716,7 +3698,7 @@ cl_int rt_process_stats_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   }
 
   // just call the CPU version for now
-  rt_process_stats(self, piece, src_buffer, width, height, ch, levels, 1);
+  rt_process_stats(self, piece, src_buffer, width, height, ch, levels);
 
   err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, sizeof(float) * ch * width * height, TRUE);
   if(err != CL_SUCCESS)
@@ -3755,7 +3737,7 @@ cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   }
 
   // just call the CPU version for now
-  rt_adjust_levels(self, piece, src_buffer, width, height, ch, levels, 1);
+  rt_adjust_levels(self, piece, src_buffer, width, height, ch, levels);
 
   err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, sizeof(float) * ch * width * height, TRUE);
   if(err != CL_SUCCESS)
