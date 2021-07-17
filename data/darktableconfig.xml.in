@@ -147,7 +147,7 @@
     <default>5</default>
     <shortdescription>waiting time between each picture in slideshow</shortdescription>
   </dtconfig>
-  <dtconfig prefs="misc" section="other">
+  <dtconfig>
     <name>ui_last/no_april1st</name>
     <type>bool</type>
     <default>true</default>
