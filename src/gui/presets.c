@@ -1393,7 +1393,7 @@ static void _dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int3
       label = g_strdup_printf("%s %s", name, _("(default)"));
     else
       label = g_strdup(name);
-    mi = gtk_menu_item_new_with_label(label);
+    mi = gtk_check_menu_item_new_with_label(label);
     g_free(label);
 
     if(module
@@ -1404,6 +1404,7 @@ static void _dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int3
       active_preset = cnt;
       writeprotect = sqlite3_column_int(stmt, 2);
       gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
+      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
     }
 
     if(isdisabled)
