@@ -499,7 +499,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       for(; i < roi_out->width; i++)
       {
         const size_t p = (size_t)j * roi_out->width + i;
-        out[p] = in[p] * d->coeffs[FCxtrans(j, i, roi_out, xtrans)];
+        out[p] = in[p] * d_coeffs[FCxtrans(j, i, roi_out, xtrans)];
       }
     }
   }
