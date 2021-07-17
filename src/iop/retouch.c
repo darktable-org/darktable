@@ -3078,71 +3078,63 @@ cleanup:
 // img_src and mask_scaled must have the same roi
 static void rt_copy_image_masked(float *const img_src, float *img_dest, dt_iop_roi_t *const roi_dest, const int ch,
                                  float *const mask_scaled, dt_iop_roi_t *const roi_mask_scaled,
-                                 const float opacity, const int use_sse)
+                                 const float opacity)
 {
-#if defined(__SSE__)
-  if(ch == 4 && use_sse)
+  if(ch == 4)
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, img_src, mask_scaled, opacity, roi_dest, roi_mask_scaled) \
+    dt_omp_firstprivate(img_src, mask_scaled, opacity, roi_dest, roi_mask_scaled) \
     shared(img_dest) \
     schedule(static)
 #endif
     for(int yy = 0; yy < roi_mask_scaled->height; yy++)
     {
       const int mask_index = yy * roi_mask_scaled->width;
-      const int src_index = mask_index * ch;
+      const int src_index = 4 * mask_index;
       const int dest_index
-          = (((yy + roi_mask_scaled->y - roi_dest->y) * roi_dest->width) + (roi_mask_scaled->x - roi_dest->x))
-            * ch;
+        = 4 * (((yy + roi_mask_scaled->y - roi_dest->y) * roi_dest->width) + (roi_mask_scaled->x - roi_dest->x));
 
       const float *s = img_src + src_index;
       const float *m = mask_scaled + mask_index;
       float *d = img_dest + dest_index;
 
-      for(int xx = 0; xx < roi_mask_scaled->width; xx++, s += ch, d += ch, m++)
+      for(int xx = 0; xx < roi_mask_scaled->width; xx++)
       {
-        const float f = (*m) * opacity;
+        const float f = m[xx] * opacity;
+        const float f1 = (1.0f - f);
 
-        const __m128 val1_f = _mm_set1_ps(1.0f - f);
-        const __m128 valf = _mm_set1_ps(f);
-
-        _mm_store_ps(d, _mm_add_ps(_mm_mul_ps(_mm_load_ps(d), val1_f), _mm_mul_ps(_mm_load_ps(s), valf)));
+        for_each_channel(c,aligned(s,d))
+        {
+          d[4*xx + c] = d[4*xx + c] * f1 + s[4*xx + c] * f;
+        }
       }
     }
   }
-  else
-#endif
+  else // must have ch == 1 (TODO: check whether this can ever happen!)
   {
-    const int ch1 = (ch == 4) ? ch - 1 : ch;
-
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, ch1, img_src, mask_scaled, opacity, roi_dest, roi_mask_scaled) \
+    dt_omp_firstprivate(img_src, mask_scaled, opacity, roi_dest, roi_mask_scaled) \
     shared(img_dest) \
     schedule(static)
 #endif
     for(int yy = 0; yy < roi_mask_scaled->height; yy++)
     {
       const int mask_index = yy * roi_mask_scaled->width;
-      const int src_index = mask_index * ch;
+      const int src_index = mask_index;
       const int dest_index
-          = (((yy + roi_mask_scaled->y - roi_dest->y) * roi_dest->width) + (roi_mask_scaled->x - roi_dest->x))
-            * ch;
+        = (((yy + roi_mask_scaled->y - roi_dest->y) * roi_dest->width) + (roi_mask_scaled->x - roi_dest->x));
 
       const float *s = img_src + src_index;
       const float *m = mask_scaled + mask_index;
       float *d = img_dest + dest_index;
 
-      for(int xx = 0; xx < roi_mask_scaled->width; xx++, s += ch, d += ch, m++)
+      for(int xx = 0; xx < roi_mask_scaled->width; xx++)
       {
-        const float f = (*m) * opacity;
+        const float f = m[xx] * opacity;
 
-        for(int c = 0; c < ch1; c++)
-        {
-          d[c] = d[c] * (1.0f - f) + s[c] * f;
-        }
+        d[xx] = d[xx] * (1.0f - f) + s[xx] * f;
       }
     }
   }
@@ -3222,7 +3214,7 @@ static void retouch_fill(float *const in, dt_iop_roi_t *const roi_in, const int 
     return;
   }
 #endif
-  const int ch1 = (ch == 4) ? ch - 1 : ch;
+  const int ch1 = (ch == 4) ? DT_PIXEL_SIMD_CHANNELS : ch;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -3248,8 +3240,7 @@ static void retouch_fill(float *const in, dt_iop_roi_t *const roi_in, const int 
 }
 
 static void retouch_clone(float *const in, dt_iop_roi_t *const roi_in, const int ch, float *const mask_scaled,
-                          dt_iop_roi_t *const roi_mask_scaled, const int dx, const int dy, const float opacity,
-                          const int use_sse)
+                          dt_iop_roi_t *const roi_mask_scaled, const int dx, const int dy, const float opacity)
 {
   // alloc temp image to avoid issues when areas self-intersects
   float *img_src = dt_alloc_align_float((size_t)ch * roi_mask_scaled->width * roi_mask_scaled->height);
@@ -3263,7 +3254,7 @@ static void retouch_clone(float *const in, dt_iop_roi_t *const roi_in, const int
   rt_copy_in_to_out(in, roi_in, img_src, roi_mask_scaled, ch, dx, dy);
 
   // clone it
-  rt_copy_image_masked(img_src, in, roi_in, ch, mask_scaled, roi_mask_scaled, opacity, use_sse);
+  rt_copy_image_masked(img_src, in, roi_in, ch, mask_scaled, roi_mask_scaled, opacity);
 
 cleanup:
   if(img_src) dt_free_align(img_src);
@@ -3340,7 +3331,7 @@ static void retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *c
   }
 
   // copy blurred (temp) image to destination image
-  rt_copy_image_masked(img_dest, in, roi_in, ch, mask_scaled, roi_mask_scaled, opacity, use_sse);
+  rt_copy_image_masked(img_dest, in, roi_in, ch, mask_scaled, roi_mask_scaled, opacity);
 
 cleanup:
   if(img_dest) dt_free_align(img_dest);
@@ -3370,7 +3361,7 @@ static void retouch_heal(float *const in, dt_iop_roi_t *const roi_in, const int 
   dt_heal(img_src, img_dest, mask_scaled, roi_mask_scaled->width, roi_mask_scaled->height, ch);
 
   // copy healed (temp) image to destination image
-  rt_copy_image_masked(img_dest, in, roi_in, ch, mask_scaled, roi_mask_scaled, opacity, use_sse);
+  rt_copy_image_masked(img_dest, in, roi_in, ch, mask_scaled, roi_mask_scaled, opacity);
 
 cleanup:
   if(img_src) dt_free_align(img_src);
@@ -3500,8 +3491,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
         {
           if(algo == DT_IOP_RETOUCH_CLONE)
           {
-            retouch_clone(layer, roi_layer, wt_p->ch, mask_scaled, &roi_mask_scaled, dx, dy, form_opacity,
-                          wt_p->use_sse);
+            retouch_clone(layer, roi_layer, wt_p->ch, mask_scaled, &roi_mask_scaled, dx, dy, form_opacity);
           }
           else if(algo == DT_IOP_RETOUCH_HEAL)
           {
