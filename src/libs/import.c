@@ -1634,6 +1634,43 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   gtk_box_pack_start(GTK_BOX(rbox), GTK_WIDGET(d->from.w), TRUE, TRUE, 0);
 }
 
+static void _browse_basedir_clicked(GtkWidget *widget, GtkEntry *basedir)
+{
+  GtkWidget *topwindow = gtk_widget_get_toplevel(widget);
+  if(!GTK_IS_WINDOW(topwindow))
+  {
+    topwindow = dt_ui_main_window(darktable.gui->ui);
+  }
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new(
+      _("select directory"), GTK_WINDOW(topwindow), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
+      GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
+
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+  gchar *old = g_strdup(gtk_entry_get_text(basedir));
+  char *c = g_strstr_len(old, -1, "$");
+  if(c) *c = '\0';
+  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), old);
+  g_free(old);
+  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    gchar *dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+
+    // dir can now contain '\': on Windows it's the path separator,
+    // on other platforms it can be part of a regular folder name.
+    // This would later clash with variable substitution, so we have to escape them
+    gchar *escaped = dt_util_str_replace(dir, "\\", "\\\\");
+
+    gtk_entry_set_text(basedir, escaped); // the signal handler will write this to conf
+    gtk_editable_set_position(GTK_EDITABLE(basedir), strlen(escaped));
+    g_free(dir);
+    g_free(escaped);
+  }
+  gtk_widget_destroy(filechooser);
+}
+
 static void _set_expander_content(GtkWidget *rbox, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
@@ -1655,7 +1692,21 @@ static void _set_expander_content(GtkWidget *rbox, dt_lib_module_t* self)
   grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   d->from.datetime = dt_gui_preferences_string(grid, "ui_last/import_datetime_override", 0, line++);
-  dt_gui_preferences_string(grid, "session/base_directory_pattern", 0, line++);
+  GtkWidget *basedir = dt_gui_preferences_string(grid, "session/base_directory_pattern", 0, line++);
+
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  g_object_ref(basedir);
+  gtk_container_remove(GTK_CONTAINER(grid), basedir);
+  gtk_box_pack_start(GTK_BOX(hbox), basedir, TRUE, TRUE, 0);
+  g_object_unref(basedir);
+  GtkWidget *browsedir = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
+  gtk_widget_set_name(browsedir, "non-flat");
+  gtk_widget_set_tooltip_text(browsedir, _("select directory"));
+
+  gtk_box_pack_start(GTK_BOX(hbox), browsedir, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(browsedir), "clicked", G_CALLBACK(_browse_basedir_clicked), basedir);
+  gtk_grid_attach_next_to(grid, hbox, gtk_grid_get_child_at(grid, 0, line - 1), GTK_POS_RIGHT, 1, 1);
+
   dt_gui_preferences_string(grid, "session/sub_directory_pattern", 0, line++);
   GtkWidget *usefn = dt_gui_preferences_bool(grid, "session/use_filename", 0, line++, FALSE);
   d->from.fn_line = line;
