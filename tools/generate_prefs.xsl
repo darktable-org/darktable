@@ -284,8 +284,36 @@ gboolean restart_required = FALSE;
 
   <xsl:text>&#xA;static void&#xA;init_tab_processing</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("processing"), _("processing"));&#xA;</xsl:text>
 
-  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='processing']">
+  <xsl:text>
+    {
+      GtkWidget *seclabel = gtk_label_new(_("image processing"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+    }
+  </xsl:text>
+
+  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='processing' and @section='general']">
     <xsl:apply-templates select="." mode="tab_block"/>
+  </xsl:for-each>
+
+  <!-- cpu/gpu/memory -->
+
+  <xsl:text>
+    {
+      GtkWidget *seclabel = gtk_label_new(_("cpu / gpu / memory"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+    }
+  </xsl:text>
+
+  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='processing' and @section='cpugpu']">
+    <xsl:if test="name != 'opencl' or $HAVE_OPENCL=1">
+      <xsl:apply-templates select="." mode="tab_block"/>
+    </xsl:if>
   </xsl:for-each>
   <xsl:value-of select="$tab_end" />
 
@@ -322,17 +350,6 @@ gboolean restart_required = FALSE;
 
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='security' and @section='other']">
     <xsl:apply-templates select="." mode="tab_block"/>
-  </xsl:for-each>
-  <xsl:value-of select="$tab_end" />
-
-  <!-- cpu/gpu/memory -->
-
-  <xsl:text>&#xA;static void&#xA;init_tab_cpugpu</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("cpu / gpu / memory"), _("cpu / gpu / memory"));&#xA;</xsl:text>
-
-  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='cpugpu']">
-    <xsl:if test="name != 'opencl' or $HAVE_OPENCL=1">
-      <xsl:apply-templates select="." mode="tab_block"/>
-    </xsl:if>
   </xsl:for-each>
   <xsl:value-of select="$tab_end" />
 
