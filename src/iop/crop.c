@@ -1200,7 +1200,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(g->aspect_presets), "value-changed", G_CALLBACK(_event_aspect_presets_changed), self);
   gtk_widget_set_tooltip_text(g->aspect_presets, _("set the aspect ratio\n"
-                                                   "the list is sorted: from most square to least square"));
+                                                   "the list is sorted: from most square to least square\n"
+                                                   "to enter custom aspect ratio open the combobox and type ratio in x:y or decimal format"));
   dt_bauhaus_widget_set_quad_paint(g->aspect_presets, dtgtk_cairo_paint_aspectflip, 0, NULL);
   g_signal_connect(G_OBJECT(g->aspect_presets), "quad-pressed", G_CALLBACK(_event_aspect_flip), self);
   gtk_box_pack_start(GTK_BOX(box_enabled), g->aspect_presets, TRUE, TRUE, 0);
@@ -1577,13 +1578,20 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     else if(grab == GRAB_BOTTOM_LEFT)
       dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
     else if(grab == GRAB_NONE)
+    {
+      dt_control_hinter_message(darktable.control, _("<b>commit</b>: double click"));
       dt_control_change_cursor(GDK_LEFT_PTR);
+    }
+    if(grab != GRAB_NONE)
+      dt_control_hinter_message(darktable.control, _("<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"));
     dt_control_queue_redraw_center();
   }
   else
   {
     dt_control_change_cursor(GDK_FLEUR);
     g->cropping = 0;
+    dt_control_hinter_message(darktable.control, _("<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</b>: ctrl+drag\n"
+                                                   "<b>commit</b>: double click"));
     dt_control_queue_redraw_center();
   }
   return 0;
@@ -1672,8 +1680,6 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
   lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0, _("[%s on borders] crop"), self->name());
   lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, GDK_SHIFT_MASK,
                                      _("[%s on borders] crop keeping ratio"), self->name());
-  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_RIGHT_DRAG, 0, _("[%s] define/rotate horizon"),
-                                     self->name());
   return lm;
 }
 
