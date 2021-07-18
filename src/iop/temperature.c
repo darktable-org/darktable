@@ -447,6 +447,16 @@ static void dt_wb_preset_interpolate(const wb_data *const p1, // the smaller tun
   }
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(inp,outp)
+#endif
+static inline void scaled_copy_4wide(float *const outp, const float *const inp, const float *const coeffs)
+{
+  // this needs to be in a separate function to make GCC8 vectorize it at -O2 as well as -O3
+  for_four_channels(c, aligned(inp, coeffs, outp))
+    outp[c] = inp[c] * coeffs[c];
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -456,38 +466,78 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
+  const float *const d_coeffs = d->coeffs;
 
   if(filters == 9u)
   { // xtrans float mosaiced
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(d, in, out, roi_out, xtrans) \
-    schedule(static) \
-    collapse(2)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(d_coeffs, in, out, roi_out, xtrans) \
+    schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
-      for(int i = 0; i < roi_out->width; i++)
+      const float DT_ALIGNED_PIXEL coeffs[3][4] =
+      {
+        { d_coeffs[FCxtrans(j, 0, roi_out, xtrans)], d_coeffs[FCxtrans(j, 1, roi_out, xtrans)],
+          d_coeffs[FCxtrans(j, 2, roi_out, xtrans)], d_coeffs[FCxtrans(j, 3, roi_out, xtrans)] },
+        { d_coeffs[FCxtrans(j, 4, roi_out, xtrans)], d_coeffs[FCxtrans(j, 5, roi_out, xtrans)],
+          d_coeffs[FCxtrans(j, 6, roi_out, xtrans)], d_coeffs[FCxtrans(j, 7, roi_out, xtrans)] },
+        { d_coeffs[FCxtrans(j, 8, roi_out, xtrans)], d_coeffs[FCxtrans(j, 9, roi_out, xtrans)],
+          d_coeffs[FCxtrans(j, 10, roi_out, xtrans)], d_coeffs[FCxtrans(j, 11, roi_out, xtrans)] },
+      };
+      // process sensels four at a time
+      //(note that attempting to ensure alignment for this main loop actually slowed things down marginally)
+      int i = 0;
+      for(int coeff = 0; i + 4 < roi_out->width; i += 4, coeff = (coeff+1)%3)
       {
         const size_t p = (size_t)j * roi_out->width + i;
-        out[p] = in[p] * d->coeffs[FCxtrans(j, i, roi_out, xtrans)];
+        for_four_channels(c) // in and out are NOT aligned when width is not a multiple of 4
+          out[p+c] = in[p+c] * coeffs[coeff][c];
+      }
+      // process the leftover sensels
+      for(; i < roi_out->width; i++)
+      {
+        const size_t p = (size_t)j * roi_out->width + i;
+        out[p] = in[p] * d_coeffs[FCxtrans(j, i, roi_out, xtrans)];
       }
     }
   }
   else if(filters)
   { // bayer float mosaiced
+    const int width = roi_out->width;
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(d, filters, in, out, roi_out) \
-    schedule(static) \
-    collapse(2)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(d_coeffs, filters, in, out, roi_out, width)       \
+    schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
-      for(int i = 0; i < roi_out->width; i++)
+      int i = 0;
+      const int alignment = ((4 - (j * width & (4 - 1))) & (4 - 1));
+      const int offset_j = j + roi_out->y;
+
+      // process the unaligned sensels at the start of the row (when width is not a multiple of 4)
+      for( ; i < alignment; i++)
       {
-        const size_t p = (size_t)j * roi_out->width + i;
-        out[p] = in[p] * d->coeffs[FC(j + roi_out->y, i + roi_out->x, filters)];
+        const size_t p = (size_t)j * width + i;
+        out[p] = in[p] * d_coeffs[FC(offset_j, i + roi_out->x, filters)];
+      }
+      const float DT_ALIGNED_PIXEL coeffs[4] = { d_coeffs[FC(offset_j, i + roi_out->x, filters)],
+                                                 d_coeffs[FC(offset_j, i + roi_out->x + 1,filters)],
+                                                 d_coeffs[FC(offset_j, i + roi_out->x + 2, filters)],
+                                                 d_coeffs[FC(offset_j, i + roi_out->x + 3, filters)] };
+      // process sensels four at a time
+      for(; i < (width & ~3); i += 4)
+      {
+        const size_t p = (size_t)j * width + i;
+        scaled_copy_4wide(out + p,in + p, coeffs);
+      }
+      // process the leftover sensels
+      for(i = width & ~3; i < width; i++)
+      {
+        const size_t p = (size_t)j * width + i;
+        out[p] = in[p] * d_coeffs[FC(j + roi_out->y, i + roi_out->x, filters)];
       }
     }
   }
@@ -510,7 +560,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
 
-    if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+    if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+      dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
 
   piece->pipe->dsc.temperature.enabled = 1;
@@ -526,92 +577,12 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const uint32_t filters = piece->pipe->dsc.filters;
-  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  if(filters == 9u)
-  { // xtrans float mosaiced
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ivoid, ovoid, roi_out, xtrans) \
-    shared(d) \
-    schedule(static)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-      const float *in = ((float *)ivoid) + (size_t)j * roi_out->width;
-      float *out = ((float *)ovoid) + (size_t)j * roi_out->width;
-
-      int i = 0;
-      const int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
-
-      // process unaligned pixels
-      for(; i < alignment && i < roi_out->width; i++, out++, in++)
-        *out = *in * d->coeffs[FCxtrans(j, i, roi_out, xtrans)];
-
-      const __m128 coeffs[3] = {
-        _mm_set_ps(d->coeffs[FCxtrans(j, i + 3, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 2, roi_out, xtrans)],
-                   d->coeffs[FCxtrans(j, i + 1, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 0, roi_out, xtrans)]),
-        _mm_set_ps(d->coeffs[FCxtrans(j, i + 7, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 6, roi_out, xtrans)],
-                   d->coeffs[FCxtrans(j, i + 5, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 4, roi_out, xtrans)]),
-        _mm_set_ps(d->coeffs[FCxtrans(j, i + 11, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 10, roi_out, xtrans)],
-                   d->coeffs[FCxtrans(j, i + 9, roi_out, xtrans)], d->coeffs[FCxtrans(j, i + 8, roi_out, xtrans)])
-      };
-
-      // process aligned pixels with SSE
-      for(int c = 0; c < 3 && i < roi_out->width - (4 - 1); c++, i += 4, in += 4, out += 4)
-      {
-        __m128 v;
-
-        v = _mm_load_ps(in);
-        v = _mm_mul_ps(v, coeffs[c]);
-        _mm_stream_ps(out, v);
-      }
-
-      // process the rest
-      for(; i < roi_out->width; i++, out++, in++) *out = *in * d->coeffs[FCxtrans(j, i, roi_out, xtrans)];
-    }
-    _mm_sfence();
-  }
-  else if(filters)
-  { // bayer float mosaiced
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(filters, ivoid, ovoid, roi_out) \
-    shared(d) \
-    schedule(static)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-      const float *in = ((float *)ivoid) + (size_t)j * roi_out->width;
-      float *out = ((float *)ovoid) + (size_t)j * roi_out->width;
-
-      int i = 0;
-      const int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
-
-      // process unaligned pixels
-      for(; i < alignment && i < roi_out->width; i++, out++, in++)
-        *out = *in * d->coeffs[FC(j + roi_out->y, i + roi_out->x, filters)];
-
-      const __m128 coeffs = _mm_set_ps(d->coeffs[FC(j + roi_out->y, roi_out->x + i + 3, filters)],
-                                       d->coeffs[FC(j + roi_out->y, roi_out->x + i + 2, filters)],
-                                       d->coeffs[FC(j + roi_out->y, roi_out->x + i + 1, filters)],
-                                       d->coeffs[FC(j + roi_out->y, roi_out->x + i, filters)]);
-
-      // process aligned pixels with SSE
-      for(; i < roi_out->width - (4 - 1); i += 4, in += 4, out += 4)
-      {
-        const __m128 input = _mm_load_ps(in);
-
-        const __m128 multiplied = _mm_mul_ps(input, coeffs);
-
-        _mm_stream_ps(out, multiplied);
-      }
-
-      // process the rest
-      for(; i < roi_out->width; i++, out++, in++)
-        *out = *in * d->coeffs[FC(j + roi_out->y, i + roi_out->x, filters)];
-    }
-    _mm_sfence();
+  if(filters)
+  { // xtrans float mosaiced or bayer float mosaiced
+    // plain C version is same speed for Bayer and actually a bit faster for Xtrans, so use it instead
+    process(self,piece,ivoid,ovoid,roi_in,roi_out);
+    return;
   }
   else
   { // non-mosaiced
@@ -638,7 +609,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     }
     _mm_sfence();
 
-    if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+    if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+      dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
 
   piece->pipe->dsc.temperature.enabled = 1;
