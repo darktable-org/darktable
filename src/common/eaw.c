@@ -505,6 +505,24 @@ static inline float dn_weight_sse(const __m128 *c1, const __m128 *c2, const floa
 }
 #endif
 
+typedef struct _aligned_pixel {
+  union {
+    float DT_ALIGNED_PIXEL v[4];
+#ifdef __SSE2__
+    __m128 sse;
+#endif
+  };
+} _aligned_pixel;
+#ifdef _OPENMP
+static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newval)
+{
+  for_four_channels(c) acc.v[c] += newval.v[c];
+  return acc;
+}
+#pragma omp declare reduction(vsum:_aligned_pixel:omp_out=add_float4(omp_out,omp_in)) \
+  initializer(omp_priv = { .v = { 0.0f, 0.0f, 0.0f, 0.0f } })
+#endif
+
 #define SUM_PIXEL_CONTRIBUTION(ii, jj) 		                                                             \
   do                                                                                                         \
   {                                                                                                          \
@@ -550,7 +568,7 @@ static inline float dn_weight_sse(const __m128 *c1, const __m128 *c2, const floa
     pcoarse[c] = sum[c];                                                                                     \
     float det = (px[c] - sum[c]);									     \
     pdetail[c] = det;    		                                              			     \
-    sum_sq[c] += (det*det);					                                             \
+    sum_sq.v[c] += (det*det);					                                             \
   }                                                                       				     \
   px += 4;                                                                                                   \
   pdetail += 4;                                                                                              \
@@ -562,7 +580,7 @@ static inline float dn_weight_sse(const __m128 *c1, const __m128 *c2, const floa
   _mm_stream_ps(pcoarse, sum);                                                                               \
   sum = *px - sum;											     \
   _mm_stream_ps(pdetail, sum);                                                                               \
-  sum_sq = sum_sq + sum*sum;					                                             \
+  sum_sq.sse = sum_sq.sse + sum*sum;				                                             \
   px++;                                                                                                      \
   pdetail += 4;                                                                                              \
   pcoarse += 4;
@@ -575,12 +593,13 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
   const int mult = 1u << scale;
   static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
   const int boundary = 2 * mult;
-  size_t scratch_size;
-  float *squared_sums = dt_calloc_perthread_float(3, &scratch_size);
+
+  _aligned_pixel sum_sq = { .v = { 0.0f } };
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, boundary, out, width, squared_sums, scratch_size) \
+  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, boundary, out, width) \
+  reduction(vsum: sum_sq) \
   schedule(static)
 #endif
   for(int rowid = 0; rowid < height; rowid++)
@@ -590,7 +609,6 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
     const float *px2;
     float *pdetail = detail + (size_t)4 * j * width;
     float *pcoarse = out + (size_t)4 * j * width;
-    float DT_ALIGNED_PIXEL sum_sq[4] = { 0 };
 
     // for the first and last 'boundary' rows, we have to perform boundary tests for the entire row;
     //   for the central bulk, we only need to use those slower versions on the leftmost and rightmost pixels
@@ -652,22 +670,9 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
       }
       SUM_PIXEL_EPILOGUE;
     }
-    float *const sq = dt_get_perthread(squared_sums, scratch_size);
-    for(i = 0; i < 3; i++)
-      sq[i] += sum_sq[i];
   }
-  // reduce the per-thread sums to a single value
-  size_t nthreads = dt_get_num_threads();
-  for(int c = 0; c < 3; c++)
-  {
-    sum_squared[c] = 0.0f;
-    for(size_t i = 0; i < nthreads; i++)
-    {
-      float *const sq = dt_get_bythread(squared_sums,scratch_size,i);
-      sum_squared[c] += sq[c];
-    }
-  }
-  dt_free_align(squared_sums);
+  for_each_channel(c)
+    sum_squared[c] = sum_sq.v[c];
 }
 
 #undef SUM_PIXEL_CONTRIBUTION
@@ -683,15 +688,13 @@ void eaw_dn_decompose_sse(float *const restrict out, const float *const restrict
   const int mult = 1u << scale;
   static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
   const int boundary = 2 * mult;
-  const size_t nthreads = dt_get_num_threads();
-  __m128 *squared_sums = dt_alloc_align(64, sizeof(__m128) * nthreads);
-  for(int i = 0; i < nthreads; i++)
-    squared_sums[i] = _mm_setzero_ps();
+
+  _aligned_pixel sum_sq = { .v = { 0.0f } };
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, boundary, out, width) \
-  shared(squared_sums) \
+  reduction(vsum: sum_sq) \
   schedule(static)
 #endif
   for(int rowid = 0; rowid < height; rowid++)
@@ -701,7 +704,6 @@ void eaw_dn_decompose_sse(float *const restrict out, const float *const restrict
     const __m128 *px2;
     float *pdetail = detail + (size_t)4 * j * width;
     float *pcoarse = out + (size_t)4 * j * width;
-    __m128 sum_sq = _mm_setzero_ps();
 
     // for the first and last 'boundary' rows, we have to use the macros with tests for the entire row;
     //   for the central bulk, we only need to use those slower versions on the leftmost and rightmost pixels
@@ -763,14 +765,8 @@ void eaw_dn_decompose_sse(float *const restrict out, const float *const restrict
       }
       SUM_PIXEL_EPILOGUE_SSE;
     }
-    squared_sums[dt_get_thread_num()] += sum_sq;
   }
-  // reduce the per-thread sums to a single value
-  __m128 sum = _mm_setzero_ps();
-  for(int i = 0; i < nthreads; i++)
-    sum += squared_sums[i];
-  dt_free_align(squared_sums);
-  _mm_store_ps(sum_squared, sum);
+  _mm_store_ps(sum_squared, sum_sq.sse);
   _mm_sfence();
 }
 
