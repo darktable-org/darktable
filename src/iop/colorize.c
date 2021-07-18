@@ -360,6 +360,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hue, _("select the hue tone"));
 
   g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
+  dt_bauhaus_slider_set_factor(g->saturation, 100.0f);
+  dt_bauhaus_slider_set_format(g->saturation, "%.0f%%");
   dt_bauhaus_slider_set_stop(g->saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(g->saturation, 1.0f, 1.0f, 1.0f, 1.0f);
   gtk_widget_set_tooltip_text(g->saturation, _("select the saturation shadow tone"));
