@@ -709,7 +709,7 @@
   <dtconfig>
     <name>ui_last/shortcuts_dialog_height</name>
     <type>int</type>
-    <default>750</default>
+    <default>700</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -723,7 +723,7 @@
   <dtconfig>
     <name>ui_last/preferences_dialog_height</name>
     <type>int</type>
-    <default>750</default>
+    <default>700</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
