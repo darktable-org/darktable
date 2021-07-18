@@ -28,7 +28,7 @@
 
 static inline void weight(const float *c1, const float *c2, const float sharpen, float *weight)
 {
-  float square[3];
+  float DT_ALIGNED_PIXEL square[4];
   for(int c = 0; c < 3; c++) square[c] = c1[c] - c2[c];
   for(int c = 0; c < 3; c++) square[c] = square[c] * square[c];
 
@@ -68,11 +68,11 @@ static inline __m128 weight_sse2(const __m128 *c1, const __m128 *c2, const float
 #define SUM_PIXEL_CONTRIBUTION_COMMON(ii, jj)                                                                \
   {                                                                                                          \
     const float f = filter[(ii)] * filter[(jj)];                                                             \
-    float wp[4] = { 0.0f, 0.0f, 0.0f, 0.0f };                                                                \
+    float DT_ALIGNED_PIXEL wp[4] = { 0.0f, 0.0f, 0.0f, 0.0f };                                               \
     weight(px, px2, sharpen, wp);                                                                            \
-    float w[4] = { 0.0f, 0.0f, 0.0f, 0.0f };                                                                 \
+    float DT_ALIGNED_PIXEL w[4] = { 0.0f, 0.0f, 0.0f, 0.0f };                                                \
     for(int c = 0; c < 4; c++) w[c] = f * wp[c];                                                             \
-    float pd[4] = { 0.0f, 0.0f, 0.0f, 0.0f };                                                                \
+    float DT_ALIGNED_PIXEL pd[4] = { 0.0f, 0.0f, 0.0f, 0.0f };                                               \
     for(int c = 0; c < 4; c++) pd[c] = w[c] * px2[c];                                                        \
     for(int c = 0; c < 4; c++) sum[c] += pd[c];                                                              \
     for(int c = 0; c < 4; c++) wgt[c] += w[c];                                                               \
@@ -143,8 +143,8 @@ static inline __m128 weight_sse2(const __m128 *c1, const __m128 *c2, const float
 #endif
 
 #define SUM_PIXEL_PROLOGUE                                                                                   \
-  float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };                                                                 \
-  float wgt[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+  float DT_ALIGNED_PIXEL sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };                                                \
+  float DT_ALIGNED_PIXEL wgt[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 #if defined(__SSE2__)
 #define SUM_PIXEL_PROLOGUE_SSE                                                                               \
@@ -478,9 +478,9 @@ void eaw_synthesize_sse2(float *const out, const float *const in, const float *c
 static inline float dn_weight(const float *c1, const float *c2, const float inv_sigma2)
 {
   // 3d distance based on color
-  float sqr[3];
-  for(int c = 0; c < 3; c++)
-  {
+  float DT_ALIGNED_PIXEL sqr[4];
+  for(int c = 0; c < 3; c++) // don't use for_each_channel here, that substantially hurts performance by preventing
+  {                          // other vectorization
     float diff = c1[c] - c2[c];
     sqr[c] = diff * diff;
   }
@@ -505,30 +505,25 @@ static inline float dn_weight_sse(const __m128 *c1, const __m128 *c2, const floa
 }
 #endif
 
-#ifdef __SSE2__
-# define PREFETCH(p) _mm_prefetch(p,_MM_HINT_NTA);
-#else
-# define PREFETCH(p)
-#endif /* __SSE2__ */
-
 #define SUM_PIXEL_CONTRIBUTION(ii, jj) 		                                                             \
   do                                                                                                         \
   {                                                                                                          \
-    PREFETCH(px2+8);                                                                                         \
     const float f = filter[(ii)] * filter[(jj)];                                                             \
     const float wp = dn_weight(px, px2, inv_sigma2);                                                         \
     const float w = f * wp;                                                                                  \
-    float pd[4];                                                                                             \
-    for(int c = 0; c < 4; c++) pd[c] = w * px2[c];                                                           \
-    for(int c = 0; c < 4; c++) sum[c] += pd[c];                                                              \
-    for(int c = 0; c < 4; c++) wgt[c] += w;                                                                  \
+    float DT_ALIGNED_PIXEL pd[4];                                                                            \
+    for_each_channel(c,aligned(px2))                                                                         \
+    {                                                                                                        \
+      pd[c] = w * px2[c];                                                                                    \
+      wgt[c] += w;                                                                                           \
+      sum[c] += pd[c];                                                                                       \
+    }                                                                                                        \
   } while(0)
 
 #if defined(__SSE__)
 #define SUM_PIXEL_CONTRIBUTION_SSE(ii, jj)	                                                             \
   do                                                                                                         \
   {                                                                                                          \
-    PREFETCH(px2+2);                                                                                         \
     const float f = filter[(ii)] * filter[(jj)];	                                                     \
     const float wp = dn_weight_sse(px, px2, inv_sigma2);                                                     \
     const __m128 w = _mm_set1_ps(f * wp);                                                                    \
@@ -539,8 +534,8 @@ static inline float dn_weight_sse(const __m128 *c1, const __m128 *c2, const floa
 #endif
 
 #define SUM_PIXEL_PROLOGUE                                                                                   \
-  float sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };                                                                 \
-  float wgt[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+  float DT_ALIGNED_PIXEL sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };                                                \
+  float DT_ALIGNED_PIXEL wgt[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 #if defined(__SSE__)
 #define SUM_PIXEL_PROLOGUE_SSE                                                                               \
@@ -549,7 +544,7 @@ static inline float dn_weight_sse(const __m128 *c1, const __m128 *c2, const floa
 #endif
 
 #define SUM_PIXEL_EPILOGUE                                                                                   \
-  for(int c = 0; c < 4; c++)										     \
+  for_each_channel(c)      										     \
   {													     \
     sum[c] /= wgt[c];                                                   				     \
     pcoarse[c] = sum[c];                                                                                     \
@@ -595,7 +590,7 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
     const float *px2;
     float *pdetail = detail + (size_t)4 * j * width;
     float *pcoarse = out + (size_t)4 * j * width;
-    float sum_sq[4] = { 0 };
+    float DT_ALIGNED_PIXEL sum_sq[4] = { 0 };
 
     // for the first and last 'boundary' rows, we have to perform boundary tests for the entire row;
     //   for the central bulk, we only need to use those slower versions on the leftmost and rightmost pixels
