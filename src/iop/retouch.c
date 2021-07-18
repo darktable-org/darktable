@@ -3136,55 +3136,10 @@ static void rt_copy_mask_to_alpha(float *const img, dt_iop_roi_t *const roi_img,
   }
 }
 
-#if defined(__SSE__)
-static void retouch_fill_sse(float *const in, dt_iop_roi_t *const roi_in, float *const mask_scaled,
-                             dt_iop_roi_t *const roi_mask_scaled, const float opacity,
-                             const float *const fill_color)
-{
-  const int ch = 4;
-
-  const float valf4_fill[4] = { fill_color[0], fill_color[1], fill_color[2], 0.f };
-  const __m128 val_fill = _mm_load_ps(valf4_fill);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, in, mask_scaled, opacity, roi_in, roi_mask_scaled, val_fill) \
-  schedule(static)
-#endif
-  for(int yy = 0; yy < roi_mask_scaled->height; yy++)
-  {
-    const int mask_index = yy * roi_mask_scaled->width;
-    const int dest_index
-        = (((yy + roi_mask_scaled->y - roi_in->y) * roi_in->width) + (roi_mask_scaled->x - roi_in->x)) * ch;
-
-    float *d = in + dest_index;
-    const float *m = mask_scaled + mask_index;
-
-    for(int xx = 0; xx < roi_mask_scaled->width; xx++, d += ch, m++)
-    {
-      const float f = (*m) * opacity;
-
-      const __m128 val1_f = _mm_set1_ps(1.0f - f);
-      const __m128 valf = _mm_set1_ps(f);
-
-      _mm_store_ps(d, _mm_add_ps(_mm_mul_ps(_mm_load_ps(d), val1_f), _mm_mul_ps(val_fill, valf)));
-    }
-  }
-}
-#endif
-
 static void retouch_fill(float *const in, dt_iop_roi_t *const roi_in, float *const mask_scaled,
                          dt_iop_roi_t *const roi_mask_scaled, const float opacity, const float *const fill_color,
                          const int use_sse)
 {
-#if defined(__SSE__)
-  if(use_sse)
-  {
-    retouch_fill_sse(in, roi_in, mask_scaled, roi_mask_scaled, opacity, fill_color);
-    return;
-  }
-#endif
-
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(fill_color, in, mask_scaled, opacity, roi_in, roi_mask_scaled) \
