@@ -3118,7 +3118,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
     bd->contrast_slider = dt_bauhaus_slider_new_with_range(module, -1.0, 1.0, 0.01, 0.0, 2);
     dt_bauhaus_widget_set_label(bd->contrast_slider, N_("blend"), N_("mask contrast"));
-    dt_bauhaus_slider_set_format(bd->contrast_slider, "%.2f");
+    dt_bauhaus_slider_set_factor(bd->contrast_slider, 100.0f);
+    dt_bauhaus_slider_set_format(bd->contrast_slider, "%+.0f%%");
     gtk_widget_set_tooltip_text(bd->contrast_slider, _("gives the tone curve of the blend mask an s-like shape to "
                                                        "adjust its contrast"));
     g_signal_connect(G_OBJECT(bd->contrast_slider), "value-changed",
