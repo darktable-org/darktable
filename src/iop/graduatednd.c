@@ -1115,6 +1115,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, dt_bauhaus_slider_from_params(self, "hue"));
   dt_bauhaus_slider_set_feedback(g->hue, 0);
+  dt_bauhaus_slider_set_factor(g->hue, 360.0f);
+  dt_bauhaus_slider_set_format(g->hue, "%.2f°");
   dt_bauhaus_slider_set_stop(g->hue, 0.0f, 1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.166f, 1.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.322f, 0.0f, 1.0f, 0.0f);
