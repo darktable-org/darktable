@@ -344,10 +344,10 @@ jobs:
           - btype: Debug
             compiler: { compiler: GNU,  CC: gcc,   CXX: g++ }
             target: skiptest
-            generator: Ninja
+            generator: MSYS Makefiles
         generator:
           - MSYS Makefiles
-          - Ninja
+          #- Ninja # do enable if confirmed that ninja is innocent in libxcf case
     defaults:
       run:
         shell: msys2 {0}
@@ -477,7 +477,8 @@ jobs:
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-      GENERATOR: Ninja
+      #GENERATOR: Ninja
+      GENERATOR: Unix Makefiles
       TARGET: ${{ matrix.target }}
     steps:
       - uses: actions/checkout@v2
