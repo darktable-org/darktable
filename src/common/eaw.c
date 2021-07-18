@@ -211,10 +211,6 @@ void eaw_decompose(float *const restrict out, const float *const restrict in, fl
   }
 }
 
-#undef SUM_PIXEL_PROLOGUE
-#undef SUM_PIXEL_EPILOGUE
-
-
 #if defined(__SSE2__)
 void eaw_decompose_sse2(float *const restrict out, const float *const restrict in, float *const restrict detail,
                         const int scale, const float sharpen, const int32_t width, const int32_t height)
@@ -299,9 +295,6 @@ void eaw_decompose_sse2(float *const restrict out, const float *const restrict i
   }
   _mm_sfence();
 }
-
-#undef SUM_PIXEL_PROLOGUE_SSE
-#undef SUM_PIXEL_EPILOGUE_SSE
 #endif
 
 void eaw_synthesize(float *const out, const float *const in, const float *const restrict detail,
@@ -440,16 +433,7 @@ static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newva
   } while(0)
 #endif
 
-#define SUM_PIXEL_PROLOGUE                                                                                   \
-  float DT_ALIGNED_PIXEL sum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };                                                \
-  float DT_ALIGNED_PIXEL wgt[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-#if defined(__SSE__)
-#define SUM_PIXEL_PROLOGUE_SSE                                                                               \
-  __m128 sum = _mm_setzero_ps();                                                                             \
-  __m128 wgt = _mm_setzero_ps();
-#endif
-
+#undef SUM_PIXEL_EPILOGUE
 #define SUM_PIXEL_EPILOGUE                                                                                   \
   for_each_channel(c)      										     \
   {													     \
@@ -464,6 +448,7 @@ static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newva
   pcoarse += 4;
 
 #if defined(__SSE__)
+#undef SUM_PIXEL_EPILOGUE_SSE
 #define SUM_PIXEL_EPILOGUE_SSE                                                                               \
   sum = sum / wgt;		                                                                             \
   _mm_stream_ps(pcoarse, sum);                                                                               \
