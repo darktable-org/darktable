@@ -344,10 +344,10 @@ jobs:
           - btype: Debug
             compiler: { compiler: GNU,  CC: gcc,   CXX: g++ }
             target: skiptest
-            generator: Ninja
+            generator: MSYS Makefiles
         generator:
           - MSYS Makefiles
-          - Ninja
+          #- Ninja # do enable if confirmed that ninja is innocent in libxcf case
     defaults:
       run:
         shell: msys2 {0}
@@ -477,7 +477,8 @@ jobs:
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-      GENERATOR: Ninja
+      #GENERATOR: Ninja
+      GENERATOR: Unix Makefiles
       TARGET: ${{ matrix.target }}
     steps:
       - uses: actions/checkout@v2
@@ -490,8 +491,8 @@ jobs:
           brew unlink python@3.8
           brew unlink gcc@9
           sudo rm '/usr/local/bin/2to3'
-          brew link --overwrite python@3.9 # workaround introduced 30.12.2021, replace asap.
-          brew upgrade --ignore-pinned
+          brew link --overwrite python@3.9 # workaround introduced 30.12.2020, replace asap.
+          # brew upgrade --ignore-pinned # workaround introduced 18.07.2021, replace asap
           brew tap Homebrew/bundle
           cd src/.ci 
           brew bundle --verbose
