@@ -200,7 +200,6 @@ static void dt_heal_laplace_loop(float *pixels, const int width, const int heigh
 
     if(err < err_exit) break;
   }
-  fprintf(stderr,"lapl_iters: %g ms\n",1000.0*(dt_get_wtime()-start));
 
 cleanup:
   if(Adiag) dt_free_align(Adiag);
