@@ -3481,6 +3481,11 @@ void reload_defaults(dt_iop_module_t *module)
     dt_bauhaus_slider_set_default(g->temperature, d->temperature);
     dt_bauhaus_combobox_set_default(g->illuminant, d->illuminant);
     dt_bauhaus_combobox_set_default(g->adaptation, d->adaptation);
+    if(g->delta_E_label_text) 
+    {
+      g_free(g->delta_E_label_text);
+      g->delta_E_label_text = NULL;
+    }
 
     if(dt_image_is_matrix_correction_supported(img))
     {
