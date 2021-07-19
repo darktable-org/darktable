@@ -37,6 +37,14 @@ typedef enum dt_imageio_retval_t
   DT_IMAGEIO_CACHE_FULL      // dt's caches are full :(
 } dt_imageio_retval_t;
 
+typedef enum dt_imageio_write_xmp_t
+{
+  DT_WRITE_XMP_NEVER = 0,
+  DT_WRITE_XMP_VERY_LAZY = 1,
+  DT_WRITE_XMP_LAZY = 2,
+  DT_WRITE_XMP_ALWAYS = 3
+} dt_imageio_write_xmp_t;
+
 typedef enum
 {
   // the first 0x7 in flags are reserved for star ratings.
@@ -290,6 +298,8 @@ void dt_image_path_append_version_no_db(int version, char *pathname, size_t path
 void dt_image_path_append_version(const int32_t imgid, char *pathname, size_t pathname_len);
 /** prints a one-line exif information string. */
 void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len);
+/** get the mode xmp sidecars are written */
+dt_imageio_write_xmp_t dt_image_get_xmp_mode();
 /* set rating to img flags */
 void dt_image_set_xmp_rating(dt_image_t *img, const int rating);
 /* get rating from img flags */
