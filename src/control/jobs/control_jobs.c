@@ -2170,6 +2170,7 @@ static GList *_apply_lua_filter(GList *images)
 {
   /* pre-sort image list for easier handling in Lua code */
   images = g_list_sort(images, (GCompareFunc)_film_filename_cmp);
+  int image_count = 1;
 
   dt_lua_lock();
   lua_State *L = darktable.lua_state.state;
@@ -2178,7 +2179,8 @@ static GList *_apply_lua_filter(GList *images)
     for(GList *elt = images; elt; elt = g_list_next(elt))
     {
       lua_pushstring(L, elt->data);
-      luaL_ref(L, -2);
+      lua_seti(L, -2, image_count);
+      image_count++;
     }
   }
   lua_pushvalue(L, -1);
@@ -2187,10 +2189,10 @@ static GList *_apply_lua_filter(GList *images)
     g_list_free_full(images, g_free);
     // recreate list of images
     images = NULL;
-    lua_pushnil(L); /* first key */
-    while(lua_next(L, -2) != 0)
+   for(int i = 1; i < image_count; i++)
     {
       /* uses 'key' (at index -2) and 'value' (at index -1) */
+      lua_geti(L, -1, i);
       void *filename = strdup(luaL_checkstring(L, -1));
       lua_pop(L, 1);
       images = g_list_prepend(images, filename);
