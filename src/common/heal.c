@@ -184,14 +184,13 @@ static void dt_heal_laplace_loop(float *pixels, const int width, const int heigh
    * round brushes, at least. I don't know whether aspect ratio
    * affects it.)
    */
-  float w = ((2.0f - 1.0f / (0.1575f * sqrtf(nmask) + 0.8f)) * .25f);
+  const float w = ((2.0f - 1.0f / (0.1575f * sqrtf(nmask) + 0.8f)) * .25f);
 
   const int max_iter = 1000;
   const float epsilon = (0.1 / 255);
   const float err_exit = epsilon * epsilon * w * w;
 
   /* Gauss-Seidel with successive over-relaxation */
-  double start = dt_get_wtime();
   for(int iter = 0; iter < max_iter; iter++)
   {
     // process red/black cells separate
