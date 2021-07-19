@@ -243,6 +243,12 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     foreach(MO ${IsoCodes_MO_FILES})
       string(REPLACE "iso_639.mo" "" MO_TARGET_DIR "${MO}")
       install(FILES "${IsoCodes_LOCALEDIR}/${MO}" DESTINATION "share/locale/${MO_TARGET_DIR}" COMPONENT DTApplication)
+      file(GLOB mofiles "${IsoCodes_LOCALEDIR}/${MO_TARGET_DIR}/*")
+      foreach(sysfile ${mofiles})
+        install(FILES ${sysfile}
+                DESTINATION ${CMAKE_INSTALL_LOCALEDIR}/${language}/LC_MESSAGES
+                COMPONENT DTApplication)
+      endforeach(sysfile)
     endforeach()
   endif(IsoCodes_FOUND)
 
