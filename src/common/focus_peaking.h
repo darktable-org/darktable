@@ -39,7 +39,7 @@ static inline uint8_t float_to_uint8(const float i)
 
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(image:64) uniform(image)
+#pragma omp declare simd aligned(image, index:64) uniform(image)
 #endif
 static inline float laplacian(const float *const image, const size_t index[8])
 {
@@ -109,9 +109,9 @@ static inline void dt_focuspeaking(cairo_t *cr, int width, int height,
   // Compute the gradients magnitudes
   float *const restrict luma_ds =  dt_alloc_align_float((size_t)buf_width * buf_height);
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
 dt_omp_firstprivate(luma, luma_ds, buf_height, buf_width) \
-schedule(static) collapse(2) aligned(luma_ds, luma:64)
+schedule(static) collapse(2)
 #endif
   for(size_t i = 0; i < buf_height; ++i)
     for(size_t j = 0; j < buf_width; ++j)
@@ -122,10 +122,10 @@ schedule(static) collapse(2) aligned(luma_ds, luma:64)
         luma_ds[index] = 0.0f;
       else
       {
-        size_t index_close[8];
+        size_t DT_ALIGNED_ARRAY index_close[8];
         get_indices(i, j, buf_width, buf_height, 1, index_close);
 
-        size_t index_far[8];
+        size_t DT_ALIGNED_ARRAY index_far[8];
         get_indices(i, j, buf_width, buf_height, 2, index_far);
 
         // Computing the gradient on the closest neighbours gives us the rate of variation, but doesn't say if we are
