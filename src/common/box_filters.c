@@ -1272,14 +1272,22 @@ void dt_box_mean_vertical(float *const buf, const size_t height, const size_t wi
     dt_unreachable_codepath();
 }
 
+static inline float window_max(const float *x, int n)
+{
+  float m = -(FLT_MAX);
+#ifdef _OPENMP
+#pragma omp simd reduction(max : m)
+#endif
+  for(int j = 0; j < n; j++)
+    m = MAX(m, x[j]);
+  return m;
+}
 
 // calculate the one-dimensional moving maximum over a window of size 2*w+1
 // input array x has stride 1, output array y has stride stride_y
 static inline void box_max_1d(int N, const float *const restrict x, float *const restrict y, size_t stride_y, int w)
 {
-  float m = -(FLT_MAX);
-  for(int i = 0; i < MIN(w + 1, N); i++)
-    m = MAX(x[i], m);
+  float m = window_max(x, MIN(w + 1, N));
   for(int i = 0; i < N; i++)
   {
     // store maximum of current window at center position
@@ -1288,12 +1296,8 @@ static inline void box_max_1d(int N, const float *const restrict x, float *const
     // rescan the window to determine the new maximum
     if(i - w >= 0 && x[i - w] == m)
     {
-      m = -(FLT_MAX);
-#ifdef _OPENMP
-#pragma omp simd aligned(x) reduction(max : m)
-#endif
-      for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
-        m = MAX(x[j], m);
+      const int start = i - w + 1;
+      m = window_max(x + start, MIN(i + w + 2, N) - start);
     }
     // if the window has not yet exceeded the end of the row/column, update the maximum value
     if(i + w + 1 < N)
@@ -1426,24 +1430,29 @@ void dt_box_max(float *const buf, const size_t height, const size_t width, const
     dt_unreachable_codepath();
 }
 
+static inline float window_min(const float *x, int n)
+{
+  float m = FLT_MAX;
+#ifdef _OPENMP
+#pragma omp simd reduction(min : m)
+#endif
+  for(int j = 0; j < n; j++)
+    m = MIN(m, x[j]);
+  return m;
+}
+
 // calculate the one-dimensional moving minimum over a window of size 2*w+1
 // input array x has stride 1, output array y has stride stride_y
 static inline void box_min_1d(int N, const float *x, float *y, size_t stride_y, int w)
 {
-  float m = FLT_MAX;
-  for(int i = 0; i < MIN(w + 1, N); i++)
-    m = MIN(x[i], m);
+  float m = window_min(x, MIN(w + 1, N));
   for(int i = 0; i < N; i++)
   {
     y[i * stride_y] = m;
     if(i - w >= 0 && x[i - w] == m)
     {
-      m = FLT_MAX;
-#ifdef _OPENMP
-#pragma omp simd aligned(x) reduction(min : m)
-#endif
-      for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
-        m = MIN(x[j], m);
+      const int start = (i - w + 1);
+      m = window_min(x + start, MIN((i + w + 2), N) - start);
     }
     // if the window has not yet exceeded the end of the row/column, update the minimum value
     if(i + w + 1 < N)
