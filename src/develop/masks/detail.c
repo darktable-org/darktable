@@ -114,6 +114,9 @@ void dt_masks_extend_border(float *mask, const int width, const int height, cons
   }
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(src, out : 64)
+#endif
 void dt_masks_blur_9x9(float *const restrict src, float *const restrict out, const int width, const int height, const float sigma)
 {
   // For a blurring sigma of 2.0f a 13x13 kernel would be optimally required but the 9x9 is by far good enough here
@@ -151,10 +154,10 @@ void dt_masks_blur_9x9(float *const restrict src, float *const restrict out, con
   const int w3 = 3*width;
   const int w4 = 4*width;
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   dt_omp_firstprivate(src, out) \
   dt_omp_sharedconst(c42, c41, c40, c33, c32, c31, c30, c22, c21, c20, c11, c10, c00, w1, w2, w3, w4, width, height) \
-  schedule(simd:static) aligned(src, out : 64)
+  schedule(simd:static)
  #endif
   for(int row = 4; row < height - 4; row++)
   {
