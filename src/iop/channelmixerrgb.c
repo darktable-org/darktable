@@ -640,7 +640,9 @@ static inline void luma_chroma(const float input[4], const float saturation[4], 
   }
 }
 
-
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in, out, XYZ_to_RGB, RGB_to_XYZ, MIX : 64) aligned(illuminant, saturation, lightness, grey:16)
+#endif
 static inline void loop_switch(const float *const restrict in, float *const restrict out,
                                const size_t width, const size_t height, const size_t ch,
                                const float XYZ_to_RGB[3][4], const float RGB_to_XYZ[3][4], const float MIX[3][4],
@@ -650,9 +652,8 @@ static inline void loop_switch(const float *const restrict in, float *const rest
                                const dt_iop_channelmixer_rgb_version_t version)
 {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(width, height, ch, in, out, XYZ_to_RGB, RGB_to_XYZ, MIX, illuminant, saturation, lightness, grey, p, gamut, clip, apply_grey, kind, version) \
-  aligned(in, out, XYZ_to_RGB, RGB_to_XYZ, MIX:64) aligned(illuminant, saturation, lightness, grey:16)\
   schedule(simd:static)
 #endif
   for(size_t k = 0; k < height * width * 4; k += 4)
