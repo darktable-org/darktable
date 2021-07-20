@@ -55,8 +55,8 @@ static const __m128 o111 DT_ALIGNED_ARRAY = { ~0, ~0, ~0, 0 };
 static inline __m128 weight_sse2(const __m128 *c1, const __m128 *c2, const float sharpen)
 {
   const __m128 diff = *c1 - *c2;
-  __m128 square = diff * diff;                                      // (?, d3, d2, d1)
-  __m128 square2 = _mm_shuffle_ps(square, square, _MM_SHUFFLE(3, 1, 2, 0)); // (?, d2, d3, d1)
+  const __m128 square = diff * diff;                                // (?, d3, d2, d1)
+  const __m128 square2 = _mm_shuffle_ps(square, square, _MM_SHUFFLE(3, 1, 2, 0)); // (?, d2, d3, d1)
   __m128 added = square + square2;                                  // (?, d2+d3, d2+d3, 2*d1)
   added = _mm_sub_ss(added, square);                                // (?, d2+d3, d2+d3, d1)
   __m128 sharpened = added * _mm_set1_ps(-sharpen);                 // (?, -s*(d2+d3), -s*(d2+d3), -s*d1)
@@ -110,7 +110,7 @@ static inline __m128 weight_sse2(const __m128 *c1, const __m128 *c2, const float
   {													     \
     sum[c] /= wgt[c];                                                   				     \
     pcoarse[c] = sum[c];                                                                                     \
-    float det = (px[c] - sum[c]);									     \
+    const float det = (px[c] - sum[c]);									     \
     pdetail[c] = det;    		                                              			     \
   }                                                                       				     \
   px += 4;                                                                                                   \
@@ -361,7 +361,7 @@ static inline float dn_weight(const float *c1, const float *c2, const float inv_
   float DT_ALIGNED_PIXEL sqr[4];
   for(int c = 0; c < 3; c++) // don't use for_each_channel here, that substantially hurts performance by preventing
   {                          // other vectorization
-    float diff = c1[c] - c2[c];
+    const float diff = c1[c] - c2[c];
     sqr[c] = diff * diff;
   }
   const float dot = (sqr[0] + sqr[1] + sqr[2]) * inv_sigma2;
@@ -375,8 +375,8 @@ static inline float dn_weight(const float *c1, const float *c2, const float inv_
 static inline float dn_weight_sse(const __m128 *c1, const __m128 *c2, const float inv_sigma2)
 {
   // 3d distance based on color
-  __m128 diff = _mm_sub_ps(*c1, *c2);
-  __m128 sqr = _mm_mul_ps(diff, diff);
+  const __m128 diff = _mm_sub_ps(*c1, *c2);
+  const __m128 sqr = _mm_mul_ps(diff, diff);
   const float dot = (sqr[0] + sqr[1] + sqr[2]) * inv_sigma2;
   const float var
       = 0.02f; // FIXME: this should ideally depend on the image before noise stabilizing transforms!
@@ -439,7 +439,7 @@ static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newva
   {													     \
     sum[c] /= wgt[c];                                                   				     \
     pcoarse[c] = sum[c];                                                                                     \
-    float det = (px[c] - sum[c]);									     \
+    const float det = (px[c] - sum[c]);									     \
     pdetail[c] = det;    		                                              			     \
     sum_sq.v[c] += (det*det);					                                             \
   }                                                                       				     \
@@ -648,4 +648,3 @@ void eaw_dn_decompose_sse(float *const restrict out, const float *const restrict
 #undef SUM_PIXEL_PROLOGUE_SSE
 #undef SUM_PIXEL_EPILOGUE_SSE
 #endif
-
