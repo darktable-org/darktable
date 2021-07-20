@@ -2692,7 +2692,10 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
   switch(event->type)
   {
   case GDK_KEY_PRESS:
-    if(event->key.is_modifier || event->key.keyval == GDK_KEY_ISO_Level3_Shift) return FALSE;
+    if(event->key.is_modifier || 
+       event->key.keyval == GDK_KEY_VoidSymbol || 
+       event->key.keyval == GDK_KEY_Meta_L || event->key.keyval == GDK_KEY_Meta_R || 
+       event->key.keyval == GDK_KEY_ISO_Level3_Shift) return FALSE;
 
     _sc.mods = event->key.state;
 
