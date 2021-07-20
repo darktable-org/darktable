@@ -3441,6 +3441,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
 
       if(darktable.lib->proxy.colorpicker.primary_sample && darktable.lib->proxy.colorpicker.primary_sample->size)
       {
+        // FIXME: the sample box is drawn with drag handles, but these aren't sensitive to the mouse -- make them sensitive? or don't draw them?
         printf("darkroom: button pressed in colorpicker with primary sample with nonzero size\n");
         gboolean on_corner_prev_box = TRUE;
         float opposite_x, opposite_y;
