@@ -762,6 +762,11 @@ static inline void loop_switch(const float *const restrict in, float *const rest
         for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; ++c) temp_one[c] = temp_two[c];
         break;
       }
+      default:
+      {
+        for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; ++c) temp_one[c] = temp_two[c];
+        break;
+      }
     }
 
     /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
