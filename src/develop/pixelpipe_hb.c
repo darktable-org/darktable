@@ -890,7 +890,8 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   }
 }
 
-static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_roi_t *roi_in)
+static void _pixelpipe_pick_samples(const float *const input, const dt_iop_roi_t *roi_in,
+                                    gboolean primary_picker_active)
 {
   cmsHPROFILE display_profile = NULL;
   cmsHPROFILE histogram_profile = NULL;
@@ -935,71 +936,18 @@ static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
-  dt_colorpicker_sample_t *sample = NULL;
-
-  for(GSList *samples = darktable.lib->proxy.colorpicker.live_samples; samples; samples = g_slist_next(samples))
+  GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
+  while(samples)
   {
-    sample = samples->data;
-
-    if(sample->locked)
-    {
-      continue;
-    }
-
-    _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab, xform_rgb2rgb, sample);
+    dt_colorpicker_sample_t *sample = samples->data;
+    if(!sample->locked)
+      _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab, xform_rgb2rgb, sample);
+    samples = g_slist_next(samples);
   }
 
-  if(xform_rgb2lab) cmsDeleteTransform(xform_rgb2lab);
-  if(xform_rgb2rgb) cmsDeleteTransform(xform_rgb2rgb);
-}
-
-static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *const input, const dt_iop_roi_t *roi_in)
-{
-  cmsHPROFILE display_profile = NULL;
-  cmsHPROFILE histogram_profile = NULL;
-  cmsHPROFILE lab_profile = NULL;
-  cmsHTRANSFORM xform_rgb2lab = NULL;
-  cmsHTRANSFORM xform_rgb2rgb = NULL;
-  dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
-  const gchar *histogram_filename = NULL;
-  const gchar _histogram_filename[1] = { 0 };
-
-  dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
-  if(histogram_filename == NULL) histogram_filename = _histogram_filename;
-
-  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
-    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
-
-  const dt_colorspaces_color_profile_t *d_profile = dt_colorspaces_get_profile(darktable.color_profiles->display_type,
-                                                       darktable.color_profiles->display_filename,
-                                                       DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
-  if(d_profile) display_profile = d_profile->profile;
-
-  if((histogram_type != darktable.color_profiles->display_type)
-     || (histogram_type == DT_COLORSPACE_FILE
-         && strcmp(histogram_filename, darktable.color_profiles->display_filename)))
-  {
-    const dt_colorspaces_color_profile_t *d_histogram = dt_colorspaces_get_profile(histogram_type,
-                                                         histogram_filename,
-                                                         DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
-    if(d_histogram) histogram_profile = d_histogram->profile;
-  }
-
-  lab_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
-
-  // display rgb --> lab
-  if(display_profile && lab_profile)
-    xform_rgb2lab = cmsCreateTransform(display_profile, TYPE_RGB_FLT, lab_profile, TYPE_Lab_FLT, INTENT_PERCEPTUAL, 0);
-
-  // display rgb --> histogram rgb
-  if(display_profile && histogram_profile)
-    xform_rgb2rgb = cmsCreateTransform(display_profile, TYPE_RGB_FLT, histogram_profile, TYPE_RGB_FLT, INTENT_RELATIVE_COLORIMETRIC, 0);
-
-  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
-    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-
-  _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab, xform_rgb2rgb,
-                             darktable.lib->proxy.colorpicker.primary_sample);
+  if(primary_picker_active)
+    _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab, xform_rgb2rgb,
+                               darktable.lib->proxy.colorpicker.primary_sample);
 
   if(xform_rgb2lab) cmsDeleteTransform(xform_rgb2lab);
   if(xform_rgb2rgb) cmsDeleteTransform(xform_rgb2rgb);
@@ -2163,30 +2111,24 @@ post_process_collect_info:
     {
       return 1;
     }
-    // Picking RGB for the live samples and converting to Lab
-    if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0)
-       && darktable.lib->proxy.colorpicker.live_samples && input) // samples to pick
-    {
-      printf("live samples picking\n");
-      _pixelpipe_pick_live_samples((const float *const )input, &roi_in);
-    }
-
-    if(dt_atomic_get_int(&pipe->shutdown))
-      return 1;
-
-    // Picking RGB for primary colorpicker output and converting to Lab
-    // FIXME: continue to sample even after colorpicker lib loses focus!
+    // Pick RGB/Lab for the primary colorpicker and live samples
     if(dev->gui_attached && pipe == dev->preview_pipe
        && (strcmp(module->op, "gamma") == 0) // only gamma provides meaningful RGB data
-       && dev->gui_module && !strcmp(dev->gui_module->op, "colorout")
-       && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
-       && darktable.lib->proxy.colorpicker.primary_sample && input) // colorpicker module active
+       && input)
     {
-      // FIXME: this does pretty much the same work as _pixelpipe_pick_live_samples() -- just have the first live sample be the primary colorpicker output and lose the routine below
-      printf("primary colorpicker picking\n");
-      _pixelpipe_pick_primary_colorpicker(dev, (const float *const )input, &roi_in);
-
-      if(module->widget) dt_control_queue_redraw_widget(module->widget);
+      // FIXME: continue to sample even after colorpicker lib loses focus!
+      const gboolean primary_picker_active = dev->gui_module
+        && !strcmp(dev->gui_module->op, "colorout")
+        && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
+        && darktable.lib->proxy.colorpicker.primary_sample;
+      if(primary_picker_active || darktable.lib->proxy.colorpicker.live_samples)
+      {
+        printf("doing colorpicking primary %d live %p\n", primary_picker_active, darktable.lib->proxy.colorpicker.live_samples);
+        _pixelpipe_pick_samples((const float *const )input, &roi_in, primary_picker_active);
+        // FIXME: do not need to redraw now to update live samples? is this repetitious for primary picker?
+        if(primary_picker_active && module->widget)
+          dt_control_queue_redraw_widget(module->widget);
+      }
     }
 
     // 4) final histogram:
