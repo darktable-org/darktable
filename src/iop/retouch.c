@@ -2850,7 +2850,7 @@ static void image_lab2rgb(float *img_src, const int width, const int height, con
 }
 
 static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const img_src,
-                             const int width, const int height, const int ch, float levels[3], int use_sse)
+                             const int width, const int height, const int ch, float levels[3])
 {
   const int size = width * height * ch;
   float l_max = -INFINITY;
@@ -2896,7 +2896,7 @@ static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 }
 
 static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *img_src, const int width,
-                             const int height, const int ch, const float levels[3], int use_sse)
+                             const int height, const int ch, const float levels[3])
 {
   const int size = width * height * ch;
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
@@ -3137,8 +3137,7 @@ static void rt_copy_mask_to_alpha(float *const img, dt_iop_roi_t *const roi_img,
 }
 
 static void retouch_fill(float *const in, dt_iop_roi_t *const roi_in, float *const mask_scaled,
-                         dt_iop_roi_t *const roi_mask_scaled, const float opacity, const float *const fill_color,
-                         const int use_sse)
+                         dt_iop_roi_t *const roi_mask_scaled, const float opacity, const float *const fill_color)
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -3438,9 +3437,9 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
               fill_color[1] = p->rt_forms[index].fill_color[1] + p->rt_forms[index].fill_brightness;
               fill_color[2] = p->rt_forms[index].fill_color[2] + p->rt_forms[index].fill_brightness;
             }
+            fill_color[3] = 0.0f;
 
-            retouch_fill(layer, roi_layer, mask_scaled, &roi_mask_scaled, form_opacity, fill_color,
-                         wt_p->use_sse);
+            retouch_fill(layer, roi_layer, mask_scaled, &roi_mask_scaled, form_opacity, fill_color);
           }
           else
             fprintf(stderr, "rt_process_forms: unknown algorithm %i\n", algo);
@@ -3547,7 +3546,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
       dt_iop_gui_leave_critical_section(self);
 
       levels[0] = levels[1] = levels[2] = 0;
-      rt_process_stats(self, piece, in_retouch, roi_rt->width, roi_rt->height, 4, levels, use_sse);
+      rt_process_stats(self, piece, in_retouch, roi_rt->width, roi_rt->height, 4, levels);
       rt_clamp_minmax(levels, levels);
 
       for(int i = 0; i < 3; i++) g->preview_levels[i] = levels[i];
@@ -3565,7 +3564,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   // if user wants to preview a detail scale adjust levels
   if(dwt_p->return_layer > 0 && dwt_p->return_layer < dwt_p->scales + 1)
   {
-    rt_adjust_levels(self, piece, in_retouch, roi_rt->width, roi_rt->height, 4, levels, use_sse);
+    rt_adjust_levels(self, piece, in_retouch, roi_rt->width, roi_rt->height, 4, levels);
   }
 
   // copy alpha channel if needed
@@ -3629,7 +3628,7 @@ cl_int rt_process_stats_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   }
 
   // just call the CPU version for now
-  rt_process_stats(self, piece, src_buffer, width, height, ch, levels, 1);
+  rt_process_stats(self, piece, src_buffer, width, height, ch, levels);
 
   err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, sizeof(float) * ch * width * height, TRUE);
   if(err != CL_SUCCESS)
@@ -3668,7 +3667,7 @@ cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   }
 
   // just call the CPU version for now
-  rt_adjust_levels(self, piece, src_buffer, width, height, ch, levels, 1);
+  rt_adjust_levels(self, piece, src_buffer, width, height, ch, levels);
 
   err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, sizeof(float) * ch * width * height, TRUE);
   if(err != CL_SUCCESS)
