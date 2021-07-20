@@ -783,11 +783,7 @@ error:
 
 static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_roi_t *roi_in,
                                        cmsHTRANSFORM xform_rgb2lab, cmsHTRANSFORM xform_rgb2rgb,
-                                       const float *const pick_box, const float *const pick_point,
-                                       const int pick_size, dt_aligned_pixel_t pick_color_rgb_min,
-                                       dt_aligned_pixel_t pick_color_rgb_max, dt_aligned_pixel_t pick_color_rgb_mean,
-                                       dt_aligned_pixel_t pick_color_lab_min, dt_aligned_pixel_t pick_color_lab_max,
-                                       dt_aligned_pixel_t pick_color_lab_mean)
+                                       dt_colorpicker_sample_t *const sample)
 {
   dt_aligned_pixel_t picked_color_rgb_min = { 0.0f };
   dt_aligned_pixel_t picked_color_rgb_max = { 0.0f };
@@ -800,17 +796,17 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   int point[2] = { 0 };
 
   for(int k = 0; k < 4; k += 2)
-    box[k] = MIN(roi_in->width - 1, MAX(0, pick_box[k] * roi_in->width));
+    box[k] = MIN(roi_in->width - 1, MAX(0, sample->box[k] * roi_in->width));
   for(int k = 1; k < 4; k += 2)
-    box[k] = MIN(roi_in->height - 1, MAX(0, pick_box[k] * roi_in->height));
-  point[0] = MIN(roi_in->width - 1, MAX(0, pick_point[0] * roi_in->width));
-  point[1] = MIN(roi_in->height - 1, MAX(0, pick_point[1] * roi_in->height));
+    box[k] = MIN(roi_in->height - 1, MAX(0, sample->box[k] * roi_in->height));
+  point[0] = MIN(roi_in->width - 1, MAX(0, sample->point[0] * roi_in->width));
+  point[1] = MIN(roi_in->height - 1, MAX(0, sample->point[1] * roi_in->height));
 
   dt_aligned_pixel_t rgb = { 0.0f };
 
   const float w = 1.0 / ((box[3] - box[1] + 1) * (box[2] - box[0] + 1));
 
-  if(pick_size == DT_COLORPICKER_SIZE_BOX)
+  if(sample->size == DT_COLORPICKER_SIZE_BOX)
   {
     for(int j = box[1]; j <= box[3]; j++)
       for(int i = box[0]; i <= box[2]; i++)
@@ -824,6 +820,7 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
           rgb[k] += w * pixel[4 * (roi_in->width * j + i) + k];
         }
       }
+    // FIXME: multiply by w here rather than above -- saves some multiplications
     for(int k = 0; k < 3; k++) picked_color_rgb_mean[k] = rgb[k];
   }
   else
@@ -837,6 +834,7 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   if(xform_rgb2rgb)
   {
     // Preparing the data for transformation
+    // FIXME: just do this in place with the three arrays rather than wasting time copying here -- unless the three arrays should be optimized via DT_ALIGNED_PIXEL
     float rgb_ddata[9] = { 0.0f };
     for(int i = 0; i < 3; i++)
     {
@@ -850,18 +848,19 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
 
     for(int i = 0; i < 3; i++)
     {
-      pick_color_rgb_mean[i] = rgb_odata[i];
-      pick_color_rgb_min[i] = rgb_odata[i + 3];
-      pick_color_rgb_max[i] = rgb_odata[i + 6];
+      sample->picked_color_rgb_mean[i] = rgb_odata[i];
+      sample->picked_color_rgb_min[i] = rgb_odata[i + 3];
+      sample->picked_color_rgb_max[i] = rgb_odata[i + 6];
     }
   }
   else
   {
+    // FIXME: cmsDoTransform() should be able to work in place, in which case don't need a separate case here, always copy from rgb_ddata == picked_color_rgb_*
     for(int i = 0; i < 3; i++)
     {
-      pick_color_rgb_mean[i] = picked_color_rgb_mean[i];
-      pick_color_rgb_min[i] = picked_color_rgb_min[i];
-      pick_color_rgb_max[i] = picked_color_rgb_max[i];
+      sample->picked_color_rgb_mean[i] = picked_color_rgb_mean[i];
+      sample->picked_color_rgb_min[i] = picked_color_rgb_min[i];
+      sample->picked_color_rgb_max[i] = picked_color_rgb_max[i];
     }
   }
 
@@ -869,6 +868,7 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   if(xform_rgb2lab)
   {
     // Preparing the data for transformation
+    // FIXME: same as above, shouldn't need to copy in place
     float rgb_data[9] = { 0.0f };
     for(int i = 0; i < 3; i++)
     {
@@ -877,14 +877,15 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
       rgb_data[i + 6] = picked_color_rgb_max[i];
     }
 
+    // FIXME: this should be possible in place -- don't need to alloc receiving array
     float Lab_data[9] = { 0.0f };
     cmsDoTransform(xform_rgb2lab, rgb_data, Lab_data, 3);
 
     for(int i = 0; i < 3; i++)
     {
-      pick_color_lab_mean[i] = Lab_data[i];
-      pick_color_lab_min[i] = Lab_data[i + 3];
-      pick_color_lab_max[i] = Lab_data[i + 6];
+      sample->picked_color_lab_mean[i] = Lab_data[i];
+      sample->picked_color_lab_min[i] = Lab_data[i + 3];
+      sample->picked_color_lab_max[i] = Lab_data[i + 6];
     }
   }
 }
@@ -945,10 +946,7 @@ static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_
       continue;
     }
 
-    _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab, xform_rgb2rgb,
-        sample->box, sample->point, sample->size,
-        sample->picked_color_rgb_min, sample->picked_color_rgb_max, sample->picked_color_rgb_mean,
-        sample->picked_color_lab_min, sample->picked_color_lab_max, sample->picked_color_lab_mean);
+    _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab, xform_rgb2rgb, sample);
   }
 
   if(xform_rgb2lab) cmsDeleteTransform(xform_rgb2lab);
@@ -1000,17 +998,8 @@ static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
-  // FIXME: can just pass in darktable.lib->proxy.colorpicker.primary_sample rather than its values?
   _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab, xform_rgb2rgb,
-      darktable.lib->proxy.colorpicker.primary_sample->box,
-      darktable.lib->proxy.colorpicker.primary_sample->point,
-      darktable.lib->proxy.colorpicker.primary_sample->size,
-      darktable.lib->proxy.colorpicker.primary_sample->picked_color_rgb_min,
-      darktable.lib->proxy.colorpicker.primary_sample->picked_color_rgb_max,
-      darktable.lib->proxy.colorpicker.primary_sample->picked_color_rgb_mean,
-      darktable.lib->proxy.colorpicker.primary_sample->picked_color_lab_min,
-      darktable.lib->proxy.colorpicker.primary_sample->picked_color_lab_max,
-      darktable.lib->proxy.colorpicker.primary_sample->picked_color_lab_mean);
+                             darktable.lib->proxy.colorpicker.primary_sample);
 
   if(xform_rgb2lab) cmsDeleteTransform(xform_rgb2lab);
   if(xform_rgb2rgb) cmsDeleteTransform(xform_rgb2rgb);
