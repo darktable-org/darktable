@@ -2801,21 +2801,12 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
 
     dt_ioppr_check_iop_order(module_src->dev, 0, "_on_drag_data_received end");
 
-    // we rebuild the pipe
-    module_src->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
-    module_src->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-    module_src->dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
-    module_src->dev->pipe->cache_obsolete = 1;
-    module_src->dev->preview_pipe->cache_obsolete = 1;
-    module_src->dev->preview2_pipe->cache_obsolete = 1;
-
     // rebuild the accelerators
     dt_iop_connect_accels_multi(module_src->so);
 
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
+    dt_dev_pixelpipe_rebuild(module_src->dev);
 
-    // invalidate buffers and force redraw of darkroom
-    dt_dev_invalidate_all(module_src->dev);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
   }
 }
 
