@@ -1156,7 +1156,7 @@ static void _blendop_blendif_showmask_clicked(GtkWidget *button, GdkEventButton 
 
     // note that a ctrl+click followed by a shift-click must keep the
     // toggle button active. But a single click must invert current
-    // toggle buttong.  That's why we check for request_mask_display
+    // toggle button.  That's why we check for request_mask_display
     // value below. But note that the toggle button state has not yet
     // been inverted by Gtk at this stage. So if a button must be ON
     // we ensure it is OFF now.

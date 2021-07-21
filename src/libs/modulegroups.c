@@ -3757,7 +3757,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(vb), hb2, FALSE, TRUE, 2);
   gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, TRUE, 2);
 
-  // presets settings (search + quick acces)
+  // presets settings (search + quick access)
   vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   d->edit_search_cb = gtk_check_button_new_with_label(_("show search line"));
   gtk_widget_set_name(d->edit_search_cb, "modulegroups_editor_setting");

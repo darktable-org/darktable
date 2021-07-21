@@ -593,7 +593,7 @@ void gui_update(dt_iop_module_t *self)
   const gboolean is_monochrome = (self->dev->image_storage.flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) != 0;
   if(is_monochrome)
   {
-    // we might have to deal with old edits, so get avarage first
+    // we might have to deal with old edits, so get average first
     int av = 2; // for rounding
     for(int i = 0; i < 4; i++)
       av += p->raw_black_level_separate[i];
