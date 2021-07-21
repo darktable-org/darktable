@@ -5766,7 +5766,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->dual_mask, FALSE, FALSE, 0);
 
   g->lmmse_refine = dt_bauhaus_combobox_from_params(self, "lmmse_refine");
-  gtk_widget_set_tooltip_text(g->lmmse_refine, _("LMMSE refinement steps. the median steps avarage the output,\nrefine adds some recalculation of red & blue channels."));
+  gtk_widget_set_tooltip_text(g->lmmse_refine, _("LMMSE refinement steps. the median steps average the output,\nrefine adds some recalculation of red & blue channels."));
 
   g->color_smoothing = dt_bauhaus_combobox_from_params(self, "color_smoothing");
   gtk_widget_set_tooltip_text(g->color_smoothing, _("how many color smoothing median steps after demosaicing"));

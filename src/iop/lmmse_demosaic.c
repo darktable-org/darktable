@@ -18,7 +18,7 @@
 
 /*
     The lmmse code base used for the darktable port has been taken from rawtherapee derived librtprocess.
-    Adaption for dt and tiling - hanno schwalm 06/2021
+    Adapt for dt and tiling - hanno schwalm 06/2021
 
     LSMME demosaicing algorithm
     L. Zhang and X. Wu,
@@ -196,7 +196,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
         const int tileRows = MIN(rowEnd - rowStart, LMMSE_TILESIZE);
         const int tileCols = MIN(colEnd - colStart, LMMSE_TILESIZE);
 
-        // index limit; normally is LMMSE_GRP but maybe missing bottom lines or right colums for outermost  tile
+        // index limit; normally is LMMSE_GRP but maybe missing bottom lines or right columns for outermost tile
         const int last_rr = tileRows + 2 * BORDER_AROUND;
         const int last_cc = tileCols + 2 * BORDER_AROUND;
 

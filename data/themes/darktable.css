@@ -2127,7 +2127,7 @@ Hierarchy :
       #thumb_bottom                                                  (GtkEventBox -- background of the bottom infos area)
         #thumb_bottom_label                                          (GtkLabel -- text of the bottom infos area, just with .dt_extended_overlay)
       #thumb_reject                                                  (GtkDarktableThumbnailBtn -- Reject icon)
-      #thumb_star                                                    (GtkDarktableThumbnailBtn -- Star icon, 5 occurences of this)
+      #thumb_star                                                    (GtkDarktableThumbnailBtn -- Star icon, 5 occurrences of this)
       #thumb_colorlabels                                             (GtkDarktableThumbnailBtn -- colorlabels icon, 1 icon with all labels)
       #thumb_localcopy                                               (GtkDarktableThumbnailBtn -- local copy triangle icon)
       #thumb_altered                                                 (GtkDarktableThumbnailBtn -- altered icon)

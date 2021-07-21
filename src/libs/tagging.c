@@ -2727,7 +2727,7 @@ static void _event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   GtkTreeView *tree = GTK_TREE_VIEW(widget);
-  // disable the deault handler
+  // disable the default handler
   g_signal_stop_emission_by_name(tree, "drag-data-received");
   gboolean success = FALSE;
 

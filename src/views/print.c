@@ -226,7 +226,7 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr,
   cairo_rectangle (cr, px, py, pwidth, pheight);
   cairo_fill (cr);
 
-  // record the screen page dimention. this will be used to compute the actual
+  // record the screen page dimension. this will be used to compute the actual
   // layout of the areas placed over the page.
 
   dt_printing_setup_display(prt->imgs,

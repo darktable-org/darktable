@@ -621,7 +621,7 @@ dt_omp_firstprivate(in, out, in_out, width, height, guide, ch) \
   // we do a weighted average between input and output, keeping more input if
   // the local averages are very different.
   // we use the same weight for all channels, as using different weights
-  // introduces artefacts in practice.
+  // introduces artifacts in practice.
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
 dt_omp_firstprivate(in, out, blurred_in_out, width, height, guide, safety, ch) \

@@ -1457,7 +1457,7 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
     return;
   }
 
-  // "changed" event can be high frequence. As calculation is heavy we don't to repeat it.
+  // "changed" event can be high frequency. As calculation is heavy we don't to repeat it.
   if(!lib->time_out)
   {
     g_timeout_add(100, _view_map_changed_callback_wait, self);

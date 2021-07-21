@@ -226,7 +226,7 @@ DEFAULT(dt_introspection_field_t *, get_introspection_linear, void);
 DEFAULT(void *, get_p, const void *param, const char *name);
 DEFAULT(dt_introspection_field_t *, get_f, const char *name);
 
-// optionnal preference entry to add at the bottom of the preset menu
+// optional preference entry to add at the bottom of the preset menu
 OPTIONAL(void, set_preferences, void *menu, struct dt_iop_module_t *self);
 
 #ifdef FULL_API_H

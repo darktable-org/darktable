@@ -272,7 +272,7 @@ static inline void pixSort(float *a, float *b)
 
 /*
   We want to avoid the module being processed in case the provided size of data is too small resulting in
-  really bad artefacts. This is often the case while zooming in with the current dt pipeline.
+  really bad artifacts. This is often the case while zooming in with the current dt pipeline.
   There is no "maths background" so i chose this after a lot of testing.
 */
 #define CA_SIZE_MINIMUM (1600)
