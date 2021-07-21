@@ -253,7 +253,7 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const
 gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in, const dt_iop_roi_t *const roi_in, const int mode);
 #endif
 
-// helper function writing the pipe-processed ctmask data to dest 
+// helper function writing the pipe-processed ctmask data to dest
 float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, const struct dt_iop_module_t *target_module);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
