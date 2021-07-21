@@ -1651,6 +1651,18 @@ gboolean dt_history_paste_on_list(const GList *list, gboolean undo)
                                        darktable.view_manager->copy_paste.full_copy);
   }
   if(undo) dt_undo_end_group(darktable.undo);
+
+  // In darkroom and if there is a copy of the iop-order we need to rebuild the pipe
+  // to take into account the possible new order of modules.
+
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+
+  if(cv->view(cv) == DT_VIEW_DARKROOM
+     && darktable.view_manager->copy_paste.copy_iop_order)
+  {
+    dt_dev_pixelpipe_rebuild(darktable.develop);
+  }
+
   return TRUE;
 }
 
@@ -1692,6 +1704,18 @@ gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo)
   if(undo) dt_undo_end_group(darktable.undo);
 
   g_list_free(l_copy);
+
+  // In darkroom and if there is a copy of the iop-order we need to rebuild the pipe
+  // to take into account the possible new order of modules.
+
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+
+  if(cv->view(cv) == DT_VIEW_DARKROOM
+     && darktable.view_manager->copy_paste.copy_iop_order)
+  {
+    dt_dev_pixelpipe_rebuild(darktable.develop);
+  }
+
   return TRUE;
 }
 
