@@ -493,9 +493,9 @@ gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x,
         if(delta_x) *delta_x = event->delta_x / 50;
         if(delta_y) *delta_y = event->delta_y / 50;
 #else
-         if(delta_x) *delta_x = event->delta_x;
-         if(delta_y) *delta_y = event->delta_y;
-#endif
+        if(delta_x) *delta_x = event->delta_x;
+        if(delta_y) *delta_y = event->delta_y;
+ #endif
         handled = TRUE;
       }
     default:

@@ -421,12 +421,27 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
   if((table->offset - 1) % table->thumbs_per_row) lbefore++;
 
   // the number of line after (including the current one)
-  int lafter = (nbid - table->offset) / table->thumbs_per_row;
-  if((nbid - table->offset) % table->thumbs_per_row) lafter++;
+  int lafter = (nbid - table->offset + 1) / table->thumbs_per_row;
+  if(nbid % table->thumbs_per_row) lafter++;
 
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
+    gdouble vpos;
+    gdouble offset;
+    if(dt_conf_get_bool("lighttable/ui/continuous_scrolling"))
+    {
+      // add position between rows if continuous scrolling is used
+      vpos = lbefore - table->accumulator;
+      // adjust size of scrollbar to work with different clamping of continuous scrolling
+      offset = (float)(table->view_height % table->thumb_size) / table->thumb_size;
+    }
+    else
+    {
+      vpos = lbefore;
+      offset = 0;
+    }
+
     // if the scrollbar is currently visible and we want to hide it
     // we first ensure that with the width without the scrollbar, we won't need a scrollbar
     if(gtk_widget_get_visible(darktable.gui->scrollbars.vscrollbar)
@@ -435,13 +450,13 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
       const int nw = table->view_width + gtk_widget_get_allocated_width(darktable.gui->scrollbars.vscrollbar);
       if((lbefore + lafter) * nw / table->thumbs_per_row >= table->view_height)
       {
-        dt_view_set_scrollbar(darktable.view_manager->current_view, 0, 0, 0, 0, lbefore, 0, lbefore + lafter + 1,
+        dt_view_set_scrollbar(darktable.view_manager->current_view, 0, 0, 0, 0, vpos, 0, lbefore + lafter + 1 - offset,
                               table->rows - 1);
         return TRUE;
       }
     }
     // in filemanager, no horizontal bar, and vertical bar reference is 1 thumb.
-    dt_view_set_scrollbar(darktable.view_manager->current_view, 0, 0, 0, 0, lbefore, 0, lbefore + lafter,
+    dt_view_set_scrollbar(darktable.view_manager->current_view, 0, 0, 0, 0, vpos, 0, lbefore + lafter - offset,
                           table->rows - 1);
     table->code_scrolling = FALSE;
     return (lbefore + lafter > table->rows - 1);
@@ -632,8 +647,17 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
 
       // we stop when first rowid image is fully shown
       dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
-      if(first->rowid == 1 && posy > 0 && first->y >= 0)
+      if(first->rowid == 1 && posy > 0 && first->y + posy > 0)
       {
+        // prevent continuous scrolling past top of filemanager
+        if (dt_conf_get_bool("lighttable/ui/continuous_scrolling"))
+        {
+          // align top row if thumbtable would be moved past top of collection
+          _move(table, 0, -first->y, FALSE);
+          table->accumulator = 0;
+          table->offset = 1;
+          return TRUE;
+        }
         // for some reasons, in filemanager, first image can not be at x=0
         // in that case, we count the number of "scroll-top" try and reallign after 2 try
         if(first->x != 0)
@@ -651,6 +675,27 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
       table->realign_top_try = 0;
 
       dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
+      // moving would expose a new bottom row
+      if (dt_conf_get_bool("lighttable/ui/continuous_scrolling")
+          && last->y + table->thumb_size + posy < table->view_height && posy < 0)
+      {
+        int nbid = 1;
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM memory.collected_images",
+                                    -1, &stmt, NULL);
+        if(sqlite3_step(stmt) == SQLITE_ROW) nbid = sqlite3_column_int(stmt, 0);
+        sqlite3_finalize(stmt);
+
+        // don't move if the whole collection is visible
+        if(nbid <= table->thumbs_per_row * (table->rows - 1)) return FALSE;
+
+        // align bottom row if thumbtable would be moved past bottom of collection
+        if(last->rowid >= nbid)
+        {
+          _move(table, 0, table->view_height - last->y - table->thumb_size - 1, FALSE);
+          return TRUE;
+        }
+      }
       if(table->thumbs_per_row == 1 && posy < 0 && g_list_is_singleton(table->list))
       {
         // special case for zoom == 1 as we don't want any space under last image (the image would have disappear)
@@ -722,7 +767,15 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
   // we update the offset
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
-    table->offset = MAX(1, table->offset - (posy / table->thumb_size) * table->thumbs_per_row);
+    int amount = 0;
+    table->accumulator += (float)posy / (float)table->thumb_size;
+    amount = trunc(table->accumulator);
+    if (amount != 0)
+    {
+        table->accumulator -= amount;
+        table->offset = MAX(1, table->offset - amount * table->thumbs_per_row);
+    }
+
     table->offset_imgid = _thumb_get_imgid(table->offset);
   }
   else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
@@ -907,8 +960,29 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
 {
   GdkEventScroll *e = (GdkEventScroll *)event;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  int delta;
 
+  // Handle continuous scrolling separately
+  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER && e->direction == GDK_SCROLL_SMOOTH
+    && !((e->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK) && dt_conf_get_bool("lighttable/ui/continuous_scrolling"))
+  {
+    gdouble delta;
+    if(dt_gui_get_scroll_deltas(e, NULL, &delta))
+    {
+      // Scale delta to represent scroll size in pixels.
+      // On macOS reverses scaling in dt_gui_get_scroll_deltas
+      delta = delta * 50;
+      // prevent moving more than view_height so that thumbs cannot disappear
+      if(delta > table->view_height) delta = table->view_height;
+      else if(delta < -table->view_height) delta = -table->view_height;
+      _move(table, 0, -delta, TRUE);
+      // ensure the hovered image is the right one
+      dt_thumbnail_t *th = _thumb_get_under_mouse(table);
+      if(th) dt_control_set_mouse_over_id(th->imgid);
+    }
+    return TRUE;
+  }
+
+  int delta;
   if(dt_gui_get_scroll_unit_delta(e, &delta))
   {
     if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER
@@ -918,7 +992,7 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
       int new = old;
       if(delta > 0)
         new = MIN(DT_LIGHTTABLE_MAX_ZOOM, new + 1);
-      else
+      else if (delta < 0)
         new = MAX(1, new - 1);
 
       if(old != new) _filemanager_zoom(table, old, new);
@@ -1557,6 +1631,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
   else
   {
     // otherwise we reset the offset to the beginning
+    table->accumulator = 0;
     table->offset = 1;
     table->offset_imgid = _thumb_get_imgid(table->offset);
     dt_conf_set_int("plugins/lighttable/recentcollect/pos0", 1);
@@ -1838,6 +1913,15 @@ void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, float x, float y)
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
+    // With continuous scrolling move the thumbnails
+    // by difference between scrollbar position and thumbtable current position.
+    if (dt_conf_get_bool("lighttable/ui/continuous_scrolling"))
+    {
+      const float thumbs_area_offset_y = (y - ((table->offset - 1) / table->thumbs_per_row - table->accumulator)) * table->thumb_size;
+      if(thumbs_area_offset_y != 0) _move(table, 0, -thumbs_area_offset_y, FALSE);
+      return;
+    }
+
     const int first_offset = (table->offset - 1) % table->thumbs_per_row;
     int new_offset = table->offset;
     if(first_offset == 0)
@@ -1858,11 +1942,6 @@ void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, float x, float y)
     {
       table->offset = new_offset;
       dt_thumbtable_full_redraw(table, TRUE);
-      // To enable smooth scrolling move the thumbnails
-      // by the floating point amount of the scrollbar
-      // so if the scrollbar is in 13.28 position move the thumbs by 0.28 * thumb_size
-      const float thumbs_area_offset_y = ((y - floor(y)) * (float)table->thumb_size);
-      _move(table, 0, -thumbs_area_offset_y, FALSE);
     }
   }
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
@@ -2059,6 +2138,18 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     sqlite3_finalize(stmt);
 
     if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
+
+    // Correct the location of thumbs when using continuous scrolling.
+    // Apply additional offset according to offset before reset.
+    if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER && dt_conf_get_bool("lighttable/ui/continuous_scrolling"))
+    {
+      if(table->accumulator != 0)
+      {
+        const gdouble accumulator_old = table->accumulator;
+        table->accumulator = 0;
+        _move(table, 0, accumulator_old * table->thumb_size, TRUE);
+      }
+    }
   }
 }
 
@@ -2169,7 +2260,11 @@ gboolean dt_thumbtable_set_offset(dt_thumbtable_t *table, const int offset, cons
   if(offset < 1 || offset == table->offset) return FALSE;
   table->offset = offset;
   dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
-  if(redraw) dt_thumbtable_full_redraw(table, TRUE);
+  if(redraw)
+  {
+    table->accumulator = 0;
+    dt_thumbtable_full_redraw(table, TRUE);
+  }
   return TRUE;
 }
 
@@ -2369,8 +2464,29 @@ static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int
   if(!table->list) return FALSE;
   // get first and last fully visible thumbnails
   dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
-  const int pos = MIN(g_list_length(table->list) - 1, table->thumbs_per_row * (table->rows - 1) - 1);
+  int pos = MIN(g_list_length(table->list) - 1, table->thumbs_per_row * (table->rows - 1) - 1);
   dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_nth_data(table->list, pos);
+
+  if(dt_conf_get_bool("lighttable/ui/continuous_scrolling"))
+  {
+    pos = g_list_length(table->list) - 1;
+    last = (dt_thumbnail_t *)g_list_nth_data(table->list, pos);
+    if(last->y - (first->y + table->thumb_size) < table->thumb_size)
+    {
+      // align requested thumb to view if no visible middle row
+      const int move_rows = (table->offset - rowid + ((rowid - 1) % table->thumbs_per_row)) / table->thumbs_per_row;
+      _move(table, 0, (move_rows - table->accumulator) * table->thumb_size, TRUE);
+      return TRUE;
+    }
+    else
+    {
+      // if first or last row is partially visible use the next row
+      if(first->y < 0)
+        first = (dt_thumbnail_t *)g_list_nth_data(table->list, table->thumbs_per_row);
+      if(last->y + table->thumb_size > table->view_height)
+        last = (dt_thumbnail_t *)g_list_nth_data(table->list, pos - (pos % table->thumbs_per_row + 1));
+    }
+  }
 
   if(first->rowid > rowid)
   {
@@ -2390,6 +2506,7 @@ static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int
   }
   return TRUE;
 }
+
 static gboolean _zoomable_ensure_rowid_visibility(dt_thumbtable_t *table, const int rowid)
 {
   if(rowid < 1) return FALSE;
