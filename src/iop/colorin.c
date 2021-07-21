@@ -532,16 +532,7 @@ static void workicc_changed(GtkWidget *widget, gpointer user_data)
 
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_WORK);
 
-    // we need to rebuild the pipe so the profile take effect
-    self->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
-    self->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-    self->dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
-    self->dev->pipe->cache_obsolete = 1;
-    self->dev->preview_pipe->cache_obsolete = 1;
-    self->dev->preview2_pipe->cache_obsolete = 1;
-
-    // invalidate buffers and force redraw of darkroom
-    dt_dev_invalidate_all(self->dev);
+    dt_dev_pixelpipe_rebuild(self->dev);
   }
   else
   {

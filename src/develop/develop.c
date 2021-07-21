@@ -1245,12 +1245,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   }
   else
   {
-    dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
-    dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-    dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
-    dev->pipe->cache_obsolete = 1;
-    dev->preview_pipe->cache_obsolete = 1;
-    dev->preview2_pipe->cache_obsolete = 1;
+    dt_dev_pixelpipe_rebuild(dev);
   }
 
   --darktable.gui->reset;

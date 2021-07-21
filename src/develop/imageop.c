@@ -563,16 +563,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   // we update show params for multi-instances for each other instances
   dt_dev_modules_update_multishow(dev);
 
-  // we refresh the pipe
-  dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
-  dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-  dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
-  dev->pipe->cache_obsolete = 1;
-  dev->preview_pipe->cache_obsolete = 1;
-  dev->preview2_pipe->cache_obsolete = 1;
-
-  // invalidate buffers and force redraw of darkroom
-  dt_dev_invalidate_all(dev);
+  dt_dev_pixelpipe_rebuild(dev);
 
   /* redraw */
   dt_control_queue_redraw_center();
@@ -655,20 +646,12 @@ static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *mod
 
   dt_ioppr_check_iop_order(module->dev, 0, "dt_iop_gui_movedown_callback end");
 
-  // we rebuild the pipe
-  module->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
-  module->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-  module->dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
-  module->dev->pipe->cache_obsolete = 1;
-  module->dev->preview_pipe->cache_obsolete = 1;
-  module->dev->preview2_pipe->cache_obsolete = 1;
-
   // rebuild the accelerators
   dt_iop_connect_accels_multi(module->so);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
 
-  // invalidate buffers and force redraw of darkroom
-  dt_dev_invalidate_all(module->dev);
+  dt_dev_pixelpipe_rebuild(module->dev);
+
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
 }
 
 static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
@@ -699,20 +682,12 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
 
   dt_ioppr_check_iop_order(module->dev, 0, "dt_iop_gui_moveup_callback end");
 
-  // we rebuild the pipe
-  next->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
-  next->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-  next->dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
-  next->dev->pipe->cache_obsolete = 1;
-  next->dev->preview_pipe->cache_obsolete = 1;
-  next->dev->preview2_pipe->cache_obsolete = 1;
-
   // rebuild the accelerators
   dt_iop_connect_accels_multi(module->so);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
 
-  // invalidate buffers and force redraw of darkroom
-  dt_dev_invalidate_all(next->dev);
+  dt_dev_pixelpipe_rebuild(next->dev);
+
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
 }
 
 dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
@@ -799,15 +774,7 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
 
   if(module->dev->gui_attached)
   {
-    module->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
-    module->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-    module->dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
-    module->dev->pipe->cache_obsolete = 1;
-    module->dev->preview_pipe->cache_obsolete = 1;
-    module->dev->preview2_pipe->cache_obsolete = 1;
-
-    // invalidate buffers and force redraw of darkroom
-    dt_dev_invalidate_all(module->dev);
+    dt_dev_pixelpipe_rebuild(module->dev);
   }
 
   /* update ui to new parameters */

@@ -119,20 +119,6 @@ void update(dt_lib_module_t *self)
   }
 }
 
-static void _invalidate_pipe(dt_develop_t *dev)
-{
-  // we rebuild the pipe
-  dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
-  dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-  dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
-  dev->pipe->cache_obsolete = 1;
-  dev->preview_pipe->cache_obsolete = 1;
-  dev->preview2_pipe->cache_obsolete = 1;
-
-  // invalidate buffers and force redraw of darkroom
-  dt_dev_invalidate_all(dev);
-}
-
 static void _image_loaded_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -183,7 +169,7 @@ void gui_reset (dt_lib_module_t *self)
 
     dt_ioppr_change_iop_order(darktable.develop, imgid, iop_order_list);
 
-    _invalidate_pipe(darktable.develop);
+    dt_dev_pixelpipe_rebuild(darktable.develop);
 
     d->current_mode = DT_IOP_ORDER_V30;
     gtk_label_set_text(GTK_LABEL(d->widget), _("v3.0"));
@@ -221,7 +207,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
     dt_ioppr_change_iop_order(darktable.develop, imgid, iop_order_list);
 
-    _invalidate_pipe(darktable.develop);
+    dt_dev_pixelpipe_rebuild(darktable.develop);
 
     update(self);
 
