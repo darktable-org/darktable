@@ -70,7 +70,7 @@ typedef struct dt_iop_borders_params_t
                                DEFAULT: "constant border" */
   int aspect_orient;        /* aspect ratio orientation
                                $DEFAULT: 0 $DESCRIPTION: "orientation" */
-  float size;               /* border width relative to overal frame width
+  float size;               /* border width relative to overall frame width
                                $MIN: 0.0 $MAX: 0.5 $DEFAULT: 0.1 $DESCRIPTION: "border size" */
   float pos_h;              /* picture horizontal position ratio into the final image
                                $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "horizontal offset" */
@@ -120,7 +120,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     {
       float color[3]; // border color
       float aspect;   // aspect ratio of the outer frame w/h
-      float size;     // border width relative to overal frame width
+      float size;     // border width relative to overall frame width
     } dt_iop_borders_params_v1_t;
 
     dt_iop_borders_params_v1_t *o = (dt_iop_borders_params_v1_t *)old_params;
@@ -146,7 +146,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float aspect;         // aspect ratio of the outer frame w/h
       char aspect_text[20]; // aspect ratio of the outer frame w/h (user string version)
       int aspect_orient;    // aspect ratio orientation
-      float size;           // border width relative to overal frame width
+      float size;           // border width relative to overall frame width
       float pos_h;          // picture horizontal position ratio into the final image
       char pos_h_text[20];  // picture horizontal position ratio into the final image (user string version)
       float pos_v;          // picture vertical position ratio into the final image
