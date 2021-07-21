@@ -609,9 +609,9 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
     if(event->state == last_state)
     {
       if(gtk_tree_view_row_expanded(GTK_TREE_VIEW(treeview), path))
-        gtk_tree_view_collapse_row (GTK_TREE_VIEW(treeview), path);
+        gtk_tree_view_collapse_row(GTK_TREE_VIEW(treeview), path);
       else
-        gtk_tree_view_expand_row (GTK_TREE_VIEW(treeview), path, FALSE);
+        gtk_tree_view_expand_row(GTK_TREE_VIEW(treeview), path, FALSE);
     }
     last_state = event->state;
   }
@@ -2077,7 +2077,7 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
     /* xgettext:no-c-format */
                                 _("use `%' as wildcard\n"
     /* xgettext:no-c-format */
-                                  "left-click to include hierarchy + sub-hierarchies (suffix `*')\n"
+                                  "click to include hierarchy + sub-hierarchies (suffix `*')\n"
     /* xgettext:no-c-format */
                                   "shift+click to include only the current hierarchy (no suffix)\n"
     /* xgettext:no-c-format */
@@ -2089,7 +2089,7 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
     /* xgettext:no-c-format */
                                 _("use `%' as wildcard\n"
     /* xgettext:no-c-format */
-                                  "left-click to include location + sub-locations (suffix `*')\n"
+                                  "click to include location + sub-locations (suffix `*')\n"
     /* xgettext:no-c-format */
                                   "shift+click to include only the current location (no suffix)\n"
     /* xgettext:no-c-format */
@@ -2101,7 +2101,7 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
     /* xgettext:no-c-format */
                                 _("use `%' as wildcard\n"
     /* xgettext:no-c-format */
-                                  "left-click to include current + sub-folders (suffix `*')\n"
+                                  "click to include current + sub-folders (suffix `*')\n"
     /* xgettext:no-c-format */
                                   "shift+click to include only the current folder (no suffix)\n"
     /* xgettext:no-c-format */
