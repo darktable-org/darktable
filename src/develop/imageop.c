@@ -1816,8 +1816,16 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   {
     if(module->gui_data)
     {
-      if(module->params && module->gui_update) module->gui_update(module);
-
+      if(module->params && module->gui_update)
+      {
+        if(module->widget && dt_conf_get_bool("plugins/darkroom/show_warnings"))
+        {
+          GtkWidget *label_widget = dt_gui_container_first_child(GTK_CONTAINER(gtk_widget_get_parent(module->widget)));
+          if(!g_strcmp0(gtk_widget_get_name(label_widget), "iop-plugin-warning")) gtk_widget_destroy(label_widget);
+          module->has_trouble = FALSE;
+        }
+        module->gui_update(module);
+      }
       dt_iop_gui_update_blending(module);
       dt_iop_gui_update_expanded(module);
     }
