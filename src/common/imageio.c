@@ -795,8 +795,8 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
             : high_quality;
 
   /* The pipeline might have out-of-bounds problems at the right and lower borders leading to
-     artefacts or mem access errors if ignored. (#3646)
-     It's very difficult to prepare the pipeline avoiding this **and** not introducing artefacts.
+     artifacts or mem access errors if ignored. (#3646)
+     It's very difficult to prepare the pipeline avoiding this **and** not introducing artifacts.
      But we can test for that situation and if there is an out-of-bounds problem we
      have basically two options:
      a) reduce the output image size by one for width & height.
