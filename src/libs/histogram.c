@@ -95,9 +95,9 @@ typedef struct dt_lib_histogram_t
   // histogram for display
   uint32_t *histogram;
   uint32_t histogram_max;
-  // waveform histogram buffer and dimensions
+  // waveform buffers and dimensions
   float *waveform_linear;
-  uint8_t *waveform_8bit;
+  uint8_t *waveform_img[3];           // image per RGB channel
   int waveform_width, waveform_height, waveform_max_width;
   // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
   uint8_t *vectorscope_graph;
@@ -197,7 +197,6 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   // quantity of data.
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
   float *const restrict wf_linear = DT_IS_ALIGNED((float *const restrict)d->waveform_linear);
-  uint8_t *const restrict wf_8bit = DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_8bit);
 
   // Use integral sized bins for columns, as otherwise they will be
   // unequal and have banding. Rely on draw to smoothly do horizontal
@@ -209,7 +208,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   const size_t bin_width = ceilf(sample_width / (float)d->waveform_max_width);
   const size_t wf_width = ceilf(sample_width / (float)bin_width);
   d->waveform_width = wf_width;
-  const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, wf_width);
+  const size_t wf_img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, wf_width);
   const size_t wf_height = d->waveform_height;
   dt_iop_image_fill(wf_linear, 0.0f, wf_width, wf_height, 3);
 
@@ -255,13 +254,16 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
 
   // loops are too small (3 * 360 * 175 max iterations) to need threads
   for(size_t ch = 0; ch < 3; ch++)
+  {
+    uint8_t *const restrict wf_img = DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_img[ch]);
     for(size_t y = 0; y < wf_height; y++)
       for(size_t x = 0; x < wf_width; x++)
       {
         const float linear = MIN(1.f, wf_linear[(ch * wf_height + y) * wf_width + x]);
         const float display = lut[(int)(linear * lutmax)];
-        wf_8bit[(ch * wf_height + y) * wf_8bit_stride + x] = display * 255.f;
+        wf_img[y*wf_img_stride + x] = display * 255.f;
       }
+  }
 }
 
 static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, const dt_iop_order_iccprofile_info_t *const vs_prof)
@@ -649,6 +651,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   for(int k = 0; k < 3; k++)
     if(mask[k])
     {
+      // FIXME: this is the last place in dt these are used -- if can eliminate, then can directly set button colors in CSS and simplify things
       set_color(cr, darktable.bauhaus->graph_colors[k]);
       dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_SCALE_LINEAR);
     }
@@ -658,47 +661,81 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_restore(cr);
 }
 
-static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t *cr, int ch, double alpha)
-{
-  // FIXME: force a recalc/redraw when colors have changed via user entering new CSS in preferences -- is there a signal for this?
-  // waveform data is BGR, need to flip to RGB
-  const GdkRGBA primary = darktable.bauhaus->graph_colors[2-ch];
-  cairo_set_source_rgba(cr, primary.red, primary.green, primary.blue, alpha);
-  const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
-  cairo_surface_t *surface
-    = dt_cairo_image_surface_create_for_data(d->waveform_8bit + (2-ch) * d->waveform_height * wf_8bit_stride,
-                                             CAIRO_FORMAT_A8,
-                                             d->waveform_width, d->waveform_height, wf_8bit_stride);
-  cairo_mask_surface(cr, surface, 0., 0.);
-  cairo_surface_destroy(surface);
-}
-
 static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
                                          int width, int height,
                                          const uint8_t mask[3])
 {
-  cairo_save(cr);
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  cairo_scale(cr, darktable.gui->ppd*width/d->waveform_width,
-              darktable.gui->ppd*height/d->waveform_height);
+  // composite before scaling to screen dimensions, as scaling each
+  // layer on draw causes a >2x slowdown
+  const double alpha_chroma = 0.75, desat_over = 0.75, alpha_over = 0.35;
+  const size_t img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
+  cairo_surface_t *cs[3] = { NULL, NULL, NULL };
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, d->waveform_width, d->waveform_height);
 
+  cairo_t *crt = cairo_create(cst);
+  cairo_set_operator(crt, CAIRO_OPERATOR_ADD);
   for(int ch = 0; ch < 3; ch++)
-    if(mask[2-ch])
-      _lib_histogram_draw_waveform_channel(d, cr, ch, 0.6);
+    if(mask[ch])
+    {
+      cs[ch] = cairo_image_surface_create_for_data(d->waveform_img[ch], CAIRO_FORMAT_A8,
+                                                   d->waveform_width, d->waveform_height, img_stride);
+      cairo_set_source_rgba(crt, ch==0 ? 1.:0., ch==1 ? 1.:0., ch==2 ? 1.:0., alpha_chroma);
+      cairo_mask_surface(crt, cs[ch], 0., 0.);
+    }
+  cairo_set_operator(crt, CAIRO_OPERATOR_HARD_LIGHT);
+  for(int ch = 0; ch < 3; ch++)
+    if(cs[ch])
+    {
+      cairo_set_source_rgba(crt, ch==0 ? 1.:desat_over, ch==1 ? 1.:desat_over, ch==2 ? 1.:desat_over, alpha_over);
+      cairo_mask_surface(crt, cs[ch], 0., 0.);
+      cairo_surface_destroy(cs[ch]);
+    }
+  cairo_destroy(crt);
+
+  // scale and write to output buffer
+  cairo_save(cr);
+  cairo_scale(cr, (float)width/d->waveform_width, (float)height/d->waveform_height);
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+  cairo_set_source_surface(cr, cst, 0., 0.);
+  cairo_paint(cr);
+  cairo_surface_destroy(cst);
   cairo_restore(cr);
 }
 
 static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, int width, int height)
 {
-  cairo_save(cr);
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  cairo_scale(cr, darktable.gui->ppd*width/(d->waveform_width*3),
-              darktable.gui->ppd*height/d->waveform_height);
-  for(int ch = 2; ch >= 0; ch--)
+  // same composite-to-temp optimization as in waveform code above
+  const double alpha_chroma = 0.85, desat_over = 0.85, alpha_over = 0.65;
+  const size_t img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_width);
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, d->waveform_width, d->waveform_height);
+
+  cairo_t *crt = cairo_create(cst);
+  // Though this scales and throws horizontal data on each composite,
+  // It appears to be fastest and least memory wasteful. The
+  // horizontal resolution will be visually equivalent to waveform.
+  cairo_scale(crt, 1./3., 1.);
+  for(int ch = 0; ch < 3; ch++)
   {
-    _lib_histogram_draw_waveform_channel(d, cr, ch, 0.9);
-    cairo_translate(cr, d->waveform_width/darktable.gui->ppd, 0);
+    cairo_surface_t *cs
+      = cairo_image_surface_create_for_data(d->waveform_img[ch], CAIRO_FORMAT_A8,
+                                            d->waveform_width, d->waveform_height, img_stride);
+    cairo_set_source_rgba(crt, ch==0 ? 1.:0., ch==1 ? 1.:0., ch==2 ? 1.:0., alpha_chroma);
+    cairo_set_operator(crt, CAIRO_OPERATOR_ADD);
+    cairo_mask_surface(crt, cs, 0., 0.);
+    cairo_set_operator(crt, CAIRO_OPERATOR_HARD_LIGHT);
+    cairo_set_source_rgba(crt, ch==0 ? 1.:desat_over, ch==1 ? 1.:desat_over, ch==2 ? 1.:desat_over, alpha_over);
+    cairo_mask_surface(crt, cs, 0., 0.);
+    cairo_surface_destroy(cs);
+    cairo_translate(crt, d->waveform_width, 0);
   }
+  cairo_destroy(crt);
+
+  cairo_save(cr);
+  cairo_scale(cr, (float)width/d->waveform_width, (float)height/d->waveform_height);
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+  cairo_set_source_surface(cr, cst, 0., 0.);
+  cairo_paint(cr);
+  cairo_surface_destroy(cst);
   cairo_restore(cr);
 }
 
@@ -1563,12 +1600,14 @@ void gui_init(dt_lib_module_t *self)
   // be scaled. 175 rows is reasonable CPU usage and represents plenty
   // of tonal gradation. 256 would match the # of bins in a regular
   // histogram.
-  d->waveform_height  = 175;
+  d->waveform_height = 175;
   // FIXME: combine with an intermediate buffer for vectorscope, as only use one or the other
-  d->waveform_linear  = dt_iop_image_alloc(d->waveform_max_width, d->waveform_height, 3);
+  d->waveform_linear = dt_iop_image_alloc(d->waveform_max_width, d->waveform_height, 3);
   // FIXME: combine waveform_8bit and vectorscope_graph, as only ever use one or the other
-  d->waveform_8bit    = dt_alloc_align(64, sizeof(uint8_t) * 3 * d->waveform_height *
-                                       cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_max_width));
+  // FIXME: keep alignment instead via single alloc via dt_alloc_perthread()?
+  for(int ch=0; ch<3; ch++)
+    d->waveform_img[ch] = dt_alloc_align(64, sizeof(uint8_t) * d->waveform_height *
+                                         cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_max_width));
 
   // FIXME: what is the appropriate resolution for this: balance memory use, processing speed, helpful resolution
   d->vectorscope_diameter_px = 384;
@@ -1729,7 +1768,8 @@ void gui_cleanup(dt_lib_module_t *self)
 
   free(d->histogram);
   dt_free_align(d->waveform_linear);
-  dt_free_align(d->waveform_8bit);
+  for(int ch=0; ch<3; ch++)
+    dt_free_align(d->waveform_img[ch]);
   dt_free_align(d->vectorscope_graph);
   dt_pthread_mutex_destroy(&d->lock);
 
