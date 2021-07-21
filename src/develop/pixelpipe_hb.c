@@ -1131,7 +1131,7 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
      !dt_tiling_piece_fits_host_memory(MAX(roi_in->width, roi_out->width),
                                        MAX(roi_in->height, roi_out->height), MAX(in_bpp, bpp),
                                           tiling->factor, tiling->overhead));
-  
+
   /* process module on cpu. use tiling if needed and possible. */
   if(needs_tiling || (darktable.unmuted & DT_DEBUG_TILING))
   {
