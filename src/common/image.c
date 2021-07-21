@@ -303,6 +303,7 @@ dt_imageio_write_xmp_t dt_image_get_xmp_mode()
       res = DT_WRITE_XMP_LAZY;
     else if(!strcmp(config, "never"))
       res = DT_WRITE_XMP_NEVER;
+    // migration path from boolean settings in <= 3.6, lazy mode were introduced in 3.8
     else if(!strcmp(config, "FALSE"))
       res = DT_WRITE_XMP_NEVER;
   }
@@ -2404,69 +2405,56 @@ int dt_image_local_copy_reset(const int32_t imgid)
 static gboolean _enforce_xmp_writing(const int32_t imgid)
 {
   gboolean writing = FALSE;
-  const gboolean verbose = (darktable.unmuted & DT_DEBUG_IMAGEIO) != 0;
 
+  // check for color labels, force write XMP if present
   sqlite3_stmt *stmt_1;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
     "SELECT COUNT(*) FROM main.color_labels WHERE imgid = ?1 AND color IS NOT NULL", -1, &stmt_1, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt_1, 1, imgid);
   if(sqlite3_step(stmt_1) == SQLITE_ROW)
   {
-    if(sqlite3_column_int(stmt_1, 0) != 0)
-    {
-      writing = TRUE;
-      if(verbose) fprintf(stderr, ", color flag found");      
-    }
+    if(sqlite3_column_int(stmt_1, 0) != 0) writing = TRUE;
   }
   sqlite3_finalize(stmt_1);
 
   if(!writing)
   {
+    // now check for geolocalisation, force write XMP if present
     sqlite3_stmt *stmt_2;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
       "SELECT COUNT(*) FROM main.images WHERE id = ?1 AND longitude IS NOT NULL AND latitude IS NOT NULL", -1, &stmt_2, NULL); 
     DT_DEBUG_SQLITE3_BIND_INT(stmt_2, 1, imgid);
     if(sqlite3_step(stmt_2) == SQLITE_ROW)
     {
-      if(sqlite3_column_int(stmt_2, 0) != 0)
-      {
-        writing = TRUE;
-        if(verbose) fprintf(stderr, ", geolocation found");    
-      }
+      if(sqlite3_column_int(stmt_2, 0) != 0) writing = TRUE;
     }
     sqlite3_finalize(stmt_2);
   }
 
   if(!writing)
   {  
+    // check for tags, force write XMP if present
     sqlite3_stmt *stmt_3;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
       "SELECT COUNT(*) FROM main.tagged_images WHERE imgid = ?1 AND tagid NOT IN memory.darktable_tags", -1, &stmt_3, NULL); 
     DT_DEBUG_SQLITE3_BIND_INT(stmt_3, 1, imgid);
     if(sqlite3_step(stmt_3) == SQLITE_ROW)
     {
-      if(sqlite3_column_int(stmt_3, 0) != 0)
-      {
-        writing = TRUE;
-        if(verbose) fprintf(stderr, ", tag found");
-      }
+      if(sqlite3_column_int(stmt_3, 0) != 0) writing = TRUE;
     }
     sqlite3_finalize(stmt_3);
   }
 
   if(!writing)
   {
+    // check for meta-data, force write XMP if present
     sqlite3_stmt *stmt_4;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
       "SELECT COUNT(*) FROM main.meta_data WHERE id = ?1 AND key IS NOT NULL", -1, &stmt_4, NULL); 
     DT_DEBUG_SQLITE3_BIND_INT(stmt_4, 1, imgid);
     if(sqlite3_step(stmt_4) == SQLITE_ROW)
     {
-      if(sqlite3_column_int(stmt_4, 0) != 0)
-      {
-        writing = TRUE;
-        if(verbose) fprintf(stderr, ", metadata found");
-      }
+      if(sqlite3_column_int(stmt_4, 0) != 0) writing = TRUE;
     }
     sqlite3_finalize(stmt_4);
   }
@@ -2487,13 +2475,6 @@ void dt_image_write_sidecar_file(const int32_t imgid)
   if(xmp_mode != DT_WRITE_XMP_ALWAYS)
   {
     const dt_history_hash_t hash_status = dt_history_hash_get_status(imgid);
-    const gboolean verbose = (darktable.unmuted & DT_DEBUG_IMAGEIO) != 0;
-    if(verbose)
-    {
-      fprintf(stderr,"[dt_image_write_sidecar_file] lazy check imgid %i, hash %x, ", imgid, hash_status); 
-      if(xmp_mode == DT_WRITE_XMP_VERY_LAZY) fprintf(stderr, "very ");
-      fprintf(stderr, "lazy");
-    }
     if(xmp_mode == DT_WRITE_XMP_VERY_LAZY)
     {
       if((hash_status == 0) || (hash_status & (DT_HISTORY_HASH_BASIC | DT_HISTORY_HASH_AUTO)))
@@ -2506,15 +2487,7 @@ void dt_image_write_sidecar_file(const int32_t imgid)
     }
 
     if(!writing)
-    {
-      if(verbose) fprintf(stderr, " HIT");
       writing = _enforce_xmp_writing(imgid);
-    }
-    if(verbose)
-    {
-      if(writing) fprintf(stderr," --> writing\n");
-      else        fprintf(stderr,"\n");
-    }
   }
 
   if(!writing) return;
