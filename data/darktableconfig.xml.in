@@ -284,12 +284,12 @@
     <type>
       <enum>
         <option>never</option>
-        <option>very lazy</option>
-        <option>lazy</option>
-        <option>always</option>
+        <option>after first manual edit</option>
+        <option>after first edit</option>
+        <option>on import</option>
       </enum>
     </type>
-    <default>always</default>
+    <default>on import</default>
     <shortdescription>write sidecar file for each image</shortdescription>
     <longdescription>these redundant files can later be re-imported into a different database, preserving your changes to the image.\nFor descriptions of 'lazy' and 'very_lazy' look up in the manual</longdescription>
   </dtconfig>

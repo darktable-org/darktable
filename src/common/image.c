@@ -297,15 +297,20 @@ dt_imageio_write_xmp_t dt_image_get_xmp_mode()
   const char *config = dt_conf_get_string_const("write_sidecar_files");
   if(config)
   {
-    if(!strcmp(config, "very lazy"))
+    if(!strcmp(config, "after first manual edit"))
       res = DT_WRITE_XMP_VERY_LAZY;
-    if(!strcmp(config, "lazy"))
+    else if(!strcmp(config, "after first edit"))
       res = DT_WRITE_XMP_LAZY;
     else if(!strcmp(config, "never"))
       res = DT_WRITE_XMP_NEVER;
     // migration path from boolean settings in <= 3.6, lazy mode were introduced in 3.8
     else if(!strcmp(config, "FALSE"))
+    {
+      dt_conf_set_string("write_sidecar_files", "never");
       res = DT_WRITE_XMP_NEVER;
+    }
+    else if(!strcmp(config, "TRUE"))
+      dt_conf_set_string("write_sidecar_files", "on import");
   }
   return res;
 }
