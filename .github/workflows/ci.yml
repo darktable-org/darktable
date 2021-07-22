@@ -74,7 +74,8 @@ jobs:
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-      GENERATOR: Ninja
+      #GENERATOR: Ninja
+      GENERATOR: Unix Makefiles
       TARGET: ${{ matrix.target }}
       DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
     steps:
@@ -227,7 +228,8 @@ jobs:
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-      GENERATOR: Ninja
+      #GENERATOR: Ninja # for some reason ninja started acting weird and generating files which called `ar` with linker flags instead of ar flags.
+      GENERATOR: Unix Makefiles
       TARGET: ${{ matrix.target }}
       DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
     steps:
