@@ -40,10 +40,10 @@
 
 #define HISTOGRAM_BINS 256
 // # of gradations between each primary/secondary to draw the hue ring
-// Note that this is gradations of CIE 1931 xy, when converted to
-// RGB (or perceptual space), the spacing will be different
-// FIXME: would fewer gradations still produce a nice hue ring? are this many gradations (32 * 6 = 192) slow to draw on the scope?
-#define VECTORSCOPE_HUES 32
+// this is tuned to most degenerate case -- curve to blue primary in Luv in linear ProPhoto RGB
+// FIXME: why does the blue curve in to the center point? is this a color processing bug or a relic of a luminance of that primary
+// FIXME: do fewer points and splines
+#define VECTORSCOPE_HUES 48
 #define VECTORSCOPE_BASE_LOG 30
 
 DT_MODULE(1)
@@ -100,12 +100,10 @@ typedef struct dt_lib_histogram_t
   uint8_t *waveform_8bit;
   int waveform_width, waveform_height, waveform_max_width;
   // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
-  uint8_t *vectorscope_graph;
+  uint8_t *vectorscope_graph, *vectorscope_bkgd;
   float vectorscope_pt[2];            // point colorpicker position
   int vectorscope_diameter_px;
-  // FIXME: These arrays could instead be alloc'd/free'd. Would the only concern about making dt_lib_histogram_t large so long be if it were stored in the DB?
-  float hue_ring_rgb[6][VECTORSCOPE_HUES][4] DT_ALIGNED_ARRAY;
-  float hue_ring_coord[6][VECTORSCOPE_HUES][2] DT_ALIGNED_ARRAY;
+  float hue_ring[6][VECTORSCOPE_HUES][2] DT_ALIGNED_ARRAY;
   const dt_iop_order_iccprofile_info_t *hue_ring_prof;
   dt_lib_histogram_scale_t hue_ring_scale;
   dt_lib_histogram_vectorscope_type_t hue_ring_colorspace;
@@ -264,7 +262,25 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
       }
 }
 
-static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, const dt_iop_order_iccprofile_info_t *const vs_prof)
+static inline float baselog(float x, float bound)
+{
+  // FIXME: use dt's fastlog()?
+  return log1pf((VECTORSCOPE_BASE_LOG - 1.f) * x / bound) / log(VECTORSCOPE_BASE_LOG) * bound;
+}
+
+static inline void log_scale(const dt_lib_histogram_t *d, float *x, float *y, float r)
+{
+  // FIXME: test for this in caller rather than here?
+  if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
+  {
+    const float h = hypotf(*x,*y);
+    const float s = baselog(h, r);
+    *x *= s / h;
+    *y *= s / h;
+  }
+}
+
+static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_order_iccprofile_info_t *const vs_prof)
 {
   if(vs_prof == d->hue_ring_prof &&
      d->vectorscope_scale == d->hue_ring_scale &&
@@ -291,6 +307,7 @@ static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, const dt_iop_order_ic
                                              {0.f, 1.f, 0.f}, {0.f, 1.f, 1.f},
                                              {0.f, 0.f, 1.f}, {1.f, 0.f, 1.f} };
   float max_radius = 0.f;
+  const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
   for(int k=0; k<6; k++)
   {
     float delta[4] DT_ALIGNED_PIXEL;
@@ -298,53 +315,87 @@ static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, const dt_iop_order_ic
       delta[ch]=(vertex_rgb[(k+1)%6][ch] - vertex_rgb[k][ch]) / VECTORSCOPE_HUES;
     for(int i=0; i < VECTORSCOPE_HUES; i++)
     {
-      float rgb[4] DT_ALIGNED_PIXEL, XYZ_D50[4] DT_ALIGNED_PIXEL, intermed[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
+      float rgb[4] DT_ALIGNED_PIXEL, XYZ_D50[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
       for_each_channel(ch,aligned(vertex_rgb,delta,rgb:16))
         rgb[ch] = vertex_rgb[k][ch] + delta[ch] * i;
       dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
                                  vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
-      // Try to represent hue in profile colorspace. Values may be
-      // outside [0,1] but cairo_set_source_rgba will clamp. Compare
-      // to illuminant_xy_to_RGB.
-      dt_XYZ_to_Rec709_D50(XYZ_D50, d->hue_ring_rgb[k][i]);
-      // FIXME: keep d->vectorscope_type in local variable for speed?
-      if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+      if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
-        dt_XYZ_to_xyY(XYZ_D50, intermed);
-        dt_xyY_to_Luv(intermed, chromaticity);
+        float xyY[4] DT_ALIGNED_PIXEL;
+        dt_XYZ_to_xyY(XYZ_D50, xyY);
+        dt_xyY_to_Luv(xyY, chromaticity);
       }
       else
       {
-        dt_XYZ_D50_2_XYZ_D65(XYZ_D50, intermed);
-        dt_XYZ_2_JzAzBz(intermed, chromaticity);
+        float XYZ_D65[4] DT_ALIGNED_PIXEL;
+        dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
+        dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
       }
-      d->hue_ring_coord[k][i][0] = chromaticity[1];
-      d->hue_ring_coord[k][i][1] = chromaticity[2];
+      d->hue_ring[k][i][0] = chromaticity[1];
+      d->hue_ring[k][i][1] = chromaticity[2];
       max_radius = MAX(max_radius, hypotf(chromaticity[1], chromaticity[2]));
     }
   }
-  // FIXME: make an image buffer with all the hues relative to whitepoint to use as the pattern for drawing hue ring and false color scope variant?
+  if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
+    for(int k=0; k<6; k++)
+      for(int i=0; i < VECTORSCOPE_HUES; i++)
+        log_scale(d, &d->hue_ring[k][i][0], &d->hue_ring[k][i][1], max_radius);
+
+  // chromaticities for drawing both hue ring and graph
+  const int diam_px = d->vectorscope_diameter_px;
+  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
+  for(size_t y = 0; y < diam_px; y++)
+    for(size_t x = 0; x < diam_px; x++)
+    {
+      float a = 2.0f * (x / (float)(diam_px-1) - 0.5f);
+      float b = 2.0f * (y / (float)(diam_px-1) - 0.5f);
+      float s = max_radius;
+      if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
+      {
+        const float h = hypotf(a,b);
+        s *= powf(VECTORSCOPE_BASE_LOG, h) / (VECTORSCOPE_BASE_LOG * h);
+      }
+      a *= s;
+      b *= s;
+      float RGB[4] DT_ALIGNED_PIXEL;
+      // FIXME: the L and Jz values are set by visual experimentation to give good saturation in graph, including center and primary/secondary nodes -- is there a better way?
+      if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+      {
+        // uv values can get huge at corners in logarithmic scale, so clamp to avoid weird colors
+        const float Luv[4] DT_ALIGNED_PIXEL = {28.0f, CLAMP(a,-100.0f,100.0f), CLAMP(b,-100.0f,100.0f)};
+        float xyY[4] DT_ALIGNED_PIXEL, XYZ_D50[4] DT_ALIGNED_PIXEL;
+        dt_Luv_to_xyY(Luv, xyY);
+        // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
+        dt_xyY_to_XYZ(xyY, XYZ_D50);
+        dt_XYZ_to_Rec709_D50(XYZ_D50, RGB);
+      }
+      else if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ)
+      {
+        const float JzAzBz[4] DT_ALIGNED_PIXEL = {0.003f, a, b};
+        float XYZ_D65[4] DT_ALIGNED_PIXEL;
+        dt_JzAzBz_2_XYZ(JzAzBz, XYZ_D65);
+        dt_XYZ_to_Rec709_D65(XYZ_D65, RGB);
+      }
+      else
+      {
+        dt_unreachable_codepath();
+      }
+      // FIXME: convert to RGB display space instead of sRGB
+      // conversion cribbed from colorbalancergb
+      // normalize with hue-preserving method (sort-of) to prevent gamut-clipping in sRGB
+      const float max_RGB = fmaxf(fmaxf(RGB[0], RGB[1]), RGB[2]);
+      for(size_t c = 0; c < 3; c++) RGB[c] = powf(RGB[c] / max_RGB, 1.f / 2.2f);
+      uint8_t *const restrict px = d->vectorscope_bkgd + y * stride + x * 4U;
+      // BGR/RGB flip is for pixelpipe vs. Cairo color?
+      for(int ch=0; ch<3; ch++)
+        px[2U-ch] = CLAMP((int)(RGB[ch] * 255.0f), 0, 255);
+    }
+
   d->vectorscope_radius = max_radius;
   d->hue_ring_prof = vs_prof;
   d->hue_ring_scale = d->vectorscope_scale;
   d->hue_ring_colorspace = d->vectorscope_type;
-}
-
-static inline float baselog(float x, float bound)
-{
-  // FIXME: use dt's fastlog()?
-  return log1pf((VECTORSCOPE_BASE_LOG - 1.f) * x / bound) / log(VECTORSCOPE_BASE_LOG) * bound;
-}
-
-static inline void log_scale(const dt_lib_histogram_t *d, float *x, float *y, float r)
-{
-  if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
-  {
-    const float h = hypotf(*x,*y);
-    const float s = baselog(h, r);
-    *x *= s / h;
-    *y *= s / h;
-  }
 }
 
 static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const float *const input,
@@ -360,7 +411,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     vs_prof = dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC);
   }
 
-  _lib_histogram_hue_ring(d, vs_prof);
+  _lib_histogram_vectorscope_bkgd(d, vs_prof);
   // FIXME: particularly for u*v*, center on hue ring bounds rather than plot center, to be able to show a larger plot?
   const float max_radius = d->vectorscope_radius;
   const float max_diam = max_radius * 2.f;
@@ -459,8 +510,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       }
 
       // FIXME: make cx,cy which are float, check 0 <= cx < 1, then multiply by diam_px
-      const int out_x = diam_px * (chromaticity[1] / max_diam + 0.5f);
-      const int out_y = diam_px * (chromaticity[2] / max_diam + 0.5f);
+      const int out_x = (diam_px-1) * (chromaticity[1] / max_diam + 0.5f);
+      const int out_y = (diam_px-1) * (chromaticity[2] / max_diam + 0.5f);
 
       // clip any out-of-scale values, so there aren't light edges
       if(out_x >= 0 && out_x <= diam_px-1 && out_y >= 0 && out_y <= diam_px-1)
@@ -472,7 +523,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_HLG_REC2020, "", DT_INTENT_PERCEPTUAL);
   const float *const restrict lut = DT_IS_ALIGNED((const float *const restrict)profile->lut_out[0]);
   const float lutmax = profile->lutsize - 1;
-  const int out_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
+  const int out_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, diam_px);
   uint8_t *const graph = d->vectorscope_graph;
 
   // FIXME: should count the max bin size, and vary the scale such that it is always 1?
@@ -484,62 +535,9 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   for(size_t out_y = 0; out_y < diam_px; out_y++)
     for(size_t out_x = 0; out_x < diam_px; out_x++)
     {
-      uint8_t *const restrict px = graph + out_y * out_stride + out_x * 4U;
       const int count = binned[out_y * diam_px + out_x];
-      if(!count)
-      {
-        px[0] = px[1] = px[2] = 0;
-        continue;
-      }
-
-      float b[4] DT_ALIGNED_PIXEL = {scale * count,
-        max_diam * (((out_x + 0.5f) / diam_px) - 0.5f),
-        max_diam * (((out_y + 0.5f) / diam_px) - 0.5f)};
-
-      const float intensity = lut[(int)(MIN(1.f, b[0]) * lutmax)];
-      float XYZ_D50[4] DT_ALIGNED_PIXEL, RGB[4] DT_ALIGNED_PIXEL;
-      const float h = hypotf(b[1], b[2]);
-
-      // FIXME: look into alternative ways to render this. From Sobotka: "Makes me wonder if full emission mixtures using the GL alpha transparency adding might help for visibility? I’d expect maximum volume of values add to display referred maximum white, while lower density volume of values are more visible and loosely representative of the mixture?"
-      if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
-      {
-        // FIXME: just convert Luv -> JzAzBz and fall through?
-        b[0] = 40.f + intensity * 60.f;
-        const float chroma = max_diam * (0.1 + 0.2 * (1.f - intensity));
-        b[1] *= chroma / h;
-        b[2] *= chroma / h;
-        float xyY[4] DT_ALIGNED_PIXEL;
-        dt_Luv_to_xyY(b, xyY);
-        // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
-        dt_xyY_to_XYZ(xyY, XYZ_D50);
-      }
-      else if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ)
-      {
-        b[0] = intensity * 0.02f;
-        const float chroma = max_diam * (0.2 + 0.4 * (1.f - intensity));
-        b[1] *= chroma / h;
-        b[2] *= chroma / h;
-        // FIXME: can optimize the XYZ_D65 -> RGB conversion by pre-multiplying matrix?
-        float XYZ_D65[4] DT_ALIGNED_PIXEL;
-        dt_JzAzBz_2_XYZ(b, XYZ_D65);
-        dt_XYZ_D65_2_XYZ_D50(XYZ_D65, XYZ_D50);
-      }
-      else
-      {
-        dt_unreachable_codepath();
-      }
-      // FIXME: a custom matrix could do this flip and write directly to pixel buffer
-      dt_XYZ_to_Rec709_D50(XYZ_D50, RGB);
-      // FIXME: can do all this work in XYZ? or uvY? (dt_uvY_to_xyY...)
-      // FIXME: can do this work in XYZ -> Lab -> LCH -> Lab -- faster?
-      // FIXME: just calculate from out_x/out_y rather than storing? then binned can be back to 1d and have int counters
-      // FIXME:what are the min/max chroma values?
-      // FIXME: do we want to do this work in Lch space, where different hues have different max chromas, or in RGB?
-      // FIXME: instead of doing this pre-colorspace, do a quick hack of XYZ -> xyY, scale the Y, then -> XYZ -> Rec709_D50 -- or if that is fishy because they're tied to stimulus and not response, do the quickest possible conversion (to Luv/Lch?) and scale in that space
-      // BGR/RGB flip is for pixelpipe vs. Cairo color?
-      // FIXME: but don't want to flip earlier when binning?
-      for(int ch=0; ch<3; ch++)
-        px[2U-ch] = CLAMP((int)(RGB[ch] * 255.0f), 0, 255);
+      const float intensity = lut[(int)(MIN(1.f, scale * count) * lutmax)];
+      graph[out_y * out_stride + out_x] = intensity * 255.0f;
     }
 
   dt_free_align(binned);
@@ -745,6 +743,20 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
     cairo_stroke(cr);
   }
 
+  cairo_surface_t *bkgd_surface =
+    dt_cairo_image_surface_create_for_data(d->vectorscope_bkgd, CAIRO_FORMAT_RGB24,
+                                           diam_px, diam_px,
+                                           cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px));
+  cairo_pattern_t *bkgd_pat = cairo_pattern_create_for_surface(bkgd_surface);
+  // primary nodes circles may extend to outside of pattern
+  cairo_pattern_set_extend(bkgd_pat, CAIRO_EXTEND_PAD);
+  // FIXME: is there an easier way to do this work?
+  cairo_matrix_t matrix;
+  cairo_matrix_init_translate(&matrix, 0.5*diam_px/darktable.gui->ppd, 0.5*diam_px/darktable.gui->ppd);
+  cairo_matrix_scale(&matrix, (double)diam_px / min_size / darktable.gui->ppd,
+                     (double)diam_px / min_size / darktable.gui->ppd);
+  cairo_pattern_set_matrix(bkgd_pat, &matrix);
+
   // FIXME: also add hue rings (monochrome/dotted) for input/work/output profiles
   // from Sobotka:
   // 1. The input encoding primaries. How dd the image start out life? What is valid data within that? What is invalid introduced by error of camera virtual primaries solving or math such as resampling an image such that negative lobes result?
@@ -753,55 +765,60 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // graticule: histogram profile hue ring
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  float x = d->hue_ring_coord[5][VECTORSCOPE_HUES-1][0];
-  float y = d->hue_ring_coord[5][VECTORSCOPE_HUES-1][1];
-  log_scale(d, &x, &y, vs_radius);
+  cairo_push_group(cr);
+  cairo_set_source(cr, bkgd_pat);
   for(int n=0; n<6; n++)
-  {
     for(int h=0; h<VECTORSCOPE_HUES; h++)
     {
-      cairo_move_to(cr, x*scale, y*scale);
-      // FIXME: can we pre-make a pattern with the hues radiating out, and use it as the "ink" to draw the hue ring and -- if in false color mode -- the vectorscope? will this be faster then drawing lots of lines each with their own color? will it allow for drawing the hue ring with splines and calculating fewer points? -- we might need a color pattern of the colorspace, then masked once to increase saturation and once for alpha?
-      // note that hue_ring_rgb and hue_ring_coord are calculated as float but converted here to double
-      cairo_set_source_rgba(cr, d->hue_ring_rgb[n][h][0], d->hue_ring_rgb[n][h][1], d->hue_ring_rgb[n][h][2], 0.5);
-      x = d->hue_ring_coord[n][h][0];
-      y = d->hue_ring_coord[n][h][1];
-      log_scale(d, &x, &y, vs_radius);
+      // note that hue_ring coords are calculated as float but converted here to double
+      float x = d->hue_ring[n][h][0];
+      float y = d->hue_ring[n][h][1];
       cairo_line_to(cr, x*scale, y*scale);
-      cairo_stroke(cr);
-      if(h==0)
-      {
-        cairo_arc(cr, x*scale, y*scale, DT_PIXEL_APPLY_DPI(2.), 0., M_PI * 2.);
-        cairo_set_source_rgba(cr, d->hue_ring_rgb[n][h][0], d->hue_ring_rgb[n][h][1], d->hue_ring_rgb[n][h][2], 1.);
-        cairo_fill_preserve(cr);
-        set_color(cr, darktable.bauhaus->graph_grid);
-        cairo_stroke(cr);
-      }
     }
+  cairo_close_path(cr);
+  cairo_stroke(cr);
+  cairo_pop_group_to_source(cr);
+  cairo_paint_with_alpha(cr, 0.4);
+
+  // primary/secondary nodes
+  for(int n=0; n<6; n++)
+  {
+    float x = d->hue_ring[n][0][0];
+    float y = d->hue_ring[n][0][1];
+    cairo_arc(cr, x*scale, y*scale, DT_PIXEL_APPLY_DPI(2.), 0., M_PI * 2.);
+    cairo_set_source(cr, bkgd_pat);
+    cairo_fill_preserve(cr);
+    set_color(cr, darktable.bauhaus->graph_grid);
+    cairo_stroke(cr);
   }
 
   // vectorscope graph
   // FIXME: use cairo_pattern_set_filter()?
+  cairo_surface_t *graph_surface =
+    dt_cairo_image_surface_create_for_data(d->vectorscope_graph, CAIRO_FORMAT_A8,
+                                           diam_px, diam_px,
+                                           cairo_format_stride_for_width(CAIRO_FORMAT_A8, diam_px));
+  cairo_pattern_t *graph_pat = cairo_pattern_create_for_surface(graph_surface);
+  cairo_pattern_set_matrix(graph_pat, &matrix);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
-  // FIXME: if use cairo_mask() could calculate a false color vectorscope and draw with appropriate hues?
-  cairo_surface_t *source = dt_cairo_image_surface_create_for_data(d->vectorscope_graph, CAIRO_FORMAT_RGB24,
-                                                                   diam_px, diam_px, stride);
-
-  // FIXME: note that multiple CAIRO_OPERATOR_ADD passes give very nice intensity -- simulate this in the drawing code?
-  cairo_pattern_t *pattern = cairo_pattern_create_for_surface(source);
-  cairo_matrix_t matrix;
-  cairo_matrix_init_translate(&matrix, 0.5*diam_px/darktable.gui->ppd, 0.5*diam_px/darktable.gui->ppd);
-  cairo_matrix_scale(&matrix, (double)diam_px / min_size / darktable.gui->ppd,
-                     (double)diam_px / min_size / darktable.gui->ppd);
-  cairo_pattern_set_matrix(pattern, &matrix);
-  cairo_set_source(cr, pattern);
-  if(isnan(d->vectorscope_pt[0]))
-    cairo_paint(cr);
-  else
+  if(!isnan(d->vectorscope_pt[0]))
+    cairo_push_group(cr);
+  cairo_set_source(cr, bkgd_pat);
+  cairo_mask(cr, graph_pat);
+  //cairo_mask_surface(cr, graph_surface, 0., 0.);
+  cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
+  cairo_mask(cr, graph_pat);
+  cairo_pattern_destroy(bkgd_pat);
+  cairo_surface_destroy(bkgd_surface);
+  cairo_pattern_destroy(graph_pat);
+  cairo_surface_destroy(graph_surface);
+  if(!isnan(d->vectorscope_pt[0]))
+  {
+    cairo_pop_group_to_source(cr);
     cairo_paint_with_alpha(cr, 0.5);
-  cairo_pattern_destroy(pattern);
-  cairo_surface_destroy(source);
+  }
+
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 
   if(!isnan(d->vectorscope_pt[0]))
@@ -1571,9 +1588,13 @@ void gui_init(dt_lib_module_t *self)
                                        cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->waveform_max_width));
 
   // FIXME: what is the appropriate resolution for this: balance memory use, processing speed, helpful resolution
+  // FIXME: make this and waveform params #DEFINEd or const above, rather than set here?
   d->vectorscope_diameter_px = 384;
-  const int vectorscope_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px);
-  d->vectorscope_graph = dt_alloc_align(64, sizeof(uint8_t) * 4U * vectorscope_stride * d->vectorscope_diameter_px);
+  d->vectorscope_graph = dt_alloc_align(64, sizeof(uint8_t) * d->vectorscope_diameter_px *
+                                        cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->vectorscope_diameter_px));
+  // FIXME: note that the background can be lower resolution than the graph -- test/compare?
+  d->vectorscope_bkgd = dt_alloc_align(64, sizeof(uint8_t) * 4U * d->vectorscope_diameter_px *
+                                       cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px));
   d->hue_ring_prof = NULL;
   d->hue_ring_scale = DT_LIB_HISTOGRAM_SCALE_N;
   d->hue_ring_colorspace = DT_LIB_HISTOGRAM_VECTORSCOPE_N;
@@ -1731,6 +1752,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_free_align(d->waveform_linear);
   dt_free_align(d->waveform_8bit);
   dt_free_align(d->vectorscope_graph);
+  dt_free_align(d->vectorscope_bkgd);
   dt_pthread_mutex_destroy(&d->lock);
 
   g_free(self->data);
