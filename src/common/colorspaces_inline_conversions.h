@@ -743,6 +743,10 @@ static inline float dt_camera_rgb_luminance(const float *const rgb)
   return (rgb[0] * 0.2225045f + rgb[1] * 0.7168786f + rgb[2] * 0.0606169f);
 }
 
+static inline float dt_workprofile_rgb_luminance(const float *const rgb, const float matrix_in[9])
+{
+  return (matrix_in[3] * rgb[0] + matrix_in[4] * rgb[1] + matrix_in[5] * rgb[2]);
+}
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ_D50, XYZ_D65: 16)
