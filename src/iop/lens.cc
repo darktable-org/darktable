@@ -58,7 +58,11 @@ extern "C" {
 #define LF_0395
 #endif
 
-DT_MODULE_INTROSPECTION(5, dt_iop_lensfun_params_t)
+#if LF_VERSION == 0x2000000
+#define LF_2000
+#endif
+
+DT_MODULE_INTROSPECTION(6, dt_iop_lensfun_params_t)
 
 typedef enum dt_iop_lensfun_modflag_t
 {
@@ -96,6 +100,7 @@ typedef struct dt_iop_lensfun_params_t
   float tca_r; // $MIN: 0.99 $MAX: 1.01 $DEFAULT: 1.0 $DESCRIPTION: "TCA red"
   float tca_b; // $MIN: 0.99 $MAX: 1.01 $DEFAULT: 1.0 $DESCRIPTION: "TCA blue"
   int modified; // $DEFAULT: 0 did user changed anything from automatically detected?
+  int lensfun_version;
 } dt_iop_lensfun_params_t;
 
 typedef struct dt_iop_lensfun_gui_data_t
@@ -300,6 +305,38 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     return 0;
   }
 
+  if(old_version == 5 && new_version == 6)
+  {
+    typedef struct
+    {
+      int modify_flags;
+      int inverse; // $MIN: 0 $MAX: 1 $DEFAULT: 0 $DESCRIPTION: "mode"
+      float scale; // $MIN: 0.1 $MAX: 2.0 $DEFAULT: 1.0
+      float crop;
+      float focal;
+      float aperture;
+      float distance;
+      lfLensType target_geom; // $DEFAULT: LF_RECTILINEAR $DESCRIPTION: "geometry"
+      char camera[128];
+      char lens[128];
+      int tca_override; // $DEFAULT: 0
+      float tca_r; // $MIN: 0.99 $MAX: 1.01 $DEFAULT: 1.0 $DESCRIPTION: "TCA red"
+      float tca_b; // $MIN: 0.99 $MAX: 1.01 $DEFAULT: 1.0 $DESCRIPTION: "TCA blue"
+      int modified; // $DEFAULT: 0 did user changed anything from automatically detected?
+    } dt_iop_lensfun_params_v5_t;
+
+    const dt_iop_lensfun_params_v5_t *o = (dt_iop_lensfun_params_v5_t *)old_params;
+    dt_iop_lensfun_params_t *n = (dt_iop_lensfun_params_t *)new_params;
+    dt_iop_lensfun_params_t *d = (dt_iop_lensfun_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    memcpy(n, o, sizeof(dt_iop_lensfun_params_t));
+    n->lensfun_version = 0;
+
+    return 0;
+  }
+
   return 1;
 }
 
@@ -342,21 +379,43 @@ static lfModifier * get_modifier(int *mods_done, int w, int h, const dt_iop_lens
   int mods_todo = d->modify_flags & mods_filter;
   int mods_done_tmp = 0;
 
-#ifdef LF_0395
-  mod = new lfModifier(d->crop, w, h, LF_PF_F32, (force_inverse) ? !d->inverse : d->inverse);
+#if defined(LF_2000) || defined(LF_0395)
+  #ifdef LF_2000
+  mod = new lfModifier(d->lens, d->focal, d->crop, w, h, LF_PF_F32, d->inverse);
+  #else
+  mod = new lfModifier(d->crop, w, h, LF_PF_F32, d->inverse);
+  #endif
+
   if(mods_todo & LF_MODIFY_DISTORTION)
+  #ifdef LF_2000
+    mods_done_tmp |= mod->EnableDistortionCorrection();
+  #else
     mods_done_tmp |= mod->EnableDistortionCorrection(d->lens, d->focal);
+  #endif
+
   if((mods_todo & LF_MODIFY_GEOMETRY) && (d->lens->Type != d->target_geom))
+  #ifdef LF_2000
+    mods_done_tmp |= mod->EnableProjectionTransform(d->lens->Type);
+  #else
     mods_done_tmp |= mod->EnableProjectionTransform(d->lens, d->focal, d->target_geom);
+  #endif
   if((mods_todo & LF_MODIFY_SCALE) && (d->scale != 1.0))
     mods_done_tmp |= mod->EnableScaling(d->scale);
   if(mods_todo & LF_MODIFY_TCA)
   {
     if(d->tca_override) mods_done_tmp |= mod->EnableTCACorrection(d->custom_tca);
+  #ifdef LF_2000
+    else mods_done_tmp |= mod->EnableTCACorrection();
+  #else
     else mods_done_tmp |= mod->EnableTCACorrection(d->lens, d->focal);
+  #endif
   }
   if(mods_todo & LF_MODIFY_VIGNETTING)
+  #ifdef LF_2000
+    mods_done_tmp |= mod->EnableVignettingCorrection(d->aperture, d->distance);
+  #else
     mods_done_tmp |= mod->EnableVignettingCorrection(d->lens, d->focal, d->aperture, d->distance);
+  #endif
 #else
   mod = new lfModifier(d->lens, d->crop, w, h);
   mods_done_tmp = mod->Initialize(d->lens, LF_PF_F32, d->focal, d->aperture, d->distance, d->scale, d->target_geom, mods_todo,
@@ -366,6 +425,116 @@ static lfModifier * get_modifier(int *mods_done, int w, int h, const dt_iop_lens
   if(mods_done) *mods_done = mods_done_tmp;
   return mod;
 }
+
+#ifdef LF_2000
+static int get_lensfun_updated_scale(dt_iop_module_t *self,
+                                     dt_iop_lensfun_params_t *p,
+                                     const lfCamera *camera,
+                                     struct legacy_initializer *initializer)
+{
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
+  lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
+  int ret = 0;
+
+  if(!p->lens[0] != '\0') return -1;
+
+  dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+  const lfLens **lenslist = dt_iop_lensfun_db->FindLenses(camera, NULL, p->lens, 0);
+  if(!lenslist) {
+    lf_free(lenslist);
+    dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+    return -1;
+  }
+
+  const dt_image_t *img = &(self->dev->image_storage);
+
+  // FIXME: get those from rawprepare IOP somehow !!!
+  const int iwd = img->width - img->crop_x - img->crop_width,
+      iht = img->height - img->crop_y - img->crop_height;
+
+  // create dummy modifier
+#if defined(__GNUC__) && (__GNUC__ > 7)
+  const dt_iop_lensfun_data_t d =
+  {
+      .lens         = (lfLens *)lenslist[0],
+      .modify_flags = p->modify_flags,
+      .inverse      = p->inverse,
+      .scale        = 1.0f,
+      .crop         = p->crop,
+      .focal        = p->focal,
+      .aperture     = p->aperture,
+      .distance     = p->distance,
+      .target_geom  = p->target_geom,
+      .custom_tca   = { .Model = LF_TCA_MODEL_NONE }
+  };
+#else
+  // prior to GCC 8.x the / .custom_tca   = { .Model = ??? } / was not supported:
+  //    sorry, unimplemented: non-trivial designated initializers not supported
+  // ?? This code can be removed when GCC-7 is not used anymore.
+
+  dt_iop_lensfun_data_t d;
+  d.lens             = (lfLens *)lenslist[0];
+  d.modify_flags     = p->modify_flags;
+  d.inverse          = p->inverse;
+  d.scale            = 1.0f;
+  d.crop             = p->crop;
+  d.focal            = p->focal;
+  d.aperture         = p->aperture;
+  d.distance         = p->distance;
+  d.target_geom      = p->target_geom;
+  d.custom_tca.Model = LF_TCA_MODEL_NONE;
+#endif
+
+  lfModifier *modifier = get_modifier(NULL, iwd, iht, &d, LF_MODIFY_ALL, FALSE);
+  ret = modifier->GetLegacyAutoScaleFactor(initializer);
+  delete modifier;
+
+  lf_free(lenslist);
+  dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+  return ret;
+}
+
+static int update_lensfun_scale(struct dt_iop_module_t *self,
+                                dt_iop_lensfun_params_t *p,
+                                dt_iop_lensfun_data_t *d,
+                                dt_iop_lensfun_gui_data_t *g)
+{
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
+  lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
+  const lfCamera **cam = NULL;
+  struct legacy_initializer initializer;
+
+  if(!p->camera[0]) return -1;
+
+  initializer.format = LF_PF_F32;
+  initializer.focal = p->focal;
+  initializer.aperture = p->aperture;
+  initializer.distance = p->distance;
+  initializer.scale = p->scale;
+  initializer.targeom = p->target_geom;
+  initializer.flags = p->modify_flags;
+  initializer.reverse = p->inverse;
+  initializer.crop = p->crop;
+  initializer.lensfun_version = p->lensfun_version;
+
+  dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+  cam = dt_iop_lensfun_db->FindCamerasExt(NULL, p->camera, 0);
+  dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+
+  if(!get_lensfun_updated_scale(self, p, cam[0], &initializer)) return -1;
+
+  p->scale = initializer.new_scale;
+  p->lensfun_version = initializer.lensfun_version;
+
+  if(d){
+    d->scale = p->scale;
+  }
+  if(g)
+    dt_bauhaus_slider_set(g->scale, p->scale);
+
+  return 0;
+}
+#endif
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -1106,6 +1275,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
      */
     p = (dt_iop_lensfun_params_t *)self->default_params;
   }
+#ifdef LF_2000
+  else {
+    dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
+    update_lensfun_scale(self,p,d,NULL);
+  }
+#endif
 
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
 
@@ -1143,7 +1318,17 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       *d->lens = *lens[0];
       if(p->tca_override)
       {
-#ifdef LF_0395
+#ifdef LF_2000
+          const dt_image_t *img = &(self->dev->image_storage);
+
+          d->custom_tca.Model = LF_TCA_MODEL_LINEAR;
+          d->custom_tca.Focal = p->focal;
+          d->custom_tca.Terms[0] = p->tca_r;
+          d->custom_tca.Terms[1] = p->tca_b;
+
+          d->custom_tca.CalibAttr.CropFactor = d->crop;
+          d->custom_tca.CalibAttr.AspectRatio = (float)img->width / (float)img->height;
+#elif LF_0395
         const dt_image_t *img = &(self->dev->image_storage);
 
         d->custom_tca =
@@ -1247,7 +1432,7 @@ void init_global(dt_iop_module_so_t *module)
     gchar *sysdbpath = g_build_filename(path, "lensfun", "version_" STR(LF_MAX_DATABASE_VERSION), (char *)NULL);
 #endif
 
-#ifdef LF_0395
+#if defined(LF_2000) || defined(LF_0395)
     const long userdbts = dt_iop_lensfun_db->ReadTimestamp(dt_iop_lensfun_db->UserUpdatesLocation);
     const long sysdbts = dt_iop_lensfun_db->ReadTimestamp(sysdbpath);
     const char *dbpath = userdbts > sysdbts ? dt_iop_lensfun_db->UserUpdatesLocation : sysdbpath;
@@ -1810,7 +1995,7 @@ static void lens_set(dt_iop_module_t *self, const lfLens *lens)
     snprintf(aperture, sizeof(aperture), "%g", lens->MinAperture);
 
   mounts[0] = 0;
-#ifdef LF_0395
+#if defined(LF_2000) || defined(LF_0395)
   const char* const* mount_names = lens->GetMountNames();
   i = 0;
   while (mount_names && *mount_names) {
@@ -1835,7 +2020,7 @@ static void lens_set(dt_iop_module_t *self, const lfLens *lens)
                          "type:\t\t%s\n"
                          "mounts:\t%s"),
                        maker ? maker : "?", model ? model : "?", focal, aperture,
-#ifdef LF_0395
+#if defined(LF_2000) || defined(LF_0395)
                        g->camera->CropFactor,
 #else
                        lens->CropFactor,
@@ -2091,6 +2276,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(w)
   {
     // user did modify something with some widget
+    p->lensfun_version = LF_VERSION;
     p->modified = 1;
   }
 }
