@@ -20,6 +20,7 @@
 #endif
 // our includes go first:
 #include "bauhaus/bauhaus.h"
+#include "common/dwt.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "dtgtk/drawingarea.h"
@@ -141,7 +142,7 @@ inline static void blur_2D_Bspline(const float *const restrict in, float *const 
           const size_t col = CLAMP((int)j + (int)(jj - (FSIZE - 1) / 2), (int)0, (int)width - 1);
           const size_t k_index = (row * width + col);
 
-          const float DT_ALIGNED_ARRAY filter[FSIZE]
+          static const float DT_ALIGNED_ARRAY filter[FSIZE]
               = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
 
           acc += filter[ii] * filter[jj] * in[k_index];
@@ -176,7 +177,7 @@ static inline void create_lens_kernel(float *const restrict buffer,
 
   // Spatial coordinates rounding error
   const float eps = 1.f / (float)width;
-  const float radius = (width - 1) / 2.f - 1;
+  const float radius = (float)(width - 1) / 2.f - 1;
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) dt_omp_firstprivate(width, height, buffer, n, m, k, rotation, eps, radius) \
@@ -186,8 +187,8 @@ static inline void create_lens_kernel(float *const restrict buffer,
     for(size_t j = 0; j < width; j++)
     {
       // get normalized kernel coordinates in [-1 ; 1]
-      const float x = (i - 1) / radius - 1;
-      const float y = (j - 1) / radius - 1;
+      const float x = (float)(i - 1) / radius - 1;
+      const float y = (float)(j - 1) / radius - 1;
 
       // get current radial distance from kernel center
       const float r = hypotf(x, y);
@@ -217,7 +218,7 @@ static inline void create_motion_kernel(float *const restrict buffer,
   // Spatial coordinates rounding error
   const float eps = 1.f / (float)width;
 
-  const float radius = (width - 1) / 2.f - 1;
+  const float radius = (float)(width - 1) / 2.f - 1;
   const float corr_angle = -M_PI_F / 4.f - angle;
 
   // Matrix of rotation
@@ -235,7 +236,7 @@ static inline void create_motion_kernel(float *const restrict buffer,
     // every eighth of pixel
 
     // get normalized kernel coordinates in [-1 ; 1]
-    const float x = (i / 8.f - 1) / radius - 1;
+    const float x = (float)(i / 8.f - 1) / radius - 1;
     //const float y = (j - 1) / radius - 1; // not used here
 
     // build the motion path : 2nd order polynomial
@@ -279,8 +280,8 @@ static inline void create_gauss_kernel(float *const restrict buffer,
     for(size_t j = 0; j < width; j++)
     {
       // get normalized kernel coordinates in [-1 ; 1]
-      const float x = (i - 1) / radius - 1;
-      const float y = (j - 1) / radius - 1;
+      const float x = (float)(i - 1) / radius - 1;
+      const float y = (float)(j - 1) / radius - 1;
 
       // get current square radial distance from kernel center
       const float r_2 = x * x + y * y;
@@ -388,7 +389,7 @@ static inline void build_pixel_kernel(float *const buffer, const size_t width, c
   }
 
   // normalize to respect the conservation of energy law
-  float norm = compute_norm(buffer, width, height);
+  const float norm = compute_norm(buffer, width, height);
   normalize(buffer, width, height, norm);
 
   dt_free_align(kernel_1);
