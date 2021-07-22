@@ -176,7 +176,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
 
 #if 0
-  float pts[4] = {(float)(roi_out->x) / roi_in->scale, (float)(roi_out->y) / roi_in->scale, (float)(roi_out->x + roi_out->width) / roi_in->scale, (float)(roi_out->y + roi_out->height) / roi_in->scale};
+  const float in_scale = roi_in->scale;
+  dt_boundingbox_t pts = {(float)(roi_out->x) / in_scale, (float)(roi_out->y) / in_scale,
+                          (float)(roi_out->x + roi_out->width) / in_scale, (float)(roi_out->y + roi_out->height) / in_scale};
   printf("in  %f %f %f %f\n", pts[0], pts[1], pts[2], pts[3]);
   dt_dev_distort_backtransform_plus(dev, dev->pipe, 0, priority, pts, 2);
   printf("out %f %f %f %f\n\n", pts[0], pts[1], pts[2], pts[3]);

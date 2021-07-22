@@ -238,6 +238,8 @@ struct dt_undo_t;
 struct dt_colorspaces_t;
 struct dt_l10n_t;
 
+typedef float dt_boundingbox_t[4];  //(x,y) of upperleft, then (x,y) of lowerright
+
 typedef enum dt_debug_thread_t
 {
   // powers of two, masking

@@ -209,7 +209,7 @@ typedef struct dt_iop_module_t
   /** color picker proxy */
   struct dt_iop_color_picker_t *picker;
   /** bounding box in which the mean color is requested. */
-  float color_picker_box[4];
+  dt_boundingbox_t color_picker_box;
   /** single point to pick if in point mode */
   float color_picker_point[2];
   /** place to store the picked color of module input. */

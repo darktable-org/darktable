@@ -37,7 +37,7 @@ typedef struct dt_iop_color_picker_t
   /** used to avoid recursion when a parameter is modified in the apply() */
   GtkWidget *colorpick;
   float pick_pos[2]; // last picker positions (max 9 picker per module)
-  float pick_box[4]; // last picker areas (max 9 picker per module)
+  dt_boundingbox_t pick_box; // last picker areas (max 9 picker per module)
 } dt_iop_color_picker_t;
 
 static gboolean _iop_record_point_area(dt_iop_color_picker_t *self)
@@ -78,7 +78,7 @@ static void _iop_get_point(dt_iop_color_picker_t *self, float *pos)
   }
 }
 
-static void _iop_get_area(dt_iop_color_picker_t *self, float *box)
+static void _iop_get_area(dt_iop_color_picker_t *self, dt_boundingbox_t box)
 {
   if(!isnan(self->pick_box[0]) && !isnan(self->pick_box[1]))
   {
@@ -184,7 +184,7 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
     }
     if(kind == DT_COLOR_PICKER_AREA)
     {
-      float box[4];
+      dt_boundingbox_t box;
       _iop_get_area(self, box);
       dt_lib_colorpicker_set_box_area(darktable.lib, box);
       self->pick_pos[0] = NAN; // trigger difference on first apply
