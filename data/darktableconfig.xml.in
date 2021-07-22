@@ -291,7 +291,7 @@
     </type>
     <default>on import</default>
     <shortdescription>write sidecar file for each image</shortdescription>
-    <longdescription>these redundant files can later be re-imported into a different database, preserving your changes to the image.\nFor descriptions of 'lazy' and 'very_lazy' look up in the manual</longdescription>
+    <longdescription>the sidecar files hold information about all your development steps to allow flawless re-importing of image files.\n\ndepending on the selected mode sidecar files will be written\n never\n on import: immediately after importing into the database\n after first manual edit: any edit after all defined presets had been applied\n after first edit: any edit after mandatory modules had been applied</longdescription>
   </dtconfig>
   <dtconfig prefs="storage" section="xmp">
     <name>compress_xmp_tags</name>
