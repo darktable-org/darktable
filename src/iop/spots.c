@@ -478,7 +478,7 @@ static int masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
                                   const dt_iop_roi_t *roi, const float *target, const float *source, int *dx,
                                   int *dy)
 {
-  float points[4];
+  dt_boundingbox_t points;
   masks_point_denormalize(piece, roi, target, 1, points);
   masks_point_denormalize(piece, roi, source, 1, points + 2);
 
@@ -563,7 +563,7 @@ void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
       {
         dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)form->points->data;
 
-        float points[4];
+        dt_boundingbox_t points;
         masks_point_denormalize(piece, roi_in, circle->center, 1, points);
         masks_point_denormalize(piece, roi_in, form->source, 1, points + 2);
 

@@ -750,7 +750,7 @@ static int rt_masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop
 {
   // if distort_mode==1 we don't scale at the right place, hence false positions if there's distortion before this
   // module. we keep it for backward compatibility only. all new forms have distort_mode==2
-  float points[4];
+  dt_boundingbox_t points;
   if(distort_mode == 1)
   {
     rt_masks_point_denormalize(piece, roi, target, 1, points);

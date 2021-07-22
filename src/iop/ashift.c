@@ -2849,7 +2849,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float scale = roi_in->scale / pr_d;
 
     // origin of image and opposite corner as reference points
-    float points[4] = { 0.0f, 0.0f, (float)piece->buf_in.width, (float)piece->buf_in.height };
+    dt_boundingbox_t points = { 0.0f, 0.0f, (float)piece->buf_in.width, (float)piece->buf_in.height };
     float ivec[2] = { points[2] - points[0], points[3] - points[1] };
     float ivecl = sqrtf(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
 
@@ -2983,7 +2983,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     const float scale = roi_in->scale / pr_d;
 
     // origin of image and opposite corner as reference points
-    float points[4] = { 0.0f, 0.0f, (float)piece->buf_in.width, (float)piece->buf_in.height };
+    dt_boundingbox_t points = { 0.0f, 0.0f, (float)piece->buf_in.width, (float)piece->buf_in.height };
     float ivec[2] = { points[2] - points[0], points[3] - points[1] };
     float ivecl = sqrtf(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
 
@@ -3205,7 +3205,7 @@ static uint64_t get_lines_hash(const dt_iop_ashift_line_t *lines, const int line
   uint64_t hash = 5381;
   for(int n = 0; n < lines_count; n++)
   {
-    float v[4] = { lines[n].p1[0], lines[n].p1[1], lines[n].p2[0], lines[n].p2[1] };
+    const dt_boundingbox_t v = { lines[n].p1[0], lines[n].p1[1], lines[n].p2[0], lines[n].p2[1] };
     union {
         float f;
         uint32_t u;
@@ -3735,7 +3735,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   {
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
 
-    float pts[4] = { pzx, pzy, 1.0f, 1.0f };
+    dt_boundingbox_t pts = { pzx, pzy, 1.0f, 1.0f };
     dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                       DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
 
@@ -3825,7 +3825,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
       dt_control_change_cursor(GDK_HAND1);
       g->adjust_crop = TRUE;
 
-      float pts[4] = { pzx, pzy, 1.0f, 1.0f };
+      dt_boundingbox_t pts = { pzx, pzy, 1.0f, 1.0f };
       dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                         DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
 

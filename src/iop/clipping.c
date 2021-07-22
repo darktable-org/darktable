@@ -265,7 +265,7 @@ typedef struct dt_iop_clipping_data_t
   uint32_t flags;           // flipping flags
   uint32_t flip;            // flipped output buffer so more area would fit.
 
-  float k_space[4]; // space for the "destination" rectangle of the keystone quadrilatere
+  dt_boundingbox_t k_space; // space for the "destination" rectangle of the keystone quadrilateral
   float kxa, kya, kxb, kyb, kxc, kyc, kxd,
       kyd; // point of the "source" quadrilatere (modified if keystone is not "full")
   float a, b, d, e, g, h; // value of the transformation matrix (c=f=0 && i=1)
@@ -353,7 +353,7 @@ static int gui_has_focus(struct dt_iop_module_t *self)
           && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS);
 }
 
-static void keystone_get_matrix(float *k_space, float kxa, float kxb, float kxc, float kxd, float kya,
+static void keystone_get_matrix(const dt_boundingbox_t k_space, float kxa, float kxb, float kxc, float kxd, float kya,
                                 float kyb, float kyc, float kyd, float *a, float *b, float *d, float *e,
                                 float *g, float *h)
 {
@@ -389,8 +389,8 @@ static void keystone_get_matrix(float *k_space, float kxa, float kxb, float kxc,
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void keystone_backtransform(float *i, float *k_space, float a, float b, float d, float e, float g,
-                                          float h, float kxa, float kya)
+static inline void keystone_backtransform(float *i, const dt_boundingbox_t k_space, float a, float b, float d,
+                                          float e, float g, float h, float kxa, float kya)
 {
   const float xx = i[0] - k_space[0];
   const float yy = i[1] - k_space[1];
@@ -404,8 +404,8 @@ static inline void keystone_backtransform(float *i, float *k_space, float a, flo
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void keystone_transform(float *i, float *k_space, float a, float b, float d, float e, float g, float h,
-                                      float kxa, float kya)
+static inline void keystone_transform(float *i, const dt_boundingbox_t k_space, float a, float b, float d,
+                                      float e, float g, float h, float kxa, float kya)
 {
   const float xx = i[0] - kxa;
   const float yy = i[1] - kya;
@@ -465,7 +465,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   const float rx = piece->buf_in.width;
   const float ry = piece->buf_in.height;
 
-  float DT_ALIGNED_PIXEL k_space[4] = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
+  const dt_boundingbox_t k_space = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
   const float kxa = d->kxa * rx, kxb = d->kxb * rx, kxc = d->kxc * rx, kxd = d->kxd * rx;
   const float kya = d->kya * ry, kyb = d->kyb * ry, kyc = d->kyc * ry, kyd = d->kyd * ry;
   float ma = 0, mb = 0, md = 0, me = 0, mg = 0, mh = 0;
@@ -535,7 +535,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   const float rx = piece->buf_in.width;
   const float ry = piece->buf_in.height;
 
-  float DT_ALIGNED_PIXEL k_space[4] = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
+  const dt_boundingbox_t k_space = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
   const float kxa = d->kxa * rx, kxb = d->kxb * rx, kxc = d->kxc * rx, kxd = d->kxd * rx;
   const float kya = d->kya * ry, kyb = d->kyb * ry, kyc = d->kyc * ry, kyd = d->kyd * ry;
   float ma, mb, md, me, mg, mh;
@@ -602,7 +602,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
     const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
     const float rx = piece->buf_in.width * roi_in->scale;
     const float ry = piece->buf_in.height * roi_in->scale;
-    float DT_ALIGNED_PIXEL k_space[4] = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
+    const dt_boundingbox_t k_space = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
     const float kxa = d->kxa * rx, kxb = d->kxb * rx, kxc = d->kxc * rx, kxd = d->kxd * rx;
     const float kya = d->kya * ry, kyb = d->kyb * ry, kyc = d->kyc * ry, kyd = d->kyd * ry;
     float ma, mb, md, me, mg, mh;
@@ -612,7 +612,8 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(in, kxa, kya, out, roi_in, roi_out) \
-    shared(d, interpolation, k_space, ma, mb, md, me, mg, mh) \
+    dt_omp_sharedconst(k_space)                             \
+    shared(d, interpolation, ma, mb, md, me, mg, mh) \
     schedule(static)
 #endif
     // (slow) point-by-point transformation.
@@ -787,11 +788,11 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
     *roi_out = *roi_in;
     // set roi_out values with rotation and keystone
     // initial corners pos
-    float corn_x[4] = { 0.0f, roi_in->width, roi_in->width, 0.0f };
-    float corn_y[4] = { 0.0f, 0.0f, roi_in->height, roi_in->height };
+    dt_boundingbox_t corn_x = { 0.0f, roi_in->width, roi_in->width, 0.0f };
+    dt_boundingbox_t corn_y = { 0.0f, 0.0f, roi_in->height, roi_in->height };
     // destination corner points
-    float corn_out_x[4] = { 0.0f };
-    float corn_out_y[4] = { 0.0f };
+    dt_boundingbox_t corn_out_x = { 0.0f };
+    dt_boundingbox_t corn_out_y = { 0.0f };
 
     // we don't test image flip as autocrop is not completely ok...
     d->flip = 0;
@@ -894,10 +895,10 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   const float so = roi_out->scale;
   const float kw = piece->buf_in.width * so, kh = piece->buf_in.height * so;
   const float roi_out_x = roi_out->x - d->enlarge_x * so, roi_out_y = roi_out->y - d->enlarge_y * so;
-  float p[2], o[2],
-      aabb[4] = { roi_out_x + d->cix * so, roi_out_y + d->ciy * so, roi_out_x + d->cix * so + roi_out->width,
+  float p[2], o[2];
+  dt_boundingbox_t aabb = { roi_out_x + d->cix * so, roi_out_y + d->ciy * so, roi_out_x + d->cix * so + roi_out->width,
                   roi_out_y + d->ciy * so + roi_out->height };
-  float aabb_in[4] = { INFINITY, INFINITY, -INFINITY, -INFINITY };
+  dt_boundingbox_t aabb_in = { INFINITY, INFINITY, -INFINITY, -INFINITY };
   for(int c = 0; c < 4; c++)
   {
     // get corner points of roi_out
@@ -979,7 +980,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
     const float rx = piece->buf_in.width * roi_in->scale;
     const float ry = piece->buf_in.height * roi_in->scale;
-    float k_space[4] = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
+    const dt_boundingbox_t k_space = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
     const float kxa = d->kxa * rx, kxb = d->kxb * rx, kxc = d->kxc * rx, kxd = d->kxd * rx;
     const float kya = d->kya * ry, kyb = d->kyb * ry, kyc = d->kyc * ry, kyd = d->kyd * ry;
     float ma, mb, md, me, mg, mh;
@@ -989,7 +990,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(ch, ch_width, ivoid, kxa, kya, ovoid, roi_in, roi_out) \
-    shared(d, interpolation, k_space, ma, mb, md, me, mg, mh) \
+    dt_omp_sharedconst(k_space) \
+    shared(d, interpolation, ma, mb, md, me, mg, mh) \
     schedule(static)
 #endif
     // (slow) point-by-point transformation.
@@ -1089,16 +1091,16 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     float m[4] = { d->m[0], d->m[1], d->m[2], d->m[3] };
 
     float k_sizes[2] = { piece->buf_in.width * roi_in->scale, piece->buf_in.height * roi_in->scale };
-    float k_space[4] = { d->k_space[0] * k_sizes[0], d->k_space[1] * k_sizes[1], d->k_space[2] * k_sizes[0],
-                         d->k_space[3] * k_sizes[1] };
-    if(d->k_apply == 0) k_space[2] = 0.0f;
+    const dt_boundingbox_t k_space = { d->k_space[0] * k_sizes[0], d->k_space[1] * k_sizes[1],
+                                       d->k_apply ? d->k_space[2] * k_sizes[0] : 0.0f,
+                                       d->k_space[3] * k_sizes[1] };
     float ma, mb, md, me, mg, mh;
     keystone_get_matrix(k_space, d->kxa * k_sizes[0], d->kxb * k_sizes[0], d->kxc * k_sizes[0],
                         d->kxd * k_sizes[0], d->kya * k_sizes[1], d->kyb * k_sizes[1], d->kyc * k_sizes[1],
                         d->kyd * k_sizes[1], &ma, &mb, &md, &me, &mg, &mh);
-    float ka[2] = { d->kxa * k_sizes[0], d->kya * k_sizes[1] };
-    float maa[4] = { ma, mb, md, me };
-    float mbb[2] = { mg, mh };
+    const float ka[2] = { d->kxa * k_sizes[0], d->kya * k_sizes[1] };
+    const float maa[4] = { ma, mb, md, me };
+    const float mbb[2] = { mg, mh };
 
     size_t sizes[3];
 
@@ -3161,7 +3163,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   if(g->straightening)
   {
     // adjust the line with possible current angle and flip on this module
-    float pts[4] = { x, y, g->button_down_x, g->button_down_y };
+    dt_boundingbox_t pts = { x, y, g->button_down_x, g->button_down_y };
     dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
 
     float dx = pts[0] - pts[2];

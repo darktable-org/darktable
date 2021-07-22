@@ -602,7 +602,7 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   // position
   if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return 1;
 
-  float fbox[4] = { 0.0f };
+  dt_boundingbox_t fbox = { 0.0f };
 
   // get absolute pixel coordinates in final preview image
   if(darktable.lib->proxy.colorpicker.size)
