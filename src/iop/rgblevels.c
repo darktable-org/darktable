@@ -72,7 +72,7 @@ typedef struct dt_iop_rgblevels_gui_data_t
   int call_auto_levels;                         // should we calculate levels automatically?
   int draw_selected_region;                     // are we drawing the selected region?
   float posx_from, posx_to, posy_from, posy_to; // coordinates of the area
-  float box_cood[4];                            // normalized coordinates
+  dt_boundingbox_t box_cood;                    // normalized coordinates
   int button_down;                              // user pressed the mouse button?
 
   double mouse_x, mouse_y;
@@ -1105,7 +1105,7 @@ static void _get_selected_area(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   {
     const int width = roi_in->width;
     const int height = roi_in->height;
-    float box_cood[4] = { g->box_cood[0], g->box_cood[1], g->box_cood[2], g->box_cood[3] };
+    dt_boundingbox_t box_cood = { g->box_cood[0], g->box_cood[1], g->box_cood[2], g->box_cood[3] };
 
     box_cood[0] *= piece->pipe->iwidth;
     box_cood[1] *= piece->pipe->iheight;

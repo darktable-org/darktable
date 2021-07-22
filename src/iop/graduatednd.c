@@ -302,7 +302,7 @@ static int set_points_from_grad(struct dt_iop_module_t *self, float *xa, float *
   // we get the extremities of the line
   const float v = (-rotation / 180) * M_PI;
   const float sinv = sinf(v);
-  float pts[4];
+  dt_boundingbox_t pts;
 
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
   if(!piece) return 0;
