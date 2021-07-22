@@ -614,7 +614,7 @@ void dt_metadata_set_import(const int imgid, const char *key, const char *value)
 
   if(keyid != -1) // known key
   {
-    gboolean imported = dt_conf_get_bool("write_sidecar_files");
+    gboolean imported = (dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER);
     if(!imported && dt_metadata_get_type(keyid) != DT_METADATA_TYPE_INTERNAL)
     {
       const gchar *name = dt_metadata_get_name(keyid);

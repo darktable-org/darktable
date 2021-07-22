@@ -538,7 +538,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       }
     }
 
-    if(dt_conf_get_bool("write_sidecar_files") ||
+    if((dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER) ||
        dt_conf_get_bool("ui_last/import_last_tags_imported"))
     {
       GList *tags = NULL;
