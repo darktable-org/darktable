@@ -186,6 +186,7 @@ src/iop/basicadj.c
 src/iop/bilat.c
 src/iop/bilateral.cc
 src/iop/bloom.c
+src/iop/blurs.c
 src/iop/borders.c
 src/iop/cacorrect.c
 src/iop/cacorrectrgb.c
