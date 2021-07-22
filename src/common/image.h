@@ -247,7 +247,7 @@ typedef struct dt_image_t
   dt_aligned_pixel_t wb_coeffs;
 
   /* DefaultUserCrop */
-  float usercrop[4];
+  dt_boundingbox_t usercrop;
   /* convenience pointer back into the image cache, so we can return dt_image_t* there directly. */
   struct dt_cache_entry_t *cache_entry;
 } dt_image_t;

@@ -693,7 +693,7 @@ static bool dt_check_usercrop(Exiv2::ExifData &exifData, dt_image_t *img)
   Exiv2::ExifData::const_iterator pos = exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.0xc7b5"));
   if(pos != exifData.end() && pos->count() == 4 && pos->size())
   {
-    float crop[4];
+    dt_boundingbox_t crop;
     for(int i = 0; i < 4; i++) crop[i] = pos->toFloat(i);
     if (((crop[0]>0)||(crop[1]>0)||(crop[2]<1)||(crop[3]<1))&&(crop[2]-crop[0]>0.05f)&&(crop[3]-crop[1]>0.05f))
     {

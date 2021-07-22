@@ -29,7 +29,7 @@ typedef struct dt_colorpicker_sample_t
 {
   /** The sample area or point */
   float point[2];
-  float box[4];
+  dt_boundingbox_t box;
   int size;
   int locked;
 
