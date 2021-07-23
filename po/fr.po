@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-23 16:42+0200\n"
-"PO-Revision-Date: 2021-07-23 16:47+0200\n"
+"POT-Creation-Date: 2021-07-23 16:51+0200\n"
+"PO-Revision-Date: 2021-07-23 16:51+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -10758,7 +10758,7 @@ msgid "blur|lens|motion"
 msgstr "flou|objectif|mouvement"
 
 #: ../src/iop/blurs.c:92
-msgid "simulate physically-accurate lens and motion blurs."
+msgid "simulate physically-accurate lens and motion blurs"
 msgstr "simule physiquement les objectifs et le flou de mouvement"
 
 #: ../src/iop/borders.c:181
