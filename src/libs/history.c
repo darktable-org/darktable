@@ -70,7 +70,8 @@ typedef struct dt_lib_history_t
 #define HIST_WIDGET_STATUS 2
 
 /* compress history stack */
-static void _lib_history_compress_clicked_callback(GtkWidget *widget, GdkEventButton *e, gpointer user_data);
+static void _lib_history_compress_clicked_callback(GtkButton *widget, gpointer user_data);
+static gboolean _lib_history_compress_pressed_callback(GtkWidget *widget, GdkEventButton *e, gpointer user_data);
 static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer user_data);
 static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget, gpointer user_data);
 /* signal callback for history change */
@@ -140,7 +141,8 @@ void gui_init(dt_lib_module_t *self)
   d->compress_button = dt_ui_button_new(_("compress history stack"),
                                         _("create a minimal history stack which produces the same image\n"
                                           "ctrl-click to truncate history to the selected item"), NULL);
-  g_signal_connect(G_OBJECT(d->compress_button), "button-press-event", G_CALLBACK(_lib_history_compress_clicked_callback), self);
+  g_signal_connect(G_OBJECT(d->compress_button), "clicked", G_CALLBACK(_lib_history_compress_clicked_callback), self);
+  g_signal_connect(G_OBJECT(d->compress_button), "button-press-event", G_CALLBACK(_lib_history_compress_pressed_callback), self);
 
   /* add toolbar button for creating style */
   d->create_button = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_NONE, NULL);
@@ -1126,10 +1128,18 @@ static void _lib_history_truncate(gboolean compress)
   dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 }
 
-static void _lib_history_compress_clicked_callback(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
+
+static void _lib_history_compress_clicked_callback(GtkButton *widget, gpointer user_data)
+{
+  _lib_history_truncate(TRUE);
+}
+
+static gboolean _lib_history_compress_pressed_callback(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
 {
   const gboolean compress = !dt_modifier_is(e->state, GDK_CONTROL_MASK);
   _lib_history_truncate(compress);
+
+  return TRUE;
 }
 
 static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer user_data)
