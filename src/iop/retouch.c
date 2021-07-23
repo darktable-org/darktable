@@ -3480,6 +3480,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
   const int gui_active = (self->dev) ? (self == self->dev->gui_module) : 0;
   const int display_wavelet_scale = (g && gui_active) ? g->display_wavelet_scale : 0;
+  const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
 
   // we will do all the clone, heal, etc on the input image,
   // this way the source for one algorithm can be the destination from a previous one
@@ -3501,7 +3502,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   dwt_p = dt_dwt_init(in_retouch, roi_rt->width, roi_rt->height, 4, p->num_scales,
                       (!display_wavelet_scale || (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) != DT_DEV_PIXELPIPE_FULL) ? 0 : p->curr_scale,
                       p->merge_from_scale, &usr_data,
-                      roi_in->scale / piece->iscale, use_sse);
+                      1.f / scale, use_sse);
   if(dwt_p == NULL) goto cleanup;
 
   // check if this module should expose mask.
@@ -4292,6 +4293,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   const int gui_active = (self->dev) ? (self == self->dev->gui_module) : 0;
   const int display_wavelet_scale = (g && gui_active) ? g->display_wavelet_scale : 0;
+  const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
 
   // we will do all the clone, heal, etc on the input image,
   // this way the source for one algorithm can be the destination from a previous one
@@ -4325,7 +4327,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                          (!display_wavelet_scale
                           || (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) != DT_DEV_PIXELPIPE_FULL) ? 0 : p->curr_scale,
                          p->merge_from_scale, &usr_data,
-                         roi_in->scale / piece->iscale);
+                         1.f / scale);
   if(dwt_p == NULL)
   {
     fprintf(stderr, "process_internal: error initializing wavelet decompose\n");
