@@ -7,6 +7,7 @@ build/lib/darktable/plugins/introspection_basicadj.c
 build/lib/darktable/plugins/introspection_bilat.c
 build/lib/darktable/plugins/introspection_bilateral.cc
 build/lib/darktable/plugins/introspection_bloom.c
+build/lib/darktable/plugins/introspection_blurs.c
 build/lib/darktable/plugins/introspection_borders.c
 build/lib/darktable/plugins/introspection_cacorrect.c
 build/lib/darktable/plugins/introspection_cacorrectrgb.c
