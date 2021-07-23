@@ -922,9 +922,9 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const in
 static void dt_colorspaces_create_cmatrix(float cmatrix[4][3], float mat[3][3])
 {
   // sRGB D65, the linear part:
-  const float rgb_to_xyz[3][3] = { { 0.4124564, 0.3575761, 0.1804375 },
-                                   { 0.2126729, 0.7151522, 0.0721750 },
-                                   { 0.0193339, 0.1191920, 0.9503041 } };
+  const dt_colormatrix_t rgb_to_xyz = { { 0.4124564f, 0.3575761f, 0.1804375f, 0.0f },
+                                        { 0.2126729f, 0.7151522f, 0.0721750f, 0.0f },
+                                        { 0.0193339f, 0.1191920f, 0.9503041f, 0.0f } };
 
   for(int c = 0; c < 3; c++)
   {

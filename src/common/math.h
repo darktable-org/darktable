@@ -191,7 +191,7 @@ static inline float scalar_product(const dt_aligned_pixel_t v_1, const dt_aligne
 #ifdef _OPENMP
 #pragma omp declare simd uniform(M) aligned(M:64) aligned(v_in, v_out:16)
 #endif
-static inline void dot_product(const dt_aligned_pixel_t v_in, const float M[3][4], dt_aligned_pixel_t v_out)
+static inline void dot_product(const dt_aligned_pixel_t v_in, const dt_colormatrix_t M, dt_aligned_pixel_t v_out)
 {
   // specialized 3×4 dot products of 4×1 RGB-alpha pixels
   #ifdef _OPENMP
