@@ -647,7 +647,7 @@ static inline void luma_chroma(const dt_aligned_pixel_t input, const dt_aligned_
 #endif
 static inline void loop_switch(const float *const restrict in, float *const restrict out,
                                const size_t width, const size_t height, const size_t ch,
-                               const float XYZ_to_RGB[3][4], const float RGB_to_XYZ[3][4], const float MIX[3][4],
+                               const dt_colormatrix_t XYZ_to_RGB, const dt_colormatrix_t RGB_to_XYZ, const float MIX[3][4],
                                const dt_aligned_pixel_t illuminant, const dt_aligned_pixel_t saturation,
                                const dt_aligned_pixel_t lightness, const dt_aligned_pixel_t grey,
                                const float p, const float gamut, const int clip, const int apply_grey,
@@ -863,7 +863,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
 
 static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_t illuminant,
                                   const size_t width, const size_t height, const size_t ch,
-                                  const float RGB_to_XYZ[3][4], dt_aligned_pixel_t xyz)
+                                  const dt_colormatrix_t RGB_to_XYZ, dt_aligned_pixel_t xyz)
 {
   /**
    * Detect the chromaticity of the illuminant based on the grey edges hypothesis.
@@ -1030,7 +1030,7 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
   dt_free_align(temp);
 }
 
-static inline void repack_3x3_to_3xSSE(const float input[9], float output[3][4])
+static inline void repack_3x3_to_3xSSE(const float input[9], dt_colormatrix_t output)
 {
   // Repack a 3×3 array/matrice into a 3×1 SSE2 vector to enable SSE4/AVX/AVX2 dot products
   output[0][0] = input[0];
@@ -1301,7 +1301,8 @@ typedef struct {
 } extraction_result_t;
 
 static const extraction_result_t _extract_patches(const float *const restrict in, const dt_iop_roi_t *const roi_in,
-                                                  dt_iop_channelmixer_rgb_gui_data_t *g, const float RGB_to_XYZ[3][4],
+                                                  dt_iop_channelmixer_rgb_gui_data_t *g,
+                                                  const dt_colormatrix_t RGB_to_XYZ,
                                                   float *const restrict patches)
 {
   const size_t width = roi_in->width;
@@ -1415,7 +1416,8 @@ static const extraction_result_t _extract_patches(const float *const restrict in
 
 void extract_color_checker(const float *const restrict in, float *const restrict out,
                            const dt_iop_roi_t *const roi_in, dt_iop_channelmixer_rgb_gui_data_t *g,
-                           const float RGB_to_XYZ[3][4], const float XYZ_to_RGB[3][4], const dt_adaptation_t kind)
+                           const dt_colormatrix_t RGB_to_XYZ, const dt_colormatrix_t XYZ_to_RGB,
+                           const dt_adaptation_t kind)
 {
   float *const restrict patches = dt_alloc_sse_ps(g->checker->patches * 4);
 
@@ -1699,7 +1701,7 @@ void extract_color_checker(const float *const restrict in, float *const restrict
 
 void validate_color_checker(const float *const restrict in,
                             const dt_iop_roi_t *const roi_in, dt_iop_channelmixer_rgb_gui_data_t *g,
-                            const float RGB_to_XYZ[3][4], const float XYZ_to_RGB[3][4])
+                            const dt_colormatrix_t RGB_to_XYZ, const dt_colormatrix_t XYZ_to_RGB)
 {
   float *const restrict patches = dt_alloc_sse_ps(4 * g->checker->patches);
   extraction_result_t extraction_result = _extract_patches(in, roi_in, g, RGB_to_XYZ, patches);
@@ -1785,8 +1787,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   // we must set it again in case of any trouble.
   _check_for_wb_issue_and_set_trouble_message(self);
 
-  float DT_ALIGNED_ARRAY RGB_to_XYZ[3][4];
-  float DT_ALIGNED_ARRAY XYZ_to_RGB[3][4];
+  dt_colormatrix_t RGB_to_XYZ;
+  dt_colormatrix_t XYZ_to_RGB;
 
   // repack the matrices as flat AVX2-compliant matrice
   if(work_profile)
@@ -1979,8 +1981,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem output_matrix_cl = NULL;
   cl_mem MIX_cl = NULL;
 
-  float DT_ALIGNED_ARRAY RGB_to_XYZ[3][4];
-  float DT_ALIGNED_ARRAY XYZ_to_RGB[3][4];
+  dt_colormatrix_t RGB_to_XYZ;
+  dt_colormatrix_t XYZ_to_RGB;
 
   // repack the matrices as flat AVX2-compliant matrice
   if(work_profile)
@@ -3638,7 +3640,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   if(work_profile == NULL) return;
 
   // repack the matrices as flat AVX2-compliant matrice
-  float DT_ALIGNED_ARRAY RGB_to_XYZ[3][4];
+  dt_colormatrix_t RGB_to_XYZ;
   repack_3x3_to_3xSSE(work_profile->matrix_in, RGB_to_XYZ);
 
   // Convert to XYZ
