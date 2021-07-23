@@ -3548,22 +3548,16 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     {
       g->preview_auto_levels = -1;
 
-      dt_iop_gui_leave_critical_section(self);
-
       levels[0] = levels[1] = levels[2] = 0;
       rt_process_stats(self, piece, in_retouch, roi_rt->width, roi_rt->height, 4, levels);
       rt_clamp_minmax(levels, levels);
 
       for(int i = 0; i < 3; i++) g->preview_levels[i] = levels[i];
 
-      dt_iop_gui_enter_critical_section(self);
       g->preview_auto_levels = 2;
-      dt_iop_gui_leave_critical_section(self);
     }
-    else
-    {
-      dt_iop_gui_leave_critical_section(self);
-    }
+
+    dt_iop_gui_leave_critical_section(self);
   }
 
   // if user wants to preview a detail scale adjust levels
@@ -4391,8 +4385,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     {
       g->preview_auto_levels = -1;
 
-      dt_iop_gui_leave_critical_section(self);
-
       levels[0] = levels[1] = levels[2] = 0;
       err = rt_process_stats_cl(self, piece, devid, in_retouch, roi_rt->width, roi_rt->height, levels);
       if(err != CL_SUCCESS) goto cleanup;
@@ -4401,14 +4393,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
       for(int i = 0; i < 3; i++) g->preview_levels[i] = levels[i];
 
-      dt_iop_gui_enter_critical_section(self);
       g->preview_auto_levels = 2;
-      dt_iop_gui_leave_critical_section(self);
     }
-    else
-    {
-      dt_iop_gui_leave_critical_section(self);
-    }
+    dt_iop_gui_leave_critical_section(self);
   }
 
   // if user wants to preview a detail scale adjust levels
