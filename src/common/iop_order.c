@@ -110,6 +110,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {27.5f }, "channelmixerrgb", 0},
   { {27.5f }, "censorize", 0},
   { {27.5f }, "negadoctor", 0},
+  { {27.5f }, "blurs", 0},
   { {27.5f }, "basicadj", 0},
   { {28.0f }, "colorreconstruct", 0},
   { {29.0f }, "colorchecker", 0},
@@ -199,6 +200,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {28.5f }, "channelmixerrgb", 0},
   { {28.5f }, "censorize", 0},
   { {28.5f }, "negadoctor", 0},      // Cineon film encoding comes after scanner input color profile
+  { {28.5f }, "blurs", 0},           // physically-accurate blurs (motion and lens)
   { {29.0f }, "nlmeans", 0},         // signal processing (denoising)
                                   //    -> needs a signal as scene-referred as possible (even if it works in Lab)
   { {30.0f }, "colorchecker", 0},    // calibration to "neutral" exchange colour space
@@ -664,6 +666,7 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
           _insert_before(iop_order_list, "ashift", "cacorrectrgb");
           _insert_before(iop_order_list, "graduatednd", "crop");
           _insert_before(iop_order_list, "channelmixerrgb", "diffuse");
+          _insert_before(iop_order_list, "nlmeans", "blurs");
         }
       }
       else if(version == DT_IOP_ORDER_LEGACY)
