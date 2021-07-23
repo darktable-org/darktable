@@ -2424,10 +2424,10 @@ static gboolean _enforce_xmp_writing(const int32_t imgid)
 
   if(!writing)
   {
-    // now check for geolocalisation, force write XMP if present
+    // now check for duplicates and geolocalisation, force write XMP if present
     sqlite3_stmt *stmt_2;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-      "SELECT COUNT(*) FROM main.images WHERE id = ?1 AND longitude IS NOT NULL AND latitude IS NOT NULL", -1, &stmt_2, NULL); 
+      "SELECT COUNT(*) FROM main.images WHERE id = ?1 AND ((longitude IS NOT NULL AND latitude IS NOT NULL) OR (max_version > 0))", -1, &stmt_2, NULL); 
     DT_DEBUG_SQLITE3_BIND_INT(stmt_2, 1, imgid);
     if(sqlite3_step(stmt_2) == SQLITE_ROW)
     {
