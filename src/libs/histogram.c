@@ -638,26 +638,27 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   if(dev->gui_module)
     printf(", op is `%s', request_color_pick %d", dev->gui_module->op, dev->gui_module->request_color_pick);
   printf("\n");
-  if(cv->view(cv) == DT_VIEW_DARKROOM &&
-     dev->gui_module && !strcmp(dev->gui_module->op, "colorout")
-     && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
+  if(cv->view(cv) == DT_VIEW_DARKROOM
+     && darktable.lib->proxy.colorpicker.primary_sample
+     && !darktable.lib->proxy.colorpicker.primary_sample->locked
      && darktable.lib->proxy.colorpicker.restrict_histogram)
   {
-    if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_COLORPICKER_SIZE_BOX)
+    const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
+    if(sample->size == DT_COLORPICKER_SIZE_BOX)
     {
       // FIXME: use primary sample color picker box
-      roi.crop_x = MIN(width, MAX(0, dev->gui_module->color_picker_box[0] * width));
-      roi.crop_y = MIN(height, MAX(0, dev->gui_module->color_picker_box[1] * height));
-      roi.crop_width = width - MIN(width, MAX(0, dev->gui_module->color_picker_box[2] * width));
-      roi.crop_height = height - MIN(height, MAX(0, dev->gui_module->color_picker_box[3] * height));
+      roi.crop_x = MIN(width, MAX(0, sample->box[0] * width));
+      roi.crop_y = MIN(height, MAX(0, sample->box[1] * height));
+      roi.crop_width = width - MIN(width, MAX(0, sample->box[2] * width));
+      roi.crop_height = height - MIN(height, MAX(0, sample->box[3] * height));
     }
     else
     {
       // FIXME: use primary sample color picker point
-      roi.crop_x = MIN(width, MAX(0, dev->gui_module->color_picker_point[0] * width));
-      roi.crop_y = MIN(height, MAX(0, dev->gui_module->color_picker_point[1] * height));
-      roi.crop_width = width - MIN(width, MAX(0, dev->gui_module->color_picker_point[0] * width));
-      roi.crop_height = height - MIN(height, MAX(0, dev->gui_module->color_picker_point[1] * height));
+      roi.crop_x = MIN(width, MAX(0, sample->point[0] * width));
+      roi.crop_y = MIN(height, MAX(0, sample->point[1] * height));
+      roi.crop_width = width - MIN(width, MAX(0, sample->point[0] * width));
+      roi.crop_height = height - MIN(height, MAX(0, sample->point[1] * height));
     }
   }
 
