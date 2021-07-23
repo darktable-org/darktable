@@ -944,6 +944,7 @@ menuitem > arrow
 menuitem check
 {
   margin-left: 0.5em;
+  margin-bottom: 1px;
 }
 
 popover
@@ -2042,11 +2043,6 @@ notebook tab:hover
   border-bottom: 0.14em solid @button_hover_fg;
   color: @button_hover_fg;
   background-color: @button_hover_bg;
-}
-
-notebook tab:hover labelnotebook
-{
-  color: @button_hover_fg;
 }
 
 notebook tab:checked
