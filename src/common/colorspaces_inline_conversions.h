@@ -28,14 +28,6 @@
 #endif
 
 
-// When included by a C++ file, restrict qualifiers are not allowed
-#ifdef __cplusplus
-#define DT_RESTRICT
-#else
-#define DT_RESTRICT restrict
-#endif
-
-
 #ifdef __SSE2__
 static inline __m128 lab_f_inv_m(const __m128 x)
 {
@@ -175,7 +167,7 @@ static inline __m128 dt_prophotoRGB_to_XYZ_sse2(__m128 rgb)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(in,out)
 #endif
-static inline void dt_apply_transposed_color_matrix(const float *const in, const float matrix[3][4],
+static inline void dt_apply_transposed_color_matrix(const float *const in, const dt_colormatrix_t matrix,
                                                     float *const out)
 {
   // Use a temp variable to accumulate the results.  GCC8 will optimize away the memory accesses for the
@@ -415,7 +407,7 @@ static inline void dt_Lch_to_xyY(const dt_aligned_pixel_t Lch, dt_aligned_pixel_
 static inline void dt_XYZ_to_Rec709_D50(const float *const XYZ, float *const sRGB)
 {
   // transpose and pad the conversion matrix to enable vectorization
-  const float xyz_to_srgb_matrix_transposed[3][4] DT_ALIGNED_PIXEL =
+  const dt_colormatrix_t xyz_to_srgb_matrix_transposed =
     { {  3.1338561f, -0.9787684f,  0.0719453f, 0.0f },
       { -1.6168667f,  1.9161415f, -0.2289914f, 0.0f },
       { -0.4906146f,  0.0334540f,  1.4052427f, 0.0f } };
@@ -433,7 +425,7 @@ static inline void dt_XYZ_to_Rec709_D65(const float *const XYZ, float *const sRG
 {
   // linear sRGB == Rec709 with no gamma
   // transpose and pad the conversion matrix to enable vectorization
-  const float xyz_to_srgb_transposed[3][4] DT_ALIGNED_PIXEL = {
+  const dt_colormatrix_t xyz_to_srgb_transposed = {
     {  3.2404542f, -0.9692660f,  0.0556434f, 0.0f },
     { -1.5371385f,  1.8760108f, -0.2040259f, 0.0f },
     { -0.4985314f,  0.0415560f,  1.0572252f, 0.0f },
@@ -478,7 +470,7 @@ static inline void dt_Rec709_to_XYZ_D50(const float *const DT_RESTRICT sRGB, flo
 {
   // Conversion matrix from http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html
   // (transpose and pad the conversion matrix to enable vectorization)
-  const float M[3][4] DT_ALIGNED_PIXEL = {
+  const dt_colormatrix_t M = {
     { 0.4360747f, 0.2225045f, 0.0139322f, 0.0f },
     { 0.3850649f, 0.7168786f, 0.0971045f, 0.0f },
     { 0.1430804f, 0.0606169f, 0.7141733f, 0.0f }
@@ -506,7 +498,7 @@ static inline void dt_sRGB_to_XYZ(const float *const sRGB, float *const XYZ)
 static inline void dt_XYZ_to_prophotorgb(const float *const XYZ, float *const rgb)
 {
   // transpose and pad the conversion matrix to enable vectorization
-  const float xyz_to_rgb_transpose[3][4] DT_ALIGNED_PIXEL = {
+  const dt_colormatrix_t xyz_to_rgb_transpose = {
     {  1.3459433f, -0.5445989f, 0.0000000f, 0.0f },
     { -0.2556075f,  1.5081673f, 0.0000000f, 0.0f },
     { -0.0511118f,  0.0205351f, 1.2118128f, 0.0f }
@@ -520,7 +512,7 @@ static inline void dt_XYZ_to_prophotorgb(const float *const XYZ, float *const rg
 static inline void dt_prophotorgb_to_XYZ(const float *const rgb, float *const XYZ)
 {
   // transpose and pad the conversion matrix to enable vectorization
-  const float rgb_to_xyz_transpose[3][4] DT_ALIGNED_PIXEL = {
+  const dt_colormatrix_t rgb_to_xyz_transpose = {
     // prophoto rgb
     { 0.7976749f, 0.2880402f, 0.0000000f, 0.0f },
     { 0.1351917f, 0.7118741f, 0.0000000f, 0.0f },
@@ -750,7 +742,7 @@ static inline float dt_camera_rgb_luminance(const float *const rgb)
 static inline void dt_XYZ_D50_2_XYZ_D65(const float *const DT_RESTRICT XYZ_D50, float *const DT_RESTRICT XYZ_D65)
 {
   // Bradford adaptation matrix from http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html
-  const float M[3][4] DT_ALIGNED_ARRAY = {
+  const dt_colormatrix_t M = {
       {  0.9555766f, -0.0230393f,  0.0631636f, 0.0f },
       { -0.0282895f,  1.0099416f,  0.0210077f, 0.0f },
       {  0.0122982f, -0.0204830f,  1.3299098f, 0.0f },
@@ -765,7 +757,7 @@ static inline void dt_XYZ_D50_2_XYZ_D65(const float *const DT_RESTRICT XYZ_D50, 
 static inline void dt_XYZ_D65_2_XYZ_D50(const float *const DT_RESTRICT XYZ_D65, float *const DT_RESTRICT XYZ_D50)
 {
   // Bradford adaptation matrix from http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html
-  const float M[3][4] DT_ALIGNED_ARRAY = {
+  const dt_colormatrix_t M = {
       {  1.0478112f,  0.0228866f, -0.0501270f, 0.0f },
       {  0.0295424f,  0.9904844f, -0.0170491f, 0.0f },
       { -0.0092345f,  0.0150436f,  0.7521316f, 0.0f },
@@ -796,12 +788,12 @@ static inline void dt_XYZ_2_JzAzBz(const float *const DT_RESTRICT XYZ_D65, float
   const float p = 134.034375f; // 1.7 x 2523 / 2^5
   const float d = -0.56f;
   const float d0 = 1.6295499532821566e-11f;
-  const float M[3][4] DT_ALIGNED_ARRAY = {
+  const dt_colormatrix_t M = {
       { 0.41478972f, 0.579999f, 0.0146480f, 0.0f },
       { -0.2015100f, 1.120649f, 0.0531008f, 0.0f },
       { -0.0166008f, 0.264800f, 0.6684799f, 0.0f },
   };
-  const float A[3][4] DT_ALIGNED_ARRAY = {
+  const dt_colormatrix_t A = {
       { 0.5f,       0.5f,       0.0f,      0.0f },
       { 3.524000f, -4.066708f,  0.542708f, 0.0f },
       { 0.199076f,  1.096799f, -1.295875f, 0.0f },
@@ -870,12 +862,12 @@ static inline void dt_JzAzBz_2_XYZ(const float *const DT_RESTRICT JzAzBz, float 
   const float p_inv = 1.0f / 134.034375f; // 1.7 x 2523 / 2^5
   const float d = -0.56f;
   const float d0 = 1.6295499532821566e-11f;
-  const float MI[3][4] DT_ALIGNED_ARRAY = {
+  const dt_colormatrix_t MI = {
       {  1.9242264357876067f, -1.0047923125953657f,  0.0376514040306180f, 0.0f },
       {  0.3503167620949991f,  0.7264811939316552f, -0.0653844229480850f, 0.0f },
       { -0.0909828109828475f, -0.3127282905230739f,  1.5227665613052603f, 0.0f },
   };
-  const float AI[3][4] DT_ALIGNED_ARRAY = {
+  const dt_colormatrix_t AI = {
       {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
       {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
       {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f },
@@ -921,12 +913,12 @@ static inline void dt_JzAzBz_2_XYZ(const float *const DT_RESTRICT JzAzBz, float 
 * https://doi.org/10.2352/issn.2169-2629.2019.27.38
 */
 
-static const float DT_ALIGNED_ARRAY XYZ_D65_to_LMS_2006_D65[3][4]
+static const dt_colormatrix_t XYZ_D65_to_LMS_2006_D65
     = { { 0.257085f, 0.859943f, -0.031061f, 0.f },
         { -0.394427f, 1.175800f, 0.106423f, 0.f },
         { 0.064856f, -0.076250f, 0.559067f, 0.f } };
 
-static const float DT_ALIGNED_ARRAY LMS_2006_D65_to_XYZ_D65[3][4]
+static const dt_colormatrix_t LMS_2006_D65_to_XYZ_D65
     = { { 1.80794659f, -1.29971660f, 0.34785879f, 0.f },
         { 0.61783960f, 0.39595453f, -0.04104687f, 0.f },
         { -0.12546960f, 0.20478038f, 1.74274183f, 0.f } };
@@ -955,12 +947,12 @@ static inline void LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t X
 * https://doi.org/10.2352/issn.2169-2629.2019.27.38
 */
 
-static const float DT_ALIGNED_ARRAY filmlightRGB_D65_to_LMS_D65[3][4]
+static const dt_colormatrix_t filmlightRGB_D65_to_LMS_D65
     = { { 0.95f, 0.38f, 0.00f, 0.f },
         { 0.05f, 0.62f, 0.03f, 0.f },
         { 0.00f, 0.00f, 0.97f, 0.f } };
 
-static const float DT_ALIGNED_ARRAY LMS_D65_to_filmlightRGB_D65[3][4]
+static const dt_colormatrix_t LMS_D65_to_filmlightRGB_D65
     = { {  1.0877193f, -0.66666667f,  0.02061856f, 0.f },
         { -0.0877193f,  1.66666667f, -0.05154639f, 0.f },
         {         0.f,          0.f,  1.03092784f, 0.f } };
