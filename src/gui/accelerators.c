@@ -1450,11 +1450,11 @@ static gboolean _action_view_click(GtkWidget *widget, GdkEventButton *event, gpo
       {
         gtk_tree_selection_unselect_path(selection, path);
         gtk_tree_view_collapse_row(view, path);
-
-        return TRUE;
       }
       else
         gtk_tree_selection_select_path(selection, path);
+
+      gtk_widget_grab_focus(widget);
     }
     else
       gtk_tree_selection_unselect_all(selection);
