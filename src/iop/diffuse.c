@@ -43,12 +43,10 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
-#include <complex.h>
-
 // Set to one to output intermediate image steps as PFM in /tmp
 #define DEBUG_DUMP_PFM 0
 
-DT_MODULE_INTROSPECTION(1, dt_iop_diffuse_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_diffuse_params_t)
 
 #define MAX_NUM_SCALES 12
 typedef struct dt_iop_diffuse_params_t
@@ -56,7 +54,7 @@ typedef struct dt_iop_diffuse_params_t
   // global parameters
   int iterations;           // $MIN: 1   $MAX: 128   $DEFAULT: 1  $DESCRIPTION: "iterations"
   float sharpness;          // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "sharpness"
-  int radius;               // $MIN: 1   $MAX: 512   $DEFAULT: 8  $DESCRIPTION: "radius"
+  int radius;               // $MIN: 1   $MAX: 512   $DEFAULT: 8  $DESCRIPTION: "max radius"
   float regularization;     // $MIN: 0. $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "edge sensitivity"
   float variance_threshold; // $MIN: -2. $MAX: 2.   $DEFAULT: 0. $DESCRIPTION: "edge threshold"
 
@@ -71,12 +69,18 @@ typedef struct dt_iop_diffuse_params_t
   float second; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "2nd order speed"
   float third; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "3rd order speed"
   float fourth; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "4th order speed"
+
+  // v2
+  int radius_center;      // $MIN: 0 $MAX: 128 $DEFAULT: 0 $DESCRIPTION: "central radius"
+
+  // new versions add params mandatorily at the end, so we can memcpy old parameters at the beginning
+
 } dt_iop_diffuse_params_t;
 
 
 typedef struct dt_iop_diffuse_gui_data_t
 {
-  GtkWidget *iterations, *fourth, *third, *second, *radius, *sharpness, *threshold, *regularization, *first,
+  GtkWidget *iterations, *fourth, *third, *second, *radius, *radius_center, *sharpness, *threshold, *regularization, *first,
       *anisotropy_first, *anisotropy_second, *anisotropy_third, *anisotropy_fourth, *regularization_first, *variance_threshold;
 } dt_iop_diffuse_gui_data_t;
 
@@ -153,10 +157,55 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
+                  const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_iop_diffuse_params_v1_t
+    {
+      // global parameters
+      int iterations;
+      float sharpness;
+      int radius;
+      float regularization;
+      float variance_threshold;
+
+      float anisotropy_first;
+      float anisotropy_second;
+      float anisotropy_third;
+      float anisotropy_fourth;
+
+      float threshold;
+
+      float first;
+      float second;
+      float third;
+      float fourth;
+    } dt_iop_diffuse_params_v1_t;
+
+    dt_iop_diffuse_params_v1_t *o = (dt_iop_diffuse_params_v1_t *)old_params;
+    dt_iop_diffuse_params_t *n = (dt_iop_diffuse_params_t *)new_params;
+    dt_iop_diffuse_params_t *d = (dt_iop_diffuse_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    // copy common parameters
+    memcpy(n, o, sizeof(dt_iop_diffuse_params_v1_t));
+
+    // init only new parameters
+    n->radius_center = 0;
+
+    return 0;
+  }
+  return 1;
+}
+
 void init_presets(dt_iop_module_so_t *self)
 {
   dt_iop_diffuse_params_t p;
   memset(&p, 0, sizeof(p));
+  p.radius_center = 0;
 
   // deblurring presets
   p.sharpness = 0.0f;
@@ -352,17 +401,19 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.first = -0.50f;
   p.second = -0.50f;
-  p.third = -0.20f;
+  p.third = -0.50f;
   p.fourth = +0.25f;
 
-  p.iterations = 4;
-  p.radius = 256;
-  p.regularization = 3.5f;
+  p.iterations = 2;
+  p.radius = 512;
+  p.radius_center = 128;
+  p.regularization = 2.f;
   dt_gui_presets_add_generic(_("add local contrast"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 32;
   p.radius = 4;
+  p.radius_center = 0;
   p.sharpness = 0.0f;
   p.threshold = 1.41f;
   p.variance_threshold = 0.f;
@@ -858,7 +909,7 @@ static inline gint wavelets_process(const float *const restrict in, float *const
     const float current_radius = equivalent_sigma_at_step(B_SPLINE_SIGMA, s);
     const float real_radius = current_radius * zoom;
 
-    const float norm = expf(-sqf(real_radius) / sqf(data->radius));
+    const float norm = expf(-sqf(real_radius - (float)data->radius_center) / sqf(data->radius + (float)data->radius_center));
     const float DT_ALIGNED_ARRAY ABCD[4] = { data->first * KAPPA * norm, data->second * KAPPA * norm,
                                              data->third * KAPPA * norm, data->fourth * KAPPA * norm };
     const float strength = data->sharpness * norm + 1.f;
@@ -975,7 +1026,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   uint8_t *const restrict mask = dt_alloc_align(64, roi_out->width * roi_out->height * sizeof(uint8_t));
 
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
-  const float final_radius = data->radius * 2.f / scale;
+  const float final_radius = (data->radius + data->radius_center) * 2.f / scale;
 
   const int iterations = MAX(ceilf((float)data->iterations), 1);
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
@@ -1135,7 +1186,7 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
     const float real_radius = current_radius * zoom;
     const float current_radius_square = sqf(current_radius);
 
-    const float norm = expf(-sqf(real_radius) / sqf(data->radius));
+    const float norm = expf(-sqf(real_radius - (float)data->radius_center) / sqf(data->radius + (float)data->radius_center));
     const float DT_ALIGNED_ARRAY ABCD[4] = { data->first * KAPPA * norm, data->second * KAPPA * norm,
                                              data->third * KAPPA * norm, data->fourth * KAPPA * norm };
     const float strength = data->sharpness * norm + 1.f;
@@ -1213,7 +1264,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem mask = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(uint8_t));
 
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
-  const float final_radius = data->radius * 2.f / scale;
+  const float final_radius = (data->radius + data->radius_center) * 2.f / scale;
 
   const int iterations = MAX(ceilf((float)data->iterations), 1);
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
@@ -1349,6 +1400,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->variance_threshold, p->variance_threshold);
   dt_bauhaus_slider_set_soft(g->regularization, p->regularization);
   dt_bauhaus_slider_set_soft(g->radius, p->radius);
+  dt_bauhaus_slider_set_soft(g->radius_center, p->radius_center);
   dt_bauhaus_slider_set_soft(g->sharpness, p->sharpness);
   dt_bauhaus_slider_set_soft(g->threshold, p->threshold);
 
@@ -1374,10 +1426,19 @@ void gui_init(struct dt_iop_module_t *self)
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_format(g->radius, "%.0f px");
   gtk_widget_set_tooltip_text(
-      g->radius, _("scale of the diffusion.\n"
+      g->radius, _("maximal scale of the diffusion.\n"
                    "high values diffuse farther, at the expense of computation time.\n"
                    "low values diffuse closer.\n"
                    "if you plan on denoising, the radius should be around the width of your lens blur."));
+
+  g->radius_center = dt_bauhaus_slider_from_params(self, "radius_center");
+  dt_bauhaus_slider_set_format(g->radius_center, "%.0f px");
+  gtk_widget_set_tooltip_text(
+      g->radius_center, _("main scale of the diffusion.\n"
+                          "zero makes diffusion act on the finest details more heavily.\n"
+                          "non-zero defines the size of the details to diffuse heavily.\n"
+                          "for deblurring and denoising, set to zero.\n"
+                          "increase to act on local contrast instead."));
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion speed")), FALSE, FALSE, 0);
 
