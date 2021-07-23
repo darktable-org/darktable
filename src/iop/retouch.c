@@ -3193,9 +3193,8 @@ static void retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *c
                          dt_iop_roi_t *const roi_mask_scaled, const float opacity, const int blur_type,
                          const float blur_radius, dt_dev_pixelpipe_iop_t *piece, const int use_sse)
 {
-  if(fabsf(blur_radius) <= 0.1f) return;
-
-  const float sigma = blur_radius * roi_in->scale / piece->iscale;
+  const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
+  const float sigma = blur_radius / scale;
 
   float *img_dest = NULL;
 
@@ -3920,9 +3919,8 @@ static cl_int retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
 {
   cl_int err = CL_SUCCESS;
 
-  if(fabsf(blur_radius) <= 0.1f) return err;
-
-  const float sigma = blur_radius * roi_layer->scale / piece->iscale;
+  const float scale = fmaxf(piece->iscale / roi_layer->scale, 1.f);
+  const float sigma = blur_radius / scale;
   const int ch = 4;
 
   const cl_mem dev_dest =
