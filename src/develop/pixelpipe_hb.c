@@ -2116,11 +2116,9 @@ post_process_collect_info:
        && (strcmp(module->op, "gamma") == 0) // only gamma provides meaningful RGB data
        && input)
     {
-      // FIXME: continue to sample even after colorpicker lib loses focus!
-      const gboolean primary_picker_active = dev->gui_module
-        && !strcmp(dev->gui_module->op, "colorout")
-        && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
-        && darktable.lib->proxy.colorpicker.primary_sample;
+      // FIXME: continue to sample on the module even if primary colorpicker is clicked
+      const gboolean primary_picker_active = darktable.lib->proxy.colorpicker.primary_sample
+        && !darktable.lib->proxy.colorpicker.primary_sample->locked;
       if(primary_picker_active || darktable.lib->proxy.colorpicker.live_samples)
       {
         printf("doing colorpicking primary %d live %p\n", primary_picker_active, darktable.lib->proxy.colorpicker.live_samples);
