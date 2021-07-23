@@ -506,6 +506,17 @@ spinbutton>button
   padding: 0 0.84em;
 }
 
+#guides_module_combobox
+{
+  padding-left: 0.84em;
+  padding-right: 0.84em;
+}
+#guides_menu_warning
+{
+  font-weight: bold;
+  background-color: @really_dark_bg_color;
+}
+
 /* icon buttons in modules main body */
 #iop-plugin-ui-main #dt-button,
 #iop-plugin-ui-main #dt-toggle-button,
