@@ -3097,7 +3097,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       }
       if(g->k_selected >= 0)
       {
-        dt_control_hinter_message(darktable.control, _("<b>move contol point</b>: drag"));
+        dt_control_hinter_message(darktable.control, _("<b>move control point</b>: drag"));
         dt_control_change_cursor(GDK_CROSS);
       }
       else if(g->k_selected_segment >= 0)
