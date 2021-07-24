@@ -402,12 +402,12 @@ void init_presets(dt_iop_module_so_t *self)
   p.first = -0.5f;
   p.second = 0.f;
   p.third = 0.f;
-  p.fourth = 0.f;
+  p.fourth = -0.5f;
 
   p.iterations = 1;
   p.radius = 512;
   p.radius_center = 512;
-  p.regularization = 0.05f;
+  p.regularization = 0.5f;
   dt_gui_presets_add_generic(_("add local contrast"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
