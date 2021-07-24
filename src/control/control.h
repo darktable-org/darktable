@@ -20,6 +20,7 @@
 
 #include "common/darktable.h"
 #include "common/dtpthread.h"
+#include "common/action.h"
 #include "control/settings.h"
 
 #include <gtk/gtk.h>
@@ -122,16 +123,17 @@ int dt_control_is_key_accelerators_on(struct dt_control_t *s);
 // All the accelerator keys for the key_pressed style shortcuts
 typedef struct dt_control_accels_t
 {
-  GtkAccelKey filmstrip_forward, filmstrip_back, lighttable_up, lighttable_down,
-    lighttable_right, lighttable_left, lighttable_pageup, lighttable_pagedown,
-    lighttable_start, lighttable_end, lighttable_sel_up, lighttable_sel_down,
-    lighttable_sel_right, lighttable_sel_left, lighttable_sel_pageup,
-    lighttable_sel_pagedown, lighttable_sel_start, lighttable_sel_end,
-    lighttable_center, lighttable_preview, lighttable_preview_display_focus,
-    lighttable_timeline, lighttable_preview_zoom_100, lighttable_preview_zoom_fit,
-    global_focus_peaking, global_sideborders, global_accels_window,
-    darkroom_preview, slideshow_start, darkroom_skip_mouse_events, global_collapsing_controls,
-    slideshow_view;
+  GtkAccelKey lighttable_up, lighttable_down,
+    lighttable_right, lighttable_left,
+    lighttable_pageup, lighttable_pagedown,
+    lighttable_start, lighttable_end,
+    lighttable_sel_up, lighttable_sel_down,
+    lighttable_sel_right, lighttable_sel_left,
+    lighttable_sel_pageup, lighttable_sel_pagedown,
+    lighttable_sel_start, lighttable_sel_end,
+    lighttable_preview, lighttable_preview_display_focus,
+    global_sideborders, global_accels_window,
+    slideshow_start, darkroom_preview, darkroom_skip_mouse_events;
 } dt_control_accels_t;
 
 #define DT_CTL_LOG_SIZE 10
@@ -147,20 +149,19 @@ typedef struct dt_control_accels_t
  */
 typedef struct dt_control_t
 {
-  // Keyboard accelerator groups
-  GtkAccelGroup *accelerators;
-
-  // Accelerator group path lists
-  GList *accelerator_list;
-
   gboolean accel_initialising;
 
   // Cached accelerator keys for key_pressed shortcuts
   dt_control_accels_t accels;
 
-  // Accel remapping data
-  gchar *accel_remap_str;
-  GtkTreePath *accel_remap_path;
+  dt_action_t *actions, actions_global, actions_views, actions_thumb, actions_libs, actions_iops, actions_blend, actions_lua, actions_fallbacks;
+
+  GHashTable *widgets;
+  GSequence *shortcuts;
+  GtkWidget *mapping_widget;
+  dt_action_element_t element;
+  GPtrArray *widget_definitions;
+  GSList *input_drivers;
 
   char vimkey[256];
   int vimkey_cnt;

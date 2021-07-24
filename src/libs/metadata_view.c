@@ -494,6 +494,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   int32_t mouse_over_id = dt_control_get_mouse_over_id();
   int32_t count = 0;
 
+  gchar *images = NULL;
+
   if(mouse_over_id == -1)
   {
      const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
@@ -503,16 +505,20 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     }
     else
     {
+      images = dt_view_get_images_to_act_on_query(FALSE);
       sqlite3_stmt *stmt;
-
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid, COUNT(imgid) FROM main.selected_images",
-                                  -1, &stmt, NULL);
+      gchar *query = g_strdup_printf("SELECT id, COUNT(id) "
+                                     "FROM main.images "
+                                     "WHERE id IN (%s)",
+                                     images);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       if(sqlite3_step(stmt) == SQLITE_ROW)
       {
         mouse_over_id = sqlite3_column_int(stmt, 0);
         count = sqlite3_column_int(stmt, 1);
       }
       sqlite3_finalize(stmt);
+      g_free(query);
 
       // Still 0 => no selection in progress
       if(count == 0)
@@ -530,9 +536,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
   if(count > 1)
   {
-    gchar *const images = dt_view_get_images_to_act_on_query(FALSE);
+    if(!images) images = dt_view_get_images_to_act_on_query(FALSE);
     sqlite3_stmt *stmt = NULL;
-    gchar *query = dt_util_dstrcat(NULL, "SELECT COUNT(DISTINCT film_id), "
+    gchar *query = g_strdup_printf("SELECT COUNT(DISTINCT film_id), "
                                          "2, " //id always different
                                          "COUNT(DISTINCT group_id), "
                                          "COUNT(DISTINCT filename), "
@@ -575,9 +581,13 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
     sqlite3_stmt *stmt_tags = NULL;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                dt_util_dstrcat(NULL, "SELECT flags, COUNT(DISTINCT imgid) FROM main.tagged_images JOIN data.tags ON data.tags.id = main.tagged_images.tagid AND name NOT LIKE 'darktable|%%' WHERE imgid in (%s) GROUP BY tagid", images),
-                                -1, &stmt_tags, NULL);
+    gchar *tag_query = g_strdup_printf("SELECT flags, COUNT(DISTINCT imgid) "
+                                       "FROM main.tagged_images "
+                                       "JOIN data.tags "
+                                       "ON data.tags.id = main.tagged_images.tagid AND name NOT LIKE 'darktable|%%' "
+                                       "WHERE imgid in (%s) GROUP BY tagid", images);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), tag_query, -1, &stmt_tags, NULL);
+    g_free(tag_query);
     g_free(query);
 
     if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -610,6 +620,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     sqlite3_finalize(stmt_tags);
   }
+
+  g_free(images);
 
   int img_id = mouse_over_id;
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, img_id, 'r');
@@ -1393,11 +1405,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show_all(d->grid);
   gtk_widget_set_no_show_all(d->grid, TRUE);
   _lib_metadata_setup_grid(self);
-  char *pref = dt_conf_get_string("plugins/lighttable/metadata_view/visible");
+  const char *pref = dt_conf_get_string_const("plugins/lighttable/metadata_view/visible");
   if(!strlen(pref))
     _display_default(self);
   _apply_preferences(pref, self);
-  g_free(pref);
 
   /* lets signup for mouse over image change signals */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
@@ -1459,7 +1470,7 @@ static int lua_update_values(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, 1);
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
-  lua_getuservalue(L, 2);
+  lua_getiuservalue(L, 2, 1);
   lua_getfield(L, 3, "values");
   lua_getfield(L, 3, "indexes");
   lua_pushnil(L);
@@ -1478,7 +1489,7 @@ static int lua_update_metadata(lua_State *L)
   int32_t imgid = lua_tointeger(L, 2);
   gboolean have_updates = false;
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
-  lua_getuservalue(L, -1);
+  lua_getiuservalue(L, -1, 1);
   lua_getfield(L, 4, "callbacks");
   lua_getfield(L, 4, "values");
   lua_pushnil(L);
@@ -1514,7 +1525,7 @@ static int lua_register_info(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
-  lua_getuservalue(L, -1);
+  lua_getiuservalue(L, -1, 1);
   const char* key = luaL_checkstring(L, 1);
   luaL_checktype(L, 2, LUA_TFUNCTION);
   {
@@ -1568,9 +1579,8 @@ static int lua_register_info(lua_State *L)
       lua_pop(L, 1);
     }
     // apply again preferences because it's already done
-    char *pref = dt_conf_get_string("plugins/lighttable/metadata_view/visible");
+    const char *pref = dt_conf_get_string_const("plugins/lighttable/metadata_view/visible");
     _apply_preferences(pref, self);
-    g_free(pref);
   }
   return 0;
 }
@@ -1579,7 +1589,7 @@ static int lua_destroy_info(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
-  lua_getuservalue(L, -1);
+  lua_getiuservalue(L, -1, 1);
   const char* key = luaL_checkstring(L, 1);
   {
     lua_getfield(L, -1, "callbacks");
@@ -1667,7 +1677,7 @@ void init(struct dt_lib_module_t *self)
   dt_lua_type_register_const_type(L, my_type, "destroy_info");
 
   dt_lua_module_entry_push(L,"lib",self->plugin_name);
-  lua_getuservalue(L, -1);
+  lua_getiuservalue(L, -1, 1);
   lua_newtable(L);
   lua_setfield(L, -2, "callbacks");
   lua_newtable(L);

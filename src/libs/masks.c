@@ -1498,7 +1498,9 @@ static void _lib_masks_remove_item(dt_lib_module_t *self, int formid, int parent
 
   for(const GList *rlt = rl; rlt; rlt = g_list_next(rlt))
   {
-    GtkTreePath *path = gtk_tree_row_reference_get_path((GtkTreeRowReference *)rlt->data);
+    GtkTreeRowReference *rowref = (GtkTreeRowReference *)rlt->data;
+    GtkTreePath *path = gtk_tree_row_reference_get_path(rowref);
+    gtk_tree_row_reference_free(rowref);
     if(path)
     {
       GtkTreeIter iter;
@@ -1506,8 +1508,10 @@ static void _lib_masks_remove_item(dt_lib_module_t *self, int formid, int parent
       {
         gtk_tree_store_remove(GTK_TREE_STORE(model), &iter);
       }
+      gtk_tree_path_free(path);
     }
   }
+  g_list_free(rl);
 }
 
 static void _lib_masks_selection_change(dt_lib_module_t *self, int selectid, int throw_event)

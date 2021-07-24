@@ -74,6 +74,11 @@ const char *name()
   return _("orientation");
 }
 
+const char *aliases()
+{
+  return _("rotation|flip");
+}
+
 int default_group()
 {
   return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
@@ -86,8 +91,8 @@ int operation_tags()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE
-    | IOP_FLAGS_UNSAFE_COPY;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_UNSAFE_COPY
+         | IOP_FLAGS_GUIDES_WIDGET;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -97,11 +102,9 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 const char *description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("rotate image by step of 90 degrees"),
-                                      _("corrective"),
-                                      _("linear, RGB, scene-referred"),
-                                      _("geometric, RGB"),
-                                      _("linear, RGB, scene-referred"));
+  return dt_iop_set_description(self, _("flip or rotate image by step of 90 degrees"), _("corrective"),
+                                _("linear, RGB, scene-referred"), _("geometric, RGB"),
+                                _("linear, RGB, scene-referred"));
 }
 
 static dt_image_orientation_t merge_two_orientations(dt_image_orientation_t raw_orientation,
@@ -198,9 +201,9 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   if (d->orientation == 0) return 1;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
     dt_omp_firstprivate(points_count, points, d, piece) \
-    schedule(static) if(points_count > 100) aligned(points:64)
+    schedule(static) if(points_count > 500)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
@@ -230,9 +233,9 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   if (d->orientation == 0) return 1;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
     dt_omp_firstprivate(points_count, points, d, piece) \
-    schedule(static) if(points_count > 100) aligned(points:64)
+    schedule(static) if(points_count > 500)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
@@ -507,6 +510,34 @@ static void rotate_ccw(GtkWidget *widget, dt_iop_module_t *self)
 {
   do_rotate(self, 0);
 }
+static void _flip_h(GtkWidget *widget, dt_iop_module_t *self)
+{
+  dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
+  dt_image_orientation_t orientation = p->orientation;
+
+  if(orientation == ORIENTATION_NULL) orientation = dt_image_orientation(&self->dev->image_storage);
+
+  if(orientation & ORIENTATION_SWAP_XY)
+    p->orientation = orientation ^ ORIENTATION_FLIP_VERTICALLY;
+  else
+    p->orientation = orientation ^ ORIENTATION_FLIP_HORIZONTALLY;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+static void _flip_v(GtkWidget *widget, dt_iop_module_t *self)
+{
+  dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
+  dt_image_orientation_t orientation = p->orientation;
+
+  if(orientation == ORIENTATION_NULL) orientation = dt_image_orientation(&self->dev->image_storage);
+
+  if(orientation & ORIENTATION_SWAP_XY)
+    p->orientation = orientation ^ ORIENTATION_FLIP_HORIZONTALLY;
+  else
+    p->orientation = orientation ^ ORIENTATION_FLIP_VERTICALLY;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
 
 void gui_init(struct dt_iop_module_t *self)
 {
@@ -515,7 +546,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  GtkWidget *label = dtgtk_reset_label_new(_("rotate"), self, &p->orientation, sizeof(int32_t));
+  GtkWidget *label = dtgtk_reset_label_new(_("transform"), self, &p->orientation, sizeof(int32_t));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
   dt_iop_button_new(self, N_("rotate 90 degrees CCW"),
@@ -525,6 +556,12 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_button_new(self, N_("rotate 90 degrees CW"),
                     G_CALLBACK(rotate_cw), FALSE, GDK_KEY_bracketright, 0,
                     dtgtk_cairo_paint_refresh, 1, self->widget);
+
+  dt_iop_button_new(self, N_("flip horizontally"), G_CALLBACK(_flip_h), FALSE, 0, 0, dtgtk_cairo_paint_flip, 1,
+                    self->widget);
+
+  dt_iop_button_new(self, N_("flip vertically"), G_CALLBACK(_flip_v), FALSE, 0, 0, dtgtk_cairo_paint_flip, 0,
+                    self->widget);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

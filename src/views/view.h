@@ -18,10 +18,12 @@
 
 #pragma once
 
+#include "common/action.h"
 #include "common/history.h"
 #include "common/image.h"
 #ifdef HAVE_PRINT
 #include "common/cups_print.h"
+#include "common/printing.h"
 #endif
 #ifdef HAVE_MAP
 #include "common/geo.h"
@@ -125,6 +127,8 @@ typedef struct dt_mouse_action_t
 struct dt_view_t;
 typedef struct dt_view_t
 {
+  dt_action_t actions; // !!! NEEDS to be FIRST (to be able to cast convert)
+
 #define INCLUDE_API_FROM_MODULE_H
 #include "views/view_api.h"
 
@@ -138,9 +142,6 @@ typedef struct dt_view_t
   // scroll bar control
   float vscroll_size, vscroll_lower, vscroll_viewport_size, vscroll_pos;
   float hscroll_size, hscroll_lower, hscroll_viewport_size, hscroll_pos;
-
-  GSList *accel_closures;
-  GtkWidget *dynamic_accel_current;
 } dt_view_t;
 
 typedef enum dt_view_image_over_t
@@ -240,6 +241,9 @@ typedef struct dt_view_manager_t
     int32_t audio_player_id; // the imgid of the image the audio is played for
     guint audio_player_event_source;
   } audio;
+
+  // toggle button for guides (in the module toolbox)
+  GtkWidget *guides_toggle;
 
   /*
    * Proxy
@@ -345,7 +349,7 @@ typedef struct dt_view_manager_t
     struct
     {
       struct dt_view_t *view;
-      void (*print_settings)(const dt_view_t *view, dt_print_info_t *pinfo);
+      void (*print_settings)(const dt_view_t *view, dt_print_info_t *pinfo, dt_images_box *imgs);
     } print;
 #endif
   } proxy;
@@ -470,7 +474,7 @@ void dt_view_map_drag_set_icon(const dt_view_manager_t *vm, GdkDragContext *cont
  * Print View Proxy
  */
 #ifdef HAVE_PRINT
-void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo);
+void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo, dt_images_box *imgs);
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

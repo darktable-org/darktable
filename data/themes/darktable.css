@@ -501,6 +501,11 @@ spinbutton>button
   margin-top: 0.42em;
 }
 
+#guides-line
+{
+  padding: 0 0.84em;
+}
+
 /* icon buttons in modules main body */
 #iop-plugin-ui-main #dt-button,
 #iop-plugin-ui-main #dt-toggle-button,
@@ -936,6 +941,12 @@ menuitem > arrow
   border: 0;
 }
 
+menuitem check
+{
+  margin-left: 0.5em;
+  margin-bottom: 1px;
+}
+
 popover
 {
   padding: 0.4em;
@@ -999,14 +1010,16 @@ popover separator
 
 notebook tabs,
 #modules-tabs,
-#blending-tabs
+#blending-tabs,
+#guides-line
 {
   color: @button_fg;
   font-family: sans-serif;
 }
 
 #modules-tabs,
-#blending-tabs
+#blending-tabs,
+#guides-line
 {
   background-color: @button_border;
 }
@@ -1017,7 +1030,8 @@ notebook tabs,
   padding: 0.1em;
 }
 
-#blending-tabs #dt-toggle-button
+#blending-tabs #dt-toggle-button,
+#guides-line #dt-toggle-button
 {
   font-size: 0.8em;
   min-height: 1.55em;
@@ -1030,6 +1044,11 @@ notebook tabs,
   min-width: 0em;
   padding-left: 0.2em;
   padding-right: 0.2em;
+}
+
+#guides-line #dt-toggle-button
+{
+  min-width: 1.55em;
 }
 
 #blending-tabs #dt-button
@@ -1047,7 +1066,8 @@ notebook tabs,
 
 /* Do not apply border-radius to group modules icons and masks icons */
 #modules-tabs button,
-#blending-tabs button
+#blending-tabs button,
+#guides-line button
 {
   border-radius: 0;
   border: 0;
@@ -1812,7 +1832,7 @@ messagedialog .default  /* this show that a button in confirmation action pop-up
 button:hover,
 #add-color-button:hover,
 menuitem:hover,
-menuitem:hover > *,
+menuitem:hover > *:not(check),
 combobox window *:hover,
 radiobutton:hover label,
 #control-button:hover,
@@ -1911,9 +1931,11 @@ button:disabled,
 }
 
 /* Treeviews and filechoosers states */
-treeview check /* set specific background color about check buttons in treeviews like copy/paste dialog window */
+treeview check, /* set specific background color about check buttons like in copy/paste dialog window */
+menuitem check
 {
   background-color: @field_selected_bg;
+  border-color: @field_selected_bg;
 }
 
 treeview:not(#lutname) *:hover:not(check),
@@ -1941,17 +1963,17 @@ filechooser *:selected
   color: @field_selected_fg;
 }
 
-treeview check:selected
+treeview check:selected,
+menuitem check:selected
 {
   background-color: @button_bg;
   border-color: @plugin_bg_color;
 }
 
-treeview check:hover
+treeview check:hover,
+menuitem check:hover
 {
-  background-color: @bauhaus_bg_hover;
   color: @field_hover_fg;
-  border-color: @selected_bg_color;
 }
 
 filechooser checkbutton:checked
@@ -2021,11 +2043,6 @@ notebook tab:hover
   border-bottom: 0.14em solid @button_hover_fg;
   color: @button_hover_fg;
   background-color: @button_hover_bg;
-}
-
-notebook tab:hover labelnotebook
-{
-  color: @button_hover_fg;
 }
 
 notebook tab:checked
@@ -2106,7 +2123,7 @@ Hierarchy :
       #thumb_bottom                                                  (GtkEventBox -- background of the bottom infos area)
         #thumb_bottom_label                                          (GtkLabel -- text of the bottom infos area, just with .dt_extended_overlay)
       #thumb_reject                                                  (GtkDarktableThumbnailBtn -- Reject icon)
-      #thumb_star                                                    (GtkDarktableThumbnailBtn -- Star icon, 5 occurences of this)
+      #thumb_star                                                    (GtkDarktableThumbnailBtn -- Star icon, 5 occurrences of this)
       #thumb_colorlabels                                             (GtkDarktableThumbnailBtn -- colorlabels icon, 1 icon with all labels)
       #thumb_localcopy                                               (GtkDarktableThumbnailBtn -- local copy triangle icon)
       #thumb_altered                                                 (GtkDarktableThumbnailBtn -- altered icon)
@@ -2619,7 +2636,7 @@ Details :
 }
 
 /* Set active menu items: needed for some Pango issues not rendering synthetic bold for all OS */
-.active-menu-item *
+.active-menu-item label
 {
-    font-weight: bold;
+  font-weight: bold;
 }

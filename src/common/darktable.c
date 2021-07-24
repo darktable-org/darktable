@@ -39,6 +39,7 @@
 #include "common/camera_control.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/action.h"
 #include "common/cpuid.h"
 #include "common/file_location.h"
 #include "common/film.h"
@@ -58,9 +59,11 @@
 #include "control/control.h"
 #include "control/crawler.h"
 #include "control/jobs/control_jobs.h"
+#include "control/jobs/film_jobs.h"
 #include "control/signal.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/guides.h"
 #include "gui/presets.h"
@@ -131,6 +134,7 @@ static int usage(const char *argv0)
 #endif
   printf(">\n");
   printf("  --datadir <data directory>\n");
+  printf("  --enforce-tiling\n");
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
 #endif
@@ -221,61 +225,6 @@ gboolean dt_supported_image(const gchar *filename)
       break;
     }
   return supported;
-}
-
-static void strip_semicolons_from_keymap(const char *path)
-{
-  char pathtmp[PATH_MAX] = { 0 };
-  FILE *fin = g_fopen(path, "rb");
-  FILE *fout;
-
-  if(!fin) return;
-
-  snprintf(pathtmp, sizeof(pathtmp), "%s_tmp", path);
-  fout = g_fopen(pathtmp, "wb");
-
-  if(!fout)
-  {
-    fclose(fin);
-    return;
-  }
-
-  int c = '\0';
-  // First ignoring the first three lines
-  for(int i = 0; i < 3; i++)
-  {
-    while(c != '\n' && c != '\r' && c != EOF) c = fgetc(fin);
-    while(c == '\n' || c == '\r') c = fgetc(fin);
-    ungetc(c, fin);
-  }
-
-  // Then ignore the first two characters of each line, copying the rest out
-  while(c != EOF)
-  {
-    fseek(fin, 2, SEEK_CUR);
-    while(c != '\n' && c != '\r' && c != EOF)
-    {
-      c = fgetc(fin);
-      if(c != '\n' && c != '\r' && c != EOF) fputc(c, fout);
-    }
-    while(c == '\n' || c == '\r')
-    {
-      fputc(c, fout);
-      c = fgetc(fin);
-    }
-    ungetc(c, fin);
-  }
-
-  fclose(fin);
-  fclose(fout);
-
-  GFile *gpath = g_file_new_for_path(path);
-  GFile *gpathtmp = g_file_new_for_path(pathtmp);
-
-  g_file_delete(gpath, NULL, NULL);
-  g_file_move(gpathtmp, gpath, 0, NULL, NULL, NULL, NULL);
-  g_object_unref(gpath);
-  g_object_unref(gpathtmp);
 }
 
 int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean *single_image)
@@ -380,17 +329,15 @@ static void dt_codepaths_init()
 #endif
   {
     darktable.codepath.OPENMP_SIMD = 1;
-    fprintf(stderr, "[dt_codepaths_init] will be using HIGHLY EXPERIMENTAL plain OpenMP SIMD codepath.\n");
+    fprintf(stderr, "[dt_codepaths_init] will be using experimental plain OpenMP SIMD codepath.\n");
   }
 
 #if defined(__SSE__)
   if(darktable.codepath._no_intrinsics)
-#endif
   {
     fprintf(stderr, "[dt_codepaths_init] SSE2-optimized codepath is disabled or unavailable.\n");
-    fprintf(stderr,
-            "[dt_codepaths_init] expect a LOT of functionality to be broken. you have been warned.\n");
   }
+#endif
 }
 
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
@@ -620,7 +567,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       else if(argv[k][1] == 'd' && argc > k + 1)
       {
         if(!strcmp(argv[k + 1], "all"))
-          darktable.unmuted = 0xffffffff; // enable all debug information
+          darktable.unmuted = 0xffffffff & ~DT_DEBUG_TILING; // enable all debug information except the enforce-tiling flag
         else if(!strcmp(argv[k + 1], "cache"))
           darktable.unmuted |= DT_DEBUG_CACHE; // enable debugging for lib/film/cache module
         else if(!strcmp(argv[k + 1], "control"))
@@ -800,6 +747,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #ifdef HAVE_OPENCL
         exclude_opencl = TRUE;
 #endif
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--enforce-tiling"))
+      {
+        darktable.unmuted |= DT_DEBUG_TILING;
         argv[k] = NULL;
       }
       else if(!strcmp(argv[k], "--"))
@@ -1049,15 +1001,16 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"))
       dt_gui_presets_init(); // init preset db schema.
     darktable.control->running = 0;
-    darktable.control->accelerators = NULL;
     dt_pthread_mutex_init(&darktable.control->run_mutex, NULL);
   }
 
   // we initialize grouping early because it's needed for collection init
+  // idem for folder reachability
   if(init_gui)
   {
     darktable.gui = (dt_gui_gtk_t *)calloc(1, sizeof(dt_gui_gtk_t));
     darktable.gui->grouping = dt_conf_get_bool("ui_last/grouping");
+    dt_film_set_folder_status();
   }
 
   // initialize collection query
@@ -1169,22 +1122,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
     // init the gui part of views
     dt_view_manager_gui_init(darktable.view_manager);
-    // Loading the keybindings
-    char keyfile[PATH_MAX] = { 0 };
 
-    // First dump the default keymapping
-    snprintf(keyfile, sizeof(keyfile), "%s/keyboardrc_default", datadir);
-    gtk_accel_map_save(keyfile);
+    // Then load any shortcuts if available
+    dt_shortcuts_load(FALSE); //
 
-    // Removing extraneous semi-colons from the default keymap
-    strip_semicolons_from_keymap(keyfile);
-
-    // Then load any modified keys if available
-    snprintf(keyfile, sizeof(keyfile), "%s/keyboardrc", datadir);
-    if(g_file_test(keyfile, G_FILE_TEST_EXISTS))
-      gtk_accel_map_load(keyfile);
-    else
-      gtk_accel_map_save(keyfile); // Save the default keymap if none is present
+    // Save the shortcuts including defaults
+    dt_shortcuts_save(TRUE);
 
     // initialize undo struct
     darktable.undo = dt_undo_init();
@@ -1231,28 +1174,15 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #ifndef MAC_INTEGRATION
     // load image(s) specified on cmdline.
     // this has to happen after lua is initialized as image import can run lua code
-    // If only one image is listed, attempt to load it in darkroom
-    int last_id = 0;
-    gboolean only_single_images = TRUE;
-    int loaded_images = 0;
-
-    for(int i = 1; i < argc; i++)
+    if (argc == 2)
     {
-      gboolean single_image = FALSE;
-      if(argv[i] == NULL || *argv[i] == '\0') continue;
-      int new_id = dt_load_from_string(argv[i], FALSE, &single_image);
-      if(new_id > 0)
-      {
-        last_id = new_id;
-        loaded_images++;
-        if(!single_image) only_single_images = FALSE;
-      }
+      // If only one image is listed, attempt to load it in darkroom
+      (void)dt_load_from_string(argv[1], TRUE, NULL);
     }
-
-    if(loaded_images == 1 && only_single_images)
+    else if (argc > 2)
     {
-      dt_control_set_mouse_over_id(last_id);
-      dt_ctl_switch_mode_to("darkroom");
+      // when multiple names are given, fire up a background job to import them
+      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, dt_pathlist_import_create(argc,argv));
     }
 #endif
   }
@@ -1634,6 +1564,18 @@ static inline size_t _get_total_memory()
 #endif
 }
 
+int dt_worker_threads()
+{
+  const int atom_cores = _get_num_atom_cores();
+  const size_t threads = dt_get_num_threads();
+  const size_t mem = _get_total_memory();
+  if(mem >= (8lu << 20) && threads >= 4 && atom_cores == 0)
+    return 4;
+  else if(threads >= 2 && atom_cores == 0)
+    return 2;
+  return 1;
+}
+
 void dt_configure_performance()
 {
   const int atom_cores = _get_num_atom_cores();
@@ -1650,7 +1592,6 @@ void dt_configure_performance()
     // But respect if user has set higher values manually earlier
     fprintf(stderr, "[defaults] setting very high quality defaults\n");
 
-    dt_conf_set_int("worker_threads", MAX(8, dt_conf_get_int("worker_threads")));
     // if machine has at least 8GB RAM, use half of the total memory size
     dt_conf_set_int("host_memory_limit", MAX(mem >> 11, dt_conf_get_int("host_memory_limit")));
     dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
@@ -1664,7 +1605,6 @@ void dt_configure_performance()
     // But respect if user has set higher values manually earlier
     fprintf(stderr, "[defaults] setting high quality defaults\n");
 
-    dt_conf_set_int("worker_threads", MAX(8, dt_conf_get_int("worker_threads")));
     dt_conf_set_int("host_memory_limit", MAX(1500, dt_conf_get_int("host_memory_limit")));
     dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
     if(demosaic_quality == NULL ||!strcmp(demosaic_quality, "always bilinear (fast)"))
@@ -1676,7 +1616,6 @@ void dt_configure_performance()
     // CONFIG 3: For less than 1GB RAM or 2 or less cores, or for atom processors
     // use very low/conservative settings
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
-    dt_conf_set_int("worker_threads", 1);
     dt_conf_set_int("host_memory_limit", 500);
     dt_conf_set_int("singlebuffer_limit", 8);
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");
@@ -1687,7 +1626,6 @@ void dt_configure_performance()
     // CONFIG 4: for everything else use explicit defaults
     fprintf(stderr, "[defaults] setting normal defaults\n");
 
-    dt_conf_set_int("worker_threads", 2);
     dt_conf_set_int("host_memory_limit", 1500);
     dt_conf_set_int("singlebuffer_limit", 16);
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");

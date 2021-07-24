@@ -640,6 +640,8 @@ void init(dt_view_t *self)
 
   dt_map_t *lib = (dt_map_t *)self->data;
 
+  darktable.view_manager->proxy.map.view = self;
+
   if(darktable.gui)
   {
     lib->image_pin = _init_image_pin();
@@ -653,7 +655,7 @@ void init(dt_view_t *self)
 
     OsmGpsMapSource_t map_source
         = OSM_GPS_MAP_SOURCE_OPENSTREETMAP; // open street map should be a nice default ...
-    gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
+    const char *old_map_source = dt_conf_get_string_const("plugins/map/map_source");
     if(old_map_source && old_map_source[0] != '\0')
     {
       // find the number of the stored map_source
@@ -669,7 +671,6 @@ void init(dt_view_t *self)
     }
     else
       dt_conf_set_string("plugins/map/map_source", osm_gps_map_source_get_friendly_name(map_source));
-    g_free(old_map_source);
 
     lib->map_source = map_source;
 
@@ -1456,7 +1457,7 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
     return;
   }
 
-  // "changed" event can be high frequence. As calculation is heavy we don't to repeat it.
+  // "changed" event can be high frequency. As calculation is heavy we don't to repeat it.
   if(!lib->time_out)
   {
     g_timeout_add(100, _view_map_changed_callback_wait, self);
@@ -2023,7 +2024,6 @@ void enter(dt_view_t *self)
   gtk_widget_show_all(GTK_WIDGET(lib->map));
 
   /* setup proxy functions */
-  darktable.view_manager->proxy.map.view = self;
   darktable.view_manager->proxy.map.center_on_location = _view_map_center_on_location;
   darktable.view_manager->proxy.map.center_on_bbox = _view_map_center_on_bbox;
   darktable.view_manager->proxy.map.show_osd = _view_map_show_osd;
@@ -2501,8 +2501,7 @@ static gboolean _view_map_center_on_image_list(dt_view_t *self, const char* tabl
   double min_latitude = INFINITY;
   int count = 0;
 
-  char *query = dt_util_dstrcat(NULL,
-                                "SELECT MIN(latitude), MAX(latitude),"
+  gchar *query = g_strdup_printf("SELECT MIN(latitude), MAX(latitude),"
                                 "       MIN(longitude), MAX(longitude), COUNT(*)"
                                 " FROM main.images AS i "
                                 " JOIN %s AS l ON l.imgid = i.id "
@@ -2715,10 +2714,9 @@ static gboolean _view_map_prefs_changed(dt_map_t *lib)
   gboolean filter_images_drawn = dt_conf_get_bool("plugins/map/filter_images_drawn");
   if(lib->filter_images_drawn != filter_images_drawn) prefs_changed = TRUE;
 
-  char *thumbnail = dt_conf_get_string("plugins/map/images_thumbnail");
+  const char *thumbnail = dt_conf_get_string_const("plugins/map/images_thumbnail");
   lib->thumbnail = !g_strcmp0(thumbnail, "thumbnail") ? DT_MAP_THUMB_THUMB :
                    !g_strcmp0(thumbnail, "count") ? DT_MAP_THUMB_COUNT : DT_MAP_THUMB_NONE;
-  g_free(thumbnail);
 
   return prefs_changed;
 }

@@ -57,7 +57,7 @@ const char **views(dt_lib_module_t *self)
 
 uint32_t container(dt_lib_module_t *self)
 {
-  gchar *pos = dt_conf_get_string("plugins/darkroom/image_infos_position");
+  const char *pos = dt_conf_get_string_const("plugins/darkroom/image_infos_position");
   dt_ui_container_t cont = DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER; // default value
 
   if(g_strcmp0(pos, "top left") == 0)
@@ -67,7 +67,6 @@ uint32_t container(dt_lib_module_t *self)
   else if(g_strcmp0(pos, "top center") == 0)
     cont = DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER;
 
-  g_free(pos);
   return cont;
 }
 

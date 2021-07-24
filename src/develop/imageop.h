@@ -33,6 +33,7 @@ typedef struct dt_iop_roi_t
 #include "common/darktable.h"
 #include "common/introspection.h"
 #include "common/opencl.h"
+#include "common/action.h"
 #include "control/settings.h"
 #include "develop/pixelpipe.h"
 #include "dtgtk/togglebutton.h"
@@ -92,19 +93,22 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_NONE = 0,
 
   /** Flag for the iop module to be enabled/included by default when creating a style */
-  IOP_FLAGS_INCLUDE_IN_STYLES  = 1 << 0,
-  IOP_FLAGS_SUPPORTS_BLENDING  = 1 << 1,  // Does provide blending modes
-  IOP_FLAGS_DEPRECATED         = 1 << 2,
-  IOP_FLAGS_ALLOW_TILING       = 1 << 4,  // Does allow tile-wise processing (valid for CPU and GPU processing)
-  IOP_FLAGS_HIDDEN             = 1 << 5,  // Hide the iop from userinterface
-  IOP_FLAGS_TILING_FULL_ROI    = 1 << 6,  // Tiling code has to expect arbitrary roi's for this module (incl. flipping, mirroring etc.)
-  IOP_FLAGS_ONE_INSTANCE       = 1 << 7,  // The module doesn't support multiple instances
-  IOP_FLAGS_PREVIEW_NON_OPENCL = 1 << 8,  // Preview pixelpipe of this module must not run on GPU but always on CPU
-  IOP_FLAGS_NO_HISTORY_STACK   = 1 << 9,  // This iop will never show up in the history stack
-  IOP_FLAGS_NO_MASKS           = 1 << 10, // The module doesn't support masks (used with SUPPORT_BLENDING)
-  IOP_FLAGS_FENCE              = 1 << 11, // No module can be moved pass this one
-  IOP_FLAGS_ALLOW_FAST_PIPE    = 1 << 12, // Module can work with a fast pipe
-  IOP_FLAGS_UNSAFE_COPY        = 1 << 13  // Unsafe to copy as part of history
+  IOP_FLAGS_INCLUDE_IN_STYLES = 1 << 0,
+  IOP_FLAGS_SUPPORTS_BLENDING = 1 << 1, // Does provide blending modes
+  IOP_FLAGS_DEPRECATED = 1 << 2,
+  IOP_FLAGS_ALLOW_TILING = 1 << 4, // Does allow tile-wise processing (valid for CPU and GPU processing)
+  IOP_FLAGS_HIDDEN = 1 << 5,       // Hide the iop from userinterface
+  IOP_FLAGS_TILING_FULL_ROI
+  = 1 << 6, // Tiling code has to expect arbitrary roi's for this module (incl. flipping, mirroring etc.)
+  IOP_FLAGS_ONE_INSTANCE = 1 << 7,       // The module doesn't support multiple instances
+  IOP_FLAGS_PREVIEW_NON_OPENCL = 1 << 8, // Preview pixelpipe of this module must not run on GPU but always on CPU
+  IOP_FLAGS_NO_HISTORY_STACK = 1 << 9,   // This iop will never show up in the history stack
+  IOP_FLAGS_NO_MASKS = 1 << 10,          // The module doesn't support masks (used with SUPPORT_BLENDING)
+  IOP_FLAGS_FENCE = 1 << 11,             // No module can be moved pass this one
+  IOP_FLAGS_ALLOW_FAST_PIPE = 1 << 12,   // Module can work with a fast pipe
+  IOP_FLAGS_UNSAFE_COPY = 1 << 13,       // Unsafe to copy as part of history
+  IOP_FLAGS_GUIDES_SPECIAL_DRAW = 1 << 14, // handle the grid drawing directly
+  IOP_FLAGS_GUIDES_WIDGET = 1 << 15        // require the guides widget
 } dt_iop_flags_t;
 
 /** status of a module*/
@@ -151,6 +155,8 @@ struct dt_iop_module_so_t;
 struct dt_iop_module_t;
 typedef struct dt_iop_module_so_t
 {
+  dt_action_t actions; // !!! NEEDS to be FIRST (to be able to cast convert)
+
 #define INCLUDE_API_FROM_MODULE_H
 #include "iop/iop_api.h"
 
@@ -162,9 +168,8 @@ typedef struct dt_iop_module_so_t
    * read-only then. */
   dt_iop_global_data_t *data;
   /** gui is also only inited once at startup. */
-  dt_iop_gui_data_t *gui_data;
+//  dt_iop_gui_data_t *gui_data;
   /** which results in this widget here, too. */
-  GtkWidget *widget;
   /** button used to show/hide this module in the plugin list. */
   dt_iop_module_state_t state;
 
@@ -178,6 +183,8 @@ typedef struct dt_iop_module_so_t
 
 typedef struct dt_iop_module_t
 {
+  dt_action_type_t actions; // !!! NEEDS to be FIRST (to be able to cast convert)
+
 #define INCLUDE_API_FROM_MODULE_H
 #include "iop/iop_api.h"
 
@@ -271,10 +278,15 @@ typedef struct dt_iop_module_t
   GtkWidget *presets_button;
   /** fusion slider */
   GtkWidget *fusion_slider;
+
+  GSList *widget_list;
+  /** show/hide guide button */
+  GtkWidget *guides_toggle;
   /** list of closures: show, enable/disable */
   GSList *accel_closures;
   GSList *accel_closures_local;
   gboolean local_closures_connected;
+
   /** flag in case the module has troubles (bad settings) - if TRUE, show a warning sign next to module label */
   gboolean has_trouble;
   /** the corresponding SO object */
@@ -378,6 +390,8 @@ void dt_iop_gui_init(dt_iop_module_t *module);
 /** reloads certain gui/param defaults when the image was switched. */
 void dt_iop_reload_defaults(dt_iop_module_t *module);
 
+extern const struct dt_action_def_t dt_action_def_iop;
+
 /*
  * must be called in dt_dev_change_image() to fix wrong histogram in levels
  * just after switching images and before full redraw
@@ -403,6 +417,8 @@ dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *op
 dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules, const char *operation, const char *multi_name);
 /** count instances of a module **/
 int dt_iop_count_instances(dt_iop_module_so_t *module);
+/** return preferred module instance for shortcuts **/
+dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module);
 
 /** returns true if module is the first instance of this operation in the pipe */
 gboolean dt_iop_is_first_instance(GList *modules, dt_iop_module_t *module);
@@ -414,9 +430,6 @@ int get_module_flags(const char *op);
 /** returns the localized plugin name for a given op name. must not be freed. */
 gchar *dt_iop_get_localized_name(const gchar *op);
 gchar *dt_iop_get_localized_aliases(const gchar *op);
-
-/** Connects common accelerators to an iop module */
-void dt_iop_connect_common_accels(dt_iop_module_t *module);
 
 /** set multi_priority and update raster mask links */
 void dt_iop_update_multi_priority(dt_iop_module_t *module, int new_priority);

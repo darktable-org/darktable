@@ -89,6 +89,7 @@ typedef struct dt_control_export_t
 typedef struct dt_control_import_t
 {
   struct dt_import_session_t *session;
+  gboolean *wait;
 } dt_control_import_t;
 
 typedef struct dt_control_image_enumerator_t
@@ -177,6 +178,8 @@ static void dt_control_image_enumerator_cleanup(void *p)
 
   g_list_free(params->index);
   params->index = NULL;
+  //FIXME: we need to free params->data to avoid a memory leak, but doing so here causes memory corruption....
+//  g_free(params->data);
 
   free(params);
 }
@@ -1176,9 +1179,9 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
       {
         imgs = g_list_prepend(imgs, grp->data);
         g_array_append_val(gloc, geoloc);
+        cntr++;
       }
       g_list_free(grps);
-      cntr++;
     }
     g_date_time_unref(utc_time);
   } while((t = g_list_next(t)) != NULL);
@@ -1466,6 +1469,7 @@ static void dt_control_gpx_apply_job_cleanup(void *p)
   dt_control_image_enumerator_t *params = p;
 
   dt_control_gpx_apply_t *data = params->data;
+  params->data = NULL;
   g_free(data->filename);
   g_free(data->tz);
 
@@ -1679,20 +1683,12 @@ void dt_control_move_images()
   dt_osx_disallow_fullscreen(filechooser);
 #endif
 
-  gchar *copymove_path = dt_conf_get_string("ui_last/copymove_path");
-  if(copymove_path != NULL)
-  {
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), copymove_path);
-    g_free(copymove_path);
-  }
-
+  dt_conf_get_folder_to_file_chooser("ui_last/copymove_path", filechooser);
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
-    dt_conf_set_string("ui_last/copymove_path", folder);
-    g_free(folder);
+    dt_conf_set_folder_from_file_chooser("ui_last/copymove_path", filechooser);
   }
   gtk_widget_destroy(filechooser);
 
@@ -1700,6 +1696,7 @@ void dt_control_move_images()
 
   // ugly, but we need to set this after constructing the job:
   ((dt_control_image_enumerator_t *)dt_control_job_get_params(job))->data = dir;
+  // the job's cleanup function is responsible for freeing dir, so we don't do that here
 
   if(dt_conf_get_bool("ask_before_move"))
   {
@@ -1751,20 +1748,12 @@ void dt_control_copy_images()
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
 #endif
-  gchar *copymove_path = dt_conf_get_string("ui_last/copymove_path");
-  if(copymove_path != NULL)
-  {
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), copymove_path);
-    g_free(copymove_path);
-  }
-
+  dt_conf_get_folder_to_file_chooser("ui_last/copymove_path", filechooser);
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
-    dt_conf_set_string("ui_last/copymove_path", folder);
-    g_free(folder);
+    dt_conf_set_folder_from_file_chooser("ui_last/copymove_path", filechooser);
   }
   gtk_widget_destroy(filechooser);
 
@@ -1772,6 +1761,7 @@ void dt_control_copy_images()
 
   // ugly, but we need to set this after constructing the job:
   ((dt_control_image_enumerator_t *)dt_control_job_get_params(job))->data = dir;
+  // the job's cleanup function is responsible for freeing dir, so we don't do that here
 
   if(dt_conf_get_bool("ask_before_copy"))
   {
@@ -2146,6 +2136,7 @@ static void _collection_update(double *last_update, double *update_interval)
 static int _control_import_image_insitu(const char *filename, GList **imgs, double *last_update,
                                         double *update_interval)
 {
+  dt_conf_set_int("ui_last/import_last_image", -1);
   char *dirname = g_path_get_dirname(filename);
   dt_film_t film;
   const int filmid = dt_film_new(&film, dirname);
@@ -2155,6 +2146,7 @@ static int _control_import_image_insitu(const char *filename, GList **imgs, doub
   {
     *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(imgid));
     _collection_update(last_update, update_interval);
+    dt_conf_set_int("ui_last/import_last_image", imgid);
   }
   g_free(dirname);
   return filmid;
@@ -2178,6 +2170,7 @@ static GList *_apply_lua_filter(GList *images)
 {
   /* pre-sort image list for easier handling in Lua code */
   images = g_list_sort(images, (GCompareFunc)_film_filename_cmp);
+  int image_count = 1;
 
   dt_lua_lock();
   lua_State *L = darktable.lua_state.state;
@@ -2186,7 +2179,8 @@ static GList *_apply_lua_filter(GList *images)
     for(GList *elt = images; elt; elt = g_list_next(elt))
     {
       lua_pushstring(L, elt->data);
-      luaL_ref(L, -2);
+      lua_seti(L, -2, image_count);
+      image_count++;
     }
   }
   lua_pushvalue(L, -1);
@@ -2195,10 +2189,10 @@ static GList *_apply_lua_filter(GList *images)
     g_list_free_full(images, g_free);
     // recreate list of images
     images = NULL;
-    lua_pushnil(L); /* first key */
-    while(lua_next(L, -2) != 0)
+   for(int i = 1; i < image_count; i++)
     {
       /* uses 'key' (at index -2) and 'value' (at index -1) */
+      lua_geti(L, -1, i);
       void *filename = strdup(luaL_checkstring(L, -1));
       lua_pop(L, 1);
       images = g_list_prepend(images, filename);
@@ -2278,6 +2272,8 @@ static int32_t _control_import_job_run(dt_job_t *job)
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, filmid);
+  if(data->wait)
+    *data->wait = FALSE;  // resume caller
   return 0;
 }
 
@@ -2308,7 +2304,7 @@ static void *_control_import_alloc()
 }
 
 static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_override,
-                                            const gboolean inplace)
+                                            const gboolean inplace, gboolean *wait)
 {
   dt_job_t *job = dt_control_job_create(&_control_import_job_run, "import");
   if(!job) return NULL;
@@ -2324,6 +2320,7 @@ static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_o
   params->index = imgs;
 
   dt_control_import_t *data = params->data;
+  data->wait = wait;
   if(inplace)
     data->session = NULL;
   else
@@ -2340,8 +2337,12 @@ static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_o
 
 void dt_control_import(GList *imgs, const time_t datetime_override, const gboolean inplace)
 {
+  gboolean wait = !imgs->next && inplace;
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     _control_import_job_create(imgs, datetime_override, inplace));
+                     _control_import_job_create(imgs, datetime_override, inplace, wait ? &wait : NULL));
+  // if import in place single image => synchronous import
+  while(wait)
+    g_usleep(100);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

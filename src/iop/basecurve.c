@@ -962,9 +962,9 @@ static inline void apply_legacy_curve(
       const float f = in[k+i] * mul;
       // use base curve for values < 1, else use extrapolation.
       if(f < 1.0f)
-        out[k+i] = table[CLAMP((int)(f * 0x10000ul), 0, 0xffff)];
+        out[k+i] = fmaxf(table[CLAMP((int)(f * 0x10000ul), 0, 0xffff)], 0.f);
       else
-        out[k+i] = dt_iop_eval_exp(unbounded_coeffs, f);
+        out[k+i] = fmaxf(dt_iop_eval_exp(unbounded_coeffs, f), 0.f);
     }
     out[k+3] = in[k+3];
   }
@@ -1004,7 +1004,7 @@ static inline void apply_curve(
     }
     for(size_t c = 0; c < 3; c++)
     {
-      out[k+c] = (ratio * in[k+c]);
+      out[k+c] = fmaxf(ratio * in[k+c], 0.f);
     }
     out[k+3] = in[k+3];
   }
@@ -1311,9 +1311,9 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 #endif
   for(size_t k = 0; k < (size_t)4 * wd * ht; k += 4)
   {
-    out[k + 0] = comb[0][k + 0];
-    out[k + 1] = comb[0][k + 1];
-    out[k + 2] = comb[0][k + 2];
+    out[k + 0] = fmaxf(comb[0][k + 0], 0.f);
+    out[k + 1] = fmaxf(comb[0][k + 1], 0.f);
+    out[k + 2] = fmaxf(comb[0][k + 2], 0.f);
     out[k + 3] = in[k + 3]; // pass on 4th channel
   }
 
@@ -2034,7 +2034,7 @@ static gboolean dt_iop_basecurve_key_press(GtkWidget *widget, GdkEventKey *event
     dx = -BASECURVE_DEFAULT_STEP;
   }
 
-  if(!handled) return TRUE;
+  if(!handled) return FALSE;
 
   return _move_point_internal(self, widget, dx, dy, event->state);
 }
@@ -2089,8 +2089,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_widget_set_tooltip_text(GTK_WIDGET(c->area), _("abscissa: input, ordinate: output. works on RGB channels"));
-
+  g_object_set_data(G_OBJECT(c->area), "iop-instance", self);
+  dt_action_define_iop(self, NULL, N_("curve"), GTK_WIDGET(c->area), NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+
   c->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");
   gtk_widget_set_tooltip_text(c->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
 
@@ -2120,9 +2122,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(c->logbase, NULL, N_("scale for graph"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->logbase , TRUE, TRUE, 0);  g_signal_connect(G_OBJECT(c->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
 
-  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK
-                                                 | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                                 | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
+  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
+                                           | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                                           | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_can_focus(GTK_WIDGET(c->area), TRUE);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(dt_iop_basecurve_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(dt_iop_basecurve_button_press), self);

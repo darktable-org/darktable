@@ -586,8 +586,8 @@ static int sanity_check(dt_iop_module_t *self)
 
   if(position_self < position_min && self->enabled)
   {
-    dt_control_log(_("tone equalizer needs to be after distorsion modules in the pipeline – disabled"));
-    fprintf(stdout, "tone equalizer needs to be after distorsion modules in the pipeline – disabled\n");
+    dt_control_log(_("tone equalizer needs to be after distortion modules in the pipeline – disabled"));
+    fprintf(stdout, "tone equalizer needs to be after distortion modules in the pipeline – disabled\n");
     self->enabled = 0;
     dt_dev_add_history_item(darktable.develop, self, FALSE);
 
@@ -874,20 +874,25 @@ static inline void display_luminance_mask(const float *const restrict in,
   const size_t out_height = (roi_in->height > roi_out->height) ? roi_out->height : roi_in->height;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(luminance, out, in, in_width, out_width, out_height, offset_x, offset_y, ch) \
-schedule(static) aligned(luminance, out, in:64) collapse(3)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(luminance, out, in, in_width, out_width, out_height, offset_x, offset_y, ch) \
+  schedule(static) collapse(2)
 #endif
   for(size_t i = 0 ; i < out_height; ++i)
     for(size_t j = 0; j < out_width; ++j)
-      for(size_t c = 0; c < ch; ++c)
+    {
+      // normalize the mask intensity between -8 EV and 0 EV for clarity,
+      // and add a "gamma" 2.0 for better legibility in shadows
+      const float intensity = sqrtf(fminf(fmaxf(luminance[(i + offset_y) * in_width  + (j + offset_x)] - 0.00390625f, 0.f) / 0.99609375f, 1.f));
+      const size_t index = (i * out_width + j) * ch;
+      // set gray level for the mask
+      for_each_channel(c,aligned(out))
       {
-        // normalize the mask intensity between -8 EV and 0 EV for clarity,
-        // and add a "gamma" 2.0 for better legibility in shadows
-        const float intensity = sqrtf(fminf(fmaxf(luminance[(i + offset_y) * in_width  + (j + offset_x)] - 0.00390625f, 0.f) / 0.99609375f, 1.f));
-        out[(i * out_width + j) * ch + c] = (c == 3) ? in[((i + offset_y) * in_width + (j + offset_x)) * ch + 3]
-                                                     : intensity;
+        out[index + c] = intensity;
       }
+      // copy alpha channel
+      out[index + 3] = in[((i + offset_y) * in_width + (j + offset_x)) * ch + 3];
+    }
 }
 
 
@@ -3062,11 +3067,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   gui_cache_init(self);
 
-  g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
+  static dt_action_def_t notebook_def = { };
+  g->notebook = dt_ui_notebook_new(&notebook_def);
+  dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
 
   // Simple view
 
-  self->widget = dt_ui_notebook_page(g->notebook, _("simple"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, N_("simple"), NULL);
 
   g->noise = dt_bauhaus_slider_from_params(self, "noise");
   dt_bauhaus_slider_set_step(g->noise, .05);
@@ -3116,13 +3123,15 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Advanced view
 
-  self->widget = dt_ui_notebook_page(g->notebook, _("advanced"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, N_("advanced"), NULL);
 
   g->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
+  g_object_set_data(G_OBJECT(g->area), "iop-instance", self);
+  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(g->area), NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
-  gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK
-                                                 | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                                 | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
+  gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
+                                           | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                                           | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_can_focus(GTK_WIDGET(g->area), TRUE);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(area_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(area_button_press), self);
@@ -3131,9 +3140,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "enter-notify-event", G_CALLBACK(area_enter_notify), self);
   g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(area_motion_notify), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve"));
-  /*
-  g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_scrolled), self);
-  g_signal_connect(G_OBJECT(c->area), "key-press-event", G_CALLBACK(dt_iop_tonecurve_key_press), self);*/
 
   g->smoothing = dt_bauhaus_slider_new_with_range(self, -1.0f, +1.0f, 0.1, 0.0f, 2);
   dt_bauhaus_slider_enable_soft_boundaries(g->smoothing, -2.33f, 1.67f);
@@ -3147,7 +3153,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Masking options
 
-  self->widget = dt_ui_notebook_page(g->notebook, _("masking"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, N_("masking"), NULL);
 
   g->method = dt_bauhaus_combobox_from_params(self, "method");
   dt_bauhaus_combobox_remove_at(g->method, DT_TONEEQ_LAST);

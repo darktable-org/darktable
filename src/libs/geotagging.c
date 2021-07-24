@@ -81,6 +81,7 @@ typedef struct dt_lib_geotagging_t
   time_t datetime;
   time_t datetime0;
   time_t offset;
+  gboolean editing;
   uint32_t imgid;
   GList* imgs;
   int nb_imgs;
@@ -274,7 +275,7 @@ static gchar *_datetime_tooltip(GDateTime *start, GDateTime *end, GTimeZone *tz)
   gchar *dtel = _utc_timeval_to_localtime_text(end, tz, FALSE);
   gchar *dtsu = _utc_timeval_to_utc_text(start, FALSE);
   gchar *dteu = _utc_timeval_to_utc_text(end, FALSE);
-  gchar *res = dt_util_dstrcat(NULL, "%s -> %s LT\n%s -> %s UTC", dtsl, dtel, dtsu, dteu);
+  gchar *res = g_strdup_printf("%s -> %s LT\n%s -> %s UTC", dtsl, dtel, dtsu, dteu);
   g_free(dtsl);
   g_free(dtel);
   g_free(dtsu);
@@ -361,7 +362,7 @@ static void _update_nb_images(dt_lib_module_t *self)
     valid = gtk_tree_model_iter_next(model, &iter);
   }
   d->map.nb_imgs = nb_imgs;
-  gchar *nb = dt_util_dstrcat(NULL, "%d/%d", nb_imgs, d->nb_imgs);
+  gchar *nb = g_strdup_printf("%d/%d", nb_imgs, d->nb_imgs);
   gtk_label_set_text(GTK_LABEL(d->map.nb_imgs_label), nb);
   g_free(nb);
 }
@@ -633,7 +634,6 @@ static void _refresh_track_list(dt_lib_module_t *self)
   if(!d->map.gpx) return;
 
   GList *trkseg = dt_gpx_get_trkseg(d->map.gpx);
-  int total_pts = 0;
   _remove_images_from_map(self);
   for(GList *i = d->imgs; i; i = g_list_next(i))
     ((dt_sel_img_t *)i->data)->segid = -1;
@@ -645,7 +645,6 @@ static void _refresh_track_list(dt_lib_module_t *self)
   {
     dt_gpx_track_segment_t *t = (dt_gpx_track_segment_t *)ts->data;
     gchar *dts = _utc_timeval_to_localtime_text(t->start_dt, d->tz_camera, TRUE);
-    total_pts += t->nb_trkpt;
     const int nb_imgs = _count_images_per_track(t, ts->next ? ts->next->data : NULL, self);
     gboolean active;
     gtk_tree_model_get(model, &iter, DT_GEO_TRACKS_ACTIVE, &active, -1);
@@ -683,7 +682,6 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
   for(GList *i = d->imgs; i; i = g_list_next(i))
     ((dt_sel_img_t *)i->data)->segid = -1;
 
-  int total_pts = 0;
   int segid = 0;
   const gboolean active = gtk_toggle_button_get_active(
                           GTK_TOGGLE_BUTTON(gtk_tree_view_column_get_widget(d->map.sel_tracks)));
@@ -706,7 +704,6 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
     segid++;
     g_free(dts);
     g_free(tooltip);
-    total_pts += t->nb_trkpt;
   }
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->map.gpx_view), model);
   g_object_unref(model);
@@ -859,10 +856,10 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
     _set_up_label(t->name, GTK_ALIGN_START, grid, 0, line, PANGO_ELLIPSIZE_NONE);
     _set_up_label(dts, GTK_ALIGN_START, grid, 1, line, PANGO_ELLIPSIZE_NONE);
     _set_up_label(dte, GTK_ALIGN_START, grid, 2, line, PANGO_ELLIPSIZE_NONE);
-    char *nb = dt_util_dstrcat(NULL, "%d", t->nb_trkpt);
+    char *nb = g_strdup_printf("%d", t->nb_trkpt);
     _set_up_label(nb, GTK_ALIGN_CENTER, grid, 3, line, PANGO_ELLIPSIZE_NONE);
     g_free(nb);
-    nb = dt_util_dstrcat(NULL, "%d", nb_imgs);
+    nb = g_strdup_printf("%d", nb_imgs);
     _set_up_label(nb, GTK_ALIGN_CENTER, grid, 4, line, PANGO_ELLIPSIZE_NONE);
     g_free(nb);
     line++;
@@ -871,10 +868,10 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
     g_free(dte);
   }
 
-  char *nb = dt_util_dstrcat(NULL, "%d", total_pts);
+  char *nb = g_strdup_printf("%d", total_pts);
   _set_up_label(nb, GTK_ALIGN_CENTER, grid, 3, line, PANGO_ELLIPSIZE_NONE);
   g_free(nb);
-  nb = dt_util_dstrcat(NULL, "%d / %d", total_imgs, d->nb_imgs);
+  nb = g_strdup_printf("%d / %d", total_imgs, d->nb_imgs);
   _set_up_label(nb, GTK_ALIGN_CENTER, grid, 4, line, PANGO_ELLIPSIZE_NONE);
   g_free(nb);
 
@@ -941,12 +938,7 @@ static void _choose_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   dt_osx_disallow_fullscreen(filechooser);
 #endif
 
-  char *last_directory = dt_conf_get_string("ui_last/gpx_last_directory");
-  if(last_directory != NULL)
-  {
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), last_directory);
-    g_free(last_directory);
-  }
+  dt_conf_get_folder_to_file_chooser("ui_last/gpx_last_directory", filechooser);
 
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
@@ -971,9 +963,7 @@ static void _choose_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   }
   if(res == GTK_RESPONSE_OK)
   {
-    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
-    dt_conf_set_string("ui_last/gpx_last_directory", folder);
-    g_free(folder);
+    dt_conf_set_folder_from_file_chooser("ui_last/gpx_last_directory", filechooser);
 
     gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
 
@@ -1284,6 +1274,7 @@ static void _display_datetime(dt_lib_datetime_t *dtw, const time_t datetime,
     g_signal_handlers_unblock_by_func(d->dt.widget[i], _datetime_entry_changed, self);
 }
 
+// read the current date/time and make correction (field under/overflow)
 static time_t _read_datetime_entry(dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
@@ -1316,14 +1307,17 @@ static void _datetime_entry_changed(GtkWidget *entry, dt_lib_module_t *self)
   const gboolean locked = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->lock_offset));
   if(!locked)
   {
-    d->datetime = _read_datetime_entry(self);
-    if(d->datetime > 0)
-      d->offset = d->datetime - d->datetime0;
-    _display_offset(d->offset, d->datetime > 0, self);
+    if(!d->editing)
+    {
+      d->datetime = _read_datetime_entry(self);
+      if(d->datetime > 0)
+        d->offset = d->datetime - d->datetime0;
+      _display_offset(d->offset, d->datetime > 0, self);
 #ifdef HAVE_MAP
-    if(d->map.view)
-      _refresh_track_list(self);
+      if(d->map.view)
+        _refresh_track_list(self);
 #endif
+    }
   }
 }
 
@@ -1449,6 +1443,7 @@ static gboolean _datetime_scroll_over(GtkWidget *w, GdkEventScroll *event, dt_li
   return TRUE;
 }
 
+// type 0 date/time, 1 original date/time, 2 offset
 static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_lib_module_t *self)
 {
   GtkWidget *flow = gtk_flow_box_new();
@@ -1501,6 +1496,7 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
 
 static gboolean _datetime_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
 {
+  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   switch(event->keyval)
   {
     case GDK_KEY_Escape:
@@ -1508,11 +1504,11 @@ static gboolean _datetime_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_l
       // reset
       _refresh_image_datetime(self);
 #ifdef HAVE_MAP
-      dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
       if(d->map.view)
         _refresh_track_list(self);
 #endif
       gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+      d->editing = FALSE;
       return FALSE;
     }
     // allow  0 .. 9, left/right/home/end movement using arrow keys and del/backspace
@@ -1536,7 +1532,6 @@ static gboolean _datetime_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_l
     case GDK_KEY_KP_8:
     case GDK_KEY_9:
     case GDK_KEY_KP_9:
-    case GDK_KEY_Tab:
     case GDK_KEY_Delete:
     case GDK_KEY_KP_Delete:
     case GDK_KEY_BackSpace:
@@ -1546,6 +1541,14 @@ static gboolean _datetime_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_l
     case GDK_KEY_KP_Home:
     case GDK_KEY_End:
     case GDK_KEY_KP_End:
+      d->editing = TRUE;
+      return FALSE;
+
+    case GDK_KEY_Tab:
+    case GDK_KEY_Return:
+    case GDK_KEY_KP_Enter:
+      d->editing = FALSE;
+      g_signal_emit_by_name(d->dt.widget[0], "changed");
       return FALSE;
 
     default: // block everything else

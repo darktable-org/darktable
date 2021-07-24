@@ -125,24 +125,14 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     {
       // handle situation where there's some problem with cache/film_id
       // i guess that's impossible, but better safe than sorry ;)
-      gchar *import_path = dt_conf_get_string("ui_last/import_path");
-      if(import_path != NULL)
-      {
-        gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), import_path);
-        g_free(import_path);
-      }
+      dt_conf_get_folder_to_file_chooser("ui_last/import_path", filechooser);
     }
     dt_image_cache_read_release(darktable.image_cache, img);
   }
   else
   {
     // multiple images, use "last import" preference
-    gchar *import_path = dt_conf_get_string("ui_last/import_path");
-    if(import_path != NULL)
-    {
-      gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), import_path);
-      g_free(import_path);
-    }
+    dt_conf_get_folder_to_file_chooser("ui_last/import_path", filechooser);
   }
 
   GtkFileFilter *filter;
@@ -159,8 +149,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
-    char *dtfilename;
-    dtfilename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    gchar *dtfilename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     if(dt_history_load_and_apply_on_list(dtfilename, imgs) != 0)
     {
       GtkWidget *dialog
@@ -183,9 +172,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     if(act_on_any)
     {
       //remember last import path if applying history to multiple images
-      gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
-      dt_conf_set_string("ui_last/import_path", folder);
-      g_free(folder);
+      dt_conf_set_folder_from_file_chooser("ui_last/import_path", filechooser);
     }
     g_free(dtfilename);
   }
@@ -401,7 +388,7 @@ void gui_init(dt_lib_module_t *self)
                                        "history_stack.html#history_stack_usage");
   gtk_grid_attach(grid, d->discard_button, 3, line++, 3, 1);
 
-  d->pastemode = dt_bauhaus_combobox_new(NULL);
+  d->pastemode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(d->pastemode, NULL, N_("mode"));
   dt_bauhaus_combobox_add(d->pastemode, _("append"));
   dt_bauhaus_combobox_add(d->pastemode, _("overwrite"));

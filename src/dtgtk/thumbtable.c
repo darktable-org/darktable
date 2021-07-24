@@ -57,19 +57,19 @@ static gchar *_thumbs_get_overlays_class(dt_thumbnail_overlay_t over)
   switch(over)
   {
     case DT_THUMBNAIL_OVERLAYS_NONE:
-      return dt_util_dstrcat(NULL, "dt_overlays_none");
+      return g_strdup("dt_overlays_none");
     case DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED:
-      return dt_util_dstrcat(NULL, "dt_overlays_hover_extended");
+      return g_strdup("dt_overlays_hover_extended");
     case DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL:
-      return dt_util_dstrcat(NULL, "dt_overlays_always");
+      return g_strdup("dt_overlays_always");
     case DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED:
-      return dt_util_dstrcat(NULL, "dt_overlays_always_extended");
+      return g_strdup("dt_overlays_always_extended");
     case DT_THUMBNAIL_OVERLAYS_MIXED:
-      return dt_util_dstrcat(NULL, "dt_overlays_mixed");
+      return g_strdup("dt_overlays_mixed");
     case DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK:
-      return dt_util_dstrcat(NULL, "dt_overlays_hover_block");
+      return g_strdup("dt_overlays_hover_block");
     default:
-      return dt_util_dstrcat(NULL, "dt_overlays_hover");
+      return g_strdup("dt_overlays_hover");
   }
 }
 
@@ -79,7 +79,7 @@ static int _thumbs_get_prefs_size(dt_thumbtable_t *table)
   // we get the size delimitations to differentiate sizes categories
   // one we set as many categories as we want (this can be useful if
   // we want to finetune css very precisely)
-  gchar *txt = dt_conf_get_string("plugins/lighttable/thumbnail_sizes");
+  const char *txt = dt_conf_get_string_const("plugins/lighttable/thumbnail_sizes");
   gchar **ts = g_strsplit(txt, "|", -1);
   int i = 0;
   while(ts[i])
@@ -89,7 +89,6 @@ static int _thumbs_get_prefs_size(dt_thumbtable_t *table)
     i++;
   }
   g_strfreev(ts);
-  g_free(txt);
   return i;
 }
 
@@ -99,8 +98,8 @@ static void _thumbs_update_overlays_mode(dt_thumbtable_t *table)
   int ns = _thumbs_get_prefs_size(table);
 
   // we change the class that indicate the thumb size
-  gchar *c0 = dt_util_dstrcat(NULL, "dt_thumbnails_%d", table->prefs_size);
-  gchar *c1 = dt_util_dstrcat(NULL, "dt_thumbnails_%d", ns);
+  gchar *c0 = g_strdup_printf("dt_thumbnails_%d", table->prefs_size);
+  gchar *c1 = g_strdup_printf("dt_thumbnails_%d", ns);
   GtkStyleContext *context = gtk_widget_get_style_context(table->widget);
   gtk_style_context_remove_class(context, c0);
   gtk_style_context_add_class(context, c1);
@@ -109,10 +108,10 @@ static void _thumbs_update_overlays_mode(dt_thumbtable_t *table)
   table->prefs_size = ns;
 
   // we change the overlay mode
-  gchar *txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/%d/%d", table->mode, ns);
+  gchar *txt = g_strdup_printf("plugins/lighttable/overlays/%d/%d", table->mode, ns);
   dt_thumbnail_overlay_t over = dt_conf_get_int(txt);
   g_free(txt);
-  txt = dt_util_dstrcat(NULL, "plugins/lighttable/tooltips/%d/%d", table->mode, ns);
+  txt = g_strdup_printf("plugins/lighttable/tooltips/%d/%d", table->mode, ns);
   table->show_tooltips = dt_conf_get_bool(txt);
   g_free(txt);
 
@@ -124,7 +123,7 @@ void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overla
 {
   if(!table) return;
   // we ensure the tooltips change in any cases
-  gchar *txt = dt_util_dstrcat(NULL, "plugins/lighttable/tooltips/%d/%d", table->mode, table->prefs_size);
+  gchar *txt = g_strdup_printf("plugins/lighttable/tooltips/%d/%d", table->mode, table->prefs_size);
   dt_conf_set_bool(txt, table->show_tooltips);
   g_free(txt);
   for(const GList *l = table->list; l; l = g_list_next(l))
@@ -135,7 +134,7 @@ void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overla
   }
 
   if(over == table->overlays) return;
-  txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/%d/%d", table->mode, table->prefs_size);
+  txt = g_strdup_printf("plugins/lighttable/overlays/%d/%d", table->mode, table->prefs_size);
   dt_conf_set_int(txt, over);
   g_free(txt);
   gchar *cl0 = _thumbs_get_overlays_class(table->overlays);
@@ -145,7 +144,7 @@ void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overla
   gtk_style_context_remove_class(context, cl0);
   gtk_style_context_add_class(context, cl1);
 
-  txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays_block_timeout/%d/%d", table->mode, table->prefs_size);
+  txt = g_strdup_printf("plugins/lighttable/overlays_block_timeout/%d/%d", table->mode, table->prefs_size);
   int timeout = 2;
   if(!dt_conf_key_exists(txt))
     timeout = dt_conf_get_int("plugins/lighttable/overlay_timeout");
@@ -173,8 +172,7 @@ void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overla
 void dt_thumbtable_set_overlays_block_timeout(dt_thumbtable_t *table, const int timeout)
 {
   if(!table) return;
-  gchar *txt
-      = dt_util_dstrcat(NULL, "plugins/lighttable/overlays_block_timeout/%d/%d", table->mode, table->prefs_size);
+  gchar *txt = g_strdup_printf("plugins/lighttable/overlays_block_timeout/%d/%d", table->mode, table->prefs_size);
   dt_conf_set_int(txt, timeout);
   g_free(txt);
 
@@ -219,7 +217,7 @@ static int _thumb_get_imgid(int rowid)
 {
   int id = -1;
   sqlite3_stmt *stmt;
-  gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM memory.collected_images WHERE rowid=%d", rowid);
+  gchar *query = g_strdup_printf("SELECT imgid FROM memory.collected_images WHERE rowid=%d", rowid);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -234,7 +232,7 @@ static int _thumb_get_rowid(int imgid)
 {
   int id = -1;
   sqlite3_stmt *stmt;
-  gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
+  gchar *query = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -521,8 +519,7 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
     int space = first->y;
     if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP) space = first->x;
     const int nb_to_load = space / table->thumb_size + (space % table->thumb_size != 0);
-    gchar *query = dt_util_dstrcat
-      (NULL,
+    gchar *query = g_strdup_printf(
        "SELECT rowid, imgid"
        " FROM memory.collected_images"
        " WHERE rowid<%d"
@@ -576,8 +573,7 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
     if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
       space = table->view_width - (last->x + table->thumb_size);
     const int nb_to_load = space / table->thumb_size + (space % table->thumb_size != 0);
-    gchar *query = dt_util_dstrcat
-      (NULL,
+    gchar *query = g_strdup_printf(
        "SELECT rowid, imgid"
        " FROM memory.collected_images"
        " WHERE rowid>%d"
@@ -1153,12 +1149,10 @@ static void _thumbtable_restore_scrollbars(dt_thumbtable_t *table)
 static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
 {
   // we get "new values"
-  gchar *hq = dt_conf_get_string("plugins/lighttable/thumbnail_hq_min_level");
+  const char *hq = dt_conf_get_string_const("plugins/lighttable/thumbnail_hq_min_level");
   dt_mipmap_size_t hql = dt_mipmap_cache_get_min_mip_from_pref(hq);
-  g_free(hq);
-  gchar *embedded = dt_conf_get_string("plugins/lighttable/thumbnail_raw_min_level");
+  const char *embedded = dt_conf_get_string_const("plugins/lighttable/thumbnail_raw_min_level");
   dt_mipmap_size_t embeddedl = dt_mipmap_cache_get_min_mip_from_pref(embedded);
-  g_free(embedded);
 
   int min_level = 8;
   int max_level = 0;
@@ -1178,8 +1172,7 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
     GtkWidget *dialog;
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-    gchar *txt
-        = dt_util_dstrcat(NULL, _("you have changed the settings related to how thumbnails are generated.\n"));
+    gchar *txt = g_strdup(_("you have changed the settings related to how thumbnails are generated.\n"));
     if(max_level >= DT_MIPMAP_8 && min_level == DT_MIPMAP_0)
       txt = dt_util_dstrcat(txt, _("all cached thumbnails need to be invalidated.\n\n"));
     else if(max_level >= DT_MIPMAP_8)
@@ -1429,8 +1422,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
         if(table->navigate_inside_selection)
         {
           sqlite3_stmt *stmt;
-          gchar *query = dt_util_dstrcat(
-              NULL,
+          gchar *query = g_strdup_printf(
               "SELECT m.imgid"
               " FROM memory.collected_images AS m, main.selected_images AS s"
               " WHERE m.imgid=s.imgid"
@@ -1447,8 +1439,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
             // no select image after, search before
             g_free(query);
             sqlite3_finalize(stmt);
-            query = dt_util_dstrcat(
-                NULL,
+            query = g_strdup_printf(
                 "SELECT m.imgid"
                 " FROM memory.collected_images AS m, main.selected_images AS s"
                 " WHERE m.imgid=s.imgid"
@@ -1777,12 +1768,10 @@ dt_thumbtable_t *dt_thumbtable_new()
   dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
 
   // get thumb generation pref for reference in case of change
-  gchar *tx = dt_conf_get_string("plugins/lighttable/thumbnail_hq_min_level");
+  const char *tx = dt_conf_get_string_const("plugins/lighttable/thumbnail_hq_min_level");
   table->pref_hq = dt_mipmap_cache_get_min_mip_from_pref(tx);
-  g_free(tx);
-  tx = dt_conf_get_string("plugins/lighttable/thumbnail_raw_min_level");
+  tx = dt_conf_get_string_const("plugins/lighttable/thumbnail_raw_min_level");
   table->pref_embedded = dt_mipmap_cache_get_min_mip_from_pref(tx);
-  g_free(tx);
 
   // set css name and class
   gtk_widget_set_name(table->widget, "thumbtable_filemanager");
@@ -1966,7 +1955,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     GList *newlist = NULL;
     int nbnew = 0;
     gchar *query
-        = dt_util_dstrcat(NULL, "SELECT rowid, imgid FROM memory.collected_images WHERE rowid>=%d LIMIT %d",
+        = g_strdup_printf("SELECT rowid, imgid FROM memory.collected_images WHERE rowid>=%d LIMIT %d",
                           offset, table->rows * table->thumbs_per_row - empty_start);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -2191,84 +2180,6 @@ gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, const int imgid,
   return dt_thumbtable_set_offset(table, _thumb_get_rowid(imgid), redraw);
 }
 
-static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
-                            GdkModifierType modifier, gpointer data)
-{
-  GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(FALSE, TRUE, FALSE));
-  dt_ratings_apply_on_list(imgs, GPOINTER_TO_INT(data), TRUE);
-
-  // if we are in darkroom we show a message as there might be no other indication
-  const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
-  if(v->view(v) == DT_VIEW_DARKROOM && g_list_is_singleton(imgs) && darktable.develop->preview_pipe)
-  {
-    // we verify that the image is the active one
-    const int id = GPOINTER_TO_INT(imgs->data);
-    if(id == darktable.develop->preview_pipe->output_imgid)
-    {
-      const dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'r');
-      if(img)
-      {
-        const int r = img->flags & DT_IMAGE_REJECTED ? DT_VIEW_REJECT : (img->flags & DT_VIEW_RATINGS_MASK);
-        dt_image_cache_read_release(darktable.image_cache, img);
-
-        // translate in human readable value
-        if(r == DT_VIEW_REJECT)
-          dt_toast_log(_("image rejected"));
-        else if(r == 1)
-          dt_toast_log(_("image rated to %s"), "★");
-        else if(r == 2)
-          dt_toast_log(_("image rated to %s"), "★★");
-        else if(r == 3)
-          dt_toast_log(_("image rated to %s"), "★★★");
-        else if(r == 4)
-          dt_toast_log(_("image rated to %s"), "★★★★");
-        else if(r == 5)
-          dt_toast_log(_("image rated to %s"), "★★★★★");
-        else if(r == 0)
-          dt_toast_log(_("image rated to 0 star"));
-      }
-    }
-  }
-
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING, imgs);
-  return TRUE;
-}
-static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
-                             GdkModifierType modifier, gpointer data)
-{
-  GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(FALSE, TRUE, FALSE));
-  dt_colorlabels_toggle_label_on_list(imgs, GPOINTER_TO_INT(data), TRUE);
-
-  // if we are in darkroom we show a message as there might be no other indication
-  const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
-  if(v->view(v) == DT_VIEW_DARKROOM && g_list_is_singleton(imgs) && darktable.develop->preview_pipe)
-  {
-    // we verify that the image is the active one
-    const int id = GPOINTER_TO_INT(imgs->data);
-    if(id == darktable.develop->preview_pipe->output_imgid)
-    {
-      GList *res = dt_metadata_get(id, "Xmp.darktable.colorlabels", NULL);
-      gchar *result = NULL;
-      for(GList *res_iter = res; res_iter; res_iter = g_list_next(res_iter))
-      {
-        const GdkRGBA c = darktable.bauhaus->colorlabels[GPOINTER_TO_INT(res_iter->data)];
-        result = dt_util_dstrcat(result,
-                                 "<span foreground='#%02x%02x%02x'>⬤ </span>",
-                                 (guint)(c.red*255), (guint)(c.green*255), (guint)(c.blue*255));
-      }
-      g_list_free(res);
-      if(result)
-        dt_toast_markup_log(_("colorlabels set to %s"), result);
-      else
-        dt_toast_log(_("all colorlabels removed"));
-      g_free(result);
-    }
-  }
-
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
-                             imgs);
-  return TRUE;
-}
 static gboolean _accel_copy(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                             GdkModifierType modifier, gpointer data)
 {
@@ -2382,120 +2293,74 @@ static gboolean _accel_select_untouched(GtkAccelGroup *accel_group, GObject *acc
 // init all accels
 void dt_thumbtable_init_accels(dt_thumbtable_t *table)
 {
-  const dt_view_type_flags_t views
-      = DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_MAP | DT_VIEW_TETHERING | DT_VIEW_PRINT;
-  const dt_view_type_flags_t views_nolt = DT_VIEW_DARKROOM | DT_VIEW_MAP | DT_VIEW_TETHERING | DT_VIEW_PRINT;
+  dt_action_t *thumb_actions = &darktable.control->actions_thumb;
+
   /* setup rating key accelerators */
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/rate 0"), views, GDK_KEY_0, 0);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/rate 1"), views, GDK_KEY_1, 0);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/rate 2"), views, GDK_KEY_2, 0);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/rate 3"), views, GDK_KEY_3, 0);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/rate 4"), views, GDK_KEY_4, 0);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/rate 5"), views, GDK_KEY_5, 0);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/rate reject"), views, GDK_KEY_r, 0);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "rating"), 0, 0, GDK_KEY_0, 0);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "rating"), 1, 0, GDK_KEY_1, 0);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "rating"), 2, 0, GDK_KEY_2, 0);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "rating"), 3, 0, GDK_KEY_3, 0);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "rating"), 4, 0, GDK_KEY_4, 0);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "rating"), 5, 0, GDK_KEY_5, 0);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "rating"), 6, 0, GDK_KEY_r, 0);
 
   /* setup history key accelerators */
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/copy history"), views_nolt, GDK_KEY_c, GDK_CONTROL_MASK);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/copy history parts"), views_nolt, GDK_KEY_c,
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "copy history"), 0, 0, GDK_KEY_c, GDK_CONTROL_MASK);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "copy history parts"), 0, 0, GDK_KEY_c,
                            GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/paste history"), views_nolt, GDK_KEY_v, GDK_CONTROL_MASK);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/paste history parts"), views_nolt, GDK_KEY_v,
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "paste history"), 0, 0, GDK_KEY_v, GDK_CONTROL_MASK);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "paste history parts"), 0, 0, GDK_KEY_v,
                            GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/discard history"), views_nolt, 0, 0);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "discard history"), 0, 0, 0, 0);
 
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/duplicate image"), views, GDK_KEY_d, GDK_CONTROL_MASK);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/duplicate image virgin"), views, GDK_KEY_d,
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "duplicate image"), 0, 0, GDK_KEY_d, GDK_CONTROL_MASK);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "duplicate image virgin"), 0, 0, GDK_KEY_d,
                            GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   /* setup color label accelerators */
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/color red"), views, GDK_KEY_F1, 0);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/color yellow"), views, GDK_KEY_F2, 0);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/color green"), views, GDK_KEY_F3, 0);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/color blue"), views, GDK_KEY_F4, 0);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/color purple"), views, GDK_KEY_F5, 0);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/clear color labels"), views, 0, 0);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "color label"), 1, 0, GDK_KEY_F1, 0);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "color label"), 2, 0, GDK_KEY_F2, 0);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "color label"), 3, 0, GDK_KEY_F3, 0);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "color label"), 4, 0, GDK_KEY_F4, 0);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "color label"), 5, 0, GDK_KEY_F5, 0);
 
   /* setup selection accelerators */
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/select all"), views, GDK_KEY_a, GDK_CONTROL_MASK);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/select none"), views, GDK_KEY_a,
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "select all"), 0, 0, GDK_KEY_a, GDK_CONTROL_MASK);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "select none"), 0, 0, GDK_KEY_a,
                            GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/invert selection"), views, GDK_KEY_i, GDK_CONTROL_MASK);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/select film roll"), views, 0, 0);
-  dt_accel_register_manual(NC_("accel", "views/thumbtable/select untouched"), views, 0, 0);
-}
-// connect all accels if thumbtable is active in the view and they are not loaded
-// disconnect them if not
-void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, const int view)
-{
-  //disconnect all accels and reconnect if thumbtable may be active for this view
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "invert selection"), 0, 0, GDK_KEY_i, GDK_CONTROL_MASK);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "select film roll"), 0, 0, 0, 0);
+  dt_accel_register_shortcut(thumb_actions, NC_("accel", "select untouched"), 0, 0, 0, 0);
 
-  dt_accel_disconnect_list(&table->accel_closures);
+  // History key accels
+  // These get filtered from DT_VIEW_LIGHTTABLE in find_views (accelerator.c)
+  dt_accel_connect_shortcut(thumb_actions, "copy history",
+                          g_cclosure_new(G_CALLBACK(_accel_copy), NULL, NULL));
+  dt_accel_connect_shortcut(thumb_actions, "copy history parts",
+                          g_cclosure_new(G_CALLBACK(_accel_copy_parts), NULL, NULL));
+  dt_accel_connect_shortcut(thumb_actions, "paste history",
+                          g_cclosure_new(G_CALLBACK(_accel_paste), NULL, NULL));
+  dt_accel_connect_shortcut(thumb_actions, "paste history parts",
+                          g_cclosure_new(G_CALLBACK(_accel_paste_parts), NULL, NULL));
+  dt_accel_connect_shortcut(thumb_actions, "discard history",
+                          g_cclosure_new(G_CALLBACK(_accel_hist_discard), NULL, NULL));
 
-  if((view & DT_VIEW_LIGHTTABLE) || (view & DT_VIEW_DARKROOM) || (view & DT_VIEW_TETHERING)
-     || (view & DT_VIEW_MAP) || (view & DT_VIEW_PRINT))
-  {
-    // Rating accels
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/rate 0",
-                            g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_DESERT), NULL));
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/rate 1",
-                            g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_1), NULL));
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/rate 2",
-                            g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_2), NULL));
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/rate 3",
-                            g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_3), NULL));
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/rate 4",
-                            g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_4), NULL));
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/rate 5",
-                            g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_STAR_5), NULL));
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/rate reject",
-                            g_cclosure_new(G_CALLBACK(_accel_rate), GINT_TO_POINTER(DT_VIEW_REJECT), NULL));
+  dt_accel_connect_shortcut(thumb_actions, "duplicate image",
+                          g_cclosure_new(G_CALLBACK(_accel_duplicate), GINT_TO_POINTER(0), NULL));
+  dt_accel_connect_shortcut(thumb_actions, "duplicate image virgin",
+                          g_cclosure_new(G_CALLBACK(_accel_duplicate), GINT_TO_POINTER(1), NULL));
 
-    // History key accels
-    if(!(view & DT_VIEW_LIGHTTABLE))
-    {
-      dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/copy history",
-                              g_cclosure_new(G_CALLBACK(_accel_copy), NULL, NULL));
-      dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/copy history parts",
-                              g_cclosure_new(G_CALLBACK(_accel_copy_parts), NULL, NULL));
-      dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/paste history",
-                              g_cclosure_new(G_CALLBACK(_accel_paste), NULL, NULL));
-      dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/paste history parts",
-                              g_cclosure_new(G_CALLBACK(_accel_paste_parts), NULL, NULL));
-      dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/discard history",
-                              g_cclosure_new(G_CALLBACK(_accel_hist_discard), NULL, NULL));
-    }
-
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/duplicate image",
-                            g_cclosure_new(G_CALLBACK(_accel_duplicate), GINT_TO_POINTER(0), NULL));
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/duplicate image virgin",
-                            g_cclosure_new(G_CALLBACK(_accel_duplicate), GINT_TO_POINTER(1), NULL));
-
-    // Color label accels
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/color red",
-                            g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(0), NULL));
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/color yellow",
-                            g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(1), NULL));
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/color green",
-                            g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(2), NULL));
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/color blue",
-                            g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(3), NULL));
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/color purple",
-                            g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(4), NULL));
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/clear color labels",
-                            g_cclosure_new(G_CALLBACK(_accel_color), GINT_TO_POINTER(5), NULL));
-
-    // Selection accels
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/select all",
-                            g_cclosure_new(G_CALLBACK(_accel_select_all), NULL, NULL));
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/select none",
-                            g_cclosure_new(G_CALLBACK(_accel_select_none), NULL, NULL));
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/invert selection",
-                            g_cclosure_new(G_CALLBACK(_accel_select_invert), NULL, NULL));
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/select film roll",
-                            g_cclosure_new(G_CALLBACK(_accel_select_film), NULL, NULL));
-    dt_accel_connect_manual(&table->accel_closures, "views/thumbtable/select untouched",
-                            g_cclosure_new(G_CALLBACK(_accel_select_untouched), NULL, NULL));
-  }
+  // Selection accels
+  dt_accel_connect_shortcut(thumb_actions, "select all",
+                          g_cclosure_new(G_CALLBACK(_accel_select_all), NULL, NULL));
+  dt_accel_connect_shortcut(thumb_actions, "select none",
+                          g_cclosure_new(G_CALLBACK(_accel_select_none), NULL, NULL));
+  dt_accel_connect_shortcut(thumb_actions, "invert selection",
+                          g_cclosure_new(G_CALLBACK(_accel_select_invert), NULL, NULL));
+  dt_accel_connect_shortcut(thumb_actions, "select film roll",
+                          g_cclosure_new(G_CALLBACK(_accel_select_film), NULL, NULL));
+  dt_accel_connect_shortcut(thumb_actions, "select untouched",
+                          g_cclosure_new(G_CALLBACK(_accel_select_untouched), NULL, NULL));
 }
 
 static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int rowid)

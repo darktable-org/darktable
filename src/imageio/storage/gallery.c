@@ -157,11 +157,10 @@ void gui_init(dt_imageio_module_storage_t *self)
   widget = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(widget), 0);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-  gchar *dir = dt_conf_get_string("plugins/imageio/storage/gallery/file_directory");
+  const char *dir = dt_conf_get_string_const("plugins/imageio/storage/gallery/file_directory");
   if(dir)
   {
     gtk_entry_set_text(GTK_ENTRY(widget), dir);
-    g_free(dir);
   }
   d->entry = GTK_ENTRY(widget);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->entry));
@@ -190,11 +189,10 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->title_entry));
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->title_entry), _("enter the title of the website"));
-  dir = dt_conf_get_string("plugins/imageio/storage/gallery/title");
+  dir = dt_conf_get_string_const("plugins/imageio/storage/gallery/title");
   if(dir)
   {
     gtk_entry_set_text(GTK_ENTRY(d->title_entry), dir);
-    g_free(dir);
   }
   g_signal_connect(G_OBJECT(d->title_entry), "changed", G_CALLBACK(title_changed_callback), self);
 }
@@ -344,6 +342,9 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
            esc_relthumbfilename,
            num, num-1, title ? title : "&nbsp;", description ? description : "&nbsp;");
 
+  if(res_title) g_list_free_full(res_title, &g_free);
+  if(res_desc) g_list_free_full(res_desc, &g_free);
+
   // export image to file. need this to be able to access meaningful
   // fdata->width and height below.
   if(dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type,
@@ -370,8 +371,6 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   g_free(esc_relthumbfilename);
 
   pair->pos = num;
-  if(res_title) g_list_free_full(res_title, &g_free);
-  if(res_desc) g_list_free_full(res_desc, &g_free);
   d->l = g_list_insert_sorted(d->l, pair, (GCompareFunc)sort_pos);
 
   /* also export thumbnail: */
@@ -568,13 +567,11 @@ void *get_params(dt_imageio_module_storage_t *self)
   d->l = NULL;
   dt_variables_params_init(&d->vp);
 
-  char *text = dt_conf_get_string("plugins/imageio/storage/gallery/file_directory");
+  const char *text = dt_conf_get_string_const("plugins/imageio/storage/gallery/file_directory");
   g_strlcpy(d->filename, text, sizeof(d->filename));
-  g_free(text);
 
-  text = dt_conf_get_string("plugins/imageio/storage/gallery/title");
+  text = dt_conf_get_string_const("plugins/imageio/storage/gallery/title");
   g_strlcpy(d->title, text, sizeof(d->title));
-  g_free(text);
 
   return d;
 }

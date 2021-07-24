@@ -1425,12 +1425,9 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // insert an history_hash entry for all images which have an history
     // note that images without history don't get hash and are considered as basic
     sqlite3_stmt *h_stmt;
-    char *workflow = dt_conf_get_string("plugins/darkroom/workflow");
-    const gboolean basecurve_auto_apply = strcmp(workflow, "display-referred") == 0;
-    g_free(workflow);
+    const gboolean basecurve_auto_apply = dt_conf_is_equal("plugins/darkroom/workflow", "display-referred");
     const gboolean sharpen_auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
-    char *query = NULL;
-    query = dt_util_dstrcat(query,
+    char *query = g_strdup_printf(
                             "SELECT id, CASE WHEN imgid IS NULL THEN 0 ELSE 1 END as altered "
                             // first, images which are both in images and history (avoids history orphans)
                             "FROM (SELECT DISTINCT id FROM main.images JOIN main.history ON imgid = id) "
@@ -2412,6 +2409,9 @@ static void _create_memory_schema(dt_database_t *db)
   sqlite3_exec(db->handle,
       "CREATE TABLE memory.darktable_iop_names (operation VARCHAR(256) PRIMARY KEY, name VARCHAR(256))",
       NULL, NULL, NULL);
+  sqlite3_exec(db->handle,
+      "CREATE TABLE memory.film_folder (id INTEGER PRIMARY KEY, status INTEGER)",
+      NULL, NULL, NULL);
 }
 
 static void _sanitize_db(dt_database_t *db)
@@ -2552,6 +2552,7 @@ void dt_database_show_error(const dt_database_t *db)
         lck_filename = g_strconcat(lck_dirname, "/library.db.lock", NULL);
         if(g_access(lck_filename, F_OK) != -1)
           status += remove(lck_filename);
+        g_free(lck_filename);
 
         if(status==0)
           dt_gui_show_standalone_yes_no_dialog(_("done"),
@@ -2751,7 +2752,7 @@ void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
 
 void dt_database_backup(const char *filename)
 {
-  char *version = g_strdup_printf("%s", darktable_package_version);
+  char *version = g_strdup(darktable_package_version);
   int k = 0;
   // get plain version (no commit id)
   while(version[k])
@@ -3572,7 +3573,7 @@ gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_tim
 
   char *later_info = NULL;
   char *size_info = g_format_size(size);
-  char *config = dt_conf_get_string("database/maintenance_check");
+  const char *config = dt_conf_get_string_const("database/maintenance_check");
   if((closing_time && (!g_strcmp0(config, "on both"))) || !g_strcmp0(config, "on startup"))
   {
     later_info = _("click later to be asked on next startup");
@@ -3585,7 +3586,6 @@ gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_tim
   {
     later_info = _("click later to be asked next time when closing darktable");
   }
-
 
   char *label_text = g_markup_printf_escaped(_("the database could use some maintenance\n"
                                                  "\n"
@@ -3616,13 +3616,12 @@ gboolean dt_database_maybe_maintenance(const struct dt_database_t *db, const gbo
   if(_is_mem_db(db))
     return FALSE;
 
-  char *config = dt_conf_get_string("database/maintenance_check");
+  const char *config = dt_conf_get_string_const("database/maintenance_check");
 
   if(!g_strcmp0(config, "never"))
   {
     // early bail out on "never"
     dt_print(DT_DEBUG_SQL, "[db maintenance] please consider enabling database maintenance.\n");
-    g_free(config);
     return FALSE;
   }
 
@@ -3640,7 +3639,6 @@ gboolean dt_database_maybe_maintenance(const struct dt_database_t *db, const gbo
       check_for_maintenance = TRUE;
     }
     // if the config was "never", check_for_vacuum is false.
-    g_free(config);
   }
 
   if(!check_for_maintenance)
@@ -3811,19 +3809,17 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
   if(_is_mem_db(db))
     return FALSE;
 
-  char *config = dt_conf_get_string("database/create_snapshot");
+  const char *config = dt_conf_get_string_const("database/create_snapshot");
   if(!g_strcmp0(config, "never"))
   {
     // early bail out on "never"
     dt_print(DT_DEBUG_SQL, "[db backup] please consider enabling database snapshots.\n");
-    g_free(config);
     return FALSE;
   }
   if(!g_strcmp0(config, "on close"))
   {
     // early bail out on "on close"
     dt_print(DT_DEBUG_SQL, "[db backup] performing unconditional snapshot.\n");
-    g_free(config);
     return TRUE;
   }
 
@@ -3846,10 +3842,8 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
   {
     // early bail out on "invalid value"
     dt_print(DT_DEBUG_SQL, "[db backup] invalid timespan requirement expecting never/on close/once a [day/week/month], got %s.\n", config);
-    g_free(config);
     return TRUE;
   }
-  g_free(config);
 
   //we're in trouble zone - we have to determine when was the last snapshot done (including version upgrade snapshot) :/
   //this could be easy if we wrote date of last successful backup to config, but that's not really an option since

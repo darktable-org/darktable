@@ -266,6 +266,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_SIGNAL         = 1 << 20,
   DT_DEBUG_PARAMS         = 1 << 21,
   DT_DEBUG_DEMOSAIC       = 1 << 22,
+  DT_DEBUG_TILING         = 1 << 23,
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t
@@ -343,7 +344,7 @@ void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 void dt_gettime_t(char *datetime, size_t datetime_len, time_t t);
 void dt_gettime(char *datetime, size_t datetime_len);
-
+int dt_worker_threads();
 void *dt_alloc_align(size_t alignment, size_t size);
 static inline float *dt_alloc_align_float(size_t pixels)
 {

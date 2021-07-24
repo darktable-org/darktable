@@ -824,7 +824,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_restore(cr);
 }
 
-// FIXME: have different drawable for each scope in a stack -- simplifies this function from being a swath of conditionals -- then esentially draw callbacks _lib_histogram_draw_waveform, _lib_histogram_draw_rgb_parade, etc.
+// FIXME: have different drawable for each scope in a stack -- simplifies this function from being a swath of conditionals -- then essentially draw callbacks _lib_histogram_draw_waveform, _lib_histogram_draw_rgb_parade, etc.
 // FIXME: if exposure change regions are separate widgets, then we could have a menu to swap in different overlay widgets (sort of like basic adjustments) to adjust other things about the image, e.g. tone equalizer, color balance, etc.
 static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
@@ -1511,35 +1511,30 @@ void gui_init(dt_lib_module_t *self)
   d->green = dt_conf_get_bool("plugins/darkroom/histogram/show_green");
   d->blue = dt_conf_get_bool("plugins/darkroom/histogram/show_blue");
 
-  gchar *str = dt_conf_get_string("plugins/darkroom/histogram/mode");
+  const char *str = dt_conf_get_string_const("plugins/darkroom/histogram/mode");
   for(dt_lib_histogram_scope_type_t i=0; i<DT_LIB_HISTOGRAM_SCOPE_N; i++)
     if(g_strcmp0(str, dt_lib_histogram_scope_type_names[i]) == 0)
       d->scope_type = i;
-  g_free(str);
 
-  str = dt_conf_get_string("plugins/darkroom/histogram/histogram");
+  str = dt_conf_get_string_const("plugins/darkroom/histogram/histogram");
   for(dt_lib_histogram_scale_t i=0; i<DT_LIB_HISTOGRAM_SCALE_N; i++)
     if(g_strcmp0(str, dt_lib_histogram_scale_names[i]) == 0)
       d->histogram_scale = i;
-  g_free(str);
 
-  str = dt_conf_get_string("plugins/darkroom/histogram/waveform");
+  str = dt_conf_get_string_const("plugins/darkroom/histogram/waveform");
   for(dt_lib_histogram_waveform_type_t i=0; i<DT_LIB_HISTOGRAM_WAVEFORM_N; i++)
     if(g_strcmp0(str, dt_lib_histogram_waveform_type_names[i]) == 0)
       d->waveform_type = i;
-  g_free(str);
 
-  str = dt_conf_get_string("plugins/darkroom/histogram/vectorscope");
+  str = dt_conf_get_string_const("plugins/darkroom/histogram/vectorscope");
   for(dt_lib_histogram_vectorscope_type_t i=0; i<DT_LIB_HISTOGRAM_VECTORSCOPE_N; i++)
     if(g_strcmp0(str, dt_lib_histogram_vectorscope_type_names[i]) == 0)
       d->vectorscope_type = i;
-  g_free(str);
 
-  str = dt_conf_get_string("plugins/darkroom/histogram/vectorscope/scale");
+  str = dt_conf_get_string_const("plugins/darkroom/histogram/vectorscope/scale");
   for(dt_lib_histogram_scale_t i=0; i<DT_LIB_HISTOGRAM_SCALE_N; i++)
     if(g_strcmp0(str, dt_lib_histogram_scale_names[i]) == 0)
       d->vectorscope_scale = i;
-  g_free(str);
 
   int a = dt_conf_get_int("plugins/darkroom/histogram/vectorscope/angle");
   d->vectorscope_angle = a * M_PI / 180.0;

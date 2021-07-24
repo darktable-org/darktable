@@ -76,9 +76,8 @@ static void _bulk_remove_tags(const int img, const gchar *tag_list)
 {
   if(img > 0 && tag_list)
   {
-    char *query = NULL;
     sqlite3_stmt *stmt;
-    query = dt_util_dstrcat(query, "DELETE FROM main.tagged_images WHERE imgid = %d AND tagid IN (%s)", img, tag_list);
+    gchar *query = g_strdup_printf("DELETE FROM main.tagged_images WHERE imgid = %d AND tagid IN (%s)", img, tag_list);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -90,9 +89,8 @@ static void _bulk_add_tags(const gchar *tag_list)
 {
   if(tag_list)
   {
-    char *query = NULL;
     sqlite3_stmt *stmt;
-    query = dt_util_dstrcat(query, "INSERT INTO main.tagged_images (imgid, tagid, position) VALUES %s", tag_list);
+    gchar *query = g_strdup_printf("INSERT INTO main.tagged_images (imgid, tagid, position) VALUES %s", tag_list);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -243,15 +241,13 @@ void dt_tag_delete_tag_batch(const char *flatlist)
 {
   sqlite3_stmt *stmt;
 
-  char *query = NULL;
-  query = dt_util_dstrcat(query, "DELETE FROM data.tags WHERE id IN (%s)", flatlist);
+  gchar *query = g_strdup_printf("DELETE FROM data.tags WHERE id IN (%s)", flatlist);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   g_free(query);
 
-  query = NULL;
-  query = dt_util_dstrcat(query, "DELETE FROM main.tagged_images WHERE tagid IN (%s)", flatlist);
+  query = g_strdup_printf("DELETE FROM main.tagged_images WHERE tagid IN (%s)", flatlist);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -607,7 +603,7 @@ uint32_t dt_tag_get_attached(const gint imgid, GList **result, const gboolean ig
   char *images = NULL;
   if(imgid > 0)
   {
-    images = dt_util_dstrcat(NULL, "%d", imgid);
+    images = g_strdup_printf("%d", imgid);
     nb_selected = 1;
   }
   else
@@ -615,8 +611,7 @@ uint32_t dt_tag_get_attached(const gint imgid, GList **result, const gboolean ig
     // we get the query used to retrieve the list of select images
     images = dt_selection_get_list_query(darktable.selection, FALSE, FALSE);
     // and we retrieve the number of image in the selection
-    gchar *query = dt_util_dstrcat(NULL,
-                                   "SELECT COUNT(*)"
+    gchar *query = g_strdup_printf("SELECT COUNT(*)"
                                    " FROM (%s)",
                                    images);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -627,8 +622,7 @@ uint32_t dt_tag_get_attached(const gint imgid, GList **result, const gboolean ig
   uint32_t count = 0;
   if(images)
   {
-    char *query = NULL;
-    query = dt_util_dstrcat(query,
+    gchar *query = g_strdup_printf(
                             "SELECT DISTINCT I.tagid, T.name, T.flags, T.synonyms,"
                             " COUNT(DISTINCT I.imgid) AS inb"
                             " FROM main.tagged_images AS I"
@@ -670,8 +664,7 @@ static uint32_t _tag_get_attached_export(const gint imgid, GList **result)
   if(!(imgid > 0)) return 0;
 
   sqlite3_stmt *stmt;
-  char *query = NULL;
-  query = dt_util_dstrcat(query,
+  gchar *query = g_strdup_printf(
                           "SELECT DISTINCT T.id, T.name, T.flags, T.synonyms"
                           // all tags
                           " FROM data.tags AS T"
@@ -827,7 +820,7 @@ static GList *_tag_get_tags(const gint imgid, const dt_tag_type_t type)
   GList *tags = NULL;
   char *images = NULL;
   if(imgid > 0)
-    images = dt_util_dstrcat(NULL, "%d", imgid);
+    images = g_strdup_printf("%d", imgid);
   else
   {
     // we get the query used to retrieve the list of select images
@@ -1023,8 +1016,7 @@ GList *dt_tag_get_images_from_list(const GList *img, const gint tagid)
 
     sqlite3_stmt *stmt;
 
-    char *query = NULL;
-    query = dt_util_dstrcat(query,
+    gchar *query = g_strdup_printf(
                             "SELECT imgid FROM main.tagged_images"
                             " WHERE tagid = %d AND imgid IN (%s)",
                             tagid, images);

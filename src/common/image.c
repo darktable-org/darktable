@@ -477,7 +477,7 @@ static void _set_datetime(const int32_t imgid, const char *datetime)
   /* fetch image from cache */
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
-  memcpy(&image->exif_datetime_taken, datetime, sizeof(image->exif_datetime_taken));
+  g_strlcpy(image->exif_datetime_taken, datetime, sizeof(image->exif_datetime_taken));
 
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
@@ -999,7 +999,7 @@ static int32_t _image_duplicate_with_version_ext(const int32_t imgid, const int3
      "   position, aspect_ratio, exposure_bias, import_timestamp)"
      " SELECT NULL, group_id, film_id, width, height, filename, maker, model, lens,"
      "       exposure, aperture, iso, focal_length, focus_distance, datetime_taken,"
-     "       flags, width, height, crop, raw_parameters, raw_denoise_threshold,"
+     "       flags, output_width, output_height, crop, raw_parameters, raw_denoise_threshold,"
      "       raw_auto_bright_threshold, raw_black, raw_maximum,"
      "       license, sha1sum, orientation, histogram, lightmap,"
      "       longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, ?1,"
@@ -1656,8 +1656,10 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   return id;
 }
 
-gboolean dt_images_already_imported(const gchar *folder, const gchar *filename)
+gboolean dt_images_already_imported(const gchar *filename)
 {
+  gchar *dir = g_path_get_dirname(filename);
+  gchar *file = g_path_get_basename(filename);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT *"
@@ -1666,10 +1668,12 @@ gboolean dt_images_already_imported(const gchar *folder, const gchar *filename)
                               "       AND images.film_id = film_rolls.id"
                               "       AND images.filename = ?2",
                               -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, folder, -1, SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, filename, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, dir, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, file, -1, SQLITE_STATIC);
   const gboolean result = sqlite3_step(stmt) == SQLITE_ROW;
   sqlite3_finalize(stmt);
+  g_free(dir);
+  g_free(file);
 
   return result;
 }
@@ -1707,6 +1711,7 @@ void dt_image_init(dt_image_t *img)
   img->version = -1;
   img->loader = LOADER_UNKNOWN;
   img->exif_inited = 0;
+  memset(img->exif_datetime_taken, 0, sizeof(img->exif_datetime_taken));
   memset(img->exif_maker, 0, sizeof(img->exif_maker));
   memset(img->exif_model, 0, sizeof(img->exif_model));
   memset(img->exif_lens, 0, sizeof(img->exif_lens));
@@ -1717,8 +1722,6 @@ void dt_image_init(dt_image_t *img)
   memset(img->camera_legacy_makermodel, 0, sizeof(img->camera_legacy_makermodel));
   memset(img->filename, 0, sizeof(img->filename));
   g_strlcpy(img->filename, "(unknown)", sizeof(img->filename));
-  img->exif_model[0] = img->exif_maker[0] = img->exif_lens[0] = '\0';
-  g_strlcpy(img->exif_datetime_taken, "0000:00:00 00:00:00", sizeof(img->exif_datetime_taken));
   img->exif_crop = 1.0;
   img->exif_exposure = 0;
   img->exif_exposure_bias = NAN;
@@ -2516,7 +2519,7 @@ void dt_image_get_datetime(const int32_t imgid, char *datetime)
   datetime[0] = '\0';
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   if(!cimg) return;
-  memcpy(datetime, cimg->exif_datetime_taken, sizeof(cimg->exif_datetime_taken));
+  g_strlcpy(datetime, cimg->exif_datetime_taken, sizeof(cimg->exif_datetime_taken));
   dt_image_cache_read_release(darktable.image_cache, cimg);
 }
 

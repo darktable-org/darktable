@@ -461,8 +461,8 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_notebook_new();
   dt_gui_add_help_link(self->widget, dt_get_help_url("image"));
 
-  GtkWidget *page1 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), _("images"), NULL);
-  GtkWidget *page2 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), _("metadata"), NULL);
+  GtkWidget *page1 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), N_("images"), NULL);
+  GtkWidget *page2 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), N_("metadata"), NULL);
 
   // images operations
   d->page1 = gtk_grid_new();
@@ -588,7 +588,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->clear_metadata_button, 4, line++, 2, 1);
   g_signal_connect(G_OBJECT(d->clear_metadata_button), "clicked", G_CALLBACK(clear_metadata_callback), self);
 
-  GtkWidget *pastemode = dt_bauhaus_combobox_new(NULL);
+  GtkWidget *pastemode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(pastemode, NULL, N_("mode"));
   dt_bauhaus_combobox_add(pastemode, _("merge"));
   dt_bauhaus_combobox_add(pastemode, _("overwrite"));
@@ -662,7 +662,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "refresh exif"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "set monochrome image"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "set color image"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "replace metadata"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "copy metadata"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "paste metadata"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "clear metadata"), 0, 0);
   // Grouping keys
@@ -708,7 +708,7 @@ static int lua_button_clicked_cb(lua_State* L)
 {
   lua_callback_data * data = lua_touserdata(L, 1);
   dt_lua_module_entry_push(L, "lib", data->self->plugin_name);
-  lua_getuservalue(L, -1);
+  lua_getiuservalue(L, -1, 1);
   lua_getfield(L, -1, "callbacks");
   lua_getfield(L, -1, data->key);
   lua_pushstring(L, data->key);
@@ -739,7 +739,7 @@ static int lua_register_action(lua_State *L)
   lua_settop(L, 3);
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
-  lua_getuservalue(L,-1);
+  lua_getiuservalue(L, -1, 1);
   const char* name = luaL_checkstring(L, 1);
   const char* key = luaL_checkstring(L, 2);
   luaL_checktype(L, 3, LUA_TFUNCTION);
@@ -767,7 +767,7 @@ static int lua_register_action(lua_State *L)
 
   // save the signal connection in case we need to destroy it later
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
-  lua_getuservalue(L, -1);
+  lua_getiuservalue(L, -1, 1);
   lua_getfield(L, -1, "signal_handlers");
   lua_pushstring(L, name);
   lua_pushinteger(L, s);
@@ -796,7 +796,7 @@ static int lua_destroy_action(lua_State *L)
       // remove the callback
 
       dt_lua_module_entry_push(L, "lib", self->plugin_name);
-      lua_getuservalue(L, -1);
+      lua_getiuservalue(L, -1, 1);
       lua_getfield(L, -1, "callbacks");
       lua_pushstring(L, name);
       lua_pushnil(L);
@@ -805,7 +805,7 @@ static int lua_destroy_action(lua_State *L)
       // disconnect the signal
 
       dt_lua_module_entry_push(L, "lib", self->plugin_name);
-      lua_getuservalue(L, -1);
+      lua_getiuservalue(L, -1, 1);
       lua_getfield(L, -1, "signal_handlers");
       lua_pushstring(L, name);
       lua_gettable(L, -2);
@@ -870,13 +870,13 @@ void init(struct dt_lib_module_t *self)
   dt_lua_type_register_const_type(L, my_type, "set_sensitive");
 
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
-  lua_getuservalue(L, -1);
+  lua_getiuservalue(L, -1, 1);
   lua_newtable(L);
   lua_setfield(L, -2, "callbacks");
   lua_pop(L, 2);
 
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
-  lua_getuservalue(L, -1);
+  lua_getiuservalue(L, -1, 1);
   lua_newtable(L);
   lua_setfield(L, -2, "signal_handlers");
   lua_pop(L, 2);

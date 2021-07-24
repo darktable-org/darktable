@@ -19,6 +19,14 @@ Therefore please help by being as accurate and concise as possible!
 For further information, please see https://github.com/darktable-org/darktable/wiki#reporting-bugs.
 ---------------------------------------------------------------
 
+**Did you buy darktable from an application store ?**
+
+_darktable is free but selling it is technically allowed by the license, at the condition that 
+the seller provides extra services and assistance to users. 
+If you bought darktable on a store, it was not from the darktable team but from a third party.
+Support is therefore the sole responsibility of the third-party seller, 
+and the darktable team will not offer free support for licenses paid to a third-party.
+Please contact your seller, assistance is part of your after-sale rights._
 
 **Describe the bug/issue**
 

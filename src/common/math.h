@@ -212,8 +212,16 @@ static inline float dt_log2f(const float f)
 #endif
 }
 
+union float_int {
+  float f;
+  int k;
+};
+
 // fast approximation of expf()
 /****** if you change this function, you need to make the same change in data/kernels/{basecurve,basic}.cl ***/
+#ifdef _OPENMP
+#pragma omp declare simd 
+#endif
 static inline float dt_fast_expf(const float x)
 {
   // meant for the range [-100.0f, 0.0f]. largest error ~ -0.06 at 0.0f.
@@ -224,12 +232,30 @@ static inline float dt_fast_expf(const float x)
   // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
   // without max clamping (doesn't work for large x, but is faster):
   const int k0 = i1 + x * (i2 - i1);
-  union {
-      float f;
-      int k;
-  } u;
+  union float_int u;
   u.k = k0 > 0 ? k0 : 0;
   return u.f;
+}
+
+static inline void dt_fast_expf_4wide(const float x[4], float result[4])
+{
+  // meant for the range [-100.0f, 0.0f]. largest error ~ -0.06 at 0.0f.
+  // will get _a_lot_ worse for x > 0.0f (9000 at 10.0f)..
+  const int i1 = 0x3f800000u;
+  // e^x, the comment would be 2^x
+  const int i2 = 0x402DF854u; // 0x40000000u;
+  // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
+  // without max clamping (doesn't work for large x, but is faster):
+  union float_int u[4];
+#ifdef _OPENMP
+#pragma omp simd aligned(x, result)
+#endif
+  for(size_t c = 0; c < 4; c++)
+  {
+    const int k0 = i1 + (int)(x[c] * (i2 - i1));
+    u[c].k = k0 > 0 ? k0 : 0;
+    result[c] = u[c].f;
+  }
 }
 
 #if defined(__SSE2__)

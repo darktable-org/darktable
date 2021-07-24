@@ -31,9 +31,8 @@ const char formula_keyword[] = "plugins/lighttable/export/metadata_formula";
 
 uint32_t dt_lib_export_metadata_get_conf_flags(void)
 {
-  char *metadata_flags = dt_conf_get_string(flags_keyword);
+  const char *metadata_flags = dt_conf_get_string_const(flags_keyword);
   const int32_t flags = strtol(metadata_flags, NULL, 16);
-  g_free(metadata_flags);
   return flags;
 }
 
@@ -44,10 +43,10 @@ char *dt_lib_export_metadata_get_conf(void)
   {
     metadata_presets = dt_conf_get_string(flags_keyword);
     int i = 0;
-    char *conf_keyword = dt_util_dstrcat(NULL,"%s%d", formula_keyword, i);
+    char *conf_keyword = g_strdup_printf("%s%d", formula_keyword, i);
     while (dt_conf_key_exists(conf_keyword))
     {
-      char *nameformula = dt_conf_get_string(conf_keyword);
+      gchar *nameformula = dt_conf_get_string(conf_keyword);
       g_free(conf_keyword);
       if(nameformula[0])
       {
@@ -61,13 +60,13 @@ char *dt_lib_export_metadata_get_conf(void)
       }
       g_free(nameformula);
       i++;
-      conf_keyword = dt_util_dstrcat(NULL,"%s%d", formula_keyword, i);
+      conf_keyword = g_strdup_printf("%s%d", formula_keyword, i);
     }
     g_free(conf_keyword);
   }
   else
   {
-    metadata_presets = dt_util_dstrcat(NULL, "%x", dt_lib_export_metadata_default_flags());
+    metadata_presets = g_strdup_printf("%x", dt_lib_export_metadata_default_flags());
   }
   return metadata_presets;
 }
@@ -92,8 +91,8 @@ void dt_lib_export_metadata_set_conf(const char *metadata_presets)
         tags = g_list_next(tags);
         if (!tags) break;
         const char *formula = (char *)tags->data;
-        nameformula = dt_util_dstrcat(NULL,"%s;%s", tagname, formula);
-        conf_keyword = dt_util_dstrcat(NULL,"%s%d", formula_keyword, i);
+        nameformula = g_strdup_printf("%s;%s", tagname, formula);
+        conf_keyword = g_strdup_printf("%s%d", formula_keyword, i);
         dt_conf_set_string(conf_keyword, nameformula);
         g_free(nameformula);
         g_free(conf_keyword);
@@ -105,13 +104,13 @@ void dt_lib_export_metadata_set_conf(const char *metadata_presets)
   g_list_free_full(list, g_free);
 
   // clean up deprecated formulas
-  conf_keyword = dt_util_dstrcat(NULL,"%s%d", formula_keyword, i);
+  conf_keyword = g_strdup_printf("%s%d", formula_keyword, i);
   while (dt_conf_key_exists(conf_keyword))
   {
     dt_conf_set_string(conf_keyword, "");
     g_free(conf_keyword);
     i++;
-    conf_keyword = dt_util_dstrcat(NULL,"%s%d", formula_keyword, i);
+    conf_keyword = g_strdup_printf("%s%d", formula_keyword, i);
   }
   g_free(conf_keyword);
 }

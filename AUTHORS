@@ -1,86 +1,102 @@
 * developers:
 Pascal Obry
-Aurélien PIERRE
 Aldric Renaudin
-parafin
+Aurélien PIERRE
 Roman Lebedev
-Tobias Ellinghaus
+parafin
+Peter Budai
 
 * translators:
-Jeronimo Pellegrini
 Pascal Obry
-EdgarLux
-Heiko Bauke
+Jeronimo Pellegrini
 Martin Straeten
+EdgarLux
+Matt Maguire
+Kevin Vermassen
+Victor Forsiuk
+Nicolas Auffray
+Matteo Mardegan
+Nameless-J
 Timur Davletshin
+chrisaga
+Báthory Péter
 Matjaž Jeran
 thisnamewasnottaken
-vertama
 Arch Ont
+Aurélien PIERRE
 Bernhard
-Báthory Péter
-Nicolas Auffray
-jpellegrini
-Alejandro Criado-Pérez
-Cyril Richard
-DWXXX
-Denny Biasiolli
-Diederik ter Rahe
-Jakub Filipowicz
-Marko Vertainen
-Matteo Mardegan
-Michel Leblond
+Danilo Bargen
+Mik-
+Miloš Komarčević
 Miroslav Fikar
-criadoperez
-mrleemon
-shlomi braitbart
-Łukasz Karcz
+Shlomi Alon-Braitbart
+jpellegrini
+quovadit
 
 * contributors (at least 4 commits):
 ralfbrown
-Hubert Kowalski
-Diederik ter Rahe
-Jeronimo Pellegrini
-Dan Torop
-Chris.Elston
 Philippe Weyland
 hanno@schwalm-bremen.de
-Heiko Bauke
-EdgarLux
-Harold le Clément de Saint-Marcq
-Mark-64
-Bill Ferguson
-Nicolas Auffray
-David-Tillmann Schaefer
-Miloš Komarčević
+Hubert Kowalski
+Dan Torop
+Chris.Elston
+Jeronimo Pellegrini
 rawfiner
-darkelectron
-Matt Maguire
-Ralf Brown
-Alexis Mousset
-dterrahe
-Andreas Schneider
 Martin Straeten
+Miloš Komarčević
+Diederik ter Rahe
+Nicolas Auffray
+Sakari Kapanen
+Victor Forsiuk
+lhietal
+EdgarLux
+Matt Maguire
+wpferguson
+Ralf Brown
+Kevin Vermassen
+Vincent THOMAS
+Daniel Vogelbacher
+Bill Ferguson
+Harold le Clément de Saint-Marcq
+quovadit
+Andreas Schneider
+Fabio Heer
 Hanno Schwalm
-Timur Davletshin
-Chris Elston
-matt-maguire
+HansBull
+Heiko Bauke
+Marco
+Marco Carrarini
+Mark-64
+vrnhgd
+Roman Khatko
+Philipp Lutz
+Harald
+Wolfgang Goetz
+Jim Robinson
+dterrahe
 
 * Sub-module rawspeed contributors (at least 1 commit):
 Roman Lebedev
-Bill Ferguson
-Josef Raschen
+Miloš Komarčević
+Hubert Kowalski
+Dan Torop
+Daniel Vogelbacher
+Elizeu Santos
+Frank Loemker
 Matt Maguire
-Philipp Normann
-Zanhard
-frantic1048
-parafin
-ponkotuy
+hanno@schwalm-bremen.de
+jas01
 
 * Sub-module OpenCL contributors (at least 1 commit):
 
 * Sub-module libxcf contributors (at least 1 commit):
 
 * Sub-module whereami contributors (at least 1 commit):
+
+* Sub-module integration contributors (at least 1 commit):
+Pascal Obry
+Miloš Komarčević
+hanno@schwalm-bremen.de
+Aurélien PIERRE
 
 And all those of you that made previous releases possible

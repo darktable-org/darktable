@@ -199,7 +199,7 @@ static void _lighttable_check_layout(dt_view_t *self)
     {
       int id = lib->thumbtable_offset;
       sqlite3_stmt *stmt;
-      gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid=%d",
+      gchar *query = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d",
                                      dt_conf_get_int("plugins/lighttable/culling_last_id"));
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -274,11 +274,11 @@ static void _culling_preview_reload_overlays(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
 
   // change overlays if needed for culling and preview
-  gchar *otxt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling/%d", DT_CULLING_MODE_CULLING);
+  gchar *otxt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", DT_CULLING_MODE_CULLING);
   dt_thumbnail_overlay_t over = dt_conf_get_int(otxt);
   dt_culling_set_overlays_mode(lib->culling, over);
   g_free(otxt);
-  otxt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling/%d", DT_CULLING_MODE_PREVIEW);
+  otxt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", DT_CULLING_MODE_PREVIEW);
   over = dt_conf_get_int(otxt);
   dt_culling_set_overlays_mode(lib->preview, over);
   g_free(otxt);
@@ -719,9 +719,9 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       }
 
       _preview_enter(self, FALSE, focus, mouse_over_id);
-      return 1;
+      return TRUE;
     }
-    return 0;
+    return TRUE;
   }
 
   // navigation accels for thumbtable layouts
@@ -852,6 +852,26 @@ static gboolean zoom_min_callback(GtkAccelGroup *accel_group, GObject *accelerat
 
 void init_key_accels(dt_view_t *self)
 {
+  dt_control_accels_t *ac = &darktable.control->accels;
+  dt_action_define_key_pressed_accel(&self->actions, "move up", &ac->lighttable_up);
+  dt_action_define_key_pressed_accel(&self->actions, "move down", &ac->lighttable_down);
+  dt_action_define_key_pressed_accel(&self->actions, "move left", &ac->lighttable_left);
+  dt_action_define_key_pressed_accel(&self->actions, "move right", &ac->lighttable_right);
+  dt_action_define_key_pressed_accel(&self->actions, "move page up", &ac->lighttable_pageup);
+  dt_action_define_key_pressed_accel(&self->actions, "move page down", &ac->lighttable_pagedown);
+  dt_action_define_key_pressed_accel(&self->actions, "move start", &ac->lighttable_start);
+  dt_action_define_key_pressed_accel(&self->actions, "move end", &ac->lighttable_end);
+  dt_action_define_key_pressed_accel(&self->actions, "move up and select", &ac->lighttable_sel_up);
+  dt_action_define_key_pressed_accel(&self->actions, "move down and select", &ac->lighttable_sel_down);
+  dt_action_define_key_pressed_accel(&self->actions, "move left and select", &ac->lighttable_sel_left);
+  dt_action_define_key_pressed_accel(&self->actions, "move right and select", &ac->lighttable_sel_right);
+  dt_action_define_key_pressed_accel(&self->actions, "move page up and select", &ac->lighttable_sel_pageup);
+  dt_action_define_key_pressed_accel(&self->actions, "move page down and select", &ac->lighttable_sel_pagedown);
+  dt_action_define_key_pressed_accel(&self->actions, "move start and select", &ac->lighttable_sel_start);
+  dt_action_define_key_pressed_accel(&self->actions, "move end and select", &ac->lighttable_sel_end);
+  dt_action_define_key_pressed_accel(&self->actions, "preview", &ac->lighttable_preview);
+  dt_action_define_key_pressed_accel(&self->actions, "preview with focus detection", &ac->lighttable_preview_display_focus);
+
   // movement keys
   dt_accel_register_view(self, NC_("accel", "move page up"), GDK_KEY_Page_Up, 0);
   dt_accel_register_view(self, NC_("accel", "move page down"), GDK_KEY_Page_Down, 0);

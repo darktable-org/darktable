@@ -221,7 +221,19 @@ int dt_film_new(dt_film_t *film, const char *directory)
                                 "SELECT id FROM main.film_rolls WHERE folder=?1",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, film->dirname, -1, SQLITE_STATIC);
-    if(sqlite3_step(stmt) == SQLITE_ROW) film->id = sqlite3_column_int(stmt, 0);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      film->id = sqlite3_column_int(stmt, 0);
+      // add it to the table memory.film_folder
+      sqlite3_stmt *stmt2;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "INSERT INTO memory.film_folder (id, status) "
+                                  "VALUES (?1, 1)",
+                                  -1, &stmt2, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, film->id);
+      sqlite3_step(stmt2);
+      sqlite3_finalize(stmt2);
+    }
     sqlite3_finalize(stmt);
   }
 
@@ -254,7 +266,7 @@ int dt_film_import(const char *dirname)
   }
 
   // when called without job system running the import will be done synchronously and destroy the film object
-  int filmid = film->id;
+  const int filmid = film->id;
 
   /* at last put import film job on queue */
   film->last_loaded = 0;
@@ -465,6 +477,38 @@ GList *dt_film_get_image_ids(const int filmid)
   }
   sqlite3_finalize(stmt);
   return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
+}
+
+void dt_film_set_folder_status()
+{
+  sqlite3_stmt *stmt, *stmt2;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "DELETE FROM memory.film_folder",
+                              -1, &stmt, NULL);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id, folder FROM main.film_rolls",
+                              -1, &stmt, NULL);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT INTO memory.film_folder (id, status) "
+                              "VALUES (?1, ?2)",
+                              -1, &stmt2, NULL);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int filmid = sqlite3_column_int(stmt, 0);
+    const char *folder = (char *)sqlite3_column_text(stmt, 1);
+    const int status = g_file_test(folder, G_FILE_TEST_IS_DIR);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, filmid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt2, 2, status);
+    sqlite3_step(stmt2);
+    sqlite3_reset(stmt2);
+  }
+  sqlite3_finalize(stmt);
+  sqlite3_finalize(stmt2);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

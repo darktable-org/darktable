@@ -21,7 +21,7 @@
 
 #include "common.h"
 
-inline float4 matrix_dot(const float4 vector, const float4 matrix[3])
+static inline float4 matrix_dot(const float4 vector, const float4 matrix[3])
 {
   float4 output;
   const float4 vector_copy = { vector.x, vector.y, vector.z, 0.f };
@@ -33,7 +33,7 @@ inline float4 matrix_dot(const float4 vector, const float4 matrix[3])
 }
 
 
-inline float4 matrix_product(const float4 xyz, constant const float *const matrix)
+static inline float4 matrix_product(const float4 xyz, constant const float *const matrix)
 {
   const float R = matrix[0] * xyz.x + matrix[1] * xyz.y + matrix[2] * xyz.z;
   const float G = matrix[3] * xyz.x + matrix[4] * xyz.y + matrix[5] * xyz.z;
@@ -43,7 +43,7 @@ inline float4 matrix_product(const float4 xyz, constant const float *const matri
 }
 
 // same as above but with 4×float padded matrix
-inline float4 matrix_product_float4(const float4 xyz, constant const float *const matrix)
+static inline float4 matrix_product_float4(const float4 xyz, constant const float *const matrix)
 {
   const float R = matrix[0] * xyz.x + matrix[1] * xyz.y + matrix[2]  * xyz.z;
   const float G = matrix[4] * xyz.x + matrix[5] * xyz.y + matrix[6]  * xyz.z;
@@ -52,7 +52,7 @@ inline float4 matrix_product_float4(const float4 xyz, constant const float *cons
   return (float4)(R, G, B, a);
 }
 
-inline float4 Lab_2_LCH(float4 Lab)
+static inline float4 Lab_2_LCH(float4 Lab)
 {
   float H = atan2(Lab.z, Lab.y);
 
@@ -65,7 +65,7 @@ inline float4 Lab_2_LCH(float4 Lab)
 }
 
 
-inline float4 LCH_2_Lab(float4 LCH)
+static inline float4 LCH_2_Lab(float4 LCH)
 {
   const float L = LCH.x;
   const float a = cos(2.0f*M_PI_F*LCH.z) * LCH.y;
@@ -75,7 +75,7 @@ inline float4 LCH_2_Lab(float4 LCH)
 }
 
 
-inline float4 lab_f(float4 x)
+static inline float4 lab_f(float4 x)
 {
   const float4 epsilon = 216.0f / 24389.0f;
   const float4 kappa = 24389.0f / 27.0f;
@@ -83,7 +83,7 @@ inline float4 lab_f(float4 x)
 }
 
 
-inline float4 XYZ_to_Lab(float4 xyz)
+static inline float4 XYZ_to_Lab(float4 xyz)
 {
   float4 lab;
   const float4 d50 = (float4)(0.9642f, 1.0f, 0.8249f, 1.0f);
@@ -96,7 +96,7 @@ inline float4 XYZ_to_Lab(float4 xyz)
 }
 
 
-inline float4 lab_f_inv(float4 x)
+static inline float4 lab_f_inv(float4 x)
 {
   const float4 epsilon = 0.206896551f;
   const float4 kappa   = 24389.0f / 27.0f;
@@ -104,7 +104,7 @@ inline float4 lab_f_inv(float4 x)
 }
 
 
-inline float4 Lab_to_XYZ(float4 Lab)
+static inline float4 Lab_to_XYZ(float4 Lab)
 {
   const float4 d50 = (float4)(0.9642f, 1.0f, 0.8249f, 0.0f);
   float4 f;
@@ -114,7 +114,7 @@ inline float4 Lab_to_XYZ(float4 Lab)
   return d50 * lab_f_inv(f);
 }
 
-inline float4 prophotorgb_to_XYZ(float4 rgb)
+static inline float4 prophotorgb_to_XYZ(float4 rgb)
 {
   const float rgb_to_xyz[3][3] = { // prophoto rgb
     {0.7976749f, 0.1351917f, 0.0313534f},
@@ -134,7 +134,7 @@ inline float4 prophotorgb_to_XYZ(float4 rgb)
   return XYZ;
 }
 
-inline float4 XYZ_to_prophotorgb(float4 XYZ)
+static inline float4 XYZ_to_prophotorgb(float4 XYZ)
 {
   const float xyz_to_rgb[3][3] = { // prophoto rgb d50
     { 1.3459433f, -0.2556075f, -0.0511118f},
@@ -154,19 +154,19 @@ inline float4 XYZ_to_prophotorgb(float4 XYZ)
   return rgb;
 }
 
-inline float4 Lab_to_prophotorgb(float4 Lab)
+static inline float4 Lab_to_prophotorgb(float4 Lab)
 {
   const float4 XYZ = Lab_to_XYZ(Lab);
   return XYZ_to_prophotorgb(XYZ);
 }
 
-inline float4 prophotorgb_to_Lab(float4 rgb)
+static inline float4 prophotorgb_to_Lab(float4 rgb)
 {
   const float4 XYZ = prophotorgb_to_XYZ(rgb);
   return XYZ_to_Lab(XYZ);
 }
 
-inline float4 RGB_2_HSL(const float4 RGB)
+static inline float4 RGB_2_HSL(const float4 RGB)
 {
   float H, S, L;
 
@@ -208,7 +208,7 @@ inline float4 RGB_2_HSL(const float4 RGB)
 
 
 
-inline float Hue_2_RGB(float v1, float v2, float vH)
+static inline float Hue_2_RGB(float v1, float v2, float vH)
 {
   if (vH < 0.0f) vH += 1.0f;
   if (vH > 1.0f) vH -= 1.0f;
@@ -220,7 +220,7 @@ inline float Hue_2_RGB(float v1, float v2, float vH)
 
 
 
-inline float4 HSL_2_RGB(const float4 HSL)
+static inline float4 HSL_2_RGB(const float4 HSL)
 {
   float R, G, B;
 
@@ -250,7 +250,7 @@ inline float4 HSL_2_RGB(const float4 HSL)
   return (float4)(R, G, B, HSL.w);
 }
 
-inline float4 RGB_2_HSV(const float4 RGB)
+static inline float4 RGB_2_HSV(const float4 RGB)
 {
   float4 HSV;
 
@@ -287,7 +287,7 @@ inline float4 RGB_2_HSV(const float4 RGB)
   return HSV;
 }
 
-inline float4 HSV_2_RGB(const float4 HSV)
+static inline float4 HSV_2_RGB(const float4 HSV)
 {
   float4 RGB;
 
@@ -332,7 +332,7 @@ inline float4 HSV_2_RGB(const float4 HSV)
 
 
 // XYZ -> sRGB matrix, D65
-inline float4 XYZ_to_sRGB(float4 XYZ)
+static inline float4 XYZ_to_sRGB(float4 XYZ)
 {
   float4 sRGB;
 
@@ -346,7 +346,7 @@ inline float4 XYZ_to_sRGB(float4 XYZ)
 
 
 // sRGB -> XYZ matrix, D65
-inline float4 sRGB_to_XYZ(float4 sRGB)
+static inline float4 sRGB_to_XYZ(float4 sRGB)
 {
   float4 XYZ;
 
@@ -359,7 +359,7 @@ inline float4 sRGB_to_XYZ(float4 sRGB)
 }
 
 
-inline float4 XYZ_to_JzAzBz(float4 XYZ_D65)
+static inline float4 XYZ_to_JzAzBz(float4 XYZ_D65)
 {
   const float4 M[3] = { { 0.41478972f, 0.579999f, 0.0146480f, 0.0f },
                         { -0.2015100f, 1.120649f, 0.0531008f, 0.0f },
@@ -388,12 +388,12 @@ inline float4 XYZ_to_JzAzBz(float4 XYZ_D65)
   temp1.y = dot(A[1], temp2);
   temp1.z = dot(A[2], temp2);
   // Iz -> Jz
-  temp1.x = 0.44f * temp1.x / (1.0f - 0.56f * temp1.x) - 1.6295499532821566e-11f;
+  temp1.x = fmax(0.44f * temp1.x / (1.0f - 0.56f * temp1.x) - 1.6295499532821566e-11f, 0.f);
   return temp1;
 }
 
 
-inline float4 JzAzBz_2_XYZ(const float4 JzAzBz)
+static inline float4 JzAzBz_2_XYZ(const float4 JzAzBz)
 {
   const float b = 1.15f;
   const float g = 0.66f;
@@ -415,7 +415,7 @@ inline float4 JzAzBz_2_XYZ(const float4 JzAzBz)
   // Jz -> Iz
   IzAzBz = JzAzBz;
   IzAzBz.x += d0;
-  IzAzBz.x = IzAzBz.x / (1.0f + d - d * IzAzBz.x);
+  IzAzBz.x = fmax(IzAzBz.x / (1.0f + d - d * IzAzBz.x), 0.f);
   // IzAzBz -> L'M'S'
   LMS.x = dot(AI[0], IzAzBz);
   LMS.y = dot(AI[1], IzAzBz);
@@ -439,7 +439,7 @@ inline float4 JzAzBz_2_XYZ(const float4 JzAzBz)
 }
 
 
-inline float4 JzAzBz_to_JzCzhz(float4 JzAzBz)
+static inline float4 JzAzBz_to_JzCzhz(float4 JzAzBz)
 {
   const float h = atan2(JzAzBz.z, JzAzBz.y) / (2.0f * M_PI_F);
   float4 JzCzhz;
@@ -459,7 +459,7 @@ inline float4 JzAzBz_to_JzCzhz(float4 JzAzBz)
 * https://doi.org/10.2352/issn.2169-2629.2019.27.38
 */
 
-inline float4 XYZ_to_LMS(const float4 XYZ)
+static inline float4 XYZ_to_LMS(const float4 XYZ)
 {
   const float4 XYZ_D65_to_LMS_2006_D65[3]
     = { { 0.257085f, 0.859943f, -0.031061f, 0.f },
@@ -470,7 +470,7 @@ inline float4 XYZ_to_LMS(const float4 XYZ)
 }
 
 
-inline float4 LMS_to_XYZ(const float4 LMS)
+static inline float4 LMS_to_XYZ(const float4 LMS)
 {
   const float4 LMS_2006_D65_to_XYZ_D65[3]
     = { { 1.80794659f, -1.29971660f, 0.34785879f, 0.f },
@@ -488,7 +488,7 @@ inline float4 LMS_to_XYZ(const float4 LMS)
 * https://doi.org/10.2352/issn.2169-2629.2019.27.38
 */
 
-inline float4 gradingRGB_to_LMS(const float4 RGB)
+static inline float4 gradingRGB_to_LMS(const float4 RGB)
 {
   const float4 filmlightRGB_D65_to_LMS_D65[3]
     = { { 0.95f, 0.38f, 0.00f, 0.f },
@@ -498,7 +498,7 @@ inline float4 gradingRGB_to_LMS(const float4 RGB)
   return matrix_dot(RGB, filmlightRGB_D65_to_LMS_D65);
 }
 
-inline float4 LMS_to_gradingRGB(const float4 LMS)
+static inline float4 LMS_to_gradingRGB(const float4 LMS)
 {
   const float4 LMS_D65_to_filmlightRGB_D65[3]
     = { {  1.0877193f, -0.66666667f,  0.02061856f, 0.f },
@@ -513,7 +513,7 @@ inline float4 LMS_to_gradingRGB(const float4 LMS)
 * Re-express the Filmlight RGB triplet as Yrg luminance/chromacity coordinates
 */
 
-inline float4 LMS_to_Yrg(const float4 LMS)
+static inline float4 LMS_to_Yrg(const float4 LMS)
 {
   // compute luminance
   const float Y = 0.68990272f * LMS.x + 0.34832189f * LMS.y;
@@ -529,7 +529,7 @@ inline float4 LMS_to_Yrg(const float4 LMS)
 }
 
 
-inline float4 Yrg_to_LMS(const float4 Yrg)
+static inline float4 Yrg_to_LMS(const float4 Yrg)
 {
   const float Y = Yrg.x;
 
@@ -553,7 +553,7 @@ inline float4 Yrg_to_LMS(const float4 Yrg)
 * Re-express Filmlight Yrg in polar coordinates Ych
 */
 
-inline float4 Yrg_to_Ych(const float4 Yrg)
+static inline float4 Yrg_to_Ych(const float4 Yrg)
 {
   const float D65[4] = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
   const float Y = Yrg.x;
@@ -565,7 +565,7 @@ inline float4 Yrg_to_Ych(const float4 Yrg)
 }
 
 
-inline float4 Ych_to_Yrg(const float4 Ych)
+static inline float4 Ych_to_Yrg(const float4 Ych)
 {
   const float D65[4] = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
   const float Y = Ych.x;
@@ -577,7 +577,7 @@ inline float4 Ych_to_Yrg(const float4 Ych)
 }
 
 
-inline float4 dt_xyY_to_uvY(const float4 xyY)
+static inline float4 dt_xyY_to_uvY(const float4 xyY)
 {
   // This is the linear part of the chromaticity transform from CIE L*u*v* e.g. u'v'.
   // See https://en.wikipedia.org/wiki/CIELUV
@@ -595,7 +595,7 @@ inline float4 dt_xyY_to_uvY(const float4 xyY)
 }
 
 
-inline float4 dt_uvY_to_xyY(const float4 uvY)
+static inline float4 dt_uvY_to_xyY(const float4 uvY)
 {
   // This is the linear part of chromaticity transform from CIE L*u*v* e.g. u'v'.
   // See https://en.wikipedia.org/wiki/CIELUV
@@ -612,7 +612,7 @@ inline float4 dt_uvY_to_xyY(const float4 uvY)
   return xyY;
 }
 
-inline float4 dt_xyY_to_XYZ(const float4 xyY)
+static inline float4 dt_xyY_to_XYZ(const float4 xyY)
 {
   float4 XYZ;
   XYZ.x = xyY.z * xyY.x / xyY.y;
@@ -624,7 +624,7 @@ inline float4 dt_xyY_to_XYZ(const float4 xyY)
 
 // port src/common/chromatic_adaptation.h
 
-inline float4 convert_XYZ_to_bradford_LMS(const float4 XYZ)
+static inline float4 convert_XYZ_to_bradford_LMS(const float4 XYZ)
 {
   // Warning : needs XYZ normalized with Y - you need to downscale before
   const float4 XYZ_to_Bradford_LMS[3] = { {  0.8951f,  0.2664f, -0.1614f, 0.f },
@@ -634,7 +634,7 @@ inline float4 convert_XYZ_to_bradford_LMS(const float4 XYZ)
   return matrix_dot(XYZ, XYZ_to_Bradford_LMS);
 }
 
-inline float4 convert_bradford_LMS_to_XYZ(const float4 LMS)
+static inline float4 convert_bradford_LMS_to_XYZ(const float4 LMS)
 {
   // Warning : output XYZ normalized with Y - you need to upscale later
   const float4 Bradford_LMS_to_XYZ[3] = { {  0.9870f, -0.1471f,  0.1600f, 0.f },
@@ -644,7 +644,7 @@ inline float4 convert_bradford_LMS_to_XYZ(const float4 LMS)
   return matrix_dot(LMS, Bradford_LMS_to_XYZ);
 }
 
-inline float4 convert_XYZ_to_CAT16_LMS(const float4 XYZ)
+static inline float4 convert_XYZ_to_CAT16_LMS(const float4 XYZ)
 {
   // Warning : needs XYZ normalized with Y - you need to downscale before
   const float4 XYZ_to_CAT16_LMS[3] = { {  0.401288f, 0.650173f, -0.051461f, 0.f },
@@ -654,7 +654,7 @@ inline float4 convert_XYZ_to_CAT16_LMS(const float4 XYZ)
   return matrix_dot(XYZ, XYZ_to_CAT16_LMS);
 }
 
-inline float4 convert_CAT16_LMS_to_XYZ(const float4 LMS)
+static inline float4 convert_CAT16_LMS_to_XYZ(const float4 LMS)
 {
   // Warning : output XYZ normalized with Y - you need to upscale later
   const float4 CAT16_LMS_to_XYZ[3] = { {  1.862068f, -1.011255f,  0.149187f, 0.f },
@@ -664,9 +664,9 @@ inline float4 convert_CAT16_LMS_to_XYZ(const float4 LMS)
   return matrix_dot(LMS, CAT16_LMS_to_XYZ);
 }
 
-inline void bradford_adapt_D50(float4 *lms_in,
-                               const float4 origin_illuminant,
-                               const float p, const int full)
+static inline void bradford_adapt_D50(float4 *lms_in,
+                                      const float4 origin_illuminant,
+                                      const float p, const int full)
 {
   // Bradford chromatic adaptation from origin to target D50 illuminant in LMS space
   // p = powf(origin_illuminant[2] / D50[2], 0.0834f) needs to be precomputed for performance,
@@ -689,9 +689,9 @@ inline void bradford_adapt_D50(float4 *lms_in,
     *lms_in *= D50 / origin_illuminant;
 }
 
-inline void CAT16_adapt_D50(float4 *lms_in,
-                            const float4 origin_illuminant,
-                            const float D, const int full)
+static inline void CAT16_adapt_D50(float4 *lms_in,
+                                   const float4 origin_illuminant,
+                                   const float D, const int full)
 {
   // CAT16 chromatic adaptation from origin to target D50 illuminant in LMS space
   // D is the coefficient of adaptation, depending of the surround lighting
@@ -704,8 +704,8 @@ inline void CAT16_adapt_D50(float4 *lms_in,
   else *lms_in *= (D * D50 / origin_illuminant + 1.f - D);
 }
 
-inline void XYZ_adapt_D50(float4 *lms_in,
-                          const float4 origin_illuminant)
+static inline void XYZ_adapt_D50(float4 *lms_in,
+                                 const float4 origin_illuminant)
 {
   // XYZ chromatic adaptation from origin to target D65 illuminant in XYZ space
   // origin illuminant need also to be precomputed to XYZ

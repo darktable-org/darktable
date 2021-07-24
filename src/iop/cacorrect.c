@@ -272,7 +272,7 @@ static inline void pixSort(float *a, float *b)
 
 /*
   We want to avoid the module being processed in case the provided size of data is too small resulting in
-  really bad artefacts. This is often the case while zooming in with the current dt pipeline.
+  really bad artifacts. This is often the case while zooming in with the current dt pipeline.
   There is no "maths background" so i chose this after a lot of testing.
 */
 #define CA_SIZE_MINIMUM (1600)
@@ -1334,7 +1334,7 @@ static void _display_ca_error(struct dt_iop_module_t *self)
 
   if(g->error == CACORRECT_ERROR_CFA)
     dt_iop_set_module_trouble_message(self, _("error"),
-                                      _("CA correction supports only RGB colour filter arrays"), NULL);
+                                      _("raw CA correction supports only standard RGB bayer filter arrays"), NULL);
   else if(g->error == CACORRECT_ERROR_MATH)
      dt_iop_set_module_trouble_message(self, _("bypassed while zooming in"),
                                       _("while calculating the correction parameters the internal maths failed so module is bypassed.\n"

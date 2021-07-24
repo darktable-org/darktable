@@ -629,7 +629,7 @@ static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const
     }
 
     if(!skip_modules)
-      skip_modules = dt_util_dstrcat(skip_modules, "'@'");
+      skip_modules = g_strdup("'@'");
 
     gchar *query = g_strdup_printf
       ("INSERT INTO main.history "
@@ -1401,7 +1401,7 @@ void dt_history_hash_write_from_history(const int32_t imgid, const dt_history_ha
     char *conflict = NULL;
     if(type & DT_HISTORY_HASH_BASIC)
     {
-      fields = dt_util_dstrcat(fields, "%s,", "basic_hash");
+      fields = g_strdup_printf("%s,", "basic_hash");
       values = g_strdup("?2,");
       conflict = g_strdup("basic_hash=?2,");
     }
@@ -1426,11 +1426,11 @@ void dt_history_hash_write_from_history(const int32_t imgid, const dt_history_ha
     {
       sqlite3_stmt *stmt;
 #ifdef HAVE_SQLITE_324_OR_NEWER
-      char *query = dt_util_dstrcat(NULL, "INSERT INTO main.history_hash"
-                                          " (imgid, %s) VALUES (?1, %s)"
-                                          " ON CONFLICT (imgid)"
-                                          " DO UPDATE SET %s",
-                                          fields, values, conflict);
+      char *query = g_strdup_printf("INSERT INTO main.history_hash"
+                                    " (imgid, %s) VALUES (?1, %s)"
+                                    " ON CONFLICT (imgid)"
+                                    " DO UPDATE SET %s",
+                                    fields, values, conflict);
 #else
       char *query = NULL;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1441,17 +1441,17 @@ void dt_history_hash_write_from_history(const int32_t imgid, const dt_history_ha
       if(sqlite3_step(stmt) == SQLITE_ROW)
       {
         sqlite3_finalize(stmt);
-        query = dt_util_dstrcat(NULL, "UPDATE main.history_hash"
-                                      " SET %s"
-                                      " WHERE imgid = ?1",
-                                      conflict);
+        query = g_strdup_printf("UPDATE main.history_hash"
+                                " SET %s"
+                                " WHERE imgid = ?1",
+                                conflict);
       }
       else
       {
         sqlite3_finalize(stmt);
-        query = dt_util_dstrcat(NULL, "INSERT INTO main.history_hash"
-                                      " (imgid, %s) VALUES (?1, %s)",
-                                      fields, values);
+        query = g_strdup_printf("INSERT INTO main.history_hash"
+                                " (imgid, %s) VALUES (?1, %s)",
+                                fields, values);
       }
 #endif
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -1568,8 +1568,7 @@ dt_history_hash_t dt_history_hash_get_status(const int32_t imgid)
   dt_history_hash_t status = 0;
   if(imgid == -1) return status;
   sqlite3_stmt *stmt;
-  char *query = dt_util_dstrcat(NULL,
-                                "SELECT CASE"
+  char *query = g_strdup_printf("SELECT CASE"
                                 "  WHEN basic_hash == current_hash THEN %d"
                                 "  WHEN auto_hash == current_hash THEN %d"
                                 "  WHEN (basic_hash IS NULL OR current_hash != basic_hash) AND"
@@ -1652,6 +1651,18 @@ gboolean dt_history_paste_on_list(const GList *list, gboolean undo)
                                        darktable.view_manager->copy_paste.full_copy);
   }
   if(undo) dt_undo_end_group(darktable.undo);
+
+  // In darkroom and if there is a copy of the iop-order we need to rebuild the pipe
+  // to take into account the possible new order of modules.
+
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+
+  if(cv->view(cv) == DT_VIEW_DARKROOM
+     && darktable.view_manager->copy_paste.copy_iop_order)
+  {
+    dt_dev_pixelpipe_rebuild(darktable.develop);
+  }
+
   return TRUE;
 }
 
@@ -1693,6 +1704,18 @@ gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo)
   if(undo) dt_undo_end_group(darktable.undo);
 
   g_list_free(l_copy);
+
+  // In darkroom and if there is a copy of the iop-order we need to rebuild the pipe
+  // to take into account the possible new order of modules.
+
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+
+  if(cv->view(cv) == DT_VIEW_DARKROOM
+     && darktable.view_manager->copy_paste.copy_iop_order)
+  {
+    dt_dev_pixelpipe_rebuild(darktable.develop);
+  }
+
   return TRUE;
 }
 

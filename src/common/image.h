@@ -297,8 +297,8 @@ int dt_image_get_xmp_rating(const dt_image_t *img);
 int dt_image_get_xmp_rating_from_flags(const int flags);
 /** finds all xmp duplicates for the given image in the database. */
 GList* dt_image_find_duplicates(const char* filename);
-/** check if an image with the given filename is already imported (present in folder) */
-gboolean dt_images_already_imported(const gchar *folder, const gchar *filename);
+/** check if an image with the given filename is already imported */
+gboolean dt_images_already_imported(const gchar *filename);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
 uint32_t dt_image_import(int32_t film_id, const char *filename, gboolean override_ignore_jpegs,
                          gboolean raise_signals);
@@ -316,7 +316,7 @@ int32_t dt_image_duplicate(const int32_t imgid);
 void dt_image_flip(const int32_t imgid, const int32_t cw);
 void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t user_flip);
 dt_image_orientation_t dt_image_get_orientation(const int32_t imgid);
-/** get max width and height of the final processed image with its current hisotry stack */
+/** get max width and height of the final processed image with its current history stack */
 gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height);
 void dt_image_update_final_size(const int32_t imgid);
 /** set image location lon/lat/ele */

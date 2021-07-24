@@ -125,9 +125,6 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->overexposed.lower = dt_conf_get_float("darkroom/ui/overexposed/lower");
   dev->overexposed.upper = dt_conf_get_float("darkroom/ui/overexposed/upper");
 
-  dev->overlay_color.enabled = FALSE;
-  dev->overlay_color.color = dt_conf_get_int("darkroom/ui/overlay_color");
-
   dev->iso_12646.enabled = FALSE;
 
   dev->second_window.zoom = DT_ZOOM_FIT;
@@ -199,25 +196,22 @@ void dt_dev_cleanup(dt_develop_t *dev)
   dt_conf_set_int("darkroom/ui/overexposed/colorscheme", dev->overexposed.colorscheme);
   dt_conf_set_float("darkroom/ui/overexposed/lower", dev->overexposed.lower);
   dt_conf_set_float("darkroom/ui/overexposed/upper", dev->overexposed.upper);
-
-  dt_conf_set_int("darkroom/ui/overlay_color", dev->overlay_color.color);
 }
 
 float dt_dev_get_preview_downsampling()
 {
-  gchar *preview_downsample = dt_conf_get_string("preview_downsampling");
+  const char *preview_downsample = dt_conf_get_string_const("preview_downsampling");
   const float downsample = (g_strcmp0(preview_downsample, "original") == 0) ? 1.0f
         : (g_strcmp0(preview_downsample, "to 1/2")==0) ? 0.5f
         : (g_strcmp0(preview_downsample, "to 1/3")==0) ? 1/3.0f
         : 0.25f;
-  g_free(preview_downsample);
   return downsample;
 }
 
 void dt_dev_process_image(dt_develop_t *dev)
 {
   if(!dev->gui_attached || dev->pipe->processing) return;
-  int err
+  const int err
       = dt_control_add_job_res(darktable.control, dt_dev_process_image_job_create(dev), DT_CTL_WORKER_ZOOM_1);
   if(err) fprintf(stderr, "[dev_process_image] job queue exceeded!\n");
 }
@@ -225,7 +219,7 @@ void dt_dev_process_image(dt_develop_t *dev)
 void dt_dev_process_preview(dt_develop_t *dev)
 {
   if(!dev->gui_attached) return;
-  int err = dt_control_add_job_res(darktable.control, dt_dev_process_preview_job_create(dev),
+  const int err = dt_control_add_job_res(darktable.control, dt_dev_process_preview_job_create(dev),
                                    DT_CTL_WORKER_ZOOM_FILL);
   if(err) fprintf(stderr, "[dev_process_preview] job queue exceeded!\n");
 }
@@ -234,7 +228,7 @@ void dt_dev_process_preview2(dt_develop_t *dev)
 {
   if(!dev->gui_attached) return;
   if(!(dev->second_window.widget && GTK_IS_WIDGET(dev->second_window.widget))) return;
-  int err = dt_control_add_job_res(darktable.control, dt_dev_process_preview2_job_create(dev),
+  const int err = dt_control_add_job_res(darktable.control, dt_dev_process_preview2_job_create(dev),
                                    DT_CTL_WORKER_ZOOM_2);
   if(err) fprintf(stderr, "[dev_process_preview2] job queue exceeded!\n");
 }
@@ -1116,13 +1110,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
     else if(!dt_iop_is_hidden(module) && module->expander)
     {
       // we have to ensure that the name of the widget is correct
-      GtkWidget *child = dt_gui_container_first_child(GTK_CONTAINER(module->expander));
-      GtkWidget *header = gtk_bin_get_child(GTK_BIN(child));
-
-      GtkWidget *wlabel = dt_gui_container_nth_child(GTK_CONTAINER(header), IOP_MODULE_LABEL);
-      gchar *label = dt_history_item_get_name_html(module);
-      gtk_label_set_markup(GTK_LABEL(wlabel), label);
-      g_free(label);
+      dt_iop_gui_update_header(module);
     }
   }
 
@@ -1257,12 +1245,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   }
   else
   {
-    dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
-    dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-    dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
-    dev->pipe->cache_obsolete = 1;
-    dev->preview_pipe->cache_obsolete = 1;
-    dev->preview2_pipe->cache_obsolete = 1;
+    dt_dev_pixelpipe_rebuild(dev);
   }
 
   --darktable.gui->reset;
@@ -1392,7 +1375,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     // Next section is to recover old edits where all modules with default parameters were not
     // recorded in the db nor in the .XMP.
     //
-    // One crutial point is the white-balance which has automatic default based on the camera
+    // One crucial point is the white-balance which has automatic default based on the camera
     // and depends on the chroma-adaptation. In modern mode the default won't be the same used
     // in legacy mode and if the white-balance is not found on the history one will be added by
     // default using current defaults. But if we are in modern chromatic adaptation the default
@@ -1444,11 +1427,10 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     return FALSE;
   }
 
-  gchar *workflow = dt_conf_get_string("plugins/darkroom/workflow");
+  const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
   const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
   const gboolean is_display_referred = strcmp(workflow, "display-referred") == 0;
   const gboolean is_workflow_none = strcmp(workflow, "none") == 0;
-  g_free(workflow);
 
   //  Add scene-referred workflow
   //  Note that we cannot use a preset for FilmicRGB as the default values are
@@ -2348,6 +2330,13 @@ gboolean dt_dev_modulegroups_is_visible(dt_develop_t *dev, gchar *module)
   return FALSE;
 }
 
+int dt_dev_modulegroups_basics_module_toggle(dt_develop_t *dev, GtkWidget *widget, gboolean doit)
+{
+  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.basics_module_toggle)
+    return dev->proxy.modulegroups.basics_module_toggle(dev->proxy.modulegroups.module, widget, doit);
+  return 0;
+}
+
 void dt_dev_masks_list_change(dt_develop_t *dev)
 {
   if(dev->proxy.masks.module && dev->proxy.masks.list_change)
@@ -2578,7 +2567,7 @@ gchar *dt_history_item_get_name(const struct dt_iop_module_t *module)
   gchar *label;
   /* create a history button and add to box */
   if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
-    label = g_strdup_printf("%s", module->name());
+    label = g_strdup(module->name());
   else
     label = g_strdup_printf("%s %s", module->name(), module->multi_name);
   return label;
@@ -2589,7 +2578,7 @@ gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module)
   gchar *label;
   /* create a history button and add to box */
   if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
-    label = g_strdup_printf("%s", module->name());
+    label = g_strdup(module->name());
   else
     label = g_markup_printf_escaped("%s <span size=\"smaller\">%s</span>", module->name(), module->multi_name);
   return label;

@@ -316,9 +316,9 @@ static inline void _apply_tonecurves(const float *const image_in, float *const i
   if((lut[0][0] >= 0.0f) && (lut[1][0] >= 0.0f) && (lut[2][0] >= 0.0f))
   {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
     dt_omp_firstprivate(stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch) \
-    schedule(static) collapse(2) aligned(image_in, image_out:64)
+    schedule(static) collapse(2)
 #endif
     for(size_t k = 0; k < stride; k += ch)
     {
@@ -332,9 +332,9 @@ static inline void _apply_tonecurves(const float *const image_in, float *const i
   else if((lut[0][0] >= 0.0f) || (lut[1][0] >= 0.0f) || (lut[2][0] >= 0.0f))
   {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
     dt_omp_firstprivate(stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch) \
-    schedule(static) collapse(2) aligned(image_in, image_out:64)
+    schedule(static) collapse(2)
 #endif
     for(size_t k = 0; k < stride; k += ch)
     {
@@ -409,9 +409,9 @@ static inline void _transform_lab_to_rgb_matrix(const float *const restrict imag
   const float *const restrict matrix = profile_info->matrix_out;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(image_in, image_out, stride, profile_info, ch, matrix) \
-  schedule(static) aligned(image_in, image_out:64) aligned(matrix:16)
+  schedule(static)
 #endif
   for(size_t y = 0; y < stride; y += ch)
   {
@@ -459,9 +459,9 @@ static inline void _transform_matrix_rgb(const float *const restrict image_in,
                                                   (profile_info_to->lut_out[2][0] >= 0.0f) };
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
     dt_omp_firstprivate(stride, image_in, image_out, profile_info_from, profile_info_to, ch, matrix, run_lut_in, run_lut_out) \
-    schedule(static) aligned(image_out, matrix:64) aligned(run_lut_in, run_lut_out:16)
+    schedule(static)
 #endif
     for(size_t y = 0; y < stride; y += ch)
     {
@@ -479,6 +479,7 @@ static inline void _transform_matrix_rgb(const float *const restrict image_in,
       }
 
       // convert color space
+      //TODO: transpose stored matrix to permit vectorization
       for(size_t c = 0; c < 3; c++)
         for(size_t i = 0; i < 3; i++)
           temp[c] += matrix[3 * c + i] * rgb[i];
@@ -495,17 +496,18 @@ static inline void _transform_matrix_rgb(const float *const restrict image_in,
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
     dt_omp_firstprivate(stride, image_in, image_out, profile_info_from, profile_info_to, ch, matrix) \
-    schedule(static) aligned(image_in, image_out, matrix:64)
+    schedule(static)
 #endif
     for(size_t y = 0; y < stride; y += ch)
     {
       const float *const restrict in = __builtin_assume_aligned(image_in + y, 16);
       float *const restrict out = __builtin_assume_aligned(image_out + y, 16);
 
-      for(size_t c = 0; c < 3; c++) out[c] = 0.f;
+      for_each_channel(c,aligned(out)) out[c] = 0.f;
 
+      //TODO: transpose stored matrix to permit vectorization
       for(size_t c = 0; c < 3; c++)
         for(size_t i = 0; i < 3; i++)
           out[c] += matrix[3 * c + i] * in[i];

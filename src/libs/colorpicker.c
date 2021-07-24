@@ -615,7 +615,7 @@ void gui_init(dt_lib_module_t *self)
   // The picker button, mode and statistic combo boxes
   GtkWidget *picker_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  data->statistic_selector = dt_bauhaus_combobox_new(NULL);
+  data->statistic_selector = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_combobox_add(data->statistic_selector, _("mean"));
   dt_bauhaus_combobox_add(data->statistic_selector, _("min"));
   dt_bauhaus_combobox_add(data->statistic_selector, _("max"));
@@ -625,7 +625,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_valign(data->statistic_selector, GTK_ALIGN_END);
   gtk_box_pack_start(GTK_BOX(picker_row), data->statistic_selector, TRUE, TRUE, 0);
 
-  data->color_mode_selector = dt_bauhaus_combobox_new(NULL);
+  data->color_mode_selector = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_combobox_add(data->color_mode_selector, _("RGB"));
   dt_bauhaus_combobox_add(data->color_mode_selector, _("Lab"));
   dt_bauhaus_combobox_add(data->color_mode_selector, _("LCh"));
@@ -638,7 +638,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(picker_row), data->color_mode_selector, TRUE, TRUE, 0);
 
   data->picker_button = dt_color_picker_new(NULL, DT_COLOR_PICKER_POINT_AREA, picker_row);
-  gtk_widget_set_tooltip_text(data->picker_button, _("turn on color picker\nctrl+click to select an area"));
+  gtk_widget_set_tooltip_text(data->picker_button, _("turn on color picker\nctrl+click or right-click to select an area"));
   gtk_widget_set_name(GTK_WIDGET(data->picker_button), "color-picker-button");
   g_signal_connect(G_OBJECT(data->picker_button), "toggled", G_CALLBACK(_picker_button_toggled), data);
 

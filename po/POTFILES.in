@@ -7,6 +7,7 @@ build/lib/darktable/plugins/introspection_basicadj.c
 build/lib/darktable/plugins/introspection_bilat.c
 build/lib/darktable/plugins/introspection_bilateral.cc
 build/lib/darktable/plugins/introspection_bloom.c
+build/lib/darktable/plugins/introspection_blurs.c
 build/lib/darktable/plugins/introspection_borders.c
 build/lib/darktable/plugins/introspection_cacorrect.c
 build/lib/darktable/plugins/introspection_cacorrectrgb.c
@@ -32,6 +33,7 @@ build/lib/darktable/plugins/introspection_crop.c
 build/lib/darktable/plugins/introspection_defringe.c
 build/lib/darktable/plugins/introspection_demosaic.c
 build/lib/darktable/plugins/introspection_denoiseprofile.c
+build/lib/darktable/plugins/introspection_diffuse.c
 build/lib/darktable/plugins/introspection_dither.c
 build/lib/darktable/plugins/introspection_equalizer.c
 build/lib/darktable/plugins/introspection_exposure.c
@@ -116,6 +118,7 @@ src/common/opencl.c
 src/common/pdf.h
 src/common/points.h
 src/common/printprof.c
+src/common/printing.c
 src/common/pwstorage/pwstorage.c
 src/common/ratings.c
 src/common/styles.c
@@ -184,6 +187,7 @@ src/iop/basicadj.c
 src/iop/bilat.c
 src/iop/bilateral.cc
 src/iop/bloom.c
+src/iop/blurs.c
 src/iop/borders.c
 src/iop/cacorrect.c
 src/iop/cacorrectrgb.c
@@ -210,7 +214,9 @@ src/iop/crop.c
 src/iop/defringe.c
 src/iop/demosaic.c
 src/iop/denoiseprofile.c
+src/iop/diffuse.c
 src/iop/dither.c
+src/iop/dual_demosaic.c
 src/iop/equalizer.c
 src/iop/exposure.c
 src/iop/filmic.c
@@ -229,6 +235,7 @@ src/iop/invert.c
 src/iop/lens.cc
 src/iop/levels.c
 src/iop/liquify.c
+src/iop/lmmse_demosaic.c
 src/iop/lowlight.c
 src/iop/lowpass.c
 src/iop/lut3d.c
@@ -241,6 +248,7 @@ src/iop/profile_gamma.c
 src/iop/rawdenoise.c
 src/iop/rawoverexposed.c
 src/iop/rawprepare.c
+src/iop/rcd_demosaic.c
 src/iop/relight.c
 src/iop/retouch.c
 src/iop/rgbcurve.c

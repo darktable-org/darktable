@@ -289,6 +289,20 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
   dt_pthread_mutex_unlock(&pipe->busy_mutex);	// safe for others to mess with the pipe now
 }
 
+void dt_dev_pixelpipe_rebuild(dt_develop_t *dev)
+{
+  dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
+  dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
+  dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
+
+  dev->pipe->cache_obsolete = 1;
+  dev->preview_pipe->cache_obsolete = 1;
+  dev->preview2_pipe->cache_obsolete = 1;
+
+  // invalidate buffers and force redraw of darkroom
+  dt_dev_invalidate_all(dev);
+}
+
 void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex); // block until pipe is idle
@@ -1112,11 +1126,14 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
 
   const size_t in_bpp = dt_iop_buffer_dsc_to_bpp(input_format);
   const size_t bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
+
+  const gboolean needs_tiling = (piece->process_tiling_ready &&
+     !dt_tiling_piece_fits_host_memory(MAX(roi_in->width, roi_out->width),
+                                       MAX(roi_in->height, roi_out->height), MAX(in_bpp, bpp),
+                                          tiling->factor, tiling->overhead));
+
   /* process module on cpu. use tiling if needed and possible. */
-  if(piece->process_tiling_ready
-     && !dt_tiling_piece_fits_host_memory(MAX(roi_in->width, roi_out->width),
-                                          MAX(roi_in->height, roi_out->height), MAX(in_bpp, bpp),
-                                          tiling->factor, tiling->overhead))
+  if(needs_tiling || (darktable.unmuted & DT_DEBUG_TILING))
   {
     module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);

@@ -536,10 +536,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   // adjust numbers to be large enough to hold what mem limit suggests.
   // we want at least 100MB, and consider 8G just still reasonable.
   const int64_t cache_memory = dt_conf_get_int64("cache_memory");
-  const int worker_threads = dt_conf_get_int("worker_threads");
   const size_t max_mem = CLAMPS(cache_memory, 100u << 20, ((size_t)8) << 30);
-  const uint32_t parallel = CLAMP(worker_threads, 1, 8);
-
   // Fixed sizes for the thumbnail mip levels, selected for coverage of most screen sizes
   int32_t mipsizes[DT_MIPMAP_F][2] = {
     { 180, 110 },             // mip0 - ~1/2 size previous one
@@ -587,8 +584,9 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   dt_cache_set_allocate_callback(&cache->mip_thumbs.cache, dt_mipmap_cache_allocate_dynamic, cache);
   dt_cache_set_cleanup_callback(&cache->mip_thumbs.cache, dt_mipmap_cache_deallocate_dynamic, cache);
 
-  const int full_entries
-      = MAX(2, parallel); // even with one thread you want two buffers. one for dr one for thumbs.
+  // even with one thread you want two buffers. one for dr one for thumbs.
+  // Also have the nr of cache entries larger than worker threads
+  const int full_entries = 2 * dt_worker_threads();
   const int32_t max_mem_bufs = nearest_power_of_two(full_entries);
 
   // for this buffer, because it can be very busy during import
@@ -969,7 +967,7 @@ dt_mipmap_size_t dt_mipmap_cache_get_matching_size(const dt_mipmap_cache_t *cach
   return best;
 }
 
-dt_mipmap_size_t dt_mipmap_cache_get_min_mip_from_pref(char *value)
+dt_mipmap_size_t dt_mipmap_cache_get_min_mip_from_pref(const char *value)
 {
   if(strcmp(value, "always") == 0) return DT_MIPMAP_0;
   if(strcmp(value, "small") == 0)  return DT_MIPMAP_1;
@@ -1183,9 +1181,8 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
   const int incompatible = !strncmp(cimg->exif_maker, "Phase One", 9);
   dt_image_cache_read_release(darktable.image_cache, cimg);
 
-  char *min = dt_conf_get_string("plugins/lighttable/thumbnail_raw_min_level");
+  const char *min = dt_conf_get_string_const("plugins/lighttable/thumbnail_raw_min_level");
   const dt_mipmap_size_t min_s = dt_mipmap_cache_get_min_mip_from_pref(min);
-  g_free(min);
   const gboolean use_embedded = (size <= min_s);
 
   if(!altered && use_embedded && !incompatible)

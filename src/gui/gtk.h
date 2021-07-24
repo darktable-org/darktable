@@ -329,6 +329,8 @@ gboolean dt_ui_panel_visible(struct dt_ui_t *ui, const dt_ui_panel_t);
 int dt_ui_panel_get_size(struct dt_ui_t *ui, const dt_ui_panel_t p);
 /**  \brief set width of right, left, or bottom panel */
 void dt_ui_panel_set_size(struct dt_ui_t *ui, const dt_ui_panel_t p, int s);
+/** \brief is the panel ancestor of widget */
+gboolean dt_ui_panel_ancestor(struct dt_ui_t *ui, const dt_ui_panel_t p, GtkWidget *w);
 /** \brief get the center drawable widget */
 GtkWidget *dt_ui_center(struct dt_ui_t *ui);
 GtkWidget *dt_ui_center_base(struct dt_ui_t *ui);
@@ -370,8 +372,11 @@ static inline GtkWidget *dt_ui_label_new(const gchar *str)
   return label;
 };
 
-// clears all the pages of the notebook
-void dt_ui_notebook_clear(GtkNotebook *notebook);
+extern const struct dt_action_def_t dt_action_def_tabs_all_rgb;
+extern const struct dt_action_def_t dt_action_def_tabs_rgb;
+extern const struct dt_action_def_t dt_action_def_tabs_none;
+
+GtkNotebook *dt_ui_notebook_new(struct dt_action_def_t *def);
 
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip);
 
@@ -431,6 +436,9 @@ void dt_gui_container_remove_children(GtkContainer *container);
 // there are no other references to any of the children (if in doubt, use dt_gui_container_remove_children
 // instead; it's a bit slower but safer).
 void dt_gui_container_destroy_children(GtkContainer *container);
+
+void dt_gui_menu_popup(GtkMenu *menu, GtkWidget *button, GdkGravity widget_anchor, GdkGravity menu_anchor);
+void dt_gui_draw_rounded_rectangle(cairo_t *cr, float width, float height, float x, float y);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

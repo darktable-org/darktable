@@ -323,6 +323,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   if(darktable.unmuted & DT_DEBUG_OPENCL)
   {
     printf("[opencl_init] device %d: %s \n", k, infostr);
+    printf("     CANONICAL_NAME:           %s\n", cname);
     printf("     GLOBAL_MEM_SIZE:          %.0fMB\n", (double)cl->dev[dev].max_global_mem / 1024.0 / 1024.0);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(infoint), &infoint, NULL);
     printf("     MAX_WORK_GROUP_SIZE:      %zu\n", infoint);
@@ -405,12 +406,34 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   escapedkerneldir = dt_util_str_replace(kerneldir, " ", "\\ ");
 #endif
 
-  options = g_strdup_printf("-w -cl-fast-relaxed-math %s -D%s=1 -I%s",
+  gchar* compile_option_name_id = g_strdup_printf("opencl_building_gpu%d", k);
+  gchar* compile_option_name_cname = g_strdup_printf("opencl_building_gpu%s", cl->dev[dev].cname);
+  gchar* compile_opt = NULL;
+
+  if(dt_conf_key_exists(compile_option_name_id))
+  {
+    compile_opt = dt_conf_get_string(compile_option_name_id);
+  }
+  else if (dt_conf_key_exists(compile_option_name_cname))
+  {
+    compile_opt = dt_conf_get_string(compile_option_name_cname);
+  }
+  else
+  {
+    compile_opt = g_strdup("-cl-fast-relaxed-math");
+  }
+
+  options = g_strdup_printf("-w %s %s -D%s=1 -I%s",
+                            compile_opt,
                             (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""),
                             dt_opencl_get_vendor_by_id(vendor_id), escapedkerneldir);
   cl->dev[dev].options = strdup(options);
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] options for OpenCL compiler: %s\n", options);
+
+  g_free(compile_opt);
+  g_free(compile_option_name_cname);
+  g_free(compile_option_name_id);
 
   g_free(options);
   options = NULL;
@@ -525,7 +548,6 @@ end:
 
 void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboolean print_statistics)
 {
-  char *str;
   dt_pthread_mutex_init(&cl->lock, NULL);
   cl->inited = 0;
   cl->enabled = 0;
@@ -576,28 +598,24 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl related configuration options:\n");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] \n");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl: %d\n", dt_conf_get_bool("opencl"));
-  str = dt_conf_get_string("opencl_scheduling_profile");
+  const char *str = dt_conf_get_string_const("opencl_scheduling_profile");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_scheduling_profile: '%s'\n", str);
-  g_free(str);
-  str = dt_conf_get_string("opencl_library");
+  str = dt_conf_get_string_const("opencl_library");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_library: '%s'\n", str);
-  g_free(str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_memory_requirement: %d\n",
            dt_conf_get_int("opencl_memory_requirement"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_memory_headroom: %d\n",
            dt_conf_get_int("opencl_memory_headroom"));
-  str = dt_conf_get_string("opencl_device_priority");
+  str = dt_conf_get_string_const("opencl_device_priority");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_device_priority: '%s'\n", str);
-  g_free(str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_mandatory_timeout: %d\n",
            dt_conf_get_int("opencl_mandatory_timeout"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_size_roundup: %d\n",
            dt_conf_get_int("opencl_size_roundup"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_async_pixelpipe: %d\n",
            dt_conf_get_bool("opencl_async_pixelpipe"));
-  str = dt_conf_get_string("opencl_synch_cache");
+  str = dt_conf_get_string_const("opencl_synch_cache");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_synch_cache: %s\n", str);
-  g_free(str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_number_event_handles: %d\n",
            dt_conf_get_int("opencl_number_event_handles"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_micro_nap: %d\n", dt_conf_get_int("opencl_micro_nap"));
@@ -613,14 +631,13 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] \n");
 
   // look for explicit definition of opencl_runtime library in preferences
-  char *library = dt_conf_get_string("opencl_library");
+  const char *library = dt_conf_get_string_const("opencl_library");
 
   // dynamically load opencl runtime
   if((cl->dlocl = dt_dlopencl_init(library)) == NULL)
   {
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_init] no working opencl library found. Continue with opencl disabled\n");
-    g_free(library);
     goto finally;
   }
   else
@@ -628,7 +645,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl library '%s' found on your system and loaded\n",
              cl->dlocl->library);
   }
-  g_free(library);
 
   cl_int err;
   all_platforms = malloc(sizeof(cl_platform_id) * DT_OPENCL_MAX_PLATFORMS);
@@ -771,7 +787,7 @@ finally:
 
     char checksum[64];
     snprintf(checksum, sizeof(checksum), "%u", cl->crc);
-    char *oldchecksum = dt_conf_get_string("opencl_checksum");
+    const char *oldchecksum = dt_conf_get_string_const("opencl_checksum");
 
     // check if the configuration (OpenCL device setup) has changed, indicated by checksum != oldchecksum
     if(strcasecmp(oldchecksum, "OFF") != 0 && strcmp(oldchecksum, checksum) != 0)
@@ -820,7 +836,6 @@ finally:
         dt_control_log(_("opencl scheduling profile set to default."));
       }
     }
-    g_free(oldchecksum);
 
     // apply config settings for scheduling profile: sets device priorities and pixelpipe synchronization timeout
     dt_opencl_scheduling_profile_t profile = dt_opencl_get_scheduling_profile();
@@ -943,13 +958,13 @@ static const char *dt_opencl_get_vendor_by_id(unsigned int id)
 
   switch(id)
   {
-    case 4098:
+    case DT_OPENCL_VENDOR_AMD:
       vendor = "AMD";
       break;
-    case 4318:
+    case DT_OPENCL_VENDOR_NVIDIA:
       vendor = "NVIDIA";
       break;
-    case 0x8086u:
+    case DT_OPENCL_VENDOR_INTEL:
       vendor = "INTEL";
       break;
     default:
@@ -2250,6 +2265,8 @@ void *dt_opencl_alloc_device(const int devid, const int width, const int height,
     fmt = (cl_image_format){ CL_R, CL_FLOAT };
   else if(bpp == sizeof(uint16_t))
     fmt = (cl_image_format){ CL_R, CL_UNSIGNED_INT16 };
+  else if(bpp == sizeof(uint8_t))
+    fmt = (cl_image_format){ CL_R, CL_UNSIGNED_INT8 };
   else
     return NULL;
 
@@ -2518,9 +2535,8 @@ int dt_opencl_update_settings(void)
 
   if(darktable.opencl->scheduling_profile != profile)
   {
-    char *pstr = dt_conf_get_string("opencl_scheduling_profile");
+    const char *pstr = dt_conf_get_string_const("opencl_scheduling_profile");
     dt_print(DT_DEBUG_OPENCL, "[opencl_update_scheduling_profile] scheduling profile set to %s\n", pstr);
-    g_free(pstr);
     dt_opencl_apply_scheduling_profile(profile);
   }
 
@@ -2528,9 +2544,8 @@ int dt_opencl_update_settings(void)
 
   if(darktable.opencl->sync_cache != sync)
   {
-    char *pstr = dt_conf_get_string("opencl_synch_cache");
+    const char *pstr = dt_conf_get_string_const("opencl_synch_cache");
     dt_print(DT_DEBUG_OPENCL, "[opencl_update_synch_cache] sync cache set to %s\n", pstr);
-    g_free(pstr);
     darktable.opencl->sync_cache = sync;
   }
 
@@ -2540,7 +2555,7 @@ int dt_opencl_update_settings(void)
 /** read scheduling profile for config variables */
 static dt_opencl_scheduling_profile_t dt_opencl_get_scheduling_profile(void)
 {
-  char *pstr = dt_conf_get_string("opencl_scheduling_profile");
+  const char *pstr = dt_conf_get_string_const("opencl_scheduling_profile");
   if(!pstr) return OPENCL_PROFILE_DEFAULT;
 
   dt_opencl_scheduling_profile_t profile = OPENCL_PROFILE_DEFAULT;
@@ -2550,15 +2565,13 @@ static dt_opencl_scheduling_profile_t dt_opencl_get_scheduling_profile(void)
   else if(!strcmp(pstr, "very fast GPU"))
     profile = OPENCL_PROFILE_VERYFAST_GPU;
 
-  g_free(pstr);
-
   return profile;
 }
 
 /** read config of when/if to synch to cache */
 static dt_opencl_sync_cache_t dt_opencl_get_sync_cache(void)
 {
-  char *pstr = dt_conf_get_string("opencl_synch_cache");
+  const char *pstr = dt_conf_get_string_const("opencl_synch_cache");
   if(!pstr) return OPENCL_SYNC_ACTIVE_MODULE;
 
   dt_opencl_sync_cache_t sync = OPENCL_SYNC_ACTIVE_MODULE;
@@ -2567,8 +2580,6 @@ static dt_opencl_sync_cache_t dt_opencl_get_sync_cache(void)
     sync = OPENCL_SYNC_TRUE;
   else if(!strcmp(pstr, "false"))
     sync = OPENCL_SYNC_FALSE;
-
-  g_free(pstr);
 
   return sync;
 }
@@ -2583,8 +2594,6 @@ static void dt_opencl_set_synchronization_timeout(int value)
 /** adjust opencl subsystem according to scheduling profile */
 static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t profile)
 {
-  char *str;
-
   dt_pthread_mutex_lock(&darktable.opencl->lock);
   darktable.opencl->scheduling_profile = profile;
 
@@ -2600,9 +2609,7 @@ static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t pr
       break;
     case OPENCL_PROFILE_DEFAULT:
     default:
-      str = dt_conf_get_string("opencl_device_priority");
-      dt_opencl_update_priorities(str);
-      g_free(str);
+      dt_opencl_update_priorities(dt_conf_get_string_const("opencl_device_priority"));
       dt_opencl_set_synchronization_timeout(dt_conf_get_int("pixelpipe_synchronization_timeout"));
       break;
   }

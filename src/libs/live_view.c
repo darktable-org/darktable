@@ -76,46 +76,9 @@ typedef struct dt_lib_live_view_t
 
   GtkWidget *live_view, *live_view_zoom, *rotate_ccw, *rotate_cw, *flip;
   GtkWidget *auto_focus, *focus_out_small, *focus_out_big, *focus_in_small, *focus_in_big;
-  GtkWidget *guide_selector, *flip_guides, *guides_widgets;
-  GList *guides_widgets_list;
+
   GtkWidget *overlay, *overlay_id_box, *overlay_id, *overlay_mode, *overlay_splitline;
 } dt_lib_live_view_t;
-
-static void guides_presets_set_visibility(dt_lib_live_view_t *lib, int which)
-{
-  if(which == 0)
-  {
-    gtk_widget_set_no_show_all(lib->guides_widgets, TRUE);
-    gtk_widget_hide(lib->guides_widgets);
-    gtk_widget_set_no_show_all(lib->flip_guides, TRUE);
-    gtk_widget_hide(lib->flip_guides);
-  }
-  else
-  {
-    GtkWidget *widget = g_list_nth_data(lib->guides_widgets_list, which - 1);
-    if(widget)
-    {
-      gtk_widget_set_no_show_all(lib->guides_widgets, FALSE);
-      gtk_widget_show_all(lib->guides_widgets);
-      gtk_stack_set_visible_child(GTK_STACK(lib->guides_widgets), widget);
-    }
-    else
-    {
-      gtk_widget_set_no_show_all(lib->guides_widgets, TRUE);
-      gtk_widget_hide(lib->guides_widgets);
-    }
-    gtk_widget_set_no_show_all(lib->flip_guides, FALSE);
-    gtk_widget_show_all(lib->flip_guides);
-  }
-
-  // TODO: add a support_flip flag to guides to hide the flip gui?
-}
-
-static void guides_presets_changed(GtkWidget *combo, dt_lib_live_view_t *lib)
-{
-  int which = dt_bauhaus_combobox_get(combo);
-  guides_presets_set_visibility(lib, which);
-}
 
 static void overlay_changed(GtkWidget *combo, dt_lib_live_view_t *lib)
 {
@@ -408,48 +371,8 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(lib->focus_out_big), "clicked",
                    G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(DT_FOCUS_FARTHER));
 
-  // Guides
-  lib->guide_selector = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(lib->guide_selector, NULL, N_("guides"));
-  gtk_box_pack_start(GTK_BOX(self->widget), lib->guide_selector, TRUE, TRUE, 0);
+  lib->overlay = dt_bauhaus_combobox_new_action(DT_ACTION(self));
 
-  lib->guides_widgets = gtk_stack_new();
-  gtk_stack_set_homogeneous(GTK_STACK(lib->guides_widgets), FALSE);
-  gtk_box_pack_start(GTK_BOX(self->widget), lib->guides_widgets, TRUE, TRUE, 0);
-
-  dt_bauhaus_combobox_add(lib->guide_selector, _("none"));
-  int i = 0;
-  for(GList *iter = darktable.guides; iter; iter = g_list_next(iter), i++)
-  {
-    GtkWidget *widget = NULL;
-    dt_guides_t *guide = (dt_guides_t *)iter->data;
-    dt_bauhaus_combobox_add(lib->guide_selector, _(guide->name));
-    if(guide->widget)
-    {
-      // generate some unique name so that we can have the same name several times
-      char name[5];
-      snprintf(name, sizeof(name), "%d", i);
-      widget = guide->widget(NULL, guide->user_data);
-      gtk_widget_show_all(widget);
-      gtk_stack_add_named(GTK_STACK(lib->guides_widgets), widget, name);
-    }
-    lib->guides_widgets_list = g_list_append(lib->guides_widgets_list, widget);
-  }
-  gtk_widget_set_no_show_all(lib->guides_widgets, TRUE);
-
-  gtk_widget_set_tooltip_text(lib->guide_selector, _("display guide lines to help compose your photograph"));
-  g_signal_connect(G_OBJECT(lib->guide_selector), "value-changed", G_CALLBACK(guides_presets_changed), lib);
-
-  lib->flip_guides = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(lib->flip_guides, NULL, N_("flip"));
-  dt_bauhaus_combobox_add(lib->flip_guides, _("none"));
-  dt_bauhaus_combobox_add(lib->flip_guides, _("horizontally"));
-  dt_bauhaus_combobox_add(lib->flip_guides, _("vertically"));
-  dt_bauhaus_combobox_add(lib->flip_guides, _("both"));
-  gtk_widget_set_tooltip_text(lib->flip_guides, _("flip guides"));
-  gtk_box_pack_start(GTK_BOX(self->widget), lib->flip_guides, TRUE, TRUE, 0);
-
-  lib->overlay = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(lib->overlay, NULL, N_("overlay"));
   dt_bauhaus_combobox_add(lib->overlay, _("none"));
   dt_bauhaus_combobox_add(lib->overlay, _("selected image"));
@@ -473,7 +396,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show(lib->overlay_id);
   gtk_widget_show(label);
 
-  lib->overlay_mode = dt_bauhaus_combobox_new(NULL);
+  lib->overlay_mode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(lib->overlay_mode, NULL, N_("overlay mode"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "normal"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "xor"));
@@ -499,7 +422,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(lib->overlay_mode), "value-changed", G_CALLBACK(_overlay_mode_changed), lib);
   gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay_mode, TRUE, TRUE, 0);
 
-  lib->overlay_splitline = dt_bauhaus_combobox_new(NULL);
+  lib->overlay_splitline = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(lib->overlay_splitline, NULL, N_("split line"));
   dt_bauhaus_combobox_add(lib->overlay_splitline, _("off"));
   dt_bauhaus_combobox_add(lib->overlay_splitline, _("on"));
@@ -516,8 +439,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_no_show_all(GTK_WIDGET(lib->overlay_mode), TRUE);
   gtk_widget_set_no_show_all(GTK_WIDGET(lib->overlay_id_box), TRUE);
   gtk_widget_set_no_show_all(GTK_WIDGET(lib->overlay_splitline), TRUE);
-
-  guides_presets_set_visibility(lib, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -758,36 +679,11 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
   const double sh = scale * ph;
 
   // draw guides
-  const int guide_flip = dt_bauhaus_combobox_get(lib->flip_guides);
   const double left = (width - sw) * 0.5;
   const double top = (height + BAR_HEIGHT - sh) * 0.5;
 
-  const double dashes = 5.0;
+  dt_guides_draw(cr, left, top, sw, sh, 1.0);
 
-  cairo_save(cr);
-  cairo_rectangle(cr, left, top, sw, sh);
-  cairo_clip(cr);
-  cairo_set_dash(cr, &dashes, 1, 0);
-
-  // Move coordinates to local center selection.
-  cairo_translate(cr, (sw / 2 + left), (sh / 2 + top));
-
-  // Flip horizontal.
-  if(guide_flip & FLAG_FLIP_HORIZONTAL) cairo_scale(cr, -1, 1);
-  // Flip vertical.
-  if(guide_flip & FLAG_FLIP_VERTICAL) cairo_scale(cr, 1, -1);
-
-  const int which = dt_bauhaus_combobox_get(lib->guide_selector);
-  dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
-  if(guide)
-  {
-    guide->draw(cr, -sw / 2, -sh / 2, sw, sh, 1.0, guide->user_data);
-    cairo_stroke_preserve(cr);
-    cairo_set_dash(cr, &dashes, 0, 0);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
-    cairo_stroke(cr);
-  }
-  cairo_restore(cr);
   dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
 }
 
