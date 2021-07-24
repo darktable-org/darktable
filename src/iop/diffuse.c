@@ -71,7 +71,7 @@ typedef struct dt_iop_diffuse_params_t
   float fourth; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "4th order speed"
 
   // v2
-  int radius_center;      // $MIN: 0 $MAX: 128 $DEFAULT: 0 $DESCRIPTION: "central radius"
+  int radius_center;      // $MIN: 0 $MAX: 512 $DEFAULT: 0 $DESCRIPTION: "central radius"
 
   // new versions add params mandatorily at the end, so we can memcpy old parameters at the beginning
 
@@ -212,17 +212,17 @@ void init_presets(dt_iop_module_so_t *self)
   p.threshold = 0.0f;
   p.variance_threshold = +0.2f;
 
-  p.anisotropy_first = +5.f;
-  p.anisotropy_second = +5.f;
-  p.anisotropy_third = +5.f;
-  p.anisotropy_fourth = +5.f;
+  p.anisotropy_first = +3.f;
+  p.anisotropy_second = +6.f;
+  p.anisotropy_third = +3.f;
+  p.anisotropy_fourth = +6.f;
 
-  p.first = -0.5f;
-  p.second = +0.25f;
-  p.third = -0.25f;
-  p.fourth = +0.125f;
+  p.first = -0.2f;
+  p.second = +0.1f;
+  p.third = -0.05f;
+  p.fourth = +0.025f;
 
-  p.regularization = 2.f;
+  p.regularization = 1.5f;
 
   p.iterations = 4;
   p.radius = 8;
@@ -394,20 +394,20 @@ void init_presets(dt_iop_module_so_t *self)
   p.threshold = 0.0f;
   p.variance_threshold = 0.f;
 
-  p.anisotropy_first = -4.f;
-  p.anisotropy_second = -4.f;
-  p.anisotropy_third = -4.f;
-  p.anisotropy_fourth = +4.f;
+  p.anisotropy_first = 0.f;
+  p.anisotropy_second = 0.f;
+  p.anisotropy_third = 0.f;
+  p.anisotropy_fourth = 0.f;
 
-  p.first = -0.50f;
-  p.second = -0.50f;
-  p.third = -0.50f;
-  p.fourth = +0.25f;
+  p.first = -0.5f;
+  p.second = 0.f;
+  p.third = 0.f;
+  p.fourth = 0.f;
 
-  p.iterations = 2;
+  p.iterations = 1;
   p.radius = 512;
-  p.radius_center = 128;
-  p.regularization = 2.f;
+  p.radius_center = 512;
+  p.regularization = 0.05f;
   dt_gui_presets_add_generic(_("add local contrast"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
@@ -909,7 +909,7 @@ static inline gint wavelets_process(const float *const restrict in, float *const
     const float current_radius = equivalent_sigma_at_step(B_SPLINE_SIGMA, s);
     const float real_radius = current_radius * zoom;
 
-    const float norm = expf(-sqf(real_radius - (float)data->radius_center) / sqf(data->radius + (float)data->radius_center));
+    const float norm = expf(-sqf(real_radius - (float)data->radius_center) / sqf(data->radius));
     const float DT_ALIGNED_ARRAY ABCD[4] = { data->first * KAPPA * norm, data->second * KAPPA * norm,
                                              data->third * KAPPA * norm, data->fourth * KAPPA * norm };
     const float strength = data->sharpness * norm + 1.f;
@@ -1186,7 +1186,7 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
     const float real_radius = current_radius * zoom;
     const float current_radius_square = sqf(current_radius);
 
-    const float norm = expf(-sqf(real_radius - (float)data->radius_center) / sqf(data->radius + (float)data->radius_center));
+    const float norm = expf(-sqf(real_radius - (float)data->radius_center) / sqf(data->radius));
     const float DT_ALIGNED_ARRAY ABCD[4] = { data->first * KAPPA * norm, data->second * KAPPA * norm,
                                              data->third * KAPPA * norm, data->fourth * KAPPA * norm };
     const float strength = data->sharpness * norm + 1.f;
