@@ -5652,6 +5652,8 @@ void reload_defaults(dt_iop_module_t *module)
   module->hide_enable_button = 1;
 
   module->default_enabled = dt_image_is_raw(&module->dev->image_storage);
+  if(module->widget)
+    gtk_stack_set_visible_child_name(GTK_STACK(module->widget), module->default_enabled ? "raw" : "non_raw");
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
