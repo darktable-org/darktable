@@ -2215,10 +2215,12 @@ post_process_collect_info:
         {
           const uint8_t *in = (uint8_t *)(*output);
           // FIXME: it would be nice to use dt_imageio_flip_buffers_ui8_to_float() but then we'd need to make another pass to convert RGB to BGR
+          #ifdef _OPENMP
+          #pragma omp parallel for default(none) dt_omp_firstprivate(buf, in, roi_out) schedule(simd:static)
+          #endif
           for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height * 4; k += 4)
           {
-            for(size_t c = 0; c < 3; c++)
-              buf[k + c] = in[k + 2 - c] / 255.0f;
+            for_four_channels(c, aligned(in, buf:64)) buf[k + c] = (float)in[k + 2 - c] / 255.0f;
           }
           darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, buf,
                                                  roi_out->width, roi_out->height,
