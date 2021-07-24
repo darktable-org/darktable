@@ -133,7 +133,8 @@ typedef enum dt_iop_order_t
   DT_IOP_ORDER_CUSTOM  = 0, // a customr order (re-ordering the pipe)
   DT_IOP_ORDER_LEGACY  = 1, // up to dt 2.6.3
   DT_IOP_ORDER_V30     = 2, // starts with dt 3.0
-  DT_IOP_ORDER_LAST    = 3
+  DT_IOP_ORDER_V30_JPG = 3, // same as previous but tuned for non-linear input
+  DT_IOP_ORDER_LAST    = 4
 } dt_iop_order_t;
 
 typedef struct dt_iop_order_entry_t
