@@ -1615,6 +1615,8 @@ void init_presets(dt_lib_module_t *self)
   AM("vignette");
   AM("watermark");
   AM("censorize");
+  AM("blurs");
+  AM("diffuse");
 
   dt_lib_presets_add(_("modules: all"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
@@ -1746,6 +1748,7 @@ void init_presets(dt_lib_module_t *self)
   AM("vignette");
   AM("watermark");
   AM("censorize");
+  AM("blurs");
 
   dt_lib_presets_add(_("workflow: scene-referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
@@ -1823,6 +1826,8 @@ void init_presets(dt_lib_module_t *self)
   AM("vignette");
   AM("watermark");
   AM("censorize");
+  AM("blurs");
+  AM("diffuse");
 
   dt_lib_presets_add(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
