@@ -1858,6 +1858,9 @@ static void _preset_popup_position(GtkMenu *menu, gint *x, gint *y, gboolean *pu
 
 static void presets_popup_callback(GtkButton *button, dt_iop_module_t *module)
 {
+  const gboolean disabled = !module->default_enabled && module->hide_enable_button;
+  if(disabled) return;
+
   dt_gui_presets_popup_menu_show_for_module(module);
 
 #if GTK_CHECK_VERSION(3, 22, 0)
