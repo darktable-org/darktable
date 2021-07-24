@@ -2259,7 +2259,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(g->aspect_presets), "value-changed", G_CALLBACK(aspect_presets_changed), self);
   gtk_widget_set_tooltip_text(g->aspect_presets, _("set the aspect ratio\n"
-                                                   "the list is sorted: from most square to least square"));
+                                                   "the list is sorted: from most square to least square\n"
+                                                   "to enter custom aspect ratio open the combobox and type ratio in x:y or decimal format"));
   dt_bauhaus_widget_set_quad_paint(g->aspect_presets, dtgtk_cairo_paint_aspectflip, 0, NULL);
   g_signal_connect(G_OBJECT(g->aspect_presets), "quad-pressed", G_CALLBACK(aspect_flip), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_presets, TRUE, TRUE, 0);
@@ -3048,7 +3049,13 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     else if(grab == GRAB_BOTTOM_LEFT)
       dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
     else if(grab == GRAB_NONE)
+    {
+      dt_control_hinter_message(darktable.control, _("<b>commit</b>: double click, <b>straighten</b>: right-drag"));
       dt_control_change_cursor(GDK_LEFT_PTR);
+    }
+    if(grab != GRAB_NONE)
+      dt_control_hinter_message(darktable.control, _("<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
+                                                     "<b>straighten</b>: right-drag"));
     dt_control_queue_redraw_center();
   }
   else
@@ -3089,9 +3096,26 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
         }
       }
       if(g->k_selected >= 0)
+      {
+        dt_control_hinter_message(darktable.control, _("<b>move contol point</b>: drag"));
         dt_control_change_cursor(GDK_CROSS);
+      }
+      else if(g->k_selected_segment >= 0)
+      {
+        dt_control_hinter_message(darktable.control, _("<b>move line</b>: drag, <b>toggle symmetry</b>: click <tt>ꝏ</tt>"));
+        dt_control_change_cursor(GDK_CROSS);
+      }
       else
+      {
+        dt_control_hinter_message(darktable.control, _("<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click <tt>ꝏ</tt>\n"
+                                                       "<b>move line/control point</b>: drag"));
         dt_control_change_cursor(GDK_FLEUR);
+      }
+    }
+    else
+    {
+      dt_control_hinter_message(darktable.control, _("<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</b>: ctrl+drag\n"
+                                                     "<b>straighten</b>: right-drag, <b>commit</b>: double click"));
     }
     dt_control_queue_redraw_center();
   }
