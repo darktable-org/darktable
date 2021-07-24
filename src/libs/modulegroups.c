@@ -1523,6 +1523,9 @@ void init_presets(dt_lib_module_t *self)
 
   const gboolean is_modern =
     dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
+  const gboolean is_scene_referred =
+    dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred");
+
 
   // all modules
   gchar *tx = NULL;
@@ -1614,7 +1617,12 @@ void init_presets(dt_lib_module_t *self)
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("ashift");
-  AM("basecurve");
+
+  if(is_scene_referred)
+    AM("filmicrgb");
+  else
+    AM("basecurve");
+
   AM("clipping");
   AM("crop");
   AM("denoiseprofile");
