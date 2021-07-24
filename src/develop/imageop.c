@@ -1798,6 +1798,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
     }
     _iop_gui_update_label(module);
     dt_iop_gui_set_enable_button(module);
+    dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
   }
   --darktable.gui->reset;
 }
