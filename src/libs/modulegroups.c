@@ -1531,7 +1531,6 @@ void init_presets(dt_lib_module_t *self)
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("basecurve");
-  AM("basicadj");
   AM("clipping");
   AM("crop");
   AM("colisa");
@@ -1614,7 +1613,6 @@ void init_presets(dt_lib_module_t *self)
   SQA();
 
   SMG(C_("modulegroup", "base"), "basic");
-  AM("basicadj");
   AM("ashift");
   AM("basecurve");
   AM("clipping");
@@ -1775,7 +1773,6 @@ void init_presets(dt_lib_module_t *self)
   AM("scalepixels");
 
   SMG(C_("modulegroup", "grading"), "grading");
-  AM("basicadj");
   AM("channelmixerrgb");
   AM("colisa");
   AM("colorbalancergb");
