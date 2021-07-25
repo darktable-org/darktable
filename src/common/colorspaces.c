@@ -514,7 +514,7 @@ int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)
   // input whitepoint[] in XYZ with Y normalized to 1.0f
   const dt_aligned_pixel_t dn
       = { preset->white[0] / (float)preset->white[1], 1.0f, preset->white[2] / (float)preset->white[1] };
-  const float lam_rigg[9] = { 0.8951, 0.2664, -0.1614, -0.7502, 1.7135, 0.0367, 0.0389, -0.0685, 1.0296 };
+  static const float lam_rigg[9] = { 0.8951f, 0.2664f, -0.1614f, -0.7502f, 1.7135f, 0.0367f, 0.0389f, -0.0685f, 1.0296f };
 
   // adapt to d50
   float chad_inv[9];

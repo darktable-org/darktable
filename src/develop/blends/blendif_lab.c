@@ -1467,7 +1467,7 @@ void dt_develop_blendif_lab_blend(struct dt_dev_pixelpipe_iop_t *piece,
         dt_aligned_pixel_t pixel;
         for_each_channel(c,aligned(b))
           pixel[c] = b[j+c];
-        dt_ioppr_rgb_matrix_to_lab(pixel, b + j, profile->matrix_in, profile->lut_in,
+        dt_ioppr_rgb_matrix_to_lab(pixel, b + j, profile->matrix_in_transposed, profile->lut_in,
                                    profile->unbounded_coeffs_in, profile->lutsize, profile->nonlinearlut);
       }
     }
