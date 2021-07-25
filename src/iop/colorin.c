@@ -669,11 +669,19 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   const int ch = piece->colors;
   const int clipping = (d->nrgb != NULL);
 
+  dt_colormatrix_t cmatrix;
+  transpose_3x3_to_3xSSE(d->cmatrix, cmatrix);
+  dt_colormatrix_t nmatrix;
+  transpose_3x3_to_3xSSE(d->nmatrix, nmatrix);
+  dt_colormatrix_t lmatrix;
+  transpose_3x3_to_3xSSE(d->lmatrix, lmatrix);
+  
     // fprintf(stderr, "Using cmatrix codepath\n");
     // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ch, clipping, d, ivoid, ovoid, roi_out) \
+  shared(cmatrix, nmatrix, lmatrix) \
   schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
@@ -691,52 +699,29 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
         cam[c] = (d->lut[c][0] >= 0.0f) ? ((in[c] < 1.0f) ? lerp_lut(d->lut[c], in[c])
                                                           : dt_iop_eval_exp(d->unbounded_coeffs[c], in[c]))
                                         : in[c];
+      cam[3] = 0.0f; // avoid uninitialized-variable warning
 
       apply_blue_mapping(cam, cam);
 
       if(!clipping)
       {
-        dt_aligned_pixel_t _xyz = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-        for(int c = 0; c < 3; c++)
-        {
-          _xyz[c] = 0.0f;
-          for(int k = 0; k < 3; k++)
-          {
-            _xyz[c] += d->cmatrix[3 * c + k] * cam[k];
-          }
-        }
-
+        dt_aligned_pixel_t _xyz;
+        dt_apply_transposed_color_matrix(cam, cmatrix, _xyz);
         dt_XYZ_to_Lab(_xyz, out);
       }
       else
       {
-        dt_aligned_pixel_t nRGB = { 0.0f, 0.0f, 0.0f, 0.0f };
-        for(int c = 0; c < 3; c++)
-        {
-          nRGB[c] = 0.0f;
-          for(int k = 0; k < 3; k++)
-          {
-            nRGB[c] += d->nmatrix[3 * c + k] * cam[k];
-          }
-        }
+        dt_aligned_pixel_t nRGB;
+        dt_apply_transposed_color_matrix(cam, nmatrix, nRGB);
 
-        dt_aligned_pixel_t cRGB = { 0.0f, 0.0f, 0.0f, 0.0f };
-        for(int c = 0; c < 3; c++)
+        dt_aligned_pixel_t cRGB;
+        for_each_channel(c)
         {
           cRGB[c] = CLAMP(nRGB[c], 0.0f, 1.0f);
         }
 
-        dt_aligned_pixel_t XYZ = { 0.0f, 0.0f, 0.0f, 0.0f };
-        for(int c = 0; c < 3; c++)
-        {
-          XYZ[c] = 0.0f;
-          for(int k = 0; k < 3; k++)
-          {
-            XYZ[c] += d->lmatrix[3 * c + k] * cRGB[k];
-          }
-        }
-
+        dt_aligned_pixel_t XYZ;
+        dt_apply_transposed_color_matrix(cRGB, lmatrix, XYZ);
         dt_XYZ_to_Lab(XYZ, out);
       }
     }
@@ -836,11 +821,19 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpip
   const int ch = piece->colors;
   const int clipping = (d->nrgb != NULL);
 
+  dt_colormatrix_t cmatrix;
+  transpose_3x3_to_3xSSE(d->cmatrix, cmatrix);
+  dt_colormatrix_t nmatrix;
+  transpose_3x3_to_3xSSE(d->nmatrix, nmatrix);
+  dt_colormatrix_t lmatrix;
+  transpose_3x3_to_3xSSE(d->lmatrix, lmatrix);
+  
 // fprintf(stderr, "Using cmatrix codepath\n");
 // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ch, clipping, d, ivoid, ovoid, roi_out) \
+  shared(cmatrix, nmatrix, lmatrix) \
   schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
@@ -858,50 +851,27 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpip
         cam[c] = (d->lut[c][0] >= 0.0f) ? ((in[c] < 1.0f) ? lerp_lut(d->lut[c], in[c])
                                                           : dt_iop_eval_exp(d->unbounded_coeffs[c], in[c]))
                                         : in[c];
+      cam[3] = 0.0f; // avoid uninitialized-variable warning
 
       if(!clipping)
       {
-        dt_aligned_pixel_t _xyz = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-        for(int c = 0; c < 3; c++)
-        {
-          _xyz[c] = 0.0f;
-          for(int k = 0; k < 3; k++)
-          {
-            _xyz[c] += d->cmatrix[3 * c + k] * cam[k];
-          }
-        }
-
+        dt_aligned_pixel_t _xyz;
+        dt_apply_transposed_color_matrix(cam, cmatrix, _xyz);
         dt_XYZ_to_Lab(_xyz, out);
       }
       else
       {
-        dt_aligned_pixel_t nRGB = { 0.0f, 0.0f, 0.0f, 0.0f };
-        for(int c = 0; c < 3; c++)
-        {
-          nRGB[c] = 0.0f;
-          for(int k = 0; k < 3; k++)
-          {
-            nRGB[c] += d->nmatrix[3 * c + k] * cam[k];
-          }
-        }
+        dt_aligned_pixel_t nRGB;
+        dt_apply_transposed_color_matrix(cam, nmatrix, nRGB);
 
-        dt_aligned_pixel_t cRGB = { 0.0f, 0.0f, 0.0f, 0.0f };
-        for(int c = 0; c < 3; c++)
+        dt_aligned_pixel_t cRGB;
+        for_each_channel(c)
         {
           cRGB[c] = CLAMP(nRGB[c], 0.0f, 1.0f);
         }
 
-        dt_aligned_pixel_t XYZ = { 0.0f, 0.0f, 0.0f, 0.0f };
-        for(int c = 0; c < 3; c++)
-        {
-          XYZ[c] = 0.0f;
-          for(int k = 0; k < 3; k++)
-          {
-            XYZ[c] += d->lmatrix[3 * c + k] * cRGB[k];
-          }
-        }
-
+        dt_aligned_pixel_t XYZ;
+        dt_apply_transposed_color_matrix(cRGB, lmatrix, XYZ);
         dt_XYZ_to_Lab(XYZ, out);
       }
     }
