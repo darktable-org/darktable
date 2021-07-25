@@ -35,6 +35,42 @@ typedef DT_ALIGNED_PIXEL float dt_aligned_pixel_t[4];
 // a 3x3 matrix, padded to permit SSE instructions to be used for multiplication and addition
 typedef float DT_ALIGNED_ARRAY dt_colormatrix_t[4][4];
 
+// To be able to vectorize per-pixel loops, we need to operate on all four channels, but if the compiler does
+// not auto-vectorize, doing so increases computation by 1/3 for a channel which typically is ignored anyway.
+// Select the appropriate number of channels over which to loop to produce the fastest code.
+#ifdef DT_NO_VECTORIZATION
+#define DT_PIXEL_SIMD_CHANNELS 3
+#else
+#define DT_PIXEL_SIMD_CHANNELS 4
+#endif
+
+// A macro which gives us a configurable shorthand to produce the optimal performance when processing all of the
+// channels in a pixel.  Its first argument is the name of the variable to be used inside the 'for' loop it creates,
+// while the optional second argument is a set of OpenMP directives, typically specifying variable alignment.
+// If indexing off of the begining of any buffer allocated with dt's image or aligned allocation functions, the
+// alignment to specify is 64; otherwise, use 16, as there may have been an odd number of pixels from the start.
+// Sample usage:
+//         for_each_channel(k,aligned(src,dest:16))
+//         {
+//           src[k] = dest[k] / 3.0f;
+//         }
+#if defined(_OPENMP) && defined(OPENMP_SIMD_) && !defined(DT_NO_SIMD_HINTS)
+//https://stackoverflow.com/questions/45762357/how-to-concatenate-strings-in-the-arguments-of-pragma
+#define _DT_Pragma_(x) _Pragma(#x)
+#define _DT_Pragma(x) _DT_Pragma_(x)
+#define for_each_channel(_var, ...) \
+  _DT_Pragma(omp simd __VA_ARGS__) \
+  for (size_t _var = 0; _var < DT_PIXEL_SIMD_CHANNELS; _var++)
+#define for_four_channels(_var, ...) \
+  _DT_Pragma(omp simd __VA_ARGS__) \
+  for (size_t _var = 0; _var < 4; _var++)
+#else
+#define for_each_channel(_var, ...) \
+  for (size_t _var = 0; _var < DT_PIXEL_SIMD_CHANNELS; _var++)
+#define for_four_channels(_var, ...) \
+  for (size_t _var = 0; _var < 4; _var++)
+#endif
+
 // convert a 3x3 matrix into the padded format optimized for vectorization
 static inline void repack_3x3_to_3xSSE(const float input[9], dt_colormatrix_t output)
 {
@@ -53,7 +89,7 @@ static inline void repack_3x3_to_3xSSE(const float input[9], dt_colormatrix_t ou
   output[2][2] = input[8];
   output[2][3] = 0.0f;
 
-  for(size_t c = 0; c < 4; c++)
+  for_four_channels(c, aligned(output))
     output[3][c] = 0.0f;
 }
 
@@ -77,6 +113,21 @@ static inline void repack_double3x3_to_3xSSE(const double input[9], dt_colormatr
 
   for(size_t c = 0; c < 4; c++)
     output[3][c] = 0.0f;
+}
+
+// vectorized multiplication of padded 3x3 matrices
+static inline void dt_colormatrix_mul(dt_colormatrix_t dst, const dt_colormatrix_t m1, const dt_colormatrix_t m2)
+{
+  for(int k = 0; k < 3; ++k)
+  {
+    dt_aligned_pixel_t sum = { 0.0f };
+    for_each_channel(i)
+    {
+      for(int j = 0; j < 3; j++)
+        sum[i] += m1[k][j] * m2[j][i];
+      dst[k][i] = sum[i];
+    }
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
