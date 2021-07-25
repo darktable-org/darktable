@@ -152,7 +152,7 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   gboolean run_validation;      // order a profile validation at next pipeline recompute
   gboolean profile_ready;       // notify that a profile is ready to be applied
   gboolean checker_ready;       // notify that a checker bounding box is ready to be used
-  float mix[3][4];
+  dt_colormatrix_t mix;
 
   GtkWidget *start_profiling;
   gboolean is_profiling_started;
@@ -646,8 +646,8 @@ static inline void luma_chroma(const dt_aligned_pixel_t input, const dt_aligned_
 #pragma omp declare simd aligned(in, out, XYZ_to_RGB, RGB_to_XYZ, MIX : 64) aligned(illuminant, saturation, lightness, grey:16)
 #endif
 static inline void loop_switch(const float *const restrict in, float *const restrict out,
-                               const size_t width, const size_t height, const size_t ch,
-                               const dt_colormatrix_t XYZ_to_RGB, const dt_colormatrix_t RGB_to_XYZ, const float MIX[3][4],
+                               const size_t width, const size_t height, const size_t ch, const dt_colormatrix_t XYZ_to_RGB,
+                               const dt_colormatrix_t RGB_to_XYZ, const dt_colormatrix_t MIX,
                                const dt_aligned_pixel_t illuminant, const dt_aligned_pixel_t saturation,
                                const dt_aligned_pixel_t lightness, const dt_aligned_pixel_t grey,
                                const float p, const float gamut, const int clip, const int apply_grey,
@@ -1029,26 +1029,6 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
 
   dt_free_align(temp);
 }
-
-static inline void repack_3x3_to_3xSSE(const float input[9], dt_colormatrix_t output)
-{
-  // Repack a 3×3 array/matrice into a 3×1 SSE2 vector to enable SSE4/AVX/AVX2 dot products
-  output[0][0] = input[0];
-  output[0][1] = input[1];
-  output[0][2] = input[2];
-  output[0][3] = 0.0f;
-
-  output[1][0] = input[3];
-  output[1][1] = input[4];
-  output[1][2] = input[5];
-  output[1][3] = 0.0f;
-
-  output[2][0] = input[6];
-  output[2][1] = input[7];
-  output[2][2] = input[8];
-  output[2][3] = 0.0f;
-}
-
 
 static void declare_cat_on_pipe(struct dt_iop_module_t *self, gboolean preset)
 {
@@ -1619,11 +1599,7 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   pseudo_solve_gaussian(A, Y, g->checker->patches * 3, 9, TRUE);
 
   // repack the matrix
-  for(size_t i = 0; i < 3; i++)
-    for(size_t j = 0; j < 3; j++)
-      g->mix[i][j] = Y[3 * i + j];
-
-  g->mix[0][3] = g->mix[1][3] = g->mix[2][3] = 0.f;
+  repack_double3x3_to_3xSSE(Y, g->mix);
 
   dt_free_align(Y);
   dt_free_align(A);

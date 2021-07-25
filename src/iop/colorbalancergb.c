@@ -368,26 +368,6 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("add basic colorfulness"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
-/* Custom matrix handling for speed */
-static inline void repack_3x3_to_3xSSE(const float input[9], dt_colormatrix_t output)
-{
-  // Repack a 3×3 array/matrice into a 3×1 SSE2 vector to enable SSE4/AVX/AVX2 dot products
-  output[0][0] = input[0];
-  output[0][1] = input[1];
-  output[0][2] = input[2];
-  output[0][3] = 0.0f;
-
-  output[1][0] = input[3];
-  output[1][1] = input[4];
-  output[1][2] = input[5];
-  output[1][3] = 0.0f;
-
-  output[2][0] = input[6];
-  output[2][1] = input[7];
-  output[2][2] = input[8];
-  output[2][3] = 0.0f;
-}
-
 
 static void mat3mul4(float *restrict dst, const float *const restrict m1, const float *const restrict m2)
 {
