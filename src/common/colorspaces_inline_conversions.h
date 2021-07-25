@@ -167,23 +167,22 @@ static inline __m128 dt_prophotoRGB_to_XYZ_sse2(__m128 rgb)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(in,out)
 #endif
-static inline void dt_apply_transposed_color_matrix(const float *const in, const dt_colormatrix_t matrix,
-                                                    float *const out)
+static inline void dt_apply_transposed_color_matrix(const dt_aligned_pixel_t in, const dt_colormatrix_t matrix,
+                                                    dt_aligned_pixel_t out)
 {
-  // Use a temp variable to accumulate the results.  GCC8 will optimize away the memory accesses for the
-  // temp array, while it writes the intermediate values to 'out' after each iteration if we don't use
-  // the temp.  That cuts total memory bandwidth by a third.
-  dt_aligned_pixel_t result = { 0.0f };
+  // using dt_aligned_pixel_t instead of float* for the function parameters gives GCC enough info to vectorize
+  // and eliminate intermediate memory writes without going through major contortions
+  for_each_channel(r)
+    out[r] = 0.0f;
   for(int c = 0; c < 3; c++)
     for_each_channel(r)
     {
-      result[r] += matrix[c][r] * in[c];
+      out[r] += matrix[c][r] * in[c];
     }
-  copy_pixel(out, result);
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd simdlen(4)
 #endif
 static inline float cbrt_5f(float f)
 {
@@ -193,7 +192,7 @@ static inline float cbrt_5f(float f)
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd simdlen(4)
 #endif
 static inline float cbrta_halleyf(const float a, const float R)
 {
@@ -203,7 +202,7 @@ static inline float cbrta_halleyf(const float a, const float R)
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd simdlen(4)
 #endif
 static inline float lab_f(const float x)
 {
@@ -213,14 +212,16 @@ static inline float lab_f(const float x)
 }
 
 /** uses D50 white point. */
+static const dt_aligned_pixel_t d50 = { 0.9642f, 1.0f, 0.8249f };
+
 #ifdef _OPENMP
 #pragma omp declare simd aligned(Lab, XYZ:16) uniform(Lab, XYZ)
 #endif
 static inline void dt_XYZ_to_Lab(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t Lab)
 {
-  const dt_aligned_pixel_t d50 = { 0.9642f, 1.0f, 0.8249f };
-  dt_aligned_pixel_t f = { 0.0f };
-  for(int i = 0; i < 3; i++) f[i] = lab_f(XYZ[i] / d50[i]);
+  dt_aligned_pixel_t f;
+  for_each_channel(i)
+    f[i] = lab_f(XYZ[i] / d50[i]);
   Lab[0] = 116.0f * f[1] - 16.0f;
   Lab[1] = 500.0f * (f[0] - f[1]);
   Lab[2] = 200.0f * (f[1] - f[2]);
@@ -242,7 +243,6 @@ static inline float lab_f_inv(const float x)
 #endif
 static inline void dt_Lab_to_XYZ(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t XYZ)
 {
-  const dt_aligned_pixel_t d50 = { 0.9642f, 1.0f, 0.8249f };
   const float fy = (Lab[0] + 16.0f) / 116.0f;
   const float fx = Lab[1] / 500.0f + fy;
   const float fz = fy - Lab[2] / 200.0f;
@@ -404,7 +404,7 @@ static inline void dt_Lch_to_xyY(const dt_aligned_pixel_t Lch, dt_aligned_pixel_
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void dt_XYZ_to_Rec709_D50(const float *const XYZ, float *const sRGB)
+static inline void dt_XYZ_to_Rec709_D50(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t sRGB)
 {
   // transpose and pad the conversion matrix to enable vectorization
   const dt_colormatrix_t xyz_to_srgb_matrix_transposed =
@@ -421,7 +421,7 @@ static inline void dt_XYZ_to_Rec709_D50(const float *const XYZ, float *const sRG
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void dt_XYZ_to_Rec709_D65(const float *const XYZ, float *const sRGB)
+static inline void dt_XYZ_to_Rec709_D65(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t sRGB)
 {
   // linear sRGB == Rec709 with no gamma
   // transpose and pad the conversion matrix to enable vectorization
@@ -466,7 +466,7 @@ static inline void dt_XYZ_to_sRGB_clipped(const float *const XYZ, float *const s
 #ifdef _OPENMP
 #pragma omp declare simd aligned(sRGB, XYZ_D50: 16)
 #endif
-static inline void dt_Rec709_to_XYZ_D50(const float *const DT_RESTRICT sRGB, float *const DT_RESTRICT XYZ_D50)
+static inline void dt_Rec709_to_XYZ_D50(const dt_aligned_pixel_t sRGB, dt_aligned_pixel_t XYZ_D50)
 {
   // Conversion matrix from http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html
   // (transpose and pad the conversion matrix to enable vectorization)
@@ -495,7 +495,7 @@ static inline void dt_sRGB_to_XYZ(const float *const sRGB, float *const XYZ)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ,rgb)
 #endif
-static inline void dt_XYZ_to_prophotorgb(const float *const XYZ, float *const rgb)
+static inline void dt_XYZ_to_prophotorgb(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t rgb)
 {
   // transpose and pad the conversion matrix to enable vectorization
   const dt_colormatrix_t xyz_to_rgb_transpose = {
@@ -509,7 +509,7 @@ static inline void dt_XYZ_to_prophotorgb(const float *const XYZ, float *const rg
 #ifdef _OPENMP
 #pragma omp declare simd aligned(rgb, XYZ)
 #endif
-static inline void dt_prophotorgb_to_XYZ(const float *const rgb, float *const XYZ)
+static inline void dt_prophotorgb_to_XYZ(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t XYZ)
 {
   // transpose and pad the conversion matrix to enable vectorization
   const dt_colormatrix_t rgb_to_xyz_transpose = {
