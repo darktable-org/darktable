@@ -1394,6 +1394,7 @@ static void _dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int3
     else
       label = g_strdup(name);
     mi = gtk_check_menu_item_new_with_label(label);
+    gtk_style_context_add_class(gtk_widget_get_style_context(mi), "check-menu-item");
     g_free(label);
 
     if(module
