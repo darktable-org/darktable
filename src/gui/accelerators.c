@@ -737,7 +737,7 @@ void find_views(dt_shortcut_t *s)
     else if(owner == &darktable.control->actions_thumb)
     {
       s->views = DT_VIEW_DARKROOM | DT_VIEW_MAP | DT_VIEW_TETHERING | DT_VIEW_PRINT;
-      if(!strstr(s->action->id,"history"))
+      if(!strcmp(s->action->id,"rating") || !strcmp(s->action->id,"color label"))
         s->views |= DT_VIEW_LIGHTTABLE; // lighttable has copy/paste history shortcuts in separate lib
     }
     else
