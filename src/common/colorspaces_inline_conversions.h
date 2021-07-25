@@ -228,7 +228,7 @@ static inline void dt_XYZ_to_Lab(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd simdlen(4)
 #endif
 static inline float lab_f_inv(const float x)
 {
@@ -247,7 +247,8 @@ static inline void dt_Lab_to_XYZ(const dt_aligned_pixel_t Lab, dt_aligned_pixel_
   const float fx = Lab[1] / 500.0f + fy;
   const float fz = fy - Lab[2] / 200.0f;
   const dt_aligned_pixel_t f = { fx, fy, fz };
-  for(int i = 0; i < 3; i++) XYZ[i] = d50[i] * lab_f_inv(f[i]);
+  for_each_channel(c)
+    XYZ[c] = d50[c] * lab_f_inv(f[c]);
 }
 
 
@@ -407,7 +408,7 @@ static inline void dt_Lch_to_xyY(const dt_aligned_pixel_t Lch, dt_aligned_pixel_
 static inline void dt_XYZ_to_Rec709_D50(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t sRGB)
 {
   // transpose and pad the conversion matrix to enable vectorization
-  const dt_colormatrix_t xyz_to_srgb_matrix_transposed =
+  static const dt_colormatrix_t xyz_to_srgb_matrix_transposed =
     { {  3.1338561f, -0.9787684f,  0.0719453f, 0.0f },
       { -1.6168667f,  1.9161415f, -0.2289914f, 0.0f },
       { -0.4906146f,  0.0334540f,  1.4052427f, 0.0f } };
@@ -425,7 +426,7 @@ static inline void dt_XYZ_to_Rec709_D65(const dt_aligned_pixel_t XYZ, dt_aligned
 {
   // linear sRGB == Rec709 with no gamma
   // transpose and pad the conversion matrix to enable vectorization
-  const dt_colormatrix_t xyz_to_srgb_transposed = {
+  static const dt_colormatrix_t xyz_to_srgb_transposed = {
     {  3.2404542f, -0.9692660f,  0.0556434f, 0.0f },
     { -1.5371385f,  1.8760108f, -0.2040259f, 0.0f },
     { -0.4985314f,  0.0415560f,  1.0572252f, 0.0f },
@@ -471,7 +472,7 @@ static inline void dt_Rec709_to_XYZ_D50(const dt_aligned_pixel_t sRGB, dt_aligne
 {
   // Conversion matrix from http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html
   // (transpose and pad the conversion matrix to enable vectorization)
-  const dt_colormatrix_t M = {
+  static const dt_colormatrix_t M = {
     { 0.4360747f, 0.2225045f, 0.0139322f, 0.0f },
     { 0.3850649f, 0.7168786f, 0.0971045f, 0.0f },
     { 0.1430804f, 0.0606169f, 0.7141733f, 0.0f }
@@ -499,7 +500,7 @@ static inline void dt_sRGB_to_XYZ(const dt_aligned_pixel_t sRGB, dt_aligned_pixe
 static inline void dt_XYZ_to_prophotorgb(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t rgb)
 {
   // transpose and pad the conversion matrix to enable vectorization
-  const dt_colormatrix_t xyz_to_rgb_transpose = {
+  static const dt_colormatrix_t xyz_to_rgb_transpose = {
     {  1.3459433f, -0.5445989f, 0.0000000f, 0.0f },
     { -0.2556075f,  1.5081673f, 0.0000000f, 0.0f },
     { -0.0511118f,  0.0205351f, 1.2118128f, 0.0f }
@@ -513,7 +514,7 @@ static inline void dt_XYZ_to_prophotorgb(const dt_aligned_pixel_t XYZ, dt_aligne
 static inline void dt_prophotorgb_to_XYZ(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t XYZ)
 {
   // transpose and pad the conversion matrix to enable vectorization
-  const dt_colormatrix_t rgb_to_xyz_transpose = {
+  static const dt_colormatrix_t rgb_to_xyz_transpose = {
     // prophoto rgb
     { 0.7976749f, 0.2880402f, 0.0000000f, 0.0f },
     { 0.1351917f, 0.7118741f, 0.0000000f, 0.0f },
@@ -555,30 +556,38 @@ static inline __m128 dt_RGB_to_XYZ_sse2(__m128 rgb)
 }
 #endif
 
+#if 0
+static const dt_colormatrix_t linear_sRGB_to_xyz_matrix =
+  { { 0.4360747f, 0.3850649f, 0.1430804f },
+    { 0.2225045f, 0.7168786f, 0.0606169f },
+    { 0.0139322f, 0.0971045f, 0.7141733f } };
+#endif
+
+static const dt_colormatrix_t sRGB_to_xyz_transposed =
+  { { 0.4360747f, 0.2225045f, 0.0139322f },
+    { 0.3850649f, 0.7168786f, 0.0971045f },
+    { 0.1430804f, 0.0606169f, 0.7141733f } };
+
 static inline void dt_linearRGB_to_XYZ(const dt_aligned_pixel_t linearRGB, dt_aligned_pixel_t XYZ)
 {
-  static const dt_colormatrix_t srgb_to_xyz = { { 0.4360747f, 0.3850649f, 0.1430804f },
-                                    { 0.2225045f, 0.7168786f, 0.0606169f },
-                                    { 0.0139322f, 0.0971045f, 0.7141733f } };
-
-  // sRGB -> XYZ
-  XYZ[0] = XYZ[1] = XYZ[2] = 0.0;
-  for(int r = 0; r < 3; r++)
-    for_each_channel(c)
-      XYZ[r] += srgb_to_xyz[r][c] * linearRGB[c];
+  dt_apply_transposed_color_matrix(linearRGB, sRGB_to_xyz_transposed, XYZ);
 }
+
+#if 0
+static const dt_colormatrix_t xyz_to_srgb_matrix =
+  { {  3.1338561f, -1.6168667f, -0.4906146f },
+    { -0.9787684f,  1.9161415f,  0.0334540f },
+    {  0.0719453f, -0.2289914f,  1.4052427f } };
+#endif
+
+static const dt_colormatrix_t xyz_to_srgb_transposed =
+  { {  3.1338561f, -0.9787684f,  0.0719453f },
+    { -1.6168667f,  1.9161415f, -0.2289914f },
+    { -0.4906146f,  0.0334540f,  1.4052427f } };
 
 static inline void dt_XYZ_to_linearRGB(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t linearRGB)
 {
-  static const dt_colormatrix_t xyz_to_srgb_matrix = { { 3.1338561f, -1.6168667f, -0.4906146f },
-                                           { -0.9787684f, 1.9161415f, 0.0334540f },
-                                           { 0.0719453f, -0.2289914f, 1.4052427f } };
-
-  // XYZ -> sRGB
-  linearRGB[0] = linearRGB[1] = linearRGB[2] = 0.f;
-  for(int r = 0; r < 3; r++)
-    for_each_channel(c)
-      linearRGB[r] += xyz_to_srgb_matrix[r][c] * XYZ[c];
+  dt_apply_transposed_color_matrix(XYZ, xyz_to_srgb_transposed, linearRGB);
 }
 
 
@@ -802,13 +811,21 @@ static inline float dt_camera_rgb_luminance(const dt_aligned_pixel_t rgb)
 static inline void dt_XYZ_D50_2_XYZ_D65(const dt_aligned_pixel_t XYZ_D50, dt_aligned_pixel_t XYZ_D65)
 {
   // Bradford adaptation matrix from http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html
-  const dt_colormatrix_t M = {
+#if 0
+  static const dt_colormatrix_t M = {
       {  0.9555766f, -0.0230393f,  0.0631636f, 0.0f },
       { -0.0282895f,  1.0099416f,  0.0210077f, 0.0f },
       {  0.0122982f, -0.0204830f,  1.3299098f, 0.0f },
   };
-  for(size_t x = 0; x < 3; x++)
-    XYZ_D65[x] = M[x][0] * XYZ_D50[0] + M[x][1] * XYZ_D50[1] + M[x][2] * XYZ_D50[2];
+#endif
+  static const dt_colormatrix_t M_transposed = {
+      {  0.9555766f, -0.0282895f,  0.0122982f, 0.0f },
+      { -0.0230393f,  1.0099416f, -0.0204830f, 0.0f },
+      {  0.0631636f,  0.0210077f,  1.3299098f, 0.0f },
+  };
+  
+  for_each_channel(x)
+    XYZ_D65[x] = M_transposed[0][x] * XYZ_D50[0] + M_transposed[1][x] * XYZ_D50[1] + M_transposed[2][x] * XYZ_D50[2];
 }
 
 #ifdef _OPENMP
@@ -817,13 +834,21 @@ static inline void dt_XYZ_D50_2_XYZ_D65(const dt_aligned_pixel_t XYZ_D50, dt_ali
 static inline void dt_XYZ_D65_2_XYZ_D50(const dt_aligned_pixel_t XYZ_D65, dt_aligned_pixel_t XYZ_D50)
 {
   // Bradford adaptation matrix from http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html
-  const dt_colormatrix_t M = {
+#if 0
+  static const dt_colormatrix_t M = {
       {  1.0478112f,  0.0228866f, -0.0501270f, 0.0f },
       {  0.0295424f,  0.9904844f, -0.0170491f, 0.0f },
       { -0.0092345f,  0.0150436f,  0.7521316f, 0.0f },
   };
-  for(size_t x = 0; x < 3; x++)
-    XYZ_D50[x] = M[x][0] * XYZ_D65[0] + M[x][1] * XYZ_D65[1] + M[x][2] * XYZ_D65[2];
+#endif
+  static const dt_colormatrix_t M_transposed = {
+      {  1.0478112f,  0.0295424f, -0.0092345f, 0.0f },
+      {  0.0228866f,  0.9904844f,  0.0150436f, 0.0f },
+      { -0.0501270f, -0.0170491f,  0.7521316f, 0.0f },
+  };
+
+  for_each_channel(x)
+    XYZ_D50[x] = M_transposed[0][x] * XYZ_D65[0] + M_transposed[1][x] * XYZ_D65[1] + M_transposed[2][x] * XYZ_D65[2];
 }
 
 
@@ -848,17 +873,24 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
   const float p = 134.034375f; // 1.7 x 2523 / 2^5
   const float d = -0.56f;
   const float d0 = 1.6295499532821566e-11f;
-  const dt_colormatrix_t M = {
+  static const dt_colormatrix_t M = {
       { 0.41478972f, 0.579999f, 0.0146480f, 0.0f },
       { -0.2015100f, 1.120649f, 0.0531008f, 0.0f },
       { -0.0166008f, 0.264800f, 0.6684799f, 0.0f },
   };
-  const dt_colormatrix_t A = {
+#if 0
+  static const dt_colormatrix_t A = {
       { 0.5f,       0.5f,       0.0f,      0.0f },
       { 3.524000f, -4.066708f,  0.542708f, 0.0f },
       { 0.199076f,  1.096799f, -1.295875f, 0.0f },
   };
-
+#endif
+  static const dt_colormatrix_t A_transposed = {
+      { 0.5f,       3.524000f,  0.199076f, 0.0f },
+      { 0.5f,      -4.066708f,  1.096799f, 0.0f },
+      { 0.0f,       0.542708f, -1.295875f, 0.0f },
+  };
+  
   dt_aligned_pixel_t XYZ = { 0.0f, 0.0f, 0.0f, 0.0f };
   dt_aligned_pixel_t LMS = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -879,10 +911,8 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
   }
 
   // L'M'S' -> Izazbz
-#ifdef _OPENMP
-#pragma omp simd aligned(LMS, JzAzBz:16) aligned(A:64)
-#endif
-  for(int i = 0; i < 3; i++) JzAzBz[i] = A[i][0] * LMS[0] + A[i][1] * LMS[1] + A[i][2] * LMS[2];
+  for_each_channel(c)
+    JzAzBz[c] = A_transposed[0][c] * LMS[0] + A_transposed[1][c] * LMS[1] + A_transposed[2][c] * LMS[2];
   // Iz -> Jz
   JzAzBz[0] = fmaxf(((1.0f + d) * JzAzBz[0]) / (1.0f + d * JzAzBz[0]) - d0, 0.f);
 }
