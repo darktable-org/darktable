@@ -1479,13 +1479,21 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
   }
 
 // start quick access
-#define SQA()                                                                                                     \
+#define SQA(is_modern, is_scene_referred)                                                                         \
   {                                                                                                               \
     g_free(tx);                                                                                                   \
-    tx = g_strdup_printf("1ꬹ1||");                                                                                \
+    tx = g_strdup_printf("1ꬹ1||");                                                                                 \
+    if(is_scene_referred)                                                                                         \
+    {                                                                                                             \
+      AM("filmicrgb/white relative exposure");                                                                    \
+      AM("filmicrgb/black relative exposure");                                                                    \
+      AM("filmicrgb/contrast");                                                                                   \
+    }                                                                                                             \
     if(is_modern)                                                                                                 \
     {                                                                                                             \
       AM("channelmixerrgb/temperature");                                                                          \
+      AM("channelmixerrgb/chroma");                                                                               \
+      AM("channelmixerrgb/hue");                                                                                  \
     }                                                                                                             \
     else                                                                                                          \
     {                                                                                                             \
@@ -1493,7 +1501,7 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
       AM("temperature/tint");                                                                                     \
     }                                                                                                             \
     AM("exposure/exposure");                                                                                      \
-    AM("colorbalancergb/contrast");                                                                               \
+    if(!is_scene_referred) AM("colorbalancergb/contrast"); /* contrast is already in filmic */                    \
     AM("colorbalancergb/global chroma");                                                                          \
     AM("colorbalancergb/global vibrance");                                                                        \
     AM("colorbalancergb/global saturation");                                                                      \
@@ -1523,15 +1531,16 @@ void init_presets(dt_lib_module_t *self)
 
   const gboolean is_modern =
     dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
+  const gboolean is_scene_referred =
+    dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred");
 
   // all modules
   gchar *tx = NULL;
 
-  SQA();
+  SQA(is_modern, is_scene_referred);
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("basecurve");
-  AM("basicadj");
   AM("clipping");
   AM("crop");
   AM("colisa");
@@ -1606,17 +1615,23 @@ void init_presets(dt_lib_module_t *self)
   AM("vignette");
   AM("watermark");
   AM("censorize");
+  AM("blurs");
+  AM("diffuse");
 
   dt_lib_presets_add(_("modules: all"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
   // minimal / 3 tabs
 
-  SQA();
+  SQA(is_modern, is_scene_referred);
 
   SMG(C_("modulegroup", "base"), "basic");
-  AM("basicadj");
   AM("ashift");
-  AM("basecurve");
+
+  if(is_scene_referred)
+    AM("filmicrgb");
+  else
+    AM("basecurve");
+
   AM("clipping");
   AM("crop");
   AM("denoiseprofile");
@@ -1644,7 +1659,7 @@ void init_presets(dt_lib_module_t *self)
   dt_lib_presets_add(_("workflow: beginner"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
   // display referred
-  SQA();
+  SQA(is_modern, FALSE);
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("basecurve");
@@ -1695,7 +1710,7 @@ void init_presets(dt_lib_module_t *self)
 
   // scene referred
 
-  SQA();
+  SQA(is_modern, TRUE);
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("filmicrgb");
@@ -1733,12 +1748,13 @@ void init_presets(dt_lib_module_t *self)
   AM("vignette");
   AM("watermark");
   AM("censorize");
+  AM("blurs");
 
   dt_lib_presets_add(_("workflow: scene-referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
   // default / 3 tabs based on Aurélien's proposal
 
-  SQA();
+  SQA(is_modern, is_scene_referred);
 
   SMG(C_("modulegroup", "technical"), "technical");
   AM("ashift");
@@ -1775,7 +1791,6 @@ void init_presets(dt_lib_module_t *self)
   AM("scalepixels");
 
   SMG(C_("modulegroup", "grading"), "grading");
-  AM("basicadj");
   AM("channelmixerrgb");
   AM("colisa");
   AM("colorbalancergb");
@@ -1811,6 +1826,8 @@ void init_presets(dt_lib_module_t *self)
   AM("vignette");
   AM("watermark");
   AM("censorize");
+  AM("blurs");
+  AM("diffuse");
 
   dt_lib_presets_add(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
@@ -1859,11 +1876,12 @@ void init_presets(dt_lib_module_t *self)
 static gchar *_presets_get_minimal(dt_lib_module_t *self)
 {
   const gboolean is_modern = dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
+  const gboolean is_scene_referred = dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred");
 
   // all modules
   gchar *tx = NULL;
 
-  SQA();
+  SQA(is_modern, is_scene_referred);
   AM("exposure/exposure");
   AM("colorbalancergb/contrast");
 
