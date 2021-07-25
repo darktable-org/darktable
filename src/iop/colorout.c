@@ -349,9 +349,6 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_d
                                               const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
-                                         ivoid, ovoid, roi_in, roi_out))
-    return; // image has been copied through to output and module's trouble flag has been updated
 
   if(!isnan(d->cmatrix[0]))
   {
@@ -401,41 +398,39 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_d
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return;
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
-  const int ch = piece->colors;
   const int gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
   float *const restrict out = (float *)ovoid;
 
   if(d->type == DT_COLORSPACE_LAB)
   {
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
   }
   else if(!isnan(d->cmatrix[0]))
   {
     const float *const restrict in = (const float *const)ivoid;
-    const float *const restrict cmatrix = d->cmatrix;
+    dt_colormatrix_t cmatrix;
+    transpose_3x3_to_3xSSE(d->cmatrix, cmatrix);
+
 // fprintf(stderr,"Using cmatrix codepath\n");
 // convert to rgb using matrix
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(cmatrix, ch, in, out, npixels) \
+    dt_omp_firstprivate(in, out, npixels) \
+    shared(cmatrix) \
     schedule(static)
 #endif
-    for(size_t k = 0; k < (size_t)ch * npixels; k += ch)
+    for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
     {
       dt_aligned_pixel_t xyz;
       dt_Lab_to_XYZ(in + k, xyz);
-
-      for(int c = 0; c < 3; c++)
-      {
-        float sum = 0.0f;
-        for(int i = 0; i < 3; i++)
-        {
-          sum += cmatrix[3 * c + i] * xyz[i];
-        }
-        out[k+c] = sum;
-      }
+      dt_aligned_pixel_t rgb; // using an aligned temporary variable lets the compiler optimize away interm. writes
+      dt_apply_transposed_color_matrix(xyz, cmatrix, rgb);
+      copy_pixel(out + k, rgb);
     }
 
     process_fastpath_apply_tonecurves(self, piece, in, out, roi_in, roi_out);
@@ -445,13 +440,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 // fprintf(stderr,"Using xform codepath\n");
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, d, gamutcheck, ivoid, out, roi_out) \
+    dt_omp_firstprivate(d, gamutcheck, ivoid, out, roi_out) \
     schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
-      const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
-      float *const restrict outp = out + (size_t)ch * k * roi_out->width;
+      const float *in = ((float *)ivoid) + (size_t)4 * k * roi_out->width;
+      float *const restrict outp = out + (size_t)4 * k * roi_out->width;
 
       cmsDoTransform(d->xform, in, outp, roi_out->width);
 
@@ -459,11 +454,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       {
         for(int j = 0; j < roi_out->width; j++)
         {
-          if(outp[ch*j+0] < 0.0f || outp[ch*j+1] < 0.0f || out[ch*j+2] < 0.0f)
+          if(outp[4*j+0] < 0.0f || outp[4*j+1] < 0.0f || out[4*j+2] < 0.0f)
           {
-            outp[ch*j+0] = 0.0f;
-            outp[ch*j+1] = 1.0f;
-            outp[ch*j+2] = 1.0f;
+            outp[4*j+0] = 0.0f;
+            outp[4*j+1] = 1.0f;
+            outp[4*j+2] = 1.0f;
           }
         }
       }
