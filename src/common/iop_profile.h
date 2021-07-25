@@ -263,7 +263,7 @@ static inline void _apply_trc(const dt_aligned_pixel_t rgb_in, dt_aligned_pixel_
 static inline void _ioppr_linear_rgb_matrix_to_xyz(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t xyz,
                                                    const float matrix[9])
 {
-  for(size_t c = 0; c < 3; c++) xyz[c] = 0.0f;
+  for_each_channel(c) xyz[c] = 0.0f;
 
   for(size_t c = 0; c < 3; c++)
     for(size_t i = 0; i < 3; i++)
@@ -279,7 +279,7 @@ static inline void _ioppr_linear_rgb_matrix_to_xyz(const dt_aligned_pixel_t rgb,
 static inline void _ioppr_xyz_to_linear_rgb_matrix(const dt_aligned_pixel_t xyz, dt_aligned_pixel_t rgb,
                                                    const float matrix[9])
 {
-  for(size_t c = 0; c < 3; c++) rgb[c] = 0.0f;
+  for_each_channel(c) rgb[c] = 0.0f;
 
   for(size_t c = 0; c < 3; c++)
     for(size_t i = 0; i < 3; i++)
