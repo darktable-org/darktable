@@ -369,19 +369,6 @@ void init_presets(dt_iop_module_so_t *self)
 }
 
 
-static void mat3mul4(float *restrict dst, const float *const restrict m1, const float *const restrict m2)
-{
-  for(int k = 0; k < 3; ++k)
-  {
-    for(int i = 0; i < 3; ++i)
-    {
-      float x = 0.0f;
-      for(int j = 0; j < 3; j++) x += m1[4 * k + j] * m2[4 * j + i];
-      dst[4 * k + i] = x;
-    }
-  }
-}
-
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(output, output_comp: 16) uniform(shadows_weight, midtones_weight, highlights_weight)
@@ -499,8 +486,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_colormatrix_t input_matrix;
   dt_colormatrix_t output_matrix;
 
-  mat3mul4((float *)output_matrix, (float *)XYZ_D50_to_D65_CAT16, (float *)RGB_to_XYZ); // output_matrix used as temp buffer
-  mat3mul4((float *)input_matrix, (float *)XYZ_D65_to_LMS_2006_D65, (float *)output_matrix);
+  dt_colormatrix_mul(output_matrix, XYZ_D50_to_D65_CAT16, RGB_to_XYZ); // output_matrix used as temp buffer
+  dt_colormatrix_mul(input_matrix, XYZ_D65_to_LMS_2006_D65, output_matrix);
 
   // Premultiply the output matrix
 
@@ -509,7 +496,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dot_product(XYZ_D50, XYZ_to_RGB, pix_out); // matrix product
   */
 
-  mat3mul4((float *)output_matrix, (float *)XYZ_to_RGB, (float *)XYZ_D65_to_D50_CAT16);
+  dt_colormatrix_mul(output_matrix, XYZ_to_RGB, XYZ_D65_to_D50_CAT16);
 
   const float *const restrict in = __builtin_assume_aligned(((const float *const restrict)ivoid), 64);
   float *const restrict out = __builtin_assume_aligned(((float *const restrict)ovoid), 64);
@@ -844,8 +831,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_colormatrix_t input_matrix;
   dt_colormatrix_t output_matrix;
 
-  mat3mul4((float *)output_matrix, (float *)XYZ_D50_to_D65_CAT16, (float *)RGB_to_XYZ); // output_matrix used as temp buffer
-  mat3mul4((float *)input_matrix, (float *)XYZ_D65_to_LMS_2006_D65, (float *)output_matrix);
+  dt_colormatrix_mul(output_matrix, XYZ_D50_to_D65_CAT16, RGB_to_XYZ); // output_matrix used as temp buffer
+  dt_colormatrix_mul(input_matrix, XYZ_D65_to_LMS_2006_D65, output_matrix);
 
   // Premultiply the output matrix
 
@@ -854,7 +841,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dot_product(XYZ_D50, XYZ_to_RGB, pix_out); // matrix product
   */
 
-  mat3mul4((float *)output_matrix, (float *)XYZ_to_RGB, (float *)XYZ_D65_to_D50_CAT16);
+  dt_colormatrix_mul(output_matrix, XYZ_to_RGB, XYZ_D65_to_D50_CAT16);
 
   input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
   output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
@@ -1052,7 +1039,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
     // Premultiply both matrices to go from D50 pipeline RGB to D65 XYZ in a single matrix dot product
     dt_colormatrix_t input_matrix;
-    mat3mul4((float *)input_matrix, (float *)XYZ_D50_to_D65_CAT16, (float *)RGB_to_XYZ);
+    dt_colormatrix_mul(input_matrix, XYZ_D50_to_D65_CAT16, RGB_to_XYZ);
 
     // make RGB values vary between [0; 1] in working space, convert to Ych and get the max(c(h)))
 #ifdef _OPENMP
