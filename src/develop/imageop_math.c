@@ -976,7 +976,7 @@ static inline void mat4inv(const float X[][4], float R[][4])
             / det;
 }
 
-static void mat4mulv(float *dst, float mat[][4], const float *const v)
+static void mat4mulv(float dst[4], const float mat[4][4], const float v[4])
 {
   for(int k = 0; k < 4; k++)
   {
@@ -986,7 +986,7 @@ static void mat4mulv(float *dst, float mat[][4], const float *const v)
   }
 }
 
-void dt_iop_estimate_cubic(const float *const x, const float *const y, float *a)
+void dt_iop_estimate_cubic(const float x[4], const float y[4], float a[4])
 {
   // we want to fit a spline
   // [y]   [x^3 x^2 x^1 1] [a^3]

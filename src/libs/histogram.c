@@ -301,7 +301,7 @@ static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, const dt_iop_order_ic
       dt_aligned_pixel_t rgb, XYZ_D50, intermed, chromaticity;
       for_each_channel(ch,aligned(vertex_rgb,delta,rgb:16))
         rgb[ch] = vertex_rgb[k][ch] + delta[ch] * i;
-      dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
+      dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D50, vs_prof->matrix_in_transposed, vs_prof->lut_in,
                                  vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
       // Try to represent hue in profile colorspace. Values may be
       // outside [0,1] but cairo_set_source_rgba will clamp. Compare
@@ -426,7 +426,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
             RGB[ch] += px[4U * (yy * roi->width + xx) + ch] * 0.25f;
 
       // this goes to the PCS which has standard illuminant D50
-      dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
+      dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, vs_prof->matrix_in_transposed, vs_prof->lut_in,
                                  vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
       // NOTE: see for comparison/reference rgb_to_JzCzhz() in color_picker.c
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
