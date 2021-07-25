@@ -35,6 +35,49 @@ typedef DT_ALIGNED_PIXEL float dt_aligned_pixel_t[4];
 // a 3x3 matrix, padded to permit SSE instructions to be used for multiplication and addition
 typedef float DT_ALIGNED_ARRAY dt_colormatrix_t[4][4];
 
+// convert a 3x3 matrix into the padded format optimized for vectorization
+static inline void repack_3x3_to_3xSSE(const float input[9], dt_colormatrix_t output)
+{
+  output[0][0] = input[0];
+  output[0][1] = input[1];
+  output[0][2] = input[2];
+  output[0][3] = 0.0f;
+
+  output[1][0] = input[3];
+  output[1][1] = input[4];
+  output[1][2] = input[5];
+  output[1][3] = 0.0f;
+
+  output[2][0] = input[6];
+  output[2][1] = input[7];
+  output[2][2] = input[8];
+  output[2][3] = 0.0f;
+
+  for(size_t c = 0; c < 4; c++)
+    output[3][c] = 0.0f;
+}
+
+// convert a 3x3 matrix into the padded format optimized for vectorization
+static inline void repack_double3x3_to_3xSSE(const double input[9], dt_colormatrix_t output)
+{
+  output[0][0] = input[0];
+  output[0][1] = input[1];
+  output[0][2] = input[2];
+  output[0][3] = 0.0f;
+
+  output[1][0] = input[3];
+  output[1][1] = input[4];
+  output[1][2] = input[5];
+  output[1][3] = 0.0f;
+
+  output[2][0] = input[6];
+  output[2][1] = input[7];
+  output[2][2] = input[8];
+  output[2][3] = 0.0f;
+
+  for(size_t c = 0; c < 4; c++)
+    output[3][c] = 0.0f;
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
