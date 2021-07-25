@@ -521,6 +521,65 @@ static inline void dt_prophotorgb_to_XYZ(const float *const rgb, float *const XY
   dt_apply_transposed_color_matrix(rgb,rgb_to_xyz_transpose,XYZ);
 }
 
+#ifdef __SSE2__
+/** uses D50 white point. */
+// see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
+static inline __m128 dt_XYZ_to_RGB_sse2(__m128 XYZ)
+{
+  // XYZ -> sRGB matrix, D65
+  const __m128 xyz_to_srgb_0 = _mm_setr_ps(3.1338561f, -0.9787684f, 0.0719453f, 0.0f);
+  const __m128 xyz_to_srgb_1 = _mm_setr_ps(-1.6168667f, 1.9161415f, -0.2289914f, 0.0f);
+  const __m128 xyz_to_srgb_2 = _mm_setr_ps(-0.4906146f, 0.0334540f, 1.4052427f, 0.0f);
+
+  __m128 rgb
+      = _mm_add_ps(_mm_mul_ps(xyz_to_srgb_0, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(0, 0, 0, 0))),
+                   _mm_add_ps(_mm_mul_ps(xyz_to_srgb_1, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(1, 1, 1, 1))),
+                              _mm_mul_ps(xyz_to_srgb_2, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(2, 2, 2, 2)))));
+
+  return rgb;
+}
+
+static inline __m128 dt_RGB_to_XYZ_sse2(__m128 rgb)
+{
+  // sRGB -> XYZ matrix, D65
+  const __m128 srgb_to_xyz_0 = _mm_setr_ps(0.4360747f, 0.2225045f, 0.0139322f, 0.0f);
+  const __m128 srgb_to_xyz_1 = _mm_setr_ps(0.3850649f, 0.7168786f, 0.0971045f, 0.0f);
+  const __m128 srgb_to_xyz_2 = _mm_setr_ps(0.1430804f, 0.0606169f, 0.7141733f, 0.0f);
+
+  __m128 XYZ
+    = ((srgb_to_xyz_0 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(0, 0, 0, 0)))
+       + (srgb_to_xyz_1 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(1, 1, 1, 1)))
+       + (srgb_to_xyz_2 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(2, 2, 2, 2))));
+  return XYZ;
+}
+#endif
+
+static inline void dt_linearRGB_to_XYZ(const dt_aligned_pixel_t linearRGB, dt_aligned_pixel_t XYZ)
+{
+  static const dt_colormatrix_t srgb_to_xyz = { { 0.4360747f, 0.3850649f, 0.1430804f },
+                                    { 0.2225045f, 0.7168786f, 0.0606169f },
+                                    { 0.0139322f, 0.0971045f, 0.7141733f } };
+
+  // sRGB -> XYZ
+  XYZ[0] = XYZ[1] = XYZ[2] = 0.0;
+  for(int r = 0; r < 3; r++)
+    for_each_channel(c)
+      XYZ[r] += srgb_to_xyz[r][c] * linearRGB[c];
+}
+
+static inline void dt_XYZ_to_linearRGB(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t linearRGB)
+{
+  static const dt_colormatrix_t xyz_to_srgb_matrix = { { 3.1338561f, -1.6168667f, -0.4906146f },
+                                           { -0.9787684f, 1.9161415f, 0.0334540f },
+                                           { 0.0719453f, -0.2289914f, 1.4052427f } };
+
+  // XYZ -> sRGB
+  linearRGB[0] = linearRGB[1] = linearRGB[2] = 0.f;
+  for(int r = 0; r < 3; r++)
+    for_each_channel(c)
+      linearRGB[r] += xyz_to_srgb_matrix[r][c] * XYZ[c];
+}
+
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(Lab, rgb)
