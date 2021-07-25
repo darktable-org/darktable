@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include "common/dttypes.h"
+#include "../../src/common/dttypes.h"
 
 typedef float elem_type;
 #define ELEM_SWAP(a,b) { elem_type t=(a);(a)=(b);(b)=t; }
