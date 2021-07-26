@@ -1841,9 +1841,12 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
           exifData["Exif.Photo.UserComment"] = desc;
         g_list_free_full(res, &g_free);
       }
+#if EXIV2_TEST_VERSION(0,27,4)
       else
         // mandatory tag for TIFF/EP and recommended for Exif, empty is ok (unknown)
+        // but correctly written only by exiv2 >= 0.27.4
         exifData["Exif.Image.ImageDescription"] = "";
+#endif
 
       res = dt_metadata_get(imgid, "Xmp.dc.rights", NULL);
       if(res != NULL)
@@ -1851,9 +1854,12 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
         exifData["Exif.Image.Copyright"] = (char *)res->data;
         g_list_free_full(res, &g_free);
       }
+#if EXIV2_TEST_VERSION(0,27,4)
       else
         // mandatory tag for TIFF/EP and optional for Exif, empty is ok (unknown)
+        // but correctly written only by exiv2 >= 0.27.4
         exifData["Exif.Image.Copyright"] = "";
+#endif
 
       res = dt_metadata_get(imgid, "Xmp.xmp.Rating", NULL);
       if(res != NULL)
