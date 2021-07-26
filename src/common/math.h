@@ -160,6 +160,26 @@ static inline void mat3mul(float *const __restrict__ dest, const float *const __
   }
 }
 
+// multiply two padded 3x3 matrices
+// dest needs to be different from m1 and m2
+// dest = m1 * m2 in this order
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline void mat3SSEmul(dt_colormatrix_t dest, const dt_colormatrix_t m1, const dt_colormatrix_t m2)
+{
+  for(int k = 0; k < 3; k++)
+  {
+    for(int i = 0; i < 3; i++)
+    {
+      float x = 0.0f;
+      for(int j = 0; j < 3; j++)
+        x += m1[k][j] * m2[j][i];
+      dest[k][i] = x;
+    }
+  }
+}
+
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif

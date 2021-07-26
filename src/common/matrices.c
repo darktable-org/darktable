@@ -19,11 +19,11 @@
 #include "common/math.h"
 #include "common/matrices.h"
 
-/** inverts the given 3x3 matrix */
-int mat3inv(float *const dst, const float *const src)
+/** inverts the given padded 3x3 matrix */
+int mat3SSEinv(dt_colormatrix_t dst, const dt_colormatrix_t src)
 {
-#define A(y, x) src[(y - 1) * 3 + (x - 1)]
-#define B(y, x) dst[(y - 1) * 3 + (x - 1)]
+#define A(y, x) src[(y - 1)][(x - 1)]
+#define B(y, x) dst[(y - 1)][(x - 1)]
 
   const float det = A(1, 1) * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3))
                     - A(2, 1) * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3))

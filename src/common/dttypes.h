@@ -71,6 +71,28 @@ typedef float DT_ALIGNED_ARRAY dt_colormatrix_t[4][4];
   for (size_t _var = 0; _var < 4; _var++)
 #endif
 
+// transpose a padded 3x3 matrix
+static inline void transpose_3xSSE(const dt_colormatrix_t input, dt_colormatrix_t output)
+{
+  output[0][0] = input[0][0];
+  output[0][1] = input[1][0];
+  output[0][2] = input[2][0];
+  output[0][3] = 0.0f;
+
+  output[1][0] = input[0][1];
+  output[1][1] = input[1][1];
+  output[1][2] = input[2][1];
+  output[1][3] = 0.0f;
+
+  output[2][0] = input[0][2];
+  output[2][1] = input[1][2];
+  output[2][2] = input[2][2];
+  output[2][3] = 0.0f;
+
+  for_four_channels(c, aligned(output))
+    output[3][c] = 0.0f;
+}
+
 // transpose and pad a 3x3 matrix into the padded format optimized for vectorization
 static inline void transpose_3x3_to_3xSSE(const float input[9], dt_colormatrix_t output)
 {
@@ -135,6 +157,20 @@ static inline void repack_double3x3_to_3xSSE(const double input[9], dt_colormatr
 
   for(size_t c = 0; c < 4; c++)
     output[3][c] = 0.0f;
+}
+
+// convert a 3x3 matrix into the padded format optimized for vectorization
+static inline void pack_3xSSE_to_3x3(const dt_colormatrix_t input, float output[9])
+{
+  output[0] = input[0][0];
+  output[1] = input[0][1];
+  output[2] = input[0][2];
+  output[3] = input[1][0];
+  output[4] = input[1][1];
+  output[5] = input[1][2];
+  output[6] = input[2][0];
+  output[7] = input[2][1];
+  output[8] = input[2][2];
 }
 
 // vectorized multiplication of padded 3x3 matrices

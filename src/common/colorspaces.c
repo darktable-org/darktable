@@ -22,6 +22,7 @@
 #include "common/debug.h"
 #include "common/file_location.h"
 #include "common/math.h"
+#include "common/matrices.h"
 #include "common/srgb_tone_curve_values.h"
 #include "common/utility.h"
 #include "control/conf.h"
@@ -146,7 +147,7 @@ static const dt_colorspaces_color_profile_t *_get_profile(dt_colorspaces_t *self
                                                           const char *filename,
                                                           dt_colorspaces_profile_direction_t direction);
 
-static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
+static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, dt_colormatrix_t matrix, float *lutr, float *lutg,
                                                   float *lutb, const int lutsize, const int input)
 {
   // create an OpenCL processable matrix + tone curves from an cmsHPROFILE:
@@ -180,21 +181,16 @@ static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, float *matri
 
   if(!red_curve || !green_curve || !blue_curve || !red_color || !green_color || !blue_color) return 2;
 
-  float matrix_tmp[9];
-  matrix_tmp[0] = red_color->X;
-  matrix_tmp[1] = green_color->X;
-  matrix_tmp[2] = blue_color->X;
-  matrix_tmp[3] = red_color->Y;
-  matrix_tmp[4] = green_color->Y;
-  matrix_tmp[5] = blue_color->Y;
-  matrix_tmp[6] = red_color->Z;
-  matrix_tmp[7] = green_color->Z;
-  matrix_tmp[8] = blue_color->Z;
+  dt_colormatrix_t matrix_tmp = { { red_color->X, green_color->X, blue_color->X },
+                                  { red_color->Y, green_color->Y, blue_color->Y },
+                                  { red_color->Z, green_color->Z,  blue_color->Z } };
 
   // some camera ICC profiles claim to have color locations for red, green and blue base colors defined,
   // but in fact these are all set to zero. we catch this case here.
   float sum = 0.0f;
-  for(int k = 0; k < 9; k++) sum += matrix_tmp[k];
+  for(int k1 = 0; k1 < 3; k1++)
+    for(int k2 = 0; k2 < 3; k2++)
+      sum += matrix_tmp[k1][k2];
   if(sum == 0.0f) return 3;
 
   if(input && lutr && lutg && lutb)
@@ -216,9 +212,10 @@ static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, float *matri
   else
   {
     // invert profile->XYZ matrix for output profiles
-    float tmp[9];
-    memcpy(tmp, matrix_tmp, sizeof(float) * 9);
-    if(mat3inv(matrix_tmp, tmp)) return 3;
+    dt_colormatrix_t tmp;
+    memcpy(tmp, matrix_tmp, sizeof(dt_colormatrix_t));
+    if(mat3SSEinv(matrix_tmp, tmp))
+      return 3;
     // also need to reverse gamma, to apply reverse before matrix multiplication:
     cmsToneCurve *rev_red = cmsReverseToneCurveEx(0x8000, red_curve);
     cmsToneCurve *rev_green = cmsReverseToneCurveEx(0x8000, green_curve);
@@ -253,18 +250,19 @@ static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, float *matri
     cmsFreeToneCurve(rev_blue);
   }
 
-  if(matrix) memcpy(matrix, matrix_tmp, sizeof(float) * 9);
+  if(matrix)
+    memcpy(matrix, matrix_tmp, sizeof(dt_colormatrix_t));
 
   return 0;
 }
 
-int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
+int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof, dt_colormatrix_t matrix, float *lutr, float *lutg,
                                                  float *lutb, const int lutsize)
 {
   return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 1);
 }
 
-int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
+int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof, dt_colormatrix_t matrix, float *lutr, float *lutg,
                                                   float *lutb, const int lutsize)
 {
   return dt_colorspaces_get_matrix_from_profile(prof, matrix, lutr, lutg, lutb, lutsize, 0);
@@ -920,7 +918,7 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const in
 static void dt_colorspaces_create_cmatrix(float cmatrix[4][3], float mat[3][3])
 {
   // sRGB D65, the linear part:
-  const dt_colormatrix_t rgb_to_xyz = { { 0.4124564f, 0.3575761f, 0.1804375f, 0.0f },
+  static const dt_colormatrix_t rgb_to_xyz = { { 0.4124564f, 0.3575761f, 0.1804375f, 0.0f },
                                         { 0.2126729f, 0.7151522f, 0.0721750f, 0.0f },
                                         { 0.0193339f, 0.1191920f, 0.9503041f, 0.0f } };
 
@@ -938,7 +936,7 @@ static void dt_colorspaces_create_cmatrix(float cmatrix[4][3], float mat[3][3])
 }
 #endif
 
-static cmsHPROFILE dt_colorspaces_create_xyzmatrix_profile(float mat[3][3])
+static cmsHPROFILE dt_colorspaces_create_xyzmatrix_profile(const float mat[3][3])
 {
   // mat: cam -> xyz
   dt_aligned_pixel_t x, y;

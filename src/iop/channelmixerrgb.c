@@ -166,7 +166,7 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
 
 typedef struct dt_iop_channelmixer_rbg_data_t
 {
-  float DT_ALIGNED_ARRAY MIX[3][4];
+  dt_colormatrix_t MIX;
   float DT_ALIGNED_PIXEL saturation[CHANNEL_SIZE];
   float DT_ALIGNED_PIXEL lightness[CHANNEL_SIZE];
   float DT_ALIGNED_PIXEL grey[CHANNEL_SIZE];
@@ -1770,8 +1770,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   if(work_profile)
   {
     // work profile can't be fetched in commit_params since it is not yet initialised
-    repack_3x3_to_3xSSE(work_profile->matrix_in, RGB_to_XYZ);
-    repack_3x3_to_3xSSE(work_profile->matrix_out, XYZ_to_RGB);
+    memcpy(RGB_to_XYZ, work_profile->matrix_in, sizeof(RGB_to_XYZ));
+    memcpy(XYZ_to_RGB, work_profile->matrix_out, sizeof(XYZ_to_RGB));
   }
 
   assert(piece->colors == 4);
@@ -1955,22 +1955,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   cl_mem input_matrix_cl = NULL;
   cl_mem output_matrix_cl = NULL;
-  cl_mem MIX_cl = NULL;
 
-  dt_colormatrix_t RGB_to_XYZ;
-  dt_colormatrix_t XYZ_to_RGB;
-
-  // repack the matrices as flat AVX2-compliant matrice
-  if(work_profile)
-  {
-    // work profile can't be fetched in commit_params since it is not yet initialised
-    repack_3x3_to_3xSSE(work_profile->matrix_in, RGB_to_XYZ);
-    repack_3x3_to_3xSSE(work_profile->matrix_out, XYZ_to_RGB);
-  }
-
-  input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), RGB_to_XYZ);
-  output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), XYZ_to_RGB);
-  MIX_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), d->MIX);
+  input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), (float*)work_profile->matrix_in);
+  output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), (float*)work_profile->matrix_out);
+  cl_mem MIX_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), d->MIX);
 
   // select the right kernel for the current LMS space
   int kernel = gd->kernel_channelmixer_rgb_rgb;
@@ -3615,13 +3603,9 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   if(work_profile == NULL) return;
 
-  // repack the matrices as flat AVX2-compliant matrice
-  dt_colormatrix_t RGB_to_XYZ;
-  repack_3x3_to_3xSSE(work_profile->matrix_in, RGB_to_XYZ);
-
   // Convert to XYZ
-  dt_aligned_pixel_t XYZ = { 0 };
-  dot_product(RGB, RGB_to_XYZ, XYZ);
+  dt_aligned_pixel_t XYZ;
+  dot_product(RGB, work_profile->matrix_in, XYZ);
 
   // Convert to xyY
   const float sum = fmaxf(XYZ[0] + XYZ[1] + XYZ[2], NORM_MIN);
