@@ -593,6 +593,7 @@ void expose(
     cairo_rectangle(cri, hbar, tbar, (double)pwidth, (double)pheight);
     cairo_clip(cri);
 
+    // FIXME: this is very similar to the code drawing the primary sample or focused module sampler -- consolidate this all into a function
     const float wd = dev->preview_pipe->backbuf_width;
     const float ht = dev->preview_pipe->backbuf_height;
     const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
@@ -679,8 +680,14 @@ void expose(
                                   && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
                                  || dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
 
-  // execute module callback hook.
-  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && dev->gui_module->enabled)
+  // draw colorpicker for in focus module or execute module callback hook
+  // FIXME: leaving on the primary colorpicker for too long will override masks and post-expose callbacks!
+  // FIXME: if module_color_picker then draw a bright picker and not mask or post-expose callback -- otherwise draw a dimmer picker if primary_color_picker is enabled, and any masks or post-expose callback
+  const gboolean module_color_picker = dev->gui_module
+    && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && dev->gui_module->enabled;
+  const gboolean primary_color_picker = darktable.lib->proxy.colorpicker.primary_sample
+    && !darktable.lib->proxy.colorpicker.primary_sample->locked;
+  if(module_color_picker || primary_color_picker)
   {
     // The colorpicker bounding rectangle should only be displayed inside the visible image
     const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
@@ -703,8 +710,9 @@ void expose(
     cairo_set_line_width(cri, 1.0 / zoom_scale);
     cairo_set_source_rgb(cri, .2, .2, .2);
 
-    const float *box = dev->gui_module->color_picker_box;
-    const float *point = dev->gui_module->color_picker_point;
+    const float *box = module_color_picker ? dev->gui_module->color_picker_box : darktable.lib->proxy.colorpicker.primary_sample->box;
+    const float *point = module_color_picker ? dev->gui_module->color_picker_point : darktable.lib->proxy.colorpicker.primary_sample->box;
+    // FIXME: this should test the sample of the current gui_module when not drawing the primary sample -- though now the primary sample is always set when setting gui module so this is OK?
     if(darktable.lib->proxy.colorpicker.primary_sample && darktable.lib->proxy.colorpicker.primary_sample->size)
     {
       cairo_translate(cri, 1.0 / zoom_scale, 1.0 / zoom_scale);
@@ -719,6 +727,8 @@ void expose(
 
         cairo_rectangle(cri, x + d, y + d, (box[2] - box[0]) * wd - 2. * d, (box[3] - box[1]) * ht - 2. * d);
 
+        // FIXME: this draws handles even though the handles can't be moved -- lose these!
+        // FIXME: these handles aren't modified by d -- they only need to be drawn once in light color
         cairo_rectangle(cri, x - w, y - w, 2. * w, 2. * w);
         cairo_rectangle(cri, x - w, box[3] * ht - w, 2. * w, 2. * w);
         cairo_rectangle(cri, box[2] * wd - w, y - w, 2. * w, 2. * w);
