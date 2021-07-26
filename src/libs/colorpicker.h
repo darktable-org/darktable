@@ -21,6 +21,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
+// FIXME: these should be an enum values
 #define DT_COLORPICKER_SIZE_POINT 0
 #define DT_COLORPICKER_SIZE_BOX 1
 
