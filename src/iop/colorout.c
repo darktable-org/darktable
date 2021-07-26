@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/dttypes.h"
 #include "common/file_location.h"
 #include "common/imagebuf.h"
 #include "common/iop_profile.h"
@@ -55,7 +56,7 @@ typedef struct dt_iop_colorout_data_t
   dt_colorspaces_color_profile_type_t type;
   dt_colorspaces_color_mode_t mode;
   float lut[3][LUT_SAMPLES];
-  float cmatrix[9];
+  dt_colormatrix_t cmatrix;
   cmsHTRANSFORM *xform;
   float unbounded_coeffs[3][3]; // for extrapolation of shaper curves
 } dt_iop_colorout_data_t;
@@ -302,7 +303,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
-  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, d->cmatrix);
+  float cmatrix[9];
+  pack_3xSSE_to_3x3(d->cmatrix, cmatrix);
+  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, cmatrix);
   if(dev_m == NULL) goto error;
   dev_r = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
   if(dev_r == NULL) goto error;
@@ -350,7 +353,7 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_d
 {
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
 
-  if(!isnan(d->cmatrix[0]))
+  if(!isnan(d->cmatrix[0][0]))
   {
     const size_t npixels = (size_t)roi_out->width * roi_out->height;
     float *const restrict out = (float *const)ovoid;
@@ -410,11 +413,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
   }
-  else if(!isnan(d->cmatrix[0]))
+  else if(!isnan(d->cmatrix[0][0]))
   {
     const float *const restrict in = (const float *const)ivoid;
     dt_colormatrix_t cmatrix;
-    transpose_3x3_to_3xSSE(d->cmatrix, cmatrix);
+    transpose_3xSSE(d->cmatrix, cmatrix);
 
 // fprintf(stderr,"Using cmatrix codepath\n");
 // convert to rgb using matrix
@@ -483,13 +486,12 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   {
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
   }
-  else if(!isnan(d->cmatrix[0]))
+  else if(!isnan(d->cmatrix[0][0]))
   {
     const float *const restrict in = (const float *const)ivoid;
-    const float *const restrict cmatrix = d->cmatrix;
-    const __m128 m0 = _mm_set_ps(0.0f, cmatrix[6], cmatrix[3], cmatrix[0]);
-    const __m128 m1 = _mm_set_ps(0.0f, cmatrix[7], cmatrix[4], cmatrix[1]);
-    const __m128 m2 = _mm_set_ps(0.0f, cmatrix[8], cmatrix[5], cmatrix[2]);
+    const __m128 m0 = _mm_set_ps(0.0f, d->cmatrix[2][0], d->cmatrix[1][0], d->cmatrix[0][0]);
+    const __m128 m1 = _mm_set_ps(0.0f, d->cmatrix[2][1], d->cmatrix[1][1], d->cmatrix[0][1]);
+    const __m128 m2 = _mm_set_ps(0.0f, d->cmatrix[2][2], d->cmatrix[1][2], d->cmatrix[0][2]);
 // fprintf(stderr,"Using cmatrix codepath\n");
 // convert to rgb using matrix
 #ifdef _OPENMP
@@ -594,7 +596,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     cmsDeleteTransform(d->xform);
     d->xform = NULL;
   }
-  d->cmatrix[0] = NAN;
+  d->cmatrix[0][0] = NAN;
   d->lut[0][0] = -1.0f;
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
@@ -723,14 +725,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
      || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
                                                       LUT_SAMPLES))
   {
-    d->cmatrix[0] = NAN;
+    d->cmatrix[0][0] = NAN;
     piece->process_cl_ready = 0;
     d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,
                                           out_intent, INTENT_RELATIVE_COLORIMETRIC, transformFlags);
   }
 
   // user selected a non-supported output profile, check that:
-  if(!d->xform && isnan(d->cmatrix[0]))
+  if(!d->xform && isnan(d->cmatrix[0][0]))
   {
     dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
     fprintf(stderr, "unsupported output profile `%s' has been replaced by sRGB!\n", out_profile->name);
@@ -740,7 +742,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
        || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
                                                         LUT_SAMPLES))
     {
-      d->cmatrix[0] = NAN;
+      d->cmatrix[0][0] = NAN;
       piece->process_cl_ready = 0;
 
       d->xform = cmsCreateProofingTransform(Lab, TYPE_LabA_FLT, output, output_format, softproof,

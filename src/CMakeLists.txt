@@ -59,6 +59,7 @@ FILE(GLOB SOURCE_FILES
   "common/locallaplacian.c"
   "common/locallaplaciancl.c"
   "common/l10n.c"
+  "common/matrices.c"
   "common/metadata.c"
   "common/metadata_export.c"
   "common/mipmap_cache.c"
