@@ -89,6 +89,13 @@ typedef enum dt_lib_histogram_vectorscope_type_t
   DT_LIB_HISTOGRAM_VECTORSCOPE_N // needs to be the last one
 } dt_lib_histogram_vectorscope_type_t;
 
+typedef enum dt_lib_histogram_position_t
+{
+  DT_LIB_HISTOGRAM_LEFT = 0,
+  DT_LIB_HISTOGRAM_RIGHT = 1,
+  DT_LIB_HISTOGRAM_LAST = 2
+} dt_lib_histogram_position_t;
+
 // FIXME: are these lists available from the enum/options in darktableconfig.xml?
 const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] = { "histogram", "waveform", "rgb parade", "vectorscope" };
 const gchar *dt_lib_histogram_scale_names[DT_LIB_HISTOGRAM_SCALE_N] = { "logarithmic", "linear" };
@@ -144,7 +151,7 @@ typedef struct dt_lib_histogram_t
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("histogram");
+  return _("scopes");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -155,17 +162,29 @@ const char **views(dt_lib_module_t *self)
 
 uint32_t container(dt_lib_module_t *self)
 {
-  return DT_UI_CONTAINER_PANEL_RIGHT_TOP;
+  dt_lib_histogram_position_t position = DT_LIB_HISTOGRAM_RIGHT;
+  if(dt_conf_key_exists("plugins/darkroom/histogram/position"))
+    position = dt_conf_get_int("plugins/darkroom/histogram/position");
+
+  switch(position)
+  {
+    case DT_LIB_HISTOGRAM_RIGHT:
+    default:
+      return DT_UI_CONTAINER_PANEL_RIGHT_TOP;
+
+    case DT_LIB_HISTOGRAM_LEFT:
+      return DT_UI_CONTAINER_PANEL_LEFT_TOP;
+  }
 }
 
 int expandable(dt_lib_module_t *self)
 {
-  return 0;
+  return 1;
 }
 
 int position()
 {
-  return 1001;
+  return 1000;
 }
 
 
@@ -1828,6 +1847,100 @@ static void _lib_histogram_preview_updated_callback(gpointer instance, dt_lib_mo
   // FIXME: it would be nice if process() just queued a redraw if not in live view, but then our draw code would have to have some other way to assure that the histogram image is current besides checking the pixelpipe to see if it has processed the current image
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   dt_control_queue_redraw_widget(d->scope_draw);
+}
+
+void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
+{
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("scopes settings"), GTK_WINDOW(win),
+                                       GTK_DIALOG_DESTROY_WITH_PARENT,
+                                       _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_YES, NULL);
+  GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+  gtk_widget_set_size_request(area, 300, -1); // width is too narrow otherwise
+
+  GtkWidget *combo = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+  dt_bauhaus_widget_set_label(combo, NULL, N_("display scopes"));
+  dt_bauhaus_combobox_add(combo, _("in the left sidebar"));
+  dt_bauhaus_combobox_add(combo, _("in the right sidebar"));
+
+  dt_lib_histogram_position_t position = DT_LIB_HISTOGRAM_RIGHT;
+  if(dt_conf_key_exists("plugins/darkroom/histogram/position"))
+    position = dt_conf_get_int("plugins/darkroom/histogram/position");
+  dt_bauhaus_combobox_set(combo, position);
+
+  gtk_box_pack_start(GTK_BOX(area), combo, TRUE, TRUE, 0);
+
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
+  gtk_widget_show_all(dialog);
+
+  int res = gtk_dialog_run(GTK_DIALOG(dialog));
+
+  if(res == GTK_RESPONSE_YES)
+  {
+    // record old histogram position
+    dt_lib_histogram_position_t old_position = DT_LIB_HISTOGRAM_RIGHT;
+    if(dt_conf_key_exists("plugins/darkroom/histogram/position"))
+      old_position = dt_conf_get_int("plugins/darkroom/histogram/position");
+
+    // save new histogram position
+    position = dt_bauhaus_combobox_get(combo);
+    if(old_position != position)
+      dt_conf_set_int("plugins/darkroom/histogram/position", position);
+
+#if 0
+    // try to update the GUI right now.
+    // BUT this hot-change doesn't really work :
+    // * if going back and forth to lighttable after a position switch,
+    //   histogram disappear until next reboot.
+    // * also the position of the widget in the sidebar is wrong after the switch
+    //   and until next reboot.
+    // all in all, the view manager is not designed to handle hot changes in GUI
+    if(old_position != position)
+    {
+      dt_view_t *cv = (dt_view_t *)dt_view_manager_get_current_view(darktable.view_manager);
+
+      // remove current widget
+      GtkWidget *ex = self->expander;
+      if(ex) gtk_widget_destroy(ex);
+      gtk_widget_destroy(self->widget);
+      self->view_leave(self, cv, NULL);
+      self->gui_cleanup(self);
+      self->data = NULL;
+      self->widget = NULL;
+
+      // add a new widget at the new place
+      self->gui_init(self);
+      GtkWidget *w = dt_lib_gui_get_expander(self);
+      if(!w) w = self->widget;
+      dt_ui_container_add_widget(darktable.gui->ui, self->container(self), w);
+
+      // generate data for changed scope and trigger widget redraw
+      if(cv->view(cv) == DT_VIEW_DARKROOM)
+        dt_dev_process_preview(darktable.develop);
+      else
+        dt_control_queue_redraw_center();
+
+      // force the widget visible
+      dt_lib_gui_set_expanded(self, TRUE);
+      dt_lib_set_visible(self, TRUE);
+      gtk_widget_queue_draw(self->widget);
+    }
+#endif
+
+    // until the above works, just warn that settings will have no effect yet
+    dt_control_log(_("you need to go switch views for the new setting to take effect."));
+  }
+
+  gtk_widget_destroy(dialog);
+}
+
+void set_preferences(void *menu, dt_lib_module_t *self)
+{
+  GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
+  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
 void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
