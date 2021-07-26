@@ -820,7 +820,7 @@ dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev,
                                      const dt_colorspaces_color_profile_type_t type,
                                      const char *filename,
                                      const int intent,
-                                     const float matrix_in[9])
+                                     const dt_colormatrix_t matrix_in)
 {
   dt_iop_order_iccprofile_info_t *profile_info = dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
 
