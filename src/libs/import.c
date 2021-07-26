@@ -422,14 +422,7 @@ static GdkPixbuf *_import_get_thumbnail(const gchar *filename)
   GdkPixbuf *pixbuf = NULL;
   gboolean have_preview = FALSE, no_preview_fallback = FALSE;
 
-  if(filename && g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-  {
-    // don't create dng thumbnails to avoid crashes in libtiff when these are hdr:
-    char *c = (char *)filename + strlen(filename);
-    while(c > filename && *c != '.') c--;
-    if(!strcasecmp(c, ".dng")) no_preview_fallback = TRUE;
-  }
-  else
+  if(!filename || !g_file_test(filename, G_FILE_TEST_IS_REGULAR))
   {
     no_preview_fallback = TRUE;
   }
@@ -467,7 +460,6 @@ static GdkPixbuf *_import_get_thumbnail(const gchar *filename)
 
   // Step 2: if we were not able to get a thumbnail at step 1,
   // read the whole file to get a small size thumbnail
-  // this will not try to read DNG files at all
   if(!have_preview && !no_preview_fallback)
   {
     pixbuf = gdk_pixbuf_new_from_file_at_size(filename, 128, 128, NULL);
@@ -478,7 +470,6 @@ static GdkPixbuf *_import_get_thumbnail(const gchar *filename)
   // we need to find out the rotation as well
   if(have_preview && !no_preview_fallback)
   {
-
     // get image orientation
     dt_image_t img = { 0 };
     (void)dt_exif_read(&img, filename);
@@ -507,7 +498,6 @@ static GdkPixbuf *_import_get_thumbnail(const gchar *filename)
   }
 
   // if no thumbanail found or read failed for whatever reason
-  // or in case of DNG files
   // just display the default darktable logo
   if(!have_preview || no_preview_fallback)
   {
