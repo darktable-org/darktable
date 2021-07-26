@@ -325,15 +325,12 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
 #endif
   {
     float *const VH_Dir = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE);
+    // ensure that border elements which are read but never actually set below are zeroed out
     memset(VH_Dir, 0, sizeof(*VH_Dir) * RCD_TILESIZE * RCD_TILESIZE);
     float *const PQ_Dir = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE / 2);
-    memset(PQ_Dir, 0, sizeof(*PQ_Dir) * (RCD_TILESIZE * RCD_TILESIZE / 2));
     float *const cfa =    dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE);
-    memset(cfa, 0, sizeof(*cfa) * RCD_TILESIZE * RCD_TILESIZE);
     float *const P_CDiff_Hpf = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE / 2);
-    memset(P_CDiff_Hpf, 0, sizeof(*P_CDiff_Hpf) * RCD_TILESIZE * RCD_TILESIZE / 2);
     float *const Q_CDiff_Hpf = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE / 2);
-    memset(Q_CDiff_Hpf, 0, sizeof(*Q_CDiff_Hpf) * RCD_TILESIZE * RCD_TILESIZE / 2);
 
     float (*const rgb)[RCD_TILESIZE * RCD_TILESIZE] = (void *)dt_alloc_align_float((size_t)3 * RCD_TILESIZE * RCD_TILESIZE);
 
@@ -358,6 +355,14 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         const int tileRows = MIN(rowEnd - rowStart, RCD_TILESIZE);
         const int tileCols = MIN(colEnd - colStart, RCD_TILESIZE);
 
+        if (rowStart + RCD_TILESIZE > height || colStart + RCD_TILESIZE > width)
+        {
+          // VH_Dir is only filled for (4,4)..(height-4,width-4), but the refinement code reads (3,3)...(h-3,w-3),
+          // so we need to ensure that the border is zeroed for partial tiles to get consistent results
+          memset(VH_Dir, 0, sizeof(*VH_Dir) * RCD_TILESIZE * RCD_TILESIZE);
+          // TODO: figure out what part of rgb is being accessed without initialization on partial tiles
+          memset(rgb, 0, sizeof(float) * 3 * RCD_TILESIZE * RCD_TILESIZE);
+        }
         // Step 0: fill data and make sure data are not negative.
         for(int row = rowStart; row < rowEnd; row++)
         {
@@ -381,7 +386,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         }
 
         // Step 1.2: Obtain the vertical and horizontal directional discrimination strength
-        float bufferH[RCD_TILESIZE] __attribute__((aligned(0x10)));
+        float DT_ALIGNED_PIXEL bufferH[RCD_TILESIZE];
         // We start with V0, V1 and V2 pointing to row -1, row and row +1
         // After row is processed V0 must point to the old V1, V1 must point to the old V2 and V2 must point to the old V0
         // because the old V0 is not used anymore and will be filled with row + 1 data in next iteration
