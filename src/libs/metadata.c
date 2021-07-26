@@ -930,6 +930,7 @@ void *get_params(dt_lib_module_t *self, int *size)
 int set_params(dt_lib_module_t *self, const void *params, int size)
 {
   if(!params) return 1;
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
   char *buf = (char *)params;
   char *metadata[DT_METADATA_NUMBER];
@@ -961,6 +962,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   dt_image_synch_xmps(imgs);
+  // force the ui refresh to update the info from preset
+  g_list_free(d->last_act_on);
+  d->last_act_on = NULL;
   _update(self);
   return 0;
 }
