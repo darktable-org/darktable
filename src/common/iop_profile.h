@@ -44,8 +44,8 @@ typedef struct dt_iop_order_iccprofile_info_t
   dt_colorspaces_color_profile_type_t type;
   char filename[DT_IOPPR_COLOR_ICC_LEN];
   dt_iop_color_intent_t intent;
-  float matrix_in[9] DT_ALIGNED_PIXEL; // don't align on more than 16 bits or OpenCL will fail
-  float matrix_out[9] DT_ALIGNED_PIXEL;
+  dt_colormatrix_t matrix_in; // don't align on more than 16 bits or OpenCL will fail
+  dt_colormatrix_t matrix_out;
   int lutsize;
   float *lut_in[3];
   float *lut_out[3];
@@ -263,7 +263,7 @@ static inline void _apply_trc(const dt_aligned_pixel_t rgb_in, dt_aligned_pixel_
   uniform(rgb, matrix_in, lut_in, unbounded_coeffs_in)
 #endif
 static inline float dt_ioppr_get_rgb_matrix_luminance(const dt_aligned_pixel_t rgb,
-                                                      const float matrix_in[9], float *const lut_in[3],
+                                                      const dt_colormatrix_t matrix_in, float *const lut_in[3],
                                                       const float unbounded_coeffs_in[3][3],
                                                       const int lutsize, const int nonlinearlut)
 {
@@ -273,10 +273,10 @@ static inline float dt_ioppr_get_rgb_matrix_luminance(const dt_aligned_pixel_t r
   {
     dt_aligned_pixel_t linear_rgb;
     _apply_trc(rgb, linear_rgb, lut_in, unbounded_coeffs_in, lutsize);
-    luminance = matrix_in[3] * linear_rgb[0] + matrix_in[4] * linear_rgb[1] + matrix_in[5] * linear_rgb[2];
+    luminance = matrix_in[1][0] * linear_rgb[0] + matrix_in[1][1] * linear_rgb[1] + matrix_in[1][2] * linear_rgb[2];
   }
   else
-    luminance = matrix_in[3] * rgb[0] + matrix_in[4] * rgb[1] + matrix_in[5] * rgb[2];
+    luminance = matrix_in[1][0] * rgb[0] + matrix_in[1][1] * rgb[1] + matrix_in[1][2] * rgb[2];
 
   return luminance;
 }

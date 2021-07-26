@@ -23,6 +23,7 @@
 #include "common/darktable.h"
 #include "common/iop_profile.h"
 #include "common/debug.h"
+#include "common/matrices.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/pixelpipe.h"
@@ -51,9 +52,9 @@
 
 static void _mark_as_nonmatrix_profile(dt_iop_order_iccprofile_info_t *const profile_info)
 {
-  profile_info->matrix_in[0] = NAN;
+  profile_info->matrix_in[0][0] = NAN;
   profile_info->matrix_in_transposed[0][0] = NAN;
-  profile_info->matrix_out[0] = NAN;
+  profile_info->matrix_out[0][0] = NAN;
   profile_info->matrix_out_transposed[0][0] = NAN;
 }
 
@@ -464,10 +465,10 @@ static inline void _transform_matrix_rgb(const float *const restrict image_in,
 
   // RGB -> XYZ -> RGB are 2 matrices products, they can be premultiplied globally ahead
   // and put in a new matrix. then we spare one matrix product per pixel.
-  float _matrix[9] DT_ALIGNED_ARRAY;
-  mat3mul(_matrix, profile_info_to->matrix_out, profile_info_from->matrix_in);
+  dt_colormatrix_t _matrix;
+  dt_colormatrix_mul(_matrix, profile_info_to->matrix_out, profile_info_from->matrix_in);
   dt_colormatrix_t matrix;
-  transpose_3x3_to_3xSSE(_matrix, matrix);
+  transpose_3xSSE(_matrix, matrix);
 
   if(profile_info_from->nonlinearlut || profile_info_to->nonlinearlut)
   {
@@ -674,15 +675,15 @@ static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profil
       _mark_as_nonmatrix_profile(profile_info);
       _clear_lut_curves(profile_info);
     }
-    else if(isnan(profile_info->matrix_in[0]) || isnan(profile_info->matrix_out[0]))
+    else if(isnan(profile_info->matrix_in[0][0]) || isnan(profile_info->matrix_out[0][0]))
     {
       _mark_as_nonmatrix_profile(profile_info);
       _clear_lut_curves(profile_info);
     }
     else
     {
-      transpose_3x3_to_3xSSE(profile_info->matrix_in, profile_info->matrix_in_transposed);
-      transpose_3x3_to_3xSSE(profile_info->matrix_out, profile_info->matrix_out_transposed);
+      transpose_3xSSE(profile_info->matrix_in, profile_info->matrix_in_transposed);
+      transpose_3xSSE(profile_info->matrix_out, profile_info->matrix_out_transposed);
     }
   }
 
@@ -690,7 +691,7 @@ static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profil
   // we do extrapolation for input values above 1.0f.
   // unfortunately we can only do this if we got the computation
   // in our hands, i.e. for the fast builtin-dt-matrix-profile path.
-  if(!isnan(profile_info->matrix_in[0]) && !isnan(profile_info->matrix_out[0]))
+  if(!isnan(profile_info->matrix_in[0][0]) && !isnan(profile_info->matrix_out[0][0]))
   {
     profile_info->nonlinearlut = _init_unbounded_coeffs(profile_info->lut_in[0], profile_info->lut_in[1], profile_info->lut_in[2],
         profile_info->unbounded_coeffs_in[0], profile_info->unbounded_coeffs_in[1], profile_info->unbounded_coeffs_in[2], profile_info->lutsize);
@@ -698,7 +699,7 @@ static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profil
         profile_info->unbounded_coeffs_out[0], profile_info->unbounded_coeffs_out[1], profile_info->unbounded_coeffs_out[2], profile_info->lutsize);
   }
 
-  if(!isnan(profile_info->matrix_in[0]) && !isnan(profile_info->matrix_out[0]) && profile_info->nonlinearlut)
+  if(!isnan(profile_info->matrix_in[0][0]) && !isnan(profile_info->matrix_out[0][0]) && profile_info->nonlinearlut)
   {
     const dt_aligned_pixel_t rgb = { 0.1842f, 0.1842f, 0.1842f };
     profile_info->grey = dt_ioppr_get_rgb_matrix_luminance(rgb, profile_info->matrix_in, profile_info->lut_in, profile_info->unbounded_coeffs_in, profile_info->lutsize, profile_info->nonlinearlut);
@@ -803,7 +804,7 @@ dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev,
 {
   dt_iop_order_iccprofile_info_t *profile_info = dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
 
-  if(profile_info == NULL || isnan(profile_info->matrix_in[0]) || isnan(profile_info->matrix_out[0]))
+  if(profile_info == NULL || isnan(profile_info->matrix_in[0][0]) || isnan(profile_info->matrix_out[0][0]))
   {
     fprintf(stderr, "[dt_ioppr_set_pipe_work_profile_info] unsupported working profile %i %s, it will be replaced with linear rec2020\n", type, filename);
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", intent);
@@ -838,9 +839,9 @@ dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev,
     * so we need to fetch and replace them from somewhere.
     */
     memcpy(profile_info->matrix_in, matrix_in, sizeof(profile_info->matrix_in));
-    mat3inv_float(profile_info->matrix_out, profile_info->matrix_in);
-    transpose_3x3_to_3xSSE(profile_info->matrix_in, profile_info->matrix_in_transposed);
-    transpose_3x3_to_3xSSE(profile_info->matrix_out, profile_info->matrix_out_transposed);
+    mat3SSEinv(profile_info->matrix_out, profile_info->matrix_in);
+    transpose_3xSSE(profile_info->matrix_in, profile_info->matrix_in_transposed);
+    transpose_3xSSE(profile_info->matrix_out, profile_info->matrix_out_transposed);
   }
   pipe->input_profile_info = profile_info;
 
@@ -856,7 +857,7 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
 {
   dt_iop_order_iccprofile_info_t *profile_info = dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
 
-  if(profile_info == NULL || isnan(profile_info->matrix_in[0]) || isnan(profile_info->matrix_out[0]))
+  if(profile_info == NULL || isnan(profile_info->matrix_in[0][0]) || isnan(profile_info->matrix_out[0][0]))
   {
     if (type != DT_COLORSPACE_DISPLAY)
     {
@@ -1065,7 +1066,7 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const flo
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
   // matrix should be never NAN, this is only to test it against lcms2!
-  if(!isnan(profile_info->matrix_in[0]) && !isnan(profile_info->matrix_out[0]))
+  if(!isnan(profile_info->matrix_in[0][0]) && !isnan(profile_info->matrix_out[0][0]))
   {
     _transform_matrix(self, image_in, image_out, width, height, cst_from, cst_to, converted_cst, profile_info);
 
@@ -1118,8 +1119,8 @@ void dt_ioppr_transform_image_colorspace_rgb(const float *const restrict image_i
   dt_times_t start_time = { 0 }, end_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
-  if(!isnan(profile_info_from->matrix_in[0]) && !isnan(profile_info_from->matrix_out[0])
-     && !isnan(profile_info_to->matrix_in[0]) && !isnan(profile_info_to->matrix_out[0]))
+  if(!isnan(profile_info_from->matrix_in[0][0]) && !isnan(profile_info_from->matrix_out[0][0])
+     && !isnan(profile_info_to->matrix_in[0][0]) && !isnan(profile_info_to->matrix_out[0][0]))
   {
     _transform_matrix_rgb(image_in, image_out, width, height, profile_info_from, profile_info_to);
 
@@ -1172,8 +1173,8 @@ void dt_ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const pr
 {
   for(int i = 0; i < 9; i++)
   {
-    profile_info_cl->matrix_in[i] = profile_info->matrix_in[i];
-    profile_info_cl->matrix_out[i] = profile_info->matrix_out[i];
+    profile_info_cl->matrix_in[i] = profile_info->matrix_in[i/3][i%3];
+    profile_info_cl->matrix_out[i] = profile_info->matrix_out[i/3][i%3];
   }
   profile_info_cl->lutsize = profile_info->lutsize;
   for(int i = 0; i < 3; i++)
@@ -1316,7 +1317,7 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
   *converted_cst = cst_from;
 
   // if we have a matrix use opencl
-  if(!isnan(profile_info->matrix_in[0]) && !isnan(profile_info->matrix_out[0]))
+  if(!isnan(profile_info->matrix_in[0][0]) && !isnan(profile_info->matrix_out[0][0]))
   {
     dt_times_t start_time = { 0 }, end_time = { 0 };
     if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
@@ -1499,8 +1500,8 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
   cl_mem matrix_cl = NULL;
 
   // if we have a matrix use opencl
-  if(!isnan(profile_info_from->matrix_in[0]) && !isnan(profile_info_from->matrix_out[0])
-     && !isnan(profile_info_to->matrix_in[0]) && !isnan(profile_info_to->matrix_out[0]))
+  if(!isnan(profile_info_from->matrix_in[0][0]) && !isnan(profile_info_from->matrix_out[0][0])
+     && !isnan(profile_info_to->matrix_in[0][0]) && !isnan(profile_info_to->matrix_out[0][0]))
   {
     dt_times_t start_time = { 0 }, end_time = { 0 };
     if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
@@ -1516,8 +1517,8 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
     dt_ioppr_get_profile_info_cl(profile_info_to, &profile_info_to_cl);
     lut_to_cl = dt_ioppr_get_trc_cl(profile_info_to);
 
-    float matrix[9] DT_ALIGNED_PIXEL;
-    mat3mul(matrix, profile_info_to->matrix_out, profile_info_from->matrix_in);
+    dt_colormatrix_t matrix;
+    dt_colormatrix_mul(matrix, profile_info_to->matrix_out, profile_info_from->matrix_in);
 
     if(in_place)
     {
@@ -1579,8 +1580,9 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       goto cleanup;
     }
-    matrix_cl
-        = dt_opencl_copy_host_to_device_constant(devid, sizeof(matrix), &matrix);
+    float matrix3x3[9];
+    pack_3xSSE_to_3x3(matrix, matrix3x3);
+    matrix_cl = dt_opencl_copy_host_to_device_constant(devid, sizeof(matrix3x3), &matrix3x3);
     if(matrix_cl == NULL)
     {
       fprintf(stderr,
