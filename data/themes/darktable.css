@@ -111,7 +111,7 @@
 /* text fields */
 @define-color field_bg @grey_15;
 @define-color field_fg @button_fg;
-@define-color field_active_bg @grey_25;
+@define-color field_active_bg @grey_30;
 @define-color field_active_fg @grey_80;
 @define-color field_selected_bg @grey_40;
 @define-color field_selected_fg @button_checked_fg;
@@ -941,12 +941,6 @@ menuitem > arrow
   border: 0;
 }
 
-menuitem check
-{
-  margin-left: 0.5em;
-  margin-bottom: 1px;
-}
-
 popover
 {
   padding: 0.4em;
@@ -979,15 +973,6 @@ popover button,
 tooltip button
 {
   background-color: transparent;
-}
-
-menuitem check
-{
-  border-radius: 0.14em;
-  border: 0.07em solid shade(@tooltip_bg_color, 4);
-  min-width: 0.7em;
-  min-height: 0.7em;
-  margin-right: 0.35em;
 }
 
 /* Header and footer labels, especially for combobox */
@@ -1934,8 +1919,8 @@ button:disabled,
 treeview check, /* set specific background color about check buttons like in copy/paste dialog window */
 menuitem check
 {
-  background-color: @field_selected_bg;
-  border-color: @field_selected_bg;
+  background-color: @field_active_bg;
+  border-color: @border_color;
 }
 
 treeview:not(#lutname) *:hover:not(check),
@@ -1963,23 +1948,47 @@ filechooser *:selected
   color: @field_selected_fg;
 }
 
-treeview check:selected,
-menuitem check:selected
+treeview check:selected
 {
   background-color: @button_bg;
   border-color: @plugin_bg_color;
-}
-
-treeview check:hover,
-menuitem check:hover
-{
-  color: @field_hover_fg;
 }
 
 filechooser checkbutton:checked
 {
   background-color: transparent;
 }
+
+/* Adjust check menuitems */
+menuitem check,
+menuitem check:selected
+{
+  border-radius: 0.14em;
+  min-width: 0.7em;
+  min-height: 0.7em;
+  margin: 0 0.3em;
+}
+
+treeview check:hover,
+menuitem check:hover
+{
+  color: @bauhaus_fg_hover;
+}
+
+  /* set active menu items: needed for some Pango issues not rendering synthetic bold for all OS */
+.active-menu-item label
+{
+  font-weight: bold;
+}
+
+  /* set preset and blend menu items */
+.check-menu-item check,
+.check-menu-item check:selected
+{
+  background-color: transparent;
+  padding: 0 0.14em;
+}
+
 
 /* Adjust delete folder dialog window */
 treeview#delete-dialog,
@@ -2633,10 +2642,4 @@ Details :
 #lighttable_layouts_box #dt-toggle-button
 {
   margin: 0 0.4em;
-}
-
-/* Set active menu items: needed for some Pango issues not rendering synthetic bold for all OS */
-.active-menu-item label
-{
-  font-weight: bold;
 }
