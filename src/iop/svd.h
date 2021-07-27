@@ -72,7 +72,7 @@ static inline int dsvd(
   double c, f, h, s, x, y, z;
   double anorm = 0.0, g = 0.0, scale = 0.0;
   double *rv1 = malloc(n * sizeof(double));
-  int l;
+  int l = 0;
 
   /* Householder reduction to bidiagonal form */
   for (int i = 0; i < n; i++)
