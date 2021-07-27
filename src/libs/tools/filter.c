@@ -67,6 +67,10 @@ const dt_collection_sort_t items[] =
 {
   DT_COLLECTION_SORT_FILENAME,
   DT_COLLECTION_SORT_DATETIME,
+  DT_COLLECTION_SORT_IMPORT_TIMESTAMP,
+  DT_COLLECTION_SORT_CHANGE_TIMESTAMP,
+  DT_COLLECTION_SORT_EXPORT_TIMESTAMP,
+  DT_COLLECTION_SORT_PRINT_TIMESTAMP,
   DT_COLLECTION_SORT_RATING,
   DT_COLLECTION_SORT_ID,
   DT_COLLECTION_SORT_COLOR,
@@ -85,17 +89,21 @@ static const char *_filter_get_label_at_pos(int pos)
   switch(pos)
   {
      case  0: return _("filename");
-     case  1: return _("time");
-     case  2: return _("rating");
-     case  3: return _("id");
-     case  4: return _("color label");
-     case  5: return _("group");
-     case  6: return _("full path");
-     case  7: return _("custom sort");
-     case  8: return _("title");
-     case  9: return _("description");
-     case 10: return _("aspect ratio");
-     case 11: return _("shuffle");
+     case  1: return _("capture time");
+     case  2: return _("import time");
+     case  3: return _("last modification time");
+     case  4: return _("last export time");
+     case  5: return _("last print time");
+     case  6: return _("rating");
+     case  7: return _("id");
+     case  8: return _("color label");
+     case  9: return _("group");
+     case 10: return _("full path");
+     case 11: return _("custom sort");
+     case 12: return _("title");
+     case 13: return _("description");
+     case 14: return _("aspect ratio");
+     case 15: return _("shuffle");
      default: return "???";
   }
 }
