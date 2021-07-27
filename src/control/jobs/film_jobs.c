@@ -265,10 +265,14 @@ static void _film_import1(dt_job_t *job, dt_film_t *film, GList *images)
     images = NULL;
     for(int i = 1; i < image_count; i++)
     {
+      //get entry I from table at index -1.  Push the result on the stack
       lua_geti(L, -1, i);
-      void *filename = strdup(luaL_checkstring(L, -1));
+      if(lua_isstring(L, -1)) //images to ignore are set to nil
+      {
+        void *filename = strdup(luaL_checkstring(L, -1));
+        images = g_list_prepend(images, filename);
+      }
       lua_pop(L, 1);
-      images = g_list_prepend(images, filename);
     }
   }
 

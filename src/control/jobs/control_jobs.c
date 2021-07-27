@@ -2189,14 +2189,17 @@ static GList *_apply_lua_filter(GList *images)
     g_list_free_full(images, g_free);
     // recreate list of images
     images = NULL;
-   for(int i = 1; i < image_count; i++)
+    for(int i = 1; i < image_count; i++)
     {
-      /* uses 'key' (at index -2) and 'value' (at index -1) */
+      //get entry I from table at index -1.  Push the result on the stack
       lua_geti(L, -1, i);
-      void *filename = strdup(luaL_checkstring(L, -1));
+      if(lua_isstring(L, -1)) //images to ignore are set to nil
+      {
+        void *filename = strdup(luaL_checkstring(L, -1));
+        images = g_list_prepend(images, filename);
+      }
       lua_pop(L, 1);
-      images = g_list_prepend(images, filename);
-    }
+   }
   }
 
   lua_pop(L, 1); // remove the table again from the stack
