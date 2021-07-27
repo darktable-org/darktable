@@ -514,6 +514,10 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_NONE);
   luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_FILENAME);
   luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_DATETIME);
+  luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_IMPORT_TIMESTAMP);
+  luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_CHANGE_TIMESTAMP);
+  luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_EXPORT_TIMESTAMP);
+  luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_PRINT_TIMESTAMP);
   luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_RATING);
   luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_ID);
   luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_COLOR);
