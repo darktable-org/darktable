@@ -2126,7 +2126,7 @@ static gboolean _widget_invisible(GtkWidget *w)
           (g_strcmp0(gtk_widget_get_name(p), "lib-plugin-ui-main") && !gtk_widget_get_visible(p)));
 }
 
-gboolean _shortcut_closest_match(GSequenceIter **current, dt_shortcut_t *s, gboolean *fully_matched)
+gboolean _shortcut_closest_match(GSequenceIter **current, dt_shortcut_t *s, gboolean *fully_matched, const dt_action_def_t *def)
 {
   *current = g_sequence_iter_prev(*current);
   dt_shortcut_t *c = g_sequence_get(*current);
@@ -2143,9 +2143,10 @@ gboolean _shortcut_closest_match(GSequenceIter **current, dt_shortcut_t *s, gboo
          (c->mods       && c->mods != s->mods ) ||
          (c->direction  & ~s->direction       ) ||
          (c->element    && s->element         ) ||
-         (c->element    && s->effect > 0      ) ||
          (c->effect > 0 && s->effect > 0      ) ||
-         (c->instance   && s->instance        ) ))
+         (c->instance   && s->instance        ) ||
+         (c->element    && s->effect > 0 && def &&
+          def->elements[c->element].effects != def->elements[s->element].effects ) ))
   {
     if(g_sequence_iter_is_begin(*current)) break;
 
@@ -2192,7 +2193,7 @@ static gboolean _shortcut_match(dt_shortcut_t *f)
 
   gboolean matched = FALSE;
 
-  if(!_shortcut_closest_match(&existing, f, &matched))
+  if(!_shortcut_closest_match(&existing, f, &matched, NULL))
     return FALSE;
 
   if(!matched && f->action)
@@ -2205,19 +2206,20 @@ static gboolean _shortcut_match(dt_shortcut_t *f)
                                     .target = GINT_TO_POINTER(matched_action->type) };
     f->action = &fallback_action;
 
+    const dt_action_def_t *def = _action_find_definition(matched_action);
+
     existing = g_sequence_search(darktable.control->shortcuts, f, shortcut_compare_func, v);
-    while(_shortcut_closest_match(&existing, f, &matched) && !matched) {};
+    while(_shortcut_closest_match(&existing, f, &matched, def) && !matched) {};
 
     if(!matched && f->effect <= DT_ACTION_EFFECT_DEFAULT_KEY)
     {
-      const dt_action_def_t *def = _action_find_definition(matched_action);
       if(def && def->elements[f->element].effects == dt_action_effect_value)
       {
         static dt_action_t value_action = { .type = DT_ACTION_TYPE_FALLBACK,
                                             .target = GINT_TO_POINTER(DT_ACTION_TYPE_VALUE_FALLBACK) };
         f->action = &value_action;
         existing = g_sequence_search(darktable.control->shortcuts, f, shortcut_compare_func, v);
-        while(_shortcut_closest_match(&existing, f, &matched) && !matched) {};
+        while(_shortcut_closest_match(&existing, f, &matched, def) && !matched) {};
       }
     }
 
@@ -2318,25 +2320,30 @@ static float process_mapping(float move_size)
       else
         fprintf(stderr, "[process_mapping] preset '%s' has unsupported type\n", fsc.action->label);
     }
-    else if(fsc.action->type < DT_ACTION_TYPE_WIDGET || !_widget_invisible(action_target))
+    else
     {
-      move_size *= fsc.speed;
-
-      dt_action_effect_t effect = fsc.effect;
-      if(effect == DT_ACTION_EFFECT_DEFAULT_MOVE)
-      {
-        if(move_size >= .0f)
-          effect = DT_ACTION_EFFECT_DEFAULT_UP;
-        else
-        {
-          effect = DT_ACTION_EFFECT_DEFAULT_DOWN;
-          move_size *= -1;
-        }
-      }
-
       const dt_action_def_t *definition = _action_find_definition(fsc.action);
-      if(definition && definition->process)
+
+      if(definition && definition->process &&
+         (fsc.action->type < DT_ACTION_TYPE_WIDGET ||
+          definition->no_widget || !_widget_invisible(action_target)))
+      {
+        move_size *= fsc.speed;
+
+        dt_action_effect_t effect = fsc.effect;
+        if(effect == DT_ACTION_EFFECT_DEFAULT_MOVE)
+        {
+          if(move_size >= .0f)
+            effect = DT_ACTION_EFFECT_DEFAULT_UP;
+          else
+          {
+            effect = DT_ACTION_EFFECT_DEFAULT_DOWN;
+            move_size *= -1;
+          }
+        }
+
         return_value = definition->process(action_target, fsc.element, effect, move_size);
+      }
     }
   }
   else if(move_size)
@@ -2967,7 +2974,9 @@ dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gc
       }
     }
 
-    if(!darktable.control->accel_initialising)
+    if(action_def && action_def->no_widget)
+      ac->target = widget;
+    else if(!darktable.control->accel_initialising)
     {
       if(label) ac->target = widget;
       g_hash_table_insert(darktable.control->widgets, widget, ac);
@@ -3044,50 +3053,53 @@ void dt_action_define_fallback(dt_action_type_t type, const dt_action_def_t *act
 
 void dt_accel_register_shortcut(dt_action_t *owner, const gchar *path_string, guint element, guint effect, guint accel_key, GdkModifierType mods)
 {
-  gchar **split_path = g_strsplit(path_string, "/", 0);
-  gchar **split_trans = g_strsplit(g_dpgettext2(NULL, "accel", path_string), "/", g_strv_length(split_path));
-
-  gchar **path = split_path;
-  gchar **trans = split_trans;
-
-  gchar *clean_path = NULL;
-
-  dt_action_t *action = owner->target;
-  while(*path)
+  if(path_string)
   {
-    if(!clean_path) clean_path = path_without_symbols(*path);
+    gchar **split_path = g_strsplit(path_string, "/", 0);
+    gchar **split_trans = g_strsplit(g_dpgettext2(NULL, "accel", path_string), "/", g_strv_length(split_path));
 
-    if(!action)
-    {
-      dt_action_t *new_action = calloc(1, sizeof(dt_action_t));
-      new_action->id = clean_path;
-      new_action->label = g_strdup(*trans ? *trans : *path);
-      new_action->type = DT_ACTION_TYPE_SECTION;
-      new_action->owner = owner;
+    gchar **path = split_path;
+    gchar **trans = split_trans;
 
-      dt_action_insert_sorted(owner, new_action);
+    gchar *clean_path = NULL;
 
-      owner = new_action;
-      action = NULL;
-    }
-    else if(!strcmp(action->id, clean_path))
+    dt_action_t *action = owner->target;
+    while(*path)
     {
-      g_free(clean_path);
-      owner = action;
-      action = action->target;
+      if(!clean_path) clean_path = path_without_symbols(*path);
+
+      if(!action)
+      {
+        dt_action_t *new_action = calloc(1, sizeof(dt_action_t));
+        new_action->id = clean_path;
+        new_action->label = g_strdup(*trans ? *trans : *path);
+        new_action->type = DT_ACTION_TYPE_SECTION;
+        new_action->owner = owner;
+
+        dt_action_insert_sorted(owner, new_action);
+
+        owner = new_action;
+        action = NULL;
+      }
+      else if(!strcmp(action->id, clean_path))
+      {
+        g_free(clean_path);
+        owner = action;
+        action = action->target;
+      }
+      else
+      {
+        action = action->next;
+        continue;
+      }
+      clean_path = NULL; // now owned by action or freed
+      path++;
+      if(*trans) trans++;
     }
-    else
-    {
-      action = action->next;
-      continue;
-    }
-    clean_path = NULL; // now owned by action or freed
-    path++;
-    if(*trans) trans++;
+
+    g_strfreev(split_path);
+    g_strfreev(split_trans);
   }
-
-  g_strfreev(split_path);
-  g_strfreev(split_trans);
 
   if(accel_key != 0)
   {
