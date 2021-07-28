@@ -644,15 +644,20 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // Convert to JCh
     float JC[2] = { Jab[0], dt_fast_hypotf(Jab[1], Jab[2]) };   // brightness/chroma vector
     const float h = atan2f(Jab[2], Jab[1]);  // hue : (a, b) angle
+    // Compute cos(arg(h)) = dx / hypot - force arg(h) = 0 if hypot == 0
+    const float cos_H = JC[1] ? Jab[1] / JC[1] : 1.f;  // cos(0)
+    // Compute sin(arg(h)) = dy / hypot - force arg(h) = 0 if hypot == 0
+    const float sin_H = JC[1] ? Jab[2] / JC[1] : 0.f;  // sin(1)
 
     // Project JC onto S, the saturation eigenvector, with orthogonal vector O.
     // Note : O should be = (C * cosf(T) - J * sinf(T)) = 0 since S is the eigenvector,
     // so we add the chroma projected along the orthogonal axis to get some control value
     const float T = atan2f(JC[1], JC[0]); // angle of the eigenvector over the hue plane
-    const float sin_T = sinf(T);
-    const float cos_T = cosf(T);
-    const float DT_ALIGNED_PIXEL M_rot_dir[2][2] = { {  cos_T,  sin_T },
-                                                     { -sin_T,  cos_T } };
+    const float norm_JC = dt_fast_hypotf(JC[0], JC[1]);
+    // Compute cos(arg(h)) = dx / hypot - force arg(h) = 0 if hypot == 0
+    const float sin_T = norm_JC ? JC[1] / norm_JC : 0.f;  // cos(0)
+    // Compute sin(arg(h)) = dy / hypot - force arg(h) = 0 if hypot == 0
+    const float cos_T = norm_JC ? JC[0] / norm_JC : 1.f;  // sin(0)
     const float DT_ALIGNED_PIXEL M_rot_inv[2][2] = { {  cos_T, -sin_T },
                                                      {  sin_T,  cos_T } };
     float SO[2];
@@ -661,7 +666,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float boosts[2] = { 1.f + d->brilliance_global + scalar_product(opacities, brilliance),     // move in S direction
                               d->saturation_global + scalar_product(opacities, saturation) }; // move in O direction
 
-    SO[0] = JC[0] * M_rot_dir[0][0] + JC[1] * M_rot_dir[0][1];
+    SO[0] = JC[0] * cos_T + JC[1] * sin_T;
     SO[1] = SO[0] * fminf(fmaxf(T * boosts[1], -T), DT_M_PI_F / 2.f - T);
     SO[0] = fmaxf(SO[0] * boosts[0], 0.f);
 
@@ -681,9 +686,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // Gamut-clip in Jch at constant hue and lightness,
     // e.g. find the max chroma available at current hue that doesn't
     // yield negative L'M'S' values, which will need to be clipped during conversion
-    const float cos_H = cosf(h);
-    const float sin_H = sinf(h);
-
     const float d0 = 1.6295499532821566e-11f;
     const float dd = -0.56f;
     float Iz = JC[0] + d0;

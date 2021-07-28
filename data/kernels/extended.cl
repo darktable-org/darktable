@@ -918,15 +918,20 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   // Convert to JCh
   float JC[2] = { Jab.x, hypot(Jab.y, Jab.z) };               // brightness/chroma vector
   const float h = atan2(Jab.z, Jab.y);  // hue : (a, b) angle
+  // Compute cos(arg(h)) = dx / hypot - force arg(h) = 0 if hypot == 0
+  const float cos_H = JC[1] != 0.f ? Jab.y / JC[1] : 1.f;  // cos(0)
+  // Compute sin(arg(h)) = dy / hypot - force arg(h) = 0 if hypot == 0
+  const float sin_H = JC[1] != 0.f ? Jab.z / JC[1] : 0.f;  // sin(1)
 
   // Project JC onto S, the saturation eigenvector, with orthogonal vector O.
   // Note : O should be = (C * cosf(T) - J * sinf(T)) = 0 since S is the eigenvector,
   // so we add the chroma projected along the orthogonal axis to get some control value
   const float T = atan2(JC[1], JC[0]); // angle of the eigenvector over the hue plane
-  const float sin_T = native_sin(T);
-  const float cos_T = native_cos(T);
-  const float M_rot_dir[2][2] = { {  cos_T,  sin_T },
-                                  { -sin_T,  cos_T } };
+  const float norm_JC = hypot(JC[0], JC[1]);
+  // Compute cos(arg(h)) = dx / hypot - force arg(h) = 0 if hypot == 0
+  const float sin_T = norm_JC != 0.f ? JC[1] / norm_JC : 0.f;  // cos(0)
+  // Compute sin(arg(h)) = dy / hypot - force arg(h) = 0 if hypot == 0
+  const float cos_T = norm_JC != 0.f ? JC[0] / norm_JC : 1.f;  // sin(0)
   const float M_rot_inv[2][2] = { {  cos_T, -sin_T },
                                   {  sin_T,  cos_T } };
   float SO[2];
@@ -935,7 +940,7 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   const float boosts[2] = { 1.f + brilliance_global + dot(opacities, brilliance),     // move in S direction
                             saturation_global + dot(opacities, saturation) }; // move in O direction
 
-  SO[0] = JC[0] * M_rot_dir[0][0] + JC[1] * M_rot_dir[0][1];
+  SO[0] = JC[0] * cos_T + JC[1] * sin_T;
   SO[1] = SO[0] * clamp(T * boosts[1], -T, M_PI_F / 2.f - T);
   SO[0] = fmax(SO[0] * boosts[0], 0.f);
 
@@ -955,8 +960,6 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   // Gamut-clip in Jch at constant hue and lightness,
   // e.g. find the max chroma available at current hue that doesn't
   // yield negative L'M'S' values, which will need to be clipped during conversion
-  const float cos_H = native_cos(h);
-  const float sin_H = native_sin(h);
 
   const float d0 = 1.6295499532821566e-11f;
   const float d = -0.56f;
