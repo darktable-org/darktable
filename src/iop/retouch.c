@@ -2715,63 +2715,6 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 // process
 //--------------------------------------------------------------------------------------------------
 
-#ifdef __SSE2__
-/** uses D50 white point. */
-// see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
-static inline __m128 dt_XYZ_to_RGB_sse2(__m128 XYZ)
-{
-  // XYZ -> sRGB matrix, D65
-  const __m128 xyz_to_srgb_0 = _mm_setr_ps(3.1338561f, -0.9787684f, 0.0719453f, 0.0f);
-  const __m128 xyz_to_srgb_1 = _mm_setr_ps(-1.6168667f, 1.9161415f, -0.2289914f, 0.0f);
-  const __m128 xyz_to_srgb_2 = _mm_setr_ps(-0.4906146f, 0.0334540f, 1.4052427f, 0.0f);
-
-  __m128 rgb
-      = _mm_add_ps(_mm_mul_ps(xyz_to_srgb_0, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(0, 0, 0, 0))),
-                   _mm_add_ps(_mm_mul_ps(xyz_to_srgb_1, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(1, 1, 1, 1))),
-                              _mm_mul_ps(xyz_to_srgb_2, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(2, 2, 2, 2)))));
-
-  return rgb;
-}
-
-static inline __m128 dt_RGB_to_XYZ_sse2(__m128 rgb)
-{
-  // sRGB -> XYZ matrix, D65
-  const __m128 srgb_to_xyz_0 = _mm_setr_ps(0.4360747f, 0.2225045f, 0.0139322f, 0.0f);
-  const __m128 srgb_to_xyz_1 = _mm_setr_ps(0.3850649f, 0.7168786f, 0.0971045f, 0.0f);
-  const __m128 srgb_to_xyz_2 = _mm_setr_ps(0.1430804f, 0.0606169f, 0.7141733f, 0.0f);
-
-  __m128 XYZ
-      = _mm_add_ps(_mm_mul_ps(srgb_to_xyz_0, _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(0, 0, 0, 0))),
-                   _mm_add_ps(_mm_mul_ps(srgb_to_xyz_1, _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(1, 1, 1, 1))),
-                              _mm_mul_ps(srgb_to_xyz_2, _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(2, 2, 2, 2)))));
-  return XYZ;
-}
-#endif
-
-static inline void dt_linearRGB_to_XYZ(const float *const linearRGB, float *XYZ)
-{
-  const float srgb_to_xyz[3][3] = { { 0.4360747, 0.3850649, 0.1430804 },
-                                    { 0.2225045, 0.7168786, 0.0606169 },
-                                    { 0.0139322, 0.0971045, 0.7141733 } };
-
-  // sRGB -> XYZ
-  XYZ[0] = XYZ[1] = XYZ[2] = 0.0;
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) XYZ[r] += srgb_to_xyz[r][c] * linearRGB[c];
-}
-
-static inline void dt_XYZ_to_linearRGB(const float *const XYZ, float *linearRGB)
-{
-  const float xyz_to_srgb_matrix[3][3] = { { 3.1338561, -1.6168667, -0.4906146 },
-                                           { -0.9787684, 1.9161415, 0.0334540 },
-                                           { 0.0719453, -0.2289914, 1.4052427 } };
-
-  // XYZ -> sRGB
-  linearRGB[0] = linearRGB[1] = linearRGB[2] = 0.f;
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) linearRGB[r] += xyz_to_srgb_matrix[r][c] * XYZ[c];
-}
-
 static void image_rgb2lab(float *img_src, const int width, const int height, const int ch, const int use_sse)
 {
   const int stride = width * height * ch;
@@ -2878,7 +2821,7 @@ static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
     if(work_profile)
     {
-      dt_ioppr_rgb_matrix_to_lab(img_src + i, Lab, work_profile->matrix_in,
+      dt_ioppr_rgb_matrix_to_lab(img_src + i, Lab, work_profile->matrix_in_transposed,
                                   work_profile->lut_in, work_profile->unbounded_coeffs_in,
                                   work_profile->lutsize, work_profile->nonlinearlut);
     }
@@ -2927,7 +2870,7 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   {
     if(work_profile)
     {
-      dt_ioppr_rgb_matrix_to_lab(img_src + i, img_src + i, work_profile->matrix_in,
+      dt_ioppr_rgb_matrix_to_lab(img_src + i, img_src + i, work_profile->matrix_in_transposed,
                                   work_profile->lut_in, work_profile->unbounded_coeffs_in,
                                   work_profile->lutsize, work_profile->nonlinearlut);
     }
@@ -2956,7 +2899,7 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 
     if(work_profile)
     {
-      dt_ioppr_lab_to_rgb_matrix(img_src + i, img_src + i, work_profile->matrix_out,
+      dt_ioppr_lab_to_rgb_matrix(img_src + i, img_src + i, work_profile->matrix_out_transposed,
                                  work_profile->lut_out, work_profile->unbounded_coeffs_out,
                                  work_profile->lutsize, work_profile->nonlinearlut);;
     }

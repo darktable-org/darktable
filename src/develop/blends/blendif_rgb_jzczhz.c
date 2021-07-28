@@ -147,7 +147,7 @@ static inline void _blendif_jzczhz(const float *const restrict pixels, float *co
 
     // use the matrix_out of the hacked profile for blending to use the
     // conversion from RGB to XYZ D65 (instead of XYZ D50)
-    dt_ioppr_rgb_matrix_to_xyz(pixels + j, XYZ_D65, profile->matrix_out, profile->lut_in,
+    dt_ioppr_rgb_matrix_to_xyz(pixels + j, XYZ_D65, profile->matrix_out_transposed, profile->lut_in,
                                profile->unbounded_coeffs_in, profile->lutsize, profile->nonlinearlut);
 
     dt_XYZ_2_JzAzBz(XYZ_D65, JzAzBz);
@@ -756,7 +756,7 @@ static inline void _rgb_to_JzCzhz(const float *const restrict rgb, float *const 
     dt_aligned_pixel_t XYZ_D65 = { 0.0f, 0.0f, 0.0f };
     // use the matrix_out of the hacked profile for blending to use the
     // conversion from RGB to XYZ D65 (instead of XYZ D50)
-    dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D65, profile->matrix_out, profile->lut_in, profile->unbounded_coeffs_in,
+    dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D65, profile->matrix_out_transposed, profile->lut_in, profile->unbounded_coeffs_in,
                                profile->lutsize, profile->nonlinearlut);
     dt_XYZ_2_JzAzBz(XYZ_D65, JzAzBz);
   }

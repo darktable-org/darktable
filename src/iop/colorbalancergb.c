@@ -368,39 +368,6 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("add basic colorfulness"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
-/* Custom matrix handling for speed */
-static inline void repack_3x3_to_3xSSE(const float input[9], float output[3][4])
-{
-  // Repack a 3×3 array/matrice into a 3×1 SSE2 vector to enable SSE4/AVX/AVX2 dot products
-  output[0][0] = input[0];
-  output[0][1] = input[1];
-  output[0][2] = input[2];
-  output[0][3] = 0.0f;
-
-  output[1][0] = input[3];
-  output[1][1] = input[4];
-  output[1][2] = input[5];
-  output[1][3] = 0.0f;
-
-  output[2][0] = input[6];
-  output[2][1] = input[7];
-  output[2][2] = input[8];
-  output[2][3] = 0.0f;
-}
-
-
-static void mat3mul4(float *restrict dst, const float *const restrict m1, const float *const restrict m2)
-{
-  for(int k = 0; k < 3; ++k)
-  {
-    for(int i = 0; i < 3; ++i)
-    {
-      float x = 0.0f;
-      for(int j = 0; j < 3; j++) x += m1[4 * k + j] * m2[4 * j + i];
-      dst[4 * k + i] = x;
-    }
-  }
-}
 
 
 #ifdef _OPENMP
@@ -490,16 +457,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   if(work_profile == NULL) return; // no point
 
-  float DT_ALIGNED_ARRAY RGB_to_XYZ[3][4];
-  float DT_ALIGNED_ARRAY XYZ_to_RGB[3][4];
-
-  // repack the matrices as flat AVX2-compliant matrice
-  if(work_profile)
-  {
-    // work profile can't be fetched in commit_params since it is not yet initialised
-    repack_3x3_to_3xSSE(work_profile->matrix_in, RGB_to_XYZ);
-    repack_3x3_to_3xSSE(work_profile->matrix_out, XYZ_to_RGB);
-  }
+  // work profile can't be fetched in commit_params since it is not yet initialised
+  // work_profile->matrix_in === RGB_to_XYZ
+  // work_profile->matrix_out === XYZ_to_RGB
 
   // Premultiply the input matrices
 
@@ -516,11 +476,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   * so we pre-multiply the 3 conversion matrices and operate only one matrix product
   */
-  float DT_ALIGNED_ARRAY input_matrix[3][4];
-  float DT_ALIGNED_ARRAY output_matrix[3][4];
+  dt_colormatrix_t input_matrix;
+  dt_colormatrix_t output_matrix;
 
-  mat3mul4((float *)output_matrix, (float *)XYZ_D50_to_D65_CAT16, (float *)RGB_to_XYZ); // output_matrix used as temp buffer
-  mat3mul4((float *)input_matrix, (float *)XYZ_D65_to_LMS_2006_D65, (float *)output_matrix);
+  dt_colormatrix_mul(output_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in); // output_matrix used as temp buffer
+  dt_colormatrix_mul(input_matrix, XYZ_D65_to_LMS_2006_D65, output_matrix);
 
   // Premultiply the output matrix
 
@@ -529,7 +489,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dot_product(XYZ_D50, XYZ_to_RGB, pix_out); // matrix product
   */
 
-  mat3mul4((float *)output_matrix, (float *)XYZ_to_RGB, (float *)XYZ_D65_to_D50_CAT16);
+  dt_colormatrix_mul(output_matrix, work_profile->matrix_out, XYZ_D65_to_D50_CAT16);
 
   const float *const restrict in = __builtin_assume_aligned(((const float *const restrict)ivoid), 64);
   float *const restrict out = __builtin_assume_aligned(((float *const restrict)ovoid), 64);
@@ -730,7 +690,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     Iz /= (1.f + dd - dd * Iz);
     Iz = fmaxf(Iz, 0.f);
 
-    const float DT_ALIGNED_ARRAY AI[3][4]
+    const dt_colormatrix_t AI
         = { {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
             {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
             {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f } };
@@ -835,16 +795,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                                             &dev_profile_info, &dev_profile_lut);
   if(err != CL_SUCCESS) goto error;
 
-  float DT_ALIGNED_ARRAY RGB_to_XYZ[3][4];
-  float DT_ALIGNED_ARRAY XYZ_to_RGB[3][4];
-
   // repack the matrices as flat AVX2-compliant matrice
-  if(work_profile)
-  {
-    // work profile can't be fetched in commit_params since it is not yet initialised
-    repack_3x3_to_3xSSE(work_profile->matrix_in, RGB_to_XYZ);
-    repack_3x3_to_3xSSE(work_profile->matrix_out, XYZ_to_RGB);
-  }
+  // work profile can't be fetched in commit_params since it is not yet initialised
+  // work_profile->matrix_in === RGB_to_XYZ
+  // work_profile->matrix_out === XYZ_to_RGB
 
   // Premultiply the input matrices
 
@@ -861,11 +815,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   * so we pre-multiply the 3 conversion matrices and operate only one matrix product
   */
-  float DT_ALIGNED_ARRAY input_matrix[3][4];
-  float DT_ALIGNED_ARRAY output_matrix[3][4];
+  dt_colormatrix_t input_matrix;
+  dt_colormatrix_t output_matrix;
 
-  mat3mul4((float *)output_matrix, (float *)XYZ_D50_to_D65_CAT16, (float *)RGB_to_XYZ); // output_matrix used as temp buffer
-  mat3mul4((float *)input_matrix, (float *)XYZ_D65_to_LMS_2006_D65, (float *)output_matrix);
+  dt_colormatrix_mul(output_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in); // output_matrix used as temp buffer
+  dt_colormatrix_mul(input_matrix, XYZ_D65_to_LMS_2006_D65, output_matrix);
 
   // Premultiply the output matrix
 
@@ -874,7 +828,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dot_product(XYZ_D50, XYZ_to_RGB, pix_out); // matrix product
   */
 
-  mat3mul4((float *)output_matrix, (float *)XYZ_to_RGB, (float *)XYZ_D65_to_D50_CAT16);
+  dt_colormatrix_mul(output_matrix, work_profile->matrix_out, XYZ_D65_to_D50_CAT16);
 
   input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
   output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
@@ -1066,13 +1020,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // init the LUT between -pi and pi by increments of 1°
     for(size_t k = 0; k < LUT_ELEM; k++) LUT[k] = 0.f;
 
-    // D50 pipeline RGB to D50 XYZ
-    float DT_ALIGNED_ARRAY RGB_to_XYZ[3][4];
-    repack_3x3_to_3xSSE(work_profile->matrix_in, RGB_to_XYZ);
-
     // Premultiply both matrices to go from D50 pipeline RGB to D65 XYZ in a single matrix dot product
-    float DT_ALIGNED_ARRAY input_matrix[3][4];
-    mat3mul4((float *)input_matrix, (float *)XYZ_D50_to_D65_CAT16, (float *)RGB_to_XYZ);
+    // instead of D50 pipeline to D50 XYZ (work_profile->matrix_in) and then D50 XYZ to D65 XYZ
+    dt_colormatrix_t input_matrix;
+    dt_colormatrix_mul(input_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
 
     // make RGB values vary between [0; 1] in working space, convert to Ych and get the max(c(h)))
 #ifdef _OPENMP
@@ -1145,7 +1096,7 @@ void pipe_RGB_to_Ych(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
   dt_aligned_pixel_t XYZ_D50 = { 0.f };
   dt_aligned_pixel_t XYZ_D65 = { 0.f };
 
-  dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, work_profile->matrix_in, work_profile->lut_in,
+  dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, work_profile->matrix_in_transposed, work_profile->lut_in,
                              work_profile->unbounded_coeffs_in, work_profile->lutsize,
                              work_profile->nonlinearlut);
   XYZ_D50_to_D65(XYZ_D50, XYZ_D65);

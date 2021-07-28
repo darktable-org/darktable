@@ -104,12 +104,12 @@ static inline gboolean _convert_color_space(const GdkRGBA *restrict sample, GdkR
   if(!(histogram_profile && display_profile)) return TRUE; // no need to paint, color will be wrong
 
   // convert from histogram RGB to XYZ
-  dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ, histogram_profile->matrix_in, histogram_profile->lut_in,
+  dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ, histogram_profile->matrix_in_transposed, histogram_profile->lut_in,
                              histogram_profile->unbounded_coeffs_in, histogram_profile->lutsize,
                              histogram_profile->nonlinearlut);
 
   // convert from XYZ to display RGB
-  dt_ioppr_xyz_to_rgb_matrix(XYZ, RGB, display_profile->matrix_out, display_profile->lut_out,
+  dt_ioppr_xyz_to_rgb_matrix(XYZ, RGB, display_profile->matrix_out_transposed, display_profile->lut_out,
                              display_profile->unbounded_coeffs_out, display_profile->lutsize,
                              display_profile->nonlinearlut);
 

@@ -160,6 +160,26 @@ static inline void mat3mul(float *const __restrict__ dest, const float *const __
   }
 }
 
+// multiply two padded 3x3 matrices
+// dest needs to be different from m1 and m2
+// dest = m1 * m2 in this order
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline void mat3SSEmul(dt_colormatrix_t dest, const dt_colormatrix_t m1, const dt_colormatrix_t m2)
+{
+  for(int k = 0; k < 3; k++)
+  {
+    for(int i = 0; i < 3; i++)
+    {
+      float x = 0.0f;
+      for(int j = 0; j < 3; j++)
+        x += m1[k][j] * m2[j][i];
+      dest[k][i] = x;
+    }
+  }
+}
+
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
@@ -191,7 +211,7 @@ static inline float scalar_product(const dt_aligned_pixel_t v_1, const dt_aligne
 #ifdef _OPENMP
 #pragma omp declare simd uniform(M) aligned(M:64) aligned(v_in, v_out:16)
 #endif
-static inline void dot_product(const dt_aligned_pixel_t v_in, const float M[3][4], dt_aligned_pixel_t v_out)
+static inline void dot_product(const dt_aligned_pixel_t v_in, const dt_colormatrix_t M, dt_aligned_pixel_t v_out)
 {
   // specialized 3×4 dot products of 4×1 RGB-alpha pixels
   #ifdef _OPENMP

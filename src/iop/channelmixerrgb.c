@@ -152,7 +152,7 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   gboolean run_validation;      // order a profile validation at next pipeline recompute
   gboolean profile_ready;       // notify that a profile is ready to be applied
   gboolean checker_ready;       // notify that a checker bounding box is ready to be used
-  float mix[3][4];
+  dt_colormatrix_t mix;
 
   GtkWidget *start_profiling;
   gboolean is_profiling_started;
@@ -166,7 +166,7 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
 
 typedef struct dt_iop_channelmixer_rbg_data_t
 {
-  float DT_ALIGNED_ARRAY MIX[3][4];
+  dt_colormatrix_t MIX;
   float DT_ALIGNED_PIXEL saturation[CHANNEL_SIZE];
   float DT_ALIGNED_PIXEL lightness[CHANNEL_SIZE];
   float DT_ALIGNED_PIXEL grey[CHANNEL_SIZE];
@@ -646,8 +646,8 @@ static inline void luma_chroma(const dt_aligned_pixel_t input, const dt_aligned_
 #pragma omp declare simd aligned(in, out, XYZ_to_RGB, RGB_to_XYZ, MIX : 64) aligned(illuminant, saturation, lightness, grey:16)
 #endif
 static inline void loop_switch(const float *const restrict in, float *const restrict out,
-                               const size_t width, const size_t height, const size_t ch,
-                               const float XYZ_to_RGB[3][4], const float RGB_to_XYZ[3][4], const float MIX[3][4],
+                               const size_t width, const size_t height, const size_t ch, const dt_colormatrix_t XYZ_to_RGB,
+                               const dt_colormatrix_t RGB_to_XYZ, const dt_colormatrix_t MIX,
                                const dt_aligned_pixel_t illuminant, const dt_aligned_pixel_t saturation,
                                const dt_aligned_pixel_t lightness, const dt_aligned_pixel_t grey,
                                const float p, const float gamut, const int clip, const int apply_grey,
@@ -863,7 +863,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
 
 static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_t illuminant,
                                   const size_t width, const size_t height, const size_t ch,
-                                  const float RGB_to_XYZ[3][4], dt_aligned_pixel_t xyz)
+                                  const dt_colormatrix_t RGB_to_XYZ, dt_aligned_pixel_t xyz)
 {
   /**
    * Detect the chromaticity of the illuminant based on the grey edges hypothesis.
@@ -1029,26 +1029,6 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
 
   dt_free_align(temp);
 }
-
-static inline void repack_3x3_to_3xSSE(const float input[9], float output[3][4])
-{
-  // Repack a 3×3 array/matrice into a 3×1 SSE2 vector to enable SSE4/AVX/AVX2 dot products
-  output[0][0] = input[0];
-  output[0][1] = input[1];
-  output[0][2] = input[2];
-  output[0][3] = 0.0f;
-
-  output[1][0] = input[3];
-  output[1][1] = input[4];
-  output[1][2] = input[5];
-  output[1][3] = 0.0f;
-
-  output[2][0] = input[6];
-  output[2][1] = input[7];
-  output[2][2] = input[8];
-  output[2][3] = 0.0f;
-}
-
 
 static void declare_cat_on_pipe(struct dt_iop_module_t *self, gboolean preset)
 {
@@ -1301,7 +1281,8 @@ typedef struct {
 } extraction_result_t;
 
 static const extraction_result_t _extract_patches(const float *const restrict in, const dt_iop_roi_t *const roi_in,
-                                                  dt_iop_channelmixer_rgb_gui_data_t *g, const float RGB_to_XYZ[3][4],
+                                                  dt_iop_channelmixer_rgb_gui_data_t *g,
+                                                  const dt_colormatrix_t RGB_to_XYZ,
                                                   float *const restrict patches)
 {
   const size_t width = roi_in->width;
@@ -1415,7 +1396,8 @@ static const extraction_result_t _extract_patches(const float *const restrict in
 
 void extract_color_checker(const float *const restrict in, float *const restrict out,
                            const dt_iop_roi_t *const roi_in, dt_iop_channelmixer_rgb_gui_data_t *g,
-                           const float RGB_to_XYZ[3][4], const float XYZ_to_RGB[3][4], const dt_adaptation_t kind)
+                           const dt_colormatrix_t RGB_to_XYZ, const dt_colormatrix_t XYZ_to_RGB,
+                           const dt_adaptation_t kind)
 {
   float *const restrict patches = dt_alloc_sse_ps(g->checker->patches * 4);
 
@@ -1617,11 +1599,7 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   pseudo_solve_gaussian(A, Y, g->checker->patches * 3, 9, TRUE);
 
   // repack the matrix
-  for(size_t i = 0; i < 3; i++)
-    for(size_t j = 0; j < 3; j++)
-      g->mix[i][j] = Y[3 * i + j];
-
-  g->mix[0][3] = g->mix[1][3] = g->mix[2][3] = 0.f;
+  repack_double3x3_to_3xSSE(Y, g->mix);
 
   dt_free_align(Y);
   dt_free_align(A);
@@ -1699,7 +1677,7 @@ void extract_color_checker(const float *const restrict in, float *const restrict
 
 void validate_color_checker(const float *const restrict in,
                             const dt_iop_roi_t *const roi_in, dt_iop_channelmixer_rgb_gui_data_t *g,
-                            const float RGB_to_XYZ[3][4], const float XYZ_to_RGB[3][4])
+                            const dt_colormatrix_t RGB_to_XYZ, const dt_colormatrix_t XYZ_to_RGB)
 {
   float *const restrict patches = dt_alloc_sse_ps(4 * g->checker->patches);
   extraction_result_t extraction_result = _extract_patches(in, roi_in, g, RGB_to_XYZ, patches);
@@ -1785,15 +1763,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   // we must set it again in case of any trouble.
   _check_for_wb_issue_and_set_trouble_message(self);
 
-  float DT_ALIGNED_ARRAY RGB_to_XYZ[3][4];
-  float DT_ALIGNED_ARRAY XYZ_to_RGB[3][4];
+  dt_colormatrix_t RGB_to_XYZ;
+  dt_colormatrix_t XYZ_to_RGB;
 
   // repack the matrices as flat AVX2-compliant matrice
   if(work_profile)
   {
     // work profile can't be fetched in commit_params since it is not yet initialised
-    repack_3x3_to_3xSSE(work_profile->matrix_in, RGB_to_XYZ);
-    repack_3x3_to_3xSSE(work_profile->matrix_out, XYZ_to_RGB);
+    memcpy(RGB_to_XYZ, work_profile->matrix_in, sizeof(RGB_to_XYZ));
+    memcpy(XYZ_to_RGB, work_profile->matrix_out, sizeof(XYZ_to_RGB));
   }
 
   assert(piece->colors == 4);
@@ -1977,22 +1955,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   cl_mem input_matrix_cl = NULL;
   cl_mem output_matrix_cl = NULL;
-  cl_mem MIX_cl = NULL;
 
-  float DT_ALIGNED_ARRAY RGB_to_XYZ[3][4];
-  float DT_ALIGNED_ARRAY XYZ_to_RGB[3][4];
-
-  // repack the matrices as flat AVX2-compliant matrice
-  if(work_profile)
-  {
-    // work profile can't be fetched in commit_params since it is not yet initialised
-    repack_3x3_to_3xSSE(work_profile->matrix_in, RGB_to_XYZ);
-    repack_3x3_to_3xSSE(work_profile->matrix_out, XYZ_to_RGB);
-  }
-
-  input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), RGB_to_XYZ);
-  output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), XYZ_to_RGB);
-  MIX_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), d->MIX);
+  input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), (float*)work_profile->matrix_in);
+  output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), (float*)work_profile->matrix_out);
+  cl_mem MIX_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), d->MIX);
 
   // select the right kernel for the current LMS space
   int kernel = gd->kernel_channelmixer_rgb_rgb;
@@ -2448,7 +2414,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
 
     dt_aligned_pixel_t RGB;
-    dt_ioppr_lab_to_rgb_matrix(g->checker->values[k].Lab, RGB, work_profile->matrix_out, work_profile->lut_out,
+    dt_ioppr_lab_to_rgb_matrix(g->checker->values[k].Lab, RGB, work_profile->matrix_out_transposed, work_profile->lut_out,
                                work_profile->unbounded_coeffs_out, work_profile->lutsize,
                                work_profile->nonlinearlut);
 
@@ -2986,7 +2952,7 @@ static void _convert_GUI_colors(dt_iop_channelmixer_rgb_params_t *p,
     dt_aligned_pixel_t XYZ;
     if(work_profile)
     {
-      dt_ioppr_rgb_matrix_to_xyz(LMS, XYZ, work_profile->matrix_in, work_profile->lut_in,
+      dt_ioppr_rgb_matrix_to_xyz(LMS, XYZ, work_profile->matrix_in_transposed, work_profile->lut_in,
                                   work_profile->unbounded_coeffs_in, work_profile->lutsize,
                                   work_profile->nonlinearlut);
       dt_XYZ_to_Rec709_D65(XYZ, RGB);
@@ -3637,13 +3603,9 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   if(work_profile == NULL) return;
 
-  // repack the matrices as flat AVX2-compliant matrice
-  float DT_ALIGNED_ARRAY RGB_to_XYZ[3][4];
-  repack_3x3_to_3xSSE(work_profile->matrix_in, RGB_to_XYZ);
-
   // Convert to XYZ
-  dt_aligned_pixel_t XYZ = { 0 };
-  dot_product(RGB, RGB_to_XYZ, XYZ);
+  dt_aligned_pixel_t XYZ;
+  dot_product(RGB, work_profile->matrix_in, XYZ);
 
   // Convert to xyY
   const float sum = fmaxf(XYZ[0] + XYZ[1] + XYZ[2], NORM_MIN);
