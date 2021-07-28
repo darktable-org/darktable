@@ -2343,7 +2343,8 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
       fprintf(stderr, "unknown mask mode '%d' in module '%s'", mm, module->op);
     gchar *str1 = g_strconcat(_("this module has a"), " ", type, NULL);
     if(raster)
-      tooltip = g_strdup(str1);
+      tooltip = g_strconcat(str1, "\n", _("as in module"), " ",
+                            dt_history_item_get_name(module->raster_mask.sink.source), NULL);
     else
       tooltip = g_strconcat(str1, "\n", _("click to display (module must be activated first)"), NULL);
     gtk_widget_set_tooltip_text(module->mask_indicator, tooltip);
