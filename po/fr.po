@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-28 19:12+0200\n"
-"PO-Revision-Date: 2021-07-28 19:34+0200\n"
+"POT-Creation-Date: 2021-07-28 20:42+0200\n"
+"PO-Revision-Date: 2021-07-28 20:43+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -225,7 +225,7 @@ msgstr "utiliser le raw à la place du JPEG embarqué à partir de la taille"
 #: ../build/bin/preferences_gen.h:4912 ../build/bin/preferences_gen.h:4966
 #: ../build/bin/preferences_gen.h:6748 ../build/bin/conf_gen.h:375
 #: ../build/bin/conf_gen.h:1020 ../build/bin/conf_gen.h:1036
-#: ../build/bin/conf_gen.h:2774
+#: ../build/bin/conf_gen.h:2784
 msgctxt "preferences"
 msgid "always"
 msgstr "toujours"
@@ -638,17 +638,17 @@ msgid "white balance slider colors"
 msgstr "contrôles colorés de la balance des blancs"
 
 #: ../build/bin/preferences_gen.h:4782 ../build/bin/preferences_gen.h:4811
-#: ../build/bin/conf_gen.h:2728
+#: ../build/bin/conf_gen.h:2738
 msgctxt "preferences"
 msgid "no color"
 msgstr "sans couleur"
 
-#: ../build/bin/preferences_gen.h:4787 ../build/bin/conf_gen.h:2729
+#: ../build/bin/preferences_gen.h:4787 ../build/bin/conf_gen.h:2739
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "couleur de l'illuminant"
 
-#: ../build/bin/preferences_gen.h:4792 ../build/bin/conf_gen.h:2730
+#: ../build/bin/preferences_gen.h:4792 ../build/bin/conf_gen.h:2740
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "effet d'émulation"
@@ -671,17 +671,17 @@ msgid "colorbalance slider block layout"
 msgstr "disposition des contrôles du module balance des couleurs"
 
 #: ../build/bin/preferences_gen.h:4847 ../build/bin/preferences_gen.h:4876
-#: ../build/bin/conf_gen.h:2764
+#: ../build/bin/conf_gen.h:2774
 msgctxt "preferences"
 msgid "list"
 msgstr "liste"
 
-#: ../build/bin/preferences_gen.h:4852 ../build/bin/conf_gen.h:2765
+#: ../build/bin/preferences_gen.h:4852 ../build/bin/conf_gen.h:2775
 msgctxt "preferences"
 msgid "tabs"
 msgstr "onglets"
 
-#: ../build/bin/preferences_gen.h:4857 ../build/bin/conf_gen.h:2766
+#: ../build/bin/preferences_gen.h:4857 ../build/bin/conf_gen.h:2776
 msgctxt "preferences"
 msgid "columns"
 msgstr "colonnes"
@@ -703,39 +703,39 @@ msgstr ""
 msgid "show right-side buttons in processing module headers"
 msgstr "affichage des boutons sur la droite des modules de développement"
 
-#: ../build/bin/preferences_gen.h:4917 ../build/bin/conf_gen.h:2775
+#: ../build/bin/preferences_gen.h:4917 ../build/bin/conf_gen.h:2785
 msgctxt "preferences"
 msgid "active"
 msgstr "actif"
 
-#: ../build/bin/preferences_gen.h:4922 ../build/bin/conf_gen.h:2776
+#: ../build/bin/preferences_gen.h:4922 ../build/bin/conf_gen.h:2786
 msgctxt "preferences"
 msgid "dim"
 msgstr "atténué"
 
 #: ../build/bin/preferences_gen.h:4927 ../build/bin/preferences_gen.h:6308
 #: ../build/bin/preferences_gen.h:6344 ../build/bin/conf_gen.h:2185
-#: ../build/bin/conf_gen.h:2777
+#: ../build/bin/conf_gen.h:2787
 msgctxt "preferences"
 msgid "auto"
 msgstr "auto"
 
-#: ../build/bin/preferences_gen.h:4932 ../build/bin/conf_gen.h:2778
+#: ../build/bin/preferences_gen.h:4932 ../build/bin/conf_gen.h:2788
 msgctxt "preferences"
 msgid "fade"
 msgstr "estompé"
 
-#: ../build/bin/preferences_gen.h:4937 ../build/bin/conf_gen.h:2779
+#: ../build/bin/preferences_gen.h:4937 ../build/bin/conf_gen.h:2789
 msgctxt "preferences"
 msgid "fit"
 msgstr "ajusté"
 
-#: ../build/bin/preferences_gen.h:4942 ../build/bin/conf_gen.h:2780
+#: ../build/bin/preferences_gen.h:4942 ../build/bin/conf_gen.h:2790
 msgctxt "preferences"
 msgid "smooth"
 msgstr "doux"
 
-#: ../build/bin/preferences_gen.h:4947 ../build/bin/conf_gen.h:2781
+#: ../build/bin/preferences_gen.h:4947 ../build/bin/conf_gen.h:2791
 msgctxt "preferences"
 msgid "glide"
 msgstr "glisser"
@@ -869,19 +869,19 @@ msgid "auto-apply pixel workflow defaults"
 msgstr "flux de travail par défaut"
 
 #: ../build/bin/preferences_gen.h:5279 ../build/bin/preferences_gen.h:5308
-#: ../build/bin/conf_gen.h:2614
+#: ../build/bin/conf_gen.h:2624
 msgctxt "preferences"
 msgid "scene-referred"
 msgstr "relatif à la scène"
 
-#: ../build/bin/preferences_gen.h:5284 ../build/bin/conf_gen.h:2615
+#: ../build/bin/preferences_gen.h:5284 ../build/bin/conf_gen.h:2625
 msgctxt "preferences"
 msgid "display-referred"
 msgstr "relatif à l'affichage"
 
 #: ../build/bin/preferences_gen.h:5289 ../build/bin/preferences_gen.h:6313
 #: ../build/bin/conf_gen.h:1632 ../build/bin/conf_gen.h:2186
-#: ../build/bin/conf_gen.h:2616
+#: ../build/bin/conf_gen.h:2626
 msgctxt "preferences"
 msgid "none"
 msgstr "aucun"
@@ -902,13 +902,13 @@ msgstr ""
 msgid "auto-apply chromatic adaptation defaults"
 msgstr "appliquer l'adaptation chromatique par défaut"
 
-#: ../build/bin/preferences_gen.h:5344 ../build/bin/conf_gen.h:2624
+#: ../build/bin/preferences_gen.h:5344 ../build/bin/conf_gen.h:2634
 msgctxt "preferences"
 msgid "modern"
 msgstr "moderne"
 
 #: ../build/bin/preferences_gen.h:5349 ../build/bin/preferences_gen.h:5368
-#: ../build/bin/conf_gen.h:2625
+#: ../build/bin/conf_gen.h:2635
 msgctxt "preferences"
 msgid "legacy"
 msgstr "originel"
@@ -1489,17 +1489,17 @@ msgid "method to use for getting the display profile"
 msgstr "méthode à utiliser pour récupérer le profil d'affichage"
 
 #: ../build/bin/preferences_gen.h:6981 ../build/bin/preferences_gen.h:7010
-#: ../build/bin/conf_gen.h:2578
+#: ../build/bin/conf_gen.h:2588
 msgctxt "preferences"
 msgid "all"
 msgstr "tout"
 
-#: ../build/bin/preferences_gen.h:6986 ../build/bin/conf_gen.h:2579
+#: ../build/bin/preferences_gen.h:6986 ../build/bin/conf_gen.h:2589
 msgctxt "preferences"
 msgid "xatom"
 msgstr "xatom"
 
-#: ../build/bin/preferences_gen.h:6991 ../build/bin/conf_gen.h:2580
+#: ../build/bin/preferences_gen.h:6991 ../build/bin/conf_gen.h:2590
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
@@ -1984,44 +1984,59 @@ msgstr "forme d'onde"
 
 #: ../build/bin/conf_gen.h:2392
 msgctxt "preferences"
+msgid "rgb parade"
+msgstr "parade RVB"
+
+#: ../build/bin/conf_gen.h:2393
+msgctxt "preferences"
 msgid "vectorscope"
 msgstr "vectorscope"
 
-#: ../build/bin/conf_gen.h:2400 ../build/bin/conf_gen.h:2427
+#: ../build/bin/conf_gen.h:2401 ../build/bin/conf_gen.h:2437
 msgctxt "preferences"
 msgid "logarithmic"
 msgstr "logarithmique"
 
-#: ../build/bin/conf_gen.h:2401 ../build/bin/conf_gen.h:2428
+#: ../build/bin/conf_gen.h:2402 ../build/bin/conf_gen.h:2438
 msgctxt "preferences"
 msgid "linear"
 msgstr "linéaire"
 
-#: ../build/bin/conf_gen.h:2409
+#: ../build/bin/conf_gen.h:2410
+msgctxt "preferences"
+msgid "horizontal"
+msgstr "horizontal"
+
+#: ../build/bin/conf_gen.h:2411
+msgctxt "preferences"
+msgid "vertical"
+msgstr "vertical"
+
+#: ../build/bin/conf_gen.h:2419
 msgctxt "preferences"
 msgid "overlaid"
 msgstr "superposer"
 
-#: ../build/bin/conf_gen.h:2410
+#: ../build/bin/conf_gen.h:2420
 msgctxt "preferences"
 msgid "parade"
 msgstr "parade"
 
-#: ../build/bin/conf_gen.h:2418
+#: ../build/bin/conf_gen.h:2428
 msgctxt "preferences"
 msgid "u*v*"
 msgstr "u*v*"
 
-#: ../build/bin/conf_gen.h:2419
+#: ../build/bin/conf_gen.h:2429
 msgctxt "preferences"
 msgid "AzBz"
 msgstr "AzBz"
 
-#: ../build/bin/conf_gen.h:2715
+#: ../build/bin/conf_gen.h:2725
 msgid "camera time zone"
 msgstr "fuseau horaire du boîtier"
 
-#: ../build/bin/conf_gen.h:2716
+#: ../build/bin/conf_gen.h:2726
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -18528,11 +18543,11 @@ msgstr "nombre d'images  par rapport aux images sélectionnées"
 msgid "histogram"
 msgstr "histogramme"
 
-#: ../src/libs/histogram.c:1016 ../src/libs/histogram.c:1633
+#: ../src/libs/histogram.c:1076 ../src/libs/histogram.c:1721
 msgid "ctrl+scroll to change display height"
 msgstr "ctrl+molette pour changer la hauteur"
 
-#: ../src/libs/histogram.c:1023
+#: ../src/libs/histogram.c:1085
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets\n"
@@ -18542,7 +18557,7 @@ msgstr ""
 "le double-clic réinitialise\n"
 "ctrl+molette pour changer la hauteur"
 
-#: ../src/libs/histogram.c:1028
+#: ../src/libs/histogram.c:1090
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets\n"
@@ -18552,108 +18567,112 @@ msgstr ""
 "le double-clic réinitialise\n"
 "ctrl+molette pour changer la hauteur"
 
-#: ../src/libs/histogram.c:1141 ../src/libs/histogram.c:1188
+#: ../src/libs/histogram.c:1203 ../src/libs/histogram.c:1243
 msgid "set scale to linear"
 msgstr "afficher en mode linéaire"
 
-#: ../src/libs/histogram.c:1146 ../src/libs/histogram.c:1193
+#: ../src/libs/histogram.c:1208 ../src/libs/histogram.c:1248
 msgid "set scale to logarithmic"
 msgstr "afficher en mode logarithmique"
 
-#: ../src/libs/histogram.c:1163
-msgid "set view to RGB parade"
-msgstr "afficher en mode parade RVB"
+#: ../src/libs/histogram.c:1224
+msgid "set scope to vertical"
+msgstr "afficher verticalement"
 
-#: ../src/libs/histogram.c:1171
-msgid "set view to waveform"
-msgstr "afficher en mode forme d'onde"
+#: ../src/libs/histogram.c:1229
+msgid "set scope to horizontal"
+msgstr "afficher horizontalement"
 
-#: ../src/libs/histogram.c:1203
+#: ../src/libs/histogram.c:1258
 msgid "set view to AzBz"
 msgstr "afficher en mode AzBz"
 
-#: ../src/libs/histogram.c:1208
+#: ../src/libs/histogram.c:1263
 msgid "set view to u*v*"
 msgstr "afficher en mode u*v*"
 
-#: ../src/libs/histogram.c:1222
+#: ../src/libs/histogram.c:1277
 msgid "set mode to waveform"
 msgstr "afficher en mode forme d'onde"
 
-#: ../src/libs/histogram.c:1232
+#: ../src/libs/histogram.c:1287
+msgid "set mode to rgb parade"
+msgstr "afficher en mode parade RVB"
+
+#: ../src/libs/histogram.c:1297
 msgid "set mode to vectorscope"
 msgstr "afficher en mode vectorscope"
 
-#: ../src/libs/histogram.c:1240
+#: ../src/libs/histogram.c:1307
 msgid "set mode to histogram"
 msgstr "afficher en mode histogramme"
 
-#: ../src/libs/histogram.c:1324 ../src/libs/histogram.c:1360
-#: ../src/libs/histogram.c:1664
+#: ../src/libs/histogram.c:1400 ../src/libs/histogram.c:1436
+#: ../src/libs/histogram.c:1752
 msgid "click to hide red channel"
 msgstr "cacher le canal rouge"
 
-#: ../src/libs/histogram.c:1324 ../src/libs/histogram.c:1360
-#: ../src/libs/histogram.c:1664
+#: ../src/libs/histogram.c:1400 ../src/libs/histogram.c:1436
+#: ../src/libs/histogram.c:1752
 msgid "click to show red channel"
 msgstr "afficher le canal rouge"
 
-#: ../src/libs/histogram.c:1332 ../src/libs/histogram.c:1358
-#: ../src/libs/histogram.c:1671
+#: ../src/libs/histogram.c:1408 ../src/libs/histogram.c:1434
+#: ../src/libs/histogram.c:1759
 msgid "click to hide green channel"
 msgstr "cacher le canal vert"
 
-#: ../src/libs/histogram.c:1332 ../src/libs/histogram.c:1358
-#: ../src/libs/histogram.c:1671
+#: ../src/libs/histogram.c:1408 ../src/libs/histogram.c:1434
+#: ../src/libs/histogram.c:1759
 msgid "click to show green channel"
 msgstr "afficher le canal vert"
 
-#: ../src/libs/histogram.c:1340 ../src/libs/histogram.c:1359
-#: ../src/libs/histogram.c:1677
+#: ../src/libs/histogram.c:1416 ../src/libs/histogram.c:1435
+#: ../src/libs/histogram.c:1765
 msgid "click to hide blue channel"
 msgstr "cacher le canal bleu"
 
-#: ../src/libs/histogram.c:1340 ../src/libs/histogram.c:1359
-#: ../src/libs/histogram.c:1677
+#: ../src/libs/histogram.c:1416 ../src/libs/histogram.c:1435
+#: ../src/libs/histogram.c:1765
 msgid "click to show blue channel"
 msgstr "afficher le canal bleu"
 
-#: ../src/libs/histogram.c:1781
+#: ../src/libs/histogram.c:1868
 msgctxt "accel"
 msgid "histogram/hide histogram"
 msgstr "histogramme/cacher histogramme"
 
-#: ../src/libs/histogram.c:1782
+#: ../src/libs/histogram.c:1869
 msgctxt "accel"
 msgid "hide histogram"
 msgstr "cacher histogramme"
 
-#: ../src/libs/histogram.c:1783
+#: ../src/libs/histogram.c:1870
 msgctxt "accel"
 msgid "histogram/cycle histogram modes"
 msgstr "histogramme/cycler sur les modes de l'histogramme"
 
-#: ../src/libs/histogram.c:1784
+#: ../src/libs/histogram.c:1871
 msgctxt "accel"
 msgid "cycle histogram modes"
 msgstr "cycler sur les modes de l'histogramme"
 
-#: ../src/libs/histogram.c:1785
+#: ../src/libs/histogram.c:1872
 msgctxt "accel"
 msgid "histogram/switch histogram mode"
 msgstr "histogramme/changer le mode de l'histogramme"
 
-#: ../src/libs/histogram.c:1786
+#: ../src/libs/histogram.c:1873
 msgctxt "accel"
 msgid "switch histogram mode"
 msgstr "changer le mode de l'histogramme"
 
-#: ../src/libs/histogram.c:1787
+#: ../src/libs/histogram.c:1874
 msgctxt "accel"
 msgid "histogram/switch histogram type"
 msgstr "histogramme/changer le type de l'histogramme"
 
-#: ../src/libs/histogram.c:1788
+#: ../src/libs/histogram.c:1875
 msgctxt "accel"
 msgid "switch histogram type"
 msgstr "changer le type de l'histogramme"
@@ -22352,6 +22371,9 @@ msgstr "actions souris"
 #: ../src/views/view.c:1726
 msgid "Action"
 msgstr "action"
+
+#~ msgid "set view to waveform"
+#~ msgstr "afficher en mode forme d'onde"
 
 #~ msgid "time"
 #~ msgstr "date/heure"
