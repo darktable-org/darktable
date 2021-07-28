@@ -128,6 +128,7 @@ typedef struct dt_action_def_t
   float (*process)(gpointer target, dt_action_element_t, dt_action_effect_t, float size);
   const dt_action_element_def_t *elements;
   const dt_shortcut_fallback_t *fallbacks;
+  const gboolean no_widget;
 } dt_action_def_t;
 
 extern const dt_action_def_t dt_action_def_toggle;
