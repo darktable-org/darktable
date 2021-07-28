@@ -204,7 +204,7 @@ int dt_develop_blendif_init_masking_profile(struct dt_dev_pixelpipe_iop_t *piece
                                             dt_develop_blend_colorspace_t cst)
 {
   // Bradford adaptation matrix from http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html
-  const float M[3][4] DT_ALIGNED_ARRAY = {
+  const dt_colormatrix_t M = {
       {  0.9555766f, -0.0230393f,  0.0631636f, 0.0f },
       { -0.0282895f,  1.0099416f,  0.0210077f, 0.0f },
       {  0.0122982f, -0.0204830f,  1.3299098f, 0.0f },
@@ -222,8 +222,8 @@ int dt_develop_blendif_init_masking_profile(struct dt_dev_pixelpipe_iop_t *piece
     {
       float sum = 0.0f;
       for(size_t i = 0; i < 3; i++)
-        sum += M[y][i] * profile->matrix_in[x + i * 3];
-      blending_profile->matrix_out[y * 3 + x] = sum;
+        sum += M[y][i] * profile->matrix_in[i][x];
+      blending_profile->matrix_out[y][x] = sum;
     }
   }
 

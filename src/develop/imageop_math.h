@@ -104,7 +104,7 @@ void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv);
 
 /** takes four points (x,y) in two arrays and fills the cubic coefficients a, such that y = [X] * a, where
   * [X] is the matrix containing all x^3 x^2 x^1 x^0 lines for all four x. */
-void dt_iop_estimate_cubic(const float *const x, const float *const y, float *a);
+void dt_iop_estimate_cubic(const float x[4], const float y[4], float a[4]);
 
 /** evaluates the cubic fit, i.e. returns y = a^t [x^3 x^2 x^1 1] */
 static inline float dt_iop_eval_cubic(const float *const a, const float x)

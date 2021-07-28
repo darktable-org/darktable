@@ -607,6 +607,12 @@ static int sanity_check(dt_iop_module_t *self)
   return 1;
 }
 
+// gaussian-ish kernel - sum is == 1.0f so we don't care much about actual coeffs
+static const dt_colormatrix_t gauss_kernel =
+  { { 0.076555024f, 0.124401914f, 0.076555024f },
+    { 0.124401914f, 0.196172249f, 0.124401914f },
+    { 0.076555024f, 0.124401914f, 0.076555024f } };
+
 __DT_CLONE_TARGETS__
 static float get_luminance_from_buffer(const float *const buffer,
                                        const size_t width, const size_t height,
@@ -617,27 +623,39 @@ static float get_luminance_from_buffer(const float *const buffer,
 
   if(y >= height || x >= width) return NAN;
 
-  const size_t y_abs[3] = { CLAMP(y - 1, 0, height - 1),    // previous line
+  const size_t y_abs[4] DT_ALIGNED_PIXEL =
+                          { MIN(y, 1) - 1,                  // previous line
                             y,                              // center line
-                            CLAMP(y + 1, 0, height - 1) };  // next line
-
-  const size_t x_abs[3] = { CLAMP(x - 1, 0, width - 1),     // previous column
-                            x,                              // center column
-                            CLAMP(x + 1, 0, width - 1) };   // next column
-
-  // gaussian-ish kernel - sum is == 1.0f so we don't care much about actual coeffs
-  const float gauss_kernel[3][3] DT_ALIGNED_ARRAY =
-                                   { { 0.076555024f, 0.124401914f, 0.076555024f },
-                                     { 0.124401914f, 0.196172249f, 0.124401914f },
-                                     { 0.076555024f, 0.124401914f, 0.076555024f } };
+                            MIN(y + 1, height - 1),         // next line
+                            y };			    // padding for vectorization
 
   float luminance = 0.0f;
+  if (x > 0 && x < width - 2)
+  {
+    // no clamping needed on x, which allows us to vectorize
+    // apply the convolution
+    for(int i = 0; i < 3; ++i)
+    {
+      const size_t y_i = y_abs[i];
+      for_each_channel(j)
+        luminance += buffer[width * y_i + x-1 + j] * gauss_kernel[i][j];
+    }
+    return luminance;
+  }
+  
+  const size_t x_abs[4] DT_ALIGNED_PIXEL =
+                          { MIN(x, 1) - 1,                  // previous column
+                            x,                              // center column
+                            MIN(x + 1, width - 1),          // next column
+                            x };                            // padding for vectorization
 
   // convolution
   for(int i = 0; i < 3; ++i)
-    for(int j = 0; j < 3; ++j)
-      luminance += buffer[width * y_abs[i] + x_abs[j]] * gauss_kernel[i][j];
-
+  {
+    const size_t y_i = y_abs[i];
+    for_each_channel(j)
+      luminance += buffer[width * y_i + x_abs[j]] * gauss_kernel[i][j];
+  }
   return luminance;
 }
 
