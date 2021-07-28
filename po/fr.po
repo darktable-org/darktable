@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-28 20:42+0200\n"
-"PO-Revision-Date: 2021-07-28 20:43+0200\n"
+"POT-Creation-Date: 2021-07-28 23:07+0200\n"
+"PO-Revision-Date: 2021-07-28 23:07+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6452,12 +6452,12 @@ msgid "input after blur"
 msgstr "entrée après le flou"
 
 #: ../src/develop/blend_gui.c:854 ../src/develop/blend_gui.c:2205
-#: ../src/develop/imageop.c:3069
+#: ../src/develop/imageop.c:3070
 msgid "input"
 msgstr "entrée"
 
 #: ../src/develop/blend_gui.c:854 ../src/develop/blend_gui.c:2205
-#: ../src/develop/imageop.c:3071
+#: ../src/develop/imageop.c:3072
 msgid "output"
 msgstr "sortie"
 
@@ -7020,34 +7020,34 @@ msgid "duplicate instance"
 msgstr "cloner l'instance"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:936 ../src/develop/imageop.c:3209
+#: ../src/develop/imageop.c:936 ../src/develop/imageop.c:3210
 #: ../src/libs/masks.c:1162
 msgid "move up"
 msgstr "monter"
 
-#: ../src/develop/imageop.c:942 ../src/develop/imageop.c:3210
+#: ../src/develop/imageop.c:942 ../src/develop/imageop.c:3211
 #: ../src/libs/masks.c:1165
 msgid "move down"
 msgstr "descendre"
 
-#: ../src/develop/imageop.c:948 ../src/develop/imageop.c:3212
+#: ../src/develop/imageop.c:948 ../src/develop/imageop.c:3213
 #: ../src/gui/accelerators.c:134 ../src/gui/presets.c:470
 #: ../src/libs/image.c:178 ../src/libs/tagging.c:1364
 #: ../src/libs/tagging.c:1452
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:955 ../src/develop/imageop.c:3213
+#: ../src/develop/imageop.c:955 ../src/develop/imageop.c:3214
 #: ../src/libs/modulegroups.c:3417 ../src/libs/modulegroups.c:3769
 msgid "rename"
 msgstr "renommer"
 
-#: ../src/develop/imageop.c:1020 ../src/develop/imageop.c:2450
+#: ../src/develop/imageop.c:1020 ../src/develop/imageop.c:2451
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:1020 ../src/develop/imageop.c:2450
+#: ../src/develop/imageop.c:1020 ../src/develop/imageop.c:2451
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
@@ -7064,11 +7064,15 @@ msgstr "masque dessiné + paramétrique"
 msgid "this module has a"
 msgstr "ce module a un"
 
-#: ../src/develop/imageop.c:2348
+#: ../src/develop/imageop.c:2346
+msgid "taken from module"
+msgstr "récupéré du module"
+
+#: ../src/develop/imageop.c:2349
 msgid "click to display (module must be activated first)"
 msgstr "cliquer pour afficher (le module doit être activé)"
 
-#: ../src/develop/imageop.c:2413
+#: ../src/develop/imageop.c:2414
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -7076,7 +7080,7 @@ msgstr ""
 "actions instances multiples\n"
 "clic-droit pour créer une nouvelle instance"
 
-#: ../src/develop/imageop.c:2426
+#: ../src/develop/imageop.c:2427
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -7085,12 +7089,12 @@ msgstr ""
 "ctrl+clic pour réappliquer les préréglages automatique"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2436 ../src/develop/imageop.c:3223
+#: ../src/develop/imageop.c:2437 ../src/develop/imageop.c:3224
 #: ../src/gui/preferences.c:786 ../src/libs/lib.c:1294
 msgid "presets"
 msgstr "préréglages"
 
-#: ../src/develop/imageop.c:2438
+#: ../src/develop/imageop.c:2439
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -7098,23 +7102,23 @@ msgstr ""
 "préréglages\n"
 "clic-droit pour appliquer sur une nouvelle instance"
 
-#: ../src/develop/imageop.c:2688 ../src/develop/imageop.c:2710
+#: ../src/develop/imageop.c:2689 ../src/develop/imageop.c:2711
 msgid "ERROR"
 msgstr "ERREUR"
 
-#: ../src/develop/imageop.c:3068
+#: ../src/develop/imageop.c:3069
 msgid "purpose"
 msgstr "objectif"
 
-#: ../src/develop/imageop.c:3070
+#: ../src/develop/imageop.c:3071
 msgid "process"
 msgstr "traitement"
 
-#: ../src/develop/imageop.c:3140
+#: ../src/develop/imageop.c:3141
 msgid "unsupported input"
 msgstr "entrée non supportée"
 
-#: ../src/develop/imageop.c:3141
+#: ../src/develop/imageop.c:3142
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -7125,42 +7129,42 @@ msgstr ""
 "dans le pipeline où le format de donnée\n"
 "ne satisfait pas les prérequis."
 
-#: ../src/develop/imageop.c:3208 ../src/develop/imageop.c:3218
+#: ../src/develop/imageop.c:3209 ../src/develop/imageop.c:3219
 #: ../src/gui/accelerators.c:130 ../src/libs/lib.c:1292
 msgid "show"
 msgstr "afficher"
 
-#: ../src/develop/imageop.c:3211 ../src/libs/modulegroups.c:3275
+#: ../src/develop/imageop.c:3212 ../src/libs/modulegroups.c:3275
 #: ../src/libs/modulegroups.c:3391 ../src/libs/modulegroups.c:3772
 #: ../src/libs/tagging.c:3094
 msgid "new"
 msgstr "nouveau"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:3214 ../src/libs/duplicate.c:546
+#: ../src/develop/imageop.c:3215 ../src/libs/duplicate.c:546
 #: ../src/libs/image.c:496 ../src/libs/modulegroups.c:3766
 msgid "duplicate"
 msgstr "cloner"
 
-#: ../src/develop/imageop.c:3219
+#: ../src/develop/imageop.c:3220
 msgid "enable"
 msgstr "activer"
 
-#: ../src/develop/imageop.c:3220
+#: ../src/develop/imageop.c:3221
 msgid "focus"
 msgstr "focus"
 
-#: ../src/develop/imageop.c:3221 ../src/gui/accelerators.c:1668
+#: ../src/develop/imageop.c:3222 ../src/gui/accelerators.c:1668
 msgid "instance"
 msgstr "instance"
 
-#: ../src/develop/imageop.c:3222 ../src/gui/accelerators.c:103
+#: ../src/develop/imageop.c:3223 ../src/gui/accelerators.c:103
 #: ../src/gui/accelerators.c:111 ../src/libs/lib.c:1293
 #: ../src/libs/modulegroups.c:3835
 msgid "reset"
 msgstr "réinitialiser"
 
-#: ../src/develop/imageop.c:3235
+#: ../src/develop/imageop.c:3236
 msgid "processing module"
 msgstr "module de traitement"
 
