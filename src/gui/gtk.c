@@ -361,6 +361,17 @@ static void _panel_toggle(dt_ui_border_t border, dt_ui_t *ui)
   }
 }
 
+static gboolean _toggle_side_borders_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                                    GdkModifierType modifier, gpointer data)
+{
+  /* toggle panel viewstate */
+  dt_ui_toggle_panels_visibility(darktable.gui->ui);
+
+  /* trigger invalidation of centerview to reprocess pipe */
+  dt_dev_invalidate(darktable.develop);
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+  return TRUE;
+}
 static gboolean _toggle_panel_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                              GdkModifierType modifier, gpointer data)
 {
@@ -1288,6 +1299,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // Side-border hide/show
   dt_accel_register_global(NC_("accel", "toggle side borders"), GDK_KEY_Tab, 0);
+  dt_accel_connect_global("toggle side borders",
+                          g_cclosure_new(G_CALLBACK(_toggle_side_borders_accel_callback), NULL, NULL));
 
   dt_accel_register_global(NC_("accel", "toggle panels collapsing controls"), GDK_KEY_b, 0);
   dt_accel_connect_global("toggle panels collapsing controls",
