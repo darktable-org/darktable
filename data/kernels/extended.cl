@@ -755,35 +755,22 @@ static inline float lookup_gamut(read_only image2d_t gamut_lut, const float x)
   // WARNING : x should be between [-pi ; pi ], which is the default output of atan2 anyway
 
   // convert in LUT coordinate
-  const float x_test = (LUT_ELEM - 1) * (x + M_PI_F) / (2.f * M_PI_F);
-
-  // find the 2 closest integer coordinates (next/previous)
-  float x_prev = floor(x_test);
-  float x_next = ceil(x_test);
+  const float angle = x + M_PI_F;
+  const float x_test = angle * (LUT_ELEM - 1) / (2.f * M_PI_F);
+  const float x_prev = fmax(floor(x_test), 0.f);
 
   // get the 2 closest LUT elements at integer coordinates
   // cycle on the hue ring if out of bounds
-  int xi = (int)x_prev;
-  if(xi < 0) xi = LUT_ELEM - 1;
-  else if(xi > LUT_ELEM - 1) xi = 0;
-
-  int xii = (int)x_next;
-  if(xii < 0) xii = LUT_ELEM - 1;
-  else if(xii > LUT_ELEM - 1) xii = 0;
+  const int xi = x_prev;
+  const int xii = xi == LUT_ELEM - 1 ? 0 : xi + 1;
 
   // fetch the corresponding y values
   const float y_prev = read_imagef(gamut_lut, sampleri, (int2)(xi, 0)).x;
   const float y_next = read_imagef(gamut_lut, sampleri, (int2)(xii, 0)).x;
 
-  // assume that we are exactly on an integer LUT element
-  float out = y_prev;
+  const float delta_x = x_test - x_prev;
 
-  if(x_next != x_prev)
-    // we are between 2 LUT elements : do linear interpolation
-    // actually, we only add the slope term on the previous one
-    out += (x_test - x_prev) * (y_next - y_prev) / (x_next - x_prev);
-
-  return out;
+  return (1.f - delta_x) * y_prev + delta_x * y_next;
 }
 
 
