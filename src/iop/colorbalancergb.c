@@ -512,10 +512,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const size_t checker_1 = (mask_display) ? DT_PIXEL_APPLY_DPI(d->checker_size) : 0;
   const size_t checker_2 = 2 * checker_1;
 
+  const float DT_ALIGNED_PIXEL hue_rotation_matrix[2][2]
+      = { { cosf(d->hue_angle), -sinf(d->hue_angle) }, { sinf(d->hue_angle), cosf(d->hue_angle) } };
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, out, roi_in, roi_out, d, g, mask_display, input_matrix, output_matrix, gamut_LUT, \
-    global, highlights, shadows, midtones, chroma, saturation, brilliance, checker_1, checker_2) \
+    global, highlights, shadows, midtones, chroma, saturation, brilliance, checker_1, checker_2, \
+    hue_rotation_matrix) \
     schedule(static) collapse(2)
 #endif
   for(size_t i = 0; i < roi_out->height; i++)
@@ -529,7 +533,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_aligned_pixel_t LMS = { 0.f };
     dt_aligned_pixel_t RGB = { 0.f };
     dt_aligned_pixel_t Yrg = { 0.f };
-    dt_aligned_pixel_t Ych = { 0.f };
 
     // clip pipeline RGB
     for_four_channels(c, aligned(pix_in:16)) RGB[c] = fmaxf(pix_in[c], 0.0f);
@@ -551,57 +554,54 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // go to Filmlight Yrg
     LMS_to_Yrg(LMS, Yrg);
 
-    // go to Ych
-    Yrg_to_Ych(Yrg, Ych);
-
     // Sanitize input : no negative luminance
-    Ych[0] = fmaxf(Ych[0], 0.f);
+    Yrg[0] = fmaxf(Yrg[0], 0.f);
 
     // Opacities for luma masks
     dt_aligned_pixel_t opacities;
     dt_aligned_pixel_t opacities_comp;
-    opacity_masks(powf(Ych[0], 0.4101205819200422f), // center middle grey in 50 %
+    opacity_masks(powf(Yrg[0], 0.4101205819200422f), // center middle grey in 50 %
                   d->shadows_weight, d->highlights_weight, d->midtones_weight, d->mask_grey_fulcrum, opacities, opacities_comp);
 
     // Hue shift - do it now because we need the gamut limit at output hue right after
-    Ych[2] += d->hue_angle;
+    // This is done by rotating the components r and g around the D65 white point.
+    const dt_aligned_pixel_t D65 = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
+    const float red = Yrg[1] - D65[0];
+    const float green = Yrg[2] - D65[1];
+    Yrg[1] = hue_rotation_matrix[0][0] * red + hue_rotation_matrix[0][1] * green;
+    Yrg[2] = hue_rotation_matrix[1][0] * red + hue_rotation_matrix[1][1] * green;
 
-    // Ensure hue ± correction is in [-PI; PI]
-    if(Ych[2] > M_PI_F) Ych[2] -= 2.f * M_PI_F;
-    else if(Ych[2] < -M_PI_F) Ych[2] += 2.f * M_PI_F;
-
+    const float current_chroma = dt_fast_hypotf(Yrg[1], Yrg[2]);
+    // Compute cos(arg(h)) = dx / hypot - force arg(h) = 0 if hypot == 0
+    const float cos_h = current_chroma ? Yrg[1] / current_chroma : 1.f;  // fall back to cos(0)
+    // Compute sin(arg(h)) = dy / hypot - force arg(h) = 0 if hypot == 0
+    const float sin_h = current_chroma ? Yrg[2] / current_chroma : 0.f;  // fall back to sin(0)
     // Linear chroma : distance to achromatic at constant luminance in scene-referred
     const float chroma_boost = d->chroma_global + scalar_product(opacities, chroma);
-    const float vibrance = d->vibrance * (1.0f - powf(Ych[1], fabsf(d->vibrance)));
+    const float vibrance = d->vibrance * (1.0f - powf(current_chroma, fabsf(d->vibrance)));
     const float chroma_factor = fmaxf(1.f + chroma_boost + vibrance, 0.f);
-    Ych[1] *= chroma_factor;
-
-    // Do a test conversion to Yrg
-    Ych_to_Yrg(Ych, Yrg);
 
     // Gamut-clip in Yrg at constant hue and luminance
     // e.g. find the max chroma value that fits in gamut at the current hue
-    const dt_aligned_pixel_t D65 = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
-    float max_c = Ych[1];
-    const float cos_h = cosf(Ych[2]);
-    const float sin_h = sinf(Ych[2]);
-
-    if(Yrg[1] < 0.f)
+    float max_c = current_chroma * chroma_factor;
+    const float new_red = max_c * cos_h + D65[0];
+    const float new_green = max_c * sin_h + D65[1];
+    if(new_red < 0.f)
     {
       max_c = fminf(-D65[0] / cos_h, max_c);
     }
-    if(Yrg[2] < 0.f)
+    if(new_green < 0.f)
     {
       max_c = fminf(-D65[1] / sin_h, max_c);
     }
-    if(Yrg[1] + Yrg[2] > 1.f)
+    if(new_red + new_green > 1.f)
     {
       max_c = fminf((1.f - D65[0] - D65[1]) / (cos_h + sin_h), max_c);
     }
 
-    // Overwrite chroma with the sanitized value and go to Yrg for real
-    Ych[1] = max_c;
-    Ych_to_Yrg(Ych, Yrg);
+    // Normalize r, g to new chroma and add white point
+    Yrg[1] = cos_h * max_c + D65[0];
+    Yrg[2] = sin_h * max_c + D65[1];
 
     // Go to LMS
     Yrg_to_LMS(Yrg, LMS);
@@ -790,6 +790,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem input_matrix_cl = NULL;
   cl_mem output_matrix_cl = NULL;
   cl_mem gamut_LUT = NULL;
+  cl_mem hue_rotation_matrix_cl = NULL;
 
   err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
                                             &dev_profile_info, &dev_profile_lut);
@@ -844,6 +845,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int checker_2 = 2 * checker_1;
   const int mask_type = (mask_display) ? g->mask_type : 0;
 
+  float hue_rotation_matrix[4]
+    = { cosf(d->hue_angle), -sinf(d->hue_angle), sinf(d->hue_angle), cosf(d->hue_angle) };
+  hue_rotation_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), hue_rotation_matrix);
+
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 2, sizeof(int), (void *)&width);
@@ -878,6 +883,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 31, sizeof(int), (void *)&checker_2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 32, 4 * sizeof(float), (void *)&d->checker_color_1);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 33, 4 * sizeof(float), (void *)&d->checker_color_2);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 34, sizeof(cl_mem), (void *)&hue_rotation_matrix_cl);
 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_rgb, sizes);
   if(err != CL_SUCCESS) goto error;
@@ -887,6 +893,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_release_mem_object(input_matrix_cl);
   dt_opencl_release_mem_object(output_matrix_cl);
   dt_opencl_release_mem_object(gamut_LUT);
+  dt_opencl_release_mem_object(hue_rotation_matrix_cl);
   return TRUE;
 
 error:
@@ -894,6 +901,7 @@ error:
   if(input_matrix_cl) dt_opencl_release_mem_object(input_matrix_cl);
   if(output_matrix_cl) dt_opencl_release_mem_object(output_matrix_cl);
   if(gamut_LUT) dt_opencl_release_mem_object(gamut_LUT);
+  if(hue_rotation_matrix_cl) dt_opencl_release_mem_object(hue_rotation_matrix_cl);
   dt_print(DT_DEBUG_OPENCL, "[opencl_colorbalancergb] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }

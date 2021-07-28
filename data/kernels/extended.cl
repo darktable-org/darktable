@@ -810,7 +810,8 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
                  const float brilliance_global, const float4 brilliance,
                  const float saturation_global, const float4 saturation,
                  const int mask_display, const int mask_type, const int checker_1, const int checker_2,
-                 const float4 checker_color_1, const float4 checker_color_2)
+                 const float4 checker_color_1, const float4 checker_color_2,
+                 constant const float *const hue_rotation_matrix)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -821,7 +822,6 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   float4 LMS = 0.f;
   float4 RGB = 0.f;
   float4 Yrg = 0.f;
-  float4 Ych = 0.f;
 
   // clip pipeline RGB
   RGB = fmax(pix_in, 0.f);
@@ -832,54 +832,52 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   // go to Filmlight Yrg
   Yrg = LMS_to_Yrg(LMS);
 
-  // go to Ych
-  Ych = Yrg_to_Ych(Yrg);
-
   // Sanitize input : no negative luminance
-  Ych.x = fmax(Ych.x, 0.f);
-  const float4 opacities = opacity_masks(native_powr(Ych.x, 0.4101205819200422f), // center middle grey in 50 %
+  Yrg.x = fmax(Yrg.x, 0.f);
+  const float4 opacities = opacity_masks(native_powr(Yrg.x, 0.4101205819200422f), // center middle grey in 50 %
                                          shadows_weight, highlights_weight, midtones_weight, mask_grey_fulcrum);
   const float4 opacities_comp = (float4)1.f - opacities;
 
   // Hue shift - do it now because we need the gamut limit at output hue right after
-  Ych.z += hue_angle;
-
-  // Ensure hue ± correction is in [-PI; PI]
-  if(Ych.z > M_PI_F) Ych.z -= 2.f * M_PI_F;
-  else if(Ych.z < -M_PI_F) Ych.z += 2.f * M_PI_F;
+  // This is done by rotating the components r and g around the D65 white point.
+  const float4 D65 = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
+  const float red = Yrg.y - D65.x;
+  const float green = Yrg.z - D65.y;
+  Yrg.y = hue_rotation_matrix[0] * red + hue_rotation_matrix[1] * green;
+  Yrg.z = hue_rotation_matrix[2] * red + hue_rotation_matrix[3] * green;
 
   // Linear chroma : distance to achromatic at constant luminance in scene-referred
+  const float current_chroma = hypot(Yrg.y, Yrg.z);
+  // Compute cos(arg(h)) = dx / hypot - force arg(h) = 0 if hypot == 0
+  const float cos_h = current_chroma != 0.f ? Yrg.y / current_chroma : 1.f;  // fall back to cos(0)
+  // Compute sin(arg(h)) = dy / hypot - force arg(h) = 0 if hypot == 0
+  const float sin_h = current_chroma != 0.f ? Yrg.z / current_chroma : 0.f;  // fall back to sin(0)
   const float chroma_boost = chroma_global + dot(opacities, chroma);
-  const float vib = vibrance * (1.0f - native_powr(Ych.y, fabs(vibrance)));
+  const float vib = vibrance * (1.0f - native_powr(current_chroma, fabs(vibrance)));
   const float chroma_factor = fmax(1.f + chroma_boost + vib, 0.f);
-  Ych.y *= chroma_factor;
-
-  // Do a test conversion to Yrg
-  Yrg = Ych_to_Yrg(Ych);
 
   // Gamut-clip in Yrg at constant hue and luminance
   // e.g. find the max chroma value that fits in gamut at the current hue
-  const float D65[4] = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
-  float max_c = Ych.y;
-  const float cos_h = native_cos(Ych.z);
-  const float sin_h = native_sin(Ych.z);
+  float max_c = current_chroma * chroma_factor;
+  const float new_red = max_c * cos_h + D65.y;
+  const float new_green = max_c * sin_h + D65.z;
 
-  if(Yrg.y < 0.f)
+  if(new_red < 0.f)
   {
     max_c = fmin(-D65[0] / cos_h, max_c);
   }
-  if(Yrg.z < 0.f)
+  if(new_green < 0.f)
   {
     max_c = fmin(-D65[1] / sin_h, max_c);
   }
-  if(Yrg.y + Yrg.z > 1.f)
+  if(new_red + new_green > 1.f)
   {
     max_c = fmin((1.f - D65[0] - D65[1]) / (cos_h + sin_h), max_c);
   }
 
-  // Overwrite chroma with the sanitized value and go to Yrg for real
-  Ych.y = max_c;
-  Yrg = Ych_to_Yrg(Ych);
+  // Normalize r, g to new chroma and add white point
+  Yrg.y = cos_h * max_c + D65.x;
+  Yrg.z = sin_h * max_c + D65.y;
 
   // Go to LMS
   LMS = Yrg_to_LMS(Yrg);
