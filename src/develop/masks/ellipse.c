@@ -1875,8 +1875,8 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module, const dt_dev_p
       const float sinv2 = y_rot * y_rot;
 
       // project the rotated unit vector out to the ellipse and the outer border
-      float radius2 = a2 * b2 / (a2 * sinv2 + b2 * cosv2);
-      float total2 = ta2 * tb2 / (ta2 * sinv2 + tb2 * cosv2);
+      const float radius2 = a2 * b2 / (a2 * sinv2 + b2 * cosv2);
+      const float total2 = ta2 * tb2 / (ta2 * sinv2 + tb2 * cosv2);
 
       // quadratic falloff between the ellipses's radius and the radius of the outside of the feathering
       // ratio = 0.0 at the outer border, >= 1.0 within the ellipse, negative outside the falloff
