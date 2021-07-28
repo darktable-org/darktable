@@ -227,11 +227,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
       // FIXME: use for_each_channel?
       for(size_t ch = 0; ch < 3; ch++)
       {
-        // FIXME: instead of doing this math, apply a transform when drawing?
-        const float v = (8.0f / 9.0f) * px[ch];
         const size_t bin = (orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? x : y) / samples_per_bin;
-        // FIXME: faster to flip tone in next loop or on display?
-        const size_t tone = (orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? 1.0f-v : v) * (num_tones-1);
+        const size_t tone = (8.0f / 9.0f) * px[ch] * (num_tones-1);
         // NOTE: this clamps NAN and < 0 to 0, but clips > 1
         if(tone <= num_tones-1)
           dt_atomic_add_int(binned + (ch * num_bins + bin) * num_tones + tone, 1);
@@ -699,7 +696,16 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
 
   // scale and write to output buffer
   cairo_save(cr);
-  cairo_scale(cr, (float)width/img_width, (float)height/img_height);
+  if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
+  {
+    // y=0 is at bottom of widget
+    cairo_translate(cr, 0., height);
+    cairo_scale(cr, (float)width/img_width, (float)-height/img_height);
+  }
+  else
+  {
+    cairo_scale(cr, (float)width/img_width, (float)height/img_height);
+  }
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_source_surface(cr, cst, 0., 0.);
   cairo_paint(cr);
@@ -744,7 +750,16 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, i
   cairo_destroy(crt);
 
   cairo_save(cr);
-  cairo_scale(cr, (float)width/img_width, (float)height/img_height);
+  if(d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI)
+  {
+    // y=0 is at bottom of widget
+    cairo_translate(cr, 0., height);
+    cairo_scale(cr, (float)width/img_width, (float)-height/img_height);
+  }
+  else
+  {
+    cairo_scale(cr, (float)width/img_width, (float)height/img_height);
+  }
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_source_surface(cr, cst, 0., 0.);
   cairo_paint(cr);
