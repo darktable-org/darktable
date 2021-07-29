@@ -43,6 +43,31 @@
 #include <string.h>
 #include <strings.h>
 
+static float _action_process_accels_show(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  if(move_size)
+  {
+    if(darktable.view_manager->accels_window.window == NULL)
+    {
+      if(effect != DT_ACTION_EFFECT_OFF)
+        dt_view_accels_show(darktable.view_manager);
+    }
+    else
+    {
+      if(effect != DT_ACTION_EFFECT_ON)
+        dt_view_accels_hide(darktable.view_manager);
+    }
+  }
+
+  return darktable.view_manager->accels_window.window != NULL;
+}
+
+const dt_action_def_t dt_action_def_accels_show
+  = { N_("hold"),
+      _action_process_accels_show,
+      dt_action_elements_hold,
+      NULL, TRUE };
+
 void dt_control_init(dt_control_t *s)
 {
   s->actions_global = (dt_action_t){ DT_ACTION_TYPE_GLOBAL, "global", C_("accel", "global"), .next = &s->actions_views };
@@ -55,8 +80,6 @@ void dt_control_init(dt_control_t *s)
   s->actions_fallbacks = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "fallbacks", C_("accel", "fallbacks") };
   s->actions = &s->actions_global;
 
-  dt_action_define_key_pressed_accel(&s->actions_global, "show accels window", &s->accels.global_accels_window);
-
   s->widgets = g_hash_table_new(NULL, NULL);
   s->shortcuts = g_sequence_new(g_free);
   s->mapping_widget = NULL;
@@ -66,6 +89,9 @@ void dt_control_init(dt_control_t *s)
   dt_action_define_fallback(DT_ACTION_TYPE_IOP, &dt_action_def_iop);
   dt_action_define_fallback(DT_ACTION_TYPE_LIB, &dt_action_def_lib);
   dt_action_define_fallback(DT_ACTION_TYPE_VALUE_FALLBACK, &dt_action_def_value);
+
+  dt_action_t *ac = dt_action_define(&s->actions_global, NULL, N_("show accels window"), NULL, &dt_action_def_accels_show);
+  dt_accel_register_shortcut(ac, NULL, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_h, 0);
 
   memset(s->vimkey, 0, sizeof(s->vimkey));
   s->vimkey_cnt = 0;
@@ -626,8 +652,6 @@ void dt_control_queue_redraw_widget(GtkWidget *widget)
 
 int dt_control_key_pressed_override(guint key, guint state)
 {
-  dt_control_accels_t *accels = &darktable.control->accels;
-
 #ifdef HAVE_GAME
   // ↑ ↑ ↓ ↓ ← → ← → b a
   static int konami_state = 0;
@@ -757,15 +781,6 @@ int dt_control_key_pressed_override(guint key, guint state)
     return 1;
   }
 
-  /* check if key accelerators are enabled*/
-  if(darktable.control->key_accelerators_on != 1) return 0;
-
-  // show/hide the accels window
-  else if(key == accels->global_accels_window.accel_key && state == accels->global_accels_window.accel_mods)
-  {
-    dt_view_accels_show(darktable.view_manager);
-    return 1;
-  }
   return 0;
 }
 
@@ -778,13 +793,6 @@ int dt_control_key_pressed(guint key, guint state)
 
 int dt_control_key_released(guint key, guint state)
 {
-  const dt_control_accels_t *accels = &darktable.control->accels;
-
-            if(key == accels->global_accels_window.accel_key) // && state == accels->global_accels_window.accel_mods)
-  {
-    dt_view_accels_hide(darktable.view_manager);
-  }
-
   int handled = 0;
   switch(key)
   {
