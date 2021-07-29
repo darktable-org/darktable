@@ -672,57 +672,51 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
   }
 }
 
-int key_released(dt_view_t *self, guint key, guint state)
+enum
 {
-  dt_control_accels_t *accels = &darktable.control->accels;
+  DT_ACTION_ELEMENT_FOCUS_DETECT = 1,
+};
+
+static float _action_process_preview(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  if(!darktable.control->key_accelerators_on) return 0;
-
-  if(((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
-      || (key == accels->lighttable_preview_display_focus.accel_key
-          && state == accels->lighttable_preview_display_focus.accel_mods))
-     && lib->preview_state && !lib->preview_sticky)
+  if(move_size)
   {
-    _preview_quit(self);
-  }
-
-  return 1;
-}
-
-int key_pressed(dt_view_t *self, guint key, guint state)
-{
-  dt_library_t *lib = (dt_library_t *)self->data;
-  dt_control_accels_t *accels = &darktable.control->accels;
-
-  if(!darktable.control->key_accelerators_on) return 0;
-
-  if((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
-     || (key == accels->lighttable_preview_display_focus.accel_key
-         && state == accels->lighttable_preview_display_focus.accel_mods))
-  {
-    if(lib->preview_state && lib->preview_sticky)
+    if(lib->preview_state)
     {
-      _preview_quit(self);
-      return TRUE;
+      if(effect != DT_ACTION_EFFECT_ON)
+        _preview_quit(self);
     }
-    const int32_t mouse_over_id = dt_control_get_mouse_over_id();
-    if(!lib->preview_state && mouse_over_id != -1)
+    else
     {
-      gboolean focus = FALSE;
-      if((key == accels->lighttable_preview_display_focus.accel_key
-          && state == accels->lighttable_preview_display_focus.accel_mods))
+      if(effect != DT_ACTION_EFFECT_OFF)
       {
-        focus = TRUE;
-      }
+        const int32_t mouse_over_id = dt_control_get_mouse_over_id();
+        if(mouse_over_id != -1)
+        {
+          gboolean focus = element == DT_ACTION_ELEMENT_FOCUS_DETECT;
 
-      _preview_enter(self, FALSE, focus, mouse_over_id);
-      return TRUE;
+          _preview_enter(self, FALSE, focus, mouse_over_id);
+        }
+      }
     }
-    return TRUE;
   }
-  return FALSE;
+
+  return lib->preview_state;
 }
+
+const dt_action_element_def_t _action_elements_preview[]
+  = { { "normal", dt_action_effect_hold },
+      { "focus detection", dt_action_effect_hold },
+      { NULL } };
+
+const dt_action_def_t dt_action_def_preview
+  = { N_("preview"),
+      _action_process_preview,
+      _action_elements_preview,
+      NULL, TRUE };
 
 enum
 {
@@ -879,18 +873,10 @@ static gboolean zoom_min_callback(GtkAccelGroup *accel_group, GObject *accelerat
 
 void init_key_accels(dt_view_t *self)
 {
-  dt_control_accels_t *ac = &darktable.control->accels;
-  dt_action_define_key_pressed_accel(&self->actions, "preview", &ac->lighttable_preview);
-  dt_action_define_key_pressed_accel(&self->actions, "preview with focus detection", &ac->lighttable_preview_display_focus);
-
   dt_accel_register_view(self, NC_("accel", "align images to grid"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "reset first image offset"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "select toggle image"), GDK_KEY_space, 0);
   dt_accel_register_view(self, NC_("accel", "select single image"), GDK_KEY_Return, 0);
-
-  // Preview key
-  dt_accel_register_view(self, NC_("accel", "preview"), GDK_KEY_w, 0);
-  dt_accel_register_view(self, NC_("accel", "preview with focus detection"), GDK_KEY_w, GDK_CONTROL_MASK);
 
   // undo/redo
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
@@ -1418,6 +1404,11 @@ void gui_init(dt_view_t *self)
   ac = dt_action_define(&self->actions, N_("move"), N_("page"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_PAGE), &dt_action_def_move);
   dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS, GDK_KEY_Page_Down, 0);
   dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT    , GDK_KEY_Page_Up, 0);
+
+  // Preview key
+  ac = dt_action_define(&self->actions, NULL, N_("preview"), NULL, &dt_action_def_preview);
+  dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
+  dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_FOCUS_DETECT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, GDK_CONTROL_MASK);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
