@@ -1,3 +1,25 @@
+-- default  lua require can't handle yielding across "require" calls
+-- This version is implemented in pure-lua and avoids the problem
+-- override the require function for everybody
+-- this version is required for darktable.collection to function as a table
+
+local orig_ipairs = ipairs
+local function ipairs_iterator(st, var)
+  var = var + 1
+  local val = st[var]
+  if val ~= nil then
+  return var, st[var]
+  end
+  end
+
+ipairs = function(t)
+  if getmetatable(t) ~= nil then -- t has metatable
+    return ipairs_iterator, t, 0
+  else
+    return orig_ipairs(t)
+  end
+end
+
 -- script installer
 
 local _scripts_install = {}
