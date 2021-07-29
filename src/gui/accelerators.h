@@ -95,6 +95,7 @@ typedef enum dt_shortcut_move_t
 extern const gchar *dt_action_effect_value[];
 extern const gchar *dt_action_effect_selection[];
 extern const gchar *dt_action_effect_toggle[];
+extern const gchar *dt_action_effect_hold[];
 extern const gchar *dt_action_effect_activate[];
 extern const gchar *dt_action_effect_presets[];
 
