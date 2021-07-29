@@ -105,6 +105,8 @@ typedef struct dt_action_element_def_t
   const gchar **effects;
 } dt_action_element_def_t;
 
+extern const dt_action_element_def_t dt_action_elements_hold[];
+
 typedef struct dt_shortcut_fallback_t
 {
   guint mods;

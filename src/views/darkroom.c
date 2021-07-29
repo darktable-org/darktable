@@ -2174,13 +2174,10 @@ static float _action_process_skip_mouse(gpointer target, dt_action_element_t ele
   return darktable.develop->darkroom_skip_mouse_events;
 }
 
-const dt_action_element_def_t _action_elements_skip_mouse[]
-  = { { NULL, dt_action_effect_hold } };
-
 const dt_action_def_t dt_action_def_skip_mouse
   = { N_("hold"),
       _action_process_skip_mouse,
-      _action_elements_skip_mouse,
+      dt_action_elements_hold,
       NULL, TRUE };
 
 static float _action_process_preview(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
@@ -2244,13 +2241,10 @@ static float _action_process_preview(gpointer target, dt_action_element_t elemen
   return lib->full_preview;
 }
 
-const dt_action_element_def_t _action_elements_preview[]
-  = { { NULL, dt_action_effect_hold } };
-
 const dt_action_def_t dt_action_def_preview
   = { N_("preview"),
       _action_process_preview,
-      _action_elements_preview,
+      dt_action_elements_hold,
       NULL, TRUE };
 
 void gui_init(dt_view_t *self)

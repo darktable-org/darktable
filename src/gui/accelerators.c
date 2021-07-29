@@ -149,6 +149,9 @@ const gchar *dt_action_effect_preset_iop[]
       N_("apply on new instance"),
       NULL };
 
+const dt_action_element_def_t dt_action_elements_hold[]
+  = { { NULL, dt_action_effect_hold } };
+
 const dt_action_element_def_t _action_elements_toggle[]
   = { { NULL, dt_action_effect_toggle } };
 const dt_action_element_def_t _action_elements_button[]
