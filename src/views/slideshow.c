@@ -568,8 +568,6 @@ int key_released(dt_view_t *self, guint key, guint state)
 int key_pressed(dt_view_t *self, guint key, guint state)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
-  dt_control_accels_t *accels = &darktable.control->accels;
-
   if(key == GDK_KEY_Shift_L || key == GDK_KEY_Shift_R || key == GDK_KEY_Shift_Lock || key == GDK_KEY_Control_L
      || key == GDK_KEY_Control_R || key == GDK_KEY_Alt_L || key == GDK_KEY_Alt_R || key == GDK_KEY_Caps_Lock
      || key == GDK_KEY_Num_Lock || key == GDK_KEY_ISO_Level3_Shift)
@@ -578,7 +576,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     // regular key
     return 0;
   }
-  else if(key == accels->slideshow_start.accel_key && state == accels->slideshow_start.accel_mods)
+  else if(key == GDK_KEY_space)
   {
     if(!d->auto_advance)
     {
