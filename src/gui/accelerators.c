@@ -808,14 +808,6 @@ static void remove_shortcut(GSequenceIter *shortcut)
       o = g_sequence_get(g_sequence_iter_next(shortcut));
     o->direction = 0;
   }
-  else if(s->action
-          && s->action->type == DT_ACTION_TYPE_KEY_PRESSED
-          && s->action->target)
-  {
-    GtkAccelKey *key = s->action->target;
-    key->accel_key = 0;
-    key->accel_mods = 0;
-  }
 
   g_sequence_remove(shortcut);
 }
@@ -848,25 +840,6 @@ static void add_shortcut(dt_shortcut_t *shortcut, dt_view_type_flags_t view)
 
     gtk_tree_store_insert_with_values(shortcuts_store, NULL, &category, found, 0, new_shortcut, -1);
   }
-
-  if(shortcut->action
-     && shortcut->action->type == DT_ACTION_TYPE_KEY_PRESSED
-     && shortcut->action->target)
-  {
-    GtkAccelKey *key = shortcut->action->target;
-
-    if(key->accel_key)
-    {
-      dt_shortcut_t old_sc = *shortcut;
-      old_sc.key = key->accel_key;
-      old_sc.mods = key->accel_mods;
-      GSequenceIter *existing = g_sequence_lookup(darktable.control->shortcuts, &old_sc, shortcut_compare_func, GINT_TO_POINTER(view));
-      if(existing) remove_shortcut(existing);
-    }
-
-    key->accel_key = shortcut->key;
-    key->accel_mods = shortcut->mods;
-  }
 }
 
 static void _shortcut_row_inserted(GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter, gpointer view)
@@ -885,29 +858,6 @@ static void _shortcut_row_inserted(GtkTreeModel *tree_model, GtkTreePath *path, 
 
 static gboolean insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
 {
-  if(shortcut->action
-     && shortcut->action
-     && shortcut->action->type == DT_ACTION_TYPE_KEY_PRESSED)
-  {
-    if(shortcut->key_device != DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE ||
-       shortcut->move_device != DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE || shortcut->move != DT_SHORTCUT_MOVE_NONE ||
-       shortcut->press || shortcut->button)
-    {
-      fprintf(stderr, "[insert_shortcut] only key+mods type shortcut supported for key_pressed style accelerators\n");
-      dt_control_log(_("only key + ctrl/shift/alt supported for this shortcut"));
-      return FALSE;
-    }
-
-    GtkAccelKey *key = shortcut->action->target;
-    if(key && key->accel_key)
-    {
-      gchar *question = g_markup_printf_escaped("\n%s\n", _("overwrite existing shortcut?"));
-      const gboolean overwrite = !confirm || dt_gui_show_standalone_yes_no_dialog(_("only one shortcut allowed"), question, _("no"), _("yes"));
-      g_free(question);
-      if(!overwrite) return FALSE;
-    }
-  }
-
   dt_shortcut_t *s = calloc(sizeof(dt_shortcut_t), 1);
   *s = *shortcut;
   find_views(s);
@@ -1086,11 +1036,7 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
       break;
     case SHORTCUT_VIEW_ACTION:
       if(s->action)
-      {
         field_text = _action_full_label(s->action);
-        if(s->action->type == DT_ACTION_TYPE_KEY_PRESSED)
-          underline = PANGO_UNDERLINE_ERROR;
-      }
       break;
     case SHORTCUT_VIEW_ELEMENT:
       elements = _action_find_elements(s->action);
@@ -2982,18 +2928,6 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path)
     owner->type = DT_ACTION_TYPE_CLOSURE; // mark newly created leaf as closure
 
   return owner;
-}
-
-void dt_action_define_key_pressed_accel(dt_action_t *action, const gchar *path, GtkAccelKey *key)
-{
-  dt_action_t *new_action = calloc(1, sizeof(dt_action_t));
-  new_action->id = path_without_symbols(path);
-  new_action->label = g_strdup(g_dpgettext2(NULL, "accel", path));
-  new_action->type = DT_ACTION_TYPE_KEY_PRESSED;
-  new_action->target = key;
-  new_action->owner = action;
-
-  dt_action_insert_sorted(action, new_action);
 }
 
 dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gchar *label, GtkWidget *widget, const dt_action_def_t *action_def)
