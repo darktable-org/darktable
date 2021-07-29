@@ -41,8 +41,6 @@ void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action);
 
 dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path);
 
-void dt_action_define_key_pressed_accel(dt_action_t *action, const gchar *name, GtkAccelKey *key);
-
 void dt_action_define_preset(dt_action_t *action, const gchar *name);
 // delete if new_name == NULL
 void dt_action_rename_preset(dt_action_t *action, const gchar *old_name, const gchar *new_name);
