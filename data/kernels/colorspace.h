@@ -683,7 +683,7 @@ static inline void bradford_adapt_D50(float4 *lms_in,
     // use linear Bradford if B is negative
     temp.z = (temp.z > 0.f) ? native_powr(temp.z, p) : temp.z;
 
-    float4 lms_out = D50 * temp;
+    *lms_in = D50 * temp;
   }
   else
     *lms_in *= D50 / origin_illuminant;
