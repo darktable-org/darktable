@@ -163,6 +163,13 @@ Actual actions:
    --install                  After building the binaries, install them
                               (default: disabled)
 
+Cleanup actions:
+   --clean-build              Clean build directory
+   --clean-install            Clean install directory
+   --clean-all                Clean both build and install directories
+-f --force                    Force clean-build to perform removal
+                              ignoring any errors
+
 Features:
 By default cmake will enable the features it autodetects on the build machine.
 Specifying the option on the command line forces the feature on or off.
