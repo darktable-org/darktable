@@ -2152,6 +2152,107 @@ static gboolean _toggle_mask_visibility_callback(GtkAccelGroup *accel_group, GOb
     return FALSE;
 }
 
+static float _action_process_skip_mouse(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  if(move_size)
+  {
+    switch(effect)
+    {
+    case DT_ACTION_EFFECT_TOGGLE:
+    case DT_ACTION_EFFECT_HOLD:
+      darktable.develop->darkroom_skip_mouse_events ^= TRUE;
+      break;
+    case DT_ACTION_EFFECT_ON:
+      darktable.develop->darkroom_skip_mouse_events = TRUE;
+      break;
+    case DT_ACTION_EFFECT_OFF:
+      darktable.develop->darkroom_skip_mouse_events = FALSE;
+      break;
+    }
+  }
+
+  return darktable.develop->darkroom_skip_mouse_events;
+}
+
+const dt_action_element_def_t _action_elements_skip_mouse[]
+  = { { NULL, dt_action_effect_hold } };
+
+const dt_action_def_t dt_action_def_skip_mouse
+  = { N_("hold"),
+      _action_process_skip_mouse,
+      _action_elements_skip_mouse,
+      NULL, TRUE };
+
+static float _action_process_preview(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  dt_develop_t *lib = darktable.view_manager->proxy.darkroom.view->data;
+
+  if(move_size)
+  {
+    if(lib->full_preview)
+    {
+      if(effect != DT_ACTION_EFFECT_ON)
+      {
+        dt_ui_restore_panels(darktable.gui->ui);
+        dt_control_set_dev_zoom(lib->full_preview_last_zoom);
+        dt_control_set_dev_zoom_x(lib->full_preview_last_zoom_x);
+        dt_control_set_dev_zoom_y(lib->full_preview_last_zoom_y);
+        dt_control_set_dev_closeup(lib->full_preview_last_closeup);
+        lib->full_preview = FALSE;
+        dt_iop_request_focus(lib->full_preview_last_module);
+        dt_masks_set_edit_mode(darktable.develop->gui_module, lib->full_preview_masks_state);
+        dt_dev_invalidate(darktable.develop);
+        dt_control_queue_redraw_center();
+        dt_control_navigation_redraw();
+      }
+    }
+    else
+    {
+      if(effect != DT_ACTION_EFFECT_OFF &&
+         lib->preview_status != DT_DEV_PIXELPIPE_DIRTY &&
+         lib->preview_status != DT_DEV_PIXELPIPE_INVALID)
+      {
+        lib->full_preview = TRUE;
+        // we hide all panels
+        for(int k = 0; k < DT_UI_PANEL_SIZE; k++)
+          dt_ui_panel_show(darktable.gui->ui, k, FALSE, FALSE);
+        // we remember the masks edit state
+        if(darktable.develop->gui_module)
+        {
+          dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)darktable.develop->gui_module->blend_data;
+          if (bd) lib->full_preview_masks_state = bd->masks_shown;
+        }
+        // we set the zoom values to "fit"
+        lib->full_preview_last_zoom = dt_control_get_dev_zoom();
+        lib->full_preview_last_zoom_x = dt_control_get_dev_zoom_x();
+        lib->full_preview_last_zoom_y = dt_control_get_dev_zoom_y();
+        lib->full_preview_last_closeup = dt_control_get_dev_closeup();
+        dt_control_set_dev_zoom(DT_ZOOM_FIT);
+        dt_control_set_dev_zoom_x(0);
+        dt_control_set_dev_zoom_y(0);
+        dt_control_set_dev_closeup(0);
+        // we quit the active iop if any
+        lib->full_preview_last_module = darktable.develop->gui_module;
+        dt_iop_request_focus(NULL);
+        gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+        dt_dev_invalidate(darktable.develop);
+        dt_control_queue_redraw_center();
+      }
+    }
+  }
+
+  return lib->full_preview;
+}
+
+const dt_action_element_def_t _action_elements_preview[]
+  = { { NULL, dt_action_effect_hold } };
+
+const dt_action_def_t dt_action_def_preview
+  = { N_("preview"),
+      _action_process_preview,
+      _action_elements_preview,
+      NULL, TRUE };
+
 void gui_init(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -2547,6 +2648,16 @@ void gui_init(dt_view_t *self)
 
   darktable.view_manager->proxy.darkroom.get_layout = _lib_darkroom_get_layout;
   dev->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+
+  dt_action_t *ac = NULL;
+
+  // Fullscreen preview key
+  ac = dt_action_define(&self->actions, NULL, N_("preview"), NULL, &dt_action_def_preview);
+  dt_accel_register_shortcut(ac, NULL, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
+
+  // add an option to allow skip mouse events while editing masks
+  ac = dt_action_define(&self->actions, NULL, N_("allow to pan & zoom while editing masks"), NULL, &dt_action_def_skip_mouse);
+  dt_accel_register_shortcut(ac, NULL, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_a, 0);
 }
 
 enum
@@ -3647,87 +3758,10 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   dt_control_navigation_redraw();
 }
 
-int key_released(dt_view_t *self, guint key, guint state)
-{
-  const dt_control_accels_t *accels = &darktable.control->accels;
-  dt_develop_t *lib = (dt_develop_t *)self->data;
-
-  if(!darktable.control->key_accelerators_on)
-    return 0;
-
-  if(key == accels->darkroom_preview.accel_key && state == accels->darkroom_preview.accel_mods && lib->full_preview)
-  {
-    dt_ui_restore_panels(darktable.gui->ui);
-    dt_control_set_dev_zoom(lib->full_preview_last_zoom);
-    dt_control_set_dev_zoom_x(lib->full_preview_last_zoom_x);
-    dt_control_set_dev_zoom_y(lib->full_preview_last_zoom_y);
-    dt_control_set_dev_closeup(lib->full_preview_last_closeup);
-    lib->full_preview = FALSE;
-    dt_iop_request_focus(lib->full_preview_last_module);
-    dt_masks_set_edit_mode(darktable.develop->gui_module, lib->full_preview_masks_state);
-    dt_dev_invalidate(darktable.develop);
-    dt_control_queue_redraw_center();
-    dt_control_navigation_redraw();
-    return 1;
-  }
-  // add an option to allow skip mouse events while editing masks
-  if(key == accels->darkroom_skip_mouse_events.accel_key && state == accels->darkroom_skip_mouse_events.accel_mods)
-  {
-    darktable.develop->darkroom_skip_mouse_events = FALSE;
-    return 1;
-  }
-
-  return 0;
-}
-
 int key_pressed(dt_view_t *self, guint key, guint state)
 {
-  const dt_control_accels_t *accels = &darktable.control->accels;
-  dt_develop_t *lib = (dt_develop_t *)self->data;
-
   if(!darktable.control->key_accelerators_on)
     return 0;
-
-  if(key == accels->darkroom_preview.accel_key && state == accels->darkroom_preview.accel_mods)
-  {
-    // hack to avoid triggering darkroom fullpreview if user enter the view with the key already pressed
-    if(!lib->full_preview
-       && (lib->preview_status == DT_DEV_PIXELPIPE_DIRTY || lib->preview_status == DT_DEV_PIXELPIPE_INVALID))
-    {
-      lib->full_preview = TRUE;
-    }
-
-    if(!lib->full_preview)
-    {
-      lib->full_preview = TRUE;
-      // we hide all panels
-      for(int k = 0; k < DT_UI_PANEL_SIZE; k++)
-        dt_ui_panel_show(darktable.gui->ui, k, FALSE, FALSE);
-      // we remember the masks edit state
-      if(darktable.develop->gui_module)
-      {
-        dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)darktable.develop->gui_module->blend_data;
-        if (bd) lib->full_preview_masks_state = bd->masks_shown;
-      }
-      // we set the zoom values to "fit"
-      lib->full_preview_last_zoom = dt_control_get_dev_zoom();
-      lib->full_preview_last_zoom_x = dt_control_get_dev_zoom_x();
-      lib->full_preview_last_zoom_y = dt_control_get_dev_zoom_y();
-      lib->full_preview_last_closeup = dt_control_get_dev_closeup();
-      dt_control_set_dev_zoom(DT_ZOOM_FIT);
-      dt_control_set_dev_zoom_x(0);
-      dt_control_set_dev_zoom_y(0);
-      dt_control_set_dev_closeup(0);
-      // we quit the active iop if any
-      lib->full_preview_last_module = darktable.develop->gui_module;
-      dt_iop_request_focus(NULL);
-      gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
-      dt_dev_invalidate(darktable.develop);
-      dt_control_queue_redraw_center();
-    }
-
-    return TRUE;
-  }
 
   if(key == GDK_KEY_Left || key == GDK_KEY_Right || key == GDK_KEY_Up || key == GDK_KEY_Down)
   {
@@ -3767,13 +3801,6 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     dt_control_queue_redraw_center();
     dt_control_navigation_redraw();
 
-    return 1;
-  }
-
-  // add an option to allow skip mouse events while editing masks
-  if(key == accels->darkroom_skip_mouse_events.accel_key && state == accels->darkroom_skip_mouse_events.accel_mods)
-  {
-    darktable.develop->darkroom_skip_mouse_events = TRUE;
     return 1;
   }
 
@@ -3836,10 +3863,6 @@ void configure(dt_view_t *self, int wd, int ht)
 
 void init_key_accels(dt_view_t *self)
 {
-  dt_control_accels_t *ac = &darktable.control->accels;
-  dt_action_define_key_pressed_accel(&self->actions, "full preview", &ac->darkroom_preview);
-  dt_action_define_key_pressed_accel(&self->actions, "allow to pan & zoom while editing masks", &ac->darkroom_skip_mouse_events);
-
   // Zoom shortcuts
   dt_accel_register_view(self, NC_("accel", "zoom close-up"), GDK_KEY_1, GDK_MOD1_MASK);
   dt_accel_register_view(self, NC_("accel", "zoom fill"), GDK_KEY_2, GDK_MOD1_MASK);
@@ -3892,15 +3915,9 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "increase brush opacity"), GDK_KEY_greater, 0);
   dt_accel_register_view(self, NC_("accel", "decrease brush opacity"), GDK_KEY_less, 0);
 
-  // fullscreen view
-  dt_accel_register_view(self, NC_("accel", "full preview"), GDK_KEY_w, 0);
-
   // undo/redo
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
   dt_accel_register_view(self, NC_("accel", "redo"), GDK_KEY_y, GDK_CONTROL_MASK);
-
-  // add an option to allow skip mouse events while editing masks
-  dt_accel_register_view(self, NC_("accel", "allow to pan & zoom while editing masks"), GDK_KEY_a, 0);
 
   // set focus to the search modules text box
   dt_accel_register_view(self, NC_("accel", "search modules"), 0, 0);

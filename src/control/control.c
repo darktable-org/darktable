@@ -760,12 +760,6 @@ int dt_control_key_pressed_override(guint key, guint state)
   /* check if key accelerators are enabled*/
   if(darktable.control->key_accelerators_on != 1) return 0;
 
-  // add an option to allow skip mouse events while editing masks
-  if(key == accels->darkroom_skip_mouse_events.accel_key && state == accels->darkroom_skip_mouse_events.accel_mods)
-  {
-    darktable.develop->darkroom_skip_mouse_events = TRUE;
-    return 1;
-  }
   // show/hide the accels window
   else if(key == accels->global_accels_window.accel_key && state == accels->global_accels_window.accel_mods)
   {
