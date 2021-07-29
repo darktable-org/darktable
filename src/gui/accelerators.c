@@ -59,6 +59,8 @@ typedef struct dt_device_key_t
 {
   dt_input_device_t key_device;
   guint key;
+  const dt_action_def_t *hold_def;
+  dt_action_element_t hold_element;
 } dt_device_key_t;
 
 typedef struct dt_action_target_t
@@ -120,6 +122,12 @@ const gchar *dt_action_effect_toggle[]
       N_("ctrl-on"),
       N_("right-toggle"),
       N_("right-on"),
+      NULL };
+const gchar *dt_action_effect_hold[]
+  = { N_("toggle"),
+      N_("on"),
+      N_("off"),
+      N_("hold"),
       NULL };
 const gchar *dt_action_effect_activate[]
   = { N_("activate"),
@@ -2065,7 +2073,7 @@ void dt_shortcuts_select_view(dt_view_type_flags_t view)
   g_sequence_sort(darktable.control->shortcuts, shortcut_compare_func, GINT_TO_POINTER(view));
 }
 
-static GSList *pressed_keys = NULL; // list of currently pressed keys
+static GSList *pressed_keys = NULL, *hold_keys = NULL; // list of currently pressed and held keys
 static guint _pressed_button = 0;
 static guint _last_time = 0, _last_mapping_time = 0;
 static guint _timeout_source = 0;
@@ -2518,8 +2526,45 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
       _sc.press = focus_loss_press;
     focus_loss_key = 0;
   }
+  else if(g_slist_find_custom(hold_keys, &this_key, cmp_key))
+  {} // ignore repeating hold key
   else
   {
+    if(id) _sc.mods = dt_key_modifier_state();
+
+    dt_shortcut_t just_key
+      = { .key_device = id,
+          .key = key,
+          .mods = _sc.mods,
+          .views = darktable.view_manager->current_view->view(darktable.view_manager->current_view) };
+
+    GSequenceIter *existing = g_sequence_lookup(darktable.control->shortcuts, &just_key,
+                                                shortcut_compare_func, GINT_TO_POINTER(just_key.views));
+    if(existing)
+    {
+      dt_shortcut_t *s = g_sequence_get(existing);
+
+      if(s && s->effect == DT_ACTION_EFFECT_HOLD &&
+         s->action && s->action->type >= DT_ACTION_TYPE_WIDGET)
+      {
+        const dt_action_def_t *definition = _action_find_definition(s->action);
+        if(definition && definition->process &&
+           definition->elements[s->element].effects == dt_action_effect_hold)
+        {
+          definition->process(NULL, s->element, DT_ACTION_EFFECT_ON, 1);
+
+          this_key.hold_def = definition;
+          this_key.hold_element = s->element;
+
+          dt_device_key_t *new_key = calloc(1, sizeof(dt_device_key_t));
+          *new_key = this_key;
+          hold_keys = g_slist_prepend(hold_keys, new_key);
+
+          return;
+        }
+      }
+    }
+
     _cancel_delayed_release();
 
     int delay = 0;
@@ -2533,8 +2578,6 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
       else
       {
         _sc.press = 0;
-
-        if(id) _sc.mods = dt_key_modifier_state();
 
         if(darktable.control->mapping_widget && !_sc.action) lookup_mapping_widget();
       }
@@ -2575,6 +2618,17 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
 void dt_shortcut_key_release(dt_input_device_t id, guint time, guint key)
 {
   dt_device_key_t this_key = { id, key };
+
+  GSList *held_key = g_slist_find_custom(hold_keys, &this_key, cmp_key);
+  if(held_key)
+  {
+    dt_device_key_t *held_data = held_key->data;
+    held_data->hold_def->process(NULL, held_data->hold_element, DT_ACTION_EFFECT_OFF, 1);
+    g_free(held_data);
+    hold_keys = g_slist_delete_link(hold_keys, held_key);
+    return;
+  }
+
   GSList *stored_key = g_slist_find_custom(pressed_keys, &this_key, cmp_key);
   if(stored_key)
   {
@@ -2685,10 +2739,12 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
       return TRUE;
     }
 
-    if(event->type != GDK_KEY_PRESS && event->type != GDK_FOCUS_CHANGE)
+    if(event->type != GDK_KEY_PRESS && event->type != GDK_KEY_RELEASE &&
+       event->type != GDK_FOCUS_CHANGE)
       return FALSE;
 
-    if(GTK_IS_WINDOW(w) && event->type == GDK_KEY_PRESS)
+    if(GTK_IS_WINDOW(w) &&
+       (event->type == GDK_KEY_PRESS || event->type == GDK_KEY_RELEASE))
     {
       if(gtk_window_propagate_key_event(GTK_WINDOW(w), &event->key) ||
          gtk_widget_event(dt_ui_center(darktable.gui->ui), event))
