@@ -1815,7 +1815,6 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module, const dt_dev_p
     dt_free_align(points);
     return 0;
   }
-  memset(*buffer, 0, sizeof(float) * w * h);
 
   // we populate the buffer
   const int wi = piece->pipe->iwidth, hi = piece->pipe->iheight;
@@ -1957,9 +1956,6 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module, const dt_d
   const int grid = CLAMP((10.0f * roi->scale + 2.0f) / 3.0f, 1, 4); // scale dependent resolution
   const int gw = (w + grid - 1) / grid + 1;  // grid dimension of total roi
   const int gh = (h + grid - 1) / grid + 1;  // grid dimension of total roi
-
-  // initialize output buffer with zero
-  memset(buffer, 0, sizeof(float) * w * h);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
   {

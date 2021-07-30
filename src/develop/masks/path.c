@@ -2297,7 +2297,7 @@ static int _path_get_area(const dt_iop_module_t *const module, const dt_dev_pixe
 }
 
 /** we write a falloff segment */
-static void _path_falloff(float **buffer, int *p0, int *p1, int posx, int posy, int bw)
+static void _path_falloff(float *const restrict buffer, int *p0, int *p1, int posx, int posy, int bw)
 {
   // segment length
   int l = sqrt((p1[0] - p0[0]) * (p1[0] - p0[0]) + (p1[1] - p0[1]) * (p1[1] - p0[1])) + 1;
@@ -2311,13 +2311,12 @@ static void _path_falloff(float **buffer, int *p0, int *p1, int posx, int posy, 
     const int x = (int)((float)i * lx / (float)l) + p0[0] - posx;
     const int y = (int)((float)i * ly / (float)l) + p0[1] - posy;
     const float op = 1.0 - (float)i / (float)l;
-    (*buffer)[y * bw + x] = fmaxf((*buffer)[y * bw + x], op);
+    size_t idx = y * bw + x;
+    buffer[idx] = fmaxf(buffer[idx], op);
     if(x > 0)
-      (*buffer)[y * bw + x - 1]
-          = fmaxf((*buffer)[y * bw + x - 1], op); // this one is to avoid gap due to int rounding
+      buffer[idx - 1] = fmaxf(buffer[idx - 1], op); // this one is to avoid gap due to int rounding
     if(y > 0)
-      (*buffer)[(y - 1) * bw + x]
-          = fmaxf((*buffer)[(y - 1) * bw + x], op); // this one is to avoid gap due to int rounding
+      buffer[idx - bw] = fmaxf(buffer[idx - bw], op); // this one is to avoid gap due to int rounding
   }
 }
 
@@ -2364,14 +2363,13 @@ static int _path_get_mask(const dt_iop_module_t *const module, const dt_dev_pixe
 
   // we allocate the buffer
   const size_t bufsize = (size_t)(*width) * (*height);
-  *buffer = dt_alloc_align_float(bufsize);
+  float *const restrict bufptr = *buffer = dt_alloc_align_float(bufsize);
   if(*buffer == NULL)
   {
     dt_free_align(points);
     dt_free_align(border);
     return 0;
   }
-  memset(*buffer, 0, sizeof(float) * bufsize);
 
   // we write all the point around the path into the buffer
   const int nbp = border_count;
@@ -2404,7 +2402,7 @@ static int _path_get_mask(const dt_iop_module_t *const module, const dt_dev_pixe
             const int nx = (j - yy) * (lastx - xx) / (float)(lasty - yy) + xx;
             const size_t idx = (size_t)(j - (*posy)) * (*width) + nx - (*posx);
             assert(idx < bufsize);
-            (*buffer)[idx] = 1.0f;
+            bufptr[idx] = 1.0f;
           }
           lasty2 = yy + 2;
           lasty = yy + 1;
@@ -2416,7 +2414,7 @@ static int _path_get_mask(const dt_iop_module_t *const module, const dt_dev_pixe
             const int nx = (j - lasty) * (xx - lastx) / (float)(yy - lasty) + lastx;
             const size_t idx = (size_t)(j - (*posy)) * (*width) + nx - (*posx);
             assert(idx < bufsize);
-            (*buffer)[idx] = 1.0f;
+            bufptr[idx] = 1.0f;
           }
           lasty2 = yy - 2;
           lasty = yy - 1;
@@ -2427,7 +2425,7 @@ static int _path_get_mask(const dt_iop_module_t *const module, const dt_dev_pixe
       {
         const size_t idx = (size_t)(lasty - (*posy)) * (*width) + lastx + 1 - (*posx);
         assert(idx < bufsize);
-        (*buffer)[idx] = 1.0f;
+        bufptr[idx] = 1.0f;
         just_change_dir = 1;
       }
       // we add the point
@@ -2437,27 +2435,27 @@ static int _path_get_mask(const dt_iop_module_t *const module, const dt_dev_pixe
         // as the previous one, especially on sharp edges
         const size_t idx = (size_t)(yy - (*posy)) * (*width) + xx - (*posx);
         assert(idx < bufsize);
-        float v = (*buffer)[idx];
+        float v = bufptr[idx];
         if(v > 0.0)
         {
           if(xx - (*posx) > 0)
           {
             const size_t idx_ = (size_t)(yy - (*posy)) * (*width) + xx - 1 - (*posx);
             assert(idx_ < bufsize);
-            (*buffer)[idx_] = 1.0f;
+            bufptr[idx_] = 1.0f;
           }
           else if(xx - (*posx) < (*width) - 1)
           {
             const size_t idx_ = (size_t)(yy - (*posy)) * (*width) + xx + 1 - (*posx);
             assert(idx_ < bufsize);
-            (*buffer)[idx_] = 1.0f;
+            bufptr[idx_] = 1.0f;
           }
         }
         else
         {
           const size_t idx_ = (size_t)(yy - (*posy)) * (*width) + xx - (*posx);
           assert(idx_ < bufsize);
-          (*buffer)[idx_] = 1.0f;
+          bufptr[idx_] = 1.0f;
           just_change_dir = 0;
         }
       }
@@ -2465,7 +2463,7 @@ static int _path_get_mask(const dt_iop_module_t *const module, const dt_dev_pixe
       {
         const size_t idx_ = (size_t)(yy - (*posy)) * (*width) + xx - (*posx);
         assert(idx_ < bufsize);
-        (*buffer)[idx_] = 1.0f;
+        bufptr[idx_] = 1.0f;
       }
       // we change last values
       lasty2 = lasty;
@@ -2486,9 +2484,9 @@ static int _path_get_mask(const dt_iop_module_t *const module, const dt_dev_pixe
     int state = 0;
     for(int xx = 0; xx < wb; xx++)
     {
-      float v = (*buffer)[yy * wb + xx];
+      float v = bufptr[yy * wb + xx];
       if(v == 1.0f) state = !state;
-      if(state) (*buffer)[yy * wb + xx] = 1.0f;
+      if(state) bufptr[yy * wb + xx] = 1.0f;
     }
   }
 
@@ -2526,7 +2524,7 @@ static int _path_get_mask(const dt_iop_module_t *const module, const dt_dev_pixe
     // and we draw the falloff
     if(last0[0] != p0[0] || last0[1] != p0[1] || last1[0] != p1[0] || last1[1] != p1[1])
     {
-      _path_falloff(buffer, p0, p1, *posx, *posy, *width);
+      _path_falloff(bufptr, p0, p1, *posx, *posy, *width);
       last0[0] = p0[0], last0[1] = p0[1];
       last1[0] = p1[0], last1[1] = p1[1];
     }

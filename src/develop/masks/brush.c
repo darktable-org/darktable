@@ -2657,8 +2657,8 @@ static int _brush_get_area(const dt_iop_module_t *const module, const dt_dev_pix
 }
 
 /** we write a falloff segment */
-static void _brush_falloff(float **buffer, int *p0, int *p1, int posx, int posy, int bw, float hardness,
-                           float density)
+static void _brush_falloff(float *const restrict buffer, int p0[2], int p1[2], int posx, int posy, int bw,
+                           float hardness, float density)
 {
   // segment length
   const int l = sqrt((p1[0] - p0[0]) * (p1[0] - p0[0]) + (p1[1] - p0[1]) * (p1[1] - p0[1])) + 1;
@@ -2674,13 +2674,13 @@ static void _brush_falloff(float **buffer, int *p0, int *p1, int posx, int posy,
     const int x = (int)((float)i * lx / (float)l) + p0[0] - posx;
     const int y = (int)((float)i * ly / (float)l) + p0[1] - posy;
     const float op = density * ((i <= solid) ? 1.0f : 1.0 - (float)(i - solid) / (float)soft);
-    (*buffer)[y * bw + x] = MAX((*buffer)[y * bw + x], op);
+    buffer[y * bw + x] = MAX(buffer[y * bw + x], op);
     if(x > 0)
-      (*buffer)[y * bw + x - 1]
-          = MAX((*buffer)[y * bw + x - 1], op); // this one is to avoid gap due to int rounding
+      buffer[y * bw + x - 1]
+          = MAX(buffer[y * bw + x - 1], op); // this one is to avoid gap due to int rounding
     if(y > 0)
-      (*buffer)[(y - 1) * bw + x]
-          = MAX((*buffer)[(y - 1) * bw + x], op); // this one is to avoid gap due to int rounding
+      buffer[(y - 1) * bw + x]
+          = MAX(buffer[(y - 1) * bw + x], op); // this one is to avoid gap due to int rounding
   }
 }
 
@@ -2728,7 +2728,6 @@ static int _brush_get_mask(const dt_iop_module_t *const module, const dt_dev_pix
     dt_free_align(payload);
     return 0;
   }
-  memset(*buffer, 0, sizeof(float) * bufsize);
 
   // now we fill the falloff
   int p0[2], p1[2];
@@ -2740,7 +2739,7 @@ static int _brush_get_mask(const dt_iop_module_t *const module, const dt_dev_pix
     p1[0] = border[i * 2];
     p1[1] = border[i * 2 + 1];
 
-    _brush_falloff(buffer, p0, p1, *posx, *posy, *width, payload[i * 2], payload[i * 2 + 1]);
+    _brush_falloff(*buffer, p0, p1, *posx, *posy, *width, payload[i * 2], payload[i * 2 + 1]);
   }
 
   dt_free_align(points);
