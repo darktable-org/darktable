@@ -928,7 +928,7 @@ void dt_image_set_aspect_ratio_if_different(const int32_t imgid, const float asp
       dt_image_cache_read_release(darktable.image_cache, image);
       dt_image_t *wimage = dt_image_cache_get(darktable.image_cache, imgid, 'w');
       wimage->aspect_ratio = aspect_ratio;
-      dt_image_cache_write_release(darktable.image_cache, wimage, DT_IMAGE_CACHE_SAFE);
+      dt_image_cache_write_release(darktable.image_cache, wimage, DT_IMAGE_CACHE_RELAXED);
     }
     else
       dt_image_cache_read_release(darktable.image_cache, image);
