@@ -37,6 +37,13 @@ typedef enum dt_imageio_retval_t
   DT_IMAGEIO_CACHE_FULL      // dt's caches are full :(
 } dt_imageio_retval_t;
 
+typedef enum dt_imageio_write_xmp_t
+{
+  DT_WRITE_XMP_NEVER = 0,
+  DT_WRITE_XMP_LAZY = 1,
+  DT_WRITE_XMP_ALWAYS = 2
+} dt_imageio_write_xmp_t;
+
 typedef enum
 {
   // the first 0x7 in flags are reserved for star ratings.
@@ -402,6 +409,8 @@ void dt_image_write_sidecar_file(const int32_t imgid);
 void dt_image_synch_xmp(const int selected);
 void dt_image_synch_xmps(const GList *img);
 void dt_image_synch_all_xmp(const gchar *pathname);
+/** get the mode xmp sidecars are written */
+dt_imageio_write_xmp_t dt_image_get_xmp_mode();
 
 // add an offset to the exif_datetime_taken field
 void dt_image_add_time_offset(const int32_t imgid, const long int offset);

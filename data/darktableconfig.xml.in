@@ -281,10 +281,16 @@
   </dtconfig>
   <dtconfig prefs="storage" section="xmp">
     <name>write_sidecar_files</name>
-    <type>bool</type>
-    <default>true</default>
+    <type>
+      <enum>
+        <option>never</option>
+        <option>after edit</option>
+        <option>on import</option>
+      </enum>
+    </type>
+    <default>on import</default>
     <shortdescription>write sidecar file for each image</shortdescription>
-    <longdescription>these redundant files can later be re-imported into a different database, preserving your changes to the image.</longdescription>
+    <longdescription>the sidecar files hold information about all your development steps to allow flawless re-importing of image files.\n\ndepending on the selected mode sidecar files will be written\n never\n on import: immediately after importing into the database\n after first edit: after any user change on the image</longdescription>
   </dtconfig>
   <dtconfig prefs="storage" section="xmp">
     <name>compress_xmp_tags</name>
