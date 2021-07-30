@@ -12048,7 +12048,7 @@ msgstr "<b>Kontrollpunkt bewegen</b>: ziehen"
 msgid "<b>move line</b>: drag, <b>toggle symmetry</b>: click <tt>ꝏ</tt>"
 msgstr ""
 "<b>Linie verschieben</b>: ziehen, <b>Symmetrie umschalten</b>: klick auf "
-"<tt>ꝏ</tt>"
+"<tt>∞</tt>"
 
 #: ../src/iop/clipping.c:3112
 msgid ""
@@ -12056,7 +12056,7 @@ msgid ""
 "<b>move line/control point</b>: drag"
 msgstr ""
 "<b>Anwenden</b>: klick auf <tt>ok</tt>, <b>Symmetrie umschalten</b>: klick "
-"auf <tt>ꝏ</tt>\n"
+"auf <tt>∞</tt>\n"
 "<b>Linie/Kontrollpunkt verschieben</b>: ziehen"
 
 #: ../src/iop/clipping.c:3119
