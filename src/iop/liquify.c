@@ -1835,8 +1835,9 @@ static GList *interpolate_paths(dt_iop_liquify_params_t *p)
       while(arc_length < total_length)
       {
         dt_liquify_warp_t *w = malloc(sizeof(dt_liquify_warp_t));
+        const float t = arc_length / total_length;
         const float complex pt = point_at_arc_length(buffer, INTERPOLATION_POINTS, arc_length, &restart);
-        mix_warps(w, warp1, warp2, pt, arc_length / total_length);
+        mix_warps(w, warp1, warp2, pt, t);
         w->status = DT_LIQUIFY_STATUS_INTERPOLATED;
         arc_length += cabsf(w->radius - w->point) * STAMP_RELOCATION;
         l = g_list_append(l, w);
