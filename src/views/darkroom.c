@@ -2247,6 +2247,53 @@ const dt_action_def_t dt_action_def_preview
       dt_action_elements_hold,
       NULL, TRUE };
 
+static float _action_process_move(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  dt_develop_t *dev = darktable.view_manager->proxy.darkroom.view->data;
+
+  if(move_size)
+  {
+    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    const int closeup = dt_control_get_dev_closeup();
+    float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+    int procw, proch;
+    dt_dev_get_processed_size(dev, &procw, &proch);
+
+    // For each cursor press, move one screen by default
+    float step_changex = dev->width / (procw * scale);
+    float step_changey = dev->height / (proch * scale);
+    float factor = 0.2f * move_size;
+    if(effect == DT_ACTION_EFFECT_DOWN) factor *= -1;
+
+    float zx = dt_control_get_dev_zoom_x();
+    float zy = dt_control_get_dev_zoom_y();
+
+    if(target)
+      zx += step_changex * factor;
+    else
+      zy -= step_changey * factor;
+
+    dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, NULL, NULL);
+    dt_control_set_dev_zoom_x(zx);
+    dt_control_set_dev_zoom_y(zy);
+
+    dt_dev_invalidate(dev);
+    dt_control_queue_redraw_center();
+    dt_control_navigation_redraw();
+  }
+
+  return 0; // FIXME return position (%)
+}
+
+const dt_action_element_def_t _action_elements_move[]
+  = { { NULL, dt_action_effect_value } };
+
+const dt_action_def_t _action_def_move
+  = { N_("move"),
+      _action_process_move,
+      _action_elements_move,
+      NULL, TRUE };
+
 void gui_init(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -2652,6 +2699,14 @@ void gui_init(dt_view_t *self)
   // add an option to allow skip mouse events while editing masks
   ac = dt_action_define(&self->actions, NULL, N_("allow to pan & zoom while editing masks"), NULL, &dt_action_def_skip_mouse);
   dt_accel_register_shortcut(ac, NULL, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_a, 0);
+
+  // move left/right/up/down
+  ac = dt_action_define(&self->actions, N_("move"), N_("horizontal"), GINT_TO_POINTER(1), &_action_def_move);
+  dt_accel_register_shortcut(ac, NULL, 0, DT_ACTION_EFFECT_DOWN, GDK_KEY_Left , 0);
+  dt_accel_register_shortcut(ac, NULL, 0, DT_ACTION_EFFECT_UP  , GDK_KEY_Right, 0);
+  ac = dt_action_define(&self->actions, N_("move"), N_("vertical"), GINT_TO_POINTER(0), &_action_def_move);
+  dt_accel_register_shortcut(ac, NULL, 0  , DT_ACTION_EFFECT_DOWN, GDK_KEY_Down , 0);
+  dt_accel_register_shortcut(ac, NULL, 0  , DT_ACTION_EFFECT_UP  , GDK_KEY_Up   , 0);
 }
 
 enum
@@ -3750,55 +3805,6 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   dt_dev_invalidate(dev);
   dt_control_queue_redraw_center();
   dt_control_navigation_redraw();
-}
-
-int key_pressed(dt_view_t *self, guint key, guint state)
-{
-  if(!darktable.control->key_accelerators_on)
-    return 0;
-
-  if(key == GDK_KEY_Left || key == GDK_KEY_Right || key == GDK_KEY_Up || key == GDK_KEY_Down)
-  {
-    dt_develop_t *dev = (dt_develop_t *)self->data;
-    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    const int closeup = dt_control_get_dev_closeup();
-    float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
-    int procw, proch;
-    dt_dev_get_processed_size(dev, &procw, &proch);
-
-    // For each cursor press, move one screen by default
-    float step_changex = dev->width / (procw * scale);
-    float step_changey = dev->height / (proch * scale);
-    float factor = 0.2f;
-
-    if(dt_modifier_is(state, GDK_MOD1_MASK)) factor = 0.02f;
-    if(dt_modifier_is(state, GDK_CONTROL_MASK)) factor = 1.0f;
-
-    float old_zoom_x, old_zoom_y;
-
-    old_zoom_x = dt_control_get_dev_zoom_x();
-    old_zoom_y = dt_control_get_dev_zoom_y();
-
-    float zx = old_zoom_x;
-    float zy = old_zoom_y;
-
-    if(key == GDK_KEY_Left) zx = zx - step_changex * factor;
-    if(key == GDK_KEY_Right) zx = zx + step_changex * factor;
-    if(key == GDK_KEY_Up) zy = zy - step_changey * factor;
-    if(key == GDK_KEY_Down) zy = zy + step_changey * factor;
-
-    dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, NULL, NULL);
-    dt_control_set_dev_zoom_x(zx);
-    dt_control_set_dev_zoom_y(zy);
-
-    dt_dev_invalidate(dev);
-    dt_control_queue_redraw_center();
-    dt_control_navigation_redraw();
-
-    return 1;
-  }
-
-  return 0;
 }
 
 static gboolean search_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,

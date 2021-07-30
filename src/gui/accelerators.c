@@ -2168,16 +2168,13 @@ static gboolean _shortcut_match(dt_shortcut_t *f)
     existing = g_sequence_search(darktable.control->shortcuts, f, shortcut_compare_func, v);
     while(_shortcut_closest_match(&existing, f, &matched, def) && !matched) {};
 
-    if(!matched && f->effect <= DT_ACTION_EFFECT_DEFAULT_KEY)
+    if(!matched && def && def->elements[f->element].effects == dt_action_effect_value)
     {
-      if(def && def->elements[f->element].effects == dt_action_effect_value)
-      {
-        static dt_action_t value_action = { .type = DT_ACTION_TYPE_FALLBACK,
-                                            .target = GINT_TO_POINTER(DT_ACTION_TYPE_VALUE_FALLBACK) };
-        f->action = &value_action;
-        existing = g_sequence_search(darktable.control->shortcuts, f, shortcut_compare_func, v);
-        while(_shortcut_closest_match(&existing, f, &matched, def) && !matched) {};
-      }
+      static dt_action_t value_action = { .type = DT_ACTION_TYPE_FALLBACK,
+                                          .target = GINT_TO_POINTER(DT_ACTION_TYPE_VALUE_FALLBACK) };
+      f->action = &value_action;
+      existing = g_sequence_search(darktable.control->shortcuts, f, shortcut_compare_func, v);
+      while(_shortcut_closest_match(&existing, f, &matched, def) && !matched) {};
     }
 
     if(f->move && !f->move_device &&
@@ -2561,6 +2558,10 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
     dt_device_key_t *new_key = calloc(1, sizeof(dt_device_key_t));
     *new_key = this_key;
     pressed_keys = g_slist_prepend(pressed_keys, new_key);
+
+    // FIXME: make arrow keys repeat; eventually treat up/down and left/right as move
+    if(key == GDK_KEY_Left || key == GDK_KEY_Right || key == GDK_KEY_Up || key == GDK_KEY_Down)
+      dt_shortcut_key_release(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, time, key);
   }
 }
 
@@ -2630,7 +2631,8 @@ void dt_shortcut_key_release(dt_input_device_t id, guint time, guint key)
   }
   else
   {
-    fprintf(stderr, "[dt_shortcut_key_release] released key wasn't stored\n");
+    if(key != GDK_KEY_Left && key != GDK_KEY_Right && key != GDK_KEY_Up && key != GDK_KEY_Down)
+      fprintf(stderr, "[dt_shortcut_key_release] released key wasn't stored\n");
   }
 }
 
