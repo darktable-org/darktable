@@ -144,7 +144,7 @@ static void _import_tags_changed(GtkWidget *widget, dt_import_metadata_t *metada
 
 static void _update_layout(dt_import_metadata_t *metadata)
 {
-  const gboolean write_xmp = dt_conf_get_bool("write_sidecar_files");
+  const gboolean write_xmp = (dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER);
   GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(metadata->grid), 2, DT_META_META_HEADER);
   gtk_widget_set_visible(w, !write_xmp);
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)

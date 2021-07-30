@@ -2037,9 +2037,11 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
       flags = flags | (auto_apply_modules ? DT_HISTORY_HASH_AUTO : DT_HISTORY_HASH_BASIC);
     }
     dt_history_hash_write_from_history(imgid, flags);
-    // As we have a proper history right now and this is first_run we write the xmp now
+    // As we have a proper history right now and this is first_run we possibly write the xmp now
     dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+    // depending on the xmp_writing mode we either us safe or relaxed
+    const gboolean always = (dt_image_get_xmp_mode() == DT_WRITE_XMP_ALWAYS);
+    dt_image_cache_write_release(darktable.image_cache, image, always ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED);
   }
   else if(legacy_params)
   {

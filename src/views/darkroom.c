@@ -923,11 +923,16 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
   dt_dev_write_history(dev);
 
   // be sure light table will update the thumbnail
-  if (!dt_history_hash_is_mipmap_synced(dev->image_storage.id))
+  if(!dt_history_hash_is_mipmap_synced(dev->image_storage.id))
   {
+    const dt_history_hash_t hash_status = dt_history_hash_get_status(dev->image_storage.id); 
+
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
     dt_image_update_final_size(dev->image_storage.id);
-    dt_image_synch_xmp(dev->image_storage.id);
+    const gboolean fresh = (hash_status == DT_HISTORY_HASH_BASIC) || (hash_status == DT_HISTORY_HASH_AUTO);
+    const dt_imageio_write_xmp_t xmp_mode = dt_image_get_xmp_mode();
+    if((xmp_mode == DT_WRITE_XMP_ALWAYS) || ((xmp_mode == DT_WRITE_XMP_LAZY) && !fresh))   
+      dt_image_synch_xmp(dev->image_storage.id);
     dt_history_hash_set_mipmap(dev->image_storage.id);
   }
 
@@ -3074,12 +3079,17 @@ void leave(dt_view_t *self)
   }
 
   // be sure light table will regenerate the thumbnail:
-  if (!dt_history_hash_is_mipmap_synced(dev->image_storage.id))
+  if(!dt_history_hash_is_mipmap_synced(dev->image_storage.id))
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
     dt_image_update_final_size(dev->image_storage.id);
-    // dump new xmp data
-    dt_image_synch_xmp(dev->image_storage.id);
+    // possibly dump new xmp data
+    const dt_history_hash_t hash_status = dt_history_hash_get_status(dev->image_storage.id); 
+
+    const gboolean fresh = (hash_status == DT_HISTORY_HASH_BASIC) || (hash_status == DT_HISTORY_HASH_AUTO);
+    const dt_imageio_write_xmp_t xmp_mode = dt_image_get_xmp_mode();
+    if((xmp_mode == DT_WRITE_XMP_ALWAYS) || ((xmp_mode == DT_WRITE_XMP_LAZY) && !fresh))   
+      dt_image_synch_xmp(dev->image_storage.id);
     dt_history_hash_set_mipmap(dev->image_storage.id);
   }
 
