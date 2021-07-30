@@ -811,22 +811,22 @@ static float _action_process_move(gpointer target, dt_action_element_t element, 
   return 0; // FIXME return should be relative position
 }
 
-const gchar *dt_action_effect_move[]
+const gchar *_action_effect_move[]
   = { N_("middle"),
       N_("next"),
       N_("previous"),
       NULL };
 
 const dt_action_element_def_t _action_elements_move[]
-  = { { N_("move"  ), dt_action_effect_move },
-      { N_("select"), dt_action_effect_move },
+  = { { N_("move"  ), _action_effect_move },
+      { N_("select"), _action_effect_move },
       { NULL } };
 
 static const dt_shortcut_fallback_t _action_fallbacks_move[]
   = { { .mods = GDK_SHIFT_MASK, .element = DT_ACTION_ELEMENT_SELECT },
       { } };
 
-const dt_action_def_t dt_action_def_move
+const dt_action_def_t _action_def_move
   = { N_("move"),
       _action_process_move,
       _action_elements_move,
@@ -1389,19 +1389,19 @@ void gui_init(dt_view_t *self)
                             G_CALLBACK(_profile_display2_changed), (gpointer)display2_profile);
 
   dt_action_t *ac = NULL;
-  ac = dt_action_define(&self->actions, N_("move"), N_("whole"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_STARTEND), &dt_action_def_move);
+  ac = dt_action_define(&self->actions, N_("move"), N_("whole"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_STARTEND), &_action_def_move);
   dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS, GDK_KEY_Home, 0);
   dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT    , GDK_KEY_End, 0);
 
-  ac = dt_action_define(&self->actions, N_("move"), N_("horizontal"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_LEFTRIGHT), &dt_action_def_move);
+  ac = dt_action_define(&self->actions, N_("move"), N_("horizontal"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_LEFTRIGHT), &_action_def_move);
   dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS, GDK_KEY_Left, 0);
   dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT    , GDK_KEY_Right, 0);
 
-  ac = dt_action_define(&self->actions, N_("move"), N_("vertical"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_UPDOWN), &dt_action_def_move);
+  ac = dt_action_define(&self->actions, N_("move"), N_("vertical"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_UPDOWN), &_action_def_move);
   dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS, GDK_KEY_Down, 0);
   dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT    , GDK_KEY_Up, 0);
 
-  ac = dt_action_define(&self->actions, N_("move"), N_("page"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_PAGE), &dt_action_def_move);
+  ac = dt_action_define(&self->actions, N_("move"), N_("page"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_PAGE), &_action_def_move);
   dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS, GDK_KEY_Page_Down, 0);
   dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT    , GDK_KEY_Page_Up, 0);
 
