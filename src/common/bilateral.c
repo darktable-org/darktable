@@ -148,14 +148,12 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   b->numslices = darktable.num_openmp_threads;
   b->sliceheight = (height + b->numslices - 1) / b->numslices;
   b->slicerows = (b->size_y + b->numslices - 1) / b->numslices + 2;
-  b->buf = dt_alloc_align_float(b->size_x * b->size_z * b->numslices * b->slicerows);
-  if (b->buf)
-  {
-    memset(b->buf, 0, sizeof(float) * b->size_x * b->size_z * b->numslices * b->slicerows);
-  }
-  else
+  b->buf = dt_calloc_align_float(b->size_x * b->size_z * b->numslices * b->slicerows);
+  if (!b->buf)
   {
     fprintf(stderr,"[bilateral] unable to allocate buffer for %lux%lux%lu grid\n",b->size_x,b->size_y,b->size_z);
+    free(b);
+    return NULL;
   }
   dt_print(DT_DEBUG_DEV, "[bilateral] created grid [%ld %ld %ld] with sigma (%f %f) (%f %f)\n",
            b->size_x, b->size_y, b->size_z, b->sigma_s, sigma_s, b->sigma_r, sigma_r);

@@ -88,13 +88,13 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module,
     if (size & DT_IMGSZ_PERTHREAD)
     {
       *bufptr = dt_alloc_perthread_float(nfloats,paddedsize);
-      if (size & DT_IMGSZ_CLEARBUF)
+      if ((size & DT_IMGSZ_CLEARBUF) && *bufptr)
         memset(*bufptr, 0, *paddedsize * dt_get_num_threads() * sizeof(float));
     }
     else
     {
       *bufptr = dt_alloc_align_float(nfloats);
-      if (size & DT_IMGSZ_CLEARBUF)
+      if ((size & DT_IMGSZ_CLEARBUF) && *bufptr)
         memset(*bufptr, 0, nfloats * sizeof(float));
     }
     if (!*bufptr)
