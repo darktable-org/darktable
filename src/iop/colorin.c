@@ -56,10 +56,6 @@
 
 #include <lcms2.h>
 
-// max iccprofile file name length
-// must be in synch with dt_colorspaces_color_profile_t
-#define DT_IOP_COLOR_ICC_LEN 512
-
 #define LUT_SAMPLES 0x10000
 
 DT_MODULE_INTROSPECTION(7, dt_iop_colorin_params_t)

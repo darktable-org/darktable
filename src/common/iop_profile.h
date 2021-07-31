@@ -36,13 +36,10 @@ struct dt_develop_t;
 struct dt_dev_pixelpipe_t;
 struct dt_dev_pixelpipe_iop_t;
 
-// must be in synch with filename in dt_colorspaces_color_profile_t in colorspaces.h
-#define DT_IOPPR_COLOR_ICC_LEN 512
-
 typedef struct dt_iop_order_iccprofile_info_t
 {
   dt_colorspaces_color_profile_type_t type;
-  char filename[DT_IOPPR_COLOR_ICC_LEN];
+  char filename[DT_IOP_COLOR_ICC_LEN];
   dt_iop_color_intent_t intent;
   dt_colormatrix_t matrix_in; // don't align on more than 16 bits or OpenCL will fail
   dt_colormatrix_t matrix_out;
@@ -56,8 +53,6 @@ typedef struct dt_iop_order_iccprofile_info_t
   dt_colormatrix_t matrix_in_transposed;  // same as matrix_in, but stored such as to permit vectorization
   dt_colormatrix_t matrix_out_transposed; // same as matrix_out, but stored such as to permit vectorization
 } dt_iop_order_iccprofile_info_t;
-
-#undef DT_IOPPR_COLOR_ICC_LEN
 
 /** must be called before using profile_info, default lutsize = 0 */
 void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info, const int lutsize);
