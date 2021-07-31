@@ -1941,7 +1941,7 @@ void dt_shortcuts_load(gboolean clear)
 
         // find action and also views along the way
         gchar **path = g_strsplit(token, "/", 0);
-        s.action = dt_action_locate(NULL, path);
+        s.action = dt_action_locate(NULL, path, FALSE);
         g_strfreev(path);
 
         if(!s.action)
@@ -2095,7 +2095,8 @@ gboolean _shortcut_closest_match(GSequenceIter **current, dt_shortcut_t *s, gboo
            ((!c->move_device && !c->move) ||
              (c->move_device == s->move_device && c->move == s->move)) &&
            (!s->action || s->action->type != DT_ACTION_TYPE_FALLBACK ||
-           s->action->target == c->action->target))) &&
+            s->action->target == c->action->target))) &&
+        !g_sequence_iter_is_begin(*current) &&
         (((c->button || c->click) && (c->button != s->button || c->click != s->click)) ||
          (c->mods       && c->mods != s->mods ) ||
          (c->direction  & ~s->direction       ) ||
@@ -2105,8 +2106,6 @@ gboolean _shortcut_closest_match(GSequenceIter **current, dt_shortcut_t *s, gboo
          (c->element    && s->effect > 0 && def &&
           def->elements[c->element].effects != def->elements[s->element].effects ) ))
   {
-    if(g_sequence_iter_is_begin(*current)) break;
-
     *current = g_sequence_iter_prev(*current);
     c = g_sequence_get(*current);
 //dt_print(DT_DEBUG_INPUT, "  [_shortcut_closest_match] shortcut considered: %s\n", _shortcut_description(c, TRUE));
@@ -2877,20 +2876,23 @@ void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
   *insertion_point = new_action;
 }
 
-dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path)
+dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path, gboolean create)
 {
   gchar *clean_path = NULL;
 
   dt_action_t *action = owner ? owner->target : darktable.control->actions;
   while(*path)
   {
+    if(owner == &darktable.control->actions_lua) create = TRUE;
+
     if(!clean_path) clean_path = path_without_symbols(*path);
 
     if(!action)
     {
-      if(!owner)
+      if(!owner || !create)
       {
-        fprintf(stderr, "[dt_action_locate] action '%s' not valid base node\n", *path);
+        fprintf(stderr, "[dt_action_locate] action '%s' %s\n", *path,
+                !owner ? "not valid base node" : "doesn't exist");
         g_free(clean_path);
         return NULL;
       }
@@ -2945,7 +2947,7 @@ dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gc
   if(label)
   {
     const gchar *path[] = { section, label, NULL };
-    ac = dt_action_locate(owner, (gchar**)&path[section ? 0 : 1]);
+    ac = dt_action_locate(owner, (gchar**)&path[section ? 0 : 1], TRUE);
   }
 
   if(ac)
@@ -3022,7 +3024,7 @@ void dt_action_define_fallback(dt_action_type_t type, const dt_action_def_t *act
   if(f)
   {
     const gchar *fallback_path[] = { action_def->name, NULL };
-    dt_action_t *fb = dt_action_locate(&darktable.control->actions_fallbacks, (gchar**)fallback_path);
+    dt_action_t *fb = dt_action_locate(&darktable.control->actions_fallbacks, (gchar**)fallback_path, TRUE);
     fb->type = DT_ACTION_TYPE_FALLBACK;
     fb->target = GINT_TO_POINTER(type);
 
@@ -3186,7 +3188,7 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *
 void dt_action_define_preset(dt_action_t *action, const gchar *name)
 {
   gchar *path[3] = { "preset", (gchar *)name, NULL };
-  dt_action_t *p = dt_action_locate(action, path);
+  dt_action_t *p = dt_action_locate(action, path, TRUE);
   if(p)
   {
     p->type = DT_ACTION_TYPE_PRESET;
@@ -3242,7 +3244,7 @@ void dt_action_rename(dt_action_t *action, const gchar *new_name)
 void dt_action_rename_preset(dt_action_t *action, const gchar *old_name, const gchar *new_name)
 {
   gchar *path[3] = { "preset", (gchar *)old_name, NULL };
-  dt_action_t *p = dt_action_locate(action, path);
+  dt_action_t *p = dt_action_locate(action, path, FALSE);
   if(p)
   {
     if(!new_name)
@@ -3324,7 +3326,7 @@ void dt_accel_connect_lib_as_global(dt_lib_module_t *module, const gchar *path, 
 void dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path, GClosure *closure)
 {
   gchar **split_path = g_strsplit(path, "`", 6);
-  dt_action_t *ac = dt_action_locate(&module->so->actions, split_path);
+  dt_action_t *ac = dt_action_locate(&module->so->actions, split_path, FALSE);
   g_strfreev(split_path);
 
   if(ac)
@@ -3476,7 +3478,7 @@ void dt_accel_cleanup_closures_iop(dt_iop_module_t *module)
 void dt_accel_rename_global(const gchar *path, const gchar *new_name)
 {
   gchar **split_path = g_strsplit(path, "/", 6);
-  dt_action_t *p = dt_action_locate(&darktable.control->actions_global, split_path);
+  dt_action_t *p = dt_action_locate(&darktable.control->actions_global, split_path, FALSE);
   g_strfreev(split_path);
 
   if(p) dt_action_rename(p, new_name);
@@ -3485,7 +3487,7 @@ void dt_accel_rename_global(const gchar *path, const gchar *new_name)
 void dt_accel_rename_lua(const gchar *path, const gchar *new_name)
 {
   gchar **split_path = g_strsplit(path, "/", 6);
-  dt_action_t *p = dt_action_locate(&darktable.control->actions_lua, split_path);
+  dt_action_t *p = dt_action_locate(&darktable.control->actions_lua, split_path, FALSE);
   g_strfreev(split_path);
 
   if(p) dt_action_rename(p, new_name);
