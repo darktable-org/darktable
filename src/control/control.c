@@ -68,6 +68,42 @@ const dt_action_def_t dt_action_def_accels_show
       dt_action_elements_hold,
       NULL, TRUE };
 
+
+GdkModifierType dt_modifier_shortcuts;
+
+static float _action_process_modifiers(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  GdkModifierType mask = 1;
+  if(element) mask <<= element + 1; // ctrl = 4, alt = 8
+  if(move_size)
+  {
+    if(dt_modifier_shortcuts & mask)
+    {
+      if(effect != DT_ACTION_EFFECT_ON)
+        dt_modifier_shortcuts &= ~mask;
+    }
+    else
+    {
+      if(effect != DT_ACTION_EFFECT_OFF)
+        dt_modifier_shortcuts |= mask;
+    }
+  }
+
+  return (dt_modifier_shortcuts & mask) != 0;
+}
+
+const dt_action_element_def_t _action_elements_modifiers[]
+  = { { "shift", dt_action_effect_hold },
+      { "ctrl", dt_action_effect_hold },
+      { "alt", dt_action_effect_hold },
+      { NULL } };
+
+const dt_action_def_t dt_action_def_modifiers
+  = { N_("modifiers"),
+      _action_process_modifiers,
+      _action_elements_modifiers,
+      NULL, TRUE };
+
 void dt_control_init(dt_control_t *s)
 {
   s->actions_global = (dt_action_t){ DT_ACTION_TYPE_GLOBAL, "global", C_("accel", "global"), .next = &s->actions_views };
@@ -92,6 +128,8 @@ void dt_control_init(dt_control_t *s)
 
   dt_action_t *ac = dt_action_define(&s->actions_global, NULL, N_("show accels window"), NULL, &dt_action_def_accels_show);
   dt_accel_register_shortcut(ac, NULL, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_h, 0);
+
+  dt_action_define(&s->actions_global, NULL, N_("modifiers"), NULL, &dt_action_def_modifiers);
 
   memset(s->vimkey, 0, sizeof(s->vimkey));
   s->vimkey_cnt = 0;
