@@ -60,7 +60,7 @@ GList *dt_control_crawler_run()
 {
   sqlite3_stmt *stmt, *inner_stmt;
   GList *result = NULL;
-  gboolean look_for_xmp = dt_conf_get_bool("write_sidecar_files");
+  gboolean look_for_xmp = (dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER);
 
   sqlite3_prepare_v2(dt_database_get(darktable.db),
                      "SELECT i.id, write_timestamp, version, folder || '" G_DIR_SEPARATOR_S "' || filename, flags "
