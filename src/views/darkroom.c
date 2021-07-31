@@ -2691,7 +2691,7 @@ void gui_init(dt_view_t *self)
   dt_action_t *ac = NULL;
 
   // Fullscreen preview key
-  ac = dt_action_define(&self->actions, NULL, N_("preview"), NULL, &dt_action_def_preview);
+  ac = dt_action_define(&self->actions, NULL, N_("full preview"), NULL, &dt_action_def_preview);
   dt_accel_register_shortcut(ac, NULL, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
 
   // add an option to allow skip mouse events while editing masks
