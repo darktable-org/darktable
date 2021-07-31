@@ -39,7 +39,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
 
 void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action);
 
-dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path);
+dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path, gboolean create);
 
 void dt_action_define_preset(dt_action_t *action, const gchar *name);
 // delete if new_name == NULL
