@@ -231,7 +231,7 @@ void dt_iop_image_fill(float *const buf, const float fill_value, const size_t wi
     // determine the number of 4-float vectors to be processed by each thread
     const size_t chunksize = (((nfloats + nthreads - 1) / nthreads) + 3) / 4;
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, fill_value, nfloats) schedule(static) num_threads(nthreads)
+  dt_omp_firstprivate(buf, fill_value, nfloats, nthreads) schedule(static) num_threads(nthreads)
     for(size_t chunk = 0; chunk < nthreads; chunk++)
     {
 #pragma omp simd aligned(buf:16)
