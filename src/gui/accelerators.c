@@ -124,10 +124,10 @@ const gchar *dt_action_effect_toggle[]
       N_("right-on"),
       NULL };
 const gchar *dt_action_effect_hold[]
-  = { N_("toggle"),
+  = { N_("hold"),
       N_("on"),
       N_("off"),
-      N_("hold"),
+      N_("toggle"),
       NULL };
 const gchar *dt_action_effect_activate[]
   = { N_("activate"),
