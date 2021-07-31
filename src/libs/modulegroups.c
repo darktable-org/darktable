@@ -235,22 +235,10 @@ static void _text_entry_changed_callback(GtkEntry *entry, dt_lib_module_t *self)
   _lib_modulegroups_update_iop_visibility(self);
 }
 
-static gboolean _text_entry_key_press_callback(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+static void _stop_search(GtkSearchEntry *entry, gpointer user_data)
 {
-
-  if(event->keyval == GDK_KEY_Escape)
-  {
-    gtk_entry_set_text(GTK_ENTRY(widget), "");
-    gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
-    return TRUE;
-  }
-  else if(event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
-  {
-    gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
-    return TRUE;
-  }
-
-  return FALSE;
+  gtk_entry_set_text(GTK_ENTRY(entry), "");
+  gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 }
 
 static DTGTKCairoPaintIconFunc _buttons_get_icon_fct(const gchar *icon)
@@ -2755,7 +2743,7 @@ void gui_init(dt_lib_module_t *self)
   d->text_entry = gtk_search_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(d->text_entry), _("search modules by name or tag"));
   g_signal_connect(G_OBJECT(d->text_entry), "search-changed", G_CALLBACK(_text_entry_changed_callback), self);
-  g_signal_connect(G_OBJECT(d->text_entry), "key-press-event", G_CALLBACK(_text_entry_key_press_callback), self);
+  g_signal_connect(G_OBJECT(d->text_entry), "stop-search", G_CALLBACK(_stop_search), NULL);
   gtk_box_pack_start(GTK_BOX(d->hbox_search_box), d->text_entry, TRUE, TRUE, 0);
   gtk_entry_set_width_chars(GTK_ENTRY(d->text_entry), 0);
   gtk_entry_set_icon_tooltip_text(GTK_ENTRY(d->text_entry), GTK_ENTRY_ICON_SECONDARY, _("clear text"));
