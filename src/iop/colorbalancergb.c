@@ -535,7 +535,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_aligned_pixel_t Yrg = { 0.f };
 
     // clip pipeline RGB
-    for_four_channels(c, aligned(pix_in:16)) RGB[c] = fmaxf(pix_in[c], 0.0f);
+    for_each_channel(c, aligned(pix_in:16)) RGB[c] = fmaxf(pix_in[c], 0.0f);
 
     // go to CIE 2006 LMS D65
     dot_product(RGB, input_matrix, LMS);
@@ -610,7 +610,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     LMS_to_gradingRGB(LMS, RGB);
 
     // Color balance
-    for_four_channels(c, aligned(RGB, opacities, opacities_comp, global, shadows, midtones, highlights:16))
+    for_each_channel(c, aligned(RGB, opacities, opacities_comp, global, shadows, midtones, highlights:16))
     {
       // global : offset
       RGB[c] += global[c];
@@ -733,24 +733,24 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dt_aligned_pixel_t color;
       if(i % checker_1 < i % checker_2)
       {
-        if(j % checker_1 < j % checker_2) for_four_channels(c) color[c] = d->checker_color_2[c];
-        else for_four_channels(c) color[c] = d->checker_color_1[c];
+        if(j % checker_1 < j % checker_2) for_each_channel(c) color[c] = d->checker_color_2[c];
+        else for_each_channel(c) color[c] = d->checker_color_1[c];
       }
       else
       {
-        if(j % checker_1 < j % checker_2) for_four_channels(c) color[c] = d->checker_color_1[c];
-        else for_four_channels(c) color[c] = d->checker_color_2[c];
+        if(j % checker_1 < j % checker_2) for_each_channel(c) color[c] = d->checker_color_1[c];
+        else for_each_channel(c) color[c] = d->checker_color_2[c];
       }
 
       float opacity = opacities[g->mask_type];
       const float opacity_comp = 1.0f - opacity;
 
-      for_four_channels(c, aligned(pix_out, color:16)) pix_out[c] = opacity_comp * color[c] + opacity * fmaxf(pix_out[c], 0.f);
+      for_each_channel(c, aligned(pix_out, color:16)) pix_out[c] = opacity_comp * color[c] + opacity * fmaxf(pix_out[c], 0.f);
       pix_out[3] = 1.0f; // alpha is opaque, we need to preview it
     }
     else
     {
-      for_four_channels(c, aligned(pix_out:16)) pix_out[c] = fmaxf(pix_out[c], 0.f);
+      for_each_channel(c, aligned(pix_out:16)) pix_out[c] = fmaxf(pix_out[c], 0.f);
       pix_out[3] = pix_in[3]; // alpha copy
     }
   }
