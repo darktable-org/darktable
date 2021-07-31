@@ -291,10 +291,32 @@ void dt_image_film_roll(const dt_image_t *img, char *pathname, size_t pathname_l
   pathname[pathname_len - 1] = '\0';
 }
 
+dt_imageio_write_xmp_t dt_image_get_xmp_mode()
+{
+  dt_imageio_write_xmp_t res = DT_WRITE_XMP_ALWAYS;
+  const char *config = dt_conf_get_string_const("write_sidecar_files");
+  if(config)
+  {
+    if(!strcmp(config, "after edit"))
+      res = DT_WRITE_XMP_LAZY;
+    else if(!strcmp(config, "never"))
+      res = DT_WRITE_XMP_NEVER;
+    // migration path from boolean settings in <= 3.6, lazy mode were introduced in 3.8
+    else if(!strcmp(config, "FALSE"))
+    {
+      dt_conf_set_string("write_sidecar_files", "never");
+      res = DT_WRITE_XMP_NEVER;
+    }
+    else if(!strcmp(config, "TRUE"))
+      dt_conf_set_string("write_sidecar_files", "on import");
+  }
+  return res;
+}
+
 gboolean dt_image_safe_remove(const int32_t imgid)
 {
   // always safe to remove if we do not have .xmp
-  if(!dt_conf_get_bool("write_sidecar_files")) return TRUE;
+  if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER) return TRUE;
 
   // check whether the original file is accessible
   char pathname[PATH_MAX] = { 0 };
@@ -906,7 +928,7 @@ void dt_image_set_aspect_ratio_if_different(const int32_t imgid, const float asp
       dt_image_cache_read_release(darktable.image_cache, image);
       dt_image_t *wimage = dt_image_cache_get(darktable.image_cache, imgid, 'w');
       wimage->aspect_ratio = aspect_ratio;
-      dt_image_cache_write_release(darktable.image_cache, wimage, DT_IMAGE_CACHE_SAFE);
+      dt_image_cache_write_release(darktable.image_cache, wimage, DT_IMAGE_CACHE_RELAXED);
     }
     else
       dt_image_cache_read_release(darktable.image_cache, image);
@@ -1378,6 +1400,7 @@ static int _image_read_duplicates(const uint32_t id, const char *filename, const
 static uint32_t _image_import_internal(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs,
                                        gboolean lua_locking, gboolean raise_signals)
 {
+  const dt_imageio_write_xmp_t xmp_mode = dt_image_get_xmp_mode(); 
   char *normalized_filename = dt_util_normalize_path(filename);
   if(!normalized_filename || !dt_util_test_image_file(normalized_filename))
   {
@@ -1604,9 +1627,10 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   if((res != 0) && (nb_xmp == 0))
   {
     // Search for Lightroom sidecar file, import tags if found
-    dt_lightroom_import(id, NULL, TRUE);
+    const gboolean lr_xmp = dt_lightroom_import(id, NULL, TRUE);
     // Make sure that lightroom xmp data (label in particular) are saved in dt xmp
-    dt_image_write_sidecar_file(id);
+    if(lr_xmp)
+      dt_image_write_sidecar_file(id);
   }
 
   // add a tag with the file extension
@@ -1621,7 +1645,8 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   dt_mipmap_cache_remove(darktable.mipmap_cache, id);
 
   //synch database entries to xmp
-  dt_image_synch_all_xmp(normalized_filename);
+  if(xmp_mode == DT_WRITE_XMP_ALWAYS)
+    dt_image_synch_all_xmp(normalized_filename);
 
   g_free(imgfname);
   g_free(basename);
@@ -2387,7 +2412,7 @@ void dt_image_write_sidecar_file(const int32_t imgid)
 {
   // TODO: compute hash and don't write if not needed!
   // write .xmp file
-  if(imgid > 0 && dt_conf_get_bool("write_sidecar_files"))
+  if((imgid > 0) && (dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER))
   {
     char filename[PATH_MAX] = { 0 };
 
@@ -2427,7 +2452,7 @@ void dt_image_write_sidecar_file(const int32_t imgid)
 void dt_image_synch_xmps(const GList *img)
 {
   if(!img) return;
-  if(dt_conf_get_bool("write_sidecar_files"))
+  if(dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER)
   {
     for(const GList *imgs = img; imgs; imgs = g_list_next(imgs))
     {
@@ -2451,7 +2476,7 @@ void dt_image_synch_xmp(const int selected)
 
 void dt_image_synch_all_xmp(const gchar *pathname)
 {
-  if(dt_conf_get_bool("write_sidecar_files"))
+  if(dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER)
   {
     sqlite3_stmt *stmt;
     gchar *imgfname = g_path_get_basename(pathname);
@@ -2480,8 +2505,7 @@ void dt_image_synch_all_xmp(const gchar *pathname)
 void dt_image_local_copy_synch(void)
 {
   // nothing to do if not creating .xmp
-  if(!dt_conf_get_bool("write_sidecar_files")) return;
-
+  if(dt_image_get_xmp_mode() == DT_WRITE_XMP_NEVER) return;
   sqlite3_stmt *stmt;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images WHERE flags&?1=?1", -1,
