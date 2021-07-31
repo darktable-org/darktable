@@ -34,9 +34,13 @@ static void dt_iop_equalizer_wtf(float *const buf, float **weight_a, const int l
   const int wd = (int)(1 + (width >> (l - 1))), ht = (int)(1 + (height >> (l - 1)));
   int ch = 0;
   // store weights for luma channel only, chroma uses same basis.
-  memset(weight_a[l], 0, sizeof(float) * wd * ht);
   for(int j = 0; j < ht - 1; j++)
+  {
     for(int i = 0; i < wd - 1; i++) weight_a[l][(size_t)j * wd + i] = gbuf(buf, i << (l - 1), j << (l - 1));
+    weight_a[l][j * wd + (wd - 1)] = 0.0f; // zero out right-most column
+  }
+  for(int i = 0; i < wd; i++) // zero out the bottom row
+    weight_a[l][(ht-1) * wd + i] = 0.0f;
 
   const int step = 1 << l;
   const int st = step / 2;

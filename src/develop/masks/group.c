@@ -593,12 +593,9 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
   const int height = roi->height;
   const size_t npixels = (size_t)width * height;
 
-  // we need to allocate a temporary buffer for intermediate creation of individual shapes
-  float *const restrict bufs = dt_alloc_align_float(npixels);
+  // we need to allocate a zeroed temporary buffer for intermediate creation of individual shapes
+  float *const restrict bufs = dt_calloc_align_float(npixels);
   if(bufs == NULL) return 0;
-
-  // empty the output buffer
-  memset(buffer, 0, sizeof(float) * npixels);
 
   // and we get all masks
   for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))

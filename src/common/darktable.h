@@ -349,6 +349,12 @@ static inline float *dt_alloc_align_float(size_t pixels)
 {
   return (float*)__builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
 }
+static inline float *dt_calloc_align_float(size_t pixels)
+{
+  float *const buf = (float*)dt_alloc_align(64, pixels * sizeof(float));
+  if(buf) memset(buf, 0, pixels * sizeof(float));
+  return (float*)__builtin_assume_aligned(buf, 64);
+}
 size_t dt_round_size(const size_t size, const size_t alignment);
 size_t dt_round_size_sse(const size_t size);
 
