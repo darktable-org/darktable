@@ -624,7 +624,7 @@ static float get_luminance_from_buffer(const float *const buffer,
   if(y >= height || x >= width) return NAN;
 
   const size_t y_abs[4] DT_ALIGNED_PIXEL =
-                          { MIN(y, 1) - 1,                  // previous line
+                          { MAX(y, 1) - 1,                  // previous line
                             y,                              // center line
                             MIN(y + 1, height - 1),         // next line
                             y };			    // padding for vectorization
@@ -644,7 +644,7 @@ static float get_luminance_from_buffer(const float *const buffer,
   }
   
   const size_t x_abs[4] DT_ALIGNED_PIXEL =
-                          { MIN(x, 1) - 1,                  // previous column
+                          { MAX(x, 1) - 1,                  // previous column
                             x,                              // center column
                             MIN(x + 1, width - 1),          // next column
                             x };                            // padding for vectorization
