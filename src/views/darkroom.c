@@ -2158,16 +2158,14 @@ static float _action_process_skip_mouse(gpointer target, dt_action_element_t ele
   {
     switch(effect)
     {
-    case DT_ACTION_EFFECT_TOGGLE:
-    case DT_ACTION_EFFECT_HOLD:
-      darktable.develop->darkroom_skip_mouse_events ^= TRUE;
-      break;
     case DT_ACTION_EFFECT_ON:
       darktable.develop->darkroom_skip_mouse_events = TRUE;
       break;
     case DT_ACTION_EFFECT_OFF:
       darktable.develop->darkroom_skip_mouse_events = FALSE;
       break;
+    default:
+      darktable.develop->darkroom_skip_mouse_events ^= TRUE;
     }
   }
 
