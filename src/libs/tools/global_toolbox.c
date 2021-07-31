@@ -494,7 +494,7 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_add_help_link(d->help_button, dt_get_help_url("global_toolbox_help"));
 
   /* create the preference button */
-  d->keymap_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_bracket, CPF_STYLE_FLAT, NULL);
+  d->keymap_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_shortcut, CPF_STYLE_FLAT, NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), d->keymap_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->keymap_button, _("define shortcuts\n"
                                                   "hover over a widget and press keys with mouse click and scroll or move combinations\n"

@@ -2850,6 +2850,76 @@ void dtgtk_cairo_paint_link(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   FINISH
 }
 
+void dtgtk_cairo_paint_shortcut(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_set_line_width(cr, .07);
+
+  //arrow
+  cairo_move_to(cr, .65, .35);
+  cairo_line_to(cr, 1., 0.);
+  cairo_stroke(cr);
+  cairo_move_to(cr, .75, 0.);
+  cairo_line_to(cr, 1., 0.);
+  cairo_line_to(cr, 1., .25);
+  cairo_stroke(cr);
+
+  //keyboard outline
+  cairo_set_line_width(cr, .05);
+  cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
+
+  cairo_move_to(cr, .5, .271);
+  cairo_line_to(cr, .1, .271);
+  cairo_line_to(cr, .1, .728);
+  cairo_line_to(cr, .9, .728);
+  cairo_line_to(cr, .9, .500);
+
+  cairo_stroke(cr);
+
+  //keyboard buttons
+
+  cairo_set_line_width(cr, .04);
+  cairo_set_line_join(cr, CAIRO_LINE_JOIN_MITER);
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+
+  //top row
+  cairo_move_to(cr, .23, .386);
+  cairo_line_to(cr, .257, .386);
+
+  cairo_move_to(cr, .33, .386);
+  cairo_line_to(cr, .357, .386);
+
+  cairo_move_to(cr, .43, .386);
+  cairo_line_to(cr, .457, .386);
+
+  cairo_move_to(cr, .53, .386);
+  cairo_line_to(cr, .557, .386);
+
+  //middle row
+
+  cairo_move_to(cr, .293, .486);
+  cairo_line_to(cr, .320, .486);
+
+  cairo_move_to(cr, .393, .486);
+  cairo_line_to(cr, .420, .486);
+
+  cairo_move_to(cr, .493, .486);
+  cairo_line_to(cr, .520, .486);
+
+  cairo_move_to(cr, .593, .486);
+  cairo_line_to(cr, .620, .486);
+
+  //bottom (spacebar) row
+
+  cairo_move_to(cr, .314, .586);
+  cairo_line_to(cr, .687, .586);
+
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
