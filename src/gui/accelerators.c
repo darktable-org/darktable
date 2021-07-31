@@ -2702,9 +2702,18 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     if(GTK_IS_WINDOW(w) &&
        (event->type == GDK_KEY_PRESS || event->type == GDK_KEY_RELEASE))
     {
-      if(gtk_window_propagate_key_event(GTK_WINDOW(w), &event->key) ||
-         gtk_widget_event(dt_ui_center(darktable.gui->ui), event))
-        return TRUE;
+      GtkWidget *focused_widget = gtk_window_get_focus(GTK_WINDOW(w));
+      if(focused_widget)
+      {
+        if(gtk_widget_event(focused_widget, event))
+          return TRUE;
+
+        if(GTK_IS_ENTRY(focused_widget) &&
+           (event->key.keyval == GDK_KEY_Tab ||
+            event->key.keyval == GDK_KEY_KP_Tab ||
+            event->key.keyval == GDK_KEY_ISO_Left_Tab))
+          return FALSE;
+      }
     }
   }
 

@@ -1491,6 +1491,8 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
     }
   }
 
+  gtk_container_foreach(GTK_CONTAINER(flow), (GtkCallback)gtk_widget_set_can_focus, GINT_TO_POINTER(FALSE));
+
   return flow;
 }
 
@@ -1545,6 +1547,8 @@ static gboolean _datetime_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_l
       return FALSE;
 
     case GDK_KEY_Tab:
+    case GDK_KEY_KP_Tab:
+    case GDK_KEY_ISO_Left_Tab:
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
       d->editing = FALSE;
