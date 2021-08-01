@@ -588,7 +588,7 @@ static inline float CCT_reverse_lookup(const float x, const float y)
       CCT_to_xy_blackbody(T, &x_bb, &y_bb);
 
     // Compute distance between current planckian chromaticity and input
-    const pair radius_tmp = { hypotf((x_bb - x), (y_bb - y)), T };
+    const pair radius_tmp = { dt_fast_hypotf((x_bb - x), (y_bb - y)), T };
 
     // If we found a smaller radius, save it
     min_radius = pair_min(min_radius, radius_tmp);
