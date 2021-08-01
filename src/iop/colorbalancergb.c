@@ -535,7 +535,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_aligned_pixel_t Yrg = { 0.f };
 
     // clip pipeline RGB
-    for_each_channel(c, aligned(pix_in:16)) RGB[c] = fmaxf(pix_in[c], 0.0f);
+    for_each_channel(c, aligned(pix_in:16)) RGB[c] = MAX(pix_in[c], 0.0f);
 
     // go to CIE 2006 LMS D65
     dot_product(RGB, input_matrix, LMS);
@@ -555,7 +555,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     LMS_to_Yrg(LMS, Yrg);
 
     // Sanitize input : no negative luminance
-    Yrg[0] = fmaxf(Yrg[0], 0.f);
+    Yrg[0] = MAX(Yrg[0], 0.f);
 
     // Opacities for luma masks
     dt_aligned_pixel_t opacities;
@@ -579,7 +579,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // Linear chroma : distance to achromatic at constant luminance in scene-referred
     const float chroma_boost = d->chroma_global + scalar_product(opacities, chroma);
     const float vibrance = d->vibrance * (1.0f - powf(current_chroma, fabsf(d->vibrance)));
-    const float chroma_factor = fmaxf(1.f + chroma_boost + vibrance, 0.f);
+    const float chroma_factor = MAX(1.f + chroma_boost + vibrance, 0.f);
 
     // Gamut-clip in Yrg at constant hue and luminance
     // e.g. find the max chroma value that fits in gamut at the current hue
@@ -588,15 +588,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float new_green = max_c * sin_h + D65[1];
     if(new_red < 0.f)
     {
-      max_c = fminf(-D65[0] / cos_h, max_c);
+      max_c = MIN(-D65[0] / cos_h, max_c);
     }
     if(new_green < 0.f)
     {
-      max_c = fminf(-D65[1] / sin_h, max_c);
+      max_c = MIN(-D65[1] / sin_h, max_c);
     }
     if(new_red + new_green > 1.f)
     {
-      max_c = fminf((1.f - D65[0] - D65[1]) / (cos_h + sin_h), max_c);
+      max_c = MIN((1.f - D65[0] - D65[1]) / (cos_h + sin_h), max_c);
     }
 
     // Normalize r, g to new chroma and add white point
@@ -667,12 +667,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                               d->saturation_global + scalar_product(opacities, saturation) }; // move in O direction
 
     SO[0] = JC[0] * cos_T + JC[1] * sin_T;
-    SO[1] = SO[0] * fminf(fmaxf(T * boosts[1], -T), DT_M_PI_F / 2.f - T);
-    SO[0] = fmaxf(SO[0] * boosts[0], 0.f);
+    SO[1] = SO[0] * MIN(MAX(T * boosts[1], -T), DT_M_PI_F / 2.f - T);
+    SO[0] = MAX(SO[0] * boosts[0], 0.f);
 
     // Project back to JCh, that is rotate back of -T angle
-    JC[0] = fmaxf(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
-    JC[1] = fmaxf(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
+    JC[0] = MAX(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
+    JC[1] = MAX(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
 
     // Gamut mapping
     const float out_max_sat_h = lookup_gamut(gamut_LUT, h);
@@ -690,7 +690,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float dd = -0.56f;
     float Iz = JC[0] + d0;
     Iz /= (1.f + dd - dd * Iz);
-    Iz = fmaxf(Iz, 0.f);
+    Iz = MAX(Iz, 0.f);
 
     const dt_colormatrix_t AI
         = { {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
@@ -704,13 +704,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // Clip chroma
     float max_C = JC[1];
     if(LMS[0] < 0.f)
-      max_C = fmin(-Iz / (AI[0][1] * cos_H + AI[0][2] * sin_H), max_C);
+      max_C = MIN(-Iz / (AI[0][1] * cos_H + AI[0][2] * sin_H), max_C);
 
     if(LMS[1] < 0.f)
-      max_C = fmin(-Iz / (AI[1][1] * cos_H + AI[1][2] * sin_H), max_C);
+      max_C = MIN(-Iz / (AI[1][1] * cos_H + AI[1][2] * sin_H), max_C);
 
     if(LMS[2] < 0.f)
-      max_C = fmin(-Iz / (AI[2][1] * cos_H + AI[2][2] * sin_H), max_C);
+      max_C = MIN(-Iz / (AI[2][1] * cos_H + AI[2][2] * sin_H), max_C);
 
     // Project back to JzAzBz for real
     Jab[0] = JC[0];
@@ -745,12 +745,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       float opacity = opacities[g->mask_type];
       const float opacity_comp = 1.0f - opacity;
 
-      for_each_channel(c, aligned(pix_out, color:16)) pix_out[c] = opacity_comp * color[c] + opacity * fmaxf(pix_out[c], 0.f);
+      for_each_channel(c, aligned(pix_out, color:16)) pix_out[c] = opacity_comp * color[c] + opacity * MAX(pix_out[c], 0.f);
       pix_out[3] = 1.0f; // alpha is opaque, we need to preview it
     }
     else
     {
-      for_each_channel(c, aligned(pix_out:16)) pix_out[c] = fmaxf(pix_out[c], 0.f);
+      for_each_channel(c, aligned(pix_out:16)) pix_out[c] = MAX(pix_out[c], 0.f);
       pix_out[3] = pix_in[3]; // alpha copy
     }
   }

@@ -937,7 +937,7 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
   for(int i = 0; i < 3; i++)
   {
     LMS[i] = M[i][0] * XYZ[0] + M[i][1] * XYZ[1] + M[i][2] * XYZ[2];
-    LMS[i] = powf(fmaxf(LMS[i] / 10000.f, 0.0f), n);
+    LMS[i] = powf(MAX(LMS[i] / 10000.f, 0.0f), n);
     LMS[i] = powf((c1 + c2 * LMS[i]) / (1.0f + c3 * LMS[i]), p);
   }
 
@@ -945,7 +945,7 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
   for_each_channel(c)
     JzAzBz[c] = A_transposed[0][c] * LMS[0] + A_transposed[1][c] * LMS[1] + A_transposed[2][c] * LMS[2];
   // Iz -> Jz
-  JzAzBz[0] = fmaxf(((1.0f + d) * JzAzBz[0]) / (1.0f + d * JzAzBz[0]) - d0, 0.f);
+  JzAzBz[0] = MAX(((1.0f + d) * JzAzBz[0]) / (1.0f + d * JzAzBz[0]) - d0, 0.f);
 }
 
 #ifdef _OPENMP
@@ -999,7 +999,7 @@ static inline void dt_JzAzBz_2_XYZ(const dt_aligned_pixel_t JzAzBz, dt_aligned_p
   dt_aligned_pixel_t IzAzBz = { 0.0f, 0.0f, 0.0f, 0.0f };
 
   IzAzBz[0] = JzAzBz[0] + d0;
-  IzAzBz[0] = fmaxf(IzAzBz[0] / (1.0f + d - d * IzAzBz[0]), 0.f);
+  IzAzBz[0] = MAX(IzAzBz[0] / (1.0f + d - d * IzAzBz[0]), 0.f);
   IzAzBz[1] = JzAzBz[1];
   IzAzBz[2] = JzAzBz[2];
 
@@ -1010,8 +1010,8 @@ static inline void dt_JzAzBz_2_XYZ(const dt_aligned_pixel_t JzAzBz, dt_aligned_p
   for(int i = 0; i < 3; i++)
   {
     LMS[i] = AI[i][0] * IzAzBz[0] + AI[i][1] * IzAzBz[1] + AI[i][2] * IzAzBz[2];
-    LMS[i] = powf(fmaxf(LMS[i], 0.0f), p_inv);
-    LMS[i] = 10000.f * powf(fmaxf((c1 - LMS[i]) / (c3 * LMS[i] - c2), 0.0f), n_inv);
+    LMS[i] = powf(MAX(LMS[i], 0.0f), p_inv);
+    LMS[i] = 10000.f * powf(MAX((c1 - LMS[i]) / (c3 * LMS[i] - c2), 0.0f), n_inv);
   }
 
   // LMS -> X'Y'Z
