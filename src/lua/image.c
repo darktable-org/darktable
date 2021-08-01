@@ -98,8 +98,6 @@ static int drop_cache(lua_State *L)
   return 0;
 }
 
-
-
 static int path_member(lua_State *L)
 {
   const dt_image_t *my_image = checkreadimage(L, 1);
@@ -327,6 +325,13 @@ static int colorlabel_member(lua_State *L)
   }
 }
 
+static int is_altered_member(lua_State *L)
+{
+  const dt_image_t *my_image = checkreadimage(L, 1);
+  lua_pushboolean(L, dt_image_altered(my_image->id));
+  releasereadimage(L, my_image);
+  return 1;
+}
 
 static int image_tostring(lua_State *L)
 {
@@ -477,6 +482,8 @@ int dt_lua_init_image(lua_State *L)
   dt_lua_type_register_const(L, dt_lua_image_t, "film");
   lua_pushcfunction(L, group_leader_member);
   dt_lua_type_register_const(L, dt_lua_image_t, "group_leader");
+  lua_pushcfunction(L, is_altered_member);
+  dt_lua_type_register_const(L, dt_lua_image_t, "is_altered");
   // read/write functions
   lua_pushcfunction(L, has_txt_member);
   dt_lua_type_register(L, dt_lua_image_t, "has_txt");
