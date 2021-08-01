@@ -103,7 +103,6 @@ void gui_init(dt_lib_module_t *self)
 
   lib->gui.entry1 = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_width_chars(GTK_ENTRY(lib->gui.entry1), 0);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(lib->gui.entry1));
   gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.entry1), TRUE, TRUE, 0);
 
   lib->gui.button1 = GTK_BUTTON(gtk_button_new_with_label(_("create")));
@@ -120,10 +119,6 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  // Setup lib data
-  dt_lib_session_t *lib = self->data;
-
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(lib->gui.entry1));
   free(self->data);
   self->data = NULL;
 }

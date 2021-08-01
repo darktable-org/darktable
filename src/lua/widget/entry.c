@@ -34,12 +34,10 @@ static void entry_init(lua_State* L)
 {
   lua_entry entry;
   luaA_to(L,lua_entry,&entry,1);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(entry->widget));
 }
 
 static void entry_cleanup(lua_State* L,lua_widget widget)
 {
-  dt_gui_key_accel_block_on_focus_disconnect(widget->widget);
 }
 
 

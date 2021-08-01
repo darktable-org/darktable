@@ -35,12 +35,10 @@ static void text_view_init(lua_State* L)
   lua_text_view text_view;
   luaA_to(L,lua_text_view, &text_view, 1);
   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text_view->widget), GTK_WRAP_WORD_CHAR);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(text_view->widget));
 }
 
 static void text_view_cleanup(lua_State* L,lua_widget widget)
 {
-  dt_gui_key_accel_block_on_focus_disconnect(widget->widget);
 }
 
 static gchar* gtk_text_buffer_get_all_text(GtkTextBuffer *buffer)

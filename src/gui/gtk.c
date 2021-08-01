@@ -625,17 +625,6 @@ gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta)
   return FALSE;
 }
 
-void dt_gui_key_accel_block_on_focus_disconnect(GtkWidget *w)
-{
- // FIXME no longer needed; dt_shortcut_dispatcher checks if Entry has focus
-}
-
-void dt_gui_key_accel_block_on_focus_connect(GtkWidget *w)
-{
-  gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);
-  // FIXME no longer needed; dt_shortcut_dispatcher checks if Entry has focus
-}
-
 static gboolean draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   // draw arrows on borders

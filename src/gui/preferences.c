@@ -1341,7 +1341,6 @@ GtkWidget *dt_gui_preferences_int(GtkGrid *grid, const char *key, const guint co
   GtkWidget *w = gtk_spin_button_new_with_range(min, max, 1.0);
   gtk_widget_set_name(w, key);
   gtk_widget_set_hexpand(w, FALSE);
-  dt_gui_key_accel_block_on_focus_connect(w);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(w), 0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(w), dt_conf_get_int(key));
   gtk_grid_attach(GTK_GRID(grid), labelev, col, line, 1, 1);

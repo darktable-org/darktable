@@ -303,7 +303,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_max_length(GTK_ENTRY(d->zoom_entry), 2);
   gtk_entry_set_width_chars(GTK_ENTRY(d->zoom_entry), 3);
   gtk_entry_set_max_width_chars(GTK_ENTRY(d->zoom_entry), 3);
-  dt_gui_key_accel_block_on_focus_connect(d->zoom_entry);
   gtk_box_pack_start(GTK_BOX(self->widget), d->zoom_entry, TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(d->zoom), "value-changed", G_CALLBACK(_lib_lighttable_zoom_slider_changed),
@@ -327,8 +326,6 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-  dt_gui_key_accel_block_on_focus_disconnect(d->zoom_entry);
   g_free(self->data);
   self->data = NULL;
 }
