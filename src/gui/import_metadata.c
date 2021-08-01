@@ -371,7 +371,6 @@ static void _set_up_entry(GtkWidget *entry, const char *str, const char *name,
   gtk_widget_set_halign(entry, GTK_ALIGN_FILL);
   gtk_entry_set_width_chars(GTK_ENTRY(entry), 5);
   gtk_widget_set_hexpand(entry, TRUE);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(entry));
   gtk_grid_attach(GTK_GRID(metadata->grid), entry, 1, line, 1, 1);
 }
 
@@ -504,13 +503,6 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
 
 void dt_import_metadata_cleanup(dt_import_metadata_t *metadata)
 {
-  for(unsigned int i = DT_META_META_VALUE; i < DT_META_META_VALUE + DT_METADATA_NUMBER; i++)
-  {
-    GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(metadata->grid), 1, i);
-    dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(w));
-  }
-  GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(metadata->grid), 1, DT_META_TAGS_VALUE);
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(w));
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_metadata_prefs_changed), metadata);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_metadata_list_changed), metadata);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_metadata_presets_changed), metadata);

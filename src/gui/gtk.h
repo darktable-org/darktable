@@ -216,11 +216,6 @@ gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event, gdouble *delta);
  * scroll events. */
 gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta);
 
-/** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
-void dt_gui_key_accel_block_on_focus_connect(GtkWidget *w);
-/** clean up connected signal handlers before destroying your widget: */
-void dt_gui_key_accel_block_on_focus_disconnect(GtkWidget *w);
-
 /*
  * new ui api
  */

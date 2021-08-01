@@ -2793,10 +2793,6 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-
-  dt_gui_key_accel_block_on_focus_disconnect(d->text_entry);
-
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_dev_image_changed_callback), self);
 
   darktable.develop->proxy.modulegroups.module = NULL;
@@ -3853,8 +3849,6 @@ void view_leave(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
 {
   if(!strcmp(old_view->module_name, "darkroom"))
   {
-    dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-    dt_gui_key_accel_block_on_focus_disconnect(d->text_entry);
     _basics_hide(self);
   }
 }
@@ -3864,7 +3858,6 @@ void view_enter(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
   if(!strcmp(new_view->module_name, "darkroom"))
   {
     dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-    dt_gui_key_accel_block_on_focus_connect(d->text_entry);
 
     // and we initialize the buttons too
     const char *preset = dt_conf_get_string_const("plugins/darkroom/modulegroups_preset");

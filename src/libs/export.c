@@ -1184,9 +1184,6 @@ void gui_init(dt_lib_module_t *self)
   const char *dpi = dt_conf_get_string_const(CONFIG_PREFIX "print_dpi");
   gtk_entry_set_text(GTK_ENTRY(d->print_dpi), dpi);
 
-  dt_gui_key_accel_block_on_focus_connect(d->print_width);
-  dt_gui_key_accel_block_on_focus_connect(d->print_height);
-  dt_gui_key_accel_block_on_focus_connect(d->print_dpi);
 
   d->width = gtk_entry_new();
   gtk_widget_set_tooltip_text(d->width, _("maximum output width limit.\n"
@@ -1200,8 +1197,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_add_events(d->width, GDK_BUTTON_PRESS_MASK);
   gtk_widget_add_events(d->height, GDK_BUTTON_PRESS_MASK);
 
-  dt_gui_key_accel_block_on_focus_connect(d->width);
-  dt_gui_key_accel_block_on_focus_connect(d->height);
 
   d->print_size = gtk_flow_box_new();
   gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(d->print_size), 5);
@@ -1235,7 +1230,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->scale, _("it can be an integer, decimal number or simple fraction.\n"
                                           "zero or empty values are equal to 1.\n"
                                           "click middle mouse button to reset to 1."));
-  dt_gui_key_accel_block_on_focus_connect(d->scale);
   gtk_widget_set_halign(GTK_WIDGET(d->scale), GTK_ALIGN_END);
   gtk_widget_add_events(d->scale, GDK_BUTTON_PRESS_MASK);
 
@@ -1496,8 +1490,6 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_cancel_postponed_update(self);
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->width));
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->height));
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_on_storage_list_changed), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_export_styles_changed_callback), self);
