@@ -22,7 +22,6 @@
 #include "bauhaus/bauhaus.h"
 #include "common/iop_profile.h"
 #include "common/colorspaces_inline_conversions.h"
-#include "common/colorspaces.h"
 #include "common/rgb_norms.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -37,6 +36,9 @@
 #define DT_IOP_RGBCURVE_RES 256
 #define DT_IOP_RGBCURVE_MAXNODES 20
 #define DT_IOP_RGBCURVE_MIN_X_DISTANCE 0.0025f
+// max iccprofile file name length
+// must be in synch with filename in dt_colorspaces_color_profile_t in colorspaces.h
+#define DT_IOP_COLOR_ICC_LEN 512
 
 DT_MODULE_INTROSPECTION(1, dt_iop_rgbcurve_params_t)
 

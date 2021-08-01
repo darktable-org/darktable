@@ -44,6 +44,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// max iccprofile file name length
+// must be in synch with dt_colorspaces_color_profile_t
+#define DT_IOP_COLOR_ICC_LEN 512
 #define LUT_SAMPLES 0x10000
 
 DT_MODULE_INTROSPECTION(5, dt_iop_colorout_params_t)
