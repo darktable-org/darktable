@@ -361,7 +361,7 @@ static inline void log_scale(const dt_lib_histogram_t *d, float *x, float *y, fl
 {
   if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
   {
-    const float h = hypotf(*x,*y);
+    const float h = dt_fast_hypotf(*x,*y);
     const float s = baselog(h, r);
     *x *= s / h;
     *y *= s / h;
@@ -518,7 +518,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
       const float intensity = lut[(int)(MIN(1.f, b[0]) * lutmax)];
       dt_aligned_pixel_t XYZ_D50, RGB;
-      const float h = hypotf(b[1], b[2]);
+      const float h = dt_fast_hypotf(b[1], b[2]);
 
       // FIXME: look into alternative ways to render this. From Sobotka: "Makes me wonder if full emission mixtures using the GL alpha transparency adding might help for visibility? I’d expect maximum volume of values add to display referred maximum white, while lower density volume of values are more visible and loosely representative of the mixture?"
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)

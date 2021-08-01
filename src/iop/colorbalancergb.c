@@ -642,7 +642,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_XYZ_2_JzAzBz(XYZ_D65, Jab);
 
     // Convert to JCh
-    float JC[2] = { Jab[0], hypotf(Jab[1], Jab[2]) };               // brightness/chroma vector
+    float JC[2] = { Jab[0], dt_fast_hypotf(Jab[1], Jab[2]) };   // brightness/chroma vector
     const float h = atan2f(Jab[2], Jab[1]);  // hue : (a, b) angle
 
     // Project JC onto S, the saturation eigenvector, with orthogonal vector O.
@@ -1044,7 +1044,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
           dot_product(rgb, input_matrix, XYZ); // Go to D50 pipeline RGB to D65 XYZ in one step
           dt_XYZ_2_JzAzBz(XYZ, Jab);           // this one expects D65 XYZ
           Jch[0] = Jab[0];
-          Jch[1] = hypotf(Jab[2], Jab[1]);
+          Jch[1] = dt_fast_hypotf(Jab[2], Jab[1]);
           Jch[2] = atan2f(Jab[2], Jab[1]);
 
           const size_t index = roundf((LUT_ELEM - 1) * (Jch[2] + M_PI_F) / (2.f * M_PI_F));

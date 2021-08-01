@@ -908,7 +908,7 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
 
       // Shift the chromaticity plane so the D50 point (target) becomes the origin
       const float D50[2] = { 0.34567f, 0.35850f };
-      const float norm = hypotf(D50[0], D50[1]);
+      const float norm = dt_fast_hypotf(D50[0], D50[1]);
 
       temp[index    ] = (XYZ[0] - D50[0]) / norm;
       temp[index + 1] = (XYZ[1] - D50[1]) / norm;
@@ -1022,7 +1022,7 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
   }
 
   const float D50[2] = { 0.34567f, 0.35850 };
-  const float norm_D50 = hypotf(D50[0], D50[1]);
+  const float norm_D50 = dt_fast_hypotf(D50[0], D50[1]);
 
   for(size_t c = 0; c < 2; c++)
     xyz[c] = norm_D50 * (xyY[c] / elements) + D50[c];
@@ -1114,14 +1114,14 @@ static void check_if_close_to_daylight(const float x, const float y, float *temp
   xy_to_uv(xy_test, uv_test);
 
   // Compute the error between the reference illuminant and the test illuminant derivated from the CCT with daylight model
-  const float delta_daylight = hypotf((uv_test[0] - uv_ref[0]), (uv_test[1] - uv_ref[1]));
+  const float delta_daylight = dt_fast_hypotf((uv_test[0] - uv_ref[0]), (uv_test[1] - uv_ref[1]));
 
   // Compute the test chromaticity from the blackbody model
   illuminant_to_xy(DT_ILLUMINANT_BB, NULL, NULL, &xy_test[0], &xy_test[1], t, DT_ILLUMINANT_FLUO_LAST, DT_ILLUMINANT_LED_LAST);
   xy_to_uv(xy_test, uv_test);
 
   // Compute the error between the reference illuminant and the test illuminant derivated from the CCT with black body model
-  const float delta_bb = hypotf((uv_test[0] - uv_ref[0]), (uv_test[1] - uv_ref[1]));
+  const float delta_bb = dt_fast_hypotf((uv_test[0] - uv_ref[0]), (uv_test[1] - uv_ref[1]));
 
   // Check the error between original and test chromaticity
   if(delta_bb < 0.005f || delta_daylight < 0.005f)
@@ -1173,8 +1173,8 @@ static inline void compute_patches_delta_E(const float *const restrict patches,
     // note : it will only be luck if I didn't mess-up the computation somewhere
     const float DL = Lab_ref[0] - Lab_test[0];
     const float L_avg = (Lab_ref[0] + Lab_test[0]) / 2.f;
-    const float C_ref = hypotf(Lab_ref[1], Lab_ref[2]);
-    const float C_test = hypotf(Lab_test[1], Lab_test[2]);
+    const float C_ref = dt_fast_hypotf(Lab_ref[1], Lab_ref[2]);
+    const float C_test = dt_fast_hypotf(Lab_test[1], Lab_test[2]);
     const float C_avg = (C_ref + C_test) / 2.f;
     float C_avg_7 = C_avg * C_avg; // C_avg²
     C_avg_7 *= C_avg_7;            // C_avg⁴
@@ -1183,8 +1183,8 @@ static inline void compute_patches_delta_E(const float *const restrict patches,
     const float C_avg_7_ratio_sqrt = sqrtf(C_avg_7 / (C_avg_7 + 6103515625.f)); // 25⁷ = 6103515625
     const float a_ref_prime = Lab_ref[1] * (1.f + 0.5f * (1.f - C_avg_7_ratio_sqrt));
     const float a_test_prime = Lab_test[1] * (1.f + 0.5f * (1.f - C_avg_7_ratio_sqrt));
-    const float C_ref_prime = hypotf(a_ref_prime, Lab_ref[2]);
-    const float C_test_prime = hypotf(a_test_prime, Lab_test[2]);
+    const float C_ref_prime = dt_fast_hypotf(a_ref_prime, Lab_ref[2]);
+    const float C_test_prime = dt_fast_hypotf(a_test_prime, Lab_test[2]);
     const float DC_prime = C_ref_prime - C_test_prime;
     const float C_avg_prime = (C_ref_prime + C_test_prime) / 2.f;
     float h_ref_prime = atan2f(Lab_ref[2], a_ref_prime);
