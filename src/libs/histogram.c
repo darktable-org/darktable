@@ -354,7 +354,7 @@ static void _lib_histogram_hue_ring(dt_lib_histogram_t *d, const dt_iop_order_ic
 static inline float baselog(float x, float bound)
 {
   // FIXME: use dt's fastlog()?
-  return log1pf((VECTORSCOPE_BASE_LOG - 1.f) * x / bound) / log(VECTORSCOPE_BASE_LOG) * bound;
+  return log1pf((VECTORSCOPE_BASE_LOG - 1.f) * x / bound) / logf(VECTORSCOPE_BASE_LOG) * bound;
 }
 
 static inline void log_scale(const dt_lib_histogram_t *d, float *x, float *y, float r)
