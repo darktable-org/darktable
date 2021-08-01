@@ -260,7 +260,7 @@ static void _gradient_init_values(float zoom_scale, dt_masks_form_gui_t *gui, fl
   // in the correct direction as dragged. We test for this by checking the
   // angle between two vectors that should be 90 degrees apart. If the angle
   // is -90 degrees, then the image is flipped.
-  float check_angle = atan2f(pts[7] - pts[1], pts[6] - pts[0]) - atan2(pts[5] - pts[1], pts[4] - pts[0]);
+  float check_angle = atan2f(pts[7] - pts[1], pts[6] - pts[0]) - atan2f(pts[5] - pts[1], pts[4] - pts[0]);
   // Normalize to the range -180 to 180 degrees
   check_angle = atan2f(sinf(check_angle), cosf(check_angle));
   if(check_angle < 0.0f) rot -= M_PI;
@@ -359,7 +359,7 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
 
     dt_dev_distort_backtransform(darktable.develop, pts2, 4);
 
-    float check_angle = atan2f(pts2[7] - pts2[1], pts2[6] - pts2[0]) - atan2(pts2[5] - pts2[1], pts2[4] - pts2[0]);
+    float check_angle = atan2f(pts2[7] - pts2[1], pts2[6] - pts2[0]) - atan2f(pts2[5] - pts2[1], pts2[4] - pts2[0]);
     // Normalize to the range -180 to 180 degrees
     check_angle = atan2f(sinf(check_angle), cosf(check_angle));
     if (check_angle < 0)
@@ -521,7 +521,7 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module, float pz
     float pts2[8] = { xref, yref, x, y, xref + 10.0f, yref, xref, yref + 10.0f };
     dt_dev_distort_backtransform(darktable.develop, pts2, 4);
 
-    float check_angle = atan2f(pts2[7] - pts2[1], pts2[6] - pts2[0]) - atan2(pts2[5] - pts2[1], pts2[4] - pts2[0]);
+    float check_angle = atan2f(pts2[7] - pts2[1], pts2[6] - pts2[0]) - atan2f(pts2[5] - pts2[1], pts2[4] - pts2[0]);
     // Normalize to the range -180 to 180 degrees
     check_angle = atan2f(sinf(check_angle), cosf(check_angle));
     if(check_angle < 0.0f)
