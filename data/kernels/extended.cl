@@ -811,7 +811,8 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
                  const float saturation_global, const float4 saturation,
                  const int mask_display, const int mask_type, const int checker_1, const int checker_2,
                  const float4 checker_color_1, const float4 checker_color_2,
-                 constant const float *const hue_rotation_matrix)
+                 constant const float *const hue_rotation_matrix,
+                 const float Y_power, const float Y_multiplier)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -897,17 +898,23 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   // midtones : power with sign preservation
   RGB = sign(RGB) * native_powr(fabs(RGB) / white_fulcrum, midtones) * white_fulcrum;
 
-  // for the non-linear ops we need to go in Yrg again because RGB doesn't preserve color
+  const float4 gradingRGB_to_Y = { 0.67282368f, 0.47812261f, 0.01044966f, 0.f };
+  const float old_Y = dot(RGB, gradingRGB_to_Y);
+
+  /* Y midtones power (gamma) and fulcrumed contrast combined in a single power
+     function by using precomputed constants. This is the equivalent of:
+
+     // Y midtones power
+     float new_Y = powf(MAX(old_Y, 0.f), Y_power) * Y_multiplier;
+
+     // Y fulcrumed contrast
+     new_Y = d->grey_fulcrum * powf(new_Y / d->grey_fulcrum, d->contrast);
+  */
+
+  const float Y_coeff = old_Y != 0.f ? Y_multiplier * native_powr(old_Y, Y_power) / old_Y : 0.f;
+  RGB *= Y_coeff;
+
   LMS = gradingRGB_to_LMS(RGB);
-  Yrg = LMS_to_Yrg(LMS);
-
-  // Y midtones power (gamma)
-  Yrg.x = native_powr(fmax(Yrg.x / white_fulcrum, 0.f), midtones_Y) * white_fulcrum;
-
-  // Y fulcrumed contrast
-  Yrg.x = grey_fulcrum * native_powr(Yrg.x / grey_fulcrum, contrast);
-
-  LMS = Yrg_to_LMS(Yrg);
   XYZ_D65 = LMS_to_XYZ(LMS);
 
   // Perceptual color adjustments

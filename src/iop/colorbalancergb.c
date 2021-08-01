@@ -515,11 +515,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float DT_ALIGNED_PIXEL hue_rotation_matrix[2][2]
       = { { cosf(d->hue_angle), -sinf(d->hue_angle) }, { sinf(d->hue_angle), cosf(d->hue_angle) } };
 
+  // Precomputed coefficients for taking a shortcut in Y power calculation
+  const float Y_power = d->midtones_Y * d->contrast;
+  const float Y_multiplier = powf(d->grey_fulcrum, 1.f - d->contrast) * powf(d->white_fulcrum, d->contrast * (1.f - d->midtones_Y));
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, out, roi_in, roi_out, d, g, mask_display, input_matrix, output_matrix, gamut_LUT, \
     global, highlights, shadows, midtones, chroma, saturation, brilliance, checker_1, checker_2, \
-    hue_rotation_matrix) \
+    hue_rotation_matrix, Y_power, Y_multiplier) \
     schedule(static) collapse(2)
 #endif
   for(size_t i = 0; i < roi_out->height; i++)
@@ -624,17 +628,23 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       RGB[c] = sign * powf(fabsf(RGB[c]) / d->white_fulcrum, midtones[c]) * d->white_fulcrum;
     }
 
-    // for the non-linear ops we need to go in Yrg again because RGB doesn't preserve color
+    const dt_aligned_pixel_t gradingRGB_to_Y = { 0.67282368f, 0.47812261f, 0.01044966f, 0.f };
+    const float old_Y = scalar_product(RGB, gradingRGB_to_Y);
+
+    /* Y midtones power (gamma) and fulcrumed contrast combined in a single power
+       function by using precomputed constants. This is the equivalent of:
+
+       // Y midtones power
+       float new_Y = powf(MAX(old_Y, 0.f), Y_power) * Y_multiplier;
+
+       // Y fulcrumed contrast
+       new_Y = d->grey_fulcrum * powf(new_Y / d->grey_fulcrum, d->contrast);
+    */
+
+    const float Y_coeff = old_Y ? Y_multiplier * powf(old_Y, Y_power) / old_Y : 0.f;
+    for_each_channel(c, aligned(RGB: 16)) RGB[c] *= Y_coeff;
+
     gradingRGB_to_LMS(RGB, LMS);
-    LMS_to_Yrg(LMS, Yrg);
-
-    // Y midtones power (gamma)
-    Yrg[0] = powf(fmaxf(Yrg[0] / d->white_fulcrum, 0.f), d->midtones_Y) * d->white_fulcrum;
-
-    // Y fulcrumed contrast
-    Yrg[0] = d->grey_fulcrum * powf(Yrg[0] / d->grey_fulcrum, d->contrast);
-
-    Yrg_to_LMS(Yrg, LMS);
     LMS_to_XYZ(LMS, XYZ_D65);
 
     // Perceptual color adjustments
@@ -851,6 +861,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     = { cosf(d->hue_angle), -sinf(d->hue_angle), sinf(d->hue_angle), cosf(d->hue_angle) };
   hue_rotation_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), hue_rotation_matrix);
 
+  // Precomputed coefficients for taking a shortcut in Y power calculation
+  const float Y_power = d->midtones_Y * d->contrast;
+  const float Y_multiplier = powf(d->grey_fulcrum, 1.f - d->contrast) * powf(d->white_fulcrum, d->contrast * (1.f - d->midtones_Y));
+
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 2, sizeof(int), (void *)&width);
@@ -886,6 +900,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 32, 4 * sizeof(float), (void *)&d->checker_color_1);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 33, 4 * sizeof(float), (void *)&d->checker_color_2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 34, sizeof(cl_mem), (void *)&hue_rotation_matrix_cl);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 35, sizeof(float), (void *)&Y_power);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 36, sizeof(float), (void *)&Y_multiplier);
 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_rgb, sizes);
   if(err != CL_SUCCESS) goto error;
