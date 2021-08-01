@@ -45,8 +45,8 @@ static inline float laplacian(const float *const image, const size_t index[8])
 {
   // Compute the magnitude of the gradient over the principal directions,
   // then again over the diagonal directions, and average both.
-  const float l1 = hypotf(image[index[4]] - image[index[3]], image[index[6]] - image[index[1]]);
-  const float l2 = hypotf(image[index[7]] - image[index[0]], image[index[5]] - image[index[2]]);
+  const float l1 = dt_fast_hypotf(image[index[4]] - image[index[3]], image[index[6]] - image[index[1]]);
+  const float l2 = dt_fast_hypotf(image[index[7]] - image[index[0]], image[index[5]] - image[index[2]]);
   //const float div = fabsf(image[index[3]] + image[index[4]] + image[index[1]] + image[index[6]] - 4.0f * image[index[3] + 1]) + 1.0f;
 
   // we assume the gradients follow an hyper-laplacian distributions in natural images,

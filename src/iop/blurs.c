@@ -191,7 +191,7 @@ static inline void create_lens_kernel(float *const restrict buffer,
       const float y = (float)(j - 1) / radius - 1;
 
       // get current radial distance from kernel center
-      const float r = hypotf(x, y);
+      const float r = dt_fast_hypotf(x, y);
 
       // get the radial distance at current angle of the shape envelope
       const float M = cosf((2.f * asinf(k) + M_PI_F * m) / (2.f * n))

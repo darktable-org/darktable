@@ -238,6 +238,15 @@ union float_int {
   int k;
 };
 
+// a faster, vectorizable version of hypotf() when we know that there won't be overflow, NaNs, or infinities
+#ifdef _OPENMP
+#pragma omp declare simd 
+#endif
+static inline float dt_fast_hypotf(const float x, const float y)
+{
+  return sqrtf(x * x + y * y);
+}
+
 // fast approximation of expf()
 /****** if you change this function, you need to make the same change in data/kernels/{basecurve,basic}.cl ***/
 #ifdef _OPENMP
