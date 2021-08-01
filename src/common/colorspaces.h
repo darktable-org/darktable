@@ -27,6 +27,9 @@
   #define TYPE_XYZA_FLT         (FLOAT_SH(1)|COLORSPACE_SH(PT_XYZ)|EXTRA_SH(1)|CHANNELS_SH(3)|BYTES_SH(4))
 #endif
 
+// max iccprofile file name length
+#define DT_IOP_COLOR_ICC_LEN 512
+
 // constants fit to the ones from lcms.h:
 typedef enum dt_iop_color_intent_t
 {
@@ -138,8 +141,7 @@ typedef struct dt_colorspaces_t
 typedef struct dt_colorspaces_color_profile_t
 {
   dt_colorspaces_color_profile_type_t type; // filename is only used for type DT_COLORSPACE_FILE
-  // must be in synch with DT_IOPPR_COLOR_ICC_LEN in iop_order.h
-  char filename[512];                       // icc file name
+  char filename[DT_IOP_COLOR_ICC_LEN];      // icc file name
   char name[512];                           // product name, displayed in GUI
   cmsHPROFILE profile;                      // the actual profile
   int in_pos;                               // position in input combo box, -1 if not applicable
