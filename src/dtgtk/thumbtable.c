@@ -2051,9 +2051,6 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       }
     }
 
-    // be sure the focus is in the right widget (needed for accels)
-    gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
-
     dt_print(DT_DEBUG_LIGHTTABLE, "done in %0.04f sec %d thumbs reloaded\n", dt_get_wtime() - start, nbnew);
     g_free(query);
     sqlite3_finalize(stmt);

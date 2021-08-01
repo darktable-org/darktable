@@ -380,8 +380,6 @@ void dt_view_manager_mouse_moved(dt_view_manager_t *vm, double x, double y, doub
 int dt_view_manager_button_released(dt_view_manager_t *vm, double x, double y, int which, uint32_t state);
 int dt_view_manager_button_pressed(dt_view_manager_t *vm, double x, double y, double pressure, int which,
                                    int type, uint32_t state);
-int dt_view_manager_key_pressed(dt_view_manager_t *vm, guint key, guint state);
-int dt_view_manager_key_released(dt_view_manager_t *vm, guint key, guint state);
 void dt_view_manager_configure(dt_view_manager_t *vm, int width, int height);
 void dt_view_manager_scrolled(dt_view_manager_t *vm, double x, double y, int up, int state);
 void dt_view_manager_scrollbar_changed(dt_view_manager_t *vm, double x, double y);

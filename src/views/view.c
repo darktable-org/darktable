@@ -583,20 +583,6 @@ int dt_view_manager_button_pressed(dt_view_manager_t *vm, double x, double y, do
   return 0;
 }
 
-int dt_view_manager_key_pressed(dt_view_manager_t *vm, guint key, guint state)
-{
-  if(!vm->current_view) return 0;
-  if(vm->current_view->key_pressed) return vm->current_view->key_pressed(vm->current_view, key, state);
-  return 0;
-}
-
-int dt_view_manager_key_released(dt_view_manager_t *vm, guint key, guint state)
-{
-  if(!vm->current_view) return 0;
-  if(vm->current_view->key_released) return vm->current_view->key_released(vm->current_view, key, state);
-  return 0;
-}
-
 void dt_view_manager_configure(dt_view_manager_t *vm, int width, int height)
 {
   for(GList *iter = vm->views; iter; iter = g_list_next(iter))
