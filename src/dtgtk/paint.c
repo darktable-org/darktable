@@ -2854,66 +2854,57 @@ void dtgtk_cairo_paint_shortcut(cairo_t *cr, gint x, gint y, gint w, gint h, gin
 {
   PREAMBLE(1, 0, 0)
 
-  cairo_set_line_width(cr, .07);
-
-  //arrow
-  cairo_move_to(cr, .65, .35);
-  cairo_line_to(cr, 1., 0.);
-  cairo_stroke(cr);
-  cairo_move_to(cr, .75, 0.);
-  cairo_line_to(cr, 1., 0.);
-  cairo_line_to(cr, 1., .25);
-  cairo_stroke(cr);
-
   //keyboard outline
   cairo_set_line_width(cr, .05);
   cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
 
-  cairo_move_to(cr, .5, .271);
-  cairo_line_to(cr, .1, .271);
-  cairo_line_to(cr, .1, .728);
-  cairo_line_to(cr, .9, .728);
-  cairo_line_to(cr, .9, .500);
+  cairo_move_to(cr, .9, .27);
+  cairo_line_to(cr, .1, .27);
+  cairo_line_to(cr, .1, .73);
+  cairo_line_to(cr, .9, .73);
+  cairo_line_to(cr, .9, .27);
 
   cairo_stroke(cr);
 
   //keyboard buttons
 
-  cairo_set_line_width(cr, .04);
+  const double cr_linewidth=.04;
+  const int toprow_keycount = 7;
+
+  cairo_set_line_width(cr, cr_linewidth);
   cairo_set_line_join(cr, CAIRO_LINE_JOIN_MITER);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
-  //top row
-  cairo_move_to(cr, .23, .386);
-  cairo_line_to(cr, .257, .386);
+  const double kheight = .73-.27;
+  const double kwidth = .9 - .1;
+  const double rspace = (kheight - cr_linewidth*3.)/4.;
+  const double keylength = (kwidth-(cr_linewidth*2.0))/((double)toprow_keycount+((double)toprow_keycount/0.9));
+  const double keyspace = keylength / 0.9;
+  const double spacelength = kwidth / 2.0;
 
-  cairo_move_to(cr, .33, .386);
-  cairo_line_to(cr, .357, .386);
+  // top row
+  double keyrowwidth = keylength * toprow_keycount + keyspace*(toprow_keycount-1);
+  double rowstartpos = .1 + (kwidth - keyrowwidth)/2;
+  for(int i=0; i < 7; i++)
+  {
+    cairo_move_to(cr, rowstartpos + i*(keylength+keyspace), .27+rspace+cr_linewidth);
+    cairo_line_to(cr, rowstartpos + i*(keylength+keyspace)+keylength, .27+rspace+cr_linewidth);
+  }
 
-  cairo_move_to(cr, .43, .386);
-  cairo_line_to(cr, .457, .386);
+  // middle row
+  keyrowwidth = keylength * (toprow_keycount-1) + keyspace*(toprow_keycount-2);
+  rowstartpos = .1 + (kwidth - keyrowwidth)/2;
+  for(int i=0; i < 6; i++)
+  {
+    cairo_move_to(cr, rowstartpos + i*(keylength+keyspace), .27+(rspace+cr_linewidth)*2);
+    cairo_line_to(cr, rowstartpos + i*(keylength+keyspace)+keylength, .27+(rspace+cr_linewidth)*2);
+  }
 
-  cairo_move_to(cr, .53, .386);
-  cairo_line_to(cr, .557, .386);
-
-  //middle row
-
-  cairo_move_to(cr, .293, .486);
-  cairo_line_to(cr, .320, .486);
-
-  cairo_move_to(cr, .393, .486);
-  cairo_line_to(cr, .420, .486);
-
-  cairo_move_to(cr, .493, .486);
-  cairo_line_to(cr, .520, .486);
-
-  cairo_move_to(cr, .593, .486);
-  cairo_line_to(cr, .620, .486);
-
-  //bottom (spacebar) row
-
-  cairo_move_to(cr, .314, .586);
-  cairo_line_to(cr, .687, .586);
+  // 3rd (space) row
+  keyrowwidth = spacelength;
+  rowstartpos = .1 + (kwidth - keyrowwidth)/2;
+  cairo_move_to(cr, rowstartpos , .27+(rspace+cr_linewidth)*3);
+  cairo_line_to(cr, rowstartpos + spacelength, .27+(rspace+cr_linewidth)*3);
 
   cairo_stroke(cr);
 
