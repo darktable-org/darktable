@@ -821,7 +821,6 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->entry, "changed", G_CALLBACK(entry_callback), d);
   g_signal_connect(d->entry, "activate", G_CALLBACK(entry_activated), d);
 
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->entry));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->entry), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget),
@@ -908,14 +907,12 @@ void gui_init(dt_lib_module_t *self)
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_cancel_postponed_update(self);
-  dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_styles_changed_callback), self);
 
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_styles_changed_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
 
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
   free(self->data);
   self->data = NULL;
 }

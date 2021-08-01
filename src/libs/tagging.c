@@ -3008,7 +3008,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
   g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(_tag_name_changed), (gpointer)self);
   d->entry = GTK_ENTRY(w);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->entry));
 
   button = dtgtk_button_new(dtgtk_cairo_paint_multiply_small, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(button, _("clear entry"));
@@ -3160,7 +3159,6 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_lib_cancel_postponed_update(self);
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
 
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_tagging_redraw_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_selection_changed_callback), self);

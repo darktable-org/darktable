@@ -163,7 +163,6 @@ void gui_init(dt_imageio_module_storage_t *self)
     gtk_entry_set_text(GTK_ENTRY(widget), dir);
   }
   d->entry = GTK_ENTRY(widget);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->entry));
 
   dt_gtkentry_setup_completion(GTK_ENTRY(widget), dt_gtkentry_get_default_path_compl_list());
 
@@ -187,7 +186,6 @@ void gui_init(dt_imageio_module_storage_t *self)
   d->title_entry = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_width_chars(d->title_entry, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->title_entry));
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->title_entry), _("enter the title of the website"));
   dir = dt_conf_get_string_const("plugins/imageio/storage/gallery/title");
   if(dir)
@@ -199,9 +197,6 @@ void gui_init(dt_imageio_module_storage_t *self)
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
 {
-  gallery_t *d = (gallery_t *)self->gui_data;
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->title_entry));
   free(self->gui_data);
 }
 

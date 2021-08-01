@@ -47,7 +47,6 @@ typedef enum dt_metadata_pref_cols_t
 typedef struct dt_lib_metadata_t
 {
   GtkTextView *textview[DT_METADATA_NUMBER];
-  gulong lost_focus_handler[DT_METADATA_NUMBER];
   GtkWidget *swindow[DT_METADATA_NUMBER];
   GList *metadata_list[DT_METADATA_NUMBER];
   char *setting_name[DT_METADATA_NUMBER];
@@ -750,11 +749,11 @@ void gui_init(dt_lib_module_t *self)
 
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD);
     gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(textview), FALSE);
-    dt_gui_key_accel_block_on_focus_connect(textview);
+    gtk_widget_add_events(textview, GDK_FOCUS_CHANGE_MASK);
     g_signal_connect(textview, "key-press-event", G_CALLBACK(_key_pressed), self);
     g_signal_connect(G_OBJECT(textview), "button-press-event", G_CALLBACK(_click_on_textview), self);
     g_signal_connect(textview, "grab-focus", G_CALLBACK(_got_focus), self);
-    d->lost_focus_handler[i] = g_signal_connect(textview, "focus-out-event", G_CALLBACK(_lost_focus), self);
+    g_signal_connect(textview, "focus-out-event", G_CALLBACK(_lost_focus), self);
     g_signal_connect(GTK_EVENT_BOX(labelev), "button-press-event",
                      G_CALLBACK(_metadata_reset), textview);
     d->textview[i] = GTK_TEXT_VIEW(textview);
@@ -801,8 +800,6 @@ void gui_cleanup(dt_lib_module_t *self)
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     g_free(d->setting_name[i]);
-    g_signal_handler_disconnect(G_OBJECT(d->textview[i]), d->lost_focus_handler[i]);
-    dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->textview[i]));
   }
   free(self->data);
   self->data = NULL;
