@@ -951,6 +951,9 @@ static gboolean _event_loop(gpointer user_data)
   return res;
 }
 
+static gboolean _key_press(GtkWidget *w, GdkEventKey *event, dt_knight_t *d);
+static gboolean _key_release(GtkWidget *w, GdkEventKey *event, dt_knight_t *d);
+
 void enter(dt_view_t *self)
 {
   dt_knight_t *d = (dt_knight_t *)self->data;
@@ -981,6 +984,9 @@ void enter(dt_view_t *self)
       break;
   }
 
+  g_signal_connect(dt_ui_center(darktable.gui->ui), "key-press-event", G_CALLBACK(_key_press), d);
+  g_signal_connect(dt_ui_center(darktable.gui->ui), "key-release-event", G_CALLBACK(_key_release), d);
+
   // start event loop
   d->event_loop = g_timeout_add(LOOP_SPEED, _event_loop, d);
 }
@@ -991,6 +997,9 @@ void leave(dt_view_t *self)
 
   // show normal gui again
   dt_control_change_cursor(GDK_LEFT_PTR);
+
+  g_signal_handlers_disconnect_by_func(dt_ui_center(darktable.gui->ui), G_CALLBACK(_key_press), d);
+  g_signal_handlers_disconnect_by_func(dt_ui_center(darktable.gui->ui), G_CALLBACK(_key_release), d);
 
   // stop event loop
   if(d->event_loop > 0) g_source_remove(d->event_loop);
@@ -1400,10 +1409,9 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   cairo_restore(cr);
 }
 
-int key_released(dt_view_t *self, guint key, guint state)
+static gboolean _key_release(GtkWidget *w, GdkEventKey *event, dt_knight_t *d)
 {
-  dt_knight_t *d = (dt_knight_t *)self->data;
-  switch(key)
+  switch(event->keyval)
   {
     case GDK_KEY_Left:
     case GDK_KEY_Right:
@@ -1413,11 +1421,9 @@ int key_released(dt_view_t *self, guint key, guint state)
   return 0;
 }
 
-int key_pressed(dt_view_t *self, guint key, guint state)
+static gboolean _key_press(GtkWidget *w, GdkEventKey *event, dt_knight_t *d)
 {
-  dt_knight_t *d = (dt_knight_t *)self->data;
-
-  switch(key)
+  switch(event->keyval)
   {
     // do movement in the event loop
     case GDK_KEY_Left:
