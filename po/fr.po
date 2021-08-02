@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-31 19:50+0200\n"
-"PO-Revision-Date: 2021-07-31 19:51+0200\n"
+"POT-Creation-Date: 2021-08-02 09:45+0200\n"
+"PO-Revision-Date: 2021-08-02 09:46+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6473,12 +6473,12 @@ msgid "input after blur"
 msgstr "entrée après le flou"
 
 #: ../src/develop/blend_gui.c:854 ../src/develop/blend_gui.c:2205
-#: ../src/develop/imageop.c:3070
+#: ../src/develop/imageop.c:3080
 msgid "input"
 msgstr "entrée"
 
 #: ../src/develop/blend_gui.c:854 ../src/develop/blend_gui.c:2205
-#: ../src/develop/imageop.c:3072
+#: ../src/develop/imageop.c:3082
 msgid "output"
 msgstr "sortie"
 
@@ -7041,34 +7041,34 @@ msgid "duplicate instance"
 msgstr "cloner l'instance"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:936 ../src/develop/imageop.c:3210
+#: ../src/develop/imageop.c:936 ../src/develop/imageop.c:3220
 #: ../src/libs/masks.c:1162
 msgid "move up"
 msgstr "monter"
 
-#: ../src/develop/imageop.c:942 ../src/develop/imageop.c:3211
+#: ../src/develop/imageop.c:942 ../src/develop/imageop.c:3221
 #: ../src/libs/masks.c:1165
 msgid "move down"
 msgstr "descendre"
 
-#: ../src/develop/imageop.c:948 ../src/develop/imageop.c:3213
+#: ../src/develop/imageop.c:948 ../src/develop/imageop.c:3223
 #: ../src/gui/accelerators.c:134 ../src/gui/presets.c:470
 #: ../src/libs/image.c:178 ../src/libs/tagging.c:1364
 #: ../src/libs/tagging.c:1452
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:955 ../src/develop/imageop.c:3214
+#: ../src/develop/imageop.c:955 ../src/develop/imageop.c:3224
 #: ../src/libs/modulegroups.c:3417 ../src/libs/modulegroups.c:3769
 msgid "rename"
 msgstr "renommer"
 
-#: ../src/develop/imageop.c:1020 ../src/develop/imageop.c:2451
+#: ../src/develop/imageop.c:1020 ../src/develop/imageop.c:2461
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:1020 ../src/develop/imageop.c:2451
+#: ../src/develop/imageop.c:1020 ../src/develop/imageop.c:2461
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
@@ -7081,19 +7081,21 @@ msgstr "masque inconnu"
 msgid "drawn + parametric mask"
 msgstr "masque dessiné + paramétrique"
 
-#: ../src/develop/imageop.c:2344
-msgid "this module has a"
-msgstr "ce module a un"
+#: ../src/develop/imageop.c:2345
+#, c-format
+msgid "this module has a `%s'"
+msgstr "ce module a un « %s »"
 
-#: ../src/develop/imageop.c:2346
-msgid "taken from module"
-msgstr "récupéré du module"
+#: ../src/develop/imageop.c:2347
+#, c-format
+msgid "taken from module `%s'"
+msgstr "récupéré du module « %s »"
 
-#: ../src/develop/imageop.c:2349
+#: ../src/develop/imageop.c:2357
 msgid "click to display (module must be activated first)"
 msgstr "cliquer pour afficher (le module doit être activé)"
 
-#: ../src/develop/imageop.c:2414
+#: ../src/develop/imageop.c:2424
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -7101,7 +7103,7 @@ msgstr ""
 "actions instances multiples\n"
 "clic-droit pour créer une nouvelle instance"
 
-#: ../src/develop/imageop.c:2427
+#: ../src/develop/imageop.c:2437
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -7110,12 +7112,12 @@ msgstr ""
 "ctrl+clic pour réappliquer les préréglages automatique"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2437 ../src/develop/imageop.c:3224
+#: ../src/develop/imageop.c:2447 ../src/develop/imageop.c:3234
 #: ../src/gui/preferences.c:786 ../src/libs/lib.c:1294
 msgid "presets"
 msgstr "préréglages"
 
-#: ../src/develop/imageop.c:2439
+#: ../src/develop/imageop.c:2449
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -7123,23 +7125,23 @@ msgstr ""
 "préréglages\n"
 "clic-droit pour appliquer sur une nouvelle instance"
 
-#: ../src/develop/imageop.c:2689 ../src/develop/imageop.c:2711
+#: ../src/develop/imageop.c:2699 ../src/develop/imageop.c:2721
 msgid "ERROR"
 msgstr "ERREUR"
 
-#: ../src/develop/imageop.c:3069
+#: ../src/develop/imageop.c:3079
 msgid "purpose"
 msgstr "objectif"
 
-#: ../src/develop/imageop.c:3071
+#: ../src/develop/imageop.c:3081
 msgid "process"
 msgstr "traitement"
 
-#: ../src/develop/imageop.c:3141
+#: ../src/develop/imageop.c:3151
 msgid "unsupported input"
 msgstr "entrée non supportée"
 
-#: ../src/develop/imageop.c:3142
+#: ../src/develop/imageop.c:3152
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -7150,42 +7152,42 @@ msgstr ""
 "dans le pipeline où le format de donnée\n"
 "ne satisfait pas les prérequis."
 
-#: ../src/develop/imageop.c:3209 ../src/develop/imageop.c:3219
+#: ../src/develop/imageop.c:3219 ../src/develop/imageop.c:3229
 #: ../src/gui/accelerators.c:130 ../src/libs/lib.c:1292
 msgid "show"
 msgstr "afficher"
 
-#: ../src/develop/imageop.c:3212 ../src/libs/modulegroups.c:3275
+#: ../src/develop/imageop.c:3222 ../src/libs/modulegroups.c:3275
 #: ../src/libs/modulegroups.c:3391 ../src/libs/modulegroups.c:3772
 #: ../src/libs/tagging.c:3094
 msgid "new"
 msgstr "nouveau"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:3215 ../src/libs/duplicate.c:546
+#: ../src/develop/imageop.c:3225 ../src/libs/duplicate.c:546
 #: ../src/libs/image.c:496 ../src/libs/modulegroups.c:3766
 msgid "duplicate"
 msgstr "cloner"
 
-#: ../src/develop/imageop.c:3220
+#: ../src/develop/imageop.c:3230
 msgid "enable"
 msgstr "activer"
 
-#: ../src/develop/imageop.c:3221
+#: ../src/develop/imageop.c:3231
 msgid "focus"
 msgstr "focus"
 
-#: ../src/develop/imageop.c:3222 ../src/gui/accelerators.c:1668
+#: ../src/develop/imageop.c:3232 ../src/gui/accelerators.c:1668
 msgid "instance"
 msgstr "instance"
 
-#: ../src/develop/imageop.c:3223 ../src/gui/accelerators.c:103
+#: ../src/develop/imageop.c:3233 ../src/gui/accelerators.c:103
 #: ../src/gui/accelerators.c:111 ../src/libs/lib.c:1293
 #: ../src/libs/modulegroups.c:3835
 msgid "reset"
 msgstr "réinitialiser"
 
-#: ../src/develop/imageop.c:3236
+#: ../src/develop/imageop.c:3246
 msgid "processing module"
 msgstr "module de traitement"
 
@@ -7228,28 +7230,28 @@ msgstr "dureté : %3.2f%%"
 msgid "size: %3.2f%%"
 msgstr "taille : %3.2f%%"
 
-#: ../src/develop/masks/brush.c:2908
+#: ../src/develop/masks/brush.c:2916
 msgid "[BRUSH creation] change size"
 msgstr "[PINCEAU] changer taille"
 
-#: ../src/develop/masks/brush.c:2910
+#: ../src/develop/masks/brush.c:2918
 msgid "[BRUSH creation] change hardness"
 msgstr "[PINCEAU] changer dureté"
 
-#: ../src/develop/masks/brush.c:2911
+#: ../src/develop/masks/brush.c:2919
 msgid "[BRUSH] change opacity"
 msgstr "[PINCEAU] changer opacité"
 
-#: ../src/develop/masks/brush.c:2912
+#: ../src/develop/masks/brush.c:2920
 msgid "[BRUSH] change hardness"
 msgstr "[PINCEAU] changer dureté"
 
-#: ../src/develop/masks/brush.c:2923
+#: ../src/develop/masks/brush.c:2931
 #, c-format
 msgid "brush #%d"
 msgstr "pinceau #%d"
 
-#: ../src/develop/masks/brush.c:2932
+#: ../src/develop/masks/brush.c:2940
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
@@ -7258,7 +7260,7 @@ msgstr ""
 "<b>taille</b> : molette, <b>dureté</b> : maj+molette\n"
 "<b>opacité</b> : ctrl+molette (%d%%)"
 
-#: ../src/develop/masks/brush.c:2936
+#: ../src/develop/masks/brush.c:2944
 #, c-format
 msgid ""
 "<b>hardness</b>: scroll, <b>size</b>: shift+scroll\n"
@@ -7267,7 +7269,7 @@ msgstr ""
 "<b>dureté</b> : molette, <b>taille</b> : maj+molette\n"
 "<b>opacité</b> : ctrl+molette (%d%%)"
 
-#: ../src/develop/masks/brush.c:2939
+#: ../src/develop/masks/brush.c:2947
 msgid "<b>size</b>: scroll"
 msgstr "<b>taille</b> : défiler"
 
@@ -7295,7 +7297,7 @@ msgstr "[CERCLE] changer la taille d'adoucissement"
 msgid "circle #%d"
 msgstr "cercle #%d"
 
-#: ../src/develop/masks/circle.c:1352 ../src/develop/masks/path.c:3117
+#: ../src/develop/masks/circle.c:1352 ../src/develop/masks/path.c:3129
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -7442,52 +7444,52 @@ msgstr "utiliser les mêmes masques que"
 msgid "masks can not contain themselves"
 msgstr "masques ne peuvent pas se contenir"
 
-#: ../src/develop/masks/path.c:3074
+#: ../src/develop/masks/path.c:3086
 msgid "[PATH creation] add a smooth node"
 msgstr "[CHEMIN création] ajouter un nœud doux"
 
-#: ../src/develop/masks/path.c:3076
+#: ../src/develop/masks/path.c:3088
 msgid "[PATH creation] add a sharp node"
 msgstr "[CHEMIN création] ajout d'un nœud dur"
 
-#: ../src/develop/masks/path.c:3077
+#: ../src/develop/masks/path.c:3089
 msgid "[PATH creation] terminate path creation"
 msgstr "[CHEMIN création] terminer création"
 
-#: ../src/develop/masks/path.c:3079
+#: ../src/develop/masks/path.c:3091
 msgid "[PATH on node] switch between smooth/sharp node"
 msgstr "[CHEMIN sur nœud] changer le nœud doux/dur"
 
-#: ../src/develop/masks/path.c:3080
+#: ../src/develop/masks/path.c:3092
 msgid "[PATH on node] remove the node"
 msgstr "[CHEMIN sur nœud] supprimer nœud"
 
-#: ../src/develop/masks/path.c:3081
+#: ../src/develop/masks/path.c:3093
 msgid "[PATH on feather] reset curvature"
 msgstr "[CHEMIN sur adoucissement] réinitialise la courbure"
 
-#: ../src/develop/masks/path.c:3083
+#: ../src/develop/masks/path.c:3095
 msgid "[PATH on segment] add node"
 msgstr "[CHEMIN sur segment] ajouter un nœud"
 
-#: ../src/develop/masks/path.c:3084
+#: ../src/develop/masks/path.c:3096
 msgid "[PATH] change size"
 msgstr "[CHEMIN] changer taille"
 
-#: ../src/develop/masks/path.c:3085
+#: ../src/develop/masks/path.c:3097
 msgid "[PATH] change opacity"
 msgstr "[CHEMIN] changer opacité"
 
-#: ../src/develop/masks/path.c:3086
+#: ../src/develop/masks/path.c:3098
 msgid "[PATH] change feather size"
 msgstr "[CHEMIN] changer la taille de l'adoucissement"
 
-#: ../src/develop/masks/path.c:3097
+#: ../src/develop/masks/path.c:3109
 #, c-format
 msgid "path #%d"
 msgstr "chemin #%d"
 
-#: ../src/develop/masks/path.c:3104
+#: ../src/develop/masks/path.c:3116
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
@@ -7495,7 +7497,7 @@ msgstr ""
 "<b>ajouter un nœud</b> : clic, <b>ajouter un nœud dur</b> : ctrl+clic\n"
 "<b>annuler</b> : clic droit"
 
-#: ../src/develop/masks/path.c:3107
+#: ../src/develop/masks/path.c:3119
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finish path</b>: right-click"
@@ -7503,7 +7505,7 @@ msgstr ""
 "<b>ajouter un nœud</b> : clic, <b>ajouter un nœud dur</b> : ctrl+clic\n"
 "<b>terminer le chemin</b> : clic droit"
 
-#: ../src/develop/masks/path.c:3110
+#: ../src/develop/masks/path.c:3122
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
@@ -7511,7 +7513,7 @@ msgstr ""
 "<b>déplacer un nœud</b> : déplacer, <b>supprimer un nœud</b> : clic droit\n"
 "<b>passer au mode doux ou dur</b>: ctrl+clic"
 
-#: ../src/develop/masks/path.c:3113
+#: ../src/develop/masks/path.c:3125
 msgid ""
 "<b>node curvature</b>: drag\n"
 "<b>reset curvature</b>: right-click"
@@ -7519,7 +7521,7 @@ msgstr ""
 "<b>courbe du nœud</b> : déplacer\n"
 "<b>réinitialiser la courbe</b> : clic-droit"
 
-#: ../src/develop/masks/path.c:3115
+#: ../src/develop/masks/path.c:3127
 msgid ""
 "<b>move segment</b>: drag\n"
 "<b>add node</b>: ctrl+click"
