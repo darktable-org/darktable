@@ -1640,7 +1640,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_tree_view_set_search_column(shortcuts_view, 0); // fake column for _search_func
   gtk_tree_view_set_search_equal_func(shortcuts_view, _search_func, shortcuts_view, NULL);
   GtkWidget *search_shortcuts = gtk_search_entry_new();
-  gtk_entry_set_placeholder_text(GTK_ENTRY(search_shortcuts), _("search shortcuts"));
+  gtk_entry_set_placeholder_text(GTK_ENTRY(search_shortcuts), _("search shortcuts list"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(search_shortcuts), "incrementally search the list of shortcuts\npress up or down keys to cycle through matches");
   g_signal_connect(G_OBJECT(search_shortcuts), "stop-search", G_CALLBACK(_stop_search), shortcuts_view);
   gtk_tree_view_set_search_entry(shortcuts_view, GTK_ENTRY(search_shortcuts));
@@ -1730,7 +1730,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_tree_view_set_search_column(actions_view, 1); // fake column for _search_func
   gtk_tree_view_set_search_equal_func(actions_view, _search_func, actions_view, NULL);
   GtkWidget *search_actions = gtk_search_entry_new();
-  gtk_entry_set_placeholder_text(GTK_ENTRY(search_actions), _("search actions"));
+  gtk_entry_set_placeholder_text(GTK_ENTRY(search_actions), _("search actions list"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(search_actions), "incrementally search the list of actions\npress up or down keys to cycle through matches");
   g_signal_connect(G_OBJECT(search_actions), "stop-search", G_CALLBACK(_stop_search), actions_view);
   gtk_tree_view_set_search_entry(actions_view, GTK_ENTRY(search_actions));
