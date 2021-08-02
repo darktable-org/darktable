@@ -694,6 +694,11 @@ spinbutton>button
   margin-right: 0.5em;
 }
 
+#search-box image.left
+{
+  padding-right: 0.5em;
+}
+
 /*-------------------
   - Scope/Histogram -
   -------------------*/
