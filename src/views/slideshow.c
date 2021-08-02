@@ -311,7 +311,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
     }
     else
     {
-      dt_control_log(_("end of images."));
+      dt_control_log(_("end of images"));
       d->auto_advance = FALSE;
     }
   }
@@ -631,7 +631,11 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "exit slideshow"), GDK_KEY_Escape, 0);
 
   dt_accel_register_view(self, NC_("accel", "slow down"), GDK_KEY_Up, 0);
+  dt_accel_register_view(self, NC_("accel", "slow down"), GDK_KEY_KP_Add, 0);
+  dt_accel_register_view(self, NC_("accel", "slow down"), GDK_KEY_plus, 0);
   dt_accel_register_view(self, NC_("accel", "speed up"), GDK_KEY_Down, 0);
+  dt_accel_register_view(self, NC_("accel", "speed up"), GDK_KEY_KP_Subtract, 0);
+  dt_accel_register_view(self, NC_("accel", "speed up"), GDK_KEY_minus, 0);
 
   dt_accel_register_view(self, NC_("accel", "step forward"), GDK_KEY_Right, 0);
   dt_accel_register_view(self, NC_("accel", "step back"), GDK_KEY_Left, 0);
