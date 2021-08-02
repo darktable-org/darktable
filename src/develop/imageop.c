@@ -2341,14 +2341,24 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
       type=_("raster mask");
     else
       fprintf(stderr, "unknown mask mode '%d' in module '%s'", mm, module->op);
-    gchar *str1 = g_strconcat(_("this module has a"), " ", type, NULL);
+
+    gchar *part1 = g_strdup_printf(_("this module has a `%s'"), type);
+    gchar *part2 = raster && module->raster_mask.sink.source
+      ? g_strdup_printf(_("taken from module `%s'"),
+                        dt_history_item_get_name(module->raster_mask.sink.source))
+      : NULL;
+
     if(raster)
-      tooltip = g_strconcat(str1, "\n", _("taken from module"), " ",
-                            dt_history_item_get_name(module->raster_mask.sink.source), NULL);
+    {
+      if(part2) part2 = g_strconcat("\n", part2, NULL);
+      tooltip = g_strconcat(part1, part2, NULL);
+    }
     else
-      tooltip = g_strconcat(str1, "\n", _("click to display (module must be activated first)"), NULL);
+      tooltip = g_strconcat(part1, "\n", _("click to display (module must be activated first)"), NULL);
+
     gtk_widget_set_tooltip_text(module->mask_indicator, tooltip);
-    g_free(str1);
+    g_free(part1);
+    g_free(part2);
     g_free(tooltip);
   }
 }
