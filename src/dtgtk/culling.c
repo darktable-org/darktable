@@ -768,13 +768,6 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
 
   const int imgid = dt_control_get_mouse_over_id();
 
-  if(imgid > 0)
-  {
-    // let's be absolutely sure that the right widget has the focus
-    // otherwise accels don't work...
-    gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
-  }
-
   // we crawl over all images to find the right one
   for(GList *l = table->list; l; l = g_list_next(l))
   {
@@ -1631,9 +1624,6 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
       dt_control_set_mouse_over_id(thumb->imgid);
     }
   }
-
-  // be sure the focus is in the right widget (needed for accels)
-  gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 
   dt_print(DT_DEBUG_LIGHTTABLE, "done in %0.04f sec\n", dt_get_wtime() - start);
 

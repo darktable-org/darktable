@@ -1468,7 +1468,6 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
       gtk_box_pack_start(box, dt->widget[i], FALSE, FALSE, 0);
       if(type == 0)
       {
-        dt_gui_key_accel_block_on_focus_connect(dt->widget[i]);
         gtk_widget_add_events(dt->widget[i], darktable.gui->scroll_mask);
       }
       else
@@ -1490,6 +1489,8 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
       gtk_box_pack_start(box, label, FALSE, FALSE, 0);
     }
   }
+
+  gtk_container_foreach(GTK_CONTAINER(flow), (GtkCallback)gtk_widget_set_can_focus, GINT_TO_POINTER(FALSE));
 
   return flow;
 }
@@ -1545,6 +1546,8 @@ static gboolean _datetime_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_l
       return FALSE;
 
     case GDK_KEY_Tab:
+    case GDK_KEY_KP_Tab:
+    case GDK_KEY_ISO_Left_Tab:
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
       d->editing = FALSE;
@@ -1749,7 +1752,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_completion_set_popup_set_width(completion, FALSE);
   gtk_entry_completion_set_match_func(completion, _completion_match_func, NULL, NULL);
   gtk_entry_set_completion(GTK_ENTRY(d->timezone), completion);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->timezone));
   g_signal_connect(G_OBJECT(d->timezone), "key-press-event", G_CALLBACK(_timezone_key_pressed), self);
 
   // gpx
@@ -1893,11 +1895,6 @@ void gui_init(dt_lib_module_t *self)
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
-  for(int i = 0; i < 6; i++)
-  {
-    dt_gui_key_accel_block_on_focus_disconnect(d->dt.widget[i]);
-  }
-  dt_gui_key_accel_block_on_focus_disconnect(d->timezone);
   g_list_free_full(d->timezones, free_tz_tuple);
   d->timezones = NULL;
   g_time_zone_unref(d->tz_camera);

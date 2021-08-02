@@ -1168,7 +1168,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->text = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(g->text), 1);
   gtk_widget_set_tooltip_text(g->text, _("text string, tag:\n$(WATERMARK_TEXT)"));
-  dt_gui_key_accel_block_on_focus_connect(g->text);
   const char *str = dt_conf_get_string_const("plugins/darkroom/watermark/text");
   gtk_entry_set_text(GTK_ENTRY(g->text), str);
 
@@ -1247,7 +1246,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   g_list_free_full(g->watermarks_filenames, g_free);
-  dt_gui_key_accel_block_on_focus_disconnect(g->text);
   g->watermarks_filenames = NULL;
 
   IOP_GUI_FREE;

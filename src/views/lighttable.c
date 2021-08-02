@@ -672,57 +672,74 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
   }
 }
 
-int key_released(dt_view_t *self, guint key, guint state)
+enum
 {
-  dt_control_accels_t *accels = &darktable.control->accels;
+  DT_ACTION_ELEMENT_FOCUS_DETECT = 1,
+};
+
+static float _action_process_preview(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  if(!darktable.control->key_accelerators_on) return 0;
-
-  if(((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
-      || (key == accels->lighttable_preview_display_focus.accel_key
-          && state == accels->lighttable_preview_display_focus.accel_mods))
-     && lib->preview_state && !lib->preview_sticky)
+  if(move_size)
   {
-    _preview_quit(self);
+    if(lib->preview_state)
+    {
+      if(effect != DT_ACTION_EFFECT_ON)
+        _preview_quit(self);
+    }
+    else
+    {
+      if(effect != DT_ACTION_EFFECT_OFF)
+      {
+        const int32_t mouse_over_id = dt_control_get_mouse_over_id();
+        if(mouse_over_id != -1)
+        {
+          gboolean focus = element == DT_ACTION_ELEMENT_FOCUS_DETECT;
+
+          _preview_enter(self, FALSE, focus, mouse_over_id);
+        }
+      }
+    }
   }
 
-  return 1;
+  return lib->preview_state;
 }
 
-int key_pressed(dt_view_t *self, guint key, guint state)
+const dt_action_element_def_t _action_elements_preview[]
+  = { { "normal", dt_action_effect_hold },
+      { "focus detection", dt_action_effect_hold },
+      { NULL } };
+
+const dt_action_def_t dt_action_def_preview
+  = { N_("preview"),
+      _action_process_preview,
+      _action_elements_preview,
+      NULL, TRUE };
+
+enum
 {
-  dt_library_t *lib = (dt_library_t *)self->data;
-  dt_control_accels_t *accels = &darktable.control->accels;
+  DT_ACTION_ELEMENT_MOVE = 0,
+  DT_ACTION_ELEMENT_SELECT = 1,
+};
 
-  if(!darktable.control->key_accelerators_on) return 0;
+enum
+{
+  _ACTION_TABLE_MOVE_STARTEND = 0,
+  _ACTION_TABLE_MOVE_LEFTRIGHT = 1,
+  _ACTION_TABLE_MOVE_UPDOWN = 2,
+  _ACTION_TABLE_MOVE_PAGE = 3,
+};
 
+static float _action_process_move(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  if(!move_size) return 0; // FIXME return should be relative position
+
+  int action = GPOINTER_TO_INT(target);
+
+  dt_library_t *lib = (dt_library_t *)darktable.view_manager->proxy.lighttable.view->data;
   const dt_lighttable_layout_t layout = dt_view_lighttable_get_layout(darktable.view_manager);
-
-  if((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
-     || (key == accels->lighttable_preview_display_focus.accel_key
-         && state == accels->lighttable_preview_display_focus.accel_mods))
-  {
-    if(lib->preview_state && lib->preview_sticky)
-    {
-      _preview_quit(self);
-      return TRUE;
-    }
-    const int32_t mouse_over_id = dt_control_get_mouse_over_id();
-    if(!lib->preview_state && mouse_over_id != -1)
-    {
-      gboolean focus = FALSE;
-      if((key == accels->lighttable_preview_display_focus.accel_key
-          && state == accels->lighttable_preview_display_focus.accel_mods))
-      {
-        focus = TRUE;
-      }
-
-      _preview_enter(self, FALSE, focus, mouse_over_id);
-      return TRUE;
-    }
-    return TRUE;
-  }
 
   // navigation accels for thumbtable layouts
   // this can't be "normal" key accels because it's usually arrow keys and lot of other widgets
@@ -730,72 +747,54 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   if(!lib->preview_state && (layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE))
   {
     dt_thumbtable_move_t move = DT_THUMBTABLE_MOVE_NONE;
-    gboolean select = FALSE;
-    if(key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods)
+    gboolean select = element == DT_ACTION_ELEMENT_SELECT;
+    if(action == _ACTION_TABLE_MOVE_LEFTRIGHT && effect == DT_ACTION_EFFECT_PREVIOUS)
       move = DT_THUMBTABLE_MOVE_LEFT;
-    else if(key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods)
+    else if(action == _ACTION_TABLE_MOVE_UPDOWN && effect == DT_ACTION_EFFECT_NEXT)
       move = DT_THUMBTABLE_MOVE_UP;
-    else if(key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods)
+    else if(action == _ACTION_TABLE_MOVE_LEFTRIGHT && effect == DT_ACTION_EFFECT_NEXT)
       move = DT_THUMBTABLE_MOVE_RIGHT;
-    else if(key == accels->lighttable_down.accel_key && state == accels->lighttable_down.accel_mods)
+    else if(action == _ACTION_TABLE_MOVE_UPDOWN && effect == DT_ACTION_EFFECT_PREVIOUS)
       move = DT_THUMBTABLE_MOVE_DOWN;
-    else if(key == accels->lighttable_pageup.accel_key && state == accels->lighttable_pageup.accel_mods)
+    else if(action == _ACTION_TABLE_MOVE_PAGE && effect == DT_ACTION_EFFECT_NEXT)
       move = DT_THUMBTABLE_MOVE_PAGEUP;
-    else if(key == accels->lighttable_pagedown.accel_key && state == accels->lighttable_pagedown.accel_mods)
+    else if(action == _ACTION_TABLE_MOVE_PAGE && effect == DT_ACTION_EFFECT_PREVIOUS)
       move = DT_THUMBTABLE_MOVE_PAGEDOWN;
-    else if(key == accels->lighttable_start.accel_key && state == accels->lighttable_start.accel_mods)
+    else if(action == _ACTION_TABLE_MOVE_STARTEND && effect == DT_ACTION_EFFECT_PREVIOUS)
       move = DT_THUMBTABLE_MOVE_START;
-    else if(key == accels->lighttable_end.accel_key && state == accels->lighttable_end.accel_mods)
+    else if(action == _ACTION_TABLE_MOVE_STARTEND && effect == DT_ACTION_EFFECT_NEXT)
       move = DT_THUMBTABLE_MOVE_END;
     else
     {
-      select = TRUE;
-      if(key == accels->lighttable_sel_left.accel_key && state == accels->lighttable_sel_left.accel_mods)
-        move = DT_THUMBTABLE_MOVE_LEFT;
-      else if(key == accels->lighttable_sel_up.accel_key && state == accels->lighttable_sel_up.accel_mods)
-        move = DT_THUMBTABLE_MOVE_UP;
-      else if(key == accels->lighttable_sel_right.accel_key && state == accels->lighttable_sel_right.accel_mods)
-        move = DT_THUMBTABLE_MOVE_RIGHT;
-      else if(key == accels->lighttable_sel_down.accel_key && state == accels->lighttable_sel_down.accel_mods)
-        move = DT_THUMBTABLE_MOVE_DOWN;
-      else if(key == accels->lighttable_sel_pageup.accel_key && state == accels->lighttable_sel_pageup.accel_mods)
-        move = DT_THUMBTABLE_MOVE_PAGEUP;
-      else if(key == accels->lighttable_sel_pagedown.accel_key
-              && state == accels->lighttable_sel_pagedown.accel_mods)
-        move = DT_THUMBTABLE_MOVE_PAGEDOWN;
-      else if(key == accels->lighttable_sel_start.accel_key && state == accels->lighttable_sel_start.accel_mods)
-        move = DT_THUMBTABLE_MOVE_START;
-      else if(key == accels->lighttable_sel_end.accel_key && state == accels->lighttable_sel_end.accel_mods)
-        move = DT_THUMBTABLE_MOVE_END;
+      // MIDDLE
     }
 
     if(move != DT_THUMBTABLE_MOVE_NONE)
     {
       // for this layout navigation keys are managed directly by thumbtable
       dt_thumbtable_key_move(dt_ui_thumbtable(darktable.gui->ui), move, select);
-      return TRUE;
+      gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
     }
   }
-
   else if(lib->preview_state || layout == DT_LIGHTTABLE_LAYOUT_CULLING
           || layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
   {
     dt_culling_move_t move = DT_CULLING_MOVE_NONE;
-    if(key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods)
+    if(action == _ACTION_TABLE_MOVE_LEFTRIGHT && effect == DT_ACTION_EFFECT_PREVIOUS)
       move = DT_CULLING_MOVE_LEFT;
-    else if(key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods)
+    else if(action == _ACTION_TABLE_MOVE_UPDOWN && effect == DT_ACTION_EFFECT_NEXT)
       move = DT_CULLING_MOVE_UP;
-    else if(key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods)
+    else if(action == _ACTION_TABLE_MOVE_LEFTRIGHT && effect == DT_ACTION_EFFECT_NEXT)
       move = DT_CULLING_MOVE_RIGHT;
-    else if(key == accels->lighttable_down.accel_key && state == accels->lighttable_down.accel_mods)
+    else if(action == _ACTION_TABLE_MOVE_UPDOWN && effect == DT_ACTION_EFFECT_PREVIOUS)
       move = DT_CULLING_MOVE_DOWN;
-    else if(key == accels->lighttable_pageup.accel_key && state == accels->lighttable_pageup.accel_mods)
+    else if(action == _ACTION_TABLE_MOVE_PAGE && effect == DT_ACTION_EFFECT_NEXT)
       move = DT_CULLING_MOVE_PAGEUP;
-    else if(key == accels->lighttable_pagedown.accel_key && state == accels->lighttable_pagedown.accel_mods)
+    else if(action == _ACTION_TABLE_MOVE_PAGE && effect == DT_ACTION_EFFECT_PREVIOUS)
       move = DT_CULLING_MOVE_PAGEDOWN;
-    else if(key == accels->lighttable_start.accel_key && state == accels->lighttable_start.accel_mods)
+    else if(action == _ACTION_TABLE_MOVE_STARTEND && effect == DT_ACTION_EFFECT_PREVIOUS)
       move = DT_CULLING_MOVE_START;
-    else if(key == accels->lighttable_end.accel_key && state == accels->lighttable_end.accel_mods)
+    else if(action == _ACTION_TABLE_MOVE_STARTEND && effect == DT_ACTION_EFFECT_NEXT)
       move = DT_CULLING_MOVE_END;
 
     if(move != DT_CULLING_MOVE_NONE)
@@ -805,12 +804,34 @@ int key_pressed(dt_view_t *self, guint key, guint state)
         dt_culling_key_move(lib->preview, move);
       else
         dt_culling_key_move(lib->culling, move);
-      return TRUE;
+      gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
     }
-    return FALSE;
   }
-  return 0;
+
+  return 0; // FIXME return should be relative position
 }
+
+const gchar *_action_effect_move[]
+  = { N_("middle"),
+      N_("next"),
+      N_("previous"),
+      NULL };
+
+const dt_action_element_def_t _action_elements_move[]
+  = { { N_("move"  ), _action_effect_move },
+      { N_("select"), _action_effect_move },
+      { NULL } };
+
+static const dt_shortcut_fallback_t _action_fallbacks_move[]
+  = { { .mods = GDK_SHIFT_MASK, .element = DT_ACTION_ELEMENT_SELECT },
+      { } };
+
+const dt_action_def_t _action_def_move
+  = { N_("move"),
+      _action_process_move,
+      _action_elements_move,
+      _action_fallbacks_move,
+      TRUE };
 
 static gboolean zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
@@ -852,54 +873,10 @@ static gboolean zoom_min_callback(GtkAccelGroup *accel_group, GObject *accelerat
 
 void init_key_accels(dt_view_t *self)
 {
-  dt_control_accels_t *ac = &darktable.control->accels;
-  dt_action_define_key_pressed_accel(&self->actions, "move up", &ac->lighttable_up);
-  dt_action_define_key_pressed_accel(&self->actions, "move down", &ac->lighttable_down);
-  dt_action_define_key_pressed_accel(&self->actions, "move left", &ac->lighttable_left);
-  dt_action_define_key_pressed_accel(&self->actions, "move right", &ac->lighttable_right);
-  dt_action_define_key_pressed_accel(&self->actions, "move page up", &ac->lighttable_pageup);
-  dt_action_define_key_pressed_accel(&self->actions, "move page down", &ac->lighttable_pagedown);
-  dt_action_define_key_pressed_accel(&self->actions, "move start", &ac->lighttable_start);
-  dt_action_define_key_pressed_accel(&self->actions, "move end", &ac->lighttable_end);
-  dt_action_define_key_pressed_accel(&self->actions, "move up and select", &ac->lighttable_sel_up);
-  dt_action_define_key_pressed_accel(&self->actions, "move down and select", &ac->lighttable_sel_down);
-  dt_action_define_key_pressed_accel(&self->actions, "move left and select", &ac->lighttable_sel_left);
-  dt_action_define_key_pressed_accel(&self->actions, "move right and select", &ac->lighttable_sel_right);
-  dt_action_define_key_pressed_accel(&self->actions, "move page up and select", &ac->lighttable_sel_pageup);
-  dt_action_define_key_pressed_accel(&self->actions, "move page down and select", &ac->lighttable_sel_pagedown);
-  dt_action_define_key_pressed_accel(&self->actions, "move start and select", &ac->lighttable_sel_start);
-  dt_action_define_key_pressed_accel(&self->actions, "move end and select", &ac->lighttable_sel_end);
-  dt_action_define_key_pressed_accel(&self->actions, "preview", &ac->lighttable_preview);
-  dt_action_define_key_pressed_accel(&self->actions, "preview with focus detection", &ac->lighttable_preview_display_focus);
-
-  // movement keys
-  dt_accel_register_view(self, NC_("accel", "move page up"), GDK_KEY_Page_Up, 0);
-  dt_accel_register_view(self, NC_("accel", "move page down"), GDK_KEY_Page_Down, 0);
-  dt_accel_register_view(self, NC_("accel", "move up"), GDK_KEY_Up, 0);
-  dt_accel_register_view(self, NC_("accel", "move down"), GDK_KEY_Down, 0);
-  dt_accel_register_view(self, NC_("accel", "move left"), GDK_KEY_Left, 0);
-  dt_accel_register_view(self, NC_("accel", "move right"), GDK_KEY_Right, 0);
-  dt_accel_register_view(self, NC_("accel", "move start"), GDK_KEY_Home, 0);
-  dt_accel_register_view(self, NC_("accel", "move end"), GDK_KEY_End, 0);
-
-  // movement keys with selection
-  dt_accel_register_view(self, NC_("accel", "move page up and select"), GDK_KEY_Page_Up, GDK_SHIFT_MASK);
-  dt_accel_register_view(self, NC_("accel", "move page down and select"), GDK_KEY_Page_Down, GDK_SHIFT_MASK);
-  dt_accel_register_view(self, NC_("accel", "move up and select"), GDK_KEY_Up, GDK_SHIFT_MASK);
-  dt_accel_register_view(self, NC_("accel", "move down and select"), GDK_KEY_Down, GDK_SHIFT_MASK);
-  dt_accel_register_view(self, NC_("accel", "move left and select"), GDK_KEY_Left, GDK_SHIFT_MASK);
-  dt_accel_register_view(self, NC_("accel", "move right and select"), GDK_KEY_Right, GDK_SHIFT_MASK);
-  dt_accel_register_view(self, NC_("accel", "move start and select"), GDK_KEY_Home, GDK_SHIFT_MASK);
-  dt_accel_register_view(self, NC_("accel", "move end and select"), GDK_KEY_End, GDK_SHIFT_MASK);
-
   dt_accel_register_view(self, NC_("accel", "align images to grid"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "reset first image offset"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "select toggle image"), GDK_KEY_space, 0);
   dt_accel_register_view(self, NC_("accel", "select single image"), GDK_KEY_Return, 0);
-
-  // Preview key
-  dt_accel_register_view(self, NC_("accel", "preview"), GDK_KEY_w, 0);
-  dt_accel_register_view(self, NC_("accel", "preview with focus detection"), GDK_KEY_w, GDK_CONTROL_MASK);
 
   // undo/redo
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
@@ -1410,6 +1387,29 @@ void gui_init(dt_view_t *self)
                             G_CALLBACK(_profile_display_changed), (gpointer)display_profile);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             G_CALLBACK(_profile_display2_changed), (gpointer)display2_profile);
+
+  dt_action_t *sa = &self->actions, *ac = NULL;
+
+  ac = dt_action_define(sa, N_("move"), N_("whole"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_STARTEND), &_action_def_move);
+  dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS, GDK_KEY_Home, 0);
+  dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT    , GDK_KEY_End, 0);
+
+  ac = dt_action_define(sa, N_("move"), N_("horizontal"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_LEFTRIGHT), &_action_def_move);
+  dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS, GDK_KEY_Left, 0);
+  dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT    , GDK_KEY_Right, 0);
+
+  ac = dt_action_define(sa, N_("move"), N_("vertical"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_UPDOWN), &_action_def_move);
+  dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS, GDK_KEY_Down, 0);
+  dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT    , GDK_KEY_Up, 0);
+
+  ac = dt_action_define(sa, N_("move"), N_("page"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_PAGE), &_action_def_move);
+  dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS, GDK_KEY_Page_Down, 0);
+  dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT    , GDK_KEY_Page_Up, 0);
+
+  // Preview key
+  dt_accel_register_shortcut(sa, NC_("accel", "preview"), DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
+  dt_accel_register_shortcut(sa, NC_("accel", "preview"), DT_ACTION_ELEMENT_FOCUS_DETECT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, GDK_CONTROL_MASK);
+  dt_action_define(sa, NULL, "preview", NULL, &dt_action_def_preview);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

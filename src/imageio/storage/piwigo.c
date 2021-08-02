@@ -783,7 +783,6 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(ui->server_entry),
                               _("the server name\ndefault protocol is https\nspecify http:// if non secure server"));
   gtk_widget_set_hexpand(GTK_WIDGET(ui->server_entry), TRUE);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->server_entry));
   gtk_entry_set_text(ui->server_entry, last_account?last_account->server:"piwigo.com");
   g_signal_connect(G_OBJECT(ui->server_entry), "changed", G_CALLBACK(_piwigo_server_entry_changed), (gpointer)ui);
   gtk_entry_set_width_chars(GTK_ENTRY(ui->server_entry), 0);
@@ -796,7 +795,6 @@ void gui_init(dt_imageio_module_storage_t *self)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   ui->user_entry = GTK_ENTRY(gtk_entry_new());
   gtk_widget_set_hexpand(GTK_WIDGET(ui->user_entry), TRUE);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->user_entry));
   gtk_entry_set_text(ui->user_entry, last_account?last_account->username:"");
   g_signal_connect(G_OBJECT(ui->user_entry), "changed", G_CALLBACK(_piwigo_entry_changed), (gpointer)ui);
   gtk_entry_set_width_chars(GTK_ENTRY(ui->user_entry), 0);
@@ -809,7 +807,6 @@ void gui_init(dt_imageio_module_storage_t *self)
   ui->pwd_entry = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_visibility(GTK_ENTRY(ui->pwd_entry), FALSE);
   gtk_widget_set_hexpand(GTK_WIDGET(ui->pwd_entry), TRUE);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->pwd_entry));
   gtk_entry_set_text(ui->pwd_entry, last_account?last_account->password:"");
   g_signal_connect(G_OBJECT(ui->pwd_entry), "changed", G_CALLBACK(_piwigo_entry_changed), (gpointer)ui);
   gtk_entry_set_width_chars(GTK_ENTRY(ui->pwd_entry), 0);
@@ -871,7 +868,6 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 
   ui->new_album_entry = GTK_ENTRY(gtk_entry_new()); // Album title
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->new_album_entry));
   gtk_entry_set_text(ui->new_album_entry, _("new album"));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->new_album_entry), TRUE, TRUE, 0);
   gtk_entry_set_width_chars(GTK_ENTRY(ui->new_album_entry), 0);
@@ -889,9 +885,6 @@ void gui_init(dt_imageio_module_storage_t *self)
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
 {
-  dt_storage_piwigo_gui_data_t *ui = self->gui_data;
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->user_entry));
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->new_album_entry));
   g_free(self->gui_data);
 }
 

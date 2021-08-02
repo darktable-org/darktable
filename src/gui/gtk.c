@@ -361,6 +361,17 @@ static void _panel_toggle(dt_ui_border_t border, dt_ui_t *ui)
   }
 }
 
+static gboolean _toggle_side_borders_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                                    GdkModifierType modifier, gpointer data)
+{
+  /* toggle panel viewstate */
+  dt_ui_toggle_panels_visibility(darktable.gui->ui);
+
+  /* trigger invalidation of centerview to reprocess pipe */
+  dt_dev_invalidate(darktable.develop);
+  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+  return TRUE;
+}
 static gboolean _toggle_panel_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                              GdkModifierType modifier, gpointer data)
 {
@@ -612,17 +623,6 @@ gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta)
     return TRUE;
   }
   return FALSE;
-}
-
-void dt_gui_key_accel_block_on_focus_disconnect(GtkWidget *w)
-{
- // FIXME no longer needed; dt_shortcut_dispatcher checks if Entry has focus
-}
-
-void dt_gui_key_accel_block_on_focus_connect(GtkWidget *w)
-{
-  gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);
-  // FIXME no longer needed; dt_shortcut_dispatcher checks if Entry has focus
 }
 
 static gboolean draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_data)
@@ -1024,16 +1024,6 @@ guint dt_gui_translated_key_state(GdkEventKey *event)
     return event->state & gtk_accelerator_get_default_mod_mask();
 }
 
-static gboolean key_pressed(GtkWidget *w, GdkEventKey *event, gpointer user_data)
-{
-  return dt_control_key_pressed(gdk_keyval_to_lower(event->keyval), dt_gui_translated_key_state(event));
-}
-
-static gboolean key_released(GtkWidget *w, GdkEventKey *event, gpointer user_data)
-{
-  return dt_control_key_released(gdk_keyval_to_lower(event->keyval), dt_gui_translated_key_state(event));
-}
-
 static gboolean button_pressed(GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
   double pressure = 1.0;
@@ -1187,7 +1177,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   widget = dt_ui_center(darktable.gui->ui);
 
-  g_signal_connect(G_OBJECT(widget), "key-press-event", G_CALLBACK(key_pressed), NULL);
   g_signal_connect(G_OBJECT(widget), "configure-event", G_CALLBACK(configure), gui);
   g_signal_connect(G_OBJECT(widget), "draw", G_CALLBACK(draw), NULL);
   g_signal_connect(G_OBJECT(widget), "motion-notify-event", G_CALLBACK(mouse_moved), NULL);
@@ -1288,6 +1277,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // Side-border hide/show
   dt_accel_register_global(NC_("accel", "toggle side borders"), GDK_KEY_Tab, 0);
+  dt_accel_connect_global("toggle side borders",
+                          g_cclosure_new(G_CALLBACK(_toggle_side_borders_accel_callback), NULL, NULL));
 
   dt_accel_register_global(NC_("accel", "toggle panels collapsing controls"), GDK_KEY_b, 0);
   dt_accel_connect_global("toggle panels collapsing controls",
@@ -1541,7 +1532,6 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gtk_window_set_title(GTK_WINDOW(widget), "darktable");
 
   g_signal_connect(G_OBJECT(widget), "delete_event", G_CALLBACK(dt_gui_quit_callback), NULL);
-  g_signal_connect(G_OBJECT(widget), "key-release-event", G_CALLBACK(key_released), NULL);
   g_signal_connect(G_OBJECT(widget), "focus-in-event", G_CALLBACK(_focus_in_out_event), widget);
   g_signal_connect(G_OBJECT(widget), "focus-out-event", G_CALLBACK(_focus_in_out_event), widget);
 
