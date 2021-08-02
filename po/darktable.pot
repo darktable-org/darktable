@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-31 19:50+0200\n"
+"POT-Creation-Date: 2021-08-02 09:45+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -6077,12 +6077,12 @@ msgid "input after blur"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:854 ../src/develop/blend_gui.c:2205
-#: ../src/develop/imageop.c:3070
+#: ../src/develop/imageop.c:3080
 msgid "input"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:854 ../src/develop/blend_gui.c:2205
-#: ../src/develop/imageop.c:3072
+#: ../src/develop/imageop.c:3082
 msgid "output"
 msgstr ""
 
@@ -6603,34 +6603,34 @@ msgstr ""
 msgid "duplicate instance"
 msgstr ""
 
-#: ../src/develop/imageop.c:936 ../src/develop/imageop.c:3210
+#: ../src/develop/imageop.c:936 ../src/develop/imageop.c:3220
 #: ../src/libs/masks.c:1162
 msgid "move up"
 msgstr ""
 
-#: ../src/develop/imageop.c:942 ../src/develop/imageop.c:3211
+#: ../src/develop/imageop.c:942 ../src/develop/imageop.c:3221
 #: ../src/libs/masks.c:1165
 msgid "move down"
 msgstr ""
 
-#: ../src/develop/imageop.c:948 ../src/develop/imageop.c:3213
+#: ../src/develop/imageop.c:948 ../src/develop/imageop.c:3223
 #: ../src/gui/accelerators.c:134 ../src/gui/presets.c:470
 #: ../src/libs/image.c:178 ../src/libs/tagging.c:1364
 #: ../src/libs/tagging.c:1452
 msgid "delete"
 msgstr ""
 
-#: ../src/develop/imageop.c:955 ../src/develop/imageop.c:3214
+#: ../src/develop/imageop.c:955 ../src/develop/imageop.c:3224
 #: ../src/libs/modulegroups.c:3417 ../src/libs/modulegroups.c:3769
 msgid "rename"
 msgstr ""
 
-#: ../src/develop/imageop.c:1020 ../src/develop/imageop.c:2451
+#: ../src/develop/imageop.c:1020 ../src/develop/imageop.c:2461
 #, c-format
 msgid "%s is switched on"
 msgstr ""
 
-#: ../src/develop/imageop.c:1020 ../src/develop/imageop.c:2451
+#: ../src/develop/imageop.c:1020 ../src/develop/imageop.c:2461
 #, c-format
 msgid "%s is switched off"
 msgstr ""
@@ -6643,59 +6643,61 @@ msgstr ""
 msgid "drawn + parametric mask"
 msgstr ""
 
-#: ../src/develop/imageop.c:2344
-msgid "this module has a"
+#: ../src/develop/imageop.c:2345
+#, c-format
+msgid "this module has a `%s'"
 msgstr ""
 
-#: ../src/develop/imageop.c:2346
-msgid "taken from module"
+#: ../src/develop/imageop.c:2347
+#, c-format
+msgid "taken from module `%s'"
 msgstr ""
 
-#: ../src/develop/imageop.c:2349
+#: ../src/develop/imageop.c:2357
 msgid "click to display (module must be activated first)"
 msgstr ""
 
-#: ../src/develop/imageop.c:2414
+#: ../src/develop/imageop.c:2424
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
 msgstr ""
 
-#: ../src/develop/imageop.c:2427
+#: ../src/develop/imageop.c:2437
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
 msgstr ""
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2437 ../src/develop/imageop.c:3224
+#: ../src/develop/imageop.c:2447 ../src/develop/imageop.c:3234
 #: ../src/gui/preferences.c:786 ../src/libs/lib.c:1294
 msgid "presets"
 msgstr ""
 
-#: ../src/develop/imageop.c:2439
+#: ../src/develop/imageop.c:2449
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
 msgstr ""
 
-#: ../src/develop/imageop.c:2689 ../src/develop/imageop.c:2711
+#: ../src/develop/imageop.c:2699 ../src/develop/imageop.c:2721
 msgid "ERROR"
 msgstr ""
 
-#: ../src/develop/imageop.c:3069
+#: ../src/develop/imageop.c:3079
 msgid "purpose"
 msgstr ""
 
-#: ../src/develop/imageop.c:3071
+#: ../src/develop/imageop.c:3081
 msgid "process"
 msgstr ""
 
-#: ../src/develop/imageop.c:3141
+#: ../src/develop/imageop.c:3151
 msgid "unsupported input"
 msgstr ""
 
-#: ../src/develop/imageop.c:3142
+#: ../src/develop/imageop.c:3152
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -6703,41 +6705,41 @@ msgid ""
 "its requirements."
 msgstr ""
 
-#: ../src/develop/imageop.c:3209 ../src/develop/imageop.c:3219
+#: ../src/develop/imageop.c:3219 ../src/develop/imageop.c:3229
 #: ../src/gui/accelerators.c:130 ../src/libs/lib.c:1292
 msgid "show"
 msgstr ""
 
-#: ../src/develop/imageop.c:3212 ../src/libs/modulegroups.c:3275
+#: ../src/develop/imageop.c:3222 ../src/libs/modulegroups.c:3275
 #: ../src/libs/modulegroups.c:3391 ../src/libs/modulegroups.c:3772
 #: ../src/libs/tagging.c:3094
 msgid "new"
 msgstr ""
 
-#: ../src/develop/imageop.c:3215 ../src/libs/duplicate.c:546
+#: ../src/develop/imageop.c:3225 ../src/libs/duplicate.c:546
 #: ../src/libs/image.c:496 ../src/libs/modulegroups.c:3766
 msgid "duplicate"
 msgstr ""
 
-#: ../src/develop/imageop.c:3220
+#: ../src/develop/imageop.c:3230
 msgid "enable"
 msgstr ""
 
-#: ../src/develop/imageop.c:3221
+#: ../src/develop/imageop.c:3231
 msgid "focus"
 msgstr ""
 
-#: ../src/develop/imageop.c:3222 ../src/gui/accelerators.c:1668
+#: ../src/develop/imageop.c:3232 ../src/gui/accelerators.c:1668
 msgid "instance"
 msgstr ""
 
-#: ../src/develop/imageop.c:3223 ../src/gui/accelerators.c:103
+#: ../src/develop/imageop.c:3233 ../src/gui/accelerators.c:103
 #: ../src/gui/accelerators.c:111 ../src/libs/lib.c:1293
 #: ../src/libs/modulegroups.c:3835
 msgid "reset"
 msgstr ""
 
-#: ../src/develop/imageop.c:3236
+#: ../src/develop/imageop.c:3246
 msgid "processing module"
 msgstr ""
 
@@ -6778,42 +6780,42 @@ msgstr ""
 msgid "size: %3.2f%%"
 msgstr ""
 
-#: ../src/develop/masks/brush.c:2908
+#: ../src/develop/masks/brush.c:2916
 msgid "[BRUSH creation] change size"
 msgstr ""
 
-#: ../src/develop/masks/brush.c:2910
+#: ../src/develop/masks/brush.c:2918
 msgid "[BRUSH creation] change hardness"
 msgstr ""
 
-#: ../src/develop/masks/brush.c:2911
+#: ../src/develop/masks/brush.c:2919
 msgid "[BRUSH] change opacity"
 msgstr ""
 
-#: ../src/develop/masks/brush.c:2912
+#: ../src/develop/masks/brush.c:2920
 msgid "[BRUSH] change hardness"
 msgstr ""
 
-#: ../src/develop/masks/brush.c:2923
+#: ../src/develop/masks/brush.c:2931
 #, c-format
 msgid "brush #%d"
 msgstr ""
 
-#: ../src/develop/masks/brush.c:2932
+#: ../src/develop/masks/brush.c:2940
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 
-#: ../src/develop/masks/brush.c:2936
+#: ../src/develop/masks/brush.c:2944
 #, c-format
 msgid ""
 "<b>hardness</b>: scroll, <b>size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 
-#: ../src/develop/masks/brush.c:2939
+#: ../src/develop/masks/brush.c:2947
 msgid "<b>size</b>: scroll"
 msgstr ""
 
@@ -6841,7 +6843,7 @@ msgstr ""
 msgid "circle #%d"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:1352 ../src/develop/masks/path.c:3117
+#: ../src/develop/masks/circle.c:1352 ../src/develop/masks/path.c:3129
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -6977,76 +6979,76 @@ msgstr ""
 msgid "masks can not contain themselves"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3074
+#: ../src/develop/masks/path.c:3086
 msgid "[PATH creation] add a smooth node"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3076
+#: ../src/develop/masks/path.c:3088
 msgid "[PATH creation] add a sharp node"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3077
+#: ../src/develop/masks/path.c:3089
 msgid "[PATH creation] terminate path creation"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3079
+#: ../src/develop/masks/path.c:3091
 msgid "[PATH on node] switch between smooth/sharp node"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3080
+#: ../src/develop/masks/path.c:3092
 msgid "[PATH on node] remove the node"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3081
+#: ../src/develop/masks/path.c:3093
 msgid "[PATH on feather] reset curvature"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3083
+#: ../src/develop/masks/path.c:3095
 msgid "[PATH on segment] add node"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3084
+#: ../src/develop/masks/path.c:3096
 msgid "[PATH] change size"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3085
+#: ../src/develop/masks/path.c:3097
 msgid "[PATH] change opacity"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3086
+#: ../src/develop/masks/path.c:3098
 msgid "[PATH] change feather size"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3097
+#: ../src/develop/masks/path.c:3109
 #, c-format
 msgid "path #%d"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3104
+#: ../src/develop/masks/path.c:3116
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3107
+#: ../src/develop/masks/path.c:3119
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3110
+#: ../src/develop/masks/path.c:3122
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3113
+#: ../src/develop/masks/path.c:3125
 msgid ""
 "<b>node curvature</b>: drag\n"
 "<b>reset curvature</b>: right-click"
 msgstr ""
 
-#: ../src/develop/masks/path.c:3115
+#: ../src/develop/masks/path.c:3127
 msgid ""
 "<b>move segment</b>: drag\n"
 "<b>add node</b>: ctrl+click"
