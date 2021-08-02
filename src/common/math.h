@@ -244,7 +244,7 @@ union float_int {
 #endif
 static inline float dt_fast_hypotf(const float x, const float y)
 {
-  return sqrtf(x * x + y + y);
+  return sqrtf(x * x + y * y);
 }
 
 // fast approximation of expf()
