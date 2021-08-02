@@ -691,10 +691,29 @@ static void mix_warps(dt_liquify_warp_t *result,
   const float radius = mix(cabsf(warp1->radius - warp1->point), cabsf(warp2->radius - warp2->point), t);
   result->radius     = pt + radius;
 
-  const float r    = mix(cabsf(warp1->strength - warp1->point), cabsf(warp2->strength - warp2->point), t);
-  const float phi  = mix(cargf(warp1->strength - warp1->point), cargf(warp2->strength - warp2->point), t);
-  result->strength = pt + r * cexpf(phi * I);
+  const complex float p1 = warp1->strength - warp1->point;
+  const complex float p2 = warp2->strength - warp2->point;
+  float arg1 = cargf(p1);
+  float arg2 = cargf(p2);
+  gboolean invert = FALSE;
 
+  if(arg1 > .0f && arg2 < -(M_PI_F / 2.f))
+  {
+    invert = TRUE;
+    arg1 = M_PI_F - arg1;
+    arg2 = -M_PI_F - arg2;
+  }
+  else if(arg1 < -(M_PI_F / 2.f) && arg2 > .0f)
+  {
+    invert = TRUE;
+    arg1 = -M_PI_F - arg1;
+    arg2 = M_PI_F - arg2;
+  }
+
+  const float r    = mix(cabsf(p1), cabsf(p2), t);
+  const float phi  = invert ? M_PI_F - mix(arg1, arg2, t) : mix(arg1, arg2, t);
+
+  result->strength = pt + r * cexpf(phi * I);
   result->point    = pt;
 }
 
@@ -1835,8 +1854,9 @@ static GList *interpolate_paths(dt_iop_liquify_params_t *p)
       while(arc_length < total_length)
       {
         dt_liquify_warp_t *w = malloc(sizeof(dt_liquify_warp_t));
+        const float t = arc_length / total_length;
         const float complex pt = point_at_arc_length(buffer, INTERPOLATION_POINTS, arc_length, &restart);
-        mix_warps(w, warp1, warp2, pt, arc_length / total_length);
+        mix_warps(w, warp1, warp2, pt, t);
         w->status = DT_LIQUIFY_STATUS_INTERPOLATED;
         arc_length += cabsf(w->radius - w->point) * STAMP_RELOCATION;
         l = g_list_append(l, w);
