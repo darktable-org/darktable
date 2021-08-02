@@ -2282,6 +2282,52 @@ static void _display_mask_indicator_callback(GtkToggleButton *bt, dt_iop_module_
   dt_iop_refresh_center(module);
 }
 
+static gboolean _mask_indicator_tooltip(GtkWidget *treeview, gint x, gint y, gboolean kb_mode,
+      GtkTooltip* tooltip, dt_iop_module_t *module)
+{
+  gboolean res = FALSE;
+  const gboolean raster = module->blend_params->mask_mode & DEVELOP_MASK_RASTER;
+  if(module->mask_indicator)
+  {
+    gchar *type = _("unknown mask");
+    gchar *text;
+    const uint32_t mm = module->blend_params->mask_mode;
+    if((mm & DEVELOP_MASK_MASK) && (mm & DEVELOP_MASK_CONDITIONAL))
+      type=_("drawn + parametric mask");
+    else if(mm & DEVELOP_MASK_MASK)
+      type=_("drawn mask");
+    else if(mm & DEVELOP_MASK_CONDITIONAL)
+      type=_("parametric mask");
+    else if(mm & DEVELOP_MASK_RASTER)
+      type=_("raster mask");
+    else
+      fprintf(stderr, "unknown mask mode '%d' in module '%s'\n", mm, module->op);
+    gchar *part1 = g_strdup_printf(_("this module has a `%s'"), type);
+    gchar *part2 = NULL;
+    if(raster && module->raster_mask.sink.source)
+    {
+      gchar *source = dt_history_item_get_name(module->raster_mask.sink.source);
+      part2 = g_strdup_printf(_("taken from module %s"), source);
+      g_free(source);
+    }
+
+    if(!raster && !part2)
+      part2 = g_strdup(_("click to display (module must be activated first)"));
+
+    if(part2)
+      text = g_strconcat(part1, "\n", part2, NULL);
+    else
+      text = g_strdup(part1);
+
+    gtk_tooltip_set_text(tooltip, text);
+    res = TRUE;
+    g_free(part1);
+    g_free(part2);
+    g_free(text);
+  }
+  return res;
+}
+
 void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
 {
   const gboolean show = add && dt_conf_get_bool("darkroom/ui/show_mask_indicator");
@@ -2305,6 +2351,9 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
     gtk_widget_set_name(module->mask_indicator, "module-mask-indicator");
     g_signal_connect(G_OBJECT(module->mask_indicator), "toggled",
                      G_CALLBACK(_display_mask_indicator_callback), module);
+    g_signal_connect(G_OBJECT(module->mask_indicator), "query-tooltip",
+                     G_CALLBACK(_mask_indicator_tooltip), module);
+    gtk_widget_set_has_tooltip(module->mask_indicator, TRUE);
     gtk_widget_set_sensitive(module->mask_indicator, !raster && module->enabled);
     gtk_box_pack_end(GTK_BOX(module->header), module->mask_indicator, FALSE, FALSE, 0);
 
@@ -2324,42 +2373,6 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
     g_list_free(children);
 
     dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
-  }
-
-  if(module->mask_indicator)
-  {
-    gchar *type = _("unknown mask");
-    gchar *tooltip;
-    const uint32_t mm = module->blend_params->mask_mode;
-    if((mm & DEVELOP_MASK_MASK) && (mm & DEVELOP_MASK_CONDITIONAL))
-      type=_("drawn + parametric mask");
-    else if(mm & DEVELOP_MASK_MASK)
-      type=_("drawn mask");
-    else if(mm & DEVELOP_MASK_CONDITIONAL)
-      type=_("parametric mask");
-    else if(mm & DEVELOP_MASK_RASTER)
-      type=_("raster mask");
-    else
-      fprintf(stderr, "unknown mask mode '%d' in module '%s'", mm, module->op);
-
-    gchar *part1 = g_strdup_printf(_("this module has a `%s'"), type);
-    gchar *part2 = raster && module->raster_mask.sink.source
-      ? g_strdup_printf(_("taken from module `%s'"),
-                        dt_history_item_get_name(module->raster_mask.sink.source))
-      : NULL;
-
-    if(raster)
-    {
-      if(part2) part2 = g_strconcat("\n", part2, NULL);
-      tooltip = g_strconcat(part1, part2, NULL);
-    }
-    else
-      tooltip = g_strconcat(part1, "\n", _("click to display (module must be activated first)"), NULL);
-
-    gtk_widget_set_tooltip_text(module->mask_indicator, tooltip);
-    g_free(part1);
-    g_free(part2);
-    g_free(tooltip);
   }
 }
 
