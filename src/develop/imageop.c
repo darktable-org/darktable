@@ -2302,20 +2302,27 @@ static gboolean _mask_indicator_tooltip(GtkWidget *treeview, gint x, gint y, gbo
       type=_("raster mask");
     else
       fprintf(stderr, "unknown mask mode '%d' in module '%s'\n", mm, module->op);
+    gchar *part1 = g_strdup_printf(_("this module has a `%s'"), type);
+    gchar *part2 = NULL;
     if(raster && module->raster_mask.sink.source)
     {
       gchar *source = dt_history_item_get_name(module->raster_mask.sink.source);
-      text = g_strdup_printf(_("this module has a %s\n"
-                               "taken from module %s"),
-                              type, source);
+      part2 = g_strdup_printf(_("taken from module %s"), source);
       g_free(source);
     }
+
+    if(!raster && !part2)
+      part2 = g_strdup(_("click to display (module must be activated first)"));
+
+    if(part2)
+      text = g_strconcat(part1, "\n", part2, NULL);
     else
-      text = g_strdup_printf(_("this module has a %s\n"
-                               "click to display (module must be activated first)"),
-                              type);
+      text = g_strdup(part1);
+
     gtk_tooltip_set_text(tooltip, text);
     res = TRUE;
+    g_free(part1);
+    g_free(part2);
     g_free(text);
   }
   return res;
