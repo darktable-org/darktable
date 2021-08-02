@@ -1705,7 +1705,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start((GtkBox *)self->widget,entry, TRUE, TRUE, 0);
   gtk_widget_add_events(entry, GDK_KEY_RELEASE_MASK);
   g_signal_connect(G_OBJECT(entry), "changed", G_CALLBACK(entry_callback), self);
-  dt_gui_key_accel_block_on_focus_connect(entry);
   g->lutentry = entry;
   // treeview
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
@@ -1747,10 +1746,6 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-#ifdef HAVE_GMIC
-  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
-  dt_gui_key_accel_block_on_focus_disconnect(g->lutentry);
-#endif // HAVE_GMIC
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(module_moved_callback), self);
 
   IOP_GUI_FREE;

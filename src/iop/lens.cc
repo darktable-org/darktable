@@ -2267,7 +2267,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->camera_model = dt_iop_button_new(self, N_("camera model"),
                                       G_CALLBACK(camera_menusearch_clicked), FALSE, 0, (GdkModifierType)0,
                                       NULL, 0, hbox);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(g->camera_model));
   g->find_camera_button = dt_iop_button_new(self, N_("find camera"),
                                             G_CALLBACK(camera_autosearch_clicked), FALSE, 0, (GdkModifierType)0,
                                             dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_DOWN, NULL);
@@ -2279,7 +2278,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->lens_model = dt_iop_button_new(self, N_("lens model"),
                                     G_CALLBACK(lens_menusearch_clicked), FALSE, 0, (GdkModifierType)0,
                                     NULL, 0, hbox);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(g->lens_model));
   g->find_lens_button = dt_iop_button_new(self, N_("find lens"),
                                           G_CALLBACK(lens_autosearch_clicked), FALSE, 0, (GdkModifierType)0,
                                           dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_DOWN, NULL);
@@ -2469,8 +2467,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(corrections_done), self);
 
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(g->lens_model));
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(g->camera_model));
   while(g->modifiers)
   {
     g_free(g->modifiers->data);

@@ -1098,17 +1098,6 @@ void set_preferences(void *menu, dt_lib_module_t *self)
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
-static gboolean _next_widget(GtkWidget *width, GdkEventKey *ev, GtkWidget *next)
-{
-  if(ev->keyval == GDK_KEY_Tab)
-  {
-    gtk_widget_grab_focus(next);
-    return TRUE;
-  }
-
-  return FALSE;
-}
-
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
@@ -1195,9 +1184,6 @@ void gui_init(dt_lib_module_t *self)
   const char *dpi = dt_conf_get_string_const(CONFIG_PREFIX "print_dpi");
   gtk_entry_set_text(GTK_ENTRY(d->print_dpi), dpi);
 
-  dt_gui_key_accel_block_on_focus_connect(d->print_width);
-  dt_gui_key_accel_block_on_focus_connect(d->print_height);
-  dt_gui_key_accel_block_on_focus_connect(d->print_dpi);
 
   d->width = gtk_entry_new();
   gtk_widget_set_tooltip_text(d->width, _("maximum output width limit.\n"
@@ -1211,8 +1197,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_add_events(d->width, GDK_BUTTON_PRESS_MASK);
   gtk_widget_add_events(d->height, GDK_BUTTON_PRESS_MASK);
 
-  dt_gui_key_accel_block_on_focus_connect(d->width);
-  dt_gui_key_accel_block_on_focus_connect(d->height);
 
   d->print_size = gtk_flow_box_new();
   gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(d->print_size), 5);
@@ -1227,6 +1211,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(dpi_box, d->print_dpi, TRUE, TRUE, 0);
   gtk_box_pack_start(dpi_box, gtk_label_new(_("dpi")), FALSE, FALSE, 0);
   gtk_container_add(GTK_CONTAINER(d->print_size), GTK_WIDGET(dpi_box));
+  gtk_container_foreach(GTK_CONTAINER(d->print_size), (GtkCallback)gtk_widget_set_can_focus, GINT_TO_POINTER(FALSE));
 
   d->px_size = gtk_flow_box_new();
   gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(d->px_size), 3);
@@ -1237,6 +1222,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(px_box, d->height, TRUE, TRUE, 0);
   gtk_box_pack_start(px_box, gtk_label_new(_("px")), FALSE, FALSE, 0);
   gtk_container_add(GTK_CONTAINER(d->px_size), GTK_WIDGET(px_box));
+  gtk_container_foreach(GTK_CONTAINER(d->px_size), (GtkCallback)gtk_widget_set_can_focus, GINT_TO_POINTER(FALSE));
 
   d->scale = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(d->scale), 5);
@@ -1244,7 +1230,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->scale, _("it can be an integer, decimal number or simple fraction.\n"
                                           "zero or empty values are equal to 1.\n"
                                           "click middle mouse button to reset to 1."));
-  dt_gui_key_accel_block_on_focus_connect(d->scale);
   gtk_widget_set_halign(GTK_WIDGET(d->scale), GTK_ALIGN_END);
   gtk_widget_add_events(d->scale, GDK_BUTTON_PRESS_MASK);
 
@@ -1405,12 +1390,9 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(_height_changed), (gpointer)d);
 
   g_signal_connect(G_OBJECT(d->width), "button-press-event", G_CALLBACK(_widht_mdlclick), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->width), "key-press-event", G_CALLBACK(_next_widget), (gpointer)d->height);
   g_signal_connect(G_OBJECT(d->height), "button-press-event", G_CALLBACK(_height_mdlclick), (gpointer)d);
   g_signal_connect(G_OBJECT(d->print_width), "button-press-event", G_CALLBACK(_widht_mdlclick), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->print_width), "key-press-event", G_CALLBACK(_next_widget), (gpointer)d->print_height);
   g_signal_connect(G_OBJECT(d->print_height), "button-press-event", G_CALLBACK(_height_mdlclick), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->print_height), "key-press-event", G_CALLBACK(_next_widget), (gpointer)d->print_dpi);
 
   g_signal_connect(G_OBJECT(d->scale), "button-press-event", G_CALLBACK(_scale_mdlclick), (gpointer)d);
   g_signal_connect(G_OBJECT(d->scale), "changed", G_CALLBACK(_scale_changed), (gpointer)d);
@@ -1508,8 +1490,6 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_cancel_postponed_update(self);
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->width));
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->height));
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_on_storage_list_changed), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_export_styles_changed_callback), self);

@@ -2107,17 +2107,8 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_entry_set_alignment(GTK_ENTRY(d->grid_size), 1);
 
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_top));
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_left));
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_right));
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_bottom));
 
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_x));
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_y));
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_width));
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_height));
 
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->grid_size));
 
   ////////////////////////// PRINTER SETTINGS
 
@@ -3069,18 +3060,6 @@ void *get_params(dt_lib_module_t *self, int *size)
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
-
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_top));
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_left));
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_right));
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_bottom));
-
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_x));
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_y));
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_width));
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_right));
-
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->grid_size));
 
   g_list_free_full(ps->profiles, g_free);
   g_list_free_full(ps->paper_list, free);

@@ -120,22 +120,6 @@ void dt_control_key_accelerators_off(struct dt_control_t *s);
 
 int dt_control_is_key_accelerators_on(struct dt_control_t *s);
 
-// All the accelerator keys for the key_pressed style shortcuts
-typedef struct dt_control_accels_t
-{
-  GtkAccelKey lighttable_up, lighttable_down,
-    lighttable_right, lighttable_left,
-    lighttable_pageup, lighttable_pagedown,
-    lighttable_start, lighttable_end,
-    lighttable_sel_up, lighttable_sel_down,
-    lighttable_sel_right, lighttable_sel_left,
-    lighttable_sel_pageup, lighttable_sel_pagedown,
-    lighttable_sel_start, lighttable_sel_end,
-    lighttable_preview, lighttable_preview_display_focus,
-    global_sideborders, global_accels_window,
-    slideshow_start, darkroom_preview, darkroom_skip_mouse_events;
-} dt_control_accels_t;
-
 #define DT_CTL_LOG_SIZE 10
 #define DT_CTL_LOG_MSG_SIZE 200
 #define DT_CTL_LOG_TIMEOUT 5000
@@ -150,9 +134,6 @@ typedef struct dt_control_accels_t
 typedef struct dt_control_t
 {
   gboolean accel_initialising;
-
-  // Cached accelerator keys for key_pressed shortcuts
-  dt_control_accels_t accels;
 
   dt_action_t *actions, actions_global, actions_views, actions_thumb, actions_libs, actions_iops, actions_blend, actions_lua, actions_fallbacks;
 

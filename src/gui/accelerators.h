@@ -39,9 +39,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
 
 void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action);
 
-dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path);
-
-void dt_action_define_key_pressed_accel(dt_action_t *action, const gchar *name, GtkAccelKey *key);
+dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path, gboolean create);
 
 void dt_action_define_preset(dt_action_t *action, const gchar *name);
 // delete if new_name == NULL
@@ -95,6 +93,7 @@ typedef enum dt_shortcut_move_t
 extern const gchar *dt_action_effect_value[];
 extern const gchar *dt_action_effect_selection[];
 extern const gchar *dt_action_effect_toggle[];
+extern const gchar *dt_action_effect_hold[];
 extern const gchar *dt_action_effect_activate[];
 extern const gchar *dt_action_effect_presets[];
 
@@ -103,6 +102,8 @@ typedef struct dt_action_element_def_t
   const gchar *name;
   const gchar **effects;
 } dt_action_element_def_t;
+
+extern const dt_action_element_def_t dt_action_elements_hold[];
 
 typedef struct dt_shortcut_fallback_t
 {
@@ -128,6 +129,7 @@ typedef struct dt_action_def_t
   float (*process)(gpointer target, dt_action_element_t, dt_action_effect_t, float size);
   const dt_action_element_def_t *elements;
   const dt_shortcut_fallback_t *fallbacks;
+  const gboolean no_widget;
 } dt_action_def_t;
 
 extern const dt_action_def_t dt_action_def_toggle;

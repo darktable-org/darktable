@@ -885,7 +885,7 @@ static void _iop_gui_rename_module(dt_iop_module_t *module)
   module->multi_name[0] = 0;
   dt_iop_gui_update_header(module);
 
-  dt_gui_key_accel_block_on_focus_connect(entry); // needs to be before focus-out-event
+  gtk_widget_add_events(entry, GDK_FOCUS_CHANGE_MASK);
   g_signal_connect(entry, "key-press-event", G_CALLBACK(_rename_module_key_press), module);
   g_signal_connect(entry, "focus-out-event", G_CALLBACK(_rename_module_key_press), module);
   g_signal_connect(entry, "style-updated", G_CALLBACK(_rename_module_resize), module);

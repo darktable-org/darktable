@@ -186,7 +186,6 @@ void gui_init(dt_imageio_module_storage_t *self)
       dt_gtkentry_get_default_path_compl_list());
 
   d->entry = GTK_ENTRY(widget);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->entry));
   gtk_entry_set_width_chars(GTK_ENTRY(widget), 0);
   gtk_widget_set_tooltip_text(widget, tooltip_text);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
@@ -211,8 +210,6 @@ void gui_init(dt_imageio_module_storage_t *self)
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
 {
-  disk_t *d = (disk_t *)self->gui_data;
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
   free(self->gui_data);
 }
 

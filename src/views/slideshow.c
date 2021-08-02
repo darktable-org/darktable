@@ -311,7 +311,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
     }
     else
     {
-      dt_control_log(_("end of images. press any key to return to lighttable mode"));
+      dt_control_log(_("end of images"));
       d->auto_advance = FALSE;
     }
   }
@@ -560,78 +560,97 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   return 0;
 }
 
-int key_released(dt_view_t *self, guint key, guint state)
+static gboolean _start_stop_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                     GdkModifierType modifier, dt_slideshow_t *d)
 {
-  return 0;
-}
-
-int key_pressed(dt_view_t *self, guint key, guint state)
-{
-  dt_slideshow_t *d = (dt_slideshow_t *)self->data;
-  dt_control_accels_t *accels = &darktable.control->accels;
-
-  if(key == GDK_KEY_Shift_L || key == GDK_KEY_Shift_R || key == GDK_KEY_Shift_Lock || key == GDK_KEY_Control_L
-     || key == GDK_KEY_Control_R || key == GDK_KEY_Alt_L || key == GDK_KEY_Alt_R || key == GDK_KEY_Caps_Lock
-     || key == GDK_KEY_Num_Lock || key == GDK_KEY_ISO_Level3_Shift)
+  if(!d->auto_advance)
   {
-    // we don't want to handle modifiers keys here. They will be handled by the state value when pressing the
-    // regular key
-    return 0;
-  }
-  else if(key == accels->slideshow_start.accel_key && state == accels->slideshow_start.accel_mods)
-  {
-    if(!d->auto_advance)
-    {
-      d->auto_advance = TRUE;
-      _step_state(d, S_REQUEST_STEP);
-    }
-    else
-    {
-      d->auto_advance = FALSE;
-      dt_control_log(_("slideshow paused"));
-    }
-    return 0;
-  }
-  else if(key == GDK_KEY_Up || key == GDK_KEY_KP_Add || key == GDK_KEY_plus)
-  {
-    _set_delay(d, 1);
-    dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
-  }
-  else if(key == GDK_KEY_Down || key == GDK_KEY_KP_Subtract || key == GDK_KEY_minus)
-  {
-    _set_delay(d, -1);
-    dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
-  }
-  else if(key == GDK_KEY_Left)
-  {
-    if (d->auto_advance) dt_control_log(_("slideshow paused"));
-    d->auto_advance = FALSE;
-    _step_state(d, S_REQUEST_STEP_BACK);
-  }
-  else if(key == GDK_KEY_Right)
-  {
-    if (d->auto_advance) dt_control_log(_("slideshow paused"));
-    d->auto_advance = FALSE;
+    d->auto_advance = TRUE;
     _step_state(d, S_REQUEST_STEP);
   }
   else
   {
-    // go back to lt mode
     d->auto_advance = FALSE;
-    dt_ctl_switch_mode_to("lighttable");
+    dt_control_log(_("slideshow paused"));
   }
 
-  return 0;
+  return TRUE;
+}
+
+static gboolean _slow_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                    GdkModifierType modifier, dt_slideshow_t *d)
+{
+  _set_delay(d, 1);
+  dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
+
+  return TRUE;
+}
+
+static gboolean _speed_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                   GdkModifierType modifier, dt_slideshow_t *d)
+{
+  _set_delay(d, -1);
+  dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
+
+  return TRUE;
+}
+
+static gboolean _step_back_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                    GdkModifierType modifier, dt_slideshow_t *d)
+{
+  if (d->auto_advance) dt_control_log(_("slideshow paused"));
+  d->auto_advance = FALSE;
+  _step_state(d, S_REQUEST_STEP_BACK);
+
+  return TRUE;
+}
+
+static gboolean _step_forward_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                       GdkModifierType modifier, dt_slideshow_t *d)
+{
+  if (d->auto_advance) dt_control_log(_("slideshow paused"));
+  d->auto_advance = FALSE;
+  _step_state(d, S_REQUEST_STEP);
+
+  return TRUE;
+}
+
+static gboolean _exit_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                               GdkModifierType modifier, dt_slideshow_t *d)
+{
+  // go back to lt mode
+  d->auto_advance = FALSE;
+  dt_ctl_switch_mode_to("lighttable");
+
+  return TRUE;
 }
 
 void init_key_accels(dt_view_t *self)
 {
   dt_accel_register_view(self, NC_("accel", "start and stop"), GDK_KEY_space, 0);
   dt_accel_register_view(self, NC_("accel", "exit slideshow"), GDK_KEY_Escape, 0);
+
+  dt_accel_register_view(self, NC_("accel", "slow down"), GDK_KEY_Up, 0);
+  dt_accel_register_view(self, NC_("accel", "slow down"), GDK_KEY_KP_Add, 0);
+  dt_accel_register_view(self, NC_("accel", "slow down"), GDK_KEY_plus, 0);
+  dt_accel_register_view(self, NC_("accel", "speed up"), GDK_KEY_Down, 0);
+  dt_accel_register_view(self, NC_("accel", "speed up"), GDK_KEY_KP_Subtract, 0);
+  dt_accel_register_view(self, NC_("accel", "speed up"), GDK_KEY_minus, 0);
+
+  dt_accel_register_view(self, NC_("accel", "step forward"), GDK_KEY_Right, 0);
+  dt_accel_register_view(self, NC_("accel", "step back"), GDK_KEY_Left, 0);
 }
 
 void connect_key_accels(dt_view_t *self)
 {
+  dt_accel_connect_view(self, "start and stop", g_cclosure_new(G_CALLBACK(_start_stop_callback), self->data, NULL));
+  dt_accel_connect_view(self, "exit slideshow", g_cclosure_new(G_CALLBACK(_exit_callback), self->data, NULL));
+
+  dt_accel_connect_view(self, "slow down", g_cclosure_new(G_CALLBACK(_slow_down_callback), self->data, NULL));
+  dt_accel_connect_view(self, "speed up", g_cclosure_new(G_CALLBACK(_speed_up_callback), self->data, NULL));
+
+  dt_accel_connect_view(self, "step forward", g_cclosure_new(G_CALLBACK(_step_forward_callback), self->data, NULL));
+  dt_accel_connect_view(self, "step back", g_cclosure_new(G_CALLBACK(_step_back_callback), self->data, NULL));
 }
 
 GSList *mouse_actions(const dt_view_t *self)
