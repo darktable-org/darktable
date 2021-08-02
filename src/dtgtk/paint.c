@@ -2852,7 +2852,7 @@ void dtgtk_cairo_paint_link(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
 
 void dtgtk_cairo_paint_shortcut(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1, 0, 0)
+  PREAMBLE(1.15, 0, 0)
 
   //keyboard outline
   cairo_set_line_width(cr, .05);
