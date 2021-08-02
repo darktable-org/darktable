@@ -999,8 +999,8 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
       piece->pipe->tiling = 1;
 
       /* the output dimensions of the good part of this specific tile */
-      size_t wd = (tx + 1) * tile_wd > roi_out->width ? roi_out->width - tx * tile_wd : tile_wd;
-      size_t ht = (ty + 1) * tile_ht > roi_out->height ? roi_out->height - ty * tile_ht : tile_ht;
+      const size_t wd = (tx + 1) * tile_wd > roi_out->width ? (size_t)roi_out->width - tx * tile_wd : tile_wd;
+      const size_t ht = (ty + 1) * tile_ht > roi_out->height ? (size_t)roi_out->height - ty * tile_ht : tile_ht;
 
       /* roi_in and roi_out of good part: oroi_good easy to calculate based on number and dimension of tile.
          iroi_good is calculated by modify_roi_in() of respective module */
@@ -1777,8 +1777,8 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       piece->pipe->tiling = 1;
 
       /* the output dimensions of the good part of this specific tile */
-      const size_t wd = (tx + 1) * tile_wd > roi_out->width ? roi_out->width - tx * tile_wd : tile_wd;
-      const size_t ht = (ty + 1) * tile_ht > roi_out->height ? roi_out->height - ty * tile_ht : tile_ht;
+      const size_t wd = (tx + 1) * tile_wd > roi_out->width ? (size_t)roi_out->width - tx * tile_wd : tile_wd;
+      const size_t ht = (ty + 1) * tile_ht > roi_out->height ? (size_t)roi_out->height - ty * tile_ht : tile_ht;
 
       /* roi_in and roi_out of good part: oroi_good easy to calculate based on number and dimension of tile.
          iroi_good is calculated by modify_roi_in() of respective module */
