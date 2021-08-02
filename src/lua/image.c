@@ -20,6 +20,8 @@
 #include "common/colorlabels.h"
 #include "common/debug.h"
 #include "common/grouping.h"
+#include "common/mipmap_cache.h" // for dt_mipmap_size_t, etc
+#include "common/file_location.h"
 #include "common/history.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -89,7 +91,6 @@ static int history_delete(lua_State *L)
   return 0;
 }
 
-
 static int drop_cache(lua_State *L)
 {
   dt_lua_image_t imgid = -1;
@@ -97,6 +98,51 @@ static int drop_cache(lua_State *L)
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
   return 0;
 }
+
+static int generate_cache(lua_State *L)
+{
+  dt_lua_image_t imgid = 1;
+  luaA_to(L, dt_lua_image_t, &imgid, 1);
+  const gboolean create_dirs = lua_toboolean(L, 2);
+  const int min = luaL_checkinteger(L, 3);
+  const int max = luaL_checkinteger(L, 4);
+  
+  if(create_dirs)
+  {
+    for(dt_mipmap_size_t k = min; k <= max; k++)
+    {
+      char dirname[PATH_MAX] = { 0 };
+      snprintf(dirname, sizeof(dirname), "%s.d/%d", darktable.mipmap_cache->cachedir, k);
+
+      if(!dt_util_test_writable_dir(dirname))
+      {
+        if(g_mkdir_with_parents(dirname, 0750))
+        {
+          fprintf(stderr, _("could not create directory '%s'!\n"), dirname);
+          return 1;
+        }
+      }
+    }
+  }
+
+  for(int k = max; k >= min && k >= 0; k--)
+  {
+    char filename[PATH_MAX] = { 0 };
+    snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
+
+    // if a valid thumbnail file is already on disc - do nothing
+    if(dt_util_test_image_file(filename)) continue;
+    // else, generate thumbnail and store in mipmap cache.
+    dt_mipmap_buffer_t buf;
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, k, DT_MIPMAP_BLOCKING, 'r');
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  }
+  // thumbnail in sync with image
+  dt_history_hash_set_mipmap(imgid);
+
+  return 0;
+}
+
 
 static int path_member(lua_State *L)
 {
@@ -550,6 +596,9 @@ int dt_lua_init_image(lua_State *L)
   lua_pushcfunction(L, drop_cache);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const(L, dt_lua_image_t, "drop_cache");
+  lua_pushcfunction(L, generate_cache);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_lua_image_t, "generate_cache");
   lua_pushcfunction(L, image_tostring);
   dt_lua_type_setmetafield(L,dt_lua_image_t,"__tostring");
 
