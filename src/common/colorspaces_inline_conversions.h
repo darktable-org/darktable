@@ -186,7 +186,7 @@ static inline void dt_apply_transposed_color_matrix(const dt_aligned_pixel_t in,
 #endif
 static inline float cbrt_5f(float f)
 {
-  uint32_t *p = (uint32_t *)&f;
+  uint32_t * const p = (uint32_t *)&f;
   *p = *p / 3 + 709921077;
   return f;
 }
@@ -823,7 +823,7 @@ static inline void dt_XYZ_D50_2_XYZ_D65(const dt_aligned_pixel_t XYZ_D50, dt_ali
       { -0.0230393f,  1.0099416f, -0.0204830f, 0.0f },
       {  0.0631636f,  0.0210077f,  1.3299098f, 0.0f },
   };
-  
+
   for_each_channel(x)
     XYZ_D65[x] = M_transposed[0][x] * XYZ_D50[0] + M_transposed[1][x] * XYZ_D50[1] + M_transposed[2][x] * XYZ_D50[2];
 }
@@ -890,7 +890,7 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
       { 0.5f,      -4.066708f,  1.096799f, 0.0f },
       { 0.0f,       0.542708f, -1.295875f, 0.0f },
   };
-  
+
   dt_aligned_pixel_t XYZ = { 0.0f, 0.0f, 0.0f, 0.0f };
   dt_aligned_pixel_t LMS = { 0.0f, 0.0f, 0.0f, 0.0f };
 
