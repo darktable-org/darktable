@@ -925,13 +925,13 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
   // be sure light table will update the thumbnail
   if(!dt_history_hash_is_mipmap_synced(dev->image_storage.id))
   {
-    const dt_history_hash_t hash_status = dt_history_hash_get_status(dev->image_storage.id); 
+    const dt_history_hash_t hash_status = dt_history_hash_get_status(dev->image_storage.id);
 
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
     dt_image_update_final_size(dev->image_storage.id);
     const gboolean fresh = (hash_status == DT_HISTORY_HASH_BASIC) || (hash_status == DT_HISTORY_HASH_AUTO);
     const dt_imageio_write_xmp_t xmp_mode = dt_image_get_xmp_mode();
-    if((xmp_mode == DT_WRITE_XMP_ALWAYS) || ((xmp_mode == DT_WRITE_XMP_LAZY) && !fresh))   
+    if((xmp_mode == DT_WRITE_XMP_ALWAYS) || ((xmp_mode == DT_WRITE_XMP_LAZY) && !fresh))
       dt_image_synch_xmp(dev->image_storage.id);
     dt_history_hash_set_mipmap(dev->image_storage.id);
   }
@@ -2688,15 +2688,15 @@ void gui_init(dt_view_t *self)
   darktable.view_manager->proxy.darkroom.get_layout = _lib_darkroom_get_layout;
   dev->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
 
-  dt_action_t *ac = NULL;
+  dt_action_t *sa = &self->actions, *ac = NULL;
 
   // Fullscreen preview key
-  ac = dt_action_define(&self->actions, NULL, N_("full preview"), NULL, &dt_action_def_preview);
-  dt_accel_register_shortcut(ac, NULL, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
+  dt_accel_register_shortcut(sa, NC_("accel", "full preview"), 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
+  dt_action_define(sa, NULL, "full preview", NULL, &dt_action_def_preview);
 
   // add an option to allow skip mouse events while editing masks
-  ac = dt_action_define(&self->actions, NULL, N_("allow to pan & zoom while editing masks"), NULL, &dt_action_def_skip_mouse);
-  dt_accel_register_shortcut(ac, NULL, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_a, 0);
+  dt_accel_register_shortcut(sa, NC_("accel", "allow to pan & zoom while editing masks"), 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_a, 0);
+  dt_action_define(sa, NULL, "allow to pan & zoom while editing masks", NULL, &dt_action_def_skip_mouse);
 
   // move left/right/up/down
   ac = dt_action_define(&self->actions, N_("move"), N_("horizontal"), GINT_TO_POINTER(1), &_action_def_move);
@@ -3242,11 +3242,11 @@ void leave(dt_view_t *self)
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
     dt_image_update_final_size(dev->image_storage.id);
     // possibly dump new xmp data
-    const dt_history_hash_t hash_status = dt_history_hash_get_status(dev->image_storage.id); 
+    const dt_history_hash_t hash_status = dt_history_hash_get_status(dev->image_storage.id);
 
     const gboolean fresh = (hash_status == DT_HISTORY_HASH_BASIC) || (hash_status == DT_HISTORY_HASH_AUTO);
     const dt_imageio_write_xmp_t xmp_mode = dt_image_get_xmp_mode();
-    if((xmp_mode == DT_WRITE_XMP_ALWAYS) || ((xmp_mode == DT_WRITE_XMP_LAZY) && !fresh))   
+    if((xmp_mode == DT_WRITE_XMP_ALWAYS) || ((xmp_mode == DT_WRITE_XMP_LAZY) && !fresh))
       dt_image_synch_xmp(dev->image_storage.id);
     dt_history_hash_set_mipmap(dev->image_storage.id);
   }
