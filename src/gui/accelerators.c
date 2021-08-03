@@ -2813,7 +2813,6 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     break;
   case GDK_GRAB_BROKEN:
     if(event->grab_broken.implicit) break;
-  case GDK_WINDOW_STATE:
     event->focus_change.in = FALSE; // fall through to GDK_FOCUS_CHANGE
   case GDK_FOCUS_CHANGE: // dialog boxes and switch to other app release grab
     if(event->focus_change.in)
