@@ -1568,6 +1568,8 @@ static void _resize_shortcuts_view(GtkWidget *view, GdkRectangle *allocation, gp
 GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
 {
   _selected_action = g_hash_table_lookup(darktable.control->widgets, widget);
+  if(!_selected_action && widget)
+    _selected_action = g_hash_table_lookup(darktable.control->widgets, gtk_widget_get_parent(widget));
   darktable.control->element = -1;
 
   GtkWidget *container = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
