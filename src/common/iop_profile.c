@@ -342,7 +342,7 @@ static inline void _apply_tonecurves(const float *const image_in, float *const i
 #endif
     for(size_t k = 0; k < stride; k += ch)
     {
-      for(int c = 0; c < 3; c++)
+      for(int c = 0; c < 3; c++) // for_each_channel doesn't vectorize, and some code needs image_out[3] preserved
       {
         image_out[k + c] = (image_in[k + c] < 1.0f) ? extrapolate_lut(lut[c], image_in[k + c], lutsize)
                                                     : eval_exp(unbounded_coeffs[c], image_in[k + c]);
@@ -358,7 +358,7 @@ static inline void _apply_tonecurves(const float *const image_in, float *const i
 #endif
     for(size_t k = 0; k < stride; k += ch)
     {
-      for(int c = 0; c < 3; c++)
+      for(int c = 0; c < 3; c++) // for_each_channel doesn't vectorize, and some code needs image_out[3] preserved
       {
         if(lut[c][0] >= 0.0f)
         {
@@ -420,7 +420,7 @@ static inline void _transform_rgb_to_lab_matrix(const float *const restrict imag
 }
 
 
-static inline void _transform_lab_to_rgb_matrix(const float *const restrict image_in, float *const restrict image_out, const int width,
+static inline void _transform_lab_to_rgb_matrix(const float *const image_in, float *const image_out, const int width,
                                          const int height,
                                          const dt_iop_order_iccprofile_info_t *const profile_info)
 {
@@ -439,8 +439,10 @@ static inline void _transform_lab_to_rgb_matrix(const float *const restrict imag
     float *const restrict out = __builtin_assume_aligned(image_out + y, 16);
 
     dt_aligned_pixel_t xyz;
+    const float alpha = in[3]; // some code does in-place conversions and relies on alpha being preserved
     dt_Lab_to_XYZ(in, xyz);
     dt_apply_transposed_color_matrix(xyz, *matrix_ptr, out);
+    out[3] = alpha;
   }
 
   if(profile_info->nonlinearlut)

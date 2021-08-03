@@ -1413,7 +1413,7 @@ static inline void _copy_mask(const float *const restrict a, float *const restri
 }
 
 void dt_develop_blendif_lab_blend(struct dt_dev_pixelpipe_iop_t *piece,
-                                  const float *const restrict a, float *const restrict b,
+                                  const float *const a, float *const b,
                                   const struct dt_iop_roi_t *const roi_in,
                                   const struct dt_iop_roi_t *const roi_out,
                                   const float *const restrict mask,
@@ -1467,8 +1467,10 @@ void dt_develop_blendif_lab_blend(struct dt_dev_pixelpipe_iop_t *piece,
         dt_aligned_pixel_t pixel;
         for_each_channel(c,aligned(b))
           pixel[c] = b[j+c];
+        const float yellow_mask = b[j+3]; // preserve alpha for code which does in-place conversion
         dt_ioppr_rgb_matrix_to_lab(pixel, b + j, profile->matrix_in_transposed, profile->lut_in,
                                    profile->unbounded_coeffs_in, profile->lutsize, profile->nonlinearlut);
+        b[j+3] = yellow_mask;
       }
     }
     else
@@ -1480,8 +1482,10 @@ void dt_develop_blendif_lab_blend(struct dt_dev_pixelpipe_iop_t *piece,
       for(size_t j = 0; j < buffsize; j += DT_BLENDIF_LAB_CH)
       {
         dt_aligned_pixel_t XYZ;
+        const float yellow_mask = b[j+3]; // preserve alpha for code which does in-place conversion
         dt_Rec709_to_XYZ_D50(b + j, XYZ);
         dt_XYZ_to_Lab(XYZ, b + j);
+        b[j+3] = yellow_mask;
       }
     }
   }
