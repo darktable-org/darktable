@@ -445,7 +445,7 @@ static void _scale_changed(GtkEntry *spin, dt_lib_export_t *d)
 static void _width_changed(GtkEditable *entry, gpointer user_data);
 static void _height_changed(GtkEditable *entry, gpointer user_data);
 
-static void _scale_mdlclick(GtkEntry *spin, GdkEventButton *event, dt_lib_export_t *d)
+static gboolean _scale_mdlclick(GtkEntry *spin, GdkEventButton *event, dt_lib_export_t *d)
 {
   if (event->button == 2)
   {
@@ -458,6 +458,7 @@ static void _scale_mdlclick(GtkEntry *spin, GdkEventButton *event, dt_lib_export
   {
     _scale_changed(spin, d);
   }
+  return FALSE;
 }
 
 static void _widht_mdlclick(GtkEntry *spin, GdkEventButton *event, gpointer user_data)
