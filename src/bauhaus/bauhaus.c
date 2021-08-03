@@ -2957,7 +2957,10 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
         fprintf(stderr, "[_action_process_slider] unknown shortcut effect (%d) for slider\n", effect);
         break;
       }
-      dt_accel_widget_toast(widget);
+
+      gchar *text = dt_bauhaus_slider_get_text(widget);
+      dt_action_widget_toast(bhw->module, widget, text);
+      g_free(text);
 
       break;
     case DT_ACTION_ELEMENT_BUTTON:
@@ -3067,7 +3070,9 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
       break;
     }
 
-    dt_accel_widget_toast(widget);
+    gchar *text = g_strdup_printf("\n%s", dt_bauhaus_combobox_get_text(widget));
+    dt_action_widget_toast(w->module, widget, text);
+    g_free(text);
   }
 
   GList *e = w->data.combobox.entries;

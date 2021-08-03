@@ -183,7 +183,7 @@ void dt_accel_rename_global(const gchar *path, const gchar *new_path);
 void dt_accel_rename_lua(const gchar *path, const gchar *new_path);
 
 // UX miscellaneous functions
-void dt_accel_widget_toast(GtkWidget *widget);
+void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar *text);
 
 // Get the scale multiplier for adjusting sliders with shortcuts
 float dt_accel_get_slider_scale_multiplier();
