@@ -3225,6 +3225,11 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
     }
   }
 
+  gchar *text = g_strdup_printf("%s, %s", dt_action_def_iop.elements[element].name,
+                                dt_action_def_iop.elements[element].effects[effect]);
+  dt_action_widget_toast(target, NULL, text);
+  g_free(text);
+
   return 0;
 }
 

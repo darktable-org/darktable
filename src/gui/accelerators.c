@@ -27,8 +27,6 @@
 #include "gui/presets.h"
 #include "dtgtk/expander.h"
 
-#include "bauhaus/bauhaus.h"
-
 #include <assert.h>
 #include <gtk/gtk.h>
 
@@ -190,6 +188,9 @@ static float _action_process_toggle(gpointer target, dt_action_element_t element
     gdk_event_free(event);
 
     value = gtk_toggle_button_get_active(target);
+
+    if(!gtk_widget_is_visible(target))
+      dt_action_widget_toast(NULL, target, value ? _("on") : _("off"));
   }
 
   return value;
@@ -361,19 +362,23 @@ static void _action_distinct_label(gchar **label, dt_action_t *action, gchar *in
   if(!action || action->type <= DT_ACTION_TYPE_GLOBAL)
     return;
 
+  gchar *instance_label = action->type == DT_ACTION_TYPE_IOP && *instance
+                        ? g_strdup_printf("%s %s", action->label, instance)
+                        : g_strdup(action->label);
+
   if(*label)
   {
     if(!strstr(action->label, *label) || *instance)
     {
-      gchar *distinct_label = action->type == DT_ACTION_TYPE_IOP && *instance
-                            ? g_strdup_printf("%s %s / %s", action->label, instance, *label)
-                            : g_strdup_printf("%s / %s", action->label, *label);
+      gchar *distinct_label = g_strdup_printf("%s / %s", instance_label, *label);
       g_free(*label);
       *label = distinct_label;
     }
+
+    g_free(instance_label);
   }
   else
-    *label = g_strdup(action->label);
+    *label = instance_label;
 
   _action_distinct_label(label, action->owner, instance);
 }
@@ -2323,6 +2328,10 @@ static float process_mapping(float move_size)
       }
       else if(owner->type == DT_ACTION_TYPE_IOP)
       {
+        gchar *text = g_strdup_printf("\napplying preset '%s'", fsc.action->label);
+        dt_action_widget_toast(action_target, NULL, text);
+        g_free(text);
+
         dt_gui_presets_apply_preset(fsc.action->label, action_target);
       }
       else
@@ -2352,6 +2361,8 @@ static float process_mapping(float move_size)
 
         return_value = definition->process(action_target, fsc.element, effect, move_size);
       }
+      else
+        dt_action_widget_toast(fsc.action, action_target, "not active");
     }
   }
   else if(move_size)
@@ -2360,11 +2371,11 @@ static float process_mapping(float move_size)
     {
       gchar *base_label = NULL;
       _action_distinct_label(&base_label, fsc.action, "");
-      dt_control_log(_("no fallback for %s (%s)"), _shortcut_description(&fsc, TRUE), base_label);
+      dt_toast_log(_("no fallback for %s (%s)"), _shortcut_description(&fsc, TRUE), base_label);
       g_free(base_label);
     }
     else
-      dt_control_log(_("%s not assigned"), _shortcut_description(&_sc, TRUE));
+      dt_toast_log(_("%s not assigned"), _shortcut_description(&_sc, TRUE));
   }
 
   return return_value;
@@ -3438,32 +3449,15 @@ void dt_accel_connect_button_lib_as_global(dt_lib_module_t *module, const gchar 
   dt_action_define(&darktable.control->actions_global, NULL, path, button, &dt_action_def_button);
 }
 
-void dt_accel_widget_toast(GtkWidget *widget)
+void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar *text)
 {
-  dt_bauhaus_widget_t *bw = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
-
   if(!darktable.gui->reset)
   {
-    gchar *text = NULL;
-
-    switch(bw->type){
-      case DT_BAUHAUS_SLIDER:
-      {
-        text = dt_bauhaus_slider_get_text(widget);
-        break;
-      }
-      case DT_BAUHAUS_COMBOBOX:
-        text = g_strdup_printf("\n%s", dt_bauhaus_combobox_get_text(widget));
-        break;
-      default: //literally impossible but hey
-        return;
-        break;
-    }
-
-    if(bw->module)
+    if(!action)
+      action = g_hash_table_lookup(darktable.control->widgets, widget);
+    if(action)
     {
-      dt_action_t *action = bw->module;
-      gchar *instance_name = NULL;
+      gchar *instance_name = "";
       gchar *label = NULL;
 
       if(action->type == DT_ACTION_TYPE_IOP_INSTANCE)
@@ -3495,10 +3489,7 @@ void dt_accel_widget_toast(GtkWidget *widget)
     }
     else
       dt_toast_log("%s", text);
-
-    g_free(text);
   }
-
 }
 
 float dt_accel_get_slider_scale_multiplier()

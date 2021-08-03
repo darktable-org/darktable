@@ -2997,6 +2997,9 @@ static float _action_process_tabs(gpointer target, dt_action_element_t element, 
 
   const int c = gtk_notebook_get_current_page(notebook);
 
+  dt_action_widget_toast(NULL, GTK_WIDGET(notebook),
+                         gtk_notebook_get_tab_label_text(notebook, gtk_notebook_get_nth_page(notebook, c)));
+
   return -1 - c + (c == element ? DT_VALUE_PATTERN_ACTIVE : 0);
 }
 
