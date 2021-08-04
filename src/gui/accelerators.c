@@ -1658,7 +1658,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_widget_set_size_request(scroll, -1, 100);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(shortcuts_view));
-  gtk_paned_pack1(GTK_PANED(container), scroll, TRUE, FALSE);
+  gtk_paned_pack2(GTK_PANED(container), scroll, TRUE, FALSE);
 
   // Creating the action selection treeview
   g_set_weak_pointer(&actions_store, gtk_tree_store_new(1, G_TYPE_POINTER)); // static
@@ -1723,7 +1723,6 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_widget_set_size_request(scroll, -1, 100);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(actions_view));
-  gtk_paned_pack2(GTK_PANED(container), scroll, TRUE, FALSE);
 
   if(found_iter.user_data)
   {
@@ -1740,8 +1739,10 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
 
   GtkWidget *button_bar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(button_bar, "shortcut_controls");
-  gtk_box_pack_start(GTK_BOX(button_bar), search_shortcuts, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(button_bar), search_actions, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(button_bar), search_actions, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(button_bar), gtk_grid_new(), TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(button_bar), search_shortcuts, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(button_bar), gtk_grid_new(), TRUE, TRUE, 0);
 
   GtkWidget *defaults_button = gtk_button_new_with_label("defaults");
   gtk_widget_set_sensitive(defaults_button, FALSE);
@@ -1758,11 +1759,13 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_widget_set_tooltip_text(import_button, "to be implemented");
   gtk_box_pack_end(GTK_BOX(button_bar), import_button, FALSE, FALSE, 0);
 
-  GtkWidget *top_level = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(top_level), container, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(top_level), button_bar, FALSE, FALSE, 0);
+  GtkWidget *top = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start(GTK_BOX(top), scroll, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(top), GTK_WIDGET(button_bar), FALSE, FALSE, 0);
 
-  return top_level;
+  gtk_paned_pack1(GTK_PANED(container), top, TRUE, FALSE);
+
+  return container;
 }
 
 void dt_shortcuts_save(gboolean backup)
