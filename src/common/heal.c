@@ -45,34 +45,94 @@
  */
 
 
-// Subtract bottom from top and store in result as a float
+// Subtract bottom from top and store in result as a float; separate 'red' and 'black' pixels into
+// two contiguous regions
 static void dt_heal_sub(const float *const top_buffer, const float *const bottom_buffer,
-                        float *const restrict result_buffer, const int width, const int height)
+                        float *const restrict red_buffer, float *const restrict black_buffer,
+                        const size_t width, const size_t height)
 {
-  const size_t i_size = (size_t)width * height * 4;
+  // how many red or black pixels per line?  For consistency, we need the larger of the two, so round up
+  const size_t res_stride = 4 * ((width + 1) / 2);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(top_buffer, bottom_buffer, i_size) \
+  dt_omp_firstprivate(top_buffer, bottom_buffer, red_buffer, black_buffer, height, width) \
   dt_omp_sharedconst(result_buffer) \
   schedule(static)
 #endif
-  for(size_t i = 0; i < i_size; i++) result_buffer[i] = top_buffer[i] - bottom_buffer[i];
+  for(size_t row = 0; row < height; row++)
+  {
+    const int parity = row & 1;
+    const size_t row_start = (row+1) * res_stride;
+    float *const buf1 = parity ? red_buffer + row_start : black_buffer + row_start;
+    float *const buf2 = parity ? black_buffer + row_start : red_buffer + row_start;
+    // handle the pixels of the row pairwise, one red and one black at a time
+    for(size_t col = 0; col < width/2; col++)
+    {
+      const size_t idx = 4 * (row * width + 2*col);
+      for_each_channel(c)
+      {
+        buf1[4*col + c] = top_buffer[idx + c] - bottom_buffer[idx + c];
+        buf2[4*col + c] = top_buffer[idx+4 + c] - bottom_buffer[idx+4 + c];
+      }
+    }
+    if(width & 1)
+    {
+      // Handle the left-over pixel when the total width is odd.  Its color will always be the same as the
+      // left-most pixel, so it goes into buf1
+      const size_t res_idx = (width-1)/2;
+      const size_t idx = 4 * (row * width + (width-1));
+      for_each_channel(c)
+        buf1[res_idx + c] = top_buffer[idx + c] - bottom_buffer[idx + c];
+    }
+  }
+  // clear the top and bottom rows, used for padding
+  memset(red_buffer, 0, res_stride * sizeof(float));
+  memset(red_buffer + (height+1)*res_stride, 0, res_stride * sizeof(float));
+  memset(black_buffer, 0, res_stride * sizeof(float));
+  memset(black_buffer + (height+1)*res_stride, 0, res_stride * sizeof(float));
 }
 
-// Add first to second and store in result
-static void dt_heal_add(const float *const restrict first_buffer, const float *const restrict second_buffer,
-                        float *const restrict result_buffer, const int width, const int height)
+// Add first to second and store in result, re-interleaving the 'red' and 'black' pixels
+static void dt_heal_add(const float *const restrict red_buffer, const float *const black_buffer,
+                        const float *const restrict second_buffer, float *const restrict result_buffer,
+                        const size_t width, const size_t height)
 {
-  const size_t i_size = (size_t)width * height * 4;
+  // how many red or black pixels per line?  For consistency, we need the larger of the two, so round up, then
+  // add one to ensure a padding pixel on the right
+  const size_t res_stride = 4 * ((width + 1) / 2);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(first_buffer, second_buffer, i_size) \
+  dt_omp_firstprivate(red_buffer, black_buffer, second_buffer, height, width) \
   dt_omp_sharedconst(result_buffer) \
   schedule(static)
 #endif
-  for(size_t i = 0; i < i_size; i++) result_buffer[i] = first_buffer[i] + second_buffer[i];
+  for(size_t row = 0; row < height; row++)
+  {
+    const int parity = row & 1;
+    const size_t row_start = row * res_stride;
+    const float *const restrict buf1 = parity ? red_buffer + row_start : black_buffer + row_start;
+    const float *const restrict buf2 = parity ? black_buffer + row_start : red_buffer + row_start;
+    // handle the pixels of the row pairwise, one red and one black at a time
+    for(size_t col = 0; col < width/2; col++)
+    {
+      const size_t idx = 4 * (row * width + 2*col);
+      for_each_channel(c)
+      {
+        result_buffer[idx + c] = buf1[4*col + c] + second_buffer[idx + c];
+        result_buffer[idx + 4 + c] = buf2[4*col + c] + second_buffer[idx + 4 + c];
+      }
+    }
+    if(width & 1)
+    {
+      // handle the left-over pixel when the total width is odd
+      const size_t res_idx = (width-1)/2;
+      const size_t idx = row * width + (width-1);
+      for_each_channel(c)
+        result_buffer[idx + c] = buf1[res_idx + c] + second_buffer[idx + c];
+    }
+  }
 }
 
 // define a custom reduction operation to handle a 3-vector of floats
@@ -89,99 +149,205 @@ static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newva
 #endif
 
 // Perform one iteration of Gauss-Seidel, and return the sum squared residual.
+#if 0
 static float dt_heal_laplace_iteration(float *const restrict pixels, const float *const restrict Adiag,
                                        const int *const restrict Aidx, const float w,
                                        const int nmask_from, const int nmask_to)
+#else
+static float dt_heal_laplace_iteration(float *const restrict active_pixels,
+                                       const float *const restrict neighbor_pixels,
+                                       const size_t height, const size_t width, const unsigned *const restrict runs,
+                                       const size_t num_runs, const size_t start_parity, const float w)
+#endif
 {
   _aligned_pixel err = { { 0.f } };
 
+  // on each iteration, we adjust each cell of the current color by a weighted fraction of the difference between
+  // it and the sum of the adjacenct cells of the opposite color.  Because we've split the cells by color, this
+  // leads to a somewhat different computation of neighbors.
+  // Rearranged, as provided to this function:
+  //   r00 r01 r02 ...           b00 b01 b02 ...
+  //   r10 r11 r12               b10 b11 b12
+  //   r20 r21 r22               b20 b21 b22
+  //   ...                       ...
+  // Original layout, from which we need to get the neighbors:
+  //     r00 b00 r01 b01 r02 b02 ...
+  //     b10 r10 b11 r11 b12 r12
+  //     r20 b20 r21 b21 r22 b22
+  //     b30 r30 b31 r31 b32 r32
+  //     ...
+  // As can be seen, the 'above' and 'below' neighbors of r(i)(j) are always b(i-1)(j) and b(i+1)(j).  The
+  // left and right neighbors depend on which color the row starts with: if red, they are b(i)(j-1) and b(i)(j);
+  // if black, they are b(i)(j) and b(i)(j+1).  All of the above holds when colors are swapped.
 #if !(defined(__apple_build_version__) && __apple_build_version__ < 11030000) //makes Xcode 11.3.1 compiler crash
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(Adiag, Aidx, w, nmask_from, nmask_to) \
-  dt_omp_sharedconst(pixels) \
+  dt_omp_firstprivate(active_pixels, neighbor_pixels, runs, num_runs, w) \
   schedule(static) \
   reduction(vsum : err)
+#endif /* _OPENMP */
 #endif
-#endif
-  for(int i = nmask_from; i < nmask_to; i++)
-  {
-    const size_t j0 = Aidx[i * 5 + 0];
-    const size_t j1 = Aidx[i * 5 + 1];
-    const size_t j2 = Aidx[i * 5 + 2];
-    const size_t j3 = Aidx[i * 5 + 3];
-    const size_t j4 = Aidx[i * 5 + 4];
-    const float a = Adiag[i];
-
-    dt_aligned_pixel_t diff;
-    for_each_channel(k,aligned(pixels))
+    for(size_t i = 0; i < num_runs; i++)
     {
-      diff[k] = w * (a * pixels[j0 + k] - (pixels[j1 + k] + pixels[j2 + k] + pixels[j3 + k] + pixels[j4 + k]));
-      pixels[j0 + k] -= diff[k];
-      err.v[k] += diff[k] * diff[k];
+      const size_t idx = runs[2*i];
+      const size_t index = (size_t)4 * idx;
+      const unsigned count = runs[2*i+1];
+      const size_t row = idx / width;
+      const size_t col = idx % width;
+      float a = 4.0f; // four neighboring pixels except at the edges
+      if (row == 1) a -= 1.0f;  // we added a padding row at top and bottom
+      if (row == height) a -= 1.0f;
+      const size_t vert_offset = 4 * width;
+      const size_t lroffset = 4 * (start_parity ^ (row % 1)); // how many floats to offset the left/right neighbors
+      if (count == 1)
+      {
+        float aa = a;
+        dt_aligned_pixel_t left = { 0.0f };
+        dt_aligned_pixel_t right = { 0.0f };
+        if (4 * col >= lroffset) // first pixel in original stamp?
+          for_each_channel(c) left[c] = neighbor_pixels[index - 4 + lroffset + c];
+        else
+          aa -= 1.0f;
+        if (col + lroffset/4 < width) // last pixel in original stamp?
+          for_each_channel(c) right[c] = neighbor_pixels[index + lroffset + c];
+        else
+          aa -= 1.0f;
+
+        dt_aligned_pixel_t diff;
+        for_each_channel(c, aligned(active_pixels, neighbor_pixels))
+        {
+          diff[c] = w * ((aa * active_pixels[index+c])
+                             - (neighbor_pixels[index - vert_offset + c] + neighbor_pixels[index + vert_offset + c]
+                                + left[c] + right[c]));
+          active_pixels[index + c] -= diff[c];
+          err.v[c] += (diff[c] * diff[c]);
+        }
+        continue;
+      }
+      for(size_t j = 0; j < count; j++)
+      {
+        dt_aligned_pixel_t diff;
+        dt_aligned_pixel_t sum_of_neighbors;
+        const size_t pixidx = index + 4*j;
+        for_each_channel(c, aligned(active_pixels,neighbor_pixels))
+        {
+          sum_of_neighbors[c] = (neighbor_pixels[pixidx - vert_offset + c] + neighbor_pixels[pixidx + vert_offset + c]
+                                 + neighbor_pixels[pixidx - 4 + lroffset + c] + neighbor_pixels[pixidx + lroffset + c]);
+          diff[c] = w * (a * active_pixels[pixidx+c] - sum_of_neighbors[c]);
+          active_pixels[pixidx + c] -= diff[c];
+          err.v[c] += (diff[c] * diff[c]);
+        }
+      }
     }
-  }
 
   return err.v[0] + err.v[1] + err.v[2];
 }
 
-// Solve the laplace equation for pixels and store the result in-place.
-static void dt_heal_laplace_loop(float *pixels, const int width, const int height,
-                                 const float *const mask)
+// convert alternating pixels of one row of the opacity mask into a set of runs of opaque pixels of the
+// form (start_index, count), and return the updated number of runs
+static size_t collect_color_runs(const float *const restrict mask, const size_t start_index,
+                                 size_t start, const size_t width,
+                                 unsigned *const restrict runs, size_t count, size_t *nmask)
 {
-  int nmask = 0;
-  int nmask2 = 0;
+  size_t masked = 0;
+  // handle the first and last pixels of the row specially so that we don't need checks on every pixel in the
+  // adaptation loop (which will be run hundreds of times for any stamp large enough that execution time is
+  // non-negligible)
+  if(mask[start])
+  {
+    runs[2*count] = start_index /* + start/2 */;
+    runs[2*count+1] = 1;
+    count++;
+    masked++;
+  }
+  gboolean in_run = FALSE;
+  unsigned run_start = 0;
+  for(size_t col = start+2; col < width; col += 2)
+  {
+    if(mask[col])
+    {
+      masked++;
+      if(!in_run)
+      {
+        run_start = col;
+        in_run = TRUE;
+      }
+    }
+    else if(in_run)
+    {
+      runs[2*count] = start_index + run_start / 2;
+      runs[2*count + 1] = (col - run_start) / 2;
+      count++;
+      in_run = FALSE;
+    }
+  }
+  if(in_run)  // finish off a run that doesn't have a zero pixel to its right
+  {
+    runs[2*count] = start_index + run_start / 2;
+    const unsigned runlen = (width - run_start) / 2;
+    runs[2*count + 1] = runlen;
+    if (runlen > 1)
+    {
+      // split off the final pixel into its own run
+      runs[2*count + 1]--;
+      count++;
+      runs[2*count] = start_index + ((width+1-start) / 2) - 1;
+      runs[2*count + 1] = 1;
+    }
+    count++;
+  }
+  *nmask += masked;
+  return count;
+}
 
-  float *Adiag = dt_alloc_align_float((size_t)width * height);
-  int *Aidx = dt_alloc_align(64, sizeof(int) * 5 * width * height);
+// convert one row of the opacity mask into a set of runs of opaque pixels of the form (start_index, count)
+static void collect_runs(const float *const restrict mask, const size_t start_index, const size_t width,
+                         unsigned *const restrict runs1, size_t *count1,
+                         unsigned *const restrict runs2, size_t *count2, size_t *nmask)
+{
+  *count1 = collect_color_runs(mask, start_index, 0, width, runs1, *count1, nmask);
+  *count2 = collect_color_runs(mask, start_index, 1, width, runs2, *count2, nmask);
+}
 
-  if((Adiag == NULL) || (Aidx == NULL))
+// Solve the laplace equation for pixels and store the result in-place.
+static void dt_heal_laplace_loop(float *const restrict red_pixels, float *const restrict black_pixels,
+                                 const size_t width, const size_t height,
+                                 const float *const restrict mask)
+{
+  // we start by converting the opacity mask into runs of nonzero positions, handling the 'red' and 'black'
+  // checkerboarded pixels separately
+  // the worst case is when consecutive red pixels alternate between being in the mask and out (same for black),
+  // in which case we will need exactly as many values in the run-length encoding as pixels; any other
+  // arrangement will yield fewer runs.  For any mask a user would have the patience to draw, there will only be
+  // a handful of runs in each row of pixels.
+  // Note that using `unsigned` instead of size_t, the stamp is limited to ~8 gigapixels (the main image can be larger)
+  const size_t subwidth = (width+1)/2;
+  unsigned *const restrict red_runs = dt_alloc_align(64, sizeof(unsigned) * subwidth * (height + 2));
+  unsigned *const restrict black_runs = dt_alloc_align(64, sizeof(unsigned) * subwidth * (height + 2));
+  if (!red_runs || !black_runs)
   {
     fprintf(stderr, "dt_heal_laplace_loop: error allocating memory for healing\n");
     goto cleanup;
   }
 
-  /* All off-diagonal elements of A are either -1 or 0. We could store it as a
-   * general-purpose sparse matrix, but that adds some unnecessary overhead to
-   * the inner loop. Instead, assume exactly 4 off-diagonal elements in each
-   * row, all of which have value -1. Any row that in fact wants less than 4
-   * coefs can put them in a dummy column to be multiplied by an empty pixel.
-   */
-  const int zero = 4 * width * height;
-  memset(pixels + zero, 0, sizeof(float) * 4);
+  size_t num_red = 0;
+  size_t num_black = 0;
+  size_t nmask = 0;
 
-  /* Construct the system of equations.
-   * Arrange Aidx in checkerboard order, so that a single linear pass over that
-   * array results updating all of the red cells and then all of the black cells.
-   */
-  for(int parity = 0; parity < 2; parity++)
+  for(size_t row = 0; row < height; row++)
   {
-    if(parity == 1) nmask2 = nmask;
-
-    for(int i = 0; i < height; i++)
+    const int parity = (row & 1);
+    const size_t index = (row + 1) * subwidth; // each color only has half as many, and we've padded a row on top
+    const size_t mask_index = row * width;
+    if (parity)
     {
-      for(int j = (i & 1) ^ parity; j < width; j += 2)
-      {
-        if(mask[j + i * width])
-        {
-#define A_POS(di, dj) (((i + di) * width + (j  + dj)) * 4)
-
-          /* Omit Dirichlet conditions for any neighbors off the
-           * edge of the canvas.
-           */
-          Adiag[nmask] = 4 - (i == 0) - (j == 0) - (i == height - 1) - (j == width - 1);
-          Aidx[5 * nmask] = A_POS(0,0);
-          Aidx[5 * nmask + 1] = (j == width-1) ? zero : A_POS(0,1);
-          Aidx[5 * nmask + 2] = (i == height-1) ? zero : A_POS(1,0);
-          Aidx[5 * nmask + 3] = (j == 0) ? zero : A_POS(0,-1);
-          Aidx[5 * nmask + 4] = (i == 0) ? zero : A_POS(-1,0);
-          nmask++;
-        }
-      }
+      collect_runs(mask + mask_index, index, width, red_runs, &num_red, black_runs, &num_black, &nmask);
+    }
+    else
+    {
+      collect_runs(mask + mask_index, index, width, black_runs, &num_black, red_runs, &num_red, &nmask);
     }
   }
-
-#undef A_POS
 
   /* Empirically optimal over-relaxation factor. (Benchmarked on
    * round brushes, at least. I don't know whether aspect ratio
@@ -196,16 +362,16 @@ static void dt_heal_laplace_loop(float *pixels, const int width, const int heigh
   /* Gauss-Seidel with successive over-relaxation */
   for(int iter = 0; iter < max_iter; iter++)
   {
-    // process red/black cells separate
-    float err = dt_heal_laplace_iteration(pixels, Adiag, Aidx, w, 0, nmask2);
-    err += dt_heal_laplace_iteration(pixels, Adiag, Aidx, w, nmask2, nmask);
+    // process red/black cells separately
+    float err = dt_heal_laplace_iteration(red_pixels, black_pixels, height, subwidth, red_runs, num_red, 0, w);
+    err += dt_heal_laplace_iteration(black_pixels, red_pixels, height, subwidth, black_runs, num_black, 1, w);
 
     if(err < err_exit) break;
   }
 
 cleanup:
-  if(Adiag) dt_free_align(Adiag);
-  if(Aidx) dt_free_align(Aidx);
+  if(red_runs) dt_free_align(red_runs);
+  if(black_runs) dt_free_align(black_runs);
 }
 
 
@@ -222,24 +388,25 @@ void dt_heal(const float *const src_buffer, float *dest_buffer, const float *con
     fprintf(stderr,"dt_heal: full-color image required\n");
     return;
   }
-  float *const restrict diff_buffer = dt_alloc_align_float((size_t)ch * width * (height + 1));
-
-  if(diff_buffer == NULL)
+  float *const restrict red_buffer = dt_alloc_align_float((size_t)ch * ((width+1)/2) * (height + 2));
+  float *const restrict black_buffer = dt_alloc_align_float((size_t)ch * ((width+1)/2) * (height + 2));
+  if(red_buffer == NULL || black_buffer == NULL)
   {
     fprintf(stderr, "dt_heal: error allocating memory for healing\n");
     goto cleanup;
   }
 
-  /* subtract pattern from image and store the result in diff */
-  dt_heal_sub(dest_buffer, src_buffer, diff_buffer, width, height);
+  /* subtract pattern from image and store the result split by 'red' and 'black' positions  */
+  dt_heal_sub(dest_buffer, src_buffer, red_buffer, black_buffer, width, height);
 
-  dt_heal_laplace_loop(diff_buffer, width, height, mask_buffer);
+  dt_heal_laplace_loop(red_buffer, black_buffer, width, height, mask_buffer);
 
   /* add solution to original image and store in dest */
-  dt_heal_add(diff_buffer, src_buffer, dest_buffer, width, height);
+  dt_heal_add(red_buffer, black_buffer, src_buffer, dest_buffer, width, height);
 
 cleanup:
-  if(diff_buffer) dt_free_align(diff_buffer);
+  if(red_buffer) dt_free_align(red_buffer);
+  if(black_buffer) dt_free_align(black_buffer);
 }
 
 #ifdef HAVE_OPENCL
