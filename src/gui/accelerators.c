@@ -1736,7 +1736,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
                           send_iter, (GClosureNotify)g_free, G_CONNECT_AFTER);
   }
 
-  int split_position = dt_conf_get_int("shortcuts/window_split");
+  const int split_position = dt_conf_get_int("shortcuts/window_split");
   if(split_position) gtk_paned_set_position(GTK_PANED(container), split_position);
   g_signal_connect(G_OBJECT(shortcuts_view), "size-allocate", G_CALLBACK(_resize_shortcuts_view), container);
 
