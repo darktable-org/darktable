@@ -3131,7 +3131,7 @@ static int filter_cb(lua_State *L)
   for(int i = 0; i < p->rules; i++)
   {
     luaA_push(L,dt_lib_collect_params_rule_t,&p->rule[i]);
-    luaL_ref(L,-2);
+    lua_seti(L,-2, i + 1);
   }
   free(p);
   return 1;
