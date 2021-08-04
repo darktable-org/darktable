@@ -369,19 +369,17 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   for(size_t y = 0; y < diam_px; y++)
     for(size_t x = 0; x < diam_px; x++)
     {
-      float a = 2.0f * (x / (float)(diam_px-1) - 0.5f);
-      float b = 2.0f * (y / (float)(diam_px-1) - 0.5f);
+      float a = x / (float)(diam_px-1) - 0.5f;
+      float b = y / (float)(diam_px-1) - 0.5f;
       const float f = max_radius / dt_fast_hypotf(a,b);
       // FIXME: hacky, really want to go to hue ring edge rather than max_radius
       // FIXME: or set radius by hand, to 0.4 for Luv, 0.8 for JzAzBz
-      a *= f;
-      b *= f;
       dt_aligned_pixel_t RGB;
       // FIXME: the L and Jz values are set by visual experimentation to give good saturation in graph, including center and primary/secondary nodes -- is there a better way?
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
         // uv values can get huge at corners in logarithmic scale, so clamp to avoid weird colors
-        const dt_aligned_pixel_t Luv = {70.0f, a, b};
+        const dt_aligned_pixel_t Luv = {70.0f, a*f, b*f};
         dt_aligned_pixel_t xyY, XYZ_D50;
         dt_Luv_to_xyY(Luv, xyY);
         // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
@@ -390,7 +388,7 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       }
       else if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ)
       {
-        const dt_aligned_pixel_t JzAzBz = {0.01f, a, b};
+        const dt_aligned_pixel_t JzAzBz = {0.01f, a*f, b*f};
         dt_aligned_pixel_t XYZ_D65;
         dt_JzAzBz_2_XYZ(JzAzBz, XYZ_D65);
         dt_XYZ_to_Rec709_D65(XYZ_D65, RGB);
