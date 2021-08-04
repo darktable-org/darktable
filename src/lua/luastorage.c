@@ -40,7 +40,7 @@ typedef struct
   lua_widget widget;
 } lua_storage_gui_t;
 
-static void push_lua_data(lua_State*L,lua_storage_t *d)
+static void push_lua_data(lua_State*L, lua_storage_t *d)
 {
   if(!d->data_created)
   {
@@ -116,9 +116,6 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
   lua_pushstring(L, complete_name);
   lua_settable(L, -3);
   lua_pop(L, 1);
-
-
-
 
   lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_storages");
   lua_getfield(L, -1, self->plugin_name);
