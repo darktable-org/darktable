@@ -1695,7 +1695,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_tree_view_set_search_equal_func(actions_view, _search_func, actions_view, NULL);
   GtkWidget *search_actions = gtk_search_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(search_actions), _("search actions list"));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(search_actions), "incrementally search the list of actions\npress up or down keys to cycle through matches");
+  gtk_widget_set_tooltip_text(GTK_WIDGET(search_actions), _("incrementally search the list of actions\npress up or down keys to cycle through matches"));
   g_signal_connect(G_OBJECT(search_actions), "stop-search", G_CALLBACK(_stop_search), actions_view);
   gtk_tree_view_set_search_entry(actions_view, GTK_ENTRY(search_actions));
 
@@ -1745,17 +1745,17 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_box_pack_start(GTK_BOX(button_bar), search_shortcuts, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(button_bar), search_actions, FALSE, FALSE, 0);
 
-  GtkWidget *defaults_button = gtk_button_new_with_label("defaults");
+  GtkWidget *defaults_button = gtk_button_new_with_label(_("defaults"));
   gtk_widget_set_sensitive(defaults_button, FALSE);
   gtk_widget_set_tooltip_text(defaults_button, "to be implemented");
   gtk_box_pack_end(GTK_BOX(button_bar), defaults_button, FALSE, FALSE, 0);
 
-  GtkWidget *export_button = gtk_button_new_with_label("export...");
+  GtkWidget *export_button = gtk_button_new_with_label(_("export..."));
   gtk_widget_set_sensitive(export_button, FALSE);
   gtk_widget_set_tooltip_text(export_button, "to be implemented");
   gtk_box_pack_end(GTK_BOX(button_bar), export_button, FALSE, FALSE, 0);
 
-  GtkWidget *import_button = gtk_button_new_with_label("import...");
+  GtkWidget *import_button = gtk_button_new_with_label(_("import..."));
   gtk_widget_set_sensitive(import_button, FALSE);
   gtk_widget_set_tooltip_text(import_button, "to be implemented");
   gtk_box_pack_end(GTK_BOX(button_bar), import_button, FALSE, FALSE, 0);
