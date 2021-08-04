@@ -355,7 +355,7 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       }
       d->hue_ring[k][i][0] = chromaticity[1];
       d->hue_ring[k][i][1] = chromaticity[2];
-      max_radius = MAX(max_radius, hypotf(chromaticity[1], chromaticity[2]));
+      max_radius = MAX(max_radius, dt_fast_hypotf(chromaticity[1], chromaticity[2]));
     }
   }
   if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
@@ -371,20 +371,17 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
     {
       float a = 2.0f * (x / (float)(diam_px-1) - 0.5f);
       float b = 2.0f * (y / (float)(diam_px-1) - 0.5f);
-      float s = max_radius;
-      if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
-      {
-        const float h = dt_fast_hypotf(a,b);
-        s *= powf(VECTORSCOPE_BASE_LOG, h) / (VECTORSCOPE_BASE_LOG * h);
-      }
-      a *= s;
-      b *= s;
+      const float f = max_radius / dt_fast_hypotf(a,b);
+      // FIXME: hacky, really want to go to hue ring edge rather than max_radius
+      // FIXME: or set radius by hand, to 0.4 for Luv, 0.8 for JzAzBz
+      a *= f;
+      b *= f;
       dt_aligned_pixel_t RGB;
       // FIXME: the L and Jz values are set by visual experimentation to give good saturation in graph, including center and primary/secondary nodes -- is there a better way?
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
         // uv values can get huge at corners in logarithmic scale, so clamp to avoid weird colors
-        const dt_aligned_pixel_t Luv = {28.0f, CLAMP(a,-100.0f,100.0f), CLAMP(b,-100.0f,100.0f)};
+        const dt_aligned_pixel_t Luv = {70.0f, a, b};
         dt_aligned_pixel_t xyY, XYZ_D50;
         dt_Luv_to_xyY(Luv, xyY);
         // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
@@ -393,7 +390,7 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       }
       else if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ)
       {
-        const dt_aligned_pixel_t JzAzBz = {0.003f, a, b};
+        const dt_aligned_pixel_t JzAzBz = {0.01f, a, b};
         dt_aligned_pixel_t XYZ_D65;
         dt_JzAzBz_2_XYZ(JzAzBz, XYZ_D65);
         dt_XYZ_to_Rec709_D65(XYZ_D65, RGB);
