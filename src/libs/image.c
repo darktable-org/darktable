@@ -715,10 +715,12 @@ static int lua_button_clicked_cb(lua_State* L)
 
   GList *image = dt_collection_get_selected(darktable.collection, -1);
   lua_newtable(L);
+  int table_index = 1;
   while(image)
   {
     luaA_push(L, dt_lua_image_t, &image->data);
-    luaL_ref(L, -2);
+    lua_seti(L, -2, table_index);
+    table_index++;
     image = g_list_delete_link(image, image);
   }
 
