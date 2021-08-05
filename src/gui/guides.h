@@ -41,8 +41,8 @@ void dt_guides_cleanup(GList *guides);
 
 void dt_guides_add_guide(const char *name, dt_guides_draw_callback draw, dt_guides_widget_callback widget, void *user_data, GDestroyNotify free);
 
-// show the popup to setup the guides
-void dt_guides_show_popup(GtkWidget *button);
+// create the popover to setup the guides
+GtkWidget *dt_guides_popover(GtkWidget *button);
 
 // draw the guide on screen
 void dt_guides_draw(cairo_t *cr, const float left, const float top, const float width, const float height,
