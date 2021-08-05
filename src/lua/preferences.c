@@ -157,10 +157,12 @@ static int get_keys(lua_State *L)
 
   keys = g_list_sort(keys, (GCompareFunc) strcmp);
   lua_newtable(L);
+  int table_index = 1;
   for(const GList* key = keys; key; key = g_list_next(key))
   {
     lua_pushstring(L, key->data);
-    luaL_ref(L, -2);
+    lua_seti(L, -2, table_index);
+    table_index++;
   }
   g_list_free(keys);
   return 1;
