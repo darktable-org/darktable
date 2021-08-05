@@ -433,11 +433,13 @@ int get_group(lua_State *L)
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
   lua_newtable(L);
+  int table_index = 1;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int(stmt, 0);
     luaA_push(L, dt_lua_image_t, &imgid);
-    luaL_ref(L, -2);
+    lua_seti(L, -2, table_index);
+    table_index++;
   }
   sqlite3_finalize(stmt);
   luaA_push(L, dt_lua_image_t, &group_id);

@@ -86,31 +86,36 @@ static int on_screen_member(lua_State *L)
   return 1;
 }
 
-static int position_member(lua_State*L) {
-  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
-  lua_pushinteger(L,module->position(module));
+static int position_member(lua_State*L) 
+{
+  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L, 1);
+  lua_pushinteger(L, module->position(module));
   return 1;
 }
 
-static int container_member(lua_State*L) {
-  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
+static int container_member(lua_State*L) 
+{
+  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L, 1);
   dt_ui_container_t container;
   container = module->container(module);
-  luaA_push(L,dt_ui_container_t,&container);
+  luaA_push(L, dt_ui_container_t, &container);
   return 1;
 }
 
 
-static int views_member(lua_State*L) {
-  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
+static int views_member(lua_State*L) 
+{
+  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L, 1);
   lua_newtable(L);
+  int table_index = 1;
   for(GList *iter = darktable.view_manager->views; iter; iter = g_list_next(iter))
   {
     const dt_view_t *view = (const dt_view_t *)iter->data;
     if(dt_lib_is_visible_in_view(module, view))
     {
-      dt_lua_module_entry_push(L,"view",(view->module_name));
-      luaL_ref(L,-2);
+      dt_lua_module_entry_push(L, "view", (view->module_name));
+      lua_seti(L, -2, table_index);
+      table_index++;
     }
   }
   return 1;
@@ -146,22 +151,22 @@ int dt_lua_init_early_lib(lua_State *L)
 {
 
   luaA_enum(L,dt_ui_container_t);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_LEFT_TOP);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_LEFT_CENTER);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_LEFT_BOTTOM);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_RIGHT_TOP);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_TOP_LEFT);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_TOP_CENTER);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_TOP_RIGHT);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_BOTTOM);
+  luaA_enum_value(L, dt_ui_container_t, DT_UI_CONTAINER_PANEL_LEFT_TOP);
+  luaA_enum_value(L, dt_ui_container_t, DT_UI_CONTAINER_PANEL_LEFT_CENTER);
+  luaA_enum_value(L, dt_ui_container_t, DT_UI_CONTAINER_PANEL_LEFT_BOTTOM);
+  luaA_enum_value(L, dt_ui_container_t, DT_UI_CONTAINER_PANEL_RIGHT_TOP);
+  luaA_enum_value(L, dt_ui_container_t, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
+  luaA_enum_value(L, dt_ui_container_t, DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM);
+  luaA_enum_value(L, dt_ui_container_t, DT_UI_CONTAINER_PANEL_TOP_LEFT);
+  luaA_enum_value(L, dt_ui_container_t, DT_UI_CONTAINER_PANEL_TOP_CENTER);
+  luaA_enum_value(L, dt_ui_container_t, DT_UI_CONTAINER_PANEL_TOP_RIGHT);
+  luaA_enum_value(L, dt_ui_container_t, DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT);
+  luaA_enum_value(L, dt_ui_container_t, DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER);
+  luaA_enum_value(L, dt_ui_container_t, DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT);
+  luaA_enum_value(L, dt_ui_container_t, DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT);
+  luaA_enum_value(L, dt_ui_container_t, DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER);
+  luaA_enum_value(L, dt_ui_container_t, DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT);
+  luaA_enum_value(L, dt_ui_container_t, DT_UI_CONTAINER_PANEL_BOTTOM);
 
   dt_lua_init_type(L, dt_lua_lib_t);
   lua_pushcfunction(L, lib_reset);
@@ -178,12 +183,12 @@ int dt_lua_init_early_lib(lua_State *L)
   lua_pushcfunction(L, expanded_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, dt_lua_lib_t, "expanded");
-  lua_pushcfunction(L,position_member);
-  dt_lua_type_register_const(L,dt_lua_lib_t,"position");
-  lua_pushcfunction(L,container_member);
-  dt_lua_type_register_const(L,dt_lua_lib_t,"container");
-  lua_pushcfunction(L,views_member);
-  dt_lua_type_register_const(L,dt_lua_lib_t,"views");
+  lua_pushcfunction(L, position_member);
+  dt_lua_type_register_const(L, dt_lua_lib_t, "position");
+  lua_pushcfunction(L, container_member);
+  dt_lua_type_register_const(L, dt_lua_lib_t, "container");
+  lua_pushcfunction(L, views_member);
+  dt_lua_type_register_const(L, dt_lua_lib_t, "views");
   lua_pushcfunction(L, visible_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, dt_lua_lib_t, "visible");
