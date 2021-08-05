@@ -52,10 +52,12 @@ static int selection_cb(lua_State *L)
     g_list_free(new_selection);
   }
   lua_newtable(L);
+  int table_index = 1;
   while(image)
   {
     luaA_push(L, dt_lua_image_t, &image->data);
-    luaL_ref(L, -2);
+    lua_seti(L, -2, table_index);
+    table_index++;
     image = g_list_delete_link(image, image);
   }
   return 1;
