@@ -104,13 +104,15 @@ static int container_member(lua_State*L) {
 static int views_member(lua_State*L) {
   dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
   lua_newtable(L);
+  int table_index = 1;
   for(GList *iter = darktable.view_manager->views; iter; iter = g_list_next(iter))
   {
     const dt_view_t *view = (const dt_view_t *)iter->data;
     if(dt_lib_is_visible_in_view(module, view))
     {
       dt_lua_module_entry_push(L,"view",(view->module_name));
-      luaL_ref(L,-2);
+      lua_seti(L,-2, table_index);
+      table_index++;
     }
   }
   return 1;
