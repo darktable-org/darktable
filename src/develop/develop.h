@@ -286,7 +286,6 @@ typedef struct dt_develop_t
   // for the overexposure indicator
   struct
   {
-    guint timeout;
     GtkWidget *floating_window, *button; // yes, having gtk stuff in here is ugly. live with it.
 
     gboolean enabled;
@@ -299,7 +298,6 @@ typedef struct dt_develop_t
   // for the raw overexposure indicator
   struct
   {
-    guint timeout;
     GtkWidget *floating_window, *button; // yes, having gtk stuff in here is ugly. live with it.
 
     gboolean enabled;
@@ -318,7 +316,6 @@ typedef struct dt_develop_t
   // the display profile related things (softproof, gamut check, profiles ...)
   struct
   {
-    guint timeout;
     GtkWidget *floating_window, *softproof_button, *gamut_button;
   } profile;
 

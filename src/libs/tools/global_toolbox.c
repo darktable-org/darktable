@@ -184,7 +184,7 @@ static void _overlays_timeout_changed(GtkWidget *w, gpointer user_data)
   }
 }
 
-static void _overlays_show_popup(dt_lib_module_t *self)
+static void _overlays_show_popup(GtkWidget *button, dt_lib_module_t *self)
 {
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
 
@@ -337,8 +337,26 @@ static void _overlays_show_popup(dt_lib_module_t *self)
     gtk_widget_hide(d->culling_box);
   }
 
+  if(show)
+  {
+    GdkDevice *pointer = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
 
-  if(show) gtk_widget_show(d->over_popup);
+    int x, y;
+    GdkWindow *pointer_window = gdk_device_get_window_at_position(pointer, &x, &y);
+    gpointer   pointer_widget = NULL;
+    if(pointer_window)
+      gdk_window_get_user_data(pointer_window, &pointer_widget);
+
+    GdkRectangle rect = { gtk_widget_get_allocated_width(button) / 2,
+                          gtk_widget_get_allocated_height(button), 1, 1 };
+
+    if(pointer_widget && button != pointer_widget)
+      gtk_widget_translate_coordinates(pointer_widget, button, x, y, &rect.x, &rect.y);
+
+    gtk_popover_set_pointing_to(GTK_POPOVER(d->over_popup), &rect);
+
+    gtk_widget_show(d->over_popup);
+  }
   else
     dt_control_log(_("overlays not available here..."));
 
@@ -399,8 +417,7 @@ void gui_init(dt_lib_module_t *self)
 #if GTK_CHECK_VERSION(3, 16, 0)
   g_object_set(G_OBJECT(d->over_popup), "transitions-enabled", FALSE, NULL);
 #endif
-  g_signal_connect_swapped(G_OBJECT(d->overlays_button), "button-press-event", G_CALLBACK(_overlays_show_popup),
-                           self);
+  g_signal_connect(G_OBJECT(d->overlays_button), "clicked", G_CALLBACK(_overlays_show_popup), self);
   // we register size of overlay icon to keep in sync thumbtable overlays
   g_signal_connect(G_OBJECT(d->overlays_button), "size-allocate", G_CALLBACK(_main_icons_register_size), NULL);
 
@@ -493,7 +510,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->help_button), "clicked", G_CALLBACK(_lib_help_button_clicked), d);
   dt_gui_add_help_link(d->help_button, dt_get_help_url("global_toolbox_help"));
 
-  /* create the preference button */
+  /* create the shortcuts button */
   d->keymap_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_shortcut, CPF_STYLE_FLAT, NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), d->keymap_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->keymap_button, _("define shortcuts\n"
@@ -893,6 +910,7 @@ static void _lib_keymap_button_clicked(GtkWidget *widget, gpointer user_data)
 void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_global(NC_("accel", "grouping"), 0, 0);
+  dt_accel_register_global(NC_("accel", "thumbnail overlays options"), 0, 0);
   dt_accel_register_global(NC_("accel", "preferences"), 0, 0);
   dt_accel_register_global(NC_("accel", "shortcuts"), 0, 0);
 
@@ -910,6 +928,7 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
 
   dt_accel_connect_button_lib_as_global(self, "grouping", d->grouping_button);
+  dt_accel_connect_button_lib_as_global(self, "thumbnail overlays options", d->overlays_button);
   dt_accel_connect_button_lib_as_global(self, "preferences", d->preferences_button);
   dt_accel_connect_button_lib_as_global(self, "shortcuts", d->keymap_button);
 
