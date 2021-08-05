@@ -40,7 +40,7 @@ typedef struct
   lua_widget widget;
 } lua_storage_gui_t;
 
-static void push_lua_data(lua_State*L,lua_storage_t *d)
+static void push_lua_data(lua_State*L, lua_storage_t *d)
 {
   if(!d->data_created)
   {
@@ -117,9 +117,6 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
   lua_settable(L, -3);
   lua_pop(L, 1);
 
-
-
-
   lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_storages");
   lua_getfield(L, -1, self->plugin_name);
   lua_getfield(L, -1, "store");
@@ -170,11 +167,13 @@ static int initialize_store_wrapper(struct dt_imageio_module_storage_t *self, dt
   luaA_push_type(L, self->parameter_lua_type, data);
   luaA_push_type(L, (*format)->parameter_lua_type, *fdata);
 
+  int table_index = 1;
   lua_newtable(L);
   for(const GList *imgids = *images; imgids; imgids = g_list_next(imgids))
   {
     luaA_push(L, dt_lua_image_t, &(imgids->data));
-    luaL_ref(L, -2);
+    lua_seti(L, -2, table_index);
+    table_index++;
   }
   lua_pushboolean(L, high_quality);
 
