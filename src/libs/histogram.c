@@ -363,50 +363,82 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       for(int i=0; i < VECTORSCOPE_HUES; i++)
         log_scale(d, &d->hue_ring[k][i][0], &d->hue_ring[k][i][1], max_radius);
 
-  // chromaticities for drawing both hue ring and graph
+  // create a Cairo mesh pattern of Gouraud triangles to draw rather than a background pixel map with color math on in each pixel for a radial background
+  // background pixel map calc is 0.008 or 0.024, draw is 0.010
+  // mesh pattern (first pass code) calc is ~ 0.015 including rendering it to pattern, draw is still 0.10
   const int diam_px = d->vectorscope_diameter_px;
-  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
-  for(size_t y = 0; y < diam_px; y++)
-    for(size_t x = 0; x < diam_px; x++)
+  // FIXME: don't need 48 hues to make a smooth transition -- would be easier if could fold this into loop above
+
+  // FIXME: think about pattern filter
+  // FIXME: remove duplicate/hacky code -- cache RGB values or at least delta values?
+  cairo_pattern_t *p = cairo_pattern_create_mesh();
+
+  double px = d->hue_ring[5][VECTORSCOPE_HUES-1][0];
+  double py = d->hue_ring[5][VECTORSCOPE_HUES-1][1];
+  dt_aligned_pixel_t delta;
+  for_each_channel(ch,aligned(vertex_rgb,delta:16))
+    delta[ch]=(vertex_rgb[0][ch] - vertex_rgb[5][ch]) / VECTORSCOPE_HUES;
+  // FIXME: this is float, Cairo call will cast this to double
+  dt_aligned_pixel_t prgb;
+  for_each_channel(ch,aligned(vertex_rgb,delta,prgb:16))
+    prgb[ch] = vertex_rgb[5][ch] + delta[ch] * (VECTORSCOPE_HUES-1);
+  for(int k=0; k<6; k++)
+  {
+    for_each_channel(ch,aligned(vertex_rgb,delta:16))
+      delta[ch]=(vertex_rgb[(k+1)%6][ch] - vertex_rgb[k][ch]) / VECTORSCOPE_HUES;
+    for(int i=0; i < VECTORSCOPE_HUES; i++)
     {
-      float a = x / (float)(diam_px-1) - 0.5f;
-      float b = y / (float)(diam_px-1) - 0.5f;
-      const float f = max_radius / dt_fast_hypotf(a,b);
-      // FIXME: hacky, really want to go to hue ring edge rather than max_radius
-      // FIXME: or set radius by hand, to 0.4 for Luv, 0.8 for JzAzBz
-      dt_aligned_pixel_t RGB;
-      // FIXME: the L and Jz values are set by visual experimentation to give good saturation in graph, including center and primary/secondary nodes -- is there a better way?
-      if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
-      {
-        // uv values can get huge at corners in logarithmic scale, so clamp to avoid weird colors
-        const dt_aligned_pixel_t Luv = {70.0f, a*f, b*f};
-        dt_aligned_pixel_t xyY, XYZ_D50;
-        dt_Luv_to_xyY(Luv, xyY);
-        // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
-        dt_xyY_to_XYZ(xyY, XYZ_D50);
-        dt_XYZ_to_Rec709_D50(XYZ_D50, RGB);
-      }
-      else if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ)
-      {
-        const dt_aligned_pixel_t JzAzBz = {0.01f, a*f, b*f};
-        dt_aligned_pixel_t XYZ_D65;
-        dt_JzAzBz_2_XYZ(JzAzBz, XYZ_D65);
-        dt_XYZ_to_Rec709_D65(XYZ_D65, RGB);
-      }
-      else
-      {
-        dt_unreachable_codepath();
-      }
-      // FIXME: convert to RGB display space instead of sRGB
-      // conversion cribbed from colorbalancergb
-      // normalize with hue-preserving method (sort-of) to prevent gamut-clipping in sRGB
-      const float max_RGB = MAX(MAX(RGB[0], RGB[1]), RGB[2]);
-      for(size_t c = 0; c < 3; c++) RGB[c] = powf(RGB[c] / max_RGB, 1.f / 2.2f);
-      uint8_t *const restrict px = d->vectorscope_bkgd + y * stride + x * 4U;
-      // BGR/RGB flip is for pixelpipe vs. Cairo color?
-      for(int ch=0; ch<3; ch++)
-        px[2U-ch] = CLAMP((int)(RGB[ch] * 255.0f), 0, 255);
+      // FIXME: this is float, Cairo call will cast this to double
+      dt_aligned_pixel_t rgb;
+      for_each_channel(ch,aligned(vertex_rgb,delta,rgb:16))
+        rgb[ch] = vertex_rgb[k][ch] + delta[ch] * i;
+      cairo_mesh_pattern_begin_patch(p);
+      cairo_mesh_pattern_move_to(p, 0., 0.);
+      cairo_mesh_pattern_line_to(p, px, py);
+      px = d->hue_ring[k][i][0];
+      py = d->hue_ring[k][i][1];
+      cairo_mesh_pattern_line_to(p, px, py);
+      // define 4th point so it isn't degenerate and can make the two radial edges have different colors w/out gradients, gradient only across the far edge of triangle
+      cairo_mesh_pattern_line_to(p, 0., 0.);
+#if 0
+      cairo_mesh_pattern_set_corner_color_rgb(p, 0, prgb[0], prgb[1], prgb[2]);
+      cairo_mesh_pattern_set_corner_color_rgb(p, 1, prgb[0], prgb[1], prgb[2]);
+#else
+      cairo_mesh_pattern_set_corner_color_rgb(p, 0, rgb[0], rgb[1], rgb[2]);
+      cairo_mesh_pattern_set_corner_color_rgb(p, 1, rgb[0], rgb[1], rgb[2]);
+      if(0) cairo_mesh_pattern_set_corner_color_rgb(p, 0, prgb[0], prgb[1], prgb[2]);
+#endif
+      cairo_mesh_pattern_set_corner_color_rgb(p, 2, rgb[0], rgb[1], rgb[2]);
+      cairo_mesh_pattern_set_corner_color_rgb(p, 3, rgb[0], rgb[1], rgb[2]);
+      cairo_mesh_pattern_end_patch(p);
+      for_each_channel(ch,aligned(prgb,rgb:16))
+        prgb[ch] = rgb[ch];
     }
+  }
+
+  cairo_matrix_t matrix;
+  cairo_matrix_init_identity(&matrix);
+  cairo_matrix_init_scale(&matrix, max_radius / (double)diam_px, max_radius / (double)diam_px);
+  // FIXME: hack to extend out the pattern, CAIRO_EXTEND_PAD doesn't seem to help
+  //cairo_matrix_scale(&matrix, 0.5, 0.5);
+  cairo_matrix_translate(&matrix, -0.5 * (diam_px-1), -0.5 * (diam_px-1));
+  cairo_pattern_set_matrix(p, &matrix);
+
+  // chromaticities for drawing both hue ring and graph
+  // FIXME: just use this inline in surface creatre
+  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
+  // FIXME: hack to draw the pattern onto background surface -- how is speed to just keep the pattern around and draw with it and lose the background buffer?
+  cairo_surface_t *bkgd_surface = cairo_image_surface_create_for_data(d->vectorscope_bkgd, CAIRO_FORMAT_RGB24,
+                                                                      diam_px, diam_px, stride);
+  cairo_t *crt = cairo_create(bkgd_surface);
+  // FIXME: set cairo operator here
+  cairo_set_source(crt, p);
+  cairo_paint(crt);
+  // FIXME: needed?
+  cairo_surface_flush(bkgd_surface);
+  cairo_surface_destroy(bkgd_surface);
+
+  cairo_pattern_destroy(p);
 
   d->vectorscope_radius = max_radius;
   d->hue_ring_prof = vs_prof;
@@ -832,6 +864,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_pattern_set_extend(bkgd_pat, CAIRO_EXTEND_PAD);
   // FIXME: is there an easier way to do this work?
   cairo_matrix_t matrix;
+  // FIXME: should this be 0.5 * (diam_px-1)?
   cairo_matrix_init_translate(&matrix, 0.5*diam_px/darktable.gui->ppd, 0.5*diam_px/darktable.gui->ppd);
   cairo_matrix_scale(&matrix, (double)diam_px / min_size / darktable.gui->ppd,
                      (double)diam_px / min_size / darktable.gui->ppd);
@@ -844,6 +877,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   // 3. The output primaries rendition. From a selection of gamut mappings, is one required between 2. and 3.?"
 
   // graticule: histogram profile hue ring
+  // FIXME: can optimize by creating this path once in _lib_histogram_vectorscope_bkgd then cairo_copy_path or cairo_copy_path_flat and here cairo_append_path and cairo_path_destroy on gui_cleanup?
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_push_group(cr);
   cairo_set_source(cr, bkgd_pat);
