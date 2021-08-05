@@ -1430,11 +1430,12 @@ static gboolean _toolbar_show_popup(gpointer user_data)
   int x, y;
   GdkWindow *pointer_window = gdk_device_get_window_at_position(pointer, &x, &y);
   gpointer   pointer_widget = NULL;
-  gdk_window_get_user_data(pointer_window, &pointer_widget);
+  if(pointer_window)
+    gdk_window_get_user_data(pointer_window, &pointer_widget);
 
   GdkRectangle rect = { gtk_widget_get_allocated_width(button) / 2, 0, 1, 1 };
 
-  if(button != pointer_widget)
+  if(pointer_widget && button != pointer_widget)
     gtk_widget_translate_coordinates(pointer_widget, button, x, y, &rect.x, &rect.y);
 
   gtk_popover_set_pointing_to(popover, &rect);
@@ -1472,20 +1473,10 @@ static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 }
 
 /* overlay color */
-static gboolean _guides_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+static void _guides_quickbutton_clicked(GtkWidget *widget, gpointer user_data)
 {
-  const GdkEventButton *e = (GdkEventButton *)event;
-  if(e->button == 3)
-  {
-    dt_guides_show_popup(widget);
-    return TRUE;
-  }
-  else
-  {
-    dt_guides_button_toggled();
-    dt_control_queue_redraw_center();
-  }
-  return FALSE;
+  dt_guides_button_toggled();
+  dt_control_queue_redraw_center();
 }
 
 static void _guides_view_changed(gpointer instance, dt_view_t *old_view, dt_view_t *new_view, dt_lib_module_t *self)
@@ -1499,30 +1490,6 @@ static void _overexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->overexposed.enabled = !d->overexposed.enabled;
   dt_dev_reprocess_center(d);
-}
-
-static gboolean _overexposed_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  const GdkEventButton *e = (GdkEventButton *)event;
-  if(e->button == 3)
-  {
-    _toolbar_show_popup(d->overexposed.floating_window);
-    return TRUE;
-  }
-  else
-  {
-    d->overexposed.timeout = g_timeout_add_seconds(1, _toolbar_show_popup, d->overexposed.floating_window);
-    return FALSE;
-  }
-}
-
-static gboolean _overexposed_quickbutton_released(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  if(d->overexposed.timeout > 0) g_source_remove(d->overexposed.timeout);
-  d->overexposed.timeout = 0;
-  return FALSE;
 }
 
 static void colorscheme_callback(GtkWidget *combo, gpointer user_data)
@@ -1573,30 +1540,6 @@ static void _rawoverexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data
   dt_dev_reprocess_center(d);
 }
 
-static gboolean _rawoverexposed_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  const GdkEventButton *e = (GdkEventButton *)event;
-  if(e->button == 3)
-  {
-    _toolbar_show_popup(d->rawoverexposed.floating_window);
-    return TRUE;
-  }
-  else
-  {
-    d->rawoverexposed.timeout = g_timeout_add_seconds(1, _toolbar_show_popup, d->rawoverexposed.floating_window);
-    return FALSE;
-  }
-}
-
-static gboolean _rawoverexposed_quickbutton_released(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  if(d->rawoverexposed.timeout > 0) g_source_remove(d->rawoverexposed.timeout);
-  d->rawoverexposed.timeout = 0;
-  return FALSE;
-}
-
 static void rawoverexposed_mode_callback(GtkWidget *combo, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
@@ -1641,52 +1584,6 @@ static void _softproof_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   dt_dev_reprocess_center(d);
 }
 
-static gboolean _softproof_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  GdkEventButton *e = (GdkEventButton *)event;
-
-  gtk_popover_set_relative_to(GTK_POPOVER(d->profile.floating_window), d->profile.softproof_button);
-
-  if(e->button == 3)
-  {
-    _toolbar_show_popup(d->profile.floating_window);
-    return TRUE;
-  }
-  else
-  {
-    d->profile.timeout = g_timeout_add_seconds(1, _toolbar_show_popup, d->profile.floating_window);
-    return FALSE;
-  }
-}
-
-static gboolean _second_window_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  GdkEventButton *e = (GdkEventButton *)event;
-
-  gtk_popover_set_relative_to(GTK_POPOVER(d->profile.floating_window), d->second_window.button);
-
-  if(e->button == 3)
-  {
-    _toolbar_show_popup(d->profile.floating_window);
-    return TRUE;
-  }
-  else
-  {
-    d->profile.timeout = g_timeout_add_seconds(1, _toolbar_show_popup, d->profile.floating_window);
-    return FALSE;
-  }
-}
-
-static gboolean _profile_quickbutton_released(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  if(d->profile.timeout > 0) g_source_remove(d->profile.timeout);
-  d->profile.timeout = 0;
-  return FALSE;
-}
-
 /* gamut */
 static void _gamut_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 {
@@ -1699,25 +1596,6 @@ static void _gamut_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   _update_softproof_gamut_checking(d);
 
   dt_dev_reprocess_center(d);
-}
-
-static gboolean _gamut_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  GdkEventButton *e = (GdkEventButton *)event;
-
-  gtk_popover_set_relative_to(GTK_POPOVER(d->profile.floating_window), d->profile.gamut_button);
-
-  if(e->button == 3)
-  {
-    _toolbar_show_popup(d->profile.floating_window);
-    return TRUE;
-  }
-  else
-  {
-    d->profile.timeout = g_timeout_add_seconds(1, _toolbar_show_popup, d->profile.floating_window);
-    return FALSE;
-  }
 }
 
 /* set the gui state for both softproof and gamut checking */
@@ -2292,6 +2170,38 @@ const dt_action_def_t _action_def_move
       _action_elements_move,
       NULL, TRUE };
 
+static gboolean _quickbutton_press_release(GtkWidget *button, GdkEventButton *event, GtkWidget *popover)
+{
+  static guint start_time = 0;
+
+  if((event->type == GDK_BUTTON_PRESS && event->button == 3) ||
+     (event->type == GDK_BUTTON_RELEASE && event->time - start_time > 600))
+  {
+    if(!popover)
+      popover = dt_guides_popover(button);
+
+    gtk_popover_set_relative_to(GTK_POPOVER(popover), button);
+
+#if GTK_CHECK_VERSION(3, 16, 0)
+    g_object_set(G_OBJECT(popover), "transitions-enabled", FALSE, NULL);
+#endif
+
+    _toolbar_show_popup(popover);
+    return TRUE;
+  }
+  else
+  {
+    start_time = event->time;
+    return FALSE;
+  }
+}
+
+void connect_button_press_release(GtkWidget *w, GtkWidget *p)
+{
+  g_signal_connect(w, "button-press-event", G_CALLBACK(_quickbutton_press_release), p);
+  g_signal_connect(w, "button-release-event", G_CALLBACK(_quickbutton_press_release), p);
+}
+
 void gui_init(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -2321,10 +2231,6 @@ void gui_init(dt_view_t *self)
   dt_action_define(&self->actions, NULL, "second window", dev->second_window.button, &dt_action_def_toggle);
   g_signal_connect(G_OBJECT(dev->second_window.button), "clicked", G_CALLBACK(_second_window_quickbutton_clicked),
                    dev);
-  g_signal_connect(G_OBJECT(dev->second_window.button), "button-press-event",
-                   G_CALLBACK(_second_window_quickbutton_pressed), dev);
-  g_signal_connect(G_OBJECT(dev->second_window.button), "button-release-event",
-                   G_CALLBACK(_profile_quickbutton_released), dev);
   gtk_widget_set_tooltip_text(dev->second_window.button, _("display a second darkroom image window"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, dev->second_window.button, DT_VIEW_DARKROOM);
 
@@ -2350,19 +2256,13 @@ void gui_init(dt_view_t *self)
                                 _("toggle raw over exposed indication\nright click for options"));
     g_signal_connect(G_OBJECT(dev->rawoverexposed.button), "clicked",
                      G_CALLBACK(_rawoverexposed_quickbutton_clicked), dev);
-    g_signal_connect(G_OBJECT(dev->rawoverexposed.button), "button-press-event",
-                     G_CALLBACK(_rawoverexposed_quickbutton_pressed), dev);
-    g_signal_connect(G_OBJECT(dev->rawoverexposed.button), "button-release-event",
-                     G_CALLBACK(_rawoverexposed_quickbutton_released), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->rawoverexposed.button, DT_VIEW_DARKROOM);
     dt_gui_add_help_link(dev->rawoverexposed.button, dt_get_help_url("rawoverexposed"));
 
     // and the popup window
     dev->rawoverexposed.floating_window = gtk_popover_new(dev->rawoverexposed.button);
+    connect_button_press_release(dev->rawoverexposed.button, dev->rawoverexposed.floating_window);
     gtk_widget_set_size_request(GTK_WIDGET(dev->rawoverexposed.floating_window), dialog_width, -1);
-#if GTK_CHECK_VERSION(3, 16, 0)
-    g_object_set(G_OBJECT(dev->rawoverexposed.floating_window), "transitions-enabled", FALSE, NULL);
-#endif
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->rawoverexposed.floating_window), vbox);
@@ -2415,19 +2315,13 @@ void gui_init(dt_view_t *self)
                                 _("toggle clipping indication\nright click for options"));
     g_signal_connect(G_OBJECT(dev->overexposed.button), "clicked",
                      G_CALLBACK(_overexposed_quickbutton_clicked), dev);
-    g_signal_connect(G_OBJECT(dev->overexposed.button), "button-press-event",
-                     G_CALLBACK(_overexposed_quickbutton_pressed), dev);
-    g_signal_connect(G_OBJECT(dev->overexposed.button), "button-release-event",
-                     G_CALLBACK(_overexposed_quickbutton_released), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->overexposed.button, DT_VIEW_DARKROOM);
     dt_gui_add_help_link(dev->overexposed.button, dt_get_help_url("overexposed"));
 
     // and the popup window
     dev->overexposed.floating_window = gtk_popover_new(dev->overexposed.button);
+    connect_button_press_release(dev->overexposed.button, dev->overexposed.floating_window);
     gtk_widget_set_size_request(GTK_WIDGET(dev->overexposed.floating_window), dialog_width, -1);
-#if GTK_CHECK_VERSION(3, 16, 0)
-    g_object_set(G_OBJECT(dev->overexposed.floating_window), "transitions-enabled", FALSE, NULL);
-#endif
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->overexposed.floating_window), vbox);
@@ -2498,10 +2392,6 @@ void gui_init(dt_view_t *self)
                                 _("toggle softproofing\nright click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.softproof_button), "clicked",
                      G_CALLBACK(_softproof_quickbutton_clicked), dev);
-    g_signal_connect(G_OBJECT(dev->profile.softproof_button), "button-press-event",
-                     G_CALLBACK(_softproof_quickbutton_pressed), dev);
-    g_signal_connect(G_OBJECT(dev->profile.softproof_button), "button-release-event",
-                     G_CALLBACK(_profile_quickbutton_released), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->profile.softproof_button, DT_VIEW_DARKROOM);
     dt_gui_add_help_link(dev->profile.softproof_button, dt_get_help_url("softproof"));
 
@@ -2513,19 +2403,15 @@ void gui_init(dt_view_t *self)
                  _("toggle gamut checking\nright click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.gamut_button), "clicked",
                      G_CALLBACK(_gamut_quickbutton_clicked), dev);
-    g_signal_connect(G_OBJECT(dev->profile.gamut_button), "button-press-event",
-                     G_CALLBACK(_gamut_quickbutton_pressed), dev);
-    g_signal_connect(G_OBJECT(dev->profile.gamut_button), "button-release-event",
-                     G_CALLBACK(_profile_quickbutton_released), dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->profile.gamut_button, DT_VIEW_DARKROOM);
     dt_gui_add_help_link(dev->profile.gamut_button, dt_get_help_url("gamut"));
 
     // and the popup window, which is shared between the two profile buttons
     dev->profile.floating_window = gtk_popover_new(NULL);
+    connect_button_press_release(dev->second_window.button, dev->profile.floating_window);
+    connect_button_press_release(dev->profile.softproof_button, dev->profile.floating_window);
+    connect_button_press_release(dev->profile.gamut_button, dev->profile.floating_window);
     gtk_widget_set_size_request(GTK_WIDGET(dev->profile.floating_window), large_dialog_width, -1);
-#if GTK_CHECK_VERSION(3, 16, 0)
-    g_object_set(G_OBJECT(dev->profile.floating_window), "transitions-enabled", FALSE, NULL);
-#endif
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->profile.floating_window), vbox);
@@ -2677,7 +2563,8 @@ void gui_init(dt_view_t *self)
     gtk_widget_set_tooltip_text(darktable.view_manager->guides_toggle,
                                 _("toggle guide lines\nright click for guides options"));
     g_signal_connect(G_OBJECT(darktable.view_manager->guides_toggle), "button-press-event",
-                     G_CALLBACK(_guides_quickbutton_pressed), dev);
+                     G_CALLBACK(_guides_quickbutton_clicked), dev);
+    connect_button_press_release(darktable.view_manager->guides_toggle, NULL);
     dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.view_manager->guides_toggle,
                                        DT_VIEW_DARKROOM | DT_VIEW_TETHERING);
     // we want to update button state each time the view change
@@ -3314,9 +3201,8 @@ void leave(dt_view_t *self)
   g_list_free_full(dev->allforms, (void (*)(void *))dt_masks_free_form);
   dev->allforms = NULL;
 
-  // take care of the overexposed window
-  if(dev->overexposed.timeout > 0) g_source_remove(dev->overexposed.timeout);
   gtk_widget_hide(dev->overexposed.floating_window);
+  gtk_widget_hide(dev->rawoverexposed.floating_window);
   gtk_widget_hide(dev->profile.floating_window);
 
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
@@ -3896,7 +3782,7 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "show drawn masks"), 0, 0);
 
   // toggle visibility of guide lines
-  dt_accel_register_view(self, NC_("accel", "show guide lines"), 0, 0);
+  dt_accel_register_view(self, NC_("accel", "show guide lines"), GDK_KEY_g, 0);
 
   // toggle visibility of second window
   dt_accel_register_view(self, NC_("accel", "second window"), 0, 0);
