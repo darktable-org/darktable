@@ -656,8 +656,9 @@ static void _settings_flip_changed(GtkWidget *w, _guides_settings_t *gw)
   dt_control_queue_redraw_center();
 }
 
-static void _settings_box_destroyed(GtkWidget *w, _guides_settings_t *gw)
+static void _guides_popover_closed(GtkPopover* self, gpointer gw)
 {
+  gtk_widget_destroy(GTK_WIDGET(self));
   g_free(gw);
 }
 
@@ -668,25 +669,21 @@ static void _settings_colors_changed(GtkWidget *combo, _guides_settings_t *gw)
 }
 
 // return the box to be included in the settings popup
-void dt_guides_show_popup(GtkWidget *button)
+GtkWidget *dt_guides_popover(GtkWidget *button)
 {
   GtkWidget *pop = gtk_popover_new(button);
   gtk_widget_set_size_request(GTK_WIDGET(pop), 350, -1);
-#if GTK_CHECK_VERSION(3, 16, 0)
-  g_object_set(G_OBJECT(pop), "transitions-enabled", FALSE, NULL);
-#endif
 
   // create a new struct for all the widgets
   _guides_settings_t *gw = (_guides_settings_t *)g_malloc0(sizeof(_guides_settings_t));
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  g_signal_connect(G_OBJECT(vbox), "destroy", G_CALLBACK(_settings_box_destroyed), gw);
+  g_signal_connect(G_OBJECT(pop), "closed", G_CALLBACK(_guides_popover_closed), gw);
 
   // global guides section
   gchar *key, *val;
   gw->g_guides = dt_bauhaus_combobox_new(NULL);
   gtk_widget_set_tooltip_text(gw->g_guides, _("setup guide lines"));
   dt_bauhaus_widget_set_label(gw->g_guides, NULL, N_("guide lines"));
-  gtk_box_pack_start(GTK_BOX(vbox), gw->g_guides, TRUE, TRUE, 0);
   for(GList *iter = darktable.guides; iter; iter = g_list_next(iter))
   {
     dt_guides_t *guide = (dt_guides_t *)iter->data;
@@ -723,6 +720,9 @@ void dt_guides_show_popup(GtkWidget *button)
   // update visibility of sub-widgets
   _settings_update_visibility(gw);
 
+  // put guide selector just above line so it doesn't change position if number of widgets changes
+  gtk_box_pack_start(GTK_BOX(vbox), gw->g_guides, TRUE, TRUE, 0);
+
   // color section
   gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
@@ -740,7 +740,8 @@ void dt_guides_show_popup(GtkWidget *button)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(gw->colors), TRUE, TRUE, 0);
 
   gtk_container_add(GTK_CONTAINER(pop), vbox);
-  gtk_widget_show_all(pop);
+
+  return pop;
 }
 
 void dt_guides_update_button_state()
