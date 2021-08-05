@@ -320,11 +320,11 @@ int dt_lua_event_multiinstance_register(lua_State *L)
     luaL_error(L, "index table and data table sizes differ.  %s events are corrupted.\n", luaL_checkstring(L, 4));
 
   // add the callback
-  luaL_ref(L, 1); // add the callback to the data table
+  lua_seti(L, 1, luaL_len(L, 1) + 1); // add the callback to the data table
   lua_pop(L, 1);  // remove the event name from the stack
-
   /// add the index
-  luaL_ref(L, 2); // add the index name to the index
+  lua_seti(L, 2, luaL_len(L, 2) + 1); // add the index name to the index
+
   lua_pop(L, 2);  // clear the stack
   return 0;
 }
