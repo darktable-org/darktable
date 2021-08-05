@@ -329,6 +329,16 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
                                              {0.f, 0.f, 1.f}, {1.f, 0.f, 1.f} };
   float max_radius = 0.f;
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
+
+  // create a Cairo mesh pattern of Gouraud triangles to draw rather than a background pixel map with color math on in each pixel for a radial background
+  // background pixel map calc is 0.008 or 0.024, draw is 0.010
+  // mesh pattern (first pass code) calc is ~ 0.015 including rendering it to pattern, draw is still 0.10
+  // FIXME: don't need 48 hues to make a smooth transition -- would be easier if could fold this into loop above
+  // FIXME: think about pattern filter
+  cairo_pattern_t *p = cairo_pattern_create_mesh();
+  dt_aligned_pixel_t prgb;
+  double px = 0., py= 0.;
+
   for(int k=0; k<6; k++)
   {
     dt_aligned_pixel_t delta;
@@ -356,82 +366,71 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       d->hue_ring[k][i][0] = chromaticity[1];
       d->hue_ring[k][i][1] = chromaticity[2];
       max_radius = MAX(max_radius, dt_fast_hypotf(chromaticity[1], chromaticity[2]));
+
+      if(k!=0 || i!=0)
+      {
+        // FIXME: only need to use d->hue_ring for primaries/secondaries if gradient code works
+        cairo_mesh_pattern_begin_patch(p);
+        cairo_mesh_pattern_move_to(p, 0., 0.);
+        cairo_mesh_pattern_line_to(p, px, py);
+        cairo_mesh_pattern_line_to(p, chromaticity[1], chromaticity[2]);
+        // define 4th point so it isn't degenerate and can make the two radial edges have different colors w/out gradients, gradient only across the far edge of triangle
+        cairo_mesh_pattern_line_to(p, 0., 0.);
+  #if 1
+        cairo_mesh_pattern_set_corner_color_rgb(p, 0, prgb[0], prgb[1], prgb[2]);
+        cairo_mesh_pattern_set_corner_color_rgb(p, 1, prgb[0], prgb[1], prgb[2]);
+  #else
+        cairo_mesh_pattern_set_corner_color_rgb(p, 0, rgb[0], rgb[1], rgb[2]);
+        cairo_mesh_pattern_set_corner_color_rgb(p, 1, rgb[0], rgb[1], rgb[2]);
+        if(0) cairo_mesh_pattern_set_corner_color_rgb(p, 0, prgb[0], prgb[1], prgb[2]);
+  #endif
+        cairo_mesh_pattern_set_corner_color_rgb(p, 2, rgb[0], rgb[1], rgb[2]);
+        cairo_mesh_pattern_set_corner_color_rgb(p, 3, rgb[0], rgb[1], rgb[2]);
+        cairo_mesh_pattern_end_patch(p);
+      }
+
+      px = chromaticity[1];
+      py = chromaticity[2];
+      for_each_channel(ch,aligned(prgb,rgb:16))
+        prgb[ch] = rgb[ch];
     }
   }
+  // last patch
+  cairo_mesh_pattern_begin_patch(p);
+  cairo_mesh_pattern_move_to(p, 0., 0.);
+  cairo_mesh_pattern_line_to(p, px, py);
+  cairo_mesh_pattern_line_to(p, d->hue_ring[0][0][0], d->hue_ring[0][0][1]);
+  cairo_mesh_pattern_line_to(p, 0., 0.);
+  cairo_mesh_pattern_set_corner_color_rgb(p, 0, prgb[0], prgb[1], prgb[2]);
+  cairo_mesh_pattern_set_corner_color_rgb(p, 1, prgb[0], prgb[1], prgb[2]);
+  cairo_mesh_pattern_set_corner_color_rgb(p, 2, vertex_rgb[0][0], vertex_rgb[0][1], vertex_rgb[0][2]);
+  cairo_mesh_pattern_set_corner_color_rgb(p, 3, vertex_rgb[0][0], vertex_rgb[0][1], vertex_rgb[0][2]);
+  cairo_mesh_pattern_end_patch(p);
+
   if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
     for(int k=0; k<6; k++)
       for(int i=0; i < VECTORSCOPE_HUES; i++)
         log_scale(d, &d->hue_ring[k][i][0], &d->hue_ring[k][i][1], max_radius);
 
-  // create a Cairo mesh pattern of Gouraud triangles to draw rather than a background pixel map with color math on in each pixel for a radial background
-  // background pixel map calc is 0.008 or 0.024, draw is 0.010
-  // mesh pattern (first pass code) calc is ~ 0.015 including rendering it to pattern, draw is still 0.10
   const int diam_px = d->vectorscope_diameter_px;
-  // FIXME: don't need 48 hues to make a smooth transition -- would be easier if could fold this into loop above
-
-  // FIXME: think about pattern filter
-  // FIXME: remove duplicate/hacky code -- cache RGB values or at least delta values?
-  cairo_pattern_t *p = cairo_pattern_create_mesh();
-
-  double px = d->hue_ring[5][VECTORSCOPE_HUES-1][0];
-  double py = d->hue_ring[5][VECTORSCOPE_HUES-1][1];
-  dt_aligned_pixel_t delta;
-  for_each_channel(ch,aligned(vertex_rgb,delta:16))
-    delta[ch]=(vertex_rgb[0][ch] - vertex_rgb[5][ch]) / VECTORSCOPE_HUES;
-  // FIXME: this is float, Cairo call will cast this to double
-  dt_aligned_pixel_t prgb;
-  for_each_channel(ch,aligned(vertex_rgb,delta,prgb:16))
-    prgb[ch] = vertex_rgb[5][ch] + delta[ch] * (VECTORSCOPE_HUES-1);
-  for(int k=0; k<6; k++)
-  {
-    for_each_channel(ch,aligned(vertex_rgb,delta:16))
-      delta[ch]=(vertex_rgb[(k+1)%6][ch] - vertex_rgb[k][ch]) / VECTORSCOPE_HUES;
-    for(int i=0; i < VECTORSCOPE_HUES; i++)
-    {
-      // FIXME: this is float, Cairo call will cast this to double
-      dt_aligned_pixel_t rgb;
-      for_each_channel(ch,aligned(vertex_rgb,delta,rgb:16))
-        rgb[ch] = vertex_rgb[k][ch] + delta[ch] * i;
-      cairo_mesh_pattern_begin_patch(p);
-      cairo_mesh_pattern_move_to(p, 0., 0.);
-      cairo_mesh_pattern_line_to(p, px, py);
-      px = d->hue_ring[k][i][0];
-      py = d->hue_ring[k][i][1];
-      cairo_mesh_pattern_line_to(p, px, py);
-      // define 4th point so it isn't degenerate and can make the two radial edges have different colors w/out gradients, gradient only across the far edge of triangle
-      cairo_mesh_pattern_line_to(p, 0., 0.);
-#if 0
-      cairo_mesh_pattern_set_corner_color_rgb(p, 0, prgb[0], prgb[1], prgb[2]);
-      cairo_mesh_pattern_set_corner_color_rgb(p, 1, prgb[0], prgb[1], prgb[2]);
-#else
-      cairo_mesh_pattern_set_corner_color_rgb(p, 0, rgb[0], rgb[1], rgb[2]);
-      cairo_mesh_pattern_set_corner_color_rgb(p, 1, rgb[0], rgb[1], rgb[2]);
-      if(0) cairo_mesh_pattern_set_corner_color_rgb(p, 0, prgb[0], prgb[1], prgb[2]);
-#endif
-      cairo_mesh_pattern_set_corner_color_rgb(p, 2, rgb[0], rgb[1], rgb[2]);
-      cairo_mesh_pattern_set_corner_color_rgb(p, 3, rgb[0], rgb[1], rgb[2]);
-      cairo_mesh_pattern_end_patch(p);
-      for_each_channel(ch,aligned(prgb,rgb:16))
-        prgb[ch] = rgb[ch];
-    }
-  }
-
+  // FIXME: multiplying here as hack to extend out the pattern slightly as, CAIRO_EXTEND_PAD doesn't seem to help for mesh patterns and it's likely that there will be radii from center which don't exactly touch the corner
+  const double pattern_max_radius = hypotf(diam_px, diam_px) * 1.1;
   cairo_matrix_t matrix;
   cairo_matrix_init_identity(&matrix);
-  cairo_matrix_init_scale(&matrix, max_radius / (double)diam_px, max_radius / (double)diam_px);
-  // FIXME: hack to extend out the pattern, CAIRO_EXTEND_PAD doesn't seem to help
-  //cairo_matrix_scale(&matrix, 0.5, 0.5);
+  cairo_matrix_init_scale(&matrix, max_radius / pattern_max_radius, max_radius / pattern_max_radius);
   cairo_matrix_translate(&matrix, -0.5 * (diam_px-1), -0.5 * (diam_px-1));
   cairo_pattern_set_matrix(p, &matrix);
 
   // chromaticities for drawing both hue ring and graph
-  // FIXME: just use this inline in surface creatre
-  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
   // FIXME: hack to draw the pattern onto background surface -- how is speed to just keep the pattern around and draw with it and lose the background buffer?
   cairo_surface_t *bkgd_surface = cairo_image_surface_create_for_data(d->vectorscope_bkgd, CAIRO_FORMAT_RGB24,
-                                                                      diam_px, diam_px, stride);
+                                                                      diam_px, diam_px,
+                                                                      cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px));
   cairo_t *crt = cairo_create(bkgd_surface);
-  // FIXME: set cairo operator here
+  // FIXME: as long as pattern isn't extending out properly, being safe and clearing first
+  cairo_set_operator(crt, CAIRO_OPERATOR_CLEAR);
+  cairo_paint(crt);
+  cairo_set_operator(crt, CAIRO_OPERATOR_SOURCE);
   cairo_set_source(crt, p);
   cairo_paint(crt);
   // FIXME: needed?
