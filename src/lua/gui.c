@@ -80,10 +80,12 @@ static int hovered_cb(lua_State *L)
 static int act_on_cb(lua_State *L)
 {
   lua_newtable(L);
+  int index_table = 1;
   for(const GList *image = dt_view_get_images_to_act_on(FALSE, TRUE, TRUE); image; image = g_list_next(image))
   {
     luaA_push(L, dt_lua_image_t, &image->data);
-    luaL_ref(L, -2);
+    lua_seti(L, -2, index_table);
+    index_table++;
   }
   return 1;
 }
