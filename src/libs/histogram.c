@@ -42,7 +42,8 @@
 // # of gradations between each primary/secondary to draw the hue ring
 // this is tuned to most degenerate case -- curve to blue primary in Luv in linear ProPhoto RGB
 // FIXME: why does the blue curve in to the center point? is this a color processing bug or a relic of a luminance of that primary
-// FIXME: do fewer points and splines
+// FIXME: do fewer points and splines?
+// FIXME: do more points so that the PQ in Linear Prophoto in Luv look better?
 #define VECTORSCOPE_HUES 48
 #define VECTORSCOPE_BASE_LOG 30
 
@@ -100,8 +101,7 @@ typedef struct dt_lib_histogram_t
   uint8_t *waveform_img[3];           // image per RGB channel
   int waveform_bins, waveform_tones, waveform_max_bins;
   // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
-  uint8_t *vectorscope_graph;
-  cairo_pattern_t *vectorscope_bkgd;
+  uint8_t *vectorscope_graph, *vectorscope_bkgd;
   float vectorscope_pt[2];            // point colorpicker position
   int vectorscope_diameter_px;
   float hue_ring[6][VECTORSCOPE_HUES][2] DT_ALIGNED_ARRAY;
@@ -331,17 +331,18 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   float max_radius = 0.f;
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
 
+  // chromaticities for drawing both hue ring and graph
   // create a Cairo mesh pattern of Gouraud triangles to draw rather than a background pixel map with color math on in each pixel for a radial background
   // background pixel map calc is 0.008 or 0.024, draw is 0.010
   // mesh pattern (first pass code) calc is ~ 0.015 including rendering it to pattern, draw is still 0.10
   // FIXME: don't need 48 hues to make a smooth transition -- would be easier if could fold this into loop above
-  // FIXME: think about pattern filter
   cairo_pattern_t *p = cairo_pattern_create_mesh();
   dt_aligned_pixel_t prgb;
   double px = 0., py= 0.;
 
   for(int k=0; k<6; k++)
   {
+    // FIXME: make delta adjustable (by separate scale factor), adjust to keep chromaticity points a reasonable distance away on graph, and to keep color jumps not too big -- is it enough just to do the first? -- or simply increase # of VECTORSCOPE_HUES for PQ and Linear Prophoto
     dt_aligned_pixel_t delta;
     for_each_channel(ch,aligned(vertex_rgb,delta:16))
       delta[ch]=(vertex_rgb[(k+1)%6][ch] - vertex_rgb[k][ch]) / VECTORSCOPE_HUES;
@@ -364,12 +365,12 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
         dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
         dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
       }
-      // FIXME: only need to use d->hue_ring for primaries/secondaries if can create a path here and use that
       d->hue_ring[k][i][0] = chromaticity[1];
       d->hue_ring[k][i][1] = chromaticity[2];
       max_radius = MAX(max_radius, dt_fast_hypotf(chromaticity[1], chromaticity[2]));
 
-      if(k!=0 || i!=0)
+      // FIXME: make a series of triangles painted on background, rather than using mesh pattern?
+      if(!(k==0 && i==0))
       {
         cairo_mesh_pattern_begin_patch(p);
         cairo_mesh_pattern_move_to(p, 0., 0.);
@@ -377,13 +378,13 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
         cairo_mesh_pattern_line_to(p, chromaticity[1], chromaticity[2]);
         // define 4th point so it isn't degenerate and can make the two radial edges have different colors w/out gradients, gradient only across the far edge of triangle
         cairo_mesh_pattern_line_to(p, 0., 0.);
+        if(0) cairo_mesh_pattern_set_corner_color_rgb(p, 0, prgb[0], prgb[1], prgb[2]);
   #if 1
         cairo_mesh_pattern_set_corner_color_rgb(p, 0, prgb[0], prgb[1], prgb[2]);
         cairo_mesh_pattern_set_corner_color_rgb(p, 1, prgb[0], prgb[1], prgb[2]);
   #else
         cairo_mesh_pattern_set_corner_color_rgb(p, 0, rgb[0], rgb[1], rgb[2]);
         cairo_mesh_pattern_set_corner_color_rgb(p, 1, rgb[0], rgb[1], rgb[2]);
-        if(0) cairo_mesh_pattern_set_corner_color_rgb(p, 0, prgb[0], prgb[1], prgb[2]);
   #endif
         cairo_mesh_pattern_set_corner_color_rgb(p, 2, rgb[0], rgb[1], rgb[2]);
         cairo_mesh_pattern_set_corner_color_rgb(p, 3, rgb[0], rgb[1], rgb[2]);
@@ -408,13 +409,41 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   cairo_mesh_pattern_set_corner_color_rgb(p, 3, vertex_rgb[0][0], vertex_rgb[0][1], vertex_rgb[0][2]);
   cairo_mesh_pattern_end_patch(p);
 
+  const int diam_px = d->vectorscope_diameter_px;
+  // multiplying as hack to extend out the pattern slightly as
+  // CAIRO_EXTEND_PAD doesn't help for mesh patterns and it's likely
+  // that there will be rays from center slightly off from the corner
+  // which will cause undrawn areas otherwise
+  const double pattern_max_radius = hypotf(diam_px, diam_px) * 1.1;
+  cairo_matrix_t matrix;
+  cairo_matrix_init_scale(&matrix, max_radius / pattern_max_radius, max_radius / pattern_max_radius);
+  cairo_matrix_translate(&matrix, -0.5 * (diam_px-1), -0.5 * (diam_px-1));
+  cairo_pattern_set_matrix(p, &matrix);
+
+  // rasterize chromaticities pattern for drawing speed
+  // FIXME: this surface can be significantly lower resolution than the graph if it helps for speed
+  cairo_surface_t *bkgd_surface = cairo_image_surface_create_for_data(d->vectorscope_bkgd, CAIRO_FORMAT_RGB24,
+                                                                      diam_px, diam_px,
+                                                                      cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px));
+  cairo_t *crt = cairo_create(bkgd_surface);
+  // FIXME: as long as pattern isn't extending out properly, being safe and clearing first
+  cairo_set_operator(crt, CAIRO_OPERATOR_CLEAR);
+  cairo_paint(crt);
+  cairo_set_operator(crt, CAIRO_OPERATOR_SOURCE);
+  cairo_set_source(crt, p);
+  cairo_paint(crt);
+  // FIXME: needed?
+  cairo_surface_flush(bkgd_surface);
+  cairo_surface_destroy(bkgd_surface);
+  cairo_pattern_destroy(p);
+  cairo_destroy(crt);
+
+  // FIXME: look into lower resolution background pattern for speed and memory usage
+
   if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
     for(int k=0; k<6; k++)
       for(int i=0; i < VECTORSCOPE_HUES; i++)
         log_scale(d, &d->hue_ring[k][i][0], &d->hue_ring[k][i][1], max_radius);
-
-  if(d->vectorscope_bkgd) cairo_pattern_destroy(d->vectorscope_bkgd);
-  d->vectorscope_bkgd = p;
 
   d->vectorscope_radius = max_radius;
   d->hue_ring_prof = vs_prof;
@@ -832,14 +861,23 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   }
 
   // chromaticities for drawing both hue ring and graph
-   cairo_pattern_t *bkgd_pat = d->vectorscope_bkgd;
-  // primary nodes circles may extend to outside of min_size, so scale pattern out to approx. widget dimensions
-  cairo_matrix_t matrix_bkgd;
-  const double max_diag = hypot(width, height);
-  cairo_matrix_init_scale(&matrix_bkgd,
-                          vs_radius * 2. / (darktable.gui->ppd * max_diag),
-                          vs_radius * 2. / (darktable.gui->ppd * max_diag));
-  cairo_pattern_set_matrix(bkgd_pat, &matrix_bkgd);
+  cairo_surface_t *bkgd_surface =
+    dt_cairo_image_surface_create_for_data(d->vectorscope_bkgd, CAIRO_FORMAT_RGB24,
+                                           diam_px, diam_px,
+                                           cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px));
+  cairo_pattern_t *bkgd_pat = cairo_pattern_create_for_surface(bkgd_surface);
+  // primary nodes circles may extend to outside of pattern
+  cairo_pattern_set_extend(bkgd_pat, CAIRO_EXTEND_PAD);
+
+  cairo_matrix_t matrix;
+  // FIXME: should this be 0.5 * (diam_px-1)?
+  cairo_matrix_init_translate(&matrix,
+                              0.5*diam_px/darktable.gui->ppd,
+                              0.5*diam_px/darktable.gui->ppd);
+  cairo_matrix_scale(&matrix,
+                     (double)diam_px / min_size / darktable.gui->ppd,
+                     (double)diam_px / min_size / darktable.gui->ppd);
+  cairo_pattern_set_matrix(bkgd_pat, &matrix);
 
   // FIXME: also add hue rings (monochrome/dotted) for input/work/output profiles
   // from Sobotka:
@@ -848,7 +886,6 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   // 3. The output primaries rendition. From a selection of gamut mappings, is one required between 2. and 3.?"
 
   // graticule: histogram profile hue ring
-  // FIXME: can optimize by creating this path once in _lib_histogram_vectorscope_bkgd then cairo_copy_path or cairo_copy_path_flat and here cairo_append_path and cairo_path_destroy on gui_cleanup?
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_push_group(cr);
   cairo_set_source(cr, bkgd_pat);
@@ -877,6 +914,21 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
     cairo_stroke(cr);
   }
 
+#if 1
+  // all nodes, for debugging
+  cairo_set_source_rgb(cr, 1, 1, 1);
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+  for(int n=0; n<6; n++)
+    for(int h=0; h<VECTORSCOPE_HUES; h++)
+    {
+      float x = d->hue_ring[n][h][0];
+      float y = d->hue_ring[n][h][1];
+      cairo_arc(cr, x*scale, y*scale, DT_PIXEL_APPLY_DPI(1.), 0., M_PI * 2.);
+      cairo_fill(cr);
+    }
+
+#endif
+
   // vectorscope graph
   // FIXME: use cairo_pattern_set_filter()?
   cairo_surface_t *graph_surface =
@@ -884,24 +936,23 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
                                            diam_px, diam_px,
                                            cairo_format_stride_for_width(CAIRO_FORMAT_A8, diam_px));
   cairo_pattern_t *graph_pat = cairo_pattern_create_for_surface(graph_surface);
-
-  cairo_matrix_t matrix_graph;
-  // FIXME: should this be 0.5 * (diam_px-1)?
-  cairo_matrix_init_translate(&matrix_graph, 0.5*diam_px/darktable.gui->ppd, 0.5*diam_px/darktable.gui->ppd);
-  cairo_matrix_scale(&matrix_graph, (double)diam_px / min_size / darktable.gui->ppd,
-                     (double)diam_px / min_size / darktable.gui->ppd);
-  cairo_pattern_set_matrix(graph_pat, &matrix_graph);
+  cairo_pattern_set_matrix(graph_pat, &matrix);
 
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   if(!isnan(d->vectorscope_pt[0]))
     cairo_push_group(cr);
   cairo_set_source(cr, bkgd_pat);
+#if 1
   cairo_mask(cr, graph_pat);
   //cairo_mask_surface(cr, graph_surface, 0., 0.);
   cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
   cairo_mask(cr, graph_pat);
-  cairo_pattern_destroy(bkgd_pat);
+#else
+  // draw background only, for debugging
+  //cairo_pattern_set_extend(bkgd_pat, CAIRO_EXTEND_NONE);
+  cairo_paint(cr);
+#endif
   cairo_pattern_destroy(graph_pat);
   cairo_surface_destroy(graph_surface);
   if(!isnan(d->vectorscope_pt[0]))
@@ -1725,7 +1776,9 @@ void gui_init(dt_lib_module_t *self)
   d->vectorscope_diameter_px = 384;
   d->vectorscope_graph = dt_alloc_align(64, sizeof(uint8_t) * d->vectorscope_diameter_px *
                                         cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->vectorscope_diameter_px));
-  d->vectorscope_bkgd = NULL;
+  // FIXME: note that the background can be lower resolution than the graph -- test/compare?
+  d->vectorscope_bkgd = dt_alloc_align(64, sizeof(uint8_t) * 4U * d->vectorscope_diameter_px *
+                                       cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px));
   d->hue_ring_prof = NULL;
   d->hue_ring_scale = DT_LIB_HISTOGRAM_SCALE_N;
   d->hue_ring_colorspace = DT_LIB_HISTOGRAM_VECTORSCOPE_N;
@@ -1883,7 +1936,7 @@ void gui_cleanup(dt_lib_module_t *self)
   for(int ch=0; ch<3; ch++)
     dt_free_align(d->waveform_img[ch]);
   dt_free_align(d->vectorscope_graph);
-  if(d->vectorscope_bkgd) cairo_pattern_destroy(d->vectorscope_bkgd);
+  dt_free_align(d->vectorscope_bkgd);
   dt_pthread_mutex_destroy(&d->lock);
 
   g_free(self->data);
