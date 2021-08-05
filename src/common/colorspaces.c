@@ -1779,7 +1779,7 @@ static void dt_colorspaces_get_display_profile_colord_callback(GObject *source, 
 }
 #endif
 
-#if GTK_CHECK_VERSION(3, 22, 0) && defined GDK_WINDOWING_X11
+#if defined GDK_WINDOWING_X11
 static int _gtk_get_monitor_num(GdkMonitor *monitor)
 {
   GdkDisplay *display;
@@ -1841,12 +1841,8 @@ void dt_colorspaces_set_display_profile(const dt_colorspaces_color_profile_type_
     GdkScreen *screen = gtk_widget_get_screen(widget);
     if(screen == NULL) screen = gdk_screen_get_default();
 
-#if GTK_CHECK_VERSION(3, 22, 0)
     GdkDisplay *display = gtk_widget_get_display(widget);
     int monitor = _gtk_get_monitor_num(gdk_display_get_monitor_at_window(display, window));
-#else
-    int monitor = gdk_screen_get_monitor_at_window(screen, window);
-#endif
 
     char *atom_name;
     if(monitor > 0)

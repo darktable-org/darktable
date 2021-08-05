@@ -755,29 +755,6 @@ static void dt_lib_gui_reset_callback(GtkButton *button, gpointer user_data)
   module->gui_reset(module);
 }
 
-#if !GTK_CHECK_VERSION(3, 22, 0)
-static void _preset_popup_posistion(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer data)
-{
-  gint w;
-  gint ww;
-  GtkRequisition requisition = { 0 };
-
-  w = gdk_window_get_width(gtk_widget_get_window(GTK_WIDGET(data)));
-  ww = gdk_window_get_width(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)));
-
-  gdk_window_get_origin(gtk_widget_get_window(GTK_WIDGET(data)), x, y);
-
-  gtk_widget_get_preferred_size(GTK_WIDGET(menu), &requisition, NULL);
-
-  /* align left panel popupmenu to right edge */
-  if(*x < ww / 2) (*x) += w - requisition.width;
-
-  GtkAllocation allocation_data;
-  gtk_widget_get_allocation(GTK_WIDGET(data), &allocation_data);
-  (*y) += allocation_data.height;
-}
-#endif
-
 static void presets_popup_callback(GtkButton *button, dt_lib_module_t *module)
 {
   dt_lib_module_info_t *mi = (dt_lib_module_info_t *)calloc(1, sizeof(dt_lib_module_info_t));

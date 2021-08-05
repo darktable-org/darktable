@@ -447,12 +447,7 @@ static gboolean dt_bauhaus_popup_button_release(GtkWidget *widget, GdkEventButto
     gdk_window_get_origin(gtk_widget_get_window(darktable.bauhaus->popup_window), &wx, &wy);
 
     gdk_device_get_position(
-#if GTK_CHECK_VERSION(3, 20, 0)
         gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(widget))), 0, &x, &y);
-#else
-        gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdk_display_get_default())), NULL, &x,
-        &y);
-#endif
     darktable.bauhaus->end_mouse_x = x - wx;
     darktable.bauhaus->end_mouse_y = y - wy;
     const dt_bauhaus_combobox_data_t *d = &darktable.bauhaus->current->data.combobox;

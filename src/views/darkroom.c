@@ -2182,9 +2182,7 @@ static gboolean _quickbutton_press_release(GtkWidget *button, GdkEventButton *ev
 
     gtk_popover_set_relative_to(GTK_POPOVER(popover), button);
 
-#if GTK_CHECK_VERSION(3, 16, 0)
     g_object_set(G_OBJECT(popover), "transitions-enabled", FALSE, NULL);
-#endif
 
     _toolbar_show_popup(popover);
     return TRUE;
@@ -4379,16 +4377,9 @@ static gboolean _second_window_draw_callback(GtkWidget *widget, cairo_t *crf, dt
   dev->second_window.width = width;
   dev->second_window.height = height;
 
-#if GTK_CHECK_VERSION(3, 20, 0)
   gdk_window_get_device_position(gtk_widget_get_window(widget),
                                  gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(widget))),
                                  &pointerx, &pointery, NULL);
-#else
-  GdkDevice *device
-      = gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gtk_widget_get_display(widget)));
-  gdk_window_get_device_position(gtk_widget_get_window(widget), device, &pointerx, &pointery, NULL);
-#endif
-
   second_window_expose(widget, dev, crf, width, height, pointerx, pointery);
 
   return TRUE;
