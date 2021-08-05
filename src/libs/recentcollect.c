@@ -265,9 +265,7 @@ static void _lib_recentcollection_updated(gpointer instance, dt_collection_chang
     if(child)
     {
       gtk_widget_set_halign(child, GTK_ALIGN_START);
-#if GTK_CHECK_VERSION(3, 16, 0)
       gtk_label_set_xalign(GTK_LABEL(child), 0.0); // without this the labels are not flush on the left
-#endif
       gtk_label_set_ellipsize(GTK_LABEL(child), PANGO_ELLIPSIZE_END);
     }
     gtk_widget_set_no_show_all(d->item[k].button, TRUE);
