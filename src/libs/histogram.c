@@ -290,15 +290,17 @@ static inline float baselog(float x, float bound)
   return log1pf((VECTORSCOPE_BASE_LOG - 1.f) * x / bound) / logf(VECTORSCOPE_BASE_LOG) * bound;
 }
 
-static inline void log_scale(const dt_lib_histogram_t *d, float *x, float *y, float r)
+static inline void log_scale(float *x, float *y, float r)
 {
-  // FIXME: test for this in caller rather than here?
-  if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
+  const float h = dt_fast_hypotf(*x,*y);
+  // Haven't seen a zero point in practice, but it is certainly
+  // possible. Map these to zero, and CPU should predict that
+  // this is unlikely.
+  if(h >= FLT_MIN)
   {
-    const float h = dt_fast_hypotf(*x,*y);
-    const float s = baselog(h, r);
-    *x *= s / h;
-    *y *= s / h;
+    const float s = baselog(h, r) / h;
+    *x *= s;
+    *y *= s;
   }
 }
 
@@ -394,8 +396,11 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
         // this starts with bright red/yellow this evens out sector
         // radii for other colors.
         // FIXME: green really is the brightest, so should start with that to really see benefit here, though current setup does work
-        chromaticity[1] *= max_radius / h;
-        chromaticity[2] *= max_radius / h;
+        if(h >= FLT_MIN)
+        {
+          chromaticity[1] *= max_radius / h;
+          chromaticity[2] *= max_radius / h;
+        }
         cairo_mesh_pattern_line_to(p, chromaticity[1], chromaticity[2]);
         // define 4th point so it isn't degenerate and can make the two radial edges have different colors w/out gradients, gradient only across the far edge of triangle
         cairo_mesh_pattern_line_to(p, 0., 0.);
@@ -461,7 +466,8 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
     for(int k=0; k<6; k++)
       for(int i=0; i < VECTORSCOPE_HUES; i++)
-        log_scale(d, &d->hue_ring[k][i][0], &d->hue_ring[k][i][1], max_radius);
+        // FIXME: hypotenuse is already calculated above, cache it?
+        log_scale(&d->hue_ring[k][i][0], &d->hue_ring[k][i][1], max_radius);
 
   d->vectorscope_radius = max_radius;
   d->hue_ring_prof = vs_prof;
@@ -475,6 +481,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 {
   const int diam_px = d->vectorscope_diameter_px;
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
+  const dt_lib_histogram_scale_t vs_scale = d->vectorscope_scale;
 
   if(!vs_prof || isnan(vs_prof->matrix_in[0][0]))
   {
@@ -519,7 +526,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // FIXME: instead of scaling, if chromaticity really depends only on XY, then make a lookup on startup of for each grid cell on graph output the minimum XY to populate that cell, then either brute-force scan that LUT, or start from position of last pixel and scan, or do an optimized search (1/2, 1/2, 1/2, etc.) -- would also find point sample pixel this way
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, binned, sample_max_x, sample_max_y, roi, pt_sample_x, pt_sample_y, d, diam_px, max_radius, max_diam, vs_prof, vs_type) \
+  dt_omp_firstprivate(input, binned, sample_max_x, sample_max_y, roi, pt_sample_x, pt_sample_y, d, diam_px, max_radius, max_diam, vs_prof, vs_type, vs_scale) \
   schedule(static) collapse(2)
 #endif
   for(size_t y=0; y<sample_max_y; y+=2)
@@ -573,7 +580,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
       }
       // FIXME: we ignore the L or Jz components -- do they optimize out of the above code, or would in particular a XYZ_2_AzBz but helpful?
-      log_scale(d, chromaticity+1, chromaticity+2, max_radius);
+      if(vs_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
+        log_scale(&chromaticity[1], &chromaticity[2], max_radius);
       if(x == pt_sample_x && y == pt_sample_y)
       {
         d->vectorscope_pt[0] = chromaticity[1];
