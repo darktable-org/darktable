@@ -2741,6 +2741,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* search box */
   d->text_entry = gtk_search_entry_new();
+  dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, NULL, "search modules", d->text_entry, NULL);
   gtk_entry_set_placeholder_text(GTK_ENTRY(d->text_entry), _("search modules by name or tag"));
   g_signal_connect(G_OBJECT(d->text_entry), "search-changed", G_CALLBACK(_text_entry_changed_callback), self);
   g_signal_connect(G_OBJECT(d->text_entry), "stop-search", G_CALLBACK(_stop_search), NULL);
