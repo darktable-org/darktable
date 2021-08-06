@@ -1560,8 +1560,9 @@ static gboolean _datetime_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_l
   }
 }
 
-static void _timezone_save(dt_lib_module_t *self, dt_lib_geotagging_t *d)
+static void _timezone_save(dt_lib_module_t *self)
 {
+  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   const gchar *tz = gtk_entry_get_text(GTK_ENTRY(d->timezone));
 
   gchar *name = NULL;
@@ -1586,20 +1587,19 @@ static void _timezone_save(dt_lib_module_t *self, dt_lib_geotagging_t *d)
 
 static gboolean _timezone_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
 {
-  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
-
   switch(event->keyval)
   {
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
     case GDK_KEY_Tab:
-      _timezone_save(self, d);
+      _timezone_save(self);
       return TRUE;
     case GDK_KEY_Escape:
       gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
       return TRUE;
     default:
-      gtk_label_set_text(GTK_LABEL (d->timezone_changed), "* ");
+      dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
+      gtk_label_set_text(GTK_LABEL (d->timezone_changed), " *");
       break;
   }
   return FALSE;
@@ -1607,8 +1607,7 @@ static gboolean _timezone_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_l
 
 static gboolean _timezone_focus_out(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
 {
-  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
-  _timezone_save(self, d);
+  _timezone_save(self);
   return FALSE;
 }
 
@@ -1725,19 +1724,20 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->apply_datetime), "clicked", G_CALLBACK(_apply_datetime_callback), self);
 
   // time zone entry
-  d->timezone_changed = dt_ui_label_new(_(""));
   label = dt_ui_label_new(_(dt_confgen_get_label("plugins/lighttable/geotagging/tz")));
   gtk_widget_set_tooltip_text(label, _(dt_confgen_get_tooltip("plugins/lighttable/geotagging/tz")));
 
-  GtkWidget *timezone_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(timezone_box), d->timezone_changed, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(timezone_box), label, FALSE, FALSE, 0);
-
-  gtk_grid_attach(grid, timezone_box , 0, line, 2, 1);
+  gtk_grid_attach(grid, label, 0, line, 2, 1);
 
   d->timezone = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(d->timezone), 0);
-  gtk_grid_attach(grid, d->timezone, 2, line++, 2, 1);
+  gtk_widget_set_tooltip_text(d->timezone, _("start typing to show a list of permitted values and select your timezone.\npress enter to confirm, so that the asterisk * disappers"));
+  d->timezone_changed = dt_ui_label_new(_(""));
+
+  GtkWidget *timezone_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(timezone_box), d->timezone, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(timezone_box), d->timezone_changed, FALSE, FALSE, 0);
+
+  gtk_grid_attach(grid, timezone_box, 2, line++, 2, 1);
 
   GtkCellRenderer *renderer;
   GtkTreeIter tree_iter;
