@@ -24,6 +24,7 @@
 #include "develop/develop.h"
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 
@@ -119,6 +120,10 @@ void gui_init(dt_lib_module_t *self)
       GtkWidget *w = _lib_viewswitcher_create_label(view);
       gtk_box_pack_start(GTK_BOX(self->widget), w, FALSE, FALSE, 0);
       d->labels = g_list_append(d->labels, gtk_bin_get_child(GTK_BIN(w)));
+
+      gchar *id = g_strdup_printf("%s %s", view->module_name, "view");
+      dt_action_define(&darktable.control->actions_global, NULL, id, w, NULL);
+      g_free(id);
 
       /* create space if more views */
       if(view_iter->next != NULL)
