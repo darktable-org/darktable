@@ -1597,7 +1597,7 @@ static gboolean _timezone_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_l
     case GDK_KEY_Escape:
       gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
       return TRUE;
-    default:
+    default: ;
       dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
       gtk_label_set_text(GTK_LABEL (d->timezone_changed), " *");
       break;
