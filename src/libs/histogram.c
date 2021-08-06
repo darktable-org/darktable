@@ -935,8 +935,12 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.55);
   cairo_mask(cr, graph_pat);
+
+  cairo_pattern_destroy(bkgd_pat);
+  cairo_surface_destroy(bkgd_surface);
   cairo_pattern_destroy(graph_pat);
   cairo_surface_destroy(graph_surface);
+
   if(!isnan(d->vectorscope_pt[0]))
   {
     cairo_pop_group_to_source(cr);
