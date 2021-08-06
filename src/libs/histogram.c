@@ -337,7 +337,8 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   // NOTE: As ProPhoto's blue primary is very dark (and imaginary), it
   // maps to a very small radius in CIELuv.
   cairo_pattern_t *p = cairo_pattern_create_mesh();
-  dt_aligned_pixel_t prev_rgb_display, first_rgb_display;
+  // initialize to make gcc-7 happy
+  dt_aligned_pixel_t prev_rgb_display = { 0.f }, first_rgb_display = { 0.f };
   double px = 0., py= 0.;
 
   for(int k=0; k<6; k++)
