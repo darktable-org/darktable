@@ -2311,6 +2311,17 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   dt_control_queue_redraw_widget(self->widget);
 }
 
+const dt_action_element_def_t _action_elements_zones[]
+  = { { N_("red"    ), dt_action_effect_value },
+      { N_("orange" ), dt_action_effect_value },
+      { N_("yellow" ), dt_action_effect_value },
+      { N_("green"  ), dt_action_effect_value },
+      { N_("aqua"   ), dt_action_effect_value },
+      { N_("blue"   ), dt_action_effect_value },
+      { N_("purple" ), dt_action_effect_value },
+      { N_("magenta"), dt_action_effect_value },
+      { NULL } };
+
 static float _action_process_zones(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
   dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
@@ -2357,23 +2368,16 @@ static float _action_process_zones(gpointer target, dt_action_element_t element,
       fprintf(stderr, "[_action_process_zones] unknown shortcut effect (%d) for color zones\n", effect);
       break;
     }
+
+    gchar *text = g_strdup_printf("%s %+.2f", _action_elements_zones[element].name, return_value * 2. - 1.);
+    dt_action_widget_toast(DT_ACTION(self), target, text);
+    g_free(text);
   }
 
   return return_value + DT_VALUE_PATTERN_PLUS_MINUS;
 }
 
-const dt_action_element_def_t _action_elements_zones[]
-  = { { N_("red"    ), dt_action_effect_value },
-      { N_("orange" ), dt_action_effect_value },
-      { N_("yellow" ), dt_action_effect_value },
-      { N_("green"  ), dt_action_effect_value },
-      { N_("aqua"   ), dt_action_effect_value },
-      { N_("blue"   ), dt_action_effect_value },
-      { N_("purple" ), dt_action_effect_value },
-      { N_("magenta"), dt_action_effect_value },
-      { NULL } };
-
-const dt_action_def_t dt_action_def_zones
+const dt_action_def_t _action_def_zones
   = { N_("color zones"),
       _action_process_zones,
       _action_elements_zones };
@@ -2514,7 +2518,7 @@ void gui_init(struct dt_iop_module_t *self)
                                            | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                                            | darktable.gui->scroll_mask);
   g_object_set_data(G_OBJECT(c->area), "iop-instance", self);
-  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(c->area), &dt_action_def_zones);
+  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(c->area), &_action_def_zones);
   gtk_widget_set_can_focus(GTK_WIDGET(c->area), TRUE);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(_area_draw_callback), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(_area_button_press_callback), self);
