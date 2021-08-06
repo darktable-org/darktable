@@ -44,7 +44,6 @@
 // Luv in linear ProPhoto RGB and the widely spaced gradations of the
 // PQ P3 RGB colorspace. This could be lowered to 32 with little
 // visible consequence.
-// FIXME: why does the blue curve in to the center point? is this a color processing bug, a relic of a luminance of that primary, or have to do with ProPhoto's imaginary blue primary?
 #define VECTORSCOPE_HUES 48
 #define VECTORSCOPE_BASE_LOG 30
 
@@ -335,10 +334,8 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
 
   // chromaticities for drawing both hue ring and graph
-  // create a Cairo mesh pattern of Gouraud triangles to draw rather than a background pixel map with color math on in each pixel for a radial background
-  // background pixel map calc is 0.008 or 0.024, draw is 0.010
-  // mesh pattern (first pass code) calc is ~ 0.015 including rendering it to pattern, draw is still 0.10
-  // FIXME: don't need 48 hues to make a smooth transition -- would be easier if could fold this into loop above
+  // NOTE: As ProPhoto's blue primary is very dark (and imaginary), it
+  // maps to a very small radius in CIELuv.
   cairo_pattern_t *p = cairo_pattern_create_mesh();
   dt_aligned_pixel_t prev_rgb_display, first_rgb_display;
   double px = 0., py= 0.;
@@ -374,13 +371,15 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       const float h = dt_fast_hypotf(chromaticity[1], chromaticity[2]);
       max_radius = MAX(max_radius, h);
 
-      // FIXME: make a series of triangles painted on background, rather than using mesh pattern?
+      // use a Cairo mesh pattern of triangles to draw background
       dt_aligned_pixel_t rgb_display;
-      // Try to represent hue in profile colorspace. Values may be
-      // outside [0,1] but cairo_set_source_rgba will clamp. Compare
-      // to illuminant_xy_to_RGB.
-      // FIXME: will cairo_mesh_pattern_set_corner_color_rgb() clamp?
+      // Try to represent hue in profile colorspace. Do crude gamut
+      // clipping, and cairo_mesh_pattern_set_corner_color_rgb will
+      // clamp.
       dt_XYZ_to_Rec709_D50(XYZ_D50, rgb_display);
+      const float max_RGB = MAX(MAX(rgb_display[0], rgb_display[1]), rgb_display[2]);
+      for_each_channel(ch,aligned(rgb_display:16))
+        rgb_display[ch] = rgb_display[ch] / max_RGB;
       if(k==0 && i==0)
       {
         for_each_channel(ch,aligned(first_rgb_display,rgb_display:16))
