@@ -44,7 +44,7 @@
 // FIXME: why does the blue curve in to the center point? is this a color processing bug or a relic of a luminance of that primary
 // FIXME: do fewer points and splines?
 // FIXME: do more points so that the PQ in Linear Prophoto in Luv look better?
-#define VECTORSCOPE_HUES 48
+#define VECTORSCOPE_HUES 32
 #define VECTORSCOPE_BASE_LOG 30
 
 DT_MODULE(1)
@@ -365,9 +365,11 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
         dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
         dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
       }
+      // FIXME: the median of chromaticity[0] could be used if we do another pass to color the background image
       d->hue_ring[k][i][0] = chromaticity[1];
       d->hue_ring[k][i][1] = chromaticity[2];
-      max_radius = MAX(max_radius, dt_fast_hypotf(chromaticity[1], chromaticity[2]));
+      const float h = dt_fast_hypotf(chromaticity[1], chromaticity[2]);
+      max_radius = MAX(max_radius, h);
 
       // FIXME: make a series of triangles painted on background, rather than using mesh pattern?
       if(!(k==0 && i==0))
@@ -375,17 +377,26 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
         cairo_mesh_pattern_begin_patch(p);
         cairo_mesh_pattern_move_to(p, 0., 0.);
         cairo_mesh_pattern_line_to(p, px, py);
+        // FIXME: hack
+        // For blue in ProPhoto there is a very small chroma, and
+        // hence a very small radius sector would be drawn. Also as
+        // this starts with bright red/yellow this evens out sector
+        // radii for other colors.
+        // FIXME: green really is the brightest, so should start with that to really see benefit here, though current setup does work
+        chromaticity[1] *= max_radius / h;
+        chromaticity[2] *= max_radius / h;
         cairo_mesh_pattern_line_to(p, chromaticity[1], chromaticity[2]);
         // define 4th point so it isn't degenerate and can make the two radial edges have different colors w/out gradients, gradient only across the far edge of triangle
         cairo_mesh_pattern_line_to(p, 0., 0.);
         if(0) cairo_mesh_pattern_set_corner_color_rgb(p, 0, prgb[0], prgb[1], prgb[2]);
-  #if 1
+#if 1
         cairo_mesh_pattern_set_corner_color_rgb(p, 0, prgb[0], prgb[1], prgb[2]);
         cairo_mesh_pattern_set_corner_color_rgb(p, 1, prgb[0], prgb[1], prgb[2]);
-  #else
+#else
+        // debug without gradients
         cairo_mesh_pattern_set_corner_color_rgb(p, 0, rgb[0], rgb[1], rgb[2]);
         cairo_mesh_pattern_set_corner_color_rgb(p, 1, rgb[0], rgb[1], rgb[2]);
-  #endif
+#endif
         cairo_mesh_pattern_set_corner_color_rgb(p, 2, rgb[0], rgb[1], rgb[2]);
         cairo_mesh_pattern_set_corner_color_rgb(p, 3, rgb[0], rgb[1], rgb[2]);
         cairo_mesh_pattern_end_patch(p);
@@ -410,11 +421,7 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   cairo_mesh_pattern_end_patch(p);
 
   const int diam_px = d->vectorscope_diameter_px;
-  // multiplying as hack to extend out the pattern slightly as
-  // CAIRO_EXTEND_PAD doesn't help for mesh patterns and it's likely
-  // that there will be rays from center slightly off from the corner
-  // which will cause undrawn areas otherwise
-  const double pattern_max_radius = hypotf(diam_px, diam_px) * 1.1;
+  const double pattern_max_radius = hypotf(diam_px, diam_px);
   cairo_matrix_t matrix;
   cairo_matrix_init_scale(&matrix, max_radius / pattern_max_radius, max_radius / pattern_max_radius);
   cairo_matrix_translate(&matrix, -0.5 * (diam_px-1), -0.5 * (diam_px-1));
