@@ -44,7 +44,7 @@
 // FIXME: why does the blue curve in to the center point? is this a color processing bug or a relic of a luminance of that primary
 // FIXME: do fewer points and splines?
 // FIXME: do more points so that the PQ in Linear Prophoto in Luv look better?
-#define VECTORSCOPE_HUES 32
+#define VECTORSCOPE_HUES 64
 #define VECTORSCOPE_BASE_LOG 30
 
 DT_MODULE(1)
@@ -337,7 +337,7 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   // mesh pattern (first pass code) calc is ~ 0.015 including rendering it to pattern, draw is still 0.10
   // FIXME: don't need 48 hues to make a smooth transition -- would be easier if could fold this into loop above
   cairo_pattern_t *p = cairo_pattern_create_mesh();
-  dt_aligned_pixel_t prgb;
+  dt_aligned_pixel_t prev_rgb_display, first_rgb_display;
   double px = 0., py= 0.;
 
   for(int k=0; k<6; k++)
@@ -348,10 +348,10 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       delta[ch]=(vertex_rgb[(k+1)%6][ch] - vertex_rgb[k][ch]) / VECTORSCOPE_HUES;
     for(int i=0; i < VECTORSCOPE_HUES; i++)
     {
-      dt_aligned_pixel_t rgb, XYZ_D50, chromaticity;
-      for_each_channel(ch,aligned(vertex_rgb,delta,rgb:16))
-        rgb[ch] = vertex_rgb[k][ch] + delta[ch] * i;
-      dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D50, vs_prof->matrix_in_transposed, vs_prof->lut_in,
+      dt_aligned_pixel_t rgb_scope, XYZ_D50, chromaticity;
+      for_each_channel(ch,aligned(vertex_rgb,delta,rgb_scope:16))
+        rgb_scope[ch] = vertex_rgb[k][ch] + delta[ch] * i;
+      dt_ioppr_rgb_matrix_to_xyz(rgb_scope, XYZ_D50, vs_prof->matrix_in_transposed, vs_prof->lut_in,
                                  vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
@@ -372,7 +372,18 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       max_radius = MAX(max_radius, h);
 
       // FIXME: make a series of triangles painted on background, rather than using mesh pattern?
-      if(!(k==0 && i==0))
+      dt_aligned_pixel_t rgb_display;
+      // Try to represent hue in profile colorspace. Values may be
+      // outside [0,1] but cairo_set_source_rgba will clamp. Compare
+      // to illuminant_xy_to_RGB.
+      // FIXME: will cairo_mesh_pattern_set_corner_color_rgb() clamp?
+      dt_XYZ_to_Rec709_D50(XYZ_D50, rgb_display);
+      if(k==0 && i==0)
+      {
+        for_each_channel(ch,aligned(first_rgb_display,rgb_display:16))
+          first_rgb_display[ch] = rgb_display[ch];
+      }
+      else
       {
         cairo_mesh_pattern_begin_patch(p);
         cairo_mesh_pattern_move_to(p, 0., 0.);
@@ -388,24 +399,24 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
         cairo_mesh_pattern_line_to(p, chromaticity[1], chromaticity[2]);
         // define 4th point so it isn't degenerate and can make the two radial edges have different colors w/out gradients, gradient only across the far edge of triangle
         cairo_mesh_pattern_line_to(p, 0., 0.);
-        if(0) cairo_mesh_pattern_set_corner_color_rgb(p, 0, prgb[0], prgb[1], prgb[2]);
+        if(0) cairo_mesh_pattern_set_corner_color_rgb(p, 0, prev_rgb_display[0], prev_rgb_display[1], prev_rgb_display[2]);
 #if 1
-        cairo_mesh_pattern_set_corner_color_rgb(p, 0, prgb[0], prgb[1], prgb[2]);
-        cairo_mesh_pattern_set_corner_color_rgb(p, 1, prgb[0], prgb[1], prgb[2]);
+        cairo_mesh_pattern_set_corner_color_rgb(p, 0, prev_rgb_display[0], prev_rgb_display[1], prev_rgb_display[2]);
+        cairo_mesh_pattern_set_corner_color_rgb(p, 1, prev_rgb_display[0], prev_rgb_display[1], prev_rgb_display[2]);
 #else
         // debug without gradients
-        cairo_mesh_pattern_set_corner_color_rgb(p, 0, rgb[0], rgb[1], rgb[2]);
-        cairo_mesh_pattern_set_corner_color_rgb(p, 1, rgb[0], rgb[1], rgb[2]);
+        cairo_mesh_pattern_set_corner_color_rgb(p, 0, rgb_display[0], rgb_display[1], rgb_display[2]);
+        cairo_mesh_pattern_set_corner_color_rgb(p, 1, rgb_display[0], rgb_display[1], rgb_display[2]);
 #endif
-        cairo_mesh_pattern_set_corner_color_rgb(p, 2, rgb[0], rgb[1], rgb[2]);
-        cairo_mesh_pattern_set_corner_color_rgb(p, 3, rgb[0], rgb[1], rgb[2]);
+        cairo_mesh_pattern_set_corner_color_rgb(p, 2, rgb_display[0], rgb_display[1], rgb_display[2]);
+        cairo_mesh_pattern_set_corner_color_rgb(p, 3, rgb_display[0], rgb_display[1], rgb_display[2]);
         cairo_mesh_pattern_end_patch(p);
       }
 
       px = chromaticity[1];
       py = chromaticity[2];
-      for_each_channel(ch,aligned(prgb,rgb:16))
-        prgb[ch] = rgb[ch];
+      for_each_channel(ch,aligned(prev_rgb_display,rgb_display:16))
+        prev_rgb_display[ch] = rgb_display[ch];
     }
   }
   // last patch
@@ -414,10 +425,10 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   cairo_mesh_pattern_line_to(p, px, py);
   cairo_mesh_pattern_line_to(p, d->hue_ring[0][0][0], d->hue_ring[0][0][1]);
   cairo_mesh_pattern_line_to(p, 0., 0.);
-  cairo_mesh_pattern_set_corner_color_rgb(p, 0, prgb[0], prgb[1], prgb[2]);
-  cairo_mesh_pattern_set_corner_color_rgb(p, 1, prgb[0], prgb[1], prgb[2]);
-  cairo_mesh_pattern_set_corner_color_rgb(p, 2, vertex_rgb[0][0], vertex_rgb[0][1], vertex_rgb[0][2]);
-  cairo_mesh_pattern_set_corner_color_rgb(p, 3, vertex_rgb[0][0], vertex_rgb[0][1], vertex_rgb[0][2]);
+  cairo_mesh_pattern_set_corner_color_rgb(p, 0, prev_rgb_display[0], prev_rgb_display[1], prev_rgb_display[2]);
+  cairo_mesh_pattern_set_corner_color_rgb(p, 1, prev_rgb_display[0], prev_rgb_display[1], prev_rgb_display[2]);
+  cairo_mesh_pattern_set_corner_color_rgb(p, 2, first_rgb_display[0], first_rgb_display[1], first_rgb_display[2]);
+  cairo_mesh_pattern_set_corner_color_rgb(p, 3, first_rgb_display[0], first_rgb_display[1], first_rgb_display[2]);
   cairo_mesh_pattern_end_patch(p);
 
   const int diam_px = d->vectorscope_diameter_px;
@@ -892,6 +903,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   // 2. The working reference primaries. How did 1. end up in 2.? Are there negative and therefore nonsensical values in the working space? Should a gamut mapping pass be applied before work, between 1. and 2.?
   // 3. The output primaries rendition. From a selection of gamut mappings, is one required between 2. and 3.?"
 
+#if 1
   // graticule: histogram profile hue ring
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_push_group(cr);
@@ -921,7 +933,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
     cairo_stroke(cr);
   }
 
-#if 1
+#if 0
   // all nodes, for debugging
   cairo_set_source_rgb(cr, 1, 1, 1);
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
@@ -933,7 +945,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       cairo_arc(cr, x*scale, y*scale, DT_PIXEL_APPLY_DPI(1.), 0., M_PI * 2.);
       cairo_fill(cr);
     }
-
+#endif
 #endif
 
   // vectorscope graph
