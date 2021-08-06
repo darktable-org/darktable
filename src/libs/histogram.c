@@ -585,7 +585,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   uint8_t *const graph = d->vectorscope_graph;
 
   // FIXME: should count the max bin size, and vary the scale such that it is always 1?
-  const float gain = 1.f / 75.f;
+  const float gain = 1.f / 30.f;
   const float scale = gain * (diam_px * diam_px) / (sample_width * sample_height);
 
   // loop appears to be too small to benefit w/OpenMP
@@ -933,7 +933,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_set_source(cr, bkgd_pat);
   cairo_mask(cr, graph_pat);
   cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
-  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.55);
   cairo_mask(cr, graph_pat);
   cairo_pattern_destroy(graph_pat);
   cairo_surface_destroy(graph_surface);
