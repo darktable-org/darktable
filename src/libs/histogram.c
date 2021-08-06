@@ -40,11 +40,12 @@
 
 #define HISTOGRAM_BINS 256
 // # of gradations between each primary/secondary to draw the hue ring
-// this is tuned to most degenerate case -- curve to blue primary in Luv in linear ProPhoto RGB
-// FIXME: why does the blue curve in to the center point? is this a color processing bug or a relic of a luminance of that primary
-// FIXME: do fewer points and splines?
-// FIXME: do more points so that the PQ in Linear Prophoto in Luv look better?
-#define VECTORSCOPE_HUES 64
+// this is tuned to most degenerate cases: curve to blue primary in
+// Luv in linear ProPhoto RGB and the widely spaced gradations of the
+// PQ P3 RGB colorspace. This could be lowered to 32 with little
+// visible consequence.
+// FIXME: why does the blue curve in to the center point? is this a color processing bug, a relic of a luminance of that primary, or have to do with ProPhoto's imaginary blue primary?
+#define VECTORSCOPE_HUES 48
 #define VECTORSCOPE_BASE_LOG 30
 
 DT_MODULE(1)
