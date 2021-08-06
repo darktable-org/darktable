@@ -2363,7 +2363,7 @@ static float process_mapping(float move_size)
 
         return_value = definition->process(action_target, fsc.element, effect, move_size);
       }
-      else
+      else if(move_size)
         dt_action_widget_toast(fsc.action, action_target, "not active");
     }
   }
