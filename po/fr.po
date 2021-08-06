@@ -11675,7 +11675,7 @@ msgstr "R entrée"
 
 #: ../src/iop/channelmixerrgb.c:3765
 msgid "input G"
-msgstr "G entrée"
+msgstr "V entrée"
 
 #: ../src/iop/channelmixerrgb.c:3772
 msgid "input B"
@@ -11687,7 +11687,7 @@ msgstr "R sortie"
 
 #: ../src/iop/channelmixerrgb.c:3781
 msgid "output G"
-msgstr "G sortie"
+msgstr "V sortie"
 
 #: ../src/iop/channelmixerrgb.c:3782
 msgid "output B"
@@ -16985,7 +16985,7 @@ msgstr "compresser ombres/hautes-lumières (gf) : léger"
 
 #: ../src/iop/toneequal.c:508
 msgid "contrast tone curve: soft"
-msgstr "courbe des tonalités contraste : soft"
+msgstr "courbe des tonalités contraste : léger"
 
 #: ../src/iop/toneequal.c:512
 msgid "contrast tone curve: medium"
