@@ -90,6 +90,7 @@ typedef struct dt_lib_geotagging_t
   GtkWidget *apply_datetime;
   GtkWidget *timezone;
   GList *timezones;
+  GtkWidget *timezone_changed;
   GtkWidget *gpx_button;
   GTimeZone *tz_camera;
   GTimeZone *tz_utc;
@@ -1575,6 +1576,13 @@ static void _timezone_save(dt_lib_module_t *self)
   d->tz_camera = !name ? g_time_zone_new_utc() : g_time_zone_new(name);
   dt_conf_set_string("plugins/lighttable/geotagging/tz", name ? name : "UTC");
   gtk_entry_set_text(GTK_ENTRY(d->timezone), name ? name : "UTC");
+  gtk_label_set_text(GTK_LABEL (d->timezone_changed), "");
+
+  gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+#ifdef HAVE_MAP
+  if(d->map.view)
+    _refresh_track_list(self);
+#endif
 }
 
 static gboolean _timezone_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
@@ -1583,22 +1591,23 @@ static gboolean _timezone_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_l
   {
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
+    case GDK_KEY_Tab:
       _timezone_save(self);
-      gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
-#ifdef HAVE_MAP
-      dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
-      if(d->map.view)
-        _refresh_track_list(self);
-#endif
       return TRUE;
     case GDK_KEY_Escape:
       gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
       return TRUE;
-    case GDK_KEY_Tab:
-      return TRUE;
-    default:
+    default: ;
+      dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
+      gtk_label_set_text(GTK_LABEL (d->timezone_changed), " *");
       break;
   }
+  return FALSE;
+}
+
+static gboolean _timezone_focus_out(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
+{
+  _timezone_save(self);
   return FALSE;
 }
 
@@ -1717,11 +1726,18 @@ void gui_init(dt_lib_module_t *self)
   // time zone entry
   label = dt_ui_label_new(_(dt_confgen_get_label("plugins/lighttable/geotagging/tz")));
   gtk_widget_set_tooltip_text(label, _(dt_confgen_get_tooltip("plugins/lighttable/geotagging/tz")));
-  gtk_grid_attach(grid, label , 0, line, 2, 1);
+
+  gtk_grid_attach(grid, label, 0, line, 2, 1);
 
   d->timezone = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(d->timezone), 0);
-  gtk_grid_attach(grid, d->timezone, 2, line++, 2, 1);
+  gtk_widget_set_tooltip_text(d->timezone, _("start typing to show a list of permitted values and select your timezone.\npress enter to confirm, so that the asterisk * disappers"));
+  d->timezone_changed = dt_ui_label_new("");
+
+  GtkWidget *timezone_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(timezone_box), d->timezone, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(timezone_box), d->timezone_changed, FALSE, FALSE, 0);
+
+  gtk_grid_attach(grid, timezone_box, 2, line++, 2, 1);
 
   GtkCellRenderer *renderer;
   GtkTreeIter tree_iter;
@@ -1751,8 +1767,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_completion_set_inline_completion(completion, TRUE);
   gtk_entry_completion_set_popup_set_width(completion, FALSE);
   gtk_entry_completion_set_match_func(completion, _completion_match_func, NULL, NULL);
+  gtk_entry_completion_set_minimum_key_length(completion, 0);
   gtk_entry_set_completion(GTK_ENTRY(d->timezone), completion);
   g_signal_connect(G_OBJECT(d->timezone), "key-press-event", G_CALLBACK(_timezone_key_pressed), self);
+  g_signal_connect(G_OBJECT(d->timezone), "focus-out-event", G_CALLBACK(_timezone_focus_out), self);
 
   // gpx
   d->gpx_button = dt_ui_button_new(_("apply GPX track file..."),
