@@ -679,7 +679,7 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
   GFile *gfolder = g_file_parse_name(folder);
 
   // if folder is root, consider one folder separator less
-  int offset = (g_path_skip_root(folder)[0] ? folder_lgth + 1 : folder_lgth);
+  const int offset = (g_path_skip_root(folder)[0] ? folder_lgth + 1 : folder_lgth);
 
   GFileEnumerator *dir_files =
     g_file_enumerate_children(gfolder,
