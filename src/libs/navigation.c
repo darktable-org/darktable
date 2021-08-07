@@ -135,6 +135,8 @@ void gui_init(dt_lib_module_t *self)
   /* set size of navigation draw area */
   gtk_widget_set_size_request(self->widget, -1, 175);
   gtk_widget_set_name(GTK_WIDGET(self->widget), "navigation-module");
+  dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, NULL, "hide navigation thumbnail", self->widget, NULL);
+  gtk_widget_set_events(self->widget, GDK_ENTER_NOTIFY_MASK);
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,

@@ -1719,6 +1719,8 @@ void gui_init(dt_lib_module_t *self)
   // shows the scope, scale, and has draggable areas
   d->scope_draw = gtk_drawing_area_new();
   gtk_widget_set_tooltip_text(d->scope_draw, _("ctrl+scroll to change display height"));
+  dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, "histogram", "hide histogram", d->scope_draw, NULL);
+  gtk_widget_set_events(d->scope_draw, GDK_ENTER_NOTIFY_MASK);
 
   // a row of control buttons
   d->button_box = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
@@ -1737,8 +1739,10 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: this could be a combobox to allow for more types and not to have to swap the icon on click
   // icons will be filled in by _scope_type_update()
   d->scope_type_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
+  dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, "histogram", "switch histogram mode", d->scope_type_button, NULL);
   gtk_box_pack_start(GTK_BOX(d->button_box), d->scope_type_button, FALSE, FALSE, 0);
   d->scope_view_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
+  dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, "histogram", "switch histogram type", d->scope_view_button, NULL);
   gtk_box_pack_start(GTK_BOX(d->button_box), d->scope_view_button, FALSE, FALSE, 0);
 
   // the red togglebutton turns into colorspace button in vectorscope
