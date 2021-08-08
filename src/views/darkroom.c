@@ -2560,7 +2560,7 @@ void gui_init(dt_view_t *self)
     dt_action_define(&self->actions, NULL, "show guide lines", darktable.view_manager->guides_toggle, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(darktable.view_manager->guides_toggle,
                                 _("toggle guide lines\nright click for guides options"));
-    g_signal_connect(G_OBJECT(darktable.view_manager->guides_toggle), "button-press-event",
+    g_signal_connect(G_OBJECT(darktable.view_manager->guides_toggle), "clicked",
                      G_CALLBACK(_guides_quickbutton_clicked), dev);
     connect_button_press_release(darktable.view_manager->guides_toggle, NULL);
     dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.view_manager->guides_toggle,
