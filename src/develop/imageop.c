@@ -912,18 +912,18 @@ static void dt_iop_gui_rename_callback(GtkButton *button, dt_iop_module_t *modul
   _iop_gui_rename_module(module);
 }
 
-static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton *event, gpointer user_data)
+static gboolean dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
 
   if(event && event->button == 3)
   {
     if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE)) dt_iop_gui_copy_callback(button, user_data);
-    return;
+    return TRUE;
   }
   else if(event && event->button == 2)
   {
-    return;
+    return FALSE;
   }
 
   GtkMenuShell *menu = GTK_MENU_SHELL(gtk_menu_new());
@@ -970,6 +970,7 @@ static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton 
 
   // make sure the button is deactivated now that the menu is opened
   if(button) dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
+  return TRUE;
 }
 
 static gboolean dt_iop_gui_off_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
