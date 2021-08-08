@@ -264,6 +264,9 @@ const dt_action_def_t dt_action_def_value
       _action_elements_value_fallback,
       _action_fallbacks_value };
 
+const dt_action_def_t _action_def_dummy
+  = { };
+
 static const dt_action_def_t *_action_find_definition(dt_action_t *action)
 {
   if(!action) return NULL;
@@ -3036,15 +3039,15 @@ dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gc
   {
     if(label)
     {
-      if(ac->type == DT_ACTION_TYPE_CLOSURE && ac->target)
+      if(ac->type == DT_ACTION_TYPE_CLOSURE && ac->target && action_def)
         g_closure_unref(ac->target);
 
       guint index = 0;
       if(g_ptr_array_find(darktable.control->widget_definitions, action_def, &index))
         ac->type = DT_ACTION_TYPE_WIDGET + index + 1;
-      else if(!action_def)
+      else if(action_def == &_action_def_dummy)
         ac->type = DT_ACTION_TYPE_WIDGET;
-      else
+      else if(action_def)
       {
         ac->type = DT_ACTION_TYPE_WIDGET + darktable.control->widget_definitions->len + 1;
         g_ptr_array_add(darktable.control->widget_definitions, (gpointer)action_def);
@@ -3057,7 +3060,7 @@ dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gc
       ac->target = widget;
     else if(!darktable.control->accel_initialising)
     {
-      if(label) ac->target = widget;
+      if(label && action_def) ac->target = widget;
       g_hash_table_insert(darktable.control->widgets, widget, ac);
 
       gtk_widget_set_has_tooltip(widget, TRUE);
@@ -3079,7 +3082,7 @@ void dt_action_define_iop(dt_iop_module_t *self, const gchar *section, const gch
     ac = dt_action_define(&darktable.control->actions_blend, subsection, label, widget, action_def);
   }
   else
-    ac = dt_action_define(&self->so->actions, section, label, widget, action_def);
+    ac = dt_action_define(&self->so->actions, section, label, widget, action_def ? action_def : &_action_def_dummy);
 
   // to support multi-instance, also save in per instance widget list
   dt_action_target_t *referral = g_malloc0(sizeof(dt_action_target_t));
