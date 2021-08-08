@@ -224,6 +224,7 @@ int dt_develop_blendif_init_masking_profile(struct dt_dev_pixelpipe_iop_t *piece
       for(size_t i = 0; i < 3; i++)
         sum += M[y][i] * profile->matrix_in[i][x];
       blending_profile->matrix_out[y][x] = sum;
+      blending_profile->matrix_out_transposed[x][y] = sum;
     }
   }
 
