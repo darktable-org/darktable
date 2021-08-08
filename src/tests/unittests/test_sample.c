@@ -23,12 +23,16 @@
 
 #include <cmocka.h>
 
+#ifdef _WIN32
+#include "win/main_wrapper.h"
+#endif
+
 static void test_sample(void **state)
 {
   // most efficient test: does just nothing :-)
 }
 
-int main()
+int main(int argc, char* argv[])
 {
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_sample)

@@ -25,6 +25,11 @@ How to make a darktable windows installer (64 bit only):
     $ pacman -S mingw-w64-x86_64-gmic
     ```
 
+* Optional: Install libraries required for [testing](../../src/tests/unittests/README.md)
+    ```
+    $ pacman -S mingw-w64-x86_64-cmocka
+    ```
+
 * For gphoto2:
     * You need to restart the MINGW64 or MSYS terminal to have CAMLIBS and IOLIBS environment variables properly set for LIBGPHOTO are available.
     * make sure they aren't pointing into your normal windows installation in case you already have darktable installed. You can check them with:
