@@ -746,7 +746,7 @@ static inline float _rgb_luminance(const float *const restrict rgb,
 #ifdef _OPENMP
 #pragma omp declare simd aligned(rgb, JzCzhz: 16) uniform(profile)
 #endif
-static inline void _rgb_to_JzCzhz(const float *const restrict rgb, float *const restrict JzCzhz,
+static inline void _rgb_to_JzCzhz(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t JzCzhz,
                                   const dt_iop_order_iccprofile_info_t *const restrict profile)
 {
   dt_aligned_pixel_t JzAzBz = { 0.0f, 0.0f, 0.0f };
