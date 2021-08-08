@@ -785,20 +785,28 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
   return module;
 }
 
+static void _iop_gui_rename_module(dt_iop_module_t *module);
+
 static void dt_iop_gui_copy_callback(GtkButton *button, gpointer user_data)
 {
-  dt_iop_gui_duplicate(user_data, FALSE);
+  dt_iop_module_t *module = dt_iop_gui_duplicate(user_data, FALSE);
 
   /* setup key accelerators */
   dt_iop_connect_accels_multi(((dt_iop_module_t *)user_data)->so);
+
+  if(dt_conf_get_bool("darkroom/ui/rename_new_instance"))
+    _iop_gui_rename_module(module);
 }
 
 static void dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
 {
-  dt_iop_gui_duplicate(user_data, TRUE);
+  dt_iop_module_t *module = dt_iop_gui_duplicate(user_data, TRUE);
 
   /* setup key accelerators */
   dt_iop_connect_accels_multi(((dt_iop_module_t *)user_data)->so);
+
+  if(dt_conf_get_bool("darkroom/ui/rename_new_instance"))
+    _iop_gui_rename_module(module);
 }
 
 static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, dt_iop_module_t *module)
