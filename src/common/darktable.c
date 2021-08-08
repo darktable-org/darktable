@@ -1586,7 +1586,19 @@ void dt_configure_performance()
 
   fprintf(stderr, "[defaults] found a %zu-bit system with %zu kb ram and %zu cores (%d atom based)\n",
           bits, mem, threads, atom_cores);
-  if(mem >= (8lu << 20) && threads > 4 && atom_cores == 0)
+  if(mem >= (16lu << 20) && threads > 6 && atom_cores == 0)
+  {
+    // CONFIG 0: at least 16GB RAM, and more than 6 CPU cores, no atom
+    // But respect if user has set higher values manually earlier
+    fprintf(stderr, "[defaults] setting ultra high quality defaults\n");
+    // if machine has at least 16GB RAM, use all of the total memory size leaving 4GB "breathing room"
+    dt_conf_set_int("host_memory_limit", MAX((mem - (4lu << 20)) >> 11, dt_conf_get_int("host_memory_limit")));
+    dt_conf_set_int("singlebuffer_limit", MAX(64, dt_conf_get_int("singlebuffer_limit")));
+    if(demosaic_quality == NULL || !strcmp(demosaic_quality, "always bilinear (fast)"))
+      dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
+    dt_conf_set_bool("ui/performance", FALSE);
+  }
+  else if(mem >= (8lu << 20) && threads > 4 && atom_cores == 0)
   {
     // CONFIG 1: at least 8GB RAM, and more than 4 CPU cores, no atom
     // But respect if user has set higher values manually earlier
@@ -1594,7 +1606,7 @@ void dt_configure_performance()
 
     // if machine has at least 8GB RAM, use half of the total memory size
     dt_conf_set_int("host_memory_limit", MAX(mem >> 11, dt_conf_get_int("host_memory_limit")));
-    dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
+    dt_conf_set_int("singlebuffer_limit", MAX(32, dt_conf_get_int("singlebuffer_limit")));
     if(demosaic_quality == NULL || !strcmp(demosaic_quality, "always bilinear (fast)"))
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
     dt_conf_set_bool("ui/performance", FALSE);
@@ -1633,6 +1645,23 @@ void dt_configure_performance()
   }
 
   g_free(demosaic_quality);
+
+  char cachedir[PATH_MAX] = { 0 };
+  guint64 freecache = 0;
+  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+  GFile *gfile = g_file_new_for_path(cachedir);
+  GFileInfo *gfileinfo = g_file_query_filesystem_info(gfile, G_FILE_ATTRIBUTE_FILESYSTEM_FREE, NULL, NULL);
+  if(gfileinfo != NULL)
+    freecache = g_file_info_get_attribute_uint64(gfileinfo, G_FILE_ATTRIBUTE_FILESYSTEM_FREE);
+  g_object_unref(gfile);
+  g_object_unref(gfileinfo);
+
+  // set cache_memory to half of freediskspace - 4gb (eg 1gb cache_mem in case of 6gb free space)
+  if(freecache > (6lu << 20))
+    dt_conf_set_int64("cache_memory", (freecache - (4lu << 20))/2);
+
+  // enable cache_disk_backend_full when user has over 8gb free diskspace
+  dt_conf_set_bool("cache_disk_backend_full", freecache > (8lu << 20));
 
   // store the current performance configure version as the last completed
   // that would prevent further execution of previous performance configuration run
