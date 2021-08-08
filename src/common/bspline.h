@@ -10,8 +10,8 @@
 #ifdef _OPENMP
 #pragma omp declare simd aligned(buf, indices, result:64)
 #endif
-static inline void sparse_scalar_product(const float *const restrict buf, const size_t indices[BSPLINE_FSIZE],
-                                         float *const restrict result)
+static inline void sparse_scalar_product(const dt_aligned_pixel_t buf, const size_t indices[BSPLINE_FSIZE],
+                                         dt_aligned_pixel_t result)
 {
   // scalar product of 2 3×5 vectors stored as RGB planes and B-spline filter,
   // e.g. RRRRR - GGGGG - BBBBB

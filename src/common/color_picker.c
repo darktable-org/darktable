@@ -58,7 +58,7 @@ static inline void rgb_to_JzCzhz(const dt_aligned_pixel_t rgb, dt_aligned_pixel_
 #ifdef _OPENMP
 #pragma omp declare simd aligned(avg, min, max, pixels: 16) uniform(width, w)
 #endif
-static inline void _color_picker_rgb_or_lab(float *const avg, float *const min, float *const max,
+static inline void _color_picker_rgb_or_lab(dt_aligned_pixel_t avg, dt_aligned_pixel_t min, dt_aligned_pixel_t max,
                                             const float *const pixels, const float w, const size_t width)
 {
   for(size_t i = 0; i < width; i += 4)
@@ -76,7 +76,7 @@ static inline void _color_picker_rgb_or_lab(float *const avg, float *const min, 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(avg, min, max, pixels: 16) uniform(width, w)
 #endif
-static inline void _color_picker_lch(float *const avg, float *const min, float *const max,
+static inline void _color_picker_lch(dt_aligned_pixel_t avg, dt_aligned_pixel_t min, dt_aligned_pixel_t max,
                                      const float *const pixels, const float w, const size_t width)
 {
   for(size_t i = 0; i < width; i += 4)
@@ -96,7 +96,7 @@ static inline void _color_picker_lch(float *const avg, float *const min, float *
 #ifdef _OPENMP
 #pragma omp declare simd aligned(avg, min, max, pixels: 16) uniform(width, w)
 #endif
-static inline void _color_picker_hsl(float *const avg, float *const min, float *const max,
+static inline void _color_picker_hsl(dt_aligned_pixel_t avg, dt_aligned_pixel_t min, dt_aligned_pixel_t max,
                                      const float *const pixels, const float w, const size_t width)
 {
   for(size_t i = 0; i < width; i += 4)
@@ -116,7 +116,7 @@ static inline void _color_picker_hsl(float *const avg, float *const min, float *
 #ifdef _OPENMP
 #pragma omp declare simd aligned(avg, min, max, pixels: 16) uniform(width, w, profile)
 #endif
-static inline void _color_picker_jzczhz(float *const avg, float *const min, float *const max,
+static inline void _color_picker_jzczhz(dt_aligned_pixel_t avg, dt_aligned_pixel_t min, dt_aligned_pixel_t max,
                                         const float *const pixels, const float w, const size_t width,
                                         const dt_iop_order_iccprofile_info_t *const profile)
 {
