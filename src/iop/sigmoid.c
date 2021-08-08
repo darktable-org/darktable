@@ -51,7 +51,8 @@ typedef enum dt_iop_sigmoid_methods_type_t
 {
   DT_SIGMOID_METHOD_CROSSTALK = 0,     // $DESCRIPTION: "crosstalk"
   DT_SIGMOID_METHOD_HUE = 1,           // $DESCRIPTION: "preserve hue"
-  DT_SIGMOID_METHOD_RGB_RATIO = 2      // $DESCRIPTION: "rgb ratio"
+  DT_SIGMOID_METHOD_RGB_RATIO = 2,     // $DESCRIPTION: "rgb ratio"
+  DT_SIGMOID_METHOD_INTERPOLATE = 3    // $DESCRIPTION: "interpolate"
 } dt_iop_sigmoid_methods_type_t;
 
 typedef enum dt_iop_sigmoid_negative_values_type_t
@@ -94,7 +95,9 @@ typedef struct dt_iop_sigmoid_params_t
   float display_white_target;  // $MIN: 20.0  $MAX: 1600.0 $DEFAULT: 100.0 $DESCRIPTION: "target white"
   float display_grey_target;   // $MIN: 0.1  $MAX: 0.2 $DEFAULT: 0.1845 $DESCRIPTION: "target grey"
   float display_black_target;  // $MIN: 0.0  $MAX: 10.0 $DEFAULT: 0.0152 $DESCRIPTION: "target black"
-  dt_iop_sigmoid_methods_type_t color_processing;  // $DEFAULT: DT_SIGMOID_METHOD_CROSSTALK $DESCRIPTION: "color processing"
+  dt_iop_sigmoid_methods_type_t color_processing;  // $DEFAULT: DT_SIGMOID_METHOD_HUE $DESCRIPTION: "color processing"
+  float hue_preservation;                          // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "preserve hue"
+  float chroma_preservation;                       // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "preserve chroma"
   float crosstalk_amount;                          // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 4.0 $DESCRIPTION: "crosstalk amount"
   dt_iop_sigmoid_norm_type_t rgb_norm_method;      // $DEFAULT: DT_SIGMOID_METHOD_AVERAGE $DESCRIPTION: "luminance norm"
   dt_iop_sigmoid_negative_values_type_t negative_values_method; // $DEFAULT: DT_SIGMOID_NEGATIVE_DESATURATE $DESCRIPTION: "negative values"
@@ -109,9 +112,11 @@ typedef struct dt_iop_sigmoid_data_t
   float film_power;
   float paper_power;
   dt_iop_sigmoid_methods_type_t color_processing;
-  dt_iop_sigmoid_negative_values_type_t negative_values_method;
+  float hue_preservation;
+  float chroma_preservation;
   float crosstalk_amount;
   dt_iop_sigmoid_norm_type_t rgb_norm_method;
+  dt_iop_sigmoid_negative_values_type_t negative_values_method;
 } dt_iop_sigmoid_data_t;
 
 typedef struct dt_iop_sigmoid_global_data_t
@@ -122,8 +127,8 @@ typedef struct dt_iop_sigmoid_gui_data_t
   // Whatever you need to make your gui happy and provide access to widgets between gui_init, gui_update etc.
   // Stored in self->gui_data while in darkroom.
   // To permanently store per-user gui configuration settings, you could use dt_conf_set/_get.
-  GtkWidget *contrast_slider, *skewness_slider, *color_processing_list, *crosstalk_slider, *rgb_norm_method_list,
-            *display_black_slider, *display_white_slider, *negative_values_list;
+  GtkWidget *contrast_slider, *skewness_slider, *color_processing_list, *hue_preservation_slider, *chroma_preservation_slider,
+      *crosstalk_slider, *rgb_norm_method_list, *display_black_slider, *display_white_slider, *negative_values_list;
 } dt_iop_sigmoid_gui_data_t;
 
 
@@ -236,7 +241,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   module_data->color_processing = params->color_processing;
   module_data->negative_values_method = params->negative_values_method;
-  module_data->crosstalk_amount = fmaxf(1.0f - params->crosstalk_amount / 100.0f, 0.0f);
+  module_data->crosstalk_amount = fminf(fmaxf(1.0f - params->crosstalk_amount / 100.0f, 0.0f), 1.0f);
+  module_data->hue_preservation = fminf(fmaxf(params->hue_preservation / 100.0f, 0.0f), 1.0f);
+  module_data->chroma_preservation = fminf(fmaxf(params->chroma_preservation / 100.0f, 0.0f), 1.0f);
   module_data->rgb_norm_method = params->rgb_norm_method;
 }
 
@@ -342,6 +349,29 @@ static inline float preserve_hue(const float maxval, const float maxvalold,
   return minval + ((maxval - minval) * (medvalold - minvalold) / (maxvalold - minvalold));
 }
 
+typedef struct dt_iop_sigmoid_value_order_t
+{
+  size_t min;
+  size_t mid;
+  size_t max;
+} dt_iop_sigmoid_value_order_t;
+
+// Linear interpolation for both hue and chroma preservation
+// Assumes hue_preservation and chroma_presevation strictly in range [0, 1]
+static inline void preserve_color_interpolated(const float channel_wise[4], const float rgb_ratio[4], float out[4], const dt_iop_sigmoid_value_order_t order,
+    const float hue_preservation, const float chroma_preservation)
+{
+  // Chroma interpolation the minimum channel
+  out[order.min] = (1.0 - chroma_preservation) * channel_wise[order.min] + chroma_preservation * rgb_ratio[order.min];
+
+  // Chroma interpolation the maximum channel
+  out[order.max] = (1.0 - chroma_preservation) * channel_wise[order.max] + chroma_preservation * rgb_ratio[order.max];
+
+  // Hue correction of the middle channel
+  const float full_hue_correction = out[order.min] + ((out[order.max] - out[order.min]) * (rgb_ratio[order.mid] - rgb_ratio[order.min]) / (rgb_ratio[order.max] - rgb_ratio[order.min]));
+  const float no_hue_correction = out[order.min] + ((out[order.max] - out[order.min]) * (channel_wise[order.mid] - channel_wise[order.min]) / (channel_wise[order.max] - channel_wise[order.min]));
+  out[order.mid] = (1.0 - hue_preservation) * no_hue_correction + hue_preservation * full_hue_correction;
+}
 
 void process_loglogistic_crosstalk(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -530,6 +560,106 @@ void process_loglogistic_hue(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   }
 }
 
+void process_loglogistic_interpolated(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+                             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
+
+  const float *const in = (const float *)ivoid;
+  float *const out = (float *)ovoid;
+  const size_t npixels = (size_t)roi_in->width * roi_in->height;
+
+  const float white_target = module_data->white_target;
+  const float paper_exp = module_data->paper_exposure;
+  const float film_fog = module_data->film_fog;
+  const float contrast_power = module_data->film_power;
+  const float skew_power = module_data->paper_power;
+  const float saturation_factor = module_data->crosstalk_amount;
+  const float hue_preservation = module_data->hue_preservation;
+  const float chroma_preservation = module_data->chroma_preservation;
+  const dt_iop_sigmoid_negative_values_type_t negative_values_method = module_data->negative_values_method;
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_sigmoid_norm_type_t rgb_norm_method = module_data->rgb_norm_method;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(npixels, saturation_factor, negative_values_method, white_target, paper_exp, film_fog, contrast_power, skew_power, hue_preservation, chroma_preservation, work_profile, rgb_norm_method) \
+  dt_omp_sharedconst(in, out) \
+  schedule(static)
+#endif
+  for(size_t k = 0; k < 4 * npixels; k += 4)
+  {
+    const float *const restrict pix_in = in + k;
+    float *const restrict pix_out = out + k;
+    float DT_ALIGNED_ARRAY pix_in_strict_positive[4];
+    float DT_ALIGNED_ARRAY channel_wise[4];
+    float DT_ALIGNED_ARRAY rgb_ratio[4];
+
+    // Force negative values to zero
+    negative_values(pix_in, pix_in_strict_positive, negative_values_method);
+
+    // Desature a bit to get proper roll off to white in highlights
+    const float pixel_average = (pix_in_strict_positive[0] + pix_in_strict_positive[1] + pix_in_strict_positive[2]) / 3.0f;
+    for(size_t c = 0; c < 3; c++)
+    {
+      const float desaturated_value = pixel_average + saturation_factor * (pix_in_strict_positive[c] - pixel_average);
+      channel_wise[c] = generalized_loglogistic_sigmoid(desaturated_value, white_target, paper_exp, film_fog, contrast_power, skew_power);
+    }
+
+    // Preserve color ratios by applying the tone curve on a luma estimate and then scale the RGB tripplet uniformly
+    const float luma = get_pixel_norm(pix_in_strict_positive, rgb_norm_method, work_profile);
+    const float mapped_luma = generalized_loglogistic_sigmoid(luma, white_target, paper_exp, film_fog, contrast_power, skew_power);
+    const float scaling_factor = mapped_luma / luma;
+    for(size_t c = 0; c < 3; c++)
+    {
+      rgb_ratio[c] = scaling_factor * pix_in_strict_positive[c];
+    }
+
+    // Hue correction by scaling the middle value relative to the max and min values.
+    dt_iop_sigmoid_value_order_t pixel_value_order;
+
+    if (pix_in[0] >= pix_in[1])
+    {
+      if (pix_in[1] > pix_in[2])
+      {  // Case 1: r >= g >  b
+        pixel_value_order = (dt_iop_sigmoid_value_order_t) {.max = 0, .mid = 1, .min = 2};
+      }
+      else if (pix_in[2] > pix_in[0])
+      {  // Case 2: b >  r >= g
+        pixel_value_order = (dt_iop_sigmoid_value_order_t) {.max = 2, .mid = 0, .min = 1};
+      }
+      else if (pix_in[2] > pix_in[1])
+      {  // Case 3: r >= b >  g
+        pixel_value_order = (dt_iop_sigmoid_value_order_t) {.max = 0, .mid = 2, .min = 1};
+      } else
+      {  // Case 4: r == g == b
+        // No change of the middle value, just assign something.
+        pixel_value_order = (dt_iop_sigmoid_value_order_t) {.max = 0, .mid = 1, .min = 2};
+      }
+    }
+    else
+    {
+      if (pix_in[0] >= pix_in[2])
+      {  // Case 5: g >  r >= b
+        pixel_value_order = (dt_iop_sigmoid_value_order_t) {.max = 1, .mid = 0, .min = 2};
+      }
+      else if (pix_in[2] > pix_in[1])
+      {  // Case 6: b >  g >  r
+        pixel_value_order = (dt_iop_sigmoid_value_order_t) {.max = 2, .mid = 1, .min = 0};
+      }
+      else
+      {  // Case 7: g >= b >  r
+        pixel_value_order = (dt_iop_sigmoid_value_order_t) {.max = 1, .mid = 2, .min = 0};
+      }
+    }
+
+    preserve_color_interpolated(channel_wise, rgb_ratio, pix_out, pixel_value_order, hue_preservation, chroma_preservation);
+
+    // Copy over the alpha channel
+    pix_out[3] = pix_in[3];
+  }
+}
+
 /** process, all real work is done here. */
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -541,13 +671,17 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     process_loglogistic_crosstalk(piece, ivoid, ovoid, roi_in, roi_out);
   }
+  else if (module_data->color_processing == DT_SIGMOID_METHOD_HUE)
+  {
+    process_loglogistic_hue(piece, ivoid, ovoid, roi_in, roi_out);
+  }
   else if (module_data->color_processing == DT_SIGMOID_METHOD_RGB_RATIO)
   {
     process_loglogistic_ratio(piece, ivoid, ovoid, roi_in, roi_out);
   }
   else
   {
-    process_loglogistic_hue(piece, ivoid, ovoid, roi_in, roi_out);
+    process_loglogistic_interpolated(piece, ivoid, ovoid, roi_in, roi_out);
   }
 }
 
@@ -591,7 +725,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   gtk_widget_set_visible(g->crosstalk_slider, p->color_processing != DT_SIGMOID_METHOD_RGB_RATIO);
   gtk_widget_set_visible(g->negative_values_list, p->color_processing != DT_SIGMOID_METHOD_RGB_RATIO);
-  gtk_widget_set_visible(g->rgb_norm_method_list, p->color_processing == DT_SIGMOID_METHOD_RGB_RATIO);
+  gtk_widget_set_visible(g->hue_preservation_slider, p->color_processing == DT_SIGMOID_METHOD_INTERPOLATE);
+  gtk_widget_set_visible(g->chroma_preservation_slider, p->color_processing == DT_SIGMOID_METHOD_INTERPOLATE);
+  gtk_widget_set_visible(g->rgb_norm_method_list, p->color_processing == DT_SIGMOID_METHOD_RGB_RATIO || p->color_processing == DT_SIGMOID_METHOD_INTERPOLATE);
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -652,6 +788,8 @@ void gui_init(dt_iop_module_t *self)
 
   // Color handling
   g->color_processing_list = dt_bauhaus_combobox_from_params(self, "color_processing");
+  g->hue_preservation_slider = dt_bauhaus_slider_from_params(self, "hue_preservation");
+  g->chroma_preservation_slider = dt_bauhaus_slider_from_params(self, "chroma_preservation");
   // Cross talk option
   g->crosstalk_slider = dt_bauhaus_slider_from_params(self, "crosstalk_amount");
   dt_bauhaus_slider_set_soft_range(g->crosstalk_slider, 0.0f, 10.0f);
