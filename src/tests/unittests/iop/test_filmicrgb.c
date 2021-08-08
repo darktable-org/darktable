@@ -35,6 +35,10 @@
 
 #include "iop/filmicrgb.c"
 
+#ifdef _WIN32
+#include "win/main_wrapper.h"
+#endif
+
 /*
  * DEFINITIONS
  */
@@ -499,11 +503,10 @@ static void test_linear_saturation(void **state)
   testimg_free(ti);
 }
 
-
 /*
  * MAIN FUNCTION
  */
-int main()
+int main(int argc, char* argv[])
 {
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_name),
