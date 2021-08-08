@@ -944,7 +944,7 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename, gboole
           send_to_trash,
           filename_display == NULL ? filename : filename_display,
           gerror == NULL ? NULL : gerror->message);
-
+      g_object_unref(gfileinfo);
       if (send_to_trash && res == _DT_DELETE_DIALOG_CHOICE_DELETE)
       {
         // Loop again, this time delete instead of trashing
