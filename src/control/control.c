@@ -129,7 +129,7 @@ void dt_control_init(dt_control_t *s)
   dt_action_t *ac = dt_action_define(&s->actions_global, NULL, N_("show accels window"), NULL, &dt_action_def_accels_show);
   dt_accel_register_shortcut(ac, NULL, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_h, 0);
 
-  dt_action_define(&s->actions_global, NULL, N_("modifiers"), NULL, &dt_action_def_modifiers);
+  s->actions_modifiers = dt_action_define(&s->actions_global, NULL, N_("modifiers"), NULL, &dt_action_def_modifiers);
 
   memset(s->vimkey, 0, sizeof(s->vimkey));
   s->vimkey_cnt = 0;

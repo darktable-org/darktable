@@ -2554,36 +2554,38 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
           .mods = _sc.mods,
           .views = darktable.view_manager->current_view->view(darktable.view_manager->current_view) };
 
+    dt_shortcut_t *s = NULL;
     GSequenceIter *existing = g_sequence_lookup(darktable.control->shortcuts, &just_key,
                                                 shortcut_compare_func, GINT_TO_POINTER(just_key.views));
-    if(!existing)
+    if(existing)
+      s = g_sequence_get(existing);
+    else
     {
       just_key.mods = 0; // fall back to key without modifiers (for multiple emulated modifiers)
       existing = g_sequence_lookup(darktable.control->shortcuts, &just_key,
                                    shortcut_compare_func, GINT_TO_POINTER(just_key.views));
+      if(existing && (s = g_sequence_get(existing)) &&
+         (s->action != darktable.control->actions_modifiers || s->effect != DT_ACTION_EFFECT_HOLD))
+        s = NULL;
     }
-    if(existing)
+    if(s && !_sc.action && !darktable.control->mapping_widget &&
+       s->effect == DT_ACTION_EFFECT_HOLD &&
+       s->action && s->action->type >= DT_ACTION_TYPE_WIDGET)
     {
-      dt_shortcut_t *s = g_sequence_get(existing);
-
-      if(s && s->effect == DT_ACTION_EFFECT_HOLD &&
-         s->action && s->action->type >= DT_ACTION_TYPE_WIDGET)
+      const dt_action_def_t *definition = _action_find_definition(s->action);
+      if(definition && definition->process &&
+          definition->elements[s->element].effects == dt_action_effect_hold)
       {
-        const dt_action_def_t *definition = _action_find_definition(s->action);
-        if(definition && definition->process &&
-           definition->elements[s->element].effects == dt_action_effect_hold)
-        {
-          definition->process(NULL, s->element, DT_ACTION_EFFECT_ON, 1);
+        definition->process(NULL, s->element, DT_ACTION_EFFECT_ON, 1);
 
-          this_key.hold_def = definition;
-          this_key.hold_element = s->element;
+        this_key.hold_def = definition;
+        this_key.hold_element = s->element;
 
-          dt_device_key_t *new_key = calloc(1, sizeof(dt_device_key_t));
-          *new_key = this_key;
-          hold_keys = g_slist_prepend(hold_keys, new_key);
+        dt_device_key_t *new_key = calloc(1, sizeof(dt_device_key_t));
+        *new_key = this_key;
+        hold_keys = g_slist_prepend(hold_keys, new_key);
 
-          return;
-        }
+        return;
       }
     }
 
@@ -2808,7 +2810,10 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     if(event->key.is_modifier || event->key.keyval == GDK_KEY_ISO_Level3_Shift)
     {
       if(_sc.action)
+      {
+        _sc.mods = event->key.state; // no dt_modifier_shortcuts; ignore emulated modifiers while mapping
         dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, 1);
+      }
       return FALSE;
     }
 
