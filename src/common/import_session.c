@@ -114,7 +114,7 @@ static gchar *_import_session_path_pattern()
   }
 
 #ifdef WIN32
-  res = g_build_path("/", base, sub, (char *)NULL);
+  res = g_build_path("\\\\", base, sub, (char *)NULL);
 #else
   res = g_build_path(G_DIR_SEPARATOR_S, base, sub, (char *)NULL);
 #endif

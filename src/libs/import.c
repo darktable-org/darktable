@@ -678,6 +678,9 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
   GError *error = NULL;
   GFile *gfolder = g_file_parse_name(folder);
 
+  // if folder is root, consider one folder separator less
+  const int offset = (g_path_skip_root(folder)[0] ? folder_lgth + 1 : folder_lgth);
+
   GFileEnumerator *dir_files =
     g_file_enumerate_children(gfolder,
                               G_FILE_ATTRIBUTE_STANDARD_NAME ","
@@ -719,8 +722,8 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
         gtk_list_store_append(d->from.store, &iter);
         gtk_list_store_set(d->from.store, &iter,
                            DT_IMPORT_UI_EXISTS, already_imported ? "✔" : " ",
-                           DT_IMPORT_UI_FILENAME, &uifullname[folder_lgth + 1],
-                           DT_IMPORT_FILENAME, &fullname[folder_lgth + 1],
+                           DT_IMPORT_UI_FILENAME, &uifullname[offset],
+                           DT_IMPORT_FILENAME, &fullname[offset],
                            DT_IMPORT_UI_DATETIME, dt_txt,
                            DT_IMPORT_DATETIME, datetime,
                            DT_IMPORT_THUMB, d->from.eye, -1);
@@ -1394,6 +1397,16 @@ static void _update_places_list(dt_lib_module_t* self)
   for (GList *places_iter = places; places_iter; places_iter = places_iter->next)
   {
     gchar *basename = g_path_get_basename(places_iter->data);
+
+#ifdef WIN32
+    // special case: root folder shall keep the drive letter in the basename
+    if(basename[0] == G_DIR_SEPARATOR && !basename[1])
+    {
+      g_free(basename);
+      basename = g_strdup(places_iter->data);
+    }
+#endif
+
     gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, basename,
                                       DT_PLACES_PATH, (char *)places_iter->data, DT_PLACES_TYPE, DT_TYPE_CUSTOM, -1);
     g_free(basename);
@@ -1448,6 +1461,16 @@ static void _add_custom_place(const gchar *folder, dt_lib_module_t* self)
     g_free(place);
 
     gchar *basename = g_path_get_basename(folder);
+
+#ifdef WIN32
+    // special case: root folder shall keep the drive letter in the basename
+    if(G_IS_DIR_SEPARATOR(basename[0]) && !basename[1])
+    {
+      g_free(basename);
+      basename = g_strdup(folder);
+    }
+#endif
+
     gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, basename,
                                       DT_PLACES_PATH, (char *)folder, DT_PLACES_TYPE, DT_TYPE_CUSTOM, -1);
     g_free(basename);
