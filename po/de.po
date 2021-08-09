@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-08-05 16:52+0200\n"
-"PO-Revision-Date: 2021-08-05 22:56+0200\n"
+"PO-Revision-Date: 2021-08-09 22:04+0200\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -891,12 +891,12 @@ msgstr "Arbeitsablauf-spezifische Einstellungen automatisch anwenden"
 #: ../build/bin/conf_gen.h:2628
 msgctxt "preferences"
 msgid "scene-referred"
-msgstr "auf Aufnahme bezogene Bearbeitung"
+msgstr "szenenbezogene Bearbeitung"
 
 #: ../build/bin/preferences_gen.h:5292 ../build/bin/conf_gen.h:2629
 msgctxt "preferences"
 msgid "display-referred"
-msgstr "auf Anzeige bezogene Bearbeitung"
+msgstr "anzeigebezogene Bearbeitung"
 
 #: ../build/bin/preferences_gen.h:5297 ../build/bin/preferences_gen.h:6321
 #: ../build/bin/conf_gen.h:1636 ../build/bin/conf_gen.h:2190
@@ -912,11 +912,11 @@ msgid ""
 "display-referred workflow is based on Lab modules and will auto-apply base "
 "curve and the legacy module pipe order."
 msgstr ""
-"Eine auf die Aufnahme bezogene Bearbeitung basiert auf Modulen, die in einem "
-"linearen Farbraum arbeiten. \n"
-"Hierfür werden die Module „Filmic” und „Belichtung” automatisch angewandt. \n"
-"Eine auf die Anzeige bezogene Bearbeitung basiert auf Modulen, die im Lab "
+"Eine szenenbezogene Bearbeitung basiert auf Modulen, die in einem linearen "
 "Farbraum arbeiten. \n"
+"Hierfür werden die Module „Filmic” und „Belichtung” automatisch angewandt. \n"
+"Eine anzeigebezogene Bearbeitung basiert auf Modulen, die im Lab Farbraum "
+"arbeiten. \n"
 "Hierfür wird das Modul „Basiskurve” automatisch angewandt und eine veraltete "
 "Modulreihenfolge eingestellt."
 
@@ -964,8 +964,8 @@ msgstr ""
 "generischen Basiskurve des Kameraherstellers verwenden. \n"
 "Bei Änderung Neustart erforderlich. \n"
 "Diese Option wird nur berücksichtigt, wenn unter „Arbeitsablauf-spezifische "
-"Einstellungen automatisch anwenden” die Option „auf Anzeige bezogene "
-"Bearbeitung” gewählt wurde. \n"
+"Einstellungen automatisch anwenden” die Option „anzeigebezogene Bearbeitung” "
+"gewählt wurde. \n"
 "Um die automatische Anwendung einer Basiskurve gänzlich zu unterbinden, ist "
 "„keines” unter „Arbeitsablauf-spezifische Einstellungen automatisch "
 "anwenden” auszuwählen."
@@ -7091,7 +7091,7 @@ msgstr "Maskierung des aktiven Moduls vorübergehend ausschalten"
 
 #: ../src/develop/develop.c:1489 ../src/gui/presets.c:947
 msgid "display-referred default"
-msgstr "Vorgabewerte für auf Anzeige bezogene Bearbeitung"
+msgstr "Vorgabewerte für anzeigebezogene Bearbeitung"
 
 # Translation rather lengthly.
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
@@ -7100,7 +7100,7 @@ msgstr "Vorgabewerte für auf Anzeige bezogene Bearbeitung"
 #: ../src/develop/develop.c:1491 ../src/gui/presets.c:949
 #: ../src/iop/exposure.c:272 ../src/iop/exposure.c:281
 msgid "scene-referred default"
-msgstr "Vorgabewerte für auf Aufnahme bezogene Bearbeitung"
+msgstr "Vorgabewerte für szenenbezogene Bearbeitung"
 
 #: ../src/develop/develop.c:1961
 #, c-format
@@ -10182,7 +10182,7 @@ msgstr "Korrekturen"
 #: ../src/iop/splittoning.c:106 ../src/iop/spots.c:68 ../src/iop/spots.c:70
 #: ../src/iop/toneequal.c:321 ../src/iop/velvia.c:106 ../src/iop/velvia.c:108
 msgid "linear, RGB, scene-referred"
-msgstr "linear, RGB, aufnahmebezogen"
+msgstr "linear, RGB, szenenbezogen"
 
 #: ../src/iop/ashift.c:128 ../src/iop/borders.c:189 ../src/iop/clipping.c:318
 #: ../src/iop/crop.c:141 ../src/iop/flip.c:106 ../src/iop/liquify.c:298
@@ -10378,7 +10378,7 @@ msgstr "Korrekturen und Effekte"
 #: ../src/iop/atrous.c:140 ../src/iop/atrous.c:142
 #: ../src/iop/colorbalance.c:160
 msgid "linear, Lab, scene-referred"
-msgstr "linear, Lab, aufnahmebezogen"
+msgstr "linear, Lab, szenenbezogen"
 
 #: ../src/iop/atrous.c:141 ../src/iop/censorize.c:85
 #: ../src/iop/hazeremoval.c:113
@@ -10694,7 +10694,7 @@ msgstr "Effekte"
 
 #: ../src/iop/basicadj.c:149 ../src/iop/colorbalancergb.c:174
 msgid "non-linear, RGB, scene-referred"
-msgstr "nichtlinear, RGB, aufnahmebezogen"
+msgstr "nichtlinear, RGB, szenenbezogen"
 
 #: ../src/iop/basicadj.c:592
 msgid ""
@@ -11103,7 +11103,7 @@ msgstr "Korrektur der chromatischen Aberration für Bayer Sensoren"
 #: ../src/iop/rawprepare.c:113 ../src/iop/temperature.c:202
 #: ../src/iop/temperature.c:204
 msgid "linear, raw, scene-referred"
-msgstr "linear, RAW, aufnahmebezogen"
+msgstr "linear, RAW, szenenbezogen"
 
 #: ../src/iop/cacorrect.c:90 ../src/iop/cacorrectrgb.c:169
 #: ../src/iop/demosaic.c:226 ../src/iop/invert.c:123
@@ -11260,11 +11260,11 @@ msgstr "verpixelt Nummernschilder und Körperteile für mehr Privatsphäre"
 #: ../src/iop/censorize.c:84 ../src/iop/colorin.c:135
 #: ../src/iop/filmicrgb.c:338 ../src/iop/graduatednd.c:151
 msgid "linear or non-linear, RGB, scene-referred"
-msgstr "linear oder nichtlinear, RGB, aufnahmebezogen"
+msgstr "linear oder nichtlinear, RGB, szenenbezogen"
 
 #: ../src/iop/censorize.c:86
 msgid "special, RGB, scene-referred"
-msgstr "RGB, aufnahmebezogen"
+msgstr "RGB, szenenbezogen"
 
 #: ../src/iop/censorize.c:419
 msgid "radius_1"
@@ -12172,7 +12172,7 @@ msgstr ""
 
 #: ../src/iop/colorbalance.c:162
 msgid "non-linear, Lab, scene-referred"
-msgstr "nichtlinear, Lab, aufnahmebezogen"
+msgstr "nichtlinear, Lab, szenenbezogen"
 
 #. these blobs were exported as dtstyle and copied from there:
 #: ../src/iop/colorbalance.c:273
@@ -14955,7 +14955,7 @@ msgstr "isoliert hochfrequente Bildpartien"
 
 #: ../src/iop/highpass.c:82 ../src/iop/lowpass.c:134
 msgid "linear or non-linear, Lab, scene-referred"
-msgstr "linear oder nichtlinear, Lab, aufnahmebezogen"
+msgstr "linear oder nichtlinear, Lab, szenenbezogen"
 
 #: ../src/iop/highpass.c:83 ../src/iop/lowpass.c:135 ../src/iop/sharpen.c:96
 msgid "frequential, Lab"
@@ -14963,7 +14963,7 @@ msgstr "frequenzbezogen, Lab"
 
 #: ../src/iop/highpass.c:84 ../src/iop/lowpass.c:136
 msgid "special, Lab, scene-referred"
-msgstr "Lab, aufnahmebezogen"
+msgstr "Lab, szenenbezogen"
 
 #: ../src/iop/highpass.c:404
 msgid "the sharpness of highpass filter"
@@ -16626,11 +16626,11 @@ msgstr "Detailschärfen mit Standard Unschärfemaske (USM)"
 
 #: ../src/iop/sharpen.c:95
 msgid "linear or non-linear, Lab, display or scene-referred"
-msgstr "linear oder nichtlinear, Lab, anzeige- oder aufnahmebezogen"
+msgstr "linear oder nichtlinear, Lab, anzeige- oder szenenbezogen"
 
 #: ../src/iop/sharpen.c:97
 msgid "quasi-linear, Lab, display or scene-referred"
-msgstr "quasi-linear, Lab, anzeige- oder aufnahembezogen"
+msgstr "quasi-linear, Lab, anzeige- oder szenenbezogen"
 
 #. add the preset.
 #. restrict to raw images
@@ -16999,7 +16999,7 @@ msgstr "quasi-linear, RGB"
 
 #: ../src/iop/toneequal.c:323
 msgid "quasi-linear, RGB, scene-referred"
-msgstr "quasi-linear, RGB, aufnahmebezogen"
+msgstr "quasi-linear, RGB, szenenbezogen"
 
 #. No blending
 #: ../src/iop/toneequal.c:439
@@ -20109,11 +20109,11 @@ msgstr "Workflow: vereinfacht"
 
 #: ../src/libs/modulegroups.c:1697
 msgid "workflow: display-referred"
-msgstr "Workflow: auf Anzeige bezogen"
+msgstr "Workflow: anzeigebezogen"
 
 #: ../src/libs/modulegroups.c:1741
 msgid "workflow: scene-referred"
-msgstr "Workflow: auf Aufnahme bezogen"
+msgstr "Workflow: szenenbezogen"
 
 #: ../src/libs/modulegroups.c:1747
 msgctxt "modulegroup"
