@@ -2146,8 +2146,11 @@ static void _pop_menu_dictionary(GtkWidget *treeview, GdkEventButton *event, dt_
       g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_dictionary_set_as_tag, self);
     }
 
-    menuitem = gtk_separator_menu_item_new();
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+    if (!d->suggestion_flag)
+    {
+      menuitem = gtk_separator_menu_item_new();
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+    }
 
     menuitem = gtk_menu_item_new_with_label(_("copy to entry"));
     g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_dictionary_copy_tag, self);
