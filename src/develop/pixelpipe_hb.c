@@ -605,6 +605,7 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   dt_boundingbox_t fbox = { 0.0f };
 
   // get absolute pixel coordinates in final preview image
+  // FIXME: should store size this per module in dt_iop_module_t in imageiop.h, as a dt_colorpicker_sample_t
   if(darktable.lib->proxy.colorpicker.primary_sample->size)
   {
     for(int k = 0; k < 4; k += 2) fbox[k] = module->color_picker_box[k] * wd;
@@ -789,9 +790,11 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   dt_aligned_pixel_t picked_color_rgb_max = { 0.0f };
   dt_aligned_pixel_t picked_color_rgb_mean = { 0.0f };
 
+  // FIXME: use for_each_channel() with only one loop
   for(int k = 0; k < 3; k++) picked_color_rgb_min[k] = FLT_MAX;
   for(int k = 0; k < 3; k++) picked_color_rgb_max[k] = FLT_MIN;
 
+  // FIXME: only have to set box or point depending on sample size
   int box[4] = { 0 };
   int point[2] = { 0 };
 
@@ -811,6 +814,7 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
     for(int j = box[1]; j <= box[3]; j++)
       for(int i = box[0]; i <= box[2]; i++)
       {
+        // FIXME: use for_each_channel()
         for(int k = 0; k < 3; k++)
         {
           picked_color_rgb_min[k]
@@ -825,6 +829,7 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   }
   else
   {
+    // FIXME: use for_each_channel()
     for(int i = 0; i < 3; i++)
       picked_color_rgb_mean[i] = picked_color_rgb_min[i]
           = picked_color_rgb_max[i] = pixel[4 * (roi_in->width * point[1] + point[0]) + i];
@@ -1745,6 +1750,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           {
             // ensure that we are using the right color space
             dt_iop_colorspace_type_t picker_cst = _transform_for_picker(module, pipe->dsc.cst);
+            // FIXME: don't need to transform entire image colorspace when just picking a point
             dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height,
                                                 input_format->cst, picker_cst, &input_format->cst,
                                                 work_profile);
