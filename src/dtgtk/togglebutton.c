@@ -108,7 +108,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
       if(!(flags & CPF_BG_TRANSPARENT) || (flags & CPF_PRELIGHT))
         gtk_render_background(context, cr, startx, starty, cwidth, cheight);
     }
-    else if(!(flags & CPF_ACTIVE) || (flags & CPF_IGNORE_FG_STATE))
+    if(!(flags & CPF_ACTIVE) || (flags & CPF_IGNORE_FG_STATE))
       fg_color.alpha = CLAMP(fg_color.alpha / 2.0, 0.3, 1.0);
   }
   else if(!(flags & CPF_BG_TRANSPARENT))
