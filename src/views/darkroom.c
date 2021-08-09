@@ -620,6 +620,7 @@ void expose(
       else
         cairo_set_source_rgb(cri, 0, 0, .2);
 
+      // FIXME: should be dt_boundingbox_t
       const float *box = sample->box;
       const float *point = sample->point;
       if(sample->size == DT_COLORPICKER_SIZE_BOX)
@@ -710,13 +711,15 @@ void expose(
     cairo_set_line_width(cri, 1.0 / zoom_scale);
     cairo_set_source_rgb(cri, .2, .2, .2);
 
-    const float *box = module_color_picker ? dev->gui_module->color_picker_box : darktable.lib->proxy.colorpicker.primary_sample->box;
-    const float *point = module_color_picker ? dev->gui_module->color_picker_point : darktable.lib->proxy.colorpicker.primary_sample->box;
-    // FIXME: this should test the sample of the current gui_module when not drawing the primary sample -- though now the primary sample is always set when setting gui module so this is OK?
+    // FIXME: should store size this per module in dt_iop_module_t in imageiop.h, as a dt_colorpicker_sample_t
+    // FIXME: this should test the size of the current gui_module when not drawing the primary sample -- though now the primary sample is always set when setting gui module so this is OK?
+    // FIXME: draw point/box in a dimmer color when colorpicker is not active but point remains drawn with a primary colorpicker readout
     if(darktable.lib->proxy.colorpicker.primary_sample && darktable.lib->proxy.colorpicker.primary_sample->size)
     {
       cairo_translate(cri, 1.0 / zoom_scale, 1.0 / zoom_scale);
 
+      // FIXME: should be dt_boundingbox_t
+      const float *box = module_color_picker ? dev->gui_module->color_picker_box : darktable.lib->proxy.colorpicker.primary_sample->box;
       double x = box[0] * wd, y = box[1] * ht;
 
       double d = 1. / zoom_scale;
@@ -739,26 +742,31 @@ void expose(
         cairo_set_source_rgb(cri, .8, .8, .8);
       }
     }
-    else if(point[0] >= 0.0f && point[0] <= 1.0f && point[1] >= 0.0f && point[1] <= 1.0f)
+    else
     {
-      const float size = (wd + ht) / 2.0;
-      cairo_rectangle(cri,
-                      point[0] * wd - .01 * size,
-                      point[1] * ht - .01 * size,
-                      .02 * size, .02 * size);
-      cairo_stroke(cri);
+      // FIXME: don't display a point at (0,0) when there is no primary color picker set up yet
+      const float *point = module_color_picker ? dev->gui_module->color_picker_point : darktable.lib->proxy.colorpicker.primary_sample->point;
+      if(point[0] >= 0.0f && point[0] <= 1.0f && point[1] >= 0.0f && point[1] <= 1.0f)
+      {
+        const float size = (wd + ht) / 2.0;
+        cairo_rectangle(cri,
+                        point[0] * wd - .01 * size,
+                        point[1] * ht - .01 * size,
+                        .02 * size, .02 * size);
+        cairo_stroke(cri);
 
-      cairo_set_source_rgb(cri, .8, .8, .8);
-      cairo_rectangle(cri,
-                      point[0] * wd - .01 * size + 1.0 / zoom_scale,
-                      point[1] * ht - .01 * size + 1.0 / zoom_scale,
-                      .02 * size - 2. / zoom_scale,
-                      .02 * size - 2. / zoom_scale);
-      cairo_move_to(cri, point[0] * wd, point[1] * ht - .01 * size + 1. / zoom_scale);
-      cairo_line_to(cri, point[0] * wd, point[1] * ht + .01 * size - 1. / zoom_scale);
-      cairo_move_to(cri, point[0] * wd - .01 * size + 1. / zoom_scale, point[1] * ht);
-      cairo_line_to(cri, point[0] * wd + .01 * size - 1. / zoom_scale, point[1] * ht);
-      cairo_stroke(cri);
+        cairo_set_source_rgb(cri, .8, .8, .8);
+        cairo_rectangle(cri,
+                        point[0] * wd - .01 * size + 1.0 / zoom_scale,
+                        point[1] * ht - .01 * size + 1.0 / zoom_scale,
+                        .02 * size - 2. / zoom_scale,
+                        .02 * size - 2. / zoom_scale);
+        cairo_move_to(cri, point[0] * wd, point[1] * ht - .01 * size + 1. / zoom_scale);
+        cairo_line_to(cri, point[0] * wd, point[1] * ht + .01 * size - 1. / zoom_scale);
+        cairo_move_to(cri, point[0] * wd - .01 * size + 1. / zoom_scale, point[1] * ht);
+        cairo_line_to(cri, point[0] * wd + .01 * size - 1. / zoom_scale, point[1] * ht);
+        cairo_stroke(cri);
+      }
     }
     cairo_restore(cri);
   }
