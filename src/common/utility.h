@@ -76,6 +76,12 @@ gboolean dt_util_gps_elevation_to_number(const double r_1, const double r_2, cha
 // make paths absolute and try to normalize on Windows. also deal with character encoding on Windows.
 gchar *dt_util_normalize_path(const gchar *input);
 
+// returns a pointer into file_name after the root component, like g_path_skip_root (), but works also with Windows networks paths (\\hostname\share\file)
+const gchar *dt_util_path_skip_root(const gchar *filename);
+
+// gets the directory components of a file name, like g_path_get_dirname(), but works also with Windows networks paths (\\hostname\share\file)
+gchar *dt_util_path_get_dirname(const gchar *filename);
+
 // format exposure time string
 gchar *dt_util_format_exposure(const float exposuretime);
 
