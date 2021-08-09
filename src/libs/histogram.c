@@ -40,6 +40,10 @@
 #include "libs/colorpicker.h"
 #include "common/splines.h"
 
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
+
 #define HISTOGRAM_BINS 256
 // # of gradations between each primary/secondary to draw the hue ring
 // this is tuned to most degenerate cases: curve to blue primary in
