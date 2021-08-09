@@ -1868,6 +1868,8 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
     position = dt_conf_get_int("plugins/darkroom/histogram/position");
   dt_bauhaus_combobox_set(combo, position);
 
+  gtk_widget_set_tooltip_text(combo, _("this setting will take effect only after switching between views."));
+
   gtk_box_pack_start(GTK_BOX(area), combo, TRUE, TRUE, 0);
 
 #ifdef GDK_WINDOWING_QUARTZ
@@ -2204,6 +2206,11 @@ void gui_init(dt_lib_module_t *self)
   /* set size of histogram draw area */
   const float histheight = dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f;
   gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
+
+  /* if we don't have a pref for the collapsed state of the widget, force it expanded */
+  /* this is to manage the transition from the uncollapsible to the collapsible widget */
+  if(dt_conf_key_exists("plugins/darkroom/histogram/position"))
+    dt_lib_gui_set_expanded(self, TRUE);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
