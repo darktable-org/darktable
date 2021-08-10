@@ -688,7 +688,8 @@ void expose(
     && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && dev->gui_module->enabled;
   const gboolean primary_color_picker = darktable.lib->proxy.colorpicker.primary_sample
     && !darktable.lib->proxy.colorpicker.primary_sample->locked;
-  if(module_color_picker || primary_color_picker)
+  if((darktable.lib->proxy.colorpicker.primary_sample) &&
+     (module_color_picker || primary_color_picker))
   {
     // The colorpicker bounding rectangle should only be displayed inside the visible image
     const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
@@ -713,61 +714,58 @@ void expose(
 
     // FIXME: if we can always use the point/box/size from primary colorpicker, don't store it per module anymore
     // FIXME: draw point/box in a dimmer color when colorpicker is not active but point remains drawn with a primary colorpicker readout
-    if(darktable.lib->proxy.colorpicker.primary_sample)
+    if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
-      if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+      cairo_translate(cri, 1.0 / zoom_scale, 1.0 / zoom_scale);
+
+      // FIXME: should be dt_boundingbox_t
+      const float *box = module_color_picker ? dev->gui_module->color_picker_box : darktable.lib->proxy.colorpicker.primary_sample->box;
+      double x = box[0] * wd, y = box[1] * ht;
+
+      double d = 1. / zoom_scale;
+      cairo_set_source_rgb(cri, .0, .0, .0);
+      for(int blackwhite = 2; blackwhite; blackwhite--)
       {
-        cairo_translate(cri, 1.0 / zoom_scale, 1.0 / zoom_scale);
+        double w = 5. / zoom_scale - d;
 
-        // FIXME: should be dt_boundingbox_t
-        const float *box = module_color_picker ? dev->gui_module->color_picker_box : darktable.lib->proxy.colorpicker.primary_sample->box;
-        double x = box[0] * wd, y = box[1] * ht;
+        cairo_rectangle(cri, x + d, y + d, (box[2] - box[0]) * wd - 2. * d, (box[3] - box[1]) * ht - 2. * d);
 
-        double d = 1. / zoom_scale;
-        cairo_set_source_rgb(cri, .0, .0, .0);
-        for(int blackwhite = 2; blackwhite; blackwhite--)
-        {
-          double w = 5. / zoom_scale - d;
+        // FIXME: this draws handles even though the handles can't be moved -- lose these!
+        // FIXME: these handles aren't modified by d -- they only need to be drawn once in light color
+        cairo_rectangle(cri, x - w, y - w, 2. * w, 2. * w);
+        cairo_rectangle(cri, x - w, box[3] * ht - w, 2. * w, 2. * w);
+        cairo_rectangle(cri, box[2] * wd - w, y - w, 2. * w, 2. * w);
+        cairo_rectangle(cri, box[2] * wd - w, box[3] * ht - w, 2. * w, 2. *w);
+        cairo_stroke(cri);
 
-          cairo_rectangle(cri, x + d, y + d, (box[2] - box[0]) * wd - 2. * d, (box[3] - box[1]) * ht - 2. * d);
-
-          // FIXME: this draws handles even though the handles can't be moved -- lose these!
-          // FIXME: these handles aren't modified by d -- they only need to be drawn once in light color
-          cairo_rectangle(cri, x - w, y - w, 2. * w, 2. * w);
-          cairo_rectangle(cri, x - w, box[3] * ht - w, 2. * w, 2. * w);
-          cairo_rectangle(cri, box[2] * wd - w, y - w, 2. * w, 2. * w);
-          cairo_rectangle(cri, box[2] * wd - w, box[3] * ht - w, 2. * w, 2. *w);
-          cairo_stroke(cri);
-
-          d = 0;
-          cairo_set_source_rgb(cri, .8, .8, .8);
-        }
+        d = 0;
+        cairo_set_source_rgb(cri, .8, .8, .8);
       }
-      else
+    }
+    else
+    {
+      // FIXME: don't display a point at (0,0) when there is no primary color picker set up yet
+      const float *point = module_color_picker ? dev->gui_module->color_picker_point : darktable.lib->proxy.colorpicker.primary_sample->point;
+      if(point[0] >= 0.0f && point[0] <= 1.0f && point[1] >= 0.0f && point[1] <= 1.0f)
       {
-        // FIXME: don't display a point at (0,0) when there is no primary color picker set up yet
-        const float *point = module_color_picker ? dev->gui_module->color_picker_point : darktable.lib->proxy.colorpicker.primary_sample->point;
-        if(point[0] >= 0.0f && point[0] <= 1.0f && point[1] >= 0.0f && point[1] <= 1.0f)
-        {
-          const float size = (wd + ht) / 2.0;
-          cairo_rectangle(cri,
-                          point[0] * wd - .01 * size,
-                          point[1] * ht - .01 * size,
-                          .02 * size, .02 * size);
-          cairo_stroke(cri);
+        const float size = (wd + ht) / 2.0;
+        cairo_rectangle(cri,
+                        point[0] * wd - .01 * size,
+                        point[1] * ht - .01 * size,
+                        .02 * size, .02 * size);
+        cairo_stroke(cri);
 
-          cairo_set_source_rgb(cri, .8, .8, .8);
-          cairo_rectangle(cri,
-                          point[0] * wd - .01 * size + 1.0 / zoom_scale,
-                          point[1] * ht - .01 * size + 1.0 / zoom_scale,
-                          .02 * size - 2. / zoom_scale,
-                          .02 * size - 2. / zoom_scale);
-          cairo_move_to(cri, point[0] * wd, point[1] * ht - .01 * size + 1. / zoom_scale);
-          cairo_line_to(cri, point[0] * wd, point[1] * ht + .01 * size - 1. / zoom_scale);
-          cairo_move_to(cri, point[0] * wd - .01 * size + 1. / zoom_scale, point[1] * ht);
-          cairo_line_to(cri, point[0] * wd + .01 * size - 1. / zoom_scale, point[1] * ht);
-          cairo_stroke(cri);
-        }
+        cairo_set_source_rgb(cri, .8, .8, .8);
+        cairo_rectangle(cri,
+                        point[0] * wd - .01 * size + 1.0 / zoom_scale,
+                        point[1] * ht - .01 * size + 1.0 / zoom_scale,
+                        .02 * size - 2. / zoom_scale,
+                        .02 * size - 2. / zoom_scale);
+        cairo_move_to(cri, point[0] * wd, point[1] * ht - .01 * size + 1. / zoom_scale);
+        cairo_line_to(cri, point[0] * wd, point[1] * ht + .01 * size - 1. / zoom_scale);
+        cairo_move_to(cri, point[0] * wd - .01 * size + 1. / zoom_scale, point[1] * ht);
+        cairo_line_to(cri, point[0] * wd + .01 * size - 1. / zoom_scale, point[1] * ht);
+        cairo_stroke(cri);
       }
     }
     cairo_restore(cri);
@@ -3325,7 +3323,8 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   int handled = 0;
 
   // FIXME: can get away with only testing primary colorpicker?
-  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && ctl->button_down
+  if(darktable.lib->proxy.colorpicker.primary_sample
+     && dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && ctl->button_down
      && ctl->button_down_which == 1)
   {
     printf("darkroom: mouse moved in colorpicker\n");
@@ -3339,24 +3338,21 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
       float zoom_x, zoom_y;
       dt_dev_get_pointer_zoom_pos(dev, x + offx, y + offy, &zoom_x, &zoom_y);
 
-      if(darktable.lib->proxy.colorpicker.primary_sample)
+      if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
       {
-        if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
-        {
-          // FIXME: don't set the module box if enough to set primary sample!
-          darktable.lib->proxy.colorpicker.primary_sample->box[0] = dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(dev->gui_module->color_picker_point[0], .5f + zoom_x) - delta_x);
-          darktable.lib->proxy.colorpicker.primary_sample->box[1] = dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(dev->gui_module->color_picker_point[1], .5f + zoom_y) - delta_y);
-          darktable.lib->proxy.colorpicker.primary_sample->box[2] = dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(dev->gui_module->color_picker_point[0], .5f + zoom_x) + delta_x);
-          darktable.lib->proxy.colorpicker.primary_sample->box[3] = dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(dev->gui_module->color_picker_point[1], .5f + zoom_y) + delta_y);
-        }
-        else
-        {
-          // FIXME: don't set the module point if enough to set primary sample!
-          darktable.lib->proxy.colorpicker.primary_sample->point[0] = dev->gui_module->color_picker_point[0] = .5f + zoom_x;
-          darktable.lib->proxy.colorpicker.primary_sample->point[1] = dev->gui_module->color_picker_point[1] = .5f + zoom_y;
+        // FIXME: don't set the module box if enough to set primary sample!
+        darktable.lib->proxy.colorpicker.primary_sample->box[0] = dev->gui_module->color_picker_box[0] = fmaxf(0.0, fminf(dev->gui_module->color_picker_point[0], .5f + zoom_x) - delta_x);
+        darktable.lib->proxy.colorpicker.primary_sample->box[1] = dev->gui_module->color_picker_box[1] = fmaxf(0.0, fminf(dev->gui_module->color_picker_point[1], .5f + zoom_y) - delta_y);
+        darktable.lib->proxy.colorpicker.primary_sample->box[2] = dev->gui_module->color_picker_box[2] = fminf(1.0, fmaxf(dev->gui_module->color_picker_point[0], .5f + zoom_x) + delta_x);
+        darktable.lib->proxy.colorpicker.primary_sample->box[3] = dev->gui_module->color_picker_box[3] = fminf(1.0, fmaxf(dev->gui_module->color_picker_point[1], .5f + zoom_y) + delta_y);
+      }
+      else
+      {
+        // FIXME: don't set the module point if enough to set primary sample!
+        darktable.lib->proxy.colorpicker.primary_sample->point[0] = dev->gui_module->color_picker_point[0] = .5f + zoom_x;
+        darktable.lib->proxy.colorpicker.primary_sample->point[1] = dev->gui_module->color_picker_point[1] = .5f + zoom_y;
 
-          dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-        }
+        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
       }
     }
     dt_control_queue_redraw();
@@ -3442,7 +3438,9 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   if(height_i > capht) offy = (capht - height_i) * .5f;
 
   int handled = 0;
-  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 1)
+  if(darktable.lib->proxy.colorpicker.primary_sample
+     && dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
+     && which == 1)
   {
     printf("darkroom: button pressed in colorpicker\n");
     float zoom_x, zoom_y;
@@ -3459,57 +3457,56 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       darktable.lib->proxy.colorpicker.primary_sample->point[0] = dev->gui_module->color_picker_point[0] = zoom_x;
       darktable.lib->proxy.colorpicker.primary_sample->point[1] = dev->gui_module->color_picker_point[1] = zoom_y;
 
-      if(darktable.lib->proxy.colorpicker.primary_sample)
+      if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
       {
+        // FIXME: the sample box is drawn with drag handles, does this code make them sensitive to the mouse?
         printf("darkroom: button pressed in colorpicker with primary sample with nonzero size\n");
-        if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+        gboolean on_corner_prev_box = TRUE;
+        float opposite_x, opposite_y;
+
+        // FIXME: test the primary sample box?
+        if(fabsf(zoom_x - dev->gui_module->color_picker_box[0]) < .005f)
+          opposite_x = dev->gui_module->color_picker_box[2];
+        else if(fabsf(zoom_x - dev->gui_module->color_picker_box[2]) < .005f)
+          opposite_x = dev->gui_module->color_picker_box[0];
+        else
+          on_corner_prev_box = FALSE;
+
+        // FIXME: test the primary sample box?
+        if(fabsf(zoom_y - dev->gui_module->color_picker_box[1]) < .005f)
+          opposite_y = dev->gui_module->color_picker_box[3];
+        else if(fabsf(zoom_y - dev->gui_module->color_picker_box[3]) < .005f)
+          opposite_y = dev->gui_module->color_picker_box[1];
+        else
+          on_corner_prev_box = FALSE;
+
+        if(on_corner_prev_box)
         {
-          // FIXME: the sample box is drawn with drag handles, does this code make them sensitive to the mouse?
-          gboolean on_corner_prev_box = TRUE;
-          float opposite_x, opposite_y;
-
-          // FIXME: test the primary sample box?
-          if(fabsf(zoom_x - dev->gui_module->color_picker_box[0]) < .005f)
-            opposite_x = dev->gui_module->color_picker_box[2];
-          else if(fabsf(zoom_x - dev->gui_module->color_picker_box[2]) < .005f)
-            opposite_x = dev->gui_module->color_picker_box[0];
-          else
-            on_corner_prev_box = FALSE;
-
-          // FIXME: test the primary sample box?
-          if(fabsf(zoom_y - dev->gui_module->color_picker_box[1]) < .005f)
-            opposite_y = dev->gui_module->color_picker_box[3];
-          else if(fabsf(zoom_y - dev->gui_module->color_picker_box[3]) < .005f)
-            opposite_y = dev->gui_module->color_picker_box[1];
-          else
-            on_corner_prev_box = FALSE;
-
-          if(on_corner_prev_box)
-          {
-            // FIXME: don't set the module color picker point?
-            darktable.lib->proxy.colorpicker.primary_sample->point[0] = dev->gui_module->color_picker_point[0] = opposite_x;
-            darktable.lib->proxy.colorpicker.primary_sample->point[1] = dev->gui_module->color_picker_point[1] = opposite_y;
-          }
-          else
-          {
-            // FIXME: don't set the module color picker box?
-            darktable.lib->proxy.colorpicker.primary_sample->box[0] = dev->gui_module->color_picker_box[0] = fmaxf(0.0, zoom_x - delta_x);
-            darktable.lib->proxy.colorpicker.primary_sample->box[1] = dev->gui_module->color_picker_box[1] = fmaxf(0.0, zoom_y - delta_y);
-            darktable.lib->proxy.colorpicker.primary_sample->box[2] = dev->gui_module->color_picker_box[2] = fminf(1.0, zoom_x + delta_x);
-            darktable.lib->proxy.colorpicker.primary_sample->box[3] = dev->gui_module->color_picker_box[3] = fminf(1.0, zoom_y + delta_y);
-          }
+          // FIXME: don't set the module color picker point?
+          darktable.lib->proxy.colorpicker.primary_sample->point[0] = dev->gui_module->color_picker_point[0] = opposite_x;
+          darktable.lib->proxy.colorpicker.primary_sample->point[1] = dev->gui_module->color_picker_point[1] = opposite_y;
         }
         else
         {
-          dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+          // FIXME: don't set the module color picker box?
+          darktable.lib->proxy.colorpicker.primary_sample->box[0] = dev->gui_module->color_picker_box[0] = fmaxf(0.0, zoom_x - delta_x);
+          darktable.lib->proxy.colorpicker.primary_sample->box[1] = dev->gui_module->color_picker_box[1] = fmaxf(0.0, zoom_y - delta_y);
+          darktable.lib->proxy.colorpicker.primary_sample->box[2] = dev->gui_module->color_picker_box[2] = fminf(1.0, zoom_x + delta_x);
+          darktable.lib->proxy.colorpicker.primary_sample->box[3] = dev->gui_module->color_picker_box[3] = fminf(1.0, zoom_y + delta_y);
         }
+      }
+      else
+      {
+        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
       }
     }
     dt_control_queue_redraw();
     return 1;
   }
 
-  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 3)
+  if(darktable.lib->proxy.colorpicker.primary_sample
+     && dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
+     && which == 3)
   {
     // default is hardcoded this way
     darktable.lib->proxy.colorpicker.primary_sample->box[0] = darktable.lib->proxy.colorpicker.primary_sample->box[1] =
