@@ -274,11 +274,11 @@ void _display_module_trouble_message_callback(gpointer instance,
   }
 }
 
-static void _darkroom_picker_draw(dt_view_t *self, cairo_t *cri,
-                                  int32_t width, int32_t height,
-                                  dt_dev_zoom_t zoom, int closeup, float zoom_x, float zoom_y,
-                                  GSList *samples,
-                                  dt_colorpicker_sample_t *match_sample)
+static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
+                                   int32_t width, int32_t height,
+                                   dt_dev_zoom_t zoom, int closeup, float zoom_x, float zoom_y,
+                                   GSList *samples, dt_colorpicker_sample_t *match_sample,
+                                   gboolean is_primary_sample, gboolean module_color_picker)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
@@ -314,46 +314,109 @@ static void _darkroom_picker_draw(dt_view_t *self, cairo_t *cri,
     }
 
     cairo_set_line_width(cri, lw);
-    // FIXME: make different cases here for primary sample active or deselected
+    // FIXME: make different cases here for a dimmed primary sample when have activated a module but there is still a primary colorpicker readout
+    if(is_primary_sample)
+    {
+      if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+        cairo_set_source_rgb(cri, .0, .0, .0);
+      else
+        cairo_set_source_rgb(cri, .2, .2, .2);
+    }
     // FIXME: this is tested a few times, preset a gboolean
-    if(sample == darktable.lib->proxy.colorpicker.selected_sample)
+    else if(sample == darktable.lib->proxy.colorpicker.selected_sample)
       cairo_set_source_rgb(cri, .2, 0, 0);
     else
       cairo_set_source_rgb(cri, 0, 0, .2);
 
-    // FIXME: should be dt_boundingbox_t
-    const float *box = sample->box;
-    const float *point = sample->point;
     if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
-      cairo_rectangle(cri, box[0] * wd + lw, box[1] * ht + lw, (box[2] - box[0]) * wd, (box[3] - box[1]) * ht);
-      cairo_stroke(cri);
+      // FIXME: can always use primary sample here and lose special case code?
+      // FIXME: should be dt_boundingbox_t
+      const float *box = module_color_picker ? dev->gui_module->color_picker_box : sample->box;
+      double x = box[0] * wd, y = box[1] * ht;
 
-      if(sample == darktable.lib->proxy.colorpicker.selected_sample)
-        cairo_set_source_rgb(cri, .8, 0, 0);
+      if(is_primary_sample)
+      {
+        cairo_translate(cri, lw, lw);
+        // FIXME: this starts out the same as lw above except it's a double not a float
+        double d = 1. / zoom_scale;
+        // FIXME: generally hacky -- align with code below and generally simplify
+        for(int blackwhite = 2; blackwhite; blackwhite--)
+        {
+          double w = 5. / zoom_scale - d;
+
+          cairo_rectangle(cri, x + d, y + d, (box[2] - box[0]) * wd - 2. * d, (box[3] - box[1]) * ht - 2. * d);
+
+          cairo_rectangle(cri, x - w, y - w, 2. * w, 2. * w);
+          cairo_rectangle(cri, x - w, box[3] * ht - w, 2. * w, 2. * w);
+          cairo_rectangle(cri, box[2] * wd - w, y - w, 2. * w, 2. * w);
+          cairo_rectangle(cri, box[2] * wd - w, box[3] * ht - w, 2. * w, 2. *w);
+          cairo_stroke(cri);
+
+          // FIXME: second version is simpler if d is 0
+          d = 0;
+          // FIXME: this executes one more time than needed
+          cairo_set_source_rgb(cri, .8, .8, .8);
+        }
+      }
       else
-        cairo_set_source_rgb(cri, 0, 0, .8);
-      cairo_rectangle(cri, box[0] * wd + 2. * lw, box[1] * ht + 2. * lw, (box[2] - box[0]) * wd - 2. * lw, (box[3] - box[1]) * ht - 2. * lw);
-      cairo_stroke(cri);
+      {
+        cairo_rectangle(cri, box[0] * wd + lw, box[1] * ht + lw, (box[2] - box[0]) * wd, (box[3] - box[1]) * ht);
+        cairo_stroke(cri);
+
+        if(sample == darktable.lib->proxy.colorpicker.selected_sample)
+          cairo_set_source_rgb(cri, .8, 0, 0);
+        else
+          cairo_set_source_rgb(cri, 0, 0, .8);
+        cairo_rectangle(cri, box[0] * wd + 2. * lw, box[1] * ht + 2. * lw, (box[2] - box[0]) * wd - 2. * lw, (box[3] - box[1]) * ht - 2. * lw);
+        cairo_stroke(cri);
+      }
     }
     else
     {
-      // FIXME: this is drawn differently for primary sample compared to live samples, implement both codes
-      cairo_rectangle(cri, point[0] * wd - .01 * wd, point[1] * ht - .01 * wd, .02 * wd, .02 * wd);
-      cairo_stroke(cri);
+      // FIXME: can always use primary sample here and lose special case code?
+      const float *point = module_color_picker ? dev->gui_module->color_picker_point : sample->point;
 
-      if(sample == darktable.lib->proxy.colorpicker.selected_sample)
-        cairo_set_source_rgb(cri, .8, 0, 0);
+      if(is_primary_sample)
+      {
+        const float size = (wd + ht) / 2.0;
+        cairo_rectangle(cri,
+                        point[0] * wd - .01 * size,
+                        point[1] * ht - .01 * size,
+                        .02 * size, .02 * size);
+        cairo_stroke(cri);
+
+        cairo_set_source_rgb(cri, .8, .8, .8);
+        cairo_rectangle(cri,
+                        point[0] * wd - .01 * size + 1.0 / zoom_scale,
+                        point[1] * ht - .01 * size + 1.0 / zoom_scale,
+                        .02 * size - 2. / zoom_scale,
+                        .02 * size - 2. / zoom_scale);
+        cairo_move_to(cri, point[0] * wd, point[1] * ht - .01 * size + 1. / zoom_scale);
+        cairo_line_to(cri, point[0] * wd, point[1] * ht + .01 * size - 1. / zoom_scale);
+        cairo_move_to(cri, point[0] * wd - .01 * size + 1. / zoom_scale, point[1] * ht);
+        cairo_line_to(cri, point[0] * wd + .01 * size - 1. / zoom_scale, point[1] * ht);
+        cairo_stroke(cri);
+      }
       else
-        cairo_set_source_rgb(cri, 0, 0, .8);
-      cairo_rectangle(cri, (point[0] - 0.01) * wd + lw,
-                      point[1] * ht - 0.01 * wd + lw, .02 * wd - 2. * lw,
-                      .02 * wd - 2. * lw);
-      cairo_move_to(cri, point[0] * wd, point[1] * ht - .01 * wd + lw);
-      cairo_line_to(cri, point[0] * wd, point[1] * ht + .01 * wd - lw);
-      cairo_move_to(cri, point[0] * wd - .01 * wd + lw, point[1] * ht);
-      cairo_line_to(cri, point[0] * wd + .01 * wd - lw, point[1] * ht);
-      cairo_stroke(cri);
+      {
+        // FIXME: this is drawn differently for primary sample compared to live samples, implement both codes
+        cairo_rectangle(cri, point[0] * wd - .01 * wd, point[1] * ht - .01 * wd, .02 * wd, .02 * wd);
+        cairo_stroke(cri);
+
+        if(sample == darktable.lib->proxy.colorpicker.selected_sample)
+          cairo_set_source_rgb(cri, .8, 0, 0);
+        else
+          cairo_set_source_rgb(cri, 0, 0, .8);
+        cairo_rectangle(cri, (point[0] - 0.01) * wd + lw,
+                        point[1] * ht - 0.01 * wd + lw, .02 * wd - 2. * lw,
+                        .02 * wd - 2. * lw);
+        cairo_move_to(cri, point[0] * wd, point[1] * ht - .01 * wd + lw);
+        cairo_line_to(cri, point[0] * wd, point[1] * ht + .01 * wd - lw);
+        cairo_move_to(cri, point[0] * wd - .01 * wd + lw, point[1] * ht);
+        cairo_line_to(cri, point[0] * wd + .01 * wd - lw, point[1] * ht);
+        cairo_stroke(cri);
+      }
     }
   }
 
@@ -668,10 +731,11 @@ void expose(
       darktable.lib->proxy.colorpicker.selected_sample
       && !darktable.lib->proxy.colorpicker.display_samples;
 
-    _darkroom_picker_draw(
+    _darkroom_pickers_draw(
       self, cri, width, height, zoom, closeup, zoom_x, zoom_y,
       darktable.lib->proxy.colorpicker.live_samples,
-      only_selected_sample ? darktable.lib->proxy.colorpicker.selected_sample : NULL);
+      only_selected_sample ? darktable.lib->proxy.colorpicker.selected_sample : NULL,
+      FALSE, FALSE);
   }
 
   // draw guide lines if needed
@@ -707,84 +771,13 @@ void expose(
   if((darktable.lib->proxy.colorpicker.primary_sample)
      && (module_color_picker || primary_color_picker))
   {
-    // The colorpicker bounding rectangle should only be displayed inside the visible image
-    const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
-    const int pheight = (dev->pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
-
-    const float hbar = (self->width - pwidth) * .5f;
-    const float tbar = (self->height - pheight) * .5f;
-    cairo_save(cri);
-    cairo_rectangle(cri, hbar, tbar, (double)pwidth, (double)pheight);
-    cairo_clip(cri);
-
-    const float wd = dev->preview_pipe->backbuf_width;
-    const float ht = dev->preview_pipe->backbuf_height;
-    const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-
-    cairo_translate(cri, width / 2.0, height / 2.0f);
-    cairo_scale(cri, zoom_scale, zoom_scale);
-    cairo_translate(cri, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
-
-    cairo_set_line_width(cri, 1.0 / zoom_scale);
-    cairo_set_source_rgb(cri, .2, .2, .2);
+    GSList samples = { .data = darktable.lib->proxy.colorpicker.primary_sample, .next = NULL };
 
     // FIXME: if we can always use the point/box/size from primary colorpicker, don't store it per module anymore
-    // FIXME: draw point/box in a dimmer color when colorpicker is not active but point remains drawn with a primary colorpicker readout
-    if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
-    {
-      cairo_translate(cri, 1.0 / zoom_scale, 1.0 / zoom_scale);
-
-      // FIXME: should be dt_boundingbox_t
-      const float *box = module_color_picker ? dev->gui_module->color_picker_box : darktable.lib->proxy.colorpicker.primary_sample->box;
-      double x = box[0] * wd, y = box[1] * ht;
-
-      double d = 1. / zoom_scale;
-      cairo_set_source_rgb(cri, .0, .0, .0);
-      for(int blackwhite = 2; blackwhite; blackwhite--)
-      {
-        double w = 5. / zoom_scale - d;
-
-        cairo_rectangle(cri, x + d, y + d, (box[2] - box[0]) * wd - 2. * d, (box[3] - box[1]) * ht - 2. * d);
-
-        // FIXME: this draws handles even though the handles can't be moved -- lose these!
-        // FIXME: these handles aren't modified by d -- they only need to be drawn once in light color
-        cairo_rectangle(cri, x - w, y - w, 2. * w, 2. * w);
-        cairo_rectangle(cri, x - w, box[3] * ht - w, 2. * w, 2. * w);
-        cairo_rectangle(cri, box[2] * wd - w, y - w, 2. * w, 2. * w);
-        cairo_rectangle(cri, box[2] * wd - w, box[3] * ht - w, 2. * w, 2. *w);
-        cairo_stroke(cri);
-
-        d = 0;
-        cairo_set_source_rgb(cri, .8, .8, .8);
-      }
-    }
-    else
-    {
-      // FIXME: don't display a point at (0,0) when there is no primary color picker set up yet
-      const float *point = module_color_picker ? dev->gui_module->color_picker_point : darktable.lib->proxy.colorpicker.primary_sample->point;
-      if(point[0] >= 0.0f && point[0] <= 1.0f && point[1] >= 0.0f && point[1] <= 1.0f)
-      {
-        const float size = (wd + ht) / 2.0;
-        cairo_rectangle(cri,
-                        point[0] * wd - .01 * size,
-                        point[1] * ht - .01 * size,
-                        .02 * size, .02 * size);
-        cairo_stroke(cri);
-
-        cairo_set_source_rgb(cri, .8, .8, .8);
-        cairo_rectangle(cri,
-                        point[0] * wd - .01 * size + 1.0 / zoom_scale,
-                        point[1] * ht - .01 * size + 1.0 / zoom_scale,
-                        .02 * size - 2. / zoom_scale,
-                        .02 * size - 2. / zoom_scale);
-        cairo_move_to(cri, point[0] * wd, point[1] * ht - .01 * size + 1. / zoom_scale);
-        cairo_line_to(cri, point[0] * wd, point[1] * ht + .01 * size - 1. / zoom_scale);
-        cairo_move_to(cri, point[0] * wd - .01 * size + 1. / zoom_scale, point[1] * ht);
-        cairo_line_to(cri, point[0] * wd + .01 * size - 1. / zoom_scale, point[1] * ht);
-        cairo_stroke(cri);
-      }
-    }
-    cairo_restore(cri);
+    // FIXME: don't display a point at (0,0) when there is no primary color picker set up yet
+    _darkroom_pickers_draw(
+      self, cri, width, height, zoom, closeup, zoom_x, zoom_y,
+      &samples, darktable.lib->proxy.colorpicker.primary_sample, TRUE, module_color_picker);
   }
   else
   {
