@@ -594,7 +594,7 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
   const size_t npixels = (size_t)width * height;
 
   // we need to allocate a zeroed temporary buffer for intermediate creation of individual shapes
-  float *const restrict bufs = dt_calloc_align_float(npixels);
+  float *const restrict bufs = dt_alloc_align_float(npixels);
   if(bufs == NULL) return 0;
 
   // and we get all masks
@@ -605,6 +605,8 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
 
     if(sel)
     {
+      // ensure that we start with a zeroed buffer regardless of what was previously written into 'bufs'
+      memset(bufs, 0, npixels*sizeof(float));
       const int ok = dt_masks_get_mask_roi(module, piece, sel, roi, bufs);
       const float op = fpt->opacity;
       const int state = fpt->state;
