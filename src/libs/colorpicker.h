@@ -21,18 +21,22 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-// FIXME: these should be an enum values
-#define DT_COLORPICKER_SIZE_POINT 0
-#define DT_COLORPICKER_SIZE_BOX 1
+typedef enum dt_lib_colorpicker_size_t
+{
+  DT_LIB_COLORPICKER_SIZE_POINT = 0,
+  DT_LIB_COLORPICKER_SIZE_BOX
+} dt_lib_colorpicker_size_t;
 
-/** The struct for live color picker samples */
+/** The struct for primary and live color picker samples */
+// FIXME: for primary and live sample we need all this data -- for per-module picker we need thje picked coor data for that point in the pixelpipe, but could lose point/box/size/locked 
 typedef struct dt_colorpicker_sample_t
 {
   /** The sample area or point */
   float point[2];
   dt_boundingbox_t box;
-  // FIXME: this should be an enum
-  int size;
+  dt_lib_colorpicker_size_t size;
+  // FIXME: change this to "active" -- for primary picker it's true once the picker has been turned on, until the picker is reset -- for live pickers it corresponds to "locked" setting
+  // FIXME: when user clicks off the colorpicker button in the primary picker, this should turn off -- if a module colorpicker is selected, there should still be a transparent way to click this off (clicking off the per-module picker, or perhaps the primary picker remains selected, and clicking it turns off per-module picker as well
   int locked;
 
   /** The actual picked colors */

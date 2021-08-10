@@ -273,7 +273,7 @@ static void _picker_button_toggled(GtkToggleButton *button, dt_lib_colorpicker_t
   gtk_widget_set_sensitive(GTK_WIDGET(data->add_sample_button), gtk_toggle_button_get_active(button));
 }
 
-static void _update_size(dt_lib_module_t *self, int size)
+static void _update_size(dt_lib_module_t *self, dt_lib_colorpicker_size_t size)
 {
   dt_lib_colorpicker_t *data = self->data;
   data->primary_sample.size = size;
@@ -502,16 +502,16 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
 
   // Setting the actual data
   // FIXME: just do a memcpy of this, then set the widget data at the end, if can pull this all from primary sample
-  if(data->primary_sample.size)
+  if(data->primary_sample.size == DT_LIB_COLORPICKER_SIZE_BOX)
   {
-    sample->size = DT_COLORPICKER_SIZE_BOX;
+    sample->size = DT_LIB_COLORPICKER_SIZE_BOX;
     // FIXME: should be able to get from primary sample
     for(int i = 0; i < 4; i++) sample->box[i] = module->color_picker_box[i];
     //for(int i = 0; i < 4; i++) sample->box[i] = data->primary_sample.box[i];
   }
   else
   {
-    sample->size = DT_COLORPICKER_SIZE_POINT;
+    sample->size = DT_LIB_COLORPICKER_SIZE_POINT;
     // FIXME: should be able to get from primary sample
     for(int i = 0; i < 2; i++) sample->point[i] = module->color_picker_point[i];
     //for(int i = 0; i < 2; i++) sample->point[i] = data->primary_sample.point[i];
@@ -567,7 +567,7 @@ static void _set_sample_area(dt_lib_module_t *self, float size)
         = size;
   }
 
-  _update_size(self, DT_COLORPICKER_SIZE_BOX);
+  _update_size(self, DT_LIB_COLORPICKER_SIZE_BOX);
 }
 
 static void _set_sample_box_area(dt_lib_module_t *self, const float *const box)
@@ -586,7 +586,7 @@ static void _set_sample_box_area(dt_lib_module_t *self, const float *const box)
       darktable.develop->gui_module->color_picker_box[k] = data->primary_sample.box[k] = box[k];
   }
 
-  _update_size(self, DT_COLORPICKER_SIZE_BOX);
+  _update_size(self, DT_LIB_COLORPICKER_SIZE_BOX);
 }
 
 static void _set_sample_point(dt_lib_module_t *self, float x, float y)
@@ -605,7 +605,7 @@ static void _set_sample_point(dt_lib_module_t *self, float x, float y)
     darktable.develop->gui_module->color_picker_point[1] = data->primary_sample.point[1] = y;
   }
 
-  _update_size(self, DT_COLORPICKER_SIZE_POINT);
+  _update_size(self, DT_LIB_COLORPICKER_SIZE_POINT);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -622,7 +622,9 @@ void gui_init(dt_lib_module_t *self)
 
   // Initializing proxy functions and data
   darktable.lib->proxy.colorpicker.module = self;
-  data->primary_sample.size = dt_conf_get_int("ui_last/colorpicker_size");
+  // FIXME: does this matter if the size is reset depending on how the picker is clipped?
+  data->primary_sample.size =
+    dt_conf_get_int("ui_last/colorpicker_size") ? DT_LIB_COLORPICKER_SIZE_BOX : DT_LIB_COLORPICKER_SIZE_POINT;
   darktable.lib->proxy.colorpicker.display_samples = dt_conf_get_int("ui_last/colorpicker_display_samples");
   darktable.lib->proxy.colorpicker.primary_sample = &data->primary_sample;
   darktable.lib->proxy.colorpicker.live_samples = NULL;
