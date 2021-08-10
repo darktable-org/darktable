@@ -278,7 +278,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
                                    int32_t width, int32_t height,
                                    dt_dev_zoom_t zoom, int closeup, float zoom_x, float zoom_y,
                                    GSList *samples, dt_colorpicker_sample_t *match_sample,
-                                   gboolean is_primary_sample, gboolean module_color_picker)
+                                   gboolean is_primary_sample)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
@@ -330,9 +330,8 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
 
     if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
-      // FIXME: can always use primary sample here and lose special case code?
-      // FIXME: should be dt_boundingbox_t
-      const float *box = module_color_picker ? dev->gui_module->color_picker_box : sample->box;
+       // FIXME: should be dt_boundingbox_t
+      const float *box = sample->box;
       double x = box[0] * wd, y = box[1] * ht;
 
       if(is_primary_sample)
@@ -374,8 +373,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     }
     else
     {
-      // FIXME: can always use primary sample here and lose special case code?
-      const float *point = module_color_picker ? dev->gui_module->color_picker_point : sample->point;
+      const float *point = sample->point;
 
       if(is_primary_sample)
       {
@@ -735,7 +733,7 @@ void expose(
       self, cri, width, height, zoom, closeup, zoom_x, zoom_y,
       darktable.lib->proxy.colorpicker.live_samples,
       only_selected_sample ? darktable.lib->proxy.colorpicker.selected_sample : NULL,
-      FALSE, FALSE);
+      FALSE);
   }
 
   // draw guide lines if needed
@@ -777,7 +775,7 @@ void expose(
     // FIXME: don't display a point at (0,0) when there is no primary color picker set up yet
     _darkroom_pickers_draw(
       self, cri, width, height, zoom, closeup, zoom_x, zoom_y,
-      &samples, darktable.lib->proxy.colorpicker.primary_sample, TRUE, module_color_picker);
+      &samples, darktable.lib->proxy.colorpicker.primary_sample, TRUE);
   }
   else
   {
