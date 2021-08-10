@@ -293,23 +293,28 @@ void dt_image_film_roll(const dt_image_t *img, char *pathname, size_t pathname_l
 
 dt_imageio_write_xmp_t dt_image_get_xmp_mode()
 {
-  dt_imageio_write_xmp_t res = DT_WRITE_XMP_ALWAYS;
+  dt_imageio_write_xmp_t res = DT_WRITE_XMP_NEVER;
   const char *config = dt_conf_get_string_const("write_sidecar_files");
   if(config)
   {
     if(!strcmp(config, "after edit"))
       res = DT_WRITE_XMP_LAZY;
-    else if(!strcmp(config, "never"))
-      res = DT_WRITE_XMP_NEVER;
-    // migration path from boolean settings in <= 3.6, lazy mode were introduced in 3.8
-    else if(!strcmp(config, "FALSE"))
-    {
-      dt_conf_set_string("write_sidecar_files", "never");
-      res = DT_WRITE_XMP_NEVER;
-    }
+    else if(!strcmp(config, "on import"))
+      res = DT_WRITE_XMP_ALWAYS;
     else if(!strcmp(config, "TRUE"))
+    {
+      // migration path from boolean settings in <= 3.6, lazy mode was introduced in 3.8
+      // as scripts or tools might use FALSE we can only update TRUE in a safe way.
+      // This leaves others like "false" or "FALSE" as DT_WRITE_XMP_NEVER without conf string update
       dt_conf_set_string("write_sidecar_files", "on import");
+      res = DT_WRITE_XMP_ALWAYS;
+    }
   }
+  else
+  {
+    res = DT_WRITE_XMP_ALWAYS;
+    dt_conf_set_string("write_sidecar_files", "on import");
+  }  
   return res;
 }
 
