@@ -606,7 +606,7 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
 
   // get absolute pixel coordinates in final preview image
   // FIXME: should store size this per module in dt_iop_module_t in imageiop.h, as a dt_colorpicker_sample_t
-  if(darktable.lib->proxy.colorpicker.primary_sample->size)
+  if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
   {
     for(int k = 0; k < 4; k += 2) fbox[k] = module->color_picker_box[k] * wd;
     for(int k = 1; k < 4; k += 2) fbox[k] = module->color_picker_box[k] * ht;
@@ -635,7 +635,7 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   box[2] = fmaxf(fbox[0], fbox[2]);
   box[3] = fmaxf(fbox[1], fbox[3]);
 
-  if(!darktable.lib->proxy.colorpicker.primary_sample->size)
+  if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
   {
     // if we are sampling one point, make sure that we actually sample it.
     for(int k = 2; k < 4; k++) box[k] += 1;
@@ -809,7 +809,7 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
 
   const float w = 1.0 / ((box[3] - box[1] + 1) * (box[2] - box[0] + 1));
 
-  if(sample->size == DT_COLORPICKER_SIZE_BOX)
+  if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
   {
     for(int j = box[1]; j <= box[3]; j++)
       for(int i = box[0]; i <= box[2]; i++)

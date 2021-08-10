@@ -644,9 +644,8 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
      && darktable.lib->proxy.colorpicker.restrict_histogram)
   {
     const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
-    if(sample->size == DT_COLORPICKER_SIZE_BOX)
+    if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
-      // FIXME: use primary sample color picker box
       roi.crop_x = MIN(width, MAX(0, sample->box[0] * width));
       roi.crop_y = MIN(height, MAX(0, sample->box[1] * height));
       roi.crop_width = width - MIN(width, MAX(0, sample->box[2] * width));
@@ -654,7 +653,6 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     }
     else
     {
-      // FIXME: use primary sample color picker point
       roi.crop_x = MIN(width, MAX(0, sample->point[0] * width));
       roi.crop_y = MIN(height, MAX(0, sample->point[1] * height));
       roi.crop_width = width - MIN(width, MAX(0, sample->point[0] * width));

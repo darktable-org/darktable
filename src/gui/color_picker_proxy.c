@@ -164,7 +164,7 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
   _iop_color_picker_reset(module->picker);
 
   if (module->picker != self || (kind == DT_COLOR_PICKER_POINT_AREA &&
-      (ctrl_key_pressed ^ (darktable.lib->proxy.colorpicker.primary_sample->size == DT_COLORPICKER_SIZE_BOX))))
+      (ctrl_key_pressed ^ (darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX))))
   {
     module->picker = self;
 
