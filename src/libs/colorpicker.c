@@ -696,6 +696,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(color_patch), "button-press-event", G_CALLBACK(_large_patch_toggle), data);
   g_signal_connect(G_OBJECT(color_patch), "draw", G_CALLBACK(_sample_draw_callback), &data->primary_sample);
 
+  // FIXME: should turn on live sample button even when primary picker isn't active, so could "live sample" the picker from an iop?
   color_patch_wrapper = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(color_patch_wrapper, "live-sample");
   gtk_box_pack_start(GTK_BOX(color_patch_wrapper), color_patch, TRUE, TRUE, 0);
