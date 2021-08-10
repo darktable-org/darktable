@@ -1910,33 +1910,6 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module, const dt_dev_p
   return 1;
 }
 
-
-#if 0
-static inline float fast_atan2(float y, float x)
-{
-    float r = 0.0F, s = 0.0F, t = 0.0F, c = 0.0F, q = 0.0F;
-    const float ax = ABS(x);
-    const float ay = ABS(y);
-    const float mx = MAX(ay, ax);
-    const float mn = MIN(ay, ax);
-    const float a = mn / mx;
-
-    s = a * a;
-    c = s * a;
-    q = s * s;
-    r =  0.024840285f * q + 0.18681418f;
-    t = -0.094097948f * q - 0.33213072f;
-    r = r * s + t;
-    r = r * c + a;
-
-    r = ay > ax ? 1.57079632679489661923f - r : r;
-    r = x < 0 ? 3.14159265358979323846f - r : r;
-    r = y < 0 ? -r : r;
-    r = isnormal(r) ? r : 0.0f;
-    return r;
-}
-#endif
-
 static int _ellipse_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
                                  dt_masks_form_t *const form, const dt_iop_roi_t *roi, float *buffer)
 {
