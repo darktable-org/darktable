@@ -918,7 +918,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       int nominator = pos->toRational(0).first;
       img->exif_focus_distance = fmax(0.0, (0.001 * nominator));
     }
-    else if(EXIV2_MAKE_VERSION(0,25,0) <= Exiv2::versionNumber() && FIND_EXIF_TAG("Exif.CanonFi.FocusDistanceUpper"))
+    else if(Exiv2::testVersion(0,25,0) && FIND_EXIF_TAG("Exif.CanonFi.FocusDistanceUpper"))
     {
       const float FocusDistanceUpper = pos->toFloat();
       if(FocusDistanceUpper <= 0.0f || (int)FocusDistanceUpper >= 0xffff)
@@ -1023,7 +1023,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
-    else if(EXIV2_MAKE_VERSION(0,25,0) <= Exiv2::versionNumber() && FIND_EXIF_TAG("Exif.PentaxDng.LensType"))
+    else if(Exiv2::testVersion(0,25,0) && FIND_EXIF_TAG("Exif.PentaxDng.LensType"))
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
@@ -1176,7 +1176,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       else
         illu[1] = DT_LS_Unknown;
       // So far the Exif.Image.CalibrationIlluminant3 tag and friends have not been implemented and there are no images to test
-#if EXIV2_VERSION >= EXIV2_MAKE_VERSION(0,27,4)
+#if EXIV2_TEST_VERSION(0,27,4)
       if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant3")) illu[2] = (dt_dng_illuminant_t) pos->toLong();
       Exiv2::ExifData::const_iterator cm3_pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix3"));
       if((illu[2] != DT_LS_Unknown) && (cm3_pos != exifData.end()) && (cm3_pos->count() == 9))
@@ -1315,12 +1315,6 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         }
       }
     }
-
-#if EXIV2_MINOR_VERSION < 23
-    // workaround for an exiv2 bug writing random garbage into exif_lens for this camera:
-    // http://dev.exiv2.org/issues/779
-    if(!strcmp(img->exif_model, "DMC-GH2")) snprintf(img->exif_lens, sizeof(img->exif_lens), "(unknown)");
-#endif
 
     // Improve lens detection for Sony SAL lenses.
     if(FIND_EXIF_TAG("Exif.Sony2.LensID") && pos->toLong() != 65535 && pos->print().find('|') == std::string::npos)
@@ -1721,16 +1715,9 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
         "Exif.Olympus.ThumbnailOffset",
         "Exif.Olympus.ThumbnailLength",
 
-        "Exif.Image.BaselineExposureOffset"
-        };
-      static const guint n_keys = G_N_ELEMENTS(keys);
-      dt_remove_exif_keys(exifData, keys, n_keys);
-    }
-#if EXIV2_MINOR_VERSION >= 23
-    {
-      // Exiv2 versions older than 0.23 drop all EXIF if the code below is executed
-      // Samsung makernote cleanup, the entries below have no relevance for exported images
-      static const char *keys[] = {
+        "Exif.Image.BaselineExposureOffset",
+
+         // Samsung makernote cleanup, the entries below have no relevance for exported images
         "Exif.Samsung2.SensorAreas",
         "Exif.Samsung2.ColorSpace",
         "Exif.Samsung2.EncryptionKey",
@@ -1750,7 +1737,6 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
       static const guint n_keys = G_N_ELEMENTS(keys);
       dt_remove_exif_keys(exifData, keys, n_keys);
     }
-#endif
 
       static const char *dngkeys[] = {
         // Embedded color profile info
@@ -3765,7 +3751,7 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid,
   g_free(iop_order_list);
 }
 
-#if EXIV2_VERSION >= EXIV2_MAKE_VERSION(0,27,0)
+#if EXIV2_TEST_VERSION(0,27,0)
 #define ERROR_CODE(a) (static_cast<Exiv2::ErrorCode>((a)))
 #else
 #define ERROR_CODE(a) (a)
@@ -4058,7 +4044,7 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
     }
     catch(Exiv2::AnyError &e)
     {
-#if EXIV2_VERSION >= EXIV2_MAKE_VERSION(0,27,0)
+#if EXIV2_TEST_VERSION(0,27,0)
       if(e.code() == Exiv2::kerTooLargeJpegSegment)
 #else
       if(e.code() == 37)
