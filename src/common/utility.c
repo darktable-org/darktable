@@ -679,6 +679,10 @@ gchar *dt_util_normalize_path(const gchar *_input)
   // on Windows filenames are case insensitive, so we can end up with an arbitrary number of different spellings for the same file.
   // another problem is that path separators can either be / or \ leading to even more problems.
 
+  // TODO:
+  // this handles filenames in the formats <drive letter>:\path\to\file or \\host-name\share-name\file
+  // some other formats like \Device\... are not supported
+
   // the Windows api expects wide chars and not utf8 :(
   wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
   g_free(filename);
