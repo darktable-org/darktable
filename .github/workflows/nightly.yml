@@ -15,7 +15,7 @@ jobs:
       matrix:
         btype: [Release]
         compiler: 
-          - { compiler: LLVM,  CC: clang,   CXX: clang++ }
+          - { compiler: GNU,  CC: gcc,   CXX: g++ }
         eco: [-DBINARY_PACKAGE_BUILD=ON]
         target: [skiptest]
     defaults:
