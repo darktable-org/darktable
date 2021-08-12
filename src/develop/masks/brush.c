@@ -2721,7 +2721,8 @@ static int _brush_get_mask(const dt_iop_module_t *const module, const dt_dev_pix
 
   // we allocate the buffer
   const size_t bufsize = (size_t)(*width) * (*height);
-  *buffer = dt_alloc_align_float(bufsize);
+  // ensure that the buffer is zeroed, as the below code only fills in pixels in the falloff region
+  *buffer = dt_calloc_align_float(bufsize);
   if(*buffer == NULL)
   {
     dt_free_align(points);
@@ -2797,6 +2798,8 @@ static inline void _brush_falloff_roi(float *buffer, const int *p0, const int *p
   }
 }
 
+// build a stamp which can be combined with other shapes in the same group
+// prerequisite: 'buffer' is all zeros
 static int _brush_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
                                dt_masks_form_t *const form, const dt_iop_roi_t *roi, float *buffer)
 {
@@ -2869,9 +2872,6 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module, const dt_dev
     dt_free_align(payload);
     return 1;
   }
-
-  // empty the output buffer
-  dt_iop_image_fill(buffer, 0.0f, width, height, 1);
 
   // now we fill the falloff
 #ifdef _OPENMP
