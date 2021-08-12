@@ -2363,7 +2363,8 @@ static int _path_get_mask(const dt_iop_module_t *const module, const dt_dev_pixe
 
   // we allocate the buffer
   const size_t bufsize = (size_t)(*width) * (*height);
-  float *const restrict bufptr = *buffer = dt_alloc_align_float(bufsize);
+  // ensure that the buffer is zeroed, as the following code only actually sets the path+falloff pixels
+  float *const restrict bufptr = *buffer = dt_calloc_align_float(bufsize);
   if(*buffer == NULL)
   {
     dt_free_align(points);
@@ -2719,6 +2720,8 @@ static void _path_falloff_roi(float *buffer, int *p0, int *p1, int bw, int bh)
   }
 }
 
+// build a stamp which can be combined with other shapes in the same group
+// prerequisite: 'buffer' is all zeros
 static int _path_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
                               dt_masks_form_t *const form,
                               const dt_iop_roi_t *roi, float *buffer)
@@ -2858,9 +2861,6 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_
              dt_get_wtime() - start2);
     start2 = dt_get_wtime();
   }
-
-  // empty the output buffer
-  dt_iop_image_fill(buffer, 0.0f, width, height, 1);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
