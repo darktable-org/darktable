@@ -2171,6 +2171,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     _reset_parameters(p, p->channel, p->splines_version);
     if(g->display_mask) _reset_display_selection(self);
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
 }
 
