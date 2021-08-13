@@ -1638,6 +1638,62 @@ static void _bounding_box(const float *const points, int num_points, int *width,
   *height = (ymax - ymin);
 }
 
+static void _fill_mask(const size_t numpoints, float *const bufptr, const float *const points,
+                       const float *const center, const float a, const float b, const float ta, const float tb,
+                       const float alpha, const size_t out_scale)
+{
+  const float a2 = a * a;
+  const float b2 = b * b;
+  const float ta2 = ta * ta;
+  const float tb2 = tb * tb;
+  const float cos_alpha = cosf(alpha);
+  const float sin_alpha = sinf(alpha);
+
+  // Determine the strength of the mask for each of the distorted points.  If inside the border of the ellipse,
+  // the strength is always 1.0; if outside the fallow region, it is 0.0, and in between it falls off quadratically.
+  // To compute this, we need to do the equivalent of projecting the vector from the center of the ellipse to the
+  // given point until it intersect the ellipse and the outer edge of the falloff, respectively.  The ellipse can
+  // be rotated, but we can compensate for that by applying a rotation matrix for the same rotation in the opposite
+  // direction before projecting the vector.
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(numpoints, bufptr, points, center, alpha, a2, b2, ta2, tb2, cos_alpha, sin_alpha, out_scale) \
+  schedule(static)
+#else
+#pragma omp parallel for shared(points)
+#endif
+#endif
+  for(size_t i = 0; i < numpoints; i++)
+    {
+      const float x = points[2 * i] - center[0];
+      const float y = points[2 * i + 1] - center[1];
+      // find the square of the distance from the center
+      const float l2 = x * x + y * y;
+      const float l = sqrtf(l2);
+      // normalize the point's coordinate to form a unit vector, taking care not to divide by zero
+      const float x_norm = l ? x / l : 0.0f;
+      const float y_norm = l ? y / l : 1.0f;  // ensure we don't get 0 for both sine and cosine below
+      // apply the rotation matrix
+      const float x_rot = x_norm * cos_alpha + y_norm * sin_alpha;
+      const float y_rot = -x_norm * sin_alpha + y_norm * cos_alpha;
+      // at this point, x_rot = cos(v) and y_rot = sin(v) since they are on the unit circle; we need the squared values
+      const float cosv2 = x_rot * x_rot;
+      const float sinv2 = y_rot * y_rot;
+
+      // project the rotated unit vector out to the ellipse and the outer border
+      const float radius2 = a2 * b2 / (a2 * sinv2 + b2 * cosv2);
+      const float total2 = ta2 * tb2 / (ta2 * sinv2 + tb2 * cosv2);
+
+      // quadratic falloff between the ellipses's radius and the radius of the outside of the feathering
+      // ratio = 0.0 at the outer border, >= 1.0 within the ellipse, negative outside the falloff
+      const float ratio = (total2 - l2) / (total2 - radius2);
+      // enforce 1.0 inside the ellipse and 0.0 outside the feathering
+      const float f = CLIP(ratio);
+      bufptr[i << out_scale] = f * f;
+    }
+}
+
 static float *const _ellipse_points_to_transform(const float center_x, const float center_y, const float dim1, const float dim2,
                                                  const float rotation, const float wd, const float ht, size_t *point_count)
 {
@@ -1843,47 +1899,9 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module, const dt_dev_p
   }
 
   float *const bufptr = *buffer;
-  const float a2 = a * a;
-  const float b2 = b * b;
-  const float ta2 = ta * ta;
-  const float tb2 = tb * tb;
-  const float cos_alpha = cosf(alpha);
-  const float sin_alpha = sinf(alpha);
 
-  // Determine the strength of the mask for each of the distorted points.  If inside the border of the ellipse,
-  // the strength is always 1.0; if outside the fallow region, it is 0.0, and in between it falls off quadratically.
-  // To compute this, we need to do the equivalent of projecting the vector from the center of the ellipse to the
-  // given point until it intersect the ellipse and the outer edge of the falloff, respectively.  The ellipse can
-  // be rotated, but we can compensate for that by applying a rotation matrix for the same rotation in the opposite
-  // direction before projecting the vector.
-  for(int i = 0; i < h*w; i++)
-    {
-      const float x = points[2 * i] - center[0];
-      const float y = points[2 * i + 1] - center[1];
-      // find the square of the distance from the center
-      const float l2 = x * x + y * y;
-      const float l = sqrtf(l2);
-      // normalize the point's coordinate to form a unit vector, taking care not to divide by zero
-      const float x_norm = l ? x / l : 0.0f;
-      const float y_norm = l ? y / l : 1.0f;  // ensure we don't get 0 for both sine and cosine below
-      // apply the rotation matrix
-      const float x_rot = x_norm * cos_alpha + y_norm * sin_alpha;
-      const float y_rot = -x_norm * sin_alpha + y_norm * cos_alpha;
-      // at this point, x_rot = cos(v) and y_rot = sin(v) since they are on the unit circle; we need the squared values
-      const float cosv2 = x_rot * x_rot;
-      const float sinv2 = y_rot * y_rot;
+  _fill_mask(h*w, bufptr, points, center, a, b, ta, tb, alpha, 0);
 
-      // project the rotated unit vector out to the ellipse and the outer border
-      const float radius2 = a2 * b2 / (a2 * sinv2 + b2 * cosv2);
-      const float total2 = ta2 * tb2 / (ta2 * sinv2 + tb2 * cosv2);
-
-      // quadratic falloff between the ellipses's radius and the radius of the outside of the feathering
-      // ratio = 0.0 at the outer border, >= 1.0 within the ellipse, negative outside the falloff
-      const float ratio = (total2 - l2) / (total2 - radius2);
-      // enforce 1.0 inside the ellipse and 0.0 outside the feathering
-      const float f = CLIP(ratio);
-      bufptr[i] = f * f;
-    }
   dt_free_align(points);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
@@ -1891,32 +1909,6 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module, const dt_dev_p
 
   return 1;
 }
-
-
-static inline float fast_atan2(float y, float x)
-{
-    float r = 0.0F, s = 0.0F, t = 0.0F, c = 0.0F, q = 0.0F;
-    const float ax = ABS(x);
-    const float ay = ABS(y);
-    const float mx = MAX(ay, ax);
-    const float mn = MIN(ay, ax);
-    const float a = mn / mx;
-
-    s = a * a;
-    c = s * a;
-    q = s * s;
-    r =  0.024840285f * q + 0.18681418f;
-    t = -0.094097948f * q - 0.33213072f;
-    r = r * s + t;
-    r = r * c + a;
-
-    r = ay > ax ? 1.57079632679489661923f - r : r;
-    r = x < 0 ? 3.14159265358979323846f - r : r;
-    r = y < 0 ? -r : r;
-    r = isnormal(r) ? r : 0.0f;
-    return r;
-}
-
 
 static int _ellipse_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
                                  dt_masks_form_t *const form, const dt_iop_roi_t *roi, float *buffer)
@@ -1940,11 +1932,6 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module, const dt_d
   const float alpha = (ellipse->rotation / 180.0f) * M_PI;
   const float cosa = cosf(alpha);
   const float sina = sinf(alpha);
-
-  const float a2 = a * a;
-  const float b2 = b * b;
-  const float ta2 = ta * ta;
-  const float tb2 = tb * tb;
 
   // we create a buffer of grid points for later interpolation: higher speed and reduced memory footprint;
   // we match size of buffer to bounding box around the shape
@@ -2062,7 +2049,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module, const dt_d
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(grid, bbxm, bbym, bbXM, bbYM, bbw, iscale, px, py) \
-  shared(points)
+  shared(points) schedule(static) collapse(2)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -2097,40 +2084,8 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module, const dt_d
   }
 
   // we calculate the mask values at the transformed points;
-  // for results: re-use the points array
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(bbh, bbw, center, alpha, a2, b2, ta2, tb2) \
-  shared(points)
-#else
-#pragma omp parallel for shared(points)
-#endif
-#endif
-  for(int j = 0; j < bbh; j++)
-    for(int i = 0; i < bbw; i++)
-    {
-      const size_t index = (size_t)j * bbw + i;
-      const float x = points[index * 2] - center[0];
-      const float y = points[index * 2 + 1] - center[1];
-      const float v = fast_atan2(y, x) - alpha;
-      const float sinv = sinf(v);
-      const float sinv2 = sinv * sinv;
-      const float cosv2 = 1.0f - sinv2;
-      const float radius2 = a2 * b2 / (a2 * sinv2 + b2 * cosv2);
-      const float total2 = ta2 * tb2 / (ta2 * sinv2 + tb2 * cosv2);
-      float l2 = x * x + y * y;
-
-      if(l2 < radius2)
-        points[index * 2] = 1.0f;
-      else if(l2 < total2)
-      {
-        const float f = (total2 - l2) / (total2 - radius2);
-        points[index * 2] = f * f;
-      }
-      else
-        points[index * 2] = 0.0f;
-    }
+  // re-use the points array for results; this requires out_scale==1 to double the offsets at which they are stored
+  _fill_mask(bbh*bbw, points, points, center, a, b, ta, tb, alpha, 1);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
