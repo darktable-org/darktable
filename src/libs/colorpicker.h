@@ -49,6 +49,7 @@ typedef struct dt_colorpicker_sample_t
   dt_aligned_pixel_t picked_color_lab_max;
 
   /** The GUI elements */
+  // FIXME: these may be only for primary and live pickers -- keep local to colorpicker.c if so?
   GtkWidget *container;
   GtkWidget *color_patch;
   GtkWidget *output_label;
