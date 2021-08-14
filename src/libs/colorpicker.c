@@ -615,6 +615,8 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)data;
 
+  // FIXME: init primary_sample box/area to a negative value to mark that it isn't set up yet and shouldn't be drawn/sampled
+  // FIXME: or addd type DT_LIB_COLORPICKER_SIZE_INACTIVE to dt_lib_colorpicker_size_t and default to that?
   data->primary_sample.rgb.red = 0.7;
   data->primary_sample.rgb.green = 0.7;
   data->primary_sample.rgb.blue = 0.7;
