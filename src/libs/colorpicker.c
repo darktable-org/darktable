@@ -628,6 +628,7 @@ void gui_init(dt_lib_module_t *self)
   data->primary_sample.size =
     dt_conf_get_int("ui_last/colorpicker_size") ? DT_LIB_COLORPICKER_SIZE_BOX : DT_LIB_COLORPICKER_SIZE_POINT;
   darktable.lib->proxy.colorpicker.display_samples = dt_conf_get_int("ui_last/colorpicker_display_samples");
+  // FIXME: should s/primary_sample/current_sample/ and set it to NULL now, to current primary or iop sample once picker is activated?
   darktable.lib->proxy.colorpicker.primary_sample = &data->primary_sample;
   darktable.lib->proxy.colorpicker.live_samples = NULL;
   darktable.lib->proxy.colorpicker.update_panel = _update_picker_output;
