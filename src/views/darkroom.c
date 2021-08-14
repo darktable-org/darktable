@@ -289,6 +289,8 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
                                    dt_dev_zoom_t zoom, int closeup, float zoom_x, float zoom_y,
                                    GSList *samples, gboolean is_primary_sample)
 {
+  if(!samples) return;
+
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
   cairo_save(cri);
@@ -330,6 +332,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
       color = DT_DEV_OVERLAY_CYAN;
     // FIXME: make different cases here for a dimmed primary sample when have activated a module but there is still a primary colorpicker readout
 
+    // FIXME: shift these all half a pixel out so that will align to pixels
     if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
       const double x = sample->box[0] * wd, y = sample->box[1] * ht,
