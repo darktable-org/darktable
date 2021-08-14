@@ -298,20 +298,20 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
   const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
   const int pheight = (dev->pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
 
-  const float hbar = (self->width - pwidth) * .5f;
-  const float tbar = (self->height - pheight) * .5f;
-  cairo_rectangle(cri, hbar, tbar, (double)pwidth, (double)pheight);
+  const double hbar = (self->width - pwidth) * .5;
+  const double tbar = (self->height - pheight) * .5;
+  cairo_rectangle(cri, hbar, tbar, pwidth, pheight);
   cairo_clip(cri);
 
-  const float wd = dev->preview_pipe->backbuf_width;
-  const float ht = dev->preview_pipe->backbuf_height;
-  const float size = (wd + ht) / 2.0;
-  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+  const double wd = dev->preview_pipe->backbuf_width;
+  const double ht = dev->preview_pipe->backbuf_height;
+  const double size = (wd + ht) / 2.0;
+  const double zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
   const double lw = 1.0 / zoom_scale;
 
-  cairo_translate(cri, width / 2.0, height / 2.0f);
+  cairo_translate(cri, 0.5 * width, 0.5 * height);
   cairo_scale(cri, zoom_scale, zoom_scale);
-  cairo_translate(cri, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
+  cairo_translate(cri, -0.5 * wd - zoom_x * wd, -0.5 * ht - zoom_y * ht);
 
   dt_colorpicker_sample_t *selected_sample = darktable.lib->proxy.colorpicker.selected_sample;
   const gboolean only_selected_sample = !is_primary_sample && selected_sample
@@ -332,11 +332,19 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
       color = DT_DEV_OVERLAY_CYAN;
     // FIXME: make different cases here for a dimmed primary sample when have activated a module but there is still a primary colorpicker readout
 
-    // FIXME: shift these all half a pixel out so that will align to pixels
+    // note that these are aligned with pixels for a clean look
     if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
-      const double x = sample->box[0] * wd, y = sample->box[1] * ht,
+      double x = sample->box[0] * wd, y = sample->box[1] * ht,
         w = sample->box[2] * wd, h = sample->box[3] * ht;
+      cairo_user_to_device(cri, &x, &y);
+      cairo_user_to_device(cri, &w, &h);
+      x=round(x+0.5)-0.5;
+      y=round(y+0.5)-0.5;
+      w=round(w+0.5)-0.5;
+      h=round(h+0.5)-0.5;
+      cairo_device_to_user(cri, &x, &y);
+      cairo_device_to_user(cri, &w, &h);
       cairo_rectangle(cri, x, y, w - x, h - y);
       if(is_primary_sample)
       {
@@ -350,25 +358,39 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     }
     else
     {
-      const float x = sample->point[0], y = sample->point[1];
-      cairo_rectangle(cri,
-                      x * wd - .01 * size, y * ht - .01 * size,
-                      .02 * size, .02 * size);
-      cairo_move_to(cri, x * wd, y * ht - .01 * size);
-      cairo_line_to(cri, x * wd, y * ht - lw * 2.0);
-      cairo_move_to(cri, x * wd, y * ht + lw * 2.0);
-      cairo_line_to(cri, x * wd, y * ht + .01 * size);
-      cairo_move_to(cri, x * wd - .01 * size, y * ht);
-      cairo_line_to(cri, x * wd - lw * 2.0, y * ht);
-      cairo_move_to(cri, x * wd + lw * 2.0, y * ht);
-      cairo_line_to(cri, x * wd + .01 * size, y * ht);
+      cairo_set_line_cap(cri, CAIRO_LINE_CAP_SQUARE);
+      double x = sample->point[0] * wd, y = sample->point[1] * ht;
+      // picker & central gap scale with zoom level
+      double w = 0.01 * size, sp = 0.0015 * size;
+      cairo_user_to_device(cri, &x, &y);
+      cairo_user_to_device_distance(cri, &w, &sp);
+      x=round(x+0.5)-0.5;
+      y=round(y+0.5)-0.5;
+      // picker & central gap should never be absurdly small, picker
+      // should always fit within center view
+      w=MAX(7.0,MIN(w,0.3*MIN(wd,ht)));
+      sp=MAX(3.0,sp);
+      w=round(w);
+      sp=round(sp);
+      cairo_device_to_user(cri, &x, &y);
+      cairo_device_to_user_distance(cri, &w, &sp);
+      cairo_rectangle(cri, x - w, y - w, w * 2.0, w * 2.0);
+      cairo_move_to(cri, x, y - w);
+      cairo_line_to(cri, x, y - sp);
+      cairo_move_to(cri, x, y + sp);
+      cairo_line_to(cri, x, y + w);
+      cairo_move_to(cri, x - w, y);
+      cairo_line_to(cri, x - sp, y);
+      cairo_move_to(cri, x + sp, y);
+      cairo_line_to(cri, x + w, y);
     }
 
-    cairo_set_line_width(cri, lw * 2.0);
-    _darkroom_picker_color(cri, color, 0.0, 0.6);
+    // draw 1 (logical) pixel light lines with 1 (logical) pixel dark
+    // outline for legibility
+    cairo_set_line_width(cri, lw * 3.0);
+    _darkroom_picker_color(cri, color, 0.0, 0.4);
     cairo_stroke_preserve(cri);
     cairo_set_line_width(cri, lw);
-    cairo_set_dash(cri, &lw, 1, 0);
     _darkroom_picker_color(cri, color, 1.0, 0.8);
     cairo_stroke(cri);
   }
@@ -720,7 +742,7 @@ void expose(
   {
     GSList samples = { .data = darktable.lib->proxy.colorpicker.primary_sample, .next = NULL };
     // FIXME: if we can always use the point/box/size from primary colorpicker, don't store it per module anymore
-    // FIXME: don't display a point at (0,0) when there is no primary color picker set up yet
+    // FIXME: don't display a point at (0,0) when there is no primary color picker set up yet -- test and if it is negative (initialize it to that) don't draw
     _darkroom_pickers_draw(self, cri, width, height, zoom, closeup, zoom_x, zoom_y,
                            &samples, TRUE);
   }
