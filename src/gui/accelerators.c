@@ -2421,6 +2421,14 @@ static void ungrab_grab_widget()
   }
 }
 
+static guint _key_modifiers_clean(guint mods)
+{
+  GdkKeymap *keymap = gdk_keymap_get_for_display(gdk_display_get_default());
+  mods &= GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK | GDK_MOD5_MASK |
+          gdk_keymap_get_modifier_mask(keymap, GDK_MODIFIER_INTENT_PRIMARY_ACCELERATOR);
+  return mods | dt_modifier_shortcuts;
+}
+
 float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size)
 {
   _sc.move_device = id;
@@ -2435,10 +2443,7 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
   else
     _sc.effect = DT_ACTION_EFFECT_DEFAULT_KEY;
 
-  GdkKeymap *keymap = gdk_keymap_get_for_display(gdk_display_get_default());
-  if(id) _sc.mods = dt_key_modifier_state() | dt_modifier_shortcuts;
-  _sc.mods &= GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK | GDK_MOD5_MASK |
-              gdk_keymap_get_modifier_mask(keymap, GDK_MODIFIER_INTENT_PRIMARY_ACCELERATOR);
+  if(id) _sc.mods = _key_modifiers_clean(dt_key_modifier_state());
 
   float return_value = 0;
   if(!size)
@@ -2546,7 +2551,7 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
   {} // ignore repeating hold key
   else
   {
-    if(id) _sc.mods = dt_key_modifier_state() | dt_modifier_shortcuts;
+    if(id) _sc.mods = _key_modifiers_clean(dt_key_modifier_state());
 
     dt_shortcut_t just_key
       = { .key_device = id,
@@ -2798,7 +2803,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
        event->key.keyval == GDK_KEY_Meta_L || event->key.keyval == GDK_KEY_Meta_R ||
        event->key.keyval == GDK_KEY_ISO_Level3_Shift) return FALSE;
 
-    _sc.mods = event->key.state | dt_modifier_shortcuts;
+    _sc.mods = _key_modifiers_clean(event->key.state);
 
     // FIXME: eventually clean up per-view and global key_pressed handlers
     if(!grab_widget && !darktable.control->mapping_widget &&
@@ -2811,7 +2816,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     {
       if(_sc.action)
       {
-        _sc.mods = event->key.state; // no dt_modifier_shortcuts; ignore emulated modifiers while mapping
+        _sc.mods = _key_modifiers_clean(event->key.state);
         dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, 1);
       }
       return FALSE;
@@ -2835,7 +2840,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     }
     return FALSE;
   case GDK_SCROLL:
-    _sc.mods = event->scroll.state | dt_modifier_shortcuts;
+    _sc.mods = _key_modifiers_clean(event->scroll.state);
 
     int delta_x, delta_y;
     if(dt_gui_get_scroll_unit_deltas((GdkEventScroll *)event, &delta_x, &delta_y))
@@ -2847,7 +2852,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     }
     break;
   case GDK_MOTION_NOTIFY:
-    _sc.mods = event->motion.state | dt_modifier_shortcuts;
+    _sc.mods = _key_modifiers_clean(event->motion.state);
 
     if(_sc.move == DT_SHORTCUT_MOVE_NONE)
     {
@@ -2895,7 +2900,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     }
     break;
   case GDK_BUTTON_PRESS:
-    _sc.mods = event->button.state | dt_modifier_shortcuts;
+    _sc.mods = _key_modifiers_clean(event->button.state);
 
     _cancel_delayed_release();
     _pressed_button |= 1 << (event->button.button - 1);
