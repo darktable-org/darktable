@@ -663,7 +663,7 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
   {
     dt_shortcut_t *s = g_sequence_get(iter);
     if(s->action == action &&
-       (darktable.control->element == -1 ||
+       (!def || darktable.control->element == -1 ||
         s->element == darktable.control->element ||
         (s->element == DT_ACTION_ELEMENT_DEFAULT && has_fallbacks)))
     {
