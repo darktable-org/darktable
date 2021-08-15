@@ -342,21 +342,6 @@ int mouse_moved(dt_lib_module_t *self, double x, double y, double pressure, int 
   return 0;
 }
 
-void _internal_gui_reset(dt_lib_module_t *self)
-{
-  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  d->num_snapshots = 0;
-  d->snapshot_image = NULL;
-
-  for(uint32_t k = 0; k < d->size; k++)
-  {
-    gtk_widget_hide(d->snapshot[k].button);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button), FALSE);
-  }
-
-  dt_control_queue_redraw_center();
-}
-
 void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
@@ -686,15 +671,7 @@ static int lua_take_snapshot(lua_State *L)
 static int lua_clear_snapshots(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
-  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  d->num_snapshots = 0;
-  d->snapshot_image = NULL;
-
-  for(uint32_t k = 0; k < d->size; k++)
-  {
-    gtk_widget_hide(d->snapshot[k].button);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button), FALSE);
-  }
+  gui_reset(self);
   return 0;
 }
 
