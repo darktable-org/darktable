@@ -39,7 +39,7 @@
 
 typedef void(_blend_row_func)(const float *const restrict a, const float *const restrict b,
                               float *const restrict out, const float *const restrict mask, const size_t stride,
-                              const float *const restrict min, const float *const restrict max);
+                              const dt_aligned_pixel_t min, const dt_aligned_pixel_t max);
 
 
 #ifdef _OPENMP
@@ -53,8 +53,7 @@ static inline float _CLAMP(const float x, const float min, const float max)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ, min, max: 16)
 #endif
-static inline void _CLAMP_XYZ(float *const restrict XYZ, const float *const restrict min,
-                              const float *const restrict max)
+static inline void _CLAMP_XYZ(dt_aligned_pixel_t XYZ, const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for_each_channel(i) XYZ[i] = fminf(fmaxf(XYZ[i], min[i]), max[i]);
 }
@@ -374,7 +373,7 @@ static inline void _blend_Lab_rescale(const float *i, float *o)
 #endif
 static void _blend_normal_bounded(const float *const restrict a, const float *const restrict b,
                                   float *const restrict out, const float *const restrict mask, const size_t stride,
-                                  const float *const restrict min, const float *const restrict max)
+                                  const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0; i < stride; i++)
   {
@@ -400,7 +399,7 @@ static void _blend_normal_bounded(const float *const restrict a, const float *co
 static void _blend_normal_unbounded(const float *const restrict a, const float *const restrict b,
                                     float *const restrict out,
                                     const float *const restrict mask, const size_t stride,
-                                    const float *const restrict min, const float *const restrict max)
+                                    const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0; i < stride; i++)
   {
@@ -425,7 +424,7 @@ static void _blend_normal_unbounded(const float *const restrict a, const float *
 #endif
 static void _blend_lighten(const float *const restrict a, const float *const restrict b,
                            float *const restrict out, const float *const restrict mask, const size_t stride,
-                           const float *const restrict min, const float *const restrict max)
+                           const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -453,7 +452,7 @@ static void _blend_lighten(const float *const restrict a, const float *const res
 #endif
 static void _blend_darken(const float *const restrict a, const float *const restrict b,
                           float *const restrict out, const float *const restrict mask, const size_t stride,
-                          const float *const restrict min, const float *const restrict max)
+                          const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -481,7 +480,7 @@ static void _blend_darken(const float *const restrict a, const float *const rest
 #endif
 static void _blend_multiply(const float *const restrict a, const float *const restrict b,
                             float *const restrict out, const float *const restrict mask, const size_t stride,
-                            const float *const restrict min, const float *const restrict max)
+                            const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -508,7 +507,7 @@ static void _blend_multiply(const float *const restrict a, const float *const re
 #endif
 static void _blend_average(const float *const restrict a, const float *const restrict b,
                            float *const restrict out, const float *const restrict mask, const size_t stride,
-                           const float *const restrict min, const float *const restrict max)
+                           const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0; i < stride; i++)
   {
@@ -533,7 +532,7 @@ static void _blend_average(const float *const restrict a, const float *const res
 #endif
 static void _blend_add(const float *const restrict a, const float *const restrict b,
                        float *const restrict out, const float *const restrict mask, const size_t stride,
-                       const float *const restrict min, const float *const restrict max)
+                       const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0; i < stride; i++)
   {
@@ -558,7 +557,7 @@ static void _blend_add(const float *const restrict a, const float *const restric
 #endif
 static void _blend_subtract(const float *const restrict a, const float *const restrict b,
                             float *const restrict out, const float *const restrict mask, const size_t stride,
-                            const float *const restrict min, const float *const restrict max)
+                            const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0; i < stride; i++)
   {
@@ -584,7 +583,7 @@ static void _blend_subtract(const float *const restrict a, const float *const re
 #endif
 static void _blend_difference(const float *const restrict a, const float *const restrict b,
                               float *const restrict out, const float *const restrict mask, const size_t stride,
-                              const float *const restrict min, const float *const restrict max)
+                              const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -614,7 +613,7 @@ static void _blend_difference(const float *const restrict a, const float *const 
 #endif
 static void _blend_difference2(const float *const restrict a, const float *const restrict b,
                                float *const restrict out, const float *const restrict mask, const size_t stride,
-                               const float *const restrict min, const float *const restrict max)
+                               const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -643,7 +642,7 @@ static void _blend_difference2(const float *const restrict a, const float *const
 #endif
 static void _blend_screen(const float *const restrict a, const float *const restrict b,
                           float *const restrict out, const float *const restrict mask, const size_t stride,
-                          const float *const restrict min, const float *const restrict max)
+                          const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -678,7 +677,7 @@ static void _blend_screen(const float *const restrict a, const float *const rest
 #endif
 static void _blend_overlay(const float *const restrict a, const float *const restrict b,
                            float *const restrict out, const float *const restrict mask, const size_t stride,
-                           const float *const restrict min, const float *const restrict max)
+                           const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -717,7 +716,7 @@ static void _blend_overlay(const float *const restrict a, const float *const res
 #endif
 static void _blend_softlight(const float *const restrict a, const float *const restrict b,
                              float *const restrict out, const float *const restrict mask, const size_t stride,
-                             const float *const restrict min, const float *const restrict max)
+                             const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -755,7 +754,7 @@ static void _blend_softlight(const float *const restrict a, const float *const r
 #endif
 static void _blend_hardlight(const float *const restrict a, const float *const restrict b,
                              float *const restrict out, const float *const restrict mask, const size_t stride,
-                             const float *const restrict min, const float *const restrict max)
+                             const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -794,7 +793,7 @@ static void _blend_hardlight(const float *const restrict a, const float *const r
 #endif
 static void _blend_vividlight(const float *const restrict a, const float *const restrict b,
                               float *const restrict out, const float *const restrict mask, const size_t stride,
-                              const float *const restrict min, const float *const restrict max)
+                              const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -833,7 +832,7 @@ static void _blend_vividlight(const float *const restrict a, const float *const 
 #endif
 static void _blend_linearlight(const float *const restrict a, const float *const restrict b,
                                float *const restrict out, const float *const restrict mask, const size_t stride,
-                               const float *const restrict min, const float *const restrict max)
+                               const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -868,7 +867,7 @@ static void _blend_linearlight(const float *const restrict a, const float *const
 #endif
 static void _blend_pinlight(const float *const restrict a, const float *const restrict b,
                             float *const restrict out, const float *const restrict mask, const size_t stride,
-                            const float *const restrict min, const float *const restrict max)
+                            const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -906,7 +905,7 @@ static void _blend_pinlight(const float *const restrict a, const float *const re
 #endif
 static void _blend_lightness(const float *const restrict a, const float *const restrict b,
                              float *const restrict out, const float *const restrict mask, const size_t stride,
-                             const float *const restrict min, const float *const restrict max)
+                             const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -933,7 +932,7 @@ static void _blend_lightness(const float *const restrict a, const float *const r
 #endif
 static void _blend_chromaticity(const float *const restrict a, const float *const restrict b,
                                 float *const restrict out, const float *const restrict mask, const size_t stride,
-                                const float *const restrict min, const float *const restrict max)
+                                const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -966,7 +965,7 @@ static void _blend_chromaticity(const float *const restrict a, const float *cons
 #endif
 static void _blend_hue(const float *const restrict a, const float *const restrict b,
                        float *const restrict out, const float *const restrict mask, const size_t stride,
-                       const float *const restrict min, const float *const restrict max)
+                       const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -1002,7 +1001,7 @@ static void _blend_hue(const float *const restrict a, const float *const restric
 #endif
 static void _blend_color(const float *const restrict a, const float *const restrict b,
                          float *const restrict out, const float *const restrict mask, const size_t stride,
-                         const float *const restrict min, const float *const restrict max)
+                         const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -1039,7 +1038,7 @@ static void _blend_color(const float *const restrict a, const float *const restr
 #endif
 static void _blend_coloradjust(const float *const restrict a, const float *const restrict b,
                                float *const restrict out, const float *const restrict mask, const size_t stride,
-                               const float *const restrict min, const float *const restrict max)
+                               const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -1076,7 +1075,7 @@ static void _blend_coloradjust(const float *const restrict a, const float *const
 #endif
 static void _blend_Lab_lightness(const float *const restrict a, const float *const restrict b,
                                  float *const restrict out, const float *const restrict mask, const size_t stride,
-                                 const float *const restrict min, const float *const restrict max)
+                                 const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -1101,7 +1100,7 @@ static void _blend_Lab_lightness(const float *const restrict a, const float *con
 #endif
 static void _blend_Lab_a(const float *const restrict a, const float *const restrict b,
                          float *const restrict out, const float *const restrict mask, const size_t stride,
-                         const float *const restrict min, const float *const restrict max)
+                         const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -1126,7 +1125,7 @@ static void _blend_Lab_a(const float *const restrict a, const float *const restr
 #endif
 static void _blend_Lab_b(const float *const restrict a, const float *const restrict b,
                          float *const restrict out, const float *const restrict mask, const size_t stride,
-                         const float *const restrict min, const float *const restrict max)
+                         const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -1152,7 +1151,7 @@ static void _blend_Lab_b(const float *const restrict a, const float *const restr
 #endif
 static void _blend_Lab_color(const float *const restrict a, const float *const restrict b,
                              float *const restrict out, const float *const restrict mask, const size_t stride,
-                             const float *const restrict min, const float *const restrict max)
+                             const dt_aligned_pixel_t min, const dt_aligned_pixel_t max)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
   {
@@ -1270,7 +1269,7 @@ static _blend_row_func *_choose_blend_func(const unsigned int blend_mode)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(out:16)
 #endif
-static inline void _display_channel_value(float *const restrict out, const float value, const float mask)
+static inline void _display_channel_value(dt_aligned_pixel_t out, const float value, const float mask)
 {
   out[0] = value;
   out[1] = value;
