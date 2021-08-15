@@ -36,6 +36,10 @@ typedef struct dt_iop_color_picker_t
   dt_iop_colorspace_type_t picker_cst;
   /** used to avoid recursion when a parameter is modified in the apply() */
   GtkWidget *colorpick;
+  // these positions are associated with the current picker widget,
+  // and will set the picker request for the current iop (or picker
+  // lib) when this picker is activated
+  // FIXME: is there really a queue of 9 prior positions or only one?
   float pick_pos[2]; // last picker positions (max 9 picker per module)
   dt_boundingbox_t pick_box; // last picker areas (max 9 picker per module)
 } dt_iop_color_picker_t;
@@ -71,6 +75,7 @@ static void _iop_get_point(dt_iop_color_picker_t *self, float *pos)
 {
   pos[0] = pos[1] = 0.5f;
 
+  // FIXME: only need to test [0]?
   if(!isnan(self->pick_pos[0]) && !isnan(self->pick_pos[1]))
   {
     pos[0] = self->pick_pos[0];
@@ -80,6 +85,7 @@ static void _iop_get_point(dt_iop_color_picker_t *self, float *pos)
 
 static void _iop_get_area(dt_iop_color_picker_t *self, dt_boundingbox_t box)
 {
+  // FIXME: only need to test [0]?
   if(!isnan(self->pick_box[0]) && !isnan(self->pick_box[1]))
   {
     for(int k = 0; k < 4; k++) box[k] = self->pick_box[k];
@@ -141,6 +147,7 @@ static void _iop_init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *mod
   picker->picker_cst = module ? module->default_colorspace(module, NULL, NULL) : iop_cs_NONE;
   picker->colorpick  = button;
 
+  // FIXME: only need to initialize [0] for each?
   for(int j = 0; j<2; j++) picker->pick_pos[j] = NAN;
   for(int j = 0; j < 4; j++) picker->pick_box[j] = NAN;
 
@@ -150,6 +157,7 @@ static void _iop_init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *mod
 static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEventButton *e, dt_iop_color_picker_t *self)
 {
   printf("in _iop_color_picker_callback_button_press\n");
+  // FIXME: this is key -- module for lib picker is intialized to NULL, this use colorout -- is this still important?
   dt_iop_module_t *module = self->module ? self->module : dt_iop_get_colorout_module();
 
   if(!module || darktable.gui->reset) return FALSE;

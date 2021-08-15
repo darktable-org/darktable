@@ -23,7 +23,7 @@
   4 routines (get_set, apply, reset and update, it will handle multiple
   color pickers in a module.
 
-  A simpler version require only apply to be passed and the pciker widget when
+  A simpler version requires only apply to be passed and the picker widget when
   a single color picker is available in a module.
 */
 

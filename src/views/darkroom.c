@@ -312,6 +312,8 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
   cairo_translate(cri, 0.5 * width, 0.5 * height);
   cairo_scale(cri, zoom_scale, zoom_scale);
   cairo_translate(cri, -0.5 * wd - zoom_x * wd, -0.5 * ht - zoom_y * ht);
+  // makes point sample crosshair gap look nicer
+  cairo_set_line_cap(cri, CAIRO_LINE_CAP_SQUARE);
 
   dt_colorpicker_sample_t *selected_sample = darktable.lib->proxy.colorpicker.selected_sample;
   const gboolean only_selected_sample = !is_primary_sample && selected_sample
@@ -335,6 +337,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     // note that these are aligned with pixels for a clean look
     if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
+      if(isnan(sample->box[0])) continue;
       double x = sample->box[0] * wd, y = sample->box[1] * ht,
         w = sample->box[2] * wd, h = sample->box[3] * ht;
       cairo_user_to_device(cri, &x, &y);
@@ -358,7 +361,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     }
     else
     {
-      cairo_set_line_cap(cri, CAIRO_LINE_CAP_SQUARE);
+      if(isnan(sample->point[0])) continue;
       double x = sample->point[0] * wd, y = sample->point[1] * ht;
       // picker & central gap scale with zoom level
       double w = 0.01 * size, sp = 0.0015 * size;
@@ -733,16 +736,17 @@ void expose(
   // draw colorpicker for in focus module or execute module callback hook
   // FIXME: leaving on the primary colorpicker for too long will override masks and post-expose callbacks!
   // FIXME: if module_color_picker then draw a bright picker and not mask or post-expose callback -- otherwise draw a dimmer picker if primary_color_picker is enabled, and any masks or post-expose callback
+  // FIXME: should ever in care about module_color_picker being set or just draw primary picker which will be turned on when module picker is active?
   const gboolean module_color_picker = dev->gui_module
     && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && dev->gui_module->enabled;
-  const gboolean primary_color_picker = darktable.lib->proxy.colorpicker.primary_sample
-    && !darktable.lib->proxy.colorpicker.primary_sample->locked;
+  const gboolean primary_color_picker = darktable.lib->proxy.colorpicker.primary_sample != NULL;
+    // FIXME: do need to check this?
+    //&& !darktable.lib->proxy.colorpicker.primary_sample->locked;
   if((darktable.lib->proxy.colorpicker.primary_sample)
      && (module_color_picker || primary_color_picker))
   {
     GSList samples = { .data = darktable.lib->proxy.colorpicker.primary_sample, .next = NULL };
     // FIXME: if we can always use the point/box/size from primary colorpicker, don't store it per module anymore
-    // FIXME: don't display a point at (0,0) when there is no primary color picker set up yet -- test and if it is negative (initialize it to that) don't draw
     _darkroom_pickers_draw(self, cri, width, height, zoom, closeup, zoom_x, zoom_y,
                            &samples, TRUE);
   }
