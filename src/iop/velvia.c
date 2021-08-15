@@ -43,7 +43,7 @@ DT_MODULE_INTROSPECTION(2, dt_iop_velvia_params_t)
 typedef struct dt_iop_velvia_params_t
 {
   float strength; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0
-  float bias;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "mid-tones bias"
+  float bias;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "midtones bias"
 } dt_iop_velvia_params_t;
 
 /* legacy version 1 params */

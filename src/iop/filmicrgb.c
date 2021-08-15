@@ -3782,7 +3782,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->contrast, 3);
   dt_bauhaus_slider_set_step(g->contrast, .01);
   gtk_widget_set_tooltip_text(g->contrast, _("slope of the linear part of the curve\n"
-                                             "affects mostly the mid-tones"));
+                                             "affects mostly the midtones"));
 
   // brightness slider
   g->output_power = dt_bauhaus_slider_from_params(self, "output_power");
@@ -3798,7 +3798,7 @@ void gui_init(dt_iop_module_t *self)
                                 "in percent of the dynamic range (white exposure - black exposure).\n"
                                 "increase to get more contrast and less desaturation at extreme luminances,\n"
                                 "decrease otherwise. no desaturation happens in the latitude range.\n"
-                                "this has no effect on mid-tones."));
+                                "this has no effect on midtones."));
 
   g->balance = dt_bauhaus_slider_from_params(self, "balance");
   dt_bauhaus_slider_set_format(g->balance, "%.2f %%");
@@ -3959,7 +3959,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     if(p->version == DT_FILMIC_COLORSCIENCE_V1)
       dt_bauhaus_widget_set_label(g->saturation, NULL, N_("extreme luminance saturation"));
     else if(p->version == DT_FILMIC_COLORSCIENCE_V2 || p->version == DT_FILMIC_COLORSCIENCE_V3)
-      dt_bauhaus_widget_set_label(g->saturation, NULL, N_("middle tones saturation"));
+      dt_bauhaus_widget_set_label(g->saturation, NULL, N_("midtones saturation"));
   }
 
   if(!w || w == g->reconstruct_bloom_vs_details)
