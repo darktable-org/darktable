@@ -135,7 +135,7 @@ typedef struct dt_control_t
 {
   gboolean accel_initialising;
 
-  dt_action_t *actions, actions_global, actions_views, actions_thumb, actions_libs, actions_iops, actions_blend, actions_lua, actions_fallbacks;
+  dt_action_t *actions, actions_global, actions_views, actions_thumb, actions_libs, actions_iops, actions_blend, actions_lua, actions_fallbacks, *actions_modifiers;
 
   GHashTable *widgets;
   GSequence *shortcuts;
