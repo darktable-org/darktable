@@ -605,7 +605,7 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   dt_boundingbox_t fbox = { 0.0f };
 
   // get absolute pixel coordinates in final preview image
-  // FIXME: should store size this per module in dt_iop_module_t in imageiop.h, as a dt_colorpicker_sample_t
+  // FIXME: should store size this per module in dt_iop_module_t in imageop.h, as a dt_colorpicker_sample_t, in case the color picker is running in a non-selected module?
   if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
   {
     for(int k = 0; k < 4; k += 2) fbox[k] = module->color_picker_box[k] * wd;

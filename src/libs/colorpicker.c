@@ -276,6 +276,7 @@ static void _picker_button_toggled(GtkToggleButton *button, dt_lib_colorpicker_t
 static void _update_size(dt_lib_module_t *self, dt_lib_colorpicker_size_t size)
 {
   dt_lib_colorpicker_t *data = self->data;
+  // FIXME: the primary sample size is used for all the iop colorpickers -- do they need their own size value?
   data->primary_sample.size = size;
 
   _update_picker_output(self);
@@ -457,7 +458,7 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
   // FIXME: lose this if can get data from primary colorpicker
   dt_iop_module_t *module = dt_iop_get_colorout_module();
 
-  sample->locked = 0;
+  sample->locked = FALSE;
   // FIXME: this can come with a memcpy from the primary_sample
   sample->rgb.red = 0.7;
   sample->rgb.green = 0.7;
@@ -559,13 +560,15 @@ static void _set_sample_area(dt_lib_module_t *self, float size)
   {
     // FIXME: still need to set via module for center view display? -- if not don't even test for gui_module?
     // FIXME: does this set the area for colorpickers besides the global color-picker, and if not colorout don't want to set primary sample?
+  // FIXME: instead of setting primary sample should set colorout sample and read that to determine primary picker value?
     darktable.develop->gui_module->color_picker_box[0] = darktable.develop->gui_module->color_picker_box[1]
-        = data->primary_sample.box[0] = data->primary_sample.box[1]
         = 1.0 - size;
     darktable.develop->gui_module->color_picker_box[2] = darktable.develop->gui_module->color_picker_box[3]
-        = data->primary_sample.box[2] = data->primary_sample.box[3]
         = size;
   }
+  // primary sample always follows any current sample
+  data->primary_sample.box[0] = data->primary_sample.box[1] = 1.0 - size;
+  data->primary_sample.box[2] = data->primary_sample.box[3] = size;
 
   _update_size(self, DT_LIB_COLORPICKER_SIZE_BOX);
 }
@@ -580,11 +583,15 @@ static void _set_sample_box_area(dt_lib_module_t *self, const float *const box)
   printf("\n");
   // FIXME: still need to set via module for center view display? -- if not don't even test for gui_module?
   // FIXME: does this set the area for colorpickers besides the global color-picker, and if not colorout don't want to set primary sample?
+  // FIXME: instead of setting primary sample should set colorout sample and read that to determine primary picker value?
   if(darktable.develop->gui_module)
   {
     for(int k = 0; k < 4; k++)
-      darktable.develop->gui_module->color_picker_box[k] = data->primary_sample.box[k] = box[k];
+      darktable.develop->gui_module->color_picker_box[k] = box[k];
   }
+  // primary sample always follows any current sample
+  for(int k = 0; k < 4; k++)
+    data->primary_sample.box[k] = box[k];
 
   _update_size(self, DT_LIB_COLORPICKER_SIZE_BOX);
 }
@@ -604,6 +611,9 @@ static void _set_sample_point(dt_lib_module_t *self, float x, float y)
     darktable.develop->gui_module->color_picker_point[0] = data->primary_sample.point[0] = x;
     darktable.develop->gui_module->color_picker_point[1] = data->primary_sample.point[1] = y;
   }
+  // primary sample always follows any current sample
+  data->primary_sample.point[0] = x;
+  data->primary_sample.point[1] = y;
 
   _update_size(self, DT_LIB_COLORPICKER_SIZE_POINT);
 }
@@ -615,8 +625,10 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)data;
 
-  // FIXME: init primary_sample box/area to a negative value to mark that it isn't set up yet and shouldn't be drawn/sampled
+  // FIXME: init primary_sample box/area to a negative value rather than NAN? proxy uses NANs, darkroom refers to negative values
   // FIXME: or addd type DT_LIB_COLORPICKER_SIZE_INACTIVE to dt_lib_colorpicker_size_t and default to that?
+  // primary picker isn't yet active and shouldn't be drawn/sampled
+  data->primary_sample.point[0] = data->primary_sample.box[0] = NAN;
   data->primary_sample.rgb.red = 0.7;
   data->primary_sample.rgb.green = 0.7;
   data->primary_sample.rgb.blue = 0.7;
@@ -775,6 +787,9 @@ void gui_reset(dt_lib_module_t *self)
 
   // First turning off any active picking
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->picker_button), FALSE);
+
+  // don't draw the primary sample
+  data->primary_sample.point[0] = data->primary_sample.box[0] = NAN;
 
   // Resetting the picked colors
   for(int i = 0; i < 3; i++)
