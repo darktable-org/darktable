@@ -1277,6 +1277,11 @@ dialog scrollbar
   margin-right: 0.35em;
 }
 
+#preferences_box #shortcut_controls entry
+{
+  min-width: 15em;
+}
+
 #preferences_box #shortcut_controls button
 {
   margin-left: 0.21em;
