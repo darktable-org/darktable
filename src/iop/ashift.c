@@ -1266,7 +1266,7 @@ error:
 }
 
 // XYZ -> sRGB matrix
-static void XYZ_to_sRGB(const float *XYZ, float *sRGB)
+static void XYZ_to_sRGB(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t sRGB)
 {
   sRGB[0] =  3.1338561f * XYZ[0] - 1.6168667f * XYZ[1] - 0.4906146f * XYZ[2];
   sRGB[1] = -0.9787684f * XYZ[0] + 1.9161415f * XYZ[1] + 0.0334540f * XYZ[2];
@@ -1274,7 +1274,7 @@ static void XYZ_to_sRGB(const float *XYZ, float *sRGB)
 }
 
 // sRGB -> XYZ matrix
-static void sRGB_to_XYZ(const float *sRGB, float *XYZ)
+static void sRGB_to_XYZ(const dt_aligned_pixel_t sRGB, dt_aligned_pixel_t XYZ)
 {
   XYZ[0] = 0.4360747f * sRGB[0] + 0.3850649f * sRGB[1] + 0.1430804f * sRGB[2];
   XYZ[1] = 0.2225045f * sRGB[0] + 0.7168786f * sRGB[1] + 0.0606169f * sRGB[2];

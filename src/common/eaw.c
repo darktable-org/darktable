@@ -26,7 +26,7 @@
 #include <xmmintrin.h>
 #endif
 
-static inline void weight(const float *c1, const float *c2, const float sharpen, float *weight)
+static inline void weight(const float *c1, const float *c2, const float sharpen, dt_aligned_pixel_t weight)
 {
   dt_aligned_pixel_t square;
   for_each_channel(c) square[c] = c1[c] - c2[c];
