@@ -185,9 +185,9 @@ static void blur_horizontal_2ch(float *const restrict buf, const int height, con
 // Put the to-be-vectorized loop into a function by itself to nudge the compiler into actually vectorizing...
 // With optimization enabled, this gets inlined and interleaved with other instructions as though it had been
 // written in place, so we get a net win from better vectorization.
-static void load_add_4wide(float *const restrict out, float *const restrict accum, const float *const restrict values)
+static void load_add_4wide(float *const restrict out, dt_aligned_pixel_t accum, const float *const restrict values)
 {
-  for_four_channels(c,aligned(accum))
+  for_four_channels(c,aligned(accum, out))
   {
     const float v = values[c];
     accum[c] += v;
@@ -195,7 +195,7 @@ static void load_add_4wide(float *const restrict out, float *const restrict accu
   }
 }
 
-static void sub_4wide(float *const restrict accum, const float *const restrict values)
+static void sub_4wide(float *const restrict accum, const dt_aligned_pixel_t values)
 {
   for_four_channels(c,aligned(accum))
     accum[c] -= values[c];
@@ -204,10 +204,10 @@ static void sub_4wide(float *const restrict accum, const float *const restrict v
 // Put the to-be-vectorized loop into a function by itself to nudge the compiler into actually vectorizing...
 // With optimization enabled, this gets inlined and interleaved with other instructions as though it had been
 // written in place, so we get a net win from better vectorization.
-static void load_add_4wide_Kahan(float *const restrict out, float *const restrict accum,
+static void load_add_4wide_Kahan(float *const restrict out, dt_aligned_pixel_t accum,
                                  const float *const restrict values, float *const restrict comp)
 {
-  for_four_channels(c,aligned(accum,comp))
+  for_four_channels(c,aligned(accum, comp, out))
   {
     const float v = values[c];
     out[c] = v;
@@ -219,7 +219,7 @@ static void load_add_4wide_Kahan(float *const restrict out, float *const restric
   }
 }
 
-static void sub_4wide_Kahan(float *const restrict accum, const float *const restrict values,
+static void sub_4wide_Kahan(float *const restrict accum, const dt_aligned_pixel_t values,
                             float *const restrict comp)
 {
   for_four_channels(c,aligned(accum,comp,values))
@@ -232,7 +232,7 @@ static void sub_4wide_Kahan(float *const restrict accum, const float *const rest
   }
 }
 
-static void store_scaled_4wide(float *const restrict out, const float *const restrict in, const float scale)
+static void store_scaled_4wide(float *const restrict out, const dt_aligned_pixel_t in, const float scale)
 {
   for_four_channels(c,aligned(in))
     out[c] = in[c] / scale;
