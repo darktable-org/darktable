@@ -694,9 +694,9 @@ spinbutton>button
   margin-right: 0.5em;
 }
 
-#search-box image.left
+.search image.left
 {
-  padding-right: 0.5em;
+  padding: 0 0.35em 0 0.21em;
 }
 
 /*-------------------
@@ -1272,15 +1272,24 @@ dialog scrollbar
   margin: 0.35em 1.05em 1.05em 1.05em;
 }
 
-#preferences_box #shortcut_controls
+#preferences_box #shortcut_controls .search
 {
-  margin-left: 0.35em;
+  margin-right: 0.35em;
 }
 
-#preferences_box #shortcut_controls button,
+#preferences_box #shortcut_controls entry
+{
+  min-width: 15em;
+}
+
+#preferences_box #shortcut_controls button
+{
+  margin-left: 0.21em;
+}
+
 #preferences_box #preset_controls button
 {
-margin: 0 0.14em;
+  margin-right: 0.21em;
 }
 
 /*--------------------------------
