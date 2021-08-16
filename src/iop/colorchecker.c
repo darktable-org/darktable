@@ -1345,7 +1345,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->scale_b, 1.0, 1.0, 1.0, 0.0);
 
   g->scale_C = dt_bauhaus_slider_new_with_range(self, -128.0, 128.0, 1.0f, 0.0f, 2);
-  gtk_widget_set_tooltip_text(g->scale_C, _("adjust target color saturation\adjusts 'a' and 'b' channels of target color in Lab space simultaneously\nlower values scale towards lower saturation while higher scale towards higher saturation"));
+  gtk_widget_set_tooltip_text(g->scale_C, _("adjust target color saturation\nadjusts 'a' and 'b' channels of target color in Lab space simultaneously\nlower values scale towards lower saturation while higher scale towards higher saturation"));
   dt_bauhaus_widget_set_label(g->scale_C, NULL, N_("saturation"));
 
   g->absolute_target = 0;
