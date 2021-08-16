@@ -1608,7 +1608,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_tree_view_set_search_equal_func(shortcuts_view, _search_func, shortcuts_view, NULL);
   GtkWidget *search_shortcuts = gtk_search_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(search_shortcuts), _("search shortcuts list"));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(search_shortcuts), "incrementally search the list of shortcuts\npress up or down keys to cycle through matches");
+  gtk_widget_set_tooltip_text(GTK_WIDGET(search_shortcuts), _("incrementally search the list of shortcuts\npress up or down keys to cycle through matches"));
   g_signal_connect(G_OBJECT(search_shortcuts), "stop-search", G_CALLBACK(_stop_search), shortcuts_view);
   gtk_tree_view_set_search_entry(shortcuts_view, GTK_ENTRY(search_shortcuts));
 
