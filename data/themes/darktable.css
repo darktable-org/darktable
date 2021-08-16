@@ -1265,26 +1265,31 @@ dialog scrollbar
   padding: 0 0.14em;
 }
 
-/* Set buttons and search field on presets and shortcuts control buttons */
-#preferences_box #shortcut_controls,
-#preferences_box #preset_controls
+/* Set buttons and search field on presets and shortcuts control buttons ; first on shortcuts options to be sure things remains consistent between shortcuts views in preferences window and in standalone shortcuts one */
+#shortcut_controls
 {
-  margin: 0.35em 1.05em 1.05em 1.05em;
+  margin: 0.35em 0 1.05em 0;
 }
 
-#preferences_box #shortcut_controls .search
+#shortcut_controls .search
 {
   margin-right: 0.35em;
 }
 
-#preferences_box #shortcut_controls entry
+#shortcut_controls entry
 {
   min-width: 15em;
 }
 
-#preferences_box #shortcut_controls button
+#shortcut_controls button
 {
   margin-left: 0.21em;
+}
+
+#preferences_box #shortcut_controls,
+#preferences_box #preset_controls
+{
+  margin: 0.35em 1.05em 1.05em 1.05em;
 }
 
 #preferences_box #preset_controls button
