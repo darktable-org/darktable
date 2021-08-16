@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-16 19:48+0200\n"
-"PO-Revision-Date: 2021-08-16 19:48+0200\n"
+"POT-Creation-Date: 2021-08-16 21:52+0200\n"
+"PO-Revision-Date: 2021-08-16 21:53+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -8316,6 +8316,14 @@ msgstr "suppression raccourci"
 #: ../src/gui/accelerators.c:1610
 msgid "search shortcuts list"
 msgstr "chercher liste des raccourcis"
+
+#: ../src/gui/accelerators.c:1611
+msgid ""
+"incrementally search the list of shortcuts\n"
+"press up or down keys to cycle through matches"
+msgstr ""
+"recherche incrémental la liste des raccourcis\n"
+"appuyer les touches haut ou bas pour parcourir la sélection"
 
 #. Setting up the cell renderers
 #: ../src/gui/accelerators.c:1625 ../src/views/view.c:1710
