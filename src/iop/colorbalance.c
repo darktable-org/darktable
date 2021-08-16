@@ -1757,7 +1757,7 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
   const gchar **short_label = (p->mode == SLOPE_OFFSET_POWER) ? short_label_ops : short_label_lgg;
   const gchar *long_label[]
      = { N_("shadows : lift / offset"),
-         N_("mid-tones : gamma / power"),
+         N_("midtones : gamma / power"),
          N_("highlights : gain / slope") };
 
   gchar *layout = dt_conf_get_string("plugins/darkroom/colorbalance/layout");
@@ -1782,7 +1782,7 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
   }
   else
   {
-    gtk_label_set_text(GTK_LABEL(g->main_label), _("shadows / mid-tones / highlights"));
+    gtk_label_set_text(GTK_LABEL(g->main_label), _("shadows / midtones / highlights"));
 
     GtkWidget *label[3];
     for(int i=0; i<3; i++)
@@ -2078,7 +2078,7 @@ void gui_init(dt_iop_module_t *self)
         N_("factor of blue for gain/slope") };
 
   ADD_BLOCK(0, lift,  N_("shadows"), lift_messages, 0.05f,  5.0f)
-  ADD_BLOCK(1, gamma, N_("mid-tones"), gamma_messages, 0.5f, 20.0f)
+  ADD_BLOCK(1, gamma, N_("midtones"), gamma_messages, 0.5f, 20.0f)
   ADD_BLOCK(2, gain,  N_("highlights"), gain_messages,  0.5f, 25.0f)
   _configure_slider_blocks(NULL, self);
 
