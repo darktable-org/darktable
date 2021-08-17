@@ -225,7 +225,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
     {
       const size_t bin = (orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? x : y) / samples_per_bin;
       size_t tone[4] DT_ALIGNED_PIXEL;
-      for_each_channel(ch,aligned(px,tone:16))
+      for_each_channel(ch, aligned(px,tone:16))
       {
         // 1.0 is at 8/9 of the height!
         const float v = (8.0f / 9.0f) * px[4U * (x + roi->crop_x) + ch];
@@ -344,12 +344,12 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   for(int k=0; k<6; k++)
   {
     dt_aligned_pixel_t delta;
-    for_each_channel(ch,aligned(vertex_rgb,delta:16))
+    for_each_channel(ch, aligned(vertex_rgb,delta:16))
       delta[ch]=(vertex_rgb[(k+1)%6][ch] - vertex_rgb[k][ch]) / VECTORSCOPE_HUES;
     for(int i=0; i < VECTORSCOPE_HUES; i++)
     {
       dt_aligned_pixel_t rgb_scope, XYZ_D50, chromaticity;
-      for_each_channel(ch,aligned(vertex_rgb,delta,rgb_scope:16))
+      for_each_channel(ch, aligned(vertex_rgb, delta, rgb_scope:16))
         rgb_scope[ch] = vertex_rgb[k][ch] + delta[ch] * i;
       dt_ioppr_rgb_matrix_to_xyz(rgb_scope, XYZ_D50, vs_prof->matrix_in_transposed, vs_prof->lut_in,
                                  vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
@@ -376,11 +376,11 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       dt_aligned_pixel_t rgb_display;
       dt_XYZ_to_Rec709_D50(XYZ_D50, rgb_display);
       const float max_RGB = MAX(MAX(rgb_display[0], rgb_display[1]), rgb_display[2]);
-      for_each_channel(ch,aligned(rgb_display:16))
+      for_each_channel(ch, aligned(rgb_display:16))
         rgb_display[ch] = rgb_display[ch] / max_RGB;
       if(k==0 && i==0)
       {
-        for_each_channel(ch,aligned(first_rgb_display,rgb_display:16))
+        for_each_channel(ch, aligned(first_rgb_display, rgb_display:16))
           first_rgb_display[ch] = rgb_display[ch];
       }
       else
@@ -409,7 +409,7 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
 
       px = chromaticity[1];
       py = chromaticity[2];
-      for_each_channel(ch,aligned(prev_rgb_display,rgb_display:16))
+      for_each_channel(ch, aligned(prev_rgb_display, rgb_display:16))
         prev_rgb_display[ch] = rgb_display[ch];
     }
   }
@@ -444,8 +444,8 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   cairo_destroy(crt);
 
   if(d->vectorscope_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
-    for(int k=0; k<6; k++)
-      for(int i=0; i < VECTORSCOPE_HUES; i++)
+    for(int k = 0; k < 6; k++)
+      for(int i = 0; i < VECTORSCOPE_HUES; i++)
         // NOTE: hypotenuse is already calculated above, but not worth caching it
         log_scale(&d->hue_ring[k][i][0], &d->hue_ring[k][i][1], max_radius);
 
@@ -531,7 +531,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
                                                      4U * ((y + roi->crop_y) * roi->width + x + roi->crop_x));
       for(size_t xx=0; xx<2; xx++)
         for(size_t yy=0; yy<2; yy++)
-          for_each_channel(ch,aligned(px,RGB:16))
+          for_each_channel(ch, aligned(px,RGB:16))
             RGB[ch] += px[4U * (yy * roi->width + xx) + ch] * 0.25f;
 
       // this goes to the PCS which has standard illuminant D50
@@ -894,12 +894,12 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_push_group(cr);
   cairo_set_source(cr, bkgd_pat);
-  for(int n=0; n<6; n++)
+  for(int n = 0; n < 6; n++)
     for(int h=0; h<VECTORSCOPE_HUES; h++)
     {
       // note that hue_ring coords are calculated as float but converted here to double
-      float x = d->hue_ring[n][h][0];
-      float y = d->hue_ring[n][h][1];
+      const float x = d->hue_ring[n][h][0];
+      const float y = d->hue_ring[n][h][1];
       cairo_line_to(cr, x*scale, y*scale);
     }
   cairo_close_path(cr);
@@ -908,10 +908,10 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_paint_with_alpha(cr, 0.4);
 
   // primary/secondary nodes
-  for(int n=0; n<6; n++)
+  for(int n = 0; n < 6; n++)
   {
-    float x = d->hue_ring[n][0][0];
-    float y = d->hue_ring[n][0][1];
+    const float x = d->hue_ring[n][0][0];
+    const float y = d->hue_ring[n][0][1];
     cairo_arc(cr, x*scale, y*scale, DT_PIXEL_APPLY_DPI(2.), 0., M_PI * 2.);
     cairo_set_source(cr, bkgd_pat);
     cairo_fill_preserve(cr);
@@ -1204,7 +1204,7 @@ static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *eve
     // bubble to adjusting the overall widget size
     return FALSE;
   }
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
+  const dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   int delta_y;
   // note are using unit rather than smooth scroll events, as
   // exposure changes can get laggy if handling a multitude of smooth
