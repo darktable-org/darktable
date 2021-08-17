@@ -270,10 +270,7 @@ static gboolean _large_patch_toggle(GtkWidget *widget, GdkEvent *event, dt_lib_c
 
 static void _picker_button_toggled(GtkToggleButton *button, dt_lib_colorpicker_t *data)
 {
-  // FIXME: should here set the picker to inactive, or do a test in the draw code to see if the colorout module has not NULL ->picker?
-  const gboolean state = gtk_toggle_button_get_active(button);
-  data->primary_sample.active = state;
-  gtk_widget_set_sensitive(GTK_WIDGET(data->add_sample_button), state);
+  gtk_widget_set_sensitive(GTK_WIDGET(data->add_sample_button), gtk_toggle_button_get_active(button));
 }
 
 static void _update_size(dt_lib_module_t *self, dt_lib_colorpicker_size_t size)
@@ -462,8 +459,6 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
   dt_iop_module_t *module = dt_iop_get_colorout_module();
 
   sample->locked = FALSE;
-  // FIXME: need to set this, or is this implicit for live samples?
-  sample->active = TRUE;
   // FIXME: this can come with a memcpy from the primary_sample
   sample->rgb.red = 0.7;
   sample->rgb.green = 0.7;
@@ -515,13 +510,15 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
     for(int i = 0; i < 4; i++) sample->box[i] = module->color_picker_box[i];
     //for(int i = 0; i < 4; i++) sample->box[i] = data->primary_sample.box[i];
   }
-  else
+  else if(data->primary_sample.size == DT_LIB_COLORPICKER_SIZE_POINT)
   {
     sample->size = DT_LIB_COLORPICKER_SIZE_POINT;
     // FIXME: should be able to get from primary sample
     for(int i = 0; i < 2; i++) sample->point[i] = module->color_picker_point[i];
     //for(int i = 0; i < 2; i++) sample->point[i] = data->primary_sample.point[i];
   }
+  else
+    dt_unreachable_codepath();
 
   for(int i = 0; i < 3; i++)
   {
@@ -630,12 +627,8 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)data;
 
-  // FIXME: init primary_sample box/area to a negative value rather than NAN? proxy uses NANs, darkroom refers to negative values
-  // FIXME: or addd type DT_LIB_COLORPICKER_SIZE_INACTIVE to dt_lib_colorpicker_size_t and default to that?
   // primary picker isn't yet active and shouldn't be drawn/sampled
-  data->primary_sample.active = FALSE;
-  // FIXME: need to set this?
-  data->primary_sample.point[0] = data->primary_sample.box[0] = NAN;
+  data->primary_sample.size = DT_LIB_COLORPICKER_SIZE_NONE;
   data->primary_sample.rgb.red = 0.7;
   data->primary_sample.rgb.green = 0.7;
   data->primary_sample.rgb.blue = 0.7;
@@ -643,9 +636,11 @@ void gui_init(dt_lib_module_t *self)
 
   // Initializing proxy functions and data
   darktable.lib->proxy.colorpicker.module = self;
+#if 0
   // FIXME: does this matter if the size is reset depending on how the picker is clipped?
   data->primary_sample.size =
     dt_conf_get_int("ui_last/colorpicker_size") ? DT_LIB_COLORPICKER_SIZE_BOX : DT_LIB_COLORPICKER_SIZE_POINT;
+#endif
   darktable.lib->proxy.colorpicker.display_samples = dt_conf_get_int("ui_last/colorpicker_display_samples");
   // FIXME: should s/primary_sample/current_sample/ and set it to NULL now, to current primary or iop sample once picker is activated?
   darktable.lib->proxy.colorpicker.primary_sample = &data->primary_sample;
@@ -796,7 +791,18 @@ void gui_reset(dt_lib_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->picker_button), FALSE);
 
   // don't draw the primary sample
-  data->primary_sample.point[0] = data->primary_sample.box[0] = NAN;
+  data->primary_sample.size = DT_LIB_COLORPICKER_SIZE_NONE;
+
+  // don't request a primary sample
+  // FIXME: instead of this and turning off toggle button, call dt_iop_color_picker_reset()?
+  // FIXME: can find our module from self?
+  dt_iop_module_t *module = dt_iop_get_colorout_module();
+  if(module)
+  {
+    module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    // FIXME: only need this?
+    module->picker = NULL;
+  }
 
   // Resetting the picked colors
   for(int i = 0; i < 3; i++)
@@ -820,6 +826,9 @@ void gui_reset(dt_lib_module_t *self)
   dt_bauhaus_combobox_set(data->statistic_selector, 0);
   dt_bauhaus_combobox_set(data->color_mode_selector, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->display_samples_check_box), FALSE);
+
+  // redraw without a picker
+  dt_control_queue_redraw_center();
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

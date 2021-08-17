@@ -23,8 +23,10 @@
 
 typedef enum dt_lib_colorpicker_size_t
 {
+  // FIXME: rejigger so that NONE is first, and test for NONE case throughout
   DT_LIB_COLORPICKER_SIZE_POINT = 0,
-  DT_LIB_COLORPICKER_SIZE_BOX
+  DT_LIB_COLORPICKER_SIZE_BOX,
+  DT_LIB_COLORPICKER_SIZE_NONE
 } dt_lib_colorpicker_size_t;
 
 /** The struct for primary and live color picker samples */
@@ -35,11 +37,8 @@ typedef struct dt_colorpicker_sample_t
   float point[2];
   dt_boundingbox_t box;
   dt_lib_colorpicker_size_t size;
-  // FIXME: change this to "active" -- for primary picker it's true once the picker has been turned on, until the picker is reset -- for live pickers it corresponds to "locked" setting
-  // FIXME: when user clicks off the colorpicker button in the primary picker, this should turn off -- if a module colorpicker is selected, there should still be a transparent way to click this off (clicking off the per-module picker, or perhaps the primary picker remains selected, and clicking it turns off per-module picker as well
+  // FIXME: this only applies to live samples
   gboolean locked;
-  // FIXME: instead of setting/testing this, check "dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF"
-  gboolean active;
 
   /** The actual picked colors */
   dt_aligned_pixel_t picked_color_rgb_mean;
