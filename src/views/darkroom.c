@@ -326,19 +326,25 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
       continue;
 
     dt_dev_overlay_colors_t color;
+    double bright_amt = 1.0;
     if(is_primary_sample)
+    {
       color = DT_DEV_OVERLAY_GRAY;
+      // dim primary sample when have activated a module but there is
+      // still a primary colorpicker readout
+      if (!(dev->gui_module
+            && !strcmp(dev->gui_module->op, "colorout")
+            && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF))
+        bright_amt = 0.5;
+    }
     else if(sample == selected_sample)
       color = DT_DEV_OVERLAY_RED;
     else
       color = DT_DEV_OVERLAY_CYAN;
-    // FIXME: make different cases here for a dimmed primary sample when have activated a module but there is still a primary colorpicker readout
 
-    // note that these are aligned with pixels for a clean look
+    // overlays are aligned with pixels for a clean look
     if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
-      // FIXME: do need to check this?
-      if(isnan(sample->box[0])) continue;
       double x = sample->box[0] * wd, y = sample->box[1] * ht,
         w = sample->box[2] * wd, h = sample->box[3] * ht;
       cairo_user_to_device(cri, &x, &y);
@@ -362,8 +368,6 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     }
     else
     {
-      // FIXME: do need to check this?
-      if(isnan(sample->point[0])) continue;
       double x = sample->point[0] * wd, y = sample->point[1] * ht;
       // picker & central gap scale with zoom level
       double w = 0.01 * size, sp = 0.0015 * size;
@@ -396,7 +400,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     _darkroom_picker_color(cri, color, 0.0, 0.4);
     cairo_stroke_preserve(cri);
     cairo_set_line_width(cri, lw);
-    _darkroom_picker_color(cri, color, 1.0, 0.8);
+    _darkroom_picker_color(cri, color, bright_amt, 0.8);
     cairo_stroke(cri);
   }
 
@@ -741,17 +745,17 @@ void expose(
   // FIXME: should ever in care about module_color_picker being set or just draw primary picker which will be turned on when module picker is active?
   const gboolean module_color_picker = dev->gui_module
     && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && dev->gui_module->enabled;
-  const gboolean primary_picker_active = darktable.lib->proxy.colorpicker.primary_sample
-    && darktable.lib->proxy.colorpicker.primary_sample->active;
-#if 0
-    // FIXME: do need to check any of this?
-    && ((darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
-        ? !isnan(darktable.lib->proxy.colorpicker.primary_sample->point[0])
-        : !isnan(darktable.lib->proxy.colorpicker.primary_sample->box[0]));
-    //&& !darktable.lib->proxy.colorpicker.primary_sample->locked;
-#endif
+  // FIXME: really only need to check this in the draw code
+  const gboolean primary_picker_focused = dev->gui_module
+    && !strcmp(dev->gui_module->op, "colorout")
+    && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF;
+  // FIXME: could simply check if darktable.lib->proxy.colorpicker.primary_sample != NULL and set it when primary sample is first turned on, unset it when primary sample is reset?
+  const gboolean primary_picker_has_sample = darktable.lib->proxy.colorpicker.primary_sample
+    && darktable.lib->proxy.colorpicker.primary_sample->size != DT_LIB_COLORPICKER_SIZE_NONE;
+  printf("expose: primary_picker_focused %d primary_picker_has_sample %d module_color_picker %d dev->gui_module %p ->request_color_pick %d ->enabled %d\n", primary_picker_focused, primary_picker_has_sample, module_color_picker, dev->gui_module, dev->gui_module ? dev->gui_module->request_color_pick : -1, dev->gui_module && dev->gui_module->enabled);
+  if(darktable.lib->proxy.colorpicker.primary_sample) printf(" primary size %d\n", darktable.lib->proxy.colorpicker.primary_sample->size);
   if(darktable.lib->proxy.colorpicker.primary_sample
-     && (module_color_picker || primary_picker_active))
+     && (module_color_picker || primary_picker_has_sample))
   {
     // FIXME: if module picker and we encapsulate its data in a struct, then hand in active module's picker?
     GSList samples = { .data = darktable.lib->proxy.colorpicker.primary_sample, .next = NULL };
@@ -3312,7 +3316,6 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   if(height_i > capht) offy = (capht - height_i) * .5f;
   int handled = 0;
 
-  // FIXME: instead of going via gui_module, test darktable.lib->proxy.colorpicker.primary_sample->active?
   if(darktable.lib->proxy.colorpicker.primary_sample
      && dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && ctl->button_down
      && ctl->button_down_which == 1)
@@ -3396,7 +3399,6 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
   if(height_i > capht) y += (capht - height_i) * .5f;
 
   int handled = 0;
-  // FIXME: instead of going via gui_module, test darktable.lib->proxy.colorpicker.primary_sample->active?
   if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 1)
   {
     dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
@@ -3429,7 +3431,6 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   if(height_i > capht) offy = (capht - height_i) * .5f;
 
   int handled = 0;
-  // FIXME: instead of going via gui_module, test darktable.lib->proxy.colorpicker.primary_sample->active?
   if(darktable.lib->proxy.colorpicker.primary_sample
      && dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
      && which == 1)
