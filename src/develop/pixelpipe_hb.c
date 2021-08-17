@@ -794,6 +794,7 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   for(int k = 0; k < 3; k++) picked_color_rgb_min[k] = FLT_MAX;
   for(int k = 0; k < 3; k++) picked_color_rgb_max[k] = FLT_MIN;
 
+  // FIXME: bail if box[0] or point[0] is NAN
   // FIXME: only have to set box or point depending on sample size
   int box[4] = { 0 };
   int point[2] = { 0 };
@@ -2124,12 +2125,20 @@ post_process_collect_info:
     {
       // FIXME: continue to sample on the module even if primary colorpicker is clicked
       const gboolean primary_picker_active = darktable.lib->proxy.colorpicker.primary_sample
-        && !darktable.lib->proxy.colorpicker.primary_sample->locked;
+        && darktable.lib->proxy.colorpicker.primary_sample->active;
+      // FIXME: do need to check any of this?
+#if 0
+        && ((darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
+            ? !isnan(darktable.lib->proxy.colorpicker.primary_sample->point[0])
+            : !isnan(darktable.lib->proxy.colorpicker.primary_sample->box[0]));
+      //&& !darktable.lib->proxy.colorpicker.primary_sample->locked;
+#endif
       if(primary_picker_active || darktable.lib->proxy.colorpicker.live_samples)
       {
         printf("doing colorpicking primary %d live %p\n", primary_picker_active, darktable.lib->proxy.colorpicker.live_samples);
         _pixelpipe_pick_samples((const float *const )input, &roi_in, primary_picker_active);
         // FIXME: do not need to redraw now to update live samples? is this repetitious for primary picker?
+        // FIXME: doesn't this just redraw gamma widget? why?
         if(primary_picker_active && module->widget)
           dt_control_queue_redraw_widget(module->widget);
       }

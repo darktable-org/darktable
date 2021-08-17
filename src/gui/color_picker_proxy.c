@@ -24,6 +24,34 @@
 #include "gui/gtk.h"
 #include "develop/blend.h"
 
+/*
+  The color_picker_proxy code links the UI colorpicker buttons in
+  iops (and the colorpicker lib) with the rest of the implementation
+  (selecting/drawing colorpicker area in center view, reading color
+  value from preview pipe, and displaying results in the colorpicker
+  lib).
+
+  From the iop (or lib) POV, all that is necessary is to instantiate
+  color picker(s) via dt_color_picker_new() or
+  dt_color_picker_new_with_cst() then receive their results via the
+  color_picker_apply() callback.
+
+  This code will initialize new pickers with a default area, then
+  remember the last area of the picker and use that when the picker is
+  reactivated.
+
+  The actual work of "picking" happens in pixelpipe_hb.c. The drawing
+  & mouse-sensitivity of the picker overlay in the center view happens
+  in darkroom.c. The display of current sample values occurs via
+  libs/colorpicker.c, which uses this code to activate its own picker.
+
+  The sample position is potentially stored in various places:
+
+  1. For each sampler widget, in dt_iop_color_picker_t.
+  2. For each iop, dt_iop_module_t records the active sample's position.
+  3. For the primary and live samples, in dt_colorpicker_sample_t.
+*/
+
 typedef struct dt_iop_color_picker_t
 {
   dt_iop_module_t *module;
@@ -169,6 +197,7 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
   const gboolean ctrl_key_pressed = dt_modifier_is(state, GDK_CONTROL_MASK) || (e != NULL && e->button == 3);
   dt_iop_color_picker_kind_t kind = self->kind;
 
+  // turn off any existing picker in the module
   _iop_color_picker_reset(module->picker);
 
   if (module->picker != self || (kind == DT_COLOR_PICKER_POINT_AREA &&
@@ -246,6 +275,8 @@ dt_iop_colorspace_type_t dt_iop_color_picker_get_active_cst(dt_iop_module_t *mod
 static void _iop_color_picker_signal_callback(gpointer instance, dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
                                               gpointer user_data)
 {
+  // this callback happens when an iop (not lib) colorpicker receives
+  // new data from the pixelpipe
   dt_develop_t *dev = module->dev;
 
   // Invalidate the cache to ensure it will be fully recomputed.
