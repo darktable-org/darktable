@@ -184,11 +184,31 @@ static void _iop_init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *mod
 
 static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEventButton *e, dt_iop_color_picker_t *self)
 {
-  printf("in _iop_color_picker_callback_button_press\n");
   // FIXME: this is key -- module for lib picker is intialized to NULL, this use colorout -- is this still important?
   dt_iop_module_t *module = self->module ? self->module : dt_iop_get_colorout_module();
+  dt_develop_t *dev = module->dev;
 
   if(!module || darktable.gui->reset) return FALSE;
+
+  // if switching from another module, turn off the picker in that
+  // module
+  if(dev->gui_module && dev->gui_module != module)
+  {
+    _iop_color_picker_reset(dev->gui_module->picker);
+    // if are switching away from an iop, we don't want to keep its
+    // colorpicker around, but if we are switching from the
+    // colorpicker lib, we do want to maintain its (de-focused) picker
+    // for readouts and potentially a scope restricted to picker
+    // selection
+    // FIXME: if go lib -> iop -> iop, will this lose the picker? do we need to tag with picker with its originating iop?
+    if(strcmp(dev->gui_module->op, "colorout"))
+    {
+      darktable.lib->proxy.colorpicker.primary_sample->size = DT_LIB_COLORPICKER_SIZE_NONE;
+      // FIXME: this is same as dt_iop_color_picker_reset
+      dev->gui_module->picker = NULL;
+      dev->gui_module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    }
+  }
 
   // set module active if not yet the case
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), TRUE);
@@ -204,6 +224,7 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
       (ctrl_key_pressed ^ (darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX))))
   {
     module->picker = self;
+    // FIXME: this should remember the last area for the primary picker -- but doesn't
 
     ++darktable.gui->reset;
 
@@ -242,6 +263,7 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
   {
     module->picker = NULL;
     module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    darktable.lib->proxy.colorpicker.primary_sample->size = DT_LIB_COLORPICKER_SIZE_NONE;
   }
 
   dt_control_queue_redraw();
@@ -251,7 +273,6 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
 
 static void _iop_color_picker_callback(GtkWidget *button, dt_iop_color_picker_t *self)
 {
-  printf("in _iop_color_picker_callback\n");
   _iop_color_picker_callback_button_press(button, NULL, self);
 }
 

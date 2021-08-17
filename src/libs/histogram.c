@@ -611,7 +611,6 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   dt_get_times(&start);
 
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  dt_develop_t *dev = darktable.develop;
 
   // special case, clear the scopes
   if(!input)
@@ -634,10 +633,6 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   // FIXME: if the only time we use roi in histogram to limit area is here, and whenever we use tether there is no colorpicker (true?), and if we're always doing a colorspace transform in darkroom and clip to roi during conversion, then can get rid of all roi code for common/histogram?
   // when darkroom colorpicker is active, gui_module is set to colorout
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  printf("in dt_lib_histogram_process dev->gui_module is %p", dev->gui_module);
-  if(dev->gui_module)
-    printf(", op is `%s', request_color_pick %d", dev->gui_module->op, dev->gui_module->request_color_pick);
-  printf("\n");
   if(cv->view(cv) == DT_VIEW_DARKROOM && darktable.lib->proxy.colorpicker.restrict_histogram)
   {
     const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
