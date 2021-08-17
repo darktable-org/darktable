@@ -640,7 +640,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   printf("\n");
   if(cv->view(cv) == DT_VIEW_DARKROOM
      && darktable.lib->proxy.colorpicker.primary_sample
-     && !darktable.lib->proxy.colorpicker.primary_sample->locked
+     && darktable.lib->proxy.colorpicker.primary_sample->active
      && darktable.lib->proxy.colorpicker.restrict_histogram)
   {
     const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;

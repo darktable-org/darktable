@@ -52,7 +52,9 @@ typedef struct dt_lib_t
       struct dt_colorpicker_sample_t *primary_sample;
       GSList *live_samples;
       struct dt_colorpicker_sample_t *selected_sample;
+      // FIXME: should be gboolean
       int display_samples;
+      // FIXME: should be gboolean
       int restrict_histogram;
       void (*update_panel)(struct dt_lib_module_t *self);
       void (*update_samples)(struct dt_lib_module_t *self);

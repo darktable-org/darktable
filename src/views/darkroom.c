@@ -337,6 +337,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     // note that these are aligned with pixels for a clean look
     if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
+      // FIXME: do need to check this?
       if(isnan(sample->box[0])) continue;
       double x = sample->box[0] * wd, y = sample->box[1] * ht,
         w = sample->box[2] * wd, h = sample->box[3] * ht;
@@ -361,6 +362,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     }
     else
     {
+      // FIXME: do need to check this?
       if(isnan(sample->point[0])) continue;
       double x = sample->point[0] * wd, y = sample->point[1] * ht;
       // picker & central gap scale with zoom level
@@ -739,12 +741,19 @@ void expose(
   // FIXME: should ever in care about module_color_picker being set or just draw primary picker which will be turned on when module picker is active?
   const gboolean module_color_picker = dev->gui_module
     && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && dev->gui_module->enabled;
-  const gboolean primary_color_picker = darktable.lib->proxy.colorpicker.primary_sample != NULL;
-    // FIXME: do need to check this?
+  const gboolean primary_picker_active = darktable.lib->proxy.colorpicker.primary_sample
+    && darktable.lib->proxy.colorpicker.primary_sample->active;
+#if 0
+    // FIXME: do need to check any of this?
+    && ((darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
+        ? !isnan(darktable.lib->proxy.colorpicker.primary_sample->point[0])
+        : !isnan(darktable.lib->proxy.colorpicker.primary_sample->box[0]));
     //&& !darktable.lib->proxy.colorpicker.primary_sample->locked;
-  if((darktable.lib->proxy.colorpicker.primary_sample)
-     && (module_color_picker || primary_color_picker))
+#endif
+  if(darktable.lib->proxy.colorpicker.primary_sample
+     && (module_color_picker || primary_picker_active))
   {
+    // FIXME: if module picker and we encapsulate its data in a struct, then hand in active module's picker?
     GSList samples = { .data = darktable.lib->proxy.colorpicker.primary_sample, .next = NULL };
     // FIXME: if we can always use the point/box/size from primary colorpicker, don't store it per module anymore
     _darkroom_pickers_draw(self, cri, width, height, zoom, closeup, zoom_x, zoom_y,
@@ -877,6 +886,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
   // disable color picker when changing image
   if(dev->gui_module)
   {
+    // FIXME: should also set primary_sample to off? -> darktable.lib->proxy.colorpicker.primary_sample.active = FALSE;
     dev->gui_module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   }
 
@@ -3302,7 +3312,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   if(height_i > capht) offy = (capht - height_i) * .5f;
   int handled = 0;
 
-  // FIXME: can get away with only testing primary colorpicker?
+  // FIXME: instead of going via gui_module, test darktable.lib->proxy.colorpicker.primary_sample->active?
   if(darktable.lib->proxy.colorpicker.primary_sample
      && dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && ctl->button_down
      && ctl->button_down_which == 1)
@@ -3386,6 +3396,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
   if(height_i > capht) y += (capht - height_i) * .5f;
 
   int handled = 0;
+  // FIXME: instead of going via gui_module, test darktable.lib->proxy.colorpicker.primary_sample->active?
   if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 1)
   {
     dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
@@ -3418,6 +3429,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   if(height_i > capht) offy = (capht - height_i) * .5f;
 
   int handled = 0;
+  // FIXME: instead of going via gui_module, test darktable.lib->proxy.colorpicker.primary_sample->active?
   if(darktable.lib->proxy.colorpicker.primary_sample
      && dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
      && which == 1)
