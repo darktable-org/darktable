@@ -450,7 +450,6 @@ static gboolean _sample_lock_toggle(GtkWidget *widget, GdkEvent *event, dt_color
 
 static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
 {
-  printf("in _add_sample()\n");
   dt_lib_colorpicker_t *data = self->data;
   dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t *)malloc(sizeof(dt_colorpicker_sample_t));
   darktable.lib->proxy.colorpicker.live_samples
@@ -554,10 +553,6 @@ static void _set_sample_area(dt_lib_module_t *self, float size)
 {
   dt_lib_colorpicker_t *data = self->data;
 
-  printf("in _set_sample_area(), darktable.develop->gui_module %p", darktable.develop->gui_module);
-  if(darktable.develop->gui_module)
-    printf(", op is `%s'", darktable.develop->gui_module->op);
-  printf("\n");
   if(darktable.develop->gui_module)
   {
     // FIXME: still need to set via module for center view display? -- if not don't even test for gui_module?
@@ -579,10 +574,6 @@ static void _set_sample_box_area(dt_lib_module_t *self, const float *const box)
 {
   dt_lib_colorpicker_t *data = self->data;
 
-  printf("in _set_sample_box_area(), darktable.develop->gui_module %p", darktable.develop->gui_module);
-  if(darktable.develop->gui_module)
-    printf(", op is `%s'", darktable.develop->gui_module->op);
-  printf("\n");
   // FIXME: still need to set via module for center view display? -- if not don't even test for gui_module?
   // FIXME: does this set the area for colorpickers besides the global color-picker, and if not colorout don't want to set primary sample?
   // FIXME: instead of setting primary sample should set colorout sample and read that to determine primary picker value?
@@ -602,10 +593,6 @@ static void _set_sample_point(dt_lib_module_t *self, float x, float y)
 {
   dt_lib_colorpicker_t *data = self->data;
 
-  printf("in _set_sample_point(), darktable.develop->gui_module %p", darktable.develop->gui_module);
-  if(darktable.develop->gui_module)
-    printf(", op is `%s'", darktable.develop->gui_module->op);
-  printf("\n");
   // FIXME: still need to set via module for center view display? -- if not don't even test for gui_module?
   // FIXME: does this set the area for colorpickers besides the global color-picker, and if not colorout don't want to set primary sample?
   if(darktable.develop->gui_module)

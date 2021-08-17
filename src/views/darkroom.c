@@ -318,6 +318,10 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
   dt_colorpicker_sample_t *selected_sample = darktable.lib->proxy.colorpicker.selected_sample;
   const gboolean only_selected_sample = !is_primary_sample && selected_sample
     && !darktable.lib->proxy.colorpicker.display_samples;
+  const gboolean picker_focused = dev->gui_module
+    // FIXME: do need to test both of these? -- mouse routines only check request_color_pick
+    && dev->gui_module->picker
+    && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF;
 
   for( ; samples; samples = g_slist_next(samples))
   {
@@ -326,17 +330,11 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
       continue;
 
     dt_dev_overlay_colors_t color;
-    double bright_amt = 1.0;
+    // dim primary sample when have activated a module but there is
+    // still a primary colorpicker readout
+    const double bright_amt = (is_primary_sample && !picker_focused) ? 0.5 : 1.0;
     if(is_primary_sample)
-    {
       color = DT_DEV_OVERLAY_GRAY;
-      // dim primary sample when have activated a module but there is
-      // still a primary colorpicker readout
-      if (!(dev->gui_module
-            && !strcmp(dev->gui_module->op, "colorout")
-            && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF))
-        bright_amt = 0.5;
-    }
     else if(sample == selected_sample)
       color = DT_DEV_OVERLAY_RED;
     else
@@ -356,7 +354,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
       cairo_device_to_user(cri, &x, &y);
       cairo_device_to_user(cri, &w, &h);
       cairo_rectangle(cri, x, y, w - x, h - y);
-      if(is_primary_sample)
+      if(is_primary_sample && picker_focused)
       {
         // handles
         const double hw = 5. / zoom_scale;
@@ -368,6 +366,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     }
     else
     {
+      // FIXME: render defocused picker and live samples differently? as a simple crosshair?
       double x = sample->point[0] * wd, y = sample->point[1] * ht;
       // picker & central gap scale with zoom level
       double w = 0.01 * size, sp = 0.0015 * size;
@@ -396,6 +395,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
 
     // draw 1 (logical) pixel light lines with 1 (logical) pixel dark
     // outline for legibility
+    // FIXME: can the overlay be more transparent, such that when live sample activates, it is more visible?
     cairo_set_line_width(cri, lw * 3.0);
     _darkroom_picker_color(cri, color, 0.0, 0.4);
     cairo_stroke_preserve(cri);
@@ -741,19 +741,11 @@ void expose(
 
   // draw colorpicker for in focus module or execute module callback hook
   // FIXME: leaving on the primary colorpicker for too long will override masks and post-expose callbacks!
-  // FIXME: if module_color_picker then draw a bright picker and not mask or post-expose callback -- otherwise draw a dimmer picker if primary_color_picker is enabled, and any masks or post-expose callback
   // FIXME: should ever in care about module_color_picker being set or just draw primary picker which will be turned on when module picker is active?
   const gboolean module_color_picker = dev->gui_module
     && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && dev->gui_module->enabled;
-  // FIXME: really only need to check this in the draw code
-  const gboolean primary_picker_focused = dev->gui_module
-    && !strcmp(dev->gui_module->op, "colorout")
-    && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF;
-  // FIXME: could simply check if darktable.lib->proxy.colorpicker.primary_sample != NULL and set it when primary sample is first turned on, unset it when primary sample is reset?
   const gboolean primary_picker_has_sample = darktable.lib->proxy.colorpicker.primary_sample
     && darktable.lib->proxy.colorpicker.primary_sample->size != DT_LIB_COLORPICKER_SIZE_NONE;
-  printf("expose: primary_picker_focused %d primary_picker_has_sample %d module_color_picker %d dev->gui_module %p ->request_color_pick %d ->enabled %d\n", primary_picker_focused, primary_picker_has_sample, module_color_picker, dev->gui_module, dev->gui_module ? dev->gui_module->request_color_pick : -1, dev->gui_module && dev->gui_module->enabled);
-  if(darktable.lib->proxy.colorpicker.primary_sample) printf(" primary size %d\n", darktable.lib->proxy.colorpicker.primary_sample->size);
   if(darktable.lib->proxy.colorpicker.primary_sample
      && (module_color_picker || primary_picker_has_sample))
   {
@@ -3320,7 +3312,6 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
      && dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && ctl->button_down
      && ctl->button_down_which == 1)
   {
-    printf("darkroom: mouse moved in colorpicker\n");
     // module requested a color box
     if(mouse_in_imagearea(self, x, y))
     {
@@ -3435,7 +3426,6 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
      && dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
      && which == 1)
   {
-    printf("darkroom: button pressed in colorpicker\n");
     float zoom_x, zoom_y;
     dt_dev_get_pointer_zoom_pos(dev, x + offx, y + offy, &zoom_x, &zoom_y);
     if(mouse_in_imagearea(self, x, y))
@@ -3453,7 +3443,6 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
       {
         // FIXME: the sample box is drawn with drag handles, does this code make them sensitive to the mouse?
-        printf("darkroom: button pressed in colorpicker with primary sample with nonzero size\n");
         gboolean on_corner_prev_box = TRUE;
         float opposite_x, opposite_y;
 
