@@ -2127,7 +2127,6 @@ post_process_collect_info:
         && darktable.lib->proxy.colorpicker.primary_sample->size != DT_LIB_COLORPICKER_SIZE_NONE;
       if(primary_picker_active || darktable.lib->proxy.colorpicker.live_samples)
       {
-        printf("doing colorpicking primary %d live %p\n", primary_picker_active, darktable.lib->proxy.colorpicker.live_samples);
         _pixelpipe_pick_samples((const float *const )input, &roi_in, primary_picker_active);
         // FIXME: do not need to redraw now to update live samples? is this repetitious for primary picker?
         // FIXME: doesn't this just redraw gamma widget? why?
