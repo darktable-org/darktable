@@ -2123,16 +2123,8 @@ post_process_collect_info:
        && (strcmp(module->op, "gamma") == 0) // only gamma provides meaningful RGB data
        && input)
     {
-      // FIXME: continue to sample on the module even if primary colorpicker is clicked
       const gboolean primary_picker_active = darktable.lib->proxy.colorpicker.primary_sample
-        && darktable.lib->proxy.colorpicker.primary_sample->active;
-      // FIXME: do need to check any of this?
-#if 0
-        && ((darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
-            ? !isnan(darktable.lib->proxy.colorpicker.primary_sample->point[0])
-            : !isnan(darktable.lib->proxy.colorpicker.primary_sample->box[0]));
-      //&& !darktable.lib->proxy.colorpicker.primary_sample->locked;
-#endif
+        && darktable.lib->proxy.colorpicker.primary_sample->size != DT_LIB_COLORPICKER_SIZE_NONE;
       if(primary_picker_active || darktable.lib->proxy.colorpicker.live_samples)
       {
         printf("doing colorpicking primary %d live %p\n", primary_picker_active, darktable.lib->proxy.colorpicker.live_samples);
