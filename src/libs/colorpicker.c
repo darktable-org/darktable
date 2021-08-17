@@ -270,7 +270,10 @@ static gboolean _large_patch_toggle(GtkWidget *widget, GdkEvent *event, dt_lib_c
 
 static void _picker_button_toggled(GtkToggleButton *button, dt_lib_colorpicker_t *data)
 {
-  gtk_widget_set_sensitive(GTK_WIDGET(data->add_sample_button), gtk_toggle_button_get_active(button));
+  // FIXME: should here set the picker to inactive, or do a test in the draw code to see if the colorout module has not NULL ->picker?
+  const gboolean state = gtk_toggle_button_get_active(button);
+  data->primary_sample.active = state;
+  gtk_widget_set_sensitive(GTK_WIDGET(data->add_sample_button), state);
 }
 
 static void _update_size(dt_lib_module_t *self, dt_lib_colorpicker_size_t size)
@@ -459,6 +462,8 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
   dt_iop_module_t *module = dt_iop_get_colorout_module();
 
   sample->locked = FALSE;
+  // FIXME: need to set this, or is this implicit for live samples?
+  sample->active = TRUE;
   // FIXME: this can come with a memcpy from the primary_sample
   sample->rgb.red = 0.7;
   sample->rgb.green = 0.7;
@@ -628,6 +633,8 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: init primary_sample box/area to a negative value rather than NAN? proxy uses NANs, darkroom refers to negative values
   // FIXME: or addd type DT_LIB_COLORPICKER_SIZE_INACTIVE to dt_lib_colorpicker_size_t and default to that?
   // primary picker isn't yet active and shouldn't be drawn/sampled
+  data->primary_sample.active = FALSE;
+  // FIXME: need to set this?
   data->primary_sample.point[0] = data->primary_sample.box[0] = NAN;
   data->primary_sample.rgb.red = 0.7;
   data->primary_sample.rgb.green = 0.7;
