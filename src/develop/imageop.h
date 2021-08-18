@@ -208,12 +208,14 @@ typedef struct dt_iop_module_t
   int32_t suppress_mask;
   /** color picker proxy */
   struct dt_iop_color_picker_t *picker;
+#if 0
   // FIXME/NOTE: this gives the current picker for the iop value, and is also stored in primary picker so long as module is on
   /** bounding box in which the mean color is requested. */
   dt_boundingbox_t color_picker_box;
   // FIXME/NOTE: this gives the current picker for the iop value, and is also stored in primary picker so long as module is on
   /** single point to pick if in point mode */
   float color_picker_point[2];
+#endif
   // FIXME: this could be stored via dt_colorpicker_sample_t
   /** place to store the picked color of module input. */
   dt_aligned_pixel_t picked_color, picked_color_min, picked_color_max;

@@ -454,8 +454,6 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
   dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t *)malloc(sizeof(dt_colorpicker_sample_t));
   darktable.lib->proxy.colorpicker.live_samples
       = g_slist_append(darktable.lib->proxy.colorpicker.live_samples, sample);
-  // FIXME: lose this if can get data from primary colorpicker
-  dt_iop_module_t *module = dt_iop_get_colorout_module();
 
   sample->locked = FALSE;
   // FIXME: this can come with a memcpy from the primary_sample
@@ -505,16 +503,12 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
   if(data->primary_sample.size == DT_LIB_COLORPICKER_SIZE_BOX)
   {
     sample->size = DT_LIB_COLORPICKER_SIZE_BOX;
-    // FIXME: should be able to get from primary sample
-    for(int i = 0; i < 4; i++) sample->box[i] = module->color_picker_box[i];
-    //for(int i = 0; i < 4; i++) sample->box[i] = data->primary_sample.box[i];
+    for(int i = 0; i < 4; i++) sample->box[i] = data->primary_sample.box[i];
   }
   else if(data->primary_sample.size == DT_LIB_COLORPICKER_SIZE_POINT)
   {
     sample->size = DT_LIB_COLORPICKER_SIZE_POINT;
-    // FIXME: should be able to get from primary sample
-    for(int i = 0; i < 2; i++) sample->point[i] = module->color_picker_point[i];
-    //for(int i = 0; i < 2; i++) sample->point[i] = data->primary_sample.point[i];
+    for(int i = 0; i < 2; i++) sample->point[i] = data->primary_sample.point[i];
   }
   else
     dt_unreachable_codepath();
@@ -549,40 +543,13 @@ static void _restrict_histogram_changed(GtkToggleButton *button, gpointer data)
 }
 
 /* set sample area proxy impl */
-static void _set_sample_area(dt_lib_module_t *self, float size)
-{
-  dt_lib_colorpicker_t *data = self->data;
 
-  if(darktable.develop->gui_module)
-  {
-    // FIXME: still need to set via module for center view display? -- if not don't even test for gui_module?
-    // FIXME: does this set the area for colorpickers besides the global color-picker, and if not colorout don't want to set primary sample?
-  // FIXME: instead of setting primary sample should set colorout sample and read that to determine primary picker value?
-    darktable.develop->gui_module->color_picker_box[0] = darktable.develop->gui_module->color_picker_box[1]
-        = 1.0 - size;
-    darktable.develop->gui_module->color_picker_box[2] = darktable.develop->gui_module->color_picker_box[3]
-        = size;
-  }
-  // primary sample always follows any current sample
-  data->primary_sample.box[0] = data->primary_sample.box[1] = 1.0 - size;
-  data->primary_sample.box[2] = data->primary_sample.box[3] = size;
-
-  _update_size(self, DT_LIB_COLORPICKER_SIZE_BOX);
-}
-
+// FIXME: can use dt_boundingbox_t here and in lib API?
 static void _set_sample_box_area(dt_lib_module_t *self, const float *const box)
 {
   dt_lib_colorpicker_t *data = self->data;
 
-  // FIXME: still need to set via module for center view display? -- if not don't even test for gui_module?
-  // FIXME: does this set the area for colorpickers besides the global color-picker, and if not colorout don't want to set primary sample?
-  // FIXME: instead of setting primary sample should set colorout sample and read that to determine primary picker value?
-  if(darktable.develop->gui_module)
-  {
-    for(int k = 0; k < 4; k++)
-      darktable.develop->gui_module->color_picker_box[k] = box[k];
-  }
-  // primary sample always follows any current sample
+  // primary sample always follows/represents current picker
   for(int k = 0; k < 4; k++)
     data->primary_sample.box[k] = box[k];
 
@@ -593,14 +560,7 @@ static void _set_sample_point(dt_lib_module_t *self, float x, float y)
 {
   dt_lib_colorpicker_t *data = self->data;
 
-  // FIXME: still need to set via module for center view display? -- if not don't even test for gui_module?
-  // FIXME: does this set the area for colorpickers besides the global color-picker, and if not colorout don't want to set primary sample?
-  if(darktable.develop->gui_module)
-  {
-    darktable.develop->gui_module->color_picker_point[0] = data->primary_sample.point[0] = x;
-    darktable.develop->gui_module->color_picker_point[1] = data->primary_sample.point[1] = y;
-  }
-  // primary sample always follows any current sample
+  // primary sample always follows/represents current picker
   data->primary_sample.point[0] = x;
   data->primary_sample.point[1] = y;
 
@@ -629,13 +589,12 @@ void gui_init(dt_lib_module_t *self)
     dt_conf_get_int("ui_last/colorpicker_size") ? DT_LIB_COLORPICKER_SIZE_BOX : DT_LIB_COLORPICKER_SIZE_POINT;
 #endif
   darktable.lib->proxy.colorpicker.display_samples = dt_conf_get_int("ui_last/colorpicker_display_samples");
-  // FIXME: should s/primary_sample/current_sample/ and set it to NULL now, to current primary or iop sample once picker is activated?
+  // FIXME: should s/primary_sample/current_sample/
   darktable.lib->proxy.colorpicker.primary_sample = &data->primary_sample;
   darktable.lib->proxy.colorpicker.picker_source = NULL;
   darktable.lib->proxy.colorpicker.live_samples = NULL;
   darktable.lib->proxy.colorpicker.update_panel = _update_picker_output;
   darktable.lib->proxy.colorpicker.update_samples = _update_samples_output;
-  darktable.lib->proxy.colorpicker.set_sample_area = _set_sample_area;
   darktable.lib->proxy.colorpicker.set_sample_box_area = _set_sample_box_area;
   darktable.lib->proxy.colorpicker.set_sample_point = _set_sample_point;
 
@@ -758,12 +717,10 @@ void gui_cleanup(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.module = NULL;
   darktable.lib->proxy.colorpicker.update_panel = NULL;
   darktable.lib->proxy.colorpicker.update_samples = NULL;
-
-  darktable.lib->proxy.colorpicker.set_sample_area = NULL;
   darktable.lib->proxy.colorpicker.set_sample_box_area = NULL;
+  darktable.lib->proxy.colorpicker.set_sample_point = NULL;
 
   darktable.lib->proxy.colorpicker.primary_sample = NULL;
-
   while(darktable.lib->proxy.colorpicker.live_samples)
     _remove_sample(darktable.lib->proxy.colorpicker.live_samples->data);
 
