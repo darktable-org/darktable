@@ -589,14 +589,6 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
   dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
 
-#if 0
-  // FIXME: these are already set in imageop.c:dt_iop_load_module_by_so()
-  // FIXME: but now they need to default from proxy?
-  self->color_picker_box[0] = self->color_picker_box[1] = .25f;
-  self->color_picker_box[2] = self->color_picker_box[3] = .75f;
-  self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
-#endif
-
   dt_iop_color_picker_reset(self, TRUE);
 
   dt_bauhaus_combobox_set(g->mode, p->mode);
