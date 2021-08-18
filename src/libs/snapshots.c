@@ -668,6 +668,13 @@ static int lua_take_snapshot(lua_State *L)
   return 0;
 }
 
+static int lua_clear_snapshots(lua_State *L)
+{
+  dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
+  gui_reset(self);
+  return 0;
+}
+
 typedef int dt_lua_snapshot_t;
 static int selected_member(lua_State *L)
 {
@@ -771,6 +778,11 @@ void init(struct dt_lib_module_t *self)
   dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "take_snapshot");
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, lua_clear_snapshots, 1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "clear_snapshots");
   lua_pushcfunction(L, snapshots_length);
   lua_pushcfunction(L, number_member);
   dt_lua_type_register_number_const_type(L, my_type);

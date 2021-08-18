@@ -145,6 +145,11 @@ void init(dt_view_t *self)
   dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "display_image");
+
+  lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
+  dt_lua_event_add(L, "darkroom-image-loaded");
 #endif
 }
 
@@ -831,6 +836,16 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
   dev->proxy.chroma_adaptation = NULL;
   dev->proxy.wb_is_D65 = TRUE;
   dev->proxy.wb_coeffs[0] = 0.f;
+
+#ifdef USE_LUA
+
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "const char*", "darkroom-image-loaded",
+      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(imgid),
+      LUA_ASYNC_DONE);
+
+#endif
 
   // change active image
   g_slist_free(darktable.view_manager->active_images);
@@ -2995,6 +3010,16 @@ void enter(dt_view_t *self)
       dt_iop_reload_defaults(module);
     }
   }
+
+#ifdef USE_LUA
+
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "const char*", "darkroom-image-loaded",
+      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(dev->image_storage.id),
+      LUA_ASYNC_DONE);
+
+#endif
 
   /* signal that darktable.develop is initialized and ready to be used */
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE);
