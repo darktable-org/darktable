@@ -64,12 +64,11 @@ typedef struct dt_iop_color_picker_t
   dt_iop_colorspace_type_t picker_cst;
   /** used to avoid recursion when a parameter is modified in the apply() */
   GtkWidget *colorpick;
-  // these positions are associated with the current picker widget,
-  // and will set the picker request for the current iop (or picker
-  // lib) when this picker is activated
-  // FIXME: is there really a queue of 9 prior positions or only one?
-  float pick_pos[2]; // last picker positions (max 9 picker per module)
-  dt_boundingbox_t pick_box; // last picker areas (max 9 picker per module)
+  // positions are associated with the current picker widget: will set
+  // the picker request for the primary picker when this picker is
+  // activated, and will remember the most recent picker position
+  float pick_pos[2];
+  dt_boundingbox_t pick_box;
 } dt_iop_color_picker_t;
 
 static gboolean _iop_record_point_area(dt_iop_color_picker_t *self)
@@ -79,27 +78,30 @@ static gboolean _iop_record_point_area(dt_iop_color_picker_t *self)
   const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
   if(self && self->module && sample)
   {
-    for(int k = 0; k < 2; k++)
-    {
-      if(self->pick_pos[k] != sample->point[k])
+    if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
+      for(int k = 0; k < 2; k++)
       {
-        self->pick_pos[k] = sample->point[k];
-        selection_changed = TRUE;
+        if(self->pick_pos[k] != sample->point[k])
+        {
+          self->pick_pos[k] = sample->point[k];
+          selection_changed = TRUE;
+        }
       }
-    }
-    for(int k = 0; k < 4; k++)
-    {
-      if (self->pick_box[k] != sample->box[k])
+    else if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+      for(int k = 0; k < 4; k++)
       {
-        self->pick_box[k] = sample->box[k];
-        selection_changed = TRUE;
+        if (self->pick_box[k] != sample->box[k])
+        {
+          self->pick_box[k] = sample->box[k];
+          selection_changed = TRUE;
+        }
       }
-    }
   }
 
   return selection_changed;
 }
 
+// FIXME: pos should be "float pos[2]"
 static void _iop_get_point(dt_iop_color_picker_t *self, float *pos)
 {
   // FIXME: some iops like other defaults -- allow these to be set
@@ -122,7 +124,6 @@ static void _iop_get_area(dt_iop_color_picker_t *self, dt_boundingbox_t box)
   }
   else
   {
-  // FIXME: some iops like other defaults -- allow these to be set
     const float size = 0.99f;
 
     box[0] = box[1] = 1.0f - size;
@@ -223,7 +224,6 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
       (ctrl_key_pressed ^ (darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX))))
   {
     module->picker = self;
-    // FIXME: this should remember the last area for the primary picker -- but doesn't
 
     ++darktable.gui->reset;
 
@@ -240,20 +240,25 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
     {
       kind = ctrl_key_pressed ? DT_COLOR_PICKER_AREA : DT_COLOR_PICKER_POINT;
     }
+    // pull picker's last recorded positions, initializing if
+    // necessary set primary picker to this picker's position
+    // FIXME: this should remember the last area for the primary picker -- but doesn't
+    // FIXME: make equivalent dt_lib_colorpicker_get_loc()?
+    // FIXME: these call _update_size() which calls _update_picker_output() which enables picker button for the lib picker -- does this cause a loop?
     if(kind == DT_COLOR_PICKER_AREA)
     {
       dt_boundingbox_t box;
       _iop_get_area(self, box);
       dt_lib_colorpicker_set_box_area(darktable.lib, box);
-      self->pick_pos[0] = NAN; // trigger difference on first apply
     }
-    else
+    else if(kind == DT_COLOR_PICKER_POINT)
     {
       float pos[2];
       _iop_get_point(self, pos);
       dt_lib_colorpicker_set_point(darktable.lib, pos[0], pos[1]);
-      self->pick_box[0] = NAN; // trigger difference on first apply
     }
+    else
+      dt_unreachable_codepath();
 
     darktable.lib->proxy.colorpicker.picker_source = self->module;
     module->dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
