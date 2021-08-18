@@ -226,8 +226,36 @@ typedef struct dt_iop_denoiseprofile_params_v10_t
                                                               $DEFAULT: MODE_Y0U0V0 $DESCRIPTION: "color mode"*/
 } dt_iop_denoiseprofile_params_v10_t;
 
-// v10 and v11 are identical structures
-typedef dt_iop_denoiseprofile_params_v10_t dt_iop_denoiseprofile_params_t;
+typedef struct dt_iop_denoiseprofile_params_t
+{
+  float radius;     /* patch size
+                       $MIN: 0.0 $MAX: 12.0 $DEFAULT: 1.0 $DESCRIPTION: "patch size" */
+  float nbhood;     /* search radius
+                       $MIN: 1.0 $MAX: 30.0 $DEFAULT: 7.0 $DESCRIPTION: "search radius" */
+  float strength;   /* noise level after equalization
+                       $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 */
+  float shadows;    /* control the impact on shadows
+                       $MIN: 0.0 $MAX: 1.8 $DEFAULT: 1.0 $DESCRIPTION: "preserve shadows" */
+  float bias;       /* allows to reduce backtransform bias
+                       $MIN: -1000.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "bias correction" */
+  float scattering; /* spread the patch search zone without increasing number of patches
+                       $MIN: 0.0 $MAX: 20.0 $DEFAULT: 0.0 $DESCRIPTION: "scattering" */
+  float central_pixel_weight; /* increase central pixel's weight in patch comparison
+                       $MIN: 0.0 $MAX: 10.0 $DEFAULT: 0.1 $DESCRIPTION: "central pixel weight" */
+  float overshooting; /* adjusts the way parameters are autoset
+                         $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 $DESCRIPTION: "adjust autoset parameters" */
+  float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
+  dt_iop_denoiseprofile_mode_t mode; /* switch between nlmeans and wavelets
+                                        $DEFAULT: MODE_WAVELETS */
+  float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; /* values to change wavelet force by frequency
+                                                                     $DEFAULT: 0.5 */
+  gboolean wb_adaptive_anscombe; // $DEFAULT: TRUE $DESCRIPTION: "whitebalance-adaptive transform" whether to adapt anscombe transform to wb coeffs
+  gboolean fix_anscombe_and_nlmeans_norm; // $DEFAULT: TRUE $DESCRIPTION: "fix various bugs in algorithm" backward compatibility options
+  gboolean use_new_vst; // $DEFAULT: TRUE $DESCRIPTION: "upgrade profiled transform" backward compatibility options
+  dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode; /* switch between RGB and Y0U0V0 modes.
+                                                              $DEFAULT: MODE_Y0U0V0 $DESCRIPTION: "color mode"*/
+} dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
 {
