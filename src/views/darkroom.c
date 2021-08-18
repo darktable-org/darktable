@@ -3502,6 +3502,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
      && which == 3)
   {
     // default is hardcoded this way
+    // FIXME: default should be set via color_pixer_proxy
     sample->box[0] = sample->box[1] = .01f;
     sample->box[2] = sample->box[3] = .99f;
 
