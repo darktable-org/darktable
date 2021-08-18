@@ -28,6 +28,7 @@
 #include "dtgtk/drawingarea.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/accelerators.h"
+#include "libs/colorpicker.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(5)
 
@@ -775,8 +776,9 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
    * update as rapidly */
   const float mean_picked_color = *self->picked_color;
 
-  if(self->color_picker_point[0] >= 0.0f
-     && self->color_picker_point[1] >= 0.0f
+  // FIXME: why test for non-negative point -- is this ever false? instead test for DT_LIB_COLORPICKER_SIZE_NONE?
+  if(darktable.lib->proxy.colorpicker.primary_sample->point[0] >= 0.0f
+     && darktable.lib->proxy.colorpicker.primary_sample->point[1] >= 0.0f
      && self->picked_color_max[0] >= 0.0f
      && mean_picked_color != c->last_picked_color)
   {
