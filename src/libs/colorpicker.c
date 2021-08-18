@@ -543,8 +543,7 @@ static void _restrict_histogram_changed(GtkToggleButton *button, gpointer data)
 
 /* set sample area proxy impl */
 
-// FIXME: can use dt_boundingbox_t here and in lib API?
-static void _set_sample_box_area(dt_lib_module_t *self, const float *const box)
+static void _set_sample_box_area(dt_lib_module_t *self, const dt_boundingbox_t box)
 {
   dt_lib_colorpicker_t *data = self->data;
 
@@ -555,13 +554,13 @@ static void _set_sample_box_area(dt_lib_module_t *self, const float *const box)
   _update_size(self, DT_LIB_COLORPICKER_SIZE_BOX);
 }
 
-static void _set_sample_point(dt_lib_module_t *self, float x, float y)
+static void _set_sample_point(dt_lib_module_t *self, const float pos[2])
 {
   dt_lib_colorpicker_t *data = self->data;
 
   // primary sample always follows/represents current picker
-  data->primary_sample.point[0] = x;
-  data->primary_sample.point[1] = y;
+  data->primary_sample.point[0] = pos[0];
+  data->primary_sample.point[1] = pos[1];
 
   _update_size(self, DT_LIB_COLORPICKER_SIZE_POINT);
 }

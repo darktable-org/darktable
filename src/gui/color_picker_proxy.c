@@ -45,11 +45,11 @@
   in darkroom.c. The display of current sample values occurs via
   libs/colorpicker.c, which uses this code to activate its own picker.
 
-  The sample position is potentially stored in various places:
+  The sample position is potentially stored in two places:
 
   1. For each sampler widget, in dt_iop_color_picker_t.
-  2. For each iop, dt_iop_module_t records the active sample's position.
-  3. For the primary and live samples, in dt_colorpicker_sample_t.
+  2. For the active iop, the primary, and the live samples in
+     dt_colorpicker_sample_t.
 */
 
 typedef struct dt_iop_color_picker_t
@@ -101,36 +101,6 @@ static gboolean _iop_record_point_area(dt_iop_color_picker_t *self)
   return selection_changed;
 }
 
-// FIXME: pos should be "float pos[2]"
-static void _iop_get_point(dt_iop_color_picker_t *self, float *pos)
-{
-  // FIXME: some iops like other defaults -- allow these to be set
-  pos[0] = pos[1] = 0.5f;
-
-  // FIXME: only need to test [0]?
-  if(!isnan(self->pick_pos[0]) && !isnan(self->pick_pos[1]))
-  {
-    pos[0] = self->pick_pos[0];
-    pos[1] = self->pick_pos[1];
-  }
-}
-
-static void _iop_get_area(dt_iop_color_picker_t *self, dt_boundingbox_t box)
-{
-  // FIXME: only need to test [0]?
-  if(!isnan(self->pick_box[0]) && !isnan(self->pick_box[1]))
-  {
-    for(int k = 0; k < 4; k++) box[k] = self->pick_box[k];
-  }
-  else
-  {
-    const float size = 0.99f;
-
-    box[0] = box[1] = 1.0f - size;
-    box[2] = box[3] = size;
-  }
-}
-
 static void _iop_color_picker_apply(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece)
 {
   if(_iop_record_point_area(module->picker))
@@ -179,9 +149,12 @@ static void _iop_init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *mod
   picker->picker_cst = module ? module->default_colorspace(module, NULL, NULL) : iop_cs_NONE;
   picker->colorpick  = button;
 
-  // FIXME: only need to initialize [0] for each?
-  for(int j = 0; j<2; j++) picker->pick_pos[j] = NAN;
-  for(int j = 0; j < 4; j++) picker->pick_box[j] = NAN;
+  // default values
+  const float middle = 0.5f;
+  const float area = 0.99f;
+  picker->pick_pos[0] = picker->pick_pos[1] = middle;
+  picker->pick_box[0] = picker->pick_box[1] = 1.0f - area;
+  picker->pick_box[2] = picker->pick_box[3] = area;
 
   _iop_color_picker_reset(picker);
 }
@@ -246,17 +219,9 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
     // FIXME: make equivalent dt_lib_colorpicker_get_loc()?
     // FIXME: these call _update_size() which calls _update_picker_output() which enables picker button for the lib picker -- does this cause a loop?
     if(kind == DT_COLOR_PICKER_AREA)
-    {
-      dt_boundingbox_t box;
-      _iop_get_area(self, box);
-      dt_lib_colorpicker_set_box_area(darktable.lib, box);
-    }
+      dt_lib_colorpicker_set_box_area(darktable.lib, self->pick_box);
     else if(kind == DT_COLOR_PICKER_POINT)
-    {
-      float pos[2];
-      _iop_get_point(self, pos);
-      dt_lib_colorpicker_set_point(darktable.lib, pos[0], pos[1]);
-    }
+      dt_lib_colorpicker_set_point(darktable.lib, self->pick_pos);
     else
       dt_unreachable_codepath();
 
