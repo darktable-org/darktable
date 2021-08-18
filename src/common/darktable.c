@@ -1123,11 +1123,14 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // init the gui part of views
     dt_view_manager_gui_init(darktable.view_manager);
 
+    // Save the default shortcuts
+    dt_shortcuts_save(".defaults", FALSE);
+
     // Then load any shortcuts if available
-    dt_shortcuts_load(FALSE); //
+    dt_shortcuts_load(NULL, FALSE); //
 
     // Save the shortcuts including defaults
-    dt_shortcuts_save(TRUE);
+    dt_shortcuts_save(NULL, TRUE);
 
     // initialize undo struct
     darktable.undo = dt_undo_init();
