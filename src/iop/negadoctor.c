@@ -1042,9 +1042,12 @@ void gui_update(dt_iop_module_t *const self)
 
   dt_iop_color_picker_reset(self, TRUE);
 
+#if 0
+  // FIXME: these now need to default from proxy?
   self->color_picker_box[0] = self->color_picker_box[1] = .10f;
   self->color_picker_box[2] = self->color_picker_box[3] = .50f;
   self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
+#endif
 
   dt_bauhaus_combobox_set(g->film_stock, p->film_stock);
 

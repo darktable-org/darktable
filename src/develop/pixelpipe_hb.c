@@ -597,24 +597,26 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   const dt_image_t image = darktable.develop->image_storage;
   const int op_after_demosaic = dt_ioppr_is_iop_before(darktable.develop->preview_pipe->iop_order_list,
                                                        module->op, "demosaic", 0);
+  const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
 
   // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined
   // position
-  if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return 1;
+  // FIXME: is this ever true? we should test for something else to indicate undefined, e.g. DT_LIB_COLORPICKER_SIZE_NONE
+  if(!sample || sample->size == DT_LIB_COLORPICKER_SIZE_NONE
+     || sample->point[0] < 0 || sample->point[1] < 0) return 1;
 
   dt_boundingbox_t fbox = { 0.0f };
 
   // get absolute pixel coordinates in final preview image
-  // FIXME: should store size this per module in dt_iop_module_t in imageop.h, as a dt_colorpicker_sample_t, in case the color picker is running in a non-selected module?
-  if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+  if(sample && sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
   {
-    for(int k = 0; k < 4; k += 2) fbox[k] = module->color_picker_box[k] * wd;
-    for(int k = 1; k < 4; k += 2) fbox[k] = module->color_picker_box[k] * ht;
+    for(int k = 0; k < 4; k += 2) fbox[k] = sample->box[k] * wd;
+    for(int k = 1; k < 4; k += 2) fbox[k] = sample->box[k] * ht;
   }
   else
   {
-    fbox[0] = fbox[2] = module->color_picker_point[0] * wd;
-    fbox[1] = fbox[3] = module->color_picker_point[1] * ht;
+    fbox[0] = fbox[2] = sample->point[0] * wd;
+    fbox[1] = fbox[3] = sample->point[1] * ht;
   }
 
   // transform back to current module coordinates

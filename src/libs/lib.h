@@ -59,7 +59,6 @@ typedef struct dt_lib_t
       gboolean restrict_histogram;
       void (*update_panel)(struct dt_lib_module_t *self);
       void (*update_samples)(struct dt_lib_module_t *self);
-      void (*set_sample_area)(struct dt_lib_module_t *self, float size);
       void (*set_sample_box_area)(struct dt_lib_module_t *self, const float *const size);
       void (*set_sample_point)(struct dt_lib_module_t *self, float x, float y);
     } colorpicker;
@@ -160,8 +159,6 @@ gboolean dt_lib_presets_can_autoapply(dt_lib_module_t *mod);
  * Proxy functions
  */
 
-/** set the colorpicker area selection tool and size, size 0.0 - 1.0 */
-void dt_lib_colorpicker_set_area(dt_lib_t *lib, float size);
 /** set the colorpicker area selection tool and size, box[k] 0.0 - 1.0 */
 void dt_lib_colorpicker_set_box_area(dt_lib_t *lib, const float *const box);
 

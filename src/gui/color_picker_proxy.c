@@ -76,21 +76,22 @@ static gboolean _iop_record_point_area(dt_iop_color_picker_t *self)
 {
   gboolean selection_changed = FALSE;
 
-  if(self && self->module)
+  const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
+  if(self && self->module && sample)
   {
     for(int k = 0; k < 2; k++)
     {
-      if(self->pick_pos[k] != self->module->color_picker_point[k])
+      if(self->pick_pos[k] != sample->point[k])
       {
-        self->pick_pos[k] = self->module->color_picker_point[k];
+        self->pick_pos[k] = sample->point[k];
         selection_changed = TRUE;
       }
     }
     for(int k = 0; k < 4; k++)
     {
-      if (self->pick_box[k] != self->module->color_picker_box[k])
+      if (self->pick_box[k] != sample->box[k])
       {
-        self->pick_box[k] = self->module->color_picker_box[k];
+        self->pick_box[k] = sample->box[k];
         selection_changed = TRUE;
       }
     }
@@ -101,6 +102,7 @@ static gboolean _iop_record_point_area(dt_iop_color_picker_t *self)
 
 static void _iop_get_point(dt_iop_color_picker_t *self, float *pos)
 {
+  // FIXME: some iops like other defaults -- allow these to be set
   pos[0] = pos[1] = 0.5f;
 
   // FIXME: only need to test [0]?
@@ -120,6 +122,7 @@ static void _iop_get_area(dt_iop_color_picker_t *self, dt_boundingbox_t box)
   }
   else
   {
+  // FIXME: some iops like other defaults -- allow these to be set
     const float size = 0.99f;
 
     box[0] = box[1] = 1.0f - size;
