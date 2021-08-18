@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -122,7 +122,7 @@ static void pretty_print(const char *buf, char *out, size_t outsize)
 
   for(int k = 0; k < num_rules; k++)
   {
-    int n = sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
+    const int n = sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
 
     if(n == 3)
     {
@@ -202,7 +202,7 @@ static void _lib_recentcollection_updated(gpointer instance, dt_collection_chang
   dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)self->data;
   dt_thumbtable_t *table = dt_ui_thumbtable(darktable.gui->ui);
   // serialize, check for recently used
-  char confname[200];
+  char confname[200] = { 0 };
 
   char buf[4096];
   if(dt_collection_serialize(buf, sizeof(buf))) return;
@@ -223,7 +223,7 @@ static void _lib_recentcollection_updated(gpointer instance, dt_collection_chang
   }
 
   int n = -1;
-  for(int k = 0 ; k < CLAMPS(_conf_get_num_items(), 0, _conf_get_max_items()) ; k++)
+  for(int k = 0; k < CLAMPS(_conf_get_num_items(), 0, _conf_get_max_items()); k++)
   {
     // is it already in the current list?
     snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", k);
@@ -259,7 +259,7 @@ static void _lib_recentcollection_updated(gpointer instance, dt_collection_chang
     for(int k = n; k > 0; k--)
     {
       snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", k - 1);
-      gchar *line1 = dt_conf_get_string(confname);
+      const gchar *line1 = dt_conf_get_string_const(confname);
       snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/pos%1d", k - 1);
       uint32_t pos1 = dt_conf_get_int(confname);
       if(line1 && line1[0] != '\0')
@@ -269,7 +269,6 @@ static void _lib_recentcollection_updated(gpointer instance, dt_collection_chang
         snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/pos%1d", k);
         dt_conf_set_int(confname, pos1);
       }
-      g_free(line1);
     }
     dt_conf_set_string("plugins/lighttable/recentcollect/line0", buf);
     dt_conf_set_int("plugins/lighttable/recentcollect/pos0",
@@ -277,7 +276,7 @@ static void _lib_recentcollection_updated(gpointer instance, dt_collection_chang
   }
   // update button descriptions:
   GList *current = d->items;
-  for (int k = 0 ; current ; k++)
+  for(int k = 0; current; k++)
   {
     char str[2048] = { 0 };
     dt_lib_recentcollect_item_t *item = (dt_lib_recentcollect_item_t *)current->data;
@@ -300,7 +299,7 @@ static void _lib_recentcollection_updated(gpointer instance, dt_collection_chang
   }
 
   current = d->items;
-  for(int k = 0 ; k < CLAMPS(_conf_get_num_items(), 0, _conf_get_max_items()) ; k++)
+  for(int k = 0; k < CLAMPS(_conf_get_num_items(), 0, _conf_get_max_items()); k++)
   {
     dt_lib_recentcollect_item_t *item = (dt_lib_recentcollect_item_t *)current->data;
     gtk_widget_set_no_show_all(item->button, FALSE);
@@ -357,7 +356,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
     if (delta > 0)
     {
       // create new items
-      for(int k = old_nb_items ; k < new_nb_items ; k++)
+      for(int k = old_nb_items; k < new_nb_items; k++)
       {
         GtkWidget *box = GTK_WIDGET(d->box);
         dt_lib_recentcollect_item_t *item =
@@ -388,7 +387,7 @@ void set_preferences(void *menu, dt_lib_module_t *self)
 void gui_reset(dt_lib_module_t *self)
 {
   dt_conf_set_int("plugins/lighttable/recentcollect/num_items", 0);
-  char confname[200];
+  char confname[200] = { 0 };
 
   for(int k = 0; k < _conf_get_max_items(); k++)
   {
@@ -414,7 +413,7 @@ void gui_init(dt_lib_module_t *self)
   d->inited = 0;
 
   // add buttons in the list, set them all to invisible
-  for(int k = 0 ; k < _conf_get_max_items() ; k++)
+  for(int k = 0; k < _conf_get_max_items(); k++)
   {
     dt_lib_recentcollect_item_t *item =
             (dt_lib_recentcollect_item_t *)malloc(sizeof(dt_lib_recentcollect_item_t));
