@@ -190,24 +190,26 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
 
   if(!module || darktable.gui->reset) return FALSE;
 
-  // if switching from another module, turn off the picker in that
-  // module
-  if(dev->gui_module && dev->gui_module != module)
+  // If switching from another module, turn off the picker in that
+  // module. If we are holding onto the colorpick libs picker, we do
+  // want to maintain its (de-focused) picker for readouts and
+  // potentially a scope restricted to picker selection
+  // FIXME: do only need to test final clause?
+#if 0
+  if(dev->gui_module && dev->gui_module != module
+     && !darktable.lib->proxy.colorpicker.primary_sample->source)
+#else
+  if(darktable.lib->proxy.colorpicker.primary_sample->source &&
+     module != darktable.lib->proxy.colorpicker.primary_sample->source)
+#endif
   {
-    _iop_color_picker_reset(dev->gui_module->picker);
-    // if are switching away from an iop, we don't want to keep its
-    // colorpicker around, but if we are switching from the
-    // colorpicker lib, we do want to maintain its (de-focused) picker
-    // for readouts and potentially a scope restricted to picker
-    // selection
+    _iop_color_picker_reset(darktable.lib->proxy.colorpicker.primary_sample->source->picker);
     // FIXME: if go lib -> iop -> iop, will this lose the picker? do we need to tag with picker with its originating iop?
-    if(strcmp(dev->gui_module->op, "colorout"))
-    {
-      darktable.lib->proxy.colorpicker.primary_sample->size = DT_LIB_COLORPICKER_SIZE_NONE;
-      // FIXME: this is same as dt_iop_color_picker_reset
-      dev->gui_module->picker = NULL;
-      dev->gui_module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-    }
+    darktable.lib->proxy.colorpicker.primary_sample->size = DT_LIB_COLORPICKER_SIZE_NONE;
+    darktable.lib->proxy.colorpicker.primary_sample->source = NULL;
+    // FIXME: this is same as dt_iop_color_picker_reset
+    dev->gui_module->picker = NULL;
+    dev->gui_module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   }
 
   // set module active if not yet the case
@@ -256,6 +258,15 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
       self->pick_box[0] = NAN; // trigger difference on first apply
     }
 
+    // FIXME: make histogram respect picker source and click off restrict
+#if 0
+    // FIXME: this fails if select rgbcurve picker, then adjust colorzones curve, then click colorzones picker -- because picker module is rgbcurve
+    if(!darktable.lib->proxy.colorpicker.primary_sample->source)
+      darktable.lib->proxy.colorpicker.primary_sample->source = self->module;
+#else
+    darktable.lib->proxy.colorpicker.primary_sample->source = self->module;
+#endif
+
     module->dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
     dt_iop_request_focus(module);
   }
@@ -264,6 +275,9 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
     module->picker = NULL;
     module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     darktable.lib->proxy.colorpicker.primary_sample->size = DT_LIB_COLORPICKER_SIZE_NONE;
+    darktable.lib->proxy.colorpicker.primary_sample->source = NULL;
+    if(darktable.lib->proxy.colorpicker.restrict_histogram)
+      module->dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
   }
 
   dt_control_queue_redraw();
