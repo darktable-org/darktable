@@ -744,10 +744,10 @@ void expose(
   // FIXME: should ever in care about module_color_picker being set or just draw primary picker which will be turned on when module picker is active?
   const gboolean module_color_picker = dev->gui_module
     && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && dev->gui_module->enabled
-    && darktable.lib->proxy.colorpicker.primary_sample->source == dev->gui_module;
+    && darktable.lib->proxy.colorpicker.picker_source == dev->gui_module;
   const gboolean primary_picker_has_sample = darktable.lib->proxy.colorpicker.primary_sample
     && darktable.lib->proxy.colorpicker.primary_sample->size != DT_LIB_COLORPICKER_SIZE_NONE
-    && darktable.lib->proxy.colorpicker.primary_sample->source == NULL;
+    && !darktable.lib->proxy.colorpicker.picker_source;
   if(darktable.lib->proxy.colorpicker.primary_sample
      && (module_color_picker || primary_picker_has_sample))
   {
@@ -3313,8 +3313,8 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   if(darktable.lib->proxy.colorpicker.primary_sample
      && dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
      // FIXME: do need to check if dev->gui_module->enabled?
-     && (darktable.lib->proxy.colorpicker.primary_sample->source == dev->gui_module
-         || !darktable.lib->proxy.colorpicker.primary_sample->source)
+     && (darktable.lib->proxy.colorpicker.picker_source == dev->gui_module
+         || !darktable.lib->proxy.colorpicker.picker_source)
      && ctl->button_down && ctl->button_down_which == 1)
   {
     // module requested a color box
@@ -3397,8 +3397,8 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
   int handled = 0;
   if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
      // FIXME: do need to check if dev->gui_module->enabled?
-     && (darktable.lib->proxy.colorpicker.primary_sample->source == dev->gui_module
-         || !darktable.lib->proxy.colorpicker.primary_sample->source)
+     && (darktable.lib->proxy.colorpicker.picker_source == dev->gui_module
+         || !darktable.lib->proxy.colorpicker.picker_source)
      && which == 1)
   {
     dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
@@ -3434,8 +3434,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   if(darktable.lib->proxy.colorpicker.primary_sample
      && dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
      // FIXME: do need to check if dev->gui_module->enabled?
-     && (darktable.lib->proxy.colorpicker.primary_sample->source == dev->gui_module
-         || !darktable.lib->proxy.colorpicker.primary_sample->source)
+     && (darktable.lib->proxy.colorpicker.picker_source == dev->gui_module
+         || !darktable.lib->proxy.colorpicker.picker_source)
      && which == 1)
   {
     float zoom_x, zoom_y;
@@ -3501,8 +3501,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   if(darktable.lib->proxy.colorpicker.primary_sample
      && dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
      // FIXME: do need to check if dev->gui_module->enabled?
-     && (darktable.lib->proxy.colorpicker.primary_sample->source == dev->gui_module
-         || !darktable.lib->proxy.colorpicker.primary_sample->source)
+     && (darktable.lib->proxy.colorpicker.picker_source == dev->gui_module
+         || !darktable.lib->proxy.colorpicker.picker_source)
      && which == 3)
   {
     // default is hardcoded this way

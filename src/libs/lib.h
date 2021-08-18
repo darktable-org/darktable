@@ -50,12 +50,13 @@ typedef struct dt_lib_t
     {
       struct dt_lib_module_t *module;
       struct dt_colorpicker_sample_t *primary_sample;
+      // Which module set the picker, or NULL if set by colorpicker
+      // lib. Used to figure out when to deactivate the picker.
+      struct dt_iop_module_t *picker_source;
       GSList *live_samples;
       struct dt_colorpicker_sample_t *selected_sample;
-      // FIXME: should be gboolean
-      int display_samples;
-      // FIXME: should be gboolean
-      int restrict_histogram;
+      gboolean display_samples;
+      gboolean restrict_histogram;
       void (*update_panel)(struct dt_lib_module_t *self);
       void (*update_samples)(struct dt_lib_module_t *self);
       void (*set_sample_area)(struct dt_lib_module_t *self, float size);
