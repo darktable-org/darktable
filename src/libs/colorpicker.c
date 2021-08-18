@@ -276,7 +276,6 @@ static void _picker_button_toggled(GtkToggleButton *button, dt_lib_colorpicker_t
 static void _update_size(dt_lib_module_t *self, dt_lib_colorpicker_size_t size)
 {
   dt_lib_colorpicker_t *data = self->data;
-  // FIXME: the primary sample size is used for all the iop colorpickers -- do they need their own size value?
   data->primary_sample.size = size;
 
   _update_picker_output(self);
