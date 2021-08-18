@@ -620,6 +620,7 @@ void gui_init(dt_lib_module_t *self)
   data->primary_sample.rgb.green = 0.7;
   data->primary_sample.rgb.blue = 0.7;
   data->primary_sample.rgb.alpha = 1.0;
+  data->primary_sample.source = NULL;
 
   // Initializing proxy functions and data
   darktable.lib->proxy.colorpicker.module = self;
