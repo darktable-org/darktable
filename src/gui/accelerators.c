@@ -29,6 +29,9 @@
 
 #include <assert.h>
 #include <gtk/gtk.h>
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 typedef struct dt_shortcut_t
 {
@@ -787,7 +790,7 @@ static void shortcuts_store_category(GtkTreeIter *category, dt_shortcut_t *s, dt
                                 s && s->views ? s->views & view ? 0 : 1 : 2);
 }
 
-gboolean remove_from_store(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+static gboolean _remove_shortcut_from_store(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
 {
   gpointer iter_data;
   gtk_tree_model_get(model, iter, 0, &iter_data, -1);
@@ -803,7 +806,7 @@ gboolean remove_from_store(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *
 static void remove_shortcut(GSequenceIter *shortcut)
 {
   if(shortcuts_store)
-    gtk_tree_model_foreach(GTK_TREE_MODEL(shortcuts_store), remove_from_store, shortcut);
+    gtk_tree_model_foreach(GTK_TREE_MODEL(shortcuts_store), _remove_shortcut_from_store, shortcut);
 
   dt_shortcut_t *s = g_sequence_get(shortcut);
   if(s && s->direction) // was this a split move?
@@ -1160,7 +1163,7 @@ static void _element_changed(GtkCellRendererCombo *combo, char *path_string, Gtk
   }
   s->element = new_index;
 
-  dt_shortcuts_save(FALSE);
+  dt_shortcuts_save(NULL, FALSE);
 }
 
 static void _effect_editing_started(GtkCellRenderer *renderer, GtkCellEditable *editable, char *path, gpointer data)
@@ -1194,14 +1197,14 @@ static void _effect_changed(GtkCellRendererCombo *combo, char *path_string, GtkT
   else
     s->effect = new_index;
 
-  dt_shortcuts_save(FALSE);
+  dt_shortcuts_save(NULL, FALSE);
 }
 
 static void _speed_edited(GtkCellRendererText *cell, const gchar *path_string, const gchar *new_text, gpointer data)
 {
   find_edited_shortcut(data, path_string)->speed = atof(new_text);
 
-  dt_shortcuts_save(FALSE);
+  dt_shortcuts_save(NULL, FALSE);
 }
 
 static void _instance_edited(GtkCellRendererText *cell, const gchar *path_string, const gchar *new_text, gpointer data)
@@ -1213,7 +1216,7 @@ static void _instance_edited(GtkCellRendererText *cell, const gchar *path_string
       if(!strcmp(instance_label[i], new_text))
         s->instance = (i + 1) / 2 * (i % 2 ? 1 : -1);
 
-  dt_shortcuts_save(FALSE);
+  dt_shortcuts_save(NULL, FALSE);
 }
 
 static void grab_in_tree_view(GtkTreeView *tree_view)
@@ -1272,7 +1275,7 @@ static gboolean _shortcut_key_pressed(GtkWidget *widget, GdkEventKey *event, gpo
         {
           remove_shortcut(shortcut_iter);
 
-          dt_shortcuts_save(FALSE);
+          dt_shortcuts_save(NULL, FALSE);
         }
         g_free(question);
       }
@@ -1282,6 +1285,26 @@ static gboolean _shortcut_key_pressed(GtkWidget *widget, GdkEventKey *event, gpo
   }
 
   return FALSE;
+}
+
+static void _add_shortcuts_to_tree()
+{
+  const dt_view_t *vw = dt_view_manager_get_current_view(darktable.view_manager);
+  dt_view_type_flags_t view = vw && vw->view ? vw->view(vw) : DT_VIEW_LIGHTTABLE;
+
+  for(gint i = 0; i < NUM_CATEGORIES; i++)
+    gtk_tree_store_insert_with_values(shortcuts_store, NULL, NULL, -1, 0, GINT_TO_POINTER(i), -1);
+
+  for(GSequenceIter *iter = g_sequence_get_begin_iter(darktable.control->shortcuts);
+      !g_sequence_iter_is_end(iter);
+      iter = g_sequence_iter_next(iter))
+  {
+    dt_shortcut_t *s = g_sequence_get(iter);
+    GtkTreeIter category;
+    shortcuts_store_category(&category, s, view);
+
+    gtk_tree_store_insert_with_values(shortcuts_store, NULL, &category, -1, 0, iter, -1);
+  }
 }
 
 static gboolean _add_actions_to_tree(GtkTreeIter *parent, dt_action_t *action,
@@ -1568,8 +1591,287 @@ static void _resize_shortcuts_view(GtkWidget *view, GdkRectangle *allocation, gp
   dt_conf_set_int("shortcuts/window_split", gtk_paned_get_position(GTK_PANED(data)));
 }
 
+const dt_input_device_t DT_ALL_DEVICES = UINT8_MAX;
+static void _shortcuts_save(gchar *shortcuts_file, dt_input_device_t device);
+static void _shortcuts_load(gchar *shortcuts_file, dt_input_device_t file_dev, dt_input_device_t load_dev, gboolean clear);
+
+static void _restore_clicked(GtkButton *button, gpointer user_data)
+{
+  enum
+  {
+    _DEFAULTS = 1,
+    _STARTUP,
+    _EDITS,
+  };
+
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("restore shortcuts"),
+                                                  GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(button))),
+                                                  GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                  _("_cancel"), GTK_RESPONSE_REJECT,
+                                                  _("_defaults"), _DEFAULTS,
+                                                  _("_startup"), _STARTUP,
+                                                  _("_edits"), _EDITS,
+                                                  NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_REJECT);
+
+  GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG (dialog)));
+  GtkWidget *label = gtk_label_new(_("restore default shortcuts\n  or as at startup\n  or when the configuration dialog was opened\n"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_container_add(content_area, label);
+  GtkWidget *clear = gtk_check_button_new_with_label(_("clear all newer shortcuts\n(instead of just restoring changed ones)"));
+  gtk_container_add(content_area, clear);
+
+  gtk_widget_show_all(GTK_WIDGET(content_area));
+
+  const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
+  const gboolean wipe = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(clear));
+
+  gtk_widget_destroy(dialog);
+
+  switch(resp)
+  {
+  case _DEFAULTS:
+    dt_shortcuts_load(".defaults", wipe);
+    break;
+  case _STARTUP:
+    dt_shortcuts_load(".backup", wipe);
+    break;
+  case _EDITS:
+    dt_shortcuts_load(".edit", wipe);
+    break;
+  }
+}
+
+static void _import_export_dev_changed(GtkComboBox *widget, gpointer user_data)
+{
+  gint dev = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  g_object_set_data(G_OBJECT(user_data), "device", GINT_TO_POINTER(dev));
+  gtk_combo_box_set_active(GTK_COMBO_BOX(user_data), 1); // make sure changed triggered
+  gtk_combo_box_set_active(GTK_COMBO_BOX(user_data), dev > 1 ? 0 : -1);
+  gtk_widget_set_sensitive(GTK_WIDGET(user_data), dev > 1);
+}
+
+static void _export_id_changed(GtkComboBox *widget, gpointer user_data)
+{
+  gint dev = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "device"));
+  gint id = dev <= 1 ? 0 :
+            gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) + (dev-1) * 10;
+
+  gint count = 0;
+
+  for(GSequenceIter *iter = g_sequence_get_begin_iter(darktable.control->shortcuts);
+      !g_sequence_iter_is_end(iter);
+      iter = g_sequence_iter_next(iter))
+  {
+    dt_shortcut_t *s = g_sequence_get(iter);
+    if(dev == 0 ||
+       (id == 0 &&  s->key_device == id && s->move_device == id) ||
+       (id != 0 && (s->key_device == id || s->move_device == id)))
+      count++;
+  }
+
+  gchar *text = g_strdup_printf("%d %s", count, _("shortcuts"));
+  gtk_label_set_text(GTK_LABEL(user_data), text);
+  g_free(text);
+}
+
+static void _export_clicked(GtkButton *button, gpointer user_data)
+{
+  GtkWindow *win = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(button)));
+
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("export shortcuts"),
+                                                  win, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                  _("_cancel"), GTK_RESPONSE_REJECT,
+                                                  _("_ok"), GTK_RESPONSE_OK,
+                                                  NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_REJECT);
+
+  GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG (dialog)));
+  GtkWidget *label = gtk_label_new(_("export all shortcuts to a file\nor just for one selected device\n"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_container_add(content_area, label);
+
+  GtkWidget *combo_dev = gtk_combo_box_text_new();
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_dev), _("all"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_dev), _("keyboard"));
+  for(GSList *driver = darktable.control->input_drivers; driver; driver = driver->next)
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_dev),
+                                   ((dt_input_driver_definition_t *)driver->data)->name);
+  gtk_container_add(content_area, combo_dev);
+
+  GtkWidget *combo_id = gtk_combo_box_text_new();
+  for(gchar num[] = "0"; *num <= '9'; (*num)++)
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_id), num);
+  gtk_container_add(content_area, combo_id);
+
+  GtkWidget *count = gtk_label_new("");
+  gtk_container_add(content_area, count);
+
+  g_signal_connect(combo_dev, "changed", G_CALLBACK(_import_export_dev_changed), combo_id);
+  g_signal_connect(combo_id, "changed", G_CALLBACK(_export_id_changed), count);
+
+  gtk_widget_show_all(GTK_WIDGET(content_area));
+
+  gtk_combo_box_set_active(GTK_COMBO_BOX(combo_dev), 0);
+
+  const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
+
+  const gint dev = gtk_combo_box_get_active(GTK_COMBO_BOX(combo_dev));
+  const gint id = dev == 0 ? DT_ALL_DEVICES :
+                  dev == 1 ? 0 :
+                  gtk_combo_box_get_active(GTK_COMBO_BOX(combo_id)) + (dev-1) * 10;
+
+  gtk_widget_destroy(dialog);
+
+  if(resp != GTK_RESPONSE_OK) return;
+
+  GtkWidget *chooser = gtk_file_chooser_dialog_new(_("select file to export"), win, GTK_FILE_CHOOSER_ACTION_SAVE,
+                                                   _("_cancel"), GTK_RESPONSE_REJECT,
+                                                   _("_export"), GTK_RESPONSE_ACCEPT,
+                                                  NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(chooser);
+#endif
+  gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(chooser), TRUE);
+  dt_conf_get_folder_to_file_chooser("ui_last/export_path", chooser);
+  gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(chooser), "shortcutsrc");
+  if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
+
+    _shortcuts_save(filename, id);
+    g_free(filename);
+    dt_conf_set_folder_from_file_chooser("ui_last/export_path", chooser);
+  }
+  gtk_widget_destroy(chooser);
+}
+
+static void _import_id_changed(GtkComboBox *widget, gpointer user_data)
+{
+  gint id = gtk_combo_box_get_active(widget);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(user_data), id);
+  gtk_widget_set_sensitive(GTK_WIDGET(user_data), id >= 0);
+}
+
+static void _import_clicked(GtkButton *button, gpointer user_data)
+{
+  GtkWindow *win = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(button)));
+
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("import shortcuts"),
+                                                  win, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                  _("_cancel"), GTK_RESPONSE_REJECT,
+                                                  _("_ok"), GTK_RESPONSE_OK,
+                                                  NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_REJECT);
+
+  GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG (dialog)));
+  GtkWidget *label = gtk_label_new(_("import all shortcuts from a file\nor just for one selected device\n"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_container_add(content_area, label);
+
+  GtkWidget *combo_dev = gtk_combo_box_text_new();
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_dev), _("all"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_dev), _("keyboard"));
+  for(GSList *driver = darktable.control->input_drivers; driver; driver = driver->next)
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_dev),
+                                   ((dt_input_driver_definition_t *)driver->data)->name);
+  gtk_container_add(content_area, combo_dev);
+
+  label = gtk_label_new(_("id in file:"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_container_add(content_area, label);
+  GtkWidget *combo_from_id = gtk_combo_box_text_new();
+  for(gchar num[] = "0"; *num <= '9'; (*num)++)
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_from_id), num);
+  gtk_container_add(content_area, combo_from_id);
+
+  label = gtk_label_new(_("load as:"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_container_add(content_area, label);
+  GtkWidget *combo_to_id = gtk_combo_box_text_new();
+  for(gchar num[] = "0"; *num <= '9'; (*num)++)
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_to_id), num);
+  gtk_container_add(content_area, combo_to_id);
+
+  GtkWidget *clear = gtk_check_button_new_with_label(_("clear device first"));
+  gtk_container_add(content_area, clear);
+
+  g_signal_connect(combo_dev, "changed", G_CALLBACK(_import_export_dev_changed), combo_from_id);
+  g_signal_connect(combo_from_id, "changed", G_CALLBACK(_import_id_changed), combo_to_id);
+
+  gtk_widget_show_all(GTK_WIDGET(content_area));
+
+  gtk_combo_box_set_active(GTK_COMBO_BOX(combo_dev), 0);
+
+  const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
+  const gint dev = gtk_combo_box_get_active(GTK_COMBO_BOX(combo_dev));
+  const gint from_id = dev == 0 ? DT_ALL_DEVICES :
+                       dev == 1 ? 0 :
+                       gtk_combo_box_get_active(GTK_COMBO_BOX(combo_from_id)) + (dev-1) * 10;
+  const gint to_id = dev == 1 ? 0 :
+                     gtk_combo_box_get_active(GTK_COMBO_BOX(combo_to_id)) + (dev-1) * 10;
+  const gboolean wipe = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(clear));
+
+  gtk_widget_destroy(dialog);
+
+  if(resp != GTK_RESPONSE_OK) return;
+
+  GtkWidget *chooser = gtk_file_chooser_dialog_new(_("select file to import"), win, GTK_FILE_CHOOSER_ACTION_OPEN,
+                                                   _("_cancel"), GTK_RESPONSE_REJECT,
+                                                   _("_import"), GTK_RESPONSE_ACCEPT,
+                                                  NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(chooser);
+#endif
+  dt_conf_get_folder_to_file_chooser("ui_last/import_path", chooser);
+  gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(chooser), "shortcutsrc");
+  if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
+
+    if(wipe && from_id != DT_ALL_DEVICES)
+    {
+      GtkTreeModel *model = GTK_TREE_MODEL(shortcuts_store);
+      GtkTreeIter category;
+      gboolean valid_category = gtk_tree_model_get_iter_first(model, &category);
+      while(valid_category)
+      {
+        GtkTreeIter child;
+        gboolean valid_child = gtk_tree_model_iter_children(model, &child, &category);
+        while(valid_child)
+        {
+          gpointer child_data;
+          gtk_tree_model_get(model, &child, 0, &child_data, -1);
+
+          dt_shortcut_t *s = g_sequence_get(child_data);
+          if((to_id == 0 &&  s->key_device == to_id && s->move_device == to_id) ||
+             (to_id != 0 && (s->key_device == to_id || s->move_device == to_id)))
+          {
+            g_sequence_remove(child_data);
+            valid_child = gtk_tree_store_remove(GTK_TREE_STORE(model), &child);
+          }
+          else
+            valid_child = gtk_tree_model_iter_next(model, &child);
+        }
+        valid_category = gtk_tree_model_iter_next(model, &category);
+      };
+    }
+
+    _shortcuts_load(filename, from_id, to_id, wipe && from_id == DT_ALL_DEVICES);
+
+    g_free(filename);
+    dt_conf_set_folder_from_file_chooser("ui_last/import_path", chooser);
+  }
+  gtk_widget_destroy(chooser);
+
+  dt_shortcuts_save(NULL, FALSE);
+}
+
 GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
 {
+  // Save the shortcuts before editing
+  dt_shortcuts_save(".edit", FALSE);
+
   _selected_action = g_hash_table_lookup(darktable.control->widgets, widget);
   if(!_selected_action && widget)
     _selected_action = g_hash_table_lookup(darktable.control->widgets, gtk_widget_get_parent(widget));
@@ -1580,22 +1882,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   // Building the shortcut treeview
   g_set_weak_pointer(&shortcuts_store, gtk_tree_store_new(1, G_TYPE_POINTER)); // static
 
-  const dt_view_t *vw = dt_view_manager_get_current_view(darktable.view_manager);
-  dt_view_type_flags_t view = vw && vw->view ? vw->view(vw) : DT_VIEW_LIGHTTABLE;
-
-  for(gint i = 0; i < NUM_CATEGORIES; i++)
-    gtk_tree_store_insert_with_values(shortcuts_store, NULL, NULL, -1, 0, GINT_TO_POINTER(i), -1);
-
-  for(GSequenceIter *iter = g_sequence_get_begin_iter(darktable.control->shortcuts);
-      !g_sequence_iter_is_end(iter);
-      iter = g_sequence_iter_next(iter))
-  {
-    dt_shortcut_t *s = g_sequence_get(iter);
-    GtkTreeIter category;
-    shortcuts_store_category(&category, s, view);
-
-    gtk_tree_store_insert_with_values(shortcuts_store, NULL, &category, -1, 0, iter, -1);
-  }
+  _add_shortcuts_to_tree();
 
   GtkTreeModel *filtered_shortcuts = gtk_tree_model_filter_new(GTK_TREE_MODEL(shortcuts_store), NULL);
   g_object_unref(G_OBJECT(shortcuts_store));
@@ -1743,25 +2030,25 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   if(split_position) gtk_paned_set_position(GTK_PANED(container), split_position);
   g_signal_connect(G_OBJECT(shortcuts_view), "size-allocate", G_CALLBACK(_resize_shortcuts_view), container);
 
-  GtkWidget *button_bar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *button_bar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0), *button = NULL;
   gtk_widget_set_name(button_bar, "shortcut_controls");
   gtk_box_pack_start(GTK_BOX(button_bar), search_shortcuts, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(button_bar), search_actions, FALSE, FALSE, 0);
 
-  GtkWidget *defaults_button = gtk_button_new_with_label(_("defaults"));
-  gtk_widget_set_sensitive(defaults_button, FALSE);
-  gtk_widget_set_tooltip_text(defaults_button, "to be implemented");
-  gtk_box_pack_end(GTK_BOX(button_bar), defaults_button, FALSE, FALSE, 0);
+  button = gtk_button_new_with_label(_("restore..."));
+  gtk_widget_set_tooltip_text(button, "restore default shortcuts or previous state");
+  g_signal_connect(button, "clicked", G_CALLBACK(_restore_clicked), NULL);
+  gtk_box_pack_end(GTK_BOX(button_bar), button, FALSE, FALSE, 0);
 
-  GtkWidget *export_button = gtk_button_new_with_label(_("export..."));
-  gtk_widget_set_sensitive(export_button, FALSE);
-  gtk_widget_set_tooltip_text(export_button, "to be implemented");
-  gtk_box_pack_end(GTK_BOX(button_bar), export_button, FALSE, FALSE, 0);
+  button = gtk_button_new_with_label(_("import..."));
+  gtk_widget_set_tooltip_text(button, "fully or partially import shortcuts from file");
+  g_signal_connect(button, "clicked", G_CALLBACK(_import_clicked), NULL);
+  gtk_box_pack_end(GTK_BOX(button_bar), button, FALSE, FALSE, 0);
 
-  GtkWidget *import_button = gtk_button_new_with_label(_("import..."));
-  gtk_widget_set_sensitive(import_button, FALSE);
-  gtk_widget_set_tooltip_text(import_button, "to be implemented");
-  gtk_box_pack_end(GTK_BOX(button_bar), import_button, FALSE, FALSE, 0);
+  button = gtk_button_new_with_label(_("export..."));
+  gtk_widget_set_tooltip_text(button, "fully or partially export shortcuts to file");
+  g_signal_connect(button, "clicked", G_CALLBACK(_export_clicked), NULL);
+  gtk_box_pack_end(GTK_BOX(button_bar), button, FALSE, FALSE, 0);
 
   GtkWidget *top_level = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(top_level), container, TRUE, TRUE, 0);
@@ -1770,17 +2057,8 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   return top_level;
 }
 
-void dt_shortcuts_save(gboolean backup)
+static void _shortcuts_save(gchar *shortcuts_file, dt_input_device_t device)
 {
-  char shortcuts_file[PATH_MAX] = { 0 };
-  dt_loc_get_user_config_dir(shortcuts_file, sizeof(shortcuts_file));
-  g_strlcat(shortcuts_file, "/shortcutsrc", PATH_MAX);
-  if(backup)
-  {
-    gchar *backup_file = g_strdup_printf("%s.backup", shortcuts_file);
-    g_rename(shortcuts_file, backup_file);
-    g_free(backup_file);
-  }
   FILE *f = g_fopen(shortcuts_file, "wb");
   if(f)
   {
@@ -1789,6 +2067,11 @@ void dt_shortcuts_save(gboolean backup)
         i = g_sequence_iter_next(i))
     {
       dt_shortcut_t *s = g_sequence_get(i);
+
+      if(device != DT_ALL_DEVICES &&
+         (device != 0 ||  s->key_device != device || s->move_device != device) &&
+         (device == 0 || (s->key_device != device && s->move_device != device)))
+        continue;
 
       gchar *key_name = _shortcut_key_move_name(s->key_device, s->key, s->mods, FALSE);
       fprintf(f, "%s", key_name);
@@ -1838,19 +2121,33 @@ void dt_shortcuts_save(gboolean backup)
   }
 }
 
-void dt_shortcuts_load(gboolean clear)
+void dt_shortcuts_save(gchar *ext, gboolean backup)
 {
   char shortcuts_file[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(shortcuts_file, sizeof(shortcuts_file));
   g_strlcat(shortcuts_file, "/shortcutsrc", PATH_MAX);
-  if(!g_file_test(shortcuts_file, G_FILE_TEST_EXISTS))
-    return;
+  if(ext) g_strlcat(shortcuts_file, ext, PATH_MAX);
+  if(backup)
+  {
+    gchar *backup_file = g_strdup_printf("%s.backup", shortcuts_file);
+    g_rename(shortcuts_file, backup_file);
+    g_free(backup_file);
+  }
 
+  _shortcuts_save(shortcuts_file, DT_ALL_DEVICES);
+}
+
+static void _shortcuts_load(gchar *shortcuts_file, dt_input_device_t file_dev, dt_input_device_t load_dev, gboolean clear)
+{
   // start with an empty shortcuts collection
   if(clear && darktable.control->shortcuts)
   {
+    if(shortcuts_store) gtk_tree_store_clear(shortcuts_store);
+
     g_sequence_free(darktable.control->shortcuts);
     darktable.control->shortcuts = g_sequence_new(g_free);
+
+    if(shortcuts_store) _add_shortcuts_to_tree();
   }
 
   FILE *f = g_fopen(shortcuts_file, "rb");
@@ -2053,11 +2350,34 @@ void dt_shortcuts_load(gboolean clear)
           fprintf(stderr, "[dt_shortcuts_load] token '%s' not recognised\n", token);
         }
 
-        insert_shortcut(&s, FALSE);
+        if(file_dev == DT_ALL_DEVICES ||
+           (file_dev == 0 &&  s.key_device == file_dev && s.move_device == file_dev) ||
+           (file_dev != 0 && (s.key_device == file_dev || s.move_device == file_dev)))
+        {
+          if(file_dev != 0)
+          {
+            if(s.key_device  == file_dev) s.key_device  = load_dev;
+            if(s.move_device == file_dev) s.move_device = load_dev;
+          }
+
+          insert_shortcut(&s, FALSE);
+        }
       }
     }
     fclose(f);
   }
+}
+
+void dt_shortcuts_load(gchar *ext, gboolean clear)
+{
+  char shortcuts_file[PATH_MAX] = { 0 };
+  dt_loc_get_user_config_dir(shortcuts_file, sizeof(shortcuts_file));
+  g_strlcat(shortcuts_file, "/shortcutsrc", PATH_MAX);
+  if(ext) g_strlcat(shortcuts_file, ext, PATH_MAX);
+  if(!g_file_test(shortcuts_file, G_FILE_TEST_EXISTS))
+    return;
+
+  _shortcuts_load(shortcuts_file, DT_ALL_DEVICES, DT_ALL_DEVICES, clear);
 }
 
 void dt_shortcuts_reinitialise()
@@ -2070,7 +2390,7 @@ void dt_shortcuts_reinitialise()
   }
 
   // reload shortcuts
-  dt_shortcuts_load(TRUE);
+  dt_shortcuts_load(NULL, TRUE);
 
   char actions_file[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(actions_file, sizeof(actions_file));
@@ -2476,7 +2796,7 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
             gtk_widget_trigger_tooltip_query(darktable.control->mapping_widget);
         }
 
-        dt_shortcuts_save(FALSE);
+        dt_shortcuts_save(NULL, FALSE);
       }
 
       _sc.action = NULL;
@@ -3333,7 +3653,7 @@ void dt_action_rename(dt_action_t *action, const gchar *new_name)
     g_free(action);
   }
 
-  dt_shortcuts_save(FALSE);
+  dt_shortcuts_save(NULL, FALSE);
 }
 
 void dt_action_rename_preset(dt_action_t *action, const gchar *old_name, const gchar *new_name)
@@ -3345,7 +3665,7 @@ void dt_action_rename_preset(dt_action_t *action, const gchar *old_name, const g
     if(!new_name)
     {
       if(actions_store)
-        gtk_tree_model_foreach(GTK_TREE_MODEL(actions_store), remove_from_store, p);
+        gtk_tree_model_foreach(GTK_TREE_MODEL(actions_store), _remove_shortcut_from_store, p);
     }
 
     dt_action_rename(p, new_name);

@@ -27,9 +27,9 @@
 GtkWidget *dt_shortcuts_prefs(GtkWidget *widget);
 GHashTable *dt_shortcut_category_lists(dt_view_type_flags_t v);
 
-void dt_shortcuts_save(gboolean backup);
+void dt_shortcuts_save(gchar *ext, gboolean backup);
 
-void dt_shortcuts_load(gboolean clear);
+void dt_shortcuts_load(gchar *ext, gboolean clear);
 
 void dt_shortcuts_reinitialise();
 
