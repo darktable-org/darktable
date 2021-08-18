@@ -274,16 +274,6 @@ void _display_module_trouble_message_callback(gpointer instance,
   }
 }
 
-static void _darkroom_picker_color(cairo_t *cr, dt_dev_overlay_colors_t color, double amt, double alpha)
-{
-  if(color == DT_DEV_OVERLAY_GRAY)
-    cairo_set_source_rgba(cr, 1.0 * amt, 1.0 * amt, 1.0 * amt, alpha);
-  else if(color == DT_DEV_OVERLAY_RED)
-    cairo_set_source_rgba(cr, 1.0 * amt, 0.0, 0.0, alpha);
-  else if(color == DT_DEV_OVERLAY_CYAN)
-    cairo_set_source_rgba(cr, 0.0, 1.0 * amt, 1.0 * amt, alpha);
-}
-
 static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
                                    int32_t width, int32_t height,
                                    dt_dev_zoom_t zoom, int closeup, float zoom_x, float zoom_y,
@@ -308,6 +298,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
   const double size = (wd + ht) / 2.0;
   const double zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
   const double lw = 1.0 / zoom_scale;
+  const double dashes[1] = { lw * 4.0 };
 
   cairo_translate(cri, 0.5 * width, 0.5 * height);
   cairo_scale(cri, zoom_scale, zoom_scale);
@@ -328,17 +319,6 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     dt_colorpicker_sample_t *sample = samples->data;
     if(only_selected_sample && (sample != selected_sample))
       continue;
-
-    dt_dev_overlay_colors_t color;
-    // dim primary sample when have activated a module but there is
-    // still a primary colorpicker readout
-    const double bright_amt = (is_primary_sample && !picker_focused) ? 0.5 : 1.0;
-    if(is_primary_sample)
-      color = DT_DEV_OVERLAY_GRAY;
-    else if(sample == selected_sample)
-      color = DT_DEV_OVERLAY_RED;
-    else
-      color = DT_DEV_OVERLAY_CYAN;
 
     // overlays are aligned with pixels for a clean look
     if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
@@ -364,12 +344,14 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
         cairo_rectangle(cri, w - hw, h - hw, 2. * hw, 2. * hw);
       }
     }
-    else
+    else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
     {
-      // FIXME: render defocused picker and live samples differently? as a simple crosshair?
       double x = sample->point[0] * wd, y = sample->point[1] * ht;
       // picker & central gap scale with zoom level
       double w = 0.01 * size, sp = 0.0015 * size;
+      // makes live sample visible when created just behind primary picker
+      if(!is_primary_sample)
+        w *= 1.4;
       cairo_user_to_device(cri, &x, &y);
       cairo_user_to_device_distance(cri, &w, &sp);
       x=round(x+0.5)-0.5;
@@ -382,25 +364,49 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
       sp=round(sp);
       cairo_device_to_user(cri, &x, &y);
       cairo_device_to_user_distance(cri, &w, &sp);
-      cairo_rectangle(cri, x - w, y - w, w * 2.0, w * 2.0);
-      cairo_move_to(cri, x, y - w);
-      cairo_line_to(cri, x, y - sp);
-      cairo_move_to(cri, x, y + sp);
-      cairo_line_to(cri, x, y + w);
-      cairo_move_to(cri, x - w, y);
-      cairo_line_to(cri, x - sp, y);
-      cairo_move_to(cri, x + sp, y);
-      cairo_line_to(cri, x + w, y);
+      // "handles"
+      if(is_primary_sample && picker_focused)
+        cairo_rectangle(cri, x - w, y - w, w * 2.0, w * 2.0);
+      if(sample == selected_sample)
+      {
+        // simple crosshair
+        cairo_move_to(cri, x, y - w * 3.0);
+        cairo_line_to(cri, x, y + w * 3.0);
+        cairo_move_to(cri, x - w * 3.0, y);
+        cairo_line_to(cri, x + w * 3.0, y);
+      }
+      else
+      {
+        // crosshair with space in center around sampled point
+        cairo_move_to(cri, x, y - w);
+        cairo_line_to(cri, x, y - sp);
+        cairo_move_to(cri, x, y + sp);
+        cairo_line_to(cri, x, y + w);
+        cairo_move_to(cri, x - w, y);
+        cairo_line_to(cri, x - sp, y);
+        cairo_move_to(cri, x + sp, y);
+        cairo_line_to(cri, x + w, y);
+      }
     }
 
-    // draw 1 (logical) pixel light lines with 1 (logical) pixel dark
-    // outline for legibility
-    // FIXME: can the overlay be more transparent, such that when live sample activates, it is more visible?
-    cairo_set_line_width(cri, lw * 3.0);
-    _darkroom_picker_color(cri, color, 0.0, 0.4);
+    // default is to draw 1 (logical) pixel light lines with 1
+    // (logical) pixel dark outline for legibility
+
+    // dim primary sample when have activated a module but there is
+    // still a primary colorpicker readout
+    const double bright_amt = (is_primary_sample && !picker_focused) ? 0.5 : 1.0;
+    const double line_scale = (sample == selected_sample ? 3.0 : 1.0);
+    cairo_set_line_width(cri, lw * 3.0 * line_scale);
+    cairo_set_source_rgba(cri, 0.0, 0.0, 0.0, 0.35 * bright_amt);
     cairo_stroke_preserve(cri);
-    cairo_set_line_width(cri, lw);
-    _darkroom_picker_color(cri, color, bright_amt, 0.8);
+
+    cairo_set_line_width(cri, lw * line_scale);
+    cairo_set_dash(cri, dashes,
+                   !is_primary_sample
+                   && sample != selected_sample
+                   && sample->size == DT_LIB_COLORPICKER_SIZE_BOX,
+                   0.0);
+    cairo_set_source_rgba(cri, 1.0, 1.0, 1.0, 0.7 * bright_amt);
     cairo_stroke(cri);
   }
 
