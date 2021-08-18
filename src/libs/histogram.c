@@ -638,10 +638,10 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     dt_develop_t *dev = darktable.develop;
     const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
     if(sample && sample->size != DT_LIB_COLORPICKER_SIZE_NONE
-       //&& dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
        // FIXME: do need to check if dev->gui_module->enabled?
-       && ((dev->gui_module && sample->source == dev->gui_module)
-           || !sample->source))
+       && ((dev->gui_module
+            && darktable.lib->proxy.colorpicker.picker_source == dev->gui_module)
+           || !darktable.lib->proxy.colorpicker.picker_source))
     {
       if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
       {
