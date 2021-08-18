@@ -37,6 +37,8 @@ typedef enum _iop_color_picker_kind_t
   DT_COLOR_PICKER_POINT_AREA // allow the user to select between point and area
 } dt_iop_color_picker_kind_t;
 
+// FIXME: add to API ability to detect if a picker is enabled for an iop so can know whether to make center view mouse sensitive to it and whether to draw it
+
 //* reset current color picker if not keep-active or not keep */
 void dt_iop_color_picker_reset(dt_iop_module_t *module, gboolean keep);
 
