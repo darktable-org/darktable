@@ -1023,7 +1023,7 @@ static void load_watermarks(const char *basedir, dt_iop_watermark_gui_data_t *g)
   for(GList *iter = files; iter; iter = g_list_next(iter))
   {
     char *filename = iter->data;
-    const gchar *extension = strrchr(filename, '.');
+    gchar *extension = strrchr(filename, '.');
     if(extension)
     {
       // we add only supported file formats to the list
@@ -1031,7 +1031,12 @@ static void load_watermarks(const char *basedir, dt_iop_watermark_gui_data_t *g)
       {
         // remember the whole filename for later
         g->watermarks_filenames = g_list_append(g->watermarks_filenames, g_strdup(filename));
-        dt_bauhaus_combobox_add(g->watermarks, filename);
+        // ... and build string shown in the gui
+        *extension = '\0';
+        extension++;
+        gchar *text = g_strdup_printf("%s (%s)", filename, extension);
+        dt_bauhaus_combobox_add(g->watermarks, text);
+        g_free(text);
       }
     }
   }
