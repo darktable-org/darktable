@@ -30,6 +30,8 @@ typedef enum dt_lib_colorpicker_size_t
   DT_LIB_COLORPICKER_SIZE_NONE
 } dt_lib_colorpicker_size_t;
 
+// FIXME: if make a live sample type declared as "struct dt_lib_colorpicker_live_sample_t" can declare it in colorpicker.c
+
 /** The struct for primary and live color picker samples */
 // FIXME: for primary and live sample we need most of this data -- for per-module picker we need the picked coor data for that point in the pixelpipe, but could lose point/box/size/locked -- and some of this data is "private" to colorpicker.c and could move there
 typedef struct dt_colorpicker_sample_t
@@ -50,6 +52,9 @@ typedef struct dt_colorpicker_sample_t
   // FIXME: this only applies to live samples
   gboolean locked;
   // FIXME: for primary sample add a "source" dt_iop_module_t field -- this lets us know to draw the sample dimmed and without handles when sample->source != dev->gui_module, and maybe that when activate a picker on a new iop to overwrite what is primary_sample
+  // which module set the picker, or NULL if set by colorpicker lib, used to figure out when to deactivate the pcicker
+  // FIXME: store this directly in proxy instead?
+  struct dt_iop_module_t *source;
 
   /** The actual picked colors */
   dt_aligned_pixel_t picked_color_rgb_mean;
