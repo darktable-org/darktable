@@ -116,7 +116,7 @@ void gui_init(dt_lib_module_t *self)
   /* create drawingarea */
   self->widget = gtk_drawing_area_new();
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
-  gtk_widget_set_events(self->widget, GDK_EXPOSURE_MASK
+  gtk_widget_set_events(self->widget, GDK_EXPOSURE_MASK | GDK_ENTER_NOTIFY_MASK
                                       | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
                                       | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK);
 
@@ -136,7 +136,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_size_request(self->widget, -1, 175);
   gtk_widget_set_name(GTK_WIDGET(self->widget), "navigation-module");
   dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, NULL, "hide navigation thumbnail", self->widget, NULL);
-  gtk_widget_set_events(self->widget, GDK_ENTER_NOTIFY_MASK);
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
