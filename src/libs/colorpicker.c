@@ -733,19 +733,22 @@ void gui_reset(dt_lib_module_t *self)
   // First turning off any active picking
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->picker_button), FALSE);
 
-  // don't draw the primary sample
-  data->primary_sample.size = DT_LIB_COLORPICKER_SIZE_NONE;
-
   // don't request a primary sample
   // FIXME: instead of this and turning off toggle button, call dt_iop_color_picker_reset()?
   // FIXME: can find our module from self?
   dt_iop_module_t *module = dt_iop_get_colorout_module();
   if(module)
   {
-    module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-    // FIXME: only need this?
     module->picker = NULL;
+    module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    // if it was restricting the histogram, we'll need to reprocess the histogram
+    if(darktable.lib->proxy.colorpicker.restrict_histogram
+       && data->primary_sample.size != DT_LIB_COLORPICKER_SIZE_NONE)
+      module->dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
   }
+
+  // don't draw the primary sample
+  data->primary_sample.size = DT_LIB_COLORPICKER_SIZE_NONE;
 
   // Resetting the picked colors
   for(int i = 0; i < 3; i++)
