@@ -650,7 +650,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
         roi.crop_width = width - MIN(width, MAX(0, sample->box[2] * width));
         roi.crop_height = height - MIN(height, MAX(0, sample->box[3] * height));
       }
-      else
+      else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
       {
         roi.crop_x = MIN(width, MAX(0, sample->point[0] * width));
         roi.crop_y = MIN(height, MAX(0, sample->point[1] * height));
