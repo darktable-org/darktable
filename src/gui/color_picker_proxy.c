@@ -161,9 +161,9 @@ static void _iop_init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *mod
 
 static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEventButton *e, dt_iop_color_picker_t *self)
 {
-  // FIXME: this is key -- module for lib picker is intialized to NULL, this use colorout -- is this still important?
+  // NOTE: this is key -- module for lib picker is intialized to NULL,
+  // then it manifests as colorout
   dt_iop_module_t *module = self->module ? self->module : dt_iop_get_colorout_module();
-  dt_develop_t *dev = module->dev;
 
   if(!module || darktable.gui->reset) return FALSE;
 
@@ -171,16 +171,12 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
   // module. If we are holding onto the colorpick libs picker, we do
   // want to maintain its (de-focused) picker for readouts and
   // potentially a scope restricted to picker selection
-  // FIXME: do only need to test final clause?
   if(darktable.lib->proxy.colorpicker.picker_source &&
      module != darktable.lib->proxy.colorpicker.picker_source)
   {
-    _iop_color_picker_reset(darktable.lib->proxy.colorpicker.picker_source->picker);
+    dt_iop_color_picker_reset(darktable.lib->proxy.colorpicker.picker_source, FALSE);
     darktable.lib->proxy.colorpicker.primary_sample->size = DT_LIB_COLORPICKER_SIZE_NONE;
     darktable.lib->proxy.colorpicker.picker_source = NULL;
-    // FIXME: this is same as dt_iop_color_picker_reset
-    dev->gui_module->picker = NULL;
-    dev->gui_module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   }
 
   // set module active if not yet the case
