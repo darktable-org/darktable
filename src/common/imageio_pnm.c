@@ -22,6 +22,7 @@
 #include "common/imageio_pfm.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -205,8 +206,15 @@ dt_imageio_retval_t dt_imageio_open_pnm(dt_image_t *img, const char *filename, d
   ret = fscanf(f, "%c%c ", head, head + 1);
   if(ret != 2 || head[0] != 'P') goto end;
 
-  ret = fscanf(f, "%d %d ", &img->width, &img->height);
+  char width_string[10] = { 0 };
+  char height_string[10] = { 0 };
+  ret = fscanf(f, "%9s %9s ", width_string, height_string);
   if(ret != 2) goto end;
+
+  errno = 0;
+  img->width = strtol(width_string, NULL, 0);
+  img->height = strtol(height_string, NULL, 0);
+  if(errno != 0 || img->width <= 0 || img->height <= 0) goto end;
 
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
