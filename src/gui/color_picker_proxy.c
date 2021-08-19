@@ -254,7 +254,7 @@ void dt_iop_color_picker_set_cst(dt_iop_module_t *module, const dt_iop_colorspac
   if(module->picker && module->picker->picker_cst != picker_cst)
   {
     module->picker->picker_cst = picker_cst;
-    module->picker->pick_pos[0] = NAN; // trigger difference on next apply
+    module->picker->pick_pos[0] = module->picker->pick_pos[1] = 0.5; // reset on next apply
   }
 }
 
