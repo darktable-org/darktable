@@ -892,9 +892,11 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
   // disable color picker when changing image
   if(dev->gui_module)
   {
-    // FIXME: should also set primary_sample to off? -> darktable.lib->proxy.colorpicker.primary_sample.active = FALSE;
+    dev->gui_module->picker = NULL;
     dev->gui_module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   }
+  darktable.lib->proxy.colorpicker.primary_sample->size = DT_LIB_COLORPICKER_SIZE_NONE;
+  darktable.lib->proxy.colorpicker.picker_source = NULL;
 
   // update aspect ratio
   if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
@@ -3104,6 +3106,8 @@ void enter(dt_view_t *self)
 void leave(dt_view_t *self)
 {
   dt_iop_color_picker_cleanup();
+  darktable.lib->proxy.colorpicker.primary_sample->size = DT_LIB_COLORPICKER_SIZE_NONE;
+  darktable.lib->proxy.colorpicker.picker_source = NULL;
 
   _unregister_modules_drag_n_drop(self);
 
