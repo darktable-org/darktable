@@ -599,11 +599,9 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
                                                        module->op, "demosaic", 0);
   const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
 
-  // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined
-  // position
-  // FIXME: is this ever true? we should test for something else to indicate undefined, e.g. DT_LIB_COLORPICKER_SIZE_NONE
-  if(!sample || sample->size == DT_LIB_COLORPICKER_SIZE_NONE
-     || sample->point[0] < 0 || sample->point[1] < 0) return 1;
+  // do not continue if a not yet defined picker area
+  if(!sample || sample->size == DT_LIB_COLORPICKER_SIZE_NONE)
+    return 1;
 
   dt_boundingbox_t fbox = { 0.0f };
 
@@ -788,52 +786,43 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
                                        cmsHTRANSFORM xform_rgb2lab, cmsHTRANSFORM xform_rgb2rgb,
                                        dt_colorpicker_sample_t *const sample)
 {
-  dt_aligned_pixel_t picked_color_rgb_min = { 0.0f };
-  dt_aligned_pixel_t picked_color_rgb_max = { 0.0f };
+  dt_aligned_pixel_t picked_color_rgb_min = { FLT_MAX, FLT_MAX, FLT_MAX };
+  dt_aligned_pixel_t picked_color_rgb_max = { FLT_MIN, FLT_MIN, FLT_MIN };
   dt_aligned_pixel_t picked_color_rgb_mean = { 0.0f };
-
-  // FIXME: use for_each_channel() with only one loop
-  for(int k = 0; k < 3; k++) picked_color_rgb_min[k] = FLT_MAX;
-  for(int k = 0; k < 3; k++) picked_color_rgb_max[k] = FLT_MIN;
-
-  // FIXME: bail if box[0] or point[0] is NAN
-  // FIXME: only have to set box or point depending on sample size
-  int box[4] = { 0 };
-  int point[2] = { 0 };
-
-  for(int k = 0; k < 4; k += 2)
-    box[k] = MIN(roi_in->width - 1, MAX(0, sample->box[k] * roi_in->width));
-  for(int k = 1; k < 4; k += 2)
-    box[k] = MIN(roi_in->height - 1, MAX(0, sample->box[k] * roi_in->height));
-  point[0] = MIN(roi_in->width - 1, MAX(0, sample->point[0] * roi_in->width));
-  point[1] = MIN(roi_in->height - 1, MAX(0, sample->point[1] * roi_in->height));
-
   dt_aligned_pixel_t rgb = { 0.0f };
-
-  const float w = 1.0 / ((box[3] - box[1] + 1) * (box[2] - box[0] + 1));
 
   if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
   {
+    int box[4] = {
+      MIN(roi_in->width - 1, MAX(0, sample->box[0] * roi_in->width)),
+      MIN(roi_in->height - 1, MAX(1, sample->box[1] * roi_in->height)),
+      MIN(roi_in->width - 1, MAX(2, sample->box[2] * roi_in->width)),
+      MIN(roi_in->height - 1, MAX(3, sample->box[3] * roi_in->height))
+    };
+
     for(int j = box[1]; j <= box[3]; j++)
       for(int i = box[0]; i <= box[2]; i++)
       {
-        // FIXME: use for_each_channel()
-        for(int k = 0; k < 3; k++)
+        for_each_channel(k, aligned(picked_color_rgb_min, picked_color_rgb_max, rgb) aligned(pixel:64))
         {
           picked_color_rgb_min[k]
               = MIN(picked_color_rgb_min[k], pixel[4 * (roi_in->width * j + i) + k]);
           picked_color_rgb_max[k]
               = MAX(picked_color_rgb_max[k], pixel[4 * (roi_in->width * j + i) + k]);
-          rgb[k] += w * pixel[4 * (roi_in->width * j + i) + k];
+          rgb[k] += pixel[4 * (roi_in->width * j + i) + k];
         }
       }
-    // FIXME: multiply by w here rather than above -- saves some multiplications
-    for(int k = 0; k < 3; k++) picked_color_rgb_mean[k] = rgb[k];
+
+    for_each_channel(k, aligned(picked_color_rgb_mean, rgb:16))
+      picked_color_rgb_mean[k] = rgb[k] / ((box[3] - box[1] + 1) * (box[2] - box[0] + 1));
   }
-  else
+  else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
   {
-    // FIXME: use for_each_channel()
-    for(int i = 0; i < 3; i++)
+    int point[2] = { 0 };
+    point[0] = MIN(roi_in->width - 1, MAX(0, sample->point[0] * roi_in->width));
+    point[1] = MIN(roi_in->height - 1, MAX(0, sample->point[1] * roi_in->height));
+
+    for_each_channel(i, aligned(picked_color_rgb_min, picked_color_rgb_max, picked_color_rgb_mean, rgb) aligned(pixel:64))
       picked_color_rgb_mean[i] = picked_color_rgb_min[i]
           = picked_color_rgb_max[i] = pixel[4 * (roi_in->width * point[1] + point[0]) + i];
   }
@@ -842,7 +831,6 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   if(xform_rgb2rgb)
   {
     // Preparing the data for transformation
-    // FIXME: just do this in place with the three arrays rather than wasting time copying here -- unless the three arrays should be optimized via DT_ALIGNED_PIXEL
     float rgb_ddata[9] = { 0.0f };
     for(int i = 0; i < 3; i++)
     {
@@ -863,7 +851,6 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   }
   else
   {
-    // FIXME: cmsDoTransform() should be able to work in place, in which case don't need a separate case here, always copy from rgb_ddata == picked_color_rgb_*
     for(int i = 0; i < 3; i++)
     {
       sample->picked_color_rgb_mean[i] = picked_color_rgb_mean[i];
@@ -876,7 +863,6 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   if(xform_rgb2lab)
   {
     // Preparing the data for transformation
-    // FIXME: same as above, shouldn't need to copy in place
     float rgb_data[9] = { 0.0f };
     for(int i = 0; i < 3; i++)
     {
@@ -885,7 +871,6 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
       rgb_data[i + 6] = picked_color_rgb_max[i];
     }
 
-    // FIXME: this should be possible in place -- don't need to alloc receiving array
     float Lab_data[9] = { 0.0f };
     cmsDoTransform(xform_rgb2lab, rgb_data, Lab_data, 3);
 
