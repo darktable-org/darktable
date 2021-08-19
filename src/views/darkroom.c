@@ -751,6 +751,7 @@ void expose(
   const gboolean module_color_picker = dev->gui_module
     && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && dev->gui_module->enabled
     && darktable.lib->proxy.colorpicker.picker_source == dev->gui_module;
+  // FIXME: checking if primary_sample set twice
   const gboolean primary_picker_has_sample = darktable.lib->proxy.colorpicker.primary_sample
     && darktable.lib->proxy.colorpicker.primary_sample->size != DT_LIB_COLORPICKER_SIZE_NONE
     && !darktable.lib->proxy.colorpicker.picker_source;
@@ -3293,6 +3294,18 @@ void mouse_enter(dt_view_t *self)
   dt_masks_events_mouse_enter(dev->gui_module);
 }
 
+// FIXME: should this callback be somewhere else, e.g. dt_dev_picker_is_sensitive()?
+// FIXME: add similar function to determine whether to draw picker?
+gboolean _picker_is_sensitive(const dt_develop_t *dev)
+{
+  return dev->gui_module
+    && dev->gui_module->enabled
+    && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
+    && darktable.lib->proxy.colorpicker.primary_sample
+    && (darktable.lib->proxy.colorpicker.picker_source == dev->gui_module
+        || !darktable.lib->proxy.colorpicker.picker_source);
+}
+
 void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -3316,16 +3329,12 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   if(height_i > capht) offy = (capht - height_i) * .5f;
   int handled = 0;
 
-  if(darktable.lib->proxy.colorpicker.primary_sample
-     && dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
-     // FIXME: do need to check if dev->gui_module->enabled?
-     && (darktable.lib->proxy.colorpicker.picker_source == dev->gui_module
-         || !darktable.lib->proxy.colorpicker.picker_source)
-     && ctl->button_down && ctl->button_down_which == 1)
+  if(_picker_is_sensitive(dev) && ctl->button_down && ctl->button_down_which == 1)
   {
     // module requested a color box
     if(mouse_in_imagearea(self, x, y))
     {
+      dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
       // Make sure a minimal width/height
       float delta_x = 1 / (float) dev->pipe->processed_width;
       float delta_y = 1 / (float) dev->pipe->processed_height;
@@ -3333,18 +3342,17 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
       float zoom_x, zoom_y;
       dt_dev_get_pointer_zoom_pos(dev, x + offx, y + offy, &zoom_x, &zoom_y);
 
-      if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+      if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
       {
-        darktable.lib->proxy.colorpicker.primary_sample->box[0] = fmaxf(0.0, fminf(darktable.lib->proxy.colorpicker.primary_sample->point[0], .5f + zoom_x) - delta_x);
-        darktable.lib->proxy.colorpicker.primary_sample->box[1] = fmaxf(0.0, fminf(darktable.lib->proxy.colorpicker.primary_sample->point[1], .5f + zoom_y) - delta_y);
-        darktable.lib->proxy.colorpicker.primary_sample->box[2] = fminf(1.0, fmaxf(darktable.lib->proxy.colorpicker.primary_sample->point[0], .5f + zoom_x) + delta_x);
-        darktable.lib->proxy.colorpicker.primary_sample->box[3] = fminf(1.0, fmaxf(darktable.lib->proxy.colorpicker.primary_sample->point[1], .5f + zoom_y) + delta_y);
-        // FIXME: why don't set preview_status dirty here?
+        sample->box[0] = fmaxf(0.0, fminf(sample->point[0], .5f + zoom_x) - delta_x);
+        sample->box[1] = fmaxf(0.0, fminf(sample->point[1], .5f + zoom_y) - delta_y);
+        sample->box[2] = fminf(1.0, fmaxf(sample->point[0], .5f + zoom_x) + delta_x);
+        sample->box[3] = fminf(1.0, fmaxf(sample->point[1], .5f + zoom_y) + delta_y);
       }
       else
       {
-        darktable.lib->proxy.colorpicker.primary_sample->point[0] = .5f + zoom_x;
-        darktable.lib->proxy.colorpicker.primary_sample->point[1] = .5f + zoom_y;
+        sample->point[0] = .5f + zoom_x;
+        sample->point[1] = .5f + zoom_y;
 
         dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
       }
@@ -3400,11 +3408,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
   if(height_i > capht) y += (capht - height_i) * .5f;
 
   int handled = 0;
-  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
-     // FIXME: do need to check if dev->gui_module->enabled?
-     && (darktable.lib->proxy.colorpicker.picker_source == dev->gui_module
-         || !darktable.lib->proxy.colorpicker.picker_source)
-     && which == 1)
+  if(_picker_is_sensitive(dev) && which == 1)
   {
     dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
     dt_control_queue_redraw();
@@ -3437,84 +3441,77 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   if(height_i > capht) offy = (capht - height_i) * .5f;
 
   int handled = 0;
-  if(sample
-     && dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
-     // FIXME: do need to check if dev->gui_module->enabled?
-     && (darktable.lib->proxy.colorpicker.picker_source == dev->gui_module
-         || !darktable.lib->proxy.colorpicker.picker_source)
-     && which == 1)
+  if(_picker_is_sensitive(dev))
   {
-    float zoom_x, zoom_y;
-    dt_dev_get_pointer_zoom_pos(dev, x + offx, y + offy, &zoom_x, &zoom_y);
-    if(mouse_in_imagearea(self, x, y))
+    if(which == 1)
     {
-      // The default box will be a square with 1% of the image width
-      const float delta_x = 0.01f;
-      const float delta_y = delta_x * (float)dev->pipe->processed_width / (float)dev->pipe->processed_height;
-
-      zoom_x += 0.5f;
-      zoom_y += 0.5f;
-
-      sample->point[0] = zoom_x;
-      sample->point[1] = zoom_y;
-
-      if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+      float zoom_x, zoom_y;
+      dt_dev_get_pointer_zoom_pos(dev, x + offx, y + offy, &zoom_x, &zoom_y);
+      if(mouse_in_imagearea(self, x, y))
       {
-        // FIXME: the sample box is drawn with drag handles, but this code seems to capture drags on right but not left corners, and maybe not precisely on the right corners
-        gboolean on_corner_prev_box = TRUE;
-        float opposite_x, opposite_y;
+        // The default box will be a square with 1% of the image width
+        const float delta_x = 0.01f;
+        const float delta_y = delta_x * (float)dev->pipe->processed_width / (float)dev->pipe->processed_height;
 
-        if(fabsf(zoom_x - sample->box[0]) < .005f)
-          opposite_x = sample->box[2];
-        else if(fabsf(zoom_x - sample->box[2]) < .005f)
-          opposite_x = sample->box[0];
-        else
-          on_corner_prev_box = FALSE;
+        zoom_x += 0.5f;
+        zoom_y += 0.5f;
 
-        if(fabsf(zoom_y - sample->box[1]) < .005f)
-          opposite_y = sample->box[3];
-        else if(fabsf(zoom_y - sample->box[3]) < .005f)
-          opposite_y = sample->box[1];
-        else
-          on_corner_prev_box = FALSE;
+        sample->point[0] = zoom_x;
+        sample->point[1] = zoom_y;
 
-        if(on_corner_prev_box)
+        if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
         {
-          sample->point[0] = opposite_x;
-          sample->point[1] = opposite_y;
+          // FIXME: the sample box is drawn with drag handles, but this code seems to capture drags on right but not left corners, and maybe not precisely on the right corners
+          gboolean on_corner_prev_box = TRUE;
+          float opposite_x, opposite_y;
+
+          if(fabsf(zoom_x - sample->box[0]) < .005f)
+            opposite_x = sample->box[2];
+          else if(fabsf(zoom_x - sample->box[2]) < .005f)
+            opposite_x = sample->box[0];
+          else
+            on_corner_prev_box = FALSE;
+
+          if(fabsf(zoom_y - sample->box[1]) < .005f)
+            opposite_y = sample->box[3];
+          else if(fabsf(zoom_y - sample->box[3]) < .005f)
+            opposite_y = sample->box[1];
+          else
+            on_corner_prev_box = FALSE;
+
+          if(on_corner_prev_box)
+          {
+            sample->point[0] = opposite_x;
+            sample->point[1] = opposite_y;
+          }
+          else
+          {
+            sample->box[0] = fmaxf(0.0, zoom_x - delta_x);
+            sample->box[1] = fmaxf(0.0, zoom_y - delta_y);
+            sample->box[2] = fminf(1.0, zoom_x + delta_x);
+            sample->box[3] = fminf(1.0, zoom_y + delta_y);
+          }
         }
-        else
+        else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
         {
-          sample->box[0] = fmaxf(0.0, zoom_x - delta_x);
-          sample->box[1] = fmaxf(0.0, zoom_y - delta_y);
-          sample->box[2] = fminf(1.0, zoom_x + delta_x);
-          sample->box[3] = fminf(1.0, zoom_y + delta_y);
+          dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
         }
       }
-      else
-      {
-        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-      }
+      dt_control_queue_redraw();
+      return 1;
     }
-    dt_control_queue_redraw();
-    return 1;
-  }
 
-  if(sample
-     && dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
-     // FIXME: do need to check if dev->gui_module->enabled?
-     && (darktable.lib->proxy.colorpicker.picker_source == dev->gui_module
-         || !darktable.lib->proxy.colorpicker.picker_source)
-     && which == 3)
-  {
-    // default is hardcoded this way
-    // FIXME: default should be set via color_pixer_proxy
-    sample->box[0] = sample->box[1] = .01f;
-    sample->box[2] = sample->box[3] = .99f;
+    if(which == 3)
+    {
+      // FIXME: color_pixer_proxy should have an dt_iop_color_picker_clear_area() function for this
+      // default is hardcoded this way
+      sample->box[0] = sample->box[1] = .01f;
+      sample->box[2] = sample->box[3] = .99f;
 
-    dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-    dt_control_queue_redraw();
-    return 1;
+      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+      dt_control_queue_redraw();
+      return 1;
+    }
   }
 
   x += offx;
