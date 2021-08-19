@@ -37,11 +37,9 @@ typedef enum dt_lib_colorpicker_size_t
 typedef struct dt_colorpicker_sample_t
 {
   /** The sample area or point */
-  // In the case of the primary sample, these are always the most
-  // recently made sample area, whether from colorpicker lib or an
-  // iop. They are used for showing the sample in the center view, and
-  // sampling in the pixelpipe.
-  // FIXME: can just read point from first to values of dt_boundingbox_t?
+  // For the primary sample, these are the current sample area,
+  // whether from colorpicker lib or an iop. They are used for showing
+  // the sample in the center view, and sampling in the pixelpipe.
   float point[2];
   dt_boundingbox_t box;
   dt_lib_colorpicker_size_t size;

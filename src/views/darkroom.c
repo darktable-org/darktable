@@ -293,6 +293,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
   cairo_rectangle(cri, hbar, tbar, pwidth, pheight);
   cairo_clip(cri);
 
+  // FIXME: use dt_dev_get_processed_size() for this?
   const double wd = dev->preview_pipe->backbuf_width;
   const double ht = dev->preview_pipe->backbuf_height;
   const double size = (wd + ht) / 2.0;
@@ -3344,10 +3345,10 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 
       if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
       {
-        sample->box[0] = fmaxf(0.0, fminf(sample->point[0], .5f + zoom_x) - delta_x);
-        sample->box[1] = fmaxf(0.0, fminf(sample->point[1], .5f + zoom_y) - delta_y);
-        sample->box[2] = fminf(1.0, fmaxf(sample->point[0], .5f + zoom_x) + delta_x);
-        sample->box[3] = fminf(1.0, fmaxf(sample->point[1], .5f + zoom_y) + delta_y);
+        sample->box[0] = fmaxf(0.0, MIN(sample->point[0], .5f + zoom_x) - delta_x);
+        sample->box[1] = fmaxf(0.0, MIN(sample->point[1], .5f + zoom_y) - delta_y);
+        sample->box[2] = fminf(1.0, MAX(sample->point[0], .5f + zoom_x) + delta_x);
+        sample->box[3] = fminf(1.0, MAX(sample->point[1], .5f + zoom_y) + delta_y);
       }
       else
       {
@@ -3456,25 +3457,35 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         zoom_x += 0.5f;
         zoom_y += 0.5f;
 
+        // hack: for box pickers, these represent the "base" point being dragged
         sample->point[0] = zoom_x;
         sample->point[1] = zoom_y;
 
         if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
         {
-          // FIXME: the sample box is drawn with drag handles, but this code seems to capture drags on right but not left corners, and maybe not precisely on the right corners
+          // FIXME: this overlaps with work in dt_dev_get_pointer_zoom_pos() above
+          const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+          const int closeup = dt_control_get_dev_closeup();
+          const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+          const int procw = dev->preview_pipe->backbuf_width;
+          const int proch = dev->preview_pipe->backbuf_height;
+          // this is slightly more than as drawn, to give room for slop
+          const float handle_px = 6.0f;
+          float hx = handle_px / (procw * zoom_scale);
+          float hy = handle_px / (proch * zoom_scale);
           gboolean on_corner_prev_box = TRUE;
           float opposite_x, opposite_y;
 
-          if(fabsf(zoom_x - sample->box[0]) < .005f)
+          if(fabsf(zoom_x - sample->box[0]) <= hx)
             opposite_x = sample->box[2];
-          else if(fabsf(zoom_x - sample->box[2]) < .005f)
+          else if(fabsf(zoom_x - sample->box[2]) <= hx)
             opposite_x = sample->box[0];
           else
             on_corner_prev_box = FALSE;
 
-          if(fabsf(zoom_y - sample->box[1]) < .005f)
+          if(fabsf(zoom_y - sample->box[1]) <= hy)
             opposite_y = sample->box[3];
-          else if(fabsf(zoom_y - sample->box[3]) < .005f)
+          else if(fabsf(zoom_y - sample->box[3]) <= hy)
             opposite_y = sample->box[1];
           else
             on_corner_prev_box = FALSE;
