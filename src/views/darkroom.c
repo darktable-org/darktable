@@ -3416,6 +3416,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
   int handled = 0;
   if(_picker_is_sensitive(dev) && which == 1)
   {
+    dt_control_change_cursor(GDK_LEFT_PTR);
     dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
     dt_control_queue_redraw();
     return 1;
@@ -3513,6 +3514,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         {
           dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
         }
+        dt_control_change_cursor(GDK_BLANK_CURSOR);
       }
       dt_control_queue_redraw();
       return 1;
