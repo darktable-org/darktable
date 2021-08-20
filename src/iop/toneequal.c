@@ -1897,9 +1897,9 @@ static void switch_cursors(struct dt_iop_module_t *self)
     return;
   }
 
-  // check if module is enabled and shown in UI
+  // check if module is expanded
   dt_iop_gui_enter_critical_section(self);
-  g->has_focus = (self->expanded && self->enabled);
+  g->has_focus = self->expanded;
   dt_iop_gui_leave_critical_section(self);
 
   if(!g->has_focus)
@@ -1961,10 +1961,9 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
 
   dt_develop_t *dev = self->dev;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
-  if(!self->enabled) return 0;
 
   dt_iop_gui_enter_critical_section(self);
-  const int fail = (!sanity_check(self) || !g->luminance_valid);
+  const int fail = !sanity_check(self);
   dt_iop_gui_leave_critical_section(self);
   if(fail) return 0;
 
@@ -2005,23 +2004,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
                                                          g->thumb_preview_buf_height,
                                                          (size_t)x_pointer, (size_t)y_pointer));
 
-  // Search for nearest node in graph and highlight it
-  const float radius_threshold = 0.45f;
-  g->area_active_node = -1;
-  if(g->cursor_valid)
-  {
-    for(int i = 0; i < CHANNELS; ++i)
-    {
-      const float delta_x = fabsf(g->cursor_exposure - centers_params[i]);
-      if(delta_x < radius_threshold)
-      {
-        g->area_active_node = i;
-      }
-    }
-  }
-
   switch_cursors(self);
-  gtk_widget_queue_draw(GTK_WIDGET(g->area));
   return 1;
 }
 
@@ -2110,9 +2093,12 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
 
   if(!sanity_check(self)) return 0;
   if(darktable.gui->reset) return 1;
-  if(!self->enabled) return 0;
   if(g == NULL) return 0;
   if(!g->has_focus) return 0;
+
+  // turn-on the module if off
+  if(!self->enabled)
+    if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
 
   // add an option to allow skip mouse events while editing masks
   if(darktable.develop->darkroom_skip_mouse_events || in_mask_editing(self)) return 0;
@@ -2255,7 +2241,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if(in_mask_editing(self)) return;
 
   dt_iop_gui_enter_critical_section(self);
-  const int fail = (!g->cursor_valid || !g->interpolation_valid || !g->luminance_valid || dev->pipe->processing || !sanity_check(self) || !g->has_focus);
+  const int fail = (!g->cursor_valid || !g->interpolation_valid || dev->pipe->processing || !sanity_check(self) || !g->has_focus);
   dt_iop_gui_leave_critical_section(self);
   if(fail) return;
 
@@ -2264,24 +2250,33 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   dt_iop_gui_enter_critical_section(self);
 
-  // re-read the exposure in case it has changed
-  g->cursor_exposure = log2f(get_luminance_from_buffer(g->thumb_preview_buf,
-                                                       g->thumb_preview_buf_width,
-                                                       g->thumb_preview_buf_height,
-                                                       (size_t)g->cursor_pos_x, (size_t)g->cursor_pos_y));
-
   // Get coordinates
   const float x_pointer = g->cursor_pos_x;
   const float y_pointer = g->cursor_pos_y;
 
-  // Get the corresponding exposure
-  const float exposure_in = g->cursor_exposure;
-  const float luminance_in = exp2f(exposure_in);
+  float exposure_in = 0.0f;
+  float luminance_in = 0.0f;
+  float correction = 0.0f;
+  float exposure_out = 0.0f;
+  float luminance_out = 0.0f;
+  if(g->luminance_valid && self->enabled)
+  {
+    // re-read the exposure in case it has changed
+    g->cursor_exposure = log2f(get_luminance_from_buffer(g->thumb_preview_buf,
+                                                         g->thumb_preview_buf_width,
+                                                         g->thumb_preview_buf_height,
+                                                         (size_t)g->cursor_pos_x, (size_t)g->cursor_pos_y));
 
-  // Get the corresponding correction and compute resulting exposure
-  const float correction = log2f(pixel_correction(exposure_in, g->factors, g->sigma));
-  const float exposure_out = exposure_in + correction;
-  const float luminance_out = exp2f(exposure_out);
+    // Get the corresponding exposure
+    exposure_in = g->cursor_exposure;
+    luminance_in = exp2f(exposure_in);
+
+    // Get the corresponding correction and compute resulting exposure
+    correction = log2f(pixel_correction(exposure_in, g->factors, g->sigma));
+    exposure_out = exposure_in + correction;
+    luminance_out = exp2f(exposure_out);
+    if(isnan(correction) || isnan(exposure_in)) return; // something went wrong
+  }
 
   dt_iop_gui_leave_critical_section(self);
 
@@ -2297,7 +2292,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
-  if(isnan(correction) || isnan(exposure_in)) return; // something went wrong
 
   // set custom cursor dimensions
   const double outer_radius = 16.;
@@ -2351,7 +2345,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
 
   // Build text object
-  snprintf(text, sizeof(text), _("%+.1f EV"), exposure_in);
+  if(g->luminance_valid && self->enabled)
+    snprintf(text, sizeof(text), _("%+.1f EV"), exposure_in);
+  else
+    snprintf(text, sizeof(text), "? EV");
   pango_layout_set_text(layout, text, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
 
@@ -2373,6 +2370,22 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   pango_font_description_free(desc);
   g_object_unref(layout);
+
+  if(g->luminance_valid && self->enabled)
+  {
+    // Search for nearest node in graph and highlight it
+    const float radius_threshold = 0.45f;
+    g->area_active_node = -1;
+    if(g->cursor_valid)
+      for(int i = 0; i < CHANNELS; ++i)
+      {
+        const float delta_x = fabsf(g->cursor_exposure - centers_params[i]);
+        if(delta_x < radius_threshold)
+          g->area_active_node = i;
+      }
+
+    gtk_widget_queue_draw(GTK_WIDGET(g->area));
+  }
 }
 
 
