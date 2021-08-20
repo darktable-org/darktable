@@ -349,13 +349,20 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
       double x = sample->point[0] * wd, y = sample->point[1] * ht;
       // picker & central gap, with live sample crosshair visible when
       // created just behind primary picker
-      double w = (is_primary_sample ? 16. : 20.) / zoom_scale, sp = 4. / zoom_scale;
-      if(sample == selected_sample)
+      double w = (is_primary_sample ? 16. : 20.) / zoom_scale, sp = 5. / zoom_scale;
+      // The picker is only at the resolution of the preview
+      // pixelpipe. If at sufficient zoom level that preview pixels
+      // would be blocky, draw a central box rather than a gap in the
+      // crosshairs in order to demonstrate this.
+      // FIXME: to be really accurate, the colorpicker should render precisely over the nearest pixelpipe pixel, but this gets particularly tricky to do with iop pickers with transformations after them in the pipeline
+      const double r = 0.5 + 2. * lw;
+      if(r > sp)
       {
-        w *= 3.0;
-        sp *= 3.0;
+        sp = r;
+        w = (is_primary_sample ? 4. : 5.) * sp;
       }
-      // FIXME: make space in center the width of a pixel in the preview buffer + 2 logical pixels (for the outline and its shadow), and if it is > 4 pixels draw it as a square, otherwise a gap in the crosshairs, to illustrate that are sampling preview rather than full pixelpipe pixels
+      if(sample == selected_sample)
+        w *= 3.0;
       cairo_user_to_device(cri, &x, &y);
       cairo_user_to_device_distance(cri, &w, &sp);
       x=round(x+0.5)-0.5;
@@ -367,15 +374,28 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
       // "handles" reminiscent of tone equalizer cursor
       if(is_primary_sample && picker_focused)
         cairo_arc(cri, x, y, w, 0., 2. * M_PI);
-      // crosshair with space in center around sampled point
-      cairo_move_to(cri, x, y - w);
-      cairo_line_to(cri, x, y - sp);
-      cairo_move_to(cri, x, y + sp);
-      cairo_line_to(cri, x, y + w);
-      cairo_move_to(cri, x - w, y);
-      cairo_line_to(cri, x - sp, y);
-      cairo_move_to(cri, x + sp, y);
-      cairo_line_to(cri, x + w, y);
+      // crosshair
+      if(sample == selected_sample)
+      {
+        cairo_move_to(cri, x - w, y);
+        cairo_line_to(cri, x + w, y);
+        cairo_move_to(cri, x, y - w);
+        cairo_line_to(cri, x, y + w);
+      }
+      else
+      {
+        // crosshair with space in center around sampled point
+        cairo_move_to(cri, x, y - w);
+        cairo_line_to(cri, x, y - sp);
+        cairo_move_to(cri, x, y + sp);
+        cairo_line_to(cri, x, y + w);
+        cairo_move_to(cri, x - w, y);
+        cairo_line_to(cri, x - sp, y);
+        cairo_move_to(cri, x + sp, y);
+        cairo_line_to(cri, x + w, y);
+        if(sp > 7. / zoom_scale)
+          cairo_rectangle(cri, x - r, y - r, r * 2.0, r * 2.0);
+      }
     }
 
     // default is to draw 1 (logical) pixel light lines with 1
