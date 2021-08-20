@@ -320,6 +320,9 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     if(only_selected_sample && (sample != selected_sample))
       continue;
 
+    // half a preview pipe pixel
+    double px = 0.5;
+
     // overlays are aligned with pixels for a clean look
     if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
@@ -347,55 +350,31 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
     {
       double x = sample->point[0] * wd, y = sample->point[1] * ht;
-      // picker & central gap, with live sample crosshair visible when
-      // created just behind primary picker
-      double w = (is_primary_sample ? 16. : 20.) / zoom_scale, sp = 5. / zoom_scale;
       // The picker is only at the resolution of the preview
-      // pixelpipe. If at sufficient zoom level that preview pixels
-      // would be blocky, draw a central box rather than a gap in the
-      // crosshairs in order to demonstrate this.
+      // pixelpipe. Represent the preview resolution in a central box
+      // showing the sample. Ideally the box is 1:1 with a preview
+      // pixel, but at the very least make it 4x4 pixels.
       // FIXME: to be really accurate, the colorpicker should render precisely over the nearest pixelpipe pixel, but this gets particularly tricky to do with iop pickers with transformations after them in the pipeline
-      const double r = 0.5 + 2. * lw;
-      if(r > sp)
-      {
-        sp = r;
-        w = (is_primary_sample ? 4. : 5.) * sp;
-      }
-      if(sample == selected_sample)
-        w *= 3.0;
+      px = MAX(5. / zoom_scale, px);
+      // crosshair radius
+      double cr = (is_primary_sample ? 4. : (sample == selected_sample ? 15. : 5.)) * px;
       cairo_user_to_device(cri, &x, &y);
-      cairo_user_to_device_distance(cri, &w, &sp);
+      cairo_user_to_device_distance(cri, &cr, &px);
       x=round(x+0.5)-0.5;
       y=round(y+0.5)-0.5;
-      w=round(w);
-      sp=round(sp);
+      cr=round(cr);
+      px=round(px);
       cairo_device_to_user(cri, &x, &y);
-      cairo_device_to_user_distance(cri, &w, &sp);
-      // "handles" reminiscent of tone equalizer cursor
+      cairo_device_to_user_distance(cri, &cr, &px);
+
+      // "handles"
       if(is_primary_sample && picker_focused)
-        cairo_arc(cri, x, y, w, 0., 2. * M_PI);
+        cairo_arc(cri, x, y, cr, 0., 2. * M_PI);
       // crosshair
-      if(sample == selected_sample)
-      {
-        cairo_move_to(cri, x - w, y);
-        cairo_line_to(cri, x + w, y);
-        cairo_move_to(cri, x, y - w);
-        cairo_line_to(cri, x, y + w);
-      }
-      else
-      {
-        // crosshair with space in center around sampled point
-        cairo_move_to(cri, x, y - w);
-        cairo_line_to(cri, x, y - sp);
-        cairo_move_to(cri, x, y + sp);
-        cairo_line_to(cri, x, y + w);
-        cairo_move_to(cri, x - w, y);
-        cairo_line_to(cri, x - sp, y);
-        cairo_move_to(cri, x + sp, y);
-        cairo_line_to(cri, x + w, y);
-        if(sp > 7. / zoom_scale)
-          cairo_rectangle(cri, x - r, y - r, r * 2.0, r * 2.0);
-      }
+      cairo_move_to(cri, x - cr, y);
+      cairo_line_to(cri, x + cr, y);
+      cairo_move_to(cri, x, y - cr);
+      cairo_line_to(cri, x, y + cr);
     }
 
     // default is to draw 1 (logical) pixel light lines with 1
@@ -417,6 +396,24 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
                    0.0);
     cairo_set_source_rgba(cri, 1.0, 1.0, 1.0, 0.7 * bright_amt);
     cairo_stroke(cri);
+
+    // draw the actual color sampled
+    // FIXME: is this overlay always drawn after the current preview has been calculated?
+    if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT && sample != selected_sample)
+    {
+      // FIXME: this always uses the mean color as _update_sample_label hasn't yet been called on the primary picker, otherwise could use sample->rgb
+      const GdkRGBA in = {sample->picked_color_rgb_mean[0], sample->picked_color_rgb_mean[1], sample->picked_color_rgb_mean[2] };
+      // default to middle grey if conversion fails
+      GdkRGBA display = {0.5, 0.5, 0.5, 1.0};
+      dt_lib_colorpicker_convert_color_space(&in, &display);
+      gdk_cairo_set_source_rgba(cri, &display);
+      // preview pixel represented as a square, if that square would be too small, just draw a circle
+      if(px < 6.0 / zoom_scale)
+        cairo_arc(cri, sample->point[0] * wd, sample->point[1] * ht, px, 0., 2. * M_PI);
+      else
+        cairo_rectangle(cri, sample->point[0] * wd - px, sample->point[1] * ht - px, px * 2.0, px * 2.0);
+      cairo_fill(cri);
+    }
   }
 
   cairo_restore(cri);
