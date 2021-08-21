@@ -81,12 +81,12 @@ typedef struct midi_device
 
 const char *note_names[] = { "C","C#","D","D#","E","F","F#","G","G#","A","A#","B", NULL };
 
-gchar *key_to_string(guint key, gboolean display)
+gchar *key_to_string(const guint key, const gboolean display)
 {
   return g_strdup_printf("%s%d", note_names[key % 12], key / 12 - 1);
 }
 
-gboolean string_to_key(gchar *string, guint *key)
+gboolean string_to_key(const gchar *string, guint *key)
 {
   int octave = 0;
   char name[3];
@@ -106,12 +106,12 @@ gboolean string_to_key(gchar *string, guint *key)
   return FALSE;
 }
 
-gchar *move_to_string(guint move, gboolean display)
+gchar *move_to_string(const guint move, const gboolean display)
 {
   return g_strdup_printf("CC%u", move);
 }
 
-gboolean string_to_move(gchar *string, guint *move)
+gboolean string_to_move(const gchar *string, guint *move)
 {
   return sscanf(string, "CC%u", move) == 1;
 }
