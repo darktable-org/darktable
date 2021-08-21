@@ -1648,7 +1648,7 @@ static void _import_export_dev_changed(GtkComboBox *widget, gpointer user_data)
   g_object_set_data(G_OBJECT(user_data), "device", GINT_TO_POINTER(dev));
   gtk_combo_box_set_active(GTK_COMBO_BOX(user_data), 1); // make sure changed triggered
   gtk_combo_box_set_active(GTK_COMBO_BOX(user_data), dev > 1 ? 0 : -1);
-  gtk_widget_set_sensitive(GTK_WIDGET(user_data), dev > 1);
+  gtk_widget_set_visible(gtk_widget_get_parent(GTK_WIDGET(user_data)), dev > 1);
 }
 
 static void _export_id_changed(GtkComboBox *widget, gpointer user_data)
@@ -1699,10 +1699,15 @@ static void _export_clicked(GtkButton *button, gpointer user_data)
                                    ((dt_input_driver_definition_t *)driver->data)->name);
   gtk_container_add(content_area, combo_dev);
 
+  GtkWidget *device_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
   GtkWidget *combo_id = gtk_combo_box_text_new();
   for(gchar num[] = "0"; *num <= '9'; (*num)++)
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_id), num);
-  gtk_container_add(content_area, combo_id);
+  gtk_container_add(GTK_CONTAINER(device_box), combo_id);
+  gtk_container_add(GTK_CONTAINER(device_box), dt_ui_label_new(_("device id")));
+
+  gtk_container_add(content_area, device_box);
 
   GtkWidget *count = gtk_label_new("");
   gtk_container_add(content_area, count);
@@ -1750,7 +1755,6 @@ static void _import_id_changed(GtkComboBox *widget, gpointer user_data)
 {
   gint id = gtk_combo_box_get_active(widget);
   gtk_combo_box_set_active(GTK_COMBO_BOX(user_data), id);
-  gtk_widget_set_sensitive(GTK_WIDGET(user_data), id >= 0);
 }
 
 static void _import_clicked(GtkButton *button, gpointer user_data)
@@ -1777,21 +1781,21 @@ static void _import_clicked(GtkButton *button, gpointer user_data)
                                    ((dt_input_driver_definition_t *)driver->data)->name);
   gtk_container_add(content_area, combo_dev);
 
-  label = gtk_label_new(_("id in file:"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_container_add(content_area, label);
+  GtkWidget *device_grid = gtk_grid_new();
+
   GtkWidget *combo_from_id = gtk_combo_box_text_new();
   for(gchar num[] = "0"; *num <= '9'; (*num)++)
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_from_id), num);
-  gtk_container_add(content_area, combo_from_id);
+  gtk_grid_attach(GTK_GRID(device_grid), combo_from_id, 0, 0, 1, 1);
+  gtk_grid_attach(GTK_GRID(device_grid), dt_ui_label_new(_("id in file")), 1, 0, 1, 1);
 
-  label = gtk_label_new(_("load as:"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_container_add(content_area, label);
   GtkWidget *combo_to_id = gtk_combo_box_text_new();
   for(gchar num[] = "0"; *num <= '9'; (*num)++)
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_to_id), num);
-  gtk_container_add(content_area, combo_to_id);
+  gtk_grid_attach(GTK_GRID(device_grid), combo_to_id, 0, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(device_grid), dt_ui_label_new(_("id when loaded")), 1, 1, 1, 1);
+
+  gtk_container_add(content_area, device_grid);
 
   GtkWidget *clear = gtk_check_button_new_with_label(_("clear device first"));
   gtk_container_add(content_area, clear);
