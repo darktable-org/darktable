@@ -75,13 +75,13 @@ const char *button_names[]
       N_("button misc1"), N_("paddle1"), N_("paddle2"), N_("paddle3"), N_("paddle4"), N_("touchpad"),
       NULL };
 
-gchar *key_to_string(guint key, gboolean display)
+gchar *key_to_string(const guint key, const gboolean display)
 {
   const gchar *name = key < SDL_CONTROLLER_BUTTON_MAX ? button_names[key] : N_("invalid gamepad button");
   return g_strdup(display ? _(name) : name);
 }
 
-gboolean string_to_key(gchar *string, guint *key)
+gboolean string_to_key(const gchar *string, guint *key)
 {
   *key = 0;
   while(button_names[*key])
@@ -99,13 +99,13 @@ const char *move_names[]
       N_("left diagonal"), N_("left skew"), N_("right diagonal"), N_("right skew"),
       NULL };
 
-gchar *move_to_string(guint move, gboolean display)
+gchar *move_to_string(const guint move, const gboolean display)
 {
   const gchar *name = move < SDL_CONTROLLER_AXIS_MAX + 4 /* diagonals */ ? move_names[move] : N_("invalid gamepad axis");
   return g_strdup(display ? _(name) : name);
 }
 
-gboolean string_to_move(gchar *string, guint *move)
+gboolean string_to_move(const gchar *string, guint *move)
 {
   *move = 0;
   while(move_names[*move])

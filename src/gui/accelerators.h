@@ -52,9 +52,9 @@ typedef struct dt_input_driver_definition_t
 {
   gchar *name;
   gchar *(*key_to_string)(const guint key, const gboolean display);
-  gboolean (*string_to_key)(const gchar *string, const guint *key);
+  gboolean (*string_to_key)(const gchar *string, guint *key);
   gchar *(*move_to_string)(const guint move, const gboolean display);
-  gboolean (*string_to_move)(const gchar *string, const guint *move);
+  gboolean (*string_to_move)(const gchar *string, guint *move);
   dt_lib_module_t *module;
 } dt_input_driver_definition_t;
 
