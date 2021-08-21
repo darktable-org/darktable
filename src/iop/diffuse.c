@@ -784,6 +784,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         for_each_channel(c, aligned(variance))
         {
           variance[c] = variance_threshold + sqrtf(variance[c] * regularization_factor);
+          variance[c] = MAX(variance[c], 1e-6f);
         }
         // compute the update
         dt_aligned_pixel_t acc = { 0.f };
