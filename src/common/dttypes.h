@@ -73,6 +73,13 @@ typedef float DT_ALIGNED_ARRAY dt_colormatrix_t[4][4];
   for (size_t _var = 0; _var < 4; _var++)
 #endif
 
+// A macro for loops which process all the three (color) channels of a pixel, when the loop body is not
+// vectorizable. Examples include some math library calls such as powf(), logf() (at least when
+// the -ffinite-math-only optimization is disabled). This can be used in such cases to save the fourth
+// unnecessary iteration.
+#define for_three_channels(_var) \
+  for (size_t _var = 0; _var < 3; _var++)
+
 // transpose a padded 3x3 matrix
 static inline void transpose_3xSSE(const dt_colormatrix_t input, dt_colormatrix_t output)
 {

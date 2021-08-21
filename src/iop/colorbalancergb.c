@@ -623,10 +623,17 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       RGB[c] *= opacities_comp[2] * (opacities_comp[0] + opacities[0] * shadows[c]) + opacities[2] * highlights[c];
       // factorization of : (RGB[c] * (1.f - alpha) + RGB[c] * d->shadows[c] * alpha) * (1.f - beta)  + RGB[c] * d->highlights[c] * beta;
 
+      RGB[c] /= d->white_fulcrum;
+    }
+
+    for_three_channels(c)  // powf is not vectorizable so it makes sense to split it out
+    {
       // midtones : power with sign preservation
       const float sign = (RGB[c] < 0.f) ? -1.f : 1.f;
-      RGB[c] = sign * powf(fabsf(RGB[c]) / d->white_fulcrum, midtones[c]) * d->white_fulcrum;
+      RGB[c] = sign * powf(sign * RGB[c], midtones[c]);
     }
+
+    for_each_channel(c) RGB[c] *= d->white_fulcrum;
 
     const dt_aligned_pixel_t gradingRGB_to_Y = { 0.67282368f, 0.47812261f, 0.01044966f, 0.f };
     const float old_Y = scalar_product(RGB, gradingRGB_to_Y);
