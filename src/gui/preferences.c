@@ -42,13 +42,6 @@
 #endif
 #define ICON_SIZE 13
 
-typedef struct dt_gui_accel_search_t
-{
-  GtkWidget *tree, *search_box;
-  gchar *last_search_term;
-  int last_found_count, curr_found_count;
-} dt_gui_accel_search_t;
-
 typedef struct dt_gui_themetweak_widgets_t
 {
   GtkWidget *apply_toggle, *save_button, *css_text_view;
@@ -77,13 +70,6 @@ static const char *dt_gui_presets_aperture_value_str[]
 
 enum
 {
-  A_ACCEL_COLUMN,
-  A_BINDING_COLUMN,
-  A_TRANS_COLUMN,
-  A_N_COLUMNS
-};
-enum
-{
   P_ROWID_COLUMN,
   P_OPERATION_COLUMN,
   P_MODULE_COLUMN,
@@ -102,17 +88,6 @@ enum
 
 static void init_tab_presets(GtkWidget *stack);
 static void init_tab_accels(GtkWidget *stack);
-static gboolean accel_search(gpointer widget, gpointer data);
-static void tree_insert_accel(gpointer accel_struct, gpointer model_link);
-static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent, const gchar *accel_path,
-                            const gchar *translated_path, guint accel_key, GdkModifierType accel_mods);
-static void path_to_accel(GtkTreeModel *model, GtkTreePath *path, gchar *str, size_t str_len);
-static void update_accels_model(gpointer widget, gpointer data);
-static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent, gchar *path, size_t path_len);
-static void delete_matching_accels(gpointer path, gpointer key_event);
-static void import_export(GtkButton *button, gpointer data);
-static void restore_defaults(GtkButton *button, gpointer data);
-static gint compare_rows_accels(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer data);
 static gint compare_rows_presets(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer data);
 static void import_preset(GtkButton *button, gpointer data);
 static void export_preset(GtkButton *button, gpointer data);
@@ -982,106 +957,6 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
   }
 }
 
-static void import_export(GtkButton *button, gpointer data)
-{
-  GtkWidget *chooser;
-  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  gchar confdir[PATH_MAX] = { 0 };
-  gchar accelpath[PATH_MAX] = { 0 };
-
-  if(data)
-  {
-    // Non-zero value indicates export
-    chooser = gtk_file_chooser_dialog_new(_("select file to export"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SAVE,
-                                          _("_cancel"), GTK_RESPONSE_CANCEL, _("_save"), GTK_RESPONSE_ACCEPT,
-                                          NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(chooser);
-#endif
-    gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(chooser), TRUE);
-    dt_conf_get_folder_to_file_chooser("ui_last/export_path", chooser);
-    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(chooser), "keyboardrc");
-    if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
-    {
-      gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
-      gtk_accel_map_save(filename);
-      g_free(filename);
-      dt_conf_set_folder_from_file_chooser("ui_last/export_path", chooser);
-    }
-    gtk_widget_destroy(chooser);
-  }
-  else
-  {
-    // Zero value indicates import
-    chooser = gtk_file_chooser_dialog_new(_("select file to import"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
-                                          _("_cancel"), GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT,
-                                          NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(chooser);
-#endif
-
-    dt_conf_get_folder_to_file_chooser("ui_last/import_path", chooser);
-    if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
-    {
-      gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
-      if(g_file_test(filename, G_FILE_TEST_EXISTS))
-      {
-        // Loading the file
-        gtk_accel_map_load(filename);
-
-        // Saving to the permanent keyboardrc
-        dt_loc_get_user_config_dir(confdir, sizeof(confdir));
-        snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", confdir);
-        gtk_accel_map_save(accelpath);
-
-        dt_conf_set_folder_from_file_chooser("ui_last/import_path", chooser);
-      }
-      g_free(filename);
-    }
-    gtk_widget_destroy(chooser);
-  }
-}
-
-static void restore_defaults(GtkButton *button, gpointer data)
-{
-  gchar accelpath[256];
-  gchar dir[PATH_MAX] = { 0 };
-  gchar path[PATH_MAX] = { 0 };
-
-  GtkWidget *message
-      = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING, GTK_BUTTONS_OK_CANCEL,
-                               _("are you sure you want to restore the default keybindings?  this will "
-                                 "erase any modifications you have made."));
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(message);
-#endif
-  if(gtk_dialog_run(GTK_DIALOG(message)) == GTK_RESPONSE_OK)
-  {
-    // First load the default keybindings for immediate effect
-    dt_loc_get_user_config_dir(dir, sizeof(dir));
-    snprintf(path, sizeof(path), "%s/keyboardrc_default", dir);
-    gtk_accel_map_load(path);
-
-    // Now deleting any iop show shortcuts
-    for(const GList *ops = darktable.iop; ops; ops = g_list_next(ops))
-    {
-      dt_iop_module_so_t *op = (dt_iop_module_so_t *)ops->data;
-      snprintf(accelpath, sizeof(accelpath), "<Darktable>/darkroom/modules/%s/show", op->op);
-      gtk_accel_map_change_entry(accelpath, 0, 0, TRUE);
-    }
-
-    // Then delete any changes to the user's keyboardrc so it gets reset
-    // on next startup
-    dt_loc_get_user_config_dir(dir, sizeof(dir));
-    snprintf(path, sizeof(path), "%s/keyboardrc", dir);
-
-    GFile *gpath = g_file_new_for_path(path);
-    g_file_delete(gpath, NULL, NULL);
-    g_object_unref(gpath);
-  }
-  gtk_widget_destroy(message);
-}
-
 static void _import_preset_from_file(const gchar* filename)
 {
   if(!dt_presets_import_from_file(filename))
@@ -1094,11 +969,12 @@ static void import_preset(GtkButton *button, gpointer data)
 {
   GtkTreeModel *model = (GtkTreeModel *)data;
   GtkWidget *chooser;
-  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  GtkWindow *win = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(button)));
 
   // Zero value indicates import
-  chooser = gtk_file_chooser_dialog_new(_("select preset to import"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
-                                        _("_cancel"), GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT,
+  chooser = gtk_file_chooser_dialog_new(_("select preset to import"), win, GTK_FILE_CHOOSER_ACTION_OPEN,
+                                        _("_cancel"), GTK_RESPONSE_CANCEL,
+                                        _("_open"), GTK_RESPONSE_ACCEPT,
                                         NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(chooser);
@@ -1137,10 +1013,12 @@ static void import_preset(GtkButton *button, gpointer data)
 
 static void export_preset(GtkButton *button, gpointer data)
 {
-  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
-      GTK_RESPONSE_CANCEL, _("_save"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+  GtkWindow *win = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(button)));
+
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new(_("select directory"), win, GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                                                       _("_cancel"), GTK_RESPONSE_CANCEL,
+                                                       _("_save"), GTK_RESPONSE_ACCEPT,
+                                                       NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
 #endif
@@ -1180,34 +1058,6 @@ static void export_preset(GtkButton *button, gpointer data)
     g_free(filedir);
   }
   gtk_widget_destroy(filechooser);
-}
-
-// Custom sort function for TreeModel entries for accels list
-static gint compare_rows_accels(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer data)
-{
-  int res = 0;
-
-  gchar *a_text;
-  gchar *b_text;
-
-  // First prioritize branch nodes over leaves
-  if(gtk_tree_model_iter_has_child(model, a)) res -= 2;
-  if(gtk_tree_model_iter_has_child(model, b)) res += 2;
-
-  // Otherwise just return alphabetical order
-  gtk_tree_model_get(model, a, A_TRANS_COLUMN, &a_text, -1);
-  gtk_tree_model_get(model, b, A_TRANS_COLUMN, &b_text, -1);
-
-  // but put default actions (marked with space at end) first
-  if(a_text[strlen(a_text)-1] == ' ') res = -4; // ignore children
-  if(b_text[strlen(b_text)-1] == ' ') res += 4;
-
-  res += strcoll(a_text, b_text) < 0 ? -1 : 1;
-
-  g_free(a_text);
-  g_free(b_text);
-
-  return res;
 }
 
 // Custom sort function for TreeModel entries for presets list
