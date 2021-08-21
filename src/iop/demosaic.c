@@ -5723,16 +5723,29 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 }
 
-static void show_mask_callback(GtkWidget *slider, gpointer user_data)
+static void show_mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
+  dt_iop_request_focus(self);
+
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
+
   g->show_mask = !(g->show_mask);
   dt_bauhaus_widget_set_quad_active(g->dual_mask, g->show_mask);
-  dt_bauhaus_widget_set_quad_toggle(g->dual_mask, g->show_mask);
   dt_dev_reprocess_center(self->dev);
+}
+
+void gui_focus(struct dt_iop_module_t *self, gboolean in)
+{
+  dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
+  if(!in)
+  {
+    const gboolean was_mask = g->show_mask;
+    g->show_mask = FALSE;  
+    dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->dual_mask), FALSE);
+    if(was_mask) dt_dev_reprocess_center(self->dev);
+  }
 }
 
 void gui_init(struct dt_iop_module_t *self)
