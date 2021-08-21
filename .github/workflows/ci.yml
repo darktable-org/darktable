@@ -114,9 +114,7 @@ jobs:
             libjson-glib-dev \
             liblcms2-dev \
             liblensfun-dev \
-            liblua5.2-dev \
             liblua5.3-dev \
-            liblua5.4-dev \
             libopenexr-dev \
             libopenjp2-7-dev \
             libosmgpsmap-1.0-dev \
@@ -270,9 +268,7 @@ jobs:
             libjson-glib-dev \
             liblcms2-dev \
             liblensfun-dev \
-            liblua5.2-dev \
             liblua5.3-dev \
-            liblua5.4-dev \
             libopenexr-dev \
             libopenjp2-7-dev \
             libosmgpsmap-1.0-dev \
