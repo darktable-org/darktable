@@ -27,9 +27,9 @@
 GtkWidget *dt_shortcuts_prefs(GtkWidget *widget);
 GHashTable *dt_shortcut_category_lists(dt_view_type_flags_t v);
 
-void dt_shortcuts_save(gchar *ext, gboolean backup);
+void dt_shortcuts_save(const gchar *ext, const gboolean backup);
 
-void dt_shortcuts_load(gchar *ext, gboolean clear);
+void dt_shortcuts_load(const gchar *ext, const gboolean clear);
 
 void dt_shortcuts_reinitialise();
 
@@ -51,18 +51,18 @@ typedef uint8_t dt_input_device_t;
 typedef struct dt_input_driver_definition_t
 {
   gchar *name;
-  gchar *(*key_to_string)(guint key, gboolean display);
-  gboolean (*string_to_key)(gchar *string, guint *key);
-  gchar *(*move_to_string)(guint move, gboolean display);
-  gboolean (*string_to_move)(gchar *string, guint *move);
+  gchar *(*key_to_string)(const guint key, const gboolean display);
+  gboolean (*string_to_key)(const gchar *string, const guint *key);
+  gchar *(*move_to_string)(const guint move, const gboolean display);
+  gboolean (*string_to_move)(const gchar *string, const guint *move);
   dt_lib_module_t *module;
 } dt_input_driver_definition_t;
 
 dt_input_device_t dt_register_input_driver(dt_lib_module_t *module, const dt_input_driver_definition_t *callbacks);
-void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key);
-void dt_shortcut_key_release(dt_input_device_t id, guint time, guint key);
-gboolean dt_shortcut_key_active(dt_input_device_t id, guint key);
-float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size);
+void dt_shortcut_key_press(dt_input_device_t id, const guint time, const guint key);
+void dt_shortcut_key_release(dt_input_device_t id, const guint time, const guint key);
+gboolean dt_shortcut_key_active(dt_input_device_t id, const guint key);
+float dt_shortcut_move(dt_input_device_t id, const guint time, const guint move, const double size);
 
 typedef enum dt_shortcut_flag_t
 {
