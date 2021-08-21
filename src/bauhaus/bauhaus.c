@@ -3094,14 +3094,14 @@ static const dt_shortcut_fallback_t _action_fallbacks_slider[]
   = { { .element = DT_ACTION_ELEMENT_BUTTON, .button = DT_SHORTCUT_LEFT },
       { .element = DT_ACTION_ELEMENT_BUTTON, .effect = DT_ACTION_EFFECT_TOGGLE_CTRL, .button = DT_SHORTCUT_LEFT, .mods = GDK_CONTROL_MASK },
       { .element = DT_ACTION_ELEMENT_FORCE,  .mods   = GDK_CONTROL_MASK | GDK_SHIFT_MASK, .speed = 10.0 },
-      { .element = DT_ACTION_ELEMENT_ZOOM,   .button = DT_SHORTCUT_RIGHT, .move = DT_SHORTCUT_MOVE_VERTICAL },
+      { .element = DT_ACTION_ELEMENT_ZOOM,   .effect = DT_ACTION_EFFECT_DEFAULT_MOVE, .button = DT_SHORTCUT_RIGHT, .move = DT_SHORTCUT_MOVE_VERTICAL },
       { } };
 static const dt_shortcut_fallback_t _action_fallbacks_combo[]
   = { { .element = DT_ACTION_ELEMENT_SELECTION, .effect = DT_ACTION_EFFECT_RESET, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
-      { .element = DT_ACTION_ELEMENT_BUTTON, .button = DT_SHORTCUT_LEFT },
-      { .element = DT_ACTION_ELEMENT_BUTTON, .effect = DT_ACTION_EFFECT_TOGGLE_CTRL, .button = DT_SHORTCUT_LEFT, .mods = GDK_CONTROL_MASK },
-      { .move = DT_SHORTCUT_MOVE_SCROLL, .speed = -1 },
-      { .move = DT_SHORTCUT_MOVE_VERTICAL, .speed = -1 },
+      { .element = DT_ACTION_ELEMENT_BUTTON,    .button = DT_SHORTCUT_LEFT },
+      { .element = DT_ACTION_ELEMENT_BUTTON,    .effect = DT_ACTION_EFFECT_TOGGLE_CTRL, .button = DT_SHORTCUT_LEFT, .mods = GDK_CONTROL_MASK },
+      { .move    = DT_SHORTCUT_MOVE_SCROLL,     .effect = DT_ACTION_EFFECT_DEFAULT_MOVE, .speed = -1 },
+      { .move    = DT_SHORTCUT_MOVE_VERTICAL,   .effect = DT_ACTION_EFFECT_DEFAULT_MOVE, .speed = -1 },
       { } };
 
 const dt_action_def_t dt_action_def_slider
