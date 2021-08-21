@@ -222,6 +222,14 @@ static void _update_sample_label(dt_colorpicker_sample_t *sample)
       break;
 
     case 4:
+      // Hex
+      snprintf(text, sizeof(text), "0x%02X%02X%02X",
+                (int)round(sample->rgb.red   * 255.f),
+                (int)round(sample->rgb.green * 255.f),
+                (int)round(sample->rgb.blue  * 255.f));
+      break;
+
+    case 5:
       // None
       snprintf(text, sizeof(text), "◎");
       break;
@@ -475,6 +483,7 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
   sample->output_label = gtk_label_new("");
   gtk_widget_set_name(sample->output_label, "live-sample-data");
   gtk_label_set_ellipsize(GTK_LABEL(sample->output_label), PANGO_ELLIPSIZE_START);
+  gtk_label_set_selectable(GTK_LABEL(sample->output_label), TRUE);
   gtk_widget_set_has_tooltip(sample->output_label, TRUE);
   g_signal_connect(G_OBJECT(sample->output_label), "query-tooltip", G_CALLBACK(_sample_tooltip_callback), sample);
   g_signal_connect(G_OBJECT(sample->output_label), "size-allocate", G_CALLBACK(_label_size_allocate_callback), sample);
@@ -630,6 +639,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(data->color_mode_selector, _("Lab"));
   dt_bauhaus_combobox_add(data->color_mode_selector, _("LCh"));
   dt_bauhaus_combobox_add(data->color_mode_selector, _("HSL"));
+  dt_bauhaus_combobox_add(data->color_mode_selector, _("Hex"));
   dt_bauhaus_combobox_add(data->color_mode_selector, _("none"));
   dt_bauhaus_combobox_set(data->color_mode_selector, dt_conf_get_int("ui_last/colorpicker_model"));
   dt_bauhaus_combobox_set_entries_ellipsis(data->color_mode_selector, PANGO_ELLIPSIZE_NONE);
@@ -661,6 +671,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *label = data->proxy_linked.output_label = gtk_label_new("");
   gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_START);
+  gtk_label_set_selectable(GTK_LABEL(label), TRUE);
   gtk_widget_set_name(label, "live-sample-data");
   gtk_widget_set_has_tooltip(label, TRUE);
   g_signal_connect(G_OBJECT(label), "query-tooltip", G_CALLBACK(_sample_tooltip_callback), &data->proxy_linked);
