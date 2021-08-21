@@ -109,7 +109,8 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
 
   const float contrastf = slider2contrast(data->dual_thrs);
-  if(showmask) piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+  if(showmask)
+    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
 
   {
     size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
