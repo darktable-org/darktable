@@ -1025,24 +1025,24 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
       int wb = blo->values_count * wu;
 
       cairo_text_extents_t te;
-      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_BRUSH_CURSOR);
+      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_TIMELINE_TEXT_FG);
       cairo_set_font_size(cr, 10 * (1 + (darktable.gui->dpi_factor - 1) / 2));
       cairo_text_extents(cr, blo->name, &te);
       int bh = allocation.height - te.height - 4;
       cairo_move_to(cr, posx + (wb - te.width) / 2 - te.x_bearing, allocation.height - 2);
       cairo_show_text(cr, blo->name);
 
-      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_BG);
+      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_TIMELINE_BG);
       cairo_rectangle(cr, posx, 0, wb, bh);
       cairo_fill(cr);
 
       for(int i = 0; i < blo->values_count; i++)
       {
-        dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.5);
+        dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_TIMELINE_FG, 0.5);
         int h = _block_get_bar_height(blo->values[i], bh);
         cairo_rectangle(cr, posx + (i * wu), bh - h, wu, h);
         cairo_fill(cr);
-        dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 1.0);
+        dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_TIMELINE_FG, 1.0);
         h = _block_get_bar_height(blo->collect_values[i], bh);
         cairo_rectangle(cr, posx + (i * wu), bh - h, wu, h);
         cairo_fill(cr);
@@ -1081,7 +1081,7 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
       if(start >= 0)
       {
         // dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG);
-        dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.8);
+        dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_TIMELINE_FG, 0.8);
         cairo_move_to(wcr, start, 0);
         cairo_line_to(wcr, start, allocation.height);
         cairo_stroke(wcr);
@@ -1090,12 +1090,12 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
         cairo_line_to(wcr, start, allocation.height);
         cairo_stroke(wcr);
       }
-      dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.5);
+      dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_TIMELINE_FG, 0.5);
       cairo_rectangle(wcr, start, 0, stop - start, allocation.height);
       cairo_fill(wcr);
       if(stop <= strip->panel_width)
       {
-        dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.8);
+        dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_TIMELINE_FG, 0.8);
         cairo_move_to(wcr, stop, 0);
         cairo_line_to(wcr, stop, allocation.height);
         cairo_stroke(wcr);
@@ -1119,7 +1119,7 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
     // we don't display NULL date (if it's outside bounds)
     if(_time_compare(tt, _time_init()) != 0)
     {
-      dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_BRUSH_TRACE);
+      dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_TIMELINE_TEXT_BG);
       cairo_move_to(wcr, strip->current_x, 0);
       cairo_line_to(wcr, strip->current_x, allocation.height);
       cairo_stroke(wcr);
@@ -1128,10 +1128,10 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
       cairo_set_font_size(wcr, 10 * darktable.gui->dpi_factor);
       cairo_text_extents(wcr, dte, &te2);
       cairo_rectangle(wcr, strip->current_x, 8, te2.width + 4, te2.height + 4);
-      dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_BRUSH_TRACE);
+      dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_TIMELINE_TEXT_BG);
       cairo_fill(wcr);
       cairo_move_to(wcr, strip->current_x + 2, 10 + te2.height);
-      dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_BRUSH_CURSOR);
+      dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_TIMELINE_TEXT_FG);
       cairo_show_text(wcr, dte);
       g_free(dte);
     }
