@@ -232,6 +232,16 @@ static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   }
 }
 
+#ifdef USE_LUA
+static void _lua_signal_batch_history_change()
+{
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "const char*", "batch-history-change",
+      LUA_ASYNC_DONE);
+}
+#endif
+
 static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   gint res = GTK_RESPONSE_YES;
@@ -261,6 +271,9 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
 
   if(res == GTK_RESPONSE_YES)
   {
+#ifdef USE_LUA
+    _lua_signal_batch_history_change(imgs);
+#endif
     dt_history_delete_on_list(imgs, TRUE);
     GList *imgs_copy = g_list_copy((GList *)imgs);
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
@@ -284,6 +297,9 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
 
   if(dt_history_paste_on_list(imgs, TRUE))
   {
+#ifdef USE_LUA
+    _lua_signal_batch_history_change(imgs);
+#endif
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                                g_list_copy((GList *)imgs));
   }
@@ -301,6 +317,9 @@ static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   GList* imgs_copy = g_list_copy((GList*)imgs);
   if(dt_history_paste_parts_on_list(imgs_copy, TRUE))
   {
+#ifdef USE_LUA
+    _lua_signal_batch_history_change(imgs);
+#endif
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                                imgs_copy); // frees imgs_copy
   }
