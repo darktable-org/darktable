@@ -591,18 +591,13 @@ static char *_get_base_url()
 {
   const gboolean use_default_url =
     dt_conf_get_bool("context_help/use_default_url");
-  const char *c_base_url = dt_confgen_get
-    (dt_is_dev_version() ? "context_help/dev_url" : "context_help/url",
-     DT_DEFAULT);
-  char *base_url = dt_conf_get_string
-    (dt_is_dev_version() ? "context_help/dev_url" : "context_help/url");
+  const char *c_base_url = dt_confgen_get("context_help/url", DT_DEFAULT);
+  char *base_url = dt_conf_get_string("context_help/url");
 
   if(use_default_url)
   {
     // want to use default URL, reset darktablerc
-    dt_conf_set_string
-      (dt_is_dev_version() ? "context_help/dev_url" : "context_help/url",
-       c_base_url);
+    dt_conf_set_string("context_help/url", c_base_url);
     return g_strdup(c_base_url);
   }
   else
@@ -630,8 +625,19 @@ static void _main_do_event_help(GdkEvent *event, gpointer data)
           dt_print(DT_DEBUG_CONTROL, "[context help] opening `%s'\n", help_url);
           char *base_url = _get_base_url();
 
+          // The base_url is: docs.darktable.org/usermanual
+          // The full format for the documentation pages is:
+          //    <base-url>/<ver>/<lang>[/path/to/page]
+          // Where:
+          //   <ver>  = development | 3.6 | 3.8 ...
+          //   <lang> = en / fr ...              (default = en)
+
           // in case of a standard release, append the dt version to the url
-          if(!dt_is_dev_version())
+          if(dt_is_dev_version())
+          {
+            base_url = dt_util_dstrcat(base_url, "development/");
+          }
+          else
           {
             char *ver = dt_version_major_minor();
             base_url = dt_util_dstrcat(base_url, "%s/", ver);
@@ -673,35 +679,53 @@ static void _main_do_event_help(GdkEvent *event, gpointer data)
           }
           if(base_url)
           {
-            gboolean is_language_supported = FALSE;
             char *lang = "en";
             GError *error = NULL;
 
-            if(darktable.l10n!=NULL)
+            // array of languages the usermanual supports.
+            // NULL MUST remain the last element of the array
+            const char *supported_languages[] =
+              { "en", "fr", "de", "eo", "es", "gl", "it", "pl", "pt-br", "uk", NULL };
+            int lang_index = 0;
+            gboolean is_language_supported = FALSE;
+
+            if(darktable.l10n != NULL)
             {
               dt_l10n_language_t *language = NULL;
-              if(darktable.l10n->selected!=-1)
+              if(darktable.l10n->selected != -1)
                   language = (dt_l10n_language_t *)g_list_nth(darktable.l10n->languages, darktable.l10n->selected)->data;
               if (language != NULL)
                 lang = language->code;
-              // array of languages the usermanual supports.
-              // NULL MUST remain the last element of the array
-              const char *supported_languages[] = { "en", NULL }; // "fr", "it", "es", "de", "pl", NULL };
-              int i = 0;
-              while(supported_languages[i])
+              while(supported_languages[lang_index])
               {
-                if(!strcmp(lang, supported_languages[i]))
+                gchar *nlang = g_strdup(lang);
+
+                // try lang as-is
+                if(!g_ascii_strcasecmp(nlang, supported_languages[lang_index]))
                 {
                   is_language_supported = TRUE;
-                  break;
                 }
-                i++;
+
+                if(!is_language_supported)
+                {
+                  // keep only first part up to _
+                  for(gchar *p = nlang; *p; p++)
+                    if(*p == '_') *p = '\0';
+
+                  if(!g_ascii_strcasecmp(nlang, supported_languages[lang_index]))
+                  {
+                    is_language_supported = TRUE;
+                  }
+                }
+
+                g_free(nlang);
+                if(is_language_supported) break;
+
+                lang_index++;
               }
             }
-            if(!is_language_supported) lang = "en";
-            char *url = dt_is_dev_version()
-              ? g_build_path("/", base_url, help_url, NULL)
-              : g_build_path("/", base_url, lang, help_url, NULL);
+            if(!is_language_supported) lang_index = 0;
+            char *url = g_build_path("/", base_url, supported_languages[lang_index], help_url, NULL);
 
             // TODO: call the web browser directly so that file:// style base for local installs works
             const gboolean uri_success = gtk_show_uri_on_window(GTK_WINDOW(win), url, gtk_get_current_event_time(), &error);
