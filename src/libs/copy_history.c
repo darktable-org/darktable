@@ -271,13 +271,13 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
 
   if(res == GTK_RESPONSE_YES)
   {
-#ifdef USE_LUA
-    _lua_signal_batch_history_change(imgs);
-#endif
     dt_history_delete_on_list(imgs, TRUE);
     GList *imgs_copy = g_list_copy((GList *)imgs);
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                                imgs_copy); // frees imgs_copy
+#ifdef USE_LUA
+    _lua_signal_batch_history_change(imgs);
+#endif
     dt_control_queue_redraw_center();
   }
 }
@@ -297,11 +297,11 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
 
   if(dt_history_paste_on_list(imgs, TRUE))
   {
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                               g_list_copy((GList *)imgs));
 #ifdef USE_LUA
     _lua_signal_batch_history_change(imgs);
 #endif
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
-                               g_list_copy((GList *)imgs));
   }
 }
 
@@ -317,11 +317,11 @@ static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   GList* imgs_copy = g_list_copy((GList*)imgs);
   if(dt_history_paste_parts_on_list(imgs_copy, TRUE))
   {
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                               imgs_copy); // frees imgs_copy
 #ifdef USE_LUA
     _lua_signal_batch_history_change(imgs);
 #endif
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
-                               imgs_copy); // frees imgs_copy
   }
   else
   {
