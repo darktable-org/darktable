@@ -234,18 +234,19 @@ static void _update_picker_output(dt_lib_module_t *self)
 {
   dt_lib_colorpicker_t *data = self->data;
 
-  dt_iop_module_t *module = dt_iop_get_colorout_module();
-  if(module)
-  {
-    ++darktable.gui->reset;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->picker_button),
-                                 module->request_color_pick != DT_REQUEST_COLORPICK_OFF);
-    --darktable.gui->reset;
+  // FIXME: if called from setting picker area, don't need to do this
+  dt_iop_color_picker_t *proxy = darktable.lib->proxy.colorpicker.picker_proxy;
+  dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
+  const gboolean is_primary_picker = sample && sample->size != DT_LIB_COLORPICKER_SIZE_NONE
+    && proxy && !proxy->module;
 
-    _update_sample_label(&data->primary_sample);
+  ++darktable.gui->reset;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->picker_button), is_primary_picker);
+  --darktable.gui->reset;
 
-    gtk_widget_queue_draw(data->large_color_patch);
-  }
+  _update_sample_label(&data->primary_sample);
+
+  gtk_widget_queue_draw(data->large_color_patch);
 }
 
 static gboolean _large_patch_toggle(GtkWidget *widget, GdkEvent *event, dt_lib_colorpicker_t *data)
@@ -584,7 +585,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.display_samples = dt_conf_get_bool("ui_last/colorpicker_display_samples");
   // FIXME: should s/primary_sample/current_sample/
   darktable.lib->proxy.colorpicker.primary_sample = &data->primary_sample;
-  darktable.lib->proxy.colorpicker.picker_source = NULL;
+  darktable.lib->proxy.colorpicker.picker_proxy = NULL;
   darktable.lib->proxy.colorpicker.live_samples = NULL;
   darktable.lib->proxy.colorpicker.update_panel = _update_picker_output;
   darktable.lib->proxy.colorpicker.update_samples = _update_samples_output;

@@ -988,20 +988,16 @@ static dt_iop_colorspace_type_t _transform_for_picker(dt_iop_module_t *self, con
 
 static gboolean _request_color_pick(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, dt_iop_module_t *module)
 {
-  // Special case the colorout module used for the global
-  // colorpicker. In this module we don't have a colorpicker, and so
-  // this cannot be a module picker. The global colorpicker use the
-  // colorout in the pipe as process point for taking the samples.
-
+  // Does the current active module need a picker?
   return
     // pick from preview pipe to get pixels outside the viewport
     dev->gui_attached && pipe == dev->preview_pipe
     // only modules with focus can pick
     && module == dev->gui_module
+    // and they are enabled
+    && dev->gui_module->enabled
     // and they want to pick ;)
-    && module->request_color_pick != DT_REQUEST_COLORPICK_OFF
-    // and this is not the global colorpicker
-    && strcmp(module->op, "colorout");
+    && module->request_color_pick != DT_REQUEST_COLORPICK_OFF;
 }
 
 static void collect_histogram_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
@@ -2115,10 +2111,7 @@ post_process_collect_info:
       if(primary_picker_active || darktable.lib->proxy.colorpicker.live_samples)
       {
         _pixelpipe_pick_samples((const float *const )input, &roi_in, primary_picker_active);
-        // FIXME: do not need to redraw now to update live samples? is this repetitious for primary picker?
-        // FIXME: doesn't this just redraw gamma widget? why?
-        if(primary_picker_active && module->widget)
-          dt_control_queue_redraw_widget(module->widget);
+        DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY, NULL, NULL);
       }
     }
 
