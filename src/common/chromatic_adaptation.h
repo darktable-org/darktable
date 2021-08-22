@@ -350,20 +350,20 @@ static inline void XYZ_adapt_D50(const dt_aligned_pixel_t lms_in,
 
 /* Pre-solved matrices to adjust white point for triplets in CIE XYZ 1931 2° observer */
 
-const dt_colormatrix_t XYZ_D50_to_D65_CAT16
-    = { { 9.89466254e-01f, -4.00304626e-02f, 4.40530317e-02f, 0.f },
-        { -5.40518733e-03f, 1.00666069e+00f, -1.75551955e-03f, 0.f },
-        { -4.03920992e-04f, 1.50768030e-02f, 1.30210211e+00f, 0.f } };
+const dt_colormatrix_t XYZ_D50_to_D65_CAT16_transposed
+    = { {  9.89466254e-01f, -5.40518733e-03f, -4.03920992e-04f, 0.f },
+        { -4.00304626e-02f,  1.00666069e+00f,  1.50768030e-02f, 0.f },
+        {  4.40530317e-02f, -1.75551955e-03f,  1.30210211e+00f, 0.f } };
 
 const dt_colormatrix_t XYZ_D50_to_D65_Bradford
     = { { 0.95547342f, -0.02309845f, 0.06325924f, 0.f },
         { -0.02836971f, 1.00999540f, 0.02104144f, 0.f },
         { 0.01231401f, -0.02050765f, 1.33036593f, 0.f } };
 
-const dt_colormatrix_t XYZ_D65_to_D50_CAT16
-    = { { 1.01085433e+00f, 4.07086103e-02f, -3.41445825e-02f, 0.f },
-        { 5.42814201e-03f, 9.93581926e-01f, 1.15592039e-03f, 0.f },
-        { 2.50722468e-04f, -1.14918759e-02f, 7.67964947e-01f, 0.f } };
+const dt_colormatrix_t XYZ_D65_to_D50_CAT16_transposed
+    = { {  1.01085433e+00f, 5.42814201e-03f,  2.50722468e-04f, 0.f },
+        {  4.07086103e-02f, 9.93581926e-01f, -1.14918759e-02f, 0.f },
+        { -3.41445825e-02f, 1.15592039e-03f,  7.67964947e-01f, 0.f } };
 
 const dt_colormatrix_t XYZ_D65_to_D50_Bradford
     = { { 1.04792979f, 0.02294687f, -0.05019227f, 0.f },
@@ -375,7 +375,7 @@ const dt_colormatrix_t XYZ_D65_to_D50_Bradford
 #endif
 static inline void XYZ_D50_to_D65(const dt_aligned_pixel_t XYZ_in, dt_aligned_pixel_t XYZ_out)
 {
-  dot_product(XYZ_in, XYZ_D50_to_D65_CAT16, XYZ_out);
+  dt_apply_transposed_color_matrix(XYZ_in, XYZ_D50_to_D65_CAT16_transposed, XYZ_out);
 }
 
 #ifdef _OPENMP
@@ -383,5 +383,5 @@ static inline void XYZ_D50_to_D65(const dt_aligned_pixel_t XYZ_in, dt_aligned_pi
 #endif
 static inline void XYZ_D65_to_D50(const dt_aligned_pixel_t XYZ_in, dt_aligned_pixel_t XYZ_out)
 {
-  dot_product(XYZ_in, XYZ_D65_to_D50_CAT16, XYZ_out);
+  dt_apply_transposed_color_matrix(XYZ_in, XYZ_D65_to_D50_CAT16_transposed, XYZ_out);
 }

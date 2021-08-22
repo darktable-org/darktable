@@ -463,11 +463,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   * so we pre-multiply the 3 conversion matrices and operate only one matrix product
   */
-  dt_colormatrix_t input_matrix;
-  dt_colormatrix_t output_matrix;
+  dt_colormatrix_t transposed_input_matrix;
+  dt_colormatrix_t transposed_output_matrix;
 
-  dt_colormatrix_mul(output_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in); // output_matrix used as temp buffer
-  dt_colormatrix_mul(input_matrix, XYZ_D65_to_LMS_2006_D65, output_matrix);
+  dt_colormatrix_mul(transposed_output_matrix, XYZ_D50_to_D65_CAT16_transposed, XYZ_D65_to_LMS_2006_D65_transposed); // transposed_output_matrix used as temp buffer
+  dt_colormatrix_mul(transposed_input_matrix, work_profile->matrix_in_transposed, transposed_output_matrix);
 
   // Premultiply the output matrix
 
@@ -476,7 +476,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dot_product(XYZ_D50, XYZ_to_RGB, pix_out); // matrix product
   */
 
-  dt_colormatrix_mul(output_matrix, work_profile->matrix_out, XYZ_D65_to_D50_CAT16);
+  dt_colormatrix_mul(transposed_output_matrix, XYZ_D65_to_D50_CAT16_transposed, work_profile->matrix_out_transposed);
 
   const float *const restrict in = __builtin_assume_aligned(((const float *const restrict)ivoid), 64);
   float *const restrict out = __builtin_assume_aligned(((float *const restrict)ovoid), 64);
@@ -508,7 +508,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, roi_in, roi_out, d, g, mask_display, input_matrix, output_matrix, gamut_LUT, \
+  dt_omp_firstprivate(in, out, roi_in, roi_out, d, g, mask_display, transposed_input_matrix, transposed_output_matrix, gamut_LUT, \
     global, highlights, shadows, midtones, chroma, saturation, brilliance, checker_1, checker_2, \
     hue_rotation_matrix, Y_power, Y_multiplier) \
     schedule(static) collapse(2)
@@ -526,7 +526,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     for_each_channel(c, aligned(pix_in:16)) RGB[c] = MAX(pix_in[c], 0.0f);
 
     // go to CIE 2006 LMS D65
-    dot_product(RGB, input_matrix, LMS);
+    dt_apply_transposed_color_matrix(RGB, transposed_input_matrix, LMS);
 
     /* The previous line is equivalent to :
       // go to CIE 1931 XYZ 2° D50
@@ -692,25 +692,25 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     Iz /= (1.f + dd - dd * Iz);
     Iz = MAX(Iz, 0.f);
 
-    const dt_colormatrix_t AI
-        = { {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
-            {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
-            {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f } };
+    const dt_colormatrix_t AI_transposed
+        = { { 1.0f,                 1.0f,                 1.0f,                0.0f },
+            { 0.1386050432715393f, -0.1386050432715393f, -0.0960192420263190f, 0.0f },
+            { 0.0580473161561189f, -0.0580473161561189f, -0.8118918960560390f, 0.0f } };
 
     // Do a test conversion to L'M'S'
     const dt_aligned_pixel_t IzAzBz = { Iz, JC[1] * cos_H, JC[1] * sin_H, 0.f };
-    dot_product(IzAzBz, AI, LMS);
+    dt_apply_transposed_color_matrix(IzAzBz, AI_transposed, LMS);
 
     // Clip chroma
     float max_C = JC[1];
     if(LMS[0] < 0.f)
-      max_C = MIN(-Iz / (AI[0][1] * cos_H + AI[0][2] * sin_H), max_C);
+      max_C = MIN(-Iz / (AI_transposed[1][0] * cos_H + AI_transposed[2][0] * sin_H), max_C);
 
     if(LMS[1] < 0.f)
-      max_C = MIN(-Iz / (AI[1][1] * cos_H + AI[1][2] * sin_H), max_C);
+      max_C = MIN(-Iz / (AI_transposed[1][1] * cos_H + AI_transposed[2][1] * sin_H), max_C);
 
     if(LMS[2] < 0.f)
-      max_C = MIN(-Iz / (AI[2][1] * cos_H + AI[2][2] * sin_H), max_C);
+      max_C = MIN(-Iz / (AI_transposed[1][2] * cos_H + AI_transposed[2][2] * sin_H), max_C);
 
     // Project back to JzAzBz for real
     Jab[0] = JC[0];
@@ -720,7 +720,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_JzAzBz_2_XYZ(Jab, XYZ_D65);
 
     // Project back to D50 pipeline RGB
-    dot_product(XYZ_D65, output_matrix, pix_out);
+    dt_apply_transposed_color_matrix(XYZ_D65, transposed_output_matrix, pix_out);
 
     /* The previous line is equivalent to :
       XYZ_D65_to_50(XYZ_D65, XYZ_D50);           // matrix product
@@ -820,9 +820,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   */
   dt_colormatrix_t input_matrix;
   dt_colormatrix_t output_matrix;
+  dt_colormatrix_t tmp_matrix;
 
-  dt_colormatrix_mul(output_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in); // output_matrix used as temp buffer
-  dt_colormatrix_mul(input_matrix, XYZ_D65_to_LMS_2006_D65, output_matrix);
+  dt_colormatrix_mul(output_matrix, XYZ_D50_to_D65_CAT16_transposed, XYZ_D65_to_LMS_2006_D65_transposed);
+  dt_colormatrix_mul(tmp_matrix, work_profile->matrix_in_transposed, output_matrix);
+  transpose_3xSSE(tmp_matrix, input_matrix);
 
   // Premultiply the output matrix
 
@@ -831,7 +833,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dot_product(XYZ_D50, XYZ_to_RGB, pix_out); // matrix product
   */
 
-  dt_colormatrix_mul(output_matrix, work_profile->matrix_out, XYZ_D65_to_D50_CAT16);
+  dt_colormatrix_mul(tmp_matrix, XYZ_D65_to_D50_CAT16_transposed, work_profile->matrix_out_transposed);
+  transpose_3xSSE(tmp_matrix, output_matrix);
 
   input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
   output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
@@ -1038,13 +1041,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
     // Premultiply both matrices to go from D50 pipeline RGB to D65 XYZ in a single matrix dot product
     // instead of D50 pipeline to D50 XYZ (work_profile->matrix_in) and then D50 XYZ to D65 XYZ
-    dt_colormatrix_t input_matrix;
-    dt_colormatrix_mul(input_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
+    dt_colormatrix_t input_matrix_transposed;
+    dt_colormatrix_mul(input_matrix_transposed, work_profile->matrix_in_transposed, XYZ_D50_to_D65_CAT16_transposed);
 
     // make RGB values vary between [0; 1] in working space, convert to Ych and get the max(c(h)))
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(input_matrix) schedule(static) dt_omp_sharedconst(LUT) \
+      dt_omp_firstprivate(input_matrix_transposed) schedule(static) dt_omp_sharedconst(LUT) \
       collapse(3)
 #endif
     for(size_t r = 0; r < STEPS; r++)
@@ -1057,7 +1060,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
           dt_aligned_pixel_t Jab = { 0.f };
           dt_aligned_pixel_t Jch = { 0.f };
 
-          dot_product(rgb, input_matrix, XYZ); // Go to D50 pipeline RGB to D65 XYZ in one step
+          dt_apply_transposed_color_matrix(rgb, input_matrix_transposed, XYZ); // Go to D50 pipeline RGB to D65 XYZ in one step
           dt_XYZ_2_JzAzBz(XYZ, Jab);           // this one expects D65 XYZ
           Jch[0] = Jab[0];
           Jch[1] = dt_fast_hypotf(Jab[2], Jab[1]);
