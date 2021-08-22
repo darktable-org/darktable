@@ -565,7 +565,7 @@ void local_laplacian_internal(
     float *const out,           // output buffer with colour
     const int wd,               // width and
     const int ht,               // height of the input buffer
-    const float sigma,          // user param: separate shadows/midtones/highlights
+    const float sigma,          // user param: separate shadows/mid-tones/highlights
     const float shadows,        // user param: lift shadows
     const float highlights,     // user param: compress highlights
     const float clarity,        // user param: increase clarity/local contrast
