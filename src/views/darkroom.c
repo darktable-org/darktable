@@ -368,7 +368,8 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
         show_preview_pixel_scale = FALSE;
       }
       // crosshair radius
-      double cr = (is_primary_sample ? 4. : (sample == selected_sample ? 15. : 5.)) * half_px;
+      double cr = (is_primary_sample ? 4. : 5.) * half_px;
+      if(sample == selected_sample) cr *= 3;
       cairo_device_to_user(cri, &x, &y);
       cairo_device_to_user_distance(cri, &cr, &half_px);
 
@@ -387,7 +388,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     const double bright_amt = (is_primary_sample && !picker_focused) ? 0.5 : 1.0;
     // default is to draw 1 (logical) pixel light lines with 1
     // (logical) pixel dark outline for legibility
-    const double line_scale = (sample == selected_sample ? 3.0 : 1.0);
+    const double line_scale = (sample == selected_sample ? 2.0 : 1.0);
     cairo_set_line_width(cri, lw * 3.0 * line_scale);
     cairo_set_source_rgba(cri, 0.0, 0.0, 0.0, 0.35 * bright_amt);
     cairo_stroke_preserve(cri);
@@ -402,13 +403,16 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     cairo_stroke(cri);
 
     // draw the actual color sampled
+    // FIXME: if an area sample is selected, when selected should fill it with colorpicker color?
     // FIXME: is this overlay always drawn after the current preview has been calculated?
-    if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT && sample != selected_sample)
+    if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
     {
       dt_iop_order_iccprofile_info_t *histogram_profile = dt_ioppr_get_histogram_profile_info(darktable.develop);
       dt_iop_order_iccprofile_info_t *display_profile = dt_ioppr_get_pipe_output_profile_info(darktable.develop->pipe);
 
-      if(show_preview_pixel_scale)
+      if(sample == selected_sample)
+        cairo_arc(cri, sample->point[0] * wd, sample->point[1] * ht, half_px * 3., 0., 2. * M_PI);
+      else if(show_preview_pixel_scale)
         cairo_rectangle(cri, sample->point[0] * wd - half_px, sample->point[1] * ht - half_px, half_px * 2., half_px * 2.);
       else
         cairo_arc(cri, sample->point[0] * wd, sample->point[1] * ht, half_px, 0., 2. * M_PI);
@@ -740,7 +744,8 @@ void expose(
   // Displaying sample areas if enabled
   if(darktable.lib->proxy.colorpicker.live_samples
      && (darktable.lib->proxy.colorpicker.display_samples
-         || darktable.lib->proxy.colorpicker.selected_sample))
+         || (darktable.lib->proxy.colorpicker.selected_sample &&
+             darktable.lib->proxy.colorpicker.selected_sample != darktable.lib->proxy.colorpicker.primary_sample)))
   {
     _darkroom_pickers_draw(
       self, cri, width, height, zoom, closeup, zoom_x, zoom_y,
