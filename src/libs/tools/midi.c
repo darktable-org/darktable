@@ -368,13 +368,48 @@ void midi_open_devices(dt_lib_module_t *self)
 
   dt_input_device_t id = dt_register_input_driver(self, &driver_definition);
 
-  for(int i = 0; i < Pm_CountDevices() && i < 10; i++)
+  const char *devices_string = dt_conf_get_string_const("plugins/midi/devices");
+  gchar **dev_strings = g_strsplit(devices_string, ",", 0);
+
+  int last_dev = -1;
+
+  for(int i = 0; i < Pm_CountDevices(); i++)
   {
     const PmDeviceInfo *info = Pm_GetDeviceInfo(i);
     dt_print(DT_DEBUG_INPUT, "[midi_open_devices] found midi device '%s' via '%s'\n", info->name, info->interf);
 
     if(info->input && !strstr(info->name, "Midi Through Port"))
     {
+      int dev = -1;
+
+      gchar **cur_dev = dev_strings;
+      for(; cur_dev && *cur_dev; cur_dev++)
+      {
+        if(**cur_dev == '-')
+        {
+          if(strstr(info->name, (*cur_dev) + 1))
+          {
+            dev = 10;
+            break;
+          }
+        }
+        else
+        {
+          dev++;
+
+          if(dev > last_dev) last_dev = dev;
+
+          if(strstr(info->name, *cur_dev))
+          {
+            break;
+          }
+        }
+      }
+
+      if(!cur_dev || !*cur_dev) dev = ++last_dev;
+
+      if(dev >= 10) continue;
+
       PortMidiStream *stream_in;
       PmError error = Pm_OpenInput(&stream_in, i, NULL, EVENT_BUFFER_SIZE, NULL, NULL);
 
@@ -385,12 +420,12 @@ void midi_open_devices(dt_lib_module_t *self)
       }
       else
       {
-        fprintf(stderr, "[midi_open_devices] opened midi device '%s' via '%s'\n", info->name, info->interf);
+        fprintf(stderr, "[midi_open_devices] opened midi device '%s' via '%s' as midi%d\n", info->name, info->interf, dev);
       }
 
       midi_device *midi = (midi_device *)g_malloc0(sizeof(midi_device));
 
-      midi->id          = id++;
+      midi->id          = id + dev;
       midi->info        = info;
       midi->portmidi_in = stream_in;
 
@@ -410,7 +445,7 @@ void midi_open_devices(dt_lib_module_t *self)
       {
         const PmDeviceInfo *infoOutput = Pm_GetDeviceInfo(j);
 
-        if(infoOutput->output && !strcmp(info->name, infoOutput->name))
+        if(!strcmp(info->name, infoOutput->name) && infoOutput->output && !infoOutput->opened)
         {
           Pm_OpenOutput(&midi->portmidi_out, j, NULL, 1000, NULL, NULL, 0);
         }
@@ -419,6 +454,8 @@ void midi_open_devices(dt_lib_module_t *self)
       self->data = g_slist_append(self->data, midi);
     }
   }
+
+  g_strfreev(dev_strings);
 
   if(self->data) g_timeout_add(10, poll_midi_devices, self);
 }

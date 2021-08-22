@@ -3226,4 +3226,11 @@
     <shortdescription>height of the collect list</shortdescription>
     <longdescription>maximum height the collect list in lighttable will grow to before scrolling</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/midi/devices</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>order or exclude midi devices</shortdescription>
+    <longdescription>comma-separated list of device name fragments that if matched load midi device at id given by location in list or if preceded by - prevent matching devices from loading</longdescription>
+  </dtconfig>
 </dtconfiglist>
