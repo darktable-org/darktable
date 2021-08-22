@@ -519,14 +519,14 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
 
 static void _display_samples_changed(GtkToggleButton *button, gpointer data)
 {
-  dt_conf_set_int("ui_last/colorpicker_display_samples", gtk_toggle_button_get_active(button));
+  dt_conf_set_bool("ui_last/colorpicker_display_samples", gtk_toggle_button_get_active(button));
   darktable.lib->proxy.colorpicker.display_samples = gtk_toggle_button_get_active(button);
   dt_dev_invalidate_from_gui(darktable.develop);
 }
 
 static void _restrict_histogram_changed(GtkToggleButton *button, gpointer data)
 {
-  dt_conf_set_int("ui_last/colorpicker_restrict_histogram", gtk_toggle_button_get_active(button));
+  dt_conf_set_bool("ui_last/colorpicker_restrict_histogram", gtk_toggle_button_get_active(button));
   darktable.lib->proxy.colorpicker.restrict_histogram = gtk_toggle_button_get_active(button);
   dt_dev_invalidate_from_gui(darktable.develop);
 }
@@ -571,12 +571,7 @@ void gui_init(dt_lib_module_t *self)
 
   // Initializing proxy functions and data
   darktable.lib->proxy.colorpicker.module = self;
-#if 0
-  // FIXME: does this matter if the size is reset depending on how the picker is clipped?
-  data->primary_sample.size =
-    dt_conf_get_int("ui_last/colorpicker_size") ? DT_LIB_COLORPICKER_SIZE_BOX : DT_LIB_COLORPICKER_SIZE_POINT;
-#endif
-  darktable.lib->proxy.colorpicker.display_samples = dt_conf_get_int("ui_last/colorpicker_display_samples");
+  darktable.lib->proxy.colorpicker.display_samples = dt_conf_get_bool("ui_last/colorpicker_display_samples");
   // FIXME: should s/primary_sample/current_sample/
   darktable.lib->proxy.colorpicker.primary_sample = &data->primary_sample;
   darktable.lib->proxy.colorpicker.picker_source = NULL;
@@ -685,14 +680,14 @@ void gui_init(dt_lib_module_t *self)
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(data->display_samples_check_box))),
                           PANGO_ELLIPSIZE_MIDDLE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->display_samples_check_box),
-                               dt_conf_get_int("ui_last/colorpicker_display_samples"));
+                               dt_conf_get_bool("ui_last/colorpicker_display_samples"));
   g_signal_connect(G_OBJECT(data->display_samples_check_box), "toggled",
                    G_CALLBACK(_display_samples_changed), NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), data->display_samples_check_box, TRUE, TRUE, 0);
 
-  GtkWidget *restrict_button = gtk_check_button_new_with_label(_("restrict histogram to selection"));
+  GtkWidget *restrict_button = gtk_check_button_new_with_label(_("restrict scope to selection"));
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(restrict_button))), PANGO_ELLIPSIZE_MIDDLE);
-  int restrict_histogram = dt_conf_get_int("ui_last/colorpicker_restrict_histogram");
+  gboolean restrict_histogram = dt_conf_get_bool("ui_last/colorpicker_restrict_histogram");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(restrict_button), restrict_histogram);
   darktable.lib->proxy.colorpicker.restrict_histogram = restrict_histogram;
   g_signal_connect(G_OBJECT(restrict_button), "toggled", G_CALLBACK(_restrict_histogram_changed), NULL);
