@@ -319,6 +319,31 @@ static inline void dt_ioppr_xyz_to_rgb_matrix(const dt_aligned_pixel_t xyz, dt_a
     dt_apply_transposed_color_matrix(xyz, matrix_out_transposed, rgb);
 }
 
+static inline void dt_ioppr_transform_pixel_colorspace_rgb(const dt_aligned_pixel_t px_in,
+                                                           dt_aligned_pixel_t px_out,
+                                                           const dt_iop_order_iccprofile_info_t *const profile_info_from,
+                                                           const dt_iop_order_iccprofile_info_t *const profile_info_to)
+{
+  if(!isnan(profile_info_from->matrix_in[0][0]) && !isnan(profile_info_from->matrix_out[0][0])
+     && !isnan(profile_info_to->matrix_in[0][0]) && !isnan(profile_info_to->matrix_out[0][0]))
+  {
+    // fast path -- matrix profiles
+    // FIXME: while this is 10x faster than dt_ioppr_transform_image_colorspace_rgb_cl, the difference is in microseconds -- hence just save code and use the latter?
+    dt_aligned_pixel_t XYZ;
+    dt_ioppr_rgb_matrix_to_xyz(px_in, XYZ, profile_info_from->matrix_in_transposed, profile_info_from->lut_in,
+                               profile_info_from->unbounded_coeffs_in, profile_info_from->lutsize,
+                               profile_info_from->nonlinearlut);
+    dt_ioppr_xyz_to_rgb_matrix(XYZ, px_out, profile_info_to->matrix_out_transposed, profile_info_to->lut_out,
+                               profile_info_to->unbounded_coeffs_out, profile_info_to->lutsize,
+                               profile_info_to->nonlinearlut);
+  }
+  else
+  {
+    // slow path via LCMS
+    dt_ioppr_transform_image_colorspace_rgb(px_in, px_out, 1, 1, profile_info_from, profile_info_to, "single pixel");
+  }
+}
+
 
 #ifdef _OPENMP
 #pragma omp declare simd \

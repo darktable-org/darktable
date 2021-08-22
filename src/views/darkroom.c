@@ -320,8 +320,14 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     if(only_selected_sample && (sample != selected_sample))
       continue;
 
-    // half a preview pipe pixel
-    double px = 0.5;
+    // The picker is at the resolution of the preview pixelpipe. This
+    // is width/2 of a preview-pipe pixel in (scaled) user space
+    // coordinates. Use half pixel width so rounding to nearest device
+    // pixel doesn't make uneven centering.
+    double half_px = 0.5;
+    const double min_half_px_device = 4.0;
+    // FIXME: instead of going to all this effort to show how error-prone a preview pipe sample can be, just produce a better point sample
+    gboolean show_preview_pixel_scale = TRUE;
 
     // overlays are aligned with pixels for a clean look
     if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
@@ -349,23 +355,22 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     }
     else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
     {
-      double x = sample->point[0] * wd, y = sample->point[1] * ht;
-      // The picker is only at the resolution of the preview
-      // pixelpipe. Represent the preview resolution in a central box
-      // showing the sample. Ideally the box is 1:1 with a preview
-      // pixel, but at the very least make it 4x4 pixels.
       // FIXME: to be really accurate, the colorpicker should render precisely over the nearest pixelpipe pixel, but this gets particularly tricky to do with iop pickers with transformations after them in the pipeline
-      px = MAX(5. / zoom_scale, px);
-      // crosshair radius
-      double cr = (is_primary_sample ? 4. : (sample == selected_sample ? 15. : 5.)) * px;
+      double x = sample->point[0] * wd, y = sample->point[1] * ht;
       cairo_user_to_device(cri, &x, &y);
-      cairo_user_to_device_distance(cri, &cr, &px);
       x=round(x+0.5)-0.5;
       y=round(y+0.5)-0.5;
-      cr=round(cr);
-      px=round(px);
+      // render picker center a reasonable size in device pixels
+      half_px = round(half_px * zoom_scale);
+      if(half_px < min_half_px_device)
+      {
+        half_px = min_half_px_device;
+        show_preview_pixel_scale = FALSE;
+      }
+      // crosshair radius
+      double cr = (is_primary_sample ? 4. : (sample == selected_sample ? 15. : 5.)) * half_px;
       cairo_device_to_user(cri, &x, &y);
-      cairo_device_to_user_distance(cri, &cr, &px);
+      cairo_device_to_user_distance(cri, &cr, &half_px);
 
       // "handles"
       if(is_primary_sample && picker_focused)
@@ -377,12 +382,11 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
       cairo_line_to(cri, x, y + cr);
     }
 
-    // default is to draw 1 (logical) pixel light lines with 1
-    // (logical) pixel dark outline for legibility
-
     // dim primary sample when have activated a module but there is
     // still a primary colorpicker readout
     const double bright_amt = (is_primary_sample && !picker_focused) ? 0.5 : 1.0;
+    // default is to draw 1 (logical) pixel light lines with 1
+    // (logical) pixel dark outline for legibility
     const double line_scale = (sample == selected_sample ? 3.0 : 1.0);
     cairo_set_line_width(cri, lw * 3.0 * line_scale);
     cairo_set_source_rgba(cri, 0.0, 0.0, 0.0, 0.35 * bright_amt);
@@ -401,18 +405,33 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     // FIXME: is this overlay always drawn after the current preview has been calculated?
     if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT && sample != selected_sample)
     {
-      // FIXME: this always uses the mean color as _update_sample_label hasn't yet been called on the primary picker, otherwise could use sample->rgb
-      const GdkRGBA in = {sample->picked_color_rgb_mean[0], sample->picked_color_rgb_mean[1], sample->picked_color_rgb_mean[2] };
-      // default to middle grey if conversion fails
-      GdkRGBA display = {0.5, 0.5, 0.5, 1.0};
-      dt_lib_colorpicker_convert_color_space(&in, &display);
-      gdk_cairo_set_source_rgba(cri, &display);
-      // preview pixel represented as a square, if that square would be too small, just draw a circle
-      if(px < 6.0 / zoom_scale)
-        cairo_arc(cri, sample->point[0] * wd, sample->point[1] * ht, px, 0., 2. * M_PI);
+      dt_iop_order_iccprofile_info_t *histogram_profile = dt_ioppr_get_histogram_profile_info(darktable.develop);
+      dt_iop_order_iccprofile_info_t *display_profile = dt_ioppr_get_pipe_output_profile_info(darktable.develop->pipe);
+
+      if(show_preview_pixel_scale)
+        cairo_rectangle(cri, sample->point[0] * wd - half_px, sample->point[1] * ht - half_px, half_px * 2., half_px * 2.);
       else
-        cairo_rectangle(cri, sample->point[0] * wd - px, sample->point[1] * ht - px, px * 2.0, px * 2.0);
-      cairo_fill(cri);
+        cairo_arc(cri, sample->point[0] * wd, sample->point[1] * ht, half_px, 0., 2. * M_PI);
+
+      if(histogram_profile && display_profile)
+      {
+        dt_aligned_pixel_t rgb_display;
+        // for a point sample, mean = min = max
+        dt_ioppr_transform_pixel_colorspace_rgb(sample->picked_color_rgb_mean, rgb_display,
+                                                histogram_profile, display_profile);
+        // Sanitize values and ensure gamut-fitting
+        // we reproduce the default behaviour of colorout, which is harsh gamut clipping
+        cairo_set_source_rgba(cri,
+                              CLAMP(rgb_display[0], 0.f, 1.f),
+                              CLAMP(rgb_display[1], 0.f, 1.f),
+                              CLAMP(rgb_display[2], 0.f, 1.f), 1.0);
+        cairo_fill(cri);
+      }
+      else
+      {
+        // unlikely failure case
+        cairo_stroke(cri);
+      }
     }
   }
 
@@ -3362,6 +3381,8 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 
         dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
       }
+      // in case have moved cursor out of center view and back, hide the cursor again
+      dt_control_change_cursor(GDK_BLANK_CURSOR);
     }
     dt_control_queue_redraw();
     return;
