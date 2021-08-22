@@ -359,6 +359,7 @@ static void _statistic_changed(GtkWidget *widget, dt_lib_module_t *self)
 
   _update_picker_output(self);
   _update_samples_output(self);
+  dt_dev_invalidate_from_gui(darktable.develop);
 }
 
 static void _color_mode_changed(GtkWidget *widget, dt_lib_module_t *self)
@@ -397,7 +398,7 @@ static gboolean _sample_enter_callback(GtkWidget *widget, GdkEvent *event, gpoin
   if(sample->size != DT_LIB_COLORPICKER_SIZE_NONE)
   {
     darktable.lib->proxy.colorpicker.selected_sample = sample;
-    dt_control_queue_redraw_center();
+    dt_dev_invalidate_from_gui(darktable.develop);
   }
 
   return FALSE;
@@ -410,7 +411,7 @@ static gboolean _sample_leave_callback(GtkWidget *widget, GdkEvent *event, gpoin
   if(darktable.lib->proxy.colorpicker.selected_sample)
   {
     darktable.lib->proxy.colorpicker.selected_sample = NULL;
-    dt_control_queue_redraw_center();
+    dt_dev_invalidate_from_gui(darktable.develop);
   }
 
   return FALSE;
@@ -525,7 +526,7 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
 
   // Updating the display
   _update_samples_output(self);
-  dt_control_queue_redraw_center();
+  dt_dev_invalidate_from_gui(darktable.develop);
 }
 
 static void _display_samples_changed(GtkToggleButton *button, gpointer data)
@@ -742,7 +743,10 @@ void gui_reset(dt_lib_module_t *self)
   // Resetting GUI elements
   dt_bauhaus_combobox_set(data->statistic_selector, 0);
   dt_bauhaus_combobox_set(data->color_mode_selector, 0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->display_samples_check_box), FALSE);
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->display_samples_check_box)))
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->display_samples_check_box), FALSE);
+  else
+    dt_dev_invalidate_from_gui(darktable.develop);
 
   // redraw without a picker
   dt_control_queue_redraw_center();
