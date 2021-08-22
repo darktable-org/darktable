@@ -708,7 +708,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->whitepoint, _("shift white point"));
   gtk_widget_set_tooltip_text(g->radius, _("spatial extent"));
   gtk_widget_set_tooltip_text(g->shadhi_algo, _("filter to use for softening. bilateral avoids halos"));
-  gtk_widget_set_tooltip_text(g->compress, _("compress the effect on shadows/highlights and\npreserve midtones"));
+  gtk_widget_set_tooltip_text(g->compress, _("compress the effect on shadows/highlights and\npreserve mid-tones"));
   gtk_widget_set_tooltip_text(g->shadows_ccorrect, _("adjust saturation of shadows"));
   gtk_widget_set_tooltip_text(g->highlights_ccorrect, _("adjust saturation of highlights"));
 }

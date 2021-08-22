@@ -67,7 +67,7 @@ typedef struct dt_iop_grain_params_t
                                       $DEFAULT: 1600.0/GRAIN_SCALE_FACTOR
                                       $DESCRIPTION: "coarseness" */
   float strength;      // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0
-  float midtones_bias; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "midtones bias"
+  float midtones_bias; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "mid-tones bias"
 } dt_iop_grain_params_t;
 
 typedef struct dt_iop_grain_gui_data_t
@@ -584,7 +584,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->midtones_bias = dt_bauhaus_slider_from_params(self, "midtones_bias");
   dt_bauhaus_slider_set_format(g->midtones_bias, "%.0f%%");
-  gtk_widget_set_tooltip_text(g->midtones_bias, _("amount of midtones bias from the photographic paper response modeling. the greater the bias, the more pronounced the fall off of the grain in shadows and highlights"));
+  gtk_widget_set_tooltip_text(g->midtones_bias, _("amount of mid-tones bias from the photographic paper response modeling. the greater the bias, the more pronounced the fall off of the grain in shadows and highlights"));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

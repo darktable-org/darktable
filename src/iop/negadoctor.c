@@ -974,7 +974,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->soft_clip, 4);
   dt_bauhaus_slider_set_format(g->soft_clip, "%.2f %%");
   gtk_widget_set_tooltip_text(g->soft_clip, _("gradually compress specular highlights past this value\n"
-                                              "to avoid clipping while pushing the exposure for midtones.\n"
+                                              "to avoid clipping while pushing the exposure for mid-tones.\n"
                                               "this somewhat reproduces the behaviour of matte paper."));
 
   gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(_("virtual print emulation")), FALSE, FALSE, 0);

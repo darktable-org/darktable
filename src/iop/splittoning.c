@@ -543,7 +543,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->compress_scale = dt_bauhaus_slider_from_params(self, N_("compress"));
   dt_bauhaus_slider_set_format(g->compress_scale, "%.2f%%");
-  gtk_widget_set_tooltip_text(g->compress_scale, _("compress the effect on highlights/shadows and\npreserve midtones"));
+  gtk_widget_set_tooltip_text(g->compress_scale, _("compress the effect on highlights/shadows and\npreserve mid-tones"));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
