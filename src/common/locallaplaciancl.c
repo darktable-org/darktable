@@ -72,7 +72,7 @@ dt_local_laplacian_cl_t *dt_local_laplacian_init_cl(
     const int devid,
     const int width,            // width of input image
     const int height,           // height of input image
-    const float sigma,          // user param: separate shadows/midtones/highlights
+    const float sigma,          // user param: separate shadows/mid-tones/highlights
     const float shadows,        // user param: lift shadows
     const float highlights,     // user param: compress highlights
     const float clarity)        // user param: increase clarity/local contrast
