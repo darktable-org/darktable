@@ -35,6 +35,9 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <libxml/parser.h>
+#ifdef USE_LUA
+#include "lua/call.h"
+#endif
 
 DT_MODULE(1)
 
@@ -226,7 +229,13 @@ static void _styles_row_activated_callback(GtkTreeView *view, GtkTreePath *path,
   if(name)
   {
     dt_styles_apply_to_list(name, list, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
-    g_free(name);
+ #ifdef USE_LUA
+    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+        0, NULL, NULL,
+        LUA_ASYNC_TYPENAME, "const char*", "batch-style-applied",
+        LUA_ASYNC_DONE);
+#endif
+   g_free(name);
   }
 }
 
@@ -264,7 +273,17 @@ static void apply_clicked(GtkWidget *w, gpointer user_data)
 
   const GList *list = dt_view_get_images_to_act_on(TRUE, TRUE, FALSE);
 
-  if(list) dt_multiple_styles_apply_to_list(style_names, list, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
+  if(list) 
+  {
+    dt_multiple_styles_apply_to_list(style_names, list, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
+#ifdef USE_LUA
+    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+        0, NULL, NULL,
+        LUA_ASYNC_TYPENAME, "const char*", "batch-style-applied",
+        LUA_ASYNC_DONE);
+#endif
+
+  }
 
   g_list_free_full(style_names, g_free);
 }
