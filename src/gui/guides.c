@@ -25,6 +25,14 @@
 
 #define DEFAULT_GUIDE_NAME "rules of thirds"
 
+typedef enum dt_golden_type_t
+{
+  GOLDEN_SECTION = 0,
+  GOLDEN_SPIRAL,
+  GOLDEN_SPIRAL_SECTION,
+  GOLDEN_ALL
+} dt_golden_type_t;
+
 typedef struct dt_QRect_t
 {
   float left, top, right, bottom, width, height;
@@ -482,16 +490,8 @@ static void _guides_draw_golden_mean(cairo_t *cr, const float x, const float y,
                                      const float zoom_scale, void *user_data)
 {
   // retrieve the golden extra in settings
-  int extra = -1;
-  gchar *val = _conf_get_guide_name("global");
-  if(val && !g_strcmp0(val, "golden mean"))
-  {
-    gchar *key = _conf_get_path("global", "golden_extra", NULL);
-    extra = dt_conf_get_int(key);
-    g_free(key);
-  }
-  // if extra is still -1 that mean we don't want to be here !
-  if(extra < 0) return;
+  dt_golden_type_t extra = GOLDEN_SECTION;
+  if(user_data) extra = GPOINTER_TO_INT(user_data);
 
   // lengths for the golden mean and half the sizes of the region:
   float w_g = w * INVPHI;
@@ -512,39 +512,10 @@ static void _guides_draw_golden_mean(cairo_t *cr, const float x, const float y,
                    R5.height * INVPHI);
   dt_guides_q_rect(&R7, R6.right - R6.width * INVPHI, R4.bottom, R6.width * INVPHI, R5.height - R6.height);
 
-  dt_guides_draw_golden_mean(cr, &R1, &R2, &R3, &R4, &R5, &R6, &R7, (extra == 0 || extra == 3), FALSE,
-                             (extra == 1 || extra == 3), (extra == 2 || extra == 3));
+  dt_guides_draw_golden_mean(
+      cr, &R1, &R2, &R3, &R4, &R5, &R6, &R7, (extra == GOLDEN_SECTION || extra == GOLDEN_ALL), FALSE,
+      (extra == GOLDEN_SPIRAL_SECTION || extra == GOLDEN_ALL), (extra == GOLDEN_SPIRAL || extra == GOLDEN_ALL));
 }
-
-static void _golden_mean_changed(GtkWidget *combo, void *user_data)
-{
-  // remember setting
-  gchar *key = _conf_get_path("global", "golden_extra", NULL);
-  dt_conf_set_int(key, dt_bauhaus_combobox_get(combo));
-  g_free(key);
-
-  dt_control_queue_redraw_center();
-}
-static GtkWidget *_guides_gui_golden_mean(dt_iop_module_t *self, void *user_data)
-{
-  GtkWidget *golden_extras = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(golden_extras, NULL, N_("extra"));
-  dt_bauhaus_combobox_add(golden_extras, _("golden sections"));
-  dt_bauhaus_combobox_add(golden_extras, _("golden spiral sections"));
-  dt_bauhaus_combobox_add(golden_extras, _("golden spiral"));
-  dt_bauhaus_combobox_add(golden_extras, _("all"));
-  gtk_widget_set_tooltip_text(golden_extras, _("show some extra guides"));
-
-  // set current value
-  gchar *key = _conf_get_path("global", "golden_extra", NULL);
-  dt_bauhaus_combobox_set(golden_extras, dt_conf_get_int(key));
-  g_free(key);
-
-  g_signal_connect(G_OBJECT(golden_extras), "value-changed", G_CALLBACK(_golden_mean_changed), user_data);
-
-  return golden_extras;
-}
-
 
 static void _guides_add_guide(GList **list, const char *name,
                               dt_guides_draw_callback draw,
@@ -577,7 +548,14 @@ GList *dt_guides_init()
   _guides_add_guide(&guides, N_("perspective"), _guides_draw_perspective, NULL, NULL, NULL, FALSE); // TODO: make the number of lines configurable with a slider?
   _guides_add_guide(&guides, N_("diagonal method"), _guides_draw_diagonal_method, NULL, NULL, NULL, FALSE);
   _guides_add_guide(&guides, N_("harmonious triangles"), _guides_draw_harmonious_triangles, NULL, NULL, NULL, TRUE);
-  _guides_add_guide(&guides, N_("golden mean"), _guides_draw_golden_mean, _guides_gui_golden_mean, NULL, NULL, TRUE);
+  _guides_add_guide(&guides, N_("golden sections"), _guides_draw_golden_mean, NULL,
+                    GINT_TO_POINTER(GOLDEN_SECTION), NULL, TRUE);
+  _guides_add_guide(&guides, N_("golden spiral"), _guides_draw_golden_mean, NULL, GINT_TO_POINTER(GOLDEN_SPIRAL),
+                    NULL, TRUE);
+  _guides_add_guide(&guides, N_("golden spiral sections"), _guides_draw_golden_mean, NULL,
+                    GINT_TO_POINTER(GOLDEN_SPIRAL_SECTION), NULL, TRUE);
+  _guides_add_guide(&guides, N_("golden mean (all guides)"), _guides_draw_golden_mean, NULL,
+                    GINT_TO_POINTER(GOLDEN_ALL), NULL, TRUE);
 
   return guides;
 }
