@@ -895,8 +895,6 @@ static inline void dt_XYZ_D65_2_XYZ_D50(const dt_aligned_pixel_t XYZ_D65, dt_ali
 #endif
 static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_pixel_t JzAzBz)
 {
-  const float b = 1.15f;
-  const float g = 0.66f;
   const float c1 = 0.8359375f; // 3424 / 2^12
   const float c2 = 18.8515625f; // 2413 / 2^7
   const float c3 = 18.6875f; // 2392 / 2^7
@@ -904,46 +902,51 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
   const float p = 134.034375f; // 1.7 x 2523 / 2^5
   const float d = -0.56f;
   const float d0 = 1.6295499532821566e-11f;
-  static const dt_colormatrix_t M = {
-      { 0.41478972f, 0.579999f, 0.0146480f, 0.0f },
-      { -0.2015100f, 1.120649f, 0.0531008f, 0.0f },
-      { -0.0166008f, 0.264800f, 0.6684799f, 0.0f },
+  /* K_transposed combines the transforms
+   *     const float b = 1.15f;
+   *     const float g = 0.66f;
+   *     static const dt_colormatrix_t M_transposed = {
+   *       { 0.41478972f, -0.2015100f, -0.0166008f, 0.0f },
+   *       { 0.579999f,    1.120649f,   0.264800f,  0.0f },
+   *       { 0.0146480f,   0.0531008f,  0.6684799f, 0.0f },
+   *     };
+   *     // XYZ -> X'Y'Z
+   *     XYZ[0] = b * XYZ_D65[0] - (b - 1.0f) * XYZ_D65[2];
+   *     XYZ[1] = g * XYZ_D65[1] - (g - 1.0f) * XYZ_D65[0];
+   *     XYZ[2] = XYZ_D65[2];
+   *     // X'Y'Z' -> LMS
+   *     dt_apply_transposed_color_matrix(XYZ, M_transposed, LMS);
+   * into a single matrix multiplication
+   *     // XYZ -> LMS
+   *     dt_apply_transposed_color_matrix(XYZ_D65, K_transposed, LMS);
+   */
+
+  static const dt_colormatrix_t K_transposed = {
+    {  0.674207838e-4f, 0.14928416e-4f, 0.07094108e-4f, 0.f },
+    {  0.38279934e-4f,  0.73962834e-4f, 0.174768e-4f,   0.f },
+    { -0.047570458e-4f, 0.0833273e-4f,  0.67097002e-4f, 0.f },
   };
-#if 0
-  static const dt_colormatrix_t A = {
-      { 0.5f,       0.5f,       0.0f,      0.0f },
-      { 3.524000f, -4.066708f,  0.542708f, 0.0f },
-      { 0.199076f,  1.096799f, -1.295875f, 0.0f },
-  };
-#endif
   static const dt_colormatrix_t A_transposed = {
-      { 0.5f,       3.524000f,  0.199076f, 0.0f },
-      { 0.5f,      -4.066708f,  1.096799f, 0.0f },
-      { 0.0f,       0.542708f, -1.295875f, 0.0f },
+    { 0.5f,  3.524000f,  0.199076f, 0.0f },
+    { 0.5f, -4.066708f,  1.096799f, 0.0f },
+    { 0.0f,  0.542708f, -1.295875f, 0.0f },
   };
 
-  dt_aligned_pixel_t XYZ = { 0.0f, 0.0f, 0.0f, 0.0f };
-  dt_aligned_pixel_t LMS = { 0.0f, 0.0f, 0.0f, 0.0f };
+  // XYZ -> LMS
+  dt_aligned_pixel_t LMS;
+  dt_apply_transposed_color_matrix(XYZ_D65, K_transposed, LMS);
 
-  // XYZ -> X'Y'Z
-  XYZ[0] = b * XYZ_D65[0] - (b - 1.0f) * XYZ_D65[2];
-  XYZ[1] = g * XYZ_D65[1] - (g - 1.0f) * XYZ_D65[0];
-  XYZ[2] = XYZ_D65[2];
-
-  // X'Y'Z -> L'M'S'
-#ifdef _OPENMP
-#pragma omp simd aligned(LMS, XYZ:16) aligned(M:64)
-#endif
-  for(int i = 0; i < 3; i++)
-  {
-    LMS[i] = M[i][0] * XYZ[0] + M[i][1] * XYZ[1] + M[i][2] * XYZ[2];
-    LMS[i] = powf(MAX(LMS[i] / 10000.f, 0.0f), n);
-    LMS[i] = powf((c1 + c2 * LMS[i]) / (1.0f + c3 * LMS[i]), p);
-  }
+  // LMS -> L'M'S'
+  // powf calls are not vectorizable so they are split out as three-channel loops
+  // to avoid extra iterations.
+  for_each_channel(i) LMS[i] = MAX(LMS[i], 0.0f);
+  for_three_channels(i) LMS[i] = powf(LMS[i], n);
+  for_each_channel(i) LMS[i] = (c1 + c2 * LMS[i]) / (1.0f + c3 * LMS[i]);
+  for_three_channels(i) LMS[i] = powf(LMS[i], p);
 
   // L'M'S' -> Izazbz
-  for_each_channel(c)
-    JzAzBz[c] = A_transposed[0][c] * LMS[0] + A_transposed[1][c] * LMS[1] + A_transposed[2][c] * LMS[2];
+  dt_apply_transposed_color_matrix(LMS, A_transposed, JzAzBz);
+
   // Iz -> Jz
   JzAzBz[0] = MAX(((1.0f + d) * JzAzBz[0]) / (1.0f + d * JzAzBz[0]) - d0, 0.f);
 }
@@ -974,8 +977,6 @@ static inline void dt_JzCzhz_2_JzAzBz(const dt_aligned_pixel_t JzCzhz, dt_aligne
 #endif
 static inline void dt_JzAzBz_2_XYZ(const dt_aligned_pixel_t JzAzBz, dt_aligned_pixel_t XYZ_D65)
 {
-  const float b = 1.15f;
-  const float g = 0.66f;
   const float c1 = 0.8359375f; // 3424 / 2^12
   const float c2 = 18.8515625f; // 2413 / 2^7
   const float c3 = 18.6875f; // 2392 / 2^7
@@ -983,47 +984,34 @@ static inline void dt_JzAzBz_2_XYZ(const dt_aligned_pixel_t JzAzBz, dt_aligned_p
   const float p_inv = 1.0f / 134.034375f; // 1.7 x 2523 / 2^5
   const float d = -0.56f;
   const float d0 = 1.6295499532821566e-11f;
-  const dt_colormatrix_t MI = {
-      {  1.9242264357876067f, -1.0047923125953657f,  0.0376514040306180f, 0.0f },
-      {  0.3503167620949991f,  0.7264811939316552f, -0.0653844229480850f, 0.0f },
-      { -0.0909828109828475f, -0.3127282905230739f,  1.5227665613052603f, 0.0f },
+  static const dt_colormatrix_t KI_transposed = {
+    {  1.6613730558e4f, -0.325075874e4f,  -0.090982811e4f,  0.f },
+    { -0.9145230923e4f,  1.5718470384e4f, -0.3127282905e4f, 0.f },
+    {  0.2313620767e4f, -0.2182538319e4f,  1.5227665613e4f, 0.f },
   };
-  const dt_colormatrix_t AI = {
-      {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
-      {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
-      {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f },
+  static const dt_colormatrix_t AI_transposed = {
+    { 1.0f,                 1.0f,                 1.0f,                0.0f },
+    { 0.1386050432715393f, -0.1386050432715393f, -0.0960192420263190f, 0.0f },
+    { 0.0580473161561189f, -0.0580473161561189f, -0.8118918960560390f, 0.0f },
   };
 
-  dt_aligned_pixel_t XYZ = { 0.0f, 0.0f, 0.0f, 0.0f };
-  dt_aligned_pixel_t LMS = { 0.0f, 0.0f, 0.0f, 0.0f };
-  dt_aligned_pixel_t IzAzBz = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-  IzAzBz[0] = JzAzBz[0] + d0;
-  IzAzBz[0] = MAX(IzAzBz[0] / (1.0f + d - d * IzAzBz[0]), 0.f);
-  IzAzBz[1] = JzAzBz[1];
-  IzAzBz[2] = JzAzBz[2];
+  dt_aligned_pixel_t LMS;
+  dt_aligned_pixel_t IzAzBz;
+  for_each_channel(c, aligned(IzAzBz, JzAzBz: 16)) IzAzBz[c] = JzAzBz[c];
+  IzAzBz[0] = MAX((IzAzBz[0] + d0) / (1.0f + d - d * (IzAzBz[0] + d0)), 0.f);
 
   // IzAzBz -> LMS
-#ifdef _OPENMP
-#pragma omp simd aligned(LMS, IzAzBz:16) aligned(AI:64)
-#endif
-  for(int i = 0; i < 3; i++)
-  {
-    LMS[i] = AI[i][0] * IzAzBz[0] + AI[i][1] * IzAzBz[1] + AI[i][2] * IzAzBz[2];
-    LMS[i] = powf(MAX(LMS[i], 0.0f), p_inv);
-    LMS[i] = 10000.f * powf(MAX((c1 - LMS[i]) / (c3 * LMS[i] - c2), 0.0f), n_inv);
-  }
+  dt_apply_transposed_color_matrix(IzAzBz, AI_transposed, LMS);
 
-  // LMS -> X'Y'Z
-#ifdef _OPENMP
-#pragma omp simd aligned(LMS, XYZ:16) aligned(MI:64)
-#endif
-  for(int i = 0; i < 3; i++) XYZ[i] = MI[i][0] * LMS[0] + MI[i][1] * LMS[1] + MI[i][2] * LMS[2];
+  // powf calls are not vectorizable so they are split out as three-channel loops
+  // to avoid extra iterations.
+  for_each_channel(i) LMS[i] = MAX(LMS[i], 0.f);
+  for_three_channels(i) LMS[i] = powf(LMS[i], p_inv);
+  for_each_channel(i) LMS[i] = MAX((c1 - LMS[i]) / (c3 * LMS[i] - c2), 0.0f);
+  for_three_channels(i) LMS[i] = powf(LMS[i], n_inv);
 
-  // X'Y'Z -> XYZ_D65
-  XYZ_D65[0] = (XYZ[0] + (b - 1.0f) * XYZ[2]) / b;
-  XYZ_D65[1] = (XYZ[1] + (g - 1.0f) * XYZ_D65[0]) / g;
-  XYZ_D65[2] = XYZ[2];
+  // LMS -> XYZ
+  dt_apply_transposed_color_matrix(LMS, KI_transposed, XYZ_D65);
 }
 
 // Convert CIE 1931 2° XYZ D65 to CIE 2006 LMS D65 (cone space)
