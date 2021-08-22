@@ -104,6 +104,8 @@ typedef struct dt_lib_histogram_t
   // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
   uint8_t *vectorscope_graph, *vectorscope_bkgd;
   float vectorscope_pt[2];            // point colorpicker position
+  GSList *vectorscope_samples;        // live samples position
+  int selected_sample;                // position of the selected live sample in the list
   int vectorscope_diameter_px;
   float hue_ring[6][VECTORSCOPE_HUES][2] DT_ALIGNED_ARRAY;
   const dt_iop_order_iccprofile_info_t *hue_ring_prof;
@@ -578,6 +580,73 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         dt_atomic_add_int(binned + out_y * diam_px + out_x, 1);
     }
 
+  //find live sample position
+  if(d->vectorscope_samples)
+  {
+    g_slist_free_full((GSList *)d->vectorscope_samples, free);
+    d->vectorscope_samples = NULL;
+    d->selected_sample = -1;
+  }
+  GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
+  if(samples)
+  {
+    const dt_colorpicker_sample_t *selected = darktable.lib->proxy.colorpicker.selected_sample;
+    dt_colorpicker_sample_t *sample = NULL;
+
+    int pos = 0;
+    for(; samples; samples = g_slist_next(samples))
+    {
+      sample = samples->data;
+      if(sample == selected) d->selected_sample = pos;
+      pos++;
+
+      //find coordinates
+      const int statistic = dt_conf_get_int("ui_last/colorpicker_mode");
+      dt_aligned_pixel_t RGB = {0.f}, XYZ_D50, chromaticity;
+      for(int k = 0; k < 3; k++)
+      {
+        switch(statistic)
+        {
+          case 0:
+            RGB[k] = sample->picked_color_rgb_mean[k];
+            break;
+
+          case 1:
+            RGB[k] = sample->picked_color_rgb_min[k];
+            break;
+
+          default:
+            RGB[k] = sample->picked_color_rgb_max[k];
+            break;
+        }
+      }
+
+      dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, vs_prof->matrix_in_transposed, vs_prof->lut_in,
+                                 vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
+      if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+      {
+        dt_aligned_pixel_t xyY_D50;
+        dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
+        dt_xyY_to_Luv(xyY_D50, chromaticity);
+      }
+      else
+      {
+        dt_aligned_pixel_t XYZ_D65;
+        dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
+        dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
+      }
+      if(vs_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
+        log_scale(&chromaticity[1], &chromaticity[2], max_radius);
+
+      float *sample_xy = (float *)calloc(2, sizeof(float));
+
+      sample_xy[0] = chromaticity[1];
+      sample_xy[1] = chromaticity[2];
+
+      d->vectorscope_samples = g_slist_append(d->vectorscope_samples, sample_xy);
+    }
+  }
+
   // shortcut to change from linear to display gamma
   const dt_iop_order_iccprofile_info_t *const profile =
     dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_HLG_REC2020, "", DT_INTENT_PERCEPTUAL);
@@ -931,7 +1000,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_pattern_set_matrix(graph_pat, &matrix);
 
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  if(!isnan(d->vectorscope_pt[0]))
+  if(!isnan(d->vectorscope_pt[0]) || d->vectorscope_samples)
     cairo_push_group(cr);
   cairo_set_source(cr, bkgd_pat);
   cairo_mask(cr, graph_pat);
@@ -944,7 +1013,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_pattern_destroy(graph_pat);
   cairo_surface_destroy(graph_surface);
 
-  if(!isnan(d->vectorscope_pt[0]))
+  if(!isnan(d->vectorscope_pt[0]) || d->vectorscope_samples)
   {
     cairo_pop_group_to_source(cr);
     cairo_paint_with_alpha(cr, 0.5);
@@ -955,11 +1024,35 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   if(!isnan(d->vectorscope_pt[0]))
   {
     // point sample
-    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
     set_color(cr, darktable.bauhaus->graph_fg);
     cairo_arc(cr, scale*d->vectorscope_pt[0], scale*d->vectorscope_pt[1],
               DT_PIXEL_APPLY_DPI(3.), 0., M_PI * 2.);
     cairo_fill(cr);
+  }
+
+   // live samples
+  if(d->vectorscope_samples)
+  {
+    GSList *samples = d->vectorscope_samples;
+    float *sample_xy = NULL;
+    int pos = 0;
+    for( ; samples; samples = g_slist_next(samples))
+    {
+      sample_xy = samples->data;
+      if(pos == d->selected_sample)
+      {
+        set_color(cr, darktable.bauhaus->graph_fg_active);
+        cairo_arc(cr, scale * sample_xy[0], scale * sample_xy[1], DT_PIXEL_APPLY_DPI(6.), 0., M_PI * 2.);
+        cairo_fill(cr);
+      }
+      else
+      {
+        set_color(cr, darktable.bauhaus->graph_fg);
+        cairo_arc(cr, scale * sample_xy[0], scale * sample_xy[1], DT_PIXEL_APPLY_DPI(4.), 0., M_PI * 2.);
+        cairo_stroke(cr);
+      }
+      pos++;
+    }
   }
 
   // overlay central circle
@@ -1773,6 +1866,10 @@ void gui_init(dt_lib_module_t *self)
   // initially no vectorscope to draw
   d->vectorscope_radius = 0.f;
 
+  // initially no live samples
+  d->vectorscope_samples = NULL;
+  d->selected_sample = -1;
+
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
   // FIXME: do need to pass self, or can wrap a callback as a lambda
@@ -1929,6 +2026,10 @@ void gui_cleanup(dt_lib_module_t *self)
     dt_free_align(d->waveform_img[ch]);
   dt_free_align(d->vectorscope_graph);
   dt_free_align(d->vectorscope_bkgd);
+  if(d->vectorscope_samples)
+    g_slist_free_full((GSList *)d->vectorscope_samples, free);
+  d->vectorscope_samples = NULL;
+  d->selected_sample = -1;
   dt_pthread_mutex_destroy(&d->lock);
 
   g_free(self->data);
