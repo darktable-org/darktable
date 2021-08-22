@@ -520,10 +520,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float *const restrict pix_in = __builtin_assume_aligned(in + k, 16);
     float *const restrict pix_out = __builtin_assume_aligned(out + k, 16);
 
-    dt_aligned_pixel_t XYZ_D65 = { 0.f };
-    dt_aligned_pixel_t LMS = { 0.f };
-    dt_aligned_pixel_t RGB = { 0.f };
-    dt_aligned_pixel_t Yrg = { 0.f };
+    dt_aligned_pixel_t XYZ_D65, LMS, RGB, Yrg, Jab;
 
     // clip pipeline RGB
     for_each_channel(c, aligned(pix_in:16)) RGB[c] = MAX(pix_in[c], 0.0f);
@@ -642,7 +639,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     LMS_to_XYZ(LMS, XYZ_D65);
 
     // Perceptual color adjustments
-    dt_aligned_pixel_t Jab = { 0.f };
     dt_XYZ_2_JzAzBz(XYZ_D65, Jab);
 
     // Convert to JCh

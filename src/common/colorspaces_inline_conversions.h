@@ -1097,11 +1097,11 @@ static inline void LMS_to_Yrg(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t Y
 
   // normalize LMS
   const float a = LMS[0] + LMS[1] + LMS[2];
-  dt_aligned_pixel_t lms = { 0.f };
+  dt_aligned_pixel_t lms;
   for_each_channel(c, aligned(LMS, lms : 16)) lms[c] = (a == 0.f) ? 0.f : LMS[c] / a;
 
   // convert to Filmlight rgb (normalized)
-  dt_aligned_pixel_t rgb = { 0.f };
+  dt_aligned_pixel_t rgb;
   LMS_to_gradingRGB(lms, rgb);
 
   Yrg[0] = Y;
@@ -1123,7 +1123,7 @@ static inline void Yrg_to_LMS(const dt_aligned_pixel_t Yrg, dt_aligned_pixel_t L
   const dt_aligned_pixel_t rgb = { r, g, b, 0.f };
 
   // convert to lms (normalized)
-  dt_aligned_pixel_t lms = { 0.f };
+  dt_aligned_pixel_t lms;
   gradingRGB_to_LMS(rgb, lms);
 
   // denormalize to LMS
