@@ -358,7 +358,6 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
     module->picked_color_min[k] = module->picked_output_color_min[k] = 666.0f;
     module->picked_color_max[k] = module->picked_output_color_max[k] = -666.0f;
   }
-  module->picker = NULL;
   module->histogram_cst = iop_cs_NONE;
   module->histogram = NULL;
   module->histogram_max[0] = module->histogram_max[1] = module->histogram_max[2] = module->histogram_max[3]
@@ -1529,7 +1528,13 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
   module->blend_params = NULL;
   free(module->default_blendop_params);
   module->default_blendop_params = NULL;
-  module->picker = NULL;
+
+  // don't have a picker pointing to a disappeared module
+  if(darktable.lib
+     && darktable.lib->proxy.colorpicker.picker_proxy
+     && darktable.lib->proxy.colorpicker.picker_proxy->module == module)
+    darktable.lib->proxy.colorpicker.picker_proxy = NULL;
+
   free(module->histogram);
   module->histogram = NULL;
   g_hash_table_destroy(module->raster_mask.source.users);

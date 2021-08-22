@@ -50,9 +50,7 @@ typedef struct dt_lib_t
     {
       struct dt_lib_module_t *module;
       struct dt_colorpicker_sample_t *primary_sample;
-      // Which module set the picker, or NULL if set by colorpicker
-      // lib. Used to figure out when to deactivate the picker.
-      struct dt_iop_module_t *picker_source;
+      struct dt_iop_color_picker_t *picker_proxy;
       GSList *live_samples;
       struct dt_colorpicker_sample_t *selected_sample;
       gboolean display_samples;

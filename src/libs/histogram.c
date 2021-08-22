@@ -32,6 +32,7 @@
 #include "dtgtk/button.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
@@ -635,12 +636,9 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(cv->view(cv) == DT_VIEW_DARKROOM && darktable.lib->proxy.colorpicker.restrict_histogram)
   {
-    dt_develop_t *dev = darktable.develop;
     const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
-    if(sample && sample->size != DT_LIB_COLORPICKER_SIZE_NONE
-       && ((dev->gui_module && dev->gui_module->enabled
-            && darktable.lib->proxy.colorpicker.picker_source == dev->gui_module)
-           || !darktable.lib->proxy.colorpicker.picker_source))
+    dt_iop_color_picker_t *proxy = darktable.lib->proxy.colorpicker.picker_proxy;
+    if(sample && sample->size != DT_LIB_COLORPICKER_SIZE_NONE && proxy && !proxy->module)
     {
       if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
       {

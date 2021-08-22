@@ -96,6 +96,7 @@
 #include "dtgtk/drawingarea.h"
 #include "dtgtk/expander.h"
 #include "gui/accelerators.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -1887,7 +1888,7 @@ static void switch_cursors(struct dt_iop_module_t *self)
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
 
   // if we are editing masks or using colour-pickers, do not display controls
-  if(!sanity_check(self) || in_mask_editing(self) || (self->picker && self->request_color_pick != DT_REQUEST_COLORPICK_OFF))
+  if(!sanity_check(self) || in_mask_editing(self) || dt_iop_color_picker_is_visible(self->dev))
   {
     // display default cursor
     GdkCursor *const cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");

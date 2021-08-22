@@ -41,6 +41,7 @@
 #include "dtgtk/button.h"
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
 #include "gui/guides.h"
 #include "gui/presets.h"
@@ -274,6 +275,7 @@ void _display_module_trouble_message_callback(gpointer instance,
   }
 }
 
+
 static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
                                    int32_t width, int32_t height,
                                    dt_dev_zoom_t zoom, int closeup, float zoom_x, float zoom_y,
@@ -309,10 +311,6 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
   dt_colorpicker_sample_t *selected_sample = darktable.lib->proxy.colorpicker.selected_sample;
   const gboolean only_selected_sample = !is_primary_sample && selected_sample
     && !darktable.lib->proxy.colorpicker.display_samples;
-  const gboolean picker_focused = dev->gui_module
-    // FIXME: do need to test both of these? -- mouse routines only check request_color_pick
-    && dev->gui_module->picker
-    && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF;
 
   for( ; samples; samples = g_slist_next(samples))
   {
@@ -343,7 +341,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
       cairo_device_to_user(cri, &x, &y);
       cairo_device_to_user(cri, &w, &h);
       cairo_rectangle(cri, x, y, w - x, h - y);
-      if(is_primary_sample && picker_focused)
+      if(is_primary_sample)
       {
         // handles
         const double hw = 5. / zoom_scale;
@@ -374,7 +372,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
       cairo_device_to_user_distance(cri, &cr, &half_px);
 
       // "handles"
-      if(is_primary_sample && picker_focused)
+      if(is_primary_sample)
         cairo_arc(cri, x, y, cr, 0., 2. * M_PI);
       // crosshair
       cairo_move_to(cri, x - cr, y);
@@ -383,14 +381,11 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
       cairo_line_to(cri, x, y + cr);
     }
 
-    // dim primary sample when have activated a module but there is
-    // still a primary colorpicker readout
-    const double bright_amt = (is_primary_sample && !picker_focused) ? 0.5 : 1.0;
     // default is to draw 1 (logical) pixel light lines with 1
     // (logical) pixel dark outline for legibility
     const double line_scale = (sample == selected_sample ? 2.0 : 1.0);
     cairo_set_line_width(cri, lw * 3.0 * line_scale);
-    cairo_set_source_rgba(cri, 0.0, 0.0, 0.0, 0.35 * bright_amt);
+    cairo_set_source_rgba(cri, 0.0, 0.0, 0.0, 0.35);
     cairo_stroke_preserve(cri);
 
     cairo_set_line_width(cri, lw * line_scale);
@@ -399,12 +394,15 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
                    && sample != selected_sample
                    && sample->size == DT_LIB_COLORPICKER_SIZE_BOX,
                    0.0);
-    cairo_set_source_rgba(cri, 1.0, 1.0, 1.0, 0.7 * bright_amt);
+    cairo_set_source_rgba(cri, 1.0, 1.0, 1.0, 0.7);
     cairo_stroke(cri);
 
     // draw the actual color sampled
     // FIXME: if an area sample is selected, when selected should fill it with colorpicker color?
     // FIXME: is this overlay always drawn after the current preview has been calculated?
+    // FIXME: will one of these calls set up sample->rgb is display profile?
+    // darktable.lib->proxy.colorpicker.update_panel(darktable.lib->proxy.colorpicker.module);
+    // darktable.lib->proxy.colorpicker.update_samples(darktable.lib->proxy.colorpicker.module);
     if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
     {
       dt_iop_order_iccprofile_info_t *histogram_profile = dt_ioppr_get_histogram_profile_info(darktable.develop);
@@ -776,20 +774,11 @@ void expose(
                                  || dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
 
   // draw colorpicker for in focus module or execute module callback hook
-  if(darktable.lib->proxy.colorpicker.primary_sample)
+  if(dt_iop_color_picker_is_visible(dev))
   {
-    const gboolean module_color_picker = dev->gui_module
-      && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && dev->gui_module->enabled
-      && darktable.lib->proxy.colorpicker.picker_source == dev->gui_module;
-    const gboolean primary_picker_has_sample =
-      darktable.lib->proxy.colorpicker.primary_sample->size != DT_LIB_COLORPICKER_SIZE_NONE
-      && !darktable.lib->proxy.colorpicker.picker_source;
-    if(module_color_picker || primary_picker_has_sample)
-    {
-      GSList samples = { .data = darktable.lib->proxy.colorpicker.primary_sample, .next = NULL };
-      _darkroom_pickers_draw(self, cri, width, height, zoom, closeup, zoom_x, zoom_y,
-                             &samples, TRUE);
-    }
+    GSList samples = { .data = darktable.lib->proxy.colorpicker.primary_sample, .next = NULL };
+    _darkroom_pickers_draw(self, cri, width, height, zoom, closeup, zoom_x, zoom_y,
+                           &samples, TRUE);
   }
   else
   {
@@ -918,11 +907,10 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
   // disable color picker when changing image
   if(dev->gui_module)
   {
-    dev->gui_module->picker = NULL;
     dev->gui_module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   }
   darktable.lib->proxy.colorpicker.primary_sample->size = DT_LIB_COLORPICKER_SIZE_NONE;
-  darktable.lib->proxy.colorpicker.picker_source = NULL;
+  darktable.lib->proxy.colorpicker.picker_proxy = NULL;
 
   // update aspect ratio
   if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
@@ -3133,7 +3121,7 @@ void leave(dt_view_t *self)
 {
   dt_iop_color_picker_cleanup();
   darktable.lib->proxy.colorpicker.primary_sample->size = DT_LIB_COLORPICKER_SIZE_NONE;
-  darktable.lib->proxy.colorpicker.picker_source = NULL;
+  darktable.lib->proxy.colorpicker.picker_proxy = NULL;
 
   _unregister_modules_drag_n_drop(self);
 
@@ -3325,17 +3313,6 @@ void mouse_enter(dt_view_t *self)
   dt_masks_events_mouse_enter(dev->gui_module);
 }
 
-// FIXME: should this callback be somewhere else, e.g. dt_dev_picker_is_sensitive()?
-gboolean _picker_is_sensitive(const dt_develop_t *dev)
-{
-  return dev->gui_module
-    && dev->gui_module->enabled
-    && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
-    && darktable.lib->proxy.colorpicker.primary_sample
-    && (darktable.lib->proxy.colorpicker.picker_source == dev->gui_module
-        || !darktable.lib->proxy.colorpicker.picker_source);
-}
-
 void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -3359,7 +3336,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   if(height_i > capht) offy = (capht - height_i) * .5f;
   int handled = 0;
 
-  if(_picker_is_sensitive(dev) && ctl->button_down && ctl->button_down_which == 1)
+  if(dt_iop_color_picker_is_visible(dev) && ctl->button_down && ctl->button_down_which == 1)
   {
     // module requested a color box
     if(mouse_in_imagearea(self, x, y))
@@ -3440,7 +3417,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
   if(height_i > capht) y += (capht - height_i) * .5f;
 
   int handled = 0;
-  if(_picker_is_sensitive(dev) && which == 1)
+  if(dt_iop_color_picker_is_visible(dev) && which == 1)
   {
     dt_control_change_cursor(GDK_LEFT_PTR);
     dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
@@ -3474,9 +3451,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   if(height_i > capht) offy = (capht - height_i) * .5f;
 
   int handled = 0;
-  if(_picker_is_sensitive(dev))
+  if(dt_iop_color_picker_is_visible(dev))
   {
-    // FIXME: hide cursor while dragging the picker? or change GDK_CROSS?
     if(which == 1)
     {
       float zoom_x, zoom_y;
