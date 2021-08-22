@@ -63,41 +63,6 @@ typedef struct dt_colorpicker_sample_t
   GdkRGBA rgb;
 } dt_colorpicker_sample_t;
 
-// FIXME: should this be in a colorspace-specific utility header, e.g. iop_profile or colorspaces or colorspaces_inline_conversions
-static inline gboolean dt_lib_colorpicker_convert_color_space(const GdkRGBA *restrict sample, GdkRGBA *restrict color)
-{
-  // RGB values are relative to the histogram color profile
-  // we need to adapt them to display profile so color look right
-  // Note : dt_ioppr_set_pipe_output_profile_info sets a non-handled output profile to sRGB by default
-  // meaning that this conversion is wrong for fancy-pants LUT-based display profiles.
-
-  dt_iop_order_iccprofile_info_t *histogram_profile = dt_ioppr_get_histogram_profile_info(darktable.develop);
-  dt_iop_order_iccprofile_info_t *display_profile = dt_ioppr_get_pipe_output_profile_info(darktable.develop->pipe);
-
-  dt_aligned_pixel_t RGB = { sample->red, sample->green, sample->blue };
-  dt_aligned_pixel_t XYZ;
-
-  if(!(histogram_profile && display_profile)) return TRUE; // no need to paint, color will be wrong
-
-  // convert from histogram RGB to XYZ
-  dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ, histogram_profile->matrix_in_transposed, histogram_profile->lut_in,
-                             histogram_profile->unbounded_coeffs_in, histogram_profile->lutsize,
-                             histogram_profile->nonlinearlut);
-
-  // convert from XYZ to display RGB
-  dt_ioppr_xyz_to_rgb_matrix(XYZ, RGB, display_profile->matrix_out_transposed, display_profile->lut_out,
-                             display_profile->unbounded_coeffs_out, display_profile->lutsize,
-                             display_profile->nonlinearlut);
-
-  // Sanitize values and ensure gamut-fitting
-  // we reproduce the default behaviour of colorout, which is harsh gamut clipping
-  color->red = CLAMP(RGB[0], 0.f, 1.f);
-  color->green = CLAMP(RGB[1], 0.f, 1.f);
-  color->blue = CLAMP(RGB[2], 0.f, 1.f);
-
-  return FALSE;
-}
-
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

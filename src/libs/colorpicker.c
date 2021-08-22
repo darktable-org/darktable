@@ -88,13 +88,37 @@ void connect_key_accels(dt_lib_module_t *self)
 
 // GUI callbacks
 
+static inline gboolean _convert_color_space(const GdkRGBA *restrict sample, GdkRGBA *restrict color)
+{
+  // RGB values are relative to the histogram color profile
+  // we need to adapt them to display profile so color look right
+  // Note : dt_ioppr_set_pipe_output_profile_info sets a non-handled output profile to sRGB by default
+  // meaning that this conversion is wrong for fancy-pants LUT-based display profiles.
+  dt_aligned_pixel_t RGB = { sample->red, sample->green, sample->blue };
+
+  dt_iop_order_iccprofile_info_t *histogram_profile = dt_ioppr_get_histogram_profile_info(darktable.develop);
+  dt_iop_order_iccprofile_info_t *display_profile = dt_ioppr_get_pipe_output_profile_info(darktable.develop->pipe);
+  // FIXME: this is only true in really strange cases, like out of memory in dt_ioppr_add_profile_info_to_list()
+  if(!(histogram_profile && display_profile)) return TRUE; // no need to paint, color will be wrong
+
+  dt_ioppr_transform_pixel_colorspace_rgb(RGB, RGB, histogram_profile, display_profile);
+
+  // Sanitize values and ensure gamut-fitting
+  // we reproduce the default behaviour of colorout, which is harsh gamut clipping
+  color->red = CLAMP(RGB[0], 0.f, 1.f);
+  color->green = CLAMP(RGB[1], 0.f, 1.f);
+  color->blue = CLAMP(RGB[2], 0.f, 1.f);
+
+  return FALSE;
+}
+
 static gboolean _sample_draw_callback(GtkWidget *widget, cairo_t *cr, dt_colorpicker_sample_t *sample)
 {
   const guint width = gtk_widget_get_allocated_width(widget);
   const guint height = gtk_widget_get_allocated_height(widget);
 
   GdkRGBA *color = gdk_rgba_copy(&sample->rgb);
-  if(dt_lib_colorpicker_convert_color_space(&sample->rgb, color))
+  if(_convert_color_space(&sample->rgb, color))
   {
     // function failed, profiles are not set, color will be wrong, exit.
     gdk_rgba_free(color);
@@ -282,7 +306,7 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
 
     GdkRGBA *color_out = gdk_rgba_copy(&color_in);
 
-    if(dt_lib_colorpicker_convert_color_space(&color_in, color_out))
+    if(_convert_color_space(&color_in, color_out))
     {
       // function failed, profiles are not set, color will be wrong, exit.
       gdk_rgba_free(color_out);
