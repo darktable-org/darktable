@@ -218,13 +218,19 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
   }
   else
   {
-    if(module)
-      module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-    else if(darktable.lib->proxy.colorpicker.restrict_histogram)
-      dt_dev_invalidate_from_gui(darktable.develop);
     darktable.lib->proxy.colorpicker.primary_sample->size = DT_LIB_COLORPICKER_SIZE_NONE;
     darktable.lib->proxy.colorpicker.picker_proxy = NULL;
     _iop_color_picker_reset(self);
+    if(module)
+    {
+      module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+      // will turn off live sample button
+      darktable.lib->proxy.colorpicker.update_panel(darktable.lib->proxy.colorpicker.module);
+    }
+    else if(darktable.lib->proxy.colorpicker.restrict_histogram)
+    {
+      dt_dev_invalidate_from_gui(darktable.develop);
+    }
   }
 
   dt_control_queue_redraw_center();
