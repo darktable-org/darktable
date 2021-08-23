@@ -233,19 +233,7 @@ static void _update_sample_label(dt_colorpicker_sample_t *sample)
 static void _update_picker_output(dt_lib_module_t *self)
 {
   dt_lib_colorpicker_t *data = self->data;
-
-  // FIXME: if called from setting picker area, don't need to do this
-  dt_iop_color_picker_t *proxy = darktable.lib->proxy.colorpicker.picker_proxy;
-  dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
-  const gboolean is_primary_picker = sample && sample->size != DT_LIB_COLORPICKER_SIZE_NONE
-    && proxy && !proxy->module;
-
-  ++darktable.gui->reset;
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->picker_button), is_primary_picker);
-  --darktable.gui->reset;
-
   _update_sample_label(&data->primary_sample);
-
   gtk_widget_queue_draw(data->large_color_patch);
 }
 
@@ -735,18 +723,13 @@ void gui_reset(dt_lib_module_t *self)
   dt_lib_colorpicker_t *data = self->data;
 
   // First turn off any active picking
-  dt_iop_module_t *module = dt_iop_get_colorout_module();
-  if(module)
+  // if was restricting histogram, reprocess
+  if(darktable.lib->proxy.colorpicker.restrict_histogram
+     && data->primary_sample.size != DT_LIB_COLORPICKER_SIZE_NONE)
   {
-    // if was restricting histogram, reprocess
-    if(darktable.lib->proxy.colorpicker.restrict_histogram
-       && data->primary_sample.size != DT_LIB_COLORPICKER_SIZE_NONE)
-    {
-      module->dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-    }
-    dt_iop_color_picker_reset(module, FALSE);
+    dt_dev_invalidate_from_gui(darktable.develop);
   }
-  data->primary_sample.size = DT_LIB_COLORPICKER_SIZE_NONE;
+  dt_iop_color_picker_reset(NULL, FALSE);
 
   // Resetting the picked colors
   for(int i = 0; i < 3; i++)
