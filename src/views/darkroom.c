@@ -203,17 +203,15 @@ static dt_darkroom_layout_t _lib_darkroom_get_layout(dt_view_t *self)
     return DT_DARKROOM_LAYOUT_EDITING;
 }
 
-static cairo_filter_t _get_filtering_level(dt_develop_t *dev)
+static cairo_filter_t _get_filtering_level(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup)
 {
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
   const float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
 
   // for pixel representation above 1:1, that is when a single pixel on the image
   // is represented on screen by multiple pixels we want to disable any cairo filter
   // which could only blur or smooth the output.
 
-  if(scale / darktable.gui->ppd > 1.0)
+  if(scale >= 0.9999f)
     return CAIRO_FILTER_FAST;
   else
     return darktable.gui->dr_filter_image;
@@ -415,7 +413,7 @@ void expose(
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), _get_filtering_level(dev));
+    cairo_pattern_set_filter(cairo_get_source(cr), _get_filtering_level(dev, zoom, closeup));
     cairo_paint(cr);
 
     if(darktable.gui->show_focus_peaking)
@@ -473,7 +471,7 @@ void expose(
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), _get_filtering_level(dev));
+    cairo_pattern_set_filter(cairo_get_source(cr), _get_filtering_level(dev, zoom, closeup));
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
@@ -3671,7 +3669,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   else scale = fmaxf(scale, 1.0f / ppd); // for small image size, minimum at 1:1
   scale = fminf(scale, 16.0f / ppd);
 
-  // for 200% zoom or more we want pixel doubling instead of interpolation
+  // pixel doubling instead of interpolation at >= 200% lodpi, >= 400% hidpi
   if(scale > 15.9999f / ppd)
   {
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
@@ -3952,6 +3950,20 @@ GSList *mouse_actions(const dt_view_t *self)
  * DPI */
 #define DT_PIXEL_APPLY_DPI_2ND_WND(dev, value) ((value) * dev->second_window.dpi_factor)
 
+static cairo_filter_t _get_second_window_filtering_level(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup)
+{
+  const float scale = dt_second_window_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+
+  // for pixel representation above 1:1, that is when a single pixel on the image
+  // is represented on screen by multiple pixels we want to disable any cairo filter
+  // which could only blur or smooth the output.
+
+  if(scale >= 0.9999f)
+    return CAIRO_FILTER_FAST;
+  else
+    return darktable.gui->dr_filter_image;
+}
+
 static void dt_second_window_change_cursor(dt_develop_t *dev, dt_cursor_t curs)
 {
   GtkWidget *widget = dev->second_window.second_wnd;
@@ -4026,7 +4038,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), _get_filtering_level(dev));
+    cairo_pattern_set_filter(cairo_get_source(cr), _get_second_window_filtering_level(dev, zoom, closeup));
     cairo_fill(cr);
 
     if(darktable.gui->show_focus_peaking)
@@ -4065,7 +4077,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
     // avoid to draw the 1px garbage that sometimes shows up in the preview :(
     cairo_rectangle(cr, 0, 0, wd - 1, ht - 1);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), _get_filtering_level(dev));
+    cairo_pattern_set_filter(cairo_get_source(cr), _get_second_window_filtering_level(dev, zoom, closeup));
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
@@ -4171,28 +4183,28 @@ static void second_window_scrolled(GtkWidget *widget, dt_develop_t *dev, double 
   else scale = fmaxf(scale, 1.0f / ppd); // for small image size, minimum at 1:1
   scale = fminf(scale, 16.0f / ppd);
 
-  // for 200% zoom or more we want pixel doubling instead of interpolation
+  // pixel doubling instead of interpolation at >= 200% lodpi, >= 400% hidpi
   if(scale > 15.9999f / ppd)
   {
-    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+    scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
     closeup = low_ppd ? 4 : 3;
   }
   else if(scale > 7.9999f / ppd)
   {
-    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+    scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
     closeup = low_ppd ? 3 : 2;
   }
   else if(scale > 3.9999f / ppd)
   {
-    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+    scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
     closeup = low_ppd ? 2 : 1;
   }
   else if(scale > 1.9999f / ppd)
   {
-   scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+   scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
    zoom = DT_ZOOM_1;
    if(low_ppd) closeup = 1;
   }
