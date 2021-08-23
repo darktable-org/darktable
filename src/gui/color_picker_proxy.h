@@ -55,6 +55,7 @@ typedef struct dt_iop_color_picker_t
   // activated, and will remember the most recent picker position
   float pick_pos[2];
   dt_boundingbox_t pick_box;
+  gboolean changed;
 } dt_iop_color_picker_t;
 
 
