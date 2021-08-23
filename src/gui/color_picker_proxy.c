@@ -77,10 +77,8 @@ gboolean dt_iop_color_picker_is_visible(const dt_develop_t *dev)
   return module_picker || primary_picker;
 }
 
-static gboolean _iop_record_point_area(dt_iop_color_picker_t *self)
+static void _iop_record_point_area(dt_iop_color_picker_t *self)
 {
-  gboolean selection_changed = FALSE;
-
   const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
   if(self && sample)
   {
@@ -90,7 +88,7 @@ static gboolean _iop_record_point_area(dt_iop_color_picker_t *self)
         if(self->pick_pos[k] != sample->point[k])
         {
           self->pick_pos[k] = sample->point[k];
-          selection_changed = TRUE;
+          self->changed = TRUE;
         }
       }
     else if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
@@ -99,12 +97,10 @@ static gboolean _iop_record_point_area(dt_iop_color_picker_t *self)
         if (self->pick_box[k] != sample->box[k])
         {
           self->pick_box[k] = sample->box[k];
-          selection_changed = TRUE;
+          self->changed = TRUE;
         }
       }
   }
-
-  return selection_changed;
 }
 
 static void _iop_color_picker_reset(dt_iop_color_picker_t *picker)
@@ -144,6 +140,7 @@ static void _iop_init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *mod
   picker->kind       = kind;
   picker->picker_cst = module ? module->default_colorspace(module, NULL, NULL) : iop_cs_NONE;
   picker->colorpick  = button;
+  picker->changed    = FALSE;
 
   // default values
   const float middle = 0.5f;
@@ -180,14 +177,7 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
   if (prior_picker != self || (kind == DT_COLOR_PICKER_POINT_AREA &&
       (ctrl_key_pressed ^ (darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX))))
   {
-    ++darktable.gui->reset;
-
-    if(DTGTK_IS_TOGGLEBUTTON(self->colorpick))
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->colorpick), TRUE);
-    else
-      dt_bauhaus_widget_set_quad_active(self->colorpick, TRUE);
-
-    --darktable.gui->reset;
+    darktable.lib->proxy.colorpicker.picker_proxy = self;
 
     if(module)
       module->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
@@ -205,7 +195,15 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
     else
       dt_unreachable_codepath();
 
-    darktable.lib->proxy.colorpicker.picker_proxy = self;
+    // important to have set up state before toggling button and
+    // triggering more callbacks
+    ++darktable.gui->reset;
+    if(DTGTK_IS_TOGGLEBUTTON(self->colorpick))
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->colorpick), TRUE);
+    else
+      dt_bauhaus_widget_set_quad_active(self->colorpick, TRUE);
+    --darktable.gui->reset;
+
     if(module)
     {
       module->dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
@@ -215,6 +213,8 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
     {
       dt_dev_invalidate_from_gui(darktable.develop);
     }
+    // force applying the next incoming sample
+    self->changed = TRUE;
   }
   else
   {
@@ -244,11 +244,8 @@ void dt_iop_color_picker_set_cst(dt_iop_module_t *module, const dt_iop_colorspac
   if(picker && picker->module == module && picker->picker_cst != picker_cst)
   {
     picker->picker_cst = picker_cst;
-    // reset position
-    // FIXME: need to reset box position as well? this is only used by blend which uses area pickers
-    // FIXME: do even need to reset the position?
-    dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
-    sample->point[0] = sample->point[1] = 0.5;
+    // force applying next picker data
+    picker->changed = TRUE;
   }
 }
 
@@ -265,38 +262,38 @@ static void _iop_color_picker_signal_callback(gpointer instance, dt_iop_module_t
                                               gpointer user_data)
 {
   dt_iop_color_picker_t *picker = darktable.lib->proxy.colorpicker.picker_proxy;
+  if(!picker) return;
 
   // primary colorpicker receives location data
-  if(!module)
+  if(module)
+  {
+    // an iop colorpicker receives new data from the pixelpipe
+    dt_develop_t *dev = module->dev;
+    if(!dev) return;
+
+    // Invalidate the cache to ensure it will be fully recomputed.
+    // modules between colorin & colorout may need the work_profile
+    // to work properly. This will force colorin to be run and it
+    // will set the work_profile if needed.
+    // FIXME: can use piece for this instead of dev?
+    dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
+    dev->preview_pipe->cache_obsolete = 1;
+
+    _iop_record_point_area(picker);
+
+    if(picker->changed)
+      if(!module->blend_data || !blend_color_picker_apply(module, picker->colorpick, piece))
+        if(module->color_picker_apply)
+          module->color_picker_apply(module, picker->colorpick, piece);
+  }
+  else
   {
     if(picker && !picker->module)
       // FIXME: redraw picker widget from here if the mouse has moved?
       _iop_record_point_area(picker);
-    return;
   }
 
-  // an iop colorpicker receives new data from the pixelpipe
-  dt_develop_t *dev = module->dev;
-
-  // Invalidate the cache to ensure it will be fully recomputed.
-  // modules between colorin & colorout may need the work_profile
-  // to work properly. This will force colorin to be run and it
-  // will set the work_profile if needed.
-
-  if(!dev) return;
-
-  // FIXME: can use piece for this instead of dev?
-  dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-  dev->preview_pipe->cache_obsolete = 1;
-
-  if(_iop_record_point_area(picker))
-  {
-    if(!module->blend_data || !blend_color_picker_apply(module, picker->colorpick, piece))
-    {
-      if(module->color_picker_apply)
-        module->color_picker_apply(module, picker->colorpick, piece);
-    }
-  }
+  picker->changed = FALSE;
 }
 
 void dt_iop_color_picker_init(void)
