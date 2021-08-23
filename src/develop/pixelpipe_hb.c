@@ -828,6 +828,14 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
           = picked_color_rgb_max[i] = pixel[4 * (roi_in->width * point[1] + point[0]) + i];
   }
 
+  // convenient to have pixels in display profile, which makes them easy to display
+  for_each_channel(i, aligned(picked_color_rgb_min, picked_color_rgb_max, picked_color_rgb_mean))
+  {
+    sample->picked_color_display_rgb_mean[i] = picked_color_rgb_mean[i];
+    sample->picked_color_display_rgb_min[i] = picked_color_rgb_min[i];
+    sample->picked_color_display_rgb_max[i] = picked_color_rgb_max[i];
+  }
+
   // Converting the display RGB values to histogram RGB
   if(xform_rgb2rgb)
   {
@@ -896,6 +904,7 @@ static void _pixelpipe_pick_samples(const float *const input, const dt_iop_roi_t
   const gchar *histogram_filename = NULL;
   const gchar _histogram_filename[1] = { 0 };
 
+  // FIXME: this is display -> histogram profile, can use dt_ioppr_transform_image_colorspace_rgb and dt_ioppr_transform_image_colorspace for Lab, or a restored dt_ioppr_transform_pixel_colorspace_rgb
   dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
   if(histogram_filename == NULL) histogram_filename = _histogram_filename;
 

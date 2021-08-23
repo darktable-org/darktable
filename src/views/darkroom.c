@@ -405,9 +405,6 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     // darktable.lib->proxy.colorpicker.update_samples(darktable.lib->proxy.colorpicker.module);
     if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
     {
-      dt_iop_order_iccprofile_info_t *histogram_profile = dt_ioppr_get_histogram_profile_info(darktable.develop);
-      dt_iop_order_iccprofile_info_t *display_profile = dt_ioppr_get_pipe_output_profile_info(darktable.develop->pipe);
-
       if(sample == selected_sample)
         cairo_arc(cri, sample->point[0] * wd, sample->point[1] * ht, half_px * 3., 0., 2. * M_PI);
       else if(show_preview_pixel_scale)
@@ -415,25 +412,8 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
       else
         cairo_arc(cri, sample->point[0] * wd, sample->point[1] * ht, half_px, 0., 2. * M_PI);
 
-      if(histogram_profile && display_profile)
-      {
-        dt_aligned_pixel_t rgb_display;
-        // for a point sample, mean = min = max
-        dt_ioppr_transform_pixel_colorspace_rgb(sample->picked_color_rgb_mean, rgb_display,
-                                                histogram_profile, display_profile);
-        // Sanitize values and ensure gamut-fitting
-        // we reproduce the default behaviour of colorout, which is harsh gamut clipping
-        cairo_set_source_rgba(cri,
-                              CLAMP(rgb_display[0], 0.f, 1.f),
-                              CLAMP(rgb_display[1], 0.f, 1.f),
-                              CLAMP(rgb_display[2], 0.f, 1.f), 1.0);
-        cairo_fill(cri);
-      }
-      else
-      {
-        // unlikely failure case
-        cairo_stroke(cri);
-      }
+      set_color(cri, sample->rgb_display);
+      cairo_fill(cri);
     }
   }
 

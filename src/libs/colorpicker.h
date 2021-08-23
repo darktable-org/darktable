@@ -47,10 +47,17 @@ typedef struct dt_colorpicker_sample_t
   gboolean locked;
 
   /** The actual picked colors */
+  // in display profile, as picked from preview pixelpipe
+  dt_aligned_pixel_t picked_color_display_rgb_mean;
+  dt_aligned_pixel_t picked_color_display_rgb_min;
+  dt_aligned_pixel_t picked_color_display_rgb_max;
+
+  // converted display profile -> histogram profile
   dt_aligned_pixel_t picked_color_rgb_mean;
   dt_aligned_pixel_t picked_color_rgb_min;
   dt_aligned_pixel_t picked_color_rgb_max;
 
+  // converted display profile -> Lab
   dt_aligned_pixel_t picked_color_lab_mean;
   dt_aligned_pixel_t picked_color_lab_min;
   dt_aligned_pixel_t picked_color_lab_max;
@@ -60,7 +67,10 @@ typedef struct dt_colorpicker_sample_t
   GtkWidget *container;
   GtkWidget *color_patch;
   GtkWidget *output_label;
-  GdkRGBA rgb;
+
+  // sample in current mode (mean/min/max) in display and histogram colorspace
+  // FIXME: use dt_aligned_pixel_t?
+  GdkRGBA rgb_display, rgb_histogram;
 } dt_colorpicker_sample_t;
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
