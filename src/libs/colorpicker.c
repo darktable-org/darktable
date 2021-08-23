@@ -235,6 +235,11 @@ static void _update_picker_output(dt_lib_module_t *self)
   dt_lib_colorpicker_t *data = self->data;
   _update_sample_label(&data->primary_sample);
   gtk_widget_queue_draw(data->large_color_patch);
+
+  // allow live sample button to work for iop samples
+  dt_colorpicker_sample_t *sample = darktable.lib->proxy.colorpicker.primary_sample;
+  gtk_widget_set_sensitive(GTK_WIDGET(data->add_sample_button),
+                           sample && sample->size != DT_LIB_COLORPICKER_SIZE_NONE);
 }
 
 static gboolean _large_patch_toggle(GtkWidget *widget, GdkEvent *event, dt_lib_colorpicker_t *data)
@@ -393,7 +398,7 @@ static gboolean _sample_enter_callback(GtkWidget *widget, GdkEvent *event, gpoin
   if(sample->size != DT_LIB_COLORPICKER_SIZE_NONE)
   {
     darktable.lib->proxy.colorpicker.selected_sample = sample;
-    dt_dev_invalidate_from_gui(darktable.develop);
+    dt_control_queue_redraw_center();
   }
 
   return FALSE;
@@ -406,7 +411,7 @@ static gboolean _sample_leave_callback(GtkWidget *widget, GdkEvent *event, gpoin
   if(darktable.lib->proxy.colorpicker.selected_sample)
   {
     darktable.lib->proxy.colorpicker.selected_sample = NULL;
-    dt_dev_invalidate_from_gui(darktable.develop);
+    dt_control_queue_redraw_center();
   }
 
   return FALSE;
@@ -513,7 +518,7 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
 
   // Updating the display
   _update_samples_output((dt_lib_module_t *)self);
-  if(darktable.lib->proxy.colorpicker.display_samples) dt_dev_invalidate_from_gui(darktable.develop);
+  dt_control_queue_redraw_center();
 }
 
 static void _display_samples_changed(GtkToggleButton *button, gpointer data)
