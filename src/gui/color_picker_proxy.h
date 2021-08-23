@@ -33,6 +33,7 @@
 typedef enum _iop_color_picker_kind_t
 {
   DT_COLOR_PICKER_POINT = 0,
+  // FIXME: s/AREA/BOX/
   DT_COLOR_PICKER_AREA,
   DT_COLOR_PICKER_POINT_AREA // allow the user to select between point and area
 } dt_iop_color_picker_kind_t;

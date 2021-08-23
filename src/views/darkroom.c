@@ -385,7 +385,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     // (logical) pixel dark outline for legibility
     const double line_scale = (sample == selected_sample ? 2.0 : 1.0);
     cairo_set_line_width(cri, lw * 3.0 * line_scale);
-    cairo_set_source_rgba(cri, 0.0, 0.0, 0.0, 0.35);
+    cairo_set_source_rgba(cri, 0.0, 0.0, 0.0, 0.4);
     cairo_stroke_preserve(cri);
 
     cairo_set_line_width(cri, lw * line_scale);
@@ -394,7 +394,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
                    && sample != selected_sample
                    && sample->size == DT_LIB_COLORPICKER_SIZE_BOX,
                    0.0);
-    cairo_set_source_rgba(cri, 1.0, 1.0, 1.0, 0.7);
+    cairo_set_source_rgba(cri, 1.0, 1.0, 1.0, 0.8);
     cairo_stroke(cri);
 
     // draw the actual color sampled
@@ -3445,18 +3445,26 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   int handled = 0;
   if(dt_iop_color_picker_is_visible(dev))
   {
+    float zoom_x, zoom_y;
+    dt_dev_get_pointer_zoom_pos(dev, x + offx, y + offy, &zoom_x, &zoom_y);
+    zoom_x += 0.5f;
+    zoom_y += 0.5f;
+
+    // FIXME: this overlaps with work in dt_dev_get_pointer_zoom_pos() above
+    // FIXME: this work is only necessary for left-click in box mode or right-click of point live sample
+    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    const int closeup = dt_control_get_dev_closeup();
+    const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+    const int procw = dev->preview_pipe->backbuf_width;
+    const int proch = dev->preview_pipe->backbuf_height;
+
     if(which == 1)
     {
-      float zoom_x, zoom_y;
-      dt_dev_get_pointer_zoom_pos(dev, x + offx, y + offy, &zoom_x, &zoom_y);
       if(mouse_in_imagearea(self, x, y))
       {
         // The default box will be a square with 1% of the image width
         const float delta_x = 0.01f;
         const float delta_y = delta_x * (float)dev->pipe->processed_width / (float)dev->pipe->processed_height;
-
-        zoom_x += 0.5f;
-        zoom_y += 0.5f;
 
         // hack: for box pickers, these represent the "base" point being dragged
         sample->point[0] = zoom_x;
@@ -3464,12 +3472,6 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
 
         if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
         {
-          // FIXME: this overlaps with work in dt_dev_get_pointer_zoom_pos() above
-          const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-          const int closeup = dt_control_get_dev_closeup();
-          const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-          const int procw = dev->preview_pipe->backbuf_width;
-          const int proch = dev->preview_pipe->backbuf_height;
           // this is slightly more than as drawn, to give room for slop
           const float handle_px = 6.0f;
           float hx = handle_px / (procw * zoom_scale);
@@ -3516,13 +3518,47 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
 
     if(which == 3)
     {
-      // FIXME: color_pixer_proxy should have an dt_iop_color_picker_clear_area() function for this
-      // default is hardcoded this way
-      sample->box[0] = sample->box[1] = .01f;
-      sample->box[2] = sample->box[3] = .99f;
+      // apply a live sample's area to the active picker?
+      // FIXME: this is a naive implementation, nicer would be to cycle through overlapping samples then reset
+      dt_iop_color_picker_t *picker = darktable.lib->proxy.colorpicker.picker_proxy;
+      if(darktable.lib->proxy.colorpicker.display_samples && mouse_in_imagearea(self, x, y))
+        for(GSList *samples = darktable.lib->proxy.colorpicker.live_samples; samples; samples = g_slist_next(samples))
+        {
+          dt_colorpicker_sample_t *live_sample = samples->data;
+          if(live_sample->size == DT_LIB_COLORPICKER_SIZE_BOX && picker->kind != DT_COLOR_PICKER_POINT)
+          {
+            if(zoom_x < live_sample->box[0] || zoom_x > live_sample->box[2]
+               || zoom_y < live_sample->box[1] || zoom_y > live_sample->box[3])
+              continue;
+            dt_lib_colorpicker_set_box_area(darktable.lib, live_sample->box);
+          }
+          else if(live_sample->size == DT_LIB_COLORPICKER_SIZE_POINT && picker->kind != DT_COLOR_PICKER_AREA)
+          {
+            // magic values derived from _darkroom_pickers_draw
+            float slop_px = MAX(26.0f, roundf(3.0f * zoom_scale));
+            const float slop_x = slop_px / (procw * zoom_scale);
+            const float slop_y = slop_px / (proch * zoom_scale);
+            if(fabsf(zoom_x - live_sample->point[0]) > slop_x || fabsf(zoom_y - live_sample->point[1]) > slop_y)
+              continue;
+            dt_lib_colorpicker_set_point(darktable.lib, live_sample->point);
+          }
+          else
+            continue;
+          dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+          dt_control_queue_redraw_center();
+          return 1;
+        }
 
-      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-      dt_control_queue_redraw_center();
+      if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+      {
+        // default is hardcoded this way
+        // FIXME: color_pixer_proxy should have an dt_iop_color_picker_clear_area() function for this
+        dt_boundingbox_t reset = { 0.01f, 0.01f, 0.99f, 0.99f };
+        dt_lib_colorpicker_set_box_area(darktable.lib, reset);
+        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+        dt_control_queue_redraw_center();
+      }
+
       return 1;
     }
   }
