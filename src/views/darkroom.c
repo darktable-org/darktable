@@ -3356,17 +3356,25 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
         sample->box[2] = fminf(1.0, MAX(sample->point[0], .5f + zoom_x) + delta_x);
         sample->box[3] = fminf(1.0, MAX(sample->point[1], .5f + zoom_y) + delta_y);
       }
-      else
+      else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
       {
+        // slight optimization: at higher zoom levels in particular,
+        // no need to update unless are sampling a different preview
+        // pipe pixel
+        // FIXME: this makes less sense for an iop which may transform coordinates
+        const float wd = (float)dev->preview_pipe->backbuf_width;
+        const float ht = (float)dev->preview_pipe->backbuf_height;
+        const int prior_x = sample->point[0] * wd, prior_y = sample->point[1] * ht;
         sample->point[0] = .5f + zoom_x;
         sample->point[1] = .5f + zoom_y;
-
-        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+        const int cur_x = sample->point[0] * wd, cur_y = sample->point[1] * ht;
+        if(prior_x != cur_x || prior_y != cur_y)
+          dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
       }
       // in case have moved cursor out of center view and back, hide the cursor again
       dt_control_change_cursor(GDK_BLANK_CURSOR);
     }
-    dt_control_queue_redraw();
+    dt_control_queue_redraw_center();
     return;
   }
   x += offx;
@@ -3419,9 +3427,13 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
   int handled = 0;
   if(dt_iop_color_picker_is_visible(dev) && which == 1)
   {
+    // only sample box picker at end, for speed
+    if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+    {
+      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+      dt_control_queue_redraw_center();
+    }
     dt_control_change_cursor(GDK_LEFT_PTR);
-    dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-    dt_control_queue_redraw();
     return 1;
   }
   // masks
@@ -3518,7 +3530,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         }
         dt_control_change_cursor(GDK_BLANK_CURSOR);
       }
-      dt_control_queue_redraw();
+      dt_control_queue_redraw_center();
       return 1;
     }
 
@@ -3530,7 +3542,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       sample->box[2] = sample->box[3] = .99f;
 
       dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-      dt_control_queue_redraw();
+      dt_control_queue_redraw_center();
       return 1;
     }
   }

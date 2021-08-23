@@ -794,6 +794,7 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
   {
     int box[4] = {
+      // FIXME: why the 0,1,2,3 for MAX, all should be 0!
       MIN(roi_in->width - 1, MAX(0, sample->box[0] * roi_in->width)),
       MIN(roi_in->height - 1, MAX(1, sample->box[1] * roi_in->height)),
       MIN(roi_in->width - 1, MAX(2, sample->box[2] * roi_in->width)),
