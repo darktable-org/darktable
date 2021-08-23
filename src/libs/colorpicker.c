@@ -442,11 +442,15 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
 {
   dt_lib_colorpicker_t *data = self->data;
   dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t *)malloc(sizeof(dt_colorpicker_sample_t));
-  darktable.lib->proxy.colorpicker.live_samples
-      = g_slist_append(darktable.lib->proxy.colorpicker.live_samples, sample);
+
+  memcpy(sample, &data->primary_sample, sizeof(dt_colorpicker_sample_t));
+  if(sample->size == DT_LIB_COLORPICKER_SIZE_NONE)
+  {
+    free(sample);
+    return;
+  }
 
   sample->locked = FALSE;
-  // FIXME: this can come with a memcpy from the primary_sample
   sample->rgb.red = 0.7;
   sample->rgb.green = 0.7;
   sample->rgb.blue = 0.7;
@@ -488,30 +492,8 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(data->samples_container), sample->container, FALSE, FALSE, 0);
   gtk_widget_show_all(sample->container);
 
-  // Setting the actual data
-  // FIXME: just do a memcpy of this, then set the widget data at the end, if can pull this all from primary sample
-  if(data->primary_sample.size == DT_LIB_COLORPICKER_SIZE_BOX)
-  {
-    sample->size = DT_LIB_COLORPICKER_SIZE_BOX;
-    for(int i = 0; i < 4; i++) sample->box[i] = data->primary_sample.box[i];
-  }
-  else if(data->primary_sample.size == DT_LIB_COLORPICKER_SIZE_POINT)
-  {
-    sample->size = DT_LIB_COLORPICKER_SIZE_POINT;
-    for(int i = 0; i < 2; i++) sample->point[i] = data->primary_sample.point[i];
-  }
-  else
-    dt_unreachable_codepath();
-
-  for(int i = 0; i < 3; i++)
-  {
-    sample->picked_color_lab_max[i] = data->primary_sample.picked_color_lab_max[i];
-    sample->picked_color_lab_mean[i] = data->primary_sample.picked_color_lab_mean[i];
-    sample->picked_color_lab_min[i] = data->primary_sample.picked_color_lab_min[i];
-    sample->picked_color_rgb_max[i] = data->primary_sample.picked_color_rgb_max[i];
-    sample->picked_color_rgb_mean[i] = data->primary_sample.picked_color_rgb_mean[i];
-    sample->picked_color_rgb_min[i] = data->primary_sample.picked_color_rgb_min[i];
-  }
+  darktable.lib->proxy.colorpicker.live_samples
+      = g_slist_append(darktable.lib->proxy.colorpicker.live_samples, sample);
 
   // remove emphasis on primary sample from mouseover on this button
   darktable.lib->proxy.colorpicker.selected_sample = NULL;
