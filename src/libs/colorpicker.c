@@ -237,9 +237,8 @@ static void _update_picker_output(dt_lib_module_t *self)
   gtk_widget_queue_draw(data->large_color_patch);
 
   // allow live sample button to work for iop samples
-  dt_colorpicker_sample_t *sample = darktable.lib->proxy.colorpicker.primary_sample;
   gtk_widget_set_sensitive(GTK_WIDGET(data->add_sample_button),
-                           sample && sample->size != DT_LIB_COLORPICKER_SIZE_NONE);
+                           data->primary_sample.size != DT_LIB_COLORPICKER_SIZE_NONE);
 }
 
 static gboolean _large_patch_toggle(GtkWidget *widget, GdkEvent *event, dt_lib_colorpicker_t *data)
@@ -273,6 +272,30 @@ static void _update_samples_output(dt_lib_module_t *self)
   {
     _update_sample_label(samples->data);
   }
+}
+
+/* set sample area proxy impl */
+
+static void _set_sample_box_area(dt_lib_module_t *self, const dt_boundingbox_t box)
+{
+  dt_lib_colorpicker_t *data = self->data;
+
+  // primary sample always follows/represents current picker
+  for(int k = 0; k < 4; k++)
+    data->primary_sample.box[k] = box[k];
+
+  _update_size(self, DT_LIB_COLORPICKER_SIZE_BOX);
+}
+
+static void _set_sample_point(dt_lib_module_t *self, const float pos[2])
+{
+  dt_lib_colorpicker_t *data = self->data;
+
+  // primary sample always follows/represents current picker
+  data->primary_sample.point[0] = pos[0];
+  data->primary_sample.point[1] = pos[1];
+
+  _update_size(self, DT_LIB_COLORPICKER_SIZE_POINT);
 }
 
 static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
@@ -431,10 +454,39 @@ static void _remove_sample_cb(GtkButton *widget, dt_colorpicker_sample_t *sample
   dt_dev_invalidate_from_gui(darktable.develop);
 }
 
-static gboolean _sample_lock_toggle(GtkWidget *widget, GdkEvent *event, dt_colorpicker_sample_t *sample)
+static gboolean _live_sample_button(GtkWidget *widget, GdkEventButton *event, dt_colorpicker_sample_t *sample)
 {
-  sample->locked = !sample->locked;
-  gtk_widget_queue_draw(widget);
+  if(event->button == 1)
+  {
+    sample->locked = !sample->locked;
+    gtk_widget_queue_draw(widget);
+  }
+  else if(event->button == 3)
+  {
+    // copy to active picker
+    dt_lib_module_t *self = darktable.lib->proxy.colorpicker.module;
+    dt_iop_color_picker_t *picker = darktable.lib->proxy.colorpicker.picker_proxy;
+
+    // no active picker, too much iffy GTK work to activate a default
+    if(!picker) return FALSE;
+
+    if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
+      _set_sample_point(self, sample->point);
+    else if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+      _set_sample_box_area(self, sample->box);
+    else
+      return FALSE;
+
+    if(picker->module)
+    {
+      picker->module->dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+      dt_control_queue_redraw_center();
+    }
+    else
+    {
+      dt_dev_invalidate_from_gui(darktable.develop);
+    }
+  }
   return FALSE;
 }
 
@@ -466,9 +518,10 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
 
   sample->color_patch = gtk_drawing_area_new();
   gtk_widget_add_events(sample->color_patch, GDK_BUTTON_PRESS_MASK);
-  gtk_widget_set_tooltip_text(sample->color_patch, _("hover to highlight sample on canvas, "
-                                                     "click to lock sample"));
-  g_signal_connect(G_OBJECT(sample->color_patch), "button-press-event", G_CALLBACK(_sample_lock_toggle), sample);
+  gtk_widget_set_tooltip_text(sample->color_patch, _("hover to highlight sample on canvas,\n"
+                                                     "click to lock sample,\n"
+                                                     "right-click to load sample area into active color picker"));
+  g_signal_connect(G_OBJECT(sample->color_patch), "button-press-event", G_CALLBACK(_live_sample_button), sample);
   g_signal_connect(G_OBJECT(sample->color_patch), "draw", G_CALLBACK(_sample_draw_callback), sample);
 
   GtkWidget *color_patch_wrapper = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -515,30 +568,6 @@ static void _restrict_histogram_changed(GtkToggleButton *button, gpointer data)
   dt_conf_set_bool("ui_last/colorpicker_restrict_histogram", gtk_toggle_button_get_active(button));
   darktable.lib->proxy.colorpicker.restrict_histogram = gtk_toggle_button_get_active(button);
   dt_dev_invalidate_from_gui(darktable.develop);
-}
-
-/* set sample area proxy impl */
-
-static void _set_sample_box_area(dt_lib_module_t *self, const dt_boundingbox_t box)
-{
-  dt_lib_colorpicker_t *data = self->data;
-
-  // primary sample always follows/represents current picker
-  for(int k = 0; k < 4; k++)
-    data->primary_sample.box[k] = box[k];
-
-  _update_size(self, DT_LIB_COLORPICKER_SIZE_BOX);
-}
-
-static void _set_sample_point(dt_lib_module_t *self, const float pos[2])
-{
-  dt_lib_colorpicker_t *data = self->data;
-
-  // primary sample always follows/represents current picker
-  data->primary_sample.point[0] = pos[0];
-  data->primary_sample.point[1] = pos[1];
-
-  _update_size(self, DT_LIB_COLORPICKER_SIZE_POINT);
 }
 
 void gui_init(dt_lib_module_t *self)
