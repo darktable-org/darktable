@@ -2094,9 +2094,9 @@ static int _control_import_image_copy(const char *filename,
 
   if(have_exif_time)
     dt_import_session_set_exif_time(session, exif_time);
+  dt_import_session_set_filename(session, basename);
   const char *output_path = dt_import_session_path(session, FALSE);
   const gboolean use_filename = dt_conf_get_bool("session/use_filename");
-  dt_import_session_set_filename(session, basename);
   const char *fname = dt_import_session_filename(session, use_filename);
 
   char *output = g_build_filename(output_path, fname, NULL);
