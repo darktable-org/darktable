@@ -121,13 +121,14 @@ static void _iop_color_picker_reset(dt_iop_color_picker_t *picker)
 void dt_iop_color_picker_reset(dt_iop_module_t *module, gboolean keep)
 {
   dt_iop_color_picker_t *picker = darktable.lib->proxy.colorpicker.picker_proxy;
-  if(module && picker && picker->module == module)
+  if(picker && picker->module == module)
   {
     if(!keep || (strcmp(gtk_widget_get_name(picker->colorpick), "keep-active") != 0))
     {
       _iop_color_picker_reset(picker);
       darktable.lib->proxy.colorpicker.picker_proxy = NULL;
-      module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+      if(module)
+        module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     }
   }
 }
@@ -187,7 +188,6 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
       kind = ctrl_key_pressed ? DT_COLOR_PICKER_AREA : DT_COLOR_PICKER_POINT;
     }
     // pull picker's last recorded positions
-    // FIXME: these call _update_size() which calls _update_picker_output() which enables picker button for the lib picker -- does this cause a loop?
     if(kind == DT_COLOR_PICKER_AREA)
       dt_lib_colorpicker_set_box_area(darktable.lib, self->pick_box);
     else if(kind == DT_COLOR_PICKER_POINT)
