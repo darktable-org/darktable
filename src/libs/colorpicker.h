@@ -30,10 +30,7 @@ typedef enum dt_lib_colorpicker_size_t
   DT_LIB_COLORPICKER_SIZE_NONE
 } dt_lib_colorpicker_size_t;
 
-// FIXME: if make a live sample type declared as "struct dt_lib_colorpicker_live_sample_t" can declare it in colorpicker.c
-
 /** The struct for primary and live color picker samples */
-// FIXME: for primary and live sample we need most of this data -- for per-module picker we need the picked coor data for that point in the pixelpipe, but could lose point/box/size/locked -- and some of this data is "private" to colorpicker.c and could move there
 typedef struct dt_colorpicker_sample_t
 {
   /** The sample area or point */
@@ -43,7 +40,7 @@ typedef struct dt_colorpicker_sample_t
   float point[2];
   dt_boundingbox_t box;
   dt_lib_colorpicker_size_t size;
-  // FIXME: this only applies to live samples
+  // NOTE: locked only applies to live samples
   gboolean locked;
 
   /** The actual picked colors */
@@ -63,7 +60,6 @@ typedef struct dt_colorpicker_sample_t
   dt_aligned_pixel_t picked_color_lab_max;
 
   /** The GUI elements */
-  // FIXME: these may be only for primary and live pickers -- keep local to colorpicker.c if so?
   GtkWidget *container;
   GtkWidget *color_patch;
   GtkWidget *output_label;
