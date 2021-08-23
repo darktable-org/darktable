@@ -206,10 +206,8 @@ typedef struct dt_iop_module_t
   int request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the module in focus. gui mode only. */
   int32_t suppress_mask;
-  // FIXME: this could be stored via dt_colorpicker_sample_t
   /** place to store the picked color of module input. */
   dt_aligned_pixel_t picked_color, picked_color_min, picked_color_max;
-  // FIXME: this could be stored via dt_colorpicker_sample_t
   /** place to store the picked color of module output (before blending). */
   dt_aligned_pixel_t picked_output_color, picked_output_color_min, picked_output_color_max;
   /** pointer to pre-module histogram data; if available: histogram_bins_count bins with 4 channels each */

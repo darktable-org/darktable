@@ -88,48 +88,14 @@ void connect_key_accels(dt_lib_module_t *self)
 
 // GUI callbacks
 
-static inline gboolean _convert_color_space(const GdkRGBA *restrict sample, GdkRGBA *restrict color)
-{
-  // RGB values are relative to the histogram color profile
-  // we need to adapt them to display profile so color look right
-  // Note : dt_ioppr_set_pipe_output_profile_info sets a non-handled output profile to sRGB by default
-  // meaning that this conversion is wrong for fancy-pants LUT-based display profiles.
-  dt_aligned_pixel_t RGB = { sample->red, sample->green, sample->blue };
-
-  dt_iop_order_iccprofile_info_t *histogram_profile = dt_ioppr_get_histogram_profile_info(darktable.develop);
-  dt_iop_order_iccprofile_info_t *display_profile = dt_ioppr_get_pipe_output_profile_info(darktable.develop->pipe);
-  // FIXME: this is only true in really strange cases, like out of memory in dt_ioppr_add_profile_info_to_list()
-  if(!(histogram_profile && display_profile)) return TRUE; // no need to paint, color will be wrong
-
-  dt_ioppr_transform_pixel_colorspace_rgb(RGB, RGB, histogram_profile, display_profile);
-
-  // Sanitize values and ensure gamut-fitting
-  // we reproduce the default behaviour of colorout, which is harsh gamut clipping
-  color->red = CLAMP(RGB[0], 0.f, 1.f);
-  color->green = CLAMP(RGB[1], 0.f, 1.f);
-  color->blue = CLAMP(RGB[2], 0.f, 1.f);
-
-  return FALSE;
-}
-
 static gboolean _sample_draw_callback(GtkWidget *widget, cairo_t *cr, dt_colorpicker_sample_t *sample)
 {
   const guint width = gtk_widget_get_allocated_width(widget);
   const guint height = gtk_widget_get_allocated_height(widget);
 
-  GdkRGBA *color = gdk_rgba_copy(&sample->rgb);
-  if(_convert_color_space(&sample->rgb, color))
-  {
-    // function failed, profiles are not set, color will be wrong, exit.
-    gdk_rgba_free(color);
-    return TRUE;
-  }
-
-  gdk_cairo_set_source_rgba(cr, color);
+  gdk_cairo_set_source_rgba(cr, &sample->rgb_display);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill (cr);
-
-  gdk_rgba_free(color);
 
   // if the sample is locked we want to add a lock
   if(sample->locked)
@@ -155,30 +121,36 @@ static void _update_sample_label(dt_colorpicker_sample_t *sample)
   const int model = dt_conf_get_int("ui_last/colorpicker_model");
   const int statistic = dt_conf_get_int("ui_last/colorpicker_mode");
 
-  float *rgb, *lab;
+  const dt_aligned_pixel_t *rgb_disp, *rgb_hist, *lab;
 
   switch(statistic)
   {
     case 0:
-      rgb = sample->picked_color_rgb_mean;
-      lab = sample->picked_color_lab_mean;
+      rgb_disp = &sample->picked_color_display_rgb_mean;
+      rgb_hist = &sample->picked_color_rgb_mean;
+      lab      = &sample->picked_color_lab_mean;
       break;
 
     case 1:
-      rgb = sample->picked_color_rgb_min;
-      lab = sample->picked_color_lab_min;
+      rgb_disp = &sample->picked_color_display_rgb_min;
+      rgb_hist = &sample->picked_color_rgb_min;
+      lab      = &sample->picked_color_lab_min;
       break;
 
     default:
-      rgb = sample->picked_color_rgb_max;
-      lab = sample->picked_color_lab_max;
+      rgb_disp = &sample->picked_color_display_rgb_max;
+      rgb_hist = &sample->picked_color_rgb_max;
+      lab      = &sample->picked_color_lab_max;
       break;
   }
 
   // Setting the output button
-  sample->rgb.red   = rgb[0];
-  sample->rgb.green = rgb[1];
-  sample->rgb.blue  = rgb[2];
+  sample->rgb_display.red   = (*rgb_disp)[0];
+  sample->rgb_display.green = (*rgb_disp)[1];
+  sample->rgb_display.blue  = (*rgb_disp)[2];
+  sample->rgb_histogram.red   = (*rgb_hist)[0];
+  sample->rgb_histogram.green = (*rgb_hist)[1];
+  sample->rgb_histogram.blue  = (*rgb_hist)[2];
 
   // Setting the output label
   char text[128] = { 0 };
@@ -189,34 +161,34 @@ static void _update_sample_label(dt_colorpicker_sample_t *sample)
     case 0:
       // RGB
       snprintf(text, sizeof(text), "%6d %6d %6d",
-                (int)round(sample->rgb.red   * 255.f),
-                (int)round(sample->rgb.green * 255.f),
-                (int)round(sample->rgb.blue  * 255.f));
+               (int)round((*rgb_hist)[0] * 255.f),
+               (int)round((*rgb_hist)[1] * 255.f),
+               (int)round((*rgb_hist)[2] * 255.f));
       break;
 
     case 1:
       // Lab
-      snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f", CLAMP(lab[0], .0f, 100.0f), lab[1], lab[2]);
+      snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f", CLAMP((*lab)[0], .0f, 100.0f), (*lab)[1], (*lab)[2]);
       break;
 
     case 2:
       // LCh
-      dt_Lab_2_LCH(lab, alt);
+      dt_Lab_2_LCH(*lab, alt);
       snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f", CLAMP(alt[0], .0f, 100.0f), alt[1], alt[2] * 360);
       break;
 
     case 3:
       // HSL
-      dt_RGB_2_HSL(rgb, alt);
+      dt_RGB_2_HSL(*rgb_hist, alt);
       snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f", alt[0] * 360, alt[1] * 100, alt[2] * 100);
       break;
 
     case 4:
       // Hex
       snprintf(text, sizeof(text), "0x%02X%02X%02X",
-                (int)round(sample->rgb.red   * 255.f),
-                (int)round(sample->rgb.green * 255.f),
-                (int)round(sample->rgb.blue  * 255.f));
+               (int)round((*rgb_hist)[0] * 255.f),
+               (int)round((*rgb_hist)[1] * 255.f),
+               (int)round((*rgb_hist)[2] * 255.f));
       break;
 
     case 5:
@@ -306,54 +278,31 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
   gchar **sample_parts = g_malloc0_n(12, sizeof(char*));
 
   sample_parts[3] = g_strdup_printf("%22s(0x%02X%02X%02X)\n<big><b>%14s</b></big>", " ",
-                                    (int)round(sample->rgb.red   * 255.f),
-                                    (int)round(sample->rgb.green * 255.f),
-                                    (int)round(sample->rgb.blue  * 255.f), _("RGB"));
+                                    (int)round(sample->rgb_histogram.red   * 255.f),
+                                    (int)round(sample->rgb_histogram.green * 255.f),
+                                    (int)round(sample->rgb_histogram.blue  * 255.f), _("RGB"));
   sample_parts[7] = g_strdup_printf("\n<big><b>%14s</b></big>", _("Lab"));
 
   for(int i = 0; i < 3; i++)
   {
-    const float *picked_rgb = (i == 0) ? sample->picked_color_rgb_mean :
-                              (i == 1) ? sample->picked_color_rgb_min
-                                       : sample->picked_color_rgb_max;
-    dt_aligned_pixel_t rgb;
-    for(size_t c = 0; c < 3; c++) rgb[c] = picked_rgb[c];
-
-    GdkRGBA color_in = { rgb[0], rgb[1], rgb[2], 1.f };
-
-    GdkRGBA *color_out = gdk_rgba_copy(&color_in);
-
-    if(_convert_color_space(&color_in, color_out))
-    {
-      // function failed, profiles are not set, color will be wrong, exit.
-      gdk_rgba_free(color_out);
-      g_strfreev(sample_parts);
-      return FALSE;
-    }
-
-    rgb[0] = color_out->red;
-    rgb[1] = color_out->green;
-    rgb[2] = color_out->blue;
-    gdk_rgba_free(color_out);
-
     sample_parts[i] = g_strdup_printf("<span background='#%02X%02X%02X'>%32s</span>",
-                                      (int)round(CLAMP(rgb[0], 0.f, 1.f) * 255.f),
-                                      (int)round(CLAMP(rgb[1], 0.f, 1.f) * 255.f),
-                                      (int)round(CLAMP(rgb[2], 0.f, 1.f) * 255.f), " ");
+                                      (int)round(CLAMP(sample->rgb_display.red, 0.f, 1.f) * 255.f),
+                                      (int)round(CLAMP(sample->rgb_display.green, 0.f, 1.f) * 255.f),
+                                      (int)round(CLAMP(sample->rgb_display.blue, 0.f, 1.f) * 255.f), " ");
 
     sample_parts[i + 4] = g_strdup_printf("<span foreground='#FF7F7F'>%6d</span>  "
                                           "<span foreground='#7FFF7F'>%6d</span>  "
                                           "<span foreground='#7F7FFF'>%6d</span>  %s",
-                                          (int)round(picked_rgb[0] * 255.f),
-                                          (int)round(picked_rgb[1] * 255.f),
-                                          (int)round(picked_rgb[2] * 255.f), _(name[i]));
+                                          (int)round(sample->rgb_histogram.red * 255.f),
+                                          (int)round(sample->rgb_histogram.green * 255.f),
+                                          (int)round(sample->rgb_histogram.blue * 255.f), _(name[i]));
 
-    const float *lab = i == 0 ? sample->picked_color_lab_mean :
-                       i == 1 ? sample->picked_color_lab_min :
-                                sample->picked_color_lab_max;
+    const dt_aligned_pixel_t *lab = (i == 0) ? &sample->picked_color_lab_mean :
+                                    (i == 1) ? &sample->picked_color_lab_min :
+                                               &sample->picked_color_lab_max;
 
     sample_parts[i + 8] = g_strdup_printf("%6.02f  %6.02f  %6.02f  %s",
-                                          lab[0], lab[1], lab[2], _(name[i]));
+                                          (*lab)[0], (*lab)[1], (*lab)[2], _(name[i]));
   }
 
   gchar *tooltip_text = g_strjoinv("\n", sample_parts);
@@ -503,10 +452,6 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
   }
 
   sample->locked = FALSE;
-  sample->rgb.red = 0.7;
-  sample->rgb.green = 0.7;
-  sample->rgb.blue = 0.7;
-  sample->rgb.alpha = 1.0;
 
   sample->container = gtk_event_box_new();
   gtk_widget_add_events(sample->container, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -579,10 +524,8 @@ void gui_init(dt_lib_module_t *self)
 
   // primary picker isn't yet active and shouldn't be drawn/sampled
   data->primary_sample.size = DT_LIB_COLORPICKER_SIZE_NONE;
-  data->primary_sample.rgb.red = 0.7;
-  data->primary_sample.rgb.green = 0.7;
-  data->primary_sample.rgb.blue = 0.7;
-  data->primary_sample.rgb.alpha = 1.0;
+  // _update_samples_output() will update the RGB values
+  data->primary_sample.rgb_histogram.alpha = data->primary_sample.rgb_display.alpha = 1.0;
 
   // Initializing proxy functions and data
   darktable.lib->proxy.colorpicker.module = self;
