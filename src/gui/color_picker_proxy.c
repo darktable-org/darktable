@@ -299,7 +299,11 @@ static void _iop_color_picker_signal_callback(gpointer instance, dt_iop_module_t
       // FIXME: redraw picker widget from here if the mouse has moved?
       _iop_record_point_area(picker);
       if(picker->changed)
+      {
         dt_control_queue_redraw_center();
+        darktable.lib->proxy.colorpicker.update_panel(darktable.lib->proxy.colorpicker.module);
+        darktable.lib->proxy.colorpicker.update_samples(darktable.lib->proxy.colorpicker.module);
+      }
     }
   }
 
