@@ -3473,7 +3473,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
           float hx = handle_px / (procw * zoom_scale);
           float hy = handle_px / (proch * zoom_scale);
           gboolean on_corner_prev_box = TRUE;
-          float opposite_x, opposite_y;
+          // initialized to calm gcc-11
+          float opposite_x = 0.f, opposite_y = 0.f;
 
           if(fabsf(zoom_x - sample->box[0]) <= hx)
             opposite_x = sample->box[2];
