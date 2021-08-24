@@ -567,16 +567,31 @@
   </dtconfig>
   <dtconfig>
     <name>ui_last/colorpicker_model</name>
-    <type>int</type>
-    <default>0</default>
-    <shortdescription>0: RGB, 1: Lab, 2: LCh, 3: HSL, 4: Hex, 5: none</shortdescription>
+    <type>
+      <enum>
+	<option>RGB</option>
+	<option>Lab</option>
+	<option>LCh</option>
+	<option>HSL</option>
+	<option>Hex</option>
+	<option>none</option>
+      </enum>
+    </type>
+    <default>RGB</default>
+    <shortdescription>color model with which to represent primary colorpicker</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>ui_last/colorpicker_mode</name>
-    <type>int</type>
-    <default>0</default>
-    <shortdescription>0: mean, 1: min, 2: max</shortdescription>
+    <type>
+      <enum>
+	<option>mean</option>
+	<option>min</option>
+	<option>max</option>
+      </enum>
+    </type>
+    <default>mean</default>
+    <shortdescription>statistic used to describe colorpicker box</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
