@@ -367,7 +367,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
       }
       // crosshair radius
       double cr = (is_primary_sample ? 4. : 5.) * half_px;
-      if(sample == selected_sample) cr *= 3;
+      if(sample == selected_sample) cr *= 2;
       cairo_device_to_user(cri, &x, &y);
       cairo_device_to_user_distance(cri, &cr, &half_px);
 
@@ -403,7 +403,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
     {
       if(sample == selected_sample)
-        cairo_arc(cri, sample->point[0] * wd, sample->point[1] * ht, half_px * 3., 0., 2. * M_PI);
+        cairo_arc(cri, sample->point[0] * wd, sample->point[1] * ht, half_px * 2., 0., 2. * M_PI);
       else if(show_preview_pixel_scale)
         cairo_rectangle(cri, sample->point[0] * wd - half_px, sample->point[1] * ht - half_px, half_px * 2., half_px * 2.);
       else
