@@ -37,8 +37,6 @@ static gboolean on_match_select(GtkEntryCompletion *widget, GtkTreeModel *model,
   gchar *s = gtk_editable_get_chars(e, 0, -1);
   gint cur_pos = gtk_editable_get_position(e);
   gint p = cur_pos;
-  gchar *end;
-  gint del_end_pos = -1;
 
   GValue value = {
     0,
@@ -54,22 +52,11 @@ static gboolean on_match_select(GtkEntryCompletion *widget, GtkTreeModel *model,
     }
   }
 
-  end = s + cur_pos;
-
-  if(end)
-  {
-    del_end_pos = end - s + 1;
-  }
-  else
-  {
-    del_end_pos = cur_pos;
-  }
-
   size_t text_len = strlen(varname) + 2;
   gchar *addtext = (gchar *)g_malloc(text_len);
   snprintf(addtext, text_len, "%s)", varname);
 
-  gtk_editable_delete_text(e, p, del_end_pos);
+  gtk_editable_delete_text(e, p, cur_pos);
   gtk_editable_insert_text(e, addtext, -1, &p);
   gtk_editable_set_position(e, p);
   g_value_unset(&value);
