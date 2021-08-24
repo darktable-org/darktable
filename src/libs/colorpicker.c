@@ -35,8 +35,32 @@
 
 DT_MODULE(1);
 
+typedef enum dt_lib_colorpicker_model_t
+{
+  DT_LIB_COLORPICKER_MODEL_RGB = 0,
+  DT_LIB_COLORPICKER_MODEL_LAB,
+  DT_LIB_COLORPICKER_MODEL_LCH,
+  DT_LIB_COLORPICKER_MODEL_HSL,
+  DT_LIB_COLORPICKER_MODEL_HEX,
+  DT_LIB_COLORPICKER_MODEL_NONE,
+  DT_LIB_COLORPICKER_MODEL_N // needs to be the lsat one
+} dt_lib_colorpicker_model_t;
+
+typedef enum dt_lib_colorpicker_statistic_t
+{
+  DT_LIB_COLORPICKER_STATISTIC_MEAN = 0,
+  DT_LIB_COLORPICKER_STATISTIC_MIN,
+  DT_LIB_COLORPICKER_STATISTIC_MAX,
+  DT_LIB_COLORPICKER_STATISTIC_N // needs to be the lsat one
+} dt_lib_colorpicker_statistic_t;
+
+const gchar *dt_lib_colorpicker_model_names[DT_LIB_COLORPICKER_MODEL_N] = {"RGB", "Lab", "LCh", "HSL", "Hex", "none"};
+const gchar *dt_lib_colorpicker_statistic_names[DT_LIB_COLORPICKER_STATISTIC_N] = {"mean", "min", "max"};
+
 typedef struct dt_lib_colorpicker_t
 {
+  dt_lib_colorpicker_model_t model;
+  dt_lib_colorpicker_statistic_t statistic;
   GtkWidget *large_color_patch;
   GtkWidget *color_mode_selector;
   GtkWidget *statistic_selector;
@@ -116,32 +140,34 @@ static gboolean _sample_draw_callback(GtkWidget *widget, cairo_t *cr, dt_colorpi
   return FALSE;
 }
 
-static void _update_sample_label(dt_colorpicker_sample_t *sample)
+static void _update_sample_label(dt_lib_module_t *self, dt_colorpicker_sample_t *sample)
 {
-  const int model = dt_conf_get_int("ui_last/colorpicker_model");
-  const int statistic = dt_conf_get_int("ui_last/colorpicker_mode");
+  dt_lib_colorpicker_t *data = self->data;
+  // initialize to placate compiler warnings
+  const dt_aligned_pixel_t *rgb_disp = NULL, *rgb_hist = NULL, *lab = NULL;
 
-  const dt_aligned_pixel_t *rgb_disp, *rgb_hist, *lab;
-
-  switch(statistic)
+  switch(data->statistic)
   {
-    case 0:
+    case DT_LIB_COLORPICKER_STATISTIC_MEAN:
       rgb_disp = &sample->picked_color_display_rgb_mean;
       rgb_hist = &sample->picked_color_rgb_mean;
       lab      = &sample->picked_color_lab_mean;
       break;
 
-    case 1:
+    case DT_LIB_COLORPICKER_STATISTIC_MIN:
       rgb_disp = &sample->picked_color_display_rgb_min;
       rgb_hist = &sample->picked_color_rgb_min;
       lab      = &sample->picked_color_lab_min;
       break;
 
-    default:
+    case DT_LIB_COLORPICKER_STATISTIC_MAX:
       rgb_disp = &sample->picked_color_display_rgb_max;
       rgb_hist = &sample->picked_color_rgb_max;
       lab      = &sample->picked_color_lab_max;
       break;
+
+    case DT_LIB_COLORPICKER_STATISTIC_N:
+      dt_unreachable_codepath();
   }
 
   // output swatch
@@ -157,39 +183,36 @@ static void _update_sample_label(dt_colorpicker_sample_t *sample)
   char text[128] = { 0 };
   dt_aligned_pixel_t alt = { 0 };
 
-  switch(model)
+  switch(data->model)
   {
-    case 0:
-      // RGB
+    case DT_LIB_COLORPICKER_MODEL_RGB:
       snprintf(text, sizeof(text), "%6d %6d %6d", sample->rgb_vals[0], sample->rgb_vals[1], sample->rgb_vals[2]);
       break;
 
-    case 1:
-      // Lab
+    case DT_LIB_COLORPICKER_MODEL_LAB:
       snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f", CLAMP((*lab)[0], .0f, 100.0f), (*lab)[1], (*lab)[2]);
       break;
 
-    case 2:
-      // LCh
+    case DT_LIB_COLORPICKER_MODEL_LCH:
       dt_Lab_2_LCH(*lab, alt);
       snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f", CLAMP(alt[0], .0f, 100.0f), alt[1], alt[2] * 360.f);
       break;
 
-    case 3:
-      // HSL
+    case DT_LIB_COLORPICKER_MODEL_HSL:
       dt_RGB_2_HSL(*rgb_hist, alt);
       snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f", alt[0] * 360.f, alt[1] * 100.f, alt[2] * 100.f);
       break;
 
-    case 4:
-      // Hex
+    case DT_LIB_COLORPICKER_MODEL_HEX:
       snprintf(text, sizeof(text), "0x%02X%02X%02X", sample->rgb_vals[0], sample->rgb_vals[1], sample->rgb_vals[2]);
       break;
 
-    case 5:
-      // None
+    case DT_LIB_COLORPICKER_MODEL_NONE:
       snprintf(text, sizeof(text), "◎");
       break;
+
+    case DT_LIB_COLORPICKER_MODEL_N:
+      dt_unreachable_codepath();
   }
 
   if(g_strcmp0(gtk_label_get_text(GTK_LABEL(sample->output_label)), text))
@@ -200,7 +223,7 @@ static void _update_sample_label(dt_colorpicker_sample_t *sample)
 static void _update_picker_output(dt_lib_module_t *self)
 {
   dt_lib_colorpicker_t *data = self->data;
-  _update_sample_label(&data->primary_sample);
+  _update_sample_label(self, &data->primary_sample);
   gtk_widget_queue_draw(data->large_color_patch);
 
   // allow live sample button to work for iop samples
@@ -237,7 +260,7 @@ static void _update_samples_output(dt_lib_module_t *self)
       samples;
       samples = g_slist_next(samples))
   {
-    _update_sample_label(samples->data);
+    _update_sample_label(self, samples->data);
   }
 }
 
@@ -328,20 +351,24 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
   return TRUE;
 }
 
-static void _statistic_changed(GtkWidget *widget, dt_lib_module_t *p)
+static void _statistic_changed(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_conf_set_int("ui_last/colorpicker_mode", dt_bauhaus_combobox_get(widget));
+  dt_lib_colorpicker_t *data = self->data;
+  data->statistic = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_string("ui_last/colorpicker_mode", dt_lib_colorpicker_statistic_names[data->statistic]);
 
-  _update_picker_output(p);
-  _update_samples_output((dt_lib_module_t *)p);
+  _update_picker_output(self);
+  _update_samples_output(self);
 }
 
-static void _color_mode_changed(GtkWidget *widget, dt_lib_module_t *p)
+static void _color_mode_changed(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_conf_set_int("ui_last/colorpicker_model", dt_bauhaus_combobox_get(widget));
+  dt_lib_colorpicker_t *data = self->data;
+  data->model = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_string("ui_last/colorpicker_model", dt_lib_colorpicker_model_names[data->model]);
 
-  _update_picker_output(p);
-  _update_samples_output((dt_lib_module_t *)p);
+  _update_picker_output(self);
+  _update_samples_output(self);
 }
 
 static void _label_size_allocate_callback(GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
@@ -497,7 +524,7 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.selected_sample = NULL;
 
   // Updating the display
-  _update_samples_output((dt_lib_module_t *)self);
+  _update_samples_output(self);
   dt_control_queue_redraw_center();
 }
 
@@ -539,6 +566,16 @@ void gui_init(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.set_sample_box_area = _set_sample_box_area;
   darktable.lib->proxy.colorpicker.set_sample_point = _set_sample_point;
 
+  const char *str = dt_conf_get_string_const("ui_last/colorpicker_model");
+  for(dt_lib_colorpicker_model_t i=0; i<DT_LIB_COLORPICKER_MODEL_N; i++)
+    if(g_strcmp0(str, dt_lib_colorpicker_model_names[i]) == 0)
+      data->model = i;
+
+  str = dt_conf_get_string_const("ui_last/colorpicker_mode");
+  for(dt_lib_colorpicker_statistic_t i=0; i<DT_LIB_COLORPICKER_STATISTIC_N; i++)
+    if(g_strcmp0(str, dt_lib_colorpicker_statistic_names[i]) == 0)
+      data->statistic = i;
+
   // Setting up the GUI
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkStyleContext *context = gtk_widget_get_style_context(self->widget);
@@ -565,23 +602,18 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *picker_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   data->statistic_selector = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_combobox_add(data->statistic_selector, _("mean"));
-  dt_bauhaus_combobox_add(data->statistic_selector, _("min"));
-  dt_bauhaus_combobox_add(data->statistic_selector, _("max"));
-  dt_bauhaus_combobox_set(data->statistic_selector, dt_conf_get_int("ui_last/colorpicker_mode"));
+  for(dt_lib_colorpicker_statistic_t i=0; i<DT_LIB_COLORPICKER_STATISTIC_N; i++)
+    dt_bauhaus_combobox_add(data->statistic_selector, _(dt_lib_colorpicker_statistic_names[i]));
+  dt_bauhaus_combobox_set(data->statistic_selector, data->statistic);
   dt_bauhaus_combobox_set_entries_ellipsis(data->statistic_selector, PANGO_ELLIPSIZE_NONE);
   g_signal_connect(G_OBJECT(data->statistic_selector), "value-changed", G_CALLBACK(_statistic_changed), self);
   gtk_widget_set_valign(data->statistic_selector, GTK_ALIGN_END);
   gtk_box_pack_start(GTK_BOX(picker_row), data->statistic_selector, TRUE, TRUE, 0);
 
   data->color_mode_selector = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_combobox_add(data->color_mode_selector, _("RGB"));
-  dt_bauhaus_combobox_add(data->color_mode_selector, _("Lab"));
-  dt_bauhaus_combobox_add(data->color_mode_selector, _("LCh"));
-  dt_bauhaus_combobox_add(data->color_mode_selector, _("HSL"));
-  dt_bauhaus_combobox_add(data->color_mode_selector, _("Hex"));
-  dt_bauhaus_combobox_add(data->color_mode_selector, _("none"));
-  dt_bauhaus_combobox_set(data->color_mode_selector, dt_conf_get_int("ui_last/colorpicker_model"));
+  for(dt_lib_colorpicker_model_t i=0; i<DT_LIB_COLORPICKER_MODEL_N; i++)
+    dt_bauhaus_combobox_add(data->color_mode_selector, _(dt_lib_colorpicker_model_names[i]));
+  dt_bauhaus_combobox_set(data->color_mode_selector, data->model);
   dt_bauhaus_combobox_set_entries_ellipsis(data->color_mode_selector, PANGO_ELLIPSIZE_NONE);
   g_signal_connect(G_OBJECT(data->color_mode_selector), "value-changed", G_CALLBACK(_color_mode_changed), self);
   gtk_widget_set_valign(data->color_mode_selector, GTK_ALIGN_END);
