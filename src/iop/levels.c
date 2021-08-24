@@ -35,7 +35,6 @@
 #include "develop/openmp_maths.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/draw.h"
-#include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
 #include "gui/presets.h"
@@ -252,11 +251,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
   float mean_picked_color = *self->picked_color / 100.0;
 
-  // FIXME: why test for non-negative point -- is this ever false? instead test for DT_LIB_COLORPICKER_SIZE_NONE?
-  if(darktable.lib->proxy.colorpicker.primary_sample->point[0] >= 0.0f
-     && darktable.lib->proxy.colorpicker.primary_sample->point[1] >= 0.0f
-     && self->picked_color_max[0] >= 0.0f
-     && mean_picked_color != c->last_picked_color)
+  if(mean_picked_color != c->last_picked_color)
   {
     dt_aligned_pixel_t previous_color;
     previous_color[0] = p->levels[0];

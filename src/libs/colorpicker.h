@@ -59,14 +59,16 @@ typedef struct dt_colorpicker_sample_t
   dt_aligned_pixel_t picked_color_lab_min;
   dt_aligned_pixel_t picked_color_lab_max;
 
+  // mean, min, or max color for tooltip in histogram profile
+  int rgb_vals[4];
+
   /** The GUI elements */
   GtkWidget *container;
   GtkWidget *color_patch;
   GtkWidget *output_label;
 
   // sample in current mode (mean/min/max) in display and histogram colorspace
-  // FIXME: use dt_aligned_pixel_t?
-  GdkRGBA rgb_display, rgb_histogram;
+  GdkRGBA rgb_display;
 } dt_colorpicker_sample_t;
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

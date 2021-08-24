@@ -876,7 +876,6 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
       dt_aligned_pixel_t picker_mean, picker_min, picker_max;
 
       // the global live samples ...
-      // FIXME: why do these disappear if mouse over the colorpicker lib?
       GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
       if(samples)
       {
