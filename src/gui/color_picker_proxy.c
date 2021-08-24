@@ -295,8 +295,12 @@ static void _iop_color_picker_signal_callback(gpointer instance, dt_iop_module_t
   else
   {
     if(picker && !picker->module)
+    {
       // FIXME: redraw picker widget from here if the mouse has moved?
       _iop_record_point_area(picker);
+      if(picker->changed)
+        dt_control_queue_redraw_center();
+    }
   }
 
   picker->changed = FALSE;
