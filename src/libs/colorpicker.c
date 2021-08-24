@@ -138,17 +138,10 @@ static gboolean _sample_draw_callback(GtkWidget *widget, cairo_t *cr, dt_colorpi
 static void _update_sample_label(dt_lib_module_t *self, dt_colorpicker_sample_t *sample)
 {
   dt_lib_colorpicker_t *data = self->data;
-  // initialize to placate compiler warnings
-  const dt_aligned_pixel_t *rgb_disp = NULL, *rgb_hist = NULL, *lab = NULL;
+  const dt_aligned_pixel_t *rgb_disp, *rgb_hist, *lab;
 
   switch(data->statistic)
   {
-    case DT_LIB_COLORPICKER_STATISTIC_MEAN:
-      rgb_disp = &sample->picked_color_display_rgb_mean;
-      rgb_hist = &sample->picked_color_rgb_mean;
-      lab      = &sample->picked_color_lab_mean;
-      break;
-
     case DT_LIB_COLORPICKER_STATISTIC_MIN:
       rgb_disp = &sample->picked_color_display_rgb_min;
       rgb_hist = &sample->picked_color_rgb_min;
@@ -161,8 +154,12 @@ static void _update_sample_label(dt_lib_module_t *self, dt_colorpicker_sample_t 
       lab      = &sample->picked_color_lab_max;
       break;
 
-    case DT_LIB_COLORPICKER_STATISTIC_N:
-      dt_unreachable_codepath();
+    default:
+    case DT_LIB_COLORPICKER_STATISTIC_MEAN:
+      rgb_disp = &sample->picked_color_display_rgb_mean;
+      rgb_hist = &sample->picked_color_rgb_mean;
+      lab      = &sample->picked_color_lab_mean;
+      break;
   }
 
   // output swatch
@@ -207,12 +204,10 @@ static void _update_sample_label(dt_lib_module_t *self, dt_colorpicker_sample_t 
       snprintf(text, sizeof(text), "0x%02X%02X%02X", sample->rgb_vals[0], sample->rgb_vals[1], sample->rgb_vals[2]);
       break;
 
+    default:
     case DT_LIB_COLORPICKER_MODEL_NONE:
       snprintf(text, sizeof(text), "◎");
       break;
-
-    case DT_LIB_COLORPICKER_MODEL_N:
-      dt_unreachable_codepath();
   }
 
   if(g_strcmp0(gtk_label_get_text(GTK_LABEL(sample->output_label)), text))
