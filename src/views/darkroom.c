@@ -400,9 +400,6 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
     // draw the actual color sampled
     // FIXME: if an area sample is selected, when selected should fill it with colorpicker color?
     // FIXME: is this overlay always drawn after the current preview has been calculated?
-    // FIXME: will one of these calls set up sample->rgb is display profile?
-    // darktable.lib->proxy.colorpicker.update_panel(darktable.lib->proxy.colorpicker.module);
-    // darktable.lib->proxy.colorpicker.update_samples(darktable.lib->proxy.colorpicker.module);
     if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
     {
       if(sample == selected_sample)
@@ -474,7 +471,6 @@ void expose(
   const float zoom_y = dt_control_get_dev_zoom_y();
   const float zoom_x = dt_control_get_dev_zoom_x();
   const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  // FIXME: should be gboolean
   const int closeup = dt_control_get_dev_closeup();
   const float backbuf_scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0) * darktable.gui->ppd;
 
