@@ -26,7 +26,7 @@ typedef enum dt_lib_colorpicker_size_t
   // FIXME: rejigger so that NONE is first, and test for NONE case throughout
   DT_LIB_COLORPICKER_SIZE_POINT = 0,
   DT_LIB_COLORPICKER_SIZE_BOX,
-  // FIXME: instead just set picker to NULL for activate IOP?
+  // FIXME: instead just set proxy to NULL to signal there is no picker?
   DT_LIB_COLORPICKER_SIZE_NONE
 } dt_lib_colorpicker_size_t;
 
@@ -44,6 +44,7 @@ typedef struct dt_colorpicker_sample_t
   gboolean locked;
 
   /** The actual picked colors */
+  // FIXME: make these instead "dt_aligned_pixel_t picked_color_display[dt_lib_colorpicker_statistic_t] and reference into them that way -- will simplify a bunch of code in which case picked_color_rgb_* -> picked_color_scope_rgb[]
   // in display profile, as picked from preview pixelpipe
   dt_aligned_pixel_t picked_color_display_rgb_mean;
   dt_aligned_pixel_t picked_color_display_rgb_min;
