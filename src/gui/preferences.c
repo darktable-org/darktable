@@ -987,7 +987,7 @@ static void import_preset(GtkButton *button, gpointer data)
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*.dtpreset");
   gtk_file_filter_add_pattern(filter, "*.DTPRESET");
-  gtk_file_filter_set_name(filter, _("darktable style files"));
+  gtk_file_filter_set_name(filter, _("darktable preset files"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(chooser), filter);
 
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
