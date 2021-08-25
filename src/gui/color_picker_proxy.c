@@ -127,6 +127,7 @@ void dt_iop_color_picker_reset(dt_iop_module_t *module, gboolean keep)
     {
       _iop_color_picker_reset(picker);
       darktable.lib->proxy.colorpicker.picker_proxy = NULL;
+      darktable.lib->proxy.colorpicker.primary_sample->size = DT_LIB_COLORPICKER_SIZE_NONE;
       if(module)
         module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     }
