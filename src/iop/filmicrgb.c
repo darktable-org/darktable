@@ -1454,14 +1454,14 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     }
   }
 
-  float *const restrict reconstructed = dt_alloc_align_float(4 * roi_out->width * roi_out->height);
+  float *const restrict reconstructed = dt_alloc_align_float((size_t)(4) * roi_out->width * roi_out->height);
   const gboolean run_fast = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
 
   // if fast mode is not in use
   if(!run_fast && recover_highlights && mask && reconstructed)
   {
     // init the blown areas with noise to create particles
-    float *const restrict inpainted =  dt_alloc_align_float(4 * roi_out->width * roi_out->height);
+    float *const restrict inpainted =  dt_alloc_align_float((size_t)(4) * roi_out->width * roi_out->height);
     inpaint_noise(in, mask, inpainted, data->noise_level / scale, data->reconstruct_threshold, data->noise_distribution,
                   roi_out->width, roi_out->height);
 
@@ -1475,7 +1475,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     if(data->high_quality_reconstruction > 0 && success_1)
     {
       float *const restrict norms = dt_alloc_align_float((size_t)roi_out->width * roi_out->height);
-      float *const restrict ratios = dt_alloc_align_float(4 * roi_out->width * roi_out->height);
+      float *const restrict ratios = dt_alloc_align_float((size_t)(4) * roi_out->width * roi_out->height);
 
       // reconstruct highlights PASS 2 on ratios
       if(norms && ratios)
