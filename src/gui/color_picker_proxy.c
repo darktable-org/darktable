@@ -271,10 +271,11 @@ static void _iop_color_picker_signal_callback(gpointer instance, dt_iop_module_t
   dt_iop_color_picker_t *picker = darktable.lib->proxy.colorpicker.picker_proxy;
   if(!picker) return;
 
-  // primary colorpicker receives location data
+  // FIXME: only signal on completion of preview pixelpipe, then work backwards to determine if need to update module data?
   if(module)
   {
     // an iop colorpicker receives new data from the pixelpipe
+    // in this case we'll receive a primary picker signal as well, later in the pipe
     dt_develop_t *dev = module->dev;
     if(!dev) return;
 
@@ -295,17 +296,18 @@ static void _iop_color_picker_signal_callback(gpointer instance, dt_iop_module_t
   }
   else
   {
-    if(picker && !picker->module)
-    {
-      // FIXME: redraw picker widget from here if the mouse has moved?
+    // lib picker is active? record new picker area, but we don't care
+    // about changed value as regardless we want to handle the new
+    // sample
+    if(!picker->module)
+      // FIXME: make _iop_record_point_area() return changed and set it to FALSE?
       _iop_record_point_area(picker);
-      if(picker->changed)
-      {
-        dt_control_queue_redraw_center();
-        darktable.lib->proxy.colorpicker.update_panel(darktable.lib->proxy.colorpicker.module);
-        darktable.lib->proxy.colorpicker.update_samples(darktable.lib->proxy.colorpicker.module);
-      }
-    }
+
+    // pixelpipe may have run because sample area changed or an iop,
+    // regardless we want to the colorpicker lib, which also can
+    // provide swatch color for a point sample overlay
+    darktable.lib->proxy.colorpicker.update_panel(darktable.lib->proxy.colorpicker.module);
+    darktable.lib->proxy.colorpicker.update_samples(darktable.lib->proxy.colorpicker.module);
   }
 
   picker->changed = FALSE;
