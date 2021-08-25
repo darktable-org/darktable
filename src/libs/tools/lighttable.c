@@ -136,6 +136,14 @@ static void _lib_lighttable_set_layout(dt_lib_module_t *self, dt_lighttable_layo
   // we deal with fullpreview first.
   if(!d->fullpreview && layout == DT_LIGHTTABLE_LAYOUT_PREVIEW)
   {
+#ifdef USE_LUA
+    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+        0, NULL, NULL,
+        LUA_ASYNC_TYPENAME, "const char*", "lighttable-mode-changed",
+        LUA_ASYNC_TYPENAME, "dt_lighttable_layout_t", d->layout,
+        LUA_ASYNC_TYPENAME, "dt_lighttable_layout_t", layout,
+        LUA_ASYNC_DONE);
+#endif
     // special case for preview : we don't change previous values, just show full preview
     d->fullpreview = TRUE;
     _lib_lighttable_update_btn(self);
@@ -144,6 +152,14 @@ static void _lib_lighttable_set_layout(dt_lib_module_t *self, dt_lighttable_layo
   }
   else if(d->fullpreview && layout != DT_LIGHTTABLE_LAYOUT_PREVIEW)
   {
+#ifdef USE_LUA
+    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+        0, NULL, NULL,
+        LUA_ASYNC_TYPENAME, "const char*", "lighttable-mode-changed",
+        LUA_ASYNC_TYPENAME, "dt_lighttable_layout_t", DT_LIGHTTABLE_LAYOUT_PREVIEW,
+        LUA_ASYNC_TYPENAME, "dt_lighttable_layout_t", layout,
+        LUA_ASYNC_DONE);
+#endif
     d->fullpreview = FALSE;
     dt_view_lighttable_set_preview_state(darktable.view_manager, FALSE, FALSE);
     // and we continue to select the right layout...
@@ -172,7 +188,16 @@ static void _lib_lighttable_set_layout(dt_lib_module_t *self, dt_lighttable_layo
     gtk_widget_set_sensitive(d->zoom, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && !d->fullpreview));
     gtk_range_set_value(GTK_RANGE(d->zoom), d->current_zoom);
 
-    dt_conf_set_int("plugins/lighttable/layout", layout);
+ #ifdef USE_LUA
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "const char*", "lighttable-mode-changed",
+      LUA_ASYNC_TYPENAME, "dt_lighttable_layout_t", current_layout,
+      LUA_ASYNC_TYPENAME, "dt_lighttable_layout_t", layout,
+      LUA_ASYNC_DONE);
+#endif
+
+   dt_conf_set_int("plugins/lighttable/layout", layout);
     if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
     {
       d->base_layout = layout;
@@ -657,6 +682,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_FILEMANAGER);
   luaA_enum_value(L, dt_lighttable_layout_t, DT_LIGHTTABLE_LAYOUT_CULLING);
   luaA_enum_value(L, dt_lighttable_layout_t, DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC);
+  luaA_enum_value(L, dt_lighttable_layout_t, DT_LIGHTTABLE_LAYOUT_PREVIEW);
   luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_LAST);
 }
 #endif
