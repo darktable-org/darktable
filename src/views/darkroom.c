@@ -397,8 +397,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
 
     // draw the actual color sampled
     // FIXME: if an area sample is selected, when selected should fill it with colorpicker color?
-    // FIXME: don't draw central swatch if waiting on preview pipe to run with a sample?
-    if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
+    if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
     {
       if(sample == selected_sample)
         cairo_arc(cri, sample->point[0] * wd, sample->point[1] * ht, half_px * 2., 0., 2. * M_PI);
