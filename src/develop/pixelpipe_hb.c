@@ -606,7 +606,7 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   dt_boundingbox_t fbox = { 0.0f };
 
   // get absolute pixel coordinates in final preview image
-  if(sample && sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+  if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
   {
     for(int k = 0; k < 4; k += 2) fbox[k] = sample->box[k] * wd;
     for(int k = 1; k < 4; k += 2) fbox[k] = sample->box[k] * ht;
@@ -635,7 +635,7 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   box[2] = fmaxf(fbox[0], fbox[2]);
   box[3] = fmaxf(fbox[1], fbox[3]);
 
-  if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
+  if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
   {
     // if we are sampling one point, make sure that we actually sample it.
     for(int k = 2; k < 4; k++) box[k] += 1;
