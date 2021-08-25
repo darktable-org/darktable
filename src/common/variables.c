@@ -34,6 +34,8 @@
 #include <string.h>
 #include <time.h>
 
+#define CONFIG_PREFIX "plugins/lighttable/export/"
+
 typedef struct dt_variables_data_t
 {
   /** cached values that shouldn't change between variables in the same expansion process */
@@ -41,11 +43,23 @@ typedef struct dt_variables_data_t
   time_t exif_time;
   guint sequence;
 
-  /* export settings for image maximum width and height taken from GUI */
+  // max image size taken from export module GUI, can be zero
   int max_width;
   int max_height;
+
+  // total sensor size, before RAW crop
   int sensor_width;
   int sensor_height;
+
+  // max RAW file size, after the raw crop
+  int raw_width;
+  int raw_height;
+
+  // image size after crop, but before export resize
+  int crop_width;
+  int crop_height;
+
+  // image export size after crop and export resize
   int export_width;
   int export_height;
 
@@ -146,16 +160,37 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
 
     params->data->flags = img->flags;
 
-    params->data->max_height = img->p_height;
-    params->data->max_width = img->p_width;
+    params->data->max_height = dt_conf_get_int(CONFIG_PREFIX "height");
+    params->data->max_width = dt_conf_get_int(CONFIG_PREFIX "width");
+    params->data->raw_height = img->p_height;
+    params->data->raw_width = img->p_width;
     params->data->sensor_height = img->height;
     params->data->sensor_width = img->width;
+    params->data->crop_height = img->final_height;
+    params->data->crop_width = img->final_width;
+
+    // for export size, assume initially no export scaling
     params->data->export_height = img->final_height;
     params->data->export_width = img->final_width;
 
+    if(params->data->max_height || params->data->max_width)
+    {
+      // export scaling occurs, calculate the resize
+      const int mh = params->data->max_height ? params->data->max_height : INT_MAX;
+      const int mw = params->data->max_width ? params->data->max_width : INT_MAX;
+      const float scale = fminf((float)mh / img->final_height, (float)mw / img->final_width);
+      if(scale < 1.0f || dt_conf_get_bool(CONFIG_PREFIX "upscale"))
+      {
+        // scaling
+        params->data->export_height = roundf(img->final_height * scale);
+        params->data->export_width = roundf(img->final_width * scale);
+      }
+    }
+
     if(params->img == NULL) dt_image_cache_read_release(darktable.image_cache, img);
   }
-  else if (params->data->exif_time) {
+  else if (params->data->exif_time)
+  {
     localtime_r(&params->data->exif_time, &params->data->exif_tm);
     params->data->have_exif_tm = TRUE;
   }
@@ -483,6 +518,14 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%d", params->data->sensor_width);
   else if(has_prefix(variable, "SENSOR_HEIGHT"))
     result = g_strdup_printf("%d", params->data->sensor_height);
+  else if(has_prefix(variable, "RAW_WIDTH"))
+    result = g_strdup_printf("%d", params->data->raw_width);
+  else if(has_prefix(variable, "RAW_HEIGHT"))
+    result = g_strdup_printf("%d", params->data->raw_height);
+  else if(has_prefix(variable, "CROP_WIDTH"))
+    result = g_strdup_printf("%d", params->data->crop_width);
+  else if(has_prefix(variable, "CROP_HEIGHT"))
+    result = g_strdup_printf("%d", params->data->crop_height);
   else if(has_prefix(variable, "EXPORT_WIDTH"))
     result = g_strdup_printf("%d", params->data->export_width);
   else if(has_prefix(variable, "EXPORT_HEIGHT"))
