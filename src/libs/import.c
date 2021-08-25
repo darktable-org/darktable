@@ -1392,7 +1392,7 @@ static void _update_places_list(dt_lib_module_t* self)
   }
 
   // add folders added by user
-  GList *places = _get_custom_places(self);
+  GList *places = _get_custom_places();
 
   for (GList *places_iter = places; places_iter; places_iter = places_iter->next)
   {
@@ -1512,7 +1512,7 @@ static GList* _get_custom_places()
   GList *places = NULL;
   gchar *saved = dt_conf_get_string("ui_last/import_custom_places");
   const int nb_saved = saved[0] ? dt_util_str_occurence(saved, ",") + 1 : 0;
-  char *folders = saved;
+  gchar *folders = g_strdup(saved);
 
   for(int i = 0; i < nb_saved; i++)
   {
@@ -1526,7 +1526,7 @@ static GList* _get_custom_places()
         folders = next + 1;
     }
   }
-//  g_free(saved);  // we can't free the string here, because the returned list points into it
+  g_free(saved);
   return places;
 }
 
