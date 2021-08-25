@@ -200,9 +200,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       const float *in = ((float *)ivoid) + (size_t)ch * roi_out->width * j;
       float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
       for(int i = 0; i < rad; i++)
-        for_each_channel(c) out[ch * i + c] = in[ch * i + c];
+        for_each_channel(c) out[(size_t)ch * i + c] = in[(size_t)ch * i + c];
       for(int i = roi_out->width - rad; i < roi_out->width; i++)
-        for_each_channel(c) out[ch * i + c] = in[ch * i + c];
+        for_each_channel(c) out[(size_t)ch * i + c] = in[(size_t)ch * i + c];
     }
   }
   else
@@ -246,7 +246,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         float DT_ALIGNED_PIXEL val[4];
         lattice.slice(val, index);
         for_each_channel(k)
-	   out[ch*i + k] = val[k] / val[3];
+	   out[(size_t)ch*i + k] = val[k] / val[3];
       }
     }
   }
