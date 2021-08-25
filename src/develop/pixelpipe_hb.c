@@ -2048,10 +2048,7 @@ post_process_collect_info:
       const gboolean primary_picker_active = darktable.lib->proxy.colorpicker.primary_sample
         && darktable.lib->proxy.colorpicker.primary_sample->size != DT_LIB_COLORPICKER_SIZE_NONE;
       if(primary_picker_active || darktable.lib->proxy.colorpicker.live_samples)
-      {
         _pixelpipe_pick_samples(dev, module, (const float *const )input, &roi_in, primary_picker_active);
-        DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY, NULL, NULL);
-      }
     }
 
     // 4) final histogram:
