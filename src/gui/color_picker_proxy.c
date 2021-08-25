@@ -77,9 +77,10 @@ gboolean dt_iop_color_picker_is_visible(const dt_develop_t *dev)
   return module_picker || primary_picker;
 }
 
-static void _iop_record_point_area(dt_iop_color_picker_t *self)
+static gboolean _iop_record_point_area(dt_iop_color_picker_t *self)
 {
   const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
+  gboolean changed = self->changed;
   if(self && sample)
   {
     if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
@@ -88,7 +89,7 @@ static void _iop_record_point_area(dt_iop_color_picker_t *self)
         if(self->pick_pos[k] != sample->point[k])
         {
           self->pick_pos[k] = sample->point[k];
-          self->changed = TRUE;
+          changed = TRUE;
         }
       }
     else if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
@@ -97,10 +98,12 @@ static void _iop_record_point_area(dt_iop_color_picker_t *self)
         if (self->pick_box[k] != sample->box[k])
         {
           self->pick_box[k] = sample->box[k];
-          self->changed = TRUE;
+          changed = TRUE;
         }
       }
   }
+  self->changed = FALSE;
+  return changed;
 }
 
 static void _iop_color_picker_reset(dt_iop_color_picker_t *picker)
@@ -265,63 +268,62 @@ dt_iop_colorspace_type_t dt_iop_color_picker_get_active_cst(dt_iop_module_t *mod
     return iop_cs_NONE;
 }
 
-static void _iop_color_picker_signal_callback(gpointer instance, dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
-                                              gpointer user_data)
+static void _iop_color_picker_pickerdata_ready_callback(gpointer instance, dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
+                                                        gpointer user_data)
+{
+  // an iop colorpicker receives new data from the pixelpipe
+  dt_iop_color_picker_t *picker = darktable.lib->proxy.colorpicker.picker_proxy;
+  dt_develop_t *dev = module->dev;
+  if(!picker || !dev) return;
+
+  // Invalidate the cache to ensure it will be fully recomputed.
+  // modules between colorin & colorout may need the work_profile
+  // to work properly. This will force colorin to be run and it
+  // will set the work_profile if needed.
+  // FIXME: can use piece for this instead of dev?
+  dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
+  dev->preview_pipe->cache_obsolete = 1;
+
+  // iops only need new picker data if the pointer has moved
+  if(_iop_record_point_area(picker))
+  {
+    if(!module->blend_data || !blend_color_picker_apply(module, picker->colorpick, piece))
+      if(module->color_picker_apply)
+        module->color_picker_apply(module, picker->colorpick, piece);
+  }
+}
+
+static void _iop_color_picker_preview_pipe_callback(gpointer instance, gpointer user_data)
 {
   dt_iop_color_picker_t *picker = darktable.lib->proxy.colorpicker.picker_proxy;
   if(!picker) return;
 
-  // FIXME: only signal on completion of preview pixelpipe, then work backwards to determine if need to update module data?
-  if(module)
-  {
-    // an iop colorpicker receives new data from the pixelpipe
-    // in this case we'll receive a primary picker signal as well, later in the pipe
-    dt_develop_t *dev = module->dev;
-    if(!dev) return;
-
-    // Invalidate the cache to ensure it will be fully recomputed.
-    // modules between colorin & colorout may need the work_profile
-    // to work properly. This will force colorin to be run and it
-    // will set the work_profile if needed.
-    // FIXME: can use piece for this instead of dev?
-    dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-    dev->preview_pipe->cache_obsolete = 1;
-
+  // lib picker is active? record new picker area, but we don't care
+  // about changed value as regardless we want to handle the new
+  // sample
+  if(!picker->module)
     _iop_record_point_area(picker);
 
-    if(picker->changed)
-      if(!module->blend_data || !blend_color_picker_apply(module, picker->colorpick, piece))
-        if(module->color_picker_apply)
-          module->color_picker_apply(module, picker->colorpick, piece);
-  }
-  else
-  {
-    // lib picker is active? record new picker area, but we don't care
-    // about changed value as regardless we want to handle the new
-    // sample
-    if(!picker->module)
-      // FIXME: make _iop_record_point_area() return changed and set it to FALSE?
-      _iop_record_point_area(picker);
-
-    // pixelpipe may have run because sample area changed or an iop,
-    // regardless we want to the colorpicker lib, which also can
-    // provide swatch color for a point sample overlay
-    darktable.lib->proxy.colorpicker.update_panel(darktable.lib->proxy.colorpicker.module);
-    darktable.lib->proxy.colorpicker.update_samples(darktable.lib->proxy.colorpicker.module);
-  }
-
-  picker->changed = FALSE;
+  // pixelpipe may have run because sample area changed or an iop,
+  // regardless we want to the colorpicker lib, which also can
+  // provide swatch color for a point sample overlay
+  darktable.lib->proxy.colorpicker.update_panel(darktable.lib->proxy.colorpicker.module);
+  darktable.lib->proxy.colorpicker.update_samples(darktable.lib->proxy.colorpicker.module);
 }
 
 void dt_iop_color_picker_init(void)
 {
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY,
-                            G_CALLBACK(_iop_color_picker_signal_callback), NULL);
+                                  G_CALLBACK(_iop_color_picker_pickerdata_ready_callback), NULL);
+  // FIXME: how do we know that this is called before we redraw the center view?
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                                  G_CALLBACK(_iop_color_picker_preview_pipe_callback), NULL);
 }
 
 void dt_iop_color_picker_cleanup(void)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_iop_color_picker_signal_callback), NULL);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_iop_color_picker_pickerdata_ready_callback), NULL);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_iop_color_picker_preview_pipe_callback), NULL);
 }
 
 static GtkWidget *_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind_t kind, GtkWidget *w,
