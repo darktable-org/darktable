@@ -296,7 +296,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float *const restrict in = (const float *const)ivoid;
   float *const restrict out = (float *const)ovoid;
-  const size_t npixels = roi_out->width * roi_out->height;
+  const size_t npixels = (size_t)(roi_out->width) * roi_out->height;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
