@@ -744,6 +744,8 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     dt_iop_color_picker_t *proxy = darktable.lib->proxy.colorpicker.picker_proxy;
     if(sample && sample->size != DT_LIB_COLORPICKER_SIZE_NONE && proxy && !proxy->module)
     {
+      // FIXME: for histogram process whole image, then pull point sample #'s from primary_picker->picked_color_rgb_mean (point) or _mean, _min, _max (as in rgb curve) and draw them as an overlay
+      // FIXME: for waveform point sample, could process whole image, then do an overlay of the point sample from primary_picker->picked_color_rgb_mean as red/green/blue dots (or short lines) at appropriate position at the horizontal/vertical position of sample
       if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
       {
         roi.crop_x = MIN(width, MAX(0, sample->box[0] * width));

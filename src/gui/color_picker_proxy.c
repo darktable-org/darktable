@@ -25,11 +25,11 @@
 #include "develop/blend.h"
 
 /*
-  The color_picker_proxy code links the UI colorpicker buttons in
-  iops (and the colorpicker lib) with the rest of the implementation
-  (selecting/drawing colorpicker area in center view, reading color
-  value from preview pipe, and displaying results in the colorpicker
-  lib).
+  The color_picker_proxy code is an interface which links the UI
+  colorpicker buttons in iops (and the colorpicker lib) with the rest
+  of the implementation (selecting/drawing colorpicker area in center
+  view, reading color value from preview pipe, and displaying results
+  in the colorpicker lib).
 
   From the iop (or lib) POV, all that is necessary is to instantiate
   color picker(s) via dt_color_picker_new() or
@@ -302,6 +302,7 @@ static void _iop_color_picker_preview_pipe_callback(gpointer instance, gpointer 
   // about changed value as regardless we want to handle the new
   // sample
   if(!picker->module)
+    // FIXME: s/_iop_record_point_area/_record_point_area/ if this is called for primary picker as well
     _iop_record_point_area(picker);
 
   // pixelpipe may have run because sample area changed or an iop,
@@ -309,13 +310,15 @@ static void _iop_color_picker_preview_pipe_callback(gpointer instance, gpointer 
   // provide swatch color for a point sample overlay
   darktable.lib->proxy.colorpicker.update_panel(darktable.lib->proxy.colorpicker.module);
   darktable.lib->proxy.colorpicker.update_samples(darktable.lib->proxy.colorpicker.module);
+  // FIXME: debug signal sequence -- what if the preview pipe finishes after the full pixelpipe completes and DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED triggers a redraw of center view -- debug by adding a pause in preview pipe -- do we want to trigger a center view redraw here on point picker so the swatch fills in?
 }
 
 void dt_iop_color_picker_init(void)
 {
+  // we have incoming iop picker data
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY,
                                   G_CALLBACK(_iop_color_picker_pickerdata_ready_callback), NULL);
-  // FIXME: how do we know that this is called before we redraw the center view?
+  // we have new primary picker data as preview pipe has run to conclusion
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                                   G_CALLBACK(_iop_color_picker_preview_pipe_callback), NULL);
 }

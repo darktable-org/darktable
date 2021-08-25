@@ -3328,10 +3328,10 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
       }
       else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
       {
-        // FIXME: get rid of this code when 400% zoom rendering is fixed for hidpi
         // slight optimization: at higher zoom levels in particular,
         // no need to update unless are sampling a different preview
         // pipe pixel
+        // FIXME: get rid of this code when 400% zoom rendering is fixed for hidpi
         // FIXME: this makes less sense for an iop which may transform coordinates
         const float wd = (float)dev->preview_pipe->backbuf_width;
         const float ht = (float)dev->preview_pipe->backbuf_height;
@@ -3341,9 +3341,11 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
         const int cur_x = sample->point[0] * wd, cur_y = sample->point[1] * ht;
         if(prior_x != cur_x || prior_y != cur_y)
         {
+          // FIXME: this is a common enough idiom that it could be a function in proxy?
           if(darktable.lib->proxy.colorpicker.picker_proxy->module)
             dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
           else
+            // FIXME: if the primary picker has moved and the preview pixelpipe is valid, we don't have to rerun pixelpipe (even if cached), we could just calculate new picker results somewhere, e.g. in the proxy -- same goes for when user clicks on a new sample point, essentially could call _iop_record_point_area() and if it is
             dt_dev_invalidate_from_gui(darktable.develop);
         }
       }
