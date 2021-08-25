@@ -3328,6 +3328,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
       }
       else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
       {
+        // FIXME: get rid of this code when 400% zoom rendering is fixed for hidpi
         // slight optimization: at higher zoom levels in particular,
         // no need to update unless are sampling a different preview
         // pipe pixel
@@ -3339,10 +3340,13 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
         sample->point[1] = .5f + zoom_y;
         const int cur_x = sample->point[0] * wd, cur_y = sample->point[1] * ht;
         if(prior_x != cur_x || prior_y != cur_y)
-          dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+        {
+          if(darktable.lib->proxy.colorpicker.picker_proxy->module)
+            dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+          else
+            dt_dev_invalidate_from_gui(darktable.develop);
+        }
       }
-      // in case have moved cursor out of center view and back, hide the cursor again
-      dt_control_change_cursor(GDK_BLANK_CURSOR);
     }
     dt_control_queue_redraw_center();
     return;
@@ -3400,10 +3404,13 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
     // only sample box picker at end, for speed
     if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
-      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+      if(darktable.lib->proxy.colorpicker.picker_proxy->module)
+        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+      else
+        dt_dev_invalidate_from_gui(darktable.develop);
       dt_control_queue_redraw_center();
+      dt_control_change_cursor(GDK_LEFT_PTR);
     }
-    dt_control_change_cursor(GDK_LEFT_PTR);
     return 1;
   }
   // masks
@@ -3496,12 +3503,15 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
             sample->box[2] = fminf(1.0, zoom_x + delta_x);
             sample->box[3] = fminf(1.0, zoom_y + delta_y);
           }
+          dt_control_change_cursor(GDK_CROSSHAIR);
         }
         else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
         {
-          dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+          if(darktable.lib->proxy.colorpicker.picker_proxy->module)
+            dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+          else
+            dt_dev_invalidate_from_gui(darktable.develop);
         }
-        dt_control_change_cursor(GDK_BLANK_CURSOR);
       }
       dt_control_queue_redraw_center();
       return 1;
@@ -3535,7 +3545,10 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
           }
           else
             continue;
-          dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+          if(darktable.lib->proxy.colorpicker.picker_proxy->module)
+            dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+          else
+            dt_dev_invalidate_from_gui(darktable.develop);
           dt_control_queue_redraw_center();
           return 1;
         }
@@ -3546,7 +3559,10 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         // FIXME: color_pixer_proxy should have an dt_iop_color_picker_clear_area() function for this
         dt_boundingbox_t reset = { 0.01f, 0.01f, 0.99f, 0.99f };
         dt_lib_colorpicker_set_box_area(darktable.lib, reset);
-        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+        if(darktable.lib->proxy.colorpicker.picker_proxy->module)
+          dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+        else
+          dt_dev_invalidate_from_gui(darktable.develop);
         dt_control_queue_redraw_center();
       }
 
