@@ -397,6 +397,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
 
     // draw the actual color sampled
     // FIXME: if an area sample is selected, when selected should fill it with colorpicker color?
+    // FIXME: don't draw central swatch if waiting on preview pipe to run with a sample?
     if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
     {
       if(sample == selected_sample)
@@ -747,6 +748,7 @@ void expose(
                                  || dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
 
   // draw colorpicker for in focus module or execute module callback hook
+  // FIXME: draw picker in gui_post_expose() hook in libs/colorpicker.c -- catch would be that live samples would appear over guides, softproof/gamut text overlay would be hidden by picker
   if(dt_iop_color_picker_is_visible(dev))
   {
     GSList samples = { .data = darktable.lib->proxy.colorpicker.primary_sample, .next = NULL };
