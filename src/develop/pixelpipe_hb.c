@@ -599,10 +599,6 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
                                                        module->op, "demosaic", 0);
   const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
 
-  // do not continue if a not yet defined picker area
-  if(!sample || sample->size == DT_LIB_COLORPICKER_SIZE_NONE)
-    return 1;
-
   dt_boundingbox_t fbox = { 0.0f };
 
   // get absolute pixel coordinates in final preview image
@@ -611,7 +607,7 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
     for(int k = 0; k < 4; k += 2) fbox[k] = sample->box[k] * wd;
     for(int k = 1; k < 4; k += 2) fbox[k] = sample->box[k] * ht;
   }
-  else
+  else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
   {
     fbox[0] = fbox[2] = sample->point[0] * wd;
     fbox[1] = fbox[3] = sample->point[1] * ht;
@@ -863,8 +859,7 @@ static void _pixelpipe_pick_from_image(dt_iop_module_t *module,
 }
 
 static void _pixelpipe_pick_samples(dt_develop_t *dev, dt_iop_module_t *module,
-                                    const float *const input, const dt_iop_roi_t *roi_in,
-                                    gboolean primary_picker_active)
+                                    const float *const input, const dt_iop_roi_t *roi_in)
 {
   const dt_iop_order_iccprofile_info_t *const histogram_profile = dt_ioppr_get_histogram_profile_info(dev);
   const dt_iop_order_iccprofile_info_t *const display_profile
@@ -880,7 +875,7 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev, dt_iop_module_t *module,
     samples = g_slist_next(samples);
   }
 
-  if(primary_picker_active)
+  if(darktable.lib->proxy.colorpicker.picker_proxy)
     _pixelpipe_pick_from_image(module, input, roi_in, display_profile, histogram_profile,
                                darktable.lib->proxy.colorpicker.primary_sample);
 }
@@ -929,8 +924,10 @@ static gboolean _request_color_pick(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
 {
   // Does the current active module need a picker?
   return
+    // there is an active picker widget
+    darktable.lib->proxy.colorpicker.picker_proxy
     // pick from preview pipe to get pixels outside the viewport
-    dev->gui_attached && pipe == dev->preview_pipe
+    && dev->gui_attached && pipe == dev->preview_pipe
     // only modules with focus can pick
     && module == dev->gui_module
     // and they are enabled
@@ -2045,10 +2042,8 @@ post_process_collect_info:
        && (strcmp(module->op, "gamma") == 0) // only gamma provides meaningful RGB data
        && input)
     {
-      const gboolean primary_picker_active = darktable.lib->proxy.colorpicker.primary_sample
-        && darktable.lib->proxy.colorpicker.primary_sample->size != DT_LIB_COLORPICKER_SIZE_NONE;
-      if(primary_picker_active || darktable.lib->proxy.colorpicker.live_samples)
-        _pixelpipe_pick_samples(dev, module, (const float *const )input, &roi_in, primary_picker_active);
+      if(darktable.lib->proxy.colorpicker.picker_proxy || darktable.lib->proxy.colorpicker.live_samples)
+        _pixelpipe_pick_samples(dev, module, (const float *const )input, &roi_in);
     }
 
     // 4) final histogram:

@@ -23,11 +23,8 @@
 
 typedef enum dt_lib_colorpicker_size_t
 {
-  // FIXME: rejigger so that NONE is first, and test for NONE case throughout
   DT_LIB_COLORPICKER_SIZE_POINT = 0,
   DT_LIB_COLORPICKER_SIZE_BOX,
-  // FIXME: instead just set proxy to NULL to signal there is no picker?
-  DT_LIB_COLORPICKER_SIZE_NONE
 } dt_lib_colorpicker_size_t;
 
 /** The struct for primary and live color picker samples */
@@ -40,7 +37,7 @@ typedef struct dt_colorpicker_sample_t
   float point[2];
   dt_boundingbox_t box;
   dt_lib_colorpicker_size_t size;
-  // NOTE: locked only applies to live samples
+  // NOTE: only applies to live samples
   gboolean locked;
 
   /** The actual picked colors */
