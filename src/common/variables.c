@@ -34,8 +34,6 @@
 #include <string.h>
 #include <time.h>
 
-#define CONFIG_PREFIX "plugins/lighttable/export/"
-
 typedef struct dt_variables_data_t
 {
   /** cached values that shouldn't change between variables in the same expansion process */
