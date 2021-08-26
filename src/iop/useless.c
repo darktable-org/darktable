@@ -290,7 +290,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // and the scale of the roi.
   const float scale = piece->iscale / roi_in->scale;
   // how many colors in our buffer?
-  const int ch = piece->colors;
+  const size_t ch = piece->colors;
 
   // most modules only support a single type of input data, so we can check whether that format has been supplied
   // and simply pass along the data if not (setting a trouble flag to inform the user)
