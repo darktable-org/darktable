@@ -307,6 +307,7 @@ static void _iop_color_picker_preview_pipe_callback(gpointer instance, gpointer 
   // FIXME: debug signal sequence -- what if the preview pipe finishes after the full pixelpipe completes and DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED triggers a redraw of center view -- debug by adding a pause in preview pipe -- do we want to trigger a center view redraw here on point picker so the swatch fills in?
 }
 
+// FIXME: s/dt_iop_color_picker_init/dt_color_picker_proxy_init/
 void dt_iop_color_picker_init(void)
 {
   // we have incoming iop picker data
@@ -317,6 +318,7 @@ void dt_iop_color_picker_init(void)
                                   G_CALLBACK(_iop_color_picker_preview_pipe_callback), NULL);
 }
 
+// FIXME: s/dt_iop_color_picker_cleanup/dt_color_picker_proxy_cleanup/
 void dt_iop_color_picker_cleanup(void)
 {
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_iop_color_picker_pickerdata_ready_callback), NULL);
