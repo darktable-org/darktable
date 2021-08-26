@@ -337,7 +337,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(avoidshift)
   {
-    const size_t buffsize = (size_t)(h_width) * h_height;
+    const size_t buffsize = (size_t)h_width * h_height;
     redfactor = dt_alloc_align_float(buffsize);
     memset(redfactor, 0, sizeof(float) * buffsize);
     bluefactor = dt_alloc_align_float(buffsize);
@@ -360,7 +360,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   double fitparams[2][2][16];
 
   // temporary array to store simple interpolation of G
-  float *Gtmp = dt_alloc_align_float((size_t)(height) * width);
+  float *Gtmp = dt_alloc_align_float((size_t)height * width);
   memset(Gtmp, 0, sizeof(float) * height * width);
 
   // temporary array to avoid race conflicts, only every second pixel needs to be saved here

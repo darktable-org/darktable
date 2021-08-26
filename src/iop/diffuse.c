@@ -1020,8 +1020,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   float *restrict in = DT_IS_ALIGNED((float *const restrict)ivoid);
   float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
 
-  float *const restrict temp1 = dt_alloc_align_float((size_t)(4) * roi_out->width * roi_out->height);
-  float *const restrict temp2 = dt_alloc_align_float((size_t)(4) * roi_out->width * roi_out->height);
+  float *const restrict temp1 = dt_alloc_align_float((size_t)roi_out->width * roi_out->height * 4);
+  float *const restrict temp2 = dt_alloc_align_float((size_t)roi_out->width * roi_out->height * 4);
 
   float *restrict temp_in = NULL;
   float *restrict temp_out = NULL;

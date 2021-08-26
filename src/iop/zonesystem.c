@@ -202,7 +202,7 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
 
   const int width = roi_out->width;
   const int height = roi_out->height;
-  const int ch = piece->colors;
+  const size_t ch = piece->colors;
   const int size = d->params.size;
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, width, height);
@@ -296,7 +296,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float *const restrict in = (const float *const)ivoid;
   float *const restrict out = (float *const)ovoid;
-  const size_t npixels = (size_t)(roi_out->width) * roi_out->height;
+  const size_t npixels = (size_t)roi_out->width * roi_out->height;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
