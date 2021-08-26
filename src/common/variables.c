@@ -63,6 +63,9 @@ typedef struct dt_variables_data_t
   int export_width;
   int export_height;
 
+  // upscale allowed on export
+  gboolean upscale;
+
   char *homedir;
   char *pictures_folder;
   const char *file_ext;
@@ -160,8 +163,6 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
 
     params->data->flags = img->flags;
 
-    params->data->max_height = dt_conf_get_int(CONFIG_PREFIX "height");
-    params->data->max_width = dt_conf_get_int(CONFIG_PREFIX "width");
     params->data->raw_height = img->p_height;
     params->data->raw_width = img->p_width;
     params->data->sensor_height = img->height;
@@ -179,9 +180,9 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
       const int mh = params->data->max_height ? params->data->max_height : INT_MAX;
       const int mw = params->data->max_width ? params->data->max_width : INT_MAX;
       const float scale = fminf((float)mh / img->final_height, (float)mw / img->final_width);
-      if(scale < 1.0f || dt_conf_get_bool(CONFIG_PREFIX "upscale"))
+      if(scale < 1.0f || params->data->upscale)
       {
-        // scaling
+        // export scaling
         params->data->export_height = roundf(img->final_height * scale);
         params->data->export_width = roundf(img->final_width * scale);
       }
@@ -963,6 +964,11 @@ void dt_variables_set_max_width_height(dt_variables_params_t *params, int max_wi
 {
   params->data->max_width = max_width;
   params->data->max_height = max_height;
+}
+
+void dt_variables_set_upscale(dt_variables_params_t *params, gboolean upscale)
+{
+  params->data->upscale = upscale;
 }
 
 void dt_variables_set_time(dt_variables_params_t *params, time_t time)
