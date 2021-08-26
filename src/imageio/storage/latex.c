@@ -247,6 +247,10 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     g_strlcpy(d->filename, fixed_path, sizeof(d->filename));
     g_free(fixed_path);
 
+    // set variable values to expand them afterwards in darktable variables
+    dt_variables_set_max_width_height(d->vp, fdata->max_width, fdata->max_height);
+    dt_variables_set_upscale(d->vp, upscale);
+
     d->vp->filename = dirname;
     d->vp->jobcode = "export";
     d->vp->imgid = imgid;
