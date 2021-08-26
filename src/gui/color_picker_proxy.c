@@ -62,17 +62,13 @@
 gboolean dt_iop_color_picker_is_visible(const dt_develop_t *dev)
 {
   dt_iop_color_picker_t *proxy = darktable.lib->proxy.colorpicker.picker_proxy;
-  dt_colorpicker_sample_t *sample = darktable.lib->proxy.colorpicker.primary_sample;
 
   const gboolean module_picker = dev->gui_module
     && dev->gui_module->enabled
     && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
-    && sample && sample->size != DT_LIB_COLORPICKER_SIZE_NONE
     && proxy && proxy->module == dev->gui_module;
 
-  const gboolean primary_picker = sample
-    && sample->size != DT_LIB_COLORPICKER_SIZE_NONE
-    && proxy && !proxy->module;
+  const gboolean primary_picker = proxy && !proxy->module;
 
   return module_picker || primary_picker;
 }
@@ -130,7 +126,6 @@ void dt_iop_color_picker_reset(dt_iop_module_t *module, gboolean keep)
     {
       _iop_color_picker_reset(picker);
       darktable.lib->proxy.colorpicker.picker_proxy = NULL;
-      darktable.lib->proxy.colorpicker.primary_sample->size = DT_LIB_COLORPICKER_SIZE_NONE;
       if(module)
         module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     }
@@ -222,7 +217,6 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
   }
   else
   {
-    darktable.lib->proxy.colorpicker.primary_sample->size = DT_LIB_COLORPICKER_SIZE_NONE;
     darktable.lib->proxy.colorpicker.picker_proxy = NULL;
     _iop_color_picker_reset(self);
     if(module)
