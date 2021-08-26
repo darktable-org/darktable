@@ -223,7 +223,7 @@ static void _update_picker_output(dt_lib_module_t *self)
 
   // allow live sample button to work for iop samples
   gtk_widget_set_sensitive(GTK_WIDGET(data->add_sample_button),
-                           data->primary_sample.size != DT_LIB_COLORPICKER_SIZE_NONE);
+                           darktable.lib->proxy.colorpicker.picker_proxy != NULL);
 }
 
 static gboolean _large_patch_toggle(GtkWidget *widget, GdkEvent *event, dt_lib_colorpicker_t *data)
@@ -390,10 +390,9 @@ static void _label_size_allocate_callback(GtkWidget *widget, GdkRectangle *alloc
   }
 }
 
-static gboolean _sample_enter_callback(GtkWidget *widget, GdkEvent *event, gpointer data)
+static gboolean _sample_enter_callback(GtkWidget *widget, GdkEvent *event, dt_colorpicker_sample_t *sample)
 {
-  dt_colorpicker_sample_t *sample = data;
-  if(sample->size != DT_LIB_COLORPICKER_SIZE_NONE)
+  if(darktable.lib->proxy.colorpicker.picker_proxy)
   {
     darktable.lib->proxy.colorpicker.selected_sample = sample;
     if(darktable.lib->proxy.colorpicker.display_samples)
@@ -476,13 +475,10 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
   dt_lib_colorpicker_t *data = self->data;
   dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t *)malloc(sizeof(dt_colorpicker_sample_t));
 
-  memcpy(sample, &data->primary_sample, sizeof(dt_colorpicker_sample_t));
-  if(sample->size == DT_LIB_COLORPICKER_SIZE_NONE)
-  {
-    free(sample);
+  if(!darktable.lib->proxy.colorpicker.picker_proxy)
     return;
-  }
 
+  memcpy(sample, &data->primary_sample, sizeof(dt_colorpicker_sample_t));
   sample->locked = FALSE;
 
   sample->container = gtk_event_box_new();
@@ -557,8 +553,6 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)data;
 
-  // primary picker isn't yet active and shouldn't be drawn/sampled
-  data->primary_sample.size = DT_LIB_COLORPICKER_SIZE_NONE;
   // _update_samples_output() will update the RGB values
   data->primary_sample.rgb_display.alpha = 1.0;
 
@@ -701,6 +695,8 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_iop_color_picker_reset(NULL, FALSE);
+
   // Clearing proxy functions
   darktable.lib->proxy.colorpicker.module = NULL;
   darktable.lib->proxy.colorpicker.update_panel = NULL;
@@ -720,10 +716,9 @@ void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_colorpicker_t *data = self->data;
 
-  // First turn off any active picking
-  // if was restricting histogram, reprocess
+  // First turn off any active picking, reprocessing if necessary
   if(darktable.lib->proxy.colorpicker.restrict_histogram
-     && data->primary_sample.size != DT_LIB_COLORPICKER_SIZE_NONE)
+     && darktable.lib->proxy.colorpicker.picker_proxy)
   {
     dt_dev_invalidate_from_gui(darktable.develop);
   }
