@@ -727,16 +727,13 @@ gchar *dt_util_normalize_path(const gchar *_input)
   return filename;
 }
 
-// returns a pointer into file_name after the root component, like g_path_skip_root (), but works also with Windows networks paths (\\hostname\share\file)
-const gchar *dt_util_path_skip_root(const gchar *filename)
-{
 #ifdef WIN32
-  if(filename[0] == G_DIR_SEPARATOR && filename[1] == G_DIR_SEPARATOR)
-      return filename + 2;
-#endif
-
-  return g_path_skip_root(filename);
+// returns TRUE if the path is a Windows UNC (\\server\share\...\file)
+const gboolean dt_util_path_is_UNC(const gchar *filename)
+{
+  return filename[0] == G_DIR_SEPARATOR && filename[1] == G_DIR_SEPARATOR;
 }
+#endif
 
 // gets the directory components of a file name, like g_path_get_dirname(), but works also with Windows networks paths (\\hostname\share\file)
 gchar *dt_util_path_get_dirname(const gchar *filename)
@@ -744,13 +741,13 @@ gchar *dt_util_path_get_dirname(const gchar *filename)
   gchar *dirname = g_path_get_dirname(filename);
 
   /* Remove trailing slash, as g_path_get_dirname() leaves it for Windows UNC and this messes up film roll name */
-  if (dirname[0])
+  if(dirname[0])
   {
     int last = strlen(dirname) - 1;
-    if (G_IS_DIR_SEPARATOR(dirname[last]))
+    if(G_IS_DIR_SEPARATOR(dirname[last]))
       dirname[last] = '\0';
   }
-  return(dirname);
+  return dirname;
 }
 
 guint dt_util_string_count_char(const char *text, const char needle)

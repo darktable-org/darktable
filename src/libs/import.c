@@ -679,7 +679,12 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
   GFile *gfolder = g_file_parse_name(folder);
 
   // if folder is root, consider one folder separator less
-  const int offset = (dt_util_path_skip_root(folder)[0] ? folder_lgth + 1 : folder_lgth);
+  int offset = (g_path_skip_root(folder)[0] ? folder_lgth + 1 : folder_lgth);
+
+#ifdef WIN32
+  // .. but for Windows UNC there will be a folder separator anyway
+  if(dt_util_path_is_UNC(folder)) offset = folder_lgth + 1;
+#endif
 
   GFileEnumerator *dir_files =
     g_file_enumerate_children(gfolder,
