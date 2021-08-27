@@ -543,7 +543,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else
   { // non-mosaiced
-    const int ch = piece->colors;
+    const size_t ch = piece->colors;
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
@@ -551,11 +551,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     schedule(static) \
     collapse(2)
 #endif
-    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+    for(size_t k = 0; k < ch * roi_out->width * roi_out->height; k += ch)
     {
-      for(int c = 0; c < 3; c++)
+      for(ptrdiff_t c = 0; c < 3; c++)
       {
-        const size_t p = (size_t)k + c;
+        const size_t p = k + c;
         out[p] = in[p] * d->coeffs[c];
       }
     }
@@ -586,7 +586,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   }
   else
   { // non-mosaiced
-    const int ch = piece->colors;
+    const size_t ch = piece->colors;
 
     const __m128 coeffs = _mm_set_ps(1.0f, d->coeffs[2], d->coeffs[1], d->coeffs[0]);
 
@@ -598,8 +598,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
-      const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
-      float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
+      const float *in = ((float *)ivoid) + ch * k * roi_out->width;
+      float *out = ((float *)ovoid) + ch * k * roi_out->width;
       for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
       {
         const __m128 input = _mm_load_ps(in);
