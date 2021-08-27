@@ -238,8 +238,10 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   g_strlcpy(pattern, d->filename, sizeof(pattern));
   gboolean from_cache = FALSE;
   dt_image_full_path(imgid, input_dir, sizeof(input_dir), &from_cache);
-  // set max_width and max_height values to expand them afterwards in darktable variables
+  // set variable values to expand them afterwards in darktable variables
   dt_variables_set_max_width_height(d->vp, fdata->max_width, fdata->max_height);
+  dt_variables_set_upscale(d->vp, upscale);
+
   gboolean fail = FALSE;
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
