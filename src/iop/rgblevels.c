@@ -26,8 +26,9 @@
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "dtgtk/drawingarea.h"
-#include "gui/color_picker_proxy.h"
 #include "gui/accelerators.h"
+#include "gui/color_picker_proxy.h"
+#include "libs/colorpicker.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(5)
 
@@ -775,10 +776,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
    * update as rapidly */
   const float mean_picked_color = *self->picked_color;
 
-  if(self->color_picker_point[0] >= 0.0f
-     && self->color_picker_point[1] >= 0.0f
-     && self->picked_color_max[0] >= 0.0f
-     && mean_picked_color != c->last_picked_color)
+  if(mean_picked_color != c->last_picked_color)
   {
     dt_aligned_pixel_t previous_color;
     previous_color[0] = p->levels[channel][0];

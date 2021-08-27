@@ -49,22 +49,16 @@ typedef struct dt_lib_t
     struct
     {
       struct dt_lib_module_t *module;
-      float *picked_color_rgb_mean;
-      float *picked_color_rgb_min;
-      float *picked_color_rgb_max;
-      float *picked_color_lab_mean;
-      float *picked_color_lab_min;
-      float *picked_color_lab_max;
+      struct dt_colorpicker_sample_t *primary_sample;
+      struct dt_iop_color_picker_t *picker_proxy;
       GSList *live_samples;
       struct dt_colorpicker_sample_t *selected_sample;
-      int size;
-      int display_samples;
-      int restrict_histogram;
+      gboolean display_samples;
+      gboolean restrict_histogram;
       void (*update_panel)(struct dt_lib_module_t *self);
       void (*update_samples)(struct dt_lib_module_t *self);
-      void (*set_sample_area)(struct dt_lib_module_t *self, float size);
-      void (*set_sample_box_area)(struct dt_lib_module_t *self, const float *const size);
-      void (*set_sample_point)(struct dt_lib_module_t *self, float x, float y);
+      void (*set_sample_box_area)(struct dt_lib_module_t *self, const dt_boundingbox_t size);
+      void (*set_sample_point)(struct dt_lib_module_t *self, const float pos[2]);
     } colorpicker;
 
     /** Histogram processing hooks */
@@ -163,13 +157,11 @@ gboolean dt_lib_presets_can_autoapply(dt_lib_module_t *mod);
  * Proxy functions
  */
 
-/** set the colorpicker area selection tool and size, size 0.0 - 1.0 */
-void dt_lib_colorpicker_set_area(dt_lib_t *lib, float size);
 /** set the colorpicker area selection tool and size, box[k] 0.0 - 1.0 */
-void dt_lib_colorpicker_set_box_area(dt_lib_t *lib, const float *const box);
+void dt_lib_colorpicker_set_box_area(dt_lib_t *lib, const dt_boundingbox_t box);
 
 /** set the colorpicker point selection tool and position */
-void dt_lib_colorpicker_set_point(dt_lib_t *lib, float x, float y);
+void dt_lib_colorpicker_set_point(dt_lib_t *lib, const float pos[2]);
 
 /** sorter callback to add a lib in the list of libs after init */
 gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b);

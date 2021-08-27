@@ -76,9 +76,12 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in, float 
   cmsHPROFILE *rgb_profile = NULL;
   cmsHPROFILE *lab_profile = NULL;
 
+  if(type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2)
+    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+
   if(type != DT_COLORSPACE_NONE)
   {
-    const dt_colorspaces_color_profile_t *profile = dt_colorspaces_get_profile(type, filename, DT_PROFILE_DIRECTION_WORK);
+    const dt_colorspaces_color_profile_t *profile = dt_colorspaces_get_profile(type, filename, DT_PROFILE_DIRECTION_ANY);
     if(profile) rgb_profile = profile->profile;
   }
   else
@@ -125,6 +128,10 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in, float 
   }
 
   xform = cmsCreateTransform(input_profile, input_format, output_profile, output_format, intent, 0);
+
+  if(type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2)
+    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+
   if(xform)
   {
 #ifdef _OPENMP
