@@ -127,7 +127,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const dt_iop_velvia_data_t *const data = (dt_iop_velvia_data_t *)piece->data;
 
-  const int ch = piece->colors;
+  const size_t ch = piece->colors;
   const float strength = data->strength / 100.0f;
 
   // Apply velvia saturation
@@ -142,8 +142,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
     {
-      const float *const in = (const float *const)ivoid + (size_t)ch * k;
-      float *const out = (float *const)ovoid + (size_t)ch * k;
+      const float *const in = (const float *const)ivoid + ch * k;
+      float *const out = (float *const)ovoid + ch * k;
 
       // calculate vibrance, and apply boost velvia saturation at least saturated pixels
       float pmax = MAX(in[0], MAX(in[1], in[2])); // max value in RGB set
