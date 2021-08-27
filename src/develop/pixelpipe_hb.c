@@ -659,7 +659,7 @@ static void pixelpipe_picker(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
                              float *picked_color_min, float *picked_color_max,
                              const dt_iop_colorspace_type_t image_cst, dt_pixelpipe_picker_source_t picker_source)
 {
-  int box[4];
+  int box[4] = { 0 };
 
   if(pixelpipe_picker_helper(module, roi, picked_color, picked_color_min, picked_color_max, picker_source, box))
   {
@@ -705,7 +705,7 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_dev_pixel
                                 float *buffer, size_t bufsize, const dt_iop_colorspace_type_t image_cst,
                                 dt_pixelpipe_picker_source_t picker_source)
 {
-  int box[4];
+  int box[4] = { 0 };
 
   if(pixelpipe_picker_helper(module, roi, picked_color, picked_color_min, picked_color_max, picker_source, box))
   {
@@ -719,17 +719,8 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_dev_pixel
     return;
   }
 
-  size_t origin[3];
-  size_t region[3];
-
-  // Initializing bounds of colorpicker box
-  origin[0] = box[0];
-  origin[1] = box[1];
-  origin[2] = 0;
-
-  region[0] = box[2] - box[0];
-  region[1] = box[3] - box[1];
-  region[2] = 1;
+  const size_t origin[3] = { box[0], box[1], 0 };
+  const size_t region[3] = { box[2] - box[0], box[3] - box[1], 1 };
 
   float *pixel = NULL;
   float *tmpbuf = NULL;
@@ -794,10 +785,10 @@ static void _pixelpipe_pick_from_image(dt_iop_module_t *module,
 
   if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
   {
-    int box[4] = {
-      MIN(roi_in->width - 1, MAX(0, sample->box[0] * roi_in->width)),
+    const int box[4] = {
+      MIN(roi_in->width - 1,  MAX(0, sample->box[0] * roi_in->width)),
       MIN(roi_in->height - 1, MAX(0, sample->box[1] * roi_in->height)),
-      MIN(roi_in->width - 1, MAX(0, sample->box[2] * roi_in->width)),
+      MIN(roi_in->width - 1,  MAX(0, sample->box[2] * roi_in->width)),
       MIN(roi_in->height - 1, MAX(0, sample->box[3] * roi_in->height))
     };
     dt_aligned_pixel_t acc = { 0.0f };
@@ -820,9 +811,10 @@ static void _pixelpipe_pick_from_image(dt_iop_module_t *module,
   }
   else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
   {
-    int point[2] = { 0 };
-    point[0] = MIN(roi_in->width - 1, MAX(0, sample->point[0] * roi_in->width));
-    point[1] = MIN(roi_in->height - 1, MAX(0, sample->point[1] * roi_in->height));
+    const int point[2] = {
+      MIN(roi_in->width - 1, MAX(0, sample->point[0] * roi_in->width)),
+      MIN(roi_in->height - 1, MAX(0, sample->point[1] * roi_in->height))
+    };
 
     for_each_channel(i, aligned(picked_color_rgb_min, picked_color_rgb_max, picked_color_rgb_mean) aligned(pixel:64))
       picked_color_rgb_mean[i] = picked_color_rgb_min[i]
