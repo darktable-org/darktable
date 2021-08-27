@@ -112,8 +112,8 @@ const gchar *dt_action_effect_selection[]
       N_("next"),
       N_("previous"),
       N_("reset"),
-      N_("first"),
       N_("last"),
+      N_("first"),
       NULL };
 const gchar *dt_action_effect_toggle[]
   = { N_("toggle"),
@@ -559,7 +559,22 @@ static gchar *_shortcut_description(dt_shortcut_t *s, gboolean full)
     if(def && def->elements)
     {
       // if(s->element || !def->fallbacks ) add_hint(", %s", def->elements[s->element].name);  // "+fallback"
-      if(s->effect > 0) add_hint(", %s", def->elements[s->element].effects[s->effect]);
+      if(def->elements[s->element].effects == dt_action_effect_selection
+          && s->effect > DT_ACTION_EFFECT_COMBO_SEPARATOR)
+      {
+        dt_introspection_type_enum_tuple_t *values
+          = g_hash_table_lookup(darktable.control->combo_introspection, s->action);
+        if(values)
+          add_hint(", %s", _(values[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1].description));
+        else
+        {
+          gchar **strings
+            = g_hash_table_lookup(darktable.control->combo_list, s->action);
+          if(strings)
+            add_hint(", %s", _(strings[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1]));
+        }
+      }
+      else if(s->effect > 0) add_hint(", %s", _(def->elements[s->element].effects[s->effect]));
     }
   }
 
@@ -1063,8 +1078,23 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
       elements = _action_find_elements(s->action);
       if(elements)
       {
-        if(s->effect >= 0
-           && (s->effect || s->action->type != DT_ACTION_TYPE_FALLBACK))
+        if(elements[s->element].effects == dt_action_effect_selection
+           && s->effect > DT_ACTION_EFFECT_COMBO_SEPARATOR)
+        {
+          dt_introspection_type_enum_tuple_t *values
+            = g_hash_table_lookup(darktable.control->combo_introspection, s->action);
+          if(values)
+            field_text = g_strdup(_(values[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1].description));
+          else
+          {
+            gchar **strings
+              = g_hash_table_lookup(darktable.control->combo_list, s->action);
+            if(strings)
+              field_text = g_strdup(_(strings[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1]));
+          }
+        }
+        else if((s->effect == 0 && s->action->type == DT_ACTION_TYPE_FALLBACK)
+                || (s->effect > 0 ))
           field_text = g_strdup(_(elements[s->element].effects[s->effect]));
         if(s->effect == 0) weight = PANGO_WEIGHT_LIGHT;
         editable = TRUE;
@@ -1166,6 +1196,13 @@ static void _element_changed(GtkCellRendererCombo *combo, char *path_string, Gtk
   dt_shortcuts_save(NULL, FALSE);
 }
 
+static gboolean _effects_separator_func(GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
+{
+  gboolean is_separator;
+  gtk_tree_model_get(model, iter, 1, &is_separator, -1);
+  return is_separator;
+}
+
 static void _effect_editing_started(GtkCellRenderer *renderer, GtkCellEditable *editable, char *path, gpointer data)
 {
   dt_shortcut_t *s = find_edited_shortcut(data, path);
@@ -1179,6 +1216,35 @@ static void _effect_editing_started(GtkCellRenderer *renderer, GtkCellEditable *
   if(elements)
     for(const gchar **effect = elements[s->element].effects; *effect ; effect++)
       gtk_list_store_insert_with_values(store, NULL, -1, 0, show_all++ ? _(*effect) : "", -1);
+
+  if(elements[s->element].effects == dt_action_effect_selection)
+  {
+    gtk_combo_box_set_row_separator_func(combo_box, _effects_separator_func, NULL, NULL);
+
+    dt_introspection_type_enum_tuple_t *values
+      = g_hash_table_lookup(darktable.control->combo_introspection, s->action);
+    if(values)
+    {
+      // insert empty/separator row
+      gtk_list_store_insert_with_values(store, NULL, -1, 1, TRUE, -1);
+
+      while(values->name)
+        gtk_list_store_insert_with_values(store, NULL, -1, 0, _((values++)->description), -1);
+    }
+    else
+    {
+      gchar **strings
+        = g_hash_table_lookup(darktable.control->combo_list, s->action);
+      if(strings)
+      {
+        // insert empty/separator row
+        gtk_list_store_insert_with_values(store, NULL, -1, 1, TRUE, -1);
+
+        while(*strings)
+          gtk_list_store_insert_with_values(store, NULL, -1, 0, _(*(strings++)), -1);
+      }
+    }
+  }
 }
 
 static void _effect_changed(GtkCellRendererCombo *combo, char *path_string, GtkTreeIter *new_iter, gpointer data)
@@ -1921,7 +1987,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   _add_prefs_column(shortcuts_view, renderer, _("element"), SHORTCUT_VIEW_ELEMENT);
 
   renderer = gtk_cell_renderer_combo_new();
-  GtkListStore *effects = gtk_list_store_new(1, G_TYPE_STRING);
+  GtkListStore *effects = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_BOOLEAN);
   g_object_set(renderer, "model", effects, "text-column", 0, "has-entry", FALSE, NULL);
   g_signal_connect(renderer, "editing-started" , G_CALLBACK(_effect_editing_started), filtered_shortcuts);
   g_signal_connect(renderer, "changed", G_CALLBACK(_effect_changed), filtered_shortcuts);
@@ -2105,7 +2171,25 @@ static void _shortcuts_save(const gchar *shortcuts_file, const dt_input_device_t
         fprintf(f, ";%s", elements[s->element].name);
       if(s->effect > (_shortcut_is_move(s) ? DT_ACTION_EFFECT_DEFAULT_MOVE
                                            : DT_ACTION_EFFECT_DEFAULT_KEY))
-        fprintf(f, ";%s", elements[s->element].effects[s->effect]);
+      {
+        if(elements[s->element].effects == dt_action_effect_selection
+           && s->effect > DT_ACTION_EFFECT_COMBO_SEPARATOR)
+        {
+          dt_introspection_type_enum_tuple_t *values
+            = g_hash_table_lookup(darktable.control->combo_introspection, s->action);
+          if(values)
+            fprintf(f, ";item:%s", values[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1].description);
+          else
+          {
+            gchar **strings
+              = g_hash_table_lookup(darktable.control->combo_list, s->action);
+            if(strings)
+              fprintf(f, ";item:%s", strings[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1]);
+          }
+        }
+        else
+          fprintf(f, ";%s", elements[s->element].effects[s->effect]);
+     }
 
       if(s->instance == -1) fprintf(f, ";last");
       if(s->instance == +1) fprintf(f, ";first");
@@ -2311,7 +2395,7 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
         }
 
         const dt_action_element_def_t *elements = _action_find_elements(s.action);
-
+        const gchar **effects = NULL;
         gint default_effect = s.effect = _shortcut_is_move(&s)
                                        ? DT_ACTION_EFFECT_DEFAULT_MOVE
                                        : DT_ACTION_EFFECT_DEFAULT_KEY;
@@ -2330,13 +2414,42 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
               continue;
             }
 
-            const gchar **effects = elements[s.element].effects;
+            effects = elements[s.element].effects;
             int effect = -1;
             while(effects[++effect])
               if(!strcmp(token, effects[effect])) break;
             if(effects[effect])
             {
               s.effect = effect;
+              continue;
+            }
+          }
+
+          if(effects == dt_action_effect_selection && g_strstr_len(token, 5, "item:"))
+          {
+            int effect = -1;
+            const char *entry = NULL;
+
+            dt_introspection_type_enum_tuple_t *values
+              = g_hash_table_lookup(darktable.control->combo_introspection, s.action);
+            if(values)
+            {
+              while((entry = values[++effect].description))
+                if(!strcmp(token + 5, entry)) break;
+            }
+            else
+            {
+              gchar **strings
+                = g_hash_table_lookup(darktable.control->combo_list, s.action);
+              if(strings)
+              {
+                while((entry = strings[++effect]))
+                  if(!strcmp(token + 5, entry)) break;
+              }
+            }
+            if(entry)
+            {
+              s.effect = effect + DT_ACTION_EFFECT_COMBO_SEPARATOR + 1;
               continue;
             }
           }
@@ -2559,9 +2672,7 @@ static gboolean _shortcut_match(dt_shortcut_t *f)
       while(_shortcut_closest_match(&existing, f, &matched, def) && !matched) {};
     }
 
-    if(f->move && !f->move_device &&
-       !(f->mods || f->press || f->button || f->click) && // FIXME || f->direction) &&
-       f->effect <= DT_ACTION_EFFECT_DEFAULT_KEY)
+    if(f->move && !f->move_device && !(f->mods || f->press || f->button || f->click))
     {
       f->effect = DT_ACTION_EFFECT_DEFAULT_MOVE;
       matched = TRUE;
@@ -3301,9 +3412,10 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
 static void _remove_widget_from_hashtable(GtkWidget *widget, gpointer user_data)
 {
   dt_action_t *action = g_hash_table_lookup(darktable.control->widgets, widget);
-  if(action && action->target == widget)
+  if(action)
   {
-    action->target = NULL;
+    if(action->target == widget) action->target = NULL;
+
     g_hash_table_remove(darktable.control->widgets, widget);
   }
 }

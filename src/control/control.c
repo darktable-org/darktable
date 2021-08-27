@@ -117,6 +117,8 @@ void dt_control_init(dt_control_t *s)
   s->actions = &s->actions_global;
 
   s->widgets = g_hash_table_new(NULL, NULL);
+  s->combo_introspection = g_hash_table_new(NULL, NULL);
+  s->combo_list = g_hash_table_new(NULL, NULL);
   s->shortcuts = g_sequence_new(g_free);
   s->mapping_widget = NULL;
   s->widget_definitions = g_ptr_array_new ();

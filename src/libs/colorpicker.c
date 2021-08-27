@@ -44,13 +44,12 @@ typedef enum dt_lib_colorpicker_model_t
   DT_LIB_COLORPICKER_MODEL_HSV,
   DT_LIB_COLORPICKER_MODEL_HEX,
   DT_LIB_COLORPICKER_MODEL_NONE,
-  DT_LIB_COLORPICKER_MODEL_N // needs to be the lsat one
 } dt_lib_colorpicker_model_t;
 
-const gchar *dt_lib_colorpicker_model_names[DT_LIB_COLORPICKER_MODEL_N] =
-   {N_("RGB"), N_("Lab"), N_("LCh"), N_("HSL"), N_("HSV"), N_("Hex"), N_("none")};
-const gchar *dt_lib_colorpicker_statistic_names[DT_LIB_COLORPICKER_STATISTIC_N] =
-   {N_("mean"), N_("min"), N_("max")};
+const gchar *dt_lib_colorpicker_model_names[]
+  = { N_("RGB"), N_("Lab"), N_("LCh"), N_("HSL"), N_("HSV"), N_("Hex"), N_("none"), NULL };
+const gchar *dt_lib_colorpicker_statistic_names[]
+  = { N_("mean"), N_("min"), N_("max"), NULL };
 
 typedef struct dt_lib_colorpicker_t
 {
@@ -537,14 +536,16 @@ void gui_init(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.set_sample_box_area = _set_sample_box_area;
   darktable.lib->proxy.colorpicker.set_sample_point = _set_sample_point;
 
-  const char *str = dt_conf_get_string_const("ui_last/colorpicker_model");
-  for(dt_lib_colorpicker_model_t i=0; i<DT_LIB_COLORPICKER_MODEL_N; i++)
-    if(g_strcmp0(str, dt_lib_colorpicker_model_names[i]) == 0)
+  const char *str = dt_conf_get_string_const("ui_last/colorpicker_model"), **names;
+  names = dt_lib_colorpicker_model_names;
+  for(dt_lib_colorpicker_model_t i=0; *names; names++, i++)
+    if(g_strcmp0(str, *names) == 0)
       data->model = i;
 
   str = dt_conf_get_string_const("ui_last/colorpicker_mode");
-  for(dt_lib_colorpicker_statistic_t i=0; i<DT_LIB_COLORPICKER_STATISTIC_N; i++)
-    if(g_strcmp0(str, dt_lib_colorpicker_statistic_names[i]) == 0)
+  names = dt_lib_colorpicker_statistic_names;
+  for(dt_lib_colorpicker_statistic_t i=0; *names; names++, i++)
+    if(g_strcmp0(str, *names) == 0)
       data->statistic = i;
 
   // Setting up the GUI
@@ -572,21 +573,21 @@ void gui_init(dt_lib_module_t *self)
   // The picker button, mode and statistic combo boxes
   GtkWidget *picker_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  data->statistic_selector = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  for(dt_lib_colorpicker_statistic_t i=0; i<DT_LIB_COLORPICKER_STATISTIC_N; i++)
-    dt_bauhaus_combobox_add(data->statistic_selector, _(dt_lib_colorpicker_statistic_names[i]));
-  dt_bauhaus_combobox_set(data->statistic_selector, data->statistic);
+  data->statistic_selector = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("statistic"),
+                                                          _("select which statistic to show"),
+                                                          data->statistic, (GtkCallback)_statistic_changed,
+                                                          self, dt_lib_colorpicker_statistic_names);
   dt_bauhaus_combobox_set_entries_ellipsis(data->statistic_selector, PANGO_ELLIPSIZE_NONE);
-  g_signal_connect(G_OBJECT(data->statistic_selector), "value-changed", G_CALLBACK(_statistic_changed), self);
+  dt_bauhaus_widget_set_label(data->statistic_selector, NULL, NULL);
   gtk_widget_set_valign(data->statistic_selector, GTK_ALIGN_END);
   gtk_box_pack_start(GTK_BOX(picker_row), data->statistic_selector, TRUE, TRUE, 0);
 
-  data->color_mode_selector = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  for(dt_lib_colorpicker_model_t i=0; i<DT_LIB_COLORPICKER_MODEL_N; i++)
-    dt_bauhaus_combobox_add(data->color_mode_selector, _(dt_lib_colorpicker_model_names[i]));
-  dt_bauhaus_combobox_set(data->color_mode_selector, data->model);
+  data->color_mode_selector = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("color mode"),
+                                                           _("select which color mode to use"),
+                                                           data->model, (GtkCallback)_color_mode_changed, self,
+                                                           dt_lib_colorpicker_model_names);
   dt_bauhaus_combobox_set_entries_ellipsis(data->color_mode_selector, PANGO_ELLIPSIZE_NONE);
-  g_signal_connect(G_OBJECT(data->color_mode_selector), "value-changed", G_CALLBACK(_color_mode_changed), self);
+  dt_bauhaus_widget_set_label(data->color_mode_selector, NULL, NULL);
   gtk_widget_set_valign(data->color_mode_selector, GTK_ALIGN_END);
   gtk_box_pack_start(GTK_BOX(picker_row), data->color_mode_selector, TRUE, TRUE, 0);
 

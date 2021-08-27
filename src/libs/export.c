@@ -1162,14 +1162,14 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url("export"));
 
-  d->dimensions_type = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->dimensions_type, NULL, N_("set size"));
-  gtk_widget_set_tooltip_text(d->dimensions_type, _("choose a method for setting the output size"));
-  dt_bauhaus_combobox_add(d->dimensions_type, _("in pixels (for file)"));
-  dt_bauhaus_combobox_add(d->dimensions_type, _("in cm (for print)"));
-  dt_bauhaus_combobox_add(d->dimensions_type, _("in inch (for print)"));
-  dt_bauhaus_combobox_add(d->dimensions_type, _("by scale (for file)"));
-  dt_bauhaus_combobox_set(d->dimensions_type, dt_conf_get_int(CONFIG_PREFIX "dimensions_type"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->dimensions_type, self, NULL, N_("set size"),
+                               _("choose a method for setting the output size"),
+                               dt_conf_get_int(CONFIG_PREFIX "dimensions_type"),
+                               (GtkCallback)_dimensions_type_changed, d,
+                               N_("in pixels (for file)"),
+                               N_("in cm (for print)"),
+                               N_("in inch (for print)"),
+                               N_("by scale (for file)"));
 
   d->print_width = gtk_entry_new();
   gtk_widget_set_tooltip_text(d->print_width, _("maximum output width limit.\n"
@@ -1379,7 +1379,6 @@ void gui_init(dt_lib_module_t *self)
   d->export_button = GTK_BUTTON(dt_ui_button_new(_("export"), _("export with current settings"), NULL));
   gtk_box_pack_start(hbox, GTK_WIDGET(d->export_button), TRUE, TRUE, 0);
 
-  g_signal_connect(G_OBJECT(d->dimensions_type), "value_changed", G_CALLBACK(_dimensions_type_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->export_button), "clicked", G_CALLBACK(_export_button_clicked), (gpointer)d);
   g_signal_connect(G_OBJECT(d->width), "changed", G_CALLBACK(_width_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(_height_changed), (gpointer)d);
