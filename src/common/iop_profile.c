@@ -66,7 +66,7 @@ static void _clear_lut_curves(dt_iop_order_iccprofile_info_t *const profile_info
     profile_info->lut_out[i][0] = -1.0f;
   }
 }
-  
+
 static void _transform_from_to_rgb_lab_lcms2(const float *const image_in, float *const image_out, const int width,
                                              const int height, const dt_colorspaces_color_profile_type_t type,
                                              const char *filename, const int intent, const int direction)
