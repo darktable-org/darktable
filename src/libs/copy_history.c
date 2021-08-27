@@ -387,14 +387,13 @@ void gui_init(dt_lib_module_t *self)
                                        "history_stack.html#history_stack_usage");
   gtk_grid_attach(grid, d->discard_button, 3, line++, 3, 1);
 
-  d->pastemode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->pastemode, NULL, N_("mode"));
-  dt_bauhaus_combobox_add(d->pastemode, _("append"));
-  dt_bauhaus_combobox_add(d->pastemode, _("overwrite"));
-  gtk_widget_set_tooltip_text(d->pastemode, _("how to handle existing history"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->pastemode, self, NULL, N_("mode"),
+                               _("how to handle existing history"),
+                               dt_conf_get_int("plugins/lighttable/copy_history/pastemode"),
+                               pastemode_combobox_changed, self,
+                               N_("append"), N_("overwrite"));
   dt_gui_add_help_link(d->pastemode, dt_get_help_url("history"));
   gtk_grid_attach(grid, d->pastemode, 0, line++, 6, 1);
-  dt_bauhaus_combobox_set(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 
   d->load_button = dt_ui_button_new(_("load sidecar file..."),
                                     _("open an XMP sidecar file\nand apply it to selected images"),
@@ -422,7 +421,6 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->paste_parts), "clicked", G_CALLBACK(paste_parts_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->paste), "clicked", G_CALLBACK(paste_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->load_button), "clicked", G_CALLBACK(load_button_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(d->pastemode), "value-changed", G_CALLBACK(pastemode_combobox_changed), (gpointer)self);
   g_signal_connect(G_OBJECT(d->write_button), "clicked", G_CALLBACK(write_button_clicked), (gpointer)self);
 }
 

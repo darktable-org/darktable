@@ -2264,6 +2264,8 @@ void gui_init(dt_view_t *self)
   g_signal_connect(G_OBJECT(dev->iso_12646.button), "clicked", G_CALLBACK(_iso_12646_quickbutton_clicked), dev);
   dt_view_manager_module_toolbox_add(darktable.view_manager, dev->iso_12646.button, DT_VIEW_DARKROOM);
 
+  GtkWidget *colorscheme, *mode;
+
   /* create rawoverexposed popup tool */
   {
     // the button
@@ -2287,19 +2289,16 @@ void gui_init(dt_view_t *self)
 
     /** let's fill the encapsulating widgets */
     /* mode of operation */
-    GtkWidget *mode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-    dt_bauhaus_widget_set_label(mode, N_("raw overexposed"), N_("mode"));
-    dt_bauhaus_combobox_add(mode, _("mark with CFA color"));
-    dt_bauhaus_combobox_add(mode, _("mark with solid color"));
-    dt_bauhaus_combobox_add(mode, _("false color"));
-    dt_bauhaus_combobox_set(mode, dev->rawoverexposed.mode);
-    gtk_widget_set_tooltip_text(mode, _("select how to mark the clipped pixels"));
-    g_signal_connect(G_OBJECT(mode), "value-changed", G_CALLBACK(rawoverexposed_mode_callback), dev);
+    DT_BAUHAUS_COMBOBOX_NEW_FULL(mode, self, N_("raw overexposed"), N_("mode"),
+                                 _("select how to mark the clipped pixels"),
+                                 dev->rawoverexposed.mode, rawoverexposed_mode_callback, dev,
+                                 N_("mark with CFA color"), N_("mark with solid color"), N_("false color"));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(mode), TRUE, TRUE, 0);
     gtk_widget_set_state_flags(mode, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* color scheme */
-    GtkWidget *colorscheme = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+    // FIXME can't use DT_BAUHAUS_COMBOBOX_NEW_FULL because of (unnecessary?) translation context
+    colorscheme = dt_bauhaus_combobox_new_action(DT_ACTION(self));
     dt_bauhaus_widget_set_label(colorscheme, N_("raw overexposed"), N_("color scheme"));
     dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "red"));
     dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "green"));
@@ -2346,28 +2345,18 @@ void gui_init(dt_view_t *self)
 
     /** let's fill the encapsulating widgets */
     /* preview mode */
-    GtkWidget *mode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-    dt_bauhaus_widget_set_label(mode, N_("overexposed"), N_("clipping preview mode"));
-    dt_bauhaus_combobox_add(mode, _("full gamut"));
-    dt_bauhaus_combobox_add(mode, _("any RGB channel"));
-    dt_bauhaus_combobox_add(mode, _("luminance only"));
-    dt_bauhaus_combobox_add(mode, _("saturation only"));
-    dt_bauhaus_combobox_set(mode, dev->overexposed.mode);
-    gtk_widget_set_tooltip_text(mode, _("select the metric you want to preview\n"
-                                        "full gamut is the combination of all other modes\n"));
-    g_signal_connect(G_OBJECT(mode), "value-changed", G_CALLBACK(mode_callback), dev);
+    DT_BAUHAUS_COMBOBOX_NEW_FULL(mode, self, N_("overexposed"), N_("clipping preview mode"),
+                                 _("select the metric you want to preview\nfull gamut is the combination of all other modes"),
+                                 dev->overexposed.mode, mode_callback, dev,
+                                 N_("full gamut"), N_("any RGB channel"), N_("luminance only"), N_("saturation only"));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(mode), TRUE, TRUE, 0);
     gtk_widget_set_state_flags(mode, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* color scheme */
-    GtkWidget *colorscheme = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-    dt_bauhaus_widget_set_label(colorscheme, N_("overexposed"), N_("color scheme"));
-    dt_bauhaus_combobox_add(colorscheme, _("black & white"));
-    dt_bauhaus_combobox_add(colorscheme, _("red & blue"));
-    dt_bauhaus_combobox_add(colorscheme, _("purple & green"));
-    dt_bauhaus_combobox_set(colorscheme, dev->overexposed.colorscheme);
-    gtk_widget_set_tooltip_text(colorscheme, _("select colors to indicate clipping"));
-    g_signal_connect(G_OBJECT(colorscheme), "value-changed", G_CALLBACK(colorscheme_callback), dev);
+    DT_BAUHAUS_COMBOBOX_NEW_FULL(colorscheme, self, N_("overexposed"), N_("color scheme"),
+                                 _("select colors to indicate clipping"),
+                                 dev->overexposed.colorscheme, colorscheme_callback, dev,
+                                 N_("black & white"), N_("red & blue"), N_("purple & green"));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(colorscheme), TRUE, TRUE, 0);
     gtk_widget_set_state_flags(colorscheme, GTK_STATE_FLAG_SELECTED, TRUE);
 
