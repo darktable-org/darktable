@@ -2155,12 +2155,6 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook, GtkWidget *page
   gtk_widget_queue_draw(self->widget);
 }
 
-static void _color_picker_callback(GtkToggleButton *togglebutton, dt_iop_module_t *module)
-{
-  if(gtk_toggle_button_get_active(togglebutton))
-    dt_iop_color_picker_set_cst(module, iop_cs_LCh);
-}
-
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
@@ -2453,7 +2447,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("   "), FALSE, FALSE, 0);
 
   // color pickers
-  c->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, hbox);
+  c->colorpicker = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_POINT_AREA, hbox, iop_cs_LCh);
   gtk_widget_set_tooltip_text(c->colorpicker, _("pick GUI color from image\nctrl+click to select an area"));
   gtk_widget_set_name(c->colorpicker, "keep-active");
   c->colorpicker_set_values = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, hbox);
@@ -2465,9 +2459,6 @@ void gui_init(struct dt_iop_module_t *self)
                                                            "drag to create a flat curve\n"
                                                            "ctrl+drag to create a positive curve\n"
                                                            "shift+drag to create a negative curve"));
-
-  g_signal_connect(G_OBJECT(c->colorpicker), "toggled", G_CALLBACK(_color_picker_callback), self);
-  g_signal_connect(G_OBJECT(c->colorpicker_set_values), "toggled", G_CALLBACK(_color_picker_callback), self);
 
   // the nice graph
   const float aspect = dt_conf_get_int("plugins/darkroom/colorzones/aspect_percent") / 100.0;

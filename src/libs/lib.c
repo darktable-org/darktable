@@ -1168,24 +1168,17 @@ gchar *dt_lib_get_localized_name(const gchar *plugin_name)
   return (gchar *)g_hash_table_lookup(module_names, plugin_name);
 }
 
-void dt_lib_colorpicker_set_area(dt_lib_t *lib, float size)
-{
-  if(!lib->proxy.colorpicker.module || !lib->proxy.colorpicker.set_sample_area) return;
-  lib->proxy.colorpicker.set_sample_area(lib->proxy.colorpicker.module, size);
-  gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
-}
-
-void dt_lib_colorpicker_set_box_area(dt_lib_t *lib, const float *const box)
+void dt_lib_colorpicker_set_box_area(dt_lib_t *lib, const dt_boundingbox_t box)
 {
   if(!lib->proxy.colorpicker.module || !lib->proxy.colorpicker.set_sample_box_area) return;
   lib->proxy.colorpicker.set_sample_box_area(lib->proxy.colorpicker.module, box);
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 }
 
-void dt_lib_colorpicker_set_point(dt_lib_t *lib, float x, float y)
+void dt_lib_colorpicker_set_point(dt_lib_t *lib, const float pos[2])
 {
   if(!lib->proxy.colorpicker.module || !lib->proxy.colorpicker.set_sample_point) return;
-  lib->proxy.colorpicker.set_sample_point(lib->proxy.colorpicker.module, x, y);
+  lib->proxy.colorpicker.set_sample_point(lib->proxy.colorpicker.module, pos);
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 }
 

@@ -2419,11 +2419,6 @@ void gui_update(dt_iop_module_t *self)
 
   // fetch last view in dartablerc
 
-
-  self->color_picker_box[0] = self->color_picker_box[1] = .25f;
-  self->color_picker_box[2] = self->color_picker_box[3] = .50f;
-  self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
-
   dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
   dt_bauhaus_slider_set_soft(g->grey_point_source, p->grey_point_source);
   dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);

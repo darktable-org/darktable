@@ -32,6 +32,7 @@
 #include "dtgtk/button.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
@@ -611,7 +612,6 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   dt_get_times(&start);
 
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  dt_develop_t *dev = darktable.develop;
 
   // special case, clear the scopes
   if(!input)
@@ -634,24 +634,26 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   // FIXME: if the only time we use roi in histogram to limit area is here, and whenever we use tether there is no colorpicker (true?), and if we're always doing a colorspace transform in darkroom and clip to roi during conversion, then can get rid of all roi code for common/histogram?
   // when darkroom colorpicker is active, gui_module is set to colorout
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view(cv) == DT_VIEW_DARKROOM &&
-     dev->gui_module && !strcmp(dev->gui_module->op, "colorout")
-     && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
-     && darktable.lib->proxy.colorpicker.restrict_histogram)
+  if(cv->view(cv) == DT_VIEW_DARKROOM && darktable.lib->proxy.colorpicker.restrict_histogram)
   {
-    if(darktable.lib->proxy.colorpicker.size == DT_COLORPICKER_SIZE_BOX)
+    const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
+    dt_iop_color_picker_t *proxy = darktable.lib->proxy.colorpicker.picker_proxy;
+    if(sample && sample->size != DT_LIB_COLORPICKER_SIZE_NONE && proxy && !proxy->module)
     {
-      roi.crop_x = MIN(width, MAX(0, dev->gui_module->color_picker_box[0] * width));
-      roi.crop_y = MIN(height, MAX(0, dev->gui_module->color_picker_box[1] * height));
-      roi.crop_width = width - MIN(width, MAX(0, dev->gui_module->color_picker_box[2] * width));
-      roi.crop_height = height - MIN(height, MAX(0, dev->gui_module->color_picker_box[3] * height));
-    }
-    else
-    {
-      roi.crop_x = MIN(width, MAX(0, dev->gui_module->color_picker_point[0] * width));
-      roi.crop_y = MIN(height, MAX(0, dev->gui_module->color_picker_point[1] * height));
-      roi.crop_width = width - MIN(width, MAX(0, dev->gui_module->color_picker_point[0] * width));
-      roi.crop_height = height - MIN(height, MAX(0, dev->gui_module->color_picker_point[1] * height));
+      if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
+      {
+        roi.crop_x = MIN(width, MAX(0, sample->box[0] * width));
+        roi.crop_y = MIN(height, MAX(0, sample->box[1] * height));
+        roi.crop_width = width - MIN(width, MAX(0, sample->box[2] * width));
+        roi.crop_height = height - MIN(height, MAX(0, sample->box[3] * height));
+      }
+      else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
+      {
+        roi.crop_x = MIN(width, MAX(0, sample->point[0] * width));
+        roi.crop_y = MIN(height, MAX(0, sample->point[1] * height));
+        roi.crop_width = width - MIN(width, MAX(0, sample->point[0] * width));
+        roi.crop_height = height - MIN(height, MAX(0, sample->point[1] * height));
+      }
     }
   }
 

@@ -23,7 +23,7 @@
   4 routines (get_set, apply, reset and update, it will handle multiple
   color pickers in a module.
 
-  A simpler version require only apply to be passed and the pciker widget when
+  A simpler version requires only apply to be passed and the picker widget when
   a single color picker is available in a module.
 */
 
@@ -33,9 +33,34 @@
 typedef enum _iop_color_picker_kind_t
 {
   DT_COLOR_PICKER_POINT = 0,
+  // FIXME: s/AREA/BOX/
   DT_COLOR_PICKER_AREA,
   DT_COLOR_PICKER_POINT_AREA // allow the user to select between point and area
 } dt_iop_color_picker_kind_t;
+
+typedef struct dt_iop_color_picker_t
+{
+  // iop which contains this picker, or NULL if primary colorpicker
+  dt_iop_module_t *module;
+  dt_iop_color_picker_kind_t kind;
+  /** requested colorspace for the color picker, valid options are:
+   * iop_cs_NONE: module colorspace
+   * iop_cs_LCh: for Lab modules
+   * iop_cs_HSL: for RGB modules
+   */
+  dt_iop_colorspace_type_t picker_cst;
+  /** used to avoid recursion when a parameter is modified in the apply() */
+  GtkWidget *colorpick;
+  // positions are associated with the current picker widget: will set
+  // the picker request for the primary picker when this picker is
+  // activated, and will remember the most recent picker position
+  float pick_pos[2];
+  dt_boundingbox_t pick_box;
+  gboolean changed;
+} dt_iop_color_picker_t;
+
+
+gboolean dt_iop_color_picker_is_visible(const dt_develop_t *dev);
 
 //* reset current color picker if not keep-active or not keep */
 void dt_iop_color_picker_reset(dt_iop_module_t *module, gboolean keep);
