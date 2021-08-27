@@ -1900,7 +1900,7 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module, const dt_dev_p
 
   float *const bufptr = *buffer;
 
-  _fill_mask(h*w, bufptr, points, center, a, b, ta, tb, alpha, 0);
+  _fill_mask((size_t)(h)*w, bufptr, points, center, a, b, ta, tb, alpha, 0);
 
   dt_free_align(points);
 
@@ -2085,7 +2085,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module, const dt_d
 
   // we calculate the mask values at the transformed points;
   // re-use the points array for results; this requires out_scale==1 to double the offsets at which they are stored
-  _fill_mask(bbh*bbw, points, points, center, a, b, ta, tb, alpha, 1);
+  _fill_mask((size_t)(bbh)*bbw, points, points, center, a, b, ta, tb, alpha, 1);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
   {

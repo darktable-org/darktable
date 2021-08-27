@@ -328,7 +328,7 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
     for (size_t col = 0; col < width; col++)
     {
       fimg[col] = 0.5f;
-      fimg[(height-1)*width + col] = 0.5f;
+      fimg[(size_t)(height-1)*width + col] = 0.5f;
     }
     const size_t nthreads = darktable.num_openmp_threads; // go direct, dt_get_num_threads() always returns numprocs
     const size_t chunksize = (height + nthreads - 1) / nthreads;

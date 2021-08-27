@@ -991,7 +991,7 @@ static inline void inpaint_mask(float *const restrict inpainted, const float *co
       const uint32_t i = k / width;
       const uint32_t j = k - i;
       uint32_t DT_ALIGNED_ARRAY state[4]
-          = { splitmix32(j + 1), splitmix32((j + 1) * (i + 3)),
+          = { splitmix32(j + 1), splitmix32((uint64_t)(j + 1) * (i + 3)),
               splitmix32(1337), splitmix32(666) };
       xoshiro128plus(state);
       xoshiro128plus(state);
@@ -1020,13 +1020,13 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   float *restrict in = DT_IS_ALIGNED((float *const restrict)ivoid);
   float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
 
-  float *const restrict temp1 = dt_alloc_align_float(roi_out->width * roi_out->height * 4);
-  float *const restrict temp2 = dt_alloc_align_float(roi_out->width * roi_out->height * 4);
+  float *const restrict temp1 = dt_alloc_align_float((size_t)roi_out->width * roi_out->height * 4);
+  float *const restrict temp2 = dt_alloc_align_float((size_t)roi_out->width * roi_out->height * 4);
 
   float *restrict temp_in = NULL;
   float *restrict temp_out = NULL;
 
-  uint8_t *const restrict mask = dt_alloc_align(64, roi_out->width * roi_out->height * sizeof(uint8_t));
+  uint8_t *const restrict mask = dt_alloc_align(64, sizeof(uint8_t) * roi_out->width * roi_out->height);
 
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const float final_radius = (data->radius + data->radius_center) * 2.f / scale;

@@ -432,7 +432,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   // check if blend is disabled
   if(!(mask_mode & DEVELOP_MASK_ENABLED)) return;
 
-  const int ch = piece->colors;           // the number of channels in the buffer
+  const size_t ch = piece->colors;           // the number of channels in the buffer
   const int xoffs = roi_out->x - roi_in->x;
   const int yoffs = roi_out->y - roi_in->y;
   const int iwidth = roi_in->width;
@@ -589,8 +589,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
         const float guide_weight = cst == iop_cs_rgb ? 100.0f : 1.0f;
         float *restrict guide = (float *restrict)ivoid;
         if(!rois_equal)
-          guide = _develop_blend_process_copy_region(guide, iwidth * ch, xoffs * ch, yoffs * ch,
-                                                     owidth * ch, oheight * ch);
+          guide = _develop_blend_process_copy_region(guide, ch * iwidth, ch * xoffs, ch * yoffs,
+                                                     ch * owidth, ch * oheight);
         if(guide)
           _develop_blend_process_feather(guide, mask, owidth, oheight, ch, guide_weight,
                                          d->feathering_radius, roi_out->scale / piece->iscale);
@@ -687,13 +687,13 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   const int owidth  = roi_in->width;
   const int oheight = roi_in->height;
 
-  lum = dt_alloc_align_float(iwidth * iheight);
+  lum = dt_alloc_align_float((size_t)iwidth * iheight);
   if(lum == NULL) goto error;
   tmp = dt_opencl_alloc_device(devid, iwidth, iheight, sizeof(float));
   if(tmp == NULL) goto error;
-  out = dt_opencl_alloc_device_buffer(devid, iwidth * iheight * sizeof(float));
+  out = dt_opencl_alloc_device_buffer(devid, sizeof(float) * iwidth * iheight);
   if(out == NULL) goto error;
-  blur = dt_opencl_alloc_device_buffer(devid, iwidth * iheight * sizeof(float));
+  blur = dt_opencl_alloc_device_buffer(devid, sizeof(float) * iwidth * iheight);
   if(blur == NULL) goto error;
 
   {

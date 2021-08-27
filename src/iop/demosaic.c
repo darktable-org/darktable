@@ -3484,21 +3484,21 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     dt_opencl_release_mem_object(dev_tmp);
     dev_tmp = NULL;
 
-    cfa = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
+    cfa = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
     if(cfa == NULL) goto error;
-    VH_dir = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
+    VH_dir = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
     if(VH_dir == NULL) goto error;
-    PQ_dir = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
+    PQ_dir = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
     if(PQ_dir == NULL) goto error;
-    VP_diff = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
+    VP_diff = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
     if(VP_diff == NULL) goto error;
-    HQ_diff = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
+    HQ_diff = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
     if(HQ_diff == NULL) goto error;
-    rgb0 = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
+    rgb0 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
     if(rgb0 == NULL) goto error;
-    rgb1 = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
+    rgb1 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
     if(rgb1 == NULL) goto error;
-    rgb2 = dt_opencl_alloc_device_buffer(devid, roi_in->width * roi_in->height * sizeof(float));
+    rgb2 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_in->width * roi_in->height);
     if(rgb2 == NULL) goto error;
 
     {
@@ -5221,8 +5221,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dev_aux = dev_out;
 
   // here we have work to be done only for dual demosaicers
-  blend = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
-  details = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
+  blend = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
+  details = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
   low_image = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if((blend == NULL) || (low_image == NULL) || (details == NULL)) goto finish;
 

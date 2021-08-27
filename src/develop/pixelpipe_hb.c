@@ -1536,7 +1536,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
             // we abuse the empty output buffer on host for intermediate storage of data in
             // pixelpipe_picker_cl()
-            const size_t outbufsize = roi_out->width * roi_out->height * bpp;
+            const size_t outbufsize = bpp * roi_out->width * roi_out->height;
 
             pixelpipe_picker_cl(pipe->devid, module, piece, &piece->dsc_in, cl_mem_input, &roi_in,
                                 module->picked_color, module->picked_color_min, module->picked_color_max,
@@ -2519,7 +2519,7 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
   if(mask == NULL) goto error;
   out = dt_opencl_alloc_device(devid, width, height, sizeof(float));
   if(out == NULL) goto error;
-  tmp = dt_opencl_alloc_device_buffer(devid, width * height * sizeof(float));
+  tmp = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
   if(tmp == NULL) goto error;
   {
     const int kernel = darktable.opencl->blendop->kernel_calc_Y0_mask;
