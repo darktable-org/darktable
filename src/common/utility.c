@@ -680,7 +680,8 @@ gchar *dt_util_normalize_path(const gchar *_input)
   // another problem is that path separators can either be / or \ leading to even more problems.
 
   // TODO:
-  // this only handles filenames in the old <drive letter>:\path\to\file form, not the \\?\UNC\ form and not some others like \Device\...
+  // this handles filenames in the formats <drive letter>:\path\to\file or \\host-name\share-name\file
+  // some other formats like \Device\... are not supported
 
   // the Windows api expects wide chars and not utf8 :(
   wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
@@ -708,16 +709,45 @@ gchar *dt_util_normalize_path(const gchar *_input)
   if(!filename)
     return NULL;
 
-  const char drive_letter = g_ascii_toupper(filename[0]);
-  if(drive_letter < 'A' || drive_letter > 'Z' || filename[1] != ':')
+  const char first = g_ascii_toupper(filename[0]);
+  if(first >= 'A' && first <= 'Z' && filename[1] == ':') // path format is <drive letter>:\path\to\file
+  {
+    filename[0] = first;
+    return filename;
+  }
+  else if(first == '\\' && filename[1] == '\\') // path format is \\host-name\share-name\file
+    return filename;
+  else
   {
     g_free(filename);
     return NULL;
   }
-  filename[0] = drive_letter;
 #endif
 
   return filename;
+}
+
+#ifdef WIN32
+// returns TRUE if the path is a Windows UNC (\\server\share\...\file)
+const gboolean dt_util_path_is_UNC(const gchar *filename)
+{
+  return filename[0] == G_DIR_SEPARATOR && filename[1] == G_DIR_SEPARATOR;
+}
+#endif
+
+// gets the directory components of a file name, like g_path_get_dirname(), but works also with Windows networks paths (\\hostname\share\file)
+gchar *dt_util_path_get_dirname(const gchar *filename)
+{
+  gchar *dirname = g_path_get_dirname(filename);
+
+  /* Remove trailing slash, as g_path_get_dirname() leaves it for Windows UNC and this messes up film roll name */
+  if(dirname[0])
+  {
+    int last = strlen(dirname) - 1;
+    if(G_IS_DIR_SEPARATOR(dirname[last]))
+      dirname[last] = '\0';
+  }
+  return dirname;
 }
 
 guint dt_util_string_count_char(const char *text, const char needle)

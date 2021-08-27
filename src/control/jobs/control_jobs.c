@@ -2137,7 +2137,7 @@ static int _control_import_image_insitu(const char *filename, GList **imgs, doub
                                         double *update_interval)
 {
   dt_conf_set_int("ui_last/import_last_image", -1);
-  char *dirname = g_path_get_dirname(filename);
+  char *dirname = dt_util_path_get_dirname(filename);
   dt_film_t film;
   const int filmid = dt_film_new(&film, dirname);
   const int32_t imgid = dt_image_import(filmid, filename, FALSE, FALSE);
