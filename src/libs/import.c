@@ -679,7 +679,12 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
   GFile *gfolder = g_file_parse_name(folder);
 
   // if folder is root, consider one folder separator less
-  const int offset = (g_path_skip_root(folder)[0] ? folder_lgth + 1 : folder_lgth);
+  int offset = (g_path_skip_root(folder)[0] ? folder_lgth + 1 : folder_lgth);
+
+#ifdef WIN32
+  // .. but for Windows UNC there will be a folder separator anyway
+  if(dt_util_path_is_UNC(folder)) offset = folder_lgth + 1;
+#endif
 
   GFileEnumerator *dir_files =
     g_file_enumerate_children(gfolder,
@@ -1534,31 +1539,25 @@ static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("open folder"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
-      GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(filechooser);
-#endif
 
-  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
-  dt_conf_get_folder_to_file_chooser("ui_last/import_last_place", filechooser);
+  GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
+      _("open folder"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_open"), _("_cancel"));
 
-  // run the dialog
-  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  // run the native dialog
+  dt_conf_get_folder_to_file_chooser("ui_last/import_last_place", GTK_WIDGET(filechooser));
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
-    gtk_widget_hide(filechooser);
-    GSList *list = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(filechooser));
-    _add_custom_place((char *)list->data, self);
-
-    dt_conf_set_string("ui_last/import_last_directory", "");
-    dt_conf_set_bool("ui_last/import_recursive", FALSE);
-    dt_gui_preferences_bool_update(d->recursive);
-    g_slist_free_full(list, g_free);
-    _update_folders_list(self);
-    _update_files_list(self);
+    char *dirname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    _add_custom_place(dirname, self);
+    g_free(dirname);
   }
-  gtk_widget_destroy(filechooser);
+  g_object_unref(filechooser);
+
+  dt_conf_set_string("ui_last/import_last_directory", "");
+  dt_conf_set_bool("ui_last/import_recursive", FALSE);
+  dt_gui_preferences_bool_update(d->recursive);
+  _update_folders_list(self);
+  _update_files_list(self);
 }
 
 static gboolean _handle_enter(GtkWidget *widget, GdkEventKey *event, dt_lib_module_t* self)
@@ -1666,20 +1665,16 @@ static void _browse_basedir_clicked(GtkWidget *widget, GtkEntry *basedir)
   {
     topwindow = dt_ui_main_window(darktable.gui->ui);
   }
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("select directory"), GTK_WINDOW(topwindow), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
-      GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(filechooser);
-#endif
 
-  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+  GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
+      _("select directory"), GTK_WINDOW(topwindow), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_open"), _("_cancel"));
+
   gchar *old = g_strdup(gtk_entry_get_text(basedir));
   char *c = g_strstr_len(old, -1, "$");
   if(c) *c = '\0';
   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), old);
   g_free(old);
-  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
 
@@ -1693,7 +1688,7 @@ static void _browse_basedir_clicked(GtkWidget *widget, GtkEntry *basedir)
     g_free(dir);
     g_free(escaped);
   }
-  gtk_widget_destroy(filechooser);
+  g_object_unref(filechooser);
 }
 
 static void _set_expander_content(GtkWidget *rbox, dt_lib_module_t* self)
