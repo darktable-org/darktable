@@ -566,10 +566,53 @@
     <longdescription>sort the following collections in descending order: 'film roll' by folder, 'folder', 'times' (e.g. 'date taken')</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>ui_last/colorpicker_mean</name>
-    <type>int</type>
-    <default>0</default>
-    <shortdescription>0: mean, 1: min, 2: max</shortdescription>
+    <name>ui_last/colorpicker_model</name>
+    <type>
+      <enum>
+	<option>RGB</option>
+	<option>Lab</option>
+	<option>LCh</option>
+	<option>HSL</option>
+	<option>Hex</option>
+	<option>none</option>
+      </enum>
+    </type>
+    <default>RGB</default>
+    <shortdescription>color model with which to represent primary colorpicker</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/colorpicker_mode</name>
+    <type>
+      <enum>
+	<option>mean</option>
+	<option>min</option>
+	<option>max</option>
+      </enum>
+    </type>
+    <default>mean</default>
+    <shortdescription>statistic used to describe colorpicker box</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/colorpicker_display_samples</name>
+    <type>boolean</type>
+    <default>false</default>
+    <shortdescription>display live sample areas on image</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/colorpicker_restrict_histogram</name>
+    <type>boolean</type>
+    <default>false</default>
+    <shortdescription>restrict histogram to selection</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/colorpicker_large</name>
+    <type>boolean</type>
+    <default>false</default>
+    <shortdescription>display large colorpicker patch</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>

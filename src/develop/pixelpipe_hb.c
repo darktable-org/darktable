@@ -585,7 +585,7 @@ static void histogram_collect_cl(int devid, dt_dev_pixelpipe_iop_t *piece, cl_me
 }
 #endif
 
-// helper for color picking
+// helper for per-module color picking
 static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *roi, dt_aligned_pixel_t picked_color,
                                    dt_aligned_pixel_t picked_color_min, dt_aligned_pixel_t picked_color_max,
                                    dt_pixelpipe_picker_source_t picker_source, int *box)
@@ -597,23 +597,24 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   const dt_image_t image = darktable.develop->image_storage;
   const int op_after_demosaic = dt_ioppr_is_iop_before(darktable.develop->preview_pipe->iop_order_list,
                                                        module->op, "demosaic", 0);
+  const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
 
-  // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined
-  // position
-  if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return 1;
+  // do not continue if a not yet defined picker area
+  if(!sample || sample->size == DT_LIB_COLORPICKER_SIZE_NONE)
+    return 1;
 
   dt_boundingbox_t fbox = { 0.0f };
 
   // get absolute pixel coordinates in final preview image
-  if(darktable.lib->proxy.colorpicker.size)
+  if(sample && sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
   {
-    for(int k = 0; k < 4; k += 2) fbox[k] = module->color_picker_box[k] * wd;
-    for(int k = 1; k < 4; k += 2) fbox[k] = module->color_picker_box[k] * ht;
+    for(int k = 0; k < 4; k += 2) fbox[k] = sample->box[k] * wd;
+    for(int k = 1; k < 4; k += 2) fbox[k] = sample->box[k] * ht;
   }
   else
   {
-    fbox[0] = fbox[2] = module->color_picker_point[0] * wd;
-    fbox[1] = fbox[3] = module->color_picker_point[1] * ht;
+    fbox[0] = fbox[2] = sample->point[0] * wd;
+    fbox[1] = fbox[3] = sample->point[1] * ht;
   }
 
   // transform back to current module coordinates
@@ -634,7 +635,7 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   box[2] = fmaxf(fbox[0], fbox[2]);
   box[3] = fmaxf(fbox[1], fbox[3]);
 
-  if(!darktable.lib->proxy.colorpicker.size)
+  if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
   {
     // if we are sampling one point, make sure that we actually sample it.
     for(int k = 2; k < 4; k++) box[k] += 1;
@@ -781,232 +782,115 @@ error:
 }
 #endif
 
-static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_roi_t *roi_in,
-                                       cmsHTRANSFORM xform_rgb2lab, cmsHTRANSFORM xform_rgb2rgb,
-                                       const float *const pick_box, const float *const pick_point,
-                                       const int pick_size, dt_aligned_pixel_t pick_color_rgb_min,
-                                       dt_aligned_pixel_t pick_color_rgb_max, dt_aligned_pixel_t pick_color_rgb_mean,
-                                       dt_aligned_pixel_t pick_color_lab_min, dt_aligned_pixel_t pick_color_lab_max,
-                                       dt_aligned_pixel_t pick_color_lab_mean)
+static void _pixelpipe_pick_from_image(dt_iop_module_t *module,
+                                       const float *const pixel, const dt_iop_roi_t *roi_in,
+                                       const dt_iop_order_iccprofile_info_t *const display_profile,
+                                       const dt_iop_order_iccprofile_info_t *const histogram_profile,
+                                       dt_colorpicker_sample_t *const sample)
 {
-  dt_aligned_pixel_t picked_color_rgb_min = { 0.0f };
-  dt_aligned_pixel_t picked_color_rgb_max = { 0.0f };
+  dt_aligned_pixel_t picked_color_rgb_min = { FLT_MAX, FLT_MAX, FLT_MAX };
+  dt_aligned_pixel_t picked_color_rgb_max = { FLT_MIN, FLT_MIN, FLT_MIN };
   dt_aligned_pixel_t picked_color_rgb_mean = { 0.0f };
 
-  for(int k = 0; k < 3; k++) picked_color_rgb_min[k] = FLT_MAX;
-  for(int k = 0; k < 3; k++) picked_color_rgb_max[k] = FLT_MIN;
-
-  int box[4] = { 0 };
-  int point[2] = { 0 };
-
-  for(int k = 0; k < 4; k += 2)
-    box[k] = MIN(roi_in->width - 1, MAX(0, pick_box[k] * roi_in->width));
-  for(int k = 1; k < 4; k += 2)
-    box[k] = MIN(roi_in->height - 1, MAX(0, pick_box[k] * roi_in->height));
-  point[0] = MIN(roi_in->width - 1, MAX(0, pick_point[0] * roi_in->width));
-  point[1] = MIN(roi_in->height - 1, MAX(0, pick_point[1] * roi_in->height));
-
-  dt_aligned_pixel_t rgb = { 0.0f };
-
-  const float w = 1.0 / ((box[3] - box[1] + 1) * (box[2] - box[0] + 1));
-
-  if(pick_size == DT_COLORPICKER_SIZE_BOX)
+  if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
   {
+    int box[4] = {
+      MIN(roi_in->width - 1, MAX(0, sample->box[0] * roi_in->width)),
+      MIN(roi_in->height - 1, MAX(0, sample->box[1] * roi_in->height)),
+      MIN(roi_in->width - 1, MAX(0, sample->box[2] * roi_in->width)),
+      MIN(roi_in->height - 1, MAX(0, sample->box[3] * roi_in->height))
+    };
+    dt_aligned_pixel_t acc = { 0.0f };
+
     for(int j = box[1]; j <= box[3]; j++)
       for(int i = box[0]; i <= box[2]; i++)
       {
-        for(int k = 0; k < 3; k++)
+        for_each_channel(k, aligned(picked_color_rgb_min, picked_color_rgb_max, acc) aligned(pixel:64))
         {
           picked_color_rgb_min[k]
               = MIN(picked_color_rgb_min[k], pixel[4 * (roi_in->width * j + i) + k]);
           picked_color_rgb_max[k]
               = MAX(picked_color_rgb_max[k], pixel[4 * (roi_in->width * j + i) + k]);
-          rgb[k] += w * pixel[4 * (roi_in->width * j + i) + k];
+          acc[k] += pixel[4 * (roi_in->width * j + i) + k];
         }
       }
-    for(int k = 0; k < 3; k++) picked_color_rgb_mean[k] = rgb[k];
+
+    for_each_channel(k, aligned(picked_color_rgb_mean, acc:16))
+      picked_color_rgb_mean[k] = acc[k] / ((box[3] - box[1] + 1) * (box[2] - box[0] + 1));
   }
-  else
+  else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
   {
-    for(int i = 0; i < 3; i++)
+    int point[2] = { 0 };
+    point[0] = MIN(roi_in->width - 1, MAX(0, sample->point[0] * roi_in->width));
+    point[1] = MIN(roi_in->height - 1, MAX(0, sample->point[1] * roi_in->height));
+
+    for_each_channel(i, aligned(picked_color_rgb_min, picked_color_rgb_max, picked_color_rgb_mean) aligned(pixel:64))
       picked_color_rgb_mean[i] = picked_color_rgb_min[i]
           = picked_color_rgb_max[i] = pixel[4 * (roi_in->width * point[1] + point[0]) + i];
   }
 
+  // convenient to have pixels in display profile, which makes them easy to display
+  for_each_channel(i, aligned(picked_color_rgb_min, picked_color_rgb_max, picked_color_rgb_mean))
+  {
+    sample->picked_color_display_rgb_mean[i] = picked_color_rgb_mean[i];
+    sample->picked_color_display_rgb_min[i] = picked_color_rgb_min[i];
+    sample->picked_color_display_rgb_max[i] = picked_color_rgb_max[i];
+  }
+
   // Converting the display RGB values to histogram RGB
-  if(xform_rgb2rgb)
-  {
-    // Preparing the data for transformation
-    float rgb_ddata[9] = { 0.0f };
-    for(int i = 0; i < 3; i++)
-    {
-      rgb_ddata[i] = picked_color_rgb_mean[i];
-      rgb_ddata[i + 3] = picked_color_rgb_min[i];
-      rgb_ddata[i + 6] = picked_color_rgb_max[i];
-    }
+  // FIXME: if we're doing a point sample, we only need to convert one value then copy it to mean/min/max
+  dt_aligned_pixel_t rgb[3];
+  dt_aligned_pixel_t lab[3] = { { 0.0f }, { 0.0f }, { 0.0f } };
+  int converted_cst;
 
-    float rgb_odata[9] = { 0.0f };
-    cmsDoTransform(xform_rgb2rgb, rgb_ddata, rgb_odata, 3);
-
-    for(int i = 0; i < 3; i++)
-    {
-      pick_color_rgb_mean[i] = rgb_odata[i];
-      pick_color_rgb_min[i] = rgb_odata[i + 3];
-      pick_color_rgb_max[i] = rgb_odata[i + 6];
-    }
-  }
-  else
+  for_each_channel(i, aligned(rgb, picked_color_rgb_min, picked_color_rgb_max, picked_color_rgb_mean))
   {
-    for(int i = 0; i < 3; i++)
-    {
-      pick_color_rgb_mean[i] = picked_color_rgb_mean[i];
-      pick_color_rgb_min[i] = picked_color_rgb_min[i];
-      pick_color_rgb_max[i] = picked_color_rgb_max[i];
-    }
+    rgb[0][i] = picked_color_rgb_mean[i];
+    rgb[1][i] = picked_color_rgb_min[i];
+    rgb[2][i] = picked_color_rgb_max[i];
   }
 
-  // Converting the RGB values to Lab
-  if(xform_rgb2lab)
+  dt_ioppr_transform_image_colorspace(module, rgb[0], lab[0], 3, 1, iop_cs_rgb, iop_cs_Lab,
+                                      &converted_cst, display_profile);
+  if(display_profile && histogram_profile)
+    dt_ioppr_transform_image_colorspace_rgb(rgb[0], rgb[0], 3, 1, display_profile, histogram_profile, "primary picker");
+
+  for_each_channel(i, aligned(rgb, picked_color_rgb_min, picked_color_rgb_max, picked_color_rgb_mean))
   {
-    // Preparing the data for transformation
-    float rgb_data[9] = { 0.0f };
-    for(int i = 0; i < 3; i++)
-    {
-      rgb_data[i] = picked_color_rgb_mean[i];
-      rgb_data[i + 3] = picked_color_rgb_min[i];
-      rgb_data[i + 6] = picked_color_rgb_max[i];
-    }
+    sample->picked_color_lab_mean[i] = lab[0][i];
+    sample->picked_color_lab_min[i] = lab[1][i];
+    sample->picked_color_lab_max[i] = lab[2][i];
+  }
 
-    float Lab_data[9] = { 0.0f };
-    cmsDoTransform(xform_rgb2lab, rgb_data, Lab_data, 3);
-
-    for(int i = 0; i < 3; i++)
-    {
-      pick_color_lab_mean[i] = Lab_data[i];
-      pick_color_lab_min[i] = Lab_data[i + 3];
-      pick_color_lab_max[i] = Lab_data[i + 6];
-    }
+  for_each_channel(i, aligned(rgb, picked_color_rgb_min, picked_color_rgb_max, picked_color_rgb_mean))
+  {
+    sample->picked_color_rgb_mean[i] = rgb[0][i];
+    sample->picked_color_rgb_min[i] = rgb[1][i];
+    sample->picked_color_rgb_max[i] = rgb[2][i];
   }
 }
 
-static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_roi_t *roi_in)
+static void _pixelpipe_pick_samples(dt_develop_t *dev, dt_iop_module_t *module,
+                                    const float *const input, const dt_iop_roi_t *roi_in,
+                                    gboolean primary_picker_active)
 {
-  cmsHPROFILE display_profile = NULL;
-  cmsHPROFILE histogram_profile = NULL;
-  cmsHPROFILE lab_profile = NULL;
-  cmsHTRANSFORM xform_rgb2lab = NULL;
-  cmsHTRANSFORM xform_rgb2rgb = NULL;
-  dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
-  const gchar *histogram_filename = NULL;
-  const gchar _histogram_filename[1] = { 0 };
+  const dt_iop_order_iccprofile_info_t *const histogram_profile = dt_ioppr_get_histogram_profile_info(dev);
+  const dt_iop_order_iccprofile_info_t *const display_profile
+    = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
+                                        darktable.color_profiles->display_filename, INTENT_RELATIVE_COLORIMETRIC);
 
-  dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
-  if(histogram_filename == NULL) histogram_filename = _histogram_filename;
-
-  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
-    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
-
-  const dt_colorspaces_color_profile_t *d_profile = dt_colorspaces_get_profile(darktable.color_profiles->display_type,
-                                                       darktable.color_profiles->display_filename,
-                                                       DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
-  if(d_profile) display_profile = d_profile->profile;
-
-  if((histogram_type != darktable.color_profiles->display_type)
-     || (histogram_type == DT_COLORSPACE_FILE
-         && strcmp(histogram_filename, darktable.color_profiles->display_filename)))
+  GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
+  while(samples)
   {
-    const dt_colorspaces_color_profile_t *d_histogram = dt_colorspaces_get_profile(histogram_type,
-                                                         histogram_filename,
-                                                         DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
-    if(d_histogram) histogram_profile = d_histogram->profile;
+    dt_colorpicker_sample_t *sample = samples->data;
+    if(!sample->locked)
+      _pixelpipe_pick_from_image(module, input, roi_in, display_profile, histogram_profile, sample);
+    samples = g_slist_next(samples);
   }
 
-  lab_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
-
-  // display rgb --> lab
-  if(display_profile && lab_profile)
-    xform_rgb2lab = cmsCreateTransform(display_profile, TYPE_RGB_FLT, lab_profile, TYPE_Lab_FLT, INTENT_PERCEPTUAL, 0);
-
-  // display rgb --> histogram rgb
-  if(display_profile && histogram_profile)
-    xform_rgb2rgb = cmsCreateTransform(display_profile, TYPE_RGB_FLT, histogram_profile, TYPE_RGB_FLT, INTENT_RELATIVE_COLORIMETRIC, 0);
-
-  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
-    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-
-  dt_colorpicker_sample_t *sample = NULL;
-
-  for(GSList *samples = darktable.lib->proxy.colorpicker.live_samples; samples; samples = g_slist_next(samples))
-  {
-    sample = samples->data;
-
-    if(sample->locked)
-    {
-      continue;
-    }
-
-    _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab, xform_rgb2rgb,
-        sample->box, sample->point, sample->size,
-        sample->picked_color_rgb_min, sample->picked_color_rgb_max, sample->picked_color_rgb_mean,
-        sample->picked_color_lab_min, sample->picked_color_lab_max, sample->picked_color_lab_mean);
-  }
-
-  if(xform_rgb2lab) cmsDeleteTransform(xform_rgb2lab);
-  if(xform_rgb2rgb) cmsDeleteTransform(xform_rgb2rgb);
-}
-
-static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *const input, const dt_iop_roi_t *roi_in)
-{
-  cmsHPROFILE display_profile = NULL;
-  cmsHPROFILE histogram_profile = NULL;
-  cmsHPROFILE lab_profile = NULL;
-  cmsHTRANSFORM xform_rgb2lab = NULL;
-  cmsHTRANSFORM xform_rgb2rgb = NULL;
-  dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
-  const gchar *histogram_filename = NULL;
-  const gchar _histogram_filename[1] = { 0 };
-
-  dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
-  if(histogram_filename == NULL) histogram_filename = _histogram_filename;
-
-  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
-    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
-
-  const dt_colorspaces_color_profile_t *d_profile = dt_colorspaces_get_profile(darktable.color_profiles->display_type,
-                                                       darktable.color_profiles->display_filename,
-                                                       DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
-  if(d_profile) display_profile = d_profile->profile;
-
-  if((histogram_type != darktable.color_profiles->display_type)
-     || (histogram_type == DT_COLORSPACE_FILE
-         && strcmp(histogram_filename, darktable.color_profiles->display_filename)))
-  {
-    const dt_colorspaces_color_profile_t *d_histogram = dt_colorspaces_get_profile(histogram_type,
-                                                         histogram_filename,
-                                                         DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
-    if(d_histogram) histogram_profile = d_histogram->profile;
-  }
-
-  lab_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
-
-  // display rgb --> lab
-  if(display_profile && lab_profile)
-    xform_rgb2lab = cmsCreateTransform(display_profile, TYPE_RGB_FLT, lab_profile, TYPE_Lab_FLT, INTENT_PERCEPTUAL, 0);
-
-  // display rgb --> histogram rgb
-  if(display_profile && histogram_profile)
-    xform_rgb2rgb = cmsCreateTransform(display_profile, TYPE_RGB_FLT, histogram_profile, TYPE_RGB_FLT, INTENT_RELATIVE_COLORIMETRIC, 0);
-
-  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
-    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-
-  _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab, xform_rgb2rgb,
-      dev->gui_module->color_picker_box, dev->gui_module->color_picker_point, darktable.lib->proxy.colorpicker.size,
-      darktable.lib->proxy.colorpicker.picked_color_rgb_min, darktable.lib->proxy.colorpicker.picked_color_rgb_max, darktable.lib->proxy.colorpicker.picked_color_rgb_mean,
-      darktable.lib->proxy.colorpicker.picked_color_lab_min, darktable.lib->proxy.colorpicker.picked_color_lab_max, darktable.lib->proxy.colorpicker.picked_color_lab_mean);
-
-  if(xform_rgb2lab) cmsDeleteTransform(xform_rgb2lab);
-  if(xform_rgb2rgb) cmsDeleteTransform(xform_rgb2rgb);
+  if(primary_picker_active)
+    _pixelpipe_pick_from_image(module, input, roi_in, display_profile, histogram_profile,
+                               darktable.lib->proxy.colorpicker.primary_sample);
 }
 
 // returns 1 if blend process need the module default colorspace
@@ -1051,20 +935,16 @@ static dt_iop_colorspace_type_t _transform_for_picker(dt_iop_module_t *self, con
 
 static gboolean _request_color_pick(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, dt_iop_module_t *module)
 {
-  // Special case the colorout module used for the global
-  // colorpicker. In this module we don't have a colorpicker, and so
-  // this cannot be a module picker. The global colorpicker use the
-  // colorout in the pipe as process point for taking the samples.
-
+  // Does the current active module need a picker?
   return
     // pick from preview pipe to get pixels outside the viewport
     dev->gui_attached && pipe == dev->preview_pipe
     // only modules with focus can pick
     && module == dev->gui_module
+    // and they are enabled
+    && dev->gui_module->enabled
     // and they want to pick ;)
-    && module->request_color_pick != DT_REQUEST_COLORPICK_OFF
-    // and this is not the global colorpicker
-    && strcmp(module->op, "colorout");
+    && module->request_color_pick != DT_REQUEST_COLORPICK_OFF;
 }
 
 static void collect_histogram_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
@@ -1801,6 +1681,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           {
             // ensure that we are using the right color space
             dt_iop_colorspace_type_t picker_cst = _transform_for_picker(module, pipe->dsc.cst);
+            // FIXME: don't need to transform entire image colorspace when just picking a point
             dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height,
                                                 input_format->cst, picker_cst, &input_format->cst,
                                                 work_profile);
@@ -2167,26 +2048,18 @@ post_process_collect_info:
     {
       return 1;
     }
-    // Picking RGB for the live samples and converting to Lab
-    if(dev->gui_attached && pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0)
-       && darktable.lib->proxy.colorpicker.live_samples && input) // samples to pick
-    {
-      _pixelpipe_pick_live_samples((const float *const )input, &roi_in);
-    }
-
-    if(dt_atomic_get_int(&pipe->shutdown))
-      return 1;
-
-    // Picking RGB for primary colorpicker output and converting to Lab
+    // Pick RGB/Lab for the primary colorpicker and live samples
     if(dev->gui_attached && pipe == dev->preview_pipe
        && (strcmp(module->op, "gamma") == 0) // only gamma provides meaningful RGB data
-       && dev->gui_module && !strcmp(dev->gui_module->op, "colorout")
-       && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
-       && darktable.lib->proxy.colorpicker.picked_color_rgb_mean && input) // colorpicker module active
+       && input)
     {
-      _pixelpipe_pick_primary_colorpicker(dev, (const float *const )input, &roi_in);
-
-      if(module->widget) dt_control_queue_redraw_widget(module->widget);
+      const gboolean primary_picker_active = darktable.lib->proxy.colorpicker.primary_sample
+        && darktable.lib->proxy.colorpicker.primary_sample->size != DT_LIB_COLORPICKER_SIZE_NONE;
+      if(primary_picker_active || darktable.lib->proxy.colorpicker.live_samples)
+      {
+        _pixelpipe_pick_samples(dev, module, (const float *const )input, &roi_in, primary_picker_active);
+        DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY, NULL, NULL);
+      }
     }
 
     // 4) final histogram:
@@ -2207,6 +2080,7 @@ post_process_collect_info:
       // benefit via a histogram.
       if(input == NULL)
       {
+        // FIXME: really get rid of this case -- colorpicker does just fine with skipping when (if??) input is NULL
         // input may not be available, so we use the output from gamma
         // this may lead to some rounding errors
         // FIXME: under what circumstances would input not be available? when this iop's result is pulled in from cache?
