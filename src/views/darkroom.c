@@ -406,7 +406,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
       else
         cairo_arc(cri, sample->point[0] * wd, sample->point[1] * ht, half_px, 0., 2. * M_PI);
 
-      set_color(cri, sample->rgb_display);
+      set_color(cri, sample->swatch);
       cairo_fill(cri);
     }
   }
@@ -3465,6 +3465,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         const float delta_x = 0.01f;
         const float delta_y = delta_x * (float)dev->pipe->processed_width / (float)dev->pipe->processed_height;
 
+        // FIXME: here and in mouse move use to dt_lib_colorpicker_set_{box_area,point} interface? -- would require a different hack for figuring out base of the drag -- but if so have that routine figure out if can just pull the new sample from preview buffer and or need to update from iop with picker or just dt_dev_invalidate_from_gui()
         // hack: for box pickers, these represent the "base" point being dragged
         sample->point[0] = zoom_x;
         sample->point[1] = zoom_y;

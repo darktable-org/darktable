@@ -304,6 +304,7 @@ static void _iop_color_picker_preview_pipe_callback(gpointer instance, gpointer 
   // provide swatch color for a point sample overlay
   darktable.lib->proxy.colorpicker.update_panel(darktable.lib->proxy.colorpicker.module);
   darktable.lib->proxy.colorpicker.update_samples(darktable.lib->proxy.colorpicker.module);
+  // FIXME: shouldn't we request a center view update here as we have new picker data from preview pipe to display?
   // FIXME: debug signal sequence -- what if the preview pipe finishes after the full pixelpipe completes and DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED triggers a redraw of center view -- debug by adding a pause in preview pipe -- do we want to trigger a center view redraw here on point picker so the swatch fills in?
 }
 
