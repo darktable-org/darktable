@@ -1,24 +1,23 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Free Software Foundation, Inc.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Copyright (C) 2021 Free Software Foundation, Inc.
 #
 #: ../build/bin/conf_gen.h:802 ../build/bin/conf_gen.h:808
 #: ../build/bin/conf_gen.h:814 ../build/bin/conf_gen.h:820
 #: ../build/bin/conf_gen.h:826
+# Marcus Gama <marcus.gama@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-08-23 07:08-0300\n"
-"PO-Revision-Date: 2021-08-23 07:11-0300\n"
-"Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
-"Language-Team: \n"
+"PO-Revision-Date: 2021-08-27 19:15-0300\n"
+"Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
+"Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Lokalize 21.08.0\n"
 "X-Poedit-Bookmarks: 722,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: ../build/bin/preferences_gen.h:67 ../build/bin/preferences_gen.h:3517
@@ -336,14 +335,14 @@ msgid ""
 "depending of the size of the thumbnail, separated by |. for example, 120|400 "
 "means 3 categories of thumbnails : 0px->120px, 120px->400px and >400px"
 msgstr ""
-"catgorias de tamanho são usadas para poder determinar sobreposições e "
+"categorias de tamanho são usadas para poder determinar as informações e "
 "valores de CSS diferentes dependendo do tamanho da miniatura, separados por "
 "|. por exemplo, 120|400 significa 3 categorias de miniaturas : 0px->120px, "
 "120px->400px e >400px"
 
 #: ../build/bin/preferences_gen.h:3974
 msgid "pattern for the thumbnail extended overlay text"
-msgstr "padrão para as sobreposições  das miniaturas"
+msgstr "padrão para o texto de informações estendidas nas miniaturas"
 
 #: ../build/bin/preferences_gen.h:3995 ../build/bin/preferences_gen.h:4038
 msgid "see manual to know all the tags you can use."
@@ -1190,7 +1189,7 @@ msgstr "perguntar antes de descartar pilha de histórico"
 #: ../build/bin/preferences_gen.h:6097
 msgid "always ask the user before history stack is discarded on any image"
 msgstr ""
-"sempre perguntar ao usuário antes de excluir a pilha d ehistórico em "
+"sempre perguntar ao usuário antes de excluir a pilha de histórico em "
 "qualquer imagem."
 
 #: ../build/bin/preferences_gen.h:6119
@@ -1354,7 +1353,7 @@ msgid ""
 "fragmentation ratio above which to ask or carry out automatically database "
 "maintenance"
 msgstr ""
-"índice de fragmentação acim ado qual perguntar ou realizar automaticamente "
+"índice de fragmentação acima do qual perguntar ou realizar automaticamente "
 "manutenção na base de dados"
 
 #: ../build/bin/preferences_gen.h:6684
@@ -1517,7 +1516,7 @@ msgid ""
 "use mouse wheel for data entry.  when disabled, this behavior is reversed"
 msgstr ""
 "quando habilitado, o botão de rolagem do mouse movimenta o painel de módulos "
-"por default. se ctrl+alt para usar o botão de rolagem para entrada de dados. "
+"por padrão. se ctrl+alt para usar o botão de rolagem para entrada de dados. "
 "quando desabilitado, este comportamento é revertido"
 
 #: ../build/bin/preferences_gen.h:7079
@@ -4537,7 +4536,7 @@ msgid ""
 "camera `%s' on port `%s' needs to be remounted\n"
 "make sure it allows access and is not mounted otherwise"
 msgstr ""
-"câmera `%s' na porta `%s' precis ser remontada\n"
+"câmera `%s' na porta `%s' precisa ser remontada\n"
 "certifique-se de que sua câmera permite acesso e que não está montada"
 
 #: ../src/common/collection.c:645
@@ -4927,15 +4926,15 @@ msgstr ""
 "\n"
 "  Como resolver este problema?\n"
 "\n"
-"  1 - Se ou tra instância do darktable já está aberta,\n"
+"  1 - Se outra instância do darktable já está aberta,\n"
 "      clique em cancelar e use aquela instância ou feche-a antes de tentar "
 "rodar o darktable novamente\n"
 "      (o processo com ID <i><b>%d</b></i> criou as travas da base de dados)\n"
 "\n"
-"  2 - Se você não encontrar uma instância d odarktable rodando, tente "
+"  2 - Se você não encontrar uma instância do darktable rodando, tente "
 "reiniciar sua sessão ou o computador.\n"
 "      Isto fechará todos os programas que estão executando e fechará a base "
-"de dados corratamente.\n"
+"de dados corretamente.\n"
 "\n"
 "  3 - Se você fez isto ou se tem certeza de que não há outras instâncias do "
 "darktable rodando,\n"
@@ -6158,7 +6157,7 @@ msgstr "compensação de tempo adicionada a %d imagem"
 #: ../src/control/jobs/control_jobs.c:1996
 #, c-format
 msgid "set date/time of %d image"
-msgstr "defininda data/hora em %d imagem"
+msgstr "define data/hora em %d imagem"
 
 #: ../src/control/jobs/control_jobs.c:1997
 #, c-format
@@ -7566,7 +7565,7 @@ msgid ""
 msgstr ""
 "o histórico tinha este módulo desabilitado, mas ele é necessário para este "
 "tipo de imagem.\n"
-"tipicamente introduzido ao aplicar uma pré-definição, estilo ou cópia&cola "
+"tipicamente introduzido ao aplicar uma predefinição, estilo ou copiar&colar "
 "de histórico"
 
 #: ../src/develop/pixelpipe_hb.c:398
@@ -7581,7 +7580,7 @@ msgstr ""
 "o histórico tinha este módulo habilitado, mas ele não é permitido para este "
 "tipo de imagem.\n"
 "provavelmente foi introduzido ao aplicar uma pré-definição, estilo ou "
-"cópia&cola de histórico"
+"copiar&colar de histórico"
 
 #: ../src/develop/pixelpipe_hb.c:2417
 msgid ""
@@ -8512,7 +8511,7 @@ msgid ""
 "tooltip visibility can only be toggled if compositing is enabled in your "
 "window manager"
 msgstr ""
-"a visibilidade de tooltips só pode ser alterada se compositing estiver "
+"a visibilidade de dicas só pode ser alterada se compositing estiver "
 "habilitado em seu gerenciador de janelas"
 
 #: ../src/gui/gtk.c:834
@@ -10376,7 +10375,7 @@ msgstr "equalizador de contraste"
 
 #: ../src/iop/atrous.c:133
 msgid "sharpness|acutance|local contrast"
-msgstr "nitidez|agudez|contraste localajusta contraste local"
+msgstr "nitidez|agudez|contraste local"
 
 #: ../src/iop/atrous.c:138
 msgid "add or remove local contrast, sharpness, acutance"
@@ -10528,7 +10527,7 @@ msgstr "neutro"
 
 #: ../src/iop/basecurve.c:202
 msgid "canon eos like"
-msgstr "similar a canon EOS"
+msgstr "similar à canon EOS"
 
 #: ../src/iop/basecurve.c:203
 msgid "canon eos like alternate"
@@ -11126,7 +11125,7 @@ msgstr "linear, raw"
 #: ../src/iop/cacorrect.c:1337
 msgid "raw CA correction supports only standard RGB bayer filter arrays"
 msgstr ""
-"correção de aberração cromática rm RAW só suporta filtros de cor RGB bayer "
+"correção de aberração cromática em RAW só suporta filtros de cor RGB bayer "
 "padrão"
 
 #: ../src/iop/cacorrect.c:1339 ../src/iop/cacorrect.c:1347
@@ -11198,7 +11197,7 @@ msgid ""
 "try changing guide channel if you\n"
 "have artifacts."
 msgstr ""
-"canal usado como referência oara\n"
+"canal usado como referência para\n"
 "corrigir outros canais.\n"
 "use o canal mais nítido se alguns\n"
 "canais estiverem desfocados.\n"
@@ -11328,7 +11327,7 @@ msgid ""
 msgstr ""
 "faz correções no espaço de cores\n"
 "como balanço de branco, mistura de canais\n"
-"e conversões para monocromático amulando filme"
+"e conversões para monocromático emulando filme"
 
 #: ../src/iop/channelmixer.c:139 ../src/iop/channelmixerrgb.c:208
 #: ../src/iop/clipping.c:316 ../src/iop/colorbalance.c:159
@@ -12713,7 +12712,7 @@ msgid ""
 "magentas"
 msgstr ""
 "ajustar cor alvo no canal Lab 'a'\n"
-"valores mais baixos deslocam a cor alvo para os verdes enquanto valoresmais "
+"valores mais baixos deslocam a cor alvo para os verdes enquanto valores mais "
 "altos deslocam para magentas."
 
 #: ../src/iop/colorchecker.c:1335
@@ -12742,8 +12741,8 @@ msgid ""
 "higher saturation"
 msgstr ""
 "ajustar canais 'a' e 'b' da cor alvo no espaço Lab simultaneamente\n"
-"valores mais baixos leval a saturação mais baixa enquanto valores mais altos "
-"levam a saturação mais alta"
+"valores mais baixos levam à saturação mais baixa enquanto valores mais altos "
+"levam à saturação mais alta"
 
 #: ../src/iop/colorchecker.c:1353
 msgid "target color"
@@ -13177,8 +13176,8 @@ msgid ""
 "ctrl+drag to create a positive curve\n"
 "shift+drag to create a negative curve"
 msgstr ""
-"criar uma curva baseada em uam área da imagem\n"
-"arraste para ceiar uma curva plana\n"
+"criar uma curva baseada em uma área da imagem\n"
+"arraste para criar uma curva plana\n"
 "ctrl+arraste para criar uma curva positiva\n"
 "shift+arraste para criar uma curva negativa"
 
@@ -13856,7 +13855,7 @@ msgid ""
 "increase if you see noise appear on smooth surfaces or\n"
 "if dark areas seem oversharpened compared to bright areas."
 msgstr ""
-"define o limiar de vraiancia entre amplificação e penalidade para bordas.\n"
+"define o limiar de variância entre amplificação e penalidade para bordas.\n"
 "aumente se quiser que pixels em áreas suaves ganhem força,\n"
 "diminua se perceber ruído em áreas suaves ou\n"
 "se áreas escuras parecerem demasiado nítidas quando comparadas com áreas "
@@ -13965,7 +13964,7 @@ msgstr ""
 
 #: ../src/iop/exposure.c:258
 msgid "magic lantern defaults"
-msgstr "dafault para magic lantern"
+msgstr "padrões para lanterna mágica"
 
 #: ../src/iop/exposure.c:299 ../src/iop/rawoverexposed.c:173
 #: ../src/iop/rawoverexposed.c:292
@@ -14298,7 +14297,7 @@ msgid ""
 msgstr ""
 "aplica uma transformação de visão para preparar a pipeline relativa à cena\n"
 "para exibição em telas SDR e impressão em papel\n"
-"prevenind orecorde de forma não-destrutiva"
+"prevenindo recorte de forma não-destrutiva"
 
 #: ../src/iop/filmicrgb.c:1070
 msgid ""
@@ -14911,7 +14910,10 @@ msgid ""
 "amount of mid-tones bias from the photographic paper response modeling. the "
 "greater the bias, the more pronounced the fall off of the grain in shadows "
 "and highlights"
-msgstr "quanto de viés de meios-tons da modelagem de resposta do papel fotográfico. quanto maior o viés, mais pronunciada a queda da granulação em sombras e realces"
+msgstr ""
+"quanto de viés de meios-tons da modelagem de resposta do papel fotográfico."
+" quanto maior o viés, mais pronunciada a queda da granulação em sombras e"
+" realces"
 
 #: ../src/iop/hazeremoval.c:99
 msgid "haze removal"
@@ -14958,7 +14960,7 @@ msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
 msgstr ""
-"ajustar manualmente o limine te corte contra realces magenta (não deveria "
+"ajustar manualmente o limite de recorte contra realces magenta (não deveria "
 "ser necessário modificar)"
 
 #: ../src/iop/highpass.c:75
@@ -15736,7 +15738,7 @@ msgstr "selecione o modo de interpolação"
 
 #: ../src/iop/mask_manager.c:46 ../src/libs/masks.c:55
 msgid "mask manager"
-msgstr "gerenciador de máscara"
+msgstr "gerenciador de máscaras"
 
 #: ../src/iop/monochrome.c:97
 msgid "quickly convert an image to black & white using a variable color filter"
@@ -17063,7 +17065,7 @@ msgid ""
 "tone equalizer in/out buffer are ill-aligned, please report the bug to the "
 "developers"
 msgstr ""
-"o buffer de entrada/saída doequalizador de tons está mal alinhado, por favor "
+"o buffer de entrada/saída do equalizador de tons está mal alinhado, por favor "
 "reporte o bug aos desenvolvedores"
 
 #: ../src/iop/toneequal.c:1032
@@ -17347,7 +17349,7 @@ msgid ""
 "balance rgb module instead."
 msgstr ""
 "este módulo foi descontinuado. por favor, ao invés dele use o deslizador "
-"vobrância no módulo balanço de cor rgb."
+"vibrância no módulo balanço de cor rgb."
 
 #: ../src/iop/vibrance.c:93
 msgid ""
@@ -17756,9 +17758,9 @@ msgid ""
 "ctrl+click to include only sub-hierarchies (suffix `|%')"
 msgstr ""
 "use `%' como curinga\n"
-"clique par aincluir a hierarquia + sub-hierarquias (sufico `*')\n"
+"clique para incluir a hierarquia + sub-hierarquias (sufixo `*')\n"
 "shift+clique para incluir somente a hierarquia corrente (sem sufixo)\n"
-"ctrl+clique para incluir soment esub-hierarquias (sufixo `|%')"
+"ctrl+clique para incluir somente sub-hierarquias (sufixo `|%')"
 
 #: ../src/libs/collect.c:2083
 #, no-c-format
@@ -18101,7 +18103,7 @@ msgstr "escreve arquivo associado"
 
 #: ../src/libs/duplicate.c:60
 msgid "duplicate manager"
-msgstr "gerenciar duplicatas"
+msgstr "gerenciador de duplicatas"
 
 #: ../src/libs/duplicate.c:263
 #, no-c-format
@@ -18639,7 +18641,7 @@ msgstr "mostrar no mapa as imagens que combinam"
 
 #: ../src/libs/geotagging.c:1860
 msgid "select images"
-msgstr "selecionar imagens"
+msgstr "imagens selecionadas"
 
 #: ../src/libs/geotagging.c:1860
 msgid "select matching images"
@@ -19164,7 +19166,7 @@ msgstr "disparo remoto"
 #: ../src/libs/import.c:201
 msgctxt "accel"
 msgid "add to library"
-msgstr "adicionar a biblioteca"
+msgstr "adicionar à biblioteca"
 
 #: ../src/libs/import.c:202
 msgctxt "accel"
@@ -19237,7 +19239,7 @@ msgstr "lugares"
 
 #: ../src/libs/import.c:1222
 msgid "restore all default places you have removed by right-click"
-msgstr "restaurar todos os lugares default que você removou com clique-direito"
+msgstr "restaurar todos os lugares default que você removeu com clique-direito"
 
 #: ../src/libs/import.c:1227
 msgid ""
@@ -19297,7 +19299,7 @@ msgstr "regras para nomes"
 
 #: ../src/libs/import.c:1755
 msgid "add to library"
-msgstr "adicionar a biblioteca"
+msgstr "adicionar à biblioteca"
 
 #: ../src/libs/import.c:1756
 msgid "copy & import"
@@ -19317,7 +19319,7 @@ msgstr "por favor aguarde durante pre-busca da lista de imagens da câmera..."
 
 #: ../src/libs/import.c:2066
 msgid "add to library..."
-msgstr "adicionar a biblioteca..."
+msgstr "adicionar à biblioteca..."
 
 #: ../src/libs/import.c:2067
 msgid "add existing images to the library"
@@ -19569,7 +19571,7 @@ msgstr "desenha apenas parte da sobreposição"
 
 #: ../src/libs/location.c:100
 msgid "find location"
-msgstr "encontra localização"
+msgstr "encontrar localização"
 
 #: ../src/libs/map_locations.c:35
 msgid "locations"
@@ -19908,7 +19910,7 @@ msgstr "categorias"
 
 #: ../src/libs/metadata_view.c:169
 msgid "image information"
-msgstr "informação da imagem"
+msgstr "informações da imagem"
 
 #: ../src/libs/metadata_view.c:357
 msgid "unused/deprecated"
@@ -20679,7 +20681,7 @@ msgstr "criar"
 
 #: ../src/libs/snapshots.c:84
 msgid "snapshots"
-msgstr "instantânea"
+msgstr "instantâneo"
 
 #: ../src/libs/snapshots.c:105
 msgctxt "accel"
@@ -21127,10 +21129,10 @@ msgid ""
 "right-click for other actions on selected tag,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
-"docionário de etiquetas,\n"
+"dicionário de etiquetas,\n"
 "clique-duplo para adicionar,\n"
 "clique-direito para outras ações na etiqueta selecionada,\n"
-"ctrol-rolar para mudar o tamanho da janela"
+"ctrl-rolar para mudar o tamanho da janela"
 
 #: ../src/libs/tagging.c:3082
 msgid ""
@@ -21262,12 +21264,12 @@ msgstr "todas exceto rejeitadas"
 #. sort by label
 #: ../src/libs/tools/filter.c:199
 msgid "sort by"
-msgstr "ordena por"
+msgstr "ordenar por"
 
 #. we write the label with the size category
 #: ../src/libs/tools/global_toolbox.c:223
 msgid "thumbnails overlays for size"
-msgstr "sobreposições para tamanho"
+msgstr "informações para o tamanho"
 
 #: ../src/libs/tools/global_toolbox.c:257
 #: ../src/libs/tools/global_toolbox.c:320
@@ -21309,7 +21311,7 @@ msgstr "esconder imagens agrupadas"
 
 #: ../src/libs/tools/global_toolbox.c:413
 msgid "click to change the type of overlays shown on thumbnails"
-msgstr "clique para mudar o tipo de sobreposições usadas nas miniaturas"
+msgstr "clique para mudar as informações da imagem exibidas nas miniaturas"
 
 #: ../src/libs/tools/global_toolbox.c:429
 #: ../src/libs/tools/global_toolbox.c:473
@@ -21319,34 +21321,34 @@ msgstr "modo de sobreposição para tamanho"
 #: ../src/libs/tools/global_toolbox.c:432
 #: ../src/libs/tools/global_toolbox.c:476
 msgid "no overlays"
-msgstr "nenhuma sobreposição"
+msgstr "nenhuma informação"
 
 #: ../src/libs/tools/global_toolbox.c:436
 msgid "overlays on mouse hover"
-msgstr "sobreposições ao passar o mouse"
+msgstr "informações ao passar o mouse"
 
 #: ../src/libs/tools/global_toolbox.c:440
 msgid "extended overlays on mouse hover"
-msgstr "sobreposições extendidas ao passar o mouse"
+msgstr "informações estendidas ao passar o mouse"
 
 #: ../src/libs/tools/global_toolbox.c:443
 #: ../src/libs/tools/global_toolbox.c:480
 msgid "permanent overlays"
-msgstr "sobreposições permanentes"
+msgstr "informações permanentes"
 
 #: ../src/libs/tools/global_toolbox.c:447
 #: ../src/libs/tools/global_toolbox.c:484
 msgid "permanent extended overlays"
-msgstr "sobreposições extendidas permanentes"
+msgstr "informações estendidas permanentes"
 
 #: ../src/libs/tools/global_toolbox.c:451
 msgid "permanent overlays extended on mouse hover"
-msgstr "sobreposições permanentes extendidas ao passar o mouse"
+msgstr "informações permanentes estendidas ao passar o mouse"
 
 #: ../src/libs/tools/global_toolbox.c:456
 #: ../src/libs/tools/global_toolbox.c:489
 msgid "overlays block on mouse hover during (s) "
-msgstr "sobrepõe bloco ao passar o mouse durante (s)"
+msgstr "bloco de informações ao passar o mouse por (s)"
 
 #: ../src/libs/tools/global_toolbox.c:463
 #: ../src/libs/tools/global_toolbox.c:496
@@ -21408,7 +21410,7 @@ msgstr "agrupar"
 #: ../src/libs/tools/global_toolbox.c:911
 msgctxt "accel"
 msgid "thumbnail overlays options"
-msgstr "opções das sobreposições em miniaturas"
+msgstr "opções de informações em miniaturas"
 
 #: ../src/libs/tools/global_toolbox.c:912
 msgctxt "accel"
@@ -21423,39 +21425,38 @@ msgstr "atalhos"
 #: ../src/libs/tools/global_toolbox.c:915
 msgctxt "accel"
 msgid "thumbnail overlays/no overlays"
-msgstr "sobreposições em miniaturas/sem sobreposições"
+msgstr "informações em miniaturas/nenhuma informação"
 
 #: ../src/libs/tools/global_toolbox.c:916
 msgctxt "accel"
 msgid "thumbnail overlays/overlays on mouse hover"
-msgstr "sobreposições em miniaturas/sobreposições ao passar o mouse"
+msgstr "informações em miniaturas/informações ao passar o mouse"
 
 #: ../src/libs/tools/global_toolbox.c:917
 msgctxt "accel"
 msgid "thumbnail overlays/extended overlays on mouse hover"
-msgstr "sobreposições em miniaturas/sobreposições extendidas ao passar o mouse"
+msgstr "informações em miniaturas/informações estendidas ao passar o mouse"
 
 #: ../src/libs/tools/global_toolbox.c:918
 msgctxt "accel"
 msgid "thumbnail overlays/permanent overlays"
-msgstr "sobreposições em miniaturas/sobreposições permanentes"
+msgstr "informações em miniaturas/informações permanentes"
 
 #: ../src/libs/tools/global_toolbox.c:919
 msgctxt "accel"
 msgid "thumbnail overlays/permanent extended overlays"
-msgstr "sobreposições em miniaturas/sobreposições extendidas permanentes"
+msgstr "informações em miniaturas/informações estendidas permanentes"
 
 #: ../src/libs/tools/global_toolbox.c:920
 msgctxt "accel"
 msgid "thumbnail overlays/permanent overlays extended on mouse hover"
 msgstr ""
-"sobreposições em miniaturas/sobreposições permanentes extendidas ao passar o "
-"mouse"
+"informações em miniaturas/informações permanentes estendidas ao passar o mouse"
 
 #: ../src/libs/tools/global_toolbox.c:921
 msgctxt "accel"
 msgid "thumbnail overlays/overlays block on mouse hover"
-msgstr "sobreposições em miniaturas/bloco de sobreposições ao passar o mouse"
+msgstr "informações em miniaturas/bloco de informações ao passar o mouse"
 
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
@@ -21642,7 +21643,7 @@ msgstr "acesso rápido para aplicação dos estilos"
 
 #: ../src/views/darkroom.c:2247
 msgid "display a second darkroom image window"
-msgstr "mostrar uma segunda janela de darkroom"
+msgstr "mostrar uma segunda janela da sala escura"
 
 #: ../src/views/darkroom.c:2258
 msgid "toggle ISO 12646 color assessment conditions"
@@ -21653,8 +21654,8 @@ msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
 msgstr ""
-"alterna indicação de super exposto \n"
-"clique direito para opcões"
+"alterna indicação de superexposição\n"
+"clique direito para opções"
 
 #: ../src/views/darkroom.c:2287
 msgid "mark with CFA color"
@@ -21720,7 +21721,7 @@ msgid ""
 "right click for options"
 msgstr ""
 "alterna indicação de recorte \n"
-"clique direito para opcões"
+"clique direito para opções"
 
 #: ../src/views/darkroom.c:2345
 msgid "clipping preview mode"
@@ -21898,7 +21899,7 @@ msgstr "zoom primeiro plano"
 #: ../src/views/darkroom.c:3775
 msgctxt "accel"
 msgid "zoom fill"
-msgstr "zoom preecher"
+msgstr "zoom preencher"
 
 #: ../src/views/darkroom.c:3776
 msgctxt "accel"
@@ -22181,7 +22182,7 @@ msgstr "zoom na visualização principal"
 
 #: ../src/views/lighttable.c:1063
 msgid "pan inside the main view"
-msgstr "arrastar na vizualização principal"
+msgstr "arrastar na visualização principal"
 
 #: ../src/views/lighttable.c:1293
 msgid "set display profile"
@@ -22250,7 +22251,7 @@ msgstr[1] "pausa do slideshow ajustada para %d segundos"
 #: ../src/views/slideshow.c:623
 msgctxt "accel"
 msgid "start and stop"
-msgstr "inicar e parar"
+msgstr "iniciar e parar"
 
 #: ../src/views/slideshow.c:624
 msgctxt "accel"
