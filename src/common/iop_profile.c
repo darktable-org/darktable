@@ -267,13 +267,15 @@ static void _transform_lcms2(struct dt_iop_module_t *self, const float *const im
 
   if(cst_from == iop_cs_rgb && cst_to == iop_cs_Lab)
   {
-    printf("[_transform_lcms2] transfoming from RGB to Lab (%s %s)\n", self->op, self->multi_name);
+    dt_print(DT_DEBUG_DEV,
+             "[_transform_lcms2] transfoming from RGB to Lab (%s %s)\n", self->op, self->multi_name);
     _transform_from_to_rgb_lab_lcms2(image_in, image_out, width, height, profile_info->type,
                                      profile_info->filename, profile_info->intent, 1);
   }
   else if(cst_from == iop_cs_Lab && cst_to == iop_cs_rgb)
   {
-    printf("[_transform_lcms2] transfoming from Lab to RGB (%s %s)\n", self->op, self->multi_name);
+    dt_print(DT_DEBUG_DEV,
+             "[_transform_lcms2] transfoming from Lab to RGB (%s %s)\n", self->op, self->multi_name);
     _transform_from_to_rgb_lab_lcms2(image_in, image_out, width, height, profile_info->type,
                                      profile_info->filename, profile_info->intent, -1);
   }
