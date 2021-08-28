@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "bauhaus/bauhaus.h"
-#include "common/colorspaces.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/math.h"
 #include "common/opencl.h"
 #include "common/exif.h"
@@ -24,6 +24,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/openmp_maths.h"
 #include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/accelerators.h"
@@ -107,8 +108,6 @@ typedef struct dt_iop_colorchecker_global_data_t
 {
   int kernel_colorchecker;
 } dt_iop_colorchecker_global_data_t;
-
-#define SQR(x) ((x) * (x))
 
 
 const char *name()
@@ -944,12 +943,12 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   {
     const dt_aligned_pixel_t Lab = { p->source_L[patch], p->source_a[patch], p->source_b[patch] };
     if((self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-       && (SQR(picked_mean[0] - Lab[0])
-               + SQR(picked_mean[1] - Lab[1])
-               + SQR(picked_mean[2] - Lab[2])
-           < SQR(picked_mean[0] - p->source_L[best_patch])
-                 + SQR(picked_mean[1] - p->source_a[best_patch])
-                 + SQR(picked_mean[2] - p->source_b[best_patch])))
+       && (sqf(picked_mean[0] - Lab[0])
+               + sqf(picked_mean[1] - Lab[1])
+               + sqf(picked_mean[2] - Lab[2])
+           < sqf(picked_mean[0] - p->source_L[best_patch])
+                 + sqf(picked_mean[1] - p->source_a[best_patch])
+                 + sqf(picked_mean[2] - p->source_b[best_patch])))
       best_patch = patch;
   }
 
