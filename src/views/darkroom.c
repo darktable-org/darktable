@@ -1495,7 +1495,7 @@ static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 /* overlay color */
 static void _guides_quickbutton_clicked(GtkWidget *widget, gpointer user_data)
 {
-  dt_guides_button_toggled();
+  dt_guides_button_toggled(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
   dt_control_queue_redraw_center();
 }
 
@@ -2197,9 +2197,6 @@ static gboolean _quickbutton_press_release(GtkWidget *button, GdkEventButton *ev
   if((event->type == GDK_BUTTON_PRESS && event->button == 3) ||
      (event->type == GDK_BUTTON_RELEASE && event->time - start_time > 600))
   {
-    if(!popover)
-      popover = dt_guides_popover(button);
-
     gtk_popover_set_relative_to(GTK_POPOVER(popover), button);
 
     g_object_set(G_OBJECT(popover), "transitions-enabled", FALSE, NULL);
@@ -2566,12 +2563,13 @@ void gui_init(dt_view_t *self)
   {
     // the button
     darktable.view_manager->guides_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, CPF_STYLE_FLAT, NULL);
-    dt_action_define(&self->actions, NULL, "show guide lines", darktable.view_manager->guides_toggle, &dt_action_def_toggle);
+    dt_action_define(&self->actions, "guide lines", "toggle", darktable.view_manager->guides_toggle, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(darktable.view_manager->guides_toggle,
                                 _("toggle guide lines\nright click for guides options"));
+    GtkWidget *popover = dt_guides_popover(self, darktable.view_manager->guides_toggle);
     g_signal_connect(G_OBJECT(darktable.view_manager->guides_toggle), "clicked",
                      G_CALLBACK(_guides_quickbutton_clicked), dev);
-    connect_button_press_release(darktable.view_manager->guides_toggle, NULL);
+    connect_button_press_release(darktable.view_manager->guides_toggle, popover);
     dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.view_manager->guides_toggle,
                                        DT_VIEW_DARKROOM | DT_VIEW_TETHERING);
     // we want to update button state each time the view change
@@ -3860,7 +3858,7 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "show drawn masks"), 0, 0);
 
   // toggle visibility of guide lines
-  dt_accel_register_view(self, NC_("accel", "show guide lines"), GDK_KEY_g, 0);
+  dt_accel_register_view(self, NC_("accel", "guide lines/toggle"), GDK_KEY_g, 0);
 
   // toggle visibility of second window
   dt_accel_register_view(self, NC_("accel", "second window"), 0, 0);
