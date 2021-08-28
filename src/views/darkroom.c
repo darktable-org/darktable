@@ -3399,7 +3399,6 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
   return 1;
 }
 
-
 int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -3667,6 +3666,15 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
   const gboolean low_ppd = (darktable.gui->ppd == 1);
   const float stepup = 0.1f * fabsf(1.0f - fitscale) / ppd;
+
+  if(!dt_iop_color_picker_is_visible(dev))
+  {
+    if(dt_key_modifier_state() & GDK_BUTTON3_MASK)
+    {
+      dt_dev_jump_image(dev, up ? -1 :  1, TRUE);
+      return;
+    }
+  }
 
   if(up)
   {
