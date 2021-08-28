@@ -17,7 +17,7 @@
 */
 
 #include "common.h"
-#include "colorspace.cl"
+#include "colorspace.h"
 
 
 /* first step for bloom module: get the thresholded lights into buffer */

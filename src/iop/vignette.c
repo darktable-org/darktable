@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,12 +19,13 @@
 #include "config.h"
 #endif
 #include <assert.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
+#include "common/math.h"
 #include "common/opencl.h"
+#include "common/tea.h"
 #include "control/control.h"
 #include "develop/blend.h"
 #include "develop/develop.h"
@@ -39,9 +40,6 @@
 #include <inttypes.h>
 
 DT_MODULE_INTROSPECTION(4, dt_iop_vignette_params_t)
-
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
-#define TEA_ROUNDS 8
 
 typedef enum dt_iop_dither_t
 {
@@ -154,6 +152,15 @@ const char *name()
   return _("vignetting");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("simulate a lens fall-off close to edges"),
+                                      _("creative"),
+                                      _("non-linear, RGB, display-referred"),
+                                      _("non-linear, RGB"),
+                                      _("non-linear, RGB, display-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING
@@ -168,34 +175,6 @@ int default_group()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scale"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "fall-off strength"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "brightness"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "horizontal center"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "vertical center"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shape"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "width-height ratio"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "dithering"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "scale", GTK_WIDGET(g->scale));
-  dt_accel_connect_slider_iop(self, "fall-off strength", GTK_WIDGET(g->falloff_scale));
-  dt_accel_connect_slider_iop(self, "brightness", GTK_WIDGET(g->brightness));
-  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->saturation));
-  dt_accel_connect_slider_iop(self, "horizontal center", GTK_WIDGET(g->center_x));
-  dt_accel_connect_slider_iop(self, "vertical center", GTK_WIDGET(g->center_y));
-  dt_accel_connect_slider_iop(self, "shape", GTK_WIDGET(g->shape));
-  dt_accel_connect_slider_iop(self, "width-height ratio", GTK_WIDGET(g->whratio));
-  dt_accel_connect_slider_iop(self, "dithering", GTK_WIDGET(g->dithering));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -256,30 +235,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   }
 
   return 1;
-}
-
-
-static void encrypt_tea(unsigned int *arg)
-{
-  const unsigned int key[] = { 0xa341316c, 0xc8013ea4, 0xad90777d, 0x7e95761e };
-  unsigned int v0 = arg[0], v1 = arg[1];
-  unsigned int sum = 0;
-  const unsigned int delta = 0x9e3779b9;
-  for(int i = 0; i < TEA_ROUNDS; i++)
-  {
-    sum += delta;
-    v0 += ((v1 << 4) + key[0]) ^ (v1 + sum) ^ ((v1 >> 5) + key[1]);
-    v1 += ((v0 << 4) + key[2]) ^ (v0 + sum) ^ ((v0 >> 5) + key[3]);
-  }
-  arg[0] = v0;
-  arg[1] = v1;
-}
-
-static float tpdf(unsigned int urandom)
-{
-  float frandom = (float)urandom / (float)0xFFFFFFFFu;
-
-  return (frandom < 0.5f ? (sqrtf(2.0f * frandom) - 1.0f) : (1.0f - sqrtf(2.0f * (1.0f - frandom))));
 }
 
 static int get_grab(float pointerx, float pointery, float startx, float starty, float endx, float endy,
@@ -569,7 +524,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       //        I guess we have to split the computation.
       if(ratio <= 1.0)
       {
-        if(which == GDK_CONTROL_MASK)
+        if(dt_modifier_is(which, GDK_CONTROL_MASK))
         {
           dt_bauhaus_slider_set(g->scale, new_scale);
         }
@@ -582,7 +537,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       {
         dt_bauhaus_slider_set(g->scale, new_scale);
 
-        if(which != GDK_CONTROL_MASK)
+        if(!dt_modifier_is(which, GDK_CONTROL_MASK))
         {
           float new_whratio = 2.0 - 1.0 / ratio;
           dt_bauhaus_slider_set(g->whratio, new_whratio);
@@ -599,7 +554,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       //        I guess we have to split the computation.
       if(ratio <= 1.0)
       {
-        if(which == GDK_CONTROL_MASK)
+        if(dt_modifier_is(which, GDK_CONTROL_MASK))
         {
           const float new_scale = 100.0 * new_vignette_h / max;
           dt_bauhaus_slider_set(g->scale, new_scale);
@@ -614,7 +569,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
         const float new_scale = 100.0 * new_vignette_h / max;
         dt_bauhaus_slider_set(g->scale, new_scale);
 
-        if(which != GDK_CONTROL_MASK)
+        if(!dt_modifier_is(which, GDK_CONTROL_MASK))
         {
           const float new_whratio = 1.0 / ratio;
           dt_bauhaus_slider_set(g->whratio, new_whratio);
@@ -680,7 +635,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const dt_iop_vignette_data_t *data = (dt_iop_vignette_data_t *)piece->data;
   const dt_iop_roi_t *buf_in = &piece->buf_in;
-  const int ch = piece->colors;
+  const size_t ch = piece->colors;
   const gboolean unbound = data->unbound;
 
   /* Center coordinates of buf_in, these should not consider buf_in->{x,y}! */
@@ -742,7 +697,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dither = 0.0f;
   }
 
-  unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
+  unsigned int *const tea_states = alloc_tea_states(dt_get_num_threads());
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -756,8 +711,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const size_t k = (size_t)ch * roi_out->width * j;
     const float *in = (const float *)ivoid + k;
     float *out = (float *)ovoid + k;
-    unsigned int *tea_state = tea_states + 2 * dt_get_thread_num();
-    tea_state[0] = j * roi_out->height + dt_get_thread_num();
+    unsigned int *tea_state = get_tea_state(tea_states,dt_get_thread_num());
+    tea_state[0] = j * roi_out->height; /* + dt_get_thread_num() -- do not include, makes results unreproducible */
     for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
     {
       // current pixel coord translated to local coord
@@ -776,6 +731,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           weight = 1.0;
         else if(weight <= 0.0)
           weight = 0.0;
+        else if(dither == 0.0f)
+        {
+          // don't bother computing the random number if dithering is disabled
+          dith = 0.0f;
+        }
         else
         {
           weight = 0.5 - cosf(M_PI * weight) / 2.0;
@@ -789,7 +749,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       if(weight > 0)
       {
         // Then apply falloff vignette
-        float falloff = (data->brightness < 0) ? (1.0 + (weight * data->brightness))
+        float falloff = (data->brightness < 0) ? (1.0f + (weight * data->brightness))
                                                : (weight * data->brightness);
         col0 = data->brightness < 0 ? col0 * falloff + dith : col0 + falloff + dith;
         col1 = data->brightness < 0 ? col1 * falloff + dith : col1 + falloff + dith;
@@ -800,7 +760,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         col2 = unbound ? col2 : CLIP(col2);
 
         // apply saturation
-        float mv = (col0 + col1 + col2) / 3.0;
+        float mv = (col0 + col1 + col2) / 3.0f;
         float wss = weight * data->saturation;
         col0 = col0 - ((mv - col0) * wss);
         col1 = col1 - ((mv - col1) * wss);
@@ -818,7 +778,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-  free(tea_states);
+  free_tea_states(tea_states);
 }
 
 
@@ -988,14 +948,14 @@ void init_presets(dt_iop_module_so_t *self)
   p.shape = 1.0f;
   p.dithering = 0;
   p.unbound = TRUE;
-  dt_gui_presets_add_generic(_("lomo"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("lomo"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_vignette_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1006,9 +966,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
-  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)module->params;
+  dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
   dt_bauhaus_slider_set(g->scale, p->scale);
   dt_bauhaus_slider_set(g->falloff_scale, p->falloff_scale);
   dt_bauhaus_slider_set(g->brightness, p->brightness);
@@ -1062,27 +1021,15 @@ void gui_init(struct dt_iop_module_t *self)
 GSList *mouse_actions(struct dt_iop_module_t *self)
 {
   GSList *lm = NULL;
-  dt_mouse_action_t *a = NULL;
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_LEFT_DRAG;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on node] change vignette/feather size"), self->name());
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->key.accel_mods = GDK_CONTROL_MASK;
-  a->action = DT_MOUSE_ACTION_LEFT_DRAG;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on node] change vignette/feather size keeping ratio"),
-             self->name());
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_LEFT_DRAG;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on center] move vignette"), self->name());
-  lm = g_slist_append(lm, a);
-
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0, 
+                                     _("[%s on node] change vignette/feather size"), self->name());
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, GDK_CONTROL_MASK, 
+                                     _("[%s on node] change vignette/feather size keeping ratio"), self->name());
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, GDK_CONTROL_MASK, 
+                                     _("[%s on center] move vignette"), self->name());
   return lm;
 }
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

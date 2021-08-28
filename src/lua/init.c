@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2020 darktable developers.
+   Copyright (C) 2013-2021 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@
 #include "lua/lualib.h"
 #include "lua/luastorage.h"
 #include "lua/modules.h"
+#include "lua/password.h"
 #include "lua/preferences.h"
 #include "lua/print.h"
 #include "lua/storage.h"
@@ -48,6 +49,7 @@
 static int dt_lua_init_init(lua_State*L)
 {
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L,"exit");
   return 0;
@@ -136,7 +138,7 @@ static lua_CFunction init_funcs[]
         dt_lua_init_luastorages,   dt_lua_init_tags,        dt_lua_init_film,     dt_lua_init_call,
         dt_lua_init_view,          dt_lua_init_events,      dt_lua_init_init,     dt_lua_init_widget,
         dt_lua_init_lualib,        dt_lua_init_gettext,     dt_lua_init_guides,   dt_lua_init_cairo,
-        NULL };
+        dt_lua_init_password,      NULL };
 
 
 void dt_lua_init(lua_State *L, const char *lua_command)
@@ -204,7 +206,7 @@ static int load_from_lua(lua_State *L)
   int argc = lua_gettop(L);
 
   char **argv = calloc(argc + 1, sizeof(char *));
-  char **argv_copy = malloc((argc + 1) * sizeof(char *));
+  char **argv_copy = malloc(sizeof(char *) * (argc + 1));
   argv[0] = strdup("lua");
   argv_copy[0] = argv[0];
   for(int i = 1; i < argc; i++)

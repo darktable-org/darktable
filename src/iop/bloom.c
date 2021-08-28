@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,9 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/box_filters.h"
+#include "common/imagebuf.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -33,15 +36,11 @@
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define BOX_ITERATIONS 8
 #define NUM_BUCKETS 4 /* OpenCL bucket chain size for tmp buffers; minimum 2 */
 
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
-#define LCLIP(x) ((x < 0) ? 0.0 : (x > 100.0) ? 100.0 : x)
 DT_MODULE_INTROSPECTION(1, dt_iop_bloom_params_t)
 
 typedef struct dt_iop_bloom_params_t
@@ -76,14 +75,15 @@ const char *name()
   return _("bloom");
 }
 
-const char *description()
+const char *description(struct dt_iop_module_t *self)
 {
-  return _("apply Orton effect for a dreamy aetherical look,\n"
-           "for creative purposes.\n"
-           "works in Lab,\n"
-           "takes preferably a linear RGB input,\n"
-           "outputs non-linear RGB.");
+  return dt_iop_set_description(self, _("apply Orton effect for a dreamy aetherical look"),
+                                      _("creative"),
+                                      _("non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
 }
+
 
 int flags()
 {
@@ -100,158 +100,73 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "size"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "threshold"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  const dt_iop_bloom_gui_data_t *g = (dt_iop_bloom_gui_data_t *)self->gui_data;
-  dt_accel_connect_slider_iop(self, "size", GTK_WIDGET(g->size));
-  dt_accel_connect_slider_iop(self, "threshold", GTK_WIDGET(g->threshold));
-  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->strength));
-}
-
-#define GAUSS(a, b, c, x) (a * pow(2.718281828, (-pow((x - b), 2) / (pow(c, 2)))))
-
-
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_bloom_data_t *data = (dt_iop_bloom_data_t *)piece->data;
-  float *in = (float *)ivoid;
-  float *out = (float *)ovoid;
-  const int ch = piece->colors;
+  const dt_iop_bloom_data_t *const data = (dt_iop_bloom_data_t *)piece->data;
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
+
+  float *restrict blurlightness;
+  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 1, &blurlightness, 0))
+  {
+    // out of memory, so just copy image through to output
+    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, TRUE);
+    return;
+  }
+
+  const float *const restrict in = DT_IS_ALIGNED((float *)ivoid);
+  float *const restrict out = DT_IS_ALIGNED((float *)ovoid);
+  const size_t npixels = (size_t)roi_out->width * roi_out->height;
 
   /* gather light by threshold */
-  float *blurlightness = calloc((size_t)roi_out->width * roi_out->height, sizeof(float));
-  memcpy(out, in, (size_t)roi_out->width * roi_out->height * ch * sizeof(float));
-
   const int rad = 256.0f * (fmin(100.0f, data->size + 1.0f) / 100.0f);
   const float _r = ceilf(rad * roi_in->scale / piece->iscale);
   const int radius = MIN(256.0f, _r);
 
   const float scale = 1.0f / exp2f(-1.0f * (fmin(100.0f, data->strength + 1.0f) / 100.0f));
 
+  const float threshold = data->threshold;
 /* get the thresholded lights into buffer */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ivoid, roi_out, scale) \
-  shared(data, blurlightness) \
+  dt_omp_firstprivate(npixels, scale, threshold) \
+  shared(blurlightness) \
+  dt_omp_sharedconst(in) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  for(size_t k = 0; k < npixels; k++)
   {
-    float *inp = ((float *)ivoid) + ch * k;
-    const float L = inp[0] * scale;
-    if(L > data->threshold) blurlightness[k] = L;
+    const float L = in[4*k] * scale;
+    blurlightness[k] = (L > threshold) ? L : 0.0f;
   }
-
 
   /* horizontal blur into memchannel lightness */
   const int range = 2 * radius + 1;
   const int hr = range / 2;
 
-  const size_t size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
-  float *const scanline_buf = malloc(size * dt_get_num_threads() * sizeof(float));
-
-  for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(hr, roi_out, scanline_buf, size) \
-    shared(blurlightness) \
-    schedule(static)
-#endif
-    for(int y = 0; y < roi_out->height; y++)
-    {
-      float *scanline = scanline_buf + size * dt_get_thread_num();
-      float L = 0;
-      int hits = 0;
-      const size_t index = (size_t)y * roi_out->width;
-      for(int x = -hr; x < roi_out->width; x++)
-      {
-        int op = x - hr - 1;
-        int np = x + hr;
-        if(op >= 0)
-        {
-          L -= blurlightness[index + op];
-          hits--;
-        }
-        if(np < roi_out->width)
-        {
-          L += blurlightness[index + np];
-          hits++;
-        }
-        if(x >= 0) scanline[x] = L / hits;
-      }
-
-      for(int x = 0; x < roi_out->width; x++) blurlightness[index + x] = scanline[x];
-    }
-
-    /* vertical pass on blurlightness */
-    const int opoffs = -(hr + 1) * roi_out->width;
-    const int npoffs = (hr)*roi_out->width;
-
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(hr, npoffs, opoffs, roi_out, size, scanline_buf) \
-    shared(blurlightness) \
-    schedule(static)
-#endif
-    for(int x = 0; x < roi_out->width; x++)
-    {
-      float *scanline = scanline_buf + size * dt_get_thread_num();
-      float L = 0;
-      int hits = 0;
-      size_t index = (size_t)x - hr * roi_out->width;
-      for(int y = -hr; y < roi_out->height; y++)
-      {
-        int op = y - hr - 1;
-        int np = y + hr;
-
-        if(op >= 0)
-        {
-          L -= blurlightness[index + opoffs];
-          hits--;
-        }
-        if(np < roi_out->height)
-        {
-          L += blurlightness[index + npoffs];
-          hits++;
-        }
-        if(y >= 0) scanline[y] = L / hits;
-        index += roi_out->width;
-      }
-
-      for(int y = 0; y < roi_out->height; y++) blurlightness[y * roi_out->width + x] = scanline[y];
-    }
-  }
-  free(scanline_buf);
+  dt_box_mean(blurlightness, roi_out->height, roi_out->width, 1, hr, BOX_ITERATIONS);
 
 /* screen blend lightness with original */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, roi_out) \
-  shared(in, out, data, blurlightness) \
+  dt_omp_firstprivate(npixels) \
+  shared(blurlightness) \
+  dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  for(size_t k = 0; k < npixels; k++)
   {
-    float *inp = in + ch * k;
-    float *outp = out + ch * k;
-    outp[0] = 100.0f - (((100.0f - inp[0]) * (100.0f - blurlightness[k])) / 100.0f); // Screen blend
-    outp[1] = inp[1];
-    outp[2] = inp[2];
+    out[4*k+0] = 100.0f - (((100.0f - in[4*k]) * (100.0f - blurlightness[k])) / 100.0f); // Screen blend
+    out[4*k+1] = in[4*k+1];
+    out[4*k+2] = in[4*k+2];
+    out[4*k+3] = in[4*k+3];
   }
+  dt_free_align(blurlightness);
 
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
-
-  free(blurlightness);
+//  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+//    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #ifdef HAVE_OPENCL
@@ -414,7 +329,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const float _r = ceilf(rad * roi_in->scale / piece->iscale);
   const int radius = MIN(256.0f, _r);
 
-  tiling->factor = 2.0f + NUM_BUCKETS * 0.25f; // in + out + NUM_BUCKETS * 0.25 tmp
+  tiling->factor = 2.0f + 0.25f + 0.05f; // in + out + blurlightness + slice for dt_box_mean
+  tiling->factor_cl = 2.0f + NUM_BUCKETS * 0.25f; // in + out + NUM_BUCKETS * 0.25 tmp
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 5 * radius; // This is a guess. TODO: check if that's sufficiently large
@@ -459,7 +375,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_bloom_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

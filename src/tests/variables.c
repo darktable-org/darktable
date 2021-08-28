@@ -3,6 +3,10 @@
 
 #include <stdio.h>
 
+#ifdef _WIN32
+#include "win/main_wrapper.h"
+#endif
+
 typedef struct test_case_t
 {
   char *input, *expected_result;
@@ -193,13 +197,13 @@ static const test_t test_real_paths = {
     printf("%d / %d tests failed\n\n", n_failed, n_tests);\
 }
 
-int main()
+int main(int argc, char* argv[])
 {
-  char *argv[] = {"darktable-test-variables", "--library", ":memory:", "--conf", "write_sidecar_files=FALSE", NULL};
-  int argc = sizeof(argv) / sizeof(*argv) - 1;
+  char *argv_override[] = {"darktable-test-variables", "--library", ":memory:", "--conf", "write_sidecar_files=never", NULL};
+  int argc_override = sizeof(argv_override) / sizeof(*argv_override) - 1;
 
   // init dt without gui and without data.db:
-  if(dt_init(argc, argv, FALSE, FALSE, NULL)) exit(1);
+  if(dt_init(argc_override, argv_override, FALSE, FALSE, NULL)) exit(1);
 
   int n_tests_overall = 0, n_failed_overall = 0, n_test_functions = 0, n_test_functions_failed = 0;
 

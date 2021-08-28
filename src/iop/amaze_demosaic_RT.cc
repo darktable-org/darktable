@@ -414,7 +414,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
     constexpr int cldf = 2; // factor to multiply cache line distance. 1 = 64 bytes, 2 = 128 bytes ...
     // assign working space
     char *buffer
-        = (char *)calloc(14 * sizeof(float) * ts * ts + sizeof(char) * ts * tsh + 18 * cldf * 64 + 63, 1);
+        = (char *)calloc(sizeof(float) * 14 * ts * ts + sizeof(char) * ts * tsh + 18 * cldf * 64 + 63, 1);
     // aligned to 64 byte boundary
     char *data = (char *)((uintptr_t(buffer) + uintptr_t(63)) / 64 * 64);
 

@@ -24,12 +24,18 @@
 #include "config.h"
 #endif
 
+#ifndef __APPLE__
 #include <glib.h>
 #include <gmodule.h>
+#endif //!__APPLE__
 
 typedef struct dt_gmodule_t
 {
+#ifndef __APPLE__
   GModule *gmodule;
+#else
+  void *gmodule;
+#endif
   char *library;
 } dt_gmodule_t;
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2020 darktable developers.
+    Copyright (C) 2016-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -92,7 +92,7 @@ static void collect_reference_patches_foreach(gpointer key, gpointer value, gpoi
 static box_t *find_patch(GHashTable *table, gpointer key);
 static void get_boundingbox(const image_t *const image, point_t *bb);
 static box_t get_sample_box(chart_t *chart, box_t *outer_box, float shrink);
-static void get_corners(const double *homography, box_t *box, point_t *corners);
+static void get_corners(const float *homography, box_t *box, point_t *corners);
 static void get_pixel_region(const image_t *const image, const point_t *const corners, int *x_start, int *y_start,
                              int *x_end, int *y_end);
 static void reset_bb(image_t *image);
@@ -136,7 +136,7 @@ static gboolean draw_image_callback(GtkWidget *widget, cairo_t *cr, gpointer use
 
   // draw overlay
   point_t bb[4];
-  double homography[9];
+  float homography[9];
   map_boundingbox_to_view(image, bb);
   // calculating the homography takes hardly any time, so we do it here instead of the move handler.
   // the benefits are that the window size is taken into account and image->bb can't disagree with the cached homography
@@ -172,7 +172,7 @@ static point_t map_point_to_view(image_t *image, point_t p)
 static gboolean motion_notify_callback_source(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_lut_t *self = (dt_lut_t *)user_data;
-  gboolean res = handle_motion(widget, event, self, &self->source);
+  const gboolean res = handle_motion(widget, event, self, &self->source);
   if(res)
   {
     collect_source_patches(self);
@@ -184,7 +184,7 @@ static gboolean motion_notify_callback_source(GtkWidget *widget, GdkEventMotion 
 static gboolean motion_notify_callback_reference(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_lut_t *self = (dt_lut_t *)user_data;
-  gboolean res = handle_motion(widget, event, self, &self->reference);
+  const gboolean res = handle_motion(widget, event, self, &self->reference);
   if(res)
   {
     collect_reference_patches(self);
@@ -405,7 +405,7 @@ static void cht_changed_callback(GtkFileChooserButton *widget, gpointer user_dat
 static gboolean open_cht(dt_lut_t *self, const char *filename)
 {
   if(self->chart) free_chart(self->chart);
-  gboolean res = ((self->chart = parse_cht(filename)) != NULL);
+  const gboolean res = ((self->chart = parse_cht(filename)) != NULL);
 
   reset_bb(&self->source);
   reset_bb(&self->reference);
@@ -442,7 +442,7 @@ static gboolean open_cht(dt_lut_t *self, const char *filename)
 static void reference_mode_changed_callback(GtkComboBox *widget, gpointer user_data)
 {
   dt_lut_t *self = (dt_lut_t *)user_data;
-  int selected = gtk_combo_box_get_active(widget);
+  const int selected = gtk_combo_box_get_active(widget);
   if(selected == 0)
   {
     // it8
@@ -475,7 +475,7 @@ static void it8_changed_callback(GtkFileChooserButton *widget, gpointer user_dat
 static gboolean open_it8(dt_lut_t *self, const char *filename)
 {
   if(!self->chart || !filename) return FALSE;
-  gboolean res = parse_it8(filename, self->chart);
+  const gboolean res = parse_it8(filename, self->chart);
   collect_source_patches(self);
   update_table(self);
 
@@ -609,7 +609,7 @@ static void print_patches(dt_lut_t *self, FILE *fd, GList *patch_names)
       continue;
     }
 
-    float source_Lab[3] = { 0.0 }, reference_Lab[3] = { 0.0 };
+    dt_aligned_pixel_t source_Lab = { 0.0 }, reference_Lab = { 0.0 };
     get_Lab_from_box(source_patch, source_Lab);
     get_Lab_from_box(reference_patch, reference_Lab);
 
@@ -753,7 +753,7 @@ static void add_patches_to_array(dt_lut_t *self, GList *patch_names, int *N, int
       continue;
     }
 
-    float source_Lab[3] = { 0.0 }, reference_Lab[3] = { 0.0 };
+    dt_aligned_pixel_t source_Lab = { 0.0 }, reference_Lab = { 0.0 };
     get_Lab_from_box(source_patch, source_Lab);
     get_Lab_from_box(reference_patch, reference_Lab);
 
@@ -820,20 +820,20 @@ static void add_hdr_patches(int *N, double **target_L, double **target_a, double
 
   if(n_extra_patches > 0)
   {
-    *target_L = realloc(*target_L, (*N + n_extra_patches + 4) * sizeof(double));
-    *target_a = realloc(*target_a, (*N + n_extra_patches + 4) * sizeof(double));
-    *target_b = realloc(*target_b, (*N + n_extra_patches + 4) * sizeof(double));
-    *colorchecker_Lab = realloc(*colorchecker_Lab, 3 * (*N + n_extra_patches) * sizeof(double));
+    *target_L = realloc(*target_L, sizeof(double) * (*N + n_extra_patches + 4));
+    *target_a = realloc(*target_a, sizeof(double) * (*N + n_extra_patches + 4));
+    *target_b = realloc(*target_b, sizeof(double) * (*N + n_extra_patches + 4));
+    *colorchecker_Lab = realloc(*colorchecker_Lab, sizeof(double) * 3 * (*N + n_extra_patches));
 
-    memmove(&(*target_L)[n_extra_patches], *target_L, *N * sizeof(double));
-    memmove(&(*target_a)[n_extra_patches], *target_a, *N * sizeof(double));
-    memmove(&(*target_b)[n_extra_patches], *target_b, *N * sizeof(double));
-    memmove(&(*colorchecker_Lab)[3 * n_extra_patches], *colorchecker_Lab, 3 * *N * sizeof(double));
+    memmove(&(*target_L)[n_extra_patches], *target_L, sizeof(double) * *N);
+    memmove(&(*target_a)[n_extra_patches], *target_a, sizeof(double) * *N);
+    memmove(&(*target_b)[n_extra_patches], *target_b, sizeof(double) * *N);
+    memmove(&(*colorchecker_Lab)[3 * n_extra_patches], *colorchecker_Lab, sizeof(double) * 3 * *N);
 
-    memcpy(*target_L, extra_target_L, n_extra_patches * sizeof(double));
-    memcpy(*target_a, extra_target_a, n_extra_patches * sizeof(double));
-    memcpy(*target_b, extra_target_b, n_extra_patches * sizeof(double));
-    memcpy(*colorchecker_Lab, extra_colorchecker_Lab, 3 * n_extra_patches * sizeof(double));
+    memcpy(*target_L, extra_target_L, sizeof(double) * n_extra_patches);
+    memcpy(*target_a, extra_target_a, sizeof(double) * n_extra_patches);
+    memcpy(*target_b, extra_target_b, sizeof(double) * n_extra_patches);
+    memcpy(*colorchecker_Lab, extra_colorchecker_Lab, sizeof(double) * 3 * n_extra_patches);
 
     *N += n_extra_patches;
   }
@@ -919,11 +919,11 @@ static char *encode_colorchecker(int num, const double *point, const double **ta
     params.target_b[k] = target[2][permutation[k]];
   }
 
-#define SWAP(a, b)                                                                                                \
-  {                                                                                                               \
-    const float tmp = (a);                                                                                        \
-    (a) = (b);                                                                                                    \
-    (b) = tmp;                                                                                                    \
+#define SWAP(a, b)          \
+  {                         \
+    const float tmp = (a);  \
+    (a) = (b);              \
+    (b) = tmp;              \
   }
   // bubble sort by octant and brightness:
   for(int k = 0; k < num - 1; k++)
@@ -967,10 +967,10 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
 
     for(int i=0;i<N;i++)
     {
-      double sat_in =
+      const double sat_in =
         colorchecker_Lab[3*i+1] * colorchecker_Lab[3*i+1] +
         colorchecker_Lab[3*i+2] * colorchecker_Lab[3*i+2];
-      double sat_out =
+      const double sat_out =
         target_a[i] * target_a[i] +
         target_b[i] * target_b[i];
       // we'll allow some artistic tint or one due to illuminants (note square scale)
@@ -1018,7 +1018,7 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   cx[num_tonecurve - 1] = cy[num_tonecurve - 1] = 100.0; // fix white
   for(int k = 1; k < num_tonecurve-1; k++)
   {
-    float rgb[3], Lab[3] = { 0.0f, 0.0f, 0.0f };
+    dt_aligned_pixel_t rgb, Lab = { 0.0f, 0.0f, 0.0f };
     Lab[0] = grays[6*k+0];
     dt_Lab_to_prophotorgb(Lab, rgb);
     cx[k] = rgb[0];
@@ -1032,7 +1032,7 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   // now unapply the curve:
   for(int k = 0; k < N; k++)
   {
-    float rgb[3], Lab[3] = { 0.0f, 0.0f, 0.0f };
+    dt_aligned_pixel_t rgb, Lab = { 0.0f, 0.0f, 0.0f };
     Lab[0] = target_L[k];
     Lab[1] = target_a[k];
     Lab[2] = target_b[k];
@@ -1049,11 +1049,11 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
 #endif
 
   const double *target[3] = { target_L, target_a, target_b };
-  double *coeff_L = malloc((N + 4) * sizeof(double));
-  double *coeff_a = malloc((N + 4) * sizeof(double));
-  double *coeff_b = malloc((N + 4) * sizeof(double));
+  double *coeff_L = malloc(sizeof(double) * (N + 4) );
+  double *coeff_a = malloc(sizeof(double) * (N + 4) );
+  double *coeff_b = malloc(sizeof(double) * (N + 4) );
   double *coeff[] = { coeff_L, coeff_a, coeff_b };
-  int *perm = malloc((N + 4) * sizeof(int));
+  int *perm = malloc(sizeof(int) * (N + 4));
   double avgerr, maxerr;
   sparsity = thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff, &avgerr, &maxerr);
 
@@ -1107,7 +1107,7 @@ static void process_button_clicked_callback(GtkButton *button, gpointer user_dat
   double *target_L = (double *)calloc(sizeof(double), (N + 4));
   double *target_a = (double *)calloc(sizeof(double), (N + 4));
   double *target_b = (double *)calloc(sizeof(double), (N + 4));
-  double *colorchecker_Lab = (double *)calloc(3 * sizeof(double), N);
+  double *colorchecker_Lab = (double *)calloc(sizeof(double) * 3, N);
 
   GHashTableIter table_iter;
   gpointer set_key, value;
@@ -1371,7 +1371,7 @@ static void update_table(dt_lut_t *self)
     box_t *box = (box_t *)g_hash_table_lookup(self->chart->box_table, name);
     if(box)
     {
-      float Lab[3] = { 0.0 };
+      dt_aligned_pixel_t Lab = { 0.0 };
       char *s_Lab_in, *s_RGB_in, *s_deltaE_1976, *s_deltaE_2000;
       float deltaE_1976 = 0.0, deltaE_2000 = 0.0;
 
@@ -1380,7 +1380,7 @@ static void update_table(dt_lut_t *self)
       box_t *patch = (box_t *)g_hash_table_lookup(self->picked_source_patches, name);
       if(patch)
       {
-        float in_Lab[3] = { 0.0 };
+        dt_aligned_pixel_t in_Lab = { 0.0 };
         get_Lab_from_box(patch, in_Lab);
         s_RGB_in = g_strdup_printf("%d; %d; %d", (int)(patch->rgb[0] * 255 + 0.5),
                                    (int)(patch->rgb[1] * 255 + 0.5), (int)(patch->rgb[2] * 255 + 0.5));
@@ -1420,7 +1420,7 @@ static void get_Lab_from_box(box_t *box, float *Lab)
   {
     case DT_COLORSPACE_XYZ:
     {
-      float XYZ[3];
+      dt_aligned_pixel_t XYZ;
       for(int i = 0; i < 3; i++) XYZ[i] = box->color[i] * 0.01;
       dt_XYZ_to_Lab(XYZ, Lab);
       break;
@@ -1467,24 +1467,24 @@ static void collect_source_patches_foreach(gpointer key, gpointer value, gpointe
 {
   dt_lut_t *self = (dt_lut_t *)user_data;
   box_t *box = (box_t *)value;
-  float xyz[3] /*, lab[3], srgb[3]*/;
+  dt_aligned_pixel_t xyz;
 
   box_t *patch = find_patch(self->picked_source_patches, key);
 
   get_xyz_sample_from_image(&self->source, self->source.shrink, box, xyz);
 
-  set_color(patch, DT_COLORSPACE_XYZ, xyz[0] * 100.0, xyz[1] * 100.0, xyz[2] * 100.0);
+  checker_set_color(patch, DT_COLORSPACE_XYZ, xyz[0] * 100.0, xyz[1] * 100.0, xyz[2] * 100.0);
 }
 
 static void collect_reference_patches_foreach(gpointer key, gpointer value, gpointer user_data)
 {
   dt_lut_t *self = (dt_lut_t *)user_data;
   box_t *patch = (box_t *)value;
-  float xyz[3];
+  dt_aligned_pixel_t xyz;
 
   get_xyz_sample_from_image(&self->reference, self->reference.shrink, patch, xyz);
 
-  set_color(patch, DT_COLORSPACE_XYZ, xyz[0] * 100.0, xyz[1] * 100.0, xyz[2] * 100.0);
+  checker_set_color(patch, DT_COLORSPACE_XYZ, xyz[0] * 100.0, xyz[1] * 100.0, xyz[2] * 100.0);
 }
 
 static box_t *find_patch(GHashTable *table, gpointer key)
@@ -1502,7 +1502,7 @@ static box_t *find_patch(GHashTable *table, gpointer key)
 static void get_xyz_sample_from_image(const image_t *const image, float shrink, box_t *box, float *xyz)
 {
   point_t bb[4];
-  double homography[9];
+  float homography[9];
   point_t corners[4];
   box_t inner_box;
   int x_start, y_start, x_end, y_end;
@@ -1517,23 +1517,23 @@ static void get_xyz_sample_from_image(const image_t *const image, float shrink, 
   get_corners(homography, &inner_box, corners);
   get_pixel_region(image, corners, &x_start, &y_start, &x_end, &y_end);
 
-  float delta_x_top = corners[TOP_RIGHT].x - corners[TOP_LEFT].x;
-  float delta_y_top = corners[TOP_RIGHT].y - corners[TOP_LEFT].y;
-  float delta_x_bottom = corners[BOTTOM_RIGHT].x - corners[BOTTOM_LEFT].x;
-  float delta_y_bottom = corners[BOTTOM_RIGHT].y - corners[BOTTOM_LEFT].y;
-  float delta_x_left = corners[BOTTOM_LEFT].x - corners[TOP_LEFT].x;
-  float delta_y_left = corners[BOTTOM_LEFT].y - corners[TOP_LEFT].y;
-  float delta_x_right = corners[BOTTOM_RIGHT].x - corners[TOP_RIGHT].x;
-  float delta_y_right = corners[BOTTOM_RIGHT].y - corners[TOP_RIGHT].y;
+  const float delta_x_top = corners[TOP_RIGHT].x - corners[TOP_LEFT].x;
+  const float delta_y_top = corners[TOP_RIGHT].y - corners[TOP_LEFT].y;
+  const float delta_x_bottom = corners[BOTTOM_RIGHT].x - corners[BOTTOM_LEFT].x;
+  const float delta_y_bottom = corners[BOTTOM_RIGHT].y - corners[BOTTOM_LEFT].y;
+  const float delta_x_left = corners[BOTTOM_LEFT].x - corners[TOP_LEFT].x;
+  const float delta_y_left = corners[BOTTOM_LEFT].y - corners[TOP_LEFT].y;
+  const float delta_x_right = corners[BOTTOM_RIGHT].x - corners[TOP_RIGHT].x;
+  const float delta_y_right = corners[BOTTOM_RIGHT].y - corners[TOP_RIGHT].y;
 
   double sample_x = 0.0, sample_y = 0.0, sample_z = 0.0;
   size_t n_samples = 0;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(image) \
-  shared(corners, x_start, y_start, x_end, y_end, delta_x_top, delta_y_top, \
-         delta_x_bottom, delta_y_bottom, delta_x_left, delta_y_left, \
-         delta_x_right, delta_y_right) \
+  shared(corners, x_start, y_start, x_end, y_end) \
+  dt_omp_sharedconst(delta_x_top, delta_y_top, delta_x_bottom, delta_y_bottom, delta_x_left, \
+                     delta_y_left, delta_x_right, delta_y_right) \
   reduction(+ : n_samples, sample_x, sample_y, sample_z) \
   schedule(static)
 #endif
@@ -1578,7 +1578,7 @@ static box_t get_sample_box(chart_t *chart, box_t *outer_box, float shrink)
   return inner_box;
 }
 
-static void get_corners(const double *homography, box_t *box, point_t *corners)
+static void get_corners(const float *homography, box_t *box, point_t *corners)
 {
   corners[TOP_LEFT] = corners[TOP_RIGHT] = corners[BOTTOM_RIGHT] = corners[BOTTOM_LEFT] = box->p;
   corners[TOP_RIGHT].x += box->w;
@@ -1793,7 +1793,7 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   double *target_L = (double *)calloc(sizeof(double), (N + 4));
   double *target_a = (double *)calloc(sizeof(double), (N + 4));
   double *target_b = (double *)calloc(sizeof(double), (N + 4));
-  double *source_Lab = (double *)calloc(3 * sizeof(double), N);
+  double *source_Lab = (double *)calloc(sizeof(double) * 3, N);
   *target_L_ptr = target_L;
   *target_a_ptr = target_a;
   *target_b_ptr = target_b;
@@ -1825,7 +1825,7 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
     target_b[i] = g_ascii_strtod(iter, &endptr);
     if(iter == endptr || *endptr != '\n') break;
 
-    double d[3] = { target_L[i], target_a[i], target_b[i] };
+    const double d[3] = { target_L[i], target_a[i], target_b[i] };
     if(sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]) > thrs)
     {
       fprintf(stderr, "warning: ignoring patch %s with large difference deltaE %g!\n", patchname,
@@ -1847,7 +1847,7 @@ static int main_csv(dt_lut_t *self, int argc, char *argv[])
   const int num_patches = atoi(argv[3]);
   const char *filename_style = argv[4];
 
-  int sparsity = num_patches + 4;
+  const int sparsity = num_patches + 4;
 
   // parse the csv
   double *target_L, *target_a, *target_b, *colorchecker_Lab;

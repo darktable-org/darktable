@@ -17,7 +17,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "color_conversion.cl"
+#include "color_conversion.h"
 #include "rgb_norms.h"
 
 /* we use this exp approximation to maintain full identity with cpu path */
@@ -71,6 +71,7 @@ basecurve_lut(read_only image2d_t in, write_only image2d_t out, const int width,
     ratio = mul * curve_lum / lum;
   }
   pixel.xyz *= ratio;
+  pixel = fmax(pixel, 0.f);
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -104,11 +105,12 @@ basecurve_legacy_lut(read_only image2d_t in, write_only image2d_t out, const int
   if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  
+
   // apply ev multiplier and use lut or extrapolation:
   pixel.x = lookup_unbounded(table, mul * pixel.x, a);
   pixel.y = lookup_unbounded(table, mul * pixel.y, a);
   pixel.z = lookup_unbounded(table, mul * pixel.z, a);
+  pixel = fmax(pixel, 0.f);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -121,15 +123,15 @@ basecurve_compute_features(read_only image2d_t in, write_only image2d_t out, con
   if(x >= width || y >= height) return;
 
   float4 value = read_imagef(in, sampleri, (int2)(x, y));
-  
+
   const float ma = max(value.x, max(value.y, value.z));
   const float mi = min(value.x, min(value.y, value.z));
-  
+
   const float sat = 0.1f + 0.1f * (ma - mi) / max(1.0e-4f, ma);
   value.w = sat;
 
   const float c = 0.54f;
-  
+
   float v = fabs(value.x - c);
   v = max(fabs(value.y - c), v);
   v = max(fabs(value.z - c), v);
@@ -138,13 +140,13 @@ basecurve_compute_features(read_only image2d_t in, write_only image2d_t out, con
   const float e = 0.2f + fast_expf(-v * v / (var * var));
 
   value.w *= e;
-  
+
   write_imagef (out, (int2)(x, y), value);
 }
 
 constant float gw[5] = { 1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f };
 
-kernel void 
+kernel void
 basecurve_blur_h(read_only image2d_t in, write_only image2d_t out,
                  const int width, const int height)
 {
@@ -168,8 +170,8 @@ basecurve_blur_h(read_only image2d_t in, write_only image2d_t out,
 }
 
 
-kernel void 
-basecurve_blur_v(read_only image2d_t in, write_only image2d_t out, 
+kernel void
+basecurve_blur_v(read_only image2d_t in, write_only image2d_t out,
                  const int width, const int height)
 {
   const int x = get_global_id(0);
@@ -202,7 +204,7 @@ basecurve_expand(read_only image2d_t in, write_only image2d_t out, const int wid
 
   // fill numbers in even pixels, zero odd ones
   float4 pixel = (x % 2 == 0 && y % 2 == 0) ? 4.0f * read_imagef(in, sampleri, (int2)(x / 2, y / 2)) : (float4)0.0f;
-  
+
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -215,7 +217,7 @@ basecurve_reduce(read_only image2d_t in, write_only image2d_t out, const int wid
   if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(2 * x, 2 * y));
-  
+
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -229,7 +231,7 @@ basecurve_detail(read_only image2d_t in, read_only image2d_t det, write_only ima
 
   float4 input = read_imagef(in, sampleri, (int2)(x, y));
   float4 detail = read_imagef(det, sampleri, (int2)(x, y));
-  
+
   write_imagef (out, (int2)(x, y), input - detail);
 }
 
@@ -243,9 +245,9 @@ basecurve_adjust_features(read_only image2d_t in, read_only image2d_t det, write
 
   float4 input = read_imagef(in, sampleri, (int2)(x, y));
   float4 detail = read_imagef(det, sampleri, (int2)(x, y));
-  
+
   input.w *= 0.1f + sqrt(detail.x * detail.x + detail.y * detail.y + detail.z * detail.z);
-  
+
   write_imagef (out, (int2)(x, y), input);
 }
 
@@ -259,15 +261,15 @@ basecurve_blend_gaussian(read_only image2d_t in, read_only image2d_t col, write_
 
   float4 comb = read_imagef(in, sampleri, (int2)(x, y));
   float4 collect = read_imagef(col, sampleri, (int2)(x, y));
-  
+
   comb.xyz += collect.xyz * collect.w;
   comb.w += collect.w;
-    
+
   write_imagef (out, (int2)(x, y), comb);
 }
 
 kernel void
-basecurve_blend_laplacian(read_only image2d_t in, read_only image2d_t col, read_only image2d_t tmp, write_only image2d_t out, 
+basecurve_blend_laplacian(read_only image2d_t in, read_only image2d_t col, read_only image2d_t tmp, write_only image2d_t out,
                           const int width, const int height)
 {
   const int x = get_global_id(0);
@@ -278,10 +280,10 @@ basecurve_blend_laplacian(read_only image2d_t in, read_only image2d_t col, read_
   float4 comb = read_imagef(in, sampleri, (int2)(x, y));
   float4 collect = read_imagef(col, sampleri, (int2)(x, y));
   float4 temp = read_imagef(tmp, sampleri, (int2)(x, y));
-  
+
   comb.xyz += (collect.xyz - temp.xyz) * collect.w;
   comb.w += collect.w;
-    
+
   write_imagef (out, (int2)(x, y), comb);
 }
 
@@ -294,9 +296,9 @@ basecurve_normalize(read_only image2d_t in, write_only image2d_t out, const int 
   if(x >= width || y >= height) return;
 
   float4 comb = read_imagef(in, sampleri, (int2)(x, y));
-  
+
   comb.xyz /= (comb.w > 1.0e-8f) ? comb.w : 1.0f;
-  
+
   write_imagef (out, (int2)(x, y), comb);
 }
 
@@ -310,9 +312,9 @@ basecurve_reconstruct(read_only image2d_t in, read_only image2d_t tmp, write_onl
 
   float4 comb = read_imagef(in, sampleri, (int2)(x, y));
   float4 temp = read_imagef(tmp, sampleri, (int2)(x, y));
-  
+
   comb += temp;
-  
+
   write_imagef (out, (int2)(x, y), comb);
 }
 
@@ -324,11 +326,8 @@ basecurve_finalize(read_only image2d_t in, read_only image2d_t comb, write_only 
 
   if(x >= width || y >= height) return;
 
-  float4 pixel = read_imagef(comb, sampleri, (int2)(x, y));
+  float4 pixel = fmax(read_imagef(comb, sampleri, (int2)(x, y)), 0.f);
   pixel.w = read_imagef(in, sampleri, (int2)(x, y)).w;
-  
+
   write_imagef (out, (int2)(x, y), pixel);
 }
-
-
-

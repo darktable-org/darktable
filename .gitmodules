@@ -11,3 +11,6 @@
 [submodule "src/external/whereami"]
 	path = src/external/whereami
 	url = https://github.com/gpakosz/whereami
+[submodule "src/tests/integration"]
+	path = src/tests/integration
+	url = https://github.com/darktable-org/darktable-tests.git

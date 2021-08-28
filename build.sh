@@ -8,6 +8,7 @@ set -e
 DT_SRC_DIR=$(dirname "$0")
 DT_SRC_DIR=$(cd "$DT_SRC_DIR" && pwd -P)
 
+
 # ---------------------------------------------------------------------------
 # Set default values to option vars
 # ---------------------------------------------------------------------------
@@ -22,6 +23,10 @@ BUILD_GENERATOR_DEFAULT="Unix Makefiles"
 BUILD_GENERATOR="$BUILD_GENERATOR_DEFAULT"
 MAKE_TASKS=-1
 ADDRESS_SANITIZER=0
+DO_CLEAN_BUILD=0
+DO_CLEAN_INSTALL=0
+MANIFEST_FILE="$BUILD_DIR/install_manifest.txt"
+FORCE_CLEAN=0
 DO_CONFIG=1
 DO_BUILD=1
 DO_INSTALL=0
@@ -29,7 +34,7 @@ SUDO=""
 
 PRINT_HELP=0
 
-FEATURES="CAMERA COLORD FLICKR GRAPHICSMAGICK KWALLET LIBSECRET LUA MAP MAC_INTEGRATION NLS OPENCL OPENEXR OPENMP UNITY WEBP GAME"
+FEATURES="CAMERA COLORD FLICKR GRAPHICSMAGICK IMAGEMAGICK KWALLET LIBSECRET LUA MAP MAC_INTEGRATION NLS OPENCL OPENEXR OPENMP UNITY WEBP GAME"
 
 # prepare a lowercase version with a space before and after
 # it's very important for parse_feature, has no impact in for loop expansions
@@ -56,6 +61,19 @@ parse_args()
 	while [ "$#" -ge 1 ] ; do
 		option="$1"
 		case $option in
+		--clean-build)
+			DO_CLEAN_BUILD=1
+			;;
+		--clean-install)
+			DO_CLEAN_INSTALL=1
+			;;
+		--clean-all)
+			DO_CLEAN_BUILD=1
+			DO_CLEAN_INSTALL=1
+			;;
+		-f|--force)
+			FORCE_CLEAN=1
+			;;
 		--prefix)
 			INSTALL_PREFIX="$2"
 			shift
@@ -145,6 +163,13 @@ Actual actions:
    --install                  After building the binaries, install them
                               (default: disabled)
 
+Cleanup actions:
+   --clean-build              Clean build directory
+   --clean-install            Clean install directory
+   --clean-all                Clean both build and install directories
+-f --force                    Force clean-build to perform removal
+                              ignoring any errors
+
 Features:
 By default cmake will enable the features it autodetects on the build machine.
 Specifying the option on the command line forces the feature on or off.
@@ -160,6 +185,21 @@ EOF
 # ---------------------------------------------------------------------------
 # utility functions
 # ---------------------------------------------------------------------------
+
+log()
+{
+	local prefix
+	case $1 in
+		trace) prefix="[\x1b[32mTRACE\x1b[0m] " ;;
+		debug|dbg) prefix="[\x1b[35mDEBUG\x1b[0m] " ;;
+		info) prefix="[\x1b[36mINFO\x1b[0m] " ;;
+		warning|warn) prefix="[\x1b[33mWARNING\x1b[0m] " ;;
+		error|err) prefix="[\x1b[31mERROR\x1b[0m] " ;;
+		critical) prefix="[\x1b[31;01mCRITICAL\x1b[0m] " ;;
+	esac
+
+	echo -e "$2" |sed -e "s/^/$prefix/"
+}
 
 num_cpu()
 {
@@ -234,6 +274,19 @@ cmake_boolean_option()
 	esac
 }
 
+clean()
+{
+	local force=$1
+	local path_to_clean=$2
+	local option="-I"
+
+	echo
+	log warn "Cleaning directory [$path_to_clean]: it will erase all the files in this path"
+	[ $force -eq 1 ] && option="-f"
+
+	rm -r "$option" "$path_to_clean" || log err "Failed to remove [$path_to_clean]"
+}
+
 # ---------------------------------------------------------------------------
 # Let's process the user's wishes
 # ---------------------------------------------------------------------------
@@ -262,8 +315,6 @@ CMAKE_MORE_OPTIONS="${CMAKE_MORE_OPTIONS} ${CMAKE_PREFIX_PATH}"
 # Let's go
 # ---------------------------------------------------------------------------
 
-mkdir -p "$BUILD_DIR"
-
 cat <<EOF
 darktable build script
 
@@ -273,8 +324,36 @@ Build type:          $BUILD_TYPE
 Build generator:     $BUILD_GENERATOR
 Build tasks:         $MAKE_TASKS
 
-
 EOF
+
+# ---------------------------------------------------------------------------
+# Let's clean some things
+# ---------------------------------------------------------------------------
+if [ $DO_CLEAN_INSTALL -gt 0 ] ; then
+	log info "Cleaning installation directory from $MANIFEST_FILE"
+	if [ -f $MANIFEST_FILE ]; then
+		for f in $(cat $MANIFEST_FILE); do
+			if [ -f "$f" ]; then
+				rm "$f" && log info "Removed: $f"
+			else
+				log warn "File not found: can't remove $f"
+			fi
+		done
+	else
+		log err "File not found: $MANIFEST_FILE"
+	fi
+fi
+
+if [ $DO_CLEAN_BUILD -gt 0 ] ; then
+	clean $FORCE_CLEAN "$BUILD_DIR"
+fi
+
+
+# ---------------------------------------------------------------------------
+# CMake
+# ---------------------------------------------------------------------------
+
+mkdir -p "$BUILD_DIR"
 
 if [ $ADDRESS_SANITIZER -ne 0 ] ; then
 	ASAN_FLAGS="CFLAGS=\"-fsanitize=address -fno-omit-frame-pointer\""

@@ -7,42 +7,51 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      cxx_stdlib libc++
     (practice showed that support for versions older than 10.7 isn't viable)
     and this line to /opt/local/etc/macports/variants.conf:
-     +no_gnome +no_x11 +quartz -x11 -gnome
-    You will also need to add patches for gnutls, python (https://trac.macports.org/ticket/51736), GraphicsMagick, ImageMagick, pugixml, librsvg and gmic
-    (all fixes except for gmic are required due to set deployment target, gmic patch removes extra dependencies):
-     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/lang/python37/files ~/ports/lang/python38/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/textproc ~/ports/science
+     +no_gnome +no_x11 +quartz -x11 -gnome -gfortran
+    You will also need to add patches for gnutls, python (https://trac.macports.org/ticket/51736), GraphicsMagick, ImageMagick, libusb, pugixml, gmic and downgrade libomp
+    (all fixes except for gmic and libomp are required due to set deployment target, gmic patch removes extra dependencies, libomp version change fixes a crash):
+     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/lang/libomp/files ~/ports/lang/python{37,38,39}/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/textproc ~/ports/science
      $ cp -R "$(port dir gnutls)" ~/ports/devel
-     $ curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-disable-connectx.diff
+     $ curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-fixes.diff
      $ cp -R "$(port dir python37)" ~/ports/lang
      $ curl -Lo ~/ports/lang/python37/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python36-stack_size.diff
      $ cp -R "$(port dir python38)" ~/ports/lang
      $ curl -Lo ~/ports/lang/python38/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python38-stack_size.diff
+     $ cp -R "$(port dir python39)" ~/ports/lang
+     $ curl -Lo ~/ports/lang/python39/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python38-stack_size.diff
      $ cp -R "$(port dir GraphicsMagick)" ~/ports/graphics
      $ curl -Lo ~/ports/graphics/GraphicsMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gm-deployment_target.diff
      $ cp -R "$(port dir ImageMagick)" ~/ports/graphics
      $ curl -Lo ~/ports/graphics/ImageMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/im-stdlib.diff
+     $ cp -R "$(port dir libusb)" ~/ports/devel
+     $ curl -Lo ~/ports/devel/libusb/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/libusb-no-clock_gettime.diff
      $ cp -R "$(port dir pugixml)" ~/ports/textproc
      $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/pugixml-stdlib.patch | patch -d ~/ports -p0
-     $ cp -R "$(port dir librsvg)" ~/ports/graphics
-     $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/librsvg-nocargo.patch | patch -d ~/ports -p0
      $ cp -R "$(port dir gmic)" ~/ports/science
      $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gmic-minimal.patch | patch -d ~/ports -p0
+     $ curl -Lo ~/ports/lang/libomp/Portfile https://github.com/macports/macports-ports/raw/589fc380ea8b74771fc4ec1de607ddbddf22cb70/lang/libomp/Portfile
+     $ curl -Lo ~/ports/lang/libomp/files/reviews.llvm.org_D88252.diff https://github.com/macports/macports-ports/raw/589fc380ea8b74771fc4ec1de607ddbddf22cb70/lang/libomp/files/reviews.llvm.org_D88252.diff
+     $ curl -Lo ~/ports/lang/libomp/files/patch-libomp-use-gettid-on-Leopard.diff https://github.com/macports/macports-ports/raw/589fc380ea8b74771fc4ec1de607ddbddf22cb70/lang/libomp/files/patch-libomp-use-gettid-on-Leopard.diff
     then append this line:
      patchfiles-append patch.diff
-    to ~/ports/*/*/Portfile files you just copied (except for pugixml, librsvg and gmic) and run:
+    to ~/ports/*/*/Portfile files you just copied (except for pugixml, gmic and libomp) and run:
      $ portindex ~/ports
     Add "file:///Users/<username>/ports" (change <username> to your actual login) to /opt/local/etc/macports/sources.conf before [default] line.
     Install required dependencies:
-     $ sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg lua webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic
+     $ sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg  webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic
+     $ sudo port select --set python2 python27
     Clone darktable git repository (in this example into ~/src):
      $ mkdir ~/src
      $ cd ~/src
      $ git clone --recurse-submodules https://github.com/darktable-org/darktable.git
-    Finally build and install darktable:
      $ cd darktable
+     $ git submodule init
+     $ git config submodule.src/tests/integration.update none
+     $ git submodule update
+    Finally build and install darktable:
      $ mkdir build
      $ cd build
-     $ cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.7 -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DOpenMP_C_INCLUDE_DIR=/opt/local/include/libomp -DOpenMP_CXX_INCLUDE_DIR=/opt/local/include/libomp -DCMAKE_LIBRARY_PATH=/opt/local/lib/libomp -DBINARY_PACKAGE_BUILD=ON -DRAWSPEED_ENABLE_LTO=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON
+     $ cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.7 -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_OBJCXX_FLAGS=-stdlib=libc++ -DOpenMP_C_INCLUDE_DIR=/opt/local/include/libomp -DOpenMP_CXX_INCLUDE_DIR=/opt/local/include/libomp -DCMAKE_LIBRARY_PATH=/opt/local/lib/libomp -DBINARY_PACKAGE_BUILD=ON -DRAWSPEED_ENABLE_LTO=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DDONT_USE_INTERNAL_LUA=OFF 
      $ make
      $ sudo make install
     After this darktable will be installed in /usr/local directory and can be started by typing the following command in terminal:
@@ -50,7 +59,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
 
 2). Download, patch and install gtk-mac-bundler (assuming darktable was cloned into ~/src directory):
      $ cd ~/src
-     $ curl -O https://ftp.gnome.org/pub/gnome/sources/gtk-mac-bundler/0.7/gtk-mac-bundler-0.7.4.tar.xz
+     $ curl -LO https://download.gnome.org/sources/gtk-mac-bundler/0.7/gtk-mac-bundler-0.7.4.tar.xz
      $ tar -xf gtk-mac-bundler-0.7.4.tar.xz
      $ cd gtk-mac-bundler-0.7.4
      $ patch -p1 < ../darktable/packaging/macosx/gtk-mac-bundler-0.7.4.patch

@@ -1,7 +1,7 @@
 
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2020 darktable developers.
+    Copyright (C) 2013-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ typedef double protected_double;  // like double, but NAN is mapped to nil
 typedef double progress_double; // a double in [0.0,1.0] any value out of bound will be silently converted to
                                 // the bound both at push and pull time
 
-// Types added to the lua type system and useable externally
+// Types added to the lua type system and usable externally
 typedef GtkOrientation dt_lua_orientation_t;
 typedef GtkAlign dt_lua_align_t;
 typedef PangoEllipsizeMode dt_lua_ellipsize_mode_t;

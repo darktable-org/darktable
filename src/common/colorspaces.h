@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,9 @@
 #ifndef TYPE_XYZA_FLT
   #define TYPE_XYZA_FLT         (FLOAT_SH(1)|COLORSPACE_SH(PT_XYZ)|EXTRA_SH(1)|CHANNELS_SH(3)|BYTES_SH(4))
 #endif
+
+// max iccprofile file name length
+#define DT_IOP_COLOR_ICC_LEN 512
 
 // constants fit to the ones from lcms.h:
 typedef enum dt_iop_color_intent_t
@@ -138,8 +141,7 @@ typedef struct dt_colorspaces_t
 typedef struct dt_colorspaces_color_profile_t
 {
   dt_colorspaces_color_profile_type_t type; // filename is only used for type DT_COLORSPACE_FILE
-  // must be in synch with DT_IOPPR_COLOR_ICC_LEN in iop_order.h
-  char filename[512];                       // icc file name
+  char filename[DT_IOP_COLOR_ICC_LEN];      // icc file name
   char name[512];                           // product name, displayed in GUI
   cmsHPROFILE profile;                      // the actual profile
   int in_pos;                               // position in input combo box, -1 if not applicable
@@ -191,12 +193,12 @@ void dt_colorspaces_cleanup_profile(cmsHPROFILE p);
 
 /** extracts tonecurves and color matrix prof to XYZ from a given input profile, returns 0 on success (curves
  * and matrix are inverted for input) */
-int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
-                                                 float *lutb, const int lutsize, const int intent);
+int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof, dt_colormatrix_t matrix, float *lutr, float *lutg,
+                                                 float *lutb, const int lutsize);
 
 /** extracts tonecurves and color matrix prof to XYZ from a given output profile, returns 0 on success. */
-int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
-                                                  float *lutb, const int lutsize, const int intent);
+int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof, dt_colormatrix_t matrix, float *lutr, float *lutg,
+                                                  float *lutb, const int lutsize);
 
 /** wrapper to get the name from a color profile. this tries to handle character encodings. */
 void dt_colorspaces_get_profile_name(cmsHPROFILE p, const char *language, const char *country, char *name,
@@ -206,8 +208,8 @@ void dt_colorspaces_get_profile_name(cmsHPROFILE p, const char *language, const 
 const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type, const char *filename);
 
 /** common functions to change between colorspaces, used in iop modules */
-void rgb2hsl(const float rgb[3], float *h, float *s, float *l);
-void hsl2rgb(float rgb[3], float h, float s, float l);
+void rgb2hsl(const dt_aligned_pixel_t rgb, float *h, float *s, float *l);
+void hsl2rgb(dt_aligned_pixel_t rgb, float h, float s, float l);
 
 /** trigger updating the display profile from the system settings (x atom, colord, ...) */
 void dt_colorspaces_set_display_profile(const dt_colorspaces_color_profile_type_t profile_type);
@@ -232,10 +234,10 @@ void dt_colorspaces_update_display2_transforms();
 int dt_colorspaces_conversion_matrices_xyz(const char *name, float in_XYZ_to_CAM[9], double XYZ_to_CAM[4][3], double CAM_to_XYZ[3][4]);
 
 /** Calculate CAM->RGB, RGB->CAM matrices and default WB multipliers */
-int dt_colorspaces_conversion_matrices_rgb(const char *name, double RGB_to_CAM[4][3], double CAM_to_RGB[3][4], double mul[4]);
+int dt_colorspaces_conversion_matrices_rgb(const char *name, double RGB_to_CAM[4][3], double CAM_to_RGB[3][4], const float *embedded_matrix, double mul[4]);
 
 /** Applies CYGM WB coeffs to an image that's already been converted to RGB by dt_colorspaces_cygm_to_rgb */
-void dt_colorspaces_cygm_apply_coeffs_to_rgb(float *out, const float *in, int num, double RGB_to_CAM[4][3], double CAM_to_RGB[3][4], float coeffs[4]);
+void dt_colorspaces_cygm_apply_coeffs_to_rgb(float *out, const float *in, int num, double RGB_to_CAM[4][3], double CAM_to_RGB[3][4], dt_aligned_pixel_t coeffs);
 
 /** convert CYGM buffer to RGB */
 void dt_colorspaces_cygm_to_rgb(float *out, int num, double CAM_to_RGB[3][4]);

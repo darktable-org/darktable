@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@
 #include "common/locallaplaciancl.h"
 #include "common/nvidia_gpus.h"
 #include "common/opencl_drivers_blacklist.h"
+#include "common/tea.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -322,6 +323,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   if(darktable.unmuted & DT_DEBUG_OPENCL)
   {
     printf("[opencl_init] device %d: %s \n", k, infostr);
+    printf("     CANONICAL_NAME:           %s\n", cname);
     printf("     GLOBAL_MEM_SIZE:          %.0fMB\n", (double)cl->dev[dev].max_global_mem / 1024.0 / 1024.0);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(infoint), &infoint, NULL);
     printf("     MAX_WORK_GROUP_SIZE:      %zu\n", infoint);
@@ -404,21 +406,41 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   escapedkerneldir = dt_util_str_replace(kerneldir, " ", "\\ ");
 #endif
 
-  // do not use -cl-fast-relaxed-math, this breaks AMD OpenCL
-  // do not use -cl-finite-math-only, this breaks Intel Neo OpenCL
-  options = g_strdup_printf("-w %s -D%s=1 -I%s",
+  gchar* compile_option_name_id = g_strdup_printf("opencl_building_gpu%d", k);
+  gchar* compile_option_name_cname = g_strdup_printf("opencl_building_gpu%s", cl->dev[dev].cname);
+  gchar* compile_opt = NULL;
+
+  if(dt_conf_key_exists(compile_option_name_id))
+  {
+    compile_opt = dt_conf_get_string(compile_option_name_id);
+  }
+  else if (dt_conf_key_exists(compile_option_name_cname))
+  {
+    compile_opt = dt_conf_get_string(compile_option_name_cname);
+  }
+  else
+  {
+    compile_opt = g_strdup("-cl-fast-relaxed-math");
+  }
+
+  options = g_strdup_printf("-w %s %s -D%s=1 -I%s",
+                            compile_opt,
                             (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""),
                             dt_opencl_get_vendor_by_id(vendor_id), escapedkerneldir);
   cl->dev[dev].options = strdup(options);
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] options for OpenCL compiler: %s\n", options);
 
+  g_free(compile_opt);
+  g_free(compile_option_name_cname);
+  g_free(compile_option_name_id);
+
   g_free(options);
   options = NULL;
   g_free(escapedkerneldir);
   escapedkerneldir = NULL;
 
-  const char *clincludes[DT_OPENCL_MAX_INCLUDES] = { "color_conversion.cl", "colorspaces.cl", "colorspace.cl", "common.h", NULL };
+  const char *clincludes[DT_OPENCL_MAX_INCLUDES] = { "rgb_norms.h", "noise_generator.h", "color_conversion.h", "colorspaces.cl", "colorspace.h", "common.h", NULL };
   char *includemd5[DT_OPENCL_MAX_INCLUDES] = { NULL };
   dt_opencl_md5sum(clincludes, includemd5);
 
@@ -526,7 +548,6 @@ end:
 
 void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboolean print_statistics)
 {
-  char *str;
   dt_pthread_mutex_init(&cl->lock, NULL);
   cl->inited = 0;
   cl->enabled = 0;
@@ -577,28 +598,24 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl related configuration options:\n");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] \n");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl: %d\n", dt_conf_get_bool("opencl"));
-  str = dt_conf_get_string("opencl_scheduling_profile");
+  const char *str = dt_conf_get_string_const("opencl_scheduling_profile");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_scheduling_profile: '%s'\n", str);
-  g_free(str);
-  str = dt_conf_get_string("opencl_library");
+  str = dt_conf_get_string_const("opencl_library");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_library: '%s'\n", str);
-  g_free(str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_memory_requirement: %d\n",
            dt_conf_get_int("opencl_memory_requirement"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_memory_headroom: %d\n",
            dt_conf_get_int("opencl_memory_headroom"));
-  str = dt_conf_get_string("opencl_device_priority");
+  str = dt_conf_get_string_const("opencl_device_priority");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_device_priority: '%s'\n", str);
-  g_free(str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_mandatory_timeout: %d\n",
            dt_conf_get_int("opencl_mandatory_timeout"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_size_roundup: %d\n",
            dt_conf_get_int("opencl_size_roundup"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_async_pixelpipe: %d\n",
            dt_conf_get_bool("opencl_async_pixelpipe"));
-  str = dt_conf_get_string("opencl_synch_cache");
+  str = dt_conf_get_string_const("opencl_synch_cache");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_synch_cache: %s\n", str);
-  g_free(str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_number_event_handles: %d\n",
            dt_conf_get_int("opencl_number_event_handles"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_micro_nap: %d\n", dt_conf_get_int("opencl_micro_nap"));
@@ -614,14 +631,13 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] \n");
 
   // look for explicit definition of opencl_runtime library in preferences
-  char *library = dt_conf_get_string("opencl_library");
+  const char *library = dt_conf_get_string_const("opencl_library");
 
   // dynamically load opencl runtime
   if((cl->dlocl = dt_dlopencl_init(library)) == NULL)
   {
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_init] no working opencl library found. Continue with opencl disabled\n");
-    g_free(library);
     goto finally;
   }
   else
@@ -629,11 +645,10 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl library '%s' found on your system and loaded\n",
              cl->dlocl->library);
   }
-  g_free(library);
 
   cl_int err;
-  all_platforms = malloc(DT_OPENCL_MAX_PLATFORMS * sizeof(cl_platform_id));
-  all_num_devices = malloc(DT_OPENCL_MAX_PLATFORMS * sizeof(cl_uint));
+  all_platforms = malloc(sizeof(cl_platform_id) * DT_OPENCL_MAX_PLATFORMS);
+  all_num_devices = malloc(sizeof(cl_uint) * DT_OPENCL_MAX_PLATFORMS);
   cl_uint num_platforms = DT_OPENCL_MAX_PLATFORMS;
   err = (cl->dlocl->symbols->dt_clGetPlatformIDs)(DT_OPENCL_MAX_PLATFORMS, all_platforms, &num_platforms);
   if(err != CL_SUCCESS)
@@ -676,6 +691,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     if(!cl->dev || !devices)
     {
       free(cl->dev);
+      cl->dev = NULL;
       free(devices);
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not allocate memory\n");
       goto finally;
@@ -698,9 +714,15 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
       devs += all_num_devices[n];
     }
   }
+  devs = NULL;
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d device%s\n", num_devices, num_devices > 1 ? "s" : "");
-  if(num_devices == 0) goto finally;
+  if(num_devices == 0)
+  {
+    if(devices)
+      free(devices);
+    goto finally;
+  }
 
   int dev = 0;
   for(int k = 0; k < num_devices; k++)
@@ -715,6 +737,8 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     ++dev;
   }
   free(devices);
+  devices = NULL;
+
   if(dev > 0)
   {
     cl->num_devs = dev;
@@ -763,7 +787,7 @@ finally:
 
     char checksum[64];
     snprintf(checksum, sizeof(checksum), "%u", cl->crc);
-    char *oldchecksum = dt_conf_get_string("opencl_checksum");
+    const char *oldchecksum = dt_conf_get_string_const("opencl_checksum");
 
     // check if the configuration (OpenCL device setup) has changed, indicated by checksum != oldchecksum
     if(strcasecmp(oldchecksum, "OFF") != 0 && strcmp(oldchecksum, checksum) != 0)
@@ -812,7 +836,6 @@ finally:
         dt_control_log(_("opencl scheduling profile set to default."));
       }
     }
-    g_free(oldchecksum);
 
     // apply config settings for scheduling profile: sets device priorities and pixelpipe synchronization timeout
     dt_opencl_scheduling_profile_t profile = dt_opencl_get_scheduling_profile();
@@ -850,6 +873,7 @@ finally:
     setlocale(LC_ALL, locale);
     free(locale);
   }
+
   return;
 }
 
@@ -934,13 +958,13 @@ static const char *dt_opencl_get_vendor_by_id(unsigned int id)
 
   switch(id)
   {
-    case 4098:
+    case DT_OPENCL_VENDOR_AMD:
       vendor = "AMD";
       break;
-    case 4318:
+    case DT_OPENCL_VENDOR_NVIDIA:
       vendor = "NVIDIA";
       break;
-    case 0x8086u:
+    case DT_OPENCL_VENDOR_INTEL:
       vendor = "INTEL";
       break;
     default:
@@ -948,30 +972,6 @@ static const char *dt_opencl_get_vendor_by_id(unsigned int id)
   }
 
   return vendor;
-}
-
-#define TEA_ROUNDS 8
-static void encrypt_tea(unsigned int *arg)
-{
-  const unsigned int key[] = { 0xa341316c, 0xc8013ea4, 0xad90777d, 0x7e95761e };
-  unsigned int v0 = arg[0], v1 = arg[1];
-  unsigned int sum = 0;
-  unsigned int delta = 0x9e3779b9;
-  for(int i = 0; i < TEA_ROUNDS; i++)
-  {
-    sum += delta;
-    v0 += ((v1 << 4) + key[0]) ^ (v1 + sum) ^ ((v1 >> 5) + key[1]);
-    v1 += ((v0 << 4) + key[2]) ^ (v0 + sum) ^ ((v0 >> 5) + key[3]);
-  }
-  arg[0] = v0;
-  arg[1] = v1;
-}
-
-static float tpdf(unsigned int urandom)
-{
-  float frandom = (float)urandom / (float)0xFFFFFFFFu;
-
-  return (frandom < 0.5f ? (sqrtf(2.0f * frandom) - 1.0f) : (1.0f - sqrtf(2.0f * (1.0f - frandom))));
 }
 
 static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const size_t height, const int count, const float sigma)
@@ -985,7 +985,7 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
   const float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
   const float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
 
-  unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
+  unsigned int *const tea_states = alloc_tea_states(dt_get_num_threads());
 
   buf = dt_alloc_align(64, width * height * bpp);
   if(buf == NULL) goto error;
@@ -997,7 +997,7 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
 #endif
   for(size_t j = 0; j < height; j++)
   {
-    unsigned int *tea_state = tea_states + 2 * dt_get_thread_num();
+    unsigned int *tea_state = get_tea_state(tea_states,dt_get_thread_num());
     tea_state[0] = j + dt_get_thread_num();
     size_t index = j * 4 * width;
     for(int i = 0; i < 4 * width; i++)
@@ -1040,13 +1040,13 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
   double end = dt_get_wtime();
 
   dt_free_align(buf);
-  free(tea_states);
+  free_tea_states(tea_states);
   return (end - start);
 
 error:
   dt_gaussian_free_cl(g);
   dt_free_align(buf);
-  free(tea_states);
+  free_tea_states(tea_states);
   dt_opencl_release_mem_object(dev_mem);
   return INFINITY;
 }
@@ -1060,7 +1060,7 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
   const float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
   const float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
 
-  unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
+  unsigned int *const tea_states = alloc_tea_states(dt_get_num_threads());
 
   buf = dt_alloc_align(64, width * height * bpp);
   if(buf == NULL) goto error;
@@ -1072,7 +1072,7 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
 #endif
   for(size_t j = 0; j < height; j++)
   {
-    unsigned int *tea_state = tea_states + 2 * dt_get_thread_num();
+    unsigned int *tea_state = get_tea_state(tea_states,dt_get_thread_num());
     tea_state[0] = j + dt_get_thread_num();
     size_t index = j * 4 * width;
     for(int i = 0; i < 4 * width; i++)
@@ -1103,13 +1103,13 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
   double end = dt_get_wtime();
 
   dt_free_align(buf);
-  free(tea_states);
+  free_tea_states(tea_states);
   return (end - start);
 
 error:
   dt_gaussian_free(g);
   dt_free_align(buf);
-  free(tea_states);
+  free_tea_states(tea_states);
   return INFINITY;
 }
 
@@ -1243,7 +1243,7 @@ static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *prio
 {
   int devs = cl->num_devs;
   int count = 0;
-  int *full = malloc((size_t)(devs + 1) * sizeof(int));
+  int *full = malloc(sizeof(int) * (devs + 1));
   int mnd = 0;
 
   // NULL or empty configstring?
@@ -1786,7 +1786,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
         return CL_SUCCESS;
       }
 
-      cl_device_id *devices = malloc(numdev * sizeof(cl_device_id));
+      cl_device_id *devices = malloc(sizeof(cl_device_id) * numdev);
       err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_DEVICES,
                                                       sizeof(cl_device_id) * numdev, devices, NULL);
       if(err != CL_SUCCESS)
@@ -1796,7 +1796,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
         return CL_SUCCESS;
       }
 
-      size_t *binary_sizes = malloc(numdev * sizeof(size_t));
+      size_t *binary_sizes = malloc(sizeof(size_t) * numdev);
       err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_BINARY_SIZES,
                                                       sizeof(size_t) * numdev, binary_sizes, NULL);
       if(err != CL_SUCCESS)
@@ -1807,7 +1807,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
         return CL_SUCCESS;
       }
 
-      unsigned char **binaries = malloc(numdev * sizeof(unsigned char *));
+      unsigned char **binaries = malloc(sizeof(unsigned char *) * numdev);
       for(int i = 0; i < numdev; i++) binaries[i] = (unsigned char *)malloc(binary_sizes[i]);
       err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_BINARIES,
                                                       sizeof(unsigned char *) * numdev, binaries, NULL);
@@ -2265,6 +2265,8 @@ void *dt_opencl_alloc_device(const int devid, const int width, const int height,
     fmt = (cl_image_format){ CL_R, CL_FLOAT };
   else if(bpp == sizeof(uint16_t))
     fmt = (cl_image_format){ CL_R, CL_UNSIGNED_INT16 };
+  else if(bpp == sizeof(uint8_t))
+    fmt = (cl_image_format){ CL_R, CL_UNSIGNED_INT8 };
   else
     return NULL;
 
@@ -2533,9 +2535,8 @@ int dt_opencl_update_settings(void)
 
   if(darktable.opencl->scheduling_profile != profile)
   {
-    char *pstr = dt_conf_get_string("opencl_scheduling_profile");
+    const char *pstr = dt_conf_get_string_const("opencl_scheduling_profile");
     dt_print(DT_DEBUG_OPENCL, "[opencl_update_scheduling_profile] scheduling profile set to %s\n", pstr);
-    g_free(pstr);
     dt_opencl_apply_scheduling_profile(profile);
   }
 
@@ -2543,9 +2544,8 @@ int dt_opencl_update_settings(void)
 
   if(darktable.opencl->sync_cache != sync)
   {
-    char *pstr = dt_conf_get_string("opencl_synch_cache");
+    const char *pstr = dt_conf_get_string_const("opencl_synch_cache");
     dt_print(DT_DEBUG_OPENCL, "[opencl_update_synch_cache] sync cache set to %s\n", pstr);
-    g_free(pstr);
     darktable.opencl->sync_cache = sync;
   }
 
@@ -2555,7 +2555,7 @@ int dt_opencl_update_settings(void)
 /** read scheduling profile for config variables */
 static dt_opencl_scheduling_profile_t dt_opencl_get_scheduling_profile(void)
 {
-  char *pstr = dt_conf_get_string("opencl_scheduling_profile");
+  const char *pstr = dt_conf_get_string_const("opencl_scheduling_profile");
   if(!pstr) return OPENCL_PROFILE_DEFAULT;
 
   dt_opencl_scheduling_profile_t profile = OPENCL_PROFILE_DEFAULT;
@@ -2565,15 +2565,13 @@ static dt_opencl_scheduling_profile_t dt_opencl_get_scheduling_profile(void)
   else if(!strcmp(pstr, "very fast GPU"))
     profile = OPENCL_PROFILE_VERYFAST_GPU;
 
-  g_free(pstr);
-
   return profile;
 }
 
 /** read config of when/if to synch to cache */
 static dt_opencl_sync_cache_t dt_opencl_get_sync_cache(void)
 {
-  char *pstr = dt_conf_get_string("opencl_synch_cache");
+  const char *pstr = dt_conf_get_string_const("opencl_synch_cache");
   if(!pstr) return OPENCL_SYNC_ACTIVE_MODULE;
 
   dt_opencl_sync_cache_t sync = OPENCL_SYNC_ACTIVE_MODULE;
@@ -2582,8 +2580,6 @@ static dt_opencl_sync_cache_t dt_opencl_get_sync_cache(void)
     sync = OPENCL_SYNC_TRUE;
   else if(!strcmp(pstr, "false"))
     sync = OPENCL_SYNC_FALSE;
-
-  g_free(pstr);
 
   return sync;
 }
@@ -2598,8 +2594,6 @@ static void dt_opencl_set_synchronization_timeout(int value)
 /** adjust opencl subsystem according to scheduling profile */
 static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t profile)
 {
-  char *str;
-
   dt_pthread_mutex_lock(&darktable.opencl->lock);
   darktable.opencl->scheduling_profile = profile;
 
@@ -2615,9 +2609,7 @@ static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t pr
       break;
     case OPENCL_PROFILE_DEFAULT:
     default:
-      str = dt_conf_get_string("opencl_device_priority");
-      dt_opencl_update_priorities(str);
-      g_free(str);
+      dt_opencl_update_priorities(dt_conf_get_string_const("opencl_device_priority"));
       dt_opencl_set_synchronization_timeout(dt_conf_get_int("pixelpipe_synchronization_timeout"));
       break;
   }
@@ -2703,8 +2695,8 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
       free(neweventtags);
       return NULL;
     }
-    memcpy(neweventlist, *eventlist, *maxevents * sizeof(cl_event));
-    memcpy(neweventtags, *eventtags, *maxevents * sizeof(dt_opencl_eventtag_t));
+    memcpy(neweventlist, *eventlist, sizeof(cl_event) * *maxevents);
+    memcpy(neweventtags, *eventtags, sizeof(dt_opencl_eventtag_t) * *maxevents);
     free(*eventlist);
     free(*eventtags);
     *eventlist = neweventlist;
@@ -2752,7 +2744,7 @@ void dt_opencl_events_reset(const int devid)
     (cl->dlocl->symbols->dt_clReleaseEvent)((*eventlist)[k]);
   }
 
-  memset(*eventtags, 0, *maxevents * sizeof(dt_opencl_eventtag_t));
+  memset(*eventtags, 0, sizeof(dt_opencl_eventtag_t) * *maxevents);
   *numevents = 0;
   *eventsconsolidated = 0;
   *lostevents = 0;
@@ -2910,8 +2902,8 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
   if(*eventlist == NULL || *numevents == 0 || *eventtags == NULL || *eventsconsolidated == 0)
     return; // nothing to do
 
-  char **tags = malloc((*eventsconsolidated + 1) * sizeof(char *));
-  float *timings = malloc((*eventsconsolidated + 1) * sizeof(float));
+  char **tags = malloc(sizeof(char *) * (*eventsconsolidated + 1));
+  float *timings = malloc(sizeof(float) * (*eventsconsolidated + 1));
   int items = 1;
   tags[0] = "";
   timings[0] = 0.0f;
@@ -3019,7 +3011,7 @@ int dt_opencl_local_buffer_opt(const int devid, const int kernel, dt_opencl_loca
     while(maxsizes[0] < *blocksizex || maxsizes[1] < *blocksizey
        || localmemsize < ((factors->xfactor * (*blocksizex) + factors->xoffset) *
                           (factors->yfactor * (*blocksizey) + factors->yoffset)) * factors->cellsize + factors->overhead
-       || workgroupsize < (*blocksizex) * (*blocksizey) || kernelworkgroupsize < (*blocksizex) * (*blocksizey))
+       || workgroupsize < (size_t)(*blocksizex) * (*blocksizey) || kernelworkgroupsize < (size_t)(*blocksizex) * (*blocksizey))
     {
       if(*blocksizex == 1 && *blocksizey == 1) return FALSE;
 

@@ -1,6 +1,6 @@
 /* --------------------------------------------------------------------------
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,12 +18,12 @@
 
 #include "common/interpolation.h"
 #include "common/darktable.h"
+#include "common/math.h"
 #include "control/conf.h"
 
 #include <assert.h>
 #include <glib.h>
 #include <inttypes.h>
-#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -100,35 +100,6 @@ static inline int64_t getts()
 /* --------------------------------------------------------------------------
  * Generic helpers
  * ------------------------------------------------------------------------*/
-
-/** Compute ceil value of a float
- * @remark Avoid libc ceil for now. Maybe we'll revert to libc later.
- * @param x Value to ceil
- * @return ceil value
- */
-static inline float ceil_fast(float x)
-{
-  if(x <= 0.f)
-  {
-    return (float)(int)x;
-  }
-  else
-  {
-    return -((float)(int)-x) + 1.f;
-  }
-}
-
-#if defined(__SSE2__)
-/** Compute absolute value
- * @param t Vector of 4 floats
- * @return Vector of their absolute values
- */ static inline __m128 _mm_abs_ps(__m128 t)
-{
-  static const uint32_t signmask[4] __attribute__((aligned(SSE_ALIGNMENT)))
-  = { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff };
-  return _mm_and_ps(*(__m128 *)signmask, t);
-}
-#endif
 
 /** Clip into specified range
  * @param idx index to filter
@@ -215,64 +186,6 @@ static inline size_t increase_for_alignment(size_t l, size_t align)
   return (l + align) & (~align);
 }
 
-/** Compute an approximate sine.
- * This function behaves correctly for the range [-pi pi] only.
- * It has the following properties:
- * <ul>
- *   <li>It has exact values for 0, pi/2, pi, -pi/2, -pi</li>
- *   <li>It has matching derivatives to sine for these same points</li>
- *   <li>Its relative error margin is <= 1% iirc</li>
- *   <li>It computational cost is 5 mults + 3 adds + 2 abs</li>
- * </ul>
- * @param t Radian parameter
- * @return guess what
- */
-static inline float sinf_fast(float t)
-{
-  static const float a = 4 / (M_PI * M_PI);
-  static const float p = 0.225f;
-
-  t = a * t * (M_PI - fabsf(t));
-
-  return t * (p * (fabsf(t) - 1) + 1);
-}
-
-#if defined(__SSE2__)
-/** Compute an approximate sine (SSE version, four sines a call).
- * This function behaves correctly for the range [-pi pi] only.
- * It has the following properties:
- * <ul>
- *   <li>It has exact values for 0, pi/2, pi, -pi/2, -pi</li>
- *   <li>It has matching derivatives to sine for these same points</li>
- *   <li>Its relative error margin is <= 1% iirc</li>
- *   <li>It computational cost is 5 mults + 3 adds + 2 abs</li>
- * </ul>
- * @param t Radian parameter
- * @return guess what
- */
-static inline __m128 sinf_fast_sse(__m128 t)
-{
-  static const __m128 a
-      = { 4.f / (M_PI * M_PI), 4.f / (M_PI * M_PI), 4.f / (M_PI * M_PI), 4.f / (M_PI * M_PI) };
-  static const __m128 p = { 0.225f, 0.225f, 0.225f, 0.225f };
-  static const __m128 pi = { M_PI, M_PI, M_PI, M_PI };
-
-  // m4 = a*t*(M_PI - fabsf(t));
-  __m128 m1 = _mm_abs_ps(t);
-  __m128 m2 = _mm_sub_ps(pi, m1);
-  __m128 m3 = _mm_mul_ps(t, m2);
-  __m128 m4 = _mm_mul_ps(a, m3);
-
-  // p*(m4*fabsf(m4) - m4) + m4;
-  __m128 n1 = _mm_abs_ps(m4);
-  __m128 n2 = _mm_mul_ps(m4, n1);
-  __m128 n3 = _mm_sub_ps(n2, m4);
-  __m128 n4 = _mm_mul_ps(p, n3);
-
-  return _mm_add_ps(n4, m4);
-}
-#endif
-
 /* --------------------------------------------------------------------------
  * Interpolation kernels
  * ------------------------------------------------------------------------*/
@@ -341,33 +254,33 @@ static inline __m128 bicubic_sse(__m128 width, __m128 t)
   static const __m128 eight = { 8.f, 8.f, 8.f, 8.f };
 
   t = _mm_abs_ps(t);
-  __m128 t2 = _mm_mul_ps(t, t);
+  const __m128 t2 = _mm_mul_ps(t, t);
 
   /* Compute 1 < t < 2 case:
    * 0.5f*(t*(-t2 + 5.f*t - 8.f) + 4.f)
    * half*(t*(mt2 + t5 - eight) + four)
    * half*(t*(mt2 + t5_sub_8) + four)
    * half*(t*(mt2_add_t5_sub_8) + four) */
-  __m128 t5 = _mm_mul_ps(five, t);
-  __m128 t5_sub_8 = _mm_sub_ps(t5, eight);
-  __m128 zero = _mm_setzero_ps();
-  __m128 mt2 = _mm_sub_ps(zero, t2);
-  __m128 mt2_add_t5_sub_8 = _mm_add_ps(mt2, t5_sub_8);
-  __m128 a = _mm_mul_ps(t, mt2_add_t5_sub_8);
-  __m128 b = _mm_add_ps(a, four);
+  const __m128 t5 = _mm_mul_ps(five, t);
+  const __m128 t5_sub_8 = _mm_sub_ps(t5, eight);
+  const __m128 zero = _mm_setzero_ps();
+  const __m128 mt2 = _mm_sub_ps(zero, t2);
+  const __m128 mt2_add_t5_sub_8 = _mm_add_ps(mt2, t5_sub_8);
+  const __m128 a = _mm_mul_ps(t, mt2_add_t5_sub_8);
+  const __m128 b = _mm_add_ps(a, four);
   __m128 r12 = _mm_mul_ps(b, half);
 
   /* Compute case < 1
    * 0.5f*(t*(3.f*t2 - 5.f*t) + 2.f) */
-  __m128 t23 = _mm_mul_ps(three, t2);
-  __m128 c = _mm_sub_ps(t23, t5);
-  __m128 d = _mm_mul_ps(t, c);
-  __m128 e = _mm_add_ps(d, two);
+  const __m128 t23 = _mm_mul_ps(three, t2);
+  const __m128 c = _mm_sub_ps(t23, t5);
+  const __m128 d = _mm_mul_ps(t, c);
+  const __m128 e = _mm_add_ps(d, two);
   __m128 r01 = _mm_mul_ps(half, e);
 
   // Compute masks fr keeping correct components
-  __m128 mask01 = _mm_cmple_ps(t, one);
-  __m128 mask12 = _mm_cmpgt_ps(t, one);
+  const __m128 mask01 = _mm_cmple_ps(t, one);
+  const __m128 mask12 = _mm_cmpgt_ps(t, one);
   r01 = _mm_and_ps(mask01, r01);
   r12 = _mm_and_ps(mask12, r12);
 
@@ -436,8 +349,8 @@ static inline float lanczos(float width, float t)
   } sign;
   sign.i = ((a & 1) << 31) | 0x3f800000;
 
-  return (DT_LANCZOS_EPSILON + width * sign.f * sinf_fast(M_PI * r) * sinf_fast(M_PI * t / width))
-         / (DT_LANCZOS_EPSILON + M_PI * M_PI * t * t);
+  return (DT_LANCZOS_EPSILON + width * sign.f * sinf_fast(M_PI_F * r) * sinf_fast(M_PI_F * t / width))
+         / (DT_LANCZOS_EPSILON + M_PI_F * M_PI_F * t * t);
 }
 
 #if defined(__SSE2__)
@@ -460,7 +373,7 @@ static inline __m128 lanczos_sse2(__m128 width, __m128 t)
   __m128i isign = _mm_and_si128(*(__m128i *)ione, a);
   isign = _mm_slli_epi64(isign, 31);
   isign = _mm_or_si128(*(__m128i *)fone, isign);
-  __m128 fsign = _mm_castsi128_ps(isign);
+  const __m128 fsign = _mm_castsi128_ps(isign);
 
   __m128 num = _mm_mul_ps(width, fsign);
   num = _mm_mul_ps(num, sinf_fast_sse(_mm_mul_ps(pi, r)));
@@ -594,12 +507,12 @@ static inline void compute_upsampling_kernel_sse(const struct dt_interpolation *
 
   // Prepare counters (math kept stupid for understanding)
   int i = 0;
-  int runs = (2 * itor->width + 3) / 4;
+  const int runs = (2 * itor->width + 3) / 4;
 
   while(i < runs)
   {
     // Compute the values
-    __m128 vr = itor->funcsse(vw, vt);
+    const __m128 vr = itor->funcsse(vw, vt);
 
     // Save result
     *(__m128 *)kernel = vr;
@@ -653,11 +566,11 @@ static inline void compute_downsampling_kernel_plain(const struct dt_interpolati
                                                      float outoinratio, int xout)
 {
   // Keep this at hand
-  float w = (float)itor->width;
+  const float w = (float)itor->width;
 
   /* Compute the phase difference between output pixel and its
    * input corresponding input pixel */
-  float xin = ceil_fast(((float)xout - w) / outoinratio);
+  const float xin = ceil_fast(((float)xout - w) / outoinratio);
   if(first)
   {
     *first = (int)xin;
@@ -700,11 +613,11 @@ static inline void compute_downsampling_kernel_sse(const struct dt_interpolation
                                                    float *kernel, float *norm, float outoinratio, int xout)
 {
   // Keep this at hand
-  float w = (float)itor->width;
+  const float w = (float)itor->width;
 
   /* Compute the phase difference between output pixel and its
    * input corresponding input pixel */
-  float xin = ceil_fast(((float)xout - w) / outoinratio);
+  const float xin = ceil_fast(((float)xout - w) / outoinratio);
   if(first)
   {
     *first = (int)xin;
@@ -724,12 +637,12 @@ static inline void compute_downsampling_kernel_sse(const struct dt_interpolation
 
   // Prepare counters (math kept stupid for understanding)
   int i = 0;
-  int runs = (*taps + 3) / 4;
+  const int runs = (*taps + 3) / 4;
 
   while(i < runs)
   {
     // Compute the values
-    __m128 vr = itor->funcsse(vw, vt);
+    const __m128 vr = itor->funcsse(vw, vt);
 
     // Save result
     *(__m128 *)kernel = vr;
@@ -826,7 +739,6 @@ float dt_interpolation_compute_sample(const struct dt_interpolation *itor, const
   {
     // At least a valid coordinate
 
-
     // Point to the upper left pixel index wise
     iy -= itor->width - 1;
     ix -= itor->width - 1;
@@ -846,11 +758,11 @@ float dt_interpolation_compute_sample(const struct dt_interpolation *itor, const
     float s = 0.f;
     for(int i = ytap_first; i < ytap_last; i++)
     {
-      int clip_y = clip(iy + i, 0, height - 1, bordermode);
+      const int clip_y = clip(iy + i, 0, height - 1, bordermode);
       float h = 0.0f;
       for(int j = xtap_first; j < xtap_last; j++)
       {
-        int clip_x = clip(ix + j, 0, width - 1, bordermode);
+        const int clip_x = clip(ix + j, 0, width - 1, bordermode);
         const float *ipixel = in + clip_y * linestride + clip_x * samplestride;
         h += kernelh[j] * ipixel[0];
       }
@@ -907,10 +819,10 @@ static void dt_interpolation_compute_pixel4c_plain(const struct dt_interpolation
     in = in - (itor->width - 1) * (4 + linestride);
 
     // Apply the kernel
-    float pixel[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    dt_aligned_pixel_t pixel = { 0.0f, 0.0f, 0.0f, 0.0f };
     for(int i = 0; i < 2 * itor->width; i++)
     {
-      float h[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      dt_aligned_pixel_t h = { 0.0f, 0.0f, 0.0f, 0.0f };
       for(int j = 0; j < 2 * itor->width; j++)
       {
         for(int c = 0; c < 3; c++) h[c] += kernelh[j] * in[j * 4 + c];
@@ -941,14 +853,14 @@ static void dt_interpolation_compute_pixel4c_plain(const struct dt_interpolation
     prepare_tap_boundaries(&ytap_first, &ytap_last, bordermode, 2 * itor->width, iy, height);
 
     // Apply the kernel
-    float pixel[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    dt_aligned_pixel_t pixel = { 0.0f, 0.0f, 0.0f, 0.0f };
     for(int i = ytap_first; i < ytap_last; i++)
     {
-      int clip_y = clip(iy + i, 0, height - 1, bordermode);
-      float h[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      const int clip_y = clip(iy + i, 0, height - 1, bordermode);
+      dt_aligned_pixel_t h = { 0.0f, 0.0f, 0.0f, 0.0f };
       for(int j = xtap_first; j < xtap_last; j++)
       {
-        int clip_x = clip(ix + j, 0, width - 1, bordermode);
+        const int clip_x = clip(ix + j, 0, width - 1, bordermode);
         const float *ipixel = in + clip_y * linestride + clip_x * 4;
         for(int c = 0; c < 3; c++) h[c] += kernelh[j] * ipixel[c];
       }
@@ -990,7 +902,7 @@ static void dt_interpolation_compute_pixel4c_sse(const struct dt_interpolation *
   }
 
   // Precompute the inverse of the filter norm for later use
-  __m128 oonorm = _mm_set_ps1(1.f / (normh * normv));
+  const __m128 oonorm = _mm_set_ps1(1.f / (normh * normv));
 
   /* Now 2 cases, the pixel + filter width goes outside the image
    * in that case we have to use index clipping to keep all reads
@@ -1050,7 +962,7 @@ static void dt_interpolation_compute_pixel4c_sse(const struct dt_interpolation *
       __m128 h = _mm_setzero_ps();
       for(int j = xtap_first; j < xtap_last; j++)
       {
-        int clip_x = clip(ix + j, 0, width - 1, bordermode);
+        const int clip_x = clip(ix + j, 0, width - 1, bordermode);
         const float *ipixel = in + clip_y * linestride + clip_x * 4;
         h = _mm_add_ps(h, _mm_mul_ps(vkernelh[j], *(__m128 *)ipixel));
       }
@@ -1153,11 +1065,11 @@ static void dt_interpolation_compute_pixel1c_plain(const struct dt_interpolation
     float pixel = 0.0f;
     for(int i = ytap_first; i < ytap_last; i++)
     {
-      int clip_y = clip(iy + i, 0, height - 1, bordermode);
+      const int clip_y = clip(iy + i, 0, height - 1, bordermode);
       float h = 0.0f;
       for(int j = xtap_first; j < xtap_last; j++)
       {
-        int clip_x = clip(ix + j, 0, width - 1, bordermode);
+        const int clip_x = clip(ix + j, 0, width - 1, bordermode);
         const float *ipixel = in + clip_y * linestride + clip_x;
         h += kernelh[j] * *ipixel;
       }
@@ -1190,7 +1102,7 @@ const struct dt_interpolation *dt_interpolation_new(enum dt_interpolation_type t
   if(type == DT_INTERPOLATION_USERPREF)
   {
     // Find user preferred interpolation method
-    gchar *uipref = dt_conf_get_string("plugins/lighttable/export/pixel_interpolator");
+    const char *uipref = dt_conf_get_string_const("plugins/lighttable/export/pixel_interpolator");
     for(int i = DT_INTERPOLATION_FIRST; uipref && i < DT_INTERPOLATION_LAST; i++)
     {
       if(!strcmp(uipref, dt_interpolator[i].name))
@@ -1200,11 +1112,28 @@ const struct dt_interpolation *dt_interpolation_new(enum dt_interpolation_type t
         break;
       }
     }
-    g_free(uipref);
 
     /* In the case the search failed (!uipref or name not found),
      * prepare later search pass with default fallback */
     type = DT_INTERPOLATION_DEFAULT;
+  }
+  else if(type == DT_INTERPOLATION_USERPREF_WARP)
+  {
+    // Find user preferred interpolation method
+    const char *uipref = dt_conf_get_string_const("plugins/lighttable/export/pixel_interpolator_warp");
+    for(int i = DT_INTERPOLATION_FIRST; uipref && i < DT_INTERPOLATION_LAST; i++)
+    {
+      if(!strcmp(uipref, dt_interpolator[i].name))
+      {
+        // Found the one
+        itor = &dt_interpolator[i];
+        break;
+      }
+    }
+
+    /* In the case the search failed (!uipref or name not found),
+     * prepare later search pass with default fallback */
+    type = DT_INTERPOLATION_DEFAULT_WARP;
   }
   if(!itor)
   {
@@ -1301,17 +1230,17 @@ static int prepare_resampling_plan(const struct dt_interpolation *itor, int in, 
   }
 
   int nlengths = out;
-  int nindex = maxtapsapixel * out;
-  int nkernel = maxtapsapixel * out;
-  size_t lengthreq = increase_for_alignment(nlengths * sizeof(int), SSE_ALIGNMENT);
-  size_t indexreq = increase_for_alignment(nindex * sizeof(int), SSE_ALIGNMENT);
-  size_t kernelreq = increase_for_alignment(nkernel * sizeof(float), SSE_ALIGNMENT);
-  size_t scratchreq = maxtapsapixel * sizeof(float) + 4 * sizeof(float);
+  const int nindex = maxtapsapixel * out;
+  const int nkernel = maxtapsapixel * out;
+  const size_t lengthreq = increase_for_alignment(nlengths * sizeof(int), SSE_ALIGNMENT);
+  const size_t indexreq = increase_for_alignment(nindex * sizeof(int), SSE_ALIGNMENT);
+  const size_t kernelreq = increase_for_alignment(nkernel * sizeof(float), SSE_ALIGNMENT);
+  const size_t scratchreq = maxtapsapixel * sizeof(float) + 4 * sizeof(float);
   // NB: because sse versions compute four taps a time
-  size_t metareq = pmeta ? 3 * sizeof(int) * out : 0;
+  const size_t metareq = pmeta ? 3 * sizeof(int) * out : 0;
 
   void *blob = NULL;
-  size_t totalreq = kernelreq + lengthreq + indexreq + scratchreq + metareq;
+  const size_t totalreq = kernelreq + lengthreq + indexreq + scratchreq + metareq;
   blob = dt_alloc_align(SSE_ALIGNMENT, totalreq);
   if(!blob)
   {
@@ -1462,6 +1391,8 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
   float *vkernel = NULL;
   int *vmeta = NULL;
 
+  const int32_t in_stride_floats = in_stride / sizeof(float);
+  const int32_t out_stride_floats = out_stride / sizeof(float);
   int r;
 
   debug_info("resampling %p (%dx%d@%dx%d scale %f) -> %p (%dx%d@%dx%d scale %f)\n", in, roi_in->width,
@@ -1525,7 +1456,7 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
 // Process each output line
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, in_stride, out_stride, roi_out) \
+  dt_omp_firstprivate(in, in_stride_floats, out_stride_floats, roi_out) \
   shared(out, hindex, hlength, hkernel, vindex, vlength, vkernel, vmeta)
 #endif
   for(int oy = 0; oy < roi_out->height; oy++)
@@ -1549,7 +1480,7 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
       debug_extra("output %p [% 4d % 4d]\n", out, ox, oy);
 
       // This will hold the resulting pixel
-      float vs[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      dt_aligned_pixel_t vs = { 0.0f, 0.0f, 0.0f, 0.0f };
 
       // Number of horizontal samples contributing to the output
       int hl = hlength[hlidx++]; // H(orizontal) L(ength)
@@ -1557,21 +1488,23 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
       for(int iy = 0; iy < vl; iy++)
       {
         // This is our input line
-        const float *i = (float *)((char *)in + (size_t)in_stride * vindex[viidx++]);
+        size_t baseidx_vindex = (size_t)vindex[viidx++] * in_stride_floats;
 
-        float vhs[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        dt_aligned_pixel_t vhs = { 0.0f, 0.0f, 0.0f, 0.0f };
 
         for(int ix = 0; ix < hl; ix++)
         {
           // Apply the precomputed filter kernel
-          size_t baseidx = (size_t)hindex[hiidx++] * 4;
+          const size_t baseidx = baseidx_vindex + (size_t)hindex[hiidx++] * 4;
           const float htap = hkernel[hkidx++];
-          for(int c = 0; c < 3; c++) vhs[c] += i[baseidx + c] * htap;
+          // Convince gcc 10 to vectorize
+          dt_aligned_pixel_t tmp = { in[baseidx], in[baseidx+1], in[baseidx+2], in[baseidx+3] };
+          for_each_channel(c, aligned(tmp,vhs:16)) vhs[c] += tmp[c] * htap;
         }
 
         // Accumulate contribution from this line
         const float vtap = vkernel[vkidx++];
-        for(int c = 0; c < 3; c++) vs[c] += vhs[c] * vtap;
+        for_each_channel(c, aligned(vhs,vs:16)) vs[c] += vhs[c] * vtap;
 
         // Reset horizontal resampling context
         hkidx -= hl;
@@ -1579,8 +1512,11 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
       }
 
       // Output pixel is ready
-      float *o = (float *)((char *)out + (size_t)oy * out_stride + (size_t)ox * 4 * sizeof(float));
-      for(int c = 0; c < 3; c++) o[c] = vs[c];
+      const size_t baseidx = (size_t)oy * out_stride_floats + (size_t)ox * 4;
+
+      // Clip negative RGB that may be produced by Lanczos undershooting
+      // Negative RGB are invalid values no matter the RGB space (light is positive)
+      for_each_channel(c, aligned(vs:16)) out[baseidx + c] = fmaxf(vs[c], 0.f);
 
       // Reset vertical resampling context
       viidx -= vl;
@@ -1709,7 +1645,7 @@ static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, f
       __m128 vs = _mm_setzero_ps();
 
       // Number of horizontal samples contributing to the output
-      int hl = hlength[hlidx++]; // H(orizontal) L(ength)
+      const int hl = hlength[hlidx++]; // H(orizontal) L(ength)
 
       for(int iy = 0; iy < vl; iy++)
       {
@@ -1721,15 +1657,15 @@ static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, f
         for(int ix = 0; ix < hl; ix++)
         {
           // Apply the precomputed filter kernel
-          size_t baseidx = (size_t)hindex[hiidx++] * 4;
-          float htap = hkernel[hkidx++];
-          __m128 vhtap = _mm_set_ps1(htap);
+          const size_t baseidx = (size_t)hindex[hiidx++] * 4;
+          const float htap = hkernel[hkidx++];
+          const __m128 vhtap = _mm_set_ps1(htap);
           vhs = _mm_add_ps(vhs, _mm_mul_ps(*(__m128 *)&i[baseidx], vhtap));
         }
 
         // Accumulate contribution from this line
-        float vtap = vkernel[vkidx++];
-        __m128 vvtap = _mm_set_ps1(vtap);
+        const float vtap = vkernel[vkidx++];
+        const __m128 vvtap = _mm_set_ps1(vtap);
         vs = _mm_add_ps(vs, _mm_mul_ps(vhs, vvtap));
 
         // Reset horizontal resampling context
@@ -1739,6 +1675,10 @@ static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, f
 
       // Output pixel is ready
       float *o = (float *)((char *)out + (size_t)oy * out_stride + (size_t)ox * 4 * sizeof(float));
+
+      // Clip negative RGB that may be produced by Lanczos undershooting
+      // Negative RGB are invalid values no matter the RGB space (light is positive)
+      vs = _mm_max_ps(vs, _mm_setzero_ps());
       _mm_stream_ps(o, vs);
 
       // Reset vertical resampling context
@@ -2159,7 +2099,7 @@ static void dt_interpolation_resample_1c_plain(const struct dt_interpolation *it
       float vs = 0.0f;
 
       // Number of horizontal samples contributing to the output
-      int hl = hlength[hlidx++]; // H(orizontal) L(ength)
+      const int hl = hlength[hlidx++]; // H(orizontal) L(ength)
 
       for(int iy = 0; iy < vl; iy++)
       {
@@ -2171,7 +2111,7 @@ static void dt_interpolation_resample_1c_plain(const struct dt_interpolation *it
         for(int ix = 0; ix < hl; ix++)
         {
           // Apply the precomputed filter kernel
-          size_t baseidx = (size_t)hindex[hiidx++];
+          const size_t baseidx = (size_t)hindex[hiidx++];
           const float htap = hkernel[hkidx++];
           vhs += i[baseidx] * htap;
         }

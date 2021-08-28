@@ -1,6 +1,6 @@
 /*
  * This file is part of darktable,
- * Copyright (C) 2019-2020 darktable developers.
+ * Copyright (C) 2019-2021 darktable developers.
  *
  *  Copyright (c) 2019      Andreas Schneider
  *
@@ -111,7 +111,9 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   }
 
   /* This can be LDR or HDR, it depends on the ICC profile. */
+  img->buf_dsc.filters = 0u;
   img->flags &= ~DT_IMAGE_RAW;
+  img->flags &= ~DT_IMAGE_S_RAW;
   img->flags |= DT_IMAGE_HDR;
 
   const float max_channel_f = (float)((1 << bit_depth) - 1);
@@ -219,7 +221,7 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
       goto out;
     }
 
-    uint8_t *data = (uint8_t *)g_malloc0(icc.size * sizeof(uint8_t));
+    uint8_t *data = (uint8_t *)g_malloc0(sizeof(uint8_t) * icc.size);
     if (data == NULL) {
       dt_print(DT_DEBUG_IMAGEIO,
                "Failed to allocate ICC buffer for AVIF image [%s]\n",
@@ -256,9 +258,10 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
         break; /* SRGB */
 
       /*
-       * GAMMA22 BT709
+       * BT709
        */
-      case AVIF_TRANSFER_CHARACTERISTICS_BT470M:
+      case AVIF_TRANSFER_CHARACTERISTICS_BT709:
+      case AVIF_TRANSFER_CHARACTERISTICS_BT470M: /* support incorrectly tagged legacy files */
 
         switch (avif->matrixCoefficients) {
         case AVIF_MATRIX_COEFFICIENTS_BT709:
@@ -381,7 +384,7 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
 
         switch (avif->matrixCoefficients) {
         case AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-          cp->type = DT_COLORSPACE_PQ_P3;
+          cp->type = DT_COLORSPACE_HLG_P3;
           break;
         default:
           break;

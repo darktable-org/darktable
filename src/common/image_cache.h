@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -68,6 +68,7 @@ void dt_image_cache_remove(dt_image_cache_t *cache, const int32_t imgid);
 
 // register timestamps in cache
 void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache, const int32_t imgid);
+void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache, const int32_t imgid, const int32_t sourceid);
 void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const int32_t imgid);
 void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache, const int32_t imgid);
 void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache, const int32_t imgid);

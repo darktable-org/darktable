@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2015-2020 darktable developers.
+   Copyright (C) 2015-2021 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "gui/gtk.h"
 #include "lua/types.h"
 #include "lua/widget/common.h"
@@ -33,16 +34,15 @@ static int container_reset(lua_State* L)
 {
   lua_container container;
   luaA_to(L,lua_container,&container,1);
-  lua_getuservalue(L,1);
-  GList*children = gtk_container_get_children(GTK_CONTAINER(container->widget));
-  GList*curelt = children;
-  while(curelt) {
+  lua_getiuservalue(L, 1, 1);
+  GList *children = gtk_container_get_children(GTK_CONTAINER(container->widget));
+  for(const GList *curelt = children; curelt; curelt = g_list_next(curelt))
+  {      
     lua_pushcfunction(L,dt_lua_widget_trigger_callback);
     GtkWidget* cur_widget = curelt->data;
     luaA_push(L,lua_widget,&cur_widget);
     lua_pushstring(L,"reset");
     lua_call(L,2,0);
-    curelt = g_list_next(curelt);
   }
   lua_pop(L,1);
   g_list_free(children);
@@ -72,14 +72,8 @@ static void on_child_removed(GtkContainer *container,GtkWidget *child,lua_contai
 
 static void container_cleanup(lua_State* L,lua_widget widget)
 {
-  GList * children = gtk_container_get_children(GTK_CONTAINER(widget->widget));
-  GList * cur_child = children;
   g_signal_handlers_disconnect_by_func(widget->widget, G_CALLBACK(on_child_removed), widget);
-  while(cur_child) {
-    gtk_container_remove(GTK_CONTAINER(widget->widget),GTK_WIDGET(cur_child->data));
-    cur_child = g_list_next(cur_child);
-  }
-  g_list_free(children);
+  dt_gui_container_remove_children(GTK_CONTAINER(widget->widget));
 }
 
 
@@ -87,7 +81,7 @@ static int child_added(lua_State *L)
 {
   lua_widget widget;
   luaA_to(L, lua_widget,&widget,2);
-  lua_getuservalue(L,1);
+  lua_getiuservalue(L, 1, 1);
   luaA_push(L,lua_widget,&widget);
   lua_pushvalue(L,2);
   lua_settable(L,-3);
@@ -98,7 +92,7 @@ static int child_removed(lua_State *L)
 {
   lua_widget widget;
   luaA_to(L, lua_widget,&widget,2),
-  lua_getuservalue(L,1);
+  lua_getiuservalue(L, 1, 1);
   luaA_push(L,lua_widget,&widget);
   lua_pushnil(L);
   lua_settable(L,-3);
@@ -123,9 +117,8 @@ static int container_len(lua_State*L)
 {
   lua_container container;
   luaA_to(L,lua_container,&container,1);
-  GList * children = gtk_container_get_children(GTK_CONTAINER(container->widget));
-  lua_pushinteger(L,g_list_length(children));
-  g_list_free(children);
+  int children = dt_gui_container_num_children(GTK_CONTAINER(container->widget));
+  lua_pushinteger(L,children);
   return 1;
 }
 
@@ -145,7 +138,7 @@ static int container_numindex(lua_State*L)
       // they should be done by child_added, but
       // there can be a race with lua's GC, so do it now.
       // child_added doing it a second time is harmless
-      lua_getuservalue(L,1);
+      lua_getiuservalue(L, 1, 1);
       luaA_push(L,lua_widget,&widget);
       lua_pushvalue(L,3);
       lua_settable(L,-3);

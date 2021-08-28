@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,6 +36,13 @@ typedef enum dt_imageio_retval_t
   DT_IMAGEIO_FILE_CORRUPTED, // file contains garbage
   DT_IMAGEIO_CACHE_FULL      // dt's caches are full :(
 } dt_imageio_retval_t;
+
+typedef enum dt_imageio_write_xmp_t
+{
+  DT_WRITE_XMP_NEVER = 0,
+  DT_WRITE_XMP_LAZY = 1,
+  DT_WRITE_XMP_ALWAYS = 2
+} dt_imageio_write_xmp_t;
 
 typedef enum
 {
@@ -134,20 +141,42 @@ typedef enum dt_image_orientation_t
 
 typedef enum dt_image_loader_t
 {
-  LOADER_UNKNOWN = 0,
-  LOADER_TIFF = 1,
-  LOADER_PNG = 2,
-  LOADER_J2K = 3,
-  LOADER_JPEG = 4,
-  LOADER_EXR = 5,
-  LOADER_RGBE = 6,
-  LOADER_PFM = 7,
-  LOADER_GM = 8,
-  LOADER_RAWSPEED = 9,
-  LOADER_PNM = 10,
-  LOADER_AVIF = 11,
-  LOADER_IM = 12,
+  LOADER_UNKNOWN  =  0,
+  LOADER_TIFF     =  1,
+  LOADER_PNG      =  2,
+  LOADER_J2K      =  3,
+  LOADER_JPEG     =  4,
+  LOADER_EXR      =  5,
+  LOADER_RGBE     =  6,
+  LOADER_PFM      =  7,
+  LOADER_GM       =  8,
+  LOADER_RAWSPEED =  9,
+  LOADER_PNM      = 10,
+  LOADER_AVIF     = 11,
+  LOADER_IM       = 12,
+  LOADER_COUNT    = 13, // keep last
 } dt_image_loader_t;
+
+static const struct
+{
+  const char *tooltip;
+  const char flag;
+} loaders_info[LOADER_COUNT] =
+{
+  { N_("unknown"),         '.'}, // EMPTY_FIELD
+  { N_("tiff"),            't'},
+  { N_("png"),             'p'},
+  { N_("j2k"),             'J'},
+  { N_("jpeg"),            'j'},
+  { N_("exr"),             'e'},
+  { N_("rgbe"),            'R'},
+  { N_("pfm"),             'P'},
+  { N_("GraphicsMagick"),  'g'},
+  { N_("rawspeed"),        'r'},
+  { N_("netpnm"),          'n'},
+  { N_("avif"),            'a'},
+  { N_("ImageMagick"),     'i'}
+};
 
 typedef struct dt_image_geoloc_t
 {
@@ -155,6 +184,9 @@ typedef struct dt_image_geoloc_t
 } dt_image_geoloc_t;
 
 struct dt_cache_entry_t;
+
+#define DT_DATETIME_LENGTH 20
+
 // TODO: add color labels and such as cacheable
 // __attribute__ ((aligned (128)))
 typedef struct dt_image_t
@@ -172,7 +204,7 @@ typedef struct dt_image_t
   char exif_maker[64];
   char exif_model[64];
   char exif_lens[128];
-  char exif_datetime_taken[20];
+  char exif_datetime_taken[DT_DATETIME_LENGTH];
 
   char camera_maker[64];
   char camera_model[64];
@@ -185,7 +217,7 @@ typedef struct dt_image_t
   // common stuff
 
   // to understand this, look at comment for dt_histogram_roi_t
-  int32_t width, height, verified_size, final_width, final_height, p_width, p_height;
+  int32_t width, height, final_width, final_height, p_width, p_height;
   int32_t crop_x, crop_y, crop_width, crop_height;
   float aspect_ratio;
 
@@ -219,10 +251,10 @@ typedef struct dt_image_t
   float pixel_aspect_ratio;
 
   /* White balance coeffs from the raw */
-  float wb_coeffs[4];
+  dt_aligned_pixel_t wb_coeffs;
 
   /* DefaultUserCrop */
-  float usercrop[4];
+  dt_boundingbox_t usercrop;
   /* convenience pointer back into the image cache, so we can return dt_image_t* there directly. */
   struct dt_cache_entry_t *cache_entry;
 } dt_image_t;
@@ -272,8 +304,11 @@ int dt_image_get_xmp_rating(const dt_image_t *img);
 int dt_image_get_xmp_rating_from_flags(const int flags);
 /** finds all xmp duplicates for the given image in the database. */
 GList* dt_image_find_duplicates(const char* filename);
+/** check if an image with the given filename is already imported */
+gboolean dt_images_already_imported(const gchar *filename);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
-uint32_t dt_image_import(int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
+uint32_t dt_image_import(int32_t film_id, const char *filename, gboolean override_ignore_jpegs,
+                         gboolean raise_signals);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from lua thread.*/
 uint32_t dt_image_import_lua(int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
 /** removes the given image from the database. */
@@ -288,15 +323,18 @@ int32_t dt_image_duplicate(const int32_t imgid);
 void dt_image_flip(const int32_t imgid, const int32_t cw);
 void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t user_flip);
 dt_image_orientation_t dt_image_get_orientation(const int32_t imgid);
-/** get max width and height of the final processed image with its current hisotry stack */
+/** get max width and height of the final processed image with its current history stack */
 gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height);
-void dt_image_reset_final_size(const int32_t imgid);
+void dt_image_update_final_size(const int32_t imgid);
 /** set image location lon/lat/ele */
 void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc,
                            const gboolean undo_on, const gboolean group_on);
 /** set images location lon/lat/ele */
 void dt_image_set_locations(const GList *img, const dt_image_geoloc_t *geoloc,
                            const gboolean undo_on);
+/** set images locations lon/lat/ele */
+void dt_image_set_images_locations(const GList *imgs, const GArray *gloc,
+                                   const gboolean undo_on);
 /** get image location lon/lat/ele */
 void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** returns TRUE if current hash is not basic nor auto_apply, FALSE otherwise. */
@@ -304,17 +342,17 @@ gboolean dt_image_altered(const int32_t imgid);
 /** returns TRUE if if current has is basic, FALSE otherwise. */
 gboolean dt_image_basic(const int32_t imgid);
 /** set the image final/cropped aspect ratio */
-double dt_image_set_aspect_ratio(const int32_t imgid, gboolean raise);
+float dt_image_set_aspect_ratio(const int32_t imgid, const gboolean raise);
 /** set the image raw aspect ratio */
 void dt_image_set_raw_aspect_ratio(const int32_t imgid);
 /** set the image final/cropped aspect ratio */
-void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio, gboolean raise);
+void dt_image_set_aspect_ratio_to(const int32_t imgid, const float aspect_ratio, const gboolean raise);
 /** set the image final/cropped aspect ratio if different from stored*/
-void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_ratio, gboolean raise);
+void dt_image_set_aspect_ratio_if_different(const int32_t imgid, const float aspect_ratio, const gboolean raise);
 /** reset the image final/cropped aspect ratio to 0.0 */
-void dt_image_reset_aspect_ratio(const int32_t imgid, gboolean raise);
+void dt_image_reset_aspect_ratio(const int32_t imgid, const gboolean raise);
 /** get the ratio of cropped raw sensor data */
-double dt_image_get_sensor_ratio(const dt_image_t *img);
+float dt_image_get_sensor_ratio(const dt_image_t *img);
 /** returns the orientation bits of the image from exif. */
 static inline dt_image_orientation_t dt_image_orientation(const dt_image_t *img)
 {
@@ -371,9 +409,17 @@ void dt_image_write_sidecar_file(const int32_t imgid);
 void dt_image_synch_xmp(const int selected);
 void dt_image_synch_xmps(const GList *img);
 void dt_image_synch_all_xmp(const gchar *pathname);
+/** get the mode xmp sidecars are written */
+dt_imageio_write_xmp_t dt_image_get_xmp_mode();
 
 // add an offset to the exif_datetime_taken field
 void dt_image_add_time_offset(const int32_t imgid, const long int offset);
+// set datetime to exif_datetime_taken field
+void dt_image_set_datetime(const GList *imgs, const char *datetime, const gboolean undo_on);
+// set datetimeS to exif_datetime_taken field
+void dt_image_set_datetimes(const GList *imgs, const GArray *dtime, const gboolean undo_on);
+// return image datetime string into the given buffer (size = DT_DATETIME_LENGTH)
+void dt_image_get_datetime(const int32_t imgid, char *datetime);
 
 /** helper function to get the audio file filename that is accompanying the image. g_free() after use */
 char *dt_image_get_audio_path(const int32_t imgid);

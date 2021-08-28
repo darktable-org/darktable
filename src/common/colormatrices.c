@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -180,6 +180,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
 
   // Wolfgang Kuehnel, Wolf Faust IT8, strobe, well lit
   { "Minolta Dynax 5D",             { 910599, 389618,  20218}, { 330353, 1223724, -116943}, { 24384, -307190, 1156891}, {604309, 629196, 525848}},
+
+  // copied from Pentax K20d
+  { "Samsung GX20",                  {1008652, 388794, -36346}, { 162323, 1113815, -341446}, { 81863, -214325, 1431107}, {664963, 685287, 527252}},
 
   // Karl Mikaelsson, Homebrew ColorChecker, strobe, well lit
   { "Sony DSLR-A100",               { 823853, 374588,  28259}, { 220200,  934509, -108643}, { 48141, -226440, 1062881}, {689651, 715225, 602127}},

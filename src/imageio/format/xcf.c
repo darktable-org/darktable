@@ -184,14 +184,14 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
         gboolean free_channel_data = TRUE;
         if(d->bpp == 8)
         {
-          channel_data = malloc((size_t)d->global.width * d->global.height * sizeof(uint8_t));
+          channel_data = malloc(sizeof(uint8_t) * d->global.width * d->global.height);
           uint8_t *ch = (uint8_t *)channel_data;
           for(size_t i = 0; i < (size_t)d->global.width * d->global.height; i++)
             ch[i] = CLAMP((int)(raster_mask[i] * 255.0), 0, 255);
         }
         else if(d->bpp == 16)
         {
-          channel_data = malloc((size_t)d->global.width * d->global.height * sizeof(uint16_t));
+          channel_data = malloc(sizeof(uint16_t) * d->global.width * d->global.height);
           uint16_t *ch = (uint16_t *)channel_data;
           for(size_t i = 0; i < (size_t)d->global.width * d->global.height; i++)
             ch[i] = CLAMP((int)(raster_mask[i] * 65535.0), 0, 65535);
@@ -230,7 +230,8 @@ void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_xcf_t *d = (dt_imageio_xcf_t *)calloc(1, sizeof(dt_imageio_xcf_t));
 
-  d->bpp = dt_conf_get_int("plugins/imageio/format/xcf/bpp");
+  const char *conf_bpp = dt_conf_get_string_const("plugins/imageio/format/xcf/bpp");
+  d->bpp = atoi(conf_bpp);
   if(d->bpp != 16 && d->bpp != 32)
     d->bpp = 8;
 
@@ -327,13 +328,16 @@ void gui_init(dt_imageio_module_format_t *self)
 
   int bpp = 32;
   if(dt_conf_key_exists("plugins/imageio/format/xcf/bpp"))
-    bpp = dt_conf_get_int("plugins/imageio/format/xcf/bpp");
+  {
+    const char *conf_bpp = dt_conf_get_string_const("plugins/imageio/format/xcf/bpp");
+    bpp = atoi(conf_bpp);
+  }
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   // Bit depth combo box
   gui->bpp = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->bpp, NULL, _("bit depth"));
+  dt_bauhaus_widget_set_label(gui->bpp, NULL, N_("bit depth"));
   dt_bauhaus_combobox_add(gui->bpp, _("8 bit"));
   dt_bauhaus_combobox_add(gui->bpp, _("16 bit"));
   dt_bauhaus_combobox_add(gui->bpp, _("32 bit (float)"));
@@ -354,6 +358,8 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
+  dt_imageio_xcf_gui_t *gui = (dt_imageio_xcf_gui_t *)self->gui_data;
+  dt_bauhaus_combobox_set(gui->bpp, 2); // bpp = 32
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

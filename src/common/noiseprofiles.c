@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2015-2020 darktable developers.
+ *    Copyright (C) 2015-2021 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -337,7 +337,7 @@ GList *dt_noiseprofile_get_matching(const dt_image_t *cimg)
             // everything worked out, add tmp_profile to result
             dt_noiseprofile_t *new_profile = (dt_noiseprofile_t *)malloc(sizeof(dt_noiseprofile_t));
             *new_profile = tmp_profile;
-            result = g_list_append(result, new_profile);
+            result = g_list_prepend(result, new_profile);
 
             g_strfreev(member_names);
           } // profiles

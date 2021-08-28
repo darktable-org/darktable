@@ -22,9 +22,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
 #include "control/control.h"
@@ -81,6 +78,15 @@ const char *name()
   return _("highlight reconstruction");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("avoid magenta highlights and try to recover highlights colors"),
+                                      _("corrective"),
+                                      _("linear, raw, scene-referred"),
+                                      _("reconstruction, raw"),
+                                      _("linear, raw, scene-referred"));
+}
+
 int default_group()
 {
   return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
@@ -94,20 +100,6 @@ int flags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_RAW;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "clipping threshold"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "method"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "clipping threshold", GTK_WIDGET(g->clip));
-  dt_accel_connect_combobox_iop(self, "method", GTK_WIDGET(g->mode));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -219,7 +211,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 6, sizeof(int), (void *)&roi_out->y);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 7, sizeof(cl_mem), (void *)&dev_xtrans);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 8,
-                               (blocksizex + 4) * (blocksizey + 4) * sizeof(float), NULL);
+                               sizeof(float) * (blocksizex + 4) * (blocksizey + 4), NULL);
 
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_highlights_1f_lch_xtrans, sizes, local);
     if(err != CL_SUCCESS) goto error;
@@ -325,14 +317,14 @@ static inline void interpolate_color_xtrans(const void *const ivoid, void *const
                           { 1,  0, -3},
                           { 2,  3,  0}};
   // record ratios of color transitions 0:unused, 1:RG, 2:RB, and 3:GB
-  float ratios[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  dt_aligned_pixel_t ratios = {1.0f, 1.0f, 1.0f, 1.0f};
 
   // passes are 0:+x, 1:-x, 2:+y, 3:-y
   // dims are 0:traverse a row, 1:traverse a column
   // dir is 1:left to right, -1: right to left
   int i = (dim == 0) ? 0 : other;
   int j = (dim == 0) ? other : 0;
-  const ssize_t offs = (dim ? roi_out->width : 1) * ((dir < 0) ? -1 : 1);
+  const ssize_t offs = (ssize_t)(dim ? roi_out->width : 1) * ((dir < 0) ? -1 : 1);
   const ssize_t offl = offs - (dim ? 1 : roi_out->width);
   const ssize_t offr = offs + (dim ? 1 : roi_out->width);
   int beg, end;
@@ -615,7 +607,7 @@ static void process_lch_bayer(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
             H *= ratio;
           }
 
-          float RGB[3] = { 0.0f, 0.0f, 0.0f };
+          dt_aligned_pixel_t RGB = { 0.0f, 0.0f, 0.0f };
 
           /*
            * backtransform proof, sage:
@@ -716,9 +708,9 @@ static void process_lch_xtrans(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 
         if(clipped)
         {
-          float mean[3] = { 0.0f, 0.0f, 0.0f };
+          dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f };
+          dt_aligned_pixel_t RGBmax = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
           int cnt[3] = { 0, 0, 0 };
-          float RGBmax[3] = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
           for(int jj = -1; jj <= 1; jj++)
           {
@@ -755,7 +747,7 @@ static void process_lch_xtrans(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
             H *= ratio;
           }
 
-          float RGB[3] = { 0.0f, 0.0f, 0.0f };
+          dt_aligned_pixel_t RGB = { 0.0f, 0.0f, 0.0f };
 
           RGB[0] = L - H / 6.0f + C / SQRT12;
           RGB[1] = L - H / 6.0f - C / SQRT12;
@@ -775,9 +767,9 @@ static void process_lch_xtrans(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 #undef SQRT3
 #undef SQRT12
 
-static void process_clip_plain(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-                               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                               const float clip)
+static void process_clip(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                         const float clip)
 {
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
@@ -808,65 +800,6 @@ static void process_clip_plain(dt_dev_pixelpipe_iop_t *piece, const void *const 
       out[k] = MIN(clip, in[k]);
     }
   }
-}
-
-#if defined(__SSE__)
-static void process_clip_sse2(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-                              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                              const float clip)
-{
-  if(piece->pipe->dsc.filters)
-  { // raw mosaic
-    const __m128 clipm = _mm_set1_ps(clip);
-    const size_t n = (size_t)roi_out->height * roi_out->width;
-    float *const out = (float *)ovoid;
-    float *const in = (float *)ivoid;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(clipm, in, n, out) \
-    schedule(static)
-#endif
-    for(size_t j = 0; j < (n & ~3u); j += 4) _mm_stream_ps(out + j, _mm_min_ps(clipm, _mm_load_ps(in + j)));
-    _mm_sfence();
-    // lets see if there's a non-multiple of four rest to process:
-    if(n & 3)
-      for(size_t j = n & ~3u; j < n; j++) out[j] = MIN(clip, in[j]);
-  }
-  else
-  {
-    const __m128 clipm = _mm_set1_ps(clip);
-    const int ch = piece->colors;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, clipm, ivoid, ovoid, roi_in, roi_out) \
-    schedule(static)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-      float *out = (float *)ovoid + (size_t)ch * roi_out->width * j;
-      float *in = (float *)ivoid + (size_t)ch * roi_in->width * j;
-      for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
-      {
-        _mm_stream_ps(out, _mm_min_ps(clipm, _mm_set_ps(in[3], in[2], in[1], in[0])));
-      }
-    }
-    _mm_sfence();
-  }
-}
-#endif
-
-static void process_clip(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                         const float clip)
-{
-  if(darktable.codepath.OPENMP_SIMD) process_clip_plain(piece, ivoid, ovoid, roi_in, roi_out, clip);
-#if defined(__SSE__)
-  else if(darktable.codepath.SSE2)
-    process_clip_sse2(piece, ivoid, ovoid, roi_in, roi_out, clip);
-#endif
-  else
-    dt_unreachable_codepath();
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -1011,7 +944,6 @@ void cleanup_global(dt_iop_module_so_t *module)
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_highlights_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1022,9 +954,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)module->params;
+  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
   dt_bauhaus_slider_set(g->clip, p->clip);
   dt_bauhaus_combobox_set(g->mode, p->mode);
 }

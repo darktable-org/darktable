@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2016-2020 darktable developers.
+ *    Copyright (C) 2016-2021 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -99,15 +99,15 @@ static int strinc(char *label, size_t buffer_size)
   return 1;
 }
 
-void set_color(box_t *box, dt_colorspaces_color_profile_type_t color_space, float c0, float c1, float c2)
+void checker_set_color(box_t *box, dt_colorspaces_color_profile_type_t color_space, float c0, float c1, float c2)
 {
   box->color_space = color_space;
   box->color[0] = c0;
   box->color[1] = c1;
   box->color[2] = c2;
 
-  float Lab[3] = { c0, c1, c2 };
-  float XYZ[3] = { c0 * 0.01, c1 * 0.01, c2 * 0.01 };
+  dt_aligned_pixel_t Lab = { c0, c1, c2 };
+  dt_aligned_pixel_t XYZ = { c0 * 0.01, c1 * 0.01, c2 * 0.01 };
 
   switch(color_space)
   {
@@ -327,6 +327,7 @@ chart_t *parse_cht(const char *filename)
               }
 
               if(!first_label) first_label = label;
+              g_free(last_label);
               last_label = label;
 
               // store it
@@ -369,6 +370,7 @@ chart_t *parse_cht(const char *filename)
           if(kl == 'X' || kl == 'Y')
             g_hash_table_insert(result->patch_sets, g_strdup_printf("%s .. %s", first_label, last_label), labels);
 
+          g_free(last_label);
           free(y_label);
           free(x_label);
         }
@@ -388,8 +390,7 @@ chart_t *parse_cht(const char *filename)
 #define SCALE_X(x) x = (x - x_min) / result->bb_w
 #define SCALE_Y(y) y = (y - y_min) / result->bb_h
 
-      GList *iter = result->f_list;
-      while(iter)
+      for(GList *iter = result->f_list; iter; iter = g_list_next(iter))
       {
         f_line_t *f = iter->data;
         for(int i = 0; i < 4; i++)
@@ -397,7 +398,6 @@ chart_t *parse_cht(const char *filename)
           SCALE_X(f->p[i].x);
           SCALE_Y(f->p[i].y);
         }
-        iter = g_list_next(iter);
       }
 
       GHashTableIter table_iter;
@@ -487,7 +487,7 @@ chart_t *parse_cht(const char *filename)
         float c1 = parse_double(&c);
         if(c - line >= len) ERROR;
         float c2 = parse_double(&c);
-        set_color(box, color_space, c0, c1, c2);
+        checker_set_color(box, color_space, c0, c1, c2);
       }
       if(n_colors != 0) ERROR;
     }
@@ -599,7 +599,7 @@ int parse_it8(const char *filename, chart_t *chart)
       goto error;
     }
 
-    set_color(box, color_space, cmsIT8GetDataDbl(hIT8, key, columns[0]), cmsIT8GetDataDbl(hIT8, key, columns[1]),
+    checker_set_color(box, color_space, cmsIT8GetDataDbl(hIT8, key, columns[0]), cmsIT8GetDataDbl(hIT8, key, columns[1]),
               cmsIT8GetDataDbl(hIT8, key, columns[2]));
   }
 

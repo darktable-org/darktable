@@ -125,7 +125,7 @@ Let's now convert the JPEG file to the same convenient format:
     $ convert FILE.JPG FILE-jpeg.ppm
 
 This creates another PPM file. But this new PPM file contains the data that your
-in camera JPEG engine has output. This step may alos involve a rotation of your
+in camera JPEG engine has output. This step may also involve a rotation of your
 image so that the PPM from the raw and the JPEG share the same orientation.
 
 

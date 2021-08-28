@@ -94,9 +94,9 @@ inline static void __attribute__((__unused__)) histogram_helper_cs_rgb_helper_pr
     const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel, uint32_t *histogram,
     const dt_iop_order_iccprofile_info_t *const profile_info)
 {
-  const float rgb[3] = { dt_ioppr_compensate_middle_grey(pixel[0], profile_info),
-      dt_ioppr_compensate_middle_grey(pixel[1], profile_info),
-      dt_ioppr_compensate_middle_grey(pixel[2], profile_info) };
+  const dt_aligned_pixel_t rgb = { dt_ioppr_compensate_middle_grey(pixel[0], profile_info),
+                                   dt_ioppr_compensate_middle_grey(pixel[1], profile_info),
+                                   dt_ioppr_compensate_middle_grey(pixel[2], profile_info) };
   const uint32_t R = PS(rgb[0], histogram_params);
   const uint32_t G = PS(rgb[1], histogram_params);
   const uint32_t B = PS(rgb[2], histogram_params);
@@ -272,7 +272,7 @@ inline static void histogram_helper_cs_Lab(const dt_dev_histogram_collection_par
 inline static void __attribute__((__unused__)) histogram_helper_cs_Lab_LCh_helper_process_pixel_float(
     const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel, uint32_t *histogram)
 {
-  float LCh[3];
+  dt_aligned_pixel_t LCh;
   dt_Lab_2_LCH(pixel, LCh);
   const uint32_t L = PS((LCh[0] / 100.f), histogram_params);
   const uint32_t C = PS((LCh[1] / (128.0f * sqrtf(2.0f))), histogram_params);

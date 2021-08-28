@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2020 darktable developers.
+    Copyright (C) 2014-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@
 #include <cpuid.h>
 #endif
 
-#if defined(HAVE___GET_GPUID)
+#if defined(HAVE___GET_CPUID)
 dt_cpu_flags_t dt_detect_cpu_features()
 {
   guint32 ax, bx, cx, dx;
@@ -86,7 +86,7 @@ dt_cpu_flags_t dt_detect_cpu_features()
 
   return cpuflags;
 }
-#endif /* __i386__ || __x86_64__ */
+#endif /* defined(HAVE___GET_CPUID) */
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

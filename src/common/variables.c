@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/debug.h"
+#include "common/darktable.h"
+#include "bauhaus/bauhaus.h"
 #include "common/variables.h"
 #include "common/colorlabels.h"
 #include "common/darktable.h"
@@ -39,9 +41,28 @@ typedef struct dt_variables_data_t
   time_t exif_time;
   guint sequence;
 
-  /* export settings for image maximum width and height taken from GUI */
+  // max image size taken from export module GUI, can be zero
   int max_width;
   int max_height;
+
+  // total sensor size, before RAW crop
+  int sensor_width;
+  int sensor_height;
+
+  // max RAW file size, after the raw crop
+  int raw_width;
+  int raw_height;
+
+  // image size after crop, but before export resize
+  int crop_width;
+  int crop_height;
+
+  // image export size after crop and export resize
+  int export_width;
+  int export_height;
+
+  // upscale allowed on export
+  gboolean upscale;
 
   char *homedir;
   char *pictures_folder;
@@ -111,7 +132,8 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->elevation = 0.0f;
   if(params->imgid)
   {
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
+    const dt_image_t *img = params->img ? (dt_image_t *)params->img
+                                        : dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
     if(sscanf(img->exif_datetime_taken, "%d:%d:%d %d:%d:%d", &params->data->exif_tm.tm_year, &params->data->exif_tm.tm_mon,
       &params->data->exif_tm.tm_mday, &params->data->exif_tm.tm_hour, &params->data->exif_tm.tm_min, &params->data->exif_tm.tm_sec) == 6)
     {
@@ -139,9 +161,35 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
 
     params->data->flags = img->flags;
 
-    dt_image_cache_read_release(darktable.image_cache, img);
+    params->data->raw_height = img->p_height;
+    params->data->raw_width = img->p_width;
+    params->data->sensor_height = img->height;
+    params->data->sensor_width = img->width;
+    params->data->crop_height = img->final_height;
+    params->data->crop_width = img->final_width;
+
+    // for export size, assume initially no export scaling
+    params->data->export_height = img->final_height;
+    params->data->export_width = img->final_width;
+
+    if(params->data->max_height || params->data->max_width)
+    {
+      // export scaling occurs, calculate the resize
+      const int mh = params->data->max_height ? params->data->max_height : INT_MAX;
+      const int mw = params->data->max_width ? params->data->max_width : INT_MAX;
+      const float scale = fminf((float)mh / img->final_height, (float)mw / img->final_width);
+      if(scale < 1.0f || params->data->upscale)
+      {
+        // export scaling
+        params->data->export_height = roundf(img->final_height * scale);
+        params->data->export_width = roundf(img->final_width * scale);
+      }
+    }
+
+    if(params->img == NULL) dt_image_cache_read_release(darktable.image_cache, img);
   }
-  else if (params->data->exif_time) {
+  else if (params->data->exif_time)
+  {
     localtime_r(&params->data->exif_time, &params->data->exif_tm);
     params->data->have_exif_tm = TRUE;
   }
@@ -225,7 +273,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location")
        && g_strcmp0(params->jobcode, "infos") == 0)
     {
-      result = dt_util_latitude_str(params->data->longitude);
+      result = dt_util_longitude_str(params->data->longitude);
     }
     else
     {
@@ -259,7 +307,6 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if(has_prefix(variable, "VERSION_NAME"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.version_name", NULL);
-    res = g_list_first(res);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -376,87 +423,35 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
         break;
     }
   }
-  else if(has_prefix(variable, "LABELS_ICONS") && g_strcmp0(params->jobcode, "infos") == 0)
+  else if((has_prefix(variable, "LABELS_ICONS") ||
+           has_prefix(variable, "LABELS_COLORICONS"))
+          && g_strcmp0(params->jobcode, "infos") == 0)
   {
     escape = FALSE;
     GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
-    res = g_list_first(res);
-    if(res != NULL)
+    for(GList *res_iter = res; res_iter; res_iter = g_list_next(res_iter))
     {
-      do
-      {
-        const char *lb = (char *)(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)));
-        if(g_strcmp0(lb, "red") == 0)
-        {
-          result = dt_util_dstrcat(result, "<span foreground=\"#ee0000\">⚫ </span>");
-        }
-        else if(g_strcmp0(lb, "yellow") == 0)
-        {
-          result = dt_util_dstrcat(result, "<span foreground=\"#eeee00\">⚫ </span>");
-        }
-        else if(g_strcmp0(lb, "green") == 0)
-        {
-          result = dt_util_dstrcat(result, "<span foreground=\"#00ee00\">⚫ </span>");
-        }
-        else if(g_strcmp0(lb, "blue") == 0)
-        {
-          result = dt_util_dstrcat(result, "<span foreground=\"#0000ee\">⚫ </span>");
-        }
-        else if(g_strcmp0(lb, "purple") == 0)
-        {
-          result = dt_util_dstrcat(result, "<span foreground=\"#ee00ee\">⚫ </span>");
-        }
-      } while((res = g_list_next(res)) != NULL);
+      const int dot_index = GPOINTER_TO_INT(res_iter->data);
+      const GdkRGBA c = darktable.bauhaus->colorlabels[dot_index];
+      result = dt_util_dstrcat(result,
+                               "<span foreground='#%02x%02x%02x'>⬤ </span>",
+                               (guint)(c.red*255), (guint)(c.green*255), (guint)(c.blue*255));
     }
     g_list_free(res);
   }
-  else if(has_prefix(variable, "LABELS_COLORICONS") && g_strcmp0(params->jobcode, "infos") == 0)
-  {
-    escape = FALSE;
-    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
-    res = g_list_first(res);
-    if(res != NULL)
-    {
-      do
-      {
-        const char *lb = (char *)(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)));
-        if(g_strcmp0(lb, "red") == 0)
-        {
-          result = dt_util_dstrcat(result, "<span foreground=\"#ee0000\">🔴 </span>");
-        }
-        else if(g_strcmp0(lb, "yellow") == 0)
-        {
-          result = dt_util_dstrcat(result, "<span foreground=\"#eeee00\">🟡 </span>");
-        }
-        else if(g_strcmp0(lb, "green") == 0)
-        {
-          result = dt_util_dstrcat(result, "<span foreground=\"#00ee00\">🟢 </span>");
-        }
-        else if(g_strcmp0(lb, "blue") == 0)
-        {
-          result = dt_util_dstrcat(result, "<span foreground=\"#0000ee\">🔵 </span>");
-        }
-        else if(g_strcmp0(lb, "purple") == 0)
-        {
-          result = dt_util_dstrcat(result, "<span foreground=\"#ee00ee\">🟣 </span>");
-        }
-      } while((res = g_list_next(res)) != NULL);
-    }
-    g_list_free(res);
-  }
-  else if(has_prefix(variable, "LABELS") || has_prefix(variable, "LABELS_ICONS") || has_prefix(variable, "LABELS_COLORICONS"))
+  else if(has_prefix(variable, "LABELS"))
   {
     // TODO: currently we concatenate all the color labels with a ',' as a separator. Maybe it's better to
     // only use the first/last label?
     GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
-    res = g_list_first(res);
     if(res != NULL)
     {
       GList *labels = NULL;
-      do
+      for(GList *res_iter = res; res_iter; res_iter = g_list_next(res_iter))
       {
-        labels = g_list_append(labels, (char *)(_(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)))));
-      } while((res = g_list_next(res)) != NULL);
+        labels = g_list_prepend(labels, (char *)(_(dt_colorlabels_to_string(GPOINTER_TO_INT(res_iter->data)))));
+      }
+      labels = g_list_reverse(labels);  // list was built in reverse order, so un-reverse it
       result = dt_util_glist_to_str(",", labels);
       g_list_free(labels);
     }
@@ -465,7 +460,6 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if(has_prefix(variable, "TITLE"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.title", NULL);
-    res = g_list_first(res);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -475,7 +469,6 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if(has_prefix(variable, "DESCRIPTION"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.description", NULL);
-    res = g_list_first(res);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -485,7 +478,6 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if(has_prefix(variable, "CREATOR"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.creator", NULL);
-    res = g_list_first(res);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -495,7 +487,6 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if(has_prefix(variable, "PUBLISHER"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.publisher", NULL);
-    res = g_list_first(res);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -505,7 +496,6 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if(has_prefix(variable, "RIGHTS"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.rights", NULL);
-    res = g_list_first(res);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -523,6 +513,22 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%d", params->data->max_width);
   else if(has_prefix(variable, "MAX_HEIGHT"))
     result = g_strdup_printf("%d", params->data->max_height);
+  else if(has_prefix(variable, "SENSOR_WIDTH"))
+    result = g_strdup_printf("%d", params->data->sensor_width);
+  else if(has_prefix(variable, "SENSOR_HEIGHT"))
+    result = g_strdup_printf("%d", params->data->sensor_height);
+  else if(has_prefix(variable, "RAW_WIDTH"))
+    result = g_strdup_printf("%d", params->data->raw_width);
+  else if(has_prefix(variable, "RAW_HEIGHT"))
+    result = g_strdup_printf("%d", params->data->raw_height);
+  else if(has_prefix(variable, "CROP_WIDTH"))
+    result = g_strdup_printf("%d", params->data->crop_width);
+  else if(has_prefix(variable, "CROP_HEIGHT"))
+    result = g_strdup_printf("%d", params->data->crop_height);
+  else if(has_prefix(variable, "EXPORT_WIDTH"))
+    result = g_strdup_printf("%d", params->data->export_width);
+  else if(has_prefix(variable, "EXPORT_HEIGHT"))
+    result = g_strdup_printf("%d", params->data->export_height);
   else if (has_prefix(variable, "CATEGORY"))
   {
     // CATEGORY should be followed by n [0,9] and "(category)". category can contain 0 or more '|'
@@ -553,7 +559,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if (has_prefix(variable, "TAGS"))
   {
     GList *tags_list = dt_tag_get_list_export(params->imgid, params->data->tags_flags);
-    char *tags = dt_util_glist_to_str(",", tags_list);
+    char *tags = dt_util_glist_to_str(", ", tags_list);
     g_list_free_full(tags_list, g_free);
     result = g_strdup(tags);
     g_free(tags);
@@ -870,6 +876,7 @@ static void grow_buffer(char **result, char **result_iter, size_t *result_length
 static char *expand(dt_variables_params_t *params, char **source, char extra_stop)
 {
   char *result = g_strdup("");
+  if(!*source) return result;
   char *result_iter = result;
   size_t result_length = 0;
   char *source_iter = *source;
@@ -942,6 +949,7 @@ void dt_variables_params_init(dt_variables_params_t **params)
   localtime_r(&now, &(*params)->data->time);
   (*params)->data->exif_time = 0;
   (*params)->sequence = -1;
+  (*params)->img = NULL;
 }
 
 void dt_variables_params_destroy(dt_variables_params_t *params)
@@ -954,6 +962,11 @@ void dt_variables_set_max_width_height(dt_variables_params_t *params, int max_wi
 {
   params->data->max_width = max_width;
   params->data->max_height = max_height;
+}
+
+void dt_variables_set_upscale(dt_variables_params_t *params, gboolean upscale)
+{
+  params->data->upscale = upscale;
 }
 
 void dt_variables_set_time(dt_variables_params_t *params, time_t time)

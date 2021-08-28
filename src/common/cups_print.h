@@ -48,7 +48,6 @@ typedef struct dt_medium_info_t
 typedef struct dt_page_setup_t
 {
   gboolean landscape;
-  dt_alignment_t alignment;
   double margin_top, margin_bottom, margin_left, margin_right;
 } dt_page_setup_t;
 
@@ -95,17 +94,16 @@ dt_medium_info_t *dt_get_medium(GList *media, const char *name);
 // print filename using the printer and the page size and setup
 void dt_print_file(const int32_t imgid, const char *filename, const char *job_title, const dt_print_info_t *pinfo);
 
-// given the page settings (media size and border) and the printer (hardware margins) returns the page, image
-// and printable area layout in the area_width and area_height (the area that dt allocate for the central display).
+// given the page settings (media size and border) and the printer (hardware margins) returns the
+// page and printable area layout in the area_width and area_height (the area that dt allocate
+// for the central display).
 //  - the page area (px, py, pwidth, pheight)
 //  - the printable area (ax, ay, awidth and aheight), the area without the borders
-//  - the image position (ix, iy, iwidth, iheight)
 // there is no unit, every returned values are based on the area size.
-void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt, const int32_t area_width, const int32_t area_height,
-                         int32_t *iwpix, int32_t *ihpix,
-                         int32_t *px,    int32_t *py,    int32_t *pwidth, int32_t *pheight,
-                         int32_t *ax,    int32_t *ay,    int32_t *awidth, int32_t *aheight,
-                         int32_t *ix,    int32_t *iy,    int32_t *iwidth, int32_t *iheight);
+void dt_get_print_layout(const dt_print_info_t *prt,
+                         const int32_t area_width, const int32_t area_height,
+                         int32_t *px, int32_t *py, int32_t *pwidth, int32_t *pheight,
+                         int32_t *ax, int32_t *ay, int32_t *awidth, int32_t *aheight);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

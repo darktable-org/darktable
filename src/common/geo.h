@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2016-2020 darktable developers.
+ *    Copyright (C) 2016-2021 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -23,13 +23,22 @@ typedef enum dt_geo_map_display_t
   MAP_DISPLAY_NONE,
   MAP_DISPLAY_POINT,
   MAP_DISPLAY_TRACK,
-  MAP_DISPLAY_POLYGON
+  MAP_DISPLAY_POLYGON,
+  MAP_DISPLAY_THUMB
 } dt_geo_map_display_t;
 
 typedef struct dt_geo_map_display_point_t
 {
   float lat, lon;
 } dt_geo_map_display_point_t;
+
+typedef struct dt_map_box_t
+{
+  float lon1;
+  float lat1;
+  float lon2;
+  float lat2;
+} dt_map_box_t;
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

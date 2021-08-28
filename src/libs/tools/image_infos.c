@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2020 darktable developers.
+    Copyright (C) 2019-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,14 +43,13 @@ const char *name(dt_lib_module_t *self)
 const char **views(dt_lib_module_t *self)
 {
   /* we handle the hidden case here */
-  gchar *pos = dt_conf_get_string("plugins/darkroom/image_infos_position");
-  if(g_strcmp0(pos, "hidden") == 0)
+  const gboolean is_hidden =
+    dt_conf_is_equal("plugins/darkroom/image_infos_position", "hidden");
+  if(is_hidden)
   {
     static const char *vv[] = { NULL };
-    g_free(pos);
     return vv;
   }
-  g_free(pos);
 
   static const char *v[] = { "darkroom", NULL };
   return v;
@@ -58,7 +57,7 @@ const char **views(dt_lib_module_t *self)
 
 uint32_t container(dt_lib_module_t *self)
 {
-  gchar *pos = dt_conf_get_string("plugins/darkroom/image_infos_position");
+  const char *pos = dt_conf_get_string_const("plugins/darkroom/image_infos_position");
   dt_ui_container_t cont = DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER; // default value
 
   if(g_strcmp0(pos, "top left") == 0)
@@ -68,7 +67,6 @@ uint32_t container(dt_lib_module_t *self)
   else if(g_strcmp0(pos, "top center") == 0)
     cont = DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER;
 
-  g_free(pos);
   return cont;
 }
 
@@ -116,6 +114,17 @@ void _lib_imageinfo_update_message(gpointer instance, dt_lib_module_t *self)
   g_free(msg);
 }
 
+static void _lib_imageinfo_update_message2(gpointer instance, gpointer imgs, dt_lib_module_t *self)
+{
+  _lib_imageinfo_update_message(instance, self);
+}
+
+void _lib_imageinfo_update_message3(gpointer instance, int query_change, int changed_property, gpointer imgs,
+                                    const int next, dt_lib_module_t *self)
+{
+  _lib_imageinfo_update_message(instance, self);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -139,11 +148,18 @@ void gui_init(dt_lib_module_t *self)
      image in darkroom when enter */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE,
                             G_CALLBACK(_lib_imageinfo_update_message), self);
+
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED,
+                                  G_CALLBACK(_lib_imageinfo_update_message2), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+                                  G_CALLBACK(_lib_imageinfo_update_message3), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_imageinfo_update_message), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_imageinfo_update_message2), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_imageinfo_update_message3), self);
 
   g_free(self->data);
   self->data = NULL;

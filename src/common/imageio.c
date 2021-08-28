@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -91,7 +91,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     // Decompress the JPG into our own memory format
     dt_imageio_jpeg_t jpg;
     if(dt_imageio_jpeg_decompress_header(buf, bufsize, &jpg)) goto error;
-    *buffer = (uint8_t *)dt_alloc_align(64, (size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
+    *buffer = (uint8_t *)dt_alloc_align(64, sizeof(uint8_t) * 4 * jpg.width * jpg.height);
     if(!*buffer) goto error;
 
     *width = jpg.width;
@@ -131,7 +131,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     *height = image->rows;
     *color_space = DT_COLORSPACE_SRGB; // FIXME: this assumes that embedded thumbnails are always srgb
 
-    *buffer = (uint8_t *)dt_alloc_align(64, (size_t)sizeof(uint8_t) * image->columns * image->rows * 4);
+    *buffer = (uint8_t *)dt_alloc_align(64, sizeof(uint8_t) * 4 * image->columns * image->rows);
     if(!*buffer) goto error_gm;
 
     for(uint32_t row = 0; row < image->rows; row++)
@@ -183,7 +183,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
       break;
     }
 
-    *buffer = malloc((*width) * (*height) * 4 * sizeof(uint8_t));
+    *buffer = malloc(sizeof(uint8_t) * (*width) * (*height) * 4);
     if (*buffer == NULL) goto error_im;
 
     mret = MagickExportImagePixels(image, 0, 0, *width, *height, "RGBP", CharPixel, *buffer);
@@ -228,7 +228,7 @@ gboolean dt_imageio_has_mono_preview(const char *filename)
 {
   dt_colorspaces_color_profile_type_t color_space;
   uint8_t *tmp = NULL;
-  int32_t thumb_width, thumb_height;
+  int32_t thumb_width = 0, thumb_height = 0;
   gboolean mono = FALSE;
 
   if(dt_imageio_large_thumbnail(filename, &tmp, &thumb_width, &thumb_height, &color_space))
@@ -325,7 +325,7 @@ void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const f
     for(int j = 0; j < ht; j++)
       for(int i = 0; i < wd; i++)
         for(int k = 0; k < ch; k++)
-          out[4 * ((size_t)j * wd + i) + k] = (in[(size_t)j * stride + ch * i + k] - black) * scale;
+          out[4 * ((size_t)j * wd + i) + k] = (in[(size_t)j * stride + (size_t)ch * i + k] - black) * scale;
     return;
   }
   int ii = 0, jj = 0;
@@ -550,6 +550,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     img->buf_dsc.cst = iop_cs_rgb; // jpeg is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_S_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
     img->loader = LOADER_JPEG;
@@ -561,10 +562,9 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   {
     // cst is set by dt_imageio_open_tiff()
     img->buf_dsc.filters = 0u;
+    // TIFF can be HDR or LDR. corresponding flags are set in dt_imageio_open_tiff()
     img->flags &= ~DT_IMAGE_RAW;
-    img->flags &= ~DT_IMAGE_HDR;
     img->flags &= ~DT_IMAGE_S_RAW;
-    img->flags |= DT_IMAGE_LDR;
     img->loader = LOADER_TIFF;
     return ret;
   }
@@ -661,9 +661,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   dt_dev_init(&dev, 0);
   dt_dev_load_image(&dev, imgid);
 
-  const int buf_is_downscaled
-      = (thumbnail_export && dt_conf_get_bool("plugins/lighttable/low_quality_thumbnails"));
-
+  const gboolean buf_is_downscaled = (thumbnail_export && dt_conf_get_bool("ui/performance"));
   dt_mipmap_buffer_t buf;
   if(buf_is_downscaled)
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_F, DT_MIPMAP_BLOCKING, 'r');
@@ -698,8 +696,10 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     goto error;
   }
 
+  const gboolean use_style = !thumbnail_export && format_params->style[0] != '\0';
+  const gboolean appending = format_params->style_append != FALSE;
   //  If a style is to be applied during export, add the iop params into the history
-  if(!thumbnail_export && format_params->style[0] != '\0')
+  if(use_style)
   {
     GList *style_items = dt_styles_get_item_list(format_params->style, TRUE, -1);
     if(!style_items)
@@ -710,17 +710,13 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
 
     GList *modules_used = NULL;
 
-    dt_dev_pop_history_items_ext(&dev, dev.history_end);
+    dt_dev_pop_history_items_ext(&dev, appending ? dev.history_end : 0);
+    dt_ioppr_update_for_style_items(&dev, style_items, appending);
 
-    dt_ioppr_update_for_style_items(&dev, style_items, format_params->style_append);
-
-    GList *st_items = g_list_first(style_items);
-    while(st_items)
+    for(GList *st_items = style_items; st_items; st_items = g_list_next(st_items))
     {
       dt_style_item_t *st_item = (dt_style_item_t *)st_items->data;
-      dt_styles_apply_style_item(&dev, st_item, &modules_used, format_params->style_append);
-
-      st_items = g_list_next(st_items);
+      dt_styles_apply_style_item(&dev, st_item, &modules_used, appending);
     }
 
     g_list_free(modules_used);
@@ -733,6 +729,27 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, buf.iscale);
   dt_dev_pixelpipe_create_nodes(&pipe, &dev);
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
+  if(darktable.unmuted & DT_DEBUG_IMAGEIO)
+  {
+    fprintf(stderr,"[dt_imageio_export_with_flags] ");
+    if(use_style)
+    {
+      if(appending) fprintf(stderr,"appending style `%s'\n", format_params->style);
+      else          fprintf(stderr,"overwrite style `%s'\n", format_params->style);
+    }
+    else fprintf(stderr,"\n");
+    int cnt = 0;
+    for(GList *nodes = pipe.nodes; nodes; nodes = g_list_next(nodes))
+    {
+      dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
+      if(piece->enabled)
+      {
+        cnt++;
+        fprintf(stderr," %s", piece->module->op);
+      }
+    }
+    fprintf(stderr," (%i)\n", cnt);
+  }
 
   if(filter)
   {
@@ -753,9 +770,8 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   }
   else if(icc_type == DT_COLORSPACE_NONE)
   {
-    GList *modules = dev.iop;
     dt_iop_module_t *colorout = NULL;
-    while(modules)
+    for(GList *modules = dev.iop; modules; modules = g_list_next(modules))
     {
       colorout = (dt_iop_module_t *)modules->data;
       if(colorout->get_p && strcmp(colorout->op, "colorout") == 0)
@@ -764,7 +780,6 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
         sRGB = (!type || *type == DT_COLORSPACE_SRGB);
         break; // colorout can't have > 1 instance
       }
-      modules = g_list_next(modules);
     }
   }
   else
@@ -780,8 +795,8 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
             : high_quality;
 
   /* The pipeline might have out-of-bounds problems at the right and lower borders leading to
-     artefacts or mem access errors if ignored. (#3646)
-     It's very difficult to prepare the pipeline avoiding this **and** not introducing artefacts.
+     artifacts or mem access errors if ignored. (#3646)
+     It's very difficult to prepare the pipeline avoiding this **and** not introducing artifacts.
      But we can test for that situation and if there is an out-of-bounds problem we
      have basically two options:
      a) reduce the output image size by one for width & height.
@@ -841,7 +856,10 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     scale = fmin(width >  0 ? fmin((double)width / (double)pipe.processed_width, max_scale) : max_scale,
                  height > 0 ? fmin((double)height / (double)pipe.processed_height, max_scale) : max_scale);
 
-    if (strcmp(dt_conf_get_string("plugins/lighttable/export/resizing"), "scaling") == 0)
+    const gboolean is_scaling =
+      dt_conf_is_equal("plugins/lighttable/export/resizing", "scaling");
+
+    if (is_scaling)
     {
       // scaling
       double scale_factor = 1;
@@ -914,8 +932,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     // find the finalscale module
     dt_dev_pixelpipe_iop_t *finalscale = NULL;
     {
-      GList *nodes = g_list_last(pipe.nodes);
-      while(nodes)
+      for(const GList *nodes = g_list_last(pipe.nodes); nodes; nodes = g_list_previous(nodes))
       {
         dt_dev_pixelpipe_iop_t *node = (dt_dev_pixelpipe_iop_t *)(nodes->data);
         if(!strcmp(node->module->op, "finalscale"))
@@ -923,7 +940,6 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
           finalscale = node;
           break;
         }
-        nodes = g_list_previous(nodes);
       }
     }
 
@@ -953,9 +969,9 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
         for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)
         {
           // convert in place, this is unfortunately very serial..
-          const uint8_t r = CLAMP(inbuf[4 * k + 2] * 0xff, 0, 0xff);
-          const uint8_t g = CLAMP(inbuf[4 * k + 1] * 0xff, 0, 0xff);
-          const uint8_t b = CLAMP(inbuf[4 * k + 0] * 0xff, 0, 0xff);
+          const uint8_t r = roundf(CLAMP(inbuf[4 * k + 2] * 0xff, 0, 0xff));
+          const uint8_t g = roundf(CLAMP(inbuf[4 * k + 1] * 0xff, 0, 0xff));
+          const uint8_t b = roundf(CLAMP(inbuf[4 * k + 0] * 0xff, 0, 0xff));
           outbuf[4 * k + 0] = r;
           outbuf[4 * k + 1] = g;
           outbuf[4 * k + 2] = b;
@@ -972,9 +988,9 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
         for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)
         {
           // convert in place, this is unfortunately very serial..
-          const uint8_t r = CLAMP(inbuf[4 * k + 0] * 0xff, 0, 0xff);
-          const uint8_t g = CLAMP(inbuf[4 * k + 1] * 0xff, 0, 0xff);
-          const uint8_t b = CLAMP(inbuf[4 * k + 2] * 0xff, 0, 0xff);
+          const uint8_t r = roundf(CLAMP(inbuf[4 * k + 0] * 0xff, 0, 0xff));
+          const uint8_t g = roundf(CLAMP(inbuf[4 * k + 1] * 0xff, 0, 0xff));
+          const uint8_t b = roundf(CLAMP(inbuf[4 * k + 2] * 0xff, 0, 0xff));
           outbuf[4 * k + 0] = r;
           outbuf[4 * k + 1] = g;
           outbuf[4 * k + 2] = b;
@@ -1008,7 +1024,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
       {
         // convert in place
         const size_t k = (size_t)processed_width * y + x;
-        for(int i = 0; i < 3; i++) buf16[4 * k + i] = CLAMP(buff[4 * k + i] * 0x10000, 0, 0xffff);
+        for(int i = 0; i < 3; i++) buf16[4 * k + i] = roundf(CLAMP(buff[4 * k + i] * 0xffff, 0, 0xffff));
       }
   }
   // else output float, no further harm done to the pixels :)
@@ -1038,6 +1054,9 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     res = format->write_image(format_params, filename, outbuf, icc_type, icc_filename, NULL, 0, imgid, num, total,
                               &pipe, export_masks);
   }
+
+  if(res)
+    goto error;
 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
@@ -1079,7 +1098,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
                             format_params, storage, storage_params);
   }
 
-  return res;
+  return 0; // success
 
 error:
   dt_dev_pixelpipe_cleanup(&pipe);

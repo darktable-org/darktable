@@ -47,9 +47,9 @@ dt_metadata_type_t;
 
 typedef enum dt_metadata_signal_t
 {
-  DT_METADATA_SIGNAL_SHOWN,     // metadata set as shown
-  DT_METADATA_SIGNAL_HIDDEN,    // metadata set as hidden
-  DT_METADATA_SIGNAL_NEW_VALUE  // metadata value changed
+  DT_METADATA_SIGNAL_SHOWN,       // metadata set as shown
+  DT_METADATA_SIGNAL_HIDDEN,      // metadata set as hidden
+  DT_METADATA_SIGNAL_NEW_VALUE    // metadata value changed
 }
 dt_metadata_signal_t;
 
@@ -65,16 +65,19 @@ dt_metadata_flag_t;
 const char *dt_metadata_get_name_by_display_order(const uint32_t order);
 
 /** return the metadata keyid by display order */
-const dt_metadata_t dt_metadata_get_keyid_by_display_order(const uint32_t order);
+dt_metadata_t dt_metadata_get_keyid_by_display_order(const uint32_t order);
+
+/** return the metadata keyid by name */
+dt_metadata_t dt_metadata_get_keyid_by_name(const char* name);
 
 /** return the metadata type by display order */
-const int dt_metadata_get_type_by_display_order(const uint32_t order);
+int dt_metadata_get_type_by_display_order(const uint32_t order);
 
 /** return the metadata name of the metadata keyid */
 const char *dt_metadata_get_name(const uint32_t keyid);
 
 /** return the keyid of the metadata key */
-const dt_metadata_t dt_metadata_get_keyid(const char* key);
+dt_metadata_t dt_metadata_get_keyid(const char* key);
 
 /** return the key of the metadata keyid */
 const char *dt_metadata_get_key(const uint32_t keyid);
@@ -86,7 +89,7 @@ const char *dt_metadata_get_subkey(const uint32_t keyid);
 const char *dt_metadata_get_key_by_subkey(const char *subkey);
 
 /** return the type of the metadata keyid */
-const int dt_metadata_get_type(const uint32_t keyid);
+int dt_metadata_get_type(const uint32_t keyid);
 
 /** init metadata flags */
 void dt_metadata_init();

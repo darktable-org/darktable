@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2020 darktable developers.
+    Copyright (C) 2014-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,13 +21,13 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
+#include "common/math.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
-#include <math.h>
 #include <stdlib.h>
 
 DT_MODULE_INTROSPECTION(1, dt_iop_rotatepixels_params_t)
@@ -49,12 +49,6 @@ typedef struct dt_iop_rotatepixels_data_t
 } dt_iop_rotatepixels_data_t;
 
 dt_iop_rotatepixels_gui_data_t dummy;
-
-static void mul_mat_vec_2(const float *m, const float *p, float *o)
-{
-  o[0] = p[0] * m[0] + p[1] * m[1];
-  o[1] = p[0] * m[2] + p[1] * m[3];
-}
 
 // helper to count corners in for loops:
 static void get_corner(const float *aabb, const int i, float *p)
@@ -97,6 +91,16 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return g_strdup(_("internal module to setup technical specificities of raw sensor.\n\n"
+                    "you should not touch values here !"));
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static void transform(const dt_dev_pixelpipe_iop_t *const piece, const float scale, const float *const x,
                       float *o)
 {
@@ -107,6 +111,10 @@ static void transform(const dt_dev_pixelpipe_iop_t *const piece, const float sca
   mul_mat_vec_2(d->m, pi, o);
 }
 
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static void backtransform(const dt_dev_pixelpipe_iop_t *const piece, const float scale, const float *const x,
                           float *o)
 {
@@ -119,10 +127,15 @@ static void backtransform(const dt_dev_pixelpipe_iop_t *const piece, const float
   o[1] += d->ry * scale;
 }
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points, size_t points_count)
 {
   const float scale = piece->buf_in.scale / piece->iscale;
 
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(points_count, points, scale, piece) \
+    schedule(static) if(points_count > 100) aligned(points:64)
+#endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];
@@ -139,11 +152,16 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   return 1;
 }
 
-int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points,
                           size_t points_count)
 {
   const float scale = piece->buf_in.scale / piece->iscale;
 
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(points_count, points, scale, piece) \
+    schedule(static) if(points_count > 100) aligned(points:64)
+#endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];
@@ -220,9 +238,9 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
 
   const float scale = roi_in->scale / piece->iscale;
 
-  float aabb[4] = { roi_out->x, roi_out->y, roi_out->x + roi_out->width, roi_out->y + roi_out->height };
+  dt_boundingbox_t aabb = { roi_out->x, roi_out->y, roi_out->x + roi_out->width, roi_out->y + roi_out->height };
 
-  float aabb_in[4] = { INFINITY, INFINITY, -INFINITY, -INFINITY };
+  dt_boundingbox_t aabb_in = { INFINITY, INFINITY, -INFINITY, -INFINITY };
 
   for(int c = 0; c < 4; c++)
   {
@@ -320,7 +338,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_rotatepixels_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -341,18 +358,16 @@ void reload_defaults(dt_iop_module_t *self)
 
   // FIXME: does not work.
   self->hide_enable_button = !self->default_enabled;
+
+  if(self->widget)
+    gtk_label_set_text(GTK_LABEL(self->widget), self->default_enabled
+                       ? _("automatic pixel rotation")
+                       : _("automatic pixel rotation\nonly works for the sensors that need it."));
 }
 
 void gui_update(dt_iop_module_t *self)
 {
-  if(!self->widget) return;
-  if(self->default_enabled)
-    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation"));
-  else
-    gtk_label_set_text(GTK_LABEL(self->widget),
-                       _("automatic pixel rotation\nonly works for the sensors that need it."));
 }
-
 void gui_init(dt_iop_module_t *self)
 {
   IOP_GUI_ALLOC(rotatepixels);

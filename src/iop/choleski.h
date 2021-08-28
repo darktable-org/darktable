@@ -23,6 +23,7 @@
 #include <time.h>
 
 #include "common/darktable.h"
+#include "common/imagebuf.h"
 #include "develop/imageop_math.h"
 
 /** Note :

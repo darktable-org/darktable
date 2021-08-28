@@ -36,7 +36,7 @@ backtransformf (float2 p, const int r_x, const int r_y, const int r_wd, const in
 }
 
 kernel void
-green_equilibration_lavg(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const unsigned int filters, 
+green_equilibration_lavg(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const unsigned int filters,
                          const int r_x, const int r_y, const float thr, local float *buffer)
 {
   const int x = get_global_id(0);
@@ -47,7 +47,7 @@ green_equilibration_lavg(read_only image2d_t in, write_only image2d_t out, const
   const int ylid = get_local_id(1);
   const int xgid = get_group_id(0);
   const int ygid = get_group_id(1);
-  
+
   // individual control variable in this work group and the work group size
   const int l = mad24(ylid, xlsz, xlid);
   const int lsz = mul24(xlsz, ylsz);
@@ -82,7 +82,7 @@ green_equilibration_lavg(read_only image2d_t in, write_only image2d_t out, const
   const int c = FC(y + r_y, x + r_x, filters);
   const float maximum = 1.0f;
   float o = buffer[0];
-  
+
   if(c == 1 && ((y + r_y) & 1))
   {
     const float o1_1 = buffer[-1 * stride - 1];
@@ -96,23 +96,23 @@ green_equilibration_lavg(read_only image2d_t in, write_only image2d_t out, const
 
     const float m1 = (o1_1+o1_2+o1_3+o1_4)/4.0f;
     const float m2 = (o2_1+o2_2+o2_3+o2_4)/4.0f;
-    
-    if (m2 > 0.0f && m1 / m2 < maximum * 2.0f)
+
+    if ((m2 > 0.0f) && (m1 > 0.0f) && (m1 / m2 < maximum * 2.0f))
     {
       const float c1 = (fabs(o1_1 - o1_2) + fabs(o1_1 - o1_3) + fabs(o1_1 - o1_4) + fabs(o1_2 - o1_3) + fabs(o1_3 - o1_4) + fabs(o1_2 - o1_4)) / 6.0f;
       const float c2 = (fabs(o2_1 - o2_2) + fabs(o2_1 - o2_3) + fabs(o2_1 - o2_4) + fabs(o2_2 - o2_3) + fabs(o2_3 - o2_4) + fabs(o2_2 - o2_4)) / 6.0f;
-      
+
       if((o < maximum * 0.95f) && (c1 < maximum * thr) && (c2 < maximum * thr))
         o *= m1/m2;
     }
   }
-  
+
   write_imagef (out, (int2)(x, y), o);
 }
 
 
 kernel void
-green_equilibration_favg_reduce_first(read_only image2d_t in, const int width, const int height, 
+green_equilibration_favg_reduce_first(read_only image2d_t in, const int width, const int height,
                                       global float2 *accu, const unsigned int filters, const int r_x, const int r_y, local float2 *buffer)
 {
   const int x = get_global_id(0);
@@ -125,11 +125,11 @@ green_equilibration_favg_reduce_first(read_only image2d_t in, const int width, c
   const int l = mad24(ylid, xlsz, xlid);
 
   const int c = FC(y + r_y, x + r_x, filters);
-  
+
   const int isinimage = (x < 2 * (width / 2) && y < 2 * (height / 2));
   const int isgreen1 = (c == 1 && !((y + r_y) & 1));
   const int isgreen2 = (c == 1 && ((y + r_y) & 1));
-  
+
   float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
 
   buffer[l].x = isinimage && isgreen1 ? pixel : 0.0f;
@@ -157,7 +157,7 @@ green_equilibration_favg_reduce_first(read_only image2d_t in, const int width, c
 }
 
 
-kernel void 
+kernel void
 green_equilibration_favg_reduce_second(const global float2* input, global float2 *result, const int length, local float2 *buffer)
 {
   int x = get_global_id(0);
@@ -169,7 +169,7 @@ green_equilibration_favg_reduce_second(const global float2* input, global float2
 
     x += get_global_size(0);
   }
-  
+
   int lid = get_local_id(0);
   buffer[lid] = sum;
 
@@ -194,7 +194,7 @@ green_equilibration_favg_reduce_second(const global float2* input, global float2
 
 
 kernel void
-green_equilibration_favg_apply(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const unsigned int filters, 
+green_equilibration_favg_apply(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const unsigned int filters,
                                const int r_x, const int r_y, const float gr_ratio)
 {
   const int x = get_global_id(0);
@@ -205,9 +205,9 @@ green_equilibration_favg_apply(read_only image2d_t in, write_only image2d_t out,
   float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
 
   const int c = FC(y + r_y, x + r_x, filters);
-  
+
   const int isgreen1 = (c == 1 && !((y + r_y) & 1));
-  
+
   pixel *= (isgreen1 ? gr_ratio : 1.0f);
 
   write_imagef (out, (int2)(x, y), pixel);
@@ -221,9 +221,9 @@ green_equilibration_favg_apply(read_only image2d_t in, write_only image2d_t out,
   }
 
 constant int glim[5] = { 0, 1, 2, 1, 0 };
-  
+
 kernel void
-pre_median(read_only image2d_t in, write_only image2d_t out, const int width, const int height, 
+pre_median(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
            const unsigned int filters, const float threshold, local float *buffer)
 {
   const int x = get_global_id(0);
@@ -234,7 +234,7 @@ pre_median(read_only image2d_t in, write_only image2d_t out, const int width, co
   const int ylid = get_local_id(1);
   const int xgid = get_group_id(0);
   const int ygid = get_group_id(1);
-  
+
   // individual control variable in this work group and the work group size
   const int l = mad24(ylid, xlsz, xlid);
   const int lsz = mul24(xlsz, ylsz);
@@ -273,7 +273,7 @@ pre_median(read_only image2d_t in, write_only image2d_t out, const int width, co
   float med[9];
 
   int cnt = 0;
-  
+
   for(int k = 0, i = 0; i < 5; i++)
   {
     for(int j = -lim[i]; j <= lim[i]; j += 2)
@@ -287,11 +287,11 @@ pre_median(read_only image2d_t in, write_only image2d_t out, const int width, co
         med[k++] = 64.0f + buffer[stride * (i - 2) + j];
     }
   }
-  
+
   for(int i = 0; i < 8; i++)
     for(int ii = i + 1; ii < 9; ii++)
       if(med[i] > med[ii]) SWAP(med[i], med[ii]);
-  
+
   float color = (c & 1) ? (cnt == 1 ? med[4] - 64.0f : med[(cnt - 1) / 2]) : buffer[0];
 
   write_imagef (out, (int2)(x, y), color);
@@ -536,7 +536,7 @@ ppg_demosaic_green (read_only image2d_t in, write_only image2d_t out, const int 
   const int ylid = get_local_id(1);
   const int xgid = get_group_id(0);
   const int ygid = get_group_id(1);
-  
+
   // individual control variable in this work group and the work group size
   const int l = mad24(ylid, xlsz, xlid);
   const int lsz = mul24(xlsz, ylsz);
@@ -566,8 +566,8 @@ ppg_demosaic_green (read_only image2d_t in, write_only image2d_t out, const int 
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  if(x >= width || y >= height) return;
-
+  // make sure we dont write the outermost 3 pixels
+  if(x >= width - 3 || x < 3 || y >= height - 3 || y < 3) return;
   // process all non-green pixels
   const int row = y;
   const int col = x;
@@ -599,12 +599,12 @@ ppg_demosaic_green (read_only image2d_t in, write_only image2d_t out, const int 
     const float pxM3 = buffer[ 3];
     const float guessx = (pxm + pc + pxM) * 2.0f - pxM2 - pxm2;
     const float diffx  = (fabs(pxm2 - pc) +
-                          fabs(pxM2 - pc) + 
+                          fabs(pxM2 - pc) +
                           fabs(pxm  - pxM)) * 3.0f +
                          (fabs(pxM3 - pxM) + fabs(pxm3 - pxm)) * 2.0f;
     const float guessy = (pym + pc + pyM) * 2.0f - pyM2 - pym2;
     const float diffy  = (fabs(pym2 - pc) +
-                          fabs(pyM2 - pc) + 
+                          fabs(pyM2 - pc) +
                           fabs(pym  - pyM)) * 3.0f +
                          (fabs(pyM3 - pyM) + fabs(pym3 - pym)) * 2.0f;
     if(diffx > diffy)
@@ -642,7 +642,7 @@ ppg_demosaic_redblue (read_only image2d_t in, write_only image2d_t out, const in
   const int ylid = get_local_id(1);
   const int xgid = get_group_id(0);
   const int ygid = get_group_id(1);
-  
+
   // individual control variable in this work group and the work group size
   const int l = mad24(ylid, xlsz, xlid);
   const int lsz = mul24(xlsz, ylsz);
@@ -673,11 +673,15 @@ ppg_demosaic_redblue (read_only image2d_t in, write_only image2d_t out, const in
   barrier(CLK_LOCAL_MEM_FENCE);
 
   if(x >= width || y >= height) return;
-
   const int row = y;
   const int col = x;
   const int c = FC(row, col, filters);
   float4 color = buffer[0];
+  if(x == 0 || y == 0 || x == (width-1) || y == (height-1))
+  {
+    write_imagef (out, (int2)(x, y), color);  
+    return;
+  }
 
   if(c == 1 || c == 3)
   { // calculate red and blue for green pixels:
@@ -733,17 +737,16 @@ ppg_demosaic_redblue (read_only image2d_t in, write_only image2d_t out, const in
  * Demosaic image border
  */
 kernel void
-border_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const unsigned int filters)
+border_interpolate(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const unsigned int filters, const int border)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  int border = 3;
-  int avgwindow = 1;
+  const int avgwindow = 1;
 
-  if(x>=border && x<width-border && y>=border && y<height-border) return;
+  if(x >= border && x < width-border && y >= border && y < height-border) return;
 
   float4 o;
   float sum[4] = { 0.0f };
@@ -753,18 +756,18 @@ border_interpolate(read_only image2d_t in, write_only image2d_t out, const int w
   {
     if (j>=0 && i>=0 && j<height && i<width)
     {
-      int f = FC(j,i,filters);
+      const int f = FC(j,i,filters);
       sum[f] += read_imagef(in, sampleri, (int2)(i, j)).x;
       count[f]++;
     }
   }
 
-  float i = read_imagef(in, sampleri, (int2)(x, y)).x;
+  const float i = read_imagef(in, sampleri, (int2)(x, y)).x;
   o.x = count[0] > 0 ? sum[0]/count[0] : i;
   o.y = count[1]+count[3] > 0 ? (sum[1]+sum[3])/(count[1]+count[3]) : i;
   o.z = count[2] > 0 ? sum[2]/count[2] : i;
 
-  int f = FC(y,x,filters);
+  const int f = FC(y,x,filters);
 
   if     (f == 0) o.x = i;
   else if(f == 1) o.y = i;
@@ -773,4 +776,3 @@ border_interpolate(read_only image2d_t in, write_only image2d_t out, const int w
 
   write_imagef (out, (int2)(x, y), o);
 }
-

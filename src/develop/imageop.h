@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ typedef struct dt_iop_roi_t
 #include "common/darktable.h"
 #include "common/introspection.h"
 #include "common/opencl.h"
+#include "common/action.h"
 #include "control/settings.h"
 #include "develop/pixelpipe.h"
 #include "dtgtk/togglebutton.h"
@@ -92,19 +93,22 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_NONE = 0,
 
   /** Flag for the iop module to be enabled/included by default when creating a style */
-  IOP_FLAGS_INCLUDE_IN_STYLES  = 1 << 0,
-  IOP_FLAGS_SUPPORTS_BLENDING  = 1 << 1,  // Does provide blending modes
-  IOP_FLAGS_DEPRECATED         = 1 << 2,
-  IOP_FLAGS_ALLOW_TILING       = 1 << 4,  // Does allow tile-wise processing (valid for CPU and GPU processing)
-  IOP_FLAGS_HIDDEN             = 1 << 5,  // Hide the iop from userinterface
-  IOP_FLAGS_TILING_FULL_ROI    = 1 << 6,  // Tiling code has to expect arbitrary roi's for this module (incl. flipping, mirroring etc.)
-  IOP_FLAGS_ONE_INSTANCE       = 1 << 7,  // The module doesn't support multiple instances
-  IOP_FLAGS_PREVIEW_NON_OPENCL = 1 << 8,  // Preview pixelpipe of this module must not run on GPU but always on CPU
-  IOP_FLAGS_NO_HISTORY_STACK   = 1 << 9,  // This iop will never show up in the history stack
-  IOP_FLAGS_NO_MASKS           = 1 << 10, // The module doesn't support masks (used with SUPPORT_BLENDING)
-  IOP_FLAGS_FENCE              = 1 << 11, // No module can be moved pass this one
-  IOP_FLAGS_ALLOW_FAST_PIPE    = 1 << 12, // Module can work with a fast pipe
-  IOP_FLAGS_UNSAFE_COPY        = 1 << 13  // Unsafe to copy as part of history
+  IOP_FLAGS_INCLUDE_IN_STYLES = 1 << 0,
+  IOP_FLAGS_SUPPORTS_BLENDING = 1 << 1, // Does provide blending modes
+  IOP_FLAGS_DEPRECATED = 1 << 2,
+  IOP_FLAGS_ALLOW_TILING = 1 << 4, // Does allow tile-wise processing (valid for CPU and GPU processing)
+  IOP_FLAGS_HIDDEN = 1 << 5,       // Hide the iop from userinterface
+  IOP_FLAGS_TILING_FULL_ROI
+  = 1 << 6, // Tiling code has to expect arbitrary roi's for this module (incl. flipping, mirroring etc.)
+  IOP_FLAGS_ONE_INSTANCE = 1 << 7,       // The module doesn't support multiple instances
+  IOP_FLAGS_PREVIEW_NON_OPENCL = 1 << 8, // Preview pixelpipe of this module must not run on GPU but always on CPU
+  IOP_FLAGS_NO_HISTORY_STACK = 1 << 9,   // This iop will never show up in the history stack
+  IOP_FLAGS_NO_MASKS = 1 << 10,          // The module doesn't support masks (used with SUPPORT_BLENDING)
+  IOP_FLAGS_FENCE = 1 << 11,             // No module can be moved pass this one
+  IOP_FLAGS_ALLOW_FAST_PIPE = 1 << 12,   // Module can work with a fast pipe
+  IOP_FLAGS_UNSAFE_COPY = 1 << 13,       // Unsafe to copy as part of history
+  IOP_FLAGS_GUIDES_SPECIAL_DRAW = 1 << 14, // handle the grid drawing directly
+  IOP_FLAGS_GUIDES_WIDGET = 1 << 15        // require the guides widget
 } dt_iop_flags_t;
 
 /** status of a module*/
@@ -117,7 +121,13 @@ typedef enum dt_iop_module_state_t
 
 } dt_iop_module_state_t;
 
-typedef void dt_iop_gui_data_t;
+typedef struct dt_iop_gui_data_t
+{
+  // "base type" for all dt_iop_XXXX_gui_data_t types used by iops
+  // to avoid compiler error about different sizes of empty structs between C and C++, we need at least one member
+  int dummy;
+} dt_iop_gui_data_t;
+
 typedef void dt_iop_data_t;
 typedef void dt_iop_global_data_t;
 
@@ -136,7 +146,8 @@ typedef enum dt_iop_colorspace_type_t
   iop_cs_Lab = 1,
   iop_cs_rgb = 2,
   iop_cs_LCh = 3,
-  iop_cs_HSL = 4
+  iop_cs_HSL = 4,
+  iop_cs_JzCzhz = 5,
 } dt_iop_colorspace_type_t;
 
 /** part of the module which only contains the cached dlopen stuff. */
@@ -144,7 +155,10 @@ struct dt_iop_module_so_t;
 struct dt_iop_module_t;
 typedef struct dt_iop_module_so_t
 {
-  // !!! MUST BE KEPT IN SYNC WITH src/iop/iop_api.h !!!
+  dt_action_t actions; // !!! NEEDS to be FIRST (to be able to cast convert)
+
+#define INCLUDE_API_FROM_MODULE_H
+#include "iop/iop_api.h"
 
   /** opened module. */
   GModule *module;
@@ -154,146 +168,25 @@ typedef struct dt_iop_module_so_t
    * read-only then. */
   dt_iop_global_data_t *data;
   /** gui is also only inited once at startup. */
-  dt_iop_gui_data_t *gui_data;
+//  dt_iop_gui_data_t *gui_data;
   /** which results in this widget here, too. */
-  GtkWidget *widget;
   /** button used to show/hide this module in the plugin list. */
   dt_iop_module_state_t state;
 
-  /** this initializes static, hardcoded presets for this module and is called only once per run of dt. */
-  void (*init_presets)(struct dt_iop_module_so_t *self);
-  /** called once per module, at startup. */
-  void (*init_global)(struct dt_iop_module_so_t *self);
-  /** called once per module, at shutdown. */
-  void (*cleanup_global)(struct dt_iop_module_so_t *self);
-  /** called once per module, at startup. */
-  int (*introspection_init)(struct dt_iop_module_so_t *self, int api_version);
-
-  /** callbacks, loaded once, referenced by the instances. */
-  int (*version)(void);
-  const char *(*name)(void);
-  int (*default_group)(void);
-  int (*flags)(void);
-
-  const char *(*description)(void);
-  /* should return a string with 5 lines:
-     line 1 : summary of what it does
-     line 2 : oriented creative or corrective ?
-     line 3 : working space
-     line 4 : input space
-     line 5 : output space
-  */
-
-  int (*operation_tags)(void);
-  int (*operation_tags_filter)(void);
-
-  /** what do the iop want as an input? */
-  void (*input_format)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                       struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
-  /** what will it output? */
-  void (*output_format)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                        struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
-
-  /** what default colorspace this iop use? */
-  int (*default_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                       struct dt_dev_pixelpipe_iop_t *piece);
-  /** what input colorspace it expects? */
-  int (*input_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                       struct dt_dev_pixelpipe_iop_t *piece);
-  /** what will it output? */
-  int (*output_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                        struct dt_dev_pixelpipe_iop_t *piece);
-  /** what colorspace the blend module operates with? */
-  int (*blend_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                        struct dt_dev_pixelpipe_iop_t *piece);
-
-  void (*tiling_callback)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                          const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out,
-                          struct dt_develop_tiling_t *tiling);
-
-  void (*gui_reset)(struct dt_iop_module_t *self);
-  void (*gui_update)(struct dt_iop_module_t *self);
-  void (*gui_init)(struct dt_iop_module_t *self);
-  void (*color_picker_apply)(struct dt_iop_module_t *self, GtkWidget *picker, struct dt_dev_pixelpipe_iop_t *piece);
-  void (*gui_changed)(struct dt_iop_module_t *self, GtkWidget *widget, void *previous);
-  void (*gui_cleanup)(struct dt_iop_module_t *self);
-  void (*gui_post_expose)(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
-                          int32_t pointerx, int32_t pointery);
-  void (*gui_focus)(struct dt_iop_module_t *self, gboolean in);
-  /** Optional callback for keyboard accelerators */
-  void (*init_key_accels)(struct dt_iop_module_so_t *so);
-  void (*original_init_key_accels)(struct dt_iop_module_so_t *so);
-  void (*connect_key_accels)(struct dt_iop_module_t *self);
-  void (*original_connect_key_accels)(struct dt_iop_module_t *self);
-  void (*disconnect_key_accels)(struct dt_iop_module_t *self);
-  GSList *(*mouse_actions)(struct dt_iop_module_t *self);
-
-  int (*mouse_leave)(struct dt_iop_module_t *self);
-  int (*mouse_moved)(struct dt_iop_module_t *self, double x, double y, double pressure, int which);
-  int (*button_released)(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
-  int (*button_pressed)(struct dt_iop_module_t *self, double x, double y, double pressure, int which,
-                        int type, uint32_t state);
-  int (*scrolled)(struct dt_iop_module_t *self, double x, double y, int up, uint32_t state);
-  void (*configure)(struct dt_iop_module_t *self, int width, int height);
-
-  void (*init)(struct dt_iop_module_t *self); // this MUST set params_size!
-  void (*original_init)(struct dt_iop_module_t *self);
-  void (*cleanup)(struct dt_iop_module_t *self);
-  void (*init_pipe)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                    struct dt_dev_pixelpipe_iop_t *piece);
-  void (*commit_params)(struct dt_iop_module_t *self, dt_iop_params_t *params,
-                        struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-  void (*change_image)(struct dt_iop_module_t *self);
-  void (*reload_defaults)(struct dt_iop_module_t *self);
-  void (*cleanup_pipe)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                       struct dt_dev_pixelpipe_iop_t *piece);
-  void (*modify_roi_in)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                        const struct dt_iop_roi_t *roi_out, struct dt_iop_roi_t *roi_in);
-  void (*modify_roi_out)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                         struct dt_iop_roi_t *roi_out, const struct dt_iop_roi_t *roi_in);
-  int (*legacy_params)(struct dt_iop_module_t *self, const void *const old_params, const int old_version,
-                       void *new_params, const int new_version);
-  // allow to select a shape inside an iop
-  void (*masks_selection_changed)(struct dt_iop_module_t *self, const int form_selected_id);
-
-  void (*process)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                  void *const o, const struct dt_iop_roi_t *const roi_in,
-                  const struct dt_iop_roi_t *const roi_out);
-  void (*process_tiling)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                         const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                         const struct dt_iop_roi_t *const roi_out, const int bpp);
   void (*process_plain)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                        const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                        const struct dt_iop_roi_t *const roi_out);
-  void (*process_sse2)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                       const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                       const struct dt_iop_roi_t *const roi_out);
-  int (*process_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                    void *const o, const struct dt_iop_roi_t *const roi_in,
-                    const struct dt_iop_roi_t *const roi_out);
-  int (*process_tiling_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                           const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                           const struct dt_iop_roi_t *const roi_out, const int bpp);
+                      const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
+                      const struct dt_iop_roi_t *const roi_out);
 
-  int (*distort_transform)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points,
-                           size_t points_count);
-  int (*distort_backtransform)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                               float *points, size_t points_count);
-  void (*distort_mask)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
-                       float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
-
-  // introspection related callbacks
+  // introspection related data
   gboolean have_introspection;
-  dt_introspection_t *(*get_introspection)(void);
-  dt_introspection_field_t *(*get_introspection_linear)(void);
-  void *(*get_p)(const void *param, const char *name);
-  dt_introspection_field_t *(*get_f)(const char *name);
-
 } dt_iop_module_so_t;
 
 typedef struct dt_iop_module_t
 {
-  // !!! MUST BE KEPT IN SYNC WITH src/iop/iop_api.h !!!
+  dt_action_type_t actions; // !!! NEEDS to be FIRST (to be able to cast convert)
+
+#define INCLUDE_API_FROM_MODULE_H
+#include "iop/iop_api.h"
 
   /** opened module. */
   GModule *module;
@@ -313,16 +206,10 @@ typedef struct dt_iop_module_t
   int request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the module in focus. gui mode only. */
   int32_t suppress_mask;
-  /** color picker proxy */
-  struct dt_iop_color_picker_t *picker;
-  /** bounding box in which the mean color is requested. */
-  float color_picker_box[4];
-  /** single point to pick if in point mode */
-  float color_picker_point[2];
   /** place to store the picked color of module input. */
-  float picked_color[4], picked_color_min[4], picked_color_max[4];
+  dt_aligned_pixel_t picked_color, picked_color_min, picked_color_max;
   /** place to store the picked color of module output (before blending). */
-  float picked_output_color[4], picked_output_color_min[4], picked_output_color_max[4];
+  dt_aligned_pixel_t picked_output_color, picked_output_color_min, picked_output_color_max;
   /** pointer to pre-module histogram data; if available: histogram_bins_count bins with 4 channels each */
   uint32_t *histogram;
   /** stats of captured histogram */
@@ -346,6 +233,7 @@ typedef struct dt_iop_module_t
   int32_t params_size;
   /** parameters needed if a gui is attached. will be NULL if in export/batch mode. */
   dt_iop_gui_data_t *gui_data;
+  dt_pthread_mutex_t gui_lock;
   /** other stuff that may be needed by the module, not only in gui mode. */
   dt_iop_global_data_t *global_data;
   /** blending params */
@@ -373,7 +261,8 @@ typedef struct dt_iop_module_t
   GtkDarktableToggleButton *off;
   /** this is the module header, contains label and buttons */
   GtkWidget *header;
-
+  /** this is the module mask indicator, inside header */
+  GtkWidget *mask_indicator;
   /** expander containing the widget and flag to store expanded state */
   GtkWidget *expander;
   gboolean expanded;
@@ -383,10 +272,17 @@ typedef struct dt_iop_module_t
   GtkWidget *presets_button;
   /** fusion slider */
   GtkWidget *fusion_slider;
+
+  GSList *widget_list;
+  /** show/hide guide button */
+  GtkWidget *guides_toggle;
   /** list of closures: show, enable/disable */
   GSList *accel_closures;
   GSList *accel_closures_local;
   gboolean local_closures_connected;
+
+  /** flag in case the module has troubles (bad settings) - if TRUE, show a warning sign next to module label */
+  gboolean has_trouble;
   /** the corresponding SO object */
   dt_iop_module_so_t *so;
 
@@ -403,157 +299,12 @@ typedef struct dt_iop_module_t
   /** delayed-event handling */
   guint timeout_handle;
 
-  /** version of the parameters in the database. */
-  int (*version)(void);
-  /** get name of the module, to be translated. */
-  const char *(*name)(void);
-  /** get the default group this module belongs to. */
-  int (*default_group)(void);
-  /** get the iop module flags. */
-  int (*flags)(void);
-
-  /** get a descriptive text used for example in a tooltip in more modules */
-  const char *(*description)(void);
-
-  int (*operation_tags)(void);
-
-  int (*operation_tags_filter)(void);
-  void (*input_format)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                       struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
-  /** what will it output? */
-  void (*output_format)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                        struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
-
-  /** what default colorspace this iop use? */
-  int (*default_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                       struct dt_dev_pixelpipe_iop_t *piece);
-  /** what input colorspace it expects? */
-  int (*input_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                       struct dt_dev_pixelpipe_iop_t *piece);
-  /** what will it output? */
-  int (*output_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                        struct dt_dev_pixelpipe_iop_t *piece);
-  /** what colorspace the blend module operates with? */
-  int (*blend_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                        struct dt_dev_pixelpipe_iop_t *piece);
-
-  /** report back info for tiling: memory usage and overlap. Memory usage: factor * input_size + overhead */
-  void (*tiling_callback)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                          const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out,
-                          struct dt_develop_tiling_t *tiling);
-
-  /** callback methods for gui. */
-  /** synch gtk interface with gui params, if necessary. */
-  void (*gui_update)(struct dt_iop_module_t *self);
-  /** reset ui to defaults */
-  void (*gui_reset)(struct dt_iop_module_t *self);
-  /** construct widget. */
-  void (*gui_init)(struct dt_iop_module_t *self);
-  /** apply color picker results */
-  void (*color_picker_apply)(struct dt_iop_module_t *self, GtkWidget *picker, struct dt_dev_pixelpipe_iop_t *piece);
-  /** called by standard widget callbacks after value changed */
-  void (*gui_changed)(struct dt_iop_module_t *self, GtkWidget *widget, void *previous);
-  /** destroy widget. */
-  void (*gui_cleanup)(struct dt_iop_module_t *self);
-  /** optional method called after darkroom expose. */
-  void (*gui_post_expose)(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
-                          int32_t pointerx, int32_t pointery);
-  /** optional callback to be notified if the module acquires gui focus/loses it. */
-  void (*gui_focus)(struct dt_iop_module_t *self, gboolean in);
-
-  /** optional event callbacks */
-  int (*mouse_leave)(struct dt_iop_module_t *self);
-  int (*mouse_moved)(struct dt_iop_module_t *self, double x, double y, double pressure, int which);
-  int (*button_released)(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
-  int (*button_pressed)(struct dt_iop_module_t *self, double x, double y, double pressure, int which,
-                        int type, uint32_t state);
-  int (*key_pressed)(struct dt_iop_module_t *self, uint16_t which);
-  int (*scrolled)(struct dt_iop_module_t *self, double x, double y, int up, uint32_t state);
-  void (*configure)(struct dt_iop_module_t *self, int width, int height);
-
-  void (*init)(struct dt_iop_module_t *self); // this MUST set params_size!
-  void (*original_init)(struct dt_iop_module_t *self);
-  void (*cleanup)(struct dt_iop_module_t *self);
-  /** this inits the piece of the pipe, allocing piece->data as necessary. */
-  void (*init_pipe)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                    struct dt_dev_pixelpipe_iop_t *piece);
-  /** this resets the params to factory defaults. used at the beginning of each history synch. */
-  /** this commits (a mutex will be locked to synch pipe/gui) the given history params to the pixelpipe piece.
-   */
-  void (*commit_params)(struct dt_iop_module_t *self, dt_iop_params_t *params,
-                        struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-  /** this is the chance to update default parameters, after the full raw is loaded. */
-  void (*reload_defaults)(struct dt_iop_module_t *self);
-  /** called after the image has changed in darkroom */
-  void (*change_image)(struct dt_iop_module_t *self);
-  /** this destroys all resources needed by the piece of the pixelpipe. */
-  void (*cleanup_pipe)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
-                       struct dt_dev_pixelpipe_iop_t *piece);
-  void (*modify_roi_in)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                        const struct dt_iop_roi_t *roi_out, struct dt_iop_roi_t *roi_in);
-  void (*modify_roi_out)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                         struct dt_iop_roi_t *roi_out, const struct dt_iop_roi_t *roi_in);
-  int (*legacy_params)(struct dt_iop_module_t *self, const void *const old_params, const int old_version,
-                       void *new_params, const int new_version);
-  // allow to select a shape inside an iop
-  void (*masks_selection_changed)(struct dt_iop_module_t *self, const int form_selected_id);
-
-  /** this is the temp homebrew callback to operations.
-    * x,y, and scale are just given for orientation in the framebuffer. i and o are
-    * scaled to the same size width*height and contain a max of 3 floats. other color
-    * formats may be filled by this callback, if the pipeline can handle it. */
-  /** the simplest variant of process(). you can only use OpenMP SIMD here, no intrinsics */
-  void (*process)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                  void *const o, const struct dt_iop_roi_t *const roi_in,
-                  const struct dt_iop_roi_t *const roi_out);
-  /** a tiling variant of process(). */
-  void (*process_tiling)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                         const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                         const struct dt_iop_roi_t *const roi_out, const int bpp);
-  /** WARNING: in IOP implementation, it is called process()!!! */
-  /** the simplest variant of process(). you can only use OpenMP SIMD here, no intrinsics */
   void (*process_plain)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                         const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
                         const struct dt_iop_roi_t *const roi_out);
-  /** a variant process(), that can contain SSE2 intrinsics. */
-  void (*process_sse2)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                       const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                       const struct dt_iop_roi_t *const roi_out);
-  /** the opencl equivalent of process(). */
-  int (*process_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                    void *const o, const struct dt_iop_roi_t *const roi_in,
-                    const struct dt_iop_roi_t *const roi_out);
-  /** a tiling variant of process_cl(). */
-  int (*process_tiling_cl)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                           const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
-                           const struct dt_iop_roi_t *const roi_out, const int bpp);
-
-  /** this functions are used for distort iop
-   * points is an array of float {x1,y1,x2,y2,...}
-   * size is 2*points_count */
-  /** points before the iop is applied => point after processed */
-  int (*distort_transform)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points,
-                           size_t points_count);
-  /** reverse points after the iop is applied => point before process */
-  int (*distort_backtransform)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                               float *points, size_t points_count);
-  /** apply the image distortion to a single channel float buffer. only needed by iops that distort the image */
-  void (*distort_mask)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
-                       float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
-
-  /** Key accelerator registration callbacks */
-  void (*connect_key_accels)(struct dt_iop_module_t *self);
-  void (*original_connect_key_accels)(struct dt_iop_module_t *self);
-  void (*disconnect_key_accels)(struct dt_iop_module_t *self);
-  GSList *(*mouse_actions)(struct dt_iop_module_t *self);
 
   // introspection related data
   gboolean have_introspection;
-  dt_introspection_t *(*get_introspection)(void);
-  dt_introspection_field_t *(*get_introspection_linear)(void);
-  void *(*get_p)(const void *param, const char *name);
-  dt_introspection_field_t *(*get_f)(const char *name);
-
 } dt_iop_module_t;
 
 /** loads and inits the modules in the plugins/ directory. */
@@ -576,6 +327,18 @@ gboolean dt_iop_so_is_hidden(dt_iop_module_so_t *module);
 gboolean dt_iop_is_hidden(dt_iop_module_t *module);
 /** checks whether iop is shown in specified group */
 gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group);
+/** enter a GUI critical section by acquiring gui_data->lock **/
+static inline void dt_iop_gui_enter_critical_section(dt_iop_module_t *const module)
+  ACQUIRE(&module->gui_lock)
+{
+  dt_pthread_mutex_lock(&module->gui_lock);
+}
+/** leave a GUI critical section by releasing gui_data->lock **/
+static inline void dt_iop_gui_leave_critical_section(dt_iop_module_t *const module)
+  RELEASE(&module->gui_lock)
+{
+  dt_pthread_mutex_unlock(&module->gui_lock);
+}
 /** cleans up gui of module and of blendops */
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module);
 /** updates the enable button state. (take into account module->enabled and module->hide_enable_button  */
@@ -604,7 +367,7 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module, const struct dt_develop
 /** make sure the raster mask is advertised if available */
 void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
-GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
+void dt_iop_gui_set_expander(dt_iop_module_t *module);
 /** get the widget of plugin ui in expander */
 GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module);
 /** get the eventbox of plugin ui in expander */
@@ -616,8 +379,12 @@ void dt_iop_request_focus(dt_iop_module_t *module);
 void dt_iop_default_init(dt_iop_module_t *module);
 /** loads default settings from database. */
 void dt_iop_load_default_params(dt_iop_module_t *module);
+/** creates the module's gui widget */
+void dt_iop_gui_init(dt_iop_module_t *module);
 /** reloads certain gui/param defaults when the image was switched. */
 void dt_iop_reload_defaults(dt_iop_module_t *module);
+
+extern const struct dt_action_def_t dt_action_def_iop;
 
 /*
  * must be called in dt_dev_change_image() to fix wrong histogram in levels
@@ -640,8 +407,15 @@ dt_iop_module_t *dt_iop_get_module(const char *op);
     if multi_priority == -1 do not checl for it */
 dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *operation, const int multi_priority);
 /** returns module with op + multi_name or NULL if not found on the list,
-    if multi_name == NULL do not checl for it */
+    if multi_name == NULL do not check for it */
 dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules, const char *operation, const char *multi_name);
+/** count instances of a module **/
+int dt_iop_count_instances(dt_iop_module_so_t *module);
+/** return preferred module instance for shortcuts **/
+dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module);
+
+/** returns true if module is the first instance of this operation in the pipe */
+gboolean dt_iop_is_first_instance(GList *modules, dt_iop_module_t *module);
 
 
 /** get module flags, works in dev and lt mode */
@@ -649,9 +423,7 @@ int get_module_flags(const char *op);
 
 /** returns the localized plugin name for a given op name. must not be freed. */
 gchar *dt_iop_get_localized_name(const gchar *op);
-
-/** Connects common accelerators to an iop module */
-void dt_iop_connect_common_accels(dt_iop_module_t *module);
+gchar *dt_iop_get_localized_aliases(const gchar *op);
 
 /** set multi_priority and update raster mask links */
 void dt_iop_update_multi_priority(dt_iop_module_t *module, int new_priority);
@@ -676,9 +448,6 @@ void dt_iop_connect_accels_all();
 /** get the module that accelerators are attached to for the current so */
 dt_iop_module_t *dt_iop_get_module_accel_curr(dt_iop_module_so_t *module);
 
-/** count instances of a module **/
-int dt_iop_count_instances(dt_iop_module_so_t *module);
-
 /** queue a refresh of the center (FULL), preview, or second-preview windows, rerunning the pixelpipe from */
 /** the given module */
 void dt_iop_refresh_center(dt_iop_module_t *module);
@@ -692,10 +461,45 @@ void dt_iop_queue_history_update(dt_iop_module_t *module, gboolean extend_prior)
 void dt_iop_cancel_history_update(dt_iop_module_t *module);
 
 /** (un)hide iop module header right side buttons */
-gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *event, gboolean show_buttons, gboolean always_hide);
+gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module, GdkEventCrossing *event, gboolean show_buttons, gboolean always_hide);
 
-#define IOP_GUI_ALLOC(module) (dt_iop_##module##_gui_data_t *)(self->gui_data = calloc(1, sizeof(dt_iop_##module##_gui_data_t)))
-#define IOP_GUI_FREE free(self->gui_data); self->gui_data = NULL
+/** add/remove mask indicator to iop module header */
+void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add);
+
+/** Set the trouble message for the module.  If non-empty, also flag the module as being in trouble; if empty
+ ** or NULL, clear the trouble flag.  If 'toast_message' is non-NULL/non-empty, pop up a toast with that
+ ** message when the module does not have a warning-label widget (use %s for the module's name).  **/
+void dt_iop_set_module_trouble_message(dt_iop_module_t *module,
+                                       const char *const trouble_msg,
+                                       const char *const trouble_tooltip,
+                                       const char *stderr_message);
+
+// format modules description going in tooltips
+char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
+                             const char *purpose, const char *input,
+                             const char *process, const char *output);
+
+static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t size)
+{
+  module->gui_data = (dt_iop_gui_data_t*)calloc(1, size);
+  dt_pthread_mutex_init(&module->gui_lock,NULL);
+  return module->gui_data;
+}
+#define IOP_GUI_ALLOC(module) \
+  (dt_iop_##module##_gui_data_t *)_iop_gui_alloc(self,sizeof(dt_iop_##module##_gui_data_t))
+
+#define IOP_GUI_FREE \
+  dt_pthread_mutex_destroy(&self->gui_lock);if(self->gui_data){free(self->gui_data);} self->gui_data = NULL
+
+/* return a warning message, prefixed by the special character ⚠ */
+char *dt_iop_warning_message(const char *message);
+
+/** check whether we have the required number of channels in the input data; if not, copy the input buffer to the
+ ** output buffer, set the module's trouble message, and return FALSE */
+gboolean dt_iop_have_required_input_format(const int required_ch, struct dt_iop_module_t *const module,
+                                           const int actual_pipe_ch,
+                                           const void *const __restrict__ ivoid, void *const __restrict__ ovoid,
+                                           const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

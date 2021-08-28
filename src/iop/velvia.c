@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -36,12 +37,6 @@
 
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
-
-// NaN-safe clip: NaN compares false and will result in 0.0
-#define CLIP(x) (((x) >= 0.0) ? ((x) <= 1.0 ? (x) : 1.0) : 0.0)
 
 DT_MODULE_INTROSPECTION(2, dt_iop_velvia_params_t)
 
@@ -84,6 +79,11 @@ const char *name()
   return _("velvia");
 }
 
+const char *aliases()
+{
+  return _("saturation");
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
@@ -99,20 +99,13 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
+const char *description(struct dt_iop_module_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mid-tones bias"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_velvia_gui_data_t *g = (dt_iop_velvia_gui_data_t*)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "strength",
-                              GTK_WIDGET(g->strength_scale));
-  dt_accel_connect_slider_iop(self, "mid-tones bias",
-                              GTK_WIDGET(g->bias_scale));
+  return dt_iop_set_description(self, _("resaturate giving more weight to blacks, whites and low-saturation pixels"),
+                                      _("creative"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("linear, RGB"),
+                                      _("linear, RGB, scene-referred"));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -134,12 +127,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const dt_iop_velvia_data_t *const data = (dt_iop_velvia_data_t *)piece->data;
 
-  const int ch = piece->colors;
+  const size_t ch = piece->colors;
   const float strength = data->strength / 100.0f;
 
   // Apply velvia saturation
   if(strength <= 0.0)
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
   else
   {
 #ifdef _OPENMP
@@ -149,8 +142,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
     {
-      const float *const in = (const float *const)ivoid + (size_t)ch * k;
-      float *const out = (float *const)ovoid + (size_t)ch * k;
+      const float *const in = (const float *const)ivoid + ch * k;
+      float *const out = (float *const)ovoid + ch * k;
 
       // calculate vibrance, and apply boost velvia saturation at least saturated pixels
       float pmax = MAX(in[0], MAX(in[1], in[2])); // max value in RGB set
@@ -174,74 +167,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
-
-#if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  dt_iop_velvia_data_t *data = (dt_iop_velvia_data_t *)piece->data;
-  float *in = (float *)ivoid;
-  float *out = (float *)ovoid;
-  const int ch = piece->colors;
-  const float strength = data->strength / 100.0f;
-
-  // Apply velvia saturation
-  if(strength <= 0.0)
-    memcpy(out, in, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
-  else
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, roi_out, strength) \
-    shared(in, out, data) \
-    schedule(static)
-#endif
-    for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
-    {
-      float *inp = in + ch * k;
-      float *outp = out + ch * k;
-      // calculate vibrance, and apply boost velvia saturation at least saturated pixels
-      float pmax = fmaxf(inp[0], fmaxf(inp[1], inp[2])); // max value in RGB set
-      float pmin = fminf(inp[0], fminf(inp[1], inp[2])); // min value in RGB set
-      float plum = (pmax + pmin) / 2.0f;                 // pixel luminocity
-      float psat = (plum <= 0.5f) ? (pmax - pmin) / (1e-5f + pmax + pmin)
-                                  : (pmax - pmin) / (1e-5f + MAX(0.0f, 2.0f - pmax - pmin));
-
-      float pweight
-          = CLAMPS(((1.0f - (1.5f * psat)) + ((1.0f + (fabsf(plum - 0.5f) * 2.0f)) * (1.0f - data->bias)))
-                   / (1.0f + (1.0f - data->bias)),
-                   0.0f, 1.0f);              // The weight of pixel
-      float saturation = strength * pweight; // So lets calculate the final affection of filter on pixel
-
-      // Apply velvia saturation values
-      const __m128 inp_m = _mm_load_ps(inp);
-      const __m128 boost = _mm_set1_ps(saturation);
-      const __m128 min_m = _mm_set1_ps(0.0f);
-      const __m128 max_m = _mm_set1_ps(1.0f);
-
-      const __m128 inp_shuffled
-          = _mm_mul_ps(_mm_add_ps(_mm_shuffle_ps(inp_m, inp_m, _MM_SHUFFLE(3, 0, 2, 1)),
-                                  _mm_shuffle_ps(inp_m, inp_m, _MM_SHUFFLE(3, 1, 0, 2))),
-                       _mm_set1_ps(0.5f));
-
-      _mm_stream_ps(
-          outp, _mm_min_ps(
-                    max_m,
-                    _mm_max_ps(min_m, _mm_add_ps(inp_m, _mm_mul_ps(boost, _mm_sub_ps(inp_m, inp_shuffled))))));
-
-      // equivalent to:
-      /*
-       outp[0]=CLAMPS(inp[0] + saturation*(inp[0]-0.5f*(inp[1]+inp[2])), 0.0f, 1.0f);
-       outp[1]=CLAMPS(inp[1] + saturation*(inp[1]-0.5f*(inp[2]+inp[0])), 0.0f, 1.0f);
-       outp[2]=CLAMPS(inp[2] + saturation*(inp[2]-0.5f*(inp[0]+inp[1])), 0.0f, 1.0f);
-      */
-    }
-  }
-  _mm_sfence();
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
-}
-#endif
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
@@ -318,7 +243,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_velvia_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -329,9 +253,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_velvia_gui_data_t *g = (dt_iop_velvia_gui_data_t *)self->gui_data;
-  dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)module->params;
+  dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)self->params;
   dt_bauhaus_slider_set(g->strength_scale, p->strength);
   dt_bauhaus_slider_set(g->bias_scale, p->bias);
 }

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 #include "common/darktable.h"
 #include "common/dtpthread.h"
+#include "common/action.h"
 #include "control/settings.h"
 
 #include <gtk/gtk.h>
@@ -36,9 +37,6 @@
 #ifdef _WIN32
 #include <shobjidl.h>
 #endif
-
-// A mask to strip out the Ctrl, Shift, and Alt mod keys for shortcuts
-#define KEY_STATE_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)
 
 struct dt_lib_backgroundjob_element_t;
 
@@ -58,10 +56,12 @@ int dt_control_key_pressed_override(guint key, guint state);
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_control_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_toast_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
+void dt_toast_markup_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_control_log_busy_enter();
 void dt_control_toast_busy_enter();
 void dt_control_log_busy_leave();
 void dt_control_toast_busy_leave();
+void dt_control_draw_busy_msg(cairo_t *cr, int width, int height);
 // disable the possibility to change the cursor shape with dt_control_change_cursor
 void dt_control_forbid_change_cursor();
 // enable the possibility to change the cursor shape with dt_control_change_cursor
@@ -120,23 +120,11 @@ void dt_control_key_accelerators_off(struct dt_control_t *s);
 
 int dt_control_is_key_accelerators_on(struct dt_control_t *s);
 
-// All the accelerator keys for the key_pressed style shortcuts
-typedef struct dt_control_accels_t
-{
-  GtkAccelKey filmstrip_forward, filmstrip_back, lighttable_up, lighttable_down, lighttable_right, lighttable_left,
-      lighttable_pageup, lighttable_pagedown, lighttable_start, lighttable_end, lighttable_sel_up,
-      lighttable_sel_down, lighttable_sel_right, lighttable_sel_left, lighttable_sel_pageup,
-      lighttable_sel_pagedown, lighttable_sel_start, lighttable_sel_end, lighttable_center, lighttable_preview,
-      lighttable_preview_display_focus, lighttable_timeline, lighttable_preview_zoom_100,
-      lighttable_preview_zoom_fit, global_focus_peaking, global_sideborders, global_accels_window,
-      darkroom_preview, slideshow_start, darkroom_skip_mouse_events;
-} dt_control_accels_t;
-
 #define DT_CTL_LOG_SIZE 10
 #define DT_CTL_LOG_MSG_SIZE 200
 #define DT_CTL_LOG_TIMEOUT 5000
 #define DT_CTL_TOAST_SIZE 10
-#define DT_CTL_TOAST_MSG_SIZE 200
+#define DT_CTL_TOAST_MSG_SIZE 300
 #define DT_CTL_TOAST_TIMEOUT 1500
 /**
  * this manages everything time-consuming.
@@ -145,18 +133,16 @@ typedef struct dt_control_accels_t
  */
 typedef struct dt_control_t
 {
-  // Keyboard accelerator groups
-  GtkAccelGroup *accelerators;
+  gboolean accel_initialising;
 
-  // Accelerator group path lists
-  GSList *accelerator_list;
+  dt_action_t *actions, actions_global, actions_views, actions_thumb, actions_libs, actions_iops, actions_blend, actions_lua, actions_fallbacks, *actions_modifiers;
 
-  // Cached accelerator keys for key_pressed shortcuts
-  dt_control_accels_t accels;
-
-  // Accel remapping data
-  gchar *accel_remap_str;
-  GtkTreePath *accel_remap_path;
+  GHashTable *widgets;
+  GSequence *shortcuts;
+  GtkWidget *mapping_widget;
+  dt_action_element_t element;
+  GPtrArray *widget_definitions;
+  GSList *input_drivers;
 
   char vimkey[256];
   int vimkey_cnt;

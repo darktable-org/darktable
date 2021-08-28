@@ -1,6 +1,6 @@
     /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +25,14 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
 GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *param);
 
 GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *param);
+
+GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const char *section, const gchar *label, const gchar *ctrl_label,
+                                   GCallback callback, gboolean local, guint accel_key, GdkModifierType mods,
+                                   DTGTKCairoPaintIconFunc paint, GtkWidget *box);
+
+GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
+                             GCallback callback, gboolean local, guint accel_key, GdkModifierType mods,
+                             DTGTKCairoPaintIconFunc paint, gint paintflags, GtkWidget *box);
 
 void dt_iop_slider_float_callback(GtkWidget *slider, float *field);
 void dt_iop_slider_int_callback(GtkWidget *slider, int *field);

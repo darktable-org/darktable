@@ -19,7 +19,7 @@ else()
     set(pofile "${language}.po")
     add_custom_command(
       OUTPUT ${pofile}
-      COMMAND ${po4a-updatepo_BIN} -f pod ${files} -p po/${pofile}
+      COMMAND sh -c "${po4a-updatepo_BIN} -f pod ${files} -p po/${pofile}"
       DEPENDS ${deps}
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../
     )

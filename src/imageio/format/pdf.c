@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2015-2020 darktable developers.
+ *    Copyright (C) 2015-2021 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -146,10 +146,12 @@ static int orientation_member(lua_State *L)
     return 0;
   }
 }
+#endif // USE_LUA
 
 
 void init(dt_imageio_module_format_t *self)
 {
+#ifdef USE_LUA
   lua_State* L = darktable.lua_state.state ;
 
   luaA_enum(L, _pdf_pages_t);
@@ -180,13 +182,8 @@ void init(dt_imageio_module_format_t *self)
 
   lua_pushcfunction(L, orientation_member);
   dt_lua_type_register_type(L, self->parameter_lua_type, "orientation");
-}
-#else // USE_LUA
-void init(dt_imageio_module_format_t *self)
-{
-  // we need an empty init, even when compiled without Lua
-}
 #endif // USE_LUA
+}
 
 void cleanup(dt_imageio_module_format_t *self)
 {
@@ -291,7 +288,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
       cmsSaveProfileToMem(profile->profile, 0, &len);
       if(len > 0)
       {
-        unsigned char *buf = malloc(len * sizeof(unsigned char));
+        unsigned char *buf = malloc(sizeof(unsigned char) * len);
         cmsSaveProfileToMem(profile->profile, buf, &len);
         icc_id = dt_pdf_add_icc_from_data(d->pdf, buf, len);
         free(buf);
@@ -312,7 +309,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   {
     if(d->params.bpp == 8)
     {
-      image_data = dt_alloc_align(64, data->width * data->height * 3);
+      image_data = dt_alloc_align(64, (size_t)3 * data->width * data->height);
       const uint8_t *in_ptr = (const uint8_t *)in;
       uint8_t *out_ptr = (uint8_t *)image_data;
       for(int y = 0; y < data->height; y++)
@@ -323,7 +320,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     }
     else
     {
-      image_data = dt_alloc_align(64, data->width * data->height * 3 * sizeof(uint16_t));
+      image_data = dt_alloc_align(64, sizeof(uint16_t) * 3 * data->width * data->height);
       const uint16_t *in_ptr = (const uint16_t *)in;
       uint16_t *out_ptr = (uint16_t *)image_data;
       for(int y = 0; y < data->height; y++)
@@ -348,22 +345,20 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   if(num == total)
   {
     int n_images = g_list_length(d->images);
-    dt_pdf_page_t **pages = malloc(n_images * sizeof(dt_pdf_page_t *));
+    dt_pdf_page_t **pages = malloc(sizeof(dt_pdf_page_t *) * n_images);
 
     gboolean outline_mode = d->params.mode != MODE_NORMAL;
     gboolean show_bb = d->params.mode == MODE_DEBUG;
 
     // add a page for every image
-    GList *iter = d->images;
     int i = 0;
-    while(iter)
+    for(const GList *iter = d->images; iter; iter = g_list_next(iter))
     {
       dt_pdf_image_t *page = (dt_pdf_image_t *)iter->data;
       page->outline_mode = outline_mode;
       page->show_bb = show_bb;
       page->rotate_to_fit = d->params.rotate;
       pages[i] = dt_pdf_add_page(d->pdf, &page, 1);
-      iter = g_list_next(iter);
       i++;
     }
 
@@ -454,17 +449,15 @@ static void _set_paper_size(dt_imageio_module_format_t *self, const char *text)
 
   g_signal_handlers_block_by_func(d->size, size_toggle_callback, self);
 
-  const GList *entries = dt_bauhaus_combobox_get_entries(d->size);
   int pos = 0;
-
-  while(entries)
+  const GList *entries;
+  for(entries = dt_bauhaus_combobox_get_entries(d->size); entries; entries = g_list_next(entries))
   {
     const dt_bauhaus_combobox_entry_t *entry = (dt_bauhaus_combobox_entry_t *)entries->data;
     if((pos < dt_pdf_paper_sizes_n && !strcasecmp(text, dt_pdf_paper_sizes[pos].name))
         || !strcasecmp(text, entry->label))
       break;
     pos++;
-    entries = g_list_next(entries);
   }
 
   if(entries)
@@ -576,27 +569,22 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(8));
 
-  GtkWidget *widget;
   int line = 0;
 
   // title
 
-  widget = gtk_label_new(_("title"));
-  gtk_widget_set_halign(widget, GTK_ALIGN_START);
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
-  gtk_grid_attach(grid, widget, 0, ++line, 1, 1);
+  gtk_grid_attach(grid, dt_ui_label_new(_("title")), 0, ++line, 1, 1);
 
   d->title = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_placeholder_text(d->title, "untitled");
+  gtk_entry_set_width_chars(d->title, 5);
   gtk_widget_set_hexpand(GTK_WIDGET(d->title), TRUE);
   gtk_grid_attach(grid, GTK_WIDGET(d->title), 1, line, 1, 1);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->title));
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->title), _("enter the title of the pdf"));
-  gchar *str = dt_conf_get_string("plugins/imageio/format/pdf/title");
+  const char *str = dt_conf_get_string_const("plugins/imageio/format/pdf/title");
   if(str)
   {
     gtk_entry_set_text(GTK_ENTRY(d->title), str);
-    g_free(str);
   }
   g_signal_connect(G_OBJECT(d->title), "changed", G_CALLBACK(title_changed_callback), self);
 
@@ -604,7 +592,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   d->size = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_combobox_set_editable(d->size, 1);
-  dt_bauhaus_widget_set_label(d->size, NULL, _("paper size"));
+  dt_bauhaus_widget_set_label(d->size, NULL, N_("paper size"));
   for(int i = 0; dt_pdf_paper_sizes[i].name; i++)
     dt_bauhaus_combobox_add(d->size, _(dt_pdf_paper_sizes[i].name));
   gtk_grid_attach(grid, GTK_WIDGET(d->size), 0, ++line, 2, 1);
@@ -612,14 +600,14 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_widget_set_tooltip_text(d->size, _("paper size of the pdf\neither one from the list or "
                                          "\"<width> [unit] x <height> <unit>\n"
                                          "example: 210 mm x 2.97 cm"));
-  str = dt_conf_get_string("plugins/imageio/format/pdf/size");
-  _set_paper_size(self, str);
-  g_free(str);
+  gchar *size_str = dt_conf_get_string("plugins/imageio/format/pdf/size");
+  _set_paper_size(self, size_str);
+  g_free(size_str);
 
   // orientation
 
   d->orientation = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->orientation, NULL, _("page orientation"));
+  dt_bauhaus_widget_set_label(d->orientation, NULL, N_("page orientation"));
   dt_bauhaus_combobox_add(d->orientation, _("portrait"));
   dt_bauhaus_combobox_add(d->orientation, _("landscape"));
   gtk_grid_attach(grid, GTK_WIDGET(d->orientation), 0, ++line, 2, 1);
@@ -629,36 +617,28 @@ void gui_init(dt_imageio_module_format_t *self)
 
   // border
 
-  widget = gtk_label_new(_("border"));
-  gtk_widget_set_halign(widget, GTK_ALIGN_START);
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
-  gtk_grid_attach(grid, widget, 0, ++line, 1, 1);
+  gtk_grid_attach(grid, dt_ui_label_new(_("border")), 0, ++line, 1, 1);
 
   d->border = GTK_ENTRY(gtk_entry_new());
+  gtk_entry_set_width_chars(d->border, 5);
   gtk_entry_set_max_length(d->border, sizeof(((dt_imageio_pdf_params_t *)NULL)->border) - 1);
   gtk_entry_set_placeholder_text(d->border, "0 mm");
   gtk_grid_attach(grid, GTK_WIDGET(d->border), 1, line, 1, 1);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->border));
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->border), _("empty space around the pdf\n"
                                                        "format: size + unit\nexamples: 10 mm, 1 inch"));
-  str = dt_conf_get_string("plugins/imageio/format/pdf/border");
+  str = dt_conf_get_string_const("plugins/imageio/format/pdf/border");
   if(str)
   {
     gtk_entry_set_text(GTK_ENTRY(d->border), str);
-    g_free(str);
   }
   g_signal_connect(G_OBJECT(d->border), "changed", G_CALLBACK(border_changed_callback), self);
 
   // dpi
 
-  widget = gtk_label_new(_("dpi"));
-  gtk_widget_set_halign(widget, GTK_ALIGN_START);
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
-  gtk_grid_attach(grid, widget, 0, ++line, 1, 1);
+  gtk_grid_attach(grid, dt_ui_label_new(_("dpi")), 0, ++line, 1, 1);
 
   d->dpi = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(1, 5000, 1));
   gtk_grid_attach(grid, GTK_WIDGET(d->dpi), 1, line, 1, 1);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->dpi));
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->dpi), _("dpi of the images inside the pdf"));
   gtk_spin_button_set_value(d->dpi, dt_conf_get_float("plugins/imageio/format/pdf/dpi"));
   g_signal_connect(G_OBJECT(d->dpi), "value-changed", G_CALLBACK(dpi_changed_callback), self);
@@ -666,7 +646,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // rotate images yes|no
 
   d->rotate = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->rotate, NULL, _("rotate images"));
+  dt_bauhaus_widget_set_label(d->rotate, NULL, N_("rotate images"));
   dt_bauhaus_combobox_add(d->rotate, _("no"));
   dt_bauhaus_combobox_add(d->rotate, _("yes"));
   gtk_grid_attach(grid, GTK_WIDGET(d->rotate), 0, ++line, 2, 1);
@@ -678,7 +658,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // pages all|single images|contact sheet
 
   d->pages = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->pages, NULL, _("TODO: pages"));
+  dt_bauhaus_widget_set_label(d->pages, NULL, N_("TODO: pages"));
   dt_bauhaus_combobox_add(d->pages, _("all"));
   dt_bauhaus_combobox_add(d->pages, _("single images"));
   dt_bauhaus_combobox_add(d->pages, _("contact sheet"));
@@ -691,7 +671,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // embedded icc profile yes|no
 
   d->icc = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->icc, NULL, _("embed icc profiles"));
+  dt_bauhaus_widget_set_label(d->icc, NULL, N_("embed icc profiles"));
   dt_bauhaus_combobox_add(d->icc, _("no"));
   dt_bauhaus_combobox_add(d->icc, _("yes"));
   gtk_grid_attach(grid, GTK_WIDGET(d->icc), 0, ++line, 2, 1);
@@ -702,7 +682,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // bpp
 
   d->bpp = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->bpp, NULL, _("bit depth"));
+  dt_bauhaus_widget_set_label(d->bpp, NULL, N_("bit depth"));
   int sel = 0;
   int bpp = dt_conf_get_int("plugins/imageio/format/pdf/bpp");
   for(int i = 0; _pdf_bpp[i].name; i++)
@@ -718,7 +698,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // compression
 
   d->compression = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->compression, NULL, _("compression"));
+  dt_bauhaus_widget_set_label(d->compression, NULL, N_("compression"));
   dt_bauhaus_combobox_add(d->compression, _("uncompressed"));
   dt_bauhaus_combobox_add(d->compression, _("deflate"));
   gtk_grid_attach(grid, GTK_WIDGET(d->compression), 0, ++line, 2, 1);
@@ -731,7 +711,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // image mode normal|draft|debug
 
   d->mode = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->mode, NULL, _("image mode"));
+  dt_bauhaus_widget_set_label(d->mode, NULL, N_("image mode"));
   dt_bauhaus_combobox_add(d->mode, _("normal"));
   dt_bauhaus_combobox_add(d->mode, _("draft"));
   dt_bauhaus_combobox_add(d->mode, _("debug"));
@@ -745,9 +725,6 @@ void gui_init(dt_imageio_module_format_t *self)
 
 void gui_cleanup(dt_imageio_module_format_t *self)
 {
-  pdf_t *d = (pdf_t *)self->gui_data;
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->title));
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->dpi));
   free(self->gui_data);
 }
 
@@ -778,17 +755,14 @@ void *get_params(dt_imageio_module_format_t *self)
 
   if(d)
   {
-    gchar *text = dt_conf_get_string("plugins/imageio/format/pdf/title");
+    const char *text = dt_conf_get_string_const("plugins/imageio/format/pdf/title");
     g_strlcpy(d->params.title, text, sizeof(d->params.title));
-    g_free(text);
 
-    text = dt_conf_get_string("plugins/imageio/format/pdf/border");
+    text = dt_conf_get_string_const("plugins/imageio/format/pdf/border");
     g_strlcpy(d->params.border, text, sizeof(d->params.border));
-    g_free(text);
 
-    text = dt_conf_get_string("plugins/imageio/format/pdf/size");
+    text = dt_conf_get_string_const("plugins/imageio/format/pdf/size");
     g_strlcpy(d->params.size, text, sizeof(d->params.size));
-    g_free(text);
 
     d->params.bpp = dt_conf_get_int("plugins/imageio/format/pdf/bpp");
     d->params.compression = dt_conf_get_int("plugins/imageio/format/pdf/compression");

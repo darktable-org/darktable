@@ -65,6 +65,7 @@ static gchar* _dt_full_locale_name(const char *locale)
         }
         j++;
       }
+      g_strfreev(locales);
     }
   }
   return NULL;
@@ -115,7 +116,7 @@ static void get_language_names(GList *languages)
   JsonReader *reader = NULL;
   JsonParser *parser = NULL;
   GError *error = NULL;
-  char *filename;
+  char *filename = NULL;
 #ifdef __APPLE__
   char *res_path = dt_osx_get_bundle_res_path();
 #endif
@@ -198,6 +199,8 @@ static void get_language_names(GList *languages)
     if(!json_reader_is_object(reader))
     {
       fprintf(stderr, "[l10n] error: unexpected layout of `%s' (element %d)\n", filename, i);
+      free(saved_locale);
+      saved_locale = NULL;
       goto end;
     }
 
@@ -270,6 +273,7 @@ static void get_language_names(GList *languages)
   {
     setlocale(LC_ALL, saved_locale);
     free(saved_locale);
+    saved_locale = NULL;
   }
 
   json_reader_end_member(reader); // 639-2
@@ -293,7 +297,7 @@ dt_l10n_t *dt_l10n_init(gboolean init_list)
   result->selected = -1;
   result->sys_default = -1;
 
-  char *ui_lang = dt_conf_get_string("ui_last/gui_language");
+  gchar *ui_lang = dt_conf_get_string("ui_last/gui_language");
   const char *old_env = g_getenv("LANGUAGE");
 
 #if defined(_WIN32)

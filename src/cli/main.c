@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -391,6 +391,10 @@ int main(int argc, char *arg[])
         k++;
         break;
       }
+      else
+      {
+        fprintf(stderr, _("warning: unknown option '%s'\n"), arg[k]);
+      }
     }
     else
     {
@@ -407,12 +411,12 @@ int main(int argc, char *arg[])
   }
 
   int m_argc = 0;
-  char **m_arg = malloc((5 + argc - k + 1) * sizeof(char *));
+  char **m_arg = malloc(sizeof(char *) * (5 + argc - k + 1));
   m_arg[m_argc++] = "darktable-cli";
   m_arg[m_argc++] = "--library";
   m_arg[m_argc++] = ":memory:";
   m_arg[m_argc++] = "--conf";
-  m_arg[m_argc++] = "write_sidecar_files=FALSE";
+  m_arg[m_argc++] = "write_sidecar_files=never";
   for(; k < argc; k++) m_arg[m_argc++] = arg[k];
   m_arg[m_argc] = NULL;
 
@@ -535,12 +539,11 @@ int main(int argc, char *arg[])
     else
     {
       dt_film_t film;
-      int id = 0;
       int filmid = 0;
 
       gchar *directory = g_path_get_dirname(input);
       filmid = dt_film_new(&film, directory);
-      id = dt_image_import(filmid, input, TRUE);
+      const int32_t id = dt_image_import(filmid, input, TRUE, TRUE);
       g_free(directory);
       if(!id)
       {
@@ -611,7 +614,7 @@ int main(int argc, char *arg[])
     if(ext && strlen(ext) > DT_MAX_OUTPUT_EXT_LENGTH)
     {
       // too long ext, no point in wasting time
-      fprintf(stderr, _("too long output file extention: %s\n"), ext);
+      fprintf(stderr, _("too long output file extension: %s\n"), ext);
       usage(arg[0]);
       g_free(output_filename);
       exit(1);
@@ -619,7 +622,7 @@ int main(int argc, char *arg[])
     else if(!ext || strlen(ext) <= 1)
     {
       // no ext or empty ext, no point in wasting time
-      fprintf(stderr, _("no output file extention given\n"));
+      fprintf(stderr, _("no output file extension given\n"));
       usage(arg[0]);
       g_free(output_filename);
       exit(1);
@@ -679,6 +682,7 @@ int main(int argc, char *arg[])
   // any longer ...
   g_strlcpy((char *)sdata, output_filename, DT_MAX_PATH_FOR_PARAMS);
   // all is good now, the last line didn't happen.
+  g_free(output_filename);
 
   format = dt_imageio_get_format_by_name(output_ext);
   if(format == NULL)
@@ -686,7 +690,6 @@ int main(int argc, char *arg[])
     fprintf(stderr, _("unknown extension '.%s'"), output_ext);
     fprintf(stderr, "\n");
     free(m_arg);
-    g_free(output_filename);
     g_free(output_ext);
     exit(1);
   }
@@ -696,7 +699,6 @@ int main(int argc, char *arg[])
   {
     fprintf(stderr, "%s\n", _("failed to get parameters from format module, aborting export ..."));
     free(m_arg);
-    g_free(output_filename);
     g_free(output_ext);
     exit(1);
   }
@@ -741,7 +743,7 @@ int main(int argc, char *arg[])
 
   // TODO: add a callback to set the bpp without going through the config
 
-  int num = 1;
+  int num = 1, res = 0;
   for(GList *iter = id_list; iter; iter = g_list_next(iter), num++)
   {
     const int id = GPOINTER_TO_INT(iter->data);
@@ -749,8 +751,9 @@ int main(int argc, char *arg[])
     dt_export_metadata_t metadata;
     metadata.flags = dt_lib_export_metadata_default_flags();
     metadata.list = NULL;
-    storage->store(storage, sdata, id, format, fdata, num, total, high_quality, upscale, export_masks,
-                   icc_type, icc_filename, icc_intent, &metadata);
+    if(storage->store(storage, sdata, id, format, fdata, num, total, high_quality, upscale, export_masks,
+                      icc_type, icc_filename, icc_intent, &metadata) != 0)
+      res = 1;
   }
 
   // cleanup time
@@ -765,6 +768,7 @@ int main(int argc, char *arg[])
   dt_cleanup();
 
   free(m_arg);
+  exit(res);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

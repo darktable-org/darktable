@@ -251,7 +251,7 @@ vng_interpolate(read_only image2d_t in, write_only image2d_t out, const int widt
   int color = fcol(y + rin_y, x + rin_x, filters, xtrans);
   int num = 0;
 
-  // average the neightbors
+  // average the neighbors
   for(g = 0; g < 8; g++, ip += 3)
   {
     if(gval[g] <= thold)

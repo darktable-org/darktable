@@ -23,13 +23,8 @@
 #include <xmmintrin.h>
 #endif
 #include "common/gaussian.h"
+#include "common/math.h"
 #include "common/opencl.h"
-
-#define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
-
-#if defined(__SSE__)
-#define MMCLAMPPS(a, mn, mx) (_mm_min_ps((mx), _mm_max_ps((a), (mn))))
-#endif
 
 #define BLOCKSIZE (1 << 6)
 
@@ -37,8 +32,8 @@ static void compute_gauss_params(const float sigma, dt_gaussian_order_t order, f
                                  float *a2, float *a3, float *b1, float *b2, float *coefp, float *coefn)
 {
   const float alpha = 1.695f / sigma;
-  const float ema = exp(-alpha);
-  const float ema2 = exp(-2.0f * alpha);
+  const float ema = expf(-alpha);
+  const float ema2 = expf(-2.0f * alpha);
   *b1 = -2.0f * ema;
   *b2 = ema2;
   *a0 = 0.0f;
@@ -90,14 +85,17 @@ size_t dt_gaussian_memory_use(const int width,    // width of input image
                               const int height,   // height of input image
                               const int channels) // channels per pixel
 {
-  size_t mem_use;
-#ifdef HAVE_OPENCL
-  mem_use = (size_t)(width + BLOCKSIZE) * (height + BLOCKSIZE) * channels * sizeof(float) * 2;
-#else
-  mem_use = (size_t)width * height * channels * sizeof(float);
-#endif
-  return mem_use;
+  return sizeof(float) * channels * width * height;
 }
+
+#ifdef HAVE_OPENCL
+size_t dt_gaussian_memory_use_cl(const int width,    // width of input image
+                                 const int height,   // height of input image
+                                 const int channels) // channels per pixel
+{
+  return sizeof(float) * channels * (width + BLOCKSIZE) * (height + BLOCKSIZE) * 2;
+}
+#endif /* HAVE_OPENCL */
 
 size_t dt_gaussian_singlebuffer_size(const int width,    // width of input image
                                      const int height,   // height of input image
@@ -105,9 +103,9 @@ size_t dt_gaussian_singlebuffer_size(const int width,    // width of input image
 {
   size_t mem_use;
 #ifdef HAVE_OPENCL
-  mem_use = (size_t)(width + BLOCKSIZE) * (height + BLOCKSIZE) * channels * sizeof(float);
+  mem_use = sizeof(float) * channels * (width + BLOCKSIZE) * (height + BLOCKSIZE);
 #else
-  mem_use = (size_t)width * height * channels * sizeof(float);
+  mem_use = sizeof(float) * channels * width * height;
 #endif
   return mem_use;
 }
@@ -141,7 +139,7 @@ dt_gaussian_t *dt_gaussian_init(const int width,    // width of input image
     g->min[k] = min[k];
   }
 
-  g->buf = dt_alloc_align(64, (size_t)width * height * channels * sizeof(float));
+  g->buf = dt_alloc_align_float((size_t)channels * width * height);
   if(!g->buf) goto error;
 
   return g;
@@ -180,15 +178,9 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 #endif
   for(int i = 0; i < width; i++)
   {
-    float xp[4] = {0.0f};
-    float yb[4] = {0.0f};
-    float yp[4] = {0.0f};
-    float xc[4] = {0.0f};
-    float yc[4] = {0.0f};
-    float xn[4] = {0.0f};
-    float xa[4] = {0.0f};
-    float yn[4] = {0.0f};
-    float ya[4] = {0.0f};
+    dt_aligned_pixel_t xp = {0.0f};
+    dt_aligned_pixel_t yb = {0.0f};
+    dt_aligned_pixel_t yp = {0.0f};
 
     // forward filter
     for(int k = 0; k < ch; k++)
@@ -196,9 +188,14 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
       xp[k] = CLAMPF(in[(size_t)i * ch + k], Labmin[k], Labmax[k]);
       yb[k] = xp[k] * coefp;
       yp[k] = yb[k];
-      xc[k] = yc[k] = xn[k] = xa[k] = yn[k] = ya[k] = 0.0f;
     }
 
+    dt_aligned_pixel_t xc = {0.0f};
+    dt_aligned_pixel_t yc = {0.0f};
+    dt_aligned_pixel_t xn = {0.0f};
+    dt_aligned_pixel_t xa = {0.0f};
+    dt_aligned_pixel_t yn = {0.0f};
+    dt_aligned_pixel_t ya = {0.0f};
     for(int j = 0; j < height; j++)
     {
       size_t offset = ((size_t)j * width + i) * ch;
@@ -254,15 +251,9 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 #endif
   for(int j = 0; j < height; j++)
   {
-    float xp[4] = {0.0f};
-    float yb[4] = {0.0f};
-    float yp[4] = {0.0f};
-    float xc[4] = {0.0f};
-    float yc[4] = {0.0f};
-    float xn[4] = {0.0f};
-    float xa[4] = {0.0f};
-    float yn[4] = {0.0f};
-    float ya[4] = {0.0f};
+    dt_aligned_pixel_t xp = {0.0f};
+    dt_aligned_pixel_t yb = {0.0f};
+    dt_aligned_pixel_t yp = {0.0f};
 
     // forward filter
     for(int k = 0; k < ch; k++)
@@ -270,8 +261,14 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
       xp[k] = CLAMPF(temp[(size_t)j * width * ch + k], Labmin[k], Labmax[k]);
       yb[k] = xp[k] * coefp;
       yp[k] = yb[k];
-      xc[k] = yc[k] = xn[k] = xa[k] = yn[k] = ya[k] = 0.0f;
     }
+
+    dt_aligned_pixel_t xc = {0.0f};
+    dt_aligned_pixel_t yc = {0.0f};
+    dt_aligned_pixel_t xn = {0.0f};
+    dt_aligned_pixel_t xa = {0.0f};
+    dt_aligned_pixel_t yn = {0.0f};
+    dt_aligned_pixel_t ya = {0.0f};
 
     for(int i = 0; i < width; i++)
     {
@@ -593,9 +590,9 @@ dt_gaussian_cl_t *dt_gaussian_init_cl(const int devid,
   g->bheight = bheight;
 
   // get intermediate vector buffers with read-write access
-  g->dev_temp1 = dt_opencl_alloc_device_buffer(devid, (size_t)bwidth * bheight * channels * sizeof(float));
+  g->dev_temp1 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * channels * bwidth * bheight);
   if(!g->dev_temp1) goto error;
-  g->dev_temp2 = dt_opencl_alloc_device_buffer(devid, (size_t)bwidth * bheight * channels * sizeof(float));
+  g->dev_temp2 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * channels * bwidth * bheight);
   if(!g->dev_temp2) goto error;
 
   return g;
@@ -619,7 +616,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   const int width = g->width;
   const int height = g->height;
   const int channels = g->channels;
-  const int bpp = channels * sizeof(float);
+  const size_t bpp = sizeof(float) * channels;
   cl_mem dev_temp1 = g->dev_temp1;
   cl_mem dev_temp2 = g->dev_temp2;
 
@@ -627,8 +624,8 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   const int bwidth = g->bwidth;
   const int bheight = g->bheight;
 
-  float Labmax[4] = { 0.0f };
-  float Labmin[4] = { 0.0f };
+  dt_aligned_pixel_t Labmax = { 0.0f };
+  dt_aligned_pixel_t Labmin = { 0.0f };
 
   for(int k = 0; k < MIN(channels, 4); k++)
   {
@@ -681,8 +678,8 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
   dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
   dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 12, channels * sizeof(float), (void *)&Labmax);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 13, channels * sizeof(float), (void *)&Labmin);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 12, sizeof(float) * channels, (void *)&Labmax);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 13, sizeof(float) * channels, (void *)&Labmin);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_gaussian_column, sizes);
   if(err != CL_SUCCESS) return err;
 
@@ -717,8 +714,8 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
   dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
   dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 12, channels * sizeof(float), (void *)&Labmax);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 13, channels * sizeof(float), (void *)&Labmin);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 12, sizeof(float) * channels, (void *)&Labmax);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 13, sizeof(float) * channels, (void *)&Labmin);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_gaussian_column, sizes);
   if(err != CL_SUCCESS) return err;
 

@@ -52,7 +52,6 @@ float dt_osx_get_ppd()
   @autoreleasepool
   {
     NSScreen *nsscreen = [NSScreen mainScreen];
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if([nsscreen respondsToSelector: NSSelectorFromString(@"backingScaleFactor")])
     {
       return [[nsscreen valueForKey: @"backingScaleFactor"] floatValue];
@@ -61,9 +60,6 @@ float dt_osx_get_ppd()
     {
       return [[nsscreen valueForKey: @"userSpaceScaleFactor"] floatValue];
     }
-#else
-    return [[nsscreen valueForKey: @"userSpaceScaleFactor"] floatValue];
-#endif
   }
 }
 
@@ -147,7 +143,16 @@ static char* _get_user_locale()
   @autoreleasepool
   {
     NSLocale* locale_ns = [NSLocale currentLocale];
-    NSString* locale_c = [NSString stringWithFormat: @"%@_%@", [locale_ns languageCode], [locale_ns countryCode]];
+    NSString* locale_c;
+    if([locale_ns respondsToSelector: @selector(languageCode)] && [locale_ns respondsToSelector: @selector(countryCode)])
+    {
+      locale_c = [NSString stringWithFormat: @"%@_%@", [locale_ns languageCode], [locale_ns countryCode]];
+    }
+    else
+    {
+      // not ideal, but better than nothing
+      locale_c = [locale_ns localeIdentifier];
+    }
     return strdup([locale_c UTF8String]);
   }
 }
@@ -224,6 +229,11 @@ void dt_osx_prepare_environment()
         gchar* cam_path = g_build_filename(lib_path, "libgphoto2", NULL);
         g_setenv("CAMLIBS", cam_path, TRUE);
         g_free(cam_path);
+      }
+      {
+        gchar* gio_path = g_build_filename(lib_path, "gio", "modules", NULL);
+        g_setenv("GIO_MODULE_DIR", gio_path, TRUE);
+        g_free(gio_path);
       }
       g_free(lib_path);
     }

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2020 darktable developers.
+    Copyright (C) 2013-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,14 +27,25 @@
   Add a new event to the lua API
 * evt_name : the id to use for the event
 EXPECTED STACK
-* -2 : closure to be called on darktable.register_event
+* -3 : closure to be called on darktable.register_event
   in charge of saving the info that will be needed when the event triggers
   including the actual callbacks to use
   * can raise lua_error
-  * 1  : a table to save info for the event (including the callback to user
-  * 2  : event name
-  * 3  : callback to use
-  * 4+ : extra parameters given in register_event
+  * 1  : a table to save info for the event (including the callback to user)
+  * 2  : a table to save the indexing information
+  * 3  : index name
+  * 4  : event name
+  * 5  : callback to use
+  * 6+ : extra parameters given in register_event
+  * should not return anything
+* -2 : closure to be called on darktable.destroy_event
+  in charge of removing the saved info so the callback wont be used
+  the next time the event is triggered
+  * can raise lua error
+  * 1  : a table containing info for the event (including the callback to user)
+  * 2  : a table to save the indexing information
+  * 3  : index name
+  * 4  : event name
   * should not return anything
 * -1 : closure to be called when event is triggered,
   in charge of using the data provided by the register function to call the callbacks
@@ -72,10 +83,13 @@ int dt_lua_event_trigger_wrapper(lua_State *L) ;
 
   the register function does not expect any extra parameter from the lua side
 
+  the destroy function does not expect any extra parameter from the lua side
+
   the trigger will pass the arguments as is to the lua callback
 
   */
 int dt_lua_event_multiinstance_register(lua_State *L);
+int dt_lua_event_multiinstance_destroy(lua_State *L);
 int dt_lua_event_multiinstance_trigger(lua_State *L);
 
 
@@ -86,9 +100,12 @@ int dt_lua_event_multiinstance_trigger(lua_State *L);
 
   the register function wants one extra parameter from lua : the key to register with
 
+  the destroy function wants one extra parameter from lua : the key to destroy
+
   the trigger function wants the bottom most arg to be the key to trigger
   */
 int dt_lua_event_keyed_register(lua_State *L);
+int dt_lua_event_keyed_destroy(lua_State *L);
 int dt_lua_event_keyed_trigger(lua_State *L);
 
 

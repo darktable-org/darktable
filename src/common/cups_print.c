@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2020 darktable developers.
+    Copyright (C) 2014-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -105,6 +105,9 @@ void dt_get_printer_info(const char *printer_name, dt_printer_info_t *pinfo)
 
       if (attr)
       {
+        // scanf use local number format and PPD has en numbers
+        dt_util_str_to_loc_numbers_format(attr->value);
+
         sscanf(attr->value, "%lf %lf %lf %lf",
                &pinfo->hw_margin_left, &pinfo->hw_margin_bottom,
                &pinfo->hw_margin_right, &pinfo->hw_margin_top);
@@ -213,28 +216,25 @@ void dt_printers_discovery(void (*cb)(dt_printer_info_t *pr, void *user_data), v
   }
 }
 
-static int paper_exists(GList *papers, const char *name)
+static gboolean paper_exists(GList *papers, const char *name)
 {
   if (strstr(name,"custom_") == name)
-    return 1;
+    return TRUE;
 
-  GList *p = papers;
-  while (p)
+  for(GList *p = papers; p; p = g_list_next(p))
   {
     const dt_paper_info_t *pi = (dt_paper_info_t*)p->data;
     if (!strcmp(pi->name,name) || !strcmp(pi->common_name,name))
-      return 1;
-    p = g_list_next (p);
+      return TRUE;
   }
-  return 0;
+  return FALSE;
 }
 
 dt_paper_info_t *dt_get_paper(GList *papers, const char *name)
 {
-  GList *p = papers;
   dt_paper_info_t *result = NULL;
 
-  while (p)
+  for(GList *p = papers; p; p = g_list_next(p))
   {
     dt_paper_info_t *pi = (dt_paper_info_t*)p->data;
     if (!strcmp(pi->name,name) || !strcmp(pi->common_name,name))
@@ -242,7 +242,6 @@ dt_paper_info_t *dt_get_paper(GList *papers, const char *name)
       result = pi;
       break;
     }
-    p = g_list_next (p);
   }
   return result;
 }
@@ -382,7 +381,7 @@ GList *dt_get_media_type(const dt_printer_info_t *printer)
           dt_medium_info_t *media = (dt_medium_info_t*)malloc(sizeof(dt_medium_info_t));
           g_strlcpy(media->name, choice->choice, MAX_NAME);
           g_strlcpy(media->common_name, choice->text, MAX_NAME);
-          result = g_list_append (result, media);
+          result = g_list_prepend (result, media);
 
           dt_print(DT_DEBUG_PRINT, "[print] new media %2d (%s) (%s)\n", k, media->name, media->common_name);
           choice++;
@@ -393,15 +392,14 @@ GList *dt_get_media_type(const dt_printer_info_t *printer)
   ppdClose(ppd);
   g_unlink(PPDFile);
 
-  return result;
+  return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
 }
 
 dt_medium_info_t *dt_get_medium(GList *media, const char *name)
 {
-  GList *m = media;
   dt_medium_info_t *result = NULL;
 
-  while (m)
+  for(GList *m = media; m; m = g_list_next(m))
   {
     dt_medium_info_t *mi = (dt_medium_info_t*)m->data;
     if (!strcmp(mi->name, name) || !strcmp(mi->common_name, name))
@@ -409,7 +407,6 @@ dt_medium_info_t *dt_get_medium(GList *media, const char *name)
       result = mi;
       break;
     }
-    m = g_list_next (m);
   }
   return result;
 }
@@ -577,55 +574,33 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
   cupsFreeOptions (num_options, options);
 }
 
-void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
+void dt_get_print_layout(const dt_print_info_t *prt,
                          const int32_t area_width, const int32_t area_height,
-                         int32_t *iwpix, int32_t *ihpix,
-                         int32_t *px,    int32_t *py,    int32_t *pwidth, int32_t *pheight,
-                         int32_t *ax,    int32_t *ay,    int32_t *awidth, int32_t *aheight,
-                         int32_t *ix,    int32_t *iy,    int32_t *iwidth, int32_t *iheight)
+                         int32_t *px, int32_t *py, int32_t *pwidth, int32_t *pheight,
+                         int32_t *ax, int32_t *ay, int32_t *awidth, int32_t *aheight)
 {
   /* this is where the layout is done for the display and for the print too. So this routine is one
      of the most critical for the print circuitry. */
 
-  double width, height;
-
   // page w/h
-  double pg_width  = prt->paper.width;
-  double pg_height = prt->paper.height;
-
-  if (area_width==0)
-    width = pg_width;
-  else
-    width = area_width;
-
-  if (area_height==0)
-    height = pg_height;
-  else
-    height = area_height;
+  float pg_width  = prt->paper.width;
+  float pg_height = prt->paper.height;
 
   /* here, width and height correspond to the area for the picture */
 
   // non-printable
-  double np_top = prt->printer.hw_margin_top;
-  double np_left = prt->printer.hw_margin_left;
-  double np_right = prt->printer.hw_margin_right;
-  double np_bottom = prt->printer.hw_margin_bottom;
+  float np_top = prt->printer.hw_margin_top;
+  float np_left = prt->printer.hw_margin_left;
+  float np_right = prt->printer.hw_margin_right;
+  float np_bottom = prt->printer.hw_margin_bottom;
 
   /* do some arrangements for the landscape mode. */
 
-  if (prt->page.landscape)
+  if(prt->page.landscape)
   {
-    double tmp = pg_width;
+    float tmp = pg_width;
     pg_width = pg_height;
     pg_height = tmp;
-
-    //  only invert if we did not get a specific area
-    if (area_width == 0 && area_height == 0)
-    {
-      tmp = width;
-      width = height;
-      height = tmp;
-    }
 
     // rotate the non-printable margins
     tmp       = np_top;
@@ -636,27 +611,27 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
   }
 
   // the image area aspect
-  const double a_aspect = (double)width / (double)height;
+  const float a_aspect = (double)area_width / (double)area_height;
 
   // page aspect
-  const double pg_aspect = pg_width / pg_height;
+  const float pg_aspect = pg_width / pg_height;
 
   // display page
   int32_t p_bottom, p_right;
 
-  if (a_aspect > pg_aspect)
+  if(a_aspect > pg_aspect)
   {
-    *px = (width - (height * pg_aspect)) / 2;
+    *px = (area_width - (area_height * pg_aspect)) / 2.0f;
     *py = 0;
-    p_bottom = height;
-    p_right = width - *px;
+    p_bottom = area_height;
+    p_right = area_width - *px;
   }
   else
   {
     *px = 0;
-    *py = (height - (width / pg_aspect)) / 2;
-    p_right = width;
-    p_bottom = height - *py;
+    *py = (area_height - (area_width / pg_aspect)) / 2.0f;
+    p_right = area_width;
+    p_bottom = area_height - *py;
   }
 
   *pwidth = p_right - *px;
@@ -666,10 +641,10 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
   // these margins are those set by the user from the GUI, and the top margin is *always*
   // at the top of the screen.
 
-  const double border_top = prt->page.margin_top;
-  const double border_left = prt->page.margin_left;
-  const double border_right = prt->page.margin_right;
-  const double border_bottom = prt->page.margin_bottom;
+  const float border_top = prt->page.margin_top;
+  const float border_left = prt->page.margin_left;
+  const float border_right = prt->page.margin_right;
+  const float border_bottom = prt->page.margin_bottom;
 
   // display picture area, that is removing the non printable areas and user's margins
 
@@ -684,75 +659,6 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
   *ay      = by;
   *awidth  = br - bx;
   *aheight = bb - by;
-
-  // get the image dimensions if needed
-
-  if (*iwpix <= 0 || *ihpix <= 0)
-    dt_image_get_final_size(imgid, iwpix, ihpix);
-
-  // compute the scaling for the image to fit into the printable area
-
-  double scale;
-
-  *iwidth = *iwpix;
-  *iheight = *ihpix;
-
-  if (*iwidth > *awidth)
-  {
-    scale =  (double)(*awidth) / (double)*iwidth;
-    *iwidth = *awidth;
-    *iheight = (int32_t)(((double)*iheight + 0.5) * scale);
-  }
-
-  if (*iheight > *aheight)
-  {
-    scale = (double)(*aheight) / (double)*iheight;
-    *iheight = *aheight;
-    *iwidth = (int32_t)(((double)*iwidth + 0.5) * scale);
-  }
-
-  // now the image position (top-left corner coordinates) in the display area depending on the page
-  // alignment set by the user.
-
-  switch (prt->page.alignment)
-  {
-    case ALIGNMENT_TOP_LEFT:
-      *ix = bx;
-      *iy = by;
-      break;
-    case ALIGNMENT_TOP:
-      *ix = bx + (*awidth - *iwidth) / 2;
-      *iy = by;
-      break;
-    case ALIGNMENT_TOP_RIGHT:
-      *ix = br - *iwidth;
-      *iy = by;
-      break;
-    case ALIGNMENT_LEFT:
-      *ix = bx;
-      *iy = by + (*aheight - *iheight) / 2;
-      break;
-    case ALIGNMENT_CENTER:
-      *ix = bx + (*awidth - *iwidth) / 2;
-      *iy = by + (*aheight - *iheight) / 2;
-      break;
-    case ALIGNMENT_RIGHT:
-      *ix = br - *iwidth;
-      *iy = by + (*aheight - *iheight) / 2;
-      break;
-    case ALIGNMENT_BOTTOM_LEFT:
-      *ix = bx;
-      *iy = bb - *iheight;
-      break;
-    case ALIGNMENT_BOTTOM:
-      *ix = bx + (*awidth - *iwidth) / 2;
-      *iy = bb - *iheight;
-      break;
-    case ALIGNMENT_BOTTOM_RIGHT:
-      *ix = br - *iwidth;
-      *iy = bb - *iheight;
-      break;
-  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

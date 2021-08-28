@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -79,7 +79,7 @@ typedef struct dt_iop_useless_params_t
   // to initialise self->default_params, which is then used in gui_init to set widget defaults.
   //
   // These field names are just examples; chose meaningful ones! For performance reasons, align
-  // to 4 byte bounderies (use gboolean, not bool).
+  // to 4 byte boundaries (use gboolean, not bool).
   int checker_scale; // $MIN: 0 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "size"
   float factor;      // $MIN: -5.0 $MAX: 5.0 $DEFAULT: 0
   gboolean check;    // $DESCRIPTION: "checkbox option"
@@ -114,6 +114,7 @@ const char *name()
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  // optionally add IOP_FLAGS_ALLOW_TILING and implement tiling_callback
 }
 
 // where does it appear in the gui?
@@ -199,15 +200,86 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   g_hash_table_insert(self->raster_mask.source.masks, GINT_TO_POINTER(mask_id), g_strdup(mask_name));
 }
 
+#if 0
+/** optional, only needed if tiling is permitted by setting IOP_FLAGS_ALLOW_TILING */
+void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+                     struct dt_develop_tiling_t *tiling)
+{
+  tiling->factor = 2.0f;    // input buffer + output buffer; increase if additional memory allocated
+  tiling->factor_cl = 2.0f; // same, but for OpenCL code path running on GPU
+  tiling->maxbuf = 1.0f;    // largest buffer needed regardless of how tiling splits up the processing
+  tiling->maxbuf_cl = 1.0f; // same, but for running on GPU
+  tiling->overhead = 0;     // number of bytes of fixed overhead
+  tiling->overlap = 0;      // how many pixels do we need to access from the neighboring tile?
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+}
+#endif
+
 /** modify regions of interest (optional, per pixel ops don't need this) */
 // void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
 // *roi_out, const dt_iop_roi_t *roi_in);
 // void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t
 // *roi_out, dt_iop_roi_t *roi_in);
+
+#if 0
+/** modify pixel coordinates according to the pixel shifts the module applies (optional, per-pixel ops don't need) */
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+{
+  const dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)piece->data;
+
+  const float adjx = 0.0 * d->factor;
+  const float adjy = 0.0;
+
+  // nothing to be done if parameters are set to neutral values (no pixel shifts)
+  if (adjx == 0.0 && adjy == 0.0) return 1;
+
+  // apply the coordinate adjustment to each provided point
+  for(size_t i = 0; i < points_count * 2; i += 2)
+  {
+    points[i] -= adjx;
+    points[i + 1] -= adjy;
+  }
+
+  return 1;  // return 1 on success, 0 if one or more points could not be transformed
+}
+#endif
+
+#if 0
+/** undo pixel shifts the module applies (optional, per-pixel ops don't need this) */
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+{
+  const dt_iop_useless_params_t *d = (dt_iop_useless_params_t *)piece->data;
+
+  const float adjx = 0.0 * d->factor;
+  const float adjy = 0.0;
+
+  // nothing to be done if parameters are set to neutral values (no pixel shifts)
+  if (adjx == 0.0 && adjy == 0.0) return 1;
+
+  // apply the inverse coordinate adjustment to each provided point
+  for(size_t i = 0; i < points_count * 2; i += 2)
+  {
+    points[i] += adjx;
+    points[i + 1] += adjy;
+  }
+
+  return 1;  // return 1 on success, 0 if one or more points could not be back-transformed
+}
+#endif
+
+/** modify a mask according to the pixel shifts the module applies (optional, per-pixel ops don't need this) */
 // void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
 // float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
 
-/** process, all real work is done here. */
+/** process, all real work is done here.
+    NOTE: process() must never use the Gtk+ API. All GUI modifications must be
+          done in the Gtk+ thread. This is to be conducted in gui_update or
+          gui_changed. If process detect a state and something it to be change on the UI
+          a signal should be used (raise a signal here) and a corresponding callback
+          must be connected to this signal.
+*/
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -218,14 +290,33 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // and the scale of the roi.
   const float scale = piece->iscale / roi_in->scale;
   // how many colors in our buffer?
-  const int ch = piece->colors;
+  const size_t ch = piece->colors;
+
+  // most modules only support a single type of input data, so we can check whether that format has been supplied
+  // and simply pass along the data if not (setting a trouble flag to inform the user)
+  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return;
 
   // we create a raster mask as an example
   float *mask = NULL;
   if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(piece->module, mask_id))
   {
-    mask = (float *)dt_alloc_align(64, (size_t)roi_out->width * roi_out->height * sizeof(float));
-    memset(mask, 0, sizeof(float) * roi_out->width * roi_out->height);
+    // Attempt to allocate all of the buffers we need.  For this example, we need one buffer that is equal in
+    // dimensions to the output buffer, has one color channel, and has been zero'd.  (See common/imagebuf.h for
+    // more details on all of the options.)
+    if (!dt_iop_alloc_image_buffers(module, roi_in, roi_out,
+                                    1/*ch per pixel*/ | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL | DT_IMGSZ_CLEARBUF, &mask,
+                                    0 /* end of list of buffers to allocate */))
+    {
+      // Uh oh, we didn't have enough memory!  If multiple buffers were requested, any that had already
+      // been allocated have been freed, and the module's trouble flag has been set.  We can simply pass
+      // through the input image and return now, since there isn't anything else we need to clean up at
+      // this point.
+      dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
+      return;
+    }
   }
   else
     g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(mask_id));
@@ -248,11 +339,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       int wi = (roi_in->x + i) * scale, wj = (roi_in->y + j) * scale;
       if((wi / d->checker_scale + wj / d->checker_scale) & 1)
       {
-        for(int c = 0; c < 3; c++) out[c] = in[c] * (1.0 - d->factor);
+        for_each_channel(c, aligned(in,out))  // vectorize if possible
+          out[c] = in[c] * (1.0 - d->factor); // does this for c=0..2 or c=0..3, whichever is faster
         if(out_mask) out_mask[i] = 1.0;
       }
       else
-        for(int c = 0; c < 3; c++) out[c] = in[c];
+      {
+        copy_pixel(out, in);
+      }
       in += ch;
       out += ch;
     }
@@ -424,7 +518,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   // If we are in darkroom, gui_init will already have been called and has initialised
   // module->gui_data and widgets.
-  // So if deafault values have been changed, it may then be necessary to also change the
+  // So if default values have been changed, it may then be necessary to also change the
   // default values in widgets. Resetting the individual widgets will then have the same
   // effect as resetting the whole module at once.
   dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)module->gui_data;
@@ -464,8 +558,8 @@ void gui_init(dt_iop_module_t *self)
   // type of image, then the widgets have to be updated in reload_params.
   dt_iop_useless_gui_data_t *g = IOP_GUI_ALLOC(useless);
 
-  // If the first widget is created useing a _from_params call, self->widget does not have to
-  // be explicitly initialised, as a new virtical box will be created automatically.
+  // If the first widget is created using a _from_params call, self->widget does not have to
+  // be explicitly initialised, as a new vertical box will be created automatically.
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   // Linking a slider to an integer will make it take only whole numbers (step=1).
@@ -503,7 +597,7 @@ void gui_init(dt_iop_module_t *self)
   // Any widgets that are _not_ directly linked to a field need to have a custom callback
   // function set up to respond to the "value-changed" signal.
   g->extra = dt_bauhaus_slider_new_with_range(self, -0.5, 0.5, .01, 0, 2);
-  dt_bauhaus_widget_set_label(g->extra, NULL, _("extra"));
+  dt_bauhaus_widget_set_label(g->extra, NULL, N_("extra"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->extra), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->extra), "value-changed", G_CALLBACK(extra_callback), self);
 }
@@ -526,6 +620,22 @@ void gui_cleanup(dt_iop_module_t *self)
 // uint32_t state);
 // int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
 // int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state);
+
+// optional: if mouse events are handled by the iop, we can add text to the help screen by declaring
+// the mouse actions and their descriptions
+#if 0
+GSList *mouse_actions(dt_iop_module_t *self)
+{
+  GSList *lm = NULL;
+  // add the first action
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK, 
+                                     _("[%s] some action"), self->name());
+  // append a second action to the list we will return
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, GDK_CONTROL_MASK | GDK_SHIFT_MASK, 
+                                     _("[%s] other action"), self->name());
+  return lm;
+}
+#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

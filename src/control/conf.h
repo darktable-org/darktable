@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "common/dtpthread.h"
 
 #include <glib.h>
+#include <gtk/gtk.h>
 #include <inttypes.h>
 
 typedef enum dt_confgen_type_t
@@ -44,6 +45,8 @@ typedef struct dt_confgen_value_t
   char *min;
   char *max;
   char *enum_values;
+  char *shortdesc;
+  char *longdesc;
 } dt_confgen_value_t;
 
 typedef struct dt_conf_t
@@ -65,7 +68,8 @@ typedef enum dt_confgen_value_kind_t
 {
   DT_DEFAULT,
   DT_MIN,
-  DT_MAX
+  DT_MAX,
+  DT_VALUES
 } dt_confgen_value_kind_t;
 
 void dt_conf_set_int(const char *name, int val);
@@ -73,6 +77,7 @@ void dt_conf_set_int64(const char *name, int64_t val);
 void dt_conf_set_float(const char *name, float val);
 void dt_conf_set_bool(const char *name, int val);
 void dt_conf_set_string(const char *name, const char *val);
+void dt_conf_set_folder_from_file_chooser(const char *name, GtkWidget *chooser);
 int dt_conf_get_int_fast(const char *name);
 int dt_conf_get_int(const char *name);
 int64_t dt_conf_get_int64_fast(const char *name);
@@ -83,7 +88,13 @@ int dt_conf_get_and_sanitize_int(const char *name, int min, int max);
 int64_t dt_conf_get_and_sanitize_int64(const char *name, int64_t min, int64_t max);
 float dt_conf_get_and_sanitize_float(const char *name, float min, float max);
 int dt_conf_get_bool(const char *name);
+// get the configuration string without duplicating it; the returned string will be invalidated by any
+// subsequent dt_conf_set_string call
+const char *dt_conf_get_string_const(const char *name);
+// get a freshly-allocated duplicate of the configuration string; safe to use even if calling dt_conf_set_string
 gchar *dt_conf_get_string(const char *name);
+gboolean dt_conf_get_folder_to_file_chooser(const char *name, GtkWidget *chooser);
+gboolean dt_conf_is_equal(const char *name, const char *value);
 void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries);
 void dt_conf_cleanup(dt_conf_t *cf);
 int dt_conf_key_exists(const char *key);
@@ -106,6 +117,9 @@ int64_t dt_confgen_get_int64(const char *name, dt_confgen_value_kind_t kind);
 gboolean dt_confgen_get_bool(const char *name, dt_confgen_value_kind_t kind);
 float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind);
 const char *dt_confgen_get(const char *name, dt_confgen_value_kind_t kind);
+
+const char *dt_confgen_get_label(const char *name);
+const char *dt_confgen_get_tooltip(const char *name);
 
 gboolean dt_conf_is_default(const char *name);
 

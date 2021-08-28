@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -82,7 +82,7 @@ static void create_callback(GtkButton *button, gpointer user_data)
 void gui_init(dt_lib_module_t *self)
 {
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, "tethering_panels.html#session");
+  dt_gui_add_help_link(self->widget, dt_get_help_url("tethering_session"));
   self->data = calloc(1, sizeof(dt_lib_session_t));
 
   // Setup lib data
@@ -103,7 +103,6 @@ void gui_init(dt_lib_module_t *self)
 
   lib->gui.entry1 = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_width_chars(GTK_ENTRY(lib->gui.entry1), 0);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(lib->gui.entry1));
   gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.entry1), TRUE, TRUE, 0);
 
   lib->gui.button1 = GTK_BUTTON(gtk_button_new_with_label(_("create")));
@@ -114,17 +113,12 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(lib->gui.button1), "clicked", G_CALLBACK(create_callback), self);
 
-  gchar *str = dt_conf_get_string("plugins/session/jobcode");
+  const char *str = dt_conf_get_string_const("plugins/session/jobcode");
   gtk_entry_set_text(lib->gui.entry1, str);
-  g_free(str);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  // Setup lib data
-  dt_lib_session_t *lib = self->data;
-
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(lib->gui.entry1));
   free(self->data);
   self->data = NULL;
 }

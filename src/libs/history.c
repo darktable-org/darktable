@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -44,6 +44,8 @@ typedef struct dt_undo_history_t
   GList *before_snapshot, *after_snapshot;
   int before_end, after_end;
   GList *before_iop_order_list, *after_iop_order_list;
+  dt_masks_edit_mode_t mask_edit_mode;
+  dt_dev_pixelpipe_display_mask_t request_mask_display;
 } dt_undo_history_t;
 
 typedef struct dt_lib_history_t
@@ -68,11 +70,8 @@ typedef struct dt_lib_history_t
 #define HIST_WIDGET_STATUS 2
 
 /* compress history stack */
-static gboolean _lib_compress_stack_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                          GdkModifierType modifier, gpointer data);
-static gboolean _lib_truncate_stack_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                          GdkModifierType modifier, gpointer data);
-static void _lib_history_compress_clicked_callback(GtkWidget *widget, GdkEventButton *e, gpointer user_data);
+static void _lib_history_compress_clicked_callback(GtkButton *widget, gpointer user_data);
+static gboolean _lib_history_compress_pressed_callback(GtkWidget *widget, GdkEventButton *e, gpointer user_data);
 static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer user_data);
 static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget, gpointer user_data);
 /* signal callback for history change */
@@ -107,7 +106,6 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "create style from history"), 0, 0);
 //   dt_accel_register_lib(self, NC_("accel", "apply style from popup menu"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "compress history stack"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "truncate history stack"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -116,12 +114,8 @@ void connect_key_accels(dt_lib_module_t *self)
 
   dt_accel_connect_button_lib(self, "create style from history", d->create_button);
 //   dt_accel_connect_button_lib(self, "apply style from popup menu", d->apply_button);
-  GClosure *closure;
-  closure = g_cclosure_new(G_CALLBACK(_lib_compress_stack_accel), (gpointer)self, NULL);
-  dt_accel_connect_lib(self, "compress history stack", closure);
 
-  closure = g_cclosure_new(G_CALLBACK(_lib_truncate_stack_accel), (gpointer)self, NULL);
-  dt_accel_connect_lib(self, "truncate history stack", closure);
+  dt_accel_connect_button_lib(self, "compress history stack", d->compress_button);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -147,7 +141,8 @@ void gui_init(dt_lib_module_t *self)
   d->compress_button = dt_ui_button_new(_("compress history stack"),
                                         _("create a minimal history stack which produces the same image\n"
                                           "ctrl-click to truncate history to the selected item"), NULL);
-  g_signal_connect(G_OBJECT(d->compress_button), "button-press-event", G_CALLBACK(_lib_history_compress_clicked_callback), self);
+  g_signal_connect(G_OBJECT(d->compress_button), "clicked", G_CALLBACK(_lib_history_compress_clicked_callback), self);
+  g_signal_connect(G_OBJECT(d->compress_button), "button-press-event", G_CALLBACK(_lib_history_compress_pressed_callback), self);
 
   /* add toolbar button for creating style */
   d->create_button = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_NONE, NULL);
@@ -257,7 +252,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
 
 static void _reset_module_instance(GList *hist, dt_iop_module_t *module, int multi_priority)
 {
-  while (hist)
+  for(; hist; hist = g_list_next(hist))
   {
     dt_dev_history_item_t *hit = (dt_dev_history_item_t *)hist->data;
 
@@ -265,7 +260,6 @@ static void _reset_module_instance(GList *hist, dt_iop_module_t *module, int mul
     {
       hit->module = module;
     }
-    hist = hist->next;
   }
 }
 
@@ -297,8 +291,7 @@ static void _add_module_expander(GList *iop_list, dt_iop_module_t *module)
   if(!dt_iop_is_hidden(module) && !module->expander)
   {
       /* add module to right panel */
-      GtkWidget *expander = dt_iop_gui_get_expander(module);
-      dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
+      dt_iop_gui_set_expander(module);
       dt_iop_gui_set_expanded(module, TRUE, FALSE);
       dt_iop_gui_update_blending(module);
   }
@@ -309,8 +302,7 @@ static dt_dev_history_item_t *_search_history_by_module(GList *history_list, dt_
 {
   dt_dev_history_item_t *hist_ret = NULL;
 
-  GList *history = g_list_first(history_list);
-  while(history)
+  for(GList *history = history_list; history; history = g_list_next(history))
   {
     dt_dev_history_item_t *hist_item = (dt_dev_history_item_t *)history->data;
 
@@ -319,8 +311,6 @@ static dt_dev_history_item_t *_search_history_by_module(GList *history_list, dt_
       hist_ret = hist_item;
       break;
     }
-
-    history = g_list_next(history);
   }
   return hist_ret;
 }
@@ -331,7 +321,7 @@ static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList 
   int deleted_module_found = 0;
 
   // we will check on dev->iop if there's a module that is not in history
-  GList *modules = g_list_first(iop_list);
+  GList *modules = iop_list;
   while(modules)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
@@ -419,16 +409,15 @@ static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList 
       dt_undo_iterate_internal(darktable.undo, DT_UNDO_HISTORY, mod, &_history_invalidate_cb);
 
       // we cleanup the module
-      dt_accel_disconnect_list(&mod->accel_closures);
-      dt_accel_cleanup_locals_iop(mod);
-      mod->accel_closures = NULL;
+      dt_accel_cleanup_closures_iop(mod);
+
       // don't delete the module, a pipe may still need it
       dev->alliop = g_list_append(dev->alliop, mod);
 
       --darktable.gui->reset;
 
       // and reset the list
-      modules = g_list_first(iop_list);
+      modules = iop_list;
       continue;
     }
 
@@ -444,8 +433,7 @@ static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList 
 static void _reorder_gui_module_list(dt_develop_t *dev)
 {
   int pos_module = 0;
-  GList *modules = g_list_last(dev->iop);
-  while(modules)
+  for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
@@ -455,16 +443,13 @@ static void _reorder_gui_module_list(dt_develop_t *dev)
       gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER), expander,
                             pos_module++);
     }
-
-    modules = g_list_previous(modules);
   }
 }
 
 static int _rebuild_multi_priority(GList *history_list)
 {
   int changed = 0;
-  GList *history = g_list_first(history_list);
-  while(history)
+  for(const GList *history = history_list; history; history = g_list_next(history))
   {
     dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)history->data;
 
@@ -475,8 +460,6 @@ static int _rebuild_multi_priority(GList *history_list)
       dt_iop_update_multi_priority(hitem->module, hitem->multi_priority);
       changed = 1;
     }
-
-    history = g_list_next(history);
   }
   return changed;
 }
@@ -487,7 +470,7 @@ static int _create_deleted_modules(GList **_iop_list, GList *history_list)
   int changed = 0;
   gboolean done = FALSE;
 
-  GList *l = g_list_first(history_list);
+  GList *l = history_list;
   while(l)
   {
     GList *next = g_list_next(l);
@@ -624,16 +607,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
     // topology has changed
     if(pipe_remove)
     {
-      // we refresh the pipe
-      dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
-      dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-      dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
-      dev->pipe->cache_obsolete = 1;
-      dev->preview_pipe->cache_obsolete = 1;
-      dev->preview2_pipe->cache_obsolete = 1;
-
-      // invalidate buffers and force redraw of darkroom
-      dt_dev_invalidate_all(dev);
+      dt_dev_pixelpipe_rebuild(dev);
     }
 
     dt_pthread_mutex_unlock(&dev->history_mutex);
@@ -648,6 +622,17 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
     dt_ioppr_resync_modules_order(dev);
 
     dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
+
+    if(dev->gui_module)
+    {
+      dt_masks_set_edit_mode(dev->gui_module, hist->mask_edit_mode);
+      darktable.develop->gui_module->request_mask_display = hist->request_mask_display;
+      dt_iop_gui_update_blendif(darktable.develop->gui_module);
+      dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)(dev->gui_module->blend_data);
+      if(bd)
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask),
+                                hist->request_mask_display == DT_DEV_PIXELPIPE_DISPLAY_MASK);
+    }
   }
 }
 
@@ -674,7 +659,7 @@ static void _lib_history_will_change_callback(gpointer instance, GList *history,
 
   if(lib->record_undo && (lib->record_history_level == 0))
   {
-    // history is about to change, we want here ot record a snapshot of the history for the undo
+    // history is about to change, here we want to record a snapshot of the history for the undo
     // record previous history
     g_list_free_full(lib->previous_snapshot, free);
     g_list_free_full(lib->previous_iop_order_list, free);
@@ -757,7 +742,7 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
     }
     break;
   case DT_INTROSPECTION_TYPE_FLOAT:
-    if(*(float*)o != *(float*)p)
+    if(*(float*)o != *(float*)p && (isfinite(*(float*)o) || isfinite(*(float*)p)))
       return g_strdup_printf("%s\t%.4f\t\u2192\t%.4f", d, *(float*)o, *(float*)p);
     break;
   case DT_INTROSPECTION_TYPE_INT:
@@ -834,8 +819,9 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
   dt_iop_params_t *old_params = hitem->module->default_params;
   dt_develop_blend_params_t *old_blend = hitem->module->default_blendop_params;
 
-  GList *find_old = g_list_first(darktable.develop->history);
-  while(find_old && find_old->data != hitem)
+  for(const GList *find_old = darktable.develop->history;
+      find_old && find_old->data != hitem;
+      find_old = g_list_next(find_old))
   {
     const dt_dev_history_item_t *hiprev = (dt_dev_history_item_t *)(find_old->data);
 
@@ -844,103 +830,114 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
       old_params = hiprev->params;
       old_blend = hiprev->blend_params;
     }
-
-    find_old = g_list_next(find_old);
   }
 
   gchar **change_parts = g_malloc0_n(sizeof(dt_develop_blend_params_t) / (sizeof(float)) + 10, sizeof(char*));
 
-  if(hitem->module->so->get_introspection())
-    change_parts[0] = _lib_history_change_text(hitem->module->so->get_introspection()->field, NULL,
+  if(hitem->module->have_introspection)
+    change_parts[0] = _lib_history_change_text(hitem->module->get_introspection()->field, NULL,
                                                 hitem->params, old_params);
   int num_parts = change_parts[0] ? 1 : 0;
 
-  #define add_blend_history_change(field, format, label)                                       \
-    if((hitem->blend_params->field) != (old_blend->field))                                     \
-      change_parts[num_parts++] = g_strdup_printf("%s\t" format "\t\u2192\t" format, _(label), \
-                                  (old_blend->field), (hitem->blend_params->field));
-
-  #define add_blend_history_change_enum(field, label, list)                                    \
-    if((hitem->blend_params->field) != (old_blend->field))                                     \
-    {                                                                                          \
-      const char *old_str = NULL, *new_str = NULL;                                             \
-      for(const dt_develop_name_value_t *i = list; *i->name; i++)                              \
-      {                                                                                        \
-        if(i->value == (old_blend->field)) old_str = i->name;                                  \
-        if(i->value == (hitem->blend_params->field)) new_str = i->name;                        \
-      }                                                                                        \
-                                                                                               \
-      change_parts[num_parts++] = (!old_str || !new_str)                                       \
-                                ? g_strdup_printf("%s\t%d\t\u2192\t%d", _(label),              \
-                                                  old_blend->field, hitem->blend_params->field)\
-                                : g_strdup_printf("%s\t%s\t\u2192\t%s", _(label),              \
-                                                  _(g_dpgettext2(NULL, "blendmode", old_str)), \
-                                                  _(g_dpgettext2(NULL, "blendmode", new_str)));\
-    }
-
-  add_blend_history_change_enum(mask_mode, "mask mode", dt_develop_mask_mode_names);
-  add_blend_history_change_enum(blend_mode, "blend mode", dt_develop_blend_mode_names);
-  add_blend_history_change(opacity, "%.4f", "mask opacity");
-  add_blend_history_change_enum(mask_combine & (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL), "combine masks", dt_develop_combine_masks_names);
-  add_blend_history_change(feathering_radius, "%.4f", "feathering radius");
-  add_blend_history_change_enum(feathering_guide, "feathering guide", dt_develop_feathering_guide_names);
-  add_blend_history_change(blur_radius, "%.4f", "mask blur");
-  add_blend_history_change(contrast, "%.4f", "mask contrast");
-  add_blend_history_change(brightness, "%.4f", "brightness");
-  add_blend_history_change(raster_mask_instance, "%d", "raster mask instance");
-  add_blend_history_change(raster_mask_id, "%d", "raster mask id");
-  add_blend_history_change_enum(raster_mask_invert, "invert mask", dt_develop_invert_mask_names);
-
-  add_blend_history_change(mask_combine & DEVELOP_COMBINE_MASKS_POS ? '-' : '+', "%c", "drawn mask polarity");
-
-  if(hitem->blend_params->mask_id != old_blend->mask_id)
-    change_parts[num_parts++] = old_blend->mask_id == 0
-                              ? g_strdup_printf(_("a drawn mask was added"))
-                              : hitem->blend_params->mask_id == 0
-                              ? g_strdup_printf(_("the drawn mask was removed"))
-                              : g_strdup_printf(_("the drawn mask was changed"));
-
-  dt_iop_gui_blend_data_t *bd = hitem->module->blend_data;
-
-  for(int in_out = 1; in_out >= 0; in_out--)
+  if(hitem->module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
   {
-    gboolean first = TRUE;
+    #define add_blend_history_change(field, format, label)                                       \
+      if((hitem->blend_params->field) != (old_blend->field))                                     \
+      {                                                                                          \
+        gchar *full_format = g_strconcat("%s\t", format, "\t\u2192\t", format, NULL);            \
+        change_parts[num_parts++] = g_strdup_printf(full_format, label,                          \
+                                    (old_blend->field), (hitem->blend_params->field));           \
+        g_free(full_format);                                                                     \
+      }
 
-    for(const dt_iop_gui_blendif_channel_t *b = bd ? bd->channel : NULL;
-        b && b->label != NULL;
-        b++)
+    #define add_blend_history_change_enum(field, label, list)                                    \
+      if((hitem->blend_params->field) != (old_blend->field))                                     \
+      {                                                                                          \
+        const char *old_str = NULL, *new_str = NULL;                                             \
+        for(const dt_develop_name_value_t *i = list; *i->name; i++)                              \
+        {                                                                                        \
+          if(i->value == (old_blend->field)) old_str = i->name;                                  \
+          if(i->value == (hitem->blend_params->field)) new_str = i->name;                        \
+        }                                                                                        \
+                                                                                                 \
+        change_parts[num_parts++] = (!old_str || !new_str)                                       \
+                                  ? g_strdup_printf("%s\t%d\t\u2192\t%d", label,                 \
+                                                    old_blend->field, hitem->blend_params->field)\
+                                  : g_strdup_printf("%s\t%s\t\u2192\t%s", label,                 \
+                                                    _(g_dpgettext2(NULL, "blendmode", old_str)), \
+                                                    _(g_dpgettext2(NULL, "blendmode", new_str)));\
+      }
+
+    add_blend_history_change_enum(blend_cst, _("colorspace"), dt_develop_blend_colorspace_names);
+    add_blend_history_change_enum(mask_mode, _("mask mode"), dt_develop_mask_mode_names);
+    add_blend_history_change_enum(blend_mode & DEVELOP_BLEND_MODE_MASK, _("blend mode"), dt_develop_blend_mode_names);
+    add_blend_history_change_enum(blend_mode & DEVELOP_BLEND_REVERSE, _("blend operation"), dt_develop_blend_mode_flag_names);
+    add_blend_history_change(blend_parameter, _("%.2f EV"), _("blend fulcrum"));
+    add_blend_history_change(opacity, "%.4f", _("mask opacity"));
+    add_blend_history_change_enum(mask_combine & (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL), _("combine masks"), dt_develop_combine_masks_names);
+    add_blend_history_change(feathering_radius, "%.4f", _("feathering radius"));
+    add_blend_history_change_enum(feathering_guide, _("feathering guide"), dt_develop_feathering_guide_names);
+    add_blend_history_change(blur_radius, "%.4f", _("mask blur"));
+    add_blend_history_change(contrast, "%.4f", _("mask contrast"));
+    add_blend_history_change(brightness, "%.4f", _("brightness"));
+    add_blend_history_change(raster_mask_instance, "%d", _("raster mask instance"));
+    add_blend_history_change(raster_mask_id, "%d", _("raster mask id"));
+    add_blend_history_change_enum(raster_mask_invert, _("invert mask"), dt_develop_invert_mask_names);
+
+    add_blend_history_change(mask_combine & DEVELOP_COMBINE_MASKS_POS ? '-' : '+', "%c", _("drawn mask polarity"));
+
+    if(hitem->blend_params->mask_id != old_blend->mask_id)
+      change_parts[num_parts++] = old_blend->mask_id == 0
+                                ? g_strdup_printf(_("a drawn mask was added"))
+                                : hitem->blend_params->mask_id == 0
+                                ? g_strdup_printf(_("the drawn mask was removed"))
+                                : g_strdup_printf(_("the drawn mask was changed"));
+
+    dt_iop_gui_blend_data_t *bd = hitem->module->blend_data;
+
+    for(int in_out = 1; in_out >= 0; in_out--)
     {
-      const dt_develop_blendif_channels_t ch = b->param_channels[in_out];
+      gboolean first = TRUE;
 
-      const int oactive = old_blend->blendif & (1 << ch);
-      const int nactive = hitem->blend_params->blendif & (1 << ch);
-
-      const int opolarity = old_blend->blendif & (1 << (ch + 16));
-      const int npolarity = hitem->blend_params->blendif & (1 << (ch + 16));
-
-      float *of = &old_blend->blendif_parameters[4 * ch];
-      float *nf = &hitem->blend_params->blendif_parameters[4 * ch];
-
-      if((oactive || nactive) && (memcmp(of, nf, 4 * sizeof(float)) || opolarity != npolarity))
+      for(const dt_iop_gui_blendif_channel_t *b = bd ? bd->channel : NULL;
+          b && b->label != NULL;
+          b++)
       {
-        if(first)
-        {
-          change_parts[num_parts++] = g_strdup(in_out ? _("parametric output mask:") : _("parametric input mask:"));
-          first = FALSE;
-        }
-        char s[4][2][25];
-        for(int k = 0; k < 4; k++)
-        {
-          b->scale_print(of[k], s[k][0], sizeof(s[k][0]));
-          b->scale_print(nf[k], s[k][1], sizeof(s[k][1]));
-        }
+        const dt_develop_blendif_channels_t ch = b->param_channels[in_out];
 
-        char *opol = !oactive ? "" : (opolarity ? "(-)" : "(+)");
-        char *npol = !nactive ? "" : (npolarity ? "(-)" : "(+)");
+        const int oactive = old_blend->blendif & (1 << ch);
+        const int nactive = hitem->blend_params->blendif & (1 << ch);
 
-        change_parts[num_parts++] = g_strdup_printf("%s\t%s| %s- %s| %s%s\t\u2192\t%s| %s- %s| %s%s", _(b->name),
-                                                    s[0][0], s[1][0], s[2][0], s[3][0], opol,
-                                                    s[0][1], s[1][1], s[2][1], s[3][1], npol);
+        const int opolarity = old_blend->blendif & (1 << (ch + 16));
+        const int npolarity = hitem->blend_params->blendif & (1 << (ch + 16));
+
+        float *of = &old_blend->blendif_parameters[4 * ch];
+        float *nf = &hitem->blend_params->blendif_parameters[4 * ch];
+
+        const float oboost = exp2f(old_blend->blendif_boost_factors[ch]);
+        const float nboost = exp2f(hitem->blend_params->blendif_boost_factors[ch]);
+
+        if((oactive || nactive) && (memcmp(of, nf, sizeof(float) * 4) || opolarity != npolarity))
+        {
+          if(first)
+          {
+            change_parts[num_parts++] = g_strdup(in_out ? _("parametric output mask:") : _("parametric input mask:"));
+            first = FALSE;
+          }
+          char s[4][2][25];
+          for(int k = 0; k < 4; k++)
+          {
+            b->scale_print(of[k], oboost, s[k][0], sizeof(s[k][0]));
+            b->scale_print(nf[k], nboost, s[k][1], sizeof(s[k][1]));
+          }
+
+          char *opol = !oactive ? "" : (opolarity ? "(-)" : "(+)");
+          char *npol = !nactive ? "" : (npolarity ? "(-)" : "(+)");
+
+          change_parts[num_parts++] = g_strdup_printf("%s\t%s| %s- %s| %s%s\t\u2192\t%s| %s- %s| %s%s", _(b->name),
+                                                      s[0][0], s[1][0], s[2][0], s[3][0], opol,
+                                                      s[0][1], s[1][1], s[2][1], s[3][1], npol);
+        }
       }
     }
   }
@@ -1005,7 +1002,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   dt_lib_history_t *d = (dt_lib_history_t *)self->data;
 
   /* first destroy all buttons in list */
-  gtk_container_foreach(GTK_CONTAINER(d->history_box), (GtkCallback)gtk_widget_destroy, 0);
+  dt_gui_container_destroy_children(GTK_CONTAINER(d->history_box));
 
   /* add default which always should be */
   int num = -1;
@@ -1028,6 +1025,17 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     hist->after_end = darktable.develop->history_end;
     hist->after_iop_order_list = dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list);
 
+    if(darktable.develop->gui_module)
+    {
+      hist->mask_edit_mode = dt_masks_get_edit_mode(darktable.develop->gui_module);
+      hist->request_mask_display = darktable.develop->gui_module->request_mask_display;
+    }
+    else
+    {
+      hist->mask_edit_mode = DT_MASKS_EDIT_OFF;
+      hist->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+    }
+
     dt_undo_record(darktable.undo, self, DT_UNDO_HISTORY, (dt_undo_data_t)hist,
                    _pop_undo, _history_undo_data_free);
   }
@@ -1038,13 +1046,12 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   dt_pthread_mutex_lock(&darktable.develop->history_mutex);
 
   /* iterate over history items and add them to list*/
-  GList *history = g_list_first(darktable.develop->history);
-  while(history)
+  for(const GList *history = darktable.develop->history; history; history = g_list_next(history))
   {
     const dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
     gchar *label;
     if(!hitem->multi_name[0] || strcmp(hitem->multi_name, "0") == 0)
-      label = g_strdup_printf("%s", hitem->module->name());
+      label = g_strdup(hitem->module->name());
     else
       label = g_strdup_printf("%s %s", hitem->module->name(), hitem->multi_name);
 
@@ -1062,8 +1069,6 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     gtk_box_pack_start(GTK_BOX(d->history_box), widget, FALSE, FALSE, 0);
     gtk_box_reorder_child(GTK_BOX(d->history_box), widget, 0);
     num++;
-
-    history = g_list_next(history);
   }
 
   /* show all widgets */
@@ -1077,9 +1082,7 @@ static void _lib_history_truncate(gboolean compress)
   const int32_t imgid = darktable.develop->image_storage.id;
   if(!imgid) return;
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-                          dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                          dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
+  dt_dev_undo_start_record(darktable.develop);
 
   // As dt_history_compress_on_image does *not* use the history stack data at all
   // make sure the current stack is in the database
@@ -1099,8 +1102,10 @@ static void _lib_history_truncate(gboolean compress)
 
   // then we can get the item to select in the new clean-up history retrieve the position of the module
   // corresponding to the history end.
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT IFNULL(MAX(num)+1, 0) FROM main.history "
-                                                             "WHERE imgid=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT IFNULL(MAX(num)+1, 0)"
+                              " FROM main.history"
+                              " WHERE imgid=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   if (sqlite3_step(stmt) == SQLITE_ROW)
@@ -1108,36 +1113,33 @@ static void _lib_history_truncate(gboolean compress)
   sqlite3_finalize(stmt);
 
   // select the new history end corresponding to the one before the history compression
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.images SET history_end=?2 WHERE id=?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images SET history_end=?2 WHERE id=?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, darktable.develop->history_end);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
+  darktable.develop->proxy.chroma_adaptation = NULL;
   dt_dev_reload_history_items(darktable.develop);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+  dt_dev_undo_end_record(darktable.develop);
+
   dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 }
 
-static gboolean _lib_compress_stack_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                          GdkModifierType modifier, gpointer data)
+
+static void _lib_history_compress_clicked_callback(GtkButton *widget, gpointer user_data)
 {
   _lib_history_truncate(TRUE);
-  return TRUE;
 }
 
-static gboolean _lib_truncate_stack_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                          GdkModifierType modifier, gpointer data)
+static gboolean _lib_history_compress_pressed_callback(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
 {
-  _lib_history_truncate(FALSE);
-  return TRUE;
-}
-
-static void _lib_history_compress_clicked_callback(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
-{
-  const gboolean compress = !(e->state & GDK_CONTROL_MASK);
+  const gboolean compress = !dt_modifier_is(e->state, GDK_CONTROL_MASK);
   _lib_history_truncate(compress);
+
+  return TRUE;
 }
 
 static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer user_data)
@@ -1154,28 +1156,28 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   GList *children = gtk_container_get_children(GTK_CONTAINER(d->history_box));
   for(GList *l = children; l != NULL; l = g_list_next(l))
   {
-    GList *hbox = gtk_container_get_children(GTK_CONTAINER(l->data));
-    GtkToggleButton *b = GTK_TOGGLE_BUTTON(g_list_nth(hbox, HIST_WIDGET_MODULE)->data);
-    if(b != GTK_TOGGLE_BUTTON(widget)) g_object_set(G_OBJECT(b), "active", FALSE, (gchar *)0);
+    GtkToggleButton *b = GTK_TOGGLE_BUTTON(dt_gui_container_nth_child(GTK_CONTAINER(l->data), HIST_WIDGET_MODULE));
+    if(b != GTK_TOGGLE_BUTTON(widget))
+      g_object_set(G_OBJECT(b), "active", FALSE, (gchar *)0);
   }
   g_list_free(children);
 
   reset = 0;
   if(darktable.gui->reset) return;
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-                          dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                          dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
+  dt_dev_undo_start_record(darktable.develop);
 
   /* revert to given history item. */
   const int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history-number"));
   dt_dev_pop_history_items(darktable.develop, num);
   // set the module list order
   dt_dev_reorder_gui_module_list(darktable.develop);
+
   /* signal history changed */
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
-  dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
+  dt_dev_undo_end_record(darktable.develop);
+
   dt_iop_connect_accels_all();
+  dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 }
 
 static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget, gpointer user_data)
@@ -1212,14 +1214,12 @@ void gui_reset(dt_lib_module_t *self)
 
   if(res == GTK_RESPONSE_YES)
   {
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-                          dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                          dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
-
+    dt_dev_undo_start_record(darktable.develop);
 
     dt_history_delete_on_image_ext(imgid, FALSE);
 
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    dt_dev_undo_end_record(darktable.develop);
+
     dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 
     dt_control_queue_redraw_center();

@@ -3,6 +3,7 @@ add_subdirectory(external)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
+include(CheckCXXSymbolExists)
 
 #
 # Add files for libdarktable
@@ -12,6 +13,7 @@ FILE(GLOB SOURCE_FILES
   "common/atomic.c"
   "common/bilateral.c"
   "common/bilateralcl.c"
+  "common/box_filters.c"
   "common/cache.c"
   "common/calculator.c"
   "common/collection.c"
@@ -26,6 +28,7 @@ FILE(GLOB SOURCE_FILES
   "common/database.c"
   "common/dbus.c"
   "common/dtpthread.c"
+  "common/eaw.c"
   "common/exif.cc"
   "common/film.c"
   "common/file_location.c"
@@ -39,6 +42,7 @@ FILE(GLOB SOURCE_FILES
   "common/image.c"
   "common/image_cache.c"
   "common/image_compression.c"
+  "common/imagebuf.c"
   "common/imageio.c"
   "common/imageio_jpeg.c"
   "common/imageio_png.c"
@@ -55,6 +59,7 @@ FILE(GLOB SOURCE_FILES
   "common/locallaplacian.c"
   "common/locallaplaciancl.c"
   "common/l10n.c"
+  "common/matrices.c"
   "common/metadata.c"
   "common/metadata_export.c"
   "common/mipmap_cache.c"
@@ -67,6 +72,7 @@ FILE(GLOB SOURCE_FILES
   "common/selection.c"
   "common/system_signal_handling.c"
   "common/tags.c"
+  "common/map_locations.c"
   "common/utility.c"
   "common/variables.c"
   "common/pwstorage/backend_kwallet.c"
@@ -100,10 +106,20 @@ FILE(GLOB SOURCE_FILES
   "develop/pixelpipe.c"
   "develop/blend.c"
   "develop/blend_gui.c"
+  "develop/blends/blendif_lab.c"
+  "develop/blends/blendif_raw.c"
+  "develop/blends/blendif_rgb_hsl.c"
+  "develop/blends/blendif_rgb_jzczhz.c"
   "develop/tiling.c"
   "common/dwt.c"
   "common/heal.c"
+  "develop/masks/brush.c"
+  "develop/masks/circle.c"
+  "develop/masks/group.c"
+  "develop/masks/ellipse.c"
+  "develop/masks/gradient.c"
   "develop/masks/masks.c"
+  "develop/masks/path.c"
   "develop/format.c"
   "dtgtk/button.c"
   "dtgtk/culling.c"
@@ -136,7 +152,13 @@ FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/OpenCL/CL/*.h" "control/*.h"
 if(APPLE)
   list(APPEND SOURCE_FILES "osx/osx.mm")
   list(APPEND HEADER_FILES "osx/osx.h")
-  set_source_files_properties(osx/osx.mm PROPERTIES LANGUAGE CXX)
+  include(CheckLanguage)
+  check_language(OBJCXX)
+  if(CMAKE_OBJCXX_COMPILER)
+    enable_language(OBJCXX)
+  else()
+    set_source_files_properties(osx/osx.mm PROPERTIES LANGUAGE CXX)
+  endif()
 endif(APPLE)
 
 if(WIN32)
@@ -263,16 +285,16 @@ if(USE_OPENMP)
 endif(USE_OPENMP)
 
 if(USE_DARKTABLE_PROFILING)
-  add_definitions(-DUSE_DARKTABLE_PROFILING)
-  set(SOURCES ${SOURCES} "common/profiling.c")
+	add_definitions(-DUSE_DARKTABLE_PROFILING)
+	set(SOURCES ${SOURCES} "common/profiling.c")
 endif()
 
 #
 # Find all other required libraries for building
 #
 # GTK3 does pull glib, but this allows us to check for the version
-find_package(Glib 2.40 REQUIRED)
-add_definitions("-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_40")
+find_package(Glib 2.56 REQUIRED)
+add_definitions("-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_56")
 add_definitions("-DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_MIN_REQUIRED")
 include_directories(SYSTEM ${Glib_INCLUDE_DIRS})
 list(APPEND LIBS ${Glib_LIBRARIES})
@@ -308,7 +330,12 @@ if(USE_CAMERA_SUPPORT)
 endif(USE_CAMERA_SUPPORT)
 
 if(USE_OPENEXR)
-  find_package(OpenEXR)
+  find_package(OpenEXR 3.0 CONFIG)
+  if(TARGET OpenEXR::OpenEXR)
+    set(OpenEXR_LIBRARIES OpenEXR::OpenEXR)
+  else()
+    find_package(OpenEXR)
+  endif()
   if(OpenEXR_FOUND)
     include_directories(SYSTEM ${OpenEXR_INCLUDE_DIRS})
     list(APPEND LIBS ${OpenEXR_LIBRARIES})
@@ -368,6 +395,25 @@ find_package(Exiv2 0.24 REQUIRED)
 include_directories(SYSTEM ${Exiv2_INCLUDE_DIRS})
 list(APPEND LIBS ${Exiv2_LIBRARIES})
 add_definitions(${Exiv2_DEFINITIONS})
+
+# Optionally enable ISOBMFF support in Exiv2
+if (USE_ISOBMFF)
+  if(Exiv2_VERSION VERSION_GREATER_EQUAL "0.27.4")
+    # exiv2 >= 0.27.4 provides optional support for ISOBMFF files.
+    # This must be manually enabled during exiv2 build and can be checked with
+    # the EXV_ENABLE_BMFF symbol.
+    check_cxx_symbol_exists(EXV_ENABLE_BMFF "exiv2/exiv2.hpp" HAVE_EXV_ENABLE_BMFF)
+    if(HAVE_EXV_ENABLE_BMFF)
+      add_definitions(-DHAVE_LIBEXIV2_WITH_ISOBMFF=1)
+      set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} cr3 heif CACHE INTERNAL "")
+      message(STATUS "Exiv2 >= 0.27.4 found with ISOBMFF support (CR3, AVIF, HEIF)")
+    else()
+      message(STATUS "Exiv2 >= 0.27.4 found, but was not compiled with ISOBMFF support (CR3, AVIF, HEIF)")
+    endif()
+  else()
+    message(STATUS "Exiv2 < 0.27.4 found, no support for ISOBMFF files (CR3, AVIF, HEIF)")
+  endif()
+endif()
 
 if(USE_OPENJPEG)
   find_package(OpenJPEG)
@@ -465,6 +511,15 @@ if(USE_GMIC)
   endif(GMIC_FOUND)
 endif(USE_GMIC)
 
+if(USE_ICU)
+  find_package(ICU)
+  if(ICU_FOUND)
+    add_definitions(-DHAVE_ICU -DSQLITE_CORE -DSQLITE_ENABLE_ICU)
+    list(APPEND LIBS ${ICU_LIBRARIES})
+    set(SOURCES ${SOURCES} "common/sqliteicu.c")
+  endif(ICU_FOUND)
+endif(USE_ICU)
+
 #
 # Add HAVE_xxx defines used by darktable
 #
@@ -484,7 +539,7 @@ endif(USE_OPENCL)
 
 
 if(Gphoto2_FOUND)
-  set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" "gui/camera_import_dialog.c" )
+  set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" )
   add_definitions("-DHAVE_GPHOTO2")
 
   # Gphoto 2.5 changed the prototype of a set of callback functions.
@@ -558,15 +613,9 @@ if(NOT CUSTOM_CFLAGS)
   #endif()
 
   #-g MUST be set for ALL builds, or there will be no support for them when bugs happen
-
-  # TODO: check if these flags bring some good :
-  # -ftree-loop-distribution -fivopts -fipa-matrix-reorg -ftracer -fvect-cost-model -fvariable-expansion-in-unroller
-  # -fprefetch-loop-arrays -ftree-vect-loop-version -freorder-blocks-and-partition -fmodulo-sched-allow-regmoves
-  # -ftree-loop-im -ftree-loop-ivcanon -fsplit-ivs-in-unroller -funroll-loops
-  # also, in IOPs, in-loops branches could be forced to be compiled as different loops variants
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MARCH} ${DT_REQ_INSTRUCTIONS} -g")
   set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -O2")
-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math -fno-finite-math-only")
   if(CMAKE_COMPILER_IS_GNUCC)
     if(BUILD_SSE2_CODEPATHS)
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
@@ -580,7 +629,7 @@ if(NOT CUSTOM_CFLAGS)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MARCH} ${DT_REQ_INSTRUCTIONS} -g")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O2")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -fno-finite-math-only")
   if(CMAKE_COMPILER_IS_GNUCXX)
     if(BUILD_SSE2_CODEPATHS)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
@@ -607,14 +656,14 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.h" "${DARKTABLE_BINDIR}
 # Build external deps
 #
 if(USE_LUA)
-  find_package(Lua53 5.3)
-  if(Lua53_FOUND)
+  find_package(Lua54 5.4)
+  if(Lua54_FOUND)
     message(STATUS "Lua support: Enabled")
-    include_directories(SYSTEM ${Lua53_INCLUDE_DIRS})
-    list(APPEND LIBS ${Lua53_LDFLAGS})
+    include_directories(SYSTEM ${Lua54_INCLUDE_DIRS})
+    list(APPEND LIBS ${Lua54_LDFLAGS})
   else()
     if(DONT_USE_INTERNAL_LUA)
-      message(STATUS "Lua support: System library for lua 5.3 not found (to use darktable's version use -DDONT_USE_INTERNAL_LUA=Off)")
+      message(STATUS "Lua support: System library for lua 5.4 not found (to use darktable's version use -DDONT_USE_INTERNAL_LUA=Off)")
       set(USE_LUA OFF)
     else(DONT_USE_INTERNAL_LUA)
       message(STATUS "Lua support: System library not found (using darktable's version)")
@@ -622,7 +671,7 @@ if(USE_LUA)
       add_subdirectory(external/lua)
       list(APPEND LIBS lua)
     endif(DONT_USE_INTERNAL_LUA)
-  endif(Lua53_FOUND)
+  endif(Lua54_FOUND)
 
   if(USE_LUA)
     add_definitions("-DUSE_LUA")
@@ -645,6 +694,7 @@ if(USE_LUA)
       "lua/lualib.c"
       "lua/luastorage.c"
       "lua/modules.c"
+      "lua/password.c"
       "lua/preferences.c"
       "lua/print.c"
       "lua/storage.c"
@@ -674,9 +724,9 @@ else(USE_LUA)
 endif(USE_LUA)
 
 if(USE_LUA)
-  if(NOT Lua53_FOUND)
+  if(NOT Lua54_FOUND)
     list(APPEND LIB_DEPS lua) # 2nd half of the uglyness :/
-  endif(NOT Lua53_FOUND)
+  endif(NOT Lua54_FOUND)
   # liblautoc for lua automated interface generation
   add_library(lautoc_static STATIC IMPORTED)
   set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a POSITION_INDEPENDENT_CODE True)
@@ -691,7 +741,7 @@ include_directories(SYSTEM ${Pugixml_INCLUDE_DIRS})
 list(APPEND LIBS ${Pugixml_LIBRARIES})
 
 if(NOT SOURCE_PACKAGE)
-  add_definitions(-Werror)
+  add_definitions(-Werror -Wfatal-errors )
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -757,6 +807,8 @@ if(BUILD_PRINT)
       "common/cups_print.h"
       "common/cups_print.c"
       "common/printprof.c"
+      "common/printing.h"
+      "common/printing.c"
       )
     set(SOURCES ${SOURCES} ${SOURCE_FILES_PRINT})
     list(APPEND LIBS ${CUPS_LIBRARIES})
@@ -850,6 +902,7 @@ add_library(lib_darktable SHARED ${DARKTABLE_BINDIR}/preferences_gen.h ${DARKTAB
 # since this isn't the same directory we do have to manually set it
 set_source_files_properties(${DARKTABLE_BINDIR}/version_gen.c PROPERTIES GENERATED TRUE)
 
+add_dependencies(lib_darktable generate_conf)
 add_dependencies(lib_darktable generate_version)
 add_dependencies(lib_darktable generate_preferences)
 

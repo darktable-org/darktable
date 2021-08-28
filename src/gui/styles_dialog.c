@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -122,7 +122,7 @@ void _gui_styles_get_active_items(dt_gui_styles_dialog_t *sd, GList **enabled, G
         *enabled = g_list_append(*enabled, GINT_TO_POINTER(num));
         if(update != NULL)
         {
-          if(uactive || num == -1)
+          if(uactive)
             *update = g_list_append(*update, GINT_TO_POINTER(update_num));
           else
             *update = g_list_append(*update, GINT_TO_POINTER(-1));
@@ -540,9 +540,9 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
     GList *items = dt_styles_get_item_list(name, FALSE, imgid);
     if(items)
     {
-      do
+      for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
       {
-        dt_style_item_t *item = (dt_style_item_t *)items->data;
+        dt_style_item_t *item = (dt_style_item_t *)items_iter->data;
 
         if(item->num != -1 && item->selimg_num != -1) // defined in style and image
         {
@@ -568,7 +568,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
                              -1);
           has_new_item = TRUE;
         }
-      } while((items = g_list_next(items)));
+      }
       g_list_free_full(items, dt_style_item_free);
     }
   }
@@ -587,14 +587,14 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
     GList *items = dt_history_get_items(imgid, FALSE);
     if(items)
     {
-      do
+      for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
       {
-        dt_history_item_t *item = (dt_history_item_t *)items->data;
+        dt_history_item_t *item = (dt_history_item_t *)items_iter->data;
 
         /* lookup history item module */
         gboolean enabled = TRUE;
         dt_iop_module_t *module = NULL;
-        GList *modules = g_list_first(darktable.develop->iop);
+        GList *modules = darktable.develop->iop;
         if(modules)
         {
           GList *result = g_list_find_custom(
@@ -617,8 +617,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
                            -1);
 
         has_item = TRUE;
-
-      } while((items = g_list_next(items)));
+      }
       g_list_free_full(items, dt_history_item_free);
     }
     else

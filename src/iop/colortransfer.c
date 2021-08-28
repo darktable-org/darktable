@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "common/colorspaces.h"
+#include "common/imagebuf.h"
 #include "common/points.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -112,6 +113,11 @@ int flags()
   return IOP_FLAGS_DEPRECATED | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_PREVIEW_NON_OPENCL;
 }
 
+const char *deprecated_msg()
+{
+  return _("this module is deprecated. better use color mapping module instead.");
+}
+
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_Lab;
@@ -137,7 +143,7 @@ void connect_key_accels(dt_iop_module_t *self)
 static void capture_histogram(const float *col, const dt_iop_roi_t *roi, int *hist)
 {
   // build separate histogram
-  memset(hist, 0, HISTN * sizeof(int));
+  memset(hist, 0, sizeof(int) * HISTN);
   for(int k = 0; k < roi->height; k++)
     for(int i = 0; i < roi->width; i++)
     {
@@ -246,9 +252,9 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
   const int nit = 10;                                 // number of iterations
   const int samples = roi->width * roi->height * 0.2; // samples: only a fraction of the buffer.
 
-  float2 *const mean = malloc(n * sizeof(float2));
-  float2 *const var = malloc(n * sizeof(float2));
-  int *const cnt = malloc(n * sizeof(int));
+  float2 *const mean = malloc(sizeof(float2) * n);
+  float2 *const var = malloc(sizeof(float2) * n);
+  int *const cnt = malloc(sizeof(int) * n);
 
   // init n clusters for a, b channels at random
   for(int k = 0; k < n; k++)
@@ -276,7 +282,7 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
       for(int k = 0; k < n; k++)
       {
         const float L = col[3 * (roi->width * j + i)];
-        const float Lab[3] = { L, col[3 * (roi->width * j + i) + 1], col[3 * (roi->width * j + i) + 2] };
+        const dt_aligned_pixel_t Lab = { L, col[3 * (roi->width * j + i) + 1], col[3 * (roi->width * j + i) + 2] };
         // determine dist to mean_out
         const int c = get_cluster(Lab, n, mean_out);
 #ifdef _OPENMP
@@ -355,7 +361,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
       p->flag = ACQUIRE2;
     }
-    memcpy(out, in, sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, ch);
   }
   else if(data->flag == APPLY)
   {
@@ -381,13 +387,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     // cluster input buffer
-    float2 *const mean = malloc(data->n * sizeof(float2));
-    float2 *const var = malloc(data->n * sizeof(float2));
+    float2 *const mean = malloc(sizeof(float2) * data->n);
+    float2 *const var = malloc(sizeof(float2) * data->n);
 
     kmeans(in, roi_in, data->n, mean, var);
 
     // get mapping from input clusters to target clusters
-    int *const mapio = malloc(data->n * sizeof(int));
+    int *const mapio = malloc(sizeof(int) * data->n);
 
     get_cluster_mapping(data->n, mean, data->mean, mapio);
 
@@ -405,7 +411,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       for(int i = 0; i < roi_out->width; i++)
       {
         const float L = in[j];
-        const float Lab[3] = { L, in[j + 1], in[j + 2] };
+        const dt_aligned_pixel_t Lab = { L, in[j + 1], in[j + 2] };
 // a, b: subtract mean, scale nvar/var, add nmean
 #if 0 // single cluster, gives color banding
         const int ki = get_cluster(in + j, data->n, mean);
@@ -433,7 +439,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else
   {
-    memcpy(out, in, sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, ch);
   }
 }
 
@@ -458,9 +464,6 @@ acquire_button_pressed (GtkButton *button, dt_iop_module_t *self)
   // request color pick
   // needed to trigger expose events:
   self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-  self->color_picker_box[0] = self->color_picker_box[1] = 0.0f;
-  self->color_picker_box[2] = self->color_picker_box[3] = 1.0f;
-  self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
   p->flag = ACQUIRE;
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
@@ -545,7 +548,6 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   piece->data = malloc(sizeof(dt_iop_colortransfer_data_t));
   dt_iop_colortransfer_data_t *d = (dt_iop_colortransfer_data_t *)piece->data;
   d->flag = NEUTRAL;
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

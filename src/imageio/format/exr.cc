@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2020 darktable developers.
+   Copyright (C) 2010-2021 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -371,7 +371,7 @@ void gui_init(dt_imageio_module_format_t *self)
   const int compression_last = dt_conf_get_int("plugins/imageio/format/exr/compression");
 
   gui->compression = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->compression, NULL, _("compression mode"));
+  dt_bauhaus_widget_set_label(gui->compression, NULL, N_("compression mode"));
 
   dt_bauhaus_combobox_add(gui->compression, _("off"));
   dt_bauhaus_combobox_add(gui->compression, _("RLE"));
@@ -393,6 +393,9 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
+  dt_imageio_exr_gui_t *gui = (dt_imageio_exr_gui_t *)self->gui_data;
+
+  dt_bauhaus_combobox_set(gui->compression, dt_confgen_get_int("plugins/imageio/format/exr/compression", DT_DEFAULT));
 }
 
 

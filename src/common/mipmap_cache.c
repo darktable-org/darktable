@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -323,7 +323,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
       int imgfw= 0, imgfh= 0;
       // be sure that we have the right size values
       dt_image_get_final_size(get_imgid(entry->key), &imgfw, &imgfh);
-      entry->data_size = sizeof(struct dt_mipmap_buffer_dsc) + (imgfw + 4) * (imgfh + 4) * 4;
+      entry->data_size = sizeof(struct dt_mipmap_buffer_dsc) + (size_t)(imgfw + 4) * (imgfh + 4) * 4;
     }
     else if(mip <= DT_MIPMAP_F)
     {
@@ -536,10 +536,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   // adjust numbers to be large enough to hold what mem limit suggests.
   // we want at least 100MB, and consider 8G just still reasonable.
   const int64_t cache_memory = dt_conf_get_int64("cache_memory");
-  const int worker_threads = dt_conf_get_int("worker_threads");
   const size_t max_mem = CLAMPS(cache_memory, 100u << 20, ((size_t)8) << 30);
-  const uint32_t parallel = CLAMP(worker_threads, 1, 8);
-
   // Fixed sizes for the thumbnail mip levels, selected for coverage of most screen sizes
   int32_t mipsizes[DT_MIPMAP_F][2] = {
     { 180, 110 },             // mip0 - ~1/2 size previous one
@@ -564,7 +561,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     // header + buffer
   for(int k = DT_MIPMAP_F-1; k >= 0; k--)
     cache->buffer_size[k] = sizeof(struct dt_mipmap_buffer_dsc)
-                                + cache->max_width[k] * cache->max_height[k] * 4;
+                                + (size_t)cache->max_width[k] * cache->max_height[k] * 4;
 
   // clear stats:
   cache->mip_thumbs.stats_requests = 0;
@@ -587,8 +584,9 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   dt_cache_set_allocate_callback(&cache->mip_thumbs.cache, dt_mipmap_cache_allocate_dynamic, cache);
   dt_cache_set_cleanup_callback(&cache->mip_thumbs.cache, dt_mipmap_cache_deallocate_dynamic, cache);
 
-  const int full_entries
-      = MAX(2, parallel); // even with one thread you want two buffers. one for dr one for thumbs.
+  // even with one thread you want two buffers. one for dr one for thumbs.
+  // Also have the nr of cache entries larger than worker threads
+  const int full_entries = 2 * dt_worker_threads();
   const int32_t max_mem_bufs = nearest_power_of_two(full_entries);
 
   // for this buffer, because it can be very busy during import
@@ -969,32 +967,52 @@ dt_mipmap_size_t dt_mipmap_cache_get_matching_size(const dt_mipmap_cache_t *cach
   return best;
 }
 
+dt_mipmap_size_t dt_mipmap_cache_get_min_mip_from_pref(const char *value)
+{
+  if(strcmp(value, "always") == 0) return DT_MIPMAP_0;
+  if(strcmp(value, "small") == 0)  return DT_MIPMAP_1;
+  if(strcmp(value, "VGA") == 0)    return DT_MIPMAP_2;
+  if(strcmp(value, "720p") == 0)   return DT_MIPMAP_3;
+  if(strcmp(value, "1080p") == 0)  return DT_MIPMAP_4;
+  if(strcmp(value, "WQXGA") == 0)  return DT_MIPMAP_5;
+  if(strcmp(value, "4k") == 0)     return DT_MIPMAP_6;
+  if(strcmp(value, "5K") == 0)     return DT_MIPMAP_7;
+  return DT_MIPMAP_NONE;
+}
+
+void dt_mipmap_cache_remove_at_size(dt_mipmap_cache_t *cache, const uint32_t imgid, const dt_mipmap_size_t mip)
+{
+  if(mip > DT_MIPMAP_8 || mip < DT_MIPMAP_0) return;
+  // get rid of all ldr thumbnails:
+  const uint32_t key = get_key(imgid, mip);
+  dt_cache_entry_t *entry = dt_cache_testget(&_get_cache(cache, mip)->cache, key, 'w');
+  if(entry)
+  {
+    ASAN_UNPOISON_MEMORY_REGION(entry->data, dt_mipmap_buffer_dsc_size);
+    struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
+    dsc->flags |= DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE;
+    dt_cache_release(&_get_cache(cache, mip)->cache, entry);
+
+    // due to DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE, removes thumbnail from disc
+    dt_cache_remove(&_get_cache(cache, mip)->cache, key);
+  }
+  else
+  {
+    // ugly, but avoids alloc'ing thumb if it is not there.
+    dt_mipmap_cache_unlink_ondisk_thumbnail((&_get_cache(cache, mip)->cache)->cleanup_data, imgid, mip);
+  }
+}
+
 void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid)
 {
   // get rid of all ldr thumbnails:
 
   for(dt_mipmap_size_t k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
   {
-    const uint32_t key = get_key(imgid, k);
-    dt_cache_entry_t *entry = dt_cache_testget(&_get_cache(cache, k)->cache, key, 'w');
-    if(entry)
-    {
-      ASAN_UNPOISON_MEMORY_REGION(entry->data, dt_mipmap_buffer_dsc_size);
-      struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
-      dsc->flags |= DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE;
-      dt_cache_release(&_get_cache(cache, k)->cache, entry);
-
-      // due to DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE, removes thumbnail from disc
-      dt_cache_remove(&_get_cache(cache, k)->cache, key);
-    }
-    else
-    {
-      // ugly, but avoids alloc'ing thumb if it is not there.
-      dt_mipmap_cache_unlink_ondisk_thumbnail((&_get_cache(cache, k)->cache)->cleanup_data, imgid, k);
-    }
+    dt_mipmap_cache_remove_at_size(cache, imgid, k);
   }
 }
-void dt_mipmap_cache_evict_at_size(dt_mipmap_cache_t *cache, const uint32_t imgid, dt_mipmap_size_t mip)
+void dt_mipmap_cache_evict_at_size(dt_mipmap_cache_t *cache, const uint32_t imgid, const dt_mipmap_size_t mip)
 {
   const uint32_t key = get_key(imgid, mip);
   // write thumbnail to disc if not existing there
@@ -1131,7 +1149,7 @@ static int _write_image(dt_imageio_module_data_t *data, const char *filename, co
                         const gboolean export_masks)
 {
   _dummy_data_t *d = (_dummy_data_t *)data;
-  memcpy(d->buf, in, data->width * data->height * sizeof(uint32_t));
+  memcpy(d->buf, in, sizeof(uint32_t) * data->width * data->height);
   return 0;
 }
 
@@ -1154,7 +1172,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
     return;
   }
 
-  const gboolean altered = !dt_image_basic(imgid);
+  const gboolean altered = dt_image_altered(imgid);
   int res = 1;
 
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
@@ -1163,7 +1181,11 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
   const int incompatible = !strncmp(cimg->exif_maker, "Phase One", 9);
   dt_image_cache_read_release(darktable.image_cache, cimg);
 
-  if(!altered && !dt_conf_get_bool("never_use_embedded_thumb") && !incompatible)
+  const char *min = dt_conf_get_string_const("plugins/lighttable/thumbnail_raw_min_level");
+  const dt_mipmap_size_t min_s = dt_mipmap_cache_get_min_mip_from_pref(min);
+  const gboolean use_embedded = (size <= min_s);
+
+  if(!altered && use_embedded && !incompatible)
   {
     const dt_image_orientation_t orientation = dt_image_get_orientation(imgid);
 

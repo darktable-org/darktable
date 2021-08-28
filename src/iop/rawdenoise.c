@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2021 darktable developers.
 
 
     darktable is free software: you can redistribute it and/or modify
@@ -21,10 +21,13 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
+#include "common/imagebuf.h"
+#include "common/dwt.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
+#include "develop/openmp_maths.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -121,6 +124,15 @@ const char *name()
   return _("raw denoise");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("denoise the raw picture early in the pipeline"),
+                                      _("corrective"),
+                                      _("linear, raw, scene-referred"),
+                                      _("linear, raw"),
+                                      _("linear, raw, scene-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_SUPPORTS_BLENDING;
@@ -136,188 +148,112 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_RAW;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "noise threshold"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "noise threshold", GTK_WIDGET(g->threshold));
-}
-
-// transposes image, it is faster to read columns than to write them.
-static void hat_transform(float *temp, const float *const base, int stride, int size, int scale)
-{
-  int i;
-  const float *basep0;
-  const float *basep1;
-  const float *basep2;
-  const size_t stxsc = (size_t)stride * scale;
-
-  basep0 = base;
-  basep1 = base + stxsc;
-  basep2 = base + stxsc;
-
-  for(i = 0; i < scale; i++, basep0 += stride, basep1 -= stride, basep2 += stride)
-    temp[i] = (*basep0 + *basep0 + *basep1 + *basep2) * 0.25f;
-
-  for(; i < size - scale; i++, basep0 += stride)
-    temp[i] = ((*basep0) * 2 + *(basep0 - stxsc) + *(basep0 + stxsc)) * 0.25f;
-
-  basep1 = basep0 - stxsc;
-  basep2 = base + stride * (size - 2);
-
-  for(; i < size; i++, basep0 += stride, basep1 += stride, basep2 -= stride)
-    temp[i] = (*basep0 + *basep0 + *basep1 + *basep2) * 0.25f;
-}
-
 #define BIT16 65536.0
 
-static void wavelet_denoise(const float *const in, float *const out, const dt_iop_roi_t *const roi,
-                            dt_iop_rawdenoise_data_t *data, uint32_t filters)
+static void compute_channel_noise(float *const noise, int color, const dt_iop_rawdenoise_data_t *const data)
 {
-  float threshold = data->threshold;
-  int lev;
-  float noise_all[] = { 0.8002, 0.2735, 0.1202, 0.0585, 0.0291, 0.0152, 0.0080, 0.0044 };
+  // note that these constants are the same for X-Trans and Bayer, as they are proportional to image detail on
+  // each channel, not the sensor pattern
+  static const float noise_all[] = { 0.8002, 0.2735, 0.1202, 0.0585, 0.0291, 0.0152, 0.0080, 0.0044 };
   for(int i = 0; i < DT_IOP_RAWDENOISE_BANDS; i++)
   {
     // scale the value from [0,1] to [0,16],
     // and makes the "0.5" neutral value become 1
-    float threshold_exp_4 = data->force[DT_RAWDENOISE_ALL][DT_IOP_RAWDENOISE_BANDS - i - 1];
-    threshold_exp_4 *= threshold_exp_4;
-    threshold_exp_4 *= threshold_exp_4;
-    noise_all[i] = noise_all[i] * threshold_exp_4 * 16.0;
+    float chan_threshold_exp_4;
+    switch(color)
+    {
+    case 0:
+      chan_threshold_exp_4 = data->force[DT_RAWDENOISE_R][DT_IOP_RAWDENOISE_BANDS - i - 1];
+      break;
+    case 2:
+      chan_threshold_exp_4 = data->force[DT_RAWDENOISE_B][DT_IOP_RAWDENOISE_BANDS - i - 1];
+      break;
+    default:
+      chan_threshold_exp_4 = data->force[DT_RAWDENOISE_G][DT_IOP_RAWDENOISE_BANDS - i - 1];
+      break;
+    }
+    chan_threshold_exp_4 *= chan_threshold_exp_4;
+    chan_threshold_exp_4 *= chan_threshold_exp_4;
+    // repeat for the overall all-channels thresholds
+    float all_threshold_exp_4 = data->force[DT_RAWDENOISE_ALL][DT_IOP_RAWDENOISE_BANDS - i - 1];
+    all_threshold_exp_4 *= all_threshold_exp_4;
+    all_threshold_exp_4 *= all_threshold_exp_4;
+    noise[i] = noise_all[i] * all_threshold_exp_4 * chan_threshold_exp_4 * 16.0f * 16.0f;
+    // the following multiplication needs to stay separate from the above line, because merging the two changes
+    // the results on the integration test!
+    noise[i] *= data->threshold;
   }
+}
 
+static void wavelet_denoise(const float *const restrict in, float *const restrict out, const dt_iop_roi_t *const roi,
+                            const dt_iop_rawdenoise_data_t * const data, const uint32_t filters)
+{
   const size_t size = (size_t)(roi->width / 2 + 1) * (roi->height / 2 + 1);
+  float *const restrict fimg = dt_alloc_align_float(size);
+  if (!fimg)
+    return;
+
+  const int nc = 4;
+  for(int c = 0; c < nc; c++) /* denoise R,G1,B,G3 individually */
+  {
+    const int color = FC(c % 2, c / 2, filters);
+    float noise[DT_IOP_RAWDENOISE_BANDS];
+    compute_channel_noise(noise,color,data);
+
+    // adjust for odd width and height
+    const int halfwidth = roi->width / 2 + (roi->width & (~(c >> 1)) & 1);
+    const int halfheight = roi->height / 2 + (roi->height & (~c) & 1);
+
+    // collect one of the R/G1/G2/B channels into a monochrome image, applying sqrt() to the values as a
+    // variance-stabilizing transform
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(in, fimg, roi, halfwidth) \
+    shared(c) \
+    schedule(static)
+#endif
+    for(int row = c & 1; row < roi->height; row += 2)
+    {
+      float *const restrict fimgp = fimg + (size_t)row / 2 * halfwidth;
+      const int offset = (c & 2) >> 1;
+      const float *const restrict inp = in + (size_t)row * roi->width + offset;
+      const int senselwidth = (roi->width-offset+1)/2;
+      for(int col = 0; col < senselwidth; col++)
+        fimgp[col] = sqrtf(MAX(0.0f, inp[2*col]));
+    }
+
+    // perform the wavelet decomposition and denoising
+    dwt_denoise(fimg,halfwidth,halfheight,DT_IOP_RAWDENOISE_BANDS,noise);
+
+    // distribute the denoised data back out to the original R/G1/G2/B channel, squaring the resulting values to
+    // undo the original transform
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(fimg, halfwidth, out, roi, size) \
+    shared(c) \
+    schedule(static)
+#endif
+    for(int row = c & 1; row < roi->height; row += 2)
+    {
+      const float *const restrict fimgp = fimg + (size_t)row / 2 * halfwidth;
+      const int offset = (c & 2) >> 1;
+      float *const restrict outp = out + (size_t)row * roi->width + offset;
+      const int senselwidth = (roi->width-offset+1)/2;
+      for(int col = 0; col < senselwidth; col++)
+      {
+        float d = fimgp[col];
+        outp[2*col] = d * d;
+      }
+    }
+  }
 #if 0
+  /* FIXME: Haven't ported this part yet */
   float maximum = 1.0;		/* FIXME */
   float black = 0.0;		/* FIXME */
   maximum *= BIT16;
   black *= BIT16;
   for (c=0; c<4; c++)
     cblack[c] *= BIT16;
-#endif
-  float *const fimg = calloc(size * 4, sizeof *fimg);
-
-
-  const int nc = 4;
-  for(int c = 0; c < nc; c++) /* denoise R,G1,B,G3 individually */
-  {
-    int color = FC(c % 2, c / 2, filters);
-    float noise[DT_IOP_RAWDENOISE_BANDS];
-    for(int i = 0; i < DT_IOP_RAWDENOISE_BANDS; i++)
-    {
-      float threshold_exp_4;
-      switch(color)
-      {
-        case 0:
-          threshold_exp_4 = data->force[DT_RAWDENOISE_R][DT_IOP_RAWDENOISE_BANDS - i - 1];
-          break;
-        case 2:
-          threshold_exp_4 = data->force[DT_RAWDENOISE_B][DT_IOP_RAWDENOISE_BANDS - i - 1];
-          break;
-        default:
-          threshold_exp_4 = data->force[DT_RAWDENOISE_G][DT_IOP_RAWDENOISE_BANDS - i - 1];
-          break;
-      }
-      threshold_exp_4 *= threshold_exp_4;
-      threshold_exp_4 *= threshold_exp_4;
-      noise[i] = noise_all[i] * threshold_exp_4 * 16.0;
-    }
-
-    // zero lowest quarter part
-    memset(fimg, 0, size * sizeof(float));
-
-    // adjust for odd width and height
-    const int halfwidth = roi->width / 2 + (roi->width & (~(c >> 1)) & 1);
-    const int halfheight = roi->height / 2 + (roi->height & (~c) & 1);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, fimg, roi, size, halfwidth) \
-    shared(c) \
-    schedule(static)
-#endif
-    for(int row = c & 1; row < roi->height; row += 2)
-    {
-      float *fimgp = fimg + size + (size_t)row / 2 * halfwidth;
-      int col = (c & 2) >> 1;
-      const float *inp = in + (size_t)row * roi->width + col;
-      for(; col < roi->width; col += 2, fimgp++, inp += 2) *fimgp = sqrt(MAX(0, *inp));
-    }
-
-    int lastpass;
-
-    for(lev = 0; lev < 5; lev++)
-    {
-      const size_t pass1 = size * ((lev & 1) * 2 + 1);
-      const size_t pass2 = 2 * size;
-      const size_t pass3 = 4 * size - pass1;
-
-// filter horizontally and transpose
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(fimg, halfheight, halfwidth, pass1, pass2) \
-      shared(lev) \
-      schedule(static)
-#endif
-      for(int col = 0; col < halfwidth; col++)
-      {
-        hat_transform(fimg + pass2 + (size_t)col * halfheight, fimg + pass1 + col, halfwidth, halfheight,
-                      1 << lev);
-      }
-// filter vertically and transpose back
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(fimg, halfheight, halfwidth, pass2, pass3) \
-      shared(lev) \
-      schedule(static)
-#endif
-      for(int row = 0; row < halfheight; row++)
-      {
-        hat_transform(fimg + pass3 + (size_t)row * halfwidth, fimg + pass2 + row, halfheight, halfwidth,
-                      1 << lev);
-      }
-
-      const float thold = threshold * noise[lev];
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(fimg, halfheight, halfwidth, pass1, pass3, thold) \
-      shared(lev)
-#endif
-      for(size_t i = 0; i < (size_t)halfwidth * halfheight; i++)
-      {
-        float *fimgp = fimg + i;
-        const float diff = fimgp[pass1] - fimgp[pass3];
-        fimgp[0] += copysignf(fmaxf(fabsf(diff) - thold, 0.0f), diff);
-      }
-
-      lastpass = pass3;
-    }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(fimg, halfwidth, out, roi) \
-    shared(c, lastpass) \
-    schedule(static)
-#endif
-    for(int row = c & 1; row < roi->height; row += 2)
-    {
-      const float *fimgp = fimg + (size_t)row / 2 * halfwidth;
-      int col = (c & 2) >> 1;
-      float *outp = out + (size_t)row * roi->width + col;
-      for(; col < roi->width; col += 2, fimgp++, outp += 2)
-      {
-        float d = fimgp[0] + fimgp[lastpass];
-        *outp = d * d;
-      }
-    }
-  }
-#if 0
-  /* FIXME: Haven't ported this part yet */
   if (filters && colors == 3)	/* pull G1 and G3 closer together */
   {
     float *window[4];
@@ -345,8 +281,8 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
         float avg = ( window[0][col-1] + window[0][col+1] +
                       window[2][col-1] + window[2][col+1] - blk[~row & 1]*4 )
                     * mul[row & 1] + (window[1][col] + blk[row & 1]) * 0.5;
-        avg = avg < 0 ? 0 : sqrt(avg);
-        float diff = sqrt(BAYER(row,col)) - avg;
+        avg = avg > 0 ? sqrtf(avg) : 0;
+        float diff = sqrtf(BAYER(row,col)) - avg;
         if      (diff < -thold) diff += thold;
         else if (diff >  thold) diff -= thold;
         else diff = 0;
@@ -355,159 +291,197 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
     }
   }
 #endif
-  free(fimg);
+  dt_free_align(fimg);
 }
 
-static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_iop_roi_t *const roi,
-                                   dt_iop_rawdenoise_data_t *data, const uint8_t (*const xtrans)[6])
+static inline float vstransform(const float value)
 {
-  float threshold = data->threshold;
-  // note that these constants are the same for X-Trans and Bayer, as
-  // they are proportional to image detail on each channel, not the
-  // sensor pattern
-  float noise_all[] = { 0.8002, 0.2735, 0.1202, 0.0585, 0.0291, 0.0152, 0.0080, 0.0044 };
-  for(int i = 0; i < DT_IOP_RAWDENOISE_BANDS; i++)
-  {
-    // scale the value from [0,1] to [0,16],
-    // and makes the "0.5" neutral value become 1
-    float threshold_exp_4 = data->force[DT_RAWDENOISE_ALL][DT_IOP_RAWDENOISE_BANDS - i - 1];
-    threshold_exp_4 *= threshold_exp_4;
-    threshold_exp_4 *= threshold_exp_4;
-    noise_all[i] = noise_all[i] * threshold_exp_4 * 16.0;
-  }
+  return sqrtf(MAX(0.0f, value));
+}
 
+static void wavelet_denoise_xtrans(const float *const restrict in, float *const restrict out,
+                                   const dt_iop_roi_t *const restrict roi,
+                                   const dt_iop_rawdenoise_data_t *const data, const uint8_t (*const xtrans)[6])
+{
   const int width = roi->width;
   const int height = roi->height;
   const size_t size = (size_t)width * height;
-  float *const fimg = malloc((size_t)size * 4 * sizeof(float));
+  // allocate a buffer for the particular color channel to be denoise; we add two rows to simplify the
+  // channel-extraction code (no special case for top/bottom row)
+  float *const img = dt_alloc_align_float((size_t)width * (height+2));
+  if (!img)
+  {
+    // we ran out of memory, so just pass through the image without denoising
+    memcpy(out, in, sizeof(float) * size);
+    return;
+  }
+  float *const fimg = img + width;	// point at the actual color channel contents in the buffer
 
   for(int c = 0; c < 3; c++)
   {
     float noise[DT_IOP_RAWDENOISE_BANDS];
-    for(int i = 0; i < DT_IOP_RAWDENOISE_BANDS; i++)
-    {
-      float threshold_exp_4;
-      switch(c)
-      {
-        case 0:
-          threshold_exp_4 = data->force[DT_RAWDENOISE_R][DT_IOP_RAWDENOISE_BANDS - i - 1];
-          break;
-        case 2:
-          threshold_exp_4 = data->force[DT_RAWDENOISE_B][DT_IOP_RAWDENOISE_BANDS - i - 1];
-          break;
-        default:
-          threshold_exp_4 = data->force[DT_RAWDENOISE_G][DT_IOP_RAWDENOISE_BANDS - i - 1];
-          break;
-      }
-      threshold_exp_4 *= threshold_exp_4;
-      threshold_exp_4 *= threshold_exp_4;
-      noise[i] = noise_all[i] * threshold_exp_4 * 16.0;
-    }
-    memset(fimg, 0, size * sizeof(float));
+    compute_channel_noise(noise, c, data);
 
+    // ensure a defined value for every pixel in the top and bottom rows, even if they are more than
+    // one pixel away from the nearest neighbor of the same color and thus the simple interpolation
+    // used in the following loop does not set them
+    for (size_t col = 0; col < width; col++)
+    {
+      fimg[col] = 0.5f;
+      fimg[(size_t)(height-1)*width + col] = 0.5f;
+    }
+    const size_t nthreads = darktable.num_openmp_threads; // go direct, dt_get_num_threads() always returns numprocs
+    const size_t chunksize = (height + nthreads - 1) / nthreads;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(fimg, height, in, roi, size, width, xtrans) \
-    shared(c) \
+  dt_omp_firstprivate(fimg, height, in, roi, size, width, xtrans, nthreads, chunksize) \
+    shared(c) num_threads(nthreads) \
     schedule(static)
 #endif
-    for(int row = (c != 1); row < height - 1; row++)
+    for(size_t chunk = 0; chunk < nthreads; chunk++)
     {
-      int col = (c != 1);
-      const float *inp = in + (size_t)row * width + col;
-      float *fimgp = fimg + size + (size_t)row * width + col;
-      for(; col < width - 1; col++, inp++, fimgp++)
-        if(FCxtrans(row, col, roi, xtrans) == c)
+      const size_t start = chunk * chunksize;
+      const size_t pastend = MIN(start + chunksize,height);
+      for(size_t row = start; row < pastend; row++)
+      {
+        const float *const restrict inp = in + row * width;
+        float *const restrict fimgp = fimg + row * width;
+        // handle red/blue pixel in first column
+        if (c != 1 && FCxtrans(row, 0, roi, xtrans) == c)
         {
-          float d = sqrt(MAX(0, *inp));
-          *fimgp = d;
-          // cheap nearest-neighbor interpolate
-          if(c == 1)
-            fimgp[1] = fimgp[width] = d;
-          else
+          // copy to neighbors above and right
+          const float d = vstransform(inp[0]);
+          fimgp[0] = fimgp[-width] = fimgp[-width+1] = d;
+        }
+        for(size_t col = (c != 1); col < width-1; col++)
+        {
+          if (FCxtrans(row, col, roi, xtrans) == c)
           {
-            fimgp[-width - 1] = fimgp[-width] = fimgp[-width + 1] = fimgp[-1] = fimgp[1] = fimgp[width - 1]
-                = fimgp[width] = fimgp[width + 1] = d;
+            // the pixel at the current location has the desired color, so apply sqrt() as a variance-stablizing
+            // transform, and then do cheap nearest-neighbor interpolation by copying it to appropriate neighbors
+            const float d = vstransform(inp[col]);
+            fimgp[col] = d;
+            if (c == 1) // green pixel
+            {
+              // Copy to the right and down.  The X-Trans color layout is such that copying to those two neighbors
+              // results in all positions being filled except in the left-most and right-most columns and sometimes
+              // the topmost and bottom-most rows (depending on how the ROI aligns with the CFA).
+              fimgp[col+1] = fimgp[col+width] = d;
+            }
+            else // red or blue pixel
+            {
+              // Copy value to all eight neighbors; it's OK to copy to the row above even when we're in row 0 (or
+              // the row below when in the last row) because the destination is sandwiched between other buffers
+              // that will be overwritten afterwards anyway.  We need to copy to all adjacent positions because
+              // there may be two green pixels between nearest red/red or blue/blue, so each will cover one of the
+              // greens.
+              fimgp[col-width-1] = fimgp[col-width] = fimgp[col-width+1] = d; // row above
+              fimgp[col-1] = fimgp[col+1] = d;                                // left and right
+              if (row < pastend-1)
+                fimgp[col+width-1] = fimgp[col+width] = fimgp[col+width+1] = d; // row below
+            }
           }
         }
-    }
-
-    int lastpass;
-
-    for(int lev = 0; lev < 5; lev++)
-    {
-      const size_t pass1 = size * ((lev & 1) * 2 + 1);
-      const size_t pass2 = 2 * size;
-      const size_t pass3 = 4 * size - pass1;
-
-// filter horizontally and transpose
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(fimg, height, pass1, pass2, width) \
-      shared(lev) \
-      schedule(static)
-#endif
-      for(int col = 0; col < width; col++)
-        hat_transform(fimg + pass2 + (size_t)col * height, fimg + pass1 + col, width, height, 1 << lev);
-// filter vertically and transpose back
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(fimg, height, pass2, pass3, width) \
-      shared(lev) \
-      schedule(static)
-#endif
-      for(int row = 0; row < height; row++)
-        hat_transform(fimg + pass3 + (size_t)row * width, fimg + pass2 + row, height, width, 1 << lev);
-
-      const float thold = threshold * noise[lev];
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(fimg, pass1, pass3, size, thold) \
-      shared(lev)
-#endif
-      for(size_t i = 0; i < size; i++)
-      {
-        float *fimgp = fimg + i;
-        const float diff = fimgp[pass1] - fimgp[pass3];
-        fimgp[0] += copysignf(fmaxf(fabsf(diff) - thold, 0.0f), diff);
+        // leftmost and rightmost pixel in the row may still need to be filled in from a neighbor
+        if (FCxtrans(row, 0, roi, xtrans) != c)
+        {
+          int src = 0;	// fallback is current sensel even if it has the wrong color
+          if (row > 1 && FCxtrans(row-1, 0, roi, xtrans) == c)
+            src = -width;
+          else if (FCxtrans(row, 1, roi, xtrans) == c)
+            src = 1;
+          else if (row > 1 && FCxtrans(row-1, 1, roi, xtrans) == c)
+            src = -width + 1;
+          fimgp[0] = vstransform(inp[src]);
+        }
+        // check the right-most pixel; if it's the desired color and not green, copy it to the neighbors
+        if (c != 1 && FCxtrans(row, width-1, roi, xtrans) == c)
+        {
+          // copy to neighbors above and left
+          const float d = vstransform(inp[width-1]);
+          fimgp[width-2] = fimgp[width-1] = fimgp[-1] = d;
+        }
+        else if (FCxtrans(row, width-1, roi, xtrans) != c)
+        {
+          int src = width-1;	// fallback is current sensel even if it has the wrong color
+          if (FCxtrans(row, width-2, roi, xtrans) == c)
+            src = width-2;
+          else if (row > 1 && FCxtrans(row-1, width-1, roi, xtrans) == c)
+            src = -1;
+          else if (row > 1 && FCxtrans(row-1, width-2, roi, xtrans) == c)
+            src = -2;
+          fimgp[width-1] = vstransform(inp[src]);
+        }
       }
-
-      lastpass = pass3;
+      if (pastend < height)
+      {
+        // Another slice follows us, and by updating the last row of our slice, we've clobbered values that
+        // were previously written by the other thread.  Restore them.
+        const float *const restrict inp = in + pastend * width;
+        float *const restrict fimgp = fimg + pastend * width;
+        for (size_t col = 0; col < width-1; col++)
+        {
+          if (FCxtrans(pastend, col, roi, xtrans) == c)
+          {
+            const float d = vstransform(inp[col]);
+            if (c == 1) // green pixel
+            {
+              if (FCxtrans(pastend, col+1, roi, xtrans) != c)
+                fimgp[col] = fimgp[col+1] = d;  // copy to the right
+            }
+            else // red/blue pixel
+            {
+              // copy the pixel's adjusted value to the prior row and left and right (if not at edge)
+              fimgp[col-width] = fimgp[col-width+1] = d;
+              if (col > 0) fimgp[col-width-1] = d;
+            }
+          }
+          // some red and blue values may need to be restored from the row TWO past the end of our slice
+          if (c != 1 && pastend+1 < height && FCxtrans(pastend+1, col, roi, xtrans) == c)
+          {
+            const float d = vstransform(inp[col+width]);
+            fimgp[col] = fimgp[col+1] = d;
+            if (col > 0) fimgp[col-1] = d;
+          }
+        }
+      }
     }
 
+    // perform the wavelet decomposition and denoising
+    dwt_denoise(fimg,width,height,DT_IOP_RAWDENOISE_BANDS,noise);
+
+    // distribute the denoised data back out to the original R/G/B channel, squaring the resulting values to
+    // undo the original transform
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(height, fimg, roi, width, xtrans) \
-    shared(c, lastpass, out) \
+    dt_omp_firstprivate(height, fimg, roi, width, xtrans, c) \
+    dt_omp_sharedconst(out) \
     schedule(static)
 #endif
     for(int row = 0; row < height; row++)
     {
-      const float *fimgp = fimg + (size_t)row * width;
-      float *outp = out + (size_t)row * width;
-      for(int col = 0; col < width; col++, outp++, fimgp++)
+      const float *const restrict fimgp = fimg + (size_t)row * width;
+      float *const restrict outp = out + (size_t)row * width;
+      for(int col = 0; col < width; col++)
         if(FCxtrans(row, col, roi, xtrans) == c)
         {
-          float d = fimgp[0] + fimgp[lastpass];
-          *outp = d * d;
+          float d = fimgp[col];
+          outp[col] = d * d;
         }
     }
   }
 
-  free(fimg);
+  dt_free_align(img);
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)piece->data;
-
-  const int width = roi_in->width;
-  const int height = roi_in->height;
+  const dt_iop_rawdenoise_data_t *const restrict d = (dt_iop_rawdenoise_data_t *)piece->data;
 
   if(!(d->threshold > 0.0f))
   {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float)*width*height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_in->width, roi_in->height, piece->colors);
   }
   else
   {
@@ -538,10 +512,12 @@ void init(dt_iop_module_t *module)
 void reload_defaults(dt_iop_module_t *module)
 {
   // can't be switched on for non-raw images:
-  if(dt_image_is_raw(&module->dev->image_storage))
-    module->hide_enable_button = 0;
-  else
-    module->hide_enable_button = 1;
+  module->hide_enable_button = !dt_image_is_raw(&module->dev->image_storage);
+
+  if(module->widget)
+  {
+    gtk_stack_set_visible_child_name(GTK_STACK(module->widget), module->hide_enable_button ? "non_raw" : "raw");
+  }
 
   module->default_enabled = 0;
 }
@@ -580,7 +556,6 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
     for(int k = 0; k < DT_IOP_RAWDENOISE_BANDS; k++)
       (void)dt_draw_curve_add_point(d->curve[ch], default_params->x[ch][k], default_params->y[ch][k]);
   }
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -597,7 +572,6 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
   dt_iop_cancel_history_update(self);
   dt_bauhaus_slider_set_soft(g->threshold, p->threshold);
-  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->hide_enable_button ? "non_raw" : "raw");
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -827,17 +801,6 @@ static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *even
     c->x_move = -1;
     gtk_widget_queue_draw(widget);
   }
-  gint x, y;
-#if GTK_CHECK_VERSION(3, 20, 0)
-  gdk_window_get_device_position(
-      event->window, gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_window_get_display(event->window))), &x,
-      &y, 0);
-#else
-  gdk_window_get_device_position(
-      event->window,
-      gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdk_window_get_display(event->window))),
-      &x, &y, NULL);
-#endif
   return TRUE;
 }
 
@@ -903,11 +866,21 @@ static gboolean rawdenoise_scrolled(GtkWidget *widget, GdkEventScroll *event, gp
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
-  gdouble delta_y;
-  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  int delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
-    c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.2 / DT_IOP_RAWDENOISE_BANDS, 1.0);
-    gtk_widget_queue_draw(widget);
+    if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    {
+      //adjust aspect
+      const int aspect = dt_conf_get_int("plugins/darkroom/rawdenoise/aspect_percent");
+      dt_conf_set_int("plugins/darkroom/rawdenoise/aspect_percent", aspect + delta_y);
+      dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
+    }
+    else
+    {
+      c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * delta_y), 0.2 / DT_IOP_RAWDENOISE_BANDS, 1.0);
+      gtk_widget_queue_draw(widget);
+    }
   }
 
   return TRUE;
@@ -929,13 +902,14 @@ void gui_init(dt_iop_module_t *self)
 
   c->channel = dt_conf_get_int("plugins/darkroom/rawdenoise/gui_channel");
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
+  dt_action_define_iop(self, NULL, N_("channel"), GTK_WIDGET(c->channel_tabs), &dt_action_def_tabs_all_rgb);
 
-  dt_ui_notebook_page(c->channel_tabs, _("all"), NULL);
-  dt_ui_notebook_page(c->channel_tabs, _("R"), NULL);
-  dt_ui_notebook_page(c->channel_tabs, _("G"), NULL);
-  dt_ui_notebook_page(c->channel_tabs, _("B"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, N_("all"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, N_("R"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, N_("G"), NULL);
+  dt_ui_notebook_page(c->channel_tabs, N_("B"), NULL);
 
-  gtk_widget_show_all(GTK_WIDGET(c->channel_tabs));
+  gtk_widget_show(gtk_notebook_get_nth_page(c->channel_tabs, c->channel));
   gtk_notebook_set_current_page(c->channel_tabs, c->channel);
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(rawdenoise_tab_switch), self);
 
@@ -955,14 +929,17 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
+  const float aspect = dt_conf_get_int("plugins/darkroom/rawdenoise/aspect_percent") / 100.0;
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
+  g_object_set_data(G_OBJECT(c->area), "iop-instance", self);
+  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(c->area), NULL);
 
   gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(c->area), FALSE, FALSE, 0);
 
-  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
-                                                 | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                                 | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
+  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
+                                           | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                                           | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(rawdenoise_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(rawdenoise_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(rawdenoise_button_release), self);

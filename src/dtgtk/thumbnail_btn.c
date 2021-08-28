@@ -40,10 +40,9 @@ static void _thumbnail_btn_init(GtkDarktableThumbnailBtn *button)
 
 static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
 {
-  g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_THUMBNAIL_BTN(widget), FALSE);
 
-  if(gtk_widget_get_allocated_height(widget) < 2 || gtk_widget_get_allocated_height(widget) < 2) return TRUE;
+  if(gtk_widget_get_allocated_height(widget) < 2 || gtk_widget_get_allocated_width(widget) < 2) return TRUE;
 
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
 
@@ -82,12 +81,14 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
 
     if(flags & CPF_DO_NOT_USE_BORDER)
     {
-      DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0, 0, allocation.width, allocation.height, flags, bg_color);
+      DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0, 0, allocation.width, allocation.height, flags,
+                                        DTGTK_THUMBNAIL_BTN(widget)->icon_data ? DTGTK_THUMBNAIL_BTN(widget)->icon_data : bg_color);
     }
     else
     {
       DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0.125 * allocation.width, 0.125 * allocation.height,
-                                        0.75 * allocation.width, 0.75 * allocation.height, flags, bg_color);
+                                        0.75 * allocation.width, 0.75 * allocation.height, flags,
+                                        DTGTK_THUMBNAIL_BTN(widget)->icon_data ? DTGTK_THUMBNAIL_BTN(widget)->icon_data : bg_color);
     }
   }
   // and eventually the image border
@@ -102,6 +103,8 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
 
 static gboolean _thumbnail_btn_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event)
 {
+  g_return_val_if_fail(widget != NULL, FALSE);
+
   int flags = gtk_widget_get_state_flags(widget);
   flags |= GTK_STATE_FLAG_PRELIGHT;
 
@@ -111,6 +114,8 @@ static gboolean _thumbnail_btn_enter_notify_callback(GtkWidget *widget, GdkEvent
 }
 static gboolean _thumbnail_btn_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event)
 {
+  g_return_val_if_fail(widget != NULL, FALSE);
+
   int flags = gtk_widget_get_state_flags(widget);
   flags &= ~GTK_STATE_FLAG_PRELIGHT;
 
@@ -129,8 +134,8 @@ GtkWidget *dtgtk_thumbnail_btn_new(DTGTKCairoPaintIconFunc paint, gint paintflag
   button->icon = paint;
   button->icon_flags = paintflags;
   button->icon_data = paintdata;
-  gtk_widget_set_events(GTK_WIDGET(button), GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK
-                                                | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK
+  gtk_widget_set_events(GTK_WIDGET(button), GDK_EXPOSURE_MASK
+                                                | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
                                                 | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                                 | GDK_ENTER_NOTIFY_MASK | GDK_ALL_EVENTS_MASK);
   gtk_widget_set_app_paintable(GTK_WIDGET(button), TRUE);
@@ -162,6 +167,8 @@ GType dtgtk_thumbnail_btn_get_type()
 
 gboolean dtgtk_thumbnail_btn_is_hidden(GtkWidget *widget)
 {
+  g_return_val_if_fail(DTGTK_IS_THUMBNAIL_BTN(widget), TRUE);
+
   return DTGTK_THUMBNAIL_BTN(widget)->hidden;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

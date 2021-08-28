@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2020 darktable developers.
+    Copyright (C) 2019-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "control/conf.h"
-#include "conf_gen.h"
 
 #include <glib.h>
 #include <glib/gstdio.h>
@@ -47,6 +46,8 @@ static void _free_confgen_value(void *value)
   g_free(s->min);
   g_free(s->max);
   g_free(s->enum_values);
+  g_free(s->shortdesc);
+  g_free(s->longdesc);
   g_free(s);
 }
 
@@ -122,7 +123,7 @@ void dt_conf_set_float(const char *name, float val)
 
 void dt_conf_set_bool(const char *name, int val)
 {
-  char *str = g_strdup_printf("%s", val ? "TRUE" : "FALSE");
+  char *str = g_strdup(val ? "TRUE" : "FALSE");
   if(dt_conf_set_if_not_overridden(name, str)) g_free(str);
 }
 
@@ -130,6 +131,12 @@ void dt_conf_set_string(const char *name, const char *val)
 {
   char *str = g_strdup(val);
   if(dt_conf_set_if_not_overridden(name, str)) g_free(str);
+}
+
+void dt_conf_set_folder_from_file_chooser(const char *name, GtkWidget *chooser)
+{
+  gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser));
+  if(dt_conf_set_if_not_overridden(name, folder)) g_free(folder);
 }
 
 int dt_conf_get_int_fast(const char *name)
@@ -298,6 +305,28 @@ gchar *dt_conf_get_string(const char *name)
   return g_strdup(str);
 }
 
+const char *dt_conf_get_string_const(const char *name)
+{
+  return dt_conf_get_var(name);
+}
+
+gboolean dt_conf_get_folder_to_file_chooser(const char *name, GtkWidget *chooser)
+{
+  const gchar *folder = dt_conf_get_string_const(name);
+  if (folder)
+  {
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser),folder);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+gboolean dt_conf_is_equal(const char *name, const char *value)
+{
+  const char *str = dt_conf_get_var(name);
+  return g_strcmp0(str, value) == 0;
+}
+
 static char *_sanitize_confgen(const char *name, const char *value)
 {
   const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
@@ -314,7 +343,7 @@ static char *_sanitize_confgen(const char *name, const char *value)
 
       const int min = item->min ? (int)dt_calculator_solve(1, item->min) : INT_MIN;
       const int max = item->max ? (int)dt_calculator_solve(1, item->max) : INT_MAX;
-      // if garbadge, use default
+      // if garbage, use default
       const int val = isnan(v) ? dt_confgen_get_int(name, DT_DEFAULT) : (int)v;
       result = g_strdup_printf("%d", CLAMP(val, min, max));
     }
@@ -325,7 +354,7 @@ static char *_sanitize_confgen(const char *name, const char *value)
 
       const int64_t min = item->min ? (int64_t)dt_calculator_solve(1, item->min) : INT64_MIN;
       const int64_t max = item->max ? (int64_t)dt_calculator_solve(1, item->max) : INT64_MAX;
-      // if garbadge, use default
+      // if garbage, use default
       const int64_t val = isnan(v) ? dt_confgen_get_int64(name, DT_DEFAULT) : (int64_t)v;
       result = g_strdup_printf("%"PRId64, CLAMP(val, min, max));
     }
@@ -336,7 +365,7 @@ static char *_sanitize_confgen(const char *name, const char *value)
 
       const float min = item->min ? (float)dt_calculator_solve(1, item->min) : -FLT_MAX;
       const float max = item->max ? (float)dt_calculator_solve(1, item->max) : FLT_MAX;
-      // if garbadge, use default
+      // if garbage, use default
       const float val = isnan(v) ? dt_confgen_get_float(name, DT_DEFAULT) : v;
       result = g_strdup_printf("%f", CLAMP(val, min, max));
     }
@@ -344,7 +373,7 @@ static char *_sanitize_confgen(const char *name, const char *value)
     case DT_BOOL:
     {
       if(strcasecmp(value, "true") && strcasecmp(value, "false"))
-        result = g_strdup_printf("%s", dt_confgen_get(name, DT_DEFAULT));
+        result = g_strdup(dt_confgen_get(name, DT_DEFAULT));
       else
         result = g_strdup(value);
     }
@@ -353,7 +382,7 @@ static char *_sanitize_confgen(const char *name, const char *value)
     {
       char *v = g_strdup_printf("[%s]", value);
       if(!strstr(item->enum_values, v))
-        result = g_strdup_printf("%s", dt_confgen_get(name, DT_DEFAULT));
+        result = g_strdup(dt_confgen_get(name, DT_DEFAULT));
       else
         result = g_strdup(value);
       g_free(v);
@@ -370,8 +399,6 @@ static char *_sanitize_confgen(const char *name, const char *value)
 void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
 {
   cf->x_confgen = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, _free_confgen_value);
-
-  dt_confgen_init();
 
   cf->table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
@@ -445,12 +472,10 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
 
   if(override_entries)
   {
-    GSList *p = override_entries;
-    while(p)
+    for(GSList *p = override_entries; p; p = g_slist_next(p))
     {
       dt_conf_string_entry_t *entry = (dt_conf_string_entry_t *)p->data;
       g_hash_table_insert(darktable.conf->override_entries, entry->key, entry->value);
-      p = g_slist_next(p);
     }
   }
 
@@ -472,14 +497,11 @@ void dt_conf_cleanup(dt_conf_t *cf)
     GList *keys = g_hash_table_get_keys(cf->table);
     GList *sorted = g_list_sort(keys, (GCompareFunc)g_strcmp0);
 
-    GList *iter = sorted;
-
-    while(iter)
+    for(GList *iter = sorted; iter; iter = g_list_next(iter))
     {
       const gchar *key = (const gchar *)iter->data;
       const gchar *val = (const gchar *)g_hash_table_lookup(cf->table, key);
       dt_conf_print(key, val, f);
-      iter = g_list_next(iter);
     }
 
     g_list_free(sorted);
@@ -498,7 +520,7 @@ int dt_conf_key_exists(const char *key)
   const int res = (g_hash_table_lookup(darktable.conf->table, key) != NULL)
                   || (g_hash_table_lookup(darktable.conf->override_entries, key) != NULL);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
-  return res;
+  return (res || dt_confgen_value_exists(key, DT_DEFAULT));
 }
 
 static void _conf_add(char *key, char *val, dt_conf_dreggn_t *d)
@@ -563,6 +585,8 @@ gboolean dt_confgen_value_exists(const char *name, dt_confgen_value_kind_t kind)
        return item->min != NULL;
      case DT_MAX:
        return item->max != NULL;
+     case DT_VALUES:
+       return item->enum_values != NULL;
   }
   return FALSE;
 }
@@ -581,7 +605,33 @@ const char *dt_confgen_get(const char *name, dt_confgen_value_kind_t kind)
          return item->min;
        case DT_MAX:
          return item->max;
+       case DT_VALUES:
+         return item->enum_values;
     }
+  }
+
+  return "";
+}
+
+const char *dt_confgen_get_label(const char *name)
+{
+  const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+
+  if(item)
+  {
+    return item->shortdesc;
+  }
+
+  return "";
+}
+
+const char *dt_confgen_get_tooltip(const char *name)
+{
+  const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+
+  if(item)
+  {
+    return item->longdesc;
   }
 
   return "";

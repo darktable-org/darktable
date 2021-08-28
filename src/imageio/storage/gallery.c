@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -155,15 +155,14 @@ void gui_init(dt_imageio_module_storage_t *self)
   GtkWidget *widget;
 
   widget = gtk_entry_new();
+  gtk_entry_set_width_chars(GTK_ENTRY(widget), 0);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-  gchar *dir = dt_conf_get_string("plugins/imageio/storage/gallery/file_directory");
+  const char *dir = dt_conf_get_string_const("plugins/imageio/storage/gallery/file_directory");
   if(dir)
   {
     gtk_entry_set_text(GTK_ENTRY(widget), dir);
-    g_free(dir);
   }
   d->entry = GTK_ENTRY(widget);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->entry));
 
   dt_gtkentry_setup_completion(GTK_ENTRY(widget), dt_gtkentry_get_default_path_compl_list());
 
@@ -183,33 +182,29 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
-  widget = gtk_label_new(_("title"));
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
-  gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("title")), FALSE, FALSE, 0);
   d->title_entry = GTK_ENTRY(gtk_entry_new());
+  gtk_entry_set_width_chars(d->title_entry, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->title_entry));
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->title_entry), _("enter the title of the website"));
-  dir = dt_conf_get_string("plugins/imageio/storage/gallery/title");
+  dir = dt_conf_get_string_const("plugins/imageio/storage/gallery/title");
   if(dir)
   {
     gtk_entry_set_text(GTK_ENTRY(d->title_entry), dir);
-    g_free(dir);
   }
   g_signal_connect(G_OBJECT(d->title_entry), "changed", G_CALLBACK(title_changed_callback), self);
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
 {
-  gallery_t *d = (gallery_t *)self->gui_data;
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->title_entry));
   free(self->gui_data);
 }
 
 void gui_reset(dt_imageio_module_storage_t *self)
 {
   gallery_t *d = (gallery_t *)self->gui_data;
+  gtk_entry_set_text(d->entry, dt_confgen_get("plugins/imageio/storage/gallery/file_directory", DT_DEFAULT));
+  gtk_entry_set_text(d->title_entry, dt_confgen_get("plugins/imageio/storage/gallery/title", DT_DEFAULT));
   dt_conf_set_string("plugins/imageio/storage/gallery/file_directory", gtk_entry_get_text(d->entry));
   dt_conf_set_string("plugins/imageio/storage/gallery/title", gtk_entry_get_text(d->title_entry));
 }
@@ -233,6 +228,10 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   dt_image_full_path(imgid, dirname, sizeof(dirname), &from_cache);
 
   char tmp_dir[PATH_MAX] = { 0 };
+
+  // set variable values to expand them afterwards in darktable variables
+  dt_variables_set_max_width_height(d->vp, fdata->max_width, fdata->max_height);
+  dt_variables_set_upscale(d->vp, upscale);
 
   d->vp->filename = dirname;
   d->vp->jobcode = "export";
@@ -342,6 +341,9 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
            esc_relthumbfilename,
            num, num-1, title ? title : "&nbsp;", description ? description : "&nbsp;");
 
+  if(res_title) g_list_free_full(res_title, &g_free);
+  if(res_desc) g_list_free_full(res_desc, &g_free);
+
   // export image to file. need this to be able to access meaningful
   // fdata->width and height below.
   if(dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type,
@@ -368,8 +370,6 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   g_free(esc_relthumbfilename);
 
   pair->pos = num;
-  if(res_title) g_list_free_full(res_title, &g_free);
-  if(res_desc) g_list_free_full(res_desc, &g_free);
   d->l = g_list_insert_sorted(d->l, pair, (GCompareFunc)sort_pos);
 
   /* also export thumbnail: */
@@ -402,34 +402,6 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   return 0;
 }
 
-static void copy_res(const char *src, const char *dst)
-{
-  char share[PATH_MAX] = { 0 };
-  dt_loc_get_datadir(share, sizeof(share));
-  gchar *sourcefile = g_build_filename(share, src, NULL);
-  char *content = NULL;
-  FILE *fin = g_fopen(sourcefile, "rb");
-  FILE *fout = g_fopen(dst, "wb");
-
-  if(fin && fout)
-  {
-    fseek(fin, 0, SEEK_END);
-    size_t end = ftell(fin);
-    rewind(fin);
-    content = (char *)g_malloc_n(end, sizeof(char));
-    if(content == NULL) goto END;
-    if(fread(content, sizeof(char), end, fin) != end) goto END;
-    if(fwrite(content, sizeof(char), end, fout) != end) goto END;
-  }
-
-END:
-  if(fout != NULL) fclose(fout);
-  if(fin != NULL) fclose(fin);
-
-  g_free(content);
-  g_free(sourcefile);
-}
-
 void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *dd)
 {
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)dd;
@@ -441,31 +413,31 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
   sprintf(c, "/style");
   g_mkdir_with_parents(filename, 0755);
   sprintf(c, "/style/style.css");
-  copy_res("/style/style.css", filename);
+  dt_copy_resource_file("/style/style.css", filename);
   sprintf(c, "/style/favicon.ico");
-  copy_res("/style/favicon.ico", filename);
+  dt_copy_resource_file("/style/favicon.ico", filename);
 
   // create subdir pswp for photoswipe scripts
   sprintf(c, "/pswp/default-skin/");
   g_mkdir_with_parents(filename, 0755);
   sprintf(c, "/pswp/photoswipe.js");
-  copy_res("/pswp/photoswipe.js", filename);
+  dt_copy_resource_file("/pswp/photoswipe.js", filename);
   sprintf(c, "/pswp/photoswipe.min.js");
-  copy_res("/pswp/photoswipe.min.js", filename);
+  dt_copy_resource_file("/pswp/photoswipe.min.js", filename);
   sprintf(c, "/pswp/photoswipe-ui-default.js");
-  copy_res("/pswp/photoswipe-ui-default.js", filename);
+  dt_copy_resource_file("/pswp/photoswipe-ui-default.js", filename);
   sprintf(c, "/pswp/photoswipe.css");
-  copy_res("/pswp/photoswipe.css", filename);
+  dt_copy_resource_file("/pswp/photoswipe.css", filename);
   sprintf(c, "/pswp/photoswipe-ui-default.min.js");
-  copy_res("/pswp/photoswipe-ui-default.min.js", filename);
+  dt_copy_resource_file("/pswp/photoswipe-ui-default.min.js", filename);
   sprintf(c, "/pswp/default-skin/default-skin.css");
-  copy_res("/pswp/default-skin/default-skin.css", filename);
+  dt_copy_resource_file("/pswp/default-skin/default-skin.css", filename);
   sprintf(c, "/pswp/default-skin/default-skin.png");
-  copy_res("/pswp/default-skin/default-skin.png", filename);
+  dt_copy_resource_file("/pswp/default-skin/default-skin.png", filename);
   sprintf(c, "/pswp/default-skin/default-skin.svg");
-  copy_res("/pswp/default-skin/default-skin.svg", filename);
+  dt_copy_resource_file("/pswp/default-skin/default-skin.svg", filename);
   sprintf(c, "/pswp/default-skin/preloader.gif");
-  copy_res("/pswp/default-skin/preloader.gif", filename);
+  dt_copy_resource_file("/pswp/default-skin/preloader.gif", filename);
 
   sprintf(c, "/index.html");
 
@@ -493,12 +465,10 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
           title, title);
 
   size_t count = 0;
-  GList *tmp = d->l;
-  while(tmp)
+  for(GList *tmp = d->l; tmp; tmp = g_list_next(tmp))
   {
     pair_t *p = (pair_t *)tmp->data;
     fprintf(f, "%s", p->line);
-    tmp = g_list_next(tmp);
     count++;
   }
 
@@ -596,13 +566,11 @@ void *get_params(dt_imageio_module_storage_t *self)
   d->l = NULL;
   dt_variables_params_init(&d->vp);
 
-  char *text = dt_conf_get_string("plugins/imageio/storage/gallery/file_directory");
+  const char *text = dt_conf_get_string_const("plugins/imageio/storage/gallery/file_directory");
   g_strlcpy(d->filename, text, sizeof(d->filename));
-  g_free(text);
 
-  text = dt_conf_get_string("plugins/imageio/storage/gallery/title");
+  text = dt_conf_get_string_const("plugins/imageio/storage/gallery/title");
   g_strlcpy(d->title, text, sizeof(d->title));
-  g_free(text);
 
   return d;
 }

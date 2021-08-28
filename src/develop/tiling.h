@@ -24,10 +24,14 @@
 
 typedef struct dt_develop_tiling_t
 {
-  /** memory requirement as a multiple of image buffer size */
+  /** memory requirement as a multiple of image buffer size (on host/CPU) */
   float factor;
-  /** maximum requirement for temporary buffers as a multiple of image buffer size */
+  /** memory requirement as a multiple of image buffer size (on GPU) */
+  float factor_cl;
+  /** maximum requirement for temporary buffers as a multiple of image buffer size (on host) */
   float maxbuf;
+  /** maximum requirement for temporary buffers as a multiple of image buffer size (on GPU) */
+  float maxbuf_cl;
   /** on-top memory requirement, with a size independent of input buffer */
   unsigned overhead;
   /** overlap needed between tiles (in pixels) */

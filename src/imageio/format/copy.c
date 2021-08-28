@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +19,9 @@
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/imageio_module.h"
+#include "common/utility.h"
 #include "imageio/format/imageio_format_api.h"
+#include "gui/gtk.h"
 #include <glib/gstdio.h>
 #include <inttypes.h>
 #include <stdio.h>
@@ -38,9 +40,6 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   char sourcefile[PATH_MAX];
   char *targetfile = NULL;
   char *xmpfile = NULL;
-  char *content = NULL;
-  FILE *fin = NULL;
-  FILE *fout = NULL;
 
   dt_image_full_path(imgid, sourcefile, sizeof(sourcefile), &from_cache);
 
@@ -50,18 +49,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
 
   if(!strcmp(sourcefile, targetfile)) goto END;
 
-  fin = g_fopen(sourcefile, "rb");
-  fout = g_fopen(targetfile, "wb");
-  if(fin == NULL || fout == NULL) goto END;
-
-  fseek(fin, 0, SEEK_END);
-  size_t end = ftell(fin);
-  rewind(fin);
-
-  content = (char *)g_malloc_n(end, sizeof(char));
-  if(content == NULL) goto END;
-  if(fread(content, sizeof(char), end, fin) != end) goto END;
-  if(fwrite(content, sizeof(char), end, fout) != end) goto END;
+  dt_copy_file(sourcefile, targetfile);
 
   // we got a copy of the file, now write the xmp data
   xmpfile = g_strconcat(targetfile, ".xmp", NULL);
@@ -76,9 +64,6 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
 END:
   g_free(targetfile);
   g_free(xmpfile);
-  g_free(content);
-  if(fin) fclose(fin);
-  if(fout) fclose(fout);
   return status;
 }
 
@@ -133,13 +118,10 @@ void cleanup(dt_imageio_module_format_t *self)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  self->widget = box;
+  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  GtkWidget *label
-      = gtk_label_new(_("do a 1:1 copy of the selected files.\nthe global options below do not apply!"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(self->widget),
+    dt_ui_label_new(_("do a 1:1 copy of the selected files.\nthe global options below do not apply!")));
 }
 void gui_cleanup(dt_imageio_module_format_t *self)
 {

@@ -27,11 +27,14 @@
 #iop-panel-icon-bloom,
 #iop-panel-icon-borders,
 #iop-panel-icon-cacorrect,
+#iop-panel-icon-censorize,
 #iop-panel-icon-channelmixer,
+#iop-panel-icon-channelmixerrgb,
 #iop-panel-icon-clahe,
 #iop-panel-icon-clipping,
 #iop-panel-icon-colisa,
 #iop-panel-icon-colorbalance,
+#iop-panel-icon-colorbalancergb,
 #iop-panel-icon-colorchecker,
 #iop-panel-icon-colorcontrast,
 #iop-panel-icon-colorcorrection,
@@ -141,6 +144,17 @@
     background-image: url('../pixmaps/plugins/darkroom/cacorrect.svg');
 }
 
+#iop-panel-icon-cacorrectrgb
+{
+    background-image: url('../pixmaps/plugins/darkroom/cacorrect.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-top: 0.14em;
+    margin-left: 0.30em;
+    min-height: 1.1em;
+    min-width: 1.1em;
+}
+
 #iop-panel-icon-channelmixer
 {
     background-image: url('../pixmaps/plugins/darkroom/channelmixer.svg');
@@ -154,6 +168,17 @@
 #iop-panel-icon-clipping
 {
     background-image: url('../pixmaps/plugins/darkroom/clipping.svg');
+}
+
+#iop-panel-icon-crop
+{
+    background-image: url('../pixmaps/plugins/darkroom/clipping.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-top: 0.14em;
+    margin-left: 0.30em;
+    min-height: 1.1em;
+    min-width: 1.1em;
 }
 
 #iop-panel-icon-colisa

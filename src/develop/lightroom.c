@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2020 darktable developers.
+    Copyright (C) 2013-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -193,13 +193,15 @@ typedef struct dt_iop_bilat_params_t
 
 
 #define LRDT_COLORIN_VERSION 1
-#define DT_IOP_COLOR_ICC_LEN 100
+#define DT_IOP_COLOR_ICC_LEN_V1 100
 
-typedef struct dt_iop_colorin_params_t
+typedef struct dt_iop_colorin_params_v1_t
 {
-  char iccprofile[DT_IOP_COLOR_ICC_LEN];
+  char iccprofile[DT_IOP_COLOR_ICC_LEN_V1];
   dt_iop_color_intent_t intent;
-} dt_iop_colorin_params_t;
+} dt_iop_colorin_params_v1_t;
+
+#undef DT_IOP_COLOR_ICC_LEN_V1
 
 //
 // end of iop structs
@@ -1063,7 +1065,7 @@ static inline float round5(double x)
   return round(x * 100000.f) / 100000.f;
 }
 
-void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
+gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 {
   gboolean refresh_needed = FALSE;
   char imported[256] = { 0 };
@@ -1075,7 +1077,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   if(!pathname)
   {
     if(!iauto) dt_control_log(_("cannot find lightroom XMP!"));
-    return;
+    return FALSE;
   }
 
   // Load LR xmp
@@ -1090,7 +1092,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   if(doc == NULL)
   {
     g_free(pathname);
-    return;
+    return FALSE ;
   }
 
   // Enter first node, xmpmeta
@@ -1101,14 +1103,14 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   {
     g_free(pathname);
     xmlFreeDoc(doc);
-    return;
+    return FALSE;
   }
 
   if(xmlStrcmp(entryNode->name, (const xmlChar *)"xmpmeta"))
   {
     if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
     g_free(pathname);
-    return;
+    return FALSE;
   }
 
   // Check that this is really a Lightroom document
@@ -1119,7 +1121,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   {
     g_free(pathname);
     xmlFreeDoc(doc);
-    return;
+    return FALSE;
   }
 
   xmlXPathRegisterNs(xpathCtx, BAD_CAST "stEvt", BAD_CAST "http://ns.adobe.com/xap/1.0/sType/ResourceEvent#");
@@ -1132,7 +1134,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     xmlXPathFreeContext(xpathCtx);
     g_free(pathname);
     xmlFreeDoc(doc);
-    return;
+    return FALSE;
   }
 
   xmlNodeSetPtr xnodes = xpathObj->nodesetval;
@@ -1150,7 +1152,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       xmlFree(value);
       if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
       g_free(pathname);
-      return;
+      return FALSE;
     }
     xmlFree(value);
   }
@@ -1251,9 +1253,9 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   if(dev != NULL && dt_image_is_raw(&dev->image_storage))
   {
     // set colorin to cmatrix which is the default from Adobe (so closer to what Lightroom does)
-    dt_iop_colorin_params_t pci = (dt_iop_colorin_params_t){ "cmatrix", DT_INTENT_PERCEPTUAL };
+    dt_iop_colorin_params_v1_t pci = (dt_iop_colorin_params_v1_t){ "cmatrix", DT_INTENT_PERCEPTUAL };
 
-    dt_add_hist(imgid, "colorin", (dt_iop_params_t *)&pci, sizeof(dt_iop_colorin_params_t), imported,
+    dt_add_hist(imgid, "colorin", (dt_iop_params_t *)&pci, sizeof(dt_iop_colorin_params_v1_t), imported,
                 sizeof(imported), LRDT_COLORIN_VERSION, &n_import);
     refresh_needed = TRUE;
   }
@@ -1527,6 +1529,9 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     geoloc.latitude = data.lat;
     geoloc.elevation = NAN;
     dt_image_set_location(imgid, &geoloc, FALSE, FALSE);
+    GList *imgs = NULL;
+    imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
 
     if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
     g_strlcat(imported, _("geotagging"), sizeof(imported));
@@ -1556,6 +1561,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
     }
   }
+  return TRUE;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

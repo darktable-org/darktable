@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2020 darktable developers.
+    Copyright (C) 2013-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -304,7 +304,7 @@ int main(int argc __attribute__((unused)), char *arg[] __attribute__((unused)))
         monitor->is_primary = is_primary;
         monitor->atom_id = atom_id++;
         monitor->name = g_strdup(output_info->name);
-        monitor_list = g_list_append(monitor_list, monitor);
+        monitor_list = g_list_prepend(monitor_list, monitor);
 
 end:
         XRRFreeCrtcInfo(crtc_info);

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -116,8 +116,8 @@ void gui_init(dt_lib_module_t *self)
   /* create drawingarea */
   self->widget = gtk_drawing_area_new();
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
-  gtk_widget_set_events(self->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK
-                                      | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK
+  gtk_widget_set_events(self->widget, GDK_EXPOSURE_MASK | GDK_ENTER_NOTIFY_MASK
+                                      | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
                                       | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK);
 
   /* connect callbacks */
@@ -135,6 +135,7 @@ void gui_init(dt_lib_module_t *self)
   /* set size of navigation draw area */
   gtk_widget_set_size_request(self->widget, -1, 175);
   gtk_widget_set_name(GTK_WIDGET(self->widget), "navigation-module");
+  dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, NULL, "hide navigation thumbnail", self->widget, NULL);
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
@@ -249,7 +250,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
       cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
 
       char zoomline[5];
-      snprintf(zoomline, sizeof(zoomline), "%.0f%%", cur_scale * 100);
+      snprintf(zoomline, sizeof(zoomline), "%.0f%%", cur_scale * 100 * darktable.gui->ppd);
 
       pango_layout_set_text(layout, zoomline, -1);
       pango_layout_get_pixel_extents(layout, &ink, NULL);
@@ -390,18 +391,6 @@ static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget, GdkEve
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   _lib_navigation_set_position(self, event->x, event->y, allocation.width, allocation.height);
-  gint x, y; // notify gtk for motion_hint.
-#if GTK_CHECK_VERSION(3, 20, 0)
-  gdk_window_get_device_position(event->window,
-      gdk_seat_get_pointer(gdk_display_get_default_seat(
-          gdk_window_get_display(event->window))),
-      &x, &y, 0);
-#else
-  gdk_window_get_device_position(event->window,
-                                 gdk_device_manager_get_client_pointer(
-                                     gdk_display_get_device_manager(gdk_window_get_display(event->window))),
-                                 &x, &y, NULL);
-#endif
   return TRUE;
 }
 
@@ -419,57 +408,75 @@ static void _zoom_preset_change(uint64_t val)
   zoom_y = dt_control_get_dev_zoom_y();
   dt_dev_get_processed_size(dev, &procw, &proch);
   float scale = 0;
+  const float ppd = darktable.gui->ppd;
+  const gboolean low_ppd = (darktable.gui->ppd == 1);
   closeup = 0;
   if(val == 0u)
   {
+    // small
     scale = 0.5 * dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
     zoom = DT_ZOOM_FREE;
   }
   else if(val == 1u)
   {
+    // fit to screen
     zoom = DT_ZOOM_FIT;
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
   }
   else if(val == 2u)
   {
-    scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
-    zoom = DT_ZOOM_1;
+    // 100%
+    if(low_ppd == 1)
+    {
+      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
+      zoom = DT_ZOOM_1;
+    }
+    else
+    {
+      scale = 1.0f / ppd;
+      zoom = DT_ZOOM_FREE;
+    }
   }
   else if(val == 3u)
   {
+    // 200%
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
-    closeup = 1;
+    if(low_ppd) closeup = 1;
   }
   else if(val == 4u)
   {
-    scale = 0.5f;
+    // 50%
+    scale = 0.5f / ppd;
     zoom = DT_ZOOM_FREE;
   }
   else if(val == 5u)
   {
+    // 1600%
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
-    closeup = 4;
+    closeup = (low_ppd) ? 4 : 3;
   }
   else if(val == 6u)
   {
+    // 400%
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
-    closeup = 2;
+    closeup = (low_ppd) ? 2 : 1;
   }
   else if(val == 7u)
   {
+    // 800%
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
-    closeup = 3;
+    closeup = (low_ppd) ? 3 : 2;
   }
 
   // zoom_x = (1.0/(scale*(1<<closeup)))*(zoom_x - .5f*dev->width )/procw;
   // zoom_y = (1.0/(scale*(1<<closeup)))*(zoom_y - .5f*dev->height)/proch;
 
-  dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
   dt_control_set_dev_zoom_scale(scale);
+  dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
   dt_control_set_dev_zoom(zoom);
   dt_control_set_dev_closeup(closeup);
   dt_control_set_dev_zoom_x(zoom_x);
@@ -532,13 +539,7 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
     g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)5);
     gtk_menu_shell_append(menu, item);
 
-    gtk_widget_show_all(GTK_WIDGET(menu));
-
-#if GTK_CHECK_VERSION(3, 22, 0)
-    gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
-#else
-    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
-#endif
+    dt_gui_menu_popup(GTK_MENU(menu), NULL, 0, 0);
 
     return TRUE;
   }

@@ -1,6 +1,7 @@
 -- default  lua require can't handle yielding across "require" calls
 -- This version is implemented in pure-lua and avoids the problem
 -- override the require function for everybody
+-- this version is required for darktable.collection to function as a table
 
 local orig_ipairs = ipairs
 local function ipairs_iterator(st, var)
@@ -17,7 +18,7 @@ ipairs = function(t)
   else
     return orig_ipairs(t)
   end
-  end
+end
 
 -- script installer
 
@@ -237,7 +238,7 @@ if _scripts_install.dt.configuration.has_gui  then
       else
         if not _scripts_install.event_registered then
           _scripts_install.dt.register_event(
-            "view-changed",
+            "_scripts_install", "view-changed",
             function(event, old_view, new_view)
               if new_view.name == "lighttable" and old_view.name == "darkroom" then
                 _scripts_install.install_module()

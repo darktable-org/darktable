@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019 Aurélien Pierre
+    copyright (c) 2021 Nicolas Auffray
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,16 +36,15 @@
 
 /* Modules box (plugins) */
 @define-color plugin_bg_color @grey_35;
-@define-color plugin_fg_color @grey_85;
-@define-color section_label @grey_75;
+@define-color plugin_fg_color @fg_color;
 @define-color plugin_label_color @grey_70;
 
 /* Modules controls (sliders and comboboxes) */
-@define-color bauhaus_fg @grey_80;
+@define-color bauhaus_bg @bg_color;
+@define-color bauhaus_fg @fg_color;
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_35;
 @define-color bauhaus_fill @grey_55;
-@define-color bauhaus_bg @grey_30;
 @define-color bauhaus_bg_hover @grey_65;
 @define-color bauhaus_fg_selected @grey_85;
 @define-color bauhaus_fg_disabled alpha(@bauhaus_fg, 0.4);
@@ -54,7 +53,7 @@
 /* GTK Buttons and tabs */
 @define-color button_border @grey_45;
 @define-color button_bg @grey_40;
-@define-color button_fg @grey_80;
+@define-color button_fg @fg_color;
 @define-color button_checked_bg @grey_55;
 @define-color button_checked_fg @grey_95;
 @define-color button_hover_bg @grey_65;
@@ -86,6 +85,7 @@
 /* Lighttable and film-strip */
 @define-color thumbnail_bg_color @grey_55;
 @define-color thumbnail_star_bg_color @grey_40;
+@define-color thumbnail_star_hover_color @grey_85;
 @define-color thumbnail_fg_color @grey_60;
 @define-color thumbnail_selected_bg_color @grey_75;
 @define-color thumbnail_hover_bg_color @grey_90;

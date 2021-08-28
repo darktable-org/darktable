@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2020 darktable developers.
+    Copyright (C) 2018-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "common/imageio_pfm.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,7 +32,7 @@
 #include <time.h>
 #include <unistd.h>
 
-// pbm -- portable bit map. values are either 0 or 1, singel channel
+// pbm -- portable bit map. values are either 0 or 1, single channel
 static dt_imageio_retval_t _read_pbm(dt_image_t *img, FILE*f, float *buf)
 {
   dt_imageio_retval_t result = DT_IMAGEIO_OK;
@@ -205,8 +206,15 @@ dt_imageio_retval_t dt_imageio_open_pnm(dt_image_t *img, const char *filename, d
   ret = fscanf(f, "%c%c ", head, head + 1);
   if(ret != 2 || head[0] != 'P') goto end;
 
-  ret = fscanf(f, "%d %d ", &img->width, &img->height);
+  char width_string[10] = { 0 };
+  char height_string[10] = { 0 };
+  ret = fscanf(f, "%9s %9s ", width_string, height_string);
   if(ret != 2) goto end;
+
+  errno = 0;
+  img->width = strtol(width_string, NULL, 0);
+  img->height = strtol(height_string, NULL, 0);
+  if(errno != 0 || img->width <= 0 || img->height <= 0) goto end;
 
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2020 darktable developers.
+    Copyright (C) 2019-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 #include <string.h>
 #include <time.h>
 
+#include "common/box_filters.h"
 #include "common/darktable.h"
+#include "common/imagebuf.h"
 
 /** Note :
  * we use finite-math-only and fast-math because divisions by zero are manually avoided in the code
@@ -96,7 +98,7 @@ __DT_CLONE_TARGETS__
 static inline float fast_clamp(const float value, const float bottom, const float top)
 {
   // vectorizable clamping between bottom and top values
-  return fmax(fmin(value, top), bottom);
+  return fmaxf(fminf(value, top), bottom);
 }
 
 
@@ -107,9 +109,9 @@ static inline void interpolate_bilinear(const float *const restrict in, const si
 {
   // Fast vectorized bilinear interpolation on ch channels
 #ifdef _OPENMP
-#pragma omp parallel for simd collapse(2) default(none) \
-  schedule(simd:static) aligned(in, out:64) \
-  dt_omp_firstprivate(in, out, width_out, height_out, width_in, height_in, ch)
+#pragma omp parallel for collapse(2) default(none) \
+  dt_omp_firstprivate(in, out, width_out, height_out, width_in, height_in, ch) \
+  schedule(simd:static)
 #endif
   for(size_t i = 0; i < height_out; i++)
   {
@@ -151,7 +153,7 @@ static inline void interpolate_bilinear(const float *const restrict in, const si
       // Interpolate over ch layers
       float *const pixel_out = (float *)out + (i * width_out + j) * ch;
 
-#pragma unroll
+//#pragma unroll //LLVM warns it can't unroll -- presumably because 'ch' is not a constant
       for(size_t c = 0; c < ch; c++)
       {
         pixel_out[c] = Dy_prev * (Q_SW[c] * Dx_next + Q_SE[c] * Dx_prev) +
@@ -179,16 +181,14 @@ static inline void variance_analyse(const float *const restrict guide, // I
 
   /*
   * input is array of struct : { { guide , mask, guide * guide, guide * mask } }
-  * temp is array of struct : { { mean_I, mean_p, corr_I, corr_Ip } } = blur(input)
   */
-  float *const restrict temp = dt_alloc_sse_ps(Ndimch);
-  float *const restrict input = dt_alloc_sse_ps(Ndimch);
+  float *const restrict input = dt_alloc_align_float(Ndimch);
 
   // Pre-multiply guide and mask and pack all inputs into an array of 4×1 SIMD struct
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(guide, mask, Ndim, radius, input) \
-  schedule(simd:static) aligned(guide, mask, input:64)
+  schedule(simd:static)
 #endif
   for(size_t k = 0; k < Ndim; k++)
   {
@@ -199,201 +199,25 @@ static inline void variance_analyse(const float *const restrict guide, // I
     input[index + 3] = guide[k] * mask[k];
   }
 
-  /*
-  * In the following, input will be blurred horizontally in a single loop
-  * as a 4 channels image, to exploit data locality
-  */
+  // blur the guide and mask as a four-channel image to exploit data locality and SIMD
+  dt_box_mean(input, height, width, 4, radius, 1);
 
-  // Convolve box average along columns
+  // blend the result and store in output buffer
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(guide, mask, temp, width, height, radius, input) \
-  schedule(simd:static) collapse(2)
+  dt_omp_firstprivate(ab, input, width, height, feathering) \
+  schedule(static)
 #endif
-  for(size_t i = 0; i < height; i++)
+  for(size_t idx = 0; idx < width*height; idx++)
   {
-    for(size_t j = 0; j < width; j++)
-    {
-      const size_t begin_convol = (i < radius) ? 0 : i - radius;
-      size_t end_convol = i + radius;
-      end_convol = (end_convol < height) ? end_convol : height - 1;
-      const float num_elem = 1.0f / ((float)end_convol - (float)begin_convol + 1.0f);
-      float tmp[4] DT_ALIGNED_PIXEL = { 0.0f }; // = { w_mean_I, w_mean_p, w_corr_I, w_corr_Ip }
-
-      // convolution
-      for(size_t c = begin_convol; c <= end_convol; c++)
-      {
-        const size_t index = (c * width + j) * 4;
-
-#ifdef _OPENMP
-#pragma omp simd reduction(+ : tmp) aligned(tmp : 16) aligned(input : 64)
-#endif
-        for(size_t k = 0; k < 4; ++k) tmp[k] += input[index + k];
-      }
-
-      const size_t index = (i * width + j) * 4;
-
-      // normalization (box blur -> coeffs = 1 / number of elements)
-#ifdef _OPENMP
-#pragma omp simd aligned(tmp:16) aligned(temp:64)
-#endif
-      for(size_t c = 0; c < 4; c++)
-        temp[index + c] = tmp[c] * num_elem;
-    }
+    const float d = fmaxf((input[4*idx+2] - input[4*idx+0] * input[4*idx+0]) + feathering, 1e-15f); // avoid division by 0.
+    const float a = (input[4*idx+3] - input[4*idx+0] * input[4*idx+1]) / d;
+    const float b = input[4*idx+1] - a * input[4*idx+0];
+    ab[2*idx] = a;
+    ab[2*idx+1] = b;
   }
 
   if(input != NULL) dt_free_align(input);
-
-  /*
-  * In the following, temp will be blurred vertically in a single loop
-  * as a 4 channels image, to exploit data locality
-  */
-
-  // Convolve box average along rows and output result
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ab, temp, width, height, radius, feathering) \
-  schedule(simd:static) collapse(2)
-#endif
-  for(size_t i = 0; i < height; i++)
-  {
-    for(size_t j = 0; j < width; j++)
-    {
-      const size_t begin_convol = (j < radius) ? 0 : j - radius;
-      size_t end_convol = j + radius;
-      end_convol = (end_convol < width) ? end_convol : width - 1;
-      const float num_elem = 1.0f / ((float)end_convol - (float)begin_convol + 1.0f);
-      float tmp[4] DT_ALIGNED_PIXEL = { 0.0f }; // = { w_mean_I, w_mean_p, w_corr_I, w_corr_Ip }
-
-      // convolution
-      for(size_t c = begin_convol; c <= end_convol; c++)
-      {
-        const size_t index = (i * width + c) * 4;
-
-#ifdef _OPENMP
-#pragma omp simd aligned(temp : 64) aligned(tmp : 16) reduction(+ : tmp)
-#endif
-        for(size_t k = 0; k < 4; ++k) tmp[k] += temp[index + k];
-      }
-
-      // normalization (box blur -> coeffs = 1 / number of elements)
-#ifdef _OPENMP
-#pragma omp simd aligned(tmp:16) reduction(*:tmp)
-#endif
-      for(size_t c = 0; c < 4; c++)
-        tmp[c] *= num_elem;
-
-      // compute blending coeffs and output
-      const size_t index = (i * width + j) * 2;
-      const float d = fmaxf((tmp[2] - tmp[0] * tmp[0]) + feathering, 1e-15f); // avoid division by 0.
-      const float a = (tmp[3] - tmp[0] * tmp[1]) / d;
-      const float b = tmp[1] - a * tmp[0];
-      const float ab_temp[2] DT_ALIGNED_PIXEL = { a, b };
-
-#ifdef _OPENMP
-#pragma omp simd aligned(ab_temp:16) aligned(ab:64)
-#endif
-      for(size_t c = 0; c < 2; c++)
-        ab[index + c] = ab_temp[c];
-    }
-  }
-
-  if(temp != NULL) dt_free_align(temp);
-}
-
-
-__DT_CLONE_TARGETS__
-static inline void box_average(float *const restrict in,
-                               const size_t width, const size_t height, const size_t ch,
-                               const int radius)
-{
-  // Compute in-place a box average (filter) on a multi-channel image over a window of size 2*radius + 1
-  // We make use of the separable nature of the filter kernel to speed-up the computation
-  // by convolving along columns and rows separately (complexity O(2 × radius) instead of O(radius²)).
-
-  assert(ch <= 4);
-
-  const size_t Ndim = width * height * ch;
-  float *const restrict temp = dt_alloc_sse_ps(Ndim);
-
-  // Convolve box average along columns
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, temp, width, height, ch, radius) \
-  schedule(simd:static) collapse(2)
-#endif
-  for(size_t j = 0; j < width; j++)
-  {
-    for(size_t i = 0; i < height; i++)
-    {
-      const size_t begin_convol = (i < radius) ? 0 : i - radius;
-      size_t end_convol = i + radius;
-      end_convol = (end_convol < height) ? end_convol : height - 1;
-      const float num_elem = (float)end_convol - (float)begin_convol + 1.0f;
-      const size_t index = (i * width + j) * ch;
-
-      float w[4] DT_ALIGNED_PIXEL = { 0.0f };
-
-      // Convolve
-      for(size_t c = begin_convol; c <= end_convol; c++)
-      {
-        const size_t index_c = (c * width + j) * ch;
-#ifdef _OPENMP
-#pragma omp simd aligned(in:64) aligned(w:16) reduction(+:w)
-#endif
-        for(size_t k = 0; k < ch; ++k)
-          w[k] += in[index_c + k];
-      }
-
-    // Normalize and Save
-#ifdef _OPENMP
-#pragma omp simd aligned(temp:64) aligned(w:16)
-#endif
-      for(size_t k = 0; k < ch; ++k)
-        temp[index + k] = w[k] / num_elem;
-    }
-  }
-
-  // Convolve box average along rows and output result
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, temp, width, height, ch, radius) \
-  schedule(simd:static) collapse(2)
-#endif
-  for(size_t i = 0; i < height; i++)
-  {
-    for(size_t j = 0; j < width; j++)
-    {
-      const size_t begin_convol = (j < radius) ? 0 : j - radius;
-      size_t end_convol = j + radius;
-      end_convol = (end_convol < width) ? end_convol : width - 1;
-      const float num_elem = (float)end_convol - (float)begin_convol + 1.0f;
-      const size_t stride = i * width;
-      const size_t index = (stride + j) * ch;
-
-      float w[4] DT_ALIGNED_PIXEL = { 0.0f };
-
-      // Convolve
-      for(size_t c = begin_convol; c <= end_convol; c++)
-      {
-        const size_t index_c = (stride + c) * ch;
-#ifdef _OPENMP
-#pragma omp simd aligned(temp:64) aligned(w:16) reduction(+:w)
-#endif
-        for(size_t k = 0; k < ch; ++k)
-          w[k] += temp[index_c + k];
-      }
-
-      // Normalize and Save
-#ifdef _OPENMP
-#pragma omp simd aligned(w:16) aligned(in:64)
-#endif
-      for(size_t k = 0; k < ch; ++k)
-        in[index + k] = w[k] / num_elem;
-    }
-  }
-
-  if(temp != NULL) dt_free_align(temp);
 }
 
 
@@ -444,13 +268,7 @@ static inline void quantize(const float *const restrict image,
   if(sampling == 0.0f)
   {
     // No-op
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(image, out, num_elem, sampling, clip_min, clip_max) \
-schedule(simd:static) aligned(image, out:64)
-#endif
-    for(size_t k = 0; k < num_elem; k++)
-      out[k] = image[k];
+    dt_iop_image_copy(out, image, num_elem);
   }
   else if(sampling == 1.0f)
   {
@@ -490,7 +308,7 @@ static inline void fast_surface_blur(float *const restrict image,
   // A down-scaling of 4 seems empirically safe and consistent no matter the image zoom level
   // see reference paper above for proof.
   const float scaling = 4.0f;
-  int ds_radius = (radius < 4) ? 1 : radius / scaling;
+  const int ds_radius = (radius < 4) ? 1 : radius / scaling;
 
   const size_t ds_height = height / scaling;
   const size_t ds_width = width / scaling;
@@ -523,7 +341,7 @@ static inline void fast_surface_blur(float *const restrict image,
     variance_analyse(ds_mask, ds_image, ds_ab, ds_width, ds_height, ds_radius, feathering);
 
     // Compute the patch-wise average of parameters a and b
-    box_average(ds_ab, ds_width, ds_height, 2, ds_radius);
+    dt_box_mean(ds_ab, ds_height, ds_width, 2, ds_radius, 1);
 
     if(i != iterations - 1)
     {

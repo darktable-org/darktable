@@ -25,7 +25,7 @@ macro(add_manpage pod)
   set(target ${CMAKE_CURRENT_BINARY_DIR}/${manpage})
   add_custom_command(
     OUTPUT ${target}
-    COMMAND ${CMAKE_SOURCE_DIR}/tools/makeman.sh ${source} ${CMAKE_CURRENT_SOURCE_DIR}/../../AUTHORS ${target}
+    COMMAND sh ${CMAKE_SOURCE_DIR}/tools/makeman.sh ${source} ${CMAKE_CURRENT_SOURCE_DIR}/../../AUTHORS ${target}
     DEPENDS ${source} ${CMAKE_CURRENT_SOURCE_DIR}/../../AUTHORS ${CMAKE_SOURCE_DIR}/tools/makeman.sh
   )
   add_custom_target(manpage_${manpage} ALL DEPENDS ${target})
@@ -57,14 +57,14 @@ else()
       # create translated .pod
       add_custom_command(
         OUTPUT ${tmppod}
-        COMMAND ${po4a-translate_BIN} -f pod -m ${pod} -p ${pofile} -l ${tmppod} -k 0
+        COMMAND sh -c "${po4a-translate_BIN} -f pod -m ${pod} -p ${pofile} -l ${tmppod} -k 0"
         DEPENDS ${pofile} ${pod}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       )
       # turn the .pod into a manpage
       add_custom_command(
         OUTPUT ${target}
-        COMMAND ${CMAKE_SOURCE_DIR}/tools/makeman.sh ${tmppod} ${CMAKE_CURRENT_SOURCE_DIR}/../../AUTHORS ${target}
+        COMMAND sh ${CMAKE_SOURCE_DIR}/tools/makeman.sh ${tmppod} ${CMAKE_CURRENT_SOURCE_DIR}/../../AUTHORS ${target}
         DEPENDS ${tmppod} ${CMAKE_CURRENT_SOURCE_DIR}/../../AUTHORS ${CMAKE_SOURCE_DIR}/tools/makeman.sh
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       )

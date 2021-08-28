@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2020 darktable developers.
+    Copyright (C) 2016-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -16,12 +16,16 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "common/module_api.h"
+#include <glib.h>
+
+#ifdef FULL_API_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#include <glib.h>
 #include <cairo/cairo.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -31,70 +35,75 @@ struct dt_view_t;
 
 /* early definition of modules to do type checking */
 
-// !!! MUST BE KEPT IN SYNC WITH dt_lib_module_t defined in src/libs/lib.h !!!
-
 #pragma GCC visibility push(default)
 
-/** version */
-int version(void);
+#endif // FULL_API_H
+
 /** get name of the module, to be translated. */
-const char *name(struct dt_lib_module_t *self);
+REQUIRED(const char *, name, struct dt_lib_module_t *self);
 
 /** get the views which the module should be loaded in. */
-const char **views(struct dt_lib_module_t *self);
+REQUIRED(const char **, views, struct dt_lib_module_t *self);
 /** get the container which the module should be placed in */
-uint32_t container(struct dt_lib_module_t *self);
+REQUIRED(uint32_t, container, struct dt_lib_module_t *self);
 /** check if module should use a expander or not, default implementation
     will make the module expandable and storing the expanding state,
     if not the module will always be shown without the expander. */
-int expandable(struct dt_lib_module_t *self);
+DEFAULT(gboolean, expandable, struct dt_lib_module_t *self);
 
 /** constructor */
-void init(struct dt_lib_module_t *self);
+OPTIONAL(void, init, struct dt_lib_module_t *self);
 /** callback methods for gui. */
 /** construct widget. */
-void gui_init(struct dt_lib_module_t *self);
+REQUIRED(void, gui_init, struct dt_lib_module_t *self);
 /** destroy widget. */
-void gui_cleanup(struct dt_lib_module_t *self);
+REQUIRED(void, gui_cleanup, struct dt_lib_module_t *self);
 /** reset to defaults. */
-void gui_reset(struct dt_lib_module_t *self);
+OPTIONAL(void, gui_reset, struct dt_lib_module_t *self);
 
 /** entering a view, only called if lib is displayed on the new view */
-void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view);
+OPTIONAL(void, view_enter, struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view);
 /** entering a view, only called if lib is displayed on the old view */
-void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view);
+OPTIONAL(void, view_leave, struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view);
 
 /** optional event callbacks for big center widget. */
 /** optional method called after lighttable expose. */
-void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,
+OPTIONAL(void, gui_post_expose, struct dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,
                      int32_t pointerx, int32_t pointery);
-int mouse_leave(struct dt_lib_module_t *self);
-int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressure, int which);
-int button_released(struct dt_lib_module_t *self, double x, double y, int which, uint32_t state);
-int button_pressed(struct dt_lib_module_t *self, double x, double y, double pressure, int which, int type,
+OPTIONAL(int, mouse_leave, struct dt_lib_module_t *self);
+OPTIONAL(int, mouse_moved, struct dt_lib_module_t *self, double x, double y, double pressure, int which);
+OPTIONAL(int, button_released, struct dt_lib_module_t *self, double x, double y, int which, uint32_t state);
+OPTIONAL(int, button_pressed, struct dt_lib_module_t *self, double x, double y, double pressure, int which, int type,
                    uint32_t state);
-int scrolled(struct dt_lib_module_t *self, double x, double y, int up);
-void configure(struct dt_lib_module_t *self, int width, int height);
-int position();
+OPTIONAL(int, scrolled, struct dt_lib_module_t *self, double x, double y, int up);
+OPTIONAL(void, configure, struct dt_lib_module_t *self, int width, int height);
+OPTIONAL(int, position, );
 
 /** implement these three if you want customizable presets to be stored in db. */
 /** legacy_params can run in iterations, just return to what version you updated the preset. */
-void *legacy_params(struct dt_lib_module_t *self, const void *const old_params, const size_t old_params_size,
+OPTIONAL(void *,legacy_params, struct dt_lib_module_t *self, const void *const old_params, const size_t old_params_size,
                     const int old_version, int *new_version, size_t *new_size);
-void *get_params(struct dt_lib_module_t *self, int *size);
-int set_params(struct dt_lib_module_t *self, const void *params, int size);
-void init_presets(struct dt_lib_module_t *self);
-void manage_presets(struct dt_lib_module_t *self);
+OPTIONAL(void *,get_params, struct dt_lib_module_t *self, int *size);
+OPTIONAL(int, set_params, struct dt_lib_module_t *self, const void *params, int size);
+OPTIONAL(void, init_presets, struct dt_lib_module_t *self);
+OPTIONAL(void, manage_presets, struct dt_lib_module_t *self);
+OPTIONAL(void, set_preferences, void *menu, struct dt_lib_module_t *self);
+/** check if the module can autoapply presets. Default is FALSE */
+DEFAULT(gboolean, preset_autoapply, struct dt_lib_module_t *self);
 
 /** Optional callbacks for keyboard accelerators */
-void init_key_accels(struct dt_lib_module_t *self);
-void connect_key_accels(struct dt_lib_module_t *self);
+OPTIONAL(void, init_key_accels, struct dt_lib_module_t *self);
+OPTIONAL(void, connect_key_accels, struct dt_lib_module_t *self);
+
+#ifdef FULL_API_H
 
 #pragma GCC visibility pop
 
 #ifdef __cplusplus
 }
 #endif
+
+#endif // FULL_API_H
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

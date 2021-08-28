@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2015-2020 darktable developers.
+   Copyright (C) 2015-2021 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ typedef struct dt_lua_widget_type_t{
   void (*gui_init)(lua_State *L);
   void (*gui_cleanup)(lua_State *L, lua_widget widget);
   const char * name;
+  gboolean visible;
   size_t  alloc_size;
   struct dt_lua_widget_type_t *parent;
   // private, do not override

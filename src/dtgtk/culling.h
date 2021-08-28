@@ -60,9 +60,13 @@ typedef struct dt_culling_t
 
   gboolean select_desactivate;
 
+  // the global zoom level of all images in the culling view.
+  // scales images from 0 "image to fit" to 1 "100% zoom".
+  float zoom_ratio;
+
   gboolean panning;      // are we moving zoomed images ?
-  int pan_x;             // last position during panning
-  int pan_y;             //
+  double pan_x;          // last position during panning
+  double pan_y;          //
   gboolean mouse_inside; // is the mouse inside culling center view ?
 
   gboolean focus; // do we show focus rectangles on images ?
@@ -75,8 +79,8 @@ typedef struct dt_culling_t
 dt_culling_t *dt_culling_new(dt_culling_mode_t mode);
 // reload all thumbs from scratch.
 void dt_culling_full_redraw(dt_culling_t *table, gboolean force);
-// intialise culling offset/naviagtion mode, etc before entering.
-// if offset is > 0 it'll be used as offset, otherwise offset wil be determined by other means
+// initialise culling offset/naviagtion mode, etc before entering.
+// if offset is > 0 it'll be used as offset, otherwise offset will be determined by other means
 void dt_culling_init(dt_culling_t *table, int offset);
 // move by key actions.
 // this key accels are not managed here but inside view
@@ -86,8 +90,8 @@ gboolean dt_culling_key_move(dt_culling_t *table, dt_culling_move_t move);
 // because this may means that other images have changed
 void dt_culling_change_offset_image(dt_culling_t *table, int offset);
 
-void dt_culling_zoom_max(dt_culling_t *table, gboolean only_current);
-void dt_culling_zoom_fit(dt_culling_t *table, gboolean only_current);
+void dt_culling_zoom_max(dt_culling_t *table);
+void dt_culling_zoom_fit(dt_culling_t *table);
 
 // set the overlays type
 void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t over);

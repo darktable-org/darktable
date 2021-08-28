@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2020 darktable developers.
+    Copyright (C) 2017-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include "common/darktable.h"
 #include "common/image.h"
 #include "control/control.h"
-#include <glib.h>   // for GList, gpointer, g_list_first, g_list_prepend
+#include <glib.h>   // for GList, gpointer, g_list_prepend
 #include <stdlib.h> // for NULL, malloc, free
 #include <sys/time.h>
 
@@ -173,7 +173,6 @@ static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_
   GList **from = action == DT_ACTION_UNDO ? &self->undo_list : &self->redo_list;
   GList **to   = action == DT_ACTION_UNDO ? &self->redo_list : &self->undo_list;
 
-  GList *l = g_list_first(*from);
   GList *imgs = NULL;
 
   // check for first item that is matching the given pattern
@@ -181,7 +180,7 @@ static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_
   dt_print(DT_DEBUG_UNDO, "[undo] action %s for %d (from length %d -> to length %d)\n",
            action == DT_ACTION_UNDO?"UNDO":"DO", filter, g_list_length(*from), g_list_length(*to));
 
-  while(l)
+  for(GList *l = *from; l; l = g_list_next(l))
   {
     dt_undo_item_t *item = (dt_undo_item_t *)l->data;
 
@@ -245,7 +244,6 @@ static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_
 
       break;
     }
-    l = g_list_next(l);
   }
   UNLOCK;
 
@@ -253,17 +251,15 @@ static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_
   {
     imgs = g_list_sort(imgs, _images_list_cmp);
     // remove duplicates
-    for(GList *img = imgs; img != NULL; img = img->next)
+    for(const GList *img = imgs; img; img = g_list_next(img))
       while(img->next && img->data == img->next->data)
         imgs = g_list_delete_link(imgs, img->next);
     // udpate xmp for updated images
-    for(GList *img = imgs; img != NULL; img = img->next)
-    {
-      dt_image_synch_xmp(GPOINTER_TO_INT(img->data));
-    }
+
+    dt_image_synch_xmps(imgs);
   }
 
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, imgs);
 }
 
 void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
@@ -278,21 +274,19 @@ void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
 
 static void _undo_clear_list(GList **list, uint32_t filter)
 {
-  GList *l = g_list_first(*list);
-
   // check for first item that is matching the given pattern
 
-  while(l)
+  GList *next;
+  for(GList *l = *list; l; l = next)
   {
     dt_undo_item_t *item = (dt_undo_item_t *)l->data;
-    GList *next = l->next;
+    next = g_list_next(l); // get next node now, because we may delete the current one
     if(item->type & filter)
     {
       //  remove this element
       *list = g_list_remove(*list, item);
       _free_undo_data((void *)item);
     }
-    l = next;
   };
 
   dt_print(DT_DEBUG_UNDO, "[undo] clear list for %d (length %d)\n",
@@ -315,18 +309,14 @@ void dt_undo_clear(dt_undo_t *self, uint32_t filter)
 static void _undo_iterate(GList *list, uint32_t filter, gpointer user_data,
                           void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item))
 {
-  GList *l = g_list_first(list);
-
   // check for first item that is matching the given pattern
-
-  while(l)
+  for(GList *l = list; l; l = g_list_next(l))
   {
     dt_undo_item_t *item = (dt_undo_item_t *)l->data;
     if(!item->is_group && (item->type & filter))
     {
       apply(user_data, item->type, item->data);
     }
-    l = l->next;
   };
 }
 

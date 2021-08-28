@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2020 darktable developers.
+    Copyright (C) 2016-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,13 +18,13 @@
 
 #include "common/darktable.h"
 #include "common/locallaplacian.h"
+#include "common/math.h"
 
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
-#include <math.h>
 #if defined(__SSE2__)
 #include <xmmintrin.h>
 #endif
@@ -169,7 +169,7 @@ static inline void gauss_expand(
 #if defined(__SSE2__)
 static inline __m128 convolve14641_vert(const float *in, const int wd)
 {
-  float four[4] = { 4.f, 4.f, 4.f, 4.f };
+  const dt_aligned_pixel_t four = { 4.f, 4.f, 4.f, 4.f };
   __m128 r0 = _mm_loadu_ps(in);
   __m128 r1 = _mm_loadu_ps(in + wd);
   __m128 r2 = _mm_loadu_ps(in + 2*wd);
@@ -283,7 +283,7 @@ static inline float *ll_pad_input(
   const int stride = 4;
   *wd2 = 2*max_supp + wd;
   *ht2 = 2*max_supp + ht;
-  float *const out = dt_alloc_align(64, *wd2**ht2*sizeof(*out));
+  float *const out = dt_alloc_align_float((size_t) *wd2 * *ht2);
 
   if(b && b->mode == 2)
   { // pad by preview buffer
@@ -424,7 +424,7 @@ static inline float curve_scalar(
     val = g - sigma * 2.0f*mt*t + t2*(- sigma - sigma*highlights);
   }
   // midtone local contrast
-  val += clarity * c * dt_fast_expf(-c*c/(2.0*sigma*sigma/3.0f));
+  val += clarity * c * expf(-c*c/(2.0*sigma*sigma/3.0f));
   return val;
 }
 
@@ -565,7 +565,7 @@ void local_laplacian_internal(
     float *const out,           // output buffer with colour
     const int wd,               // width and
     const int ht,               // height of the input buffer
-    const float sigma,          // user param: separate shadows/midtones/highlights
+    const float sigma,          // user param: separate shadows/mid-tones/highlights
     const float shadows,        // user param: lift shadows
     const float highlights,     // user param: compress highlights
     const float clarity,        // user param: increase clarity/local contrast
@@ -589,12 +589,12 @@ void local_laplacian_internal(
 
   // allocate pyramid pointers for padded input
   for(int l=1;l<=last_level;l++)
-    padded[l] = dt_alloc_align(64, sizeof(float)*dl(w,l)*dl(h,l));
+    padded[l] = dt_alloc_align_float((size_t)dl(w,l) * dl(h,l));
 
   // allocate pyramid pointers for output
   float *output[max_levels] = {0};
   for(int l=0;l<=last_level;l++)
-    output[l] = dt_alloc_align(64, sizeof(float)*dl(w,l)*dl(h,l));
+    output[l] = dt_alloc_align_float((size_t)dl(w,l) * dl(h,l));
 
   // create gauss pyramid of padded input, write coarse directly to output
 #if defined(__SSE2__)
@@ -620,7 +620,7 @@ void local_laplacian_internal(
   // allocate memory for intermediate laplacian pyramids
   float *buf[num_gamma][max_levels] = {{0}};
   for(int k=0;k<num_gamma;k++) for(int l=0;l<=last_level;l++)
-    buf[k][l] = dt_alloc_align(64, sizeof(float)*dl(w,l)*dl(h,l));
+    buf[k][l] = dt_alloc_align_float((size_t)dl(w,l)*dl(h,l));
 
   // the paper says remapping only level 3 not 0 does the trick, too
   // (but i really like the additional octave of sharpness we get,
@@ -777,7 +777,7 @@ size_t local_laplacian_memory_use(const int width,     // width of input image
   size_t memory_use = 0;
 
   for(int l=0;l<num_levels;l++)
-    memory_use += (size_t)(2 + num_gamma) * dl(paddwd, l) * dl(paddht, l) * sizeof(float);
+    memory_use += sizeof(float) * (2 + num_gamma) * dl(paddwd, l) * dl(paddht, l);
 
   return memory_use;
 }
@@ -790,5 +790,5 @@ size_t local_laplacian_singlebuffer_size(const int width,     // width of input 
   const int paddwd = width  + 2*max_supp;
   const int paddht = height + 2*max_supp;
 
-  return (size_t)dl(paddwd, 0) * dl(paddht, 0) * sizeof(float);
+  return sizeof(float) * dl(paddwd, 0) * dl(paddht, 0);
 }

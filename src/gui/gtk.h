@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -90,6 +90,9 @@ typedef enum dt_gui_color_t
   DT_GUI_COLOR_MAP_COUNT_SAME_LOC,
   DT_GUI_COLOR_MAP_COUNT_DIFF_LOC,
   DT_GUI_COLOR_MAP_COUNT_BG,
+  DT_GUI_COLOR_MAP_LOC_SHAPE_HIGH,
+  DT_GUI_COLOR_MAP_LOC_SHAPE_LOW,
+  DT_GUI_COLOR_MAP_LOC_SHAPE_DEF,
   DT_GUI_COLOR_LAST
 } dt_gui_color_t;
 
@@ -213,11 +216,6 @@ gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event, gdouble *delta);
  * scroll events. */
 gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta);
 
-/** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
-void dt_gui_key_accel_block_on_focus_connect(GtkWidget *w);
-/** clean up connected signal handlers before destroying your widget: */
-void dt_gui_key_accel_block_on_focus_disconnect(GtkWidget *w);
-
 /*
  * new ui api
  */
@@ -326,6 +324,8 @@ gboolean dt_ui_panel_visible(struct dt_ui_t *ui, const dt_ui_panel_t);
 int dt_ui_panel_get_size(struct dt_ui_t *ui, const dt_ui_panel_t p);
 /**  \brief set width of right, left, or bottom panel */
 void dt_ui_panel_set_size(struct dt_ui_t *ui, const dt_ui_panel_t p, int s);
+/** \brief is the panel ancestor of widget */
+gboolean dt_ui_panel_ancestor(struct dt_ui_t *ui, const dt_ui_panel_t p, GtkWidget *w);
 /** \brief get the center drawable widget */
 GtkWidget *dt_ui_center(struct dt_ui_t *ui);
 GtkWidget *dt_ui_center_base(struct dt_ui_t *ui);
@@ -346,8 +346,8 @@ void dt_ellipsize_combo(GtkComboBox *cbox);
 static inline void dt_ui_section_label_set(GtkWidget *label)
 {
   gtk_widget_set_halign(label, GTK_ALIGN_FILL); // make it span the whole available width
+  gtk_label_set_xalign (GTK_LABEL(label), 0.5f);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END); // ellipsize labels
-  g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);    // make the text left aligned
   gtk_widget_set_name(label, "section_label"); // make sure that we can style these easily
 }
 
@@ -362,9 +362,16 @@ static inline GtkWidget *dt_ui_label_new(const gchar *str)
 {
   GtkWidget *label = gtk_label_new(str);
   gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_label_set_xalign (GTK_LABEL(label), 0.0f);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   return label;
 };
+
+extern const struct dt_action_def_t dt_action_def_tabs_all_rgb;
+extern const struct dt_action_def_t dt_action_def_tabs_rgb;
+extern const struct dt_action_def_t dt_action_def_tabs_none;
+
+GtkNotebook *dt_ui_notebook_new(struct dt_action_def_t *def);
 
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip);
 
@@ -406,6 +413,27 @@ static inline GtkWidget *dt_ui_button_new(const gchar *label, const gchar *toolt
 };
 
 GtkWidget *dt_ui_scroll_wrap(GtkWidget *w, gint min_size, char *config_str);
+
+// check whether the given container has any user-added children
+gboolean dt_gui_container_has_children(GtkContainer *container);
+// return a count of the user-added children in the given container
+int dt_gui_container_num_children(GtkContainer *container);
+// return the first child of the given container
+GtkWidget *dt_gui_container_first_child(GtkContainer *container);
+// return the requested child of the given container, or NULL if it has fewer children
+GtkWidget *dt_gui_container_nth_child(GtkContainer *container, int which);
+
+// remove all of the children we've added to the container.  Any which no longer have any references will
+// be destroyed.
+void dt_gui_container_remove_children(GtkContainer *container);
+
+// delete all of the children we've added to the container.  Use this function only if you are SURE
+// there are no other references to any of the children (if in doubt, use dt_gui_container_remove_children
+// instead; it's a bit slower but safer).
+void dt_gui_container_destroy_children(GtkContainer *container);
+
+void dt_gui_menu_popup(GtkMenu *menu, GtkWidget *button, GdkGravity widget_anchor, GdkGravity menu_anchor);
+void dt_gui_draw_rounded_rectangle(cairo_t *cr, float width, float height, float x, float y);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -343,23 +343,10 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
   if(jpg->quality < 40) jpg->cinfo.smoothing_factor = 60;
   jpg->cinfo.optimize_coding = 1;
 
-  // according to specs density_unit = 0, X_density = 1, Y_density = 1 should be fine and valid since it
-  // describes an image with unknown unit and square pixels.
-  // however, some applications (like the Telekom cloud thingy) seem to be confused by that, so let's set
-  // these calues to the same as stored in exiv :/
   const int resolution = dt_conf_get_int("metadata/resolution");
-  if(resolution > 0)
-  {
-    jpg->cinfo.density_unit = 1;
-    jpg->cinfo.X_density = resolution;
-    jpg->cinfo.Y_density = resolution;
-  }
-  else
-  {
-    jpg->cinfo.density_unit = 0;
-    jpg->cinfo.X_density = 1;
-    jpg->cinfo.Y_density = 1;
-  }
+  jpg->cinfo.density_unit = 1;
+  jpg->cinfo.X_density = resolution;
+  jpg->cinfo.Y_density = resolution;
 
   jpeg_start_compress(&(jpg->cinfo), TRUE);
 
@@ -370,14 +357,14 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)
     {
-      unsigned char *buf = malloc(len * sizeof(unsigned char));
+      unsigned char *buf = malloc(sizeof(unsigned char) * len);
       cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg->cinfo), buf, len);
       free(buf);
     }
   }
 
-  uint8_t *row = dt_alloc_align(64, (size_t)3 * jpg->global.width * sizeof(uint8_t));
+  uint8_t *row = dt_alloc_align(64, sizeof(uint8_t) * 3 * jpg->global.width);
   const uint8_t *buf;
   while(jpg->cinfo.next_scanline < jpg->cinfo.image_height)
   {
@@ -588,9 +575,15 @@ void gui_init(dt_imageio_module_format_t *self)
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   self->widget = box;
   // quality slider
-  g->quality = dt_bauhaus_slider_new_with_range(NULL, 5, 100, 1, 95, 0);
-  dt_bauhaus_widget_set_label(g->quality, NULL, _("quality"));
-  dt_bauhaus_slider_set_default(g->quality, 95);
+  g->quality = dt_bauhaus_slider_new_with_range(NULL,
+                                                dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_MIN),
+                                                dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_MAX),
+                                                1,
+                                                dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_DEFAULT),
+                                                0);
+  dt_bauhaus_widget_set_label(g->quality, NULL, N_("quality"));
+  dt_bauhaus_slider_set_default(g->quality, dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_DEFAULT));
+  dt_bauhaus_slider_set(g->quality, dt_conf_get_int("plugins/imageio/format/jpeg/quality"));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->quality), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->quality), "value-changed", G_CALLBACK(quality_changed), NULL);
   // TODO: add more options: subsample dreggn
@@ -604,7 +597,7 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 void gui_reset(dt_imageio_module_format_t *self)
 {
   dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)self->gui_data;
-  dt_bauhaus_slider_set(g->quality, dt_conf_get_int("plugins/imageio/format/jpeg/quality"));
+  dt_bauhaus_slider_set(g->quality, dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_DEFAULT));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -1,4 +1,24 @@
+/*
+    This file is part of darktable,
+    Copyright (C) 2010-2021 darktable developers.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #pragma once
+
+#include "develop/blend.h"
 
 // format flags stored into the presets database; the FOR_NOT_ variants are negated to keep existing presets
 typedef enum dt_gui_presets_format_flag_t
@@ -10,6 +30,42 @@ typedef enum dt_gui_presets_format_flag_t
   FOR_NOT_COLOR = 1 << 4
 } dt_gui_presets_format_flag_t;
 
+enum // Lib and iop presets
+{
+  DT_ACTION_EFFECT_SHOW = DT_ACTION_EFFECT_DEFAULT_KEY,
+//DT_ACTION_EFFECT_UP,
+//DT_ACTION_EFFECT_DOWN,
+  DT_ACTION_EFFECT_STORE = 3,
+  DT_ACTION_EFFECT_DELETE = 4,
+  DT_ACTION_EFFECT_EDIT = 5,
+  DT_ACTION_EFFECT_UPDATE = 6,
+  DT_ACTION_EFFECT_PREFERENCES = 7,
+};
+typedef struct dt_gui_presets_edit_dialog_t
+{
+  GtkWindow *parent;
+
+  dt_iop_module_t *iop;
+  gchar *module_name;
+  gchar *operation;
+  int op_version;
+
+  GtkEntry *name, *description;
+  GtkCheckButton *autoapply, *filter;
+  GtkWidget *details;
+  GtkWidget *model, *maker, *lens;
+  GtkWidget *iso_min, *iso_max;
+  GtkWidget *exposure_min, *exposure_max;
+  GtkWidget *aperture_min, *aperture_max;
+  GtkWidget *focal_length_min, *focal_length_max;
+  gchar *original_name;
+  gint old_id;
+  GtkWidget *format_btn[5];
+
+  GCallback callback;
+  gpointer data;
+} dt_gui_presets_edit_dialog_t;
+
 #define DT_PRESETS_FOR_NOT (FOR_NOT_MONO | FOR_NOT_COLOR);
 
 /** create a db table with presets for all operations. */
@@ -17,7 +73,9 @@ void dt_gui_presets_init();
 
 /** add or replace a generic (i.e. non-exif specific) preset for this operation. */
 void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const int32_t version,
-                                const void *params, const int32_t params_size, const int32_t enabled);
+                                const void *params, const int32_t params_size,
+                                const int32_t enabled,
+                                const dt_develop_blend_colorspace_t blend_cst);
 
 /** same as add_generic but also supply blendop parameters for the presets. */
 void dt_gui_presets_add_with_blendop(
@@ -59,6 +117,21 @@ void dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module);
 
 /** show popupmenu for favorite modules */
 void dt_gui_favorite_presets_menu_show();
+
+/** apply a preset to the current module **/
+void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module);
+
+/** apply any auto presets that are appropriate for the current module **/
+gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module);
+
+void dt_gui_presets_show_iop_edit_dialog(const char *name_in, dt_iop_module_t *module, GCallback final_callback,
+                                         gpointer data, gboolean allow_name_change, gboolean allow_desc_change,
+                                         gboolean allow_remove, GtkWindow *parent);
+void dt_gui_presets_show_edit_dialog(const char *name_in, const char *module_name, int rowid,
+                                     GCallback final_callback, gpointer data, gboolean allow_name_change,
+                                     gboolean allow_desc_change, gboolean allow_remove, GtkWindow *parent);
+
+void dt_gui_presets_confirm_and_delete(GtkWidget *parent_dialog, const char *name, const char *module_name, int rowid);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -7,7 +7,7 @@
   <id>darktable.desktop</id>
   <name>darktable</name>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license>GPL-3.0+ and GPL-2.0+ and LGPL-2.0+ and BSD-3-Clause and MIT and CC-BY-SA-1.0 and CC-BY-2.5 and CC-BY-NC-3.0</project_license>
+  <project_license>GPL-3.0+ AND GPL-2.0+ AND LGPL-2.0+ AND BSD-3-Clause AND MIT AND CC-BY-SA-1.0 AND CC-BY-2.5 AND CC-BY-NC-3.0</project_license>
   <_summary>Organize and develop images from digital cameras</_summary>
   <translation type="gettext">darktable</translation>
   <description>
@@ -49,6 +49,9 @@
   </screenshots>
   <content_rating type="oars-1.1" />
   <releases>
+    <release date="2021-07-03" version="3.6.0"/>
+    <release date="2021-02-06" version="3.4.1"/>
+    <release date="2020-12-24" version="3.4.0"/>
     <release date="2020-08-10" version="3.2.1"/>
     <release date="2020-04-18" version="3.0.2"/>
     <release date="2020-03-09" version="3.0.1"/>

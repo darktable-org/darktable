@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -43,8 +44,6 @@
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
-
-#define CLIP(x) ((x < 0.0f) ? 0.0f : (x > 1.0f) ? 1.0f : x)
 
 DT_MODULE_INTROSPECTION(1, dt_iop_graduatednd_params_t)
 
@@ -71,51 +70,55 @@ void init_presets(dt_iop_module_so_t *self)
 
   dt_gui_presets_add_generic(_("neutral gray ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("neutral gray ND4 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 2, 0, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("neutral gray ND8 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 3, 0, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("neutral gray ND2 (hard)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 75, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("neutral gray ND4 (hard)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 2, 75, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("neutral gray ND8 (hard)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 3, 75, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("orange ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.102439, 0.8 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("yellow ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.151220, 0.5 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("purple ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.824390, 0.5 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("green ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.302439, 0.5 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("red ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0, 0.5 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("blue ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.663415, 0.5 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("brown ND4 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 2, 0, 0, 50, 0.082927, 0.25 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 typedef struct dt_iop_graduatednd_gui_data_t
 {
-//  GtkBox *vbox;
-//  GtkWidget *label1, *label2, *label3, *label5, *label6; // density, hardness, rotation, hue, saturation
   GtkWidget *density, *hardness, *rotation, *hue, *saturation;
 
   int selected;
@@ -141,6 +144,15 @@ const char *name()
   return _("graduated density");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("simulate an optical graduated neutral density filter"),
+                                      _("corrective and creative"),
+                                      _("linear or non-linear, RGB, scene-referred"),
+                                      _("non-linear, RGB"),
+                                      _("non-linear, RGB, display-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING
@@ -155,26 +167,6 @@ int default_group()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "density"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "hardness"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "hue"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "density", GTK_WIDGET(g->density));
-  dt_accel_connect_slider_iop(self, "hardness", GTK_WIDGET(g->hardness));
-  dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->rotation));
-  dt_accel_connect_slider_iop(self, "hue", GTK_WIDGET(g->hue));
-  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->saturation));
 }
 
 static inline float f(const float t, const float c, const float x)
@@ -309,8 +301,8 @@ static int set_points_from_grad(struct dt_iop_module_t *self, float *xa, float *
 {
   // we get the extremities of the line
   const float v = (-rotation / 180) * M_PI;
-  const float sinv = sin(v);
-  float pts[4];
+  const float sinv = sinf(v);
+  dt_boundingbox_t pts;
 
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
   if(!piece) return 0;
@@ -351,7 +343,7 @@ static int set_points_from_grad(struct dt_iop_module_t *self, float *xa, float *
   else
   {
     // otherwise we determine the extremities
-    const float cosv = cos(v);
+    const float cosv = cosf(v);
     float xx1 = (sinv - cosv + 1.0f - offset / 50.0f) * wp * 0.5f / sinv;
     float xx2 = (sinv + cosv + 1.0f - offset / 50.0f) * wp * 0.5f / sinv;
     float yy1 = 0.0f;
@@ -437,7 +429,7 @@ static int set_points_from_grad(struct dt_iop_module_t *self, float *xa, float *
 
 static inline void update_saturation_slider_end_color(GtkWidget *slider, float hue)
 {
-  float rgb[3];
+  dt_aligned_pixel_t rgb;
   hsl2rgb(rgb, hue, 1.0, 0.5);
   dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
 }
@@ -523,9 +515,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_stroke(cr);
 
   // the extremities
+  const float pr_d = darktable.develop->preview_downsampling;
   float x1, y1, x2, y2;
-  const float l = sqrt((xb - xa) * (xb - xa) + (yb - ya) * (yb - ya));
-  const float ext = wd * 0.01f / zoom_scale;
+  const float l = sqrtf((xb - xa) * (xb - xa) + (yb - ya) * (yb - ya));
+  const float ext = wd * 0.01f / pr_d / zoom_scale;
   x1 = xa + (xb - xa) * ext / l;
   y1 = ya + (yb - ya) * ext / l;
   x2 = (xa + x1) / 2.0;
@@ -574,9 +567,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  int closeup = dt_control_get_dev_closeup();
-  float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1<<closeup, 1);
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  const float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1<<closeup, 1);
   float pzx, pzy;
   dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
   pzx += 0.5f;
@@ -610,8 +603,9 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   }
   else
   {
+    const float pr_d = darktable.develop->preview_downsampling;
     g->selected = 0;
-    const float ext = DT_PIXEL_APPLY_DPI(0.02f) / zoom_scale;
+    const float ext = DT_PIXEL_APPLY_DPI(0.02f) / pr_d / zoom_scale;
     // are we near extermity ?
     if(pzy > g->ya - ext && pzy < g->ya + ext && pzx > g->xa - ext && pzx < g->xa + ext)
     {
@@ -703,7 +697,7 @@ int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
-  if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+  if(dt_modifier_is(state, GDK_CONTROL_MASK))
   {
     float dens;
     if(up)
@@ -716,7 +710,7 @@ int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state)
     }
     return 1;
   }
-  if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+  if(dt_modifier_is(state, GDK_SHIFT_MASK))
   {
     float comp;
     if(up)
@@ -732,6 +726,41 @@ int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state)
   return 0;
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd simdlen(4)
+#endif
+static inline float density_times_length(const float dens, const float length)
+{
+//  return (dens * CLIP(0.5f + length) / 8.0f);
+  return (dens * CLAMP(0.5f + length, 0.0f, 1.0f) / 8.0f);
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd simdlen(4)
+#endif
+static inline float compute_density(const float dens, const float length)
+{
+#if 1
+  // !!! approximation is ok only when highest density is 8
+  // for input x = (data->density * CLIP( 0.5+length ), calculate 2^x as (e^(ln2*x/8))^8
+  // use exp2f approximation to calculate e^(ln2*x/8)
+  // in worst case - density==8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
+  const float t = DT_M_LN2f * density_times_length(dens,length);
+  const float d1 = t * t * 0.5f;
+  const float d2 = d1 * t * 0.333333333f;
+  const float d3 = d2 * t * 0.25f;
+  const float d = 1 + t + d1 + d2 + d3; /* taylor series for e^x till x^4 */
+  // printf("%d %d  %f\n",y,x,d);
+  float density = d * d;
+  density = density * density;
+  density = density * density;
+#else
+  // use fair exp2f
+  const float density = exp2f(dens * CLIP(0.5f + length));
+#endif
+  return density;
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -742,71 +771,49 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int iy = (roi_in->y);
   const float iw = piece->buf_in.width * roi_out->scale;
   const float ih = piece->buf_in.height * roi_out->scale;
-  const float hw = iw / 2.0;
-  const float hh = ih / 2.0;
-  const float hw_inv = 1.0 / hw;
-  const float hh_inv = 1.0 / hh;
+  const float hw = iw / 2.0f;
+  const float hh = ih / 2.0f;
+  const float hw_inv = 1.0f / hw;
+  const float hh_inv = 1.0f / hh;
   const float v = (-data->rotation / 180) * M_PI;
-  const float sinv = sin(v);
-  const float cosv = cos(v);
-  const float filter_radie = sqrt((hh * hh) + (hw * hw)) / hh;
-  const float offset = data->offset / 100.0 * 2;
+  const float sinv = sinf(v);
+  const float cosv = cosf(v);
+  const float filter_radie = sqrtf((hh * hh) + (hw * hw)) / hh;
+  const float offset = data->offset / 100.0f * 2;
 
-#if 1
-  const float filter_hardness
-      = 1.0 / filter_radie / (1.0 - (0.5 + (data->hardness / 100.0) * 0.9 / 2.0)) * 0.5;
-#else
-  const float hardness = data->hardness / 100.0f;
-  const float t = 1.0f - .8f / (.8f + hardness);
-  const float c = 1.0f + 1000.0f * powf(4.0, hardness);
-#endif
+  const float filter_hardness = 1.0 / filter_radie / (1.0 - (0.5 + (data->hardness / 100.0) * 0.9 / 2.0)) * 0.5;
 
-
+  const int width = roi_out->width;
+  const int height = roi_out->height;
   if(data->density > 0)
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(ch, cosv, data, filter_hardness, hh_inv, hw_inv, \
-                        ivoid, ix, iy, offset, ovoid, roi_out, sinv) \
+                        ivoid, ix, iy, offset, ovoid, height, width, sinv) \
     schedule(static)
 #endif
-    for(int y = 0; y < roi_out->height; y++)
+    for(int y = 0; y < height; y++)
     {
-      const size_t k = (size_t)roi_out->width * y * ch;
-      const float *in = (float *)ivoid + k;
-      float *out = (float *)ovoid + k;
+      const size_t k = (size_t)width * y * ch;
+      const float *const restrict in = (float *)ivoid + k;
+      float *const restrict out = (float *)ovoid + k;
 
       float length = (sinv * (-1.0 + ix * hw_inv) - cosv * (-1.0 + (iy + y) * hh_inv) - 1.0 + offset)
                      * filter_hardness;
       const float length_inc = sinv * hw_inv * filter_hardness;
 
-      for(int x = 0; x < roi_out->width; x++, in += ch, out += ch)
+      for(int x = 0; x < width; x++)
       {
-#if 1
-        // !!! approximation is ok only when highest density is 8
-        // for input x = (data->density * CLIP( 0.5+length ), calculate 2^x as (e^(ln2*x/8))^8
-        // use exp2f approximation to calculate e^(ln2*x/8)
-        // in worst case - density==8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
-        const float t = 0.693147181f /* ln2 */ * (data->density * CLIP(0.5f + length) / 8.0f);
-        const float d1 = t * t * 0.5f;
-        const float d2 = d1 * t * 0.333333333f;
-        const float d3 = d2 * t * 0.25f;
-        const float d = 1 + t + d1 + d2 + d3; /* taylor series for e^x till x^4 */
-        // printf("%d %d  %f\n",y,x,d);
-        float density = d;
-        density = density * density;
-        density = density * density;
-        density = density * density;
-#else
-        // use fair exp2f
-        const float density = exp2f(data->density * CLIP(0.5f + length));
-#endif
+        const float density = compute_density(data->density, length);
 
-        for(int l = 0; l < 3; l++)
+        #ifdef _OPENMP
+        #pragma omp simd aligned(in, out : 16)
+        #endif
+        for(int l = 0; l < 4; l++)
         {
-          out[l] = MAX(0.0f, (in[l] / (data->color[l] + data->color1[l] * density)));
+          out[ch*x+l] = MAX(0.0f, (in[ch*x+l] / (data->color[l] + data->color1[l] * density)));
         }
-
         length += length_inc;
       }
     }
@@ -816,50 +823,37 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(ch, cosv, data, filter_hardness, hh_inv, hw_inv, \
-                        ivoid, ix, iy, offset, ovoid, roi_out, sinv) \
+                        ivoid, ix, iy, offset, ovoid, height, width, sinv)    \
     schedule(static)
 #endif
-    for(int y = 0; y < roi_out->height; y++)
+    for(int y = 0; y < height; y++)
     {
-      const size_t k = (size_t)roi_out->width * y * ch;
-      const float *in = (float *)ivoid + k;
-      float *out = (float *)ovoid + k;
+      const size_t k = (size_t)width * y * ch;
+      const float *const restrict in = (float *)ivoid + k;
+      float *const restrict out = (float *)ovoid + k;
 
       float length = (sinv * (-1.0f + ix * hw_inv) - cosv * (-1.0f + (iy + y) * hh_inv) - 1.0f + offset)
                      * filter_hardness;
       const float length_inc = sinv * hw_inv * filter_hardness;
 
-      for(int x = 0; x < roi_out->width; x++, in += ch, out += ch)
+      for(int x = 0; x < width; x++)
       {
-#if 1
-        // !!! approximation is ok only when lowest density is -8
-        // for input x = (-data->density * CLIP( 0.5-length ), calculate 2^x as (e^(ln2*x/8))^8
-        // use exp2f approximation to calculate e^(ln2*x/8)
-        // in worst case - density==-8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
-        const float t = 0.693147181f /* ln2 */ * (-data->density * CLIP(0.5f - length) / 8.0f);
-        const float d1 = t * t * 0.5f;
-        const float d2 = d1 * t * 0.333333333f;
-        const float d3 = d2 * t * 0.25f;
-        const float d = 1 + t + d1 + d2 + d3; /* taylor series for e^x till x^4 */
-        float density = d;
-        density = density * density;
-        density = density * density;
-        density = density * density;
-#else
-        const float density = exp2f(-data->density * CLIP(0.5f - length));
-#endif
+        const float density = compute_density(-data->density, -length);
 
-        for(int l = 0; l < 3; l++)
+        #ifdef _OPENMP
+        #pragma omp simd aligned(in, out : 16)
+        #endif
+        for(int l = 0; l < 4; l++)
         {
-          out[l] = MAX(0.0f, (in[l] * (data->color[l] + data->color1[l] * density)));
+          out[ch*x+l] = MAX(0.0f, (in[ch*x+l] * (data->color[l] + data->color1[l] * density)));
         }
-
         length += length_inc;
       }
     }
   }
 
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #if defined(__SSE__)
@@ -873,73 +867,47 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const int iy = (roi_in->y);
   const float iw = piece->buf_in.width * roi_out->scale;
   const float ih = piece->buf_in.height * roi_out->scale;
-  const float hw = iw / 2.0;
-  const float hh = ih / 2.0;
-  const float hw_inv = 1.0 / hw;
-  const float hh_inv = 1.0 / hh;
+  const float hw = iw / 2.0f;
+  const float hh = ih / 2.0f;
+  const float hw_inv = 1.0f / hw;
+  const float hh_inv = 1.0f / hh;
   const float v = (-data->rotation / 180) * M_PI;
-  const float sinv = sin(v);
-  const float cosv = cos(v);
-  const float filter_radie = sqrt((hh * hh) + (hw * hw)) / hh;
-  const float offset = data->offset / 100.0 * 2;
+  const float sinv = sinf(v);
+  const float cosv = cosf(v);
+  const float filter_radie = sqrtf((hh * hh) + (hw * hw)) / hh;
+  const float offset = data->offset / 100.0f * 2;
 
-#if 1
-  const float filter_hardness = 1.0 / filter_radie
-                                   / (1.0 - (0.5 + (data->hardness / 100.0) * 0.9 / 2.0)) * 0.5;
-#else
-  const float hardness = data->hardness / 100.0f;
-  const float t = 1.0f - .8f / (.8f + hardness);
-  const float c = 1.0f + 1000.0f * powf(4.0, hardness);
-#endif
+  const float filter_hardness = 1.0 / filter_radie / (1.0 - (0.5 + (data->hardness / 100.0) * 0.9 / 2.0)) * 0.5;
 
-
+  const int width = roi_out->width;
+  const int height = roi_out->height;
   if(data->density > 0)
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(ch, cosv, data, filter_hardness, hh_inv, hw_inv, \
-                        ivoid, ix, iy, offset, ovoid, roi_out, sinv) \
+                        ivoid, ix, iy, offset, ovoid, height, width, sinv)    \
     schedule(static)
 #endif
-    for(int y = 0; y < roi_out->height; y++)
+    for(int y = 0; y < height; y++)
     {
-      const size_t k = (size_t)roi_out->width * y * ch;
-      const float *in = (float *)ivoid + k;
-      float *out = (float *)ovoid + k;
+      const size_t k = (size_t)width * y * ch;
+      const float *const restrict in = (float *)ivoid + k;
+      float *const restrict out = (float *)ovoid + k;
 
       float length = (sinv * (-1.0 + ix * hw_inv) - cosv * (-1.0 + (iy + y) * hh_inv) - 1.0 + offset)
                      * filter_hardness;
       const float length_inc = sinv * hw_inv * filter_hardness;
 
       const __m128 c = _mm_set_ps(0, data->color[2], data->color[1], data->color[0]);
-      const __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f), c);
+      const __m128 c1 = _mm_set1_ps(1.0f) - c;
 
-      for(int x = 0; x < roi_out->width; x++, in += ch, out += ch)
+      for(int x = 0; x < width; x++)
       {
-#if 1
-        // !!! approximation is ok only when highest density is 8
-        // for input x = (data->density * CLIP( 0.5+length ), calculate 2^x as (e^(ln2*x/8))^8
-        // use exp2f approximation to calculate e^(ln2*x/8)
-        // in worst case - density==8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
-        const float t = 0.693147181f /* ln2 */ * (data->density * CLIP(0.5f + length) / 8.0f);
-        const float d1 = t * t * 0.5f;
-        const float d2 = d1 * t * 0.333333333f;
-        const float d3 = d2 * t * 0.25f;
-        const float d = 1 + t + d1 + d2 + d3; /* taylor series for e^x till x^4 */
-        // printf("%d %d  %f\n",y,x,d);
-        __m128 density = _mm_set1_ps(d);
-        density = _mm_mul_ps(density, density);
-        density = _mm_mul_ps(density, density);
-        density = _mm_mul_ps(density, density);
-#else
-        // use fair exp2f
-        const __m128 density = _mm_set1_ps(exp2f(data->density * CLIP(0.5f + length)));
-#endif
+        const __m128 density = _mm_set1_ps(compute_density(data->density, length));
 
         /* max(0,in / (c + (1-c)*density)) */
-        _mm_stream_ps(out, _mm_max_ps(_mm_set1_ps(0.0f),
-                                      _mm_div_ps(_mm_load_ps(in), _mm_add_ps(c, _mm_mul_ps(c1, density)))));
-
+        _mm_stream_ps(out + ch*x, _mm_max_ps(_mm_set1_ps(0.0f), (_mm_load_ps(in + ch*x) / (c + (c1 * density)))));
         length += length_inc;
       }
     }
@@ -949,46 +917,28 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(ch, cosv, data, filter_hardness, hh_inv, hw_inv, \
-                        ivoid, ix, iy, offset, ovoid, roi_out, sinv) \
+                        ivoid, ix, iy, offset, ovoid, height, width, sinv)    \
     schedule(static)
 #endif
-    for(int y = 0; y < roi_out->height; y++)
+    for(int y = 0; y < height; y++)
     {
-      const size_t k = (size_t)roi_out->width * y * ch;
-      const float *in = (float *)ivoid + k;
-      float *out = (float *)ovoid + k;
+      const size_t k = (size_t)width * y * ch;
+      const float *const restrict in = (float *)ivoid + k;
+      float *const restrict out = (float *)ovoid + k;
 
       float length = (sinv * (-1.0f + ix * hw_inv) - cosv * (-1.0f + (iy + y) * hh_inv) - 1.0f + offset)
                       * filter_hardness;
       const float length_inc = sinv * hw_inv * filter_hardness;
 
       const __m128 c = _mm_set_ps(0, data->color[2], data->color[1], data->color[0]);
-      const __m128 c1 = _mm_sub_ps(_mm_set1_ps(1.0f), c);
+      const __m128 c1 = _mm_set1_ps(1.0f) - c;
 
-      for(int x = 0; x < roi_out->width; x++, in += ch, out += ch)
+      for(int x = 0; x < width; x++)
       {
-#if 1
-        // !!! approximation is ok only when lowest density is -8
-        // for input x = (-data->density * CLIP( 0.5-length ), calculate 2^x as (e^(ln2*x/8))^8
-        // use exp2f approximation to calculate e^(ln2*x/8)
-        // in worst case - density==-8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
-        const float t = 0.693147181f /* ln2 */ * (-data->density * CLIP(0.5f - length) / 8.0f);
-        const float d1 = t * t * 0.5f;
-        const float d2 = d1 * t * 0.333333333f;
-        const float d3 = d2 * t * 0.25f;
-        const float d = 1 + t + d1 + d2 + d3; /* taylor series for e^x till x^4 */
-        __m128 density = _mm_set1_ps(d);
-        density = _mm_mul_ps(density, density);
-        density = _mm_mul_ps(density, density);
-        density = _mm_mul_ps(density, density);
-#else
-        const __m128 density = _mm_set1_ps(exp2f(-data->density * CLIP(0.5f - length)));
-#endif
+        const __m128 density = _mm_set1_ps(compute_density(-data->density, -length));
 
         /* max(0,in * (c + (1-c)*density)) */
-        _mm_stream_ps(out, _mm_max_ps(_mm_set1_ps(0.0f),
-                                      _mm_mul_ps(_mm_load_ps(in), _mm_add_ps(c, _mm_mul_ps(c1, density)))));
-
+        _mm_stream_ps(out + ch*x, _mm_max_ps(_mm_set1_ps(0.0f), (_mm_load_ps(in + ch*x) * (c + (c1 * density)))));
         length += length_inc;
       }
     }
@@ -1016,15 +966,15 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int iy = (roi_in->y);
   const float iw = piece->buf_in.width * roi_out->scale;
   const float ih = piece->buf_in.height * roi_out->scale;
-  const float hw = iw / 2.0;
-  const float hh = ih / 2.0;
-  const float hw_inv = 1.0 / hw;
-  const float hh_inv = 1.0 / hh;
+  const float hw = iw / 2.0f;
+  const float hh = ih / 2.0f;
+  const float hw_inv = 1.0f / hw;
+  const float hh_inv = 1.0f / hh;
   const float v = (-data->rotation / 180) * M_PI;
-  const float sinv = sin(v);
-  const float cosv = cos(v);
-  const float filter_radie = sqrt((hh * hh) + (hw * hw)) / hh;
-  const float offset = data->offset / 100.0 * 2;
+  const float sinv = sinf(v);
+  const float cosv = cosf(v);
+  const float filter_radie = sqrtf((hh * hh) + (hw * hw)) / hh;
+  const float offset = data->offset / 100.0f * 2;
   const float density = data->density;
 
 #if 1
@@ -1121,7 +1071,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_graduatednd_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1132,9 +1081,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-  dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)module->params;
+  dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -1167,6 +1115,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, dt_bauhaus_slider_from_params(self, "hue"));
   dt_bauhaus_slider_set_feedback(g->hue, 0);
+  dt_bauhaus_slider_set_factor(g->hue, 360.0f);
+  dt_bauhaus_slider_set_format(g->hue, "%.2f°");
   dt_bauhaus_slider_set_stop(g->hue, 0.0f, 1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.166f, 1.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.322f, 0.0f, 1.0f, 0.0f);
@@ -1177,6 +1127,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hue, _("select the hue tone of filter"));
 
   g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
+  dt_bauhaus_slider_set_factor(g->saturation, 100.0f);
+  dt_bauhaus_slider_set_format(g->saturation, "%.0f%%");
   dt_bauhaus_slider_set_stop(g->saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(g->saturation, 1.0f, 1.0f, 1.0f, 1.0f);
   gtk_widget_set_tooltip_text(g->saturation, _("select the saturation of filter"));
@@ -1189,30 +1141,13 @@ void gui_init(struct dt_iop_module_t *self)
 GSList *mouse_actions(struct dt_iop_module_t *self)
 {
   GSList *lm = NULL;
-  dt_mouse_action_t *a = NULL;
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_LEFT_DRAG;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on nodes] change line rotation"), self->name());
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_LEFT_DRAG;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on line] move line"), self->name());
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->key.accel_mods = GDK_CONTROL_MASK;
-  a->action = DT_MOUSE_ACTION_SCROLL;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on line] change density"), self->name());
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->key.accel_mods = GDK_SHIFT_MASK;
-  a->action = DT_MOUSE_ACTION_SCROLL;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on line] change hardness"), self->name());
-  lm = g_slist_append(lm, a);
-
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0,
+                                     _("[%s on nodes] change line rotation"), self->name());
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0, _("[%s on line] move line"), self->name());
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK,
+                                     _("[%s on line] change density"), self->name());
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK,
+                                     _("[%s on line] change hardness"), self->name());
   return lm;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

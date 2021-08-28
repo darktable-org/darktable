@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2020 darktable developers.
+    Copyright (C) 2016-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -148,14 +148,12 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   b->numslices = darktable.num_openmp_threads;
   b->sliceheight = (height + b->numslices - 1) / b->numslices;
   b->slicerows = (b->size_y + b->numslices - 1) / b->numslices + 2;
-  b->buf = dt_alloc_align(64, b->size_x * b->size_z * b->numslices * b->slicerows * sizeof(float));
-  if (b->buf)
-  {
-    memset(b->buf, 0, b->size_x * b->size_z * b->numslices * b->slicerows * sizeof(float));
-  }
-  else
+  b->buf = dt_calloc_align_float(b->size_x * b->size_z * b->numslices * b->slicerows);
+  if (!b->buf)
   {
     fprintf(stderr,"[bilateral] unable to allocate buffer for %lux%lux%lu grid\n",b->size_x,b->size_y,b->size_z);
+    free(b);
+    return NULL;
   }
   dt_print(DT_DEBUG_DEV, "[bilateral] created grid [%ld %ld %ld] with sigma (%f %f) (%f %f)\n",
            b->size_x, b->size_y, b->size_z, b->sigma_s, sigma_s, b->sigma_r, sigma_r);
@@ -206,7 +204,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
       float y = CLAMPS(j / b->sigma_s, 0, b->size_y - 1);
       const int yi = MIN((int)y, b->size_y - 2);
       const float yf = y - yi;
-      const size_t base = (yi + slice_offset) * oy;
+      const size_t base = (size_t)(yi + slice_offset) * oy;
       for(int i = 0; i < b->width; i++)
       {
         size_t index = 4 * (j * b->width + i);
@@ -215,7 +213,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
         // nearest neighbour splatting:
         const size_t grid_index = base + image_to_relgrid(b, i, L, &xf, &zf);
         // sum up payload here
-        const float contrib[4] =
+        const dt_aligned_pixel_t contrib =
         {
           (1.0f - xf) * (1.0f - yf) * 100.0f / sigma_s,	// precompute the contributions along the first two dimensions
           xf * (1.0f - yf) * 100.0f / sigma_s,
@@ -252,7 +250,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
       // clear elements in the part of the buffer which holds the final result now that we've read the partial result,
       // since we'll be adding to those locations later
       if (j < b->size_y)
-        memset(buf + j*oy, '\0', oy*sizeof(float));
+        memset(buf + j*oy, '\0', sizeof(float) * oy);
     }
   }
 }
@@ -389,7 +387,7 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
       const float L = in[index];
       // trilinear lookup:
       const size_t gi = image_to_grid(b, i, j, L, &xf, &yf, &zf);
-      const float Lout = L
+      const float Lout = fmaxf( 0.0f, L
                          + norm * (buf[gi] * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
                                    + buf[gi + ox] * (xf) * (1.0f - yf) * (1.0f - zf)
                                    + buf[gi + oy] * (1.0f - xf) * (yf) * (1.0f - zf)
@@ -397,7 +395,7 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
                                    + buf[gi + oz] * (1.0f - xf) * (1.0f - yf) * (zf)
                                    + buf[gi + ox + oz] * (xf) * (1.0f - yf) * (zf)
                                    + buf[gi + oy + oz] * (1.0f - xf) * (yf) * (zf)
-                                   + buf[gi + ox + oy + oz] * (xf) * (yf) * (zf));
+                                   + buf[gi + ox + oy + oz] * (xf) * (yf) * (zf)));
       out[index] = Lout;
       // and copy color and mask
       out[index + 1] = in[index + 1];

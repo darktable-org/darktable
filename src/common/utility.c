@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#include <locale.h>
 
 #include "common/darktable.h"
 #include "common/file_location.h"
@@ -96,8 +98,9 @@ guint dt_util_str_occurence(const gchar *haystack, const gchar *needle)
 
 gchar *dt_util_str_replace(const gchar *string, const gchar *pattern, const gchar *substitute)
 {
-  gint occurences = dt_util_str_occurence(string, pattern);
-  gchar *nstring;
+  const gint occurences = dt_util_str_occurence(string, pattern);
+  gchar *nstring = NULL;
+
   if(occurences)
   {
     nstring = g_malloc_n(strlen(string) + (occurences * strlen(substitute)) + 1, sizeof(gchar));
@@ -131,15 +134,14 @@ gchar *dt_util_glist_to_str(const gchar *separator, GList *items)
   gchar *result = NULL;
 
   // add the entries to an char* array
-  items = g_list_first(items);
   gchar **strings = g_malloc0_n(count + 1, sizeof(gchar *));
   if(items != NULL)
   {
     int i = 0;
-    do
+    for(; items; items = g_list_next(items))
     {
       strings[i++] = items->data;
-    } while((items = g_list_next(items)) != NULL);
+    }
   }
 
   // join them into a single string
@@ -192,7 +194,7 @@ gchar *dt_util_fix_path(const gchar *path)
   /* check if path has a prepended tilde */
   if(path[0] == '~')
   {
-    size_t len = strlen(path);
+    const size_t len = strlen(path);
     char *user = NULL;
     int off = 1;
 
@@ -276,18 +278,46 @@ size_t dt_utf8_strlcpy(char *dest, const char *src, size_t n)
   return s - src;
 }
 
-off_t dt_util_get_file_size(const char *filename)
+gboolean dt_util_test_image_file(const char *filename)
 {
+  if(g_access(filename, R_OK)) return FALSE;
 #ifdef _WIN32
-  struct _stati64 st;
-  if(_stati64(filename, &st) == 0) return st.st_size;
-#else
-  struct stat st;
-  if(stat(filename, &st) == 0) return st.st_size;
+  struct _stati64 stats;
+
+  // the code this replaced used utf8 paths with no problem
+  // utf8 paths will not work in this context for no reason 
+  // that I can figure out, but converting utf8 to utf16 works
+  // fine.
+
+  wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
+  const int result = _wstati64(wfilename, &stats);
+  g_free(wfilename);
+  if(result) return FALSE; // there was an error
+ #else
+  struct stat stats;
+  if(stat(filename, &stats)) return FALSE;
 #endif
 
-  return -1;
+  const gboolean regular = (S_ISREG(stats.st_mode)) != 0;
+  const gboolean size_ok = stats.st_size > 0;
+  return regular && size_ok;
 }
+
+gboolean dt_util_test_writable_dir(const char *path)
+{
+  if(path == NULL) return FALSE;
+#ifdef _WIN32
+  struct _stati64 stats;
+  if(_stati64(path, &stats)) return FALSE;
+#else
+  struct stat stats;
+  if(stat(path, &stats)) return FALSE;
+#endif
+  if(S_ISDIR(stats.st_mode) == 0) return FALSE;  
+  if(g_access(path, W_OK | X_OK) != 0) return FALSE;
+  return TRUE;
+}
+
 
 gboolean dt_util_is_dir_empty(const char *dirname)
 {
@@ -475,7 +505,7 @@ gchar *dt_util_latitude_str(float latitude)
 
   if(latitude < 0)
   {
-    latitude = fabs(latitude);
+    latitude = fabsf(latitude);
     c = OSD_COORDINATES_CHR_S;
   }
 
@@ -493,7 +523,7 @@ gchar *dt_util_longitude_str(float longitude)
 
   if(longitude < 0)
   {
-    longitude = fabs(longitude);
+    longitude = fabsf(longitude);
     c = OSD_COORDINATES_CHR_W;
   }
 
@@ -510,7 +540,7 @@ gchar *dt_util_elevation_str(float elevation)
 
   if(elevation < 0)
   {
-    elevation = fabs(elevation);
+    elevation = fabsf(elevation);
     c = OSD_ELEVATION_BSL;
   }
 
@@ -650,7 +680,8 @@ gchar *dt_util_normalize_path(const gchar *_input)
   // another problem is that path separators can either be / or \ leading to even more problems.
 
   // TODO:
-  // this only handles filenames in the old <drive letter>:\path\to\file form, not the \\?\UNC\ form and not some others like \Device\...
+  // this handles filenames in the formats <drive letter>:\path\to\file or \\host-name\share-name\file
+  // some other formats like \Device\... are not supported
 
   // the Windows api expects wide chars and not utf8 :(
   wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);
@@ -659,7 +690,7 @@ gchar *dt_util_normalize_path(const gchar *_input)
     return NULL;
 
   wchar_t LongPath[MAX_PATH] = {0};
-  DWORD size = GetLongPathNameW(wfilename, LongPath, MAX_PATH);
+  const DWORD size = GetLongPathNameW(wfilename, LongPath, MAX_PATH);
   g_free(wfilename);
   if(size == 0 || size > MAX_PATH)
     return NULL;
@@ -678,16 +709,45 @@ gchar *dt_util_normalize_path(const gchar *_input)
   if(!filename)
     return NULL;
 
-  char drive_letter = g_ascii_toupper(filename[0]);
-  if(drive_letter < 'A' || drive_letter > 'Z' || filename[1] != ':')
+  const char first = g_ascii_toupper(filename[0]);
+  if(first >= 'A' && first <= 'Z' && filename[1] == ':') // path format is <drive letter>:\path\to\file
+  {
+    filename[0] = first;
+    return filename;
+  }
+  else if(first == '\\' && filename[1] == '\\') // path format is \\host-name\share-name\file
+    return filename;
+  else
   {
     g_free(filename);
     return NULL;
   }
-  filename[0] = drive_letter;
 #endif
 
   return filename;
+}
+
+#ifdef WIN32
+// returns TRUE if the path is a Windows UNC (\\server\share\...\file)
+const gboolean dt_util_path_is_UNC(const gchar *filename)
+{
+  return filename[0] == G_DIR_SEPARATOR && filename[1] == G_DIR_SEPARATOR;
+}
+#endif
+
+// gets the directory components of a file name, like g_path_get_dirname(), but works also with Windows networks paths (\\hostname\share\file)
+gchar *dt_util_path_get_dirname(const gchar *filename)
+{
+  gchar *dirname = g_path_get_dirname(filename);
+
+  /* Remove trailing slash, as g_path_get_dirname() leaves it for Windows UNC and this messes up film roll name */
+  if(dirname[0])
+  {
+    int last = strlen(dirname) - 1;
+    if(G_IS_DIR_SEPARATOR(dirname[last]))
+      dirname[last] = '\0';
+  }
+  return dirname;
 }
 
 guint dt_util_string_count_char(const char *text, const char needle)
@@ -695,10 +755,18 @@ guint dt_util_string_count_char(const char *text, const char needle)
   guint count = 0;
   while(text[0])
   {
-    if (text[0] == needle) count ++;
+    if(text[0] == needle) count ++;
     text ++;
   }
   return count;
+}
+
+void dt_util_str_to_loc_numbers_format(char *data)
+{
+  const struct lconv *currentLocalConv = localeconv();
+  const gchar loc_decimal_point = currentLocalConv->decimal_point[0];
+  const gchar *en_decimal_point = ".";
+  g_strdelimit(data, en_decimal_point, loc_decimal_point);
 }
 
 GList *dt_util_str_to_glist(const gchar *separator, const gchar *text)
@@ -721,7 +789,7 @@ GList *dt_util_str_to_glist(const gchar *separator, const gchar *text)
       prev = next + strlen(separator);
       len = strlen(prev);
       list = g_list_prepend(list, item);
-      if (!len) list = g_list_prepend(list, g_strdup(""));
+      if(!len) list = g_list_prepend(list, g_strdup(""));
     }
     else
     {
@@ -738,7 +806,7 @@ GList *dt_util_str_to_glist(const gchar *separator, const gchar *text)
 // format exposure time given in seconds to a string in a unified way
 char *dt_util_format_exposure(const float exposuretime)
 {
-  char *result;
+  char *result = NULL;
   if(exposuretime >= 1.0f)
   {
     if(nearbyintf(exposuretime) == exposuretime)
@@ -762,6 +830,63 @@ char *dt_util_format_exposure(const float exposuretime)
     result = g_strdup_printf("%.1f″", exposuretime);
 
   return result;
+}
+
+char *dt_read_file(const char *const filename, size_t *filesize)
+{
+  if (filesize) *filesize = 0;
+  FILE *fd = g_fopen(filename, "rb");
+  if(!fd) return NULL;
+
+  fseek(fd, 0, SEEK_END);
+  const size_t end = ftell(fd);
+  rewind(fd);
+
+  char *content = (char *)malloc(sizeof(char) * end);
+  if(!content) return NULL;
+
+  const size_t count = fread(content, sizeof(char), end, fd);
+  fclose(fd);
+  if (count == end)
+  {
+    if (filesize) *filesize = end;
+    return content;
+  }
+  free(content);
+  return NULL;
+}
+
+void dt_copy_file(const char *const sourcefile, const char *dst)
+{
+  char *content = NULL;
+  FILE *fin = g_fopen(sourcefile, "rb");
+  FILE *fout = g_fopen(dst, "wb");
+
+  if(fin && fout)
+  {
+    fseek(fin, 0, SEEK_END);
+    const size_t end = ftell(fin);
+    rewind(fin);
+    content = (char *)g_malloc_n(end, sizeof(char));
+    if(content == NULL) goto END;
+    if(fread(content, sizeof(char), end, fin) != end) goto END;
+    if(fwrite(content, sizeof(char), end, fout) != end) goto END;
+  }
+
+END:
+  if(fout != NULL) fclose(fout);
+  if(fin != NULL) fclose(fin);
+
+  g_free(content);
+}
+
+void dt_copy_resource_file(const char *src, const char *dst)
+{
+  char share[PATH_MAX] = { 0 };
+  dt_loc_get_datadir(share, sizeof(share));
+  gchar *sourcefile = g_build_filename(share, src, NULL);
+  dt_copy_file(sourcefile, dst);
+  g_free(sourcefile);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -97,14 +97,15 @@ static void _group_helper_function(void)
     int id = sqlite3_column_int(stmt, 0);
     if(new_group_id == -1) new_group_id = id;
     dt_grouping_add_to_group(new_group_id, id);
-    imgs = g_list_append(imgs, GINT_TO_POINTER(id));
+    imgs = g_list_prepend(imgs, GINT_TO_POINTER(id));
   }
+  imgs = g_list_reverse(imgs); // list was built in reverse order, so un-reverse it
   sqlite3_finalize(stmt);
   if(darktable.gui->grouping)
     darktable.gui->expanded_group_id = new_group_id;
   else
     darktable.gui->expanded_group_id = -1;
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_GROUPING, imgs);
   dt_control_queue_redraw_center();
 }
 
@@ -117,14 +118,22 @@ static void _ungroup_helper_function(void)
                               &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int id = sqlite3_column_int(stmt, 0);
-    dt_grouping_remove_from_group(id);
-    imgs = g_list_append(imgs, GINT_TO_POINTER(id));
+    const int id = sqlite3_column_int(stmt, 0);
+    const int new_group_id = dt_grouping_remove_from_group(id);
+    if(new_group_id != -1)
+    {
+      // new_group_id == -1 if image to be ungrouped was a single image and no change to any group was made
+      imgs = g_list_prepend(imgs, GINT_TO_POINTER(id));
+    }
   }
   sqlite3_finalize(stmt);
-  darktable.gui->expanded_group_id = -1;
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
-  dt_control_queue_redraw_center();
+  if(imgs != NULL)
+  {
+    darktable.gui->expanded_group_id = -1;
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_GROUPING,
+                               g_list_reverse(imgs));
+    dt_control_queue_redraw_center();
+  }
 }
 
 static void button_clicked(GtkWidget *widget, gpointer user_data)
@@ -164,7 +173,7 @@ static void button_clicked(GtkWidget *widget, gpointer user_data)
 static const char* _image_get_delete_button_label()
 {
 if (dt_conf_get_bool("send_to_trash"))
-  return _("trash");
+  return _("delete (trash)");
 else
   return _("delete");
 }
@@ -172,71 +181,91 @@ else
 static const char* _image_get_delete_button_tooltip()
 {
 if (dt_conf_get_bool("send_to_trash"))
-  return _("send file to trash");
+  return _("physically delete from disk (using trash if possible)");
 else
-  return _("physically delete from disk");
+  return _("physically delete from disk immediately");
 }
 
 static void _update(dt_lib_module_t *self)
 {
   dt_lib_cancel_postponed_update(self);
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
-  const GList *imgs = dt_view_get_images_to_act_on(FALSE, FALSE);
+  const GList *imgs = dt_view_get_images_to_act_on(FALSE, FALSE, FALSE);
 
-  const guint act_on_cnt = g_list_length((GList *)imgs);
+  const int act_on_any = imgs != NULL;              // list length > 0 ?
+  const int act_on_one = g_list_is_singleton(imgs); // list length == 1 ?
+  const int act_on_mult = act_on_any && !act_on_one;// list length > 1 ?
   const uint32_t selected_cnt = dt_collection_get_selected_count(darktable.collection);
   const gboolean can_paste
-      = d->imageid > 0 && (act_on_cnt > 1 || (act_on_cnt == 1 && (d->imageid != dt_view_get_image_to_act_on())));
+      = d->imageid > 0 && (act_on_mult || (act_on_one && (d->imageid != dt_view_get_image_to_act_on())));
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->remove_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->delete_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->remove_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->delete_button), act_on_any);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->move_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->copy_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->move_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->copy_button), act_on_any);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->create_hdr_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->duplicate_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->create_hdr_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->duplicate_button), act_on_any);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->rotate_ccw_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->rotate_cw_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->reset_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->rotate_ccw_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->rotate_cw_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->reset_button), act_on_any);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->cache_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->uncache_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->cache_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->uncache_button), act_on_any);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->group_button), selected_cnt > 1);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->ungroup_button), selected_cnt > 0);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->copy_metadata_button), act_on_cnt == 1);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->copy_metadata_button), act_on_one);
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste_metadata_button), can_paste);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->clear_metadata_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->clear_metadata_button), act_on_any);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->refresh_button), act_on_cnt > 0);
-  if(act_on_cnt > 1)
+  gtk_widget_set_sensitive(GTK_WIDGET(d->refresh_button), act_on_any);
+  if(act_on_mult)
   {
+    gtk_widget_set_sensitive(GTK_WIDGET(d->ungroup_button), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), TRUE);
   }
-  else if(act_on_cnt == 0)
+  else if(!act_on_any)
   {
+    // no images to act on!
+    gtk_widget_set_sensitive(GTK_WIDGET(d->ungroup_button), FALSE);
     gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), FALSE);
     gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), FALSE);
   }
   else
   {
+    // exact one image to act on
     const int imgid = dt_view_get_image_to_act_on();
     if(imgid >= 0)
     {
       dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
       const gboolean is_bw = (dt_image_monochrome_flags(img) != 0);
+      const int img_group_id = img->group_id;
       dt_image_cache_read_release(darktable.image_cache, img);
       gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), !is_bw);
       gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), is_bw);
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT COUNT(id) FROM main.images WHERE group_id = ?1 AND id != ?2", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img_group_id);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+      if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        const int images_in_grp = sqlite3_column_int(stmt, 0);
+        gtk_widget_set_sensitive(GTK_WIDGET(d->ungroup_button), images_in_grp > 0);
+      }
+      else
+        gtk_widget_set_sensitive(GTK_WIDGET(d->ungroup_button), FALSE);
+      if(stmt) sqlite3_finalize(stmt);
     }
     else
     {
       gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), FALSE);
       gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), FALSE);
+      gtk_widget_set_sensitive(GTK_WIDGET(d->ungroup_button), FALSE);
     }
   }
 }
@@ -246,8 +275,9 @@ static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t
   _update(self);
 }
 
-static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
-                                        int next, dt_lib_module_t *self)
+static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change,
+                                         dt_collection_properties_t changed_property, gpointer imgs, int next,
+                                         dt_lib_module_t *self)
 {
   _update(self);
 }
@@ -287,16 +317,18 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   const gboolean geotag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/geotags");
   const gboolean dttag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/tags");
   const int imageid = d->imageid;
-  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
+  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE, FALSE);
   if(imgs)
   {
     // for all the above actions, we don't use the grpu_on tag, as grouped images have already been added to image
     // list
-    const dt_undo_type_t undo_type = (rating_flag ? DT_UNDO_RATINGS : 0) |
-                                    (colors_flag ? DT_UNDO_COLORLABELS : 0) |
-                                    (dtmetadata_flag ? DT_UNDO_METADATA : 0) |
-                                    (geotag_flag ? DT_UNDO_GEOTAG : 0) |
-                                    (dttag_flag ? DT_UNDO_TAGS : 0);
+    const dt_undo_type_t undo_type =
+        (rating_flag     ? DT_UNDO_RATINGS     : 0)
+      | (colors_flag     ? DT_UNDO_COLORLABELS : 0)
+      | (dtmetadata_flag ? DT_UNDO_METADATA    : 0)
+      | (geotag_flag     ? DT_UNDO_GEOTAG      : 0)
+      | (dttag_flag      ? DT_UNDO_TAGS        : 0);
+
     if(undo_type) dt_undo_start_group(darktable.undo, undo_type);
 
     if(rating_flag)
@@ -324,6 +356,8 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
       else
         dt_image_get_location(imageid, geoloc);
       dt_image_set_locations(imgs, geoloc, TRUE);
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED,
+                                    g_list_copy((GList *)imgs), 0);
       g_free(geoloc);
     }
     if(dttag_flag)
@@ -339,7 +373,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
     {
       dt_undo_end_group(darktable.undo);
       dt_image_synch_xmps(imgs);
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_METADATA,
                                  g_list_copy((GList *)imgs));
       dt_control_queue_redraw_center();
     }
@@ -425,10 +459,10 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   self->timeout_handle = 0;
   self->widget = gtk_notebook_new();
-  dt_gui_add_help_link(self->widget, "selected_images.html#selected_images_usage");
+  dt_gui_add_help_link(self->widget, dt_get_help_url("image"));
 
-  GtkWidget *page1 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), _("images"), NULL);
-  GtkWidget *page2 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), _("metadata"), NULL);
+  GtkWidget *page1 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), N_("images"), NULL);
+  GtkWidget *page2 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), N_("metadata"), NULL);
 
   // images operations
   d->page1 = gtk_grid_new();
@@ -439,7 +473,7 @@ void gui_init(dt_lib_module_t *self)
   int line = 0;
 
 
-  d->remove_button = dt_ui_button_new(_("remove"), _("remove from the collection"), NULL);
+  d->remove_button = dt_ui_button_new(_("remove"), _("remove images from the image library, without deleting"), NULL);
   gtk_grid_attach(grid, d->remove_button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(d->remove_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(0));
 
@@ -459,7 +493,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->create_hdr_button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(d->create_hdr_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(7));
 
-  d->duplicate_button = dt_ui_button_new(_("duplicate"), _("add a duplicate to the collection, including its history stack"), NULL);
+  d->duplicate_button = dt_ui_button_new(_("duplicate"), _("add a duplicate to the image library, including its history stack"), NULL);
   gtk_grid_attach(grid, d->duplicate_button, 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(d->duplicate_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(3));
 
@@ -554,8 +588,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->clear_metadata_button, 4, line++, 2, 1);
   g_signal_connect(G_OBJECT(d->clear_metadata_button), "clicked", G_CALLBACK(clear_metadata_callback), self);
 
-  GtkWidget *pastemode = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(pastemode, NULL, _("mode"));
+  GtkWidget *pastemode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+  dt_bauhaus_widget_set_label(pastemode, NULL, N_("mode"));
   dt_bauhaus_combobox_add(pastemode, _("merge"));
   dt_bauhaus_combobox_add(pastemode, _("overwrite"));
   gtk_widget_set_tooltip_text(pastemode, _("how to handle existing metadata"));
@@ -614,8 +648,8 @@ void gui_cleanup(dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "remove from collection"), GDK_KEY_Delete, 0);
-  dt_accel_register_lib(self, NC_("accel", "delete from disk or send to trash"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "remove from darktable"), GDK_KEY_Delete, 0);
+  dt_accel_register_lib(self, NC_("accel", "delete from disk using trash if possible"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "move to other folder"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "copy to other folder"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate selected images 90 degrees CW"), 0, 0);
@@ -628,7 +662,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "refresh exif"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "set monochrome image"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "set color image"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "replace metadata"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "copy metadata"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "paste metadata"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "clear metadata"), 0, 0);
   // Grouping keys
@@ -640,8 +674,8 @@ void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
 
-  dt_accel_connect_button_lib(self, "remove from collection", d->remove_button);
-  dt_accel_connect_button_lib(self, "delete from disk or send to trash", d->delete_button);
+  dt_accel_connect_button_lib(self, "remove from darktable", d->remove_button);
+  dt_accel_connect_button_lib(self, "delete from disk using trash if possible", d->delete_button);
   dt_accel_connect_button_lib(self, "move to other folder", d->move_button);
   dt_accel_connect_button_lib(self, "copy to other folder", d->copy_button);
   dt_accel_connect_button_lib(self, "rotate selected images 90 degrees CW", d->rotate_cw_button);
@@ -663,7 +697,8 @@ void connect_key_accels(dt_lib_module_t *self)
 }
 
 #ifdef USE_LUA
-typedef struct {
+typedef struct
+{
   const char* key;
   dt_lib_module_t * self;
 } lua_callback_data;
@@ -671,62 +706,145 @@ typedef struct {
 
 static int lua_button_clicked_cb(lua_State* L)
 {
-  lua_callback_data * data = lua_touserdata(L,1);
-  dt_lua_module_entry_push(L,"lib",data->self->plugin_name);
-  lua_getuservalue(L,-1);
-  lua_getfield(L,-1,"callbacks");
-  lua_getfield(L,-1,data->key);
-  lua_pushstring(L,data->key);
+  lua_callback_data * data = lua_touserdata(L, 1);
+  dt_lua_module_entry_push(L, "lib", data->self->plugin_name);
+  lua_getiuservalue(L, -1, 1);
+  lua_getfield(L, -1, "callbacks");
+  lua_getfield(L, -1, data->key);
+  lua_pushstring(L, data->key);
 
   GList *image = dt_collection_get_selected(darktable.collection, -1);
   lua_newtable(L);
+  int table_index = 1;
   while(image)
   {
     luaA_push(L, dt_lua_image_t, &image->data);
-    luaL_ref(L, -2);
+    lua_seti(L, -2, table_index);
+    table_index++;
     image = g_list_delete_link(image, image);
   }
 
-  lua_call(L,2,0);
+  lua_call(L, 2, 0);
   return 0;
 }
 
 static void lua_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_lua_async_call_alien(lua_button_clicked_cb,
-      0,NULL,NULL,
-      LUA_ASYNC_TYPENAME,"void*", user_data,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "void*", user_data,
       LUA_ASYNC_DONE);
 }
 
 static int lua_register_action(lua_State *L)
 {
-  lua_settop(L,3);
+  lua_settop(L, 3);
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
-  dt_lua_module_entry_push(L,"lib",self->plugin_name);
-  lua_getuservalue(L,-1);
-  const char* key = luaL_checkstring(L,1);
-  luaL_checktype(L,2,LUA_TFUNCTION);
+  dt_lua_module_entry_push(L, "lib", self->plugin_name);
+  lua_getiuservalue(L, -1, 1);
+  const char* name = luaL_checkstring(L, 1);
+  const char* key = luaL_checkstring(L, 2);
+  luaL_checktype(L, 3, LUA_TFUNCTION);
 
-  lua_getfield(L,-1,"callbacks");
-  lua_pushstring(L,key);
-  lua_pushvalue(L,2);
-  lua_settable(L,-3);
+  lua_getfield(L, -1, "callbacks");
+  lua_pushstring(L, name);
+  lua_pushvalue(L, 3);
+  lua_settable(L, -3);
 
   GtkWidget* button = gtk_button_new_with_label(key);
-  const char * tooltip = lua_tostring(L,3);
-  if(tooltip)  {
+  const char * tooltip = lua_tostring(L, 3);
+  if(tooltip)
+  {
     gtk_widget_set_tooltip_text(button, tooltip);
   }
+  gtk_widget_set_name(button, name);
   dt_lib_image_t *d = self->data;
   gtk_grid_attach_next_to(GTK_GRID(d->page1), button, NULL, GTK_POS_BOTTOM, 4, 1);
 
 
   lua_callback_data * data = malloc(sizeof(lua_callback_data));
-  data->key = strdup(key);
+  data->key = strdup(name);
   data->self = self;
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(lua_button_clicked), data);
+  const gulong s = g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(lua_button_clicked), data);
+
+  // save the signal connection in case we need to destroy it later
+  dt_lua_module_entry_push(L, "lib", self->plugin_name);
+  lua_getiuservalue(L, -1, 1);
+  lua_getfield(L, -1, "signal_handlers");
+  lua_pushstring(L, name);
+  lua_pushinteger(L, s);
+  lua_settable(L, -3);
+
   gtk_widget_show_all(button);
+
+  return 0;
+}
+
+static int lua_destroy_action(lua_State *L)
+{
+  lua_settop(L, 3);
+  dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
+  const char* name = luaL_checkstring(L, 1);
+  dt_lib_image_t *d = self->data;
+
+  // find the button named name
+
+  GtkWidget* widget = NULL;
+
+  for(int row = 5; (widget = gtk_grid_get_child_at(GTK_GRID(d->page1), 0, row)) != NULL; row++)
+  {
+    if(GTK_IS_BUTTON(widget) && strcmp(gtk_widget_get_name(widget), name) == 0)
+    {
+      // remove the callback
+
+      dt_lua_module_entry_push(L, "lib", self->plugin_name);
+      lua_getiuservalue(L, -1, 1);
+      lua_getfield(L, -1, "callbacks");
+      lua_pushstring(L, name);
+      lua_pushnil(L);
+      lua_settable(L, -3);
+
+      // disconnect the signal
+
+      dt_lua_module_entry_push(L, "lib", self->plugin_name);
+      lua_getiuservalue(L, -1, 1);
+      lua_getfield(L, -1, "signal_handlers");
+      lua_pushstring(L, name);
+      lua_gettable(L, -2);
+      const gulong handler_id = luaL_checkinteger(L, -1);
+      g_signal_handler_disconnect(G_OBJECT(widget), handler_id);
+
+      // remove the widget
+
+      gtk_grid_remove_row(GTK_GRID(d->page1), row);
+
+      break;
+    }
+  }
+
+  return 0;
+}
+
+static int lua_set_action_sensitive(lua_State *L)
+{
+  lua_settop(L, 3);
+  dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
+  const char* name = luaL_checkstring(L, 1);
+  const gboolean sensitive = lua_toboolean(L, 2);
+  dt_lib_image_t *d = self->data;
+
+  // find the button named name
+
+  GtkWidget* widget = NULL;
+
+  for(int row = 5; (widget = gtk_grid_get_child_at(GTK_GRID(d->page1), 0, row)) != NULL; row++)
+  {
+    if(GTK_IS_BUTTON(widget) && strcmp(gtk_widget_get_name(widget), name) == 0)
+    {
+      gtk_widget_set_sensitive(widget, sensitive);
+      break;
+    }
+  }
   return 0;
 }
 
@@ -736,17 +854,36 @@ void init(struct dt_lib_module_t *self)
   lua_State *L = darktable.lua_state.state;
   int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
   lua_pushlightuserdata(L, self);
-  lua_pushcclosure(L, lua_register_action,1);
+  lua_pushcclosure(L, lua_register_action, 1);
   dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "register_action");
 
-  dt_lua_module_entry_push(L,"lib",self->plugin_name);
-  lua_getuservalue(L,-1);
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, lua_destroy_action, 1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "destroy_action");
+
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, lua_set_action_sensitive, 1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "set_sensitive");
+
+  dt_lua_module_entry_push(L, "lib", self->plugin_name);
+  lua_getiuservalue(L, -1, 1);
   lua_newtable(L);
-  lua_setfield(L,-2,"callbacks");
-  lua_pop(L,2);
+  lua_setfield(L, -2, "callbacks");
+  lua_pop(L, 2);
+
+  dt_lua_module_entry_push(L, "lib", self->plugin_name);
+  lua_getiuservalue(L, -1, 1);
+  lua_newtable(L);
+  lua_setfield(L, -2, "signal_handlers");
+  lua_pop(L, 2);
 }
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

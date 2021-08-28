@@ -27,6 +27,23 @@ macro(_detach_debuginfo target dest)
     set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES $<TARGET_FILE_NAME:${target}>.dbg)
 endmacro()
 
+
+#-------------------------------------------------------------------------------
+# _copy_required_library(<target> <library>)
+#
+# Helper function to copy required library (specified by target) alongside the 
+# target binary. 
+# 
+# This is required as Win doesn't have a RPATH
+#-------------------------------------------------------------------------------
+function(_copy_required_library target library)
+  message( STATUS "WIN32: Adding post-build step to copy required lib alongside target binary")
+  add_custom_command(TARGET ${target} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${library}> $<TARGET_FILE_DIR:${target}>
+  )
+endfunction()
+
+
 function(InstallDependencyFiles)
 
 if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
@@ -96,6 +113,9 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     ${MINGW_PATH}/libgmpxx*.dll
   #LIBUSB1
     ${MINGW_PATH}/libusb*.dll
+  #OPENSSL
+    ${MINGW_PATH}/libcrypto*.dll
+    ${MINGW_PATH}/libssl*.dll
     )
 
   if(OpenEXR_FOUND)
@@ -124,6 +144,16 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
       ${MINGW_PATH}/libltdl*.dll
       ${MINGW_PATH}/libGraphicsMagick++*.dll
       ${MINGW_PATH}/libGraphicsMagickWand*.dll
+    )
+    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
+  endif()
+
+  # workaround for msys2 gmic 2.9.0-3. Should be reviewed when gmic 2.9.3 is available
+  if(GMIC_FOUND)
+    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
+      #GMIC
+      ${MINGW_PATH}/libopencv_core*.dll
+      ${MINGW_PATH}/libopencv_videoio*.dll
     )
     list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
   endif()
@@ -230,6 +260,12 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     foreach(MO ${IsoCodes_MO_FILES})
       string(REPLACE "iso_639.mo" "" MO_TARGET_DIR "${MO}")
       install(FILES "${IsoCodes_LOCALEDIR}/${MO}" DESTINATION "share/locale/${MO_TARGET_DIR}" COMPONENT DTApplication)
+      file(GLOB mofiles "${IsoCodes_LOCALEDIR}/${MO_TARGET_DIR}/*")
+      foreach(sysfile ${mofiles})
+        install(FILES ${sysfile}
+                DESTINATION ${CMAKE_INSTALL_LOCALEDIR}/${language}/LC_MESSAGES
+                COMPONENT DTApplication)
+      endforeach(sysfile)
     endforeach()
   endif(IsoCodes_FOUND)
 
@@ -239,6 +275,24 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
       DESTINATION share/curl/
       RENAME curl-ca-bundle.crt
       COMPONENT DTApplication)
+
+  # Add libavif files
+  if(libavif_FOUND)
+    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
+      #LIBAVIF
+      ${MINGW_PATH}/libavif*.dll
+    )
+    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
+  endif(libavif_FOUND)
+
+  # Add rsvg2 files
+  if(Rsvg2_FOUND)
+    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
+      #RSVG2
+      ${MINGW_PATH}/librsvg*.dll
+    )
+    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
+  endif(Rsvg2_FOUND)
 
 endif(WIN32 AND NOT BUILD_MSYS2_INSTALL)
 

@@ -33,7 +33,7 @@ Testimg *testimg_alloc(const int width, const int height)
   Testimg *ti = calloc(sizeof(Testimg), 1);
   ti->width = width;
   ti->height = height;
-  ti->pixels = calloc(width * height * 4, sizeof(float));
+  ti->pixels = calloc((size_t)4 * width * height, sizeof(float));
   ti->name = "";
   return ti;
 }

@@ -68,7 +68,10 @@ while IFS="" read -r p || [ -n "$p" ]; do
       if [ "$p" = "" ] || [ "${p:0:13}" = "And all those" ]; then
           continue
       fi
-      CONTENT="\"$p\",$CONTENT"
+
+      #on some weird configs read doesn't remove new line, remove it here just to be sure
+      LINE=$(echo -n "$p" | tr -d '[:cntrl:]')
+      CONTENT="\"$LINE\",$CONTENT"
   fi
 done < "$AUTHORS"
 

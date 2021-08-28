@@ -140,20 +140,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <limits.h>
 #include <float.h>
-//#include "lsd.h"
-
-/** ln(10) */
-#ifndef M_LN10
-#define M_LN10 2.30258509299404568402
-#endif /* !M_LN10 */
-
-/** PI */
-#ifndef M_PI
-#define M_PI   3.14159265358979323846
-#endif /* !M_PI */
+#include "common/math.h"
 
 #ifndef FALSE
 #define FALSE 0
@@ -319,7 +308,7 @@ static ntuple_list new_ntuple_list(unsigned int dim)
   n_tuple->dim = dim;
 
   /* get memory for tuples */
-  n_tuple->values = (double *) malloc( dim*n_tuple->max_size * sizeof(double) );
+  n_tuple->values = (double *) malloc(sizeof(double) * dim * n_tuple->max_size);
   if( n_tuple->values == NULL ) error("not enough memory.");
 
   return n_tuple;
@@ -339,7 +328,7 @@ static void enlarge_ntuple_list(ntuple_list n_tuple)
 
   /* realloc memory */
   n_tuple->values = (double *) realloc( (void *) n_tuple->values,
-                      n_tuple->dim * n_tuple->max_size * sizeof(double) );
+                      sizeof(double) * n_tuple->dim * n_tuple->max_size );
   if( n_tuple->values == NULL ) error("not enough memory.");
 }
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #include "develop/format.h"
 #include "develop/pixelpipe_hb.h"
 #include "libs/lib.h"
+#include "libs/colorpicker.h"
 #include <stdlib.h>
 
 
@@ -101,19 +102,20 @@ uint64_t dt_dev_pixelpipe_cache_basichash(int imgid, struct dt_dev_pixelpipe_t *
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     dt_develop_t *dev = piece->module->dev;
-    if(!(dev->gui_module && (dev->gui_module->operation_tags_filter() & piece->module->operation_tags())))
+    if(!(dev->gui_module && dev->gui_module != piece->module
+         && (dev->gui_module->operation_tags_filter() & piece->module->operation_tags())))
     {
       hash = ((hash << 5) + hash) ^ piece->hash;
       if(piece->module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
       {
-        if(darktable.lib->proxy.colorpicker.size)
+        if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
         {
-          const char *str = (const char *)piece->module->color_picker_box;
+          const char *str = (const char *)darktable.lib->proxy.colorpicker.primary_sample->box;
           for(size_t i = 0; i < sizeof(float) * 4; i++) hash = ((hash << 5) + hash) ^ str[i];
         }
-        else
+        else if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
         {
-          const char *str = (const char *)piece->module->color_picker_point;
+          const char *str = (const char *)darktable.lib->proxy.colorpicker.primary_sample->point;
           for(size_t i = 0; i < sizeof(float) * 2; i++) hash = ((hash << 5) + hash) ^ str[i];
         }
       }
@@ -137,8 +139,9 @@ uint64_t dt_dev_pixelpipe_cache_basichash_prior(int imgid, struct dt_dev_pixelpi
     if (module == (dt_iop_module_t *)modules->data)
       break;		// we've found the given module, so 'last' now contains the index of the prior active module
     dt_develop_t *dev = piece->module->dev;
-    if (piece->enabled &&
-        !(dev->gui_module && (dev->gui_module->operation_tags_filter() & piece->module->operation_tags())))
+    if(piece->enabled
+       && !(dev->gui_module && dev->gui_module != piece->module
+            && (dev->gui_module->operation_tags_filter() & piece->module->operation_tags())))
       last = k;
     pieces = g_list_next(pieces);
     modules = g_list_next(modules);

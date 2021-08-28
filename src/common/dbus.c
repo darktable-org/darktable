@@ -199,7 +199,8 @@ void dt_dbus_destroy(const dt_dbus_t *dbus)
 {
   g_bus_unown_name(dbus->owner_id);
   g_dbus_node_info_unref(dbus->introspection_data);
-  g_object_unref(G_OBJECT(dbus->dbus_connection));
+  if(dbus->dbus_connection)
+    g_object_unref(G_OBJECT(dbus->dbus_connection));
 
   g_free((dt_dbus_t *)dbus);
 }

@@ -68,6 +68,39 @@ int dt_dwt_first_scale_visible(dwt_params_t *p);
  */
 void dwt_decompose(dwt_params_t *p, _dwt_layer_func layer_func);
 
+/* decomposes an image into 'bands' wavelet scales, then recomposes a denoised image from just that portion
+ * of each scale whose absolute magnitude exceeds the threshold in noise[band]
+ * img: input image, overwritten with the denoised image
+ * width, height: image dimensions
+ * bands: number of wavelet scales to generate
+ * noise: array of thresholds, on per band
+ */
+void dwt_denoise(float *const img, const int width, const int height, const int bands, const float *const noise);
+
+// to make the DWT algorithm (and others which operate on a column of spaced-out pixels for each pixel of a
+// row) as cache-friendly as possible, we want to interleave the actual processing of rows such that the next
+// iteration processes the row 'stride' pixels below the current one, which will already be in L2 cache (if
+// not L1) from having been accessed on this iteration so if stride is 16, we want to process rows 0, 16, 32,
+// ..., then 1, 17, 33, ..., 2, 18, 34, ..., etc.
+/*
+ * given a row identifier (0 .. height-1), an image height, and a stride,
+ * return the physical row number of the image on which to operate
+ */
+static inline int dwt_interleave_rows(const int rowid, const int height, const int stride)
+{
+  if (height <= stride)
+    return rowid;
+  const int per_pass = ((height + stride - 1) / stride);
+  const int long_passes = height % stride;
+  // adjust for the fact that we have some passes with one fewer iteration when height is not a multiple of stride
+  if (long_passes == 0 || rowid < long_passes * per_pass)
+    return (rowid / per_pass) + stride * (rowid % per_pass);
+  const int rowid2 = rowid - long_passes * per_pass;
+  return long_passes + (rowid2 / (per_pass-1)) + stride * (rowid2 % (per_pass-1));
+}
+
+
+
 #ifdef HAVE_OPENCL
 typedef struct dt_dwt_cl_global_t
 {

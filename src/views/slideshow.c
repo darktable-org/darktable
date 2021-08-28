@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2020 darktable developers.
+    Copyright (C) 2013-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -207,7 +207,7 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   sqlite3_finalize(stmt);
 
   // this is a little slow, might be worth to do an option:
-  const gboolean high_quality = dt_conf_get_bool("plugins/slideshow/high_quality");
+  const gboolean high_quality = !dt_conf_get_bool("ui/performance");
 
   if(id)
   {
@@ -311,7 +311,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
     }
     else
     {
-      dt_control_log(_("end of images. press any key to return to lighttable mode"));
+      dt_control_log(_("end of images"));
       d->auto_advance = FALSE;
     }
   }
@@ -400,16 +400,9 @@ void enter(dt_view_t *self)
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GdkRectangle rect;
 
-#if GTK_CHECK_VERSION(3, 22, 0)
   GdkDisplay *display = gtk_widget_get_display(window);
   GdkMonitor *mon = gdk_display_get_monitor_at_window(display, gtk_widget_get_window(window));
   gdk_monitor_get_geometry(mon, &rect);
-#else
-  GdkScreen *screen = gtk_widget_get_screen(window);
-  if(!screen) screen = gdk_screen_get_default();
-  int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(window));
-  gdk_screen_get_monitor_geometry(screen, monitor, &rect);
-#endif
 
   dt_pthread_mutex_lock(&d->lock);
 
@@ -431,7 +424,7 @@ void enter(dt_view_t *self)
   if(imgid > 0)
   {
     sqlite3_stmt *stmt;
-    gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
+    gchar *query = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d", imgid);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -560,86 +553,104 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   return 0;
 }
 
-int key_released(dt_view_t *self, guint key, guint state)
+static gboolean _start_stop_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                     GdkModifierType modifier, dt_slideshow_t *d)
 {
-  return 0;
-}
-
-int key_pressed(dt_view_t *self, guint key, guint state)
-{
-  dt_slideshow_t *d = (dt_slideshow_t *)self->data;
-  dt_control_accels_t *accels = &darktable.control->accels;
-
-  if(key == accels->slideshow_start.accel_key && state == accels->slideshow_start.accel_mods)
+  if(!d->auto_advance)
   {
-    if(!d->auto_advance)
-    {
-      d->auto_advance = TRUE;
-      _step_state(d, S_REQUEST_STEP);
-    }
-    else
-    {
-      d->auto_advance = FALSE;
-      dt_control_log(_("slideshow paused"));
-    }
-    return 0;
-  }
-  else if(key == GDK_KEY_Up || key == GDK_KEY_KP_Add)
-  {
-    _set_delay(d, 1);
-    dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
-  }
-  else if(key == GDK_KEY_Down || key == GDK_KEY_KP_Subtract)
-  {
-    _set_delay(d, -1);
-    dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
-  }
-  else if(key == GDK_KEY_Left || key == GDK_KEY_Shift_L)
-  {
-    if (d->auto_advance) dt_control_log(_("slideshow paused"));
-    d->auto_advance = FALSE;
-    _step_state(d, S_REQUEST_STEP_BACK);
-  }
-  else if(key == GDK_KEY_Right || key == GDK_KEY_Shift_R)
-  {
-    if (d->auto_advance) dt_control_log(_("slideshow paused"));
-    d->auto_advance = FALSE;
+    d->auto_advance = TRUE;
     _step_state(d, S_REQUEST_STEP);
   }
   else
   {
-    // go back to lt mode
     d->auto_advance = FALSE;
-    dt_ctl_switch_mode_to("lighttable");
+    dt_control_log(_("slideshow paused"));
   }
 
-  return 0;
+  return TRUE;
+}
+
+static gboolean _slow_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                    GdkModifierType modifier, dt_slideshow_t *d)
+{
+  _set_delay(d, 1);
+  dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
+
+  return TRUE;
+}
+
+static gboolean _speed_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                   GdkModifierType modifier, dt_slideshow_t *d)
+{
+  _set_delay(d, -1);
+  dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
+
+  return TRUE;
+}
+
+static gboolean _step_back_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                    GdkModifierType modifier, dt_slideshow_t *d)
+{
+  if (d->auto_advance) dt_control_log(_("slideshow paused"));
+  d->auto_advance = FALSE;
+  _step_state(d, S_REQUEST_STEP_BACK);
+
+  return TRUE;
+}
+
+static gboolean _step_forward_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                       GdkModifierType modifier, dt_slideshow_t *d)
+{
+  if (d->auto_advance) dt_control_log(_("slideshow paused"));
+  d->auto_advance = FALSE;
+  _step_state(d, S_REQUEST_STEP);
+
+  return TRUE;
+}
+
+static gboolean _exit_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                               GdkModifierType modifier, dt_slideshow_t *d)
+{
+  // go back to lt mode
+  d->auto_advance = FALSE;
+  dt_ctl_switch_mode_to("lighttable");
+
+  return TRUE;
 }
 
 void init_key_accels(dt_view_t *self)
 {
   dt_accel_register_view(self, NC_("accel", "start and stop"), GDK_KEY_space, 0);
+  dt_accel_register_view(self, NC_("accel", "exit slideshow"), GDK_KEY_Escape, 0);
+
+  dt_accel_register_view(self, NC_("accel", "slow down"), GDK_KEY_Up, 0);
+  dt_accel_register_view(self, NC_("accel", "slow down"), GDK_KEY_KP_Add, 0);
+  dt_accel_register_view(self, NC_("accel", "slow down"), GDK_KEY_plus, 0);
+  dt_accel_register_view(self, NC_("accel", "speed up"), GDK_KEY_Down, 0);
+  dt_accel_register_view(self, NC_("accel", "speed up"), GDK_KEY_KP_Subtract, 0);
+  dt_accel_register_view(self, NC_("accel", "speed up"), GDK_KEY_minus, 0);
+
+  dt_accel_register_view(self, NC_("accel", "step forward"), GDK_KEY_Right, 0);
+  dt_accel_register_view(self, NC_("accel", "step back"), GDK_KEY_Left, 0);
 }
 
 void connect_key_accels(dt_view_t *self)
 {
+  dt_accel_connect_view(self, "start and stop", g_cclosure_new(G_CALLBACK(_start_stop_callback), self->data, NULL));
+  dt_accel_connect_view(self, "exit slideshow", g_cclosure_new(G_CALLBACK(_exit_callback), self->data, NULL));
+
+  dt_accel_connect_view(self, "slow down", g_cclosure_new(G_CALLBACK(_slow_down_callback), self->data, NULL));
+  dt_accel_connect_view(self, "speed up", g_cclosure_new(G_CALLBACK(_speed_up_callback), self->data, NULL));
+
+  dt_accel_connect_view(self, "step forward", g_cclosure_new(G_CALLBACK(_step_forward_callback), self->data, NULL));
+  dt_accel_connect_view(self, "step back", g_cclosure_new(G_CALLBACK(_step_back_callback), self->data, NULL));
 }
 
 GSList *mouse_actions(const dt_view_t *self)
 {
   GSList *lm = NULL;
-  dt_mouse_action_t *a = NULL;
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_LEFT;
-  g_strlcpy(a->name, _("go to next image"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_RIGHT;
-  g_strlcpy(a->name, _("go to previous image"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, 0, _("go to next image"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0, _("go to previous image"));
   return lm;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

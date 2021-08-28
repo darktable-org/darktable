@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019 Aurélien Pierre.
+    copyright (c) 2019 Aurélien Pierre
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -80,7 +80,8 @@ box *
 }
 
 button,
-#section_label
+#section_label,
+#section_label *
 {
     font-family: "Roboto Medium", "Roboto",
                  "Segoe UI Semibold", "Segoe UI",
@@ -104,7 +105,8 @@ button,
 notebook tabs,
 #modules-tabs,
 #blending-tabs,
-tooltip label
+tooltip label,
+.active-menu-item * /* needed for some Pango issues not rendering synthetic bold for all OS */
 {
     font-family: "Roboto",
                  "Segoe UI",

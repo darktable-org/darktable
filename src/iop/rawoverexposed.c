@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2016-2020 darktable developers.
+   Copyright (C) 2016-2021 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 
 #include "common/darktable.h"    // for darktable, darktable_t, dt_alloc_a...
 #include "common/image.h"        // for dt_image_t, ::DT_IMAGE_4BAYER
+#include "common/imagebuf.h"     // for dt_iop_image_copy_by_size
 #include "common/mipmap_cache.h" // for dt_mipmap_buffer_t, dt_mipmap_cach...
 #include "common/opencl.h"
 #include "control/control.h"      // for dt_control_log
@@ -163,7 +164,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const int colorscheme = dev->rawoverexposed.colorscheme;
   const float *const color = dt_iop_rawoverexposed_colors[colorscheme];
 
-  memcpy(ovoid, ivoid, (size_t)ch * roi_out->width * roi_out->height * sizeof(float));
+  dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
 
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
@@ -175,34 +176,37 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
 
 #if 0
-  float pts[4] = {(float)(roi_out->x) / roi_in->scale, (float)(roi_out->y) / roi_in->scale, (float)(roi_out->x + roi_out->width) / roi_in->scale, (float)(roi_out->y + roi_out->height) / roi_in->scale};
+  const float in_scale = roi_in->scale;
+  dt_boundingbox_t pts = {(float)(roi_out->x) / in_scale, (float)(roi_out->y) / in_scale,
+                          (float)(roi_out->x + roi_out->width) / in_scale, (float)(roi_out->y + roi_out->height) / in_scale};
   printf("in  %f %f %f %f\n", pts[0], pts[1], pts[2], pts[3]);
   dt_dev_distort_backtransform_plus(dev, dev->pipe, 0, priority, pts, 2);
   printf("out %f %f %f %f\n\n", pts[0], pts[1], pts[2], pts[3]);
 #endif
 
   const uint16_t *const raw = (const uint16_t *const)buf.buf;
-  float *const out = (float *const)ovoid;
+  float *const restrict out = DT_IS_ALIGNED((float *const)ovoid);
 
   // NOT FROM THE PIPE !!!
   const uint32_t filters = image->buf_dsc.filters;
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])image->buf_dsc.xtrans;
 
   // acquire temp memory for distorted pixel coords
-  const size_t coordbufsize = (size_t)roi_out->width * 2;
-  float *coordbuf = dt_alloc_align(64, coordbufsize * sizeof(float) * dt_get_num_threads());
+  size_t coordbufsize;
+  float *const restrict coordbuf = dt_alloc_perthread_float(2*roi_out->width, &coordbufsize);
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
   dt_omp_firstprivate(ch, color, coordbufsize, d, \
                       dt_iop_rawoverexposed_colors, filters, iop_order, mode, \
                       out, raw, roi_in, roi_out, xtrans) \
-  shared(self, coordbuf, buf) \
+  dt_omp_sharedconst(coordbuf) \
+  shared(self, buf) \
   schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
-    float *bufptr = coordbuf + (size_t)coordbufsize * dt_get_thread_num();
+    float *const restrict bufptr = dt_get_perthread(coordbuf, coordbufsize);
 
     // here are all the pixels of this row
     for(int i = 0; i < roi_out->width; i++)
@@ -243,10 +247,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       switch(mode)
       {
         case DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA:
-          memcpy(out + pout, dt_iop_rawoverexposed_colors[c], 4 * sizeof(float));
+          memcpy(out + pout, dt_iop_rawoverexposed_colors[c], sizeof(float) * 4);
           break;
         case DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID:
-          memcpy(out + pout, color, 4 * sizeof(float));
+          memcpy(out + pout, color, sizeof(float) * 4);
           break;
         case DT_DEV_RAWOVEREXPOSED_MODE_FALSECOLOR:
           out[pout + c] = 0.0;
@@ -497,7 +501,6 @@ void cleanup_global(dt_iop_module_so_t *module)
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_rawoverexposed_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

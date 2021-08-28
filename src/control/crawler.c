@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2020 darktable developers.
+    Copyright (C) 2014-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ GList *dt_control_crawler_run()
 {
   sqlite3_stmt *stmt, *inner_stmt;
   GList *result = NULL;
-  gboolean look_for_xmp = dt_conf_get_bool("write_sidecar_files");
+  gboolean look_for_xmp = (dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER);
 
   sqlite3_prepare_v2(dt_database_get(darktable.db),
                      "SELECT i.id, write_timestamp, version, folder || '" G_DIR_SEPARATOR_S "' || filename, flags "
@@ -104,7 +104,7 @@ GList *dt_control_crawler_run()
 
       struct stat statbuf;
       // on Windows the encoding might not be UTF8
-      gchar *xmp_path_locale = g_locale_from_utf8(xmp_path, -1, NULL, NULL, NULL);
+      gchar *xmp_path_locale = dt_util_normalize_path(xmp_path);
       const int stat_res = stat(xmp_path_locale, &statbuf);
       g_free(xmp_path_locale);
       if(stat_res == -1) continue; // TODO: shall we report these?
@@ -121,7 +121,7 @@ GList *dt_control_crawler_run()
         item->image_path = g_strdup(image_path);
         item->xmp_path = g_strdup(xmp_path);
 
-        result = g_list_append(result, item);
+        result = g_list_prepend(result, item);
         dt_print(DT_DEBUG_CONTROL, "[crawler] `%s' (id: %d) is a newer xmp file.\n", xmp_path, id);
       }
       // older timestamps are the case for all images after the db upgrade. better not report these
@@ -192,7 +192,7 @@ GList *dt_control_crawler_run()
   sqlite3_finalize(stmt);
   sqlite3_finalize(inner_stmt);
 
-  return result;
+  return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
 }
 
 
@@ -349,14 +349,14 @@ void dt_control_crawler_show_image_list(GList *images)
 
   gui->model = GTK_TREE_MODEL(store);
 
-  GList *list_iter = g_list_first(images);
-  while(list_iter)
+  for(GList *list_iter = images; list_iter; list_iter = g_list_next(list_iter))
   {
     GtkTreeIter iter;
     dt_control_crawler_result_t *item = list_iter->data;
     char timestamp_db[64], timestamp_xmp[64];
-    strftime(timestamp_db, sizeof(timestamp_db), "%c", localtime(&item->timestamp_db));
-    strftime(timestamp_xmp, sizeof(timestamp_xmp), "%c", localtime(&item->timestamp_xmp));
+    struct tm tm_stamp;
+    strftime(timestamp_db, sizeof(timestamp_db), "%c", localtime_r(&item->timestamp_db, &tm_stamp));
+    strftime(timestamp_xmp, sizeof(timestamp_xmp), "%c", localtime_r(&item->timestamp_xmp, &tm_stamp));
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter,
                        DT_CONTROL_CRAWLER_COL_SELECTED, 0,
@@ -369,7 +369,6 @@ void dt_control_crawler_show_image_list(GList *images)
                        -1);
     g_free(item->image_path);
     g_free(item->xmp_path);
-    list_iter = g_list_next(list_iter);
   }
   g_list_free_full(images, g_free);
 

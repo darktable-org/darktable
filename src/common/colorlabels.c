@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include <gdk/gdkkeysyms.h>
+#include "bauhaus/bauhaus.h"
 
 const char *dt_colorlabels_name[] = {
   "red", "yellow", "green", "blue", "purple",
@@ -70,9 +72,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
 {
   if(type == DT_UNDO_COLORLABELS)
   {
-    GList *list = (GList *)data;
-
-    while(list)
+    for(GList *list = (GList *)data; list; list = g_list_next(list))
     {
       dt_undo_colorlabels_t *undocolorlabels = (dt_undo_colorlabels_t *)list->data;
 
@@ -80,7 +80,6 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
       const uint8_t after = (action == DT_ACTION_UNDO) ? undocolorlabels->before : undocolorlabels->after;
       _pop_undo_execute(undocolorlabels->imgid, before, after);
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undocolorlabels->imgid));
-      list = g_list_next(list);
     }
     dt_collection_hint_message(darktable.collection);
   }
@@ -135,8 +134,7 @@ typedef enum dt_colorlabels_actions_t
 
 static void _colorlabels_execute(const GList *imgs, const int labels, GList **undo, const gboolean undo_on, const int action)
 {
-  GList *images = (GList *)imgs;
-  while(images)
+  for(const GList *images = imgs; images; images = g_list_next((GList *)images))
   {
     const int image_id = GPOINTER_TO_INT(images->data);
     const uint8_t before = dt_colorlabels_get_labels(image_id);
@@ -167,23 +165,19 @@ static void _colorlabels_execute(const GList *imgs, const int labels, GList **un
     }
 
     _pop_undo_execute(image_id, before, after);
-
-    images = g_list_next(images);
   }
 }
 
 void dt_colorlabels_set_labels(const GList *img, const int labels, const gboolean clear_on,
                                const gboolean undo_on)
 {
-  GList *imgs = g_list_copy((GList *)img);
-  if(imgs)
+  if(img)
   {
     GList *undo = NULL;
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_COLORLABELS);
 
-    _colorlabels_execute(imgs, labels, &undo, undo_on, clear_on ? DT_CA_SET : DT_CA_ADD);
+    _colorlabels_execute(img, labels, &undo, undo_on, clear_on ? DT_CA_SET : DT_CA_ADD);
 
-    g_list_free(imgs);
     if(undo_on)
     {
       dt_undo_record(darktable.undo, NULL, DT_UNDO_COLORLABELS, undo, _pop_undo, _colorlabels_undo_data_free);
@@ -210,11 +204,9 @@ void dt_colorlabels_toggle_label_on_list(const GList *list, const int color, con
   }
 
   // synchronise xmp files
-  GList *l = (GList *)list;
-  while(l)
+  for(GList *l = (GList *)list; l; l = g_list_next(l))
   {
     dt_image_synch_xmp(GPOINTER_TO_INT(l->data));
-    l = g_list_next(l);
   }
 
   if(undo_on)
@@ -252,6 +244,70 @@ const char *dt_colorlabels_to_string(int label)
   if(label < 0 || label >= DT_COLORLABELS_LAST) return ""; // shouldn't happen
   return dt_colorlabels_name[label];
 }
+
+static float _action_process_color_label(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  float return_value = NAN;
+
+  if(move_size)
+  {
+    GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(FALSE, TRUE, FALSE));
+    dt_colorlabels_toggle_label_on_list(imgs, element ? element - 1 : 5, TRUE);
+
+    // if we are in darkroom we show a message as there might be no other indication
+    const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
+    if(v->view(v) == DT_VIEW_DARKROOM && g_list_is_singleton(imgs) && darktable.develop->preview_pipe)
+    {
+      // we verify that the image is the active one
+      const int id = GPOINTER_TO_INT(imgs->data);
+      if(id == darktable.develop->preview_pipe->output_imgid)
+      {
+        GList *res = dt_metadata_get(id, "Xmp.darktable.colorlabels", NULL);
+        gchar *result = NULL;
+        for(GList *res_iter = res; res_iter; res_iter = g_list_next(res_iter))
+        {
+          const GdkRGBA c = darktable.bauhaus->colorlabels[GPOINTER_TO_INT(res_iter->data)];
+          result = dt_util_dstrcat(result,
+                                  "<span foreground='#%02x%02x%02x'>⬤ </span>",
+                                  (guint)(c.red*255), (guint)(c.green*255), (guint)(c.blue*255));
+        }
+        g_list_free(res);
+        if(result)
+          dt_toast_markup_log(_("colorlabels set to %s"), result);
+        else
+          dt_toast_log(_("all colorlabels removed"));
+        g_free(result);
+      }
+    }
+
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
+                               imgs);
+  }
+  else if(darktable.develop && element != 0)
+  {
+    const int image_id = darktable.develop->image_storage.id;
+    if (image_id != -1)
+    {
+      return_value = dt_colorlabels_check_label(image_id, element - 1);
+    }
+  }
+
+  return return_value;
+}
+
+const dt_action_element_def_t _action_elements_color_label[]
+  = { { N_("clear" ), dt_action_effect_activate },
+      { N_("red"   ), dt_action_effect_toggle },
+      { N_("yellow"), dt_action_effect_toggle },
+      { N_("green" ), dt_action_effect_toggle },
+      { N_("blue"  ), dt_action_effect_toggle },
+      { N_("purple"), dt_action_effect_toggle },
+      { NULL } };
+
+const dt_action_def_t dt_action_def_color_label
+  = { N_("color label"),
+      _action_process_color_label,
+      _action_elements_color_label };
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

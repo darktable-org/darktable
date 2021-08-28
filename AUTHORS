@@ -2,85 +2,101 @@
 Pascal Obry
 Aldric Renaudin
 Aurélien PIERRE
-Tobias Ellinghaus
 Roman Lebedev
-Ulrich Pegelow
 parafin
-Alexandre Prokoudine
+Peter Budai
 
 * translators:
 Pascal Obry
-EdgarLux
-jpellegrini
-Heiko Bauke
-Timur Davletshin
 Jeronimo Pellegrini
-Jakub Filipowicz
-mepi0011
+Martin Straeten
+EdgarLux
+Matt Maguire
+Kevin Vermassen
+Victor Forsiuk
 Nicolas Auffray
-Ger Siemerink
-Matjaž Jeran
-Maurizio Paglia
-lkarcz
-Laurent Guillier
 Matteo Mardegan
-Michael Moese
-Michel Leblond
-Tobias Ellinghaus
-Tomasz Golinski
-Ulrich Pegelow
-hanno@schwalm-bremen.de
-igmerti
-jakubfi
-shlomi braitbart
+Nameless-J
+Timur Davletshin
+chrisaga
+Báthory Péter
+Matjaž Jeran
 thisnamewasnottaken
-zerng07
+Arch Ont
+Aurélien PIERRE
+Bernhard
+Danilo Bargen
+Mik-
+Miloš Komarčević
+Miroslav Fikar
+Shlomi Alon-Braitbart
+jpellegrini
+quovadit
 
 * contributors (at least 4 commits):
-Chris.Elston
-Diederik ter Rahe
-Philippe Weyland
-Hubert Kowalski
-EdgarLux
-Heiko Bauke
-hanno@schwalm-bremen.de
-Dan Torop
-Nicolas Auffray
-Andreas Schneider
-Ger Siemerink
-GrahamByrnes
-rawfiner
-jpellegrini
-Mark-64
-Bill Ferguson
 ralfbrown
-Marco
-Vasyl Tretiakov
-U-DESKTOP-HQME86Jmarco
-Martin Burri
-Victor Engmark
-Jakub Filipowicz
-Hanno Schwalm
+Philippe Weyland
+hanno@schwalm-bremen.de
+Hubert Kowalski
+Dan Torop
+Chris.Elston
 Jeronimo Pellegrini
-Timur Davletshin
-elstoc
-mepi0011
-JP Verrue
-Matthieu Volat
-Sam Smith
-Will Bennett
+rawfiner
+Martin Straeten
+Miloš Komarčević
+Diederik ter Rahe
+Nicolas Auffray
+Sakari Kapanen
+Victor Forsiuk
+lhietal
+EdgarLux
+Matt Maguire
+wpferguson
+Ralf Brown
+Kevin Vermassen
+Vincent THOMAS
+Daniel Vogelbacher
+Bill Ferguson
+Harold le Clément de Saint-Marcq
+quovadit
+Andreas Schneider
+Fabio Heer
+Hanno Schwalm
+HansBull
+Heiko Bauke
+Marco
+Marco Carrarini
+Mark-64
+vrnhgd
+Roman Khatko
+Philipp Lutz
+Harald
+Wolfgang Goetz
+Jim Robinson
+dterrahe
 
 * Sub-module rawspeed contributors (at least 1 commit):
 Roman Lebedev
-David-Tillmann Schaefer
+Miloš Komarčević
 Hubert Kowalski
-Marcel Bollmann
-Martin Straeten
-Tino H. Seifert
+Dan Torop
+Daniel Vogelbacher
+Elizeu Santos
+Frank Loemker
+Matt Maguire
 hanno@schwalm-bremen.de
+jas01
 
 * Sub-module OpenCL contributors (at least 1 commit):
 
 * Sub-module libxcf contributors (at least 1 commit):
+
+* Sub-module whereami contributors (at least 1 commit):
+
+* Sub-module integration contributors (at least 1 commit):
+Pascal Obry
+Miloš Komarčević
+hanno@schwalm-bremen.de
+Aurélien PIERRE
 
 And all those of you that made previous releases possible

@@ -73,8 +73,8 @@ static inline double compute_error(
     const double Lt = target[0][i];
     const double L0 = tonecurve_apply(c, Lt);
     const double L1 = tonecurve_apply(c, Lt + residual_L[i]);
-    float Lab0[3] = { L0, target[1][i], target[2][i] };
-    float Lab1[3] = { L1, target[1][i], target[2][i] };
+    dt_aligned_pixel_t Lab0 = { L0, target[1][i], target[2][i] };
+    dt_aligned_pixel_t Lab1 = { L1, target[1][i], target[2][i] };
     const double localerr = dt_colorspaces_deltaE_2000(Lab0, Lab1);
     err += localerr;
 #else
@@ -94,8 +94,8 @@ static inline double compute_error(
     const double Lt = target[0][i];
     const double L0 = tonecurve_apply(c, Lt);
     const double L1 = tonecurve_apply(c, Lt + residual_L[i]);
-    float Lab0[3] = {L0, target[1][i], target[2][i]};
-    float Lab1[3] = {L1, target[1][i], target[2][i]};
+    dt_aligned_pixel_t Lab0 = {L0, target[1][i], target[2][i]};
+    dt_aligned_pixel_t Lab1 = {L1, target[1][i], target[2][i]};
     err += dt_colorspaces_deltaE_2000(Lab0, Lab1);
 #else
     const double Lt = target[0][i];
@@ -120,7 +120,7 @@ static inline int solve(double *As, double *w, double *v, const double *b, doubl
   dsvd(As, wd, s + 1, S, w, v); // As is wd x s+1 but row stride S.
   if(w[s] < 1e-3)               // if the smallest singular value becomes too small, we're done
     return 1;
-  double *tmp = malloc(S * sizeof(double));
+  double *tmp = malloc(sizeof(double) * S);
   for(int i = 0; i <= s; i++) // compute tmp = u^t * b
   {
     tmp[i] = 0.0;
@@ -157,7 +157,7 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
   if(maxerr) *maxerr = 0.0;
 
   const int wd = N + 4;
-  double *A = malloc(wd * wd * sizeof(double));
+  double *A = malloc(sizeof(double) * wd * wd);
   // construct system matrix A such that:
   // A c = f
   //
@@ -181,7 +181,7 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
     for(int i = N; i < wd; i++) A[j * wd + i] = 0.0f;
 
   // precompute normalisation factors for columns of A
-  double *norm = malloc(wd * sizeof(double));
+  double *norm = malloc(sizeof(double) * wd);
   for(int i = 0; i < wd; i++)
   {
     norm[i] = 0.0;
@@ -191,14 +191,14 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 
   // XXX do we need these explicitly?
   // residual = target vector
-  double(*r)[wd] = malloc(dim * wd * sizeof(double));
-  const double **b = malloc(dim * sizeof(double *));
+  double(*r)[wd] = malloc(sizeof(double) * dim * wd);
+  const double **b = malloc(sizeof(double *) * dim);
   for(int k = 0; k < dim; k++) b[k] = target[k];
-  for(int k = 0; k < dim; k++) memcpy(r[k], b[k], wd * sizeof(double));
+  for(int k = 0; k < dim; k++) memcpy(r[k], b[k], sizeof(double) * wd);
 
-  double *w = malloc(S * sizeof(double));
-  double *v = malloc(S * S * sizeof(double));
-  double *As = calloc(wd * S, sizeof(double));
+  double *w = malloc(sizeof(double) * S);
+  double *v = malloc(sizeof(double) * S * S);
+  double *As = calloc((size_t)wd * S, sizeof(double));
 
   // for rank from 0 to sparsity level
   int s = 0, patches = 0;

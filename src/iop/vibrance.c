@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,8 +35,6 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-// NaN-safe clip: NaN compares false and will result in 0.0
-#define CLIP(x) (((x) >= 0.0) ? ((x) <= 1.0 ? (x) : 1.0) : 0.0)
 DT_MODULE_INTROSPECTION(2, dt_iop_vibrance_params_t)
 
 typedef struct dt_iop_vibrance_params_t
@@ -59,15 +57,25 @@ typedef struct dt_iop_vibrance_global_data_t
   int kernel_vibrance;
 } dt_iop_vibrance_global_data_t;
 
+const char *deprecated_msg()
+{
+  return _("this module is deprecated. please use the vibrance slider in the color balance rgb module instead.");
+}
 
 const char *name()
 {
   return _("vibrance");
 }
 
+const char *aliases()
+{
+  return _("saturation");
+}
+
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING
+    | IOP_FLAGS_DEPRECATED;
 }
 
 int default_group()
@@ -80,48 +88,49 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
+const char *description(struct dt_iop_module_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "vibrance"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_vibrance_gui_data_t *g = (dt_iop_vibrance_gui_data_t*)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "vibrance",
-                              GTK_WIDGET(g->amount_scale));
+  return dt_iop_set_description(self, _("saturate and reduce the lightness of the most saturated pixels\n"
+                                        "to make the colors more vivid."),
+                                      _("creative"),
+                                      _("linear or non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_vibrance_data_t *d = (dt_iop_vibrance_data_t *)piece->data;
-  const float *in = (float *)ivoid;
-  float *out = (float *)ovoid;
-  const int ch = piece->colors;
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
+
+  const dt_iop_vibrance_data_t *const d = (dt_iop_vibrance_data_t *)piece->data;
+  const float *const restrict in = (float *)ivoid;
+  float *const restrict out = (float *)ovoid;
 
   const float amount = (d->amount * 0.01);
+  const int npixels = roi_out->height * roi_out->width;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(amount, ch, roi_out) \
-  shared(in, out) \
+  dt_omp_firstprivate(amount, npixels) \
+  dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
-  for(int k = 0; k < roi_out->height; k++)
+  for(int k = 0; k < 4 * npixels; k += 4)
   {
-    size_t offs = (size_t)k * roi_out->width * ch;
-    for(int l = 0; l < (roi_out->width * ch); l += ch)
+    /* saturation weight 0 - 1 */
+    const float sw = sqrtf((in[k + 1] * in[k + 1]) + (in[k + 2] * in[k + 2])) / 256.0f;
+    const float ls = 1.0f - ((amount * sw) * .25f);
+    const float ss = 1.0f + (amount * sw);
+    const dt_aligned_pixel_t weights = { ls, ss, ss, 1.0f };
+#ifdef _OPENMP
+#pragma omp simd aligned(in, out : 16)
+#endif
+    for (int c = 0; c < 4; c++)
     {
-      /* saturation weight 0 - 1 */
-      float sw = sqrt((in[offs + l + 1] * in[offs + l + 1]) + (in[offs + l + 2] * in[offs + l + 2])) / 256.0;
-      float ls = 1.0 - ((amount * sw) * .25);
-      float ss = 1.0 + (amount * sw);
-      out[offs + l + 0] = in[offs + l + 0] * ls;
-      out[offs + l + 1] = in[offs + l + 1] * ss;
-      out[offs + l + 2] = in[offs + l + 2] * ss;
-      out[offs + l + 3] = in[offs + l + 3];
+      out[k + c] = in[k + c] * weights[c];
     }
   }
 }
@@ -190,7 +199,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_vibrance_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -201,11 +209,11 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_vibrance_gui_data_t *g = (dt_iop_vibrance_gui_data_t *)self->gui_data;
-  dt_iop_vibrance_params_t *p = (dt_iop_vibrance_params_t *)module->params;
+  dt_iop_vibrance_params_t *p = (dt_iop_vibrance_params_t *)self->params;
   dt_bauhaus_slider_set(g->amount_scale, p->amount);
 }
+
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_vibrance_gui_data_t *g = IOP_GUI_ALLOC(vibrance);

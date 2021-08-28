@@ -19,11 +19,11 @@
 #include "config.h"
 #endif
 #include <assert.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
+#include "common/math.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -48,7 +48,6 @@
 #define GRAIN_LUT_DELTA_MIN 0.0001
 #define GRAIN_LUT_PAPER_GAMMA 1.0
 
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 DT_MODULE_INTROSPECTION(2, dt_iop_grain_params_t)
 
 
@@ -68,7 +67,7 @@ typedef struct dt_iop_grain_params_t
                                       $DEFAULT: 1600.0/GRAIN_SCALE_FACTOR
                                       $DESCRIPTION: "coarseness" */
   float strength;      // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0
-  float midtones_bias; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "midtones bias"
+  float midtones_bias; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "mid-tones bias"
 } dt_iop_grain_params_t;
 
 typedef struct dt_iop_grain_gui_data_t
@@ -420,6 +419,15 @@ const char *name()
   return _("grain");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("simulate silver grains from film"),
+                                      _("creative"),
+                                      _("non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
@@ -433,22 +441,6 @@ int default_group()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_Lab;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "coarseness"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "midtones bias"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_grain_gui_data_t *g = (dt_iop_grain_gui_data_t*)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "coarseness", GTK_WIDGET(g->scale));
-  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->strength));
-  dt_accel_connect_slider_iop(self, "midtones bias", GTK_WIDGET(g->midtones_bias));
 }
 
 // see: http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
@@ -551,7 +543,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_grain_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -593,7 +584,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->midtones_bias = dt_bauhaus_slider_from_params(self, "midtones_bias");
   dt_bauhaus_slider_set_format(g->midtones_bias, "%.0f%%");
-  gtk_widget_set_tooltip_text(g->midtones_bias, _("amount of midtones bias from the photographic paper response modeling. the greater the bias, the more pronounced the fall off of the grain in shadows and highlights"));
+  gtk_widget_set_tooltip_text(g->midtones_bias, _("amount of mid-tones bias from the photographic paper response modeling. the greater the bias, the more pronounced the fall off of the grain in shadows and highlights"));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

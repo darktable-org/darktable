@@ -2,7 +2,7 @@
 # install opencl kernel source files
 #
 FILE(GLOB DT_OPENCL_KERNELS "*.cl" "common.h")
-FILE(GLOB DT_OPENCL_EXTRA "programs.conf" "rgb_norms.h")
+FILE(GLOB DT_OPENCL_EXTRA "programs.conf" "rgb_norms.h" "noise_generator.h" "color_conversion.h" "colorspace.h")
 
 add_custom_target(testcompile_opencl_kernels ALL)
 
@@ -15,7 +15,7 @@ macro (testcompile_opencl_kernel IN)
 
   add_custom_command(
     OUTPUT  ${TOUCH}
-    COMMAND ${CLANG_OPENCL_COMPILER} -cc1 -cl-std=CL1.1 -isystem ${CLANG_OPENCL_INCLUDE_DIR} -finclude-default-header -I${CMAKE_CURRENT_SOURCE_DIR} ${IN}
+    COMMAND ${CLANG_OPENCL_COMPILER} -cc1 -cl-std=CL1.2 -isystem ${CLANG_OPENCL_INCLUDE_DIR} -finclude-default-header -I${CMAKE_CURRENT_SOURCE_DIR} ${IN}
     COMMAND ${CMAKE_COMMAND} -E touch ${TOUCH} # will be empty!
     DEPENDS ${IN}
     COMMENT "Test-compiling OpenCL program ${KERNAME}"

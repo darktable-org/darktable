@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2020 darktable developers.
+   Copyright (C) 2013-2021 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -159,7 +159,8 @@ static int import_images(lua_State *L)
     }
     luaA_push(L, dt_lua_image_t, &result);
     // force refresh of thumbtable view
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_append(NULL, GINT_TO_POINTER(result)));
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                               g_list_prepend(NULL, GINT_TO_POINTER(result)));
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
     dt_control_queue_redraw_center();
 
@@ -196,13 +197,35 @@ static int database_numindex(lua_State *L)
   {
     int imgid = sqlite3_column_int(stmt, 0);
     luaA_push(L, dt_lua_image_t, &imgid);
-    sqlite3_finalize(stmt);
   }
   else
-  {
-    sqlite3_finalize(stmt);
     lua_pushnil(L);
+
+  sqlite3_finalize(stmt);
+  return 1;
+}
+
+static int database_get_image(lua_State *L)
+{
+  const int img_id = luaL_checkinteger(L, -1);
+  if(img_id < 1)
+  {
+    return luaL_error(L, "incorrect image id in database");
   }
+  sqlite3_stmt *stmt = NULL;
+  char query[1024];
+  snprintf(query, sizeof(query), "SELECT id FROM main.images WHERE id = %d LIMIT 1",
+           img_id);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int imgid = sqlite3_column_int(stmt, 0);
+    luaA_push(L, dt_lua_image_t, &imgid);
+  }
+  else
+    lua_pushnil(L);
+
+  sqlite3_finalize(stmt);
   return 1;
 }
 
@@ -266,6 +289,9 @@ int dt_lua_init_database(lua_State *L)
   lua_pushcfunction(L, dt_lua_copy_image);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "copy_image");
+  lua_pushcfunction(L, database_get_image);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "get_image");
 
   /* database type */
   dt_lua_push_darktable_lib(L);
@@ -278,12 +304,14 @@ int dt_lua_init_database(lua_State *L)
   dt_lua_type_register_number_const_type(L, type_id);
 
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L, "post-import-film");
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, G_CALLBACK(on_film_imported),
                             NULL);
 
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L, "post-import-image");
 

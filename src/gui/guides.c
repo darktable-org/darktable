@@ -20,7 +20,18 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
+#include "develop/imageop_gui.h"
 #include "gui/guides.h"
+
+#define DEFAULT_GUIDE_NAME "rules of thirds"
+
+typedef enum dt_golden_type_t
+{
+  GOLDEN_SECTION = 0,
+  GOLDEN_SPIRAL,
+  GOLDEN_SPIRAL_SECTION,
+  GOLDEN_ALL
+} dt_golden_type_t;
 
 typedef struct dt_QRect_t
 {
@@ -37,16 +48,103 @@ static void dt_guides_q_rect(dt_QRect_t *R1, float left, float top, float width,
   R1->height = height;
 }
 
-typedef struct _grid_t
+typedef struct _guides_settings_t
 {
-  unsigned horizontal;
-  unsigned vertical;
-  unsigned subdiv;
-} _grid_t;
+  GtkWidget *g_guides, *g_flip, *g_widgets;
 
-static void dt_guides_draw_grid(cairo_t *cr, const float x, const float y, const float w,
-                                       const float h, float zoom_scale, _grid_t *data)
+  GtkWidget *colors;
+  gboolean block_events;
+} _guides_settings_t;
+
+
+// return the index of the guide in the list or -1 if not found
+static int _guides_get_value(gchar *name)
 {
+  int i = 0;
+  for(GList *iter = darktable.guides; iter; iter = g_list_next(iter), i++)
+  {
+    dt_guides_t *guide = (dt_guides_t *)iter->data;
+    if(!g_strcmp0(name, guide->name)) return i;
+  }
+  return -1;
+}
+
+static gchar *_conf_get_path(gchar *module_name, gchar *property_1, gchar *property_2)
+{
+  if(!darktable.view_manager) return NULL;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  // in lighttable, we store panels states per layout
+  char lay[32] = "";
+  if(g_strcmp0(cv->module_name, "lighttable") == 0)
+  {
+    if(dt_view_lighttable_preview_state(darktable.view_manager))
+      g_snprintf(lay, sizeof(lay), "preview/");
+    else
+      g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
+  }
+  else if(g_strcmp0(cv->module_name, "darkroom") == 0)
+  {
+    g_snprintf(lay, sizeof(lay), "%d/", dt_view_darkroom_get_layout(darktable.view_manager));
+  }
+
+  if(property_2)
+    return dt_util_dstrcat(NULL, "guides/%s/%s%s/%s/%s", cv->module_name, lay, module_name, property_1, property_2);
+  else
+    return dt_util_dstrcat(NULL, "guides/%s/%s%s/%s", cv->module_name, lay, module_name, property_1);
+}
+
+static dt_guides_t *_conf_get_guide(gchar *module_name)
+{
+  dt_guides_t *guide = NULL;
+  gchar *key = _conf_get_path(module_name, "guide", NULL);
+  if(!dt_conf_key_exists(key)) dt_conf_set_string(key, DEFAULT_GUIDE_NAME);
+  gchar *val = dt_conf_get_string(key);
+  guide = (dt_guides_t *)g_list_nth_data(darktable.guides, _guides_get_value(val));
+  g_free(val);
+  g_free(key);
+
+  // if we don't have any valid guide, let's fallback to default one
+  if(!guide)
+  {
+    // global case : we fallback to "rule of third"
+    guide = (dt_guides_t *)g_list_nth_data(darktable.guides, 1);
+  }
+
+  return guide;
+}
+
+static gchar *_conf_get_guide_name(gchar *module_name)
+{
+  dt_guides_t *guide = _conf_get_guide(module_name);
+  if(guide) return guide->name;
+  return NULL;
+}
+
+static void dt_guides_draw_grid(cairo_t *cr, const float x, const float y, const float w, const float h,
+                                float zoom_scale, void *data)
+{
+  // retrieve the grid values in settings
+  int nbh = 3, nbv = 3, subdiv = 3;
+  gboolean loaded = FALSE;
+
+  // if we want the global setting
+  gchar *val = _conf_get_guide_name("global");
+  if(val && !g_strcmp0(val, "grid"))
+  {
+    gchar *key = _conf_get_path("global", "grid_nbh", NULL);
+    if(dt_conf_key_exists(key)) nbh = dt_conf_get_int(key);
+    g_free(key);
+    key = _conf_get_path("global", "grid_nbv", NULL);
+    if(dt_conf_key_exists(key)) nbv = dt_conf_get_int(key);
+    g_free(key);
+    key = _conf_get_path("global", "grid_subdiv", NULL);
+    if(dt_conf_key_exists(key)) subdiv = dt_conf_get_int(key);
+    g_free(key);
+    loaded = TRUE;
+  }
+  // if stille not loaded that mean we don't want to be here !
+  if(!loaded) return;
+
   float right = x + w;
   float bottom = y + h;
   double dashes = 5.0 / zoom_scale;
@@ -55,73 +153,83 @@ static void dt_guides_draw_grid(cairo_t *cr, const float x, const float y, const
 
   cairo_set_dash(cr, &dashes, 1, 0);
   dt_draw_set_color_overlay(cr, 0.2, 0.3);
-  dt_draw_horizontal_lines(cr, (1+data->horizontal) * (1+data->subdiv), x, y, right, bottom);
-  dt_draw_vertical_lines(cr, (1+data->vertical) * (1+data->subdiv), x, y, right, bottom);
+  dt_draw_horizontal_lines(cr, (1 + nbh) * (1 + subdiv), x, y, right, bottom);
+  dt_draw_vertical_lines(cr, (1 + nbv) * (1 + subdiv), x, y, right, bottom);
   cairo_set_dash(cr, &dashes, 1, dashes);
   dt_draw_set_color_overlay(cr, 0.8, 0.3);
-  dt_draw_horizontal_lines(cr, (1+data->horizontal) * (1+data->subdiv), x, y, right, bottom);
-  dt_draw_vertical_lines(cr, (1+data->vertical) * (1+data->subdiv), x, y, right, bottom);
+  dt_draw_horizontal_lines(cr, (1 + nbh) * (1 + subdiv), x, y, right, bottom);
+  dt_draw_vertical_lines(cr, (1 + nbv) * (1 + subdiv), x, y, right, bottom);
 
   cairo_set_dash(cr, &dashes, 1, 0);
   dt_draw_set_color_overlay(cr, 0.2, 0.5);
-  dt_draw_horizontal_lines(cr, 1+data->horizontal, x, y, right, bottom);
-  dt_draw_vertical_lines(cr, 1+data->vertical, x, y, right, bottom);
+  dt_draw_horizontal_lines(cr, 1 + nbh, x, y, right, bottom);
+  dt_draw_vertical_lines(cr, 1 + nbv, x, y, right, bottom);
 
   cairo_set_dash(cr, &dashes, 1, dashes);
   dt_draw_set_color_overlay(cr, 0.8, 0.5);
-  dt_draw_horizontal_lines(cr, 1+data->horizontal, x, y, right, bottom);
-  dt_draw_vertical_lines(cr, 1+data->vertical, x, y, right, bottom);
+  dt_draw_horizontal_lines(cr, 1 + nbh, x, y, right, bottom);
+  dt_draw_vertical_lines(cr, 1 + nbv, x, y, right, bottom);
 }
 
-static void _grid_horizontal_changed(GtkWidget *w, _grid_t *data)
+static void _grid_horizontal_changed(GtkWidget *w, void *data)
 {
   int horizontal = dt_bauhaus_slider_get(w);
-  data->horizontal = horizontal;
-  dt_conf_set_int("plugins/darkroom/clipping/grid_horizontal", horizontal);
+  gchar *key = _conf_get_path("global", "grid_nbh", NULL);
+  dt_conf_set_int(key, horizontal);
+  g_free(key);
   dt_control_queue_redraw_center();
 }
 
-static void _grid_vertical_changed(GtkWidget *w, _grid_t *data)
+static void _grid_vertical_changed(GtkWidget *w, void *data)
 {
   int vertical = dt_bauhaus_slider_get(w);
-  data->vertical = vertical;
-  dt_conf_set_int("plugins/darkroom/clipping/grid_vertical", vertical);
+  gchar *key = _conf_get_path("global", "grid_nbv", NULL);
+  dt_conf_set_int(key, vertical);
+  g_free(key);
   dt_control_queue_redraw_center();
 }
 
-static void _grid_subdiv_changed(GtkWidget *w, _grid_t *data)
+static void _grid_subdiv_changed(GtkWidget *w, void *data)
 {
   int subdiv = dt_bauhaus_slider_get(w);
-  data->subdiv = subdiv;
-  dt_conf_set_int("plugins/darkroom/clipping/grid_subdiv", subdiv);
+  gchar *key = _conf_get_path("global", "grid_subdiv", NULL);
+  dt_conf_set_int(key, subdiv);
+  g_free(key);
   dt_control_queue_redraw_center();
 }
 
 static GtkWidget *_guides_gui_grid(dt_iop_module_t *self, void *user_data)
 {
-  _grid_t *data = (_grid_t *)user_data;
-
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  GtkWidget *grid_horizontal = dt_bauhaus_slider_new_with_range(self, 0, 12, 1, data->horizontal, 0);
+  GtkWidget *grid_horizontal = dt_bauhaus_slider_new_with_range(NULL, 0, 12, 1, 3, 0);
   dt_bauhaus_slider_set_hard_max(grid_horizontal, 36);
-  dt_bauhaus_widget_set_label(grid_horizontal, NULL, _("horizontal lines"));
+  dt_bauhaus_widget_set_label(grid_horizontal, NULL, N_("horizontal lines"));
   gtk_widget_set_tooltip_text(grid_horizontal, _("number of horizontal guide lines"));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(grid_horizontal), TRUE, TRUE, 0);
+  gchar *key = _conf_get_path("global", "grid_nbh", NULL);
+  dt_bauhaus_slider_set(grid_horizontal, dt_conf_key_exists(key) ? dt_conf_get_int(key) : 3);
+  g_free(key);
   g_signal_connect(G_OBJECT(grid_horizontal), "value-changed", G_CALLBACK(_grid_horizontal_changed), user_data);
 
-  GtkWidget *grid_vertical = dt_bauhaus_slider_new_with_range(self, 0, 12, 1, data->vertical, 0);
+  GtkWidget *grid_vertical = dt_bauhaus_slider_new_with_range(NULL, 0, 12, 1, 3, 0);
   dt_bauhaus_slider_set_hard_max(grid_vertical, 36);
-  dt_bauhaus_widget_set_label(grid_vertical, NULL, _("vertical lines"));
+  dt_bauhaus_widget_set_label(grid_vertical, NULL, N_("vertical lines"));
   gtk_widget_set_tooltip_text(grid_vertical, _("number of vertical guide lines"));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(grid_vertical), TRUE, TRUE, 0);
+  key = _conf_get_path("global", "grid_nbv", NULL);
+  dt_bauhaus_slider_set(grid_vertical, dt_conf_key_exists(key) ? dt_conf_get_int(key) : 3);
+  g_free(key);
   g_signal_connect(G_OBJECT(grid_vertical), "value-changed", G_CALLBACK(_grid_vertical_changed), user_data);
 
-  GtkWidget *grid_subdiv = dt_bauhaus_slider_new_with_range(self, 0, 10, 1, data->subdiv, 0);
+  GtkWidget *grid_subdiv = dt_bauhaus_slider_new_with_range(NULL, 0, 10, 1, 3, 0);
   dt_bauhaus_slider_set_hard_max(grid_subdiv, 30);
-  dt_bauhaus_widget_set_label(grid_subdiv, NULL, _("subdivisions"));
+  dt_bauhaus_widget_set_label(grid_subdiv, NULL, N_("subdivisions"));
   gtk_widget_set_tooltip_text(grid_subdiv, _("number of subdivisions per grid rectangle"));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(grid_subdiv), TRUE, TRUE, 0);
+  key = _conf_get_path("global", "grid_subdiv", NULL);
+  dt_bauhaus_slider_set(grid_subdiv, dt_conf_key_exists(key) ? dt_conf_get_int(key) : 3);
+  g_free(key);
   g_signal_connect(G_OBJECT(grid_subdiv), "value-changed", G_CALLBACK(_grid_subdiv_changed), user_data);
 
   return box;
@@ -163,7 +271,7 @@ static void dt_guides_draw_rules_of_thirds(cairo_t *cr, const float left, const 
 static void dt_guides_draw_harmonious_triangles(cairo_t *cr, const float left, const float top, const float width,
                                                 const float height/*, const float dst*/)
 {
-  int dst = (int)((height * cos(atan(width / height)) / (cos(atan(height / width)))));
+  int dst = (int)((height * cosf(atanf(width / height)) / (cosf(atanf(height / width)))));
 
   dt_draw_line(cr, -width / 2, -height / 2, width / 2, height / 2);
   dt_draw_line(cr, -width / 2 + dst, -height / 2, -width / 2, height / 2);
@@ -341,15 +449,6 @@ static void dt_guides_draw_golden_mean(cairo_t *cr, dt_QRect_t *R1, dt_QRect_t *
 
 ///////// wrappers for the guides system
 
-typedef struct _golden_mean_t
-{
-  int which;
-  gboolean golden_section;
-  gboolean golden_triangle;
-  gboolean golden_spiral_section;
-  gboolean golden_spiral;
-} _golden_mean_t;
-
 static void _guides_draw_grid(cairo_t *cr, const float x, const float y,
                               const float w, const float h,
                               const float zoom_scale, void *user_data)
@@ -390,7 +489,9 @@ static void _guides_draw_golden_mean(cairo_t *cr, const float x, const float y,
                                      const float w, const float h,
                                      const float zoom_scale, void *user_data)
 {
-  _golden_mean_t *d = (_golden_mean_t *)user_data;
+  // retrieve the golden extra in settings
+  dt_golden_type_t extra = GOLDEN_SECTION;
+  if(user_data) extra = GPOINTER_TO_INT(user_data);
 
   // lengths for the golden mean and half the sizes of the region:
   float w_g = w * INVPHI;
@@ -411,44 +512,10 @@ static void _guides_draw_golden_mean(cairo_t *cr, const float x, const float y,
                    R5.height * INVPHI);
   dt_guides_q_rect(&R7, R6.right - R6.width * INVPHI, R4.bottom, R6.width * INVPHI, R5.height - R6.height);
 
-  dt_guides_draw_golden_mean(cr, &R1, &R2, &R3, &R4, &R5, &R6, &R7, d->golden_section, d->golden_triangle,
-                             d->golden_spiral_section, d->golden_spiral);
+  dt_guides_draw_golden_mean(
+      cr, &R1, &R2, &R3, &R4, &R5, &R6, &R7, (extra == GOLDEN_SECTION || extra == GOLDEN_ALL), FALSE,
+      (extra == GOLDEN_SPIRAL_SECTION || extra == GOLDEN_ALL), (extra == GOLDEN_SPIRAL || extra == GOLDEN_ALL));
 }
-static inline void _golden_mean_set_data(_golden_mean_t *data, int which)
-{
-  data->which = which;
-  data->golden_section = which == 0 || which == 3;
-  data->golden_triangle = 0;
-  data->golden_spiral_section = which == 1 || which == 3;
-  data->golden_spiral = which == 2 || which == 3;
-}
-static void _golden_mean_changed(GtkWidget *combo, _golden_mean_t *user_data)
-{
-  int which = dt_bauhaus_combobox_get(combo);
-
-  // remember setting
-  dt_conf_set_int("plugins/darkroom/clipping/golden_extras", which);
-
-  _golden_mean_set_data(user_data, which);
-
-  dt_control_queue_redraw_center();
-}
-static GtkWidget *_guides_gui_golden_mean(dt_iop_module_t *self, void *user_data)
-{
-  _golden_mean_t *data = (_golden_mean_t *)user_data;
-  GtkWidget *golden_extras = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(golden_extras, NULL, _("extra"));
-  dt_bauhaus_combobox_add(golden_extras, _("golden sections"));
-  dt_bauhaus_combobox_add(golden_extras, _("golden spiral sections"));
-  dt_bauhaus_combobox_add(golden_extras, _("golden spiral"));
-  dt_bauhaus_combobox_add(golden_extras, _("all"));
-  gtk_widget_set_tooltip_text(golden_extras, _("show some extra guides"));
-  dt_bauhaus_combobox_set(golden_extras, data->which);
-  g_signal_connect(G_OBJECT(golden_extras), "value-changed", G_CALLBACK(_golden_mean_changed), user_data);
-
-  return golden_extras;
-}
-
 
 static void _guides_add_guide(GList **list, const char *name,
                               dt_guides_draw_callback draw,
@@ -475,25 +542,283 @@ GList *dt_guides_init()
 {
   GList *guides = NULL;
 
-  {
-    _grid_t *user_data = (_grid_t *)malloc(sizeof(_grid_t));
-    user_data->horizontal = dt_conf_key_exists("plugins/darkroom/clipping/grid_horizontal") ? dt_conf_get_int("plugins/darkroom/clipping/grid_horizontal") : 3;
-    user_data->vertical = dt_conf_key_exists("plugins/darkroom/clipping/grid_vertical") ? dt_conf_get_int("plugins/darkroom/clipping/grid_vertical") : 3;
-    user_data->subdiv = dt_conf_key_exists("plugins/darkroom/clipping/grid_subdiv") ? dt_conf_get_int("plugins/darkroom/clipping/grid_subdiv") : 3;
-    _guides_add_guide(&guides, _("grid"), _guides_draw_grid, _guides_gui_grid, user_data, free, FALSE);
-  }
-  _guides_add_guide(&guides, _("rules of thirds"), _guides_draw_rules_of_thirds, NULL, NULL, NULL, FALSE);
-  _guides_add_guide(&guides, _("metering"), _guides_draw_metering, NULL, NULL, NULL, FALSE);
-  _guides_add_guide(&guides, _("perspective"), _guides_draw_perspective, NULL, NULL, NULL, FALSE); // TODO: make the number of lines configurable with a slider?
-  _guides_add_guide(&guides, _("diagonal method"), _guides_draw_diagonal_method, NULL, NULL, NULL, FALSE);
-  _guides_add_guide(&guides, _("harmonious triangles"), _guides_draw_harmonious_triangles, NULL, NULL, NULL, TRUE);
-  {
-    _golden_mean_t *user_data = (_golden_mean_t *)malloc(sizeof(_golden_mean_t));
-    _golden_mean_set_data(user_data, dt_conf_get_int("plugins/darkroom/clipping/golden_extras"));
-    _guides_add_guide(&guides, _("golden mean"), _guides_draw_golden_mean, _guides_gui_golden_mean, user_data, free, TRUE);
-  }
+  _guides_add_guide(&guides, N_("grid"), _guides_draw_grid, _guides_gui_grid, NULL, NULL, FALSE);
+  _guides_add_guide(&guides, N_("rules of thirds"), _guides_draw_rules_of_thirds, NULL, NULL, NULL, FALSE);
+  _guides_add_guide(&guides, N_("metering"), _guides_draw_metering, NULL, NULL, NULL, FALSE);
+  _guides_add_guide(&guides, N_("perspective"), _guides_draw_perspective, NULL, NULL, NULL, FALSE); // TODO: make the number of lines configurable with a slider?
+  _guides_add_guide(&guides, N_("diagonal method"), _guides_draw_diagonal_method, NULL, NULL, NULL, FALSE);
+  _guides_add_guide(&guides, N_("harmonious triangles"), _guides_draw_harmonious_triangles, NULL, NULL, NULL, TRUE);
+  _guides_add_guide(&guides, N_("golden sections"), _guides_draw_golden_mean, NULL,
+                    GINT_TO_POINTER(GOLDEN_SECTION), NULL, TRUE);
+  _guides_add_guide(&guides, N_("golden spiral"), _guides_draw_golden_mean, NULL, GINT_TO_POINTER(GOLDEN_SPIRAL),
+                    NULL, TRUE);
+  _guides_add_guide(&guides, N_("golden spiral sections"), _guides_draw_golden_mean, NULL,
+                    GINT_TO_POINTER(GOLDEN_SPIRAL_SECTION), NULL, TRUE);
+  _guides_add_guide(&guides, N_("golden mean (all guides)"), _guides_draw_golden_mean, NULL,
+                    GINT_TO_POINTER(GOLDEN_ALL), NULL, TRUE);
 
   return guides;
+}
+
+static void _settings_update_visibility(_guides_settings_t *gw)
+{
+  // show or hide the flip and extra widgets for global case
+  dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->g_guides));
+  gtk_widget_set_visible(gw->g_flip, (guide && guide->support_flip));
+  gtk_widget_set_visible(gw->g_widgets, (guide && guide->widget));
+  if((guide && guide->widget))
+  {
+    GList *l = gtk_container_get_children(GTK_CONTAINER(gw->g_widgets));
+    if(l && l->data)
+    {
+      GtkWidget *w = (GtkWidget *)l->data;
+      gtk_widget_destroy(w);
+    }
+    GtkWidget *extra = guide->widget(NULL, guide->user_data);
+    gtk_box_pack_start(GTK_BOX(gw->g_widgets), extra, TRUE, TRUE, 0);
+    gtk_widget_show_all(extra);
+  }
+}
+
+static void _settings_flip_update(_guides_settings_t *gw)
+{
+  gw->block_events = TRUE;
+
+  // we retrieve the global settings
+  dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->g_guides));
+  if(guide && guide->support_flip)
+  {
+    gchar *key = _conf_get_path("global", guide->name, "flip");
+    dt_bauhaus_combobox_set(gw->g_flip, dt_conf_get_int(key));
+    g_free(key);
+  }
+
+  gw->block_events = FALSE;
+}
+
+static void _settings_guides_changed(GtkWidget *w, _guides_settings_t *gw)
+{
+  if(gw->block_events) return;
+
+  // we save the new setting
+  dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->g_guides));
+  gchar *key = _conf_get_path("global", "guide", NULL);
+  dt_conf_set_string(key, guide ? guide->name : "rule of thirds");
+  g_free(key);
+
+  // we update the flip combo
+  _settings_flip_update(gw);
+  // we update the gui
+  _settings_update_visibility(gw);
+  // we update global button state
+  dt_guides_update_button_state();
+
+  // we update the drawing
+  dt_control_queue_redraw_center();
+}
+
+static void _settings_flip_changed(GtkWidget *w, _guides_settings_t *gw)
+{
+  if(gw->block_events) return;
+
+  // we save the new setting
+  dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->g_guides));
+  if(guide)
+  {
+    gchar *key = _conf_get_path("global", guide->name, "flip");
+    dt_conf_set_int(key, dt_bauhaus_combobox_get(w));
+    g_free(key);
+  }
+
+  // we update the drawing
+  dt_control_queue_redraw_center();
+}
+
+static void _guides_popover_closed(GtkPopover* self, gpointer gw)
+{
+  gtk_widget_destroy(GTK_WIDGET(self));
+  g_free(gw);
+}
+
+static void _settings_colors_changed(GtkWidget *combo, _guides_settings_t *gw)
+{
+  dt_conf_set_int("darkroom/ui/overlay_color", dt_bauhaus_combobox_get(combo));
+  dt_control_queue_redraw_center();
+}
+
+// return the box to be included in the settings popup
+GtkWidget *dt_guides_popover(GtkWidget *button)
+{
+  GtkWidget *pop = gtk_popover_new(button);
+  gtk_widget_set_size_request(GTK_WIDGET(pop), 350, -1);
+
+  // create a new struct for all the widgets
+  _guides_settings_t *gw = (_guides_settings_t *)g_malloc0(sizeof(_guides_settings_t));
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  g_signal_connect(G_OBJECT(pop), "closed", G_CALLBACK(_guides_popover_closed), gw);
+
+  // global guides section
+  gchar *key, *val;
+  gw->g_guides = dt_bauhaus_combobox_new(NULL);
+  gtk_widget_set_tooltip_text(gw->g_guides, _("setup guide lines"));
+  dt_bauhaus_widget_set_label(gw->g_guides, NULL, N_("guide lines"));
+  for(GList *iter = darktable.guides; iter; iter = g_list_next(iter))
+  {
+    dt_guides_t *guide = (dt_guides_t *)iter->data;
+    dt_bauhaus_combobox_add(gw->g_guides, _(guide->name));
+  }
+
+  gw->g_widgets = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), gw->g_widgets, TRUE, TRUE, 0);
+  gtk_widget_set_no_show_all(gw->g_widgets, TRUE);
+
+  gw->g_flip = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(gw->g_flip, NULL, N_("flip guides"));
+  dt_bauhaus_combobox_add(gw->g_flip, _("none"));
+  dt_bauhaus_combobox_add(gw->g_flip, _("horizontally"));
+  dt_bauhaus_combobox_add(gw->g_flip, _("vertically"));
+  dt_bauhaus_combobox_add(gw->g_flip, _("both"));
+  gtk_widget_set_tooltip_text(gw->g_flip, _("flip guides"));
+  gtk_box_pack_start(GTK_BOX(vbox), gw->g_flip, TRUE, TRUE, 0);
+  gtk_widget_set_no_show_all(gw->g_flip, TRUE);
+
+  key = _conf_get_path("global", "guide", NULL);
+  if(!dt_conf_key_exists(key)) dt_conf_set_string(key, DEFAULT_GUIDE_NAME);
+  val = dt_conf_get_string(key);
+  g_free(key);
+  const int i = _guides_get_value(val);
+  g_free(val);
+  dt_bauhaus_combobox_set(gw->g_guides, i);
+
+  g_signal_connect(G_OBJECT(gw->g_guides), "value-changed", G_CALLBACK(_settings_guides_changed), gw);
+  g_signal_connect(G_OBJECT(gw->g_flip), "value-changed", G_CALLBACK(_settings_flip_changed), gw);
+
+  // update flip values
+  _settings_flip_update(gw);
+  // update visibility of sub-widgets
+  _settings_update_visibility(gw);
+
+  // put guide selector just above line so it doesn't change position if number of widgets changes
+  gtk_box_pack_start(GTK_BOX(vbox), gw->g_guides, TRUE, TRUE, 0);
+
+  // color section
+  gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
+
+  gw->colors = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(gw->colors, NULL, N_("overlay color"));
+  dt_bauhaus_combobox_add(gw->colors, _("gray"));
+  dt_bauhaus_combobox_add(gw->colors, _("red"));
+  dt_bauhaus_combobox_add(gw->colors, _("green"));
+  dt_bauhaus_combobox_add(gw->colors, _("yellow"));
+  dt_bauhaus_combobox_add(gw->colors, _("cyan"));
+  dt_bauhaus_combobox_add(gw->colors, _("magenta"));
+  dt_bauhaus_combobox_set(gw->colors, dt_conf_get_int("darkroom/ui/overlay_color"));
+  gtk_widget_set_tooltip_text(gw->colors, _("set overlay color"));
+  g_signal_connect(G_OBJECT(gw->colors), "value-changed", G_CALLBACK(_settings_colors_changed), gw);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(gw->colors), TRUE, TRUE, 0);
+
+  gtk_container_add(GTK_CONTAINER(pop), vbox);
+
+  return pop;
+}
+
+void dt_guides_update_button_state()
+{
+  if(!darktable.view_manager) return;
+  GtkWidget *bt = darktable.view_manager->guides_toggle;
+
+  gchar *key = _conf_get_path("global", "show", NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bt), dt_conf_get_bool(key));
+  g_free(key);
+}
+
+void dt_guides_button_toggled()
+{
+  gchar *key = _conf_get_path("global", "show", NULL);
+  dt_conf_set_bool(key, !dt_conf_get_bool(key));
+  g_free(key);
+}
+
+void dt_guides_draw(cairo_t *cr, const float left, const float top, const float width, const float height,
+                    const float zoom_scale)
+{
+  const double dashes = DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
+
+  dt_iop_module_t *module = darktable.develop->gui_module;
+
+  // first, we check if we need to show the guides or not
+  gchar *key = _conf_get_path("global", "show", NULL);
+  gboolean show = dt_conf_get_bool(key);
+  g_free(key);
+
+  // otherwise we try the module autoshow
+  if(!show && module)
+  {
+    key = _conf_get_path(module->op, "autoshow", NULL);
+    show = dt_conf_get_bool(key);
+    g_free(key);
+  }
+
+  // if it's still false, then nothing to draw
+  if(!show) return;
+
+  // let's get the guide to show
+  dt_guides_t *guide = _conf_get_guide("global");
+  if(!guide) return;
+
+  int flip = 0;
+  // retrieve guide flip
+  if(guide->support_flip)
+  {
+    key = _conf_get_path("global", guide->name, "flip");
+    if(dt_conf_key_exists(key)) flip = dt_conf_get_int(key);
+    g_free(key);
+  }
+
+  // save context
+  cairo_save(cr);
+  cairo_rectangle(cr, left, top, width, height);
+  cairo_clip(cr);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
+  dt_draw_set_color_overlay(cr, 0.8, 1.0);
+  cairo_set_dash(cr, &dashes, 1, 0);
+
+  // Move coordinates to local center selection.
+  cairo_translate(cr, (width / 2 + left), (height / 2 + top));
+
+  // Flip horizontal.
+  if(flip == 1 || flip == 3) cairo_scale(cr, -1, 1);
+  // Flip vertical.
+  if(flip == 2 || flip == 3) cairo_scale(cr, 1, -1);
+
+  // we do the drawing itself
+  guide->draw(cr, -width / 2.0, -height / 2.0, width, height, zoom_scale, guide->user_data);
+
+  cairo_stroke_preserve(cr);
+  cairo_set_dash(cr, &dashes, 0, 0);
+  dt_draw_set_color_overlay(cr, 0.3, 0.8);
+  cairo_stroke(cr);
+
+  cairo_restore(cr);
+}
+
+static void _settings_autoshow_change(GtkWidget *mi, dt_iop_module_t *module)
+{
+  // we inverse the autoshow value for the module
+  gchar *key = _conf_get_path(module->op, "autoshow", NULL);
+  dt_conf_set_bool(key, !dt_conf_get_bool(key));
+  g_free(key);
+  dt_control_queue_redraw_center();
+}
+
+void dt_guides_add_module_menuitem(void *menu, struct dt_iop_module_t *module)
+{
+  GtkWidget *mi = gtk_check_menu_item_new_with_label(_("show guides"));
+  gchar *key = _conf_get_path(module->op, "autoshow", NULL);
+  gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), dt_conf_get_bool(key));
+  g_free(key);
+  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_settings_autoshow_change), module);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
 static void free_guide(void *data)

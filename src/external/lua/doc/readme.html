@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <HTML>
 <HEAD>
-<TITLE>Lua 5.3 readme</TITLE>
+<TITLE>Lua 5.4 readme</TITLE>
 <LINK REL="stylesheet" TYPE="text/css" HREF="lua.css">
 <META HTTP-EQUIV="content-type" CONTENT="text/html; charset=iso-8859-1">
 <STYLE TYPE="text/css">
@@ -30,7 +30,7 @@ tt, kbd, code {
 
 <H1>
 <A HREF="http://www.lua.org/"><IMG SRC="logo.gif" ALT="Lua"></A>
-Welcome to Lua 5.3
+Welcome to Lua 5.4
 </H1>
 
 <DIV CLASS="menubar">
@@ -47,7 +47,7 @@ Welcome to Lua 5.3
 
 <H2><A NAME="about">About Lua</A></H2>
 <P>
-Lua is a powerful, fast, lightweight, embeddable scripting language
+Lua is a powerful, efficient, lightweight, embeddable scripting language
 developed by a
 <A HREF="http://www.lua.org/authors.html">team</A>
 at
@@ -55,7 +55,9 @@ at
 the Pontifical Catholic University of Rio de Janeiro in Brazil.
 Lua is
 <A HREF="#license">free software</A>
-used in many products and projects around the world.
+used in
+<A HREF="http://www.lua.org/uses.html">many products and projects</A>
+around the world.
 
 <P>
 Lua's
@@ -69,7 +71,7 @@ and
 updated
 <A HREF="http://www.lua.org/docs.html">documentation</A>,
 especially the
-<A HREF="http://www.lua.org/manual/5.3/">reference manual</A>,
+<A HREF="http://www.lua.org/manual/5.4/">reference manual</A>,
 which may differ slightly from the
 <A HREF="contents.html">local copy</A>
 distributed in this package.
@@ -85,7 +87,8 @@ because
 Lua is implemented in pure ANSI C and compiles unmodified in all known
 platforms that have an ANSI C compiler.
 Lua also compiles unmodified as C++.
-The instructions given below for building Lua are for Unix-like platforms.
+The instructions given below for building Lua are for Unix-like platforms,
+such as Linux and Mac OS X.
 See also
 <A HREF="#other">instructions for other systems</A>
 and
@@ -101,21 +104,24 @@ a multi-platform distribution of Lua that includes batteries.
 
 <H3>Building Lua</H3>
 <P>
-In most Unix-like platforms, simply do "<KBD>make</KBD>" with a suitable target.
+In most common Unix-like platforms, simply do "<KBD>make</KBD>".
 Here are the details.
 
 <OL>
 <LI>
 Open a terminal window and move to
-the top-level directory, which is named <TT>lua-5.3.x</TT>.
+the top-level directory, which is named <TT>lua-5.4.3</TT>.
 The <TT>Makefile</TT> there controls both the build process and the installation process.
 <P>
 <LI>
-  Do "<KBD>make</KBD>" and see if your platform is listed.
+  Do "<KBD>make</KBD>". The <TT>Makefile</TT> will guess your platform and build Lua for it.
+<P>
+<LI>
+  If the guess failed, do "<KBD>make help</KBD>" and see if your platform is listed.
   The platforms currently supported are:
 <P>
 <P CLASS="display">
-   aix bsd c89 freebsd generic linux macosx mingw posix solaris
+   guess aix bsd c89 freebsd generic linux linux-readline macosx mingw posix solaris
 </P>
 <P>
   If your platform is listed, just do "<KBD>make xxx</KBD>", where xxx
@@ -136,25 +142,27 @@ and liblua.a (the library).
   after building Lua. This will run the interpreter and print its version.
 </OL>
 <P>
-If you're running Linux and get compilation errors,
+If you're running Linux, try "<KBD>make linux-readline</KBD>" to build the interactive Lua interpreter with handy line-editing and history capabilities.
+If you get compilation errors,
 make sure you have installed the <TT>readline</TT> development package
 (which is probably named <TT>libreadline-dev</TT> or <TT>readline-devel</TT>).
 If you get link errors after that,
-then try "<KBD>make linux MYLIBS=-ltermcap</KBD>".
+then try "<KBD>make linux-readline MYLIBS=-ltermcap</KBD>".
 
 <H3>Installing Lua</H3>
 <P>
   Once you have built Lua, you may want to install it in an official
   place in your system. In this case, do "<KBD>make install</KBD>". The official
   place and the way to install files are defined in the <TT>Makefile</TT>. You'll
-  probably need the right permissions to install files.
+  probably need the right permissions to install files, and so may need to do "<KBD>sudo make install</KBD>".
 
 <P>
-  To build and install Lua in one step, do "<KBD>make xxx install</KBD>",
+  To build and install Lua in one step, do "<KBD>make all install</KBD>",
+  or "<KBD>make xxx install</KBD>",
   where xxx is your platform name.
 
 <P>
-  To install Lua locally, do "<KBD>make local</KBD>".
+  To install Lua locally after building it, do "<KBD>make local</KBD>".
   This will create a directory <TT>install</TT> with subdirectories
   <TT>bin</TT>, <TT>include</TT>, <TT>lib</TT>, <TT>man</TT>, <TT>share</TT>,
   and install Lua as listed below.
@@ -223,11 +231,8 @@ then try "<KBD>make linux MYLIBS=-ltermcap</KBD>".
 <DT>
 library:
 <DD>
-lapi.c lcode.c lctype.c ldebug.c ldo.c ldump.c lfunc.c lgc.c llex.c
-lmem.c lobject.c lopcodes.c lparser.c lstate.c lstring.c ltable.c
-ltm.c lundump.c lvm.c lzio.c
-lauxlib.c lbaselib.c lbitlib.c lcorolib.c ldblib.c liolib.c
-lmathlib.c loslib.c lstrlib.c ltablib.c lutf8lib.c loadlib.c linit.c
+lapi.c lcode.c lctype.c ldebug.c ldo.c ldump.c lfunc.c lgc.c llex.c lmem.c lobject.c lopcodes.c lparser.c lstate.c lstring.c ltable.c ltm.c lundump.c lvm.c lzio.c
+lauxlib.c lbaselib.c lcorolib.c ldblib.c liolib.c lmathlib.c loadlib.c loslib.c lstrlib.c ltablib.c lutf8lib.c linit.c
 <DT>
 interpreter:
 <DD>
@@ -239,9 +244,9 @@ compiler:
 </DL>
 
 <P>
-  To use Lua as a library in your own programs you'll need to know how to
+  To use Lua as a library in your own programs, you'll need to know how to
   create and use libraries with your compiler. Moreover, to dynamically load
-  C libraries for Lua you'll need to know how to create dynamic libraries
+  C libraries for Lua, you'll need to know how to create dynamic libraries
   and you'll need to make sure that the Lua API functions are accessible to
   those dynamic libraries &mdash; but <EM>don't</EM> link the Lua library
   into each dynamic library. For Unix, we recommend that the Lua library
@@ -254,9 +259,9 @@ compiler:
   As mentioned above, you may edit <TT>src/luaconf.h</TT> to customize
   some features before building Lua.
 
-<H2><A NAME="changes">Changes since Lua 5.2</A></H2>
+<H2><A NAME="changes">Changes since Lua 5.3</A></H2>
 <P>
-Here are the main changes introduced in Lua 5.3.
+Here are the main changes introduced in Lua 5.4.
 The
 <A HREF="contents.html">reference manual</A>
 lists the
@@ -264,50 +269,20 @@ lists the
 
 <H3>Main changes</H3>
 <UL>
-<LI> integers (64-bit by default)
-<LI> official support for 32-bit numbers
-<LI> bitwise operators
-<LI> basic utf-8 support
-<LI> functions for packing and unpacking values
-
-</UL>
-
-Here are the other changes introduced in Lua 5.3:
-<H3>Language</H3>
-<UL>
-<LI> userdata can have any Lua value as uservalue
-<LI> floor division
-<LI> more flexible rules for some metamethods
-</UL>
-
-<H3>Libraries</H3>
-<UL>
-<LI> <CODE>ipairs</CODE> and the table library respect metamethods
-<LI> strip option in <CODE>string.dump</CODE>
-<LI> table library respects metamethods
-<LI> new function <CODE>table.move</CODE>
-<LI> new function <CODE>string.pack</CODE>
-<LI> new function <CODE>string.unpack</CODE>
-<LI> new function <CODE>string.packsize</CODE>
-</UL>
-
-<H3>C API</H3>
-<UL>
-<LI> simpler API for continuation functions in C
-<LI> <CODE>lua_gettable</CODE> and similar functions return type of resulted value
-<LI> strip option in <CODE>lua_dump</CODE>
-<LI> new function: <CODE>lua_geti</CODE>
-<LI> new function: <CODE>lua_seti</CODE>
-<LI> new function: <CODE>lua_isyieldable</CODE>
-<LI> new function: <CODE>lua_numbertointeger</CODE>
-<LI> new function: <CODE>lua_rotate</CODE>
-<LI> new function: <CODE>lua_stringtonumber</CODE>
-</UL>
-
-<H3>Lua standalone interpreter</H3>
-<UL>
-<LI> can be used as calculator; no need to prefix with '='
-<LI> <CODE>arg</CODE> table available to all code
+<LI> new generational mode for garbage collection
+<LI> to-be-closed variables
+<LI> const variables
+<LI> userdata can have multiple user values
+<LI> new implementation for math.random
+<LI> warning system
+<LI> debug information about function arguments and returns
+<LI> new semantics for the integer 'for' loop
+<LI> optional 'init' argument to 'string.gmatch'
+<LI> new functions 'lua_resetthread' and 'coroutine.close'
+<LI> string-to-number coercions moved to the string library
+<LI> allocation function allowed to fail when shrinking a memory block
+<LI> new format '%p' in 'string.format'
+<LI> utf8 library accepts codepoints up to 2^31
 </UL>
 
 <H2><A NAME="license">License</A></H2>
@@ -328,7 +303,7 @@ For details, see
 <A HREF="http://www.lua.org/license.html">this</A>.
 
 <BLOCKQUOTE STYLE="padding-bottom: 0em">
-Copyright &copy; 1994&ndash;2016 Lua.org, PUC-Rio.
+Copyright &copy; 1994&ndash;2021 Lua.org, PUC-Rio.
 
 <P>
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -355,10 +330,10 @@ THE SOFTWARE.
 
 <P CLASS="footer">
 Last update:
-Tue Feb  2 22:25:27 BRST 2016
+Wed Mar  3 10:16:26 UTC 2021
 </P>
 <!--
-Last change: revised for Lua 5.3.3
+Last change: revised for Lua 5.4.3
 -->
 
 </BODY>

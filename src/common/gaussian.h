@@ -24,9 +24,9 @@
 
 typedef enum dt_gaussian_order_t
 {
-  DT_IOP_GAUSSIAN_ZERO = 0,
-  DT_IOP_GAUSSIAN_ONE = 1,
-  DT_IOP_GAUSSIAN_TWO = 2
+  DT_IOP_GAUSSIAN_ZERO = 0, // $DESCRIPTION: "order 0"
+  DT_IOP_GAUSSIAN_ONE = 1,  // $DESCRIPTION: "order 1"
+  DT_IOP_GAUSSIAN_TWO = 2   // $DESCRIPTION: "order 2"
 } dt_gaussian_order_t;
 
 
@@ -44,6 +44,9 @@ dt_gaussian_t *dt_gaussian_init(const int width, const int height, const int cha
                                 const float *min, const float sigma, const int order);
 
 size_t dt_gaussian_memory_use(const int width, const int height, const int channels);
+#ifdef HAVE_OPENCL
+size_t dt_gaussian_memory_use_cl(const int width, const int height, const int channels);
+#endif
 
 size_t dt_gaussian_singlebuffer_size(const int width, const int height, const int channels);
 

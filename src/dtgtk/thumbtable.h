@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019--2020 Aldric Renaudin.
+    Copyright (C) 2019-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 
 typedef enum dt_thumbtable_mode_t
 {
+  DT_THUMBTABLE_MODE_NONE,
   DT_THUMBTABLE_MODE_FILEMANAGER,
   DT_THUMBTABLE_MODE_FILMSTRIP,
   DT_THUMBTABLE_MODE_ZOOM
@@ -67,7 +68,7 @@ typedef struct dt_thumbtable_t
   int thumbs_per_row; // number of image in a row (1 for filmstrip ; MAX_ZOOM for zoomable)
   int rows; // number of rows (the last one is not fully visible) for filmstrip it's the number of columns
   int thumb_size;              // demanded thumb size (real size can differ of 1 due to rounding)
-  int prefs_size;              // size value to dertermine overlays mode and css class
+  int prefs_size;              // size value to determine overlays mode and css class
   int view_width, view_height; // last main widget size
   GdkRectangle thumbs_area;    // coordinate of all the currently loaded thumbs area
 
@@ -90,7 +91,7 @@ typedef struct dt_thumbtable_t
   // as this can change during the drag and drop (esp. because of the image_over_id)
   GList *drag_list;
 
-  // to desactivate scrollbars event because we have updated it by hand in the code
+  // to deactivate scrollbars event because we have updated it by hand in the code
   gboolean code_scrolling;
 
   // are scrollbars shown ?
@@ -98,6 +99,10 @@ typedef struct dt_thumbtable_t
 
   // in lighttable preview or culling, we can navigate inside selection or inside full collection
   gboolean navigate_inside_selection;
+
+  // let's remember previous thumbnail generation settings to detect if they change
+  int pref_embedded;
+  int pref_hq;
 } dt_thumbtable_t;
 
 dt_thumbtable_t *dt_thumbtable_new();
@@ -114,7 +119,7 @@ gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, int imgid, gbool
 // fired when the zoom level change
 void dt_thumbtable_zoom_changed(dt_thumbtable_t *table, int oldzoom, int newzoom);
 
-// ensure that the mentionned image is visible by moving the view if needed
+// ensure that the mentioned image is visible by moving the view if needed
 gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, int imgid);
 // check if the mentioned image is visible
 gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table, int imgid);
@@ -123,17 +128,14 @@ gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table, int imgid)
 // this key accels are not managed here but inside view
 gboolean dt_thumbtable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, gboolean select);
 
-// ensure the first image in collection as no offset (is positionned on top-left)
+// ensure the first image in collection as no offset (is positioned on top-left)
 gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table);
 
 // scrollbar change
-void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, int x, int y);
+void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, float x, float y);
 
 // init all accels
 void dt_thumbtable_init_accels(dt_thumbtable_t *table);
-// connect all accels if thumbtable is active in the view and they are not loaded
-// disconnect them if not
-void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, int view);
 
 // change the type of overlays that should be shown (over or under the image)
 void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overlay_t over);

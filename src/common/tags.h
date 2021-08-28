@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -103,13 +103,13 @@ gboolean dt_tag_set_tags(const GList *tags, const GList *img, const gboolean ign
                          const gboolean clear_on, const gboolean undo_on);
 
 /** attach a list of tags on list of images. \param[in] tags a comma separated string of tags. \param[in]
- * img the list of images to attach tag to. \note If tag not exists it's created.*/
+ * img the list of images to attach tag to. \note If tag does not exist, it's created.*/
 gboolean dt_tag_attach_string_list(const gchar *tags, const GList *img, const gboolean undo_on);
 
-/** detach tag from images. \param[in] tagid if of tag to deattach. \param[in] img the list of image id to detach
+/** detach tag from images. \param[in] tagid of tag to detach. \param[in] img the list of image id to detach
  * tag from */
 gboolean dt_tag_detach_images(const guint tagid, const GList *img, const gboolean undo_on);
-/** detach tag from images. \param[in] tagid if of tag to dettach. \param[in] imgid the image id to detach
+/** detach tag from images. \param[in] tagid of tag to detach. \param[in] imgid the image id to detach
  * tag from, if < 0 images to act on are used. */
 gboolean dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on);
 
@@ -143,8 +143,11 @@ GList *dt_tag_get_hierarchical_export(gint imgid, int32_t flags);
 /** get a flat list of tags id attached to image id*/
 GList *dt_tag_get_tags(const gint imgid, const gboolean ignore_dt_tags);
 
+/** get the subset of images that have a given tag attached */
+GList *dt_tag_get_images(const gint tagid);
+
 /** get the subset of images from the given list that have a given tag attached */
-GList *dt_tag_get_images_from_list(const GList *img, gint tagid);
+GList *dt_tag_get_images_from_list(const GList *img, const gint tagid);
 
 /** retrieves a list of suggested tags matching keyword. \param[in] keyword the keyword to search \param[out]
  * result a pointer to list populated with result. \return the count \note the limit of result is decided by
@@ -193,15 +196,18 @@ uint32_t dt_tag_images_count(gint tagid);
 char *dt_tag_get_subtags(const gint imgid, const char *category, const int level);
 
 /** return the images order associated to that tag */
-const gboolean dt_tag_get_tag_order_by_id(const uint32_t tagid, uint32_t *sort,
+gboolean dt_tag_get_tag_order_by_id(const uint32_t tagid, uint32_t *sort,
                                           gboolean *descending);
 
 /** save the images order on the tag */
 void dt_tag_set_tag_order_by_id(const uint32_t tagid, const uint32_t sort,
                                 const gboolean descending);
 
-/** return the tagid of that tag - return 0 if not found*/
-const uint32_t dt_tag_get_tag_id_by_name(const char * const name);
+/** return the tagid of that tag - follow tag sensitivity - return 0 if not found*/
+uint32_t dt_tag_get_tag_id_by_name(const char * const name);
+
+/** init the darktable tags table */
+void dt_set_darktable_tags();
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

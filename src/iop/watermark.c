@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 */
 
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "common/tags.h"
 #include "common/variables.h"
 #include "control/control.h"
@@ -47,7 +48,6 @@
 #include "common/metadata.h"
 #include "common/utility.h"
 
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 DT_MODULE_INTROSPECTION(5, dt_iop_watermark_params_t)
 
 // gchar *checksum = g_compute_checksum_for_data(G_CHECKSUM_MD5,data,length);
@@ -58,6 +58,12 @@ typedef enum dt_iop_watermark_base_scale_t
   DT_SCALE_LARGER_BORDER = 1, // $DESCRIPTION: "larger border"
   DT_SCALE_SMALLER_BORDER = 2 // $DESCRIPTION: "smaller border"
 } dt_iop_watermark_base_scale_t;
+
+typedef enum dt_iop_watermark_type_t
+{
+  DT_WTM_SVG = 0,         // $DESCRIPTION: "vector .svg"
+  DT_WTM_PNG = 1          // $DESCRIPTION: "raster .png"
+} dt_iop_watermark_type_t;
 
 typedef struct dt_iop_watermark_params_t
 {
@@ -101,7 +107,7 @@ typedef struct dt_iop_watermark_data_t
 typedef struct dt_iop_watermark_gui_data_t
 {
   GtkWidget *watermarks;                             // watermark
-  GList     *watermarks_filenames;                   // the actual filenames. the dropdown lacks file extensions
+  GList     *watermarks_filenames;                   // the actual filenames
   GtkWidget *refresh;                                // refresh watermarks...
   GtkWidget *align[9];                               // Alignment buttons
   GtkWidget *opacity, *scale, *x_offset, *y_offset;  // opacity, scale, xoffs, yoffs
@@ -284,6 +290,15 @@ const char *name()
   return _("watermark");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("overlay an SVG watermark like a signature on the picture"),
+                                      _("creative"),
+                                      _("non-linear, RGB, display-referred"),
+                                      _("non-linear, RGB"),
+                                      _("non-linear, RGB, display-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
@@ -304,30 +319,18 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
+// sets text / color / font widgets sensitive based on watermark file type
+static void _text_color_font_set_sensitive(dt_iop_watermark_gui_data_t *g, gchar *filename)
 {
-  dt_accel_register_iop(self, FALSE, NC_("accel", "refresh"), 0, 0);
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "opacity"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scale"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "x offset"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "y offset"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "marker"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "scale on"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_button_iop(self, "refresh", GTK_WIDGET(g->refresh));
-  dt_accel_connect_slider_iop(self, "opacity", GTK_WIDGET(g->opacity));
-  dt_accel_connect_slider_iop(self, "scale", GTK_WIDGET(g->scale));
-  dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->rotate));
-  dt_accel_connect_slider_iop(self, "x offset", GTK_WIDGET(g->x_offset));
-  dt_accel_connect_slider_iop(self, "y offset", GTK_WIDGET(g->y_offset));
-  dt_accel_connect_combobox_iop(self, "marker", GTK_WIDGET(g->watermarks));
-  dt_accel_connect_combobox_iop(self, "scale on", GTK_WIDGET(g->sizeto));
+  const gchar *extension = strrchr(filename, '.');
+  if(extension)
+  {
+    const gboolean active = !g_ascii_strcasecmp(extension, ".svg");
+    gtk_widget_set_sensitive(GTK_WIDGET(g->colorpick), active);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->color_picker_button), active);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->text), active);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->fontsel), active);
+  }
 }
 
 static void _combo_box_set_active_text(dt_iop_watermark_gui_data_t *g, gchar *text)
@@ -338,6 +341,7 @@ static void _combo_box_set_active_text(dt_iop_watermark_gui_data_t *g, gchar *te
     if(!g_strcmp0((gchar *)iter->data, text))
     {
       dt_bauhaus_combobox_set(g->watermarks, i);
+      _text_color_font_set_sensitive(g, text);
       return;
     }
     i++;
@@ -366,33 +370,16 @@ static gchar *_string_substitute(gchar *string, const gchar *search, const gchar
   gchar *_replace = _string_escape(replace);
   gchar *result = dt_util_str_replace(string, search, _replace);
   g_free(_replace);
+  g_free(string);  // dt_util_str_replace always returns a new string, and we don't need the original after this func
   return result;
 }
 
 static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data_t *data,
-                                    const dt_image_t *image)
+                                    const dt_image_t *image, const gchar *filename)
 {
   gsize length;
 
-  gchar *svgdoc = NULL;
-  gchar configdir[PATH_MAX] = { 0 };
-  gchar datadir[PATH_MAX] = { 0 };
-  gchar *filename;
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-  dt_loc_get_user_config_dir(configdir, sizeof(configdir));
-  g_strlcat(datadir, "/watermarks/", sizeof(datadir));
-  g_strlcat(configdir, "/watermarks/", sizeof(configdir));
-  g_strlcat(datadir, data->filename, sizeof(datadir));
-  g_strlcat(configdir, data->filename, sizeof(configdir));
 
-  if(g_file_test(configdir, G_FILE_TEST_EXISTS))
-    filename = configdir;
-  else if(g_file_test(datadir, G_FILE_TEST_EXISTS))
-    filename = datadir;
-  else
-    return NULL;
-
-  gchar *svgdata = NULL;
   char datetime[200];
 
   // EXIF datetime
@@ -409,23 +396,14 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
   time_t t = time(NULL);
   (void)localtime_r(&t, &tt_cur);
 
+  gchar *svgdata = NULL;
   if(g_file_get_contents(filename, &svgdata, &length, NULL))
   {
     // File is loaded lets substitute strings if found...
 
     // Darktable internal
-    svgdoc = _string_substitute(svgdata, "$(DARKTABLE.NAME)", PACKAGE_NAME);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    svgdoc = _string_substitute(svgdata, "$(DARKTABLE.VERSION)", darktable_package_version);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DARKTABLE.NAME)", PACKAGE_NAME);
+    svgdata = _string_substitute(svgdata, "$(DARKTABLE.VERSION)", darktable_package_version);
 
     // Simple text from watermark module
     gchar buffer[1024];
@@ -434,12 +412,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     if(data->text[0])
     {
       g_strlcpy(buffer, data->text, sizeof(buffer));
-      svgdoc = _string_substitute(svgdata, "$(WATERMARK_TEXT)", buffer);
-      if(svgdoc != svgdata)
-      {
-        g_free(svgdata);
-        svgdata = svgdoc;
-      }
+      svgdata = _string_substitute(svgdata, "$(WATERMARK_TEXT)", buffer);
     }
     // apply font style substitutions
     PangoFontDescription *font = pango_font_description_from_string(data->font);
@@ -447,12 +420,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     const int font_weight = (int)pango_font_description_get_weight(font);
 
     g_strlcpy(buffer, pango_font_description_get_family(font), sizeof(buffer));
-    svgdoc = _string_substitute(svgdata, "$(WATERMARK_FONT_FAMILY)", buffer);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(WATERMARK_FONT_FAMILY)", buffer);
 
     switch(font_style)
     {
@@ -466,350 +434,135 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
         g_strlcpy(buffer, "normal", sizeof(buffer));
         break;
     }
-    svgdoc = _string_substitute(svgdata, "$(WATERMARK_FONT_STYLE)", buffer);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(WATERMARK_FONT_STYLE)", buffer);
 
     g_snprintf(buffer, sizeof(buffer), "%d", font_weight);
-    svgdoc = _string_substitute(svgdata, "$(WATERMARK_FONT_WEIGHT)", buffer);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(WATERMARK_FONT_WEIGHT)", buffer);
 
     pango_font_description_free(font);
 
     // watermark color
     GdkRGBA c = { data->color[0], data->color[1], data->color[2], 1.0f };
     g_strlcpy(buffer, gdk_rgba_to_string(&c), sizeof(buffer));
-    svgdoc = _string_substitute(svgdata, "$(WATERMARK_COLOR)", buffer);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(WATERMARK_COLOR)", buffer);
 
     // Current image ID
     g_snprintf(buffer, sizeof(buffer), "%d", image->id);
-    svgdoc = _string_substitute(svgdata, "$(IMAGE.ID)", buffer);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(IMAGE.ID)", buffer);
 
     // Current image
     dt_image_print_exif(image, buffer, sizeof(buffer));
-    svgdoc = _string_substitute(svgdata, "$(IMAGE.EXIF)", buffer);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(IMAGE.EXIF)", buffer);
 
     // Image exif
     // EXIF date
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE)", image->exif_datetime_taken);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE)", image->exif_datetime_taken);
     // $(EXIF.DATE.SECOND) -- 00..60
     strftime(datetime, sizeof(datetime), "%S", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.SECOND)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.SECOND)", datetime);
     // $(EXIF.DATE.MINUTE) -- 00..59
     strftime(datetime, sizeof(datetime), "%M", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.MINUTE)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.MINUTE)", datetime);
     // $(EXIF.DATE.HOUR) -- 00..23
     strftime(datetime, sizeof(datetime), "%H", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.HOUR)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.HOUR)", datetime);
     // $(EXIF.DATE.HOUR_AMPM) -- 01..12
     strftime(datetime, sizeof(datetime), "%I %p", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.HOUR_AMPM)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.HOUR_AMPM)", datetime);
     // $(EXIF.DATE.DAY) -- 01..31
     strftime(datetime, sizeof(datetime), "%d", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.DAY)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.DAY)", datetime);
     // $(EXIF.DATE.MONTH) -- 01..12
     strftime(datetime, sizeof(datetime), "%m", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.MONTH)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.MONTH)", datetime);
     // $(EXIF.DATE.SHORT_MONTH) -- Jan, Feb, .., Dec, localized
     strftime(datetime, sizeof(datetime), "%b", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.SHORT_MONTH)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.SHORT_MONTH)", datetime);
     // $(EXIF.DATE.LONG_MONTH) -- January, February, .., December, localized
     strftime(datetime, sizeof(datetime), "%B", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.LONG_MONTH)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.LONG_MONTH)", datetime);
     // $(EXIF.DATE.SHORT_YEAR) -- 12
     strftime(datetime, sizeof(datetime), "%y", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.SHORT_YEAR)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.SHORT_YEAR)", datetime);
     // $(EXIF.DATE.LONG_YEAR) -- 2012
     strftime(datetime, sizeof(datetime), "%Y", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.LONG_YEAR)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.LONG_YEAR)", datetime);
 
     // Current date
     // $(DATE) -- YYYY:
     dt_gettime_t(datetime, sizeof(datetime), t);
-    svgdoc = _string_substitute(svgdata, "$(DATE)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE)", datetime);
     // $(DATE.SECOND) -- 00..60
     strftime(datetime, sizeof(datetime), "%S", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.SECOND)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.SECOND)", datetime);
     // $(DATE.MINUTE) -- 00..59
     strftime(datetime, sizeof(datetime), "%M", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.MINUTE)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.MINUTE)", datetime);
     // $(DATE.HOUR) -- 00..23
     strftime(datetime, sizeof(datetime), "%H", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.HOUR)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.HOUR)", datetime);
     // $(DATE.HOUR_AMPM) -- 01..12
     strftime(datetime, sizeof(datetime), "%I %p", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.HOUR_AMPM)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.HOUR_AMPM)", datetime);
     // $(DATE.DAY) -- 01..31
     strftime(datetime, sizeof(datetime), "%d", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.DAY)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.DAY)", datetime);
     // $(DATE.MONTH) -- 01..12
     strftime(datetime, sizeof(datetime), "%m", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.MONTH)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.MONTH)", datetime);
     // $(DATE.SHORT_MONTH) -- Jan, Feb, .., Dec, localized
     strftime(datetime, sizeof(datetime), "%b", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.SHORT_MONTH)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.SHORT_MONTH)", datetime);
     // $(DATE.LONG_MONTH) -- January, February, .., December, localized
     strftime(datetime, sizeof(datetime), "%B", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.LONG_MONTH)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.LONG_MONTH)", datetime);
     // $(DATE.SHORT_YEAR) -- 12
     strftime(datetime, sizeof(datetime), "%y", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.SHORT_YEAR)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.SHORT_YEAR)", datetime);
     // $(DATE.LONG_YEAR) -- 2012
     strftime(datetime, sizeof(datetime), "%Y", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.LONG_YEAR)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-
-    svgdoc = _string_substitute(svgdata, "$(EXIF.MAKER)", image->camera_maker);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    svgdoc = _string_substitute(svgdata, "$(EXIF.MODEL)", image->camera_model);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    svgdoc = _string_substitute(svgdata, "$(EXIF.LENS)", image->exif_lens);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-
-    svgdoc = _string_substitute(svgdata, "$(IMAGE.FILENAME)", image->filename);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.LONG_YEAR)", datetime);
+    svgdata = _string_substitute(svgdata, "$(EXIF.MAKER)", image->camera_maker);
+    svgdata = _string_substitute(svgdata, "$(EXIF.MODEL)", image->camera_model);
+    svgdata = _string_substitute(svgdata, "$(EXIF.LENS)", image->exif_lens);
+    svgdata = _string_substitute(svgdata, "$(IMAGE.FILENAME)", image->filename);
 
     gchar *basename = g_path_get_basename(image->filename);
     if(g_strrstr(basename, ".")) *(g_strrstr(basename, ".")) = '\0';
-    svgdoc = _string_substitute(svgdata, "$(IMAGE.BASENAME)", basename);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(IMAGE.BASENAME)", basename);
     g_free(basename);
 
     // TODO: auto generate that code?
     GList *res;
     res = dt_metadata_get(image->id, "Xmp.dc.creator", NULL);
-    svgdoc = _string_substitute(svgdata, "$(Xmp.dc.creator)", (res ? res->data : ""));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    if(res)
-    {
-      g_list_free_full(res, &g_free);
-    }
+    svgdata = _string_substitute(svgdata, "$(Xmp.dc.creator)", (res ? res->data : ""));
+    g_list_free_full(res, &g_free);
 
     res = dt_metadata_get(image->id, "Xmp.dc.publisher", NULL);
-    svgdoc = _string_substitute(svgdata, "$(Xmp.dc.publisher)", (res ? res->data : ""));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    if(res)
-    {
-      g_list_free_full(res, &g_free);
-    }
+    svgdata = _string_substitute(svgdata, "$(Xmp.dc.publisher)", (res ? res->data : ""));
+    g_list_free_full(res, &g_free);
 
     res = dt_metadata_get(image->id, "Xmp.dc.title", NULL);
-    svgdoc = _string_substitute(svgdata, "$(Xmp.dc.title)", (res ? res->data : ""));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    if(res)
-    {
-      g_list_free_full(res, &g_free);
-    }
+    svgdata = _string_substitute(svgdata, "$(Xmp.dc.title)", (res ? res->data : ""));
+    g_list_free_full(res, &g_free);
 
     res = dt_metadata_get(image->id, "Xmp.dc.description", NULL);
-    svgdoc = _string_substitute(svgdata, "$(Xmp.dc.description)", (res ? res->data : ""));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    if(res)
-    {
-      g_list_free_full(res, &g_free);
-    }
+    svgdata = _string_substitute(svgdata, "$(Xmp.dc.description)", (res ? res->data : ""));
+    g_list_free_full(res, &g_free);
 
     res = dt_metadata_get(image->id, "Xmp.dc.rights", NULL);
-    svgdoc = _string_substitute(svgdata, "$(Xmp.dc.rights)", (res ? res->data : ""));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    if(res)
-    {
-      g_list_free_full(res, &g_free);
-    }
+    svgdata = _string_substitute(svgdata, "$(Xmp.dc.rights)", (res ? res->data : ""));
+    g_list_free_full(res, &g_free);
 
     res = dt_tag_get_list(image->id);
     gchar *keywords = dt_util_glist_to_str(", ", res);
-    svgdoc = _string_substitute(svgdata, "$(IMAGE.TAGS)", (keywords ? keywords : ""));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(IMAGE.TAGS)", (keywords ? keywords : ""));
     g_free(keywords);
-    if(res)
-    {
-      g_list_free_full(res, &g_free);
-    }
+    g_list_free_full(res, &g_free);
 
     const int stars = image->flags & 0x7;
     const char *const rating_str[] = { "☆☆☆☆☆", "★☆☆☆☆", "★★☆☆☆", "★★★☆☆", "★★★★☆", "★★★★★", "❌", "" };
-    svgdoc = _string_substitute(svgdata, "$(Xmp.xmp.Rating)", rating_str[stars]);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(Xmp.xmp.Rating)", rating_str[stars]);
 
     // geolocation
     gchar *latitude = NULL, *longitude = NULL, *elevation = NULL;
@@ -833,53 +586,29 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     if(longitude) parts[i++] = longitude;
     if(elevation) parts[i++] = elevation;
     gchar *location = g_strjoinv(", ", parts);
-    svgdoc = _string_substitute(svgdata, "$(GPS.LATITUDE)", (latitude ? latitude : "-"));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    svgdoc = _string_substitute(svgdata, "$(GPS.LONGITUDE)", (longitude ? longitude : "-"));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    svgdoc = _string_substitute(svgdata, "$(GPS.ELEVATION)", (elevation ? elevation : "-"));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    svgdoc = _string_substitute(svgdata, "$(GPS.LOCATION)", location);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(GPS.LATITUDE)", (latitude ? latitude : "-"));
+    svgdata = _string_substitute(svgdata, "$(GPS.LONGITUDE)", (longitude ? longitude : "-"));
+    svgdata = _string_substitute(svgdata, "$(GPS.ELEVATION)", (elevation ? elevation : "-"));
+    svgdata = _string_substitute(svgdata, "$(GPS.LOCATION)", location);
     g_free(latitude);
     g_free(longitude);
     g_free(elevation);
     g_free(location);
 
+    // standard calculation on the remaining variables
+    const int32_t flags = dt_lib_export_metadata_get_conf_flags();
+    dt_variables_params_t *params;
+    dt_variables_params_init(&params);
+    params->filename = image->filename;
+    params->jobcode = "infos";
+    params->sequence = 0;
+    params->imgid = image->id;
+    dt_variables_set_tags_flags(params, flags);
+    gchar *svgdoc = dt_variables_expand(params, svgdata, FALSE);  // returns a new string
+    g_free(svgdata);  // free the old one
+    svgdata = svgdoc; // and make the expanded string our result
   }
-
-  // standard calculation on the remaining variables
-  const int32_t flags = dt_lib_export_metadata_get_conf_flags();
-  dt_variables_params_t *params;
-  dt_variables_params_init(&params);
-  params->filename = image->filename;
-  params->jobcode = "infos";
-  params->sequence = 0;
-  params->imgid = image->id;
-  dt_variables_set_tags_flags(params, flags);
-  svgdoc = dt_variables_expand(params, svgdata, FALSE);
-  if(svgdoc != svgdata)
-  {
-    g_free(svgdata);
-    svgdata = svgdoc;
-  }
-  return svgdoc;
+  return svgdata;
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -891,16 +620,67 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = piece->colors;
   const float angle = (M_PI / 180) * (-data->rotate);
 
-  /* Load svg if not loaded */
-  gchar *svgdoc = _watermark_get_svgdoc(self, data, &piece->pipe->image);
-  if(!svgdoc)
+  gchar configdir[PATH_MAX] = { 0 };
+  gchar datadir[PATH_MAX] = { 0 };
+  gchar *filename;
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  dt_loc_get_user_config_dir(configdir, sizeof(configdir));
+  g_strlcat(datadir, "/watermarks/", sizeof(datadir));
+  g_strlcat(configdir, "/watermarks/", sizeof(configdir));
+  g_strlcat(datadir, data->filename, sizeof(datadir));
+  g_strlcat(configdir, data->filename, sizeof(configdir));
+
+  if(g_file_test(configdir, G_FILE_TEST_EXISTS))
+    filename = configdir;
+  else if(g_file_test(datadir, G_FILE_TEST_EXISTS))
+    filename = datadir;
+  else
   {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
+  // find out the watermark type
+  dt_iop_watermark_type_t type;
+  const gchar *extension = strrchr(data->filename, '.');
+  if(extension)
+  {
+    if(!g_ascii_strcasecmp(extension, ".svg"))
+      type = DT_WTM_SVG;
+    else if(!g_ascii_strcasecmp(extension, ".png"))
+      type = DT_WTM_PNG;
+    else // this should not happen
+    {
+      dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+      return;
+    }
+  }
+  else
+  {
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+    return;
+  }
+
+  /* Load svg if not loaded */
+  gchar *svgdoc = NULL;
+  if(type == DT_WTM_SVG)
+  {
+    svgdoc = _watermark_get_svgdoc(self, data, &piece->pipe->image, filename);
+    if(!svgdoc)
+    {
+      dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+      return;
+    }
+  }
+  
   /* setup stride for performance */
   const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, roi_out->width);
+  if(stride == -1)
+  {
+    fprintf(stderr, "[watermark] cairo stride error\n");
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+    return;
+  }
 
   /* create a cairo memory surface that is later used for reading watermark overlay data */
   guint8 *image = (guint8 *)g_malloc0_n(roi_out->height, stride);
@@ -908,33 +688,64 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                                                  roi_out->height, stride);
   if((cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) || (image == NULL))
   {
-    fprintf(stderr,"[watermark] Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
+    fprintf(stderr, "[watermark] cairo surface error: %s\n",
+            cairo_status_to_string(cairo_surface_status(surface)));
     g_free(image);
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
   // rsvg (or some part of cairo which is used underneath) isn't thread safe, for example when handling fonts
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
 
-  /* create the rsvghandle from parsed svg data */
-  GError *error = NULL;
-  RsvgHandle *svg = rsvg_handle_new_from_data((const guint8 *)svgdoc, strlen(svgdoc), &error);
-  g_free(svgdoc);
-  if(!svg || error)
+  RsvgHandle *svg = NULL;
+  if(type == DT_WTM_SVG)
   {
-    cairo_surface_destroy(surface);
-    g_free(image);
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
-    dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-    fprintf(stderr, "[watermark] error processing svg file: %s\n", error->message);
-    g_error_free(error);
-    return;
+    /* create the rsvghandle from parsed svg data */
+    GError *error = NULL;
+    svg = rsvg_handle_new_from_data((const guint8 *)svgdoc, strlen(svgdoc), &error);
+    g_free(svgdoc);
+    if(!svg || error)
+    {
+      cairo_surface_destroy(surface);
+      g_free(image);
+      dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+      dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+      fprintf(stderr, "[watermark] error processing svg file: %s\n", error->message);
+      g_error_free(error);
+      return;
+    }
   }
 
-  /* get the dimension of svg */
+  // we use a second surface
+  guint8 *image_two = NULL;
+  cairo_surface_t *surface_two = NULL;
+
+  /* get the dimension of svg or png */
   RsvgDimensionData dimension;
-  rsvg_handle_get_dimensions(svg, &dimension);
+  switch(type)
+  {
+    case DT_WTM_SVG:
+      rsvg_handle_get_dimensions(svg, &dimension);
+      break;
+    case DT_WTM_PNG:
+      // load png into surface 2
+      surface_two = cairo_image_surface_create_from_png(filename);
+      if((cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS))
+      {
+        fprintf(stderr, "[watermark] cairo png surface 2 error: %s\n",
+                cairo_status_to_string(cairo_surface_status(surface_two)));
+        cairo_surface_destroy(surface);
+        g_free(image);
+        dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+        dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+        return;
+      }
+      dimension.width = cairo_image_surface_get_width(surface_two);
+      dimension.height = cairo_image_surface_get_height(surface_two);
+      break;
+  }
+
   // if no text is given dimensions are null
   if(!dimension.width) dimension.width = 1;
   if(!dimension.height) dimension.height = 1;
@@ -962,11 +773,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else
   {
     // in larger/smaller side mode, set wbase and hbase to the largest or smallest side of the image
-    float larger;
-    if(dimension.width > dimension.height)
-      larger = (float)dimension.width;
-    else
-      larger = (float)dimension.height;
+    const float larger = dimension.width > dimension.height
+      ? (float)dimension.width
+      : (float)dimension.height;
 
     if(iw > ih)
     {
@@ -1021,28 +830,33 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
      distortions and blurred images are obvious but you also can easily have crashes.
   */
 
-  /* the svg_offsets allow safe text boxes as they might render out of the dimensions */
-  const float svg_offset_x = ceilf(3.0f * scale);
-  const float svg_offset_y = ceilf(3.0f * scale);
-
-  const int watermark_width =  (int)((dimension.width  * scale) + 3* svg_offset_x);
-  const int watermark_height = (int)((dimension.height * scale) + 3* svg_offset_y) ;
-
-  const int stride_two = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, watermark_width);
-  guint8 *image_two = (guint8 *)g_malloc0_n(watermark_height, stride_two);
-
-  cairo_surface_t *surface_two = cairo_image_surface_create_for_data(image_two, CAIRO_FORMAT_ARGB32, watermark_width,
-                                                                 watermark_height, stride_two);
-  if((cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS) || (image_two == NULL))
+  float svg_offset_x = 0;
+  float svg_offset_y = 0;
+  if(type == DT_WTM_SVG)
   {
-    fprintf(stderr,"[watermark] Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface_two)));
-    cairo_surface_destroy(surface);
-    g_object_unref(svg);
-    g_free(image);
-    g_free(image_two);
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
-    dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-    return;
+    /* the svg_offsets allow safe text boxes as they might render out of the dimensions */
+    svg_offset_x = ceilf(3.0f * scale);
+    svg_offset_y = ceilf(3.0f * scale);
+
+    const int watermark_width  = (int)((dimension.width  * scale) + 3* svg_offset_x);
+    const int watermark_height = (int)((dimension.height * scale) + 3* svg_offset_y) ;
+
+    const int stride_two = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, watermark_width);
+    image_two = (guint8 *)g_malloc0_n(watermark_height, stride_two);
+    surface_two = cairo_image_surface_create_for_data(image_two, CAIRO_FORMAT_ARGB32, watermark_width,
+                                                                   watermark_height, stride_two);
+    if((cairo_surface_status(surface_two) != CAIRO_STATUS_SUCCESS) || (image_two == NULL))
+    {
+      fprintf(stderr, "[watermark] cairo surface 2 error: %s\n",
+              cairo_status_to_string(cairo_surface_status(surface_two)));
+      cairo_surface_destroy(surface);
+      g_object_unref(svg);
+      g_free(image);
+      g_free(image_two);
+      dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+      dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+      return;
+    }
   }
 
   /* create cairo context and setup transformation/scale */
@@ -1091,13 +905,23 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   cairo_translate(cr, -cX, -cY);
 
   // now set proper scale and translationfor the watermark itself
-  cairo_translate(cr_two, svg_offset_x,svg_offset_y);
-  cairo_scale(cr_two, scale, scale);
-  /* render svg into surface*/
-  rsvg_handle_render_cairo(svg, cr_two);
+  cairo_translate(cr_two, svg_offset_x, svg_offset_y);
+
+  switch(type)
+  {
+    case DT_WTM_SVG:
+      cairo_scale(cr_two, scale, scale);
+      /* render svg into surface*/
+      rsvg_handle_render_cairo(svg, cr_two);
+      break;
+    case DT_WTM_PNG:
+      cairo_scale(cr, scale, scale);
+      break;
+  }
   cairo_surface_flush(surface_two);
 
-  cairo_set_source_surface(cr, surface_two,-svg_offset_x,-svg_offset_y);
+  // paint the watermark
+  cairo_set_source_surface(cr, surface_two, -svg_offset_x, -svg_offset_y);
   cairo_paint(cr);
 
   // no more non-thread safe rsvg usage
@@ -1112,33 +936,34 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   /* render surface on output */
   guint8 *sd = image;
   const float opacity = data->opacity / 100.0f;
-  /*
-  #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(in, out,sd,opacity) schedule(static)
-  #endif
-  */
-  for(int j = 0; j < roi_out->height; j++)
-    for(int i = 0; i < roi_out->width; i++)
-    {
-      const float alpha = (sd[3] / 255.0f) * opacity;
-      /* svg uses a premultiplied alpha, so only use opacity for the blending */
-      out[0] = ((1.0f - alpha) * in[0]) + (opacity * (sd[2] / 255.0f));
-      out[1] = ((1.0f - alpha) * in[1]) + (opacity * (sd[1] / 255.0f));
-      out[2] = ((1.0f - alpha) * in[2]) + (opacity * (sd[0] / 255.0f));
-      out[3] = in[3];
-
-      out += ch;
-      in += ch;
-      sd += 4;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(roi_out, in, out, sd, opacity, ch)   \
+  schedule(static)
+#endif
+  for(int j = 0; j < roi_out->height * roi_out->width; j++)
+  {
+    float *const i = in + ch*j;
+    float *const o = out + ch*j;
+    guint8 *const s = sd + 4*j;
+    const float alpha = (s[3] / 255.0f) * opacity;
+    /* svg uses a premultiplied alpha, so only use opacity for the blending */
+    o[0] = ((1.0f - alpha) * i[0]) + (opacity * (s[2] / 255.0f));
+    o[1] = ((1.0f - alpha) * i[1]) + (opacity * (s[1] / 255.0f));
+    o[2] = ((1.0f - alpha) * i[2]) + (opacity * (s[0] / 255.0f));
+    o[3] = in[3];
     }
-
 
   /* clean up */
   cairo_surface_destroy(surface);
   cairo_surface_destroy(surface_two);
-  g_object_unref(svg);
   g_free(image);
-  g_free(image_two);
+  if(type == DT_WTM_SVG)
+  {
+    g_free(image_two);
+    g_object_unref(svg);
+  }
+
 }
 
 static void watermark_callback(GtkWidget *tb, gpointer user_data)
@@ -1151,6 +976,7 @@ static void watermark_callback(GtkWidget *tb, gpointer user_data)
   memset(p->filename, 0, sizeof(p->filename));
   int n = dt_bauhaus_combobox_get(g->watermarks);
   g_strlcpy(p->filename, (char *)g_list_nth_data(g->watermarks_filenames, n), sizeof(p->filename));
+  _text_color_font_set_sensitive(g, p->filename);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1189,7 +1015,7 @@ static void load_watermarks(const char *basedir, dt_iop_watermark_gui_data_t *g)
   {
     const gchar *d_name;
     while((d_name = g_dir_read_name(dir)))
-      files = g_list_append(files, g_strdup(d_name));
+      files = g_list_prepend(files, g_strdup(d_name));
     g_dir_close(dir);
   }
 
@@ -1197,13 +1023,22 @@ static void load_watermarks(const char *basedir, dt_iop_watermark_gui_data_t *g)
   for(GList *iter = files; iter; iter = g_list_next(iter))
   {
     char *filename = iter->data;
-    // remember the whole filename for later
-    g->watermarks_filenames = g_list_append(g->watermarks_filenames, g_strdup(filename));
-    // ... and remove the file extension from the string shown in the gui
-    char *c = filename + strlen(filename);
-    while(c >= filename && *c != '.') *c-- = '\0';
-    if(*c == '.') *c = '\0';
-    dt_bauhaus_combobox_add(g->watermarks, filename);
+    gchar *extension = strrchr(filename, '.');
+    if(extension)
+    {
+      // we add only supported file formats to the list
+      if(!g_ascii_strcasecmp(extension, ".svg") || !g_ascii_strcasecmp(extension, ".png"))
+      {
+        // remember the whole filename for later
+        g->watermarks_filenames = g_list_append(g->watermarks_filenames, g_strdup(filename));
+        // ... and build string shown in the gui
+        *extension = '\0';
+        extension++;
+        gchar *text = g_strdup_printf("%s (%s)", filename, extension);
+        dt_bauhaus_combobox_add(g->watermarks, text);
+        g_free(text);
+      }
+    }
   }
 
   g_list_free_full(files, g_free);
@@ -1306,7 +1141,9 @@ static void fontsel_callback(GtkWidget *button, gpointer user_data)
   if(darktable.gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
-  g_strlcpy(p->font, gtk_font_chooser_get_font(GTK_FONT_CHOOSER(button)), sizeof(p->font));
+  gchar *fontname = gtk_font_chooser_get_font(GTK_FONT_CHOOSER(button));
+  g_strlcpy(p->font, fontname, sizeof(p->font));
+  g_free(fontname);
   dt_conf_set_string("plugins/darkroom/watermark/font", p->font);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1333,13 +1170,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   memset(d->font, 0, sizeof(d->font));
   g_strlcpy(d->font, p->font, sizeof(d->font));
 
-// fprintf(stderr,"Commit params: %s...\n",d->filename);
+// fprintf(stderr, "Commit params: %s...\n",d->filename);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_watermark_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1439,25 +1275,21 @@ void gui_init(struct dt_iop_module_t *self)
   g->text = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(g->text), 1);
   gtk_widget_set_tooltip_text(g->text, _("text string, tag:\n$(WATERMARK_TEXT)"));
-  dt_gui_key_accel_block_on_focus_connect(g->text);
-  gchar *str = dt_conf_get_string("plugins/darkroom/watermark/text");
+  const char *str = dt_conf_get_string_const("plugins/darkroom/watermark/text");
   gtk_entry_set_text(GTK_ENTRY(g->text), str);
-  g_free(str);
 
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->text, label, GTK_POS_RIGHT, 2, 1);
 
   // Text font
   label = dtgtk_reset_label_new(_("font"), self, &p->font, sizeof(p->font));
-  str = dt_conf_get_string("plugins/darkroom/watermark/font");
+  str = dt_conf_get_string_const("plugins/darkroom/watermark/font");
   g->fontsel = gtk_font_button_new_with_font(str==NULL?"DejaVu Sans 10":str);
-  GList *childs = gtk_container_get_children(GTK_CONTAINER(gtk_bin_get_child(GTK_BIN(g->fontsel))));
-  gtk_label_set_ellipsize(GTK_LABEL(childs->data), PANGO_ELLIPSIZE_MIDDLE);
-  g_list_free(childs);
+  GtkWidget *child = dt_gui_container_first_child(GTK_CONTAINER(gtk_bin_get_child(GTK_BIN(g->fontsel))));
+  gtk_label_set_ellipsize(GTK_LABEL(child), PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_tooltip_text(g->fontsel, _("text font, tags:\n$(WATERMARK_FONT_FAMILY)\n"
                                             "$(WATERMARK_FONT_STYLE)\n$(WATERMARK_FONT_WEIGHT)"));
   gtk_font_button_set_show_size (GTK_FONT_BUTTON(g->fontsel), FALSE);
-  g_free(str);
 
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->fontsel, label, GTK_POS_RIGHT, 2, 1);
@@ -1521,7 +1353,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   g_list_free_full(g->watermarks_filenames, g_free);
-  dt_gui_key_accel_block_on_focus_disconnect(g->text);
   g->watermarks_filenames = NULL;
 
   IOP_GUI_FREE;

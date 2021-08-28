@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -174,7 +174,7 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)
     {
-      char *buf = malloc(len * sizeof(char));
+      char *buf = malloc(sizeof(char) * len);
       char name[512] = { 0 };
       cmsSaveProfileToMem(out_profile, buf, &len);
       dt_colorspaces_get_profile_name(out_profile, "en", "US", name, sizeof(name));
@@ -201,7 +201,7 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
    */
   png_set_filler(png_ptr, 0, PNG_FILLER_AFTER);
 
-  png_bytep *row_pointers = dt_alloc_align(64, (size_t)height * sizeof(png_bytep));
+  png_bytep *row_pointers = dt_alloc_align(64, sizeof(png_bytep) * height);
 
   if(p->bpp > 8)
   {
@@ -421,11 +421,10 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_png_t *d = (dt_imageio_png_t *)calloc(1, sizeof(dt_imageio_png_t));
-  d->bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
-  if(d->bpp < 12)
+  const char *bpp = dt_conf_get_string_const("plugins/imageio/format/png/bpp");
+  d->bpp = atoi(bpp);
+  if(d->bpp != 8 && d->bpp != 16)
     d->bpp = 8;
-  else
-    d->bpp = 16;
 
   // PNG compression level might actually be zero!
   if(!dt_conf_key_exists("plugins/imageio/format/png/compression"))
@@ -511,7 +510,8 @@ void gui_init(dt_imageio_module_format_t *self)
 {
   dt_imageio_png_gui_t *gui = (dt_imageio_png_gui_t *)malloc(sizeof(dt_imageio_png_gui_t));
   self->gui_data = (void *)gui;
-  int bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
+  const char *conf_bpp = dt_conf_get_string_const("plugins/imageio/format/png/bpp");
+  int bpp = atoi(conf_bpp);
 
   // PNG compression level might actually be zero!
   int compression = 5;
@@ -522,7 +522,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   // Bit depth combo box
   gui->bit_depth = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->bit_depth, NULL, _("bit depth"));
+  dt_bauhaus_widget_set_label(gui->bit_depth, NULL, N_("bit depth"));
   dt_bauhaus_combobox_add(gui->bit_depth, _("8 bit"));
   dt_bauhaus_combobox_add(gui->bit_depth, _("16 bit"));
   if(bpp == 16)
@@ -535,8 +535,13 @@ void gui_init(dt_imageio_module_format_t *self)
   g_signal_connect(G_OBJECT(gui->bit_depth), "value-changed", G_CALLBACK(bit_depth_changed), NULL);
 
   // Compression level slider
-  gui->compression = dt_bauhaus_slider_new_with_range(NULL, 0, 9, 1, 5, 0);
-  dt_bauhaus_widget_set_label(gui->compression, NULL, _("compression"));
+  gui->compression = dt_bauhaus_slider_new_with_range(NULL,
+                                                      dt_confgen_get_int("plugins/imageio/format/png/compression", DT_MIN),
+                                                      dt_confgen_get_int("plugins/imageio/format/png/compression", DT_MAX),
+                                                      1,
+                                                      dt_confgen_get_int("plugins/imageio/format/png/compression", DT_DEFAULT),
+                                                      0);
+  dt_bauhaus_widget_set_label(gui->compression, NULL, N_("compression"));
   dt_bauhaus_slider_set(gui->compression, compression);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->compression), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->compression), "value-changed", G_CALLBACK(compression_level_changed), NULL);
@@ -549,6 +554,9 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
+  dt_imageio_png_gui_t *gui = (dt_imageio_png_gui_t *)self->gui_data;
+  dt_bauhaus_combobox_set(gui->bit_depth, 0); // 8bpp
+  dt_bauhaus_slider_set(gui->compression, dt_confgen_get_int("plugins/imageio/format/png/compression", DT_DEFAULT));
 }
 
 int flags(dt_imageio_module_data_t *data)

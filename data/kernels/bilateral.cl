@@ -380,7 +380,7 @@ slice(
         grid[gi+ox+oz]    * (       fx) * (1.0f - fy) * (       fz) +
         grid[gi+oy+oz]    * (1.0f - fx) * (       fy) * (       fz) +
         grid[gi+ox+oy+oz] * (       fx) * (       fy) * (       fz);
-  pixel.x = L + norm * Ldiff;
+  pixel.x = max(0.0f, L + norm * Ldiff);
   write_imagef (out, (int2)(x, y), pixel);
 }
 

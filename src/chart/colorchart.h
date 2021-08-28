@@ -40,8 +40,8 @@ typedef struct box_t
   float w, h;
   // color
   dt_colorspaces_color_profile_type_t color_space;
-  float color[3]; // either XYZ or Lab, depending on color_space
-  float rgb[3];   // color converted to sRGB for rough displaying of patches
+  dt_aligned_pixel_t color; // either XYZ or Lab, depending on color_space
+  dt_aligned_pixel_t rgb;   // color converted to sRGB for rough displaying of patches
 } box_t;
 
 typedef struct chart_t
@@ -64,7 +64,7 @@ typedef struct chart_t
 void free_chart(chart_t *chart);
 chart_t *parse_cht(const char *filename);
 int parse_it8(const char *filename, chart_t *chart);
-void set_color(box_t *box, dt_colorspaces_color_profile_type_t color_space, float c0, float c1, float c2);
+void checker_set_color(box_t *box, dt_colorspaces_color_profile_type_t color_space, float c0, float c1, float c2);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

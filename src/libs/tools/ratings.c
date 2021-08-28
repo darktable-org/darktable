@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "dtgtk/button.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 
@@ -88,9 +89,10 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *drawing = gtk_drawing_area_new();
 
-  gtk_widget_set_events(drawing, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
-                            | GDK_LEAVE_NOTIFY_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                            | GDK_STRUCTURE_MASK);
+  gtk_widget_set_events(drawing, GDK_EXPOSURE_MASK     | GDK_POINTER_MOTION_MASK
+                               | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
+                               | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                               | GDK_STRUCTURE_MASK);
 
   /* connect callbacks */
   gtk_widget_set_app_paintable(drawing, TRUE);
@@ -105,6 +107,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* set size of navigation draw area */
   gtk_widget_set_name(self->widget, "lib-rating-stars");
+  dt_action_define(&darktable.control->actions_thumb, NULL, "rating", drawing, &dt_action_def_rating);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -153,7 +156,7 @@ static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, gpoi
       cairo_set_source_rgba(cr, fg_color.red, fg_color.green, fg_color.blue, fg_color.alpha * 0.5);
       cairo_stroke(cr);
       gdk_cairo_set_source_rgba(cr, &fg_color);
-      if((k + 1) > d->current) d->current = (k + 1);
+      if((k + 1) > d->current) d->current = darktable.control->element = (k + 1);
     }
     else
       cairo_stroke(cr);
@@ -175,16 +178,8 @@ static gboolean _lib_ratings_motion_notify_callback(GtkWidget *widget, GdkEventM
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_ratings_t *d = (dt_lib_ratings_t *)self->data;
 
-#if GTK_CHECK_VERSION(3, 20, 0)
-  gdk_window_get_device_position(
-      event->window, gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(widget))),
-      &d->pointerx, &d->pointery, 0);
-#else
-  gdk_window_get_device_position(event->window,
-                                 gdk_device_manager_get_client_pointer(
-                                     gdk_display_get_device_manager(gdk_window_get_display(event->window))),
-                                 &d->pointerx, &d->pointery, NULL);
-#endif
+  d->pointerx = event->x;
+  d->pointery = event->y;
   gtk_widget_queue_draw(self->widget);
   return TRUE;
 }
@@ -196,9 +191,9 @@ static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventBu
   dt_lib_ratings_t *d = (dt_lib_ratings_t *)self->data;
   if(d->current > 0)
   {
-    const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
+    const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE, FALSE);
     dt_ratings_apply_on_list(imgs, d->current, TRUE);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING,
                                g_list_copy((GList *)imgs));
 
     dt_control_queue_redraw_center();

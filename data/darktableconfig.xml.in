@@ -4,7 +4,7 @@
   <dtconfig>
     <name>themes/usercss</name>
     <type>bool</type>
-    <default>true</default>
+    <default>false</default>
     <shortdescription>modify theme with user tweaks</shortdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="accel">
@@ -59,6 +59,13 @@
     <default>library.db</default>
     <shortdescription>database location</shortdescription>
     <longdescription>filename relative to ~/.config/darktable or starting with a slash (needs a restart).</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>storage/piwigo/last_album</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription></shortdescription>
+    <longdescription></longdescription>
   </dtconfig>
   <dtconfig prefs="storage" section="database">
     <name>database/maintenance_check</name>
@@ -140,60 +147,53 @@
     <default>5</default>
     <shortdescription>waiting time between each picture in slideshow</shortdescription>
   </dtconfig>
-  <dtconfig prefs="misc" section="other">
+  <dtconfig>
     <name>ui_last/no_april1st</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>do not show april 1st game</shortdescription>
   </dtconfig>
-  <dtconfig prefs="cpugpu" restart="true">
+  <dtconfig prefs="processing" section="cpugpu" restart="true">
     <name>cache_memory</name>
     <type factor="(1.0 / (1024.0 * 1024.0))" min="(1024 * 1024 * 100)">int64</type>
     <default>(1024 * 1024 * 512)</default>
     <shortdescription>memory in megabytes to use for thumbnail cache</shortdescription>
     <longdescription>this controls how much memory is going to be used for thumbnails and other buffers (needs a restart).</longdescription>
   </dtconfig>
-  <dtconfig prefs="cpugpu">
+  <dtconfig prefs="processing" section="cpugpu">
     <name>cache_disk_backend</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>enable disk backend for thumbnail cache</shortdescription>
     <longdescription>if enabled, write thumbnails to disk (.cache/darktable/) when evicted from the memory cache. note that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached thumbnails again. it's safe though to delete these manually, if you want. light table performance will be increased greatly when browsing a lot. to generate all thumbnails of your entire collection offline, run 'darktable-generate-cache'.</longdescription>
   </dtconfig>
-  <dtconfig prefs="cpugpu">
+  <dtconfig prefs="processing" section="cpugpu">
     <name>cache_disk_backend_full</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>enable disk backend for full preview cache</shortdescription>
     <longdescription>if enabled, write full preview to disk (.cache/darktable/) when evicted from the memory cache. note that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached thumbnails again. it's safe though to delete these manually, if you want. light table performance will be increased greatly when zooming image in full preview mode.</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable">
+  <dtconfig>
     <name>cache_color_managed</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>color manage cached thumbnails</shortdescription>
     <longdescription>if enabled, cached thumbnails will be color managed so that lighttable and filmstrip can show correct colors. otherwise the results may look wrong once the display profile gets changed.</longdescription>
   </dtconfig>
-  <dtconfig prefs="cpugpu" restart="true">
-    <name>worker_threads</name>
-    <type min="1" max="64">int</type>
-    <default>2</default>
-    <shortdescription>number of background threads</shortdescription>
-    <longdescription>this controls for example how many threads are used to create thumbnails during import. the cache will grow to a maximum of twice this number of full resolution image buffers (needs a restart).</longdescription>
-  </dtconfig>
-  <dtconfig prefs="cpugpu" restart="true">
+  <dtconfig prefs="processing" section="cpugpu" restart="true">
     <name>host_memory_limit</name>
     <type>int</type>
     <default>1500</default>
     <shortdescription>host memory limit (in MB) for tiling</shortdescription>
     <longdescription>this variable controls the maximum amount of memory (in MB) a module may use during image processing. lower values will force memory hungry modules to process image with increasing number of tiles. setting this to 0 will omit any limit. values below 500 will be treated as 500 (needs a restart).</longdescription>
   </dtconfig>
-  <dtconfig prefs="cpugpu" restart="true">
+  <dtconfig prefs="processing" section="cpugpu" restart="true">
     <name>singlebuffer_limit</name>
     <type min="2" max="64">int</type>
     <default>16</default>
     <shortdescription>minimum amount of memory (in MB) for a single buffer in tiling</shortdescription>
-    <longdescription>if set to a positive, non-zero value this variable defines the minimum amount of memory (in MB) that tiling should take for a single image buffer. has precedence over heuristics based on host_memory_limit (needs a restart).</longdescription>
+    <longdescription>minimum amount of memory (in MB) that tiling should take for a single image buffer (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_memory_headroom</name>
@@ -270,7 +270,7 @@
     <type>string</type>
     <default></default>
     <shortdescription>checksum representing the setup of opencl devices on this computer</shortdescription>
-    <longdescription>darktable re-checks the performance benchmarks of your system in case your setup has changed, which is indicated by a change versus the stored checksum in this config variable; darktable de-activates opencl if the GPU benchmark lies below the one of the CPU; inital value is the empty string; set to OFF if you want to deactivate any automatic checks and prefer to do all configurations manually.</longdescription>
+    <longdescription>darktable re-checks the performance benchmarks of your system in case your setup has changed, which is indicated by a change versus the stored checksum in this config variable; darktable de-activates opencl if the GPU benchmark lies below the one of the CPU; initial value is the empty string; set to OFF if you want to deactivate any automatic checks and prefer to do all configurations manually.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>pixelpipe_synchronization_timeout</name>
@@ -279,19 +279,18 @@
     <shortdescription>timeout period of pixelpipe synchronization</shortdescription>
     <longdescription>time period (in units of 5ms) after which synchronization of preview and full pixelpipe is assumed to have failed. set to zero to omit pixelpipe synchronization. defaults to 200.</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable">
-    <name>never_use_embedded_thumb</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>don't use embedded preview JPEG but half-size raw</shortdescription>
-    <longdescription>check this option to not use the embedded JPEG from the raw file but process the raw data. this is slower but gives you color managed thumbnails.</longdescription>
-  </dtconfig>
   <dtconfig prefs="storage" section="xmp">
     <name>write_sidecar_files</name>
-    <type>bool</type>
-    <default>true</default>
+    <type>
+      <enum>
+        <option>never</option>
+        <option>after edit</option>
+        <option>on import</option>
+      </enum>
+    </type>
+    <default>on import</default>
     <shortdescription>write sidecar file for each image</shortdescription>
-    <longdescription>these redundant files can later be re-imported into a different database, preserving your changes to the image.</longdescription>
+    <longdescription>the sidecar files hold information about all your development steps to allow flawless re-importing of image files.\n\ndepending on the selected mode sidecar files will be written:\n - never\n - on import: immediately after importing the image\n - after edit: after any user change on the image</longdescription>
   </dtconfig>
   <dtconfig prefs="storage" section="xmp">
     <name>compress_xmp_tags</name>
@@ -320,14 +319,33 @@
     <shortdescription>disable the entry completion</shortdescription>
     <longdescription>the entry completion is useful for those who enter tags from keyboard only. for others the entry completion can be embarrassing. need to restart darktable.</longdescription>
   </dtconfig>
-  <dtconfig prefs="cpugpu" capability="opencl">
+  <dtconfig dialog="collect">
+    <name>plugins/lighttable/tagging/no_uncategorized</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>do not set the 'uncategorized' entry for tags</shortdescription>
+    <longdescription>do not set the 'uncategorized' entry for tags which do not have children</longdescription>
+  </dtconfig>
+  <dtconfig dialog="collect">
+    <name>plugins/lighttable/tagging/case_sensitivity</name>
+    <type>
+      <enum>
+        <option>sensitive</option>
+        <option>insensitive</option>
+      </enum>
+    </type>
+    <default>insensitive</default>
+    <shortdescription>tags case sensitivity</shortdescription>
+    <longdescription>tags case sensitivity. without the Sqlite ICU extension, insensivity works only for the 26 latin letters</longdescription>
+  </dtconfig>
+  <dtconfig prefs="processing" section="cpugpu" capability="opencl">
     <name>opencl</name>
     <type>bool</type>
     <default>${DEFCONFIG_OPENCL}</default>
     <shortdescription>activate OpenCL support</shortdescription>
     <longdescription>if found, use OpenCL runtime on your system for improved processing speed. can be switched on and off at any time.</longdescription>
   </dtconfig>
-  <dtconfig prefs="cpugpu" capability="opencl">
+  <dtconfig prefs="processing" section="cpugpu" capability="opencl">
     <name>opencl_scheduling_profile</name>
     <type>
       <enum>
@@ -364,7 +382,7 @@
     <name>opencl_memory_requirement</name>
     <type>int</type>
     <default>768</default>
-    <shortdescription>minmum amount of GPU memory (MB) required to activate OpenCL</shortdescription>
+    <shortdescription>minimum amount of GPU memory (MB) required to activate OpenCL</shortdescription>
     <longdescription>OpenCL will only be activated if your graphics card has at least this amount of memory. reducing the value will allow cards with less GPU memory to be used - but at the risk of lower system stability and occasional crashes. values below 200 will be treated as 200.</longdescription>
   </dtconfig>
   <dtconfig>
@@ -381,56 +399,63 @@
     <shortdescription>assumed maximum sane number of tiles</shortdescription>
     <longdescription>if during tiling this number is exceeded darktable assumes that tiling is not possible and falls back to untiled processing - with all system memory limits taking full effect. in case you want to process huge images you may want to increase this number.</longdescription>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>ask_before_remove</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>ask before removing images from database</shortdescription>
-    <longdescription>always ask the user before any image is removed from DB.</longdescription>
+    <shortdescription>ask before removing images from the library</shortdescription>
+    <longdescription>always ask the user before any image is removed from the library</longdescription>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>ask_before_delete</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>ask before erasing images from disk</shortdescription>
+    <shortdescription>ask before deleting images from disk</shortdescription>
     <longdescription>always ask the user before any image file is deleted</longdescription>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>ask_before_discard</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>ask before discarding history stack</shortdescription>
     <longdescription>always ask the user before history stack is discarded on any image</longdescription>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>send_to_trash</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>send files to trash when erasing images</shortdescription>
+    <shortdescription>try to use trash when deleting images</shortdescription>
     <longdescription>send files to trash instead of permanently deleting files on system that supports it</longdescription>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>ask_before_move</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>ask before moving images from film roll folder</shortdescription>
     <longdescription>always ask the user before any image file is moved.</longdescription>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>ask_before_copy</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>ask before copying images to new film roll folder</shortdescription>
     <longdescription>always ask the user before any image file is copied.</longdescription>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>ask_before_rmdir</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>ask before removing empty folders</shortdescription>
     <longdescription>always ask the user before removing any empty folder. this can happen after moving or deleting images.</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable">
+  <dtconfig dialog="recentcollect">
+    <name>plugins/lighttable/recentcollect/max_items</name>
+    <type min="1" max="50">int</type>
+    <default>10</default>
+    <shortdescription>number of collections to be stored</shortdescription>
+    <longdescription>the number of recent collections to store and show in this list</longdescription>
+  </dtconfig>
+  <dtconfig dialog="collect">
     <name>show_folder_levels</name>
     <type min="1" max="5">int</type>
     <default>1</default>
@@ -515,20 +540,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/capture/camera/import/jobcode</name>
-    <type>string</type>
-    <default>noname</default>
-    <shortdescription>jobcode of import job</shortdescription>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/capture/camera/live_view_fps</name>
     <type>int</type>
     <default>15</default>
     <shortdescription>maximum fps of live view update in tethering view</shortdescription>
     <longdescription>going too fast will result in too many redraws without a real benefit</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable">
+  <dtconfig dialog="collect">
     <name>plugins/collect/filmroll_sort</name>
     <type>
       <enum>
@@ -540,18 +558,61 @@
     <shortdescription>sort film rolls by</shortdescription>
     <longdescription>sets the collections-list order for film rolls</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable">
+  <dtconfig dialog="collect">
     <name>plugins/collect/descending</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>sort collection recent to older</shortdescription>
-    <longdescription>changes the default collections-list order for folders, times and dates to run from recent to older</longdescription>
+    <shortdescription>sort collection descending</shortdescription>
+    <longdescription>sort the following collections in descending order: 'film roll' by folder, 'folder', 'times' (e.g. 'date taken')</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>ui_last/colorpicker_mean</name>
-    <type>int</type>
-    <default>0</default>
-    <shortdescription>0: mean, 1: min, 2: max</shortdescription>
+    <name>ui_last/colorpicker_model</name>
+    <type>
+      <enum>
+	<option>RGB</option>
+	<option>Lab</option>
+	<option>LCh</option>
+	<option>HSL</option>
+	<option>Hex</option>
+	<option>none</option>
+      </enum>
+    </type>
+    <default>RGB</default>
+    <shortdescription>color model with which to represent primary colorpicker</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/colorpicker_mode</name>
+    <type>
+      <enum>
+	<option>mean</option>
+	<option>min</option>
+	<option>max</option>
+      </enum>
+    </type>
+    <default>mean</default>
+    <shortdescription>statistic used to describe colorpicker box</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/colorpicker_display_samples</name>
+    <type>boolean</type>
+    <default>false</default>
+    <shortdescription>display live sample areas on image</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/colorpicker_restrict_histogram</name>
+    <type>boolean</type>
+    <default>false</default>
+    <shortdescription>restrict histogram to selection</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/colorpicker_large</name>
+    <type>boolean</type>
+    <default>false</default>
+    <shortdescription>display large colorpicker patch</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
@@ -640,51 +701,170 @@
   </dtconfig>
   <dtconfig>
     <name>ui_last/expander_import</name>
-    <type>int</type>
-    <default>2</default>
+    <type>bool</type>
+    <default>false</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig>
+    <name>ui_last/import_dialog_paned_pos</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/import_dialog_paned_places_pos</name>
+    <type>int</type>
+    <default>150</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/import_dialog_show_home</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/import_dialog_show_pictures</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/import_dialog_show_mounted</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/import_dialog_width</name>
+    <type>int</type>
+    <default>800</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/import_dialog_height</name>
+    <type>int</type>
+    <default>600</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/shortcuts_dialog_width</name>
+    <type>int</type>
+    <default>1100</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/shortcuts_dialog_height</name>
+    <type>int</type>
+    <default>700</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/preferences_dialog_width</name>
+    <type>int</type>
+    <default>1100</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/preferences_dialog_height</name>
+    <type>int</type>
+    <default>700</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/modulegroups_dialog_width</name>
+    <type>int</type>
+    <default>1100</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/modulegroups_dialog_height</name>
+    <type>int</type>
+    <default>700</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/session_expander_import</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>ui_last/import_select_new</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>select only new pictures</shortdescription>
+    <longdescription>only select images that have not already been imported</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
     <name>ui_last/import_ignore_jpegs</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>ignore JPEG images when importing film rolls</shortdescription>
+    <shortdescription>ignore JPEG images</shortdescription>
     <longdescription>when having raw+JPEG images together in one directory it makes no sense to import both. with this flag one can ignore all JPEGs found.</longdescription>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig ui="yes">
+    <name>ui_last/import_apply_metadata</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>apply metadata</shortdescription>
+    <longdescription>apply some metadata to all newly imported images.</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
     <name>ui_last/import_recursive</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>recursive directory traversal when importing filmrolls</shortdescription>
-    <longdescription/>
+    <shortdescription>recursive directory</shortdescription>
+    <longdescription>recursive directory traversal when importing filmrolls</longdescription>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig ui="yes">
     <name>ui_last/import_last_creator</name>
     <type>string</type>
     <default/>
     <shortdescription>creator to be applied when importing</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig ui="yes">
     <name>ui_last/import_last_publisher</name>
     <type>string</type>
     <default/>
     <shortdescription>publisher to be applied when importing</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig ui="yes">
     <name>ui_last/import_last_rights</name>
     <type>string</type>
     <default/>
     <shortdescription>rights to be applied when importing</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig ui="yes">
     <name>ui_last/import_last_tags</name>
     <type>string</type>
     <default/>
     <shortdescription>comma separated tags to be applied when importing</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>ui_last/import_last_tags_imported</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>import tags from xmp</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
@@ -694,12 +874,54 @@
     <shortdescription>last opened directory.</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig>
+    <name>ui_last/import_last_root</name>
+    <type>string</type>
+    <default/>
+    <shortdescription>last root folder</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>ui_last/import_last_folder_descending</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription>folders display order in folder pane</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig ui="yes">
     <name>ui_last/import_initial_rating</name>
     <type min="0" max="5">int</type>
     <default>1</default>
-    <shortdescription>initial import rating</shortdescription>
+    <shortdescription>initial rating</shortdescription>
     <longdescription>initial star rating for all images when importing a filmroll</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>ui_last/ignore_exif_rating</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>ignore exif rating</shortdescription>
+    <longdescription>ignore exif rating. if not set and exif rating is found, it overrides 'initial rating'</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>ui_last/import_jobcode</name>
+    <type>string</type>
+    <default>no_name</default>
+    <shortdescription>import job</shortdescription>
+    <longdescription>name of the import job</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>ui_last/import_datetime_override</name>
+    <type>string</type>
+    <default/>
+    <shortdescription>override today's date</shortdescription>
+    <longdescription>enter a valid date/time (YYYY-MM-DD[Thh:mm:ss] format) if you want to override the current date/time used when expanding variables:\n$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS).\nlet the field empty otherwise</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>ui_last/import_keep_open</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>keep this window open</shortdescription>
+    <longdescription>keep this window open to run several imports</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/capture/mode</name>
@@ -876,14 +1098,26 @@
     <shortdescription>last timeline zoom.</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig> <!-- this option is not exposed in the gui because there might be crashy synchronisation issues when it's updated on the fly -->
-    <name>plugins/lighttable/low_quality_thumbnails</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>low quality thumbnails</shortdescription>
-    <longdescription>if set to true, thumbnails will be processed by first downscaling rather than demosaicing the full image. this can result in much faster processing times and blurrier images, especially when you cropped a lot.</longdescription>
+  <dtconfig prefs="lighttable" section="thumbs">
+    <name>plugins/lighttable/thumbnail_raw_min_level</name>
+   <type>
+      <enum>
+        <option>always</option>
+        <option>small</option>
+        <option>VGA</option>
+        <option>720p</option>
+        <option>1080p</option>
+        <option>WQXGA</option>
+        <option>4K</option>
+        <option>5K</option>
+        <option>never</option>
+      </enum>
+    </type>
+    <default>never</default>
+    <shortdescription>use raw file instead of embedded JPEG from size</shortdescription>
+    <longdescription>if the thumbnail size is greater than this value, it will be processed using raw file instead of the embedded preview JPEG (better but slower).\nif you want all thumbnails and pre-rendered images in best quality you should choose the *always* option.\n(more comments in the manual)</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable">
+  <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/thumbnail_hq_min_level</name>
     <type>
       <enum>
@@ -899,31 +1133,31 @@
       </enum>
     </type>
     <default>720p</default>
-    <shortdescription>high quality thumb processing from size</shortdescription>
-    <longdescription>if the thumbnail size is greater than this value, it will be processed using the full quality rendering path (better but slower).</longdescription>
+    <shortdescription>high quality processing from size</shortdescription>
+    <longdescription>if the thumbnail size is greater than this value, it will be processed using the full quality rendering path (better but slower).\nif you want all thumbnails and pre-rendered images in best quality you should choose the *always* option.\n(more comments in the manual)</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable">
+  <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/thumbnail_sizes</name>
     <type>string</type>
     <default>120|400</default>
-    <shortdescription>delimiters for sizes categories</shortdescription>
-    <longdescription>sizes categories are used to be able to set different overlays and css values depending of the size of the thumbnail.</longdescription>
+    <shortdescription>delimiters for size categories</shortdescription>
+    <longdescription>size categories are used to be able to set different overlays and css values depending of the size of the thumbnail, separated by |. for example, 120|400 means 3 categories of thumbnails : 0px->120px, 120px->400px and >400px</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable">
+  <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/extended_pattern</name>
     <type>longstring</type>
     <default>$(FILE_NAME).$(FILE_EXTENSION)$(NL)$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH)mm • $(EXIF_ISO) ISO $(SIDECAR_TXT)</default>
     <shortdescription>pattern for the thumbnail extended overlay text</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable">
+  <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/thumbnail_tooltip_pattern</name>
     <type>longstring</type>
     <default>&lt;b&gt;$(FILE_NAME).$(FILE_EXTENSION)&lt;/b&gt;$(NL)$(EXIF_DAY)/$(EXIF_MONTH)/$(EXIF_YEAR) $(EXIF_HOUR):$(EXIF_MINUTE):$(EXIF_SECOND)$(NL)$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • $(EXIF_ISO) ISO</default>
     <shortdescription>pattern for the thumbnail tooltip (empty to disable)</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="general">
     <name>pressure_sensitivity</name>
     <type>
       <enum>
@@ -939,7 +1173,7 @@
     <shortdescription>pen pressure control for brush masks</shortdescription>
     <longdescription>off - pressure reading ignored, hardness/opacity/brush size - pressure reading controls specified attribute, absolute/relative - pressure reading is taken directly as attribute value or multiplied with pre-defined setting.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="general">
     <name>brush_smoothing</name>
     <type>
       <enum>
@@ -952,26 +1186,26 @@
     <shortdescription>smoothing of brush strokes</shortdescription>
     <longdescription>sets level for smoothing of brush strokes. stronger smoothing leads to less nodes and easier editing but with lower control of accuracy.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="modules">
     <name>channel_display</name>
     <type>
       <enum>
         <option>false color</option>
-        <option>grey scale</option>
+        <option>gray scale</option>
       </enum>
     </type>
     <default>false color</default>
     <shortdescription>display of individual color channels</shortdescription>
     <longdescription>defines how color channels are displayed when activated in the parametric masks feature.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="general">
     <name>plugins/darkroom/image_infos_pattern</name>
     <type>longstring</type>
     <default>$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • $(EXIF_ISO) ISO</default>
     <shortdescription>pattern for the image information line</shortdescription>
     <longdescription>see manual for a list of the tags you can use.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="general">
     <name>plugins/darkroom/image_infos_position</name>
     <type>
       <enum>
@@ -985,19 +1219,6 @@
     <default>bottom</default>
     <shortdescription>position of the image information line</shortdescription>
     <longdescription/>
-  </dtconfig>
-  <dtconfig prefs="darkroom" restart="true">
-    <name>plugins/darkroom/search_iop_by_text</name>
-    <type>
-      <enum>
-        <option>show search text</option>
-        <option>show groups</option>
-        <option>show both</option>
-      </enum>
-    </type>
-    <default>show both</default>
-    <shortdescription>show module groups and/or search text entry</shortdescription>
-    <longdescription>show module groups and/or search text entry. (needs a restart)</longdescription>
   </dtconfig>
   <dtconfig>
     <name>database_cache_quality</name>
@@ -1013,21 +1234,27 @@
     <shortdescription>draw borders around grouped images</shortdescription>
     <longdescription>draw borders around grouped images when grouping is turned off and the mouse hovers over one of the images of the group</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
-    <name>plugins/darkroom/default_presets_first</name>
+  <dtconfig prefs="misc" section="interface">
+    <name>modules/default_presets_first</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>sort built-in presets first</shortdescription>
     <longdescription>whether to show built-in presets first before user's presets in presets menu.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="modules">
     <name>plugins/darkroom/hide_default_presets</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>hide built-in presets</shortdescription>
-    <longdescription>hides built-in presets of modules in both presets and favourites menu.</longdescription>
+    <shortdescription>hide built-in presets for processing modules</shortdescription>
+    <longdescription>hides built-in presets of processing modules in both presets and favourites menu.</longdescription>
   </dtconfig>
-
+  <dtconfig prefs="lighttable" section="general">
+    <name>plugins/lighttable/hide_default_presets</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>hide built-in presets for utility modules</shortdescription>
+    <longdescription>hides built-in presets of utility modules in presets menu.</longdescription>
+  </dtconfig>
   <dtconfig prefs="import" section="session">
     <name>session/base_directory_pattern</name>
     <type>string</type>
@@ -1186,17 +1413,17 @@
     <shortdescription>append or replace history stack if pasted</shortdescription>
     <longdescription>0 -- append on top of stack, 1 -- replace it.</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable">
+  <dtconfig prefs="lighttable" section="general">
     <name>plugins/lighttable/collect/single-click</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>use single-click in the collect panel</shortdescription>
-    <longdescription>check this option to use single-click to select items in the collect panel. this will allow you to do range selections for date-time and numeric values.</longdescription>
+    <shortdescription>use single-click in the collections module</shortdescription>
+    <longdescription>check this option to use single-click to select items in the collections module. this will allow you to do range selections for date-time and numeric values.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/collect/num_rules</name>
     <type>int</type>
-    <default>0</default>
+    <default>1</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -1210,7 +1437,7 @@
   <dtconfig>
     <name>plugins/lighttable/collect/string0</name>
     <type>string</type>
-    <default/>
+    <default>%</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -1414,10 +1641,17 @@
     <name>plugins/darkroom/tagging/visible</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription/>
+    <shortdescription>show the tagging module in the darkroom view (as well as in lighttable)</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig>
+    <name>plugins/darkroom/export/visible</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show the export module in the darkroom view (as well as in lighttable)</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig prefs="security" section="general">
     <name>plugins/lighttable/tagging/ask_before_delete_tag</name>
     <type>bool</type>
     <default>true</default>
@@ -1459,26 +1693,137 @@
     <shortdescription>whether to sort tags by count or by name</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig>
+    <name>plugins/lighttable/tagging/heightattachedwindow</name>
+    <type>int</type>
+    <default>100</default>
+    <shortdescription>height of the tagging attached view</shortdescription>
+    <longdescription>maximum height the tagging attached view will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tagging/heightdictionarywindow</name>
+    <type>int</type>
+    <default>200</default>
+    <shortdescription>height of the tagging dictionary view</shortdescription>
+    <longdescription>maximum height the tagging dictionary view will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/metadata/creator_text_height</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription>height of the metadata creator field</shortdescription>
+    <longdescription>maximum height the metadata textview will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/metadata/publisher_text_height</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription>height of the metadata publisher field</shortdescription>
+    <longdescription>maximum height the metadata textview will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/metadata/title_text_height</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription>height of the metadata title field</shortdescription>
+    <longdescription>maximum height the metadata textview will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/metadata/description_text_height</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription>height of the metadata description field</shortdescription>
+    <longdescription>maximum height the metadata textview will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/metadata/rights_text_height</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription>height of the metadata rights field</shortdescription>
+    <longdescription>maximum height the metadata textview will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/metadata/notes_text_height</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription>height of the metadata notes field</shortdescription>
+    <longdescription>maximum height the metadata textview will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/metadata/version name_text_height</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription>height of the metadata version name field</shortdescription>
+    <longdescription>maximum height the metadata textview will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig prefs="security" section="general">
     <name>plugins/lighttable/style/ask_before_delete_style</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>ask before deleting a style</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="security">
+  <dtconfig prefs="security" section="general">
     <name>plugins/lighttable/preset/ask_before_delete_preset</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>ask before deleting a preset</shortdescription>
-    <longdescription>will ask for confirmation before deleting or overwritting a preset</longdescription>
+    <longdescription>will ask for confirmation before deleting or overwriting a preset</longdescription>
   </dtconfig>
-  <dtconfig>
+  <dtconfig prefs="security" section="general">
+    <name>plugins/lighttable/export/ask_before_export_overwrite</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>ask before exporting in overwrite mode</shortdescription>
+    <longdescription>will ask for confirmation before exporting files in overwrite mode</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
     <name>plugins/map/show_map_osd</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription/>
-    <longdescription/>
+    <shortdescription>show OSD</shortdescription>
+    <longdescription>toggle the visibility of the map overlays</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>plugins/map/filter_images_drawn</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>filtered images</shortdescription>
+    <longdescription>when set limit the images drawn to the current filmstrip</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>plugins/map/max_images_drawn</name>
+    <type min="10" max="100000">int</type>
+    <default>100</default>
+    <shortdescription>max images</shortdescription>
+    <longdescription>the maximum number of image thumbnails drawn on the map</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>plugins/map/epsilon_factor</name>
+    <type min="1" max="100">int</type>
+    <default>25</default>
+    <shortdescription>group size factor</shortdescription>
+    <longdescription>increase or decrease the spatial size of images groups on the map. can influence the calculation time</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>plugins/map/min_images_per_group</name>
+    <type min="1" max="10">int</type>
+    <default>1</default>
+    <shortdescription>min images per group</shortdescription>
+    <longdescription>the minimum number of images to set up an images group. can influence the calculation time.</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>plugins/map/images_thumbnail</name>
+    <type>
+      <enum>
+        <option>thumbnail</option>
+        <option>count</option>
+        <option>none</option>
+      </enum>
+    </type>
+    <default>thumbnail</default>
+    <shortdescription>thumbnail display</shortdescription>
+    <longdescription>three options are available: images thumbnails, only the count of images of the group or nothing</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/map/show_outline</name>
@@ -1487,19 +1832,12 @@
     <shortdescription>Whether to highlight the search result on the map</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig>
+  <dtconfig ui="yes">
     <name>plugins/map/max_outline_nodes</name>
     <type>int</type>
     <default>10000</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig prefs="otherviews" section="geoloc">
-    <name>plugins/map/max_images_drawn</name>
-    <type>int</type>
-    <default>100</default>
-    <shortdescription>maximum number of images drawn on map</shortdescription>
-    <longdescription>the maximum number of geotagged images drawn on the map. increasing this number can slow drawing of the map down.</longdescription>
+    <shortdescription>max polygon points</shortdescription>
+    <longdescription>limit the number of points imported with polygon in find location module</longdescription>
   </dtconfig>
   <dtconfig prefs="otherviews" section="geoloc">
     <name>plugins/lighttable/metadata_view/pretty_location</name>
@@ -1508,18 +1846,11 @@
     <shortdescription>pretty print the image location</shortdescription>
     <longdescription>show a more readable representation of the location in the image information module</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable">
-    <name>plugins/lighttable/draw_custom_metadata</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>overlay txt sidecar over zoomed images</shortdescription>
-    <longdescription>when there is a txt file next to an image it can be shown as an overlay over zoomed images on the lighttable. the txt file either has to be there at import time or the crawler has to be enabled</longdescription>
-  </dtconfig>
-  <dtconfig prefs="lighttable">
+  <dtconfig prefs="lighttable" section="general">
     <name>lighttable/ui/single_module</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>expand a single lighttable module at a time</shortdescription>
+    <shortdescription>expand a single utility module at a time</shortdescription>
     <longdescription>this option toggles the behavior of shift clicking in lighttable mode</longdescription>
   </dtconfig>
   <dtconfig>
@@ -1527,34 +1858,34 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>always show thumbnail overlays</shortdescription>
-    <longdescription>show overlays (rating stars, "edited" mark, etc) for all thumbnails in file manager, not only hovered one</longdescription>
+    <longdescription>show overlays (rating stars, 'edited' mark, etc) for all thumbnails in file manager, not only hovered one</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="modules">
     <name>darkroom/ui/single_module</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>expand a single darkroom module at a time</shortdescription>
+    <shortdescription>expand a single processing module at a time</shortdescription>
     <longdescription>this option toggles the behavior of shift clicking in darkroom mode</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="modules">
     <name>darkroom/ui/single_module_group_only</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>only collapse modules in current group</shortdescription>
     <longdescription>if only expanding a single module at a time, only collapse other modules in the current group - ignore modules in other groups</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="modules">
     <name>darkroom/ui/activate_expand</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>expand the module when it is activated, and collapse it when disabled</shortdescription>
     <longdescription>this option allows to expand or collapse automatically the module when it is enabled or disabled.</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable">
+  <dtconfig prefs="lighttable" section="general">
     <name>lighttable/ui/scroll_to_module</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>scroll to lighttable modules when expanded/collapsed</shortdescription>
+    <shortdescription>scroll to utility modules when expanded/collapsed</shortdescription>
     <longdescription>when this option is enabled then darktable will try to scroll the module to the top of the visible list</longdescription>
   </dtconfig>
   <dtconfig>
@@ -1613,11 +1944,25 @@
     <shortdescription>panels collapsing state in preview mode</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig>
+    <name>slideshow/ui/panels_collapse_controls</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>show borders arrows in slideshow</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>slideshow/ui/panel_collaps_state</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription>panels collapsing state in slideshow</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig prefs="darkroom" section="modules">
     <name>darkroom/ui/scroll_to_module</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>scroll to darkroom modules when expanded/collapsed</shortdescription>
+    <shortdescription>scroll to processing modules when expanded/collapsed</shortdescription>
     <longdescription>when this option is enabled then darktable will try to scroll the module to the top of the visible list</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="interface">
@@ -1627,14 +1972,14 @@
     <shortdescription>mouse wheel scrolls modules side panel by default</shortdescription>
     <longdescription>when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to use mouse wheel for data entry.  when disabled, this behavior is reversed</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="general">
     <name>plugins/darkroom/ui/border_size</name>
     <type>int</type>
     <default>10</default>
     <shortdescription>border around image in darkroom mode</shortdescription>
     <longdescription>process the image in darkroom mode with a small border. set to 0 if you don't want any border.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="general">
     <name>darkroom/ui/scrollbars</name>
     <type>bool</type>
     <default>false</default>
@@ -1683,19 +2028,12 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="processing">
+  <dtconfig prefs="processing" section="general">
     <name>plugins/lighttable/export/force_lcms2</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>always use LittleCMS 2 to apply output color profile</shortdescription>
     <longdescription>this is slower than the default.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="otherviews" section="slideshow">
-    <name>plugins/slideshow/high_quality</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>do high quality processing for slideshow</shortdescription>
-    <longdescription>same option as for export, but applies to slideshow.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/high_quality_processing</name>
@@ -1704,14 +2042,14 @@
     <shortdescription>do high quality resampling during export</shortdescription>
     <longdescription>the image will first be processed in full resolution, and downscaled at the very end. this can result in better quality sometimes, but will always be slower.</longdescription>
   </dtconfig>
- <dtconfig prefs="lighttable">
+ <dtconfig prefs="lighttable" section="general">
     <name>rating_one_double_tap</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>rating an image one star twice will not zero out the rating</shortdescription>
-    <longdescription>do not have the rating of one star behave as documented in the manual--an image rated one star twice will result in a zero star rating.</longdescription>
+    <longdescription>defines whether rating an image one star twice will zero out star rating.</longdescription>
   </dtconfig>
- <dtconfig prefs="lighttable">
+ <dtconfig prefs="lighttable" section="general">
     <name>lighttable/ui/scrollbars</name>
     <type>bool</type>
     <default>true</default>
@@ -1761,6 +2099,18 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/channelmixerrgb/gui_page</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>last page selected in channel mixer rgb notebook</shortdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/retouch/default_algo</name>
+    <type>int</type>
+    <default>2</default>
+    <shortdescription>default algorithm for the retouch module</shortdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/demosaic/fdc_xover_iso</name>
     <type>int</type>
     <default>1600</default>
@@ -1774,20 +2124,20 @@
     <shortdescription>whether to show the compute variance mode in denoiseprofile</shortdescription>
     <longdescription>adds a mode in denoiseprofile that allows to compute the variance after the generalized anscombe transform is performed</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="general">
     <name>plugins/darkroom/demosaic/quality</name>
     <type>
       <enum>
         <option>always bilinear (fast)</option>
-        <option>at most PPG (reasonable)</option>
+        <option>at most RCD (reasonable)</option>
         <option>full (possibly slow)</option>
       </enum>
     </type>
-    <default>at most PPG (reasonable)</default>
+    <default>at most RCD (reasonable)</default>
     <shortdescription>demosaicing for zoomed out darkroom mode</shortdescription>
-    <longdescription>interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, but not as sharp. middle ground is using PPG + interpolation modes specified on the 'pixel interpolator' option (processing tab), full will use exactly the settings for full-size export. X-Trans sensors use VNG rather than PPG as middle ground.</longdescription>
+    <longdescription>interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, but not as sharp. middle ground is using RCD + interpolation modes specified on the 'pixel interpolator' option (processing tab), full will use exactly the settings for full-size export. X-Trans sensors use VNG rather than RCD as middle ground.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" >
+  <dtconfig prefs="darkroom" section="general">
     <name>preview_downsampling</name>
     <type>
       <enum>
@@ -1801,7 +2151,27 @@
     <shortdescription>reduce resolution of preview image</shortdescription>
     <longdescription>decrease to speed up preview rendering, may hinder accurate masking</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing">
+  <dtconfig prefs="darkroom" section="general">
+    <name>darkroom/ui/loading_screen</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show loading screen between images</shortdescription>
+    <longdescription>show gray loading screen when navigating between images in the darkroom\ndisable to just show a toast message</longdescription>
+  </dtconfig>
+  <dtconfig prefs="processing" section="general">
+    <name>plugins/lighttable/export/pixel_interpolator_warp</name>
+    <type>
+      <enum>
+        <option>bilinear</option>
+        <option>bicubic</option>
+        <option>lanczos2</option>
+      </enum>
+    </type>
+    <default>bicubic</default>
+    <shortdescription>pixel interpolator (warp)</shortdescription>
+    <longdescription>pixel interpolator used in modules for rotation, lens correction, liquify, cropping and final scaling (bilinear, bicubic, lanczos2).</longdescription>
+  </dtconfig>
+  <dtconfig prefs="processing" section="general">
     <name>plugins/lighttable/export/pixel_interpolator</name>
     <type>
       <enum>
@@ -1812,8 +2182,8 @@
       </enum>
     </type>
     <default>lanczos3</default>
-    <shortdescription>pixel interpolator</shortdescription>
-    <longdescription>pixel interpolator used in rotation and lens correction (bilinear, bicubic, lanczos2, lanczos3).</longdescription>
+    <shortdescription>pixel interpolator (scaling)</shortdescription>
+    <longdescription>pixel interpolator used for scaling (bilinear, bicubic, lanczos2, lanczos3).</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/dimensions_type</name>
@@ -1886,6 +2256,27 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>context_help/use_default_url</name>
+    <type>boolean</type>
+    <default>true</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>context_help/url</name>
+    <type>string</type>
+    <default>https://darktable.org/usermanual/</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>context_help/dev_url</name>
+    <type>string</type>
+    <default>https://darktable-org.github.io/dtdocs/</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/imageio/storage/email/client</name>
     <type>string</type>
     <default/>
@@ -1936,16 +2327,29 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/jpeg/quality</name>
-    <type>int</type>
+    <type min="5" max="100">int</type>
+    <default>95</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/j2k/quality</name>
+    <type min="5" max="100">int</type>
     <default>95</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/tiff/bpp</name>
-    <type>int</type>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>16</option>
+        <option>32</option>
+      </enum>
+    </type>
     <default>8</default>
-    <shortdescription/>
+    <shortdescription>TIFF bit depth (bpp)</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
@@ -1957,26 +2361,106 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/tiff/compresslevel</name>
-    <type>int</type>
+    <type min="0" max="9">int</type>
     <default>6</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/png/bpp</name>
-    <type>int</type>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>16</option>
+      </enum>
+    </type>
     <default>8</default>
-    <shortdescription/>
+    <shortdescription>PNG bit depth (bpp)</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/png/compression</name>
-    <type>int</type>
+    <type min="0" max="9">int</type>
     <default>5</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="misc" section="other">
+  <dtconfig>
+    <name>plugins/imageio/format/webp/comp_type</name>
+    <type min="0" max="1">int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/webp/quality</name>
+    <type min="5" max="100">int</type>
+    <default>95</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/webp/hint</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/avif/bpp</name>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>10</option>
+        <option>12</option>
+      </enum>
+    </type>
+    <default>8</default>
+    <shortdescription>AVIF bit depth (bpp)</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/avif/color_mode</name>
+    <type min="0">int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/avif/tiling</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>AVIF Tiling</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/avif/compression_type</name>
+    <type min="0">int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/avif/quality</name>
+    <type min="5" max="100">int</type>
+    <default>92</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/xcf/bpp</name>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>16</option>
+        <option>32</option>
+      </enum>
+    </type>
+    <default>32</default>
+    <shortdescription>XCF bit depth (bpp)</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig prefs="security" section="other">
     <name>plugins/pwstorage/pwstorage_backend</name>
     <type>
       <enum>
@@ -2125,10 +2609,73 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/histogram/height</name>
-    <type min="100" max="200">int</type>
+    <type min="100" max="250">int</type>
     <default>175</default>
     <shortdescription>height of the histogram module</shortdescription>
     <longdescription>height of the histogram module in the darkroom and tethering views</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/atrous/aspect_percent</name>
+    <type min="50" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of contrast equalizer gui in per cent</shortdescription>
+    <longdescription>aspect ratio of contrast equalizer gui in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/denoiseprofile/aspect_percent</name>
+    <type min="50" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of denoise (profiled) wavelets gui in per cent</shortdescription>
+    <longdescription>aspect ratio of denoise (profiled) wavelets gui in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/rawdenoise/aspect_percent</name>
+    <type min="50" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of raw denoise wavelets gui in per cent</shortdescription>
+    <longdescription>aspect ratio of raw denoise wavelets gui in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/colorzones/aspect_percent</name>
+    <type min="50" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of color zones graph in per cent</shortdescription>
+    <longdescription>aspect ratio of color zones graph in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/lowlight/aspect_percent</name>
+    <type min="50" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of lowlight graph in per cent</shortdescription>
+    <longdescription>aspect ratio of lowlight graph in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/levels/aspect_percent</name>
+    <type min="25" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of levels graph in per cent</shortdescription>
+    <longdescription>aspect ratio of levels graph in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/rgblevels/aspect_percent</name>
+    <type min="25" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of rgb levels graph in per cent</shortdescription>
+    <longdescription>aspect ratio of rgb levels graph in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/filmicrgb/aspect_percent</name>
+    <type min="50" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of filmic rgb graph in per cent</shortdescription>
+    <longdescription>aspect ratio of filmic rgb graph in per cent</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/colorbalancergb/aspect_percent</name>
+    <type min="50" max="100">int</type>
+    <default>56</default>
+    <shortdescription>aspect ratio of color balance rgb graph in per cent</shortdescription>
+    <longdescription>aspect ratio of color balance rgb graph in per cent</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/histogram/mode</name>
@@ -2136,6 +2683,8 @@
       <enum>
         <option>histogram</option>
         <option>waveform</option>
+        <option>rgb parade</option>
+        <option>vectorscope</option>
       </enum>
     </type>
     <default>histogram</default>
@@ -2155,6 +2704,18 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/histogram/orient</name>
+    <type>
+      <enum>
+        <option>horizontal</option>
+        <option>vertical</option>
+      </enum>
+    </type>
+    <default>horizontal</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/histogram/waveform</name>
     <type>
       <enum>
@@ -2165,6 +2726,37 @@
     <default>overlaid</default>
     <shortdescription/>
     <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/histogram/vectorscope</name>
+    <type>
+      <enum>
+        <option>u*v*</option>
+        <option>AzBz</option>
+      </enum>
+    </type>
+    <default>u*v*</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/histogram/vectorscope/scale</name>
+    <type>
+      <enum>
+        <option>logarithmic</option>
+        <option>linear</option>
+      </enum>
+    </type>
+    <default>logarithmic</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/histogram/vectorscope/angle</name>
+    <type>int</type>
+    <default>270</default>
+    <shortdescription/>
+    <longdescription>Angle in degrees to orient the vectorscope. 0 is the color science proper orientation (see CIE 1976 UCS diagram). 270 is what video editors are used to when using a vectorscope (with red/magenta in 12:00 position).</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/histogram/show_red</name>
@@ -2313,6 +2905,13 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/print/print/grid_size</name>
+    <type min="0" max="100">float</type>
+    <default>10</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
   <dtconfig prefs="misc" section="interface">
     <name>ui_last/display_profile_source</name>
     <type>
@@ -2328,9 +2927,9 @@
   </dtconfig>
   <dtconfig>
     <name>metadata/resolution</name>
-    <type>int</type>
+    <type min="72" max="9600">int</type>
     <default>300</default>
-    <shortdescription/>
+    <shortdescription>DPI value for exported files</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="storage" section="xmp">
@@ -2340,21 +2939,21 @@
     <shortdescription>look for updated xmp files on startup</shortdescription>
     <longdescription>check file modification times of all xmp files on startup to check if any got updated in the meantime</longdescription>
   </dtconfig>
-  <dtconfig prefs="misc" section="other">
+  <dtconfig prefs="security" section="other">
     <name>plugins/lighttable/audio_player</name>
     <type>string</type>
     <default>${DEFCONFIG_AUDIOPLAYER}</default>
     <shortdescription>executable for playing audio files</shortdescription>
     <longdescription>this external program is used to play audio files some cameras record to keep notes for images</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing" restart="true">
+  <dtconfig prefs="processing" section="general" restart="true">
     <name>plugins/darkroom/lut3d/def_path</name>
     <type>dir</type>
     <default></default>
     <shortdescription>3D lut root folder</shortdescription>
     <longdescription>this folder (and sub-folders) contains Lut files used by lut3d modules. (need a restart).</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing">
+  <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/workflow</name>
     <type>
       <enum>
@@ -2363,31 +2962,50 @@
         <option>none</option>
       </enum>
     </type>
-    <default>display-referred</default>
+    <default>scene-referred</default>
     <shortdescription>auto-apply pixel workflow defaults</shortdescription>
     <longdescription>scene-referred workflow is based on linear modules and will auto-apply filmic and exposure,\ndisplay-referred workflow is based on Lab modules and will auto-apply base curve and the legacy module pipe order.</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing" restart="true">
+  <dtconfig prefs="processing" section="general">
+    <name>plugins/darkroom/chromatic-adaptation</name>
+    <type>
+      <enum>
+        <option>modern</option>
+        <option>legacy</option>
+      </enum>
+    </type>
+    <default>legacy</default>
+    <shortdescription>auto-apply chromatic adaptation defaults</shortdescription>
+    <longdescription>legacy performs a basic chromatic adaptation using only the white balance module\nmodern uses a combination of white balance module and color calibration module, with improved color science for chromatic adaptation.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="processing" section="general" restart="true">
     <name>plugins/darkroom/basecurve/auto_apply_percamera_presets</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>auto-apply per camera basecurve presets</shortdescription>
     <longdescription>use the per-camera basecurve by default instead of the generic manufacturer one if there is one available (needs a restart).\nthis option is taken into account when the \"auto-apply pixel workflow defaults\" is set to \"display-referred\".\nto prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults\" should be set to \"none\"</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing">
+  <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/sharpen/auto_apply</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>auto-apply sharpen</shortdescription>
     <longdescription>this added sharpen is not recommended on cameras without a low-pass filter. you should disable this option if you use one of those more recent cameras or sharpen your images with other means.</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing">
+  <dtconfig prefs="processing" section="general">
     <name>ui/detect_mono_exif</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>detect monochrome previews</shortdescription>
     <longdescription>many monochrome images can be identified via exif and preview data. beware: this slows down imports and reading exif data</longdescription>
  </dtconfig>
+ <dtconfig prefs="processing" section="general">
+    <name>plugins/darkroom/show_warnings</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show warning messages</shortdescription>
+    <longdescription>display messages in modules to warn beginner users when non-standard and possibly harmful settings are used in the pipeline.\nthese messages can be false-positive and should be disregarded if you know what you are doing. this option will hide them all the time.</longdescription>
+  </dtconfig>
  <dtconfig>
     <name>screen_dpi_overwrite</name>
     <type>float</type>
@@ -2444,13 +3062,34 @@
     <longdescription>preset use for defining iop layout</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/modulegroups_basics_sections_labels</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show the name of the module of each basic widget</shortdescription>
+    <longdescription>show the name of the module of each basic widget</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/geotagging/heighttracklist</name>
+    <type>int</type>
+    <default>50</default>
+    <shortdescription>height of the track list</shortdescription>
+    <longdescription>maximum height the track list will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>plugins/lighttable/geotagging/tz</name>
+    <type>string</type>
+    <default>UTC</default>
+    <shortdescription>camera time zone</shortdescription>
+    <longdescription>most cameras don't store the time zone in EXIF. give the correct time zone so the GPX data can be correctly matched</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/map/geotagging_search_url</name>
     <type>string</type>
     <default>https://nominatim.openstreetmap.org/search/%s?format=xml&amp;limit=%d&amp;polygon_text=1</default>
     <shortdescription>Geotagging search URL</shortdescription>
     <longdescription>this can be changed when the default OpenStreetMap search URL is broken</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="interface">
+  <dtconfig prefs="darkroom" section="modules">
     <name>plugins/darkroom/temperature/colored_sliders</name>
     <type>
       <enum>
@@ -2475,9 +3114,23 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>arange buttons as bar below temp/tint sliders</shortdescription>
-    <longdescription>if enabled, the buttons in white balance module will be aranged below temp/tint sliders, otherwise they'll be shown in a grid to the right of temp/tint sliders</longdescription>
+    <longdescription>if enabled, the buttons in white balance module will be arranged below temp/tint sliders, otherwise they'll be shown in a grid to the right of temp/tint sliders</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="interface">
+  <dtconfig>
+    <name>plugins/darkroom/crop/expand_margins</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to show margins</shortdescription>
+    <longdescription>this is just for remembering whether to show margins or not and remember it</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/colorzones/bg_sat_factor</name>
+    <type min="0.1" max="1.0">float</type>
+    <default>0.5</default>
+    <shortdescription>saturation factor of the color zones background</shortdescription>
+    <longdescription>higher value means more saturated backgrounds in color zones</longdescription>
+  </dtconfig>
+  <dtconfig prefs="darkroom" section="modules">
     <name>plugins/darkroom/colorbalance/layout</name>
     <type>
       <enum>
@@ -2490,7 +3143,7 @@
     <shortdescription>colorbalance slider block layout</shortdescription>
     <longdescription>choose how to organise the slider blocks for lift, gamma and gain:\nlist - all sliders are shown in one long list (with headers),\ntabs - use tabs to switch between the blocks of sliders,\ncolumns - the blocks of sliders are shown next to each other (in narrow columns)</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="modules">
     <name>darkroom/ui/hide_header_buttons</name>
     <type>
       <enum>
@@ -2505,8 +3158,22 @@
       </enum>
     </type>
     <default>always</default>
-    <shortdescription>show right-side buttons in darkroom module headers</shortdescription>
+    <shortdescription>show right-side buttons in processing module headers</shortdescription>
     <longdescription>when the mouse is not over a module, the multi-instance, reset and preset buttons can be hidden:\nalways - always show all buttons,\nactive - only show the buttons when the mouse is over the module,\ndim - buttons are dimmed when mouse is away,\nauto - hide the buttons when the panel is narrow,\nfade - fade out all buttons when panel narrows,\nfit - hide all the buttons if the module name doesn't fit,\nsmooth - fade out all buttons in one header simultaneously,\nglide - gradually hide individual buttons as needed</longdescription>
+  </dtconfig>
+  <dtconfig prefs="darkroom" section="modules">
+    <name>darkroom/ui/show_mask_indicator</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show mask indicator in module headers</shortdescription>
+    <longdescription>if enabled, an icon will be shown in the header of any processing modules that have a mask applied</longdescription>
+  </dtconfig>
+  <dtconfig prefs="darkroom" section="modules">
+    <name>darkroom/ui/rename_new_instance</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>prompt for name on addition of new instance</shortdescription>
+    <longdescription>if enabled, a rename prompt will be present for each new module instance (either new instance or duplicate)</longdescription>
   </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@
@@ -2587,5 +3254,26 @@
     <default>400</default>
     <shortdescription>height of the styles list</shortdescription>
     <longdescription>maximum height the styles list in lighttable will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/toneequal/gui_page</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>active tab in tone equaliser module</shortdescription>
+    <longdescription>which of simple, advanced or masking tabs will show at startup</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/collect/windowheight</name>
+    <type>int</type>
+    <default>500</default>
+    <shortdescription>height of the collect list</shortdescription>
+    <longdescription>maximum height the collect list in lighttable will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/midi/devices</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>order or exclude midi devices</shortdescription>
+    <longdescription>comma-separated list of device name fragments that if matched load midi device at id given by location in list or if preceded by - prevent matching devices from loading</longdescription>
   </dtconfig>
 </dtconfiglist>

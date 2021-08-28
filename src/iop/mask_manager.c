@@ -29,6 +29,7 @@
 #include "config.h"
 #endif
 
+#include "common/imagebuf.h"
 #include "develop/develop.h"
 
 DT_MODULE_INTROSPECTION(2, dt_iop_mask_manager_params_t)
@@ -78,7 +79,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;
-  memcpy(o, i, (size_t)ch * roi_out->width * roi_out->height * sizeof(float));
+  dt_iop_image_copy_by_size(o, i, roi_out->width, roi_out->height, ch);
 }
 
 #ifdef HAVE_OPENCL
@@ -112,7 +113,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_mask_manager_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

@@ -4,7 +4,7 @@ The darktable project welcomes contributions:
 
 * [Code](https://www.darktable.org/development/)
 * [Documentation](https://www.darktable.org/resources/)
-* Testing (and any backtraces if you happpen to crash darktable)
+* Testing (and any backtraces if you happen to crash darktable)
 * Translations
 * [Camera profiles](https://www.darktable.org/resources/camera-support/).
 * Tutorials, screencasts, etc.
@@ -16,7 +16,7 @@ more information.
 
 Before you spend a lot of time working on a new feature, it's always best to
 discuss your proposed changes with us first.  The best place to do that is in
-our IRC channel on **irc.freenode.net**, channel **#darktable** or the
+our IRC channel on **ircs://irc.oftc.net:6697**, channel **#darktable** or the
 development mailing list, [see here for more
 information](https://www.darktable.org/contact/).  This will dramatically
 improve your chances of having your code merged, especially if we think you'll

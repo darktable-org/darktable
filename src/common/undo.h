@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2020 darktable developers.
+    Copyright (C) 2017-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,11 +35,15 @@ typedef enum dt_undo_type_t
   DT_UNDO_METADATA    = 1 << 6,
   DT_UNDO_LT_HISTORY  = 1 << 7,
   DT_UNDO_FLAGS       = 1 << 8,
-  DT_UNDO_DEVELOP     = DT_UNDO_HISTORY | DT_UNDO_MASK | DT_UNDO_TAGS,
-  DT_UNDO_LIGHTTABLE  = DT_UNDO_RATINGS | DT_UNDO_COLORLABELS | DT_UNDO_TAGS | DT_UNDO_METADATA
-                        | DT_UNDO_LT_HISTORY | DT_UNDO_GEOTAG | DT_UNDO_FLAGS,
-  DT_UNDO_MAP         = DT_UNDO_GEOTAG | DT_UNDO_TAGS,
-  DT_UNDO_ALL         = DT_UNDO_GEOTAG | DT_UNDO_DEVELOP | DT_UNDO_LIGHTTABLE
+  DT_UNDO_DATETIME    = 1 << 9,
+  DT_UNDO_DUPLICATE   = 1 << 10,
+  DT_UNDO_DEVELOP     = DT_UNDO_HISTORY | DT_UNDO_MASK | DT_UNDO_TAGS
+                        | DT_UNDO_RATINGS | DT_UNDO_COLORLABELS | DT_UNDO_DUPLICATE,
+  DT_UNDO_LIGHTTABLE  = DT_UNDO_RATINGS | DT_UNDO_COLORLABELS | DT_UNDO_TAGS
+                        | DT_UNDO_METADATA | DT_UNDO_LT_HISTORY | DT_UNDO_GEOTAG
+                        | DT_UNDO_FLAGS | DT_UNDO_DATETIME | DT_UNDO_DUPLICATE,
+  DT_UNDO_MAP         = DT_UNDO_GEOTAG | DT_UNDO_TAGS | DT_UNDO_DATETIME,
+  DT_UNDO_ALL         = DT_UNDO_MAP | DT_UNDO_DEVELOP | DT_UNDO_LIGHTTABLE
 } dt_undo_type_t;
 
 typedef enum dt_undo_action_t

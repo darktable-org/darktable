@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2020 darktable developers.
+    Copyright (C) 2015-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -69,8 +69,6 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
 
   if(expander->expanded != expanded)
   {
-    GtkWidget *widget = GTK_WIDGET(expander);
-
     expander->expanded = expanded;
 
     GtkWidget *frame = expander->body;
@@ -78,7 +76,6 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
     if(frame)
     {
       gtk_widget_set_visible(frame, expander->expanded);
-      gtk_widget_queue_resize(widget);
     }
   }
 }

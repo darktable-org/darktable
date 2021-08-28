@@ -20,6 +20,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -66,6 +67,16 @@ const char *name()
   return _("hot pixels");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("remove abnormally bright pixels by dampening them with neighbours"),
+                                      _("corrective"),
+                                      _("linear, raw, scene-referred"),
+                                      _("reconstruction, raw"),
+                                      _("linear, raw, scene-referred"));
+}
+
+
 int default_group()
 {
   return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
@@ -79,20 +90,6 @@ int flags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_RAW;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "threshold"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "threshold", GTK_WIDGET(g->threshold));
-  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->strength));
 }
 
 /* Detect hot sensor pixels based on the 4 surrounding sites. Pixels
@@ -284,7 +281,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_hotpixels_data_t *data = (dt_iop_hotpixels_data_t *)piece->data;
 
   // The processing loop should output only a few pixels, so just copy everything first
-  memcpy(ovoid, ivoid, (size_t)roi_out->width * roi_out->height * sizeof(float));
+  dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, 1);
 
   int fixed;
   if(piece->pipe->dsc.filters == 9u)
@@ -325,7 +322,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_hotpixels_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

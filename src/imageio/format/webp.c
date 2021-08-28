@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2020 darktable developers.
+    Copyright (C) 2013-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -322,15 +322,20 @@ void gui_init(dt_imageio_module_format_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   gui->compression = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->compression, NULL, _("compression type"));
+  dt_bauhaus_widget_set_label(gui->compression, NULL, N_("compression type"));
   dt_bauhaus_combobox_add(gui->compression, _("lossy"));
   dt_bauhaus_combobox_add(gui->compression, _("lossless"));
   dt_bauhaus_combobox_set(gui->compression, comp_type);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compression, TRUE, TRUE, 0);
 
-  gui->quality = dt_bauhaus_slider_new_with_range(NULL, 5, 100, 1, 95, 0);
-  dt_bauhaus_widget_set_label(gui->quality, NULL, _("quality"));
-  dt_bauhaus_slider_set_default(gui->quality, 95);
+  gui->quality = dt_bauhaus_slider_new_with_range(NULL,
+                                                  dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_MIN),
+                                                  dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_MAX),
+                                                  1,
+                                                  dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_DEFAULT),
+                                                  0);
+  dt_bauhaus_widget_set_label(gui->quality, NULL, N_("quality"));
+  dt_bauhaus_slider_set_default(gui->quality, dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_DEFAULT));
   dt_bauhaus_slider_set_format(gui->quality, "%.2f%%");
   gtk_widget_set_tooltip_text(gui->quality, _("applies only to lossy setting"));
   if(quality > 0 && quality <= 100) dt_bauhaus_slider_set(gui->quality, quality);
@@ -343,7 +348,7 @@ void gui_init(dt_imageio_module_format_t *self)
     gtk_widget_set_sensitive(gui->quality, FALSE);
 
   gui->hint = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->hint, NULL, _("image hint"));
+  dt_bauhaus_widget_set_label(gui->hint, NULL, N_("image hint"));
   gtk_widget_set_tooltip_text(gui->hint,
                _("image characteristics hint for the underlying encoder.\n"
                "picture : digital picture, like portrait, inner shot\n"
@@ -365,6 +370,13 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
+  dt_imageio_webp_gui_data_t *gui = (dt_imageio_webp_gui_data_t *)self->gui_data;
+  const int comp_type = dt_confgen_get_int("plugins/imageio/format/webp/comp_type", DT_DEFAULT);
+  const int quality = dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_DEFAULT);
+  const int hint = dt_confgen_get_int("plugins/imageio/format/webp/hint", DT_DEFAULT);
+  dt_bauhaus_combobox_set(gui->compression, comp_type);
+  dt_bauhaus_slider_set(gui->quality, quality);
+  dt_bauhaus_combobox_set(gui->hint, hint);
 }
 
 int flags(dt_imageio_module_data_t *data)

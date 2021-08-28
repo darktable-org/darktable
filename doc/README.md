@@ -40,19 +40,6 @@ $ cd build && make install (or sudo make install)
 $ darktable
 ```
 
-Optionally, to build the user manual:
-
- - Java JDK, `gnome-doc-utils`, Saxon 6.5.x, FOP and ImageMagick
- - `xsltproc` and the DocBook XML DTD and XSL stylesheets
-
-Then, type:
-
-```
-$ cd build
-$ make darktable-usermanual
-$ evince doc/usermanual/darktable-usermanual.pdf
-```
-
 Optionally, to build translations of the manual pages:
 
  - PO for anything (`po4a`)

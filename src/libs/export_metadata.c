@@ -56,7 +56,7 @@ typedef struct dt_lib_export_metadata_t
   GList *taglist;
 } dt_lib_export_metadata_t;
 
-GList *dt_exif_get_exiv2_taglist();
+const GList *dt_exif_get_exiv2_taglist();
 
 // find a string on the list
 static gboolean find_metadata_iter_per_text(GtkTreeModel *model, GtkTreeIter *iter, gint col, const char *text)
@@ -68,7 +68,9 @@ static gboolean find_metadata_iter_per_text(GtkTreeModel *model, GtkTreeIter *it
   while (valid)
   {
     gtk_tree_model_get(model, &it, col, &name, -1);
-    if (g_strcmp0(text, name) == 0)
+    const gboolean found = g_strcmp0(text, name) == 0;
+    g_free(name);
+    if(found)
     {
       if (iter) *iter = it;
       return TRUE;
@@ -115,6 +117,7 @@ static gboolean click_on_metadata_list(GtkWidget *view, GdkEventButton *event, d
       if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
       {
         add_selected_metadata(GTK_TREE_VIEW(view), d);
+        gtk_tree_path_free(path);
         return TRUE;
       }
     }
@@ -445,7 +448,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
                     (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(omithierarchy)) ? DT_META_OMIT_HIERARCHY : 0)
                     );
 
-    newlist = dt_util_dstrcat(NULL,"%x", newflags);
+    newlist = g_strdup_printf("%x", newflags);
     GtkTreeIter iter;
     gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(d->liststore), &iter);
     while(valid)

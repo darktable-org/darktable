@@ -16,50 +16,60 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/colorspaces_inline_conversions.h"
+#pragma once
+
+#include "common/chromatic_adaptation.h"
+#include "common/image.h"
+#include "external/adobe_coeff.c"
+
 
 /* Standard CIE illuminants */
 typedef enum dt_illuminant_t
 {
-  DT_ILLUMINANT_PIPE   = 0,    // darktable pipeline D50
-  DT_ILLUMINANT_A      = 1,    // incandescent bulb
-  DT_ILLUMINANT_D      = 2,    // daylight
-  DT_ILLUMINANT_E      = 3,    // equi-energy (x = y)
-  DT_ILLUMINANT_F      = 4,    // fluorescent
-  DT_ILLUMINANT_LED    = 5,    // LED
-  DT_ILLUMINANT_BB     = 6,    // general black body radiator - not CIE standard
-  DT_ILLUMINANT_CUSTOM = 7,    // input x and y directly - bypass search
+  DT_ILLUMINANT_PIPE            = 0, // $DESCRIPTION: "same as pipeline (D50)"
+  DT_ILLUMINANT_A               = 1, // $DESCRIPTION: "A (incandescent)"
+  DT_ILLUMINANT_D               = 2, // $DESCRIPTION: "D (daylight)"
+  DT_ILLUMINANT_E               = 3, // $DESCRIPTION: "E (equi-energy)" (x = y)
+  DT_ILLUMINANT_F               = 4, // $DESCRIPTION: "F (fluorescent)"
+  DT_ILLUMINANT_LED             = 5, // $DESCRIPTION: "LED (LED light)"
+  DT_ILLUMINANT_BB              = 6, // $DESCRIPTION: "Planckian (black body)" general black body radiator - not CIE standard
+  DT_ILLUMINANT_CUSTOM          = 7, // $DESCRIPTION: "custom" input x and y directly - bypass search
+  DT_ILLUMINANT_DETECT_SURFACES = 8, // $DESCRIPTION: "(AI) detect from image surfaces..." auto-detection in image from grey world model
+  DT_ILLUMINANT_DETECT_EDGES    = 9, // $DESCRIPTION: "(AI) detect from image edges..."auto-detection in image from grey edges model
+  DT_ILLUMINANT_CAMERA          = 10,// $DESCRIPTION: "as shot in camera" read RAW EXIF for WB
   DT_ILLUMINANT_LAST
 } dt_illuminant_t;
 
+// CIE fluorescent standards : https://en.wikipedia.org/wiki/Standard_illuminant
 typedef enum dt_illuminant_fluo_t
 {
-  DT_ILLUMINANT_FLUO_F1  = 0,  // Daylight Fluorescent 6430K
-  DT_ILLUMINANT_FLUO_F2  = 1,  // Cool White Fluorescent 4230K
-  DT_ILLUMINANT_FLUO_F3  = 2,  // White Fluorescent 3450K
-  DT_ILLUMINANT_FLUO_F4  = 3,  // Warm White Fluorescent 2940K
-  DT_ILLUMINANT_FLUO_F5  = 4,  // Daylight Fluorescent 6350K
-  DT_ILLUMINANT_FLUO_F6  = 5,  // Lite White Fluorescent 4150K
-  DT_ILLUMINANT_FLUO_F7  = 6,  // D65 simulator, Daylight simulator 6500K
-  DT_ILLUMINANT_FLUO_F8  = 7,  // D50 simulator, Sylvania F40 5000K
-  DT_ILLUMINANT_FLUO_F9  = 8,  // Cool White Deluxe Fluorescent 4150K
-  DT_ILLUMINANT_FLUO_F10 = 9,  // Philips TL85, Ultralume 50 5000K
-  DT_ILLUMINANT_FLUO_F11 = 10, // Philips TL84, Ultralume 40 4000K
-  DT_ILLUMINANT_FLUO_F12 = 11, // Philips TL83, Ultralume 30 3000K
+  DT_ILLUMINANT_FLUO_F1  = 0,  // $DESCRIPTION: "F1 (Daylight 6430 K) – medium CRI"
+  DT_ILLUMINANT_FLUO_F2  = 1,  // $DESCRIPTION: "F2 (Cool White 4230 K) – medium CRI"
+  DT_ILLUMINANT_FLUO_F3  = 2,  // $DESCRIPTION: "F3 (White 3450 K) – medium CRI"
+  DT_ILLUMINANT_FLUO_F4  = 3,  // $DESCRIPTION: "F4 (Warm White 2940 K) – medium CRI"
+  DT_ILLUMINANT_FLUO_F5  = 4,  // $DESCRIPTION: "F5 (Daylight 6350 K) – medium CRI"
+  DT_ILLUMINANT_FLUO_F6  = 5,  // $DESCRIPTION: "F6 (Lite White 4150 K) – medium CRI"
+  DT_ILLUMINANT_FLUO_F7  = 6,  // $DESCRIPTION: "F7 (D65 simulator 6500 K) – high CRI"
+  DT_ILLUMINANT_FLUO_F8  = 7,  // $DESCRIPTION: "F8 (D50 simulator 5000 K) – high CRI"
+  DT_ILLUMINANT_FLUO_F9  = 8,  // $DESCRIPTION: "F9 (Cool White Deluxe 4150 K) – high CRI"
+  DT_ILLUMINANT_FLUO_F10 = 9,  // $DESCRIPTION: "F10 (Tuned RGB 5000 K) – low CRI" Philips TL85, Ultralume 50
+  DT_ILLUMINANT_FLUO_F11 = 10, // $DESCRIPTION: "F11 (Tuned RGB 4000 K) – low CRI" Philips TL84, Ultralume 40
+  DT_ILLUMINANT_FLUO_F12 = 11, // $DESCRIPTION: "F12 (Tuned RGB 3000 K) – low CRI" Philips TL83, Ultralume 30
   DT_ILLUMINANT_FLUO_LAST
 } dt_illuminant_fluo_t;
 
+// CIE LED standards : https://en.wikipedia.org/wiki/Standard_illuminant
 typedef enum dt_illuminant_led_t
 {
-  DT_ILLUMINANT_LED_B1  = 0,   // phosphor-converted blue 2733K
-  DT_ILLUMINANT_LED_B2  = 1,   // phosphor-converted blue 2998K
-  DT_ILLUMINANT_LED_B3  = 2,   // phosphor-converted blue 4103K
-  DT_ILLUMINANT_LED_B4  = 3,   // phosphor-converted blue 5109K
-  DT_ILLUMINANT_LED_B5  = 4,   // phosphor-converted blue 6598K
-  DT_ILLUMINANT_LED_BH1 = 5,   // mix of phosphor-converted blue red (blue-hybrid) 2851K
-  DT_ILLUMINANT_LED_RGB1= 6,   // mixing of red, green, and blue LEDs 2840K
-  DT_ILLUMINANT_LED_V1  = 7,   // phosphor-converted violet 2724K
-  DT_ILLUMINANT_LED_V2  = 8,   // phosphor-converted violet 4070K
+  DT_ILLUMINANT_LED_B1  = 0,   // $DESCRIPTION: "B1 (Blue 2733 K)" phosphor-converted blue
+  DT_ILLUMINANT_LED_B2  = 1,   // $DESCRIPTION: "B2 (Blue 2998 K)" phosphor-converted blue
+  DT_ILLUMINANT_LED_B3  = 2,   // $DESCRIPTION: "B3 (Blue 4103 K)" phosphor-converted blue
+  DT_ILLUMINANT_LED_B4  = 3,   // $DESCRIPTION: "B4 (Blue 5109 K)" phosphor-converted blue
+  DT_ILLUMINANT_LED_B5  = 4,   // $DESCRIPTION: "B5 (Blue 6598 K)" phosphor-converted blue
+  DT_ILLUMINANT_LED_BH1 = 5,   // $DESCRIPTION: "BH1 (Blue-Red hybrid 2851 K)" mix of phosphor-converted blue red
+  DT_ILLUMINANT_LED_RGB1= 6,   // $DESCRIPTION: "RGB1 (RGB 2840 K)" mixing of red, green, and blue LEDs
+  DT_ILLUMINANT_LED_V1  = 7,   // $DESCRIPTION: "V1 (Violet 2724 K)" phosphor-converted violet
+  DT_ILLUMINANT_LED_V2  = 8,   // $DESCRIPTION: "V2 (Violet 4070 K)" phosphor-converted violet
   DT_ILLUMINANT_LED_LAST
 } dt_illuminant_led_t;
 
@@ -170,7 +180,7 @@ static inline void CCT_to_xy_blackbody(const float t, float *x, float *y)
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void illuminant_xy_to_XYZ(const float x, const float y, float XYZ[3])
+static inline void illuminant_xy_to_XYZ(const float x, const float y, dt_aligned_pixel_t XYZ)
 {
   XYZ[0] = x / y;             // X
   XYZ[1] = 1.f;               // Y is always 1 by definition, for an illuminant
@@ -181,15 +191,15 @@ static inline void illuminant_xy_to_XYZ(const float x, const float y, float XYZ[
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void illuminant_xy_to_RGB(const float x, const float y, float RGB[4])
+static inline void illuminant_xy_to_RGB(const float x, const float y, dt_aligned_pixel_t RGB)
 {
   // Get an sRGB preview of current illuminant
-  float XYZ[4];
+  dt_aligned_pixel_t XYZ;
   illuminant_xy_to_XYZ(x, y, XYZ);
 
   // Fixme : convert to RGB display space instead of sRGB but first the display profile should be global in dt,
   // not confined to colorout where it gets created/destroyed all the time.
-  dt_XYZ_to_Rec709_D65(XYZ, RGB);
+  dt_XYZ_to_Rec709_D50(XYZ, RGB);
 
   // Handle gamut clipping
   const float max_RGB = fmaxf(fmaxf(RGB[0], RGB[1]), RGB[2]);
@@ -200,7 +210,7 @@ static inline void illuminant_xy_to_RGB(const float x, const float y, float RGB[
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void illuminant_CCT_to_RGB(const float t, float RGB[4])
+static inline void illuminant_CCT_to_RGB(const float t, dt_aligned_pixel_t RGB)
 {
   float x, y;
   if(t > 4000.f)
@@ -212,11 +222,18 @@ static inline void illuminant_CCT_to_RGB(const float t, float RGB[4])
 }
 
 
-static int illuminant_to_xy(const dt_illuminant_t illuminant, // primary type of illuminant
-                            float *x_out, float *y_out,       // chromaticity output
-                            const float t,                    // temperature in K, if needed
-                            const dt_illuminant_fluo_t fluo,  // sub-type of fluorescent illuminant, if needed
-                            const dt_illuminant_led_t iled)   // sub-type of led illuminant, if needed
+// Fetch image from pipeline and read EXIF for camera RAW WB coeffs
+static inline int find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_aligned_pixel_t custom_wb,
+                                                   float *chroma_x, float *chroma_y);
+
+
+static inline int illuminant_to_xy(const dt_illuminant_t illuminant, // primary type of illuminant
+                                   const dt_image_t *img,            // image container
+                                   const dt_aligned_pixel_t custom_wb, // optional user-set WB coeffs
+                                   float *x_out, float *y_out,       // chromaticity output
+                                   const float t,                    // temperature in K, if needed
+                                   const dt_illuminant_fluo_t fluo,  // sub-type of fluorescent illuminant, if needed
+                                   const dt_illuminant_led_t iled)   // sub-type of led illuminant, if needed
 {
   /**
    * Compute the x and y chromaticity coordinates in Yxy spaces for standard illuminants
@@ -233,9 +250,9 @@ static int illuminant_to_xy(const dt_illuminant_t illuminant, // primary type of
   {
     case DT_ILLUMINANT_PIPE:
     {
-      // darktable default pipeline D65
-      x = 0.31271f;
-      y = 0.32902f;
+      // darktable default pipeline D50
+      x = 0.34567f;
+      y = 0.35850f;
       break;
     }
     case DT_ILLUMINANT_E:
@@ -285,7 +302,15 @@ static int illuminant_to_xy(const dt_illuminant_t illuminant, // primary type of
       if(y != 0.f && x != 0.f) break;
       // else t is out of bounds -> use custom/original values (next case)
     }
+    case DT_ILLUMINANT_CAMERA:
+    {
+      // Detect WB from RAW EXIF
+      if(img)
+        if(find_temperature_from_raw_coeffs(img, custom_wb, &x, &y)) break;
+    }
     case DT_ILLUMINANT_CUSTOM: // leave x and y as-is
+    case DT_ILLUMINANT_DETECT_EDGES:
+    case DT_ILLUMINANT_DETECT_SURFACES:
     case DT_ILLUMINANT_LAST:
     {
       return FALSE;
@@ -303,10 +328,11 @@ static int illuminant_to_xy(const dt_illuminant_t illuminant, // primary type of
 }
 
 
-static inline void WB_coeffs_to_illuminant_xy(const float CAM_to_XYZ[4][3], const float WB[4], float *x, float *y)
+static inline void WB_coeffs_to_illuminant_xy(const float CAM_to_XYZ[4][3], const dt_aligned_pixel_t WB,
+                                              float *x, float *y)
 {
   // Find the illuminant chromaticity x y from RAW WB coeffs and camera input matrice
-  float XYZ[4];
+  dt_aligned_pixel_t XYZ, LMS;
   // Simulate white point, aka convert (1, 1, 1) in camera space to XYZ
   // warning : we multiply the transpose of CAM_to_XYZ  since the pseudoinverse transposes it
   XYZ[0] = CAM_to_XYZ[0][0] / WB[0] + CAM_to_XYZ[1][0] / WB[1] + CAM_to_XYZ[2][0] / WB[2];
@@ -314,14 +340,12 @@ static inline void WB_coeffs_to_illuminant_xy(const float CAM_to_XYZ[4][3], cons
   XYZ[2] = CAM_to_XYZ[0][2] / WB[0] + CAM_to_XYZ[1][2] / WB[1] + CAM_to_XYZ[2][2] / WB[2];
 
   // Matrices white point is D65. We need to convert it for darktable's pipe (D50)
-  /*
-  static const float DT_ALIGNED_PIXEL D65[4] = { 0.941238f, 1.040633f, 1.088932f, 0.f };
-  static const float p = powf(1.088932f / 0.818155f, 0.0834f);
+  static const dt_aligned_pixel_t D65 = { 0.941238f, 1.040633f, 1.088932f, 0.f };
+  const float p = powf(1.088932f / 0.818155f, 0.0834f);
 
-  convert_XYZ_to_bradford_LMS(XYZ, XYZ);
-  bradford_adapt_D50(XYZ, D65, p, XYZ);
-  convert_bradford_LMS_to_XYZ(XYZ, XYZ);
-  */
+  convert_XYZ_to_bradford_LMS(XYZ, LMS);
+  bradford_adapt_D50(LMS, D65, p, FALSE, LMS);
+  convert_bradford_LMS_to_XYZ(LMS, XYZ);
 
   // Get white point chromaticity
   XYZ[0] /= XYZ[1];
@@ -330,6 +354,107 @@ static inline void WB_coeffs_to_illuminant_xy(const float CAM_to_XYZ[4][3], cons
 
   *x = XYZ[0] / (XYZ[0] + XYZ[1] + XYZ[2]);
   *y = XYZ[1] / (XYZ[0] + XYZ[1] + XYZ[2]);
+}
+
+
+static inline void matrice_pseudoinverse(float (*in)[3], float (*out)[3], int size)
+{
+  float DT_ALIGNED_ARRAY work[3][6];
+
+  for(int i = 0; i < 3; i++)
+  {
+    for(int j = 0; j < 6; j++)
+      work[i][j] = j == i+3;
+    for(int j = 0; j < 3; j++)
+      for(int k = 0; k < size; k++)
+        work[i][j] += in[k][i] * in[k][j];
+  }
+  for(int i = 0; i < 3; i++)
+  {
+    float num = work[i][i];
+    for(int j = 0; j < 6; j++)
+      work[i][j] /= num;
+    for(int k = 0; k < 3; k++)
+    {
+      if(k==i) continue;
+      num = work[k][i];
+      for(int j = 0; j < 6; j++)
+        work[k][j] -= work[i][j] * num;
+    }
+  }
+  for(int i = 0; i < size; i++)
+    for(int j = 0; j < 3; j++)
+    {
+      out[i][j] = 0.0f;
+      for(int k = 0; k < 3; k++)
+        out[i][j] += work[j][k+3] * in[i][k];
+    }
+}
+
+
+static int find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_aligned_pixel_t custom_wb,
+                                            float *chroma_x, float *chroma_y)
+{
+  if(img == NULL) return FALSE;
+  if(!dt_image_is_matrix_correction_supported(img)) return FALSE;
+
+  int has_valid_coeffs = TRUE;
+  const int num_coeffs = (img->flags & DT_IMAGE_4BAYER) ? 4 : 3;
+
+  // Check coeffs
+  for(int k = 0; has_valid_coeffs && k < num_coeffs; k++)
+    if(!isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f) has_valid_coeffs = FALSE;
+
+  if(!has_valid_coeffs) return FALSE;
+
+  // Get white balance camera factors
+  dt_aligned_pixel_t WB = { img->wb_coeffs[0], img->wb_coeffs[1], img->wb_coeffs[2], img->wb_coeffs[3] };
+
+  // Adapt the camera coeffs with custom white balance if provided
+  // this can deal with WB coeffs that don't use the input matrix reference
+  if(custom_wb)
+    for(size_t k = 0; k < 4; k++) WB[k] *= custom_wb[k];
+
+  // Get the camera input profile (matrice of primaries)
+  float XYZ_to_CAM[4][3];
+  XYZ_to_CAM[0][0] = NAN;
+
+  if(!isnan(img->d65_color_matrix[0]))
+  {
+    // keep in sync with reload_defaults from colorin.c
+    // embedded matrix is used with higher priority than standard one
+    XYZ_to_CAM[0][0] = img->d65_color_matrix[0];
+    XYZ_to_CAM[0][1] = img->d65_color_matrix[1];
+    XYZ_to_CAM[0][2] = img->d65_color_matrix[2];
+
+    XYZ_to_CAM[1][0] = img->d65_color_matrix[3];
+    XYZ_to_CAM[1][1] = img->d65_color_matrix[4];
+    XYZ_to_CAM[1][2] = img->d65_color_matrix[5];
+
+    XYZ_to_CAM[2][0] = img->d65_color_matrix[6];
+    XYZ_to_CAM[2][1] = img->d65_color_matrix[7];
+    XYZ_to_CAM[2][2] = img->d65_color_matrix[8];
+  }
+  else
+  {
+    dt_dcraw_adobe_coeff(img->camera_makermodel, (float(*)[12])XYZ_to_CAM);
+  }
+
+  if(isnan(XYZ_to_CAM[0][0])) return FALSE;
+
+  // Bloody input matrices define XYZ -> CAM transform, as if we often needed camera profiles to output
+  // So we need to invert them. Here go your CPU cycles again.
+  float CAM_to_XYZ[4][3];
+  CAM_to_XYZ[0][0] = NAN;
+  matrice_pseudoinverse(XYZ_to_CAM, CAM_to_XYZ, 3);
+  if(isnan(CAM_to_XYZ[0][0])) return FALSE;
+
+  float x, y;
+  WB_coeffs_to_illuminant_xy(CAM_to_XYZ, WB, &x, &y);
+  *chroma_x = x;
+  *chroma_y = y;
+
+  return TRUE;
 }
 
 
@@ -381,6 +506,21 @@ static inline float get_tint_from_tinted_xy(const float x, const float y, const 
 }
 
 
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline void xy_to_uv(const float xy[2], float uv[2])
+{
+  // Convert to CIE1960 Yuv color space, usefull to compute CCT
+  // https://en.wikipedia.org/wiki/CIE_1960_color_space
+  const float denom = 12.f * xy[1] - 1.882f * xy[0] + 2.9088f;
+  uv[0] = 5.5932f * xy[0] + 1.9116 * xy[1];
+  uv[1] = 7.8972f * xy[1];
+  uv[0] /= denom;
+  uv[1] /= denom;
+}
+
+
 /*
  * The following defines a custom OpenMP reduction so the reverse-lookup can be fully parallelized without sharing.
  *
@@ -424,10 +564,12 @@ static inline float CCT_reverse_lookup(const float x, const float y)
 
   struct pair min_radius = { FLT_MAX, 0.0f };
 
+#ifndef __APPLE__ //makes Xcode 11.3.1 compiler crash
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(x, y, T_min, T_range, LUT_samples) reduction(pairmin:min_radius)\
   schedule(simd:static)
+#endif
 #endif
   for(size_t i = 0; i < LUT_samples; i++)
   {
@@ -439,10 +581,14 @@ static inline float CCT_reverse_lookup(const float x, const float y)
 
     // Current x, y chromaticity
     float x_bb, y_bb;
-    CCT_to_xy_blackbody(T, &x_bb, &y_bb);
+
+    if(T > 3000.f)
+      CCT_to_xy_daylight(T, &x_bb, &y_bb);
+    else
+      CCT_to_xy_blackbody(T, &x_bb, &y_bb);
 
     // Compute distance between current planckian chromaticity and input
-    const pair radius_tmp = { hypotf((x_bb - x), (y_bb - y)), T };
+    const pair radius_tmp = { dt_fast_hypotf((x_bb - x), (y_bb - y)), T };
 
     // If we found a smaller radius, save it
     min_radius = pair_min(min_radius, radius_tmp);

@@ -13,7 +13,7 @@ if [ "${option}" = "-h" ] || [ "${option}" = "--help" ]; then
   echo "Extract White Balance preset info from images"
   echo "Usage:   $0 <file1> [file2] ..."
   echo ""
-  echo "This tool will generate archive with wite balance"
+  echo "This tool will generate archive with white balance"
   echo "presets extracted from provided image files"
   exit 0
 fi

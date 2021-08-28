@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2014-2020 darktable developers.
+   Copyright (C) 2014-2021 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ typedef struct
   lua_widget widget;
 } lua_storage_gui_t;
 
-static void push_lua_data(lua_State*L,lua_storage_t *d)
+static void push_lua_data(lua_State*L, lua_storage_t *d)
 {
   if(!d->data_created)
   {
@@ -110,15 +110,12 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
   dt_lua_lock();
   lua_State *L = darktable.lua_state.state;
 
-  push_lua_data(L,d);
-  dt_lua_goto_subtable(L,"files");
+  push_lua_data(L, d);
+  dt_lua_goto_subtable(L, "files");
   luaA_push(L, dt_lua_image_t, &(imgid));
   lua_pushstring(L, complete_name);
   lua_settable(L, -3);
-  lua_pop(L,1);
-
-
-
+  lua_pop(L, 1);
 
   lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_storages");
   lua_getfield(L, -1, self->plugin_name);
@@ -139,9 +136,9 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
   lua_pushinteger(L, num);
   lua_pushinteger(L, total);
   lua_pushboolean(L, high_quality);
-  push_lua_data(L,d);
-  dt_lua_goto_subtable(L,"extra");
-  dt_lua_treated_pcall(L,8,0);
+  push_lua_data(L, d);
+  dt_lua_goto_subtable(L, "extra");
+  dt_lua_treated_pcall(L, 8, 0);
   lua_pop(L, 2);
   dt_lua_unlock();
   g_free(filename);
@@ -170,25 +167,25 @@ static int initialize_store_wrapper(struct dt_imageio_module_storage_t *self, dt
   luaA_push_type(L, self->parameter_lua_type, data);
   luaA_push_type(L, (*format)->parameter_lua_type, *fdata);
 
-  GList *imgids = *images;
+  int table_index = 1;
   lua_newtable(L);
-  while(imgids)
+  for(const GList *imgids = *images; imgids; imgids = g_list_next(imgids))
   {
     luaA_push(L, dt_lua_image_t, &(imgids->data));
-    luaL_ref(L, -2);
-    imgids = g_list_next(imgids);
+    lua_seti(L, -2, table_index);
+    table_index++;
   }
   lua_pushboolean(L, high_quality);
 
   lua_storage_t *d = (lua_storage_t *)data;
-  push_lua_data(L,d);
-  dt_lua_goto_subtable(L,"extra");
+  push_lua_data(L, d);
+  dt_lua_goto_subtable(L, "extra");
 
-  dt_lua_treated_pcall(L,5,1);
+  dt_lua_treated_pcall(L, 5, 1);
   if(!lua_isnoneornil(L, -1))
   {
     g_list_free(*images);
-    if(lua_type(L,-1) != LUA_TTABLE)
+    if(lua_type(L, -1) != LUA_TTABLE)
     {
       dt_print(DT_DEBUG_LUA, "LUA ERROR initialization function of storage did not return nil or table\n");
       dt_lua_unlock();
@@ -229,13 +226,13 @@ static void finalize_store_wrapper(struct dt_imageio_module_storage_t *self, dt_
   luaA_push_type(L, self->parameter_lua_type, data);
 
   lua_storage_t *d = (lua_storage_t *)data;
-  push_lua_data(L,d);
-  dt_lua_goto_subtable(L,"files");
+  push_lua_data(L, d);
+  dt_lua_goto_subtable(L, "files");
 
-  push_lua_data(L,d);
-  dt_lua_goto_subtable(L,"extra");
+  push_lua_data(L, d);
+  dt_lua_goto_subtable(L, "extra");
 
-  dt_lua_treated_pcall(L,3,0);
+  dt_lua_treated_pcall(L, 3, 0);
   lua_pop(L, 2);
   dt_lua_unlock();
 }
@@ -323,17 +320,17 @@ static int version_wrapper()
 
 static void gui_init_wrapper(struct dt_imageio_module_storage_t *self)
 {
-  lua_storage_gui_t *gui_data =self->gui_data;
+  lua_storage_gui_t *gui_data = self->gui_data;
   self->widget = gui_data->widget->widget;
 }
 
 static void gui_reset_wrapper(struct dt_imageio_module_storage_t *self)
 {
-  lua_storage_gui_t *gui_data =self->gui_data;
+  lua_storage_gui_t *gui_data = self->gui_data;
   dt_lua_async_call_alien(dt_lua_widget_trigger_callback,
-      0,NULL,NULL,
-      LUA_ASYNC_TYPENAME,"lua_widget",gui_data->widget,
-      LUA_ASYNC_TYPENAME,"const char*","reset",
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "lua_widget", gui_data->widget,
+      LUA_ASYNC_TYPENAME, "const char*", "reset",
       LUA_ASYNC_DONE);
 }
 
@@ -440,8 +437,8 @@ static int register_storage(lua_State *L)
   else
   {
     lua_widget widget;
-    luaA_to(L,lua_widget,&widget,7);
-    dt_lua_widget_bind(L,widget);
+    luaA_to(L, lua_widget, &widget, 7);
+    dt_lua_widget_bind(L, widget);
     data->widget = widget;
   }
 
@@ -455,12 +452,9 @@ static int register_storage(lua_State *L)
   luaA_struct_type(darktable.lua_state.state, type_id);
   dt_lua_register_storage_type(darktable.lua_state.state, storage, type_id);
 
-
-
-  GList *it = darktable.imageio->plugins_format;
   if(!lua_isnoneornil(L, 5))
   {
-    while(it)
+    for(GList *it = darktable.imageio->plugins_format; it; it = g_list_next(it))
     {
       lua_pushvalue(L, 5);
       dt_imageio_module_format_t *format = (dt_imageio_module_format_t *)it->data;
@@ -470,24 +464,22 @@ static int register_storage(lua_State *L)
       luaA_push_type(L, format->parameter_lua_type, fdata);
       format->free_params(format, fdata);
       storage->free_params(storage, sdata);
-      dt_lua_treated_pcall(L,2,1);
+      dt_lua_treated_pcall(L, 2, 1);
       int result = lua_toboolean(L, -1);
       lua_pop(L, 1);
       if(result)
       {
         data->supported_formats = g_list_prepend(data->supported_formats, format);
       }
-      it = g_list_next(it);
     }
   }
   else
   {
     // all formats are supported
-    while(it)
+    for(GList *it = darktable.imageio->plugins_format; it; it = g_list_next(it))
     {
       dt_imageio_module_format_t *format = (dt_imageio_module_format_t *)it->data;
       data->supported_formats = g_list_prepend(data->supported_formats, format);
-      it = g_list_next(it);
     }
   }
 
@@ -498,8 +490,27 @@ static int register_storage(lua_State *L)
   return 0;
 }
 
+static int destroy_storage(lua_State *L)
+{
+  const char *module_name = luaL_checkstring(L, 1);
+  dt_imageio_module_storage_t *storage = dt_imageio_get_storage_by_name(module_name);
+  dt_imageio_remove_storage(storage);
+  // free the storage?
+  storage->gui_cleanup(storage);
+  if(storage->widget) g_object_unref(storage->widget);
+  if(storage->module) g_module_close(storage->module);
+  free(storage);
+  return 0;
+}
+
 int dt_lua_init_luastorages(lua_State *L)
 {
+  dt_lua_push_darktable_lib(L);
+  lua_pushstring(L, "destroy_storage");
+  lua_pushcfunction(L, &destroy_storage);
+  lua_settable(L, -3);
+  lua_pop(L, 1);
+
   dt_lua_push_darktable_lib(L);
   lua_pushstring(L, "register_storage");
   lua_pushcfunction(L, &register_storage);

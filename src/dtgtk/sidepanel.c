@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2020 darktable developers.
+    Copyright (C) 2015-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,11 @@
 
 G_DEFINE_TYPE(GtkDarktableSidePanel, dtgtk_side_panel, GTK_TYPE_BOX);
 
+static GtkSizeRequestMode dtgtk_side_panel_get_request_mode(GtkWidget *widget)
+{
+  return GTK_SIZE_REQUEST_CONSTANT_SIZE;
+}
+
 static void dtgtk_side_panel_get_preferred_width(GtkWidget *widget, gint *minimum_size, gint *natural_size)
 {
   GtkDarktableSidePanelClass *class = DTGTK_SIDE_PANEL_GET_CLASS(widget);
@@ -34,6 +39,7 @@ static void dtgtk_side_panel_class_init(GtkDarktableSidePanelClass *class)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
 
+  widget_class->get_request_mode = dtgtk_side_panel_get_request_mode;
   widget_class->get_preferred_width = dtgtk_side_panel_get_preferred_width;
 
   class->width

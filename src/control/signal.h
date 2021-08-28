@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,6 +55,13 @@ typedef enum dt_signal_t
    */
   DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
 
+  /** \brief This signal is raised by viewmanager when a view has changed.
+    1 : dt_view_t * the old view
+    2 : dt_view_t * the new (current) view
+    no returned value
+   */
+  DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE,
+
   /** \bief This signal is raised when a thumb is doubleclicked in
     thumbtable (filemananger, filmstrip)
     1 : int the imageid of the thumbnail
@@ -65,8 +72,9 @@ typedef enum dt_signal_t
   /** \brief This signal is raised when collection changed. To avoid leaking the list,
     dt_collection_t is connected to this event and responsible of that.
     1 : dt_collection_change_t the reason why the collection has changed
-    2 : GList of imageids that have changed (can be null if it's a global change)
-    3 : next untouched imgid in the list (-1 if no list)
+    2 : dt_collection_properties_t the property that has changed
+    3 : GList of imageids that have changed (can be null if it's a global change)
+    4 : next untouched imgid in the list (-1 if no list)
     no returned value
     */
   /** image list not to be freed by the caller, automatically freed */
@@ -79,6 +87,12 @@ typedef enum dt_signal_t
 
   /** \brief This signal is raised when a tag is added/deleted/changed  */
   DT_SIGNAL_TAG_CHANGED,
+
+  /** \brief This signal is raised when a geotag is added/deleted/changed  */
+  // when imgs <> NULL these images have some geotag changes
+  // when imgs == NULL locations have changed
+  // if locid <> 0 it the new selected location on map
+  DT_SIGNAL_GEOTAG_CHANGED,
 
   /** \brief This signal is raised when metadata status (shown/hidden) or value has changed */
   DT_SIGNAL_METADATA_CHANGED,
@@ -109,6 +123,9 @@ typedef enum dt_signal_t
 
   /** \brief This signal is raised only when a filmroll is removed */
   DT_SIGNAL_FILMROLLS_REMOVED,
+
+  /* \brief This signal is raised when a preset is created/updated/deleted */
+  DT_SIGNAL_PRESETS_CHANGED,
 
   /** \brief This signal is raised when darktable.develop is initialized.
       \note any modules that wants to access darktable->develop should connect
@@ -226,14 +243,20 @@ typedef enum dt_signal_t
   DT_SIGNAL_CONTROL_TOAST_REDRAW,
 
   /** \brief This signal is raised when new color picker data are available in the pixelpipe.
-    1 module
-    2 piece
+    1 module (NULL if primary picker)
+    2 piece (NULL if primary picker)
     no returned value
   */
   DT_SIGNAL_CONTROL_PICKERDATA_READY,
 
   /* \brief This signal is raised when metadata view needs update */
   DT_SIGNAL_METADATA_UPDATE,
+
+  /* \brief This signal is raised when a module is in trouble and message is to be displayed */
+  DT_SIGNAL_TROUBLE_MESSAGE,
+
+  /* \brief This signal is raised when the user choses a new location from map (module location)*/
+  DT_SIGNAL_LOCATION_CHANGED,
 
   /* do not touch !*/
   DT_SIGNAL_COUNT

@@ -36,6 +36,7 @@
 #endif
 
 #include "bauhaus/bauhaus.h"
+#include "common/box_filters.h"
 #include "common/darktable.h"
 #include "common/guided_filter.h"
 #include "develop/imageop.h"
@@ -80,7 +81,6 @@ typedef struct dt_iop_hazeremoval_gui_data_t
   rgb_pixel A0;
   float distance_max;
   uint64_t hash;
-  dt_pthread_mutex_t lock;
 } dt_iop_hazeremoval_gui_data_t;
 
 typedef struct dt_iop_hazeremoval_global_data_t
@@ -100,6 +100,20 @@ const char *name()
 }
 
 
+const char *aliases()
+{
+  return _("dehaze|defog|smoke|smog");
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("remove fog and atmospheric hazing from pictures"),
+                                      _("corrective"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("frequential, RGB"),
+                                      _("linear, RGB, scene-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
@@ -117,24 +131,10 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "distance"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_hazeremoval_gui_data_t *g = (dt_iop_hazeremoval_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->strength));
-  dt_accel_connect_slider_iop(self, "distance", GTK_WIDGET(g->distance));
-}
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_hazeremoval_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 
@@ -180,13 +180,13 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->strength, p->strength);
   dt_bauhaus_slider_set(g->distance, p->distance);
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->distance_max = NAN;
   g->A0[0] = NAN;
   g->A0[1] = NAN;
   g->A0[2] = NAN;
   g->hash = 0;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 }
 
 
@@ -194,7 +194,6 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_hazeremoval_gui_data_t *g = IOP_GUI_ALLOC(hazeremoval);
 
-  dt_pthread_mutex_init(&g->lock, NULL);
   g->distance_max = NAN;
   g->A0[0] = NAN;
   g->A0[1] = NAN;
@@ -213,9 +212,6 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_iop_hazeremoval_gui_data_t *g = (dt_iop_hazeremoval_gui_data_t *)self->gui_data;
-  dt_pthread_mutex_destroy(&g->lock);
-
   IOP_GUI_FREE;
 }
 
@@ -254,164 +250,6 @@ static inline void pointer_swap_f(float *a, float *b)
 }
 
 
-// calculate the one-dimensional moving maximum over a window of size 2*w+1
-// input array x has stride 1, output array y has stride stride_y
-static inline void box_max_1d(int N, const float *x, float *y, size_t stride_y, int w)
-{
-  float m = -(INFINITY);
-  for(int i = 0, i_end = min_i(w + 1, N); i < i_end; i++) m = fmaxf(x[i], m);
-  for(int i = 0; i < N; i++)
-  {
-    y[i * stride_y] = m;
-    if(i - w >= 0 && x[i - w] == m)
-    {
-      m = -(INFINITY);
-      for(int j = max_i(i - w + 1, 0), j_end = min_i(i + w + 2, N); j < j_end; j++) m = fmaxf(x[j], m);
-    }
-    if(i + w + 1 < N) m = fmaxf(x[i + w + 1], m);
-  }
-}
-
-
-// calculate the two-dimensional moving maximum over a box of size (2*w+1) x (2*w+1)
-// does the calculation in-place if input and output images are identical
-static void box_max(const gray_image img1, const gray_image img2, const int w)
-{
-  gray_image img2_bak;
-  if(img1.data == img2.data)
-  {
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-    dt_omp_firstprivate(img1, img2, w) \
-    private(img2_bak)
-#endif
-    {
-      img2_bak = new_gray_image(img2.width, 1);
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-      for(int i1 = 0; i1 < img2.height; i1++)
-      {
-        memcpy(img2_bak.data, img2.data + (size_t)i1 * img2.width, sizeof(float) * img2.width);
-        box_max_1d(img2.width, img2_bak.data, img2.data + (size_t)i1 * img2.width, 1, w);
-      }
-      free_gray_image(&img2_bak);
-    }
-  }
-  else
-  {
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-    dt_omp_firstprivate(img1, img2, w) \
-    private(img2_bak)
-#endif
-    {
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-      for(int i1 = 0; i1 < img1.height; i1++)
-        box_max_1d(img1.width, img1.data + (size_t)i1 * img1.width, img2.data + (size_t)i1 * img2.width, 1, w);
-    }
-  }
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(img1, img2, w) \
-  private(img2_bak)
-#endif
-  {
-    img2_bak = new_gray_image(1, img2.height);
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-    for(int i0 = 0; i0 < img1.width; i0++)
-    {
-      for(int i1 = 0; i1 < img1.height; i1++) img2_bak.data[i1] = img2.data[i0 + (size_t)i1 * img2.width];
-      box_max_1d(img1.height, img2_bak.data, img2.data + i0, img1.width, w);
-    }
-    free_gray_image(&img2_bak);
-  }
-}
-
-
-// calculate the one-dimensional moving minimum over a window of size 2*w+1
-// input array x has stride 1, output array y has stride stride_y
-static inline void box_min_1d(int N, const float *x, float *y, size_t stride_y, int w)
-{
-  float m = INFINITY;
-  for(int i = 0, i_end = min_i(w + 1, N); i < i_end; i++) m = fminf(x[i], m);
-  for(int i = 0; i < N; i++)
-  {
-    y[i * stride_y] = m;
-    if(i - w >= 0 && x[i - w] == m)
-    {
-      m = INFINITY;
-      for(int j = max_i(i - w + 1, 0), j_end = min_i(i + w + 2, N); j < j_end; j++) m = fminf(x[j], m);
-    }
-    if(i + w + 1 < N) m = fminf(x[i + w + 1], m);
-  }
-}
-
-
-// calculate the two-dimensional moving minimum over a box of size (2*w+1) x (2*w+1)
-// does the calculation in-place if input and output images are identical
-static void box_min(const gray_image img1, const gray_image img2, const int w)
-{
-  gray_image img2_bak;
-  if(img1.data == img2.data)
-  {
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-    dt_omp_firstprivate(img1, img2, w) \
-    private(img2_bak)
-#endif
-    {
-      img2_bak = new_gray_image(img2.width, 1);
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-      for(int i1 = 0; i1 < img2.height; i1++)
-      {
-        memcpy(img2_bak.data, img2.data + (size_t)i1 * img2.width, sizeof(float) * img2.width);
-        box_min_1d(img2.width, img2_bak.data, img2.data + (size_t)i1 * img2.width, 1, w);
-      }
-      free_gray_image(&img2_bak);
-    }
-  }
-  else
-  {
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-    dt_omp_firstprivate(img1, img2, w) \
-    private(img2_bak)
-#endif
-    {
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-      for(int i1 = 0; i1 < img1.height; i1++)
-        box_min_1d(img1.width, img1.data + (size_t)i1 * img1.width, img2.data + (size_t)i1 * img2.width, 1, w);
-    }
-  }
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(img1, img2, w) \
-  private(img2_bak)
-#endif
-  {
-    img2_bak = new_gray_image(1, img2.height);
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-    for(int i0 = 0; i0 < img1.width; i0++)
-    {
-      for(int i1 = 0; i1 < img1.height; i1++) img2_bak.data[i1] = img2.data[i0 + (size_t)i1 * img2.width];
-      box_min_1d(img1.height, img2_bak.data, img2.data + i0, img1.width, w);
-    }
-    free_gray_image(&img2_bak);
-  }
-}
-
-
 // calculate the dark channel (minimal color component over a box of size (2*w+1) x (2*w+1) )
 static void dark_channel(const const_rgb_image img1, const gray_image img2, const int w)
 {
@@ -429,7 +267,7 @@ static void dark_channel(const const_rgb_image img1, const gray_image img2, cons
     m = fminf(pixel[2], m);
     img2.data[i] = m;
   }
-  box_min(img2, img2, w);
+  dt_box_min(img2.data, img2.height, img2.width, 1, w);
 }
 
 
@@ -451,7 +289,7 @@ static void transition_map(const const_rgb_image img1, const gray_image img2, co
     m = fminf(pixel[2] / A0[2], m);
     img2.data[i] = 1.f - m * strength;
   }
-  box_max(img2, img2, w);
+  dt_box_max(img2.data, img2.height, img2.width, 1, w);
 }
 
 
@@ -587,7 +425,7 @@ static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_hazeremoval_gui_data_t *g = self->gui_data;
+  dt_iop_hazeremoval_gui_data_t *const g = (dt_iop_hazeremoval_gui_data_t*)self->gui_data;
   dt_iop_hazeremoval_params_t *d = piece->data;
 
   const int ch = piece->colors;
@@ -620,9 +458,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // luckily stores it for us.
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     const uint64_t hash = g->hash;
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
     // Note that the case 'hash == 0' on first invocation in a session
     // implies that g->distance_max is NAN, which initiates special
     // handling below to avoid inconsistent results.  In all other
@@ -631,14 +469,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // there we need to wait (with timeout).
     if(hash != 0
        && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL,
-                                      &g->lock, &g->hash))
+                                      &self->gui_lock, &g->hash))
       dt_control_log(_("inconsistent output"));
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     A0[0] = g->A0[0];
     A0[1] = g->A0[1];
     A0[2] = g->A0[2];
     distance_max = g->distance_max;
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
   // In all other cases we calculate distance_max and A0 here.
   if(isnan(distance_max)) distance_max = ambient_light(img_in, w1, &A0);
@@ -646,13 +484,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
     uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     g->A0[0] = A0[0];
     g->A0[1] = A0[1];
     g->A0[2] = A0[2];
     g->distance_max = distance_max;
     g->hash = hash;
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
 
   // calculate the transition map
@@ -660,7 +498,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   transition_map(img_in, trans_map, w1, A0, strength);
 
   // refine the transition map
-  box_min(trans_map, trans_map, w1);
+  dt_box_min(trans_map.data, trans_map.height, trans_map.width, 1, w1);
   gray_image trans_map_filtered = new_gray_image(width, height);
   // apply guided filter with no clipping
   guided_filter(img_in.data, trans_map.data, trans_map_filtered.data, width, height, ch, w2, eps, 1.f, -FLT_MAX,
@@ -842,7 +680,7 @@ static int dehaze_cl(struct dt_iop_module_t *self, int devid, cl_mem img_in, cl_
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem img_in, cl_mem img_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_hazeremoval_gui_data_t *g = self->gui_data;
+  dt_iop_hazeremoval_gui_data_t *const g = (dt_iop_hazeremoval_gui_data_t*)self->gui_data;
   dt_iop_hazeremoval_params_t *d = piece->data;
 
   const int ch = piece->colors;
@@ -872,9 +710,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // luckily stores it for us.
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     const uint64_t hash = g->hash;
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
     // Note that the case 'hash == 0' on first invocation in a session
     // implies that g->distance_max is NAN, which initiates special
     // handling below to avoid inconsistent results.  In all other
@@ -883,14 +721,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // there we need to wait (with timeout).
     if(hash != 0
        && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL,
-                                      &g->lock, &g->hash))
+                                      &self->gui_lock, &g->hash))
       dt_control_log(_("inconsistent output"));
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     A0[0] = g->A0[0];
     A0[1] = g->A0[1];
     A0[2] = g->A0[2];
     distance_max = g->distance_max;
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
   // In all other cases we calculate distance_max and A0 here.
   if(isnan(distance_max)) distance_max = ambient_light_cl(self, devid, img_in, w1, &A0);
@@ -898,13 +736,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
     uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     g->A0[0] = A0[0];
     g->A0[1] = A0[1];
     g->A0[2] = A0[2];
     g->distance_max = distance_max;
     g->hash = hash;
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
 
   // calculate the transition map

@@ -16,13 +16,14 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/math.h"
 #include "common/matrices.h"
 
-/** inverts the given 3x3 matrix */
-int mat3inv(float *const dst, const float *const src)
+/** inverts the given padded 3x3 matrix */
+int mat3SSEinv(dt_colormatrix_t dst, const dt_colormatrix_t src)
 {
-#define A(y, x) src[(y - 1) * 3 + (x - 1)]
-#define B(y, x) dst[(y - 1) * 3 + (x - 1)]
+#define A(y, x) src[(y - 1)][(x - 1)]
+#define B(y, x) dst[(y - 1)][(x - 1)]
 
   const float det = A(1, 1) * (A(3, 3) * A(2, 2) - A(3, 2) * A(2, 3))
                     - A(2, 1) * (A(3, 3) * A(1, 2) - A(3, 2) * A(1, 3))
@@ -49,28 +50,6 @@ int mat3inv(float *const dst, const float *const src)
   return 0;
 }
 
-static void mat3mulv(float *dst, const float *const mat, const float *const v)
-{
-  for(int k = 0; k < 3; k++)
-  {
-    float x = 0.0f;
-    for(int i = 0; i < 3; i++) x += mat[3 * k + i] * v[i];
-    dst[k] = x;
-  }
-}
-
-static void mat3mul(float *dst, const float *const m1, const float *const m2)
-{
-  for(int k = 0; k < 3; k++)
-  {
-    for(int i = 0; i < 3; i++)
-    {
-      float x = 0.0f;
-      for(int j = 0; j < 3; j++) x += m1[3 * k + j] * m2[3 * j + i];
-      dst[3 * k + i] = x;
-    }
-  }
-}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

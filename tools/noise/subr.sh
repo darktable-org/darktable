@@ -266,7 +266,7 @@ get_exif_key() {
 	file=$1
 	key=$2
 
-	exiv2 -g "$key" -Pt "$file" 2>/dev/null || :
+	exiv2 -K "$key" -Pv -b "$file" 2>/dev/null | sed 's/ *$//g' || :
 }
 
 get_image_iso() {
@@ -327,23 +327,24 @@ get_image_iso() {
 }
 
 get_image_camera_maker() {
-	local file maker
+	local file first_model maker
 	file=$1
 
 	tool_installed exiv2
 
 	first_model=$(echo $(get_exif_key "$file" Exif.Image.Model) | cut -d " " -f 1)
-	if [ "$first_model" = "PENTAX" ]; then
-		maker="Pentax"
+	if [ "$first_model" = "PENTAX" ] || [ "$first_model" = "RICOH" ]; then
+		maker=$first_model
 	else
-	  maker=$(get_exif_key "$file" Exif.Image.Make)
-	  maker=$(echo $maker | cut -c 1)$(echo $maker | cut -c 2- | cut -d " " -f 1 | tr "[A-Z]" "[a-z]")
+		maker=$(get_exif_key "$file" Exif.Image.Make)
 	fi
+	# ensure name is capitalized
+	maker=$(echo $maker | cut -c 1 | tr "[a-z]" "[A-Z]")$(echo $maker | cut -c 2- | cut -d " " -f 1 | tr "[A-Z]" "[a-z]")
 	echo $maker
 }
 
 get_image_camera_model() {
-	local file model
+	local file first_maker model first_model
 	file=$1
 
 	tool_installed exiv2

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,40 +18,79 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
+#include "common/imagebuf.h"
+#include "common/gaussian.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "develop/imageop_math.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
-
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE_INTROSPECTION(1, dt_iop_cacorrect_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_cacorrect_params_t)
 
 #pragma GCC diagnostic ignored "-Wshadow"
 
+typedef enum dt_iop_cacorrect_errror_t
+{
+  CACORRECT_ERROR_NO = 0,
+  CACORRECT_ERROR_CFA = 1,
+  CACORRECT_ERROR_MATH = 2,
+  CACORRECT_ERROR_LIN = 3,
+  CACORRECT_ERROR_SIZE = 4,
+} dt_iop_cacorrect_error_t;
+
+typedef enum dt_iop_cacorrect_multi_t
+{
+  CACORRETC_MULTI_1 = 1,     // $DESCRIPTION: "once"
+  CACORRETC_MULTI_2 = 2,     // $DESCRIPTION: "twice"
+  CACORRETC_MULTI_3 = 3,     // $DESCRIPTION: "three times"
+  CACORRETC_MULTI_4 = 4,     // $DESCRIPTION: "four times"
+  CACORRETC_MULTI_5 = 5,     // $DESCRIPTION: "five times"
+} dt_iop_cacorrect_multi_t;
+
 typedef struct dt_iop_cacorrect_params_t
 {
-  int keep; // $DEFAULT: 50
+  gboolean avoidshift;      // $DEFAULT: 0 $DESCRIPTION: "avoid colorshift"
+  dt_iop_cacorrect_multi_t iterations; // $DEFAULT: CACORRETC_MULTI_2 $DESCRIPTION: "iterations"
 } dt_iop_cacorrect_params_t;
 
 typedef struct dt_iop_cacorrect_gui_data_t
 {
+  GtkWidget *avoidshift;
+  GtkWidget *iterations;
+  gint error;
 } dt_iop_cacorrect_gui_data_t;
+
+typedef struct dt_iop_cacorrect_data_t
+{
+  uint32_t avoidshift;
+  uint32_t iterations;
+} dt_iop_cacorrect_data_t;
 
 // this returns a translatable name
 const char *name()
 {
   // make sure you put all your translatable strings into _() !
-  return _("chromatic aberrations");
+  return _("raw chromatic aberrations");
 }
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("correct chromatic aberrations for Bayer sensors"),
+                                      _("corrective"),
+                                      _("linear, raw, scene-referred"),
+                                      _("linear, raw"),
+                                      _("linear, raw, scene-referred"));
+}
+
 
 int default_group()
 {
@@ -68,6 +107,19 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_RAW;
 }
 
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
+                  void *new_params, const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    dt_iop_cacorrect_params_t *n = (dt_iop_cacorrect_params_t *)new_params;
+    n->avoidshift = FALSE;
+    n->iterations = 1;
+    return 0;
+  }
+  return 1;
+}
+
 /*==================================================================================
  * begin raw therapee code, hg checkout of march 09, 2016 branch master.
  *==================================================================================*/
@@ -78,83 +130,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 #define INLINE inline
 #endif
 
-#ifdef __SSE2__
-
-typedef __m128i vmask;
-typedef __m128 vfloat;
-
-#define ZEROV _mm_setzero_ps()
-#define F2V(a) _mm_set1_ps((a))
-#define STVFU(x, y) _mm_storeu_ps(&x, y)
-#define LVFU(x) _mm_loadu_ps(&x)
-
-#define STC2VFU(a, v)                                                                                        \
-  {                                                                                                          \
-    __m128 TST1V = _mm_loadu_ps(&a);                                                                         \
-    __m128 TST2V = _mm_unpacklo_ps(v, v);                                                                    \
-    vmask cmask = _mm_set_epi32(0xffffffff, 0, 0xffffffff, 0);                                               \
-    _mm_storeu_ps(&a, vself(cmask, TST1V, TST2V));                                                           \
-    TST1V = _mm_loadu_ps((&a) + 4);                                                                          \
-    TST2V = _mm_unpackhi_ps(v, v);                                                                           \
-    _mm_storeu_ps((&a) + 4, vself(cmask, TST1V, TST2V));                                                     \
-  }
-
-static INLINE vfloat LC2VFU(float *a)
-{
-  // Load 8 floats from a and combine a[0],a[2],a[4] and a[6] into a vector of 4 floats
-  vfloat a1 = _mm_loadu_ps(a);
-  vfloat a2 = _mm_loadu_ps((a) + 4);
-  return _mm_shuffle_ps(a1, a2, _MM_SHUFFLE(2, 0, 2, 0));
-}
-static INLINE vfloat SQRV(vfloat a)
-{
-  return a * a;
-}
-static INLINE vfloat vmul2f(vfloat a)
-{
-  // fastest way to multiply by 2
-  return a + a;
-}
-static INLINE vfloat vcast_vf_f(float f)
-{
-  return _mm_set_ps(f, f, f, f);
-}
-static INLINE vmask vorm(vmask x, vmask y)
-{
-  return _mm_or_si128(x, y);
-}
-static INLINE vmask vandm(vmask x, vmask y)
-{
-  return _mm_and_si128(x, y);
-}
-static INLINE vmask vandnotm(vmask x, vmask y)
-{
-  return _mm_andnot_si128(x, y);
-}
-static INLINE vfloat vabsf(vfloat f)
-{
-  return (vfloat)vandnotm((vmask)vcast_vf_f(-0.0f), (vmask)f);
-}
-static INLINE vfloat vself(vmask mask, vfloat x, vfloat y)
-{
-  return (vfloat)vorm(vandm(mask, (vmask)x), vandnotm(mask, (vmask)y));
-}
-static INLINE float vhadd(vfloat a)
-{
-  // returns a[0] + a[1] + a[2] + a[3]
-  a += _mm_movehl_ps(a, a);
-  return _mm_cvtss_f32(_mm_add_ss(a, _mm_shuffle_ps(a, a, 1)));
-}
-static INLINE vfloat vintpf(vfloat a, vfloat b, vfloat c)
-{
-  // calculate a * b + (1 - a) * c (interpolate two values)
-  // following is valid:
-  // vintpf(a, b+x, c+x) = vintpf(a, b, c) + x
-  // vintpf(a, b*x, c*x) = vintpf(a, b, c) * x
-  return a * (b - c) + c;
-}
-
-#endif // __SSE2__
 
 static INLINE float SQR(float x)
 {
@@ -176,12 +151,12 @@ static INLINE float intp(const float a, const float b, const float c)
 
 ////////////////////////////////////////////////////////////////
 //
-//		Chromatic Aberration Auto-correction
+//  Chromatic Aberration correction on raw bayer cfa data
 //
 //		copyright (c) 2008-2010  Emil Martinec <ejmartin@uchicago.edu>
+//  copyright (c) for improvements (speedups, iterated correction and avoid colour shift) 2018 Ingo Weyrich <heckflosse67@gmx.de>
 //
-//
-// code dated: November 26, 2010
+//  code dated: September 8, 2018
 //
 //	CA_correct_RT.cc is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -194,7 +169,7 @@ static INLINE float intp(const float a, const float b, const float c)
 //	GNU General Public License for more details.
 //
 //	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//      along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 ////////////////////////////////////////////////////////////////
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -295,55 +270,101 @@ static inline void pixSort(float *a, float *b)
   }
 }
 
-// void RawImageSource::CA_correct_RT(const double cared, const double cablue, const double caautostrength)
-static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in2,
-                       float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+/*
+  We want to avoid the module being processed in case the provided size of data is too small resulting in
+  really bad artifacts. This is often the case while zooming in with the current dt pipeline.
+  There is no "maths background" so i chose this after a lot of testing.
+*/
+#define CA_SIZE_MINIMUM (1600)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  const float *const in2 = (float *)i;
+  float *out = (float *) o;
+
   const int width = roi_in->width;
   const int height = roi_in->height;
+  const int h_width = (width + 1) / 2;
+  const int h_height = (height + 1) / 2;
+
   const uint32_t filters = piece->pipe->dsc.filters;
-  memcpy(out, in2, width * height * sizeof(float));
+
+  const gboolean full_pipe  = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL;
+  const gboolean valid = MAX(width, height) >= CA_SIZE_MINIMUM;
+  const gboolean run_fast = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+
+  dt_iop_cacorrect_data_t     *d = (dt_iop_cacorrect_data_t *)piece->data;
+  dt_iop_cacorrect_gui_data_t *g = (dt_iop_cacorrect_gui_data_t *)self->gui_data;
+
+  const gboolean avoidshift = d->avoidshift;
+  const int iterations = d->iterations;
+
+  // Because we can't break parallel processing, we need a switch do handle the errors
+  gboolean processpasstwo = TRUE;
+
+  float *redfactor = NULL;
+  float *bluefactor = NULL;
+  float *oldraw = NULL;
+
+  dt_iop_image_copy_by_size(out, in2, width, height, 1);
+
+  if(full_pipe && g)
+  {
+    if(valid) g->error = CACORRECT_ERROR_NO;
+    else      g->error = CACORRECT_ERROR_SIZE;
+  }
+
+  if(!valid || run_fast) return;
+
   const float *const in = out;
-  const double cared = 0, cablue = 0;
-  const double caautostrength = 4;
+
+  const float caautostrength = 4.0f;
 
   // multithreaded and partly vectorized by Ingo Weyrich
   const int ts = 128;
   const int tsh = ts / 2;
   // shifts to location of vertical and diagonal neighbors
-  const int v1 = ts, v2 = 2 * ts, v3 = 3 * ts,
-            v4 = 4 * ts; //, p1=-ts+1, p2=-2*ts+2, p3=-3*ts+3, m1=ts+1, m2=2*ts+2, m3=3*ts+3;
+  const int v1 = ts, v2 = 2 * ts, v3 = 3 * ts, v4 = 4 * ts;
 
   // Test for RGB cfa
   for(int i = 0; i < 2; i++)
     for(int j = 0; j < 2; j++)
       if(FC(i, j, filters) == 3)
       {
-        printf("CA correction supports only RGB Colour filter arrays\n");
+        if(g) g->error = CACORRECT_ERROR_CFA;
         return;
       }
 
-  //   volatile double progress = 0.0;
-  //
-  //   if(plistener)
-  //   {
-  //     plistener->setProgress(progress);
-  //   }
+  if(avoidshift)
+  {
+    const size_t buffsize = (size_t)h_width * h_height;
+    redfactor = dt_alloc_align_float(buffsize);
+    memset(redfactor, 0, sizeof(float) * buffsize);
+    bluefactor = dt_alloc_align_float(buffsize);
+    memset(bluefactor, 0, sizeof(float) * buffsize);
+    oldraw = dt_alloc_align_float(buffsize * 2);
+    memset(oldraw, 0, sizeof(float) * buffsize * 2);
+    // copy raw values before ca correction
+#ifdef _OPENMP
+        #pragma omp parallel for
+#endif
+    for(int row = 0; row < height; row++)
+    {
+      for(int col = (FC(row, 0, filters) & 1); col < width; col += 2)
+      {
+        oldraw[row * h_width + col / 2] = in[row * width + col];
+      }
+    }
+  }
 
-  const gboolean autoCA = (cared == 0 && cablue == 0);
-  // local variables
-  //   const int width = W, height = H;
+  double fitparams[2][2][16];
+
   // temporary array to store simple interpolation of G
-  float *Gtmp = (float(*))calloc((height) * (width), sizeof *Gtmp);
+  float *Gtmp = dt_alloc_align_float((size_t)height * width);
+  memset(Gtmp, 0, sizeof(float) * height * width);
 
   // temporary array to avoid race conflicts, only every second pixel needs to be saved here
-  float *RawDataTmp = (float *)malloc(height * width * sizeof(float) / 2 + 4);
-
-  float blockave[2][2] = { { 0, 0 }, { 0, 0 } }, blocksqave[2][2] = { { 0, 0 }, { 0, 0 } },
-        blockdenom[2][2] = { { 0, 0 }, { 0, 0 } }, blockvar[2][2];
-
-  // Because we can't break parallel processing, we need a switch do handle the errors
-  gboolean processpasstwo = TRUE;
+  float *RawDataTmp = dt_alloc_align_float(height * width / 2 + 4);
 
   const int border = 8;
   const int border2 = 16;
@@ -353,25 +374,28 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   const int vblsz = ceil((float)(height + border2) / (ts - border2) + 2 + vz1);
   const int hblsz = ceil((float)(width + border2) / (ts - border2) + 2 + hz1);
 
-  char *buffer1 = (char *)calloc(vblsz * hblsz * (2 * 2 + 1), sizeof(float));
+  char *buffer1 = (char *)calloc((size_t)vblsz * hblsz * (2 * 2 + 1), sizeof(float));
 
   // block CA shift values and weight assigned to block
   float *blockwt = (float *)buffer1;
-  float(*blockshifts)[2][2] = (float(*)[2][2])(buffer1 + (vblsz * hblsz * sizeof(float)));
+  float(*blockshifts)[2][2] = (float(*)[2][2])(buffer1 + (sizeof(float) * vblsz * hblsz));
 
-  double fitparams[2][2][16];
-
+  float blockave[2][2] = { { 0, 0 }, { 0, 0 } };
+  float blocksqave[2][2] = { { 0, 0 }, { 0, 0 } };
+  float blockdenom[2][2] = { { 0, 0 }, { 0, 0 } };
+  float blockvar[2][2];
   // order of 2d polynomial fit (polyord), and numpar=polyord^2
   int polyord = 4, numpar = 16;
 
   const float eps = 1e-5f, eps2 = 1e-10f; // tolerance to avoid dividing by zero
 
+  for (size_t it = 0; it < iterations && processpasstwo; it++)
+  {
+
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
   {
-    //     int progresscounter = 0;
-
     // direction of the CA shift in a tile
     int GRBdir[2][3];
 
@@ -389,7 +413,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
           blockdenomthr[2][2] = { { 0, 0 }, { 0, 0 } };
 
     // assign working space
-    const int buffersize = 3 * sizeof(float) * ts * ts + 6 * sizeof(float) * ts * tsh + 8 * 64 + 63;
+    const size_t buffersize = sizeof(float) * 3 * ts * ts + 6 * sizeof(float) * ts * tsh + 8 * 64 + 63;
     char *buffer = (char *)malloc(buffersize);
     char *data = (char *)(((uintptr_t)buffer + (uintptr_t)63) / 64 * 64);
 
@@ -419,8 +443,6 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     // green interpolated to optical sample points for R/B
     float *gshift = rbhpfv; // there is no overlap in buffer usage => share
 
-
-    if(autoCA)
     {
 // Main algorithm: Tile loop calculating correction parameters per tile
 #ifdef _OPENMP
@@ -542,43 +564,10 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // end of initialization
 
-
-#ifdef __SSE2__
-          vfloat onev = F2V(1.f);
-          vfloat epsv = F2V(eps);
-#endif
           for(int rr = 3; rr < rr1 - 3; rr++)
           {
             int row = rr + top;
-            int cc = 3 + (FC(rr, 3, filters) & 1);
-            int indx = rr * ts + cc;
-            int c = FC(rr, cc, filters);
-#ifdef __SSE2__
-            for(; cc < cc1 - 9; cc += 8, indx += 8)
-            {
-              // compute directional weights using image gradients
-              vfloat wtuv = onev / SQRV(epsv + vabsf(LC2VFU(&rgb[1][indx + v1]) - LC2VFU(&rgb[1][indx - v1]))
-                                        + vabsf(LC2VFU(&rgb[c][indx]) - LC2VFU(&rgb[c][indx - v2]))
-                                        + vabsf(LC2VFU(&rgb[1][indx - v1]) - LC2VFU(&rgb[1][indx - v3])));
-              vfloat wtdv = onev / SQRV(epsv + vabsf(LC2VFU(&rgb[1][indx - v1]) - LC2VFU(&rgb[1][indx + v1]))
-                                        + vabsf(LC2VFU(&rgb[c][indx]) - LC2VFU(&rgb[c][indx + v2]))
-                                        + vabsf(LC2VFU(&rgb[1][indx + v1]) - LC2VFU(&rgb[1][indx + v3])));
-              vfloat wtlv = onev / SQRV(epsv + vabsf(LC2VFU(&rgb[1][indx + 1]) - LC2VFU(&rgb[1][indx - 1]))
-                                        + vabsf(LC2VFU(&rgb[c][indx]) - LC2VFU(&rgb[c][indx - 2]))
-                                        + vabsf(LC2VFU(&rgb[1][indx - 1]) - LC2VFU(&rgb[1][indx - 3])));
-              vfloat wtrv = onev / SQRV(epsv + vabsf(LC2VFU(&rgb[1][indx - 1]) - LC2VFU(&rgb[1][indx + 1]))
-                                        + vabsf(LC2VFU(&rgb[c][indx]) - LC2VFU(&rgb[c][indx + 2]))
-                                        + vabsf(LC2VFU(&rgb[1][indx + 1]) - LC2VFU(&rgb[1][indx + 3])));
-
-              // store in rgb array the interpolated G value at R/B grid points using directional weighted
-              // average
-              STC2VFU(rgb[1][indx], (wtuv * LC2VFU(&rgb[1][indx - v1]) + wtdv * LC2VFU(&rgb[1][indx + v1])
-                                     + wtlv * LC2VFU(&rgb[1][indx - 1]) + wtrv * LC2VFU(&rgb[1][indx + 1]))
-                                        / (wtuv + wtdv + wtlv + wtrv));
-            }
-
-#endif
-            for(; cc < cc1 - 3; cc += 2, indx += 2)
+            for(int cc = 3 + (FC(rr, 3, filters) & 1), indx = rr * ts + cc, c = FC(rr, cc, filters); cc < cc1 - 3; cc += 2, indx += 2)
             {
               // compute directional weights using image gradients
               float wtu = 1.f / SQR(eps + fabsf(rgb[1][indx + v1] - rgb[1][indx - v1])
@@ -610,50 +599,10 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
               }
             }
           }
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#ifdef __SSE2__
-          vfloat zd25v = F2V(0.25f);
-#endif
+
           for(int rr = 4; rr < rr1 - 4; rr++)
           {
-            int cc = 4 + (FC(rr, 2, filters) & 1), indx = rr * ts + cc, c = FC(rr, cc, filters);
-#ifdef __SSE2__
-            for(; cc < cc1 - 10; cc += 8, indx += 8)
-            {
-              vfloat rgb1v = LC2VFU(&rgb[1][indx]);
-              vfloat rgbcv = LC2VFU(&rgb[c][indx]);
-              vfloat temp1v
-                  = vabsf(vabsf((rgb1v - rgbcv) - (LC2VFU(&rgb[1][indx + v4]) - LC2VFU(&rgb[c][indx + v4])))
-                          + vabsf(LC2VFU(&rgb[1][indx - v4]) - LC2VFU(&rgb[c][indx - v4]) - rgb1v + rgbcv)
-                          - vabsf(LC2VFU(&rgb[1][indx - v4]) - LC2VFU(&rgb[c][indx - v4])
-                                  - LC2VFU(&rgb[1][indx + v4]) + LC2VFU(&rgb[c][indx + v4])));
-              STVFU(rbhpfv[indx >> 1], temp1v);
-              vfloat temp2v
-                  = vabsf(vabsf((rgb1v - rgbcv) - (LC2VFU(&rgb[1][indx + 4]) - LC2VFU(&rgb[c][indx + 4])))
-                          + vabsf(LC2VFU(&rgb[1][indx - 4]) - LC2VFU(&rgb[c][indx - 4]) - rgb1v + rgbcv)
-                          - vabsf(LC2VFU(&rgb[1][indx - 4]) - LC2VFU(&rgb[c][indx - 4])
-                                  - LC2VFU(&rgb[1][indx + 4]) + LC2VFU(&rgb[c][indx + 4])));
-              STVFU(rbhpfh[indx >> 1], temp2v);
-
-              // low and high pass 1D filters of G in vertical/horizontal directions
-              rgb1v = vmul2f(rgb1v);
-              vfloat glpfvv = zd25v * (rgb1v + LC2VFU(&rgb[1][indx + v2]) + LC2VFU(&rgb[1][indx - v2]));
-              vfloat glpfhv = zd25v * (rgb1v + LC2VFU(&rgb[1][indx + 2]) + LC2VFU(&rgb[1][indx - 2]));
-              rgbcv = vmul2f(rgbcv);
-              STVFU(rblpfv[indx >> 1],
-                    epsv + vabsf(glpfvv
-                                 - zd25v * (rgbcv + LC2VFU(&rgb[c][indx + v2]) + LC2VFU(&rgb[c][indx - v2]))));
-              STVFU(rblpfh[indx >> 1],
-                    epsv + vabsf(glpfhv
-                                 - zd25v * (rgbcv + LC2VFU(&rgb[c][indx + 2]) + LC2VFU(&rgb[c][indx - 2]))));
-              STVFU(grblpfv[indx >> 1],
-                    glpfvv + zd25v * (rgbcv + LC2VFU(&rgb[c][indx + v2]) + LC2VFU(&rgb[c][indx - v2])));
-              STVFU(grblpfh[indx >> 1],
-                    glpfhv + zd25v * (rgbcv + LC2VFU(&rgb[c][indx + 2]) + LC2VFU(&rgb[c][indx - 2])));
-            }
-
-#endif
-            for(; cc < cc1 - 4; cc += 2, indx += 2)
+            for(int cc = 4 + (FC(rr, 2, filters) & 1), indx = rr * ts + cc, c = FC(rr, cc, filters); cc < cc1 - 4; cc += 2, indx += 2)
             {
               rbhpfv[indx >> 1] = fabsf(
                   fabsf((rgb[1][indx] - rgb[c][indx]) - (rgb[1][indx + v4] - rgb[c][indx + v4]))
@@ -688,82 +637,11 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
             }
           }
 
-#ifdef __SSE2__
-          vfloat zd3125v = F2V(0.3125f);
-          vfloat zd09375v = F2V(0.09375f);
-          vfloat zd1v = F2V(0.1f);
-          vfloat zd125v = F2V(0.125f);
-#endif
-
           // along line segments, find the point along each segment that minimizes the colour variance
           // averaged over the tile; evaluate for up/down and left/right away from R/B grid point
           for(int rr = 8; rr < rr1 - 8; rr++)
           {
-            int cc = 8 + (FC(rr, 2, filters) & 1);
-            int indx = rr * ts + cc;
-            int c = FC(rr, cc, filters);
-#ifdef __SSE2__
-            vfloat coeff00v = ZEROV;
-            vfloat coeff01v = ZEROV;
-            vfloat coeff02v = ZEROV;
-            vfloat coeff10v = ZEROV;
-            vfloat coeff11v = ZEROV;
-            vfloat coeff12v = ZEROV;
-            for(; cc < cc1 - 14; cc += 8, indx += 8)
-            {
-
-              // in linear interpolation, colour differences are a quadratic function of interpolation
-              // position;
-              // solve for the interpolation position that minimizes colour difference variance over the tile
-
-              // vertical
-              vfloat gdiffv
-                  = zd3125v * (LC2VFU(&rgb[1][indx + ts]) - LC2VFU(&rgb[1][indx - ts]))
-                    + zd09375v * (LC2VFU(&rgb[1][indx + ts + 1]) - LC2VFU(&rgb[1][indx - ts + 1])
-                                  + LC2VFU(&rgb[1][indx + ts - 1]) - LC2VFU(&rgb[1][indx - ts - 1]));
-              vfloat deltgrbv = LC2VFU(&rgb[c][indx]) - LC2VFU(&rgb[1][indx]);
-
-              vfloat gradwtv
-                  = vabsf(zd25v * LVFU(rbhpfv[indx >> 1])
-                          + zd125v * (LVFU(rbhpfv[(indx >> 1) + 1]) + LVFU(rbhpfv[(indx >> 1) - 1])))
-                    * (LVFU(grblpfv[(indx >> 1) - v1]) + LVFU(grblpfv[(indx >> 1) + v1]))
-                    / (epsv + zd1v * (LVFU(grblpfv[(indx >> 1) - v1]) + LVFU(grblpfv[(indx >> 1) + v1]))
-                       + LVFU(rblpfv[(indx >> 1) - v1]) + LVFU(rblpfv[(indx >> 1) + v1]));
-
-              coeff00v += gradwtv * deltgrbv * deltgrbv;
-              coeff01v += gradwtv * gdiffv * deltgrbv;
-              coeff02v += gradwtv * gdiffv * gdiffv;
-
-              // horizontal
-              gdiffv = zd3125v * (LC2VFU(&rgb[1][indx + 1]) - LC2VFU(&rgb[1][indx - 1]))
-                       + zd09375v * (LC2VFU(&rgb[1][indx + 1 + ts]) - LC2VFU(&rgb[1][indx - 1 + ts])
-                                     + LC2VFU(&rgb[1][indx + 1 - ts]) - LC2VFU(&rgb[1][indx - 1 - ts]));
-
-              gradwtv = vabsf(zd25v * LVFU(rbhpfh[indx >> 1])
-                              + zd125v * (LVFU(rbhpfh[(indx >> 1) + v1]) + LVFU(rbhpfh[(indx >> 1) - v1])))
-                        * (LVFU(grblpfh[(indx >> 1) - 1]) + LVFU(grblpfh[(indx >> 1) + 1]))
-                        / (epsv + zd1v * (LVFU(grblpfh[(indx >> 1) - 1]) + LVFU(grblpfh[(indx >> 1) + 1]))
-                           + LVFU(rblpfh[(indx >> 1) - 1]) + LVFU(rblpfh[(indx >> 1) + 1]));
-
-              coeff10v += gradwtv * deltgrbv * deltgrbv;
-              coeff11v += gradwtv * gdiffv * deltgrbv;
-              coeff12v += gradwtv * gdiffv * gdiffv;
-
-              //  In Mathematica,
-              //  f[x_]=Expand[Total[Flatten[
-              //  ((1-x) RotateLeft[Gint,shift1]+x
-              //  RotateLeft[Gint,shift2]-cfapad)^2[[dv;;-1;;2,dh;;-1;;2]]]]];
-              //  extremum = -.5Coefficient[f[x],x]/Coefficient[f[x],x^2]
-            }
-            coeff[0][0][c >> 1] += vhadd(coeff00v);
-            coeff[0][1][c >> 1] += vhadd(coeff01v);
-            coeff[0][2][c >> 1] += vhadd(coeff02v);
-            coeff[1][0][c >> 1] += vhadd(coeff10v);
-            coeff[1][1][c >> 1] += vhadd(coeff11v);
-            coeff[1][2][c >> 1] += vhadd(coeff12v);
-
-#endif
-            for(; cc < cc1 - 8; cc += 2, indx += 2)
+            for(int cc = 8 + (FC(rr, 2, filters) & 1), indx = rr * ts + cc, c = FC(rr, cc, filters); cc < cc1 - 8; cc += 2, indx += 2)
             {
 
               // in linear interpolation, colour differences are a quadratic function of interpolation
@@ -844,23 +722,6 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
             } // vert/hor
           }   // colour
 
-          //           if(plistener)
-          //           {
-          //             progresscounter++;
-          //
-          //             if(progresscounter % 8 == 0)
-          // #pragma omp critical(cadetectpass1)
-          //             {
-          //               progress += (double)(8.0 * (ts - border2) * (ts - border2)) / (2 * height * width);
-          //
-          //               if(progress > 1.0)
-          //               {
-          //                 progress = 1.0;
-          //               }
-          //
-          //               plistener->setProgress(progress);
-          //             }
-          //           }
         }
 
 // end of diagnostic pass
@@ -895,7 +756,8 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
             else
             {
               processpasstwo = FALSE;
-              printf("blockdenom vanishes \n");
+              if(g) g->error = CACORRECT_ERROR_MATH;
+              fprintf(stderr, "blockdenom vanishes");
               break;
             }
           }
@@ -1038,10 +900,12 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
             polyord = 2;
             numpar = 4;
 
+            if(g) g->error = CACORRECT_ERROR_LIN;
+
             if(numblox[1] < 10)
             {
-
-              printf("numblox = %d \n", numblox[1]);
+              if(g) g->error = CACORRECT_ERROR_MATH;
+              fprintf(stderr, ", numblox = %d \n", numblox[1]);
               processpasstwo = FALSE;
             }
           }
@@ -1054,9 +918,8 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
               {
                 if(!LinEqSolve(numpar, polymat[c][dir], shiftmat[c][dir], fitparams[c][dir]))
                 {
-                  printf("CA correction pass failed -- can't solve linear equations for colour %d direction "
-                         "%d...\n",
-                         c, dir);
+                  if(g) g->error = CACORRECT_ERROR_MATH;
+                  fprintf(stderr, ", correction pass failed -- can't solve linear equations for colour %d direction %d", c, dir);
                   processpasstwo = FALSE;
                 }
               }
@@ -1203,54 +1066,6 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
           }
 
           // end of border fill
-          // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-          if(!autoCA)
-          {
-            // manual CA correction; use red/blue slider values to set CA shift parameters
-            for(int rr = 3; rr < rr1 - 3; rr++)
-              for(int row = rr + top, cc = 3, indx = rr * ts + cc; cc < cc1 - 3; cc++, indx++)
-              {
-                int col = cc + left;
-                int c = FC(rr, cc, filters);
-
-                if(c != 1)
-                {
-                  // compute directional weights using image gradients
-                  float wtu = 1.0 / SQR(eps + fabsf(rgb[1][(rr + 1) * ts + cc] - rgb[1][(rr - 1) * ts + cc])
-                                        + fabsf(rgb[c][(rr)*ts + cc] - rgb[c][(rr - 2) * ts + cc])
-                                        + fabsf(rgb[1][(rr - 1) * ts + cc] - rgb[1][(rr - 3) * ts + cc]));
-                  float wtd = 1.0 / SQR(eps + fabsf(rgb[1][(rr - 1) * ts + cc] - rgb[1][(rr + 1) * ts + cc])
-                                        + fabsf(rgb[c][(rr)*ts + cc] - rgb[c][(rr + 2) * ts + cc])
-                                        + fabsf(rgb[1][(rr + 1) * ts + cc] - rgb[1][(rr + 3) * ts + cc]));
-                  float wtl = 1.0 / SQR(eps + fabsf(rgb[1][(rr)*ts + cc + 1] - rgb[1][(rr)*ts + cc - 1])
-                                        + fabsf(rgb[c][(rr)*ts + cc] - rgb[c][(rr)*ts + cc - 2])
-                                        + fabsf(rgb[1][(rr)*ts + cc - 1] - rgb[1][(rr)*ts + cc - 3]));
-                  float wtr = 1.0 / SQR(eps + fabsf(rgb[1][(rr)*ts + cc - 1] - rgb[1][(rr)*ts + cc + 1])
-                                        + fabsf(rgb[c][(rr)*ts + cc] - rgb[c][(rr)*ts + cc + 2])
-                                        + fabsf(rgb[1][(rr)*ts + cc + 1] - rgb[1][(rr)*ts + cc + 3]));
-
-                  // store in rgb array the interpolated G value at R/B grid points using directional weighted
-                  // average
-                  rgb[1][indx] = (wtu * rgb[1][indx - v1] + wtd * rgb[1][indx + v1] + wtl * rgb[1][indx - 1]
-                                  + wtr * rgb[1][indx + 1])
-                                 / (wtu + wtd + wtl + wtr);
-                }
-
-                if(row > -1 && row < height && col > -1 && col < width)
-                {
-                  Gtmp[row * width + col] = rgb[1][indx];
-                }
-              }
-
-            float hfrac = -((float)(hblock - 0.5) / (hblsz - 2) - 0.5);
-            float vfrac = -((float)(vblock - 0.5) / (vblsz - 2) - 0.5) * height / width;
-            lblockshifts[0][0] = 2 * vfrac * cared;
-            lblockshifts[0][1] = 2 * hfrac * cared;
-            lblockshifts[1][0] = 2 * vfrac * cablue;
-            lblockshifts[1][1] = 2 * hfrac * cablue;
-          }
-          else
           {
             // CA auto correction; use CA diagnostic pass to set shift parameters
             lblockshifts[0][0] = lblockshifts[0][1] = 0;
@@ -1308,32 +1123,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
           for(int rr = 4; rr < rr1 - 4; rr++)
           {
-            int cc = 4 + (FC(rr, 2, filters) & 1);
-            int c = FC(rr, cc, filters);
-#ifdef __SSE2__
-            vfloat shifthfracv = F2V(shifthfrac[c]);
-            vfloat shiftvfracv = F2V(shiftvfrac[c]);
-            for(; cc < cc1 - 10; cc += 8)
-            {
-              // perform CA correction using colour ratios or colour differences
-              vfloat Ginthfloorv
-                  = vintpf(shifthfracv, LC2VFU(&rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthceil[c]]),
-                           LC2VFU(&rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthfloor[c]]));
-              vfloat Ginthceilv
-                  = vintpf(shifthfracv, LC2VFU(&rgb[1][(rr + shiftvceil[c]) * ts + cc + shifthceil[c]]),
-                           LC2VFU(&rgb[1][(rr + shiftvceil[c]) * ts + cc + shifthfloor[c]]));
-              // Gint is bilinear interpolation of G at CA shift point
-              vfloat Gintv = vintpf(shiftvfracv, Ginthceilv, Ginthfloorv);
-
-              // determine R/B at grid points using colour differences at shift point plus interpolated G
-              // value at grid point
-              // but first we need to interpolate G-R/G-B to grid points...
-              STVFU(grbdiff[((rr)*ts + cc) >> 1], Gintv - LC2VFU(&rgb[c][(rr)*ts + cc]));
-              STVFU(gshift[((rr)*ts + cc) >> 1], Gintv);
-            }
-
-#endif
-            for(; cc < cc1 - 4; cc += 2)
+            for(int cc = 4 + (FC(rr, 2, filters) & 1), c = FC(rr, cc, filters); cc < cc1 - 4; cc += 2)
             {
               // perform CA correction using colour ratios or colour differences
               float Ginthfloor = intp(shifthfrac[c], rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthceil[c]],
@@ -1429,24 +1219,6 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
               RawDataTmp[indx] = rgb[c][(rr)*ts + cc];
             }
           }
-
-          //           if(plistener)
-          //           {
-          //             progresscounter++;
-          //
-          //             if(progresscounter % 8 == 0)
-          // #pragma omp critical(cacorrect)
-          //             {
-          //               progress += (double)(8.0 * (ts - border2) * (ts - border2)) / (2 * height * width);
-          //
-          //               if(progress > 1.0)
-          //               {
-          //                 progress = 1.0;
-          //               }
-          //
-          //               plistener->setProgress(progress);
-          //             }
-          //           }
         }
 
 #ifdef _OPENMP
@@ -1468,28 +1240,126 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     // clean up
     free(buffer);
   }
+  }
 
-  free(Gtmp);
+  if(avoidshift && processpasstwo)
+  {
+    // to avoid or at least reduce the colour shift caused by raw ca correction we compute the per pixel difference factors
+    // of red and blue channel and apply a gaussian blur to them.
+    // Then we apply the resulting factors per pixel on the result of raw ca correction
+#ifdef _OPENMP
+  #pragma omp parallel for
+#endif
+    for(int row = 0; row < height; row++)
+    {
+      const int firstCol = FC(row, 0, filters) & 1;
+      const int color    = FC(row, firstCol, filters);
+      float *nongreen    = (color == 0) ? redfactor : bluefactor;
+      for(int col = firstCol; col < width; col += 2)
+      {
+        nongreen[(row / 2) * h_width + col / 2] = (in[row * width + col] <= 1.0f || oldraw[row * h_width + col / 2] <= 1.0f)
+          ? 1.0f : LIM(oldraw[row * h_width + col / 2] / in[row * width + col], 0.5f, 2.0f);
+      }
+    }
+
+    if(height % 2)
+    {
+      // odd height => factors are not set in last row => use values of preceding row
+      for(int col = 0; col < h_width; col++)
+      {
+        redfactor[(h_height-1) * h_width + col] =  redfactor[(h_height-2) * h_width + col];
+        bluefactor[(h_height-1) * h_width + col] =  bluefactor[(h_height-2) * h_width + col];
+      }
+    }
+
+    if(width % 2)
+    {
+      // odd width => factors for one channel are not set in last column => use value of preceding column
+      const int ngRow = 1 - (FC(0, 0, filters) & 1);
+      const int ngCol = FC(ngRow, 0, filters) & 1;
+      const int color = FC(ngRow, ngCol, filters);
+      float *nongreen = (color == 0) ? redfactor : bluefactor;
+      for(int row = 0; row < h_height; row++)
+      {
+        nongreen[row * h_width + h_width - 1] = nongreen[row * h_width + h_width - 2];
+      }
+    }
+
+    // blur correction factors
+    float valmax[] = { 10.0f };
+    float valmin[] = { 0.1f };
+    dt_gaussian_t *red  = dt_gaussian_init(h_width, h_height, 1, valmax, valmin, 30.0f, 0);
+    dt_gaussian_t *blue = dt_gaussian_init(h_width, h_height, 1, valmax, valmin, 30.0f, 0);
+    if(red && blue)
+    {
+      dt_gaussian_blur(red, redfactor, redfactor);
+      dt_gaussian_blur(blue, bluefactor, bluefactor);
+
+#ifdef _OPENMP
+  #pragma omp for
+#endif
+      for(int row = 2; row < height - 2; row++)
+      {
+        const int firstCol = FC(row, 0, filters) & 1;
+        const int color = FC(row, firstCol, filters);
+        float *nongreen = (color == 0) ? redfactor : bluefactor;
+        for(int col = firstCol; col < width - 2; col += 2)
+        {
+          const float correction = nongreen[row / 2 * h_width + col / 2];
+          out[row * width + col] *= correction;
+        }
+      }
+    }
+    if(red)  dt_gaussian_free(red);
+    if(blue) dt_gaussian_free(blue);
+  }
+
   free(buffer1);
-  free(RawDataTmp);
-
-  //   if(plistener)
-  //   {
-  //     plistener->setProgress(1.0);
-  //   }
+  dt_free_align(RawDataTmp);
+  dt_free_align(Gtmp);
+  dt_free_align(redfactor);
+  dt_free_align(bluefactor);
+  dt_free_align(oldraw);
 }
 
 /*==================================================================================
  * end raw therapee code
  *==================================================================================*/
-
-
-/** process, all real work is done here. */
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static void _display_ca_error(struct dt_iop_module_t *self)
 {
-  CA_correct(self, piece, (float *)i, (float *)o, roi_in, roi_out);
+  dt_iop_cacorrect_gui_data_t *g = (dt_iop_cacorrect_gui_data_t *)self->gui_data;
+
+  if(g == NULL) return;
+   ++darktable.gui->reset;
+
+  if(g->error == CACORRECT_ERROR_CFA)
+    dt_iop_set_module_trouble_message(self, _("error"),
+                                      _("raw CA correction supports only standard RGB bayer filter arrays"), NULL);
+  else if(g->error == CACORRECT_ERROR_MATH)
+     dt_iop_set_module_trouble_message(self, _("bypassed while zooming in"),
+                                      _("while calculating the correction parameters the internal maths failed so module is bypassed.\n"
+                                        "you can get more info by running dt via the console."), NULL);
+  else if(g->error == CACORRECT_ERROR_LIN)
+     dt_iop_set_module_trouble_message(self, _("quality"),
+                                      _("internals maths found too few data points so restricted the order of the fit to linear.\n"
+                                        "you might view bad correction results."), NULL);
+  else if(g->error == CACORRECT_ERROR_SIZE)
+    dt_iop_set_module_trouble_message(self, _("bypassed while zooming in"),
+                                      _("to calculate good parameters for raw CA correction we want full sensor data or at least a sensible part of that.\n"
+                                        "the image shown in darkroom would look vastly different from developed files so effect is bypassed now."), NULL);
+  else
+    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
+
+  --darktable.gui->reset;
 }
+
+static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self == NULL) return;
+  _display_ca_error(self);
+}
+
 
 void reload_defaults(dt_iop_module_t *module)
 {
@@ -1506,14 +1376,23 @@ void reload_defaults(dt_iop_module_t *module)
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
+  dt_iop_cacorrect_params_t *p = (dt_iop_cacorrect_params_t *)params;
+  dt_iop_cacorrect_data_t *d = (dt_iop_cacorrect_data_t *) piece->data;
+
   dt_image_t *img = &pipe->image;
-  if(!dt_image_is_raw(img) || (dt_image_monochrome_flags(img) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)))
-    piece->enabled = 0;
+  const gboolean active = (dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) &&
+     !(dt_image_monochrome_flags(img) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)));
+
+  if(!active) piece->enabled = 0;
+
+  d->iterations = p->iterations;
+  d->avoidshift = p->avoidshift;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  self->commit_params(self, self->default_params, pipe, piece);
+  free(piece->data);
+  piece->data = malloc(sizeof(dt_iop_cacorrect_data_t));
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1523,32 +1402,76 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(dt_iop_module_t *self)
 {
-  if(dt_image_is_raw(&self->dev->image_storage))
-    if(self->dev->image_storage.buf_dsc.filters != 9u &&
-       !(dt_image_monochrome_flags(&self->dev->image_storage) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)))
-      gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction"));
-    else
-      gtk_label_set_text(GTK_LABEL(self->widget),
-                         _("automatic chromatic aberration correction\ndisabled for non-Bayer sensors"));
-  else
-    gtk_label_set_text(GTK_LABEL(self->widget),
-                       _("automatic chromatic aberration correction\nonly works for raw images."));
+  dt_iop_cacorrect_gui_data_t *g = (dt_iop_cacorrect_gui_data_t *)self->gui_data;
+  dt_iop_cacorrect_params_t *p = (dt_iop_cacorrect_params_t *)self->params;
+
+  dt_image_t *img = &self->dev->image_storage;
+
+  const gboolean active = (dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) &&
+     !(dt_image_monochrome_flags(img) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)));
+
+  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), active ? "raw" : "non_raw");
+
+  gtk_widget_set_visible(g->avoidshift, active);
+  gtk_widget_set_visible(g->iterations, active);
+  dt_bauhaus_combobox_set_from_value(g->iterations, p->iterations);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->avoidshift), p->avoidshift);
+
+  _display_ca_error(self);
+}
+
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
+{
+  dt_iop_cacorrect_gui_data_t *g = (dt_iop_cacorrect_gui_data_t *)self->gui_data;
+  dt_iop_cacorrect_params_t *p = (dt_iop_cacorrect_params_t *)self->params;
+
+  dt_image_t *img = &self->dev->image_storage;
+
+  const gboolean active = (dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) &&
+     !(dt_image_monochrome_flags(img) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)));
+
+  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), active ? "raw" : "non_raw");
+
+  gtk_widget_set_visible(g->avoidshift, active);
+  dt_bauhaus_combobox_set_from_value(g->iterations, p->iterations);
+  gtk_widget_set_visible(g->iterations, active);
+
+  g->error = CACORRECT_ERROR_NO;
+  _display_ca_error(self);
+}
+
+void gui_cleanup(dt_iop_module_t *self)
+{
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
+  IOP_GUI_FREE;
 }
 
 void gui_init(dt_iop_module_t *self)
 {
-  IOP_GUI_ALLOC(cacorrect);
+  dt_iop_cacorrect_gui_data_t *g = IOP_GUI_ALLOC(cacorrect);
+  g->error = CACORRECT_ERROR_NO;
 
-  self->widget = dt_ui_label_new("");
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
+                            G_CALLBACK(_develop_ui_pipe_finished_callback), self);
+
+  GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  g->iterations = dt_bauhaus_combobox_from_params(self, "iterations");
+  gtk_widget_set_tooltip_text(g->iterations, _("iteration runs, default is twice"));
+
+  g->avoidshift = dt_bauhaus_toggle_from_params(self, "avoidshift");
+  gtk_widget_set_tooltip_text(g->avoidshift, _("activate colorshift correction for blue & red channels"));
+
+  // start building top level widget
+  self->widget = gtk_stack_new();
+  gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
+  gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "raw");
+
+  GtkWidget *label_non_raw = dt_ui_label_new(_("automatic chromatic aberration correction\nonly for bayer raw files"));
+  gtk_stack_add_named(GTK_STACK(self->widget), label_non_raw, "non_raw");
 }
 
-/** additional, optional callbacks to capture darkroom center events. */
-// void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
-// int32_t pointery);
-// int mouse_moved(dt_iop_module_t *self, double x, double y, double pressure, int which);
-// int button_pressed(dt_iop_module_t *self, double x, double y, double pressure, int which, int type,
-// uint32_t state);
-
+#undef CA_SIZE_MINIMUM
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

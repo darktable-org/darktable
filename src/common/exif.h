@@ -26,12 +26,39 @@
 extern "C" {
 #endif
 
+typedef enum dt_dng_illuminant_t // from adobes dng_sdk
+{
+	DT_LS_Unknown              =  0,
+	DT_LS_Daylight             =  1,
+	DT_LS_Fluorescent          =  2,
+	DT_LS_Tungsten             =  3,
+	DT_LS_Flash                =  4,
+	DT_LS_FineWeather          =  9,
+	DT_LS_CloudyWeather        = 10,
+	DT_LS_Shade                = 11,
+	DT_LS_DaylightFluorescent  = 12, // D  5700 - 7100K
+	DT_LS_DayWhiteFluorescent  = 13, // N  4600 - 5500K
+	DT_LS_CoolWhiteFluorescent = 14, // W  3800 - 4500K
+	DT_LS_WhiteFluorescent     = 15, // WW 3250 - 3800K
+	DT_LS_WarmWhiteFluorescent = 16, // L  2600 - 3250K
+	DT_LS_StandardLightA       = 17,
+	DT_LS_StandardLightB       = 18,
+	DT_LS_StandardLightC       = 19,
+	DT_LS_D55                  = 20,
+	DT_LS_D65                  = 21,
+	DT_LS_D75                  = 22,
+	DT_LS_D50                  = 23,
+	DT_LS_ISOStudioTungsten    = 24,
+	DT_LS_Other                = 255
+} dt_dng_illuminant_t;
+
+
 /** set the list of available tags from Exvi2 */
 void dt_exif_set_exiv2_taglist();
 
 /** get the list of available tags from Exvi2 */
 /** must not be freed */
-const GList * const dt_exif_get_exiv2_taglist();
+const GList* dt_exif_get_exiv2_taglist();
 
 /** read metadata from file with full path name, XMP data trumps IPTC data trumps EXIF data, store to image
  * struct. returns 0 on success. */

@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2020 darktable developers.
+   Copyright (C) 2013-2021 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -52,10 +52,12 @@ static int selection_cb(lua_State *L)
     g_list_free(new_selection);
   }
   lua_newtable(L);
+  int table_index = 1;
   while(image)
   {
     luaA_push(L, dt_lua_image_t, &image->data);
-    luaL_ref(L, -2);
+    lua_seti(L, -2, table_index);
+    table_index++;
     image = g_list_delete_link(image, image);
   }
   return 1;
@@ -78,16 +80,15 @@ static int hovered_cb(lua_State *L)
 static int act_on_cb(lua_State *L)
 {
   lua_newtable(L);
-  const GList *image = dt_view_get_images_to_act_on(FALSE, TRUE);
-  while(image)
+  int table_index = 1;
+  for(const GList *image = dt_view_get_images_to_act_on(FALSE, TRUE, TRUE); image; image = g_list_next(image))
   {
     luaA_push(L, dt_lua_image_t, &image->data);
-    luaL_ref(L, -2);
-    image = g_list_next((GList *)image);
+    lua_seti(L, -2, table_index);
+    table_index++;
   }
   return 1;
 }
-
 
 static int current_view_cb(lua_State *L)
 {
@@ -160,7 +161,6 @@ static int panel_hide_all_cb(lua_State *L)
 static int panel_show_all_cb(lua_State *L)
 {
   for(int k = 0; k < DT_UI_PANEL_SIZE; k++) dt_ui_panel_show(darktable.gui->ui, k, TRUE, TRUE);
-  // code goes here
   return 0;
 }
 
@@ -218,10 +218,10 @@ typedef dt_progress_t *dt_lua_backgroundjob_t;
 
 static int job_canceled(lua_State *L)
 {
-  lua_getuservalue(L, 1);
+  lua_getiuservalue(L, 1, 1);
   lua_getfield(L, -1, "cancel_callback");
   lua_pushvalue(L, -3);
-  lua_call(L,1,0);
+  lua_call(L, 1, 0);
   lua_pop(L, 2);
   return 0;
 }
@@ -229,8 +229,8 @@ static int job_canceled(lua_State *L)
 static void lua_job_cancelled(dt_progress_t *progress, gpointer user_data)
 {
   dt_lua_async_call_alien(job_canceled,
-      0, NULL,NULL,
-      LUA_ASYNC_TYPENAME,"dt_lua_backgroundjob_t",progress,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "dt_lua_backgroundjob_t", progress,
       LUA_ASYNC_DONE);
 }
 
@@ -252,7 +252,7 @@ static int lua_create_job(lua_State *L)
   luaA_push(L, dt_lua_backgroundjob_t, &progress);
   if(cancellable)
   {
-    lua_getuservalue(L, -1);
+    lua_getiuservalue(L, -1, 1);
     lua_pushvalue(L, 3);
     lua_setfield(L, -2, "cancel_callback");
     lua_pop(L, 1);
@@ -315,17 +315,20 @@ static int lua_job_valid(lua_State *L)
 static void on_mouse_over_image_changed(gpointer instance, gpointer user_data)
 {
   int imgid = dt_control_get_mouse_over_id();
-  if(imgid != -1) {
-  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
-      0, NULL,NULL,
-      LUA_ASYNC_TYPENAME,"char*","mouse-over-image-changed",
-      LUA_ASYNC_TYPENAME,"dt_lua_image_t",imgid,
-      LUA_ASYNC_DONE);
-  } else {
-  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
-      0, NULL,NULL,
-      LUA_ASYNC_TYPENAME,"char*","mouse-over-image-changed",
-      LUA_ASYNC_DONE);
+  if(imgid != -1) 
+  {
+    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+        0, NULL, NULL,
+        LUA_ASYNC_TYPENAME, "char*", "mouse-over-image-changed",
+        LUA_ASYNC_TYPENAME, "dt_lua_image_t", imgid,
+        LUA_ASYNC_DONE);
+  } 
+  else 
+  {
+    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+        0, NULL, NULL,
+        LUA_ASYNC_TYPENAME, "char*", "mouse-over-image-changed",
+        LUA_ASYNC_DONE);
   }
 }
 
@@ -383,14 +386,14 @@ int dt_lua_init_gui(lua_State *L)
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "views");
 
-    luaA_enum(L,dt_ui_panel_t);
-    luaA_enum_value(L,dt_ui_panel_t,DT_UI_PANEL_TOP);
-    luaA_enum_value(L,dt_ui_panel_t,DT_UI_PANEL_CENTER_TOP);
-    luaA_enum_value(L,dt_ui_panel_t,DT_UI_PANEL_CENTER_BOTTOM);
-    luaA_enum_value(L,dt_ui_panel_t,DT_UI_PANEL_LEFT);
-    luaA_enum_value(L,dt_ui_panel_t,DT_UI_PANEL_RIGHT);
-    luaA_enum_value(L,dt_ui_panel_t,DT_UI_PANEL_BOTTOM);
-    luaA_enum_value(L,dt_ui_panel_t,DT_UI_PANEL_SIZE);
+    luaA_enum(L, dt_ui_panel_t);
+    luaA_enum_value(L, dt_ui_panel_t, DT_UI_PANEL_TOP);
+    luaA_enum_value(L, dt_ui_panel_t, DT_UI_PANEL_CENTER_TOP);
+    luaA_enum_value(L, dt_ui_panel_t, DT_UI_PANEL_CENTER_BOTTOM);
+    luaA_enum_value(L, dt_ui_panel_t, DT_UI_PANEL_LEFT);
+    luaA_enum_value(L, dt_ui_panel_t, DT_UI_PANEL_RIGHT);
+    luaA_enum_value(L, dt_ui_panel_t, DT_UI_PANEL_BOTTOM);
+    luaA_enum_value(L, dt_ui_panel_t, DT_UI_PANEL_SIZE);
 
 
 
@@ -403,6 +406,7 @@ int dt_lua_init_gui(lua_State *L)
 
     // allow to react to highlighting an image
     lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+    lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
     lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
     dt_lua_event_add(L, "mouse-over-image-changed");
     DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, G_CALLBACK(on_mouse_over_image_changed), NULL);

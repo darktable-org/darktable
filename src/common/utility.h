@@ -37,14 +37,18 @@ GList *dt_util_glist_uniq(GList *items);
 /** fixes the given path by replacing a possible tilde with the correct home directory */
 gchar *dt_util_fix_path(const gchar *path);
 size_t dt_utf8_strlcpy(char *dest, const char *src, size_t n);
-/** get the size of a file in bytes */
-off_t dt_util_get_file_size(const char *filename);
+/** returns true if a file is regular, has read access and a filesize > 0 */
+gboolean dt_util_test_image_file(const char *filename);
+/** returns true if the path represents a directory with write access */
+gboolean dt_util_test_writable_dir(const char *path);
 /** returns true if dirname is empty */
 gboolean dt_util_is_dir_empty(const char *dirname);
 /** returns a valid UTF-8 string for the given char array. has to be freed with g_free(). */
 gchar *dt_util_foo_to_utf8(const char *string);
 /** returns the number of occurence of character in a text. */
 guint dt_util_string_count_char(const char *text, const char needle);
+/* helper function to convert en float numbers to local based numbers for scanf */
+void dt_util_str_to_loc_numbers_format(char *data);
 
 typedef enum dt_logo_season_t
 {
@@ -72,8 +76,26 @@ gboolean dt_util_gps_elevation_to_number(const double r_1, const double r_2, cha
 // make paths absolute and try to normalize on Windows. also deal with character encoding on Windows.
 gchar *dt_util_normalize_path(const gchar *input);
 
+#ifdef WIN32
+// returns TRUE if the path is a Windows UNC (\\server\share\...\file)
+const gboolean dt_util_path_is_UNC(const gchar *filename);
+#endif
+
+// gets the directory components of a file name, like g_path_get_dirname(), but works also with Windows networks paths (\\hostname\share\file)
+gchar *dt_util_path_get_dirname(const gchar *filename);
+
 // format exposure time string
 gchar *dt_util_format_exposure(const float exposuretime);
+
+// read the contents of the given file into a malloc'ed buffer
+// returns NULL if unable to read file or alloc memory; sets filesize to the number of bytes returned
+char *dt_read_file(const char *filename, size_t *filesize);
+
+// copy the contents of the given file to a new file
+void dt_copy_file(const char *src, const char *dst);
+
+// copy the contents of a file in dt's data directory to a new file
+void dt_copy_resource_file(const char *src, const char *dst);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

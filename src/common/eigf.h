@@ -85,9 +85,9 @@ static inline void eigf_variance_analysis(const float *const restrict guide, // 
   float minmg = 10000000.0f;
   float maxmg = 0.0f;
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
 dt_omp_firstprivate(guide, mask, in, Ndim) \
-  schedule(simd:static) aligned(guide, mask, in:64) \
+  schedule(simd:static) \
   reduction(max:maxg, maxm, maxg2, maxmg)\
   reduction(min:ming, minm, ming2, minmg)
 #endif
@@ -101,18 +101,18 @@ dt_omp_firstprivate(guide, mask, in, Ndim) \
     in[k * 4 + 1] = pixelg2;
     in[k * 4 + 2] = pixelm;
     in[k * 4 + 3] = pixelmg;
-    if(pixelg < ming) ming = pixelg;
-    if(pixelg > maxg) maxg = pixelg;
-    if(pixelm < minm) minm = pixelm;
-    if(pixelm > maxm) maxm = pixelm;
-    if(pixelg2 < ming2) ming2 = pixelg2;
-    if(pixelg2 > maxg2) maxg2 = pixelg2;
-    if(pixelmg < minmg) minmg = pixelmg;
-    if(pixelmg > maxmg) maxmg = pixelmg;
+    ming = MIN(ming,pixelg);
+    maxg = MAX(maxg,pixelg);
+    minm = MIN(minm,pixelm);
+    maxm = MAX(maxm,pixelm);
+    ming2 = MIN(ming2,pixelg2);
+    maxg2 = MAX(maxg2,pixelg2);
+    minmg = MIN(minmg,pixelmg);
+    maxmg = MAX(maxmg,pixelmg);
   }
 
-  float max[4] = {maxg, maxg2, maxm, maxmg};
-  float min[4] = {ming, ming2, minm, minmg};
+  dt_aligned_pixel_t max = {maxg, maxg2, maxm, maxmg};
+  dt_aligned_pixel_t min = {ming, ming2, minm, minmg};
   dt_gaussian_t *g = dt_gaussian_init(width, height, 4, max, min, sigma, 0);
   if(!g) return;
   dt_gaussian_blur_4c(g, in, out);
@@ -148,9 +148,9 @@ static inline void eigf_variance_analysis_no_mask(const float *const restrict gu
   float ming2 = 10000000.0f;
   float maxg2 = 0.0f;
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
 dt_omp_firstprivate(guide, in, Ndim) \
-  schedule(simd:static) aligned(guide, in:64) \
+  schedule(simd:static) \
   reduction(max:maxg, maxg2)\
   reduction(min:ming, ming2)
 #endif
@@ -160,10 +160,10 @@ dt_omp_firstprivate(guide, in, Ndim) \
     const float pixelg2 = pixelg * pixelg;
     in[2 * k] = pixelg;
     in[2 * k + 1] = pixelg2;
-    if(pixelg < ming) ming = pixelg;
-    if(pixelg > maxg) maxg = pixelg;
-    if(pixelg2 < ming2) ming2 = pixelg2;
-    if(pixelg2 > maxg2) maxg2 = pixelg2;
+    ming = MIN(ming,pixelg);
+    maxg = MAX(maxg,pixelg);
+    ming2 = MIN(ming2,pixelg2);
+    maxg2 = MAX(maxg2,pixelg2);
   }
 
   float max[2] = {maxg, maxg2};

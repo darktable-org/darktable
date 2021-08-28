@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,13 +48,12 @@ static void _selection_raise_signal()
 }
 
 /* updates the internal collection of an selection */
-static void _selection_update_collection(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
-                                         int next, gpointer user_data);
+static void _selection_update_collection(gpointer instance, dt_collection_change_t query_change,
+                                         dt_collection_properties_t changed_property, gpointer imgs, int next,
+                                         gpointer user_data);
 
 static void _selection_select(dt_selection_t *selection, uint32_t imgid)
 {
-  gchar *query = NULL;
-
   if(imgid != -1)
   {
     const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
@@ -63,15 +62,15 @@ static void _selection_select(dt_selection_t *selection, uint32_t imgid)
       const int img_group_id = image->group_id;
       dt_image_cache_read_release(darktable.image_cache, image);
 
+      gchar *query = NULL;
       if(!darktable.gui || !darktable.gui->grouping || darktable.gui->expanded_group_id == img_group_id
          || !selection->collection)
       {
-        query = dt_util_dstrcat(query, "INSERT OR IGNORE INTO main.selected_images VALUES (%d)", imgid);
+        query = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images VALUES (%d)", imgid);
       }
       else
       {
-        query = dt_util_dstrcat(query,
-                                "INSERT OR IGNORE INTO main.selected_images"
+        query = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images"
                                 "  SELECT id"
                                 "  FROM main.images "
                                 "  WHERE group_id = %d AND id IN (%s)",
@@ -89,7 +88,8 @@ static void _selection_select(dt_selection_t *selection, uint32_t imgid)
   dt_collection_hint_message(darktable.collection);
 }
 
-void _selection_update_collection(gpointer instance, dt_collection_change_t query_change, gpointer imgs, int next,
+void _selection_update_collection(gpointer instance, dt_collection_change_t query_change,
+                                  dt_collection_properties_t changed_property, gpointer imgs, int next,
                                   gpointer user_data)
 {
   dt_selection_t *selection = (dt_selection_t *)user_data;
@@ -111,7 +111,7 @@ const dt_selection_t *dt_selection_new()
   dt_selection_t *s = g_malloc0(sizeof(dt_selection_t));
 
   /* initialize the collection copy */
-  _selection_update_collection(NULL, DT_COLLECTION_CHANGE_RELOAD, NULL, -1, (gpointer)s);
+  _selection_update_collection(NULL, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL, -1, (gpointer)s);
 
   /* initialize last_single_id based on current database */
   s->last_single_id = -1;
@@ -141,12 +141,10 @@ void dt_selection_free(dt_selection_t *selection)
 
 void dt_selection_invert(dt_selection_t *selection)
 {
-  gchar *fullq = NULL;
-
   if(!selection->collection) return;
 
-  fullq = dt_util_dstrcat(fullq, "%s", "INSERT OR IGNORE INTO main.selected_images ");
-  fullq = dt_util_dstrcat(fullq, "%s", dt_collection_get_query(selection->collection));
+  gchar *fullq = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images %s",
+                                 dt_collection_get_query(selection->collection));
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "INSERT INTO memory.tmp_selection SELECT imgid FROM main.selected_images", NULL, NULL,
@@ -185,7 +183,6 @@ void dt_selection_select(dt_selection_t *selection, uint32_t imgid)
 
 void dt_selection_deselect(dt_selection_t *selection, uint32_t imgid)
 {
-  gchar *query = NULL;
   selection->last_single_id = -1;
 
   if(imgid != -1)
@@ -196,14 +193,15 @@ void dt_selection_deselect(dt_selection_t *selection, uint32_t imgid)
       const int img_group_id = image->group_id;
       dt_image_cache_read_release(darktable.image_cache, image);
 
+      gchar *query = NULL;
       if(!darktable.gui || !darktable.gui->grouping || darktable.gui->expanded_group_id == img_group_id)
       {
-        query = dt_util_dstrcat(query, "DELETE FROM main.selected_images WHERE imgid = %d", imgid);
+        query = g_strdup_printf("DELETE FROM main.selected_images WHERE imgid = %d", imgid);
       }
       else
       {
-        query = dt_util_dstrcat(query, "DELETE FROM main.selected_images WHERE imgid IN "
-                                       "(SELECT id FROM main.images WHERE group_id = %d)",
+        query = g_strdup_printf("DELETE FROM main.selected_images WHERE imgid IN "
+                                "(SELECT id FROM main.images WHERE group_id = %d)",
                                 img_group_id);
       }
 
@@ -258,12 +256,10 @@ void dt_selection_toggle(dt_selection_t *selection, uint32_t imgid)
 
 void dt_selection_select_all(dt_selection_t *selection)
 {
-  gchar *fullq = NULL;
-
   if(!selection->collection) return;
 
-  fullq = dt_util_dstrcat(fullq, "%s", "INSERT OR IGNORE INTO main.selected_images ");
-  fullq = dt_util_dstrcat(fullq, "%s", dt_collection_get_query_no_group(selection->collection));
+  gchar *fullq = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images %s",
+                                 dt_collection_get_query_no_group(selection->collection));
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
@@ -280,8 +276,6 @@ void dt_selection_select_all(dt_selection_t *selection)
 
 void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
 {
-  gchar *fullq = NULL;
-
   if(!selection->collection) return;
 
   /* get start and end rows for range selection */
@@ -336,8 +330,8 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
 
   dt_collection_update(selection->collection);
 
-  fullq = dt_util_dstrcat(fullq, "%s", "INSERT OR IGNORE INTO main.selected_images ");
-  fullq = dt_util_dstrcat(fullq, "%s", dt_collection_get_query_no_group(selection->collection));
+  gchar *fullq = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images %s",
+                                 dt_collection_get_query_no_group(selection->collection));
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), fullq, -1, &stmt, NULL);
 
@@ -385,8 +379,6 @@ void dt_selection_select_filmroll(dt_selection_t *selection)
 
 void dt_selection_select_unaltered(dt_selection_t *selection)
 {
-  char *fullq = NULL;
-
   if(!selection->collection) return;
 
   /* set unaltered collection filter and update query */
@@ -395,10 +387,8 @@ void dt_selection_select_unaltered(dt_selection_t *selection)
                                                          | COLLECTION_FILTER_UNALTERED));
   dt_collection_update(selection->collection);
 
-
-  fullq = dt_util_dstrcat(fullq, "%s", "INSERT OR IGNORE INTO main.selected_images ");
-  fullq = dt_util_dstrcat(fullq, "%s", dt_collection_get_query(selection->collection));
-
+  char *fullq = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images %s",
+                                dt_collection_get_query(selection->collection));
 
   /* clean current selection and select unaltered images */
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
@@ -424,11 +414,9 @@ void dt_selection_select_list(struct dt_selection_t *selection, GList *list)
   while(list)
   {
     int count = 1;
-    gchar *query = NULL;
-
     int imgid = GPOINTER_TO_INT(list->data);
     selection->last_single_id = imgid;
-    query = dt_util_dstrcat(query, "INSERT OR IGNORE INTO main.selected_images VALUES (%d)", imgid);
+    gchar *query = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images VALUES (%d)", imgid);
     list = g_list_next(list);
     while(list && count < 400)
     {
@@ -449,6 +437,58 @@ void dt_selection_select_list(struct dt_selection_t *selection, GList *list)
   dt_collection_hint_message(darktable.collection);
 }
 
+// return the query used to get the selection
+// be carefull : if ordering is TRUE, the order depend of only_visible :
+// DESC order if only_visible is TRUE ; ASC order otherwise...
+gchar *dt_selection_get_list_query(struct dt_selection_t *selection, const gboolean only_visible,
+                                   const gboolean ordering)
+{
+  gchar *query = NULL;
+  if(only_visible)
+  {
+    // we don't want to get image hidden because of grouping
+    query = g_strdup_printf("SELECT m.imgid"
+                            " FROM memory.collected_images as m"
+                            " WHERE m.imgid IN (SELECT s.imgid FROM main.selected_images as s)%s",
+                            ordering ? " ORDER BY m.rowid DESC" : "");
+  }
+  else
+  {
+    // we need to get hidden grouped images too, and the
+    // selection already contains them, but not in right order
+    if(ordering)
+    {
+      query = g_strdup_printf("SELECT DISTINCT ng.id"
+                              " FROM (%s) AS ng"
+                              " WHERE ng.id IN (SELECT s.imgid FROM main.selected_images as s)",
+                              dt_collection_get_query_no_group(dt_selection_get_collection(selection)));
+    }
+    else
+    {
+      query = g_strdup("SELECT imgid FROM main.selected_images");
+    }
+  }
+  return query;
+}
+
+// return a list of all selected imgid
+GList *dt_selection_get_list(struct dt_selection_t *selection, const gboolean only_visible, const gboolean ordering)
+{
+  GList *l = NULL;
+  gchar *query = dt_selection_get_list_query(selection, only_visible, ordering);
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  g_free(query);
+  while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    l = g_list_prepend(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+  }
+  if(!(only_visible && ordering)) l = g_list_reverse(l);
+  if(stmt) sqlite3_finalize(stmt);
+
+  return l;
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

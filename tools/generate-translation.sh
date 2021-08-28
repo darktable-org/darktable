@@ -33,6 +33,7 @@ declare -A LANG_NAME=( [af]=Afrikaans
                        [de]=German
                        [el]=Greek
                        [es]="European Spanish"
+                       [eo]=Esperanto
                        [fi]=Finnish
                        [gl]=Galician
                        [he]=Hebrew
@@ -49,10 +50,13 @@ declare -A LANG_NAME=( [af]=Afrikaans
                        [sk]=Slovak
                        [sl]=Slovenian
                        [sq]=Albanian
+                       [sr@latin]="Serbian Latin"
+                       [sr]="Serbian Cyrilic"
                        [sv]=Swedish
                        [th]=Thai
                        [uk]=Ukrainian
-                       [zh_CN]=Chinese )
+                       [zh_CN]="Chinese - China"
+                       [zh_TW]="Chinese - Taiwan" )
 
 
 

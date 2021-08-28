@@ -35,6 +35,10 @@
 
 #include "iop/filmicrgb.c"
 
+#ifdef _WIN32
+#include "win/main_wrapper.h"
+#endif
+
 /*
  * DEFINITIONS
  */
@@ -99,12 +103,12 @@ static void test_pixel_rgb_norm_power(void **state)
     p[3] = 2.0f;  // to make sure pixel[3] has no influence
     float norm = pixel_rgb_norm_power(p);
     TR_DEBUG("pixel={%e, %e, %e) => norm=%e", p[0], p[1], p[2], norm);
-    float numerator = powf(p[0], 3) + powf(p[1], 3) + powf(p[2], 3);
-    float denominator = powf(p[0], 2) + powf(p[1], 2) + powf(p[2], 2);
+    float numerator = p[0] * p[0] * p[0] + p[1] * p[1] * p[1] + p[2] * p[2] * p[2];
+    float denominator = p[0] * p[0] + p[1] * p[1] + p[2] * p[2];
     float exp_norm = numerator / denominator;
     assert_float_equal(norm, exp_norm, E);
     assert_true(norm > 0.0f);
-    assert_true(norm <= 1.0f);
+    assert_true(norm <= 1.0f + 1e-6f);
   }
   testimg_free(ti);
 
@@ -324,7 +328,7 @@ static float saturation_gui_to_internal(float saturation_percent)
   // leave it for the moment (Feb 2020). This code here needs to be adapted when
   // the bug gets fixed.
 
-  TR_BUG("saturation converstion from gui to internal is wrong");
+  TR_BUG("saturation conversion from gui to internal is wrong");
   return (2.0f * saturation_percent / 100.0f + 1.0f);  // copied from filmicrgb.c
   //fix: return 100.0f / fmaxf(100.0f - saturation_percent, 1e-6);
 }
@@ -499,11 +503,10 @@ static void test_linear_saturation(void **state)
   testimg_free(ti);
 }
 
-
 /*
  * MAIN FUNCTION
  */
-int main()
+int main(int argc, char* argv[])
 {
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_name),

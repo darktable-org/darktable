@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "color_conversion.cl"
+#include "color_conversion.h"
 #include "rgb_norms.h"
 
 float rgblevels_1c(const float pixel, global const float *levels, const float inv_gamma, read_only image2d_t lut)

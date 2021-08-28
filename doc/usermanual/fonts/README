@@ -1,7 +1,0 @@
-../fopconfig.xml defined the fonts available for the fop process
-
-../xsl/darktable_fo.xsl is the stylesheet for fop and here the defined fonts can be selected for the document
-
-Generate xml files for fonts... referenced in fopconfig.xml
-
-find ./ -name "*.ttf" -type f -exec fop-ttfreader {} {}.xml \;

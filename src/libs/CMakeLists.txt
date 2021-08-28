@@ -83,6 +83,29 @@ add_library(global_toolbox MODULE "tools/global_toolbox.c")
 add_library(timeline MODULE "tools/timeline.c")
 add_library(image_infos MODULE "tools/image_infos.c")
 
+find_path(PORTMIDI_INCLUDE_DIR NAMES portmidi.h
+          DOC "The Portmidi include directory"
+)
+find_library(PORTMIDI_LIBRARY NAMES portmidi
+          DOC "The Portmidi library"
+)
+if(PORTMIDI_INCLUDE_DIR)
+  add_definitions("-DHAVE_PORTMIDI")
+  include_directories(${PORTMIDI_INCLUDE_DIRS})
+  set(MODULES ${MODULES} midi)
+  add_library(midi MODULE "tools/midi.c")
+  target_link_libraries (midi ${PORTMIDI_LIBRARY})
+endif()
+
+find_package(SDL2)
+if(SDL2_INCLUDE_DIRS)
+  add_definitions("-DHAVE_SDL")
+  include_directories(${SDL2_INCLUDE_DIRS})
+  set(MODULES ${MODULES} gamepad)
+  add_library(gamepad MODULE "tools/gamepad.c")
+  target_link_libraries(gamepad ${SDL2_LIBRARIES})
+endif()
+
 if(BUILD_BATTERY_INDICATOR)
   add_library(battery_indicator MODULE "tools/battery_indicator.c")
 endif()
@@ -96,9 +119,10 @@ endif(Gphoto2_FOUND)
 
 # the modules specific to map mode
 if(USE_MAP)
-	add_library(location MODULE "location.c")
-	add_library(map_settings MODULE "map_settings.c")
-	set(MODULES ${MODULES} location map_settings)
+  add_library(location MODULE "location.c")
+  add_library(map_settings MODULE "map_settings.c")
+  add_library(map_locations MODULE "map_locations.c")
+  set(MODULES ${MODULES} location map_settings map_locations)
 endif(USE_MAP)
 
 # the modules specific to geotagging module

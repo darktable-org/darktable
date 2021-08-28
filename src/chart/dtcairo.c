@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2019-2020 darktable developers.
+ *    Copyright (C) 2019-2021 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ void draw_cross(cairo_t *cr, point_t center)
   cairo_line_to(cr, center.x, center.y + 10);
 }
 
-void draw_box(cairo_t *cr, box_t box, const double *homography)
+void draw_box(cairo_t *cr, box_t box, const float *homography)
 {
   point_t p[4];
   p[TOP_LEFT] = p[TOP_RIGHT] = p[BOTTOM_RIGHT] = p[BOTTOM_LEFT] = box.p;
@@ -89,10 +89,9 @@ void draw_boundingbox(cairo_t *cr, point_t *bb)
   for(int i = 0; i < 4; i++) draw_line(cr, bb[i], bb[(i + 1) % 4]);
 }
 
-void draw_f_boxes(cairo_t *cr, const double *homography, chart_t *chart)
+void draw_f_boxes(cairo_t *cr, const float *homography, chart_t *chart)
 {
-  GList *iter = chart->f_list;
-  while(iter)
+  for(GList *iter = chart->f_list; iter; iter = g_list_next(iter))
   {
     f_line_t *f = iter->data;
     for(int i = 0; i < 4; i++)
@@ -100,11 +99,10 @@ void draw_f_boxes(cairo_t *cr, const double *homography, chart_t *chart)
       point_t p = apply_homography(f->p[i], homography);
       draw_cross(cr, p);
     }
-    iter = g_list_next(iter);
   }
 }
 
-static void _draw_boxes(cairo_t *cr, const double *homography, GHashTable *table)
+static void _draw_boxes(cairo_t *cr, const float *homography, GHashTable *table)
 {
   GHashTableIter table_iter;
   gpointer key, value;
@@ -117,17 +115,17 @@ static void _draw_boxes(cairo_t *cr, const double *homography, GHashTable *table
   }
 }
 
-void draw_d_boxes(cairo_t *cr, const double *homography, chart_t *chart)
+void draw_d_boxes(cairo_t *cr, const float *homography, chart_t *chart)
 {
   _draw_boxes(cr, homography, chart->d_table);
 }
 
-void draw_color_boxes_outline(cairo_t *cr, const double *homography, chart_t *chart)
+void draw_color_boxes_outline(cairo_t *cr, const float *homography, chart_t *chart)
 {
   _draw_boxes(cr, homography, chart->box_table);
 }
 
-void draw_color_boxes_inside(cairo_t *cr, const double *homography, chart_t *chart, float shrink, float line_width,
+void draw_color_boxes_inside(cairo_t *cr, const float *homography, chart_t *chart, float shrink, float line_width,
                                gboolean colored)
 {
   GHashTableIter table_iter;
@@ -198,7 +196,7 @@ cairo_surface_t *cairo_surface_create_from_xyz_data(const float *const image, co
     const float *iter = image + y * width * 3;
     for(int x = 0; x < width; x++, iter += 3)
     {
-      float sRGB[3];
+      dt_aligned_pixel_t sRGB;
       int32_t pixel = 0;
       dt_XYZ_to_sRGB_clipped(iter, sRGB);
       for(int c = 0; c < 3; c++) pixel |= ((int)(sRGB[c] * 255) & 0xff) << (16 - c * 8);

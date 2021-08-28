@@ -19,11 +19,12 @@
 #include "config.h"
 #endif
 #include <assert.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
+#include "common/box_filters.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -35,12 +36,11 @@
 #include "iop/iop_api.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#if defined(__SSE__)
+#include <xmmintrin.h>
+#endif
 
 #define MAX_RADIUS 16
-#define BOX_ITERATIONS 8
-
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
-#define LCLIP(x) ((x < 0) ? 0.0 : (x > 100.0) ? 100.0 : x)
 
 DT_MODULE_INTROSPECTION(1, dt_iop_highpass_params_t)
 
@@ -75,6 +75,15 @@ const char *name()
   return _("highpass");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("isolate high frequencies in the image"),
+                                      _("creative"),
+                                      _("linear or non-linear, Lab, scene-referred"),
+                                      _("frequential, Lab"),
+                                      _("special, Lab, scene-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
@@ -90,21 +99,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "sharpness"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast boost"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_highpass_gui_data_t *g =
-    (dt_iop_highpass_gui_data_t*)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "sharpness", GTK_WIDGET(g->sharpness));
-  dt_accel_connect_slider_iop(self, "contrast boost", GTK_WIDGET(g->contrast));
-}
-
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
@@ -114,10 +108,11 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const int rad = MAX_RADIUS * (fmin(100.0f, d->sharpness + 1) / 100.0f);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
 
-  const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
+  const float sigma = sqrtf((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
   const int wdh = ceilf(3.0f * sigma);
 
-  tiling->factor = 3.0f; // in + out + tmp
+  tiling->factor = 2.1f; // in + out + small slice for box_mean
+  tiling->factor_cl = 3.0f; // in + out + tmp
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = wdh;
@@ -148,7 +143,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but
    * unproven. ask me if you need details. ulrich */
-  const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
+  const float sigma = sqrtf((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
   const int wdh = ceilf(3.0f * sigma);
   const int wd = 2 * wdh + 1;
   const size_t mat_size = (size_t)wd * sizeof(float);
@@ -194,7 +189,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   size_t sizes[3];
   size_t local[3];
 
-  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   dev_m = dt_opencl_copy_host_to_device_constant(devid, mat_size, mat);
@@ -278,25 +273,30 @@ error:
 }
 #endif
 
-
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_highpass_data_t *data = (dt_iop_highpass_data_t *)piece->data;
-  float *in = (float *)ivoid;
+  const float *const in = (float *)ivoid;
   float *out = (float *)ovoid;
-  const int ch = piece->colors;
+  const int ch = 4;
+
+  /* the blend code at the end assumes at least 4 channels, and we never get more than four */
+  assert(piece->colors == ch);
 
 /* create inverted image and then blur */
+/* since we use only the L channel, pack the values together instead of every fourth float */
+/* to reduce cache pressure and memory bandwidth during the blur operation */
+  const size_t npixels = (size_t)roi_out->height * roi_out->width;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, roi_out) \
-  shared(in, out) \
+  dt_omp_firstprivate(npixels) \
+  dt_omp_sharedconst(in) \
+  shared(out) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
-    out[ch * k] = 100.0f - LCLIP(in[ch * k]); // only L in Lab space
-
+  for(size_t k = 0; k < (size_t)npixels; k++)
+    out[k] = 100.0f - LCLIP(in[4 * k]); // only L in Lab space
 
   const int rad = MAX_RADIUS * (fmin(100.0, data->sharpness + 1) / 100.0);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
@@ -305,84 +305,41 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int range = 2 * radius + 1;
   const int hr = range / 2;
 
-  const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
-  float *scanline = calloc(size, sizeof(float));
-
-  for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
-  {
-    for(int y = 0; y < roi_out->height; y++)
-    {
-      float L = 0;
-      int hits = 0;
-      size_t index = (size_t)y * roi_out->width;
-      for(int x = -hr; x < roi_out->width; x++)
-      {
-        int op = x - hr - 1;
-        int np = x + hr;
-        if(op >= 0)
-        {
-          L -= out[(index + op) * ch];
-          hits--;
-        }
-        if(np < roi_out->width)
-        {
-          L += out[(index + np) * ch];
-          hits++;
-        }
-        if(x >= 0) scanline[x] = L / hits;
-      }
-
-      for(int x = 0; x < roi_out->width; x++) out[(index + x) * ch] = scanline[x];
-    }
-
-    /* vertical pass on blurlightness */
-    const int opoffs = -(hr + 1) * roi_out->width;
-    const int npoffs = (hr)*roi_out->width;
-    for(int x = 0; x < roi_out->width; x++)
-    {
-      float L = 0;
-      int hits = 0;
-      size_t index = (size_t)x - hr * roi_out->width;
-      for(int y = -hr; y < roi_out->height; y++)
-      {
-        const int op = y - hr - 1;
-        const int np = y + hr;
-        if(op >= 0)
-        {
-          L -= out[(index + opoffs) * ch];
-          hits--;
-        }
-        if(np < roi_out->height)
-        {
-          L += out[(index + npoffs) * ch];
-          hits++;
-        }
-        if(y >= 0) scanline[y] = L / hits;
-        index += roi_out->width;
-      }
-
-      for(int y = 0; y < roi_out->height; y++) out[((size_t)y * roi_out->width + x) * ch] = scanline[y];
-    }
-  }
-
-  free(scanline);
+  dt_box_mean(out, roi_out->height, roi_out->width, 1, hr, BOX_ITERATIONS);
 
   const float contrast_scale = ((data->contrast / 100.0) * 7.5);
+  /* Blend the inverted blurred L channel with the original input.  Because we packed the L values */
+  /* and are inserting the result in the same buffer containing the L values, we need to work in */
+  /* reverse order */
+  /* We can only do the final 3/4 in parallel here, because updating the first quarter in one thread */
+  /* would clobber values still needed by other threads. */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, contrast_scale, roi_out) \
-  shared(in, out, data) \
+  dt_omp_firstprivate(ch, contrast_scale, npixels) \
+  dt_omp_sharedconst(in) \
+  shared(out, data) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  for(size_t k = npixels - 1; k > npixels/4; k--)
   {
     size_t index = ch * k;
     // Mix out and in
-    out[index] = out[index] * 0.5 + in[index] * 0.5;
-    out[index] = LCLIP(50.0f + ((out[index] - 50.0f) * contrast_scale));
+    const float L = out[k] * 0.5 + in[index] * 0.5;
+    out[index] = LCLIP(50.0f + ((L - 50.0f) * contrast_scale));
     out[index + 1] = out[index + 2] = 0.0f; // desaturate a and b in Lab space
-    out[index + 3] = in[index + 3];
+    out[index + 3] = in[index + 3]; // copy the alpha channel in case it is in use
   }
+  /* process the final quarter of the pixels */
+  for(ssize_t k = npixels/4; k >= 0; k--)
+  {
+    size_t index = ch * k;
+    // Mix out and in
+    const float L = out[k] * 0.5 + in[index] * 0.5;
+    out[index] = LCLIP(50.0f + ((L - 50.0f) * contrast_scale));
+    out[index + 1] = out[index + 2] = 0.0f; // desaturate a and b in Lab space
+    out[index + 3] = in[index + 3]; // copy the alpha channel in case it is in use
+  }
+
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -398,7 +355,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_highpass_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

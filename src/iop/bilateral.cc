@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ extern "C" {
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -69,6 +70,11 @@ typedef struct dt_iop_bilateral_data_t
 
 const char *name()
 {
+  return _("surface blur");
+}
+
+const char *aliases()
+{
   return _("denoise (bilateral filter)");
 }
 
@@ -87,21 +93,13 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
+const char *description(struct dt_iop_module_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t *)self->gui_data;
-  dt_accel_connect_slider_iop(self, "radius", GTK_WIDGET(g->radius));
-  dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->red));
-  dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->green));
-  dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->blue));
+  return dt_iop_set_description(self, _("apply edge-aware surface blur to denoise or smoothen textures"),
+                                      _("corrective and creative"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("linear, RGB"),
+                                      _("linear, RGB, scene-referred"));
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -118,7 +116,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   sigma[4] = data->sigma[4];
   if(fmaxf(sigma[0], sigma[1]) < .1)
   {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
@@ -127,7 +125,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(rad <= 6 && ((piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL))
   {
     // no use denoising the thumbnail. takes ages without permutohedral
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, ch);
   }
   else if(rad <= 6)
   {
@@ -145,11 +143,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     for(int l = -rad; l <= rad; l++)
       for(int k = -rad; k <= rad; k++) m[l * wd + k] /= weight;
 
-    float *const weights_buf = (float *)malloc(weights_size * dt_get_num_threads() * sizeof(float));
+    size_t padded_weights_size;
+    float *const weights_buf = dt_alloc_perthread_float(weights_size, &padded_weights_size);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, ivoid, ovoid, rad, roi_in, roi_out, wd, weights_buf) \
+    dt_omp_firstprivate(ch, ivoid, ovoid, rad, roi_in, roi_out, wd, weights_buf, padded_weights_size) \
     shared(m, mat, isig2col) \
     schedule(static)
 #endif
@@ -157,7 +156,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       const float *in = ((float *)ivoid) + ch * ((size_t)j * roi_in->width + rad);
       float *out = ((float *)ovoid) + ch * ((size_t)j * roi_out->width + rad);
-      float *weights = weights_buf + weights_size * dt_get_thread_num();
+      float *weights = (float*)dt_get_perthread(weights_buf, padded_weights_size);
       float *w = weights + rad * wd + rad;
       float sumw;
       for(int i = rad; i < roi_out->width - rad; i++)
@@ -174,20 +173,20 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           }
         for(int l = -rad; l <= rad; l++)
           for(int k = -rad; k <= rad; k++) w[l * wd + k] /= sumw;
-        for(int c = 0; c < 3; c++) out[c] = 0.0f;
+        for_each_channel(c) out[c] = 0.0f;
         for(int l = -rad; l <= rad; l++)
           for(int k = -rad; k <= rad; k++)
           {
             const float *inp = in + ch * ((size_t)l * roi_in->width + k);
             float pix_weight = w[(size_t)l * wd + k];
-            for(int c = 0; c < 3; c++) out[c] += inp[c] * pix_weight;
+            for_each_channel(c) out[c] += inp[c] * pix_weight;
           }
         out += ch;
         in += ch;
       }
     }
 
-    free((void *)weights_buf);
+    dt_free_align(weights_buf);
 
     // fill unprocessed border
     for(int j = 0; j < rad; j++)
@@ -201,9 +200,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       const float *in = ((float *)ivoid) + (size_t)ch * roi_out->width * j;
       float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
       for(int i = 0; i < rad; i++)
-        for(int c = 0; c < 3; c++) out[ch * i + c] = in[ch * i + c];
+        for_each_channel(c) out[(size_t)ch * i + c] = in[(size_t)ch * i + c];
       for(int i = roi_out->width - rad; i < roi_out->width; i++)
-        for(int c = 0; c < 3; c++) out[ch * i + c] = in[ch * i + c];
+        for_each_channel(c) out[(size_t)ch * i + c] = in[(size_t)ch * i + c];
     }
   }
   else
@@ -213,7 +212,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 // splat into the lattice
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
 #endif
     for(int j = 0; j < roi_in->height; j++)
     {
@@ -223,7 +222,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       for(int i = 0; i < roi_in->width; i++, index++)
       {
         float pos[5] = { i * sigma[0], j * sigma[1], in[0] * sigma[2], in[1] * sigma[3], in[2] * sigma[4] };
-        float val[4] = { in[0], in[1], in[2], 1.0 };
+        float DT_ALIGNED_PIXEL val[4] = { in[0], in[1], in[2], 1.0 };
         lattice.splat(pos, val, index, thread);
         in += ch;
       }
@@ -236,18 +235,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 // slice from the lattice
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
 #endif
     for(int j = 0; j < roi_in->height; j++)
     {
-      float *out = (float *)ovoid + (size_t)j * roi_in->width * ch;
+      float *const out = (float *)ovoid + (size_t)j * roi_in->width * ch;
       size_t index = (size_t)j * roi_in->width;
       for(int i = 0; i < roi_in->width; i++, index++)
       {
-        float val[4];
+        float DT_ALIGNED_PIXEL val[4];
         lattice.slice(val, index);
-        for(int k = 0; k < 3; k++) out[k] = val[k] / val[3];
-        out += ch;
+        for_each_channel(k)
+	   out[(size_t)ch*i + k] = val[k] / val[3];
       }
     }
   }
@@ -270,7 +269,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_bilateral_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -281,9 +279,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t *)self->gui_data;
-  dt_iop_bilateral_params_t *p = (dt_iop_bilateral_params_t *)module->params;
+  dt_iop_bilateral_params_t *p = (dt_iop_bilateral_params_t *)self->params;
   dt_bauhaus_slider_set_soft(g->radius, p->radius);
   // dt_bauhaus_slider_set(g->scale2, p->sigma[1]);
   dt_bauhaus_slider_set_soft(g->red, p->red);
@@ -300,7 +297,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   sigma[0] = data->sigma[0] * roi_in->scale / piece->iscale;
   sigma[1] = data->sigma[1] * roi_in->scale / piece->iscale;
   const int rad = (int)(3.0 * fmaxf(sigma[0], sigma[1]) + 1.0);
-  tiling->factor = 2 + 50;
+  tiling->factor = 2.0 /*input+output*/ + 80.0/16/*worst-case hashtable*/ + 52.0/16/*replay buffer*/;
   tiling->overhead = 0;
   tiling->overlap = rad;
   tiling->xalign = 1;

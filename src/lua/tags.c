@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2020 darktable developers.
+   Copyright (C) 2013-2021 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -164,15 +164,11 @@ static int tag_delete(lua_State *L)
   if(dt_tag_remove(tagid, TRUE))
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
-  GList *list_iter;
-  if((list_iter = g_list_first(tagged_images)) != NULL)
+  for(const GList *list_iter = tagged_images; list_iter; list_iter = g_list_next(list_iter))
   {
-    do
-    {
-      dt_image_synch_xmp(GPOINTER_TO_INT(list_iter->data));
-    } while((list_iter = g_list_next(list_iter)) != NULL);
+    dt_image_synch_xmp(GPOINTER_TO_INT(list_iter->data));
   }
-  g_list_free(g_list_first(tagged_images));
+  g_list_free(tagged_images);
 
   return 0;
 }
@@ -238,6 +234,7 @@ static int tag_lib_find(lua_State *L)
 int dt_lua_tag_get_attached(lua_State *L)
 {
   dt_lua_image_t imgid;
+  int table_index = 1;
   luaA_to(L, dt_lua_image_t, &imgid, 1);
   sqlite3_stmt *stmt;
 
@@ -250,7 +247,8 @@ int dt_lua_tag_get_attached(lua_State *L)
   {
     int tagid = sqlite3_column_int(stmt, 0);
     luaA_push(L, dt_lua_tag_t, &tagid);
-    luaL_ref(L, -2);
+    lua_seti(L, -2, table_index);
+    table_index++;
     rv = sqlite3_step(stmt);
   }
   sqlite3_finalize(stmt);
@@ -261,6 +259,7 @@ int dt_lua_tag_get_attached(lua_State *L)
 int dt_lua_tag_get_tagged_images(lua_State *L)
 {
   dt_lua_tag_t tagid;
+  int table_index = 1;
   luaA_to(L, dt_lua_tag_t, &tagid, 1);
   sqlite3_stmt *stmt;
 
@@ -273,7 +272,8 @@ int dt_lua_tag_get_tagged_images(lua_State *L)
   {
     int imgid = sqlite3_column_int(stmt, 0);
     luaA_push(L, dt_lua_image_t, &imgid);
-    luaL_ref(L, -2);
+    lua_seti(L, -2, table_index);
+    table_index++;
     rv = sqlite3_step(stmt);
   }
   sqlite3_finalize(stmt);
@@ -299,7 +299,7 @@ int dt_lua_init_tags(lua_State *L)
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const(L, dt_lua_tag_t, "detach");
   lua_pushcfunction(L, tag_tostring);
-  dt_lua_type_setmetafield(L,dt_lua_tag_t,"__tostring");
+  dt_lua_type_setmetafield(L, dt_lua_tag_t, "__tostring");
 
   /* tags */
   dt_lua_push_darktable_lib(L);

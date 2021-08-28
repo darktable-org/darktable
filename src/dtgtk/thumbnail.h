@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019--2020 Aldric Renaudin.
+    Copyright (C) 2019-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include <gtk/gtk.h>
 
 #define MAX_STARS 5
+#define IMG_TO_FIT 0.0f
 
 typedef enum dt_thumbnail_border_t
 {
@@ -45,6 +46,13 @@ typedef enum dt_thumbnail_overlay_t
   DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK
 } dt_thumbnail_overlay_t;
 
+typedef enum dt_thumbnail_container_t
+{
+  DT_THUMBNAIL_CONTAINER_LIGHTTABLE,
+  DT_THUMBNAIL_CONTAINER_CULLING,
+  DT_THUMBNAIL_CONTAINER_PREVIEW
+} dt_thumbnail_container_t;
+
 typedef enum dt_thumbnail_selection_mode_t
 {
   DT_THUMBNAIL_SEL_MODE_NORMAL = 0, // user can change selection with normal mouse click (+CTRL or +SHIFT)
@@ -58,6 +66,7 @@ typedef struct
   int width, height;         // current thumb size (with the background and the border)
   int x, y;                  // current position at screen
   int img_width, img_height; // current image size (can be greater than the image box in case of zoom)
+  dt_thumbnail_container_t container; // type of container of the thumbnail
 
   gboolean mouse_over;
   gboolean selected;
@@ -121,25 +130,25 @@ typedef struct
 
   // specific for culling and preview
   gboolean zoomable;   // can we zoom in/out the thumbnail (used for culling/preview)
-  double aspect_ratio; // aspect ratio of the image
+  float aspect_ratio;  // aspect ratio of the image
 
   // difference between the global zoom values and the value to apply to this specific thumbnail
   float zoom;     // zoom value. 1.0 is "image to fit" (the initial value)
-  int zoomx;      // zoom panning of the image
-  int zoomy;      //
-  int current_zx; // zoom panning currently applied on the image
-  int current_zy; // can differ from zoomx if image is not loaded on first try
+  double zoomx;   // zoom panning of the image
+  double zoomy;   //
 
   float zoom_100; // max zoom value (image 100%)
 
   gboolean display_focus; // do we display rectangles to show focused part of the image
+
+  gboolean busy; // should we show the busy message ?
 } dt_thumbnail_t;
 
-dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over,
-                                 gboolean zoomable, gboolean tooltip);
+dt_thumbnail_t *dt_thumbnail_new(int width, int height, float zoom_ratio, int imgid, int rowid, dt_thumbnail_overlay_t over,
+                                 dt_thumbnail_container_t container, gboolean tooltip);
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb);
-GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb);
-void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean force);
+GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio);
+void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean force, float zoom_ratio);
 void dt_thumbnail_set_group_border(dt_thumbnail_t *thumb, dt_thumbnail_border_t border);
 void dt_thumbnail_set_mouseover(dt_thumbnail_t *thumb, gboolean over);
 
@@ -147,8 +156,11 @@ void dt_thumbnail_set_mouseover(dt_thumbnail_t *thumb, gboolean over);
 // note that it's just cosmetic as dropping occurs in thumbtable in any case
 void dt_thumbnail_set_drop(dt_thumbnail_t *thumb, gboolean accept_drop);
 
-// update the informations of the image and update icons accordingly
+// update the information of the image and update icons accordingly
 void dt_thumbnail_update_infos(dt_thumbnail_t *thumb);
+
+// check if the image is selected and set its state and background
+void dt_thumbnail_update_selection(dt_thumbnail_t *thumb);
 
 // force image recomputing
 void dt_thumbnail_image_refresh(dt_thumbnail_t *thumb);
@@ -163,6 +175,8 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb);
 void dt_thumbnail_image_refresh_position(dt_thumbnail_t *thumb);
 // get the maximal zoom value (to show 1:1 image)
 float dt_thumbnail_get_zoom100(dt_thumbnail_t *thumb);
+// get the zoom ratio from 0 ("image to fit") to 1 ("max zoom value")
+float dt_thumbnail_get_zoom_ratio(dt_thumbnail_t *thumb);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

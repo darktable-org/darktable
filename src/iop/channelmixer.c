@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2010-2020 darktable developers.
+  Copyright (C) 2010-2021 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/openmp_maths.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -95,7 +96,7 @@ typedef struct dt_iop_channelmixer_params_t
 typedef struct dt_iop_channelmixer_gui_data_t
 {
   GtkBox *vbox;
-  GtkWidget *output_channel;                      // Output channel
+  GtkWidget *output_channel;                          // Output channel
   GtkWidget *scale_red, *scale_green, *scale_blue;    // red, green, blue
 } dt_iop_channelmixer_gui_data_t;
 
@@ -125,9 +126,26 @@ const char *name()
   return _("channel mixer");
 }
 
+const char *deprecated_msg()
+{
+  return _("this module is deprecated. please use the color calibration module instead.");
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("perform color space corrections\n"
+                                        "such as white balance, channels mixing\n"
+                                        "and conversions to monochrome emulating film"),
+                                      _("corrective or creative"),
+                                      _("linear, RGB, display-referred"),
+                                      _("linear, RGB"),
+                                      _("linear, RGB, display-referred"));
+}
+
+
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_DEPRECATED;
 }
 
 int default_group()
@@ -138,25 +156,6 @@ int default_group()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "destination"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_channelmixer_gui_data_t *g =
-    (dt_iop_channelmixer_gui_data_t*)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->scale_red));
-  dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->scale_green));
-  dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->scale_blue));
-  dt_accel_connect_combobox_iop(self, "destination", GTK_WIDGET(g->output_channel));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
@@ -206,14 +205,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-#ifdef _OPENMT
-#pragma omp declare simd
-#endif
-static inline float clamp_simd(const float value)
-{
-  return fmaxf(0.0f, fminf(1.0f, value));
-}
-
 static void process_hsl_v1(dt_dev_pixelpipe_iop_t *piece, const float *const restrict in,
                            float *const restrict out, const dt_iop_roi_t *const roi_out)
 {
@@ -231,7 +222,7 @@ static void process_hsl_v1(dt_dev_pixelpipe_iop_t *piece, const float *const res
   for(size_t k = 0; k < pixel_count; k += ch)
   {
     float h, s, l, hmix, smix, lmix;
-    float rgb[3];
+    dt_aligned_pixel_t rgb;
 
     // Calculate the HSL mix
     hmix = clamp_simd(in[k + 0] * hsl_matrix[0]) + (in[k + 1] * hsl_matrix[1]) + (in[k + 2] * hsl_matrix[2]);
@@ -250,7 +241,7 @@ static void process_hsl_v1(dt_dev_pixelpipe_iop_t *piece, const float *const res
     }
     else // no HSL copy in[] to out[]
     {
-      for(int c = 0; c < 3; c++) rgb[c] = in[k + c];
+      for_each_channel(c,aligned(rgb,in)) rgb[c] = in[k + c];
     }
 
     // Calculate RGB mix
@@ -279,9 +270,9 @@ static void process_hsl_v2(dt_dev_pixelpipe_iop_t *piece, const float *const res
 #endif
   for(size_t k = 0; k < pixel_count; k += ch)
   {
-    float rgb[3] = { in[k], in[k + 1], in[k + 2] };
+    dt_aligned_pixel_t rgb = { in[k], in[k + 1], in[k + 2] };
 
-    float hsl_mix[3];
+    dt_aligned_pixel_t hsl_mix;
     for(int i = 0, j = 0; i < 3; i++, j += 3)
     {
       hsl_mix[i] = clamp_simd(hsl_matrix[j + 0] * rgb[0]
@@ -292,11 +283,11 @@ static void process_hsl_v2(dt_dev_pixelpipe_iop_t *piece, const float *const res
     // If HSL mix is used apply to out[]
     if(hsl_mix[0] != 0.0 || hsl_mix[1] != 0.0 || hsl_mix[2] != 0.0)
     {
-      float hsl[3];
+      dt_aligned_pixel_t hsl;
       // rgb2hsl expects all values to be clipped
-      for(int i = 0; i < 3; i++)
+      for_each_channel(c)
       {
-        rgb[i] = clamp_simd(rgb[i]);
+        rgb[c] = clamp_simd(rgb[c]);
       }
       // mix into HSL output channels
       rgb2hsl(rgb, &hsl[0], &hsl[1], &hsl[2]);
@@ -543,13 +534,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
 
   // Gray
-  float graymix[3] = { p->red[CHANNEL_GRAY], p->green[CHANNEL_GRAY], p->blue[CHANNEL_GRAY] };
+  dt_aligned_pixel_t graymix = { p->red[CHANNEL_GRAY], p->green[CHANNEL_GRAY], p->blue[CHANNEL_GRAY] };
   const gboolean gray_mix_mode = (graymix[0] != 0.0f || graymix[1] != 0.0f || graymix[2] != 0.0f) ? TRUE : FALSE;
 
   // Recompute the 3x3 RGB matrix
   if(gray_mix_mode)
   {
-    float mixed_gray[3];
+    dt_aligned_pixel_t mixed_gray;
     for(int i = 0; i < 3; i++)
     {
       mixed_gray[i] = (graymix[0] * d->rgb_matrix[i]
@@ -586,7 +577,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_channelmixer_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -597,9 +587,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
-  dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)module->params;
+  dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
 
   const int output_channel_index = dt_bauhaus_combobox_get(g->output_channel);
   if(output_channel_index >= 0)
@@ -629,7 +618,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* output */
   g->output_channel = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->output_channel, NULL, _("destination"));
+  dt_bauhaus_widget_set_label(g->output_channel, NULL, N_("destination"));
   dt_bauhaus_combobox_add(g->output_channel, _("hue"));
   dt_bauhaus_combobox_add(g->output_channel, _("saturation"));
   dt_bauhaus_combobox_add(g->output_channel, _("lightness"));
@@ -643,19 +632,19 @@ void gui_init(struct dt_iop_module_t *self)
   /* red */
   g->scale_red = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->red[CHANNEL_RED], 3);
   gtk_widget_set_tooltip_text(g->scale_red, _("amount of red channel in the output channel"));
-  dt_bauhaus_widget_set_label(g->scale_red, NULL, _("red"));
+  dt_bauhaus_widget_set_label(g->scale_red, NULL, N_("red"));
   g_signal_connect(G_OBJECT(g->scale_red), "value-changed", G_CALLBACK(red_callback), self);
 
   /* green */
   g->scale_green = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->green[CHANNEL_RED], 3);
   gtk_widget_set_tooltip_text(g->scale_green, _("amount of green channel in the output channel"));
-  dt_bauhaus_widget_set_label(g->scale_green, NULL, _("green"));
+  dt_bauhaus_widget_set_label(g->scale_green, NULL, N_("green"));
   g_signal_connect(G_OBJECT(g->scale_green), "value-changed", G_CALLBACK(green_callback), self);
 
   /* blue */
   g->scale_blue = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->blue[CHANNEL_RED], 3);
   gtk_widget_set_tooltip_text(g->scale_blue, _("amount of blue channel in the output channel"));
-  dt_bauhaus_widget_set_label(g->scale_blue, NULL, _("blue"));
+  dt_bauhaus_widget_set_label(g->scale_blue, NULL, N_("blue"));
   g_signal_connect(G_OBJECT(g->scale_blue), "value-changed", G_CALLBACK(blue_callback), self);
 
 
@@ -675,111 +664,111 @@ void init_presets(dt_iop_module_so_t *self)
                                                               { 0, 0, 0, 0, 1, 0, 0 },
                                                               { 0, 0, 0, 1, 0, 0, 0 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1);
+                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("swap G and B"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0 },
                                                               { 0, 0, 0, 0, 0, 1, 0 },
                                                               { 0, 0, 0, 0, 1, 0, 0 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1);
+                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("color contrast boost"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0.8, 1, 0, 0, 0 },
                                                               { 0, 0, 0.1, 0, 1, 0, 0 },
                                                               { 0, 0, 0.1, 0, 0, 1, 0 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1);
+                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("color details boost"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0.1, 1, 0, 0, 0 },
                                                               { 0, 0, 0.8, 0, 1, 0, 0 },
                                                               { 0, 0, 0.1, 0, 0, 1, 0 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1);
+                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("color artifacts boost"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0.1, 1, 0, 0, 0 },
                                                               { 0, 0, 0.1, 0, 1, 0, 0 },
                                                               { 0, 0, 0.8, 0, 0, 1, 0 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1);
+                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("B/W luminance-based"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.21 },
                                                               { 0, 0, 0, 0, 1, 0, 0.72 },
                                                               { 0, 0, 0, 0, 0, 1, 0.07 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1);
+                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("B/W artifacts boost"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, -0.275 },
                                                               { 0, 0, 0, 0, 1, 0, -0.275 },
                                                               { 0, 0, 0, 0, 0, 1, 1.275 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1);
+                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("B/W smooth skin"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 1.0 },
                                                               { 0, 0, 0, 0, 1, 0, 0.325 },
                                                               { 0, 0, 0, 0, 0, 1, -0.4 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1);
+                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("B/W blue artifacts reduce"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.4 },
                                                               { 0, 0, 0, 0, 1, 0, 0.750 },
                                                               { 0, 0, 0, 0, 0, 1, -0.15 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1);
+                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_gui_presets_add_generic(_("B/W Ilford Delta 100-400"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.21 },
                                                               { 0, 0, 0, 0, 1, 0, 0.42 },
                                                               { 0, 0, 0, 0, 0, 1, 0.37 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1);
+                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_gui_presets_add_generic(_("B/W Ilford Delta 3200"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.31 },
                                                               { 0, 0, 0, 0, 1, 0, 0.36 },
                                                               { 0, 0, 0, 0, 0, 1, 0.33 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1);
+                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_gui_presets_add_generic(_("B/W Ilford FP4"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.28 },
                                                               { 0, 0, 0, 0, 1, 0, 0.41 },
                                                               { 0, 0, 0, 0, 0, 1, 0.31 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1);
+                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_gui_presets_add_generic(_("B/W Ilford HP5"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.23 },
                                                               { 0, 0, 0, 0, 1, 0, 0.37 },
                                                               { 0, 0, 0, 0, 0, 1, 0.40 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1);
+                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_gui_presets_add_generic(_("B/W Ilford SFX"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.36 },
                                                               { 0, 0, 0, 0, 1, 0, 0.31 },
                                                               { 0, 0, 0, 0, 0, 1, 0.33 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1);
+                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_gui_presets_add_generic(_("B/W Kodak T-Max 100"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.24 },
                                                               { 0, 0, 0, 0, 1, 0, 0.37 },
                                                               { 0, 0, 0, 0, 0, 1, 0.39 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1);
+                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_gui_presets_add_generic(_("B/W Kodak T-max 400"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.27 },
                                                               { 0, 0, 0, 0, 1, 0, 0.36 },
                                                               { 0, 0, 0, 0, 0, 1, 0.37 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1);
+                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_gui_presets_add_generic(_("B/W Kodak Tri-X 400"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0.25 },
                                                               { 0, 0, 0, 0, 1, 0, 0.35 },
                                                               { 0, 0, 0, 0, 0, 1, 0.40 },
                                                               CHANNEL_MIXER_VERSION_2 },
-                             sizeof(dt_iop_channelmixer_params_t), 1);
+                             sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);

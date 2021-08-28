@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2016-2020 darktable developers.
+ *    Copyright (C) 2016-2021 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -349,8 +349,8 @@ static inline cairo_pattern_t *_new_sprite(const uint8_t *data, const int width,
                                            int *_stride, GList **bufs, GList **surfaces, GList **patterns)
 {
   const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, width);
-  uint8_t *buf = (uint8_t *)malloc(stride * height);
-  for(int y = 0; y < height; y++) memcpy(&buf[y * stride], &(data[y * width]), width * sizeof(uint8_t));
+  uint8_t *buf = (uint8_t *)malloc((size_t)stride * height);
+  for(int y = 0; y < height; y++) memcpy(&buf[y * stride], &(data[y * width]), sizeof(uint8_t) * width);
   cairo_surface_t *surface = cairo_image_surface_create_for_data(buf, CAIRO_FORMAT_A8, width, height, stride);
   cairo_pattern_t *pattern = cairo_pattern_create_for_surface(surface);
   cairo_pattern_set_filter(pattern, CAIRO_FILTER_NEAREST);
@@ -438,7 +438,7 @@ void init(dt_view_t *self)
     d->bunker_buf[i] = (uint8_t *)g_list_last(d->bufs)->data;
   }
   // font
-  d->letters = (cairo_pattern_t **)malloc(n_letters * sizeof(cairo_pattern_t *));
+  d->letters = (cairo_pattern_t **)malloc(sizeof(cairo_pattern_t *) * n_letters);
   for(int i = 0; i < n_letters; i++)
     d->letters[i]
         = _new_sprite(font[i], FONT_WIDTH, FONT_HEIGHT, NULL, &(d->bufs), &(d->surfaces), &(d->patterns));
@@ -525,9 +525,9 @@ static dt_knight_explosion_t *_new_explosion(float x, float y, int ttl, cairo_pa
 }
 
 // change the bunker graphics by subtracting an explosion sprite
-static void _destroy_bunker(dt_knight_t *d, int bunker, int hit_x, int hit_y)
+static void _destroy_bunker(dt_knight_t *d, int bunker_idx, int hit_x, int hit_y)
 {
-  uint8_t *buf = d->bunker_buf[bunker];
+  uint8_t *buf = d->bunker_buf[bunker_idx];
   // the explosion has stride == width
   const uint8_t *ex = explosions[EXPLOSION_SHOT];
 
@@ -748,20 +748,20 @@ static gboolean _event_loop_game(dt_knight_t *d)
     // check aliens
     for(int i = 0; i < N_ALIENS_Y * N_ALIENS_X; i++)
     {
-      dt_knight_alien_t *alien = &d->aliens[i];
-      if(!alien->alive) continue;
-      if(d->player_shot.x >= alien->x - half_gap
-         && d->player_shot.x <= alien->x + ALIEN_TARGET_WIDTH + half_gap
-         && d->player_shot.y >= alien->y - SHOT_LENGTH && d->player_shot.y <= alien->y + ALIEN_TARGET_HEIGHT)
+      dt_knight_alien_t *curr_alien = &d->aliens[i];
+      if(!curr_alien->alive) continue;
+      if(d->player_shot.x >= curr_alien->x - half_gap
+         && d->player_shot.x <= curr_alien->x + ALIEN_TARGET_WIDTH + half_gap
+         && d->player_shot.y >= curr_alien->y - SHOT_LENGTH && d->player_shot.y <= curr_alien->y + ALIEN_TARGET_HEIGHT)
       {
         // we hit an alien
         d->freeze = ALIEN_DEATH_TIME;
         d->player_shot.active = FALSE;
-        alien->alive = FALSE;
+        curr_alien->alive = FALSE;
         d->n_aliens--;
-        d->score_1 += alien->points;
+        d->score_1 += curr_alien->points;
         dt_knight_explosion_t *explosion
-            = _new_explosion(alien->x, alien->y, ALIEN_DEATH_TIME, d->explosion_sprite[EXPLOSION_ALIEN]);
+            = _new_explosion(curr_alien->x, curr_alien->y, ALIEN_DEATH_TIME, d->explosion_sprite[EXPLOSION_ALIEN]);
         d->explosions = g_list_append(d->explosions, explosion);
         if(d->alien_next_to_move == i) d->alien_next_to_move = _next_alien(d->aliens, d->alien_next_to_move);
         break;
@@ -867,25 +867,25 @@ static gboolean _event_loop_game(dt_knight_t *d)
       const int next = _next_alien(d->aliens, d->alien_next_to_move);
       const int next_x = next % N_ALIENS_X;
       const int next_y = next / N_ALIENS_X;
-      dt_knight_alien_t *alien = &d->aliens[d->alien_next_to_move];
+      dt_knight_alien_t *alien_tm = &d->aliens[d->alien_next_to_move];
       switch(d->alien_direction)
       {
         case ALIEN_LEFT:
-          alien->x -= STEP_SIZE * ALIEN_TARGET_WIDTH;
+          alien_tm->x -= STEP_SIZE * ALIEN_TARGET_WIDTH;
           if((next_y > y || (next_y == y && next_x < x) || next == d->alien_next_to_move)
              && _leftest(d->aliens) - STEP_SIZE * ALIEN_TARGET_WIDTH < 0.0)
             d->alien_direction = ALIEN_DOWN_THEN_RIGHT;
           break;
         case ALIEN_RIGHT:
-          alien->x += STEP_SIZE * ALIEN_TARGET_WIDTH;
+          alien_tm->x += STEP_SIZE * ALIEN_TARGET_WIDTH;
           if((next_y > y || (next_y == y && next_x < x) || next == d->alien_next_to_move)
              && _rightest(d->aliens) + ALIEN_TARGET_WIDTH + STEP_SIZE * ALIEN_TARGET_WIDTH > 1.0)
             d->alien_direction = ALIEN_DOWN_THEN_LEFT;
           break;
         case ALIEN_DOWN_THEN_LEFT:
         case ALIEN_DOWN_THEN_RIGHT:
-          alien->y += 0.5 * ALIEN_TARGET_HEIGHT;
-          if(alien->y + ALIEN_TARGET_HEIGHT >= PLAYER_Y + 0.5 * PLAYER_TARGET_HEIGHT)
+          alien_tm->y += 0.5 * ALIEN_TARGET_HEIGHT;
+          if(alien_tm->y + ALIEN_TARGET_HEIGHT >= PLAYER_Y + 0.5 * PLAYER_TARGET_HEIGHT)
           {
             d->freeze = 3.0 * 1000.0 / LOOP_SPEED;
             d->total_freeze = TRUE;
@@ -897,10 +897,10 @@ static gboolean _event_loop_game(dt_knight_t *d)
       }
 
       // when going over a bunker it (the bunker) gets destroyed
-      _walk_over_bunker(d, alien->x, alien->y, ALIEN_TARGET_WIDTH, ALIEN_TARGET_HEIGHT);
+      _walk_over_bunker(d, alien_tm->x, alien_tm->y, ALIEN_TARGET_WIDTH, ALIEN_TARGET_HEIGHT);
 
       // allow the last one to go really fast, but keep it animating
-      if(!(i == 0 && d->alien_next_to_move == next)) alien->frame = 1 - alien->frame;
+      if(!(i == 0 && d->alien_next_to_move == next)) alien_tm->frame = 1 - alien_tm->frame;
       d->alien_next_to_move = next;
     }
   }
@@ -934,7 +934,7 @@ static gboolean _event_loop_animation(dt_knight_t *d)
 static gboolean _event_loop(gpointer user_data)
 {
   dt_knight_t *d = (dt_knight_t *)user_data;
-  gboolean res = FALSE;  // silence warning about unitialized res
+  gboolean res = FALSE;  // silence warning about uninitialized res
   switch(d->game_state)
   {
     case INTRO:
@@ -950,6 +950,9 @@ static gboolean _event_loop(gpointer user_data)
   dt_control_queue_redraw_center();
   return res;
 }
+
+static gboolean _key_press(GtkWidget *w, GdkEventKey *event, dt_knight_t *d);
+static gboolean _key_release(GtkWidget *w, GdkEventKey *event, dt_knight_t *d);
 
 void enter(dt_view_t *self)
 {
@@ -981,6 +984,9 @@ void enter(dt_view_t *self)
       break;
   }
 
+  g_signal_connect(dt_ui_center(darktable.gui->ui), "key-press-event", G_CALLBACK(_key_press), d);
+  g_signal_connect(dt_ui_center(darktable.gui->ui), "key-release-event", G_CALLBACK(_key_release), d);
+
   // start event loop
   d->event_loop = g_timeout_add(LOOP_SPEED, _event_loop, d);
 }
@@ -991,6 +997,9 @@ void leave(dt_view_t *self)
 
   // show normal gui again
   dt_control_change_cursor(GDK_LEFT_PTR);
+
+  g_signal_handlers_disconnect_by_func(dt_ui_center(darktable.gui->ui), G_CALLBACK(_key_press), d);
+  g_signal_handlers_disconnect_by_func(dt_ui_center(darktable.gui->ui), G_CALLBACK(_key_release), d);
 
   // stop event loop
   if(d->event_loop > 0) g_source_remove(d->event_loop);
@@ -1400,10 +1409,9 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   cairo_restore(cr);
 }
 
-int key_released(dt_view_t *self, guint key, guint state)
+static gboolean _key_release(GtkWidget *w, GdkEventKey *event, dt_knight_t *d)
 {
-  dt_knight_t *d = (dt_knight_t *)self->data;
-  switch(key)
+  switch(event->keyval)
   {
     case GDK_KEY_Left:
     case GDK_KEY_Right:
@@ -1413,11 +1421,9 @@ int key_released(dt_view_t *self, guint key, guint state)
   return 0;
 }
 
-int key_pressed(dt_view_t *self, guint key, guint state)
+static gboolean _key_press(GtkWidget *w, GdkEventKey *event, dt_knight_t *d)
 {
-  dt_knight_t *d = (dt_knight_t *)self->data;
-
-  switch(key)
+  switch(event->keyval)
   {
     // do movement in the event loop
     case GDK_KEY_Left:

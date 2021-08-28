@@ -58,9 +58,6 @@
   (UNBOUND_SHADOWS_L | UNBOUND_SHADOWS_A | UNBOUND_SHADOWS_B | UNBOUND_HIGHLIGHTS_L | UNBOUND_HIGHLIGHTS_A   \
    | UNBOUND_HIGHLIGHTS_B | UNBOUND_GAUSSIAN)
 
-#define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
-#define CLAMP_RANGE(x, y, z) (CLAMP(x, y, z))
-
 DT_MODULE_INTROSPECTION(5, dt_iop_shadhi_params_t)
 
 typedef enum dt_iop_shadhi_algo_t
@@ -193,6 +190,16 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("modify the tonal range of the shadows and highlights\n"
+                                        "of an image by enhancing local contrast."),
+                                      _("corrective and creative"),
+                                      _("linear or non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
+}
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
@@ -272,34 +279,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 }
 
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "white point adjustment"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "compress"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows color correction"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights color correction"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "soften with"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_shadhi_gui_data_t *g = (dt_iop_shadhi_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "shadows", GTK_WIDGET(g->shadows));
-  dt_accel_connect_slider_iop(self, "highlights", GTK_WIDGET(g->highlights));
-  dt_accel_connect_slider_iop(self, "white point adjustment", GTK_WIDGET(g->whitepoint));
-  dt_accel_connect_slider_iop(self, "radius", GTK_WIDGET(g->radius));
-  dt_accel_connect_slider_iop(self, "compress", GTK_WIDGET(g->compress));
-  dt_accel_connect_slider_iop(self, "shadows color correction", GTK_WIDGET(g->shadows_ccorrect));
-  dt_accel_connect_slider_iop(self, "highlights color correction", GTK_WIDGET(g->highlights_ccorrect));
-  dt_accel_connect_combobox_iop(self, "soften with", GTK_WIDGET(g->shadhi_algo));
-}
-
-
-
 static inline void _Lab_scale(const float *i, float *o)
 {
   o[0] = i[0] / 100.0f;
@@ -320,13 +299,15 @@ static inline float sign(float x)
   return (x < 0 ? -1.0f : 1.0f);
 }
 
-
+#ifdef _OPENMP
+#pragma omp declare simd aligned(ivoid, ovoid : 64)
+#endif
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_shadhi_data_t *data = (dt_iop_shadhi_data_t *)piece->data;
-  float *in = (float *)ivoid;
-  float *out = (float *)ovoid;
+  const dt_iop_shadhi_data_t *const restrict data = (dt_iop_shadhi_data_t *)piece->data;
+  const float *const restrict in = (float *)ivoid;
+  float *const restrict out = (float *)ovoid;
   const int width = roi_out->width;
   const int height = roi_out->height;
   const int ch = piece->colors;
@@ -350,8 +331,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(data->shadhi_algo == SHADHI_ALGO_GAUSSIAN)
   {
-    float Labmax[4] = { 100.0f, 128.0f, 128.0f, 1.0f };
-    float Labmin[4] = { 0.0f, -128.0f, -128.0f, 0.0f };
+    dt_aligned_pixel_t Labmax = { 100.0f, 128.0f, 128.0f, 1.0f };
+    dt_aligned_pixel_t Labmin = { 0.0f, -128.0f, -128.0f, 0.0f };
 
     if(unbound_mask)
     {
@@ -378,24 +359,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_bilateral_free(b);
   }
 
-// invert and desaturate
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(roi_out) \
-  shared(out) \
-  schedule(static)
-#endif
-  for(size_t j = 0; j < (size_t)roi_out->width * roi_out->height * 4; j += 4)
-  {
-    out[j + 0] = 100.0f - out[j + 0];
-    out[j + 1] = 0.0f;
-    out[j + 2] = 0.0f;
-  }
-
-  const float max[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-  const float min[4] = { 0.0f, -1.0f, -1.0f, 0.0f };
+  const dt_aligned_pixel_t max = { 1.0f, 1.0f, 1.0f, 1.0f };
+  const dt_aligned_pixel_t min = { 0.0f, -1.0f, -1.0f, 0.0f };
   const float lmin = 0.0f;
-  const float lmax = max[0] + fabs(min[0]);
+  const float lmax = max[0] + fabsf(min[0]);
   const float halfmax = lmax / 2.0;
   const float doublemax = lmax * 2.0;
 
@@ -406,13 +373,17 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                       highlights, highlights_ccorrect, lmax, lmin, \
                       low_approximation, max, min,  shadows, \
                       shadows_ccorrect, unbound_mask, whitepoint, width) \
-  shared(in, out) \
+  dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
   for(size_t j = 0; j < (size_t)width * height * ch; j += ch)
   {
-    float ta[3], tb[3];
+    dt_aligned_pixel_t ta, tb;
     _Lab_scale(&in[j], ta);
+    // invert and desaturate the blurred output pixel
+    out[j + 0] = 100.0f - out[j + 0];
+    out[j + 1] = 0.0f;
+    out[j + 2] = 0.0f;
     _Lab_scale(&out[j], tb);
 
     ta[0] = ta[0] > 0.0f ? ta[0] / whitepoint : ta[0];
@@ -420,75 +391,67 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     // overlay highlights
     float highlights2 = highlights * highlights;
-    float highlights_xform = CLAMP_RANGE(1.0f - tb[0] / (1.0f - compress), 0.0f, 1.0f);
+    const float highlights_xform = CLAMP(1.0f - tb[0] / (1.0f - compress), 0.0f, 1.0f);
 
     while(highlights2 > 0.0f)
     {
-      float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
+      const float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP(ta[0], lmin, lmax);
       float lb = (tb[0] - halfmax) * sign(-highlights) * sign(lmax - la) + halfmax;
-      lb = unbound_mask ? lb : CLAMP_RANGE(lb, lmin, lmax);
-      float lref = copysignf(fabs(la) > low_approximation ? 1.0f / fabs(la) : 1.0f / low_approximation, la);
-      float href = copysignf(
-          fabs(1.0f - la) > low_approximation ? 1.0f / fabs(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
+      lb = unbound_mask ? lb : CLAMP(lb, lmin, lmax);
+      const float lref = copysignf(fabsf(la) > low_approximation ? 1.0f / fabsf(la) : 1.0f / low_approximation, la);
+      const float href = copysignf(
+          fabsf(1.0f - la) > low_approximation ? 1.0f / fabsf(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
 
-      float chunk = highlights2 > 1.0f ? 1.0f : highlights2;
-      float optrans = chunk * highlights_xform;
+      const float chunk = highlights2 > 1.0f ? 1.0f : highlights2;
+      const float optrans = chunk * highlights_xform;
       highlights2 -= 1.0f;
 
       ta[0] = la * (1.0 - optrans)
               + (la > halfmax ? lmax - (lmax - doublemax * (la - halfmax)) * (lmax - lb) : doublemax * la
                                                                                            * lb) * optrans;
 
-      ta[0] = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
+      ta[0] = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP(ta[0], lmin, lmax);
 
-      ta[1] = ta[1] * (1.0f - optrans)
-              + (ta[1] + tb[1]) * (ta[0] * lref * (1.0f - highlights_ccorrect)
-                                   + (1.0f - ta[0]) * href * highlights_ccorrect) * optrans;
+      const float chroma_factor = (ta[0] * lref * (1.0f - highlights_ccorrect)
+                                   + (1.0f - ta[0]) * href * highlights_ccorrect);
+      ta[1] = ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * chroma_factor * optrans;
+      ta[1] = (flags & UNBOUND_HIGHLIGHTS_A) ? ta[1] : CLAMP(ta[1], min[1], max[1]);
 
-      ta[1] = (flags & UNBOUND_HIGHLIGHTS_A) ? ta[1] : CLAMP_RANGE(ta[1], min[1], max[1]);
-
-      ta[2] = ta[2] * (1.0f - optrans)
-              + (ta[2] + tb[2]) * (ta[0] * lref * (1.0f - highlights_ccorrect)
-                                   + (1.0f - ta[0]) * href * highlights_ccorrect) * optrans;
-
-      ta[2] = (flags & UNBOUND_HIGHLIGHTS_B) ? ta[2] : CLAMP_RANGE(ta[2], min[2], max[2]);
+      ta[2] = ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * chroma_factor * optrans;
+      ta[2] = (flags & UNBOUND_HIGHLIGHTS_B) ? ta[2] : CLAMP(ta[2], min[2], max[2]);
     }
 
     // overlay shadows
     float shadows2 = shadows * shadows;
-    float shadows_xform = CLAMP_RANGE(tb[0] / (1.0f - compress) - compress / (1.0f - compress), 0.0f, 1.0f);
+    const float shadows_xform = CLAMP(tb[0] / (1.0f - compress) - compress / (1.0f - compress), 0.0f, 1.0f);
 
     while(shadows2 > 0.0f)
     {
-      float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
+      const float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP(ta[0], lmin, lmax);
       float lb = (tb[0] - halfmax) * sign(shadows) * sign(lmax - la) + halfmax;
-      lb = unbound_mask ? lb : CLAMP_RANGE(lb, lmin, lmax);
-      float lref = copysignf(fabs(la) > low_approximation ? 1.0f / fabs(la) : 1.0f / low_approximation, la);
-      float href = copysignf(
-          fabs(1.0f - la) > low_approximation ? 1.0f / fabs(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
+      lb = unbound_mask ? lb : CLAMP(lb, lmin, lmax);
+      const float lref = copysignf(fabsf(la) > low_approximation ? 1.0f / fabsf(la) : 1.0f / low_approximation, la);
+      const float href = copysignf(
+          fabsf(1.0f - la) > low_approximation ? 1.0f / fabsf(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
 
 
-      float chunk = shadows2 > 1.0f ? 1.0f : shadows2;
-      float optrans = chunk * shadows_xform;
+      const float chunk = shadows2 > 1.0f ? 1.0f : shadows2;
+      const float optrans = chunk * shadows_xform;
       shadows2 -= 1.0f;
 
       ta[0] = la * (1.0 - optrans)
               + (la > halfmax ? lmax - (lmax - doublemax * (la - halfmax)) * (lmax - lb) : doublemax * la
                                                                                            * lb) * optrans;
 
-      ta[0] = (flags & UNBOUND_SHADOWS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
+      ta[0] = (flags & UNBOUND_SHADOWS_L) ? ta[0] : CLAMP(ta[0], lmin, lmax);
 
-      ta[1] = ta[1] * (1.0f - optrans)
-              + (ta[1] + tb[1]) * (ta[0] * lref * shadows_ccorrect
-                                   + (1.0f - ta[0]) * href * (1.0f - shadows_ccorrect)) * optrans;
+      const float chroma_factor = (ta[0] * lref * shadows_ccorrect
+                                   + (1.0f - ta[0]) * href * (1.0f - shadows_ccorrect));
+      ta[1] = ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * chroma_factor * optrans;
+      ta[1] = (flags & UNBOUND_SHADOWS_A) ? ta[1] : CLAMP(ta[1], min[1], max[1]);
 
-      ta[1] = (flags & UNBOUND_SHADOWS_A) ? ta[1] : CLAMP_RANGE(ta[1], min[1], max[1]);
-
-      ta[2] = ta[2] * (1.0f - optrans)
-              + (ta[2] + tb[2]) * (ta[0] * lref * shadows_ccorrect
-                                   + (1.0f - ta[0]) * href * (1.0f - shadows_ccorrect)) * optrans;
-
-      ta[2] = (flags & UNBOUND_SHADOWS_B) ? ta[2] : CLAMP_RANGE(ta[2], min[2], max[2]);
+      ta[2] = ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * chroma_factor * optrans;
+      ta[2] = (flags & UNBOUND_SHADOWS_B) ? ta[2] : CLAMP(ta[2], min[2], max[2]);
     }
 
     _Lab_rescale(ta, &out[j]);
@@ -538,8 +501,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(d->shadhi_algo == SHADHI_ALGO_GAUSSIAN)
   {
-    float Labmax[4] = { 100.0f, 128.0f, 128.0f, 1.0f };
-    float Labmin[4] = { 0.0f, -128.0f, -128.0f, 0.0f };
+    dt_aligned_pixel_t Labmax = { 100.0f, 128.0f, 128.0f, 1.0f };
+    dt_aligned_pixel_t Labmin = { 0.0f, -128.0f, -128.0f, 0.0f };
 
     if(unbound_mask)
     {
@@ -572,7 +535,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     b = NULL; // make sure we don't clean it up twice
   }
 
-  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   size_t origin[] = { 0, 0, 0 };
@@ -632,7 +595,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const float sigma_r = 100.0f; // does not depend on scale
   const float sigma_s = sigma;
 
-  const size_t basebuffer = width * height * channels * sizeof(float);
+  const size_t basebuffer = sizeof(float) * channels * width * height;
 
   if(d->shadhi_algo == SHADHI_ALGO_BILATERAL)
   {
@@ -645,6 +608,9 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   {
     // gaussian blur
     tiling->factor = 2.0f + fmax(1.0f, (float)dt_gaussian_memory_use(width, height, channels) / basebuffer);
+#ifdef HAVE_OPENCL
+    tiling->factor_cl = 2.0f + fmax(1.0f, (float)dt_gaussian_memory_use_cl(width, height, channels) / basebuffer);
+#endif
     tiling->maxbuf = fmax(1.0f, (float)dt_gaussian_singlebuffer_size(width, height, channels) / basebuffer);
   }
 
@@ -682,7 +648,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_shadhi_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -693,9 +658,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_shadhi_gui_data_t *g = (dt_iop_shadhi_gui_data_t *)self->gui_data;
-  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)module->params;
+  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
   dt_bauhaus_slider_set(g->shadows, p->shadows);
   dt_bauhaus_slider_set(g->highlights, p->highlights);
   dt_bauhaus_slider_set(g->whitepoint, p->whitepoint);
@@ -744,7 +708,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->whitepoint, _("shift white point"));
   gtk_widget_set_tooltip_text(g->radius, _("spatial extent"));
   gtk_widget_set_tooltip_text(g->shadhi_algo, _("filter to use for softening. bilateral avoids halos"));
-  gtk_widget_set_tooltip_text(g->compress, _("compress the effect on shadows/highlights and\npreserve midtones"));
+  gtk_widget_set_tooltip_text(g->compress, _("compress the effect on shadows/highlights and\npreserve mid-tones"));
   gtk_widget_set_tooltip_text(g->shadows_ccorrect, _("adjust saturation of shadows"));
   gtk_widget_set_tooltip_text(g->highlights_ccorrect, _("adjust saturation of highlights"));
 }

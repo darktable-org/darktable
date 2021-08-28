@@ -21,6 +21,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <sqlite3.h>
+#include "develop/imageop.h"
 
 struct dt_develop_t;
 struct dt_iop_module_t;
@@ -78,6 +79,11 @@ gboolean dt_history_copy_parts(int imgid);
 gboolean dt_history_paste_on_list(const GList *list, gboolean undo);
 gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo);
 
+static inline gboolean dt_history_module_skip_copy(const int flags)
+{
+  return flags & (IOP_FLAGS_DEPRECATED | IOP_FLAGS_UNSAFE_COPY | IOP_FLAGS_HIDDEN);
+}
+
 /** load a dt file and applies to selected images */
 int dt_history_load_and_apply_on_list(gchar *filename, const GList *list);
 
@@ -121,10 +127,10 @@ gboolean dt_history_check_module_exists(int32_t imgid, const char *operation);
 void dt_history_hash_write_from_history(const int32_t imgid, const dt_history_hash_t type);
 
 /** return the hash history status */
-const dt_history_hash_t dt_history_hash_get_status(const int32_t imgid);
+dt_history_hash_t dt_history_hash_get_status(const int32_t imgid);
 
 /** return true if mipmap_hash = current_hash */
-const gboolean dt_history_hash_is_mipmap_synced(const int32_t imgid);
+gboolean dt_history_hash_is_mipmap_synced(const int32_t imgid);
 
 /** update mipmap hash to db (= current_hash) */
 void dt_history_hash_set_mipmap(const int32_t imgid);

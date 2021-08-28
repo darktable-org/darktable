@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2020 darktable developers.
+    Copyright (C) 2015-2021 darktable developers.
 
     (based on code by johannes hanika)
 
@@ -23,6 +23,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/imageio_rawspeed.h" // for dt_rawspeed_crop_dcraw_filters
 #include "common/opencl.h"
+#include "common/imagebuf.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "develop/tiling.h"
@@ -35,18 +36,15 @@
 #include <gtk/gtk.h>
 #include <stdint.h>
 #include <stdlib.h>
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 
 DT_MODULE_INTROSPECTION(1, dt_iop_rawprepare_params_t)
 
 typedef struct dt_iop_rawprepare_params_t
 {
-  int32_t x; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop x"
-  int32_t y; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop y"
-  int32_t width; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop width"
-  int32_t height; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop height"
+  int32_t x; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop left"
+  int32_t y; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop top"
+  int32_t width; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop right"
+  int32_t height; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop bottom"
   uint16_t raw_black_level_separate[4]; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "black level"
   uint16_t raw_white_point; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "white point"
 } dt_iop_rawprepare_params_t;
@@ -106,6 +104,15 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_RAW;
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("sets technical specificities of the raw sensor.\n\ntouch with great care!"),
+                                      _("mandatory"),
+                                      _("linear, raw, scene-referred"),
+                                      _("linear, raw"),
+                                      _("linear, raw, scene-referred"));
+}
+
 void init_presets(dt_iop_module_so_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
@@ -120,81 +127,34 @@ void init_presets(dt_iop_module_so_t *self)
                                                            .raw_black_level_separate[2] = 0,
                                                            .raw_black_level_separate[3] = 0,
                                                            .raw_white_point = UINT16_MAX },
-                             sizeof(dt_iop_rawprepare_params_t), 1);
+                             sizeof(dt_iop_rawprepare_params_t), 1, DEVELOP_BLEND_CS_NONE);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  for(int i = 0; i < 4; i++)
-  {
-    gchar *label = g_strdup_printf(_("black level %i"), i);
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", label));
-    g_free(label);
-  }
-
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "white point"));
-
-  if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
-  {
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "crop x"));
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "crop y"));
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "crop width"));
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "crop height"));
-  }
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
-
-  for(int i = 0; i < 4; i++)
-  {
-    gchar *label = g_strdup_printf(_("black level %i"), i);
-    dt_accel_connect_slider_iop(self, label, g->black_level_separate[i]);
-    g_free(label);
-  }
-
-  dt_accel_connect_slider_iop(self, "white point", g->white_point);
-
-  if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
-  {
-    dt_accel_connect_slider_iop(self, "crop x", g->x);
-    dt_accel_connect_slider_iop(self, "crop y", g->y);
-    dt_accel_connect_slider_iop(self, "crop width", g->width);
-    dt_accel_connect_slider_iop(self, "crop height", g->height);
-  }
-}
-
-// value to round,   reference on how to round:
-//  if ref was even, returned value will be even
-//  if ref was odd,  returned value will be odd
-static int round_smart(float val, int ref)
-{
-  // first, just round it
-  int round = (int)roundf(val);
-
-  if((ref & 1) ^ (round & 1)) round++;
-
-  return round;
 }
 
 static int compute_proper_crop(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_in, int value)
 {
   const float scale = roi_in->scale / piece->iscale;
-
-  return round_smart((float)value * scale, value);
+  return (int)roundf((float)value * scale);
 }
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points, size_t points_count)
 {
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  // nothing to be done if parameters are set to neutral values (no top/left crop)
+  if (d->x == 0 && d->y == 0) return 1;
 
   const float scale = piece->buf_in.scale / piece->iscale;
 
   const float x = (float)d->x * scale, y = (float)d->y * scale;
 
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(points_count, points, y, x) \
+    schedule(static) \
+    aligned(points:64) if(points_count > 100)
+#endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     points[i] -= x;
@@ -204,15 +164,24 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   return 1;
 }
 
-int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points,
                           size_t points_count)
 {
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  // nothing to be done if parameters are set to neutral values (no top/left crop)
+  if (d->x == 0 && d->y == 0) return 1;
 
   const float scale = piece->buf_in.scale / piece->iscale;
 
   const float x = (float)d->x * scale, y = (float)d->y * scale;
 
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(points_count, points, y, x) \
+    schedule(static) \
+    aligned(points:64) if(points_count > 100)
+#endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     points[i] += x;
@@ -225,9 +194,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
                   float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  // TODO
-  memset(out, 0, sizeof(float) * roi_out->width * roi_out->height);
-  fprintf(stderr, "TODO: implement %s() in %s\n", __FUNCTION__, __FILE__);
+  dt_iop_copy_image_roi(out, in, 1, roi_in, roi_out, TRUE);
 }
 
 // we're not scaling here (bayer input), so just crop borders
@@ -239,11 +206,11 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
 
   roi_out->x = roi_out->y = 0;
 
-  int32_t x = d->x + d->width, y = d->y + d->height;
+  const int32_t x = d->x + d->width, y = d->y + d->height;
 
   const float scale = roi_in->scale / piece->iscale;
-  roi_out->width -= round_smart((float)x * scale, x);
-  roi_out->height -= round_smart((float)y * scale, y);
+  roi_out->width -= (int)roundf((float)x * scale);
+  roi_out->height -= (int)roundf((float)y * scale);
 }
 
 void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
@@ -252,11 +219,11 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   *roi_in = *roi_out;
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
 
-  int32_t x = d->x + d->width, y = d->y + d->height;
+  const int32_t x = d->x + d->width, y = d->y + d->height;
 
   const float scale = roi_in->scale / piece->iscale;
-  roi_in->width += round_smart((float)x * scale, x);
-  roi_in->height += round_smart((float)y * scale, y);
+  roi_in->width += (int)roundf((float)x * scale);
+  roi_in->height += (int)roundf((float)y * scale);
 }
 
 void output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
@@ -288,6 +255,10 @@ static int BL(const dt_iop_roi_t *const roi_out, const dt_iop_rawprepare_data_t 
   return ((((row + roi_out->y + d->y) & 1) << 1) + ((col + roi_out->x + d->x) & 1));
 }
 
+/* Some comments about the cpu code path; tests with gcc 10.x show a clear performance gain for the
+   compile generated code vs SSE specific code. This depends slightly on the cpu but it's 1.2 to 3-fold
+   better for all tested cases.
+*/
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -298,7 +269,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const int csx = compute_proper_crop(piece, roi_in, d->x), csy = compute_proper_crop(piece, roi_in, d->y);
 
-  if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_UINT16)
+  if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1
+     && piece->dsc_in.datatype == TYPE_UINT16)
   { // raw mosaic
 
     const uint16_t *const in = (const uint16_t *const)ivoid;
@@ -325,7 +297,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
     adjust_xtrans_filters(piece->pipe, csx, csy);
   }
-  else if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_FLOAT)
+  else if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1
+          && piece->dsc_in.datatype == TYPE_FLOAT)
   { // raw mosaic, fp, unnormalized
 
     const float *const in = (const float *const)ivoid;
@@ -382,164 +355,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-  for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
-}
-
-#if defined(__SSE2__)
-void process_sse2(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
-
-  // fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
-  // fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
-
-  const int csx = compute_proper_crop(piece, roi_in, d->x), csy = compute_proper_crop(piece, roi_in, d->y);
-
-  if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_UINT16)
-  { // raw mosaic
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(csx, csy, d, ivoid, ovoid, roi_in, roi_out) \
-    schedule(static)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-      const uint16_t *in = ((uint16_t *)ivoid) + ((size_t)roi_in->width * (j + csy) + csx);
-      float *out = ((float *)ovoid) + (size_t)roi_out->width * j;
-
-      int i = 0;
-
-      // FIXME: figure alignment!  !!! replace with for !!!
-      while((!dt_is_aligned(in, 16) || !dt_is_aligned(out, 16)) && (i < roi_out->width))
-      {
-        const int id = BL(roi_out, d, j, i);
-        *out = (((float)(*in)) - d->sub[id]) / d->div[id];
-        i++;
-        in++;
-        out++;
-      }
-
-      const __m128 sub = _mm_set_ps(d->sub[BL(roi_out, d, j, i + 3)], d->sub[BL(roi_out, d, j, i + 2)],
-                                    d->sub[BL(roi_out, d, j, i + 1)], d->sub[BL(roi_out, d, j, i)]);
-
-      const __m128 div = _mm_set_ps(d->div[BL(roi_out, d, j, i + 3)], d->div[BL(roi_out, d, j, i + 2)],
-                                    d->div[BL(roi_out, d, j, i + 1)], d->div[BL(roi_out, d, j, i)]);
-
-      // process aligned pixels with SSE
-      for(; i < roi_out->width - (8 - 1); i += 8, in += 8)
-      {
-        const __m128i input = _mm_load_si128((__m128i *)in);
-
-        __m128i ilo = _mm_unpacklo_epi16(input, _mm_set1_epi16(0));
-        __m128i ihi = _mm_unpackhi_epi16(input, _mm_set1_epi16(0));
-
-        __m128 flo = _mm_cvtepi32_ps(ilo);
-        __m128 fhi = _mm_cvtepi32_ps(ihi);
-
-        flo = _mm_div_ps(_mm_sub_ps(flo, sub), div);
-        fhi = _mm_div_ps(_mm_sub_ps(fhi, sub), div);
-
-        _mm_stream_ps(out, flo);
-        out += 4;
-        _mm_stream_ps(out, fhi);
-        out += 4;
-      }
-
-      // process the rest
-      for(; i < roi_out->width; i++, in++, out++)
-      {
-        const int id = BL(roi_out, d, j, i);
-        *out = (((float)(*in)) - d->sub[id]) / d->div[id];
-      }
-    }
-
-    piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
-    adjust_xtrans_filters(piece->pipe, csx, csy);
-  }
-  else if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_FLOAT)
-  { // raw mosaic, fp, unnormalized
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(d, csx, csy, ivoid, ovoid, roi_in, roi_out) \
-    schedule(static)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-      const float *in = ((float *)ivoid) + ((size_t)roi_in->width * (j + csy) + csx);
-      float *out = ((float *)ovoid) + (size_t)roi_out->width * j;
-
-      int i = 0;
-
-      // FIXME: figure alignment!  !!! replace with for !!!
-      while((!dt_is_aligned(in, 16) || !dt_is_aligned(out, 16)) && (i < roi_out->width))
-      {
-        const int id = BL(roi_out, d, j, i);
-        *out = (*in - d->sub[id]) / d->div[id];
-        i++;
-        in++;
-        out++;
-      }
-
-      const __m128 sub = _mm_set_ps(d->sub[BL(roi_out, d, j, i + 3)], d->sub[BL(roi_out, d, j, i + 2)],
-                                    d->sub[BL(roi_out, d, j, i + 1)], d->sub[BL(roi_out, d, j, i)]);
-
-      const __m128 div = _mm_set_ps(d->div[BL(roi_out, d, j, i + 3)], d->div[BL(roi_out, d, j, i + 2)],
-                                    d->div[BL(roi_out, d, j, i + 1)], d->div[BL(roi_out, d, j, i)]);
-
-      // process aligned pixels with SSE
-      for(; i < roi_out->width - (4 - 1); i += 4, in += 4, out += 4)
-      {
-        const __m128 input = _mm_load_ps(in);
-
-        const __m128 scaled = _mm_div_ps(_mm_sub_ps(input, sub), div);
-
-        _mm_stream_ps(out, scaled);
-      }
-
-      // process the rest
-      for(; i < roi_out->width; i++, in++, out++)
-      {
-        const int id = BL(roi_out, d, j, i);
-        *out = (*in - d->sub[id]) / d->div[id];
-      }
-    }
-
-    piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
-    adjust_xtrans_filters(piece->pipe, csx, csy);
-  }
-  else
-  { // pre-downsampled buffer that needs black/white scaling
-
-    const __m128 sub = _mm_load_ps(d->sub), div = _mm_load_ps(d->div);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(csx, csy, div, ivoid, ovoid, roi_in, roi_out, sub) \
-    schedule(static)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-      const float *in = ((float *)ivoid) + (size_t)4 * (roi_in->width * (j + csy) + csx);
-      float *out = ((float *)ovoid) + (size_t)4 * roi_out->width * j;
-
-      // process aligned pixels with SSE
-      for(int i = 0; i < roi_out->width; i++, in += 4, out += 4)
-      {
-        const __m128 input = _mm_load_ps(in);
-
-        const __m128 scaled = _mm_div_ps(_mm_sub_ps(input, sub), div);
-
-        _mm_stream_ps(out, scaled);
-      }
-    }
-  }
+  dt_dev_write_rawdetail_mask(piece, (float *const)ovoid, roi_in, DT_DEV_DETAIL_MASK_RAWPREPARE);
 
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
-
-  _mm_sfence();
 }
-#endif
 
 #ifdef HAVE_OPENCL
 int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
@@ -604,6 +423,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 
+  err = dt_dev_write_rawdetail_mask_cl(piece, dev_out, roi_in, DT_DEV_DETAIL_MASK_RAWPREPARE);
+  if(err != CL_SUCCESS) goto error;
+
   return TRUE;
 
 error:
@@ -637,7 +459,9 @@ static gboolean image_set_rawcrops(const uint32_t imgid, int dx, int dy)
 {
   dt_image_t *img = NULL;
   img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-  const gboolean test = (img->p_width == img->width - dx) && (img->p_height == img->height - dy);
+  const gboolean test = (img->p_width == img->width - dx)
+                     && (img->p_height == img->height - dy);
+
   dt_image_cache_read_release(darktable.image_cache, img);
   if(test) return FALSE;
 
@@ -699,13 +523,17 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   if(image_set_rawcrops(pipe->image.id, d->x + d->width, d->y + d->height))
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
 
-  if(!(dt_image_is_rawprepare_supported(&piece->pipe->image)) || image_is_normalized(&piece->pipe->image)) piece->enabled = 0;
+  if(!(dt_image_is_rawprepare_supported(&piece->pipe->image))
+     || image_is_normalized(&piece->pipe->image))
+    piece->enabled = 0;
+
+  if(piece->pipe->want_detail_mask == (DT_DEV_DETAIL_MASK_REQUIRED | DT_DEV_DETAIL_MASK_RAWPREPARE))
+    piece->process_tiling_ready = 0;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_rawprepare_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -731,6 +559,9 @@ void reload_defaults(dt_iop_module_t *self)
 
   self->hide_enable_button = 1;
   self->default_enabled = dt_image_is_rawprepare_supported(image) && !image_is_normalized(image);
+
+  if(self->widget)
+    gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 }
 
 void init_global(dt_iop_module_so_t *self)
@@ -759,10 +590,26 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
   dt_iop_rawprepare_params_t *p = (dt_iop_rawprepare_params_t *)self->params;
 
-  for(int i = 0; i < 4; i++)
+  const gboolean is_monochrome = (self->dev->image_storage.flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) != 0;
+  if(is_monochrome)
   {
-    dt_bauhaus_slider_set_soft(g->black_level_separate[i], p->raw_black_level_separate[i]);
+    // we might have to deal with old edits, so get average first
+    int av = 2; // for rounding
+    for(int i = 0; i < 4; i++)
+      av += p->raw_black_level_separate[i];
+
+    for(int i = 0; i < 4; i++)
+      dt_bauhaus_slider_set_soft(g->black_level_separate[i], av / 4);
   }
+  else
+  {
+    for(int i = 0; i < 4; i++)
+      dt_bauhaus_slider_set_soft(g->black_level_separate[i], p->raw_black_level_separate[i]);
+  }
+
+  // don't show upper three black levels for monochromes
+  for(int i = 1; i < 4; i++)
+    gtk_widget_set_visible(g->black_level_separate[i], !is_monochrome);     
 
   dt_bauhaus_slider_set_soft(g->white_point, p->raw_white_point);
 
@@ -773,9 +620,30 @@ void gui_update(dt_iop_module_t *self)
     dt_bauhaus_slider_set_soft(g->width, p->width);
     dt_bauhaus_slider_set_soft(g->height, p->height);
   }
-
-  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 }
+
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
+{
+  dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
+  dt_iop_rawprepare_params_t *p = (dt_iop_rawprepare_params_t *)self->params;
+
+  const gboolean is_monochrome = (self->dev->image_storage.flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) != 0;
+  if(is_monochrome)
+  {
+    if(w == g->black_level_separate[0])
+    {
+      const int val = p->raw_black_level_separate[0];
+      for(int i = 1; i < 4; i++)
+        dt_bauhaus_slider_set_soft(g->black_level_separate[i], val);
+    }
+  }
+}
+
+const gchar *black_label[]
+  =  { N_("black level 0"),
+       N_("black level 1"),
+       N_("black level 2"),
+       N_("black level 3") };
 
 void gui_init(dt_iop_module_t *self)
 {
@@ -786,14 +654,12 @@ void gui_init(dt_iop_module_t *self)
   for(int i = 0; i < 4; i++)
   {
     gchar *par = g_strdup_printf("raw_black_level_separate[%i]", i);
-    gchar *label = g_strdup_printf(_("black level %i"), i);
 
     g->black_level_separate[i] = dt_bauhaus_slider_from_params(self, par);
-    dt_bauhaus_widget_set_label(g->black_level_separate[i], NULL, label);
-    gtk_widget_set_tooltip_text(g->black_level_separate[i], label);
+    dt_bauhaus_widget_set_label(g->black_level_separate[i], NULL, black_label[i]);
+    gtk_widget_set_tooltip_text(g->black_level_separate[i], _(black_label[i]));
     dt_bauhaus_slider_set_soft_max(g->black_level_separate[i], 16384);
 
-    g_free(label);
     g_free(par);
   }
 

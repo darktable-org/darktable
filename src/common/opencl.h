@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,7 +29,10 @@
 #define DT_OPENCL_EVENTNAMELENGTH 64
 #define DT_OPENCL_MAX_EVENTS 256
 #define DT_OPENCL_MAX_ERRORS 5
-#define DT_OPENCL_MAX_INCLUDES 5
+#define DT_OPENCL_MAX_INCLUDES 7
+#define DT_OPENCL_VENDOR_AMD 4098
+#define DT_OPENCL_VENDOR_NVIDIA 4318
+#define DT_OPENCL_VENDOR_INTEL 0x8086u
 
 #include "common/darktable.h"
 

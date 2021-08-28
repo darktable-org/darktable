@@ -49,7 +49,7 @@ class DTBuild
   #  command += " -d camsupport"
     command += " --conf plugins/imageio/format/tiff/bpp=16"
   #  command += " --conf plugins/imageio/format/jpeg/quality=100"
-    command += " --conf write_sidecar_files=false"
+    command += " --conf write_sidecar_files=never"
     run_cmd_test_file command, outfile
   end
 

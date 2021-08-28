@@ -438,7 +438,7 @@ float *monotone_hermite_set(int n, float x[], float y[])
   }
   for(i = 0; i < n; i++)
   {
-    if(fabs(delta[i]) < EPSILON)
+    if(fabsf(delta[i]) < EPSILON)
     {
       m[i] = 0.0f;
       m[i + 1] = 0.0f;

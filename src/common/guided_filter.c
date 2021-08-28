@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2020 darktable developers.
+    Copyright (C) 2017-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,9 @@
 
 */
 
+#include "common/box_filters.h"
 #include "common/guided_filter.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include <assert.h>
 #include <float.h>
@@ -55,18 +57,6 @@
 # define _mm_prefetch(where,hint)
 #endif
 
-#ifndef dt_omp_shared
-#ifdef _OPENMP
-#if defined(__clang__) || __GNUC__ > 8
-# define dt_omp_shared(...)  shared(__VA_ARGS__)
-#else
-  // GCC 8.4 throws string of errors "'x' is predetermined 'shared' for 'shared'" if we explicitly declare
-  //  'const' variables as shared
-# define dt_omp_shared(var, ...)
-#endif
-#endif /* _OPENMP */
-#endif /* dt_omp_shared */
-
 // the filter does internal tiling to keep memory requirements reasonable, so this structure
 // defines the position of the tile being processed
 typedef struct tile
@@ -83,7 +73,7 @@ typedef struct color_image
 // allocate space for n-component image of size width x height
 static inline color_image new_color_image(int width, int height, int ch)
 {
-  return (color_image){ dt_alloc_align(64, sizeof(float) * width * height * ch), width, height, ch };
+  return (color_image){ dt_alloc_align_float((size_t)width * height * ch), width, height, ch };
 }
 
 // free space for n-component image
@@ -99,199 +89,6 @@ static inline float *get_color_pixel(color_image img, size_t i)
   return img.data + i * img.stride;
 }
 
-// calculate the one-dimensional moving average over a window of size 2*w+1 independently for each of four channels
-// input array x has stride 4, output array y has stride stride_y
-static inline void box_mean_1d_4ch(int N, const float *x, float *y, size_t stride_y, int w)
-{
-  float n_box = 0.f, m[4] = { 0.f, 0.f, 0.f, 0.f }, c[4] = { 0.f, 0.f, 0.f, 0.f };
-  if(N > 2 * w)
-  {
-    for(int i = 0, i_end = w + 1; i < i_end; i++)
-    {
-      SIMD_FOR (int k = 0; k < 4; k++)
-        m[k] = Kahan_sum(m[k], &c[k], x[4*i+k]);
-      n_box++;
-    }
-    for(int i = 0, i_end = w; i < i_end; i++)
-    {
-      SIMD_FOR (int k = 0; k < 4; k++)
-      {
-        y[i * stride_y + k] = m[k] / n_box;
-        m[k] = Kahan_sum(m[k], &c[k], x[4*(i + w + 1) + k]);
-      }
-      n_box++;
-    }
-    for(int i = w, i_end = N - w - 1; i < i_end; i++)
-    {
-      SIMD_FOR (int k = 0; k < 4; k++)
-      {
-        y[i * stride_y + k] = m[k] / n_box;
-        m[k] = Kahan_sum(m[k], &c[k], x[4*(i + w + 1) + k]);
-        m[k] = Kahan_sum(m[k], &c[k], -x[4*(i - w) + k]);
-      }
-    }
-    for(int i = N - w - 1, i_end = N; i < i_end; i++)
-    {
-      SIMD_FOR (int k = 0; k < 4; k++)
-      {
-        y[i * stride_y + k] = m[k] / n_box;
-        m[k] = Kahan_sum(m[k], &c[k], -x[4*(i - w) + k]);
-      }
-      n_box--;
-    }
-  }
-  else
-  {
-    for(int i = 0, i_end = min_i(w + 1, N); i < i_end; i++)
-    {
-      SIMD_FOR (int k = 0; k < 4; k++)
-      {
-        m[k] = Kahan_sum(m[k], &c[k], x[4*i + k]);
-      }
-      n_box++;
-    }
-    for(int i = 0; i < N; i++)
-    {
-      SIMD_FOR (int k = 0; k < 4; k++)
-        y[i * stride_y + k] = m[k] / n_box;
-      if(i - w >= 0)
-      {
-        SIMD_FOR (int k = 0; k < 4; k++)
-          m[k] = Kahan_sum(m[k], &c[k], -x[4*(i - w)+k]);
-        n_box--;
-      }
-      if(i + w + 1 < N)
-      {
-        SIMD_FOR (int k = 0; k < 4; k++)
-          m[k] = Kahan_sum(m[k], &c[k], x[4*(i + w + 1)+k]);
-        n_box++;
-      }
-    }
-  }
-}
-
-// calculate the one-dimensional moving average over a window of size 2*w+1 independently for each of eight channels
-// input array x has stride 9, output array y has stride stride_y
-static inline void box_mean_1d_9ch(int N, const float *x, float *y, size_t stride_y, int w)
-{
-  float n_box = 0.f, m[9] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
-  float c[9] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
-  if(N > 2 * w)
-  {
-    for(int i = 0, i_end = w + 1; i < i_end; i++)
-    {
-      SIMD_FOR (int k = 0; k < 9; k++)
-        m[k] = Kahan_sum(m[k], &c[k], x[9*i+k]);
-      n_box++;
-    }
-    for(int i = 0, i_end = w; i < i_end; i++)
-    {
-      SIMD_FOR (int k = 0; k < 9; k++)
-      {
-        y[i * stride_y + k] = m[k] / n_box;
-        m[k] = Kahan_sum(m[k], &c[k], x[9*(i + w + 1) + k]);
-      }
-      n_box++;
-    }
-    for(int i = w, i_end = N - w - 1; i < i_end; i++)
-    {
-      SIMD_FOR (int k = 0; k < 9; k++)
-      {
-        y[i * stride_y + k] = m[k] / n_box;
-        m[k] = Kahan_sum(m[k], &c[k], x[9*(i + w + 1) + k]);
-        m[k] = Kahan_sum(m[k], &c[k], -x[9*(i - w) + k]);
-      }
-    }
-    for(int i = N - w - 1, i_end = N; i < i_end; i++)
-    {
-      SIMD_FOR (int k = 0; k < 9; k++)
-      {
-        y[i * stride_y + k] = m[k] / n_box;
-        m[k] = Kahan_sum(m[k], &c[k], -x[9*(i - w) + k]);
-      }
-      n_box--;
-    }
-  }
-  else
-  {
-    for(int i = 0, i_end = min_i(w + 1, N); i < i_end; i++)
-    {
-      SIMD_FOR (int k = 0; k < 9; k++)
-      {
-        m[k] = Kahan_sum(m[k], &c[k], x[9*i + k]);
-      }
-      n_box++;
-    }
-    for(int i = 0; i < N; i++)
-    {
-      SIMD_FOR (int k = 0; k < 9; k++)
-        y[i * stride_y + k] = m[k] / n_box;
-      if(i - w >= 0)
-      {
-        SIMD_FOR (int k = 0; k < 9; k++)
-          m[k] = Kahan_sum(m[k], &c[k], -x[9*(i - w)+k]);
-        n_box--;
-      }
-      if(i + w + 1 < N)
-      {
-        SIMD_FOR (int k = 0; k < 9; k++)
-          m[k] = Kahan_sum(m[k], &c[k], x[9*(i + w + 1)+k]);
-        n_box++;
-      }
-    }
-  }
-}
-
-// in-place calculate the two-dimensional moving average of a four-channel image over a box of size (2*w+1) x (2*w+1)
-static void box_mean_4ch(color_image img, int w)
-{
-  const size_t size = 4 * max_i(img.width, img.height);
-  float *img_bak = dt_alloc_align(64, dt_get_num_threads() * size * sizeof(float));
-  const size_t width = 4 * img.width;
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) dt_omp_firstprivate(w, size, width, img_bak) shared(img)
-#endif
-  for(int i1 = 0; i1 < img.height; i1++)
-  {
-    float *buf = img_bak + dt_get_thread_num() * size;
-    memcpy(buf, img.data + (size_t)i1 * width, sizeof(float) * width);
-    box_mean_1d_4ch(img.width, buf, img.data + (size_t)i1 * width, 4, w);
-  }
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) dt_omp_firstprivate(w, size, width, img_bak) shared(img)
-#endif
-  for(int i0 = 0; i0 < img.width; i0++)
-  {
-    float *buf = img_bak + dt_get_thread_num() * size;
-    for(int i1 = 0; i1 < img.height; i1++)
-      SIMD_FOR (int k = 0; k < 4; k++)
-        buf[4*i1+k] = img.data[4*(i0 + (size_t)i1 * img.width)+k];
-    box_mean_1d_4ch(img.height, buf, img.data + 4*i0, width, w);
-  }
-  dt_free_align(img_bak);
-}
-
-// in-place calculate the two-dimensional moving average of a four-channel image over a box of size (2*w+1) x (2*w+1)
-static void box_means_vert(float *img_bak, int w, color_image mean, color_image var)
-{
-  const size_t size = 9 * max_i(mean.width, mean.height);
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) dt_omp_firstprivate(w, size, img_bak) \
-  shared(mean, var)
-#endif
-  for(int i0 = 0; i0 < mean.width; i0++)
-  {
-    float *buf = img_bak + dt_get_thread_num() * size;
-    for(int i1 = 0; i1 < mean.height; i1++)
-      SIMD_FOR (int k = 0; k < 4; k++)
-        buf[4*i1+k] = mean.data[4*(i0 + (size_t)i1 * mean.width)+k];
-    box_mean_1d_4ch(mean.height, buf, mean.data + 4*i0, 4 * mean.width, w);
-    for(int i1 = 0; i1 < var.height; i1++)
-      SIMD_FOR (int k = 0; k < 9; k++)
-        buf[9*i1+k] = var.data[9*(i0 + (size_t)i1 * var.width)+k];
-    box_mean_1d_9ch(var.height, buf, var.data + 9*i0, 9 * var.width, w);
-  }
-}
 
 // apply guided filter to single-component image img using the 3-components image imgg as a guide
 // the filtering applies a monochrome box filter to a total of 13 image channels:
@@ -326,24 +123,24 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
 #define VAR_GB 7
   color_image mean = new_color_image(width, height, 4);
   color_image variance = new_color_image(width, height, 9);
-  const size_t img_dimen = max_i(mean.width, mean.height);
-  const size_t img_bak_sz = 13 * img_dimen;
-  float *img_bak = dt_alloc_align(64, dt_get_num_threads() * img_bak_sz * sizeof(float));
+  const size_t img_dimen = mean.width;
+  size_t img_bak_sz;
+  float *img_bak = dt_alloc_perthread_float(9*img_dimen, &img_bak_sz);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(img, imgg, mean, variance, img_bak) \
-  dt_omp_firstprivate(img_bak_sz, img_dimen, w, guide_weight) dt_omp_shared(source)
+  dt_omp_firstprivate(img_bak_sz, img_dimen, w, guide_weight) dt_omp_sharedconst(source)
 #endif
   for(int j_imgg = source.lower; j_imgg < source.upper; j_imgg++)
   {
     int j = j_imgg - source.lower;
-    // put values directly into temp buffer to avoid a memcpy for the horizontal box mean pass
-    float *const meanpx = img_bak + dt_get_thread_num() * img_bak_sz;
-    float *const varpx = meanpx + 4*img_dimen;
+    float *const restrict meanpx = mean.data + 4 * j * mean.width;
+    float *const restrict varpx = variance.data + 9 * j * variance.width;
     for(int i_imgg = source.left; i_imgg < source.right; i_imgg++)
     {
       size_t i = i_imgg - source.left;
       const float *pixel_ = get_color_pixel(imgg, i_imgg + (size_t)j_imgg * imgg.width);
-      float pixel[3] = { pixel_[0] * guide_weight, pixel_[1] * guide_weight, pixel_[2] * guide_weight };
+      dt_aligned_pixel_t pixel =
+        { pixel_[0] * guide_weight, pixel_[1] * guide_weight, pixel_[2] * guide_weight, pixel_[3] * guide_weight };
       const float input = img.data[i_imgg + (size_t)j_imgg * img.width];
       meanpx[4*i+INP_MEAN] = input;
       meanpx[4*i+GUIDE_MEAN_R] = pixel[0];
@@ -360,11 +157,13 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
       varpx[9*i+VAR_BB] = pixel[2] * pixel[2];
     }
     // apply horizontal pass of box mean filter while the cache is still hot
-    box_mean_1d_4ch(mean.width, meanpx, mean.data + 4 * j * mean.width, 4, w);
-    box_mean_1d_9ch(variance.width, varpx, variance.data + 9 * j * variance.width, 9, w);
+    float *const restrict scratch = dt_get_perthread(img_bak, img_bak_sz);
+    dt_box_mean_horizontal(meanpx, mean.width, 4|BOXFILTER_KAHAN_SUM, w, scratch);
+    dt_box_mean_horizontal(varpx, variance.width, 9|BOXFILTER_KAHAN_SUM, w, scratch);
   }
-  box_means_vert(img_bak, w, mean, variance);
   dt_free_align(img_bak);
+  dt_box_mean_vertical(mean.data, mean.height, mean.width, 4|BOXFILTER_KAHAN_SUM, w);
+  dt_box_mean_vertical(variance.data, variance.height, variance.width, 9|BOXFILTER_KAHAN_SUM, w);
   // we will recycle memory of 'mean' for the new coefficient arrays a_? and b to reduce memory foot print
   color_image a_b = mean;
   #define A_RED 0
@@ -429,10 +228,12 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
     a_b.data[4*i+B] = b_;
   }
   free_color_image(&variance);
-  box_mean_4ch(a_b, w);
+
+  dt_box_mean(a_b.data, a_b.height, a_b.width, a_b.stride|BOXFILTER_KAHAN_SUM, w, 1);
+
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) \
-  shared(target, imgg, a_b, img_out) dt_omp_shared(source) dt_omp_firstprivate(min, max, width, guide_weight)
+  shared(target, imgg, a_b, img_out) dt_omp_sharedconst(source) dt_omp_firstprivate(min, max, width, guide_weight)
 #endif
   for(int j_imgg = target.lower; j_imgg < target.upper; j_imgg++)
   {
@@ -457,7 +258,7 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
 static int compute_tile_height(const int height, const int w)
 {
   int tile_h = max_i(3 * w, GF_TILE_SIZE);
-#if 0 // enabling the below doesn't make any measureable speed difference, but does cause a handfull of pixels
+#if 0 // enabling the below doesn't make any measureable speed difference, but does cause a handful of pixels
       // to round off differently (as does changing GF_TILE_SIZE)
   if ((height % tile_h) > 0 && (height % tile_h) < GF_TILE_SIZE/3)
   {
@@ -482,7 +283,7 @@ static int compute_tile_height(const int height, const int w)
 static int compute_tile_width(const int width, const int w)
 {
   int tile_w = max_i(3 * w, GF_TILE_SIZE);
-#if 0 // enabling the below doesn't make any measureable speed difference, but does cause a handfull of pixels
+#if 0 // enabling the below doesn't make any measureable speed difference, but does cause a handful of pixels
       // to round off differently (as does changing GF_TILE_SIZE)
   if ((width % tile_w) > 0 && (width % tile_w) < GF_TILE_SIZE/2)
   {

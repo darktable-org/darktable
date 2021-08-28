@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,7 +30,6 @@
 #include <gphoto2/gphoto2.h>
 #include <gtk/gtk.h>
 
-
 /** A camera object used for camera actions and callbacks */
 typedef struct dt_camera_t
 {
@@ -59,7 +58,12 @@ typedef struct dt_camera_t
   gboolean can_live_view_advanced;
   /** This camera/device can be remote controlled. */
   gboolean can_config;
-
+  /** This camera can read file previews */
+  gboolean can_file_preview;
+  /** This camera has some directory support */
+  gboolean can_directory;
+  /** This camera has exif support */
+  gboolean can_file_exif;
   /** Flag camera in tethering mode. \see dt_camera_tether_mode() */
   gboolean is_tethering;
 
@@ -83,6 +87,12 @@ typedef struct dt_camera_t
   /** gphoto2 context */
   GPContext *gpcontext;
 
+  /** flag to unmount */
+  gboolean unmount;
+  /** flag noting a runtime ptp error condition */
+  gboolean ptperror;
+  /** flag true while importing */
+  gboolean is_importing;
   /** Live view */
   gboolean is_live_viewing;
   /** The last preview image from the camera */
@@ -107,14 +117,20 @@ typedef struct dt_camera_t
   dt_pthread_mutex_t live_view_synch;
 } dt_camera_t;
 
-/** A dummy camera object used for locked cameras */
-typedef struct dt_camera_locked_t
+/** A dummy camera object used for unused cameras */
+typedef struct dt_camera_unused_t
 {
   /** A pointer to the model string of camera. */
   char *model;
   /** A pointer to the port string of camera. */
   char *port;
-} dt_camera_locked_t;
+  /** mark the camera as auto unmounted */
+  gboolean boring;
+  /** mark the camera as used by another application */
+  gboolean used;
+  /** if true it will be removed from the list to force a reconnect */
+  gboolean trymount;
+} dt_camera_unused_t;
 
 /** Camera control status.
   These enumerations are passed back to host application using
@@ -157,8 +173,8 @@ typedef struct dt_camctl_t
   GList *listeners;
   /** List of cameras found and initialized by camera control.*/
   GList *cameras;
-  /** List of locked cameras found */
-  GList *locked_cameras;
+  /** List of unused cameras found */
+  GList *unused_cameras;
 
   /** The actual gphoto2 context */
   GPContext *gpcontext;
@@ -171,6 +187,10 @@ typedef struct dt_camctl_t
   const dt_camera_t *wanted_camera;
 
   const dt_camera_t *active_camera;
+
+  gboolean import_ui;
+  int ticker;
+  int tickmask;
 } dt_camctl_t;
 
 
@@ -234,19 +254,20 @@ void dt_camctl_register_listener(const dt_camctl_t *c, dt_camctl_listener_t *lis
 void dt_camctl_unregister_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener);
 /** Check if there is any camera connected */
 gboolean dt_camctl_have_cameras(const dt_camctl_t *c);
-/** Check if there is any camera locked  */
-gboolean dt_camctl_have_locked_cameras(const dt_camctl_t *c);
+/** Check if there is any camera known but unused  */
+gboolean dt_camctl_have_unused_cameras(const dt_camctl_t *c);
 /** Selects a camera to be used by cam control, this camera is selected if NULL is passed as camera*/
 void dt_camctl_select_camera(const dt_camctl_t *c, const dt_camera_t *cam);
 /** Can tether...*/
 int dt_camctl_can_enter_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam);
 /** Enables/Disables the tether mode on camera. */
 void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam, gboolean enable);
-/** traverse filesystem on camera an retrieves previews of images */
-void dt_camctl_get_previews(const dt_camctl_t *c, dt_camera_preview_flags_t flags, dt_camera_t *cam);
 /** Imports the images in list from specified camera */
 void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *images);
-
+/** return the list of images from camera */
+GList *dt_camctl_get_images_list(const dt_camctl_t *c, dt_camera_t *cam);
+/** return the thumbnail of a camera image */
+GdkPixbuf *dt_camctl_get_thumbnail(const dt_camctl_t *c, dt_camera_t *cam, const gchar *filename);
 /** Execute remote capture of camera.*/
 void dt_camctl_camera_capture(const dt_camctl_t *c, const dt_camera_t *cam);
 /** Start live view of camera.*/
@@ -259,16 +280,28 @@ const char *dt_camctl_camera_get_model(const dt_camctl_t *c, const dt_camera_t *
 /** Set a property value \param cam Pointer to dt_camera_t if NULL the camctl->active_camera is used. */
 void dt_camctl_camera_set_property_string(const dt_camctl_t *c, const dt_camera_t *cam,
                                           const char *property_name, const char *value);
+void dt_camctl_camera_set_property_toggle(const dt_camctl_t *c, const dt_camera_t *cam,
+                                          const char *property_name);
 void dt_camctl_camera_set_property_choice(const dt_camctl_t *c, const dt_camera_t *cam,
                                           const char *property_name, const int value);
 void dt_camctl_camera_set_property_int(const dt_camctl_t *c, const dt_camera_t *cam,
                                        const char *property_name, const int value);
+void dt_camctl_camera_set_property_float(const dt_camctl_t *c, const dt_camera_t *cam,
+                                       const char *property_name, const float value);
 /** Get a property value from cached configuration. \param cam Pointer to dt_camera_t if NULL the
  * camctl->active_camera is used. */
 const char *dt_camctl_camera_get_property(const dt_camctl_t *c, const dt_camera_t *cam,
                                           const char *property_name);
 /** Check if property exists. */
 int dt_camctl_camera_property_exists(const dt_camctl_t *c, const dt_camera_t *cam, const char *property_name);
+
+/**
+ * @param cam the camera to check property type for
+ * @param property_name the property check type for
+ * @return the type of camera widget, NULL on failure
+ */
+int dt_camctl_camera_get_property_type(const dt_camctl_t *c, const dt_camera_t *cam, const char *property_name, CameraWidgetType *widget_type);
+
 /** Get first choice available for named property. */
 const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c, const dt_camera_t *cam,
                                                        const char *property_name);

@@ -17,6 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -88,6 +89,21 @@ const char *name()
   return _("color contrast");
 }
 
+const char *aliases()
+{
+  return _("saturation");
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("increase saturation and separation between\n"
+                                        "opposite colors"),
+                                      _("creative"),
+                                      _("non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
@@ -121,21 +137,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in,out:64) aligned(slope,offset,low,high)
+#endif
+static inline void clamped_scaling(float *const restrict out, const float *const restrict in,
+                                   const dt_aligned_pixel_t slope, const dt_aligned_pixel_t offset,
+                                   const dt_aligned_pixel_t low, const dt_aligned_pixel_t high)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green-magenta contrast"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue-yellow contrast"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_colorcontrast_gui_data_t *g =
-    (dt_iop_colorcontrast_gui_data_t*)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "green-magenta contrast",
-                              GTK_WIDGET(g->a_scale));
-  dt_accel_connect_slider_iop(self, "blue-yellow contrast",
-                              GTK_WIDGET(g->b_scale));
+  for_each_channel(c,dt_omp_nontemporal(out))
+    out[c] = CLAMPS(in[c] * slope[c] + offset[c], low[c], high[c]);
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -147,94 +157,98 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_colorcontrast_params_t *const d = (dt_iop_colorcontrast_params_t *)piece->data;
 
   // how many colors in our buffer?
-  const int ch = piece->colors;
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
 
-  const float *const in = (const float *const)ivoid;
-  float *const out = (float *const)ovoid;
+  const float *const restrict in = DT_IS_ALIGNED((const float *const)ivoid);
+  float *const restrict out = DT_IS_ALIGNED((float *const)ovoid);
+  const size_t npixels = (size_t)roi_out->width * roi_out->height;
+
+  const dt_aligned_pixel_t slope = { 1.0f, d->a_steepness, d->b_steepness, 1.0f };
+  const dt_aligned_pixel_t offset = { 0.0f, d->a_offset, d->b_offset, 0.0f };
+  const dt_aligned_pixel_t lowlimit = { -INFINITY, -128.0f, -128.0f, -INFINITY };
+  const dt_aligned_pixel_t highlimit = { INFINITY, 128.0f, 128.0f, INFINITY };
 
   if(d->unbound)
   {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(ch, d, in, out, roi_out) \
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(in, out, npixels, slope, offset) \
     schedule(static)
 #endif
-    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+    for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
     {
-      out[k] = in[k];
-      out[k + 1] = (in[k + 1] * d->a_steepness) + d->a_offset;
-      out[k + 2] = (in[k + 2] * d->b_steepness) + d->b_offset;
-      out[k + 4] = in[k + 4];
+      for_each_channel(c,dt_omp_nontemporal(out))
+      {
+        out[k + c] = (in[k + c] * slope[c]) + offset[c];
+      }
     }
   }
   else
   {
+
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(ch, d, in, out, roi_out) \
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(in, out, npixels, slope, offset, lowlimit, highlimit) \
     schedule(static)
 #endif
-    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+    for(size_t k = 0; k < npixels; k ++)
     {
-      out[k] = in[k];
-      out[k + 1] = CLAMP((in[k + 1] * d->a_steepness) + d->a_offset, -128.0f, 128.0f);
-      out[k + 2] = CLAMP((in[k + 2] * d->b_steepness) + d->b_offset, -128.0f, 128.0f);
-      out[k + 4] = in[k + 4];
+      // the inner per-pixel loop needs to be declared in a separate vectorizable function to convince the
+      // compiler that it doesn't need to check for overlap or misalignment of the buffers for *every* pixel,
+      // which actually makes the code slower than not vectorizing....
+      clamped_scaling(out + 4*k, in + 4*k, slope, offset, lowlimit, highlimit);
     }
   }
 }
 
 #if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict ivoid,
+                  void *const restrict ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
 
   // get our data struct:
-  dt_iop_colorcontrast_params_t *d = (dt_iop_colorcontrast_params_t *)piece->data;
+  const dt_iop_colorcontrast_params_t *const d = (dt_iop_colorcontrast_params_t *)piece->data;
 
   // how many colors in our buffer?
-  const int ch = piece->colors;
-
-  const int unbound = d->unbound;
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
 
   const __m128 scale = _mm_set_ps(1.0f, d->b_steepness, d->a_steepness, 1.0f);
   const __m128 offset = _mm_set_ps(0.0f, d->b_offset, d->a_offset, 0.0f);
   const __m128 min = _mm_set_ps(-INFINITY, -128.0f, -128.0f, -INFINITY);
   const __m128 max = _mm_set_ps(INFINITY, 128.0f, 128.0f, INFINITY);
 
-// iterate over all output pixels (same coordinates as input)
+  const float *const restrict in = (float*)ivoid;
+  float *const restrict out = (float*)ovoid;
+
+  // iterate over all output pixels (same coordinates as input)
+  const int npixels = roi_out->height * roi_out->width;
+  if (d->unbound)
+  {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ivoid, max, min, offset, ovoid, roi_in, roi_out, \
-                      scale, unbound) \
-  shared(d) \
+  dt_omp_firstprivate(in, out, offset, npixels, scale) \
   schedule(static)
 #endif
-  for(int j = 0; j < roi_out->height; j++)
-  {
-
-    float *in = ((float *)ivoid) + (size_t)ch * roi_in->width * j;
-    float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
-
-    if(unbound)
+    for(int j = 0; j < 4 * npixels; j += 4)
     {
-      for(int i = 0; i < roi_out->width; i++)
-      {
-        _mm_stream_ps(out, _mm_add_ps(offset, _mm_mul_ps(scale, _mm_load_ps(in))));
-        in += ch;
-        out += ch;
-      }
+      _mm_stream_ps(out + j, offset + scale * _mm_load_ps(in + j));
     }
-    else
+  }
+  else
+  {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, out, max, min, offset, npixels, scale) \
+  schedule(static)
+#endif
+    for(int j = 0; j < 4 * npixels; j += 4)
     {
-      for(int i = 0; i < roi_out->width; i++)
-      {
-        _mm_stream_ps(
-            out, _mm_min_ps(max, _mm_max_ps(min, _mm_add_ps(offset, _mm_mul_ps(scale, _mm_load_ps(in))))));
-        in += ch;
-        out += ch;
-      }
+      _mm_stream_ps(out + j, _mm_min_ps(max, _mm_max_ps(min, offset + scale * _mm_load_ps(in + j))));
     }
   }
   _mm_sfence();
@@ -313,7 +327,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_colorcontrast_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

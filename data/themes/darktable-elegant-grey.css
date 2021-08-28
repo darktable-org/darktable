@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019 Nicolas Auffray
+    copyright (c) 2021 Nicolas Auffray
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,15 +39,14 @@
 /* Modules box (plugins) */
 @define-color plugin_bg_color @grey_50;
 @define-color plugin_fg_color @fg_color;
-@define-color section_label @grey_80;
 @define-color plugin_label_color @grey_80;
 
 /* Modules controls (sliders and comboboxes) */
+@define-color bauhaus_bg @bg_color;
 @define-color bauhaus_fg @fg_color;
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_50;
 @define-color bauhaus_fill @grey_70;
-@define-color bauhaus_bg @grey_45;
 @define-color bauhaus_bg_hover @grey_65;
 @define-color bauhaus_fg_hover @grey_95;
 @define-color bauhaus_fg_selected @grey_85;
@@ -57,7 +56,7 @@
 /* GTK Buttons and tabs */
 @define-color button_border @grey_60;
 @define-color button_bg @grey_55;
-@define-color button_fg @grey_90;
+@define-color button_fg @fg_color;
 @define-color button_checked_bg @grey_70;
 @define-color button_checked_fg @grey_100;
 @define-color button_hover_bg @grey_80;
@@ -66,7 +65,7 @@
 /* text fields */
 @define-color field_bg @grey_45;
 @define-color field_fg @grey_95;
-@define-color field_active_bg @grey_55;
+@define-color field_active_bg @grey_50;
 @define-color field_active_fg @grey_95;
 @define-color field_selected_bg @grey_60;
 @define-color field_selected_fg @button_checked_fg;
@@ -87,7 +86,7 @@
 @define-color lighttable_bg_font_color @grey_95;
 
 /* Lighttable and film-strip */
-@define-color thumbnail_font_color @grey_35;
+@define-color thumbnail_font_color @grey_40;
 @define-color thumbnail_bg_color @grey_70;
 @define-color thumbnail_fg_color @grey_60;
 @define-color thumbnail_selected_bg_color @grey_80;
@@ -150,4 +149,13 @@
 .dt_overlays_always_extended#preview #thumb_main:hover #thumb_bottom
 {
   background-image: linear-gradient(rgba(246, 246, 246, 0.4) 0%, rgba(246, 246, 246, 0.2) 5%, rgba(226, 226, 226, 0) 100%);
+}
+
+/* Make inactive stars more discrete when not hovered */
+.dt_overlays_always #thumb_star,
+.dt_overlays_always_extended #thumb_star,
+.dt_overlays_mixed #thumb_star,
+.dt_overlays_hover_block #thumb_star
+{
+  color: shade(@thumbnail_font_color, 1.5);
 }

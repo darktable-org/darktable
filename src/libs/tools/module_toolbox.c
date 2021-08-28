@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -93,9 +93,8 @@ void gui_cleanup(dt_lib_module_t *self)
 void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
 {
   dt_lib_module_toolbox_t *d = (dt_lib_module_toolbox_t *)self->data;
-  GList *child_elt = d->child_views;
   dt_view_type_flags_t nv= new_view->view(new_view);
-  while(child_elt)
+  for(const GList *child_elt = d->child_views; child_elt; child_elt = g_list_next(child_elt))
   {
     child_data_t* child_data = (child_data_t*)child_elt->data;
     if(child_data->views & nv)
@@ -106,7 +105,6 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
     {
       gtk_widget_hide(child_data->child);
     }
-    child_elt = g_list_next(child_elt);
   }
 }
 

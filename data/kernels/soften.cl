@@ -17,7 +17,7 @@
 */
 
 #include "common.h"
-#include "colorspace.cl"
+#include "colorspace.h"
 
 
 /* first step for soften module: generate overexposed image */

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -65,11 +65,12 @@ static GList *_gui_hist_get_active_items(dt_history_copy_item_t *d)
       gboolean active = FALSE;
       gint num = 0;
       gtk_tree_model_get(model, &iter, DT_HIST_ITEMS_COL_ENABLED, &active, DT_HIST_ITEMS_COL_NUM, &num, -1);
-      if(active && num >= 0) result = g_list_append(result, GINT_TO_POINTER(num));
+      if(active && num >= 0)
+        result = g_list_prepend(result, GINT_TO_POINTER(num));
 
     } while(gtk_tree_model_iter_next(model, &iter));
   }
-  return result;
+  return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
 }
 
 static void _gui_hist_set_items(dt_history_copy_item_t *d, gboolean active)
@@ -128,19 +129,16 @@ static void _gui_hist_item_toggled(GtkCellRendererToggle *cell, gchar *path_str,
 
 static gboolean _gui_is_set(GList *selops, unsigned int num)
 {
-  GList *l = selops;
-
   /* nothing to filter */
-  if(!l) return TRUE;
+  if(!selops) return TRUE;
 
-  while(l)
+  for(GList *l = selops; l; l = g_list_next(l))
   {
     if(l->data)
     {
       unsigned int lnum = GPOINTER_TO_UINT(l->data);
       if(lnum == num) return TRUE;
     }
-    l = g_list_next(l);
   }
   return FALSE;
 }
@@ -247,14 +245,14 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
       g_free(label);
     }
 
-    do
+    for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
     {
-      const dt_history_item_t *item = (dt_history_item_t *)items->data;
+      const dt_history_item_t *item = (dt_history_item_t *)items_iter->data;
       const int flags = get_module_flags(item->op);
 
       if(!(flags & IOP_FLAGS_HIDDEN))
       {
-        const gboolean is_safe = ((flags & IOP_FLAGS_UNSAFE_COPY) == 0);
+        const gboolean is_safe = !dt_history_module_skip_copy(flags);
 
         gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
         gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
@@ -263,7 +261,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
                            DT_HIST_ITEMS_COL_NUM, (gint)item->num,
                            -1);
       }
-    } while((items = g_list_next(items)));
+    }
     g_list_free_full(items, dt_history_item_free);
   }
   else

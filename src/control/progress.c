@@ -222,6 +222,7 @@ static void global_progress_end(dt_control_t *control, dt_progress_t *progress)
     }
 
     g_object_unref(G_OBJECT(darktable.dbus->dbus_connection));
+    darktable.dbus->dbus_connection = NULL;
   }
 
 #endif // HAVE_UNITY
@@ -281,6 +282,7 @@ void dt_control_progress_init(struct dt_control_t *control)
     }
 
     g_object_unref(G_OBJECT(darktable.dbus->dbus_connection));
+    darktable.dbus->dbus_connection = NULL;
   }
 
 #endif // HAVE_UNITY

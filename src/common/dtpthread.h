@@ -41,7 +41,7 @@ static inline double dt_pthread_get_wtime()
 
 
 #define TOPN 3
-typedef struct dt_pthread_mutex_t
+typedef struct CAPABILITY("mutex") dt_pthread_mutex_t
 {
   pthread_mutex_t mutex;
   char name[256];
@@ -52,7 +52,7 @@ typedef struct dt_pthread_mutex_t
   double top_locked_sum[TOPN];
   char top_wait_name[TOPN][256];
   double top_wait_sum[TOPN];
-} dt_pthread_mutex_t;
+} CAPABILITY("mutex") dt_pthread_mutex_t;
 
 typedef struct dt_pthread_rwlock_t
 {
@@ -108,6 +108,7 @@ static inline int dt_pthread_mutex_init_with_caller(dt_pthread_mutex_t *mutex,
 #define dt_pthread_mutex_lock(A) dt_pthread_mutex_lock_with_caller(A, __FILE__, __LINE__, __FUNCTION__)
 static inline int dt_pthread_mutex_lock_with_caller(dt_pthread_mutex_t *mutex, const char *file,
                                                     const int line, const char *function)
+  ACQUIRE(mutex) NO_THREAD_SAFETY_ANALYSIS
 {
   const double t0 = dt_pthread_get_wtime();
   const int ret = pthread_mutex_lock(&(mutex->mutex));
@@ -135,6 +136,7 @@ static inline int dt_pthread_mutex_lock_with_caller(dt_pthread_mutex_t *mutex, c
 #define dt_pthread_mutex_trylock(A) dt_pthread_mutex_trylock_with_caller(A, __FILE__, __LINE__, __FUNCTION__)
 static inline int dt_pthread_mutex_trylock_with_caller(dt_pthread_mutex_t *mutex, const char *file,
                                                        const int line, const char *function)
+  TRY_ACQUIRE(0, mutex)
 {
   const double t0 = dt_pthread_get_wtime();
   const int ret = pthread_mutex_trylock(&(mutex->mutex));
@@ -163,6 +165,7 @@ static inline int dt_pthread_mutex_trylock_with_caller(dt_pthread_mutex_t *mutex
 #define dt_pthread_mutex_unlock(A) dt_pthread_mutex_unlock_with_caller(A, __FILE__, __LINE__, __FUNCTION__)
 static inline int dt_pthread_mutex_unlock_with_caller(dt_pthread_mutex_t *mutex, const char *file,
                                                       const int line, const char *function)
+  RELEASE(mutex) NO_THREAD_SAFETY_ANALYSIS
 {
   const double t0 = dt_pthread_get_wtime();
   const double locked = t0 - mutex->time_locked;

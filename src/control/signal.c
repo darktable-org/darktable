@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -51,17 +51,19 @@ typedef struct dt_signal_description
 static GType uint_arg[] = { G_TYPE_UINT };
 static GType pointer_arg[] = { G_TYPE_POINTER };
 static GType pointer_2arg[] = { G_TYPE_POINTER, G_TYPE_POINTER };
-static GType collection_args[] = { G_TYPE_UINT, G_TYPE_POINTER, G_TYPE_UINT };
+static GType pointer_trouble[] = { G_TYPE_POINTER, G_TYPE_STRING, G_TYPE_STRING };
+static GType collection_args[] = { G_TYPE_UINT, G_TYPE_UINT, G_TYPE_POINTER, G_TYPE_UINT };
 static GType image_export_arg[]
     = { G_TYPE_UINT, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER };
 static GType history_will_change_arg[]
 = { G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_POINTER };
+static GType geotag_arg[] = { G_TYPE_POINTER, G_TYPE_UINT };
 
 // callback for the destructor of DT_SIGNAL_COLLECTION_CHANGED
-static void _collection_changed_destroy_callback(gpointer instance, int query_change, gpointer imgs,
-                                                 const int next, gpointer user_data)
+static void _collection_changed_destroy_callback(gpointer instance, int query_change, int changed_property,
+                                                 gpointer imgs, const int next, gpointer user_data)
 {
-  if(imgs && g_list_length(imgs) > 0)
+  if(imgs)
   {
     g_list_free(imgs);
     imgs = NULL;
@@ -71,7 +73,23 @@ static void _collection_changed_destroy_callback(gpointer instance, int query_ch
 // callback for the destructor of DT_SIGNAL_IMAGE_INFO_CHANGED
 static void _image_info_changed_destroy_callback(gpointer instance, gpointer imgs, gpointer user_data)
 {
-  if(imgs && g_list_length(imgs) > 0)
+  if(imgs)
+  {
+    g_list_free(imgs);
+    imgs = NULL;
+  }
+}
+
+// callback for the destructor of DT_SIGNAL_PRESETS_CHANGED
+static void _presets_changed_destroy_callback(gpointer instance, gpointer module, gpointer user_data)
+{
+  g_free(module);
+}
+
+// callback for the destructor of DT_SIGNAL_GEOTAG_CHANGED
+static void _image_geotag_destroy_callback(gpointer instance, gpointer imgs, const int locid, gpointer user_data)
+{
+  if(imgs)
   {
     g_list_free(imgs);
     imgs = NULL;
@@ -92,15 +110,19 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
 
   { "dt-viewmanager-view-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, pointer_2arg, NULL,
     FALSE }, // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
+  { "dt-viewmanager-view-cannot-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, pointer_2arg, NULL,
+    FALSE }, // DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE
   { "dt-viewmanager-thumbtable-activate", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg,
     NULL, FALSE }, // DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE
 
-  { "dt-collection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 3, collection_args,
+  { "dt-collection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 4, collection_args,
     G_CALLBACK(_collection_changed_destroy_callback), FALSE }, // DT_SIGNAL_COLLECTION_CHANGED
   { "dt-selection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_SELECTION_CHANGED
   { "dt-tag-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_TAG_CHANGED
+  { "dt-geotag-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, geotag_arg,
+    G_CALLBACK(_image_geotag_destroy_callback), FALSE }, // DT_SIGNAL_GEOTAG_CHANGED
   { "dt-metadata-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL,
     FALSE }, // DT_SIGNAL_METADATA_CHANGED
   { "dt-image-info-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg,
@@ -115,7 +137,8 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
     FALSE }, // DT_SIGNAL_FILMROLLS_IMPORTED
   { "dt-filmrolls-removed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_FILMROLLS_REMOVED
-
+  { "dt-presets-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg,
+    G_CALLBACK(_presets_changed_destroy_callback), FALSE }, // DT_SIGNAL_PRESETS_CHANGED
 
   /* Develop related signals */
   { "dt-develop-initialized", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
@@ -171,6 +194,12 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
 
   { "dt-metadata-update", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_METADATA_UPDATE
+
+  { "dt-trouble-message", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 3, pointer_trouble, NULL,
+    FALSE }, // DT_SIGNAL_TROUBLE_MESSAGE
+
+  { "dt-location-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg, NULL,
+    TRUE }, // DT_SIGNAL_LOCATION_CHANGED
 
 };
 

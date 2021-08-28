@@ -75,6 +75,12 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return g_strdup(_("internal module to setup technical specificities of raw sensor.\n\n"
+                    "you should not touch values here !"));
+}
+
 static void transform(const dt_dev_pixelpipe_iop_t *const piece, float *p)
 {
   dt_iop_scalepixels_data_t *d = piece->data;
@@ -234,7 +240,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_scalepixels_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -257,16 +262,15 @@ void reload_defaults(dt_iop_module_t *self)
 
   // FIXME: does not work.
   self->hide_enable_button = !self->default_enabled;
+
+  if(self->widget)
+    gtk_label_set_text(GTK_LABEL(self->widget), self->default_enabled
+                       ? _("automatic pixel scaling")
+                       :_("automatic pixel scaling\nonly works for the sensors that need it."));
 }
 
 void gui_update(dt_iop_module_t *self)
 {
-  if(!self->widget) return;
-  if(self->default_enabled)
-    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel scaling"));
-  else
-    gtk_label_set_text(GTK_LABEL(self->widget),
-                       _("automatic pixel scaling\nonly works for the sensors that need it."));
 }
 
 void gui_init(dt_iop_module_t *self)

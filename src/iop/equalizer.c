@@ -20,6 +20,7 @@
 #endif
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/imagebuf.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -104,6 +105,10 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
+const char *deprecated_msg()
+{
+  return _("this module is deprecated. better use contrast equalizer module instead.");
+}
 
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -112,7 +117,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int chs = piece->colors;
   const int width = roi_in->width, height = roi_in->height;
   const float scale = roi_in->scale;
-  memcpy(ovoid, ivoid, (size_t)chs * sizeof(float) * width * height);
+  dt_iop_image_copy_by_size(ovoid, ivoid, width, height, chs);
 #if 1
   // printf("thread %d starting equalizer", (int)pthread_self());
   // if(piece->iscale != 1.0) printf(" for preview\n");
@@ -136,7 +141,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   for(int k = 1; k < numl_cap; k++)
   {
     const int wd = (int)(1 + (width >> (k - 1))), ht = (int)(1 + (height >> (k - 1)));
-    tmp[k] = (float *)malloc((size_t)sizeof(float) * wd * ht);
+    tmp[k] = (float *)malloc(sizeof(float) * wd * ht);
   }
 
   for(int level = 1; level < numl_cap; level++) dt_iop_equalizer_wtf(ovoid, tmp, level, width, height);
@@ -188,12 +193,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       const int step = 1 << l;
 #if 1 // scale coefficients
       for(int j = 0; j < height; j += step)
-        for(int i = step / 2; i < width; i += step) out[(size_t)chs * width * j + chs * i + ch] *= coeff;
+        for(int i = step / 2; i < width; i += step) out[(size_t)chs * width * j + (size_t)chs * i + ch] *= coeff;
       for(int j = step / 2; j < height; j += step)
-        for(int i = 0; i < width; i += step) out[(size_t)chs * width * j + chs * i + ch] *= coeff;
+        for(int i = 0; i < width; i += step) out[(size_t)chs * width * j + (size_t)chs * i + ch] *= coeff;
       for(int j = step / 2; j < height; j += step)
         for(int i = step / 2; i < width; i += step)
-          out[(size_t)chs * width * j + chs * i + ch] *= coeff * coeff;
+          out[(size_t)chs * width * j + (size_t)chs * i + ch] *= coeff * coeff;
 #else // soft-thresholding (shrinkage)
 #define wshrink                                                                                              \
   (copysignf(fmaxf(0.0f, fabsf(out[(size_t)chs * width * j + chs * i + ch]) - (1.0 - coeff)),                \
@@ -365,7 +370,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   gtk_widget_set_size_request(GTK_WIDGET(c->area), 195, 195);
 
-  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK | darktable.gui.scroll_mask);
+  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK | darktable.gui.scroll_mask);
   g_signal_connect (G_OBJECT (c->area), "draw",
                     G_CALLBACK (dt_iop_equalizer_expose), self);
   g_signal_connect (G_OBJECT (c->area), "button-press-event",
@@ -624,8 +629,6 @@ static gboolean dt_iop_equalizer_motion_notify(GtkWidget *widget, GdkEventMotion
     c->x_move = -1;
   }
   gtk_widget_queue_draw(widget);
-  gint x, y;
-  gdk_window_get_device_position(event->window, gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdk_window_get_display(event->window))), &x, &y, NULL);
 
   return TRUE;
 }

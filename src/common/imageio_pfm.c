@@ -22,6 +22,7 @@
 #include "common/imageio_pfm.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,8 +51,17 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
     cols = 1;
   else
     goto error_corrupt;
-  ret = fscanf(f, "%d %d %f%*[^\n]", &img->width, &img->height, &scale_factor);
+  char width_string[10] = { 0 };
+  char height_string[10] = { 0 };
+  char scale_factor_string[64] = { 0 };
+  ret = fscanf(f, "%9s %9s %63s%*[^\n]", width_string, height_string, scale_factor_string);
   if(ret != 3) goto error_corrupt;
+  errno = 0;
+  img->width = strtol(width_string, NULL, 0);
+  img->height = strtol(height_string, NULL, 0);
+  scale_factor = g_ascii_strtod(scale_factor_string, NULL);
+  if(errno != 0) goto error_corrupt;
+  if(img->width <= 0 || img->height <= 0 ) goto error_corrupt;
   ret = fread(&ret, sizeof(char), 1, f);
   if(ret != 1) goto error_corrupt;
   ret = 0;
@@ -84,12 +94,13 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
             = buf[4 * (img->width * j + i) + 0] = v.f;
       }
   float *line = (float *)calloc(4 * img->width, sizeof(float));
+  if(line == NULL) goto error_cache_full;
   for(size_t j = 0; j < img->height / 2; j++)
   {
-    memcpy(line, buf + img->width * j * 4, 4 * sizeof(float) * img->width);
+    memcpy(line, buf + img->width * j * 4, sizeof(float) * 4 * img->width);
     memcpy(buf + img->width * j * 4, buf + img->width * (img->height - 1 - j) * 4,
-           4 * sizeof(float) * img->width);
-    memcpy(buf + img->width * (img->height - 1 - j) * 4, line, 4 * sizeof(float) * img->width);
+           sizeof(float) * 4 * img->width);
+    memcpy(buf + img->width * (img->height - 1 - j) * 4, line, sizeof(float) * 4 * img->width);
   }
   free(line);
   fclose(f);
