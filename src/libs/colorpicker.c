@@ -46,14 +46,6 @@ typedef enum dt_lib_colorpicker_model_t
   DT_LIB_COLORPICKER_MODEL_N // needs to be the lsat one
 } dt_lib_colorpicker_model_t;
 
-typedef enum dt_lib_colorpicker_statistic_t
-{
-  DT_LIB_COLORPICKER_STATISTIC_MEAN = 0,
-  DT_LIB_COLORPICKER_STATISTIC_MIN,
-  DT_LIB_COLORPICKER_STATISTIC_MAX,
-  DT_LIB_COLORPICKER_STATISTIC_N // needs to be the lsat one
-} dt_lib_colorpicker_statistic_t;
-
 const gchar *dt_lib_colorpicker_model_names[DT_LIB_COLORPICKER_MODEL_N] = {"RGB", "Lab", "LCh", "HSL", "Hex", "none"};
 const gchar *dt_lib_colorpicker_statistic_names[DT_LIB_COLORPICKER_STATISTIC_N] = {"mean", "min", "max"};
 
@@ -355,6 +347,7 @@ static void _statistic_changed(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_colorpicker_t *data = self->data;
   data->statistic = dt_bauhaus_combobox_get(widget);
+  darktable.lib->proxy.colorpicker.statistic = (int)data->statistic;
   dt_conf_set_string("ui_last/colorpicker_mode", dt_lib_colorpicker_statistic_names[data->statistic]);
 
   _update_picker_output(self);
