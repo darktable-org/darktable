@@ -109,6 +109,8 @@ typedef struct dt_iop_colorchecker_global_data_t
   int kernel_colorchecker;
 } dt_iop_colorchecker_global_data_t;
 
+#define SQR(x) ((x) * (x))
+
 
 const char *name()
 {
@@ -829,11 +831,12 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-void gui_update(struct dt_iop_module_t *self)
+void _colorchecker_rebuild_patch_list(struct dt_iop_module_t *self)
 {
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   if(g->patch >= p->num_patches || g->patch < 0) return;
+
   if(dt_bauhaus_combobox_length(g->combobox_patch) != p->num_patches)
   {
     dt_bauhaus_combobox_clear(g->combobox_patch);
@@ -847,7 +850,17 @@ void gui_update(struct dt_iop_module_t *self)
       dtgtk_drawing_area_set_aspect_ratio(g->area, 2.0/3.0);
     else
       dtgtk_drawing_area_set_aspect_ratio(g->area, 1.0);
+    // FIXME: why not just use g->patch for everything?
+    g->drawn_patch = dt_bauhaus_combobox_get(g->combobox_patch);
   }
+}
+
+void _colorchecker_update_sliders(struct dt_iop_module_t *self)
+{
+  dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
+  if(g->patch >= p->num_patches || g->patch < 0) return;
+
   if(g->absolute_target)
   {
     dt_bauhaus_slider_set(g->scale_L, p->target_L[g->patch]);
@@ -871,6 +884,15 @@ void gui_update(struct dt_iop_module_t *self)
         p->target_b[g->patch]*p->target_b[g->patch]);
     dt_bauhaus_slider_set(g->scale_C, Cout-Cin);
   }
+}
+
+void gui_update(struct dt_iop_module_t *self)
+{
+  dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+
+  _colorchecker_rebuild_patch_list(self);
+  _colorchecker_update_sliders(self);
+
   gtk_widget_queue_draw(g->area);
 }
 
@@ -912,11 +934,35 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+  dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
+  dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
+  if(p->num_patches <= 0) return;
+
+  // determine patch based on color picker result
+  const dt_aligned_pixel_t picked_mean = { self->picked_color[0], self->picked_color[1], self->picked_color[2] };
+  int best_patch = 0;
+  for(int patch = 1; patch < p->num_patches; patch++)
   {
-    self->gui_update(self);
+    const cmsCIELab Lab = { .L = p->source_L[patch], .a = p->source_a[patch], .b = p->source_b[patch] };
+    if((self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
+       && (SQR(picked_mean[0] - Lab.L)
+               + SQR(picked_mean[1] - Lab.a)
+               + SQR(picked_mean[2] - Lab.b)
+           < SQR(picked_mean[0] - p->source_L[best_patch])
+                 + SQR(picked_mean[1] - p->source_a[best_patch])
+                 + SQR(picked_mean[2] - p->source_b[best_patch])))
+      best_patch = patch;
   }
-  dt_control_queue_redraw_center();
+
+  if(best_patch != g->drawn_patch)
+  {
+    g->patch = g->drawn_patch = best_patch;
+    ++darktable.gui->reset;
+    dt_bauhaus_combobox_set(g->combobox_patch, g->drawn_patch);
+    _colorchecker_update_sliders(self);
+    --darktable.gui->reset;
+    gtk_widget_queue_draw(g->area);
+  }
 }
 
 static void target_L_callback(GtkWidget *slider, gpointer user_data)
@@ -1037,19 +1083,25 @@ static void target_callback(GtkWidget *combo, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   g->absolute_target = dt_bauhaus_combobox_get(combo);
+  ++darktable.gui->reset;
+  _colorchecker_update_sliders(self);
+  --darktable.gui->reset;
   // switch off colour picker, it'll interfere with other changes of the patch:
   dt_iop_color_picker_reset(self, TRUE);
-  self->gui_update(self);
+  gtk_widget_queue_draw(g->area);
 }
 
 static void patch_callback(GtkWidget *combo, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  g->patch = dt_bauhaus_combobox_get(combo);
+  g->drawn_patch = g->patch = dt_bauhaus_combobox_get(combo);
+  ++darktable.gui->reset;
+  _colorchecker_update_sliders(self);
+  --darktable.gui->reset;
   // switch off colour picker, it'll interfere with other changes of the patch:
   dt_iop_color_picker_reset(self, TRUE);
-  self->gui_update(self);
+  gtk_widget_queue_draw(g->area);
 }
 
 static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
@@ -1067,15 +1119,9 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
   cairo_set_source_rgb(cr, .2, .2, .2);
   cairo_paint(cr);
 
-  const float *picked_mean = self->picked_color;
-  int besti = 0, bestj = 0;
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
-  int cells_x = 6, cells_y = 4;
-  if(p->num_patches > 24)
-  {
-    cells_x = 7;
-    cells_y = 7;
-  }
+  const int cells_x = p->num_patches > 24 ? 7 : 6;
+  const int cells_y = p->num_patches > 24 ? 7 : 4;
   for(int j = 0; j < cells_y; j++)
   {
     for(int i = 0; i < cells_x; i++)
@@ -1087,20 +1133,6 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
       Lab.L = p->source_L[patch];
       Lab.a = p->source_a[patch];
       Lab.b = p->source_b[patch];
-      if((self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-         && ((picked_mean[0] - Lab.L) * (picked_mean[0] - Lab.L)
-                 + (picked_mean[1] - Lab.a) * (picked_mean[1] - Lab.a)
-                 + (picked_mean[2] - Lab.b) * (picked_mean[2] - Lab.b)
-             < (picked_mean[0] - p->source_L[cells_x * bestj + besti])
-                       * (picked_mean[0] - p->source_L[cells_x * bestj + besti])
-                   + (picked_mean[1] - p->source_a[cells_x * bestj + besti])
-                         * (picked_mean[1] - p->source_a[cells_x * bestj + besti])
-                   + (picked_mean[2] - p->source_b[cells_x * bestj + besti])
-                         * (picked_mean[2] - p->source_b[cells_x * bestj + besti])))
-      {
-        besti = i;
-        bestj = j;
-      }
       cmsDoTransform(g->xform, &Lab, rgb, 1);
       cairo_set_source_rgb(cr, rgb[0], rgb[1], rgb[2]);
       cairo_rectangle(cr, width * i / (float)cells_x, height * j / (float)cells_y,
@@ -1131,34 +1163,15 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
     }
   }
 
-  // highlight patch that is closest to picked colour,
-  // or the one selected in the combobox.
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE)
-  {
-    int i = dt_bauhaus_combobox_get(g->combobox_patch);
-    besti = i % cells_x;
-    bestj = i / cells_x;
-    g->drawn_patch = cells_x * bestj + besti;
-  }
-  else if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-  {
-    // freshly picked, also select it in gui:
-    int pick = self->request_color_pick;
-    g->drawn_patch = cells_x * bestj + besti;
-    ++darktable.gui->reset;
-    dt_bauhaus_combobox_set(g->combobox_patch, g->drawn_patch);
-    g->patch = g->drawn_patch;
-    self->gui_update(self);
-    --darktable.gui->reset;
-    self->request_color_pick = pick; // restore, the combobox will kill it
-  }
+  const int draw_i = g->drawn_patch % cells_x;
+  const int draw_j = g->drawn_patch / cells_x;
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
   cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
   cairo_rectangle(cr,
-      width * besti / (float)cells_x + DT_PIXEL_APPLY_DPI(5),
-      height * bestj / (float)cells_y + DT_PIXEL_APPLY_DPI(5),
-      width / (float)cells_x - DT_PIXEL_APPLY_DPI(11),
-      height / (float)cells_y - DT_PIXEL_APPLY_DPI(11));
+      width * draw_i / (float) cells_x + DT_PIXEL_APPLY_DPI(5),
+      height * draw_j / (float) cells_y + DT_PIXEL_APPLY_DPI(5),
+      width / (float) cells_x - DT_PIXEL_APPLY_DPI(11),
+      height / (float) cells_y - DT_PIXEL_APPLY_DPI(11));
   cairo_stroke(cr);
 
   cairo_destroy(cr);
@@ -1230,7 +1243,10 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
     p->target_a[patch] = p->source_a[patch];
     p->target_b[patch] = p->source_b[patch];
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-    self->gui_update(self);
+    ++darktable.gui->reset;
+    _colorchecker_update_sliders(self);
+    --darktable.gui->reset;
+    gtk_widget_queue_draw(g->area);
     return TRUE;
   }
   else if(event->button == 3 && (patch < p->num_patches))
@@ -1245,7 +1261,11 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
     memmove(p->source_b+patch, p->source_b+patch+1, sizeof(float)*(p->num_patches-1-patch));
     p->num_patches--;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-    self->gui_update(self);
+    ++darktable.gui->reset;
+    _colorchecker_rebuild_patch_list(self);
+    _colorchecker_update_sliders(self);
+    --darktable.gui->reset;
+    gtk_widget_queue_draw(g->area);
     return TRUE;
   }
   else if((event->button == 1) &&
@@ -1278,7 +1298,14 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
       p->target_a[patch] = p->source_a[patch] = self->picked_color[1];
       p->target_b[patch] = p->source_b[patch] = self->picked_color[2];
       dt_dev_add_history_item(darktable.develop, self, TRUE);
-      self->gui_update(self);
+
+      ++darktable.gui->reset;
+      _colorchecker_rebuild_patch_list(self);
+      dt_bauhaus_combobox_set(g->combobox_patch, patch);
+      _colorchecker_update_sliders(self);
+      --darktable.gui->reset;
+      g->patch = g->drawn_patch = patch;
+      gtk_widget_queue_draw(g->area);
     }
     return TRUE;
   }
