@@ -25,6 +25,19 @@
 
 #define DEFAULT_GUIDE_NAME "rules of thirds"
 
+static const char *_guide_names[]
+  = { N_("grid"),
+      N_("rules of thirds"),
+      N_("metering"),
+      N_("perspective"),
+      N_("diagonal method"),
+      N_("harmonious triangles"),
+      N_("golden sections"),
+      N_("golden spiral"),
+      N_("golden spiral sections"),
+      N_("golden mean (all guides)"),
+      NULL };
+
 typedef enum dt_golden_type_t
 {
   GOLDEN_SECTION = 0,
@@ -50,10 +63,7 @@ static void dt_guides_q_rect(dt_QRect_t *R1, float left, float top, float width,
 
 typedef struct _guides_settings_t
 {
-  GtkWidget *g_guides, *g_flip, *g_widgets;
-
-  GtkWidget *colors;
-  gboolean block_events;
+  GtkWidget *g_flip, *g_widgets, *colors;
 } _guides_settings_t;
 
 
@@ -531,31 +541,44 @@ static void _guides_add_guide(GList **list, const char *name,
   guide->free = free;
   guide->support_flip = support_flip;
   *list = g_list_append(*list, guide);
+
+  gchar *key, *val;
+  key = _conf_get_path("global", "guide", NULL);
+  if(key)
+  {
+    val = dt_conf_get_string(key);
+    if(val)
+    {
+      const int i = _guides_get_value(val);
+      g_free(val);
+      dt_bauhaus_combobox_set(darktable.view_manager->guides, i);
+    }
+    g_free(key);
+  }
 }
 
 void dt_guides_add_guide(const char *name, dt_guides_draw_callback draw, dt_guides_widget_callback widget, void *user_data, GDestroyNotify free)
 {
   _guides_add_guide(&darktable.guides, name, draw, widget, user_data, free, TRUE);
+
+  dt_bauhaus_combobox_add(darktable.view_manager->guides, _(name));
 }
 
 GList *dt_guides_init()
 {
   GList *guides = NULL;
 
-  _guides_add_guide(&guides, N_("grid"), _guides_draw_grid, _guides_gui_grid, NULL, NULL, FALSE);
-  _guides_add_guide(&guides, N_("rules of thirds"), _guides_draw_rules_of_thirds, NULL, NULL, NULL, FALSE);
-  _guides_add_guide(&guides, N_("metering"), _guides_draw_metering, NULL, NULL, NULL, FALSE);
-  _guides_add_guide(&guides, N_("perspective"), _guides_draw_perspective, NULL, NULL, NULL, FALSE); // TODO: make the number of lines configurable with a slider?
-  _guides_add_guide(&guides, N_("diagonal method"), _guides_draw_diagonal_method, NULL, NULL, NULL, FALSE);
-  _guides_add_guide(&guides, N_("harmonious triangles"), _guides_draw_harmonious_triangles, NULL, NULL, NULL, TRUE);
-  _guides_add_guide(&guides, N_("golden sections"), _guides_draw_golden_mean, NULL,
-                    GINT_TO_POINTER(GOLDEN_SECTION), NULL, TRUE);
-  _guides_add_guide(&guides, N_("golden spiral"), _guides_draw_golden_mean, NULL, GINT_TO_POINTER(GOLDEN_SPIRAL),
-                    NULL, TRUE);
-  _guides_add_guide(&guides, N_("golden spiral sections"), _guides_draw_golden_mean, NULL,
-                    GINT_TO_POINTER(GOLDEN_SPIRAL_SECTION), NULL, TRUE);
-  _guides_add_guide(&guides, N_("golden mean (all guides)"), _guides_draw_golden_mean, NULL,
-                    GINT_TO_POINTER(GOLDEN_ALL), NULL, TRUE);
+  const char **names = _guide_names;
+  _guides_add_guide(&guides, *names++, _guides_draw_grid, _guides_gui_grid, NULL, NULL, FALSE);
+  _guides_add_guide(&guides, *names++, _guides_draw_rules_of_thirds, NULL, NULL, NULL, FALSE);
+  _guides_add_guide(&guides, *names++, _guides_draw_metering, NULL, NULL, NULL, FALSE);
+  _guides_add_guide(&guides, *names++, _guides_draw_perspective, NULL, NULL, NULL, FALSE); // TODO: make the number of lines configurable with a slider?
+  _guides_add_guide(&guides, *names++, _guides_draw_diagonal_method, NULL, NULL, NULL, FALSE);
+  _guides_add_guide(&guides, *names++, _guides_draw_harmonious_triangles, NULL, NULL, NULL, TRUE);
+  _guides_add_guide(&guides, *names++, _guides_draw_golden_mean, NULL, GINT_TO_POINTER(GOLDEN_SECTION), NULL, TRUE);
+  _guides_add_guide(&guides, *names++, _guides_draw_golden_mean, NULL, GINT_TO_POINTER(GOLDEN_SPIRAL), NULL, TRUE);
+  _guides_add_guide(&guides, *names++, _guides_draw_golden_mean, NULL, GINT_TO_POINTER(GOLDEN_SPIRAL_SECTION), NULL, TRUE);
+  _guides_add_guide(&guides, *names++, _guides_draw_golden_mean, NULL, GINT_TO_POINTER(GOLDEN_ALL), NULL, TRUE);
 
   return guides;
 }
@@ -563,29 +586,26 @@ GList *dt_guides_init()
 static void _settings_update_visibility(_guides_settings_t *gw)
 {
   // show or hide the flip and extra widgets for global case
-  dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->g_guides));
+  dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(darktable.view_manager->guides));
   gtk_widget_set_visible(gw->g_flip, (guide && guide->support_flip));
   gtk_widget_set_visible(gw->g_widgets, (guide && guide->widget));
   if((guide && guide->widget))
   {
-    GList *l = gtk_container_get_children(GTK_CONTAINER(gw->g_widgets));
-    if(l && l->data)
-    {
-      GtkWidget *w = (GtkWidget *)l->data;
-      gtk_widget_destroy(w);
-    }
+    GtkWidget *w = gtk_bin_get_child(GTK_BIN(gw->g_widgets));
+    if(w) gtk_widget_destroy(w);
+
     GtkWidget *extra = guide->widget(NULL, guide->user_data);
-    gtk_box_pack_start(GTK_BOX(gw->g_widgets), extra, TRUE, TRUE, 0);
+    gtk_container_add(GTK_CONTAINER(gw->g_widgets), extra);
     gtk_widget_show_all(extra);
   }
 }
 
 static void _settings_flip_update(_guides_settings_t *gw)
 {
-  gw->block_events = TRUE;
+  ++darktable.gui->reset;
 
   // we retrieve the global settings
-  dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->g_guides));
+  dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(darktable.view_manager->guides));
   if(guide && guide->support_flip)
   {
     gchar *key = _conf_get_path("global", guide->name, "flip");
@@ -593,15 +613,13 @@ static void _settings_flip_update(_guides_settings_t *gw)
     g_free(key);
   }
 
-  gw->block_events = FALSE;
+  --darktable.gui->reset;
 }
 
 static void _settings_guides_changed(GtkWidget *w, _guides_settings_t *gw)
 {
-  if(gw->block_events) return;
-
   // we save the new setting
-  dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->g_guides));
+  dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(darktable.view_manager->guides));
   gchar *key = _conf_get_path("global", "guide", NULL);
   dt_conf_set_string(key, guide ? guide->name : "rule of thirds");
   g_free(key);
@@ -619,10 +637,8 @@ static void _settings_guides_changed(GtkWidget *w, _guides_settings_t *gw)
 
 static void _settings_flip_changed(GtkWidget *w, _guides_settings_t *gw)
 {
-  if(gw->block_events) return;
-
   // we save the new setting
-  dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(gw->g_guides));
+  dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, dt_bauhaus_combobox_get(darktable.view_manager->guides));
   if(guide)
   {
     gchar *key = _conf_get_path("global", guide->name, "flip");
@@ -634,12 +650,6 @@ static void _settings_flip_changed(GtkWidget *w, _guides_settings_t *gw)
   dt_control_queue_redraw_center();
 }
 
-static void _guides_popover_closed(GtkPopover* self, gpointer gw)
-{
-  gtk_widget_destroy(GTK_WIDGET(self));
-  g_free(gw);
-}
-
 static void _settings_colors_changed(GtkWidget *combo, _guides_settings_t *gw)
 {
   dt_conf_set_int("darkroom/ui/overlay_color", dt_bauhaus_combobox_get(combo));
@@ -647,7 +657,7 @@ static void _settings_colors_changed(GtkWidget *combo, _guides_settings_t *gw)
 }
 
 // return the box to be included in the settings popup
-GtkWidget *dt_guides_popover(GtkWidget *button)
+GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
 {
   GtkWidget *pop = gtk_popover_new(button);
   gtk_widget_set_size_request(GTK_WIDGET(pop), 350, -1);
@@ -655,66 +665,36 @@ GtkWidget *dt_guides_popover(GtkWidget *button)
   // create a new struct for all the widgets
   _guides_settings_t *gw = (_guides_settings_t *)g_malloc0(sizeof(_guides_settings_t));
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  g_signal_connect(G_OBJECT(pop), "closed", G_CALLBACK(_guides_popover_closed), gw);
 
   // global guides section
-  gchar *key, *val;
-  gw->g_guides = dt_bauhaus_combobox_new(NULL);
-  gtk_widget_set_tooltip_text(gw->g_guides, _("setup guide lines"));
-  dt_bauhaus_widget_set_label(gw->g_guides, NULL, N_("guide lines"));
-  for(GList *iter = darktable.guides; iter; iter = g_list_next(iter))
-  {
-    dt_guides_t *guide = (dt_guides_t *)iter->data;
-    dt_bauhaus_combobox_add(gw->g_guides, _(guide->name));
-  }
-
-  gw->g_widgets = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gw->g_widgets = gtk_event_box_new();
   gtk_box_pack_start(GTK_BOX(vbox), gw->g_widgets, TRUE, TRUE, 0);
-  gtk_widget_set_no_show_all(gw->g_widgets, TRUE);
 
-  gw->g_flip = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gw->g_flip, NULL, N_("flip guides"));
-  dt_bauhaus_combobox_add(gw->g_flip, _("none"));
-  dt_bauhaus_combobox_add(gw->g_flip, _("horizontally"));
-  dt_bauhaus_combobox_add(gw->g_flip, _("vertically"));
-  dt_bauhaus_combobox_add(gw->g_flip, _("both"));
-  gtk_widget_set_tooltip_text(gw->g_flip, _("flip guides"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gw->g_flip, self, N_("guide lines"), N_("flip"), _("flip guides"),
+                               0, (GtkCallback)_settings_flip_changed, gw,
+                               N_("none"),
+                               N_("horizontally"),
+                               N_("vertically"),
+                               N_("both"));
   gtk_box_pack_start(GTK_BOX(vbox), gw->g_flip, TRUE, TRUE, 0);
   gtk_widget_set_no_show_all(gw->g_flip, TRUE);
 
-  key = _conf_get_path("global", "guide", NULL);
-  if(!dt_conf_key_exists(key)) dt_conf_set_string(key, DEFAULT_GUIDE_NAME);
-  val = dt_conf_get_string(key);
-  g_free(key);
-  const int i = _guides_get_value(val);
-  g_free(val);
-  dt_bauhaus_combobox_set(gw->g_guides, i);
-
-  g_signal_connect(G_OBJECT(gw->g_guides), "value-changed", G_CALLBACK(_settings_guides_changed), gw);
-  g_signal_connect(G_OBJECT(gw->g_flip), "value-changed", G_CALLBACK(_settings_flip_changed), gw);
-
-  // update flip values
-  _settings_flip_update(gw);
-  // update visibility of sub-widgets
-  _settings_update_visibility(gw);
-
-  // put guide selector just above line so it doesn't change position if number of widgets changes
-  gtk_box_pack_start(GTK_BOX(vbox), gw->g_guides, TRUE, TRUE, 0);
+  darktable.view_manager->guides = dt_bauhaus_combobox_new_full(DT_ACTION(self), N_("guide lines"), N_("type"),
+                                                                _("setup guide lines"),
+                                                                0, (GtkCallback)_settings_guides_changed, gw, _guide_names);
+  gtk_box_pack_start(GTK_BOX(vbox), darktable.view_manager->guides, TRUE, TRUE, 0);
 
   // color section
   gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
-  gw->colors = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gw->colors, NULL, N_("overlay color"));
-  dt_bauhaus_combobox_add(gw->colors, _("gray"));
-  dt_bauhaus_combobox_add(gw->colors, _("red"));
-  dt_bauhaus_combobox_add(gw->colors, _("green"));
-  dt_bauhaus_combobox_add(gw->colors, _("yellow"));
-  dt_bauhaus_combobox_add(gw->colors, _("cyan"));
-  dt_bauhaus_combobox_add(gw->colors, _("magenta"));
-  dt_bauhaus_combobox_set(gw->colors, dt_conf_get_int("darkroom/ui/overlay_color"));
-  gtk_widget_set_tooltip_text(gw->colors, _("set overlay color"));
-  g_signal_connect(G_OBJECT(gw->colors), "value-changed", G_CALLBACK(_settings_colors_changed), gw);
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gw->colors, self, N_("guide lines"), N_("overlay color"), _("set overlay color"),
+                               dt_conf_get_int("darkroom/ui/overlay_color"), (GtkCallback)_settings_colors_changed, gw,
+                               N_("gray"),
+                               N_("red"),
+                               N_("green"),
+                               N_("yellow"),
+                               N_("cyan"),
+                               N_("magenta"));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(gw->colors), TRUE, TRUE, 0);
 
   gtk_container_add(GTK_CONTAINER(pop), vbox);
@@ -732,10 +712,10 @@ void dt_guides_update_button_state()
   g_free(key);
 }
 
-void dt_guides_button_toggled()
+void dt_guides_button_toggled(gboolean active)
 {
   gchar *key = _conf_get_path("global", "show", NULL);
-  dt_conf_set_bool(key, !dt_conf_get_bool(key));
+  dt_conf_set_bool(key, active);
   g_free(key);
 }
 
