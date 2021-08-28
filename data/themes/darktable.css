@@ -2172,8 +2172,10 @@ Details :
     state = :active    if the thumb correspond to one of the images worked on (filmstrip)
     state = :hover     if the mouse hover the widget
     class = .dt_group_left / .dt_group_right / .dt_group_top / .dt_group_bottom  if we need to draw group borders around thumb
+    class = .dt_thumbnail_rating_[0-6]   rating value of the image (6==rejected)
   #thumb_image
     only the borders are drawn - background is ignored
+    color transparency is used to draw the image
   all icons inside the widget
     class = .dt_thumb_btn
     state = :hover : the mouse is hovering the icon
@@ -2250,6 +2252,11 @@ Details :
 .dt_thumbnails_2 #thumb_image /* update consistently margins if big thumbnails (less images per row) are shown */
 {
   margin: 1.4em;
+}
+
+.dt_thumbnail_rating_6 #thumb_image
+{
+  color: rgba(0,0,0,0.35); /* only the transparency is used to fade the image drawing */
 }
 
 #thumb_ext /* adjust margin to better align to group, audio... icons and match to near all thumbnails sizes */
