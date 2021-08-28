@@ -601,22 +601,25 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       pos++;
 
       //find coordinates
-      const int statistic = dt_conf_get_int("ui_last/colorpicker_mode");
+      const dt_lib_colorpicker_statistic_t statistic = darktable.lib->proxy.colorpicker.statistic;
       dt_aligned_pixel_t RGB = {0.f}, XYZ_D50, chromaticity;
       for(int k = 0; k < 3; k++)
       {
         switch(statistic)
         {
-          case 0:
+          case DT_LIB_COLORPICKER_STATISTIC_MEAN:
             RGB[k] = sample->picked_color_rgb_mean[k];
             break;
 
-          case 1:
+          case DT_LIB_COLORPICKER_STATISTIC_MIN:
             RGB[k] = sample->picked_color_rgb_min[k];
             break;
 
-          default:
+          case DT_LIB_COLORPICKER_STATISTIC_MAX:
             RGB[k] = sample->picked_color_rgb_max[k];
+            break;
+          default:
+            fprintf(stderr, "[histogram] unsupported color picker statistics %i\n", statistic);
             break;
         }
       }
