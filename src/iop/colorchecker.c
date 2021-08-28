@@ -91,7 +91,6 @@ typedef struct dt_iop_colorchecker_gui_data_t
 {
   GtkWidget *area, *combobox_patch, *scale_L, *scale_a, *scale_b, *scale_C, *combobox_target;
   int patch, drawn_patch;
-  cmsHTRANSFORM xform;
   int absolute_target; // 0: show relative offsets in sliders, 1: show absolute Lab values
 } dt_iop_colorchecker_gui_data_t;
 
@@ -943,11 +942,11 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   int best_patch = 0;
   for(int patch = 1; patch < p->num_patches; patch++)
   {
-    const cmsCIELab Lab = { .L = p->source_L[patch], .a = p->source_a[patch], .b = p->source_b[patch] };
+    const dt_aligned_pixel_t Lab = { p->source_L[patch], p->source_a[patch], p->source_b[patch] };
     if((self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-       && (SQR(picked_mean[0] - Lab.L)
-               + SQR(picked_mean[1] - Lab.a)
-               + SQR(picked_mean[2] - Lab.b)
+       && (SQR(picked_mean[0] - Lab[0])
+               + SQR(picked_mean[1] - Lab[1])
+               + SQR(picked_mean[2] - Lab[2])
            < SQR(picked_mean[0] - p->source_L[best_patch])
                  + SQR(picked_mean[1] - p->source_a[best_patch])
                  + SQR(picked_mean[2] - p->source_b[best_patch])))
@@ -1126,15 +1125,15 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
   {
     for(int i = 0; i < cells_x; i++)
     {
-      double rgb[3] = { 0.5, 0.5, 0.5 }; // Lab: rgb grey converted to Lab
-      cmsCIELab Lab;
       const int patch = i + j*cells_x;
       if(patch >= p->num_patches) continue;
-      Lab.L = p->source_L[patch];
-      Lab.a = p->source_a[patch];
-      Lab.b = p->source_b[patch];
-      cmsDoTransform(g->xform, &Lab, rgb, 1);
+
+      const dt_aligned_pixel_t Lab = { p->source_L[patch], p->source_a[patch], p->source_b[patch] };
+      dt_aligned_pixel_t rgb, XYZ;
+      dt_Lab_to_XYZ(Lab, XYZ);
+      dt_XYZ_to_sRGB(XYZ, rgb);
       cairo_set_source_rgb(cr, rgb[0], rgb[1], rgb[2]);
+
       cairo_rectangle(cr, width * i / (float)cells_x, height * j / (float)cells_y,
           width / (float)cells_x - DT_PIXEL_APPLY_DPI(1),
           height / (float)cells_y - DT_PIXEL_APPLY_DPI(1));
@@ -1395,19 +1394,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->scale_b), "value-changed", G_CALLBACK(target_b_callback), self);
   g_signal_connect(G_OBJECT(g->scale_C), "value-changed", G_CALLBACK(target_C_callback), self);
   g_signal_connect(G_OBJECT(g->combobox_target), "value-changed", G_CALLBACK(target_callback), self);
-
-  cmsHPROFILE hsRGB = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_IN)->profile;
-  cmsHPROFILE hLab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
-  g->xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL,
-                                0); // cmsFLAGS_NOTPRECALC);
-}
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  cmsDeleteTransform(g->xform);
-
-  IOP_GUI_FREE;
 }
 
 #undef MAX_PATCHES
