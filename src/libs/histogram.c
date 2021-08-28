@@ -580,8 +580,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         dt_atomic_add_int(binned + out_y * diam_px + out_x, 1);
     }
 
-  //find live sample position
-  if(d->vectorscope_samples)
+  // if live simple visualized, find their position
+  if(d->vectorscope_samples && darktable.lib->proxy.colorpicker.display_samples)
   {
     g_slist_free_full((GSList *)d->vectorscope_samples, free);
     d->vectorscope_samples = NULL;
@@ -1000,7 +1000,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_pattern_set_matrix(graph_pat, &matrix);
 
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  if(!isnan(d->vectorscope_pt[0]) || d->vectorscope_samples)
+  if(!isnan(d->vectorscope_pt[0]) || (d->vectorscope_samples && darktable.lib->proxy.colorpicker.display_samples))
     cairo_push_group(cr);
   cairo_set_source(cr, bkgd_pat);
   cairo_mask(cr, graph_pat);
@@ -1013,7 +1013,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_pattern_destroy(graph_pat);
   cairo_surface_destroy(graph_surface);
 
-  if(!isnan(d->vectorscope_pt[0]) || d->vectorscope_samples)
+  if(!isnan(d->vectorscope_pt[0]) || (d->vectorscope_samples && darktable.lib->proxy.colorpicker.display_samples))
   {
     cairo_pop_group_to_source(cr);
     cairo_paint_with_alpha(cr, 0.5);
@@ -1031,7 +1031,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   }
 
    // live samples
-  if(d->vectorscope_samples)
+  if(d->vectorscope_samples && darktable.lib->proxy.colorpicker.display_samples)
   {
     GSList *samples = d->vectorscope_samples;
     float *sample_xy = NULL;
