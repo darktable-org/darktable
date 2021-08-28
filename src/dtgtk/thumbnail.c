@@ -134,6 +134,22 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
   g_free(ttf);
 }
 
+static void _thumb_update_rating_class(dt_thumbnail_t *thumb)
+{
+  if(!thumb->w_main) return;
+
+  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_main);
+  for(int i = DT_VIEW_DESERT; i <= DT_VIEW_REJECT; i++)
+  {
+    gchar *cn = g_strdup_printf("dt_thumbnail_rating_%d", i);
+    if(thumb->rating == i)
+      gtk_style_context_add_class(context, cn);
+    else
+      gtk_style_context_remove_class(context, cn);
+    g_free(cn);
+  }
+}
+
 static void _image_get_infos(dt_thumbnail_t *thumb)
 {
   if(thumb->imgid <= 0) return;
@@ -141,6 +157,7 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
 
   // we only get here infos that might change, others(exif, ...) are cached on widget creation
 
+  const int old_rating = thumb->rating;
   thumb->rating = 0;
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
   if(img)
@@ -154,6 +171,11 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
     thumb->groupid = img->group_id;
 
     dt_image_cache_read_release(darktable.image_cache, img);
+  }
+  // if the rating as changed, update the rejected
+  if(old_rating != thumb->rating)
+  {
+    _thumb_update_rating_class(thumb);
   }
 
   // colorlabels
@@ -236,7 +258,11 @@ static void _thumb_draw_image(dt_thumbnail_t *thumb, cairo_t *cr)
 
     cairo_set_source_surface(cr, thumb->img_surf, thumb->zoomx * darktable.gui->ppd,
                              thumb->zoomy * darktable.gui->ppd);
-    cairo_paint(cr);
+
+    // get the transparency value
+    GdkRGBA im_color;
+    gtk_style_context_get_color(context, gtk_widget_get_state_flags(thumb->w_image), &im_color);
+    cairo_paint_with_alpha(cr, im_color.alpha);
 
     // and eventually the image border
     gtk_render_frame(context, cr, 0, 0, w * darktable.gui->ppd_thb, h * darktable.gui->ppd_thb);
@@ -1163,6 +1189,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
   // main widget (overlay)
   thumb->w_main = gtk_overlay_new();
   gtk_widget_set_name(thumb->w_main, "thumb_main");
+  _thumb_update_rating_class(thumb);
   gtk_widget_set_size_request(thumb->w_main, thumb->width, thumb->height);
 
   if(thumb->imgid > 0)
