@@ -58,7 +58,7 @@ OPTIONAL(int, button_released, struct dt_view_t *self, double x, double y, int w
 OPTIONAL(int, button_pressed, struct dt_view_t *self, double x, double y, double pressure,
                               int which, int type, uint32_t state);
 OPTIONAL(void, configure, struct dt_view_t *self, int width, int height);
-OPTIONAL(void, scrolled, struct dt_view_t *self, double x, double y, int up, int state); // mouse scrolled in view
+OPTIONAL(void, scrolled, struct dt_view_t *self, double x, double y, int up, int state, guint m_button); // mouse scrolled in view
 OPTIONAL(void, scrollbar_changed, struct dt_view_t *self, double x, double y); // scrollbars changed in view
 
 // keyboard accel callbacks

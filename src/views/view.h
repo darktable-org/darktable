@@ -381,7 +381,7 @@ int dt_view_manager_button_released(dt_view_manager_t *vm, double x, double y, i
 int dt_view_manager_button_pressed(dt_view_manager_t *vm, double x, double y, double pressure, int which,
                                    int type, uint32_t state);
 void dt_view_manager_configure(dt_view_manager_t *vm, int width, int height);
-void dt_view_manager_scrolled(dt_view_manager_t *vm, double x, double y, int up, int state);
+void dt_view_manager_scrolled(dt_view_manager_t *vm, double x, double y, int up, int state, guint m_button);
 void dt_view_manager_scrollbar_changed(dt_view_manager_t *vm, double x, double y);
 
 /** add widget to the current view toolbox */

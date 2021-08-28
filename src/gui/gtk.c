@@ -102,6 +102,8 @@ typedef struct dt_ui_t
   GtkWidget *log_msg, *toast_msg;
 } dt_ui_t;
 
+guint _button_pressed;
+
 /* initialize the whole left panel */
 static void _ui_init_panel_left(struct dt_ui_t *ui, GtkWidget *container);
 /* initialize the whole right panel */
@@ -709,14 +711,15 @@ static gboolean draw(GtkWidget *da, cairo_t *cr, gpointer user_data)
 static gboolean scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   int delta_y;
+
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
     dt_view_manager_scrolled(darktable.view_manager, event->x, event->y,
                              delta_y < 0,
-                             event->state & 0xf);
+                             event->state & 0xf,
+                             _button_pressed);
     gtk_widget_queue_draw(widget);
   }
-
   return TRUE;
 }
 
@@ -1011,6 +1014,7 @@ static gboolean button_pressed(GtkWidget *w, GdkEventButton *event, gpointer use
   dt_control_button_pressed(event->x, event->y, pressure, event->button, event->type, event->state & 0xf);
   gtk_widget_grab_focus(w);
   gtk_widget_queue_draw(w);
+  _button_pressed = event->button;
   return FALSE;
 }
 
@@ -1018,6 +1022,7 @@ static gboolean button_released(GtkWidget *w, GdkEventButton *event, gpointer us
 {
   dt_control_button_released(event->x, event->y, event->button, event->state & 0xf);
   gtk_widget_queue_draw(w);
+  _button_pressed = 0;
   return TRUE;
 }
 

@@ -3646,7 +3646,7 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
   dt_control_navigation_redraw();
 }
 
-void scrolled(dt_view_t *self, double x, double y, int up, int state)
+void scrolled(dt_view_t *self, double x, double y, int up, int state, guint m_button)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
   const int32_t tb = dev->border_size;
@@ -3692,6 +3692,11 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
 
   if(up)
   {
+    if(m_button == 3)
+    {
+      dt_dev_jump_image(dev, -1, TRUE);
+      return;
+    }
     if(fitscale <= 1.0f && (scale == (1.0f / ppd) || scale == (2.0f / ppd)) && constrained) return; // for large image size
     else if(fitscale > 1.0f && fitscale <= 2.0f && scale == (2.0f / ppd) && constrained) return; // for medium image size
 
@@ -3715,6 +3720,12 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   }
   else
   {
+    if(m_button == 3)
+    {
+      dt_dev_jump_image(dev, 1, TRUE);
+      return;
+    }
+
     if(fitscale <= 2.0f && ((scale == fitscale && constrained) || scale < 0.5 * fitscale)) return; // for large and medium image size
     else if(fitscale > 2.0f && scale < 1.0f / ppd) return; // for small image size
 
@@ -3820,7 +3831,7 @@ static gboolean zoom_in_callback(GtkAccelGroup *accel_group, GObject *accelerata
   dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
-  scrolled(self, dev->width / 2, dev->height / 2, 1, modifier);
+  scrolled(self, dev->width / 2, dev->height / 2, 1, modifier, 0);
   return TRUE;
 }
 
@@ -3830,7 +3841,7 @@ static gboolean zoom_out_callback(GtkAccelGroup *accel_group, GObject *accelerat
   dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
-  scrolled(self, dev->width / 2, dev->height / 2, 0, modifier);
+  scrolled(self, dev->width / 2, dev->height / 2, 0, modifier, 0);
   return TRUE;
 }
 
