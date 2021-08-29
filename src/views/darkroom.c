@@ -3479,7 +3479,6 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
           gboolean on_corner_prev_box = TRUE;
           // initialized to calm gcc-11
           float opposite_x = 0.f, opposite_y = 0.f;
-          dt_cursor_t cursor = GDK_FLEUR;
 
           if(fabsf(zoom_x - sample->box[0]) <= hx)
             opposite_x = sample->box[2];
@@ -3499,10 +3498,6 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
           {
             sample->point[0] = opposite_x;
             sample->point[1] = opposite_y;
-            if(opposite_y == sample->box[3])
-              cursor = opposite_x == sample->box[2] ? GDK_TOP_LEFT_CORNER: GDK_TOP_RIGHT_CORNER;
-            else
-              cursor = opposite_x == sample->box[2] ? GDK_BOTTOM_LEFT_CORNER : GDK_BOTTOM_RIGHT_CORNER;
           }
           else
           {
@@ -3511,7 +3506,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
             sample->box[2] = fminf(1.0, zoom_x + delta_x);
             sample->box[3] = fminf(1.0, zoom_y + delta_y);
           }
-          dt_control_change_cursor(cursor);
+          dt_control_change_cursor(GDK_FLEUR);
         }
         else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
         {
