@@ -382,6 +382,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *self)
 {
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
+  if(!g) return; // seems that sometimes, g can be undefined for some reason...
   g->preview_ready = TRUE;
   if(self->dev->gui_module != self)
   {
