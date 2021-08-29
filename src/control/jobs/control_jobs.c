@@ -1676,21 +1676,16 @@ void dt_control_move_images()
     return;
   }
 
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
-      GTK_RESPONSE_CANCEL, _("_select as destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(filechooser);
-#endif
+  GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
+        _("open folder"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_open"), _("_cancel"));
 
-  dt_conf_get_folder_to_file_chooser("ui_last/copymove_path", filechooser);
-  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
-  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  dt_conf_get_folder_to_file_chooser("ui_last/copymove_path", GTK_FILE_CHOOSER(filechooser));
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    dt_conf_set_folder_from_file_chooser("ui_last/copymove_path", filechooser);
+    dt_conf_set_folder_from_file_chooser("ui_last/copymove_path", GTK_FILE_CHOOSER(filechooser));
   }
-  gtk_widget_destroy(filechooser);
+  g_object_unref(filechooser);
 
   if(!dir || !g_file_test(dir, G_FILE_TEST_IS_DIR)) goto abort;
 
@@ -1742,20 +1737,16 @@ void dt_control_copy_images()
     return;
   }
 
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
-      GTK_RESPONSE_CANCEL, _("_select as destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(filechooser);
-#endif
-  dt_conf_get_folder_to_file_chooser("ui_last/copymove_path", filechooser);
-  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
-  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
+        _("open folder"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_open"), _("_cancel"));
+
+  dt_conf_get_folder_to_file_chooser("ui_last/copymove_path", GTK_FILE_CHOOSER(filechooser));
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    dt_conf_set_folder_from_file_chooser("ui_last/copymove_path", filechooser);
+    dt_conf_set_folder_from_file_chooser("ui_last/copymove_path", GTK_FILE_CHOOSER(filechooser));
   }
-  gtk_widget_destroy(filechooser);
+  g_object_unref(filechooser);
 
   if(!dir || !g_file_test(dir, G_FILE_TEST_IS_DIR)) goto abort;
 

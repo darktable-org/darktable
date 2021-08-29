@@ -939,7 +939,7 @@ static void _choose_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   dt_osx_disallow_fullscreen(filechooser);
 #endif
 
-  dt_conf_get_folder_to_file_chooser("ui_last/gpx_last_directory", filechooser);
+  dt_conf_get_folder_to_file_chooser("ui_last/gpx_last_directory", GTK_FILE_CHOOSER(filechooser));
 
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
@@ -964,7 +964,7 @@ static void _choose_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   }
   if(res == GTK_RESPONSE_OK)
   {
-    dt_conf_set_folder_from_file_chooser("ui_last/gpx_last_directory", filechooser);
+    dt_conf_set_folder_from_file_chooser("ui_last/gpx_last_directory", GTK_FILE_CHOOSER(filechooser));
 
     gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
 
