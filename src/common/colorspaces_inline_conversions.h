@@ -772,6 +772,34 @@ static inline void dt_HSV_2_RGB(const dt_aligned_pixel_t HSV, dt_aligned_pixel_t
 
 
 #ifdef _OPENMP
+#pragma omp declare simd aligned(RGB, HCV: 16)
+#endif
+static inline void dt_RGB_2_HCV(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t HCV)
+{
+  const float min = fminf(RGB[0], fminf(RGB[1], RGB[2]));
+  const float max = fmaxf(RGB[0], fmaxf(RGB[1], RGB[2]));
+  const float delta = max - min;
+
+  const float V = max;
+  float C, H;
+
+  if(fabsf(max) > 1e-6f && fabsf(delta) > 1e-6f)
+  {
+    C = delta;
+    H = _dt_RGB_2_Hue(RGB, max, delta);
+  }
+  else
+  {
+    C = 0.0f;
+    H = 0.0f;
+  }
+
+  HCV[0] = H;
+  HCV[1] = C;
+  HCV[2] = V;
+}
+
+#ifdef _OPENMP
 #pragma omp declare simd
 #endif
 static inline void dt_Lab_2_LCH(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t LCH)
