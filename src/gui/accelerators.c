@@ -1738,7 +1738,7 @@ static void _export_clicked(GtkButton *button, gpointer user_data)
   dt_osx_disallow_fullscreen(chooser);
 #endif
   gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(chooser), TRUE);
-  dt_conf_get_folder_to_file_chooser("ui_last/export_path", chooser);
+  dt_conf_get_folder_to_file_chooser("ui_last/export_path", GTK_FILE_CHOOSER(chooser));
   gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(chooser), "shortcutsrc");
   if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
   {
@@ -1746,7 +1746,7 @@ static void _export_clicked(GtkButton *button, gpointer user_data)
 
     _shortcuts_save(filename, id);
     g_free(filename);
-    dt_conf_set_folder_from_file_chooser("ui_last/export_path", chooser);
+    dt_conf_set_folder_from_file_chooser("ui_last/export_path", GTK_FILE_CHOOSER(chooser));
   }
   gtk_widget_destroy(chooser);
 }
@@ -1827,7 +1827,7 @@ static void _import_clicked(GtkButton *button, gpointer user_data)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(chooser);
 #endif
-  dt_conf_get_folder_to_file_chooser("ui_last/import_path", chooser);
+  dt_conf_get_folder_to_file_chooser("ui_last/import_path", GTK_FILE_CHOOSER(chooser));
   gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(chooser), "shortcutsrc");
   if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
   {
@@ -1864,7 +1864,7 @@ static void _import_clicked(GtkButton *button, gpointer user_data)
     _shortcuts_load(filename, from_id, to_id, wipe && from_id == DT_ALL_DEVICES);
 
     g_free(filename);
-    dt_conf_set_folder_from_file_chooser("ui_last/import_path", chooser);
+    dt_conf_set_folder_from_file_chooser("ui_last/import_path", GTK_FILE_CHOOSER(chooser));
   }
   gtk_widget_destroy(chooser);
 

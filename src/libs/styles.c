@@ -396,7 +396,7 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
 #endif
-  dt_conf_get_folder_to_file_chooser("ui_last/export_path", filechooser);
+  dt_conf_get_folder_to_file_chooser("ui_last/export_path", GTK_FILE_CHOOSER(filechooser));
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -513,7 +513,7 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
       }
       dt_control_log(_("style %s was successfully exported"), (char*)style->data);
     }
-    dt_conf_set_folder_from_file_chooser("ui_last/export_path", filechooser);
+    dt_conf_set_folder_from_file_chooser("ui_last/export_path", GTK_FILE_CHOOSER(filechooser));
     g_free(filedir);
   }
   gtk_widget_destroy(filechooser);
@@ -533,7 +533,7 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
 #endif
-  dt_conf_get_folder_to_file_chooser("ui_last/import_path", filechooser);
+  dt_conf_get_folder_to_file_chooser("ui_last/import_path", GTK_FILE_CHOOSER(filechooser));
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
 
   GtkFileFilter *filter;
@@ -694,7 +694,7 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
 
     dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
     _gui_styles_update_view(d);
-    dt_conf_set_folder_from_file_chooser("ui_last/import_path", filechooser);
+    dt_conf_set_folder_from_file_chooser("ui_last/import_path", GTK_FILE_CHOOSER(filechooser));
   }
   gtk_widget_destroy(filechooser);
 }

@@ -1544,7 +1544,7 @@ static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t *self)
       _("open folder"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_open"), _("_cancel"));
 
   // run the native dialog
-  dt_conf_get_folder_to_file_chooser("ui_last/import_last_place", GTK_WIDGET(filechooser));
+  dt_conf_get_folder_to_file_chooser("ui_last/import_last_place", GTK_FILE_CHOOSER(filechooser));
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     char *dirname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));

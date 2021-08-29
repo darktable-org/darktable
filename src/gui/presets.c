@@ -367,7 +367,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(filechooser);
 #endif
-    dt_conf_get_folder_to_file_chooser("ui_last/export_path", filechooser);
+    dt_conf_get_folder_to_file_chooser("ui_last/export_path", GTK_FILE_CHOOSER(filechooser));
 
     // save if accepted
     if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -376,7 +376,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
       dt_presets_save_to_file(g->old_id, name, filedir);
       dt_control_log(_("preset %s was successfully exported"), name);
       g_free(filedir);
-      dt_conf_set_folder_from_file_chooser("ui_last/export_path", filechooser);
+      dt_conf_set_folder_from_file_chooser("ui_last/export_path", GTK_FILE_CHOOSER(filechooser));
     }
 
     gtk_widget_destroy(GTK_WIDGET(filechooser));
