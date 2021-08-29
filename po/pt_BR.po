@@ -8993,6 +8993,7 @@ msgstr "proporção áurea"
 msgid "horizontal lines"
 msgstr "linhas horizontais"
 
+
 #: ../src/gui/guides.c:218
 msgid "number of horizontal guide lines"
 msgstr "número de linhas-guia horizontais"
