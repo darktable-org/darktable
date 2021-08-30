@@ -1059,11 +1059,10 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   }
 
   // overlay central circle
-  set_color(cr, darktable.bauhaus->graph_overlay);
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+  set_color(cr, darktable.bauhaus->graph_grid);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
   cairo_new_sub_path(cr);
-  cairo_arc(cr, 0., 0., DT_PIXEL_APPLY_DPI(2.), 0., M_PI * 2.);
+  cairo_arc(cr, 0., 0., DT_PIXEL_APPLY_DPI(3.), 0., M_PI * 2.);
   cairo_fill(cr);
 
   cairo_restore(cr);
