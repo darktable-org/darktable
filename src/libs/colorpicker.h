@@ -71,6 +71,15 @@ typedef struct dt_colorpicker_sample_t
   GdkRGBA rgb_display;
 } dt_colorpicker_sample_t;
 
+typedef enum dt_lib_colorpicker_statistic_t
+{
+  DT_LIB_COLORPICKER_STATISTIC_MEAN = 0,
+  DT_LIB_COLORPICKER_STATISTIC_MIN,
+  DT_LIB_COLORPICKER_STATISTIC_MAX,
+  DT_LIB_COLORPICKER_STATISTIC_N // needs to be the lsat one
+} dt_lib_colorpicker_statistic_t;
+
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

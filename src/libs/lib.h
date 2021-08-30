@@ -55,6 +55,7 @@ typedef struct dt_lib_t
       struct dt_colorpicker_sample_t *selected_sample;
       gboolean display_samples;
       gboolean restrict_histogram;
+      int statistic;
       void (*update_panel)(struct dt_lib_module_t *self);
       void (*update_samples)(struct dt_lib_module_t *self);
       void (*set_sample_box_area)(struct dt_lib_module_t *self, const dt_boundingbox_t size);
