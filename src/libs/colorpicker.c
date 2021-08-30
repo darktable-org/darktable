@@ -46,14 +46,6 @@ typedef enum dt_lib_colorpicker_model_t
   DT_LIB_COLORPICKER_MODEL_N // needs to be the lsat one
 } dt_lib_colorpicker_model_t;
 
-typedef enum dt_lib_colorpicker_statistic_t
-{
-  DT_LIB_COLORPICKER_STATISTIC_MEAN = 0,
-  DT_LIB_COLORPICKER_STATISTIC_MIN,
-  DT_LIB_COLORPICKER_STATISTIC_MAX,
-  DT_LIB_COLORPICKER_STATISTIC_N // needs to be the lsat one
-} dt_lib_colorpicker_statistic_t;
-
 const gchar *dt_lib_colorpicker_model_names[DT_LIB_COLORPICKER_MODEL_N] = {"RGB", "Lab", "LCh", "HSL", "Hex", "none"};
 const gchar *dt_lib_colorpicker_statistic_names[DT_LIB_COLORPICKER_STATISTIC_N] = {"mean", "min", "max"};
 
@@ -355,10 +347,13 @@ static void _statistic_changed(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_colorpicker_t *data = self->data;
   data->statistic = dt_bauhaus_combobox_get(widget);
+  darktable.lib->proxy.colorpicker.statistic = (int)data->statistic;
   dt_conf_set_string("ui_last/colorpicker_mode", dt_lib_colorpicker_statistic_names[data->statistic]);
 
   _update_picker_output(self);
   _update_samples_output(self);
+  if(darktable.lib->proxy.colorpicker.display_samples)
+      dt_dev_invalidate_from_gui(darktable.develop);
 }
 
 static void _color_mode_changed(GtkWidget *widget, dt_lib_module_t *self)
@@ -397,7 +392,10 @@ static gboolean _sample_enter_callback(GtkWidget *widget, GdkEvent *event, gpoin
   if(sample->size != DT_LIB_COLORPICKER_SIZE_NONE)
   {
     darktable.lib->proxy.colorpicker.selected_sample = sample;
-    dt_control_queue_redraw_center();
+    if(darktable.lib->proxy.colorpicker.display_samples)
+      dt_dev_invalidate_from_gui(darktable.develop);
+   	else
+   	  dt_control_queue_redraw_center();
   }
 
   return FALSE;
@@ -410,7 +408,10 @@ static gboolean _sample_leave_callback(GtkWidget *widget, GdkEvent *event, gpoin
   if(darktable.lib->proxy.colorpicker.selected_sample)
   {
     darktable.lib->proxy.colorpicker.selected_sample = NULL;
-    dt_control_queue_redraw_center();
+    if(darktable.lib->proxy.colorpicker.display_samples)
+      dt_dev_invalidate_from_gui(darktable.develop);
+   	else
+   	  dt_control_queue_redraw_center();
   }
 
   return FALSE;
@@ -525,7 +526,10 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
 
   // Updating the display
   _update_samples_output(self);
-  dt_control_queue_redraw_center();
+  if(darktable.lib->proxy.colorpicker.display_samples)
+      dt_dev_invalidate_from_gui(darktable.develop);
+   	else
+   	  dt_control_queue_redraw_center();
 }
 
 static void _display_samples_changed(GtkToggleButton *button, gpointer data)
@@ -673,7 +677,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget),
                      dt_ui_scroll_wrap(data->samples_container, 1, "plugins/darkroom/colorpicker/windowheight"), TRUE, TRUE, 0);
 
-  data->display_samples_check_box = gtk_check_button_new_with_label(_("display sample areas on image"));
+  data->display_samples_check_box = gtk_check_button_new_with_label(_("display samples on image/vectorscope"));
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(data->display_samples_check_box))),
                           PANGO_ELLIPSIZE_MIDDLE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->display_samples_check_box),
@@ -742,7 +746,10 @@ void gui_reset(dt_lib_module_t *self)
   // Resetting GUI elements
   dt_bauhaus_combobox_set(data->statistic_selector, 0);
   dt_bauhaus_combobox_set(data->color_mode_selector, 0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->display_samples_check_box), FALSE);
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->display_samples_check_box)))
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->display_samples_check_box), FALSE);
+  else
+    dt_dev_invalidate_from_gui(darktable.develop);
 
   // redraw without a picker
   dt_control_queue_redraw_center();
