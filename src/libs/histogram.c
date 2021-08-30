@@ -486,10 +486,6 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     sample_height = roi->height;
     roi->crop_x = roi->crop_y = 0;
   }
-  else
-  {
-    d->vectorscope_pt[0] = NAN;
-  }
 
   // RGB -> chromaticity (processor-heavy), count into bins by chromaticity
   // FIXME: if we do convert to histogram RGB, should it be an absolute colorimetric conversion (would mean knowing the histogram profile whitepoint and un-adapting its matrices) and then we have a meaningful whitepoint and could plot spectral locus -- or the reverse, adapt the spectral locus to the histogram profile PCS (always D50)?
@@ -574,9 +570,10 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
   dt_aligned_pixel_t RGB = {0.f}, XYZ_D50, chromaticity;
   const dt_lib_colorpicker_statistic_t statistic = darktable.lib->proxy.colorpicker.statistic;
-  dt_colorpicker_sample_t *sample  = darktable.lib->proxy.colorpicker.primary_sample;
+  dt_colorpicker_sample_t *sample;
 
   // find position of the primary sample
+  sample = darktable.lib->proxy.colorpicker.primary_sample;
   for(int k = 0; k < 3; k++)
   {
     switch(statistic)
@@ -1038,7 +1035,13 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_pattern_set_matrix(graph_pat, &matrix);
 
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  if(!isnan(d->vectorscope_pt[0]) || (d->vectorscope_samples && darktable.lib->proxy.colorpicker.display_samples))
+
+  const gboolean display_primary_sample = darktable.lib->proxy.colorpicker.restrict_histogram &&
+      darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_POINT;
+  const gboolean display_live_samples = d->vectorscope_samples &&
+      darktable.lib->proxy.colorpicker.display_samples;
+
+  if(display_primary_sample || display_live_samples)
     cairo_push_group(cr);
   cairo_set_source(cr, bkgd_pat);
   cairo_mask(cr, graph_pat);
@@ -1051,7 +1054,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_pattern_destroy(graph_pat);
   cairo_surface_destroy(graph_surface);
 
-  if(!isnan(d->vectorscope_pt[0]) || (d->vectorscope_samples && darktable.lib->proxy.colorpicker.display_samples))
+  if(display_primary_sample || display_live_samples)
   {
     cairo_pop_group_to_source(cr);
     cairo_paint_with_alpha(cr, 0.5);
@@ -1066,7 +1069,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_arc(cr, 0., 0., DT_PIXEL_APPLY_DPI(3.), 0., M_PI * 2.);
   cairo_fill(cr);
 
-  if(!isnan(d->vectorscope_pt[0]))
+  if(display_primary_sample)
   {
     // point sample
     set_color(cr, darktable.bauhaus->graph_fg);
@@ -1076,7 +1079,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   }
 
    // live samples
-  if(d->vectorscope_samples && darktable.lib->proxy.colorpicker.display_samples)
+  if(display_live_samples)
   {
     GSList *samples = d->vectorscope_samples;
     float *sample_xy = NULL;
