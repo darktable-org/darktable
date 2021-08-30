@@ -479,12 +479,9 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
   int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
   int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
-  size_t pt_sample_x = SIZE_MAX, pt_sample_y = SIZE_MAX;
   if(sample_width == 1 && sample_height == 1)
   {
     // point sample still calculates graph based on whole image
-    pt_sample_x = roi->crop_x - (roi->crop_x % 2);
-    pt_sample_y = roi->crop_y - (roi->crop_y % 2);
     sample_width = roi->width;
     sample_height = roi->height;
     roi->crop_x = roi->crop_y = 0;
@@ -509,7 +506,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // FIXME: instead of scaling, if chromaticity really depends only on XY, then make a lookup on startup of for each grid cell on graph output the minimum XY to populate that cell, then either brute-force scan that LUT, or start from position of last pixel and scan, or do an optimized search (1/2, 1/2, 1/2, etc.) -- would also find point sample pixel this way
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, binned, sample_max_x, sample_max_y, roi, pt_sample_x, pt_sample_y, d, diam_px, max_radius, max_diam, vs_prof, vs_type, vs_scale) \
+  dt_omp_firstprivate(input, binned, sample_max_x, sample_max_y, roi, d, diam_px, max_radius, max_diam, vs_prof, vs_type, vs_scale) \
   schedule(static) collapse(2)
 #endif
   for(size_t y=0; y<sample_max_y; y+=2)
@@ -565,11 +562,6 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       // FIXME: we ignore the L or Jz components -- do they optimize out of the above code, or would in particular a XYZ_2_AzBz but helpful?
       if(vs_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
         log_scale(&chromaticity[1], &chromaticity[2], max_radius);
-      if(x == pt_sample_x && y == pt_sample_y)
-      {
-        d->vectorscope_pt[0] = chromaticity[1];
-        d->vectorscope_pt[1] = chromaticity[2];
-      }
 
       // FIXME: make cx,cy which are float, check 0 <= cx < 1, then multiply by diam_px
       const int out_x = (diam_px-1) * (chromaticity[1] / max_diam + 0.5f);
@@ -579,6 +571,52 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       if(out_x >= 0 && out_x <= diam_px-1 && out_y >= 0 && out_y <= diam_px-1)
         dt_atomic_add_int(binned + out_y * diam_px + out_x, 1);
     }
+
+  dt_aligned_pixel_t RGB = {0.f}, XYZ_D50, chromaticity;
+  const dt_lib_colorpicker_statistic_t statistic = darktable.lib->proxy.colorpicker.statistic;
+  dt_colorpicker_sample_t *sample  = darktable.lib->proxy.colorpicker.primary_sample;
+
+  // find position of the primary sample
+  for(int k = 0; k < 3; k++)
+  {
+    switch(statistic)
+    {
+      case DT_LIB_COLORPICKER_STATISTIC_MEAN:
+        RGB[k] = sample->picked_color_rgb_mean[k];
+        break;
+
+      case DT_LIB_COLORPICKER_STATISTIC_MIN:
+        RGB[k] = sample->picked_color_rgb_min[k];
+        break;
+
+      case DT_LIB_COLORPICKER_STATISTIC_MAX:
+        RGB[k] = sample->picked_color_rgb_max[k];
+        break;
+      default:
+        fprintf(stderr, "[histogram] unsupported color picker statistics %i\n", statistic);
+        break;
+    }
+  }
+
+  dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, vs_prof->matrix_in_transposed, vs_prof->lut_in,
+                             vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
+  if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+  {
+    dt_aligned_pixel_t xyY_D50;
+    dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
+    dt_xyY_to_Luv(xyY_D50, chromaticity);
+  }
+  else
+  {
+    dt_aligned_pixel_t XYZ_D65;
+    dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
+    dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
+  }
+  if(vs_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
+    log_scale(&chromaticity[1], &chromaticity[2], max_radius);
+
+  d->vectorscope_pt[0] = chromaticity[1];
+  d->vectorscope_pt[1] = chromaticity[2];
 
   // if live simple visualized, find their position
   if(d->vectorscope_samples && darktable.lib->proxy.colorpicker.display_samples)
@@ -591,7 +629,6 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   if(samples)
   {
     const dt_colorpicker_sample_t *selected = darktable.lib->proxy.colorpicker.selected_sample;
-    dt_colorpicker_sample_t *sample = NULL;
 
     int pos = 0;
     for(; samples; samples = g_slist_next(samples))
@@ -601,8 +638,6 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       pos++;
 
       //find coordinates
-      const dt_lib_colorpicker_statistic_t statistic = darktable.lib->proxy.colorpicker.statistic;
-      dt_aligned_pixel_t RGB = {0.f}, XYZ_D50, chromaticity;
       for(int k = 0; k < 3; k++)
       {
         switch(statistic)
