@@ -143,6 +143,10 @@
 @define-color thumbnail_hover_bg_color @grey_85;
 @define-color thumbnail_hover_fg_color @grey_90;
 @define-color filmstrip_bg_color @darkroom_bg_color;
+@define-color timeline_bg_color shade(@filmstrip_bg_color, 0.9);
+@define-color timeline_fg_color @text_color;
+@define-color timeline_text_bg_color alpha(black, .8);
+@define-color timeline_text_fg_color alpha(white, .9);
 @define-color thumbnail_localcopy_color @grey_75;
 
 /* Brushes */
