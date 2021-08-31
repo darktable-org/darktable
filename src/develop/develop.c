@@ -931,6 +931,21 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
   }
 }
 
+const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const char *op)
+{
+  for(GList *l = g_list_last(dev->history); l; l = g_list_previous(l))
+  {
+    dt_dev_history_item_t *item = (dt_dev_history_item_t *)l->data;
+    if(!g_strcmp0(item->op_name, op))
+    {
+      return item;
+      break;
+    }
+  }
+
+  return NULL;
+}
+
 void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable, const int no_image)
 {
   _dev_add_history_item_ext(dev, module, enable, FALSE, no_image, FALSE);
