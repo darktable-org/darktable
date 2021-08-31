@@ -529,7 +529,6 @@ void gui_init(dt_lib_module_t *self)
   // Initializing proxy functions and data
   darktable.lib->proxy.colorpicker.module = self;
   darktable.lib->proxy.colorpicker.display_samples = dt_conf_get_bool("ui_last/colorpicker_display_samples");
-  // FIXME: should s/primary_sample/current_sample/
   darktable.lib->proxy.colorpicker.primary_sample = &data->primary_sample;
   darktable.lib->proxy.colorpicker.picker_proxy = NULL;
   darktable.lib->proxy.colorpicker.live_samples = NULL;
