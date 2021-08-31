@@ -775,10 +775,6 @@ static void _pixelpipe_pick_from_image(dt_iop_module_t *module,
                                        const dt_iop_order_iccprofile_info_t *const histogram_profile,
                                        dt_colorpicker_sample_t *const sample)
 {
-  lib_colorpicker_sample_statistics picked_rgb = { { FLT_MAX, FLT_MAX, FLT_MAX },
-                                                   { FLT_MIN, FLT_MIN, FLT_MIN },
-                                                   { 0.0f } };
-
   if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
   {
     const int box[4] = {
@@ -788,9 +784,11 @@ static void _pixelpipe_pick_from_image(dt_iop_module_t *module,
       MIN(roi_in->height - 1, MAX(0, sample->box[3] * roi_in->height))
     };
     const int box_pixels = (box[3] - box[1] + 1) * (box[2] - box[0] + 1);
+    lib_colorpicker_sample_statistics picked_rgb = { { 0.0f },
+                                                     { FLT_MAX, FLT_MAX, FLT_MAX },
+                                                     { FLT_MIN, FLT_MIN, FLT_MIN } };
     dt_aligned_pixel_t acc = { 0.0f };
 
-    // FIXME: use OpenMP reduction
     for(int j = box[1]; j <= box[3]; j++)
       for(int i = box[0]; i <= box[2]; i++)
       {
@@ -804,38 +802,41 @@ static void _pixelpipe_pick_from_image(dt_iop_module_t *module,
           acc[ch] += v;
         }
       }
-
     for_each_channel(ch, aligned(picked_rgb, acc:16))
       picked_rgb[DT_LIB_COLORPICKER_STATISTIC_MEAN][ch] = acc[ch] / box_pixels;
+
+    // convenient to have pixels in display profile, which makes them easy to display
+    memcpy(sample->display[0], picked_rgb[0], sizeof(lib_colorpicker_sample_statistics));
+
+    // NOTE: conversions assume that dt_aligned_pixel_t[x] has no
+    // padding, e.g. is equivalent to float[x*4], and that on failure
+    // it's OK not to touch output
+    int converted_cst;
+    dt_ioppr_transform_image_colorspace(module, picked_rgb[0], sample->lab[0], 3, 1, iop_cs_rgb, iop_cs_Lab,
+                                        &converted_cst, display_profile);
+    if(display_profile && histogram_profile)
+      dt_ioppr_transform_image_colorspace_rgb(picked_rgb[0], sample->scope[0], 3, 1,
+                                              display_profile, histogram_profile, "primary picker");
   }
   else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
   {
-    const int point[2] = {
-      MIN(roi_in->width - 1, MAX(0, sample->point[0] * roi_in->width)),
-      MIN(roi_in->height - 1, MAX(0, sample->point[1] * roi_in->height))
-    };
-
-    for(dt_lib_colorpicker_statistic_t stat = 0; stat < DT_LIB_COLORPICKER_STATISTIC_N; stat++)
-      for_each_channel(ch, aligned(picked_rgb) aligned(pixel:64))
-        picked_rgb[stat][ch] = pixel[4 * (roi_in->width * point[1] + point[0]) + ch];
+    const int x = MIN(roi_in->width - 1, MAX(0, sample->point[0] * roi_in->width));
+    const int y = MIN(roi_in->height - 1, MAX(0, sample->point[1] * roi_in->height));
+    int converted_cst;
+    // mean = min = max == pixel sample, so only need to do colorspace work on a single point
+    memcpy(sample->display[0], pixel + 4 * (roi_in->width * y + x), sizeof(dt_aligned_pixel_t));
+    dt_ioppr_transform_image_colorspace(module, sample->display[0], sample->lab[0], 1, 1, iop_cs_rgb, iop_cs_Lab,
+                                        &converted_cst, display_profile);
+    if(display_profile && histogram_profile)
+      dt_ioppr_transform_image_colorspace_rgb(sample->display[0], sample->scope[0], 1, 1,
+                                              display_profile, histogram_profile, "primary picker");
+    for(dt_lib_colorpicker_statistic_t stat = 1; stat < DT_LIB_COLORPICKER_STATISTIC_N; stat++)
+    {
+      memcpy(sample->display[stat], sample->display[0], sizeof(dt_aligned_pixel_t));
+      memcpy(sample->lab[stat], sample->lab[0], sizeof(dt_aligned_pixel_t));
+      memcpy(sample->scope[stat], sample->scope[0], sizeof(dt_aligned_pixel_t));
+    }
   }
-
-  // convenient to have pixels in display profile, which makes them easy to display
-  memcpy(sample->display[0], picked_rgb[0], sizeof(lib_colorpicker_sample_statistics));
-
-  // Converting the display RGB values to histogram RGB
-  // FIXME: if we're doing a point sample, we only need to convert one value then copy it to mean/min/max
-  int converted_cst;
-
-  // NOTE: conversions assume that dt_aligned_pixel_t[x] has no
-  // padding, e.g. is equivalent to float[x*4], and that on failure
-  // it's OK not to touch output
-  dt_ioppr_transform_image_colorspace(module, picked_rgb[0], sample->lab[0], 3, 1, iop_cs_rgb, iop_cs_Lab,
-                                      &converted_cst, display_profile);
-  // FIXME: do need to check for these?
-  if(display_profile && histogram_profile)
-    dt_ioppr_transform_image_colorspace_rgb(picked_rgb[0], sample->scope[0], 3, 1,
-                                            display_profile, histogram_profile, "primary picker");
 }
 
 static void _pixelpipe_pick_samples(dt_develop_t *dev, dt_iop_module_t *module,

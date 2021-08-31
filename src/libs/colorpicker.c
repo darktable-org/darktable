@@ -269,7 +269,8 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
   gchar **sample_parts = g_malloc0_n(12, sizeof(char*));
 
   sample_parts[3] = g_strdup_printf("%22s(0x%02X%02X%02X)\n<big><b>%14s</b></big>", " ",
-                                    sample->label_rgb[0], sample->label_rgb[1], sample->label_rgb[2], _("RGB"));
+                                    CLAMP(sample->label_rgb[0], 0, 255), CLAMP(sample->label_rgb[1], 0, 255),
+                                    CLAMP(sample->label_rgb[2], 0, 255), _("RGB"));
   sample_parts[7] = g_strdup_printf("\n<big><b>%14s</b></big>", _("Lab"));
 
   for(int i = 0; i < DT_LIB_COLORPICKER_STATISTIC_N; i++)
