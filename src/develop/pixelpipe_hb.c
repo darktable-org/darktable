@@ -775,10 +775,9 @@ static void _pixelpipe_pick_from_image(dt_iop_module_t *module,
                                        const dt_iop_order_iccprofile_info_t *const histogram_profile,
                                        dt_colorpicker_sample_t *const sample)
 {
-  // FIXME: make these an array picked[DT_LIB_COLORPICKER_STATISTIC_N]
-  dt_aligned_pixel_t picked_color_rgb_min = { FLT_MAX, FLT_MAX, FLT_MAX };
-  dt_aligned_pixel_t picked_color_rgb_max = { FLT_MIN, FLT_MIN, FLT_MIN };
-  dt_aligned_pixel_t picked_color_rgb_mean = { 0.0f };
+  lib_colorpicker_sample_statistics picked_rgb = { { FLT_MAX, FLT_MAX, FLT_MAX },
+                                                   { FLT_MIN, FLT_MIN, FLT_MIN },
+                                                   { 0.0f } };
 
   if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
   {
@@ -788,23 +787,26 @@ static void _pixelpipe_pick_from_image(dt_iop_module_t *module,
       MIN(roi_in->width - 1,  MAX(0, sample->box[2] * roi_in->width)),
       MIN(roi_in->height - 1, MAX(0, sample->box[3] * roi_in->height))
     };
+    const int box_pixels = (box[3] - box[1] + 1) * (box[2] - box[0] + 1);
     dt_aligned_pixel_t acc = { 0.0f };
 
+    // FIXME: use OpenMP reduction
     for(int j = box[1]; j <= box[3]; j++)
       for(int i = box[0]; i <= box[2]; i++)
       {
-        for_each_channel(k, aligned(picked_color_rgb_min, picked_color_rgb_max, acc) aligned(pixel:64))
+        for_each_channel(ch, aligned(picked_rgb, acc) aligned(pixel:64))
         {
-          picked_color_rgb_min[k]
-              = MIN(picked_color_rgb_min[k], pixel[4 * (roi_in->width * j + i) + k]);
-          picked_color_rgb_max[k]
-              = MAX(picked_color_rgb_max[k], pixel[4 * (roi_in->width * j + i) + k]);
-          acc[k] += pixel[4 * (roi_in->width * j + i) + k];
+          const float v = pixel[4 * (roi_in->width * j + i) + ch];
+          picked_rgb[DT_LIB_COLORPICKER_STATISTIC_MIN][ch]
+              = MIN(picked_rgb[DT_LIB_COLORPICKER_STATISTIC_MIN][ch], v);
+          picked_rgb[DT_LIB_COLORPICKER_STATISTIC_MAX][ch]
+              = MAX(picked_rgb[DT_LIB_COLORPICKER_STATISTIC_MAX][ch], v);
+          acc[ch] += v;
         }
       }
 
-    for_each_channel(k, aligned(picked_color_rgb_mean, acc:16))
-      picked_color_rgb_mean[k] = acc[k] / ((box[3] - box[1] + 1) * (box[2] - box[0] + 1));
+    for_each_channel(ch, aligned(picked_rgb, acc:16))
+      picked_rgb[DT_LIB_COLORPICKER_STATISTIC_MEAN][ch] = acc[ch] / box_pixels;
   }
   else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
   {
@@ -813,53 +815,27 @@ static void _pixelpipe_pick_from_image(dt_iop_module_t *module,
       MIN(roi_in->height - 1, MAX(0, sample->point[1] * roi_in->height))
     };
 
-    for_each_channel(i, aligned(picked_color_rgb_min, picked_color_rgb_max, picked_color_rgb_mean) aligned(pixel:64))
-      picked_color_rgb_mean[i] = picked_color_rgb_min[i]
-          = picked_color_rgb_max[i] = pixel[4 * (roi_in->width * point[1] + point[0]) + i];
+    for(dt_lib_colorpicker_statistic_t stat = 0; stat < DT_LIB_COLORPICKER_STATISTIC_N; stat++)
+      for_each_channel(ch, aligned(picked_rgb) aligned(pixel:64))
+        picked_rgb[stat][ch] = pixel[4 * (roi_in->width * point[1] + point[0]) + ch];
   }
 
   // convenient to have pixels in display profile, which makes them easy to display
-  for_each_channel(i, aligned(picked_color_rgb_min, picked_color_rgb_max, picked_color_rgb_mean))
-  {
-    sample->display[DT_LIB_COLORPICKER_STATISTIC_MEAN][i] = picked_color_rgb_mean[i];
-    sample->display[DT_LIB_COLORPICKER_STATISTIC_MIN][i] = picked_color_rgb_min[i];
-    sample->display[DT_LIB_COLORPICKER_STATISTIC_MAX][i] = picked_color_rgb_max[i];
-  }
+  memcpy(sample->display[0], picked_rgb[0], sizeof(lib_colorpicker_sample_statistics));
 
   // Converting the display RGB values to histogram RGB
   // FIXME: if we're doing a point sample, we only need to convert one value then copy it to mean/min/max
-  // FIXME: these should be indexed to DT_LIB_COLORPICKER_STATISTIC_N and then make below more succinct
-  dt_aligned_pixel_t rgb[3];
-  dt_aligned_pixel_t lab[3] = { { 0.0f }, { 0.0f }, { 0.0f } };
   int converted_cst;
 
-  for_each_channel(i, aligned(rgb, picked_color_rgb_min, picked_color_rgb_max, picked_color_rgb_mean))
-  {
-    rgb[0][i] = picked_color_rgb_mean[i];
-    rgb[1][i] = picked_color_rgb_min[i];
-    rgb[2][i] = picked_color_rgb_max[i];
-  }
-
-  dt_ioppr_transform_image_colorspace(module, rgb[0], lab[0], 3, 1, iop_cs_rgb, iop_cs_Lab,
+  // NOTE: conversions assume that dt_aligned_pixel_t[x] has no
+  // padding, e.g. is equivalent to float[x*4], and that on failure
+  // it's OK not to touch output
+  dt_ioppr_transform_image_colorspace(module, picked_rgb[0], sample->lab[0], 3, 1, iop_cs_rgb, iop_cs_Lab,
                                       &converted_cst, display_profile);
   // FIXME: do need to check for these?
   if(display_profile && histogram_profile)
-    dt_ioppr_transform_image_colorspace_rgb(rgb[0], rgb[0], 3, 1, display_profile, histogram_profile, "primary picker");
-
-  // FIXME: combine these two loops
-  for_each_channel(i, aligned(lab))
-  {
-    sample->lab[DT_LIB_COLORPICKER_STATISTIC_MEAN][i] = lab[0][i];
-    sample->lab[DT_LIB_COLORPICKER_STATISTIC_MIN][i] = lab[1][i];
-    sample->lab[DT_LIB_COLORPICKER_STATISTIC_MAX][i] = lab[2][i];
-  }
-
-  for_each_channel(i, aligned(rgb))
-  {
-    sample->scope[DT_LIB_COLORPICKER_STATISTIC_MEAN][i] = rgb[0][i];
-    sample->scope[DT_LIB_COLORPICKER_STATISTIC_MIN][i] = rgb[1][i];
-    sample->scope[DT_LIB_COLORPICKER_STATISTIC_MAX][i] = rgb[2][i];
-  }
+    dt_ioppr_transform_image_colorspace_rgb(picked_rgb[0], sample->scope[0], 3, 1,
+                                            display_profile, histogram_profile, "primary picker");
 }
 
 static void _pixelpipe_pick_samples(dt_develop_t *dev, dt_iop_module_t *module,
