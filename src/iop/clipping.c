@@ -354,15 +354,8 @@ static void _display_crop_error(struct dt_iop_module_t *self)
   ++darktable.gui->reset;
 
   gboolean trouble = FALSE;
-  for(GList *l = g_list_last(self->dev->history); l; l = g_list_previous(l))
-  {
-    dt_dev_history_item_t *item = (dt_dev_history_item_t *)l->data;
-    if(!g_strcmp0(item->op_name, "crop"))
-    {
-      if(item->enabled) trouble = TRUE;
-      break;
-    }
-  }
+  const dt_dev_history_item_t *crop = dt_dev_get_history_item(self->dev, "crop");
+  if(crop && crop->enabled) trouble = TRUE;
 
   if(trouble)
   {
