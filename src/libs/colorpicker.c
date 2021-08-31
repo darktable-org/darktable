@@ -41,12 +41,13 @@ typedef enum dt_lib_colorpicker_model_t
   DT_LIB_COLORPICKER_MODEL_LAB,
   DT_LIB_COLORPICKER_MODEL_LCH,
   DT_LIB_COLORPICKER_MODEL_HSL,
+  DT_LIB_COLORPICKER_MODEL_HSV,
   DT_LIB_COLORPICKER_MODEL_HEX,
   DT_LIB_COLORPICKER_MODEL_NONE,
   DT_LIB_COLORPICKER_MODEL_N // needs to be the lsat one
 } dt_lib_colorpicker_model_t;
 
-const gchar *dt_lib_colorpicker_model_names[DT_LIB_COLORPICKER_MODEL_N] = {"RGB", "Lab", "LCh", "HSL", "Hex", "none"};
+const gchar *dt_lib_colorpicker_model_names[DT_LIB_COLORPICKER_MODEL_N] = {"RGB", "Lab", "LCh", "HSL", "HSV", "Hex", "none"};
 const gchar *dt_lib_colorpicker_statistic_names[DT_LIB_COLORPICKER_STATISTIC_N] = {"mean", "min", "max"};
 
 typedef struct dt_lib_colorpicker_t
@@ -192,6 +193,11 @@ static void _update_sample_label(dt_lib_module_t *self, dt_colorpicker_sample_t 
 
     case DT_LIB_COLORPICKER_MODEL_HSL:
       dt_RGB_2_HSL(*rgb_hist, alt);
+      snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f", alt[0] * 360.f, alt[1] * 100.f, alt[2] * 100.f);
+      break;
+
+    case DT_LIB_COLORPICKER_MODEL_HSV:
+      dt_RGB_2_HSV(*rgb_hist, alt);
       snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f", alt[0] * 360.f, alt[1] * 100.f, alt[2] * 100.f);
       break;
 
