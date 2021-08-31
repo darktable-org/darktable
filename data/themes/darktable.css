@@ -614,7 +614,17 @@ spinbutton>button
 /* Set duplicate module space in darkroom */
 #left .duplicate-ui .text-button
 {
-  margin-top: 0.28em;
+  margin-top: 0.5em;
+}
+
+#left .duplicate-ui grid > label
+{
+  margin-top: 1em;
+}
+
+#left .duplicate-ui entry
+{
+  margin: 1.25em 0 1.25em 0.5em;
 }
 
 /* Set modules name header */
@@ -2262,7 +2272,7 @@ Details :
 }
 
 /* Set top margin on active image in filmstrip */
-#thumb_main:active #thumb_back
+#thumbtable_filmstrip #thumb_main:active #thumb_back
 {
   border-top: 0.105em solid @border_color;
 }
