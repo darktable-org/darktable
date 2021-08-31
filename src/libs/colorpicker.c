@@ -47,8 +47,10 @@ typedef enum dt_lib_colorpicker_model_t
   DT_LIB_COLORPICKER_MODEL_N // needs to be the lsat one
 } dt_lib_colorpicker_model_t;
 
-const gchar *dt_lib_colorpicker_model_names[DT_LIB_COLORPICKER_MODEL_N] = {"RGB", "Lab", "LCh", "HSL", "HSV", "Hex", "none"};
-const gchar *dt_lib_colorpicker_statistic_names[DT_LIB_COLORPICKER_STATISTIC_N] = {"mean", "min", "max"};
+const gchar *dt_lib_colorpicker_model_names[DT_LIB_COLORPICKER_MODEL_N] =
+   {N_("RGB"), N_("Lab"), N_("LCh"), N_("HSL"), N_("HSV"), N_("Hex"), N_("none")};
+const gchar *dt_lib_colorpicker_statistic_names[DT_LIB_COLORPICKER_STATISTIC_N] =
+   {N_("mean"), N_("min"), N_("max")};
 
 typedef struct dt_lib_colorpicker_t
 {
