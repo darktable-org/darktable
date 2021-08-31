@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-31 11:26+0200\n"
+"POT-Creation-Date: 2021-08-31 17:40+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1959,7 +1959,7 @@ msgstr ""
 #: ../src/common/history.c:873 ../src/common/styles.c:1105
 #: ../src/common/styles.c:1109 ../src/develop/blend_gui.c:101
 #: ../src/develop/blend_gui.c:124 ../src/develop/blend_gui.c:2988
-#: ../src/develop/develop.c:2207 ../src/gui/accelerators.c:121
+#: ../src/develop/develop.c:2222 ../src/gui/accelerators.c:121
 #: ../src/gui/accelerators.c:130 ../src/gui/accelerators.c:196
 #: ../src/imageio/format/avif.c:811 ../src/imageio/format/exr.cc:376
 #: ../src/imageio/format/j2k.c:666 ../src/libs/live_view.c:427
@@ -2010,11 +2010,11 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
 #: ../src/gui/guides.c:677 ../src/iop/basecurve.c:2100
-#: ../src/iop/channelmixerrgb.c:3821 ../src/iop/clipping.c:1955
-#: ../src/iop/clipping.c:2177 ../src/iop/clipping.c:2193
+#: ../src/iop/channelmixerrgb.c:3821 ../src/iop/clipping.c:1948
+#: ../src/iop/clipping.c:2170 ../src/iop/clipping.c:2186
 #: ../src/iop/lens.cc:2216 ../src/iop/retouch.c:422 ../src/libs/collect.c:1829
-#: ../src/libs/export.c:1074 ../src/libs/live_view.c:377
-#: ../src/libs/print_settings.c:2526
+#: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1074
+#: ../src/libs/live_view.c:377 ../src/libs/print_settings.c:2526
 msgid "none"
 msgstr ""
 
@@ -3096,7 +3096,7 @@ msgid "color mode"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:410
-#: ../src/libs/colorpicker.c:291
+#: ../src/libs/colorpicker.c:51 ../src/libs/colorpicker.c:299
 msgid "RGB"
 msgstr ""
 
@@ -4524,7 +4524,7 @@ msgstr ""
 
 #: ../src/common/colorspaces.c:1476 ../src/common/colorspaces.c:1662
 #: ../src/develop/blend_gui.c:95 ../src/develop/blend_gui.c:1728
-#: ../src/libs/colorpicker.c:292
+#: ../src/libs/colorpicker.c:51 ../src/libs/colorpicker.c:300
 msgid "Lab"
 msgstr ""
 
@@ -4912,7 +4912,7 @@ msgstr ""
 #: ../src/common/history.c:854 ../src/common/history.c:857
 #: ../src/common/history.c:873 ../src/common/styles.c:1105
 #: ../src/common/styles.c:1109 ../src/develop/blend_gui.c:125
-#: ../src/develop/develop.c:2207 ../src/gui/accelerators.c:120
+#: ../src/develop/develop.c:2222 ../src/gui/accelerators.c:120
 #: ../src/gui/accelerators.c:129 ../src/gui/accelerators.c:196
 #: ../src/imageio/format/avif.c:809 ../src/libs/live_view.c:428
 msgid "on"
@@ -6656,19 +6656,19 @@ msgstr ""
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 
-#: ../src/develop/develop.c:1489 ../src/gui/presets.c:947
+#: ../src/develop/develop.c:1504 ../src/gui/presets.c:947
 msgid "display-referred default"
 msgstr ""
 
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
 #. we need an initial exposure boost. This might be too much in some cases but…
 #. (the preset name is used in develop.c)
-#: ../src/develop/develop.c:1491 ../src/gui/presets.c:949
+#: ../src/develop/develop.c:1506 ../src/gui/presets.c:949
 #: ../src/iop/exposure.c:272 ../src/iop/exposure.c:281
 msgid "scene-referred default"
 msgstr ""
 
-#: ../src/develop/develop.c:1961
+#: ../src/develop/develop.c:1976
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr ""
@@ -7524,16 +7524,16 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:4456
 #: ../src/iop/ashift.c:4457 ../src/iop/ashift.c:4553 ../src/iop/ashift.c:4554
-#: ../src/iop/clipping.c:1957 ../src/iop/clipping.c:2178
-#: ../src/iop/clipping.c:2195 ../src/views/darkroom.c:2606
+#: ../src/iop/clipping.c:1950 ../src/iop/clipping.c:2171
+#: ../src/iop/clipping.c:2188 ../src/views/darkroom.c:2606
 #: ../src/views/lighttable.c:1395
 msgid "horizontal"
 msgstr ""
 
 #: ../src/gui/accelerators.c:80 ../src/iop/ashift.c:4456
 #: ../src/iop/ashift.c:4457 ../src/iop/ashift.c:4553 ../src/iop/ashift.c:4554
-#: ../src/iop/clipping.c:1956 ../src/iop/clipping.c:2179
-#: ../src/iop/clipping.c:2194 ../src/views/darkroom.c:2609
+#: ../src/iop/clipping.c:1949 ../src/iop/clipping.c:2172
+#: ../src/iop/clipping.c:2187 ../src/views/darkroom.c:2609
 #: ../src/views/lighttable.c:1399
 msgid "vertical"
 msgstr ""
@@ -8489,7 +8489,7 @@ msgstr ""
 msgid "vertically"
 msgstr ""
 
-#: ../src/gui/guides.c:680 ../src/iop/clipping.c:2180
+#: ../src/gui/guides.c:680 ../src/iop/clipping.c:2173
 #: ../src/iop/colorbalance.c:1886
 msgid "both"
 msgstr ""
@@ -9717,7 +9717,7 @@ msgstr ""
 msgid "shear the image along one diagonal"
 msgstr ""
 
-#: ../src/iop/ashift.c:4752 ../src/iop/clipping.c:2202
+#: ../src/iop/ashift.c:4752 ../src/iop/clipping.c:2195
 msgid "automatically crop to avoid black edges"
 msgstr ""
 
@@ -10366,7 +10366,7 @@ msgstr ""
 msgid "16:9"
 msgstr ""
 
-#: ../src/iop/borders.c:973 ../src/iop/clipping.c:2216 ../src/iop/crop.c:1106
+#: ../src/iop/borders.c:973 ../src/iop/clipping.c:2209 ../src/iop/crop.c:1106
 msgid "golden cut"
 msgstr ""
 
@@ -10386,7 +10386,7 @@ msgstr ""
 msgid "4:3"
 msgstr ""
 
-#: ../src/iop/borders.c:978 ../src/iop/clipping.c:2206 ../src/iop/crop.c:1096
+#: ../src/iop/borders.c:978 ../src/iop/clipping.c:2199 ../src/iop/crop.c:1096
 #: ../src/libs/collect.c:271
 msgid "square"
 msgstr ""
@@ -10423,7 +10423,7 @@ msgstr ""
 msgid "size of the border in percent of the full image"
 msgstr ""
 
-#: ../src/iop/borders.c:1041 ../src/iop/clipping.c:2303 ../src/iop/crop.c:1192
+#: ../src/iop/borders.c:1041 ../src/iop/clipping.c:2296 ../src/iop/crop.c:1192
 msgid "aspect"
 msgstr ""
 
@@ -10992,7 +10992,7 @@ msgid ""
 msgstr ""
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/iop/channelmixerrgb.c:3673 ../src/iop/clipping.c:2171
+#: ../src/iop/channelmixerrgb.c:3673 ../src/iop/clipping.c:2164
 #: ../src/iop/colorbalancergb.c:1569 ../src/iop/filmicrgb.c:3646
 #: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3105
 #: ../src/libs/print_settings.c:2216 ../src/views/lighttable.c:1403
@@ -11221,145 +11221,145 @@ msgstr ""
 msgid "change the framing and correct the perspective"
 msgstr ""
 
-#: ../src/iop/clipping.c:369
+#: ../src/iop/clipping.c:362
 msgid "cropping may be applied twice"
 msgstr ""
 
-#: ../src/iop/clipping.c:370
+#: ../src/iop/clipping.c:363
 msgid ""
 "crop module is enabled.\n"
 "cropping image here too will result in double cropping\n"
 "which may provide unexpected results."
 msgstr ""
 
-#: ../src/iop/clipping.c:1447 ../src/iop/clipping.c:2205 ../src/iop/crop.c:450
+#: ../src/iop/clipping.c:1440 ../src/iop/clipping.c:2198 ../src/iop/crop.c:450
 #: ../src/iop/crop.c:1095
 msgid "original image"
 msgstr ""
 
-#: ../src/iop/clipping.c:1751 ../src/iop/crop.c:754
+#: ../src/iop/clipping.c:1744 ../src/iop/crop.c:754
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr ""
 
-#: ../src/iop/clipping.c:1767 ../src/iop/crop.c:770
+#: ../src/iop/clipping.c:1760 ../src/iop/crop.c:770
 msgid "invalid ratio format. it should be a positive number"
 msgstr ""
 
-#: ../src/iop/clipping.c:1958 ../src/iop/clipping.c:2196
+#: ../src/iop/clipping.c:1951 ../src/iop/clipping.c:2189
 msgid "full"
 msgstr ""
 
-#: ../src/iop/clipping.c:1959
+#: ../src/iop/clipping.c:1952
 msgid "old system"
 msgstr ""
 
-#: ../src/iop/clipping.c:1960
+#: ../src/iop/clipping.c:1953
 msgid "correction applied"
 msgstr ""
 
-#: ../src/iop/clipping.c:2173
+#: ../src/iop/clipping.c:2166
 msgid "main"
 msgstr ""
 
-#: ../src/iop/clipping.c:2176
+#: ../src/iop/clipping.c:2169
 msgid "flip"
 msgstr ""
 
-#: ../src/iop/clipping.c:2182
+#: ../src/iop/clipping.c:2175
 msgid "mirror image horizontally and/or vertically"
 msgstr ""
 
-#: ../src/iop/clipping.c:2185
+#: ../src/iop/clipping.c:2178
 msgid "angle"
 msgstr ""
 
-#: ../src/iop/clipping.c:2189
+#: ../src/iop/clipping.c:2182
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 
-#: ../src/iop/clipping.c:2192
+#: ../src/iop/clipping.c:2185
 msgid "keystone"
 msgstr ""
 
-#: ../src/iop/clipping.c:2197
+#: ../src/iop/clipping.c:2190
 msgid "set perspective correction for your image"
 msgstr ""
 
-#: ../src/iop/clipping.c:2204 ../src/iop/crop.c:1094
+#: ../src/iop/clipping.c:2197 ../src/iop/crop.c:1094
 msgid "freehand"
 msgstr ""
 
-#: ../src/iop/clipping.c:2207 ../src/iop/crop.c:1097
+#: ../src/iop/clipping.c:2200 ../src/iop/crop.c:1097
 msgid "10:8 in print"
 msgstr ""
 
-#: ../src/iop/clipping.c:2208 ../src/iop/crop.c:1098
+#: ../src/iop/clipping.c:2201 ../src/iop/crop.c:1098
 msgid "5:4, 4x5, 8x10"
 msgstr ""
 
-#: ../src/iop/clipping.c:2209 ../src/iop/crop.c:1099
+#: ../src/iop/clipping.c:2202 ../src/iop/crop.c:1099
 msgid "11x14"
 msgstr ""
 
-#: ../src/iop/clipping.c:2210 ../src/iop/crop.c:1100
+#: ../src/iop/clipping.c:2203 ../src/iop/crop.c:1100
 msgid "8.5x11, letter"
 msgstr ""
 
-#: ../src/iop/clipping.c:2211 ../src/iop/crop.c:1101
+#: ../src/iop/clipping.c:2204 ../src/iop/crop.c:1101
 msgid "4:3, VGA, TV"
 msgstr ""
 
-#: ../src/iop/clipping.c:2212 ../src/iop/crop.c:1102
+#: ../src/iop/clipping.c:2205 ../src/iop/crop.c:1102
 msgid "5x7"
 msgstr ""
 
-#: ../src/iop/clipping.c:2213 ../src/iop/crop.c:1103
+#: ../src/iop/clipping.c:2206 ../src/iop/crop.c:1103
 msgid "ISO 216, DIN 476, A4"
 msgstr ""
 
-#: ../src/iop/clipping.c:2214 ../src/iop/crop.c:1104
+#: ../src/iop/clipping.c:2207 ../src/iop/crop.c:1104
 msgid "3:2, 4x6, 35mm"
 msgstr ""
 
-#: ../src/iop/clipping.c:2215 ../src/iop/crop.c:1105
+#: ../src/iop/clipping.c:2208 ../src/iop/crop.c:1105
 msgid "16:10, 8x5"
 msgstr ""
 
-#: ../src/iop/clipping.c:2217 ../src/iop/crop.c:1107
+#: ../src/iop/clipping.c:2210 ../src/iop/crop.c:1107
 msgid "16:9, HDTV"
 msgstr ""
 
-#: ../src/iop/clipping.c:2218 ../src/iop/crop.c:1108
+#: ../src/iop/clipping.c:2211 ../src/iop/crop.c:1108
 msgid "widescreen"
 msgstr ""
 
-#: ../src/iop/clipping.c:2219 ../src/iop/crop.c:1109
+#: ../src/iop/clipping.c:2212 ../src/iop/crop.c:1109
 msgid "2:1, univisium"
 msgstr ""
 
-#: ../src/iop/clipping.c:2220 ../src/iop/crop.c:1110
+#: ../src/iop/clipping.c:2213 ../src/iop/crop.c:1110
 msgid "cinemascope"
 msgstr ""
 
-#: ../src/iop/clipping.c:2221 ../src/iop/crop.c:1111
+#: ../src/iop/clipping.c:2214 ../src/iop/crop.c:1111
 msgid "21:9"
 msgstr ""
 
-#: ../src/iop/clipping.c:2222 ../src/iop/crop.c:1112
+#: ../src/iop/clipping.c:2215 ../src/iop/crop.c:1112
 msgid "anamorphic"
 msgstr ""
 
-#: ../src/iop/clipping.c:2223 ../src/iop/crop.c:1113
+#: ../src/iop/clipping.c:2216 ../src/iop/crop.c:1113
 msgid "3:1, panorama"
 msgstr ""
 
-#: ../src/iop/clipping.c:2255 ../src/iop/clipping.c:2267 ../src/iop/crop.c:1145
+#: ../src/iop/clipping.c:2248 ../src/iop/clipping.c:2260 ../src/iop/crop.c:1145
 #: ../src/iop/crop.c:1157
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr ""
 
-#: ../src/iop/clipping.c:2314 ../src/iop/crop.c:1203
+#: ../src/iop/clipping.c:2307 ../src/iop/crop.c:1203
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square\n"
@@ -11367,72 +11367,72 @@ msgid ""
 "decimal format"
 msgstr ""
 
-#: ../src/iop/clipping.c:2321 ../src/iop/crop.c:1213
+#: ../src/iop/clipping.c:2314 ../src/iop/crop.c:1213
 msgid "margins"
 msgstr ""
 
-#: ../src/iop/clipping.c:2327 ../src/iop/crop.c:1241
+#: ../src/iop/clipping.c:2320 ../src/iop/crop.c:1241
 msgid "the left margin cannot overlap with the right margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:2334 ../src/iop/crop.c:1248
+#: ../src/iop/clipping.c:2327 ../src/iop/crop.c:1248
 msgid "the right margin cannot overlap with the left margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:2340 ../src/iop/crop.c:1254
+#: ../src/iop/clipping.c:2333 ../src/iop/crop.c:1254
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:2347 ../src/iop/crop.c:1261
+#: ../src/iop/clipping.c:2340 ../src/iop/crop.c:1261
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:3107
+#: ../src/iop/clipping.c:3100
 msgid "<b>commit</b>: double click, <b>straighten</b>: right-drag"
 msgstr ""
 
-#: ../src/iop/clipping.c:3111
+#: ../src/iop/clipping.c:3104
 msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
 
-#: ../src/iop/clipping.c:3154
+#: ../src/iop/clipping.c:3147
 msgid "<b>move control point</b>: drag"
 msgstr ""
 
-#: ../src/iop/clipping.c:3159
+#: ../src/iop/clipping.c:3152
 msgid "<b>move line</b>: drag, <b>toggle symmetry</b>: click <tt>ꝏ</tt>"
 msgstr ""
 
-#: ../src/iop/clipping.c:3164
+#: ../src/iop/clipping.c:3157
 msgid ""
 "<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click <tt>ꝏ</tt>\n"
 "<b>move line/control point</b>: drag"
 msgstr ""
 
-#: ../src/iop/clipping.c:3171
+#: ../src/iop/clipping.c:3164
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag\n"
 "<b>straighten</b>: right-drag, <b>commit</b>: double click"
 msgstr ""
 
-#: ../src/iop/clipping.c:3422 ../src/iop/crop.c:1670
+#: ../src/iop/clipping.c:3415 ../src/iop/crop.c:1670
 msgid "commit"
 msgstr ""
 
-#: ../src/iop/clipping.c:3433 ../src/iop/crop.c:1681
+#: ../src/iop/clipping.c:3426 ../src/iop/crop.c:1681
 #, c-format
 msgid "[%s on borders] crop"
 msgstr ""
 
-#: ../src/iop/clipping.c:3435 ../src/iop/crop.c:1683
+#: ../src/iop/clipping.c:3428 ../src/iop/crop.c:1683
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr ""
 
-#: ../src/iop/clipping.c:3436
+#: ../src/iop/clipping.c:3429
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr ""
@@ -11560,7 +11560,7 @@ msgstr ""
 msgid "color control sliders"
 msgstr ""
 
-#: ../src/iop/colorbalance.c:1884
+#: ../src/iop/colorbalance.c:1884 ../src/libs/colorpicker.c:51
 msgid "HSL"
 msgstr ""
 
@@ -16528,59 +16528,71 @@ msgstr ""
 msgid "preferences..."
 msgstr ""
 
-#: ../src/libs/colorpicker.c:68
+#: ../src/libs/colorpicker.c:51
+msgid "LCh"
+msgstr ""
+
+#: ../src/libs/colorpicker.c:51
+msgid "HSV"
+msgstr ""
+
+#: ../src/libs/colorpicker.c:51
+msgid "Hex"
+msgstr ""
+
+#: ../src/libs/colorpicker.c:53 ../src/libs/colorpicker.c:294
+msgid "mean"
+msgstr ""
+
+#: ../src/libs/colorpicker.c:53 ../src/libs/colorpicker.c:294
+msgid "min"
+msgstr ""
+
+#: ../src/libs/colorpicker.c:53 ../src/libs/colorpicker.c:294
+msgid "max"
+msgstr ""
+
+#: ../src/libs/colorpicker.c:71
 msgid "color picker"
 msgstr ""
 
-#: ../src/libs/colorpicker.c:94
+#: ../src/libs/colorpicker.c:97
 msgctxt "accel"
 msgid "pick color"
 msgstr ""
 
-#: ../src/libs/colorpicker.c:95
+#: ../src/libs/colorpicker.c:98
 msgctxt "accel"
 msgid "add sample"
 msgstr ""
 
-#: ../src/libs/colorpicker.c:286
-msgid "mean"
-msgstr ""
-
-#: ../src/libs/colorpicker.c:286
-msgid "min"
-msgstr ""
-
-#: ../src/libs/colorpicker.c:286
-msgid "max"
-msgstr ""
-
-#: ../src/libs/colorpicker.c:494
+#: ../src/libs/colorpicker.c:502
 msgid ""
 "hover to highlight sample on canvas,\n"
 "click to lock sample,\n"
 "right-click to load sample area into active color picker"
 msgstr ""
 
-#: ../src/libs/colorpicker.c:594 ../src/libs/colorpicker.c:644
+#: ../src/libs/colorpicker.c:602 ../src/libs/colorpicker.c:652
 msgid "click to (un)hide large color patch"
 msgstr ""
 
-#: ../src/libs/colorpicker.c:627
+#: ../src/libs/colorpicker.c:635
 msgid ""
 "turn on color picker\n"
 "ctrl+click or right-click to select an area"
 msgstr ""
 
 #. Adding the live samples section
-#: ../src/libs/colorpicker.c:670
+#: ../src/libs/colorpicker.c:678
 msgid "live samples"
 msgstr ""
 
-#: ../src/libs/colorpicker.c:680
+#: ../src/libs/colorpicker.c:688
 msgid "display samples on image/vectorscope"
 msgstr ""
 
-#: ../src/libs/colorpicker.c:689
+#: ../src/libs/colorpicker.c:697
 msgid "restrict scope to selection"
 msgstr ""
 
