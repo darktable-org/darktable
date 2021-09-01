@@ -345,6 +345,7 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
   gtk_text_buffer_get_start_iter(buffer, &iter);
   gtk_text_buffer_insert_markup(buffer, &iter, tooltip_text, -1);
   gtk_tooltip_set_custom(tooltip, view);
+  gtk_widget_map(view); //added in order to fix #9908, probably a Gtk issue
 
   g_free(tooltip_text);
 
