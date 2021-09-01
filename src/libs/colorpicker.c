@@ -291,8 +291,6 @@ static void _set_sample_point(dt_lib_module_t *self, const float pos[2])
 static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
                                          GtkTooltip *tooltip, const dt_colorpicker_sample_t *sample)
 {
-  const gchar *name[] = { N_("mean"), N_("min"), N_("max") };
-
   gchar **sample_parts = g_malloc0_n(12, sizeof(char*));
 
   sample_parts[3] = g_strdup_printf("%22s(0x%02X%02X%02X)\n<big><b>%14s</b></big>", " ",
@@ -321,11 +319,13 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
                                           "<span foreground='#7F7FFF'>%6d</span>  %s",
                                           (int)roundf((*rgb_hist)[0] * 255.f),
                                           (int)roundf((*rgb_hist)[1] * 255.f),
-                                          (int)roundf((*rgb_hist)[2] * 255.f), _(name[i]));
+                                          (int)roundf((*rgb_hist)[2] * 255.f),
+                                          _(dt_lib_colorpicker_statistic_names[i]));
 
 
     sample_parts[i + 8] = g_strdup_printf("%6.02f  %6.02f  %6.02f  %s",
-                                          (*lab)[0], (*lab)[1], (*lab)[2], _(name[i]));
+                                          (*lab)[0], (*lab)[1], (*lab)[2],
+                                          _(dt_lib_colorpicker_statistic_names[i]));
   }
 
   gchar *tooltip_text = g_strjoinv("\n", sample_parts);
