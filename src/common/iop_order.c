@@ -214,9 +214,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {33.0f }, "lowpass", 0},         // same
   { {34.0f }, "highpass", 0},        // same
   { {35.0f }, "sharpen", 0},         // same, worst than atrous in same use-case, less control overall
-  { {36.0f }, "lut3d", 0},           // apply a creative style or film emulation, possibly non-linear,
-                                  //    so better move it after frequential ops that need L2 Hilbert spaces
-                                  //    of square summable functions
+  
   { {37.0f }, "colortransfer", 0},   // probably better if source and destination colours are neutralized in the same
                                   //    colour exchange space, hence after colorin and colorcheckr,
                                   //    but apply after frequential ops in case it does non-linear witchcraft,
@@ -235,6 +233,7 @@ const dt_iop_order_entry_t v30_order[] = {
                                   //    on camera JPEG default look
   { {45.0f }, "filmic", 0},          // same, but different (parametric) approach
   { {46.0f }, "filmicrgb", 0},       // same, upgraded
+  { {36.0f }, "lut3d", 0},           // apply a creative style or film emulation, possibly non-linear
   { {47.0f }, "colisa", 0},          // edit contrast while damaging colour
   { {48.0f }, "tonecurve", 0},       // same
   { {49.0f }, "levels", 0},          // same
@@ -324,9 +323,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 33.0f }, "lowpass", 0 },       // same
   { { 34.0f }, "highpass", 0 },      // same
   { { 35.0f }, "sharpen", 0 },       // same, worst than atrous in same use-case, less control overall
-  { { 36.0f }, "lut3d", 0 },         // apply a creative style or film emulation, possibly non-linear,
-                                     //    so better move it after frequential ops that need L2 Hilbert spaces
-                                     //    of square summable functions
+  
   { { 37.0f }, "colortransfer", 0 }, // probably better if source and destination colours are neutralized in the
                                      // same
                                      //    colour exchange space, hence after colorin and colorcheckr,
@@ -347,6 +344,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
                                      //    on camera JPEG default look
   { { 45.0f }, "filmic", 0 },        // same, but different (parametric) approach
   { { 46.0f }, "filmicrgb", 0 },     // same, upgraded
+  { { 36.0f }, "lut3d", 0 },         // apply a creative style or film emulation, possibly non-linear
   { { 47.0f }, "colisa", 0 },        // edit contrast while damaging colour
   { { 48.0f }, "tonecurve", 0 },     // same
   { { 49.0f }, "levels", 0 },        // same
