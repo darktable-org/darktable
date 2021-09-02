@@ -244,7 +244,14 @@ const char *dt_image_film_roll_name(const char *path)
   int count = 0;
   while(folder > path)
   {
+
+#ifdef _WIN32
+    // in Windows, both \ and / can be folder separator
+    if(*folder == G_DIR_SEPARATOR || *folder == '/')
+#else
     if(*folder == G_DIR_SEPARATOR)
+#endif
+
       if(++count >= numparts)
       {
         ++folder;
