@@ -1776,7 +1776,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
 
   // 1mm
 
-  const float step = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->grid_size)) * units[ps->unit];
+  const float step = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->grid_size)) / units[ps->unit];
 
   // only display grid if spacing more than 5 pixels
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ps->grid))
