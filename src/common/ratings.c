@@ -210,7 +210,7 @@ static float _action_process_rating(gpointer target, dt_action_element_t element
 {
   float return_value = NAN;
 
-  if(move_size)
+  if(!isnan(move_size))
   {
     if(element != DT_VIEW_REJECT)
     {
