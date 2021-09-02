@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-28 07:49+0200\n"
-"PO-Revision-Date: 2021-08-28 19:43+0200\n"
+"POT-Creation-Date: 2021-08-31 17:40+0200\n"
+"PO-Revision-Date: 2021-09-01 13:01+0200\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -1886,7 +1886,6 @@ msgid "HSL"
 msgstr "HSL"
 
 #: ../build/bin/conf_gen.h:614
-#| msgid "exr"
 msgctxt "preferences"
 msgid "Hex"
 msgstr "Hex"
@@ -1897,13 +1896,11 @@ msgid "mean"
 msgstr "Mittel"
 
 #: ../build/bin/conf_gen.h:624
-#| msgid "min"
 msgctxt "preferences"
 msgid "min"
 msgstr "min"
 
 #: ../build/bin/conf_gen.h:625
-#| msgid "max"
 msgctxt "preferences"
 msgid "max"
 msgstr "max"
@@ -2244,7 +2241,7 @@ msgstr "spezifisch"
 #: ../src/common/history.c:873 ../src/common/styles.c:1105
 #: ../src/common/styles.c:1109 ../src/develop/blend_gui.c:101
 #: ../src/develop/blend_gui.c:124 ../src/develop/blend_gui.c:2988
-#: ../src/develop/develop.c:2207 ../src/gui/accelerators.c:121
+#: ../src/develop/develop.c:2222 ../src/gui/accelerators.c:121
 #: ../src/gui/accelerators.c:130 ../src/gui/accelerators.c:196
 #: ../src/imageio/format/avif.c:811 ../src/imageio/format/exr.cc:376
 #: ../src/imageio/format/j2k.c:666 ../src/libs/live_view.c:427
@@ -2295,11 +2292,11 @@ msgstr "erhalte Farben"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
 #: ../src/gui/guides.c:677 ../src/iop/basecurve.c:2100
-#: ../src/iop/channelmixerrgb.c:3821 ../src/iop/clipping.c:1914
-#: ../src/iop/clipping.c:2126 ../src/iop/clipping.c:2142
+#: ../src/iop/channelmixerrgb.c:3821 ../src/iop/clipping.c:1948
+#: ../src/iop/clipping.c:2170 ../src/iop/clipping.c:2186
 #: ../src/iop/lens.cc:2216 ../src/iop/retouch.c:422 ../src/libs/collect.c:1829
-#: ../src/libs/export.c:1074 ../src/libs/live_view.c:377
-#: ../src/libs/print_settings.c:2526
+#: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1074
+#: ../src/libs/live_view.c:377 ../src/libs/print_settings.c:2526
 msgid "none"
 msgstr "keine"
 
@@ -2572,7 +2569,7 @@ msgstr "sehr starke Chromatische Aberration"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
 #: ../src/common/collection.c:1500 ../src/develop/blend_gui.c:2006
 #: ../src/develop/blend_gui.c:2033 ../src/develop/lightroom.c:830
-#: ../src/gui/gtk.c:3016 ../src/gui/guides.c:710 ../src/iop/bilateral.cc:317
+#: ../src/gui/gtk.c:3020 ../src/gui/guides.c:710 ../src/iop/bilateral.cc:317
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
 #: ../src/iop/channelmixerrgb.c:3780 ../src/iop/colorzones.c:2311
 #: ../src/iop/temperature.c:1832 ../src/iop/temperature.c:1981
@@ -2583,7 +2580,7 @@ msgstr "Rot"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
 #: ../src/common/collection.c:1504 ../src/develop/blend_gui.c:2009
 #: ../src/develop/blend_gui.c:2036 ../src/develop/lightroom.c:834
-#: ../src/gui/gtk.c:3017 ../src/gui/guides.c:711 ../src/iop/bilateral.cc:322
+#: ../src/gui/gtk.c:3021 ../src/gui/guides.c:711 ../src/iop/bilateral.cc:322
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
 #: ../src/iop/channelmixerrgb.c:3781 ../src/iop/colorzones.c:2314
 #: ../src/iop/temperature.c:1816 ../src/iop/temperature.c:1834
@@ -2594,7 +2591,7 @@ msgstr "Grün"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
 #: ../src/common/collection.c:1506 ../src/develop/blend_gui.c:2012
 #: ../src/develop/blend_gui.c:2039 ../src/develop/lightroom.c:836
-#: ../src/gui/gtk.c:3018 ../src/iop/bilateral.cc:327
+#: ../src/gui/gtk.c:3022 ../src/iop/bilateral.cc:327
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:3782 ../src/iop/colorzones.c:2316
 #: ../src/iop/temperature.c:1836 ../src/iop/temperature.c:1983
@@ -3132,7 +3129,7 @@ msgstr "Modus"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:1983 ../src/iop/channelmixer.c:624
-#: ../src/iop/colorchecker.c:1331 ../src/iop/colorize.c:369
+#: ../src/iop/colorchecker.c:1356 ../src/iop/colorize.c:369
 #: ../src/iop/colorzones.c:2439
 msgid "lightness"
 msgstr "Helligkeit"
@@ -3146,7 +3143,7 @@ msgstr "Helligkeit"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:146
 #: ../src/develop/blend_gui.c:1993 ../src/iop/basicadj.c:625
 #: ../src/iop/channelmixer.c:623 ../src/iop/colisa.c:317
-#: ../src/iop/colorbalance.c:2036 ../src/iop/colorchecker.c:1349
+#: ../src/iop/colorbalance.c:2036 ../src/iop/colorchecker.c:1374
 #: ../src/iop/colorcontrast.c:94 ../src/iop/colorcorrection.c:283
 #: ../src/iop/colorize.c:362 ../src/iop/colorzones.c:2440
 #: ../src/iop/lowpass.c:592 ../src/iop/soften.c:410
@@ -3387,7 +3384,7 @@ msgid "color mode"
 msgstr "Farbmodus"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:410
-#: ../src/libs/colorpicker.c:299
+#: ../src/libs/colorpicker.c:51 ../src/libs/colorpicker.c:299
 msgid "RGB"
 msgstr "RGB"
 
@@ -4854,7 +4851,7 @@ msgstr "lineares XYZ"
 
 #: ../src/common/colorspaces.c:1476 ../src/common/colorspaces.c:1662
 #: ../src/develop/blend_gui.c:95 ../src/develop/blend_gui.c:1728
-#: ../src/libs/colorpicker.c:300
+#: ../src/libs/colorpicker.c:51 ../src/libs/colorpicker.c:300
 msgid "Lab"
 msgstr "Lab"
 
@@ -5328,7 +5325,7 @@ msgstr ""
 #: ../src/common/history.c:854 ../src/common/history.c:857
 #: ../src/common/history.c:873 ../src/common/styles.c:1105
 #: ../src/common/styles.c:1109 ../src/develop/blend_gui.c:125
-#: ../src/develop/develop.c:2207 ../src/gui/accelerators.c:120
+#: ../src/develop/develop.c:2222 ../src/gui/accelerators.c:120
 #: ../src/gui/accelerators.c:129 ../src/gui/accelerators.c:196
 #: ../src/imageio/format/avif.c:809 ../src/libs/live_view.c:428
 msgid "on"
@@ -6820,9 +6817,10 @@ msgstr "Kanal"
 #: ../src/iop/rgbcurve.c:1392 ../src/iop/tonecurve.c:1184
 msgid ""
 "pick GUI color from image\n"
-"ctrl+click to select an area"
+"ctrl+click or right-click to select an area"
 msgstr ""
-"mit Strg-Mausklick Bereich auswählen, um GUI-Farbe aus dem Bild zu übernehmen"
+"GUI-Farbe aus dem Bild auswählen\n"
+"Strg+Klick oder Rechtsklick zur Auswahl eines Bereichs"
 
 #: ../src/develop/blend_gui.c:2177
 msgid ""
@@ -7154,7 +7152,7 @@ msgstr "Maskierung vorübergehend ausschalten"
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "Maskierung des aktiven Moduls vorübergehend ausschalten"
 
-#: ../src/develop/develop.c:1489 ../src/gui/presets.c:947
+#: ../src/develop/develop.c:1504 ../src/gui/presets.c:947
 msgid "display-referred default"
 msgstr "Vorgabewerte für anzeigebezogene Bearbeitung"
 
@@ -7162,12 +7160,12 @@ msgstr "Vorgabewerte für anzeigebezogene Bearbeitung"
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
 #. we need an initial exposure boost. This might be too much in some cases but…
 #. (the preset name is used in develop.c)
-#: ../src/develop/develop.c:1491 ../src/gui/presets.c:949
+#: ../src/develop/develop.c:1506 ../src/gui/presets.c:949
 #: ../src/iop/exposure.c:272 ../src/iop/exposure.c:281
 msgid "scene-referred default"
 msgstr "Vorgabewerte für szenenbezogene Bearbeitung"
 
-#: ../src/develop/develop.c:1961
+#: ../src/develop/develop.c:1976
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: Modul „%s” hat unpassende Version: %d != %d"
@@ -8096,16 +8094,16 @@ msgstr "verschieben"
 
 #: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:4456
 #: ../src/iop/ashift.c:4457 ../src/iop/ashift.c:4553 ../src/iop/ashift.c:4554
-#: ../src/iop/clipping.c:1916 ../src/iop/clipping.c:2127
-#: ../src/iop/clipping.c:2144 ../src/views/darkroom.c:2606
+#: ../src/iop/clipping.c:1950 ../src/iop/clipping.c:2171
+#: ../src/iop/clipping.c:2188 ../src/views/darkroom.c:2606
 #: ../src/views/lighttable.c:1395
 msgid "horizontal"
 msgstr "horizontal"
 
 #: ../src/gui/accelerators.c:80 ../src/iop/ashift.c:4456
 #: ../src/iop/ashift.c:4457 ../src/iop/ashift.c:4553 ../src/iop/ashift.c:4554
-#: ../src/iop/clipping.c:1915 ../src/iop/clipping.c:2128
-#: ../src/iop/clipping.c:2143 ../src/views/darkroom.c:2609
+#: ../src/iop/clipping.c:1949 ../src/iop/clipping.c:2172
+#: ../src/iop/clipping.c:2187 ../src/views/darkroom.c:2609
 #: ../src/views/lighttable.c:1399
 msgid "vertical"
 msgstr "vertikal"
@@ -8168,12 +8166,12 @@ msgid "popup"
 msgstr "popup"
 
 #: ../src/gui/accelerators.c:112 ../src/gui/accelerators.c:141
-#: ../src/gui/gtk.c:2961 ../src/views/lighttable.c:816
+#: ../src/gui/gtk.c:2965 ../src/views/lighttable.c:816
 msgid "next"
 msgstr "nächster"
 
 #: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:140
-#: ../src/gui/gtk.c:2962 ../src/views/lighttable.c:817
+#: ../src/gui/gtk.c:2966 ../src/views/lighttable.c:817
 msgid "previous"
 msgstr "vorheriger"
 
@@ -8207,7 +8205,7 @@ msgstr "rechts-umschalten"
 msgid "right-on"
 msgstr "rechts-an"
 
-#: ../src/gui/accelerators.c:134 ../src/gui/gtk.c:2960
+#: ../src/gui/accelerators.c:134 ../src/gui/gtk.c:2964
 msgid "activate"
 msgstr "aktivieren"
 
@@ -8427,18 +8425,14 @@ msgid "restore shortcuts"
 msgstr "Kurzbefehle wiederherstellen"
 
 #: ../src/gui/accelerators.c:1611
-#| msgid "defaults"
 msgid "_defaults"
 msgstr "_Standard"
 
 #: ../src/gui/accelerators.c:1612
-#| msgctxt "preferences"
-#| msgid "on startup"
 msgid "_startup"
 msgstr "_beim Start"
 
 #: ../src/gui/accelerators.c:1613
-#| msgid "edit"
 msgid "_edits"
 msgstr "_vor Änderung"
 
@@ -8483,7 +8477,7 @@ msgstr ""
 "oder nur für ein ausgewähltes Gerät\n"
 
 #: ../src/gui/accelerators.c:1695 ../src/gui/accelerators.c:1777
-#: ../src/gui/gtk.c:3015 ../src/imageio/format/pdf.c:662
+#: ../src/gui/gtk.c:3019 ../src/imageio/format/pdf.c:662
 #: ../src/iop/denoiseprofile.c:3596 ../src/iop/lens.cc:2222
 #: ../src/iop/rawdenoise.c:907 ../src/libs/tools/filter.c:183
 msgid "all"
@@ -8790,7 +8784,7 @@ msgstr "%.1f"
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:3022 ../src/gui/gtk.c:3027 ../src/gui/gtk.c:3032
+#: ../src/gui/gtk.c:3026 ../src/gui/gtk.c:3031 ../src/gui/gtk.c:3036
 msgid "tabs"
 msgstr "Tabs"
 
@@ -8839,22 +8833,18 @@ msgid "$(MAX_HEIGHT) - maximum image export height"
 msgstr "$(MAX_HEIGHT) – maximale Höhe beim Bildexport"
 
 #: ../src/gui/gtkentry.c:182
-#| msgid "$(MAX_WIDTH) - maximum image export width"
 msgid "$(SENSOR_WIDTH) - image sensor width"
 msgstr "$(SENSOR_WIDTH) - Breite des Bildsensors"
 
 #: ../src/gui/gtkentry.c:183
-#| msgid "$(MAX_HEIGHT) - maximum image export height"
 msgid "$(SENSOR_HEIGHT) - image sensor height"
 msgstr "$(SENSOR_HEIGHT) - Höhe des Bildsensors"
 
 #: ../src/gui/gtkentry.c:184
-#| msgid "$(MAX_WIDTH) - maximum image export width"
 msgid "$(RAW_WIDTH) - RAW image width"
 msgstr "$(RAW_WIDTH) - Breite des RAW"
 
 #: ../src/gui/gtkentry.c:185
-#| msgid "$(MAX_HEIGHT) - maximum image export height"
 msgid "$(RAW_HEIGHT) - RAW image height"
 msgstr "$(RAW_HEIGHT) - Höhe des RAW"
 
@@ -9107,7 +9097,7 @@ msgstr "horizontal"
 msgid "vertically"
 msgstr "vertikal"
 
-#: ../src/gui/guides.c:680 ../src/iop/clipping.c:2129
+#: ../src/gui/guides.c:680 ../src/iop/clipping.c:2173
 #: ../src/iop/colorbalance.c:1886
 msgid "both"
 msgstr "beides"
@@ -10421,7 +10411,7 @@ msgstr "Objektivverschiebung in eine Richtung korrigieren"
 msgid "shear the image along one diagonal"
 msgstr "Bild entlang einer Diagonalen scheren"
 
-#: ../src/iop/ashift.c:4752 ../src/iop/clipping.c:2151
+#: ../src/iop/ashift.c:4752 ../src/iop/clipping.c:2195
 msgid "automatically crop to avoid black edges"
 msgstr "Automatisch zuschneiden, um schwarze Ränder zu vermeiden"
 
@@ -11129,7 +11119,7 @@ msgstr "2:1"
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:973 ../src/iop/clipping.c:2165 ../src/iop/crop.c:1105
+#: ../src/iop/borders.c:973 ../src/iop/clipping.c:2209 ../src/iop/crop.c:1106
 msgid "golden cut"
 msgstr "Goldener Schnitt"
 
@@ -11149,7 +11139,7 @@ msgstr "DIN"
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:978 ../src/iop/clipping.c:2155 ../src/iop/crop.c:1095
+#: ../src/iop/borders.c:978 ../src/iop/clipping.c:2199 ../src/iop/crop.c:1096
 #: ../src/libs/collect.c:271
 msgid "square"
 msgstr "quadratisch"
@@ -11186,7 +11176,7 @@ msgstr "2/3"
 msgid "size of the border in percent of the full image"
 msgstr "Größe des Randes in Prozent des ganzen Bildes"
 
-#: ../src/iop/borders.c:1041 ../src/iop/clipping.c:2252 ../src/iop/crop.c:1191
+#: ../src/iop/borders.c:1041 ../src/iop/clipping.c:2296 ../src/iop/crop.c:1192
 msgid "aspect"
 msgstr "Format"
 
@@ -11845,7 +11835,7 @@ msgstr ""
 "Normalisierung wird deaktiviert."
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/iop/channelmixerrgb.c:3673 ../src/iop/clipping.c:2120
+#: ../src/iop/channelmixerrgb.c:3673 ../src/iop/clipping.c:2164
 #: ../src/iop/colorbalancergb.c:1569 ../src/iop/filmicrgb.c:3646
 #: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3105
 #: ../src/libs/print_settings.c:2216 ../src/views/lighttable.c:1403
@@ -12100,139 +12090,153 @@ msgstr "Zuschneiden|Perspektive|Trapezverzerrung|Verzerrung"
 msgid "change the framing and correct the perspective"
 msgstr "Ausschneiden, Rotieren und Perspektivkorrektur"
 
-#: ../src/iop/clipping.c:1408 ../src/iop/clipping.c:2154 ../src/iop/crop.c:449
-#: ../src/iop/crop.c:1094
+#: ../src/iop/clipping.c:362
+msgid "cropping may be applied twice"
+msgstr "Zuschneiden kann doppelt angewendet sein"
+
+#: ../src/iop/clipping.c:363
+msgid ""
+"crop module is enabled.\n"
+"cropping image here too will result in double cropping\n"
+"which may provide unexpected results."
+msgstr ""
+"Das Zuschneiden-Modul ist aktiviert.\n"
+"Das Bild auch hier zu beschneidenen kann zu unerwarteten \n"
+"Ergebnissen führen, da es später erneut beschnitten wird."
+
+#: ../src/iop/clipping.c:1440 ../src/iop/clipping.c:2198 ../src/iop/crop.c:450
+#: ../src/iop/crop.c:1095
 msgid "original image"
 msgstr "Original"
 
-#: ../src/iop/clipping.c:1712 ../src/iop/crop.c:753
+#: ../src/iop/clipping.c:1744 ../src/iop/crop.c:754
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "Ungültiges Seitenverhältnis. Es sollte „Zahl:Zahl“ sein."
 
-#: ../src/iop/clipping.c:1728 ../src/iop/crop.c:769
+#: ../src/iop/clipping.c:1760 ../src/iop/crop.c:770
 msgid "invalid ratio format. it should be a positive number"
 msgstr "Ungültiges Seitenverhältnis. Es sollte eine positive Zahl sein."
 
-#: ../src/iop/clipping.c:1917 ../src/iop/clipping.c:2145
+#: ../src/iop/clipping.c:1951 ../src/iop/clipping.c:2189
 msgid "full"
 msgstr "vollständig"
 
-#: ../src/iop/clipping.c:1918
+#: ../src/iop/clipping.c:1952
 msgid "old system"
 msgstr "altes System"
 
-#: ../src/iop/clipping.c:1919
+#: ../src/iop/clipping.c:1953
 msgid "correction applied"
 msgstr "Korrektur angewandt"
 
-#: ../src/iop/clipping.c:2122
+#: ../src/iop/clipping.c:2166
 msgid "main"
 msgstr "Beschnitt"
 
-#: ../src/iop/clipping.c:2125
+#: ../src/iop/clipping.c:2169
 msgid "flip"
 msgstr "spiegeln"
 
-#: ../src/iop/clipping.c:2131
+#: ../src/iop/clipping.c:2175
 msgid "mirror image horizontally and/or vertically"
 msgstr "Bild horizontal und/oder vertikal spiegeln"
 
-#: ../src/iop/clipping.c:2134
+#: ../src/iop/clipping.c:2178
 msgid "angle"
 msgstr "Winkel"
 
 # sehr unschön :-(
 # hoffe, der deutsche Vorschlag ist besser :-)
 # (evtl. müßte das englische Original ebenfalls verbessert werden)
-#: ../src/iop/clipping.c:2138
+#: ../src/iop/clipping.c:2182
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 "Mit rechter Maustaste ins Bild klicken und eine Linie entlang einer "
 "horizontalen oder vertikalen Kante des Motivs ziehen"
 
-#: ../src/iop/clipping.c:2141
+#: ../src/iop/clipping.c:2185
 msgid "keystone"
 msgstr "Trapezkorrektur"
 
-#: ../src/iop/clipping.c:2146
+#: ../src/iop/clipping.c:2190
 msgid "set perspective correction for your image"
 msgstr "Perspektivische Korrektur des Bildes festlegen"
 
-#: ../src/iop/clipping.c:2153 ../src/iop/crop.c:1093
+#: ../src/iop/clipping.c:2197 ../src/iop/crop.c:1094
 msgid "freehand"
 msgstr "frei"
 
-#: ../src/iop/clipping.c:2156 ../src/iop/crop.c:1096
+#: ../src/iop/clipping.c:2200 ../src/iop/crop.c:1097
 msgid "10:8 in print"
 msgstr "10:8 für Druck"
 
-#: ../src/iop/clipping.c:2157 ../src/iop/crop.c:1097
+#: ../src/iop/clipping.c:2201 ../src/iop/crop.c:1098
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4×5, 8×10"
 
-#: ../src/iop/clipping.c:2158 ../src/iop/crop.c:1098
+#: ../src/iop/clipping.c:2202 ../src/iop/crop.c:1099
 msgid "11x14"
 msgstr "11×14"
 
-#: ../src/iop/clipping.c:2159 ../src/iop/crop.c:1099
+#: ../src/iop/clipping.c:2203 ../src/iop/crop.c:1100
 msgid "8.5x11, letter"
 msgstr "8,5×11, Letter"
 
-#: ../src/iop/clipping.c:2160 ../src/iop/crop.c:1100
+#: ../src/iop/clipping.c:2204 ../src/iop/crop.c:1101
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:2161 ../src/iop/crop.c:1101
+#: ../src/iop/clipping.c:2205 ../src/iop/crop.c:1102
 msgid "5x7"
 msgstr "5×7"
 
-#: ../src/iop/clipping.c:2162 ../src/iop/crop.c:1102
+#: ../src/iop/clipping.c:2206 ../src/iop/crop.c:1103
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:2163 ../src/iop/crop.c:1103
+#: ../src/iop/clipping.c:2207 ../src/iop/crop.c:1104
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4×6, 35mm"
 
-#: ../src/iop/clipping.c:2164 ../src/iop/crop.c:1104
+#: ../src/iop/clipping.c:2208 ../src/iop/crop.c:1105
 msgid "16:10, 8x5"
 msgstr "16:10, 8×5"
 
-#: ../src/iop/clipping.c:2166 ../src/iop/crop.c:1106
+#: ../src/iop/clipping.c:2210 ../src/iop/crop.c:1107
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:2167 ../src/iop/crop.c:1107
+#: ../src/iop/clipping.c:2211 ../src/iop/crop.c:1108
 msgid "widescreen"
 msgstr "Breitbild"
 
-#: ../src/iop/clipping.c:2168 ../src/iop/crop.c:1108
+#: ../src/iop/clipping.c:2212 ../src/iop/crop.c:1109
 msgid "2:1, univisium"
 msgstr "2:1, Univisium"
 
-#: ../src/iop/clipping.c:2169 ../src/iop/crop.c:1109
+#: ../src/iop/clipping.c:2213 ../src/iop/crop.c:1110
 msgid "cinemascope"
 msgstr "CinemaScope"
 
-#: ../src/iop/clipping.c:2170 ../src/iop/crop.c:1110
+#: ../src/iop/clipping.c:2214 ../src/iop/crop.c:1111
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:2171 ../src/iop/crop.c:1111
+#: ../src/iop/clipping.c:2215 ../src/iop/crop.c:1112
 msgid "anamorphic"
 msgstr "anamorph"
 
-#: ../src/iop/clipping.c:2172 ../src/iop/crop.c:1112
+#: ../src/iop/clipping.c:2216 ../src/iop/crop.c:1113
 msgid "3:1, panorama"
 msgstr "3:1, Panorama"
 
-#: ../src/iop/clipping.c:2204 ../src/iop/clipping.c:2216 ../src/iop/crop.c:1144
-#: ../src/iop/crop.c:1156
+#: ../src/iop/clipping.c:2248 ../src/iop/clipping.c:2260 ../src/iop/crop.c:1145
+#: ../src/iop/crop.c:1157
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "Ungültiges Seitenverhältnis für „%s”. Es sollte „Zahl:Zahl“ sein"
 
-#: ../src/iop/clipping.c:2263 ../src/iop/crop.c:1202
+#: ../src/iop/clipping.c:2307 ../src/iop/crop.c:1203
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square\n"
@@ -12244,31 +12248,31 @@ msgstr ""
 "zur Eingabe des benutzerdefinierten Seitenverhältnisses das Einstellfeld "
 "öffnen und das Verhältnis in x:y oder im Dezimalformat eingeben"
 
-#: ../src/iop/clipping.c:2270 ../src/iop/crop.c:1212
+#: ../src/iop/clipping.c:2314 ../src/iop/crop.c:1213
 msgid "margins"
 msgstr "Ränder"
 
-#: ../src/iop/clipping.c:2276 ../src/iop/crop.c:1240
+#: ../src/iop/clipping.c:2320 ../src/iop/crop.c:1241
 msgid "the left margin cannot overlap with the right margin"
 msgstr "Linker Rand kann nicht über rechten Rand hinauslaufen"
 
-#: ../src/iop/clipping.c:2283 ../src/iop/crop.c:1247
+#: ../src/iop/clipping.c:2327 ../src/iop/crop.c:1248
 msgid "the right margin cannot overlap with the left margin"
 msgstr "Rechter Rand kann nicht über linken Rand hinauslaufen"
 
-#: ../src/iop/clipping.c:2289 ../src/iop/crop.c:1253
+#: ../src/iop/clipping.c:2333 ../src/iop/crop.c:1254
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr "Oberer Rand kann nicht über unteren Rand hinauslaufen"
 
-#: ../src/iop/clipping.c:2296 ../src/iop/crop.c:1260
+#: ../src/iop/clipping.c:2340 ../src/iop/crop.c:1261
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr "Unterer Rand kann nicht über oberen Rand hinauslaufen"
 
-#: ../src/iop/clipping.c:3055
+#: ../src/iop/clipping.c:3100
 msgid "<b>commit</b>: double click, <b>straighten</b>: right-drag"
 msgstr "<b>Bestätigen</b>: Doppelklick, <b>Ausrichten</b>: Rechtsclick-ziehen"
 
-#: ../src/iop/clipping.c:3059
+#: ../src/iop/clipping.c:3104
 msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
@@ -12277,17 +12281,17 @@ msgstr ""
 "+ziehen\n"
 "<b>Ausrichten</b>: Rechtsclick-ziehen"
 
-#: ../src/iop/clipping.c:3102
+#: ../src/iop/clipping.c:3147
 msgid "<b>move control point</b>: drag"
 msgstr "<b>Kontrollpunkt bewegen</b>: ziehen"
 
-#: ../src/iop/clipping.c:3107
+#: ../src/iop/clipping.c:3152
 msgid "<b>move line</b>: drag, <b>toggle symmetry</b>: click <tt>ꝏ</tt>"
 msgstr ""
 "<b>Linie verschieben</b>: ziehen, <b>Symmetrie umschalten</b>: klick auf "
 "<tt>∞</tt>"
 
-#: ../src/iop/clipping.c:3112
+#: ../src/iop/clipping.c:3157
 msgid ""
 "<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click <tt>ꝏ</tt>\n"
 "<b>move line/control point</b>: drag"
@@ -12296,7 +12300,7 @@ msgstr ""
 "auf <tt>∞</tt>\n"
 "<b>Linie/Kontrollpunkt verschieben</b>: ziehen"
 
-#: ../src/iop/clipping.c:3119
+#: ../src/iop/clipping.c:3164
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag\n"
@@ -12306,21 +12310,21 @@ msgstr ""
 "<b>Horizontal verschieben</b>: Strg+ziehen\n"
 "<b>Ausrichten</b>: Rechtsklick-ziehen, <b>Bestätigen</b>: Doppelklick"
 
-#: ../src/iop/clipping.c:3370 ../src/iop/crop.c:1669
+#: ../src/iop/clipping.c:3415 ../src/iop/crop.c:1670
 msgid "commit"
 msgstr "Änderungen übernehmen"
 
-#: ../src/iop/clipping.c:3381 ../src/iop/crop.c:1680
+#: ../src/iop/clipping.c:3426 ../src/iop/crop.c:1681
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s on borders] Zuschnitt"
 
-#: ../src/iop/clipping.c:3383 ../src/iop/crop.c:1682
+#: ../src/iop/clipping.c:3428 ../src/iop/crop.c:1683
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s on borders] Verhältnis des Zuschnitt"
 
-#: ../src/iop/clipping.c:3384
+#: ../src/iop/clipping.c:3429
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] Horizont definieren/drehen"
@@ -12450,7 +12454,7 @@ msgstr "Farbabbildungsmethode"
 msgid "color control sliders"
 msgstr "Farbsteuerungsregler"
 
-#: ../src/iop/colorbalance.c:1884
+#: ../src/iop/colorbalance.c:1884 ../src/libs/colorpicker.c:51
 msgid "HSL"
 msgstr "HSL"
 
@@ -12835,12 +12839,12 @@ msgstr "Fuji Provia Emulation"
 msgid "Fuji Velvia emulation"
 msgstr "Fuji Velvia Emulation"
 
-#: ../src/iop/colorchecker.c:843 ../src/iop/colorchecker.c:1323
+#: ../src/iop/colorchecker.c:844 ../src/iop/colorchecker.c:1348
 #, c-format
 msgid "patch #%d"
 msgstr "Feld #%d"
 
-#: ../src/iop/colorchecker.c:1195
+#: ../src/iop/colorchecker.c:1206
 #, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
@@ -12856,15 +12860,15 @@ msgstr ""
 "Taste drücken während Farbwahl mittels Pipette, um die Farbe des Feldes zu "
 "ersetzen."
 
-#: ../src/iop/colorchecker.c:1318
+#: ../src/iop/colorchecker.c:1343
 msgid "patch"
 msgstr "Feld"
 
-#: ../src/iop/colorchecker.c:1319
+#: ../src/iop/colorchecker.c:1344
 msgid "color checker patch"
 msgstr "Farbfeld"
 
-#: ../src/iop/colorchecker.c:1330
+#: ../src/iop/colorchecker.c:1355
 msgid ""
 "adjust target color Lab 'L' channel\n"
 "lower values darken target color while higher brighten it"
@@ -12872,7 +12876,7 @@ msgstr ""
 "Zielfarbe einstellen: Lab ‚L‘ Kanal\n"
 "niedrigere Werte verdunkeln die Zielfarbe, höhere hellen sie auf"
 
-#: ../src/iop/colorchecker.c:1334
+#: ../src/iop/colorchecker.c:1359
 msgid ""
 "adjust target color Lab 'a' channel\n"
 "lower values shift target color towards greens while higher shift towards "
@@ -12882,11 +12886,11 @@ msgstr ""
 "niedrigere Werte verschieben die Zielfarbe in Richtung Grün, höhere in "
 "Richtung Magenta"
 
-#: ../src/iop/colorchecker.c:1335
+#: ../src/iop/colorchecker.c:1360
 msgid "green-magenta offset"
 msgstr "Grün-Magenta Kompensation"
 
-#: ../src/iop/colorchecker.c:1341
+#: ../src/iop/colorchecker.c:1366
 msgid ""
 "adjust target color Lab 'b' channel\n"
 "lower values shift target color towards blues while higher shift towards "
@@ -12896,11 +12900,11 @@ msgstr ""
 "niedrigere Werte verschieben die Zielfarbe in Richtung Blau, höhere in "
 "Richtung Gelb"
 
-#: ../src/iop/colorchecker.c:1342
+#: ../src/iop/colorchecker.c:1367
 msgid "blue-yellow offset"
 msgstr "Blau-Gelb Kompensation"
 
-#: ../src/iop/colorchecker.c:1348
+#: ../src/iop/colorchecker.c:1373
 msgid ""
 "adjust target color saturation\n"
 "adjusts 'a' and 'b' channels of target color in Lab space simultaneously\n"
@@ -12912,11 +12916,11 @@ msgstr ""
 "niedrigere Werte führen zu geringerer Sättigung, höhere Werte zu höherer "
 "Sättigung"
 
-#: ../src/iop/colorchecker.c:1353
+#: ../src/iop/colorchecker.c:1378
 msgid "target color"
 msgstr "Zielfarbe"
 
-#: ../src/iop/colorchecker.c:1354
+#: ../src/iop/colorchecker.c:1379
 msgid ""
 "control target color of the patches\n"
 "relative - target color is relative from the patch original color\n"
@@ -12926,11 +12930,11 @@ msgstr ""
 "relativ - Zielfarbe ist relativ zur Originalfarbe des Feldes\n"
 "absolut - Zielfarbe ist der absolute Lab-Wert"
 
-#: ../src/iop/colorchecker.c:1355
+#: ../src/iop/colorchecker.c:1380
 msgid "relative"
 msgstr "relativ"
 
-#: ../src/iop/colorchecker.c:1356
+#: ../src/iop/colorchecker.c:1381
 msgid "absolute"
 msgstr "absolut"
 
@@ -13421,21 +13425,21 @@ msgstr "Zuschneiden|Verzeichnung"
 msgid "change the framing"
 msgstr "Beschnitt verändern"
 
-#: ../src/iop/crop.c:1087
+#: ../src/iop/crop.c:1088
 msgid "crop settings"
 msgstr "Einstellungen"
 
-#: ../src/iop/crop.c:1582
+#: ../src/iop/crop.c:1583
 msgid "<b>commit</b>: double click"
 msgstr "<b>bestätigen</b>: Doppelklick rechts"
 
-#: ../src/iop/crop.c:1586
+#: ../src/iop/crop.c:1587
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
 "<b>Größe ändern</b>: ziehen, <b>Seitenverhältnis beibehalten</b>: Umschalt"
 "+ziehen"
 
-#: ../src/iop/crop.c:1593
+#: ../src/iop/crop.c:1594
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag\n"
@@ -18098,33 +18102,48 @@ msgstr "Speichern"
 msgid "preferences..."
 msgstr "Voreinstellungen"
 
-#: ../src/libs/colorpicker.c:76
+#: ../src/libs/colorpicker.c:51
+msgid "LCh"
+msgstr "LCh"
+
+#: ../src/libs/colorpicker.c:51
+#| msgid "HSL"
+msgid "HSV"
+msgstr "HSV"
+
+#: ../src/libs/colorpicker.c:51
+#| msgctxt "preferences"
+#| msgid "Hex"
+msgid "Hex"
+msgstr "Hex"
+
+#: ../src/libs/colorpicker.c:53 ../src/libs/colorpicker.c:294
+msgid "mean"
+msgstr "Mittel"
+
+#: ../src/libs/colorpicker.c:53 ../src/libs/colorpicker.c:294
+msgid "min"
+msgstr "Minimum"
+
+#: ../src/libs/colorpicker.c:53 ../src/libs/colorpicker.c:294
+msgid "max"
+msgstr "Maximum"
+
+#: ../src/libs/colorpicker.c:71
 msgid "color picker"
 msgstr "Pipette"
 
-#: ../src/libs/colorpicker.c:102
+#: ../src/libs/colorpicker.c:97
 msgctxt "accel"
 msgid "pick color"
 msgstr "Farbe wählen"
 
-#: ../src/libs/colorpicker.c:103
+#: ../src/libs/colorpicker.c:98
 msgctxt "accel"
 msgid "add sample"
 msgstr "Sample hinzufügen"
 
-#: ../src/libs/colorpicker.c:294
-msgid "mean"
-msgstr "Mittel"
-
-#: ../src/libs/colorpicker.c:294
-msgid "min"
-msgstr "Minimum"
-
-#: ../src/libs/colorpicker.c:294
-msgid "max"
-msgstr "Maximum"
-
-#: ../src/libs/colorpicker.c:493
+#: ../src/libs/colorpicker.c:502
 msgid ""
 "hover to highlight sample on canvas,\n"
 "click to lock sample,\n"
@@ -18134,11 +18153,11 @@ msgstr ""
 "zum Sperren klicken\n"
 "Rechtsklick zum Laden des Meßpunkts in den aktiven Farbwähler"
 
-#: ../src/libs/colorpicker.c:590 ../src/libs/colorpicker.c:640
+#: ../src/libs/colorpicker.c:602 ../src/libs/colorpicker.c:652
 msgid "click to (un)hide large color patch"
 msgstr "klicken, um großes Farbfeld ein- bzw. auszublenden"
 
-#: ../src/libs/colorpicker.c:623
+#: ../src/libs/colorpicker.c:635
 msgid ""
 "turn on color picker\n"
 "ctrl+click or right-click to select an area"
@@ -18147,15 +18166,15 @@ msgstr ""
 "Strg+Klick oder Rechtsklick, um Bereich auszuwählen"
 
 #. Adding the live samples section
-#: ../src/libs/colorpicker.c:666
+#: ../src/libs/colorpicker.c:678
 msgid "live samples"
 msgstr "Live-Messwerte"
 
-#: ../src/libs/colorpicker.c:676
-msgid "display sample areas on image"
-msgstr "Messpunkte im Bild anzeigen"
+#: ../src/libs/colorpicker.c:688
+msgid "display samples on image/vectorscope"
+msgstr "Messpunkte im Bild/Vektorscope anzeigen"
 
-#: ../src/libs/colorpicker.c:685
+#: ../src/libs/colorpicker.c:697
 msgid "restrict scope to selection"
 msgstr "Histogramm/Scope auf Auswahl beschränken"
 
@@ -18872,15 +18891,15 @@ msgstr "passende Bilder auswählen"
 msgid "number of matching images versus selected images"
 msgstr "Anzahl für Geotagging ausgewählte Bilder zu Ausgewählten Bildern"
 
-#: ../src/libs/histogram.c:141
+#: ../src/libs/histogram.c:143
 msgid "histogram"
 msgstr "Histogramm"
 
-#: ../src/libs/histogram.c:1140 ../src/libs/histogram.c:1788
+#: ../src/libs/histogram.c:1271 ../src/libs/histogram.c:1923
 msgid "ctrl+scroll to change display height"
 msgstr "Strg+scrollen ändert die Höhe des Histogramms."
 
-#: ../src/libs/histogram.c:1149
+#: ../src/libs/histogram.c:1280
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets\n"
@@ -18889,7 +18908,7 @@ msgstr ""
 "Ziehen, um den Schwarzpunkt zu ändern, Doppelklick zum Zurücksetzen. Strg"
 "+Scrollen ändert die Höhe des Histogramms."
 
-#: ../src/libs/histogram.c:1154
+#: ../src/libs/histogram.c:1285
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets\n"
@@ -18898,112 +18917,112 @@ msgstr ""
 "Ziehen, um die Belichtung zu ändern, Doppelklick zum Zurücksetzen. Strg"
 "+Scrollen ändert die Höhe des Histogramms."
 
-#: ../src/libs/histogram.c:1267 ../src/libs/histogram.c:1307
+#: ../src/libs/histogram.c:1398 ../src/libs/histogram.c:1438
 msgid "set scale to linear"
 msgstr "Histogramm linear skalieren"
 
-#: ../src/libs/histogram.c:1272 ../src/libs/histogram.c:1312
+#: ../src/libs/histogram.c:1403 ../src/libs/histogram.c:1443
 msgid "set scale to logarithmic"
 msgstr "Histogramm logarithmischen skalieren"
 
-#: ../src/libs/histogram.c:1288
+#: ../src/libs/histogram.c:1419
 msgid "set scope to vertical"
 msgstr "zum vertikalen Histogramm wechseln"
 
-#: ../src/libs/histogram.c:1293
+#: ../src/libs/histogram.c:1424
 msgid "set scope to horizontal"
 msgstr "zum horizontalen Histogramm wechseln"
 
-#: ../src/libs/histogram.c:1322
+#: ../src/libs/histogram.c:1453
 msgid "set view to AzBz"
 msgstr "AzBz Sicht verwenden"
 
-#: ../src/libs/histogram.c:1327
+#: ../src/libs/histogram.c:1458
 msgid "set view to u*v*"
 msgstr "u*v* Sicht verwenden"
 
-#: ../src/libs/histogram.c:1341
+#: ../src/libs/histogram.c:1472
 msgid "set mode to waveform"
 msgstr "zum Waveform-Histogramm wechseln"
 
-#: ../src/libs/histogram.c:1351
+#: ../src/libs/histogram.c:1482
 msgid "set mode to rgb parade"
 msgstr "zu getrennten RGB-Kanälen wechseln"
 
-#: ../src/libs/histogram.c:1361
+#: ../src/libs/histogram.c:1492
 msgid "set mode to vectorscope"
 msgstr "zu Vectorscope wechseln"
 
-#: ../src/libs/histogram.c:1371
+#: ../src/libs/histogram.c:1502
 msgid "set mode to histogram"
 msgstr "zu Histogramm wechseln"
 
-#: ../src/libs/histogram.c:1464 ../src/libs/histogram.c:1500
-#: ../src/libs/histogram.c:1823
+#: ../src/libs/histogram.c:1595 ../src/libs/histogram.c:1631
+#: ../src/libs/histogram.c:1958
 msgid "click to hide red channel"
 msgstr "klicken, um den Rot-Kanal auszublenden"
 
-#: ../src/libs/histogram.c:1464 ../src/libs/histogram.c:1500
-#: ../src/libs/histogram.c:1823
+#: ../src/libs/histogram.c:1595 ../src/libs/histogram.c:1631
+#: ../src/libs/histogram.c:1958
 msgid "click to show red channel"
 msgstr "klicken, um den Rot-Kanal anzuzeigen"
 
-#: ../src/libs/histogram.c:1472 ../src/libs/histogram.c:1498
-#: ../src/libs/histogram.c:1830
+#: ../src/libs/histogram.c:1603 ../src/libs/histogram.c:1629
+#: ../src/libs/histogram.c:1965
 msgid "click to hide green channel"
 msgstr "klicken, um den Grün-Kanal auszublenden"
 
-#: ../src/libs/histogram.c:1472 ../src/libs/histogram.c:1498
-#: ../src/libs/histogram.c:1830
+#: ../src/libs/histogram.c:1603 ../src/libs/histogram.c:1629
+#: ../src/libs/histogram.c:1965
 msgid "click to show green channel"
 msgstr "klicken, um den Grün-Kanal anzuzeigen"
 
-#: ../src/libs/histogram.c:1480 ../src/libs/histogram.c:1499
-#: ../src/libs/histogram.c:1836
+#: ../src/libs/histogram.c:1611 ../src/libs/histogram.c:1630
+#: ../src/libs/histogram.c:1971
 msgid "click to hide blue channel"
 msgstr "klicken, um den Blau-Kanal auszublenden"
 
-#: ../src/libs/histogram.c:1480 ../src/libs/histogram.c:1499
-#: ../src/libs/histogram.c:1836
+#: ../src/libs/histogram.c:1611 ../src/libs/histogram.c:1630
+#: ../src/libs/histogram.c:1971
 msgid "click to show blue channel"
 msgstr "klicken, um den Blau-Kanal anzuzeigen"
 
-#: ../src/libs/histogram.c:1940
+#: ../src/libs/histogram.c:2079
 msgctxt "accel"
 msgid "histogram/hide histogram"
 msgstr "Histogramm/Histogramm verbergen"
 
-#: ../src/libs/histogram.c:1941
+#: ../src/libs/histogram.c:2080
 msgctxt "accel"
 msgid "hide histogram"
 msgstr "Histogramm verbergen"
 
-#: ../src/libs/histogram.c:1942
+#: ../src/libs/histogram.c:2081
 msgctxt "accel"
 msgid "histogram/cycle histogram modes"
 msgstr "Histogramm/Histogramm-Modi zyklisch wechseln"
 
-#: ../src/libs/histogram.c:1943
+#: ../src/libs/histogram.c:2082
 msgctxt "accel"
 msgid "cycle histogram modes"
 msgstr "Histogramm-Modi zyklisch wechseln"
 
-#: ../src/libs/histogram.c:1944
+#: ../src/libs/histogram.c:2083
 msgctxt "accel"
 msgid "histogram/switch histogram mode"
 msgstr "Histogramm/Histogramm-Modus umschalten"
 
-#: ../src/libs/histogram.c:1945
+#: ../src/libs/histogram.c:2084
 msgctxt "accel"
 msgid "switch histogram mode"
 msgstr "Histogramm-Modus umschalten"
 
-#: ../src/libs/histogram.c:1946
+#: ../src/libs/histogram.c:2085
 msgctxt "accel"
 msgid "histogram/switch histogram type"
 msgstr "Histogramm/Histogramm-Typ umschalten"
 
-#: ../src/libs/histogram.c:1947
+#: ../src/libs/histogram.c:2086
 msgctxt "accel"
 msgid "switch histogram type"
 msgstr "Histogramm-Typ umschalten"
