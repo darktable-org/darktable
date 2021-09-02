@@ -470,11 +470,13 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
 
   _aligned_pixel sum_sq = { .v = { 0.0f } };
 
+#ifndef __APPLE__ //makes Xcode 11.3.1 compiler crash
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, boundary, out, width) \
   reduction(vsum: sum_sq) \
   schedule(static)
+#endif
 #endif
   for(int rowid = 0; rowid < height; rowid++)
   {
@@ -565,11 +567,13 @@ void eaw_dn_decompose_sse(float *const restrict out, const float *const restrict
 
   _aligned_pixel sum_sq = { .v = { 0.0f } };
 
+#ifndef __APPLE__ //makes Xcode 11.3.1 compiler crash
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, boundary, out, width) \
   reduction(vsum: sum_sq) \
   schedule(static)
+#endif
 #endif
   for(int rowid = 0; rowid < height; rowid++)
   {
