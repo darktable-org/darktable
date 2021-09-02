@@ -458,12 +458,17 @@ jobs:
           retention-days: 1
 
   macOS:
-    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.target }}
+    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.target }}
     needs: Linux-minimal
-    runs-on: macos-latest
+    runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true
       matrix:
+        build:
+          - { os: macos-10.15, xcode: 11.3.1 }
+          - { os: macos-10.15, xcode: 11.7 }
+          - { os: macos-10.15, xcode: 12.4 }
+          - { os: macos-11,    xcode: 12.5.1 }
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ RelWithDebInfo ]
@@ -471,6 +476,7 @@ jobs:
           - skiptest
           - nofeatures
     env:
+      DEVELOPER_DIR: /Applications/Xcode_${{ matrix.build.xcode }}.app/Contents/Developer
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
       SRC_DIR: ${{ github.workspace }}/src
