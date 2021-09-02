@@ -95,12 +95,14 @@ static float dt_heal_laplace_iteration(float *const restrict pixels, const float
 {
   _aligned_pixel err = { { 0.f } };
 
+#ifndef __APPLE__ //makes Xcode 11.3.1 compiler crash
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(Adiag, Aidx, w, nmask_from, nmask_to) \
   dt_omp_sharedconst(pixels) \
   schedule(static) \
   reduction(vsum : err)
+#endif
 #endif
   for(int i = nmask_from; i < nmask_to; i++)
   {
