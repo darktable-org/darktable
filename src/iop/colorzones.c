@@ -2338,7 +2338,7 @@ static float _action_process_zones(gpointer target, dt_action_element_t element,
                      ? curve[node].y
                      : dt_draw_curve_calc_value(c->minmax_curve[ch], x);
 
-  if(move_size)
+  if(!isnan(move_size))
   {
     if(!close_enough)
       node = _add_node(curve, &p->curve_num_nodes[ch], x, return_value);

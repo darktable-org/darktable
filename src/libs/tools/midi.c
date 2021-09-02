@@ -513,7 +513,7 @@ static gboolean _timeout_midi_update(gpointer user_data)
   {
     midi_device *midi = devices->data;
 
-    for(int i = 0; i < midi->num_knobs; i++) update_with_move(midi, 0, i + midi->first_knob, 0);
+    for(int i = 0; i < midi->num_knobs; i++) update_with_move(midi, 0, i + midi->first_knob, NAN);
 
     for(int i = 0; i < midi->num_keys; i++)
       midi_write(midi, midi->is_x_touch_mini ? 0 : midi->channel, 0x9,

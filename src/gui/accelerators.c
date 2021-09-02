@@ -106,6 +106,7 @@ const gchar *dt_action_effect_value[]
       N_("reset"),
       N_("top"),
       N_("bottom"),
+      N_("set"),
       NULL };
 const gchar *dt_action_effect_selection[]
   = { N_("popup"),
@@ -164,7 +165,7 @@ static float _action_process_toggle(gpointer target, dt_action_element_t element
 {
   float value = gtk_toggle_button_get_active(target);
 
-  if(move_size &&
+  if(!isnan(move_size) &&
      !((effect == DT_ACTION_EFFECT_ON      ||
         effect == DT_ACTION_EFFECT_ON_CTRL ||
         effect == DT_ACTION_EFFECT_ON_RIGHT) && value) &&
@@ -203,7 +204,7 @@ static float _action_process_button(gpointer target, dt_action_element_t element
 {
   if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
 
-  if(move_size && gtk_widget_is_sensitive(target))
+  if(!isnan(move_size) && gtk_widget_is_sensitive(target))
   {
     if(effect != DT_ACTION_EFFECT_ACTIVATE || !gtk_widget_activate(GTK_WIDGET(target)))
     {
@@ -1103,6 +1104,7 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
                  || s->effect == DT_ACTION_EFFECT_DEFAULT_KEY
                  || s->effect == DT_ACTION_EFFECT_DEFAULT_UP
                  || s->effect == DT_ACTION_EFFECT_DEFAULT_DOWN
+                 || s->effect == DT_ACTION_EFFECT_SET
                  || (!s->effect && s->action->type == DT_ACTION_TYPE_FALLBACK))))
       {
         field_text = g_strdup_printf("%.3f", s->speed);
@@ -2777,14 +2779,14 @@ static float _process_action(dt_action_t *action, int instance,
     }
   }
 
-  if(action->type == DT_ACTION_TYPE_CLOSURE && action->target && move_size)
+  if(action->type == DT_ACTION_TYPE_CLOSURE && action->target && !isnan(move_size))
   {
     typedef gboolean (*accel_callback)(GtkAccelGroup *accel_group, GObject *acceleratable,
                                        guint keyval, GdkModifierType modifier, gpointer p);
     ((accel_callback)((GCClosure*)action_target)->callback)(NULL, NULL, _sc.key, _sc.mods,
                                                             ((GClosure*)action_target)->data);
   }
-  else if(action->type == DT_ACTION_TYPE_PRESET && owner && move_size)
+  else if(action->type == DT_ACTION_TYPE_PRESET && owner && !isnan(move_size))
   {
     if(owner->type == DT_ACTION_TYPE_LIB)
     {
@@ -2811,7 +2813,7 @@ static float _process_action(dt_action_t *action, int instance,
             || definition->no_widget
             || !_widget_invisible(action_target)))
       return_value = definition->process(action_target, element, effect, move_size);
-    else if(move_size)
+    else if(!isnan(move_size))
       dt_action_widget_toast(action, action_target, "not active");
   }
 
@@ -2829,18 +2831,18 @@ static float _process_shortcut(float move_size)
 
     if(fsc.effect == DT_ACTION_EFFECT_DEFAULT_MOVE)
     {
-      if(move_size >= .0f)
-        fsc.effect = DT_ACTION_EFFECT_DEFAULT_UP;
-      else
+      if(move_size < .0f)
       {
         fsc.effect = DT_ACTION_EFFECT_DEFAULT_DOWN;
         move_size *= -1;
       }
+      else
+        fsc.effect = DT_ACTION_EFFECT_DEFAULT_UP;
     }
 
     return _process_action(fsc.action, fsc.instance, fsc.element, fsc.effect, move_size);
   }
-  else if(move_size)
+  else if(!isnan(move_size))
   {
     if(fsc.action)
     {
@@ -2973,7 +2975,7 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
   if(id) _sc.mods = _key_modifiers_clean(dt_key_modifier_state());
 
   float return_value = 0;
-  if(!size)
+  if(isnan(size))
     return_value = _process_shortcut(size);
   else
   {
@@ -3289,7 +3291,7 @@ gboolean dt_shortcut_key_active(dt_input_device_t id, guint key)
       const dt_action_def_t *definition = _action_find_definition(s->action);
       if(definition && definition->process)
       {
-        float value = definition->process(s->action->target, s->element, s->effect, 0);
+        float value = definition->process(s->action->target, s->element, s->effect, NAN);
         return fmodf(value, 1) <= DT_VALUE_PATTERN_ACTIVE || fmodf(value, 2) > .5;
       }
     }

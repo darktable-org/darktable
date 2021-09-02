@@ -2932,7 +2932,7 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
   float value = dt_bauhaus_slider_get(widget);
   const float min_visible = powf(10.0f, -dt_bauhaus_slider_get_digits(widget));
 
-  if(move_size)
+  if(!isnan(move_size))
   {
     switch(element)
     {
@@ -2950,7 +2950,7 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
         float step = dt_bauhaus_slider_get_step(widget);
         float multiplier = dt_accel_get_slider_scale_multiplier();
 
-        if(fabsf(move_size * step * multiplier) < min_visible)
+        if(move_size && fabsf(move_size * step * multiplier) < min_visible)
           multiplier = min_visible / fabsf(move_size * step);
 
         if(element == DT_ACTION_ELEMENT_FORCE)
@@ -2971,6 +2971,9 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
         break;
       case DT_ACTION_EFFECT_BOTTOM:
         dt_bauhaus_slider_set_soft(widget, element == DT_ACTION_ELEMENT_FORCE ? d->hard_min: d->min);
+        break;
+      case DT_ACTION_EFFECT_SET:
+        dt_bauhaus_slider_set_soft(widget, move_size);
         break;
       default:
         fprintf(stderr, "[_action_process_slider] unknown shortcut effect (%d) for slider\n", effect);
@@ -3033,6 +3036,9 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
     }
   }
 
+  if(effect == DT_ACTION_EFFECT_SET)
+    return dt_bauhaus_slider_get(widget);
+
   return d->pos +
          ( d->min == -d->max                             ? DT_VALUE_PATTERN_PLUS_MINUS :
          ( d->min == 0 && (d->max == 1 || d->max == 100) ? DT_VALUE_PATTERN_PERCENTAGE : 0 ));
@@ -3053,7 +3059,7 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   int value = dt_bauhaus_combobox_get(widget);
 
-  if(move_size)
+  if(!isnan(move_size))
   {
     if(element == DT_ACTION_ELEMENT_BUTTON)
       dt_bauhaus_widget_press_quad(widget);
