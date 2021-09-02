@@ -2325,9 +2325,6 @@ void gui_init(dt_lib_module_t *self)
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-    d->snap_grid = gtk_check_button_new_with_label(_("snap to grid"));
-    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(d->snap_grid), TRUE, TRUE, 0);
-
     d->grid = gtk_check_button_new_with_label(_("display grid"));
     // d->grid_size = gtk_spin_button_new_with_range(0, 100, 0.1);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->grid), TRUE, TRUE, 0);
@@ -2337,6 +2334,10 @@ void gui_init(dt_lib_module_t *self)
                               dt_conf_get_float("plugins/print/print/grid_size") * units[d->unit]);
 
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+
+    d->snap_grid = gtk_check_button_new_with_label(_("snap to grid"));
+    gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(d->snap_grid), TRUE, TRUE, 0);
+
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 0);
 
     g_signal_connect(G_OBJECT(d->grid_size), "value-changed", G_CALLBACK(_grid_size_changed), self);
