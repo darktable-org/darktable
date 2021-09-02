@@ -960,6 +960,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(view));
     gtk_text_buffer_set_text(buffer, tooltip_text, -1);
     gtk_tooltip_set_custom(tooltip, view);
+    gtk_widget_map(view); // FIXME: workaround added in order to fix #9908, probably a Gtk issue, remove when fixed upstream
 
     int count_column1 = 0, count_column2 = 0;
     for(gchar *line = tooltip_text; *line; )
