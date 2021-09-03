@@ -23,5 +23,5 @@ jobs:
         days-before-close: 365
         remove-stale-when-updated: true
         exempt-all-milestones: true
-        exempt-pr-label: 'bugfix,wip'
-        exempt-issue-label: 'scope: camera support,bugfix: wip'
+        exempt-pr-labels: 'bugfix,wip'
+        exempt-issue-labels: 'scope: camera support,bugfix: wip'
