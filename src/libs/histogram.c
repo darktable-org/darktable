@@ -305,21 +305,21 @@ const float x_vtx[7] = {0.0, 0.166667, 0.333333, 0.5, 0.666667, 0.833333, 1.0};
 const float rgb_y_vtx[7] = {0.0, 0.083333, 0.166667, 0.383838, 0.586575, 0.833333, 1.0};
 const float ryb_y_vtx[] = {0.0, 0.333333, 0.472217, 0.611105, 0.715271, 0.833333, 1.0};
 
-static void _ryb2rgb(const dt_aligned_pixel_t ryb, dt_aligned_pixel_t rgb, dt_lib_histogram_t *d)
+static void _ryb2rgb(const dt_aligned_pixel_t ryb, dt_aligned_pixel_t rgb, const float *ryb2rgb_ypp)
 {
   dt_aligned_pixel_t HSV;
   dt_RGB_2_HSV(ryb, HSV);
   HSV[0] = interpolate_val(sizeof(x_vtx)/sizeof(float), (float *)x_vtx, HSV[0],
-                           (float *)rgb_y_vtx, d->ryb2rgb_ypp, CUBIC_SPLINE);
+                           (float *)rgb_y_vtx, (float *)ryb2rgb_ypp, CUBIC_SPLINE);
   dt_HSV_2_RGB(HSV, rgb);
 }
 
-static void _rgb2ryb(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t ryb, dt_lib_histogram_t *d)
+static void _rgb2ryb(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t ryb, const float *rgb2ryb_ypp)
 {
   dt_aligned_pixel_t HSV;
   dt_RGB_2_HSV(rgb, HSV);
   HSV[0] = interpolate_val(sizeof(x_vtx)/sizeof(float), (float *)x_vtx, HSV[0],
-                           (float *)ryb_y_vtx, d->rgb2ryb_ypp, CUBIC_SPLINE);
+                           (float *)ryb_y_vtx, (float *)rgb2ryb_ypp, CUBIC_SPLINE);
   dt_HSV_2_RGB(HSV, ryb);
 }
 
@@ -412,7 +412,7 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       else
       {
         // get the color to be displayed
-        _ryb2rgb(rgb_scope, rgb_display, d);
+        _ryb2rgb(rgb_scope, rgb_display, d->ryb2rgb_ypp);
         const float alpha = M_PI * (0.33333 * ((float)k + (float)i / VECTORSCOPE_HUES));
         chromaticity[1] = cosf(alpha) * 0.01;
         chromaticity[2] = sinf(alpha) * 0.01;
@@ -508,7 +508,7 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
 static  void _get_chromaticity(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t chromaticity,
                                const dt_lib_histogram_vectorscope_type_t vs_type,
                                const dt_iop_order_iccprofile_info_t *vs_prof,
-                               dt_lib_histogram_t *d)
+                               const float *rgb2ryb_ypp)
 {
   dt_aligned_pixel_t XYZ_D50;
   if(vs_type != DT_LIB_HISTOGRAM_VECTORSCOPE_RYB)
@@ -545,7 +545,7 @@ static  void _get_chromaticity(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t 
     // gamma corrected sRGB -> linear sRGB
     for_each_channel(ch, aligned(rgb, RGB:16))
       rgb[ch] = RGB[ch] <= 0.04045f ? RGB[ch] / 12.92f : powf((RGB[ch] + 0.055f) / (1.0f + 0.055f), 2.4f);
-    _rgb2ryb(rgb, RYB, d);
+    _rgb2ryb(rgb, RYB, rgb2ryb_ypp);
     dt_RGB_2_HCV(RYB, HCV);
     const float alpha = 2.0 * M_PI * HCV[0];
     chromaticity[1] = cosf(alpha) * HCV[1] * 0.01;
@@ -625,7 +625,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
           for_each_channel(ch, aligned(px,RGB:16))
             RGB[ch] += px[4U * (yy * roi->width + xx) + ch] * 0.25f;
 
-      _get_chromaticity(RGB, chromaticity, vs_type, vs_prof, d);
+      _get_chromaticity(RGB, chromaticity, vs_type, vs_prof, d->rgb2ryb_ypp);
       // FIXME: we ignore the L or Jz components -- do they optimize out of the above code, or would in particular a XYZ_2_AzBz but helpful?
       if(vs_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
         log_scale(&chromaticity[1], &chromaticity[2], max_radius);
@@ -647,7 +647,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   sample = darktable.lib->proxy.colorpicker.primary_sample;
   memcpy(RGB, sample->scope[statistic], sizeof(dt_aligned_pixel_t));
 
-  _get_chromaticity(RGB, chromaticity, vs_type, vs_prof, d);
+  _get_chromaticity(RGB, chromaticity, vs_type, vs_prof, d->rgb2ryb_ypp);
 
   if(vs_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
     log_scale(&chromaticity[1], &chromaticity[2], max_radius);
@@ -677,7 +677,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       //find coordinates
       memcpy(RGB, sample->scope[statistic], sizeof(dt_aligned_pixel_t));
 
-      _get_chromaticity(RGB, chromaticity, vs_type, vs_prof, d);
+      _get_chromaticity(RGB, chromaticity, vs_type, vs_prof, d->rgb2ryb_ypp);
 
       if(vs_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
         log_scale(&chromaticity[1], &chromaticity[2], max_radius);
