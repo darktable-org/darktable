@@ -505,6 +505,54 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   d->hue_ring_colorspace = d->vectorscope_type;
 }
 
+static  void _get_chromaticity(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t chromaticity,
+                               const dt_lib_histogram_vectorscope_type_t vs_type,
+                               const dt_iop_order_iccprofile_info_t *vs_prof,
+                               dt_lib_histogram_t *d)
+{
+  dt_aligned_pixel_t XYZ_D50;
+  if(vs_type != DT_LIB_HISTOGRAM_VECTORSCOPE_RYB)
+  {
+    // this goes to the PCS which has standard illuminant D50
+    dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, vs_prof->matrix_in_transposed, vs_prof->lut_in,
+                               vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
+    // NOTE: see for comparison/reference rgb_to_JzCzhz() in color_picker.c
+    if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+    {
+      // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
+      dt_aligned_pixel_t xyY_D50;
+      dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
+      // using D50 correct u*v* (not u'v') to be relative to the whitepoint (important for vectorscope) and as u*v* is more evenly spaced
+      dt_xyY_to_Luv(xyY_D50, chromaticity);
+    }
+    else
+    {
+      // FIXME: can skip a hop by pre-multipying matrices: see colorbalancergb and dt_develop_blendif_init_masking_profile() for how to make hacked profile
+      dt_aligned_pixel_t XYZ_D65;
+      // If the profile whitepoint is D65, its RGB -> XYZ conversion
+      // matrix has been adapted to D50 (PCS standard) via
+      // Bradford. Using Bradford again to adapt back to D65 gives a
+      // pretty clean reversal of the transform.
+      // FIXME: if the profile whitepoint is D50 (ProPhoto...), then should we use a nicer adaptation (CAT16?) to D65?
+      dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
+      // FIXME: The bulk of processing time is spent in the XYZ -> JzAzBz conversion in the 2*3 powf() in X'Y'Z' -> L'M'S'. Making a LUT for these, using _apply_trc() to do powf() work. It only needs to be accurate enough to be about on the right pixel for a diam_px x diam_px plot
+      dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
+    }
+  }
+  else
+  {
+    dt_aligned_pixel_t RYB, rgb, HCV;
+    // gamma corrected sRGB -> linear sRGB
+    for_each_channel(ch, aligned(rgb, RGB:16))
+      rgb[ch] = RGB[ch] <= 0.04045f ? RGB[ch] / 12.92f : powf((RGB[ch] + 0.055f) / (1.0f + 0.055f), 2.4f);
+    _rgb2ryb(rgb, RYB, d);
+    dt_RGB_2_HCV(RYB, HCV);
+    const float alpha = 2.0 * M_PI * HCV[0];
+    chromaticity[1] = cosf(alpha) * HCV[1] * 0.01;
+    chromaticity[2] = sinf(alpha) * HCV[1] * 0.01;
+  }
+}
+
 static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const float *const input,
                                                dt_histogram_roi_t *const roi,
                                                const dt_iop_order_iccprofile_info_t *vs_prof)
@@ -567,7 +615,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       //   RGB (pixelpipe) -> XYZ(PCS, D50) -> chromaticity
       // A catch is that pixelpipe RGB may be a CLUT profile, hence would
       // need to have an LCMS path unless histogram moves to before colorout.
-      dt_aligned_pixel_t RGB = {0.f}, XYZ_D50, chromaticity;
+      dt_aligned_pixel_t RGB = {0.f}, chromaticity;
       // FIXME: for speed, downsample 2x2 -> 1x1 here, which still should produce enough chromaticity data -- Question: AVERAGE(RGBx4) -> chromaticity, or AVERAGE((RGB -> chromaticity)x4)?
       // FIXME: could compromise and downsample to 2x1 -- may also be a bit faster than skipping rows
       const float *const restrict px = DT_IS_ALIGNED((const float *const restrict)input +
@@ -577,46 +625,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
           for_each_channel(ch, aligned(px,RGB:16))
             RGB[ch] += px[4U * (yy * roi->width + xx) + ch] * 0.25f;
 
-      if(vs_type != DT_LIB_HISTOGRAM_VECTORSCOPE_RYB)
-      {
-        // this goes to the PCS which has standard illuminant D50
-        dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, vs_prof->matrix_in_transposed, vs_prof->lut_in,
-                                   vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
-        // NOTE: see for comparison/reference rgb_to_JzCzhz() in color_picker.c
-        if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
-        {
-          // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
-          dt_aligned_pixel_t xyY_D50;
-          dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
-          // using D50 correct u*v* (not u'v') to be relative to the whitepoint (important for vectorscope) and as u*v* is more evenly spaced
-          dt_xyY_to_Luv(xyY_D50, chromaticity);
-        }
-        else
-        {
-          // FIXME: can skip a hop by pre-multipying matrices: see colorbalancergb and dt_develop_blendif_init_masking_profile() for how to make hacked profile
-          dt_aligned_pixel_t XYZ_D65;
-          // If the profile whitepoint is D65, its RGB -> XYZ conversion
-          // matrix has been adapted to D50 (PCS standard) via
-          // Bradford. Using Bradford again to adapt back to D65 gives a
-          // pretty clean reversal of the transform.
-          // FIXME: if the profile whitepoint is D50 (ProPhoto...), then should we use a nicer adaptation (CAT16?) to D65?
-          dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
-          // FIXME: The bulk of processing time is spent in the XYZ -> JzAzBz conversion in the 2*3 powf() in X'Y'Z' -> L'M'S'. Making a LUT for these, using _apply_trc() to do powf() work. It only needs to be accurate enough to be about on the right pixel for a diam_px x diam_px plot
-          dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
-        }
-      }
-      else
-      {
-        dt_aligned_pixel_t RYB, rgb, HCV;
-        // gamma corrected sRGB -> linear sRGB
-        for_each_channel(ch, aligned(rgb, RGB:16))
-          rgb[ch] = RGB[ch] <= 0.04045f ? RGB[ch] / 12.92f : powf((RGB[ch] + 0.055f) / (1.0f + 0.055f), 2.4f);
-        _rgb2ryb(rgb, RYB, d);
-        dt_RGB_2_HCV(RYB, HCV);
-        const float alpha = 2.0 * M_PI * HCV[0];
-        chromaticity[1] = cosf(alpha) * HCV[1] * 0.01;
-        chromaticity[2] = sinf(alpha) * HCV[1] * 0.01;
-      }
+      _get_chromaticity(RGB, chromaticity, vs_type, vs_prof, d);
       // FIXME: we ignore the L or Jz components -- do they optimize out of the above code, or would in particular a XYZ_2_AzBz but helpful?
       if(vs_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
         log_scale(&chromaticity[1], &chromaticity[2], max_radius);
@@ -630,7 +639,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         dt_atomic_add_int(binned + out_y * diam_px + out_x, 1);
     }
 
-  dt_aligned_pixel_t RGB = {0.f}, XYZ_D50, chromaticity;
+  dt_aligned_pixel_t RGB = {0.f}, chromaticity;
   const dt_lib_colorpicker_statistic_t statistic = darktable.lib->proxy.colorpicker.statistic;
   dt_colorpicker_sample_t *sample;
 
@@ -638,20 +647,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   sample = darktable.lib->proxy.colorpicker.primary_sample;
   memcpy(RGB, sample->scope[statistic], sizeof(dt_aligned_pixel_t));
 
-  dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, vs_prof->matrix_in_transposed, vs_prof->lut_in,
-                             vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
-  if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
-  {
-    dt_aligned_pixel_t xyY_D50;
-    dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
-    dt_xyY_to_Luv(xyY_D50, chromaticity);
-  }
-  else
-  {
-    dt_aligned_pixel_t XYZ_D65;
-    dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
-    dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
-  }
+  _get_chromaticity(RGB, chromaticity, vs_type, vs_prof, d);
+
   if(vs_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
     log_scale(&chromaticity[1], &chromaticity[2], max_radius);
 
@@ -679,20 +676,9 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
       //find coordinates
       memcpy(RGB, sample->scope[statistic], sizeof(dt_aligned_pixel_t));
-      dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, vs_prof->matrix_in_transposed, vs_prof->lut_in,
-                                 vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
-      if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
-      {
-        dt_aligned_pixel_t xyY_D50;
-        dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
-        dt_xyY_to_Luv(xyY_D50, chromaticity);
-      }
-      else
-      {
-        dt_aligned_pixel_t XYZ_D65;
-        dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
-        dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
-      }
+
+      _get_chromaticity(RGB, chromaticity, vs_type, vs_prof, d);
+
       if(vs_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
         log_scale(&chromaticity[1], &chromaticity[2], max_radius);
 
@@ -1070,11 +1056,11 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
     cairo_push_group(cr);
   cairo_set_source(cr, bkgd_pat);
   cairo_mask(cr, graph_pat);
-//  cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+  cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.55);
   cairo_mask(cr, graph_pat);
   cairo_pattern_destroy(bkgd_pat);
+
   cairo_surface_destroy(bkgd_surface);
   cairo_pattern_destroy(graph_pat);
   cairo_surface_destroy(graph_surface);
@@ -1940,7 +1926,7 @@ void gui_init(dt_lib_module_t *self)
   // initially no live samples
   d->vectorscope_samples = NULL;
   d->selected_sample = -1;
-  
+
   d->rgb2ryb_ypp = interpolate_set(sizeof(x_vtx)/sizeof(float), (float *)x_vtx, (float *)ryb_y_vtx, CUBIC_SPLINE);
   d->ryb2rgb_ypp = interpolate_set(sizeof(x_vtx)/sizeof(float), (float *)x_vtx, (float *)rgb_y_vtx, CUBIC_SPLINE);
   // proxy functions and data so that pixelpipe or tether can
