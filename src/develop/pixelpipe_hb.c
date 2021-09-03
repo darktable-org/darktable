@@ -905,10 +905,10 @@ static gboolean _request_color_pick(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
 {
   // Does the current active module need a picker?
   return
-    // there is an active picker widget
-    darktable.lib->proxy.colorpicker.picker_proxy
     // pick from preview pipe to get pixels outside the viewport
-    && dev->gui_attached && pipe == dev->preview_pipe
+    dev->gui_attached && pipe == dev->preview_pipe
+    // there is an active picker widget
+    && darktable.lib->proxy.colorpicker.picker_proxy
     // only modules with focus can pick
     && module == dev->gui_module
     // and they are enabled
