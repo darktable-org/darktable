@@ -843,9 +843,9 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
           // this functions need a 4c image
           for(int k = 0; k < 3; k++)
           {
-            pick_mean[k] = sample->picked_color_rgb_mean[k];
-            pick_min[k] = sample->picked_color_rgb_min[k];
-            pick_max[k] = sample->picked_color_rgb_max[k];
+            pick_mean[k] = sample->scope[DT_LIB_COLORPICKER_STATISTIC_MEAN][k];
+            pick_min[k] = sample->scope[DT_LIB_COLORPICKER_STATISTIC_MIN][k];
+            pick_max[k] = sample->scope[DT_LIB_COLORPICKER_STATISTIC_MAX][k];
           }
           pick_mean[3] = pick_min[3] = pick_max[3] = 1.f;
 

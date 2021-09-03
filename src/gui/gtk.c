@@ -697,12 +697,6 @@ static gboolean draw(GtkWidget *da, cairo_t *cr, gpointer user_data)
     cairo_paint(cr);
   }
 
-  if(darktable.lib->proxy.colorpicker.module)
-  {
-    darktable.lib->proxy.colorpicker.update_panel(darktable.lib->proxy.colorpicker.module);
-    darktable.lib->proxy.colorpicker.update_samples(darktable.lib->proxy.colorpicker.module);
-  }
-
   return TRUE;
 }
 

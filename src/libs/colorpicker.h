@@ -23,12 +23,19 @@
 
 typedef enum dt_lib_colorpicker_size_t
 {
-  // FIXME: rejigger so that NONE is first, and test for NONE case throughout
   DT_LIB_COLORPICKER_SIZE_POINT = 0,
   DT_LIB_COLORPICKER_SIZE_BOX,
-  // FIXME: instead just set picker to NULL for activate IOP?
-  DT_LIB_COLORPICKER_SIZE_NONE
 } dt_lib_colorpicker_size_t;
+
+typedef enum dt_lib_colorpicker_statistic_t
+{
+  DT_LIB_COLORPICKER_STATISTIC_MEAN = 0,
+  DT_LIB_COLORPICKER_STATISTIC_MIN,
+  DT_LIB_COLORPICKER_STATISTIC_MAX,
+  DT_LIB_COLORPICKER_STATISTIC_N // needs to be the last one
+} dt_lib_colorpicker_statistic_t;
+
+typedef dt_aligned_pixel_t lib_colorpicker_sample_statistics[DT_LIB_COLORPICKER_STATISTIC_N];
 
 /** The struct for primary and live color picker samples */
 typedef struct dt_colorpicker_sample_t
@@ -40,44 +47,26 @@ typedef struct dt_colorpicker_sample_t
   float point[2];
   dt_boundingbox_t box;
   dt_lib_colorpicker_size_t size;
-  // NOTE: locked only applies to live samples
+  // NOTE: only applies to live samples
   gboolean locked;
 
   /** The actual picked colors */
-  // in display profile, as picked from preview pixelpipe
-  dt_aligned_pixel_t picked_color_display_rgb_mean;
-  dt_aligned_pixel_t picked_color_display_rgb_min;
-  dt_aligned_pixel_t picked_color_display_rgb_max;
-
-  // converted display profile -> histogram profile
-  dt_aligned_pixel_t picked_color_rgb_mean;
-  dt_aligned_pixel_t picked_color_rgb_min;
-  dt_aligned_pixel_t picked_color_rgb_max;
-
-  // converted display profile -> Lab
-  dt_aligned_pixel_t picked_color_lab_mean;
-  dt_aligned_pixel_t picked_color_lab_min;
-  dt_aligned_pixel_t picked_color_lab_max;
-
-  // mean, min, or max color for tooltip in histogram profile
-  int rgb_vals[4];
+  // picked color in display profile, as picked from preview pixelpipe
+  lib_colorpicker_sample_statistics display;
+  // picked color converted display profile -> histogram profile
+  lib_colorpicker_sample_statistics scope;
+  // picked color converted display profile -> Lab
+  lib_colorpicker_sample_statistics lab;
+  // in scope profile with current statistic
+  int label_rgb[4];
+  // in display profile with current statistic
+  GdkRGBA swatch;
 
   /** The GUI elements */
   GtkWidget *container;
   GtkWidget *color_patch;
   GtkWidget *output_label;
-
-  // sample in current mode (mean/min/max) in display and histogram colorspace
-  GdkRGBA rgb_display;
 } dt_colorpicker_sample_t;
-
-typedef enum dt_lib_colorpicker_statistic_t
-{
-  DT_LIB_COLORPICKER_STATISTIC_MEAN = 0,
-  DT_LIB_COLORPICKER_STATISTIC_MIN,
-  DT_LIB_COLORPICKER_STATISTIC_MAX,
-  DT_LIB_COLORPICKER_STATISTIC_N // needs to be the lsat one
-} dt_lib_colorpicker_statistic_t;
 
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
