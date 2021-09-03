@@ -397,7 +397,11 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
 
     // draw the actual color sampled
     // FIXME: if an area sample is selected, when selected should fill it with colorpicker color?
-    // FIXME: is this overlay always drawn after the current preview has been calculated?
+    // NOTE: The sample may be based on outdated data, but still
+    // display as it will update eventually. If we only drew on valid
+    // data, swatches on point live samples would flicker when the
+    // primary sample was drawn, and the primary sample swatch would
+    // flicker when an iop is adjusted.
     if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
     {
       if(sample == selected_sample)
@@ -407,7 +411,7 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
       else
         cairo_arc(cri, sample->point[0] * wd, sample->point[1] * ht, half_px, 0., 2. * M_PI);
 
-      set_color(cri, sample->rgb_display);
+      set_color(cri, sample->swatch);
       cairo_fill(cri);
     }
   }
@@ -748,6 +752,7 @@ void expose(
                                  || dt_lib_gui_get_expanded(dt_lib_get_module("masks"));
 
   // draw colorpicker for in focus module or execute module callback hook
+  // FIXME: draw picker in gui_post_expose() hook in libs/colorpicker.c -- catch would be that live samples would appear over guides, softproof/gamut text overlay would be hidden by picker
   if(dt_iop_color_picker_is_visible(dev))
   {
     GSList samples = { .data = darktable.lib->proxy.colorpicker.primary_sample, .next = NULL };
@@ -879,12 +884,8 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
   }
 
   // disable color picker when changing image
-  if(dev->gui_module)
-  {
-    dev->gui_module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  }
-  darktable.lib->proxy.colorpicker.primary_sample->size = DT_LIB_COLORPICKER_SIZE_NONE;
-  darktable.lib->proxy.colorpicker.picker_proxy = NULL;
+  if(darktable.lib->proxy.colorpicker.picker_proxy)
+    dt_iop_color_picker_reset(darktable.lib->proxy.colorpicker.picker_proxy->module, FALSE);
 
   // update aspect ratio
   if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
@@ -3094,8 +3095,8 @@ void enter(dt_view_t *self)
 void leave(dt_view_t *self)
 {
   dt_iop_color_picker_cleanup();
-  darktable.lib->proxy.colorpicker.primary_sample->size = DT_LIB_COLORPICKER_SIZE_NONE;
-  darktable.lib->proxy.colorpicker.picker_proxy = NULL;
+  if(darktable.lib->proxy.colorpicker.picker_proxy)
+    dt_iop_color_picker_reset(darktable.lib->proxy.colorpicker.picker_proxy->module, FALSE);
 
   _unregister_modules_drag_n_drop(self);
 
@@ -3332,21 +3333,10 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
       }
       else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
       {
-        // slight optimization: at higher zoom levels in particular,
-        // no need to update unless are sampling a different preview
-        // pipe pixel
-        // FIXME: this makes less sense for an iop which may transform coordinates
-        const float wd = (float)dev->preview_pipe->backbuf_width;
-        const float ht = (float)dev->preview_pipe->backbuf_height;
-        const int prior_x = sample->point[0] * wd, prior_y = sample->point[1] * ht;
         sample->point[0] = .5f + zoom_x;
         sample->point[1] = .5f + zoom_y;
-        const int cur_x = sample->point[0] * wd, cur_y = sample->point[1] * ht;
-        if(prior_x != cur_x || prior_y != cur_y)
-          dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
       }
-      // in case have moved cursor out of center view and back, hide the cursor again
-      dt_control_change_cursor(GDK_BLANK_CURSOR);
     }
     dt_control_queue_redraw_center();
     return;
@@ -3406,8 +3396,8 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
     {
       dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
       dt_control_queue_redraw_center();
+      dt_control_change_cursor(GDK_LEFT_PTR);
     }
-    dt_control_change_cursor(GDK_LEFT_PTR);
     return 1;
   }
   // masks
@@ -3460,6 +3450,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         const float delta_x = 0.01f;
         const float delta_y = delta_x * (float)dev->pipe->processed_width / (float)dev->pipe->processed_height;
 
+        // FIXME: here and in mouse move use to dt_lib_colorpicker_set_{box_area,point} interface? -- would require a different hack for figuring out base of the drag
         // hack: for box pickers, these represent the "base" point being dragged
         sample->point[0] = zoom_x;
         sample->point[1] = zoom_y;
@@ -3500,12 +3491,12 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
             sample->box[2] = fminf(1.0, zoom_x + delta_x);
             sample->box[3] = fminf(1.0, zoom_y + delta_y);
           }
+          dt_control_change_cursor(GDK_FLEUR);
         }
         else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
         {
           dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
         }
-        dt_control_change_cursor(GDK_BLANK_CURSOR);
       }
       dt_control_queue_redraw_center();
       return 1;
