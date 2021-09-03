@@ -574,26 +574,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
   // find position of the primary sample
   sample = darktable.lib->proxy.colorpicker.primary_sample;
-  for(int k = 0; k < 3; k++)
-  {
-    switch(statistic)
-    {
-      case DT_LIB_COLORPICKER_STATISTIC_MEAN:
-        RGB[k] = sample->picked_color_rgb_mean[k];
-        break;
-
-      case DT_LIB_COLORPICKER_STATISTIC_MIN:
-        RGB[k] = sample->picked_color_rgb_min[k];
-        break;
-
-      case DT_LIB_COLORPICKER_STATISTIC_MAX:
-        RGB[k] = sample->picked_color_rgb_max[k];
-        break;
-      default:
-        fprintf(stderr, "[histogram] unsupported color picker statistics %i\n", statistic);
-        break;
-    }
-  }
+  memcpy(RGB, sample->scope[statistic], sizeof(dt_aligned_pixel_t));
 
   dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, vs_prof->matrix_in_transposed, vs_prof->lut_in,
                              vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
@@ -635,27 +616,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       pos++;
 
       //find coordinates
-      for(int k = 0; k < 3; k++)
-      {
-        switch(statistic)
-        {
-          case DT_LIB_COLORPICKER_STATISTIC_MEAN:
-            RGB[k] = sample->picked_color_rgb_mean[k];
-            break;
-
-          case DT_LIB_COLORPICKER_STATISTIC_MIN:
-            RGB[k] = sample->picked_color_rgb_min[k];
-            break;
-
-          case DT_LIB_COLORPICKER_STATISTIC_MAX:
-            RGB[k] = sample->picked_color_rgb_max[k];
-            break;
-          default:
-            fprintf(stderr, "[histogram] unsupported color picker statistics %i\n", statistic);
-            break;
-        }
-      }
-
+      memcpy(RGB, sample->scope[statistic], sizeof(dt_aligned_pixel_t));
       dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, vs_prof->matrix_in_transposed, vs_prof->lut_in,
                                  vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
@@ -742,8 +703,10 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   {
     const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
     dt_iop_color_picker_t *proxy = darktable.lib->proxy.colorpicker.picker_proxy;
-    if(sample && sample->size != DT_LIB_COLORPICKER_SIZE_NONE && proxy && !proxy->module)
+    if(proxy && !proxy->module)
     {
+      // FIXME: for histogram process whole image, then pull point sample #'s from primary_picker->scope_mean (point) or _mean, _min, _max (as in rgb curve) and draw them as an overlay
+      // FIXME: for waveform point sample, could process whole image, then do an overlay of the point sample from primary_picker->scope_mean as red/green/blue dots (or short lines) at appropriate position at the horizontal/vertical position of sample
       if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
       {
         roi.crop_x = MIN(width, MAX(0, sample->box[0] * width));
