@@ -397,7 +397,12 @@ static void _darkroom_pickers_draw(dt_view_t *self, cairo_t *cri,
 
     // draw the actual color sampled
     // FIXME: if an area sample is selected, when selected should fill it with colorpicker color?
-    if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
+    // NOTE: The sample may be based on outdated data, but still
+    // display as it will update eventually. If we only drew on valid
+    // data, swatches on point live samples would flicker when the
+    // primary sample was drawn, and the primary sample swatch would
+    // flicker when an iop is adjusted.
+    if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
     {
       if(sample == selected_sample)
         cairo_arc(cri, sample->point[0] * wd, sample->point[1] * ht, half_px * 2., 0., 2. * M_PI);
@@ -3328,24 +3333,9 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
       }
       else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
       {
-        // slight optimization: at higher zoom levels in particular,
-        // no need to update unless are sampling a different preview
-        // pipe pixel
-        // FIXME: this makes less sense for an iop which may transform coordinates
-        const float wd = (float)dev->preview_pipe->backbuf_width;
-        const float ht = (float)dev->preview_pipe->backbuf_height;
-        const int prior_x = sample->point[0] * wd, prior_y = sample->point[1] * ht;
         sample->point[0] = .5f + zoom_x;
         sample->point[1] = .5f + zoom_y;
-        const int cur_x = sample->point[0] * wd, cur_y = sample->point[1] * ht;
-        if(prior_x != cur_x || prior_y != cur_y)
-        {
-          if(darktable.lib->proxy.colorpicker.picker_proxy->module)
-            dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-          else
-            // NOTE: it could be possible to pull the new sample from output_backbuf, but then it would be 8-bit rather than float
-            dt_dev_invalidate_from_gui(darktable.develop);
-        }
+        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
       }
     }
     dt_control_queue_redraw_center();
@@ -3404,10 +3394,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
     // only sample box picker at end, for speed
     if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
     {
-      if(darktable.lib->proxy.colorpicker.picker_proxy->module)
-        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-      else
-        dt_dev_invalidate_from_gui(darktable.develop);
+      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
       dt_control_queue_redraw_center();
       dt_control_change_cursor(GDK_LEFT_PTR);
     }
@@ -3463,7 +3450,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         const float delta_x = 0.01f;
         const float delta_y = delta_x * (float)dev->pipe->processed_width / (float)dev->pipe->processed_height;
 
-        // FIXME: here and in mouse move use to dt_lib_colorpicker_set_{box_area,point} interface? -- would require a different hack for figuring out base of the drag -- but if so have that routine figure out if can just pull the new sample from preview buffer and or need to update from iop with picker or just dt_dev_invalidate_from_gui()
+        // FIXME: here and in mouse move use to dt_lib_colorpicker_set_{box_area,point} interface? -- would require a different hack for figuring out base of the drag
         // hack: for box pickers, these represent the "base" point being dragged
         sample->point[0] = zoom_x;
         sample->point[1] = zoom_y;
@@ -3508,11 +3495,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         }
         else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
         {
-          if(darktable.lib->proxy.colorpicker.picker_proxy->module)
-            dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-          else
-            dt_dev_invalidate_from_gui(darktable.develop);
-          //dt_control_change_cursor(GDK_TARGET);
+          dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
         }
       }
       dt_control_queue_redraw_center();
@@ -3547,10 +3530,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
           }
           else
             continue;
-          if(darktable.lib->proxy.colorpicker.picker_proxy->module)
-            dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-          else
-            dt_dev_invalidate_from_gui(darktable.develop);
+          dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
           dt_control_queue_redraw_center();
           return 1;
         }
@@ -3561,10 +3541,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         // FIXME: color_pixer_proxy should have an dt_iop_color_picker_clear_area() function for this
         dt_boundingbox_t reset = { 0.01f, 0.01f, 0.99f, 0.99f };
         dt_lib_colorpicker_set_box_area(darktable.lib, reset);
-        if(darktable.lib->proxy.colorpicker.picker_proxy->module)
-          dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
-        else
-          dt_dev_invalidate_from_gui(darktable.develop);
+        dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
         dt_control_queue_redraw_center();
       }
 
