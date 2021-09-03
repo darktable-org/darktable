@@ -1327,6 +1327,29 @@ void dtgtk_cairo_paint_structure(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   FINISH
 }
 
+void dtgtk_cairo_paint_draw_structure(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_move_to(cr, 0.1, 0.1);
+  cairo_line_to(cr, 0.1, 0.9);
+  cairo_line_to(cr, 0.9, 0.9);
+  cairo_line_to(cr, 0.9, 0.1);
+  cairo_line_to(cr, 0.1, 0.1);
+  cairo_stroke(cr);
+
+  cairo_arc(cr, 0.1, 0.1, 0.1, 0.0, 2 * M_PI);
+  cairo_stroke(cr);
+  cairo_arc(cr, 0.1, 0.9, 0.1, 0.0, 2 * M_PI);
+  cairo_stroke(cr);
+  cairo_arc(cr, 0.9, 0.9, 0.1, 0.0, 2 * M_PI);
+  cairo_stroke(cr);
+  cairo_arc(cr, 0.9, 0.1, 0.1, 0.0, 2 * M_PI);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_cancel(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   PREAMBLE(1.05, 0, 0)

@@ -78,7 +78,7 @@
 #define RANSAC_OPTIMIZATION_STEPS 5         // home many steps to optimize epsilon
 #define RANSAC_OPTIMIZATION_DRY_RUNS 50     // how man runs per optimization steps
 #define RANSAC_HURDLE 5                     // hurdle rate: the number of lines below which we do a complete permutation instead of random sampling
-#define MINIMUM_FITLINES 4                  // minimum number of lines needed for automatic parameter fit
+#define MINIMUM_FITLINES 2                  // minimum number of lines needed for automatic parameter fit
 #define NMS_EPSILON 1e-3                    // break criterion for Nelder-Mead simplex
 #define NMS_SCALE 1.0                       // scaling factor for Nelder-Mead simplex
 #define NMS_ITERATIONS 400                  // number of iterations for Nelder-Mead simplex
@@ -402,13 +402,8 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *values_expander;
   GtkWidget *values_box;
   GtkWidget *values_toggle;
-  GtkWidget *method;
   GtkGrid *auto_grid;
-  GtkGrid *draw_grid;
-  GtkWidget *draw_v;
-  GtkWidget *draw_h;
-  GtkWidget *draw_both;
-  GtkWidget *draw_clean;
+  GtkWidget *draw_structure;
   gboolean values_expanded;
   gboolean straightening;
   float straighten_x;
@@ -461,6 +456,13 @@ typedef struct dt_iop_ashift_gui_data_t
   float cr;	// shadow copy of dt_iop_ashift_data_t.cr
   float ct;	// shadow copy of dt_iop_ashift_data_t.ct
   float cb;	// shadow copy of dt_iop_ashift_data_t.cb
+
+  gboolean draw_fitting;
+  int draw_near_point;
+  gboolean draw_point_move;
+  float draw_pointmove_x;
+  float draw_pointmove_y;
+  float *draw_points;
 } dt_iop_ashift_gui_data_t;
 
 typedef struct dt_iop_ashift_data_t
@@ -2803,6 +2805,7 @@ static int do_clean_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p
   g->lines = NULL;
   g->lines_version++;
   g->lines_suppressed = 0;
+  g->draw_fitting = FALSE;
   g->fitting = 0;
   return TRUE;
 }
@@ -3276,14 +3279,15 @@ static int update_colors(struct dt_iop_module_t *self, dt_iop_ashift_points_idx_
 
 // get all the points to display lines in the gui
 static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *lines, const int lines_count,
-                      const int lines_version, float **points, dt_iop_ashift_points_idx_t **points_idx,
-                      int *points_lines_count, float scale)
+                      const int lines_version, float **points, float **extremas,
+                      dt_iop_ashift_points_idx_t **points_idx, int *points_lines_count, float scale)
 {
   dt_develop_t *dev = self->dev;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   dt_iop_ashift_points_idx_t *my_points_idx = NULL;
   float *my_points = NULL;
+  float *my_extremas = NULL;
 
   // is the display flipped relative to the original image?
   const int isflipped = g->isflipped;
@@ -3326,11 +3330,19 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
 
   // now allocate new points buffer
   my_points = (float *)malloc(sizeof(float) * 2 * total_points);
+  if(extremas) my_extremas = (float *)malloc(sizeof(float) * 2 * 2 * lines_count);
   if(my_points == NULL) goto error;
 
   // second step: generate points for each line
   for(int n = 0, offset = 0; n < lines_count; n++)
   {
+    if(extremas)
+    {
+      my_extremas[4 * n] = lines[n].p1[0] / scale;
+      my_extremas[4 * n + 1] = lines[n].p1[1] / scale;
+      my_extremas[4 * n + 2] = lines[n].p2[0] / scale;
+      my_extremas[4 * n + 3] = lines[n].p2[1] / scale;
+    }
     my_points_idx[n].offset = offset;
 
     float x = lines[n].p1[0] / scale;
@@ -3353,6 +3365,12 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   // third step: transform all points
   if(!dt_dev_distort_transform_plus(dev, dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_INCL, my_points, total_points))
     goto error;
+  if(extremas)
+  {
+    if(!dt_dev_distort_transform_plus(dev, dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_FORW_INCL,
+                                      my_extremas, 2 * lines_count))
+      goto error;
+  }
 
   // fourth step: get bounding box in final coordinates (used later for checking "near"-ness to mouse pointer)
   for(int n = 0; n < lines_count; n++)
@@ -3383,12 +3401,14 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   *points = my_points;
   *points_idx = my_points_idx;
   *points_lines_count = lines_count;
+  if(extremas) *extremas = my_extremas;
 
   return TRUE;
 
 error:
   if(my_points_idx != NULL) free(my_points_idx);
   if(my_points != NULL) free(my_points);
+  if(my_extremas) free(my_extremas);
   return FALSE;
 }
 
@@ -3658,7 +3678,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     g->points_idx = NULL;
     g->points_lines_count = 0;
 
-    if(!get_points(self, g->lines, g->lines_count, g->lines_version, &g->points, &g->points_idx,
+    if(!get_points(self, g->lines, g->lines_count, g->lines_version, &g->points, &g->draw_points, &g->points_idx,
                    &g->points_lines_count, pr_d))
       return;
 
@@ -3732,6 +3752,36 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_stroke(cr);
   }
 
+  // we also draw the corner in case of drawn perspective
+  if(g->draw_fitting && g->draw_points)
+  {
+    dt_draw_set_color_overlay(cr, 0.3, 1.0);
+    if(g->draw_near_point == 0)
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0) / zoom_scale);
+    else
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
+    cairo_arc(cr, g->draw_points[0], g->draw_points[1], DT_PIXEL_APPLY_DPI(5.0) / zoom_scale, 0, 2.0 * M_PI);
+    cairo_stroke(cr);
+    if(g->draw_near_point == 1)
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0) / zoom_scale);
+    else
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
+    cairo_arc(cr, g->draw_points[2], g->draw_points[3], DT_PIXEL_APPLY_DPI(5.0) / zoom_scale, 0, 2.0 * M_PI);
+    cairo_stroke(cr);
+    if(g->draw_near_point == 2)
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0) / zoom_scale);
+    else
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
+    cairo_arc(cr, g->draw_points[4], g->draw_points[5], DT_PIXEL_APPLY_DPI(5.0) / zoom_scale, 0, 2.0 * M_PI);
+    cairo_stroke(cr);
+    if(g->draw_near_point == 3)
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0) / zoom_scale);
+    else
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
+    cairo_arc(cr, g->draw_points[6], g->draw_points[7], DT_PIXEL_APPLY_DPI(5.0) / zoom_scale, 0, 2.0 * M_PI);
+    cairo_stroke(cr);
+  }
+
   // and we draw the selection box if any
   if(g->isbounding != ASHIFT_BOUNDING_OFF)
   {
@@ -3802,6 +3852,17 @@ static void update_lines_count(const dt_iop_ashift_line_t *lines, const int line
   *horizontal_count = hlines;
 }
 
+static gboolean _draw_near_point(const float x, const float y, const int corner_x, const int corner_y)
+{
+  const int delta = 5;
+  return (x - corner_x < delta && x - corner_x > -delta && y - corner_y < delta && y - corner_y > -delta);
+}
+static void _draw_recompute_line_length(dt_iop_ashift_line_t *line)
+{
+  line->length = sqrt((line->p2[0] - line->p1[0]) * (line->p2[0] - line->p1[0])
+                      + (line->p2[1] - line->p1[1]) * (line->p2[1] - line->p1[1]));
+}
+
 int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
@@ -3843,6 +3904,68 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   // but since g->adjust_crop was FALSE, we have nothing to do
   if(g->lines_suppressed || g->lines == NULL)
     return TRUE;
+
+  if(g->draw_point_move)
+  {
+    float pts[2] = { pzx * wd, pzy * ht };
+    if(dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
+                                         DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 1))
+    {
+      if(g->draw_near_point == 0)
+      {
+        g->lines[0].p1[0] = pts[0];
+        g->lines[0].p1[1] = pts[1];
+        _draw_recompute_line_length(&g->lines[0]);
+        g->lines[2].p1[0] = pts[0];
+        g->lines[2].p1[1] = pts[1];
+        _draw_recompute_line_length(&g->lines[2]);
+      }
+      else if(g->draw_near_point == 1)
+      {
+        g->lines[0].p2[0] = pts[0];
+        g->lines[0].p2[1] = pts[1];
+        _draw_recompute_line_length(&g->lines[0]);
+        g->lines[3].p1[0] = pts[0];
+        g->lines[3].p1[1] = pts[1];
+        _draw_recompute_line_length(&g->lines[3]);
+      }
+      else if(g->draw_near_point == 2)
+      {
+        g->lines[1].p1[0] = pts[0];
+        g->lines[1].p1[1] = pts[1];
+        _draw_recompute_line_length(&g->lines[1]);
+        g->lines[2].p2[0] = pts[0];
+        g->lines[2].p2[1] = pts[1];
+        _draw_recompute_line_length(&g->lines[2]);
+      }
+      else if(g->draw_near_point == 3)
+      {
+        g->lines[1].p2[0] = pts[0];
+        g->lines[1].p2[1] = pts[1];
+        _draw_recompute_line_length(&g->lines[1]);
+        g->lines[3].p2[0] = pts[0];
+        g->lines[3].p2[1] = pts[1];
+        _draw_recompute_line_length(&g->lines[3]);
+      }
+      g->lines_hash++;
+      g->lines_version++;
+      dt_control_queue_redraw_center();
+    }
+    return TRUE;
+  }
+  // if we are in draw mode, we check if we are near a corner
+  if(g->draw_fitting && g->lines_count >= 4)
+  {
+    g->draw_near_point = -1;
+    if(_draw_near_point(pzx * wd, pzy * ht, g->draw_points[0], g->draw_points[1]))
+      g->draw_near_point = 0;
+    else if(_draw_near_point(pzx * wd, pzy * ht, g->draw_points[2], g->draw_points[3]))
+      g->draw_near_point = 1;
+    else if(_draw_near_point(pzx * wd, pzy * ht, g->draw_points[4], g->draw_points[5]))
+      g->draw_near_point = 2;
+    else if(_draw_near_point(pzx * wd, pzy * ht, g->draw_points[6], g->draw_points[7]))
+      g->draw_near_point = 3;
+  }
 
   // if in rectangle selecting mode adjust "near"-ness of lines according to
   // the rectangular selection
@@ -3941,6 +4064,18 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     else
       return FALSE;
   }
+
+  // grab a draw corner
+  if(g->draw_fitting && g->draw_near_point >= 0)
+  {
+    g->draw_point_move = TRUE;
+    g->lastx = x;
+    g->lasty = y;
+    g->draw_pointmove_x = pzx - 0.5;
+    g->draw_pointmove_y = pzy - 0.5;
+    return TRUE;
+  }
+  if(g->draw_fitting) return FALSE;
 
   // remember lines version at this stage so we can continuously monitor if the
   // lines have changed in-between
@@ -4048,6 +4183,13 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     if(a > 180.0) a -= 360.0;
 
     dt_bauhaus_slider_set_soft(g->rotation, -a);
+    return TRUE;
+  }
+
+  // release a draw corner
+  if(g->draw_point_move)
+  {
+    g->draw_point_move = FALSE;
     return TRUE;
   }
 
@@ -4553,11 +4695,6 @@ void gui_update(struct dt_iop_module_t *self)
   // copy crop box into shadow variables
   shadow_crop_box(p,g);
 
-  // update perspective method
-  const dt_iop_ashift_method_t method = dt_bauhaus_combobox_get(g->method);
-  gtk_widget_set_visible(GTK_WIDGET(g->auto_grid), (method == ASHIFT_METHOD_AUTO));
-  gtk_widget_set_visible(GTK_WIDGET(g->draw_grid), (method == ASHIFT_METHOD_DRAW));
-
   // update values expander
   const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->values_toggle));
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->values_toggle), dtgtk_cairo_paint_solid_arrow,
@@ -4792,16 +4929,73 @@ static void _event_values_expander_click(GtkWidget *widget, GdkEventButton *e, g
                                !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->values_toggle)));
 }
 
-static void _event_method_changed(GtkWidget *widget, gpointer user_data)
+static void _draw_basic_line(dt_iop_ashift_line_t *line, int x1, int y1, int x2, int y2,
+                             dt_iop_ashift_linetype_t type)
 {
-  if(darktable.gui->reset) return;
+  // store as homogeneous coordinates
+  line->p1[0] = x1;
+  line->p1[1] = y1;
+  line->p1[2] = 1.0f;
+  line->p2[0] = x2;
+  line->p2[1] = y2;
+  line->p2[2] = 1.0f;
 
+  // calculate homogeneous coordinates of connecting line (defined by the two points)
+  vec3prodn(line->L, line->p1, line->p2);
+
+  // normalaze line coordinates so that x^2 + y^2 = 1
+  // (this will always succeed as L is a real line connecting two real points)
+  vec3lnorm(line->L, line->L);
+
+  // length and width of rectangle (see LSD)
+  line->length = sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+  line->width = 1.0f;
+  line->weight = 1.0f;
+
+  // register type of line
+  line->type = type;
+}
+
+static int _event_draw_structure_click(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  if(darktable.gui->reset) return FALSE;
 
-  const dt_iop_ashift_method_t method = dt_bauhaus_combobox_get(g->method);
-  gtk_widget_set_visible(GTK_WIDGET(g->auto_grid), (method == ASHIFT_METHOD_AUTO));
-  gtk_widget_set_visible(GTK_WIDGET(g->draw_grid), (method == ASHIFT_METHOD_DRAW));
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
+
+  do_clean_structure(self, p);
+
+  const float wd = self->dev->preview_pipe->backbuf_width;
+  const float ht = self->dev->preview_pipe->backbuf_height;
+  float pts[8] = { wd * 0.2, ht * 0.2, wd * 0.2, ht * 0.8, wd * 0.8, ht * 0.2, wd * 0.8, ht * 0.8 };
+  if(dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
+                                       DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 4))
+  {
+    g->draw_fitting = TRUE;
+    g->lines = (dt_iop_ashift_line_t *)malloc(sizeof(dt_iop_ashift_line_t) * 4);
+    g->lines_count = 4;
+
+    _draw_basic_line(&g->lines[0], pts[0], pts[1], pts[2], pts[3], ASHIFT_LINE_VERTICAL_SELECTED);
+    _draw_basic_line(&g->lines[1], pts[4], pts[5], pts[6], pts[7], ASHIFT_LINE_VERTICAL_SELECTED);
+    _draw_basic_line(&g->lines[2], pts[0], pts[1], pts[4], pts[5], ASHIFT_LINE_HORIZONTAL_SELECTED);
+    _draw_basic_line(&g->lines[3], pts[2], pts[3], pts[6], pts[7], ASHIFT_LINE_HORIZONTAL_SELECTED);
+
+    g->lines_in_width = piece->iwidth;
+    g->lines_in_height = piece->iheight;
+    g->lines_x_off = 0;
+    g->lines_y_off = 0;
+    g->vertical_count = 2;
+    g->horizontal_count = 2;
+    g->vertical_weight = 2.0;
+    g->horizontal_weight = 2.0;
+    g->lines_version++;
+    g->lines_suppressed = 0;
+
+    dt_control_queue_redraw_center();
+  }
+  return TRUE;
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -4849,6 +5043,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->lastx = g->lasty = -1.0f;
   g->crop_cx = g->crop_cy = 1.0f;
 
+  g->draw_near_point = -1;
+
   g->rotation = dt_bauhaus_slider_from_params(self, N_("rotation"));
   dt_bauhaus_slider_set_format(g->rotation, "%.2f°");
   dt_bauhaus_slider_set_soft_range(g->rotation, -ROTATION_RANGE, ROTATION_RANGE);
@@ -4856,77 +5052,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
   g_signal_connect(G_OBJECT(g->cropmode), "value-changed", G_CALLBACK(cropmode_callback), self);
 
-  g->method = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->method, NULL, N_("perspective method"));
-  dt_bauhaus_combobox_add(g->method, _("none"));
-  dt_bauhaus_combobox_add(g->method, _("automatic"));
-  dt_bauhaus_combobox_add(g->method, _("drawing"));
-  g_signal_connect(G_OBJECT(g->method), "value-changed", G_CALLBACK(_event_method_changed), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->method, TRUE, TRUE, 0);
-
-  g->auto_grid = GTK_GRID(gtk_grid_new());
-  gtk_grid_set_row_spacing(g->auto_grid, 2 * DT_BAUHAUS_SPACE);
-  gtk_grid_set_column_spacing(g->auto_grid, DT_PIXEL_APPLY_DPI(10));
-
-  gtk_grid_attach(g->auto_grid, dt_ui_label_new(_("automatic fit")), 0, 0, 1, 1);
-
-  g->fit_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 1, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_v), TRUE);
-  gtk_grid_attach(g->auto_grid, g->fit_v, 1, 0, 1, 1);
-
-  g->fit_h = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 2, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_h), TRUE);
-  gtk_grid_attach(g->auto_grid, g->fit_h, 2, 0, 1, 1);
-
-  g->fit_both = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 3, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_both), TRUE);
-  gtk_grid_attach(g->auto_grid, g->fit_both, 3, 0, 1, 1);
-
-  gtk_grid_attach(g->auto_grid, dt_ui_label_new(_("get structure")), 0, 1, 1, 1);
-
-  g->structure = dtgtk_button_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->structure), TRUE);
-  gtk_grid_attach(g->auto_grid, g->structure, 1, 1, 1, 1);
-
-  g->clean = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->clean), TRUE);
-  gtk_grid_attach(g->auto_grid, g->clean, 2, 1, 1, 1);
-
-  g->eye = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->eye), TRUE);
-  gtk_grid_attach(g->auto_grid, g->eye, 3, 1, 1, 1);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->auto_grid), TRUE, TRUE, 0);
-
-  g->draw_grid = GTK_GRID(gtk_grid_new());
-  gtk_grid_set_row_spacing(g->draw_grid, 2 * DT_BAUHAUS_SPACE);
-  gtk_grid_set_column_spacing(g->draw_grid, DT_PIXEL_APPLY_DPI(10));
-
-  gtk_grid_attach(g->draw_grid, dt_ui_label_new(_("automatic fit")), 0, 0, 1, 1);
-
-  g->draw_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 1, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->draw_v), TRUE);
-  gtk_grid_attach(g->draw_grid, g->draw_v, 1, 0, 1, 1);
-
-  g->draw_h = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 2, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->draw_h), TRUE);
-  gtk_grid_attach(g->draw_grid, g->draw_h, 2, 0, 1, 1);
-
-  g->draw_both = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 3, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->draw_both), TRUE);
-  gtk_grid_attach(g->draw_grid, g->draw_both, 3, 0, 1, 1);
-
-  g->draw_clean = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->draw_clean), TRUE);
-  gtk_grid_attach(g->draw_grid, g->draw_clean, 4, 0, 1, 1);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->draw_grid), TRUE, TRUE, 0);
-
   // we put the detailled values under an expander
   g->values_expanded = dt_conf_get_bool("plugins/darkroom/ashift/expand_values");
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
   GtkWidget *header_evb = gtk_event_box_new();
-  GtkWidget *destdisp = dt_ui_section_label_new(_("perspective values"));
+  GtkWidget *destdisp = dt_ui_section_label_new(_("perspective"));
   GtkStyleContext *context = gtk_widget_get_style_context(destdisp_head);
   gtk_style_context_add_class(context, "section-expander");
   gtk_container_add(GTK_CONTAINER(header_evb), destdisp);
@@ -4986,6 +5116,45 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(g->values_box), g->specifics, TRUE, TRUE, 0);
 
+  g->auto_grid = GTK_GRID(gtk_grid_new());
+  gtk_grid_set_row_spacing(g->auto_grid, 2 * DT_BAUHAUS_SPACE);
+  gtk_grid_set_column_spacing(g->auto_grid, DT_PIXEL_APPLY_DPI(10));
+
+  gtk_grid_attach(g->auto_grid, dt_ui_label_new(_("fit")), 0, 0, 1, 1);
+
+  g->fit_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 1, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_v), TRUE);
+  gtk_grid_attach(g->auto_grid, g->fit_v, 2, 0, 1, 1);
+
+  g->fit_h = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 2, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_h), TRUE);
+  gtk_grid_attach(g->auto_grid, g->fit_h, 3, 0, 1, 1);
+
+  g->fit_both = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 3, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_both), TRUE);
+  gtk_grid_attach(g->auto_grid, g->fit_both, 4, 0, 1, 1);
+
+  gtk_grid_attach(g->auto_grid, dt_ui_label_new(_("get structure")), 0, 1, 1, 1);
+
+  g->draw_structure = dtgtk_togglebutton_new(dtgtk_cairo_paint_draw_structure, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->draw_structure), TRUE);
+  gtk_grid_attach(g->auto_grid, g->draw_structure, 1, 1, 1, 1);
+
+  g->structure = dtgtk_button_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->structure), TRUE);
+  gtk_grid_attach(g->auto_grid, g->structure, 2, 1, 1, 1);
+
+  g->clean = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->clean), TRUE);
+  gtk_grid_attach(g->auto_grid, g->clean, 3, 1, 1, 1);
+
+  g->eye = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->eye), TRUE);
+  gtk_grid_attach(g->auto_grid, g->eye, 4, 1, 1, 1);
+
+  gtk_widget_show_all(GTK_WIDGET(g->auto_grid));
+  gtk_box_pack_start(GTK_BOX(g->values_box), GTK_WIDGET(g->auto_grid), TRUE, TRUE, 0);
+
   self->widget = main_box;
 
   gtk_widget_set_tooltip_text(g->rotation, _("rotate image"));
@@ -5015,16 +5184,19 @@ void gui_init(struct dt_iop_module_t *self)
                                              "ctrl+click to only fit rotation\n"
                                              "shift+click to only fit lens shift\n"
                                              "ctrl+shift+click to only fit rotation and lens shift"));
-  gtk_widget_set_tooltip_text(g->structure, _("analyse line structure in image\n"
+  gtk_widget_set_tooltip_text(g->structure, _("automatically analyse line structure in image\n"
                                               "ctrl+click for an additional edge enhancement\n"
                                               "shift+click for an additional detail enhancement\n"
                                               "ctrl+shift+click for a combination of both methods"));
+  gtk_widget_set_tooltip_text(g->draw_structure, _("manually define perspective rectangle"));
   gtk_widget_set_tooltip_text(g->clean, _("remove line structure information"));
   gtk_widget_set_tooltip_text(g->eye, _("toggle visibility of structure lines"));
 
   g_signal_connect(G_OBJECT(g->fit_v), "button-press-event", G_CALLBACK(fit_v_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->fit_h), "button-press-event", G_CALLBACK(fit_h_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->fit_both), "button-press-event", G_CALLBACK(fit_both_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->draw_structure), "button-press-event", G_CALLBACK(_event_draw_structure_click),
+                   (gpointer)self);
   g_signal_connect(G_OBJECT(g->structure), "button-press-event", G_CALLBACK(structure_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->clean), "clicked", G_CALLBACK(clean_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->eye), "toggled", G_CALLBACK(eye_button_toggled), (gpointer)self);
