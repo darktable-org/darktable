@@ -582,6 +582,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     roi->crop_x = roi->crop_y = 0;
   }
 
+  const float *rgb2ryb_ypp = d->rgb2ryb_ypp;
   // RGB -> chromaticity (processor-heavy), count into bins by chromaticity
   // FIXME: if we do convert to histogram RGB, should it be an absolute colorimetric conversion (would mean knowing the histogram profile whitepoint and un-adapting its matrices) and then we have a meaningful whitepoint and could plot spectral locus -- or the reverse, adapt the spectral locus to the histogram profile PCS (always D50)?
   // FIXME: pre-allocate? -- use the same buffer as for waveform?
@@ -597,7 +598,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // FIXME: instead of scaling, if chromaticity really depends only on XY, then make a lookup on startup of for each grid cell on graph output the minimum XY to populate that cell, then either brute-force scan that LUT, or start from position of last pixel and scan, or do an optimized search (1/2, 1/2, 1/2, etc.) -- would also find point sample pixel this way
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, binned, sample_max_x, sample_max_y, roi, d, diam_px, max_radius, max_diam, vs_prof, vs_type, vs_scale) \
+  dt_omp_firstprivate(input, binned, sample_max_x, sample_max_y, roi, rgb2ryb_ypp, diam_px, max_radius, max_diam, vs_prof, vs_type, vs_scale) \
   schedule(static) collapse(2)
 #endif
   for(size_t y=0; y<sample_max_y; y+=2)
@@ -625,7 +626,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
           for_each_channel(ch, aligned(px,RGB:16))
             RGB[ch] += px[4U * (yy * roi->width + xx) + ch] * 0.25f;
 
-      _get_chromaticity(RGB, chromaticity, vs_type, vs_prof, d->rgb2ryb_ypp);
+      _get_chromaticity(RGB, chromaticity, vs_type, vs_prof, rgb2ryb_ypp);
       // FIXME: we ignore the L or Jz components -- do they optimize out of the above code, or would in particular a XYZ_2_AzBz but helpful?
       if(vs_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
         log_scale(&chromaticity[1], &chromaticity[2], max_radius);
@@ -647,7 +648,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   sample = darktable.lib->proxy.colorpicker.primary_sample;
   memcpy(RGB, sample->scope[statistic], sizeof(dt_aligned_pixel_t));
 
-  _get_chromaticity(RGB, chromaticity, vs_type, vs_prof, d->rgb2ryb_ypp);
+  _get_chromaticity(RGB, chromaticity, vs_type, vs_prof, rgb2ryb_ypp);
 
   if(vs_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
     log_scale(&chromaticity[1], &chromaticity[2], max_radius);
@@ -677,7 +678,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       //find coordinates
       memcpy(RGB, sample->scope[statistic], sizeof(dt_aligned_pixel_t));
 
-      _get_chromaticity(RGB, chromaticity, vs_type, vs_prof, d->rgb2ryb_ypp);
+      _get_chromaticity(RGB, chromaticity, vs_type, vs_prof, rgb2ryb_ypp);
 
       if(vs_scale == DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC)
         log_scale(&chromaticity[1], &chromaticity[2], max_radius);
