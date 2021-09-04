@@ -1401,14 +1401,11 @@ static void draw_equilateral_triangle(cairo_t *cr, float radius)
 }
 
 
-static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t *cr, const GdkRGBA fg_color, const GdkRGBA border_color)
+static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t *cr, float wd, const GdkRGBA fg_color, const GdkRGBA border_color)
 {
   // draw scale indicator (the tiny triangle)
-  GtkWidget *widget = GTK_WIDGET(w);
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
   if(w->type != DT_BAUHAUS_SLIDER) return;
-  const float wd = allocation.width;
+
   const float border_width = darktable.bauhaus->border_width;
   const float size = darktable.bauhaus->marker_size;
 
@@ -1497,15 +1494,12 @@ static void dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
   }
 }
 
-static void dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
+static void dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr, float width)
 {
   // draw line for orientation in slider
-  GtkWidget *widget = GTK_WIDGET(w);
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
   if(w->type != DT_BAUHAUS_SLIDER) return;
-  const int wd = allocation.width;
-  const float slider_width = wd - darktable.bauhaus->quad_width - INNER_PADDING;
+
+  const float slider_width = width - darktable.bauhaus->quad_width - INNER_PADDING;
   cairo_save(cr);
   dt_bauhaus_slider_data_t *d = &w->data.slider;
 
@@ -1601,14 +1595,13 @@ static void dt_bauhaus_widget_reject(dt_bauhaus_widget_t *w)
 static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
 {
   GtkWidget *widget = GTK_WIDGET(w);
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  const int base_width = allocation.width, base_height = inner_height(allocation);
 
   GtkAllocation allocation_popup_window;
   gtk_widget_get_allocation(darktable.bauhaus->popup_window, &allocation_popup_window);
 
   const int width = allocation_popup_window.width, height = inner_height(allocation_popup_window);
+  const int base_width = width - darktable.bauhaus->widget_space;
+  const int base_height = darktable.bauhaus->line_height + darktable.bauhaus->widget_space * 2.0f + INNER_PADDING * 2.0f;
 
   switch(w->type)
   {
@@ -1693,10 +1686,8 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   const int height = inner_height(allocation);
 
   // dimensions of the original line
-  GtkWidget *current = GTK_WIDGET(w);
-  GtkAllocation allocation_current;
-  gtk_widget_get_allocation(current, &allocation_current);
-  int wd = allocation_current.width, ht = inner_height(allocation_current);
+  int wd = width - darktable.bauhaus->widget_space;
+  int ht = darktable.bauhaus->line_height + darktable.bauhaus->widget_space * 2.0f + INNER_PADDING * 2.0f;
 
   const int popwin_wd = allocation.width + darktable.bauhaus->widget_space * 2.0f;
   const int popwin_ht = allocation.height + darktable.bauhaus->widget_space * 2.0f;
@@ -1745,7 +1736,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       cairo_translate(cr, INNER_PADDING, 0);
 
-      dt_bauhaus_draw_baseline(w, cr);
+      dt_bauhaus_draw_baseline(w, cr, width);
 
       cairo_save(cr);
       cairo_set_line_width(cr, 0.5);
@@ -1779,12 +1770,12 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_restore(cr);
 
       // draw indicator
-      dt_bauhaus_draw_indicator(w, d->oldpos + mouse_off, cr, *fg_color, *bg_color);
+      dt_bauhaus_draw_indicator(w, d->oldpos + mouse_off, cr, width, *fg_color, *bg_color);
 
       // draw numerical value:
       cairo_save(cr);
 
-      char *text = dt_bauhaus_slider_get_text(current);
+      char *text = dt_bauhaus_slider_get_text(GTK_WIDGET(w));
       set_color(cr, *fg_color);
       float value_width = show_pango_text(w, context, cr, text, wd - darktable.bauhaus->quad_width - INNER_PADDING,
                                           0, 0, TRUE, FALSE, PANGO_ELLIPSIZE_END, FALSE, FALSE);
@@ -2018,7 +2009,7 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
       const dt_bauhaus_slider_data_t *d = &w->data.slider;
 
       // line for orientation
-      dt_bauhaus_draw_baseline(w, cr);
+      dt_bauhaus_draw_baseline(w, cr, width);
       dt_bauhaus_draw_quad(w, cr);
 
       float value_width = 0;
@@ -2027,7 +2018,7 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
         cairo_save(cr);
         cairo_rectangle(cr, 0, 0, width - darktable.bauhaus->quad_width - INNER_PADDING, height + INNER_PADDING);
         cairo_clip(cr);
-        dt_bauhaus_draw_indicator(w, d->pos, cr, *fg_color, *bg_color);
+        dt_bauhaus_draw_indicator(w, d->pos, cr, width, *fg_color, *bg_color);
         cairo_restore(cr);
 
         // TODO: merge that text with combo
@@ -2090,11 +2081,21 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
 
   bauhaus_request_focus(w);
 
+  gtk_widget_realize(darktable.bauhaus->popup_window);
+
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
-  if(tmp.width == 1) return;
+  if(tmp.width == 1)
+  {
+    if(dt_ui_panel_ancestor(darktable.gui->ui, DT_UI_PANEL_RIGHT, GTK_WIDGET(w)))
+      tmp.width = dt_ui_panel_get_size(darktable.gui->ui, DT_UI_PANEL_RIGHT);
+    else if(dt_ui_panel_ancestor(darktable.gui->ui, DT_UI_PANEL_LEFT, GTK_WIDGET(w)))
+      tmp.width = dt_ui_panel_get_size(darktable.gui->ui, DT_UI_PANEL_LEFT);
+    else
+      tmp.width = 300;
+    tmp.width -= INNER_PADDING * 2;
+  }
 
-  gtk_widget_realize(darktable.bauhaus->popup_window);
   GdkWindow *widget_window = gtk_widget_get_window(GTK_WIDGET(w));
 
   gint wx, wy;
