@@ -482,14 +482,22 @@ static inline void dt_Rec709_to_XYZ_D50(const dt_aligned_pixel_t sRGB, dt_aligne
 
 
 #ifdef _OPENMP
+#pragma omp declare simd aligned(sRGB, RGB)
+#endif
+static inline void dt_sRGB_to_linear_sRGB(const dt_aligned_pixel_t sRGB, dt_aligned_pixel_t RGB)
+{
+  // gamma corrected sRGB -> linear sRGB
+  for(int c = 0; c < 3; c++)
+    RGB[c] = sRGB[c] <= 0.04045f ? sRGB[c] / 12.92f : powf((sRGB[c] + 0.055f) / (1.0f + 0.055f), 2.4f);
+}
+
+#ifdef _OPENMP
 #pragma omp declare simd aligned(sRGB, XYZ)
 #endif
 static inline void dt_sRGB_to_XYZ(const dt_aligned_pixel_t sRGB, dt_aligned_pixel_t XYZ)
 {
   dt_aligned_pixel_t rgb = { 0 };
-  // gamma corrected sRGB -> linear sRGB
-  for(int c = 0; c < 3; c++)
-    rgb[c] = sRGB[c] <= 0.04045f ? sRGB[c] / 12.92f : powf((sRGB[c] + 0.055f) / (1.0f + 0.055f), 2.4f);
+  dt_sRGB_to_linear_sRGB(sRGB, rgb);
   // linear sRGB -> XYZ
   dt_Rec709_to_XYZ_D50(rgb, XYZ);
 }

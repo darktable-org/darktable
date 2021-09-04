@@ -542,9 +542,7 @@ static  void _get_chromaticity(const dt_aligned_pixel_t RGB, dt_aligned_pixel_t 
   else
   {
     dt_aligned_pixel_t RYB, rgb, HCV;
-    // gamma corrected sRGB -> linear sRGB
-    for_each_channel(ch, aligned(rgb, RGB:16))
-      rgb[ch] = RGB[ch] <= 0.04045f ? RGB[ch] / 12.92f : powf((RGB[ch] + 0.055f) / (1.0f + 0.055f), 2.4f);
+    dt_sRGB_to_linear_sRGB(RGB, rgb);
     _rgb2ryb(rgb, RYB, rgb2ryb_ypp);
     dt_RGB_2_HCV(RYB, HCV);
     const float alpha = 2.0 * M_PI * HCV[0];
@@ -1060,8 +1058,8 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.55);
   cairo_mask(cr, graph_pat);
-  cairo_pattern_destroy(bkgd_pat);
 
+  cairo_pattern_destroy(bkgd_pat);
   cairo_surface_destroy(bkgd_surface);
   cairo_pattern_destroy(graph_pat);
   cairo_surface_destroy(graph_surface);
