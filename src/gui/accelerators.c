@@ -2820,13 +2820,34 @@ static float _process_action(dt_action_t *action, int instance,
   return return_value;
 }
 
+static void ungrab_grab_widget()
+{
+  gdk_seat_ungrab(gdk_display_get_default_seat(gdk_display_get_default()));
+
+  g_slist_free_full(pressed_keys, g_free);
+  pressed_keys = NULL;
+
+  if(grab_widget)
+  {
+    gtk_widget_set_sensitive(grab_widget, TRUE);
+    gtk_widget_set_tooltip_text(grab_widget, NULL);
+    g_signal_handlers_disconnect_by_func(gtk_widget_get_toplevel(grab_widget), G_CALLBACK(dt_shortcut_dispatcher), NULL);
+    grab_widget = NULL;
+  }
+}
+
 static float _process_shortcut(float move_size)
 {
   dt_shortcut_t fsc = _sc;
   fsc.action = NULL;
   fsc.element  = 0;
+
+  static int consecutive_unmatched = 0;
+
   if(_shortcut_match(&fsc))
   {
+    consecutive_unmatched = 0;
+
     move_size *= fsc.speed;
 
     if(fsc.effect == DT_ACTION_EFFECT_DEFAULT_MOVE)
@@ -2853,6 +2874,13 @@ static float _process_shortcut(float move_size)
     }
     else
       dt_toast_log(_("%s not assigned"), _shortcut_description(&_sc, TRUE));
+
+    if(++consecutive_unmatched >= 3)
+    {
+      ungrab_grab_widget();
+      _sc = (dt_shortcut_t) { 0 };
+      consecutive_unmatched = 0;
+    }
   }
 
   return NAN;
@@ -2930,22 +2958,6 @@ static inline void _cancel_delayed_release(void)
 
     _sc.button = _pressed_button;
     _sc.click = 0;
-  }
-}
-
-static void ungrab_grab_widget()
-{
-  gdk_seat_ungrab(gdk_display_get_default_seat(gdk_display_get_default()));
-
-  g_slist_free_full(pressed_keys, g_free);
-  pressed_keys = NULL;
-
-  if(grab_widget)
-  {
-    gtk_widget_set_sensitive(grab_widget, TRUE);
-    gtk_widget_set_tooltip_text(grab_widget, NULL);
-    g_signal_handlers_disconnect_by_func(gtk_widget_get_toplevel(grab_widget), G_CALLBACK(dt_shortcut_dispatcher), NULL);
-    grab_widget = NULL;
   }
 }
 
