@@ -233,9 +233,9 @@ const dt_iop_order_entry_t v30_order[] = {
                                   //    on camera JPEG default look
   { {45.0f }, "filmic", 0},          // same, but different (parametric) approach
   { {46.0f }, "filmicrgb", 0},       // same, upgraded
-  { {36.0f }, "lut3d", 0},           // apply a creative style or film emulation, possibly non-linear
   { {47.0f }, "colisa", 0},          // edit contrast while damaging colour
   { {48.0f }, "tonecurve", 0},       // same
+  { {36.0f }, "lut3d", 0},           // apply a creative style or film emulation, possibly non-linear
   { {49.0f }, "levels", 0},          // same
   { {50.0f }, "shadhi", 0},          // same
   { {51.0f }, "zonesystem", 0},      // same
@@ -344,9 +344,9 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
                                      //    on camera JPEG default look
   { { 45.0f }, "filmic", 0 },        // same, but different (parametric) approach
   { { 46.0f }, "filmicrgb", 0 },     // same, upgraded
-  { { 36.0f }, "lut3d", 0 },         // apply a creative style or film emulation, possibly non-linear
   { { 47.0f }, "colisa", 0 },        // edit contrast while damaging colour
   { { 48.0f }, "tonecurve", 0 },     // same
+  { { 36.0f }, "lut3d", 0 },         // apply a creative style or film emulation, possibly non-linear
   { { 49.0f }, "levels", 0 },        // same
   { { 50.0f }, "shadhi", 0 },        // same
   { { 51.0f }, "zonesystem", 0 },    // same
