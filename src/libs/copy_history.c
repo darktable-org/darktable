@@ -104,12 +104,11 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   const int act_on_any = imgs != NULL;  // list length > 0?
   const int act_on_one = g_list_is_singleton(imgs); // list length == 1?
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("open sidecar file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN, _("_cancel"),
-      GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(filechooser);
-#endif
+  GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
+          _("open sidecar file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
+          _("_open"), _("_cancel"));
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+
   if(act_on_one)
   {
     //single image to load xmp to, assume we want to load from same dir
@@ -147,7 +146,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   gtk_file_filter_set_name(filter, _("all files"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
-  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dtfilename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     if(dt_history_load_and_apply_on_list(dtfilename, imgs) != 0)
@@ -176,7 +175,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     }
     g_free(dtfilename);
   }
-  gtk_widget_destroy(filechooser);
+  g_object_unref(filechooser);
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
