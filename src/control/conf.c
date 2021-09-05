@@ -137,9 +137,19 @@ void dt_conf_set_folder_from_file_chooser(const char *name, GtkFileChooser *choo
 {
 
 #ifdef WIN32
-  // Windows native file chooser does not need to save current folder
-  // moreover gtk_file_chooser_get_current_folder() does not work for Windows
-  if(GTK_IS_FILE_CHOOSER_NATIVE(chooser)) return;
+  // for Windows native file chooser, gtk_file_chooser_get_current_folder()
+  // does not work, so we workaround
+  if(GTK_IS_FILE_CHOOSER_NATIVE(chooser))
+  {
+    gchar *pathname = gtk_file_chooser_get_filename(chooser);
+    if(pathname)
+    {
+      gchar *folder = g_path_get_dirname(pathname);
+      if(dt_conf_set_if_not_overridden(name, folder)) g_free(folder);
+      g_free(pathname);
+    }
+    return;
+  }
 #endif
 
   gchar *folder = gtk_file_chooser_get_current_folder(chooser);
@@ -319,12 +329,6 @@ const char *dt_conf_get_string_const(const char *name)
 
 gboolean dt_conf_get_folder_to_file_chooser(const char *name, GtkFileChooser *chooser)
 {
-
-#ifdef WIN32
-  // Windows native file chooser does not need to be manually set to current folder
-  if(GTK_IS_FILE_CHOOSER_NATIVE(chooser)) return TRUE;
-#endif
-
   const gchar *folder = dt_conf_get_string_const(name);
   if (folder)
   {
