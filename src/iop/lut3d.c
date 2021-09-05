@@ -1552,9 +1552,9 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
     return;
   }
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("select lut file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN, _("_cancel"), GTK_RESPONSE_CANCEL,
-      _("_select"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+  GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
+        _("select lut file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
+        _("_select"), _("_cancel"));
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
   char *composed = g_build_filename(lutfolder, p->filepath, NULL);
@@ -1588,7 +1588,7 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
   gtk_file_filter_set_name(filter, _("all files"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
-  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *filepath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     if (strcmp(lutfolder, filepath) < 0)
@@ -1606,7 +1606,7 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
     gtk_widget_set_sensitive(g->filepath, p->filepath[0]);
   }
   g_free(lutfolder);
-  gtk_widget_destroy(filechooser);
+  g_object_unref(filechooser);
 }
 
 static void _show_hide_colorspace(dt_iop_module_t *self)
