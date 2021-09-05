@@ -52,7 +52,7 @@ static gboolean _gui_hist_is_copy_module_order_set(dt_history_copy_item_t *d)
   do
   {
       gtk_tree_model_get(model, &iter, DT_HIST_ITEMS_COL_ENABLED, &active, DT_HIST_ITEMS_COL_NUM, &num, -1);
-      if (active && (num == -1)) module_order_was_copied = TRUE;
+      if(active && (num == -1)) module_order_was_copied = TRUE;
   }
   while(gtk_tree_model_iter_next(model, &iter));
 
