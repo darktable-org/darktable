@@ -968,17 +968,12 @@ static void _import_preset_from_file(const gchar* filename)
 static void import_preset(GtkButton *button, gpointer data)
 {
   GtkTreeModel *model = (GtkTreeModel *)data;
-  GtkWidget *chooser;
   GtkWindow *win = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(button)));
 
   // Zero value indicates import
-  chooser = gtk_file_chooser_dialog_new(_("select preset to import"), win, GTK_FILE_CHOOSER_ACTION_OPEN,
-                                        _("_cancel"), GTK_RESPONSE_CANCEL,
-                                        _("_open"), GTK_RESPONSE_ACCEPT,
-                                        NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(chooser);
-#endif
+  GtkFileChooserNative *chooser = gtk_file_chooser_native_new(
+        _("select preset(s) to import"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
+        _("_open"), _("_cancel"));
 
   dt_conf_get_folder_to_file_chooser("ui_last/import_path", GTK_FILE_CHOOSER(chooser));
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(chooser), TRUE);
@@ -996,7 +991,7 @@ static void import_preset(GtkButton *button, gpointer data)
 
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(chooser), filter);
 
-  if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
   {
     GSList *filenames = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(chooser));
     g_slist_foreach(filenames, (GFunc)_import_preset_from_file, NULL);
@@ -1008,24 +1003,20 @@ static void import_preset(GtkButton *button, gpointer data)
 
     dt_conf_set_folder_from_file_chooser("ui_last/import_path", GTK_FILE_CHOOSER(chooser));
   }
-  gtk_widget_destroy(chooser);
+  g_object_unref(chooser);
 }
 
 static void export_preset(GtkButton *button, gpointer data)
 {
   GtkWindow *win = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(button)));
 
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new(_("select directory"), win, GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-                                                       _("_cancel"), GTK_RESPONSE_CANCEL,
-                                                       _("_save"), GTK_RESPONSE_ACCEPT,
-                                                       NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(filechooser);
-#endif
-  dt_conf_get_folder_to_file_chooser("ui_last/export_path", GTK_FILE_CHOOSER(filechooser));
-  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+  GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
+        _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+        _("_save"), _("_cancel"));
 
-  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  dt_conf_get_folder_to_file_chooser("ui_last/export_path", GTK_FILE_CHOOSER(filechooser));
+
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *filedir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     sqlite3_stmt *stmt;
@@ -1057,7 +1048,7 @@ static void export_preset(GtkButton *button, gpointer data)
 
     g_free(filedir);
   }
-  gtk_widget_destroy(filechooser);
+  g_object_unref(filechooser);
 }
 
 // Custom sort function for TreeModel entries for presets list

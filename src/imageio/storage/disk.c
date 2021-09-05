@@ -118,7 +118,8 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
   disk_t *d = (disk_t *)self->gui_data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-        _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_select as output destination"), _("_cancel"));
+        _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+        _("_select as output destination"), _("_cancel"));
 
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
   char *c = g_strstr_len(old, -1, "$");

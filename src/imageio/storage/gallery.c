@@ -104,20 +104,16 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
 {
   gallery_t *d = (gallery_t *)self->gui_data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
-      GTK_RESPONSE_CANCEL, _("_select as output destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(filechooser);
-#endif
+  GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
+         _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, 
+         _("_select as output destination"), _("_cancel"));
 
-  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
   char *c = g_strstr_len(old, -1, "$");
   if(c) *c = '\0';
   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), old);
   g_free(old);
-  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     char *composed = g_build_filename(dir, "$(FILE_NAME)", NULL);
@@ -132,7 +128,7 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
     g_free(composed);
     g_free(escaped);
   }
-  gtk_widget_destroy(filechooser);
+  g_object_unref(filechooser);
 }
 
 static void entry_changed_callback(GtkEntry *entry, gpointer user_data)
