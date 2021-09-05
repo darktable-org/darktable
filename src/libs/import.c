@@ -1541,7 +1541,7 @@ static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t *self)
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-      _("open folder"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_open"), _("_cancel"));
+      _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_open"), _("_cancel"));
 
   // run the native dialog
   dt_conf_get_folder_to_file_chooser("ui_last/import_last_place", GTK_FILE_CHOOSER(filechooser));

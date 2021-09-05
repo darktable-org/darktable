@@ -414,7 +414,6 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
 {
   GtkTreeView *treeview = GTK_TREE_VIEW(userdata);
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *filechooser;
 
   GtkTreeSelection *selection;
   GtkTreeIter iter, child;
@@ -432,21 +431,17 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
   gtk_tree_model_iter_parent(model, &iter, &child);
   gtk_tree_model_get(model, &child, DT_LIB_COLLECT_COL_PATH, &tree_path, -1);
 
-  filechooser = gtk_file_chooser_dialog_new(
-    _("search filmroll"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
-    GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(filechooser);
-#endif
+  GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
+          _("search filmroll"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+          _("_open"), _("_cancel"));
 
-  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   if(tree_path != NULL)
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), tree_path);
   else
     goto error;
 
   // run the dialog
-  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gint id = -1;
     sqlite3_stmt *stmt;
@@ -514,12 +509,12 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
   }
   g_free(tree_path);
   g_free(new_path);
-  gtk_widget_destroy(filechooser);
+  g_object_unref(filechooser);
   return;
 
 error:
   /* Something wrong happened */
-  gtk_widget_destroy(filechooser);
+  g_object_unref(filechooser);
   dt_control_log(_("problem selecting new path for the filmroll in %s"), tree_path);
 
   g_free(tree_path);

@@ -1730,17 +1730,14 @@ static void _export_clicked(GtkButton *button, gpointer user_data)
 
   if(resp != GTK_RESPONSE_OK) return;
 
-  GtkWidget *chooser = gtk_file_chooser_dialog_new(_("select file to export"), win, GTK_FILE_CHOOSER_ACTION_SAVE,
-                                                   _("_cancel"), GTK_RESPONSE_REJECT,
-                                                   _("_export"), GTK_RESPONSE_ACCEPT,
-                                                  NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(chooser);
-#endif
+  GtkFileChooserNative *chooser = gtk_file_chooser_native_new(
+        _("select file to export"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SAVE,
+        _("_export"), _("_cancel"));
+
   gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(chooser), TRUE);
   dt_conf_get_folder_to_file_chooser("ui_last/export_path", GTK_FILE_CHOOSER(chooser));
   gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(chooser), "shortcutsrc");
-  if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
 
@@ -1748,7 +1745,7 @@ static void _export_clicked(GtkButton *button, gpointer user_data)
     g_free(filename);
     dt_conf_set_folder_from_file_chooser("ui_last/export_path", GTK_FILE_CHOOSER(chooser));
   }
-  gtk_widget_destroy(chooser);
+  g_object_unref(chooser);
 }
 
 static void _import_id_changed(GtkComboBox *widget, gpointer user_data)
@@ -1820,16 +1817,13 @@ static void _import_clicked(GtkButton *button, gpointer user_data)
 
   if(resp != GTK_RESPONSE_OK) return;
 
-  GtkWidget *chooser = gtk_file_chooser_dialog_new(_("select file to import"), win, GTK_FILE_CHOOSER_ACTION_OPEN,
-                                                   _("_cancel"), GTK_RESPONSE_REJECT,
-                                                   _("_import"), GTK_RESPONSE_ACCEPT,
-                                                  NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(chooser);
-#endif
+  GtkFileChooserNative *chooser = gtk_file_chooser_native_new(
+        _("select file to import"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
+        _("_import"), _("_cancel"));
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(chooser), FALSE);
+
   dt_conf_get_folder_to_file_chooser("ui_last/import_path", GTK_FILE_CHOOSER(chooser));
-  gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(chooser), "shortcutsrc");
-  if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
 
@@ -1866,7 +1860,7 @@ static void _import_clicked(GtkButton *button, gpointer user_data)
     g_free(filename);
     dt_conf_set_folder_from_file_chooser("ui_last/import_path", GTK_FILE_CHOOSER(chooser));
   }
-  gtk_widget_destroy(chooser);
+  g_object_unref(chooser);
 
   dt_shortcuts_save(NULL, FALSE);
 }
