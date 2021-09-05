@@ -2295,17 +2295,14 @@ static void _import_button_clicked(GtkButton *button, dt_lib_module_t *self)
   }
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new(_("Select a keyword file"), GTK_WINDOW(win),
-                                                       GTK_FILE_CHOOSER_ACTION_OPEN,
-                                                       _("_cancel"), GTK_RESPONSE_CANCEL,
-                                                       _("_import"), GTK_RESPONSE_ACCEPT, (char *)NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(filechooser);
-#endif
+  GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
+        _("select a keyword file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
+        _("_import"), _("_cancel"));
+
   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), last_dirname);
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
-  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     char *dirname = g_path_get_dirname(filename);
@@ -2319,7 +2316,7 @@ static void _import_button_clicked(GtkButton *button, dt_lib_module_t *self)
     g_free(dirname);
   }
 
-  gtk_widget_destroy(filechooser);
+  g_object_unref(filechooser);
   _init_treeview(self, 1);
 }
 
@@ -2334,18 +2331,15 @@ static void _export_button_clicked(GtkButton *button, dt_lib_module_t *self)
   }
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new(_("Select file to export to"), GTK_WINDOW(win),
-                                                       GTK_FILE_CHOOSER_ACTION_SAVE,
-                                                       _("_cancel"), GTK_RESPONSE_CANCEL,
-                                                       _("_export"), GTK_RESPONSE_ACCEPT, (char *)NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(filechooser);
-#endif
+  GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
+        _("select file to export to"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SAVE,
+        _("_export"), _("_cancel"));
+
   gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(filechooser), TRUE);
   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), last_dirname);
   gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(filechooser), export_filename);
 
-  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     char *dirname = g_path_get_dirname(filename);
@@ -2361,7 +2355,7 @@ static void _export_button_clicked(GtkButton *button, dt_lib_module_t *self)
 
   g_date_time_unref(now);
   g_free(export_filename);
-  gtk_widget_destroy(filechooser);
+  g_object_unref(filechooser);
 }
 
 static void _update_layout(dt_lib_module_t *self)
