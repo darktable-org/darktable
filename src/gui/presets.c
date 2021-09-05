@@ -361,16 +361,13 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
     const gchar *name = gtk_entry_get_text(g->name);
 
     // ask for destination directory
-    GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-        _("select directory"), GTK_WINDOW(dialog), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
-        GTK_RESPONSE_CANCEL, _("_select as output destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(filechooser);
-#endif
+    GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
+          _("select directory"), GTK_WINDOW(dialog), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+          _("_select as output destination"), _("_cancel"));
     dt_conf_get_folder_to_file_chooser("ui_last/export_path", GTK_FILE_CHOOSER(filechooser));
 
     // save if accepted
-    if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+    if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
     {
       char *filedir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
       dt_presets_save_to_file(g->old_id, name, filedir);
@@ -379,7 +376,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
       dt_conf_set_folder_from_file_chooser("ui_last/export_path", GTK_FILE_CHOOSER(filechooser));
     }
 
-    gtk_widget_destroy(GTK_WIDGET(filechooser));
+    g_object_unref(GTK_WIDGET(filechooser));
     return; // we don't close the window so other actions can be performed if needed
   }
   else if(response_id == GTK_RESPONSE_REJECT && g->old_id)
