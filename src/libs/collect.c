@@ -501,6 +501,9 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
       /* reset filter so that view isn't empty */
       dt_view_filter_reset(darktable.view_manager, FALSE);
 
+      // refresh the folders status
+      dt_film_set_folder_status();
+
       /* update collection to view missing filmroll */
       _lib_folders_update_collection(new_path);
 
