@@ -1823,7 +1823,6 @@ static void _import_clicked(GtkButton *button, gpointer user_data)
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(chooser), FALSE);
 
   dt_conf_get_folder_to_file_chooser("ui_last/import_path", GTK_FILE_CHOOSER(chooser));
-  //gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(chooser), "shortcutsrc"); is it accepted in Linux?
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
