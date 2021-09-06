@@ -55,7 +55,7 @@ jobs:
           channel: '#darktable'
           nickname: dtslav
           message: |-
-            Helo, there be ${{ steps.gitlog.outputs.llc }} new commit(s) to ${{ github.repository }}:
+            Showing last ${{ steps.gitlog.outputs.llc }} commit(s) to ${{ github.repository }}:
             ${{ steps.gitlog.outputs.log }}
       - uses: actions/upload-artifact@v2
         with:
