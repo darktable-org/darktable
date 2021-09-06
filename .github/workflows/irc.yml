@@ -1,0 +1,64 @@
+name: IRC Notification
+
+on:
+  schedule:
+  - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  dtslave:
+    if: github.repository == 'darktable-org/darktable'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          path: src
+      - uses: dawidd6/action-download-artifact@v2
+        continue-on-error: true
+        with:
+          workflow: irc.yml
+          name: recent_commit
+      - name: git log
+        id: gitlog
+        run: |
+          cd src;
+          if [ ! -f ../recent_commit ]; then
+            git log --format="%H" -n 1 --skip 10 > ../recent_commit
+          fi;
+          git log --format="%H" -n 1 > ../current_commit
+          if cmp -s ../recent_commit ../current_commit; then
+            echo "no new commits since last run"
+            echo "::set-output name=log::"
+          else
+            git log --reverse --first-parent --pretty=format:"%h: %s (%aN)" `cat ../recent_commit`..`cat ../current_commit` >> ../log
+            echo "current log:"
+            cat ../log
+            echo "";
+            echo "setting output..."
+            output="$(cat ../log)"
+            output="${output//'%'/'%25'}"
+            output="${output//$'\n'/'%0A'}"
+            output="${output//$'\r'/'%0D'}"
+            echo "::set-output name=log::$output"
+            echo ""
+            echo "" >> ../log
+            echo "::set-output name=llc::$(wc -l < ../log)"
+          fi;
+          cd ..
+          mv -f current_commit recent_commit
+      - name: IRC notification
+        if: ${{ steps.gitlog.outputs.log != '' }}
+        uses: Gottox/irc-message-action@v2
+        with:
+          server: "irc.oftc.net"
+          channel: '#darktable'
+          nickname: dtslav
+          message: |-
+            Helo, there be ${{ steps.gitlog.outputs.llc }} new commit(s) to ${{ github.repository }}:
+            ${{ steps.gitlog.outputs.log }}
+      - uses: actions/upload-artifact@v2
+        with:
+          name: recent_commit
+          path: recent_commit
+          if-no-files-found: warn
