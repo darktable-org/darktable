@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-06-22 11:42+0300\n"
-"PO-Revision-Date: 2021-06-22 12:31+0300\n"
+"PO-Revision-Date: 2021-09-06 16:17+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 2.4.3\n"
+"X-Generator: Poedit 3.0\n"
 
 #: ../build/bin/preferences_gen.h:67 ../build/bin/preferences_gen.h:3510
 #: ../build/bin/preferences_gen.h:3546 ../build/bin/preferences_gen.h:3582
@@ -3225,13 +3225,13 @@ msgstr "яскравість середнього сірого"
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:166
 #: ../src/iop/filmic.c:1621
 msgid "black relative exposure"
-msgstr "експозиція відносно чорного"
+msgstr "відносна експозиція чорного"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:213
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:414
 #: ../src/iop/filmic.c:1609
 msgid "white relative exposure"
-msgstr "експозиція відносно білого"
+msgstr "відносна експозиція білого"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:225
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:422
@@ -8963,7 +8963,7 @@ msgstr "вибраний вихідний профіль погано працю
 
 #: ../src/imageio/format/exr.cc:355
 msgid "OpenEXR (float)"
-msgstr "OpenEXR (рухома крапка)"
+msgstr "OpenEXR (рухома кома)"
 
 #: ../src/imageio/format/exr.cc:374
 msgid "compression mode"
@@ -9207,7 +9207,7 @@ msgstr ""
 
 #: ../src/imageio/format/pfm.c:118
 msgid "PFM (float)"
-msgstr "PFM (рухома крапка)"
+msgstr "PFM (рухома кома)"
 
 #: ../src/imageio/format/png.c:484
 msgid "PNG (8/16-bit)"
@@ -9227,7 +9227,7 @@ msgstr "TIFF (8/16/32 біт)"
 
 #: ../src/imageio/format/tiff.c:811
 msgid "32 bit (float)"
-msgstr "32 біти (рухома крапка)"
+msgstr "32 біти (рухома кома)"
 
 #: ../src/imageio/format/tiff.c:826
 msgid "deflate with predictor"
@@ -20638,7 +20638,7 @@ msgstr "позначити кольором обрізаного каналу"
 
 #: ../src/views/darkroom.c:2222
 msgid "mark with solid color"
-msgstr "позначити суцільним колором"
+msgstr "позначити суцільним кольором"
 
 #: ../src/views/darkroom.c:2223
 msgid "false color"
