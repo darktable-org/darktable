@@ -1802,7 +1802,6 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       const int hovered = (darktable.bauhaus->mouse_y - darktable.bauhaus->widget_space) / darktable.bauhaus->line_height;
       gchar *keys = g_utf8_casefold(darktable.bauhaus->keys, -1);
       const PangoEllipsizeMode ellipsis = d->entries_ellipsis;
-      wd *= d->scale;
       ht = darktable.bauhaus->line_height;
 
       for(GList *it = d->entries; it; it = g_list_next(it))
