@@ -444,7 +444,7 @@ static gchar *_shortcut_key_move_name(dt_input_device_t id, guint key_or_move, g
       driver = driver->next;
 
     if(!driver)
-      name = g_strdup(_("Unknown driver"));
+      name = g_strdup(_("unknown driver"));
     else
     {
       dt_input_driver_definition_t *callbacks = driver->data;
