@@ -1013,6 +1013,11 @@ popover separator
   background-color: @selected_bg_color;
 }
 
+combobox separator
+{
+  min-height: 1px;
+}
+
 /*----------------------
   - GTK Notebooks tabs -
   ----------------------*/
