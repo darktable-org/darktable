@@ -101,7 +101,6 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE, FALSE));
   if(!imgs)
     return;
-  const int act_on_any = imgs != NULL;  // list length > 0?
   const int act_on_one = g_list_is_singleton(imgs); // list length == 1?
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
@@ -168,7 +167,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
                                     g_list_copy((GList *)imgs), 0);
       dt_control_queue_redraw_center();
     }
-    if(act_on_any)
+    if(!act_on_one)
     {
       //remember last import path if applying history to multiple images
       dt_conf_set_folder_from_file_chooser("ui_last/import_path", GTK_FILE_CHOOSER(filechooser));
