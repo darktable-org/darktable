@@ -130,7 +130,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     m = f.readFile();
     dt_pthread_mutex_unlock(&darktable.readFile_mutex);
 
-    RawParser t(m.get());
+    RawParser t(*m.get());
     d = t.getDecoder(meta);
 
     if(!d.get()) return DT_IMAGEIO_FILE_CORRUPTED;
