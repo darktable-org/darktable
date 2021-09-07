@@ -1199,6 +1199,33 @@ void dtgtk_cairo_paint_jzazbz(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   FINISH
 }
 
+void dtgtk_cairo_paint_ryb(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  // FIXME: change icon to "RYB"
+
+  cairo_move_to(cr, 0.0, 0.7);
+  cairo_line_to(cr, 0.0, 0.2);
+  cairo_curve_to(cr, 0.5, 0.25, -0.2, 0.45, 0.45, 0.7);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, 0.5, 0.5);
+  cairo_line_to(cr, 1.0, 0.0);
+  cairo_stroke(cr);
+  cairo_move_to(cr, 0.75, 0.25);
+  cairo_line_to(cr, 0.4, 0.0);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, 0.55, 1.0);
+  cairo_line_to(cr, 0.55, 0.5);
+  cairo_curve_to(cr, 1.0, 0.55, 1.0, 0.7, 0.55, 0.75);
+  cairo_curve_to(cr, 1.3, 0.8, 1.3, 0.95, 0.4, 1.0);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_filmstrip(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   gdouble sw = 0.6;
