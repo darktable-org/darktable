@@ -98,7 +98,7 @@ static void write_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 
 static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 {
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE, FALSE);
+  GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE, FALSE));
   if(!imgs)
     return;
   const int act_on_any = imgs != NULL;  // list length > 0?
@@ -176,6 +176,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     g_free(dtfilename);
   }
   g_object_unref(filechooser);
+  g_list_free(imgs);
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
