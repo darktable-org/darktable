@@ -886,7 +886,7 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const c
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   memset(w->label, 0, sizeof(w->label)); // keep valgrind happy
-  g_strlcpy(w->label, _(label), sizeof(w->label));
+  if(label) g_strlcpy(w->label, _(label), sizeof(w->label));
   if(section) w->section = g_strdup(_(section));
 
   if(w->module)
@@ -1064,6 +1064,19 @@ GtkWidget *dt_bauhaus_combobox_new_action(dt_action_t *self)
   return dt_bauhaus_combobox_new((dt_iop_module_t *)self);
 }
 
+GtkWidget *dt_bauhaus_combobox_new_full(dt_action_t *action, const char *section, const char *label, const char *tip,
+                                        int pos, GtkCallback callback, gpointer data, const char **texts)
+{
+  GtkWidget *combo = dt_bauhaus_combobox_new_action(action);
+  dt_bauhaus_widget_set_label(combo, section, label);
+  dt_bauhaus_combobox_add_list(combo, (dt_action_t *)(DT_BAUHAUS_WIDGET(combo)->module), texts);
+  dt_bauhaus_combobox_set(combo, pos);
+  gtk_widget_set_tooltip_text(combo, tip ? tip : _(label));
+  if(callback) g_signal_connect(G_OBJECT(combo), "value-changed", G_CALLBACK(callback), data);
+
+  return combo;
+}
+
 void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *self)
 {
   w->type = DT_BAUHAUS_COMBOBOX;
@@ -1101,6 +1114,15 @@ void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(GtkWidg
   w->combo_populate = fct;
 }
 
+void dt_bauhaus_combobox_add_list(GtkWidget *widget, dt_action_t *action, const char **texts)
+{
+  if(action)
+    g_hash_table_insert(darktable.control->combo_list, action, texts);
+
+  while(texts && *texts)
+    dt_bauhaus_combobox_add_full(widget, _(*(texts++)), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, NULL, NULL, TRUE);
+}
+
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text)
 {
   dt_bauhaus_combobox_add_full(widget, text, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, NULL, NULL, TRUE);
@@ -1119,6 +1141,8 @@ void dt_bauhaus_combobox_add_aligned(GtkWidget *widget, const char *text, dt_bau
 void dt_bauhaus_combobox_add_full(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align,
                                   gpointer data, void (free_func)(void *data), gboolean sensitive)
 {
+  if(darktable.control->accel_initialising) return;
+
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
@@ -3062,7 +3086,8 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
       dt_bauhaus_combobox_set(widget, value);
       break;
     default:
-      fprintf(stderr, "[_action_process_combo] unknown shortcut effect (%d) for combo\n", effect);
+      value = effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1;
+      dt_bauhaus_combobox_set(widget, value);
       break;
     }
 

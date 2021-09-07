@@ -3465,7 +3465,7 @@ void reload_defaults(dt_iop_module_t *module)
     dt_bauhaus_slider_set_default(g->temperature, d->temperature);
     dt_bauhaus_combobox_set_default(g->illuminant, d->illuminant);
     dt_bauhaus_combobox_set_default(g->adaptation, d->adaptation);
-    if(g->delta_E_label_text) 
+    if(g->delta_E_label_text)
     {
       g_free(g->delta_E_label_text);
       g->delta_E_label_text = NULL;
@@ -3804,34 +3804,32 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->collapsible = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->checkers_list = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->checkers_list, NULL, _("chart"));
-  dt_bauhaus_combobox_add(g->checkers_list, _("Xrite ColorChecker 24 pre-2014"));
-  dt_bauhaus_combobox_add(g->checkers_list, _("Xrite ColorChecker 24 post-2014"));
-  dt_bauhaus_combobox_add(g->checkers_list, _("Datacolor SpyderCheckr 24 pre-2018"));
-  dt_bauhaus_combobox_add(g->checkers_list, _("Datacolor SpyderCheckr 24 post-2018"));
-  dt_bauhaus_combobox_add(g->checkers_list, _("Datacolor SpyderCheckr 48 pre-2018"));
-  dt_bauhaus_combobox_add(g->checkers_list, _("Datacolor SpyderCheckr 48 post-2018"));
-  g_signal_connect(G_OBJECT(g->checkers_list), "value-changed", G_CALLBACK(checker_changed_callback), self);
-  gtk_widget_set_tooltip_text(g->checkers_list, _("choose the vendor and the type of your chart"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->checkers_list, self, NULL, N_("chart"),
+                                _("choose the vendor and the type of your chart"),
+                                0, checker_changed_callback, self,
+                                N_("Xrite ColorChecker 24 pre-2014"),
+                                N_("Xrite ColorChecker 24 post-2014"),
+                                N_("Datacolor SpyderCheckr 24 pre-2018"),
+                                N_("Datacolor SpyderCheckr 24 post-2018"),
+                                N_("Datacolor SpyderCheckr 48 pre-2018"),
+                                N_("Datacolor SpyderCheckr 48 post-2018"));
   gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(g->checkers_list), TRUE, TRUE, 0);
 
-  g->optimize = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->optimize, NULL, _("optimize for"));
-  dt_bauhaus_combobox_add(g->optimize, _("none"));
-  dt_bauhaus_combobox_add(g->optimize, _("neutral colors"));
-  dt_bauhaus_combobox_add(g->optimize, _("saturated colors"));
-  dt_bauhaus_combobox_add(g->optimize, _("skin and soil colors"));
-  dt_bauhaus_combobox_add(g->optimize, _("foliage colors"));
-  dt_bauhaus_combobox_add(g->optimize, _("sky and water colors"));
-  dt_bauhaus_combobox_add(g->optimize, _("average delta E"));
-  dt_bauhaus_combobox_add(g->optimize, _("maximum delta E"));
-  g_signal_connect(G_OBJECT(g->optimize), "value-changed", G_CALLBACK(optimize_changed_callback), self);
-  gtk_widget_set_tooltip_text(g->optimize, _("choose the colors that will be optimized with higher priority.\n"
-                                             "neutral colors gives the lowest average delta E but a high maximum delta E\n"
-                                             "saturated colors gives the lowest maximum delta E but a high average delta E\n"
-                                             "none is a trade-off between both\n"
-                                             "the others are special behaviours to protect some hues"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->optimize, self, NULL, N_("optimize for"),
+                                _("choose the colors that will be optimized with higher priority.\n"
+                                  "neutral colors gives the lowest average delta E but a high maximum delta E\n"
+                                  "saturated colors gives the lowest maximum delta E but a high average delta E\n"
+                                  "none is a trade-off between both\n"
+                                  "the others are special behaviours to protect some hues"),
+                                0, optimize_changed_callback, self,
+                                N_("none"),
+                                N_("neutral colors"),
+                                N_("saturated colors"),
+                                N_("skin and soil colors"),
+                                N_("foliage colors"),
+                                N_("sky and water colors"),
+                                N_("average delta E"),
+                                N_("maximum delta E"));
   gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(g->optimize), TRUE, TRUE, 0);
 
   g->safety = dt_bauhaus_slider_new_with_range_and_feedback(self, 0., 1., 0.1, 0.5, 3, TRUE);
