@@ -19,6 +19,7 @@
 #pragma once
 
 #include "develop/imageop.h"
+#include "views/view.h"
 
 typedef void (*dt_guides_draw_callback)(cairo_t *cr, const float x, const float y,
                                         const float w, const float h,
@@ -42,7 +43,7 @@ void dt_guides_cleanup(GList *guides);
 void dt_guides_add_guide(const char *name, dt_guides_draw_callback draw, dt_guides_widget_callback widget, void *user_data, GDestroyNotify free);
 
 // create the popover to setup the guides
-GtkWidget *dt_guides_popover(GtkWidget *button);
+GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button);
 
 // draw the guide on screen
 void dt_guides_draw(cairo_t *cr, const float left, const float top, const float width, const float height,
@@ -50,7 +51,7 @@ void dt_guides_draw(cairo_t *cr, const float left, const float top, const float 
 
 // routines for the module toolbar button
 void dt_guides_update_button_state();
-void dt_guides_button_toggled();
+void dt_guides_button_toggled(gboolean active);
 
 // show the menuitem for modules
 void dt_guides_add_module_menuitem(void *menu, struct dt_iop_module_t *module);
