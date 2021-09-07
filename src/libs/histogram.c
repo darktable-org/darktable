@@ -388,7 +388,7 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       delta[ch] = (vertex_rgb[(k+1)%6][ch] - vertex_rgb[k][ch]) / VECTORSCOPE_HUES;
     for(int i=0; i < VECTORSCOPE_HUES; i++)
     {
-      dt_aligned_pixel_t rgb_scope, XYZ_D50, chromaticity;
+      dt_aligned_pixel_t rgb_scope, XYZ_D50 = { 0 }, chromaticity = { 0 };
       for_each_channel(ch, aligned(vertex_rgb, delta, rgb_scope:16))
         rgb_scope[ch] = vertex_rgb[k][ch] + delta[ch] * i;
       switch(vs_type)
