@@ -384,8 +384,8 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   for(int k=0; k<6; k++)
   {
     dt_aligned_pixel_t delta;
-    for_each_channel(ch, aligned(vertex_rgb,delta:16))
-      delta[ch]=(vertex_rgb[(k+1)%6][ch] - vertex_rgb[k][ch]) / VECTORSCOPE_HUES;
+    for_each_channel(ch, aligned(vertex_rgb, delta:16))
+      delta[ch] = (vertex_rgb[(k+1)%6][ch] - vertex_rgb[k][ch]) / VECTORSCOPE_HUES;
     for(int i=0; i < VECTORSCOPE_HUES; i++)
     {
       dt_aligned_pixel_t rgb_scope, XYZ_D50, chromaticity;
