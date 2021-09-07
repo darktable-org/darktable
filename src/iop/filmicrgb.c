@@ -160,6 +160,14 @@ typedef enum dt_iop_filmic_rgb_gui_mode_t
   DT_FILMIC_GUI_LAST
 } dt_iop_filmic_rgb_gui_mode_t;
 
+// copy enum definition for introspection
+typedef enum dt_iop_filmic_noise_distribution_t
+{
+  DT_FILMIC_NOISE_UNIFORM = DT_NOISE_UNIFORM,      // $DESCRIPTION: "uniform"
+  DT_FILMIC_NOISE_GAUSSIAN = DT_NOISE_GAUSSIAN,    // $DESCRIPTION: "gaussian"
+  DT_FILMIC_NOISE_POISSONIAN = DT_NOISE_POISSONIAN // $DESCRIPTION: "poissonian"
+} dt_iop_filmic_noise_distribution_t;
+
 // clang-format off
 typedef struct dt_iop_filmicrgb_params_t
 {
@@ -186,7 +194,7 @@ typedef struct dt_iop_filmicrgb_params_t
   gboolean auto_hardness;                       // $DEFAULT: TRUE $DESCRIPTION: "auto adjust hardness"
   gboolean custom_grey;                         // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-gray values"
   int high_quality_reconstruction;       // $MIN: 0 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "iterations of high-quality reconstruction"
-  int noise_distribution;                // $DEFAULT: DT_NOISE_GAUSSIAN $DESCRIPTION: "type of noise"
+  dt_iop_filmic_noise_distribution_t noise_distribution; // $DEFAULT: DT_NOISE_GAUSSIAN $DESCRIPTION: "type of noise"
   dt_iop_filmicrgb_curve_type_t shadows; // $DEFAULT: DT_FILMIC_CURVE_RATIONAL $DESCRIPTION: "contrast in shadows"
   dt_iop_filmicrgb_curve_type_t highlights; // $DEFAULT: DT_FILMIC_CURVE_RATIONAL $DESCRIPTION: "contrast in highlights"
   gboolean compensate_icc_black; // $DEFAULT: FALSE $DESCRIPTION: "compensate output ICC profile black point"
@@ -2359,7 +2367,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->preserve_color = p->preserve_color;
   d->high_quality_reconstruction = p->high_quality_reconstruction;
   d->noise_level = p->noise_level;
-  d->noise_distribution = p->noise_distribution;
+  d->noise_distribution = (dt_noise_distribution_t)p->noise_distribution;
 
   // compute the curves and their LUT
   dt_iop_filmic_rgb_compute_spline(p, &d->spline);
@@ -3889,9 +3897,6 @@ void gui_init(dt_iop_module_t *self)
 
   // Noise distribution
   g->noise_distribution = dt_bauhaus_combobox_from_params(self, "noise_distribution");
-  dt_bauhaus_combobox_add(g->noise_distribution, _("uniform"));
-  dt_bauhaus_combobox_add(g->noise_distribution, _("gaussian"));
-  dt_bauhaus_combobox_add(g->noise_distribution, _("poissonian"));
   gtk_widget_set_tooltip_text(g->noise_distribution, _("choose the statistical distribution of noise.\n"
                                                        "this is useful to match natural sensor noise pattern.\n"));
 

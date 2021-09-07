@@ -713,6 +713,11 @@ spinbutton>button
   padding: 0 0.35em 0 0.21em;
 }
 
+#filter-box
+{
+  min-width: 50em;
+}
+
 /*-------------------
   - Scope/Histogram -
   -------------------*/
@@ -1006,6 +1011,11 @@ popover separator
   margin: 0.6em 2em;
   padding-bottom: 0.07em;
   background-color: @selected_bg_color;
+}
+
+combobox separator
+{
+  min-height: 1px;
 }
 
 /*----------------------
