@@ -664,21 +664,13 @@ static uint32_t _tag_get_attached_export(const gint imgid, GList **result)
   if(!(imgid > 0)) return 0;
 
   sqlite3_stmt *stmt;
-  gchar *query = g_strdup_printf(
-                          "SELECT DISTINCT T.id, T.name, T.flags, T.synonyms"
-                          // all tags
-                          " FROM data.tags AS T"
-                          // tags attached to image(s), not dt tag, ordered by name
-                          " JOIN (SELECT DISTINCT I.tagid, T.name"
-                          "       FROM main.tagged_images AS I"
-                          "       JOIN data.tags AS T ON T.id = I.tagid"
-                          "       WHERE I.imgid = %d AND T.id NOT IN memory.darktable_tags"
-                          "       ORDER by T.name) AS T1"
-                          // keep all tags in the path
-                          "   ON T.name = SUBSTR(T1.name, 1, LENGTH(T.name))",
-                          imgid);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT DISTINCT TI.tagid, T.name, T.flags, T.synonyms"
+                              " FROM main.tagged_images AS TI"
+                              " JOIN data.tags AS T ON T.id = TI.tagid"
+                              " WHERE TI.imgid = ?1 AND TI.tagid NOT IN memory.darktable_tags",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   // Create result
   uint32_t count = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -694,7 +686,6 @@ static uint32_t _tag_get_attached_export(const gint imgid, GList **result)
     count++;
   }
   sqlite3_finalize(stmt);
-  g_free(query);
 
   return count;
 }
