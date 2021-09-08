@@ -404,6 +404,7 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *values_toggle;
   GtkGrid *auto_grid;
   GtkWidget *draw_structure;
+  GtkWidget *draw_direct_structure;
   gboolean values_expanded;
   gboolean straightening;
   float straighten_x;
@@ -463,6 +464,8 @@ typedef struct dt_iop_ashift_gui_data_t
   float draw_pointmove_x;
   float draw_pointmove_y;
   float *draw_points;
+
+  gboolean draw_direct;
 } dt_iop_ashift_gui_data_t;
 
 typedef struct dt_iop_ashift_data_t
@@ -2806,6 +2809,7 @@ static int do_clean_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p
   g->lines_version++;
   g->lines_suppressed = 0;
   g->draw_fitting = FALSE;
+  g->draw_direct = FALSE;
   g->fitting = 0;
   return TRUE;
 }
@@ -3656,6 +3660,29 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_restore(cr);
   }
 
+  // we draw the draw direct line
+  if(g->draw_direct && g->draw_point_move)
+  {
+    cairo_save(cr);
+    cairo_translate(cr, width / 2.0, height / 2.0);
+    cairo_scale(cr, zoom_scale, zoom_scale);
+    cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
+    dt_draw_set_color_overlay(cr, 0.3, 1.0);
+
+    float pzx, pzy;
+    dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
+    pzx += 0.5f;
+    pzy += 0.5f;
+
+    const float bzx = g->draw_pointmove_x, bzy = g->draw_pointmove_y;
+    cairo_move_to(cr, bzx * wd, bzy * ht);
+    cairo_line_to(cr, pzx * wd, pzy * ht);
+    cairo_stroke(cr);
+
+    cairo_restore(cr);
+  }
+
   // structural data are currently being collected or fit procedure is running? -> skip
   if(g->fitting) return;
 
@@ -3863,11 +3890,38 @@ static void _draw_recompute_line_length(dt_iop_ashift_line_t *line)
                       + (line->p2[1] - line->p1[1]) * (line->p2[1] - line->p1[1]));
 }
 
+static void _draw_basic_line(dt_iop_ashift_line_t *line, int x1, int y1, int x2, int y2,
+                             dt_iop_ashift_linetype_t type)
+{
+  // store as homogeneous coordinates
+  line->p1[0] = x1;
+  line->p1[1] = y1;
+  line->p1[2] = 1.0f;
+  line->p2[0] = x2;
+  line->p2[1] = y2;
+  line->p2[2] = 1.0f;
+
+  // calculate homogeneous coordinates of connecting line (defined by the two points)
+  vec3prodn(line->L, line->p1, line->p2);
+
+  // normalaze line coordinates so that x^2 + y^2 = 1
+  // (this will always succeed as L is a real line connecting two real points)
+  vec3lnorm(line->L, line->L);
+
+  // length and width of rectangle (see LSD)
+  line->length = sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+  line->width = 1.0f;
+  line->weight = 1.0f;
+
+  // register type of line
+  line->type = type;
+}
+
 int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-  if(g->straightening)
+  if(g->straightening || (g->draw_direct && g->draw_point_move))
   {
     dt_control_queue_redraw_center();
     return TRUE;
@@ -4043,7 +4097,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   }
 
   // if visibility of lines is switched off or no lines available -> potentially adjust crop area
-  if(g->lines_suppressed || g->lines == NULL)
+  if(!g->draw_direct && (g->lines_suppressed || g->lines == NULL))
   {
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     if (p->cropmode == ASHIFT_CROP_ASPECT)
@@ -4076,6 +4130,16 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     return TRUE;
   }
   if(g->draw_fitting) return FALSE;
+
+  if(g->draw_direct && which == 1)
+  {
+    g->draw_point_move = TRUE;
+    g->lastx = x;
+    g->lasty = y;
+    g->draw_pointmove_x = pzx;
+    g->draw_pointmove_y = pzy;
+    return TRUE;
+  }
 
   // remember lines version at this stage so we can continuously monitor if the
   // lines have changed in-between
@@ -4149,6 +4213,8 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  const float wd = self->dev->preview_pipe->backbuf_width;
+  const float ht = self->dev->preview_pipe->backbuf_height;
 
   dt_control_change_cursor(GDK_LEFT_PTR);
 
@@ -4186,6 +4252,47 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     return TRUE;
   }
 
+  if(g->draw_direct && g->draw_point_move)
+  {
+    float pzx = 0.0f, pzy = 0.0f;
+    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+    pzx += 0.5f;
+    pzy += 0.5f;
+    float pts[4] = { g->draw_pointmove_x * wd, g->draw_pointmove_y * ht, pzx * wd, pzy * ht };
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
+                                      DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
+
+    const int count = g->lines_count + 1;
+    dt_iop_ashift_line_t *lines = (dt_iop_ashift_line_t *)malloc(sizeof(dt_iop_ashift_line_t) * count);
+    for(int i = 0; i < g->lines_count; i++)
+    {
+      lines[i] = g->lines[i];
+    }
+    if(g->lines) free(g->lines);
+    g->lines = lines;
+    g->lines_count = count;
+    dt_iop_ashift_linetype_t linetype = ASHIFT_LINE_VERTICAL_SELECTED;
+    if(abs(pts[2] - pts[0]) > abs(pts[3] - pts[1])) linetype = ASHIFT_LINE_HORIZONTAL_SELECTED;
+    _draw_basic_line(&g->lines[count - 1], pts[0], pts[1], pts[2], pts[3], linetype);
+
+    if(linetype == ASHIFT_LINE_VERTICAL_SELECTED)
+    {
+      g->vertical_count++;
+      g->vertical_weight += 1.0f;
+    }
+    else
+    {
+      g->horizontal_count++;
+      g->horizontal_weight += 1.0f;
+    }
+    g->lines_version++;
+    g->lines_suppressed = 0;
+    g->draw_point_move = FALSE;
+
+    dt_control_queue_redraw_center();
+    return TRUE;
+  }
+
   // release a draw corner
   if(g->draw_point_move)
   {
@@ -4215,9 +4322,6 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 
     pzx += 0.5f;
     pzy += 0.5f;
-
-    const float wd = self->dev->preview_pipe->backbuf_width;
-    const float ht = self->dev->preview_pipe->backbuf_height;
 
     if(wd >= 1.0 && ht >= 1.0)
     {
@@ -4929,33 +5033,6 @@ static void _event_values_expander_click(GtkWidget *widget, GdkEventButton *e, g
                                !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->values_toggle)));
 }
 
-static void _draw_basic_line(dt_iop_ashift_line_t *line, int x1, int y1, int x2, int y2,
-                             dt_iop_ashift_linetype_t type)
-{
-  // store as homogeneous coordinates
-  line->p1[0] = x1;
-  line->p1[1] = y1;
-  line->p1[2] = 1.0f;
-  line->p2[0] = x2;
-  line->p2[1] = y2;
-  line->p2[2] = 1.0f;
-
-  // calculate homogeneous coordinates of connecting line (defined by the two points)
-  vec3prodn(line->L, line->p1, line->p2);
-
-  // normalaze line coordinates so that x^2 + y^2 = 1
-  // (this will always succeed as L is a real line connecting two real points)
-  vec3lnorm(line->L, line->L);
-
-  // length and width of rectangle (see LSD)
-  line->length = sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-  line->width = 1.0f;
-  line->weight = 1.0f;
-
-  // register type of line
-  line->type = type;
-}
-
 static int _event_draw_structure_click(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -4995,6 +5072,29 @@ static int _event_draw_structure_click(GtkWidget *widget, GdkEventButton *event,
 
     dt_control_queue_redraw_center();
   }
+  return TRUE;
+}
+
+static int _event_draw_direct_structure_click(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  if(darktable.gui->reset) return FALSE;
+
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
+
+  do_clean_structure(self, p);
+
+  g->draw_direct = TRUE;
+
+  g->lines_in_width = piece->iwidth;
+  g->lines_in_height = piece->iheight;
+  g->lines_x_off = 0;
+  g->lines_y_off = 0;
+
+  dt_control_queue_redraw_center();
+
   return TRUE;
 }
 
@@ -5124,33 +5224,37 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->fit_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 1, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_v), TRUE);
-  gtk_grid_attach(g->auto_grid, g->fit_v, 2, 0, 1, 1);
+  gtk_grid_attach(g->auto_grid, g->fit_v, 1, 0, 2, 1);
 
   g->fit_h = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 2, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_h), TRUE);
-  gtk_grid_attach(g->auto_grid, g->fit_h, 3, 0, 1, 1);
+  gtk_grid_attach(g->auto_grid, g->fit_h, 3, 0, 2, 1);
 
   g->fit_both = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 3, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_both), TRUE);
-  gtk_grid_attach(g->auto_grid, g->fit_both, 4, 0, 1, 1);
+  gtk_grid_attach(g->auto_grid, g->fit_both, 5, 0, 2, 1);
 
   gtk_grid_attach(g->auto_grid, dt_ui_label_new(_("get structure")), 0, 1, 1, 1);
 
+  g->draw_direct_structure = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_drawn, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->draw_direct_structure), TRUE);
+  gtk_grid_attach(g->auto_grid, g->draw_direct_structure, 1, 1, 1, 1);
+
   g->draw_structure = dtgtk_togglebutton_new(dtgtk_cairo_paint_draw_structure, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->draw_structure), TRUE);
-  gtk_grid_attach(g->auto_grid, g->draw_structure, 1, 1, 1, 1);
+  gtk_grid_attach(g->auto_grid, g->draw_structure, 2, 1, 1, 1);
 
   g->structure = dtgtk_button_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->structure), TRUE);
-  gtk_grid_attach(g->auto_grid, g->structure, 2, 1, 1, 1);
+  gtk_grid_attach(g->auto_grid, g->structure, 3, 1, 1, 1);
 
   g->clean = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->clean), TRUE);
-  gtk_grid_attach(g->auto_grid, g->clean, 3, 1, 1, 1);
+  gtk_grid_attach(g->auto_grid, g->clean, 5, 1, 1, 1);
 
   g->eye = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->eye), TRUE);
-  gtk_grid_attach(g->auto_grid, g->eye, 4, 1, 1, 1);
+  gtk_grid_attach(g->auto_grid, g->eye, 6, 1, 1, 1);
 
   gtk_widget_show_all(GTK_WIDGET(g->auto_grid));
   gtk_box_pack_start(GTK_BOX(g->values_box), GTK_WIDGET(g->auto_grid), TRUE, TRUE, 0);
@@ -5189,6 +5293,7 @@ void gui_init(struct dt_iop_module_t *self)
                                               "shift+click for an additional detail enhancement\n"
                                               "ctrl+shift+click for a combination of both methods"));
   gtk_widget_set_tooltip_text(g->draw_structure, _("manually define perspective rectangle"));
+  gtk_widget_set_tooltip_text(g->draw_direct_structure, _("manually draw structure lines"));
   gtk_widget_set_tooltip_text(g->clean, _("remove line structure information"));
   gtk_widget_set_tooltip_text(g->eye, _("toggle visibility of structure lines"));
 
@@ -5197,6 +5302,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->fit_both), "button-press-event", G_CALLBACK(fit_both_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->draw_structure), "button-press-event", G_CALLBACK(_event_draw_structure_click),
                    (gpointer)self);
+  g_signal_connect(G_OBJECT(g->draw_direct_structure), "button-press-event",
+                   G_CALLBACK(_event_draw_direct_structure_click), (gpointer)self);
   g_signal_connect(G_OBJECT(g->structure), "button-press-event", G_CALLBACK(structure_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->clean), "clicked", G_CALLBACK(clean_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->eye), "toggled", G_CALLBACK(eye_button_toggled), (gpointer)self);
