@@ -55,6 +55,7 @@ jobs:
           channel: '#darktable'
           nickname: dtslav
           response_allow_from: andabata, AurlienPierre[m], elstoc, johnny_bit, parafin
+          response_timeout: 5
           message: |-
             Showing last ${{ steps.gitlog.outputs.llc }} commit(s) to ${{ github.repository }}:
             ${{ steps.gitlog.outputs.log }}
