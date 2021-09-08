@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 500
+          fetch-depth: 200
           path: src
       - uses: dawidd6/action-download-artifact@v2
         continue-on-error: true
@@ -31,7 +31,7 @@ jobs:
             echo "no new commits since last run"
             echo "::set-output name=log::"
           else
-            git log --reverse --first-parent --pretty=format:"%h: %s (%aN)" `cat ../recent_commit`..`cat ../current_commit` >> ../log
+            git log --reverse --first-parent --pretty=format:"%h: %s (%aN)" `cat ../recent_commit`..`cat ../current_commit` | perl -pe 'if(/pull request #(\d+)/){$title=`curl -s https://api.github.com/repos/darktable-org/darktable/pulls/$1|jq -r .title`;chomp $title;s/pull request/"$title"/}' >> ../log
             echo "current log:"
             cat ../log
             echo "";
@@ -54,6 +54,8 @@ jobs:
           server: "irc.oftc.net"
           channel: '#darktable'
           nickname: dtslav
+          response_allow_from: andabata, AurlienPierre[m], elstoc, johnny_bit, parafin
+          response_timeout: 5
           message: |-
             Showing last ${{ steps.gitlog.outputs.llc }} commit(s) to ${{ github.repository }}:
             ${{ steps.gitlog.outputs.log }}
