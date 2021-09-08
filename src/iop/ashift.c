@@ -4031,7 +4031,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   if(wd < 1.0 || ht < 1.0) return 1;
 
   // if we start to draw a straightening line
-  if(which == 3)
+  if((g->lines_suppressed || g->lines == NULL) && which == 3)
   {
     dt_control_change_cursor(GDK_CROSSHAIR);
     g->straightening = TRUE;
