@@ -203,7 +203,7 @@ jobs:
             target: skiptest
           - os: { label: ubuntu-latest, code: latest }
             btype: Debug
-            compiler: { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev lld-12}
+            compiler: { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev libc++1-12 libc++abi1-12 lld-12}
             target: skiptest
         exclude:
           - os: { label: ubuntu-20.04, code: focal }
@@ -216,11 +216,11 @@ jobs:
             target: nofeatures_nosse
           - os: { label: ubuntu-20.04, code: focal }
             btype: RelWithDebInfo
-            compiler: { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev lld-12}
+            compiler: { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev libc++1-12 libc++abi1-12 lld-12}
             target: nofeatures
           - os: { label: ubuntu-20.04, code: focal }
             btype: RelWithDebInfo
-            compiler: { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev lld-12}
+            compiler: { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev libc++1-12 libc++abi1-12 lld-12}
             target: nofeatures_nosse
     env:
       CC: ${{ matrix.compiler.CC }}
