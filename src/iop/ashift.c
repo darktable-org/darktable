@@ -402,7 +402,6 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *values_expander;
   GtkWidget *values_box;
   GtkWidget *values_toggle;
-  GtkGrid *auto_grid;
   GtkWidget *draw_structure;
   GtkWidget *draw_direct_structure;
   gboolean values_expanded;
@@ -5209,48 +5208,53 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(g->values_box), g->specifics, TRUE, TRUE, 0);
 
-  g->auto_grid = GTK_GRID(gtk_grid_new());
-  gtk_grid_set_row_spacing(g->auto_grid, 2 * DT_BAUHAUS_SPACE);
-  gtk_grid_set_column_spacing(g->auto_grid, DT_PIXEL_APPLY_DPI(10));
+  GtkWidget *helpers = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(helpers, "section_label");
+  gtk_box_pack_start(GTK_BOX(helpers), dt_ui_label_new(_("perspective helpers")), TRUE, TRUE, 0);
 
-  gtk_grid_attach(g->auto_grid, dt_ui_label_new(_("fit")), 0, 0, 1, 1);
+  g->clean = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(helpers), g->clean, FALSE, TRUE, 0);
 
-  g->fit_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 1, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_v), TRUE);
-  gtk_grid_attach(g->auto_grid, g->fit_v, 2, 0, 1, 1);
+  g->eye = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(helpers), g->eye, FALSE, TRUE, 0);
 
-  g->fit_h = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 2, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_h), TRUE);
-  gtk_grid_attach(g->auto_grid, g->fit_h, 3, 0, 1, 1);
+  gtk_widget_show_all(helpers);
+  gtk_box_pack_start(GTK_BOX(g->values_box), helpers, TRUE, TRUE, 0);
 
-  g->fit_both = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 3, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_both), TRUE);
-  gtk_grid_attach(g->auto_grid, g->fit_both, 4, 0, 1, 1);
+  GtkGrid *auto_grid = GTK_GRID(gtk_grid_new());
+  gtk_grid_set_row_spacing(auto_grid, 2 * DT_BAUHAUS_SPACE);
+  gtk_grid_set_column_spacing(auto_grid, DT_PIXEL_APPLY_DPI(10));
 
-  gtk_grid_attach(g->auto_grid, dt_ui_label_new(_("structure")), 0, 1, 1, 1);
+  gtk_grid_attach(auto_grid, dt_ui_label_new(_("structure")), 0, 0, 1, 1);
 
   g->draw_direct_structure = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_drawn, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->draw_direct_structure), TRUE);
-  gtk_grid_attach(g->auto_grid, g->draw_direct_structure, 1, 1, 1, 1);
+  gtk_grid_attach(auto_grid, g->draw_direct_structure, 1, 0, 1, 1);
 
   g->draw_structure = dtgtk_togglebutton_new(dtgtk_cairo_paint_draw_structure, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->draw_structure), TRUE);
-  gtk_grid_attach(g->auto_grid, g->draw_structure, 2, 1, 1, 1);
+  gtk_grid_attach(auto_grid, g->draw_structure, 2, 0, 1, 1);
 
   g->structure = dtgtk_button_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->structure), TRUE);
-  gtk_grid_attach(g->auto_grid, g->structure, 3, 1, 1, 1);
+  gtk_grid_attach(auto_grid, g->structure, 3, 0, 1, 1);
 
-  g->clean = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->clean), TRUE);
-  gtk_grid_attach(g->auto_grid, g->clean, 4, 1, 1, 1);
+  gtk_grid_attach(auto_grid, dt_ui_label_new(_("fit")), 0, 1, 1, 1);
 
-  g->eye = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->eye), TRUE);
-  gtk_grid_attach(g->auto_grid, g->eye, 5, 1, 1, 1);
+  g->fit_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 1, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_v), TRUE);
+  gtk_grid_attach(auto_grid, g->fit_v, 1, 1, 1, 1);
 
-  gtk_widget_show_all(GTK_WIDGET(g->auto_grid));
-  gtk_box_pack_start(GTK_BOX(g->values_box), GTK_WIDGET(g->auto_grid), TRUE, TRUE, 0);
+  g->fit_h = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 2, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_h), TRUE);
+  gtk_grid_attach(auto_grid, g->fit_h, 2, 1, 1, 1);
+
+  g->fit_both = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | 3, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->fit_both), TRUE);
+  gtk_grid_attach(auto_grid, g->fit_both, 3, 1, 1, 1);
+
+  gtk_widget_show_all(GTK_WIDGET(auto_grid));
+  gtk_box_pack_start(GTK_BOX(g->values_box), GTK_WIDGET(auto_grid), TRUE, TRUE, 0);
 
   self->widget = main_box;
 
