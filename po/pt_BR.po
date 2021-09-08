@@ -21863,7 +21863,7 @@ msgid ""
 "full gamut is the combination of all other modes"
 msgstr ""
 "selecione a métrica que quer pré-visualizar\n"
-"gama completa é a combinação de todos os outros modos\n"
+"gama completa é a combinação de todos os outros modos"
 
 #: ../src/views/darkroom.c:2348
 msgid "full gamut"
