@@ -31,7 +31,7 @@ jobs:
             echo "no new commits since last run"
             echo "::set-output name=log::"
           else
-            git log --reverse --first-parent --pretty=format:"%h: %s (%aN)" `cat ../recent_commit`..`cat ../current_commit` | | perl -pe 'if(/pull request #(\d+)/){$title=`curl -s https://api.github.com/repos/darktable-org/darktable/pulls/$1|jq -r .title`;chomp $title;s/pull request/"$title"/}' >> ../log
+            git log --reverse --first-parent --pretty=format:"%h: %s (%aN)" `cat ../recent_commit`..`cat ../current_commit` | perl -pe 'if(/pull request #(\d+)/){$title=`curl -s https://api.github.com/repos/darktable-org/darktable/pulls/$1|jq -r .title`;chomp $title;s/pull request/"$title"/}' >> ../log
             echo "current log:"
             cat ../log
             echo "";
