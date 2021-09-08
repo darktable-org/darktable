@@ -1675,7 +1675,7 @@ void gui_init(dt_iop_module_t *self)
 #ifdef HAVE_GMIC
   gtk_widget_set_tooltip_text(button, _("select a png (haldclut)"
       ", a cube, a 3dl or a gmz (compressed lut) file "
-      "CAUTION: 3D lut folder must be set in preferences/core options/miscellaneous before choosing the lut file"));
+      "CAUTION: 3D lut folder must be set in preferences/processing before choosing the lut file"));
 #else
   gtk_widget_set_tooltip_text(button, _("select a png (haldclut)"
       ", a cube or a 3dl file "
