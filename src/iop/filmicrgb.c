@@ -3578,7 +3578,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
     }
     else if(g->active_button == DT_FILMIC_GUI_BUTTON_LABELS)
     {
-      gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("toggle axis labels and values display."));
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("toggle axis labels and values display"));
     }
     else if(g->active_button == DT_FILMIC_GUI_BUTTON_TYPE)
     {

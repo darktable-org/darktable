@@ -453,7 +453,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->thumbnails_box), d->over_r5, TRUE, TRUE, 0);
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->over_r6 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(d->over_r0),
-                                                           _("overlays block on mouse hover during (s) "));
+                                                           _("overlays block on mouse hover during (s)"));
   g_signal_connect(G_OBJECT(d->over_r6), "toggled", G_CALLBACK(_overlays_toggle_button), self);
   gtk_box_pack_start(GTK_BOX(hbox), d->over_r6, TRUE, TRUE, 0);
   d->over_timeout = gtk_spin_button_new_with_range(-1, 99, 1);
@@ -486,7 +486,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->culling_box), d->over_culling_r4, TRUE, TRUE, 0);
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->over_culling_r6 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(d->over_culling_r0),
-                                                                   _("overlays block on mouse hover during (s) "));
+                                                                   _("overlays block on mouse hover during (s)"));
   g_signal_connect(G_OBJECT(d->over_culling_r6), "toggled", G_CALLBACK(_overlays_toggle_culling_button), self);
   gtk_box_pack_start(GTK_BOX(hbox), d->over_culling_r6, TRUE, TRUE, 0);
   d->over_culling_timeout = gtk_spin_button_new_with_range(-1, 99, 1);

@@ -194,8 +194,8 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
   {
     GtkWidget *dialog = gtk_message_dialog_new(
     GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_CLOSE,
-    ngettext("no history compression of 1 image.\nsee tag: darktable|problem|history-compress.",
-             "no history compression of %d images.\nsee tag: darktable|problem|history-compress.", missing ), missing);
+    ngettext("no history compression of 1 image.\nsee tag: darktable|problem|history-compress",
+             "no history compression of %d images.\nsee tag: darktable|problem|history-compress", missing ), missing);
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif

@@ -812,28 +812,28 @@ finally:
         cl->enabled = FALSE;
         dt_conf_set_bool("opencl", FALSE);
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] due to a slow GPU the opencl flag has been set to OFF.\n");
-        dt_control_log(_("due to a slow GPU hardware acceleration via opencl has been de-activated."));
+        dt_control_log(_("due to a slow GPU hardware acceleration via opencl has been de-activated"));
       }
       else if(cl->num_devs >= 2)
       {
         // set scheduling profile to "multiple GPUs" if more than one device has been found
         dt_conf_set_string("opencl_scheduling_profile", "multiple GPUs");
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for multiple GPUs.\n");
-        dt_control_log(_("multiple GPUs detected - opencl scheduling profile has been set accordingly."));
+        dt_control_log(_("multiple GPUs detected - opencl scheduling profile has been set accordingly"));
       }
       else if(tcpu >= 6.0f * tgpumin)
       {
         // set scheduling profile to "very fast GPU" if CPU is way too slow
         dt_conf_set_string("opencl_scheduling_profile", "very fast GPU");
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for very fast GPU.\n");
-        dt_control_log(_("very fast GPU detected - opencl scheduling profile has been set accordingly."));
+        dt_control_log(_("very fast GPU detected - opencl scheduling profile has been set accordingly"));
       }
       else
       {
         // set scheduling profile to "default"
         dt_conf_set_string("opencl_scheduling_profile", "default");
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile to default.\n");
-        dt_control_log(_("opencl scheduling profile set to default."));
+        dt_control_log(_("opencl scheduling profile set to default"));
       }
     }
 

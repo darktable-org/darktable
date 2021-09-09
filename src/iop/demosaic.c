@@ -5775,13 +5775,13 @@ void gui_init(struct dt_iop_module_t *self)
   g->median_thrs = dt_bauhaus_slider_from_params(self, "median_thrs");
   dt_bauhaus_slider_set_step(g->median_thrs, 0.001);
   dt_bauhaus_slider_set_digits(g->median_thrs, 3);
-  gtk_widget_set_tooltip_text(g->median_thrs, _("threshold for edge-aware median.\nset to 0.0 to switch off.\n"
-                                                "set to 1.0 to ignore edges."));
+  gtk_widget_set_tooltip_text(g->median_thrs, _("threshold for edge-aware median.\nset to 0.0 to switch off\n"
+                                                "set to 1.0 to ignore edges"));
   g->dual_thrs = dt_bauhaus_slider_from_params(self, "dual_thrs");
   dt_bauhaus_slider_set_step(g->dual_thrs, 0.01);
   dt_bauhaus_slider_set_digits(g->dual_thrs, 2);
-  gtk_widget_set_tooltip_text(g->dual_thrs, _("contrast threshold for dual demosaic.\nset to 0.0 for high frequency content.\n"
-                                                "set to 1.0 for flat content."));
+  gtk_widget_set_tooltip_text(g->dual_thrs, _("contrast threshold for dual demosaic.\nset to 0.0 for high frequency content\n"
+                                                "set to 1.0 for flat content"));
   g->dual_mask = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->dual_mask, NULL, N_("display blending mask"));
   dt_bauhaus_widget_set_quad_paint(g->dual_mask, dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
@@ -5790,7 +5790,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->dual_mask, FALSE, FALSE, 0);
 
   g->lmmse_refine = dt_bauhaus_combobox_from_params(self, "lmmse_refine");
-  gtk_widget_set_tooltip_text(g->lmmse_refine, _("LMMSE refinement steps. the median steps average the output,\nrefine adds some recalculation of red & blue channels."));
+  gtk_widget_set_tooltip_text(g->lmmse_refine, _("LMMSE refinement steps. the median steps average the output,\nrefine adds some recalculation of red & blue channels"));
 
   g->color_smoothing = dt_bauhaus_combobox_from_params(self, "color_smoothing");
   gtk_widget_set_tooltip_text(g->color_smoothing, _("how many color smoothing median steps after demosaicing"));

@@ -260,7 +260,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     if(cur_scale >= 2.0f)
     {
       /* xgettext:no-c-format */
-      dt_control_log(_("preview is only possible for zoom lower than 200%%..."));
+      dt_control_log(_("preview is only possible for zoom lower than 200%%"));
       return;
     }
     nz = cur_scale / min_scale;

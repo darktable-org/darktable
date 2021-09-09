@@ -829,7 +829,7 @@ void init_presets(dt_lib_module_t *self)
                     _("Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"));
   add_rights_preset(self, _("CC BY-NC-ND"),
                     _("Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"));
-  add_rights_preset(self, _("all rights reserved"), _("all rights reserved."));
+  add_rights_preset(self, _("all rights reserved"), _("all rights reserved"));
 }
 
 void *legacy_params(dt_lib_module_t *self, const void *const old_params, const size_t old_params_size,
