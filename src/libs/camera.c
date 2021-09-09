@@ -480,12 +480,12 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.timer), _("the count of seconds before actually doing a capture"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.count),
                _("the amount of images to capture in a sequence,\nyou can use this in conjunction with "
-                 "delayed mode to create stop-motion sequences."));
+                 "delayed mode to create stop-motion sequences"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.brackets),
-               _("the amount of brackets on each side of centered shoot, amount of images = (brackets*2)+1."));
+               _("the amount of brackets on each side of centered shoot, amount of images = (brackets*2) + 1"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.steps),
                _("the amount of steps per bracket, steps is camera configurable and usually 3 steps per "
-                 "stop\nwith other words, 3 steps is 1EV exposure step between brackets."));
+                 "stop\nwith other words, 3 steps is 1EV exposure step between brackets"));
 
   g_signal_connect(G_OBJECT(lib->gui.toggle_timer), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
   g_signal_connect(G_OBJECT(lib->gui.toggle_sequence), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);

@@ -2047,7 +2047,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>rating an image one star twice will not zero out the rating</shortdescription>
-    <longdescription>defines whether rating an image one star twice will zero out star rating.</longdescription>
+    <longdescription>defines whether rating an image one star twice will zero out star rating</longdescription>
   </dtconfig>
  <dtconfig prefs="lighttable" section="general">
     <name>lighttable/ui/scrollbars</name>
@@ -2976,7 +2976,7 @@
     </type>
     <default>legacy</default>
     <shortdescription>auto-apply chromatic adaptation defaults</shortdescription>
-    <longdescription>legacy performs a basic chromatic adaptation using only the white balance module\nmodern uses a combination of white balance module and color calibration module, with improved color science for chromatic adaptation.</longdescription>
+    <longdescription>legacy performs a basic chromatic adaptation using only the white balance module\nmodern uses a combination of white balance module and color calibration module, with improved color science for chromatic adaptation</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="general" restart="true">
     <name>plugins/darkroom/basecurve/auto_apply_percamera_presets</name>

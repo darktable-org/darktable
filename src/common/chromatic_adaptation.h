@@ -25,7 +25,7 @@ typedef enum dt_adaptation_t
   DT_ADAPTATION_LINEAR_BRADFORD = 0, // $DESCRIPTION: "linear Bradford (ICC v4)"
   DT_ADAPTATION_CAT16           = 1, // $DESCRIPTION: "CAT16 (CIECAM16)"
   DT_ADAPTATION_FULL_BRADFORD   = 2, // $DESCRIPTION: "non-linear Bradford"
-  DT_ADAPTATION_XYZ             = 3, // $DESCRIPTION: "XYZ "
+  DT_ADAPTATION_XYZ             = 3, // $DESCRIPTION: "XYZ"
   DT_ADAPTATION_RGB             = 4, // $DESCRIPTION: "none (bypass)"
   DT_ADAPTATION_LAST
 } dt_adaptation_t;

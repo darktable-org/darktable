@@ -1505,31 +1505,31 @@ static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
   switch(ma->action)
   {
     case DT_MOUSE_ACTION_LEFT:
-      atxt = dt_util_dstrcat(atxt, _("Left click"));
+      atxt = dt_util_dstrcat(atxt, _("left click"));
       break;
     case DT_MOUSE_ACTION_RIGHT:
-      atxt = dt_util_dstrcat(atxt, _("Right click"));
+      atxt = dt_util_dstrcat(atxt, _("right click"));
       break;
     case DT_MOUSE_ACTION_MIDDLE:
-      atxt = dt_util_dstrcat(atxt, _("Middle click"));
+      atxt = dt_util_dstrcat(atxt, _("middle click"));
       break;
     case DT_MOUSE_ACTION_SCROLL:
-      atxt = dt_util_dstrcat(atxt, _("Scroll"));
+      atxt = dt_util_dstrcat(atxt, _("scroll"));
       break;
     case DT_MOUSE_ACTION_DOUBLE_LEFT:
-      atxt = dt_util_dstrcat(atxt, _("Left double-click"));
+      atxt = dt_util_dstrcat(atxt, _("left double-click"));
       break;
     case DT_MOUSE_ACTION_DOUBLE_RIGHT:
-      atxt = dt_util_dstrcat(atxt, _("Right double-click"));
+      atxt = dt_util_dstrcat(atxt, _("right double-click"));
       break;
     case DT_MOUSE_ACTION_DRAG_DROP:
-      atxt = dt_util_dstrcat(atxt, _("Drag and drop"));
+      atxt = dt_util_dstrcat(atxt, _("drag and drop"));
       break;
     case DT_MOUSE_ACTION_LEFT_DRAG:
-      atxt = dt_util_dstrcat(atxt, _("Left click+Drag"));
+      atxt = dt_util_dstrcat(atxt, _("left click+drag"));
       break;
     case DT_MOUSE_ACTION_RIGHT_DRAG:
-      atxt = dt_util_dstrcat(atxt, _("Right click+Drag"));
+      atxt = dt_util_dstrcat(atxt, _("right click+drag"));
       break;
   }
 
@@ -1605,7 +1605,7 @@ void dt_view_accels_show(dt_view_manager_t *vm)
   vm->accels_window.sticky_btn
       = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT, NULL);
   g_object_set(G_OBJECT(vm->accels_window.sticky_btn), "tooltip-text",
-               _("switch to a classic window which will stay open after key release."), (char *)NULL);
+               _("switch to a classic window which will stay open after key release"), (char *)NULL);
   g_signal_connect(G_OBJECT(vm->accels_window.sticky_btn), "button-press-event", G_CALLBACK(_accels_window_sticky),
                    vm);
   context = gtk_widget_get_style_context(vm->accels_window.sticky_btn);
@@ -1709,7 +1709,7 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
       GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
       GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("shortcut"), renderer, "text", 0, NULL);
       gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-      column = gtk_tree_view_column_new_with_attributes(_("Action"), renderer, "text", 1, NULL);
+      column = gtk_tree_view_column_new_with_attributes(_("action"), renderer, "text", 1, NULL);
       gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
       gtk_box_pack_start(GTK_BOX(box), list, FALSE, FALSE, 0);
