@@ -116,8 +116,33 @@ gboolean string_to_move(const gchar *string, guint *move)
   return sscanf(string, "CC%u", move) == 1;
 }
 
+gboolean key_to_move(dt_lib_module_t *self, const dt_input_device_t id, const guint key, guint *move)
+{
+  for(GSList *devices = self->data; devices; devices = devices->next)
+  {
+    midi_device *midi = devices->data;
+    if(midi->id != id) continue;
+
+    if(midi->is_x_touch_mini)
+    {
+      if(key < 8)
+        *move = key + 1;
+      else if(key >= 24 && key < 32)
+        *move = key - 13;
+      else
+        return FALSE;
+    }
+    else
+    {
+      *move = key;
+    }
+  }
+
+  return TRUE;
+}
+
 const dt_input_driver_definition_t driver_definition
-  = { "midi", key_to_string, string_to_key, move_to_string, string_to_move };
+  = { "midi", key_to_string, string_to_key, move_to_string, string_to_move, key_to_move };
 
 void midi_write(midi_device *midi, gint channel, gint type, gint key, gint velocity)
 {
@@ -276,8 +301,8 @@ void update_with_move(midi_device *midi, PmTimestamp timestamp, gint controller,
 
 static gboolean poll_midi_devices(gpointer user_data)
 {
-  GSList *devices = (GSList *)((dt_lib_module_t *)user_data)->data;
-  while(devices)
+  dt_lib_module_t *self = user_data;
+  for(GSList *devices = self->data; devices; devices = devices->next)
   {
     midi_device *midi = devices->data;
 
@@ -349,8 +374,6 @@ static gboolean poll_midi_devices(gpointer user_data)
         for(int j = 0; (j != midi->first_knob || (j += midi->num_knobs)) && j < 128; j++) midi->last_known[j] = -1;
       }
     }
-
-    devices = devices->next;
   }
 
   return G_SOURCE_CONTINUE;

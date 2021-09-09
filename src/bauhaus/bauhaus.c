@@ -1760,7 +1760,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       cairo_translate(cr, INNER_PADDING, 0);
 
-      dt_bauhaus_draw_baseline(w, cr, width);
+      dt_bauhaus_draw_baseline(w, cr, wd);
 
       cairo_save(cr);
       cairo_set_line_width(cr, 0.5);
@@ -1794,7 +1794,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_restore(cr);
 
       // draw indicator
-      dt_bauhaus_draw_indicator(w, d->oldpos + mouse_off, cr, width, *fg_color, *bg_color);
+      dt_bauhaus_draw_indicator(w, d->oldpos + mouse_off, cr, wd, *fg_color, *bg_color);
 
       // draw numerical value:
       cairo_save(cr);
@@ -1826,7 +1826,6 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       const int hovered = (darktable.bauhaus->mouse_y - darktable.bauhaus->widget_space) / darktable.bauhaus->line_height;
       gchar *keys = g_utf8_casefold(darktable.bauhaus->keys, -1);
       const PangoEllipsizeMode ellipsis = d->entries_ellipsis;
-      wd *= d->scale;
       ht = darktable.bauhaus->line_height;
 
       for(GList *it = d->entries; it; it = g_list_next(it))
