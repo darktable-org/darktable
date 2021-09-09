@@ -3755,21 +3755,21 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(first, 3);                                     \
   dt_bauhaus_slider_set_hard_min(first, -2.f);                                \
   dt_bauhaus_slider_set_hard_max(first, 2.f);                                 \
-  dt_bauhaus_widget_set_label(first, section, _("input R"));                \
+  dt_bauhaus_widget_set_label(first, section, N_("input R"));                 \
                                                                               \
   second = dt_bauhaus_slider_from_params(self, #var "[1]");                   \
   dt_bauhaus_slider_set_step(second, 0.005);                                  \
   dt_bauhaus_slider_set_digits(second, 3);                                    \
   dt_bauhaus_slider_set_hard_min(second, -2.f);                               \
   dt_bauhaus_slider_set_hard_max(second, 2.f);                                \
-  dt_bauhaus_widget_set_label(second, section, _("input G"));             \
+  dt_bauhaus_widget_set_label(second, section, N_("input G"));                \
                                                                               \
   third = dt_bauhaus_slider_from_params(self, swap ? #var "[0]" : #var "[2]");\
   dt_bauhaus_slider_set_step(third, 0.005);                                   \
   dt_bauhaus_slider_set_digits(third, 3);                                     \
   dt_bauhaus_slider_set_hard_min(third, -2.f);                                \
   dt_bauhaus_slider_set_hard_max(third, 2.f);                                 \
-  dt_bauhaus_widget_set_label(third, section, _("input B"));               \
+  dt_bauhaus_widget_set_label(third, section, N_("input B"));                 \
                                                                               \
   g->scale_##var##_R = swap ? third : first;                                  \
   g->scale_##var##_G = second;                                                \
