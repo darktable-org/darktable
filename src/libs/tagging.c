@@ -1455,12 +1455,12 @@ static void _pop_menu_dictionary_delete_node(GtkWidget *menuitem, dt_lib_module_
 
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(vbox), box, FALSE, TRUE, 0);
-  text = g_strdup_printf(ngettext("<u>%d</u> tag will be deleted.", "<u>%d</u> tags will be deleted.", tag_count), tag_count);
+  text = g_strdup_printf(ngettext("<u>%d</u> tag will be deleted", "<u>%d</u> tags will be deleted", tag_count), tag_count);
   label = gtk_label_new(NULL);
   gtk_label_set_markup(GTK_LABEL(label), text);
   gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
   g_free(text);
-  text = g_strdup_printf(ngettext("<u>%d</u> image will be updated", "<u>%d</u> images will be updated ", img_count), img_count);
+  text = g_strdup_printf(ngettext("<u>%d</u> image will be updated", "<u>%d</u> images will be updated", img_count), img_count);
   label = gtk_label_new(NULL);
   gtk_label_set_markup(GTK_LABEL(label), text);
   gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
@@ -1666,12 +1666,12 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
 
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(vbox), box, FALSE, TRUE, 0);
-  text = g_strdup_printf(ngettext("<u>%d</u> tag will be updated.", "<u>%d</u> tags will be updated.", tag_count), tag_count);
+  text = g_strdup_printf(ngettext("<u>%d</u> tag will be updated", "<u>%d</u> tags will be updated", tag_count), tag_count);
   label = gtk_label_new(NULL);
   gtk_label_set_markup(GTK_LABEL(label), text);
   gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
   g_free(text);
-  text = g_strdup_printf(ngettext("<u>%d</u> image will be updated", "<u>%d</u> images will be updated ", img_count), img_count);
+  text = g_strdup_printf(ngettext("<u>%d</u> image will be updated", "<u>%d</u> images will be updated", img_count), img_count);
   label = gtk_label_new(NULL);
   gtk_label_set_markup(GTK_LABEL(label), text);
   gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
@@ -1941,12 +1941,12 @@ static void _pop_menu_dictionary_change_path(GtkWidget *menuitem, dt_lib_module_
 
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(vbox), box, FALSE, TRUE, 0);
-  text = g_strdup_printf(ngettext("<u>%d</u> tag will be updated.", "<u>%d</u> tags will be updated.", tag_count), tag_count);
+  text = g_strdup_printf(ngettext("<u>%d</u> tag will be updated", "<u>%d</u> tags will be updated", tag_count), tag_count);
   label = gtk_label_new(NULL);
   gtk_label_set_markup(GTK_LABEL(label), text);
   gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
   g_free(text);
-  text = g_strdup_printf(ngettext("<u>%d</u> image will be updated", "<u>%d</u> images will be updated ", img_count), img_count);
+  text = g_strdup_printf(ngettext("<u>%d</u> image will be updated", "<u>%d</u> images will be updated", img_count), img_count);
   label = gtk_label_new(NULL);
   gtk_label_set_markup(GTK_LABEL(label), text);
   gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
