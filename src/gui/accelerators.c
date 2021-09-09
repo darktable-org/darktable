@@ -406,13 +406,8 @@ dt_input_device_t dt_register_input_driver(dt_lib_module_t *module, const dt_inp
 {
   dt_input_device_t id = 10;
 
-  GSList *driver = darktable.control->input_drivers;
-  while(driver)
-  {
-    if(((dt_input_driver_definition_t *)driver->data)->module == module) return id;
-    driver = driver->next;
-    id += 10;
-  }
+  for(GSList *d = darktable.control->input_drivers; d; d = d->next, id += 10)
+    if(((dt_input_driver_definition_t *)d->data)->module == module) return id;
 
   dt_input_driver_definition_t *new_driver = calloc(1, sizeof(dt_input_driver_definition_t));
   *new_driver = *callbacks;
@@ -445,32 +440,30 @@ static gchar *_shortcut_key_move_name(dt_input_device_t id, guint key_or_move, g
   else
   {
     GSList *driver = darktable.control->input_drivers;
-    while(driver)
-    {
-      if((id -= 10) < 10)
-      {
-        dt_input_driver_definition_t *callbacks = driver->data;
-        gchar *without_device
-          = mods == DT_MOVE_NAME
-          ? callbacks->move_to_string(key_or_move, display)
-          : callbacks->key_to_string(key_or_move, display);
-
-        if(display && id == 0)
-          post_name = without_device;
-        else
-        {
-          char id_str[2] = "\0\0";
-          if(id) id_str[0] = '0' + id;
-
-          name = g_strdup_printf("%s%s:%s", display ? "" : callbacks->name, id_str, without_device);
-          g_free(without_device);
-        }
-        break;
-      }
+    while(driver && (id -= 10) > 10)
       driver = driver->next;
-    }
 
-    if(!driver) name = g_strdup(_("Unknown driver"));
+    if(!driver)
+      name = g_strdup(_("unknown driver"));
+    else
+    {
+      dt_input_driver_definition_t *callbacks = driver->data;
+      gchar *without_device
+        = mods == DT_MOVE_NAME
+        ? callbacks->move_to_string(key_or_move, display)
+        : callbacks->key_to_string(key_or_move, display);
+
+      if(display && id == 0)
+        post_name = without_device;
+      else
+      {
+        char id_str[2] = "\0\0";
+        if(id) id_str[0] = '0' + id;
+
+        name = g_strdup_printf("%s%s:%s", display ? "" : callbacks->name, id_str, without_device);
+        g_free(without_device);
+      }
+    }
   }
   if(mods != DT_MOVE_NAME)
   {
@@ -2646,7 +2639,44 @@ static gboolean _shortcut_match(dt_shortcut_t *f)
   gboolean matched = FALSE;
 
   if(!_shortcut_closest_match(&existing, f, &matched, NULL))
-    return FALSE;
+  {
+    // see if there is a fallback from midi knob press to knob turn
+    if(!f->key_device || f->move_device || f->move)
+      return FALSE;
+
+    dt_input_device_t id = f->key_device;
+    GSList *driver = darktable.control->input_drivers;
+    while(driver && (id -= 10) > 10)
+      driver = driver->next;
+
+    if(!driver)
+      return FALSE;
+    else
+    {
+      dt_input_driver_definition_t *callbacks = driver->data;
+
+      if(callbacks->key_to_move &&
+         callbacks->key_to_move(callbacks->module, f->key_device, f->key, &f->move))
+      {
+        f->move_device = f->key_device;
+        f->key_device = 0;
+        f->key = 0;
+
+        existing = g_sequence_search(darktable.control->shortcuts, f, shortcut_compare_func, v);
+        if(!_shortcut_closest_match(&existing, f, &matched, NULL) && !f->action)
+          return FALSE;
+        else
+        {
+          const dt_action_def_t *def = _action_find_definition(f->action);
+
+          if(def && def->elements
+             && (def->elements[f->element].effects == dt_action_effect_value
+                 || def->elements[f->element].effects == dt_action_effect_selection))
+            f->effect = DT_ACTION_EFFECT_RESET;
+        }
+      }
+    }
+  }
 
   if(!matched && f->action)
   {
