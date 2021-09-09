@@ -48,6 +48,8 @@ void dt_action_rename(dt_action_t *action, const gchar *new_name);
 
 typedef uint8_t dt_input_device_t;
 
+// FIXME this could eventually be refactored into dt_input_module_t
+// with its own _api.h and loader
 typedef struct dt_input_driver_definition_t
 {
   gchar *name;
@@ -55,6 +57,7 @@ typedef struct dt_input_driver_definition_t
   gboolean (*string_to_key)(const gchar *string, guint *key);
   gchar *(*move_to_string)(const guint move, const gboolean display);
   gboolean (*string_to_move)(const gchar *string, guint *move);
+  gboolean (*key_to_move)(dt_lib_module_t *self, const dt_input_device_t id, const guint key, guint *move);
   dt_lib_module_t *module;
 } dt_input_driver_definition_t;
 
