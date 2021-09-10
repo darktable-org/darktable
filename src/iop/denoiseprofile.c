@@ -682,7 +682,7 @@ void init_presets(dt_iop_module_so_t *self)
   // then the wavelet ones
   p.mode = MODE_WAVELETS;
   p.wavelet_color_mode = MODE_Y0U0V0;
-  p.strength = 3.0f;
+  p.strength = 1.2f;
   p.use_new_vst = TRUE;
   // disable variance stabilization transform to avoid any bias
   // (wavelets perform well even without the VST):
@@ -704,7 +704,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[DT_DENOISE_PROFILE_Y0][b] = b / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0f);
     p.y[DT_DENOISE_PROFILE_Y0][b] = 0.0f;
   }
-  dt_gui_presets_add_generic(_("wavelets: chroma only"), self->op, self->version(), &p,
+  dt_gui_presets_add_generic(_("wavelets: chroma only"), self->op, 11, &p,
                              sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
