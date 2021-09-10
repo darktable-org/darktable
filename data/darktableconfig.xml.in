@@ -2953,6 +2953,13 @@
     <shortdescription>3D lut root folder</shortdescription>
     <longdescription>this folder (and sub-folders) contains Lut files used by lut3d modules. (need a restart).</longdescription>
   </dtconfig>
+  <dtconfig prefs="processing" section="general" restart="true">
+    <name>plugins/darkroom/watermark/custom_folder</name>
+    <type>dir</type>
+    <default>(None)</default>
+    <shortdescription>watermarks custom folder</shortdescription>
+    <longdescription>this folder (and sub-folders) contains SVG and PNG files used by watermark modules. (need a restart).</longdescription>
+  </dtconfig>
   <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/workflow</name>
     <type>
