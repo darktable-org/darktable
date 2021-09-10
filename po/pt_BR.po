@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-08 09:06-0300\n"
-"PO-Revision-Date: 2021-09-08 07:06-0300\n"
+"POT-Creation-Date: 2021-09-09 22:48-0300\n"
+"PO-Revision-Date: 2021-09-09 22:57-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -193,9 +193,8 @@ msgstr "dar uma estrela duas vezes a uma imagem não resultará em zero estrelas
 
 #: ../build/bin/preferences_gen.h:3678
 msgid ""
-"defines whether rating an image one star twice will zero out star rating."
-msgstr ""
-"define se dar uma estrela duas vezes a uma imagem resultará em zero estrelas."
+"defines whether rating an image one star twice will zero out star rating"
+msgstr "define se dar uma estrela duas vezes a uma imagem resultará em zero estrelas"
 
 #: ../build/bin/preferences_gen.h:3700 ../build/bin/preferences_gen.h:4396
 msgid "show scrollbars for central view"
@@ -945,7 +944,7 @@ msgid ""
 "legacy performs a basic chromatic adaptation using only the white balance "
 "module\n"
 "modern uses a combination of white balance module and color calibration "
-"module, with improved color science for chromatic adaptation."
+"module, with improved color science for chromatic adaptation"
 msgstr ""
 "legado realiza uma adaptação cromática básica usando somente o módulo de "
 "balanço de branco\n"
@@ -2263,18 +2262,12 @@ msgstr "nenhum"
 
 #: ../build/lib/darktable/plugins/introspection_basecurve.c:263
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:250
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:219
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:237
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:255
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:273
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:448
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:460
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:472
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:484
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:252
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:154
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:271
 #: ../src/develop/blend_gui.c:2024 ../src/develop/blend_gui.c:2043
+#: ../src/iop/colorbalancergb.c:1881 ../src/iop/colorbalancergb.c:1882
+#: ../src/iop/colorbalancergb.c:1883 ../src/iop/colorbalancergb.c:1884
 msgid "luminance"
 msgstr "luminância"
 
@@ -2402,6 +2395,8 @@ msgstr "curvatura"
 #: ../build/lib/darktable/plugins/introspection_blurs.c:206
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:81
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:148
+#: ../src/iop/colorbalancergb.c:1876 ../src/iop/colorbalancergb.c:1880
+#: ../src/iop/colorbalancergb.c:1884
 msgid "offset"
 msgstr "deslocamento"
 
@@ -2775,7 +2770,7 @@ msgid "non-linear Bradford"
 msgstr "Bradford não-linear"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:554
-msgid "XYZ "
+msgid "XYZ"
 msgstr "XYZ "
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:555
@@ -2798,7 +2793,7 @@ msgstr "versão 3 (Abr 2021)"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:303
 #: ../build/lib/darktable/plugins/introspection_crop.c:61
 #: ../build/lib/darktable/plugins/introspection_crop.c:134
-#: ../src/gui/accelerators.c:528
+#: ../src/gui/accelerators.c:521
 msgid "left"
 msgstr "esquerda"
 
@@ -2814,7 +2809,7 @@ msgstr "superior"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:311
 #: ../build/lib/darktable/plugins/introspection_crop.c:73
 #: ../build/lib/darktable/plugins/introspection_crop.c:142
-#: ../src/gui/accelerators.c:529
+#: ../src/gui/accelerators.c:522
 msgid "right"
 msgstr "direita"
 
@@ -2853,43 +2848,77 @@ msgstr "inclinação, deslocamento, potência (ProPhotoRGB)"
 msgid "lift, gamma, gain (sRGB)"
 msgstr "elevação, gama, ganho (sRGB)"
 
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:219
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:448
+#, fuzzy
+msgid "lift luminance"
+msgstr "luminância"
+
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:225
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:243
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:261
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:279
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:452
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:464
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:476
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:488
-#: ../src/develop/blend_gui.c:2020 ../src/develop/blend_gui.c:2047
-#: ../src/iop/atrous.c:1592 ../src/iop/channelmixerrgb.c:3738
-#: ../src/iop/equalizer.c:391 ../src/iop/nlmeans.c:536
-msgid "chroma"
+#, fuzzy
+msgid "lift chroma"
 msgstr "croma"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:231
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:249
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:267
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:285
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:456
+#, fuzzy
+msgid "lift hue"
+msgstr "levantar"
+
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:237
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:460
+#, fuzzy
+msgid "power luminance"
+msgstr "luminância"
+
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:243
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:464
+#, fuzzy
+msgid "power chroma"
+msgstr "reduz ruido croma"
+
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:249
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:468
+#, fuzzy
+msgid "power hue"
+msgstr "potência"
+
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:255
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:472
+#, fuzzy
+msgid "gain luminance"
+msgstr "luminância"
+
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:261
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:476
+#, fuzzy
+msgid "gain chroma"
+msgstr "croma global"
+
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:267
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:480
+#, fuzzy
+msgid "gain hue"
+msgstr "ganho"
+
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:273
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:484
+#, fuzzy
+msgid "offset luminance"
+msgstr "luminância"
+
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:279
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:488
+#, fuzzy
+msgid "offset chroma"
+msgstr "reduz ruido croma"
+
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:285
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:492
-#: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:155
-#: ../build/lib/darktable/plugins/introspection_colorzones.c:257
-#: ../build/lib/darktable/plugins/introspection_graduatednd.c:87
-#: ../build/lib/darktable/plugins/introspection_graduatednd.c:152
-#: ../build/lib/darktable/plugins/introspection_splittoning.c:61
-#: ../build/lib/darktable/plugins/introspection_splittoning.c:73
-#: ../build/lib/darktable/plugins/introspection_splittoning.c:134
-#: ../build/lib/darktable/plugins/introspection_splittoning.c:142
-#: ../src/develop/blend_gui.c:1997 ../src/develop/blend_gui.c:2016
-#: ../src/develop/blend_gui.c:2051 ../src/iop/channelmixer.c:622
-#: ../src/iop/channelmixerrgb.c:3732 ../src/iop/colorbalance.c:2019
-#: ../src/iop/colorize.c:349 ../src/iop/colorreconstruction.c:1290
-#: ../src/iop/colorzones.c:2441 ../src/iop/splittoning.c:477
-msgid "hue"
-msgstr "matiz"
+#, fuzzy
+msgid "offset hue"
+msgstr "deslocamento"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:291
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:496
@@ -2907,54 +2936,51 @@ msgid "highlights fall-off"
 msgstr "decaimento de realces"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:309
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:351
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:381
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:508
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:536
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:556
-#: ../build/lib/darktable/plugins/introspection_toneequal.c:156
-#: ../build/lib/darktable/plugins/introspection_toneequal.c:297
-#: ../src/iop/bilat.c:463 ../src/iop/colorbalance.c:2076
-#: ../src/iop/shadhi.c:694 ../src/iop/splittoning.c:526
-msgid "shadows"
-msgstr "sombras"
+#, fuzzy
+msgid "chroma shadows"
+msgstr "corrigir sombras"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:315
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:339
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:369
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:512
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:528
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:548
-#: ../build/lib/darktable/plugins/introspection_toneequal.c:180
-#: ../build/lib/darktable/plugins/introspection_toneequal.c:313
-#: ../src/iop/bilat.c:457 ../src/iop/colorbalance.c:2078
-#: ../src/iop/monochrome.c:579 ../src/iop/shadhi.c:695
-#: ../src/iop/splittoning.c:528
-msgid "highlights"
-msgstr "realces"
+#, fuzzy
+msgid "chroma highlights"
+msgstr "recortar realces"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:321
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:516
-msgid "global chroma"
-msgstr "croma global"
+#, fuzzy
+msgid "chroma global"
+msgstr "croma"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:327
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:345
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:375
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:520
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:532
-#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:552
-#: ../build/lib/darktable/plugins/introspection_toneequal.c:168
-#: ../build/lib/darktable/plugins/introspection_toneequal.c:305
-#: ../src/iop/colorbalance.c:2077
-msgid "mid-tones"
+#, fuzzy
+msgid "chroma mid-tones"
 msgstr "meios-tons"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:333
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:524
-#: ../src/iop/filmic.c:1677
-msgid "global saturation"
+msgid "saturation global"
 msgstr "saturação global"
+
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:339
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:528
+#, fuzzy
+msgid "saturation highlights"
+msgstr "ajuste saturação de realces"
+
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:345
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:532
+#, fuzzy
+msgid "saturation mid-tones"
+msgstr "saturação apenas"
+
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:351
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:536
+#, fuzzy
+msgid "saturation shadows"
+msgstr "ajuste saturação de sombras"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:357
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:540
@@ -2963,8 +2989,26 @@ msgstr "deslocamento de matiz"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:363
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:544
-msgid "global brilliance"
-msgstr "brilhância global"
+msgid "brilliance global"
+msgstr ""
+
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:369
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:548
+#, fuzzy
+msgid "brilliance highlights"
+msgstr "recortar realces"
+
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:375
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:552
+#, fuzzy
+msgid "brilliance mid-tones"
+msgstr "expoente de luminância nos meios-tons"
+
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:381
+#: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:556
+#, fuzzy
+msgid "brilliance shadows"
+msgstr "gnaho de luminância nas sombras"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:387
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:560
@@ -3065,6 +3109,24 @@ msgstr "extensão da faixa"
 msgid "saturated colors"
 msgstr "cores saturadas"
 
+#: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:155
+#: ../build/lib/darktable/plugins/introspection_colorzones.c:257
+#: ../build/lib/darktable/plugins/introspection_graduatednd.c:87
+#: ../build/lib/darktable/plugins/introspection_graduatednd.c:152
+#: ../build/lib/darktable/plugins/introspection_splittoning.c:61
+#: ../build/lib/darktable/plugins/introspection_splittoning.c:73
+#: ../build/lib/darktable/plugins/introspection_splittoning.c:134
+#: ../build/lib/darktable/plugins/introspection_splittoning.c:142
+#: ../src/develop/blend_gui.c:1997 ../src/develop/blend_gui.c:2016
+#: ../src/develop/blend_gui.c:2051 ../src/iop/channelmixer.c:622
+#: ../src/iop/channelmixerrgb.c:3732 ../src/iop/colorbalance.c:2019
+#: ../src/iop/colorbalancergb.c:1873 ../src/iop/colorbalancergb.c:1874
+#: ../src/iop/colorbalancergb.c:1875 ../src/iop/colorbalancergb.c:1876
+#: ../src/iop/colorize.c:349 ../src/iop/colorreconstruction.c:1290
+#: ../src/iop/colorzones.c:2441 ../src/iop/splittoning.c:477
+msgid "hue"
+msgstr "matiz"
+
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:78
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:193
 msgid "select by"
@@ -3100,12 +3162,13 @@ msgstr "luminosidade"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:146
 #: ../src/develop/blend_gui.c:1993 ../src/iop/basicadj.c:625
 #: ../src/iop/channelmixer.c:623 ../src/iop/colisa.c:317
-#: ../src/iop/colorbalance.c:2036 ../src/iop/colorchecker.c:1374
-#: ../src/iop/colorcontrast.c:94 ../src/iop/colorcorrection.c:283
-#: ../src/iop/colorize.c:362 ../src/iop/colorzones.c:2440
-#: ../src/iop/lowpass.c:592 ../src/iop/soften.c:410
-#: ../src/iop/splittoning.c:489 ../src/iop/velvia.c:84 ../src/iop/vibrance.c:72
-#: ../src/iop/vignette.c:991
+#: ../src/iop/colorbalance.c:2036 ../src/iop/colorbalancergb.c:1891
+#: ../src/iop/colorbalancergb.c:1892 ../src/iop/colorbalancergb.c:1893
+#: ../src/iop/colorchecker.c:1374 ../src/iop/colorcontrast.c:94
+#: ../src/iop/colorcorrection.c:283 ../src/iop/colorize.c:362
+#: ../src/iop/colorzones.c:2440 ../src/iop/lowpass.c:592
+#: ../src/iop/soften.c:410 ../src/iop/splittoning.c:489 ../src/iop/velvia.c:84
+#: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:991
 msgid "saturation"
 msgstr "saturação"
 
@@ -3128,7 +3191,7 @@ msgstr "raio para detecção de bordas"
 #: ../build/lib/darktable/plugins/introspection_defringe.c:106
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:221
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:420
-#: ../src/iop/bloom.c:403 ../src/iop/colorbalancergb.c:1828
+#: ../src/iop/bloom.c:403 ../src/iop/colorbalancergb.c:1830
 #: ../src/iop/colorreconstruction.c:1284 ../src/iop/hotpixels.c:376
 #: ../src/iop/sharpen.c:468
 msgid "threshold"
@@ -3614,9 +3677,9 @@ msgstr "versão do gerador de splines"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/darktable.c:918 ../src/common/database.c:2543
 #: ../src/common/variables.c:510 ../src/develop/imageop_gui.c:302
-#: ../src/gui/accelerators.c:927 ../src/gui/accelerators.c:944
-#: ../src/gui/accelerators.c:957 ../src/gui/accelerators.c:996
-#: ../src/gui/accelerators.c:1340 ../src/imageio/format/pdf.c:650
+#: ../src/gui/accelerators.c:920 ../src/gui/accelerators.c:937
+#: ../src/gui/accelerators.c:950 ../src/gui/accelerators.c:989
+#: ../src/gui/accelerators.c:1333 ../src/imageio/format/pdf.c:650
 #: ../src/imageio/format/pdf.c:675 ../src/libs/export.c:1252
 #: ../src/libs/export.c:1258 ../src/libs/export.c:1265
 #: ../src/libs/metadata_view.c:698
@@ -4101,15 +4164,40 @@ msgstr "pretos"
 msgid "deep shadows"
 msgstr "sombras profundas"
 
+#: ../build/lib/darktable/plugins/introspection_toneequal.c:156
+#: ../build/lib/darktable/plugins/introspection_toneequal.c:297
+#: ../src/iop/bilat.c:463 ../src/iop/colorbalance.c:2076
+#: ../src/iop/colorbalancergb.c:1889 ../src/iop/colorbalancergb.c:1893
+#: ../src/iop/colorbalancergb.c:1897 ../src/iop/shadhi.c:694
+#: ../src/iop/splittoning.c:526
+msgid "shadows"
+msgstr "sombras"
+
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:162
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:301
 msgid "light shadows"
 msgstr "sombras leves"
 
+#: ../build/lib/darktable/plugins/introspection_toneequal.c:168
+#: ../build/lib/darktable/plugins/introspection_toneequal.c:305
+#: ../src/iop/colorbalance.c:2077 ../src/iop/colorbalancergb.c:1888
+#: ../src/iop/colorbalancergb.c:1892 ../src/iop/colorbalancergb.c:1896
+msgid "mid-tones"
+msgstr "meios-tons"
+
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:174
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:309
 msgid "dark highlights"
 msgstr "realces escuros"
+
+#: ../build/lib/darktable/plugins/introspection_toneequal.c:180
+#: ../build/lib/darktable/plugins/introspection_toneequal.c:313
+#: ../src/iop/bilat.c:457 ../src/iop/colorbalance.c:2078
+#: ../src/iop/colorbalancergb.c:1887 ../src/iop/colorbalancergb.c:1891
+#: ../src/iop/colorbalancergb.c:1895 ../src/iop/monochrome.c:579
+#: ../src/iop/shadhi.c:695 ../src/iop/splittoning.c:528
+msgid "highlights"
+msgstr "realces"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:186
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:317
@@ -4353,39 +4441,39 @@ msgstr "Mostrar imagens em um mapa"
 msgid "Print your images"
 msgstr "Imprimir suas imagens"
 
-#: ../src/bauhaus/bauhaus.c:3109 ../src/gui/accelerators.c:265
+#: ../src/bauhaus/bauhaus.c:3108 ../src/gui/accelerators.c:265
 msgid "value"
 msgstr "valor"
 
-#: ../src/bauhaus/bauhaus.c:3110 ../src/bauhaus/bauhaus.c:3116
+#: ../src/bauhaus/bauhaus.c:3109 ../src/bauhaus/bauhaus.c:3115
 #: ../src/gui/accelerators.c:249
 msgid "button"
 msgstr "botão"
 
-#: ../src/bauhaus/bauhaus.c:3111
+#: ../src/bauhaus/bauhaus.c:3110
 msgid "force"
 msgstr "força"
 
-#: ../src/bauhaus/bauhaus.c:3112
+#: ../src/bauhaus/bauhaus.c:3111
 msgid "zoom"
 msgstr "zoom"
 
-#: ../src/bauhaus/bauhaus.c:3115
+#: ../src/bauhaus/bauhaus.c:3114
 msgid "selection"
 msgstr "seleção"
 
-#: ../src/bauhaus/bauhaus.c:3134
+#: ../src/bauhaus/bauhaus.c:3133
 msgid "slider"
 msgstr "deslizador"
 
-#: ../src/bauhaus/bauhaus.c:3139
+#: ../src/bauhaus/bauhaus.c:3138
 msgid "dropdown"
 msgstr "menu flutuante"
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1681
-#: ../src/control/jobs/control_jobs.c:1743 ../src/gui/accelerators.c:1676
-#: ../src/gui/accelerators.c:1750 ../src/gui/accelerators.c:1801
-#: ../src/gui/accelerators.c:1829 ../src/gui/accelerators.c:1888
+#: ../src/control/jobs/control_jobs.c:1743 ../src/gui/accelerators.c:1669
+#: ../src/gui/accelerators.c:1743 ../src/gui/accelerators.c:1794
+#: ../src/gui/accelerators.c:1822 ../src/gui/accelerators.c:1881
 #: ../src/gui/hist_dialog.c:193 ../src/gui/preferences.c:976
 #: ../src/gui/preferences.c:1015 ../src/gui/presets.c:366
 #: ../src/gui/presets.c:466 ../src/gui/styles_dialog.c:418
@@ -4930,9 +5018,9 @@ msgstr ""
 
 #: ../src/common/darktable.c:918 ../src/common/database.c:2543
 #: ../src/common/database.c:3601 ../src/common/variables.c:508
-#: ../src/develop/imageop_gui.c:303 ../src/gui/accelerators.c:927
-#: ../src/gui/accelerators.c:944 ../src/gui/accelerators.c:957
-#: ../src/gui/accelerators.c:996 ../src/gui/accelerators.c:1340
+#: ../src/develop/imageop_gui.c:303 ../src/gui/accelerators.c:920
+#: ../src/gui/accelerators.c:937 ../src/gui/accelerators.c:950
+#: ../src/gui/accelerators.c:989 ../src/gui/accelerators.c:1333
 #: ../src/imageio/format/pdf.c:651 ../src/imageio/format/pdf.c:676
 #: ../src/libs/export.c:1253 ../src/libs/export.c:1259
 #: ../src/libs/export.c:1266 ../src/libs/metadata_view.c:698
@@ -5476,24 +5564,24 @@ msgstr "perfil de controle de ruído `%s' não é válido"
 
 #: ../src/common/opencl.c:815
 msgid ""
-"due to a slow GPU hardware acceleration via opencl has been de-activated."
+"due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr "devido a baixa aceleração de hardware da GPU o opencl foi desativado."
 
 #: ../src/common/opencl.c:822
 msgid ""
-"multiple GPUs detected - opencl scheduling profile has been set accordingly."
+"multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "detectadas múltiplas GPUs - o perfil de escalonamento foi ajustado de acordo."
 
 #: ../src/common/opencl.c:829
 msgid ""
-"very fast GPU detected - opencl scheduling profile has been set accordingly."
+"very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "GPU muito rápida detectada - o perfil de escalonamento foi ajustado de "
 "acordo."
 
 #: ../src/common/opencl.c:836
-msgid "opencl scheduling profile set to default."
+msgid "opencl scheduling profile set to default"
 msgstr "perfil de escalonamento OpenCL ajustado para padrão."
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.cc:1875
@@ -6690,6 +6778,16 @@ msgstr "S"
 msgid "sliders for chroma channel (of HSL)"
 msgstr "deslizante para canal croma (de HSL)"
 
+#: ../src/develop/blend_gui.c:2020 ../src/develop/blend_gui.c:2047
+#: ../src/iop/atrous.c:1592 ../src/iop/channelmixerrgb.c:3738
+#: ../src/iop/colorbalancergb.c:1877 ../src/iop/colorbalancergb.c:1878
+#: ../src/iop/colorbalancergb.c:1879 ../src/iop/colorbalancergb.c:1880
+#: ../src/iop/colorbalancergb.c:1887 ../src/iop/colorbalancergb.c:1888
+#: ../src/iop/colorbalancergb.c:1889 ../src/iop/equalizer.c:391
+#: ../src/iop/nlmeans.c:536
+msgid "chroma"
+msgstr "croma"
+
 #: ../src/develop/blend_gui.c:2021
 msgid "sliders for value channel (of HSL)"
 msgstr "deslizante para canal valor (de HSL)"
@@ -7249,7 +7347,7 @@ msgstr "habilitar"
 msgid "focus"
 msgstr "foco"
 
-#: ../src/develop/imageop.c:3240 ../src/gui/accelerators.c:2010
+#: ../src/develop/imageop.c:3240 ../src/gui/accelerators.c:2003
 msgid "instance"
 msgstr "instância"
 
@@ -8013,7 +8111,7 @@ msgstr "erro: garanta que min_mip <= max_mip\n"
 msgid "creating complete lighttable thumbnail cache\n"
 msgstr "criando cache completo de miniaturas para mesa de luz\n"
 
-#: ../src/gui/accelerators.c:77
+#: ../src/gui/accelerators.c:77 ../src/views/view.c:1517
 msgid "scroll"
 msgstr "rolar"
 
@@ -8082,11 +8180,11 @@ msgstr "altgr"
 msgid "edit"
 msgstr "editar"
 
-#: ../src/gui/accelerators.c:104 ../src/gui/accelerators.c:540
+#: ../src/gui/accelerators.c:104 ../src/gui/accelerators.c:533
 msgid "up"
 msgstr "para cima"
 
-#: ../src/gui/accelerators.c:105 ../src/gui/accelerators.c:540
+#: ../src/gui/accelerators.c:105 ../src/gui/accelerators.c:533
 msgid "down"
 msgstr "para baixo"
 
@@ -8104,11 +8202,11 @@ msgstr "próxima"
 msgid "previous"
 msgstr "anterior"
 
-#: ../src/gui/accelerators.c:115 ../src/gui/accelerators.c:1035
+#: ../src/gui/accelerators.c:115 ../src/gui/accelerators.c:1028
 msgid "last"
 msgstr "última"
 
-#: ../src/gui/accelerators.c:116 ../src/gui/accelerators.c:1034
+#: ../src/gui/accelerators.c:116 ../src/gui/accelerators.c:1027
 msgid "first"
 msgstr "primeira"
 
@@ -8168,51 +8266,51 @@ msgstr "aplicar"
 msgid "apply on new instance"
 msgstr "aplicar em nova instância"
 
-#: ../src/gui/accelerators.c:473
-msgid "Unknown driver"
-msgstr "Driver desconhecido"
+#: ../src/gui/accelerators.c:447
+msgid "unknown driver"
+msgstr "driver desconhecido"
 
-#: ../src/gui/accelerators.c:521 ../src/gui/accelerators.c:531
+#: ../src/gui/accelerators.c:514 ../src/gui/accelerators.c:524
 msgid "double"
 msgstr "duplo"
 
-#: ../src/gui/accelerators.c:522 ../src/gui/accelerators.c:532
+#: ../src/gui/accelerators.c:515 ../src/gui/accelerators.c:525
 msgid "triple"
 msgstr "triplo"
 
-#: ../src/gui/accelerators.c:523 ../src/gui/accelerators.c:533
+#: ../src/gui/accelerators.c:516 ../src/gui/accelerators.c:526
 msgid "long"
 msgstr "longo"
 
-#: ../src/gui/accelerators.c:524
+#: ../src/gui/accelerators.c:517
 msgid "press"
 msgstr "pressionar"
 
-#: ../src/gui/accelerators.c:530 ../src/views/lighttable.c:815
+#: ../src/gui/accelerators.c:523 ../src/views/lighttable.c:815
 msgid "middle"
 msgstr "meio"
 
-#: ../src/gui/accelerators.c:534
+#: ../src/gui/accelerators.c:527
 msgid "click"
 msgstr "clique"
 
-#: ../src/gui/accelerators.c:548
+#: ../src/gui/accelerators.c:541
 msgid "first instance"
 msgstr "primeira instância"
 
-#: ../src/gui/accelerators.c:550
+#: ../src/gui/accelerators.c:543
 msgid "last instance"
 msgstr "última instância"
 
-#: ../src/gui/accelerators.c:552
+#: ../src/gui/accelerators.c:545
 msgid "relative instance"
 msgstr "instância relativa"
 
-#: ../src/gui/accelerators.c:555 ../src/gui/accelerators.c:2000
+#: ../src/gui/accelerators.c:548 ../src/gui/accelerators.c:1993
 msgid "speed"
 msgstr "velocidade"
 
-#: ../src/gui/accelerators.c:632
+#: ../src/gui/accelerators.c:625
 msgid ""
 "press Del to delete selected shortcut\n"
 "double click to add new shortcut\n"
@@ -8222,7 +8320,7 @@ msgstr ""
 "clique duplo para adicionar um novo atalho\n"
 "comece a digitar para busca incremental"
 
-#: ../src/gui/accelerators.c:646
+#: ../src/gui/accelerators.c:639
 msgid ""
 "click to filter shortcut list\n"
 "double click to define new shortcut\n"
@@ -8232,7 +8330,7 @@ msgstr ""
 "clique duplo para definir um novo atalho\n"
 "comece a digitar para busca incremental"
 
-#: ../src/gui/accelerators.c:656
+#: ../src/gui/accelerators.c:649
 msgid ""
 "press keys with mouse click and scroll or move combinations to create a "
 "shortcut"
@@ -8240,82 +8338,82 @@ msgstr ""
 "pressione teclas com combinações de clique, rolar e movimentos do mouse para "
 "criar um atalho"
 
-#: ../src/gui/accelerators.c:657
+#: ../src/gui/accelerators.c:650
 msgid "click to open shortcut configuration"
 msgstr "clique para abrir configuração de atalho"
 
-#: ../src/gui/accelerators.c:658
+#: ../src/gui/accelerators.c:651
 msgid "ctrl+click to add to quick access panel\n"
 msgstr "ctrl+click para adicionar ao painel de acesso rápido\n"
 
-#: ../src/gui/accelerators.c:659
+#: ../src/gui/accelerators.c:652
 msgid "ctrl+click to remove from quick access panel\n"
 msgstr "ctrl+click para remover do painel de acesso rápido\n"
 
-#: ../src/gui/accelerators.c:660
+#: ../src/gui/accelerators.c:653
 msgid "right click to exit mapping mode"
 msgstr "clique direito para sair do modo de mapeamento"
 
-#: ../src/gui/accelerators.c:798
+#: ../src/gui/accelerators.c:791
 msgid "active view"
 msgstr "vista ativa"
 
-#: ../src/gui/accelerators.c:799
+#: ../src/gui/accelerators.c:792
 msgid "other views"
 msgstr "outras vistas"
 
-#: ../src/gui/accelerators.c:800
+#: ../src/gui/accelerators.c:793
 msgid "fallbacks"
 msgstr "alternativas"
 
-#: ../src/gui/accelerators.c:925
+#: ../src/gui/accelerators.c:918
 msgid "create separate shortcuts for up and down move?"
 msgstr "criar atalhos separados para movimentos para cima e para baixo?"
 
-#: ../src/gui/accelerators.c:927
+#: ../src/gui/accelerators.c:920
 msgid "shortcut for move exists with single effect"
 msgstr "atalho para movimento existe com único efeito"
 
-#: ../src/gui/accelerators.c:942
+#: ../src/gui/accelerators.c:935
 msgid "reset the settings of the shortcut?"
 msgstr "redefinir a configuração do atalho?"
 
-#: ../src/gui/accelerators.c:944
+#: ../src/gui/accelerators.c:937
 msgid "shortcut exists with different settings"
 msgstr "existe um atalho com configuração diferente"
 
 #. there should be no other clashes because same mapping already existed
-#: ../src/gui/accelerators.c:955
+#: ../src/gui/accelerators.c:948
 msgid "remove the shortcut?"
 msgstr "remover o atalho?"
 
-#: ../src/gui/accelerators.c:957
+#: ../src/gui/accelerators.c:950
 msgid "shortcut already exists"
 msgstr "o atalho já existe"
 
-#: ../src/gui/accelerators.c:993
+#: ../src/gui/accelerators.c:986
 msgid "remove these existing shortcuts?"
 msgstr "remover estes atalhos existentes?"
 
-#: ../src/gui/accelerators.c:995
+#: ../src/gui/accelerators.c:988
 msgid "clashing shortcuts exist"
 msgstr "há atalhos conflitantes"
 
 #. or 3, but change char relative[] = "-2" to "-1"
 #. NUM_INSTANCES
-#: ../src/gui/accelerators.c:1033
+#: ../src/gui/accelerators.c:1026
 msgid "preferred"
 msgstr "preferido"
 
-#: ../src/gui/accelerators.c:1036
+#: ../src/gui/accelerators.c:1029
 msgid "second"
 msgstr "segundo"
 
-#: ../src/gui/accelerators.c:1037
+#: ../src/gui/accelerators.c:1030
 msgid "last but one"
 msgstr "penúltimo"
 
-#: ../src/gui/accelerators.c:1292
+#: ../src/gui/accelerators.c:1285
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -8340,31 +8438,31 @@ msgstr ""
 "\n"
 "clique direito para cancelar"
 
-#: ../src/gui/accelerators.c:1339
+#: ../src/gui/accelerators.c:1332
 msgid "remove the selected shortcut?"
 msgstr "excluir os atalhos selecionados?"
 
-#: ../src/gui/accelerators.c:1340
+#: ../src/gui/accelerators.c:1333
 msgid "removing shortcut"
 msgstr "removendo atalho"
 
-#: ../src/gui/accelerators.c:1673
+#: ../src/gui/accelerators.c:1666
 msgid "restore shortcuts"
 msgstr "restaurar atalhos"
 
-#: ../src/gui/accelerators.c:1677
+#: ../src/gui/accelerators.c:1670
 msgid "_defaults"
 msgstr "_padrões"
 
-#: ../src/gui/accelerators.c:1678
+#: ../src/gui/accelerators.c:1671
 msgid "_startup"
 msgstr "_ao iniciar"
 
-#: ../src/gui/accelerators.c:1679
+#: ../src/gui/accelerators.c:1672
 msgid "_edits"
 msgstr "_editados"
 
-#: ../src/gui/accelerators.c:1684
+#: ../src/gui/accelerators.c:1677
 msgid ""
 "restore default shortcuts\n"
 "  or as at startup\n"
@@ -8374,7 +8472,7 @@ msgstr ""
 "  ou como ao iniciar\n"
 "  ou como quando o diálogo de configuração foi aberto\n"
 
-#: ../src/gui/accelerators.c:1687
+#: ../src/gui/accelerators.c:1680
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
@@ -8382,21 +8480,21 @@ msgstr ""
 "limpar todos os atalhos mais novos\n"
 "(ao invés de simplesmente restaurar os modificados)"
 
-#: ../src/gui/accelerators.c:1739 ../src/gui/preferences.c:856
+#: ../src/gui/accelerators.c:1732 ../src/gui/preferences.c:856
 #: ../src/libs/tools/global_toolbox.c:854
 msgid "shortcuts"
 msgstr "atalhos"
 
-#: ../src/gui/accelerators.c:1748
+#: ../src/gui/accelerators.c:1741
 msgid "export shortcuts"
 msgstr "exportar atalhos"
 
-#: ../src/gui/accelerators.c:1751 ../src/gui/accelerators.c:1830
+#: ../src/gui/accelerators.c:1744 ../src/gui/accelerators.c:1823
 #: ../src/gui/hist_dialog.c:196 ../src/gui/presets.c:467
 msgid "_ok"
 msgstr "_ok"
 
-#: ../src/gui/accelerators.c:1756
+#: ../src/gui/accelerators.c:1749
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
@@ -8404,34 +8502,34 @@ msgstr ""
 "exportar todos os atalhos para um arquivo\n"
 "ou somente para um dispositivo selecionado\n"
 
-#: ../src/gui/accelerators.c:1761 ../src/gui/accelerators.c:1840
+#: ../src/gui/accelerators.c:1754 ../src/gui/accelerators.c:1833
 #: ../src/gui/gtk.c:3013 ../src/imageio/format/pdf.c:662
 #: ../src/iop/denoiseprofile.c:3596 ../src/iop/lens.cc:2222
 #: ../src/iop/rawdenoise.c:907 ../src/libs/tools/filter.c:185
 msgid "all"
 msgstr "tudo"
 
-#: ../src/gui/accelerators.c:1762 ../src/gui/accelerators.c:1841
+#: ../src/gui/accelerators.c:1755 ../src/gui/accelerators.c:1834
 msgid "keyboard"
 msgstr "teclado"
 
-#: ../src/gui/accelerators.c:1774
+#: ../src/gui/accelerators.c:1767
 msgid "device id"
 msgstr "id do dispositivo"
 
-#: ../src/gui/accelerators.c:1800
+#: ../src/gui/accelerators.c:1793
 msgid "select file to export"
 msgstr "selecione arquivo para exportar"
 
-#: ../src/gui/accelerators.c:1801 ../src/libs/tagging.c:2336
+#: ../src/gui/accelerators.c:1794 ../src/libs/tagging.c:2336
 msgid "_export"
 msgstr "_exportar"
 
-#: ../src/gui/accelerators.c:1827
+#: ../src/gui/accelerators.c:1820
 msgid "import shortcuts"
 msgstr "importar atalhos"
 
-#: ../src/gui/accelerators.c:1835
+#: ../src/gui/accelerators.c:1828
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
@@ -8439,31 +8537,31 @@ msgstr ""
 "importar todos os atalhos de um arquivo\n"
 "ou somente para um dispositivo selecionado\n"
 
-#: ../src/gui/accelerators.c:1853
+#: ../src/gui/accelerators.c:1846
 msgid "id in file"
 msgstr "id no arquivo"
 
-#: ../src/gui/accelerators.c:1859
+#: ../src/gui/accelerators.c:1852
 msgid "id when loaded"
 msgstr "id quando carregado"
 
-#: ../src/gui/accelerators.c:1863
+#: ../src/gui/accelerators.c:1856
 msgid "clear device first"
 msgstr "limpar o dispositivo primeiro"
 
-#: ../src/gui/accelerators.c:1887
+#: ../src/gui/accelerators.c:1880
 msgid "select file to import"
 msgstr "selecione arquivo para importar"
 
-#: ../src/gui/accelerators.c:1888 ../src/libs/tagging.c:2300
+#: ../src/gui/accelerators.c:1881 ../src/libs/tagging.c:2300
 msgid "_import"
 msgstr "_importar"
 
-#: ../src/gui/accelerators.c:1961
+#: ../src/gui/accelerators.c:1954
 msgid "search shortcuts list"
 msgstr "buscar na lista de atalhos"
 
-#: ../src/gui/accelerators.c:1962
+#: ../src/gui/accelerators.c:1955
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
@@ -8473,27 +8571,28 @@ msgstr ""
 "resultados"
 
 #. Setting up the cell renderers
-#: ../src/gui/accelerators.c:1976 ../src/views/view.c:1710
+#: ../src/gui/accelerators.c:1969 ../src/views/view.c:1710
 msgid "shortcut"
 msgstr "atalho"
 
-#: ../src/gui/accelerators.c:1978 ../src/gui/accelerators.c:2065
+#: ../src/gui/accelerators.c:1971 ../src/gui/accelerators.c:2058
+#: ../src/views/view.c:1712
 msgid "action"
 msgstr "ação"
 
-#: ../src/gui/accelerators.c:1987
+#: ../src/gui/accelerators.c:1980
 msgid "element"
 msgstr "elemento"
 
-#: ../src/gui/accelerators.c:1994
+#: ../src/gui/accelerators.c:1987
 msgid "effect"
 msgstr "efeito"
 
-#: ../src/gui/accelerators.c:2051
+#: ../src/gui/accelerators.c:2044
 msgid "search actions list"
 msgstr "buscar na lista de ações"
 
-#: ../src/gui/accelerators.c:2052
+#: ../src/gui/accelerators.c:2045
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
@@ -8502,39 +8601,39 @@ msgstr ""
 "pressione as teclas para cima e para baixo para percorrer ciclicamente os "
 "resultados"
 
-#: ../src/gui/accelerators.c:2071 ../src/gui/guides.c:682
+#: ../src/gui/accelerators.c:2064 ../src/gui/guides.c:682
 #: ../src/libs/export_metadata.c:190
 msgid "type"
 msgstr "tipo"
 
-#: ../src/gui/accelerators.c:2102
+#: ../src/gui/accelerators.c:2095
 msgid "restore..."
 msgstr "restaurar..."
 
-#: ../src/gui/accelerators.c:2107
+#: ../src/gui/accelerators.c:2100
 msgid "import..."
 msgstr "importar..."
 
 #. export button
-#: ../src/gui/accelerators.c:2112 ../src/libs/styles.c:870
+#: ../src/gui/accelerators.c:2105 ../src/libs/styles.c:870
 msgid "export..."
 msgstr "exportar..."
 
-#: ../src/gui/accelerators.c:2513
+#: ../src/gui/accelerators.c:2506
 msgid "input devices reinitialised"
 msgstr "dispositivos de entrada reinicializados"
 
-#: ../src/gui/accelerators.c:2816
+#: ../src/gui/accelerators.c:2846
 #, c-format
 msgid "no fallback for %s (%s)"
 msgstr "nenhuma alternativa para %s (%s)"
 
-#: ../src/gui/accelerators.c:2820
+#: ../src/gui/accelerators.c:2850
 #, c-format
 msgid "%s not assigned"
 msgstr "%s não associado"
 
-#: ../src/gui/accelerators.c:2916
+#: ../src/gui/accelerators.c:2946
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s associado a %s"
@@ -8987,7 +9086,6 @@ msgstr "proporção áurea (todas as guias)"
 msgid "horizontal lines"
 msgstr "linhas horizontais"
 
-
 #: ../src/gui/guides.c:218
 msgid "number of horizontal guide lines"
 msgstr "número de linhas-guia horizontais"
@@ -9269,9 +9367,8 @@ msgid "failed to import preset %s"
 msgstr "falha ao importar predefinição %s"
 
 #: ../src/gui/preferences.c:975
-#, fuzzy
 msgid "select preset(s) to import"
-msgstr "selecione configuração para importar"
+msgstr "selecione predefinições para importar"
 
 #: ../src/gui/preferences.c:976 ../src/libs/collect.c:436
 #: ../src/libs/copy_history.c:108 ../src/libs/geotagging.c:937
@@ -12511,39 +12608,39 @@ msgstr "aumentar a riqueza de cores principalmente em cores com croma baixo"
 msgid "increase the contrast at constant chromaticity"
 msgstr "aumentar o contraste com cromaticidade constante"
 
-#: ../src/iop/colorbalancergb.c:1594
+#: ../src/iop/colorbalancergb.c:1596
 msgid "linear chroma grading"
 msgstr "gradação linear de croma"
 
-#: ../src/iop/colorbalancergb.c:1601
+#: ../src/iop/colorbalancergb.c:1603
 msgid "increase colorfulness at same luminance globally"
 msgstr "aumentar a riqueza de cores na mesma luminância globalmente"
 
-#: ../src/iop/colorbalancergb.c:1607
+#: ../src/iop/colorbalancergb.c:1609
 msgid "increase colorfulness at same luminance mostly in shadows"
 msgstr ""
 "aumentar a riqueza de cores na mesma luminância principalmente nas sombras"
 
-#: ../src/iop/colorbalancergb.c:1613
+#: ../src/iop/colorbalancergb.c:1615
 msgid "increase colorfulness at same luminance mostly in mid-tones"
 msgstr ""
 "aumentar a riqueza de cores na mesma luminância principalmente nos meios-tons"
 
-#: ../src/iop/colorbalancergb.c:1619
+#: ../src/iop/colorbalancergb.c:1621
 msgid "increase colorfulness at same luminance mostly in highlights"
 msgstr ""
 "aumentar a riqueza de cores na mesma luminância principalmente nos realces"
 
-#: ../src/iop/colorbalancergb.c:1621
+#: ../src/iop/colorbalancergb.c:1623
 msgid "perceptual saturation grading"
 msgstr "gradação de saturação perceptual"
 
-#: ../src/iop/colorbalancergb.c:1628
+#: ../src/iop/colorbalancergb.c:1630
 msgid "add or remove saturation by an absolute amount"
 msgstr "adicionar ou remover saturação em quantidade absoluta"
 
-#: ../src/iop/colorbalancergb.c:1635 ../src/iop/colorbalancergb.c:1642
-#: ../src/iop/colorbalancergb.c:1649
+#: ../src/iop/colorbalancergb.c:1637 ../src/iop/colorbalancergb.c:1644
+#: ../src/iop/colorbalancergb.c:1651
 msgid ""
 "increase or decrease saturation proportionally to the original pixel "
 "saturation"
@@ -12551,16 +12648,16 @@ msgstr ""
 "aumentar ou diminuir a saturação proporcionalmente à saturação original do "
 "pixel"
 
-#: ../src/iop/colorbalancergb.c:1652
+#: ../src/iop/colorbalancergb.c:1653
 msgid "perceptual brilliance grading"
 msgstr "gradação de brilhância perceptual"
 
-#: ../src/iop/colorbalancergb.c:1659
+#: ../src/iop/colorbalancergb.c:1660
 msgid "add or remove brilliance by an absolute amount"
 msgstr "adicionar ou remover brilhância em quantidade absoluta"
 
-#: ../src/iop/colorbalancergb.c:1666 ../src/iop/colorbalancergb.c:1673
-#: ../src/iop/colorbalancergb.c:1680
+#: ../src/iop/colorbalancergb.c:1667 ../src/iop/colorbalancergb.c:1674
+#: ../src/iop/colorbalancergb.c:1681
 msgid ""
 "increase or decrease brilliance proportionally to the original pixel "
 "brilliance"
@@ -12625,7 +12722,8 @@ msgstr "matiz do ganho de cor em realces"
 msgid "chroma of the color gain in highlights"
 msgstr "croma do ganho de cor em realces"
 
-#: ../src/iop/colorbalancergb.c:1757
+#: ../src/iop/colorbalancergb.c:1757 ../src/iop/colorbalancergb.c:1874
+#: ../src/iop/colorbalancergb.c:1878 ../src/iop/colorbalancergb.c:1882
 msgid "power"
 msgstr "potência"
 
@@ -12642,67 +12740,95 @@ msgid "chroma of the color exponent in mid-tones"
 msgstr "croma do expoente de cor nos meios-tons"
 
 #. Page masks
-#: ../src/iop/colorbalancergb.c:1782
+#: ../src/iop/colorbalancergb.c:1784
 msgid "masks"
 msgstr "máscaras"
 
-#: ../src/iop/colorbalancergb.c:1782
+#: ../src/iop/colorbalancergb.c:1784
 msgid "isolate luminances"
 msgstr "isolar luminâncias"
 
-#: ../src/iop/colorbalancergb.c:1784
+#: ../src/iop/colorbalancergb.c:1786
 msgid "luminance ranges"
 msgstr "faixas de luminância"
 
-#: ../src/iop/colorbalancergb.c:1789 ../src/iop/colorzones.c:2514
+#: ../src/iop/colorbalancergb.c:1791 ../src/iop/colorzones.c:2514
 #: ../src/iop/filmicrgb.c:3639 ../src/iop/lowlight.c:836
 #: ../src/iop/rawdenoise.c:935 ../src/iop/toneequal.c:3163
 msgid "graph"
 msgstr "gráfico"
 
-#: ../src/iop/colorbalancergb.c:1800
+#: ../src/iop/colorbalancergb.c:1802
 msgid "weight of the shadows over the whole tonal range"
 msgstr "peso das sombras sobre a faixa tonal total"
 
-#: ../src/iop/colorbalancergb.c:1811
+#: ../src/iop/colorbalancergb.c:1813
 msgid "position of the middle-gray reference for masking"
 msgstr "posição da referência de cinza médio para mascaramento"
 
-#: ../src/iop/colorbalancergb.c:1822
+#: ../src/iop/colorbalancergb.c:1824
 msgid "weights of highlights over the whole tonal range"
 msgstr "peso dos realces sobre a faixa tonal total"
 
-#: ../src/iop/colorbalancergb.c:1835
+#: ../src/iop/colorbalancergb.c:1837
 msgid "peak white luminance value used to normalize the power function"
 msgstr ""
 "valor de pico de luminância de branco usado para normalizar a função de "
 "potência"
 
-#: ../src/iop/colorbalancergb.c:1843
+#: ../src/iop/colorbalancergb.c:1845
 msgid "peak gray luminance value used to normalize the power function"
 msgstr ""
 "valor de pico de luminância de branco usado para normalizar a função de "
 "potência"
 
-#: ../src/iop/colorbalancergb.c:1845
+#: ../src/iop/colorbalancergb.c:1847
 msgid "mask preview settings"
 msgstr "configurações de pré-visualização de máscara"
 
-#: ../src/iop/colorbalancergb.c:1848
+#: ../src/iop/colorbalancergb.c:1850
 msgid "checkerboard color 1"
 msgstr "cor 1 do tabuleiro"
 
-#: ../src/iop/colorbalancergb.c:1851 ../src/iop/colorbalancergb.c:1860
+#: ../src/iop/colorbalancergb.c:1853 ../src/iop/colorbalancergb.c:1862
 msgid "select color of the checkerboard from a swatch"
 msgstr "selecione a cor do tabuleiro em uma amostra"
 
-#: ../src/iop/colorbalancergb.c:1857
+#: ../src/iop/colorbalancergb.c:1859
 msgid "checkerboard color 2"
 msgstr "cor 2 do tabuleiro"
 
-#: ../src/iop/colorbalancergb.c:1867
+#: ../src/iop/colorbalancergb.c:1869
 msgid "checkerboard size"
 msgstr "tamanho do tabuleiro"
+
+#: ../src/iop/colorbalancergb.c:1873 ../src/iop/colorbalancergb.c:1877
+#: ../src/iop/colorbalancergb.c:1881
+#, fuzzy
+msgid "lift"
+msgstr "levantar"
+
+#: ../src/iop/colorbalancergb.c:1875 ../src/iop/colorbalancergb.c:1879
+#: ../src/iop/colorbalancergb.c:1883
+msgid "gain"
+msgstr "ganho"
+
+#: ../src/iop/colorbalancergb.c:1886
+msgid "global chroma"
+msgstr "croma global"
+
+#: ../src/iop/colorbalancergb.c:1890 ../src/iop/filmic.c:1677
+msgid "global saturation"
+msgstr "saturação global"
+
+#: ../src/iop/colorbalancergb.c:1894
+msgid "global brilliance"
+msgstr "brilhância global"
+
+#: ../src/iop/colorbalancergb.c:1895 ../src/iop/colorbalancergb.c:1896
+#: ../src/iop/colorbalancergb.c:1897
+msgid "brilliance"
+msgstr "brilhância"
 
 #: ../src/iop/colorchecker.c:115
 msgid "color look up table"
@@ -13452,8 +13578,8 @@ msgstr ""
 #: ../src/iop/demosaic.c:5778
 msgid ""
 "threshold for edge-aware median.\n"
-"set to 0.0 to switch off.\n"
-"set to 1.0 to ignore edges."
+"set to 0.0 to switch off\n"
+"set to 1.0 to ignore edges"
 msgstr ""
 "limite para mediana sensível a borda.\n"
 "defina 0.0 para desativar.\n"
@@ -13462,8 +13588,8 @@ msgstr ""
 #: ../src/iop/demosaic.c:5783
 msgid ""
 "contrast threshold for dual demosaic.\n"
-"set to 0.0 for high frequency content.\n"
-"set to 1.0 for flat content."
+"set to 0.0 for high frequency content\n"
+"set to 1.0 for flat content"
 msgstr ""
 "limite de contraste para interpolação cromática dual.\n"
 "defina em 0.0 para conteúdo de alta frequência.\n"
@@ -13476,7 +13602,7 @@ msgstr "mostrar máscara de mesclagem"
 #: ../src/iop/demosaic.c:5793
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
-"refine adds some recalculation of red & blue channels."
+"refine adds some recalculation of red & blue channels"
 msgstr ""
 "passos de refinamento LMMSE. os passos de mediana calculam média da saída,\n"
 "os de refinamento adicionam algum recálculo de canais vermelho & azul."
@@ -14474,7 +14600,7 @@ msgstr ""
 "a curva escura é a de dessaturação."
 
 #: ../src/iop/filmicrgb.c:3581
-msgid "toggle axis labels and values display."
+msgid "toggle axis labels and values display"
 msgstr "alterna exibição de rótulos dos eixos e valores."
 
 #: ../src/iop/filmicrgb.c:3585
@@ -15738,7 +15864,7 @@ msgstr ""
 "erro - o valor lut máximo não casa com nenhuma profundidade de bits válida"
 
 #: ../src/iop/lut3d.c:1550
-msgid "Lut root folder not defined"
+msgid "lut root folder not defined"
 msgstr "pasta raiz do lut não definida"
 
 #: ../src/iop/lut3d.c:1556
@@ -15758,14 +15884,14 @@ msgid "hald cluts (png) or 3D lut (cube or 3dl)"
 msgstr "hald cluts (png) ou 3D lut (cubo ou 3dl)"
 
 #: ../src/iop/lut3d.c:1603
-msgid "Select file outside Lut root folder is not allowed"
-msgstr "Seleção de arquivo fora da pasta raiz do LUT não é permitida"
+msgid "select file outside Lut root folder is not allowed"
+msgstr "seleção de arquivo fora da pasta raiz do LUT não é permitida"
 
 #: ../src/iop/lut3d.c:1676
 msgid ""
 "select a png (haldclut), a cube, a 3dl or a gmz (compressed lut) file "
-"CAUTION: 3D lut folder must be set in preferences/core options/miscellaneous "
-"before choosing the lut file"
+"CAUTION: 3D lut folder must be set in preferences/processing before choosing "
+"the lut file"
 msgstr ""
 "selecione um arquivo png (haldclut), um cubo, uma 3dl ou um gmz (LUT "
 "comprimido)\n"
@@ -17714,7 +17840,7 @@ msgstr "a contagem de segundos antes de realizar a captura"
 msgid ""
 "the amount of images to capture in a sequence,\n"
 "you can use this in conjunction with delayed mode to create stop-motion "
-"sequences."
+"sequences"
 msgstr ""
 "a quantidade de imagens capturadas em sequência,\n"
 "você pode definir isto em conjunto com o modo em retardo para criar "
@@ -17723,16 +17849,14 @@ msgstr ""
 #: ../src/libs/camera.c:485
 msgid ""
 "the amount of brackets on each side of centered shoot, amount of images = "
-"(brackets*2)+1."
-msgstr ""
-"a quantidade de brackets em cada lado de um disparo centrado, total de "
-"imagens = (brackets*2)+1."
+"(brackets*2) + 1"
+msgstr "a quantidade de brackets em cada lado de um disparo centrado, total de imagens = (brackets*2) + 1."
 
 #: ../src/libs/camera.c:487
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usually 3 "
 "steps per stop\n"
-"with other words, 3 steps is 1EV exposure step between brackets."
+"with other words, 3 steps is 1EV exposure step between brackets"
 msgstr ""
 "a quantidade de passos de bracket, passo são configuráveis na câmera e "
 "geralmente 3 passos por stop\n"
@@ -18011,14 +18135,12 @@ msgid "statistic"
 msgstr "estatística"
 
 #: ../src/libs/colorpicker.c:577
-#, fuzzy
 msgid "select which statistic to show"
-msgstr "selecionar o tom de saturação de sombra"
+msgstr "selecionar que estatística mostrar"
 
 #: ../src/libs/colorpicker.c:586
-#, fuzzy
 msgid "select which color mode to use"
-msgstr "clique para alternar o modo de cor nos deslizadores"
+msgstr "selecionar que modo de cor usar"
 
 #: ../src/libs/colorpicker.c:595
 msgid ""
@@ -18059,13 +18181,13 @@ msgid "error loading file '%s'"
 msgstr "erro carregando arquivo '%s'"
 
 #: ../src/libs/copy_history.c:197
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "no history compression of 1 image.\n"
-"see tag: darktable|problem|history-compress."
+"see tag: darktable|problem|history-compress"
 msgid_plural ""
 "no history compression of %d images.\n"
-"see tag: darktable|problem|history-compress."
+"see tag: darktable|problem|history-compress"
 msgstr[0] ""
 "o histórico de uma imagem não é comprimido.\n"
 "veja a etiqueta: darktable|problema|history-compress."
@@ -18219,7 +18341,7 @@ msgstr "gerenciador de duplicatas"
 
 #: ../src/libs/duplicate.c:263
 #, no-c-format
-msgid "preview is only possible for zoom lower than 200%%..."
+msgid "preview is only possible for zoom lower than 200%%"
 msgstr "pré-visualização só é possível para zoom menor que 200%%..."
 
 #: ../src/libs/duplicate.c:543 ../src/libs/history.c:1011
@@ -18812,9 +18934,8 @@ msgid "set view to AzBz"
 msgstr "mudar visão para AzBz"
 
 #: ../src/libs/histogram.c:1489
-#, fuzzy
 msgid "set view to RYB"
-msgstr "mudar visão para AzBz"
+msgstr "mudar visão para RYB"
 
 #: ../src/libs/histogram.c:1494
 msgid "set view to u*v*"
@@ -19964,10 +20085,6 @@ msgstr "Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"
 msgid "all rights reserved"
 msgstr "todos direitos reservados"
 
-#: ../src/libs/metadata.c:832
-msgid "all rights reserved."
-msgstr "todos direitos reservados."
-
 #. internal
 #: ../src/libs/metadata_view.c:122
 msgid "filmroll"
@@ -21030,8 +21147,8 @@ msgstr "excluir nó?"
 
 #: ../src/libs/tagging.c:1458
 #, c-format
-msgid "<u>%d</u> tag will be deleted."
-msgid_plural "<u>%d</u> tags will be deleted."
+msgid "<u>%d</u> tag will be deleted"
+msgid_plural "<u>%d</u> tags will be deleted"
 msgstr[0] "<u>%d</u> etiquta será removida."
 msgstr[1] "<u>%d</u> etiquta serão removidas."
 
@@ -21039,9 +21156,9 @@ msgstr[1] "<u>%d</u> etiquta serão removidas."
 #: ../src/libs/tagging.c:1949
 #, c-format
 msgid "<u>%d</u> image will be updated"
-msgid_plural "<u>%d</u> images will be updated "
+msgid_plural "<u>%d</u> images will be updated"
 msgstr[0] "<u>%d</u> imagem será atualizada"
-msgstr[1] "<u>%d</u> imagens serão atualizadas "
+msgstr[1] "<u>%d</u> imagens serão atualizadas"
 
 #: ../src/libs/tagging.c:1489
 #, c-format
@@ -21080,8 +21197,8 @@ msgstr "etiqueta já existe. abortando."
 
 #: ../src/libs/tagging.c:1669 ../src/libs/tagging.c:1944
 #, c-format
-msgid "<u>%d</u> tag will be updated."
-msgid_plural "<u>%d</u> tags will be updated."
+msgid "<u>%d</u> tag will be updated"
+msgid_plural "<u>%d</u> tags will be updated"
 msgstr[0] "<u>%d</u> etiqueta será atualizada."
 msgstr[1] "<u>%d</u> etiquetas serão atualizadas."
 
@@ -21162,9 +21279,8 @@ msgid "(private)"
 msgstr "(privado)"
 
 #: ../src/libs/tagging.c:2299
-#, fuzzy
 msgid "select a keyword file"
-msgstr "Selecione um arquivo de palavras-chave"
+msgstr "selecione um arquivo de palavras-chave"
 
 #: ../src/libs/tagging.c:2312
 msgid "error importing tags"
@@ -21176,9 +21292,8 @@ msgid "%zd tags imported"
 msgstr "%zd etiquetas importadas"
 
 #: ../src/libs/tagging.c:2335
-#, fuzzy
 msgid "select file to export to"
-msgstr "Selecione arquivo para exportar"
+msgstr "selecione arquivo para exportar"
 
 #: ../src/libs/tagging.c:2349
 msgid "error exporting tags"
@@ -21364,9 +21479,8 @@ msgid "filter"
 msgstr "filtro"
 
 #: ../src/libs/tools/filter.c:162
-#, fuzzy
 msgid "comparator"
-msgstr "operador"
+msgstr "comparador"
 
 #: ../src/libs/tools/filter.c:163 ../src/libs/tools/filter.c:182
 msgid "which images should be shown"
@@ -21478,7 +21592,8 @@ msgstr "informações permanentes estendidas ao passar o mouse"
 
 #: ../src/libs/tools/global_toolbox.c:456
 #: ../src/libs/tools/global_toolbox.c:489
-msgid "overlays block on mouse hover during (s) "
+#, fuzzy
+msgid "overlays block on mouse hover during (s)"
 msgstr "bloco de informações ao passar o mouse por (s)"
 
 #: ../src/libs/tools/global_toolbox.c:463
@@ -21860,7 +21975,6 @@ msgid "clipping preview mode"
 msgstr "modo de pré-visualização de recorte"
 
 #: ../src/views/darkroom.c:2346
-#, fuzzy
 msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes"
@@ -22106,10 +22220,9 @@ msgstr "mostrar máscara desenhada"
 
 #. toggle visibility of guide lines
 #: ../src/views/darkroom.c:3861
-#, fuzzy
 msgctxt "accel"
 msgid "guide lines/toggle"
-msgstr "linhas-guia"
+msgstr "linhas-guia/alternar"
 
 #. toggle visibility of second window
 #: ../src/views/darkroom.c:3864
@@ -22436,47 +22549,43 @@ msgid "no camera with tethering support available for use..."
 msgstr "nenhuma câmera com acesso remoto disponível para uso..."
 
 #: ../src/views/view.c:1508
-msgid "Left click"
-msgstr "Clique esquerdo"
+msgid "left click"
+msgstr "clique esquerdo"
 
 #: ../src/views/view.c:1511
-msgid "Right click"
-msgstr "Clique direito"
+msgid "right click"
+msgstr "clique direito"
 
 #: ../src/views/view.c:1514
-msgid "Middle click"
-msgstr "Clique do meio"
-
-#: ../src/views/view.c:1517
-msgid "Scroll"
-msgstr "Rolar"
+msgid "middle click"
+msgstr "clique do meio"
 
 #: ../src/views/view.c:1520
-msgid "Left double-click"
+msgid "left double-click"
 msgstr "clique esquerdo duplo"
 
 #: ../src/views/view.c:1523
-msgid "Right double-click"
+msgid "right double-click"
 msgstr "clique direito duplo"
 
 #: ../src/views/view.c:1526
-msgid "Drag and drop"
-msgstr "Arrastar e soltar"
+msgid "drag and drop"
+msgstr "arrastar e soltar"
 
 #: ../src/views/view.c:1529
-msgid "Left click+Drag"
-msgstr "Clique Esquerdo+Arrastar"
+msgid "left click+drag"
+msgstr "clique esquerdo+arrastar"
 
 #: ../src/views/view.c:1532
-msgid "Right click+Drag"
-msgstr "Clique direito+Arrastar"
+msgid "right click+drag"
+msgstr "clique direito+arrastar"
 
 #: ../src/views/view.c:1553
 msgid "darktable - accels window"
 msgstr "darktable - janela de atalhos"
 
 #: ../src/views/view.c:1608
-msgid "switch to a classic window which will stay open after key release."
+msgid "switch to a classic window which will stay open after key release"
 msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla."
 
 #. we add the mouse actions too
@@ -22484,9 +22593,14 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 msgid "mouse actions"
 msgstr "ações com mouse"
 
-#: ../src/views/view.c:1712
-msgid "Action"
-msgstr "Ação"
+#~ msgid "all rights reserved."
+#~ msgstr "todos direitos reservados."
+
+#~ msgid "Scroll"
+#~ msgstr "Rolar"
+
+#~ msgid "Action"
+#~ msgstr "Ação"
 
 #~ msgctxt "accel"
 #~ msgid "show guide lines"
@@ -23593,9 +23707,6 @@ msgstr "Ação"
 
 #~ msgid "tonal weight"
 #~ msgstr "peso tonal"
-
-#~ msgid "saturation global"
-#~ msgstr "saturação global"
 
 #~ msgid ""
 #~ "enter the time shown on the selected picture\n"
