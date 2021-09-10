@@ -4469,7 +4469,7 @@ static void cropmode_callback(GtkWidget *widget, gpointer user_data)
   swap_shadow_crop_box(p,g);
 }
 
-static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static int _event_fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return FALSE;
@@ -4521,7 +4521,7 @@ static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
   return FALSE;
 }
 
-static int fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static int _event_fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return FALSE;
@@ -4573,7 +4573,7 @@ static int fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
   return FALSE;
 }
 
-static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static int _event_fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return FALSE;
@@ -4642,7 +4642,7 @@ static void _gui_update_structure_states(dt_iop_module_t *self, GtkWidget *widge
   }
 }
 
-static int structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static int _event_structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return FALSE;
@@ -4699,7 +4699,7 @@ static int structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gp
   return FALSE;
 }
 
-static void clean_button_clicked(GtkButton *button, gpointer user_data)
+static void _event_clean_button_clicked(GtkButton *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
@@ -4709,7 +4709,7 @@ static void clean_button_clicked(GtkButton *button, gpointer user_data)
   dt_control_queue_redraw_center();
 }
 
-static void eye_button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+static void _event_eye_button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
@@ -4730,7 +4730,7 @@ static void eye_button_toggled(GtkToggleButton *togglebutton, gpointer user_data
 // routine that is called after preview image has been processed. we use it
 // to perform structure collection or fitting in case those have been triggered while
 // the module had not yet been enabled
-static void process_after_preview_callback(gpointer instance, gpointer user_data)
+static void _event_process_after_preview_callback(gpointer instance, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
@@ -4964,7 +4964,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 // adjust labels of lens shift parameters according to flip status of image
-static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
+static gboolean _event_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return FALSE;
@@ -5071,7 +5071,7 @@ static void _event_values_expander_click(GtkWidget *widget, GdkEventButton *e, g
                                !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->values_toggle)));
 }
 
-static int _event_draw_structure_click(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static int _event_draw_structure_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
@@ -5122,7 +5122,7 @@ static int _event_draw_structure_click(GtkWidget *widget, GdkEventButton *event,
   return TRUE;
 }
 
-static int _event_draw_direct_structure_click(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static int _event_draw_direct_structure_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
@@ -5358,26 +5358,30 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->clean, _("remove line structure information"));
   gtk_widget_set_tooltip_text(g->eye, _("toggle visibility of structure lines"));
 
-  g_signal_connect(G_OBJECT(g->fit_v), "button-press-event", G_CALLBACK(fit_v_button_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(g->fit_h), "button-press-event", G_CALLBACK(fit_h_button_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(g->fit_both), "button-press-event", G_CALLBACK(fit_both_button_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(g->draw_structure), "button-press-event", G_CALLBACK(_event_draw_structure_click),
+  g_signal_connect(G_OBJECT(g->fit_v), "button-press-event", G_CALLBACK(_event_fit_v_button_clicked),
+                   (gpointer)self);
+  g_signal_connect(G_OBJECT(g->fit_h), "button-press-event", G_CALLBACK(_event_fit_h_button_clicked),
+                   (gpointer)self);
+  g_signal_connect(G_OBJECT(g->fit_both), "button-press-event", G_CALLBACK(_event_fit_both_button_clicked),
+                   (gpointer)self);
+  g_signal_connect(G_OBJECT(g->draw_structure), "button-press-event", G_CALLBACK(_event_draw_structure_clicked),
                    (gpointer)self);
   g_signal_connect(G_OBJECT(g->draw_direct_structure), "button-press-event",
-                   G_CALLBACK(_event_draw_direct_structure_click), (gpointer)self);
-  g_signal_connect(G_OBJECT(g->structure), "button-press-event", G_CALLBACK(structure_button_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(g->clean), "clicked", G_CALLBACK(clean_button_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(g->eye), "toggled", G_CALLBACK(eye_button_toggled), (gpointer)self);
-  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
+                   G_CALLBACK(_event_draw_direct_structure_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->structure), "button-press-event", G_CALLBACK(_event_structure_button_clicked),
+                   (gpointer)self);
+  g_signal_connect(G_OBJECT(g->clean), "clicked", G_CALLBACK(_event_clean_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->eye), "toggled", G_CALLBACK(_event_eye_button_toggled), (gpointer)self);
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_event_draw), self);
 
   /* add signal handler for preview pipe finish to redraw the overlay */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                            G_CALLBACK(process_after_preview_callback), self);
+                                  G_CALLBACK(_event_process_after_preview_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(process_after_preview_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_process_after_preview_callback), self);
 
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   free(g->lines);
