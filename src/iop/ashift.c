@@ -4627,6 +4627,21 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
   return FALSE;
 }
 
+static void _gui_update_structure_states(dt_iop_module_t *self, GtkWidget *widget)
+{
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
+  else
+  {
+    if(widget != g->draw_direct_structure)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->draw_direct_structure), FALSE);
+    if(widget != g->draw_structure) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->draw_structure), FALSE);
+    if(widget != g->structure) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->structure), FALSE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
+  }
+}
+
 static int structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -4634,8 +4649,19 @@ static int structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gp
 
   if(event->button == 1)
   {
+    _gui_update_structure_states(self, widget);
+
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+    do_clean_structure(self, p);
+
+    // if the button is unselcted, we don't go further
+    if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+    {
+      dt_control_queue_redraw_center();
+      return TRUE;
+    }
 
     const int control = dt_modifiers_include(event->state, GDK_CONTROL_MASK);
     const int shift = dt_modifiers_include(event->state, GDK_SHIFT_MASK);
@@ -5051,10 +5077,19 @@ static int _event_draw_structure_click(GtkWidget *widget, GdkEventButton *event,
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   if(darktable.gui->reset) return FALSE;
 
+  _gui_update_structure_states(self, widget);
+
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
 
   do_clean_structure(self, p);
+
+  // if the button is unselcted, we don't go further
+  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+  {
+    dt_control_queue_redraw_center();
+    return TRUE;
+  }
 
   const float wd = self->dev->preview_pipe->backbuf_width;
   const float ht = self->dev->preview_pipe->backbuf_height;
@@ -5093,10 +5128,19 @@ static int _event_draw_direct_structure_click(GtkWidget *widget, GdkEventButton 
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   if(darktable.gui->reset) return FALSE;
 
+  _gui_update_structure_states(self, widget);
+
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
 
   do_clean_structure(self, p);
+
+  // if the button is unselcted, we don't go further
+  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+  {
+    dt_control_queue_redraw_center();
+    return TRUE;
+  }
 
   g->draw_direct = TRUE;
 
@@ -5255,7 +5299,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_hexpand(GTK_WIDGET(g->draw_structure), TRUE);
   gtk_grid_attach(auto_grid, g->draw_structure, 2, 0, 1, 1);
 
-  g->structure = dtgtk_button_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT, NULL);
+  g->structure = dtgtk_togglebutton_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->structure), TRUE);
   gtk_grid_attach(auto_grid, g->structure, 3, 0, 1, 1);
 
