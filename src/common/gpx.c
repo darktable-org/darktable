@@ -173,13 +173,27 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
       return FALSE;
     }
 
+    dt_gpx_track_point_t *tp_next = (dt_gpx_track_point_t *)item->next->data;
     /* check if timestamp is within current and next trackpoint */
-    const gint cmp_n = g_date_time_compare(timestamp, ((dt_gpx_track_point_t *)item->next->data)->time);
+    const gint cmp_n = g_date_time_compare(timestamp, tp_next->time);
     if((cmp >= 0) && (item->next && cmp_n <= 0))
     {
-      geoloc->longitude = tp->longitude;
-      geoloc->latitude = tp->latitude;
-      geoloc->elevation = tp->elevation;
+      GTimeSpan seg_diff = g_date_time_difference(tp_next->time, tp->time);
+      GTimeSpan diff = g_date_time_difference(timestamp, tp->time);
+      if (seg_diff == 0)
+      {
+        geoloc->longitude = tp->longitude;
+        geoloc->latitude = tp->latitude;
+        geoloc->elevation = tp->elevation;
+      }
+      else
+      {
+        /* get the point by interpolation according to timestamp */
+        float interpolator = (float)diff / (float)seg_diff;
+        geoloc->longitude = tp->longitude + (tp_next->longitude - tp->longitude) * interpolator;
+        geoloc->latitude = tp->latitude + (tp_next->latitude - tp->latitude) * interpolator;
+        geoloc->elevation = tp->elevation + (tp_next->elevation - tp->elevation) * interpolator;
+      }
       return TRUE;
     }
   }
