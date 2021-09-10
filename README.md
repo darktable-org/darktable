@@ -10,30 +10,31 @@ darktable is **not** a free Adobe® Lightroom® replacement.
 ## Table of Contents
 
 1. [Documentation](#documentation)
-2. [Requirements](#requirements)
+2. [Website](#website)
+3. [Requirements](#requirements)
    - [Supported platforms](#supported-platforms)
    - [Hardware](#hardware)
-3. [Installing](#installing)
+4. [Installing](#installing)
    - [Latest release](#latest-release)
    - [Development snapshot](#development-snapshot)
-4. [Updating from older versions](#updating-from-older-versions)
-5. [Getting extensions](#getting-extensions)
-6. [Building](#building)
+5. [Updating from older versions](#updating-from-older-versions)
+6. [Getting extensions](#getting-extensions)
+7. [Building](#building)
    - [Dependencies](#dependencies)
    - [Get the source](#get-the-source)
    - [Get submodules](#get-submodules)
    - [Compile](#compile)
    - [Further reading](#further-reading)
-7. [Using](#using)
+8. [Using](#using)
    - [Test/unstable version](#testunstable-version)
    - [Regular/stable version](#regularstable-version)
-8. [Contributing](#contributing)
-9. [FAQ](#faq)
+9. [Contributing](#contributing)
+10. [FAQ](#faq)
    - [Why is my camera not detected when plugged-in ?](#why-is-my-camera-not-detected-when-plugged-in-)
    - [Why is my lens not detected/corrected in darkroom ?](#why-is-my-lens-not-detectedcorrected-in-darkroom-)
    - [Why are the thumbnails in lighttable looking different than the preview in darkroom ?](#why-are-the-thumbnails-in-lighttable-looking-different-than-the-preview-in-darkroom-)
-10. [Wiki](#wiki)
-11. [Mailing lists](#mailing-lists)
+11. [Wiki](#wiki)
+12. [Mailing lists](#mailing-lists)
 
 Documentation
 -------------
@@ -41,6 +42,11 @@ Documentation
 The darktable user manual is maintained in the [dtdocs](https://github.com/darktable-org/dtdocs) repository.
 
 Lua API documentation is maintained in the [luadocs](https://github.com/darktable-org/luadocs) repository.
+
+Website
+-------
+
+The website [https://www.darktable.org/](https://www.darktable.org/) is maintained in the [dtorg](https://github.com/darktable-org/dtorg) repository.
 
 Requirements
 ------------
