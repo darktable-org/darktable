@@ -3722,6 +3722,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   // now draw all lines
   for(int n = 0; n < g->points_lines_count; n++)
   {
+    // hide removed lines in drawn mode
+    if((g->draw_fitting || g->draw_direct) && g->points_idx[n].type != ASHIFT_LINE_HORIZONTAL_SELECTED
+       && g->points_idx[n].type != ASHIFT_LINE_VERTICAL_SELECTED)
+      continue;
     // is the near flag set? -> draw line a bit thicker
     if(g->points_idx[n].near)
       cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0) / zoom_scale);
@@ -3759,6 +3763,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     const int nb = g->draw_direct ? g->lines_count * 2 : 4;
     for(int i = 0; i < nb; i++)
     {
+      // hide removed lines
+      if(g->lines[i / 2].type != ASHIFT_LINE_HORIZONTAL_SELECTED
+         && g->lines[i / 2].type != ASHIFT_LINE_VERTICAL_SELECTED)
+        continue;
       if(g->draw_near_point == i)
         cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0) / zoom_scale);
       else
@@ -4024,11 +4032,15 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
         continue;
 
       if(g->isdeselecting)
+      {
         g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
-      else if(g->isselecting)
+        handled = 1;
+      }
+      else if(g->isselecting && !g->draw_direct)
+      {
         g->lines[n].type |= ASHIFT_LINE_SELECTED;
-
-      handled = 1;
+        handled = 1;
+      }
     }
   }
 
@@ -4105,36 +4117,6 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   }
   if(g->draw_fitting) return FALSE;
 
-  // start to draw a manual line
-  if(g->draw_direct && which == 1)
-  {
-    g->draw_point_move = TRUE;
-    g->lastx = x;
-    g->lasty = y;
-
-    // we instanciate a new line with both extrema at the current position
-    // and enable the "move point" mode with the second extrema
-    float pts[4] = { pzx * wd, pzy * ht };
-    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
-                                      DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 1);
-
-    const int count = g->lines_count + 1;
-    dt_iop_ashift_line_t *lines = (dt_iop_ashift_line_t *)malloc(sizeof(dt_iop_ashift_line_t) * count);
-    for(int i = 0; i < g->lines_count; i++)
-    {
-      lines[i] = g->lines[i];
-    }
-    if(g->lines) free(g->lines);
-    g->lines = lines;
-    g->lines_count = count;
-    _draw_basic_line(&g->lines[count - 1], pts[0], pts[1], pts[0], pts[1], ASHIFT_LINE_VERTICAL_SELECTED);
-
-    g->vertical_count++;
-    g->vertical_weight += 1.0f;
-    g->draw_near_point = g->lines_count * 2 - 1;
-    return TRUE;
-  }
-
   // remember lines version at this stage so we can continuously monitor if the
   // lines have changed in-between
   g->selecting_lines_version = g->lines_version;
@@ -4173,11 +4155,45 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
       continue;
 
     if(which == 3)
+    {
       g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
-    else
+      handled = 1;
+    }
+    else if(!g->draw_direct)
+    {
       g->lines[n].type |= ASHIFT_LINE_SELECTED;
+      handled = 1;
+    }
+  }
 
-    handled = 1;
+  if(handled == 0 && g->draw_direct && which == 1)
+  {
+    // start to draw a manual line
+    g->draw_point_move = TRUE;
+    g->lastx = x;
+    g->lasty = y;
+
+    // we instanciate a new line with both extrema at the current position
+    // and enable the "move point" mode with the second extrema
+    float pts[4] = { pzx * wd, pzy * ht };
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
+                                      DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 1);
+
+    const int count = g->lines_count + 1;
+    dt_iop_ashift_line_t *lines = (dt_iop_ashift_line_t *)malloc(sizeof(dt_iop_ashift_line_t) * count);
+    for(int i = 0; i < g->lines_count; i++)
+    {
+      lines[i] = g->lines[i];
+    }
+    if(g->lines) free(g->lines);
+    g->lines = lines;
+    g->lines_count = count;
+    _draw_basic_line(&g->lines[count - 1], pts[0], pts[1], pts[0], pts[1], ASHIFT_LINE_VERTICAL_SELECTED);
+
+    g->vertical_count++;
+    g->vertical_weight += 1.0f;
+    g->draw_near_point = g->lines_count * 2 - 1;
+    return TRUE;
   }
 
   // we switch into sweeping mode either if we anyhow take control
@@ -4320,11 +4336,15 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
         if(g->points_idx[n].bounded == 0) continue;
 
         if(g->isbounding == ASHIFT_BOUNDING_DESELECT)
+        {
           g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
-        else
+          handled = 1;
+        }
+        else if(!g->draw_direct)
+        {
           g->lines[n].type |= ASHIFT_LINE_SELECTED;
-
-        handled = 1;
+          handled = 1;
+        }
       }
 
       if(handled)
