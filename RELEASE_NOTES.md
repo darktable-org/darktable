@@ -51,3 +51,19 @@ You are strongly advised to take a backup first.
 - Fix noise profile for RICOH GR III.
 
 - Fix some memory leaks.
+
+## RawSpeed changes
+
+## Camera support, compared to 3.6
+
+### Base Support
+
+- Leica C-Lux (3:2)
+- Nikon D6 (14bit-compressed, 14bit-uncompressed, 12bit-compressed, 12bit-uncompressed)
+- Nikon Z fc (14bit-compressed, 12bit-compressed)
+- Sony ILCE-7RM3A
+- Sony ILCE-7RM4A
+
+### Noise Profiles
+
+- Ricoh GR III
