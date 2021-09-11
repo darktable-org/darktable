@@ -460,6 +460,7 @@ typedef struct dt_iop_ashift_gui_data_t
   gboolean draw_fitting;
   int draw_near_point;
   gboolean draw_point_move;
+  int draw_line_move;
   float draw_pointmove_x;
   float draw_pointmove_y;
   float *draw_points;
@@ -3138,8 +3139,8 @@ error:
 #endif
 
 // gather information about "near"-ness in g->points_idx
-static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx,
-                     const int lines_count, float pzx, float pzy, float delta)
+static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx, const int lines_count, float pzx,
+                     float pzy, float delta, gboolean multiple)
 {
   const float delta2 = delta * delta;
 
@@ -3177,6 +3178,8 @@ static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx
         break;
       }
     }
+    // if we don't want multiple selection, stop here
+    if(!multiple && points_idx[n].near) break;
   }
 }
 
@@ -3998,6 +4001,80 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     }
     return TRUE;
   }
+
+  // case where we move a drawn line
+  if(g->draw_line_move >= 0)
+  {
+    float pts[2] = { pzx * wd, pzy * ht };
+    if(dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
+                                         DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 1))
+    {
+      const float dx = pts[0] - g->draw_pointmove_x;
+      const float dy = pts[1] - g->draw_pointmove_y;
+      const int n = g->draw_line_move;
+      g->draw_pointmove_x = pts[0];
+      g->draw_pointmove_y = pts[1];
+
+      // we move the line extremas
+      g->lines[n].p1[0] += dx;
+      g->lines[n].p1[1] += dy;
+      g->lines[n].p2[0] += dx;
+      g->lines[n].p2[1] += dy;
+      // sanity check to be sure the extremas don't go outside the image area
+      g->lines[n].p1[0] = CLAMPF(g->lines[n].p1[0], 0.0f, g->lines_in_width);
+      g->lines[n].p1[1] = CLAMPF(g->lines[n].p1[1], 0.0f, g->lines_in_height);
+      g->lines[n].p2[0] = CLAMPF(g->lines[n].p2[0], 0.0f, g->lines_in_width);
+      g->lines[n].p2[1] = CLAMPF(g->lines[n].p2[1], 0.0f, g->lines_in_height);
+
+      _draw_recompute_line_length(&g->lines[n]);
+
+      // for the rectangle method, we need to move the adjacent lines too
+      if(g->draw_fitting)
+      {
+        if(n == 0)
+        {
+          g->lines[2].p1[0] = g->lines[n].p1[0];
+          g->lines[2].p1[1] = g->lines[n].p1[1];
+          g->lines[3].p1[0] = g->lines[n].p2[0];
+          g->lines[3].p1[1] = g->lines[n].p2[1];
+          _draw_recompute_line_length(&g->lines[2]);
+          _draw_recompute_line_length(&g->lines[3]);
+        }
+        else if(n == 1)
+        {
+          g->lines[2].p2[0] = g->lines[n].p1[0];
+          g->lines[2].p2[1] = g->lines[n].p1[1];
+          g->lines[3].p2[0] = g->lines[n].p2[0];
+          g->lines[3].p2[1] = g->lines[n].p2[1];
+          _draw_recompute_line_length(&g->lines[2]);
+          _draw_recompute_line_length(&g->lines[3]);
+        }
+        else if(n == 2)
+        {
+          g->lines[0].p1[0] = g->lines[n].p1[0];
+          g->lines[0].p1[1] = g->lines[n].p1[1];
+          g->lines[1].p1[0] = g->lines[n].p2[0];
+          g->lines[1].p1[1] = g->lines[n].p2[1];
+          _draw_recompute_line_length(&g->lines[0]);
+          _draw_recompute_line_length(&g->lines[1]);
+        }
+        else if(n == 3)
+        {
+          g->lines[0].p2[0] = g->lines[n].p1[0];
+          g->lines[0].p2[1] = g->lines[n].p1[1];
+          g->lines[1].p2[0] = g->lines[n].p2[0];
+          g->lines[1].p2[1] = g->lines[n].p2[1];
+          _draw_recompute_line_length(&g->lines[0]);
+          _draw_recompute_line_length(&g->lines[1]);
+        }
+      }
+
+      g->lines_hash++;
+      g->lines_version++;
+      dt_control_queue_redraw_center();
+    }
+    return TRUE;
+  }
   // if we are in draw mode, we check if we are near a corner
   if(g->draw_points && ((g->draw_fitting && g->lines_count >= 4) || g->draw_direct))
   {
@@ -4021,7 +4098,8 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   }
 
   // gather information about "near"-ness in g->points_idx
-  get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->near_delta);
+  get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->near_delta,
+           !(g->draw_direct || g->draw_fitting));
 
   // if we are in sweeping mode iterate over lines as we move the pointer and change "selected" state.
   if(g->isdeselecting || g->isselecting)
@@ -4115,7 +4193,6 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     g->lasty = y;
     return TRUE;
   }
-  if(g->draw_fitting) return FALSE;
 
   // remember lines version at this stage so we can continuously monitor if the
   // lines have changed in-between
@@ -4142,27 +4219,52 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   // if we are zoomed out (no panning possible) and we have lines to display we take control
   const int take_control = (cur_scale == min_scale) && (g->points_lines_count > 0);
 
-  g->near_delta = dt_conf_get_float("plugins/darkroom/ashift/near_delta");
+  if(g->draw_direct || g->draw_fitting)
+    g->near_delta = dt_conf_get_float("plugins/darkroom/ashift/near_delta_draw");
+  else
+    g->near_delta = dt_conf_get_float("plugins/darkroom/ashift/near_delta");
 
   // gather information about "near"-ness in g->points_idx
-  get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->near_delta);
+  get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->near_delta,
+           !(g->draw_direct || g->draw_fitting));
 
-  // iterate over all lines close to the pointer and change "selected" state.
-  // left-click selects and right-click deselects the line
-  for(int n = 0; g->selecting_lines_version == g->lines_version && n < g->points_lines_count; n++)
+  if((g->draw_direct && which == 1) || g->draw_fitting)
   {
-    if(g->points_idx[n].near == 0)
-      continue;
-
-    if(which == 3)
+    // we search the selected line and mark it as the moved line
+    for(int n = 0; n < g->points_lines_count; n++)
     {
-      g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
-      handled = 1;
+      if(g->points_idx[n].near)
+      {
+        float pts[2] = { pzx * wd, pzy * ht };
+        dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
+                                          DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 1);
+        g->draw_line_move = n;
+        g->draw_pointmove_x = pts[0];
+        g->draw_pointmove_y = pts[1];
+        return TRUE;
+      }
     }
-    else if(!g->draw_direct)
+    // for the rectangle draw fitting, we don't go further
+    if(g->draw_fitting) return FALSE;
+  }
+  else
+  {
+    // iterate over all lines close to the pointer and change "selected" state.
+    // left-click selects and right-click deselects the line
+    for(int n = 0; g->selecting_lines_version == g->lines_version && n < g->points_lines_count; n++)
     {
-      g->lines[n].type |= ASHIFT_LINE_SELECTED;
-      handled = 1;
+      if(g->points_idx[n].near == 0) continue;
+
+      if(which == 3)
+      {
+        g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
+        handled = 1;
+      }
+      else if(!g->draw_direct)
+      {
+        g->lines[n].type |= ASHIFT_LINE_SELECTED;
+        handled = 1;
+      }
     }
   }
 
@@ -4175,7 +4277,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
     // we instanciate a new line with both extrema at the current position
     // and enable the "move point" mode with the second extrema
-    float pts[4] = { pzx * wd, pzy * ht };
+    float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                       DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 1);
 
@@ -4228,6 +4330,13 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 
   dt_control_change_cursor(GDK_LEFT_PTR);
 
+  // ends eventual line move
+  if(g->draw_line_move >= 0)
+  {
+    g->draw_line_move = -1;
+    return TRUE;
+  }
+
   if(g->straightening)
   {
     g->straightening = FALSE;
@@ -4272,7 +4381,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     {
       const dt_iop_ashift_linetype_t old_linetype = g->lines[l].type;
       dt_iop_ashift_linetype_t linetype = ASHIFT_LINE_VERTICAL_SELECTED;
-      if(abs(g->lines[l].p1[0] - g->lines[l].p2[0]) > abs(g->lines[l].p1[1] - g->lines[l].p2[1]))
+      if(fabsf(g->lines[l].p1[0] - g->lines[l].p2[0]) > fabsf(g->lines[l].p1[1] - g->lines[l].p2[1]))
         linetype = ASHIFT_LINE_HORIZONTAL_SELECTED;
       g->lines[l].type = linetype;
 
@@ -4388,14 +4497,24 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
     const float wd = self->dev->preview_pipe->backbuf_width;
     const float ht = self->dev->preview_pipe->backbuf_height;
 
-    float near_delta = dt_conf_get_float("plugins/darkroom/ashift/near_delta");
+    float near_delta = 5.0f;
+    if(g->draw_direct || g->draw_fitting)
+      near_delta = dt_conf_get_float("plugins/darkroom/ashift/near_delta_draw");
+    else
+      near_delta = dt_conf_get_float("plugins/darkroom/ashift/near_delta");
     const float amount = up ? 0.8f : 1.25f;
     near_delta = MAX(4.0f, MIN(near_delta * amount, 100.0f));
-    dt_conf_set_float("plugins/darkroom/ashift/near_delta", near_delta);
+    if(g->draw_direct || g->draw_fitting)
+      dt_conf_set_float("plugins/darkroom/ashift/near_delta_draw", near_delta);
+    else
+      dt_conf_set_float("plugins/darkroom/ashift/near_delta", near_delta);
     g->near_delta = near_delta;
 
+    // for drawn structure, we stop here
+    if(g->draw_direct || g->draw_fitting) return TRUE;
+
     // gather information about "near"-ness in g->points_idx
-    get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->near_delta);
+    get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->near_delta, TRUE);
 
     // iterate over all lines close to the pointer and change "selected" state.
     for(int n = 0; g->selecting_lines_version == g->lines_version && n < g->points_lines_count; n++)
@@ -4404,9 +4523,15 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
         continue;
 
       if(g->isdeselecting)
+      {
         g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
-      else if(g->isselecting)
+        handled = 1;
+      }
+      else if(g->isselecting && !g->draw_direct)
+      {
         g->lines[n].type |= ASHIFT_LINE_SELECTED;
+        handled = 1;
+      }
 
       handled = 1;
     }
@@ -4425,6 +4550,20 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
   return FALSE;
 }
 
+static void _gui_update_structure_states(dt_iop_module_t *self, GtkWidget *widget)
+{
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  if(widget && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
+  else
+  {
+    if(widget != g->draw_direct_structure)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->draw_direct_structure), FALSE);
+    if(widget != g->draw_structure) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->draw_structure), FALSE);
+    if(widget != g->structure) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->structure), FALSE);
+    if(widget) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
+  }
+}
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
@@ -4448,6 +4587,7 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   /* reset eventual remaining structures */
   do_clean_structure(self, p);
+  _gui_update_structure_states(self, NULL);
 }
 
 static void cropmode_callback(GtkWidget *widget, gpointer user_data)
@@ -4625,21 +4765,6 @@ static int _event_fit_both_button_clicked(GtkWidget *widget, GdkEventButton *eve
     return TRUE;
   }
   return FALSE;
-}
-
-static void _gui_update_structure_states(dt_iop_module_t *self, GtkWidget *widget)
-{
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
-  else
-  {
-    if(widget != g->draw_direct_structure)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->draw_direct_structure), FALSE);
-    if(widget != g->draw_structure) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->draw_structure), FALSE);
-    if(widget != g->structure) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->structure), FALSE);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
-  }
 }
 
 static int _event_structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
@@ -4935,6 +5060,14 @@ void reload_defaults(dt_iop_module_t *module)
     g->adjust_crop = FALSE;
     g->lastx = g->lasty = -1.0f;
     g->crop_cx = g->crop_cy = 1.0f;
+
+    g->draw_fitting = FALSE;
+    g->draw_direct = FALSE;
+    g->draw_line_move = -1;
+    g->draw_near_point = -1;
+    g->draw_point_move = FALSE;
+
+    _gui_update_structure_states(module, NULL);
   }
 }
 
@@ -5200,6 +5333,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->crop_cx = g->crop_cy = 1.0f;
 
   g->draw_near_point = -1;
+  g->draw_line_move = -1;
 
   g->rotation = dt_bauhaus_slider_from_params(self, N_("rotation"));
   dt_bauhaus_slider_set_format(g->rotation, "%.2f°");

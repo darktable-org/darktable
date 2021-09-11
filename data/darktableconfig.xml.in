@@ -2899,6 +2899,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/ashift/near_delta_draw</name>
+    <type>float</type>
+    <default>5.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/print/print/black_point_compensation</name>
     <type>bool</type>
     <default>true</default>
