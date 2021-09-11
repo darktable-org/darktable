@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include <glib.h>
 #include <inttypes.h>
+#include <math.h>
 
 /* GPX XML parser */
 typedef enum _gpx_parser_element_t
@@ -188,11 +189,73 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
       }
       else
       {
-        /* get the point by interpolation according to timestamp */
-        float interpolator = (float)diff / (float)seg_diff;
-        geoloc->longitude = tp->longitude + (tp_next->longitude - tp->longitude) * interpolator;
-        geoloc->latitude = tp->latitude + (tp_next->latitude - tp->latitude) * interpolator;
-        geoloc->elevation = tp->elevation + (tp_next->elevation - tp->elevation) * interpolator;
+        /* get the point by interpolation according to timestamp
+
+        We assume that the maximum difference in longitude is less or equal 180º:
+        since the bigger use case is that of an airplane, never an airplane flies more than 180º in longitude */
+
+        const double pi = 3.1415926535;
+
+        double lon1 = tp->longitude;
+        double lon2 = tp_next->longitude;
+        double lat1 = tp->latitude;
+        double lat2 = tp_next->latitude;
+
+        const double f = (double)diff / (double)seg_diff; /* the fraction of the distance */
+
+        /*
+        interpolation on the earth surface
+        formulas from http://www.movable-type.co.uk/scripts/latlong.html
+
+        the formulas are correct even if the two point are e.g [(0, -179), (0,179)]
+        TO DO: in this case the line is incorrect
+        */
+
+        /*
+        first, calculate the distance on the earth surface
+        */
+        const double r = 6371000.0; // metres
+        const double phi1 = lat1 * pi / 180; // φ, λ in radians
+        const double phi2 = lat2 * pi / 180;
+        const double lambda1 = lon1 * pi / 180;
+        const double lambda2 = lon2 * pi / 180;
+        const double deltaphi = phi2 - phi1;
+        const double deltalambda = lambda2 - lambda1;
+
+        const double a = sin(deltaphi / 2) * sin(deltaphi / 2) +
+                  cos(phi1) * cos(phi2) *
+                  sin(deltalambda / 2) * sin(deltalambda / 2);
+        const double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+        const double d = r * c; /* distance on the surface in metres */
+        const double delta = d / r; /* angular distance between the points in radians */
+
+        /*
+        then, calculate the intermediate point
+        */
+        const double a1 = sin((1 - f) * delta) / sin(delta);
+        const double b = sin(f * delta) / sin(delta);
+        const double x = a1 * cos(phi1) * cos(lambda1) + b * cos(phi2) * cos(lambda2);
+        const double y = a1 * cos(phi1) * sin(lambda1) + b * cos(phi2) * sin(lambda2);
+        const double z = a1 * sin(phi1) + b * sin(phi2);
+        const double phi = atan2(z, sqrt(x * x + y * y)); /* latitude of intermediate point in radians */
+        const double lambda = atan2(y, x);  /* longitude of intermediate point in radians */
+
+        geoloc->latitude = phi / pi * 180;
+        geoloc->longitude = lambda / pi * 180;
+        printf("%f %f\n", geoloc->latitude, geoloc->longitude);
+
+        /* the following lines would perform a linear interpolation,
+           which would be more fast for short distances
+           but speed should not be a problem here
+
+        geoloc->longitude = tp->longitude + (tp_next->longitude - tp->longitude) * f;
+        geoloc->latitude = tp->latitude + (tp_next->latitude - tp->latitude) * f;
+        */
+        printf("%f %f\n\n", tp->latitude + (tp_next->latitude - tp->latitude) * f, tp->longitude + (tp_next->longitude - tp->longitude) * f);
+
+        /* make a simple linear interpolation on elevation */
+        geoloc->elevation = tp->elevation + (tp_next->elevation - tp->elevation) * f;
       }
       return TRUE;
     }
