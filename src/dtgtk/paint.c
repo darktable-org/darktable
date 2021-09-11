@@ -1201,26 +1201,27 @@ void dtgtk_cairo_paint_jzazbz(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
 
 void dtgtk_cairo_paint_ryb(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1, 0, 0)
+  PREAMBLE(1.2, -0.05, -0.05)
 
-  // FIXME: change icon to "RYB"
-
-  cairo_move_to(cr, 0.0, 0.7);
-  cairo_line_to(cr, 0.0, 0.2);
-  cairo_curve_to(cr, 0.5, 0.25, -0.2, 0.45, 0.45, 0.7);
+  cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.8);
+  cairo_arc(cr, 0.5, 0.5, 0.5, -0.83333 * M_PI, -0.16667 * M_PI);
+  cairo_line_to(cr, 0.5, 0.5);
+  cairo_close_path(cr);
+  cairo_fill(cr);
   cairo_stroke(cr);
 
-  cairo_move_to(cr, 0.5, 0.5);
-  cairo_line_to(cr, 1.0, 0.0);
-  cairo_stroke(cr);
-  cairo_move_to(cr, 0.75, 0.25);
-  cairo_line_to(cr, 0.4, 0.0);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 0.0, 0.8);
+  cairo_arc(cr, 0.5, 0.5, 0.5, 0.5 * M_PI, -0.83333 * M_PI);
+  cairo_line_to(cr, 0.5, 0.5);
+  cairo_close_path(cr);
+  cairo_fill(cr);
   cairo_stroke(cr);
 
-  cairo_move_to(cr, 0.55, 1.0);
-  cairo_line_to(cr, 0.55, 0.5);
-  cairo_curve_to(cr, 1.0, 0.55, 1.0, 0.7, 0.55, 0.75);
-  cairo_curve_to(cr, 1.3, 0.8, 1.3, 0.95, 0.4, 1.0);
+  cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 0.8);
+  cairo_arc(cr, 0.5, 0.5, 0.5, -0.16667 * M_PI, 0.5 * M_PI);
+  cairo_line_to(cr, 0.5, 0.5);
+  cairo_close_path(cr);
+  cairo_fill(cr);
   cairo_stroke(cr);
 
   FINISH
