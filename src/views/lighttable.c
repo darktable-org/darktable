@@ -378,6 +378,58 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
+static void _event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
+                                GtkSelectionData *selection_data, guint target_type, guint time,
+                                gpointer user_data)
+{
+  gboolean success = FALSE;
+
+  if((target_type == DND_TARGET_URI) && (selection_data != NULL)
+     && (gtk_selection_data_get_length(selection_data) >= 0))
+  {
+    gchar **uri_list = g_strsplit_set((gchar *)gtk_selection_data_get_data(selection_data), "\r\n", 0);
+    if(uri_list)
+    {
+      gchar **image_to_load = uri_list;
+      while(*image_to_load)
+      {
+        if(**image_to_load)
+        {
+          dt_load_from_string(*image_to_load, FALSE, NULL); // TODO: do we want to open the image in darkroom mode?
+                                                            // If yes -> set to TRUE.
+        }
+        image_to_load++;
+      }
+    }
+    g_strfreev(uri_list);
+    success = TRUE;
+  }
+  else if((target_type == DND_TARGET_IMGID) && (selection_data != NULL)
+          && (gtk_selection_data_get_length(selection_data) >= 0))
+  {
+    dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+    if(table->drag_list)
+    {
+      if(darktable.collection->params.sort == DT_COLLECTION_SORT_CUSTOM_ORDER
+         && table->mode != DT_THUMBTABLE_MODE_ZOOM)
+      {
+        // source = dest = thumbtable => we are reordering
+        // set order to "user defined" (this shouldn't trigger anything)
+        const int32_t mouse_over_id = dt_control_get_mouse_over_id();
+        dt_collection_move_before(mouse_over_id, table->drag_list);
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                                   g_list_copy(table->drag_list));
+        success = TRUE;
+      }
+    }
+    else
+    {
+      // we don't catch anything here at the moment
+    }
+  }
+  gtk_drag_finish(context, success, FALSE, time);
+}
+
 // display help text in the center view if there's no image to show
 static int _lighttable_expose_empty(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
                                     int32_t pointery)
@@ -1283,6 +1335,10 @@ void gui_init(dt_view_t *self)
                               gtk_widget_get_parent(dt_ui_log_msg(darktable.gui->ui)), -1);
   gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
                               gtk_widget_get_parent(dt_ui_toast_msg(darktable.gui->ui)), -1);
+
+  // enable drag & drop
+  gtk_drag_dest_set(dt_ui_center_base(darktable.gui->ui), GTK_DEST_DEFAULT_ALL, target_list_all, n_targets_all, GDK_ACTION_MOVE);
+  g_signal_connect(G_OBJECT(dt_ui_center_base(darktable.gui->ui)), "drag-data-received", G_CALLBACK(_event_dnd_received), NULL);
 
   /* add the global focus peaking button in toolbox */
   dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.gui->focus_peaking_button,
