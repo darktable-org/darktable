@@ -18,9 +18,9 @@
 #include "common/gpx.h"
 #include "common/geo.h"
 #include "common/darktable.h"
+#include "common/math.h
 #include <glib.h>
 #include <inttypes.h>
-#include <math.h>
 
 #define EARTH_RADIUS 6378100.0 /* in meters */
 
@@ -169,10 +169,12 @@ void dt_gpx_destroy(struct dt_gpx_t *gpx)
   const double lon_rad_2 = lon2 * M_PI_F / 180;
   const double delta_lat_rad = lat_rad_2 - lat_rad_1;
   const double delta_lon_rad = lon_rad_2 - lon_rad_1;
+  const double sin_delta_lat_rad = sin(delta_lat_rad / 2);
+  const double sin_delta_lon_rad = sin(delta_lon_rad / 2);
 
-  const double a = sin(delta_lat_rad / 2) * sin(delta_lat_rad / 2) +
+  const double a = sin_delta_lat_rad * sin_delta_lat_rad +
                    cos(lat_rad_1) * cos(lat_rad_2) *
-                   sin(delta_lon_rad / 2) * sin(delta_lon_rad / 2);
+                   sin_delta_lon_rad * sin_delta_lon_rad;
   *delta = 2 * atan2(sqrt(a), sqrt(1 - a)); /* angular distance between the points in radians */
 
   *d = *delta * EARTH_RADIUS;               /* distance on the surface in metres */
@@ -185,14 +187,17 @@ static void dt_gpx_geodesic_intermediate_point(double lat1, double lon1,
                                               )
 {
   const double lat_rad_1 = lat1 * M_PI_F / 180;
+  const double cos_lat_rad_1 = cos(lat_rad_1);
   const double lat_rad_2 = lat2 * M_PI_F / 180;
+  const double cos_lat_rad_2 = cos(lat_rad_2);
   const double lon_rad_1 = lon1 * M_PI_F / 180;
   const double lon_rad_2 = lon2 * M_PI_F / 180;
+  const double sin_delta = sin(delta);
 
-  const double a = sin((1 - f) * delta) / sin(delta);
-  const double b = sin(f * delta) / sin(delta);
-  const double x = a * cos(lat_rad_1) * cos(lon_rad_1) + b * cos(lat_rad_2) * cos(lon_rad_2);
-  const double y = a * cos(lat_rad_1) * sin(lon_rad_1) + b * cos(lat_rad_2) * sin(lon_rad_2);
+  const double a = sin((1 - f) * delta) / sin_delta;
+  const double b = sin(f * delta) / sin_delta;
+  const double x = a * cos_lat_rad_1 * cos(lon_rad_1) + b * cos_lat_rad_2 * cos(lon_rad_2);
+  const double y = a * cos_lat_rad_1 * sin(lon_rad_1) + b * cos_lat_rad_2 * sin(lon_rad_2);
   const double z = a * sin(lat_rad_1) + b * sin(lat_rad_2);
   const double lat_rad = atan2(z, sqrt(x * x + y * y)); /* latitude of intermediate point in radians */
   const double lon_rad = atan2(y, x);                   /* longitude of intermediate point in radians */
