@@ -1163,8 +1163,10 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
 
   const int draw_i = g->drawn_patch % cells_x;
   const int draw_j = g->drawn_patch / cells_x;
+  float color = 1.0;
+  if(p->source_L[g->drawn_patch] > 80) color = 0.0;
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
-  cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+  cairo_set_source_rgb(cr, color, color, color);
   cairo_rectangle(cr,
       width * draw_i / (float) cells_x + DT_PIXEL_APPLY_DPI(5),
       height * draw_j / (float) cells_y + DT_PIXEL_APPLY_DPI(5),
