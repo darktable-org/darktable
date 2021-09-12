@@ -18,7 +18,7 @@
 #include "common/gpx.h"
 #include "common/geo.h"
 #include "common/darktable.h"
-#include "common/math.h
+#include "common/math.h"
 #include <glib.h>
 #include <inttypes.h>
 
