@@ -1,15 +1,15 @@
 # Copyright (C) 2021 Free Software Foundation, Inc.
 #
-# Marcus Gama <marcus.gama@gmail.com>, 2021.
 #: ../build/bin/conf_gen.h:837 ../build/bin/conf_gen.h:843
 #: ../build/bin/conf_gen.h:849 ../build/bin/conf_gen.h:855
 #: ../build/bin/conf_gen.h:861
+# Marcus Gama <marcus.gama@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-09-09 22:48-0300\n"
-"PO-Revision-Date: 2021-09-09 22:57-0300\n"
+"PO-Revision-Date: 2021-09-10 20:39-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1998,7 +1998,7 @@ msgstr "quando definido, limita as imagens à tira de filme atual"
 
 #: ../build/bin/conf_gen.h:1654
 msgid "max images"
-msgstr "max imagens"
+msgstr "máximo de imagens"
 
 #: ../build/bin/conf_gen.h:1655
 msgid "the maximum number of image thumbnails drawn on the map"
@@ -2052,7 +2052,7 @@ msgstr ""
 
 #: ../build/bin/conf_gen.h:1692
 msgid "max polygon points"
-msgstr "número máximo de pontos em polígono"
+msgstr "máximo de pontos em polígono"
 
 #: ../build/bin/conf_gen.h:1693
 msgid ""
@@ -3939,23 +3939,23 @@ msgstr "pirâmide"
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:84
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:199
 msgid "film stock"
-msgstr "filme"
+msgstr "tipo de filme"
 
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:132
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:231
 msgid "scan exposure bias"
-msgstr "viés de exposição ao escanear"
+msgstr "viés de exposição ao digitalizar"
 
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:138
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:235
 msgid "paper black (density correction)"
-msgstr "preto no papel (correção de densidade)"
+msgstr "preto do papel (correção de densidade)"
 
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:144
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:239
 #: ../src/iop/negadoctor.c:967
 msgid "paper grade (gamma)"
-msgstr "grading do papel (gama)"
+msgstr "gradação do papel (gama)"
 
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:150
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:243
@@ -3970,7 +3970,7 @@ msgstr "ajuste de exposição"
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:261
 #: ../src/iop/negadoctor.c:390
 msgid "black and white film"
-msgstr "filme preto & branco"
+msgstr "filme preto e branco"
 
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:262
 #: ../src/iop/negadoctor.c:375
@@ -4705,19 +4705,19 @@ msgstr "data/hora da foto"
 
 #: ../src/common/collection.c:690 ../src/libs/metadata_view.c:129
 msgid "import timestamp"
-msgstr "marca temporal (data/hora) de importação"
+msgstr "tempo de importação"
 
 #: ../src/common/collection.c:691 ../src/libs/metadata_view.c:130
 msgid "change timestamp"
-msgstr "marca temporal (data/hora) de modificação"
+msgstr "tempo de modificação"
 
 #: ../src/common/collection.c:692 ../src/libs/metadata_view.c:131
 msgid "export timestamp"
-msgstr "marca temporal (data/hora) de exportação"
+msgstr "tempo de exportação"
 
 #: ../src/common/collection.c:693 ../src/libs/metadata_view.c:132
 msgid "print timestamp"
-msgstr "marca temporal (data/hora) de impressão"
+msgstr "tempo de impressão"
 
 #: ../src/common/collection.c:694 ../src/libs/history.c:85
 msgid "history"
@@ -7908,7 +7908,7 @@ msgstr "inverter seleção"
 #: ../src/dtgtk/thumbtable.c:2329 ../src/libs/select.c:380
 msgctxt "accel"
 msgid "select film roll"
-msgstr "seleciona rolo de filme"
+msgstr "selecionar rolo de filme"
 
 #: ../src/dtgtk/thumbtable.c:2330 ../src/libs/select.c:381
 msgctxt "accel"
@@ -13372,7 +13372,7 @@ msgstr "tons de pele natural"
 
 #: ../src/iop/colorzones.c:711
 msgid "black & white film"
-msgstr "filme preto & branco"
+msgstr "filme preto e branco"
 
 #: ../src/iop/colorzones.c:731
 msgid "HSL base setting"
@@ -15973,24 +15973,24 @@ msgstr "analista de negativos"
 
 #: ../src/iop/negadoctor.c:150
 msgid "film|invert|negative|scan"
-msgstr "filme|inverter|negativo|scan"
+msgstr "filme|inverter|negativo|digitalizar"
 
 #: ../src/iop/negadoctor.c:155
 msgid "invert film negative scans and simulate printing on paper"
-msgstr "inverte negativos de filme escaneados e simula impressão em papel"
+msgstr "inverte negativos de filme digitalizados e simula impressão em papel"
 
 #: ../src/iop/negadoctor.c:442
 msgid "D min"
-msgstr "D min"
+msgstr "D mín"
 
 #: ../src/iop/negadoctor.c:448 ../src/iop/negadoctor.c:829
 msgid "D min red component"
-msgstr "D min componente vermelho"
+msgstr "D mín componente vermelho"
 
 #. Page FILM PROPERTIES
 #: ../src/iop/negadoctor.c:805
 msgid "film properties"
-msgstr "propriedades do filme"
+msgstr "filme"
 
 #. Dmin
 #: ../src/iop/negadoctor.c:809
@@ -16012,15 +16012,15 @@ msgstr ""
 "ajusta a cor e as sombras do revestimento protetor de filme.\n"
 "esse valor depende do material do filme,\n"
 "os vapores químicos produzidos durante a revelação do filme,\n"
-"e o balanço de branco do scanner."
+"e o balanço de branco do digitalizador."
 
 #: ../src/iop/negadoctor.c:840
 msgid "D min green component"
-msgstr "D min componente verde"
+msgstr "D mín componente verde"
 
 #: ../src/iop/negadoctor.c:851
 msgid "D min blue component"
-msgstr "D min componente azul"
+msgstr "D mín componente azul"
 
 #. D max and scanner bias
 #: ../src/iop/negadoctor.c:859
@@ -16035,24 +16035,25 @@ msgid ""
 msgstr ""
 "densidade máxima do filme, correspondendo ao branco após a inversão.\n"
 "este valor depende das especificações do filme, do processo de revelação,\n"
-"e do alcance dinâmico da cena e das configurações de exposição do scanner."
+"e do alcance dinâmico da cena e das configurações de exposição do"
+" digitalizador."
 
 #: ../src/iop/negadoctor.c:867
 msgid "scanner exposure settings"
-msgstr "configurações da exposição do scanner"
+msgstr "configurações da exposição do digitalizador"
 
 #: ../src/iop/negadoctor.c:872
 msgid ""
 "correct the exposure of the scanner, for all RGB channels,\n"
 "before the inversion, so blacks are neither clipped or too pale."
 msgstr ""
-"corrige a exposição do scanner, para todos os canais RGB,\n"
+"corrige a exposição do digitalizador, para todos os canais RGB,\n"
 "antes da inversão, de forma que os pretos não são cortados ou muito pálidos."
 
 #. WB shadows
 #: ../src/iop/negadoctor.c:879
 msgid "shadows color cast"
-msgstr "desvio de cor em sombras"
+msgstr "desvio de cor nas sombras"
 
 #: ../src/iop/negadoctor.c:885
 msgid "select color of shadows from a swatch"
@@ -16064,7 +16065,7 @@ msgstr "selecionar cor das sombras a partir da imagem"
 
 #: ../src/iop/negadoctor.c:895
 msgid "shadows red offset"
-msgstr "offset vermelho das sombras"
+msgstr "compensação de vermelho nas sombras"
 
 #: ../src/iop/negadoctor.c:896 ../src/iop/negadoctor.c:903
 #: ../src/iop/negadoctor.c:910
@@ -16081,16 +16082,16 @@ msgstr ""
 
 #: ../src/iop/negadoctor.c:902
 msgid "shadows green offset"
-msgstr "offset verde das sombras"
+msgstr "compensação de verde nas sombras"
 
 #: ../src/iop/negadoctor.c:909
 msgid "shadows blue offset"
-msgstr "offset azul das sombras"
+msgstr "compensação azul nas sombras"
 
 #. WB highlights
 #: ../src/iop/negadoctor.c:916
 msgid "highlights white balance"
-msgstr "balanço de branco de realces"
+msgstr "balanço de branco nos realces"
 
 #: ../src/iop/negadoctor.c:922
 msgid "select color of illuminant from a swatch"
@@ -16102,7 +16103,7 @@ msgstr "selecionar cor do iluminante a partir de uma imagem"
 
 #: ../src/iop/negadoctor.c:932
 msgid "illuminant red gain"
-msgstr "ganho vermelho do iluminante"
+msgstr "ganho vermelho no iluminante"
 
 #: ../src/iop/negadoctor.c:933 ../src/iop/negadoctor.c:940
 #: ../src/iop/negadoctor.c:947
@@ -16119,16 +16120,16 @@ msgstr ""
 
 #: ../src/iop/negadoctor.c:939
 msgid "illuminant green gain"
-msgstr "ganho verde do iluminante"
+msgstr "ganho verde no iluminante"
 
 #: ../src/iop/negadoctor.c:946
 msgid "illuminant blue gain"
-msgstr "ganho azul do iluminante"
+msgstr "ganho azul no iluminante"
 
 #. Page PRINT PROPERTIES
 #: ../src/iop/negadoctor.c:953
 msgid "print properties"
-msgstr "propriedades de impressão"
+msgstr "impressão"
 
 #. print corrections
 #: ../src/iop/negadoctor.c:956
@@ -18808,7 +18809,7 @@ msgstr "travar valor de deslocamento de tempo para aplicar em outra seleção"
 #. apply
 #: ../src/libs/geotagging.c:1718
 msgid "apply offset"
-msgstr "aplicar deslocamento (intervalo de tempo)"
+msgstr "aplicar intervalo de tempo"
 
 #: ../src/libs/geotagging.c:1718
 msgid "apply offset to selected images"
@@ -19721,7 +19722,7 @@ msgstr "sobrepor outra imagem sobre a exibição ao vivo"
 
 #: ../src/libs/live_view.c:385 ../src/libs/metadata_view.c:123
 msgid "image id"
-msgstr "imagem id"
+msgstr "id da imagem"
 
 #: ../src/libs/live_view.c:389
 msgid "enter image id of the overlay manually"
@@ -20875,7 +20876,7 @@ msgstr ""
 
 #: ../src/libs/select.c:146
 msgid "select film roll"
-msgstr "seleciona rolo de filme"
+msgstr "selecionar rolo de filme"
 
 #: ../src/libs/select.c:146
 msgid ""
@@ -21018,7 +21019,7 @@ msgstr "filtrar nomes de estilo"
 
 #: ../src/libs/styles.c:826
 msgid "create duplicate"
-msgstr "cria duplicata"
+msgstr "criar duplicata"
 
 #: ../src/libs/styles.c:832
 msgid "creates a duplicate of the image before applying style"
@@ -21547,12 +21548,12 @@ msgstr "sobreposições não disponíveis aqui..."
 #: ../src/libs/tools/global_toolbox.c:404
 #: ../src/libs/tools/global_toolbox.c:550
 msgid "expand grouped images"
-msgstr "expande imagens agrupadas"
+msgstr "expandir imagens agrupadas"
 
 #: ../src/libs/tools/global_toolbox.c:406
 #: ../src/libs/tools/global_toolbox.c:552
 msgid "collapse grouped images"
-msgstr "esconder imagens agrupadas"
+msgstr "recolher imagens agrupadas"
 
 #: ../src/libs/tools/global_toolbox.c:413
 msgid "click to change the type of overlays shown on thumbnails"
@@ -21723,7 +21724,7 @@ msgstr "clique para entrar no modo de visualização completa"
 
 #: ../src/libs/tools/lighttable.c:122
 msgid "click to enter culling layout in fixed mode."
-msgstr "clique para entrar no modo de seleção em modo fixo"
+msgstr "clique para entrar no modo de seleção fixo"
 
 #: ../src/libs/tools/lighttable.c:124 ../src/libs/tools/lighttable.c:129
 msgid "click to exit culling layout."
@@ -22060,7 +22061,7 @@ msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
 msgstr ""
-"alterna verificação de gamut\n"
+"alterna verificação de gama\n"
 "clique direito para opções"
 
 #: ../src/views/darkroom.c:2431 ../src/views/darkroom.c:2438
