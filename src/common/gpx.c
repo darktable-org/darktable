@@ -23,6 +23,7 @@
 #include <math.h>
 
 #define PI 3.1415926535
+#define EARTH_RADIUS 6378100.0 /* in meters */
 
 /* GPX XML parser */
 typedef enum _gpx_parser_element_t
@@ -163,7 +164,6 @@ void dt_gpx_destroy(struct dt_gpx_t *gpx)
                       double *d, double *delta
                     )
 {
-  const double r = 6371000.0; // earth radius in meters
   const double lat_rad_1 = lat1 * PI / 180;
   const double lat_rad_2 = lat2 * PI / 180;
   const double lon_rad_1 = lon1 * PI / 180;
@@ -174,10 +174,9 @@ void dt_gpx_destroy(struct dt_gpx_t *gpx)
   const double a = sin(delta_lat_rad / 2) * sin(delta_lat_rad / 2) +
                    cos(lat_rad_1) * cos(lat_rad_2) *
                    sin(delta_lon_rad / 2) * sin(delta_lon_rad / 2);
-  const double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+  *delta = 2 * atan2(sqrt(a), sqrt(1 - a)); /* angular distance between the points in radians */
 
-  *d = r * c; /* distance on the surface in metres */
-   *delta = *d / r; /* angular distance between the points in radians */
+  *d = *delta * EARTH_RADIUS;               /* distance on the surface in metres */
 }
 
 static void dt_gpx_geodesic_intermediate_point(double lat1, double lon1,
