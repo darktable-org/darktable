@@ -37,7 +37,7 @@ void dt_shortcuts_select_view(dt_view_type_flags_t view);
 
 gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_data);
 
-float dt_action_process(gchar *action, int instance, gchar *element, gchar *effect, float size);
+float dt_action_process(const gchar *action, int instance, const gchar *element, const gchar *effect, float size);
 
 void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action);
 
