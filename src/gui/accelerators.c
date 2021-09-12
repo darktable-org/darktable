@@ -2886,7 +2886,7 @@ static float _process_shortcut(float move_size)
   return NAN;
 }
 
-float dt_action_process(gchar *action, int instance, gchar *element, gchar *effect, float move_size)
+float dt_action_process(const gchar *action, int instance, const gchar *element, const gchar *effect, float move_size)
 {
   gchar **path = g_strsplit(action, "/", 0);
   dt_action_t *ac = dt_action_locate(NULL, path, FALSE);
