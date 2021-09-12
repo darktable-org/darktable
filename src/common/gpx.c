@@ -22,6 +22,8 @@
 #include <inttypes.h>
 #include <math.h>
 
+#define PI 3.1415926535
+
 /* GPX XML parser */
 typedef enum _gpx_parser_element_t
 {
@@ -152,6 +154,57 @@ void dt_gpx_destroy(struct dt_gpx_t *gpx)
   g_free(gpx);
 }
 
+/* --------------------------------------------------------------------------
+ * Geodesic interpolation functions
+ * ------------------------------------------------------------------------*/
+
+ static void dt_gpx_geodesic_distance(double lat1, double lon1,
+                      double lat2, double lon2,
+                      double *d, double *delta
+                    )
+{
+  const double r = 6371000.0; // earth radius in meters
+  const double lat_rad_1 = lat1 * PI / 180;
+  const double lat_rad_2 = lat2 * PI / 180;
+  const double lon_rad_1 = lon1 * PI / 180;
+  const double lon_rad_2 = lon2 * PI / 180;
+  const double delta_lat_rad = lat_rad_2 - lat_rad_1;
+  const double delta_lon_rad = lon_rad_2 - lon_rad_1;
+
+  const double a = sin(delta_lat_rad / 2) * sin(delta_lat_rad / 2) +
+                   cos(lat_rad_1) * cos(lat_rad_2) *
+                   sin(delta_lon_rad / 2) * sin(delta_lon_rad / 2);
+  const double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+  *d = r * c; /* distance on the surface in metres */
+   *delta = *d / r; /* angular distance between the points in radians */
+}
+
+static void dt_gpx_geodesic_intermediate_point(double lat1, double lon1,
+                                               double lat2, double lon2,
+                                               double f, double delta,
+                                               double *lat, double *lon
+                                              )
+{
+  const double lat_rad_1 = lat1 * PI / 180;
+  const double lat_rad_2 = lat2 * PI / 180;
+  const double lon_rad_1 = lon1 * PI / 180;
+  const double lon_rad_2 = lon2 * PI / 180;
+
+  const double a = sin((1 - f) * delta) / sin(delta);
+  const double b = sin(f * delta) / sin(delta);
+  const double x = a * cos(lat_rad_1) * cos(lon_rad_1) + b * cos(lat_rad_2) * cos(lon_rad_2);
+  const double y = a * cos(lat_rad_1) * sin(lon_rad_1) + b * cos(lat_rad_2) * sin(lon_rad_2);
+  const double z = a * sin(lat_rad_1) + b * sin(lat_rad_2);
+  const double lat_rad = atan2(z, sqrt(x * x + y * y)); /* latitude of intermediate point in radians */
+  const double lon_rad = atan2(y, x);                   /* longitude of intermediate point in radians */
+
+  *lat = lat_rad / PI * 180;
+  *lon = lon_rad / PI * 180;
+}
+/* -------- end of Geodesic interpolation functions -----------------------*/
+
+
 gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_image_geoloc_t *geoloc)
 {
   g_assert(gpx != NULL);
@@ -194,8 +247,6 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
         We assume that the maximum difference in longitude is less or equal 180º:
         since the bigger use case is that of an airplane, never an airplane flies more than 180º in longitude */
 
-        const double pi = 3.1415926535;
-
         double lon1 = tp->longitude;
         double lon2 = tp_next->longitude;
         double lat1 = tp->latitude;
@@ -214,35 +265,24 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
         /*
         first, calculate the distance on the earth surface
         */
-        const double r = 6371000.0; // metres
-        const double phi1 = lat1 * pi / 180; // φ, λ in radians
-        const double phi2 = lat2 * pi / 180;
-        const double lambda1 = lon1 * pi / 180;
-        const double lambda2 = lon2 * pi / 180;
-        const double deltaphi = phi2 - phi1;
-        const double deltalambda = lambda2 - lambda1;
-
-        const double a = sin(deltaphi / 2) * sin(deltaphi / 2) +
-                  cos(phi1) * cos(phi2) *
-                  sin(deltalambda / 2) * sin(deltalambda / 2);
-        const double c = 2 * atan2(sqrt(a), sqrt(1 - a));
-
-        const double d = r * c; /* distance on the surface in metres */
-        const double delta = d / r; /* angular distance between the points in radians */
+        double d, delta;
+        dt_gpx_geodesic_distance(lat1, lon1,
+                        lat2, lon2,
+                        &d, &delta
+                      ); /* d is the distance on the surface in metres */
 
         /*
         then, calculate the intermediate point
         */
-        const double a1 = sin((1 - f) * delta) / sin(delta);
-        const double b = sin(f * delta) / sin(delta);
-        const double x = a1 * cos(phi1) * cos(lambda1) + b * cos(phi2) * cos(lambda2);
-        const double y = a1 * cos(phi1) * sin(lambda1) + b * cos(phi2) * sin(lambda2);
-        const double z = a1 * sin(phi1) + b * sin(phi2);
-        const double phi = atan2(z, sqrt(x * x + y * y)); /* latitude of intermediate point in radians */
-        const double lambda = atan2(y, x);  /* longitude of intermediate point in radians */
+        double lat, lon;
+        dt_gpx_geodesic_intermediate_point(lat1, lon1,
+                                  lat2, lon2,
+                                  f, delta,
+                                  &lat, &lon
+                                );
 
-        geoloc->latitude = phi / pi * 180;
-        geoloc->longitude = lambda / pi * 180;
+        geoloc->latitude = lat;
+        geoloc->longitude = lon;
         printf("%f %f\n", geoloc->latitude, geoloc->longitude);
 
         /* the following lines would perform a linear interpolation,
