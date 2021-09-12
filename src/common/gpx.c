@@ -22,7 +22,6 @@
 #include <inttypes.h>
 #include <math.h>
 
-#define PI 3.1415926535
 #define EARTH_RADIUS 6378100.0 /* in meters */
 
 /* GPX XML parser */
@@ -164,10 +163,10 @@ void dt_gpx_destroy(struct dt_gpx_t *gpx)
                       double *d, double *delta
                     )
 {
-  const double lat_rad_1 = lat1 * PI / 180;
-  const double lat_rad_2 = lat2 * PI / 180;
-  const double lon_rad_1 = lon1 * PI / 180;
-  const double lon_rad_2 = lon2 * PI / 180;
+  const double lat_rad_1 = lat1 * M_PI_F / 180;
+  const double lat_rad_2 = lat2 * M_PI_F / 180;
+  const double lon_rad_1 = lon1 * M_PI_F / 180;
+  const double lon_rad_2 = lon2 * M_PI_F / 180;
   const double delta_lat_rad = lat_rad_2 - lat_rad_1;
   const double delta_lon_rad = lon_rad_2 - lon_rad_1;
 
@@ -185,10 +184,10 @@ static void dt_gpx_geodesic_intermediate_point(double lat1, double lon1,
                                                double *lat, double *lon
                                               )
 {
-  const double lat_rad_1 = lat1 * PI / 180;
-  const double lat_rad_2 = lat2 * PI / 180;
-  const double lon_rad_1 = lon1 * PI / 180;
-  const double lon_rad_2 = lon2 * PI / 180;
+  const double lat_rad_1 = lat1 * M_PI_F / 180;
+  const double lat_rad_2 = lat2 * M_PI_F / 180;
+  const double lon_rad_1 = lon1 * M_PI_F / 180;
+  const double lon_rad_2 = lon2 * M_PI_F / 180;
 
   const double a = sin((1 - f) * delta) / sin(delta);
   const double b = sin(f * delta) / sin(delta);
@@ -198,8 +197,8 @@ static void dt_gpx_geodesic_intermediate_point(double lat1, double lon1,
   const double lat_rad = atan2(z, sqrt(x * x + y * y)); /* latitude of intermediate point in radians */
   const double lon_rad = atan2(y, x);                   /* longitude of intermediate point in radians */
 
-  *lat = lat_rad / PI * 180;
-  *lon = lon_rad / PI * 180;
+  *lat = lat_rad / M_PI_F * 180;
+  *lon = lon_rad / M_PI_F * 180;
 }
 /* -------- end of Geodesic interpolation functions -----------------------*/
 
