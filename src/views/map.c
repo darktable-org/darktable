@@ -2213,18 +2213,22 @@ static void track_add_point(OsmGpsMapTrack *track, OsmGpsMapPoint *point, OsmGps
     OsmGpsMapPoint *ith_point;
     double f, ith_lat, ith_lon;
     int n_segments = d / 10000;
+    gboolean first_time = TRUE;
     for (int i = 1; i < n_segments; i ++)
     {
       f = (double)i / n_segments;
       dt_gpx_geodesic_intermediate_point(prev_lat, prev_lon,
-                                lat, lon,
-                                f, delta,
-                                &ith_lat, &ith_lon
-                              );
+                                         lat, lon,
+                                         delta,
+                                         first_time,
+                                         f,
+                                         &ith_lat, &ith_lon
+                                        );
 
       ith_point = osm_gps_map_point_new_degrees (ith_lat, ith_lon);
       osm_gps_map_track_add_point(track, ith_point);
       osm_gps_map_point_free(ith_point);
+      first_time = FALSE;
     }
   }
 }
