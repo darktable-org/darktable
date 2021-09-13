@@ -157,13 +157,19 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     // For a blurring sigma of 2.0f a 13x13 kernel would be optimally required but the 9x9 is by far good enough here 
     float kernel[9][9];
     const float temp = -2.0f * (2.0f * 2.0f);
+    const float range = 3.0f * 1.5f * 3.0f * 1.5f;
     float sum = 0.0f;
-    for(int i = -4; i <= 4; i++)
+    for(int k = -4; k <= 4; k++)
     {
       for(int j = -4; j <= 4; j++)
       {
-        kernel[i + 4][j + 4] = expf(((i*i) + (j*j)) / temp);
-        sum += kernel[i + 4][j + 4];
+        if((sqrf(k) + sqrf(j)) <= range)
+        {
+          kernel[k + 4][j + 4] = expf((sqrf(k) + sqrf(j)) / temp);
+          sum += kernel[k + 4][j + 4];
+        }
+        else
+          kernel[k + 4][j + 4] = 0.0f;
       }
     }
     for(int i = 0; i < 9; i++)

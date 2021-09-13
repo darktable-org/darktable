@@ -729,13 +729,19 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
     // For a blurring sigma of 2.0f a 13x13 kernel would be optimally required but the 9x9 is by far good enough here 
     float kernel[9][9];
     const float temp = -8.0f; // -2.0f * 2.0f * 2.0f; for a sigma of 2
+    const float range = 3.0f * 1.5f * 3.0f * 1.5f;
     float sum = 0.0f;
-    for(int i = -4; i <= 4; i++)
+    for(int k = -4; k <= 4; k++)
     {
       for(int j = -4; j <= 4; j++)
       {
-        kernel[i + 4][j + 4] = expf( ((i*i) + (j*j)) / temp);
-        sum += kernel[i + 4][j + 4];
+        if((k*k + j*j) <= range)
+        {
+          kernel[k + 4][j + 4] = expf((k*k + j*j) / temp);
+          sum += kernel[k + 4][j + 4];
+        }
+        else
+          kernel[k + 4][j + 4] = 0.0f;
       }
     }
     for(int i = 0; i < 9; i++)
