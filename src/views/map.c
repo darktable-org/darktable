@@ -2248,21 +2248,15 @@ static OsmGpsMapPolygon *_view_map_add_polygon(const dt_view_t *view, GList *poi
   float prev_lat = 0.0;
   float prev_lon = 0.0;
 
-  OsmGpsMapPoint* prev_point = osm_gps_map_point_new_degrees(0.0, 0.0);;
-
   for(GList *iter = points; iter; iter = g_list_next(iter))
   {
     dt_geo_map_display_point_t *p = (dt_geo_map_display_point_t *)iter->data;
     if((fabs(p->lat - prev_lat) > dlat) || (fabs(p->lon - prev_lon) > dlon))
     {
       OsmGpsMapPoint* point = osm_gps_map_point_new_degrees(p->lat, p->lon);
-      track_add_point(track, point, prev_point);
-      osm_gps_map_point_free(prev_point);
-      prev_point = &(*point);
+      osm_gps_map_track_add_point(track, point);
       prev_lat = p->lat;
       prev_lon = p->lon;
-      if (!g_list_next(iter))
-        osm_gps_map_point_free(prev_point);
     }
   }
 
@@ -2303,7 +2297,7 @@ static OsmGpsMapPolygon *_view_map_add_polygon_location(dt_map_t *lib, dt_locati
   int j = 0;
   float prev_lat = 0.0;
   float prev_lon = 0.0;
-  OsmGpsMapPoint* prev_point = osm_gps_map_point_new_degrees(0.0, 0.0);;
+
   for(GList *iter = ld->data.polygons; iter; iter = g_list_next(iter), i++)
   {
     dt_geo_map_display_point_t *p = (dt_geo_map_display_point_t *)iter->data;
@@ -2313,26 +2307,17 @@ static OsmGpsMapPolygon *_view_map_add_polygon_location(dt_map_t *lib, dt_locati
       if((fabs(p->lat - prev_lat) > dlat) || (fabs(p->lon - prev_lon) > dlon))
       {
         OsmGpsMapPoint* point = osm_gps_map_point_new_degrees(p->lat, p->lon);
-        track_add_point(track, point, prev_point);
-        osm_gps_map_point_free(prev_point);
-        prev_point = &(*point);
+        osm_gps_map_track_add_point(track, point);
         prev_lat = p->lat;
         prev_lon = p->lon;
         j++;
-        if (!g_list_next(iter))
-          osm_gps_map_point_free(prev_point);
-
       }
     }
     else if(!(i % mod2))
     {
       OsmGpsMapPoint* point = osm_gps_map_point_new_degrees(p->lat, p->lon);
-      track_add_point(track, point, prev_point);
-      osm_gps_map_point_free(prev_point);
-      prev_point = &(*point);
+      osm_gps_map_track_add_point(track, point);
       j++;
-      if (!g_list_next(iter))
-        osm_gps_map_point_free(prev_point);
     }
   }
 
@@ -2358,16 +2343,11 @@ static OsmGpsMapTrack *_view_map_add_track(const dt_view_t *view, GList *points)
 
   OsmGpsMapTrack* track = osm_gps_map_track_new();
 
-  OsmGpsMapPoint* prev_point = osm_gps_map_point_new_degrees(0.0, 0.0);;
   for(GList *iter = points; iter; iter = g_list_next(iter))
   {
     dt_geo_map_display_point_t *p = (dt_geo_map_display_point_t *)iter->data;
     OsmGpsMapPoint* point = osm_gps_map_point_new_degrees(p->lat, p->lon);
-    track_add_point(track, point, prev_point);
-    osm_gps_map_point_free(prev_point);
-    prev_point = &(*point);
-    if (!g_list_next(iter))
-      osm_gps_map_point_free(prev_point);
+    osm_gps_map_track_add_point(track, point);
   }
 
   g_object_set(track, "editable", FALSE, (gchar *)0);
