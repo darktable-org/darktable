@@ -2247,7 +2247,6 @@ static OsmGpsMapPolygon *_view_map_add_polygon(const dt_view_t *view, GList *poi
 
   float prev_lat = 0.0;
   float prev_lon = 0.0;
-
   for(GList *iter = points; iter; iter = g_list_next(iter))
   {
     dt_geo_map_display_point_t *p = (dt_geo_map_display_point_t *)iter->data;
@@ -2297,7 +2296,6 @@ static OsmGpsMapPolygon *_view_map_add_polygon_location(dt_map_t *lib, dt_locati
   int j = 0;
   float prev_lat = 0.0;
   float prev_lon = 0.0;
-
   for(GList *iter = ld->data.polygons; iter; iter = g_list_next(iter), i++)
   {
     dt_geo_map_display_point_t *p = (dt_geo_map_display_point_t *)iter->data;
