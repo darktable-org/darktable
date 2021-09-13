@@ -8,7 +8,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     (practice showed that support for versions older than 10.7 isn't viable)
     and this line to /opt/local/etc/macports/variants.conf:
      +no_gnome +no_x11 +quartz -x11 -gnome -gfortran
-    You will also need to add patches for gnutls, python (https://trac.macports.org/ticket/51736), GraphicsMagick, ImageMagick, libusb, pugixml, gmic and downgrade libomp
+    You will also need to add patches for gnutls, python (https://trac.macports.org/ticket/51736), GraphicsMagick, ImageMagick, libusb, perl, pugixml, gmic and downgrade libomp
     (all fixes except for gmic and libomp are required due to set deployment target, gmic patch removes extra dependencies, libomp version change fixes a crash):
      $ mkdir -p ~/ports/devel/gnutls/files ~/ports/lang/libomp/files ~/ports/lang/python{37,38,39}/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/textproc ~/ports/science
      $ cp -R "$(port dir gnutls)" ~/ports/devel
@@ -25,6 +25,8 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ curl -Lo ~/ports/graphics/ImageMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/im-stdlib.diff
      $ cp -R "$(port dir libusb)" ~/ports/devel
      $ curl -Lo ~/ports/devel/libusb/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/libusb-no-clock_gettime.diff
+     $ cp -R "$(port dir perl5)" ~/ports/lang
+     $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/perl-at.patch | patch -d ~/ports -p0
      $ cp -R "$(port dir pugixml)" ~/ports/textproc
      $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/pugixml-stdlib.patch | patch -d ~/ports -p0
      $ cp -R "$(port dir gmic)" ~/ports/science
@@ -34,7 +36,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ curl -Lo ~/ports/lang/libomp/files/patch-libomp-use-gettid-on-Leopard.diff https://github.com/macports/macports-ports/raw/589fc380ea8b74771fc4ec1de607ddbddf22cb70/lang/libomp/files/patch-libomp-use-gettid-on-Leopard.diff
     then append this line:
      patchfiles-append patch.diff
-    to ~/ports/*/*/Portfile files you just copied (except for pugixml, gmic and libomp) and run:
+    to ~/ports/*/*/Portfile files you just copied (except for perl5, pugixml, gmic and libomp) and run:
      $ portindex ~/ports
     Add "file:///Users/<username>/ports" (change <username> to your actual login) to /opt/local/etc/macports/sources.conf before [default] line.
     Install required dependencies:
