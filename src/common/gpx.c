@@ -24,6 +24,9 @@
 
 #define EARTH_RADIUS 6378100.0 /* in meters */
 #define DT_MINIMUM_DISTANCE_FOR_GEODESIC 10000.0 /* in meters */
+#define DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC 0.1
+/* DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC is in degrees, and is used for longitude and latitude
+   0.1 degress ~ 10 km on the earth surface */
 
 /* GPX XML parser */
 typedef enum _gpx_parser_element_t
@@ -164,10 +167,10 @@ void dt_gpx_destroy(struct dt_gpx_t *gpx)
                       double *d, double *delta
                     )
 {
-  const double lat_rad_1 = lat1 * M_PI_F / 180;
-  const double lat_rad_2 = lat2 * M_PI_F / 180;
-  const double lon_rad_1 = lon1 * M_PI_F / 180;
-  const double lon_rad_2 = lon2 * M_PI_F / 180;
+  const double lat_rad_1 = lat1 * M_PI / 180;
+  const double lat_rad_2 = lat2 * M_PI / 180;
+  const double lon_rad_1 = lon1 * M_PI / 180;
+  const double lon_rad_2 = lon2 * M_PI / 180;
   const double delta_lat_rad = lat_rad_2 - lat_rad_1;
   const double delta_lon_rad = lon_rad_2 - lon_rad_1;
   const double sin_delta_lat_rad = sin(delta_lat_rad / 2);
@@ -205,16 +208,16 @@ static void dt_gpx_geodesic_intermediate_point(double lat1, double lon1,
 
   if (first_time)
   {
-    lat_rad_1 = lat1 * M_PI_F / 180;
+    lat_rad_1 = lat1 * M_PI / 180;
     sin_lat_rad_1 = sin(lat_rad_1);
     cos_lat_rad_1 = cos(lat_rad_1);
-    lat_rad_2 = lat2 * M_PI_F / 180;
+    lat_rad_2 = lat2 * M_PI / 180;
     sin_lat_rad_2 = sin(lat_rad_2);
     cos_lat_rad_2 = cos(lat_rad_2);
-    lon_rad_1 = lon1 * M_PI_F / 180;
+    lon_rad_1 = lon1 * M_PI / 180;
     sin_lon_rad_1 = sin(lon_rad_1);
     cos_lon_rad_1 = cos(lon_rad_1);
-    lon_rad_2 = lon2 * M_PI_F / 180;
+    lon_rad_2 = lon2 * M_PI / 180;
     sin_lon_rad_2 = sin(lon_rad_2);
     cos_lon_rad_2 = cos(lon_rad_2);
     sin_delta = sin(delta);
@@ -228,8 +231,8 @@ static void dt_gpx_geodesic_intermediate_point(double lat1, double lon1,
   const double lat_rad = atan2(z, sqrt(x * x + y * y)); /* latitude of intermediate point in radians */
   const double lon_rad = atan2(y, x);                   /* longitude of intermediate point in radians */
 
-  *lat = lat_rad / M_PI_F * 180;
-  *lon = lon_rad / M_PI_F * 180;
+  *lat = lat_rad / M_PI * 180;
+  *lon = lon_rad / M_PI * 180;
 }
 /* -------- end of Geodesic interpolation functions -----------------------*/
 
@@ -281,31 +284,38 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
         double lat1 = tp->latitude;
         double lat2 = tp_next->latitude;
 
+        double lat, lon;
+
         const double f = (double)diff / (double)seg_diff; /* the fraction of the distance */
 
-        /*
-        interpolation on the earth surface
-        formulas from http://www.movable-type.co.uk/scripts/latlong.html
-
-        the formulas are correct even if the two point are e.g [(0, -179), (0,179)]
-        TO DO: in this case the line is incorrect
-        */
-
-        /*
-        first, calculate the distance on the earth surface
-        */
-        double d, delta;
-        dt_gpx_geodesic_distance(lat1, lon1,
-                        lat2, lon2,
-                        &d, &delta
-                      ); /* d is the distance on the surface in metres */
-
-        /*
-        then, calculate the intermediate point
-        */
-        double lat, lon;
-        if (d >= DT_MINIMUM_DISTANCE_FOR_GEODESIC)
+        if (
+          fabs(lat2 - lat1) < DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC ||
+          fabs(lon2 - lon1) < DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC
+        )
         {
+          /* short distance (< 10 km), no need for geodesic interpolation */
+          lon = lon1 + (lat2 - lon1) * f;
+          lat = lat1 + (lat2 - lat1) * f;
+        }
+        else
+        {
+          /* interpolation on the earth surface
+             formulas from http://www.movable-type.co.uk/scripts/latlong.html
+
+             the formulas are correct even if the two point are across the day line, e.g [(0, -179), (0,179)]
+             TO DO: in this case the line which is drawn is incorrect, but this should be a osm_gps issue
+          */
+
+          /* first, calculate the distance on the earth surface */
+          double d, delta;
+          dt_gpx_geodesic_distance(lat1, lon1,
+                          lat2, lon2,
+                          &d, &delta
+                        );
+          /* d is the distance on the surface in metres,
+             delta is the angle defined by the two points*/
+
+          /* then, calculate the intermediate point */
           dt_gpx_geodesic_intermediate_point(lat1, lon1,
                                              lat2, lon2,
                                              delta,
@@ -313,12 +323,6 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
                                              f,
                                              &lat, &lon
                                             );
-        }
-        else
-        {
-          /* short distance, no need for geodesic interpolation */
-          lon = tp->longitude + (tp_next->longitude - tp->longitude) * f;
-          lat = tp->latitude + (tp_next->latitude - tp->latitude) * f;
         }
 
         geoloc->latitude = lat;
