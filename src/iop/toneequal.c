@@ -573,6 +573,7 @@ static void invalidate_luminance_cache(dt_iop_module_t *const self)
   g->thumb_preview_hash = 0;
   g->ui_preview_hash = 0;
   dt_iop_gui_leave_critical_section(self);
+  dt_iop_refresh_preview(self);
 }
 
 
@@ -1670,7 +1671,6 @@ void gui_update(struct dt_iop_module_t *self)
 
   show_guiding_controls(self);
   invalidate_luminance_cache(self);
-  dt_iop_refresh_preview(self);
 
   dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->show_luminance_mask), g->mask_display);
 }
@@ -1684,7 +1684,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     dt_bauhaus_widget_set_quad_active(w, FALSE);
 
   invalidate_luminance_cache(self);
-  dt_iop_refresh_preview(self);
 }
 
 static void smoothing_callback(GtkWidget *slider, gpointer user_data)
@@ -1731,7 +1730,6 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
     --darktable.gui->reset;
 
     invalidate_luminance_cache(self);
-    dt_iop_refresh_preview(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     dt_bauhaus_widget_set_quad_active(quad, FALSE);
     return;
@@ -1787,7 +1785,6 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
     --darktable.gui->reset;
 
     invalidate_luminance_cache(self);
-    dt_iop_refresh_preview(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     dt_bauhaus_widget_set_quad_active(quad, FALSE);
     return;
