@@ -309,9 +309,9 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
           /* first, calculate the distance on the earth surface */
           double d, delta;
           dt_gpx_geodesic_distance(lat1, lon1,
-                          lat2, lon2,
-                          &d, &delta
-                        );
+                                   lat2, lon2,
+                                   &d, &delta
+                                  );
           /* d is the distance on the surface in metres,
              delta is the angle defined by the two points*/
 
