@@ -34,6 +34,10 @@ You are strongly advised to take a backup first.
 
 ## Bug Fixes
 
+## Notes
+
+- 3.8.x series of darktable releases will be the last supporting running on macOS 10.7 and building with Xcode 11.
+  Next major release will require at least macOS 10.14 to run and Xcode 12 to build.
 
 ## Changed Dependencies
 
