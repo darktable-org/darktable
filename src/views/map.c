@@ -2203,7 +2203,7 @@ static void track_add_point(OsmGpsMapTrack *track, OsmGpsMapPoint *point, OsmGps
                   prev_lat, prev_lon,
                   &d, &delta
                 );
-  if ((prev_lat == 0.0 && prev_lon == 0.0) || d < 10000)
+  if ((prev_lat == 0.0 && prev_lon == 0.0) || d < DT_MINIMUM_DISTANCE_FOR_GEODESIC)
   {
     osm_gps_map_track_add_point(track, point);
   }
@@ -2212,7 +2212,7 @@ static void track_add_point(OsmGpsMapTrack *track, OsmGpsMapPoint *point, OsmGps
     /* the line must be splitted in order to seek the geodesic line */
     OsmGpsMapPoint *ith_point;
     double f, ith_lat, ith_lon;
-    int n_segments = d / 10000;
+    int n_segments = d / DT_MINIMUM_DISTANCE_FOR_GEODESIC;
     gboolean first_time = TRUE;
     for (int i = 1; i < n_segments; i ++)
     {
@@ -2340,12 +2340,17 @@ static OsmGpsMapTrack *_view_map_add_track(const dt_view_t *view, GList *points)
   dt_map_t *lib = (dt_map_t *)view->data;
 
   OsmGpsMapTrack* track = osm_gps_map_track_new();
-
+  
+  OsmGpsMapPoint* prev_point = osm_gps_map_point_new_degrees(0.0, 0.0);
   for(GList *iter = points; iter; iter = g_list_next(iter))
   {
     dt_geo_map_display_point_t *p = (dt_geo_map_display_point_t *)iter->data;
     OsmGpsMapPoint* point = osm_gps_map_point_new_degrees(p->lat, p->lon);
-    osm_gps_map_track_add_point(track, point);
+    track_add_point(track, point, prev_point);
+    osm_gps_map_point_free(prev_point);
+    prev_point = &(*point);
+    if (!g_list_next(iter))
+      osm_gps_map_point_free(prev_point);
   }
 
   g_object_set(track, "editable", FALSE, (gchar *)0);

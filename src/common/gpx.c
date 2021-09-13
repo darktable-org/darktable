@@ -23,6 +23,7 @@
 #include <inttypes.h>
 
 #define EARTH_RADIUS 6378100.0 /* in meters */
+#define DT_MINIMUM_DISTANCE_FOR_GEODESIC 10000.0 /* in meters */
 
 /* GPX XML parser */
 typedef enum _gpx_parser_element_t
@@ -303,26 +304,25 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
         then, calculate the intermediate point
         */
         double lat, lon;
-        dt_gpx_geodesic_intermediate_point(lat1, lon1,
-                                  lat2, lon2,
-                                  delta,
-                                  TRUE,
-                                  f,
-                                  &lat, &lon
-                                );
+        if (d >= DT_MINIMUM_DISTANCE_FOR_GEODESIC)
+        {
+          dt_gpx_geodesic_intermediate_point(lat1, lon1,
+                                             lat2, lon2,
+                                             delta,
+                                             TRUE,
+                                             f,
+                                             &lat, &lon
+                                            );
+        }
+        else
+        {
+          /* short distance, no need for geodesic interpolation */
+          lon = tp->longitude + (tp_next->longitude - tp->longitude) * f;
+          lat = tp->latitude + (tp_next->latitude - tp->latitude) * f;
+        }
 
         geoloc->latitude = lat;
         geoloc->longitude = lon;
-        printf("%f %f\n", geoloc->latitude, geoloc->longitude);
-
-        /* the following lines would perform a linear interpolation,
-           which would be more fast for short distances
-           but speed should not be a problem here
-
-        geoloc->longitude = tp->longitude + (tp_next->longitude - tp->longitude) * f;
-        geoloc->latitude = tp->latitude + (tp_next->latitude - tp->latitude) * f;
-        */
-        printf("%f %f\n\n", tp->latitude + (tp_next->latitude - tp->latitude) * f, tp->longitude + (tp_next->longitude - tp->longitude) * f);
 
         /* make a simple linear interpolation on elevation */
         geoloc->elevation = tp->elevation + (tp_next->elevation - tp->elevation) * f;
