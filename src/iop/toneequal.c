@@ -573,6 +573,7 @@ static void invalidate_luminance_cache(dt_iop_module_t *const self)
   g->thumb_preview_hash = 0;
   g->ui_preview_hash = 0;
   dt_iop_gui_leave_critical_section(self);
+  dt_iop_refresh_preview(self);
 }
 
 
@@ -1725,36 +1726,33 @@ static void smoothing_callback(GtkWidget *slider, gpointer user_data)
 static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+
   if(darktable.gui->reset) return;
 
   dt_iop_request_focus(self);
 
-  if(!self->enabled)
-  {
-    // If module disabled, enable and do nothing
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-    return;
-  }
-
-  dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
-  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
-
-  if(p->exposure_boost != 0.0f)
+  if(p->exposure_boost != 0.0f || !self->enabled)
   {
     // Reset the exposure boost and do nothing
     p->exposure_boost = 0.0f;
     ++darktable.gui->reset;
     dt_bauhaus_slider_set_soft(g->exposure_boost, p->exposure_boost);
+    dt_bauhaus_widget_set_quad_active(quad, FALSE);
     --darktable.gui->reset;
 
     invalidate_luminance_cache(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-    dt_bauhaus_widget_set_quad_active(quad, FALSE);
     return;
   }
 
-  if(!g->luminance_valid || self->dev->pipe->processing)
+  if(!g->luminance_valid || self->dev->pipe->processing || !g->histogram_valid)
   {
+    ++darktable.gui->reset;
+    gboolean active = dt_bauhaus_widget_get_quad_active(quad);
+    dt_bauhaus_widget_set_quad_active(quad, !active);
+    --darktable.gui->reset;
     dt_control_log(_("wait for the preview to finish recomputing"));
     return;
   }
@@ -1770,7 +1768,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
   dt_iop_gui_leave_critical_section(self);
 
   update_histogram(self);
-  p->exposure_boost += target - g->histogram_average;
+  p->exposure_boost = target - g->histogram_average;
 
   // Update the GUI stuff
   ++darktable.gui->reset;
@@ -1787,36 +1785,33 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
 static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+
   if(darktable.gui->reset) return;
 
   dt_iop_request_focus(self);
 
-  if(!self->enabled)
-  {
-    // If module disabled, enable and do nothing
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-    return;
-  }
-
-  dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
-  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
-
-  if(p->contrast_boost != 0.0f)
+  if(p->contrast_boost != 0.0f || !self->enabled)
   {
     // Reset the contrast boost and do nothing
     p->contrast_boost = 0.0f;
     ++darktable.gui->reset;
     dt_bauhaus_slider_set_soft(g->contrast_boost, p->contrast_boost);
+    dt_bauhaus_widget_set_quad_active(quad, FALSE);
     --darktable.gui->reset;
 
     invalidate_luminance_cache(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-    dt_bauhaus_widget_set_quad_active(quad, FALSE);
     return;
   }
 
-  if(!g->luminance_valid || self->dev->pipe->processing)
+  if(!g->luminance_valid || self->dev->pipe->processing || !g->histogram_valid)
   {
+    ++darktable.gui->reset;
+    gboolean active = dt_bauhaus_widget_get_quad_active(quad);
+    dt_bauhaus_widget_set_quad_active(quad, !active);
+    --darktable.gui->reset;
     dt_control_log(_("wait for the preview to finish recomputing"));
     return;
   }
@@ -3087,6 +3082,8 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   if(g == NULL) return;
   dt_iop_request_focus(self);
+  dt_bauhaus_widget_set_quad_active(g->exposure_boost, FALSE);
+  dt_bauhaus_widget_set_quad_active(g->contrast_boost, FALSE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 
   // Redraw graph
