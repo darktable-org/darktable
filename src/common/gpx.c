@@ -289,7 +289,7 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
         const double f = (double)diff / (double)seg_diff; /* the fraction of the distance */
 
         if (
-          fabs(lat2 - lat1) < DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC ||
+          fabs(lat2 - lat1) < DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC &&
           fabs(lon2 - lon1) < DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC
         )
         {
