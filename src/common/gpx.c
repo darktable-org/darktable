@@ -184,10 +184,10 @@ void dt_gpx_destroy(struct dt_gpx_t *gpx)
   *d = *delta * EARTH_RADIUS;               /* distance on the surface in metres */
 }
 
-static void dt_gpx_geodesic_intermediate_point(double lat1, double lon1,
-                                               double lat2, double lon2,
-                                               double delta,
-                                               gboolean first_time,
+static void dt_gpx_geodesic_intermediate_point(const double lat1, const double lon1,
+                                               const double lat2, const double lon2,
+                                               const double delta,
+                                               const gboolean first_time,
                                                double f,
                                                double *lat, double *lon
                                               )
@@ -279,14 +279,14 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
         We assume that the maximum difference in longitude is less or equal 180º:
         since the bigger use case is that of an airplane, never an airplane flies more than 180º in longitude */
 
-        double lon1 = tp->longitude;
-        double lon2 = tp_next->longitude;
-        double lat1 = tp->latitude;
-        double lat2 = tp_next->latitude;
+        const double lat1 = tp->latitude;
+        const double lon1 = tp->longitude;
+        const double lat2 = tp_next->latitude;
+        const double lon2 = tp_next->longitude;
 
         double lat, lon;
 
-        const double f = (double)diff / (double)seg_diff; /* the fraction of the distance */
+        double f = (double)diff / (double)seg_diff; /* the fraction of the distance */
 
         if (
           fabs(lat2 - lat1) < DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC &&
