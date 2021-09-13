@@ -2197,7 +2197,6 @@ static void track_add_point(OsmGpsMapTrack *track, OsmGpsMapPoint *point, OsmGps
   float lat, lon, prev_lat, prev_lon;
   osm_gps_map_point_get_degrees(point, &lat, &lon);
   osm_gps_map_point_get_degrees(prev_point, &prev_lat, &prev_lon);
-  printf("%f, %f - %f %f\n", lat, lon, prev_lat, prev_lon);
   double d, delta;
   dt_gpx_geodesic_distance(lat, lon,
                   prev_lat, prev_lon,
@@ -2340,7 +2339,7 @@ static OsmGpsMapTrack *_view_map_add_track(const dt_view_t *view, GList *points)
   dt_map_t *lib = (dt_map_t *)view->data;
 
   OsmGpsMapTrack* track = osm_gps_map_track_new();
-  
+
   OsmGpsMapPoint* prev_point = osm_gps_map_point_new_degrees(0.0, 0.0);
   for(GList *iter = points; iter; iter = g_list_next(iter))
   {
