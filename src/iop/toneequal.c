@@ -182,7 +182,7 @@ typedef struct dt_iop_toneequalizer_params_t
   float smoothing; // $DEFAULT: 1.414213562 sqrtf(2.0f)
   float feathering; // $MIN: 0.01 $MAX: 10000.0 $DEFAULT: 1.0 $DESCRIPTION: "edges refinement/feathering"
   float quantization; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "mask quantization"
-  float contrast_boost; // $MIN: -16.0 $MAX: 16.0 $DEFAULT: 0.0 $DESCRIPTION: "mask contrast compensation"
+  float contrast_boost; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "mask contrast compensation"
   float exposure_boost; // $MIN: -16.0 $MAX: 16.0 $DEFAULT: 0.0 $DESCRIPTION: "mask exposure compensation"
   dt_iop_toneequalizer_filter_t details; // $DEFAULT: DT_TONEEQ_EIGF
   dt_iop_luminance_mask_method_t method; // $DEFAULT: DT_TONEEQ_NORM_2 $DESCRIPTION: "luminance estimator"
@@ -1348,67 +1348,67 @@ static inline void build_interpolation_matrix(float A[CHANNELS * PIXEL_CHAN],
 
 
 __DT_CLONE_TARGETS__
-static inline void compute_log_histogram(const float *const restrict luminance,
+static inline void compute_log_histogram_and_stats(const float *const restrict luminance,
                                           int histogram[UI_SAMPLES],
                                           const size_t num_elem,
-                                          int *max_histogram)
+                                          int *max_histogram,
+                                          float *first_decile, float *last_decile)
 {
   // (Re)init the histogram
   memset(histogram, 0, sizeof(int) * UI_SAMPLES);
+
+  // we first calculate an extended histogram for better accuracy
+  #define TEMP_SAMPLES 2 * UI_SAMPLES
+  int temp_hist[TEMP_SAMPLES];
+  memset(temp_hist, 0, sizeof(int) * TEMP_SAMPLES);
 
   // Split exposure in bins
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(simd:static) \
   dt_omp_firstprivate(luminance, num_elem) \
-  reduction(+:histogram[:UI_SAMPLES])
+  reduction(+:temp_hist[:TEMP_SAMPLES])
 #endif
   for(size_t k = 0; k < num_elem; k++)
   {
-    // the histogram shows bins between [-14; +2] EV remapped between [0 ; UI_SAMPLES[
-    const int index = CLAMP((int)(((log2f(luminance[k]) + 8.0f) / 8.0f) * (float)UI_SAMPLES), 0, UI_SAMPLES - 1);
-    histogram[index] += 1;
+    // extended histogram bins between [-8; +8] EV remapped between [0 ; 2 * UI_SAMPLES]
+    const int index = CLAMP((int)(((log2f(luminance[k]) + 8.0f) / 16.0f) * (float)TEMP_SAMPLES), 0, TEMP_SAMPLES - 1);
+    temp_hist[index] += 1;
   }
 
-  *max_histogram = 0;
-
-  for(int k = 0; k < UI_SAMPLES; k++)
-  {
-    // store the max numbers of elements in bins for later normalization
-    if(histogram[k] > *max_histogram)
-      *max_histogram = histogram[k];
-  }
-}
-
-
-static inline void histogram_deciles(const int histogram[UI_SAMPLES], size_t hist_bins, size_t num_elem,
-                              const float hist_span, const float hist_offset,
-                              float *first_decile, float *last_decile)
-{
-  // Browse an histogram of `hist_bins` bins containing a population of `num_elems` elements
-  // spanning from `hist_offset` to `hist_offset + hist_span`,
-  // looking for the position of the first and last deciles,
-  // and return their values scaled in the corresponding span
-
-  const int first = (int)((float)num_elem * 0.1f);
-  const int last = (int)((float)num_elem * 0.9f);
+  const int first = (int)((float)num_elem * 0.05f);
+  const int last = (int)((float)num_elem * 0.95f);
   int population = 0;
   int first_pos = 0;
   int last_pos = 0;
 
-  // scout the histogram bins looking for deciles
-  for(size_t k = 0; k < hist_bins; ++k)
+  // scout the extended histogram bins looking for deciles
+  // these would not be accurate with the regular histogram
+  for(size_t k = 0; k < TEMP_SAMPLES; ++k)
   {
     const size_t prev_population = population;
-    population += histogram[k];
+    population += temp_hist[k];
     if(prev_population < first && first <= population) first_pos = k;
     if(prev_population < last && last <= population) last_pos = k;
   }
 
-  // Convert bins positions to exposures
-  *first_decile = (hist_span * (((float)first_pos) / ((float)(hist_bins - 1)))) + hist_offset;
-  *last_decile = (hist_span * (((float)last_pos) / ((float)(hist_bins - 1)))) + hist_offset;
-}
+  // Convert decile positions to exposures
+  *first_decile = 16.0 * (float)first_pos / (float)(TEMP_SAMPLES - 1) - 8.0;
+  *last_decile = 16.0 * (float)last_pos / (float)(TEMP_SAMPLES - 1) - 8.0;
 
+  *max_histogram = 0;
+  // remap the extended histogram into the normal one
+  // bins between [-8; 0] EV remapped between [0 ; UI_SAMPLES]
+  for(size_t k = 0; k < TEMP_SAMPLES; ++k)
+  {
+    float EV = 16.0 * (float)k / (float)(TEMP_SAMPLES - 1) - 8.0;
+    int i = CLAMP((int)(((EV + 8.0f) / 8.0f) * (float)UI_SAMPLES), 0, UI_SAMPLES - 1);
+    histogram[i] += temp_hist[k];
+
+    // store the max numbers of elements in bins for later normalization
+    if(histogram[i] > *max_histogram)
+      *max_histogram = histogram[i];
+  }
+}
 
 static inline void update_histogram(struct dt_iop_module_t *const self)
 {
@@ -1419,9 +1419,8 @@ static inline void update_histogram(struct dt_iop_module_t *const self)
   if(!g->histogram_valid && g->luminance_valid)
   {
     const size_t num_elem = g->thumb_preview_buf_height * g->thumb_preview_buf_width;
-    compute_log_histogram(g->thumb_preview_buf, g->histogram, num_elem, &g->max_histogram);
-    histogram_deciles(g->histogram, UI_SAMPLES, num_elem, 8.0f, -8.0f,
-                      &g->histogram_first_decile, &g->histogram_last_decile);
+    compute_log_histogram_and_stats(g->thumb_preview_buf, g->histogram, num_elem, &g->max_histogram,
+                                      &g->histogram_first_decile, &g->histogram_last_decile);
     g->histogram_average = (g->histogram_first_decile + g->histogram_last_decile) / 2.0f;
     g->histogram_valid = TRUE;
   }
@@ -1544,7 +1543,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->feathering = 1.f / (p->feathering);
 
   // UI params are in log2 offsets (EV) : convert to linear factors
-  d->contrast_boost = exp2f(p->contrast_boost);
+  d->contrast_boost = p->contrast_boost;
   d->exposure_boost = exp2f(p->exposure_boost);
 
   /*
@@ -1828,12 +1827,11 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
 
   const float target = log2f(CONTRAST_FULCRUM);
   update_histogram(self);
-  const float span_left = fabsf(target - g->histogram_first_decile);
-  const float span_right = fabsf(g->histogram_last_decile - target);
-  const float origin = fmaxf(span_left, span_right);
 
   // Compute the correction
-  p->contrast_boost = (3.0f - origin);
+  const float c1 = CLAMPS((-1.0 - g->histogram_last_decile) / (g->histogram_last_decile - target), -1.0, 1.0);
+  const float c2 = CLAMPS((-7.0 - g->histogram_first_decile) / (g->histogram_first_decile - target), -1.0, 1.0);
+  p->contrast_boost = c1 < c2 ? c1 : c2;
 
   // Update the GUI stuff
   ++darktable.gui->reset;
@@ -3251,8 +3249,9 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->exposure_boost), "quad-pressed", G_CALLBACK(auto_adjust_exposure_boost), self);
 
   g->contrast_boost = dt_bauhaus_slider_from_params(self, "contrast_boost");
-  dt_bauhaus_slider_set_soft_range(g->contrast_boost, -4.0, 4.0);
-  dt_bauhaus_slider_set_format(g->contrast_boost, "%+.2f EV");
+  dt_bauhaus_slider_set_soft_range(g->contrast_boost, -0.5, 0.5);
+  dt_bauhaus_slider_set_factor(g->contrast_boost, 100.0f);
+  dt_bauhaus_slider_set_format(g->contrast_boost, "%+.2f %%");
   gtk_widget_set_tooltip_text(g->contrast_boost, _("use this to counter the averaging effect of the guided filter\n"
                                                    "and dilate the mask contrast around -4EV\n"
                                                    "this allows to spread the exposure histogram over more channels\n"
