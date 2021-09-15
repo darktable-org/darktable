@@ -2036,6 +2036,8 @@ void enter(dt_view_t *self)
   darktable.view_manager->proxy.map.redraw = _view_map_redraw;
   darktable.view_manager->proxy.map.display_selected = _view_map_display_selected;
 
+  darktable.view_manager->proxy.map.view = self;
+
   /* connect signal for filmstrip image activate */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
                             G_CALLBACK(_view_map_filmstrip_activate_callback), self);
