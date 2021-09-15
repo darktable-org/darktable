@@ -203,7 +203,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
     const gchar *name = gtk_entry_get_text(g->name);
     if(((g->old_id >= 0) && (strcmp(g->original_name, name) != 0)) || (g->old_id < 0))
     {
-      if(strcmp(_("new preset"), name) == 0 || !(name && *name))
+      if(name == NULL || *name == '\0' || strcmp(_("new preset"), name) == 0)
       {
         // show error dialog
         GtkWidget *dlg_changename
