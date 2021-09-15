@@ -1661,6 +1661,7 @@ static gboolean _view_map_drag_motion_callback(GtkWidget *widget, GdkDragContext
   osm_gps_map_convert_screen_to_geographic(lib->map, x, y, p);
   float lat, lon;
   osm_gps_map_point_get_degrees(p, &lat, &lon);
+  osm_gps_map_point_free(p);
   _toast_log_lat_lon(lat, lon);
   return FALSE;
 }
@@ -1800,6 +1801,7 @@ static gboolean _zoom_and_center(const gint x, const gint y, const int direction
   osm_gps_map_convert_screen_to_geographic(lib->map, nx, ny, pt);
   float nlat, nlon;
   osm_gps_map_point_get_degrees(pt, &nlat, &nlon);
+  osm_gps_map_point_free(pt);
   osm_gps_map_set_center_and_zoom(lib->map, nlat, nlon, zoom);
 
   return TRUE;
