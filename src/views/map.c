@@ -19,7 +19,7 @@
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "common/gpx.c"
+#include "common/gpx.h"
 #include "common/geo.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"

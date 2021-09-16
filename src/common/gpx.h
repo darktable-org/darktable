@@ -21,6 +21,12 @@
 #include <glib.h>
 #include "common/image.h"
 
+#define EARTH_RADIUS 6378100.0 /* in meters */
+#define DT_MINIMUM_DISTANCE_FOR_GEODESIC 10000.0 /* in meters */
+#define DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC 0.1
+/* DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC is in degrees, and is used for longitude and latitude
+   0.1 degress ~ 10 km on the earth surface */
+
 struct dt_gpx_t;
 
 typedef struct dt_gpx_track_point_t
@@ -54,6 +60,21 @@ GList *dt_gpx_get_trkseg(struct dt_gpx_t *gpx);
 
 // get the list of track points for a track segment
 GList *dt_gpx_get_trkpts(struct dt_gpx_t *gpx, const guint segid);
+
+
+void dt_gpx_geodesic_distance(double lat1, double lon1,
+                              double lat2, double lon2,
+                              double *d, double *delta
+                             );
+
+void dt_gpx_geodesic_intermediate_point(const double lat1, const double lon1,
+                                        const double lat2, const double lon2,
+                                        const double delta,
+                                        const gboolean first_time,
+                                        double f,
+                                        double *lat, double *lon
+                                       );
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
