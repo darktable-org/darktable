@@ -232,7 +232,7 @@ int dt_imageio_png_read_profile(const char *filename, uint8_t **out)
   if(png_get_valid(image.png_ptr, image.info_ptr, PNG_INFO_iCCP) != 0
      && png_get_iCCP(image.png_ptr, image.info_ptr, &name, &compression_type, &profile, &proflen) != 0)
   {
-    *out = (uint8_t *)malloc(proflen);
+    *out = (uint8_t *)g_malloc(proflen);
     memcpy(*out, profile, proflen);
   }
   else
