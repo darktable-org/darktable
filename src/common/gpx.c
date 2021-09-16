@@ -266,7 +266,7 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
     {
       GTimeSpan seg_diff = g_date_time_difference(tp_next->time, tp->time);
       GTimeSpan diff = g_date_time_difference(timestamp, tp->time);
-      if (seg_diff == 0)
+      if (seg_diff == 0 || diff == 0)
       {
         geoloc->longitude = tp->longitude;
         geoloc->latitude = tp->latitude;
@@ -329,7 +329,10 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
         geoloc->longitude = lon;
 
         /* make a simple linear interpolation on elevation */
-        geoloc->elevation = tp->elevation + (tp_next->elevation - tp->elevation) * f;
+        if (tp_next->elevation == NAN || tp->elevation == NAN)
+          geoloc->elevation = NAN;
+        else
+          geoloc->elevation = tp->elevation + (tp_next->elevation - tp->elevation) * f;
       }
       return TRUE;
     }
