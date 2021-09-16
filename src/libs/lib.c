@@ -1239,7 +1239,7 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
 {
   dt_lib_module_t *module = target;
 
-  if(move_size)
+  if(!isnan(move_size))
   {
     switch(element)
     {

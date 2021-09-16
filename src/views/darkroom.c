@@ -2052,7 +2052,7 @@ static gboolean _toggle_mask_visibility_callback(GtkAccelGroup *accel_group, GOb
 
 static float _action_process_skip_mouse(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
-  if(move_size)
+  if(!isnan(move_size))
   {
     switch(effect)
     {
@@ -2080,7 +2080,7 @@ static float _action_process_preview(gpointer target, dt_action_element_t elemen
 {
   dt_develop_t *lib = darktable.view_manager->proxy.darkroom.view->data;
 
-  if(move_size)
+  if(!isnan(move_size))
   {
     if(lib->full_preview)
     {
@@ -2147,7 +2147,7 @@ static float _action_process_move(gpointer target, dt_action_element_t element, 
 {
   dt_develop_t *dev = darktable.view_manager->proxy.darkroom.view->data;
 
-  if(move_size)
+  if(!isnan(move_size))
   {
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const int closeup = dt_control_get_dev_closeup();

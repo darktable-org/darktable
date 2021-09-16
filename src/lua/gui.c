@@ -21,6 +21,7 @@
 #include "common/selection.h"
 #include "control/control.h"
 #include "control/settings.h"
+#include "gui/accelerators.h"
 #include "lua/call.h"
 #include "lua/image.h"
 #include "lua/types.h"
@@ -100,6 +101,28 @@ static int current_view_cb(lua_State *L)
   }
   const dt_view_t *current_view = dt_view_manager_get_current_view(darktable.view_manager);
   dt_lua_module_entry_push(L, "view", current_view->module_name);
+  return 1;
+}
+
+static int action_cb(lua_State *L)
+{
+  const gchar *action = luaL_checkstring(L, 1);
+  int instance = luaL_checkinteger(L, 2);
+  const gchar *element = lua_type(L, 3) == LUA_TSTRING ? luaL_checkstring(L, 3) : NULL;
+  const gchar *effect = lua_type(L, 4) == LUA_TSTRING ? luaL_checkstring(L, 4) : NULL;
+
+  float move_size = NAN;
+
+  if(lua_type(L, 5) == LUA_TNUMBER ||
+     (lua_type(L, 5) == LUA_TSTRING && strlen(luaL_checkstring(L, 5)) > 0))
+  {
+    move_size = luaL_checknumber(L, 5);
+  }
+
+  float ret_val = dt_action_process(action, instance, element, effect, move_size);
+
+  lua_pushnumber(L, ret_val);
+
   return 1;
 }
 
@@ -315,15 +338,15 @@ static int lua_job_valid(lua_State *L)
 static void on_mouse_over_image_changed(gpointer instance, gpointer user_data)
 {
   int imgid = dt_control_get_mouse_over_id();
-  if(imgid != -1) 
+  if(imgid != -1)
   {
     dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
         0, NULL, NULL,
         LUA_ASYNC_TYPENAME, "char*", "mouse-over-image-changed",
         LUA_ASYNC_TYPENAME, "dt_lua_image_t", imgid,
         LUA_ASYNC_DONE);
-  } 
-  else 
+  }
+  else
   {
     dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
         0, NULL, NULL,
@@ -355,6 +378,9 @@ int dt_lua_init_gui(lua_State *L)
     lua_pushcfunction(L, current_view_cb);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "current_view");
+    lua_pushcfunction(L, action_cb);
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "action");
     lua_pushcfunction(L, panel_visible_cb);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "panel_visible");
