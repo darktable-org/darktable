@@ -31,7 +31,7 @@
   Creating the images global variable
  **********************************************************************/
 
-static int selection_cb(lua_State *L)
+static int _selection_cb(lua_State *L)
 {
   GList *image = dt_collection_get_selected(darktable.collection, -1);
   if(lua_gettop(L) > 0)
@@ -64,7 +64,7 @@ static int selection_cb(lua_State *L)
   return 1;
 }
 
-static int hovered_cb(lua_State *L)
+static int _hovered_cb(lua_State *L)
 {
   int32_t mouse_over_id = dt_control_get_mouse_over_id();
   if(mouse_over_id == -1)
@@ -78,7 +78,7 @@ static int hovered_cb(lua_State *L)
   return 1;
 }
 
-static int act_on_cb(lua_State *L)
+static int _act_on_cb(lua_State *L)
 {
   lua_newtable(L);
   int table_index = 1;
@@ -91,7 +91,7 @@ static int act_on_cb(lua_State *L)
   return 1;
 }
 
-static int current_view_cb(lua_State *L)
+static int _current_view_cb(lua_State *L)
 {
   if(lua_gettop(L) > 0)
   {
@@ -104,7 +104,7 @@ static int current_view_cb(lua_State *L)
   return 1;
 }
 
-static int action_cb(lua_State *L)
+static int _action_cb(lua_State *L)
 {
   const gchar *action = luaL_checkstring(L, 1);
   int instance = luaL_checkinteger(L, 2);
@@ -126,7 +126,7 @@ static int action_cb(lua_State *L)
   return 1;
 }
 
-static int panel_visible_cb(lua_State *L)
+static int _panel_visible_cb(lua_State *L)
 {
   dt_ui_panel_t p;
 
@@ -144,7 +144,7 @@ static int panel_visible_cb(lua_State *L)
   }
 }
 
-static int panel_hide_cb(lua_State *L)
+static int _panel_hide_cb(lua_State *L)
 {
   dt_ui_panel_t p;
   if(lua_gettop(L) > 0)
@@ -159,7 +159,7 @@ static int panel_hide_cb(lua_State *L)
   }
 }
 
-static int panel_show_cb(lua_State *L)
+static int _panel_show_cb(lua_State *L)
 {
   dt_ui_panel_t p;
   if(lua_gettop(L) > 0)
@@ -174,20 +174,20 @@ static int panel_show_cb(lua_State *L)
   }
 }
 
-static int panel_hide_all_cb(lua_State *L)
+static int _panel_hide_all_cb(lua_State *L)
 {
   for(int k = 0; k < DT_UI_PANEL_SIZE; k++) dt_ui_panel_show(darktable.gui->ui, k, FALSE, TRUE);
   // code goes here
   return 0;
 }
 
-static int panel_show_all_cb(lua_State *L)
+static int _panel_show_all_cb(lua_State *L)
 {
   for(int k = 0; k < DT_UI_PANEL_SIZE; k++) dt_ui_panel_show(darktable.gui->ui, k, TRUE, TRUE);
   return 0;
 }
 
-static int panel_get_size_cb(lua_State *L)
+static int _panel_get_size_cb(lua_State *L)
 {
   dt_ui_panel_t p;
   int size;
@@ -212,7 +212,7 @@ static int panel_get_size_cb(lua_State *L)
   }
 }
 
-static int panel_set_size_cb(lua_State *L)
+static int _panel_set_size_cb(lua_State *L)
 {
   dt_ui_panel_t p;
   int size;
@@ -239,7 +239,7 @@ static int panel_set_size_cb(lua_State *L)
 
 typedef dt_progress_t *dt_lua_backgroundjob_t;
 
-static int job_canceled(lua_State *L)
+static int _job_canceled(lua_State *L)
 {
   lua_getiuservalue(L, 1, 1);
   lua_getfield(L, -1, "cancel_callback");
@@ -249,15 +249,15 @@ static int job_canceled(lua_State *L)
   return 0;
 }
 
-static void lua_job_cancelled(dt_progress_t *progress, gpointer user_data)
+static void _lua_job_cancelled(dt_progress_t *progress, gpointer user_data)
 {
-  dt_lua_async_call_alien(job_canceled,
+  dt_lua_async_call_alien(_job_canceled,
       0, NULL, NULL,
       LUA_ASYNC_TYPENAME, "dt_lua_backgroundjob_t", progress,
       LUA_ASYNC_DONE);
 }
 
-static int lua_create_job(lua_State *L)
+static int _lua_create_job(lua_State *L)
 {
   const char *message = luaL_checkstring(L, 1);
   gboolean has_progress_bar = lua_toboolean(L, 2);
@@ -270,7 +270,7 @@ static int lua_create_job(lua_State *L)
   dt_progress_t *progress = dt_control_progress_create(darktable.control, has_progress_bar, message);
   if(cancellable)
   {
-    dt_control_progress_make_cancellable(darktable.control, progress, lua_job_cancelled, progress);
+    dt_control_progress_make_cancellable(darktable.control, progress, _lua_job_cancelled, progress);
   }
   luaA_push(L, dt_lua_backgroundjob_t, &progress);
   if(cancellable)
@@ -283,7 +283,7 @@ static int lua_create_job(lua_State *L)
   return 1;
 }
 
-static int lua_job_progress(lua_State *L)
+static int _lua_job_progress(lua_State *L)
 {
   dt_progress_t *progress;
   luaA_to(L, dt_lua_backgroundjob_t, &progress, 1);
@@ -309,7 +309,7 @@ static int lua_job_progress(lua_State *L)
   }
 }
 
-static int lua_job_valid(lua_State *L)
+static int _lua_job_valid(lua_State *L)
 {
   dt_progress_t *progress;
   luaA_to(L, dt_lua_backgroundjob_t, &progress, 1);
@@ -335,7 +335,7 @@ static int lua_job_valid(lua_State *L)
   }
 }
 
-static void on_mouse_over_image_changed(gpointer instance, gpointer user_data)
+static void _on_mouse_over_image_changed(gpointer instance, gpointer user_data)
 {
   int imgid = dt_control_get_mouse_over_id();
   if(imgid != -1)
@@ -367,42 +367,42 @@ int dt_lua_init_gui(lua_State *L)
     lua_setfield(L, -2, "gui");
     lua_pop(L, 1);
 
-    lua_pushcfunction(L, selection_cb);
+    lua_pushcfunction(L, _selection_cb);
     dt_lua_gtk_wrap(L);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "selection");
-    lua_pushcfunction(L, hovered_cb);
+    lua_pushcfunction(L, _hovered_cb);
     dt_lua_type_register_const_type(L, type_id, "hovered");
-    lua_pushcfunction(L, act_on_cb);
+    lua_pushcfunction(L, _act_on_cb);
     dt_lua_type_register_const_type(L, type_id, "action_images");
-    lua_pushcfunction(L, current_view_cb);
+    lua_pushcfunction(L, _current_view_cb);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "current_view");
-    lua_pushcfunction(L, action_cb);
+    lua_pushcfunction(L, _action_cb);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "action");
-    lua_pushcfunction(L, panel_visible_cb);
+    lua_pushcfunction(L, _panel_visible_cb);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "panel_visible");
-    lua_pushcfunction(L, panel_hide_cb);
+    lua_pushcfunction(L, _panel_hide_cb);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "panel_hide");
-    lua_pushcfunction(L, panel_show_cb);
+    lua_pushcfunction(L, _panel_show_cb);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "panel_show");
-    lua_pushcfunction(L, panel_hide_all_cb);
+    lua_pushcfunction(L, _panel_hide_all_cb);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "panel_hide_all");
-    lua_pushcfunction(L, panel_show_all_cb);
+    lua_pushcfunction(L, _panel_show_all_cb);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "panel_show_all");
-    lua_pushcfunction(L, panel_get_size_cb);
+    lua_pushcfunction(L, _panel_get_size_cb);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "panel_get_size");
-    lua_pushcfunction(L, panel_set_size_cb);
+    lua_pushcfunction(L, _panel_set_size_cb);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "panel_set_size");
-    lua_pushcfunction(L, lua_create_job);
+    lua_pushcfunction(L, _lua_create_job);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "create_job");
     dt_lua_module_push(L, "lib");
@@ -425,9 +425,9 @@ int dt_lua_init_gui(lua_State *L)
 
     // create a type describing a job object
     int job_type = dt_lua_init_gpointer_type(L, dt_lua_backgroundjob_t);
-    lua_pushcfunction(L, lua_job_progress);
+    lua_pushcfunction(L, _lua_job_progress);
     dt_lua_type_register_type(L, job_type, "percent");
-    lua_pushcfunction(L, lua_job_valid);
+    lua_pushcfunction(L, _lua_job_valid);
     dt_lua_type_register_type(L, job_type, "valid");
 
     // allow to react to highlighting an image
@@ -435,7 +435,7 @@ int dt_lua_init_gui(lua_State *L)
     lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
     lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
     dt_lua_event_add(L, "mouse-over-image-changed");
-    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, G_CALLBACK(on_mouse_over_image_changed), NULL);
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, G_CALLBACK(_on_mouse_over_image_changed), NULL);
   }
   return 0;
 }
