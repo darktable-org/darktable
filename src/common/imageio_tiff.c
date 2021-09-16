@@ -503,14 +503,17 @@ int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
     cmsSaveProfileToMem(profile, 0, &profile_len);
     if(profile_len > 0)
     {
-      *out = (uint8_t *)malloc(profile_len);
+      *out = (uint8_t *)g_malloc(profile_len);
       cmsSaveProfileToMem(profile, *out, &profile_len);
     }
   }
   else if(TIFFGetField(tiff, TIFFTAG_ICCPROFILE, &profile_len, &profile))
   {
-    *out = (uint8_t *)malloc(profile_len);
-    memcpy(*out, profile, profile_len);
+    if(profile_len > 0)
+    {
+      *out = (uint8_t *)g_malloc(profile_len);
+      memcpy(*out, profile, profile_len);
+    }
   }
   else
     profile_len = 0;

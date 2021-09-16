@@ -216,19 +216,12 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
   if (avif->icc.size > 0) {
     avifRWData icc = avif->icc;
 
-    if (icc.data == NULL || icc.size == 0) {
+    if (icc.data == NULL) {
       ret = DT_IMAGEIO_FILE_CORRUPTED;
       goto out;
     }
 
-    uint8_t *data = (uint8_t *)g_malloc0(sizeof(uint8_t) * icc.size);
-    if (data == NULL) {
-      dt_print(DT_DEBUG_IMAGEIO,
-               "Failed to allocate ICC buffer for AVIF image [%s]\n",
-               filename);
-      ret = DT_IMAGEIO_FILE_CORRUPTED;
-      goto out;
-    }
+    uint8_t *data = (uint8_t *)g_malloc(icc.size);
     memcpy(data, icc.data, icc.size);
 
     cp->icc_profile_size = icc.size;
