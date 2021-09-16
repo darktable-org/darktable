@@ -2926,7 +2926,7 @@ static gboolean notebook_motion_notify_callback(GtkWidget *widget, GdkEventMotio
 static float _action_process_tabs(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
   GtkNotebook *notebook = GTK_NOTEBOOK(target);
-  if(move_size)
+  if(!isnan(move_size))
   {
     switch(effect)
     {
@@ -2947,7 +2947,7 @@ static float _action_process_tabs(gpointer target, dt_action_element_t element, 
 
   const int c = gtk_notebook_get_current_page(notebook);
 
-  if(move_size)
+  if(!isnan(move_size))
     dt_action_widget_toast(NULL, GTK_WIDGET(notebook),
                            gtk_notebook_get_tab_label_text(notebook, gtk_notebook_get_nth_page(notebook, c)));
 
