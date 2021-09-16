@@ -249,7 +249,7 @@ static float _action_process_color_label(gpointer target, dt_action_element_t el
 {
   float return_value = NAN;
 
-  if(move_size)
+  if(!isnan(move_size))
   {
     GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(FALSE, TRUE, FALSE));
     dt_colorlabels_toggle_label_on_list(imgs, element ? element - 1 : 5, TRUE);

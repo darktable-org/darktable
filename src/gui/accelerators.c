@@ -106,6 +106,7 @@ const gchar *dt_action_effect_value[]
       N_("reset"),
       N_("top"),
       N_("bottom"),
+      N_("set"),
       NULL };
 const gchar *dt_action_effect_selection[]
   = { N_("popup"),
@@ -164,7 +165,7 @@ static float _action_process_toggle(gpointer target, dt_action_element_t element
 {
   float value = gtk_toggle_button_get_active(target);
 
-  if(move_size &&
+  if(!isnan(move_size) &&
      !((effect == DT_ACTION_EFFECT_ON      ||
         effect == DT_ACTION_EFFECT_ON_CTRL ||
         effect == DT_ACTION_EFFECT_ON_RIGHT) && value) &&
@@ -203,7 +204,7 @@ static float _action_process_button(gpointer target, dt_action_element_t element
 {
   if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
 
-  if(move_size && gtk_widget_is_sensitive(target))
+  if(!isnan(move_size) && gtk_widget_is_sensitive(target))
   {
     if(effect != DT_ACTION_EFFECT_ACTIVATE || !gtk_widget_activate(GTK_WIDGET(target)))
     {
@@ -708,11 +709,11 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
   return FALSE;
 }
 
-void find_views(dt_shortcut_t *s)
+static dt_view_type_flags_t _find_views(dt_action_t *action)
 {
-  s->views = 0;
+  dt_view_type_flags_t vws = 0;
 
-  dt_action_t *owner = s->action;
+  dt_action_t *owner = action;
   while(owner && owner->type >= DT_ACTION_TYPE_SECTION)
     owner = owner->owner;
 
@@ -721,13 +722,13 @@ void find_views(dt_shortcut_t *s)
   switch(owner->type)
   {
   case DT_ACTION_TYPE_IOP:
-    s->views = DT_VIEW_DARKROOM;
+    vws = DT_VIEW_DARKROOM;
     break;
   case DT_ACTION_TYPE_VIEW:
     {
       dt_view_t *view = (dt_view_t *)owner;
 
-      s->views = view->view(view);
+      vws = view->view(view);
     }
     break;
   case DT_ACTION_TYPE_LIB:
@@ -738,48 +739,50 @@ void find_views(dt_shortcut_t *s)
       while (*views)
       {
         if     (strcmp(*views, "lighttable") == 0)
-          s->views |= DT_VIEW_LIGHTTABLE;
+          vws |= DT_VIEW_LIGHTTABLE;
         else if(strcmp(*views, "darkroom") == 0)
-          s->views |= DT_VIEW_DARKROOM;
+          vws |= DT_VIEW_DARKROOM;
         else if(strcmp(*views, "print") == 0)
-          s->views |= DT_VIEW_PRINT;
+          vws |= DT_VIEW_PRINT;
         else if(strcmp(*views, "slideshow") == 0)
-          s->views |= DT_VIEW_SLIDESHOW;
+          vws |= DT_VIEW_SLIDESHOW;
         else if(strcmp(*views, "map") == 0)
-          s->views |= DT_VIEW_MAP;
+          vws |= DT_VIEW_MAP;
         else if(strcmp(*views, "tethering") == 0)
-          s->views |= DT_VIEW_TETHERING;
+          vws |= DT_VIEW_TETHERING;
         else if(strcmp(*views, "*") == 0)
-          s->views |= DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING |
-                      DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
+          vws |= DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING |
+                 DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
         views++;
       }
     }
     break;
   case DT_ACTION_TYPE_CATEGORY:
     if(owner == &darktable.control->actions_blend)
-      s->views = DT_VIEW_DARKROOM;
+      vws = DT_VIEW_DARKROOM;
     else if(owner == &darktable.control->actions_fallbacks)
-      s->views = 0;
+      vws = 0;
     else if(owner == &darktable.control->actions_lua)
-      s->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING |
-                 DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
+      vws = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING |
+            DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
     else if(owner == &darktable.control->actions_thumb)
     {
-      s->views = DT_VIEW_DARKROOM | DT_VIEW_MAP | DT_VIEW_TETHERING | DT_VIEW_PRINT;
-      if(!strcmp(s->action->id,"rating") || !strcmp(s->action->id,"color label"))
-        s->views |= DT_VIEW_LIGHTTABLE; // lighttable has copy/paste history shortcuts in separate lib
+      vws = DT_VIEW_DARKROOM | DT_VIEW_MAP | DT_VIEW_TETHERING | DT_VIEW_PRINT;
+      if(!strcmp(action->id,"rating") || !strcmp(action->id,"color label"))
+        vws |= DT_VIEW_LIGHTTABLE; // lighttable has copy/paste history shortcuts in separate lib
     }
     else
       fprintf(stderr, "[find_views] views for category '%s' unknown\n", owner->id);
     break;
   case DT_ACTION_TYPE_GLOBAL:
-    s->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING |
-               DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
+    vws = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING |
+          DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
     break;
   default:
     break;
   }
+
+  return vws;
 }
 
 static GtkTreeStore *shortcuts_store = NULL;
@@ -879,7 +882,7 @@ static gboolean insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
 {
   dt_shortcut_t *s = calloc(sizeof(dt_shortcut_t), 1);
   *s = *shortcut;
-  find_views(s);
+  s->views = _find_views(s->action);
   dt_view_type_flags_t real_views = s->views;
 
   const dt_view_t *vw = NULL;
@@ -1101,6 +1104,7 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
                  || s->effect == DT_ACTION_EFFECT_DEFAULT_KEY
                  || s->effect == DT_ACTION_EFFECT_DEFAULT_UP
                  || s->effect == DT_ACTION_EFFECT_DEFAULT_DOWN
+                 || s->effect == DT_ACTION_EFFECT_SET
                  || (!s->effect && s->action->type == DT_ACTION_TYPE_FALLBACK))))
       {
         field_text = g_strdup_printf("%.3f", s->speed);
@@ -2376,7 +2380,7 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
           }
         }
 
-        // find action and also views along the way
+        // find action
         gchar **path = g_strsplit(token, "/", 0);
         s.action = dt_action_locate(NULL, path, FALSE);
         g_strfreev(path);
@@ -2714,130 +2718,152 @@ static gboolean _shortcut_match(dt_shortcut_t *f)
   return matched;
 }
 
-static float _process_mapping(float move_size)
+
+static float _process_action(dt_action_t *action, int instance,
+                             dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
   float return_value = NAN;
 
+  dt_action_t *owner = action;
+  while(owner && owner->type >= DT_ACTION_TYPE_SECTION) owner = owner->owner;
+
+  gpointer action_target = action->type == DT_ACTION_TYPE_LIB ? action : action->target;
+
+  if(owner && owner->type == DT_ACTION_TYPE_IOP)
+  {
+    // find module instance
+    dt_iop_module_so_t *module = (dt_iop_module_so_t *)owner;
+
+    if(instance)
+    {
+      int current_instance = abs(instance);
+
+      dt_iop_module_t *mod = NULL;
+
+      for(GList *iop_mods = instance >= 0
+                          ? darktable.develop->iop
+                          : g_list_last(darktable.develop->iop);
+          iop_mods;
+          iop_mods = instance >= 0
+                  ? g_list_next(iop_mods)
+                  : g_list_previous(iop_mods))
+      {
+        mod = (dt_iop_module_t *)iop_mods->data;
+
+        if(mod->so == module
+            && mod->iop_order != INT_MAX
+            && !--current_instance)
+          break;
+      }
+
+      // find module instance widget
+      if(mod && action->type >= DT_ACTION_TYPE_PER_INSTANCE)
+      {
+        for(GSList *w = mod->widget_list; w; w = w->next)
+        {
+          dt_action_target_t *referral = w->data;
+          if(referral->action == action)
+          {
+            action_target = referral->target;
+            break;
+          }
+        }
+      }
+      else
+        action_target = mod;
+    }
+    else if(action->type == DT_ACTION_TYPE_IOP
+            || action->type == DT_ACTION_TYPE_PRESET)
+    {
+      action_target = dt_iop_get_module_preferred_instance((dt_iop_module_so_t *)owner);
+    }
+  }
+
+  if(action->type == DT_ACTION_TYPE_CLOSURE && action->target && !isnan(move_size))
+  {
+    typedef gboolean (*accel_callback)(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                       guint keyval, GdkModifierType modifier, gpointer p);
+    ((accel_callback)((GCClosure*)action_target)->callback)(NULL, NULL, _sc.key, _sc.mods,
+                                                            ((GClosure*)action_target)->data);
+  }
+  else if(action->type == DT_ACTION_TYPE_PRESET && owner && !isnan(move_size))
+  {
+    if(owner->type == DT_ACTION_TYPE_LIB)
+    {
+      dt_lib_module_t *lib = (dt_lib_module_t *)owner;
+      dt_lib_presets_apply(action->label, lib->plugin_name, lib->version());
+    }
+    else if(owner->type == DT_ACTION_TYPE_IOP)
+    {
+      gchar *text = g_strdup_printf("\napplying preset '%s'", action->label);
+      dt_action_widget_toast(action_target, NULL, text);
+      g_free(text);
+
+      dt_gui_presets_apply_preset(action->label, action_target);
+    }
+    else
+      fprintf(stderr, "[process_action] preset '%s' has unsupported type\n", action->label);
+  }
+  else
+  {
+    const dt_action_def_t *definition = _action_find_definition(action);
+
+    if(definition && definition->process
+        && (action->type < DT_ACTION_TYPE_WIDGET
+            || definition->no_widget
+            || !_widget_invisible(action_target)))
+      return_value = definition->process(action_target, element, effect, move_size);
+    else if(!isnan(move_size))
+      dt_action_widget_toast(action, action_target, "not active");
+  }
+
+  return return_value;
+}
+
+static void ungrab_grab_widget()
+{
+  gdk_seat_ungrab(gdk_display_get_default_seat(gdk_display_get_default()));
+
+  g_slist_free_full(pressed_keys, g_free);
+  pressed_keys = NULL;
+
+  if(grab_widget)
+  {
+    gtk_widget_set_sensitive(grab_widget, TRUE);
+    gtk_widget_set_tooltip_text(grab_widget, NULL);
+    g_signal_handlers_disconnect_by_func(gtk_widget_get_toplevel(grab_widget), G_CALLBACK(dt_shortcut_dispatcher), NULL);
+    grab_widget = NULL;
+  }
+}
+
+static float _process_shortcut(float move_size)
+{
   dt_shortcut_t fsc = _sc;
   fsc.action = NULL;
   fsc.element  = 0;
+
+  static int consecutive_unmatched = 0;
+
   if(_shortcut_match(&fsc))
   {
-    dt_action_t *owner = fsc.action;
-    while(owner && owner->type >= DT_ACTION_TYPE_SECTION) owner = owner->owner;
+    consecutive_unmatched = 0;
 
-    gpointer action_target = fsc.action->type == DT_ACTION_TYPE_LIB
-                           ? fsc.action
-                           : fsc.action->target;
+    move_size *= fsc.speed;
 
-    if(owner && owner->type == DT_ACTION_TYPE_IOP)
+    if(fsc.effect == DT_ACTION_EFFECT_DEFAULT_MOVE)
     {
-      // find module instance
-      dt_iop_module_so_t *module = (dt_iop_module_so_t *)owner;
-
-      if(fsc.instance)
+      if(move_size < .0f)
       {
-        int current_instance = abs(fsc.instance);
-
-        dt_iop_module_t *mod = NULL;
-
-        for(GList *iop_mods = fsc.instance >= 0
-                            ? darktable.develop->iop
-                            : g_list_last(darktable.develop->iop);
-            iop_mods;
-            iop_mods = fsc.instance >= 0
-                    ? g_list_next(iop_mods)
-                    : g_list_previous(iop_mods))
-        {
-          mod = (dt_iop_module_t *)iop_mods->data;
-
-          if(mod->so == module
-             && mod->iop_order != INT_MAX
-             && !--current_instance)
-            break;
-        }
-
-        // find module instance widget
-        if(mod && fsc.action->type >= DT_ACTION_TYPE_PER_INSTANCE)
-        {
-          for(GSList *w = mod->widget_list; w; w = w->next)
-          {
-            dt_action_target_t *referral = w->data;
-            if(referral->action == fsc.action)
-            {
-              action_target = referral->target;
-              break;
-            }
-          }
-        }
-        else
-          action_target = mod;
-      }
-      else if(fsc.action->type == DT_ACTION_TYPE_IOP
-              || fsc.action->type == DT_ACTION_TYPE_PRESET)
-      {
-        action_target = dt_iop_get_module_preferred_instance((dt_iop_module_so_t *)owner);
-      }
-    }
-
-    if(fsc.action->type == DT_ACTION_TYPE_CLOSURE
-       && fsc.action->target && move_size)
-    {
-      typedef gboolean (*accel_callback)(GtkAccelGroup *accel_group, GObject *acceleratable,
-                                        guint keyval, GdkModifierType modifier, gpointer p);
-      ((accel_callback)((GCClosure*)action_target)->callback)(NULL, NULL, _sc.key, _sc.mods,
-                                                       ((GClosure*)action_target)->data);
-    }
-    else if(fsc.action->type == DT_ACTION_TYPE_PRESET
-            && owner
-            && move_size)
-    {
-      if(owner->type == DT_ACTION_TYPE_LIB)
-      {
-        dt_lib_module_t *lib = (dt_lib_module_t *)owner;
-        dt_lib_presets_apply(fsc.action->label, lib->plugin_name, lib->version());
-      }
-      else if(owner->type == DT_ACTION_TYPE_IOP)
-      {
-        gchar *text = g_strdup_printf("\napplying preset '%s'", fsc.action->label);
-        dt_action_widget_toast(action_target, NULL, text);
-        g_free(text);
-
-        dt_gui_presets_apply_preset(fsc.action->label, action_target);
+        fsc.effect = DT_ACTION_EFFECT_DEFAULT_DOWN;
+        move_size *= -1;
       }
       else
-        fprintf(stderr, "[process_mapping] preset '%s' has unsupported type\n", fsc.action->label);
+        fsc.effect = DT_ACTION_EFFECT_DEFAULT_UP;
     }
-    else
-    {
-      const dt_action_def_t *definition = _action_find_definition(fsc.action);
 
-      if(definition && definition->process
-         && (fsc.action->type < DT_ACTION_TYPE_WIDGET
-             || definition->no_widget
-             || !_widget_invisible(action_target)))
-      {
-        move_size *= fsc.speed;
-
-        dt_action_effect_t effect = fsc.effect;
-        if(effect == DT_ACTION_EFFECT_DEFAULT_MOVE)
-        {
-          if(move_size >= .0f)
-            effect = DT_ACTION_EFFECT_DEFAULT_UP;
-          else
-          {
-            effect = DT_ACTION_EFFECT_DEFAULT_DOWN;
-            move_size *= -1;
-          }
-        }
-
-        return_value = definition->process(action_target, fsc.element, effect, move_size);
-      }
-      else if(move_size)
-        dt_action_widget_toast(fsc.action, action_target, "not active");
-    }
+    return _process_action(fsc.action, fsc.instance, fsc.element, fsc.effect, move_size);
   }
-  else if(move_size)
+  else if(!isnan(move_size))
   {
     if(fsc.action)
     {
@@ -2848,9 +2874,72 @@ static float _process_mapping(float move_size)
     }
     else
       dt_toast_log(_("%s not assigned"), _shortcut_description(&_sc, TRUE));
+
+    if(++consecutive_unmatched >= 3)
+    {
+      ungrab_grab_widget();
+      _sc = (dt_shortcut_t) { 0 };
+      consecutive_unmatched = 0;
+    }
   }
 
-  return return_value;
+  return NAN;
+}
+
+float dt_action_process(const gchar *action, int instance, const gchar *element, const gchar *effect, float move_size)
+{
+  gchar **path = g_strsplit(action, "/", 0);
+  dt_action_t *ac = dt_action_locate(NULL, path, FALSE);
+  g_strfreev(path);
+
+  if(!ac)
+  {
+    fprintf(stderr, "[dt_action_process] action path '%s' not found\n", action);
+    return NAN;;
+  }
+
+  dt_view_type_flags_t vws = _find_views(ac);
+  if(!(vws & darktable.view_manager->current_view->view(darktable.view_manager->current_view)))
+  {
+    fprintf(stderr, "[dt_action_process] action '%s' not valid for current view\n", action);
+    return NAN;;
+  }
+
+  dt_action_element_t el = DT_ACTION_ELEMENT_DEFAULT;
+  dt_action_effect_t ef = DT_ACTION_EFFECT_DEFAULT_KEY;
+  if((element && *element) || (effect && *effect))
+  {
+    const dt_action_element_def_t *elements = _action_find_elements(ac);
+    if(elements)
+    {
+      if(element && *element)
+      {
+        while(elements[el].name && strcmp(elements[el].name, element)) el++;
+
+        if(!elements[el].name)
+        {
+          fprintf(stderr, "[dt_action_process] element '%s' not valid for action '%s'\n", element, action);
+          return NAN;;
+        }
+      }
+
+      const gchar **effects = elements[el].effects;
+      if(effect && *effect)
+      {
+        while(effects[ef] && strcmp(effects[ef], effect)) ef++;
+
+        if(!effects[ef])
+        {
+          fprintf(stderr, "[dt_action_process] effect '%s' not valid for action '%s'\n", effect, action);
+          return NAN;;
+        }
+      }
+
+      //FIXME add combobox direct item: effects after #9894
+    }
+  }
+
+  return _process_action(ac, instance, el, ef, move_size);
 }
 
 gint cmp_key(const gconstpointer a, const gconstpointer b)
@@ -2869,22 +2958,6 @@ static inline void _cancel_delayed_release(void)
 
     _sc.button = _pressed_button;
     _sc.click = 0;
-  }
-}
-
-static void ungrab_grab_widget()
-{
-  gdk_seat_ungrab(gdk_display_get_default_seat(gdk_display_get_default()));
-
-  g_slist_free_full(pressed_keys, g_free);
-  pressed_keys = NULL;
-
-  if(grab_widget)
-  {
-    gtk_widget_set_sensitive(grab_widget, TRUE);
-    gtk_widget_set_tooltip_text(grab_widget, NULL);
-    g_signal_handlers_disconnect_by_func(gtk_widget_get_toplevel(grab_widget), G_CALLBACK(dt_shortcut_dispatcher), NULL);
-    grab_widget = NULL;
   }
 }
 
@@ -2914,8 +2987,8 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
   if(id) _sc.mods = _key_modifiers_clean(dt_key_modifier_state());
 
   float return_value = 0;
-  if(!size)
-    return_value = _process_mapping(size);
+  if(isnan(size))
+    return_value = _process_shortcut(size);
   else
   {
     _cancel_delayed_release();
@@ -2959,7 +3032,7 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
     else
     {
       if(!pressed_keys)
-        return_value = _process_mapping(size);
+        return_value = _process_shortcut(size);
       else
       {
         // pressed_keys can be emptied if losing grab during processing
@@ -2969,7 +3042,7 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
           _sc.key_device = device_key->key_device;
           _sc.key = device_key->key;
 
-          return_value = _process_mapping(size);
+          return_value = _process_shortcut(size);
         }
       }
     }
@@ -3230,7 +3303,7 @@ gboolean dt_shortcut_key_active(dt_input_device_t id, guint key)
       const dt_action_def_t *definition = _action_find_definition(s->action);
       if(definition && definition->process)
       {
-        float value = definition->process(s->action->target, s->element, s->effect, 0);
+        float value = definition->process(s->action->target, s->element, s->effect, NAN);
         return fmodf(value, 1) <= DT_VALUE_PATTERN_ACTIVE || fmodf(value, 2) > .5;
       }
     }
