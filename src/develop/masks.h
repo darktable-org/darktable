@@ -429,12 +429,16 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
                                          const float initial_ypos, const float xpos, const float ypos, float *px,
                                          float *py, const int adding);
 
-/** luminance mask support */
+/** detail mask support */
 void dt_masks_extend_border(float *mask, const int width, const int height, const int border);
+void dt_masks_blur_9x9_coeff(float *coeffs, const float sigma);
 void dt_masks_blur_9x9(float *const src, float *const out, const int width, const int height, const float sigma);
 void dt_masks_calc_rawdetail_mask(float *const src, float *const out, float *const tmp, const int width,
                                   const int height, const dt_aligned_pixel_t wb);
 void dt_masks_calc_detail_mask(float *const src, float *const out, float *const tmp, const int width, const int height, const float threshold, const gboolean detail);
+
+void dt_masks_blur_approx_weighed(float *const src, float *const out, float *const weight, const int width, const int height);
+int dt_masks_blur_fast(float *const src, float *const out, const int width, const int height, const float sigma);
 
 /** return the list of possible mouse actions */
 GSList *dt_masks_mouse_actions(dt_masks_form_t *form);
