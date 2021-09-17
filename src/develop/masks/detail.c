@@ -329,6 +329,55 @@ void _masks_blur_13x13_coeff(float *c, const float sigma)
   blurmat[17] * (src[i - w1] + src[i - 1] + src[i + 1] + src[i + w1]) + \
   blurmat[18] * src[i] )
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(src, out, weight : 64)
+#endif
+void dt_masks_blur_approx_weighed(float *const restrict src, float *const restrict out, float *const restrict weight, const int width, const int height)
+{
+  #define maxmat 50
+  // We precalculate the kernel coeffs for all sigmas and will later choose the appropriate kernel & algo for every location in the mask.
+  // sigmas are clipped to be below 5.0
+  float coeffs[maxmat][20];
+
+  for(int i = 1; i < 9; i++)
+    _masks_blur_5x5_coeff(coeffs[i-1], 0.1f * (float) (i));  
+  for(int i = 9; i < 16; i++)
+    dt_masks_blur_9x9_coeff(coeffs[i-1], 0.1f * (float) (i));  
+  for(int i = 16; i <= maxmat; i++)
+    _masks_blur_13x13_coeff(coeffs[i-1], 0.1f * (float) (i));  
+
+  const int w1 = width;
+  const int w2 = 2*width;
+  const int w3 = 3*width;
+  const int w4 = 4*width;
+  const int w5 = 5*width;
+  const int w6 = 6*width;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) \
+  dt_omp_firstprivate(src, out, weight) \
+  dt_omp_sharedconst(coeffs, width, height, w1, w2, w3, w4, w5, w6) \
+  schedule(simd:static)
+ #endif
+  for(int row = 6; row < height - 6; row++)
+  {
+#if defined(__clang__)
+        #pragma clang loop vectorize(assume_safety)
+#elif defined(__GNUC__)
+        #pragma GCC ivdep
+#endif
+    for(int col = 6; col < width - 6; col++)
+    {
+      const int i = row * width + col;
+      const int d = MIN(maxmat, MAX(0, ((int) (10.0f * weight[i])))) ;      
+      float *blurmat = coeffs[d-1];
+      if(d == 0)      out[i] = src[i];
+      else if(d < 9)  out[i] = FAST_BLUR_5;
+      else if(d < 16) out[i] = FAST_BLUR_9;
+      else            out[i] = FAST_BLUR_13;               
+    }
+  }
+}
+
 void dt_masks_calc_rawdetail_mask(float *const restrict src, float *const restrict mask, float *const restrict tmp,
                                   const int width, const int height, const dt_aligned_pixel_t wb)
 {
