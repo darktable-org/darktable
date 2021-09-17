@@ -182,7 +182,7 @@ typedef struct dt_iop_toneequalizer_params_t
   float smoothing; // $DEFAULT: 1.414213562 sqrtf(2.0f)
   float feathering; // $MIN: 0.01 $MAX: 10000.0 $DEFAULT: 1.0 $DESCRIPTION: "edges refinement/feathering"
   float quantization; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "mask quantization"
-  float contrast_boost; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "mask contrast compensation"
+  float contrast_boost; // $MIN: -16.0 $MAX: 16.0 $DEFAULT: 0.0 $DESCRIPTION: "mask contrast compensation"
   float exposure_boost; // $MIN: -16.0 $MAX: 16.0 $DEFAULT: 0.0 $DESCRIPTION: "mask exposure compensation"
   dt_iop_toneequalizer_filter_t details; // $DEFAULT: DT_TONEEQ_EIGF
   dt_iop_luminance_mask_method_t method; // $DEFAULT: DT_TONEEQ_NORM_2 $DESCRIPTION: "luminance estimator"
@@ -1543,7 +1543,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->feathering = 1.f / (p->feathering);
 
   // UI params are in log2 offsets (EV) : convert to linear factors
-  d->contrast_boost = p->contrast_boost;
+  d->contrast_boost = exp2f(p->contrast_boost);
   d->exposure_boost = exp2f(p->exposure_boost);
 
   /*
@@ -1769,7 +1769,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
   dt_iop_gui_leave_critical_section(self);
 
   update_histogram(self);
-  p->exposure_boost += target - g->histogram_average;
+  p->exposure_boost = target - g->histogram_average;
 
   // Update the GUI stuff
   ++darktable.gui->reset;
@@ -1820,22 +1820,27 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
     return;
   }
 
-  // The goal is to spread 80 % of the exposure histogram between -4 ± 3 EV
+  // The goal is to spread 90 % of the exposure histogram in the [-7, -1] EV
   dt_iop_gui_enter_critical_section(self);
   g->histogram_valid = 0;
   dt_iop_gui_leave_critical_section(self);
 
-  const float target = log2f(CONTRAST_FULCRUM);
   update_histogram(self);
 
-  // Compute the correction
-  const float c1 = CLAMPS((-1.0 - g->histogram_last_decile) / (g->histogram_last_decile - target), -1.0, 1.0);
-  const float c2 = CLAMPS((-7.0 - g->histogram_first_decile) / (g->histogram_first_decile - target), -1.0, 1.0);
-  p->contrast_boost = c1 < c2 ? c1 : c2;
+  // calculate the corrections
+  const float fd_old = exp2f(g->histogram_first_decile);
+  const float ld_old = exp2f(g->histogram_last_decile);
+  const float s1 = CONTRAST_FULCRUM - exp2f(-7.0);
+  const float s2 = exp2f(-1.0) - CONTRAST_FULCRUM;
+  const float mix = fd_old * s2 +  ld_old * s1;
+
+  p->contrast_boost = log2f(mix / (CONTRAST_FULCRUM * (ld_old - fd_old)));
+  p->exposure_boost = log2f(CONTRAST_FULCRUM * (s1 + s2) / mix);
 
   // Update the GUI stuff
   ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->contrast_boost, p->contrast_boost);
+  dt_bauhaus_slider_set_soft(g->exposure_boost, p->exposure_boost);
   --darktable.gui->reset;
   invalidate_luminance_cache(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -3249,9 +3254,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->exposure_boost), "quad-pressed", G_CALLBACK(auto_adjust_exposure_boost), self);
 
   g->contrast_boost = dt_bauhaus_slider_from_params(self, "contrast_boost");
-  dt_bauhaus_slider_set_soft_range(g->contrast_boost, -0.5, 0.5);
-  dt_bauhaus_slider_set_factor(g->contrast_boost, 100.0f);
-  dt_bauhaus_slider_set_format(g->contrast_boost, "%+.2f %%");
+  dt_bauhaus_slider_set_soft_range(g->contrast_boost, -2.0, 2.0);
+  dt_bauhaus_slider_set_format(g->contrast_boost, "%+.2f EV");
   gtk_widget_set_tooltip_text(g->contrast_boost, _("use this to counter the averaging effect of the guided filter\n"
                                                    "and dilate the mask contrast around -4EV\n"
                                                    "this allows to spread the exposure histogram over more channels\n"

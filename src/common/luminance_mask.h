@@ -78,7 +78,6 @@ typedef enum dt_iop_luminance_mask_method_t
  * backfire in the exposure computations.
  **/
 
-/*
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
@@ -88,17 +87,7 @@ static float linear_contrast(const float pixel, const float fulcrum, const float
   // Increase the slope of the value around a fulcrum value
   return fmaxf((pixel - fulcrum) * contrast + fulcrum, MIN_FLOAT);
 }
-*/
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-__DT_CLONE_TARGETS__
-static float log_contrast(const float pixel, const float fulcrum, const float contrast)
-{
-  // Increase the slope of the value around a fulcrum value
-  return fmaxf(pixel * powf(pixel / fulcrum, contrast), MIN_FLOAT);
-}
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(image, luminance:64) uniform(image, luminance)
@@ -120,7 +109,7 @@ static void pixel_rgb_mean(const float *const restrict image,
   for(int c = 0; c < 3; ++c)
     lum += image[k + c];
 
-  luminance[k / ch] = log_contrast(exposure_boost * lum / 3.0f, fulcrum, contrast_boost);
+  luminance[k / ch] = linear_contrast(exposure_boost * lum / 3.0f, fulcrum, contrast_boost);
 }
 
 
@@ -137,7 +126,7 @@ static void pixel_rgb_value(const float *const restrict image,
   // max(RGB) is equivalent to HSV value
 
   const float lum = exposure_boost * fmaxf(fmaxf(image[k], image[k + 1]), image[k + 2]);
-  luminance[k / ch] = log_contrast(lum, fulcrum, contrast_boost);
+  luminance[k / ch] = linear_contrast(lum, fulcrum, contrast_boost);
 }
 
 
@@ -155,7 +144,7 @@ static void pixel_rgb_lightness(const float *const restrict image,
 
   const float max_rgb = fmaxf(fmaxf(image[k], image[k + 1]), image[k + 2]);
   const float min_rgb = fminf(fminf(image[k], image[k + 1]), image[k + 2]);
-  luminance[k / ch] = log_contrast(exposure_boost * (max_rgb + min_rgb) / 2.0f, fulcrum, contrast_boost);
+  luminance[k / ch] = linear_contrast(exposure_boost * (max_rgb + min_rgb) / 2.0f, fulcrum, contrast_boost);
 }
 
 #ifdef _OPENMP
@@ -178,7 +167,7 @@ static void pixel_rgb_norm_1(const float *const restrict image,
     for(int c = 0; c < 3; ++c)
       lum += fabsf(image[k + c]);
 
-  luminance[k / ch] = log_contrast(exposure_boost * lum, fulcrum, contrast_boost);
+  luminance[k / ch] = linear_contrast(exposure_boost * lum, fulcrum, contrast_boost);
 }
 
 
@@ -201,7 +190,7 @@ static void pixel_rgb_norm_2(const float *const restrict image,
 #endif
   for(int c = 0; c < 3; ++c) result += image[k + c] * image[k + c];
 
-  luminance[k / ch] = log_contrast(exposure_boost * sqrtf(result), fulcrum, contrast_boost);
+  luminance[k / ch] = linear_contrast(exposure_boost * sqrtf(result), fulcrum, contrast_boost);
 }
 
 
@@ -232,7 +221,7 @@ static void pixel_rgb_norm_power(const float *const restrict image,
     denominator += RGB_square;
   }
 
-  luminance[k / ch] = log_contrast(exposure_boost * numerator / denominator, fulcrum, contrast_boost);
+  luminance[k / ch] = linear_contrast(exposure_boost * numerator / denominator, fulcrum, contrast_boost);
 }
 
 #ifdef _OPENMP
@@ -257,7 +246,7 @@ static void pixel_rgb_geomean(const float *const restrict image,
     lum *= fabsf(image[k + c]);
   }
 
-  luminance[k / ch] = log_contrast(exposure_boost * powf(lum, 1.0f / 3.0f), fulcrum, contrast_boost);
+  luminance[k / ch] = linear_contrast(exposure_boost * powf(lum, 1.0f / 3.0f), fulcrum, contrast_boost);
 }
 
 
