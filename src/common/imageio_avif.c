@@ -54,7 +54,8 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   avifResult result;
 
   decoder = avifDecoderCreate();
-  if (decoder == NULL) {
+  if(decoder == NULL)
+  {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to create AVIF decoder for image [%s]\n",
              filename);
@@ -63,7 +64,8 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   }
 
   result = avifDecoderReadFile(decoder, &avif_image, filename);
-  if (result != AVIF_RESULT_OK) {
+  if(result != AVIF_RESULT_OK)
+  {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to parse AVIF image [%s]: %s\n",
              filename, avifResultToString(result));
@@ -80,7 +82,8 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   avifRGBImageAllocatePixels(&rgb);
 
   result = avifImageYUVToRGB(avif, &rgb);
-  if (result != AVIF_RESULT_OK) {
+  if(result != AVIF_RESULT_OK)
+  {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to convert AVIF image [%s] from YUV to RGB: %s\n",
              filename, avifResultToString(result));
@@ -102,7 +105,8 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   img->buf_dsc.cst = iop_cs_rgb;
 
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
-  if (mipbuf == NULL) {
+  if(mipbuf == NULL)
+  {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to allocate mipmap buffer for AVIF image [%s]\n",
              filename);
@@ -195,7 +199,8 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
   avifResult result;
 
   decoder = avifDecoderCreate();
-  if (decoder == NULL) {
+  if(decoder == NULL)
+  {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to create AVIF decoder for image [%s]\n",
              filename);
@@ -204,7 +209,8 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
   }
 
   result = avifDecoderReadFile(decoder, &avif_image, filename);
-  if (result != AVIF_RESULT_OK) {
+  if(result != AVIF_RESULT_OK)
+  {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to parse AVIF image [%s]: %s\n",
              filename, avifResultToString(result));
@@ -213,10 +219,12 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
   }
   avif = &avif_image;
 
-  if (avif->icc.size > 0) {
+  if(avif->icc.size > 0)
+  {
     avifRWData icc = avif->icc;
 
-    if (icc.data == NULL) {
+    if(icc.data == NULL)
+    {
       ret = DT_IMAGEIO_FILE_CORRUPTED;
       goto out;
     }

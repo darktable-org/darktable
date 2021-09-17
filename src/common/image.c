@@ -367,7 +367,7 @@ void dt_image_full_path(const int32_t imgid, char *pathname, size_t pathname_len
     char lc_pathname[PATH_MAX] = { 0 };
     _image_local_copy_full_path(imgid, lc_pathname, sizeof(lc_pathname));
 
-    if (g_file_test(lc_pathname, G_FILE_TEST_EXISTS))
+    if(g_file_test(lc_pathname, G_FILE_TEST_EXISTS))
       g_strlcpy(pathname, (char *)lc_pathname, pathname_len);
     else
       *from_cache = FALSE;
@@ -910,7 +910,7 @@ void dt_image_set_raw_aspect_ratio(const int32_t imgid)
 
 void dt_image_set_aspect_ratio_to(const int32_t imgid, const float aspect_ratio, const gboolean raise)
 {
-  if (aspect_ratio > .0f)
+  if(aspect_ratio > .0f)
   {
     /* fetch image from cache */
     dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
@@ -929,7 +929,7 @@ void dt_image_set_aspect_ratio_to(const int32_t imgid, const float aspect_ratio,
 
 void dt_image_set_aspect_ratio_if_different(const int32_t imgid, const float aspect_ratio, const gboolean raise)
 {
-  if (aspect_ratio > .0f)
+  if(aspect_ratio > .0f)
   {
     /* fetch image from cache */
     dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
@@ -1248,7 +1248,7 @@ static int _valid_glob_match(const char *const name, size_t offset)
 {
   // verify that the name matched by glob() is a valid sidecar name by checking whether we have an underscore
   // followed by a sequence of digits followed by a period at the given offset in the name
-  if (strlen(name) < offset || name[offset] != '_')
+  if(strlen(name) < offset || name[offset] != '_')
     return FALSE;
   size_t i;
   for(i = offset+1; name[i] && name[i] != '.'; i++)
@@ -1271,7 +1271,7 @@ GList* dt_image_find_duplicates(const char* filename)
   // start by locating the extension, which we'll be referencing multiple times
   const size_t fn_len = strlen(filename);
   const char* ext = strrchr(filename,'.');  // find last dot
-  if (!ext) ext = filename;
+  if(!ext) ext = filename;
   const size_t ext_offset = ext - filename;
 
   gchar pattern[PATH_MAX] = { 0 };
@@ -1292,7 +1292,7 @@ GList* dt_image_find_duplicates(const char* filename)
   // now collect all file_N*N.ext.xmp matches
   static const char glob_pattern[] = "_[0-9]*[0-9]";
   const size_t gp_len = strlen(glob_pattern);
-  if (fn_len + gp_len + xmp_len < sizeof(pattern)) // enough space to build pattern?
+  if(fn_len + gp_len + xmp_len < sizeof(pattern)) // enough space to build pattern?
   {
     // add GLOB.ext.xmp to the root of the basename
     g_strlcpy(pattern + ext_offset, glob_pattern, sizeof(pattern) - fn_len);
@@ -1689,7 +1689,7 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   // the following line would look logical with new_tags_set being the return value
   // from dt_tag_new above, but this could lead to too rapid signals, being able to lock up the
   // keywords side pane when trying to use it, which can lock up the whole dt GUI ..
-  // if (new_tags_set) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,DT_SIGNAL_TAG_CHANGED);
+  // if(new_tags_set) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,DT_SIGNAL_TAG_CHANGED);
   return id;
 }
 
@@ -1789,7 +1789,7 @@ void dt_image_init(dt_image_t *img)
 
 void dt_image_refresh_makermodel(dt_image_t *img)
 {
-  if (!img->camera_maker[0] || !img->camera_model[0] || !img->camera_alias[0])
+  if(!img->camera_maker[0] || !img->camera_model[0] || !img->camera_alias[0])
   {
     // We need to use the exif values, so let's get rawspeed to munge them
     dt_rawspeed_lookup_makermodel(img->exif_maker, img->exif_model,
@@ -2349,7 +2349,7 @@ int dt_image_local_copy_reset(const int32_t imgid)
   const gboolean local_copy_exists = (imgr->flags & DT_IMAGE_LOCAL_COPY) == DT_IMAGE_LOCAL_COPY ? TRUE : FALSE;
   dt_image_cache_read_release(darktable.image_cache, imgr);
 
-  if (!local_copy_exists)
+  if(!local_copy_exists)
     return 0;
 
   // check that the original file is accessible
@@ -2432,14 +2432,14 @@ void dt_image_write_sidecar_file(const int32_t imgid)
     gboolean from_cache = FALSE;
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
 
-    if (!g_file_test(filename, G_FILE_TEST_EXISTS))
+    if(!g_file_test(filename, G_FILE_TEST_EXISTS))
     {
       // OTHERWISE: check if the local copy exists
       from_cache = TRUE;
       dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
 
       //  nothing to do, the original is not accessible and there is no local copy
-      if (!from_cache) return;
+      if(!from_cache) return;
     }
 
     dt_image_path_append_version(imgid, filename, sizeof(filename));
