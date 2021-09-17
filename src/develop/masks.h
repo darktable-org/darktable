@@ -438,7 +438,6 @@ void dt_masks_calc_rawdetail_mask(float *const src, float *const out, float *con
 void dt_masks_calc_detail_mask(float *const src, float *const out, float *const tmp, const int width, const int height, const float threshold, const gboolean detail);
 
 void dt_masks_blur_approx_weighed(float *const src, float *const out, float *const weight, const int width, const int height);
-int dt_masks_blur_fast(float *const src, float *const out, const int width, const int height, const float sigma);
 
 /** return the list of possible mouse actions */
 GSList *dt_masks_mouse_actions(dt_masks_form_t *form);
