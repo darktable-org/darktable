@@ -1370,8 +1370,8 @@ static inline void compute_log_histogram_and_stats(const float *const restrict l
 #endif
   for(size_t k = 0; k < num_elem; k++)
   {
-    // extended histogram bins between [-8; +8] EV remapped between [0 ; 2 * UI_SAMPLES]
-    const int index = CLAMP((int)(((log2f(luminance[k]) + 8.0f) / 16.0f) * (float)TEMP_SAMPLES), 0, TEMP_SAMPLES - 1);
+    // extended histogram bins between [-10; +6] EV remapped between [0 ; 2 * UI_SAMPLES]
+    const int index = CLAMP((int)(((log2f(luminance[k]) + 10.0f) / 16.0f) * (float)TEMP_SAMPLES), 0, TEMP_SAMPLES - 1);
     temp_hist[index] += 1;
   }
 
@@ -1392,15 +1392,15 @@ static inline void compute_log_histogram_and_stats(const float *const restrict l
   }
 
   // Convert decile positions to exposures
-  *first_decile = 16.0 * (float)first_pos / (float)(TEMP_SAMPLES - 1) - 8.0;
-  *last_decile = 16.0 * (float)last_pos / (float)(TEMP_SAMPLES - 1) - 8.0;
+  *first_decile = 16.0 * (float)first_pos / (float)(TEMP_SAMPLES - 1) - 10.0;
+  *last_decile = 16.0 * (float)last_pos / (float)(TEMP_SAMPLES - 1) - 10.0;
 
   *max_histogram = 0;
   // remap the extended histogram into the normal one
   // bins between [-8; 0] EV remapped between [0 ; UI_SAMPLES]
   for(size_t k = 0; k < TEMP_SAMPLES; ++k)
   {
-    float EV = 16.0 * (float)k / (float)(TEMP_SAMPLES - 1) - 8.0;
+    float EV = 16.0 * (float)k / (float)(TEMP_SAMPLES - 1) - 10.0;
     int i = CLAMP((int)(((EV + 8.0f) / 8.0f) * (float)UI_SAMPLES), 0, UI_SAMPLES - 1);
     histogram[i] += temp_hist[k];
 
