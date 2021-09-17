@@ -173,12 +173,7 @@ static inline void dt_apply_transposed_color_matrix(const dt_aligned_pixel_t in,
   // using dt_aligned_pixel_t instead of float* for the function parameters gives GCC enough info to vectorize
   // and eliminate intermediate memory writes without going through major contortions
   for_each_channel(r)
-    out[r] = 0.0f;
-  for(int c = 0; c < 3; c++)
-    for_each_channel(r)
-    {
-      out[r] += matrix[c][r] * in[c];
-    }
+    out[r] = matrix[0][r] * in[0] + matrix[1][r] * in[1] + matrix[2][r] * in[2];
 }
 
 #ifdef _OPENMP
