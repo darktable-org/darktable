@@ -378,13 +378,6 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
-static void _event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
-                                GtkSelectionData *selection_data, guint target_type, guint time,
-                                gpointer user_data)
-{
-	dt_thumbtable_event_dnd_received(widget, context, x, y, selection_data, target_type, time, user_data);
-}
-
 // display help text in the center view if there's no image to show
 static int _lighttable_expose_empty(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
                                     int32_t pointery)
@@ -1293,7 +1286,7 @@ void gui_init(dt_view_t *self)
 
   // enable drag & drop
   gtk_drag_dest_set(dt_ui_center_base(darktable.gui->ui), GTK_DEST_DEFAULT_ALL, target_list_all, n_targets_all, GDK_ACTION_MOVE);
-  g_signal_connect(G_OBJECT(dt_ui_center_base(darktable.gui->ui)), "drag-data-received", G_CALLBACK(_event_dnd_received), NULL);
+  g_signal_connect(G_OBJECT(dt_ui_center_base(darktable.gui->ui)), "drag-data-received", G_CALLBACK(dt_thumbtable_event_dnd_received), NULL);
 
   /* add the global focus peaking button in toolbox */
   dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.gui->focus_peaking_button,
