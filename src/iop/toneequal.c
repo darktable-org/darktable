@@ -1731,16 +1731,6 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
 
   if(darktable.gui->reset) return;
 
-  if(!g->luminance_valid || self->dev->pipe->processing || !g->histogram_valid)
-  {
-    ++darktable.gui->reset;
-    gboolean active = dt_bauhaus_widget_get_quad_active(quad);
-    dt_bauhaus_widget_set_quad_active(quad, !active);
-    --darktable.gui->reset;
-    dt_control_log(_("wait for the preview to finish recomputing"));
-    return;
-  }
-
   dt_iop_request_focus(self);
 
   if(p->exposure_boost != 0.0f || !self->enabled)
@@ -1754,6 +1744,16 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
 
     invalidate_luminance_cache(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
+    return;
+  }
+
+  if(!g->luminance_valid || self->dev->pipe->processing || !g->histogram_valid)
+  {
+    ++darktable.gui->reset;
+    gboolean active = dt_bauhaus_widget_get_quad_active(quad);
+    dt_bauhaus_widget_set_quad_active(quad, !active);
+    --darktable.gui->reset;
+    dt_control_log(_("wait for the preview to finish recomputing"));
     return;
   }
 
@@ -1790,16 +1790,6 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
 
   if(darktable.gui->reset) return;
 
-  if(!g->luminance_valid || self->dev->pipe->processing || !g->histogram_valid)
-  {
-    ++darktable.gui->reset;
-    gboolean active = dt_bauhaus_widget_get_quad_active(quad);
-    dt_bauhaus_widget_set_quad_active(quad, !active);
-    --darktable.gui->reset;
-    dt_control_log(_("wait for the preview to finish recomputing"));
-    return;
-  }
-
   dt_iop_request_focus(self);
 
   if(p->contrast_boost != 0.0f || !self->enabled)
@@ -1813,6 +1803,16 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
 
     invalidate_luminance_cache(self);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
+    return;
+  }
+
+  if(!g->luminance_valid || self->dev->pipe->processing || !g->histogram_valid)
+  {
+    ++darktable.gui->reset;
+    gboolean active = dt_bauhaus_widget_get_quad_active(quad);
+    dt_bauhaus_widget_set_quad_active(quad, !active);
+    --darktable.gui->reset;
+    dt_control_log(_("wait for the preview to finish recomputing"));
     return;
   }
 
