@@ -417,7 +417,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
   char *dtlogo = g_build_filename(datadir, "pixmaps", logo, NULL);
   RsvgHandle *svg = rsvg_handle_new_from_file(dtlogo, &error);
   if(svg)
-  {  
+  {
     RsvgDimensionData dimension;
     // rsvg_handle_get_dimensions has been deprecated in librsvg 2.52
     #if LIBRSVG_CHECK_VERSION(2,52,0)
