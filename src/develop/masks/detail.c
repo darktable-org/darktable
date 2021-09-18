@@ -341,7 +341,8 @@ void dt_masks_blur_approx_weighed(float *const restrict src, float *const restri
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(src, out, weight) \
-  dt_omp_sharedconst(coeffs, width, height, w1, w2, w3, w4, w5, w6) \
+  dt_omp_sharedconst(width, height, w1, w2, w3, w4, w5, w6) \
+  shared(coeffs) \
   schedule(simd:static) aligned(src, out, weight : 64)
  #endif
   for(int row = 6; row < height - 6; row++)
