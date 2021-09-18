@@ -209,7 +209,7 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
         )
         {
           /* short distance (< 10 km), no need for geodesic interpolation */
-          lon = lon1 + (lat2 - lon1) * f;
+          lon = lon1 + (lon2 - lon1) * f;
           lat = lat1 + (lat2 - lat1) * f;
         }
         else
