@@ -2222,7 +2222,7 @@ static void _track_add_point(OsmGpsMapTrack *track, OsmGpsMapPoint *point, OsmGp
     double f, ith_lat, ith_lon;
     int n_segments = ceil(d / DT_MINIMUM_DISTANCE_FOR_GEODESIC);
     gboolean first_time = TRUE;
-    for (int i = 1; i < n_segments; i ++)
+    for (int i = 1; i <= n_segments; i ++)
     {
       f = (double)i / n_segments;
       dt_gpx_geodesic_intermediate_point(prev_lat, prev_lon,
