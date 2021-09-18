@@ -112,7 +112,9 @@ static int32_t dt_styles_get_id_by_name(const char *name);
 
 gboolean dt_styles_exists(const char *name)
 {
-  return (dt_styles_get_id_by_name(name)) != 0 ? TRUE : FALSE;
+  if(name)
+    return (dt_styles_get_id_by_name(name)) != 0 ? TRUE : FALSE;
+  return FALSE;
 }
 
 static void _dt_style_cleanup_multi_instance(int id)
