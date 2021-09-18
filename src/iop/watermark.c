@@ -725,8 +725,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   RsvgDimensionData dimension;
   switch(type)
   {
-    case DT_WTM_SVG:
-      
+    case DT_WTM_SVG:      
       // rsvg_handle_get_dimensions has been deprecated in librsvg 2.52
       #if LIBRSVG_CHECK_VERSION(2,52,0)
         double width;
@@ -737,8 +736,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       #else
         rsvg_handle_get_dimensions(svg, &dimension);
       #endif 
-      break;
-      
+      break;      
     case DT_WTM_PNG:
       // load png into surface 2
       surface_two = cairo_image_surface_create_from_png(filename);
