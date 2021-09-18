@@ -477,12 +477,12 @@ GList *dt_gpx_get_trkpts(struct dt_gpx_t *gpx, const guint segid)
 }
 
 void dt_gpx_geodesic_intermediate_point(const double lat1, const double lon1,
-                                               const double lat2, const double lon2,
-                                               const double delta,
-                                               const gboolean first_time,
-                                               double f,
-                                               double *lat, double *lon
-                                              )
+                                        const double lat2, const double lon2,
+                                        const double delta,
+                                        const gboolean first_time,
+                                        double f,
+                                        double *lat, double *lon
+                                       )
 {
   static double lat_rad_1;
   static double sin_lat_rad_1;
