@@ -722,15 +722,23 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   cairo_surface_t *surface_two = NULL;
 
   /* get the dimension of svg or png */
-  double width;
-  double height;
-
-  
+  RsvgDimensionData dimension;
   switch(type)
   {
     case DT_WTM_SVG:
-      rsvg_handle_get_intrinsic_size_in_pixels (svg, &width, &height);
+      
+      // rsvg_handle_get_dimensions has been deprecated in librsvg 2.52
+      #if LIBRSVG_CHECK_VERSION (2, 52, 0)
+        double width;
+        double height;
+        rsvg_handle_get_intrinsic_size_in_pixels (svg, &width, &height);
+        dimension.width = width;
+        dimension.height = height;
+      #else
+        rsvg_handle_get_dimensions(svg, &dimension);
+      #endif 
       break;
+      
     case DT_WTM_PNG:
       // load png into surface 2
       surface_two = cairo_image_surface_create_from_png(filename);
@@ -744,14 +752,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
         return;
       }
-      width = cairo_image_surface_get_width(surface_two);
-      height = cairo_image_surface_get_height(surface_two);
+      dimension.width = cairo_image_surface_get_width(surface_two);
+      dimension.height = cairo_image_surface_get_height(surface_two);
       break;
   }
 
   // if no text is given dimensions are null
-  if(!width) width = 1;
-  if(!height) height = 1;
+  if(!dimension.width) dimension.width = 1;
+  if(!dimension.height) dimension.height = 1;
 
   //  width/height of current (possibly cropped) image
   const float iw = piece->buf_in.width;
@@ -768,17 +776,17 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // in image mode, the wbase and hbase are just the image width and height
     wbase = iw;
     hbase = ih;
-    if(width > height)
-      scale = (iw * roi_out->scale) / width;
+    if(dimension.width > dimension.height)
+      scale = (iw * roi_out->scale) / dimension.width;
     else
-      scale = (ih * roi_out->scale) / height;
+      scale = (ih * roi_out->scale) / dimension.height;
   }
   else
   {
     // in larger/smaller side mode, set wbase and hbase to the largest or smallest side of the image
-    const float larger = width > height
-      ? (float)width
-      : (float)height;
+    const float larger = dimension.width > dimension.height
+      ? (float)dimension.width
+      : (float)dimension.height;
 
     if(iw > ih)
     {
@@ -800,18 +808,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   float svg_width, svg_height;
 
-  if(width > height)
+  if(dimension.width > dimension.height)
   {
     if(data->sizeto == DT_SCALE_IMAGE || (iw > ih && data->sizeto == DT_SCALE_LARGER_BORDER)
        || (iw < ih && data->sizeto == DT_SCALE_SMALLER_BORDER))
     {
       svg_width = iw * uscale;
-      svg_height = height * (svg_width / width);
+      svg_height = dimension.height * (svg_width / dimension.width);
     }
     else
     {
       svg_width = ih * uscale;
-      svg_height = height * (svg_width / width);
+      svg_height = dimension.height * (svg_width / dimension.width);
     }
   }
   else
@@ -820,12 +828,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
        || (ih < iw && data->sizeto == DT_SCALE_SMALLER_BORDER))
     {
       svg_height = ih * uscale;
-      svg_width = width * (svg_height / height);
+      svg_width = dimension.width * (svg_height / dimension.height);
     }
     else
     {
       svg_height = iw * uscale;
-      svg_width = width * (svg_height / height);
+      svg_width = dimension.width * (svg_height / dimension.height);
     }
   }
 
@@ -841,8 +849,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     svg_offset_x = ceilf(3.0f * scale);
     svg_offset_y = ceilf(3.0f * scale);
 
-    const int watermark_width  = (int)((width  * scale) + 3* svg_offset_x);
-    const int watermark_height = (int)((height * scale) + 3* svg_offset_y) ;
+    const int watermark_width  = (int)((dimension.width  * scale) + 3* svg_offset_x);
+    const int watermark_height = (int)((dimension.height * scale) + 3* svg_offset_y) ;
 
     const int stride_two = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, watermark_width);
     image_two = (guint8 *)g_malloc0_n(watermark_height, stride_two);
@@ -915,14 +923,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     case DT_WTM_SVG:
       cairo_scale(cr_two, scale, scale);
       /* render svg into surface*/
-      GError *error = NULL;
-      RsvgRectangle viewport;
-	    viewport.x = 0;
-	    viewport.y = 0;
-	    viewport.width = width;
-	    viewport.height = height;
-
-      rsvg_handle_render_document(svg, cr_two, &viewport, &error);
+      
+      // rsvg_handle_render_cairo has been deprecated in librsvg 2.52
+      #if LIBRSVG_CHECK_VERSION (2, 52, 0)
+        GError *error = NULL;
+        RsvgRectangle viewport;
+	      viewport.x = 0;
+	      viewport.y = 0;
+	      viewport.width = dimension.width;
+	      viewport.height = dimension.height;
+        rsvg_handle_render_document(svg, cr_two, &viewport, &error);
+      #else
+        rsvg_handle_render_cairo(svg, cr_two);
+      #endif  
       break;
     case DT_WTM_PNG:
       cairo_scale(cr, scale, scale);
