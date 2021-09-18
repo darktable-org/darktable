@@ -422,7 +422,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
     // rsvg_handle_get_dimensions has been deprecated in librsvg 2.52
     #if LIBRSVG_CHECK_VERSION (2, 52, 0)
       double width;
-      double heigh;
+      double height;
       rsvg_handle_get_intrinsic_size_in_pixels(svg, &width, &height);
       dimension.width = width;
       dimension.height = height;
