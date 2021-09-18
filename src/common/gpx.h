@@ -22,8 +22,8 @@
 #include "common/image.h"
 
 #define EARTH_RADIUS 6378100.0 /* in meters */
-#define DT_MINIMUM_DISTANCE_FOR_GEODESIC 10000.0 /* in meters */
-#define DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC 0.1
+#define DT_MINIMUM_DISTANCE_FOR_GEODESIC 100000.0 /* in meters */
+#define DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC 1.0
 /* DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC is in degrees, and is used for longitude and latitude
    0.1 degress ~ 10 km on the earth surface */
 
