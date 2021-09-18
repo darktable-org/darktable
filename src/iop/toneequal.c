@@ -1762,14 +1762,20 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
   // to spread it over as many nodes as possible for better exposure control.
   // Controls nodes are between -8 and 0 EV,
   // so we aim at centering the exposure distribution on -4 EV
-  const float target = log2f(CONTRAST_FULCRUM);
 
   dt_iop_gui_enter_critical_section(self);
   g->histogram_valid = 0;
   dt_iop_gui_leave_critical_section(self);
 
   update_histogram(self);
-  p->exposure_boost = target - g->histogram_average;
+
+  const float fd_old = exp2f(g->histogram_first_decile);
+  const float ld_old = exp2f(g->histogram_last_decile);
+  const float s1 = CONTRAST_FULCRUM - exp2f(-7.0);
+  const float s2 = exp2f(-1.0) - CONTRAST_FULCRUM;
+  const float mix = fd_old * s2 +  ld_old * s1;
+
+  p->exposure_boost += log2f(CONTRAST_FULCRUM * (s1 + s2) / mix);
 
   // Update the GUI stuff
   ++darktable.gui->reset;
@@ -1834,13 +1840,11 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
   const float s2 = exp2f(-1.0) - CONTRAST_FULCRUM;
   const float mix = fd_old * s2 +  ld_old * s1;
 
-  p->contrast_boost = log2f(mix / (CONTRAST_FULCRUM * (ld_old - fd_old)));
-  p->exposure_boost = log2f(CONTRAST_FULCRUM * (s1 + s2) / mix);
+  p->contrast_boost += log2f(mix / (CONTRAST_FULCRUM * (ld_old - fd_old)));
 
   // Update the GUI stuff
   ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->contrast_boost, p->contrast_boost);
-  dt_bauhaus_slider_set_soft(g->exposure_boost, p->exposure_boost);
   --darktable.gui->reset;
   invalidate_luminance_cache(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
