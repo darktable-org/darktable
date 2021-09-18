@@ -90,17 +90,14 @@ static inline float sqrf(float a)
   return a * a;
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(mask : 64)
-#endif
-void dt_masks_extend_border(float *mask, const int width, const int height, const int border)
+void dt_masks_extend_border(float *const restrict mask, const int width, const int height, const int border)
 {
   if(border <= 0) return;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) \
+  #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(mask) \
   dt_omp_sharedconst(width, height, border) \
-  schedule(simd:static)
+  schedule(simd:static) aligned(mask : 64)
  #endif
   for(int row = border; row < height - border; row++)
   {
@@ -112,10 +109,10 @@ void dt_masks_extend_border(float *mask, const int width, const int height, cons
     }
   }
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) \
+  #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(mask) \
   dt_omp_sharedconst(width, height, border) \
-  schedule(simd:static)
+  schedule(simd:static) aligned(mask : 64)
  #endif
   for(int col = 0; col < width; col++)
   {
@@ -226,9 +223,6 @@ void dt_masks_blur_9x9_coeff(float *c, const float sigma)
   blurmat[1]  * (src[i - w1] + src[i - 1] + src[i + 1] + src[i + w1]) + \
   blurmat[0]  * src[i] )
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(src, out : 64)
-#endif
 void dt_masks_blur_9x9(float *const restrict src, float *const restrict out, const int width, const int height, const float sigma)
 {
   float blurmat[13];
@@ -239,18 +233,13 @@ void dt_masks_blur_9x9(float *const restrict src, float *const restrict out, con
   const int w3 = 3*width;
   const int w4 = 4*width;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(src, out) \
-  dt_omp_sharedconst(blurmat, width, height, w1, w2, w3, w4) \
-  schedule(simd:static)
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(blurmat, src, out) \
+  dt_omp_sharedconst(width, height, w1, w2, w3, w4) \
+  schedule(simd:static) aligned(src, out : 64)
  #endif
   for(int row = 4; row < height - 4; row++)
   {
-#if defined(__clang__)
-        #pragma clang loop vectorize(assume_safety)
-#elif defined(__GNUC__)
-        #pragma GCC ivdep
-#endif
     for(int col = 4; col < width - 4; col++)
     {
       const int i = row * width + col;
@@ -329,9 +318,6 @@ void _masks_blur_13x13_coeff(float *c, const float sigma)
   blurmat[17] * (src[i - w1] + src[i - 1] + src[i + 1] + src[i + w1]) + \
   blurmat[18] * src[i] )
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(src, out, weight : 64)
-#endif
 void dt_masks_blur_approx_weighed(float *const restrict src, float *const restrict out, float *const restrict weight, const int width, const int height)
 {
   #define maxmat 50
@@ -353,18 +339,13 @@ void dt_masks_blur_approx_weighed(float *const restrict src, float *const restri
   const int w5 = 5*width;
   const int w6 = 6*width;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) \
+  #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(src, out, weight) \
   dt_omp_sharedconst(coeffs, width, height, w1, w2, w3, w4, w5, w6) \
-  schedule(simd:static)
+  schedule(simd:static) aligned(src, out, weight : 64)
  #endif
   for(int row = 6; row < height - 6; row++)
   {
-#if defined(__clang__)
-        #pragma clang loop vectorize(assume_safety)
-#elif defined(__GNUC__)
-        #pragma GCC ivdep
-#endif
     for(int col = 6; col < width - 6; col++)
     {
       const int i = row * width + col;
