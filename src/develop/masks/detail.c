@@ -318,6 +318,77 @@ void _masks_blur_13x13_coeff(float *c, const float sigma)
   blurmat[17] * (src[i - w1] + src[i - 1] + src[i + 1] + src[i + w1]) + \
   blurmat[18] * src[i] )
 
+int dt_masks_blur_fast(float *const restrict src, float *const restrict out, const int width, const int height, const float sigma, const float gain, const float clip)
+{
+  float blurmat[19];
+  const int w1 = width;
+  const int w2 = 2*width;
+  const int w3 = 3*width;
+  const int w4 = 4*width;
+  const int w5 = 5*width;
+  const int w6 = 6*width;
+  if(sigma <= 0.0f)
+  {
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(src, out) \
+  dt_omp_sharedconst(gain, width, height, clip) \
+  schedule(simd:static) aligned(src, out : 64)
+#endif
+    for(int i = 0; i < width * height; i++)
+      out[i] = fmaxf(0.0f, fminf(clip, gain * src[i]));
+    return 0;  
+  }
+  else if(sigma <= 0.8f)
+  {
+    _masks_blur_5x5_coeff(blurmat, sigma);
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(src, out) \
+  dt_omp_sharedconst(gain, width, height, w1, w2, clip) \
+  shared(blurmat) \
+  schedule(simd:static) aligned(src, out : 64)
+#endif
+    for(int row = 2; row < height - 2; row++)
+    {
+      for(int col = 2, i = row * width + col; col < width - 2; col++, i++)
+        out[i] = fmaxf(0.0f, fminf(clip, gain * FAST_BLUR_5));
+    }
+    return 2;
+  }
+  else if(sigma <= 1.5f)
+  {
+    dt_masks_blur_9x9_coeff(blurmat, sigma);
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(src, out) \
+  dt_omp_sharedconst(gain, width, height, w1, w2, w3, w4, clip) \
+  shared(blurmat) \
+  schedule(simd:static) aligned(src, out : 64)
+ #endif
+    for(int row = 4; row < height - 4; row++)
+    {
+      for(int col = 4, i = row * width + col; col < width - 4; col++, i++)
+        out[i] = fmaxf(0.0f, fminf(clip, gain * FAST_BLUR_9));
+    }
+    return 4;
+  }
+  _masks_blur_13x13_coeff(blurmat, sigma);
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(src, out) \
+  dt_omp_sharedconst(gain, width, height, w1, w2, w3, w4, w5, w6, clip) \
+  shared(blurmat) \
+  schedule(simd:static) aligned(src, out : 64)
+ #endif
+  for(int row = 6; row < height - 6; row++)
+  {
+    for(int col = 6, i = row * width + col; col < width - 6; col++, i++)
+      out[i] = fmaxf(0.0f, fminf(clip, gain * FAST_BLUR_13));
+  }
+  return 6;
+}
+
 void dt_masks_blur_approx_weighed(float *const restrict src, float *const restrict out, float *const restrict weight, const int width, const int height)
 {
   #define maxmat 50
