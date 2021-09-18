@@ -420,7 +420,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
   {
     RsvgDimensionData dimension;
     // rsvg_handle_get_dimensions has been deprecated in librsvg 2.52
-    #if LIBRSVG_CHECK_VERSION(2,46,0)
+    #if LIBRSVG_CHECK_VERSION(2,52,0)
       double width;
       double height;
       rsvg_handle_get_intrinsic_size_in_pixels(svg, &width, &height);
@@ -459,7 +459,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
       cairo_scale(cr, factor, factor);
       
       // rsvg_handle_render_cairo has been deprecated in librsvg 2.52
-      #if LIBRSVG_CHECK_VERSION(2,46,0)
+      #if LIBRSVG_CHECK_VERSION(2,52,0)
         RsvgRectangle viewport;
 	      viewport.x = 0;
 	      viewport.y = 0;

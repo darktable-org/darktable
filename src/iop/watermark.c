@@ -727,7 +727,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     case DT_WTM_SVG:      
       // rsvg_handle_get_dimensions has been deprecated in librsvg 2.52
-      #if LIBRSVG_CHECK_VERSION(2,46,0)
+      #if LIBRSVG_CHECK_VERSION(2,52,0)
         double width;
         double height;
         rsvg_handle_get_intrinsic_size_in_pixels(svg, &width, &height);
@@ -923,7 +923,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       /* render svg into surface*/
       
       // rsvg_handle_render_cairo has been deprecated in librsvg 2.52
-      #if LIBRSVG_CHECK_VERSION(2,46,0)
+      #if LIBRSVG_CHECK_VERSION(2,52,0)
         GError *error = NULL;
         RsvgRectangle viewport;
 	      viewport.x = 0;
