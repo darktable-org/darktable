@@ -725,13 +725,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   RsvgDimensionData dimension;
   switch(type)
   {
-    case DT_WTM_SVG:
-      
+    case DT_WTM_SVG:      
       // rsvg_handle_get_dimensions has been deprecated in librsvg 2.52
       #if LIBRSVG_CHECK_VERSION (2, 52, 0)
         double width;
         double height;
-        rsvg_handle_get_intrinsic_size_in_pixels (svg, &width, &height);
+        rsvg_handle_get_intrinsic_size_in_pixels(svg, *dimension.width, *dimension.height);
         dimension.width = width;
         dimension.height = height;
       #else
