@@ -375,40 +375,23 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 static gboolean _get_watermark_folders(const gchar *filepath, char* datadir, size_t datasize, char* configdir, size_t configsize)
 {
-  gboolean result;
+  gboolean result = FALSE;
   dt_loc_get_datadir(datadir, datasize);
   g_strlcat(datadir, G_DIR_SEPARATOR_S, datasize);
   g_strlcat(datadir, "watermarks", datasize);
 
-  gchar *custom_folder = dt_conf_get_string("plugins/darkroom/watermark/custom_folder");
-  if (custom_folder[0] &&
-      // dirty hack: preferences of "dir" type can't really be reset to an empty string,
-      // plus the result of a reset depends on OS, so we need to use a special value
-      !g_strrstr(custom_folder, "(None)"))
+  dt_loc_get_user_config_dir(configdir, configsize);
+  g_strlcat(configdir, G_DIR_SEPARATOR_S, configsize);
+  g_strlcat(configdir, "watermarks", configsize);
+  gchar *composed = g_build_path(G_DIR_SEPARATOR_S, configdir, filepath, NULL);
+
+  if(!g_access(composed, F_OK))
   {
-    // if a custom folder is defined, use that
-    gchar *composed = g_build_path(G_DIR_SEPARATOR_S, custom_folder, filepath, NULL);
-    if(!g_access(composed, F_OK))
-    {
-      g_strlcpy(configdir, composed, configsize);
-      result = TRUE;
-    }
-    else
-    {
-      g_strlcpy(configdir, custom_folder, configsize);
-      result = TRUE;
-    }
+    g_strlcpy(configdir, composed, configsize);
+    result = TRUE;
   }
-  else
-    {
-    // else fall back on default configdir
-      dt_loc_get_user_config_dir(configdir, configsize);
-      g_strlcat(configdir, G_DIR_SEPARATOR_S, configsize);
-      g_strlcat(configdir, "watermarks", configsize);
-      g_free(custom_folder);
-      result = FALSE;
-    }
-return result;
+  g_free(composed);
+  return result;
 }
 
 // sets text / color / font widgets sensitive based on watermark file type
@@ -724,13 +707,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(!g_file_test(filename, G_FILE_TEST_EXISTS))
       {
         fprintf(stderr, "[watermark] watermark file not found\n");
-        goto error;
+        g_free(filename);
+        // fall back on default
+        filename = g_build_filename(datadir, "darktable.svg", NULL);
       }
   }
 
   // find out the watermark type
   dt_iop_watermark_type_t type;
-  const gchar *extension = strrchr(data->filename, '.');
+  const gchar *extension = strrchr(filename, '.');
   if(extension)
   {
     if(!g_ascii_strcasecmp(extension, ".svg"))
@@ -1149,12 +1134,6 @@ static void refresh_watermarks(dt_iop_module_t *self)
   g_signal_handlers_unblock_by_func(g->watermarks, watermark_callback, self);
 }
 
-static void refresh_callback(GtkWidget *tb, dt_iop_module_t *self)
-{
-  dt_control_log(_("list of watermark files updated"));
-  refresh_watermarks(self);
-}
-
 static void chooser_callback(GtkWidget *tb, dt_iop_module_t *self)
 {
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
@@ -1166,10 +1145,8 @@ static void chooser_callback(GtkWidget *tb, dt_iop_module_t *self)
   gchar datadir[PATH_MAX] = { 0 };
   if(!_get_watermark_folders(p->filepath, datadir, sizeof(datadir), configdir, sizeof(configdir)))
   {
-    // this should not happen
-    fprintf(stderr, "[watermark] custom folder not configured\n");
-    dt_control_log(_("watermark custom folder not configured"));
-    return;
+    fprintf(stderr, "[watermark] subfolder not found\n");
+    dt_control_log(_("watermark user folder not found"));
   }
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
@@ -1198,9 +1175,13 @@ static void chooser_callback(GtkWidget *tb, dt_iop_module_t *self)
   {
     gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     gchar *dirname = g_path_get_dirname(filename);
-    gchar *custom_folder = dt_conf_get_string("plugins/darkroom/watermark/custom_folder");
 
-    if(g_str_has_prefix(dirname, custom_folder))
+    // we reuse configdir here
+    dt_loc_get_user_config_dir(configdir, sizeof(configdir));
+    g_strlcat(configdir, G_DIR_SEPARATOR_S, sizeof(configdir));
+    g_strlcat(configdir, "watermarks", sizeof(configdir));
+
+    if(g_str_has_prefix(dirname, configdir))
     {
       gchar *basename = g_path_get_basename(filename);
       gchar *extension = strrchr(basename, '.');
@@ -1211,7 +1192,7 @@ static void chooser_callback(GtkWidget *tb, dt_iop_module_t *self)
           memset(p->filename, 0, sizeof(p->filename));
           g_strlcpy(p->filename, basename, sizeof(p->filename));
           memset(p->filepath, 0, sizeof(p->filepath));
-          g_strlcpy(p->filepath, dirname + strlen(custom_folder) + 1, sizeof(p->filepath));
+          g_strlcpy(p->filepath, dirname + strlen(configdir) + 1, sizeof(p->filepath));
           refresh_watermarks(self);
           _combo_box_set_active_text(g, filename);
           _text_color_font_set_sensitive(g, p->filename);
@@ -1232,12 +1213,11 @@ static void chooser_callback(GtkWidget *tb, dt_iop_module_t *self)
     }
     else
     {
-      fprintf(stderr, "[watermark] select file outside watermark custom folder is not allowed\n");
-      dt_control_log(_("select file outside watermark custom folder is not allowed"));
+      fprintf(stderr, "[watermark] select file outside watermark folder is not allowed\n");
+      dt_control_log(_("select file outside watermark folder is not allowed"));
     }
     g_free(filename);
     g_free(dirname);
-    g_free(custom_folder);
   }
   g_object_unref(filechooser);
 }
@@ -1362,7 +1342,17 @@ void gui_update(struct dt_iop_module_t *self)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), FALSE);
   }
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[p->alignment]), TRUE);
-  _combo_box_set_active_text(g, p->filename);
+
+  gchar configdir[PATH_MAX] = { 0 };
+  gchar datadir[PATH_MAX] = { 0 };
+  _get_watermark_folders(p->filepath, datadir, sizeof(datadir), configdir, sizeof(configdir));
+
+  char *tooltip = g_strdup_printf(_("SVG or PNG files in folders:\n%s\n%s"), configdir, datadir);
+  gtk_widget_set_tooltip_text(g->watermarks, tooltip);
+  g_free(tooltip);
+  refresh_watermarks(self);
+
+   _combo_box_set_active_text(g, p->filename);
   dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
   gtk_entry_set_text(GTK_ENTRY(g->text), p->text);
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
@@ -1398,28 +1388,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
   int line = 0;
 
-  // Add the marker combobox
-  gchar configdir[PATH_MAX] = { 0 };
-  gchar datadir[PATH_MAX] = { 0 };
-  if(_get_watermark_folders(p->filepath, datadir, sizeof(datadir), configdir, sizeof(configdir)))
-    {
-      g->fbutton = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
-      gtk_widget_set_tooltip_text(g->fbutton, _("select watermark files from custom folder"));
-      g_signal_connect(G_OBJECT(g->fbutton), "clicked", G_CALLBACK(chooser_callback), self);
-    }
-  else
-  {
-     g->fbutton = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT, NULL);
-     gtk_widget_set_tooltip_text(g->fbutton, _("refresh list of watermark files from default folder"));
-     g_signal_connect(G_OBJECT(g->fbutton), "clicked", G_CALLBACK(refresh_callback), self);
-  }
+  g->fbutton = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
+  gtk_widget_set_tooltip_text(g->fbutton, _("select watermark files from user folder"));
 
   label = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(p->filename));
   g->watermarks = dt_bauhaus_combobox_new(self);
   gtk_widget_set_hexpand(GTK_WIDGET(g->watermarks), TRUE);
-  char *tooltip = g_strdup_printf(_("SVG or PNG files in folders:\n%s\n%s"), configdir, datadir);
-  gtk_widget_set_tooltip_text(g->watermarks, tooltip);
-  g_free(tooltip);
 
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->watermarks, label, GTK_POS_RIGHT, 1, 1);
@@ -1513,9 +1487,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->scale, _("the scale of the watermark"));
   gtk_widget_set_tooltip_text(g->rotate, _("the rotation of the watermark"));
 
-  refresh_watermarks(self);
+  //refresh_watermarks(self);
 
   g_signal_connect(G_OBJECT(g->watermarks), "value-changed", G_CALLBACK(watermark_callback), self);
+  g_signal_connect(G_OBJECT(g->fbutton), "clicked", G_CALLBACK(chooser_callback), self);
   g_signal_connect(G_OBJECT(g->text), "changed", G_CALLBACK(text_callback), self);
   g_signal_connect(G_OBJECT(g->colorpick), "color-set", G_CALLBACK(colorpick_color_set), self);
   g_signal_connect(G_OBJECT(g->fontsel), "font-set", G_CALLBACK(fontsel_callback), self);
