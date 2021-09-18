@@ -417,9 +417,18 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
   char *dtlogo = g_build_filename(datadir, "pixmaps", logo, NULL);
   RsvgHandle *svg = rsvg_handle_new_from_file(dtlogo, &error);
   if(svg)
-  {
+  {  
     RsvgDimensionData dimension;
-    rsvg_handle_get_dimensions(svg, &dimension);
+    // rsvg_handle_get_dimensions has been deprecated in librsvg 2.52
+    #if LIBRSVG_CHECK_VERSION(2,52,0)
+      double width;
+      double height;
+      rsvg_handle_get_intrinsic_size_in_pixels(svg, &width, &height);
+      dimension.width = width;
+      dimension.height = height;
+    #else      
+      rsvg_handle_get_dimensions(svg, &dimension);
+    #endif 
 
     const float ppd = darktable.gui ? darktable.gui->ppd : 1.0;
 
@@ -448,7 +457,19 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
     {
       cairo_t *cr = cairo_create(surface);
       cairo_scale(cr, factor, factor);
-      rsvg_handle_render_cairo(svg, cr);
+      
+      // rsvg_handle_render_cairo has been deprecated in librsvg 2.52
+      #if LIBRSVG_CHECK_VERSION(2,52,0)
+        RsvgRectangle viewport;
+	      viewport.x = 0;
+	      viewport.y = 0;
+	      viewport.width = final_width;
+	      viewport.height = final_height;
+        rsvg_handle_render_document(svg, cr, &viewport, &error);
+      #else
+        rsvg_handle_render_cairo(svg, cr);
+      #endif  
+
       cairo_destroy(cr);
       cairo_surface_flush(surface);
     }
