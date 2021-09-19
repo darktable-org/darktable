@@ -1767,13 +1767,21 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
 
   update_histogram(self);
 
-  const float fd_old = exp2f(g->histogram_first_decile);
-  const float ld_old = exp2f(g->histogram_last_decile);
+  // calculate exposure correction
+  const float fd_new = exp2f(g->histogram_first_decile);
+  const float ld_new = exp2f(g->histogram_last_decile);
+  const float e = exp2f(p->exposure_boost);
+  const float c = exp2f(p->contrast_boost);
+  // revert current transformation
+  const float fd_old = ((fd_new - CONTRAST_FULCRUM) / c + CONTRAST_FULCRUM) / e;
+  const float ld_old = ((ld_new - CONTRAST_FULCRUM) / c + CONTRAST_FULCRUM) / e;
+
+  // calculate correction
   const float s1 = CONTRAST_FULCRUM - exp2f(-7.0);
   const float s2 = exp2f(-1.0) - CONTRAST_FULCRUM;
   const float mix = fd_old * s2 +  ld_old * s1;
 
-  p->exposure_boost += log2f(CONTRAST_FULCRUM * (s1 + s2) / mix);
+  p->exposure_boost = log2f(CONTRAST_FULCRUM * (s1 + s2) / mix);
 
   // Update the GUI stuff
   ++darktable.gui->reset;
@@ -1828,14 +1836,21 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
 
   update_histogram(self);
 
-  // calculate the corrections
-  const float fd_old = exp2f(g->histogram_first_decile);
-  const float ld_old = exp2f(g->histogram_last_decile);
+  // calculate contrast correction
+  const float fd_new = exp2f(g->histogram_first_decile);
+  const float ld_new = exp2f(g->histogram_last_decile);
+  const float e = exp2f(p->exposure_boost);
+  const float c = exp2f(p->contrast_boost);
+  // revert current transformation
+  const float fd_old = ((fd_new - CONTRAST_FULCRUM) / c + CONTRAST_FULCRUM) / e;
+  const float ld_old = ((ld_new - CONTRAST_FULCRUM) / c + CONTRAST_FULCRUM) / e;
+
+  // calculate correction
   const float s1 = CONTRAST_FULCRUM - exp2f(-7.0);
   const float s2 = exp2f(-1.0) - CONTRAST_FULCRUM;
   const float mix = fd_old * s2 +  ld_old * s1;
 
-  p->contrast_boost += log2f(mix / (CONTRAST_FULCRUM * (ld_old - fd_old)));
+  p->contrast_boost = log2f(mix / (CONTRAST_FULCRUM * (ld_old - fd_old)));
 
   // Update the GUI stuff
   ++darktable.gui->reset;
