@@ -423,14 +423,14 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *fit_v;
   GtkWidget *fit_h;
   GtkWidget *fit_both;
-  GtkWidget *structure;
+  GtkWidget *structure_auto;
+  GtkWidget *structure_quad;
+  GtkWidget *structure_lines;
   GtkWidget *clean;
   GtkWidget *eye;
   GtkWidget *values_expander;
   GtkWidget *values_box;
   GtkWidget *values_toggle;
-  GtkWidget *draw_structure;
-  GtkWidget *draw_direct_structure;
   gboolean values_expanded;
   gboolean straightening;
   float straighten_x;
@@ -4773,10 +4773,9 @@ static void _gui_update_structure_states(dt_iop_module_t *self, GtkWidget *widge
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
   else
   {
-    if(widget != g->draw_direct_structure)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->draw_direct_structure), FALSE);
-    if(widget != g->draw_structure) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->draw_structure), FALSE);
-    if(widget != g->structure) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->structure), FALSE);
+    if(widget != g->structure_lines) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->structure_lines), FALSE);
+    if(widget != g->structure_quad) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->structure_quad), FALSE);
+    if(widget != g->structure_auto) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->structure_auto), FALSE);
     if(widget) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
   }
 }
@@ -4983,7 +4982,7 @@ static int _event_fit_both_button_clicked(GtkWidget *widget, GdkEventButton *eve
   return FALSE;
 }
 
-static int _event_structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static int _event_structure_auto_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return FALSE;
@@ -5426,7 +5425,7 @@ static void _event_values_expander_click(GtkWidget *widget, GdkEventButton *e, g
                                !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->values_toggle)));
 }
 
-static int _event_draw_structure_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static int _event_structure_quad_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
@@ -5484,7 +5483,7 @@ static int _event_draw_structure_clicked(GtkWidget *widget, GdkEventButton *even
   return TRUE;
 }
 
-static int _event_draw_direct_structure_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static int _event_structure_lines_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
@@ -5657,17 +5656,17 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_grid_attach(auto_grid, dt_ui_label_new(_("structure")), 0, 0, 1, 1);
 
-  g->draw_direct_structure = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_drawn, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->draw_direct_structure), TRUE);
-  gtk_grid_attach(auto_grid, g->draw_direct_structure, 1, 0, 1, 1);
+  g->structure_lines = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_drawn, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->structure_lines), TRUE);
+  gtk_grid_attach(auto_grid, g->structure_lines, 1, 0, 1, 1);
 
-  g->draw_structure = dtgtk_togglebutton_new(dtgtk_cairo_paint_draw_structure, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->draw_structure), TRUE);
-  gtk_grid_attach(auto_grid, g->draw_structure, 2, 0, 1, 1);
+  g->structure_quad = dtgtk_togglebutton_new(dtgtk_cairo_paint_draw_structure, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->structure_quad), TRUE);
+  gtk_grid_attach(auto_grid, g->structure_quad, 2, 0, 1, 1);
 
-  g->structure = dtgtk_togglebutton_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_hexpand(GTK_WIDGET(g->structure), TRUE);
-  gtk_grid_attach(auto_grid, g->structure, 3, 0, 1, 1);
+  g->structure_auto = dtgtk_togglebutton_new(dtgtk_cairo_paint_structure, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->structure_auto), TRUE);
+  gtk_grid_attach(auto_grid, g->structure_auto, 3, 0, 1, 1);
 
   gtk_grid_attach(auto_grid, dt_ui_label_new(_("fit")), 0, 1, 1, 1);
 
@@ -5715,12 +5714,12 @@ void gui_init(struct dt_iop_module_t *self)
                                              "ctrl+click to only fit rotation\n"
                                              "shift+click to only fit lens shift\n"
                                              "ctrl+shift+click to only fit rotation and lens shift"));
-  gtk_widget_set_tooltip_text(g->structure, _("automatically analyse line structure in image\n"
-                                              "ctrl+click for an additional edge enhancement\n"
-                                              "shift+click for an additional detail enhancement\n"
-                                              "ctrl+shift+click for a combination of both methods"));
-  gtk_widget_set_tooltip_text(g->draw_structure, _("manually define perspective rectangle"));
-  gtk_widget_set_tooltip_text(g->draw_direct_structure, _("manually draw structure lines"));
+  gtk_widget_set_tooltip_text(g->structure_auto, _("automatically analyse line structure in image\n"
+                                                   "ctrl+click for an additional edge enhancement\n"
+                                                   "shift+click for an additional detail enhancement\n"
+                                                   "ctrl+shift+click for a combination of both methods"));
+  gtk_widget_set_tooltip_text(g->structure_quad, _("manually define perspective rectangle"));
+  gtk_widget_set_tooltip_text(g->structure_lines, _("manually draw structure lines"));
   gtk_widget_set_tooltip_text(g->clean, _("remove line structure information"));
   gtk_widget_set_tooltip_text(g->eye, _("toggle visibility of structure lines"));
 
@@ -5730,11 +5729,11 @@ void gui_init(struct dt_iop_module_t *self)
                    (gpointer)self);
   g_signal_connect(G_OBJECT(g->fit_both), "button-press-event", G_CALLBACK(_event_fit_both_button_clicked),
                    (gpointer)self);
-  g_signal_connect(G_OBJECT(g->draw_structure), "button-press-event", G_CALLBACK(_event_draw_structure_clicked),
+  g_signal_connect(G_OBJECT(g->structure_quad), "button-press-event", G_CALLBACK(_event_structure_quad_clicked),
                    (gpointer)self);
-  g_signal_connect(G_OBJECT(g->draw_direct_structure), "button-press-event",
-                   G_CALLBACK(_event_draw_direct_structure_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(g->structure), "button-press-event", G_CALLBACK(_event_structure_button_clicked),
+  g_signal_connect(G_OBJECT(g->structure_lines), "button-press-event", G_CALLBACK(_event_structure_lines_clicked),
+                   (gpointer)self);
+  g_signal_connect(G_OBJECT(g->structure_auto), "button-press-event", G_CALLBACK(_event_structure_auto_clicked),
                    (gpointer)self);
   g_signal_connect(G_OBJECT(g->clean), "clicked", G_CALLBACK(_event_clean_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->eye), "toggled", G_CALLBACK(_event_eye_button_toggled), (gpointer)self);
