@@ -113,11 +113,11 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_HISTORY,
   DT_COLLECTION_PROP_MODULE,
   DT_COLLECTION_PROP_ORDER,
+  DT_COLLECTION_PROP_RATING, // XXX any implication to moving it here? was under PROP_UNDEF
 
   DT_COLLECTION_PROP_LAST,
 
   DT_COLLECTION_PROP_UNDEF,
-  DT_COLLECTION_PROP_RATING, // this one goes here as not used currently in collect.c
   DT_COLLECTION_PROP_SORT
 } dt_collection_properties_t;
 
