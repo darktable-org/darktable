@@ -1838,6 +1838,21 @@ static void list_view(dt_lib_collect_rule_t *dr)
         }
         break;
 
+      case DT_COLLECTION_PROP_RATING: // image rating
+        {
+          g_snprintf(query, sizeof(query),
+                     "SELECT CASE (flags & 7) WHEN 0 THEN '0 - unstarred' WHEN 1 THEN '1 - ★' WHEN 2 THEN '2 - ★★' WHEN 3 THEN '3 - ★★★' WHEN 4 then '4 - ★★★★' WHEN 5 then '5 - ★★★★★' WHEN 8 THEN '8 - REJECTED' ELSE 'unknown (6-7)' END"
+                     " AS rating_text,"
+                     " (flags & 7) AS rating,"
+                     " COUNT(*) AS count"
+                     " FROM main.images AS mi"
+                     " WHERE rating %s"
+                     " AND rating < 9" // see dt_image_flags_t in image.h
+                     " GROUP BY rating"
+                     " ORDER BY rating", where_ext);
+        }
+        break;
+
       default:
         if(property >= DT_COLLECTION_PROP_METADATA
            && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
@@ -1969,6 +1984,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
                     || property == DT_COLLECTION_PROP_ISO
                     || property == DT_COLLECTION_PROP_MODULE
                     || property == DT_COLLECTION_PROP_ORDER
+                    || property == DT_COLLECTION_PROP_RATING
                     || (property >= DT_COLLECTION_PROP_METADATA
                         && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)))
   {
@@ -2046,7 +2062,8 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
      || property == DT_COLLECTION_PROP_FOCAL_LENGTH
      || property == DT_COLLECTION_PROP_ISO
      || property == DT_COLLECTION_PROP_ASPECT_RATIO
-     || property == DT_COLLECTION_PROP_EXPOSURE)
+     || property == DT_COLLECTION_PROP_EXPOSURE
+     || property == DT_COLLECTION_PROP_RATING)
   {
     gtk_widget_set_tooltip_text(d->text, _("use <, <=, >, >=, <>, =, [;] as operators"));
   }
@@ -2294,7 +2311,8 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
                 || item == DT_COLLECTION_PROP_FOCAL_LENGTH
                 || item == DT_COLLECTION_PROP_ISO
                 || item == DT_COLLECTION_PROP_EXPOSURE
-                || item == DT_COLLECTION_PROP_ASPECT_RATIO))
+                || item == DT_COLLECTION_PROP_ASPECT_RATIO
+                || item == DT_COLLECTION_PROP_RATING))
     {
       /* this is a range selection */
       GtkTreeIter iter2;
@@ -2829,6 +2847,7 @@ static void _populate_collect_combo(GtkWidget *w)
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_HISTORY);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MODULE);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ORDER);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
 
 #undef ADD_COLLECT_ENTRY
 }

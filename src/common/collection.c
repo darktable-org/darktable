@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <ctype.h>
 
 
 #ifdef _WIN32
@@ -705,6 +706,7 @@ const char *dt_collection_name(dt_collection_properties_t prop)
     case DT_COLLECTION_PROP_LOCAL_COPY:       return _("local copy");
     case DT_COLLECTION_PROP_MODULE:           return _("module");
     case DT_COLLECTION_PROP_ORDER:            return _("module order");
+    case DT_COLLECTION_PROP_RATING:           return _("image rating");
     case DT_COLLECTION_PROP_LAST:             return NULL;
     default:
     {
@@ -1887,6 +1889,48 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           query = g_strdup_printf("(id IN (SELECT imgid FROM main.module_order WHERE version = %d))", i);
         else
           query = g_strdup_printf("(id NOT IN (SELECT imgid FROM main.module_order))");
+      }
+      break;
+
+    case DT_COLLECTION_PROP_RATING: // image rating
+      {
+        gchar *operator, *number1, *number2;
+        dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
+
+        if(operator && strcmp(operator, "[]") == 0)
+        {
+          if(number1 && number2)
+            query = g_strdup_printf("((flags & 7 >= %s) AND (flags & 7 <= %s))", number1,
+                number2);
+        }
+        else if(operator && number1)
+        {
+          query = g_strdup_printf("((flags & 7) %s %s)", operator, number1);
+        }
+        else if(number1)
+        {
+          query = g_strdup_printf("((flags & 7) = %s)", number1);
+        }
+        else
+        {
+          char c;
+          /*
+           Displayed star rating are of the form "2 - ★★"
+           If the input starts with a digit, match with the corresponding star rating
+          */
+          if(text && isdigit(c = text[0]))
+          {
+            query = g_strdup_printf("((flags & 7) = %c)", c);
+          }
+          else
+          { /* Attempt to match arbirary user inputs. Will return no results for anything but '%' wildcard. */
+            query = g_strdup_printf("((flags & 7) LIKE '%%%s%%')", escaped_text);
+          }
+        }
+
+        g_free(operator);
+        g_free(number1);
+        g_free(number2);
       }
       break;
 
