@@ -426,7 +426,6 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *structure_auto;
   GtkWidget *structure_quad;
   GtkWidget *structure_lines;
-  GtkWidget *clean;
   GtkWidget *eye;
   GtkWidget *values_expander;
   GtkWidget *values_box;
@@ -4778,6 +4777,14 @@ static void _gui_update_structure_states(dt_iop_module_t *self, GtkWidget *widge
     if(widget != g->structure_auto) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->structure_auto), FALSE);
     if(widget) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
   }
+
+  // update fit buttons state
+  const gboolean enable = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->structure_auto))
+                           || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->structure_quad))
+                           || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->structure_lines)));
+  gtk_widget_set_sensitive(g->fit_v, enable);
+  gtk_widget_set_sensitive(g->fit_h, enable);
+  gtk_widget_set_sensitive(g->fit_both, enable);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
@@ -5044,16 +5051,6 @@ static int _event_structure_auto_clicked(GtkWidget *widget, GdkEventButton *even
     return TRUE;
   }
   return FALSE;
-}
-
-static void _event_clean_button_clicked(GtkButton *button, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-  (void)do_clean_structure(self, p, FALSE);
-  dt_iop_request_focus(self);
-  dt_control_queue_redraw_center();
 }
 
 static void _event_eye_button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
@@ -5641,9 +5638,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_name(helpers, "section_label");
   gtk_box_pack_start(GTK_BOX(helpers), dt_ui_label_new(_("perspective helpers")), TRUE, TRUE, 0);
 
-  g->clean = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
-  gtk_box_pack_start(GTK_BOX(helpers), g->clean, FALSE, TRUE, 0);
-
   g->eye = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT, NULL);
   gtk_box_pack_start(GTK_BOX(helpers), g->eye, FALSE, TRUE, 0);
 
@@ -5720,7 +5714,6 @@ void gui_init(struct dt_iop_module_t *self)
                                                    "ctrl+shift+click for a combination of both methods"));
   gtk_widget_set_tooltip_text(g->structure_quad, _("manually define perspective rectangle"));
   gtk_widget_set_tooltip_text(g->structure_lines, _("manually draw structure lines"));
-  gtk_widget_set_tooltip_text(g->clean, _("remove line structure information"));
   gtk_widget_set_tooltip_text(g->eye, _("toggle visibility of structure lines"));
 
   g_signal_connect(G_OBJECT(g->fit_v), "button-press-event", G_CALLBACK(_event_fit_v_button_clicked),
@@ -5735,7 +5728,6 @@ void gui_init(struct dt_iop_module_t *self)
                    (gpointer)self);
   g_signal_connect(G_OBJECT(g->structure_auto), "button-press-event", G_CALLBACK(_event_structure_auto_clicked),
                    (gpointer)self);
-  g_signal_connect(G_OBJECT(g->clean), "clicked", G_CALLBACK(_event_clean_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(g->eye), "toggled", G_CALLBACK(_event_eye_button_toggled), (gpointer)self);
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_event_draw), self);
 
