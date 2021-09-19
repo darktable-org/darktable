@@ -32,7 +32,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <ctype.h>
 
 
 #ifdef _WIN32
@@ -1913,19 +1912,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         }
         else
         {
-          char c;
-          /*
-           Displayed star rating are of the form "2 - ★★"
-           If the input starts with a digit, match with the corresponding star rating
-          */
-          if(text && isdigit(c = text[0]))
-          {
-            query = g_strdup_printf("((flags & 7) = %c)", c);
-          }
-          else
-          { /* Attempt to match arbirary user inputs. Will return no results for anything but '%' wildcard. */
-            query = g_strdup_printf("((flags & 7) LIKE '%%%s%%')", escaped_text);
-          }
+          query = g_strdup_printf("((flags & 7) LIKE '%%%s%%')", escaped_text);
         }
 
         g_free(operator);
