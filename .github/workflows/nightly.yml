@@ -109,3 +109,66 @@ jobs:
           name: darktable.${{ github.sha }}.win64.zip
           path: ${{ env.BUILD_DIR }}/darktable-*.exe
           retention-days: 2
+  
+  macOS:
+    name: Nightly darktable.${{ github.sha }}.macOS
+    runs-on: ${{ matrix.build.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        build:
+          - { os: macos-10.15, xcode: 11.3.1, deployment: 10.7 }
+        compiler:
+          - { compiler: XCode,   CC: cc, CXX: c++ }
+        btype: [ RelWithDebInfo ]
+        target:
+          - nofeatures
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_${{ matrix.build.xcode }}.app/Contents/Developer
+      CC: ${{ matrix.compiler.CC }}
+      CXX: ${{ matrix.compiler.CXX }}
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.build.deployment }}
+      CXXFLAGS: -stdlib=libc++
+      OBJCXXFLAGS: -stdlib=libc++
+      SRC_DIR: ${{ github.workspace }}/src
+      BUILD_DIR: ${{ github.workspace }}/build
+      INSTALL_PREFIX: ${{ github.workspace }}/install
+      CMAKE_BUILD_TYPE: ${{ matrix.btype }}
+      #GENERATOR: Ninja
+      GENERATOR: Unix Makefiles
+      TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          path: src
+      - name: Install Base Dependencies
+        run: |
+          brew update > /dev/null || true
+          brew unlink python@3.8
+          brew unlink gcc@9
+          sudo rm '/usr/local/bin/2to3'
+          brew link --overwrite python@3.9 # workaround introduced 30.12.2020, replace asap.
+          # brew upgrade --ignore-pinned # workaround introduced 18.07.2021, replace asap
+          brew tap Homebrew/bundle
+          cd src/.ci 
+          brew bundle --verbose
+      - name: Build and Install
+          # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
+        run: |
+          cmake -E make_directory "${BUILD_DIR}";
+          cmake -E make_directory "${INSTALL_PREFIX}";
+          ./src/.ci/ci-script.sh;
+      - name: Check if it runs
+        run: |
+          ${INSTALL_PREFIX}/bin/darktable --version || true
+          ${INSTALL_PREFIX}/bin/darktable-cli \
+                 --width 2048 --height 2048 \
+                 --hq true --apply-custom-presets false \
+                 "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \
+                 "${SRC_DIR}/src/tests/integration/0000-nop/nop.xmp" \
+                 output.png \
+                 --core --disable-opencl --conf host_memory_limit=8192 \
+                 --conf worker_threads=4 -t 4 \
+                 --conf plugins/lighttable/export/force_lcms2=FALSE \
+                 --conf plugins/lighttable/export/iccintent=0
