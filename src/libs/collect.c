@@ -629,6 +629,7 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
              || d->view_rule == DT_COLLECTION_PROP_ISO
              || d->view_rule == DT_COLLECTION_PROP_EXPOSURE
              || d->view_rule == DT_COLLECTION_PROP_ASPECT_RATIO
+             || d->view_rule == DT_COLLECTION_PROP_RATING
             )
          )
       {
@@ -856,7 +857,8 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   const int property = _combo_get_active_collection(dr->combo);
   if(property == DT_COLLECTION_PROP_APERTURE
      || property == DT_COLLECTION_PROP_FOCAL_LENGTH
-     || property == DT_COLLECTION_PROP_ISO)
+     || property == DT_COLLECTION_PROP_ISO
+     || property == DT_COLLECTION_PROP_RATING)
   {
     // handle of numeric value, which can have some operator before the text
     visible = TRUE;
@@ -1841,13 +1843,10 @@ static void list_view(dt_lib_collect_rule_t *dr)
       case DT_COLLECTION_PROP_RATING: // image rating
         {
           g_snprintf(query, sizeof(query),
-                     "SELECT CASE (flags & 7) WHEN 0 THEN '0 - unstarred' WHEN 1 THEN '1 - ★' WHEN 2 THEN '2 - ★★' WHEN 3 THEN '3 - ★★★' WHEN 4 then '4 - ★★★★' WHEN 5 then '5 - ★★★★★' WHEN 8 THEN '8 - REJECTED' ELSE 'unknown (6-7)' END"
-                     " AS rating_text,"
-                     " (flags & 7) AS rating,"
+                     "SELECT (flags & 7) AS rating,"
                      " COUNT(*) AS count"
                      " FROM main.images AS mi"
-                     " WHERE rating %s"
-                     " AND rating < 9" // see dt_image_flags_t in image.h
+                     " WHERE %s"
                      " GROUP BY rating"
                      " ORDER BY rating", where_ext);
         }
@@ -1956,7 +1955,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
        || property == DT_COLLECTION_PROP_FOCAL_LENGTH
        || property == DT_COLLECTION_PROP_ISO
        || property == DT_COLLECTION_PROP_EXPOSURE
-       || property == DT_COLLECTION_PROP_ASPECT_RATIO)
+       || property == DT_COLLECTION_PROP_ASPECT_RATIO
+       || property == DT_COLLECTION_PROP_RATING)
     {
       gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
     }
@@ -2002,7 +2002,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
      || property == DT_COLLECTION_PROP_FOCAL_LENGTH
      || property == DT_COLLECTION_PROP_ISO
      || property == DT_COLLECTION_PROP_EXPOSURE
-     || property == DT_COLLECTION_PROP_ASPECT_RATIO)
+     || property == DT_COLLECTION_PROP_ASPECT_RATIO
+     || property == DT_COLLECTION_PROP_RATING)
   {
     // test selection range [xxx;xxx]
     GRegex *regex;
@@ -3264,7 +3265,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_GROUPING);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_MODULE);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_ORDER);
-
+  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_RATING);
 }
 #endif
 #undef MAX_RULES
