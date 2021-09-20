@@ -99,7 +99,7 @@ void dt_copy_file(const char *src, const char *dst);
 void dt_copy_resource_file(const char *src, const char *dst);
 
 // returns the RsvgDimensionData of a supplied RsvgHandle
-RsvgDimensionData getSvgDimension(RsvgHandle *svg);
+RsvgDimensionData dt_get_svg_dimension(RsvgHandle *svg);
 
 // renders svg data
 void dt_render_svg(RsvgHandle *svg, cairo_t *cr, double width, double height, double offset_x, double offset_y);

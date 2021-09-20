@@ -419,7 +419,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
   if(svg)
   {
     RsvgDimensionData dimension;
-    dimension = getSvgDimension(svg);
+    dimension = dt_get_svg_dimension(svg);
 
     const float ppd = darktable.gui ? darktable.gui->ppd : 1.0;
 
@@ -889,7 +889,7 @@ void dt_copy_resource_file(const char *src, const char *dst)
   g_free(sourcefile);
 }
 
-RsvgDimensionData getSvgDimension(RsvgHandle *svg) 
+RsvgDimensionData dt_get_svg_dimension(RsvgHandle *svg) 
 {
   RsvgDimensionData dimension;
   // rsvg_handle_get_dimensions has been deprecated in librsvg 2.52

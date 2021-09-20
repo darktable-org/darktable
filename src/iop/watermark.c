@@ -726,7 +726,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   switch(type)
   {
     case DT_WTM_SVG:
-      dimension = getSvgDimension(svg);
+      dimension = dt_get_svg_dimension(svg);
       break;
     case DT_WTM_PNG:
       // load png into surface 2
