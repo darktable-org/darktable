@@ -726,16 +726,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   switch(type)
   {
     case DT_WTM_SVG:      
-      // rsvg_handle_get_dimensions has been deprecated in librsvg 2.52
-      #if LIBRSVG_CHECK_VERSION(2,52,0)
-        double width;
-        double height;
-        rsvg_handle_get_intrinsic_size_in_pixels(svg, &width, &height);
-        dimension.width = width;
-        dimension.height = height;
-      #else
-        rsvg_handle_get_dimensions(svg, &dimension);
-      #endif 
+      dimension = getSvgDimension(*svg);
       break;      
     case DT_WTM_PNG:
       // load png into surface 2
@@ -921,19 +912,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     case DT_WTM_SVG:
       cairo_scale(cr_two, scale, scale);
       /* render svg into surface*/
-      
-      // rsvg_handle_render_cairo has been deprecated in librsvg 2.52
-      #if LIBRSVG_CHECK_VERSION(2,52,0)
-        GError *error = NULL;
-        RsvgRectangle viewport;
-	      viewport.x = 0;
-	      viewport.y = 0;
-	      viewport.width = dimension.width;
-	      viewport.height = dimension.height;
-        rsvg_handle_render_document(svg, cr_two, &viewport, &error);
-      #else
-        rsvg_handle_render_cairo(svg, cr_two);
-      #endif  
+      dt_render_svg(*svg, cr_two, dimension.width, dimension.height, 0, 0);
       break;
     case DT_WTM_PNG:
       cairo_scale(cr, scale, scale);

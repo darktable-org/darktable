@@ -20,6 +20,7 @@
 
 #include <gtk/gtk.h>
 #include <string.h>
+#include <librsvg/rsvg.h>
 
 /** dynamically allocate and concatenate string */
 gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...) __attribute__((format(printf, 2, 3)));
@@ -96,6 +97,12 @@ void dt_copy_file(const char *src, const char *dst);
 
 // copy the contents of a file in dt's data directory to a new file
 void dt_copy_resource_file(const char *src, const char *dst);
+
+// returns the RsvgDimensionData of a supplied RsvgHandle
+RsvgDimensionData getSvgDimension(RsvgHandle svg);
+
+// renders svg data
+void dt_render_svg(RsvgHandle svg, cairo_t *cr, double width, double height, double offset_x, double offset_y);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
