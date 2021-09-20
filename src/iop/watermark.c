@@ -725,9 +725,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   RsvgDimensionData dimension;
   switch(type)
   {
-    case DT_WTM_SVG:      
+    case DT_WTM_SVG:
       dimension = getSvgDimension(svg);
-      break;      
+      break;
     case DT_WTM_PNG:
       // load png into surface 2
       surface_two = cairo_image_surface_create_from_png(filename);
