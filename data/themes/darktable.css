@@ -1300,6 +1300,7 @@ dialog scrollbar
   margin-right: 0.35em;
 }
 
+#preset_controls entry,
 #shortcut_controls entry
 {
   min-width: 15em;
