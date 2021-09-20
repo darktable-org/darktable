@@ -99,10 +99,10 @@ void dt_copy_file(const char *src, const char *dst);
 void dt_copy_resource_file(const char *src, const char *dst);
 
 // returns the RsvgDimensionData of a supplied RsvgHandle
-RsvgDimensionData getSvgDimension(RsvgHandle svg);
+RsvgDimensionData getSvgDimension(RsvgHandle *svg);
 
 // renders svg data
-void dt_render_svg(RsvgHandle svg, cairo_t *cr, double width, double height, double offset_x, double offset_y);
+void dt_render_svg(RsvgHandle *svg, cairo_t *cr, double width, double height, double offset_x, double offset_y);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -726,7 +726,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   switch(type)
   {
     case DT_WTM_SVG:      
-      dimension = getSvgDimension(*svg);
+      dimension = getSvgDimension(svg);
       break;      
     case DT_WTM_PNG:
       // load png into surface 2
@@ -912,7 +912,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     case DT_WTM_SVG:
       cairo_scale(cr_two, scale, scale);
       /* render svg into surface*/
-      dt_render_svg(*svg, cr_two, dimension.width, dimension.height, 0, 0);
+      dt_render_svg(svg, cr_two, dimension.width, dimension.height, 0, 0);
       break;
     case DT_WTM_PNG:
       cairo_scale(cr, scale, scale);
