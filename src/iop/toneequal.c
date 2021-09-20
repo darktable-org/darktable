@@ -1377,37 +1377,49 @@ static inline void compute_log_histogram_and_stats(const float *const restrict l
   }
 
   const int first = (int)((float)num_elem * 0.05f);
-  const int last = (int)((float)num_elem * 0.95f);
+  const int last = (int)((float)num_elem * (1.0f - 0.95f));
   int population = 0;
   int first_pos = 0;
   int last_pos = 0;
 
   // scout the extended histogram bins looking for deciles
   // these would not be accurate with the regular histogram
-  for(size_t k = 0; k < TEMP_SAMPLES; ++k)
+  for(int k = 0; k < TEMP_SAMPLES; ++k)
   {
     const size_t prev_population = population;
     population += temp_hist[k];
-    if(prev_population < first && first <= population) first_pos = k;
-    if(prev_population < last && last <= population) last_pos = k;
+    if(prev_population < first && first <= population)
+    {
+      first_pos = k;
+      break;
+    }
+  }
+  population = 0;
+  for(int k = TEMP_SAMPLES - 1; k >= 0; --k)
+  {
+    const size_t prev_population = population;
+    population += temp_hist[k];
+    if(prev_population < last && last <= population)
+    {
+      last_pos = k;
+      break;
+    }
   }
 
   // Convert decile positions to exposures
   *first_decile = 16.0 * (float)first_pos / (float)(TEMP_SAMPLES - 1) - 10.0;
   *last_decile = 16.0 * (float)last_pos / (float)(TEMP_SAMPLES - 1) - 10.0;
 
-  *max_histogram = 0;
   // remap the extended histogram into the normal one
   // bins between [-8; 0] EV remapped between [0 ; UI_SAMPLES]
   for(size_t k = 0; k < TEMP_SAMPLES; ++k)
   {
     float EV = 16.0 * (float)k / (float)(TEMP_SAMPLES - 1) - 10.0;
-    int i = CLAMP((int)(((EV + 8.0f) / 8.0f) * (float)UI_SAMPLES), 0, UI_SAMPLES - 1);
+    const int i = CLAMP((int)(((EV + 8.0f) / 8.0f) * (float)UI_SAMPLES), 0, UI_SAMPLES - 1);
     histogram[i] += temp_hist[k];
 
     // store the max numbers of elements in bins for later normalization
-    if(histogram[i] > *max_histogram)
-      *max_histogram = histogram[i];
+    *max_histogram = histogram[i] > *max_histogram ? histogram[i] : *max_histogram;
   }
 }
 
@@ -1732,13 +1744,11 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
 
   dt_iop_request_focus(self);
 
-  if(p->exposure_boost != 0.0f || !self->enabled)
+  if(!self->enabled)
   {
-    // Reset the exposure boost and do nothing
-    p->exposure_boost = 0.0f;
+    // activate module and do nothing
     ++darktable.gui->reset;
     dt_bauhaus_slider_set_soft(g->exposure_boost, p->exposure_boost);
-    dt_bauhaus_widget_set_quad_active(quad, FALSE);
     --darktable.gui->reset;
 
     invalidate_luminance_cache(self);
@@ -1748,10 +1758,6 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
 
   if(!g->luminance_valid || self->dev->pipe->processing || !g->histogram_valid)
   {
-    ++darktable.gui->reset;
-    gboolean active = dt_bauhaus_widget_get_quad_active(quad);
-    dt_bauhaus_widget_set_quad_active(quad, !active);
-    --darktable.gui->reset;
     dt_control_log(_("wait for the preview to finish recomputing"));
     return;
   }
@@ -1805,13 +1811,11 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
 
   dt_iop_request_focus(self);
 
-  if(p->contrast_boost != 0.0f || !self->enabled)
+  if(!self->enabled)
   {
-    // Reset the contrast boost and do nothing
-    p->contrast_boost = 0.0f;
+    // activate module and do nothing
     ++darktable.gui->reset;
     dt_bauhaus_slider_set_soft(g->contrast_boost, p->contrast_boost);
-    dt_bauhaus_widget_set_quad_active(quad, FALSE);
     --darktable.gui->reset;
 
     invalidate_luminance_cache(self);
@@ -1821,10 +1825,6 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
 
   if(!g->luminance_valid || self->dev->pipe->processing || !g->histogram_valid)
   {
-    ++darktable.gui->reset;
-    gboolean active = dt_bauhaus_widget_get_quad_active(quad);
-    dt_bauhaus_widget_set_quad_active(quad, !active);
-    --darktable.gui->reset;
     dt_control_log(_("wait for the preview to finish recomputing"));
     return;
   }
@@ -3264,9 +3264,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->exposure_boost, "%+.2f EV");
   gtk_widget_set_tooltip_text(g->exposure_boost, _("use this to slide the mask average exposure along channels\n"
                                                    "for a better control of the exposure correction with the available nodes.\n"
-                                                   "the picker will auto-adjust the average exposure at -4EV."));
-  dt_bauhaus_widget_set_quad_paint(g->exposure_boost, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->exposure_boost, TRUE);
+                                                   "the button will auto-adjust the average exposure"));
+  dt_bauhaus_widget_set_quad_paint(g->exposure_boost, dtgtk_cairo_paint_auto_levels, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->exposure_boost, FALSE);
   g_signal_connect(G_OBJECT(g->exposure_boost), "quad-pressed", G_CALLBACK(auto_adjust_exposure_boost), self);
 
   g->contrast_boost = dt_bauhaus_slider_from_params(self, "contrast_boost");
@@ -3275,9 +3275,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->contrast_boost, _("use this to counter the averaging effect of the guided filter\n"
                                                    "and dilate the mask contrast around -4EV\n"
                                                    "this allows to spread the exposure histogram over more channels\n"
-                                                   "for a better control of the exposure correction."));
-  dt_bauhaus_widget_set_quad_paint(g->contrast_boost, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->contrast_boost, TRUE);
+                                                   "for a better control of the exposure correction.\n"
+                                                   "the button will auto-adjust the contrast"));
+  dt_bauhaus_widget_set_quad_paint(g->contrast_boost, dtgtk_cairo_paint_auto_levels, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->contrast_boost, FALSE);
   g_signal_connect(G_OBJECT(g->contrast_boost), "quad-pressed", G_CALLBACK(auto_adjust_contrast_boost), self);
 
   // start building top level widget
