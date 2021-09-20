@@ -705,7 +705,7 @@ const char *dt_collection_name(dt_collection_properties_t prop)
     case DT_COLLECTION_PROP_LOCAL_COPY:       return _("local copy");
     case DT_COLLECTION_PROP_MODULE:           return _("module");
     case DT_COLLECTION_PROP_ORDER:            return _("module order");
-    case DT_COLLECTION_PROP_RATING:           return _("image rating");
+    case DT_COLLECTION_PROP_RATING:           return _("rating");
     case DT_COLLECTION_PROP_LAST:             return NULL;
     default:
     {
