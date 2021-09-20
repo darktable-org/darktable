@@ -47,24 +47,14 @@ typedef struct dt_gui_themetweak_widgets_t
   GtkWidget *apply_toggle, *save_button, *css_text_view;
 } dt_gui_themetweak_widgets_t;
 
-// FIXME: this is copypasta from gui/presets.c. better put these somewhere so that all places can access the
-// same data.
-static const int dt_gui_presets_exposure_value_cnt = 24;
-static const float dt_gui_presets_exposure_value[]
-    = { 0.,       1. / 8000, 1. / 4000, 1. / 2000, 1. / 1000, 1. / 1000, 1. / 500, 1. / 250,
-        1. / 125, 1. / 60,   1. / 30,   1. / 15,   1. / 15,   1. / 8,    1. / 4,   1. / 2,
-        1,        2,         4,         8,         15,        30,        60,       FLT_MAX };
-static const char *dt_gui_presets_exposure_value_str[]
-    = { "0",     "1/8000", "1/4000", "1/2000", "1/1000", "1/1000", "1/500", "1/250",
-        "1/125", "1/60",   "1/30",   "1/15",   "1/15",   "1/8",    "1/4",   "1/2",
-        "1\"",   "2\"",    "4\"",    "8\"",    "15\"",   "30\"",   "60\"",  "+" };
-static const int dt_gui_presets_aperture_value_cnt = 19;
-static const float dt_gui_presets_aperture_value[]
-    = { 0,    0.5,  0.7,  1.0,  1.4,  2.0,  2.8,  4.0,   5.6,    8.0,
-        11.0, 16.0, 22.0, 32.0, 45.0, 64.0, 90.0, 128.0, FLT_MAX };
-static const char *dt_gui_presets_aperture_value_str[]
-    = { "f/0",  "f/0.5", "f/0.7", "f/1.0", "f/1.4", "f/2",  "f/2.8", "f/4",   "f/5.6", "f/8",
-        "f/11", "f/16",  "f/22",  "f/32",  "f/45",  "f/64", "f/90",  "f/128", "f/+" };
+// link to values in gui/presets.c
+// move to presets.h if needed elsewhere
+extern const int dt_gui_presets_exposure_value_cnt;
+extern const float dt_gui_presets_exposure_value[];
+extern const char *dt_gui_presets_exposure_value_str[];
+extern const int dt_gui_presets_aperture_value_cnt;
+extern const float dt_gui_presets_aperture_value[];
+extern const char *dt_gui_presets_aperture_value_str[];
 
 // Values for the accelerators/presets treeview
 
