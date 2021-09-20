@@ -1284,6 +1284,10 @@ void gui_init(dt_view_t *self)
   gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
                               gtk_widget_get_parent(dt_ui_toast_msg(darktable.gui->ui)), -1);
 
+  // enable drag & drop
+  gtk_drag_dest_set(dt_ui_center_base(darktable.gui->ui), GTK_DEST_DEFAULT_ALL, target_list_all, n_targets_all, GDK_ACTION_MOVE);
+  g_signal_connect(G_OBJECT(dt_ui_center_base(darktable.gui->ui)), "drag-data-received", G_CALLBACK(dt_thumbtable_event_dnd_received), NULL);
+
   /* add the global focus peaking button in toolbox */
   dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.gui->focus_peaking_button,
                                      DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM);
