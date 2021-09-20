@@ -900,7 +900,7 @@ RsvgDimensionData getSvgDimension(RsvgHandle *svg)
     dimension.width = width;
     dimension.height = height;
   #else      
-    rsvg_handle_get_dimensions(&svg, &dimension);
+    rsvg_handle_get_dimensions(svg, &dimension);
   #endif
   return dimension; 
 }
