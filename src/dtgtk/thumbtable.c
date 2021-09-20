@@ -1696,7 +1696,7 @@ static void _event_dnd_begin(GtkWidget *widget, GdkDragContext *context, gpointe
   }
 }
 
-static void _event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
+void dt_thumbtable_event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
                                 GtkSelectionData *selection_data, guint target_type, guint time,
                                 gpointer user_data)
 {
@@ -1801,7 +1801,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   g_signal_connect_after(table->widget, "drag-begin", G_CALLBACK(_event_dnd_begin), table);
   g_signal_connect_after(table->widget, "drag-end", G_CALLBACK(_event_dnd_end), table);
   g_signal_connect(table->widget, "drag-data-get", G_CALLBACK(_event_dnd_get), table);
-  g_signal_connect(table->widget, "drag-data-received", G_CALLBACK(_event_dnd_received), table);
+  g_signal_connect(table->widget, "drag-data-received", G_CALLBACK(dt_thumbtable_event_dnd_received), table);
 
   g_signal_connect(G_OBJECT(table->widget), "scroll-event", G_CALLBACK(_event_scroll), table);
   g_signal_connect(G_OBJECT(table->widget), "draw", G_CALLBACK(_event_draw), table);
