@@ -552,16 +552,18 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
     for(const GSList *filename = filenames; filename; filename = g_slist_next(filename))
     {
       /* extract name from xml file */
-      gchar *bname = "";
+      gchar *bname = NULL;
       xmlDoc *document = xmlReadFile((char*)filename->data, NULL, 0);
       xmlNode *root = NULL;
       if(document != NULL)
         root = xmlDocGetRootElement(document);
 
-      if(document == NULL || root == NULL)
+      if(document == NULL || root == NULL || xmlStrcmp(root->name, BAD_CAST "darktable_style"))
       {
         dt_print(DT_DEBUG_CONTROL,
                  "[styles] file %s is not a style file\n", (char*)filename->data);
+        if(document)
+          xmlFreeDoc(document);
         continue;
       }
 
@@ -571,16 +573,23 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
         {
           if(strcmp((char*)node->name, "name") == 0)
           {
-            //printf("%s\n", node->name);
-            //printf("%s\n", xmlNodeGetContent(node));
-            bname = (char*)xmlNodeGetContent(node);
+            bname = g_strdup((char*)xmlNodeGetContent(node));
             break;
           }
         }
       }
 
+      // xml doc is not necessary after this point
+      xmlFreeDoc(document);
+
+      if(!bname){
+        dt_print(DT_DEBUG_CONTROL,
+                 "[styles] file %s is malformed style file\n", (char*)filename->data);
+        continue;
+      }
+
       // check if style exists
-      if(dt_styles_exists(bname) != 0)
+      if(dt_styles_exists(bname))
       {
         /* do not run overwrite dialog */
         if(overwrite_check_button == 1)
@@ -685,6 +694,7 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
       {
         dt_styles_import_from_file((char*)filename->data);
       }
+      g_free(bname);
     }
     g_slist_free_full(filenames, g_free);
 

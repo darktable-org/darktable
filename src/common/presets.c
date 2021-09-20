@@ -201,6 +201,13 @@ int dt_presets_import_from_file(const char *preset_path)
   if(!doc)
     return FALSE;
 
+  xmlNodePtr root = xmlDocGetRootElement(doc);
+  if(!root || xmlStrcmp(root->name, BAD_CAST "darktable_preset") != 0)
+  {
+    xmlFreeDoc(doc);
+    return FALSE;
+  }
+
   gchar *name = get_preset_element(doc, "name");
   gchar *description = get_preset_element(doc, "description");
   gchar *operation = get_preset_element(doc, "operation");
