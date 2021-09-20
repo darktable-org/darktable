@@ -1464,23 +1464,6 @@ gboolean shortcut_selection_function(GtkTreeSelection *selection,
 
 static dt_action_t *_selected_action = NULL;
 
-static gboolean _start_search(GtkWidget *widget, GdkEventKey *event, GtkSearchEntry *entry)
-{
-  if(gtk_search_entry_handle_event(entry, (GdkEvent *)event))
-  {
-    gtk_entry_grab_focus_without_selecting(GTK_ENTRY(entry));
-    return TRUE;
-  }
-
-  return FALSE;
-}
-
-static void _stop_search(GtkSearchEntry *entry, GtkWidget *tree_view)
-{
-  gtk_entry_set_text(GTK_ENTRY(entry), "");
-  gtk_widget_grab_focus(tree_view);
-}
-
 static gboolean _action_view_click(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
   GtkTreeView *view = GTK_TREE_VIEW(widget);
@@ -1548,7 +1531,7 @@ static void _action_selection_changed(GtkTreeSelection *selection, gpointer data
   gtk_tree_view_expand_all(shortcuts_view);
 }
 
-gboolean _search_func(GtkTreeModel *model, gint column, const gchar *key, GtkTreeIter *iter, gpointer search_data)
+static gboolean _search_func(GtkTreeModel *model, gint column, const gchar *key, GtkTreeIter *iter, gpointer search_data)
 {
   gchar *key_case = g_utf8_casefold(key, -1), *label_case = NULL;
   if(column == 1)
@@ -1957,7 +1940,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   GtkWidget *search_shortcuts = gtk_search_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(search_shortcuts), _("search shortcuts list"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(search_shortcuts), _("incrementally search the list of shortcuts\npress up or down keys to cycle through matches"));
-  g_signal_connect(G_OBJECT(search_shortcuts), "stop-search", G_CALLBACK(_stop_search), shortcuts_view);
+  g_signal_connect(G_OBJECT(search_shortcuts), "stop-search", G_CALLBACK(dt_gui_search_stop), shortcuts_view);
   gtk_tree_view_set_search_entry(shortcuts_view, GTK_ENTRY(search_shortcuts));
 
   gtk_tree_selection_set_select_function(gtk_tree_view_get_selection(shortcuts_view),
@@ -1966,7 +1949,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   g_signal_connect(G_OBJECT(shortcuts_view), "query-tooltip", G_CALLBACK(_shortcut_tooltip_callback), GINT_TO_POINTER(TRUE));
   g_signal_connect(G_OBJECT(shortcuts_view), "row-activated", G_CALLBACK(_shortcut_row_activated), filtered_shortcuts);
   g_signal_connect(G_OBJECT(shortcuts_view), "key-press-event", G_CALLBACK(_shortcut_key_pressed), NULL);
-  g_signal_connect(G_OBJECT(shortcuts_view), "key-press-event", G_CALLBACK(_start_search), search_shortcuts);
+  g_signal_connect(G_OBJECT(shortcuts_view), "key-press-event", G_CALLBACK(dt_gui_search_start), search_shortcuts);
   g_signal_connect(G_OBJECT(shortcuts_store), "row-inserted", G_CALLBACK(_shortcut_row_inserted), shortcuts_view);
 
   // Setting up the cell renderers
@@ -2047,14 +2030,14 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   GtkWidget *search_actions = gtk_search_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(search_actions), _("search actions list"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(search_actions), _("incrementally search the list of actions\npress up or down keys to cycle through matches"));
-  g_signal_connect(G_OBJECT(search_actions), "stop-search", G_CALLBACK(_stop_search), actions_view);
+  g_signal_connect(G_OBJECT(search_actions), "stop-search", G_CALLBACK(dt_gui_search_stop), actions_view);
   gtk_tree_view_set_search_entry(actions_view, GTK_ENTRY(search_actions));
 
   g_object_set(actions_view, "has-tooltip", TRUE, NULL);
   g_signal_connect(G_OBJECT(actions_view), "query-tooltip", G_CALLBACK(_shortcut_tooltip_callback), NULL);
   g_signal_connect(G_OBJECT(actions_view), "row-activated", G_CALLBACK(_action_row_activated), actions_store);
   g_signal_connect(G_OBJECT(actions_view), "button-press-event", G_CALLBACK(_action_view_click), actions_store);
-  g_signal_connect(G_OBJECT(actions_view), "key-press-event", G_CALLBACK(_start_search), search_actions);
+  g_signal_connect(G_OBJECT(actions_view), "key-press-event", G_CALLBACK(dt_gui_search_start), search_actions);
   g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(actions_view)), "changed",
                    G_CALLBACK(_action_selection_changed), shortcuts_view);
 
