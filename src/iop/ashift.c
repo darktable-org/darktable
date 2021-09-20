@@ -426,7 +426,6 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *structure_auto;
   GtkWidget *structure_quad;
   GtkWidget *structure_lines;
-  GtkWidget *eye;
   GtkWidget *values_expander;
   GtkWidget *values_box;
   GtkWidget *values_toggle;
@@ -434,7 +433,6 @@ typedef struct dt_iop_ashift_gui_data_t
   gboolean straightening;
   float straighten_x;
   float straighten_y;
-  int lines_suppressed;
   int fitting;
   int isflipped;
   int isselecting;
@@ -1675,7 +1673,6 @@ static int get_structure(dt_iop_module_t *module, dt_iop_ashift_enhance_t enhanc
   g->vertical_weight = vertical_weight;
   g->horizontal_weight = horizontal_weight;
   g->lines_version++;
-  g->lines_suppressed = 0;
   g->lines = lines;
 
   free(buffer);
@@ -3025,7 +3022,6 @@ static int do_clean_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p
   if(g->lines) free(g->lines);
   g->lines = NULL;
   g->lines_version++;
-  g->lines_suppressed = 0;
   g->current_structure_method = ASHIFT_METHOD_NONE;
   g->fitting = 0;
   return TRUE;
@@ -3878,7 +3874,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if(g->fitting) return;
 
   // no structural data or visibility switched off? -> stop here
-  if(g->lines == NULL || g->lines_suppressed || !gui_has_focus(self)) return;
+  if(g->lines == NULL || !gui_has_focus(self)) return;
 
   // get hash value that changes if distortions from here to the end of the pixelpipe changed
   uint64_t hash = dt_dev_hash_distort(dev);
@@ -4131,8 +4127,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
 
   // if visibility of lines is switched off or no lines available, we would normally adjust the crop box
   // but since g->adjust_crop was FALSE, we have nothing to do
-  if(g->lines_suppressed || g->lines == NULL)
-    return TRUE;
+  if(!g->lines) return TRUE;
 
   // if we are moving a drawn line extrema, we do the change here
   if(g->draw_point_move)
@@ -4345,7 +4340,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   if(wd < 1.0 || ht < 1.0) return 1;
 
   // if we start to draw a straightening line
-  if((g->lines_suppressed || g->lines == NULL) && which == 3)
+  if(!g->lines && which == 3)
   {
     dt_control_change_cursor(GDK_CROSSHAIR);
     g->straightening = TRUE;
@@ -4356,8 +4351,8 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     return TRUE;
   }
 
-  // if visibility of lines is switched off or no lines available -> potentially adjust crop area
-  if(g->current_structure_method != ASHIFT_METHOD_LINES && (g->lines_suppressed || g->lines == NULL))
+  // if no lines available -> potentially adjust crop area
+  if(g->current_structure_method != ASHIFT_METHOD_LINES && !g->lines)
   {
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     if (p->cropmode == ASHIFT_CROP_ASPECT)
@@ -4605,7 +4600,6 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
       }
 
       g->lines_version++;
-      g->lines_suppressed = 0;
     }
     g->draw_point_move = FALSE;
     g->draw_near_point = -1;
@@ -4696,8 +4690,7 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   // do nothing if visibility of lines is switched off or no lines available
-  if(g->lines_suppressed || g->lines == NULL)
-    return FALSE;
+  if(!g->lines) return FALSE;
 
   if(g->near_delta > 0 && (g->isdeselecting || g->isselecting))
   {
@@ -4819,12 +4812,6 @@ static void cropmode_callback(GtkWidget *widget, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-
-  if(g->lines != NULL && !g->lines_suppressed)
-  {
-    g->lines_suppressed = 1;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), g->lines_suppressed);
-  }
 
   swap_shadow_crop_box(p,g);	//temporarily update real crop box
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -5053,24 +5040,6 @@ static int _event_structure_auto_clicked(GtkWidget *widget, GdkEventButton *even
   return FALSE;
 }
 
-static void _event_eye_button_toggled(GtkToggleButton *togglebutton, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  if(darktable.gui->reset) return;
-  if(g->lines == NULL)
-  {
-    g->lines_suppressed = 0;
-    gtk_toggle_button_set_active(togglebutton, 0);
-  }
-  else
-  {
-    g->lines_suppressed = gtk_toggle_button_get_active(togglebutton);
-  }
-  dt_iop_request_focus(self);
-  dt_control_queue_redraw_center();
-}
-
 // routine that is called after preview image has been processed. we use it
 // to perform structure collection or fitting in case those have been triggered while
 // the module had not yet been enabled
@@ -5174,7 +5143,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->aspect, p->aspect);
   dt_bauhaus_combobox_set(g->mode, p->mode);
   dt_bauhaus_combobox_set(g->cropmode, p->cropmode);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), 0);
 
   gtk_widget_set_visible(g->specifics, p->mode == ASHIFT_MODE_SPECIFIC);
 
@@ -5259,7 +5227,6 @@ void reload_defaults(dt_iop_module_t *module)
     g->lensshift_v_range = LENSSHIFT_RANGE_SOFT;
     g->lensshift_h_range = LENSSHIFT_RANGE_SOFT;
     g->shear_range = SHEAR_RANGE_SOFT;
-    g->lines_suppressed = 0;
     g->lines_version = 0;
     g->isselecting = 0;
     g->isdeselecting = 0;
@@ -5335,7 +5302,6 @@ static gboolean _event_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *sel
   ++darktable.gui->reset;
   dt_bauhaus_widget_set_label(g->lensshift_v, NULL, string_v);
   dt_bauhaus_widget_set_label(g->lensshift_h, NULL, string_h);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->eye), g->lines_suppressed);
   --darktable.gui->reset;
 
   return FALSE;
@@ -5472,7 +5438,6 @@ static int _event_structure_quad_clicked(GtkWidget *widget, GdkEventButton *even
       g->vertical_weight = 2.0;
       g->horizontal_weight = 2.0;
       g->lines_version++;
-      g->lines_suppressed = 0;
 
       dt_control_queue_redraw_center();
     }
@@ -5537,7 +5502,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->vertical_count = 0;
   g->horizontal_count = 0;
   g->lines_version = 0;
-  g->lines_suppressed = 0;
   g->points = NULL;
   g->points_idx = NULL;
   g->points_lines_count = 0;
@@ -5634,14 +5598,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(g->values_box), g->specifics, TRUE, TRUE, 0);
 
-  GtkWidget *helpers = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(helpers, "section_label");
-  gtk_box_pack_start(GTK_BOX(helpers), dt_ui_label_new(_("perspective helpers")), TRUE, TRUE, 0);
-
-  g->eye = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT, NULL);
-  gtk_box_pack_start(GTK_BOX(helpers), g->eye, FALSE, TRUE, 0);
-
-  gtk_widget_show_all(helpers);
+  GtkWidget *helpers = dt_ui_section_label_new(_("perspective helpers"));
   gtk_box_pack_start(GTK_BOX(g->values_box), helpers, TRUE, TRUE, 0);
 
   GtkGrid *auto_grid = GTK_GRID(gtk_grid_new());
@@ -5714,7 +5671,6 @@ void gui_init(struct dt_iop_module_t *self)
                                                    "ctrl+shift+click for a combination of both methods"));
   gtk_widget_set_tooltip_text(g->structure_quad, _("manually define perspective rectangle"));
   gtk_widget_set_tooltip_text(g->structure_lines, _("manually draw structure lines"));
-  gtk_widget_set_tooltip_text(g->eye, _("toggle visibility of structure lines"));
 
   g_signal_connect(G_OBJECT(g->fit_v), "button-press-event", G_CALLBACK(_event_fit_v_button_clicked),
                    (gpointer)self);
@@ -5728,7 +5684,6 @@ void gui_init(struct dt_iop_module_t *self)
                    (gpointer)self);
   g_signal_connect(G_OBJECT(g->structure_auto), "button-press-event", G_CALLBACK(_event_structure_auto_clicked),
                    (gpointer)self);
-  g_signal_connect(G_OBJECT(g->eye), "toggled", G_CALLBACK(_event_eye_button_toggled), (gpointer)self);
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_event_draw), self);
 
   /* add signal handler for preview pipe finish to redraw the overlay */
