@@ -2076,6 +2076,10 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
                           send_iter, (GClosureNotify)g_free, G_CONNECT_AFTER);
   }
 
+  GtkTreePath *path = gtk_tree_path_new_first();
+  gtk_tree_view_set_cursor(shortcuts_view, path, NULL, FALSE);
+  gtk_tree_path_free(path);
+
   const int split_position = dt_conf_get_int("shortcuts/window_split");
   if(split_position) gtk_paned_set_position(GTK_PANED(container), split_position);
   g_signal_connect(G_OBJECT(shortcuts_view), "size-allocate", G_CALLBACK(_resize_shortcuts_view), container);
