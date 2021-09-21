@@ -47,24 +47,14 @@ typedef struct dt_gui_themetweak_widgets_t
   GtkWidget *apply_toggle, *save_button, *css_text_view;
 } dt_gui_themetweak_widgets_t;
 
-// FIXME: this is copypasta from gui/presets.c. better put these somewhere so that all places can access the
-// same data.
-static const int dt_gui_presets_exposure_value_cnt = 24;
-static const float dt_gui_presets_exposure_value[]
-    = { 0.,       1. / 8000, 1. / 4000, 1. / 2000, 1. / 1000, 1. / 1000, 1. / 500, 1. / 250,
-        1. / 125, 1. / 60,   1. / 30,   1. / 15,   1. / 15,   1. / 8,    1. / 4,   1. / 2,
-        1,        2,         4,         8,         15,        30,        60,       FLT_MAX };
-static const char *dt_gui_presets_exposure_value_str[]
-    = { "0",     "1/8000", "1/4000", "1/2000", "1/1000", "1/1000", "1/500", "1/250",
-        "1/125", "1/60",   "1/30",   "1/15",   "1/15",   "1/8",    "1/4",   "1/2",
-        "1\"",   "2\"",    "4\"",    "8\"",    "15\"",   "30\"",   "60\"",  "+" };
-static const int dt_gui_presets_aperture_value_cnt = 19;
-static const float dt_gui_presets_aperture_value[]
-    = { 0,    0.5,  0.7,  1.0,  1.4,  2.0,  2.8,  4.0,   5.6,    8.0,
-        11.0, 16.0, 22.0, 32.0, 45.0, 64.0, 90.0, 128.0, FLT_MAX };
-static const char *dt_gui_presets_aperture_value_str[]
-    = { "f/0",  "f/0.5", "f/0.7", "f/1.0", "f/1.4", "f/2",  "f/2.8", "f/4",   "f/5.6", "f/8",
-        "f/11", "f/16",  "f/22",  "f/32",  "f/45",  "f/64", "f/90",  "f/128", "f/+" };
+// link to values in gui/presets.c
+// move to presets.h if needed elsewhere
+extern const int dt_gui_presets_exposure_value_cnt;
+extern const float dt_gui_presets_exposure_value[];
+extern const char *dt_gui_presets_exposure_value_str[];
+extern const int dt_gui_presets_aperture_value_cnt;
+extern const float dt_gui_presets_aperture_value[];
+extern const char *dt_gui_presets_aperture_value_str[];
 
 // Values for the accelerators/presets treeview
 
@@ -744,11 +734,51 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
   cairo_surface_destroy(check_cst);
 }
 
+static gboolean _search_func(GtkTreeModel *model, gint column, const gchar *key, GtkTreeIter *iter, gpointer search_data)
+{
+  gchar *key_case = g_utf8_casefold(key, -1), *label = NULL;
+
+  gtk_tree_model_get(model, iter, P_NAME_COLUMN, &label, -1);
+  gchar *name_case = g_utf8_casefold(label, -1);
+  g_free(label);
+  gtk_tree_model_get(model, iter, P_MODULE_COLUMN, &label, -1);
+  gchar *module_case = g_utf8_casefold(label, -1);
+  g_free(label);
+
+  const gboolean different = !((name_case && strstr(name_case, key_case))
+                               || (module_case && strstr(module_case, key_case)));
+
+  g_free(name_case);
+  g_free(module_case);
+  g_free(key_case);
+
+  if(!different)
+  {
+    GtkTreePath *path = gtk_tree_model_get_path(model, iter);
+    gtk_tree_view_expand_to_path(GTK_TREE_VIEW(search_data), path);
+    gtk_tree_path_free(path);
+
+    return FALSE;
+  }
+
+  GtkTreeIter child;
+  if(gtk_tree_model_iter_children(model, &child, iter))
+  {
+    do
+    {
+      _search_func(model, column, key, &child, search_data);
+    }
+    while(gtk_tree_model_iter_next(model, &child));
+  }
+
+  return TRUE;
+}
+
 static void init_tab_presets(GtkWidget *stack)
 {
   GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
-  GtkWidget *tree = gtk_tree_view_new();
+  GtkTreeView *tree = GTK_TREE_VIEW(gtk_tree_view_new());
   GtkTreeStore *model = gtk_tree_store_new(
       P_N_COLUMNS, G_TYPE_INT /*rowid*/, G_TYPE_STRING /*operation*/, G_TYPE_STRING /*module*/,
       GDK_TYPE_PIXBUF /*editable*/, G_TYPE_STRING /*name*/, G_TYPE_STRING /*model*/, G_TYPE_STRING /*maker*/,
@@ -769,48 +799,48 @@ static void init_tab_presets(GtkWidget *stack)
   // Setting up the cell renderers
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(_("module"), renderer, "text", P_MODULE_COLUMN, NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+  gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_pixbuf_new();
   column = gtk_tree_view_column_new_with_attributes("", renderer, "pixbuf", P_EDITABLE_COLUMN, NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+  gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(_("name"), renderer, "text", P_NAME_COLUMN, NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+  gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(_("model"), renderer, "text", P_MODEL_COLUMN, NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+  gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(_("maker"), renderer, "text", P_MAKER_COLUMN, NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+  gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(_("lens"), renderer, "text", P_LENS_COLUMN, NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+  gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(_("ISO"), renderer, "text", P_ISO_COLUMN, NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+  gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(_("exposure"), renderer, "text", P_EXPOSURE_COLUMN, NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+  gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(_("aperture"), renderer, "text", P_APERTURE_COLUMN, NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+  gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(_("focal length"), renderer, "text",
                                                     P_FOCAL_LENGTH_COLUMN, NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+  gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_pixbuf_new();
   column = gtk_tree_view_column_new_with_attributes(_("auto"), renderer, "pixbuf", P_AUTOAPPLY_COLUMN, NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+  gtk_tree_view_append_column(tree, column);
 
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_box_pack_start(GTK_BOX(container), scroll, TRUE, TRUE, 0);
@@ -819,12 +849,21 @@ static void init_tab_presets(GtkWidget *stack)
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(hbox, "preset_controls");
 
+  GtkWidget *search_presets = gtk_search_entry_new();
+  gtk_box_pack_start(GTK_BOX(hbox), search_presets, FALSE, TRUE, 0);
+  gtk_entry_set_placeholder_text(GTK_ENTRY(search_presets), _("search presets list"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(search_presets), _("incrementally search the list of presets\npress up or down keys to cycle through matches"));
+  g_signal_connect(G_OBJECT(search_presets), "activate", G_CALLBACK(dt_gui_search_stop), tree);
+  g_signal_connect(G_OBJECT(search_presets), "stop-search", G_CALLBACK(dt_gui_search_stop), tree);
+  g_signal_connect(G_OBJECT(tree), "key-press-event", G_CALLBACK(dt_gui_search_start), search_presets);
+  gtk_tree_view_set_search_entry(tree, GTK_ENTRY(search_presets));
+
   GtkWidget *button = gtk_button_new_with_label(C_("preferences", "import..."));
-  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_preset), (gpointer)model);
 
   button = gtk_button_new_with_label(C_("preferences", "export..."));
-  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_preset), (gpointer)model);
 
   gtk_box_pack_start(GTK_BOX(container), hbox, FALSE, FALSE, 0);
@@ -838,14 +877,13 @@ static void init_tab_presets(GtkWidget *stack)
   g_signal_connect(G_OBJECT(tree), "key-press-event", G_CALLBACK(tree_key_press_presets), (gpointer)model);
 
   // Setting up the search functionality
-  gtk_tree_view_set_search_column(GTK_TREE_VIEW(tree), P_NAME_COLUMN);
-  gtk_tree_view_set_enable_search(GTK_TREE_VIEW(tree), TRUE);
+  gtk_tree_view_set_search_equal_func(tree, _search_func, tree, NULL);
 
   // Attaching the model to the treeview
-  gtk_tree_view_set_model(GTK_TREE_VIEW(tree), GTK_TREE_MODEL(model));
+  gtk_tree_view_set_model(tree, GTK_TREE_MODEL(model));
 
   // Adding the treeview to its containers
-  gtk_container_add(GTK_CONTAINER(scroll), tree);
+  gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(tree));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
   g_object_unref(G_OBJECT(model));
