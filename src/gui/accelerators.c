@@ -1994,7 +1994,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_widget_set_size_request(scroll, -1, 100);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(shortcuts_view));
-  gtk_paned_pack1(GTK_PANED(container), scroll, TRUE, FALSE);
+  gtk_paned_pack2(GTK_PANED(container), scroll, TRUE, FALSE);
 
   // Creating the action selection treeview
   g_set_weak_pointer(&actions_store, gtk_tree_store_new(1, G_TYPE_POINTER)); // static
@@ -2059,7 +2059,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_widget_set_size_request(scroll, -1, 100);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(actions_view));
-  gtk_paned_pack2(GTK_PANED(container), scroll, TRUE, FALSE);
+  gtk_paned_pack1(GTK_PANED(container), scroll, TRUE, FALSE);
 
   if(found_iter.user_data)
   {
@@ -2076,8 +2076,8 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
 
   GtkWidget *button_bar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0), *button = NULL;
   gtk_widget_set_name(button_bar, "shortcut_controls");
-  gtk_box_pack_start(GTK_BOX(button_bar), search_shortcuts, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(button_bar), search_actions, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(button_bar), search_shortcuts, FALSE, FALSE, 0);
 
   button = gtk_button_new_with_label(_("restore..."));
   gtk_widget_set_tooltip_text(button, "restore default shortcuts or previous state");
