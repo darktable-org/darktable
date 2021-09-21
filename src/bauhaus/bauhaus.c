@@ -948,7 +948,21 @@ void dt_bauhaus_widget_press_quad(GtkWidget *widget)
     else
       w->quad_paint_flags |= CPF_ACTIVE;
   }
+  else
+    w->quad_paint_flags |= CPF_ACTIVE;
+
   g_signal_emit_by_name(G_OBJECT(w), "quad-pressed");
+}
+
+void dt_bauhaus_widget_release_quad(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if (!w->quad_toggle)
+  {
+    if (w->quad_paint_flags & CPF_ACTIVE)
+      w->quad_paint_flags &= ~CPF_ACTIVE;
+    gtk_widget_queue_draw(GTK_WIDGET(w));
+  }
 }
 
 static float _default_linear_curve(GtkWidget *self, float value, dt_bauhaus_curve_t dir)
@@ -2766,6 +2780,7 @@ static gboolean dt_bauhaus_slider_button_release(GtkWidget *widget, GdkEventButt
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
 
+  dt_bauhaus_widget_release_quad(widget);
   if((event->button == 1) && (d->is_dragging))
   {
     bauhaus_request_focus(w);
