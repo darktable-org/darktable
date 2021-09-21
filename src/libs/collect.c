@@ -289,7 +289,7 @@ void init_presets(dt_lib_module_t *self)
   (void)localtime_r(&now, &tt);
   strftime(datetime, 100, "%Y:%m:%d", &tt);
 
-  CLEAR_PARAMS(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
+  CLEAR_PARAMS(DT_COLLECTION_PROP_TIME);
   g_strlcpy(params.rule[0].string, datetime, PARAM_STRING_SIZE);
   dt_lib_presets_add(_("today"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
@@ -299,7 +299,7 @@ void init_presets(dt_lib_module_t *self)
   (void)localtime_r(&last24h, &tt);
   strftime(datetime, 100, "> %Y:%m:%d %H:%M", &tt);
 
-  CLEAR_PARAMS(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
+  CLEAR_PARAMS(DT_COLLECTION_PROP_TIME);
   g_strlcpy(params.rule[0].string, datetime, PARAM_STRING_SIZE);
   dt_lib_presets_add(_("last 24h"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
@@ -308,7 +308,7 @@ void init_presets(dt_lib_module_t *self)
   (void)localtime_r(&last30d, &tt);
   strftime(datetime, 100, "> %Y:%m:%d", &tt);
 
-  CLEAR_PARAMS(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
+  CLEAR_PARAMS(DT_COLLECTION_PROP_TIME);
   g_strlcpy(params.rule[0].string, datetime, PARAM_STRING_SIZE);
   dt_lib_presets_add(_("last 30 days"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
