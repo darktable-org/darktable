@@ -1486,7 +1486,10 @@ static gboolean _action_view_click(GtkWidget *widget, GdkEventButton *event, gpo
         gtk_tree_view_collapse_row(view, path);
       }
       else
+      {
         gtk_tree_selection_select_path(selection, path);
+        gtk_tree_view_set_cursor(view, path, NULL, FALSE);
+      }
 
       gtk_widget_grab_focus(widget);
     }
@@ -1502,6 +1505,7 @@ static gboolean _action_view_map(GtkTreeView *view, GdkEvent *event, gpointer fo
   GtkTreePath *path = gtk_tree_model_get_path(gtk_tree_view_get_model(view), found_iter);
   gtk_tree_view_expand_to_path(view, path);
   gtk_tree_view_scroll_to_cell(view, path, NULL, TRUE, 0.5, 0);
+  gtk_tree_view_set_cursor(view, path, NULL, FALSE);
   gtk_tree_path_free(path);
 
   gtk_tree_selection_select_iter(gtk_tree_view_get_selection(view), found_iter);
@@ -1940,6 +1944,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   GtkWidget *search_shortcuts = gtk_search_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(search_shortcuts), _("search shortcuts list"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(search_shortcuts), _("incrementally search the list of shortcuts\npress up or down keys to cycle through matches"));
+  g_signal_connect(G_OBJECT(search_shortcuts), "activate", G_CALLBACK(dt_gui_search_stop), shortcuts_view);
   g_signal_connect(G_OBJECT(search_shortcuts), "stop-search", G_CALLBACK(dt_gui_search_stop), shortcuts_view);
   gtk_tree_view_set_search_entry(shortcuts_view, GTK_ENTRY(search_shortcuts));
 
@@ -2030,6 +2035,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   GtkWidget *search_actions = gtk_search_entry_new();
   gtk_entry_set_placeholder_text(GTK_ENTRY(search_actions), _("search actions list"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(search_actions), _("incrementally search the list of actions\npress up or down keys to cycle through matches"));
+  g_signal_connect(G_OBJECT(search_actions), "activate", G_CALLBACK(dt_gui_search_stop), actions_view);
   g_signal_connect(G_OBJECT(search_actions), "stop-search", G_CALLBACK(dt_gui_search_stop), actions_view);
   gtk_tree_view_set_search_entry(actions_view, GTK_ENTRY(search_actions));
 

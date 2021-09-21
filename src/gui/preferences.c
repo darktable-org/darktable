@@ -853,6 +853,7 @@ static void init_tab_presets(GtkWidget *stack)
   gtk_box_pack_start(GTK_BOX(hbox), search_presets, FALSE, TRUE, 0);
   gtk_entry_set_placeholder_text(GTK_ENTRY(search_presets), _("search presets list"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(search_presets), _("incrementally search the list of presets\npress up or down keys to cycle through matches"));
+  g_signal_connect(G_OBJECT(search_presets), "activate", G_CALLBACK(dt_gui_search_stop), tree);
   g_signal_connect(G_OBJECT(search_presets), "stop-search", G_CALLBACK(dt_gui_search_stop), tree);
   g_signal_connect(G_OBJECT(tree), "key-press-event", G_CALLBACK(dt_gui_search_start), search_presets);
   gtk_tree_view_set_search_entry(tree, GTK_ENTRY(search_presets));
