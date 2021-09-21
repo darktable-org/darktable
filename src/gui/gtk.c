@@ -3266,6 +3266,32 @@ void dt_gui_draw_rounded_rectangle(cairo_t *cr, float width, float height, float
   cairo_fill(cr);
 }
 
+gboolean dt_gui_search_start(GtkWidget *widget, GdkEventKey *event, GtkSearchEntry *entry)
+{
+  if(gtk_search_entry_handle_event(entry, (GdkEvent *)event))
+  {
+    gtk_entry_grab_focus_without_selecting(GTK_ENTRY(entry));
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+void dt_gui_search_stop(GtkSearchEntry *entry, GtkWidget *widget)
+{
+  gtk_widget_grab_focus(widget);
+
+  gtk_entry_set_text(GTK_ENTRY(entry), "");
+
+  if(GTK_IS_TREE_VIEW(widget))
+  {
+    GtkTreePath *path = NULL;
+    gtk_tree_view_get_cursor(GTK_TREE_VIEW(widget), &path, NULL);
+    gtk_tree_selection_select_path(gtk_tree_view_get_selection(GTK_TREE_VIEW(widget)), path);
+    gtk_tree_path_free(path);
+  }
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

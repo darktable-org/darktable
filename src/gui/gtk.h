@@ -437,7 +437,14 @@ void dt_gui_container_remove_children(GtkContainer *container);
 void dt_gui_container_destroy_children(GtkContainer *container);
 
 void dt_gui_menu_popup(GtkMenu *menu, GtkWidget *button, GdkGravity widget_anchor, GdkGravity menu_anchor);
+
 void dt_gui_draw_rounded_rectangle(cairo_t *cr, float width, float height, float x, float y);
+
+// event handler for "key-press-event" of GtkTreeView to decide if focus switches to GtkSearchEntry
+gboolean dt_gui_search_start(GtkWidget *widget, GdkEventKey *event, GtkSearchEntry *entry);
+
+// event handler for "stop-search" of GtkSearchEntry
+void dt_gui_search_stop(GtkSearchEntry *entry, GtkWidget *widget);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
