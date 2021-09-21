@@ -419,7 +419,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
   if(svg)
   {
     RsvgDimensionData dimension;
-    rsvg_handle_get_dimensions(svg, &dimension);
+    dimension = dt_get_svg_dimension(svg);
 
     const float ppd = darktable.gui ? darktable.gui->ppd : 1.0;
 
@@ -448,7 +448,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
     {
       cairo_t *cr = cairo_create(surface);
       cairo_scale(cr, factor, factor);
-      rsvg_handle_render_cairo(svg, cr);
+      dt_render_svg(svg, cr, final_width, final_height, 0, 0);
       cairo_destroy(cr);
       cairo_surface_flush(surface);
     }
@@ -887,6 +887,38 @@ void dt_copy_resource_file(const char *src, const char *dst)
   gchar *sourcefile = g_build_filename(share, src, NULL);
   dt_copy_file(sourcefile, dst);
   g_free(sourcefile);
+}
+
+RsvgDimensionData dt_get_svg_dimension(RsvgHandle *svg) 
+{
+  RsvgDimensionData dimension;
+  // rsvg_handle_get_dimensions has been deprecated in librsvg 2.52
+  #if LIBRSVG_CHECK_VERSION(2,52,0)
+    double width;
+    double height;
+    rsvg_handle_get_intrinsic_size_in_pixels(svg, &width, &height);
+    dimension.width = width;
+    dimension.height = height;
+  #else      
+    rsvg_handle_get_dimensions(svg, &dimension);
+  #endif
+  return dimension; 
+}
+
+void dt_render_svg(RsvgHandle *svg, cairo_t *cr, double width, double height, double offset_x, double offset_y) 
+{
+  // rsvg_handle_render_cairo has been deprecated in librsvg 2.52
+  #if LIBRSVG_CHECK_VERSION(2,52,0)
+    RsvgRectangle viewport = { 
+      .x = offset_x,
+      .y = offset_y,
+      .width = width,
+      .height = height,
+    };
+    rsvg_handle_render_document(svg, cr, &viewport, NULL);
+  #else
+    rsvg_handle_render_cairo(svg, cr);
+  #endif  
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
