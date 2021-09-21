@@ -17,6 +17,11 @@ add_library(ppm MODULE "ppm.c")
 add_library(pfm MODULE "pfm.c")
 add_library(tiff MODULE "tiff.c")
 
+if(JXL_FOUND)
+  list(APPEND MODULES "jxl")
+  add_library(jxl MODULE "jxl.c")
+endif(JXL_FOUND)
+
 if(WebP_FOUND)
   list(APPEND MODULES "webp")
   add_library(webp MODULE "webp.c")

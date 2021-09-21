@@ -2614,6 +2614,41 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/imageio/format/jxl/lossless</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/quality</name>
+    <type min="0.0" max="15.0">float</type>
+    <default>14.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/encoding_effort</name>
+    <type min="1" max="9">int</type>
+    <default>3</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/decoding_effort</name>
+    <type min="0" max="4">int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/container</name>
+    <type>string</type>
+    <default>bmff</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/imageio/format/webp/comp_type</name>
     <type min="0" max="1">int</type>
     <default>0</default>
