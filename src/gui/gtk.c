@@ -3279,8 +3279,17 @@ gboolean dt_gui_search_start(GtkWidget *widget, GdkEventKey *event, GtkSearchEnt
 
 void dt_gui_search_stop(GtkSearchEntry *entry, GtkWidget *widget)
 {
-  gtk_entry_set_text(GTK_ENTRY(entry), "");
   gtk_widget_grab_focus(widget);
+
+  gtk_entry_set_text(GTK_ENTRY(entry), "");
+
+  if(GTK_IS_TREE_VIEW(widget))
+  {
+    GtkTreePath *path = NULL;
+    gtk_tree_view_get_cursor(GTK_TREE_VIEW(widget), &path, NULL);
+    gtk_tree_selection_select_path(gtk_tree_view_get_selection(GTK_TREE_VIEW(widget)), path);
+    gtk_tree_path_free(path);
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
