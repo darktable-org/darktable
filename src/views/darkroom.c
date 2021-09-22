@@ -738,6 +738,10 @@ void expose(
     const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1 << closeup, 1);
 
     cairo_save(cri);
+    // don't draw guides on image margins
+    cairo_rectangle(cri, tb, tb, width - 2 * tb, height - 2 * tb);
+    cairo_clip(cri);
+    // switch to the preview reference
     cairo_translate(cri, width / 2.0, height / 2.0);
     cairo_scale(cri, zoom_scale, zoom_scale);
     cairo_translate(cri, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
