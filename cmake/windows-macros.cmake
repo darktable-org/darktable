@@ -263,7 +263,7 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
       file(GLOB mofiles "${IsoCodes_LOCALEDIR}/${MO_TARGET_DIR}/*")
       foreach(sysfile ${mofiles})
         install(FILES ${sysfile}
-                DESTINATION ${CMAKE_INSTALL_LOCALEDIR}/${language}/LC_MESSAGES
+                DESTINATION ${CMAKE_INSTALL_LOCALEDIR}/${MO_TARGET_DIR}
                 COMPONENT DTApplication)
       endforeach(sysfile)
     endforeach()
