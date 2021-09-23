@@ -1221,12 +1221,14 @@ static void _effect_editing_started(GtkCellRenderer *renderer, GtkCellEditable *
   int bold_move = _shortcut_is_move(s) ? DT_ACTION_EFFECT_DEFAULT_KEY : DT_ACTION_EFFECT_DEFAULT_DOWN + 1;
   if(elements)
     for(const gchar **effect = elements[s->element].effects; *effect ; effect++, bold_move++)
+    {
       gtk_list_store_insert_with_values(store, NULL, -1,
                                         DT_ACTION_EFFECT_COLUMN_NAME, show_all++ ? _(*effect) : _("(unchanged)"),
                                         DT_ACTION_EFFECT_COLUMN_WEIGHT, bold_move >  DT_ACTION_EFFECT_DEFAULT_KEY
                                                                      && bold_move <= DT_ACTION_EFFECT_DEFAULT_DOWN
                                                                       ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL,
                                         -1);
+    }
 
   GList *cell = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(combo_box));
   gtk_cell_layout_add_attribute(GTK_CELL_LAYOUT(combo_box), cell->data, "weight", DT_ACTION_EFFECT_COLUMN_WEIGHT);
@@ -1244,10 +1246,12 @@ static void _effect_editing_started(GtkCellRenderer *renderer, GtkCellEditable *
       gtk_list_store_insert_with_values(store, NULL, -1, DT_ACTION_EFFECT_COLUMN_SEPARATOR, TRUE, -1);
 
       while(values->name)
+      {
         gtk_list_store_insert_with_values(store, NULL, -1,
                                           DT_ACTION_EFFECT_COLUMN_NAME, _((values++)->description),
                                           DT_ACTION_EFFECT_COLUMN_WEIGHT, PANGO_WEIGHT_NORMAL,
                                           -1);
+      }
     }
     else
     {
@@ -1259,10 +1263,12 @@ static void _effect_editing_started(GtkCellRenderer *renderer, GtkCellEditable *
         gtk_list_store_insert_with_values(store, NULL, -1, DT_ACTION_EFFECT_COLUMN_SEPARATOR, TRUE, -1);
 
         while(*strings)
+        {
           gtk_list_store_insert_with_values(store, NULL, -1,
                                             DT_ACTION_EFFECT_COLUMN_NAME, _(*(strings++)),
                                             DT_ACTION_EFFECT_COLUMN_WEIGHT, PANGO_WEIGHT_NORMAL,
                                             -1);
+        }
       }
     }
   }
