@@ -1843,7 +1843,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
       case DT_COLLECTION_PROP_RATING: // image rating
         {
           g_snprintf(query, sizeof(query),
-                     "SELECT (flags & 7) AS rating,"
+                     "SELECT CASE WHEN (flags & 8) == 8 THEN -1 ELSE (flags & 7) END AS rating, 1,"
                      " COUNT(*) AS count"
                      " FROM main.images AS mi"
                      " WHERE %s"
