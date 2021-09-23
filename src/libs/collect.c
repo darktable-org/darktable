@@ -888,7 +888,7 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
       }
       else if(operator && number2 && strcmp(operator, "[]") == 0)
       {
-        float nb3 = g_strtod(number2, NULL);
+        const float nb3 = g_strtod(number2, NULL);
         visible = (nb2 >= nb1 && nb2 <= nb3);
       }
       else
