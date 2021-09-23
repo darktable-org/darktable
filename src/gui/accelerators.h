@@ -180,8 +180,8 @@ void dt_accel_connect_instance_iop(dt_iop_module_t *module);
 void dt_accel_connect_lua(const gchar *path, GClosure *closure);
 void dt_accel_connect_shortcut(dt_action_t *owner, const gchar *path_string, GClosure *closure);
 
-// Disconnect function
-void dt_accel_cleanup_closures_iop(dt_iop_module_t *module); // rename to cleanup instance_list
+// Cleanup function
+void dt_action_cleanup_instance_iop(dt_iop_module_t *module);
 
 // Rename/remove functions
 void dt_accel_rename_global(const gchar *path, const gchar *new_path);
