@@ -2441,6 +2441,8 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
   d->typing = FALSE;
+
+  dt_control_queue_redraw_center();
 }
 
 static void entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *dr)
