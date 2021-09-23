@@ -1056,6 +1056,13 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         fprintf(stderr, "[exif] Warning: lens \"%s\" unknown as \"%s\"\n", img->exif_lens, lens.c_str());
       }
     }
+    else if(FIND_EXIF_TAG("Exif.NikonLd4.LensIDNumber") && pos->toLong() > 0)
+    {
+      /* Recent F-mount (D780, D6) or Z body w/ FTZ adapter detected.
+       * Prioritize this legacy ID lookup instead of Exif.Photo.LensModel within
+       * default Exiv2::lensName() search below. */
+      dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+    }
     else if((pos = Exiv2::lensName(exifData)) != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
