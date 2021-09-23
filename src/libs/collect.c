@@ -282,35 +282,55 @@ void init_presets(dt_lib_module_t *self)
                        &params, sizeof(params), TRUE);
 
   // based on date/time
-  const time_t now = time(NULL);
   struct tm tt;
-  char datetime[100] = { 0 };
+  char datetime_today[100] = { 0 };
+  char datetime_24hrs[100] = { 0 };
+  char datetime_30d[100] = { 0 };
 
-  (void)localtime_r(&now, &tt);
-  strftime(datetime, 100, "%Y:%m:%d", &tt);
-
-  CLEAR_PARAMS(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
-  g_strlcpy(params.rule[0].string, datetime, PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("today"), self->plugin_name, self->version(),
-                       &params, sizeof(params), TRUE);
-
+  const time_t now = time(NULL);
   const time_t ONE_DAY = (24 * 60 * 60);
   const time_t last24h = now - ONE_DAY;
-  (void)localtime_r(&last24h, &tt);
-  strftime(datetime, 100, "> %Y:%m:%d %H:%M", &tt);
+  const time_t last30d = now - (ONE_DAY * 30);
 
+  (void)localtime_r(&now, &tt);
+  strftime(datetime_today, 100, "%Y:%m:%d", &tt);
+
+  (void)localtime_r(&last24h, &tt);
+  strftime(datetime_24hrs, 100, "> %Y:%m:%d %H:%M", &tt);
+
+  (void)localtime_r(&last30d, &tt);
+  strftime(datetime_30d, 100, "> %Y:%m:%d", &tt);
+
+  // presets based on import
   CLEAR_PARAMS(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
-  g_strlcpy(params.rule[0].string, datetime, PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("last 24h"), self->plugin_name, self->version(),
+  g_strlcpy(params.rule[0].string, datetime_today, PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("imported today"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
 
-  const time_t last30d = now - (ONE_DAY * 30);
-  (void)localtime_r(&last30d, &tt);
-  strftime(datetime, 100, "> %Y:%m:%d", &tt);
+  CLEAR_PARAMS(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
+  g_strlcpy(params.rule[0].string, datetime_24hrs, PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("imported last 24h"), self->plugin_name, self->version(),
+                       &params, sizeof(params), TRUE);
 
   CLEAR_PARAMS(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
-  g_strlcpy(params.rule[0].string, datetime, PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("last 30 days"), self->plugin_name, self->version(),
+  g_strlcpy(params.rule[0].string, datetime_30d, PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("imported last 30 days"), self->plugin_name, self->version(),
+                       &params, sizeof(params), TRUE);
+
+  // presets based on image metadata (image taken)
+  CLEAR_PARAMS(DT_COLLECTION_PROP_TIME);
+  g_strlcpy(params.rule[0].string, datetime_today, PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("taken today"), self->plugin_name, self->version(),
+                       &params, sizeof(params), TRUE);
+
+  CLEAR_PARAMS(DT_COLLECTION_PROP_TIME);
+  g_strlcpy(params.rule[0].string, datetime_24hrs, PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("taken last 24h"), self->plugin_name, self->version(),
+                       &params, sizeof(params), TRUE);
+
+  CLEAR_PARAMS(DT_COLLECTION_PROP_TIME);
+  g_strlcpy(params.rule[0].string, datetime_30d, PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("taken last 30 days"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
 
 #undef CLEAR_PARAMS
