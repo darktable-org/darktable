@@ -1203,7 +1203,7 @@ static char *_dt_collection_compute_datetime(const char *operator, const char *i
   if(strcmp(operator, "<") == 0 || strcmp(operator, ">=") == 0)
   {
     // we set all values to their minimum
-    tm1.tm_mon = 1;
+    tm1.tm_mon = 0;
     tm1.tm_mday = 1;
     tm1.tm_hour = 0;
     tm1.tm_min = 0;
