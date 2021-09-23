@@ -1014,7 +1014,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
       dev->iop = g_list_remove_link(dev->iop, g_list_nth(dev->iop, i));
 
       // we cleanup the module
-      dt_accel_cleanup_closures_iop(module);
+      dt_action_cleanup_instance_iop(module);
 
       free(module);
     }
@@ -3185,7 +3185,7 @@ void leave(dt_view_t *self)
     // force refresh if module has mask visualized
     if (module->request_mask_display || module->suppress_mask) dt_iop_refresh_center(module);
 
-    dt_accel_cleanup_closures_iop(module);
+    dt_action_cleanup_instance_iop(module);
     dt_iop_cleanup_module(module);
     free(module);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
