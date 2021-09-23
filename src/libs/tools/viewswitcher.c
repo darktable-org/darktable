@@ -121,9 +121,7 @@ void gui_init(dt_lib_module_t *self)
       gtk_box_pack_start(GTK_BOX(self->widget), w, FALSE, FALSE, 0);
       d->labels = g_list_append(d->labels, gtk_bin_get_child(GTK_BIN(w)));
 
-      gchar *id = g_strdup_printf("%s %s", view->module_name, "view");
-      dt_action_define(&darktable.control->actions_global, NULL, id, w, NULL);
-      g_free(id);
+      dt_action_define(&darktable.control->actions_global, "switch views", view->module_name, w, NULL);
 
       /* create space if more views */
       if(view_iter->next != NULL)
