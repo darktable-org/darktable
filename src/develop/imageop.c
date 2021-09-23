@@ -551,7 +551,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   // rebuild the accelerators (to point to an extant module)
   dt_iop_connect_accels_multi(module->so);
 
-  dt_accel_cleanup_closures_iop(module);
+  dt_action_cleanup_instance_iop(module);
 
   // don't delete the module, a pipe may still need it
   dev->alliop = g_list_append(dev->alliop, module);

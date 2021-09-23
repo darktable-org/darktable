@@ -826,6 +826,9 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
     if(gtk_widget_get_toplevel(event_widget) != main_window)
       break;
 
+    if(!gtk_window_is_active(GTK_WINDOW(main_window)))
+      break;
+
     dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)data;
     if(event_widget == d->keymap_button)
       break;
