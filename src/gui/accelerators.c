@@ -878,6 +878,27 @@ static void _shortcut_row_inserted(GtkTreeModel *tree_model, GtkTreePath *path, 
   gtk_tree_path_free(filter_path);
 }
 
+static gboolean _yes_no_dialog(gchar *title, gchar *question)
+{
+  GtkWindow *win = NULL;
+  for(GList *wins = gtk_window_list_toplevels(); wins; wins = g_list_delete_link(wins, wins))
+    if(gtk_window_is_active(wins->data)) win = wins->data;
+
+  GtkWidget *dialog = gtk_message_dialog_new(win, GTK_DIALOG_DESTROY_WITH_PARENT,
+                                             GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s", question);
+  gtk_window_set_title(GTK_WINDOW(dialog), title);
+
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
+
+  const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
+
+  gtk_widget_destroy(dialog);
+
+  return resp == GTK_RESPONSE_YES;
+}
+
 static gboolean insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
 {
   dt_shortcut_t *s = calloc(sizeof(dt_shortcut_t), 1);
@@ -915,18 +936,16 @@ static gboolean insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
 
           if(e->action == s->action)
           {
-            gchar *question = NULL;
             if(_shortcut_is_move(e) && e->effect != DT_ACTION_EFFECT_DEFAULT_MOVE)
             {
-              question = g_markup_printf_escaped("\n%s\n", _("create separate shortcuts for up and down move?"));
               if(!confirm ||
-                 dt_gui_show_standalone_yes_no_dialog(_("shortcut for move exists with single effect"), question, _("no"), _("yes")))
+                 _yes_no_dialog(_("shortcut for move exists with single effect"),
+                                _("create separate shortcuts for up and down move?")))
               {
                 e->direction = (DT_SHORTCUT_UP | DT_SHORTCUT_DOWN) ^ s->direction;
                 if(s->effect == DT_ACTION_EFFECT_DEFAULT_MOVE)
                   s->effect = DT_ACTION_EFFECT_DEFAULT_KEY;
                 add_shortcut(s, view);
-                g_free(question);
                 return TRUE;
               }
             }
@@ -935,9 +954,9 @@ static gboolean insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
                     e->speed    != s->speed   ||
                     e->instance != s->instance )
             {
-              question = g_markup_printf_escaped("\n%s\n", _("reset the settings of the shortcut?"));
               if(!confirm ||
-                 dt_gui_show_standalone_yes_no_dialog(_("shortcut exists with different settings"), question, _("no"), _("yes")))
+                 _yes_no_dialog(_("shortcut exists with different settings"),
+                                _("reset the settings of the shortcut?")))
               {
                 e->element  = s->element;
                 e->effect   = s->effect;
@@ -948,14 +967,13 @@ static gboolean insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
             else
             {
               // there should be no other clashes because same mapping already existed
-              question = g_markup_printf_escaped("\n%s\n", _("remove the shortcut?"));
               if(confirm &&
-                 dt_gui_show_standalone_yes_no_dialog(_("shortcut already exists"), question, _("no"), _("yes")))
+                 _yes_no_dialog(_("shortcut already exists"),
+                                _("remove the shortcut?")))
               {
                 remove_shortcut(existing);
               }
             }
-            g_free(question);
             g_free(s);
             return FALSE;
           }
@@ -985,11 +1003,10 @@ static gboolean insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
 
     if(existing_labels)
     {
-      gchar *question = g_markup_printf_escaped("\n%s\n<i>%s</i>\n",
-                                                _("remove these existing shortcuts?"),
-                                                existing_labels);
-      remove_existing = dt_gui_show_standalone_yes_no_dialog(_("clashing shortcuts exist"),
-                                                             question, _("no"), _("yes"));
+      gchar *question = g_strdup_printf("%s\n%s",
+                                        _("remove these existing shortcuts?"),
+                                        existing_labels);
+      remove_existing = _yes_no_dialog(_("clashing shortcuts exist"), question);
 
       g_free(existing_labels);
       g_free(question);
@@ -1333,14 +1350,13 @@ static gboolean _shortcut_key_pressed(GtkWidget *widget, GdkEventKey *event, gpo
 
       if(GPOINTER_TO_UINT(shortcut_iter) >= NUM_CATEGORIES)
       {
-        gchar *question = g_markup_printf_escaped("\n%s\n", _("remove the selected shortcut?"));
-        if(dt_gui_show_standalone_yes_no_dialog(_("removing shortcut"), question, _("no"), _("yes")))
+        if(_yes_no_dialog(_("removing shortcut"),
+                          _("remove the selected shortcut?")))
         {
           remove_shortcut(shortcut_iter);
 
           dt_shortcuts_save(NULL, FALSE);
         }
-        g_free(question);
       }
     }
 
