@@ -1206,28 +1206,28 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   g_signal_connect(G_OBJECT(widget), "event", G_CALLBACK(dt_shortcut_dispatcher), NULL);
 
   // register keys for view switching
-  dt_accel_register_global(NC_("accel", "tethering view"), GDK_KEY_t, 0);
-  dt_accel_register_global(NC_("accel", "lighttable view"), GDK_KEY_l, 0);
-  dt_accel_register_global(NC_("accel", "darkroom view"), GDK_KEY_d, 0);
-  dt_accel_register_global(NC_("accel", "map view"), GDK_KEY_m, 0);
-  dt_accel_register_global(NC_("accel", "slideshow view"), GDK_KEY_s, 0);
-  dt_accel_register_global(NC_("accel", "print view"), GDK_KEY_p, 0);
+  dt_accel_register_global(NC_("accel", "switch views/tethering"), GDK_KEY_t, 0);
+  dt_accel_register_global(NC_("accel", "switch views/lighttable"), GDK_KEY_l, 0);
+  dt_accel_register_global(NC_("accel", "switch views/darkroom"), GDK_KEY_d, 0);
+  dt_accel_register_global(NC_("accel", "switch views/map"), GDK_KEY_m, 0);
+  dt_accel_register_global(NC_("accel", "switch views/slideshow"), GDK_KEY_s, 0);
+  dt_accel_register_global(NC_("accel", "switch views/print"), GDK_KEY_p, 0);
 
-  dt_accel_connect_global("tethering view",
+  dt_accel_connect_global("switch views/tethering",
                           g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
                                          GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_TETHERING), NULL));
-  dt_accel_connect_global("lighttable view",
+  dt_accel_connect_global("switch views/lighttable",
                           g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
                                          GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_LIGHTTABLE), NULL));
-  dt_accel_connect_global("darkroom view",
+  dt_accel_connect_global("switch views/darkroom",
                           g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
                                          GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_DARKROOM), NULL));
-  dt_accel_connect_global("map view", g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
+  dt_accel_connect_global("switch views/map", g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
                                                      GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_MAP), NULL));
-  dt_accel_connect_global("slideshow view",
+  dt_accel_connect_global("switch views/slideshow",
                           g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
                                          GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_SLIDESHOW), NULL));
-  dt_accel_connect_global("print view", g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
+  dt_accel_connect_global("switch views/print", g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
                                                      GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_PRINT), NULL));
 
   // register_keys for applying styles
@@ -1239,64 +1239,64 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_accel_connect_global("quit", g_cclosure_new(G_CALLBACK(quit_callback), NULL, NULL));
 
   // Full-screen accelerator (no ESC handler here to enable quit-slideshow using ESC)
-  dt_accel_register_global(NC_("accel", "toggle fullscreen"), GDK_KEY_F11, 0);
+  dt_accel_register_global(NC_("accel", "fullscreen"), GDK_KEY_F11, 0);
 
-  dt_accel_connect_global("toggle fullscreen", g_cclosure_new(G_CALLBACK(fullscreen_key_accel_callback),
+  dt_accel_connect_global("fullscreen", g_cclosure_new(G_CALLBACK(fullscreen_key_accel_callback),
                                                               GINT_TO_POINTER(1), NULL));
 
   // Side-border hide/show
-  dt_accel_register_global(NC_("accel", "toggle side borders"), GDK_KEY_Tab, 0);
-  dt_accel_connect_global("toggle side borders",
+  dt_accel_register_global(NC_("accel", "panels/all"), GDK_KEY_Tab, 0);
+  dt_accel_connect_global("panels/all",
                           g_cclosure_new(G_CALLBACK(_toggle_side_borders_accel_callback), NULL, NULL));
 
-  dt_accel_register_global(NC_("accel", "toggle panels collapsing controls"), GDK_KEY_b, 0);
-  dt_accel_connect_global("toggle panels collapsing controls",
+  dt_accel_register_global(NC_("accel", "panels/collapsing controls"), GDK_KEY_b, 0);
+  dt_accel_connect_global("panels/collapsing controls",
                           g_cclosure_new(G_CALLBACK(_panels_controls_accel_callback), NULL, NULL));
 
-  dt_accel_register_global(NC_("accel", "toggle left panel"), GDK_KEY_L, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_connect_global("toggle left panel", g_cclosure_new(G_CALLBACK(_toggle_panel_accel_callback),
+  dt_accel_register_global(NC_("accel", "panels/left"), GDK_KEY_L, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_connect_global("panels/left", g_cclosure_new(G_CALLBACK(_toggle_panel_accel_callback),
                                                               GINT_TO_POINTER(DT_UI_BORDER_LEFT), NULL));
 
-  dt_accel_register_global(NC_("accel", "toggle right panel"), GDK_KEY_R, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_connect_global("toggle right panel", g_cclosure_new(G_CALLBACK(_toggle_panel_accel_callback),
+  dt_accel_register_global(NC_("accel", "panels/right"), GDK_KEY_R, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_connect_global("panels/right", g_cclosure_new(G_CALLBACK(_toggle_panel_accel_callback),
                                                                GINT_TO_POINTER(DT_UI_BORDER_RIGHT), NULL));
 
-  dt_accel_register_global(NC_("accel", "toggle top panel"), GDK_KEY_T, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_connect_global("toggle top panel", g_cclosure_new(G_CALLBACK(_toggle_panel_accel_callback),
+  dt_accel_register_global(NC_("accel", "panels/top"), GDK_KEY_T, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_connect_global("panels/top", g_cclosure_new(G_CALLBACK(_toggle_panel_accel_callback),
                                                              GINT_TO_POINTER(DT_UI_BORDER_TOP), NULL));
 
-  dt_accel_register_global(NC_("accel", "toggle bottom panel"), GDK_KEY_B, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_connect_global("toggle bottom panel", g_cclosure_new(G_CALLBACK(_toggle_panel_accel_callback),
+  dt_accel_register_global(NC_("accel", "panels/bottom"), GDK_KEY_B, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_connect_global("panels/bottom", g_cclosure_new(G_CALLBACK(_toggle_panel_accel_callback),
                                                                 GINT_TO_POINTER(DT_UI_BORDER_BOTTOM), NULL));
 
   // specific top/bottom toggles
-  dt_accel_register_global(NC_("accel", "toggle header"), GDK_KEY_h, GDK_CONTROL_MASK);
-  dt_accel_connect_global("toggle header", g_cclosure_new(G_CALLBACK(_toggle_header_accel_callback), NULL, NULL));
+  dt_accel_register_global(NC_("accel", "panels/header"), GDK_KEY_h, GDK_CONTROL_MASK);
+  dt_accel_connect_global("panels/header", g_cclosure_new(G_CALLBACK(_toggle_header_accel_callback), NULL, NULL));
 
-  dt_accel_register_global(NC_("accel", "toggle filmstrip and timeline"), GDK_KEY_f, GDK_CONTROL_MASK);
-  dt_accel_connect_global("toggle filmstrip and timeline",
+  dt_accel_register_global(NC_("accel", "panels/filmstrip and timeline"), GDK_KEY_f, GDK_CONTROL_MASK);
+  dt_accel_connect_global("panels/filmstrip and timeline",
                           g_cclosure_new(G_CALLBACK(_toggle_filmstrip_accel_callback), NULL, NULL));
 
-  dt_accel_register_global(NC_("accel", "toggle top toolbar"), 0, 0);
-  dt_accel_connect_global("toggle top toolbar",
+  dt_accel_register_global(NC_("accel", "panels/top toolbar"), 0, 0);
+  dt_accel_connect_global("panels/top toolbar",
                           g_cclosure_new(G_CALLBACK(_toggle_top_tool_accel_callback), NULL, NULL));
 
-  dt_accel_register_global(NC_("accel", "toggle bottom toolbar"), 0, 0);
-  dt_accel_connect_global("toggle bottom toolbar",
+  dt_accel_register_global(NC_("accel", "panels/bottom toolbar"), 0, 0);
+  dt_accel_connect_global("panels/bottom toolbar",
                           g_cclosure_new(G_CALLBACK(_toggle_bottom_tool_accel_callback), NULL, NULL));
 
-  dt_accel_register_global(NC_("accel", "toggle all top panels"), 0, 0);
-  dt_accel_connect_global("toggle all top panels",
+  dt_accel_register_global(NC_("accel", "panels/all top"), 0, 0);
+  dt_accel_connect_global("panels/all top",
                           g_cclosure_new(G_CALLBACK(_toggle_top_all_accel_callback), NULL, NULL));
 
-  dt_accel_register_global(NC_("accel", "toggle all bottom panels"), 0, 0);
-  dt_accel_connect_global("toggle all bottom panels",
+  dt_accel_register_global(NC_("accel", "panels/all bottom"), 0, 0);
+  dt_accel_connect_global("panels/all bottom",
                           g_cclosure_new(G_CALLBACK(_toggle_bottom_all_accel_callback), NULL, NULL));
 
   // View-switch
-  dt_accel_register_global(NC_("accel", "switch view"), GDK_KEY_period, 0);
+  dt_accel_register_global(NC_("accel", "switch views/light-dark"), GDK_KEY_period, 0);
 
-  dt_accel_connect_global("switch view",
+  dt_accel_connect_global("switch views/light-dark",
                           g_cclosure_new(G_CALLBACK(view_switch_key_accel_callback), NULL, NULL));
 
   // accels window
@@ -1510,7 +1510,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   // Initializing the top border
   widget = gtk_drawing_area_new();
   gui->widgets.top_border = widget;
-  dt_action_define(&darktable.control->actions_global, NULL, "toggle top panel", widget, NULL);
+  dt_action_define(&darktable.control->actions_global, "panels", "top", widget, NULL);
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
   gtk_widget_set_size_request(widget, -1, DT_PIXEL_APPLY_DPI(10));
   gtk_widget_set_app_paintable(widget, TRUE);
@@ -1526,7 +1526,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   // Initializing the bottom border
   widget = gtk_drawing_area_new();
   gui->widgets.bottom_border = widget;
-  dt_action_define(&darktable.control->actions_global, NULL, "toggle bottom panel", widget, NULL);
+  dt_action_define(&darktable.control->actions_global, "panels", "bottom", widget, NULL);
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
   gtk_widget_set_size_request(widget, -1, DT_PIXEL_APPLY_DPI(10));
   gtk_widget_set_app_paintable(widget, TRUE);
@@ -1560,7 +1560,7 @@ static void init_main_table(GtkWidget *container)
   // Adding the left border
   widget = gtk_drawing_area_new();
   darktable.gui->widgets.left_border = widget;
-  dt_action_define(&darktable.control->actions_global, NULL, "toggle left panel", widget, NULL);
+  dt_action_define(&darktable.control->actions_global, "panels", "left", widget, NULL);
 
   gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(10), -1);
   gtk_widget_set_app_paintable(widget, TRUE);
@@ -1574,7 +1574,7 @@ static void init_main_table(GtkWidget *container)
   // Adding the right border
   widget = gtk_drawing_area_new();
   darktable.gui->widgets.right_border = widget;
-  dt_action_define(&darktable.control->actions_global, NULL, "toggle right panel", widget, NULL);
+  dt_action_define(&darktable.control->actions_global, "panels", "right", widget, NULL);
 
   gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(10), -1);
   gtk_widget_set_app_paintable(widget, TRUE);
