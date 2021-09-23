@@ -2063,10 +2063,15 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
      || property == DT_COLLECTION_PROP_FOCAL_LENGTH
      || property == DT_COLLECTION_PROP_ISO
      || property == DT_COLLECTION_PROP_ASPECT_RATIO
-     || property == DT_COLLECTION_PROP_EXPOSURE
-     || property == DT_COLLECTION_PROP_RATING)
+     || property == DT_COLLECTION_PROP_EXPOSURE)
   {
     gtk_widget_set_tooltip_text(d->text, _("use <, <=, >, >=, <>, =, [;] as operators"));
+  }
+  else if(property == DT_COLLECTION_PROP_RATING)
+  {
+    gtk_widget_set_tooltip_text(d->text, _("use <, <=, >, >=, <>, =, [;] as operators\n"
+                                           "star rating: 0-5\n"
+                                           "rejected images: -1"));
   }
   else if(property == DT_COLLECTION_PROP_DAY || is_time_property(property))
   {
