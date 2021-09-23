@@ -304,33 +304,33 @@ void init_presets(dt_lib_module_t *self)
   // presets based on import
   CLEAR_PARAMS(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
   g_strlcpy(params.rule[0].string, datetime_today, PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("imported today"), self->plugin_name, self->version(),
+  dt_lib_presets_add(_("imported: today"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
 
   CLEAR_PARAMS(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
   g_strlcpy(params.rule[0].string, datetime_24hrs, PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("imported last 24h"), self->plugin_name, self->version(),
+  dt_lib_presets_add(_("imported: last 24h"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
 
   CLEAR_PARAMS(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
   g_strlcpy(params.rule[0].string, datetime_30d, PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("imported last 30 days"), self->plugin_name, self->version(),
+  dt_lib_presets_add(_("imported: last 30 days"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
 
   // presets based on image metadata (image taken)
   CLEAR_PARAMS(DT_COLLECTION_PROP_TIME);
   g_strlcpy(params.rule[0].string, datetime_today, PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("taken today"), self->plugin_name, self->version(),
+  dt_lib_presets_add(_("taken: today"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
 
   CLEAR_PARAMS(DT_COLLECTION_PROP_TIME);
   g_strlcpy(params.rule[0].string, datetime_24hrs, PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("taken last 24h"), self->plugin_name, self->version(),
+  dt_lib_presets_add(_("taken: last 24h"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
 
   CLEAR_PARAMS(DT_COLLECTION_PROP_TIME);
   g_strlcpy(params.rule[0].string, datetime_30d, PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("taken last 30 days"), self->plugin_name, self->version(),
+  dt_lib_presets_add(_("taken: last 30 days"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
 
 #undef CLEAR_PARAMS
