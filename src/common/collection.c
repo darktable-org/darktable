@@ -1914,7 +1914,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         {
           if(g_strcmp0(operator, "<=") == 0 || g_strcmp0(operator, "<") == 0)
           { // all below rating + rejected
-            query = g_strdup_printf("(flags & 7 %s %s)", operator, number1);
+            query = g_strdup_printf("(flags & 8 == 8 OR flags & 7 %s %s)", operator, number1);
           }
           else if(g_strcmp0(operator, ">=") == 0 || g_strcmp0(operator, ">") == 0)
           {
