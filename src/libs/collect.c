@@ -368,6 +368,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   dt_lib_collect_params_t *p = (dt_lib_collect_params_t *)params;
   char confname[200] = { 0 };
 
+  gboolean reset_view_filter = FALSE;
   for(uint32_t i = 0; i < p->rules; i++)
   {
     /* set item */
@@ -381,6 +382,17 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     /* set string */
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1u", i);
     dt_conf_set_string(confname, p->rule[i].string);
+
+    /* if one of the rules is a rating filter, the view rating filter will be reset to all */
+    if(p->rule[i].item == DT_COLLECTION_PROP_RATING)
+    {
+      reset_view_filter = TRUE;
+    }
+  }
+
+  if(reset_view_filter)
+  {
+    dt_view_filter_reset(darktable.view_manager, FALSE);
   }
 
   /* set number of rules */
@@ -2138,7 +2150,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
 
-  // we check if something as change since last call
+  // we check if something has changed since last call
   if(d->view_rule != -1) return;
 
   ++darktable.gui->reset;
