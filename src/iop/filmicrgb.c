@@ -32,6 +32,7 @@
 #include "develop/imageop_math.h"
 #include "develop/noise_generator.h"
 #include "develop/openmp_maths.h"
+#include "develop/tiling.h"
 #include "dtgtk/button.h"
 #include "dtgtk/drawingarea.h"
 #include "dtgtk/expander.h"
@@ -355,7 +356,7 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -776,7 +777,7 @@ static inline float linear_saturation(const float x, const float luminance, cons
 }
 
 
-#define MAX_NUM_SCALES 12
+#define MAX_NUM_SCALES 10
 
 
 #ifdef _OPENMP
@@ -1415,6 +1416,25 @@ static inline void restore_ratios(float *const restrict ratios, const float *con
       ratios[4*k + c] = clamp_simd(ratios[4*k + c]) * norms[k];
 }
 
+void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+                     struct dt_develop_tiling_t *tiling)
+{
+  const int scales = get_scales(roi_in, piece);
+  const int max_filter_radius = (1 << scales);
+
+  // in + out + 2 * tmp + 2 * LF + 2 * temp + ratios
+  tiling->factor = 9.0f;
+  tiling->factor_cl = 9.0f;
+
+  tiling->maxbuf = 1.0f;
+  tiling->maxbuf_cl = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = max_filter_radius;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+  return;
+}
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict ivoid,
              void *const restrict ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
