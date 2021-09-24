@@ -1106,8 +1106,7 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
               field_text = g_strdup(_(strings[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1]));
           }
         }
-        else if((s->effect == 0 && s->action->type == DT_ACTION_TYPE_FALLBACK)
-                || (s->effect > 0 ))
+        else if(s->effect > 0 || s->action->type != DT_ACTION_TYPE_FALLBACK)
           field_text = g_strdup(_(elements[s->element].effects[s->effect]));
         if(s->effect == 0) weight = PANGO_WEIGHT_LIGHT;
         editable = TRUE;
@@ -1187,7 +1186,9 @@ static void _element_editing_started(GtkCellRenderer *renderer, GtkCellEditable 
 
   int show_all = s->action->type != DT_ACTION_TYPE_FALLBACK;
   for(const dt_action_element_def_t *element = _action_find_elements(s->action); element && element->name ; element++)
-    gtk_list_store_insert_with_values(store, NULL, -1, 0, show_all++ ? _(element->name) : "", -1);
+    gtk_list_store_insert_with_values(store, NULL, -1, 0, show_all++ ? _(element->name) : _("(unchanged)"), -1);
+
+  gtk_combo_box_set_active(combo_box, s->element);
 }
 
 static void _element_changed(GtkCellRendererCombo *combo, char *path_string, GtkTreeIter *new_iter, gpointer data)
@@ -1210,10 +1211,17 @@ static void _element_changed(GtkCellRendererCombo *combo, char *path_string, Gtk
   dt_shortcuts_save(NULL, FALSE);
 }
 
+enum
+{
+  DT_ACTION_EFFECT_COLUMN_NAME,
+  DT_ACTION_EFFECT_COLUMN_SEPARATOR,
+  DT_ACTION_EFFECT_COLUMN_WEIGHT,
+};
+
 static gboolean _effects_separator_func(GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
 {
   gboolean is_separator;
-  gtk_tree_model_get(model, iter, 1, &is_separator, -1);
+  gtk_tree_model_get(model, iter, DT_ACTION_EFFECT_COLUMN_SEPARATOR, &is_separator, -1);
   return is_separator;
 }
 
@@ -1227,9 +1235,21 @@ static void _effect_editing_started(GtkCellRenderer *renderer, GtkCellEditable *
 
   const dt_action_element_def_t *elements = _action_find_elements(s->action);
   int show_all = s->action->type != DT_ACTION_TYPE_FALLBACK;
+  int bold_move = _shortcut_is_move(s) ? DT_ACTION_EFFECT_DEFAULT_KEY : DT_ACTION_EFFECT_DEFAULT_DOWN + 1;
   if(elements)
-    for(const gchar **effect = elements[s->element].effects; *effect ; effect++)
-      gtk_list_store_insert_with_values(store, NULL, -1, 0, show_all++ ? _(*effect) : "", -1);
+    for(const gchar **effect = elements[s->element].effects; *effect ; effect++, bold_move++)
+    {
+      gtk_list_store_insert_with_values(store, NULL, -1,
+                                        DT_ACTION_EFFECT_COLUMN_NAME, show_all++ ? _(*effect) : _("(unchanged)"),
+                                        DT_ACTION_EFFECT_COLUMN_WEIGHT, bold_move >  DT_ACTION_EFFECT_DEFAULT_KEY
+                                                                     && bold_move <= DT_ACTION_EFFECT_DEFAULT_DOWN
+                                                                      ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL,
+                                        -1);
+    }
+
+  GList *cell = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(combo_box));
+  gtk_cell_layout_add_attribute(GTK_CELL_LAYOUT(combo_box), cell->data, "weight", DT_ACTION_EFFECT_COLUMN_WEIGHT);
+  g_list_free(cell);
 
   if(elements[s->element].effects == dt_action_effect_selection)
   {
@@ -1240,10 +1260,15 @@ static void _effect_editing_started(GtkCellRenderer *renderer, GtkCellEditable *
     if(values)
     {
       // insert empty/separator row
-      gtk_list_store_insert_with_values(store, NULL, -1, 1, TRUE, -1);
+      gtk_list_store_insert_with_values(store, NULL, -1, DT_ACTION_EFFECT_COLUMN_SEPARATOR, TRUE, -1);
 
       while(values->name)
-        gtk_list_store_insert_with_values(store, NULL, -1, 0, _((values++)->description), -1);
+      {
+        gtk_list_store_insert_with_values(store, NULL, -1,
+                                          DT_ACTION_EFFECT_COLUMN_NAME, _((values++)->description),
+                                          DT_ACTION_EFFECT_COLUMN_WEIGHT, PANGO_WEIGHT_NORMAL,
+                                          -1);
+      }
     }
     else
     {
@@ -1252,13 +1277,20 @@ static void _effect_editing_started(GtkCellRenderer *renderer, GtkCellEditable *
       if(strings)
       {
         // insert empty/separator row
-        gtk_list_store_insert_with_values(store, NULL, -1, 1, TRUE, -1);
+        gtk_list_store_insert_with_values(store, NULL, -1, DT_ACTION_EFFECT_COLUMN_SEPARATOR, TRUE, -1);
 
         while(*strings)
-          gtk_list_store_insert_with_values(store, NULL, -1, 0, _(*(strings++)), -1);
+        {
+          gtk_list_store_insert_with_values(store, NULL, -1,
+                                            DT_ACTION_EFFECT_COLUMN_NAME, _(*(strings++)),
+                                            DT_ACTION_EFFECT_COLUMN_WEIGHT, PANGO_WEIGHT_NORMAL,
+                                            -1);
+        }
       }
     }
   }
+
+  gtk_combo_box_set_active(combo_box, s->effect == -1 ? 1 : s->effect);
 }
 
 static void _effect_changed(GtkCellRendererCombo *combo, char *path_string, GtkTreeIter *new_iter, gpointer data)
@@ -1988,7 +2020,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   _add_prefs_column(shortcuts_view, renderer, _("element"), SHORTCUT_VIEW_ELEMENT);
 
   renderer = gtk_cell_renderer_combo_new();
-  GtkListStore *effects = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_BOOLEAN);
+  GtkListStore *effects = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INT);
   g_object_set(renderer, "model", effects, "text-column", 0, "has-entry", FALSE, NULL);
   g_signal_connect(renderer, "editing-started" , G_CALLBACK(_effect_editing_started), filtered_shortcuts);
   g_signal_connect(renderer, "changed", G_CALLBACK(_effect_changed), filtered_shortcuts);
