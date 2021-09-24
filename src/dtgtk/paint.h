@@ -291,6 +291,10 @@ void dtgtk_cairo_paint_cut_forms(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 void dtgtk_cairo_paint_display_wavelet_scale(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a auto level icon for retouch */
 void dtgtk_cairo_paint_auto_levels(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint a generic four-pointed compass star */
+void dtgtk_cairo_paint_compass_star(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint a magic wand for tone equalizer */
+void dtgtk_cairo_paint_wand(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
 // Lighttable modes
 
