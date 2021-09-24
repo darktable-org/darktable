@@ -1068,10 +1068,10 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
 
-    /* Capitalize Nikon Z-mount lenses properly for presentation */
+    /* Capitalize Nikon Z-mount lenses properly for UI presentation */
     if(g_str_has_prefix(img->exif_lens, "NIKKOR"))
     {
-      for(i=1; i<=5; ++i)
+      for(size_t i = 1; i <= 5; ++i)
         img->exif_lens[i] = g_ascii_tolower(img->exif_lens[i]);
     }
 
