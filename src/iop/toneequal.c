@@ -1840,7 +1840,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
   const float fd_new = exp2f(g->histogram_first_decile);
   const float ld_new = exp2f(g->histogram_last_decile);
   const float e = exp2f(p->exposure_boost);
-  const float c = exp2f(p->contrast_boost);
+  float c = exp2f(p->contrast_boost);
   // revert current transformation
   const float fd_old = ((fd_new - CONTRAST_FULCRUM) / c + CONTRAST_FULCRUM) / e;
   const float ld_old = ((ld_new - CONTRAST_FULCRUM) / c + CONTRAST_FULCRUM) / e;
@@ -1850,7 +1850,20 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
   const float s2 = exp2f(-1.0) - CONTRAST_FULCRUM;
   const float mix = fd_old * s2 +  ld_old * s1;
 
-  p->contrast_boost = log2f(mix / (CONTRAST_FULCRUM * (ld_old - fd_old)));
+  c = log2f(mix / (CONTRAST_FULCRUM * (ld_old - fd_old)) / c);
+
+  // when adding contrast, blur filters modify the histogram in a way difficult to predict
+  // here we implement a heuristic correction based on a set of images and regression analysis
+  if(p->details == DT_TONEEQ_EIGF)
+  {
+   if(p->feathering < 5.0f && c > 0.0f)
+     c = -0.0276f + 0.01823 * p->feathering + 0.7566f * c;
+  }
+  else if(p->details == DT_TONEEQ_GUIDED)
+    if(c > 0.0f)
+      c = 0.0235f + 1.1225f * c;
+
+  p->contrast_boost += c;
 
   // Update the GUI stuff
   ++darktable.gui->reset;
