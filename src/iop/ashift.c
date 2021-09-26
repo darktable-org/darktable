@@ -2814,6 +2814,9 @@ static int do_get_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p,
   if(b == NULL)
   {
     dt_control_log(_("data pending - please repeat"));
+    // force to reprocess the preview, otherwise the buffer is ko
+    dt_dev_pixelpipe_flush_caches(module->dev->preview_pipe);
+    dt_dev_reprocess_preview(module->dev);
     goto error;
   }
 
@@ -2845,6 +2848,15 @@ static int do_get_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p,
 error:
   g->fitting = 0;
   return FALSE;
+}
+
+// determine if the line is vertical or horizontal
+static void _draw_retrieve_line_type(dt_iop_ashift_line_t *line)
+{
+  dt_iop_ashift_linetype_t linetype = ASHIFT_LINE_VERTICAL_SELECTED;
+  if(fabsf(line->p1[0] - line->p2[0]) > fabsf(line->p1[1] - line->p2[1]))
+    linetype = ASHIFT_LINE_HORIZONTAL_SELECTED;
+  line->type = linetype;
 }
 
 // add a basic line. used for drawing perspective method
@@ -4588,23 +4600,19 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     // we determine the vertical/horizontal line type (that may have changed)
     // we also save the lines in params
     // points move are done directly in mouse_move routine
-    const int l = g->draw_near_point / 2;
-    if(l >= 0 && l < g->lines_count)
+    for(int l = 0; l < g->lines_count; l++)
     {
       const dt_iop_ashift_linetype_t old_linetype = g->lines[l].type;
-      dt_iop_ashift_linetype_t linetype = ASHIFT_LINE_VERTICAL_SELECTED;
-      if(fabsf(g->lines[l].p1[0] - g->lines[l].p2[0]) > fabsf(g->lines[l].p1[1] - g->lines[l].p2[1]))
-        linetype = ASHIFT_LINE_HORIZONTAL_SELECTED;
-      g->lines[l].type = linetype;
+      _draw_retrieve_line_type(&g->lines[l]);
 
-      if(linetype != old_linetype && linetype == ASHIFT_LINE_VERTICAL_SELECTED)
+      if(g->lines[l].type != old_linetype && g->lines[l].type == ASHIFT_LINE_VERTICAL_SELECTED)
       {
         g->vertical_count++;
         g->vertical_weight += 1.0f;
         g->horizontal_count--;
         g->horizontal_weight -= 1.0f;
       }
-      else if(linetype != old_linetype)
+      else if(g->lines[l].type != old_linetype)
       {
         g->horizontal_count++;
         g->horizontal_weight += 1.0f;
@@ -4816,6 +4824,8 @@ void gui_reset(struct dt_iop_module_t *self)
   /* reset eventual remaining structures */
   do_clean_structure(self, p, FALSE);
   _gui_update_structure_states(self, NULL);
+  // force to reprocess the preview, otherwise the buffer is ko
+  dt_dev_pixelpipe_flush_caches(self->dev->preview_pipe);
 }
 
 static void cropmode_callback(GtkWidget *widget, gpointer user_data)
@@ -5405,11 +5415,25 @@ static int _event_structure_quad_clicked(GtkWidget *widget, GdkEventButton *even
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return FALSE;
+
+  // we verify that we have a valid buffer
+  dt_iop_gui_enter_critical_section(self);
+  float *b = g->buf;
+  dt_iop_gui_leave_critical_section(self);
+
+  if(b == NULL)
+  {
+    dt_control_log(_("data pending - please repeat"));
+    // force to reprocess the preview, otherwise the buffer is ko
+    dt_dev_pixelpipe_flush_caches(self->dev->preview_pipe);
+    dt_dev_reprocess_preview(self->dev);
+    return TRUE;
+  }
 
   _gui_update_structure_states(self, widget);
 
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
 
   do_clean_structure(self, p, TRUE);
@@ -5447,6 +5471,9 @@ static int _event_structure_quad_clicked(GtkWidget *widget, GdkEventButton *even
       _draw_basic_line(&g->lines[3], pts[2] * pr_d, pts[3] * pr_d, pts[6] * pr_d, pts[7] * pr_d,
                        ASHIFT_LINE_HORIZONTAL_SELECTED);
 
+      // get real line type (they may be wrong due to image rotation)
+      for(int i = 0; i < 4; i++) _draw_retrieve_line_type(&g->lines[i]);
+
       g->lines_in_width = piece->iwidth * pr_d;
       g->lines_in_height = piece->iheight * pr_d;
       g->lines_x_off = 0;
@@ -5467,11 +5494,25 @@ static int _event_structure_lines_clicked(GtkWidget *widget, GdkEventButton *eve
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return FALSE;
+
+  // we verify that we have a valid buffer
+  dt_iop_gui_enter_critical_section(self);
+  float *b = g->buf;
+  dt_iop_gui_leave_critical_section(self);
+
+  if(b == NULL)
+  {
+    dt_control_log(_("data pending - please repeat"));
+    // force to reprocess the preview, otherwise the buffer is ko
+    dt_dev_pixelpipe_flush_caches(self->dev->preview_pipe);
+    dt_dev_reprocess_preview(self->dev);
+    return TRUE;
+  }
 
   _gui_update_structure_states(self, widget);
 
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
 
   do_clean_structure(self, p, TRUE);
