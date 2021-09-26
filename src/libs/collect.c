@@ -388,6 +388,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   dt_lib_collect_params_t *p = (dt_lib_collect_params_t *)params;
   char confname[200] = { 0 };
 
+  gboolean reset_view_filter = FALSE;
   for(uint32_t i = 0; i < p->rules; i++)
   {
     /* set item */
@@ -401,6 +402,17 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     /* set string */
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1u", i);
     dt_conf_set_string(confname, p->rule[i].string);
+
+    /* if one of the rules is a rating filter, the view rating filter will be reset to all */
+    if(p->rule[i].item == DT_COLLECTION_PROP_RATING)
+    {
+      reset_view_filter = TRUE;
+    }
+  }
+
+  if(reset_view_filter)
+  {
+    dt_view_filter_reset(darktable.view_manager, FALSE);
   }
 
   /* set number of rules */
@@ -649,6 +661,7 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
              || d->view_rule == DT_COLLECTION_PROP_ISO
              || d->view_rule == DT_COLLECTION_PROP_EXPOSURE
              || d->view_rule == DT_COLLECTION_PROP_ASPECT_RATIO
+             || d->view_rule == DT_COLLECTION_PROP_RATING
             )
          )
       {
@@ -876,7 +889,8 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   const int property = _combo_get_active_collection(dr->combo);
   if(property == DT_COLLECTION_PROP_APERTURE
      || property == DT_COLLECTION_PROP_FOCAL_LENGTH
-     || property == DT_COLLECTION_PROP_ISO)
+     || property == DT_COLLECTION_PROP_ISO
+     || property == DT_COLLECTION_PROP_RATING)
   {
     // handle of numeric value, which can have some operator before the text
     visible = TRUE;
@@ -1858,6 +1872,18 @@ static void list_view(dt_lib_collect_rule_t *dr)
         }
         break;
 
+      case DT_COLLECTION_PROP_RATING: // image rating
+        {
+          g_snprintf(query, sizeof(query),
+                     "SELECT CASE WHEN (flags & 8) == 8 THEN -1 ELSE (flags & 7) END AS rating, 1,"
+                     " COUNT(*) AS count"
+                     " FROM main.images AS mi"
+                     " WHERE %s"
+                     " GROUP BY rating"
+                     " ORDER BY rating", where_ext);
+        }
+        break;
+
       default:
         if(property >= DT_COLLECTION_PROP_METADATA
            && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)
@@ -1961,7 +1987,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
        || property == DT_COLLECTION_PROP_FOCAL_LENGTH
        || property == DT_COLLECTION_PROP_ISO
        || property == DT_COLLECTION_PROP_EXPOSURE
-       || property == DT_COLLECTION_PROP_ASPECT_RATIO)
+       || property == DT_COLLECTION_PROP_ASPECT_RATIO
+       || property == DT_COLLECTION_PROP_RATING)
     {
       gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
     }
@@ -1989,6 +2016,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
                     || property == DT_COLLECTION_PROP_ISO
                     || property == DT_COLLECTION_PROP_MODULE
                     || property == DT_COLLECTION_PROP_ORDER
+                    || property == DT_COLLECTION_PROP_RATING
                     || (property >= DT_COLLECTION_PROP_METADATA
                         && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)))
   {
@@ -2006,7 +2034,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
      || property == DT_COLLECTION_PROP_FOCAL_LENGTH
      || property == DT_COLLECTION_PROP_ISO
      || property == DT_COLLECTION_PROP_EXPOSURE
-     || property == DT_COLLECTION_PROP_ASPECT_RATIO)
+     || property == DT_COLLECTION_PROP_ASPECT_RATIO
+     || property == DT_COLLECTION_PROP_RATING)
   {
     // test selection range [xxx;xxx]
     GRegex *regex;
@@ -2069,6 +2098,12 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
      || property == DT_COLLECTION_PROP_EXPOSURE)
   {
     gtk_widget_set_tooltip_text(d->text, _("use <, <=, >, >=, <>, =, [;] as operators"));
+  }
+  else if(property == DT_COLLECTION_PROP_RATING)
+  {
+    gtk_widget_set_tooltip_text(d->text, _("use <, <=, >, >=, <>, =, [;] as operators\n"
+                                           "star rating: 0-5\n"
+                                           "rejected images: -1"));
   }
   else if(property == DT_COLLECTION_PROP_DAY || is_time_property(property))
   {
@@ -2135,7 +2170,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
 
-  // we check if something as change since last call
+  // we check if something has changed since last call
   if(d->view_rule != -1) return;
 
   ++darktable.gui->reset;
@@ -2314,7 +2349,8 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
                 || item == DT_COLLECTION_PROP_FOCAL_LENGTH
                 || item == DT_COLLECTION_PROP_ISO
                 || item == DT_COLLECTION_PROP_EXPOSURE
-                || item == DT_COLLECTION_PROP_ASPECT_RATIO))
+                || item == DT_COLLECTION_PROP_ASPECT_RATIO
+                || item == DT_COLLECTION_PROP_RATING))
     {
       /* this is a range selection */
       GtkTreeIter iter2;
@@ -2825,6 +2861,7 @@ static void _populate_collect_combo(GtkWidget *w)
         ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
       }
     }
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
 
@@ -3239,6 +3276,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_PRINT_TIMESTAMP);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_HISTORY);
+  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_RATING);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_COLORLABEL);
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
@@ -3267,7 +3305,6 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_GROUPING);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_MODULE);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_ORDER);
-
 }
 #endif
 #undef MAX_RULES

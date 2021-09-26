@@ -705,6 +705,7 @@ const char *dt_collection_name(dt_collection_properties_t prop)
     case DT_COLLECTION_PROP_LOCAL_COPY:       return _("local copy");
     case DT_COLLECTION_PROP_MODULE:           return _("module");
     case DT_COLLECTION_PROP_ORDER:            return _("module order");
+    case DT_COLLECTION_PROP_RATING:           return _("rating");
     case DT_COLLECTION_PROP_LAST:             return NULL;
     default:
     {
@@ -1144,7 +1145,7 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
   *number1 = *number2 = *operator= NULL;
 
   // we test the range expression first
-  regex = g_regex_new("^\\s*\\[\\s*([0-9]+\\.?[0-9]*)\\s*;\\s*([0-9]+\\.?[0-9]*)\\s*\\]\\s*$", 0, 0, NULL);
+  regex = g_regex_new("^\\s*\\[\\s*([-+]?[0-9]+\\.?[0-9]*)\\s*;\\s*([-+]?[0-9]+\\.?[0-9]*)\\s*\\]\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
   int match_count = g_match_info_get_match_count(match_info);
 
@@ -1162,7 +1163,7 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
   g_regex_unref(regex);
 
   // and we test the classic comparison operators
-  regex = g_regex_new("^\\s*(=|<|>|<=|>=|<>)?\\s*([0-9]+\\.?[0-9]*)\\s*$", 0, 0, NULL);
+  regex = g_regex_new("^\\s*(=|<|>|<=|>=|<>)?\\s*([-+]?[0-9]+\\.?[0-9]*)\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
   match_count = g_match_info_get_match_count(match_info);
 
@@ -1887,6 +1888,69 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           query = g_strdup_printf("(id IN (SELECT imgid FROM main.module_order WHERE version = %d))", i);
         else
           query = g_strdup_printf("(id NOT IN (SELECT imgid FROM main.module_order))");
+      }
+      break;
+
+    case DT_COLLECTION_PROP_RATING: // image rating
+      {
+        gchar *operator, *number1, *number2;
+        dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
+
+        if(operator && strcmp(operator, "[]") == 0)
+        {
+          if(number1 && number2)
+          {
+            if(atoi(number1) == -1)
+            { // rejected + star rating
+              query = g_strdup_printf("(flags & 7 >= %s AND flags & 7 <= %s)", number1, number2);
+            }
+            else
+            { // non-rejected + star rating
+              query = g_strdup_printf("((flags & 8 == 0) AND (flags & 7 >= %s AND flags & 7 <= %s))", number1, number2);
+            }
+          }
+        }
+        else if(operator && number1)
+        {
+          if(g_strcmp0(operator, "<=") == 0 || g_strcmp0(operator, "<") == 0)
+          { // all below rating + rejected
+            query = g_strdup_printf("(flags & 8 == 8 OR flags & 7 %s %s)", operator, number1);
+          }
+          else if(g_strcmp0(operator, ">=") == 0 || g_strcmp0(operator, ">") == 0)
+          {
+            if(atoi(number1) >= 0)
+            { // non rejected above rating
+              query = g_strdup_printf("(flags & 8 == 0 AND flags & 7 %s %s)", operator, number1);
+            }
+            // otherwise no filter (rejected + all ratings)
+          }
+          else
+          { // <> exclusion operator
+            if(atoi(number1) == -1)
+            { // all except rejected
+              query = g_strdup_printf("(flags & 8 == 0)");
+            }
+            else
+            { // all except star rating (including rejected)
+              query = g_strdup_printf("(flags & 8 == 8 OR flags & 7 %s %s)", operator, number1);
+            }
+          }
+        }
+        else if(number1)
+        {
+          if(atoi(number1) == -1)
+          { // rejected only
+            query = g_strdup_printf("(flags & 8 == 8)");
+          }
+          else
+          { // non-rejected + star rating
+            query = g_strdup_printf("(flags & 8 == 0 AND flags & 7 == %s)", number1);
+          }
+        }
+
+        g_free(operator);
+        g_free(number1);
+        g_free(number2);
       }
       break;
 
