@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-09-09 22:48-0300\n"
-"PO-Revision-Date: 2021-09-24 19:58-0300\n"
+"PO-Revision-Date: 2021-09-25 08:00-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -150,7 +150,7 @@ msgstr "FALSO"
 #: ../build/bin/preferences_gen.h:3534
 msgid "hides built-in presets of utility modules in presets menu."
 msgstr ""
-"esconde predefinições nativas dos módulos utilitários nos menus de "
+"oculta predefinições nativas dos módulos utilitários nos menus de "
 "predefinições e favoritos."
 
 #: ../build/bin/preferences_gen.h:3556
@@ -553,8 +553,8 @@ msgstr "para 1/4"
 #: ../build/bin/preferences_gen.h:4545
 msgid "decrease to speed up preview rendering, may hinder accurate masking"
 msgstr ""
-"diminua para acelerar a renderização de pré-visualização; pode pode "
-"prejudicar a precisão do mascaramento"
+"diminua para acelerar a renderização de pré-visualização; pode prejudicar "
+"a precisão do mascaramento"
 
 #: ../build/bin/preferences_gen.h:4567
 msgid "show loading screen between images"
@@ -604,7 +604,7 @@ msgid ""
 "hides built-in presets of processing modules in both presets and favourites "
 "menu."
 msgstr ""
-"esconde predefinições nativas dos módulos de processamento nos menus de "
+"oculta predefinições nativas dos módulos de processamento nos menus de "
 "predefinições e favoritos."
 
 #: ../build/bin/preferences_gen.h:4707
@@ -708,7 +708,7 @@ msgid ""
 msgstr ""
 "seleciona como organizar os blocos de deslizadores para elevação, gama e "
 "ganho:\n"
-"lista - todos os deslizadores são mostrados em uma list alonga (com "
+"lista - todos os deslizadores são mostrados em uma lista alonga (com "
 "cabeçalhos),\n"
 "abas - use abas para alternar entre os blocos de deslizadores,\n"
 "colunas - os blocos de deslizadores são mostrados uns ao lado dos outros (em "
@@ -769,16 +769,17 @@ msgid ""
 "smooth - fade out all buttons in one header simultaneously,\n"
 "glide - gradually hide individual buttons as needed"
 msgstr ""
-"quando o mouse não está sobre um módulo, os botões de multi-instancia, reset "
-"e preset podem ser escondidos:\n"
+"quando o mouse não está sobre um módulo, os botões de múltiplas instâncias,"
+" reiniciar "
+"e predefinições podem ser ocultos:\n"
 "sempre - sempre mostrar todos os botões,\n"
 "ativo - só mostrar os botões quando o mouse estiver sobre o módulo,\n"
 "atenuar - botões são atenuados quando o mouse está fora,\n"
-"auto - esconder os botões quando o painel estiver estreito,\n"
+"auto - ocultar os botões quando o painel estiver estreito,\n"
 "desvanecer - atenuar gradualmente os botões quando o painel estreitar,\n"
-"encaixar - esconda os botões se o nome do módulo não couber,\n"
+"encaixar - oculta os botões se o nome do módulo não couber,\n"
 "suave - atenuar gradualmente os botões em um cabeçalho simultaneamente,\n"
-"deslizar - gradualmente esconder botões individuais conforme necessário"
+"deslizar - gradualmente ocultar botões individuais conforme necessário"
 
 #: ../build/bin/preferences_gen.h:5071
 msgid "show mask indicator in module headers"
@@ -790,11 +791,11 @@ msgid ""
 "that have a mask applied"
 msgstr ""
 "se habilitado, um ícone será mostrado nos cabeçalhos do módulo para indicar "
-"os módulos que tem uma máscara"
+"os módulos que possuem uma máscara aplicada"
 
 #: ../build/bin/preferences_gen.h:5107
 msgid "prompt for name on addition of new instance"
-msgstr "perguntar por nome ao adicionar uma nova instancia"
+msgstr "perguntar por nome ao adicionar uma nova instância"
 
 #: ../build/bin/preferences_gen.h:5121
 msgid ""
@@ -802,7 +803,7 @@ msgid ""
 "(either new instance or duplicate)"
 msgstr ""
 "se habilitada, um prompt de renomeação será apresentado para cada nova "
-"instancia de módulo (tanto novas instancias como duplicatas)"
+"instância de módulo (tanto novas instâncias como duplicatas)"
 
 #: ../build/bin/preferences_gen.h:5149
 msgid "processing"
@@ -848,8 +849,8 @@ msgid ""
 "pixel interpolator used in modules for rotation, lens correction, liquify, "
 "cropping and final scaling (bilinear, bicubic, lanczos2)."
 msgstr ""
-"interpolador de pixel usado em módulos para rotação, correção de lente, "
-"liquefazer, corte e mudança final de escala (bilinear, bicúbico, lanczos2)."
+"interpolador de pixel usado em módulos para rotação, correção da lente, "
+"dissolver, corte e mudança final de escala (bilinear, bicúbico, lanczos2)."
 
 #: ../build/bin/preferences_gen.h:5273
 msgid "pixel interpolator (scaling)"
@@ -881,7 +882,7 @@ msgstr "pasta raiz do LUT 3D"
 #: ../src/libs/import.c:1670 ../src/libs/import.c:1724 ../src/libs/styles.c:394
 #: ../src/lua/preferences.c:665
 msgid "select directory"
-msgstr "selecione diretório"
+msgstr "selecione pasta"
 
 #: ../build/bin/preferences_gen.h:5362
 msgid ""
@@ -968,8 +969,7 @@ msgstr ""
 "usar a curva base específica por-câmera como padrão ao invés do genérico do "
 "fabricante, se houver uma curva específica disponível (precisa reiniciar).\n"
 "esta opção é levada em consideração quando o default \"auto-aplicar defaults "
-"do fluxo de trabalho da pixelpipe\" é definido como \"relativo à exibição"
-"\".\n"
+"do fluxo de trabalho da pixelpipe\" é definido como \"relativo à exibição\".\n"
 "para prevenir a aplicação automática de definições de curva base, \"auto-"
 "aplicar defaults do fluxo de trabalho da pixelpipe\" deve ser configurado "
 "como \"nenhuma\""
@@ -1151,12 +1151,13 @@ msgid ""
 "parallel on two different GPUs; very fast GPU - process both pixelpipes "
 "sequentially on the GPU."
 msgstr ""
-"define como as tarefas das duas pixelpipe --  full e de preview --  são "
-"escalonadas em sistemas com OpenCL habilitado. padrão - a GPU processa full "
-"e a CPU processa o preview pipe (adaptável por parâmetros de configuração; "
-"múltiplas GPUs - processa as duas pixelpipes em paralelo nas duas diferentes "
-"GPUs; GPU muito rápida -- processa as duas pixelpipes  sequencialmente na "
-"GPU."
+"define como as tarefas das duas pixelpipe --  completa e de pré-visualização"
+" --  "
+"são escalonadas em sistemas com OpenCL habilitado. padrão - a GPU processa "
+"a completa e a CPU processa o pré-visualização (adaptável por parâmetros de "
+" configuração); múltiplas GPUs - processa as duas pixelpipes em paralelo nas "
+"duas diferentes GPUs; GPU muito rápida -- processa as duas pixelpipes "
+"sequencialmente na GPU."
 
 #: ../build/bin/preferences_gen.h:5988
 msgid "security"
@@ -1629,7 +1630,7 @@ msgid ""
 "after applying the above rule, if instances of the module are active, ignore "
 "inactive instances"
 msgstr ""
-"depois de aplicar as regras acima, se instancias de um módulo estiverem "
+"depois de aplicar as regras acima, se instâncias de um módulo estiverem "
 "ativas, ignore as instâncias inativas"
 
 #: ../build/bin/preferences_gen.h:7341
@@ -1641,8 +1642,8 @@ msgid ""
 "after applying the above rules, if instances of the module are unmasked, "
 "ignore masked instances"
 msgstr ""
-"depois de aplicar as regras acima, se instancias de um módulo estiverem não-"
-"mascaradas, ignore as instancias mascaradas"
+"depois de aplicar as regras acima, se instâncias de um módulo estiverem não-"
+"mascaradas, ignore as instâncias mascaradas"
 
 #: ../build/bin/preferences_gen.h:7377
 msgid "selection order"
@@ -1888,7 +1889,7 @@ msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
 msgstr ""
-"quando houverem imagens raw+jpeg juntas em um diretório não faz sentido "
+"quando houverem imagens raw+jpeg juntas em uma pasta, não faz sentido "
 "importar ambos. com esta opção pode-se ignorar todos os jpegs encontrados."
 
 #: ../build/bin/conf_gen.h:824
@@ -1901,11 +1902,11 @@ msgstr "aplicar alguns metadados a todas imagens importadas recentemente."
 
 #: ../build/bin/conf_gen.h:830
 msgid "recursive directory"
-msgstr "diretório recursivo"
+msgstr "pasta recursiva"
 
 #: ../build/bin/conf_gen.h:831
 msgid "recursive directory traversal when importing filmrolls"
-msgstr "atravessar diretórios recursivamente ao importar rolos de filme"
+msgstr "pesquisa pastas recursivamente ao importar rolos de filme"
 
 #: ../build/bin/conf_gen.h:836
 msgid "creator to be applied when importing"
@@ -2850,75 +2851,63 @@ msgstr "elevação, gama, ganho (sRGB)"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:219
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:448
-#, fuzzy
 msgid "lift luminance"
-msgstr "luminância"
+msgstr "elevação de luminância"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:225
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:452
-#, fuzzy
 msgid "lift chroma"
-msgstr "croma"
+msgstr "elevação de croma"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:231
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:456
-#, fuzzy
 msgid "lift hue"
-msgstr "levantar"
+msgstr "elevação de matiz"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:237
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:460
-#, fuzzy
 msgid "power luminance"
-msgstr "luminância"
+msgstr "potência de luminância"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:243
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:464
-#, fuzzy
 msgid "power chroma"
-msgstr "reduz ruido croma"
+msgstr "potência de croma"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:249
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:468
-#, fuzzy
 msgid "power hue"
-msgstr "potência"
+msgstr "potência de matiz"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:255
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:472
-#, fuzzy
 msgid "gain luminance"
-msgstr "luminância"
+msgstr "ganho de luminância"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:261
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:476
-#, fuzzy
 msgid "gain chroma"
-msgstr "croma global"
+msgstr "ganho de croma"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:267
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:480
-#, fuzzy
 msgid "gain hue"
-msgstr "ganho"
+msgstr "ganho de matiz"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:273
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:484
-#, fuzzy
 msgid "offset luminance"
-msgstr "luminância"
+msgstr "deslocamento de luminância"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:279
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:488
-#, fuzzy
 msgid "offset chroma"
-msgstr "reduz ruido croma"
+msgstr "deslocamento de croma"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:285
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:492
-#, fuzzy
 msgid "offset hue"
-msgstr "deslocamento"
+msgstr "deslocamento de matiz"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:291
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:496
@@ -2937,27 +2926,23 @@ msgstr "decaimento de realces"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:309
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:508
-#, fuzzy
 msgid "chroma shadows"
-msgstr "corrigir sombras"
+msgstr "croma nas sombras"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:315
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:512
-#, fuzzy
 msgid "chroma highlights"
-msgstr "recortar realces"
+msgstr "croma nos realces"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:321
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:516
-#, fuzzy
 msgid "chroma global"
-msgstr "croma"
+msgstr "croma global"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:327
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:520
-#, fuzzy
 msgid "chroma mid-tones"
-msgstr "meios-tons"
+msgstr "croma nos meios-tons"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:333
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:524
@@ -2971,9 +2956,8 @@ msgstr "saturação dos realces"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:345
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:532
-#, fuzzy
 msgid "saturation mid-tones"
-msgstr "saturação apenas"
+msgstr "saturação nos meios-tons"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:351
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:536
@@ -2988,13 +2972,12 @@ msgstr "deslocamento de matiz"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:363
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:544
 msgid "brilliance global"
-msgstr ""
+msgstr "brilhância global"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:369
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:548
-#, fuzzy
 msgid "brilliance highlights"
-msgstr "recortar realces"
+msgstr "brilhância nos realces"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:375
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:552
@@ -3003,14 +2986,13 @@ msgstr "brilhância nos meios-tons"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:381
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:556
-#, fuzzy
 msgid "brilliance shadows"
-msgstr "gnaho de luminância nas sombras"
+msgstr "brilhância nas sombras"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:387
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:560
 msgid "mask middle-gray fulcrum"
-msgstr "pivô (fulcrum) de cinza médio de máscara"
+msgstr "pivô (fulcrum) de cinza médio da máscara"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:393
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:564
@@ -4561,7 +4543,7 @@ msgid ""
 "notice: output location is a directory. assuming '%s/$(FILE_NAME).%s' output "
 "pattern"
 msgstr ""
-"nota: local de saída é um diretório. presumindo padrão de saída '%s/"
+"nota: local de saída é uma pasta. presumindo padrão de saída '%s/"
 "$(FILE_NAME).%s'\""
 
 #. output file exists or there's output ext specified and it's same as file...
@@ -4982,7 +4964,7 @@ msgstr "caminho estranho encontrado `%s'"
 #: ../src/common/darktable.c:254
 #, c-format
 msgid "error loading directory `%s'"
-msgstr "erro carregando diretório `%s'"
+msgstr "erro carregando pasta `%s'"
 
 #: ../src/common/darktable.c:277
 #, c-format
@@ -5326,14 +5308,14 @@ msgstr ""
 #: ../src/common/film.c:302
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
-msgstr[0] "você realmente deseja remover este diretório vazio?"
+msgstr[0] "você realmente deseja remover esta pasta vazia?"
 msgstr[1] "você realmente deseja remover estes diretórios vazios?"
 
 #: ../src/common/film.c:309
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
-msgstr[0] "remover diretório vazio?"
-msgstr[1] "remover diretórios vazios?"
+msgstr[0] "remover pasta vazia?"
+msgstr[1] "remover pastas vazias?"
 
 #: ../src/common/film.c:328 ../src/gui/preferences.c:779
 #: ../src/gui/styles_dialog.c:445 ../src/libs/geotagging.c:837
@@ -5920,8 +5902,7 @@ msgstr "importar imagens da câmera"
 
 #: ../src/control/jobs/control_jobs.c:141
 msgid "failed to create film roll for destination directory, aborting move.."
-msgstr ""
-"falha ao criar rolo de filme no diretório de destino, abortando mover..."
+msgstr "falha ao criar rolo de filme na pasta de destino, cancelando mover..."
 
 #: ../src/control/jobs/control_jobs.c:370
 msgid "exposure bracketing only works on raw images."
@@ -8047,17 +8028,17 @@ msgstr "balanço de branco automático"
 #: ../src/generate-cache/main.c:50
 #, c-format
 msgid "creating cache directories\n"
-msgstr "criando diretórios de cache\n"
+msgstr "criando pastas de cache\n"
 
 #: ../src/generate-cache/main.c:56
 #, c-format
 msgid "creating cache directory '%s'\n"
-msgstr "criando diretório de cache `%s'\n"
+msgstr "criando pastas de cache `%s'\n"
 
 #: ../src/generate-cache/main.c:59
 #, c-format
 msgid "could not create directory '%s'!\n"
-msgstr "não foi possível criar o diretório `%s'!\n"
+msgstr "não foi possível criar a pasta `%s'!\n"
 
 #: ../src/generate-cache/main.c:83
 #, c-format
@@ -8219,7 +8200,7 @@ msgstr "ctrl-alternar"
 
 #: ../src/gui/accelerators.c:123
 msgid "ctrl-on"
-msgstr ""
+msgstr "ctrl-ligado"
 
 #: ../src/gui/accelerators.c:124
 msgid "right-toggle"
@@ -10139,12 +10120,12 @@ msgstr "pular"
 #: ../src/imageio/storage/latex.c:269
 #, c-format
 msgid "could not create directory `%s'!"
-msgstr "não foi possível criar o diretório `%s'!"
+msgstr "não foi possível criar a pasta `%s'!"
 
 #: ../src/imageio/storage/disk.c:288
 #, c-format
 msgid "could not write to directory `%s'!"
-msgstr "não foi possível escrever no diretório `%s'!"
+msgstr "não foi possível salvar na pasta `%s'!"
 
 #: ../src/imageio/storage/disk.c:318
 #, c-format
@@ -12677,7 +12658,7 @@ msgstr "croma do deslocamento global de cor"
 
 #: ../src/iop/colorbalancergb.c:1709
 msgid "shadows lift"
-msgstr "elevação de sombras"
+msgstr "elevação nas sombras"
 
 #: ../src/iop/colorbalancergb.c:1716
 msgid "luminance gain in shadows"
@@ -12693,7 +12674,7 @@ msgstr "ganho de croma de cor nas sombras"
 
 #: ../src/iop/colorbalancergb.c:1733
 msgid "highlights gain"
-msgstr "ganho em realces"
+msgstr "ganho nos realces"
 
 #: ../src/iop/colorbalancergb.c:1740
 msgid "luminance gain in highlights"
@@ -12789,9 +12770,8 @@ msgstr "tamanho do tabuleiro"
 
 #: ../src/iop/colorbalancergb.c:1873 ../src/iop/colorbalancergb.c:1877
 #: ../src/iop/colorbalancergb.c:1881
-#, fuzzy
 msgid "lift"
-msgstr "levantar"
+msgstr "elevação"
 
 #: ../src/iop/colorbalancergb.c:1875 ../src/iop/colorbalancergb.c:1879
 #: ../src/iop/colorbalancergb.c:1883
@@ -21572,7 +21552,6 @@ msgstr "informações permanentes estendidas ao passar o mouse"
 
 #: ../src/libs/tools/global_toolbox.c:456
 #: ../src/libs/tools/global_toolbox.c:489
-#, fuzzy
 msgid "overlays block on mouse hover during (s)"
 msgstr "bloco de informações ao passar o mouse por (s)"
 
@@ -21683,7 +21662,7 @@ msgstr ""
 #: ../src/libs/tools/global_toolbox.c:921
 msgctxt "accel"
 msgid "thumbnail overlays/overlays block on mouse hover"
-msgstr "informações em miniaturas/bloco de informações ao passar o mouse"
+msgstr "informações/bloco de informações em miniaturas ao passar o mouse"
 
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
