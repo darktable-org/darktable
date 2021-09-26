@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2021 darktable developers.
+    Copyright (C) 2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 
 /*
   eucledian distance transform for darktable Hanno Schwalm (hanno@schwalm-bremen.de) 2021/09  
@@ -41,7 +40,8 @@
 */
 
 /* Howto
-  dt_image_distance_transform(float *const restrict src, float *const restrict out, const size_t width, const size_t height, const float clip, const dt_distance_transform_t mode)
+  dt_image_distance_transform(float *const restrict src, float *const restrict out, const size_t width, const size_t height,
+       const float clip, const dt_distance_transform_t mode)
     writes data to an 1-ch image at 'out' with dimensions given. 'out' must be aligned as by dt_alloc_align_float.
     You may either
       - prepare the 'out' image before calling the distance transform, in this case use DT_DISTANCE_TRANSFORM_NONE as mode.
@@ -50,7 +50,7 @@
         will fill in the zeros / DT_DISTANCE_TRANSFORM_MAX
 */
 
-
+#include "common/imagebuf.h"
 #include "develop/openmp_maths.h"
 
 typedef enum dt_distance_transform_t

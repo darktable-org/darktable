@@ -24,8 +24,6 @@
 #include <string.h>
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
-#include "common/imagebuf.h"
-#include "common/distance_transform.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
