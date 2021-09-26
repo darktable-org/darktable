@@ -779,7 +779,7 @@ static void presets_popup_callback(GtkButton *button, dt_lib_module_t *module)
 
 void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
 {
-  if(!module->expander) return;
+  if(!module->expander || !module->arrow) return;
 
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), expanded);
 
