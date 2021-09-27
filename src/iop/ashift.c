@@ -5007,7 +5007,9 @@ static int _event_fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event,
       g->jobparams = g->lastfit = fitaxis;
     }
 
+    swap_shadow_crop_box(p, g);                             // temporarily update real crop box
     dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
+    swap_shadow_crop_box(p, g);
     return TRUE;
   }
   return FALSE;
@@ -5058,7 +5060,9 @@ static int _event_fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event,
       g->jobparams = g->lastfit = fitaxis;
     }
 
+    swap_shadow_crop_box(p, g);                             // temporarily update real crop box
     dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
+    swap_shadow_crop_box(p, g);
     return TRUE;
   }
   return FALSE;
@@ -5111,7 +5115,9 @@ static int _event_fit_both_button_clicked(GtkWidget *widget, GdkEventButton *eve
       g->jobparams = g->lastfit = fitaxis;
     }
 
+    swap_shadow_crop_box(p, g);                             // temporarily update real crop box
     dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
+    swap_shadow_crop_box(p, g);
     return TRUE;
   }
   return FALSE;
