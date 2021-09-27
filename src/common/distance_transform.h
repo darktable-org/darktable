@@ -40,7 +40,7 @@
 */
 
 /* Howto
-  dt_image_distance_transform(float *const restrict src, float *const restrict out, const size_t width, const size_t height,
+  float dt_image_distance_transform(float *const restrict src, float *const restrict out, const size_t width, const size_t height,
        const float clip, const dt_distance_transform_t mode)
     writes data to an 1-ch image at 'out' with dimensions given. 'out' must be aligned as by dt_alloc_align_float.
     You may either
@@ -48,10 +48,16 @@
         you should have filled 'out' with either 0.0f or DT_DISTANCE_TRANSFORM_MAX marking the positions as on/off
       - use DT_DISTANCE_TRANSFORM_MASK, in this case data found in src is checked vs clip, dt_image_distance_transform
         will fill in the zeros / DT_DISTANCE_TRANSFORM_MAX
+   The returned float of this function is the maximum calculated distance
 */
 
 #include "common/imagebuf.h"
-#include "develop/openmp_maths.h"
+
+// We don't want to use the SIMD version as we might access unaligned memory
+static inline float sqrf(float a)
+{
+  return a * a;
+}
 
 typedef enum dt_distance_transform_t
 {
@@ -61,7 +67,7 @@ typedef enum dt_distance_transform_t
 
 #define DT_DISTANCE_TRANSFORM_MAX (1e20)
 
-static void dt(float *f, float *z, float *d, int *v, int n)
+static void _image_distance_transform(const float *f, float *z, float *d, int *v, const int n)
 {
   int k = 0;
   v[0] = 0;
@@ -69,12 +75,13 @@ static void dt(float *f, float *z, float *d, int *v, int n)
   z[1] = DT_DISTANCE_TRANSFORM_MAX;
   for(int q = 1; q <= n-1; q++)
   {
-    float s  = ((f[q] + sqf((float)q)) - (f[v[k]] + sqf((float)v[k]))) / (float)(2*q - 2*v[k]);
-    while(s <= z[k])
+    float s = (f[q] + sqrf((float)q)) - (f[v[k]] + sqrf((float)v[k]));
+    while(s <= z[k] * (float)(2*q - 2*v[k]))
     {
       k--;
-      s = ((f[q] + sqf((float)q)) - (f[v[k]] + sqf((float)v[k]))) / (float)(2*q - 2*v[k]);
+      s = (f[q] + sqrf((float)q)) - (f[v[k]] + sqrf((float)v[k]));
     }
+    s /= (float)(2*q - 2*v[k]);
     k++;
     v[k] = q;
     z[k] = s;
@@ -86,11 +93,11 @@ static void dt(float *f, float *z, float *d, int *v, int n)
   {
     while(z[k+1] < (float)q)
       k++;
-    d[q] = sqf((float)(q-v[k])) + f[v[k]];
+    d[q] = sqrf((float)(q-v[k])) + f[v[k]];
   }
 }
 
-void dt_image_distance_transform(float *const restrict src, float *const restrict out, const size_t width, const size_t height, const float clip, const dt_distance_transform_t mode)
+float dt_image_distance_transform(float *const restrict src, float *const restrict out, const size_t width, const size_t height, const float clip, const dt_distance_transform_t mode)
 {
   switch(mode)
   {
@@ -109,13 +116,14 @@ void dt_image_distance_transform(float *const restrict src, float *const restric
     default:
       dt_iop_image_fill(out, 0.0f, width, height, 1);
       fprintf(stderr,"[dt_image_distance_transform] called with unsupported mode %i\n", mode);
-      return;
+      return 0.0f;
   }
 
   const size_t maxdim = MAX(width, height);
-
+  float max_distance = 0.0f;
 #ifdef _OPENMP
   #pragma omp parallel \
+  reduction(max : max_distance) \
   dt_omp_firstprivate(out) \
   dt_omp_sharedconst(maxdim, width, height)
 #endif
@@ -133,7 +141,7 @@ void dt_image_distance_transform(float *const restrict src, float *const restric
     {
       for(size_t y = 0; y < height; y++)
         f[y] = out[y*width + x];
-      dt(f, z, d, v, height);
+      _image_distance_transform(f, z, d, v, height);
       for(size_t y = 0; y < height; y++)
         out[y*width + x] = d[y];
     }
@@ -144,16 +152,19 @@ void dt_image_distance_transform(float *const restrict src, float *const restric
 #endif
     for(size_t y = 0; y < height; y++)
     {
+      _image_distance_transform(&out[y*width], z, d, v, width);
       for(size_t x = 0; x < width; x++)
-        f[x] = out[y*width + x];
-      dt(f, z, d, v, width);
-      for(size_t x = 0; x < width; x++)
-        out[y*width + x] = sqrtf(d[x]);
+      {
+        const float val = sqrtf(d[x]);
+        out[y*width + x] = val;
+        max_distance = fmaxf(max_distance, val);
+      }
     }
     dt_free_align(f);
     dt_free_align(d);
     dt_free_align(z);
     dt_free_align(v);
   }
+  return max_distance;
 }
 
