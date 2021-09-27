@@ -2899,6 +2899,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/ashift/near_delta_draw</name>
+    <type>float</type>
+    <default>5.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/print/print/black_point_compensation</name>
     <type>bool</type>
     <default>true</default>
@@ -3122,6 +3129,13 @@
     <default>false</default>
     <shortdescription>whether to show margins</shortdescription>
     <longdescription>this is just for remembering whether to show margins or not and remember it</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/ashift/expand_values</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to show values</shortdescription>
+    <longdescription>this is just for remembering whether to show values or not</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/colorzones/bg_sat_factor</name>
