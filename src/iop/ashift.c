@@ -340,7 +340,7 @@ typedef struct dt_iop_ashift_params_t
   float orthocorr;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "lens dependence"
   float aspect;      // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "aspect adjust"
   dt_iop_ashift_mode_t mode;     // $DEFAULT: ASHIFT_MODE_GENERIC $DESCRIPTION: "lens model"
-  dt_iop_ashift_crop_t cropmode; // $DEFAULT: ASHIFT_CROP_OFF $DESCRIPTION: "automatic cropping"
+  dt_iop_ashift_crop_t cropmode; // $DEFAULT: ASHIFT_CROP_LARGEST $DESCRIPTION: "automatic cropping"
   float cl;          // $DEFAULT: 0.0
   float cr;          // $DEFAULT: 1.0
   float ct;          // $DEFAULT: 0.0
@@ -4957,6 +4957,7 @@ static void cropmode_callback(GtkWidget *widget, gpointer user_data)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
+  dt_conf_set_int("plugins/darkroom/ashift/autocrop_value", dt_bauhaus_combobox_get(g->cropmode));
   swap_shadow_crop_box(p,g);	//temporarily update real crop box
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   swap_shadow_crop_box(p,g);
@@ -5338,6 +5339,8 @@ void reload_defaults(dt_iop_module_t *module)
   // init defaults:
   ((dt_iop_ashift_params_t *)module->default_params)->f_length = f_length;
   ((dt_iop_ashift_params_t *)module->default_params)->crop_factor = crop_factor;
+  ((dt_iop_ashift_params_t *)module->default_params)->cropmode
+      = dt_conf_get_int("plugins/darkroom/ashift/autocrop_value");
 
   // reset gui elements
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
