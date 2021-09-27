@@ -266,7 +266,9 @@ typedef enum dt_iop_ashift_jobcode_t
 {
   ASHIFT_JOBCODE_NONE = 0,
   ASHIFT_JOBCODE_GET_STRUCTURE = 1,
-  ASHIFT_JOBCODE_FIT = 2
+  ASHIFT_JOBCODE_FIT = 2,
+  ASHIFT_JOBCODE_GET_STRUCTURE_LINES = 3,
+  ASHIFT_JOBCODE_GET_STRUCTURE_QUAD = 4
 } dt_iop_ashift_jobcode_t;
 
 typedef struct dt_iop_ashift_params1_t
@@ -338,7 +340,6 @@ typedef struct dt_iop_ashift_params_t
   float orthocorr;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "lens dependence"
   float aspect;      // $MIN: 0.5 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "aspect adjust"
   dt_iop_ashift_mode_t mode;     // $DEFAULT: ASHIFT_MODE_GENERIC $DESCRIPTION: "lens model"
-  int toggle;                    // $DEFAULT: 0
   dt_iop_ashift_crop_t cropmode; // $DEFAULT: ASHIFT_CROP_OFF $DESCRIPTION: "automatic cropping"
   float cl;          // $DEFAULT: 0.0
   float cr;          // $DEFAULT: 1.0
@@ -524,7 +525,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->lensshift_v = old->lensshift_v;
     new->lensshift_h = old->lensshift_h;
     new->shear = 0.0f;
-    new->toggle = old->toggle;
     new->f_length = DEFAULT_F_LENGTH;
     new->crop_factor = 1.0f;
     new->orthocorr = 100.0f;
@@ -548,7 +548,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->lensshift_v = old->lensshift_v;
     new->lensshift_h = old->lensshift_h;
     new->shear = 0.0f;
-    new->toggle = old->toggle;
     new->f_length = old->f_length;
     new->crop_factor = old->crop_factor;
     new->orthocorr = old->orthocorr;
@@ -572,7 +571,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->lensshift_v = old->lensshift_v;
     new->lensshift_h = old->lensshift_h;
     new->shear = 0.0f;
-    new->toggle = old->toggle;
     new->f_length = old->f_length;
     new->crop_factor = old->crop_factor;
     new->orthocorr = old->orthocorr;
@@ -596,7 +594,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->lensshift_v = old->lensshift_v;
     new->lensshift_h = old->lensshift_h;
     new->shear = old->shear;
-    new->toggle = old->toggle;
     new->f_length = old->f_length;
     new->crop_factor = old->crop_factor;
     new->orthocorr = old->orthocorr;
@@ -2797,59 +2794,6 @@ static void crop_adjust(dt_iop_module_t *module, const dt_iop_ashift_params_t *c
   return;
 }
 
-// helper function to start analysis for structural data and report about errors
-static int do_get_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p,
-                            dt_iop_ashift_enhance_t enhance)
-{
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
-
-  if(g->fitting) return FALSE;
-
-  g->fitting = 1;
-
-  dt_iop_gui_enter_critical_section(module);
-  float *b = g->buf;
-  dt_iop_gui_leave_critical_section(module);
-
-  if(b == NULL)
-  {
-    dt_control_log(_("data pending - please repeat"));
-    // force to reprocess the preview, otherwise the buffer is ko
-    dt_dev_pixelpipe_flush_caches(module->dev->preview_pipe);
-    dt_dev_reprocess_preview(module->dev);
-    goto error;
-  }
-
-  if(!get_structure(module, enhance))
-  {
-    dt_control_log(_("could not detect structural data in image"));
-#ifdef ASHIFT_DEBUG
-    // find out more
-    printf("do_get_structure: buf %p, buf_hash %lu, buf_width %d, buf_height %d, lines %p, lines_count %d\n",
-           g->buf, g->buf_hash, g->buf_width, g->buf_height, g->lines, g->lines_count);
-#endif
-    goto error;
-  }
-
-  if(!remove_outliers(module))
-  {
-    dt_control_log(_("could not run outlier removal"));
-#ifdef ASHIFT_DEBUG
-    // find out more
-    printf("remove_outliers: buf %p, buf_hash %lu, buf_width %d, buf_height %d, lines %p, lines_count %d\n",
-           g->buf, g->buf_hash, g->buf_width, g->buf_height, g->lines, g->lines_count);
-#endif
-    goto error;
-  }
-
-  g->fitting = 0;
-  return TRUE;
-
-error:
-  g->fitting = 0;
-  return FALSE;
-}
-
 // determine if the line is vertical or horizontal
 static void _draw_retrieve_line_type(dt_iop_ashift_line_t *line)
 {
@@ -2885,6 +2829,28 @@ static void _draw_basic_line(dt_iop_ashift_line_t *line, int x1, int y1, int x2,
 
   // register type of line
   line->type = type;
+}
+
+static void _gui_update_structure_states(dt_iop_module_t *self, GtkWidget *widget)
+{
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+  if(widget && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
+  else
+  {
+    if(widget != g->structure_lines) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->structure_lines), FALSE);
+    if(widget != g->structure_quad) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->structure_quad), FALSE);
+    if(widget != g->structure_auto) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->structure_auto), FALSE);
+    if(widget) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
+  }
+
+  // update fit buttons state
+  const gboolean enable = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->structure_auto))
+                           || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->structure_quad))
+                           || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->structure_lines)));
+  gtk_widget_set_sensitive(g->fit_v, enable);
+  gtk_widget_set_sensitive(g->fit_h, enable);
+  gtk_widget_set_sensitive(g->fit_both, enable);
 }
 
 static void _draw_save_lines_to_params(dt_iop_module_t *self)
@@ -3046,6 +3012,183 @@ static int do_clean_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p
   return TRUE;
 }
 
+// helper function to start analysis for structural data and report about errors
+static int _do_get_structure_auto(dt_iop_module_t *module, dt_iop_ashift_params_t *p,
+                                  dt_iop_ashift_enhance_t enhance)
+{
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
+
+  if(g->fitting) return FALSE;
+
+  g->fitting = 1;
+
+  dt_iop_gui_enter_critical_section(module);
+  float *b = g->buf;
+  dt_iop_gui_leave_critical_section(module);
+
+  if(b == NULL)
+  {
+    dt_control_log(_("data pending - please repeat"));
+    // force to reprocess the preview, otherwise the buffer is ko
+    dt_dev_pixelpipe_flush_caches(module->dev->preview_pipe);
+    dt_dev_reprocess_preview(module->dev);
+    goto error;
+  }
+
+  if(!get_structure(module, enhance))
+  {
+    dt_control_log(_("could not detect structural data in image"));
+#ifdef ASHIFT_DEBUG
+    // find out more
+    printf("do_get_structure: buf %p, buf_hash %lu, buf_width %d, buf_height %d, lines %p, lines_count %d\n",
+           g->buf, g->buf_hash, g->buf_width, g->buf_height, g->lines, g->lines_count);
+#endif
+    goto error;
+  }
+
+  if(!remove_outliers(module))
+  {
+    dt_control_log(_("could not run outlier removal"));
+#ifdef ASHIFT_DEBUG
+    // find out more
+    printf("remove_outliers: buf %p, buf_hash %lu, buf_width %d, buf_height %d, lines %p, lines_count %d\n",
+           g->buf, g->buf_hash, g->buf_width, g->buf_height, g->lines, g->lines_count);
+#endif
+    goto error;
+  }
+
+  g->fitting = 0;
+  return TRUE;
+
+error:
+  g->fitting = 0;
+  return FALSE;
+}
+
+// initialise the lines structure method
+static void _do_get_structure_lines(dt_iop_module_t *self)
+{
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+  // we verify that we have a valid buffer
+  dt_iop_gui_enter_critical_section(self);
+  float *b = g->buf;
+  dt_iop_gui_leave_critical_section(self);
+
+  if(b == NULL)
+  {
+    dt_control_log(_("data pending - please repeat"));
+    // force to reprocess the preview, otherwise the buffer is ko
+    dt_dev_pixelpipe_flush_caches(self->dev->preview_pipe);
+    dt_dev_reprocess_preview(self->dev);
+    return;
+  }
+
+  _gui_update_structure_states(self, g->structure_lines);
+
+  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
+
+  do_clean_structure(self, p, TRUE);
+
+  // if the button is unselcted, we don't go further
+  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->structure_lines)))
+  {
+    dt_control_queue_redraw_center();
+    return;
+  }
+
+  g->current_structure_method = ASHIFT_METHOD_LINES;
+
+  const float pr_d = self->dev->preview_downsampling;
+  g->lines_in_width = piece->iwidth * pr_d;
+  g->lines_in_height = piece->iheight * pr_d;
+  g->lines_x_off = 0;
+  g->lines_y_off = 0;
+
+  // we try to recover eventual saved lines
+  _draw_retrieve_lines_from_params(self, ASHIFT_METHOD_LINES);
+
+  dt_control_queue_redraw_center();
+}
+
+// initialise the quad structure method
+static void _do_get_structure_quad(dt_iop_module_t *self)
+{
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
+
+  // we verify that we have a valid buffer
+  dt_iop_gui_enter_critical_section(self);
+  float *b = g->buf;
+  dt_iop_gui_leave_critical_section(self);
+
+  if(b == NULL)
+  {
+    dt_control_log(_("data pending - please repeat"));
+    // force to reprocess the preview, otherwise the buffer is ko
+    dt_dev_pixelpipe_flush_caches(self->dev->preview_pipe);
+    dt_dev_reprocess_preview(self->dev);
+    return;
+  }
+
+  _gui_update_structure_states(self, g->structure_quad);
+
+  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
+
+  do_clean_structure(self, p, TRUE);
+
+  // if the button is unselected, we don't go further
+  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->structure_quad)))
+  {
+    dt_control_queue_redraw_center();
+    return;
+  }
+  // we try to recover eventual saved lines
+  if(_draw_retrieve_lines_from_params(self, ASHIFT_METHOD_QUAD))
+  {
+    dt_control_queue_redraw_center();
+  }
+  else
+  {
+    const float pr_d = self->dev->preview_downsampling;
+    const float wd = self->dev->preview_pipe->backbuf_width;
+    const float ht = self->dev->preview_pipe->backbuf_height;
+    float pts[8] = { wd * 0.2, ht * 0.2, wd * 0.2, ht * 0.8, wd * 0.8, ht * 0.2, wd * 0.8, ht * 0.8 };
+    if(dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
+                                         DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 4))
+    {
+      g->current_structure_method = ASHIFT_METHOD_QUAD;
+      g->lines = (dt_iop_ashift_line_t *)malloc(sizeof(dt_iop_ashift_line_t) * 4);
+      g->lines_count = 4;
+
+      _draw_basic_line(&g->lines[0], pts[0] * pr_d, pts[1] * pr_d, pts[2] * pr_d, pts[3] * pr_d,
+                       ASHIFT_LINE_VERTICAL_SELECTED);
+      _draw_basic_line(&g->lines[1], pts[4] * pr_d, pts[5] * pr_d, pts[6] * pr_d, pts[7] * pr_d,
+                       ASHIFT_LINE_VERTICAL_SELECTED);
+      _draw_basic_line(&g->lines[2], pts[0] * pr_d, pts[1] * pr_d, pts[4] * pr_d, pts[5] * pr_d,
+                       ASHIFT_LINE_HORIZONTAL_SELECTED);
+      _draw_basic_line(&g->lines[3], pts[2] * pr_d, pts[3] * pr_d, pts[6] * pr_d, pts[7] * pr_d,
+                       ASHIFT_LINE_HORIZONTAL_SELECTED);
+
+      // get real line type (they may be wrong due to image rotation)
+      for(int i = 0; i < 4; i++) _draw_retrieve_line_type(&g->lines[i]);
+
+      g->lines_in_width = piece->iwidth * pr_d;
+      g->lines_in_height = piece->iheight * pr_d;
+      g->lines_x_off = 0;
+      g->lines_y_off = 0;
+      g->vertical_count = 2;
+      g->horizontal_count = 2;
+      g->vertical_weight = 2.0;
+      g->horizontal_weight = 2.0;
+      g->lines_version++;
+
+      dt_control_queue_redraw_center();
+    }
+  }
+}
+
 // helper function to start parameter fit and report about errors
 static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ashift_fitaxis_t dir)
 {
@@ -3055,7 +3198,7 @@ static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ash
 
   // if no structure available get it
   if(g->lines == NULL)
-    if(!do_get_structure(module, p, ASHIFT_ENHANCE_NONE)) goto error;
+    if(!_do_get_structure_auto(module, p, ASHIFT_ENHANCE_NONE)) goto error;
 
   g->fitting = 1;
 
@@ -4779,28 +4922,6 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
   return FALSE;
 }
 
-static void _gui_update_structure_states(dt_iop_module_t *self, GtkWidget *widget)
-{
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  if(widget && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
-  else
-  {
-    if(widget != g->structure_lines) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->structure_lines), FALSE);
-    if(widget != g->structure_quad) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->structure_quad), FALSE);
-    if(widget != g->structure_auto) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->structure_auto), FALSE);
-    if(widget) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
-  }
-
-  // update fit buttons state
-  const gboolean enable = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->structure_auto))
-                           || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->structure_quad))
-                           || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->structure_lines)));
-  gtk_widget_set_sensitive(g->fit_v, enable);
-  gtk_widget_set_sensitive(g->fit_h, enable);
-  gtk_widget_set_sensitive(g->fit_both, enable);
-}
-
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
@@ -4884,7 +5005,6 @@ static int _event_fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event,
       // the preview image is ready
       g->jobcode = ASHIFT_JOBCODE_FIT;
       g->jobparams = g->lastfit = fitaxis;
-      p->toggle ^= 1;
     }
 
     dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
@@ -4936,7 +5056,6 @@ static int _event_fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event,
       // the preview image is ready
       g->jobcode = ASHIFT_JOBCODE_FIT;
       g->jobparams = g->lastfit = fitaxis;
-      p->toggle ^= 1;
     }
 
     dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
@@ -4990,7 +5109,6 @@ static int _event_fit_both_button_clicked(GtkWidget *widget, GdkEventButton *eve
       // the preview image is ready
       g->jobcode = ASHIFT_JOBCODE_FIT;
       g->jobparams = g->lastfit = fitaxis;
-      p->toggle ^= 1;
     }
 
     dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
@@ -5046,7 +5164,7 @@ static int _event_structure_auto_clicked(GtkWidget *widget, GdkEventButton *even
     if(self->enabled)
     {
       // module is enabled -> process directly
-      (void)do_get_structure(self, p, enhance);
+      (void)_do_get_structure_auto(self, p, enhance);
     }
     else
     {
@@ -5054,7 +5172,6 @@ static int _event_structure_auto_clicked(GtkWidget *widget, GdkEventButton *even
       // the preview image is ready
       g->jobcode = ASHIFT_JOBCODE_GET_STRUCTURE;
       g->jobparams = enhance;
-      p->toggle ^= 1;
     }
 
     dt_dev_add_history_item(darktable.develop, self, TRUE); // also calls dt_control_queue_redraw_center
@@ -5083,8 +5200,16 @@ static void _event_process_after_preview_callback(gpointer instance, gpointer us
 
   switch(jobcode)
   {
+    case ASHIFT_JOBCODE_GET_STRUCTURE_QUAD:
+      _do_get_structure_quad(self);
+      break;
+
+    case ASHIFT_JOBCODE_GET_STRUCTURE_LINES:
+      _do_get_structure_lines(self);
+      break;
+
     case ASHIFT_JOBCODE_GET_STRUCTURE:
-      (void)do_get_structure(self, p, (dt_iop_ashift_enhance_t)jobparams);
+      (void)_do_get_structure_auto(self, p, (dt_iop_ashift_enhance_t)jobparams);
       break;
 
     case ASHIFT_JOBCODE_FIT:
@@ -5414,128 +5539,49 @@ static void _event_values_expander_click(GtkWidget *widget, GdkEventButton *e, g
 static int _event_structure_quad_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return FALSE;
 
-  // we verify that we have a valid buffer
-  dt_iop_gui_enter_critical_section(self);
-  float *b = g->buf;
-  dt_iop_gui_leave_critical_section(self);
+  dt_iop_request_focus(self);
 
-  if(b == NULL)
+  if(self->enabled)
   {
-    dt_control_log(_("data pending - please repeat"));
-    // force to reprocess the preview, otherwise the buffer is ko
-    dt_dev_pixelpipe_flush_caches(self->dev->preview_pipe);
-    dt_dev_reprocess_preview(self->dev);
-    return TRUE;
-  }
-
-  _gui_update_structure_states(self, widget);
-
-  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
-
-  do_clean_structure(self, p, TRUE);
-
-  // if the button is unselcted, we don't go further
-  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
-  {
-    dt_control_queue_redraw_center();
-    return TRUE;
-  }
-  // we try to recover eventual saved lines
-  if(_draw_retrieve_lines_from_params(self, ASHIFT_METHOD_QUAD))
-  {
-    dt_control_queue_redraw_center();
+    // module is enabled -> process directly
+    _do_get_structure_quad(self);
   }
   else
   {
-    const float pr_d = self->dev->preview_downsampling;
-    const float wd = self->dev->preview_pipe->backbuf_width;
-    const float ht = self->dev->preview_pipe->backbuf_height;
-    float pts[8] = { wd * 0.2, ht * 0.2, wd * 0.2, ht * 0.8, wd * 0.8, ht * 0.2, wd * 0.8, ht * 0.8 };
-    if(dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
-                                         DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 4))
-    {
-      g->current_structure_method = ASHIFT_METHOD_QUAD;
-      g->lines = (dt_iop_ashift_line_t *)malloc(sizeof(dt_iop_ashift_line_t) * 4);
-      g->lines_count = 4;
-
-      _draw_basic_line(&g->lines[0], pts[0] * pr_d, pts[1] * pr_d, pts[2] * pr_d, pts[3] * pr_d,
-                       ASHIFT_LINE_VERTICAL_SELECTED);
-      _draw_basic_line(&g->lines[1], pts[4] * pr_d, pts[5] * pr_d, pts[6] * pr_d, pts[7] * pr_d,
-                       ASHIFT_LINE_VERTICAL_SELECTED);
-      _draw_basic_line(&g->lines[2], pts[0] * pr_d, pts[1] * pr_d, pts[4] * pr_d, pts[5] * pr_d,
-                       ASHIFT_LINE_HORIZONTAL_SELECTED);
-      _draw_basic_line(&g->lines[3], pts[2] * pr_d, pts[3] * pr_d, pts[6] * pr_d, pts[7] * pr_d,
-                       ASHIFT_LINE_HORIZONTAL_SELECTED);
-
-      // get real line type (they may be wrong due to image rotation)
-      for(int i = 0; i < 4; i++) _draw_retrieve_line_type(&g->lines[i]);
-
-      g->lines_in_width = piece->iwidth * pr_d;
-      g->lines_in_height = piece->iheight * pr_d;
-      g->lines_x_off = 0;
-      g->lines_y_off = 0;
-      g->vertical_count = 2;
-      g->horizontal_count = 2;
-      g->vertical_weight = 2.0;
-      g->horizontal_weight = 2.0;
-      g->lines_version++;
-
-      dt_control_queue_redraw_center();
-    }
+    // module is not enabled -> invoke it and queue the job to be processed once
+    // the preview image is ready
+    g->jobcode = ASHIFT_JOBCODE_GET_STRUCTURE_QUAD;
   }
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE); // also calls dt_control_queue_redraw_center
+
   return TRUE;
 }
 
 static int _event_structure_lines_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return FALSE;
 
-  // we verify that we have a valid buffer
-  dt_iop_gui_enter_critical_section(self);
-  float *b = g->buf;
-  dt_iop_gui_leave_critical_section(self);
+  dt_iop_request_focus(self);
 
-  if(b == NULL)
+  if(self->enabled)
   {
-    dt_control_log(_("data pending - please repeat"));
-    // force to reprocess the preview, otherwise the buffer is ko
-    dt_dev_pixelpipe_flush_caches(self->dev->preview_pipe);
-    dt_dev_reprocess_preview(self->dev);
-    return TRUE;
+    // module is enabled -> process directly
+    _do_get_structure_lines(self);
+  }
+  else
+  {
+    // module is not enabled -> invoke it and queue the job to be processed once
+    // the preview image is ready
+    g->jobcode = ASHIFT_JOBCODE_GET_STRUCTURE_LINES;
   }
 
-  _gui_update_structure_states(self, widget);
-
-  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
-
-  do_clean_structure(self, p, TRUE);
-
-  // if the button is unselcted, we don't go further
-  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
-  {
-    dt_control_queue_redraw_center();
-    return TRUE;
-  }
-
-  g->current_structure_method = ASHIFT_METHOD_LINES;
-
-  const float pr_d = self->dev->preview_downsampling;
-  g->lines_in_width = piece->iwidth * pr_d;
-  g->lines_in_height = piece->iheight * pr_d;
-  g->lines_x_off = 0;
-  g->lines_y_off = 0;
-
-  // we try to recover eventual saved lines
-  _draw_retrieve_lines_from_params(self, ASHIFT_METHOD_LINES);
-
-  dt_control_queue_redraw_center();
+  dt_dev_add_history_item(darktable.develop, self, TRUE); // also calls dt_control_queue_redraw_center
 
   return TRUE;
 }
