@@ -19,6 +19,10 @@
 :: LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 :: OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 :: SOFTWARE.
+::
+:: Purpose:
+:: This batch will iterate over cached thumbnail files and check if the image number is still in the library.db
+
 
 @echo OFF
 pushd %~dp0
@@ -71,6 +75,13 @@ where busybox >NUL 2>&1 || echo error: busybox.exe is not found, please add it s
 :: set the command to run for each stale file
 if %dryrun% EQU 0 set action=del /f /q
 
+:: test configdir:
+if NOT EXIST "%configdir%" echo error: configdir "%configdir%" doesn't exist && exit /b 1
+
+:: if you force configdir but not library:
+if NOT EXIST "%library%" set library=%configdir%\library.db
+
+:: test library:
 if NOT EXIST "%library%" echo error: library db "%library%" doesn't exist && exit /b 1
 
 :: the mipmap directory matching the selected library as defined on Linux:
@@ -100,7 +111,6 @@ IF NOT EXIST "%cache_dir%\" echo error: cache directory "%cache_dir%" doesn't ex
 set id_list=%TEMP%\darktable-id_list.%RANDOM%.tmp
 sqlite3 "%library%" "select id from images order by id" >"%id_list%"
 
-:: iterate over cached mipmaps file and check for each if the image is in the db
 :: mipmaps look like this: C:\Users\username\AppData\Local\Microsoft\Windows\INetCache\darktable\mipmaps-2917b0700b9fbb133931706610039dffd5f2d65d.d\0\105.%mipmap_ext%
 set mipmap_list=%TEMP%\darktable-mipmap_list.%RANDOM%.tmp
 dir /b /s /A-D "%cache_dir%" >"%mipmap_list%"
@@ -136,10 +146,10 @@ echo Delete thumbnails of images that are no longer in darktable's library
 echo Usage:   %~n0 [options]
 echo:
 echo Options:
-echo   -c^|--cache_base ^<path^>   path to the place where darktable's thumbnail caches are stored
+echo   -c^|--cache_base ^<path^>   path to the place where darktable's cache folder
 echo                            (default: "%cache_base%")
 echo   -C^|--cache_dir ^<path^>   path to the place where darktable's thumbnail caches are stored
-echo                            (default: "%cache_base%")
+echo                            (default: auto-detected "%cache_base%\mipmaps-sha1sum.d")
 echo   -d^|--configdir ^<path^>    path to the darktable config directory
 echo                            (default: "%configdir%")
 echo   -l^|--library ^<path^>      path to the library.db
@@ -150,4 +160,3 @@ goto :EOF
 :end
 :: cleanup
 del /f /q "%id_list%" "%mipmap_list%" "%mipmap_list_id%" "%mipmap_list_id_2delete%" >NUL 2>&1
-
