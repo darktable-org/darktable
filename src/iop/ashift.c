@@ -3064,7 +3064,9 @@ static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ash
   switch(res)
   {
     case NMS_NOT_ENOUGH_LINES:
-      dt_control_log(_("not enough structure for automatic correction"));
+      dt_control_log(
+          _("not enough structure for automatic correction\nminimum %d lines in each relevant direction"),
+          MINIMUM_FITLINES);
       goto error;
       break;
     case NMS_DID_NOT_CONVERGE:
@@ -5698,7 +5700,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = main_box;
 
-  gtk_widget_set_tooltip_text(g->rotation, _("rotate image"));
+  gtk_widget_set_tooltip_text(g->rotation, _("right-click and drag a line on the image to drag a straight line"));
   gtk_widget_set_tooltip_text(g->lensshift_v, _("apply lens shift correction in one direction"));
   gtk_widget_set_tooltip_text(g->lensshift_h, _("apply lens shift correction in one direction"));
   gtk_widget_set_tooltip_text(g->shear, _("shear the image along one diagonal"));
@@ -5767,6 +5769,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 GSList *mouse_actions(struct dt_iop_module_t *self)
 {
   GSList *lm = NULL;
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_RIGHT_DRAG, 0, _("[%s] define/rotate horizon"), self->name());
   lm  = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT,  0, _("[%s on segment] select segment"), self->name());
   lm  = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_RIGHT, 0,
                                       _("[%s on segment] unselect segment"), self->name());
