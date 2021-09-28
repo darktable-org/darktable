@@ -268,7 +268,8 @@ typedef enum dt_iop_ashift_jobcode_t
   ASHIFT_JOBCODE_GET_STRUCTURE = 1,
   ASHIFT_JOBCODE_FIT = 2,
   ASHIFT_JOBCODE_GET_STRUCTURE_LINES = 3,
-  ASHIFT_JOBCODE_GET_STRUCTURE_QUAD = 4
+  ASHIFT_JOBCODE_GET_STRUCTURE_QUAD = 4,
+  ASHIFT_JOBCODE_DO_CROP = 5
 } dt_iop_ashift_jobcode_t;
 
 typedef struct dt_iop_ashift_params1_t
@@ -4930,8 +4931,15 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 #ifdef ASHIFT_DEBUG
   model_probe(self, p, g->lastfit);
 #endif
-  do_crop(self, p);
-  commit_crop_box(p,g);
+  if(g->buf_height > 0 && g->buf_width > 0)
+  {
+    do_crop(self, p);
+    commit_crop_box(p, g);
+  }
+  else
+  {
+    g->jobcode = ASHIFT_JOBCODE_DO_CROP;
+  }
 
   if(w == g->mode)
   {
@@ -5207,6 +5215,15 @@ static void _event_process_after_preview_callback(gpointer instance, gpointer us
 
   switch(jobcode)
   {
+    case ASHIFT_JOBCODE_DO_CROP:
+      do_crop(self, p);
+      commit_crop_box(p, g);
+      // save all that
+      swap_shadow_crop_box(p, g); // temporarily update real crop box
+      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      swap_shadow_crop_box(p, g);
+      break;
+
     case ASHIFT_JOBCODE_GET_STRUCTURE_QUAD:
       _do_get_structure_quad(self);
       break;
