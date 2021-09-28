@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-28 10:28+0200\n"
-"PO-Revision-Date: 2021-09-28 10:46+0200\n"
+"POT-Creation-Date: 2021-09-28 11:01+0200\n"
+"PO-Revision-Date: 2021-09-28 11:01+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -8774,10 +8774,9 @@ msgstr "panneaux/bas tous"
 
 #. View-switch
 #: ../src/gui/gtk.c:1297
-#, fuzzy
 msgctxt "accel"
-msgid "switch views/light-dark"
-msgstr "changer de vue"
+msgid "switch views/lighttable <> darkroom"
+msgstr "changer de vue/table lumineuse <> chambre noire"
 
 #. accels window
 #: ../src/gui/gtk.c:1303
@@ -22794,6 +22793,11 @@ msgstr "créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1668
 msgid "mouse actions"
 msgstr "actions souris"
+
+#, fuzzy
+#~ msgctxt "accel"
+#~ msgid "switch views/light-dark"
+#~ msgstr "changer de vue"
 
 #~ msgctxt "accel"
 #~ msgid "tethering view"
