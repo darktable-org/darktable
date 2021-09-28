@@ -789,7 +789,8 @@ static void _set_mapping_mode_cursor(GtkWidget *widget)
 
   if(widget && !strcmp(gtk_widget_get_name(widget), "module-header"))
     cursor = GDK_BASED_ARROW_DOWN;
-  else if(darktable.control->mapping_widget && darktable.develop)
+  else if(g_hash_table_lookup(darktable.control->widgets, darktable.control->mapping_widget)
+          && darktable.develop)
   {
     switch(dt_dev_modulegroups_basics_module_toggle(darktable.develop, widget, FALSE))
     {
@@ -814,8 +815,7 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
     if(event->crossing.mode == GDK_CROSSING_UNGRAB) break;
   case GDK_GRAB_BROKEN:
   case GDK_FOCUS_CHANGE:
-    darktable.control->mapping_widget = g_hash_table_lookup(darktable.control->widgets, event_widget)
-                                      ? event_widget : NULL;
+    darktable.control->mapping_widget = event_widget;
     _set_mapping_mode_cursor(event_widget);
     break;
   case GDK_BUTTON_PRESS:
