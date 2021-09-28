@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-23 14:33+0200\n"
+"POT-Creation-Date: 2021-09-28 10:28+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -226,7 +226,7 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:4992 ../build/bin/preferences_gen.h:5046
 #: ../build/bin/preferences_gen.h:6893 ../build/bin/conf_gen.h:379
 #: ../build/bin/conf_gen.h:1067 ../build/bin/conf_gen.h:1083
-#: ../build/bin/conf_gen.h:2831
+#: ../build/bin/conf_gen.h:2843
 msgctxt "preferences"
 msgid "always"
 msgstr ""
@@ -599,17 +599,17 @@ msgid "white balance slider colors"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4862 ../build/bin/preferences_gen.h:4891
-#: ../build/bin/conf_gen.h:2785
+#: ../build/bin/conf_gen.h:2791
 msgctxt "preferences"
 msgid "no color"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4867 ../build/bin/conf_gen.h:2786
+#: ../build/bin/preferences_gen.h:4867 ../build/bin/conf_gen.h:2792
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4872 ../build/bin/conf_gen.h:2787
+#: ../build/bin/preferences_gen.h:4872 ../build/bin/conf_gen.h:2793
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr ""
@@ -628,17 +628,17 @@ msgid "colorbalance slider block layout"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4927 ../build/bin/preferences_gen.h:4956
-#: ../build/bin/conf_gen.h:2821
+#: ../build/bin/conf_gen.h:2833
 msgctxt "preferences"
 msgid "list"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4932 ../build/bin/conf_gen.h:2822
+#: ../build/bin/preferences_gen.h:4932 ../build/bin/conf_gen.h:2834
 msgctxt "preferences"
 msgid "tabs"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4937 ../build/bin/conf_gen.h:2823
+#: ../build/bin/preferences_gen.h:4937 ../build/bin/conf_gen.h:2835
 msgctxt "preferences"
 msgid "columns"
 msgstr ""
@@ -656,39 +656,39 @@ msgstr ""
 msgid "show right-side buttons in processing module headers"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:4997 ../build/bin/conf_gen.h:2832
+#: ../build/bin/preferences_gen.h:4997 ../build/bin/conf_gen.h:2844
 msgctxt "preferences"
 msgid "active"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5002 ../build/bin/conf_gen.h:2833
+#: ../build/bin/preferences_gen.h:5002 ../build/bin/conf_gen.h:2845
 msgctxt "preferences"
 msgid "dim"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5007 ../build/bin/preferences_gen.h:6424
 #: ../build/bin/preferences_gen.h:6460 ../build/bin/conf_gen.h:2232
-#: ../build/bin/conf_gen.h:2834
+#: ../build/bin/conf_gen.h:2846
 msgctxt "preferences"
 msgid "auto"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5012 ../build/bin/conf_gen.h:2835
+#: ../build/bin/preferences_gen.h:5012 ../build/bin/conf_gen.h:2847
 msgctxt "preferences"
 msgid "fade"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5017 ../build/bin/conf_gen.h:2836
+#: ../build/bin/preferences_gen.h:5017 ../build/bin/conf_gen.h:2848
 msgctxt "preferences"
 msgid "fit"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5022 ../build/bin/conf_gen.h:2837
+#: ../build/bin/preferences_gen.h:5022 ../build/bin/conf_gen.h:2849
 msgctxt "preferences"
 msgid "smooth"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5027 ../build/bin/conf_gen.h:2838
+#: ../build/bin/preferences_gen.h:5027 ../build/bin/conf_gen.h:2850
 msgctxt "preferences"
 msgid "glide"
 msgstr ""
@@ -813,19 +813,19 @@ msgid "auto-apply pixel workflow defaults"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5395 ../build/bin/preferences_gen.h:5424
-#: ../build/bin/conf_gen.h:2671
+#: ../build/bin/conf_gen.h:2677
 msgctxt "preferences"
 msgid "scene-referred"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5400 ../build/bin/conf_gen.h:2672
+#: ../build/bin/preferences_gen.h:5400 ../build/bin/conf_gen.h:2678
 msgctxt "preferences"
 msgid "display-referred"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5405 ../build/bin/preferences_gen.h:6429
 #: ../build/bin/conf_gen.h:615 ../build/bin/conf_gen.h:1679
-#: ../build/bin/conf_gen.h:2233 ../build/bin/conf_gen.h:2673
+#: ../build/bin/conf_gen.h:2233 ../build/bin/conf_gen.h:2679
 msgctxt "preferences"
 msgid "none"
 msgstr ""
@@ -842,13 +842,13 @@ msgstr ""
 msgid "auto-apply chromatic adaptation defaults"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:5460 ../build/bin/conf_gen.h:2681
+#: ../build/bin/preferences_gen.h:5460 ../build/bin/conf_gen.h:2687
 msgctxt "preferences"
 msgid "modern"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5465 ../build/bin/preferences_gen.h:5484
-#: ../build/bin/conf_gen.h:2682
+#: ../build/bin/conf_gen.h:2688
 msgctxt "preferences"
 msgid "legacy"
 msgstr ""
@@ -1108,7 +1108,7 @@ msgid "will ask for confirmation before exporting files in overwrite mode"
 msgstr ""
 
 #. italic
-#: ../build/bin/preferences_gen.h:6393 ../src/libs/tools/viewswitcher.c:151
+#: ../build/bin/preferences_gen.h:6393 ../src/libs/tools/viewswitcher.c:149
 msgid "other"
 msgstr ""
 
@@ -1344,17 +1344,17 @@ msgid "method to use for getting the display profile"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:7126 ../build/bin/preferences_gen.h:7155
-#: ../build/bin/conf_gen.h:2635
+#: ../build/bin/conf_gen.h:2641
 msgctxt "preferences"
 msgid "all"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:7131 ../build/bin/conf_gen.h:2636
+#: ../build/bin/preferences_gen.h:7131 ../build/bin/conf_gen.h:2642
 msgctxt "preferences"
 msgid "xatom"
 msgstr ""
 
-#: ../build/bin/preferences_gen.h:7136 ../build/bin/conf_gen.h:2637
+#: ../build/bin/preferences_gen.h:7136 ../build/bin/conf_gen.h:2643
 msgctxt "preferences"
 msgid "colord"
 msgstr ""
@@ -1881,78 +1881,78 @@ msgctxt "preferences"
 msgid "AzBz"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2772
+#: ../build/bin/conf_gen.h:2778
 msgid "camera time zone"
 msgstr ""
 
-#: ../build/bin/conf_gen.h:2773
+#: ../build/bin/conf_gen.h:2779
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_ashift.c:120
-#: ../build/lib/darktable/plugins/introspection_ashift.c:245
+#: ../build/lib/darktable/plugins/introspection_ashift.c:135
+#: ../build/lib/darktable/plugins/introspection_ashift.c:290
 msgid "lens shift (vertical)"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_ashift.c:126
-#: ../build/lib/darktable/plugins/introspection_ashift.c:249
+#: ../build/lib/darktable/plugins/introspection_ashift.c:141
+#: ../build/lib/darktable/plugins/introspection_ashift.c:294
 msgid "lens shift (horizontal)"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_ashift.c:132
-#: ../build/lib/darktable/plugins/introspection_ashift.c:253
+#: ../build/lib/darktable/plugins/introspection_ashift.c:147
+#: ../build/lib/darktable/plugins/introspection_ashift.c:298
 msgid "shear"
 msgstr ""
 
 #. focal length
-#: ../build/lib/darktable/plugins/introspection_ashift.c:138
-#: ../build/lib/darktable/plugins/introspection_ashift.c:257
+#: ../build/lib/darktable/plugins/introspection_ashift.c:153
+#: ../build/lib/darktable/plugins/introspection_ashift.c:302
 #: ../src/common/collection.c:697 ../src/gui/preferences.c:837
 #: ../src/gui/presets.c:590 ../src/libs/camera.c:569
 #: ../src/libs/metadata_view.c:142
 msgid "focal length"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_ashift.c:144
-#: ../build/lib/darktable/plugins/introspection_ashift.c:261
+#: ../build/lib/darktable/plugins/introspection_ashift.c:159
+#: ../build/lib/darktable/plugins/introspection_ashift.c:306
 msgid "crop factor"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_ashift.c:150
-#: ../build/lib/darktable/plugins/introspection_ashift.c:265
+#: ../build/lib/darktable/plugins/introspection_ashift.c:165
+#: ../build/lib/darktable/plugins/introspection_ashift.c:310
 msgid "lens dependence"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_ashift.c:156
-#: ../build/lib/darktable/plugins/introspection_ashift.c:269
+#: ../build/lib/darktable/plugins/introspection_ashift.c:171
+#: ../build/lib/darktable/plugins/introspection_ashift.c:314
 msgid "aspect adjust"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_ashift.c:162
-#: ../build/lib/darktable/plugins/introspection_ashift.c:273
+#: ../build/lib/darktable/plugins/introspection_ashift.c:177
+#: ../build/lib/darktable/plugins/introspection_ashift.c:318
 #: ../src/iop/lens.cc:2278
 msgid "lens model"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_ashift.c:174
-#: ../build/lib/darktable/plugins/introspection_ashift.c:281
+#: ../build/lib/darktable/plugins/introspection_ashift.c:189
+#: ../build/lib/darktable/plugins/introspection_ashift.c:326
 #: ../build/lib/darktable/plugins/introspection_clipping.c:244
 #: ../build/lib/darktable/plugins/introspection_clipping.c:371
 msgid "automatic cropping"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_ashift.c:311
+#: ../build/lib/darktable/plugins/introspection_ashift.c:376
 msgid "generic"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_ashift.c:312
+#: ../build/lib/darktable/plugins/introspection_ashift.c:377
 msgid "specific"
 msgstr ""
 
 #. DEVELOP_MASK_DISABLED
-#: ../build/lib/darktable/plugins/introspection_ashift.c:316
+#: ../build/lib/darktable/plugins/introspection_ashift.c:381
 #: ../build/lib/darktable/plugins/introspection_colorin.c:301
 #: ../build/lib/darktable/plugins/introspection_vignette.c:263
 #: ../src/common/history.c:854 ../src/common/history.c:857
@@ -1966,11 +1966,11 @@ msgstr ""
 msgid "off"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_ashift.c:317
+#: ../build/lib/darktable/plugins/introspection_ashift.c:382
 msgid "largest area"
 msgstr ""
 
-#: ../build/lib/darktable/plugins/introspection_ashift.c:318
+#: ../build/lib/darktable/plugins/introspection_ashift.c:383
 msgid "original format"
 msgstr ""
 
@@ -2012,7 +2012,7 @@ msgstr ""
 #: ../src/gui/guides.c:675 ../src/iop/basecurve.c:2100
 #: ../src/iop/channelmixerrgb.c:3825 ../src/iop/clipping.c:1948
 #: ../src/iop/clipping.c:2170 ../src/iop/clipping.c:2186
-#: ../src/iop/lens.cc:2216 ../src/iop/retouch.c:422 ../src/libs/collect.c:1827
+#: ../src/iop/lens.cc:2216 ../src/iop/retouch.c:422 ../src/libs/collect.c:1861
 #: ../src/libs/colorpicker.c:50 ../src/libs/export.c:1074
 #: ../src/libs/live_view.c:377 ../src/libs/print_settings.c:2527
 msgid "none"
@@ -2135,7 +2135,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:144
 #: ../build/lib/darktable/plugins/introspection_watermark.c:118
 #: ../build/lib/darktable/plugins/introspection_watermark.c:235
-#: ../src/iop/ashift.c:4668
+#: ../src/iop/ashift.c:5592
 msgid "rotation"
 msgstr ""
 
@@ -2281,35 +2281,35 @@ msgid "very large chromatic aberration"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
-#: ../src/common/collection.c:1500 ../src/develop/blend_gui.c:2006
+#: ../src/common/collection.c:1501 ../src/develop/blend_gui.c:2006
 #: ../src/develop/blend_gui.c:2033 ../src/develop/lightroom.c:830
 #: ../src/gui/gtk.c:3014 ../src/gui/guides.c:693 ../src/iop/bilateral.cc:317
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
 #: ../src/iop/channelmixerrgb.c:3780 ../src/iop/colorzones.c:2311
 #: ../src/iop/temperature.c:1832 ../src/iop/temperature.c:1981
-#: ../src/libs/collect.c:1728
+#: ../src/libs/collect.c:1762
 msgid "red"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
-#: ../src/common/collection.c:1504 ../src/develop/blend_gui.c:2009
+#: ../src/common/collection.c:1505 ../src/develop/blend_gui.c:2009
 #: ../src/develop/blend_gui.c:2036 ../src/develop/lightroom.c:834
 #: ../src/gui/gtk.c:3015 ../src/gui/guides.c:694 ../src/iop/bilateral.cc:322
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
 #: ../src/iop/channelmixerrgb.c:3781 ../src/iop/colorzones.c:2314
 #: ../src/iop/temperature.c:1816 ../src/iop/temperature.c:1834
-#: ../src/iop/temperature.c:1982 ../src/libs/collect.c:1728
+#: ../src/iop/temperature.c:1982 ../src/libs/collect.c:1762
 msgid "green"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
-#: ../src/common/collection.c:1506 ../src/develop/blend_gui.c:2012
+#: ../src/common/collection.c:1507 ../src/develop/blend_gui.c:2012
 #: ../src/develop/blend_gui.c:2039 ../src/develop/lightroom.c:836
 #: ../src/gui/gtk.c:3016 ../src/iop/bilateral.cc:327
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:3782 ../src/iop/colorzones.c:2316
 #: ../src/iop/temperature.c:1836 ../src/iop/temperature.c:1983
-#: ../src/libs/collect.c:1728
+#: ../src/libs/collect.c:1762
 msgid "blue"
 msgstr ""
 
@@ -2765,7 +2765,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:572
 #: ../src/iop/basicadj.c:607 ../src/iop/bilat.c:453 ../src/iop/colisa.c:315
 #: ../src/iop/colorbalance.c:1921 ../src/iop/colorbalance.c:1928
-#: ../src/iop/filmic.c:1649 ../src/iop/filmicrgb.c:3783
+#: ../src/iop/filmic.c:1649 ../src/iop/filmicrgb.c:3803
 #: ../src/iop/lowpass.c:590
 msgid "contrast"
 msgstr ""
@@ -3058,8 +3058,8 @@ msgid "Markesteijn 3-pass + VNG"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
-#: ../src/common/collection.c:1522 ../src/common/collection.c:1530
-#: ../src/libs/collect.c:1688
+#: ../src/common/collection.c:1523 ../src/common/collection.c:1531
+#: ../src/libs/collect.c:1722
 msgid "basic"
 msgstr ""
 
@@ -3345,7 +3345,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:293
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:468
-#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:3960
+#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:3980
 msgid "extreme luminance saturation"
 msgstr ""
 
@@ -4197,15 +4197,15 @@ msgid "dropdown"
 msgstr ""
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1681
-#: ../src/control/jobs/control_jobs.c:1743 ../src/gui/accelerators.c:1676
-#: ../src/gui/accelerators.c:1750 ../src/gui/accelerators.c:1801
-#: ../src/gui/accelerators.c:1829 ../src/gui/accelerators.c:1888
+#: ../src/control/jobs/control_jobs.c:1743 ../src/gui/accelerators.c:1708
+#: ../src/gui/accelerators.c:1782 ../src/gui/accelerators.c:1833
+#: ../src/gui/accelerators.c:1861 ../src/gui/accelerators.c:1920
 #: ../src/gui/hist_dialog.c:193 ../src/gui/preferences.c:1014
 #: ../src/gui/preferences.c:1053 ../src/gui/presets.c:366
 #: ../src/gui/presets.c:466 ../src/gui/styles_dialog.c:418
 #: ../src/imageio/storage/disk.c:122 ../src/imageio/storage/gallery.c:109
 #: ../src/imageio/storage/latex.c:108 ../src/iop/lut3d.c:1557
-#: ../src/libs/collect.c:436 ../src/libs/copy_history.c:108
+#: ../src/libs/collect.c:468 ../src/libs/copy_history.c:108
 #: ../src/libs/geotagging.c:936 ../src/libs/import.c:1544
 #: ../src/libs/import.c:1670 ../src/libs/styles.c:395 ../src/libs/styles.c:530
 #: ../src/libs/tagging.c:2300 ../src/libs/tagging.c:2336
@@ -4471,64 +4471,69 @@ msgstr ""
 msgid "module"
 msgstr ""
 
-#: ../src/common/collection.c:707 ../src/libs/ioporder.c:39
+#: ../src/common/collection.c:707 ../src/libs/ioporder.c:40
 msgid "module order"
 msgstr ""
 
-#: ../src/common/collection.c:1502 ../src/develop/lightroom.c:832
+#: ../src/common/collection.c:708 ../src/common/ratings.c:299
+#: ../src/develop/lightroom.c:1521 ../src/libs/tools/filter.c:95
+msgid "rating"
+msgstr ""
+
+#: ../src/common/collection.c:1503 ../src/develop/lightroom.c:832
 #: ../src/gui/guides.c:695 ../src/iop/colorzones.c:2313
-#: ../src/iop/temperature.c:1822 ../src/libs/collect.c:1728
+#: ../src/iop/temperature.c:1822 ../src/libs/collect.c:1762
 msgid "yellow"
 msgstr ""
 
-#: ../src/common/collection.c:1508 ../src/iop/colorzones.c:2317
-#: ../src/libs/collect.c:1728
+#: ../src/common/collection.c:1509 ../src/iop/colorzones.c:2317
+#: ../src/libs/collect.c:1762
 msgid "purple"
 msgstr ""
 
-#: ../src/common/collection.c:1524 ../src/libs/collect.c:1688
+#: ../src/common/collection.c:1525 ../src/libs/collect.c:1722
 msgid "auto applied"
 msgstr ""
 
-#: ../src/common/collection.c:1526 ../src/libs/collect.c:1688
+#: ../src/common/collection.c:1527 ../src/libs/collect.c:1722
 msgid "altered"
 msgstr ""
 
-#: ../src/common/collection.c:1538 ../src/common/collection.c:1621
-#: ../src/libs/collect.c:1175 ../src/libs/collect.c:1307
-#: ../src/libs/collect.c:1329 ../src/libs/collect.c:1434
-#: ../src/libs/collect.c:2339
+#: ../src/common/collection.c:1539 ../src/common/collection.c:1622
+#: ../src/libs/collect.c:1209 ../src/libs/collect.c:1341
+#: ../src/libs/collect.c:1363 ../src/libs/collect.c:1468
+#: ../src/libs/collect.c:2395
 msgid "not tagged"
 msgstr ""
 
-#: ../src/common/collection.c:1539 ../src/libs/collect.c:1329
+#: ../src/common/collection.c:1540 ../src/libs/collect.c:1363
 #: ../src/libs/map_locations.c:768
 msgid "tagged"
 msgstr ""
 
-#: ../src/common/collection.c:1540
+#: ../src/common/collection.c:1541
 msgid "tagged*"
 msgstr ""
 
-#: ../src/common/collection.c:1570 ../src/libs/collect.c:1700
+#: ../src/common/collection.c:1571 ../src/libs/collect.c:1734
 msgid "not copied locally"
 msgstr ""
 
 #. grouping
-#: ../src/common/collection.c:1868 ../src/libs/collect.c:1802
+#: ../src/common/collection.c:1869 ../src/libs/collect.c:1836
 msgid "group leaders"
 msgstr ""
 
-#: ../src/common/collection.c:1899 ../src/libs/collect.c:1863
+#: ../src/common/collection.c:1963 ../src/libs/collect.c:1909
 msgid "not defined"
 msgstr ""
 
-#: ../src/common/collection.c:2181
+#: ../src/common/collection.c:2245
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr ""
 
-#: ../src/common/collection.c:2187
+#: ../src/common/collection.c:2251
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -4760,7 +4765,7 @@ msgstr ""
 msgid "error starting darktable"
 msgstr ""
 
-#: ../src/common/database.c:2536 ../src/libs/collect.c:2843
+#: ../src/common/database.c:2536 ../src/libs/collect.c:2900
 #: ../src/libs/export_metadata.c:272 ../src/libs/import.c:1762
 #: ../src/libs/metadata.c:445 ../src/libs/metadata_view.c:1239
 #: ../src/libs/modulegroups.c:3396 ../src/libs/recentcollect.c:319
@@ -5113,7 +5118,7 @@ msgstr ""
 msgid "requested session path not available. device not mounted?"
 msgstr ""
 
-#: ../src/common/iop_order.c:59 ../src/libs/ioporder.c:193
+#: ../src/common/iop_order.c:59 ../src/libs/ioporder.c:203
 msgid "legacy"
 msgstr ""
 
@@ -5304,11 +5309,6 @@ msgstr ""
 
 #: ../src/common/ratings.c:295
 msgid "reject"
-msgstr ""
-
-#: ../src/common/ratings.c:299 ../src/develop/lightroom.c:1521
-#: ../src/libs/tools/filter.c:95
-msgid "rating"
 msgstr ""
 
 #: ../src/common/styles.c:227
@@ -6887,7 +6887,7 @@ msgstr ""
 msgid "focus"
 msgstr ""
 
-#: ../src/develop/imageop.c:3240 ../src/gui/accelerators.c:2011
+#: ../src/develop/imageop.c:3240 ../src/gui/accelerators.c:2043
 msgid "instance"
 msgstr ""
 
@@ -7286,6 +7286,7 @@ msgid "grouped images"
 msgstr ""
 
 #: ../src/dtgtk/thumbnail.c:705 ../src/dtgtk/thumbnail.c:1414
+#: ../src/iop/ashift.c:5684
 msgid "fit"
 msgstr ""
 
@@ -7602,16 +7603,16 @@ msgstr ""
 msgid "pan"
 msgstr ""
 
-#: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:4456
-#: ../src/iop/ashift.c:4457 ../src/iop/ashift.c:4553 ../src/iop/ashift.c:4554
+#: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:5221
+#: ../src/iop/ashift.c:5222 ../src/iop/ashift.c:5324 ../src/iop/ashift.c:5325
 #: ../src/iop/clipping.c:1950 ../src/iop/clipping.c:2171
 #: ../src/iop/clipping.c:2188 ../src/views/darkroom.c:2598
 #: ../src/views/lighttable.c:1399
 msgid "horizontal"
 msgstr ""
 
-#: ../src/gui/accelerators.c:80 ../src/iop/ashift.c:4456
-#: ../src/iop/ashift.c:4457 ../src/iop/ashift.c:4553 ../src/iop/ashift.c:4554
+#: ../src/gui/accelerators.c:80 ../src/iop/ashift.c:5221
+#: ../src/iop/ashift.c:5222 ../src/iop/ashift.c:5324 ../src/iop/ashift.c:5325
 #: ../src/iop/clipping.c:1949 ../src/iop/clipping.c:2172
 #: ../src/iop/clipping.c:2187 ../src/views/darkroom.c:2601
 #: ../src/views/lighttable.c:1403
@@ -7793,7 +7794,7 @@ msgstr ""
 msgid "relative instance"
 msgstr ""
 
-#: ../src/gui/accelerators.c:549 ../src/gui/accelerators.c:2001
+#: ../src/gui/accelerators.c:549 ../src/gui/accelerators.c:2033
 msgid "speed"
 msgstr ""
 
@@ -7891,7 +7892,11 @@ msgstr ""
 msgid "last but one"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1306
+#: ../src/gui/accelerators.c:1189 ../src/gui/accelerators.c:1243
+msgid "(unchanged)"
+msgstr ""
+
+#: ../src/gui/accelerators.c:1338
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -7905,187 +7910,187 @@ msgid ""
 "right-click to cancel"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1353
+#: ../src/gui/accelerators.c:1385
 msgid "removing shortcut"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1354
+#: ../src/gui/accelerators.c:1386
 msgid "remove the selected shortcut?"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1673
+#: ../src/gui/accelerators.c:1705
 msgid "restore shortcuts"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1677
+#: ../src/gui/accelerators.c:1709
 msgid "_defaults"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1678
+#: ../src/gui/accelerators.c:1710
 msgid "_startup"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1679
+#: ../src/gui/accelerators.c:1711
 msgid "_edits"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1684
+#: ../src/gui/accelerators.c:1716
 msgid ""
 "restore default shortcuts\n"
 "  or as at startup\n"
 "  or when the configuration dialog was opened\n"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1687
+#: ../src/gui/accelerators.c:1719
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1739 ../src/gui/preferences.c:894
+#: ../src/gui/accelerators.c:1771 ../src/gui/preferences.c:894
 #: ../src/libs/tools/global_toolbox.c:857
 msgid "shortcuts"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1748
+#: ../src/gui/accelerators.c:1780
 msgid "export shortcuts"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1751 ../src/gui/accelerators.c:1830
+#: ../src/gui/accelerators.c:1783 ../src/gui/accelerators.c:1862
 #: ../src/gui/hist_dialog.c:196 ../src/gui/presets.c:467
 msgid "_ok"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1756
+#: ../src/gui/accelerators.c:1788
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1761 ../src/gui/accelerators.c:1840
+#: ../src/gui/accelerators.c:1793 ../src/gui/accelerators.c:1872
 #: ../src/gui/gtk.c:3013 ../src/imageio/format/pdf.c:662
 #: ../src/iop/denoiseprofile.c:3596 ../src/iop/lens.cc:2222
 #: ../src/iop/rawdenoise.c:907 ../src/libs/tools/filter.c:185
 msgid "all"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1762 ../src/gui/accelerators.c:1841
+#: ../src/gui/accelerators.c:1794 ../src/gui/accelerators.c:1873
 msgid "keyboard"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1774
+#: ../src/gui/accelerators.c:1806
 msgid "device id"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1800
+#: ../src/gui/accelerators.c:1832
 msgid "select file to export"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1801 ../src/libs/tagging.c:2336
+#: ../src/gui/accelerators.c:1833 ../src/libs/tagging.c:2336
 msgid "_export"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1827
+#: ../src/gui/accelerators.c:1859
 msgid "import shortcuts"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1835
+#: ../src/gui/accelerators.c:1867
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1853
+#: ../src/gui/accelerators.c:1885
 msgid "id in file"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1859
+#: ../src/gui/accelerators.c:1891
 msgid "id when loaded"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1863
+#: ../src/gui/accelerators.c:1895
 msgid "clear device first"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1887
+#: ../src/gui/accelerators.c:1919
 msgid "select file to import"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1888 ../src/libs/tagging.c:2300
+#: ../src/gui/accelerators.c:1920 ../src/libs/tagging.c:2300
 msgid "_import"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1961
+#: ../src/gui/accelerators.c:1993
 msgid "search shortcuts list"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1962
+#: ../src/gui/accelerators.c:1994
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
 msgstr ""
 
 #. Setting up the cell renderers
-#: ../src/gui/accelerators.c:1977 ../src/views/view.c:1710
+#: ../src/gui/accelerators.c:2009 ../src/views/view.c:1710
 msgid "shortcut"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1979 ../src/gui/accelerators.c:2067
+#: ../src/gui/accelerators.c:2011 ../src/gui/accelerators.c:2099
 #: ../src/views/view.c:1712
 msgid "action"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1988
+#: ../src/gui/accelerators.c:2020
 msgid "element"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1995
+#: ../src/gui/accelerators.c:2027
 msgid "effect"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2052
+#: ../src/gui/accelerators.c:2084
 msgid "search actions list"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2053
+#: ../src/gui/accelerators.c:2085
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2073 ../src/gui/guides.c:682
+#: ../src/gui/accelerators.c:2105 ../src/gui/guides.c:682
 #: ../src/libs/export_metadata.c:190
 msgid "type"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2108
+#: ../src/gui/accelerators.c:2140
 msgid "restore..."
 msgstr ""
 
-#: ../src/gui/accelerators.c:2113
+#: ../src/gui/accelerators.c:2145
 msgid "import..."
 msgstr ""
 
 #. export button
-#: ../src/gui/accelerators.c:2118 ../src/libs/styles.c:880
+#: ../src/gui/accelerators.c:2150 ../src/libs/styles.c:880
 msgid "export..."
 msgstr ""
 
-#: ../src/gui/accelerators.c:2519
+#: ../src/gui/accelerators.c:2551
 msgid "input devices reinitialised"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2891
+#: ../src/gui/accelerators.c:2923
 #, c-format
 msgid "no fallback for %s (%s)"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2895
+#: ../src/gui/accelerators.c:2927
 #, c-format
 msgid "%s not assigned"
 msgstr ""
 
-#: ../src/gui/accelerators.c:3038
+#: ../src/gui/accelerators.c:3070
 #, c-format
 msgid "%s assigned to %s"
 msgstr ""
@@ -8115,32 +8120,32 @@ msgstr ""
 #. register keys for view switching
 #: ../src/gui/gtk.c:1209
 msgctxt "accel"
-msgid "tethering view"
+msgid "switch views/tethering"
 msgstr ""
 
 #: ../src/gui/gtk.c:1210
 msgctxt "accel"
-msgid "lighttable view"
+msgid "switch views/lighttable"
 msgstr ""
 
 #: ../src/gui/gtk.c:1211
 msgctxt "accel"
-msgid "darkroom view"
+msgid "switch views/darkroom"
 msgstr ""
 
 #: ../src/gui/gtk.c:1212
 msgctxt "accel"
-msgid "map view"
+msgid "switch views/map"
 msgstr ""
 
 #: ../src/gui/gtk.c:1213
 msgctxt "accel"
-msgid "slideshow view"
+msgid "switch views/slideshow"
 msgstr ""
 
 #: ../src/gui/gtk.c:1214
 msgctxt "accel"
-msgid "print view"
+msgid "switch views/print"
 msgstr ""
 
 #. register ctrl-q to quit:
@@ -8152,75 +8157,75 @@ msgstr ""
 #. Full-screen accelerator (no ESC handler here to enable quit-slideshow using ESC)
 #: ../src/gui/gtk.c:1242
 msgctxt "accel"
-msgid "toggle fullscreen"
+msgid "fullscreen"
 msgstr ""
 
 #. Side-border hide/show
 #: ../src/gui/gtk.c:1248
 msgctxt "accel"
-msgid "toggle side borders"
+msgid "panels/all"
 msgstr ""
 
 #: ../src/gui/gtk.c:1252
 msgctxt "accel"
-msgid "toggle panels collapsing controls"
+msgid "panels/collapsing controls"
 msgstr ""
 
 #: ../src/gui/gtk.c:1256
 msgctxt "accel"
-msgid "toggle left panel"
+msgid "panels/left"
 msgstr ""
 
 #: ../src/gui/gtk.c:1260
 msgctxt "accel"
-msgid "toggle right panel"
+msgid "panels/right"
 msgstr ""
 
 #: ../src/gui/gtk.c:1264
 msgctxt "accel"
-msgid "toggle top panel"
+msgid "panels/top"
 msgstr ""
 
 #: ../src/gui/gtk.c:1268
 msgctxt "accel"
-msgid "toggle bottom panel"
+msgid "panels/bottom"
 msgstr ""
 
 #. specific top/bottom toggles
 #: ../src/gui/gtk.c:1273
 msgctxt "accel"
-msgid "toggle header"
+msgid "panels/header"
 msgstr ""
 
 #: ../src/gui/gtk.c:1276
 msgctxt "accel"
-msgid "toggle filmstrip and timeline"
+msgid "panels/filmstrip and timeline"
 msgstr ""
 
 #: ../src/gui/gtk.c:1280
 msgctxt "accel"
-msgid "toggle top toolbar"
+msgid "panels/top toolbar"
 msgstr ""
 
 #: ../src/gui/gtk.c:1284
 msgctxt "accel"
-msgid "toggle bottom toolbar"
+msgid "panels/bottom toolbar"
 msgstr ""
 
 #: ../src/gui/gtk.c:1288
 msgctxt "accel"
-msgid "toggle all top panels"
+msgid "panels/all top"
 msgstr ""
 
 #: ../src/gui/gtk.c:1292
 msgctxt "accel"
-msgid "toggle all bottom panels"
+msgid "panels/all bottom"
 msgstr ""
 
 #. View-switch
 #: ../src/gui/gtk.c:1297
 msgctxt "accel"
-msgid "switch view"
+msgid "switch views/light-dark"
 msgstr ""
 
 #. accels window
@@ -8501,7 +8506,7 @@ msgstr ""
 msgid "metering"
 msgstr ""
 
-#: ../src/gui/guides.c:32
+#: ../src/gui/guides.c:32 ../src/iop/ashift.c:5603
 msgid "perspective"
 msgstr ""
 
@@ -8807,7 +8812,7 @@ msgstr ""
 msgid "select preset(s) to import"
 msgstr ""
 
-#: ../src/gui/preferences.c:1014 ../src/libs/collect.c:436
+#: ../src/gui/preferences.c:1014 ../src/libs/collect.c:468
 #: ../src/libs/copy_history.c:108 ../src/libs/geotagging.c:937
 #: ../src/libs/import.c:1544 ../src/libs/import.c:1670 ../src/libs/styles.c:530
 msgid "_open"
@@ -9717,39 +9722,35 @@ msgid_plural "%d/%d exported to piwigo webalbum"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/iop/ashift.c:115
-msgid "perspective correction"
-msgstr ""
-
 #: ../src/iop/ashift.c:120
-msgid "keystone|distortion"
+msgid "rotation and perspective"
 msgstr ""
 
 #: ../src/iop/ashift.c:125
-msgid "distort perspective automatically"
+msgid "rotate|keystone|distortion|crop|reframe"
 msgstr ""
 
-#: ../src/iop/ashift.c:126 ../src/iop/basecurve.c:339 ../src/iop/cacorrect.c:88
-#: ../src/iop/cacorrectrgb.c:167 ../src/iop/colorreconstruction.c:135
-#: ../src/iop/defringe.c:81 ../src/iop/denoiseprofile.c:720
-#: ../src/iop/dither.c:103 ../src/iop/flip.c:105 ../src/iop/hazeremoval.c:111
-#: ../src/iop/highlights.c:84 ../src/iop/hotpixels.c:73 ../src/iop/invert.c:121
-#: ../src/iop/lens.cc:159 ../src/iop/nlmeans.c:99
-#: ../src/iop/profile_gamma.c:101 ../src/iop/rawdenoise.c:130
-#: ../src/iop/retouch.c:207 ../src/iop/sharpen.c:94 ../src/iop/spots.c:67
-#: ../src/iop/temperature.c:201
-msgid "corrective"
+#: ../src/iop/ashift.c:130
+msgid "rotate or distort perspective"
 msgstr ""
 
-#: ../src/iop/ashift.c:127 ../src/iop/ashift.c:129 ../src/iop/basicadj.c:147
+#: ../src/iop/ashift.c:131 ../src/iop/channelmixer.c:139
+#: ../src/iop/channelmixerrgb.c:208 ../src/iop/clipping.c:316
+#: ../src/iop/colorbalance.c:159 ../src/iop/colorbalancergb.c:171
+#: ../src/iop/colorchecker.c:126 ../src/iop/colorcorrection.c:77
+#: ../src/iop/crop.c:140 ../src/iop/lut3d.c:139
+msgid "corrective or creative"
+msgstr ""
+
+#: ../src/iop/ashift.c:132 ../src/iop/ashift.c:134 ../src/iop/basicadj.c:147
 #: ../src/iop/bilateral.cc:100 ../src/iop/bilateral.cc:102
 #: ../src/iop/blurs.c:93 ../src/iop/blurs.c:94 ../src/iop/channelmixerrgb.c:209
 #: ../src/iop/channelmixerrgb.c:211 ../src/iop/clipping.c:317
 #: ../src/iop/clipping.c:319 ../src/iop/colorbalancergb.c:172
 #: ../src/iop/colorin.c:137 ../src/iop/crop.c:141 ../src/iop/crop.c:142
 #: ../src/iop/demosaic.c:227 ../src/iop/denoiseprofile.c:721
-#: ../src/iop/denoiseprofile.c:723 ../src/iop/diffuse.c:141
-#: ../src/iop/diffuse.c:142 ../src/iop/exposure.c:115 ../src/iop/exposure.c:117
+#: ../src/iop/denoiseprofile.c:723 ../src/iop/diffuse.c:142
+#: ../src/iop/diffuse.c:143 ../src/iop/exposure.c:115 ../src/iop/exposure.c:117
 #: ../src/iop/flip.c:106 ../src/iop/flip.c:107 ../src/iop/hazeremoval.c:112
 #: ../src/iop/hazeremoval.c:114 ../src/iop/lens.cc:160 ../src/iop/lens.cc:162
 #: ../src/iop/liquify.c:297 ../src/iop/liquify.c:299 ../src/iop/retouch.c:208
@@ -9759,106 +9760,119 @@ msgstr ""
 msgid "linear, RGB, scene-referred"
 msgstr ""
 
-#: ../src/iop/ashift.c:128 ../src/iop/borders.c:189 ../src/iop/clipping.c:318
+#: ../src/iop/ashift.c:133 ../src/iop/borders.c:189 ../src/iop/clipping.c:318
 #: ../src/iop/crop.c:141 ../src/iop/flip.c:106 ../src/iop/liquify.c:298
 msgid "geometric, RGB"
 msgstr ""
 
-#: ../src/iop/ashift.c:2593
+#: ../src/iop/ashift.c:2674
 msgid "automatic cropping failed"
 msgstr ""
 
-#: ../src/iop/ashift.c:2735
+#: ../src/iop/ashift.c:2816 ../src/iop/ashift.c:5430 ../src/iop/ashift.c:5509
 msgid "data pending - please repeat"
 msgstr ""
 
-#: ../src/iop/ashift.c:2741
+#: ../src/iop/ashift.c:2825
 msgid "could not detect structural data in image"
 msgstr ""
 
-#: ../src/iop/ashift.c:2752
+#: ../src/iop/ashift.c:2836
 msgid "could not run outlier removal"
 msgstr ""
 
-#: ../src/iop/ashift.c:2806
-msgid "not enough structure for automatic correction"
+#: ../src/iop/ashift.c:3068
+#, c-format
+msgid ""
+"not enough structure for automatic correction\n"
+"minimum %d lines in each relevant direction"
 msgstr ""
 
-#: ../src/iop/ashift.c:2811
+#: ../src/iop/ashift.c:3074
 msgid "automatic correction failed, please correct manually"
 msgstr ""
 
-#: ../src/iop/ashift.c:4456 ../src/iop/ashift.c:4457 ../src/iop/ashift.c:4553
-#: ../src/iop/ashift.c:4554
+#. if count > MAX_SAVED_LINES we alert that the next lines won't be saved in params
+#. but they still may be used for the current section (that's why we still allow them)
+#: ../src/iop/ashift.c:4506
+#, c-format
+msgid "only %d lines can be saved in parameters"
+msgstr ""
+
+#: ../src/iop/ashift.c:5221 ../src/iop/ashift.c:5222 ../src/iop/ashift.c:5324
+#: ../src/iop/ashift.c:5325
 #, c-format
 msgid "lens shift (%s)"
 msgstr ""
 
-#: ../src/iop/ashift.c:4718
-msgid "automatic fit"
+#: ../src/iop/ashift.c:5663
+msgid "perspective helpers"
 msgstr ""
 
-#: ../src/iop/ashift.c:4732
-msgid "get structure"
+#: ../src/iop/ashift.c:5670
+msgid "structure"
 msgstr ""
 
-#: ../src/iop/ashift.c:4748
-msgid "rotate image"
+#: ../src/iop/ashift.c:5703
+msgid ""
+"rotate image\n"
+"right-click and drag to define a horizontal or vertical line by drawing on "
+"the image"
 msgstr ""
 
-#: ../src/iop/ashift.c:4749 ../src/iop/ashift.c:4750
+#: ../src/iop/ashift.c:5704 ../src/iop/ashift.c:5705
 msgid "apply lens shift correction in one direction"
 msgstr ""
 
-#: ../src/iop/ashift.c:4751
+#: ../src/iop/ashift.c:5706
 msgid "shear the image along one diagonal"
 msgstr ""
 
-#: ../src/iop/ashift.c:4752 ../src/iop/clipping.c:2195
+#: ../src/iop/ashift.c:5707 ../src/iop/clipping.c:2195
 msgid "automatically crop to avoid black edges"
 msgstr ""
 
-#: ../src/iop/ashift.c:4753
+#: ../src/iop/ashift.c:5708
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
 msgstr ""
 
-#: ../src/iop/ashift.c:4755
+#: ../src/iop/ashift.c:5710
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 
-#: ../src/iop/ashift.c:4757
+#: ../src/iop/ashift.c:5712
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
 msgstr ""
 
-#: ../src/iop/ashift.c:4760
+#: ../src/iop/ashift.c:5715
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
 msgstr ""
 
-#: ../src/iop/ashift.c:4762
+#: ../src/iop/ashift.c:5717
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 
-#: ../src/iop/ashift.c:4763
+#: ../src/iop/ashift.c:5718
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
 "shift+click to only fit lens shift"
 msgstr ""
 
-#: ../src/iop/ashift.c:4766
+#: ../src/iop/ashift.c:5721
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
 "shift+click to only fit lens shift"
 msgstr ""
 
-#: ../src/iop/ashift.c:4769
+#: ../src/iop/ashift.c:5724
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -9867,38 +9881,43 @@ msgid ""
 "ctrl+shift+click to only fit rotation and lens shift"
 msgstr ""
 
-#: ../src/iop/ashift.c:4775
+#: ../src/iop/ashift.c:5730
 msgid ""
-"analyse line structure in image\n"
+"automatically analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
 "shift+click for an additional detail enhancement\n"
 "ctrl+shift+click for a combination of both methods"
 msgstr ""
 
-#: ../src/iop/ashift.c:4779
-msgid "remove line structure information"
+#: ../src/iop/ashift.c:5734
+msgid "manually define perspective rectangle"
 msgstr ""
 
-#: ../src/iop/ashift.c:4780
-msgid "toggle visibility of structure lines"
+#: ../src/iop/ashift.c:5735
+msgid "manually draw structure lines"
 msgstr ""
 
-#: ../src/iop/ashift.c:4811
+#: ../src/iop/ashift.c:5772 ../src/iop/clipping.c:3429
+#, c-format
+msgid "[%s] define/rotate horizon"
+msgstr ""
+
+#: ../src/iop/ashift.c:5773
 #, c-format
 msgid "[%s on segment] select segment"
 msgstr ""
 
-#: ../src/iop/ashift.c:4813
+#: ../src/iop/ashift.c:5775
 #, c-format
 msgid "[%s on segment] unselect segment"
 msgstr ""
 
-#: ../src/iop/ashift.c:4815
+#: ../src/iop/ashift.c:5777
 #, c-format
 msgid "[%s] select all segments from zone"
 msgstr ""
 
-#: ../src/iop/ashift.c:4817
+#: ../src/iop/ashift.c:5779
 #, c-format
 msgid "[%s] unselect all segments from zone"
 msgstr ""
@@ -9915,8 +9934,8 @@ msgstr ""
 msgid "add or remove local contrast, sharpness, acutance"
 msgstr ""
 
-#: ../src/iop/atrous.c:139 ../src/iop/bilateral.cc:99 ../src/iop/diffuse.c:141
-#: ../src/iop/exposure.c:114 ../src/iop/filmicrgb.c:345
+#: ../src/iop/atrous.c:139 ../src/iop/bilateral.cc:99 ../src/iop/diffuse.c:142
+#: ../src/iop/exposure.c:114 ../src/iop/filmicrgb.c:346
 #: ../src/iop/graduatednd.c:150 ../src/iop/negadoctor.c:156
 #: ../src/iop/rgbcurve.c:142 ../src/iop/rgblevels.c:122 ../src/iop/shadhi.c:197
 #: ../src/iop/tonecurve.c:213 ../src/iop/toneequal.c:321
@@ -9955,7 +9974,7 @@ msgstr ""
 msgid "denoise"
 msgstr ""
 
-#: ../src/iop/atrous.c:854 ../src/iop/bloom.c:75 ../src/iop/diffuse.c:331
+#: ../src/iop/atrous.c:854 ../src/iop/bloom.c:75 ../src/iop/diffuse.c:332
 msgid "bloom"
 msgstr ""
 
@@ -10138,6 +10157,18 @@ msgid ""
 "for corrective purposes, to prepare images for display"
 msgstr ""
 
+#: ../src/iop/basecurve.c:339 ../src/iop/cacorrect.c:88
+#: ../src/iop/cacorrectrgb.c:167 ../src/iop/colorreconstruction.c:135
+#: ../src/iop/defringe.c:81 ../src/iop/denoiseprofile.c:720
+#: ../src/iop/dither.c:103 ../src/iop/flip.c:105 ../src/iop/hazeremoval.c:111
+#: ../src/iop/highlights.c:84 ../src/iop/hotpixels.c:73 ../src/iop/invert.c:121
+#: ../src/iop/lens.cc:159 ../src/iop/nlmeans.c:99
+#: ../src/iop/profile_gamma.c:101 ../src/iop/rawdenoise.c:130
+#: ../src/iop/retouch.c:207 ../src/iop/sharpen.c:94 ../src/iop/spots.c:67
+#: ../src/iop/temperature.c:201
+msgid "corrective"
+msgstr ""
+
 #: ../src/iop/basecurve.c:340 ../src/iop/channelmixer.c:140
 #: ../src/iop/channelmixer.c:142 ../src/iop/lut3d.c:140
 #: ../src/iop/negadoctor.c:157 ../src/iop/profile_gamma.c:102
@@ -10148,7 +10179,7 @@ msgstr ""
 
 #: ../src/iop/basecurve.c:341 ../src/iop/basicadj.c:148
 #: ../src/iop/colorbalance.c:161 ../src/iop/colorbalancergb.c:173
-#: ../src/iop/dither.c:105 ../src/iop/filmicrgb.c:347
+#: ../src/iop/dither.c:105 ../src/iop/filmicrgb.c:348
 #: ../src/iop/graduatednd.c:152 ../src/iop/negadoctor.c:158
 #: ../src/iop/profile_gamma.c:103 ../src/iop/rgbcurve.c:144
 #: ../src/iop/rgblevels.c:124 ../src/iop/vignette.c:160
@@ -10157,7 +10188,7 @@ msgid "non-linear, RGB"
 msgstr ""
 
 #: ../src/iop/basecurve.c:342 ../src/iop/dither.c:104 ../src/iop/dither.c:106
-#: ../src/iop/filmicrgb.c:348 ../src/iop/graduatednd.c:153
+#: ../src/iop/filmicrgb.c:349 ../src/iop/graduatednd.c:153
 #: ../src/iop/negadoctor.c:159 ../src/iop/profile_gamma.c:104
 #: ../src/iop/rgblevels.c:125 ../src/iop/vignette.c:159
 #: ../src/iop/vignette.c:161 ../src/iop/watermark.c:297
@@ -10360,7 +10391,7 @@ msgid ""
 "contrast"
 msgstr ""
 
-#: ../src/iop/bilateral.cc:73 ../src/iop/diffuse.c:313
+#: ../src/iop/bilateral.cc:73 ../src/iop/diffuse.c:314
 msgid "surface blur"
 msgstr ""
 
@@ -10374,7 +10405,7 @@ msgstr ""
 
 #: ../src/iop/bilateral.cc:101 ../src/iop/blurs.c:93
 #: ../src/iop/channelmixer.c:141 ../src/iop/denoiseprofile.c:722
-#: ../src/iop/diffuse.c:141 ../src/iop/exposure.c:116 ../src/iop/soften.c:107
+#: ../src/iop/diffuse.c:142 ../src/iop/exposure.c:116 ../src/iop/soften.c:107
 #: ../src/iop/splittoning.c:105 ../src/iop/velvia.c:107
 msgid "linear, RGB"
 msgstr ""
@@ -10732,7 +10763,7 @@ msgid "censorize license plates and body parts for privacy"
 msgstr ""
 
 #: ../src/iop/censorize.c:84 ../src/iop/colorin.c:135
-#: ../src/iop/filmicrgb.c:346 ../src/iop/graduatednd.c:151
+#: ../src/iop/filmicrgb.c:347 ../src/iop/graduatednd.c:151
 msgid "linear or non-linear, RGB, scene-referred"
 msgstr ""
 
@@ -10786,13 +10817,6 @@ msgid ""
 "perform color space corrections\n"
 "such as white balance, channels mixing\n"
 "and conversions to monochrome emulating film"
-msgstr ""
-
-#: ../src/iop/channelmixer.c:139 ../src/iop/channelmixerrgb.c:208
-#: ../src/iop/clipping.c:316 ../src/iop/colorbalance.c:159
-#: ../src/iop/colorbalancergb.c:171 ../src/iop/colorchecker.c:126
-#: ../src/iop/colorcorrection.c:77 ../src/iop/crop.c:140 ../src/iop/lut3d.c:139
-msgid "corrective or creative"
 msgstr ""
 
 #: ../src/iop/channelmixer.c:621
@@ -11090,7 +11114,7 @@ msgstr ""
 
 #. //////////////////////// PAGE SETTINGS
 #: ../src/iop/channelmixerrgb.c:3673 ../src/iop/clipping.c:2164
-#: ../src/iop/colorbalancergb.c:1569 ../src/iop/filmicrgb.c:3654
+#: ../src/iop/colorbalancergb.c:1569 ../src/iop/filmicrgb.c:3674
 #: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3124
 #: ../src/libs/print_settings.c:2216 ../src/views/lighttable.c:1407
 msgid "page"
@@ -11525,11 +11549,6 @@ msgstr ""
 msgid "[%s on borders] crop keeping ratio"
 msgstr ""
 
-#: ../src/iop/clipping.c:3429
-#, c-format
-msgid "[%s] define/rotate horizon"
-msgstr ""
-
 #: ../src/iop/colisa.c:79
 msgid "contrast brightness saturation"
 msgstr ""
@@ -11931,7 +11950,7 @@ msgid "luminance ranges"
 msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1791 ../src/iop/colorzones.c:2514
-#: ../src/iop/filmicrgb.c:3639 ../src/iop/lowlight.c:836
+#: ../src/iop/filmicrgb.c:3659 ../src/iop/lowlight.c:836
 #: ../src/iop/rawdenoise.c:935 ../src/iop/toneequal.c:3182
 msgid "graph"
 msgstr ""
@@ -12900,15 +12919,15 @@ msgid ""
 "differences in the images already processed."
 msgstr ""
 
-#: ../src/iop/diffuse.c:126
+#: ../src/iop/diffuse.c:127
 msgid "diffuse or sharpen"
 msgstr ""
 
-#: ../src/iop/diffuse.c:131
+#: ../src/iop/diffuse.c:132
 msgid "diffusion|deconvolution|blur|sharpening"
 msgstr ""
 
-#: ../src/iop/diffuse.c:137
+#: ../src/iop/diffuse.c:138
 msgid ""
 "simulate directional diffusion of light with heat transfer model\n"
 "to apply an iterative edge-oriented blur, \n"
@@ -12916,70 +12935,70 @@ msgid ""
 "or to remove blur with blind deconvolution."
 msgstr ""
 
-#: ../src/iop/diffuse.c:229
+#: ../src/iop/diffuse.c:230
 msgid "lens deblur: soft"
 msgstr ""
 
-#: ../src/iop/diffuse.c:234
+#: ../src/iop/diffuse.c:235
 msgid "lens deblur: medium"
 msgstr ""
 
-#: ../src/iop/diffuse.c:239
+#: ../src/iop/diffuse.c:240
 msgid "lens deblur: hard"
 msgstr ""
 
-#: ../src/iop/diffuse.c:258
+#: ../src/iop/diffuse.c:259
 msgid "dehaze"
 msgstr ""
 
-#: ../src/iop/diffuse.c:277
+#: ../src/iop/diffuse.c:278
 msgid "denoise: soft"
 msgstr ""
 
-#: ../src/iop/diffuse.c:295
+#: ../src/iop/diffuse.c:296
 msgid "denoise: hard (slow)"
 msgstr ""
 
-#: ../src/iop/diffuse.c:349
+#: ../src/iop/diffuse.c:350
 msgid "sharpen demosaicing (no AA filter)"
 msgstr ""
 
-#: ../src/iop/diffuse.c:353
+#: ../src/iop/diffuse.c:354
 msgid "sharpen demosaicing (AA filter)"
 msgstr ""
 
-#: ../src/iop/diffuse.c:372
+#: ../src/iop/diffuse.c:373
 msgid "simulate watercolour"
 msgstr ""
 
-#: ../src/iop/diffuse.c:390
+#: ../src/iop/diffuse.c:391
 msgid "simulate line drawing"
 msgstr ""
 
-#: ../src/iop/diffuse.c:411
+#: ../src/iop/diffuse.c:412
 msgid "add local contrast"
 msgstr ""
 
-#: ../src/iop/diffuse.c:431
+#: ../src/iop/diffuse.c:432
 msgid "inpaint highlights"
 msgstr ""
 
-#: ../src/iop/diffuse.c:1055 ../src/iop/diffuse.c:1293
+#: ../src/iop/diffuse.c:1081 ../src/iop/diffuse.c:1319
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgstr ""
 
-#: ../src/iop/diffuse.c:1421
+#: ../src/iop/diffuse.c:1447
 msgid "diffusion properties"
 msgstr ""
 
-#: ../src/iop/diffuse.c:1425
+#: ../src/iop/diffuse.c:1451
 msgid ""
 "more iterations make the effect stronger but the module slower.\n"
 "this is analogous to giving more time to the diffusion reaction.\n"
 "if you plan on sharpening or inpainting, more iterations help reconstruction."
 msgstr ""
 
-#: ../src/iop/diffuse.c:1432
+#: ../src/iop/diffuse.c:1458
 msgid ""
 "maximal scale of the diffusion.\n"
 "high values diffuse farther, at the expense of computation time.\n"
@@ -12988,7 +13007,7 @@ msgid ""
 "blur."
 msgstr ""
 
-#: ../src/iop/diffuse.c:1440
+#: ../src/iop/diffuse.c:1466
 msgid ""
 "main scale of the diffusion.\n"
 "zero makes diffusion act on the finest details more heavily.\n"
@@ -12997,11 +13016,11 @@ msgid ""
 "increase to act on local contrast instead."
 msgstr ""
 
-#: ../src/iop/diffuse.c:1446
+#: ../src/iop/diffuse.c:1472
 msgid "diffusion speed"
 msgstr ""
 
-#: ../src/iop/diffuse.c:1452
+#: ../src/iop/diffuse.c:1478
 msgid ""
 "smoothing or sharpening of smooth details (gradients).\n"
 "positive values diffuse and blur.\n"
@@ -13009,7 +13028,7 @@ msgid ""
 "zero does nothing."
 msgstr ""
 
-#: ../src/iop/diffuse.c:1461 ../src/iop/diffuse.c:1470
+#: ../src/iop/diffuse.c:1487 ../src/iop/diffuse.c:1496
 msgid ""
 "smoothing or sharpening of sharp details.\n"
 "positive values diffuse and blur.\n"
@@ -13017,7 +13036,7 @@ msgid ""
 "zero does nothing."
 msgstr ""
 
-#: ../src/iop/diffuse.c:1479
+#: ../src/iop/diffuse.c:1505
 msgid ""
 "smoothing or sharpening of sharp details (gradients).\n"
 "positive values diffuse and blur.\n"
@@ -13025,12 +13044,12 @@ msgid ""
 "zero does nothing."
 msgstr ""
 
-#: ../src/iop/diffuse.c:1484
+#: ../src/iop/diffuse.c:1510
 msgid "diffusion directionality"
 msgstr ""
 
-#: ../src/iop/diffuse.c:1491 ../src/iop/diffuse.c:1501
-#: ../src/iop/diffuse.c:1511 ../src/iop/diffuse.c:1521
+#: ../src/iop/diffuse.c:1517 ../src/iop/diffuse.c:1527
+#: ../src/iop/diffuse.c:1537 ../src/iop/diffuse.c:1547
 msgid ""
 "anisotropy of the diffusion.\n"
 "zero makes the diffusion isotrope (same in all directions)\n"
@@ -13038,22 +13057,22 @@ msgid ""
 "negatives make the diffusion follow gradients more closely"
 msgstr ""
 
-#: ../src/iop/diffuse.c:1526
+#: ../src/iop/diffuse.c:1552
 msgid "edges management"
 msgstr ""
 
-#: ../src/iop/diffuse.c:1532
+#: ../src/iop/diffuse.c:1558
 msgid "increase or decrease the sharpness of the highest frequencies"
 msgstr ""
 
-#: ../src/iop/diffuse.c:1536
+#: ../src/iop/diffuse.c:1562
 msgid ""
 "define the sensitivity of the variance penalty for edges.\n"
 "increase to exclude more edges from diffusion,\n"
 "if fringes or halos appear."
 msgstr ""
 
-#: ../src/iop/diffuse.c:1542
+#: ../src/iop/diffuse.c:1568
 msgid ""
 "define the variance threshold between edge amplification and penalty.\n"
 "decrease if you want pixels on smooth surfaces get a boost,\n"
@@ -13061,11 +13080,11 @@ msgid ""
 "if dark areas seem oversharpened compared to bright areas."
 msgstr ""
 
-#: ../src/iop/diffuse.c:1548
+#: ../src/iop/diffuse.c:1574
 msgid "diffusion spatiality"
 msgstr ""
 
-#: ../src/iop/diffuse.c:1554
+#: ../src/iop/diffuse.c:1580
 msgid ""
 "luminance threshold for the mask.\n"
 "0. disables the luminance masking and applies the module on the whole "
@@ -13255,14 +13274,14 @@ msgid ""
 "except in back-lighting situations, this should be around 18%."
 msgstr ""
 
-#: ../src/iop/filmic.c:1608 ../src/iop/filmicrgb.c:3674
+#: ../src/iop/filmic.c:1608 ../src/iop/filmicrgb.c:3694
 msgid ""
 "number of stops between middle gray and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
 "adjust so highlights clipping is avoided"
 msgstr ""
 
-#: ../src/iop/filmic.c:1620 ../src/iop/filmicrgb.c:3684
+#: ../src/iop/filmic.c:1620 ../src/iop/filmicrgb.c:3704
 msgid ""
 "number of stops between middle gray and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -13276,7 +13295,7 @@ msgid ""
 "useful in conjunction with \"auto tune levels\"."
 msgstr ""
 
-#: ../src/iop/filmic.c:1637 ../src/iop/filmicrgb.c:3697
+#: ../src/iop/filmic.c:1637 ../src/iop/filmicrgb.c:3717
 #: ../src/iop/profile_gamma.c:678
 msgid "auto tune levels"
 msgstr ""
@@ -13293,14 +13312,14 @@ msgstr ""
 msgid "filmic S curve"
 msgstr ""
 
-#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:3787
+#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:3807
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
 msgstr ""
 
 #. geotagging
-#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:3796
+#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:3816
 #: ../src/libs/metadata_view.c:156
 msgid "latitude"
 msgstr ""
@@ -13316,7 +13335,7 @@ msgstr ""
 msgid "shadows/highlights balance"
 msgstr ""
 
-#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:3808
+#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:3828
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -13384,19 +13403,19 @@ msgstr ""
 msgid "destination/display"
 msgstr ""
 
-#: ../src/iop/filmic.c:1742 ../src/iop/filmicrgb.c:3828
+#: ../src/iop/filmic.c:1742 ../src/iop/filmicrgb.c:3848
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
 msgstr ""
 
-#: ../src/iop/filmic.c:1751 ../src/iop/filmicrgb.c:3836
+#: ../src/iop/filmic.c:1751 ../src/iop/filmicrgb.c:3856
 msgid ""
 "middle gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
 msgstr ""
 
-#: ../src/iop/filmic.c:1760 ../src/iop/filmicrgb.c:3844
+#: ../src/iop/filmic.c:1760 ../src/iop/filmicrgb.c:3864
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -13413,103 +13432,103 @@ msgid ""
 "you should never touch that unless you know what you are doing."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:332
+#: ../src/iop/filmicrgb.c:333
 msgid "filmic rgb"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:337
+#: ../src/iop/filmicrgb.c:338
 msgid "tone mapping|curve|view transform|contrast|saturation|highlights"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:342
+#: ../src/iop/filmicrgb.c:343
 msgid ""
 "apply a view transform to prepare the scene-referred pipeline\n"
 "for display on SDR screens and paper prints\n"
 "while preventing clipping in non-destructive ways"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:1078
+#: ../src/iop/filmicrgb.c:1079
 msgid ""
 "filmic highlights reconstruction failed to allocate memory, check your RAM "
 "settings"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:1427 ../src/iop/filmicrgb.c:1704
+#: ../src/iop/filmicrgb.c:1447 ../src/iop/filmicrgb.c:1724
 msgid "filmic works only on RGB input"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:1562
+#: ../src/iop/filmicrgb.c:1582
 msgid "filmic highlights reconstruction failed to allocate memory on GPU"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:2716
+#: ../src/iop/filmicrgb.c:2736
 msgid "look only"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:2718
+#: ../src/iop/filmicrgb.c:2738
 msgid "look + mapping (lin)"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:2720
+#: ../src/iop/filmicrgb.c:2740
 msgid "look + mapping (log)"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:2722
+#: ../src/iop/filmicrgb.c:2742
 msgid "dynamic range mapping"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3052
+#: ../src/iop/filmicrgb.c:3072
 #, c-format
 msgid "(%.0f %%)"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3068
+#: ../src/iop/filmicrgb.c:3088
 #, no-c-format
 msgid "% display"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3079
+#: ../src/iop/filmicrgb.c:3099
 msgid "EV scene"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3083
+#: ../src/iop/filmicrgb.c:3103
 #, no-c-format
 msgid "% camera"
 msgstr ""
 
 #. Page DISPLAY
-#: ../src/iop/filmicrgb.c:3119 ../src/iop/filmicrgb.c:3821
+#: ../src/iop/filmicrgb.c:3139 ../src/iop/filmicrgb.c:3841
 msgid "display"
 msgstr ""
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:3128
+#: ../src/iop/filmicrgb.c:3148
 msgid "(%)"
 msgstr ""
 
 #. Page SCENE
-#: ../src/iop/filmicrgb.c:3137 ../src/iop/filmicrgb.c:3657
+#: ../src/iop/filmicrgb.c:3157 ../src/iop/filmicrgb.c:3677
 msgid "scene"
 msgstr ""
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:3146
+#: ../src/iop/filmicrgb.c:3166
 msgid "(EV)"
 msgstr ""
 
 #. we are over the graph area
-#: ../src/iop/filmicrgb.c:3575
+#: ../src/iop/filmicrgb.c:3595
 msgid ""
 "use the parameters below to set the nodes.\n"
 "the bright curve is the filmic tone mapping curve\n"
 "the dark curve is the desaturation curve."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3581
+#: ../src/iop/filmicrgb.c:3601
 msgid "toggle axis labels and values display"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3585
+#: ../src/iop/filmicrgb.c:3605
 msgid ""
 "cycle through graph views.\n"
 "left click: cycle forward.\n"
@@ -13517,15 +13536,15 @@ msgid ""
 "double click: reset to look view."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3664
+#: ../src/iop/filmicrgb.c:3684
 msgid ""
 "adjust to match the average luminance of the image's subject.\n"
 "the value entered here will then be remapped to 18.45%.\n"
 "decrease the value to increase the overall brightness."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3672 ../src/iop/filmicrgb.c:3682
-#: ../src/iop/filmicrgb.c:3715 ../src/iop/filmicrgb.c:3725
+#: ../src/iop/filmicrgb.c:3692 ../src/iop/filmicrgb.c:3702
+#: ../src/iop/filmicrgb.c:3735 ../src/iop/filmicrgb.c:3745
 #: ../src/iop/toneequal.c:3132 ../src/iop/toneequal.c:3136
 #: ../src/iop/toneequal.c:3140 ../src/iop/toneequal.c:3144
 #: ../src/iop/toneequal.c:3148 ../src/iop/toneequal.c:3152
@@ -13536,13 +13555,13 @@ msgstr ""
 msgid "%+.2f EV"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3692
+#: ../src/iop/filmicrgb.c:3712
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3698
+#: ../src/iop/filmicrgb.c:3718
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -13553,15 +13572,15 @@ msgid ""
 msgstr ""
 
 #. Page RECONSTRUCT
-#: ../src/iop/filmicrgb.c:3707
+#: ../src/iop/filmicrgb.c:3727
 msgid "reconstruct"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3709
+#: ../src/iop/filmicrgb.c:3729
 msgid "highlights clipping"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3717
+#: ../src/iop/filmicrgb.c:3737
 msgid ""
 "set the exposure threshold upon which\n"
 "clipped highlights get reconstructed.\n"
@@ -13571,22 +13590,22 @@ msgid ""
 "increase to exclude more areas."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3727
+#: ../src/iop/filmicrgb.c:3747
 msgid ""
 "soften the transition between clipped highlights and valid pixels.\n"
 "decrease to make the transition harder and sharper,\n"
 "increase to make the transition softer and blurrier."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3733
+#: ../src/iop/filmicrgb.c:3753
 msgid "display highlight reconstruction mask"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3740 ../src/iop/splittoning.c:533
+#: ../src/iop/filmicrgb.c:3760 ../src/iop/splittoning.c:533
 msgid "balance"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3748
+#: ../src/iop/filmicrgb.c:3768
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -13597,7 +13616,7 @@ msgid ""
 "decrease if all RGB channels are clipped over large areas."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3760
+#: ../src/iop/filmicrgb.c:3780
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -13608,7 +13627,7 @@ msgid ""
 "decrease if you want more blur."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3773
+#: ../src/iop/filmicrgb.c:3793
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -13620,18 +13639,18 @@ msgid ""
 msgstr ""
 
 #. Page LOOK
-#: ../src/iop/filmicrgb.c:3781
+#: ../src/iop/filmicrgb.c:3801
 msgid "look"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3792
+#: ../src/iop/filmicrgb.c:3812
 msgid ""
 "equivalent to paper grade in analog.\n"
 "increase to make highlights brighter and less compressed.\n"
 "decrease to mute highlights."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3800
+#: ../src/iop/filmicrgb.c:3820
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "in percent of the dynamic range (white exposure - black exposure).\n"
@@ -13640,7 +13659,7 @@ msgid ""
 "this has no effect on mid-tones."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3816
+#: ../src/iop/filmicrgb.c:3836
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -13648,38 +13667,38 @@ msgid ""
 msgstr ""
 
 #. Page OPTIONS
-#: ../src/iop/filmicrgb.c:3848
+#: ../src/iop/filmicrgb.c:3868
 msgid "options"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3853
+#: ../src/iop/filmicrgb.c:3873
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3857
+#: ../src/iop/filmicrgb.c:3877
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
 "so ensure they are properly corrected elsewhere.\n"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3863
+#: ../src/iop/filmicrgb.c:3883
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3868
+#: ../src/iop/filmicrgb.c:3888
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3873
+#: ../src/iop/filmicrgb.c:3893
 #, c-format
 msgid ""
 "enable to input custom middle-gray values.\n"
@@ -13688,7 +13707,7 @@ msgid ""
 "disable to use standard 18.45 %% middle gray."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3880
+#: ../src/iop/filmicrgb.c:3900
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
@@ -13696,7 +13715,7 @@ msgid ""
 "disable if you want a manual control."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3886
+#: ../src/iop/filmicrgb.c:3906
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
 "more iterations means more color propagation from neighbourhood.\n"
@@ -13704,7 +13723,7 @@ msgid ""
 "it also helps with difficult cases of magenta highlights."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3893
+#: ../src/iop/filmicrgb.c:3913
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -13712,13 +13731,13 @@ msgid ""
 "so they blend with the rest of the picture."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3900
+#: ../src/iop/filmicrgb.c:3920
 msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern.\n"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:3962
+#: ../src/iop/filmicrgb.c:3982
 msgid "mid-tones saturation"
 msgstr ""
 
@@ -16125,7 +16144,7 @@ msgstr ""
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
-"the button will auto-adjust the average exposure"
+"the magic wand will auto-adjust the average exposure"
 msgstr ""
 
 #: ../src/iop/toneequal.c:3275
@@ -16134,7 +16153,7 @@ msgid ""
 "and dilate the mask contrast around -4EV\n"
 "this allows to spread the exposure histogram over more channels\n"
 "for a better control of the exposure correction.\n"
-"the button will auto-adjust the contrast"
+"the magic wand will auto-adjust the contrast"
 msgstr ""
 
 #: ../src/iop/toneequal.c:3295 ../src/iop/toneequal.c:3299
@@ -16487,63 +16506,82 @@ msgstr ""
 msgid "collections"
 msgstr ""
 
-#: ../src/libs/collect.c:294
-msgid "today"
+#: ../src/libs/collect.c:307
+msgid "imported: today"
 msgstr ""
 
-#: ../src/libs/collect.c:304
-msgid "last 24h"
+#: ../src/libs/collect.c:312
+msgid "imported: last 24h"
 msgstr ""
 
-#: ../src/libs/collect.c:313
-msgid "last 30 days"
+#: ../src/libs/collect.c:317
+msgid "imported: last 30 days"
 msgstr ""
 
-#: ../src/libs/collect.c:435
+#: ../src/libs/collect.c:323
+msgid "taken: today"
+msgstr ""
+
+#: ../src/libs/collect.c:328
+msgid "taken: last 24h"
+msgstr ""
+
+#: ../src/libs/collect.c:333
+msgid "taken: last 30 days"
+msgstr ""
+
+#: ../src/libs/collect.c:467
 msgid "search filmroll"
 msgstr ""
 
-#: ../src/libs/collect.c:518
+#: ../src/libs/collect.c:550
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
 msgstr ""
 
-#: ../src/libs/collect.c:579
+#: ../src/libs/collect.c:611
 msgid "search filmroll..."
 msgstr ""
 
-#: ../src/libs/collect.c:583
+#: ../src/libs/collect.c:615
 msgid "remove..."
 msgstr ""
 
-#: ../src/libs/collect.c:1209
+#: ../src/libs/collect.c:1243
 msgid "uncategorized"
 msgstr ""
 
-#: ../src/libs/collect.c:1700
+#: ../src/libs/collect.c:1734
 msgid "copied locally"
 msgstr ""
 
-#: ../src/libs/collect.c:1802
+#: ../src/libs/collect.c:1836
 msgid "group followers"
 msgstr ""
 
-#: ../src/libs/collect.c:2051
+#: ../src/libs/collect.c:2100
 msgid "use <, <=, >, >=, <>, =, [;] as operators"
 msgstr ""
 
-#: ../src/libs/collect.c:2056
+#: ../src/libs/collect.c:2104
+msgid ""
+"use <, <=, >, >=, <>, =, [;] as operators\n"
+"star rating: 0-5\n"
+"rejected images: -1"
+msgstr ""
+
+#: ../src/libs/collect.c:2111
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "type dates in the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"
 msgstr ""
 
-#: ../src/libs/collect.c:2063
+#: ../src/libs/collect.c:2118
 #, no-c-format
 msgid "use `%' as wildcard and `,' to separate values"
 msgstr ""
 
-#: ../src/libs/collect.c:2069
+#: ../src/libs/collect.c:2124
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -16552,7 +16590,7 @@ msgid ""
 "ctrl+click to include only sub-hierarchies (suffix `|%')"
 msgstr ""
 
-#: ../src/libs/collect.c:2081
+#: ../src/libs/collect.c:2136
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -16561,7 +16599,7 @@ msgid ""
 "ctrl+click to include only sub-locations (suffix `|%')"
 msgstr ""
 
-#: ../src/libs/collect.c:2093
+#: ../src/libs/collect.c:2148
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -16570,78 +16608,78 @@ msgid ""
 "ctrl+click to include only sub-folders (suffix `|%')"
 msgstr ""
 
-#: ../src/libs/collect.c:2104
+#: ../src/libs/collect.c:2159
 #, no-c-format
 msgid "use `%' as wildcard"
 msgstr ""
 
-#: ../src/libs/collect.c:2157 ../src/libs/collect.c:2172
-#: ../src/libs/collect.c:2729
+#: ../src/libs/collect.c:2212 ../src/libs/collect.c:2227
+#: ../src/libs/collect.c:2785
 msgid "clear this rule"
 msgstr ""
 
-#: ../src/libs/collect.c:2161
+#: ../src/libs/collect.c:2216
 msgid "clear this rule or add new rules"
 msgstr ""
 
-#: ../src/libs/collect.c:2735
+#: ../src/libs/collect.c:2791
 msgid "narrow down search"
 msgstr ""
 
-#: ../src/libs/collect.c:2740
+#: ../src/libs/collect.c:2796
 msgid "add more images"
 msgstr ""
 
-#: ../src/libs/collect.c:2745
+#: ../src/libs/collect.c:2801
 msgid "exclude images"
 msgstr ""
 
-#: ../src/libs/collect.c:2752
+#: ../src/libs/collect.c:2808
 msgid "change to: and"
 msgstr ""
 
-#: ../src/libs/collect.c:2757
+#: ../src/libs/collect.c:2813
 msgid "change to: or"
 msgstr ""
 
-#: ../src/libs/collect.c:2762
+#: ../src/libs/collect.c:2818
 msgid "change to: except"
 msgstr ""
 
-#: ../src/libs/collect.c:2788
+#: ../src/libs/collect.c:2844
 msgid "files"
 msgstr ""
 
-#: ../src/libs/collect.c:2793 ../src/libs/export_metadata.c:292
+#: ../src/libs/collect.c:2849 ../src/libs/export_metadata.c:292
 #: ../src/libs/image.c:465 ../src/libs/image.c:570 ../src/libs/metadata.c:485
 #: ../src/libs/metadata.c:656 ../src/libs/metadata_view.c:1270
 msgid "metadata"
 msgstr ""
 
-#: ../src/libs/collect.c:2811
+#: ../src/libs/collect.c:2868
 msgid "times"
 msgstr ""
 
-#: ../src/libs/collect.c:2819
+#: ../src/libs/collect.c:2876
 msgid "capture details"
 msgstr ""
 
-#: ../src/libs/collect.c:2828 ../src/libs/tools/darktable.c:65
+#: ../src/libs/collect.c:2885 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr ""
 
-#: ../src/libs/collect.c:2841
+#: ../src/libs/collect.c:2898
 msgid "collections settings"
 msgstr ""
 
-#: ../src/libs/collect.c:2844 ../src/libs/export_metadata.c:272
+#: ../src/libs/collect.c:2901 ../src/libs/export_metadata.c:272
 #: ../src/libs/metadata.c:445 ../src/libs/metadata_view.c:1239
 #: ../src/libs/recentcollect.c:320 ../src/libs/tagging.c:1526
 #: ../src/libs/tagging.c:1656 ../src/libs/tagging.c:1931
 msgid "save"
 msgstr ""
 
-#: ../src/libs/collect.c:2858 ../src/libs/export.c:1097
+#: ../src/libs/collect.c:2915 ../src/libs/export.c:1097
 #: ../src/libs/metadata.c:579 ../src/libs/metadata_view.c:1350
 #: ../src/libs/recentcollect.c:382
 msgid "preferences..."
@@ -18046,19 +18084,15 @@ msgstr ""
 msgid "parameters"
 msgstr ""
 
-#: ../src/libs/ioporder.c:140
-msgid "current order"
-msgstr ""
-
-#: ../src/libs/ioporder.c:180
+#: ../src/libs/ioporder.c:190
 msgid "v3.0"
 msgstr ""
 
-#: ../src/libs/ioporder.c:198
+#: ../src/libs/ioporder.c:208
 msgid "v3.0 for RAW input (default)"
 msgstr ""
 
-#: ../src/libs/ioporder.c:203
+#: ../src/libs/ioporder.c:213
 msgid "v3.0 for JPEG/non-RAW input"
 msgstr ""
 
