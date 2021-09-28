@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-28 10:28+0200\n"
+"POT-Creation-Date: 2021-09-28 11:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8225,7 +8225,7 @@ msgstr ""
 #. View-switch
 #: ../src/gui/gtk.c:1297
 msgctxt "accel"
-msgid "switch views/light-dark"
+msgid "switch views/lighttable <> darkroom"
 msgstr ""
 
 #. accels window
