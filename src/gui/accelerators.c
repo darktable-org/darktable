@@ -2928,8 +2928,7 @@ static float _process_shortcut(float move_size)
 
     if(++consecutive_unmatched >= 3)
     {
-      _ungrab_grab_widget();
-      _sc = (dt_shortcut_t) { 0 };
+      _ungrab_at_focus_loss();
       consecutive_unmatched = 0;
     }
   }
