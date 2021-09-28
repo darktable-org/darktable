@@ -1294,9 +1294,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
                           g_cclosure_new(G_CALLBACK(_toggle_bottom_all_accel_callback), NULL, NULL));
 
   // View-switch
-  dt_accel_register_global(NC_("accel", "switch views/light-dark"), GDK_KEY_period, 0);
+  dt_accel_register_global(NC_("accel", "switch views/lighttable <> darkroom"), GDK_KEY_period, 0);
 
-  dt_accel_connect_global("switch views/light-dark",
+  dt_accel_connect_global("switch views/lighttable <> darkroom",
                           g_cclosure_new(G_CALLBACK(view_switch_key_accel_callback), NULL, NULL));
 
   // accels window
