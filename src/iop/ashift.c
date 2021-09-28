@@ -122,7 +122,7 @@ const char *name()
 
 const char *aliases()
 {
-  return _("rotation|keystone|distortion");
+  return _("rotate|keystone|distortion|crop|reframe");
 }
 
 const char *description(struct dt_iop_module_t *self)
