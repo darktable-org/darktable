@@ -2198,8 +2198,11 @@ static gboolean _quickbutton_press_release(GtkWidget *button, GdkEventButton *ev
 {
   static guint start_time = 0;
 
+  int delay = 0;
+  g_object_get(gtk_settings_get_default(), "gtk-long-press-time", &delay, NULL);
+
   if((event->type == GDK_BUTTON_PRESS && event->button == 3) ||
-     (event->type == GDK_BUTTON_RELEASE && event->time - start_time > 600))
+     (event->type == GDK_BUTTON_RELEASE && event->time - start_time > delay))
   {
     gtk_popover_set_relative_to(GTK_POPOVER(popover), button);
 

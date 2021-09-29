@@ -3508,7 +3508,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
       _ungrab_at_focus_loss();
     return FALSE;
   case GDK_WINDOW_STATE:
-    if(event->window_state.changed_mask == GDK_WINDOW_STATE_FOCUSED)
+    if(!(event->window_state.new_window_state & GDK_WINDOW_STATE_FOCUSED))
       _ungrab_at_focus_loss();
     return FALSE;
   case GDK_FOCUS_CHANGE: // dialog boxes and switch to other app release grab
