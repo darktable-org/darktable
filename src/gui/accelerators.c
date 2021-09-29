@@ -812,6 +812,7 @@ const gchar *category_label[NUM_CATEGORIES]
   = { N_("active view"),
       N_("other views"),
       N_("fallbacks") };
+#define CATEGORY_FALLBACKS 2
 
 static void _shortcuts_store_category(GtkTreeIter *category, dt_shortcut_t *s, dt_view_type_flags_t view)
 {
@@ -1682,6 +1683,8 @@ static gboolean _visible_shortcuts(GtkTreeModel *model, GtkTreeIter  *iter, gpoi
   void *data_ptr = NULL;
   gtk_tree_model_get(model, iter, 0, &data_ptr, -1);
 
+  if(GPOINTER_TO_UINT(data_ptr) == CATEGORY_FALLBACKS && !darktable.control->enable_fallbacks) return FALSE;
+
   if(!_selected_action || GPOINTER_TO_UINT(data_ptr) < NUM_CATEGORIES) return TRUE;
 
   dt_shortcut_t *s = g_sequence_get(data_ptr);
@@ -1708,6 +1711,15 @@ static void _resize_shortcuts_view(GtkWidget *view, GdkRectangle *allocation, gp
 const dt_input_device_t DT_ALL_DEVICES = UINT8_MAX;
 static void _shortcuts_save(const gchar *shortcuts_file, const dt_input_device_t device);
 static void _shortcuts_load(const gchar *shortcuts_file, const dt_input_device_t file_dev, const dt_input_device_t load_dev, const gboolean clear);
+
+static void _fallbacks_toggled(GtkToggleButton *button, gpointer data)
+{
+  dt_conf_set_bool("accel/enable_fallbacks",
+                   (darktable.control->enable_fallbacks = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))));
+
+  GtkTreeView *shortcuts_view = GTK_TREE_VIEW(data);
+  gtk_tree_model_filter_refilter(GTK_TREE_MODEL_FILTER(gtk_tree_view_get_model(shortcuts_view)));
+}
 
 static void _restore_clicked(GtkButton *button, gpointer user_data)
 {
@@ -2153,18 +2165,25 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   gtk_box_pack_start(GTK_BOX(button_bar), search_actions, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(button_bar), search_shortcuts, FALSE, FALSE, 0);
 
+  button = gtk_check_button_new_with_label(_("enable fallbacks"));
+  gtk_widget_set_tooltip_text(button, _("enables default meanings for additional buttons, modifiers or moves\n"
+                                        "when used in combination with a base shortcut"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), darktable.control->enable_fallbacks);
+  g_signal_connect(button, "toggled", G_CALLBACK(_fallbacks_toggled), shortcuts_view);
+  gtk_box_pack_start(GTK_BOX(button_bar), button, TRUE, FALSE, 0);
+
   button = gtk_button_new_with_label(_("restore..."));
-  gtk_widget_set_tooltip_text(button, "restore default shortcuts or previous state");
+  gtk_widget_set_tooltip_text(button, _("restore default shortcuts or previous state"));
   g_signal_connect(button, "clicked", G_CALLBACK(_restore_clicked), NULL);
   gtk_box_pack_end(GTK_BOX(button_bar), button, FALSE, FALSE, 0);
 
   button = gtk_button_new_with_label(_("import..."));
-  gtk_widget_set_tooltip_text(button, "fully or partially import shortcuts from file");
+  gtk_widget_set_tooltip_text(button, _("fully or partially import shortcuts from file"));
   g_signal_connect(button, "clicked", G_CALLBACK(_import_clicked), NULL);
   gtk_box_pack_end(GTK_BOX(button_bar), button, FALSE, FALSE, 0);
 
   button = gtk_button_new_with_label(_("export..."));
-  gtk_widget_set_tooltip_text(button, "fully or partially export shortcuts to file");
+  gtk_widget_set_tooltip_text(button, _("fully or partially export shortcuts to file"));
   g_signal_connect(button, "clicked", G_CALLBACK(_export_clicked), NULL);
   gtk_box_pack_end(GTK_BOX(button_bar), button, FALSE, FALSE, 0);
 
@@ -2746,7 +2765,7 @@ static gboolean _shortcut_match(dt_shortcut_t *f, gchar **fb_log)
     }
   }
 
-  if(!matched && f->action)
+  if(!matched && f->action && darktable.control->enable_fallbacks)
   {
     // try to add fallbacks
     f->views = 0;
