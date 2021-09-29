@@ -47,6 +47,13 @@
     <shortdescription>keyboard shortcut slider precision</shortdescription>
   </dtconfig>
   <dtconfig>
+    <name>accel/enable_fallbacks</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>enable shortcut fallbacks</shortdescription>
+    <longdescription>enables default meanings for additional buttons, modifiers or moves when used in combination with a base shortcut</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>bauhaus/scale</name>
     <type>float</type>
     <default>1.4</default>

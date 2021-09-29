@@ -139,6 +139,7 @@ typedef struct dt_control_t
 
   GHashTable *widgets, *combo_introspection, *combo_list;
   GSequence *shortcuts;
+  gboolean enable_fallbacks;
   GtkWidget *mapping_widget;
   dt_action_element_t element;
   GPtrArray *widget_definitions;
