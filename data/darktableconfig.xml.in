@@ -2642,13 +2642,6 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/imageio/format/jxl/container</name>
-    <type>string</type>
-    <default>bmff</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/imageio/format/webp/comp_type</name>
     <type min="0" max="1">int</type>
     <default>0</default>

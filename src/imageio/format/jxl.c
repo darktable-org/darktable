@@ -30,9 +30,11 @@ DT_MODULE(1)
 
 #define CONF_PREFIX "plugins/imageio/format/jxl/"
 
-// Should the decoding effort option be exposed to user?
-#define SHOW_DECODING_EFFORT
 
+
+/*
+-------- MODULE INFO --------
+*/
 
 
 typedef struct dt_imageio_jxl_params_t
@@ -41,9 +43,7 @@ typedef struct dt_imageio_jxl_params_t
   gboolean lossless;
   float quality;
   int encoding_effort;
-#ifdef SHOW_DECODING_EFFORT
   int decoding_effort;
-#endif
 } dt_imageio_jxl_params_t;
 
 typedef struct dt_imageio_jxl_gui_data_t
@@ -55,10 +55,8 @@ typedef struct dt_imageio_jxl_gui_data_t
   GtkWidget *quality;
   // Int (1-9): effort with which to encode output. 1 = low quality, 9 = high quality.
   GtkWidget *encoding_effort;
-#ifdef SHOW_DECODING_EFFORT
   // Int (0-4): effort required to decode output. 0 = fast, 4 = slow.
   GtkWidget *decoding_effort;
-#endif
 } dt_imageio_jxl_gui_data_t;
 
 
@@ -72,9 +70,7 @@ void init(dt_imageio_module_format_t *self)
 
   dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_jxl_params_t, encoding_effort, int);
 
-#ifdef SHOW_DECODING_EFFORT
   dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_jxl_params_t, decoding_effort, int);
-#endif
 #endif
 }
 
@@ -97,6 +93,7 @@ const char *extension(dt_imageio_module_data_t *data)
 int dimension(struct dt_imageio_module_format_t *self, struct dt_imageio_module_data_t *data, uint32_t *width,
               uint32_t *height)
 {
+  // The maximum dimensions supported by jxl images
   *width = 1073741823;
   *height = 1073741823;
   return 1;
@@ -104,8 +101,114 @@ int dimension(struct dt_imageio_module_format_t *self, struct dt_imageio_module_
 
 int bpp(dt_imageio_module_data_t *data)
 {
+  // 32 bytes per pixel
   return 32;
 }
+
+
+
+/*
+-------- IMAGE WRITING --------
+*/
+
+
+int write_32(FILE *stream, uint32_t num)
+{
+  uint32_t be;
+
+  // Need to ensure that the number is in big endian format
+  uint8_t *buf = (uint8_t *)&be;
+  buf[0] = (num >> 24) & 0xFF;
+  buf[1] = (num >> 16) & 0xFF;
+  buf[2] = (num >> 8) & 0xFF;
+  buf[3] = (num >> 0) & 0xFF;
+
+  if(fwrite(buf, 4, 1, stream) != 1) return 1; // failure writing to file
+  return 0;
+}
+
+int write_64(FILE *stream, uint64_t num)
+{
+  uint64_t be;
+
+  // Need to ensure that the number is in big endian format
+  uint8_t *buf = (uint8_t *)&be;
+  buf[0] = (num >> 56) & 0xFF;
+  buf[1] = (num >> 48) & 0xFF;
+  buf[2] = (num >> 40) & 0xFF;
+  buf[3] = (num >> 32) & 0xFF;
+  buf[4] = (num >> 24) & 0xFF;
+  buf[5] = (num >> 16) & 0xFF;
+  buf[6] = (num >> 8) & 0xFF;
+  buf[7] = (num >> 0) & 0xFF;
+
+  if(fwrite(buf, 8, 1, stream) != 1) return 1; // failure writing to file
+  return 0;
+}
+
+int write_box(FILE *stream, uint8_t *type, uint8_t *data, uint64_t data_len)
+{
+  uint64_t box_len = 0;
+  box_len += 4; // The size of the "size" field - 4 bytes
+  box_len += 4; // The size of the "type" field - 4 bytes
+  box_len += data_len;
+
+  // can we fit the data length into a 32 bit unsigned integer?
+  gboolean large = box_len > 0xFFFFFFFF;
+  if(large) box_len += 8; // The size of the "largesize" field - 8 bytes
+
+  if(write_32(stream, large ? 1 : box_len)) return 1;
+
+  fwrite(type, 1, 4, stream);
+
+  if(large)
+  {
+    if(write_64(stream, box_len)) return 1;
+  }
+
+  // If data is null then the caller wants to write the data itself
+  if(data)
+  {
+    if(fwrite(data, data_len, 1, stream) != 1) return 1; // failure writing to file
+  }
+  return 0;
+}
+
+// Write a BMFF header for a JXL file
+int write_container_header(FILE *stream)
+{
+  uint8_t *signature_type = (uint8_t *)"JXL ";
+  uint8_t signature[4] = { 0xd, 0xa, 0x87, 0xa };
+  if(write_box(stream, signature_type, (uint8_t *)&signature, 4)) return 1;
+
+  uint8_t *ftyp_type = (uint8_t *)"ftyp";
+  // first 4 bytes: major brand (jxl )
+  // second 4 bytes: minor version (0)
+  // third 4 bytes: compatible brands (jxl )
+  uint8_t *ftyp = (uint8_t *)"jxl \0\0\0\0jxl ";
+  if(write_box(stream, ftyp_type, ftyp, 12)) return 1;
+  return 0;
+}
+
+int write_container_codestream(FILE *stream, uint8_t *codestream, uint64_t codestream_len)
+{
+  uint8_t *codestream_type = (uint8_t *)"jxlc";
+  if(write_box(stream, codestream_type, codestream, codestream_len)) return 1;
+  return 0;
+}
+
+int write_container_exif(FILE *stream, uint8_t *exif, uint64_t exif_len)
+{
+  uint8_t *exif_type = (uint8_t *)"Exif";
+  uint64_t data_len = 4 + exif_len; // add space for offset
+  if(write_box(stream, exif_type, NULL, data_len)) return 1;
+
+  write_32(stream, 0); // offset
+  if(fwrite(exif, exif_len, 1, stream) != 1) return 1;
+
+  return 0;
+}
+
 
 int write_image(struct dt_imageio_module_data_t *data, const char *filename, const void *in_tmp,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename, void *exif, int exif_len,
@@ -182,17 +285,20 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   // removes the possibility of storing extra data like exif.
   // It is not likely darktable users exporting images care so much about this
   // small size improvement, and more likely they want to store exif data.
-  JXL_ASSERT(JxlEncoderUseContainer(encoder, JXL_TRUE));
+  // HOWEVER - We do not want libjxl to write the image in a container, we will
+  // do that ourselves. This gives us the control to be able to add our own
+  // sections (e.g. exif data).
+  JXL_ASSERT(JxlEncoderUseContainer(encoder, JXL_FALSE));
 
   // automatically freed when we destroy the encoder
   JxlEncoderOptions *options = JxlEncoderOptionsCreate(encoder, NULL);
   JXL_ASSERT(JxlEncoderOptionsSetLossless(options, params->lossless ? JXL_TRUE : JXL_FALSE));
-#ifdef SHOW_DECODING_EFFORT
+
   int decode_effort = params->decoding_effort;
   // We store decoding effort but jxl wants encoding speed, we must reverse it
   decode_effort = (decode_effort - 4) * -1;
   JXL_ASSERT(JxlEncoderOptionsSetDecodingSpeed(options, decode_effort));
-#endif
+
   int encode_effort = params->encoding_effort;
   // In libjxl 0.5 encode efforts over 4 cause a crash and encode efforts below 3 are unsupported
   if(JxlEncoderVersion() <= 0 * 1000000 + 5 * 1000 + 0) // if version <= 0.5
@@ -204,6 +310,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
       encode_effort = 3;
   }
   JXL_ASSERT(JxlEncoderOptionsSetEffort(options, encode_effort));
+
   int quality = params->quality;
   // We store quality but jxl wants distance, so we reverse the scale
   quality = (quality - 15) * -1;
@@ -211,8 +318,9 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
 
   int channels = 3;
   JxlPixelFormat pixel_format = { channels, JXL_TYPE_FLOAT, JXL_NATIVE_ENDIAN, 1 };
-  size_t in_buf_size = width * height * channels * sizeof(float);
 
+  // Fix pixel stride
+  size_t in_buf_size = width * height * channels * sizeof(float);
   pixels = malloc(in_buf_size);
   for(int y = 0; y < height; y++)
   {
@@ -227,24 +335,45 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   JXL_ASSERT(JxlEncoderAddImageFrame(options, &pixel_format, pixels, in_buf_size));
   JxlEncoderCloseInput(encoder);
 
-  // Write the image to disk in chunks of 50,000 bytes
+  // Write the image to a buffer. We resize the image in chunks of 5,000 bytes.
   // fixme: Can we better estimate what the optimal size of chunks is for this image?
-  size_t chunkSize = 50000;
+  size_t chunkSize = 5000;
 
   out_buf = malloc(chunkSize);
-  if(!out_buf) goto end;
-
-  out_file = g_fopen(filename, "wb");
-  if(!out_file) goto end;
+  uint8_t *out_cur = out_buf;
+  size_t out_len = chunkSize;
+  if(!out_buf)
+  {
+    fprintf(stderr, "JXL failure: out of memory\n");
+    goto end;
+  }
 
   JxlEncoderStatus out_status = JXL_ENC_NEED_MORE_OUTPUT;
 
   while(out_status == JXL_ENC_NEED_MORE_OUTPUT)
   {
-    uint8_t *out_tmp = out_buf;
-    size_t out_avail = chunkSize;
+    size_t out_avail = out_buf + out_len - out_cur;
 
-    out_status = JxlEncoderProcessOutput(encoder, &out_tmp, &out_avail);
+    out_status = JxlEncoderProcessOutput(encoder, &out_cur, &out_avail);
+
+    // out_tmp is incremented by the amount written and out_avail is decremented by the same amount
+
+    if(out_status == JXL_ENC_NEED_MORE_OUTPUT)
+    {
+      // Make sure there is still enough available space
+      if(out_avail < chunkSize / 2)
+      {
+        size_t offset = out_cur - out_buf;
+        out_len += chunkSize - out_avail;
+        out_buf = realloc(out_buf, out_len);
+        if(!out_buf)
+        {
+          fprintf(stderr, "JXL failure: out of memory\n");
+          goto end;
+        }
+        out_cur = out_buf + offset;
+      }
+    }
     if(out_status != JXL_ENC_NEED_MORE_OUTPUT && out_status != JXL_ENC_SUCCESS)
     {
       // out_status should be an error: force it to be processed
@@ -253,11 +382,22 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
       // should happen anyway in the assertion)
       goto end;
     }
+  }
 
-    // out_tmp is incremented by the amount written
-    size_t consumed = out_tmp - out_buf;
-    // write however much we got to the file
-    if(fwrite(out_buf, 1, consumed, out_file) != consumed) goto end;
+  out_file = g_fopen(filename, "wb");
+  if(!out_file) goto end;
+
+  // Now we need to write the bmff container, starting with the header
+  if(write_container_header(out_file)) goto end;
+
+  // Write the image codestream (the output from libjxl)
+  if(write_container_codestream(out_file, out_buf, out_len)) goto end;
+
+  // Write the exif data if it exists
+  printf("Exif: %p, length: %d\n", exif, exif_len);
+  if(exif)
+  {
+    if(write_container_exif(out_file, exif, exif_len)) goto end;
   }
 
   // Successful write: set to success code
@@ -313,9 +453,7 @@ void *get_params(dt_imageio_module_format_t *self)
 
   params->encoding_effort = dt_conf_get_int(CONF_PREFIX "encoding_effort");
 
-#ifdef SHOW_DECODING_EFFORT
   params->decoding_effort = dt_conf_get_int(CONF_PREFIX "decoding_effort");
-#endif
 
   return params;
 }
@@ -348,14 +486,12 @@ int set_params(dt_imageio_module_format_t *self, const void *params_v, const int
     encoding_effort = 9;
   dt_bauhaus_slider_set(gui->encoding_effort, encoding_effort);
 
-#ifdef SHOW_DECODING_EFFORT
   int decoding_effort = params->decoding_effort;
   if(decoding_effort < 0)
     decoding_effort = 0;
   else if(decoding_effort > 4)
     decoding_effort = 4;
   dt_bauhaus_slider_set(gui->decoding_effort, decoding_effort);
-#endif
 
   return 0;
 }
@@ -397,12 +533,10 @@ static void encoding_effort_changed(GtkWidget *encoding_effort, dt_imageio_modul
   dt_conf_set_int(CONF_PREFIX "encoding_effort", (int)dt_bauhaus_slider_get(encoding_effort));
 }
 
-#ifdef SHOW_DECODING_EFFORT
 static void decoding_effort_changed(GtkWidget *decoding_effort, dt_imageio_module_format_t *self)
 {
   dt_conf_set_float(CONF_PREFIX "decoding_effort", dt_bauhaus_slider_get(decoding_effort));
 }
-#endif
 
 void gui_init(dt_imageio_module_format_t *self)
 {
@@ -452,7 +586,6 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_box_pack_start(GTK_BOX(box), encoding_effort, TRUE, TRUE, 0);
   gui->encoding_effort = encoding_effort;
 
-#ifdef SHOW_DECODING_EFFORT
   // decode effort slider
   GtkWidget *decoding_effort
       = dt_bauhaus_slider_new_with_range(NULL, dt_confgen_get_int(CONF_PREFIX "decoding_effort", DT_MIN),
@@ -464,7 +597,6 @@ void gui_init(dt_imageio_module_format_t *self)
   g_signal_connect(G_OBJECT(decoding_effort), "value-changed", G_CALLBACK(decoding_effort_changed), self);
   gtk_box_pack_start(GTK_BOX(box), decoding_effort, TRUE, TRUE, 0);
   gui->decoding_effort = decoding_effort;
-#endif
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)
@@ -486,13 +618,10 @@ void gui_reset(dt_imageio_module_format_t *self)
   int encoding_effort = dt_confgen_get_int(CONF_PREFIX "encoding_effort", DT_DEFAULT);
   dt_bauhaus_slider_set(gui->encoding_effort, encoding_effort);
 
-#ifdef SHOW_DECODING_EFFORT
   int decoding_effort = dt_confgen_get_int(CONF_PREFIX "decoding_effort", DT_DEFAULT);
   dt_bauhaus_slider_set(gui->decoding_effort, decoding_effort);
-#endif
 }
 
 
 
-#undef SHOW_DECODING_EFFORT
 #undef CONF_PREFIX
