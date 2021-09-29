@@ -3138,6 +3138,13 @@
     <longdescription>this is just for remembering whether to show values or not</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/ashift/autocrop_value</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription>auto-crop mode</shortdescription>
+    <longdescription>0=off ; 1= largest area ; 2= original image</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/colorzones/bg_sat_factor</name>
     <type min="0.1" max="1.0">float</type>
     <default>0.5</default>
