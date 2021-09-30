@@ -1854,13 +1854,15 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
 
   // when adding contrast, blur filters modify the histogram in a way difficult to predict
   // here we implement a heuristic correction based on a set of images and regression analysis
-  if(p->details == DT_TONEEQ_EIGF)
+  if(p->details == DT_TONEEQ_EIGF && c > 0.0f)
   {
-   if(p->feathering < 5.0f && c > 0.0f)
-     c = -0.0276f + 0.01823 * p->feathering + 0.7566f * c;
+    const float correction = -0.0276f + 0.01823 * p->feathering + (0.7566f - 1.0f) * c;
+    if(p->feathering < 5.0f)
+      c += correction;
+    else if(p->feathering < 10.0f)
+      c += correction * (2.0f - p->feathering / 5.0f);
   }
-  else if(p->details == DT_TONEEQ_GUIDED)
-    if(c > 0.0f)
+  else if(p->details == DT_TONEEQ_GUIDED && c > 0.0f)
       c = 0.0235f + 1.1225f * c;
 
   p->contrast_boost += c;
