@@ -121,7 +121,7 @@ void dt_control_key_accelerators_off(struct dt_control_t *s);
 int dt_control_is_key_accelerators_on(struct dt_control_t *s);
 
 #define DT_CTL_LOG_SIZE 10
-#define DT_CTL_LOG_MSG_SIZE 200
+#define DT_CTL_LOG_MSG_SIZE 1000
 #define DT_CTL_LOG_TIMEOUT 5000
 #define DT_CTL_TOAST_SIZE 10
 #define DT_CTL_TOAST_MSG_SIZE 300
@@ -139,6 +139,7 @@ typedef struct dt_control_t
 
   GHashTable *widgets, *combo_introspection, *combo_list;
   GSequence *shortcuts;
+  gboolean enable_fallbacks;
   GtkWidget *mapping_widget;
   dt_action_element_t element;
   GPtrArray *widget_definitions;
