@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-09-28 07:51-0300\n"
-"PO-Revision-Date: 2021-09-28 08:27-0300\n"
+"PO-Revision-Date: 2021-09-29 23:36-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -8707,24 +8707,22 @@ msgstr "alterna controles para recolher painéis"
 #: ../src/gui/gtk.c:1256
 msgctxt "accel"
 msgid "panels/left"
-msgstr ""
+msgstr "painéis/esquerta"
 
 #: ../src/gui/gtk.c:1260
-#, fuzzy
 msgctxt "accel"
 msgid "panels/right"
-msgstr "luz do pino"
+msgstr "painéis/direita"
 
 #: ../src/gui/gtk.c:1264
 msgctxt "accel"
 msgid "panels/top"
-msgstr ""
+msgstr "painéis/superior"
 
 #: ../src/gui/gtk.c:1268
-#, fuzzy
 msgctxt "accel"
 msgid "panels/bottom"
-msgstr "inferior"
+msgstr "painéis/inferior"
 
 #. specific top/bottom toggles
 #: ../src/gui/gtk.c:1273
@@ -10404,11 +10402,13 @@ msgid "could not run outlier removal"
 msgstr "não foi possível executar a remoção"
 
 #: ../src/iop/ashift.c:3068
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "not enough structure for automatic correction\n"
 "minimum %d lines in each relevant direction"
-msgstr "não há estrutura suficiente para correção automática"
+msgstr ""
+"não há estrutura suficiente para correção automática\n"
+"no mínimo %d linhas em cada direção relevante"
 
 #: ../src/iop/ashift.c:3074
 msgid "automatic correction failed, please correct manually"
@@ -10419,7 +10419,7 @@ msgstr "a correção automática falhou, faça manualmente"
 #: ../src/iop/ashift.c:4506
 #, c-format
 msgid "only %d lines can be saved in parameters"
-msgstr ""
+msgstr "somente %d linhas podem ser guardadas em parâmetros"
 
 #: ../src/iop/ashift.c:5221 ../src/iop/ashift.c:5222 ../src/iop/ashift.c:5324
 #: ../src/iop/ashift.c:5325
@@ -10524,7 +10524,6 @@ msgstr ""
 "ctrl-shift-clique para ajustar somente rotação e correção de lente"
 
 #: ../src/iop/ashift.c:5730
-#, fuzzy
 msgid ""
 "automatically analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
@@ -17509,7 +17508,6 @@ msgstr ""
 "usados"
 
 #: ../src/iop/toneequal.c:3265
-#, fuzzy
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -17517,7 +17515,7 @@ msgid ""
 msgstr ""
 "use para mover a exposição média da máscara pelos canais\n"
 "para melhor controle da correção de exposição com os nós disponíveis.\n"
-"o seletor ajustará automaticamente a exposição média em -4EV."
+"o seletor ajustará automaticamente a exposição média"
 
 #: ../src/iop/toneequal.c:3275
 #, fuzzy
@@ -17919,28 +17917,24 @@ msgid "imported: today"
 msgstr "importada: hoje"
 
 #: ../src/libs/collect.c:312
-#, fuzzy
 msgid "imported: last 24h"
-msgstr "últimas 24h"
+msgstr "importada: últimas 24h"
 
 #: ../src/libs/collect.c:317
-#, fuzzy
 msgid "imported: last 30 days"
-msgstr "últimos 30 dias"
+msgstr "importada: últimos 30 dias"
 
 #: ../src/libs/collect.c:323
 msgid "taken: today"
-msgstr ""
+msgstr "tirada: hoje"
 
 #: ../src/libs/collect.c:328
-#, fuzzy
 msgid "taken: last 24h"
-msgstr "últimas 24h"
+msgstr "tirada: últimas 24h"
 
 #: ../src/libs/collect.c:333
-#, fuzzy
 msgid "taken: last 30 days"
-msgstr "últimos 30 dias"
+msgstr "tirada: últimos 30 dias"
 
 #: ../src/libs/collect.c:467
 msgid "search filmroll"
@@ -17976,12 +17970,14 @@ msgid "use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "use <, <=, >, >=, <>, =, [;] como operadores"
 
 #: ../src/libs/collect.c:2104
-#, fuzzy
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "star rating: 0-5\n"
 "rejected images: -1"
-msgstr "use <, <=, >, >=, <>, =, [;] como operadores"
+msgstr ""
+"use <, <=, >, >=, <>, =, [;] como operadores\n"
+"classificação em estrelas: 0-5\n"
+"imagens rejeitadas: -1"
 
 #: ../src/libs/collect.c:2111
 msgid ""
