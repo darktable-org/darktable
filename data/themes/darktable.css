@@ -2526,6 +2526,11 @@ Details :
   color: rgba(0,0,0,0.35); /* only the transparency is used to fade the image drawing */
 }
 
+.dt_thumbnail_rating_6 #thumb_back
+{
+  background-color: shade(@thumbnail_bg_color,0.9); /* also fade the thumb background */
+}
+
 .dt_overlays_hover .dt_thumbnail_rating_6#thumb_main:hover .dt_thumb_btn,
 .dt_overlays_hover_extended .dt_thumbnail_rating_6#thumb_main:hover .dt_thumb_btn,
 .dt_overlays_hover_extended .dt_thumbnail_rating_6#thumb_main:hover #thumb_bottom_label,
