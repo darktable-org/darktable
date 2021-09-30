@@ -2292,6 +2292,40 @@ void dt_shortcuts_save(const gchar *ext, const gboolean backup)
   _shortcuts_save(shortcuts_file, DT_ALL_DEVICES);
 }
 
+static gboolean _find_combo_effect(const gchar **effects, const gchar *token, dt_action_t *ac, gint *ef)
+{
+  if(effects == dt_action_effect_selection && g_strstr_len(token, 5, "item:"))
+  {
+    int effect = -1;
+    const char *entry = NULL;
+
+    dt_introspection_type_enum_tuple_t *values
+      = g_hash_table_lookup(darktable.control->combo_introspection, ac);
+    if(values)
+    {
+      while((entry = values[++effect].description))
+        if(!strcmp(token + 5, entry)) break;
+    }
+    else
+    {
+      gchar **strings
+        = g_hash_table_lookup(darktable.control->combo_list, ac);
+      if(strings)
+      {
+        while((entry = strings[++effect]))
+          if(!strcmp(token + 5, entry)) break;
+      }
+    }
+    if(entry)
+    {
+      *ef = effect + DT_ACTION_EFFECT_COMBO_SEPARATOR + 1;
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
 static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_dev, const dt_input_device_t load_dev, const gboolean clear)
 {
   // start with an empty shortcuts collection
@@ -2488,41 +2522,15 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
             }
 
             effects = elements[s.element].effects;
+
+            if(_find_combo_effect(effects, token, s.action, &s.effect)) continue;
+
             int effect = -1;
             while(effects[++effect])
               if(!strcmp(token, effects[effect])) break;
             if(effects[effect])
             {
               s.effect = effect;
-              continue;
-            }
-          }
-
-          if(effects == dt_action_effect_selection && g_strstr_len(token, 5, "item:"))
-          {
-            int effect = -1;
-            const char *entry = NULL;
-
-            dt_introspection_type_enum_tuple_t *values
-              = g_hash_table_lookup(darktable.control->combo_introspection, s.action);
-            if(values)
-            {
-              while((entry = values[++effect].description))
-                if(!strcmp(token + 5, entry)) break;
-            }
-            else
-            {
-              gchar **strings
-                = g_hash_table_lookup(darktable.control->combo_list, s.action);
-              if(strings)
-              {
-                while((entry = strings[++effect]))
-                  if(!strcmp(token + 5, entry)) break;
-              }
-            }
-            if(entry)
-            {
-              s.effect = effect + DT_ACTION_EFFECT_COMBO_SEPARATOR + 1;
               continue;
             }
           }
@@ -2931,7 +2939,6 @@ static void _ungrab_at_focus_loss()
   _sc = (dt_shortcut_t) { 0 };
 }
 
-
 static float _process_shortcut(float move_size)
 {
   float return_value = NAN;
@@ -3031,18 +3038,16 @@ float dt_action_process(const gchar *action, int instance, const gchar *element,
       }
 
       const gchar **effects = elements[el].effects;
-      if(effect && *effect)
+      if(effect && *effect && !_find_combo_effect(effects, effect, ac, &ef))
       {
         while(effects[ef] && strcmp(effects[ef], effect)) ef++;
 
         if(!effects[ef])
         {
           fprintf(stderr, "[dt_action_process] effect '%s' not valid for action '%s'\n", effect, action);
-          return NAN;;
+          return NAN;
         }
       }
-
-      //FIXME add combobox direct item: effects after #9894
     }
   }
 

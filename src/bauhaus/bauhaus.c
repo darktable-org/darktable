@@ -3122,7 +3122,7 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
     dt_bauhaus_combobox_entry_t *entry = e->data;
     if(entry && ! entry->sensitive) value--; // don't count unselectable combo items in value
   }
-  return - 1 - value;
+  return - 1 - value + (value == effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1 ? DT_VALUE_PATTERN_ACTIVE : 0);
 }
 
 const dt_action_element_def_t _action_elements_slider[]
