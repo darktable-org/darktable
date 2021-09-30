@@ -1355,7 +1355,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // toggle focus peaking everywhere
   dt_accel_register_global(NC_("accel", "toggle focus peaking"), GDK_KEY_f, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_connect_button_lib_as_global(NULL, "toggle focus peaking", darktable.gui->focus_peaking_button);
+  dt_action_define(&darktable.control->actions_global, NULL, "toggle focus peaking", darktable.gui->focus_peaking_button, &dt_action_def_toggle);
 
   return 0;
 }

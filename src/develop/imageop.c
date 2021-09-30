@@ -2420,6 +2420,9 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
     gtk_widget_set_tooltip_text(lab, description);
     g_free(description);
   }
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_LABEL]), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
+                   GINT_TO_POINTER(DT_ACTION_ELEMENT_SHOW));
+
   /* add multi instances menu button */
   hw[IOP_MODULE_INSTANCE] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT, NULL);
   module->multimenu_button = GTK_WIDGET(hw[IOP_MODULE_INSTANCE]);
