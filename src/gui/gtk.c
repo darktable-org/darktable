@@ -1098,8 +1098,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   gtkosx_application_set_menu_bar(
       OSXApp, GTK_MENU_SHELL(gtk_menu_bar_new())); // needed for default entries to show up
 #endif
-  g_signal_connect(G_OBJECT(OSXApp), "NSApplicationBlockTermination", G_CALLBACK(osx_quit_callback), NULL);
-  g_signal_connect(G_OBJECT(OSXApp), "NSApplicationOpenFile", G_CALLBACK(osx_openfile_callback), NULL);
+  g_signal_connect(G_OBJECT(OSXApp), "NSApplicationBlockTermination", G_CALLBACK(_osx_quit_callback), NULL);
+  g_signal_connect(G_OBJECT(OSXApp), "NSApplicationOpenFile", G_CALLBACK(_osx_openfile_callback), NULL);
 #endif
 
   GtkWidget *widget;
