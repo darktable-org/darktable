@@ -802,7 +802,7 @@ int dt_gui_gtk_write_config()
 
 void dt_gui_gtk_set_source_rgb(cairo_t *cr, dt_gui_color_t color)
 {
-  GdkRGBA bc = darktable.gui->colors[color];
+  const GdkRGBA bc = darktable.gui->colors[color];
   cairo_set_source_rgb(cr, bc.red, bc.green, bc.blue);
 }
 
