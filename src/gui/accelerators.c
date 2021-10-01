@@ -3123,14 +3123,17 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
       {
         _last_mapping_time = time;
 
+        // mapping_widget gets cleared by confirmation dialog focus loss
+        GtkWidget *mapped_widget = darktable.control->mapping_widget;
+
         dt_shortcut_t s = _sc;
         if(_insert_shortcut(&s, TRUE))
         {
           dt_control_log(_("%s assigned to %s"),
                          _shortcut_description(&s), _action_description(&s, 2));
 
-          if(darktable.control->mapping_widget)
-            gtk_widget_trigger_tooltip_query(darktable.control->mapping_widget);
+          if(mapped_widget)
+            gtk_widget_trigger_tooltip_query(mapped_widget);
         }
 
         dt_shortcuts_save(NULL, FALSE);

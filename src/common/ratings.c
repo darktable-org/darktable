@@ -199,6 +199,7 @@ void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean
   else
     dt_control_log(_("no images selected to apply rating"));
 }
+
 enum
 {
   DT_ACTION_EFFECT_SELECT = DT_ACTION_EFFECT_DEFAULT_KEY,

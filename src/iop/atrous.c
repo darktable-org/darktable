@@ -1404,6 +1404,8 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
   if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
   c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
 
+  darktable.control->element = 0;
+
   int ch2 = c->channel;
   if(c->channel == atrous_L) ch2 = atrous_Lt;
   if(c->channel == atrous_c) ch2 = atrous_ct;
@@ -1443,6 +1445,8 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
         dist = d2;
       }
     }
+    darktable.control->element = c->x_move + 1;
+
     gtk_widget_queue_draw(widget);
   }
   else
@@ -1564,6 +1568,149 @@ static void mix_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+enum
+{
+  DT_ACTION_EFFECT_ATROUS_RESET = DT_ACTION_EFFECT_DEFAULT_KEY,
+  DT_ACTION_EFFECT_BOOST = DT_ACTION_EFFECT_DEFAULT_UP,
+  DT_ACTION_EFFECT_REDUCE = DT_ACTION_EFFECT_DEFAULT_DOWN,
+  DT_ACTION_EFFECT_RAISE = 3,
+  DT_ACTION_EFFECT_LOWER = 4,
+  DT_ACTION_EFFECT_RIGHT = 5,
+  DT_ACTION_EFFECT_LEFT = 6,
+};
+
+const gchar *dt_action_effect_equalizer[]
+  = { N_("reset"),
+      N_("boost"),
+      N_("reduce"),
+      N_("raise"),
+      N_("lower"),
+      N_("right"),
+      N_("left"),
+      NULL };
+
+const dt_action_element_def_t _action_elements_equalizer[]
+  = { { N_("radius"  ), dt_action_effect_value     },
+      { N_("coarsest"), dt_action_effect_equalizer },
+      { N_("coarser" ), dt_action_effect_equalizer },
+      { N_("coarse"  ), dt_action_effect_equalizer },
+      { N_("fine"    ), dt_action_effect_equalizer },
+      { N_("finer"   ), dt_action_effect_equalizer },
+      { N_("finest"  ), dt_action_effect_equalizer },
+      { } };
+
+static float _action_process_equalizer(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  dt_iop_module_t *self = g_object_get_data(G_OBJECT(target), "iop-instance");
+  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
+  dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
+  dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->default_params;
+
+  const int node = element - 1;
+  const int ch1 = c->channel;
+  const int ch2 = ch1 == atrous_L ? atrous_Lt
+                : ch1 == atrous_c ? atrous_ct
+                : ch1;
+
+  if(!isnan(move_size))
+  {
+    gchar *toast = NULL;
+
+    if(element)
+    {
+      switch(effect)
+      {
+      case DT_ACTION_EFFECT_ATROUS_RESET:
+        p->y[ch1][node] = d->y[ch1][node];
+        p->y[ch2][node] = d->y[ch2][node];
+
+        toast = g_strdup_printf("%s, %s", _action_elements_equalizer[element].name, "reset");
+        break;
+      case DT_ACTION_EFFECT_REDUCE:
+        move_size *= -1;
+      case DT_ACTION_EFFECT_BOOST:
+        get_params(p, ch1, p->x[ch1][node], p->y[ch1][node] + move_size / 100, c->mouse_radius);
+
+        toast = g_strdup_printf("%s, %s %+.2f", _action_elements_equalizer[element].name,
+                                ch1 == atrous_s ? _("sharpness") : _("boost"), p->y[ch1][node] * 2. - 1.);
+        break;
+      case DT_ACTION_EFFECT_LOWER:
+        move_size *= -1;
+      case DT_ACTION_EFFECT_RAISE:
+        get_params(p, ch2, p->x[ch2][node], p->y[ch2][node] + move_size / 100, c->mouse_radius);
+
+        toast = g_strdup_printf("%s, %s %.2f", _action_elements_equalizer[element].name,
+                                _("threshold"), p->y[ch2][node]);
+        break;
+      case DT_ACTION_EFFECT_LEFT:
+        move_size *= -1;
+      case DT_ACTION_EFFECT_RIGHT:
+        if(element > 1 && element < BANDS)
+        {
+          const float minx = p->x[ch1][node - 1] + 0.001f;
+          const float maxx = p->x[ch1][node + 1] - 0.001f;
+          p->x[ch1][node] = p->x[ch2][node]
+            = fminf(maxx, fmaxf(minx, p->x[ch1][node] + move_size * (maxx - minx) / 100));
+        }
+
+        toast = g_strdup_printf("%s, %s %+.2f", _action_elements_equalizer[element].name,
+                                _("x"), p->x[ch1][node]);
+        break;
+      default:
+        fprintf(stderr, "[_action_process_equalizer] unknown shortcut effect (%d) for contrast equalizer node\n", effect);
+        break;
+      }
+
+      dt_iop_queue_history_update(self, FALSE);
+    }
+    else // radius
+    {
+      float bottop = -1e6;
+      switch(effect)
+      {
+      case DT_ACTION_EFFECT_RESET:
+        c->mouse_radius = 1.0 / BANDS;
+        break;
+      case DT_ACTION_EFFECT_BOTTOM:
+        bottop *= -1;
+      case DT_ACTION_EFFECT_TOP:
+        move_size = bottop;
+      case DT_ACTION_EFFECT_DOWN:
+        move_size *= -1;
+      case DT_ACTION_EFFECT_UP:
+        c->mouse_radius = CLAMP(c->mouse_radius * (1.0 + 0.1 * move_size), 0.25 / BANDS, 1.0);
+        break;
+      default:
+        fprintf(stderr, "[_action_process_equalizer] unknown shortcut effect (%d) for contrast equalizer radius\n", effect);
+        break;
+      }
+
+      toast = g_strdup_printf("%s %+.2f", _action_elements_equalizer[element].name, c->mouse_radius);
+    }
+    dt_action_widget_toast(DT_ACTION(self), target, toast);
+    g_free(toast);
+
+    gtk_widget_queue_draw(self->widget);
+  }
+
+  return element ? effect >= DT_ACTION_EFFECT_RIGHT ? p->x[ch1][node] :
+                   effect >= DT_ACTION_EFFECT_RAISE ? p->y[ch2][node] + DT_VALUE_PATTERN_PERCENTAGE :
+                   effect >= DT_ACTION_EFFECT_BOOST ? p->y[ch1][node] + DT_VALUE_PATTERN_PLUS_MINUS :
+                   p->y[ch1][node] != d->y[ch1][node] || p->y[ch2][node] != d->y[ch2][node]
+                 : c->mouse_radius + DT_VALUE_PATTERN_PERCENTAGE;
+}
+
+static const dt_shortcut_fallback_t _action_fallbacks_equalizer[]
+  = { { .mods = GDK_SHIFT_MASK,   .effect = DT_ACTION_EFFECT_RAISE },
+      { .mods = GDK_CONTROL_MASK, .effect = DT_ACTION_EFFECT_RIGHT },
+      { } };
+
+const dt_action_def_t _action_def_equalizer
+  = { N_("contrast equalizer"),
+      _action_process_equalizer,
+      _action_elements_equalizer,
+      _action_fallbacks_equalizer };
+
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *c = IOP_GUI_ALLOC(atrous);
@@ -1606,7 +1753,8 @@ void gui_init(struct dt_iop_module_t *self)
                         | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                         | GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK
                         | darktable.gui->scroll_mask);
-
+  g_object_set_data(G_OBJECT(c->area), "iop-instance", self);
+  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(c->area), &_action_def_equalizer);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(area_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(area_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(area_button_release), self);
