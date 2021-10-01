@@ -1056,9 +1056,24 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         fprintf(stderr, "[exif] Warning: lens \"%s\" unknown as \"%s\"\n", img->exif_lens, lens.c_str());
       }
     }
+    else if(FIND_EXIF_TAG("Exif.NikonLd4.LensID") && pos->toLong() == 0)
+    {
+      /* Z body w/ FTZ adapter or recent F body (e.g. D780, D6) detected.
+       * Prioritize the legacy ID lookup instead of Exif.Photo.LensModel included
+       * in the default Exiv2::lensName() search below. */
+      if(FIND_EXIF_TAG("Exif.NikonLd4.LensIDNumber"))
+        dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+    }
     else if((pos = Exiv2::lensName(exifData)) != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+    }
+
+    /* Capitalize Nikon Z-mount lenses properly for UI presentation */
+    if(g_str_has_prefix(img->exif_lens, "NIKKOR"))
+    {
+      for(size_t i = 1; i <= 5; ++i)
+        img->exif_lens[i] = g_ascii_tolower(img->exif_lens[i]);
     }
 
     // finally the lens has only numbers and parentheses, let's try to use
