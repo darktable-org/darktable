@@ -160,14 +160,6 @@ static gboolean fullscreen_key_accel_callback(GtkAccelGroup *accel_group, GObjec
   return TRUE;
 }
 
-static gboolean view_switch_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-                                               guint keyval, GdkModifierType modifier, gpointer data)
-{
-  dt_ctl_switch_mode();
-  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
-  return TRUE;
-}
-
 static gboolean toggle_tooltip_visibility(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                guint keyval, GdkModifierType modifier, gpointer data)
 {
@@ -1292,12 +1284,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_accel_register_global(NC_("accel", "panels/all bottom"), 0, 0);
   dt_accel_connect_global("panels/all bottom",
                           g_cclosure_new(G_CALLBACK(_toggle_bottom_all_accel_callback), NULL, NULL));
-
-  // View-switch
-  dt_accel_register_global(NC_("accel", "switch views/lighttable ↔ darkroom"), GDK_KEY_period, 0);
-
-  dt_accel_connect_global("switch views/lighttable ↔ darkroom",
-                          g_cclosure_new(G_CALLBACK(view_switch_key_accel_callback), NULL, NULL));
 
   // accels window
   dt_accel_register_global(NC_("accel", "show accels window"), GDK_KEY_h, 0);
