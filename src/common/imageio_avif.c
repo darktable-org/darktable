@@ -248,7 +248,9 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
       case AVIF_TRANSFER_CHARACTERISTICS_SRGB:
 
         switch (avif->matrixCoefficients) {
-        case AVIF_MATRIX_COEFFICIENTS_BT709:
+        case AVIF_MATRIX_COEFFICIENTS_IDENTITY:
+        case AVIF_MATRIX_COEFFICIENTS_BT470BG: /* BT601 coeffs */ 
+        case AVIF_MATRIX_COEFFICIENTS_BT709: /* support incorrectly tagged legacy files */
         case AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
           cp->type = DT_COLORSPACE_SRGB;
           break;
