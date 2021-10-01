@@ -1559,7 +1559,7 @@ static int32_t dt_styles_get_id_by_name(const char *name)
   return id;
 }
 
-void init_styles_key_accels()
+void dt_init_styles_key_accels()
 {
   GList *result = dt_styles_get_list("");
   if(result)
@@ -1575,7 +1575,7 @@ void init_styles_key_accels()
   }
 }
 
-void connect_styles_key_accels()
+void dt_connect_styles_key_accels()
 {
   GList *result = dt_styles_get_list("");
   if(result)

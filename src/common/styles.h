@@ -125,9 +125,9 @@ void dt_styles_save_to_file(const char *style_name, const char *filedir, gboolea
 void dt_styles_import_from_file(const char *style_path);
 
 /** register global style accelerators at start time */
-void init_styles_key_accels();
+void dt_init_styles_key_accels();
 /** connect global style accelerators at start time */
-void connect_styles_key_accels();
+void dt_connect_styles_key_accels();
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
