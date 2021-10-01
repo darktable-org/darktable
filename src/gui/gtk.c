@@ -2680,7 +2680,6 @@ void dt_gui_load_theme(const char *theme)
 {
   char theme_css[PATH_MAX] = { 0 };
   g_snprintf(theme_css, sizeof(theme_css), "%s.css", theme);
-  fprintf(stderr, "%s: trying to load theme %s\n", G_STRFUNC, theme_css);
 
   if(!dt_conf_key_exists("use_system_font"))
     dt_conf_set_bool("use_system_font", TRUE);
@@ -2710,30 +2709,19 @@ void dt_gui_load_theme(const char *theme)
   path = g_build_filename(configdir, "themes", theme_css, NULL);
   if(!g_file_test(path, G_FILE_TEST_EXISTS))
   {
-    fprintf(stderr, "%s: path %s does not exist\n", G_STRFUNC, path);
-
     // dt dir theme
     path = g_build_filename(datadir, "themes", theme_css, NULL);
     if(!g_file_test(path, G_FILE_TEST_EXISTS))
     {
-      fprintf(stderr, "%s: path %s does not exist\n", G_STRFUNC, path);
-
       // fallback to default theme
       path = g_build_filename(datadir, "themes/darktable.css", NULL);
       dt_conf_set_string("ui_last/theme", "darktable");
-      fprintf(stderr, "%s: setting theme to the safe default: %s\n", G_STRFUNC, theme);
     }
     else
-    {
       dt_conf_set_string("ui_last/theme", theme);
-      fprintf(stderr, "%s: setting ui to %s\n", G_STRFUNC, theme);
-    }
   }
   else
-  {
     dt_conf_set_string("ui_last/theme", theme);
-    fprintf(stderr, "%s: setting ui to %s\n", G_STRFUNC, theme);
-  }
 
   GError *error = NULL;
 
@@ -2752,7 +2740,7 @@ void dt_gui_load_theme(const char *theme)
   gchar *usercsspath_uri = g_filename_to_uri(usercsspath, NULL, &error);
   if(usercsspath_uri == NULL)
     fprintf(stderr, "%s: could not convert path %s to URI. Error: %s\n", G_STRFUNC, usercsspath, error->message);
-else
+  else
     fprintf(stderr, "%s: usercsspath_uri: %s\n", G_STRFUNC, usercsspath_uri);
 
   gchar *themecss = NULL;
@@ -2760,12 +2748,10 @@ else
   {
     themecss = g_strjoin(NULL, "@import url('", path_uri,
                                            "'); @import url('", usercsspath_uri, "');", NULL);
-    fprintf(stderr, "%s: importing %s and %s to %s\n", G_STRFUNC, path_uri, usercsspath_uri, themecss);
   }
   else
   {
     themecss = g_strjoin(NULL, "@import url('", path_uri, "');", NULL);
-    fprintf(stderr, "%s: import alone: %s to: %s\n", G_STRFUNC, path_uri, themecss);
   }
 
   g_free(path_uri);
@@ -2775,7 +2761,6 @@ else
 
   if(dt_conf_get_bool("ui/hide_tooltips"))
   {
-    fprintf(stderr, "%s: tooltips \n", G_STRFUNC);
     gchar *newcss = g_strjoin(NULL, themecss, " tooltip {opacity: 0; background: transparent;}", NULL);
     g_free(themecss);
     themecss = newcss;
