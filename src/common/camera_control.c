@@ -185,7 +185,7 @@ static void _error_func_dispatch25(GPContext *context, const char *text, void *d
                        "\nmake sure your camera allows access and is not mounted otherwise"), cam->model, cam->port, text);
       cam->ptperror = TRUE;
     }
-      
+
     /* notify client of camera connection broken */
     _dispatch_camera_error(camctl, camctl->active_camera, CAMERA_CONNECTION_BROKEN);
 
@@ -1123,11 +1123,20 @@ static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
   return TRUE;
 }
 
+static int _sort_filename(gchar *a, gchar *b)
+{
+  return g_strcmp0(a, b);
+}
+
 void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *images)
 {
+  GList *ifiles = g_list_sort(images, (GCompareFunc)_sort_filename);
+  char *prev_file = NULL;
+  char *prev_output = NULL;
+
   _camctl_lock(c, cam);
 
-  for(GList *ifile = images; ifile; ifile = g_list_next(ifile))
+  for(GList *ifile = ifiles; ifile; ifile = g_list_next(ifile))
   {
     // Split file into folder and filename
     char *eos;
@@ -1165,17 +1174,31 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
     else
       size = (gsize) gpsize;
 
-    const gboolean have_exif_time = dt_exif_get_datetime_taken((uint8_t *)data, size, &exif_time);
-
-    const char *output_path = _dispatch_request_image_path(c, have_exif_time ? &exif_time : NULL, cam);
-    const char *fname = _dispatch_request_image_filename(c, filename, have_exif_time ? &exif_time : NULL, cam);
-    if(!fname)
+    char *output = NULL;
+    if(dt_has_same_path_basename(file, prev_file))
     {
-      gp_file_free(camfile);
-      continue;
+      // make sure we keep the same output filename, changing only the extension
+      output = dt_copy_filename_extension(prev_output, file);
+      if(!output)
+      {
+        gp_file_free(camfile);
+        continue;
+      }
     }
+    else
+    {
+      const gboolean have_exif_time = dt_exif_get_datetime_taken((uint8_t *)data, size, &exif_time);
 
-    char *output = g_build_filename(output_path, fname, (char *)NULL);
+      const char *output_path = _dispatch_request_image_path(c, have_exif_time ? &exif_time : NULL, cam);
+      const char *fname = _dispatch_request_image_filename(c, filename, have_exif_time ? &exif_time : NULL, cam);
+      if(!fname)
+      {
+        gp_file_free(camfile);
+        continue;
+      }
+
+      output = g_build_filename(output_path, fname, (char *)NULL);
+    }
 
     if(!g_file_set_contents(output, data, size, NULL))
        dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to write file %s\n", output);
@@ -1183,8 +1206,11 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
       _dispatch_camera_image_downloaded(c, cam, output);
 
     gp_file_free(camfile);
-    g_free(output);
+    g_free(prev_output);
+    prev_output = output;
+    prev_file = file;
   }
+  g_free(prev_output);
 
   _dispatch_control_status(c, CAMERA_CONTROL_AVAILABLE);
   _camctl_unlock(c);
