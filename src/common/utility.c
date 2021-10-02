@@ -285,7 +285,7 @@ gboolean dt_util_test_image_file(const char *filename)
   struct _stati64 stats;
 
   // the code this replaced used utf8 paths with no problem
-  // utf8 paths will not work in this context for no reason 
+  // utf8 paths will not work in this context for no reason
   // that I can figure out, but converting utf8 to utf16 works
   // fine.
 
@@ -313,7 +313,7 @@ gboolean dt_util_test_writable_dir(const char *path)
   struct stat stats;
   if(stat(path, &stats)) return FALSE;
 #endif
-  if(S_ISDIR(stats.st_mode) == 0) return FALSE;  
+  if(S_ISDIR(stats.st_mode) == 0) return FALSE;
   if(g_access(path, W_OK | X_OK) != 0) return FALSE;
   return TRUE;
 }
@@ -889,7 +889,7 @@ void dt_copy_resource_file(const char *src, const char *dst)
   g_free(sourcefile);
 }
 
-RsvgDimensionData dt_get_svg_dimension(RsvgHandle *svg) 
+RsvgDimensionData dt_get_svg_dimension(RsvgHandle *svg)
 {
   RsvgDimensionData dimension;
   // rsvg_handle_get_dimensions has been deprecated in librsvg 2.52
@@ -899,17 +899,17 @@ RsvgDimensionData dt_get_svg_dimension(RsvgHandle *svg)
     rsvg_handle_get_intrinsic_size_in_pixels(svg, &width, &height);
     dimension.width = width;
     dimension.height = height;
-  #else      
+  #else
     rsvg_handle_get_dimensions(svg, &dimension);
   #endif
-  return dimension; 
+  return dimension;
 }
 
-void dt_render_svg(RsvgHandle *svg, cairo_t *cr, double width, double height, double offset_x, double offset_y) 
+void dt_render_svg(RsvgHandle *svg, cairo_t *cr, double width, double height, double offset_x, double offset_y)
 {
   // rsvg_handle_render_cairo has been deprecated in librsvg 2.52
   #if LIBRSVG_CHECK_VERSION(2,52,0)
-    RsvgRectangle viewport = { 
+    RsvgRectangle viewport = {
       .x = offset_x,
       .y = offset_y,
       .width = width,
@@ -918,7 +918,46 @@ void dt_render_svg(RsvgHandle *svg, cairo_t *cr, double width, double height, do
     rsvg_handle_render_document(svg, cr, &viewport, NULL);
   #else
     rsvg_handle_render_cairo(svg, cr);
-  #endif  
+  #endif
+}
+
+// check if the path + basenames are the same (<=> only differ by the extension)
+gboolean dt_has_same_path_basename(const char *filename1, const char *filename2)
+{
+  // assume both filenames have an extension
+  if(!filename1 || !filename2) return FALSE;
+  const char *dot1 = strrchr(filename1, '.');
+  if(!dot1) return FALSE;
+  const char *dot2 = strrchr(filename2, '.');
+  if(!dot2) return FALSE;
+  const int length1 = dot1 - filename1;
+  const int length2 = dot2 - filename2;
+  if(length1 != length2)
+    return FALSE;
+  for(int i = length1 - 1; i > 0; i--)
+    if(filename1[i] != filename2[i])
+      return FALSE;
+  return TRUE;
+}
+
+// set the filename2 extension to filename1 - return NULL if fails - result should be freed
+char *dt_copy_filename_extension(const char *filename1, const char *filename2)
+{
+  // assume both filenames have an extension
+  if(!filename1 || !filename2) return NULL;
+  const char *dot1 = strrchr(filename1, '.');
+  if(!dot1) return NULL;
+  const char *dot2 = strrchr(filename2, '.');
+  if(!dot2) return NULL;
+  const int name_lgth = dot1 - filename1;
+  const int ext_lgth = strlen(dot2);
+  char *output = g_malloc(name_lgth + ext_lgth + 1);
+  if(output)
+  {
+    memcpy(output, filename1, name_lgth);
+    memcpy(&output[name_lgth], &filename2[strlen(filename2) - ext_lgth], ext_lgth + 1);
+  }
+  return output;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

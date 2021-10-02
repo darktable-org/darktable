@@ -33,6 +33,7 @@
 #include "common/undo.h"
 #include "common/grouping.h"
 #include "common/import_session.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "develop/imageop_math.h"
 
@@ -1677,7 +1678,7 @@ void dt_control_move_images()
   }
 
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-        _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, 
+        _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
         _("_select as destination"), _("_cancel"));
 
   dt_conf_get_folder_to_file_chooser("ui_last/copymove_path", GTK_FILE_CHOOSER(filechooser));
@@ -1739,7 +1740,7 @@ void dt_control_copy_images()
   }
 
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-        _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, 
+        _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
         _("_select as destination"), _("_cancel"));
 
   dt_conf_get_folder_to_file_chooser("ui_last/copymove_path", GTK_FILE_CHOOSER(filechooser));
@@ -2061,6 +2062,7 @@ void dt_control_write_sidecar_files()
 }
 
 static int _control_import_image_copy(const char *filename,
+                                      char **prev_filename, char **prev_output,
                                       struct dt_import_session_t *session, GList **imgs)
 {
   char *data = NULL;
@@ -2072,17 +2074,27 @@ static int _control_import_image_copy(const char *filename,
     dt_print(DT_DEBUG_CONTROL, "[import_from] failed to read file `%s`\n", filename);
     return -1;
   }
-  char *basename = g_path_get_basename(filename);
-  const gboolean have_exif_time = dt_exif_get_datetime_taken((uint8_t *)data, size, &exif_time);
+  char *output = NULL;
+  if(dt_has_same_path_basename(filename, *prev_filename))
+  {
+    // make sure we keep the same output filename, changing only the extension
+    output = dt_copy_filename_extension(*prev_output, filename);
+  }
+  else
+  {
+    char *basename = g_path_get_basename(filename);
+    const gboolean have_exif_time = dt_exif_get_datetime_taken((uint8_t *)data, size, &exif_time);
 
-  if(have_exif_time)
-    dt_import_session_set_exif_time(session, exif_time);
-  dt_import_session_set_filename(session, basename);
-  const char *output_path = dt_import_session_path(session, FALSE);
-  const gboolean use_filename = dt_conf_get_bool("session/use_filename");
-  const char *fname = dt_import_session_filename(session, use_filename);
+    if(have_exif_time)
+      dt_import_session_set_exif_time(session, exif_time);
+    dt_import_session_set_filename(session, basename);
+    const char *output_path = dt_import_session_path(session, FALSE);
+    const gboolean use_filename = dt_conf_get_bool("session/use_filename");
+    const char *fname = dt_import_session_filename(session, use_filename);
 
-  char *output = g_build_filename(output_path, fname, NULL);
+    output = g_build_filename(output_path, fname, NULL);
+    g_free(basename);
+  }
 
   if(!g_file_set_contents(output, data, size, NULL))
   {
@@ -2105,8 +2117,9 @@ static int _control_import_image_copy(const char *filename,
     }
   }
   g_free(data);
-  g_free(output);
-  g_free(basename);
+  g_free(*prev_output);
+  *prev_output = output;
+  *prev_filename = (char *)filename;
   return res ? dt_import_session_film_id(session) : -1;
 }
 
@@ -2145,24 +2158,15 @@ static int _control_import_image_insitu(const char *filename, GList **imgs, doub
   return filmid;
 }
 
-#ifdef USE_LUA
-/* compare used for sorting the list of files to import
-   only sort on basename of full path eg. the actually filename.
-*/
-static int _film_filename_cmp(gchar *a, gchar *b)
+static int _sort_filename(gchar *a, gchar *b)
 {
-  gchar *a_basename = g_path_get_basename(a);
-  gchar *b_basename = g_path_get_basename(b);
-  int ret = g_strcmp0(a_basename, b_basename);
-  g_free(a_basename);
-  g_free(b_basename);
-  return ret;
+  return g_strcmp0(a, b);
 }
 
+#ifdef USE_LUA
 static GList *_apply_lua_filter(GList *images)
 {
-  /* pre-sort image list for easier handling in Lua code */
-  images = g_list_sort(images, (GCompareFunc)_film_filename_cmp);
+  // images list is assumed already sorted
   int image_count = 1;
 
   dt_lua_lock();
@@ -2200,7 +2204,7 @@ static GList *_apply_lua_filter(GList *images)
   dt_lua_unlock();
 
   /* we got ourself a list of images, lets sort and start import */
-  images = g_list_sort(images, (GCompareFunc)_film_filename_cmp);
+  images = g_list_sort(images, (GCompareFunc)_sort_filename);
   return images;
 }
 #endif
@@ -2232,11 +2236,13 @@ static int32_t _control_import_job_run(dt_job_t *job)
   double last_coll_update = dt_get_wtime() - (INIT_UPDATE_INTERVAL/2.0);
   double last_prog_update = last_coll_update;
   double update_interval = INIT_UPDATE_INTERVAL;
+  char *prev_filename = NULL;
+  char *prev_output = NULL;
   for(GList *img = t; img; img = g_list_next(img))
   {
     if(data->session)
     {
-      filmid = _control_import_image_copy((char *)img->data, data->session, &imgs);
+      filmid = _control_import_image_copy((char *)img->data, &prev_filename, &prev_output, data->session, &imgs);
       if(filmid != -1 && first_filmid == -1)
       {
         first_filmid = filmid;
@@ -2262,6 +2268,7 @@ static int32_t _control_import_job_run(dt_job_t *job)
       g_usleep(100);
     }
   }
+  g_free(prev_output);
 
   dt_control_log(ngettext("imported %d image", "imported %d images", cntr), cntr);
   dt_control_queue_redraw_center();
@@ -2313,7 +2320,7 @@ static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_o
   dt_control_job_add_progress(job, _("import"), FALSE);
   dt_control_job_set_params(job, params, _control_import_job_cleanup);
 
-  params->index = imgs;
+  params->index = g_list_sort(imgs, (GCompareFunc)_sort_filename);
 
   dt_control_import_t *data = params->data;
   data->wait = wait;
