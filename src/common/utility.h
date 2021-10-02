@@ -104,6 +104,12 @@ RsvgDimensionData dt_get_svg_dimension(RsvgHandle *svg);
 // renders svg data
 void dt_render_svg(RsvgHandle *svg, cairo_t *cr, double width, double height, double offset_x, double offset_y);
 
+// check if the path + basenames are the same (<=> only differ by the extension)
+gboolean dt_has_same_path_basename(const char *filename1, const char *filename2);
+
+// set the filename2 extension to filename1 - return NULL if fails - result should be freed
+char *dt_copy_filename_extension(const char *filename1, const char *filename2);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

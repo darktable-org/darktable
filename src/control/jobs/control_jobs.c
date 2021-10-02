@@ -33,6 +33,7 @@
 #include "common/undo.h"
 #include "common/grouping.h"
 #include "common/import_session.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "develop/imageop_math.h"
 
@@ -2060,36 +2061,6 @@ void dt_control_write_sidecar_files()
                                                           FALSE));
 }
 
-static gboolean _same_basefilename(const char *filename, const char *prev_filename)
-{
-  if(!filename || !prev_filename) return FALSE;
-  const char *dot = strrchr(filename, '.');
-  if(!dot) return FALSE;
-  const int length = dot - filename;
-  const char *prev_dot = strrchr(prev_filename, '.');
-  if(!prev_dot) return FALSE;
-  const int prev_length = prev_dot - prev_filename;
-  if(length != prev_length)
-    return FALSE;
-  for(int i = length - 1; i > 0; i--)
-    if(filename[i] != prev_filename[i])
-      return FALSE;
-  return TRUE;
-}
-
-static char *_set_extension(const char *prev_output, const char *filename)
-{
-  const char *dot = strrchr(filename, '.');
-  const char *prev_dot = strrchr(prev_output, '.');
-  const int name_lgth = prev_dot - prev_output;
-  const int ext_lgth = strlen(dot);
-  char *output = malloc(name_lgth + ext_lgth + 1);
-  memcpy(output, prev_output, name_lgth);
-  memcpy(&output[name_lgth], &filename[strlen(filename) - ext_lgth], ext_lgth);
-  output[name_lgth + ext_lgth] = '\0';
-  return output;
-}
-
 static int _control_import_image_copy(const char *filename,
                                       char **prev_filename, char **prev_output,
                                       struct dt_import_session_t *session, GList **imgs)
@@ -2104,10 +2075,10 @@ static int _control_import_image_copy(const char *filename,
     return -1;
   }
   char *output = NULL;
-  if(_same_basefilename(filename, *prev_filename))
+  if(dt_has_same_path_basename(filename, *prev_filename))
   {
     // make sure we keep the same output filename, changing only the extension
-    output = _set_extension(*prev_output, filename);
+    output = dt_copy_filename_extension(*prev_output, filename);
   }
   else
   {
@@ -2187,6 +2158,11 @@ static int _control_import_image_insitu(const char *filename, GList **imgs, doub
   return filmid;
 }
 
+static int _sort_filename(gchar *a, gchar *b)
+{
+  return g_strcmp0(a, b);
+}
+
 #ifdef USE_LUA
 static GList *_apply_lua_filter(GList *images)
 {
@@ -2228,7 +2204,7 @@ static GList *_apply_lua_filter(GList *images)
   dt_lua_unlock();
 
   /* we got ourself a list of images, lets sort and start import */
-  images = g_list_sort(images, (GCompareFunc)_film_filename_cmp);
+  images = g_list_sort(images, (GCompareFunc)_sort_filename);
   return images;
 }
 #endif
@@ -2328,11 +2304,6 @@ static void *_control_import_alloc()
     return NULL;
   }
   return params;
-}
-
-static int _sort_filename(gchar *a, gchar *b)
-{
-  return g_strcmp0(a, b);
 }
 
 static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_override,
