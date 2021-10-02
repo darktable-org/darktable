@@ -2714,7 +2714,7 @@ void dt_gui_load_theme(const char *theme)
     if(!g_file_test(path, G_FILE_TEST_EXISTS))
     {
       // fallback to default theme
-      path = g_build_filename(datadir, "themes/darktable.css", NULL);
+      path = g_build_filename(datadir, "themes", "darktable.css", NULL);
       dt_conf_set_string("ui_last/theme", "darktable");
     }
     else
@@ -2729,7 +2729,7 @@ void dt_gui_load_theme(const char *theme)
   gtk_style_context_add_provider_for_screen
     (gdk_screen_get_default(), themes_style_provider, GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
 
-  usercsspath = g_build_filename(configdir, "/user.css", NULL);
+  usercsspath = g_build_filename(configdir, "user.css", NULL);
 
   gchar *path_uri = g_filename_to_uri(path, NULL, &error);
   if(path_uri == NULL)
