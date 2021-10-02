@@ -2678,6 +2678,9 @@ void dt_gui_add_help_link(GtkWidget *widget, const char *link)
 // load a CSS theme
 void dt_gui_load_theme(const char *theme)
 {
+  char theme_css[PATH_MAX] = { 0 };
+  g_snprintf(theme_css, sizeof(theme_css), "%s.css", theme);
+
   if(!dt_conf_key_exists("use_system_font"))
     dt_conf_set_bool("use_system_font", TRUE);
 
@@ -2697,20 +2700,21 @@ void dt_gui_load_theme(const char *theme)
     g_free(font_name);
   }
 
-  char path[PATH_MAX] = { 0 }, datadir[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 }, usercsspath[PATH_MAX] = { 0 };
+  gchar *path, *usercsspath;
+  char datadir[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
-  // user dir them
-  g_snprintf(path, sizeof(path), "%s/themes/%s.css", configdir, theme);
+  // user dir theme
+  path = g_build_filename(configdir, "themes", theme_css, NULL);
   if(!g_file_test(path, G_FILE_TEST_EXISTS))
   {
     // dt dir theme
-    g_snprintf(path, sizeof(path), "%s/themes/%s.css", datadir, theme);
+    path = g_build_filename(datadir, "themes", theme_css, NULL);
     if(!g_file_test(path, G_FILE_TEST_EXISTS))
     {
       // fallback to default theme
-      g_snprintf(path, sizeof(path), "%s/themes/darktable.css", datadir);
+      path = g_build_filename(datadir, "themes", "darktable.css", NULL);
       dt_conf_set_string("ui_last/theme", "darktable");
     }
     else
@@ -2720,37 +2724,40 @@ void dt_gui_load_theme(const char *theme)
     dt_conf_set_string("ui_last/theme", theme);
 
   GError *error = NULL;
+
   GtkStyleProvider *themes_style_provider = GTK_STYLE_PROVIDER(gtk_css_provider_new());
   gtk_style_context_add_provider_for_screen
     (gdk_screen_get_default(), themes_style_provider, GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
 
-  g_snprintf(usercsspath, sizeof(usercsspath), "%s/user.css", configdir);
+  usercsspath = g_build_filename(configdir, "user.css", NULL);
 
-  char *c1 = path;
-  char *c2 = usercsspath;
+  gchar *path_uri = g_filename_to_uri(path, NULL, &error);
+  if(path_uri == NULL)
+    fprintf(stderr, "%s: could not convert path %s to URI. Error: %s\n", G_STRFUNC, path, error->message);
+  else
+    fprintf(stderr, "%s: path_uri: %s\n", G_STRFUNC, path_uri);
 
-#ifdef _WIN32
-  // for Windows, we need to remove the drive letter and the colon, if present, and replace '\' with '/'
-  c1 = strchr(path, ':');
-  c1 = (c1 == NULL ? path : c1 + 1);
-  c2 = strchr(usercsspath, ':');
-  c2 = (c2 == NULL ? usercsspath : c2 + 1);
-
-  c1 = g_strdelimit(c1, "\\", '/');
-  c2 = g_strdelimit(c2, "\\", '/');
-#endif
+  gchar *usercsspath_uri = g_filename_to_uri(usercsspath, NULL, &error);
+  if(usercsspath_uri == NULL)
+    fprintf(stderr, "%s: could not convert path %s to URI. Error: %s\n", G_STRFUNC, usercsspath, error->message);
+  else
+    fprintf(stderr, "%s: usercsspath_uri: %s\n", G_STRFUNC, usercsspath_uri);
 
   gchar *themecss = NULL;
-
-  if(dt_conf_get_bool("themes/usercss") && g_file_test(c2, G_FILE_TEST_EXISTS))
+  if(dt_conf_get_bool("themes/usercss") && g_file_test(usercsspath, G_FILE_TEST_EXISTS))
   {
-    themecss = g_strjoin(NULL, "@import url('", c1,
-                                           "'); @import url('", c2, "');", NULL);
+    themecss = g_strjoin(NULL, "@import url('", path_uri,
+                                           "'); @import url('", usercsspath_uri, "');", NULL);
   }
   else
   {
-    themecss = g_strjoin(NULL, "@import url('", c1, "');", NULL);
+    themecss = g_strjoin(NULL, "@import url('", path_uri, "');", NULL);
   }
+
+  g_free(path_uri);
+  g_free(usercsspath_uri);
+  g_free(path);
+  g_free(usercsspath);
 
   if(dt_conf_get_bool("ui/hide_tooltips"))
   {
@@ -2761,10 +2768,9 @@ void dt_gui_load_theme(const char *theme)
 
   if(!gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(themes_style_provider), themecss, -1, &error))
   {
-    fprintf(stderr, "%s: error parsing combined CSS: %s\n", G_STRFUNC, error->message);
+    fprintf(stderr, "%s: error parsing combined CSS %s: %s\n", G_STRFUNC, themecss, error->message);
     g_clear_error(&error);
   }
-
 
   g_free(themecss);
 
