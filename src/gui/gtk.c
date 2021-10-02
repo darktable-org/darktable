@@ -2734,14 +2734,10 @@ void dt_gui_load_theme(const char *theme)
   gchar *path_uri = g_filename_to_uri(path, NULL, &error);
   if(path_uri == NULL)
     fprintf(stderr, "%s: could not convert path %s to URI. Error: %s\n", G_STRFUNC, path, error->message);
-  else
-    fprintf(stderr, "%s: path_uri: %s\n", G_STRFUNC, path_uri);
 
   gchar *usercsspath_uri = g_filename_to_uri(usercsspath, NULL, &error);
   if(usercsspath_uri == NULL)
     fprintf(stderr, "%s: could not convert path %s to URI. Error: %s\n", G_STRFUNC, usercsspath, error->message);
-  else
-    fprintf(stderr, "%s: usercsspath_uri: %s\n", G_STRFUNC, usercsspath_uri);
 
   gchar *themecss = NULL;
   if(dt_conf_get_bool("themes/usercss") && g_file_test(usercsspath, G_FILE_TEST_EXISTS))
