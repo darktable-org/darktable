@@ -187,5 +187,5 @@ jobs:
         uses: 'actions/upload-artifact@v2'
         with:
           name: darktable.${{ github.sha }}.macos.zip
-          path: ${INSTALL_PREFIX}/bin/darktable*
+          path: ${{ env.INSTALL_PREFIX }}/*
           retention-days: 2
