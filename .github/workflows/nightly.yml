@@ -153,10 +153,6 @@ jobs:
         with:
           submodules: true
           path: src
-      - name: List src_dir contents
-        run: |
-          echo ${SRC_DIR}
-          ls -al ${SRC_DIR}/
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
