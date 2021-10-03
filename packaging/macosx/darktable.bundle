@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <app-bundle>
   <meta>
-    <prefix name="default">/usr/local</prefix>
-    <prefix name="dt">/Users/runner/work/darktable/darktable/install</prefix>
+    <prefix name="default">/opt/local</prefix>
+    <prefix name="dt">/usr/local</prefix>
     <destination overwrite="yes">package</destination>
     <run-install-name-tool/>
     <gtk>gtk+-3.0</gtk>
