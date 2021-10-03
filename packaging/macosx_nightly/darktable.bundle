@@ -11,7 +11,6 @@
   <main-binary>${prefix:dt}/bin/darktable</main-binary>
   <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/bin/darktable-chart</binary>
   <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/bin/darktable-cli</binary>
-  <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/bin/darktable-cltest</binary>
   <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/bin/darktable-generate-cache</binary>
   <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/bin/darktable-rs-identify</binary>
   <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/libexec/darktable/tools/darktable-curve-tool</binary>
