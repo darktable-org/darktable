@@ -197,5 +197,5 @@ jobs:
           make install
       - name: Create DMG image
         run: |
-          cd ${SRC_DIR}/darktable/packaging/macosx
+          cd ${SRC_DIR}/packaging/macosx
           ./make-app-bundle
