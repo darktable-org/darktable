@@ -2801,7 +2801,7 @@ static gboolean _shortcut_match(dt_shortcut_t *f, gchar **fb_log)
     f->action = matched_action;
   }
 
-  return matched;
+  return f->action != NULL;
 }
 
 
@@ -2967,15 +2967,7 @@ static float _process_shortcut(float move_size)
   }
   else if(!isnan(move_size))
   {
-    if(fsc.action)
-    {
-      gchar *base_label = NULL;
-      _action_distinct_label(&base_label, fsc.action, "");
-      dt_toast_log(_("no fallback for %s (%s)"), _shortcut_description(&fsc), base_label);
-      g_free(base_label);
-    }
-    else
-      dt_toast_log(_("%s not assigned"), _shortcut_description(&_sc));
+    dt_toast_log(_("%s not assigned"), _shortcut_description(&_sc));
 
     if(++consecutive_unmatched >= 3)
     {
@@ -3278,13 +3270,10 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
         _lookup_mapping_widget();
       }
 
-      GdkCursor *cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "all-scroll");
       gdk_seat_grab(gdk_display_get_default_seat(gdk_display_get_default()),
                     gtk_widget_get_window(_grab_window ? _grab_window
-                                                      : dt_ui_main_window(darktable.gui->ui)),
-                    GDK_SEAT_CAPABILITY_ALL, FALSE, cursor,
-                    NULL, NULL, NULL);
-      g_object_unref(cursor);
+                                                       : dt_ui_main_window(darktable.gui->ui)),
+                    GDK_SEAT_CAPABILITY_ALL, FALSE, NULL, NULL, NULL, NULL);
 
       _last_time = time;
     }
@@ -3434,9 +3423,6 @@ static guint _fix_keyval(GdkEvent *event)
 
 gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_data)
 {
-  static gdouble move_start_x = 0;
-  static gdouble move_start_y = 0;
-
 //  dt_print(DT_DEBUG_INPUT, "  [shortcut_dispatcher] %d\n", event->type);
 
   if(!darktable.control->key_accelerators_on) return FALSE; // FIXME should eventually no longer be needed
@@ -3471,6 +3457,9 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
       }
     }
   }
+
+  int delay = 0;
+  g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
 
   switch(event->type)
   {
@@ -3532,21 +3521,27 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
   case GDK_MOTION_NOTIFY:
     _sc.mods = _key_modifiers_clean(event->motion.state);
 
-    if(_sc.move == DT_SHORTCUT_MOVE_NONE)
-    {
-      move_start_x = event->motion.x;
-      move_start_y = event->motion.y;
-      _sc.move = DT_SHORTCUT_MOVE_HORIZONTAL; // FIXME set fake direction so the start position doesn't keep resetting
-      break;
-    }
+    static gdouble move_start_x = 0, move_start_y = 0, last_distance = 0;
 
     const gdouble x_move = event->motion.x - move_start_x;
     const gdouble y_move = event->motion.y - move_start_y;
-    const gdouble step_size = 10; // FIXME configurable, x & y separately
+    const gdouble new_distance = x_move * x_move + y_move * y_move;
 
-//  FIXME try to keep cursor in same location. gdk_device_warp does not seem to do anything. Maybe needs different device?
-//  gdk_device_warp(event->motion.device, gdk_window_get_screen(event->motion.window),
-//                  move_start_x, move_start_y); // use event->motion.x_root
+    static int move_last_time = 0;
+    if(move_last_time != _last_time || new_distance < last_distance)
+    {
+      move_start_x = event->motion.x;
+      move_start_y = event->motion.y;
+      move_last_time = _last_time;
+      last_distance = 0;
+      break;
+    }
+
+    // might just be an accidental move during a key press or button click
+    // possibly different time sources from midi or other devices
+    if(event->motion.time > _last_time && event->motion.time < _last_time + delay) break;
+
+    const gdouble step_size = 10;
 
     const gdouble angle = x_move / (0.001 + y_move);
     gdouble size = trunc(x_move / step_size);
@@ -3597,9 +3592,6 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     // maybe even action on PRESS rather than RELEASE
     // FIXME be careful!!; we seem to be receiving presses and releases twice!?!
     _pressed_button &= ~(1 << (event->button.button - 1));
-
-    int delay = 0;
-    g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
 
     const guint passed_time = event->button.time - _last_time;
     if(passed_time < delay
