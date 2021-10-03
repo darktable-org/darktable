@@ -3,9 +3,11 @@ set -e -o pipefail
 trap 'echo "${BASH_SOURCE[0]}{${FUNCNAME[0]}}:${LINENO}: Error: command \`${BASH_COMMAND}\` failed with exit code $?"' ERR
 cd "$(dirname "$0")"/
 
+BUNDLE_FILE=${1:-darktable.bundle}
+
 lensfun-update-data || true
 cp -R ~/.local/share/lensfun .
-~/.local/bin/gtk-mac-bundler darktable.bundle
+~/.local/bin/gtk-mac-bundler $BUNDLE_FILE
 mv package/darktable.app/Contents/MacOS/darktable-bin package/darktable.app/Contents/MacOS/darktable
 mv package/darktable.app/Contents/Resources/lib/gdk-pixbuf-2.0/*/loaders.cache package/darktable.app/Contents/Resources/etc/gtk-3.0/
 rm -Rf lensfun

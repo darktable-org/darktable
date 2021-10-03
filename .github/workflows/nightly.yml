@@ -194,7 +194,7 @@ jobs:
       - name: Create DMG image
         run: |
           cd ${SRC_DIR}/packaging/macosx
-          ./make-app-bundle
+          ./make-app-bundle ${SRC_DIR}/packaging/macosx/darktable-nightly.bundle
       - name: Publish artifacts
         uses: 'actions/upload-artifact@v2'
         with:
