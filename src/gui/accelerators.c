@@ -2801,7 +2801,7 @@ static gboolean _shortcut_match(dt_shortcut_t *f, gchar **fb_log)
     f->action = matched_action;
   }
 
-  return matched;
+  return f->action != NULL;
 }
 
 
@@ -2967,15 +2967,7 @@ static float _process_shortcut(float move_size)
   }
   else if(!isnan(move_size))
   {
-    if(fsc.action)
-    {
-      gchar *base_label = NULL;
-      _action_distinct_label(&base_label, fsc.action, "");
-      dt_toast_log(_("no fallback for %s (%s)"), _shortcut_description(&fsc), base_label);
-      g_free(base_label);
-    }
-    else
-      dt_toast_log(_("%s not assigned"), _shortcut_description(&_sc));
+    dt_toast_log(_("%s not assigned"), _shortcut_description(&_sc));
 
     if(++consecutive_unmatched >= 3)
     {
