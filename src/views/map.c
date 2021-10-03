@@ -72,6 +72,7 @@ typedef struct dt_map_t
   GList *selected_images;
   gboolean start_drag;
   int start_drag_x, start_drag_y;
+  int start_drag_offset_x, start_drag_offset_y;
   float thumb_lat_angle, thumb_lon_angle;
   sqlite3_stmt *main_query;
   gboolean drop_filmstrip_activated;
@@ -1498,8 +1499,8 @@ static dt_map_image_t *_view_map_get_entry_at_pos(dt_view_t *self, const double 
   return NULL;
 }
 
-static GList *_view_map_get_imgs_at_pos(dt_view_t *self, const double x,
-                                        const double y, const gboolean first_on)
+static GList *_view_map_get_imgs_at_pos(dt_view_t *self, const float x, const float y,
+                                        int *offset_x, int *offset_y, const gboolean first_on)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
   GList *imgs = NULL;
@@ -1519,6 +1520,8 @@ static GList *_view_map_get_imgs_at_pos(dt_view_t *self, const double x,
       if(x >= img_x && x <= img_x + entry->width && y <= img_y && y >= img_y - entry->height)
       {
         imgid = entry->imgid;
+        *offset_x = (int)x - img_x;
+        *offset_y = (int)y - img_y - DT_PIXEL_APPLY_DPI(image_pin_size);
         break;
       }
     }
@@ -1647,8 +1650,8 @@ static void _view_map_drag_set_icon(const dt_view_t *self, GdkDragContext *conte
     GtkWidget *image = gtk_image_new_from_pixbuf(thumb);
     gtk_widget_set_name((image), "map_drag_icon");
     gtk_widget_show(image);
-    gtk_drag_set_icon_widget(context, image, 0,
-                             DT_PIXEL_APPLY_DPI(height + image_pin_size + 2 * thumb_border));
+    gtk_drag_set_icon_widget(context, image, lib->start_drag_offset_x,
+                             DT_PIXEL_APPLY_DPI(height + image_pin_size + 2 * thumb_border + lib->start_drag_offset_y));
     g_object_unref(thumb);
   }
 }
@@ -1923,6 +1926,7 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
     }
     // check if the click was on image(s) or just some random position
     lib->selected_images = _view_map_get_imgs_at_pos(self, e->x, e->y,
+                                                     &lib->start_drag_offset_x, &lib->start_drag_offset_y,
                                                      !dt_modifier_is(e->state, GDK_SHIFT_MASK));
     if(e->type == GDK_BUTTON_PRESS)
     {
@@ -1970,6 +1974,8 @@ static gboolean _view_map_button_release_callback(GtkWidget *w, GdkEventButton *
 {
   dt_map_t *lib = (dt_map_t *)self->data;
   lib->start_drag = FALSE;
+  lib->start_drag_offset_x = 0;
+  lib->start_drag_offset_y = 0;
   lib->loc.drag = FALSE;
   return FALSE;
 }
@@ -2008,6 +2014,8 @@ void enter(dt_view_t *self)
 
   lib->selected_images = NULL;
   lib->start_drag = FALSE;
+  lib->start_drag_offset_x = 0;
+  lib->start_drag_offset_y = 0;
   lib->loc.drag = FALSE;
   lib->entering = TRUE;
 
@@ -2593,7 +2601,8 @@ static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, 
         }
         float longitude, latitude;
         OsmGpsMapPoint *pt = osm_gps_map_point_new_degrees(0.0, 0.0);
-        osm_gps_map_convert_screen_to_geographic(lib->map, x, y, pt);
+        osm_gps_map_convert_screen_to_geographic(lib->map, x - lib->start_drag_offset_x,
+                                                 y - lib->start_drag_offset_y, pt);
         osm_gps_map_point_get_degrees(pt, &latitude, &longitude);
         osm_gps_map_point_free(pt);
         // TODO redraw the image group
