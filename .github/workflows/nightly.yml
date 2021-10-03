@@ -142,6 +142,10 @@ jobs:
         with:
           submodules: true
           path: src
+      - name: List src_dir contents
+        run: |
+          echo ${SRC_DIR}
+          ls -al ${SRC_DIR}/
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
@@ -178,7 +182,7 @@ jobs:
           curl -LO https://download.gnome.org/sources/gtk-mac-bundler/0.7/gtk-mac-bundler-0.7.4.tar.xz
           tar -xf gtk-mac-bundler-0.7.4.tar.xz
           cd gtk-mac-bundler-0.7.4
-          patch -p1 < ${SRC_DIR}/darktable/packaging/macosx/gtk-mac-bundler-0.7.4.patch
+          patch -p1 < ${SRC_DIR}/packaging/macosx/gtk-mac-bundler-0.7.4.patch
           make install
       - name: Create DMG image
         run: |
