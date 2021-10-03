@@ -152,7 +152,7 @@ static void _update_atdetach_buttons(dt_lib_module_t *self)
   dt_lib_cancel_postponed_update(self);
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
 
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
+  const GList *imgs = dt_view_get_images_to_act_on(FALSE, FALSE, FALSE);
   const gboolean has_act_on = imgs != NULL;
 
   const gint dict_tags_sel_cnt =
@@ -983,7 +983,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
       }
       g_strfreev(tokens);
       GList *tags_r = dt_tag_get_tags(-1, TRUE);
-      const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
+      const GList *imgs = dt_view_get_images_to_act_on(FALSE, FALSE, FALSE);
       dt_tag_set_tags(tags, imgs, TRUE, TRUE, TRUE);
       gboolean change = FALSE;
       for(GList *tag = tags; tag; tag = g_list_next(tag))
@@ -3203,7 +3203,7 @@ static gboolean _lib_tagging_tag_redo(GtkAccelGroup *accel_group, GObject *accel
 
   if(d->last_tag)
   {
-    const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE, FALSE);
+    const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE, FALSE);
     const gboolean res = dt_tag_attach_string_list(d->last_tag, imgs, TRUE);
     if(res) dt_image_synch_xmps(imgs);
     _init_treeview(self, 0);

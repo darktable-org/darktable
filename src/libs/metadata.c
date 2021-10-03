@@ -126,7 +126,7 @@ static void _update(dt_lib_module_t *self)
   dt_lib_cancel_postponed_update(self);
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
+  const GList *imgs = dt_view_get_images_to_act_on(FALSE, FALSE, FALSE);
 
   // first we want to make sure the list of images to act on has changed
   // this is not the case if mouse hover change but still stay in selection for ex.
@@ -162,7 +162,7 @@ static void _update(dt_lib_module_t *self)
 
   // using dt_metadata_get() is not possible here. we want to do all this in a single pass, everything else
   // takes ages.
-  gchar *images = dt_view_get_images_to_act_on_query(TRUE);
+  gchar *images = dt_view_get_images_to_act_on_query(FALSE);
   imgs_count = g_list_length((GList *)imgs);
 
   if(images)

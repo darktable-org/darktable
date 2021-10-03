@@ -561,7 +561,7 @@ gboolean dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_
 {
   GList *imgs = NULL;
   if(imgid == -1)
-    imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE, FALSE));
+    imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(!group_on, TRUE, FALSE));
   else
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));
   if(group_on) dt_grouping_add_grouped_images(&imgs);
