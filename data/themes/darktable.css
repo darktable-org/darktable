@@ -2536,7 +2536,6 @@ Details :
   background-color: shade(@thumbnail_bg_color,0.85); /* also fade the thumb background */
 }
 
-.dt_overlays_hover .dt_thumbnail_rating_6#thumb_main:hover .dt_thumb_btn,
 .dt_overlays_always .dt_thumbnail_rating_6 #thumb_ext,
 .dt_overlays_always .dt_thumbnail_rating_6 #thumb_altered,
 .dt_overlays_always_extended .dt_thumbnail_rating_6 #thumb_ext,
@@ -2546,6 +2545,11 @@ Details :
 .dt_overlays_mixed .dt_thumbnail_rating_6 #thumb_altered
 {
   color: rgba(0,0,0,0.15); /* only the transparency is used to fade the image drawing */
+}
+
+.dt_thumbnail_rating_6 #thumb_star
+{
+  color: transparent; /* needed to hide completely stars in rejected images as they are not needed, except in hover mode if we want to un-reject images */
 }
 
 /* Set local copy mark */
