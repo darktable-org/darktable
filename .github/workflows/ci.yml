@@ -21,7 +21,7 @@ on:
         - "**.md"
   pull_request:
     branches:
-      - master
+      # - master
     paths-ignore:
         - "po/**"
         - "packaging/**"
