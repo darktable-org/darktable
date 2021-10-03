@@ -2526,38 +2526,26 @@ Details :
   color: rgba(0,0,0,0.35); /* only the transparency is used to fade the image drawing */
 }
 
+.dt_thumbnail_rating_6#thumb_main:hover #thumb_image
+{
+  color: rgba(0,0,0,1); /* only the transparency is used to fade the image drawing */
+}
+
 .dt_thumbnail_rating_6 #thumb_back
 {
-  background-color: shade(@thumbnail_bg_color,0.9); /* also fade the thumb background */
+  background-color: shade(@thumbnail_bg_color,0.85); /* also fade the thumb background */
 }
 
 .dt_overlays_hover .dt_thumbnail_rating_6#thumb_main:hover .dt_thumb_btn,
-.dt_overlays_hover_extended .dt_thumbnail_rating_6#thumb_main:hover .dt_thumb_btn,
-.dt_overlays_hover_extended .dt_thumbnail_rating_6#thumb_main:hover #thumb_bottom_label,
 .dt_overlays_always .dt_thumbnail_rating_6 #thumb_ext,
 .dt_overlays_always .dt_thumbnail_rating_6 #thumb_altered,
-.dt_overlays_always .dt_thumbnail_rating_6#thumb_main:hover #thumb_ext,
-.dt_overlays_always .dt_thumbnail_rating_6#thumb_main:hover #thumb_altered,
-.dt_overlays_always .dt_thumbnail_rating_6#thumb_main:hover .dt_thumb_btn,
 .dt_overlays_always_extended .dt_thumbnail_rating_6 #thumb_ext,
 .dt_overlays_always_extended .dt_thumbnail_rating_6 #thumb_altered,
 .dt_overlays_always_extended .dt_thumbnail_rating_6 #thumb_bottom_label,
-.dt_overlays_always_extended .dt_thumbnail_rating_6#thumb_main:hover #thumb_ext,
-.dt_overlays_always_extended .dt_thumbnail_rating_6#thumb_main:hover #thumb_altered,
-.dt_overlays_always_extended .dt_thumbnail_rating_6#thumb_main:hover .dt_thumb_btn,
-.dt_overlays_always_extended .dt_thumbnail_rating_6#thumb_main:hover #thumb_bottom_label,
 .dt_overlays_mixed .dt_thumbnail_rating_6 #thumb_ext,
-.dt_overlays_mixed .dt_thumbnail_rating_6 #thumb_altered,
-.dt_overlays_mixed .dt_thumbnail_rating_6#thumb_main:hover #thumb_ext,
-.dt_overlays_mixed .dt_thumbnail_rating_6#thumb_main:hover #thumb_altered,
-.dt_overlays_mixed .dt_thumbnail_rating_6#thumb_main:hover .dt_thumb_btn,
-.dt_overlays_mixed .dt_thumbnail_rating_6#thumb_main:hover #thumb_bottom_label,
-.dt_overlays_hover_block .dt_thumbnail_rating_6#thumb_main:hover #thumb_ext,
-.dt_overlays_hover_block .dt_thumbnail_rating_6#thumb_main:hover #thumb_altered,
-.dt_overlays_hover_block .dt_thumbnail_rating_6#thumb_main:hover .dt_thumb_btn,
-.dt_overlays_hover_block .dt_thumbnail_rating_6#thumb_main:hover #thumb_bottom_label
+.dt_overlays_mixed .dt_thumbnail_rating_6 #thumb_altered
 {
-  color: rgba(0,0,0,0.25); /* only the transparency is used to fade the image drawing */
+  color: rgba(0,0,0,0.15); /* only the transparency is used to fade the image drawing */
 }
 
 /* Set local copy mark */
