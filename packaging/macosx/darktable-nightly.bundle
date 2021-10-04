@@ -13,8 +13,6 @@
   <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/bin/darktable-cli</binary>
   <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/bin/darktable-generate-cache</binary>
   <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/bin/darktable-rs-identify</binary>
-  <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/libexec/darktable/tools/darktable-curve-tool</binary>
-  <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/libexec/darktable/tools/darktable-noiseprofile</binary>
   <binary>${prefix:dt}/lib/darktable</binary>
   <binary dest="${bundle}/Contents/Resources/lib/libgphoto2_port">${prefix}/lib/libgphoto2_port/${pkg:libgphoto2_port:VERSION}</binary>
   <binary dest="${bundle}/Contents/Resources/lib/libgphoto2">${prefix}/lib/libgphoto2/${pkg:libgphoto2:VERSION}</binary>
