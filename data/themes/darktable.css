@@ -2528,12 +2528,13 @@ Details :
 
 .dt_thumbnail_rating_6#thumb_main:hover #thumb_image
 {
-  color: rgba(0,0,0,1); /* only the transparency is used to fade the image drawing */
+  color: rgba(0,0,0,1); /* take back image to normal state by removing transparency when hovering the image */
 }
 
 .dt_thumbnail_rating_6 #thumb_back
 {
-  background-color: shade(@thumbnail_bg_color,0.85); /* also fade the thumb background */
+  background-color: shade(@thumbnail_bg_color,0.75); /* also fade the thumb background */
+  border: 1px solid shade(@lighttable_bg_color, 0.75); /* this is needed to have appropriate border colors and avoid visible differences in border regardless of not rejected images */
 }
 
 .dt_overlays_always .dt_thumbnail_rating_6 #thumb_ext,
@@ -2544,7 +2545,7 @@ Details :
 .dt_overlays_mixed .dt_thumbnail_rating_6 #thumb_ext,
 .dt_overlays_mixed .dt_thumbnail_rating_6 #thumb_altered
 {
-  color: rgba(0,0,0,0.15); /* only the transparency is used to fade the image drawing */
+  color: rgba(0,0,0,0.15); /* add some transparency to infos items in thumbnail */
 }
 
 .dt_thumbnail_rating_6 #thumb_star

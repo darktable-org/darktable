@@ -150,12 +150,3 @@
 {
   background-image: linear-gradient(rgba(246, 246, 246, 0.4) 0%, rgba(246, 246, 246, 0.2) 5%, rgba(226, 226, 226, 0) 100%);
 }
-
-/* Make inactive stars more discrete when not hovered */
-.dt_overlays_always #thumb_star,
-.dt_overlays_always_extended #thumb_star,
-.dt_overlays_mixed #thumb_star,
-.dt_overlays_hover_block #thumb_star
-{
-  color: shade(@thumbnail_font_color, 1.5);
-}
