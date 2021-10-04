@@ -156,8 +156,8 @@ jobs:
       - name: Setup tmate session for debugging
         #if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
-          with:
-            limit-access-to-actor: true
+        with:
+          limit-access-to-actor: true
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
