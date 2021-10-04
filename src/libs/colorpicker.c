@@ -159,7 +159,7 @@ static void _update_sample_label(dt_lib_module_t *self, dt_colorpicker_sample_t 
 
     case DT_LIB_COLORPICKER_MODEL_LAB:
       snprintf(text, sizeof(text), "%6.02f %6.02f %6.02f",
-               CLAMP(sample->lab[statistic][0], .0f, 100.0f), sample->lab[statistic][1], sample->lab[statistic][1]);
+               CLAMP(sample->lab[statistic][0], .0f, 100.0f), sample->lab[statistic][1], sample->lab[statistic][2]);
       break;
 
     case DT_LIB_COLORPICKER_MODEL_LCH:
