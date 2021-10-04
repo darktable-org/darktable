@@ -1056,7 +1056,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         fprintf(stderr, "[exif] Warning: lens \"%s\" unknown as \"%s\"\n", img->exif_lens, lens.c_str());
       }
     }
-    else if(FIND_EXIF_TAG("Exif.NikonLd4.LensID") && pos->toLong() == 0)
+    else if(Exiv2::testVersion(0,27,4) && FIND_EXIF_TAG("Exif.NikonLd4.LensID") && pos->toLong() == 0)
     {
       /* Z body w/ FTZ adapter or recent F body (e.g. D780, D6) detected.
        * Prioritize the legacy ID lookup instead of Exif.Photo.LensModel included
