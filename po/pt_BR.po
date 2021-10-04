@@ -1,15 +1,15 @@
 # Copyright (C) 2021 Free Software Foundation, Inc.
 #
-# Marcus Gama <marcus.gama@gmail.com>, 2021.
 #: ../build/bin/conf_gen.h:843 ../build/bin/conf_gen.h:849
 #: ../build/bin/conf_gen.h:855 ../build/bin/conf_gen.h:861
 #: ../build/bin/conf_gen.h:867
+# Marcus Gama <marcus.gama@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-10-03 22:29-0300\n"
-"PO-Revision-Date: 2021-10-03 22:34-0300\n"
+"PO-Revision-Date: 2021-10-04 19:48-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -8162,9 +8162,8 @@ msgid "down"
 msgstr "para baixo"
 
 #: ../src/gui/accelerators.c:109
-#, fuzzy
 msgid "set"
-msgstr "redefinir"
+msgstr "definir"
 
 #: ../src/gui/accelerators.c:112
 msgid "popup"
@@ -8588,9 +8587,8 @@ msgid "type"
 msgstr "tipo"
 
 #: ../src/gui/accelerators.c:2168
-#, fuzzy
 msgid "enable fallbacks"
-msgstr "alternativas"
+msgstr "ativar fallbacks"
 
 #: ../src/gui/accelerators.c:2169
 msgid ""
@@ -8631,9 +8629,8 @@ msgid "input devices reinitialised"
 msgstr "dispositivos de entrada reinicializados"
 
 #: ../src/gui/accelerators.c:2795
-#, fuzzy
 msgid "fallback to move"
-msgstr "alternativas"
+msgstr "fallback para mover"
 
 #: ../src/gui/accelerators.c:2970
 #, c-format
@@ -8671,40 +8668,34 @@ msgstr "fechando o darktable..."
 
 #. register keys for view switching
 #: ../src/gui/gtk.c:1201
-#, fuzzy
 msgctxt "accel"
 msgid "switch views/tethering"
-msgstr "muda vista"
+msgstr "alternar vistas/acesso remoto"
 
 #: ../src/gui/gtk.c:1202
-#, fuzzy
 msgctxt "accel"
 msgid "switch views/lighttable"
-msgstr "mudar para mesa de luz"
+msgstr "alternar vistas/mesa de luz"
 
 #: ../src/gui/gtk.c:1203
-#, fuzzy
 msgctxt "accel"
 msgid "switch views/darkroom"
-msgstr "muda vista"
+msgstr "alternar vistas/sala escura"
 
 #: ../src/gui/gtk.c:1204
-#, fuzzy
 msgctxt "accel"
 msgid "switch views/map"
-msgstr "muda vista"
+msgstr "alternar vistas/mapa"
 
 #: ../src/gui/gtk.c:1205
-#, fuzzy
 msgctxt "accel"
 msgid "switch views/slideshow"
-msgstr "muda vista"
+msgstr "alternar vistas/apresentação"
 
 #: ../src/gui/gtk.c:1206
-#, fuzzy
 msgctxt "accel"
 msgid "switch views/print"
-msgstr "muda vista"
+msgstr "alternar vistas/imprimir"
 
 #. register ctrl-q to quit:
 #: ../src/gui/gtk.c:1229
@@ -8751,10 +8742,9 @@ msgstr "painéis/inferior"
 
 #. specific top/bottom toggles
 #: ../src/gui/gtk.c:1265
-#, fuzzy
 msgctxt "accel"
 msgid "panels/header"
-msgstr "líder"
+msgstr "painéis/cabeçalho"
 
 #: ../src/gui/gtk.c:1268
 msgctxt "accel"
@@ -8774,12 +8764,12 @@ msgstr "painéis/barra de ferramentas inferior"
 #: ../src/gui/gtk.c:1280
 msgctxt "accel"
 msgid "panels/all top"
-msgstr ""
+msgstr "painéis/tudo acima"
 
 #: ../src/gui/gtk.c:1284
 msgctxt "accel"
 msgid "panels/all bottom"
-msgstr ""
+msgstr "painéis/tudo abaixo"
 
 #. accels window
 #: ../src/gui/gtk.c:1289
@@ -9365,17 +9355,15 @@ msgid "auto"
 msgstr "auto"
 
 #: ../src/gui/preferences.c:854
-#, fuzzy
 msgid "search presets list"
-msgstr "buscar na lista de atalhos"
+msgstr "buscar na lista de predefinições"
 
 #: ../src/gui/preferences.c:855
-#, fuzzy
 msgid ""
 "incrementally search the list of presets\n"
 "press up or down keys to cycle through matches"
 msgstr ""
-"busca incremental na lista de ações\n"
+"busca incremental na lista de predefinições\n"
 "pressione as teclas para cima e para baixo para percorrer ciclicamente os "
 "resultados"
 
@@ -10366,9 +10354,8 @@ msgid "rotation and perspective"
 msgstr "rotação e perspectiva"
 
 #: ../src/iop/ashift.c:125
-#, fuzzy
 msgid "rotate|keystone|distortion|crop|reframe"
-msgstr "distorção de perspectiva|distorção"
+msgstr "girar|chave|distorção|cortar|reenquadrar"
 
 #: ../src/iop/ashift.c:130
 msgid "rotate or distort perspective"
@@ -10448,9 +10435,8 @@ msgid "lens shift (%s)"
 msgstr "deslocamento da lente (%s)"
 
 #: ../src/iop/ashift.c:5735
-#, fuzzy
 msgid "perspective helpers"
-msgstr "perspectiva"
+msgstr "auxiliares de perspectiva"
 
 #: ../src/iop/ashift.c:5742
 msgid "structure"
@@ -10463,7 +10449,8 @@ msgid ""
 "the image"
 msgstr ""
 "rotacionar imagem\n"
-"clique com o botão direito e arraste para definir uma linha horizontal ou vertical ao desenhar na imagem"
+"clique com o botão direito e arraste para definir uma linha horizontal ou"
+" vertical ao desenhar na imagem"
 
 #: ../src/iop/ashift.c:5776 ../src/iop/ashift.c:5777
 msgid "apply lens shift correction in one direction"
@@ -15340,7 +15327,8 @@ msgid ""
 "by running lensfun_update_data"
 msgstr ""
 "por favor selecione sua lente manualmente\n"
-"você pode querer também cerificar se sua base de dados lensfun está atualizada\n"
+"você pode querer também cerificar se sua base de dados lensfun está"
+" atualizada\n"
 "executando lensfun_update_data"
 
 #: ../src/iop/lens.cc:1843
