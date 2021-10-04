@@ -1635,6 +1635,37 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, i
   return TRUE;
 }
 
+static void _delete_node(dt_iop_module_t *self, dt_iop_colorzones_node_t *curve, int *nodes, int node, gboolean zero)
+{
+  if(zero)
+  {
+    curve[node].y = 0.5f;
+  }
+  else
+  {
+    //  for p->splines_version == DT_IOP_COLORZONES_SPLINES_V1 condition nodes > 1 always true
+    if(*nodes > 1)
+    {
+      for(int k = node; k < *nodes - 1; k++)
+      {
+        curve[k].x = curve[k + 1].x;
+        curve[k].y = curve[k + 1].y;
+      }
+      curve[*nodes - 1].x = curve[*nodes - 1].y = 0;
+      (*nodes)--;
+    }
+    else
+    {
+      curve[0].x = 0.5f;
+      curve[0].y = 0.5f;
+    }
+  }
+
+  dt_iop_color_picker_reset(self, TRUE);
+  gtk_widget_queue_draw(self->widget);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 static inline int _add_node(dt_iop_colorzones_node_t *curve, int *nodes, float x, float y)
 {
   int selected = -1;
@@ -2015,36 +2046,10 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
       return TRUE;
     }
 
-    // ctrl+right click reset the node to y-zero
-    if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
-    {
-      curve[c->selected].y = 0.5f;
-    }
-    // right click deletes the node
-    else
-    {
-      //  for p->splines_version == DT_IOP_COLORZONES_SPLINES_V1 condition nodes > 1 always true
-      if(nodes > 1)
-      {
-        for(int k = c->selected; k < nodes - 1; k++)
-        {
-          curve[k].x = curve[k + 1].x;
-          curve[k].y = curve[k + 1].y;
-        }
-        curve[nodes - 1].x = curve[nodes - 1].y = 0;
-        p->curve_num_nodes[ch]--;
-      }
-      else
-      {
-        curve[0].x = 0.5f;
-        curve[0].y = 0.5f;
-      }
-    }
+    // right click deletes the node, ctrl+right click reset the node to y-zero
+    _delete_node(self, curve, &p->curve_num_nodes[ch], c->selected, dt_modifier_is(event->state, GDK_CONTROL_MASK));
     c->selected = -2; // avoid re-insertion of that point immediately after this
 
-    dt_iop_color_picker_reset(self, TRUE);
-    gtk_widget_queue_draw(self->widget);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;
   }
 
@@ -2325,12 +2330,13 @@ static float _action_process_zones(gpointer target, dt_action_element_t element,
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
 
   int ch = c->channel;
+  const int nodes = p->curve_num_nodes[ch];
   dt_iop_colorzones_node_t *curve = p->curve[ch];
   float x = (float)element / 7.0;
 
   gboolean close_enough = FALSE;
   int node = 0;
-  while(node < p->curve_num_nodes[ch] &&
+  while(node < nodes &&
         !(close_enough = fabsf(curve[node].x - x) <= 1./16))
     node++;
 
@@ -2340,15 +2346,12 @@ static float _action_process_zones(gpointer target, dt_action_element_t element,
 
   if(!isnan(move_size))
   {
-    if(!close_enough)
-      node = _add_node(curve, &p->curve_num_nodes[ch], x, return_value);
-
     float bottop = -1e6;
     switch(effect)
     {
     case DT_ACTION_EFFECT_RESET:
-      // FIXME delete node (or don't create one if !close_enough)
-      // refactor from right-click on node
+      if(close_enough)
+        _delete_node(self, curve, &p->curve_num_nodes[ch], node, FALSE);
       break;
     case DT_ACTION_EFFECT_BOTTOM:
       bottop *= -1;
@@ -2357,6 +2360,9 @@ static float _action_process_zones(gpointer target, dt_action_element_t element,
     case DT_ACTION_EFFECT_DOWN:
       move_size *= -1;
     case DT_ACTION_EFFECT_UP:
+      if(!close_enough)
+        node = _add_node(curve, &p->curve_num_nodes[ch], x, return_value);
+
       _move_point_internal(self, target, node, 0.f, move_size / 100, 0);
       return_value = curve[node].y;
       break;
