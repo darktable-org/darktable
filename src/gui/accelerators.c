@@ -2613,7 +2613,7 @@ static void _lookup_mapping_widget()
   if(!_sc.action) return;
 
   _sc.instance = 0;
-  if(_sc.action->target != darktable.control->mapping_widget)
+  if(dt_conf_get_bool("accel/assign_instance") && _sc.action->target != darktable.control->mapping_widget)
   {
     // find relative module instance
     dt_action_t *owner = _sc.action;

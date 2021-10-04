@@ -40,6 +40,13 @@
     <shortdescription>selection order</shortdescription>
     <longdescription>after applying the above rules, apply the shortcut based on its position in the pixelpipe</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="accel">
+    <name>accel/assign_instance</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>allow visual assignment to specific instances</shortdescription>
+    <longdescription>when multiple instances are present on an image this allows shortcuts to be visually assigned to those specific instances\notherwise shortcuts will always be assigned to the preferred instance</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>accel/slider_precision</name>
     <type>int</type>
