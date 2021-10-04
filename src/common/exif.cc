@@ -435,7 +435,7 @@ static bool dt_exif_read_xmp_tag(Exiv2::XmpData &xmpData, Exiv2::XmpData::iterat
 {
   try
   {
-    return (*pos = xmpData.findKey(Exiv2::XmpKey(key))) != xmpData.end() && (*pos)->size();
+    return (*pos = xmpData.findKey(Exiv2::XmpKey(key)) != xmpData.end()) && (*pos)->size();
   }
   catch(Exiv2::AnyError &e)
   {
@@ -617,7 +617,7 @@ static bool dt_exif_read_iptc_tag(Exiv2::IptcData &iptcData, Exiv2::IptcData::co
 {
   try
   {
-    return (*pos = iptcData.findKey(Exiv2::IptcKey(key))) != iptcData.end() && (*pos)->size();
+    return (*pos = iptcData.findKey(Exiv2::IptcKey(key)) != iptcData.end()) && (*pos)->size();
   }
   catch(Exiv2::AnyError &e)
   {
@@ -727,7 +727,7 @@ static bool dt_exif_read_exif_tag(Exiv2::ExifData &exifData, Exiv2::ExifData::co
 {
   try
   {
-    return (*pos = exifData.findKey(Exiv2::ExifKey(key))) != exifData.end() && (*pos)->size();
+    return (*pos = exifData.findKey(Exiv2::ExifKey(key)) != exifData.end()) && (*pos)->size();
   }
   catch(Exiv2::AnyError &e)
   {
@@ -2522,13 +2522,13 @@ static GHashTable *read_masks(Exiv2::XmpData &xmpData, const char *filename, con
   Exiv2::XmpData::iterator mask_id;
   Exiv2::XmpData::iterator mask_nb;
   Exiv2::XmpData::iterator mask_src;
-  if((mask = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask"))) != xmpData.end()
-    && (mask_src = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_src"))) != xmpData.end()
-    && (mask_name = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_name"))) != xmpData.end()
-    && (mask_type = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_type"))) != xmpData.end()
-    && (mask_version = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_version"))) != xmpData.end()
-    && (mask_id = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_id"))) != xmpData.end()
-    && (mask_nb = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_nb"))) != xmpData.end())
+  if((mask = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask")) != xmpData.end())
+    && (mask_src = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_src")) != xmpData.end())
+    && (mask_name = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_name")) != xmpData.end())
+    && (mask_type = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_type")) != xmpData.end())
+    && (mask_version = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_version")) != xmpData.end())
+    && (mask_id = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_id")) != xmpData.end())
+    && (mask_nb = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_nb")) != xmpData.end()))
   {
     // fixes API change happened after exiv2 v0.27.2.1
     const size_t cnt = (size_t)mask->count();
@@ -3122,7 +3122,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     }
 
     // we shouldn't change history_end when no history was read!
-    if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_end"))) != xmpData.end() && num > 0)
+    if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_end")) != xmpData.end()) && num > 0)
     {
       int history_end = MIN(pos->toLong(), num);
       if(num_masks > 0) history_end++;
@@ -4201,7 +4201,7 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
     // 0xffff -> Uncalibrated
     //          + Exif.Iop.InteroperabilityIndex of 'R03' -> AdobeRGB
     //          + Exif.Iop.InteroperabilityIndex of 'R98' -> sRGB
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.ColorSpace"))) != exifData.end() && pos->size())
+    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.ColorSpace")) != exifData.end()) && pos->size())
     {
       int colorspace = pos->toLong();
       if(colorspace == 0x01)
@@ -4210,7 +4210,7 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
         return DT_COLORSPACE_ADOBERGB;
       else if(colorspace == 0xffff)
       {
-        if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Iop.InteroperabilityIndex"))) != exifData.end()
+        if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Iop.InteroperabilityIndex")) != exifData.end())
           && pos->size())
         {
           std::string interop_index = pos->toString();
