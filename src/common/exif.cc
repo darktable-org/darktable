@@ -710,7 +710,22 @@ static bool dt_check_usercrop(Exiv2::ExifData &exifData, dt_image_t *img)
   return FALSE;
 }
 
-void dt_exif_img_check_usercrop(dt_image_t *img, const char *filename)
+static bool dt_check_dng_opcodes(Exiv2::ExifData &exifData, dt_image_t *img)
+{
+  Exiv2::ExifData::const_iterator pos = exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.OpcodeList2"));
+  if(pos != exifData.end())
+  {
+    g_free(img->dng_opcode_list_2);
+    // To be freed in dt_image_cache_deallocate()
+    img->dng_opcode_list_2 = (uint8_t *)g_malloc(pos->size());
+    img->dng_opcode_list_2_size = pos->size();
+    pos->copy(img->dng_opcode_list_2, Exiv2::invalidByteOrder);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+void dt_exif_img_check_additional_tags(dt_image_t *img, const char *filename)
 {
   try
   {
@@ -718,7 +733,11 @@ void dt_exif_img_check_usercrop(dt_image_t *img, const char *filename)
     assert(image.get() != 0);
     read_metadata_threadsafe(image);
     Exiv2::ExifData &exifData = image->exifData();
-    if(!exifData.empty()) dt_check_usercrop(exifData, img);
+    if(!exifData.empty())
+    {
+      dt_check_usercrop(exifData, img);
+      dt_check_dng_opcodes(exifData, img);
+    }
     return;
   }
   catch(Exiv2::AnyError &e)
@@ -890,13 +909,19 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
     if (dt_check_usercrop(exifData, img))
       {
-        img->flags |= DT_IMAGE_HAS_USERCROP;
+        img->flags |= DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS;
         guint tagid = 0;
         char tagname[64];
         snprintf(tagname, sizeof(tagname), "darktable|mode|exif-crop");
         dt_tag_new(tagname, &tagid);
         dt_tag_attach(tagid, img->id, FALSE, FALSE);
       }
+
+    if(dt_check_dng_opcodes(exifData, img))
+    {
+      img->flags |= DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS;
+    }
+
     /*
      * Get the focus distance in meters.
      */

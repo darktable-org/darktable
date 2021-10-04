@@ -84,8 +84,9 @@ typedef enum
   DT_IMAGE_4BAYER = 16384,
   // image was detected as monochrome
   DT_IMAGE_MONOCHROME = 32768,
-  // image has usercrop information
-  DT_IMAGE_HAS_USERCROP = 65536,
+  // image has exif tags which are not cached in the database but must be read and stored in dt_image_t when
+  // the image is loaded.
+  DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS = 65536,
   // image is an sraw
   DT_IMAGE_S_RAW = 1 << 17,
   // image has a monochrome preview tested
@@ -261,6 +262,11 @@ typedef struct dt_image_t
 
   /* DefaultUserCrop */
   dt_boundingbox_t usercrop;
+
+  /* DNG opcodes from exif tag to be applied prior to demosaic */
+  uint8_t *dng_opcode_list_2;
+  uint32_t dng_opcode_list_2_size;
+
   /* convenience pointer back into the image cache, so we can return dt_image_t* there directly. */
   struct dt_cache_entry_t *cache_entry;
 } dt_image_t;
