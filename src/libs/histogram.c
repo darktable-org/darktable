@@ -166,19 +166,8 @@ const char **views(dt_lib_module_t *self)
 
 uint32_t container(dt_lib_module_t *self)
 {
-  dt_lib_histogram_position_t position = DT_LIB_HISTOGRAM_RIGHT;
-  if(dt_conf_key_exists("plugins/darkroom/histogram/position"))
-    position = dt_conf_get_int("plugins/darkroom/histogram/position");
-
-  switch(position)
-  {
-    case DT_LIB_HISTOGRAM_RIGHT:
-    default:
-      return DT_UI_CONTAINER_PANEL_RIGHT_TOP;
-
-    case DT_LIB_HISTOGRAM_LEFT:
-      return DT_UI_CONTAINER_PANEL_LEFT_TOP;
-  }
+  const dt_lib_histogram_position_t position = dt_conf_get_int("plugins/darkroom/histogram/position");
+  return position;
 }
 
 int expandable(dt_lib_module_t *self)
@@ -1853,7 +1842,7 @@ static void _lib_histogram_preview_updated_callback(gpointer instance, dt_lib_mo
   dt_control_queue_redraw_widget(d->scope_draw);
 }
 
-void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
+static void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("scopes settings"), GTK_WINDOW(win),
@@ -1881,7 +1870,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 #endif
   gtk_widget_show_all(dialog);
 
-  int res = gtk_dialog_run(GTK_DIALOG(dialog));
+  const int res = gtk_dialog_run(GTK_DIALOG(dialog));
 
   if(res == GTK_RESPONSE_YES)
   {
