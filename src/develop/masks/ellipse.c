@@ -28,8 +28,8 @@
 static inline void _ellipse_point_transform(const float xref, const float yref, const float x, const float y,
                                             const float sinr, const float cosr, float *xnew, float *ynew)
 {
-  float xtmp = (sinr * sinr + cosr * cosr) * (x - xref) + (cosr * sinr - cosr * sinr) * (y - yref);
-  float ytmp = (cosr * sinr - cosr * sinr) * (x - xref) + (sinr * sinr + cosr * cosr) * (y - yref);
+  const float xtmp = (sinr * sinr + cosr * cosr) * (x - xref) + (cosr * sinr - cosr * sinr) * (y - yref);
+  const float ytmp = (cosr * sinr - cosr * sinr) * (x - xref) + (sinr * sinr + cosr * cosr) * (y - yref);
 
   *xnew = xref + xtmp;
   *ynew = yref + ytmp;
@@ -38,8 +38,8 @@ static inline void _ellipse_point_transform(const float xref, const float yref, 
 // Jordan's point in polygon test
 static int _ellipse_cross_test(float x, float y, float *point_1, float *point_2)
 {
-  float x_a = x;
-  float y_a = y;
+  const float x_a = x;
+  const float y_a = y;
   float x_b = point_1[0];
   float y_b = point_1[1];
   float x_c = point_2[0];
@@ -64,7 +64,7 @@ static int _ellipse_cross_test(float x, float y, float *point_1, float *point_2)
 
   if(y_a <= y_b || y_a > y_c) return 1;
 
-  float delta = (x_b - x_a) * (y_c - y_a) - (y_b - y_a) * (x_c - x_a);
+  const float delta = (x_b - x_a) * (y_c - y_a) - (y_b - y_a) * (x_c - x_a);
 
   if(delta > 0)
     return -1;
@@ -126,8 +126,8 @@ static int _ellipse_point_close_to_path(float x, float y, float as, float *point
       yy = lasty + p * r4;
     }
 
-    float dx = x - xx;
-    float dy = y - yy;
+    const float dx = x - xx;
+    const float dy = y - yy;
 
     if(sqf(dx) + sqf(dy) < as2) return 1;
   }
@@ -470,7 +470,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
 
     if(dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
     {
-      float rotation;
+      float rotation = 0.0f;
 
       if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
         rotation = dt_conf_get_float("plugins/darkroom/spots/ellipse_rotation");
@@ -1269,7 +1269,7 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module, float pzx
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
 
     int in = 0, inb = 0, near = 0, ins = 0; // FIXME gcc7 false-positive
-    float dist;
+    float dist = 0.0f;
     _ellipse_get_distance(pzx * darktable.develop->preview_pipe->backbuf_width,
                           pzy * darktable.develop->preview_pipe->backbuf_height, as, gui, index, 0,
                           &in, &inb, &near, &ins, &dist);
