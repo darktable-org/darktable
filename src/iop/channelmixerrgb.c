@@ -229,13 +229,25 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
                   const int new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  if(old_version == 1 && new_version == 3)
   {
     // V1 and V2 use the same param structure but the normalize_grey param had no effect since commit_params
     // forced normalization no matter what. So we re-import the params and force the param to TRUE to keep edits.
     memcpy(new_params, old_params, sizeof(dt_iop_channelmixer_rgb_params_t));
     dt_iop_channelmixer_rgb_params_t *n = (dt_iop_channelmixer_rgb_params_t *)new_params;
     n->normalize_grey = TRUE;
+
+    // V2 and V3 use the same param structure but these :
+
+    // swap the saturation parameters for R and B to put them in natural order
+    const float R = n->saturation[0];
+    const float B = n->saturation[2];
+    n->saturation[0] = B;
+    n->saturation[2] = R;
+
+    // say that these params were created with legacy code
+    n->version = CHANNELMIXERRGB_V_1;
+
     return 0;
   }
   if(old_version == 2 && new_version == 3)
