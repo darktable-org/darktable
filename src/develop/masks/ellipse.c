@@ -1746,7 +1746,7 @@ static float *const _ellipse_points_to_transform(const float center_x, const flo
   {
     float alpha = (i - 5) * 2.0 * M_PI / (float)l;
     points[i * 2] = x + a * cosf(alpha) * cosv - b * sinf(alpha) * sinv;
-    points[i * 2 + 1] = x + a * cosf(alpha) * sinv + b * sinf(alpha) * cosv;
+    points[i * 2 + 1] = y + a * cosf(alpha) * sinv + b * sinf(alpha) * cosv;
   }
   return points;
 }
