@@ -165,6 +165,7 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  gtk_widget_destroy(self->widget);
   free(self->data);
   self->data = NULL;
 }
