@@ -200,6 +200,7 @@ GList *dt_control_crawler_run()
 
 typedef struct dt_control_crawler_gui_t
 {
+  GtkTreeView *tree;
   GtkTreeModel *model;
   GtkWidget *select_all;
   gulong select_all_handler_id;
@@ -222,19 +223,36 @@ static void _clear_select_all(dt_control_crawler_gui_t *gui)
   g_signal_handler_unblock(G_OBJECT(gui->select_all), gui->select_all_handler_id);
 }
 
-// set the "selected" flag in the list model when an image gets (un)selected
-static void _select_toggled_callback(GtkCellRendererToggle *cell_renderer, gchar *path_str, gpointer user_data)
+static void _reset_selection(GtkTreeModel *model)
 {
-  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
+  // Reset at the TreeViewToogleButton level
+  // This is because the crawler doesn't use the default TreeView selection methods
+  // but implements its own partial ones.
+  // To get the multiselection, we had to enable default TreeView selection methods too,
+  // but since all the internal circuitery uses the custom ToggleButton boolean,
+  // we need to maintain both pathes and sync them.
+  // This function is equivalent to gtk_tree_selection_unselect_all() but for the custom ToggleButton path
   GtkTreeIter iter;
-  GtkTreePath *path = gtk_tree_path_new_from_string(path_str);
-  gboolean selected;
+  gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
+  while(valid)
+  {
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_CONTROL_CRAWLER_COL_SELECTED, FALSE, -1);
+    valid = gtk_tree_model_iter_next(model, &iter);
+  }
+}
 
-  gtk_tree_model_get_iter(gui->model, &iter, path);
-  gtk_tree_model_get(gui->model, &iter, DT_CONTROL_CRAWLER_COL_SELECTED, &selected, -1);
-  gtk_list_store_set(GTK_LIST_STORE(gui->model), &iter, DT_CONTROL_CRAWLER_COL_SELECTED, !selected, -1);
+static void _commit_line_from_selection(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data)
+{
+  gtk_list_store_set(GTK_LIST_STORE(model), iter, DT_CONTROL_CRAWLER_COL_SELECTED, TRUE, -1);
+}
 
-  gtk_tree_path_free(path);
+static void _selection_changed(GtkTreeSelection *selection, dt_control_crawler_gui_t *gui)
+{
+  // Deselect everything
+  _reset_selection(gui->model);
+
+  // Commit selection
+  gtk_tree_selection_selected_foreach(selection, _commit_line_from_selection, gui);
 
   // we also want to disable the "select all" thing
   _clear_select_all(gui);
@@ -244,9 +262,9 @@ static void _select_toggled_callback(GtkCellRendererToggle *cell_renderer, gchar
 static void _select_all_callback(GtkToggleButton *togglebutton, gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
+  const gboolean selected = gtk_toggle_button_get_active(togglebutton);
 
-  gboolean selected = gtk_toggle_button_get_active(togglebutton);
-
+  // Select at the TreeViewToggleButton level
   GtkTreeIter iter;
   gboolean valid = gtk_tree_model_get_iter_first(gui->model, &iter);
   while(valid)
@@ -254,6 +272,14 @@ static void _select_all_callback(GtkToggleButton *togglebutton, gpointer user_da
     gtk_list_store_set(GTK_LIST_STORE(gui->model), &iter, DT_CONTROL_CRAWLER_COL_SELECTED, selected, -1);
     valid = gtk_tree_model_iter_next(gui->model, &iter);
   }
+
+  // Select at the TreeView level
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
+
+  if(selected)
+    gtk_tree_selection_select_all(selection);
+  else
+    gtk_tree_selection_unselect_all(selection);
 }
 
 // reload xmp files of the selected images
@@ -373,9 +399,13 @@ void dt_control_crawler_show_image_list(GList *images)
   g_list_free_full(images, g_free);
 
   GtkWidget *tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
+  gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
+  g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(_selection_changed), gui);
+
+  gui->tree = GTK_TREE_VIEW(tree); // FIXME: do we need to free that later ?
 
   GtkCellRenderer *renderer = gtk_cell_renderer_toggle_new();
-  g_signal_connect(renderer, "toggled", G_CALLBACK(_select_toggled_callback), gui);
   column = gtk_tree_view_column_new_with_attributes(_("select"), renderer, "active",
                                                     DT_CONTROL_CRAWLER_COL_SELECTED, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
