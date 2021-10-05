@@ -410,9 +410,14 @@ void dt_control_crawler_show_image_list(GList *images)
                                                     DT_CONTROL_CRAWLER_COL_SELECTED, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
-  column = gtk_tree_view_column_new_with_attributes(_("path"), gtk_cell_renderer_text_new(), "text",
+  GtkCellRenderer *renderer_text = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes(_("path"), renderer_text, "text",
                                                     DT_CONTROL_CRAWLER_COL_IMAGE_PATH, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+  gtk_tree_view_column_set_expand(column, TRUE);
+  gtk_tree_view_column_set_resizable(column, TRUE);
+  gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(200));
+  g_object_set(renderer_text, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
 
   column = gtk_tree_view_column_new_with_attributes(_("xmp timestamp"), gtk_cell_renderer_text_new(), "text",
                                                     DT_CONTROL_CRAWLER_COL_TS_XMP, NULL);
