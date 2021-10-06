@@ -32,6 +32,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "common/dng_opcode.h"
 
 #include <gtk/gtk.h>
 #include <stdint.h>
@@ -76,6 +77,11 @@ typedef struct dt_iop_rawprepare_data_t
     uint16_t raw_black_level;
     uint16_t raw_white_point;
   } rawprepare;
+
+  // image contains GainMaps that we are able to apply here
+  gboolean has_gainmaps;
+  // GainMaps for each pixel of RGGB Bayer image
+  dt_dng_gain_map_t *gainmaps[4];
 } dt_iop_rawprepare_data_t;
 
 typedef struct dt_iop_rawprepare_global_data_t
@@ -507,6 +513,36 @@ static gboolean image_set_rawcrops(const uint32_t imgid, int dx, int dy)
   return TRUE;
 }
 
+gboolean check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gainmaps_out)
+{
+  const dt_image_t *const image = &(self->dev->image_storage);
+  dt_dng_gain_map_t *gainmaps[4] = {0};
+
+  if(g_list_length(image->dng_gain_maps) != 4)
+    return FALSE;
+
+  for(int i = 0; i < 4; i++)
+  {
+    dt_dng_gain_map_t *g = (dt_dng_gain_map_t *)g_list_nth_data(image->dng_gain_maps, i);
+    if(g == NULL ||
+      g->plane != 0 || g->planes != 1 || g->map_planes != 1 ||
+      g->row_pitch != 2 || g->col_pitch != 2 ||
+      g->map_origin_v != 0 || g->map_origin_h != 0 ||
+      g->map_points_v < 2 || g->map_points_h < 2)
+      return FALSE;
+    uint32_t ch = ((g->top & 1) << 1) + (g->left & 1);
+    gainmaps[ch] = g;
+  }
+
+  if(gainmaps[0] == NULL || gainmaps[1] == NULL || gainmaps[2] == NULL || gainmaps[3] == NULL)
+    return FALSE;
+
+  if(gainmaps_out)
+    memcpy(gainmaps_out, gainmaps, sizeof(gainmaps));
+
+  return TRUE;
+}
+
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -555,6 +591,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   d->rawprepare.raw_black_level = (uint16_t)(black / 4.0f);
   d->rawprepare.raw_white_point = p->raw_white_point;
 
+  if(p->flat_field == FLAT_FIELD_EMBEDDED)
+    d->has_gainmaps = check_gain_maps(self, d->gainmaps);
+  else
+    d->has_gainmaps = FALSE;
+
   if(image_set_rawcrops(pipe->image.id, d->x + d->width, d->y + d->height))
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
 
@@ -582,6 +623,8 @@ void reload_defaults(dt_iop_module_t *self)
   dt_iop_rawprepare_params_t *d = self->default_params;
   const dt_image_t *const image = &(self->dev->image_storage);
 
+  gboolean has_gainmaps = check_gain_maps(self, NULL);
+
   *d = (dt_iop_rawprepare_params_t){.x = image->crop_x,
                                     .y = image->crop_y,
                                     .width = image->crop_width,
@@ -590,7 +633,8 @@ void reload_defaults(dt_iop_module_t *self)
                                     .raw_black_level_separate[1] = image->raw_black_level_separate[1],
                                     .raw_black_level_separate[2] = image->raw_black_level_separate[2],
                                     .raw_black_level_separate[3] = image->raw_black_level_separate[3],
-                                    .raw_white_point = image->raw_white_point };
+                                    .raw_white_point = image->raw_white_point,
+                                    .flat_field = has_gainmaps ? FLAT_FIELD_EMBEDDED : FLAT_FIELD_OFF };
 
   self->hide_enable_button = 1;
   self->default_enabled = dt_image_is_rawprepare_supported(image) && !image_is_normalized(image);
