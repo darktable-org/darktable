@@ -59,6 +59,7 @@ extern "C" {
 #include "common/colorlabels.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/dng_opcode.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/exif.h"
@@ -710,19 +711,19 @@ static bool dt_check_usercrop(Exiv2::ExifData &exifData, dt_image_t *img)
   return FALSE;
 }
 
-static bool dt_check_dng_opcodes(Exiv2::ExifData &exifData, dt_image_t *img)
+static gboolean dt_check_dng_opcodes(Exiv2::ExifData &exifData, dt_image_t *img)
 {
+  gboolean has_opcodes = FALSE;
   Exiv2::ExifData::const_iterator pos = exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.OpcodeList2"));
   if(pos != exifData.end())
   {
-    g_free(img->dng_opcode_list_2);
-    // To be freed in dt_image_cache_deallocate()
-    img->dng_opcode_list_2 = (uint8_t *)g_malloc(pos->size());
-    img->dng_opcode_list_2_size = pos->size();
-    pos->copy(img->dng_opcode_list_2, Exiv2::invalidByteOrder);
-    return TRUE;
+    uint8_t *data = (uint8_t *)g_malloc(pos->size());
+    pos->copy(data, Exiv2::invalidByteOrder);
+    dt_dng_opcode_process_opcode_list_2(data, pos->size(), img);
+    g_free(data);
+    has_opcodes = TRUE;
   }
-  return FALSE;
+  return has_opcodes;
 }
 
 void dt_exif_img_check_additional_tags(dt_image_t *img, const char *filename)

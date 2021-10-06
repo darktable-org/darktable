@@ -263,9 +263,8 @@ typedef struct dt_image_t
   /* DefaultUserCrop */
   dt_boundingbox_t usercrop;
 
-  /* DNG opcodes from exif tag to be applied prior to demosaic */
-  uint8_t *dng_opcode_list_2;
-  uint32_t dng_opcode_list_2_size;
+  /* GainMaps from DNG OpcodeList2 exif tag */
+  GList *dng_gain_maps;
 
   /* convenience pointer back into the image cache, so we can return dt_image_t* there directly. */
   struct dt_cache_entry_t *cache_entry;

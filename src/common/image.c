@@ -1828,8 +1828,7 @@ void dt_image_init(dt_image_t *img)
   img->wb_coeffs[3] = NAN;
   img->usercrop[0] = img->usercrop[1] = 0;
   img->usercrop[2] = img->usercrop[3] = 1;
-  img->dng_opcode_list_2 = NULL;
-  img->dng_opcode_list_2_size = 0;
+  img->dng_gain_maps = NULL;
   img->cache_entry = 0;
 
   for(int k=0; k<4; k++)
