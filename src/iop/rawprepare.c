@@ -37,7 +37,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-DT_MODULE_INTROSPECTION(1, dt_iop_rawprepare_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_rawprepare_params_t)
+
+typedef enum dt_iop_rawprepare_flat_field_t
+{
+  FLAT_FIELD_OFF = 0,     // $DESCRIPTION: "disabled"
+  FLAT_FIELD_EMBEDDED = 1 // $DESCRIPTION: "embedded"
+} dt_iop_rawprepare_flat_field_t;
 
 typedef struct dt_iop_rawprepare_params_t
 {
@@ -47,6 +53,7 @@ typedef struct dt_iop_rawprepare_params_t
   int32_t height; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop bottom"
   uint16_t raw_black_level_separate[4]; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "black level"
   uint16_t raw_white_point; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "white point"
+  dt_iop_rawprepare_flat_field_t flat_field; // $DEFAULT: FLAT_FIELD_OFF $DESCRIPTION: "flat field correction"
 } dt_iop_rawprepare_params_t;
 
 typedef struct dt_iop_rawprepare_gui_data_t
@@ -54,6 +61,7 @@ typedef struct dt_iop_rawprepare_gui_data_t
   GtkWidget *black_level_separate[4];
   GtkWidget *white_point;
   GtkWidget *x, *y, *width, *height;
+  GtkWidget *flat_field;
 } dt_iop_rawprepare_gui_data_t;
 
 typedef struct dt_iop_rawprepare_data_t
@@ -102,6 +110,32 @@ int default_group()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RAW;
+}
+
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
+                  void *new_params, const int new_version)
+{
+  typedef struct dt_iop_rawprepare_params_t dt_iop_rawprepare_params_v2_t;
+  typedef struct dt_iop_rawprepare_params_v1_t
+  {
+    int32_t x;
+    int32_t y;
+    int32_t width;
+    int32_t height;
+    uint16_t raw_black_level_separate[4];
+    uint16_t raw_white_point;
+  } dt_iop_rawprepare_params_v1_t;
+
+  if(old_version == 1 && new_version == 2)
+  {
+    dt_iop_rawprepare_params_v1_t *o = (dt_iop_rawprepare_params_v1_t *)old_params;
+    dt_iop_rawprepare_params_v2_t *n = (dt_iop_rawprepare_params_v2_t *)new_params;
+    memcpy(n, o, sizeof *o);
+    n->flat_field = FLAT_FIELD_OFF;
+    return 0;
+  }
+
+  return 1;
 }
 
 const char **description(struct dt_iop_module_t *self)
@@ -652,6 +686,9 @@ void gui_init(dt_iop_module_t *self)
   g->white_point = dt_bauhaus_slider_from_params(self, "raw_white_point");
   gtk_widget_set_tooltip_text(g->white_point, _("white point"));
   dt_bauhaus_slider_set_soft_max(g->white_point, 16384);
+
+  g->flat_field = dt_bauhaus_combobox_from_params(self, "flat_field");
+  gtk_widget_set_tooltip_text(g->flat_field, _("flat field correction to compensate for lens shading"));
 
   if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
   {
