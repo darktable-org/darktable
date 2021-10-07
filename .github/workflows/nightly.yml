@@ -165,14 +165,12 @@ jobs:
         run: |
           sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg  webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic
       - name: Build and Install
-        if: false
           # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
         run: |
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
           ./src/.ci/ci-script.sh;
       - name: Check if it runs
-        if: false
         run: |
           ${INSTALL_PREFIX}/bin/darktable --version || true
           ${INSTALL_PREFIX}/bin/darktable-cli \
@@ -186,7 +184,6 @@ jobs:
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
                  --conf plugins/lighttable/export/iccintent=0
       - name: Install and prepare mac bundler
-        if: false
         run: |
           cd ${SRC_DIR}
           curl -LO https://download.gnome.org/sources/gtk-mac-bundler/0.7/gtk-mac-bundler-0.7.4.tar.xz
@@ -195,12 +192,10 @@ jobs:
           patch -p1 < ${SRC_DIR}/packaging/macosx/gtk-mac-bundler-0.7.4.patch
           make install
       - name: Create DMG image
-        if: false
         run: |
           cd ${SRC_DIR}/packaging/macosx
           ./make-app-bundle ${SRC_DIR}/packaging/macosx/darktable-nightly.bundle
       - name: Publish artifacts
-        if: false
         uses: 'actions/upload-artifact@v2'
         with:
           name: darktable.${{ github.sha }}.macos
