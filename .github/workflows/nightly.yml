@@ -161,7 +161,7 @@ jobs:
         run: |
           echo "buildfromsource always" | sudo tee -a /opt/local/etc/macports/macports.conf
           echo "macosx_deployment_target 10.7" | sudo tee -a /opt/local/etc/macports/macports.conf
-          echo "cxx_stdlib libc++"" | sudo tee -a /opt/local/etc/macports/macports.conf
+          echo "cxx_stdlib libc++" | sudo tee -a /opt/local/etc/macports/macports.conf
           echo "+no_gnome +no_x11 +quartz -x11 -gnome -gfortran" | sudo tee -a /opt/local/etc/macports/variants.conf
       - name: Install Base Dependencies
         run: |
