@@ -163,6 +163,46 @@ jobs:
           echo "macosx_deployment_target ${MACOSX_DEPLOYMENT_TARGET}" | sudo tee -a /opt/local/etc/macports/macports.conf
           echo "cxx_stdlib libc++" | sudo tee -a /opt/local/etc/macports/macports.conf
           echo "+no_gnome +no_x11 +quartz -x11 -gnome -gfortran" | sudo tee -a /opt/local/etc/macports/variants.conf
+      - name: Add patches (see packaging/macosx/BUILD.txt)
+        run: |
+          mkdir -p ~/ports/devel/gnutls/files ~/ports/lang/libomp/files ~/ports/lang/python{37,38,39}/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/textproc ~/ports/science
+          cp -R "$(port dir gnutls)" ~/ports/devel
+          curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-fixes.diff
+          cp -R "$(port dir python37)" ~/ports/lang
+          curl -Lo ~/ports/lang/python37/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python36-stack_size.diff
+          cp -R "$(port dir python38)" ~/ports/lang
+          curl -Lo ~/ports/lang/python38/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python38-stack_size.diff
+          cp -R "$(port dir python39)" ~/ports/lang
+          curl -Lo ~/ports/lang/python39/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python38-stack_size.diff
+          cp -R "$(port dir GraphicsMagick)" ~/ports/graphics
+          curl -Lo ~/ports/graphics/GraphicsMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gm-deployment_target.diff
+          cp -R "$(port dir ImageMagick)" ~/ports/graphics
+          curl -Lo ~/ports/graphics/ImageMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/im-stdlib.diff
+          cp -R "$(port dir libusb)" ~/ports/devel
+          curl -Lo ~/ports/devel/libusb/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/libusb-no-clock_gettime.diff
+          cp -R "$(port dir perl5)" ~/ports/lang
+          curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/perl-at.patch | patch -d ~/ports -p0
+          cp -R "$(port dir pugixml)" ~/ports/textproc
+          curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/pugixml-stdlib.patch | patch -d ~/ports -p0
+          cp -R "$(port dir gmic)" ~/ports/science
+          curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gmic-minimal.patch | patch -d ~/ports -p0
+          curl -Lo ~/ports/lang/libomp/Portfile https://github.com/macports/macports-ports/raw/589fc380ea8b74771fc4ec1de607ddbddf22cb70/lang/libomp/Portfile
+          curl -Lo ~/ports/lang/libomp/files/reviews.llvm.org_D88252.diff https://github.com/macports/macports-ports/raw/589fc380ea8b74771fc4ec1de607ddbddf22cb70/lang/libomp/files/reviews.llvm.org_D88252.diff
+          curl -Lo ~/ports/lang/libomp/files/patch-libomp-use-gettid-on-Leopard.diff https://github.com/macports/macports-ports/raw/589fc380ea8b74771fc4ec1de607ddbddf22cb70/lang/libomp/files/patch-libomp-use-gettid-on-Leopard.diff
+      - name: Patch portfiles
+        run: |
+          for f in ~/ports/*/*/Portfile;
+          do
+            echo $f;
+            echo "patchfiles-append patch.diff" | tee -a $f;
+          done;
+          
+          portindex ~/ports
+
+          echo "$HOME/ports\n$(cat /opt/local/etc/macports/sources.conf)" | sudo tee /opt/local/etc/macports/sources.conf
+
+          echo "Contents of sources.conf:"
+          cat /opt/local/etc/macports/sources.conf
       - name: Install Base Dependencies
         run: |
           sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg  webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic
