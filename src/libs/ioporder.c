@@ -65,7 +65,7 @@ void update(dt_lib_module_t *self)
     if(!self->expander) return;
 
     d->widget = gtk_label_new("");
-    g_signal_connect(G_OBJECT(d->widget), "destroy", G_CALLBACK(gtk_widget_destroy), &d->widget);
+    g_signal_connect(G_OBJECT(d->widget), "destroy", G_CALLBACK(gtk_widget_destroyed), &d->widget);
     gtk_widget_show(d->widget);
     gtk_box_pack_start(GTK_BOX(dtgtk_expander_get_header(DTGTK_EXPANDER(self->expander))), d->widget, TRUE, TRUE, 0);
 
@@ -165,6 +165,9 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
+
+  gtk_widget_destroy(d->widget);
   free(self->data);
   self->data = NULL;
 }
