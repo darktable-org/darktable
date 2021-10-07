@@ -194,7 +194,7 @@ jobs:
           for f in ~/ports/*/*/Portfile;
           do
             echo $f;
-            echo "patchfiles-append patch.diff" | tee -a $f;
+            echo "patchfiles-append patch.diff" | tee -a $f;
           done;
           
           portindex ~/ports
