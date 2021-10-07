@@ -159,7 +159,6 @@ jobs:
           source ./macports-ci install
       - name: Customize MacPorts configuration
         run: |
-          echo "buildfromsource always" | sudo tee -a /opt/local/etc/macports/macports.conf
           echo "macosx_deployment_target ${MACOSX_DEPLOYMENT_TARGET}" | sudo tee -a /opt/local/etc/macports/macports.conf
           echo "cxx_stdlib libc++" | sudo tee -a /opt/local/etc/macports/macports.conf
           echo "+no_gnome +no_x11 +quartz -x11 -gnome -gfortran" | sudo tee -a /opt/local/etc/macports/variants.conf
