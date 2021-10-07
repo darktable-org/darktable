@@ -157,10 +157,12 @@ jobs:
         run: |
           curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci
           source ./macports-ci install
-          sudo echo "buildfromsource always"                          >> /opt/local/etc/macports/macports.conf
-          sudo echo "macosx_deployment_target 10.7"                   >> /opt/local/etc/macports/macports.conf
-          sudo echo "cxx_stdlib libc++""                              >> /opt/local/etc/macports/macports.conf
-          sudo echo "+no_gnome +no_x11 +quartz -x11 -gnome -gfortran" >> /opt/local/etc/macports/variants.conf
+      - name: Customize MacPorts configuration
+        run: |
+          echo "buildfromsource always" | sudo tee -a /opt/local/etc/macports/macports.conf
+          echo "macosx_deployment_target 10.7" | sudo tee -a /opt/local/etc/macports/macports.conf
+          echo "cxx_stdlib libc++"" | sudo tee -a /opt/local/etc/macports/macports.conf
+          echo "+no_gnome +no_x11 +quartz -x11 -gnome -gfortran" | sudo tee -a /opt/local/etc/macports/variants.conf
       - name: Install Base Dependencies
         run: |
           sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg  webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic
