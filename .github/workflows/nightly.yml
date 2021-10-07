@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-    - macos_nightly_build
+    - macos_nightly_macports
 
 jobs:
   Win64:
