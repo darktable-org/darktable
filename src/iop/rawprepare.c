@@ -80,7 +80,7 @@ typedef struct dt_iop_rawprepare_data_t
 
   // image contains GainMaps that we are able to apply here
   gboolean has_gainmaps;
-  // GainMaps for each pixel of RGGB Bayer image
+  // GainMap for each filter of RGGB Bayer pattern
   dt_dng_gain_map_t *gainmaps[4];
 } dt_iop_rawprepare_data_t;
 
@@ -396,12 +396,47 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
+  if(d->has_gainmaps)
+  {
+    const float im_to_rel_x = 1.0 / piece->buf_in.width;
+    const float im_to_rel_y = 1.0 / piece->buf_in.height;
+    const float rel_to_map_x = 1.0 / d->gainmaps[0]->map_spacing_h;
+    const float rel_to_map_y = 1.0 / d->gainmaps[0]->map_spacing_v;
+    const uint32_t map_w = d->gainmaps[0]->map_points_h;
+    const uint32_t map_h = d->gainmaps[0]->map_points_v;
+    const float map_origin_h = d->gainmaps[0]->map_origin_h;
+    const float map_origin_v = d->gainmaps[0]->map_origin_v;
+
+    float *const out = (float *const)ovoid;
+    for(int j = 0; j < roi_out->height; j++)
+    {
+      for(int i = 0; i < roi_out->width; i++)
+      {
+        const int id = BL(roi_out, d, j, i);
+        const float *const map_gain = d->gainmaps[id]->map_gain;
+        const float x_map = CLAMP(((roi_out->x + i) * im_to_rel_x - map_origin_h) * rel_to_map_x, 0, map_w);
+        const float y_map = CLAMP(((roi_out->y + j) * im_to_rel_y - map_origin_v) * rel_to_map_y, 0, map_h);
+        const uint32_t x_i0 = MIN(x_map, map_w - 1);
+        const uint32_t y_i0 = MIN(y_map, map_h - 1);
+        const uint32_t x_i1 = MIN(x_i0 + 1, map_w - 1);
+        const uint32_t y_i1 = MIN(y_i0 + 1, map_h - 1);
+        const float x_frac = x_map - x_i0;
+        const float y_frac = y_map - y_i0;
+        const float gain_top = (1.0f - x_frac) * map_gain[y_i0 * map_w + x_i0] + x_frac * map_gain[y_i0 * map_w + x_i1];
+        const float gain_bottom = (1.0f - x_frac) * map_gain[y_i1 * map_w + x_i0] + x_frac * map_gain[y_i1 * map_w + x_i1];
+        const size_t pout = (size_t)j * roi_out->width + i;
+        out[pout] *= (1.0f - y_frac) * gain_top + y_frac * gain_bottom;
+      }
+    }
+  }
+
   dt_dev_write_rawdetail_mask(piece, (float *const)ovoid, roi_in, DT_DEV_DETAIL_MASK_RAWPREPARE);
 
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 }
 
-#ifdef HAVE_OPENCL
+// Temporarily disable OpenCL as flat field correction is not implemented yet
+#ifdef xHAVE_OPENCL
 int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -513,6 +548,7 @@ static gboolean image_set_rawcrops(const uint32_t imgid, int dx, int dy)
   return TRUE;
 }
 
+// check if image contains GainMaps of the exact type that we can apply here
 gboolean check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gainmaps_out)
 {
   const dt_image_t *const image = &(self->dev->image_storage);
@@ -523,19 +559,33 @@ gboolean check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gainmaps_out
 
   for(int i = 0; i < 4; i++)
   {
+    // check that each GainMap applies to one filter of a Bayer image
+    // and is not a 1x1 no-op
     dt_dng_gain_map_t *g = (dt_dng_gain_map_t *)g_list_nth_data(image->dng_gain_maps, i);
     if(g == NULL ||
       g->plane != 0 || g->planes != 1 || g->map_planes != 1 ||
       g->row_pitch != 2 || g->col_pitch != 2 ||
-      g->map_origin_v != 0 || g->map_origin_h != 0 ||
       g->map_points_v < 2 || g->map_points_h < 2)
       return FALSE;
-    uint32_t ch = ((g->top & 1) << 1) + (g->left & 1);
-    gainmaps[ch] = g;
+    uint32_t filter = ((g->top & 1) << 1) + (g->left & 1);
+    gainmaps[filter] = g;
   }
 
+  // check that there is a GainMap for each filter of the Bayer pattern
   if(gainmaps[0] == NULL || gainmaps[1] == NULL || gainmaps[2] == NULL || gainmaps[3] == NULL)
     return FALSE;
+
+  // check that each GainMap has the same shape
+  for(int i = 1; i < 4; i++)
+  {
+    if(gainmaps[i]->map_points_h != gainmaps[0]->map_points_h ||
+      gainmaps[i]->map_points_v != gainmaps[0]->map_points_v ||
+      gainmaps[i]->map_spacing_h != gainmaps[0]->map_spacing_h ||
+      gainmaps[i]->map_spacing_v != gainmaps[0]->map_spacing_v ||
+      gainmaps[i]->map_origin_h != gainmaps[0]->map_origin_h ||
+      gainmaps[i]->map_origin_v != gainmaps[0]->map_origin_v)
+      return FALSE;
+  }
 
   if(gainmaps_out)
     memcpy(gainmaps_out, gainmaps, sizeof(gainmaps));
@@ -623,6 +673,7 @@ void reload_defaults(dt_iop_module_t *self)
   dt_iop_rawprepare_params_t *d = self->default_params;
   const dt_image_t *const image = &(self->dev->image_storage);
 
+  // if there are embedded GainMaps, they should be applied by default to avoid uneven color cast
   gboolean has_gainmaps = check_gain_maps(self, NULL);
 
   *d = (dt_iop_rawprepare_params_t){.x = image->crop_x,
@@ -684,6 +735,8 @@ void gui_update(dt_iop_module_t *self)
   // don't show upper three black levels for monochromes
   for(int i = 1; i < 4; i++)
     gtk_widget_set_visible(g->black_level_separate[i], !is_monochrome);
+
+  dt_bauhaus_combobox_set(g->flat_field, p->flat_field);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)

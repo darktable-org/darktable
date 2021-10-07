@@ -715,6 +715,9 @@ static gboolean dt_check_dng_opcodes(Exiv2::ExifData &exifData, dt_image_t *img)
 {
   gboolean has_opcodes = FALSE;
   Exiv2::ExifData::const_iterator pos = exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.OpcodeList2"));
+  // DNGs without an embedded preview have the opcodes under Exif.Image instead of Exif.SubImage1
+  if(pos == exifData.end())
+    pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.OpcodeList2"));
   if(pos != exifData.end())
   {
     uint8_t *data = (uint8_t *)g_malloc(pos->size());
