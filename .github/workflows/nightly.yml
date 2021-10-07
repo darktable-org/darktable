@@ -198,7 +198,7 @@ jobs:
         if: false
         run: |
           cd ${SRC_DIR}/packaging/macosx
-          ./make-app-bundle ${SRC_DIR}/packaging/macosx/darktable-nightly.bundle
+          ./make-app-bundle ${SRC_DIR}/packaging/macosx/darktable.bundle
       - name: Publish artifacts
         if: false
         uses: 'actions/upload-artifact@v2'
