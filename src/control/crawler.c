@@ -45,6 +45,8 @@ typedef enum dt_control_crawler_cols_t
   DT_CONTROL_CRAWLER_COL_TS_DB,
   DT_CONTROL_CRAWLER_COL_TS_XMP_INT, // new timestamp to db
   DT_CONTROL_CRAWLER_COL_TS_DB_INT,
+  DT_CONTROL_CRAWLER_COL_REPORT,
+  DT_CONTROL_CRAWLER_COL_TIME_DELTA,
   DT_CONTROL_CRAWLER_NUM_COLS
 } dt_control_crawler_cols_t;
 
@@ -450,6 +452,23 @@ static void _oldest_button_clicked(GtkButton *button, gpointer user_data)
   _cleanup_GList(rows_to_remove);
 }
 
+static gchar* str_time_delta(const int time_delta)
+{
+  // display the time difference as a legible string
+  int seconds = time_delta;
+
+  int minutes = seconds / 60;
+  seconds -= 60 * minutes;
+
+  int hours = minutes / 60;
+  minutes -= 60 * hours;
+
+  int days = hours / 24;
+  hours -= 24 * days;
+
+  return g_strdup_printf(_("%id %02dh %02dm %02ds"), days, hours, minutes, seconds);
+}
+
 // show a popup window with a list of updated images/xmp files and allow the user to tell dt what to do about them
 void dt_control_crawler_show_image_list(GList *images)
 {
@@ -468,7 +487,9 @@ void dt_control_crawler_show_image_list(GList *images)
                                            G_TYPE_STRING, // timestamp from xmp
                                            G_TYPE_STRING, // timestamp from db
                                            G_TYPE_INT,    // timestamp to db
-                                           G_TYPE_INT);
+                                           G_TYPE_INT,
+                                           G_TYPE_STRING, // report: newer version
+                                           G_TYPE_STRING);// time delta
 
   gui->model = GTK_TREE_MODEL(store);
 
@@ -480,14 +501,26 @@ void dt_control_crawler_show_image_list(GList *images)
     struct tm tm_stamp;
     strftime(timestamp_db, sizeof(timestamp_db), "%c", localtime_r(&item->timestamp_db, &tm_stamp));
     strftime(timestamp_xmp, sizeof(timestamp_xmp), "%c", localtime_r(&item->timestamp_xmp, &tm_stamp));
+
+    const time_t time_delta = abs(item->timestamp_db - item->timestamp_xmp);
+    gchar *timestamp_delta = str_time_delta(time_delta);
+
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, DT_CONTROL_CRAWLER_COL_ID, item->id, DT_CONTROL_CRAWLER_COL_IMAGE_PATH,
-                       item->image_path, DT_CONTROL_CRAWLER_COL_XMP_PATH, item->xmp_path,
-                       DT_CONTROL_CRAWLER_COL_TS_XMP, timestamp_xmp, DT_CONTROL_CRAWLER_COL_TS_DB, timestamp_db,
-                       DT_CONTROL_CRAWLER_COL_TS_XMP_INT, item->timestamp_xmp, DT_CONTROL_CRAWLER_COL_TS_DB_INT,
-                       item->timestamp_db, -1);
+    gtk_list_store_set(store, &iter,
+                       DT_CONTROL_CRAWLER_COL_ID, item->id,
+                       DT_CONTROL_CRAWLER_COL_IMAGE_PATH, item->image_path,
+                       DT_CONTROL_CRAWLER_COL_XMP_PATH, item->xmp_path,
+                       DT_CONTROL_CRAWLER_COL_TS_XMP, timestamp_xmp,
+                       DT_CONTROL_CRAWLER_COL_TS_DB, timestamp_db,
+                       DT_CONTROL_CRAWLER_COL_TS_XMP_INT, item->timestamp_xmp,
+                       DT_CONTROL_CRAWLER_COL_TS_DB_INT, item->timestamp_db,
+                       DT_CONTROL_CRAWLER_COL_REPORT, (item->timestamp_xmp > item->timestamp_db) ? _("xmp")
+                                                                                                 : _("database"),
+                       DT_CONTROL_CRAWLER_COL_TIME_DELTA, timestamp_delta,
+                       -1);
     g_free(item->image_path);
     g_free(item->xmp_path);
+    g_free(timestamp_delta);
   }
   g_list_free_full(images, g_free);
 
@@ -512,6 +545,16 @@ void dt_control_crawler_show_image_list(GList *images)
 
   column = gtk_tree_view_column_new_with_attributes(_("database timestamp"), gtk_cell_renderer_text_new(), "text",
                                                     DT_CONTROL_CRAWLER_COL_TS_DB, NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
+  column = gtk_tree_view_column_new_with_attributes(_("newest"), gtk_cell_renderer_text_new(), "text",
+                                                    DT_CONTROL_CRAWLER_COL_REPORT, NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
+
+  GtkCellRenderer *renderer_date = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes(_("time difference"), renderer_date, "text",
+                                                    DT_CONTROL_CRAWLER_COL_TIME_DELTA, NULL);
+  g_object_set(renderer_date, "xalign", 1., NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   gtk_container_add(GTK_CONTAINER(scroll), tree);
