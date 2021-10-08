@@ -502,7 +502,7 @@ void dt_control_crawler_show_image_list(GList *images)
     strftime(timestamp_db, sizeof(timestamp_db), "%c", localtime_r(&item->timestamp_db, &tm_stamp));
     strftime(timestamp_xmp, sizeof(timestamp_xmp), "%c", localtime_r(&item->timestamp_xmp, &tm_stamp));
 
-    const time_t time_delta = abs(item->timestamp_db - item->timestamp_xmp);
+    const time_t time_delta = labs(item->timestamp_db - item->timestamp_xmp);
     gchar *timestamp_delta = str_time_delta(time_delta);
 
     gtk_list_store_append(store, &iter);
