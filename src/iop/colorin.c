@@ -1845,7 +1845,6 @@ void reload_defaults(dt_iop_module_t *module)
     {
       img->profile_size = dt_imageio_j2k_read_profile(filename, &img->profile);
       color_profile = (img->profile_size > 0) ? DT_COLORSPACE_EMBEDDED_ICC : DT_COLORSPACE_NONE;
-
     }
 #endif
     // the ldr test just checks for magics in the file header
@@ -1862,26 +1861,11 @@ void reload_defaults(dt_iop_module_t *module)
 #ifdef HAVE_LIBAVIF
     else if(!strcmp(ext, "avif"))
     {
-      struct avif_color_profile cp = {
-          .type = DT_COLORSPACE_NONE,
-      };
-      const dt_imageio_retval_t ret =
-          dt_imageio_avif_read_color_profile(filename, &cp);
-      if (ret != DT_IMAGEIO_OK)
-      {
-        g_free(ext);
-        return;
-      }
-      if (cp.type != DT_COLORSPACE_NONE)
-      {
-        color_profile = cp.type;
-      }
-      else
-      {
-        img->profile_size = cp.icc_profile_size;
-        img->profile      = cp.icc_profile;
+      dt_colorspaces_cicp_t cicp;
+      img->profile_size = dt_imageio_avif_read_profile(filename, &img->profile, &cicp);
+      /* try the nclx box before falling back to any ICC profile */
+      if((color_profile = dt_colorspaces_cicp_to_type(&cicp, filename)) == DT_COLORSPACE_NONE)
         color_profile = (img->profile_size > 0) ? DT_COLORSPACE_EMBEDDED_ICC : DT_COLORSPACE_NONE;
-      }
     }
 #endif
     g_free(ext);

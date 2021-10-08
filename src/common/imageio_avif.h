@@ -20,18 +20,11 @@
 
 #pragma once
 
-#include "common/colorspaces.h"
 #include "common/image.h"
 #include "common/mipmap_cache.h"
-
-struct avif_color_profile {
-    dt_colorspaces_color_profile_type_t type;
-    size_t icc_profile_size;
-    uint8_t *icc_profile;
-};
 
 dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
                                          const char *filename,
                                          dt_mipmap_buffer_t *buf);
-dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename,
-                                                       struct avif_color_profile *cp);
+
+int dt_imageio_avif_read_profile(const char *filename, uint8_t **out, dt_colorspaces_cicp_t *cicp);
