@@ -104,6 +104,43 @@ typedef enum dt_colorspaces_profile_direction_t
                              | DT_PROFILE_DIRECTION_DISPLAY2
 } dt_colorspaces_profile_direction_t;
 
+/* CICP color primaries (Recommendation ITU-T H.273) */
+typedef enum dt_colorspaces_cicp_color_primaries_t
+{
+    DT_CICP_COLOR_PRIMARIES_REC709 = 1,
+    DT_CICP_COLOR_PRIMARIES_UNSPECIFIED = 2,
+    DT_CICP_COLOR_PRIMARIES_REC2020 = 9,
+    DT_CICP_COLOR_PRIMARIES_XYZ = 10,
+    DT_CICP_COLOR_PRIMARIES_P3 = 12 // D65
+} dt_colorspaces_cicp_color_primaries_t;
+
+/* CICP transfer characteristics (Recommendation ITU-T H.273) */
+typedef enum dt_colorspaces_cicp_transfer_characteristics_t
+{
+    DT_CICP_TRANSFER_CHARACTERISTICS_REC709 = 1,
+    DT_CICP_TRANSFER_CHARACTERISTICS_UNSPECIFIED = 2,
+    DT_CICP_TRANSFER_CHARACTERISTICS_GAMMA22 = 4,
+    DT_CICP_TRANSFER_CHARACTERISTICS_REC601 = 6,
+    DT_CICP_TRANSFER_CHARACTERISTICS_LINEAR = 8,
+    DT_CICP_TRANSFER_CHARACTERISTICS_SRGB = 13,
+    DT_CICP_TRANSFER_CHARACTERISTICS_REC2020_10B = 14,
+    DT_CICP_TRANSFER_CHARACTERISTICS_REC2020_12B = 15,
+    DT_CICP_TRANSFER_CHARACTERISTICS_PQ = 16,
+    DT_CICP_TRANSFER_CHARACTERISTICS_HLG = 18
+} dt_colorspaces_cicp_transfer_characteristics_t;
+
+/* CICP matrix coefficients (Recommendation ITU-T H.273) */
+typedef enum dt_colorspaces_cicp_matrix_coefficients_t
+{
+    DT_CICP_MATRIX_COEFFICIENTS_IDENTITY = 0,
+    DT_CICP_MATRIX_COEFFICIENTS_REC709 = 1,
+    DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED = 2,
+    DT_CICP_MATRIX_COEFFICIENTS_SYCC = 5,
+    DT_CICP_MATRIX_COEFFICIENTS_REC601 = 6,
+    DT_CICP_MATRIX_COEFFICIENTS_REC2020_NCL = 9,
+    DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL = 12
+} dt_colorspaces_cicp_matrix_coefficients_t;
+
 typedef struct dt_colorspaces_t
 {
   GList *profiles;
@@ -152,12 +189,20 @@ typedef struct dt_colorspaces_color_profile_t
   int work_pos;                             // position in working combo box, -1 if not applicable
 } dt_colorspaces_color_profile_t;
 
+typedef struct dt_colorspaces_cicp_t
+{
+    dt_colorspaces_cicp_color_primaries_t color_primaries;
+    dt_colorspaces_cicp_transfer_characteristics_t transfer_characteristics;
+    dt_colorspaces_cicp_matrix_coefficients_t matrix_coefficients;
+} dt_colorspaces_cicp_t;
+
 int mat3inv_float(float *const dst, const float *const src);
 int mat3inv_double(double *const dst, const double *const src);
 int mat3inv(float *const dst, const float *const src);
 
 /** populate the global color profile lists */
 dt_colorspaces_t *dt_colorspaces_init();
+
 /** cleanup on shutdown */
 void dt_colorspaces_cleanup(dt_colorspaces_t *self);
 
@@ -213,6 +258,7 @@ void hsl2rgb(dt_aligned_pixel_t rgb, float h, float s, float l);
 
 /** trigger updating the display profile from the system settings (x atom, colord, ...) */
 void dt_colorspaces_set_display_profile(const dt_colorspaces_color_profile_type_t profile_type);
+
 /** get the profile described by type & filename.
  *  this doesn't support image specifics like embedded profiles or camera matrices */
 const dt_colorspaces_color_profile_t *
@@ -223,6 +269,9 @@ dt_colorspaces_get_profile(dt_colorspaces_color_profile_type_t type, const char 
  *  fullname is always the fullpathname to the profile and filename may be a full pathname
  *  or just a base name */
 gboolean  dt_colorspaces_is_profile_equal(const char *fullname, const char *filename);
+
+/** try to infer profile type from CICP */
+dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type(const dt_colorspaces_cicp_t *cicp, const char *filename);
 
 /** update the display transforms of srgb and adobergb to the display profile.
  * make sure that darktable.color_profiles->xprofile_lock is held when calling this! */

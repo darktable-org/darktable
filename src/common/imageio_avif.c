@@ -30,15 +30,11 @@
 #include <strings.h>
 
 #include "control/control.h"
-#include "common/colorspaces.h"
-#include "common/darktable.h"
 #include "common/exif.h"
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "imageio.h"
 #include "imageio_avif.h"
-
-#include <avif/avif.h>
 
 dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
                                          const char *filename,
@@ -190,12 +186,17 @@ out:
   return ret;
 }
 
-dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, struct avif_color_profile *cp)
+int dt_imageio_avif_read_profile(const char *filename, uint8_t **out, dt_colorspaces_cicp_t *cicp)
 {
-  dt_imageio_retval_t ret;
+  /* set default return values */
+  int size = 0;
+  *out = NULL;
+  cicp->color_primaries = AVIF_COLOR_PRIMARIES_UNSPECIFIED;
+  cicp->transfer_characteristics = AVIF_TRANSFER_CHARACTERISTICS_UNSPECIFIED;
+  cicp->matrix_coefficients = AVIF_MATRIX_COEFFICIENTS_UNSPECIFIED;
+
   avifDecoder *decoder = NULL;
   avifImage avif_image = {0};
-  avifImage *avif = NULL;
   avifResult result;
 
   decoder = avifDecoderCreate();
@@ -204,7 +205,6 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to create AVIF decoder for image [%s]\n",
              filename);
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
   }
 
@@ -214,204 +214,28 @@ dt_imageio_retval_t dt_imageio_avif_read_color_profile(const char *filename, str
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to parse AVIF image [%s]: %s\n",
              filename, avifResultToString(result));
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
   }
-  avif = &avif_image;
 
-  if(avif->icc.size > 0)
+  if(avif_image.icc.size > 0)
   {
-    avifRWData icc = avif->icc;
+    avifRWData *icc = &avif_image.icc;
 
-    if(icc.data == NULL)
-    {
-      ret = DT_IMAGEIO_FILE_CORRUPTED;
-      goto out;
-    }
+    if(icc->data == NULL) goto out;
 
-    uint8_t *data = (uint8_t *)g_malloc(icc.size);
-    memcpy(data, icc.data, icc.size);
-
-    cp->icc_profile_size = icc.size;
-    cp->icc_profile = data;
-  } else {
-    switch(avif->colorPrimaries) {
-    /*
-     * BT709
-     */
-    case AVIF_COLOR_PRIMARIES_BT709:
-
-      switch (avif->transferCharacteristics) {
-      /*
-       * SRGB
-       */
-      case AVIF_TRANSFER_CHARACTERISTICS_SRGB:
-
-        switch (avif->matrixCoefficients) {
-        case AVIF_MATRIX_COEFFICIENTS_IDENTITY:
-        case AVIF_MATRIX_COEFFICIENTS_BT470BG: /* BT601 coeffs */ 
-        case AVIF_MATRIX_COEFFICIENTS_BT709: /* support incorrectly tagged legacy files */
-        case AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-          cp->type = DT_COLORSPACE_SRGB;
-          break;
-        default:
-          break;
-        }
-
-        break; /* SRGB */
-
-      /*
-       * BT709
-       */
-      case AVIF_TRANSFER_CHARACTERISTICS_BT709:
-      case AVIF_TRANSFER_CHARACTERISTICS_BT470M: /* support incorrectly tagged legacy files */
-
-        switch (avif->matrixCoefficients) {
-        case AVIF_MATRIX_COEFFICIENTS_BT709:
-        case AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-          cp->type = DT_COLORSPACE_REC709;
-          break;
-        default:
-          break;
-        }
-
-        break; /* GAMMA22 BT709 */
-
-      /*
-       * LINEAR BT709
-       */
-      case AVIF_TRANSFER_CHARACTERISTICS_LINEAR:
-
-        switch (avif->matrixCoefficients) {
-        case AVIF_MATRIX_COEFFICIENTS_BT709:
-        case AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-          cp->type = DT_COLORSPACE_LIN_REC709;
-          break;
-        default:
-          break;
-        }
-
-        break; /* LINEAR BT709 */
-
-      default:
-        break;
-      }
-
-      break; /* BT709 */
-
-    /*
-     * BT2020
-     */
-    case AVIF_COLOR_PRIMARIES_BT2020:
-
-      switch (avif->transferCharacteristics) {
-      /*
-       * LINEAR BT2020
-       */
-      case AVIF_TRANSFER_CHARACTERISTICS_LINEAR:
-
-        switch (avif->matrixCoefficients) {
-        case AVIF_MATRIX_COEFFICIENTS_BT2020_NCL:
-        case AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-          cp->type = DT_COLORSPACE_LIN_REC2020;
-          break;
-        default:
-          break;
-        }
-
-        break; /* LINEAR BT2020 */
-
-      /*
-       * PQ BT2020
-       */
-      case AVIF_TRANSFER_CHARACTERISTICS_SMPTE2084:
-
-        switch (avif->matrixCoefficients) {
-        case AVIF_MATRIX_COEFFICIENTS_BT2020_NCL:
-        case AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-          cp->type = DT_COLORSPACE_PQ_REC2020;
-          break;
-        default:
-          break;
-        }
-
-        break; /* PQ BT2020 */
-
-      /*
-       * HLG BT2020
-       */
-      case AVIF_TRANSFER_CHARACTERISTICS_HLG:
-
-        switch (avif->matrixCoefficients) {
-        case AVIF_MATRIX_COEFFICIENTS_BT2020_NCL:
-        case AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-          cp->type = DT_COLORSPACE_HLG_REC2020;
-          break;
-        default:
-          break;
-        }
-
-        break; /* HLG BT2020 */
-
-      default:
-        break;
-      }
-
-      break; /* BT2020 */
-
-    /*
-     * P3
-     */
-    case AVIF_COLOR_PRIMARIES_SMPTE432:
-
-      switch (avif->transferCharacteristics) {
-      /*
-       * PQ P3
-       */
-      case AVIF_TRANSFER_CHARACTERISTICS_SMPTE2084:
-
-        switch (avif->matrixCoefficients) {
-        case AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-          cp->type = DT_COLORSPACE_PQ_P3;
-          break;
-        default:
-          break;
-        }
-
-        break; /* PQ P3 */
-
-      /*
-       * HLG P3
-       */
-      case AVIF_TRANSFER_CHARACTERISTICS_HLG:
-
-        switch (avif->matrixCoefficients) {
-        case AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL:
-          cp->type = DT_COLORSPACE_HLG_P3;
-          break;
-        default:
-          break;
-        }
-
-        break; /* HLG P3 */
-
-      default:
-        break;
-      }
-
-      break; /* P3 */
-
-    default:
-      dt_print(DT_DEBUG_IMAGEIO,
-               "Unsupported color profile for %s\n",
-               filename);
-      break;
-    }
+    *out = (uint8_t *)g_malloc0(icc->size);
+    memcpy(*out, icc->data, icc->size);
+    size = icc->size;
+  }
+  else
+  {
+    cicp->color_primaries = avif_image.colorPrimaries;
+    cicp->transfer_characteristics = avif_image.transferCharacteristics;
+    cicp->matrix_coefficients = avif_image.matrixCoefficients;
   }
 
-  ret = DT_IMAGEIO_OK;
 out:
   avifDecoderDestroy(decoder);
 
-  return ret;
+  return size;
 }

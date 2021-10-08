@@ -22,7 +22,7 @@
 #include "config.h"
 #endif
 
-#include "common/darktable.h"
+#include "common/colorspaces.h"
 #include "common/dtpthread.h"
 #include "develop/format.h"
 #include <glib.h>
