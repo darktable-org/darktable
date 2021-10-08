@@ -241,5 +241,5 @@ jobs:
         uses: 'actions/upload-artifact@v2'
         with:
           name: darktable.${{ github.sha }}.macos
-          path: ${{ env.INSTALL_PREFIX }}/*
-          retention-days: 2
+          path: ${{ env.SRC_DIR }}/*.dmg
+          retention-days: 7
