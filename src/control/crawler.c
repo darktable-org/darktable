@@ -23,11 +23,12 @@
 #include <string.h>
 
 #include "common/darktable.h"
-#include "common/debug.h"
 #include "common/database.h"
+#include "common/debug.h"
 #include "common/history.h"
 #include "common/image.h"
 #include "control/conf.h"
+#include "control/control.h"
 #include "crawler.h"
 #include "gui/gtk.h"
 #ifdef GDK_WINDOWING_QUARTZ
@@ -37,13 +38,13 @@
 
 typedef enum dt_control_crawler_cols_t
 {
-  DT_CONTROL_CRAWLER_COL_SELECTED = 0,
-  DT_CONTROL_CRAWLER_COL_ID,
+  DT_CONTROL_CRAWLER_COL_ID = 0,
   DT_CONTROL_CRAWLER_COL_IMAGE_PATH,
   DT_CONTROL_CRAWLER_COL_XMP_PATH,
   DT_CONTROL_CRAWLER_COL_TS_XMP,
   DT_CONTROL_CRAWLER_COL_TS_DB,
-  DT_CONTROL_CRAWLER_COL_TS,    // new timestamp to db
+  DT_CONTROL_CRAWLER_COL_TS_XMP_INT, // new timestamp to db
+  DT_CONTROL_CRAWLER_COL_TS_DB_INT,
   DT_CONTROL_CRAWLER_NUM_COLS
 } dt_control_crawler_cols_t;
 
@@ -192,7 +193,7 @@ GList *dt_control_crawler_run()
   sqlite3_finalize(stmt);
   sqlite3_finalize(inner_stmt);
 
-  return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
+  return g_list_reverse(result); // list was built in reverse order, so un-reverse it
 }
 
 
@@ -202,8 +203,6 @@ typedef struct dt_control_crawler_gui_t
 {
   GtkTreeView *tree;
   GtkTreeModel *model;
-  GtkWidget *select_all;
-  gulong select_all_handler_id;
 } dt_control_crawler_gui_t;
 
 // close the window and clean up
@@ -215,141 +214,240 @@ static void dt_control_crawler_response_callback(GtkWidget *dialog, gint respons
   free(gui);
 }
 
-// unselect the "select all" toggle
-static void _clear_select_all(dt_control_crawler_gui_t *gui)
-{
-  g_signal_handler_block(G_OBJECT(gui->select_all), gui->select_all_handler_id);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gui->select_all), FALSE);
-  g_signal_handler_unblock(G_OBJECT(gui->select_all), gui->select_all_handler_id);
-}
 
-static void _reset_selection(GtkTreeModel *model)
+static void _delete_selected_rows(GList *rr_list, GtkTreeModel *model)
 {
-  // Reset at the TreeViewToogleButton level
-  // This is because the crawler doesn't use the default TreeView selection methods
-  // but implements its own partial ones.
-  // To get the multiselection, we had to enable default TreeView selection methods too,
-  // but since all the internal circuitery uses the custom ToggleButton boolean,
-  // we need to maintain both pathes and sync them.
-  // This function is equivalent to gtk_tree_selection_unselect_all() but for the custom ToggleButton path
-  GtkTreeIter iter;
-  gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
-  while(valid)
+  // Remove TreeView rows from rr_list. It needs to be populated before
+  GList *node;
+  for(node = rr_list; node != NULL; node = g_list_next(node))
   {
-    gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_CONTROL_CRAWLER_COL_SELECTED, FALSE, -1);
-    valid = gtk_tree_model_iter_next(model, &iter);
+    GtkTreePath *path = gtk_tree_row_reference_get_path((GtkTreeRowReference*)node->data);
+
+    if(path)
+    {
+      GtkTreeIter  iter;
+      if (gtk_tree_model_get_iter(model, &iter, path))
+        gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
+    }
   }
 }
 
-static void _commit_line_from_selection(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data)
-{
-  gtk_list_store_set(GTK_LIST_STORE(model), iter, DT_CONTROL_CRAWLER_COL_SELECTED, TRUE, -1);
-}
 
-static void _selection_changed(GtkTreeSelection *selection, dt_control_crawler_gui_t *gui)
-{
-  // Deselect everything
-  _reset_selection(gui->model);
-
-  // Commit selection
-  gtk_tree_selection_selected_foreach(selection, _commit_line_from_selection, gui);
-
-  // we also want to disable the "select all" thing
-  _clear_select_all(gui);
-}
-
-// (un)select all images in the list
-static void _select_all_callback(GtkToggleButton *togglebutton, gpointer user_data)
+static void _select_all_callback(GtkButton *button, gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
-  const gboolean selected = gtk_toggle_button_get_active(togglebutton);
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
+  gtk_tree_selection_select_all(selection);
+}
 
-  // Select at the TreeViewToggleButton level
+
+static void _select_none_callback(GtkButton *button, gpointer user_data)
+{
+  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
+  gtk_tree_selection_unselect_all(selection);
+}
+
+
+static void _select_invert_callback(GtkButton *button, gpointer user_data)
+{
+  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
+
   GtkTreeIter iter;
   gboolean valid = gtk_tree_model_get_iter_first(gui->model, &iter);
   while(valid)
   {
-    gtk_list_store_set(GTK_LIST_STORE(gui->model), &iter, DT_CONTROL_CRAWLER_COL_SELECTED, selected, -1);
+    if(gtk_tree_selection_iter_is_selected(selection, &iter))
+      gtk_tree_selection_unselect_iter(selection, &iter);
+    else
+      gtk_tree_selection_select_iter(selection, &iter);
+
     valid = gtk_tree_model_iter_next(gui->model, &iter);
   }
-
-  // Select at the TreeView level
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
-
-  if(selected)
-    gtk_tree_selection_select_all(selection);
-  else
-    gtk_tree_selection_unselect_all(selection);
 }
 
-// reload xmp files of the selected images
+
+static void _db_update_timestamp(const int id, const time_t timestamp)
+{
+  // Update DB writing timestamp with XMP file timestamp
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images SET write_timestamp = ?2 WHERE id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, timestamp);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+
+static void _get_crawler_entry_from_model(GtkTreeModel *model, GtkTreeIter *iter,
+                                          dt_control_crawler_result_t *entry)
+{
+  gtk_tree_model_get(model, iter, DT_CONTROL_CRAWLER_COL_IMAGE_PATH, &entry->image_path, DT_CONTROL_CRAWLER_COL_ID,
+                     &entry->id, DT_CONTROL_CRAWLER_COL_XMP_PATH, &entry->xmp_path,
+                     DT_CONTROL_CRAWLER_COL_TS_DB_INT, &entry->timestamp_db, DT_CONTROL_CRAWLER_COL_TS_XMP_INT,
+                     &entry->timestamp_xmp, -1);
+}
+
+
+static void _append_row_to_remove(GtkTreeModel *model, GtkTreePath *path, gpointer user_data)
+{
+  // append TreeModel rows to the list to remove
+  GList **rowref_list = (GList **)user_data;
+  GtkTreeRowReference *rowref = gtk_tree_row_reference_new(model, path);
+  *rowref_list = g_list_append(*rowref_list, rowref);
+}
+
+
+static void _cleanup_GList(GList *list)
+{
+  g_list_foreach(list, (GFunc) gtk_tree_row_reference_free, NULL);
+  g_list_free(list);
+}
+
+
+static void sync_xmp_to_db(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data)
+{
+  dt_control_crawler_result_t entry = { 0 };
+  _get_crawler_entry_from_model(model, iter, &entry);
+  _db_update_timestamp(entry.id, entry.timestamp_xmp);
+  const int success = dt_history_load_and_apply(entry.id, entry.xmp_path, 0);  // success = 0, fail = 1
+
+  if(!success) _append_row_to_remove(model, path, user_data);
+  fprintf(stdout, "%s synced XMP -> DB\n", entry.image_path);
+
+  int *return_code = (int *)user_data;
+  *return_code |= success;
+
+  g_free(entry.xmp_path);
+  g_free(entry.image_path);
+}
+
+
+static void sync_db_to_xmp(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data)
+{
+  dt_control_crawler_result_t entry = { 0 };
+  _get_crawler_entry_from_model(model, iter, &entry);
+  dt_image_write_sidecar_file(entry.id);
+
+  fprintf(stdout, "%s synced DB -> XMP\n", entry.image_path);
+  _append_row_to_remove(model, path, user_data);
+
+  g_free(entry.xmp_path);
+  g_free(entry.image_path);
+
+  // no return code, dt_image_write_sidecar_file always succeeds… ¯\_(ツ)_/¯
+  // FIXME ?
+}
+
+static void sync_newest_to_oldest(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data)
+{
+  dt_control_crawler_result_t entry = { 0 };
+  _get_crawler_entry_from_model(model, iter, &entry);
+
+  if(entry.timestamp_xmp > entry.timestamp_db)
+  {
+    // WRITE XMP in DB
+    _db_update_timestamp(entry.id, entry.timestamp_xmp);
+    dt_history_load_and_apply(entry.id, entry.xmp_path, 0);
+    fprintf(stdout, "%s synced XMP (new) -> DB (old)\n", entry.image_path);
+    // don't track the return code since the other path doesn't anyway
+  }
+  else if(entry.timestamp_xmp < entry.timestamp_db)
+  {
+    // WRITE DB in XMP
+    dt_image_write_sidecar_file(entry.id);
+    fprintf(stdout, "%s synced DB (new) -> XMP (old)\n", entry.image_path);
+  }
+  else
+  {
+    // we should never reach that part of the code
+    // if both timestamps are equal, they should not be in this list in the first place
+    fprintf(stderr, "editing timestamps may be corrupted\n");
+  }
+
+  _append_row_to_remove(model, path, user_data);
+
+  g_free(entry.xmp_path);
+  g_free(entry.image_path);
+}
+
+
+static void sync_oldest_to_newest(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data)
+{
+  dt_control_crawler_result_t entry = { 0 };
+  _get_crawler_entry_from_model(model, iter, &entry);
+
+  if(entry.timestamp_xmp < entry.timestamp_db)
+  {
+    // WRITE XMP in DB
+    _db_update_timestamp(entry.id, entry.timestamp_xmp);
+    dt_history_load_and_apply(entry.id, entry.xmp_path, 0);
+    fprintf(stdout, "%s synced XMP (old) -> DB (new)\n", entry.image_path);
+    // don't track the return code since the other path doesn't anyway
+  }
+  else if(entry.timestamp_xmp > entry.timestamp_db)
+  {
+    // WRITE DB in XMP
+    dt_image_write_sidecar_file(entry.id);
+    fprintf(stdout, "%s synced DB (old) -> XMP (new)\n", entry.image_path);
+  }
+  else
+  {
+    // we should never reach that part of the code
+    // if both timestamps are equal, they should not be in this list in the first place
+    fprintf(stderr, "editing timestamps may be corrupted\n");
+  }
+
+  _append_row_to_remove(model, path, user_data);
+
+  g_free(entry.xmp_path);
+  g_free(entry.image_path);
+}
+
+// overwrite database with xmp
 static void _reload_button_clicked(GtkButton *button, gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
-
-  GtkTreeIter iter;
-  gboolean valid = gtk_tree_model_get_iter_first(gui->model, &iter);
-  while(valid)
-  {
-    gboolean selected;
-    int id;
-    gchar *xmp_path = NULL;
-    time_t timestamp;
-    gtk_tree_model_get(gui->model, &iter,
-                       DT_CONTROL_CRAWLER_COL_SELECTED, &selected,
-                       DT_CONTROL_CRAWLER_COL_ID, &id,
-                       DT_CONTROL_CRAWLER_COL_XMP_PATH, &xmp_path,
-                       DT_CONTROL_CRAWLER_COL_TS, &timestamp,
-                       -1);
-    if(selected)
-    {
-      // align db write timestamp on xmp file timestamp
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2
-        (dt_database_get(darktable.db),
-         "UPDATE main.images SET write_timestamp = ?2 WHERE id = ?1",
-         -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, timestamp);
-      sqlite3_step(stmt);
-      sqlite3_finalize(stmt);
-
-      dt_history_load_and_apply(id, xmp_path, 0);
-      valid = gtk_list_store_remove(GTK_LIST_STORE(gui->model), &iter);
-    }
-    else
-      valid = gtk_tree_model_iter_next(gui->model, &iter);
-    g_free(xmp_path);
-  }
-  // we also want to disable the "select all" thing
-  _clear_select_all(gui);
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
+  GList *rows_to_remove = NULL;
+  gtk_tree_selection_selected_foreach(selection, sync_xmp_to_db, &rows_to_remove);
+  _delete_selected_rows(rows_to_remove, gui->model);
+  _cleanup_GList(rows_to_remove);
 }
 
-// overwrite xmp files of the selected images
+// overwrite xmp with database
 void _overwrite_button_clicked(GtkButton *button, gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
+  GList *rows_to_remove = NULL;
+  gtk_tree_selection_selected_foreach(selection, sync_db_to_xmp, &rows_to_remove);
+  _delete_selected_rows(rows_to_remove, gui->model);
+  _cleanup_GList(rows_to_remove);
+}
 
-  GtkTreeIter iter;
-  gboolean valid = gtk_tree_model_get_iter_first(gui->model, &iter);
-  while(valid)
-  {
-    gboolean selected;
-    int id;
-    gtk_tree_model_get(gui->model, &iter,
-                       DT_CONTROL_CRAWLER_COL_SELECTED, &selected,
-                       DT_CONTROL_CRAWLER_COL_ID, &id,
-                       -1);
-    if(selected)
-    {
-      dt_image_write_sidecar_file(id);
-      valid = gtk_list_store_remove(GTK_LIST_STORE(gui->model), &iter);
-    }
-    else
-      valid = gtk_tree_model_iter_next(gui->model, &iter);
-  }
-  // we also want to disable the "select all" thing
-  _clear_select_all(gui);
+// overwrite the oldest with the newest
+static void _newest_button_clicked(GtkButton *button, gpointer user_data)
+{
+  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
+  GList *rows_to_remove = NULL;
+  gtk_tree_selection_selected_foreach(selection, sync_newest_to_oldest, &rows_to_remove);
+  _delete_selected_rows(rows_to_remove, gui->model);
+  _cleanup_GList(rows_to_remove);
+}
+
+// overwrite the newest with the oldest
+static void _oldest_button_clicked(GtkButton *button, gpointer user_data)
+{
+  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
+  GList *rows_to_remove = NULL;
+  gtk_tree_selection_selected_foreach(selection, sync_oldest_to_newest, &rows_to_remove);
+  _delete_selected_rows(rows_to_remove, gui->model);
+  _cleanup_GList(rows_to_remove);
 }
 
 // show a popup window with a list of updated images/xmp files and allow the user to tell dt what to do about them
@@ -364,14 +462,13 @@ void dt_control_crawler_show_image_list(GList *images)
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   gtk_widget_set_vexpand(scroll, TRUE);
   GtkListStore *store = gtk_list_store_new(DT_CONTROL_CRAWLER_NUM_COLS,
-                                           G_TYPE_BOOLEAN, // selection toggle
-                                           G_TYPE_INT,     // id
-                                           G_TYPE_STRING,  // image path
-                                           G_TYPE_STRING,  // xmp path
-                                           G_TYPE_STRING,  // timestamp from xmp
-                                           G_TYPE_STRING,  // timestamp from db
-                                           G_TYPE_INT      // timestamp to db
-                                           );
+                                           G_TYPE_INT,    // id
+                                           G_TYPE_STRING, // image path
+                                           G_TYPE_STRING, // xmp path
+                                           G_TYPE_STRING, // timestamp from xmp
+                                           G_TYPE_STRING, // timestamp from db
+                                           G_TYPE_INT,    // timestamp to db
+                                           G_TYPE_INT);
 
   gui->model = GTK_TREE_MODEL(store);
 
@@ -384,15 +481,11 @@ void dt_control_crawler_show_image_list(GList *images)
     strftime(timestamp_db, sizeof(timestamp_db), "%c", localtime_r(&item->timestamp_db, &tm_stamp));
     strftime(timestamp_xmp, sizeof(timestamp_xmp), "%c", localtime_r(&item->timestamp_xmp, &tm_stamp));
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter,
-                       DT_CONTROL_CRAWLER_COL_SELECTED, 0,
-                       DT_CONTROL_CRAWLER_COL_ID, item->id,
-                       DT_CONTROL_CRAWLER_COL_IMAGE_PATH, item->image_path,
-                       DT_CONTROL_CRAWLER_COL_XMP_PATH, item->xmp_path,
-                       DT_CONTROL_CRAWLER_COL_TS_XMP, timestamp_xmp,
-                       DT_CONTROL_CRAWLER_COL_TS_DB, timestamp_db,
-                       DT_CONTROL_CRAWLER_COL_TS, item->timestamp_xmp,
-                       -1);
+    gtk_list_store_set(store, &iter, DT_CONTROL_CRAWLER_COL_ID, item->id, DT_CONTROL_CRAWLER_COL_IMAGE_PATH,
+                       item->image_path, DT_CONTROL_CRAWLER_COL_XMP_PATH, item->xmp_path,
+                       DT_CONTROL_CRAWLER_COL_TS_XMP, timestamp_xmp, DT_CONTROL_CRAWLER_COL_TS_DB, timestamp_db,
+                       DT_CONTROL_CRAWLER_COL_TS_XMP_INT, item->timestamp_xmp, DT_CONTROL_CRAWLER_COL_TS_DB_INT,
+                       item->timestamp_db, -1);
     g_free(item->image_path);
     g_free(item->xmp_path);
   }
@@ -401,14 +494,8 @@ void dt_control_crawler_show_image_list(GList *images)
   GtkWidget *tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
-  g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(_selection_changed), gui);
 
   gui->tree = GTK_TREE_VIEW(tree); // FIXME: do we need to free that later ?
-
-  GtkCellRenderer *renderer = gtk_cell_renderer_toggle_new();
-  column = gtk_tree_view_column_new_with_attributes(_("select"), renderer, "active",
-                                                    DT_CONTROL_CRAWLER_COL_SELECTED, NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   GtkCellRenderer *renderer_text = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(_("path"), renderer_text, "text",
@@ -423,8 +510,8 @@ void dt_control_crawler_show_image_list(GList *images)
                                                     DT_CONTROL_CRAWLER_COL_TS_XMP, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
-  column = gtk_tree_view_column_new_with_attributes(_("database timestamp"), gtk_cell_renderer_text_new(),
-                                                    "text", DT_CONTROL_CRAWLER_COL_TS_DB, NULL);
+  column = gtk_tree_view_column_new_with_attributes(_("database timestamp"), gtk_cell_renderer_text_new(), "text",
+                                                    DT_CONTROL_CRAWLER_COL_TS_DB, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   gtk_container_add(GTK_CONTAINER(scroll), tree);
@@ -433,8 +520,8 @@ void dt_control_crawler_show_image_list(GList *images)
   // build a dialog window that contains the list of images
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("updated xmp sidecar files found"), GTK_WINDOW(win),
-                                                  GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
-                                                  _("_close"), GTK_RESPONSE_CLOSE, NULL);
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, _("_close"),
+                                                  GTK_RESPONSE_CLOSE, NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -449,19 +536,30 @@ void dt_control_crawler_show_image_list(GList *images)
 
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 0);
-  GtkWidget *select_all = gtk_check_button_new_with_label(_("select all"));
+  GtkWidget *select_all = gtk_button_new_with_label(_("select all"));
+  GtkWidget *select_none = gtk_button_new_with_label(_("select none"));
+  GtkWidget *select_invert = gtk_button_new_with_label(_("invert selection"));
   gtk_box_pack_start(GTK_BOX(box), select_all, FALSE, FALSE, 0);
-  gui->select_all_handler_id = g_signal_connect(select_all, "toggled", G_CALLBACK(_select_all_callback), gui);
-  gui->select_all = select_all;
+  gtk_box_pack_start(GTK_BOX(box), select_none, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), select_invert, FALSE, FALSE, 0);
+  g_signal_connect(select_all, "clicked", G_CALLBACK(_select_all_callback), gui);
+  g_signal_connect(select_none, "clicked", G_CALLBACK(_select_none_callback), gui);
+  g_signal_connect(select_invert, "clicked", G_CALLBACK(_select_invert_callback), gui);
 
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 0);
-  GtkWidget *reload_button = gtk_button_new_with_label(_("update database from selected xmp files"));
-  GtkWidget *overwrite_button = gtk_button_new_with_label(_("overwrite selected xmp files"));
+  GtkWidget *reload_button = gtk_button_new_with_label(_("keep the xmp edit"));
+  GtkWidget *overwrite_button = gtk_button_new_with_label(_("keep the database edit"));
+  GtkWidget *newest_button = gtk_button_new_with_label(_("keep the newest edit"));
+  GtkWidget *oldest_button = gtk_button_new_with_label(_("keep the oldest edit"));
   gtk_box_pack_start(GTK_BOX(box), reload_button, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), overwrite_button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), newest_button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), oldest_button, FALSE, FALSE, 0);
   g_signal_connect(reload_button, "clicked", G_CALLBACK(_reload_button_clicked), gui);
   g_signal_connect(overwrite_button, "clicked", G_CALLBACK(_overwrite_button_clicked), gui);
+  g_signal_connect(newest_button, "clicked", G_CALLBACK(_newest_button_clicked), gui);
+  g_signal_connect(oldest_button, "clicked", G_CALLBACK(_oldest_button_clicked), gui);
 
   gtk_widget_show_all(dialog);
 
