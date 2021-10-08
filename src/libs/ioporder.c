@@ -167,7 +167,7 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_ioporder_t *d = (dt_lib_ioporder_t *)self->data;
 
-  gtk_widget_destroy(d->widget);
+  if(d->widget) gtk_widget_destroy(d->widget);
   free(self->data);
   self->data = NULL;
 }
