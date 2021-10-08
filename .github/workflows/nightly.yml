@@ -204,7 +204,7 @@ jobs:
           cat /opt/local/etc/macports/sources.conf
       - name: Install Base Dependencies
         run: |
-          sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg  webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic
+          sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib flickcurl GraphicsMagick openjpeg webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic
           sudo port select --set python2 python27
       - name: Build and Install
         if: false
