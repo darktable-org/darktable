@@ -44,6 +44,7 @@ void dt_guides_add_guide(const char *name, dt_guides_draw_callback draw, dt_guid
 
 // create the popover to setup the guides
 GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button);
+void dt_guides_update_popover_values();
 
 // draw the guide on screen
 void dt_guides_draw(cairo_t *cr, const float left, const float top, const float width, const float height,

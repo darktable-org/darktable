@@ -838,6 +838,9 @@ static void _settings_autoshow_menu(GtkWidget *button, struct dt_iop_module_t *m
   gtk_popover_set_relative_to(GTK_POPOVER(popover), button);
 
   g_object_set(G_OBJECT(popover), "transitions-enabled", FALSE, NULL);
+
+  dt_guides_update_popover_values();
+
   gtk_widget_show_all(popover);
 }
 
@@ -878,6 +881,18 @@ void dt_guides_update_module_widget(struct dt_iop_module_t *module)
 
   GtkWidget *box = gtk_widget_get_parent(module->guides_combo);
   gtk_widget_set_visible(box, dt_conf_get_bool("plugins/darkroom/show_guides_in_ui"));
+}
+
+void dt_guides_update_popover_values()
+{
+  // configure the values that may have changed from the last show
+  gchar *key = _conf_get_path("global", "guide", NULL);
+  if(!dt_conf_key_exists(key)) dt_conf_set_string(key, DEFAULT_GUIDE_NAME);
+  gchar *val = dt_conf_get_string(key);
+  g_free(key);
+  const int i = _guides_get_value(val);
+  g_free(val);
+  dt_bauhaus_combobox_set(darktable.view_manager->guides, i);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -1464,6 +1464,10 @@ static gboolean _toolbar_show_popup(gpointer user_data)
 
   gtk_popover_set_pointing_to(popover, &rect);
 
+  // for the guides popover, it need to be updated before we show it
+  if(darktable.view_manager && GTK_WIDGET(popover) == darktable.view_manager->guides_popover)
+    dt_guides_update_popover_values();
+
   gtk_widget_show_all(GTK_WIDGET(popover));
 
   // cancel glib timeout if invoked by long button press
