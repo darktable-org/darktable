@@ -403,7 +403,7 @@ static void sync_newest_to_oldest(GtkTreeModel *model, GtkTreePath *path, GtkTre
       message = g_strdup_printf(_("ERROR: %s NOT synced new (XMP) -> old (DB)"), entry.image_path);
       _log_synchronization(gui, message);
       g_free(message);
-      message = g_strdup_printf(_("ERROR: cannot write the database. The destination may be offline or read-only."));
+      message = g_strdup_printf(_("ERROR: cannot write the database. The destination may be full, offline or read-only."));
       _log_synchronization(gui, message);
     }
   }
@@ -422,7 +422,7 @@ static void sync_newest_to_oldest(GtkTreeModel *model, GtkTreePath *path, GtkTre
       message = g_strdup_printf(_("ERROR: %s NOT synced new (DB) -> old (XMP)"), entry.image_path);
       _log_synchronization(gui, message);
       g_free(message);
-      message = g_strdup_printf(_("ERROR: cannot write %s \nThe destination may be offline or read-only."), entry.xmp_path);
+      message = g_strdup_printf(_("ERROR: cannot write %s \nThe destination may be full, offline or read-only."), entry.xmp_path);
       _log_synchronization(gui, message);
     }
   }
@@ -466,7 +466,7 @@ static void sync_oldest_to_newest(GtkTreeModel *model, GtkTreePath *path, GtkTre
       message = g_strdup_printf(_("ERROR: %s NOT synced old (XMP) -> new (DB)"), entry.image_path);
       _log_synchronization(gui, message);
       g_free(message);
-      message = g_strdup_printf(_("ERROR: cannot write the database. The destination may be offline or read-only."));
+      message = g_strdup_printf(_("ERROR: cannot write the database. The destination may be full, offline or read-only."));
       _log_synchronization(gui, message);
     }
   }
@@ -484,7 +484,7 @@ static void sync_oldest_to_newest(GtkTreeModel *model, GtkTreePath *path, GtkTre
       message = g_strdup_printf(_("ERROR: %s NOT synced old (DB) -> new (XMP)"), entry.image_path);
       _log_synchronization(gui, message);
       g_free(message);
-      message = g_strdup_printf(_("ERROR: cannot write %s \nThe destination may be offline or read-only."), entry.xmp_path);
+      message = g_strdup_printf(_("ERROR: cannot write %s \nThe destination may be full, offline or read-only."), entry.xmp_path);
       _log_synchronization(gui, message);
     }
   }
