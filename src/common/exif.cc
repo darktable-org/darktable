@@ -1177,7 +1177,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       Exiv2::ExifData::const_iterator cm1_pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix1"));
       if((illu[0] != DT_LS_Unknown) && (cm1_pos != exifData.end()) && (cm1_pos->count() == 9))
       {
-        for(int i = 0; i < 9; i++) colmatrix[0][i] = cm1_pos->toFloat(i);      
+        for(int i = 0; i < 9; i++) colmatrix[0][i] = cm1_pos->toFloat(i);
       }
       else
         illu[0] = DT_LS_Unknown;
@@ -1186,7 +1186,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       Exiv2::ExifData::const_iterator cm2_pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix2"));
       if((illu[1] != DT_LS_Unknown) && (cm2_pos != exifData.end()) && (cm2_pos->count() == 9))
       {
-        for(int i = 0; i < 9; i++) colmatrix[1][i] = cm2_pos->toFloat(i);      
+        for(int i = 0; i < 9; i++) colmatrix[1][i] = cm2_pos->toFloat(i);
       }
       else
         illu[1] = DT_LS_Unknown;
@@ -1196,7 +1196,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       Exiv2::ExifData::const_iterator cm3_pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix3"));
       if((illu[2] != DT_LS_Unknown) && (cm3_pos != exifData.end()) && (cm3_pos->count() == 9))
       {
-        for(int i = 0; i < 9; i++) colmatrix[2][i] = cm3_pos->toFloat(i);      
+        for(int i = 0; i < 9; i++) colmatrix[2][i] = cm3_pos->toFloat(i);
       }
       else
         illu[2] = DT_LS_Unknown;
@@ -1209,7 +1209,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       // otherwise we take the one closest >= D65
       for(int i = 0; i < 3; i++)
       {
-        if((illu[i] != DT_LS_Unknown) && (_illu_to_temp(illu[i]) > sel_temp) && (sel_temp < D65temp)) 
+        if((illu[i] != DT_LS_Unknown) && (_illu_to_temp(illu[i]) > sel_temp) && (sel_temp < D65temp))
         {
           sel_illu = i;
           sel_temp = _illu_to_temp(illu[i]);
@@ -1259,7 +1259,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
           case DT_LS_D65:
             for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = colmatrix[sel_illu][i];
             break;
-            
+
           default:
             fprintf(stderr,"[exif] did not find a proper dng correction matrix for illuminant %i\n", illu[sel_illu]);
             break;
@@ -4175,8 +4175,8 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
       {
         fprintf(stderr, "cannot write xmp file '%s': '%s'\n", filename, strerror(errno));
         dt_control_log(_("cannot write xmp file '%s': '%s'"), filename, strerror(errno));
+        return -1;
       }
-
     }
 
     return 0;
