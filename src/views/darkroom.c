@@ -163,6 +163,9 @@ void cleanup(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
+  // unref the grid lines popover if needed
+  if(darktable.view_manager->guides_popover) g_object_unref(darktable.view_manager->guides_popover);
+
   if(dev->second_window.second_wnd)
   {
     if(gtk_widget_is_visible(dev->second_window.second_wnd))
@@ -2578,6 +2581,7 @@ void gui_init(dt_view_t *self)
     gtk_widget_set_tooltip_text(darktable.view_manager->guides_toggle,
                                 _("toggle guide lines\nright click for guides options"));
     darktable.view_manager->guides_popover = dt_guides_popover(self, darktable.view_manager->guides_toggle);
+    g_object_ref(darktable.view_manager->guides_popover);
     g_signal_connect(G_OBJECT(darktable.view_manager->guides_toggle), "clicked",
                      G_CALLBACK(_guides_quickbutton_clicked), dev);
     connect_button_press_release(darktable.view_manager->guides_toggle, darktable.view_manager->guides_popover);
