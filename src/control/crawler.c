@@ -205,6 +205,9 @@ typedef struct dt_control_crawler_gui_t
 {
   GtkTreeView *tree;
   GtkTreeModel *model;
+  GtkWidget *log;
+  GtkWidget *spinner;
+  GList *rows_to_remove;
 } dt_control_crawler_gui_t;
 
 // close the window and clean up
@@ -217,8 +220,11 @@ static void dt_control_crawler_response_callback(GtkWidget *dialog, gint respons
 }
 
 
-static void _delete_selected_rows(GList *rr_list, GtkTreeModel *model)
+static void _delete_selected_rows(dt_control_crawler_gui_t *gui)
 {
+  GList *rr_list = gui->rows_to_remove;
+  GtkTreeModel *model = gui->model;
+
   // Remove TreeView rows from rr_list. It needs to be populated before
   for(GList *node = rr_list; node != NULL; node = g_list_next(node))
   {
@@ -231,6 +237,10 @@ static void _delete_selected_rows(GList *rr_list, GtkTreeModel *model)
         gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
     }
   }
+
+  // Cleanup the list of rows
+  g_list_foreach(rr_list, (GFunc) gtk_tree_row_reference_free, NULL);
+  g_list_free(rr_list);
 }
 
 
@@ -292,35 +302,50 @@ static void _get_crawler_entry_from_model(GtkTreeModel *model, GtkTreeIter *iter
 }
 
 
-static void _append_row_to_remove(GtkTreeModel *model, GtkTreePath *path, gpointer user_data)
+static void _append_row_to_remove(GtkTreeModel *model, GtkTreePath *path, GList **rowref_list)
 {
   // append TreeModel rows to the list to remove
-  GList **rowref_list = (GList **)user_data;
   GtkTreeRowReference *rowref = gtk_tree_row_reference_new(model, path);
   *rowref_list = g_list_append(*rowref_list, rowref);
 }
 
-
-static void _cleanup_tree_rows_list(GList *list)
+static void _log_synchronization(dt_control_crawler_gui_t *gui, gchar *message)
 {
-  g_list_foreach(list, (GFunc) gtk_tree_row_reference_free, NULL);
-  g_list_free(list);
+  // add a new line in the log TreeView
+  GtkTreeIter iter_log;
+  GtkTreeModel *model_log = gtk_tree_view_get_model(GTK_TREE_VIEW(gui->log));
+  gtk_list_store_append(GTK_LIST_STORE(model_log), &iter_log);
+  gtk_list_store_set(GTK_LIST_STORE(model_log), &iter_log,
+                     0, message,
+                     -1);
 }
 
 
 static void sync_xmp_to_db(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data)
 {
+  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   dt_control_crawler_result_t entry = { 0 };
   _get_crawler_entry_from_model(model, iter, &entry);
   _db_update_timestamp(entry.id, entry.timestamp_xmp);
   const int success = dt_history_load_and_apply(entry.id, entry.xmp_path, 0);  // success = 0, fail = 1
 
-  if(!success) _append_row_to_remove(model, path, user_data);
-  fprintf(stdout, "%s synced XMP -> DB\n", entry.image_path);
+  gchar *message;
+  if(!success)
+  {
+    _append_row_to_remove(model, path, &gui->rows_to_remove);
+    message = g_strdup_printf(_("SUCCESS: %s synced XMP -> DB"), entry.image_path);
+    _log_synchronization(gui, message);
+  }
+  else
+  {
+    message = g_strdup_printf(_("ERROR: %s NOT synced XMP -> DB"), entry.image_path);
+    _log_synchronization(gui, message);
+    g_free(message);
+    message = g_strdup_printf(_("ERROR: cannot write the database. The destination may be offline or read-only."));
+    _log_synchronization(gui, message);
+  }
 
-  int *return_code = (int *)user_data;
-  *return_code |= success;
-
+  g_free(message);
   g_free(entry.xmp_path);
   g_free(entry.image_path);
 }
@@ -328,48 +353,91 @@ static void sync_xmp_to_db(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *
 
 static void sync_db_to_xmp(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data)
 {
+  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   dt_control_crawler_result_t entry = { 0 };
   _get_crawler_entry_from_model(model, iter, &entry);
-  dt_image_write_sidecar_file(entry.id);
+  const int success = dt_image_write_sidecar_file(entry.id);  // success = 0, fail = 1
 
-  fprintf(stdout, "%s synced DB -> XMP\n", entry.image_path);
-  _append_row_to_remove(model, path, user_data);
+  gchar *message;
 
+  if(!success)
+  {
+    _append_row_to_remove(model, path, &gui->rows_to_remove);
+    message = g_strdup_printf(_("SUCCESS: %s synced DB -> XMP"), entry.image_path);
+    _log_synchronization(gui, message);
+  }
+  else
+  {
+    message = g_strdup_printf(_("ERROR: %s NOT synced DB -> XMP"), entry.image_path);
+    _log_synchronization(gui, message);
+    g_free(message);
+    message = g_strdup_printf(_("ERROR: cannot write %s \nThe destination may be offline or read-only."), entry.xmp_path);
+    _log_synchronization(gui, message);
+  }
+
+  g_free(message);
   g_free(entry.xmp_path);
   g_free(entry.image_path);
-
-  // no return code, dt_image_write_sidecar_file always succeeds… ¯\_(ツ)_/¯
-  // FIXME ?
 }
 
 static void sync_newest_to_oldest(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data)
 {
+  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   dt_control_crawler_result_t entry = { 0 };
   _get_crawler_entry_from_model(model, iter, &entry);
+  int success;
+  gchar *message;
 
   if(entry.timestamp_xmp > entry.timestamp_db)
   {
     // WRITE XMP in DB
     _db_update_timestamp(entry.id, entry.timestamp_xmp);
-    dt_history_load_and_apply(entry.id, entry.xmp_path, 0);
-    fprintf(stdout, "%s synced XMP (new) -> DB (old)\n", entry.image_path);
-    // don't track the return code since the other path doesn't anyway
+    success = dt_history_load_and_apply(entry.id, entry.xmp_path, 0);
+    if(!success)
+    {
+      message = g_strdup_printf(_("SUCCESS: %s synced new (XMP) -> old (DB)"), entry.image_path);
+      _log_synchronization(gui, message);
+    }
+    else
+    {
+      message = g_strdup_printf(_("ERROR: %s NOT synced new (XMP) -> old (DB)"), entry.image_path);
+      _log_synchronization(gui, message);
+      g_free(message);
+      message = g_strdup_printf(_("ERROR: cannot write the database. The destination may be offline or read-only."));
+      _log_synchronization(gui, message);
+    }
   }
   else if(entry.timestamp_xmp < entry.timestamp_db)
   {
     // WRITE DB in XMP
-    dt_image_write_sidecar_file(entry.id);
+    success = dt_image_write_sidecar_file(entry.id);
     fprintf(stdout, "%s synced DB (new) -> XMP (old)\n", entry.image_path);
+    if(!success)
+    {
+      message = g_strdup_printf(_("SUCCESS: %s synced new (DB) -> old (XMP)"), entry.image_path);
+      _log_synchronization(gui, message);
+    }
+    else
+    {
+      message = g_strdup_printf(_("ERROR: %s NOT synced new (DB) -> old (XMP)"), entry.image_path);
+      _log_synchronization(gui, message);
+      g_free(message);
+      message = g_strdup_printf(_("ERROR: cannot write %s \nThe destination may be offline or read-only."), entry.xmp_path);
+      _log_synchronization(gui, message);
+    }
   }
   else
   {
     // we should never reach that part of the code
     // if both timestamps are equal, they should not be in this list in the first place
-    fprintf(stderr, "editing timestamps may be corrupted\n");
+    success = 1;
+    message = g_strdup_printf(_("EXCEPTION: %s has inconsistent timestamps"), entry.image_path);
+    _log_synchronization(gui, message);
   }
 
-  _append_row_to_remove(model, path, user_data);
+  if(!success) _append_row_to_remove(model, path, &gui->rows_to_remove);
 
+  g_free(message);
   g_free(entry.xmp_path);
   g_free(entry.image_path);
 }
@@ -377,32 +445,61 @@ static void sync_newest_to_oldest(GtkTreeModel *model, GtkTreePath *path, GtkTre
 
 static void sync_oldest_to_newest(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data)
 {
+  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   dt_control_crawler_result_t entry = { 0 };
   _get_crawler_entry_from_model(model, iter, &entry);
+  int success;
+  gchar *message;
 
   if(entry.timestamp_xmp < entry.timestamp_db)
   {
     // WRITE XMP in DB
     _db_update_timestamp(entry.id, entry.timestamp_xmp);
-    dt_history_load_and_apply(entry.id, entry.xmp_path, 0);
-    fprintf(stdout, "%s synced XMP (old) -> DB (new)\n", entry.image_path);
-    // don't track the return code since the other path doesn't anyway
+    success = dt_history_load_and_apply(entry.id, entry.xmp_path, 0);
+    if(!success)
+    {
+      message = g_strdup_printf(_("SUCCESS: %s synced old (XMP) -> new (DB)"), entry.image_path);
+      _log_synchronization(gui, message);
+    }
+    else
+    {
+      message = g_strdup_printf(_("ERROR: %s NOT synced old (XMP) -> new (DB)"), entry.image_path);
+      _log_synchronization(gui, message);
+      g_free(message);
+      message = g_strdup_printf(_("ERROR: cannot write the database. The destination may be offline or read-only."));
+      _log_synchronization(gui, message);
+    }
   }
   else if(entry.timestamp_xmp > entry.timestamp_db)
   {
     // WRITE DB in XMP
-    dt_image_write_sidecar_file(entry.id);
-    fprintf(stdout, "%s synced DB (old) -> XMP (new)\n", entry.image_path);
+    success = dt_image_write_sidecar_file(entry.id);
+    if(!success)
+    {
+      message = g_strdup_printf(_("SUCCESS: %s synced old (DB) -> new (XMP)"), entry.image_path);
+      _log_synchronization(gui, message);
+    }
+    else
+    {
+      message = g_strdup_printf(_("ERROR: %s NOT synced old (DB) -> new (XMP)"), entry.image_path);
+      _log_synchronization(gui, message);
+      g_free(message);
+      message = g_strdup_printf(_("ERROR: cannot write %s \nThe destination may be offline or read-only."), entry.xmp_path);
+      _log_synchronization(gui, message);
+    }
   }
   else
   {
     // we should never reach that part of the code
     // if both timestamps are equal, they should not be in this list in the first place
-    fprintf(stderr, "editing timestamps may be corrupted\n");
+    success = 1;
+    message = g_strdup_printf(_("EXCEPTION: %s has inconsistent timestamps"), entry.image_path);
+    _log_synchronization(gui, message);
   }
 
-  _append_row_to_remove(model, path, user_data);
+  if(!success) _append_row_to_remove(model, path, &gui->rows_to_remove);
 
+  g_free(message);
   g_free(entry.xmp_path);
   g_free(entry.image_path);
 }
@@ -412,10 +509,11 @@ static void _reload_button_clicked(GtkButton *button, gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
-  GList *rows_to_remove = NULL;
-  gtk_tree_selection_selected_foreach(selection, sync_xmp_to_db, &rows_to_remove);
-  _delete_selected_rows(rows_to_remove, gui->model);
-  _cleanup_tree_rows_list(rows_to_remove);
+  gui->rows_to_remove = NULL;
+  gtk_spinner_start(GTK_SPINNER(gui->spinner));
+  gtk_tree_selection_selected_foreach(selection, sync_xmp_to_db, gui);
+  _delete_selected_rows(gui);
+  gtk_spinner_stop(GTK_SPINNER(gui->spinner));
 }
 
 // overwrite xmp with database
@@ -423,10 +521,11 @@ void _overwrite_button_clicked(GtkButton *button, gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
-  GList *rows_to_remove = NULL;
-  gtk_tree_selection_selected_foreach(selection, sync_db_to_xmp, &rows_to_remove);
-  _delete_selected_rows(rows_to_remove, gui->model);
-  _cleanup_tree_rows_list(rows_to_remove);
+  gui->rows_to_remove = NULL;
+  gtk_spinner_start(GTK_SPINNER(gui->spinner));
+  gtk_tree_selection_selected_foreach(selection, sync_db_to_xmp, gui);
+  _delete_selected_rows(gui);
+  gtk_spinner_stop(GTK_SPINNER(gui->spinner));
 }
 
 // overwrite the oldest with the newest
@@ -434,10 +533,11 @@ static void _newest_button_clicked(GtkButton *button, gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
-  GList *rows_to_remove = NULL;
-  gtk_tree_selection_selected_foreach(selection, sync_newest_to_oldest, &rows_to_remove);
-  _delete_selected_rows(rows_to_remove, gui->model);
-  _cleanup_tree_rows_list(rows_to_remove);
+  gui->rows_to_remove = NULL;
+  gtk_spinner_start(GTK_SPINNER(gui->spinner));
+  gtk_tree_selection_selected_foreach(selection, sync_newest_to_oldest, gui);
+  _delete_selected_rows(gui);
+  gtk_spinner_stop(GTK_SPINNER(gui->spinner));
 }
 
 // overwrite the newest with the oldest
@@ -445,10 +545,11 @@ static void _oldest_button_clicked(GtkButton *button, gpointer user_data)
 {
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(gui->tree);
-  GList *rows_to_remove = NULL;
-  gtk_tree_selection_selected_foreach(selection, sync_oldest_to_newest, &rows_to_remove);
-  _delete_selected_rows(rows_to_remove, gui->model);
-  _cleanup_tree_rows_list(rows_to_remove);
+  gui->rows_to_remove = NULL;
+  gtk_spinner_start(GTK_SPINNER(gui->spinner));
+  gtk_tree_selection_selected_foreach(selection, sync_oldest_to_newest, gui);
+  _delete_selected_rows(gui);
+  gtk_spinner_stop(GTK_SPINNER(gui->spinner));
 }
 
 static gchar* str_time_delta(const int time_delta)
@@ -590,6 +691,7 @@ void dt_control_crawler_show_image_list(GList *images)
 
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 0);
+
   GtkWidget *reload_button = gtk_button_new_with_label(_("keep the xmp edit"));
   GtkWidget *overwrite_button = gtk_button_new_with_label(_("keep the database edit"));
   GtkWidget *newest_button = gtk_button_new_with_label(_("keep the newest edit"));
@@ -602,6 +704,24 @@ void dt_control_crawler_show_image_list(GList *images)
   g_signal_connect(overwrite_button, "clicked", G_CALLBACK(_overwrite_button_clicked), gui);
   g_signal_connect(newest_button, "clicked", G_CALLBACK(_newest_button_clicked), gui);
   g_signal_connect(oldest_button, "clicked", G_CALLBACK(_oldest_button_clicked), gui);
+
+  /* Feedback spinner in case synch happens over network and stales */
+  gui->spinner = gtk_spinner_new();
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(gui->spinner), FALSE, FALSE, 0);
+
+  /* Log report */
+  scroll = gtk_scrolled_window_new(NULL, NULL);
+  gui->log = gtk_tree_view_new();
+  gtk_box_pack_start(GTK_BOX(content_box), scroll, TRUE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(scroll), gui->log);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+
+  gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW(gui->log), -1, _("synchronization log"), renderer_text,
+                                               "text", 0, NULL);
+  GtkListStore *store_log = gtk_list_store_new (1, G_TYPE_STRING);
+  GtkTreeModel *model_log = GTK_TREE_MODEL(store_log);
+  gtk_tree_view_set_model(GTK_TREE_VIEW(gui->log), model_log);
+  g_object_unref(model_log);
 
   gtk_widget_show_all(dialog);
 
