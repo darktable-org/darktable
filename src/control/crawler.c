@@ -220,8 +220,7 @@ static void dt_control_crawler_response_callback(GtkWidget *dialog, gint respons
 static void _delete_selected_rows(GList *rr_list, GtkTreeModel *model)
 {
   // Remove TreeView rows from rr_list. It needs to be populated before
-  GList *node;
-  for(node = rr_list; node != NULL; node = g_list_next(node))
+  for(GList *node = rr_list; node != NULL; node = g_list_next(node))
   {
     GtkTreePath *path = gtk_tree_row_reference_get_path((GtkTreeRowReference*)node->data);
 
@@ -302,7 +301,7 @@ static void _append_row_to_remove(GtkTreeModel *model, GtkTreePath *path, gpoint
 }
 
 
-static void _cleanup_GList(GList *list)
+static void _cleanup_tree_rows_list(GList *list)
 {
   g_list_foreach(list, (GFunc) gtk_tree_row_reference_free, NULL);
   g_list_free(list);
@@ -416,7 +415,7 @@ static void _reload_button_clicked(GtkButton *button, gpointer user_data)
   GList *rows_to_remove = NULL;
   gtk_tree_selection_selected_foreach(selection, sync_xmp_to_db, &rows_to_remove);
   _delete_selected_rows(rows_to_remove, gui->model);
-  _cleanup_GList(rows_to_remove);
+  _cleanup_tree_rows_list(rows_to_remove);
 }
 
 // overwrite xmp with database
@@ -427,7 +426,7 @@ void _overwrite_button_clicked(GtkButton *button, gpointer user_data)
   GList *rows_to_remove = NULL;
   gtk_tree_selection_selected_foreach(selection, sync_db_to_xmp, &rows_to_remove);
   _delete_selected_rows(rows_to_remove, gui->model);
-  _cleanup_GList(rows_to_remove);
+  _cleanup_tree_rows_list(rows_to_remove);
 }
 
 // overwrite the oldest with the newest
@@ -438,7 +437,7 @@ static void _newest_button_clicked(GtkButton *button, gpointer user_data)
   GList *rows_to_remove = NULL;
   gtk_tree_selection_selected_foreach(selection, sync_newest_to_oldest, &rows_to_remove);
   _delete_selected_rows(rows_to_remove, gui->model);
-  _cleanup_GList(rows_to_remove);
+  _cleanup_tree_rows_list(rows_to_remove);
 }
 
 // overwrite the newest with the oldest
@@ -449,7 +448,7 @@ static void _oldest_button_clicked(GtkButton *button, gpointer user_data)
   GList *rows_to_remove = NULL;
   gtk_tree_selection_selected_foreach(selection, sync_oldest_to_newest, &rows_to_remove);
   _delete_selected_rows(rows_to_remove, gui->model);
-  _cleanup_GList(rows_to_remove);
+  _cleanup_tree_rows_list(rows_to_remove);
 }
 
 static gchar* str_time_delta(const int time_delta)
@@ -463,7 +462,7 @@ static gchar* str_time_delta(const int time_delta)
   int hours = minutes / 60;
   minutes -= 60 * hours;
 
-  int days = hours / 24;
+  const int days = hours / 24;
   hours -= 24 * days;
 
   return g_strdup_printf(_("%id %02dh %02dm %02ds"), days, hours, minutes, seconds);
