@@ -60,6 +60,7 @@
 
 #include <gtk/gtk.h>
 #include "control/conf.h"
+#include "common/calculator.h"
 
 #define NON_DEF_CHAR "●"
 
@@ -74,7 +75,7 @@ static gboolean handle_enter_key(GtkWidget *widget, GdkEvent *event, gpointer da
   return FALSE;
 }
 
-static void set_widget_label_default(GtkWidget *widget, const char *confstr, GtkWidget *label)
+static void set_widget_label_default(GtkWidget *widget, const char *confstr, GtkWidget *label, const float factor)
 {
   gboolean is_default = TRUE;
 
@@ -95,15 +96,28 @@ static void set_widget_label_default(GtkWidget *widget, const char *confstr, Gtk
     gtk_tree_model_get(model, &iter, 0, &c_state, -1);
     is_default = (strcmp(c_state, c_default) == 0);
   }
+  else if(GTK_IS_SPIN_BUTTON(widget))
+  {
+    const gchar *c_default = dt_confgen_get(confstr, DT_DEFAULT);
+    const float v_default = dt_calculator_solve(1, c_default) * factor;
+    const float v_state = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
+    is_default = (v_state == v_default);
+  }
   else if(GTK_IS_ENTRY(widget))
   {
     const gchar *c_default = dt_confgen_get(confstr, DT_DEFAULT);
     const gchar *c_state = gtk_entry_get_text(GTK_ENTRY(widget));
     is_default = (strcmp(c_state, c_default) == 0);
   }
+  else if(GTK_IS_FILE_CHOOSER(widget))
+  {
+    const gchar *c_default = dt_confgen_get(confstr, DT_DEFAULT);
+    const gchar *c_state = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
+    is_default = (strcmp(c_state, c_default) == 0);
+  }
   else
   {
-    // unsupported widget like a file-chooser
+    // other unsupported widgets
     return;
   }
 
@@ -165,8 +179,9 @@ gboolean restart_required = FALSE;
     <xsl:if test="@restart">
       <xsl:text>  restart_required = TRUE;&#xA;</xsl:text>
     </xsl:if>
+    <xsl:apply-templates select="type" mode="factor"/>
     <xsl:text>  set_widget_label_default(widget, "</xsl:text>
-    <xsl:value-of select="name"/><xsl:text>", GTK_WIDGET(user_data));</xsl:text>
+    <xsl:value-of select="name"/><xsl:text>", GTK_WIDGET(user_data), factor);</xsl:text>
     <xsl:text>&#xA;}&#xA;&#xA;</xsl:text>
   </xsl:for-each>
 
@@ -689,7 +704,7 @@ gboolean restart_required = FALSE;
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(widget), setting);
     g_free(setting);
     </xsl:text>
-    <xsl:text>g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);</xsl:text>
+    <xsl:text>g_signal_connect(G_OBJECT(widget), "selection-changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);</xsl:text>
     <xsl:text>
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
