@@ -668,7 +668,7 @@ GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   // title
-  GtkWidget *lb = gtk_label_new(_("Global guides settings"));
+  GtkWidget *lb = gtk_label_new(_("global guide overlay settings"));
   gtk_label_set_justify(GTK_LABEL(lb), GTK_JUSTIFY_CENTER);
   gtk_widget_set_name(lb, "guides_menu_title");
   gtk_box_pack_start(GTK_BOX(vbox), lb, TRUE, TRUE, 0);
@@ -858,11 +858,10 @@ void dt_guides_init_module_widget(GtkWidget *iopw, struct dt_iop_module_t *modul
   g_free(key);
 
   g_signal_connect(G_OBJECT(cb), "toggled", G_CALLBACK(_settings_autoshow_change2), module);
-  gtk_widget_set_tooltip_text(cb,
-                              _("set if the guides should appear automatically when this module get the focus"));
+  gtk_widget_set_tooltip_text(cb, _("show guide overlay when this module has focus"));
   GtkWidget *ic = dtgtk_button_new(dtgtk_cairo_paint_grid, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(
-      ic, _("Change global guides settings\nNote that this settings will be applied to all the guides."));
+  gtk_widget_set_tooltip_text(ic, _("change global guide settings\nnote that these settings are applied globally "
+                                    "and will impact any module that shows guide overlays"));
   g_signal_connect(G_OBJECT(ic), "clicked", G_CALLBACK(_settings_autoshow_menu), module);
 
   // we hide it if the preference is set to "off"
