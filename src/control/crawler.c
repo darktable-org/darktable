@@ -341,7 +341,7 @@ static void sync_xmp_to_db(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *
     message = g_strdup_printf(_("ERROR: %s NOT synced XMP -> DB"), entry.image_path);
     _log_synchronization(gui, message);
     g_free(message);
-    message = g_strdup_printf(_("ERROR: cannot write the database. The destination may be offline or read-only."));
+    message = g_strdup_printf(_("ERROR: cannot write the database. The destination may be full, offline or read-only."));
     _log_synchronization(gui, message);
   }
 
@@ -371,7 +371,7 @@ static void sync_db_to_xmp(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *
     message = g_strdup_printf(_("ERROR: %s NOT synced DB -> XMP"), entry.image_path);
     _log_synchronization(gui, message);
     g_free(message);
-    message = g_strdup_printf(_("ERROR: cannot write %s \nThe destination may be offline or read-only."), entry.xmp_path);
+    message = g_strdup_printf(_("ERROR: cannot write %s \nThe destination may be full, offline or read-only."), entry.xmp_path);
     _log_synchronization(gui, message);
   }
 
