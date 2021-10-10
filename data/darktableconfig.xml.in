@@ -171,7 +171,7 @@
     <name>cache_memory</name>
     <type factor="(1.0 / (1024.0 * 1024.0))" min="(1024 * 1024 * 100)">int64</type>
     <default>(1024 * 1024 * 512)</default>
-    <shortdescription>memory in megabytes to use for thumbnail cache</shortdescription>
+    <shortdescription>memory in MB to use for thumbnail cache</shortdescription>
     <longdescription>this controls how much memory is going to be used for thumbnails and other buffers (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu">
