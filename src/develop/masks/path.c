@@ -658,7 +658,9 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
     if(dborder && nb >= 3)
     {
       // we get the next point (start of the next segment)
-      _path_border_get_XY(p3[0], p3[1], p3[2], p3[3], p4[2], p4[3], p4[0], p4[1], 0, p3[4], cmin, cmin + 1,
+      // t=0.00001f to workaround rounding effects with full optimization that result in bmax[0] NOT being set to
+      // NAN when t=0 and the two points in p3 are identical (as is the case on a control node set to sharp corner)
+      _path_border_get_XY(p3[0], p3[1], p3[2], p3[3], p4[2], p4[3], p4[0], p4[1], 0.00001f, p3[4], cmin, cmin + 1,
                           bmax, bmax + 1);
       if(isnan(bmax[0]))
       {
