@@ -107,8 +107,8 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {25.0f }, "profile_gamma", 0},
   { {26.0f }, "hazeremoval", 0},
   { {27.0f }, "colorin", 0},
-  { {27.5f }, "diffuse", 0},
   { {27.5f }, "channelmixerrgb", 0},
+  { {27.5f }, "diffuse", 0},
   { {27.5f }, "censorize", 0},
   { {27.5f }, "negadoctor", 0},
   { {27.5f }, "blurs", 0},
@@ -198,8 +198,8 @@ const dt_iop_order_entry_t v30_order[] = {
   { {26.0f }, "profile_gamma", 0},
   { {27.0f }, "equalizer", 0},
   { {28.0f }, "colorin", 0},
-  { {28.5f }, "diffuse", 0},
   { {28.5f }, "channelmixerrgb", 0},
+  { {28.5f }, "diffuse", 0},
   { {28.5f }, "censorize", 0},
   { {28.5f }, "negadoctor", 0},      // Cineon film encoding comes after scanner input color profile
   { {28.5f }, "blurs", 0},           // physically-accurate blurs (motion and lens)
@@ -214,7 +214,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {33.0f }, "lowpass", 0},         // same
   { {34.0f }, "highpass", 0},        // same
   { {35.0f }, "sharpen", 0},         // same, worst than atrous in same use-case, less control overall
-  
+
   { {37.0f }, "colortransfer", 0},   // probably better if source and destination colours are neutralized in the same
                                   //    colour exchange space, hence after colorin and colorcheckr,
                                   //    but apply after frequential ops in case it does non-linear witchcraft,
@@ -307,8 +307,8 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 28.0f }, "profile_gamma", 0},
   { { 28.0f }, "equalizer", 0},
   // from there, it's the same as the raw order
-  { { 28.5f }, "diffuse", 0 },
   { { 28.5f }, "channelmixerrgb", 0 },
+  { { 28.5f }, "diffuse", 0 },
   { { 28.5f }, "censorize", 0 },
   { { 28.5f }, "negadoctor", 0 },   // Cineon film encoding comes after scanner input color profile
   { { 28.5f }, "blurs", 0 },        // physically-accurate blurs (motion and lens)
@@ -323,7 +323,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 33.0f }, "lowpass", 0 },       // same
   { { 34.0f }, "highpass", 0 },      // same
   { { 35.0f }, "sharpen", 0 },       // same, worst than atrous in same use-case, less control overall
-  
+
   { { 37.0f }, "colortransfer", 0 }, // probably better if source and destination colours are neutralized in the
                                      // same
                                      //    colour exchange space, hence after colorin and colorcheckr,
@@ -809,7 +809,7 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
           _insert_before(iop_order_list, "rgbcurve", "colorbalancergb");
           _insert_before(iop_order_list, "ashift", "cacorrectrgb");
           _insert_before(iop_order_list, "graduatednd", "crop");
-          _insert_before(iop_order_list, "channelmixerrgb", "diffuse");
+          _insert_before(iop_order_list, "colorbalance", "diffuse");
           _insert_before(iop_order_list, "nlmeans", "blurs");
         }
       }
