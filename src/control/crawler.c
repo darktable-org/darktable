@@ -327,10 +327,10 @@ static void sync_xmp_to_db(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *
   dt_control_crawler_result_t entry = { 0 };
   _get_crawler_entry_from_model(model, iter, &entry);
   _db_update_timestamp(entry.id, entry.timestamp_xmp);
-  const int success = dt_history_load_and_apply(entry.id, entry.xmp_path, 0);  // success = 0, fail = 1
+  const int error = dt_history_load_and_apply(entry.id, entry.xmp_path, 0);  // success = 0, fail = 1
 
   gchar *message;
-  if(!success)
+  if(!error)
   {
     _append_row_to_remove(model, path, &gui->rows_to_remove);
     message = g_strdup_printf(_("SUCCESS: %s synced XMP -> DB"), entry.image_path);
@@ -356,11 +356,11 @@ static void sync_db_to_xmp(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   dt_control_crawler_result_t entry = { 0 };
   _get_crawler_entry_from_model(model, iter, &entry);
-  const int success = dt_image_write_sidecar_file(entry.id);  // success = 0, fail = 1
+  const int error = dt_image_write_sidecar_file(entry.id);  // success = 0, fail = 1
 
   gchar *message;
 
-  if(!success)
+  if(!error)
   {
     _append_row_to_remove(model, path, &gui->rows_to_remove);
     message = g_strdup_printf(_("SUCCESS: %s synced DB -> XMP"), entry.image_path);
@@ -385,15 +385,15 @@ static void sync_newest_to_oldest(GtkTreeModel *model, GtkTreePath *path, GtkTre
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   dt_control_crawler_result_t entry = { 0 };
   _get_crawler_entry_from_model(model, iter, &entry);
-  int success;
+  int error;
   gchar *message;
 
   if(entry.timestamp_xmp > entry.timestamp_db)
   {
     // WRITE XMP in DB
     _db_update_timestamp(entry.id, entry.timestamp_xmp);
-    success = dt_history_load_and_apply(entry.id, entry.xmp_path, 0);
-    if(!success)
+    error = dt_history_load_and_apply(entry.id, entry.xmp_path, 0);
+    if(!error)
     {
       message = g_strdup_printf(_("SUCCESS: %s synced new (XMP) -> old (DB)"), entry.image_path);
       _log_synchronization(gui, message);
@@ -410,9 +410,9 @@ static void sync_newest_to_oldest(GtkTreeModel *model, GtkTreePath *path, GtkTre
   else if(entry.timestamp_xmp < entry.timestamp_db)
   {
     // WRITE DB in XMP
-    success = dt_image_write_sidecar_file(entry.id);
+    error = dt_image_write_sidecar_file(entry.id);
     fprintf(stdout, "%s synced DB (new) -> XMP (old)\n", entry.image_path);
-    if(!success)
+    if(!error)
     {
       message = g_strdup_printf(_("SUCCESS: %s synced new (DB) -> old (XMP)"), entry.image_path);
       _log_synchronization(gui, message);
@@ -430,12 +430,12 @@ static void sync_newest_to_oldest(GtkTreeModel *model, GtkTreePath *path, GtkTre
   {
     // we should never reach that part of the code
     // if both timestamps are equal, they should not be in this list in the first place
-    success = 1;
+    error = 1;
     message = g_strdup_printf(_("EXCEPTION: %s has inconsistent timestamps"), entry.image_path);
     _log_synchronization(gui, message);
   }
 
-  if(!success) _append_row_to_remove(model, path, &gui->rows_to_remove);
+  if(!error) _append_row_to_remove(model, path, &gui->rows_to_remove);
 
   g_free(message);
   g_free(entry.xmp_path);
@@ -448,15 +448,15 @@ static void sync_oldest_to_newest(GtkTreeModel *model, GtkTreePath *path, GtkTre
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   dt_control_crawler_result_t entry = { 0 };
   _get_crawler_entry_from_model(model, iter, &entry);
-  int success;
+  int error;
   gchar *message;
 
   if(entry.timestamp_xmp < entry.timestamp_db)
   {
     // WRITE XMP in DB
     _db_update_timestamp(entry.id, entry.timestamp_xmp);
-    success = dt_history_load_and_apply(entry.id, entry.xmp_path, 0);
-    if(!success)
+    error = dt_history_load_and_apply(entry.id, entry.xmp_path, 0);
+    if(!error)
     {
       message = g_strdup_printf(_("SUCCESS: %s synced old (XMP) -> new (DB)"), entry.image_path);
       _log_synchronization(gui, message);
@@ -473,8 +473,8 @@ static void sync_oldest_to_newest(GtkTreeModel *model, GtkTreePath *path, GtkTre
   else if(entry.timestamp_xmp > entry.timestamp_db)
   {
     // WRITE DB in XMP
-    success = dt_image_write_sidecar_file(entry.id);
-    if(!success)
+    error = dt_image_write_sidecar_file(entry.id);
+    if(!error)
     {
       message = g_strdup_printf(_("SUCCESS: %s synced old (DB) -> new (XMP)"), entry.image_path);
       _log_synchronization(gui, message);
@@ -492,12 +492,12 @@ static void sync_oldest_to_newest(GtkTreeModel *model, GtkTreePath *path, GtkTre
   {
     // we should never reach that part of the code
     // if both timestamps are equal, they should not be in this list in the first place
-    success = 1;
+    error = 1;
     message = g_strdup_printf(_("EXCEPTION: %s has inconsistent timestamps"), entry.image_path);
     _log_synchronization(gui, message);
   }
 
-  if(!success) _append_row_to_remove(model, path, &gui->rows_to_remove);
+  if(!error) _append_row_to_remove(model, path, &gui->rows_to_remove);
 
   g_free(message);
   g_free(entry.xmp_path);
