@@ -321,7 +321,7 @@ dt_imageio_write_xmp_t dt_image_get_xmp_mode()
   {
     res = DT_WRITE_XMP_ALWAYS;
     dt_conf_set_string("write_sidecar_files", "on import");
-  }  
+  }
   return res;
 }
 
@@ -1412,7 +1412,7 @@ static int _image_read_duplicates(const uint32_t id, const char *filename, const
 static uint32_t _image_import_internal(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs,
                                        gboolean lua_locking, gboolean raise_signals)
 {
-  const dt_imageio_write_xmp_t xmp_mode = dt_image_get_xmp_mode(); 
+  const dt_imageio_write_xmp_t xmp_mode = dt_image_get_xmp_mode();
   char *normalized_filename = dt_util_normalize_path(filename);
   if(!normalized_filename || !dt_util_test_image_file(normalized_filename))
   {
@@ -2420,7 +2420,7 @@ int dt_image_local_copy_reset(const int32_t imgid)
 // xmp stuff
 // *******************************************************
 
-void dt_image_write_sidecar_file(const int32_t imgid)
+int dt_image_write_sidecar_file(const int32_t imgid)
 {
   // TODO: compute hash and don't write if not needed!
   // write .xmp file
@@ -2439,7 +2439,7 @@ void dt_image_write_sidecar_file(const int32_t imgid)
       dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
 
       //  nothing to do, the original is not accessible and there is no local copy
-      if(!from_cache) return;
+      if(!from_cache) return 1;
     }
 
     dt_image_path_append_version(imgid, filename, sizeof(filename));
@@ -2457,8 +2457,11 @@ void dt_image_write_sidecar_file(const int32_t imgid)
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
+      return 0;
     }
   }
+
+  return 1; // error : nothing written
 }
 
 void dt_image_synch_xmps(const GList *img)
