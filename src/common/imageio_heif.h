@@ -24,12 +24,6 @@
 #include "common/image.h"
 #include "common/mipmap_cache.h"
 
-struct heif_color_profile {
-    dt_colorspaces_color_profile_type_t type;
-    size_t icc_profile_size;
-    uint8_t *icc_profile;
-};
-
 dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
                                          const char *filename,
                                          dt_mipmap_buffer_t *buf);
