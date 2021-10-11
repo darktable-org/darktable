@@ -201,7 +201,7 @@ int dt_imageio_heif_read_profile(const char *filename,
   if(!ctx) {
     dt_print(DT_DEBUG_IMAGEIO,
              "Unable to allocate HEIF context\n");
-    return DT_IMAGEIO_CACHE_FULL;
+    goto out;
   }
 
   struct heif_error err;
