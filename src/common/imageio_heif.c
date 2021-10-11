@@ -276,6 +276,7 @@ dt_imageio_retval_t dt_imageio_heif_read_color_profile(const char *filename, str
       dt_print(DT_DEBUG_IMAGEIO,
              "No color profile for HEIF file [%s]\n",
              filename);
+      cp->type = DT_COLORSPACE_NONE;
       ret = DT_IMAGEIO_OK;
       break; /* heif_color_profile_type_not_present */
 
@@ -315,6 +316,22 @@ static void map_icc_profile(
 
       switch (profile_info->transfer_characteristics) {
       /*
+      * sRGB
+      */
+      case heif_transfer_characteristic_IEC_61966_2_1:
+      case heif_transfer_characteristic_IEC_61966_2_4:
+        switch (profile_info->matrix_coefficients) {
+        case heif_matrix_coefficients_ITU_R_BT_709_5:
+        case heif_matrix_coefficients_chromaticity_derived_non_constant_luminance:
+          cp->type = DT_COLORSPACE_SRGB;
+          break;
+        default:
+          break;
+        }
+
+        break; /* sRGB */
+
+      /*
        * REC709 (all transfer curves are equivalent)
        */
       case heif_transfer_characteristic_ITU_R_BT_709_5:
@@ -331,23 +348,7 @@ static void map_icc_profile(
           break;
         }
 
-        break; /* SRGB */
-
-      /*
-       * GAMMA22 BT709
-       */
-      case heif_transfer_characteristic_ITU_R_BT_470_6_System_M:
-
-        switch (profile_info->matrix_coefficients) {
-        case heif_matrix_coefficients_ITU_R_BT_709_5:
-        case heif_matrix_coefficients_chromaticity_derived_non_constant_luminance:
-          cp->type = DT_COLORSPACE_REC709;
-          break;
-        default:
-          break;
-        }
-
-        break; /* GAMMA22 BT709 */
+        break; /* REC709 */
 
       /*
        * LINEAR BT709
