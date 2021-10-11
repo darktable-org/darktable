@@ -39,9 +39,6 @@
 #include "imageio_heif.h"
 
 
-static void map_icc_profile(const char *filename, struct heif_color_profile_nclx *profile_info, struct heif_color_profile *cp);
-
-
 dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
                                          const char *filename,
                                          dt_mipmap_buffer_t *mbuf)
@@ -67,7 +64,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     switch(err.code) {
       case heif_error_Unsupported_filetype:
       case heif_error_Unsupported_feature:
-        fprintf(stderr, "[imageio_heif] Unsupported file: `%s'! Is your libheif compiled with HEVC support?\n", filename); 
+        fprintf(stderr, "[imageio_heif] Unsupported file: `%s'! Is your libheif compiled with HEVC support?\n", filename);
         break;
       default:
         break;
@@ -187,9 +184,17 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
 }
 
 
-dt_imageio_retval_t dt_imageio_heif_read_color_profile(const char *filename, struct heif_color_profile *cp)
+int dt_imageio_heif_read_profile(const char *filename,
+                                uint8_t **out,
+                                dt_colorspaces_cicp_t *cicp)
 {
-  dt_imageio_retval_t ret;
+  /* set default return values */
+  int size = 0;
+  *out = NULL;
+  cicp->color_primaries = heif_color_primaries_unspecified;
+  cicp->transfer_characteristics = heif_transfer_characteristic_unspecified;
+  cicp->matrix_coefficients = heif_matrix_coefficients_unspecified;
+
   struct heif_image_handle* handle = NULL;
 
   struct heif_context* ctx = heif_context_alloc();
@@ -210,7 +215,6 @@ dt_imageio_retval_t dt_imageio_heif_read_color_profile(const char *filename, str
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to read HEIF file [%s]\n",
              filename);
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
   }
 
@@ -220,7 +224,6 @@ dt_imageio_retval_t dt_imageio_heif_read_color_profile(const char *filename, str
         dt_print(DT_DEBUG_IMAGEIO,
              "No images found in HEIF file [%s]\n",
              filename);
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
   }
 
@@ -230,7 +233,6 @@ dt_imageio_retval_t dt_imageio_heif_read_color_profile(const char *filename, str
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to read primary image from HEIF file [%s]\n",
              filename);
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
   }
 
@@ -248,12 +250,11 @@ dt_imageio_retval_t dt_imageio_heif_read_color_profile(const char *filename, str
         dt_print(DT_DEBUG_IMAGEIO,
                 "Failed to get NCLX color profile data from HEIF file [%s]\n",
                 filename);
-        ret = DT_IMAGEIO_FILE_CORRUPTED;
         goto out;
       }
-      // map NCLX info to Darktable profiles
-      map_icc_profile(filename, profile_info_nclx, cp);
-      ret = DT_IMAGEIO_OK;
+      cicp->color_primaries = profile_info_nclx->color_primaries;
+      cicp->transfer_characteristics = profile_info_nclx->transfer_characteristics;
+      cicp->matrix_coefficients = profile_info_nclx->matrix_coefficients;
       break; /* heif_color_profile_type_nclx */
 
     case heif_color_profile_type_rICC:
@@ -261,8 +262,6 @@ dt_imageio_retval_t dt_imageio_heif_read_color_profile(const char *filename, str
       icc_size = heif_image_handle_get_raw_color_profile_size(handle);
       if(icc_size <= 0) {
         // image has no embedded ICC profile
-        cp->type = DT_COLORSPACE_NONE;
-        ret = DT_IMAGEIO_OK;
         goto out;
       }
       icc_data = (uint8_t *)g_malloc0(sizeof(uint8_t) * icc_size);
@@ -271,29 +270,23 @@ dt_imageio_retval_t dt_imageio_heif_read_color_profile(const char *filename, str
         dt_print(DT_DEBUG_IMAGEIO,
                 "Failed to read embedded ICC profile from HEIF image [%s]\n",
                 filename);
-        ret = DT_IMAGEIO_FILE_CORRUPTED;
         g_free(icc_data);
         goto out;
       }
-      cp->icc_profile_size = icc_size;
-      cp->icc_profile = icc_data;
-      cp->type = DT_COLORSPACE_NONE;
-      ret = DT_IMAGEIO_OK;
+      size = icc_size;
+      *out = icc_data;
       break; /* heif_color_profile_type_rICC / heif_color_profile_type_prof */
 
     case heif_color_profile_type_not_present:
       dt_print(DT_DEBUG_IMAGEIO,
              "No color profile for HEIF file [%s]\n",
              filename);
-      cp->type = DT_COLORSPACE_NONE;
-      ret = DT_IMAGEIO_OK;
       break; /* heif_color_profile_type_not_present */
 
     default:
       dt_print(DT_DEBUG_IMAGEIO,
                 "Unknown color profile data from HEIF file [%s]\n",
                 filename);
-      ret = DT_IMAGEIO_FILE_CORRUPTED;
       break;
   }
 
@@ -307,185 +300,5 @@ dt_imageio_retval_t dt_imageio_heif_read_color_profile(const char *filename, str
   }
   heif_context_free(ctx);
 
-  return ret;
-}
-
-
-// map HEIF NCLX profile information to Darktable profiles
-static void map_icc_profile(
-  const char *filename,
-  struct heif_color_profile_nclx *profile_info,
-  struct heif_color_profile *cp) {
-  cp->type = DT_COLORSPACE_NONE;
-  switch(profile_info->color_primaries) {
-    /*
-     * BT709
-     */
-    case heif_color_primaries_ITU_R_BT_709_5:
-
-      switch (profile_info->transfer_characteristics) {
-      /*
-      * sRGB
-      */
-      case heif_transfer_characteristic_IEC_61966_2_1:
-      case heif_transfer_characteristic_IEC_61966_2_4:
-        switch (profile_info->matrix_coefficients) {
-        case heif_matrix_coefficients_ITU_R_BT_709_5:
-        case heif_matrix_coefficients_chromaticity_derived_non_constant_luminance:
-          cp->type = DT_COLORSPACE_SRGB;
-          break;
-        default:
-          break;
-        }
-
-        break; /* sRGB */
-
-      /*
-       * REC709 (all transfer curves are equivalent)
-       */
-      case heif_transfer_characteristic_ITU_R_BT_709_5:
-      case heif_transfer_characteristic_ITU_R_BT_601_6:
-      case heif_transfer_characteristic_ITU_R_BT_2020_2_10bit:
-      case heif_transfer_characteristic_ITU_R_BT_2020_2_12bit:
-
-        switch (profile_info->matrix_coefficients) {
-        case heif_matrix_coefficients_ITU_R_BT_709_5:
-        case heif_matrix_coefficients_chromaticity_derived_non_constant_luminance:
-          cp->type = DT_COLORSPACE_REC709;
-          break;
-        default:
-          break;
-        }
-
-        break; /* REC709 */
-
-      /*
-       * LINEAR BT709
-       */
-      case heif_transfer_characteristic_linear:
-
-        switch (profile_info->matrix_coefficients) {
-        case heif_matrix_coefficients_ITU_R_BT_709_5:
-        case heif_matrix_coefficients_chromaticity_derived_non_constant_luminance:
-          cp->type = DT_COLORSPACE_LIN_REC709;
-          break;
-        default:
-          break;
-        }
-
-        break; /* LINEAR BT709 */
-
-      default:
-        break;
-      }
-
-      break; /* BT709 */
-
-    /*
-     * BT2020
-     */
-    case heif_color_primaries_ITU_R_BT_2020_2_and_2100_0:
-
-      switch (profile_info->transfer_characteristics) {
-      /*
-       * LINEAR BT2020
-       */
-      case heif_transfer_characteristic_linear:
-
-        switch (profile_info->matrix_coefficients) {
-        case heif_matrix_coefficients_ITU_R_BT_2020_2_non_constant_luminance:
-        case heif_matrix_coefficients_chromaticity_derived_non_constant_luminance:
-          cp->type = DT_COLORSPACE_LIN_REC2020;
-          break;
-        default:
-          break;
-        }
-
-        break; /* LINEAR BT2020 */
-
-      /*
-       * PQ BT2020
-       */
-      case heif_transfer_characteristic_ITU_R_BT_2100_0_PQ:
-
-        switch (profile_info->matrix_coefficients) {
-        case heif_matrix_coefficients_ITU_R_BT_2020_2_non_constant_luminance:
-        case heif_matrix_coefficients_chromaticity_derived_non_constant_luminance:
-          cp->type = DT_COLORSPACE_PQ_REC2020;
-          break;
-        default:
-          break;
-        }
-
-        break; /* PQ BT2020 */
-
-
-      /*
-       * HLG BT2020
-       */
-      case heif_transfer_characteristic_ITU_R_BT_2100_0_HLG:
-
-        switch (profile_info->matrix_coefficients) {
-        case heif_matrix_coefficients_ITU_R_BT_2020_2_non_constant_luminance:
-        case heif_matrix_coefficients_chromaticity_derived_non_constant_luminance:
-          cp->type = DT_COLORSPACE_HLG_REC2020;
-          break;
-        default:
-          break;
-        }
-
-        break; /* HLG BT2020 */
-      default:
-        break;
-      }
-
-      break; /* BT2020 */
-
-    /*
-     * P3
-     */
-    case heif_color_primaries_SMPTE_EG_432_1:
-
-      switch (profile_info->transfer_characteristics) {
-      /*
-       * PQ P3
-       */
-      case heif_transfer_characteristic_ITU_R_BT_2100_0_PQ:
-
-        switch (profile_info->matrix_coefficients) {
-        case heif_matrix_coefficients_chromaticity_derived_non_constant_luminance:
-          cp->type = DT_COLORSPACE_PQ_P3;
-          break;
-        default:
-          break;
-        }
-
-        break; /* PQ P3 */
-
-      /*
-       * HLG P3
-       */
-      case heif_transfer_characteristic_ITU_R_BT_2100_0_HLG:
-
-        switch (profile_info->matrix_coefficients) {
-        case heif_matrix_coefficients_chromaticity_derived_non_constant_luminance:
-          cp->type = DT_COLORSPACE_HLG_P3;
-          break;
-        default:
-          break;
-        }
-
-        break; /* HLG P3 */
-      default:
-        break;
-      }
-
-      break; /* P3 */
-
-    default:
-      dt_print(DT_DEBUG_IMAGEIO,
-             "Failed to determine color profile from HEIF image [%s]\n",
-             filename);
-      break;
-    }
+  return size;
 }
