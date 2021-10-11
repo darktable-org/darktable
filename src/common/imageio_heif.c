@@ -64,6 +64,15 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
              "Failed to read HEIF file [%s]\n",
              filename);
     ret = DT_IMAGEIO_FILE_CORRUPTED;
+    switch(err.code) {
+      case heif_error_Unsupported_filetype:
+      case heif_error_Unsupported_feature:
+        fprintf(stderr, "[imageio_heif] Unsupported file: `%s'! Is your libheif compiled with HEVC support?\n", filename); 
+        break;
+      default:
+        break;
+    }
+
     goto out;
   }
 
