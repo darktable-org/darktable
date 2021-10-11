@@ -373,6 +373,10 @@ if (USE_HEIF)
         add_definitions(-DHAVE_LIBHEIF=1)
         list(APPEND SOURCES "common/imageio_heif.c")
         set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} heif heic hif CACHE INTERNAL "")
+        if (NOT TARGET avif)
+          # libheif can handle avif, too
+          set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} avif CACHE INTERNAL "")
+        endif()
     endif()
 endif()
 

@@ -546,6 +546,9 @@ int dt_imageio_is_hdr(const char *filename)
        || !strcasecmp(c, ".heif")
        || !strcasecmp(c, ".heic")
        || !strcasecmp(c, ".hif")
+  #ifndef HAVE_LIBAVIF
+       || !strcasecmp(c, ".avif")
+  #endif
 #endif
            )
       return 1;
