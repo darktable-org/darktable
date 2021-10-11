@@ -1872,7 +1872,13 @@ void reload_defaults(dt_iop_module_t *module)
     }
 #endif
 #ifdef HAVE_LIBHEIF
-    else if(!strcmp(ext, "heif") || !strcmp(ext, "heic") || !strcmp(ext, "hif"))
+    else if(!strcmp(ext, "heif")
+         || !strcmp(ext, "heic")
+         || !strcmp(ext, "hif")
+  #ifndef HAVE_LIVAVIF
+         || !strcmp(ext, "avif")
+  #endif
+         )
     {
       struct heif_color_profile cp = {
           .type = DT_COLORSPACE_NONE,
