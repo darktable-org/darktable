@@ -958,6 +958,13 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
     if((xmp_mode == DT_WRITE_XMP_ALWAYS) || ((xmp_mode == DT_WRITE_XMP_LAZY) && !fresh))
       dt_image_synch_xmp(dev->image_storage.id);
     dt_history_hash_set_mipmap(dev->image_storage.id);
+#ifdef USE_LUA
+    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+        0, NULL, NULL,
+        LUA_ASYNC_TYPENAME, "const char*", "darkroom-image-history-changed",
+        LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(dev->image_storage.id),
+        LUA_ASYNC_DONE);
+#endif
   }
 
   // cleanup visible masks
@@ -3160,6 +3167,13 @@ void leave(dt_view_t *self)
     if((xmp_mode == DT_WRITE_XMP_ALWAYS) || ((xmp_mode == DT_WRITE_XMP_LAZY) && !fresh))
       dt_image_synch_xmp(dev->image_storage.id);
     dt_history_hash_set_mipmap(dev->image_storage.id);
+#ifdef USE_LUA
+    dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+        0, NULL, NULL,
+        LUA_ASYNC_TYPENAME, "const char*", "darkroom-image-history-changed",
+        LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(dev->image_storage.id),
+        LUA_ASYNC_DONE);
+#endif
   }
 
   // clear gui.
