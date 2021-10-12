@@ -1,15 +1,15 @@
 # Copyright (C) 2021 Free Software Foundation, Inc.
 #
-# Marcus Gama <marcus.gama@gmail.com>, 2021.
 #: ../build/bin/conf_gen.h:849 ../build/bin/conf_gen.h:855
 #: ../build/bin/conf_gen.h:861 ../build/bin/conf_gen.h:867
 #: ../build/bin/conf_gen.h:873
+# Marcus Gama <marcus.gama@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-10-10 15:06-0300\n"
-"PO-Revision-Date: 2021-10-10 15:07-0300\n"
+"PO-Revision-Date: 2021-10-12 10:01-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1670,7 +1670,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:7472
 msgid "allow visual assignment to specific instances"
-msgstr ""
+msgstr "permitir atribuição visual para instâncias específicas"
 
 #: ../build/bin/preferences_gen.h:7486
 msgid ""
@@ -1678,6 +1678,10 @@ msgid ""
 "visually assigned to those specific instances\n"
 "otherwise shortcuts will always be assigned to the preferred instance"
 msgstr ""
+"quando múltiplas instâncias estiverem presentes em uma imagem, isto permite\n"
+"atribuir visualmente atalhos  a estas instâncias específicas, caso contrário"
+" os\n"
+"atalhos serão sempre atribuídos à instância preferencial"
 
 #: ../build/bin/preferences_gen.h:7496
 msgid "map / geolocalization view"
@@ -10716,7 +10720,7 @@ msgstr "opaco"
 
 #: ../src/iop/atrous.c:1584 ../src/iop/atrous.c:1635
 msgid "boost"
-msgstr ""
+msgstr "impulsionar"
 
 #: ../src/iop/atrous.c:1585
 msgid "reduce"
@@ -10727,29 +10731,24 @@ msgid "raise"
 msgstr "aumentar"
 
 #: ../src/iop/atrous.c:1587
-#, fuzzy
 msgid "lower"
-msgstr "potência"
+msgstr "baixar"
 
 #: ../src/iop/atrous.c:1594
-#, fuzzy
 msgid "coarsest"
-msgstr "grosseiro"
+msgstr "o mais grosseiro"
 
 #: ../src/iop/atrous.c:1595
-#, fuzzy
 msgid "coarser"
-msgstr "grosseiro"
+msgstr "mais grosseiro"
 
 #: ../src/iop/atrous.c:1598
-#, fuzzy
 msgid "finer"
-msgstr "fino"
+msgstr "mais fino"
 
 #: ../src/iop/atrous.c:1599
-#, fuzzy
 msgid "finest"
-msgstr "fino"
+msgstr "o mais fino"
 
 #: ../src/iop/atrous.c:1657 ../src/libs/export.c:1206 ../src/libs/export.c:1221
 msgid "x"
