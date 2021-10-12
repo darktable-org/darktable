@@ -364,7 +364,7 @@ if(USE_OPENEXR)
 endif(USE_OPENEXR)
 
 if(USE_JXL)
-  find_package(JXL 0.5)
+  find_package(JXL 0.6)
   if(JXL_FOUND)
     include_directories(SYSTEM ${JXL_INCLUDE_DIRS})
     list(APPEND LIBS ${JXL_LIBRARIES})

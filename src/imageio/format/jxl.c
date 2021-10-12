@@ -390,10 +390,8 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
     }
   }
 
-  JxlBasicInfo basic_info = {};
-  // fixme: add this in once libjxl 0.6 is released and forced as a dependency
-  // This method is only added in 0.6 but it is required to be called
-  // JXL_ASSERT(JxlEncoderInitBasicInfo(&basic_info));
+  JxlBasicInfo basic_info;
+  JxlEncoderInitBasicInfo(&basic_info);
   basic_info.have_container = JXL_FALSE;
   basic_info.xsize = width;
   basic_info.ysize = height;
@@ -433,16 +431,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   decode_effort = (decode_effort - 4) * -1;
   JXL_ASSERT(JxlEncoderOptionsSetDecodingSpeed(options, decode_effort));
 
-  int encode_effort = params->encoding_effort;
-  // In libjxl 0.5 encode efforts over 4 cause a crash and encode efforts below 3 are unsupported
-  if(JxlEncoderVersion() <= 0 * 1000000 + 5 * 1000 + 0) // if version <= 0.5
-  {
-    fprintf(stderr, "Warning: Encoding effort is limited to 3-4 on libjxl 0.5 and lower\n");
-    if(encode_effort > 4)
-      encode_effort = 4;
-    else if(encode_effort < 3)
-      encode_effort = 3;
-  }
+  const int encode_effort = params->encoding_effort;
   JXL_ASSERT(JxlEncoderOptionsSetEffort(options, encode_effort));
 
   int quality = params->quality;

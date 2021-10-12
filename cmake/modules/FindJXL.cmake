@@ -7,7 +7,8 @@
 include(LibFindMacros)
 
 # Use pkg-config to get hints about paths
-libfind_pkg_check_modules(JXL_PKGCONF libjxl)
+# libfind_pkg_check_modules(JXL_PKGCONF libjxl) <- this isn't working?
+pkg_check_modules(JXL_PKGCONF QUIET libjxl)
 
 find_path(JXL_INCLUDE_DIR
   NAMES jxl/encode.h
