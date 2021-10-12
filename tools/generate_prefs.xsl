@@ -94,7 +94,7 @@ static void set_widget_label_default(GtkWidget *widget, const char *confstr, Gtk
     gchar *c_state = NULL;
     gtk_tree_model_iter_nth_child(model, &iter, NULL, active);
     gtk_tree_model_get(model, &iter, 0, &c_state, -1);
-    is_default = (strcmp(c_state, c_default) == 0);
+    is_default = (g_strcmp0(c_state, c_default) == 0);
   }
   else if(GTK_IS_SPIN_BUTTON(widget))
   {
@@ -107,13 +107,13 @@ static void set_widget_label_default(GtkWidget *widget, const char *confstr, Gtk
   {
     const gchar *c_default = dt_confgen_get(confstr, DT_DEFAULT);
     const gchar *c_state = gtk_entry_get_text(GTK_ENTRY(widget));
-    is_default = (strcmp(c_state, c_default) == 0);
+    is_default = (g_strcmp0(c_state, c_default) == 0);
   }
   else if(GTK_IS_FILE_CHOOSER(widget))
   {
     const gchar *c_default = dt_confgen_get(confstr, DT_DEFAULT);
     const gchar *c_state = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
-    is_default = (strcmp(c_state, c_default) == 0);
+    is_default = (g_strcmp0(c_state, c_default) == 0);
   }
   else
   {
