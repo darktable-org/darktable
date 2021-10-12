@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-04 10:36+0200\n"
-"PO-Revision-Date: 2021-10-04 10:44+0200\n"
+"POT-Creation-Date: 2021-10-12 15:17+0200\n"
+"PO-Revision-Date: 2021-10-12 15:19+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1287,7 +1287,7 @@ msgstr ""
 msgid "storage"
 msgstr "stockage"
 
-#: ../build/bin/preferences_gen.h:6569
+#: ../build/bin/preferences_gen.h:6569 ../src/control/crawler.c:595
 msgid "database"
 msgstr "base de données"
 
@@ -1408,7 +1408,7 @@ msgstr ""
 "mais attention une sauvegarde prend de la place disque et seulement la "
 "dernière sauvegarde réussi est nécessaire comme point de restauration"
 
-#: ../build/bin/preferences_gen.h:6827
+#: ../build/bin/preferences_gen.h:6827 ../src/control/crawler.c:594
 msgid "xmp"
 msgstr "xmp"
 
@@ -2264,7 +2264,7 @@ msgstr "préserver couleur"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
 #: ../src/gui/guides.c:675 ../src/iop/basecurve.c:2100
-#: ../src/iop/channelmixerrgb.c:3825 ../src/iop/clipping.c:1948
+#: ../src/iop/channelmixerrgb.c:3837 ../src/iop/clipping.c:1948
 #: ../src/iop/clipping.c:2170 ../src/iop/clipping.c:2186
 #: ../src/iop/lens.cc:2239 ../src/iop/retouch.c:422 ../src/libs/collect.c:1861
 #: ../src/libs/colorpicker.c:50 ../src/libs/export.c:1074
@@ -2540,7 +2540,7 @@ msgstr "aberrations chromatiques très larges"
 #: ../src/develop/blend_gui.c:2033 ../src/develop/lightroom.c:830
 #: ../src/gui/gtk.c:3003 ../src/gui/guides.c:693 ../src/iop/bilateral.cc:317
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
-#: ../src/iop/channelmixerrgb.c:3780 ../src/iop/colorzones.c:2316
+#: ../src/iop/channelmixerrgb.c:3792 ../src/iop/colorzones.c:2316
 #: ../src/iop/temperature.c:1832 ../src/iop/temperature.c:1981
 #: ../src/libs/collect.c:1762
 msgid "red"
@@ -2551,7 +2551,7 @@ msgstr "rouge"
 #: ../src/develop/blend_gui.c:2036 ../src/develop/lightroom.c:834
 #: ../src/gui/gtk.c:3004 ../src/gui/guides.c:694 ../src/iop/bilateral.cc:322
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
-#: ../src/iop/channelmixerrgb.c:3781 ../src/iop/colorzones.c:2319
+#: ../src/iop/channelmixerrgb.c:3793 ../src/iop/colorzones.c:2319
 #: ../src/iop/temperature.c:1816 ../src/iop/temperature.c:1834
 #: ../src/iop/temperature.c:1982 ../src/libs/collect.c:1762
 msgid "green"
@@ -2562,7 +2562,7 @@ msgstr "vert"
 #: ../src/develop/blend_gui.c:2039 ../src/develop/lightroom.c:836
 #: ../src/gui/gtk.c:3005 ../src/iop/bilateral.cc:327
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
-#: ../src/iop/channelmixerrgb.c:3782 ../src/iop/colorzones.c:2321
+#: ../src/iop/channelmixerrgb.c:3794 ../src/iop/colorzones.c:2321
 #: ../src/iop/temperature.c:1836 ../src/iop/temperature.c:1983
 #: ../src/libs/collect.c:1762
 msgid "blue"
@@ -2682,7 +2682,7 @@ msgid "(AI) detect from image edges..."
 msgstr "(IA) détecter depuis les bords de l'image..."
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:517
-#: ../src/iop/channelmixerrgb.c:3477
+#: ../src/iop/channelmixerrgb.c:3489
 msgid "as shot in camera"
 msgstr "tel que pris par le boitier"
 
@@ -3096,7 +3096,7 @@ msgid "range extent"
 msgstr "étendue de clarté"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
-#: ../src/iop/channelmixerrgb.c:3827
+#: ../src/iop/channelmixerrgb.c:3839
 msgid "saturated colors"
 msgstr "couleurs saturées"
 
@@ -3110,7 +3110,7 @@ msgstr "couleurs saturées"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:1997 ../src/develop/blend_gui.c:2016
 #: ../src/develop/blend_gui.c:2051 ../src/iop/channelmixer.c:622
-#: ../src/iop/channelmixerrgb.c:3732 ../src/iop/colorbalance.c:2019
+#: ../src/iop/channelmixerrgb.c:3744 ../src/iop/colorbalance.c:2019
 #: ../src/iop/colorbalancergb.c:1873 ../src/iop/colorbalancergb.c:1874
 #: ../src/iop/colorbalancergb.c:1875 ../src/iop/colorbalancergb.c:1876
 #: ../src/iop/colorize.c:349 ../src/iop/colorreconstruction.c:1290
@@ -4045,7 +4045,7 @@ msgstr "mode de remplissage"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:279
 #: ../build/lib/darktable/plugins/introspection_retouch.c:414
-#: ../src/iop/basicadj.c:621 ../src/iop/channelmixerrgb.c:3785
+#: ../src/iop/basicadj.c:621 ../src/iop/channelmixerrgb.c:3797
 #: ../src/iop/colisa.c:316 ../src/iop/lowpass.c:591 ../src/iop/soften.c:414
 #: ../src/iop/vignette.c:990 ../src/libs/history.c:882
 msgid "brightness"
@@ -5459,7 +5459,7 @@ msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
 "accessible."
 
-#: ../src/common/image.c:2546
+#: ../src/common/image.c:2549
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -5510,7 +5510,7 @@ msgstr ""
 "le chemin demandé pour la session n'est pas accessible. l'appareil n'est pas "
 "monté?"
 
-#: ../src/common/iop_order.c:59 ../src/libs/ioporder.c:203
+#: ../src/common/iop_order.c:59 ../src/libs/ioporder.c:206
 msgid "legacy"
 msgstr "originel"
 
@@ -5666,8 +5666,8 @@ msgstr "image notée à « %s »"
 msgid "unknown"
 msgstr "inconnu"
 
-#: ../src/common/ratings.c:284 ../src/control/crawler.c:379
-#: ../src/libs/select.c:39 ../src/views/lighttable.c:822
+#: ../src/common/ratings.c:284 ../src/libs/select.c:39
+#: ../src/views/lighttable.c:822
 msgid "select"
 msgstr "sélection"
 
@@ -5719,7 +5719,7 @@ msgstr "le style « %s » existe déjà"
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
-msgstr "styles/appliquer %s"
+msgstr "styles/appliquer « %s »"
 
 #: ../src/common/styles.c:407
 #, c-format
@@ -5852,40 +5852,161 @@ msgstr "afficher la fenêtre des raccourcis"
 msgid "working..."
 msgstr "en cours..."
 
-#: ../src/control/crawler.c:383
+#: ../src/control/crawler.c:345
+#, c-format
+msgid "ERROR: %s NOT synced XMP → DB"
+msgstr "ERREUR : %s NON synchronisé XMP → DB"
+
+#: ../src/control/crawler.c:346 ../src/control/crawler.c:397
+#: ../src/control/crawler.c:449
+msgid ""
+"ERROR: cannot write the database. the destination may be full, offline or "
+"read-only."
+msgstr ""
+"ERREUR : impossible d'écrire la base de données. la destination est peut "
+"être pleine, hors ligne ou en lecture seule."
+
+#: ../src/control/crawler.c:351
+#, c-format
+msgid "SUCCESS: %s synced XMP → DB"
+msgstr "SUCCES : %s synchronisé XMP → DB"
+
+#: ../src/control/crawler.c:368
+#, c-format
+msgid "ERROR: %s NOT synced DB → XMP"
+msgstr "ERREUR : %s NON synchronisé DB → XMP"
+
+#: ../src/control/crawler.c:369 ../src/control/crawler.c:412
+#: ../src/control/crawler.c:463
+#, c-format
+msgid ""
+"ERROR: cannot write %s \n"
+"the destination may be full, offline or read-only."
+msgstr ""
+"ERREUR : impossible d'écrire %s \n"
+"la destination est peut être pleine, hors ligne ou en lecture seule."
+
+#: ../src/control/crawler.c:374
+#, c-format
+msgid "SUCCESS: %s synced DB → XMP"
+msgstr "SUCCES : %s synchronisé DB → XMP"
+
+#: ../src/control/crawler.c:396
+#, c-format
+msgid "ERROR: %s NOT synced new (XMP) → old (DB)"
+msgstr "ERREUR : %s NON synchronisé nouveau (XMP) → ancien (DB)"
+
+#: ../src/control/crawler.c:401
+#, c-format
+msgid "SUCCESS: %s synced new (XMP) → old (DB)"
+msgstr "SUCCES : %s synchronisé nouveau (XMP) → ancien (DB)"
+
+#: ../src/control/crawler.c:411
+#, c-format
+msgid "ERROR: %s NOT synced new (DB) → old (XMP)"
+msgstr "ERREUR : %s NON synchronisé nouveau (DB) → ancien (XMP)"
+
+#: ../src/control/crawler.c:416
+#, c-format
+msgid "SUCCESS: %s synced new (DB) → old (XMP)"
+msgstr "SUCCES : %s synchronisé nouveau (DB) → ancien (XMP)"
+
+#: ../src/control/crawler.c:424 ../src/control/crawler.c:475
+#, c-format
+msgid "EXCEPTION: %s has inconsistent timestamps"
+msgstr "EXCEPTION : %s a un horodatage incohérent"
+
+#: ../src/control/crawler.c:448
+#, c-format
+msgid "ERROR: %s NOT synced old (XMP) → new (DB)"
+msgstr "ERREUR : %s NON synchronisé ancien (XMP) → nouveau (DB)"
+
+#: ../src/control/crawler.c:453
+#, c-format
+msgid "SUCCESS: %s synced old (XMP) → new (DB)"
+msgstr "SUCCES : %s synchronisé ancien (XMP) → nouveau (DB)"
+
+#: ../src/control/crawler.c:462
+#, c-format
+msgid "ERROR: %s NOT synced old (DB) → new (XMP)"
+msgstr "ERREUR : %s NON synchronisé ancien (DB) → nouveau (XMP)"
+
+#: ../src/control/crawler.c:467
+#, c-format
+msgid "SUCCESS: %s synced old (DB) → new (XMP)"
+msgstr "SUCCES : %s synchronisé ancien (DB) → nouveau (XMP)"
+
+#: ../src/control/crawler.c:546
+#, c-format
+msgid "%id %02dh %02dm %02ds"
+msgstr "%ij %02dh %02dm %02ds"
+
+#: ../src/control/crawler.c:611
 msgid "path"
 msgstr "chemin"
 
-#: ../src/control/crawler.c:387
+#: ../src/control/crawler.c:619
 msgid "xmp timestamp"
 msgstr "horodatage xmp"
 
-#: ../src/control/crawler.c:391
+#: ../src/control/crawler.c:623
 msgid "database timestamp"
 msgstr "horodatage base de données"
 
-#: ../src/control/crawler.c:400
+#: ../src/control/crawler.c:627
+msgid "newest"
+msgstr "plus récent"
+
+#: ../src/control/crawler.c:632
+msgid "time difference"
+msgstr "différence horaire"
+
+#: ../src/control/crawler.c:642
 msgid "updated xmp sidecar files found"
 msgstr "versions modifiées de fichier xmp trouvées"
 
-#: ../src/control/crawler.c:402
+#: ../src/control/crawler.c:643
 msgid "_close"
 msgstr "_fermer"
 
 #. action-box
-#: ../src/control/crawler.c:417 ../src/libs/import.c:1781
+#: ../src/control/crawler.c:657 ../src/libs/import.c:1781
 #: ../src/libs/select.c:134
 msgid "select all"
 msgstr "tout sélectionner"
 
-#: ../src/control/crawler.c:424
-msgid "update database from selected xmp files"
-msgstr ""
-"mise à jours de la base de données depuis les fichiers xmp selectionnés"
+#: ../src/control/crawler.c:658 ../src/libs/import.c:1785
+#: ../src/libs/select.c:138
+msgid "select none"
+msgstr "rien sélectionner"
 
-#: ../src/control/crawler.c:425
-msgid "overwrite selected xmp files"
-msgstr "écraser les fichiers xmp selectionnés"
+#: ../src/control/crawler.c:659 ../src/libs/select.c:142
+msgid "invert selection"
+msgstr "inverser"
+
+#: ../src/control/crawler.c:671
+msgid "on the selection:"
+msgstr "sur la sélection :"
+
+#: ../src/control/crawler.c:672
+msgid "keep the xmp edit"
+msgstr "garder le développement xmp"
+
+#: ../src/control/crawler.c:673
+msgid "keep the database edit"
+msgstr "garder développement base de données"
+
+#: ../src/control/crawler.c:674
+msgid "keep the newest edit"
+msgstr "garder le nouveau développement"
+
+#: ../src/control/crawler.c:675
+msgid "keep the oldest edit"
+msgstr "garder l'ancien développement"
+
+#: ../src/control/crawler.c:697
+msgid "synchronization log"
+msgstr "log de synchronisation"
 
 #: ../src/control/jobs/camera_jobs.c:79
 #, c-format
@@ -6727,13 +6848,13 @@ msgid "sliders for gray value"
 msgstr "conditions de fusion sur le canal gris"
 
 #: ../src/develop/blend_gui.c:2003 ../src/develop/blend_gui.c:2030
-#: ../src/gui/guides.c:692 ../src/iop/channelmixerrgb.c:3786
+#: ../src/gui/guides.c:692 ../src/iop/channelmixerrgb.c:3798
 #: ../src/iop/levels.c:671
 msgid "gray"
 msgstr "gris"
 
 #: ../src/develop/blend_gui.c:2004 ../src/develop/blend_gui.c:2031
-#: ../src/iop/channelmixerrgb.c:3780 ../src/iop/denoiseprofile.c:3597
+#: ../src/iop/channelmixerrgb.c:3792 ../src/iop/denoiseprofile.c:3597
 #: ../src/iop/rawdenoise.c:908 ../src/iop/rgbcurve.c:1383
 #: ../src/iop/rgblevels.c:1013
 msgid "R"
@@ -6744,7 +6865,7 @@ msgid "sliders for red channel"
 msgstr "conditions de fusion sur le canal rouge"
 
 #: ../src/develop/blend_gui.c:2007 ../src/develop/blend_gui.c:2034
-#: ../src/iop/channelmixerrgb.c:3781 ../src/iop/denoiseprofile.c:3598
+#: ../src/iop/channelmixerrgb.c:3793 ../src/iop/denoiseprofile.c:3598
 #: ../src/iop/rawdenoise.c:909 ../src/iop/rgbcurve.c:1384
 #: ../src/iop/rgblevels.c:1014
 msgid "G"
@@ -6755,7 +6876,7 @@ msgid "sliders for green channel"
 msgstr "conditions de fusion sur le canal vert"
 
 #: ../src/develop/blend_gui.c:2010 ../src/develop/blend_gui.c:2037
-#: ../src/iop/channelmixerrgb.c:3782 ../src/iop/denoiseprofile.c:3599
+#: ../src/iop/channelmixerrgb.c:3794 ../src/iop/denoiseprofile.c:3599
 #: ../src/iop/rawdenoise.c:910 ../src/iop/rgbcurve.c:1385
 #: ../src/iop/rgblevels.c:1015
 msgid "B"
@@ -6782,7 +6903,7 @@ msgid "sliders for chroma channel (of HSL)"
 msgstr "conditions de fusion sur le canal de saturation (de TSL)"
 
 #: ../src/develop/blend_gui.c:2020 ../src/develop/blend_gui.c:2047
-#: ../src/iop/atrous.c:1739 ../src/iop/channelmixerrgb.c:3738
+#: ../src/iop/atrous.c:1739 ../src/iop/channelmixerrgb.c:3750
 #: ../src/iop/colorbalancergb.c:1877 ../src/iop/colorbalancergb.c:1878
 #: ../src/iop/colorbalancergb.c:1879 ../src/iop/colorbalancergb.c:1880
 #: ../src/iop/colorbalancergb.c:1887 ../src/iop/colorbalancergb.c:1888
@@ -7402,7 +7523,7 @@ msgstr "dureté : %3.2f%%"
 #: ../src/develop/masks/brush.c:1140 ../src/develop/masks/brush.c:1182
 #: ../src/develop/masks/brush.c:1189 ../src/develop/masks/circle.c:122
 #: ../src/develop/masks/circle.c:176 ../src/develop/masks/ellipse.c:555
-#: ../src/develop/masks/ellipse.c:642 ../src/develop/masks/path.c:1097
+#: ../src/develop/masks/ellipse.c:642 ../src/develop/masks/path.c:1099
 #, c-format
 msgid "size: %3.2f%%"
 msgstr "taille : %3.2f%%"
@@ -7452,7 +7573,7 @@ msgstr "<b>taille</b> : défiler"
 
 #: ../src/develop/masks/circle.c:109 ../src/develop/masks/circle.c:159
 #: ../src/develop/masks/ellipse.c:527 ../src/develop/masks/ellipse.c:612
-#: ../src/develop/masks/path.c:1034 ../src/develop/masks/path.c:1041
+#: ../src/develop/masks/path.c:1036 ../src/develop/masks/path.c:1043
 #, c-format
 msgid "feather size: %3.2f%%"
 msgstr "adoucissement : %3.2f%%"
@@ -7474,7 +7595,7 @@ msgstr "[CERCLE] changer la taille d'adoucissement"
 msgid "circle #%d"
 msgstr "cercle #%d"
 
-#: ../src/develop/masks/circle.c:1352 ../src/develop/masks/path.c:3129
+#: ../src/develop/masks/circle.c:1352 ../src/develop/masks/path.c:3131
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -7621,52 +7742,52 @@ msgstr "utiliser les mêmes masques que"
 msgid "masks can not contain themselves"
 msgstr "masques ne peuvent pas se contenir"
 
-#: ../src/develop/masks/path.c:3086
+#: ../src/develop/masks/path.c:3088
 msgid "[PATH creation] add a smooth node"
 msgstr "[CHEMIN création] ajouter un nœud doux"
 
-#: ../src/develop/masks/path.c:3088
+#: ../src/develop/masks/path.c:3090
 msgid "[PATH creation] add a sharp node"
 msgstr "[CHEMIN création] ajout d'un nœud dur"
 
-#: ../src/develop/masks/path.c:3089
+#: ../src/develop/masks/path.c:3091
 msgid "[PATH creation] terminate path creation"
 msgstr "[CHEMIN création] terminer création"
 
-#: ../src/develop/masks/path.c:3091
+#: ../src/develop/masks/path.c:3093
 msgid "[PATH on node] switch between smooth/sharp node"
 msgstr "[CHEMIN sur nœud] changer le nœud doux/dur"
 
-#: ../src/develop/masks/path.c:3092
+#: ../src/develop/masks/path.c:3094
 msgid "[PATH on node] remove the node"
 msgstr "[CHEMIN sur nœud] supprimer nœud"
 
-#: ../src/develop/masks/path.c:3093
+#: ../src/develop/masks/path.c:3095
 msgid "[PATH on feather] reset curvature"
 msgstr "[CHEMIN sur adoucissement] réinitialise la courbure"
 
-#: ../src/develop/masks/path.c:3095
+#: ../src/develop/masks/path.c:3097
 msgid "[PATH on segment] add node"
 msgstr "[CHEMIN sur segment] ajouter un nœud"
 
-#: ../src/develop/masks/path.c:3096
+#: ../src/develop/masks/path.c:3098
 msgid "[PATH] change size"
 msgstr "[CHEMIN] changer taille"
 
-#: ../src/develop/masks/path.c:3097
+#: ../src/develop/masks/path.c:3099
 msgid "[PATH] change opacity"
 msgstr "[CHEMIN] changer opacité"
 
-#: ../src/develop/masks/path.c:3098
+#: ../src/develop/masks/path.c:3100
 msgid "[PATH] change feather size"
 msgstr "[CHEMIN] changer la taille de l'adoucissement"
 
-#: ../src/develop/masks/path.c:3109
+#: ../src/develop/masks/path.c:3111
 #, c-format
 msgid "path #%d"
 msgstr "chemin #%d"
 
-#: ../src/develop/masks/path.c:3116
+#: ../src/develop/masks/path.c:3118
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
@@ -7674,7 +7795,7 @@ msgstr ""
 "<b>ajouter un nœud</b> : clic, <b>ajouter un nœud dur</b> : ctrl+clic\n"
 "<b>annuler</b> : clic droit"
 
-#: ../src/develop/masks/path.c:3119
+#: ../src/develop/masks/path.c:3121
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finish path</b>: right-click"
@@ -7682,7 +7803,7 @@ msgstr ""
 "<b>ajouter un nœud</b> : clic, <b>ajouter un nœud dur</b> : ctrl+clic\n"
 "<b>terminer le chemin</b> : clic droit"
 
-#: ../src/develop/masks/path.c:3122
+#: ../src/develop/masks/path.c:3124
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
@@ -7690,7 +7811,7 @@ msgstr ""
 "<b>déplacer un nœud</b> : déplacer, <b>supprimer un nœud</b> : clic droit\n"
 "<b>passer au mode doux ou dur</b>: ctrl+clic"
 
-#: ../src/develop/masks/path.c:3125
+#: ../src/develop/masks/path.c:3127
 msgid ""
 "<b>node curvature</b>: drag\n"
 "<b>reset curvature</b>: right-click"
@@ -7698,7 +7819,7 @@ msgstr ""
 "<b>courbe du nœud</b> : déplacer\n"
 "<b>réinitialiser la courbe</b> : clic-droit"
 
-#: ../src/develop/masks/path.c:3127
+#: ../src/develop/masks/path.c:3129
 msgid ""
 "<b>move segment</b>: drag\n"
 "<b>add node</b>: ctrl+click"
@@ -9786,7 +9907,7 @@ msgstr "compression de l'images"
 #. default
 #. digits
 #: ../src/imageio/format/avif.c:857 ../src/imageio/format/j2k.c:658
-#: ../src/imageio/format/jpeg.c:584 ../src/imageio/format/webp.c:337
+#: ../src/imageio/format/jpeg.c:578 ../src/imageio/format/webp.c:337
 #: ../src/iop/cacorrect.c:1343 ../src/libs/camera.c:583
 msgid "quality"
 msgstr "qualité"
@@ -9894,7 +10015,7 @@ msgstr "Cinema2K, 48fps"
 msgid "Cinema4K, 24FPS"
 msgstr "Cinema4K, 24fps"
 
-#: ../src/imageio/format/jpeg.c:561
+#: ../src/imageio/format/jpeg.c:555
 msgid "JPEG (8-bit)"
 msgstr "JPEG (8-bits)"
 
@@ -11663,11 +11784,11 @@ msgstr "quantité du canal vert dans le canal de destination"
 msgid "amount of blue channel in the output channel"
 msgstr "quantité du canal bleu dans le canal de destination"
 
-#: ../src/iop/channelmixer.c:662 ../src/iop/channelmixerrgb.c:453
+#: ../src/iop/channelmixer.c:662 ../src/iop/channelmixerrgb.c:465
 msgid "swap R and B"
 msgstr "échanger R et B"
 
-#: ../src/iop/channelmixer.c:668 ../src/iop/channelmixerrgb.c:427
+#: ../src/iop/channelmixer.c:668 ../src/iop/channelmixerrgb.c:439
 msgid "swap G and B"
 msgstr "échanger V et B"
 
@@ -11743,67 +11864,67 @@ msgstr "mixeur de canaux|balance des blancs|monochrome"
 msgid "linear, RGB or XYZ"
 msgstr "linéaire, RVB ou XYZ"
 
-#: ../src/iop/channelmixerrgb.c:331
+#: ../src/iop/channelmixerrgb.c:343
 msgid "B&W : luminance-based"
 msgstr "N&B : basée sur luminance"
 
-#: ../src/iop/channelmixerrgb.c:360
+#: ../src/iop/channelmixerrgb.c:372
 msgid "B&W : ILFORD HP5+"
 msgstr "N&B : ILFORD HP5+"
 
-#: ../src/iop/channelmixerrgb.c:369
+#: ../src/iop/channelmixerrgb.c:381
 msgid "B&W : ILFORD DELTA 100"
 msgstr "N&B : ILFORD DELTA 100"
 
-#: ../src/iop/channelmixerrgb.c:379
+#: ../src/iop/channelmixerrgb.c:391
 msgid "B&W : ILFORD DELTA 400 - 3200"
 msgstr "N&B : ILFORD DELTA 400 - 3200"
 
-#: ../src/iop/channelmixerrgb.c:388
+#: ../src/iop/channelmixerrgb.c:400
 msgid "B&W : ILFORD FP4+"
 msgstr "N&B : ILFORD FP4+"
 
-#: ../src/iop/channelmixerrgb.c:397
+#: ../src/iop/channelmixerrgb.c:409
 msgid "B&W : Fuji Acros 100"
 msgstr "N&B : Fuji Acros 100"
 
-#: ../src/iop/channelmixerrgb.c:414
+#: ../src/iop/channelmixerrgb.c:426
 msgid "basic channel mixer"
 msgstr "mixeur de canaux base"
 
-#: ../src/iop/channelmixerrgb.c:440
+#: ../src/iop/channelmixerrgb.c:452
 msgid "swap G and R"
 msgstr "échanger V et R"
 
-#: ../src/iop/channelmixerrgb.c:1635
+#: ../src/iop/channelmixerrgb.c:1647
 msgid "(daylight)"
 msgstr "(lumière du jour)"
 
-#: ../src/iop/channelmixerrgb.c:1637
+#: ../src/iop/channelmixerrgb.c:1649
 msgid "(black body)"
 msgstr "(corps noir)"
 
-#: ../src/iop/channelmixerrgb.c:1639
+#: ../src/iop/channelmixerrgb.c:1651
 msgid "(invalid)"
 msgstr "invalide"
 
-#: ../src/iop/channelmixerrgb.c:1643 ../src/iop/channelmixerrgb.c:1692
+#: ../src/iop/channelmixerrgb.c:1655 ../src/iop/channelmixerrgb.c:1704
 msgid "very good"
 msgstr "très bon"
 
-#: ../src/iop/channelmixerrgb.c:1645 ../src/iop/channelmixerrgb.c:1694
+#: ../src/iop/channelmixerrgb.c:1657 ../src/iop/channelmixerrgb.c:1706
 msgid "good"
 msgstr "bon"
 
-#: ../src/iop/channelmixerrgb.c:1647 ../src/iop/channelmixerrgb.c:1696
+#: ../src/iop/channelmixerrgb.c:1659 ../src/iop/channelmixerrgb.c:1708
 msgid "passable"
 msgstr "passable"
 
-#: ../src/iop/channelmixerrgb.c:1649 ../src/iop/channelmixerrgb.c:1698
+#: ../src/iop/channelmixerrgb.c:1661 ../src/iop/channelmixerrgb.c:1710
 msgid "bad"
 msgstr "mauvais"
 
-#: ../src/iop/channelmixerrgb.c:1656
+#: ../src/iop/channelmixerrgb.c:1668
 #, c-format
 msgid ""
 "\n"
@@ -11840,7 +11961,7 @@ msgstr ""
 "compensation d'exposition : \t%+.2f IL\n"
 "décalage du noir : \t\t\t%+.4f"
 
-#: ../src/iop/channelmixerrgb.c:1702
+#: ../src/iop/channelmixerrgb.c:1714
 #, c-format
 msgid ""
 "\n"
@@ -11861,11 +11982,11 @@ msgstr ""
 
 #. our second biggest problem : another channelmixerrgb instance is doing CAT
 #. earlier in the pipe.
-#: ../src/iop/channelmixerrgb.c:1724
+#: ../src/iop/channelmixerrgb.c:1736
 msgid "double CAT applied"
 msgstr "CAT appliquée deux foix"
 
-#: ../src/iop/channelmixerrgb.c:1725
+#: ../src/iop/channelmixerrgb.c:1737
 msgid ""
 "you have 2 instances or more of color calibration,\n"
 "all performing chromatic adaptation.\n"
@@ -11878,11 +11999,11 @@ msgstr ""
 "avec des masques en connaissance de cause."
 
 #. our first and biggest problem : white balance module is being clever with WB coeffs
-#: ../src/iop/channelmixerrgb.c:1735
+#: ../src/iop/channelmixerrgb.c:1747
 msgid "white balance module error"
 msgstr "erreur module balance des blancs"
 
-#: ../src/iop/channelmixerrgb.c:1736
+#: ../src/iop/channelmixerrgb.c:1748
 msgid ""
 "the white balance module is not using the camera\n"
 "reference illuminant, which will cause issues here\n"
@@ -11894,20 +12015,20 @@ msgstr ""
 "d'adaptation chromatique ici. soit la référence de chaîne de traitement\n"
 "est utilisée soit l'adaptation chromatiques est désactivée."
 
-#: ../src/iop/channelmixerrgb.c:1809
+#: ../src/iop/channelmixerrgb.c:1821
 msgid "auto-detection of white balance completed"
 msgstr "détection automatique de la balance des blancs terminée"
 
-#: ../src/iop/channelmixerrgb.c:1946
+#: ../src/iop/channelmixerrgb.c:1958
 msgid "channelmixerrgb works only on RGB input"
 msgstr "channelmixerrgb travaille uniquement avec une entrée RVB"
 
-#: ../src/iop/channelmixerrgb.c:3237
+#: ../src/iop/channelmixerrgb.c:3249
 #, c-format
 msgid "CCT: %.0f K (daylight)"
 msgstr "CCT : %.0f K (lumière du jour)"
 
-#: ../src/iop/channelmixerrgb.c:3239
+#: ../src/iop/channelmixerrgb.c:3251
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a daylight spectrum,\n"
@@ -11918,12 +12039,12 @@ msgstr ""
 "du jour,\n"
 "donc sa température est pertinente et significative avec un illuminant D."
 
-#: ../src/iop/channelmixerrgb.c:3245
+#: ../src/iop/channelmixerrgb.c:3257
 #, c-format
 msgid "CCT: %.0f K (black body)"
 msgstr "CCT : %.0f K (corps noir)"
 
-#: ../src/iop/channelmixerrgb.c:3247
+#: ../src/iop/channelmixerrgb.c:3259
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a black body spectrum,\n"
@@ -11935,12 +12056,12 @@ msgstr ""
 "donc sa température est pertinente et significative avec un illuminant "
 "planckien."
 
-#: ../src/iop/channelmixerrgb.c:3253
+#: ../src/iop/channelmixerrgb.c:3265
 #, c-format
 msgid "CCT: %.0f K (invalid)"
 msgstr "CCT : %.0f K (invalide)"
 
-#: ../src/iop/channelmixerrgb.c:3255
+#: ../src/iop/channelmixerrgb.c:3267
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant cannot be accurately modeled by a daylight or black body "
@@ -11954,12 +12075,12 @@ msgstr ""
 "donc sa température est pertinente et significative avec un illuminant "
 "personnalisé."
 
-#: ../src/iop/channelmixerrgb.c:3262
+#: ../src/iop/channelmixerrgb.c:3274
 #, c-format
 msgid "CCT: undefined"
 msgstr "CCT : non défini"
 
-#: ../src/iop/channelmixerrgb.c:3264
+#: ../src/iop/channelmixerrgb.c:3276
 msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
@@ -11967,16 +12088,16 @@ msgstr ""
 "température de couleur proximale\n"
 "ne peut être définie donc vous devez utiliser un illuminant personnalisé."
 
-#: ../src/iop/channelmixerrgb.c:3502
+#: ../src/iop/channelmixerrgb.c:3514
 msgid "white balance successfully extracted from raw image"
 msgstr "la balance des blancs a été extraite de l'image raw avec succès"
 
 #. We need to recompute only the full preview
-#: ../src/iop/channelmixerrgb.c:3508
+#: ../src/iop/channelmixerrgb.c:3520
 msgid "auto-detection of white balance started…"
 msgstr "l'auto-détection de la balance des blancs a démarrée…"
 
-#: ../src/iop/channelmixerrgb.c:3563
+#: ../src/iop/channelmixerrgb.c:3575
 msgid ""
 "color calibration: the sum of the gray channel parameters is zero, "
 "normalization will be disabled."
@@ -11985,7 +12106,7 @@ msgstr ""
 "la normalisation va être désactivée."
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/iop/channelmixerrgb.c:3673 ../src/iop/clipping.c:2164
+#: ../src/iop/channelmixerrgb.c:3685 ../src/iop/clipping.c:2164
 #: ../src/iop/colorbalancergb.c:1569 ../src/iop/filmicrgb.c:3674
 #: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3139
 #: ../src/libs/print_settings.c:2216 ../src/views/lighttable.c:1407
@@ -11993,19 +12114,19 @@ msgid "page"
 msgstr "page"
 
 #. Page CAT
-#: ../src/iop/channelmixerrgb.c:3676
+#: ../src/iop/channelmixerrgb.c:3688
 msgid "CAT"
 msgstr "CAT"
 
-#: ../src/iop/channelmixerrgb.c:3676
+#: ../src/iop/channelmixerrgb.c:3688
 msgid "chromatic adaptation transform"
 msgstr "transformation d'adaptation chromatique"
 
-#: ../src/iop/channelmixerrgb.c:3678
+#: ../src/iop/channelmixerrgb.c:3690
 msgid "adaptation"
 msgstr "adaptation"
 
-#: ../src/iop/channelmixerrgb.c:3680
+#: ../src/iop/channelmixerrgb.c:3692
 msgid ""
 "choose the method to adapt the illuminant\n"
 "and the colorspace in which the module works: \n"
@@ -12028,7 +12149,7 @@ msgstr ""
 "• aucun désactive toute adaptation et utilise l'espace RVB de travail du "
 "pipeline."
 
-#: ../src/iop/channelmixerrgb.c:3697
+#: ../src/iop/channelmixerrgb.c:3709
 msgid ""
 "this is the color of the scene illuminant before chromatic adaptation\n"
 "this color will be turned into pure white by the adaptation."
@@ -12036,103 +12157,103 @@ msgstr ""
 "ceci est la couleur de l'illuminant de scène avant l'adaptation chromatique\n"
 "cette couleur sera transformée en blanc pur par l'adaptation."
 
-#: ../src/iop/channelmixerrgb.c:3704 ../src/iop/temperature.c:2011
+#: ../src/iop/channelmixerrgb.c:3716 ../src/iop/temperature.c:2011
 msgid "set white balance to detected from area"
 msgstr "choisir la balance des blancs depuis une zone"
 
-#: ../src/iop/channelmixerrgb.c:3708
+#: ../src/iop/channelmixerrgb.c:3720
 msgid "illuminant"
 msgstr "illuminant"
 
-#: ../src/iop/channelmixerrgb.c:3714 ../src/iop/temperature.c:1946
+#: ../src/iop/channelmixerrgb.c:3726 ../src/iop/temperature.c:1946
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/channelmixerrgb.c:3758
+#: ../src/iop/channelmixerrgb.c:3770
 msgid "input R"
 msgstr "R entrée"
 
-#: ../src/iop/channelmixerrgb.c:3765
+#: ../src/iop/channelmixerrgb.c:3777
 msgid "input G"
 msgstr "V entrée"
 
-#: ../src/iop/channelmixerrgb.c:3772
+#: ../src/iop/channelmixerrgb.c:3784
 msgid "input B"
 msgstr "B entrée"
 
-#: ../src/iop/channelmixerrgb.c:3780
+#: ../src/iop/channelmixerrgb.c:3792
 msgid "output R"
 msgstr "R sortie"
 
-#: ../src/iop/channelmixerrgb.c:3781
+#: ../src/iop/channelmixerrgb.c:3793
 msgid "output G"
 msgstr "V sortie"
 
-#: ../src/iop/channelmixerrgb.c:3782
+#: ../src/iop/channelmixerrgb.c:3794
 msgid "output B"
 msgstr "B sortie"
 
-#: ../src/iop/channelmixerrgb.c:3783
+#: ../src/iop/channelmixerrgb.c:3795
 msgid "colorfulness"
 msgstr "saturation"
 
-#: ../src/iop/channelmixerrgb.c:3783
+#: ../src/iop/channelmixerrgb.c:3795
 msgid "output colorfulness"
 msgstr "saturation sortie"
 
-#: ../src/iop/channelmixerrgb.c:3785
+#: ../src/iop/channelmixerrgb.c:3797
 msgid "output brightness"
 msgstr "luminosité sortie"
 
-#: ../src/iop/channelmixerrgb.c:3786
+#: ../src/iop/channelmixerrgb.c:3798
 msgid "output gray"
 msgstr "gris sortie"
 
-#: ../src/iop/channelmixerrgb.c:3798
+#: ../src/iop/channelmixerrgb.c:3810
 msgid "calibrate with a color checker"
 msgstr "calibrer avec une charte couleur"
 
-#: ../src/iop/channelmixerrgb.c:3801
+#: ../src/iop/channelmixerrgb.c:3813
 msgid "use a color checker target to autoset CAT and channels"
 msgstr "utiliser une charte couleur pour auto-définir CAT et canaux"
 
-#: ../src/iop/channelmixerrgb.c:3807
+#: ../src/iop/channelmixerrgb.c:3819
 msgid "chart"
 msgstr "charte"
 
-#: ../src/iop/channelmixerrgb.c:3808
+#: ../src/iop/channelmixerrgb.c:3820
 msgid "choose the vendor and the type of your chart"
 msgstr "choisissez le vendeur et le modèle de votre charte"
 
-#: ../src/iop/channelmixerrgb.c:3810
+#: ../src/iop/channelmixerrgb.c:3822
 msgid "Xrite ColorChecker 24 pre-2014"
 msgstr "Xrite ColorChecker 24 pré-2014"
 
-#: ../src/iop/channelmixerrgb.c:3811
+#: ../src/iop/channelmixerrgb.c:3823
 msgid "Xrite ColorChecker 24 post-2014"
 msgstr "Xrite ColorChecker 24 post-2014"
 
-#: ../src/iop/channelmixerrgb.c:3812
+#: ../src/iop/channelmixerrgb.c:3824
 msgid "Datacolor SpyderCheckr 24 pre-2018"
 msgstr "Datacolor SpyderCheckr 24 (avant 2018)"
 
-#: ../src/iop/channelmixerrgb.c:3813
+#: ../src/iop/channelmixerrgb.c:3825
 msgid "Datacolor SpyderCheckr 24 post-2018"
 msgstr "Datacolor SpyderCheckr 24 (après 2018)"
 
-#: ../src/iop/channelmixerrgb.c:3814
+#: ../src/iop/channelmixerrgb.c:3826
 msgid "Datacolor SpyderCheckr 48 pre-2018"
 msgstr "Datacolor SpyderCheckr 48 (avant 2018)"
 
-#: ../src/iop/channelmixerrgb.c:3815
+#: ../src/iop/channelmixerrgb.c:3827
 msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr "Datacolor SpyderCheckr 48 (après 2018)"
 
-#: ../src/iop/channelmixerrgb.c:3818
+#: ../src/iop/channelmixerrgb.c:3830
 msgid "optimize for"
 msgstr "optimisé pour"
 
-#: ../src/iop/channelmixerrgb.c:3819
+#: ../src/iop/channelmixerrgb.c:3831
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -12150,35 +12271,35 @@ msgstr ""
 "les autres sont des comportements spéciaux visant à protéger certaines "
 "teintes"
 
-#: ../src/iop/channelmixerrgb.c:3826
+#: ../src/iop/channelmixerrgb.c:3838
 msgid "neutral colors"
 msgstr "couleurs neutres"
 
-#: ../src/iop/channelmixerrgb.c:3828
+#: ../src/iop/channelmixerrgb.c:3840
 msgid "skin and soil colors"
 msgstr "couleurs de la peau et du sol"
 
-#: ../src/iop/channelmixerrgb.c:3829
+#: ../src/iop/channelmixerrgb.c:3841
 msgid "foliage colors"
 msgstr "couleurs du feuillage"
 
-#: ../src/iop/channelmixerrgb.c:3830
+#: ../src/iop/channelmixerrgb.c:3842
 msgid "sky and water colors"
 msgstr "couleurs du ciel et de l'eau"
 
-#: ../src/iop/channelmixerrgb.c:3831
+#: ../src/iop/channelmixerrgb.c:3843
 msgid "average delta E"
 msgstr "delta E moyen"
 
-#: ../src/iop/channelmixerrgb.c:3832
+#: ../src/iop/channelmixerrgb.c:3844
 msgid "maximum delta E"
 msgstr "delta E maximum"
 
-#: ../src/iop/channelmixerrgb.c:3836
+#: ../src/iop/channelmixerrgb.c:3848
 msgid "patch scale"
 msgstr "échelle du patch"
 
-#: ../src/iop/channelmixerrgb.c:3837
+#: ../src/iop/channelmixerrgb.c:3849
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
@@ -12188,19 +12309,19 @@ msgstr ""
 "utile lorsque la correction de la perspective est bâclée ou\n"
 "le cadre des patchs projette une ombre sur les bords du patch."
 
-#: ../src/iop/channelmixerrgb.c:3845
+#: ../src/iop/channelmixerrgb.c:3857
 msgid "the delta E is using the CIE 2000 formula."
 msgstr "le delta E utilise la formule CIE 2000."
 
-#: ../src/iop/channelmixerrgb.c:3851
+#: ../src/iop/channelmixerrgb.c:3863
 msgid "accept the computed profile and set it in the module"
 msgstr "accepter le profile calculé et le définir dans le module"
 
-#: ../src/iop/channelmixerrgb.c:3856
+#: ../src/iop/channelmixerrgb.c:3868
 msgid "recompute the profile"
 msgstr "recalculer le profil"
 
-#: ../src/iop/channelmixerrgb.c:3861
+#: ../src/iop/channelmixerrgb.c:3873
 msgid "check the output delta E"
 msgstr "vérifier le delta E de sortie"
 
@@ -13213,21 +13334,21 @@ msgstr "impossible de générer le profil d'entrée !"
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "profil d'entrée non supporté, remplacé par linéaire RVB Rec709 !"
 
-#: ../src/iop/colorin.c:2063
+#: ../src/iop/colorin.c:2047
 msgid "input profile"
 msgstr "profil d'entrée"
 
-#: ../src/iop/colorin.c:2067
+#: ../src/iop/colorin.c:2051
 msgid "working profile"
 msgstr "profil de travail"
 
-#: ../src/iop/colorin.c:2074 ../src/iop/colorin.c:2085
+#: ../src/iop/colorin.c:2058 ../src/iop/colorin.c:2069
 #: ../src/iop/colorout.c:890
 #, c-format
 msgid "ICC profiles in %s or %s"
 msgstr "profils ICC dans « %s » ou « %s »"
 
-#: ../src/iop/colorin.c:2096
+#: ../src/iop/colorin.c:2080
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "cantonne les valeurs Lab au gamut de l'espace RVB"
 
@@ -19773,10 +19894,6 @@ msgstr "ajouter à la bibliothèque"
 msgid "copy & import"
 msgstr "copier & importer"
 
-#: ../src/libs/import.c:1785 ../src/libs/select.c:138
-msgid "select none"
-msgstr "rien sélectionner"
-
 #: ../src/libs/import.c:1791
 msgid "select new"
 msgstr "sélectionner nouveaux"
@@ -19814,15 +19931,15 @@ msgstr ""
 msgid "parameters"
 msgstr "paramètres"
 
-#: ../src/libs/ioporder.c:190
+#: ../src/libs/ioporder.c:193
 msgid "v3.0"
 msgstr "v3.0"
 
-#: ../src/libs/ioporder.c:208
+#: ../src/libs/ioporder.c:211
 msgid "v3.0 for RAW input (default)"
 msgstr "v3.0 pour les RAW (défaut)"
 
-#: ../src/libs/ioporder.c:213
+#: ../src/libs/ioporder.c:216
 msgid "v3.0 for JPEG/non-RAW input"
 msgstr "v3.0 pour JPEG/non-RAW"
 
@@ -21125,10 +21242,6 @@ msgstr "sélectionne toutes les images de la collection actuelle"
 #: ../src/libs/select.c:138
 msgid "clear selection"
 msgstr "aucune sélection"
-
-#: ../src/libs/select.c:142
-msgid "invert selection"
-msgstr "inverser"
 
 #: ../src/libs/select.c:142
 msgid ""
@@ -22872,6 +22985,13 @@ msgstr "créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1668
 msgid "mouse actions"
 msgstr "actions souris"
+
+#~ msgid "update database from selected xmp files"
+#~ msgstr ""
+#~ "mise à jours de la base de données depuis les fichiers xmp selectionnés"
+
+#~ msgid "overwrite selected xmp files"
+#~ msgstr "écraser les fichiers xmp selectionnés"
 
 #, c-format
 #~ msgid "no fallback for %s (%s)"
