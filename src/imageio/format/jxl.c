@@ -14,6 +14,7 @@
 */
 
 #include "bauhaus/bauhaus.h"
+#include "common/colorspaces.c"
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "common/imageio.h"
@@ -111,6 +112,10 @@ int bpp(dt_imageio_module_data_t *data)
 -------- IMAGE WRITING --------
 */
 
+// Note: We include our own code to write the jxl codestream within a BMFF container.
+// JXL images can either be naked (just the codestream) or wrapped in a BMFF container.
+// libjxl can write the codestream in a container for you, but it doesn't have options for
+// including other "boxes" such as exif data, so we will manage the BMFF container ourselves.
 
 int write_32(FILE *stream, uint32_t num)
 {
@@ -243,17 +248,146 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   void *runner = JxlThreadParallelRunnerCreate(NULL, num_threads);
   JXL_ASSERT(JxlEncoderSetParallelRunner(encoder, JxlThreadParallelRunner, runner));
 
-  cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
+  const dt_colorspaces_color_profile_t *output_profile
+      = dt_colorspaces_get_output_profile(imgid, over_type, over_filename);
+  cmsHPROFILE out_profile = output_profile->profile;
+  // Previous call will give us a more accurate color profile type
+  // (not what the user requested in the export menu but what the image is actually using)
+  over_type = output_profile->type;
 
-  cmsUInt32Number size = 0;
-  if(cmsSaveProfileToMem(out_profile, NULL, &size))
+  // If possible we want libjxl to save the color encoding in it's own format, rather
+  // than as an ICC binary blob which is possible. ICC blobs are slightly larger and
+  // are also less compatible with various image viewers.
+  // If we are unable to find the required color encoding data for libjxl we will
+  // just fallback to providing an ICC blob (and hope we can at least do that!).
+  gboolean write_icc = true;
+  JxlColorEncoding color_encoding;
+
+  if(cmsGetColorSpace(out_profile) == cmsSigRgbData)
   {
-    unsigned char *buf = malloc(size);
-    if(!buf || !cmsSaveProfileToMem(out_profile, buf, &size)) goto end;
+    color_encoding.color_space = JXL_COLOR_SPACE_RGB;
 
-    JXL_ASSERT(JxlEncoderSetICCProfile(encoder, buf, size));
+    cmsCIEXYZ *wtpt = cmsReadTag(out_profile, cmsSigMediaWhitePointTag);
+    if(wtpt)
+    {
+      color_encoding.white_point = JXL_WHITE_POINT_CUSTOM;
+      color_encoding.white_point_xy[0] = wtpt->X;
+      color_encoding.white_point_xy[1] = wtpt->Y;
 
-    free(buf);
+      cmsCIExyYTRIPLE primaries;
+      write_icc = false;
+      if(over_type == DT_COLORSPACE_SRGB)
+      {
+        primaries = sRGB_Primaries;
+        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_SRGB;
+      }
+      else if(over_type == DT_COLORSPACE_BRG)
+      {
+        primaries = sRGB_Primaries;
+        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_SRGB;
+      }
+      else if(over_type == DT_COLORSPACE_INFRARED)
+      {
+        primaries = sRGB_Primaries;
+        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
+      }
+      else if(over_type == DT_COLORSPACE_DISPLAY)
+      {
+        primaries = sRGB_Primaries;
+        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_SRGB;
+      }
+      else if(over_type == DT_COLORSPACE_DISPLAY2)
+      {
+        primaries = sRGB_Primaries;
+        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_SRGB;
+      }
+      else if(over_type == DT_COLORSPACE_LIN_REC2020)
+      {
+        primaries = Rec2020_Primaries;
+        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
+      }
+      else if(over_type == DT_COLORSPACE_PQ_REC2020)
+      {
+        primaries = Rec2020_Primaries;
+        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_PQ;
+      }
+      else if(over_type == DT_COLORSPACE_HLG_REC2020)
+      {
+        primaries = Rec2020_Primaries;
+        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_HLG;
+      }
+      else if(over_type == DT_COLORSPACE_REC709)
+      {
+        primaries = Rec709_Primaries;
+        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_709;
+      }
+      else if(over_type == DT_COLORSPACE_LIN_REC709)
+      {
+        primaries = Rec709_Primaries;
+        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
+      }
+      else if(over_type == DT_COLORSPACE_ADOBERGB)
+      {
+        primaries = Adobe_Primaries;
+        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_GAMMA;
+        color_encoding.gamma = 2.19921875;
+      }
+      else if(over_type == DT_COLORSPACE_PQ_P3)
+      {
+        primaries = P3_Primaries;
+        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_PQ;
+      }
+      else if(over_type == DT_COLORSPACE_HLG_P3)
+      {
+        primaries = P3_Primaries;
+        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_HLG;
+      }
+      else if(over_type == DT_COLORSPACE_PROPHOTO_RGB)
+      {
+        primaries = ProPhoto_Primaries;
+        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
+      }
+      else
+      {
+        write_icc = true;
+      }
+
+      if(!write_icc)
+      {
+        color_encoding.primaries = JXL_PRIMARIES_CUSTOM;
+        color_encoding.primaries_red_xy[0] = primaries.Red.x;
+        color_encoding.primaries_red_xy[1] = primaries.Red.y;
+        color_encoding.primaries_green_xy[0] = primaries.Green.x;
+        color_encoding.primaries_green_xy[1] = primaries.Green.y;
+        color_encoding.primaries_blue_xy[0] = primaries.Blue.x;
+        color_encoding.primaries_blue_xy[1] = primaries.Blue.y;
+        // TODO: safe to simply put pipe->icc_intent here?
+        color_encoding.rendering_intent = JXL_RENDERING_INTENT_PERCEPTUAL;
+
+        JxlEncoderSetColorEncoding(encoder, &color_encoding);
+      }
+    }
+  }
+
+  if(write_icc)
+  {
+    fprintf(stderr, "JXL: Could not generate color encoding data, falling back to ICC binary\n");
+
+    cmsUInt32Number size = 0;
+    if(cmsSaveProfileToMem(out_profile, NULL, &size))
+    {
+      unsigned char *buf = malloc(size);
+      if(!buf || !cmsSaveProfileToMem(out_profile, buf, &size)) goto end;
+
+      JXL_ASSERT(JxlEncoderSetICCProfile(encoder, buf, size));
+
+      free(buf);
+    }
+    else
+    {
+      fprintf(stderr, "JXL: Error writing ICC data\n");
+      goto end;
+    }
   }
 
   JxlBasicInfo basic_info = {};
@@ -335,10 +469,10 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   JXL_ASSERT(JxlEncoderAddImageFrame(options, &pixel_format, pixels, in_buf_size));
   JxlEncoderCloseInput(encoder);
 
-  // Write the image to a buffer. We resize the image in chunks of 5,000 bytes.
-  // fixme: Can we better estimate what the optimal size of chunks is for this image?
-  size_t chunkSize = 5000;
 
+  // Write the image codestream to a buffer. We write the image in chunks of 50,000 bytes.
+  // fixme: Can we better estimate what the optimal size of chunks is for this image?
+  size_t chunkSize = 50000;
   out_buf = malloc(chunkSize);
   uint8_t *out_cur = out_buf;
   size_t out_len = chunkSize;
@@ -374,7 +508,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
         out_cur = out_buf + offset;
       }
     }
-    if(out_status != JXL_ENC_NEED_MORE_OUTPUT && out_status != JXL_ENC_SUCCESS)
+    else if(out_status != JXL_ENC_SUCCESS)
     {
       // out_status should be an error: force it to be processed
       JXL_ASSERT(out_status);
@@ -394,7 +528,6 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   if(write_container_codestream(out_file, out_buf, out_len)) goto end;
 
   // Write the exif data if it exists
-  printf("Exif: %p, length: %d\n", exif, exif_len);
   if(exif)
   {
     if(write_container_exif(out_file, exif, exif_len)) goto end;
