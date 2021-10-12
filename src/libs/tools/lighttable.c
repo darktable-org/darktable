@@ -617,7 +617,7 @@ static int layout_cb(lua_State *L)
   const dt_lighttable_layout_t tmp = _lib_lighttable_get_layout(self);
   if(lua_gettop(L) > 0){
     dt_lighttable_layout_t value;
-    luaA_to(L,dt_lighttable_layout_t,&value,1);
+    luaA_to(L, dt_lighttable_layout_t, &value, 1);
     _lib_lighttable_set_layout(self, value);
   }
   luaA_push(L, dt_lighttable_layout_t, &tmp);
@@ -629,7 +629,7 @@ static int zoom_level_cb(lua_State *L)
   const gint tmp = _lib_lighttable_get_zoom(self);
   if(lua_gettop(L) > 0){
     int value;
-    luaA_to(L,int,&value,1);
+    luaA_to(L, int, &value, 1);
     _lib_lighttable_set_zoom(self, value);
   }
   luaA_push(L, int, &tmp);
@@ -646,18 +646,19 @@ void init(struct dt_lib_module_t *self)
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "layout");
   lua_pushlightuserdata(L, self);
-  lua_pushcclosure(L, zoom_level_cb,1);
+  lua_pushcclosure(L, zoom_level_cb, 1);
   dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "zoom_level");
 
   luaA_enum(L,dt_lighttable_layout_t);
-  luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_FIRST);
-  luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_ZOOMABLE);
-  luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_FILEMANAGER);
+  luaA_enum_value(L, dt_lighttable_layout_t, DT_LIGHTTABLE_LAYOUT_FIRST);
+  luaA_enum_value(L, dt_lighttable_layout_t, DT_LIGHTTABLE_LAYOUT_ZOOMABLE);
+  luaA_enum_value(L, dt_lighttable_layout_t, DT_LIGHTTABLE_LAYOUT_FILEMANAGER);
   luaA_enum_value(L, dt_lighttable_layout_t, DT_LIGHTTABLE_LAYOUT_CULLING);
   luaA_enum_value(L, dt_lighttable_layout_t, DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC);
-  luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_LAST);
+  luaA_enum_value(L, dt_lighttable_layout_t, DT_LIGHTTABLE_LAYOUT_PREVIEW);
+  luaA_enum_value(L, dt_lighttable_layout_t, DT_LIGHTTABLE_LAYOUT_LAST);
 }
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
