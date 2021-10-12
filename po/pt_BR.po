@@ -1,15 +1,15 @@
 # Copyright (C) 2021 Free Software Foundation, Inc.
 #
-# Marcus Gama <marcus.gama@gmail.com>, 2021.
 #: ../build/bin/conf_gen.h:849 ../build/bin/conf_gen.h:855
 #: ../build/bin/conf_gen.h:861 ../build/bin/conf_gen.h:867
 #: ../build/bin/conf_gen.h:873
+# Marcus Gama <marcus.gama@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-10-12 10:32-0300\n"
-"PO-Revision-Date: 2021-10-12 10:39-0300\n"
+"PO-Revision-Date: 2021-10-12 14:40-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -5843,19 +5843,21 @@ msgstr "processando..."
 #: ../src/control/crawler.c:345
 #, c-format
 msgid "ERROR: %s NOT synced XMP → DB"
-msgstr "ERRO: %s NÃO syncronizado XMP → DB"
+msgstr "ERRO: %s NÃO sincronizado XMP → DB"
 
 #: ../src/control/crawler.c:346 ../src/control/crawler.c:397
 #: ../src/control/crawler.c:449
 msgid ""
 "ERROR: cannot write the database. the destination may be full, offline or "
 "read-only."
-msgstr "ERRO: não é possívle escrever na base de dados. o destino pode estar cheio, offline ou disponível somente para leitura."
+msgstr ""
+"ERRO: não é possível escrever na base de dados. o destino pode estar cheio,"
+" offline ou disponível somente para leitura."
 
 #: ../src/control/crawler.c:351
 #, c-format
 msgid "SUCCESS: %s synced XMP → DB"
-msgstr "SUCCESSO: %s syncronizado XMP → DB"
+msgstr "SUCESSO: %s sincronizado XMP → DB"
 
 #: ../src/control/crawler.c:368
 #, c-format
@@ -5875,52 +5877,52 @@ msgstr ""
 #: ../src/control/crawler.c:374
 #, c-format
 msgid "SUCCESS: %s synced DB → XMP"
-msgstr "SUCCESSO: %s syncronizado DB → XMP"
+msgstr "SUCESSO: %s sincronizado DB → XMP"
 
 #: ../src/control/crawler.c:396
 #, c-format
 msgid "ERROR: %s NOT synced new (XMP) → old (DB)"
-msgstr "ERRO: %s NÃO syncronizado novo (XMP) → antigo (DB)"
+msgstr "ERRO: %s NÃO sincronizado novo (XMP) → antigo (DB)"
 
 #: ../src/control/crawler.c:401
 #, c-format
 msgid "SUCCESS: %s synced new (XMP) → old (DB)"
-msgstr "SUCCESSO: %s syncronizado novo (XMP) → antigo (DB)"
+msgstr "SUCESSO: %s sincronizado novo (XMP) → antigo (DB)"
 
 #: ../src/control/crawler.c:411
 #, c-format
 msgid "ERROR: %s NOT synced new (DB) → old (XMP)"
-msgstr "ERRORO: %s NÃO syncronizado novo (DB) → antigo (XMP)"
+msgstr "ERRO: %s NÃO sincronizado novo (DB) → antigo (XMP)"
 
 #: ../src/control/crawler.c:416
 #, c-format
 msgid "SUCCESS: %s synced new (DB) → old (XMP)"
-msgstr "SUCCESSO: %s syncronizado novo (DB) → antigo (XMP)"
+msgstr "SUCESSO: %s sincronizado novo (DB) → antigo (XMP)"
 
 #: ../src/control/crawler.c:424 ../src/control/crawler.c:475
 #, c-format
 msgid "EXCEPTION: %s has inconsistent timestamps"
-msgstr ""
+msgstr "EXCEÇÃO: %s possui marca de tempo inconsistente"
 
 #: ../src/control/crawler.c:448
 #, c-format
 msgid "ERROR: %s NOT synced old (XMP) → new (DB)"
-msgstr "ERRO: %s NÃO syncronizado antigo (XMP) → novo (DB)"
+msgstr "ERRO: %s NÃO sincronizado antigo (XMP) → novo (DB)"
 
 #: ../src/control/crawler.c:453
 #, c-format
 msgid "SUCCESS: %s synced old (XMP) → new (DB)"
-msgstr "SUCCESSO: %s syncronizado antigo (XMP) → novo (DB)"
+msgstr "SUCESSO: %s sincronizado antigo (XMP) → novo (DB)"
 
 #: ../src/control/crawler.c:462
 #, c-format
 msgid "ERROR: %s NOT synced old (DB) → new (XMP)"
-msgstr "ERRORO: %s NÃO syncronizado antigo (DB) → novo (XMP)"
+msgstr "ERRO: %s NÃO sincronizado antigo (DB) → novo (XMP)"
 
 #: ../src/control/crawler.c:467
 #, c-format
 msgid "SUCCESS: %s synced old (DB) → new (XMP)"
-msgstr "SUCCESSO: %s syncronizado antigo (DB) → novo (XMP)"
+msgstr "SUCESSO: %s sincronizado antigo (DB) → novo (XMP)"
 
 #: ../src/control/crawler.c:546
 #, c-format
