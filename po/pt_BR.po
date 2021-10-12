@@ -1,15 +1,15 @@
 # Copyright (C) 2021 Free Software Foundation, Inc.
 #
+# Marcus Gama <marcus.gama@gmail.com>, 2021.
 #: ../build/bin/conf_gen.h:849 ../build/bin/conf_gen.h:855
 #: ../build/bin/conf_gen.h:861 ../build/bin/conf_gen.h:867
 #: ../build/bin/conf_gen.h:873
-# Marcus Gama <marcus.gama@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-10 15:06-0300\n"
-"PO-Revision-Date: 2021-10-12 10:01-0300\n"
+"POT-Creation-Date: 2021-10-12 10:32-0300\n"
+"PO-Revision-Date: 2021-10-12 10:39-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1297,7 +1297,7 @@ msgstr ""
 msgid "storage"
 msgstr "armazenamento"
 
-#: ../build/bin/preferences_gen.h:6569
+#: ../build/bin/preferences_gen.h:6569 ../src/control/crawler.c:595
 msgid "database"
 msgstr "base de dados"
 
@@ -1418,7 +1418,7 @@ msgstr ""
 "recente\n"
 "para uma recuperação."
 
-#: ../build/bin/preferences_gen.h:6827
+#: ../build/bin/preferences_gen.h:6827 ../src/control/crawler.c:594
 msgid "xmp"
 msgstr "xmp"
 
@@ -1679,8 +1679,8 @@ msgid ""
 "otherwise shortcuts will always be assigned to the preferred instance"
 msgstr ""
 "quando múltiplas instâncias estiverem presentes em uma imagem, isto permite\n"
-"atribuir visualmente atalhos  a estas instâncias específicas, caso contrário"
-" os\n"
+"atribuir visualmente atalhos  a estas instâncias específicas, caso contrário "
+"os\n"
 "atalhos serão sempre atribuídos à instância preferencial"
 
 #: ../build/bin/preferences_gen.h:7496
@@ -5445,7 +5445,7 @@ msgstr ""
 "não é possível remover cópias local quando o arquivo original está "
 "inacessível."
 
-#: ../src/common/image.c:2546
+#: ../src/common/image.c:2549
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -5654,8 +5654,8 @@ msgstr "imagem classificada em %s"
 msgid "unknown"
 msgstr "desconhecido"
 
-#: ../src/common/ratings.c:284 ../src/control/crawler.c:379
-#: ../src/libs/select.c:39 ../src/views/lighttable.c:822
+#: ../src/common/ratings.c:284 ../src/libs/select.c:39
+#: ../src/views/lighttable.c:822
 msgid "select"
 msgstr "selecionar"
 
@@ -5840,39 +5840,159 @@ msgstr "mostra janela de atalhos"
 msgid "working..."
 msgstr "processando..."
 
-#: ../src/control/crawler.c:383
+#: ../src/control/crawler.c:345
+#, c-format
+msgid "ERROR: %s NOT synced XMP → DB"
+msgstr "ERRO: %s NÃO syncronizado XMP → DB"
+
+#: ../src/control/crawler.c:346 ../src/control/crawler.c:397
+#: ../src/control/crawler.c:449
+msgid ""
+"ERROR: cannot write the database. the destination may be full, offline or "
+"read-only."
+msgstr "ERRO: não é possívle escrever na base de dados. o destino pode estar cheio, offline ou disponível somente para leitura."
+
+#: ../src/control/crawler.c:351
+#, c-format
+msgid "SUCCESS: %s synced XMP → DB"
+msgstr "SUCCESSO: %s syncronizado XMP → DB"
+
+#: ../src/control/crawler.c:368
+#, c-format
+msgid "ERROR: %s NOT synced DB → XMP"
+msgstr "ERRO: %s NÃO sincronizado DB → XMP"
+
+#: ../src/control/crawler.c:369 ../src/control/crawler.c:412
+#: ../src/control/crawler.c:463
+#, c-format
+msgid ""
+"ERROR: cannot write %s \n"
+"the destination may be full, offline or read-only."
+msgstr ""
+"ERRO: não é possível escrever %s \\n\n"
+"o destino pode estar cheio, offline ou disponível somente para leitura."
+
+#: ../src/control/crawler.c:374
+#, c-format
+msgid "SUCCESS: %s synced DB → XMP"
+msgstr "SUCCESSO: %s syncronizado DB → XMP"
+
+#: ../src/control/crawler.c:396
+#, c-format
+msgid "ERROR: %s NOT synced new (XMP) → old (DB)"
+msgstr "ERRO: %s NÃO syncronizado novo (XMP) → antigo (DB)"
+
+#: ../src/control/crawler.c:401
+#, c-format
+msgid "SUCCESS: %s synced new (XMP) → old (DB)"
+msgstr "SUCCESSO: %s syncronizado novo (XMP) → antigo (DB)"
+
+#: ../src/control/crawler.c:411
+#, c-format
+msgid "ERROR: %s NOT synced new (DB) → old (XMP)"
+msgstr "ERRORO: %s NÃO syncronizado novo (DB) → antigo (XMP)"
+
+#: ../src/control/crawler.c:416
+#, c-format
+msgid "SUCCESS: %s synced new (DB) → old (XMP)"
+msgstr "SUCCESSO: %s syncronizado novo (DB) → antigo (XMP)"
+
+#: ../src/control/crawler.c:424 ../src/control/crawler.c:475
+#, c-format
+msgid "EXCEPTION: %s has inconsistent timestamps"
+msgstr ""
+
+#: ../src/control/crawler.c:448
+#, c-format
+msgid "ERROR: %s NOT synced old (XMP) → new (DB)"
+msgstr "ERRO: %s NÃO syncronizado antigo (XMP) → novo (DB)"
+
+#: ../src/control/crawler.c:453
+#, c-format
+msgid "SUCCESS: %s synced old (XMP) → new (DB)"
+msgstr "SUCCESSO: %s syncronizado antigo (XMP) → novo (DB)"
+
+#: ../src/control/crawler.c:462
+#, c-format
+msgid "ERROR: %s NOT synced old (DB) → new (XMP)"
+msgstr "ERRORO: %s NÃO syncronizado antigo (DB) → novo (XMP)"
+
+#: ../src/control/crawler.c:467
+#, c-format
+msgid "SUCCESS: %s synced old (DB) → new (XMP)"
+msgstr "SUCCESSO: %s syncronizado antigo (DB) → novo (XMP)"
+
+#: ../src/control/crawler.c:546
+#, c-format
+msgid "%id %02dh %02dm %02ds"
+msgstr "%id %02dh %02dm %02ds"
+
+#: ../src/control/crawler.c:611
 msgid "path"
 msgstr "caminho"
 
-#: ../src/control/crawler.c:387
+#: ../src/control/crawler.c:619
 msgid "xmp timestamp"
 msgstr "data/hora do xmp"
 
-#: ../src/control/crawler.c:391
+#: ../src/control/crawler.c:623
 msgid "database timestamp"
 msgstr "data/hora base de dados"
 
-#: ../src/control/crawler.c:400
+#: ../src/control/crawler.c:627
+msgid "newest"
+msgstr "o mais novo"
+
+#: ../src/control/crawler.c:632
+msgid "time difference"
+msgstr "diferença de tempo"
+
+#: ../src/control/crawler.c:642
 msgid "updated xmp sidecar files found"
 msgstr "arquivo auxiliar xmp atualizado não encontrado"
 
-#: ../src/control/crawler.c:402
+#: ../src/control/crawler.c:643
 msgid "_close"
 msgstr "_fechar"
 
 #. action-box
-#: ../src/control/crawler.c:417 ../src/libs/import.c:1781
+#: ../src/control/crawler.c:657 ../src/libs/import.c:1781
 #: ../src/libs/select.c:134
 msgid "select all"
 msgstr "selecionar tudo"
 
-#: ../src/control/crawler.c:424
-msgid "update database from selected xmp files"
-msgstr "atualiza base de dados a partir dos aquivos xmp selecionados"
+#: ../src/control/crawler.c:658 ../src/libs/import.c:1785
+#: ../src/libs/select.c:138
+msgid "select none"
+msgstr "selecionar nenhuma"
 
-#: ../src/control/crawler.c:425
-msgid "overwrite selected xmp files"
-msgstr "sobrescreve aquivos xmp selecionados"
+#: ../src/control/crawler.c:659 ../src/libs/select.c:142
+msgid "invert selection"
+msgstr "inverter seleção"
+
+#: ../src/control/crawler.c:671
+msgid "on the selection:"
+msgstr "na seleção:"
+
+#: ../src/control/crawler.c:672
+msgid "keep the xmp edit"
+msgstr "manter a edição do xmp"
+
+#: ../src/control/crawler.c:673
+msgid "keep the database edit"
+msgstr "manter a edição da base de dados"
+
+#: ../src/control/crawler.c:674
+msgid "keep the newest edit"
+msgstr "manter a edição mais nova"
+
+#: ../src/control/crawler.c:675
+msgid "keep the oldest edit"
+msgstr "manter a edição mais antiga"
+
+#: ../src/control/crawler.c:697
+msgid "synchronization log"
+msgstr "log de sincronização"
 
 #: ../src/control/jobs/camera_jobs.c:79
 #, c-format
@@ -7384,7 +7504,7 @@ msgstr "dureza: %3.2f%%"
 #: ../src/develop/masks/brush.c:1140 ../src/develop/masks/brush.c:1182
 #: ../src/develop/masks/brush.c:1189 ../src/develop/masks/circle.c:122
 #: ../src/develop/masks/circle.c:176 ../src/develop/masks/ellipse.c:555
-#: ../src/develop/masks/ellipse.c:642 ../src/develop/masks/path.c:1097
+#: ../src/develop/masks/ellipse.c:642 ../src/develop/masks/path.c:1099
 #, c-format
 msgid "size: %3.2f%%"
 msgstr "tamanho: %3.2f%%"
@@ -7434,7 +7554,7 @@ msgstr "<b>tamanho</b>: scroll"
 
 #: ../src/develop/masks/circle.c:109 ../src/develop/masks/circle.c:159
 #: ../src/develop/masks/ellipse.c:527 ../src/develop/masks/ellipse.c:612
-#: ../src/develop/masks/path.c:1034 ../src/develop/masks/path.c:1041
+#: ../src/develop/masks/path.c:1036 ../src/develop/masks/path.c:1043
 #, c-format
 msgid "feather size: %3.2f%%"
 msgstr "tamanho do enevoamento: %3.2f%%"
@@ -7456,7 +7576,7 @@ msgstr "[CÍRCULO] muda tamanho do enevoamento"
 msgid "circle #%d"
 msgstr "círculo #%d"
 
-#: ../src/develop/masks/circle.c:1352 ../src/develop/masks/path.c:3129
+#: ../src/develop/masks/circle.c:1352 ../src/develop/masks/path.c:3131
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -7603,52 +7723,52 @@ msgstr "usar as mesmas formas que"
 msgid "masks can not contain themselves"
 msgstr "máscaras não podem conter a si mesmas"
 
-#: ../src/develop/masks/path.c:3086
+#: ../src/develop/masks/path.c:3088
 msgid "[PATH creation] add a smooth node"
 msgstr "[CAMINHO criação] adiciona nó suave"
 
-#: ../src/develop/masks/path.c:3088
+#: ../src/develop/masks/path.c:3090
 msgid "[PATH creation] add a sharp node"
 msgstr "[CAMINHO criação] adicionar um nó nítido"
 
-#: ../src/develop/masks/path.c:3089
+#: ../src/develop/masks/path.c:3091
 msgid "[PATH creation] terminate path creation"
 msgstr "[CAMINHO em nó] terminar criação de caminho"
 
-#: ../src/develop/masks/path.c:3091
+#: ../src/develop/masks/path.c:3093
 msgid "[PATH on node] switch between smooth/sharp node"
 msgstr "[CAMINHO em nó] mudar entre nó suave/nítido"
 
-#: ../src/develop/masks/path.c:3092
+#: ../src/develop/masks/path.c:3094
 msgid "[PATH on node] remove the node"
 msgstr "[CAMINHO em nó] remover o nó"
 
-#: ../src/develop/masks/path.c:3093
+#: ../src/develop/masks/path.c:3095
 msgid "[PATH on feather] reset curvature"
 msgstr "[CAMINHO em enevoamento] redefinir curvatura"
 
-#: ../src/develop/masks/path.c:3095
+#: ../src/develop/masks/path.c:3097
 msgid "[PATH on segment] add node"
 msgstr "[CAMINHO em segmento] adicionar nó"
 
-#: ../src/develop/masks/path.c:3096
+#: ../src/develop/masks/path.c:3098
 msgid "[PATH] change size"
 msgstr "[CAMINHO] mudar tamanho"
 
-#: ../src/develop/masks/path.c:3097
+#: ../src/develop/masks/path.c:3099
 msgid "[PATH] change opacity"
 msgstr "[CAMINHO] mudar opacidade"
 
-#: ../src/develop/masks/path.c:3098
+#: ../src/develop/masks/path.c:3100
 msgid "[PATH] change feather size"
 msgstr "[CAMINHO]  muda tamanho do enevoamento"
 
-#: ../src/develop/masks/path.c:3109
+#: ../src/develop/masks/path.c:3111
 #, c-format
 msgid "path #%d"
 msgstr "caminho #%d"
 
-#: ../src/develop/masks/path.c:3116
+#: ../src/develop/masks/path.c:3118
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
@@ -7656,7 +7776,7 @@ msgstr ""
 "<b>adicionar nó</b>: clique, <b>adicionar nó nítido</b>:ctrl+clique\n"
 "<b>cancelar</b>: clique direito"
 
-#: ../src/develop/masks/path.c:3119
+#: ../src/develop/masks/path.c:3121
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finish path</b>: right-click"
@@ -7664,7 +7784,7 @@ msgstr ""
 "<b>adicionar nó</b>: clique, <b>adicionar nó nítido</b>:ctrl+clique\n"
 "<b>finalizar caminho</b>: clique direito"
 
-#: ../src/develop/masks/path.c:3122
+#: ../src/develop/masks/path.c:3124
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
@@ -7672,7 +7792,7 @@ msgstr ""
 "<b>mover nó</b>: arrastar, <b>remover nó</b>: clique-direito\n"
 "<b>alternar modo entre nó suave/nítido</b>: ctrl+clique"
 
-#: ../src/develop/masks/path.c:3125
+#: ../src/develop/masks/path.c:3127
 msgid ""
 "<b>node curvature</b>: drag\n"
 "<b>reset curvature</b>: right-click"
@@ -7680,7 +7800,7 @@ msgstr ""
 "<b>curvatura do nó</b>: arrastar\n"
 "<b>redefinir curvatura</b>: clique-direito"
 
-#: ../src/develop/masks/path.c:3127
+#: ../src/develop/masks/path.c:3129
 msgid ""
 "<b>move segment</b>: drag\n"
 "<b>add node</b>: ctrl+click"
@@ -19636,10 +19756,6 @@ msgstr "adicionar à biblioteca"
 msgid "copy & import"
 msgstr "copiar & importar"
 
-#: ../src/libs/import.c:1785 ../src/libs/select.c:138
-msgid "select none"
-msgstr "selecionar nenhuma"
-
 #: ../src/libs/import.c:1791
 msgid "select new"
 msgstr "selecionar nova"
@@ -20953,10 +21069,6 @@ msgstr "seleciona todas imagens na coleção atual"
 #: ../src/libs/select.c:138
 msgid "clear selection"
 msgstr "limpa seleção"
-
-#: ../src/libs/select.c:142
-msgid "invert selection"
-msgstr "inverter seleção"
 
 #: ../src/libs/select.c:142
 msgid ""
@@ -22684,6 +22796,12 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1668
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "update database from selected xmp files"
+#~ msgstr "atualiza base de dados a partir dos aquivos xmp selecionados"
+
+#~ msgid "overwrite selected xmp files"
+#~ msgstr "sobrescreve aquivos xmp selecionados"
 
 #, c-format
 #~ msgid "no fallback for %s (%s)"
