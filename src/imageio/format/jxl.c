@@ -277,16 +277,6 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
         primaries = &sRGB_Primaries;
         color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_SRGB;
         break;
-      case DT_COLORSPACE_BRG:
-        color_encoding.white_point = JXL_WHITE_POINT_D65;
-        color_encoding.primaries = JXL_PRIMARIES_SRGB;
-        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_SRGB;
-        break;
-      case DT_COLORSPACE_INFRARED:
-        color_encoding.white_point = JXL_WHITE_POINT_D65;
-        color_encoding.primaries = JXL_PRIMARIES_SRGB;
-        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
-        break;
       case DT_COLORSPACE_LIN_REC2020:
         color_encoding.white_point = JXL_WHITE_POINT_D65;
         color_encoding.primaries = JXL_PRIMARIES_2100;
@@ -431,13 +421,15 @@ color_encoding_end:
   // Fix pixel stride
   const size_t in_buf_size = width * height * channels * sizeof(float);
   pixels = malloc(in_buf_size);
+  if(!pixels) goto end;
   for(int y = 0; y < height; y++)
   {
     for(int x = 0; x < width; x++)
     {
-      const float *buf = &in[((y * width) + x) * 4];
+      const float *in_pixel = &in[((y * width) + x) * 4];
+      float *pixel = &pixels[(y * width * channels) + (x * channels)];
 
-      for(int k = 0; k < channels; k++) pixels[(y * width * channels) + (x * channels) + k] = buf[k];
+      for(int k = 0; k < channels; k++) pixel[k] = in_pixel[k];
     }
   }
 
@@ -449,13 +441,9 @@ color_encoding_end:
   // fixme: Can we better estimate what the optimal size of chunks is for this image?
   const size_t chunkSize = 50000;
   out_buf = malloc(chunkSize);
+  if(!out_buf) goto end;
   uint8_t *out_cur = out_buf;
   size_t out_len = chunkSize;
-  if(!out_buf)
-  {
-    fprintf(stderr, "JXL failure: out of memory\n");
-    goto end;
-  }
 
   JxlEncoderStatus out_status = JXL_ENC_NEED_MORE_OUTPUT;
 
@@ -665,6 +653,7 @@ static void decoding_effort_changed(GtkWidget *decoding_effort, dt_imageio_modul
 void gui_init(dt_imageio_module_format_t *self)
 {
   dt_imageio_jxl_gui_data_t *gui = malloc(sizeof(dt_imageio_jxl_gui_data_t));
+  if(!gui) return;
   self->gui_data = gui;
 
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
