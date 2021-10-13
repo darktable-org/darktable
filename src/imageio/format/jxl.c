@@ -164,14 +164,14 @@ int write_box(FILE *stream, const uint8_t *type, const uint8_t *data, const uint
 
   if(write_32(stream, large ? 1 : box_len)) return 1;
 
-  fwrite(type, 1, 4, stream);
+  if(fwrite(type, 4, 1, stream) != 1) return 1; // failure writing to file
 
   if(large)
   {
     if(write_64(stream, box_len)) return 1;
   }
 
-  // If data is null then the caller wants to write the data itself
+  // If data is null then the caller wants to write the data itself (or there is no data)
   if(data)
   {
     if(fwrite(data, data_len, 1, stream) != 1) return 1; // failure writing to file
@@ -260,135 +260,121 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   // are also less compatible with various image viewers.
   // If we are unable to find the required color encoding data for libjxl we will
   // just fallback to providing an ICC blob (and hope we can at least do that!).
-  gboolean write_icc = true;
-  JxlColorEncoding color_encoding;
 
+  // We can only handle RGB
   if(cmsGetColorSpace(out_profile) == cmsSigRgbData)
   {
-    color_encoding.color_space = JXL_COLOR_SPACE_RGB;
-
-    const cmsCIEXYZ *wtpt = cmsReadTag(out_profile, cmsSigMediaWhitePointTag);
-    if(wtpt)
+    // Attempt to find the whitepoint, primaries and transfer function
+    // If we can't find any of these we fall back to ICC binary
+    // If libjxl does not have it's own definition of our primaries we can pass that manually.
+    JxlColorEncoding color_encoding;
+    const cmsCIExyYTRIPLE *primaries = NULL;
+    switch(over_type)
     {
-      color_encoding.white_point = JXL_WHITE_POINT_CUSTOM;
-      color_encoding.white_point_xy[0] = wtpt->X;
-      color_encoding.white_point_xy[1] = wtpt->Y;
-
-      cmsCIExyYTRIPLE primaries;
-      write_icc = false;
-      if(over_type == DT_COLORSPACE_SRGB)
-      {
-        primaries = sRGB_Primaries;
+      case DT_COLORSPACE_SRGB:
+        color_encoding.white_point = JXL_WHITE_POINT_D65;
+        color_encoding.primaries = JXL_PRIMARIES_SRGB;
+        primaries = &sRGB_Primaries;
         color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_SRGB;
-      }
-      else if(over_type == DT_COLORSPACE_BRG)
-      {
-        primaries = sRGB_Primaries;
+        break;
+      case DT_COLORSPACE_BRG:
+        color_encoding.white_point = JXL_WHITE_POINT_D65;
+        color_encoding.primaries = JXL_PRIMARIES_SRGB;
         color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_SRGB;
-      }
-      else if(over_type == DT_COLORSPACE_INFRARED)
-      {
-        primaries = sRGB_Primaries;
+        break;
+      case DT_COLORSPACE_INFRARED:
+        color_encoding.white_point = JXL_WHITE_POINT_D65;
+        color_encoding.primaries = JXL_PRIMARIES_SRGB;
         color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
-      }
-      else if(over_type == DT_COLORSPACE_DISPLAY)
-      {
-        primaries = sRGB_Primaries;
-        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_SRGB;
-      }
-      else if(over_type == DT_COLORSPACE_DISPLAY2)
-      {
-        primaries = sRGB_Primaries;
-        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_SRGB;
-      }
-      else if(over_type == DT_COLORSPACE_LIN_REC2020)
-      {
-        primaries = Rec2020_Primaries;
+        break;
+      case DT_COLORSPACE_LIN_REC2020:
+        color_encoding.white_point = JXL_WHITE_POINT_D65;
+        color_encoding.primaries = JXL_PRIMARIES_2100;
         color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
-      }
-      else if(over_type == DT_COLORSPACE_PQ_REC2020)
-      {
-        primaries = Rec2020_Primaries;
+        break;
+      case DT_COLORSPACE_PQ_REC2020:
+        color_encoding.white_point = JXL_WHITE_POINT_D65;
+        color_encoding.primaries = JXL_PRIMARIES_2100;
         color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_PQ;
-      }
-      else if(over_type == DT_COLORSPACE_HLG_REC2020)
-      {
-        primaries = Rec2020_Primaries;
+        break;
+      case DT_COLORSPACE_HLG_REC2020:
+        color_encoding.white_point = JXL_WHITE_POINT_D65;
+        color_encoding.primaries = JXL_PRIMARIES_2100;
         color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_HLG;
-      }
-      else if(over_type == DT_COLORSPACE_REC709)
-      {
-        primaries = Rec709_Primaries;
+        break;
+      case DT_COLORSPACE_REC709:
+        color_encoding.white_point = JXL_WHITE_POINT_D65;
+        primaries = &Rec709_Primaries;
         color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_709;
-      }
-      else if(over_type == DT_COLORSPACE_LIN_REC709)
-      {
-        primaries = Rec709_Primaries;
+        break;
+      case DT_COLORSPACE_LIN_REC709:
+        color_encoding.white_point = JXL_WHITE_POINT_D65;
+        primaries = &Rec709_Primaries;
         color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
-      }
-      else if(over_type == DT_COLORSPACE_ADOBERGB)
-      {
-        primaries = Adobe_Primaries;
+        break;
+      case DT_COLORSPACE_ADOBERGB:
+        color_encoding.white_point = JXL_WHITE_POINT_D65;
+        primaries = &Adobe_Primaries;
         color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_GAMMA;
         color_encoding.gamma = 2.19921875;
-      }
-      else if(over_type == DT_COLORSPACE_PQ_P3)
-      {
-        primaries = P3_Primaries;
+        break;
+      case DT_COLORSPACE_PQ_P3:
+        color_encoding.white_point = JXL_WHITE_POINT_D65;
+        color_encoding.primaries = JXL_PRIMARIES_P3;
         color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_PQ;
-      }
-      else if(over_type == DT_COLORSPACE_HLG_P3)
-      {
-        primaries = P3_Primaries;
+        break;
+      case DT_COLORSPACE_HLG_P3:
+        color_encoding.white_point = JXL_WHITE_POINT_D65;
+        color_encoding.primaries = JXL_PRIMARIES_P3;
         color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_HLG;
-      }
-      else if(over_type == DT_COLORSPACE_PROPHOTO_RGB)
-      {
-        primaries = ProPhoto_Primaries;
+        break;
+      case DT_COLORSPACE_PROPHOTO_RGB:
+        color_encoding.white_point = JXL_WHITE_POINT_D65;
+        primaries = &ProPhoto_Primaries;
         color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
-      }
-      else
-      {
-        write_icc = true;
-      }
-
-      if(!write_icc)
-      {
-        color_encoding.primaries = JXL_PRIMARIES_CUSTOM;
-        color_encoding.primaries_red_xy[0] = primaries.Red.x;
-        color_encoding.primaries_red_xy[1] = primaries.Red.y;
-        color_encoding.primaries_green_xy[0] = primaries.Green.x;
-        color_encoding.primaries_green_xy[1] = primaries.Green.y;
-        color_encoding.primaries_blue_xy[0] = primaries.Blue.x;
-        color_encoding.primaries_blue_xy[1] = primaries.Blue.y;
-        // TODO: safe to simply put pipe->icc_intent here?
-        color_encoding.rendering_intent = JXL_RENDERING_INTENT_PERCEPTUAL;
-
-        JxlEncoderSetColorEncoding(encoder, &color_encoding);
-      }
+        break;
+      default:
+        goto write_icc;
     }
+
+    color_encoding.color_space = JXL_COLOR_SPACE_RGB;
+    if(primaries != NULL)
+    {
+      color_encoding.primaries = JXL_PRIMARIES_CUSTOM;
+      color_encoding.primaries_red_xy[0] = primaries->Red.x;
+      color_encoding.primaries_red_xy[1] = primaries->Red.y;
+      color_encoding.primaries_green_xy[0] = primaries->Green.x;
+      color_encoding.primaries_green_xy[1] = primaries->Green.y;
+      color_encoding.primaries_blue_xy[0] = primaries->Blue.x;
+      color_encoding.primaries_blue_xy[1] = primaries->Blue.y;
+    }
+    // TODO: safe to simply put pipe->icc_intent here?
+    color_encoding.rendering_intent = JXL_RENDERING_INTENT_PERCEPTUAL;
+    JxlEncoderSetColorEncoding(encoder, &color_encoding);
+    goto color_encoding_end;
   }
 
-  if(write_icc)
+write_icc:
+  fprintf(stdout, "JXL: Could not generate color encoding data, falling back to ICC binary\n");
+
+  cmsUInt32Number size = 0;
+  unsigned char *icc_buf = NULL;
+  if(cmsSaveProfileToMem(out_profile, NULL, &size))
   {
-    fprintf(stderr, "JXL: Could not generate color encoding data, falling back to ICC binary\n");
-
-    cmsUInt32Number size = 0;
-    if(cmsSaveProfileToMem(out_profile, NULL, &size))
+    icc_buf = malloc(size);
+    if(icc_buf && cmsSaveProfileToMem(out_profile, icc_buf, &size))
     {
-      unsigned char *buf = malloc(size);
-      if(!buf || !cmsSaveProfileToMem(out_profile, buf, &size)) goto end;
-
-      JXL_ASSERT(JxlEncoderSetICCProfile(encoder, buf, size));
-
-      free(buf);
-    }
-    else
-    {
-      fprintf(stderr, "JXL: Error writing ICC data\n");
-      goto end;
+      JXL_ASSERT(JxlEncoderSetICCProfile(encoder, icc_buf, size));
+      free(icc_buf);
+      goto color_encoding_end;
     }
   }
+
+  if(icc_buf) free(icc_buf);
+  fprintf(stderr, "JXL: Error writing ICC data\n");
+  goto end;
+
+color_encoding_end:
 
   JxlBasicInfo basic_info;
   JxlEncoderInitBasicInfo(&basic_info);
@@ -508,18 +494,34 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   }
 
   out_file = g_fopen(filename, "wb");
-  if(!out_file) goto end;
+  if(!out_file)
+  {
+    fprintf(stderr, "JXL: Could not open output file '%s'\n", filename);
+    goto end;
+  }
 
   // Now we need to write the bmff container, starting with the header
-  if(write_container_header(out_file)) goto end;
+  if(write_container_header(out_file))
+  {
+    fprintf(stderr, "JXL: Error writing BMFF container header to output file\n");
+    goto end;
+  }
 
   // Write the image codestream (the output from libjxl)
-  if(write_container_codestream(out_file, out_buf, out_len)) goto end;
+  if(write_container_codestream(out_file, out_buf, out_len))
+  {
+    fprintf(stderr, "JXL: Error writing codestream to output file\n");
+    goto end;
+  }
 
   // Write the exif data if it exists
   if(exif)
   {
-    if(write_container_exif(out_file, exif, exif_len)) goto end;
+    if(write_container_exif(out_file, exif, exif_len))
+    {
+      fprintf(stderr, "JXL: Error writing EXIF data to output file\n");
+      goto end;
+    }
   }
 
   // Successful write: set to success code
