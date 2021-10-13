@@ -2970,7 +2970,7 @@
   <dtconfig prefs="processing" section="general" restart="true">
     <name>plugins/darkroom/lut3d/def_path</name>
     <type>dir</type>
-    <default></default>
+    <default>$(home)</default>
     <shortdescription>3D lut root folder</shortdescription>
     <longdescription>this folder (and sub-folders) contains Lut files used by lut3d modules. (need a restart).</longdescription>
   </dtconfig>
