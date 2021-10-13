@@ -1875,7 +1875,7 @@ void reload_defaults(dt_iop_module_t *module)
     else if(!strcmp(ext, "heif")
          || !strcmp(ext, "heic")
          || !strcmp(ext, "hif")
-  #ifndef HAVE_LIVAVIF
+  #ifndef HAVE_LIBAVIF
          || !strcmp(ext, "avif")
   #endif
          )
