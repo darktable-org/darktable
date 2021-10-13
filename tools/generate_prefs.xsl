@@ -594,12 +594,12 @@ gboolean restart_required = FALSE;
   </xsl:template>
 
   <xsl:template match="dtconfig[type='dir']" mode="reset">
-    <xsl:text>
-      dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", "</xsl:text><xsl:value-of select="default"/><xsl:text>");
-      gchar *folder = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
-      gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(widget), folder);
-      g_free(folder);
-    </xsl:text>
+    <xsl:text>    gchar *path = dt_conf_expand_default_dir("</xsl:text><xsl:value-of select="default"/><xsl:text>");
+    dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", path);
+    g_free(path);
+    path = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
+    gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(widget), path);
+    g_free(path);</xsl:text>
   </xsl:template>
 
 <!-- CALLBACK -->
@@ -644,16 +644,13 @@ gboolean restart_required = FALSE;
     gtk_tree_model_get(gtk_combo_box_get_model(GTK_COMBO_BOX(widget)), &amp;iter, 0, &amp;s, -1);
     dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", s);
     g_free(s);
-  }
-</xsl:text>
+  }</xsl:text>
   </xsl:template>
 
   <xsl:template match="dtconfig[type='dir']" mode="change">
-    <xsl:text>
-    gchar *folder = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
-    dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", folder);
-    g_free(folder);
-    </xsl:text>
+    <xsl:text>  gchar *folder = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
+  dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", folder);
+  g_free(folder);</xsl:text>
   </xsl:template>
 
 <!-- TAB -->
@@ -707,7 +704,9 @@ gboolean restart_required = FALSE;
     <xsl:text>g_signal_connect(G_OBJECT(widget), "selection-changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);</xsl:text>
     <xsl:text>
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
+    gchar *default_path = dt_conf_expand_default_dir("</xsl:text><xsl:value-of select="default"/><xsl:text>");
+    snprintf(tooltip, 1024, _("double click to reset to `%s'"), default_path);
+    g_free(default_path);
     g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
     </xsl:text>
   </xsl:template>
