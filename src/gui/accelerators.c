@@ -2904,7 +2904,7 @@ static float _process_action(dt_action_t *action, int instance,
 
     if(definition && definition->process
         && (action->type < DT_ACTION_TYPE_WIDGET
-            || definition->no_widget
+            || !action_target
             || !_widget_invisible(action_target)))
       return_value = definition->process(action_target, element, effect, move_size);
     else if(!isnan(move_size))
