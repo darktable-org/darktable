@@ -18,13 +18,6 @@ do
 	install_name_tool -rpath @loader_path/../lib/darktable @loader_path/../Resources/lib/darktable "$i"
 done
 ln -s /Applications package/
-#copy gtk-osx-application translations if we can find them
-IFS=""
-port contents gtk-osx-application-common-gtk\* | sed "s|^ */|/|" | grep "\.lproj/GtkosxApplication\.strings$" | while read -r i
-do
-	mkdir package/darktable.app/Contents/Resources/"$(basename "$(dirname "$i")")"
-	cp "$i" package/darktable.app/Contents/Resources/"$(basename "$(dirname "$i")")"
-done
 
 if [ -z "$STRIPDEBUGINFO" ]
 then

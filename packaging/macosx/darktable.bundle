@@ -25,6 +25,7 @@
   <binary>${prefix}/lib/gio/modules/libgiognutls.so</binary>
   <binary>${prefix}/lib/gio/modules/libgiolibproxy.so</binary>
   <translations name="gtk30">${prefix}/share/locale</translations>
+  <translations name="gtk-mac-integration">${prefix}/share/locale</translations>
   <translations name="iso_639">${prefix}/share/locale</translations>
   <translations name="darktable">${prefix:dt}/share/locale</translations>
   <data>${prefix:dt}/share/darktable</data>
