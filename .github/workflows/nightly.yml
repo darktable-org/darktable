@@ -125,7 +125,7 @@ jobs:
     name: Nightly darktable.${{ github.sha }}.macOS
     runs-on: ${{ matrix.build.os }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         build:
           - { os: macos-10.15, xcode: 11.3.1, deployment: 10.7 }
