@@ -30,7 +30,7 @@ fi
 
 if [ -n "$CODECERT" ]
 then
-	find package/darktable.app/Contents/Resources/lib -type d -name \*.dSYM -prune -or -type f -exec codesign --verbose --force --options runtime -s "${CODECERT}" \{} \;
+	find package/darktable.app/Contents/Resources/lib{,exec} -type d -name \*.dSYM -prune -or -type f -exec codesign --verbose --force --options runtime -s "${CODECERT}" \{} \;
 	codesign --deep --verbose --force --options runtime -s "${CODECERT}" package/darktable.app
 fi
 
