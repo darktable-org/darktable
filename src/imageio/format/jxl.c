@@ -227,14 +227,20 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   uint8_t *out_buf = NULL;
   FILE *out_file = NULL;
 
-#define JXL_ASSERT(code)                                                                                          \
+#define LIBJXL_ASSERT(code)                                                                                       \
   {                                                                                                               \
     const JxlEncoderStatus res = code;                                                                            \
     if(res != JXL_ENC_SUCCESS)                                                                                    \
     {                                                                                                             \
-      fprintf(stderr, "JXL call failed with err %d (src/imageio/format/jxl.c#L%d)\n", res, __LINE__);             \
+      fprintf(stderr, "JXL: libjxl call failed with err %d (src/imageio/format/jxl.c#L%d)\n", res, __LINE__);     \
       goto end;                                                                                                   \
     }                                                                                                             \
+  }
+
+#define JXL_FAIL(msg, ...)                                                                                        \
+  {                                                                                                               \
+    fprintf(stderr, "JXL: " msg "\n", ##__VA_ARGS__);                                                             \
+    goto end;                                                                                                     \
   }
 
   const dt_imageio_jxl_params_t *params = (dt_imageio_jxl_params_t *)data;
@@ -246,7 +252,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   // JxlThreadParallelRunnerDefaultNumWorkerThreads()
   const uint32_t num_threads = JxlResizableParallelRunnerSuggestThreads(width, height);
   void *runner = JxlThreadParallelRunnerCreate(NULL, num_threads);
-  JXL_ASSERT(JxlEncoderSetParallelRunner(encoder, JxlThreadParallelRunner, runner));
+  LIBJXL_ASSERT(JxlEncoderSetParallelRunner(encoder, JxlThreadParallelRunner, runner));
 
   const dt_colorspaces_color_profile_t *output_profile
       = dt_colorspaces_get_output_profile(imgid, over_type, over_filename);
@@ -256,25 +262,26 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   over_type = output_profile->type;
 
   // If possible we want libjxl to save the color encoding in it's own format, rather
-  // than as an ICC binary blob which is possible. ICC blobs are slightly larger and
-  // are also less compatible with various image viewers.
+  // than as an ICC binary blob which is possible.
   // If we are unable to find the required color encoding data for libjxl we will
   // just fallback to providing an ICC blob (and hope we can at least do that!).
+  bool written_color = false;
 
   // We can only handle RGB
   if(cmsGetColorSpace(out_profile) == cmsSigRgbData)
   {
     // Attempt to find the whitepoint, primaries and transfer function
     // If we can't find any of these we fall back to ICC binary
-    // If libjxl does not have it's own definition of our primaries we can pass that manually.
     JxlColorEncoding color_encoding;
-    const cmsCIExyYTRIPLE *primaries = NULL;
+    color_encoding.color_space = JXL_COLOR_SPACE_RGB;
+    // TODO: safe to simply put pipe->icc_intent here?
+    color_encoding.rendering_intent = JXL_RENDERING_INTENT_PERCEPTUAL;
+
     switch(over_type)
     {
       case DT_COLORSPACE_SRGB:
         color_encoding.white_point = JXL_WHITE_POINT_D65;
         color_encoding.primaries = JXL_PRIMARIES_SRGB;
-        primaries = &sRGB_Primaries;
         color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_SRGB;
         break;
       case DT_COLORSPACE_LIN_REC2020:
@@ -294,19 +301,13 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
         break;
       case DT_COLORSPACE_REC709:
         color_encoding.white_point = JXL_WHITE_POINT_D65;
-        primaries = &Rec709_Primaries;
+        color_encoding.primaries = JXL_PRIMARIES_SRGB;
         color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_709;
         break;
       case DT_COLORSPACE_LIN_REC709:
         color_encoding.white_point = JXL_WHITE_POINT_D65;
-        primaries = &Rec709_Primaries;
+        color_encoding.primaries = JXL_PRIMARIES_SRGB;
         color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
-        break;
-      case DT_COLORSPACE_ADOBERGB:
-        color_encoding.white_point = JXL_WHITE_POINT_D65;
-        primaries = &Adobe_Primaries;
-        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_GAMMA;
-        color_encoding.gamma = 2.19921875;
         break;
       case DT_COLORSPACE_PQ_P3:
         color_encoding.white_point = JXL_WHITE_POINT_D65;
@@ -318,53 +319,35 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
         color_encoding.primaries = JXL_PRIMARIES_P3;
         color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_HLG;
         break;
-      case DT_COLORSPACE_PROPHOTO_RGB:
-        color_encoding.white_point = JXL_WHITE_POINT_D65;
-        primaries = &ProPhoto_Primaries;
-        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
-        break;
       default:
         goto write_icc;
     }
 
-    color_encoding.color_space = JXL_COLOR_SPACE_RGB;
-    if(primaries != NULL)
-    {
-      color_encoding.primaries = JXL_PRIMARIES_CUSTOM;
-      color_encoding.primaries_red_xy[0] = primaries->Red.x;
-      color_encoding.primaries_red_xy[1] = primaries->Red.y;
-      color_encoding.primaries_green_xy[0] = primaries->Green.x;
-      color_encoding.primaries_green_xy[1] = primaries->Green.y;
-      color_encoding.primaries_blue_xy[0] = primaries->Blue.x;
-      color_encoding.primaries_blue_xy[1] = primaries->Blue.y;
-    }
-    // TODO: safe to simply put pipe->icc_intent here?
-    color_encoding.rendering_intent = JXL_RENDERING_INTENT_PERCEPTUAL;
     JxlEncoderSetColorEncoding(encoder, &color_encoding);
-    goto color_encoding_end;
+    written_color = true;
   }
 
 write_icc:
-  fprintf(stdout, "JXL: Could not generate color encoding data, falling back to ICC binary\n");
 
-  cmsUInt32Number size = 0;
-  unsigned char *icc_buf = NULL;
-  if(cmsSaveProfileToMem(out_profile, NULL, &size))
+  // If we haven't yet managed to write the color encoding we need to fallback to ICC
+  if(!written_color)
   {
+    fprintf(stdout, "JXL: Could not generate color encoding data, falling back to ICC binary\n");
+
+    cmsUInt32Number size = 0;
+    unsigned char *icc_buf = NULL;
+    // First find the size of the icc buffer
+    if(!cmsSaveProfileToMem(out_profile, NULL, &size)) JXL_FAIL("Error finding ICC data length");
+
     icc_buf = malloc(size);
-    if(icc_buf && cmsSaveProfileToMem(out_profile, icc_buf, &size))
-    {
-      JXL_ASSERT(JxlEncoderSetICCProfile(encoder, icc_buf, size));
-      free(icc_buf);
-      goto color_encoding_end;
-    }
+    if(!icc_buf) JXL_FAIL("Could not allocate ICC buffer of length %u", size);
+
+    // Fill the icc buffer
+    if(!cmsSaveProfileToMem(out_profile, icc_buf, &size)) JXL_FAIL("Error writing ICC data");
+
+    LIBJXL_ASSERT(JxlEncoderSetICCProfile(encoder, icc_buf, size));
+    free(icc_buf);
   }
-
-  if(icc_buf) free(icc_buf);
-  fprintf(stderr, "JXL: Error writing ICC data\n");
-  goto end;
-
-color_encoding_end:
 
   JxlBasicInfo basic_info;
   JxlEncoderInitBasicInfo(&basic_info);
@@ -386,7 +369,7 @@ color_encoding_end:
   basic_info.alpha_bits = 0;
   basic_info.alpha_exponent_bits = 0;
   basic_info.alpha_premultiplied = JXL_FALSE;
-  JXL_ASSERT(JxlEncoderSetBasicInfo(encoder, &basic_info));
+  LIBJXL_ASSERT(JxlEncoderSetBasicInfo(encoder, &basic_info));
 
   // We assume that the user wants the JXL image in a bmff container.
   // JXL images can be stored without any container so they are smaller, but this
@@ -396,24 +379,24 @@ color_encoding_end:
   // HOWEVER - We do not want libjxl to write the image in a container, we will
   // do that ourselves. This gives us the control to be able to add our own
   // sections (e.g. exif data).
-  JXL_ASSERT(JxlEncoderUseContainer(encoder, JXL_FALSE));
+  LIBJXL_ASSERT(JxlEncoderUseContainer(encoder, JXL_FALSE));
 
   // automatically freed when we destroy the encoder
   JxlEncoderOptions *options = JxlEncoderOptionsCreate(encoder, NULL);
-  JXL_ASSERT(JxlEncoderOptionsSetLossless(options, params->lossless ? JXL_TRUE : JXL_FALSE));
+  LIBJXL_ASSERT(JxlEncoderOptionsSetLossless(options, params->lossless ? JXL_TRUE : JXL_FALSE));
 
   int decode_effort = params->decoding_effort;
   // We store decoding effort but jxl wants encoding speed, we must reverse it
   decode_effort = (decode_effort - 4) * -1;
-  JXL_ASSERT(JxlEncoderOptionsSetDecodingSpeed(options, decode_effort));
+  LIBJXL_ASSERT(JxlEncoderOptionsSetDecodingSpeed(options, decode_effort));
 
   const int encode_effort = params->encoding_effort;
-  JXL_ASSERT(JxlEncoderOptionsSetEffort(options, encode_effort));
+  LIBJXL_ASSERT(JxlEncoderOptionsSetEffort(options, encode_effort));
 
   int quality = params->quality;
   // We store quality but jxl wants distance, so we reverse the scale
   quality = (quality - 15) * -1;
-  JXL_ASSERT(JxlEncoderOptionsSetDistance(options, quality));
+  LIBJXL_ASSERT(JxlEncoderOptionsSetDistance(options, quality));
 
   const int channels = 3;
   JxlPixelFormat pixel_format = { channels, JXL_TYPE_FLOAT, JXL_NATIVE_ENDIAN, 1 };
@@ -421,7 +404,7 @@ color_encoding_end:
   // Fix pixel stride
   const size_t in_buf_size = width * height * channels * sizeof(float);
   pixels = malloc(in_buf_size);
-  if(!pixels) goto end;
+  if(!pixels) JXL_FAIL("Could not allocate pixel buffer of size %zu", in_buf_size);
   for(int y = 0; y < height; y++)
   {
     for(int x = 0; x < width; x++)
@@ -433,7 +416,7 @@ color_encoding_end:
     }
   }
 
-  JXL_ASSERT(JxlEncoderAddImageFrame(options, &pixel_format, pixels, in_buf_size));
+  LIBJXL_ASSERT(JxlEncoderAddImageFrame(options, &pixel_format, pixels, in_buf_size));
   JxlEncoderCloseInput(encoder);
 
 
@@ -441,7 +424,7 @@ color_encoding_end:
   // fixme: Can we better estimate what the optimal size of chunks is for this image?
   const size_t chunkSize = 50000;
   out_buf = malloc(chunkSize);
-  if(!out_buf) goto end;
+  if(!out_buf) JXL_FAIL("Could not allocate codestream chunk of size %zu", chunkSize);
   uint8_t *out_cur = out_buf;
   size_t out_len = chunkSize;
 
@@ -463,18 +446,14 @@ color_encoding_end:
         const size_t offset = out_cur - out_buf;
         out_len += chunkSize - out_avail;
         out_buf = realloc(out_buf, out_len);
-        if(!out_buf)
-        {
-          fprintf(stderr, "JXL failure: out of memory\n");
-          goto end;
-        }
+        if(!out_buf) JXL_FAIL("Could not reallocate codestream chunk to size %zu", out_len);
         out_cur = out_buf + offset;
       }
     }
     else if(out_status != JXL_ENC_SUCCESS)
     {
       // out_status should be an error: force it to be processed
-      JXL_ASSERT(out_status);
+      LIBJXL_ASSERT(out_status);
       // just to let the compiler know that we will goto end (even though it
       // should happen anyway in the assertion)
       goto end;
@@ -482,34 +461,18 @@ color_encoding_end:
   }
 
   out_file = g_fopen(filename, "wb");
-  if(!out_file)
-  {
-    fprintf(stderr, "JXL: Could not open output file '%s'\n", filename);
-    goto end;
-  }
+  if(!out_file) JXL_FAIL("Could not open output file '%s'", filename);
 
   // Now we need to write the bmff container, starting with the header
-  if(write_container_header(out_file))
-  {
-    fprintf(stderr, "JXL: Error writing BMFF container header to output file\n");
-    goto end;
-  }
+  if(write_container_header(out_file)) JXL_FAIL("Error writing BMFF container header");
 
   // Write the image codestream (the output from libjxl)
-  if(write_container_codestream(out_file, out_buf, out_len))
-  {
-    fprintf(stderr, "JXL: Error writing codestream to output file\n");
-    goto end;
-  }
+  if(write_container_codestream(out_file, out_buf, out_len)) JXL_FAIL("Error writing codestream to output file");
 
   // Write the exif data if it exists
   if(exif)
   {
-    if(write_container_exif(out_file, exif, exif_len))
-    {
-      fprintf(stderr, "JXL: Error writing EXIF data to output file\n");
-      goto end;
-    }
+    if(write_container_exif(out_file, exif, exif_len)) JXL_FAIL("Error writing EXIF data to output file");
   }
 
   // Successful write: set to success code
