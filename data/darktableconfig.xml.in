@@ -171,7 +171,7 @@
     <name>cache_memory</name>
     <type factor="(1.0 / (1024.0 * 1024.0))" min="(1024 * 1024 * 100)">int64</type>
     <default>(1024 * 1024 * 512)</default>
-    <shortdescription>memory in megabytes to use for thumbnail cache</shortdescription>
+    <shortdescription>memory in MB to use for thumbnail cache</shortdescription>
     <longdescription>this controls how much memory is going to be used for thumbnails and other buffers (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu">
@@ -2977,7 +2977,7 @@
   <dtconfig prefs="processing" section="general" restart="true">
     <name>plugins/darkroom/lut3d/def_path</name>
     <type>dir</type>
-    <default></default>
+    <default>$(home)</default>
     <shortdescription>3D lut root folder</shortdescription>
     <longdescription>this folder (and sub-folders) contains Lut files used by lut3d modules. (need a restart).</longdescription>
   </dtconfig>

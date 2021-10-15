@@ -794,6 +794,7 @@ gboolean dt_conf_is_default(const char *name)
   case DT_BOOL:
     return dt_conf_get_bool(name) == dt_confgen_get_bool(name, DT_DEFAULT);
     break;
+  case DT_PATH:
   case DT_STRING:
   case DT_ENUM:
   default:
@@ -805,6 +806,34 @@ gboolean dt_conf_is_default(const char *name)
     }
   }
 }
+
+gchar* dt_conf_expand_default_dir(const char *dir)
+{
+  // expand special dirs
+#define CONFIG_DIR "$(config)"
+#define HOME_DIR   "$(home)"
+
+  gchar *path = NULL;
+  if(g_str_has_prefix(dir, CONFIG_DIR))
+  {
+    gchar configdir[PATH_MAX] = { 0 };
+    dt_loc_get_user_config_dir(configdir, sizeof(configdir));
+    path = g_strdup_printf("%s%s", configdir, dir + strlen(CONFIG_DIR));
+  }
+  else if(g_str_has_prefix(dir, HOME_DIR))
+  {
+    gchar *homedir = dt_loc_get_home_dir(NULL);
+    path = g_strdup_printf("%s%s", homedir, dir + strlen(HOME_DIR));
+    g_free(homedir);
+  }
+  else path = g_strdup(dir);
+
+  gchar *normalized_path = dt_util_normalize_path(path);
+  g_free(path);
+
+  return normalized_path;
+}
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
