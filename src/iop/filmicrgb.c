@@ -2146,9 +2146,18 @@ inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_param
         = powf(fmaxf(p->white_point_target, p->grey_point_target) / 100.0f, 1.0f / (p->output_power)); // in %
   }
 
+  const float hardness = p->output_power;
   float latitude = CLAMP(p->latitude, 0.0f, 100.0f) / 100.0f * dynamic_range; // in % of dynamic range
   float balance = CLAMP(p->balance, -50.0f, 50.0f) / 100.0f;                  // in %
-  float contrast = CLAMP(p->contrast, 1.00001f, 6.0f);
+  float slope = CLAMP(p->contrast * dynamic_range / 8.0f, 1.00001f, 100.0f);
+  // we want a slope that depends only on contrast at gray point.
+  // let's consider f(x) = (contrast*x+linear_intercept)^output_power
+  // f'(x) = contrast * output_power * (contrast*x+linear_intercept)^(output_power-1)
+  // linear_intercept = grey_display - (contrast * grey_log);
+  // f'(grey_log) = contrast * output_power * (contrast * grey_log + grey_display - (contrast * grey_log))^(output_power-1)
+  //              = contrast * output_power * grey_display^(output_power-1)
+  // f'(grey_log) = target_contrast <=> contrast = target_contrast / (output_power * grey_display^(output_power-1))
+  float contrast = slope / (hardness * powf(grey_display, hardness - 1.0f));
 
   // nodes for mapping from log encoding to desired target luminance
   // X coordinates
