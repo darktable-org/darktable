@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "develop/imageop_gui.h"
+#include "dtgtk/button.h"
 #include "gui/guides.h"
 
 #define DEFAULT_GUIDE_NAME "rules of thirds"
@@ -666,6 +667,12 @@ GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
   _guides_settings_t *gw = (_guides_settings_t *)g_malloc0(sizeof(_guides_settings_t));
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
+  // title
+  GtkWidget *lb = gtk_label_new(_("global guide overlay settings"));
+  gtk_label_set_justify(GTK_LABEL(lb), GTK_JUSTIFY_CENTER);
+  gtk_widget_set_name(lb, "guides_menu_title");
+  gtk_box_pack_start(GTK_BOX(vbox), lb, TRUE, TRUE, 0);
+
   // global guides section
   gw->g_widgets = gtk_event_box_new();
   gtk_box_pack_start(GTK_BOX(vbox), gw->g_widgets, TRUE, TRUE, 0);
@@ -787,6 +794,9 @@ static void _settings_autoshow_change(GtkWidget *mi, dt_iop_module_t *module)
   // we inverse the autoshow value for the module
   gchar *key = _conf_get_path(module->op, "autoshow", NULL);
   dt_conf_set_bool(key, !dt_conf_get_bool(key));
+  darktable.gui->reset++;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->guides_combo), dt_conf_get_bool(key));
+  darktable.gui->reset--;
   g_free(key);
   dt_control_queue_redraw_center();
 }
@@ -813,6 +823,76 @@ void dt_guides_cleanup(GList *guides)
   g_list_free_full(guides, free_guide);
 }
 
+static void _settings_autoshow_change2(GtkWidget *combo, struct dt_iop_module_t *module)
+{
+  if(darktable.gui->reset) return;
+  gchar *key = _conf_get_path(module->op, "autoshow", NULL);
+  dt_conf_set_bool(key, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(combo)));
+  g_free(key);
+  dt_control_queue_redraw_center();
+}
+
+static void _settings_autoshow_menu(GtkWidget *button, struct dt_iop_module_t *module)
+{
+  GtkWidget *popover = darktable.view_manager->guides_popover;
+  gtk_popover_set_relative_to(GTK_POPOVER(popover), button);
+
+  g_object_set(G_OBJECT(popover), "transitions-enabled", FALSE, NULL);
+
+  dt_guides_update_popover_values();
+
+  gtk_widget_show_all(popover);
+}
+
+void dt_guides_init_module_widget(GtkWidget *iopw, struct dt_iop_module_t *module)
+{
+  if(!(module->flags() & IOP_FLAGS_GUIDES_WIDGET)) return;
+
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *cb = module->guides_combo = gtk_check_button_new_with_label(_("show guides"));
+  gtk_widget_set_name(box, "guides_module_combobox");
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(cb))), PANGO_ELLIPSIZE_START);
+
+  gchar *key = _conf_get_path(module->op, "autoshow", NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cb), dt_conf_get_bool(key));
+  g_free(key);
+
+  g_signal_connect(G_OBJECT(cb), "toggled", G_CALLBACK(_settings_autoshow_change2), module);
+  gtk_widget_set_tooltip_text(cb, _("show guide overlay when this module has focus"));
+  GtkWidget *ic = dtgtk_button_new(dtgtk_cairo_paint_grid, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_tooltip_text(ic, _("change global guide settings\nnote that these settings are applied globally "
+                                    "and will impact any module that shows guide overlays"));
+  g_signal_connect(G_OBJECT(ic), "clicked", G_CALLBACK(_settings_autoshow_menu), module);
+
+  // we hide it if the preference is set to "off"
+  gtk_widget_set_no_show_all(box, TRUE);
+  gtk_widget_show(cb);
+  gtk_widget_show(ic);
+
+  gtk_box_pack_start(GTK_BOX(box), cb, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(box), ic, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(iopw), box, TRUE, TRUE, 0);
+}
+
+void dt_guides_update_module_widget(struct dt_iop_module_t *module)
+{
+  if(!module->guides_combo) return;
+
+  GtkWidget *box = gtk_widget_get_parent(module->guides_combo);
+  gtk_widget_set_visible(box, dt_conf_get_bool("plugins/darkroom/show_guides_in_ui"));
+}
+
+void dt_guides_update_popover_values()
+{
+  // configure the values that may have changed from the last show
+  gchar *key = _conf_get_path("global", "guide", NULL);
+  if(!dt_conf_key_exists(key)) dt_conf_set_string(key, DEFAULT_GUIDE_NAME);
+  gchar *val = dt_conf_get_string(key);
+  g_free(key);
+  const int i = _guides_get_value(val);
+  g_free(val);
+  dt_bauhaus_combobox_set(darktable.view_manager->guides, i);
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
