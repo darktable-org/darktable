@@ -1266,8 +1266,8 @@
     <name>plugins/darkroom/show_guides_in_ui</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>show the auto_apply guides widget in modules UI</shortdescription>
-    <longdescription>show the auto_apply guides widget in modules UI</longdescription>
+    <shortdescription>show the guides widget in modules UI</shortdescription>
+    <longdescription>show the guides widget in modules UI</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="general">
     <name>plugins/lighttable/hide_default_presets</name>
