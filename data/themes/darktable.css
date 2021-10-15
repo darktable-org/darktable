@@ -505,9 +505,15 @@ spinbutton>button
   margin-top: 0.42em;
 }
 
-#guides-line
+#guides_module_combobox
 {
-  padding: 0 0.84em;
+  padding: 0.21em 0.84em 0.42em 0.84em;
+}
+
+#guides_module_combobox button
+{
+  border: none;
+  font-size: 1.2em;
 }
 
 /* icon buttons in modules main body */
@@ -2325,10 +2331,11 @@ Details :
 }
 
 /*----------------------------------------
-  - Popover overlays menu from star icon -
+  - Popover overlays menu from star icon and grid lines -
   ----------------------------------------*/
 
-#overlays_label  /* set title of the popover menu */
+#overlays_label,  /* set title of the popover menu */
+#guides_menu_title
 {
   font-weight: bold;
   padding: 0.28em 0;
