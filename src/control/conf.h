@@ -34,6 +34,7 @@ typedef enum dt_confgen_type_t
   DT_INT64,
   DT_FLOAT,
   DT_BOOL,
+  DT_PATH,
   DT_STRING,
   DT_ENUM
 } dt_confgen_type_t;
@@ -122,6 +123,7 @@ const char *dt_confgen_get_label(const char *name);
 const char *dt_confgen_get_tooltip(const char *name);
 
 gboolean dt_conf_is_default(const char *name);
+gchar* dt_conf_expand_default_dir(const char *dir);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
