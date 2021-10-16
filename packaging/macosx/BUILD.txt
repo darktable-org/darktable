@@ -8,9 +8,9 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     (practice showed that support for versions older than 10.7 isn't viable)
     and this line to /opt/local/etc/macports/variants.conf:
      +no_gnome +no_x11 +quartz -x11 -gnome -gfortran
-    You will also need to add patches for gnutls, python (https://trac.macports.org/ticket/51736), GraphicsMagick, ImageMagick, libusb, perl, pugixml, gmic and downgrade libomp
-    (all fixes except for gmic and libomp are required due to set deployment target, gmic patch removes extra dependencies, libomp version change fixes a crash):
-     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/lang/libomp/files ~/ports/lang/python{37,38,39}/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/textproc ~/ports/science
+    You will also need to add patches for gnutls, python (https://trac.macports.org/ticket/51736), GraphicsMagick, ImageMagick, libusb, perl, pugixml, gmic, gtk-osx-application and downgrade libomp
+    (all fixes except for gmic, gtk-osx-application and libomp are required due to set deployment target, gmic patch removes extra dependencies, gtk-osx-application patch and libomp version change fix a crash):
+     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/devel/gtk-osx-application/files ~/ports/lang/libomp/files ~/ports/lang/python{37,38,39}/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/textproc ~/ports/science
      $ cp -R "$(port dir gnutls)" ~/ports/devel
      $ curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-fixes.diff
      $ cp -R "$(port dir python37)" ~/ports/lang
@@ -25,6 +25,8 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ curl -Lo ~/ports/graphics/ImageMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/im-stdlib.diff
      $ cp -R "$(port dir libusb)" ~/ports/devel
      $ curl -Lo ~/ports/devel/libusb/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/libusb-no-clock_gettime.diff
+     $ cp -R "$(port dir gtk-osx-application)" ~/ports/devel
+     $ curl -Lo ~/ports/devel/gtk-osx-application/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gtk-osx-application-gettext.patch
      $ cp -R "$(port dir perl5)" ~/ports/lang
      $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/perl-at.patch | patch -d ~/ports -p0
      $ cp -R "$(port dir pugixml)" ~/ports/textproc
