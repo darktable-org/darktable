@@ -64,16 +64,14 @@ GList *dt_gpx_get_trkpts(struct dt_gpx_t *gpx, const guint segid);
 
 void dt_gpx_geodesic_distance(double lat1, double lon1,
                               double lat2, double lon2,
-                              double *d, double *delta
-                             );
+                              double *d, double *delta);
 
 void dt_gpx_geodesic_intermediate_point(const double lat1, const double lon1,
                                         const double lat2, const double lon2,
                                         const double delta,
                                         const gboolean first_time,
                                         double f,
-                                        double *lat, double *lon
-                                       );
+                                        double *lat, double *lon);
 
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
