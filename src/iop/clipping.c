@@ -301,7 +301,7 @@ static inline void adjust_aabb(const float *p, float *aabb)
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. please use the crop and/or perspective correction modules instead.");
+  return _("this module is deprecated. please use the crop and/or rotation and perspective modules instead.");
 }
 
 const char *name()
