@@ -2,8 +2,6 @@
  * This file is part of darktable,
  * Copyright (C) 2021 darktable developers.
  *
- *  Copyright (c) 2021      Daniel Vogelbacher
- *
  *  darktable is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -49,19 +47,22 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   struct heif_image* heif_img = NULL;
 
   struct heif_context* ctx = heif_context_alloc();
-  if(!ctx) {
+  if(!ctx)
+  {
     dt_print(DT_DEBUG_IMAGEIO,
              "Unable to allocate HEIF context\n");
     return DT_IMAGEIO_CACHE_FULL;
   }
 
   err = heif_context_read_from_file(ctx, filename, NULL);
-   if (err.code != 0) {
+   if (err.code != 0)
+   {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to read HEIF file [%s]\n",
              filename);
     ret = DT_IMAGEIO_FILE_CORRUPTED;
-    switch(err.code) {
+    switch(err.code)
+    {
       case heif_error_Unsupported_filetype:
       case heif_error_Unsupported_feature:
         fprintf(stderr, "[imageio_heif] Unsupported file: `%s'! Is your libheif compiled with HEVC support?\n", filename);
@@ -75,8 +76,9 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
 
   // HEIF may contain multiple images or none.
   int num_images = heif_context_get_number_of_top_level_images(ctx);
-  if (num_images == 0) {
-        dt_print(DT_DEBUG_IMAGEIO,
+  if (num_images == 0)
+  {
+    dt_print(DT_DEBUG_IMAGEIO,
              "No images found in HEIF file [%s]\n",
              filename);
     ret = DT_IMAGEIO_FILE_CORRUPTED;
@@ -85,7 +87,8 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
 
   // We can only process a single image
   err = heif_context_get_primary_image_handle(ctx, &handle);
-  if (err.code != 0) {
+  if (err.code != 0)
+  {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to read primary image from HEIF file [%s]\n",
              filename);
@@ -95,7 +98,8 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
 
   // Darktable only supports LITTLE_ENDIAN systems, so RRGGBB_LE should be fine
   err = heif_decode_image(handle, &heif_img, heif_colorspace_RGB, heif_chroma_interleaved_RRGGBB_LE, NULL);
-  if (err.code != 0) {
+  if (err.code != 0)
+  {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to decode HEIF file [%s]\n",
              filename);
@@ -117,7 +121,8 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   img->buf_dsc.cst = iop_cs_rgb;
 
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
-  if (mipbuf == NULL) {
+  if (mipbuf == NULL)
+  {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to allocate mipmap buffer for HEIF image [%s]\n",
              filename);
@@ -138,9 +143,11 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
              filename);
 
   /* This can be LDR or HDR, it depends on the ICC profile. But if bit_depth <= 8 it must be LDR. */
-  if(bit_depth > 8) {
+  if(bit_depth > 8)
+  {
     img->flags |= DT_IMAGE_HDR;
-  } else {
+  } else
+  {
     img->flags &= ~DT_IMAGE_HDR;
   }
 
@@ -172,10 +179,12 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
 
   out:
   // cleanup handles
-  if(heif_img) {
+  if(heif_img)
+  {
     heif_image_release(heif_img);
   }
-  if(handle) {
+  if(handle)
+  {
     heif_image_handle_release(handle);
   }
   heif_context_free(ctx);
@@ -198,7 +207,8 @@ int dt_imageio_heif_read_profile(const char *filename,
   struct heif_image_handle* handle = NULL;
 
   struct heif_context* ctx = heif_context_alloc();
-  if(!ctx) {
+  if(!ctx)
+  {
     dt_print(DT_DEBUG_IMAGEIO,
              "Unable to allocate HEIF context\n");
     goto out;
@@ -211,7 +221,8 @@ int dt_imageio_heif_read_profile(const char *filename,
 
 
   err = heif_context_read_from_file(ctx, filename, NULL);
-  if (err.code != 0) {
+  if (err.code != 0)
+  {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to read HEIF file [%s]\n",
              filename);
@@ -220,7 +231,8 @@ int dt_imageio_heif_read_profile(const char *filename,
 
   // HEIF may contain multiple images or none.
   int num_images = heif_context_get_number_of_top_level_images(ctx);
-  if (num_images == 0) {
+  if (num_images == 0)
+  {
         dt_print(DT_DEBUG_IMAGEIO,
              "No images found in HEIF file [%s]\n",
              filename);
@@ -229,7 +241,8 @@ int dt_imageio_heif_read_profile(const char *filename,
 
   // We can only process a single image
   err = heif_context_get_primary_image_handle(ctx, &handle);
-  if (err.code != 0) {
+  if (err.code != 0)
+  {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to read primary image from HEIF file [%s]\n",
              filename);
@@ -246,7 +259,8 @@ int dt_imageio_heif_read_profile(const char *filename,
              "Found NCLX color profile for HEIF file [%s]\n",
              filename);
       err = heif_image_handle_get_nclx_color_profile(handle, &profile_info_nclx);
-      if (err.code != 0) {
+      if (err.code != 0)
+      {
         dt_print(DT_DEBUG_IMAGEIO,
                 "Failed to get NCLX color profile data from HEIF file [%s]\n",
                 filename);
@@ -260,13 +274,15 @@ int dt_imageio_heif_read_profile(const char *filename,
     case heif_color_profile_type_rICC:
     case heif_color_profile_type_prof:
       icc_size = heif_image_handle_get_raw_color_profile_size(handle);
-      if(icc_size <= 0) {
+      if(icc_size <= 0)
+      {
         // image has no embedded ICC profile
         goto out;
       }
       icc_data = (uint8_t *)g_malloc0(sizeof(uint8_t) * icc_size);
       err = heif_image_handle_get_raw_color_profile(handle, icc_data);
-      if (err.code != 0) {
+      if (err.code != 0)
+      {
         dt_print(DT_DEBUG_IMAGEIO,
                 "Failed to read embedded ICC profile from HEIF image [%s]\n",
                 filename);
@@ -292,10 +308,12 @@ int dt_imageio_heif_read_profile(const char *filename,
 
   out:
   // cleanup handles
-  if(profile_info_nclx) {
+  if(profile_info_nclx)
+  {
     heif_nclx_color_profile_free(profile_info_nclx);
   }
-  if(handle) {
+  if(handle)
+  {
     heif_image_handle_release(handle);
   }
   heif_context_free(ctx);
