@@ -2199,8 +2199,8 @@ static void _track_add_point(OsmGpsMapTrack *track, OsmGpsMapPoint *point, OsmGp
   osm_gps_map_point_get_degrees(prev_point, &prev_lat, &prev_lon);
   double d, delta;
   gboolean short_distance = TRUE;
-  if (fabs(lat - prev_lat) > DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC
-      || fabs(lon - prev_lon) > DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC)
+  if(fabs(lat - prev_lat) > DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC
+     || fabs(lon - prev_lon) > DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC)
   {
     short_distance = FALSE;
     dt_gpx_geodesic_distance(lat, lon,

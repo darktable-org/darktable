@@ -240,7 +240,7 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
         geoloc->longitude = lon;
 
         /* make a simple linear interpolation on elevation */
-        if (tp_next->elevation == NAN || tp->elevation == NAN)
+        if(tp_next->elevation == NAN || tp->elevation == NAN)
           geoloc->elevation = NAN;
         else
           geoloc->elevation = tp->elevation + (tp_next->elevation - tp->elevation) * f;
