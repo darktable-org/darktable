@@ -1140,16 +1140,24 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
                                        const char* const trouble_tooltip,
                                        const char *const stderr_message)
 {
-  //  first stderr message if any
-  if(stderr_message)
+  if(module->enabled)
   {
-    const char *name = module ? module->name() : "?";
-    fprintf(stderr, "[%s] %s\n", name, stderr_message ? stderr_message : trouble_msg);
-  }
+    //  first stderr message if any
+    if(stderr_message)
+    {
+      const char *name = module ? module->name() : "?";
+      fprintf(stderr, "[%s] %s\n", name, stderr_message ? stderr_message : trouble_msg);
+    }
 
-  if(!dt_iop_is_hidden(module) && module->gui_data && dt_conf_get_bool("plugins/darkroom/show_warnings"))
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TROUBLE_MESSAGE,
+    if(!dt_iop_is_hidden(module) && module->gui_data && dt_conf_get_bool("plugins/darkroom/show_warnings"))
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TROUBLE_MESSAGE,
                                   module, trouble_msg, trouble_tooltip);
+  }
+  else
+  {
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TROUBLE_MESSAGE,
+                                  module, NULL, NULL);
+  }
 }
 
 static void _iop_gui_update_label(dt_iop_module_t *module)
