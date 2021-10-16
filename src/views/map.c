@@ -19,6 +19,7 @@
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/gpx.h"
 #include "common/geo.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
@@ -2191,6 +2192,51 @@ static gboolean _view_map_remove_pin(const dt_view_t *view, OsmGpsMapImage *pin)
   return osm_gps_map_image_remove(lib->map, pin);
 }
 
+static void _track_add_point(OsmGpsMapTrack *track, OsmGpsMapPoint *point, OsmGpsMapPoint *prev_point)
+{
+  float lat, lon, prev_lat, prev_lon;
+  osm_gps_map_point_get_degrees(point, &lat, &lon);
+  osm_gps_map_point_get_degrees(prev_point, &prev_lat, &prev_lon);
+  double d, delta;
+  gboolean short_distance = TRUE;
+  if(fabs(lat - prev_lat) > DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC
+     || fabs(lon - prev_lon) > DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC)
+  {
+    short_distance = FALSE;
+    dt_gpx_geodesic_distance(lat, lon,
+                             prev_lat, prev_lon,
+                             &d, &delta);
+  }
+
+  if(short_distance || d < DT_MINIMUM_DISTANCE_FOR_GEODESIC)
+  {
+    osm_gps_map_track_add_point(track, point);
+  }
+  else
+  {
+    /* the line must be splitted in order to seek the geodesic line */
+    OsmGpsMapPoint *ith_point;
+    double f, ith_lat, ith_lon;
+    const int n_segments = ceil(d / DT_MINIMUM_DISTANCE_FOR_GEODESIC);
+    gboolean first_time = TRUE;
+    for(int i = 1; i <= n_segments; i ++)
+    {
+      f = (double)i / n_segments;
+      dt_gpx_geodesic_intermediate_point(prev_lat, prev_lon,
+                                         lat, lon,
+                                         delta,
+                                         first_time,
+                                         f,
+                                         &ith_lat, &ith_lon);
+
+      ith_point = osm_gps_map_point_new_degrees (ith_lat, ith_lon);
+      osm_gps_map_track_add_point(track, ith_point);
+      osm_gps_map_point_free(ith_point);
+      first_time = FALSE;
+    }
+  }
+}
+
 #ifdef HAVE_OSMGPSMAP_110_OR_NEWER
 static OsmGpsMapPolygon *_view_map_add_polygon(const dt_view_t *view, GList *points)
 {
@@ -2299,11 +2345,25 @@ static OsmGpsMapTrack *_view_map_add_track(const dt_view_t *view, GList *points)
 
   OsmGpsMapTrack* track = osm_gps_map_track_new();
 
+  OsmGpsMapPoint* prev_point;
+  gboolean first_point = TRUE;
   for(GList *iter = points; iter; iter = g_list_next(iter))
   {
     dt_geo_map_display_point_t *p = (dt_geo_map_display_point_t *)iter->data;
     OsmGpsMapPoint* point = osm_gps_map_point_new_degrees(p->lat, p->lon);
-    osm_gps_map_track_add_point(track, point);
+    if(first_point)
+    {
+      osm_gps_map_track_add_point(track, point);
+    }
+    else
+    {
+      _track_add_point(track, point, prev_point);
+      osm_gps_map_point_free(prev_point);
+    }
+    prev_point = &(*point);
+    if(!g_list_next(iter))
+      osm_gps_map_point_free(prev_point);
+    first_point = FALSE;
   }
 
   g_object_set(track, "editable", FALSE, (gchar *)0);
