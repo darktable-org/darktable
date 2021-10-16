@@ -122,7 +122,7 @@ jobs:
           retention-days: 2
   
   macOS:
-    name: Nightly darktable.${{ github.sha }}.macOS
+    name: Nightly darktable.${{ github.sha }}.${{ matrix.build.deployment }}.${{ matrix.build.xcode }}.macOS
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: false
