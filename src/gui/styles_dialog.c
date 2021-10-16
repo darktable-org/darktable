@@ -533,7 +533,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
     gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
     gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
                        DT_STYLE_ITEMS_COL_ENABLED, dt_styles_has_module_order(name),
-                       DT_STYLE_ITEMS_COL_NAME, _("modules order"),
+                       DT_STYLE_ITEMS_COL_NAME, _("module order"),
                        DT_STYLE_ITEMS_COL_NUM, -1,
                        -1);
     /* get history items for named style and populate the items list */
@@ -575,7 +575,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   else
   {
     const dt_iop_order_t order = dt_ioppr_get_iop_order_version(imgid);
-    char *label = g_strdup_printf("%s (%s)", _("modules order"), dt_iop_order_string(order));
+    char *label = g_strdup_printf("%s (%s)", _("module order"), dt_iop_order_string(order));
     gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
     gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
                        DT_STYLE_ITEMS_COL_ENABLED, TRUE,
