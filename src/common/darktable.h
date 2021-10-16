@@ -347,6 +347,12 @@ void dt_gettime_t(char *datetime, size_t datetime_len, time_t t);
 void dt_gettime(char *datetime, size_t datetime_len);
 int dt_worker_threads();
 void *dt_alloc_align(size_t alignment, size_t size);
+static inline void* dt_calloc_align(size_t alignment, size_t size)
+{
+  void *buf = dt_alloc_align(alignment, size);
+  if(buf) memset(buf, 0, size);
+  return buf;
+}
 static inline float *dt_alloc_align_float(size_t pixels)
 {
   return (float*)__builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
