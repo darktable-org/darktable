@@ -181,7 +181,7 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
     {
       GTimeSpan seg_diff = g_date_time_difference(tp_next->time, tp->time);
       GTimeSpan diff = g_date_time_difference(timestamp, tp->time);
-      if (seg_diff == 0 || diff == 0)
+      if(seg_diff == 0 || diff == 0)
       {
         geoloc->longitude = tp->longitude;
         geoloc->latitude = tp->latitude;
@@ -201,12 +201,10 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
 
         double lat, lon;
 
-        double f = (double)diff / (double)seg_diff; /* the fraction of the distance */
+        const double f = (double)diff / (double)seg_diff; /* the fraction of the distance */
 
-        if (
-          fabs(lat2 - lat1) < DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC &&
-          fabs(lon2 - lon1) < DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC
-        )
+        if(fabs(lat2 - lat1) < DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC
+            && fabs(lon2 - lon1) < DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC)
         {
           /* short distance (< 10 km), no need for geodesic interpolation */
           lon = lon1 + (lon2 - lon1) * f;
@@ -225,8 +223,7 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
           double d, delta;
           dt_gpx_geodesic_distance(lat1, lon1,
                                    lat2, lon2,
-                                   &d, &delta
-                                  );
+                                   &d, &delta);
           /* d is the distance on the surface in metres,
              delta is the angle defined by the two points*/
 
@@ -236,8 +233,7 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
                                              delta,
                                              TRUE,
                                              f,
-                                             &lat, &lon
-                                            );
+                                             &lat, &lon);
         }
 
         geoloc->latitude = lat;
@@ -454,10 +450,9 @@ GList *dt_gpx_get_trkpts(struct dt_gpx_t *gpx, const guint segid)
  * Geodesic interpolation functions
  * ------------------------------------------------------------------------*/
 
- void dt_gpx_geodesic_distance(double lat1, double lon1,
-                                      double lat2, double lon2,
-                                      double *d, double *delta
-                                     )
+void dt_gpx_geodesic_distance(double lat1, double lon1,
+                              double lat2, double lon2,
+                              double *d, double *delta)
 {
   const double lat_rad_1 = lat1 * M_PI / 180;
   const double lat_rad_2 = lat2 * M_PI / 180;
@@ -497,7 +492,7 @@ void dt_gpx_geodesic_intermediate_point(const double lat1, const double lon1,
   static double cos_lon_rad_2;
   static double sin_delta;
 
-  if (first_time)
+  if(first_time)
   {
     lat_rad_1 = lat1 * M_PI / 180;
     sin_lat_rad_1 = sin(lat_rad_1);
