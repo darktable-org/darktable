@@ -377,9 +377,6 @@ static gchar *_string_substitute(gchar *string, const gchar *search, const gchar
 static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data_t *data,
                                     const dt_image_t *image, const gchar *filename)
 {
-  gsize length;
-
-
   char datetime[200];
 
   // EXIF datetime
@@ -397,6 +394,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
   (void)localtime_r(&t, &tt_cur);
 
   gchar *svgdata = NULL;
+  gsize length = 0;
   if(g_file_get_contents(filename, &svgdata, &length, NULL))
   {
     // File is loaded lets substitute strings if found...
@@ -672,7 +670,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       return;
     }
   }
-  
+
   /* setup stride for performance */
   const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, roi_out->width);
   if(stride == -1)
