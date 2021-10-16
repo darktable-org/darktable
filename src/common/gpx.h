@@ -21,6 +21,12 @@
 #include <glib.h>
 #include "common/image.h"
 
+#define EARTH_RADIUS 6378100.0 /* in meters */
+#define DT_MINIMUM_DISTANCE_FOR_GEODESIC 100000.0 /* in meters */
+#define DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC 1.0
+/* DT_MINIMUM_ANGULAR_DELTA_FOR_GEODESIC is in degrees, and is used for longitude and latitude
+   0.1 degress ~ 10 km on the earth surface */
+
 struct dt_gpx_t;
 
 typedef struct dt_gpx_track_point_t
@@ -54,6 +60,23 @@ GList *dt_gpx_get_trkseg(struct dt_gpx_t *gpx);
 
 // get the list of track points for a track segment
 GList *dt_gpx_get_trkpts(struct dt_gpx_t *gpx, const guint segid);
+
+// get the distance on the geodesic line and the angle delta referred to earth center
+void dt_gpx_geodesic_distance(double lat1, double lon1,
+                              double lat2, double lon2,
+                              double *d, double *delta);
+
+/* get the intermediate point (lat, lon) on the geodesic line between point 1 and point 2
+   which form an angle delta (calculated by dt_gpx_geodesic_distance)
+   corresponding to fraction f
+   boolean first_time is in order to reduce unnecessary calculations  */
+void dt_gpx_geodesic_intermediate_point(const double lat1, const double lon1,
+                                        const double lat2, const double lon2,
+                                        const double delta,
+                                        const gboolean first_time,
+                                        double f,
+                                        double *lat, double *lon);
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
