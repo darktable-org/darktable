@@ -61,11 +61,15 @@ GList *dt_gpx_get_trkseg(struct dt_gpx_t *gpx);
 // get the list of track points for a track segment
 GList *dt_gpx_get_trkpts(struct dt_gpx_t *gpx, const guint segid);
 
-
+// get the distance on the geodesic line and the angle delta referred to earth center
 void dt_gpx_geodesic_distance(double lat1, double lon1,
                               double lat2, double lon2,
                               double *d, double *delta);
 
+/* get the intermediate point (lat, lon) on the geodesic line between point 1 and point 2
+   which form an angle delta (calculated by dt_gpx_geodesic_distance)
+   corresponding to fraction f
+   boolean first_time is in order to reduce unnecessary calculations  */
 void dt_gpx_geodesic_intermediate_point(const double lat1, const double lon1,
                                         const double lat2, const double lon2,
                                         const double delta,
