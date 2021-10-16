@@ -128,7 +128,7 @@ jobs:
       fail-fast: false
       matrix:
         build:
-          - { os: macos-10.15, xcode: 11.3.1, deployment: 10.7 }
+          #- { os: macos-10.15, xcode: 11.3.1, deployment: 10.7 }
           - { os: macos-10.15, xcode: 11.7,   deployment: 10.14 }
           - { os: macos-10.15, xcode: 12.4,   deployment: 10.15 }
           - { os: macos-11,    xcode: 12.5.1, deployment: 11.3 }
