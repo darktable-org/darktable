@@ -1825,7 +1825,7 @@ void init_presets(dt_lib_module_t *self)
   AM("tonemap");
   AM("vibrance");
   AM("basicadj");
-  // this modules are deprecated in 3.6 and should be removed 1 yer later
+  // these modules are deprecated in 3.6 and should be removed 1 year later
   AM("spots");
   AM("defringe");
   // these modules are deprecated in 3.8 and should be removed 1 year later
