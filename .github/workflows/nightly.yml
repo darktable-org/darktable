@@ -10,7 +10,7 @@ on:
 
 jobs:
   Win64:
-    if: github.repository == 'darktable-org/darktable'
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
     name: Nightly darktable.${{ github.sha }}.win64
     runs-on: windows-latest
     strategy:
