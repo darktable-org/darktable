@@ -45,6 +45,9 @@
 #ifdef HAVE_LIBAVIF
 #include "common/imageio_avif.h"
 #endif
+#ifdef HAVE_LIBHEIF
+#include "common/imageio_heif.h"
+#endif
 #include "common/mipmap_cache.h"
 #include "common/styles.h"
 #include "control/conf.h"
@@ -408,6 +411,13 @@ dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, d
   loader = LOADER_AVIF;
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
 #endif
+
+#ifdef HAVE_LIBHEIF
+  ret = dt_imageio_open_heif(img, filename, buf);
+  loader = LOADER_HEIF;
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
+#endif
+
 return_label:
   if(ret == DT_IMAGEIO_OK)
   {
@@ -531,6 +541,14 @@ int dt_imageio_is_hdr(const char *filename)
 #endif
 #ifdef HAVE_LIBAVIF
        || !strcasecmp(c, ".avif")
+#endif
+#ifdef HAVE_LIBHEIF
+       || !strcasecmp(c, ".heif")
+       || !strcasecmp(c, ".heic")
+       || !strcasecmp(c, ".hif")
+  #ifndef HAVE_LIBAVIF
+       || !strcasecmp(c, ".avif")
+  #endif
 #endif
            )
       return 1;

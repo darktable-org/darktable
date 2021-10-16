@@ -111,6 +111,7 @@ jobs:
             libgphoto2-dev \
             libgraphicsmagick1-dev \
             libgtk-3-dev \
+            libheif-dev \
             libjpeg-dev \
             libjson-glib-dev \
             liblcms2-dev \
@@ -266,6 +267,7 @@ jobs:
             libgphoto2-dev \
             libgraphicsmagick1-dev \
             libgtk-3-dev \
+            libheif-dev \
             libjpeg-dev \
             libjson-glib-dev \
             liblcms2-dev \
@@ -396,6 +398,7 @@ jobs:
             mingw-w64-x86_64-libxslt
             mingw-w64-x86_64-libsoup
             mingw-w64-x86_64-libavif
+            mingw-w64-x86_64-libheif
             mingw-w64-x86_64-libwebp
             mingw-w64-x86_64-libsecret
             mingw-w64-x86_64-lua

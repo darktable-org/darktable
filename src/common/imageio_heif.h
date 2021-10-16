@@ -1,6 +1,6 @@
 /*
  * This file is part of darktable,
- * Copyright (C) 2019 darktable developers.
+ * Copyright (C) 2021 darktable developers.
  *
  *  darktable is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,11 +18,14 @@
 
 #pragma once
 
+#include "common/colorspaces.h"
 #include "common/image.h"
 #include "common/mipmap_cache.h"
 
-dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
+dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
                                          const char *filename,
                                          dt_mipmap_buffer_t *buf);
+int dt_imageio_heif_read_profile(const char *filename,
+                                 uint8_t **out,
+                                 dt_colorspaces_cicp_t *cicp);
 
-int dt_imageio_avif_read_profile(const char *filename, uint8_t **out, dt_colorspaces_cicp_t *cicp);

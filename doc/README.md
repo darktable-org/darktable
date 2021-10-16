@@ -23,6 +23,7 @@ Optionally, you might need for special features:
  - SDL, SDL-image and Mesa OpenGL (to build darktable-viewer)
  - `osm-gps-map` for geo tagging view
  - `lensfun` (lens distortion plugin)
+ - `libheif` for reading HEIF/HEIC images
  - OpenEXR for HDR export
  - `libsecret` for storing passwords
  - `libcolord-dev` `libcolord-gtk-dev` for colour profile support
