@@ -355,7 +355,7 @@ static void _display_crop_error(struct dt_iop_module_t *self)
 
   gboolean trouble = FALSE;
   const dt_dev_history_item_t *crop = dt_dev_get_history_item(self->dev, "crop");
-  if(crop && crop->enabled) trouble = TRUE;
+  if(self->enabled && crop && crop->enabled) trouble = TRUE;
 
   if(trouble)
   {
