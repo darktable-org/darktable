@@ -1865,8 +1865,10 @@ static gchar *_presets_get_minimal(dt_lib_module_t *self)
   AM("colorbalancergb/contrast");
 
   SMG(C_("modulegroup", "base"), "basic");
-  AM("basecurve");
-  AM("filmicrgb");
+  if(is_scene_referred)
+    AM("filmicrgb");
+  else
+    AM("basecurve");
   AM("exposure");
   AM("colorbalancergb");
 
