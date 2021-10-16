@@ -346,34 +346,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-static void _display_crop_error(struct dt_iop_module_t *self)
-{
-  // check if crop module is activated and show an alert if it's the case
-  // as crop is later in the pipe, cropping here will have unexpected results
-
-  ++darktable.gui->reset;
-
-  gboolean trouble = FALSE;
-  const dt_dev_history_item_t *crop = dt_dev_get_history_item(self->dev, "crop");
-  if(crop && crop->enabled) trouble = TRUE;
-
-  if(trouble)
-  {
-    dt_iop_set_module_trouble_message(self, _("cropping may be applied twice"),
-                                      _("crop module is enabled.\n"
-                                        "cropping image here too will result in double cropping\n"
-                                        "which may provide unexpected results."),
-                                      "possible double crop");
-  }
-  else
-  {
-    // no longer in trouble
-    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
-  }
-
-  --darktable.gui->reset;
-}
-
 static int gui_has_focus(struct dt_iop_module_t *self)
 {
   return (self->dev->gui_module == self
@@ -1376,10 +1348,6 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
-  // check if crop module is activated and show an alert if it's the case
-  // even if c&r is not still activated
-  if(in) _display_crop_error(self);
-
   if(self->enabled)
   {
     if(in)
@@ -1889,8 +1857,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   commit_box(self, g, p);
 
   if(w == g->crop_auto) dt_control_queue_redraw_center();
-
-  _display_crop_error(self);
 }
 
 void gui_reset(struct dt_iop_module_t *self)
@@ -2056,8 +2022,6 @@ void gui_update(struct dt_iop_module_t *self)
   g->clip_h = CLAMPF(fabsf(p->ch) - p->cy, 0.1f, 1.0f - g->clip_y);
 
   dt_bauhaus_combobox_set(g->crop_auto, p->crop_auto);
-
-  _display_crop_error(self);
 }
 
 static void hvflip_callback(GtkWidget *widget, dt_iop_module_t *self)
@@ -2130,18 +2094,9 @@ static gchar *format_aspect(gchar *original, int adim, int bdim)
   return g_strdup_printf("%s  %4.2f", original, (float)adim / (float)bdim);
 }
 
-static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  _display_crop_error(self);
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = IOP_GUI_ALLOC(clipping);
-
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
-                                  G_CALLBACK(_develop_ui_pipe_finished_callback), self);
 
   g->aspect_list = NULL;
   g->clip_x = g->clip_y = g->handle_x = g->handle_y = 0.0;
@@ -2356,7 +2311,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   g_list_free_full(g->aspect_list, free_aspect);
   g->aspect_list = NULL;
 
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
   IOP_GUI_FREE;
 }
 
