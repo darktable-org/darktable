@@ -50,7 +50,7 @@ DT_MODULE(1)
 // list of recommended basics widgets
 #define RECOMMENDED_BASICS                                                                                        \
   "|exposure/exposure|temperature/temperature|temperature/tint|colorbalancergb/contrast|colorbalancergb/global "        \
-  "vibrance|colorbalancergb/global chroma|colorbalancergb/global saturation|clipping/angle|denoiseprofile|lens|bilat|"
+  "vibrance|colorbalancergb/global chroma|colorbalancergb/global saturation|ashift/roration|denoiseprofile|lens|bilat|"
 
 // if a preset cannot be loaded or the current preset deleted, this is the fallback preset
 
@@ -1148,7 +1148,7 @@ static gchar *_preset_retrieve_old_layout_updated()
       ret = dt_util_dstrcat(ret, "1ꬹ1|||%s",
                             "exposure/exposure|temperature/temperature|temperature/tint|colorbalancergb/contrast"
                             "|colorbalancergb/global vibrance|colorbalancergb/global chroma|colorbalancergb/global saturation"
-                            "|clipping/angle|denoiseprofile|lens|bilat");
+                            "|ashift/rotation|denoiseprofile|lens|bilat");
       ret = dt_util_dstrcat(ret, "ꬹfavorites|favorites|");
     }
     else if(i == 1)
@@ -1202,7 +1202,7 @@ static gchar *_preset_retrieve_old_layout(const char *list, const char *list_fav
       ret = dt_util_dstrcat(ret, "1ꬹ1|||%s",
                             "exposure/exposure|temperature/temperature|temperature/tint|colorbalancergb/contrast"
                             "|colorbalancergb/global vibrance|colorbalancergb/global chroma|colorbalancergb/global saturation"
-                            "|clipping/angle|denoiseprofile|lens|bilat");
+                            "|ashift/rotation|denoiseprofile|lens|bilat");
       ret = dt_util_dstrcat(ret, "ꬹfavorites|favorites|");
     }
     else if(i == 1)
@@ -1487,7 +1487,7 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
     AM("colorbalancergb/global chroma");                                                                          \
     AM("colorbalancergb/global vibrance");                                                                        \
     AM("colorbalancergb/global saturation");                                                                      \
-    AM("clipping/angle");                                                                                         \
+    AM("ashift/rotation");                                                                                        \
     AM("denoiseprofile");                                                                                         \
     AM("lens");                                                                                                   \
     AM("bilat");                                                                                                  \
@@ -1523,8 +1523,8 @@ void init_presets(dt_lib_module_t *self)
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("basecurve");
-  AM("clipping");
   AM("crop");
+  AM("ashift");
   AM("colisa");
   AM("colorreconstruct");
   AM("demosaic");
@@ -1564,7 +1564,6 @@ void init_presets(dt_lib_module_t *self)
   AM("velvia");
 
   SMG(C_("modulegroup", "correct"), "correct");
-  AM("ashift");
   AM("atrous");
   AM("bilateral");
   AM("cacorrect");
@@ -1614,7 +1613,6 @@ void init_presets(dt_lib_module_t *self)
   else
     AM("basecurve");
 
-  AM("clipping");
   AM("crop");
   AM("denoiseprofile");
   AM("exposure");
@@ -1646,8 +1644,8 @@ void init_presets(dt_lib_module_t *self)
   SMG(C_("modulegroup", "base"), "basic");
   AM("basecurve");
   AM("toneequal");
-  AM("clipping");
   AM("crop");
+  AM("ashift");
   AM("flip");
   AM("exposure");
   AM("temperature");
@@ -1666,7 +1664,6 @@ void init_presets(dt_lib_module_t *self)
   AM("velvia");
 
   SMG(C_("modulegroup", "correct"), "correct");
-  AM("ashift");
   AM("cacorrect");
   AM("cacorrectrgb");
   AM("denoiseprofile");
@@ -1697,8 +1694,8 @@ void init_presets(dt_lib_module_t *self)
   SMG(C_("modulegroup", "base"), "basic");
   AM("filmicrgb");
   AM("toneequal");
-  AM("clipping");
   AM("crop");
+  AM("ashift");
   AM("flip");
   AM("exposure");
   AM("temperature");
@@ -1710,7 +1707,6 @@ void init_presets(dt_lib_module_t *self)
   AM("colorzones");
 
   SMG(C_("modulegroup", "correct"), "correct");
-  AM("ashift");
   AM("cacorrect");
   AM("cacorrectrgb");
   AM("denoiseprofile");
@@ -1739,12 +1735,11 @@ void init_presets(dt_lib_module_t *self)
   SQA(is_modern, is_scene_referred);
 
   SMG(C_("modulegroup", "technical"), "technical");
-  AM("ashift");
   AM("basecurve");
   AM("bilateral");
   AM("cacorrect");
-  AM("clipping");
   AM("crop");
+  AM("ashift");
   AM("colorchecker");
   AM("colorin");
   AM("colorout");
@@ -1830,9 +1825,11 @@ void init_presets(dt_lib_module_t *self)
   AM("tonemap");
   AM("vibrance");
   AM("basicadj");
-  // this modules are deprecated in 3.6 and should be removed 1 yer later
+  // these modules are deprecated in 3.6 and should be removed 1 year later
   AM("spots");
   AM("defringe");
+  // these modules are deprecated in 3.8 and should be removed 1 year later
+  AM("clipping");
 
   dt_lib_presets_add(_(DEPRECATED_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
