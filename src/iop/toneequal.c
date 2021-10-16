@@ -211,7 +211,7 @@ typedef struct dt_iop_toneequalizer_global_data_t
 
 typedef struct dt_iop_toneequalizer_gui_data_t
 {
-  // Mem arrays 64-bits aligned - contiguous memory
+  // Mem arrays 64-bytes aligned - contiguous memory
   float factors[PIXEL_CHAN] DT_ALIGNED_ARRAY;
   float gui_lut[UI_SAMPLES] DT_ALIGNED_ARRAY; // LUT for the UI graph
   float interpolation_matrix[CHANNELS * PIXEL_CHAN] DT_ALIGNED_ARRAY;
@@ -1597,13 +1597,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = calloc(1, sizeof(dt_iop_toneequalizer_data_t));
+  piece->data = dt_calloc_align(64, sizeof(dt_iop_toneequalizer_data_t));
 }
 
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free_align(piece->data);
   piece->data = NULL;
 }
 

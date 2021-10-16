@@ -482,7 +482,8 @@ char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
 
 static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t size)
 {
-  module->gui_data = (dt_iop_gui_data_t*)calloc(1, size);
+  // Align so that DT_ALIGNED_ARRAY may be used within gui_data struct
+  module->gui_data = (dt_iop_gui_data_t*)dt_calloc_align(64, size);
   dt_pthread_mutex_init(&module->gui_lock,NULL);
   return module->gui_data;
 }
@@ -490,7 +491,7 @@ static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t 
   (dt_iop_##module##_gui_data_t *)_iop_gui_alloc(self,sizeof(dt_iop_##module##_gui_data_t))
 
 #define IOP_GUI_FREE \
-  dt_pthread_mutex_destroy(&self->gui_lock);if(self->gui_data){free(self->gui_data);} self->gui_data = NULL
+  dt_pthread_mutex_destroy(&self->gui_lock);if(self->gui_data){dt_free_align(self->gui_data);} self->gui_data = NULL
 
 /* return a warning message, prefixed by the special character ⚠ */
 char *dt_iop_warning_message(const char *message);
