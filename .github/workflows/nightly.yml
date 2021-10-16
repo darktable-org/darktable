@@ -214,6 +214,7 @@ jobs:
         run: |
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
+          export ECO="-DOpenMP_C_INCLUDE_DIR=/opt/local/include/libomp -DOpenMP_CXX_INCLUDE_DIR=/opt/local/include/libomp -DCMAKE_LIBRARY_PATH=/opt/local/lib/libomp"
           ./src/.ci/ci-script.sh;
       - name: Check if it runs
         run: |
