@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-15 13:13+0200\n"
+"POT-Creation-Date: 2021-10-16 22:13+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2028,8 +2028,8 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
 #: ../src/gui/guides.c:682 ../src/iop/basecurve.c:2100
-#: ../src/iop/channelmixerrgb.c:3837 ../src/iop/clipping.c:1948
-#: ../src/iop/clipping.c:2170 ../src/iop/clipping.c:2186
+#: ../src/iop/channelmixerrgb.c:3837 ../src/iop/clipping.c:1918
+#: ../src/iop/clipping.c:2129 ../src/iop/clipping.c:2145
 #: ../src/iop/lens.cc:2239 ../src/iop/retouch.c:422 ../src/libs/collect.c:1861
 #: ../src/libs/colorpicker.c:50 ../src/libs/export.c:1074
 #: ../src/libs/live_view.c:377 ../src/libs/print_settings.c:2527
@@ -3531,7 +3531,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:80
 #: ../build/lib/darktable/plugins/introspection_highlights.c:139
-#: ../src/iop/exposure.c:843 ../src/views/darkroom.c:2329
+#: ../src/iop/exposure.c:843 ../src/views/darkroom.c:2336
 msgid "clipping threshold"
 msgstr ""
 
@@ -3574,7 +3574,7 @@ msgstr ""
 #: ../src/iop/levels.c:686 ../src/iop/profile_gamma.c:687
 #: ../src/libs/copy_history.c:390 ../src/libs/export.c:1346
 #: ../src/libs/image.c:592 ../src/libs/print_settings.c:2566
-#: ../src/libs/styles.c:846 ../src/views/darkroom.c:2303
+#: ../src/libs/styles.c:846 ../src/views/darkroom.c:2310
 msgid "mode"
 msgstr ""
 
@@ -3605,8 +3605,8 @@ msgstr ""
 
 #. move left/right/up/down
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
-#: ../src/views/darkroom.c:2199 ../src/views/darkroom.c:2609
-#: ../src/views/darkroom.c:2612 ../src/views/lighttable.c:821
+#: ../src/views/darkroom.c:2206 ../src/views/darkroom.c:2616
+#: ../src/views/darkroom.c:2619 ../src/views/lighttable.c:821
 #: ../src/views/lighttable.c:830 ../src/views/lighttable.c:1395
 #: ../src/views/lighttable.c:1399 ../src/views/lighttable.c:1403
 #: ../src/views/lighttable.c:1407
@@ -3846,8 +3846,8 @@ msgid "erase"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:442
-#: ../src/gui/presets.c:59 ../src/iop/watermark.c:1261 ../src/libs/image.c:608
-#: ../src/libs/modulegroups.c:2358
+#: ../src/gui/presets.c:59 ../src/iop/watermark.c:1259 ../src/libs/image.c:608
+#: ../src/libs/modulegroups.c:2355
 msgid "color"
 msgstr ""
 
@@ -4570,7 +4570,7 @@ msgid "export profile"
 msgstr ""
 
 #: ../src/common/colorspaces.c:1404 ../src/common/colorspaces.c:1684
-#: ../src/views/darkroom.c:2473
+#: ../src/views/darkroom.c:2480
 msgid "softproof profile"
 msgstr ""
 
@@ -4787,7 +4787,7 @@ msgstr ""
 #: ../src/common/database.c:2536 ../src/libs/collect.c:2900
 #: ../src/libs/export_metadata.c:281 ../src/libs/import.c:1762
 #: ../src/libs/metadata.c:445 ../src/libs/metadata_view.c:1239
-#: ../src/libs/modulegroups.c:3396 ../src/libs/recentcollect.c:319
+#: ../src/libs/modulegroups.c:3393 ../src/libs/recentcollect.c:319
 #: ../src/libs/styles.c:441 ../src/libs/styles.c:624 ../src/libs/tagging.c:1357
 #: ../src/libs/tagging.c:1445 ../src/libs/tagging.c:1526
 #: ../src/libs/tagging.c:1656 ../src/libs/tagging.c:1931
@@ -5413,13 +5413,13 @@ msgstr ""
 msgid "below sea level"
 msgstr ""
 
-#: ../src/common/utility.c:547 ../src/iop/watermark.c:581
+#: ../src/common/utility.c:547 ../src/iop/watermark.c:579
 #: ../src/libs/metadata_view.c:915
 msgid "m"
 msgstr ""
 
 #: ../src/control/control.c:66 ../src/gui/accelerators.c:129
-#: ../src/views/darkroom.c:2085
+#: ../src/views/darkroom.c:2092
 msgid "hold"
 msgstr ""
 
@@ -6767,7 +6767,7 @@ msgid "adjust the fulcrum used by some blending operations"
 msgstr ""
 
 #. Add opacity/scale sliders to table
-#: ../src/develop/blend_gui.c:3078 ../src/iop/watermark.c:1302
+#: ../src/develop/blend_gui.c:3078 ../src/iop/watermark.c:1300
 msgid "opacity"
 msgstr ""
 
@@ -6916,7 +6916,7 @@ msgid "delete"
 msgstr ""
 
 #: ../src/develop/imageop.c:959 ../src/develop/imageop.c:3237
-#: ../src/libs/modulegroups.c:3396 ../src/libs/modulegroups.c:3748
+#: ../src/libs/modulegroups.c:3393 ../src/libs/modulegroups.c:3745
 msgid "rename"
 msgstr ""
 
@@ -7005,14 +7005,14 @@ msgstr ""
 msgid "show"
 msgstr ""
 
-#: ../src/develop/imageop.c:3235 ../src/libs/modulegroups.c:3254
-#: ../src/libs/modulegroups.c:3370 ../src/libs/modulegroups.c:3751
+#: ../src/develop/imageop.c:3235 ../src/libs/modulegroups.c:3251
+#: ../src/libs/modulegroups.c:3367 ../src/libs/modulegroups.c:3748
 #: ../src/libs/tagging.c:3076
 msgid "new"
 msgstr ""
 
 #: ../src/develop/imageop.c:3238 ../src/libs/duplicate.c:546
-#: ../src/libs/image.c:496 ../src/libs/modulegroups.c:3745
+#: ../src/libs/image.c:496 ../src/libs/modulegroups.c:3742
 msgid "duplicate"
 msgstr ""
 
@@ -7030,7 +7030,7 @@ msgstr ""
 
 #: ../src/develop/imageop.c:3246 ../src/gui/accelerators.c:106
 #: ../src/gui/accelerators.c:115 ../src/iop/atrous.c:1583
-#: ../src/libs/lib.c:1263 ../src/libs/modulegroups.c:3814
+#: ../src/libs/lib.c:1263 ../src/libs/modulegroups.c:3811
 msgid "reset"
 msgstr ""
 
@@ -7658,7 +7658,7 @@ msgstr ""
 msgid "underwater"
 msgstr ""
 
-#: ../src/external/wb_presets.c:77 ../src/views/darkroom.c:2370
+#: ../src/external/wb_presets.c:77 ../src/views/darkroom.c:2377
 msgid "black & white"
 msgstr ""
 
@@ -7742,16 +7742,16 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:5372
 #: ../src/iop/ashift.c:5373 ../src/iop/ashift.c:5475 ../src/iop/ashift.c:5476
-#: ../src/iop/clipping.c:1950 ../src/iop/clipping.c:2171
-#: ../src/iop/clipping.c:2188 ../src/views/darkroom.c:2609
+#: ../src/iop/clipping.c:1920 ../src/iop/clipping.c:2130
+#: ../src/iop/clipping.c:2147 ../src/views/darkroom.c:2616
 #: ../src/views/lighttable.c:1399
 msgid "horizontal"
 msgstr ""
 
 #: ../src/gui/accelerators.c:80 ../src/iop/ashift.c:5372
 #: ../src/iop/ashift.c:5373 ../src/iop/ashift.c:5475 ../src/iop/ashift.c:5476
-#: ../src/iop/clipping.c:1949 ../src/iop/clipping.c:2172
-#: ../src/iop/clipping.c:2187 ../src/views/darkroom.c:2612
+#: ../src/iop/clipping.c:1919 ../src/iop/clipping.c:2131
+#: ../src/iop/clipping.c:2146 ../src/views/darkroom.c:2619
 #: ../src/views/lighttable.c:1403
 msgid "vertical"
 msgstr ""
@@ -7836,8 +7836,8 @@ msgid "first"
 msgstr ""
 
 #: ../src/gui/accelerators.c:120 ../src/gui/accelerators.c:132
-#: ../src/gui/accelerators.c:238 ../src/views/darkroom.c:2285
-#: ../src/views/darkroom.c:2341
+#: ../src/gui/accelerators.c:238 ../src/views/darkroom.c:2292
+#: ../src/views/darkroom.c:2348
 msgid "toggle"
 msgstr ""
 
@@ -8243,17 +8243,17 @@ msgstr ""
 msgid "fallback to move"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2977
+#: ../src/gui/accelerators.c:2978
 #, c-format
 msgid "%s not assigned"
 msgstr ""
 
-#: ../src/gui/accelerators.c:3124
+#: ../src/gui/accelerators.c:3125
 #, c-format
 msgid "%s assigned to %s"
 msgstr ""
 
-#: ../src/gui/gtk.c:158 ../src/views/darkroom.c:4644
+#: ../src/gui/gtk.c:158 ../src/views/darkroom.c:4658
 msgid "darktable - darkroom preview"
 msgstr ""
 
@@ -8724,7 +8724,7 @@ msgstr ""
 msgid "guide lines"
 msgstr ""
 
-#: ../src/gui/guides.c:680 ../src/iop/clipping.c:2169
+#: ../src/gui/guides.c:680 ../src/iop/clipping.c:2128
 msgid "flip"
 msgstr ""
 
@@ -8740,7 +8740,7 @@ msgstr ""
 msgid "vertically"
 msgstr ""
 
-#: ../src/gui/guides.c:685 ../src/iop/clipping.c:2173
+#: ../src/gui/guides.c:685 ../src/iop/clipping.c:2132
 #: ../src/iop/colorbalance.c:1886
 msgid "both"
 msgstr ""
@@ -9024,13 +9024,13 @@ msgid "preset `%s' is write-protected, can't delete!"
 msgstr ""
 
 #: ../src/gui/presets.c:173 ../src/gui/presets.c:403 ../src/libs/lib.c:240
-#: ../src/libs/modulegroups.c:3627
+#: ../src/libs/modulegroups.c:3624
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr ""
 
 #: ../src/gui/presets.c:177 ../src/gui/presets.c:408 ../src/libs/lib.c:244
-#: ../src/libs/modulegroups.c:3631
+#: ../src/libs/modulegroups.c:3628
 msgid "delete preset?"
 msgstr ""
 
@@ -9171,8 +9171,8 @@ msgstr ""
 msgid "update preset?"
 msgstr ""
 
-#: ../src/gui/presets.c:1078 ../src/libs/modulegroups.c:3713
-#: ../src/libs/modulegroups.c:3722
+#: ../src/gui/presets.c:1078 ../src/libs/modulegroups.c:3710
+#: ../src/libs/modulegroups.c:3719
 msgid "manage module layouts"
 msgstr ""
 
@@ -9908,7 +9908,7 @@ msgid "rotate or distort perspective"
 msgstr ""
 
 #: ../src/iop/ashift.c:131 ../src/iop/channelmixer.c:139
-#: ../src/iop/channelmixerrgb.c:208 ../src/iop/clipping.c:316
+#: ../src/iop/channelmixerrgb.c:208 ../src/iop/clipping.c:320
 #: ../src/iop/colorbalance.c:159 ../src/iop/colorbalancergb.c:171
 #: ../src/iop/colorchecker.c:126 ../src/iop/colorcorrection.c:77
 #: ../src/iop/crop.c:140 ../src/iop/lut3d.c:139
@@ -9918,8 +9918,8 @@ msgstr ""
 #: ../src/iop/ashift.c:132 ../src/iop/ashift.c:134 ../src/iop/basicadj.c:147
 #: ../src/iop/bilateral.cc:100 ../src/iop/bilateral.cc:102
 #: ../src/iop/blurs.c:93 ../src/iop/blurs.c:94 ../src/iop/channelmixerrgb.c:209
-#: ../src/iop/channelmixerrgb.c:211 ../src/iop/clipping.c:317
-#: ../src/iop/clipping.c:319 ../src/iop/colorbalancergb.c:172
+#: ../src/iop/channelmixerrgb.c:211 ../src/iop/clipping.c:321
+#: ../src/iop/clipping.c:323 ../src/iop/colorbalancergb.c:172
 #: ../src/iop/colorin.c:137 ../src/iop/crop.c:141 ../src/iop/crop.c:142
 #: ../src/iop/demosaic.c:227 ../src/iop/denoiseprofile.c:721
 #: ../src/iop/denoiseprofile.c:723 ../src/iop/diffuse.c:142
@@ -9933,7 +9933,7 @@ msgstr ""
 msgid "linear, RGB, scene-referred"
 msgstr ""
 
-#: ../src/iop/ashift.c:133 ../src/iop/borders.c:189 ../src/iop/clipping.c:318
+#: ../src/iop/ashift.c:133 ../src/iop/borders.c:189 ../src/iop/clipping.c:322
 #: ../src/iop/crop.c:141 ../src/iop/flip.c:106 ../src/iop/liquify.c:298
 msgid "geometric, RGB"
 msgstr ""
@@ -10001,7 +10001,7 @@ msgstr ""
 msgid "shear the image along one diagonal"
 msgstr ""
 
-#: ../src/iop/ashift.c:5779 ../src/iop/clipping.c:2195
+#: ../src/iop/ashift.c:5779 ../src/iop/clipping.c:2154
 msgid "automatically crop to avoid black edges"
 msgstr ""
 
@@ -10070,7 +10070,7 @@ msgstr ""
 msgid "manually draw structure lines"
 msgstr ""
 
-#: ../src/iop/ashift.c:5844 ../src/iop/clipping.c:3429
+#: ../src/iop/ashift.c:5844 ../src/iop/clipping.c:3387
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr ""
@@ -10710,7 +10710,7 @@ msgstr ""
 msgid "16:9"
 msgstr ""
 
-#: ../src/iop/borders.c:973 ../src/iop/clipping.c:2209 ../src/iop/crop.c:1106
+#: ../src/iop/borders.c:973 ../src/iop/clipping.c:2168 ../src/iop/crop.c:1106
 msgid "golden cut"
 msgstr ""
 
@@ -10730,7 +10730,7 @@ msgstr ""
 msgid "4:3"
 msgstr ""
 
-#: ../src/iop/borders.c:978 ../src/iop/clipping.c:2199 ../src/iop/crop.c:1096
+#: ../src/iop/borders.c:978 ../src/iop/clipping.c:2158 ../src/iop/crop.c:1096
 #: ../src/libs/collect.c:271
 msgid "square"
 msgstr ""
@@ -10767,7 +10767,7 @@ msgstr ""
 msgid "size of the border in percent of the full image"
 msgstr ""
 
-#: ../src/iop/borders.c:1041 ../src/iop/clipping.c:2296 ../src/iop/crop.c:1192
+#: ../src/iop/borders.c:1041 ../src/iop/clipping.c:2255 ../src/iop/crop.c:1192
 msgid "aspect"
 msgstr ""
 
@@ -11329,7 +11329,7 @@ msgid ""
 msgstr ""
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/iop/channelmixerrgb.c:3685 ../src/iop/clipping.c:2164
+#: ../src/iop/channelmixerrgb.c:3685 ../src/iop/clipping.c:2123
 #: ../src/iop/colorbalancergb.c:1569 ../src/iop/filmicrgb.c:3674
 #: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3139
 #: ../src/libs/print_settings.c:2216 ../src/views/lighttable.c:1407
@@ -11546,153 +11546,148 @@ msgstr ""
 msgid "strength of the effect"
 msgstr ""
 
-#: ../src/iop/clipping.c:305
+#: ../src/iop/clipping.c:304
+msgid ""
+"this module is deprecated. please use the crop and/or rotation and "
+"perspective modules instead."
+msgstr ""
+
+#: ../src/iop/clipping.c:309
 msgid "crop and rotate"
 msgstr ""
 
-#: ../src/iop/clipping.c:310
+#: ../src/iop/clipping.c:314
 msgid "reframe|perspective|keystone|distortion"
 msgstr ""
 
-#: ../src/iop/clipping.c:315
+#: ../src/iop/clipping.c:319
 msgid "change the framing and correct the perspective"
 msgstr ""
 
-#: ../src/iop/clipping.c:362
-msgid "cropping may be applied twice"
-msgstr ""
-
-#: ../src/iop/clipping.c:363
-msgid ""
-"crop module is enabled.\n"
-"cropping image here too will result in double cropping\n"
-"which may provide unexpected results."
-msgstr ""
-
-#: ../src/iop/clipping.c:1440 ../src/iop/clipping.c:2198 ../src/iop/crop.c:450
+#: ../src/iop/clipping.c:1412 ../src/iop/clipping.c:2157 ../src/iop/crop.c:450
 #: ../src/iop/crop.c:1095
 msgid "original image"
 msgstr ""
 
-#: ../src/iop/clipping.c:1744 ../src/iop/crop.c:754
+#: ../src/iop/clipping.c:1716 ../src/iop/crop.c:754
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr ""
 
-#: ../src/iop/clipping.c:1760 ../src/iop/crop.c:770
+#: ../src/iop/clipping.c:1732 ../src/iop/crop.c:770
 msgid "invalid ratio format. it should be a positive number"
 msgstr ""
 
-#: ../src/iop/clipping.c:1951 ../src/iop/clipping.c:2189
+#: ../src/iop/clipping.c:1921 ../src/iop/clipping.c:2148
 msgid "full"
 msgstr ""
 
-#: ../src/iop/clipping.c:1952
+#: ../src/iop/clipping.c:1922
 msgid "old system"
 msgstr ""
 
-#: ../src/iop/clipping.c:1953
+#: ../src/iop/clipping.c:1923
 msgid "correction applied"
 msgstr ""
 
-#: ../src/iop/clipping.c:2166
+#: ../src/iop/clipping.c:2125
 msgid "main"
 msgstr ""
 
-#: ../src/iop/clipping.c:2175
+#: ../src/iop/clipping.c:2134
 msgid "mirror image horizontally and/or vertically"
 msgstr ""
 
-#: ../src/iop/clipping.c:2178
+#: ../src/iop/clipping.c:2137
 msgid "angle"
 msgstr ""
 
-#: ../src/iop/clipping.c:2182
+#: ../src/iop/clipping.c:2141
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 
-#: ../src/iop/clipping.c:2185
+#: ../src/iop/clipping.c:2144
 msgid "keystone"
 msgstr ""
 
-#: ../src/iop/clipping.c:2190
+#: ../src/iop/clipping.c:2149
 msgid "set perspective correction for your image"
 msgstr ""
 
-#: ../src/iop/clipping.c:2197 ../src/iop/crop.c:1094
+#: ../src/iop/clipping.c:2156 ../src/iop/crop.c:1094
 msgid "freehand"
 msgstr ""
 
-#: ../src/iop/clipping.c:2200 ../src/iop/crop.c:1097
+#: ../src/iop/clipping.c:2159 ../src/iop/crop.c:1097
 msgid "10:8 in print"
 msgstr ""
 
-#: ../src/iop/clipping.c:2201 ../src/iop/crop.c:1098
+#: ../src/iop/clipping.c:2160 ../src/iop/crop.c:1098
 msgid "5:4, 4x5, 8x10"
 msgstr ""
 
-#: ../src/iop/clipping.c:2202 ../src/iop/crop.c:1099
+#: ../src/iop/clipping.c:2161 ../src/iop/crop.c:1099
 msgid "11x14"
 msgstr ""
 
-#: ../src/iop/clipping.c:2203 ../src/iop/crop.c:1100
+#: ../src/iop/clipping.c:2162 ../src/iop/crop.c:1100
 msgid "8.5x11, letter"
 msgstr ""
 
-#: ../src/iop/clipping.c:2204 ../src/iop/crop.c:1101
+#: ../src/iop/clipping.c:2163 ../src/iop/crop.c:1101
 msgid "4:3, VGA, TV"
 msgstr ""
 
-#: ../src/iop/clipping.c:2205 ../src/iop/crop.c:1102
+#: ../src/iop/clipping.c:2164 ../src/iop/crop.c:1102
 msgid "5x7"
 msgstr ""
 
-#: ../src/iop/clipping.c:2206 ../src/iop/crop.c:1103
+#: ../src/iop/clipping.c:2165 ../src/iop/crop.c:1103
 msgid "ISO 216, DIN 476, A4"
 msgstr ""
 
-#: ../src/iop/clipping.c:2207 ../src/iop/crop.c:1104
+#: ../src/iop/clipping.c:2166 ../src/iop/crop.c:1104
 msgid "3:2, 4x6, 35mm"
 msgstr ""
 
-#: ../src/iop/clipping.c:2208 ../src/iop/crop.c:1105
+#: ../src/iop/clipping.c:2167 ../src/iop/crop.c:1105
 msgid "16:10, 8x5"
 msgstr ""
 
-#: ../src/iop/clipping.c:2210 ../src/iop/crop.c:1107
+#: ../src/iop/clipping.c:2169 ../src/iop/crop.c:1107
 msgid "16:9, HDTV"
 msgstr ""
 
-#: ../src/iop/clipping.c:2211 ../src/iop/crop.c:1108
+#: ../src/iop/clipping.c:2170 ../src/iop/crop.c:1108
 msgid "widescreen"
 msgstr ""
 
-#: ../src/iop/clipping.c:2212 ../src/iop/crop.c:1109
+#: ../src/iop/clipping.c:2171 ../src/iop/crop.c:1109
 msgid "2:1, univisium"
 msgstr ""
 
-#: ../src/iop/clipping.c:2213 ../src/iop/crop.c:1110
+#: ../src/iop/clipping.c:2172 ../src/iop/crop.c:1110
 msgid "cinemascope"
 msgstr ""
 
-#: ../src/iop/clipping.c:2214 ../src/iop/crop.c:1111
+#: ../src/iop/clipping.c:2173 ../src/iop/crop.c:1111
 msgid "21:9"
 msgstr ""
 
-#: ../src/iop/clipping.c:2215 ../src/iop/crop.c:1112
+#: ../src/iop/clipping.c:2174 ../src/iop/crop.c:1112
 msgid "anamorphic"
 msgstr ""
 
-#: ../src/iop/clipping.c:2216 ../src/iop/crop.c:1113
+#: ../src/iop/clipping.c:2175 ../src/iop/crop.c:1113
 msgid "3:1, panorama"
 msgstr ""
 
-#: ../src/iop/clipping.c:2248 ../src/iop/clipping.c:2260 ../src/iop/crop.c:1145
+#: ../src/iop/clipping.c:2207 ../src/iop/clipping.c:2219 ../src/iop/crop.c:1145
 #: ../src/iop/crop.c:1157
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr ""
 
-#: ../src/iop/clipping.c:2307 ../src/iop/crop.c:1203
+#: ../src/iop/clipping.c:2266 ../src/iop/crop.c:1203
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square\n"
@@ -11700,67 +11695,67 @@ msgid ""
 "decimal format"
 msgstr ""
 
-#: ../src/iop/clipping.c:2314 ../src/iop/crop.c:1213
+#: ../src/iop/clipping.c:2273 ../src/iop/crop.c:1213
 msgid "margins"
 msgstr ""
 
-#: ../src/iop/clipping.c:2320 ../src/iop/crop.c:1241
+#: ../src/iop/clipping.c:2279 ../src/iop/crop.c:1241
 msgid "the left margin cannot overlap with the right margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:2327 ../src/iop/crop.c:1248
+#: ../src/iop/clipping.c:2286 ../src/iop/crop.c:1248
 msgid "the right margin cannot overlap with the left margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:2333 ../src/iop/crop.c:1254
+#: ../src/iop/clipping.c:2292 ../src/iop/crop.c:1254
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:2340 ../src/iop/crop.c:1261
+#: ../src/iop/clipping.c:2299 ../src/iop/crop.c:1261
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:3100
+#: ../src/iop/clipping.c:3058
 msgid "<b>commit</b>: double click, <b>straighten</b>: right-drag"
 msgstr ""
 
-#: ../src/iop/clipping.c:3104
+#: ../src/iop/clipping.c:3062
 msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
 
-#: ../src/iop/clipping.c:3147
+#: ../src/iop/clipping.c:3105
 msgid "<b>move control point</b>: drag"
 msgstr ""
 
-#: ../src/iop/clipping.c:3152
+#: ../src/iop/clipping.c:3110
 msgid "<b>move line</b>: drag, <b>toggle symmetry</b>: click <tt>ꝏ</tt>"
 msgstr ""
 
-#: ../src/iop/clipping.c:3157
+#: ../src/iop/clipping.c:3115
 msgid ""
 "<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click <tt>ꝏ</tt>\n"
 "<b>move line/control point</b>: drag"
 msgstr ""
 
-#: ../src/iop/clipping.c:3164
+#: ../src/iop/clipping.c:3122
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag\n"
 "<b>straighten</b>: right-drag, <b>commit</b>: double click"
 msgstr ""
 
-#: ../src/iop/clipping.c:3415 ../src/iop/crop.c:1670
+#: ../src/iop/clipping.c:3373 ../src/iop/crop.c:1670
 msgid "commit"
 msgstr ""
 
-#: ../src/iop/clipping.c:3426 ../src/iop/crop.c:1681
+#: ../src/iop/clipping.c:3384 ../src/iop/crop.c:1681
 #, c-format
 msgid "[%s on borders] crop"
 msgstr ""
 
-#: ../src/iop/clipping.c:3428 ../src/iop/crop.c:1683
+#: ../src/iop/clipping.c:3386 ../src/iop/crop.c:1683
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr ""
@@ -12576,21 +12571,21 @@ msgstr ""
 
 #: ../src/iop/colorout.c:867 ../src/libs/export.c:1303
 #: ../src/libs/print_settings.c:2190 ../src/libs/print_settings.c:2512
-#: ../src/views/darkroom.c:2446 ../src/views/darkroom.c:2453
+#: ../src/views/darkroom.c:2453 ../src/views/darkroom.c:2460
 #: ../src/views/lighttable.c:1319 ../src/views/lighttable.c:1326
 msgid "perceptual"
 msgstr ""
 
 #: ../src/iop/colorout.c:868 ../src/libs/export.c:1304
 #: ../src/libs/print_settings.c:2191 ../src/libs/print_settings.c:2513
-#: ../src/views/darkroom.c:2447 ../src/views/darkroom.c:2454
+#: ../src/views/darkroom.c:2454 ../src/views/darkroom.c:2461
 #: ../src/views/lighttable.c:1320 ../src/views/lighttable.c:1327
 msgid "relative colorimetric"
 msgstr ""
 
 #: ../src/iop/colorout.c:869 ../src/libs/export.c:1305
 #: ../src/libs/print_settings.c:2192 ../src/libs/print_settings.c:2514
-#: ../src/views/darkroom.c:2448 ../src/views/darkroom.c:2455
+#: ../src/views/darkroom.c:2455 ../src/views/darkroom.c:2462
 #: ../src/views/lighttable.c:1321 ../src/views/lighttable.c:1328
 msgctxt "rendering intent"
 msgid "saturation"
@@ -12598,7 +12593,7 @@ msgstr ""
 
 #: ../src/iop/colorout.c:870 ../src/libs/export.c:1306
 #: ../src/libs/print_settings.c:2193 ../src/libs/print_settings.c:2515
-#: ../src/views/darkroom.c:2449 ../src/views/darkroom.c:2456
+#: ../src/views/darkroom.c:2456 ../src/views/darkroom.c:2463
 #: ../src/views/lighttable.c:1322 ../src/views/lighttable.c:1329
 msgid "absolute colorimetric"
 msgstr ""
@@ -13569,7 +13564,7 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1701 ../src/libs/export.c:1301
 #: ../src/libs/print_settings.c:2189 ../src/libs/print_settings.c:2509
-#: ../src/views/darkroom.c:2445 ../src/views/lighttable.c:1318
+#: ../src/views/darkroom.c:2452 ../src/views/lighttable.c:1318
 #: ../src/views/lighttable.c:1325
 msgid "intent"
 msgstr ""
@@ -13760,7 +13755,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3163 ../src/iop/toneequal.c:3167
 #: ../src/iop/toneequal.c:3171 ../src/iop/toneequal.c:3175
 #: ../src/iop/toneequal.c:3179 ../src/libs/metadata_view.c:768
-#: ../src/views/darkroom.c:2377
+#: ../src/views/darkroom.c:2384
 #, c-format
 msgid "%+.2f EV"
 msgstr ""
@@ -14459,7 +14454,7 @@ msgstr ""
 
 #. scale
 #: ../src/iop/lens.cc:2365 ../src/iop/vignette.c:988
-#: ../src/iop/watermark.c:1304
+#: ../src/iop/watermark.c:1302
 msgid "scale"
 msgstr ""
 
@@ -14467,7 +14462,7 @@ msgstr ""
 msgid "auto scale"
 msgstr ""
 
-#: ../src/iop/lens.cc:2374 ../src/libs/modulegroups.c:2359
+#: ../src/iop/lens.cc:2374 ../src/libs/modulegroups.c:2356
 msgid "correct"
 msgstr ""
 
@@ -15171,9 +15166,9 @@ msgstr ""
 #. * let's fill the encapsulating widgets
 #. preview mode
 #. color scheme
-#: ../src/iop/overexposed.c:72 ../src/views/darkroom.c:2341
-#: ../src/views/darkroom.c:2359 ../src/views/darkroom.c:2367
-#: ../src/views/darkroom.c:2378 ../src/views/darkroom.c:2395
+#: ../src/iop/overexposed.c:72 ../src/views/darkroom.c:2348
+#: ../src/views/darkroom.c:2366 ../src/views/darkroom.c:2374
+#: ../src/views/darkroom.c:2385 ../src/views/darkroom.c:2402
 msgid "overexposed"
 msgstr ""
 
@@ -15271,9 +15266,9 @@ msgstr ""
 
 #. * let's fill the encapsulating widgets
 #. mode of operation
-#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2285
-#: ../src/views/darkroom.c:2303 ../src/views/darkroom.c:2313
-#: ../src/views/darkroom.c:2329
+#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2292
+#: ../src/views/darkroom.c:2310 ../src/views/darkroom.c:2320
+#: ../src/views/darkroom.c:2336
 msgid "raw overexposed"
 msgstr ""
 
@@ -15841,7 +15836,7 @@ msgstr ""
 
 #. Additional parameters
 #. Camera settings
-#: ../src/iop/splittoning.c:531 ../src/iop/watermark.c:1299
+#: ../src/iop/splittoning.c:531 ../src/iop/watermark.c:1297
 #: ../src/libs/camera.c:503
 msgid "properties"
 msgstr ""
@@ -16495,50 +16490,50 @@ msgstr ""
 msgid "overlay an SVG watermark like a signature on the picture"
 msgstr ""
 
-#: ../src/iop/watermark.c:1227
+#: ../src/iop/watermark.c:1225
 msgid "content"
 msgstr ""
 
-#: ../src/iop/watermark.c:1243
+#: ../src/iop/watermark.c:1241
 msgid "marker"
 msgstr ""
 
-#: ../src/iop/watermark.c:1246
+#: ../src/iop/watermark.c:1244
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
 msgstr ""
 
-#: ../src/iop/watermark.c:1263
+#: ../src/iop/watermark.c:1261
 msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
 msgstr ""
 
-#: ../src/iop/watermark.c:1265
+#: ../src/iop/watermark.c:1263
 msgid "select watermark color"
 msgstr ""
 
-#: ../src/iop/watermark.c:1267
+#: ../src/iop/watermark.c:1265
 msgid "pick color from image"
 msgstr ""
 
 #. Simple text
-#: ../src/iop/watermark.c:1274
+#: ../src/iop/watermark.c:1272
 msgid "text"
 msgstr ""
 
-#: ../src/iop/watermark.c:1277
+#: ../src/iop/watermark.c:1275
 msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
 msgstr ""
 
 #. Text font
-#: ../src/iop/watermark.c:1285
+#: ../src/iop/watermark.c:1283
 msgid "font"
 msgstr ""
 
-#: ../src/iop/watermark.c:1290
+#: ../src/iop/watermark.c:1288
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -16547,28 +16542,28 @@ msgid ""
 msgstr ""
 
 #. dt_bauhaus_combobox_add(g->sizeto, C_("size", "image"));
-#: ../src/iop/watermark.c:1312
+#: ../src/iop/watermark.c:1310
 msgid "size is relative to"
 msgstr ""
 
-#: ../src/iop/watermark.c:1314
+#: ../src/iop/watermark.c:1312
 msgid "position"
 msgstr ""
 
-#: ../src/iop/watermark.c:1318 ../src/libs/print_settings.c:2371
+#: ../src/iop/watermark.c:1316 ../src/libs/print_settings.c:2371
 msgid "alignment"
 msgstr ""
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1339
+#: ../src/iop/watermark.c:1337
 msgid "the opacity of the watermark"
 msgstr ""
 
-#: ../src/iop/watermark.c:1340
+#: ../src/iop/watermark.c:1338
 msgid "the scale of the watermark"
 msgstr ""
 
-#: ../src/iop/watermark.c:1341
+#: ../src/iop/watermark.c:1339
 msgid "the rotation of the watermark"
 msgstr ""
 
@@ -17517,7 +17512,7 @@ msgstr ""
 msgid "open GPX file"
 msgstr ""
 
-#: ../src/libs/geotagging.c:935 ../src/views/darkroom.c:2152
+#: ../src/libs/geotagging.c:935 ../src/views/darkroom.c:2159
 #: ../src/views/lighttable.c:716
 msgid "preview"
 msgstr ""
@@ -17871,7 +17866,7 @@ msgid "physically delete from disk immediately"
 msgstr ""
 
 #. delete
-#: ../src/libs/image.c:476 ../src/libs/modulegroups.c:3742
+#: ../src/libs/image.c:476 ../src/libs/modulegroups.c:3739
 #: ../src/libs/styles.c:870
 msgid "remove"
 msgstr ""
@@ -18911,7 +18906,7 @@ msgstr ""
 #. FIXME don't check here if on/off is enabled, because it depends on image (reload_defaults)
 #. respond later to image changed signal
 #: ../src/libs/modulegroups.c:312 ../src/libs/modulegroups.c:324
-#: ../src/libs/modulegroups.c:2461 ../src/libs/modulegroups.c:2463
+#: ../src/libs/modulegroups.c:2458 ../src/libs/modulegroups.c:2460
 msgid "on-off"
 msgstr ""
 
@@ -18937,9 +18932,9 @@ msgstr ""
 msgid "go to the full version of the %s module"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1524 ../src/libs/modulegroups.c:1609
-#: ../src/libs/modulegroups.c:1646 ../src/libs/modulegroups.c:1697
-#: ../src/libs/modulegroups.c:1870
+#: ../src/libs/modulegroups.c:1524 ../src/libs/modulegroups.c:1608
+#: ../src/libs/modulegroups.c:1644 ../src/libs/modulegroups.c:1694
+#: ../src/libs/modulegroups.c:1867
 msgctxt "modulegroup"
 msgid "base"
 msgstr ""
@@ -18949,282 +18944,282 @@ msgctxt "modulegroup"
 msgid "tone"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1551 ../src/libs/modulegroups.c:1660
-#: ../src/libs/modulegroups.c:1707
+#: ../src/libs/modulegroups.c:1551 ../src/libs/modulegroups.c:1658
+#: ../src/libs/modulegroups.c:1704
 msgctxt "modulegroup"
 msgid "color"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1566 ../src/libs/modulegroups.c:1668
-#: ../src/libs/modulegroups.c:1712
+#: ../src/libs/modulegroups.c:1566 ../src/libs/modulegroups.c:1666
+#: ../src/libs/modulegroups.c:1709
 msgctxt "modulegroup"
 msgid "correct"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1585 ../src/libs/modulegroups.c:1681
-#: ../src/libs/modulegroups.c:1725 ../src/libs/modulegroups.c:2362
+#: ../src/libs/modulegroups.c:1584 ../src/libs/modulegroups.c:1678
+#: ../src/libs/modulegroups.c:1721 ../src/libs/modulegroups.c:2359
 msgctxt "modulegroup"
 msgid "effect"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1603
+#: ../src/libs/modulegroups.c:1602
 msgid "modules: all"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1625 ../src/libs/modulegroups.c:1775
+#: ../src/libs/modulegroups.c:1623 ../src/libs/modulegroups.c:1770
 msgctxt "modulegroup"
 msgid "grading"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1633 ../src/libs/modulegroups.c:1793
-#: ../src/libs/modulegroups.c:2366
+#: ../src/libs/modulegroups.c:1631 ../src/libs/modulegroups.c:1788
+#: ../src/libs/modulegroups.c:2363
 msgctxt "modulegroup"
 msgid "effects"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1641
+#: ../src/libs/modulegroups.c:1639
 msgid "workflow: beginner"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1691
+#: ../src/libs/modulegroups.c:1688
 msgid "workflow: display-referred"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1735
+#: ../src/libs/modulegroups.c:1731
 msgid "workflow: scene-referred"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1741
+#: ../src/libs/modulegroups.c:1737
 msgctxt "modulegroup"
 msgid "technical"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1818
+#: ../src/libs/modulegroups.c:1813
 msgid "search only"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1824 ../src/libs/modulegroups.c:2130
-#: ../src/libs/modulegroups.c:2615
+#: ../src/libs/modulegroups.c:1819 ../src/libs/modulegroups.c:2127
+#: ../src/libs/modulegroups.c:2612
 msgctxt "modulegroup"
 msgid "deprecated"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1845
+#: ../src/libs/modulegroups.c:1842
 msgid "previous config"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1846
+#: ../src/libs/modulegroups.c:1843
 msgid "previous layout"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:1850
+#: ../src/libs/modulegroups.c:1847
 msgid "previous config with new layout"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2003 ../src/libs/modulegroups.c:2514
+#: ../src/libs/modulegroups.c:2000 ../src/libs/modulegroups.c:2511
 msgid "remove this widget"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2148 ../src/libs/modulegroups.c:2388
+#: ../src/libs/modulegroups.c:2145 ../src/libs/modulegroups.c:2385
 msgid "remove this module"
 msgstr ""
 
 #. does it belong to recommended modules ?
-#: ../src/libs/modulegroups.c:2357
+#: ../src/libs/modulegroups.c:2354
 msgid "base"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2360
+#: ../src/libs/modulegroups.c:2357
 msgid "tone"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2363
+#: ../src/libs/modulegroups.c:2360
 msgid "technical"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2364
+#: ../src/libs/modulegroups.c:2361
 msgid "grading"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2370 ../src/libs/modulegroups.c:2378
+#: ../src/libs/modulegroups.c:2367 ../src/libs/modulegroups.c:2375
 msgid "add this module"
 msgstr ""
 
 #. show the submenu with all the modules
-#: ../src/libs/modulegroups.c:2400 ../src/libs/modulegroups.c:2575
+#: ../src/libs/modulegroups.c:2397 ../src/libs/modulegroups.c:2572
 msgid "all available modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2408
+#: ../src/libs/modulegroups.c:2405
 msgid "add module"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2413
+#: ../src/libs/modulegroups.c:2410
 msgid "remove module"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2523 ../src/libs/modulegroups.c:2530
+#: ../src/libs/modulegroups.c:2520 ../src/libs/modulegroups.c:2527
 msgid "add this widget"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2559
+#: ../src/libs/modulegroups.c:2556
 msgid "add widget"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2564
+#: ../src/libs/modulegroups.c:2561
 msgid "remove widget"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2718
+#: ../src/libs/modulegroups.c:2715
 msgid "quick access panel"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2727
+#: ../src/libs/modulegroups.c:2724
 msgid "show only active modules"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2732
+#: ../src/libs/modulegroups.c:2729
 msgid ""
 "presets\n"
 "ctrl+click to manage"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2739
+#: ../src/libs/modulegroups.c:2736
 msgid "search modules by name or tag"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2744
+#: ../src/libs/modulegroups.c:2741
 msgid "clear text"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2752
+#: ../src/libs/modulegroups.c:2749
 msgid ""
 "the following modules are deprecated because they have internal design "
 "mistakes which can't be solved and alternative modules which solve them.\n"
 "they will be removed for new edits in the next release."
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2991
+#: ../src/libs/modulegroups.c:2988
 msgid "basic icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3001
+#: ../src/libs/modulegroups.c:2998
 msgid "active icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3011
+#: ../src/libs/modulegroups.c:3008
 msgid "color icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3021
+#: ../src/libs/modulegroups.c:3018
 msgid "correct icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3031
+#: ../src/libs/modulegroups.c:3028
 msgid "effect icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3041
+#: ../src/libs/modulegroups.c:3038
 msgid "favorites icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3051
+#: ../src/libs/modulegroups.c:3048
 msgid "tone icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3061
+#: ../src/libs/modulegroups.c:3058
 msgid "grading icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3071
+#: ../src/libs/modulegroups.c:3068
 msgid "technical icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3104
+#: ../src/libs/modulegroups.c:3101
 msgid "quick access panel widgets"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3106
+#: ../src/libs/modulegroups.c:3103
 msgid "quick access"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3127
+#: ../src/libs/modulegroups.c:3124
 msgid "add widget to the quick access panel"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3159
+#: ../src/libs/modulegroups.c:3156
 msgid "group icon"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3168
+#: ../src/libs/modulegroups.c:3165
 msgid "group name"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3179
+#: ../src/libs/modulegroups.c:3176
 msgid "remove group"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3206
+#: ../src/libs/modulegroups.c:3203
 msgid "move group to the left"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3215
+#: ../src/libs/modulegroups.c:3212
 msgid "add module to the group"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3227
+#: ../src/libs/modulegroups.c:3224
 msgid "move group to the right"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3395
+#: ../src/libs/modulegroups.c:3392
 msgid "rename preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3402
+#: ../src/libs/modulegroups.c:3399
 msgid "new preset name :"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3403
+#: ../src/libs/modulegroups.c:3400
 msgid "a preset with this name already exists !"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3735
+#: ../src/libs/modulegroups.c:3732
 msgid "preset : "
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3742
+#: ../src/libs/modulegroups.c:3739
 msgid "remove the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3745
+#: ../src/libs/modulegroups.c:3742
 msgid "duplicate the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3748
+#: ../src/libs/modulegroups.c:3745
 msgid "rename the preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3751
+#: ../src/libs/modulegroups.c:3748
 msgid "create a new empty preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3759
+#: ../src/libs/modulegroups.c:3756
 msgid "show search line"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3763
+#: ../src/libs/modulegroups.c:3760
 msgid "show quick access panel"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3772
+#: ../src/libs/modulegroups.c:3769
 msgid "auto-apply this preset"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3788
+#: ../src/libs/modulegroups.c:3785
 msgid "module groups"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:3806
+#: ../src/libs/modulegroups.c:3803
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
@@ -20459,143 +20454,143 @@ msgstr ""
 msgid "no image to open !"
 msgstr ""
 
-#: ../src/views/darkroom.c:1301
+#: ../src/views/darkroom.c:1308
 msgid "no userdefined presets for favorite modules were found"
 msgstr ""
 
-#: ../src/views/darkroom.c:1306
+#: ../src/views/darkroom.c:1313
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr ""
 
-#: ../src/views/darkroom.c:1431
+#: ../src/views/darkroom.c:1438
 msgid "no styles have been created yet"
 msgstr ""
 
-#: ../src/views/darkroom.c:2244
+#: ../src/views/darkroom.c:2251
 msgid "quick access to presets"
 msgstr ""
 
-#: ../src/views/darkroom.c:2253
+#: ../src/views/darkroom.c:2260
 msgid "quick access for applying any of your styles"
 msgstr ""
 
-#: ../src/views/darkroom.c:2263
+#: ../src/views/darkroom.c:2270
 msgid "display a second darkroom image window"
 msgstr ""
 
-#: ../src/views/darkroom.c:2274
+#: ../src/views/darkroom.c:2281
 msgid "toggle ISO 12646 color assessment conditions"
 msgstr ""
 
-#: ../src/views/darkroom.c:2287
+#: ../src/views/darkroom.c:2294
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
 msgstr ""
 
-#: ../src/views/darkroom.c:2304
+#: ../src/views/darkroom.c:2311
 msgid "select how to mark the clipped pixels"
 msgstr ""
 
-#: ../src/views/darkroom.c:2306
+#: ../src/views/darkroom.c:2313
 msgid "mark with CFA color"
 msgstr ""
 
-#: ../src/views/darkroom.c:2306
+#: ../src/views/darkroom.c:2313
 msgid "mark with solid color"
 msgstr ""
 
-#: ../src/views/darkroom.c:2306
+#: ../src/views/darkroom.c:2313
 msgid "false color"
 msgstr ""
 
-#: ../src/views/darkroom.c:2313 ../src/views/darkroom.c:2367
+#: ../src/views/darkroom.c:2320 ../src/views/darkroom.c:2374
 msgid "color scheme"
 msgstr ""
 
-#: ../src/views/darkroom.c:2314
+#: ../src/views/darkroom.c:2321
 msgctxt "solidcolor"
 msgid "red"
 msgstr ""
 
-#: ../src/views/darkroom.c:2315
+#: ../src/views/darkroom.c:2322
 msgctxt "solidcolor"
 msgid "green"
 msgstr ""
 
-#: ../src/views/darkroom.c:2316
+#: ../src/views/darkroom.c:2323
 msgctxt "solidcolor"
 msgid "blue"
 msgstr ""
 
-#: ../src/views/darkroom.c:2317
+#: ../src/views/darkroom.c:2324
 msgctxt "solidcolor"
 msgid "black"
 msgstr ""
 
-#: ../src/views/darkroom.c:2321
+#: ../src/views/darkroom.c:2328
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
 msgstr ""
 
-#: ../src/views/darkroom.c:2331
+#: ../src/views/darkroom.c:2338
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
 "0.0 - black level"
 msgstr ""
 
-#: ../src/views/darkroom.c:2343
+#: ../src/views/darkroom.c:2350
 msgid ""
 "toggle clipping indication\n"
 "right click for options"
 msgstr ""
 
-#: ../src/views/darkroom.c:2359
+#: ../src/views/darkroom.c:2366
 msgid "clipping preview mode"
 msgstr ""
 
-#: ../src/views/darkroom.c:2360
+#: ../src/views/darkroom.c:2367
 msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes"
 msgstr ""
 
-#: ../src/views/darkroom.c:2362
+#: ../src/views/darkroom.c:2369
 msgid "full gamut"
 msgstr ""
 
-#: ../src/views/darkroom.c:2362
+#: ../src/views/darkroom.c:2369
 msgid "any RGB channel"
 msgstr ""
 
-#: ../src/views/darkroom.c:2362
+#: ../src/views/darkroom.c:2369
 msgid "luminance only"
 msgstr ""
 
-#: ../src/views/darkroom.c:2362
+#: ../src/views/darkroom.c:2369
 msgid "saturation only"
 msgstr ""
 
-#: ../src/views/darkroom.c:2368
+#: ../src/views/darkroom.c:2375
 msgid "select colors to indicate clipping"
 msgstr ""
 
-#: ../src/views/darkroom.c:2370
+#: ../src/views/darkroom.c:2377
 msgid "red & blue"
 msgstr ""
 
-#: ../src/views/darkroom.c:2370
+#: ../src/views/darkroom.c:2377
 msgid "purple & green"
 msgstr ""
 
-#: ../src/views/darkroom.c:2378
+#: ../src/views/darkroom.c:2385
 msgid "lower threshold"
 msgstr ""
 
-#: ../src/views/darkroom.c:2379
+#: ../src/views/darkroom.c:2386
 msgid ""
 "clipping threshold for the black point,\n"
 "in EV, relatively to white (0 EV).\n"
@@ -20607,273 +20602,273 @@ msgid ""
 "typical B&W glossy prints produce black at -9.00 EV."
 msgstr ""
 
-#: ../src/views/darkroom.c:2395
+#: ../src/views/darkroom.c:2402
 msgid "upper threshold"
 msgstr ""
 
-#: ../src/views/darkroom.c:2397
+#: ../src/views/darkroom.c:2404
 #, no-c-format
 msgid ""
 "clipping threshold for the white point.\n"
 "100% is peak medium luminance."
 msgstr ""
 
-#: ../src/views/darkroom.c:2410
+#: ../src/views/darkroom.c:2417
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
 msgstr ""
 
-#: ../src/views/darkroom.c:2421
+#: ../src/views/darkroom.c:2428
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
 msgstr ""
 
-#: ../src/views/darkroom.c:2445 ../src/views/darkroom.c:2452
-#: ../src/views/darkroom.c:2471 ../src/views/darkroom.c:2472
-#: ../src/views/darkroom.c:2473 ../src/views/darkroom.c:2474
+#: ../src/views/darkroom.c:2452 ../src/views/darkroom.c:2459
+#: ../src/views/darkroom.c:2478 ../src/views/darkroom.c:2479
+#: ../src/views/darkroom.c:2480 ../src/views/darkroom.c:2481
 msgid "profiles"
 msgstr ""
 
-#: ../src/views/darkroom.c:2452
+#: ../src/views/darkroom.c:2459
 msgid "preview intent"
 msgstr ""
 
-#: ../src/views/darkroom.c:2471 ../src/views/lighttable.c:1332
+#: ../src/views/darkroom.c:2478 ../src/views/lighttable.c:1332
 msgid "display profile"
 msgstr ""
 
-#: ../src/views/darkroom.c:2472 ../src/views/lighttable.c:1335
+#: ../src/views/darkroom.c:2479 ../src/views/lighttable.c:1335
 msgid "preview display profile"
 msgstr ""
 
-#: ../src/views/darkroom.c:2474
+#: ../src/views/darkroom.c:2481
 msgid "histogram profile"
 msgstr ""
 
-#: ../src/views/darkroom.c:2538 ../src/views/lighttable.c:1371
+#: ../src/views/darkroom.c:2545 ../src/views/lighttable.c:1371
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr ""
 
-#: ../src/views/darkroom.c:2541 ../src/views/lighttable.c:1374
+#: ../src/views/darkroom.c:2548 ../src/views/lighttable.c:1374
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr ""
 
-#: ../src/views/darkroom.c:2544
+#: ../src/views/darkroom.c:2551
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr ""
 
-#: ../src/views/darkroom.c:2547
+#: ../src/views/darkroom.c:2554
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr ""
 
-#: ../src/views/darkroom.c:2582
+#: ../src/views/darkroom.c:2589
 msgid ""
 "toggle guide lines\n"
 "right click for guides options"
 msgstr ""
 
 #. Fullscreen preview key
-#: ../src/views/darkroom.c:2601
+#: ../src/views/darkroom.c:2608
 msgctxt "accel"
 msgid "full preview"
 msgstr ""
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:2605
+#: ../src/views/darkroom.c:2612
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr ""
 
-#: ../src/views/darkroom.c:3801
+#: ../src/views/darkroom.c:3815
 msgid "keyboard shortcut slider precision: fine"
 msgstr ""
 
-#: ../src/views/darkroom.c:3803
+#: ../src/views/darkroom.c:3817
 msgid "keyboard shortcut slider precision: normal"
 msgstr ""
 
-#: ../src/views/darkroom.c:3805
+#: ../src/views/darkroom.c:3819
 msgid "keyboard shortcut slider precision: coarse"
 msgstr ""
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3842
+#: ../src/views/darkroom.c:3856
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr ""
 
-#: ../src/views/darkroom.c:3843
+#: ../src/views/darkroom.c:3857
 msgctxt "accel"
 msgid "zoom fill"
 msgstr ""
 
-#: ../src/views/darkroom.c:3844
+#: ../src/views/darkroom.c:3858
 msgctxt "accel"
 msgid "zoom fit"
 msgstr ""
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:3847 ../src/views/lighttable.c:890
+#: ../src/views/darkroom.c:3861 ../src/views/lighttable.c:890
 msgctxt "accel"
 msgid "zoom in"
 msgstr ""
 
-#: ../src/views/darkroom.c:3848 ../src/views/lighttable.c:892
+#: ../src/views/darkroom.c:3862 ../src/views/lighttable.c:892
 msgctxt "accel"
 msgid "zoom out"
 msgstr ""
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3851
+#: ../src/views/darkroom.c:3865
 msgctxt "accel"
 msgid "image forward"
 msgstr ""
 
-#: ../src/views/darkroom.c:3852
+#: ../src/views/darkroom.c:3866
 msgctxt "accel"
 msgid "image back"
 msgstr ""
 
 #. toggle ISO 12646 color assessment condition
-#: ../src/views/darkroom.c:3855
+#: ../src/views/darkroom.c:3869
 msgctxt "accel"
 msgid "color assessment"
 msgstr ""
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3858
+#: ../src/views/darkroom.c:3872
 msgctxt "accel"
 msgid "raw overexposed/toggle"
 msgstr ""
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3861
+#: ../src/views/darkroom.c:3875
 msgctxt "accel"
 msgid "overexposed/toggle"
 msgstr ""
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:3864
+#: ../src/views/darkroom.c:3878
 msgctxt "accel"
 msgid "cycle overlay colors"
 msgstr ""
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3867
+#: ../src/views/darkroom.c:3881
 msgctxt "accel"
 msgid "softproof"
 msgstr ""
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3870
+#: ../src/views/darkroom.c:3884
 msgctxt "accel"
 msgid "gamut check"
 msgstr ""
 
 #. toggle visibility of drawn masks for current gui module
-#: ../src/views/darkroom.c:3873
+#: ../src/views/darkroom.c:3887
 msgctxt "accel"
 msgid "show drawn masks"
 msgstr ""
 
 #. toggle visibility of guide lines
-#: ../src/views/darkroom.c:3876
+#: ../src/views/darkroom.c:3890
 msgctxt "accel"
 msgid "guide lines/toggle"
 msgstr ""
 
 #. toggle visibility of second window
-#: ../src/views/darkroom.c:3879
+#: ../src/views/darkroom.c:3893
 msgctxt "accel"
 msgid "second window"
 msgstr ""
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3882
+#: ../src/views/darkroom.c:3896
 msgctxt "accel"
 msgid "increase brush size"
 msgstr ""
 
-#: ../src/views/darkroom.c:3883
+#: ../src/views/darkroom.c:3897
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr ""
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3886
+#: ../src/views/darkroom.c:3900
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr ""
 
-#: ../src/views/darkroom.c:3887
+#: ../src/views/darkroom.c:3901
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr ""
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3890
+#: ../src/views/darkroom.c:3904
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr ""
 
-#: ../src/views/darkroom.c:3891
+#: ../src/views/darkroom.c:3905
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr ""
 
 #. undo/redo
-#: ../src/views/darkroom.c:3894 ../src/views/lighttable.c:882
-#: ../src/views/map.c:2085
+#: ../src/views/darkroom.c:3908 ../src/views/lighttable.c:882
+#: ../src/views/map.c:2086
 msgctxt "accel"
 msgid "undo"
 msgstr ""
 
-#: ../src/views/darkroom.c:3895 ../src/views/lighttable.c:883
-#: ../src/views/map.c:2086
+#: ../src/views/darkroom.c:3909 ../src/views/lighttable.c:883
+#: ../src/views/map.c:2087
 msgctxt "accel"
 msgid "redo"
 msgstr ""
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3898
+#: ../src/views/darkroom.c:3912
 msgctxt "accel"
 msgid "search modules"
 msgstr ""
 
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:3901
+#: ../src/views/darkroom.c:3915
 msgctxt "accel"
 msgid "change keyboard shortcut slider precision"
 msgstr ""
 
-#: ../src/views/darkroom.c:3991
+#: ../src/views/darkroom.c:4005
 msgid "switch to lighttable"
 msgstr ""
 
-#: ../src/views/darkroom.c:3992 ../src/views/lighttable.c:1030
+#: ../src/views/darkroom.c:4006 ../src/views/lighttable.c:1030
 msgid "zoom in the image"
 msgstr ""
 
-#: ../src/views/darkroom.c:3993
+#: ../src/views/darkroom.c:4007
 msgid "unbounded zoom in the image"
 msgstr ""
 
-#: ../src/views/darkroom.c:3994
+#: ../src/views/darkroom.c:4008
 msgid "zoom to 100% 200% and back"
 msgstr ""
 
-#: ../src/views/darkroom.c:3996
+#: ../src/views/darkroom.c:4010
 msgid "[modules] expand module without closing others"
 msgstr ""
 
-#: ../src/views/darkroom.c:3998
+#: ../src/views/darkroom.c:4012
 msgid "[modules] change module position in pipe"
 msgstr ""
 
@@ -21010,19 +21005,19 @@ msgctxt "accel"
 msgid "preview"
 msgstr ""
 
-#: ../src/views/map.c:196
+#: ../src/views/map.c:197
 msgid "map"
 msgstr ""
 
-#: ../src/views/map.c:2763
+#: ../src/views/map.c:2823
 msgid "[on image] open in darkroom"
 msgstr ""
 
-#: ../src/views/map.c:2764
+#: ../src/views/map.c:2824
 msgid "[on map] zoom map"
 msgstr ""
 
-#: ../src/views/map.c:2765
+#: ../src/views/map.c:2825
 msgid "move image location"
 msgstr ""
 
