@@ -704,7 +704,20 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
     const char *filename = g_file_info_get_name(info);
     if(!filename)
       continue;
-    const guint64 datetime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+    guint64 datetime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+
+    if(dt_conf_get_bool("ui_last/import_use_exifdate"))
+    {
+      char *data = NULL;
+      gsize size = 0;
+      time_t exif_time;
+      char *folder_filename = dt_util_dstrcat(NULL, "%s/%s", folder, filename);
+
+      if(g_file_get_contents(folder_filename, &data, &size, NULL))
+        if(dt_exif_get_datetime_taken((uint8_t *)data, size, &exif_time))
+          datetime = exif_time;
+    }
+
     GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
     gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
     const GFileType filetype = g_file_info_get_file_type(info);
@@ -838,6 +851,12 @@ static gboolean _update_files_list(gpointer user_data)
 static void _import_new_toggled(GtkWidget *widget, dt_lib_module_t* self)
 {
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) _do_select_new(self);
+}
+
+static void _use_exifdate_toggled(GtkWidget *widget, dt_lib_module_t* self)
+{
+  _update_files_list(self);
+  _show_all_thumbs(self);
 }
 
 static void _ignore_jpegs_toggled(GtkWidget *widget, dt_lib_module_t* self)
@@ -1619,12 +1638,12 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
 #endif
   {
     renderer = gtk_cell_renderer_text_new();
-    column = gtk_tree_view_column_new_with_attributes(_("modified"), renderer, "text",
+    column = gtk_tree_view_column_new_with_attributes(_("date/time"), renderer, "text",
                                                       DT_IMPORT_UI_DATETIME, NULL);
     gtk_tree_view_append_column(d->from.treeview, column);
     gtk_tree_view_column_set_sort_column_id(column, DT_IMPORT_DATETIME);
     GtkWidget *header = gtk_tree_view_column_get_button(column);
-    gtk_widget_set_tooltip_text(header, _("file 'modified date/time', may be different from 'Exif date/time'"));
+    gtk_widget_set_tooltip_text(header, _("file 'modified date/time' (default) or 'exif date/time' if checked above"));
     gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(d->from.store),
                                          DT_IMPORT_DATETIME, GTK_SORT_ASCENDING);
   }
@@ -1820,6 +1839,10 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
     d->recursive = dt_gui_preferences_bool(grid, "ui_last/import_recursive", col++, line, TRUE);
     gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line), TRUE);
     g_signal_connect(G_OBJECT(d->recursive), "toggled", G_CALLBACK(_recursive_toggled), self);
+
+    GtkWidget *use_exifdate = dt_gui_preferences_bool(grid, "ui_last/import_use_exifdate", col++, line, TRUE);
+    gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line), TRUE);
+    g_signal_connect(G_OBJECT(use_exifdate), "toggled", G_CALLBACK(_use_exifdate_toggled), self);
   }
   GtkWidget *ignore_jpegs = dt_gui_preferences_bool(grid, "ui_last/import_ignore_jpegs", col++, line, TRUE);
   gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line++), TRUE);

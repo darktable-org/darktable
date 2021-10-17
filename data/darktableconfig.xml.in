@@ -826,6 +826,13 @@
     <longdescription>only select images that have not already been imported</longdescription>
   </dtconfig>
   <dtconfig ui="yes">
+    <name>ui_last/import_use_exifdate</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>use exif date/time</shortdescription>
+    <longdescription>shows exif date/time instead of modified date/time if available. \nuse with care, because it takes long to read!</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
     <name>ui_last/import_ignore_jpegs</name>
     <type>bool</type>
     <default>false</default>
