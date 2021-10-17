@@ -208,6 +208,10 @@ int dt_imageio_heif_read_profile(const char *filename,
   cicp->matrix_coefficients = (uint16_t)heif_matrix_coefficients_unspecified;
 
   struct heif_image_handle* handle = NULL;
+  struct heif_error err;
+  struct heif_color_profile_nclx *profile_info_nclx = NULL;
+  size_t icc_size = 0;
+  uint8_t *icc_data = NULL;
 
   struct heif_context* ctx = heif_context_alloc();
   if(!ctx)
@@ -216,12 +220,6 @@ int dt_imageio_heif_read_profile(const char *filename,
              "Unable to allocate HEIF context\n");
     goto out;
   }
-
-  struct heif_error err;
-  struct heif_color_profile_nclx *profile_info_nclx = NULL;
-  size_t icc_size = 0;
-  uint8_t *icc_data = NULL;
-
 
   err = heif_context_read_from_file(ctx, filename, NULL);
   if(err.code != 0)
