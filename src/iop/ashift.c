@@ -117,12 +117,12 @@ DT_MODULE_INTROSPECTION(5, dt_iop_ashift_params_t)
 
 const char *name()
 {
-  return _("rotation and perspective");
+  return _("rotate and perspective");
 }
 
 const char *aliases()
 {
-  return _("rotate|keystone|distortion|crop|reframe");
+  return _("rotation|keystone|distortion|crop|reframe");
 }
 
 const char *description(struct dt_iop_module_t *self)
