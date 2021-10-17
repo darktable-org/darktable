@@ -1024,6 +1024,7 @@ static inline void precondition_Y0U0V0(const float *const in, float *const buf, 
       }
       buf[j+c] = sum;
     }
+    buf[j+3] = 0;
   }
 }
 
