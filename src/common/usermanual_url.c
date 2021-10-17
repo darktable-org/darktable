@@ -96,7 +96,7 @@ dt_help_url urls_db[] =
   {"gamut",                      "module-reference/utility-modules/darkroom/gamut/"},
 
   // iop links
-  {"ashift",                     "module-reference/processing-modules/perspective-correction/"},
+  {"ashift",                     "module-reference/processing-modules/rotate-perspective/"},
   {"atrous",                     "module-reference/processing-modules/contrast-equalizer/"},
   {"basecurve",                  "module-reference/processing-modules/base-curve/"},
   {"bilateral",                  "module-reference/processing-modules/surface-blur/"},
